@@ -8,8 +8,7 @@ from gi.repository import Gio, Gtk, GObject, Gdk, GLib
 class Module:
     def __init__(self, content_box):
         keywords = _("time, date, calendar, format, network, sync")
-        advanced = False
-        sidePage = SidePage(_("Date & Time"), "cs-date-time", keywords, advanced, content_box)
+        sidePage = SidePage(_("Date & Time"), "cs-date-time", keywords, content_box)
         self.sidePage = sidePage
         self.name = "calendar"
         self.comment = _("Manage date and time settings")
@@ -21,7 +20,7 @@ class Module:
         label.set_markup("<b>%s</b>" % _("Date Settings"))
         label.set_alignment(0, 0.5)
         hbox.pack_start(label, False, False, 0)
-        self.sidePage.add_widget(hbox, False)
+        self.sidePage.add_widget(hbox)
 
         try:
             self.changeTimeWidget = ChangeTimeWidget()  
@@ -30,18 +29,18 @@ class Module:
                 self.ntpCheckButton = NtpCheckButton(_("Use network time"))
                 Ibox = IndentedHBox()
                 Ibox.add(self.ntpCheckButton)
-                self.sidePage.add_widget(Ibox, False)
+                self.sidePage.add_widget(Ibox)
             except Exception, detail:
                 print detail
 
             Ibox = IndentedHBox()
             Ibox.add(self.changeTimeWidget)
-            self.sidePage.add_widget(Ibox, False)
+            self.sidePage.add_widget(Ibox)
 
             try:
                 Ibox = IndentedHBox()
                 Ibox.add(TimeZoneSelectorWidget())
-                self.sidePage.add_widget(Ibox, False)
+                self.sidePage.add_widget(Ibox)
 
             except Exception, detail:
                 print detail
@@ -58,19 +57,19 @@ class Module:
         label.set_markup("<b>%s</b>" % _("Date Format"))
         label.set_alignment(0, 0.5)
         hbox.pack_start(label, False, False, 0)
-        self.sidePage.add_widget(hbox, False)
+        self.sidePage.add_widget(hbox)
 
         Ibox = IndentedHBox()
         Ibox.add(GSettingsCheckButton(_("Use 24h clock"), "org.cinnamon.desktop.interface", "clock-use-24h", None))
-        self.sidePage.add_widget(Ibox, False)
+        self.sidePage.add_widget(Ibox)
 
         Ibox = IndentedHBox()
         Ibox.add(GSettingsCheckButton(_("Display the date"), "org.cinnamon.desktop.interface", "clock-show-date", None))
-        self.sidePage.add_widget(Ibox, False)
+        self.sidePage.add_widget(Ibox)
 
         Ibox = IndentedHBox()
         Ibox.add(GSettingsCheckButton(_("Display seconds"), "org.cinnamon.desktop.interface", "clock-show-seconds", None))        
-        self.sidePage.add_widget(Ibox, False)        
+        self.sidePage.add_widget(Ibox)        
 
     def _ntp_toggled(self, widget):
         self.changeTimeWidget.change_using_ntp( self.ntpCheckButton.get_active() )

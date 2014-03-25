@@ -158,8 +158,7 @@ if HAS_DEDICATED_TERMINAL_SHORTCUT:
 class Module:
     def __init__(self, content_box):
         keywords = _("keyboard, shortcut, hotkey")
-        advanced = True
-        sidePage = KeyboardSidePage(_("Keyboard"), "cs-keyboard", keywords, advanced, content_box)
+        sidePage = KeyboardSidePage(_("Keyboard"), "cs-keyboard", keywords, content_box)
         self.sidePage = sidePage
         self.comment = _("Manage keyboard settings and shortcuts")
         self.name = "keyboard"
@@ -330,11 +329,11 @@ class NotebookPage:
         self.content_box.show_all()
 
 class KeyboardSidePage (SidePage):
-    def __init__(self, name, icon, keywords, advanced, content_box):
-        SidePage.__init__(self, name, icon, keywords, advanced, content_box)
+    def __init__(self, name, icon, keywords, content_box):
+        SidePage.__init__(self, name, icon, keywords, content_box)
         self.tabs = []
 
-    def build(self, advanced):
+    def build(self):
         # Clear all the widgets from the content box
         widgets = self.content_box.get_children()
         for widget in widgets:

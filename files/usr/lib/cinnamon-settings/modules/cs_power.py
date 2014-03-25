@@ -34,8 +34,7 @@ IDLE_DELAY_OPTIONS = [
 class Module:
     def __init__(self, content_box):
         keywords = _("power, suspend, hibernate, laptop, desktop, brightness, screensaver")
-        advanced = False
-        sidePage = SidePage(_("Power Management"), "cs-power", keywords, advanced, content_box, is_c_mod=True)
+        sidePage = SidePage(_("Power Management"), "cs-power", keywords, content_box, is_c_mod=True)
         self.sidePage = sidePage
         self.name = "power"
         self.category = "hardware"
@@ -86,7 +85,7 @@ class Module:
 
                 alignment.add(vbox)
                 frame.add(alignment)
-                self.sidePage.add_widget(frame, False)
+                self.sidePage.add_widget(frame)
 
                 widget.set_tooltip_text(_("Sets the brightness level of the screen"))
                 vbox.pack_start(widget, False, False, 0)

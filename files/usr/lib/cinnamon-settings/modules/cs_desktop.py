@@ -6,8 +6,7 @@ from gi.repository import Gio
 class Module:
     def __init__(self, content_box):
         keywords = _("desktop, home, button, trash")
-        advanced = False
-        sidePage = SidePage(_("Desktop"), "cs-desktop", keywords, advanced, content_box)
+        sidePage = SidePage(_("Desktop"), "cs-desktop", keywords, content_box)
         self.sidePage = sidePage
         self.name = "desktop"
         self.category = "prefs"

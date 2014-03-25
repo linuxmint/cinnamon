@@ -40,8 +40,7 @@ BACKGROUND_ICONS_SIZE = 200
 class Module:
     def __init__(self, content_box):
         keywords = _("background, picture, screenshot, slideshow")
-        advanced = False
-        sidePage = BackgroundSidePage(_("Backgrounds"), "cs-backgrounds", keywords, advanced, content_box)
+        sidePage = BackgroundSidePage(_("Backgrounds"), "cs-backgrounds", keywords, content_box)
         self.sidePage = sidePage
         self.name = "backgrounds"
         self.category = "appear"
@@ -468,8 +467,8 @@ class BackgroundSlideshowPane(Gtk.Table):
             Gio.Settings("org.cinnamon.desktop.background").set_string("picture-uri", "file://" + filename)
 
 class BackgroundSidePage (SidePage):
-    def __init__(self, name, icon, keywords, advanced, content_box):
-        SidePage.__init__(self, name, icon, keywords, advanced, content_box, -1)
+    def __init__(self, name, icon, keywords, content_box):
+        SidePage.__init__(self, name, icon, keywords, content_box, -1)
         self._gnome_background_schema = Gio.Settings(schema = "org.cinnamon.desktop.background")
         self._cinnamon_background_schema = Gio.Settings(schema = "org.cinnamon.background")
         self._add_wallpapers_dialog = AddWallpapersDialog()
@@ -490,7 +489,7 @@ class BackgroundSidePage (SidePage):
             self.remove_wallpaper_button.show()
         self.mainbox.show_all()
     
-    def build(self, advanced):
+    def build(self):
         # Clear all the widgets from the content box
         widgets = self.content_box.get_children()
         for widget in widgets:
@@ -544,32 +543,31 @@ class BackgroundSidePage (SidePage):
             self.add_wallpaper_button.show()
             self.remove_wallpaper_button.show()
 
-        if advanced:
-            advanced_options_box = Gtk.HBox()
-            advanced_options_box.set_spacing(10)
+        advanced_options_box = Gtk.HBox()
+        advanced_options_box.set_spacing(10)
 
-            self.content_box.pack_start(advanced_options_box, False, True, 3)
+        self.content_box.pack_start(advanced_options_box, False, True, 3)
 
-            l = Gtk.Label.new(_("Picture aspect"))
-            l.set_alignment(0, 0.5)
-            advanced_options_box.pack_start(l, False, False, 0)
-            self.picture_options = GSettingsComboBox("", "org.cinnamon.desktop.background", "picture-options", None, BACKGROUND_PICTURE_OPTIONS)
-            advanced_options_box.pack_start(self.picture_options, False, False, 0)
+        l = Gtk.Label.new(_("Picture aspect"))
+        l.set_alignment(0, 0.5)
+        advanced_options_box.pack_start(l, False, False, 0)
+        self.picture_options = GSettingsComboBox("", "org.cinnamon.desktop.background", "picture-options", None, BACKGROUND_PICTURE_OPTIONS)
+        advanced_options_box.pack_start(self.picture_options, False, False, 0)
 
-            l = Gtk.Label.new(_("Gradient"))
-            l.set_alignment(0, 0.5)
-            advanced_options_box.pack_start(l, False, False, 0)
-            self.color_shading_type = GSettingsComboBox("", "org.cinnamon.desktop.background", "color-shading-type", None, BACKGROUND_COLOR_SHADING_TYPES)
-            advanced_options_box.pack_start(self.color_shading_type, False, False, 0)
+        l = Gtk.Label.new(_("Gradient"))
+        l.set_alignment(0, 0.5)
+        advanced_options_box.pack_start(l, False, False, 0)
+        self.color_shading_type = GSettingsComboBox("", "org.cinnamon.desktop.background", "color-shading-type", None, BACKGROUND_COLOR_SHADING_TYPES)
+        advanced_options_box.pack_start(self.color_shading_type, False, False, 0)
 
-            hbox = Gtk.HBox()
-            l = Gtk.Label.new(_("Colors"))
-            hbox.pack_start(l, False, False, 2)
-            self.primary_color = GSettingsColorChooser("org.cinnamon.desktop.background", "primary-color", None)
-            hbox.pack_start(self.primary_color, False, False, 2)
-            self.secondary_color = GSettingsColorChooser("org.cinnamon.desktop.background", "secondary-color", None)
-            hbox.pack_start(self.secondary_color, False, False, 2)
-            advanced_options_box.pack_start(hbox, False, False, 0)
+        hbox = Gtk.HBox()
+        l = Gtk.Label.new(_("Colors"))
+        hbox.pack_start(l, False, False, 2)
+        self.primary_color = GSettingsColorChooser("org.cinnamon.desktop.background", "primary-color", None)
+        hbox.pack_start(self.primary_color, False, False, 2)
+        self.secondary_color = GSettingsColorChooser("org.cinnamon.desktop.background", "secondary-color", None)
+        hbox.pack_start(self.secondary_color, False, False, 2)
+        advanced_options_box.pack_start(hbox, False, False, 0)
 
         self.content_box.show_all()
 

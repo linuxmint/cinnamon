@@ -7,14 +7,13 @@ from SettingsWidgets import *
 class Module:
     def __init__(self, content_box):
         keywords = _("desklet, desktop, slideshow")
-        advanced = False
         self.name = "desklets"
         self.comment = _("Manage your Cinnamon desklets")
         # for i18n replacement in ExtensionCore.py
         noun = _("desklet")
         pl_noun = _("desklets")
         target = _("desktop")
-        sidePage = DeskletsViewSidePage(_("Desklets"), "cs-desklets", keywords, advanced, content_box, "desklet", noun, pl_noun, target)
+        sidePage = DeskletsViewSidePage(_("Desklets"), "cs-desklets", keywords, content_box, "desklet", noun, pl_noun, target)
         self.sidePage = sidePage
 
         self.category = "prefs"
@@ -24,9 +23,9 @@ class Module:
         self.sidePage.builder = builder
 
 class DeskletsViewSidePage (ExtensionSidePage):
-    def __init__(self, name, icon, keywords, advanced, content_box, collection_type, noun, pl_noun, target):
+    def __init__(self, name, icon, keywords, content_box, collection_type, noun, pl_noun, target):
         self.RemoveString = _("You can remove specific instances from the desktop via that desklet's context menu")
-        ExtensionSidePage.__init__(self, name, icon, keywords, advanced, content_box, collection_type, noun, pl_noun, target)
+        ExtensionSidePage.__init__(self, name, icon, keywords, content_box, collection_type, noun, pl_noun, target)
 
     def toSettingString(self, uuid, instanceId):
         return ("%s:%d:0:100") % (uuid, instanceId)

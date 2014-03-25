@@ -29,7 +29,7 @@ except Exception, detail:
     sys.exit(1)
 
 class SidePage:
-    def __init__(self, name, icon, keywords, advanced, content_box = None, size = None, is_c_mod = False, is_standalone = False, exec_name = None, module=None):
+    def __init__(self, name, icon, keywords, content_box = None, size = None, is_c_mod = False, is_standalone = False, exec_name = None, module=None):
         self.name = name
         self.icon = icon
         self.content_box = content_box
@@ -39,16 +39,14 @@ class SidePage:
         self.exec_name = exec_name
         self.module = module # Optionally set by the module so we can call on_module_selected() on it when we show it.
         self.keywords = keywords
-        self.advanced = advanced
         self.size = size
         self.topWindow = None
         self.builder = None
 
-    def add_widget(self, widget, advanced = False):
-        self.widgets.append(widget)
-        widget.advanced = advanced
+    def add_widget(self, widget):
+        self.widgets.append(widget)        
 
-    def build(self, mode_advanced):
+    def build(self):
         # Clear all the widgets from the content box
         widgets = self.content_box.get_children()
         for widget in widgets:
@@ -60,10 +58,7 @@ class SidePage:
         # mess up these modifications - so for these, we just show the
         # top-level widget
         if not self.is_standalone:
-            for widget in self.widgets:
-                if widget.advanced:
-                    if not mode_advanced:
-                        continue
+            for widget in self.widgets:               
                 self.content_box.pack_start(widget, False, False, 2)
             if self.is_c_mod:
                 self.content_box.show()
@@ -88,8 +83,8 @@ class SidePage:
             subprocess.Popen(self.exec_name.split())
 
 class CCModule:
-    def __init__(self, label, mod_id, icon, category, advanced, keywords, content_box):
-        sidePage = SidePage(label, icon, keywords, advanced, content_box, False, True, False, mod_id)
+    def __init__(self, label, mod_id, icon, category, keywords, content_box):
+        sidePage = SidePage(label, icon, keywords, content_box, False, True, False, mod_id)
         self.sidePage = sidePage
         self.name = mod_id
         self.category = category
@@ -105,8 +100,8 @@ class CCModule:
             return False
 
 class SAModule:
-    def __init__(self, label, mod_id, icon, category, advanced, keywords, content_box):
-        sidePage = SidePage(label, icon, keywords, advanced, content_box, False, False, True, mod_id)
+    def __init__(self, label, mod_id, icon, category, keywords, content_box):
+        sidePage = SidePage(label, icon, keywords, content_box, False, False, True, mod_id)
         self.sidePage = sidePage
         self.name = mod_id
         self.category = category

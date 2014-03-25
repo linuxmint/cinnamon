@@ -309,17 +309,14 @@ class OtherTypeDialog(Gtk.Dialog):
 class Module:
     def __init__(self, content_box):
         keywords = _("media, defaults, applications, programs, removable, browser, email, calendar, music, videos, photos, images, cd, autostart, autoplay")
-        advanced = False
-
-        sidePage = DefaultSidepage(_("Preferred Applications"), "cs-default-applications", keywords, advanced, content_box)
-
+        sidePage = DefaultSidepage(_("Preferred Applications"), "cs-default-applications", keywords, content_box)
         self.sidePage = sidePage
         self.name = "default"
         self.category = "prefs"
 
 class DefaultSidepage (SidePage):
-    def __init__(self, name, icon, keywords, advanced, content_box):
-        SidePage.__init__(self, name, icon, keywords, advanced, content_box, 330)
+    def __init__(self, name, icon, keywords, content_box):
+        SidePage.__init__(self, name, icon, keywords, content_box, 330)
         self.tabs = []
         self.notebook = Gtk.Notebook()
         self.viewbox1 = Gtk.VBox()
@@ -337,8 +334,8 @@ class DefaultSidepage (SidePage):
         widget1 = self.setupDefaultApps()
         widget2 = self.setupMedia()
         
-        self.add_widget(widget1, 0, None)
-        self.add_widget(widget2, 1, None)
+        self.add_widget(widget1, 0)
+        self.add_widget(widget2, 1)
 
     def setupDefaultApps(self):
         table = ButtonTable(len(preferred_app_defs))
@@ -351,12 +348,11 @@ class DefaultSidepage (SidePage):
     def onMoreClicked(self, button):
         self.other_type_dialog.doShow(button.get_toplevel())
         
-    def add_widget(self, widget, tab, advanced = False):
+    def add_widget(self, widget, tab):
         self.widgets.append(widget)
-        widget.advanced = advanced
         widget.tab = tab
         
-    def build(self, advanced):
+    def build(self):
         for widget in self.viewbox1.get_children():
             self.viewbox1.remove(widget)
         for widget in self.viewbox2.get_children():
@@ -364,10 +360,7 @@ class DefaultSidepage (SidePage):
         for widget in self.content_box.get_children():
             self.content_box.remove(widget)
 
-        for widget in self.widgets:
-            if widget.advanced:
-                if not advanced:
-                    continue
+        for widget in self.widgets:            
             if widget.tab == 0:
                 self.viewbox1.pack_start(widget, False, False, 2)
             elif widget.tab == 1:

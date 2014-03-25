@@ -7,8 +7,7 @@ from gi.repository import Gtk
 class Module:
     def __init__(self, content_box):
         keywords = _("font, size, small, large")
-        advanced = False
-        sidePage = SidePage(_("Fonts"), "cs-fonts", keywords, advanced, content_box)
+        sidePage = SidePage(_("Fonts"), "cs-fonts", keywords, content_box)
         self.sidePage = sidePage
         self.name = "fonts"
         self.category = "appear"
@@ -20,7 +19,7 @@ class Module:
         label.set_markup("<b>%s</b>" % _("Basic font configuration"))
         label.set_alignment(0, 0.5)
         hbox.pack_start(label, False, False, 0)
-        self.sidePage.add_widget(hbox, False)
+        self.sidePage.add_widget(hbox)
         
         sidePage.add_widget(self.make_combo_group(GSettingsFontButton, _("Default font"), "org.cinnamon.desktop.interface", "font-name", None))
         sidePage.add_widget(self.make_combo_group(GSettingsFontButton, _("Document font"), "org.gnome.desktop.interface", "document-font-name", None))
@@ -33,11 +32,11 @@ class Module:
         label.set_markup("<b>%s</b>" % _("Advanced font configuration"))
         label.set_alignment(0, 0.5)
         hbox.pack_start(label, False, False, 0)
-        self.sidePage.add_widget(hbox, True)
+        self.sidePage.add_widget(hbox)
         
-        sidePage.add_widget(self.make_combo_group(GSettingsRangeSpin, _("Text scaling factor"), "org.cinnamon.desktop.interface", "text-scaling-factor", None), True)
-        sidePage.add_widget(self.make_combo_group(GSettingsComboBox, _("Antialiasing"), "org.cinnamon.settings-daemon.plugins.xsettings", "antialiasing", None), True)
-        sidePage.add_widget(self.make_combo_group(GSettingsComboBox, _("Hinting"), "org.cinnamon.settings-daemon.plugins.xsettings", "hinting", None), True)
+        sidePage.add_widget(self.make_combo_group(GSettingsRangeSpin, _("Text scaling factor"), "org.cinnamon.desktop.interface", "text-scaling-factor", None))
+        sidePage.add_widget(self.make_combo_group(GSettingsComboBox, _("Antialiasing"), "org.cinnamon.settings-daemon.plugins.xsettings", "antialiasing", None))
+        sidePage.add_widget(self.make_combo_group(GSettingsComboBox, _("Hinting"), "org.cinnamon.settings-daemon.plugins.xsettings", "hinting", None))
 
     def make_combo_group(self, widget, group_label, root, key, ex1):
         self.size_groups = getattr(self, "size_groups", [Gtk.SizeGroup.new(Gtk.SizeGroupMode.HORIZONTAL) for x in range(2)])

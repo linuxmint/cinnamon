@@ -7,16 +7,15 @@ from SettingsWidgets import *
 class Module:
     def __init__(self, content_box):
         keywords = _("mouse, touchpad, synaptic, double-click")
-        advanced = False
-        sidePage = MouseTouchpadSidepage(_("Mouse and Touchpad"), "cs-mouse", keywords, advanced, content_box)
+        sidePage = MouseTouchpadSidepage(_("Mouse and Touchpad"), "cs-mouse", keywords, content_box)
         self.sidePage = sidePage
         self.comment = _("Control mouse and touchpad settings")
         self.name = "mouse"
         self.category = "hardware"
 
 class MouseTouchpadSidepage (SidePage):
-    def __init__(self, name, icon, keywords, advanced, content_box):
-        SidePage.__init__(self, name, icon, keywords, advanced, content_box, 360)
+    def __init__(self, name, icon, keywords, content_box):
+        SidePage.__init__(self, name, icon, keywords, content_box, 360)
         self.tabs = []
         self.mousebox = Gtk.VBox()
         self.touchbox = Gtk.VBox()
@@ -39,7 +38,7 @@ class MouseTouchpadSidepage (SidePage):
         title = Gtk.Label.new()
         title.set_markup("<b>%s</b>" % _("General"))
         title.set_alignment(0,0)
-        self.add_widget(title, 0, False)
+        self.add_widget(title, 0)
 
         box = IndentedHBox()
         box.add(CheckButton(_("Left handed (mouse buttons inverted)"), "org.cinnamon.settings-daemon.peripherals.mouse", "left-handed", None))
@@ -51,68 +50,68 @@ class MouseTouchpadSidepage (SidePage):
 
         box = IndentedHBox()
         box.add(GSettingsCheckButton(_("Emulate middle click by clicking both left and right buttons"), "org.cinnamon.settings-daemon.peripherals.mouse", "middle-button-enabled", None))
-        self.add_widget(box, 0, True)
+        self.add_widget(box, 0)
 
         title = Gtk.Label.new()
         title.set_markup("<b>%s</b>    <i><small>%s</small></i>" % (_("Pointer Size"), _("Note: All sizes may not be available on certain icon themes")))
         title.set_alignment(0,0)
-        self.add_widget(title, 0, None)
+        self.add_widget(title, 0)
 
         box = IndentedHBox()
 
         slider = GSettingsRange(_("Size:"), _("Smaller"), _("Larger"), 5, 50, False, "int", False, "org.cinnamon.desktop.interface", "cursor-size", None, adjustment_step = 1.0)
         slider.add_mark(24.0, Gtk.PositionType.TOP, None)
         box.add_expand(slider)
-        self.add_widget(box, 0, None)
+        self.add_widget(box, 0)
 
         title = Gtk.Label.new()
         title.set_markup("<b>%s</b>" % _("Pointer Speed"))
         title.set_alignment(0,0)
-        self.add_widget(title, 0, None)
+        self.add_widget(title, 0)
 
         box = IndentedHBox()
         slider = GSettingsRange(_("Acceleration:"), _("Slow"), _("Fast"), 1.0, 10.0, False, "double", False, "org.cinnamon.settings-daemon.peripherals.mouse", "motion-acceleration", None, adjustment_step = 1.0)
         box.add_expand(slider)
-        self.add_widget(box, 0, None)
+        self.add_widget(box, 0)
 
         box = IndentedHBox()
         slider = GSettingsRange(_("Sensitivity:"), _("Low"), _("High"), 1, 10, False, "int", False, "org.cinnamon.settings-daemon.peripherals.mouse", "motion-threshold", None, adjustment_step = 1)
         box.add_expand(slider)
-        self.add_widget(box, 0, None) 
+        self.add_widget(box, 0) 
 
         title = Gtk.Label.new()
         title.set_markup("<b>%s</b>" % _("Double-Click Timeout"))
         title.set_alignment(0,0)
-        self.add_widget(title, 0, None)
+        self.add_widget(title, 0)
 
         box = IndentedHBox()
         slider = GSettingsRange(_("Timeout:"), _("Short"), _("Long"), 100, 1000, False, "int", False, "org.cinnamon.settings-daemon.peripherals.mouse", "double-click", None, adjustment_step = 1)
         box.add_expand(slider)
-        self.add_widget(box, 0, None)
+        self.add_widget(box, 0)
 
         test_button = Gtk.Button.new_with_label(_("Double-click test"))
         test_button.connect("button-press-event", self.test_button_clicked)
-        self.add_widget(test_button, 0, None)
+        self.add_widget(test_button, 0)
 
         title = Gtk.Label.new()
         title.set_markup("<b>%s</b>" % _("Drag and drop"))
         title.set_alignment(0,0)
-        self.add_widget(title, 0, True)
+        self.add_widget(title, 0)
 
         box = IndentedHBox()
         box.add(GSettingsSpinButton(_("Cinnamon drag threshold"), "org.cinnamon", "dnd-drag-threshold", None, 1, 400, 1, 1, _("Pixels")))
-        self.add_widget(box, 0, True)
+        self.add_widget(box, 0)
 
         box = IndentedHBox()
         box.add(GSettingsSpinButton(_("GTK drag threshold"), "org.cinnamon.settings-daemon.peripherals.mouse", "drag-threshold", None, 1, 400, 1, 1, _("Pixels")))
-        self.add_widget(box, 0, True)
+        self.add_widget(box, 0)
 
         # Touchpad
 
         title = Gtk.Label.new()
         title.set_markup("<b>%s</b>" % _("General"))
         title.set_alignment(0,0)
-        self.add_widget(title, 1, False)
+        self.add_widget(title, 1)
 
         box = IndentedHBox()
         box.add(GSettingsCheckButton(_("Enable touchpad"), "org.cinnamon.settings-daemon.peripherals.touchpad", "touchpad-enabled", None))
@@ -128,7 +127,7 @@ class MouseTouchpadSidepage (SidePage):
         title = Gtk.Label.new()
         title.set_markup("<b>%s</b>" % _("Scrolling"))
         title.set_alignment(0,0)
-        self.add_widget(title, 1, False)
+        self.add_widget(title, 1)
 
         scroll_method = [["disabled", _("Disabled")], ["edge-scrolling", _("Edge Scrolling")], ["two-finger-scrolling", _("Two-finger scrolling")]]
         scroll_method_combo = GSettingsComboBox(_("Panel layout"), "org.cinnamon.settings-daemon.peripherals.touchpad", "scroll-method", "org.cinnamon.settings-daemon.peripherals.touchpad/touchpad-enabled", scroll_method)
@@ -145,24 +144,23 @@ class MouseTouchpadSidepage (SidePage):
         title = Gtk.Label.new()
         title.set_markup("<b>%s</b>" % _("Pointer Speed"))
         title.set_alignment(0,0)
-        self.add_widget(title, 1, False)
+        self.add_widget(title, 1)
 
         slider = GSettingsRange(_("Acceleration:"), _("Slow"), _("Fast"), 1.0, 10.0, False, "double", False, "org.cinnamon.settings-daemon.peripherals.touchpad", "motion-acceleration", "org.cinnamon.settings-daemon.peripherals.touchpad/touchpad-enabled", adjustment_step = 1.0)
         box = IndentedHBox()
         box.add_expand(slider)
-        self.add_widget(box, 1, None)
+        self.add_widget(box, 1)
 
         slider = GSettingsRange(_("Sensitivity:"), _("Low"), _("High"), 1, 10, False, "int", False, "org.cinnamon.settings-daemon.peripherals.touchpad", "motion-threshold", "org.cinnamon.settings-daemon.peripherals.touchpad/touchpad-enabled", adjustment_step = 1)
         box = IndentedHBox()
         box.add_expand(slider)
-        self.add_widget(box, 1, None) 
+        self.add_widget(box, 1) 
 
-    def add_widget(self, widget, tab, advanced = False):
-        self.widgets.append(widget)
-        widget.advanced = advanced
+    def add_widget(self, widget, tab):
+        self.widgets.append(widget)        
         widget.tab = tab
 
-    def build(self, advanced):
+    def build(self):
         for widget in self.mousebox.get_children():
             self.mousebox.remove(widget)
         for widget in self.touchbox.get_children():
@@ -170,10 +168,7 @@ class MouseTouchpadSidepage (SidePage):
         for widget in self.content_box.get_children():
             self.content_box.remove(widget)
 
-        for widget in self.widgets:
-            if widget.advanced:
-                if not advanced:
-                    continue
+        for widget in self.widgets:            
             if widget.tab == 0:
                 self.mousebox.pack_start(widget, False, False, 2)
             elif widget.tab == 1:

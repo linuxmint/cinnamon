@@ -45,8 +45,8 @@ class ExtensionSidePage (SidePage):
     SORT_ENABLED = 3
     SORT_REMOVABLE = 4  
 
-    def __init__(self, name, icon, keywords, advanced, content_box, collection_type, noun, pl_noun, target):
-        SidePage.__init__(self, name, icon, keywords, advanced, content_box, -1)
+    def __init__(self, name, icon, keywords, content_box, collection_type, noun, pl_noun, target):
+        SidePage.__init__(self, name, icon, keywords, content_box, -1)
         self.collection_type = collection_type
         self.target = target
         self.noun = noun
@@ -55,7 +55,7 @@ class ExtensionSidePage (SidePage):
         self.icons = []
         self.run_once = False
 
-    def build(self, advanced):
+    def build(self):
         # Clear all the widgets from the content box
         widgets = self.content_box.get_children()
         for widget in widgets:

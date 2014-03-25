@@ -102,8 +102,7 @@ def createSystemInfos():
 class Module:
     def __init__(self, content_box):
         keywords = _("system, information, details, graphic, sound, kernel, version")
-        advanced = False
-        sidePage = SidePage(_("System Info"), "cs-details", keywords, advanced, content_box)
+        sidePage = SidePage(_("System Info"), "cs-details", keywords, content_box)
         self.sidePage = sidePage
         self.name = "info"
         self.category = "hardware"
@@ -114,7 +113,7 @@ class Module:
         table = Gtk.Table.new(len(infos), 2, False)
         table.set_row_spacings(8)
         table.set_col_spacings(15)
-        sidePage.add_widget(table, False)
+        sidePage.add_widget(table)
 
         row = 0
         for (key, value) in infos:

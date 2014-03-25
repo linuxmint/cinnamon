@@ -6,8 +6,7 @@ from gi.repository.Gtk import SizeGroup, SizeGroupMode
 class Module:
     def __init__(self, content_box):
         keywords = _("effects, fancy, window")
-        advanced = True
-        sidePage = SidePage(_("Effects"), "cs-desktop-effects", keywords, advanced, content_box)
+        sidePage = SidePage(_("Effects"), "cs-desktop-effects", keywords, content_box)
         self.sidePage = sidePage
         self.name = "effects"
         self.category = "appear"

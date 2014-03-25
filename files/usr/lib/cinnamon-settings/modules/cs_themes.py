@@ -8,14 +8,13 @@ class Module:
     def __init__(self, content_box):
         keywords = _("themes, style")
         self.comment = _("Manage themes to change how your desktop looks")
-        advanced = False
         self.name = "themes"
         # for i18n replacement in ExtensionCore.py
         noun = _("theme")
         pl_noun = _("themes")
         # We do not translate Cinnamon
         target = "Cinnamon"
-        sidePage = ThemesViewSidePage(_("Themes"), "cs-themes", keywords, advanced, content_box, "theme", noun, pl_noun, target)
+        sidePage = ThemesViewSidePage(_("Themes"), "cs-themes", keywords, content_box, "theme", noun, pl_noun, target)
         self.sidePage = sidePage
 
         self.category = "appear"
@@ -26,9 +25,9 @@ class Module:
 
 class ThemesViewSidePage (ExtensionSidePage):
 
-    def __init__(self, name, icon, keywords, advanced, content_box, collection_type, noun, pl_noun, target):
+    def __init__(self, name, icon, keywords, content_box, collection_type, noun, pl_noun, target):
         self.RemoveString = ""
-        ExtensionSidePage.__init__(self, name, icon, keywords, advanced, content_box, collection_type, noun, pl_noun, target)
+        ExtensionSidePage.__init__(self, name, icon, keywords, content_box, collection_type, noun, pl_noun, target)
 
     def toSettingString(self, uuid, instanceId):
         return uuid

@@ -8,8 +8,7 @@ from gi.repository.Gtk import SizeGroup, SizeGroupMode
 class Module:
     def __init__(self, content_box):
         keywords = _("windows, titlebar, edge, switcher, window list, attention, focus")
-        advanced = True
-        sidePage = SidePage(_("Windows"), "cs-windows", keywords, advanced, content_box)
+        sidePage = SidePage(_("Windows"), "cs-windows", keywords, content_box)
         self.sidePage = sidePage
         self.name = "windows"
         self.category = "prefs"
@@ -47,12 +46,12 @@ class Module:
         sidePage.add_widget(GSettingsCheckButton(_("Enable mouse-wheel scrolling in Window List applet"), "org.cinnamon", "window-list-applet-scroll", None))
         sidePage.add_widget(GSettingsCheckButton(_("Show an alert in the window list when a window from another workspace requires attention"), "org.cinnamon", "window-list-applet-alert", None))
         sidePage.add_widget(GSettingsCheckButton(_("Bring windows which require attention to the current workspace"), "org.cinnamon", "bring-windows-to-current-workspace", None))
-        sidePage.add_widget(GSettingsCheckButton(_("Attach dialog windows to their parent window's titlebar"), "org.cinnamon.muffin", "attach-modal-dialogs", None), True)
-        sidePage.add_widget(GSettingsCheckButton(_("Enforce displaying the alt-tab switcher on the primary monitor instead of the active one"), "org.cinnamon", "alttab-switcher-enforce-primary-monitor", None), True)
+        sidePage.add_widget(GSettingsCheckButton(_("Attach dialog windows to their parent window's titlebar"), "org.cinnamon.muffin", "attach-modal-dialogs", None))
+        sidePage.add_widget(GSettingsCheckButton(_("Enforce displaying the alt-tab switcher on the primary monitor instead of the active one"), "org.cinnamon", "alttab-switcher-enforce-primary-monitor", None))
         
         sidePage.add_widget(Gtk.Separator.new(Gtk.Orientation.HORIZONTAL))
         
-        sidePage.add_widget(GSettingsSpinButton(_("Window drag/resize threshold"), "org.cinnamon.muffin", "resize-threshold", None, 1, 100, 1, 1, _("Pixels")), True)
+        sidePage.add_widget(GSettingsSpinButton(_("Window drag/resize threshold"), "org.cinnamon.muffin", "resize-threshold", None, 1, 100, 1, 1, _("Pixels")))
 
     def _make_combo_group(self, group_label, root, key, stuff):
         self.size_groups = getattr(self, "size_groups", [SizeGroup.new(SizeGroupMode.HORIZONTAL) for x in range(2)])

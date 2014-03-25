@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!-- Generated with glade 3.16.1 -->
 <interface>
-  <!-- interface-requires gtk+ 3.0 -->
+  <requires lib="gtk+" version="3.0"/>
   <object class="GtkWindow" id="main_window">
     <property name="visible">True</property>
     <property name="can_focus">False</property>
@@ -20,17 +21,11 @@
             <property name="visible">True</property>
             <property name="can_focus">False</property>
             <property name="toolbar_style">icons</property>
-            <style>
-              <class name="primary-toolbar"/>
-            </style>
             <child>
               <object class="GtkToolItem" id="toolbutton2">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="valign">center</property>
-                <style>
-                  <class name="raised"/>
-                </style>
                 <child>
                   <object class="GtkButtonBox" id="buttonbox2">
                     <property name="visible">True</property>
@@ -57,9 +52,13 @@
                     </child>
                   </object>
                 </child>
+                <style>
+                  <class name="raised"/>
+                </style>
               </object>
               <packing>
                 <property name="expand">False</property>
+                <property name="homogeneous">False</property>
               </packing>
             </child>
             <child>
@@ -75,7 +74,6 @@
                     <property name="margin_right">6</property>
                     <property name="invisible_char">●</property>
                     <property name="width_chars">25</property>
-                    <property name="invisible_char_set">True</property>
                     <property name="caps_lock_warning">False</property>
                     <property name="primary_icon_stock">gtk-find</property>
                     <property name="secondary_icon_stock">gtk-clear</property>
@@ -85,8 +83,12 @@
               </object>
               <packing>
                 <property name="expand">True</property>
+                <property name="homogeneous">False</property>
               </packing>
             </child>
+            <style>
+              <class name="primary-toolbar"/>
+            </style>
           </object>
           <packing>
             <property name="expand">False</property>
@@ -171,89 +173,6 @@
             <property name="expand">True</property>
             <property name="fill">True</property>
             <property name="position">1</property>
-          </packing>
-        </child>
-        <child>
-          <object class="GtkSeparator" id="separator1">
-            <property name="visible">True</property>
-            <property name="can_focus">False</property>
-          </object>
-          <packing>
-            <property name="expand">False</property>
-            <property name="fill">True</property>
-            <property name="position">2</property>
-          </packing>
-        </child>
-        <child>
-          <object class="GtkToolbar" id="bottom_bar">
-            <property name="visible">True</property>
-            <property name="can_focus">False</property>
-            <style>
-              <class name="toolbar"/>
-            </style>
-            <child>
-              <object class="GtkToolItem" id="toolbutton3">
-                <property name="visible">True</property>
-                <property name="can_focus">False</property>
-                <child>
-                  <object class="GtkLinkButton" id="mode_button">
-                    <property name="label" translatable="yes">button</property>
-                    <property name="visible">True</property>
-                    <property name="can_focus">False</property>
-                    <property name="receives_default">True</property>
-                    <property name="border_width">4</property>
-                    <property name="relief">none</property>
-                    <property name="focus_on_click">False</property>
-                    <property name="xalign">0</property>
-                    <signal name="activate-link" handler="on_menu_button_clicked" swapped="no"/>
-                  </object>
-                </child>
-              </object>
-              <packing>
-                <property name="expand">False</property>
-                <property name="homogeneous">True</property>
-              </packing>
-            </child>
-            <child>
-              <object class="GtkToolItem" id="toolbutton1">
-                <property name="visible">True</property>
-                <property name="can_focus">False</property>
-                <property name="valign">start</property>
-                <property name="margin_right">4</property>
-                <child>
-                  <object class="GtkButtonBox" id="buttonbox1">
-                    <property name="visible">True</property>
-                    <property name="can_focus">False</property>
-                    <property name="halign">end</property>
-                    <property name="border_width">4</property>
-                    <property name="layout_style">center</property>
-                    <child>
-                      <object class="GtkButton" id="button_cancel">
-                        <property name="label">gtk-close</property>
-                        <property name="visible">True</property>
-                        <property name="can_focus">True</property>
-                        <property name="receives_default">True</property>
-                        <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
-                        <property name="use_stock">True</property>
-                      </object>
-                      <packing>
-                        <property name="expand">False</property>
-                        <property name="fill">True</property>
-                        <property name="position">1</property>
-                      </packing>
-                    </child>
-                  </object>
-                </child>
-              </object>
-              <packing>
-                <property name="expand">True</property>
-              </packing>
-            </child>
-          </object>
-          <packing>
-            <property name="expand">False</property>
-            <property name="fill">True</property>
-            <property name="position">3</property>
           </packing>
         </child>
       </object>

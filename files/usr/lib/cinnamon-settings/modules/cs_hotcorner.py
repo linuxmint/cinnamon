@@ -13,8 +13,7 @@ _0_DEG = 0.0 * (math.pi/180.0)
 class Module:
     def __init__(self, content_box):
         keywords = _("hotcorner, overview, scale, expo")
-        advanced = True
-        sidePage = HotCornerViewSidePage(_("Hot Corners"), "cs-overview", keywords, advanced, content_box)
+        sidePage = HotCornerViewSidePage(_("Hot Corners"), "cs-overview", keywords, content_box)
         self.sidePage = sidePage
         self.comment = _("Manage hotcorner settings")
         self.name = "hotcorner"
@@ -200,8 +199,8 @@ class HotCornerConfigurtion():
         
     
 class HotCornerViewSidePage(SidePage):
-    def __init__(self, name, icon, keywords, advanced, content_box):
-        SidePage.__init__(self, name, icon, keywords, advanced, content_box)
+    def __init__(self, name, icon, keywords, content_box):
+        SidePage.__init__(self, name, icon, keywords, content_box)
 
         self.corners = []
         for i in range(4):
@@ -243,7 +242,7 @@ class HotCornerViewSidePage(SidePage):
             self.cornerDisplay.setCornerEnabled(corner.index, isEnabled)
         self.cornerDisplay.queue_draw()
 
-    def build(self, advanced):
+    def build(self):
         # Clear all existing widgets
         widgets = self.content_box.get_children()
         for widget in widgets:

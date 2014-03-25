@@ -75,8 +75,7 @@ class EditableEntry (Gtk.Notebook):
 class Module:
     def __init__(self, content_box):
         keywords = _("user, account, information, details")
-        advanced = False
-        sidePage = SidePage(_("Account details"), "cs-user", keywords, advanced, content_box, module=self)
+        sidePage = SidePage(_("Account details"), "cs-user", keywords, content_box, module=self)
         self.sidePage = sidePage
         self.name = "user"
         self.category = "prefs"
@@ -121,14 +120,14 @@ class Module:
                         self.row = self.row + 1
        
         self.realname_entry = EditableEntry()
-        self.sidePage.add_widget(self.realname_entry, False)         
+        self.sidePage.add_widget(self.realname_entry)         
         self.realname_entry.connect("changed", self._on_realname_changed)
         self.realname_entry.set_tooltip_text(_("Click to change your name"))
         
         table = Gtk.Table.new(3, 2, False)
         table.set_row_spacings(8)
         table.set_col_spacings(15)        
-        self.sidePage.add_widget(table, False)
+        self.sidePage.add_widget(table)
         
         label_picture = Gtk.Label.new(_("Picture:"))
         label_picture.set_alignment(1, 0.5)
