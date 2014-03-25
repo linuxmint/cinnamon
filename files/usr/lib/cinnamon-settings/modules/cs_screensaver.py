@@ -37,12 +37,16 @@ class Module:
         section.add(widget)
         widget = GSettingsCheckButton(_("Lock the computer when the screen turns off"), "org.cinnamon.desktop.screensaver", "lock-enabled", None)
         widget.set_tooltip_text(_("Enable this option to require a password when the screen turns itself off, or when the screensaver activates after a period of inactivity"))
-        section.add(widget)
+        box = Gtk.HBox()
+        box.set_spacing(6)
+        box.add(widget)
         widget = GSettingsIntComboBox("", "org.cinnamon.desktop.screensaver", "lock-delay", "org.cinnamon.desktop.screensaver/lock-enabled", LOCK_DELAY_OPTIONS, use_uint=True)
         widget.set_tooltip_text(_("This option defines the amount of time to wait before locking the screen, after showing the screensaver or after turning off the screen"))
-        section.add(widget)
+        box.add(widget)
+        section.add(box)
         vbox.add(section)
 
+        vbox.add(Gtk.Separator.new(Gtk.Orientation.HORIZONTAL))       
 
         section = Section(_("Away Message"))
         widget = GSettingsEntry(_("Show this message when the screen is locked: "), "org.cinnamon.screensaver", "default-message", None)

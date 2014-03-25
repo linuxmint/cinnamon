@@ -10,12 +10,7 @@ class Module:
         self.sidePage = sidePage
         self.name = "effects"
         self.category = "appear"
-        self.comment = _("Control Cinnamon visual effects.")
-        sidePage.add_widget(GSettingsCheckButton(_("Enable desktop effects"), "org.cinnamon", "desktop-effects", None))
-
-        box = IndentedHBox()
-        box.add(GSettingsCheckButton(_("Enable desktop effects on dialog boxes"), "org.cinnamon", "desktop-effects-on-dialogs", "org.cinnamon/desktop-effects"))
-        sidePage.add_widget(box)
+        self.comment = _("Control Cinnamon visual effects.")            
 
         # Destroy window effects
         transition_effects = [[effect] * 2 for effect in
@@ -74,30 +69,46 @@ class Module:
             self.size_groups[3].add_widget(w)
             box.add(w)
 
-            return box
-        
+            return box        
+
+        bg = SectionBg()        
+        sidePage.add_widget(bg)
+        vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
+        bg.add(vbox)
+
+        section = Section(_("Enable Effects"))  
+        section.add(GSettingsCheckButton(_("Enable desktop effects"), "org.cinnamon", "desktop-effects", None))
+        section.add_indented(GSettingsCheckButton(_("Enable desktop effects on dialog boxes"), "org.cinnamon", "desktop-effects-on-dialogs", "org.cinnamon/desktop-effects"))
+        section.add(GSettingsCheckButton(_("Enable fade effect on Cinnamon scrollboxes (like the Menu application list)"), "org.cinnamon", "enable-vfade", None))
+        vbox.add(section)
+
+        vbox.add(Gtk.Separator.new(Gtk.Orientation.HORIZONTAL))
+
+        section = Section(_("Customize Effects"))
         #CLOSING WINDOWS
         effects = [["none", _("None")], ["scale", _("Scale")], ["fade", _("Fade")]]        
-        sidePage.add_widget(_make_effect_group(_("Closing windows:"), "close", effects))
+        section.add(_make_effect_group(_("Closing windows:"), "close", effects))
         
         #MAPPING WINDOWS
         effects = [["none", _("None")], ["scale", _("Scale")], ["fade", _("Fade")]]        
-        sidePage.add_widget(_make_effect_group(_("Mapping windows:"), "map", effects))
+        section.add(_make_effect_group(_("Mapping windows:"), "map", effects))
         
         #MINIMIZING WINDOWS
         effects = [["none", _("None")], ["traditional", _("Traditional")], ["scale", _("Scale")], ["fade", _("Fade")]]
-        sidePage.add_widget(_make_effect_group(_("Minimizing windows:"), "minimize", effects))
+        section.add(_make_effect_group(_("Minimizing windows:"), "minimize", effects))
         
         #MAXIMIZING WINDOWS
         effects = [["none", _("None")], ["scale", _("Scale")]]        
-        sidePage.add_widget(_make_effect_group(_("Maximizing windows:"), "maximize", effects))
+        section.add(_make_effect_group(_("Maximizing windows:"), "maximize", effects))
         
         #UNMAXIMIZING WINDOWS
         effects = [["none", _("None")], ["scale", _("Scale")]]
-        sidePage.add_widget(_make_effect_group(_("Unmaximizing windows:"), "unmaximize", effects))
+        section.add(_make_effect_group(_("Unmaximizing windows:"), "unmaximize", effects))
 
         #TILING WINDOWS
         effects = [["none", _("None")], ["scale", _("Scale")]]
-        sidePage.add_widget(_make_effect_group(_("Tiling and snapping windows:"), "tile", effects))
+        section.add(_make_effect_group(_("Tiling and snapping windows:"), "tile", effects))
+        
+        vbox.add(section)
 
-        sidePage.add_widget(GSettingsCheckButton(_("Enable fade effect on Cinnamon scrollboxes (like the Menu application list)"), "org.cinnamon", "enable-vfade", None))
+

@@ -22,6 +22,8 @@ class Module:
         section.add(combo)
         vbox.add(section)
 
+        vbox.add(Gtk.Separator.new(Gtk.Orientation.HORIZONTAL))       
+
         section = Section(_("Miscellaneous Options"))
         section.add(GSettingsCheckButton(_("Log LookingGlass output to ~/.cinnamon/glass.log (Requires Cinnamon restart)"), "org.cinnamon", "enable-looking-glass-logs", None))
         section.add(GSettingsCheckButton(_("Display notifications"), "org.cinnamon", "display-notifications", None))

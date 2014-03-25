@@ -165,28 +165,28 @@ class Section(Gtk.Box):
 
     def add(self, widget):
         box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
-        box.set_margin_left(80)
+        box.set_margin_left(40)
         box.set_margin_right(10)
         box.pack_start(widget, False, True, 0)
         self.pack_start(box, False, False, 0)
 
     def add_expand(self, widget):
         box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
-        box.set_margin_left(80)
+        box.set_margin_left(40)
         box.set_margin_right(10)
         box.pack_start(widget, True, True, 0)
         self.pack_start(box, False, False, 0)
 
     def add_indented(self, widget):
         box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
-        box.set_margin_left(120)
+        box.set_margin_left(80)
         box.set_margin_right(10)
         box.pack_start(widget, False, True, 0)
         self.pack_start(box, False, False, 0)
 
     def add_indented_expand(self, widget):
         box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
-        box.set_margin_left(120)
+        box.set_margin_left(80)
         box.set_margin_right(10)
         box.pack_start(widget, True, True, 0)
         self.pack_start(box, False, False, 0)

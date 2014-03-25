@@ -41,6 +41,8 @@ class Module:
             print detail
         vbox.add(section)
 
+        vbox.add(Gtk.Separator.new(Gtk.Orientation.HORIZONTAL))       
+
         section = Section(_("Date Format"))
         section.add(GSettingsCheckButton(_("Use 24h clock"), "org.cinnamon.desktop.interface", "clock-use-24h", None))
         section.add(GSettingsCheckButton(_("Display the date"), "org.cinnamon.desktop.interface", "clock-show-date", None))
@@ -230,9 +232,9 @@ class ChangeTimeWidget(Gtk.HBox):
         timeBox.pack_start(self.hourSpin, False, False, 2)
         timeBox.pack_start(Gtk.Label.new(_(":")), False, False, 2)
         timeBox.pack_start(self.minSpin, False, False, 2)
-        
-        dateBox.pack_start(self.monthBox, False, False, 2)
+                
         dateBox.pack_start(self.daySpin, False, False, 2)
+        dateBox.pack_start(self.monthBox, False, False, 2)
         dateBox.pack_start(self.yearSpin, False, False, 2)
         
         self.pack_start(Gtk.Label.new(_("Date : ")), False, False, 2)

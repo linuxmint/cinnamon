@@ -12,29 +12,35 @@ class Module:
         self.comment = _("Manage window tiling preferences")
         self.category = "prefs"
 
-        sidePage.add_widget(GSettingsCheckButton(_("Enable Window Tiling and Snapping"), "org.cinnamon.muffin", "edge-tiling", None))
-        box = IndentedHBox()
-        box.add(GSettingsSpinButton(_("Tiling HUD visibility threshold"), "org.cinnamon.muffin", "tile-hud-threshold", "org.cinnamon.muffin/edge-tiling", 1, 300, 1, 1, _("Pixels")))
-        sidePage.add_widget(box)
+        bg = SectionBg()        
+        sidePage.add_widget(bg)
+        vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
+        bg.add(vbox)
 
-        box = IndentedHBox()
+        section = Section(_("Tiling and Snapping Settings"))  
+        section.add(GSettingsCheckButton(_("Enable Window Tiling and Snapping"), "org.cinnamon.muffin", "edge-tiling", None))
+        section.add_indented(GSettingsSpinButton(_("Tiling HUD visibility threshold"), "org.cinnamon.muffin", "tile-hud-threshold", "org.cinnamon.muffin/edge-tiling", 1, 300, 1, 1, _("Pixels")))
         modifiers = [["", "Disabled"],["Super", _("Super (Windows)")],["Alt", _("Alt")],["Shift", _("Shift")],["Control", _("Control")]]
-        box.add(GSettingsComboBox(_("Modifier to use for toggling between tile and snap mode"), "org.cinnamon.muffin", "snap-modifier", "org.cinnamon.muffin/edge-tiling", modifiers))
-        sidePage.add_widget(box)
+        section.add_indented(GSettingsComboBox(_("Modifier to use for toggling between tile and snap mode"), "org.cinnamon.muffin", "snap-modifier", "org.cinnamon.muffin/edge-tiling", modifiers))
+        section.add_indented(GSettingsCheckButton(_("Maximize, instead of tile, when dragging a window to the top edge"), "org.cinnamon.muffin", "tile-maximize", "org.cinnamon.muffin/edge-tiling"))
+        section.add_indented(GSettingsCheckButton(_("Prevent the snap on-screen-display from showing"), "org.cinnamon", "hide-snap-osd", "org.cinnamon.muffin/edge-tiling"))
+        vbox.add(section)
+        
+        vbox.add(Gtk.Separator.new(Gtk.Orientation.HORIZONTAL))
+        
+        section = Section(_("Edge Flip Settings"))  
+        section.add(GSettingsCheckButton(_("Enable Edge Flip"), "org.cinnamon", "enable-edge-flip", None))
+        section.add_indented(GSettingsSpinButton(_("Edge Flip delay"), "org.cinnamon", "edge-flip-delay", "org.cinnamon/enable-edge-flip", 1, 3000, 1, 1, _("ms")))
+        vbox.add(section)
 
-        box = IndentedHBox()
-        box.add(GSettingsCheckButton(_("Maximize, instead of tile, when dragging a window to the top edge"), "org.cinnamon.muffin", "tile-maximize", "org.cinnamon.muffin/edge-tiling"))
-        sidePage.add_widget(box)
+        vbox.add(Gtk.Separator.new(Gtk.Orientation.HORIZONTAL))
+        
+        section = Section(_("Miscellaneous Settings"))  
+        section.add(GSettingsCheckButton(_("Invert the left and right arrow key directions used to shift workspaces during a window drag"), "org.cinnamon.muffin", "invert-workspace-flip-direction", None))
+        section.add(GSettingsCheckButton(_("Enable legacy window snapping (hold <Shift> while dragging a window)"), "org.cinnamon.muffin", "legacy-snap", None))       
+        vbox.add(section)
 
-        box = IndentedHBox()
-        box.add(GSettingsCheckButton(_("Prevent the snap on-screen-display from showing"), "org.cinnamon", "hide-snap-osd", "org.cinnamon.muffin/edge-tiling"))
-        sidePage.add_widget(box)
+        
 
-        sidePage.add_widget(GSettingsCheckButton(_("Enable Edge Flip"), "org.cinnamon", "enable-edge-flip", None))
-        box = IndentedHBox()
-        box.add(GSettingsSpinButton(_("Edge Flip delay"), "org.cinnamon", "edge-flip-delay", "org.cinnamon/enable-edge-flip", 1, 3000, 1, 1, _("ms")))
-        sidePage.add_widget(box)
+        
 
-        sidePage.add_widget(GSettingsCheckButton(_("Invert the left and right arrow key directions used to shift workspaces during a window drag"), "org.cinnamon.muffin", "invert-workspace-flip-direction", None))
-
-        sidePage.add_widget(GSettingsCheckButton(_("Enable legacy window snapping (hold <Shift> while dragging a window)"), "org.cinnamon.muffin", "legacy-snap", None))

@@ -18,14 +18,16 @@ class Module:
         vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
         bg.add(vbox)
         
-        section = Section(_("Basic font configuration"))
+        section = Section(_("Font Selection"))
         section.add(self.make_combo_group(GSettingsFontButton, _("Default font"), "org.cinnamon.desktop.interface", "font-name", None))
         section.add(self.make_combo_group(GSettingsFontButton, _("Document font"), "org.gnome.desktop.interface", "document-font-name", None))
         section.add(self.make_combo_group(GSettingsFontButton, _("Monospace font"), "org.gnome.desktop.interface", "monospace-font-name", None))
         section.add(self.make_combo_group(GSettingsFontButton, _("Window title font"), "org.cinnamon.desktop.wm.preferences", "titlebar-font", None))
         vbox.add(section)
         
-        section = Section(_("Advanced font configuration"))        
+        vbox.add(Gtk.Separator.new(Gtk.Orientation.HORIZONTAL))
+
+        section = Section(_("Font Settings"))        
         section.add(self.make_combo_group(GSettingsRangeSpin, _("Text scaling factor"), "org.cinnamon.desktop.interface", "text-scaling-factor", None))
         section.add(self.make_combo_group(GSettingsComboBox, _("Antialiasing"), "org.cinnamon.settings-daemon.plugins.xsettings", "antialiasing", None))
         section.add(self.make_combo_group(GSettingsComboBox, _("Hinting"), "org.cinnamon.settings-daemon.plugins.xsettings", "hinting", None))
