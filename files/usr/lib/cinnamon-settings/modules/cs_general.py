@@ -11,7 +11,7 @@ class Module:
         self.comment = _("Miscellaneous Cinnamon preferences")
         self.category = "prefs"
 
-        bg = SectionBg()
+        bg = SectionBg()        
         sidePage.add_widget(bg)
         vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
         bg.add(vbox)
@@ -21,8 +21,6 @@ class Module:
         combo = GSettingsUIntComboBox(_("User interface scaling:"), "org.cinnamon.desktop.interface", "scaling-factor", ui_scales)
         section.add(combo)
         vbox.add(section)
-
-        sidePage.add_widget(Gtk.Separator.new(Gtk.Orientation.HORIZONTAL))
 
         section = Section(_("Miscellaneous Options"))
         section.add(GSettingsCheckButton(_("Log LookingGlass output to ~/.cinnamon/glass.log (Requires Cinnamon restart)"), "org.cinnamon", "enable-looking-glass-logs", None))

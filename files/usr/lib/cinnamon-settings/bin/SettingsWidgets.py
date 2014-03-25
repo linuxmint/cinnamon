@@ -58,8 +58,11 @@ class SidePage:
         # mess up these modifications - so for these, we just show the
         # top-level widget
         if not self.is_standalone:
-            for widget in self.widgets:               
-                self.content_box.pack_start(widget, False, False, 2)
+            for widget in self.widgets:
+                if hasattr(widget, 'expand'):
+                    self.content_box.pack_start(widget, True, True, 2)
+                else:
+                    self.content_box.pack_start(widget, False, False, 2)
             if self.is_c_mod:
                 self.content_box.show()
                 children = self.content_box.get_children()
@@ -151,7 +154,7 @@ class Section(Gtk.Box):
         self.name = name
         super(Section, self).__init__()
         self.set_orientation(Gtk.Orientation.VERTICAL)
-        self.set_border_width(10)
+        self.set_border_width(6)
         self.set_spacing(6)
         self.label = Gtk.Label.new()
         self.label.set_markup("<b>%s</b>" % self.name)
@@ -163,28 +166,28 @@ class Section(Gtk.Box):
     def add(self, widget):
         box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
         box.set_margin_left(80)
-        box.set_margin_right(80)
+        box.set_margin_right(10)
         box.pack_start(widget, False, True, 0)
         self.pack_start(box, False, False, 0)
 
     def add_expand(self, widget):
         box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
         box.set_margin_left(80)
-        box.set_margin_right(80)
+        box.set_margin_right(10)
         box.pack_start(widget, True, True, 0)
         self.pack_start(box, False, False, 0)
 
     def add_indented(self, widget):
         box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
         box.set_margin_left(120)
-        box.set_margin_right(80)
+        box.set_margin_right(10)
         box.pack_start(widget, False, True, 0)
         self.pack_start(box, False, False, 0)
 
     def add_indented_expand(self, widget):
         box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
         box.set_margin_left(120)
-        box.set_margin_right(80)
+        box.set_margin_right(10)
         box.pack_start(widget, True, True, 0)
         self.pack_start(box, False, False, 0)
 
@@ -195,6 +198,7 @@ class SectionBg(Gtk.ScrolledWindow):
         self.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.NEVER)
         self.set_shadow_type(Gtk.ShadowType.ETCHED_IN)
         Gtk.StyleContext.add_class(self.get_style_context(), "notebook")
+        self.expand = True # Tells CS to give expand us to the whole window
 
 class IndentedHBox(Gtk.HBox):
     def __init__(self):
