@@ -14,34 +14,23 @@ class Module:
         self.comment = _("Manage date and time settings")
         self.category = "prefs"        
         
-        #Label Bold
-        hbox = Gtk.HBox()
-        label = Gtk.Label()
-        label.set_markup("<b>%s</b>" % _("Date Settings"))
-        label.set_alignment(0, 0.5)
-        hbox.pack_start(label, False, False, 0)
-        self.sidePage.add_widget(hbox)
-
+        bg = SectionBg()        
+        sidePage.add_widget(bg)
+        vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
+        bg.add(vbox)
+    
+        section = Section(_("Date Settings"))
         try:
             self.changeTimeWidget = ChangeTimeWidget()  
             self.ntpCheckButton = None 
             try:
-                self.ntpCheckButton = NtpCheckButton(_("Use network time"))
-                Ibox = IndentedHBox()
-                Ibox.add(self.ntpCheckButton)
-                self.sidePage.add_widget(Ibox)
+                self.ntpCheckButton = NtpCheckButton(_("Use network time"))                
+                section.add(self.ntpCheckButton)
             except Exception, detail:
-                print detail
-
-            Ibox = IndentedHBox()
-            Ibox.add(self.changeTimeWidget)
-            self.sidePage.add_widget(Ibox)
-
-            try:
-                Ibox = IndentedHBox()
-                Ibox.add(TimeZoneSelectorWidget())
-                self.sidePage.add_widget(Ibox)
-
+                print detail            
+            section.add(self.changeTimeWidget)            
+            try:                
+                section.add(TimeZoneSelectorWidget())
             except Exception, detail:
                 print detail
             
@@ -50,26 +39,13 @@ class Module:
                 self.changeTimeWidget.change_using_ntp( self.ntpCheckButton.get_active() )
         except Exception, detail:
             print detail
+        vbox.add(section)
 
-        #Label Bold
-        hbox = Gtk.HBox()
-        label = Gtk.Label()
-        label.set_markup("<b>%s</b>" % _("Date Format"))
-        label.set_alignment(0, 0.5)
-        hbox.pack_start(label, False, False, 0)
-        self.sidePage.add_widget(hbox)
-
-        Ibox = IndentedHBox()
-        Ibox.add(GSettingsCheckButton(_("Use 24h clock"), "org.cinnamon.desktop.interface", "clock-use-24h", None))
-        self.sidePage.add_widget(Ibox)
-
-        Ibox = IndentedHBox()
-        Ibox.add(GSettingsCheckButton(_("Display the date"), "org.cinnamon.desktop.interface", "clock-show-date", None))
-        self.sidePage.add_widget(Ibox)
-
-        Ibox = IndentedHBox()
-        Ibox.add(GSettingsCheckButton(_("Display seconds"), "org.cinnamon.desktop.interface", "clock-show-seconds", None))        
-        self.sidePage.add_widget(Ibox)        
+        section = Section(_("Date Format"))
+        section.add(GSettingsCheckButton(_("Use 24h clock"), "org.cinnamon.desktop.interface", "clock-use-24h", None))
+        section.add(GSettingsCheckButton(_("Display the date"), "org.cinnamon.desktop.interface", "clock-show-date", None))
+        section.add(GSettingsCheckButton(_("Display seconds"), "org.cinnamon.desktop.interface", "clock-show-seconds", None))        
+        vbox.add(section)
 
     def _ntp_toggled(self, widget):
         self.changeTimeWidget.change_using_ntp( self.ntpCheckButton.get_active() )
