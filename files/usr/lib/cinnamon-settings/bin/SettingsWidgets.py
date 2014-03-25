@@ -193,6 +193,14 @@ class Section(Gtk.Box):
         box.pack_start(widget, True, True, 0)
         self.pack_start(box, False, False, 0)
 
+class SectionBg(Gtk.ScrolledWindow):
+
+    def __init__(self):
+        Gtk.ScrolledWindow.__init__(self)
+        self.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.NEVER)
+        self.set_shadow_type(Gtk.ShadowType.ETCHED_IN)
+        Gtk.StyleContext.add_class(self.get_style_context(), "notebook")
+
 class IndentedHBox(Gtk.HBox):
     def __init__(self):
         super(IndentedHBox, self).__init__()
