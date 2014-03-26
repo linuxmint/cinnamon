@@ -45,8 +45,8 @@ class ExtensionSidePage (SidePage):
     SORT_ENABLED = 3
     SORT_REMOVABLE = 4  
 
-    def __init__(self, name, icon, keywords, content_box, collection_type, noun, pl_noun, target):
-        SidePage.__init__(self, name, icon, keywords, content_box, -1)
+    def __init__(self, name, icon, keywords, content_box, collection_type, noun, pl_noun, target, module=None):
+        SidePage.__init__(self, name, icon, keywords, content_box, -1, module=module)
         self.collection_type = collection_type
         self.target = target
         self.noun = noun
@@ -55,12 +55,8 @@ class ExtensionSidePage (SidePage):
         self.icons = []
         self.run_once = False
 
-    def build(self):
-        # Clear all the widgets from the content box
-        widgets = self.content_box.get_children()
-        for widget in widgets:
-            self.content_box.remove(widget)
-        
+    def load(self):
+
         scrolledWindow = Gtk.ScrolledWindow()   
         scrolledWindow.set_shadow_type(Gtk.ShadowType.ETCHED_IN)   
         scrolledWindow.set_border_width(6) 
@@ -73,8 +69,7 @@ class ExtensionSidePage (SidePage):
         self.search_entry.connect('changed', self.on_entry_refilter)
 
         self.notebook.append_page(extensions_vbox, Gtk.Label.new(_("Installed")))
-        
-        self.content_box.add(self.notebook)
+                
         self.treeview = Gtk.TreeView()
         self.treeview.set_rules_hint(True)
         self.treeview.set_has_tooltip(True)
@@ -372,8 +367,6 @@ class ExtensionSidePage (SidePage):
         if extra_page:
             self.notebook.append_page(extra_page, extra_page.label)
 
-        self.content_box.show_all()
-
         if not self.themes:
             self.spices.scrubConfigDirs(self.enabled_extensions)
 
@@ -393,6 +386,10 @@ class ExtensionSidePage (SidePage):
                             self.configureButton.clicked()
                         elif self.extConfigureButton.get_visible() and self.extConfigureButton.get_sensitive():
                             self.extConfigureButton.clicked()
+
+        self.notebook.expand = True
+        
+        self.add_widget(self.notebook)
 
     def icon_cell_data_func(self, column, cell, model, iter, data=None):
         wrapper = model.get_value(iter, data)

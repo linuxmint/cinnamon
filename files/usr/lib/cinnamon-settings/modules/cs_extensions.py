@@ -12,19 +12,18 @@ class Module:
         pl_noun = _("extensions")
         # we do not translate Cinnamon
         target = "Cinnamon"
-        sidePage = ExtensionViewSidePage(_("Extensions"), "cs-extensions", keywords, content_box, "extension", noun, pl_noun, target)
-        self.sidePage = sidePage
-
+        self.sidePage = ExtensionSidePage(_("Extensions"), "cs-extensions", keywords, content_box, "extension", noun, pl_noun, target, module=self)
+        self.sidePage.RemoveString = ""
         self.category = "prefs"
+
+    def on_module_selected(self):
+        if not self.loaded:
+            print "Loading Desklets module"
+            self.sidePage.load()
 
     def _setParentRef(self, window, builder):
         self.sidePage.window = window
         self.sidePage.builder = builder
-
-class ExtensionViewSidePage (ExtensionSidePage):
-    def __init__(self, name, icon, keywords, content_box, collection_type, noun, pl_noun, target):
-        self.RemoveString = ""
-        ExtensionSidePage.__init__(self, name, icon, keywords, content_box, collection_type, noun, pl_noun, target)
 
     def toSettingString(self, uuid, instanceId):
         return uuid

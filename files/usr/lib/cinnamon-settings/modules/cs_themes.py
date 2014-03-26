@@ -14,21 +14,19 @@ class Module:
         pl_noun = _("themes")
         # We do not translate Cinnamon
         target = "Cinnamon"
-        sidePage = ThemesViewSidePage(_("Themes"), "cs-themes", keywords, content_box, "theme", noun, pl_noun, target)
-        self.sidePage = sidePage
-
+        self.sidePage = ExtensionSidePage(_("Themes"), "cs-themes", keywords, content_box, "theme", noun, pl_noun, target, module=self)        
+        self.sidePage.removeString = ""        
         self.category = "appear"
+
+    def on_module_selected(self):
+        if not self.loaded:
+            print "Loading Themes module"
+            self.sidePage.load()
 
     def _setParentRef(self, window, builder):
         self.sidePage.window = window
         self.sidePage.builder = builder
-
-class ThemesViewSidePage (ExtensionSidePage):
-
-    def __init__(self, name, icon, keywords, content_box, collection_type, noun, pl_noun, target):
-        self.RemoveString = ""
-        ExtensionSidePage.__init__(self, name, icon, keywords, content_box, collection_type, noun, pl_noun, target)
-
+    
     def toSettingString(self, uuid, instanceId):
         return uuid
 
