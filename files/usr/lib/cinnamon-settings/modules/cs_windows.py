@@ -14,44 +14,55 @@ class Module:
         self.category = "prefs"
         self.comment = _("Manage window preferences")
 
+        bg = SectionBg()        
+        sidePage.add_widget(bg)
+        vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
+        bg.add(vbox)
+
+        section = Section(_("Alt-Tab"))  
         alttab_styles = [["icons", _("Icons only")],["icons+thumbnails", _("Icons and thumbnails")],["icons+preview", _("Icons and window preview")],["preview", _("Window preview (no icons)")],["coverflow", _("Coverflow (3D)")],["timeline", _("Timeline (3D)")]]
         alttab_styles_combo = self._make_combo_group(_("Alt-Tab switcher style"), "org.cinnamon", "alttab-switcher-style", alttab_styles)
-        sidePage.add_widget(alttab_styles_combo)
+        section.add(alttab_styles_combo)
+        section.add(GSettingsCheckButton(_("Display the alt-tab switcher on the primary monitor instead of the active one"), "org.cinnamon", "alttab-switcher-enforce-primary-monitor", None))
+        vbox.add(section)
 
-        sidePage.add_widget(Gtk.Separator.new(Gtk.Orientation.HORIZONTAL))
-        
-        sidePage.add_widget(self._make_combo_group(_("Action on title bar double-click"),
+        vbox.add(Gtk.Separator.new(Gtk.Orientation.HORIZONTAL))        
+
+        section = Section(_("Titlebar"))
+        section.add(self._make_combo_group(_("Action on title bar double-click"),
                                             "org.cinnamon.desktop.wm.preferences", "action-double-click-titlebar",
                                             [(i, i.replace("-", " ").title()) for i in ('toggle-shade', 'toggle-maximize', 'toggle-maximize-horizontally', 'toggle-maximize-vertically', 'minimize', 'shade', 'menu', 'lower', 'none')]))
-        sidePage.add_widget(self._make_combo_group(_("Action on title bar middle-click"),
+        section.add(self._make_combo_group(_("Action on title bar middle-click"),
                                             "org.cinnamon.desktop.wm.preferences", "action-middle-click-titlebar",
                                             [(i, i.replace("-", " ").title()) for i in ('toggle-shade', 'toggle-maximize', 'toggle-maximize-horizontally', 'toggle-maximize-vertically', 'minimize', 'shade', 'menu', 'lower', 'none')]))
-        sidePage.add_widget(self._make_combo_group(_("Action on title bar right-click"),
+        section.add(self._make_combo_group(_("Action on title bar right-click"),
                                             "org.cinnamon.desktop.wm.preferences", "action-right-click-titlebar",
-                                            [(i, i.replace("-", " ").title()) for i in ('toggle-shade', 'toggle-maximize', 'toggle-maximize-horizontally', 'toggle-maximize-vertically', 'minimize', 'shade', 'menu', 'lower', 'none')]))
-        sidePage.add_widget(self._make_combo_group(_("Window focus mode"), 
-                                            "org.cinnamon.desktop.wm.preferences", "focus-mode", 
-                                            [(i, i.title()) for i in ("click","sloppy","mouse")]))
-        sidePage.add_widget(GSettingsCheckButton(_("Automatically raises the focused window"), "org.cinnamon.desktop.wm.preferences", "auto-raise", None))                                   
-        sidePage.add_widget(self._make_combo_group(_("Window click action modifier"), 
-                                            "org.cinnamon.desktop.wm.preferences", "mouse-button-modifier", 
-                                            [(i, i.title()) for i in ("","<Alt>","<Super>","<Control>")]))
-                                    
-        sidePage.add_widget(Gtk.Separator.new(Gtk.Orientation.HORIZONTAL))
-        
-        sidePage.add_widget(TitleBarButtonsOrderSelector())
+                                            [(i, i.replace("-", " ").title()) for i in ('toggle-shade', 'toggle-maximize', 'toggle-maximize-horizontally', 'toggle-maximize-vertically', 'minimize', 'shade', 'menu', 'lower', 'none')]))        
+        vbox.add(section)
 
-        sidePage.add_widget(Gtk.Separator.new(Gtk.Orientation.HORIZONTAL))
-                
-        sidePage.add_widget(GSettingsCheckButton(_("Enable mouse-wheel scrolling in Window List applet"), "org.cinnamon", "window-list-applet-scroll", None))
-        sidePage.add_widget(GSettingsCheckButton(_("Show an alert in the window list when a window from another workspace requires attention"), "org.cinnamon", "window-list-applet-alert", None))
-        sidePage.add_widget(GSettingsCheckButton(_("Bring windows which require attention to the current workspace"), "org.cinnamon", "bring-windows-to-current-workspace", None))
-        sidePage.add_widget(GSettingsCheckButton(_("Attach dialog windows to their parent window's titlebar"), "org.cinnamon.muffin", "attach-modal-dialogs", None))
-        sidePage.add_widget(GSettingsCheckButton(_("Enforce displaying the alt-tab switcher on the primary monitor instead of the active one"), "org.cinnamon", "alttab-switcher-enforce-primary-monitor", None))
+        vbox.add(Gtk.Separator.new(Gtk.Orientation.HORIZONTAL))
+
+        section = Section(_("Window List"))
+        section.add(GSettingsCheckButton(_("Show an alert in the window list when a window from another workspace requires attention"), "org.cinnamon", "window-list-applet-alert", None))
+        section.add(GSettingsCheckButton(_("Enable mouse-wheel scrolling in the window list"), "org.cinnamon", "window-list-applet-scroll", None))        
+        vbox.add(section)
+
+        vbox.add(Gtk.Separator.new(Gtk.Orientation.HORIZONTAL))
+
+        section = Section(_("Window Focus"))
+        section.add(self._make_combo_group(_("Window focus mode"), "org.cinnamon.desktop.wm.preferences", "focus-mode", [(i, i.title()) for i in ("click","sloppy","mouse")]))
+        section.add(GSettingsCheckButton(_("Automatically raise focused windows"), "org.cinnamon.desktop.wm.preferences", "auto-raise", None))
+        section.add(GSettingsCheckButton(_("Bring windows which require attention to the current workspace"), "org.cinnamon", "bring-windows-to-current-workspace", None))        
+        section.add(GSettingsCheckButton(_("Attach dialog windows to their parent window's titlebar"), "org.cinnamon.muffin", "attach-modal-dialogs", None))
+        vbox.add(section)
+
+        vbox.add(Gtk.Separator.new(Gtk.Orientation.HORIZONTAL))
+
+        section = Section(_("Moving and Resizing Windows"))
+        section.add(self._make_combo_group(_("Special key to move windows"), "org.cinnamon.desktop.wm.preferences", "mouse-button-modifier", [(i, i.title()) for i in ("","<Alt>","<Super>","<Control>")]))
+        section.add(GSettingsSpinButton(_("Window drag/resize threshold"), "org.cinnamon.muffin", "resize-threshold", None, 1, 100, 1, 1, _("Pixels")))        
+        vbox.add(section)
         
-        sidePage.add_widget(Gtk.Separator.new(Gtk.Orientation.HORIZONTAL))
-        
-        sidePage.add_widget(GSettingsSpinButton(_("Window drag/resize threshold"), "org.cinnamon.muffin", "resize-threshold", None, 1, 100, 1, 1, _("Pixels")))
 
     def _make_combo_group(self, group_label, root, key, stuff):
         self.size_groups = getattr(self, "size_groups", [SizeGroup.new(SizeGroupMode.HORIZONTAL) for x in range(2)])

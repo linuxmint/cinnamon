@@ -52,7 +52,7 @@ class Module:
             path = "org.cinnamon/desktop-effects"
             template = "desktop-effects-%s-%s"
 
-            box = IndentedHBox()
+            box = Gtk.HBox()
             label = Gtk.Label.new()
             label.set_markup(group_label)
             label.props.xalign = 0.0
