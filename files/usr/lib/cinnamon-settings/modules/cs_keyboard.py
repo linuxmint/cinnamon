@@ -850,7 +850,7 @@ class CellRendererKeybinding(Gtk.CellRendererText):
         self.set_label(accel_string)
         self.teaching = False
         key, codes, mods = Gtk.accelerator_parse_with_keycode(accel_string)
-        self.emit("accel-edited", self.path, key, mods, codes)
+        self.emit("accel-edited", self.path, key, mods, codes[0])
         return True
 
     def sanitize(self, string):
