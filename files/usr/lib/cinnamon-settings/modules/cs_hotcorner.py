@@ -13,11 +13,98 @@ _0_DEG = 0.0 * (math.pi/180.0)
 class Module:
     def __init__(self, content_box):
         keywords = _("hotcorner, overview, scale, expo")
-        sidePage = HotCornerViewSidePage(_("Hot Corners"), "cs-overview", keywords, content_box)
+        sidePage = SidePage(_("Hot Corners"), "cs-overview", keywords, content_box, module=self)
         self.sidePage = sidePage
         self.comment = _("Manage hotcorner settings")
         self.name = "hotcorner"
         self.category = "prefs"
+
+    def on_module_selected(self):
+        if not self.loaded:
+            print "Loading HotCorner module"  
+
+            self.corners = []
+            for i in range(4):
+                self.corners.append(HotCornerConfiguration(i, self.onConfigChanged))
+            
+            self.settings = Gio.Settings.new('org.cinnamon')
+            self.settings.connect('changed::overview-corner', self.on_settings_changed)
+            oc_list = self.settings.get_strv("overview-corner")
+            self.properties = []
+            for item in oc_list:
+                props = item.split(":")
+                self.properties.append(props)
+
+            table = Gtk.Table.new(2, 3, False)
+            table.set_row_spacings(5)
+            table.set_col_spacings(5)
+
+            self.cornerDisplay = HotCornerDisplay()
+            table.attach(self.cornerDisplay, 1, 2, 0, 2)
+            table.attach(self.corners[0].build(), 0, 1, 0, 1, Gtk.AttachOptions.FILL, Gtk.AttachOptions.EXPAND|Gtk.AttachOptions.FILL)
+            table.attach(self.corners[1].build(), 2, 3, 0, 1, Gtk.AttachOptions.FILL, Gtk.AttachOptions.EXPAND|Gtk.AttachOptions.FILL)
+            table.attach(self.corners[2].build(), 0, 1, 1, 2, Gtk.AttachOptions.FILL, Gtk.AttachOptions.EXPAND|Gtk.AttachOptions.FILL)
+            table.attach(self.corners[3].build(), 2, 3, 1, 2, Gtk.AttachOptions.FILL, Gtk.AttachOptions.EXPAND|Gtk.AttachOptions.FILL)
+            
+            self.cornerDisplay.set_size_request(200, 250)
+            
+            self.sidePage.add_widget(table)
+        
+            self.on_settings_changed(self.settings, "overview-corner")
+       
+    def on_settings_changed(self, settings, key):
+        oc_list = self.settings.get_strv("overview-corner")
+        del self.properties[:]
+        for item in oc_list:
+            props = item.split(":")
+            self.properties.append(props)
+        self.update()
+
+    def update(self):
+        for corner in self.corners:
+            function = ""
+            prop = self.properties[corner.index]
+            function = prop[0]
+            enabled = prop[1] == "true"
+            visible = prop[2] == "true"
+            isEnabled = False
+
+            if prop[1] == "true":
+                isEnabled = True
+            elif prop[2] == "true":
+                isEnabled = True
+            else:
+                isEnabled = False
+
+            corner.setValues(function, visible, enabled)
+            self.cornerDisplay.setCornerEnabled(corner.index, isEnabled)
+        self.cornerDisplay.queue_draw()    
+        
+    def onConfigChanged(self, index, function, visible, enabled):
+        self.cornerDisplay.queue_draw()
+        
+        props = self.properties[index]
+
+        props[0] = function
+    
+        if enabled:
+            props[1] = 'true'
+        else:
+            props[1] = 'false'
+
+        if visible:
+            props[2] = 'true'
+        else:
+            props[2] = 'false'
+
+        self.write_settings()
+
+    def write_settings(self):
+        oc_list = []
+        for prop in self.properties:
+            oc_list.append(":".join(prop))
+        self.settings.set_strv("overview-corner", oc_list)
+
 
 class HotCornerDisplay(Gtk.Label):
     def __init__(self):
@@ -110,7 +197,7 @@ class HotCornerDisplay(Gtk.Label):
 
         return True
 
-class HotCornerConfigurtion():
+class HotCornerConfiguration():
     def __init__(self, index, updateCallback):
         self.updateCallback = updateCallback
         self.index = index
@@ -130,8 +217,10 @@ class HotCornerConfigurtion():
         self.functionCombo.add_attribute(rendererText, "text", 1)
         
         self.customEntry = Gtk.Entry()
-        self.iconCheckbox = Gtk.CheckButton(_("Icon visible"))
-        self.hoverCheckbox = Gtk.CheckButton(_("Hover enabled"))
+        self.iconCheckbox = Gtk.CheckButton()
+        self.iconCheckbox.set_label(_("Icon visible"))
+        self.hoverCheckbox = Gtk.CheckButton()
+        self.hoverCheckbox.set_label(_("Hover enabled"))
         
         self.box.pack_start(self.functionCombo, True, True, 0)
         self.box.pack_start(self.customEntry, True, True, 0)
@@ -198,97 +287,5 @@ class HotCornerConfigurtion():
             self.updateCallback(self.index, function, visible, enabled)
         
     
-class HotCornerViewSidePage(SidePage):
-    def __init__(self, name, icon, keywords, content_box):
-        SidePage.__init__(self, name, icon, keywords, content_box)
 
-        self.corners = []
-        for i in range(4):
-            self.corners.append(HotCornerConfigurtion(i, self.onConfigChanged))
-        
-        self.settings = Gio.Settings.new('org.cinnamon')
-        self.settings.connect('changed::overview-corner', self.on_settings_changed)
-        oc_list = self.settings.get_strv("overview-corner")
-        self.properties = []
-        for item in oc_list:
-            props = item.split(":")
-            self.properties.append(props)
-
-    def on_settings_changed(self, settings, key):
-        oc_list = self.settings.get_strv("overview-corner")
-        del self.properties[:]
-        for item in oc_list:
-            props = item.split(":")
-            self.properties.append(props)
-        self.update()
-
-    def update(self):
-        for corner in self.corners:
-            function = ""
-            prop = self.properties[corner.index]
-            function = prop[0]
-            enabled = prop[1] == "true"
-            visible = prop[2] == "true"
-            isEnabled = False
-
-            if prop[1] == "true":
-                isEnabled = True
-            elif prop[2] == "true":
-                isEnabled = True
-            else:
-                isEnabled = False
-
-            corner.setValues(function, visible, enabled)
-            self.cornerDisplay.setCornerEnabled(corner.index, isEnabled)
-        self.cornerDisplay.queue_draw()
-
-    def build(self):
-        # Clear all existing widgets
-        widgets = self.content_box.get_children()
-        for widget in widgets:
-            self.content_box.remove(widget)
-        
-        table = Gtk.Table.new(2, 3, False)
-        table.set_row_spacings(5)
-        table.set_col_spacings(5)
-
-        self.cornerDisplay = HotCornerDisplay()
-        table.attach(self.cornerDisplay, 1, 2, 0, 2)
-        table.attach(self.corners[0].build(), 0, 1, 0, 1, Gtk.AttachOptions.FILL, Gtk.AttachOptions.EXPAND|Gtk.AttachOptions.FILL)
-        table.attach(self.corners[1].build(), 2, 3, 0, 1, Gtk.AttachOptions.FILL, Gtk.AttachOptions.EXPAND|Gtk.AttachOptions.FILL)
-        table.attach(self.corners[2].build(), 0, 1, 1, 2, Gtk.AttachOptions.FILL, Gtk.AttachOptions.EXPAND|Gtk.AttachOptions.FILL)
-        table.attach(self.corners[3].build(), 2, 3, 1, 2, Gtk.AttachOptions.FILL, Gtk.AttachOptions.EXPAND|Gtk.AttachOptions.FILL)
-        
-        self.cornerDisplay.set_size_request(200, 250)
-        
-        self.content_box.pack_start(table, False, False, 2)
-
-        # Signals
-        self.content_box.show_all()
-        self.on_settings_changed(self.settings, "overview-corner")
-        
-    def onConfigChanged(self, index, function, visible, enabled):
-        self.cornerDisplay.queue_draw()
-        
-        props = self.properties[index]
-
-        props[0] = function
-    
-        if enabled:
-            props[1] = 'true'
-        else:
-            props[1] = 'false'
-
-        if visible:
-            props[2] = 'true'
-        else:
-            props[2] = 'false'
-
-        self.write_settings()
-
-    def write_settings(self):
-        oc_list = []
-        for prop in self.properties:
-            oc_list.append(":".join(prop))
-        self.settings.set_strv("overview-corner", oc_list)
 

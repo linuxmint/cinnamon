@@ -7,33 +7,34 @@ from gi.repository import Gtk
 class Module:
     def __init__(self, content_box):
         keywords = _("font, size, small, large")
-        sidePage = SidePage(_("Fonts"), "cs-fonts", keywords, content_box)
+        sidePage = SidePage(_("Fonts"), "cs-fonts", keywords, content_box, module=self)
         self.sidePage = sidePage
         self.name = "fonts"
         self.category = "appear"
-        self.comment = _("Configure system fonts")
+        self.comment = _("Configure system fonts")        
 
-        bg = SectionBg()        
-        sidePage.add_widget(bg)
-        vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
-        bg.add(vbox)
-        
-        section = Section(_("Font Selection"))
-        section.add(self.make_combo_group(GSettingsFontButton, _("Default font"), "org.cinnamon.desktop.interface", "font-name", None))
-        section.add(self.make_combo_group(GSettingsFontButton, _("Document font"), "org.gnome.desktop.interface", "document-font-name", None))
-        section.add(self.make_combo_group(GSettingsFontButton, _("Monospace font"), "org.gnome.desktop.interface", "monospace-font-name", None))
-        section.add(self.make_combo_group(GSettingsFontButton, _("Window title font"), "org.cinnamon.desktop.wm.preferences", "titlebar-font", None))
-        vbox.add(section)
-        
-        vbox.add(Gtk.Separator.new(Gtk.Orientation.HORIZONTAL))
+    def on_module_selected(self):
+        if not self.loaded:
+            print "Loading Fonts module"
+            bg = SectionBg()        
+            self.sidePage.add_widget(bg)
+            vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
+            bg.add(vbox)
+            
+            section = Section(_("Font Selection"))
+            section.add(self.make_combo_group(GSettingsFontButton, _("Default font"), "org.cinnamon.desktop.interface", "font-name", None))
+            section.add(self.make_combo_group(GSettingsFontButton, _("Document font"), "org.gnome.desktop.interface", "document-font-name", None))
+            section.add(self.make_combo_group(GSettingsFontButton, _("Monospace font"), "org.gnome.desktop.interface", "monospace-font-name", None))
+            section.add(self.make_combo_group(GSettingsFontButton, _("Window title font"), "org.cinnamon.desktop.wm.preferences", "titlebar-font", None))
+            vbox.add(section)
+            
+            vbox.add(Gtk.Separator.new(Gtk.Orientation.HORIZONTAL))
 
-        section = Section(_("Font Settings"))        
-        section.add(self.make_combo_group(GSettingsRangeSpin, _("Text scaling factor"), "org.cinnamon.desktop.interface", "text-scaling-factor", None))
-        section.add(self.make_combo_group(GSettingsComboBox, _("Antialiasing"), "org.cinnamon.settings-daemon.plugins.xsettings", "antialiasing", None))
-        section.add(self.make_combo_group(GSettingsComboBox, _("Hinting"), "org.cinnamon.settings-daemon.plugins.xsettings", "hinting", None))
-        vbox.add(section)
-
-
+            section = Section(_("Font Settings"))        
+            section.add(self.make_combo_group(GSettingsRangeSpin, _("Text scaling factor"), "org.cinnamon.desktop.interface", "text-scaling-factor", None))
+            section.add(self.make_combo_group(GSettingsComboBox, _("Antialiasing"), "org.cinnamon.settings-daemon.plugins.xsettings", "antialiasing", None))
+            section.add(self.make_combo_group(GSettingsComboBox, _("Hinting"), "org.cinnamon.settings-daemon.plugins.xsettings", "hinting", None))
+            vbox.add(section)
 
     def make_combo_group(self, widget, group_label, root, key, ex1):
         self.size_groups = getattr(self, "size_groups", [Gtk.SizeGroup.new(Gtk.SizeGroupMode.HORIZONTAL) for x in range(2)])

@@ -6,14 +6,21 @@ from gi.repository import Gio
 class Module:
     def __init__(self, content_box):
         keywords = _("desktop, home, button, trash")
-        sidePage = SidePage(_("Desktop"), "cs-desktop", keywords, content_box)
+        sidePage = SidePage(_("Desktop"), "cs-desktop", keywords, content_box, module=self)
         self.sidePage = sidePage
         self.name = "desktop"
         self.category = "prefs"
-        self.comment = _("Manage your desktop icons")        
+        self.comment = _("Manage your desktop icons")
 
     def _loadCheck(self):
-        if 'org.nemo' in Gio.Settings.list_schemas():
+        if 'org.nemo' in Gio.Settings.list_schemas():            
+            return True
+        else:
+            return False
+
+    def on_module_selected(self):
+        if not self.loaded:
+            print "Loading Desktop module"
             nemo_desktop_schema = Gio.Settings.new("org.nemo.desktop")
             nemo_desktop_keys = nemo_desktop_schema.list_keys()
 
@@ -37,8 +44,4 @@ class Module:
                 section.add(GSettingsCheckButton(_("Mounted volumes"), "org.nemo.desktop", "volumes-visible", None))
             if "network-icon-visible" in nemo_desktop_keys:
                 section.add(GSettingsCheckButton(_("Network"), "org.nemo.desktop", "network-icon-visible", None))
-            vbox.add(section)            
-            return True
-        else:
-            return False
-
+            vbox.add(section)

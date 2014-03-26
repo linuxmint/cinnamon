@@ -158,358 +158,187 @@ if HAS_DEDICATED_TERMINAL_SHORTCUT:
 class Module:
     def __init__(self, content_box):
         keywords = _("keyboard, shortcut, hotkey")
-        sidePage = KeyboardSidePage(_("Keyboard"), "cs-keyboard", keywords, content_box)
+        sidePage = SidePage(_("Keyboard"), "cs-keyboard", keywords, content_box, module=self)
         self.sidePage = sidePage
         self.comment = _("Manage keyboard settings and shortcuts")
         self.name = "keyboard"
         self.category = "hardware"
 
-class KeyBindingCategory():
-    def __init__(self, label, int_name):
-        self.label = label
-        self.int_name = int_name
-        self.keybindings = []
+    def on_module_selected(self):
+        if not self.loaded:
+            print "Loading Keyboard module"
+            self.tabs = []        
+            self.notebook = Gtk.Notebook()
 
-    def add(self, keybinding):
-        self.keybindings.append(keybinding)
+            tab = NotebookPage(_("Typing"), False)
+            tab.add_widget(GSettingsCheckButton(_("Enable key repeat"), "org.cinnamon.settings-daemon.peripherals.keyboard", "repeat", None))
+            box = IndentedHBox()
+            slider = GSettingsRange(_("Repeat delay:"), _("Short"), _("Long"), 100, 2000, False, "uint", False, "org.cinnamon.settings-daemon.peripherals.keyboard", "delay",
+                                                                            "org.cinnamon.settings-daemon.peripherals.keyboard/repeat", adjustment_step = 10)
+            box.pack_start(slider, True, True, 0)
+            tab.add_widget(box)
+            box = IndentedHBox()
+            slider = GSettingsRange(_("Repeat speed:"), _("Slow"), _("Fast"), 20, 2000, True, "uint", True, "org.cinnamon.settings-daemon.peripherals.keyboard", "repeat-interval",
+                                                                            "org.cinnamon.settings-daemon.peripherals.keyboard/repeat", adjustment_step = 1)
+            box.pack_start(slider, True, True, 0)
+            tab.add_widget(box)
+            tab.add_widget(Gtk.Separator.new(Gtk.Orientation.HORIZONTAL))
+            
+            tab.add_widget(GSettingsCheckButton(_("Text cursor blinks"), "org.cinnamon.desktop.interface", "cursor-blink", None))
+            box = IndentedHBox()
+            slider = GSettingsRange(_("Blink speed:"), _("Slow"), _("Fast"), 100, 2500, True, "int", False, "org.cinnamon.desktop.interface", "cursor-blink-time",
+                                                                            "org.cinnamon.desktop.interface/cursor-blink", adjustment_step = 10)
+            box.pack_start(slider, True, True, 0)
+            tab.add_widget(box)
+            tab.add_widget(Gtk.Separator.new(Gtk.Orientation.HORIZONTAL))
+            tab.add_widget(Gtk.Label.new(_("Test Box")))
+            tab.add_widget(Gtk.Entry())
+            self.addNotebookTab(tab)
 
-    def clear(self):
-        del self.keybindings[:]
+            tab = NotebookPage(_("Keyboard shortcuts"), True)
 
-class KeyBinding():
-    def __init__(self, label, schema, key, is_array, category):
-        self.key = key
-        self.label = label
-        self.is_array = is_array
-        self.entries = [ ]
-        self.settings = Gio.Settings.new(schema)
-        self.loadSettings()
+            headingbox = Gtk.Box.new(Gtk.Orientation.VERTICAL, 2)
+            mainbox = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 2)
+            headingbox.pack_start(mainbox, True, True, 2)
+            headingbox.pack_end(Gtk.Label.new(_("To edit a keyboard binding, click it and press the new keys, or press backspace to clear it.")), False, False, 1)
 
-    def loadSettings(self):
-        del self.entries[:]
-        if self.is_array:
-            self.entries = self.get_array(self.settings.get_strv(self.key))
-        else:
-            self.entries = self.get_array(self.settings.get_string(self.key))
+            left_vbox = Gtk.Box.new(Gtk.Orientation.VERTICAL, 2)
+            right_vbox = Gtk.Box.new(Gtk.Orientation.VERTICAL, 2)
+            
+            category_scroller = Gtk.ScrolledWindow.new(None, None)
+            category_scroller.set_shadow_type(Gtk.ShadowType.IN)
+            
+            kb_name_scroller = Gtk.ScrolledWindow.new(None, None)
+            kb_name_scroller.set_shadow_type(Gtk.ShadowType.IN)
+            
+            entry_scroller = Gtk.ScrolledWindow.new(None, None)
+            entry_scroller.set_shadow_type(Gtk.ShadowType.IN)
+            
+            right_vbox.pack_start(kb_name_scroller, False, False, 2)
+            right_vbox.pack_start(entry_scroller, False, False, 2)
+            kb_name_scroller.set_property('min-content-height', 150)
+            entry_scroller.set_property('min-content-height', 100)
+            self.cat_tree = Gtk.TreeView.new()        
+            self.kb_tree = Gtk.TreeView.new()
+            self.entry_tree = Gtk.TreeView.new()
 
-    def get_array(self, raw_array):
-        result = []
-        if self.is_array:
-            for entry in raw_array:
-                result.append(entry)
-            while (len(result) < 3):
-                result.append("")
-        else:
-            result.append(raw_array)
-            while (len(result) < 3):
-                result.append("_invalid_")
-        return result
+            self.kb_tree.connect('row-activated', self.onCustomKeyBindingEdited)
+            self.kb_tree.connect('button-press-event', self.onContextMenuPopup)
+            self.kb_tree.connect('popup-menu', self.onContextMenuPopup)
 
-    def setBinding(self, index, val):
-        if val is not None:
-            self.entries[index] = val
-        else:
-            self.entries[index] = ""
-        self.writeSettings()
+            left_vbox.pack_start(category_scroller, True, True, 2)
+                    
+            category_scroller.add(self.cat_tree)
+            category_scroller.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.NEVER)
+            kb_name_scroller.add(self.kb_tree)
+            kb_name_scroller.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC)
+            entry_scroller.add(self.entry_tree)
+            entry_scroller.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.NEVER)
 
-    def writeSettings(self):
-        if self.is_array:
-            array = []
-            for entry in self.entries:
-                if entry is not "":
-                    array.append(entry)
-            self.settings.set_strv(self.key, array)
-        else:
-            self.settings.set_string(self.key, self.entries[0])
+            buttonbox = Gtk.ButtonBox.new(Gtk.Orientation.HORIZONTAL)
+            self.add_custom_button = Gtk.Button.new_with_label(_("Add custom shortcut"))
+            self.add_custom_button.connect('clicked', self.onAddCustomButtonClicked)
+            self.remove_custom_button = Gtk.Button.new_with_label(_("Remove custom shortcut"))
+            self.remove_custom_button.connect('clicked', self.onRemoveCustomButtonClicked)
+            self.remove_custom_button.set_property('sensitive', False)
+            buttonbox.pack_start(self.add_custom_button, False, False, 2)
+            buttonbox.pack_start(self.remove_custom_button, False, False, 2)
 
-    def resetDefaults(self):
-        self.settings.reset(self.key)
-        self.loadSettings()
+            right_vbox.pack_end(buttonbox, False, False, 2)
 
-class CustomKeyBinding():
-    def __init__(self, path, label, action, binding):
-        self.path = path
-        self.label = label
-        self.action = action
-        self.entries = []
-        self.entries.append(binding)
+            mainbox.pack_start(left_vbox, False, False, 2)
+            mainbox.pack_start(right_vbox, True, True, 2)
 
-    def setBinding(self, index, val):
-        if val is not None:
-            self.entries[index] = val
-        else:
-            self.entries[index] = ""
-        self.writeSettings()
+            left_vbox.set_border_width(2)
+            right_vbox.set_border_width(2)
 
-    def writeSettings(self):
-        custom_path = CUSTOM_KEYS_BASENAME+"/"+self.path+"/"
-        settings = Gio.Settings.new_with_path(CUSTOM_KEYS_SCHEMA, custom_path)
+            self.cat_store = Gtk.ListStore(str,     # The category name
+                                           object)  # The category object
 
-        settings.set_string("name", self.label)
-        settings.set_string("command", self.action)
-        settings.set_string("binding", self.entries[0])
+            self.kb_store = Gtk.ListStore( str,   # Keybinding name
+                                           object)# The keybinding object
 
-        # Touch the custom-list key, this will trigger a rebuild in cinnamon
-        parent = Gio.Settings.new(CUSTOM_KEYS_PARENT_SCHEMA)
-        custom_list = parent.get_strv("custom-list")
-        parent.set_strv("custom-list", custom_list)
+            self.entry_store = Gtk.ListStore( str, # Keybinding entry
+                                              object) # Keybinding object
 
-# Utility to convert key modifier codes to something more friendly
-def clean_kb(keybinding):
-    if keybinding is "":
-        return cgi.escape(_("unassigned"))
-    keybinding = keybinding.replace("<Super>", _("Super-"))
-    keybinding = keybinding.replace("<Primary>", _("Ctrl-"))
-    keybinding = keybinding.replace("<Shift>", _("Shift-"))
-    keybinding = keybinding.replace("<Alt>", _("Alt-"))
-    keybinding = keybinding.replace("<Control>", _("Ctrl-"))
-    return cgi.escape(keybinding)
+            cell = Gtk.CellRendererText()
+            cell.set_alignment(.5,0)
+            cat_column = Gtk.TreeViewColumn(_("Categories"), cell, text=0)
+            cat_column.set_alignment(.5)
+            cat_column.set_property('min-width', 200)
 
-class AddCustomDialog(Gtk.Dialog):
-    def __init__(self, edit_mode):
-        if edit_mode:
-            ok_button_label = _("Update")
-        else:
-            ok_button_label = _("Add")
-        super(AddCustomDialog, self).__init__(_("Add custom shortcut"),
-                                                None,
-                                                0,
-                                                (ok_button_label, Gtk.ResponseType.OK,
-                                                _("Cancel"), Gtk.ResponseType.CANCEL))
-        self.set_default_size(350, 100)
-        name_box = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 2)
-        command_box = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 2)
-        name_box.pack_start(Gtk.Label.new(_("Name:")), False, False, 2)
-        command_box.pack_start(Gtk.Label.new(_("Command:")), False, False, 2)
-        self.name_entry = Gtk.Entry()
-        self.name_entry.connect('changed', self.onEntriesChanged)
-        self.command_entry  = Gtk.Entry()
-        self.command_entry.connect('changed', self.onEntriesChanged)
-        name_box.pack_start(self.name_entry, True, True, 2)
-        command_box.pack_start(self.command_entry, True, True, 2)
+            self.cat_tree.append_column(cat_column)
+            self.cat_tree.connect("cursor-changed", self.onCategoryChanged)
 
-        self.file_picker = Gtk.FileChooserButton(_("Select a file"), Gtk.FileChooserAction.OPEN)
-        self.file_picker.connect('file-set', self.onFilePicked)
-        command_box.pack_start(self.file_picker, False, False, 2)
+            kb_name_cell = Gtk.CellRendererText()
+            kb_name_cell.set_alignment(.5,.5)
+            kb_column = Gtk.TreeViewColumn(_("Keyboard shortcuts"), kb_name_cell, text=0)
+            kb_column.set_alignment(.5)
+            self.kb_tree.append_column(kb_column)
+            self.kb_tree.connect("cursor-changed", self.onKeyBindingChanged)
 
-        self.vbox.pack_start(name_box, True, True, 2)
-        self.vbox.pack_start(command_box, True, True, 2)
+            entry_cell = CellRendererKeybinding(self.entry_tree)
+            entry_cell.set_alignment(.5,.5)
+            entry_cell.connect('accel-edited', self.onEntryChanged, self.entry_store)
+            entry_cell.connect('accel-cleared', self.onEntryCleared, self.entry_store)
+            entry_cell.set_property('editable', True)
 
-        self.onEntriesChanged(self)
+            entry_column = Gtk.TreeViewColumn(_("Keyboard bindings"), entry_cell, text=0)
+            entry_column.set_alignment(.5)
+            self.entry_tree.append_column(entry_column)
 
-    def onFilePicked(self, widget):
-        path = self.file_picker.get_uri()[7:]
-        self.command_entry.set_text(path)
+            self.entry_tree.set_tooltip_text(_("Click to set a new accelerator key.") +
+                                             _("  Press Escape or click again to cancel the operation." +
+                                               "  Press Backspace to clear the existing keybinding."))
 
-    def onEntriesChanged(self, widget):
-        ok_enabled = self.name_entry.get_text().strip() is not "" and self.command_entry.get_text().strip() is not ""
-        self.set_response_sensitive(Gtk.ResponseType.OK, ok_enabled)
+            self.main_store = []
 
-class NotebookPage:
-    def __init__(self, name, expanding):
-        self.name = name
-        self.widgets = []
-        self.expanding = expanding
-        self.tab = Gtk.ScrolledWindow()
-        self.content_box = Gtk.VBox()
+            # categories                                Display name        internal category
+            self.main_store.append(KeyBindingCategory("Cinnamon", "cinnamon"))
+            self.main_store.append(KeyBindingCategory(_("Windows"), "windows"))
+            self.main_store.append(KeyBindingCategory(_("Window Tiling"), "window-tiling"))
+            self.main_store.append(KeyBindingCategory(_("Workspace Management"), "ws-manage"))
+            self.main_store.append(KeyBindingCategory(_("System"), "system"))
+            self.main_store.append(KeyBindingCategory(_("Launchers"), "launchers"))
+            self.main_store.append(KeyBindingCategory(_("Sound and Media"), "media"))
+            self.main_store.append(KeyBindingCategory(_("Universal Access"), "accessibility"))
+            self.main_store.append(KeyBindingCategory(_("Custom Shortcuts"), "custom"))
 
-    def add_widget(self, widget):
-        self.widgets.append(widget)
+            for binding in KEYBINDINGS:
+                for category in self.main_store:
+                    if category.int_name == binding[4]:
+                        category.add(KeyBinding(binding[0], binding[1], binding[2], binding[3], binding[4]))
+          #              print bindings.index(binding)  # remove, only for catching segfaults when adding bindings
 
-    def build(self):
-        # Clear all the widgets from the content box
-        widgets = self.content_box.get_children()
-        for widget in widgets:
-            self.content_box.remove(widget)
-        for widget in self.widgets:
-            self.content_box.pack_start(widget, self.expanding, self.expanding, 2)
-        self.tab.add_with_viewport(self.content_box)
-        self.content_box.set_border_width(5)
-        self.tab.set_min_content_height(410)
-        self.content_box.show_all()
-
-class KeyboardSidePage (SidePage):
-    def __init__(self, name, icon, keywords, content_box):
-        SidePage.__init__(self, name, icon, keywords, content_box)
-        self.tabs = []
-
-    def build(self):
-        # Clear all the widgets from the content box
-        widgets = self.content_box.get_children()
-        for widget in widgets:
-            self.content_box.remove(widget)
-        self.notebook = Gtk.Notebook()
-
-        tab = NotebookPage(_("Typing"), False)
-        tab.add_widget(GSettingsCheckButton(_("Enable key repeat"), "org.cinnamon.settings-daemon.peripherals.keyboard", "repeat", None))
-        box = IndentedHBox()
-        slider = GSettingsRange(_("Repeat delay:"), _("Short"), _("Long"), 100, 2000, False, "uint", False, "org.cinnamon.settings-daemon.peripherals.keyboard", "delay",
-                                                                        "org.cinnamon.settings-daemon.peripherals.keyboard/repeat", adjustment_step = 10)
-        box.pack_start(slider, True, True, 0)
-        tab.add_widget(box)
-        box = IndentedHBox()
-        slider = GSettingsRange(_("Repeat speed:"), _("Slow"), _("Fast"), 20, 2000, True, "uint", True, "org.cinnamon.settings-daemon.peripherals.keyboard", "repeat-interval",
-                                                                        "org.cinnamon.settings-daemon.peripherals.keyboard/repeat", adjustment_step = 1)
-        box.pack_start(slider, True, True, 0)
-        tab.add_widget(box)
-        tab.add_widget(Gtk.Separator.new(Gtk.Orientation.HORIZONTAL))
-        
-        tab.add_widget(GSettingsCheckButton(_("Text cursor blinks"), "org.cinnamon.desktop.interface", "cursor-blink", None))
-        box = IndentedHBox()
-        slider = GSettingsRange(_("Blink speed:"), _("Slow"), _("Fast"), 100, 2500, True, "int", False, "org.cinnamon.desktop.interface", "cursor-blink-time",
-                                                                        "org.cinnamon.desktop.interface/cursor-blink", adjustment_step = 10)
-        box.pack_start(slider, True, True, 0)
-        tab.add_widget(box)
-        tab.add_widget(Gtk.Separator.new(Gtk.Orientation.HORIZONTAL))
-        tab.add_widget(Gtk.Label.new(_("Test Box")))
-        tab.add_widget(Gtk.Entry())
-        self.addNotebookTab(tab)
-
-        tab = NotebookPage(_("Keyboard shortcuts"), True)
-
-        headingbox = Gtk.Box.new(Gtk.Orientation.VERTICAL, 2)
-        mainbox = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 2)
-        headingbox.pack_start(mainbox, True, True, 2)
-        headingbox.pack_end(Gtk.Label.new(_("To edit a keyboard binding, click it and press the new keys, or press backspace to clear it.")), False, False, 1)
-
-        left_vbox = Gtk.Box.new(Gtk.Orientation.VERTICAL, 2)
-        right_vbox = Gtk.Box.new(Gtk.Orientation.VERTICAL, 2)
-        
-        category_scroller = Gtk.ScrolledWindow.new(None, None)
-        category_scroller.set_shadow_type(Gtk.ShadowType.IN)
-        
-        kb_name_scroller = Gtk.ScrolledWindow.new(None, None)
-        kb_name_scroller.set_shadow_type(Gtk.ShadowType.IN)
-        
-        entry_scroller = Gtk.ScrolledWindow.new(None, None)
-        entry_scroller.set_shadow_type(Gtk.ShadowType.IN)
-        
-        right_vbox.pack_start(kb_name_scroller, False, False, 2)
-        right_vbox.pack_start(entry_scroller, False, False, 2)
-        kb_name_scroller.set_property('min-content-height', 150)
-        entry_scroller.set_property('min-content-height', 100)
-        self.cat_tree = Gtk.TreeView.new()        
-        self.kb_tree = Gtk.TreeView.new()
-        self.entry_tree = Gtk.TreeView.new()
-
-        self.kb_tree.connect('row-activated', self.onCustomKeyBindingEdited)
-        self.kb_tree.connect('button-press-event', self.onContextMenuPopup)
-        self.kb_tree.connect('popup-menu', self.onContextMenuPopup)
-
-        left_vbox.pack_start(category_scroller, True, True, 2)
-                
-        category_scroller.add(self.cat_tree)
-        category_scroller.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.NEVER)
-        kb_name_scroller.add(self.kb_tree)
-        kb_name_scroller.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC)
-        entry_scroller.add(self.entry_tree)
-        entry_scroller.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.NEVER)
-
-        buttonbox = Gtk.ButtonBox.new(Gtk.Orientation.HORIZONTAL)
-        self.add_custom_button = Gtk.Button.new_with_label(_("Add custom shortcut"))
-        self.add_custom_button.connect('clicked', self.onAddCustomButtonClicked)
-        self.remove_custom_button = Gtk.Button.new_with_label(_("Remove custom shortcut"))
-        self.remove_custom_button.connect('clicked', self.onRemoveCustomButtonClicked)
-        self.remove_custom_button.set_property('sensitive', False)
-        buttonbox.pack_start(self.add_custom_button, False, False, 2)
-        buttonbox.pack_start(self.remove_custom_button, False, False, 2)
-
-        right_vbox.pack_end(buttonbox, False, False, 2)
-
-        mainbox.pack_start(left_vbox, False, False, 2)
-        mainbox.pack_start(right_vbox, True, True, 2)
-
-        left_vbox.set_border_width(2)
-        right_vbox.set_border_width(2)
-
-        self.cat_store = Gtk.ListStore(str,     # The category name
-                                       object)  # The category object
-
-        self.kb_store = Gtk.ListStore( str,   # Keybinding name
-                                       object)# The keybinding object
-
-        self.entry_store = Gtk.ListStore( str, # Keybinding entry
-                                          object) # Keybinding object
-
-        cell = Gtk.CellRendererText()
-        cell.set_alignment(.5,0)
-        cat_column = Gtk.TreeViewColumn(_("Categories"), cell, text=0)
-        cat_column.set_alignment(.5)
-        cat_column.set_property('min-width', 200)
-
-        self.cat_tree.append_column(cat_column)
-        self.cat_tree.connect("cursor-changed", self.onCategoryChanged)
-
-        kb_name_cell = Gtk.CellRendererText()
-        kb_name_cell.set_alignment(.5,.5)
-        kb_column = Gtk.TreeViewColumn(_("Keyboard shortcuts"), kb_name_cell, text=0)
-        kb_column.set_alignment(.5)
-        self.kb_tree.append_column(kb_column)
-        self.kb_tree.connect("cursor-changed", self.onKeyBindingChanged)
-
-        entry_cell = CellRendererKeybinding(self.entry_tree)
-        entry_cell.set_alignment(.5,.5)
-        entry_cell.connect('accel-edited', self.onEntryChanged, self.entry_store)
-        entry_cell.connect('accel-cleared', self.onEntryCleared, self.entry_store)
-        entry_cell.set_property('editable', True)
-
-        entry_column = Gtk.TreeViewColumn(_("Keyboard bindings"), entry_cell, text=0)
-        entry_column.set_alignment(.5)
-        self.entry_tree.append_column(entry_column)
-
-        self.entry_tree.set_tooltip_text(_("Click to set a new accelerator key.") +
-                                         _("  Press Escape or click again to cancel the operation." +
-                                           "  Press Backspace to clear the existing keybinding."))
-
-        self.main_store = []
-
-        # categories                                Display name        internal category
-        self.main_store.append(KeyBindingCategory("Cinnamon", "cinnamon"))
-        self.main_store.append(KeyBindingCategory(_("Windows"), "windows"))
-        self.main_store.append(KeyBindingCategory(_("Window Tiling"), "window-tiling"))
-        self.main_store.append(KeyBindingCategory(_("Workspace Management"), "ws-manage"))
-        self.main_store.append(KeyBindingCategory(_("System"), "system"))
-        self.main_store.append(KeyBindingCategory(_("Launchers"), "launchers"))
-        self.main_store.append(KeyBindingCategory(_("Sound and Media"), "media"))
-        self.main_store.append(KeyBindingCategory(_("Universal Access"), "accessibility"))
-        self.main_store.append(KeyBindingCategory(_("Custom Shortcuts"), "custom"))
-
-        for binding in KEYBINDINGS:
             for category in self.main_store:
-                if category.int_name == binding[4]:
-                    category.add(KeyBinding(binding[0], binding[1], binding[2], binding[3], binding[4]))
-      #              print bindings.index(binding)  # remove, only for catching segfaults when adding bindings
+                self.cat_store.append((category.label, category))
 
-        for category in self.main_store:
-            self.cat_store.append((category.label, category))
+            self.loadCustoms()
+            self.cat_tree.set_model(self.cat_store)
+            self.kb_tree.set_model(self.kb_store)
+            self.entry_tree.set_model(self.entry_store)
 
-        self.loadCustoms()
-        self.cat_tree.set_model(self.cat_store)
-        self.kb_tree.set_model(self.kb_store)
-        self.entry_tree.set_model(self.entry_store)
+            tab.add_widget(headingbox)
+            self.addNotebookTab(tab)
+            
+            tab = NotebookPage(_("Keyboard layouts"), True)
+            try:
+                widget = self.sidePage.content_box.c_manager.get_c_widget("region")
+            except:
+                widget = None
 
-        tab.add_widget(headingbox)
-        self.addNotebookTab(tab)
-        
-        tab = NotebookPage(_("Keyboard layouts"), True)
-        try:
-            widget = self.content_box.c_manager.get_c_widget("region")
-        except:
-            widget = None
+            if widget is not None:
+                cheat_box = Gtk.Box.new(Gtk.Orientation.VERTICAL, 2)
+                cheat_box.pack_start(widget, False, False, 2)
+                cheat_box.set_vexpand(False)
+                widget.show()
+                tab.add_widget(cheat_box)
+            
+            self.addNotebookTab(tab)        
 
-        if widget is not None:
-            cheat_box = Gtk.Box.new(Gtk.Orientation.VERTICAL, 2)
-            cheat_box.pack_start(widget, False, False, 2)
-            cheat_box.set_vexpand(False)
-            widget.show()
-            tab.add_widget(cheat_box)
-        
-        self.addNotebookTab(tab)        
-
-        self.content_box.add(self.notebook)
-        for tab in self.tabs:
-            tab.build()
-        self.content_box.show_all()
+            self.sidePage.add_widget(self.notebook)
+            for tab in self.tabs:
+                tab.build()
 
     def addNotebookTab(self, tab):
         self.notebook.append_page(tab.tab, Gtk.Label.new(tab.name))
@@ -777,6 +606,172 @@ class KeyboardSidePage (SidePage):
     def onResetToDefault(self, popup, keybinding):
         keybinding.resetDefaults()
         self.onKeyBindingChanged(self.kb_tree)
+
+
+class KeyBindingCategory():
+    def __init__(self, label, int_name):
+        self.label = label
+        self.int_name = int_name
+        self.keybindings = []
+
+    def add(self, keybinding):
+        self.keybindings.append(keybinding)
+
+    def clear(self):
+        del self.keybindings[:]
+
+class KeyBinding():
+    def __init__(self, label, schema, key, is_array, category):
+        self.key = key
+        self.label = label
+        self.is_array = is_array
+        self.entries = [ ]
+        self.settings = Gio.Settings.new(schema)
+        self.loadSettings()
+
+    def loadSettings(self):
+        del self.entries[:]
+        if self.is_array:
+            self.entries = self.get_array(self.settings.get_strv(self.key))
+        else:
+            self.entries = self.get_array(self.settings.get_string(self.key))
+
+    def get_array(self, raw_array):
+        result = []
+        if self.is_array:
+            for entry in raw_array:
+                result.append(entry)
+            while (len(result) < 3):
+                result.append("")
+        else:
+            result.append(raw_array)
+            while (len(result) < 3):
+                result.append("_invalid_")
+        return result
+
+    def setBinding(self, index, val):
+        if val is not None:
+            self.entries[index] = val
+        else:
+            self.entries[index] = ""
+        self.writeSettings()
+
+    def writeSettings(self):
+        if self.is_array:
+            array = []
+            for entry in self.entries:
+                if entry is not "":
+                    array.append(entry)
+            self.settings.set_strv(self.key, array)
+        else:
+            self.settings.set_string(self.key, self.entries[0])
+
+    def resetDefaults(self):
+        self.settings.reset(self.key)
+        self.loadSettings()
+
+class CustomKeyBinding():
+    def __init__(self, path, label, action, binding):
+        self.path = path
+        self.label = label
+        self.action = action
+        self.entries = []
+        self.entries.append(binding)
+
+    def setBinding(self, index, val):
+        if val is not None:
+            self.entries[index] = val
+        else:
+            self.entries[index] = ""
+        self.writeSettings()
+
+    def writeSettings(self):
+        custom_path = CUSTOM_KEYS_BASENAME+"/"+self.path+"/"
+        settings = Gio.Settings.new_with_path(CUSTOM_KEYS_SCHEMA, custom_path)
+
+        settings.set_string("name", self.label)
+        settings.set_string("command", self.action)
+        settings.set_string("binding", self.entries[0])
+
+        # Touch the custom-list key, this will trigger a rebuild in cinnamon
+        parent = Gio.Settings.new(CUSTOM_KEYS_PARENT_SCHEMA)
+        custom_list = parent.get_strv("custom-list")
+        parent.set_strv("custom-list", custom_list)
+
+# Utility to convert key modifier codes to something more friendly
+def clean_kb(keybinding):
+    if keybinding is "":
+        return cgi.escape(_("unassigned"))
+    keybinding = keybinding.replace("<Super>", _("Super-"))
+    keybinding = keybinding.replace("<Primary>", _("Ctrl-"))
+    keybinding = keybinding.replace("<Shift>", _("Shift-"))
+    keybinding = keybinding.replace("<Alt>", _("Alt-"))
+    keybinding = keybinding.replace("<Control>", _("Ctrl-"))
+    return cgi.escape(keybinding)
+
+class AddCustomDialog(Gtk.Dialog):
+    def __init__(self, edit_mode):
+        if edit_mode:
+            ok_button_label = _("Update")
+        else:
+            ok_button_label = _("Add")
+        super(AddCustomDialog, self).__init__(_("Add custom shortcut"),
+                                                None,
+                                                0,
+                                                (ok_button_label, Gtk.ResponseType.OK,
+                                                _("Cancel"), Gtk.ResponseType.CANCEL))
+        self.set_default_size(350, 100)
+        name_box = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 2)
+        command_box = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 2)
+        name_box.pack_start(Gtk.Label.new(_("Name:")), False, False, 2)
+        command_box.pack_start(Gtk.Label.new(_("Command:")), False, False, 2)
+        self.name_entry = Gtk.Entry()
+        self.name_entry.connect('changed', self.onEntriesChanged)
+        self.command_entry  = Gtk.Entry()
+        self.command_entry.connect('changed', self.onEntriesChanged)
+        name_box.pack_start(self.name_entry, True, True, 2)
+        command_box.pack_start(self.command_entry, True, True, 2)
+
+        self.file_picker = Gtk.FileChooserButton(_("Select a file"), Gtk.FileChooserAction.OPEN)
+        self.file_picker.connect('file-set', self.onFilePicked)
+        command_box.pack_start(self.file_picker, False, False, 2)
+
+        self.vbox.pack_start(name_box, True, True, 2)
+        self.vbox.pack_start(command_box, True, True, 2)
+
+        self.onEntriesChanged(self)
+
+    def onFilePicked(self, widget):
+        path = self.file_picker.get_uri()[7:]
+        self.command_entry.set_text(path)
+
+    def onEntriesChanged(self, widget):
+        ok_enabled = self.name_entry.get_text().strip() is not "" and self.command_entry.get_text().strip() is not ""
+        self.set_response_sensitive(Gtk.ResponseType.OK, ok_enabled)
+
+class NotebookPage:
+    def __init__(self, name, expanding):
+        self.name = name
+        self.widgets = []
+        self.expanding = expanding
+        self.tab = Gtk.ScrolledWindow()
+        self.content_box = Gtk.VBox()
+
+    def add_widget(self, widget):
+        self.widgets.append(widget)
+
+    def build(self):
+        # Clear all the widgets from the content box
+        widgets = self.content_box.get_children()
+        for widget in widgets:
+            self.content_box.remove(widget)
+        for widget in self.widgets:
+            self.content_box.pack_start(widget, self.expanding, self.expanding, 2)
+        self.tab.add_with_viewport(self.content_box)
+        self.content_box.set_border_width(5)
+        self.tab.set_min_content_height(410)
+        self.content_box.show_all()
+  
 
 SPECIAL_MODS = (["Super_L",    "<Super>"],
                 ["Super_R",    "<Super>"],
