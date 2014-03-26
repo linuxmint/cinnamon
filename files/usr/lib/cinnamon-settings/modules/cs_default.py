@@ -309,33 +309,38 @@ class OtherTypeDialog(Gtk.Dialog):
 class Module:
     def __init__(self, content_box):
         keywords = _("media, defaults, applications, programs, removable, browser, email, calendar, music, videos, photos, images, cd, autostart, autoplay")
-        sidePage = DefaultSidepage(_("Preferred Applications"), "cs-default-applications", keywords, content_box)
+        sidePage = SidePage(_("Preferred Applications"), "cs-default-applications", keywords, content_box, 330, module=self)
         self.sidePage = sidePage
         self.name = "default"
         self.category = "prefs"
 
-class DefaultSidepage (SidePage):
-    def __init__(self, name, icon, keywords, content_box):
-        SidePage.__init__(self, name, icon, keywords, content_box, 330)
-        self.tabs = []
-        self.notebook = Gtk.Notebook()
-        self.viewbox1 = Gtk.VBox()
-        self.viewbox2 = Gtk.VBox()
-        
-        default = Gtk.ScrolledWindow()
-        default.add_with_viewport(self.viewbox1)
-        
-        media = Gtk.ScrolledWindow()
-        media.add_with_viewport(self.viewbox2)
-        
-        self.notebook.append_page(default, Gtk.Label.new(_("Preferred Applications")))
-        self.notebook.append_page(media, Gtk.Label.new(_("Removable Media")))
+    def on_module_selected(self):
+        if not self.loaded:
+            print "Loading Default module"
 
-        widget1 = self.setupDefaultApps()
-        widget2 = self.setupMedia()
-        
-        self.add_widget(widget1, 0)
-        self.add_widget(widget2, 1)
+            self.tabs = []
+            self.notebook = Gtk.Notebook()
+            self.viewbox1 = Gtk.VBox()
+            self.viewbox2 = Gtk.VBox()
+            
+            default = Gtk.ScrolledWindow()
+            default.add_with_viewport(self.viewbox1)
+            
+            media = Gtk.ScrolledWindow()
+            media.add_with_viewport(self.viewbox2)
+            
+            self.notebook.append_page(default, Gtk.Label.new(_("Preferred Applications")))
+            self.notebook.append_page(media, Gtk.Label.new(_("Removable Media")))
+
+            widget = self.setupDefaultApps()
+            self.viewbox1.pack_start(widget, False, False, 2)
+
+            widget = self.setupMedia()
+            self.viewbox2.pack_start(widget, False, False, 2)                        
+
+            self.notebook.expand = True
+            self.sidePage.add_widget(self.notebook)
+            
 
     def setupDefaultApps(self):
         table = ButtonTable(len(preferred_app_defs))
@@ -347,28 +352,6 @@ class DefaultSidepage (SidePage):
 
     def onMoreClicked(self, button):
         self.other_type_dialog.doShow(button.get_toplevel())
-        
-    def add_widget(self, widget, tab):
-        self.widgets.append(widget)
-        widget.tab = tab
-        
-    def build(self):
-        for widget in self.viewbox1.get_children():
-            self.viewbox1.remove(widget)
-        for widget in self.viewbox2.get_children():
-            self.viewbox2.remove(widget)
-        for widget in self.content_box.get_children():
-            self.content_box.remove(widget)
-
-        for widget in self.widgets:            
-            if widget.tab == 0:
-                self.viewbox1.pack_start(widget, False, False, 2)
-            elif widget.tab == 1:
-                self.viewbox2.pack_start(widget, False, False, 2)
-
-        self.content_box.pack_start(self.notebook, True, True, 2)
-        self.content_box.show_all()
-        self.content_box.show_all()
 
     def setupMedia(self):
         self.media_settings = Gio.Settings.new(MEDIA_HANDLING_SCHEMA)

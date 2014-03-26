@@ -8,46 +8,49 @@ from gi.repository import Gio, Gtk, GObject, Gdk, GLib
 class Module:
     def __init__(self, content_box):
         keywords = _("time, date, calendar, format, network, sync")
-        sidePage = SidePage(_("Date & Time"), "cs-date-time", keywords, content_box)
+        sidePage = SidePage(_("Date & Time"), "cs-date-time", keywords, content_box, module=self)
         self.sidePage = sidePage
         self.name = "calendar"
         self.comment = _("Manage date and time settings")
         self.category = "prefs"        
+                
+    def on_module_selected(self):
+        if not self.loaded:
+            print "Loading Calendar module"
+            bg = SectionBg()        
+            self.sidePage.add_widget(bg)
+            vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
+            bg.add(vbox)
         
-        bg = SectionBg()        
-        sidePage.add_widget(bg)
-        vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
-        bg.add(vbox)
-    
-        section = Section(_("Date Settings"))
-        try:
-            self.changeTimeWidget = ChangeTimeWidget()  
-            self.ntpCheckButton = None 
+            section = Section(_("Date Settings"))
             try:
-                self.ntpCheckButton = NtpCheckButton(_("Use network time"))                
-                section.add(self.ntpCheckButton)
-            except Exception, detail:
-                print detail            
-            section.add(self.changeTimeWidget)            
-            try:                
-                section.add(TimeZoneSelectorWidget())
+                self.changeTimeWidget = ChangeTimeWidget()  
+                self.ntpCheckButton = None 
+                try:
+                    self.ntpCheckButton = NtpCheckButton(_("Use network time"))                
+                    section.add(self.ntpCheckButton)
+                except Exception, detail:
+                    print detail            
+                section.add(self.changeTimeWidget)            
+                try:                
+                    section.add(TimeZoneSelectorWidget())
+                except Exception, detail:
+                    print detail
+                
+                if self.ntpCheckButton != None:
+                    self.ntpCheckButton.connect('toggled', self._ntp_toggled)
+                    self.changeTimeWidget.change_using_ntp( self.ntpCheckButton.get_active() )
             except Exception, detail:
                 print detail
-            
-            if self.ntpCheckButton != None:
-                self.ntpCheckButton.connect('toggled', self._ntp_toggled)
-                self.changeTimeWidget.change_using_ntp( self.ntpCheckButton.get_active() )
-        except Exception, detail:
-            print detail
-        vbox.add(section)
+            vbox.add(section)
 
-        vbox.add(Gtk.Separator.new(Gtk.Orientation.HORIZONTAL))       
+            vbox.add(Gtk.Separator.new(Gtk.Orientation.HORIZONTAL))       
 
-        section = Section(_("Date Format"))
-        section.add(GSettingsCheckButton(_("Use 24h clock"), "org.cinnamon.desktop.interface", "clock-use-24h", None))
-        section.add(GSettingsCheckButton(_("Display the date"), "org.cinnamon.desktop.interface", "clock-show-date", None))
-        section.add(GSettingsCheckButton(_("Display seconds"), "org.cinnamon.desktop.interface", "clock-show-seconds", None))        
-        vbox.add(section)
+            section = Section(_("Date Format"))
+            section.add(GSettingsCheckButton(_("Use 24h clock"), "org.cinnamon.desktop.interface", "clock-use-24h", None))
+            section.add(GSettingsCheckButton(_("Display the date"), "org.cinnamon.desktop.interface", "clock-show-date", None))
+            section.add(GSettingsCheckButton(_("Display seconds"), "org.cinnamon.desktop.interface", "clock-show-seconds", None))        
+            vbox.add(section)
 
     def _ntp_toggled(self, widget):
         self.changeTimeWidget.change_using_ntp( self.ntpCheckButton.get_active() )

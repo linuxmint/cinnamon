@@ -68,7 +68,7 @@ def getProcInfos():
                     break
     return result
 
-def createSystemInfos():
+def createSystemInfos():    
     procInfos = getProcInfos()
     infos = []
     (dname, dversion, dsuffix) = platform.linux_distribution()
@@ -102,27 +102,30 @@ def createSystemInfos():
 class Module:
     def __init__(self, content_box):
         keywords = _("system, information, details, graphic, sound, kernel, version")
-        sidePage = SidePage(_("System Info"), "cs-details", keywords, content_box)
+        sidePage = SidePage(_("System Info"), "cs-details", keywords, content_box, module=self)
         self.sidePage = sidePage
         self.name = "info"
         self.category = "hardware"
         self.comment = _("Display system information")
         
-        infos = createSystemInfos()                        
-        
-        table = Gtk.Table.new(len(infos), 2, False)
-        table.set_row_spacings(8)
-        table.set_col_spacings(15)
-        sidePage.add_widget(table)
+    def on_module_selected(self):
+        if not self.loaded:
+            print "Loading Info module"
+            infos = createSystemInfos()                        
+            
+            table = Gtk.Table.new(len(infos), 2, False)
+            table.set_row_spacings(8)
+            table.set_col_spacings(15)
+            self.sidePage.add_widget(table)
 
-        row = 0
-        for (key, value) in infos:
-            labelKey = Gtk.Label.new(key)
-            labelKey.set_alignment(1, 0.5)
-            labelKey.get_style_context().add_class("dim-label")
-            labelValue = Gtk.Label.new(value)
-            labelValue.set_alignment(0, 0.5)
-            table.attach(labelKey, 0, 1, row, row+1)
-            table.attach(labelValue, 1, 2, row, row+1)
-            row += 1
-
+            row = 0
+            for (key, value) in infos:
+                labelKey = Gtk.Label.new(key)
+                labelKey.set_alignment(1, 0.5)
+                labelKey.get_style_context().add_class("dim-label")
+                labelValue = Gtk.Label.new(value)
+                labelValue.set_alignment(0, 0.5)
+                table.attach(labelKey, 0, 1, row, row+1)
+                table.attach(labelValue, 1, 2, row, row+1)
+                row += 1
+                

@@ -42,15 +42,22 @@ class SidePage:
         self.size = size
         self.topWindow = None
         self.builder = None
+        if self.module != None:
+            self.module.loaded = False
 
     def add_widget(self, widget):
         self.widgets.append(widget)        
 
-    def build(self):
+    def build(self):        
         # Clear all the widgets from the content box
         widgets = self.content_box.get_children()
         for widget in widgets:
             self.content_box.remove(widget)
+
+        if (self.module is not None):
+            self.module.on_module_selected()
+            self.module.loaded = True
+
         # Add our own widgets
         # C modules are sort of messy - they check the desktop type
         # (for Unity or GNOME) and show/hide UI items depending on
@@ -78,10 +85,8 @@ class SidePage:
                         else:
                             for c_widget in c_widgets:
                                 c_widget.show()
-            else:                
-                self.content_box.show_all()
-                if (self.module is not None):
-                    self.module.on_module_selected()
+            else:                                
+                self.content_box.show_all()                
         else:
             subprocess.Popen(self.exec_name.split())
 
