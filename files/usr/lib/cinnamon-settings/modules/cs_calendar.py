@@ -22,7 +22,7 @@ class Module:
             vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
             bg.add(vbox)
         
-            section = Section(_("Date Settings"))
+            section = Section(_("Date &amp; Time Settings"))
             try:
                 self.changeTimeWidget = ChangeTimeWidget()  
                 self.ntpCheckButton = None 
@@ -242,6 +242,7 @@ class ChangeTimeWidget(Gtk.HBox):
         
         self.pack_start(Gtk.Label.new(_("Date : ")), False, False, 2)
         self.pack_start(dateBox, True, True, 2)
+        self.pack_start(Gtk.Label.new('\t\t'), False, False, 2)
         self.pack_start(Gtk.Label.new(_("Time : ")), False, False, 2)
         self.pack_start(timeBox, True, True, 2)
         
