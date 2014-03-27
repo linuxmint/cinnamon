@@ -45,18 +45,26 @@ Homepage: http://cinnamon.linuxmint.com
 
 Package: cinnamon
 Architecture: any
-Depends: ${gir:Depends},
-         cjs,
+Depends: cinnamon-common (= ${source:Version}),
+         cinnamon-translations (>= ${cinnamon:Version}),
+         cjs (>= ${cinnamon:Version}),
+         libcjs0c (>= ${cinnamon:Version}),
+         cinnamon-desktop-data (>= ${cinnamon:Version}),
+         libcinnamon-desktop0 (>= ${cinnamon:Version}),
+         libcinnamon-menu-3-0 (>= ${cinnamon:Version}),
+         cinnamon-control-center (>= ${cinnamon:Version}),
+         cinnamon-settings-daemon (>= ${cinnamon:Version}),
+         cinnamon-session (>= ${cinnamon:Version}),
+         libmuffin0 (>= ${cinnamon:Version}),
+         gir1.2-muffin-3.0 (>= ${cinnamon:Version}),
+         nemo (>= ${cinnamon:Version}),
+         cinnamon-screensaver (>= ${cinnamon:Version}),
+         nm-applet,
+         ${gir:Depends},
          ${shlibs:Depends},
-         ${misc:Depends},
-         cinnamon-common (= ${source:Version}),
-         cinnamon-translations,
-         cinnamon-control-center | gnome-control-center,
+         ${misc:Depends},                  
          caribou,
-         cups-pk-helper,
-         cinnamon-settings-daemon,
-         cinnamon-session,
-         cinnamon-desktop-data (>= 1.0.0),
+         cups-pk-helper,               
          gnome-icon-theme-symbolic (>= 2.91),
          ${icon-theme:Depends},
          gir1.2-accountsservice-1.0,
@@ -86,18 +94,10 @@ Depends: ${gir:Depends},
          metacity,
          gnome-panel | tint2,
          network-manager-gnome
-Recommends: gnome-themes-standard, gnome-terminal, nemo, cinnamon-screensaver, gnome-session-bin, gir1.2-cjsdbus-1.0, cinnamon-bluetooth
+Recommends: gnome-themes-standard, gnome-terminal, cinnamon-bluetooth
 Provides: notification-daemon, x-window-manager
 Description: Cinnamon desktop
- Cinnamon redefines user interactions with the GNOME desktop.
- In particular, it offers new paradigms for launching applications,
- accessing documents, and organizing open windows in GNOME. Later, it
- will introduce a new applets eco-system and offer new solutions for
- other desktop features, such as notifications and contacts
- management. Cinnamon is intended to replace functions handled
- by the GNOME Panel and by the window manager in previous versions of
- GNOME. Cinnamon has rich visual effects enabled by new
- graphical technologies.
+ Cinnamon is a modern Linux desktop which provides advanced innovative features and a traditional user experience. It's easy to use, powerful and flexible.
 
 Package: cinnamon-dbg
 Section: debug
@@ -106,15 +106,7 @@ Architecture: any
 Depends: cinnamon (= ${binary:Version}),
          ${misc:Depends}
 Description: Debugging symbols for the Cinnamon desktop
- Cinnamon redefines user interactions with the GNOME desktop.
- In particular, it offers new paradigms for launching applications,
- accessing documents, and organizing open windows in GNOME. Later, it
- will introduce a new applets eco-system and offer new solutions for
- other desktop features, such as notifications and contacts
- management. Cinnamon is intended to replace functions handled
- by the GNOME Panel and by the window manager in previous versions of
- GNOME. Cinnamon has rich visual effects enabled by new
- graphical technologies.
+ Cinnamon is a modern Linux desktop which provides advanced innovative features and a traditional user experience. It's easy to use, powerful and flexible.
  .
  This package contains the debugging symbols.
 
@@ -124,14 +116,6 @@ Breaks: cinnamon (<< 1.7.1)
 Architecture: all
 Depends: ${misc:Depends}, python
 Description: Cinnamon desktop (Common data files)
- Cinnamon redefines user interactions with the GNOME desktop.
- In particular, it offers new paradigms for launching applications,
- accessing documents, and organizing open windows in GNOME. Later, it
- will introduce a new applets eco-system and offer new solutions for
- other desktop features, such as notifications and contacts
- management. Cinnamon is intended to replace functions handled
- by the GNOME Panel and by the window manager in previous versions of
- GNOME. Cinnamon has rich visual effects enabled by new
- graphical technologies.
+ Cinnamon is a modern Linux desktop which provides advanced innovative features and a traditional user experience. It's easy to use, powerful and flexible.
  .
  This package contains the architecture independent files needed by Cinnamon
