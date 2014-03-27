@@ -1,9 +1,17 @@
 {
+ "menu-icon-custom" : {
+    "type" : "checkbox",
+    "default" : "false",
+    "description" : "Use a custom icon",
+    "tooltip" : "Unchecking this allows the theme to set the icon"
+ },
  "menu-icon" : {
     "type" : "iconfilechooser",
-    "default" : "menu",
-    "description": "Icon",
-    "tooltip": "Select an icon to show in the panel."
+    "default" : "/usr/share/cinnamon/theme/menu.svg",
+    "description" : "Icon",
+    "tooltip" : "Select an icon to show in the panel.",
+    "dependency" : "menu-icon-custom",
+    "indent" : "true"
  }, 
  "menu-label" : {
     "type" : "entry",
