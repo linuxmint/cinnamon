@@ -199,12 +199,12 @@ class Section(Gtk.Box):
 class SectionBg(Gtk.ScrolledWindow):
 
     def __init__(self):
-        Gtk.ScrolledWindow.__init__(self)
-        self.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.NEVER)
-        #self.set_shadow_type(Gtk.ShadowType.ETCHED_IN)
-        #Gtk.StyleContext.add_class(self.get_style_context(), "notebook")
+        Gtk.Viewport.__init__(self)
+        self.set_shadow_type(Gtk.ShadowType.ETCHED_IN)
+        style = self.get_style_context()
+        style.add_class("section-bg")
         self.expand = True # Tells CS to give expand us to the whole window
-
+        
 class IndentedHBox(Gtk.HBox):
     def __init__(self):
         super(IndentedHBox, self).__init__()
