@@ -148,7 +148,7 @@ PlacesManager.prototype = {
         let homeIcon = Cinnamon.util_get_icon_for_uri (homeUri);
         this._home = new PlaceInfo('special:home', homeLabel,
             function(size) {
-                return St.TextureCache.get_default().load_gicon(null, homeIcon, size);
+                return St.TextureCache.get_default().load_gicon(null, homeIcon, size, global.ui_scale);
             },
             function(params) {
                 Gio.app_info_launch_default_for_uri(homeUri, _makeLaunchContext(params));
@@ -161,7 +161,7 @@ PlacesManager.prototype = {
         let desktopIcon = Cinnamon.util_get_icon_for_uri (desktopUri);
         this._desktopMenu = new PlaceInfo('special:desktop', desktopLabel,
             function(size) {
-                return St.TextureCache.get_default().load_gicon(null, desktopIcon, size);
+                return St.TextureCache.get_default().load_gicon(null, desktopIcon, size, global.ui_scale);
             },
             function(params) {
                 Gio.app_info_launch_default_for_uri(desktopUri, _makeLaunchContext(params));
