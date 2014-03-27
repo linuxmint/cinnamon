@@ -32,6 +32,9 @@ class Module:
             vbox.add(Gtk.Separator.new(Gtk.Orientation.HORIZONTAL))        
 
             section = Section(_("Titlebar"))
+            
+            section.add(TitleBarButtonsOrderSelector())
+            
             section.add(self._make_combo_group(_("Action on title bar double-click"),
                                                 "org.cinnamon.desktop.wm.preferences", "action-double-click-titlebar",
                                                 [(i, i.replace("-", " ").title()) for i in ('toggle-shade', 'toggle-maximize', 'toggle-maximize-horizontally', 'toggle-maximize-vertically', 'minimize', 'shade', 'menu', 'lower', 'none')]))
