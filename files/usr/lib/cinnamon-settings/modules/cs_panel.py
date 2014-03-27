@@ -63,4 +63,6 @@ class Module:
             
             vbox.add(Gtk.Separator.new(Gtk.Orientation.HORIZONTAL))
 
-            self.sidePage.add_widget(GSettingsCheckButton(_("Panel edit mode"), "org.cinnamon", "panel-edit-mode", None))
+            hbox = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
+            hbox.pack_start(GSettingsCheckButton(_("Panel edit mode"), "org.cinnamon", "panel-edit-mode", None), False, False, 6)
+            vbox.pack_start(hbox, False, False, 2)
