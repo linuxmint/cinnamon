@@ -95,7 +95,7 @@ class Module:
         path = "org.cinnamon/desktop-effects"
         template = "desktop-effects-%s-%s"
         box = Gtk.HBox()
-        label = Gtk.Label.new()
+        label = Gtk.Label()
         label.set_markup(group_label)
         label.props.xalign = 0.0
         self.size_groups[0].add_widget(label)

@@ -182,7 +182,7 @@ class ExtensionSidePage (SidePage):
         self.comboshow.add_attribute(renderer_text, "text", 1)
         self.comboshow.show()
         
-        showLabel = Gtk.Label.new()
+        showLabel = Gtk.Label()
         showLabel.set_text(_("Show"))
         showLabel.show()
         hbox.pack_start(showLabel, False, False, 4)
@@ -253,7 +253,7 @@ class ExtensionSidePage (SidePage):
 
         hbox = Gtk.HBox()
         hbox.set_border_width(3);
-        sortLabel = Gtk.Label.new()
+        sortLabel = Gtk.Label()
         sortLabel.set_text(_("Sort by"))
         sortLabel.show()
         hbox.pack_start(sortLabel, False, False, 4)

@@ -22,7 +22,7 @@ class EditableEntry (Gtk.Notebook):
     def __init__ (self):
         super(EditableEntry, self).__init__()
 
-        self.label = Gtk.Label.new()
+        self.label = Gtk.Label()
         self.entry = Gtk.Entry()
         self.button = Gtk.Button()
 
@@ -356,7 +356,7 @@ class PasswordDialog(Gtk.Dialog):
         table.attach(self.strengh_indicator, 1, 2, 2, 3, xoptions=Gtk.AttachOptions.EXPAND|Gtk.AttachOptions.FILL)                
         self.strengh_indicator.set_size_request(-1, 1)
 
-        self.strengh_label = Gtk.Label.new()
+        self.strengh_label = Gtk.Label()
         self.strengh_label.set_tooltip_text(_("Your new password needs to be at least 8 characters long"))
         self.strengh_label.set_alignment(1, 0.5)
         table.attach(self.strengh_label, 2, 3, 2, 3)

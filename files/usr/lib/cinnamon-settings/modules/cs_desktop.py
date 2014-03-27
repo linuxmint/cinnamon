@@ -30,7 +30,7 @@ class Module:
             bg.add(vbox)
 
             section = Section(_("Desktop Icons"))            
-            label = Gtk.Label.new()
+            label = Gtk.Label()
             label.set_markup("<i><small>%s</small></i>" % _("Select the items you want to see on the desktop:"))
             label.get_style_context().add_class("dim-label")
             section.add(label)

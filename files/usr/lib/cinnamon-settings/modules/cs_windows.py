@@ -71,7 +71,7 @@ class Module:
         self.size_groups = getattr(self, "size_groups", [SizeGroup.new(SizeGroupMode.HORIZONTAL) for x in range(2)])
         
         box = Gtk.HBox()
-        label = Gtk.Label.new()
+        label = Gtk.Label()
         label.set_markup(group_label)
         label.props.xalign = 0.0
         self.size_groups[0].add_widget(label)

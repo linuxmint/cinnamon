@@ -430,7 +430,7 @@ class Header(Gtk.HBox, BaseWidget):
     def __init__(self, key, settings_obj, uuid):
         BaseWidget.__init__(self, key, settings_obj, uuid)
         super(Header, self).__init__()
-        self.label = Gtk.Label.new()
+        self.label = Gtk.Label()
         self.label.set_use_markup(True)
         self.label.set_markup("<b>%s</b>" % self.get_desc())
         self.pack_start(self.label, False, False, 2)
