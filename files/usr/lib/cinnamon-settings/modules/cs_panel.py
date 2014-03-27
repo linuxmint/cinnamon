@@ -24,7 +24,7 @@ class Module:
             desktop_layouts = [["traditional", _("Traditional (panel at the bottom)")], ["flipped", _("Flipped (panel at the top)")], ["classic", _("Classic (panels at the top and at the bottom)")]]        
             desktop_layouts_combo = GSettingsComboBox(_("Panel layout"), "org.cinnamon", "desktop-layout", None, desktop_layouts)
             section.add(desktop_layouts_combo) 
-            label = Gtk.Label.new()
+            label = Gtk.Label()
             label.set_markup("<i><small>%s</small></i>" % _("Note: If you change the layout you will need to restart Cinnamon and Cinnamon Settings."))        
             label.get_style_context().add_class("dim-label")
             section.add(label)

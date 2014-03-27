@@ -50,7 +50,7 @@ class Module:
             vbox.add(Gtk.Separator.new(Gtk.Orientation.HORIZONTAL))
 
             section = Section(_("Pointer Size"))  
-            widget = Gtk.Label.new()
+            widget = Gtk.Label()
             widget.set_markup("<i><small>%s</small></i>" % _("Note: All sizes may not be available on certain icon themes"))            
             section.add(widget)
             widget = GSettingsRange(_("Size:"), _("Smaller"), _("Larger"), 5, 50, False, "int", False, "org.cinnamon.desktop.interface", "cursor-size", None, adjustment_step = 1.0)
