@@ -13,8 +13,8 @@ class Module:
         noun = _("desklet")
         pl_noun = _("desklets")
         target = _("desktop")
-        self.sidePage = ExtensionSidePage(_("Desklets"), "cs-desklets", keywords, content_box, "desklet", noun, pl_noun, target, module=self)
-        self.sidePage.RemoveString = _("You can remove specific instances from the desktop via that desklet's context menu")
+        sidePage = DeskletsViewSidePage(_("Desklets"), "cs-desklets", keywords, content_box, "desklet", noun, pl_noun, target, self)
+        self.sidePage = sidePage
         self.category = "prefs"
 
     def on_module_selected(self):
@@ -25,6 +25,12 @@ class Module:
     def _setParentRef(self, window, builder):
         self.sidePage.window = window
         self.sidePage.builder = builder
+
+
+class DeskletsViewSidePage (ExtensionSidePage):
+    def __init__(self, name, icon, keywords, content_box, collection_type, noun, pl_noun, target, module):
+        self.RemoveString = _("You can remove specific instances from the desktop via that desklet's context menu")
+        ExtensionSidePage.__init__(self, name, icon, keywords, content_box, collection_type, noun, pl_noun, target, module)
 
     def toSettingString(self, uuid, instanceId):
         return ("%s:%d:0:100") % (uuid, instanceId)

@@ -11,8 +11,8 @@ class Module:
         pl_noun = _("applets")
         target = _("panel")
         self.comment = _("Manage Cinnamon applets")
-        self.sidePage = ExtensionSidePage(_("Applets"), "cs-applets", keywords, content_box, "applet", noun, pl_noun, target, module=self)        
-        self.sidePage.RemoveString = _("You can remove specific instances in panel edit mode via the context menu.")
+        sidePage = AppletsViewSidePage(_("Applets"), "cs-applets", keywords, content_box, "applet", noun, pl_noun, target, self)
+        self.sidePage = sidePage
         self.category = "prefs"
 
     def on_module_selected(self):
@@ -23,6 +23,11 @@ class Module:
     def _setParentRef(self, window, builder):
         self.sidePage.window = window
         self.sidePage.builder = builder
+
+class AppletsViewSidePage (ExtensionSidePage):
+    def __init__(self, name, icon, keywords, content_box, collection_type, noun, pl_noun, target, module):
+        self.RemoveString = _("You can remove specific instances in panel edit mode via the context menu.")
+        ExtensionSidePage.__init__(self, name, icon, keywords, content_box, collection_type, noun, pl_noun, target, module)
 
     def toSettingString(self, uuid, instanceId):
         return ("panel1:right:0:%s:%d") % (uuid, instanceId)

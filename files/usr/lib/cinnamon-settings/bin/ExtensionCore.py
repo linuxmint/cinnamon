@@ -571,7 +571,7 @@ class ExtensionSidePage (SidePage):
             newExtensions = []
             for i_uuid, is_update, is_active in self.install_list:
                 if uuid != i_uuid:
-                    newExtensions += [(i_uuid, is_update)]
+                    newExtensions += [(i_uuid, is_update, is_active)]
             self.install_list = newExtensions
         else:
             if uuid not in self.install_list:
