@@ -86,7 +86,11 @@ class SidePage:
                             for c_widget in c_widgets:
                                 c_widget.show()
             else:                                
-                self.content_box.show_all()                
+                self.content_box.show_all()
+                try:
+                    self.check_third_arg()
+                except:
+                    pass
         else:
             subprocess.Popen(self.exec_name.split())
 

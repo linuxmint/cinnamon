@@ -69,7 +69,9 @@ class ExtensionSidePage (SidePage):
         self.search_entry.connect('changed', self.on_entry_refilter)
 
         self.notebook.append_page(extensions_vbox, Gtk.Label.new(_("Installed")))
-                
+
+        self.content_box.add(self.notebook)
+
         self.treeview = Gtk.TreeView()
         self.treeview.set_rules_hint(True)
         self.treeview.set_has_tooltip(True)
@@ -367,11 +369,14 @@ class ExtensionSidePage (SidePage):
         if extra_page:
             self.notebook.append_page(extra_page, extra_page.label)
 
+        self.content_box.show_all()
+
         if not self.themes:
             self.spices.scrubConfigDirs(self.enabled_extensions)
 
         self.search_entry.grab_focus()
 
+    def check_third_arg(self):
         if len(sys.argv) > 2 and not self.run_once:
             for row in self.model:
                 uuid = self.model.get_value(row.iter, 0)
@@ -386,10 +391,6 @@ class ExtensionSidePage (SidePage):
                             self.configureButton.clicked()
                         elif self.extConfigureButton.get_visible() and self.extConfigureButton.get_sensitive():
                             self.extConfigureButton.clicked()
-
-        self.notebook.expand = True
-        
-        self.add_widget(self.notebook)
 
     def icon_cell_data_func(self, column, cell, model, iter, data=None):
         wrapper = model.get_value(iter, data)
