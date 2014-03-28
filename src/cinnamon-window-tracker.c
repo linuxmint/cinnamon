@@ -231,21 +231,32 @@ get_app_from_window_wmclass (MetaWindow  *window)
   CinnamonApp *app;
   CinnamonAppSystem *appsys;
   char *wmclass;
-  char *with_desktop;
+  char *wmclass_with_desktop;
+  char *wmclass_stripped;
 
   appsys = cinnamon_app_system_get_default ();
-  wmclass = strip_extension(get_appid_from_window (window));
 
+  const char *window_wm_class;
+  window_wm_class = meta_window_get_wm_class (window);
+  if (window_wm_class) {
+    wmclass = g_ascii_strdown (window_wm_class, -1);
+    g_strdelimit (wmclass, " ", '-'); // This handles "Fedora Eclipse", probably others. Note g_strdelimit is modify-in-place.
+  }
+  
   if (!wmclass)
     return NULL;
 
-  with_desktop = g_strjoin (NULL, wmclass, ".desktop", NULL);
-  g_free (wmclass);
+  wmclass_stripped = strip_extension(wmclass);
 
-  app = cinnamon_app_system_lookup_heuristic_basename (appsys, with_desktop);
+  wmclass_with_desktop = g_strjoin (NULL, wmclass_stripped, ".desktop", NULL);
+  
+  g_free (wmclass);
+  g_free (wmclass_stripped);
+
+  app = cinnamon_app_system_lookup_heuristic_basename (appsys, wmclass_with_desktop);
   if (app != NULL)
     g_object_ref (app);
-  g_free (with_desktop);
+  g_free (wmclass_with_desktop);
 
   return app;
 }
