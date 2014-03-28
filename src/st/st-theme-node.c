@@ -81,6 +81,7 @@ st_theme_node_dispose (GObject *gobject)
 
   if (node->theme)
     {
+      g_signal_handlers_disconnect_by_func (node->theme, on_custom_stylesheets_changed, node);
       g_object_unref (node->theme);
       node->theme = NULL;
     }
@@ -95,11 +96,7 @@ st_theme_node_dispose (GObject *gobject)
     {
       g_object_unref (node->border_image);
       node->border_image = NULL;
-    }
-
-  if (node->theme)
-      g_signal_handlers_disconnect_by_func (node->theme,
-                                            on_custom_stylesheets_changed, node);
+    } 
 
   if (node->icon_colors)
     {
