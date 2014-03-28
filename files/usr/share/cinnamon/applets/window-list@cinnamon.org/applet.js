@@ -705,7 +705,13 @@ AppMenuButton.prototype = {
                             new St.Icon({ icon_name: 'application-default-icon',
                                          icon_type: St.IconType.FULLCOLOR,
                                          icon_size: this.iconSize });
+
+
+      let old_child = this._iconBox.get_child();
       this._iconBox.set_child(icon);
+      if (old_child != null) { 
+        old_child.destroy();
+      }      
     },
 
     getAttention: function() {

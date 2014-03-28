@@ -640,8 +640,8 @@ WindowOverlay.prototype = {
         this.disconnectAttentionSignals();
         this._windowClone.metaWindow.disconnect(this._updateCaptionId);
         this.title.destroy();
-        this.closeButton.destroy();this._applicationIconBox.destroy();
-        
+        this.closeButton.destroy();
+        this.icon.destroy();
         this._applicationIconBox.destroy();
     },
 
