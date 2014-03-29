@@ -804,9 +804,25 @@
    
     <key name="login-file" type="s">
       <default>""</default>
-      <summary>Which sound to play when switching windows</summary>
+      <summary>Which sound to play when logging in</summary>
       <description>
         Which sound to play during login.
+      </description>
+    </key> 
+
+    <key name="logout-enabled" type="b">
+      <default>false</default>
+      <summary>Whether to play a sound during logout</summary>
+      <description>
+        Whether to play a sound during logout.
+      </description>
+    </key> 
+   
+    <key name="logout-file" type="s">
+      <default>""</default>
+      <summary>Which sound to play when logging out</summary>
+      <description>
+        Which sound to play during logout.
       </description>
     </key>          
 
