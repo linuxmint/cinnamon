@@ -146,7 +146,12 @@ class XletSetting:
 
     def build_notebook(self):
         self.nb = Gtk.Notebook()
-        i = 1
+        i = 0
+        target_instance = -1
+        target_page = -1
+        if len(sys.argv) > 3:
+            target_instance = sys.argv[3]
+
         for instance_key in self.applet_settings.keys():
 
             view = Gtk.ScrolledWindow()
@@ -169,12 +174,19 @@ class XletSetting:
                     content_box.pack_start(widgets[widget_key], False, False, 2)
                 if len(widgets[widget_key].dependents) > 0:
                     widgets[widget_key].update_dependents()
-            self.nb.append_page(view, Gtk.Label.new(_("Instance %s") % i))
+            view.show()
+            self.nb.append_page(view, Gtk.Label.new(_("Instance %d") % (i + 1)))
             view.key = instance_key
+            if view.key == target_instance:
+                target_page = i
             i += 1
 
         self.content.pack_start(self.nb, True, True, 2)
         self.nb.set_scrollable(True)
+
+        if target_page != -1:
+            self.nb.set_current_page(target_page)
+
         self.nb.connect("switch-page", self.on_page_changed)
 
     def on_page_changed(self, nb, page, num):
