@@ -13,7 +13,7 @@ const DND = imports.ui.dnd;
 const Tweener = imports.ui.tweener;
 const Util = imports.misc.util;
 
-const DEFAULT_ICON_SIZE = 19;
+const DEFAULT_ICON_SIZE = 20;
 const DEFAULT_ANIM_SIZE = 13;
 const ICON_HEIGHT_FACTOR = .8;
 const ICON_ANIM_FACTOR = .65;
