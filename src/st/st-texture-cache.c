@@ -540,6 +540,7 @@ data_to_cogl_handle (const guchar *data,
   CoglHandle texture, offscreen;
   CoglColor clear_color;
   guint size;
+  GError *error;
 
   size = MAX (width, height);
 
@@ -557,6 +558,25 @@ data_to_cogl_handle (const guchar *data,
                                         COGL_PIXEL_FORMAT_ANY);
 
   offscreen = cogl_offscreen_new_to_texture (texture);
+
+  error = NULL;
+  if (!cogl_framebuffer_allocate (offscreen, &error))
+    {
+      g_warning ("Failed to allocate FBO (sized %d): %s", size, error->message);
+
+      cogl_object_unref (texture);
+      cogl_object_unref (offscreen);
+      g_clear_error (&error);
+
+      return cogl_texture_new_from_data (width,
+                                         height,
+                                         COGL_TEXTURE_NONE,
+                                         has_alpha ? COGL_PIXEL_FORMAT_RGBA_8888 : COGL_PIXEL_FORMAT_RGB_888,
+                                         COGL_PIXEL_FORMAT_ANY,
+                                         rowstride,
+                                         data);
+  }
+
   cogl_color_set_from_4ub (&clear_color, 0, 0, 0, 0);
   cogl_push_framebuffer (offscreen);
   cogl_clear (&clear_color, COGL_BUFFER_BIT_COLOR);
