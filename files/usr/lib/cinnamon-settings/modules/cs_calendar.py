@@ -22,7 +22,7 @@ class Module:
             bg.add(vbox)
                     
             try:
-                section = Section(_("Date Settings"))
+                section = Section(_("Date &amp; Time Settings"))
                 widget = self.sidePage.content_box.c_manager.get_c_widget("datetime")
                 section.add_expand(widget)            
                 vbox.add(section)
