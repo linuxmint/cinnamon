@@ -187,7 +187,20 @@ GenericApplicationButton.prototype = {
             this.menu.actor.set_style_class_name('menu-context-menu');
             this.menu.connect('open-state-changed', Lang.bind(this, this._subMenuOpenStateChanged));
         }
+    }, 
+
+    highlight: function() {
+        this.actor.add_style_pseudo_class('highlighted');
     },
+
+    unhighlight: function() {
+        var app_key = this.app.get_id();
+        if (app_key == null) {
+            app_key = this.app.get_name() + ":" + this.app.get_description();
+        }
+        this.appsMenuButton._knownApps.push(app_key);
+        this.actor.remove_style_pseudo_class('highlighted');
+    },   
     
     _onButtonReleaseEvent: function (actor, event) {
         if (event.get_button()==1){
@@ -202,6 +215,7 @@ GenericApplicationButton.prototype = {
     },
     
     activate: function(event) {
+        this.unhighlight();    
         this.app.open_new_window(-1);
         this.appsMenuButton.menu.close();
     },
@@ -366,7 +380,7 @@ ApplicationButton.prototype = {
         this.isDraggableApp = true;
         this.icon.realize();
         this.label.realize();
-    },
+    },     
     
     get_app_id: function() {
         return this.app.get_id();
@@ -857,7 +871,9 @@ MyApplet.prototype = {
             this._activeActor = null;
             this._applicationsBoxWidth = 0;
             this.menuIsOpening = false;
-            
+            this._knownApps = new Array(); // Used to keep track of apps that are already installed, so we can highlight newly installed ones
+            this._appsWereRefreshed = false;
+
             this.RecentManager = new DocInfo.DocManager();
 
             this._display();
@@ -1557,6 +1573,8 @@ MyApplet.prototype = {
             this.applicationsBox.add_actor(this._applicationsButtons[i].menu.actor);
         }
 
+        this._appsWereRefreshed = true;
+
         this._refreshPlacesAndRecent();
     },
 
@@ -1685,7 +1703,23 @@ MyApplet.prototype = {
                     }
                     if (!(app_key in this._applicationsButtonFromApp)) {
 
-                        let applicationButton = new ApplicationButton(this, app);
+                        let applicationButton = new ApplicationButton(this, app);                        
+
+                        var app_is_known = false;
+                        for (var i = 0; i < this._knownApps.length; i++) {
+                            if (this._knownApps[i] == app_key) {
+                                app_is_known = true;
+                            }
+                        }
+                        if (!app_is_known) {
+                            if (this._appsWereRefreshed) {
+                                applicationButton.highlight();
+                            }
+                            else {
+                                this._knownApps.push(app_key);
+                            }
+                        }
+                    
                         applicationButton.actor.connect('realize', Lang.bind(this, this._onApplicationButtonRealized));
                         applicationButton.actor.connect('leave-event', Lang.bind(this, this._appLeaveEvent, applicationButton));
                         this._addEnterEvent(applicationButton, Lang.bind(this, this._appEnterEvent, applicationButton));
