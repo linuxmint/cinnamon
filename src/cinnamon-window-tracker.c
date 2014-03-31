@@ -203,8 +203,8 @@ cinnamon_window_tracker_is_window_interesting (MetaWindow *window)
   return TRUE;
 }
 
-gchar *
-strip_extension (gchar *wm_class)
+static gchar *
+strip_extension (const gchar *wm_class)
 {
     char *result;
     if (g_str_has_suffix (wm_class, ".py") ||
@@ -230,9 +230,11 @@ get_app_from_window_wmclass (MetaWindow  *window)
 {
   CinnamonApp *app;
   CinnamonAppSystem *appsys;
-  char *wmclass;
-  char *wmclass_with_desktop;
-  char *wmclass_stripped;
+  gchar *wmclass;
+  gchar *wmclass_with_desktop;
+  gchar *wmclass_stripped;
+
+  wmclass = wmclass_with_desktop = wmclass_stripped = NULL;
 
   appsys = cinnamon_app_system_get_default ();
 
