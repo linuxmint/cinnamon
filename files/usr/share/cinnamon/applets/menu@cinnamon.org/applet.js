@@ -1365,7 +1365,7 @@ MyApplet.prototype = {
                         this._clearPrevAppSelection(button.actor);
                         button.actor.style_class = "menu-application-button-selected";
                         this.selectedAppTitle.set_text("");
-                        this.selectedAppDescription.set_text(button.place.id.slice(16));
+                        this.selectedAppDescription.set_text(button.place.id.slice(16).replace(/%20/g, ' '));
                         }));
                 button.actor.connect('leave-event', Lang.bind(this, function() {
                             this._previousSelectedActor = button.actor;
@@ -1434,7 +1434,7 @@ MyApplet.prototype = {
                         this._clearPrevAppSelection(button.actor);
                         button.actor.style_class = "menu-application-button-selected";
                         this.selectedAppTitle.set_text("");
-                        this.selectedAppDescription.set_text(button.file.uri.slice(7));
+                        this.selectedAppDescription.set_text(button.file.uri.slice(7).replace(/%20/g, ' '));
                         }));
                 button.actor.connect('leave-event', Lang.bind(this, function() {
                         button.actor.style_class = "menu-application-button";
