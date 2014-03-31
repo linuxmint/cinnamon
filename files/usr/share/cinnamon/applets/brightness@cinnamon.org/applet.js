@@ -84,7 +84,7 @@ TextImageMenuItem.prototype = {
          let file = Gio.file_new_for_path(icon_file);
          let icon_uri = file.get_uri();
  
-         return St.TextureCache.get_default().load_uri_sync(1, icon_uri, 16, 16);
+         return St.TextureCache.get_default().load_uri_async(icon_uri, 16, 16);
     },
 }
 /* end of TextImageMenuItem */
