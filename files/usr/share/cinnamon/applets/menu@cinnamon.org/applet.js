@@ -28,6 +28,7 @@ const MAX_FAV_ICON_SIZE = 32;
 const CATEGORY_ICON_SIZE = 22;
 const APPLICATION_ICON_SIZE = 22;
 const MAX_RECENT_FILES = 20;
+const MAX_BUTTON_WIDTH = "max-width: 20em;";
 
 const USER_DESKTOP_PATH = FileUtils.getUserDesktopDir();
 
@@ -312,6 +313,8 @@ TransientButton.prototype = {
         this.addActor(this.icon);
 
         this.label = new St.Label({ text: displayPath, style_class: 'menu-application-button-label' });
+        this.label.clutter_text.ellipsize = Pango.EllipsizeMode.END;        
+        this.label.set_style(MAX_BUTTON_WIDTH);
         this.addActor(this.label);
         this.isDraggableApp = false;
     },
@@ -356,6 +359,8 @@ ApplicationButton.prototype = {
         this.addActor(this.icon);
         this.name = this.app.get_name();
         this.label = new St.Label({ text: this.name, style_class: 'menu-application-button-label' });
+        this.label.clutter_text.ellipsize = Pango.EllipsizeMode.END;        
+        this.label.set_style(MAX_BUTTON_WIDTH);
         this.addActor(this.label);
         this._draggable = DND.makeDraggable(this.actor);
         this.isDraggableApp = true;
@@ -400,6 +405,8 @@ PlaceButton.prototype = {
         this.actor.set_style_class_name('menu-application-button');
         this.actor._delegate = this;
         this.label = new St.Label({ text: this.button_name, style_class: 'menu-application-button-label' });
+        this.label.clutter_text.ellipsize = Pango.EllipsizeMode.END;        
+        this.label.set_style(MAX_BUTTON_WIDTH);
         this.icon = place.iconFactory(APPLICATION_ICON_SIZE);
         if (!this.icon)
             this.icon = new St.Icon({icon_name: "folder", icon_size: APPLICATION_ICON_SIZE, icon_type: St.IconType.FULLCOLOR});
@@ -439,7 +446,7 @@ RecentButton.prototype = {
         this.actor._delegate = this;
         this.label = new St.Label({ text: this.button_name, style_class: 'menu-application-button-label' });
         this.label.clutter_text.ellipsize = Pango.EllipsizeMode.END;        
-        this.label.set_style("max-width: 50em;");
+        this.label.set_style(MAX_BUTTON_WIDTH);
         this.icon = file.createIcon(APPLICATION_ICON_SIZE);
         this.addActor(this.icon);
         this.addActor(this.label);
