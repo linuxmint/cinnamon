@@ -144,6 +144,7 @@ ApplicationContextMenuItem.prototype = {
                     enabled_applets.push("panel1:right:0:panel-launchers@cinnamon.org:" + new_applet_id);
                     global.settings.set_strv("enabled-applets", enabled_applets);
                 }
+                this._appButton.toggleMenu();
                 break;
             case "add_to_desktop":
                 let file = Gio.file_new_for_path(this._appButton.app.get_app_info().get_filename());
@@ -155,15 +156,21 @@ ApplicationContextMenuItem.prototype = {
                 }catch(e){
                     global.log(e);
                 }
+                this._appButton.toggleMenu();
                 break;
             case "add_to_favorites":
                 AppFavorites.getAppFavorites().addFavorite(this._appButton.app.get_id());
-                break;
+                this._appButton.toggleMenu();
+                break;                
             case "remove_from_favorites":
                 AppFavorites.getAppFavorites().removeFavorite(this._appButton.app.get_id());
+                this._appButton.toggleMenu();
                 break;
-        }
-        this._appButton.toggleMenu();
+            case "uninstall":
+                Util.spawnCommandLine("gksu -m '" + _("Please provide your password to uninstall this application") + "' /usr/bin/cinnamon-remove-application '" + this._appButton.app.get_app_info().get_filename() + "'");
+                this._appButton.appsMenuButton.menu.close();
+                break;
+        }        
         return false;
     }
 
@@ -244,6 +251,10 @@ GenericApplicationButton.prototype = {
                 this.menu.addMenuItem(menuItem);
             }else{
                 menuItem = new ApplicationContextMenuItem(this, _("Add to favorites"), "add_to_favorites");
+                this.menu.addMenuItem(menuItem);
+            }
+            if (this.appsMenuButton._canUninstallApps) {
+                menuItem = new ApplicationContextMenuItem(this, _("Uninstall"), "uninstall");
                 this.menu.addMenuItem(menuItem);
             }
         }
@@ -873,6 +884,7 @@ MyApplet.prototype = {
             this.menuIsOpening = false;
             this._knownApps = new Array(); // Used to keep track of apps that are already installed, so we can highlight newly installed ones
             this._appsWereRefreshed = false;
+            this._canUninstallApps = GLib.file_test("/usr/bin/cinnamon-remove-application", GLib.FileTest.EXISTS);
 
             this.RecentManager = new DocInfo.DocManager();
 
