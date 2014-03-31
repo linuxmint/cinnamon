@@ -50,9 +50,6 @@ class SidePage:
 
     def build(self):        
         # Clear all the widgets from the content box
-        widgets = self.content_box.get_children()
-        for widget in widgets:
-            self.content_box.remove(widget)
 
         if (self.module is not None):
             self.module.on_module_selected()
@@ -85,7 +82,7 @@ class SidePage:
                         else:
                             for c_widget in c_widgets:
                                 c_widget.show()
-            else:                                
+            else:
                 self.content_box.show_all()
                 try:
                     self.check_third_arg()
