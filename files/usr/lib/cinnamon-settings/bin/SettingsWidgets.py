@@ -50,7 +50,10 @@ class SidePage:
 
     def build(self):        
         # Clear all the widgets from the content box
-
+        widgets = self.content_box.get_children()
+        for widget in widgets:
+            self.content_box.remove(widget)
+            
         if (self.module is not None):
             self.module.on_module_selected()
             self.module.loaded = True
