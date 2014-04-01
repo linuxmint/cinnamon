@@ -247,7 +247,7 @@ function start() {
     // Chain up async errors reported from C
     global.connect('notify-error', function (global, msg, detail) { notifyError(msg, detail); });    
 
-    Gio.DesktopAppInfo.set_desktop_env('GNOME');
+    Gio.DesktopAppInfo.set_desktop_env('X-Cinnamon');
 
     cinnamonDBusService = new CinnamonDBus.Cinnamon();
     lookingGlassDBusService = new LookingGlassDBus.CinnamonLookingGlass();
