@@ -25,11 +25,9 @@ class Module:
 
             mouse = Gtk.ScrolledWindow()
             mouse.add_with_viewport(self.mousebox)
-            self.mousebox.set_border_width(5)
 
             touch = Gtk.ScrolledWindow()
             touch.add_with_viewport(self.touchbox)
-            self.touchbox.set_border_width(5)
             
             self.notebook.append_page(mouse, Gtk.Label.new(_("Mouse")))
             self.notebook.append_page(touch, Gtk.Label.new(_("Touchpad")))
@@ -37,9 +35,7 @@ class Module:
 
             # Mouse
 
-            bg = SectionBg()                            
             vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
-            bg.add(vbox)
 
             section = Section(_("General"))  
             section.add(GSettingsCheckButton(_("Left handed (mouse buttons inverted)"), "org.cinnamon.settings-daemon.peripherals.mouse", "left-handed", None))
@@ -81,13 +77,11 @@ class Module:
             section.add(GSettingsSpinButton(_("GTK drag threshold"), "org.cinnamon.settings-daemon.peripherals.mouse", "drag-threshold", None, 1, 400, 1, 1, _("Pixels")))
             vbox.add(section)            
     
-            self.mousebox.pack_start(bg, False, False, 2)
+            self.mousebox.pack_start(vbox, False, False, 2)
 
             # Touchpad
 
-            bg = SectionBg()                            
             vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
-            bg.add(vbox)
 
             section = Section(_("General"))  
             section.add(GSettingsCheckButton(_("Enable touchpad"), "org.cinnamon.settings-daemon.peripherals.touchpad", "touchpad-enabled", None))
@@ -112,7 +106,7 @@ class Module:
             section.add_expand(GSettingsRange(_("Sensitivity:"), _("Low"), _("High"), 1, 10, False, "int", False, "org.cinnamon.settings-daemon.peripherals.touchpad", "motion-threshold", "org.cinnamon.settings-daemon.peripherals.touchpad/touchpad-enabled", adjustment_step = 1))
             vbox.add(section)                            
             
-            self.touchbox.pack_start(bg, False, False, 2)                
+            self.touchbox.pack_start(vbox, False, False, 2)                
 
             self.sidePage.add_widget(self.notebook)            
 
