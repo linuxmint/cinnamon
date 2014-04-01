@@ -334,31 +334,29 @@ MyApplet.prototype = {
     },
     
     _updateLabel: function() {
-        this._proxy.GetDevicesRemote(Lang.bind(this, function(devices, error) {
+        this._proxy.GetPrimaryDeviceRemote(Lang.bind(this, function(device, error) {
             if (error) {
                 this._mainLabel.set_text("");
                 return;
             }
 
             if (this._labelDisplay != LabelDisplay.NONE) {
-                for (let i = 0; i < devices.length; i++) {
-                    let [device_id, device_type, icon, percentage, state, time] = devices[i];
-                    if (device_type == UPDeviceType.BATTERY || device_id == this._primaryDeviceId) {
-                        let labelText = "";
+                let [device_id, device_type, icon, percentage, state, seconds] = device;
+                if (device_type == UPDeviceType.BATTERY) {
+                    let labelText = "";
 
-                        if (this._labelDisplay == LabelDisplay.PERCENT || time == 0) {
-                            labelText = C_("percent of battery remaining", "%d%%").format(Math.round(percentage));
-                        }
-                        else if (this._labelDisplay == LabelDisplay.TIME) {
-                            let seconds = time / 60;
-                            let minutes = Math.floor(seconds % 60);
-                            let hours = Math.floor(seconds / 60);
-                            labelText = C_("time of battery remaining", "%d:%02d").format(hours,minutes);
-                        }
-
-                        this._mainLabel.set_text(labelText);
-                        return;
+                    if (this._labelDisplay == LabelDisplay.PERCENT || seconds == 0) {
+                        labelText = C_("percent of battery remaining", "%d%%").format(Math.round(percentage));
                     }
+                    else if (this._labelDisplay == LabelDisplay.TIME) {
+                        let time = Math.round(seconds / 60);
+                        let minutes = Math.floor(time % 60);
+                        let hours = Math.floor(time / 60);
+                        labelText = C_("time of battery remaining", "%d:%02d").format(hours,minutes);
+                    }
+
+                    this._mainLabel.set_text(labelText);
+                    return;
                 }
             }
             // Display disabled or no battery found... hot-unplugged?
