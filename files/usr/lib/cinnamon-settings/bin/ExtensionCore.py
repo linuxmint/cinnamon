@@ -70,7 +70,8 @@ class ExtensionSidePage (SidePage):
 
         self.notebook.append_page(extensions_vbox, Gtk.Label.new(_("Installed")))
 
-        self.content_box.add(self.notebook)
+        self.add_widget(self.notebook)
+        self.notebook.expand = True
 
         self.treeview = Gtk.TreeView()
         self.treeview.set_rules_hint(True)
