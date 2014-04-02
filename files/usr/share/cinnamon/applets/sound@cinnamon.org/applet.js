@@ -814,8 +814,6 @@ MyApplet.prototype = {
             this.metadata = metadata;
             for (let i = 0; i < support_seek.length; i++) {
                 Main.systrayManager.registerRole(support_seek[i], metadata.uuid);
-            }
-        try {
             this.settings = new Settings.AppletSettings(this, "sound@cinnamon.org", instanceId);
             this.settings.bindProperty(Settings.BindingDirection.IN, "showtrack", "showtrack", this.on_settings_changed, null);
             this.settings.bindProperty(Settings.BindingDirection.IN, "showalbum", "showalbum", this.on_settings_changed, null);
