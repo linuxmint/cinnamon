@@ -1792,6 +1792,35 @@ st_texture_cache_load_from_raw (StTextureCache    *cache,
 static StTextureCache *instance = NULL;
 
 /**
+ * st_texture_cache_load_file_simple:
+ * @cache: A #StTextureCache
+ * @file_path: Filesystem path
+ *
+ * Asynchronously load an image into a texture.  The texture will be cached
+ * indefinitely.  On error, this function returns an empty texture and prints a warning.
+ *
+ * Returns: (transfer none): A new #ClutterTexture
+ */
+ClutterActor *
+st_texture_cache_load_file_simple (StTextureCache *cache,
+                                   const gchar    *file_path)
+{
+  GFile *file;
+  char *uri;
+  ClutterActor *texture;
+
+  file = g_file_new_for_path (file_path);
+  uri = g_file_get_uri (file);
+
+  texture = st_texture_cache_load_uri_async (cache, uri, -1, -1);
+  if (texture == NULL)
+    {
+      texture = clutter_texture_new ();
+    }
+  return texture;
+}
+
+/**
  * st_texture_cache_get_default:
  *
  * Return value: (transfer none): The global texture cache

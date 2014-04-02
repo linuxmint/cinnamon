@@ -114,6 +114,9 @@ ClutterActor *st_texture_cache_load_from_raw (StTextureCache    *cache,
                                               int                size,
                                               GError           **error);
 
+ClutterActor *st_texture_cache_load_file_simple (StTextureCache *cache,
+                                                 const gchar    *file_path);
+
 /**
  * StTextureCacheLoader: (skip)
  * @cache: a #StTextureCache
