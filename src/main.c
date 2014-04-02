@@ -224,7 +224,7 @@ main (int argc, char **argv)
   GOptionContext *ctx;
   GError *error = NULL;
   int ecode;
-
+  g_setenv ("CLUTTER_DISABLE_XINPUT", "1", TRUE);
   g_type_init ();
 
   bindtextdomain (GETTEXT_PACKAGE, LOCALEDIR);
@@ -251,6 +251,7 @@ main (int argc, char **argv)
   meta_init ();
   g_unsetenv ("NO_GAIL");
   g_unsetenv ("NO_AT_BRIDGE");
+  g_unsetenv ("CLUTTER_DISABLE_XINPUT");
 
   /* FIXME: Add gjs API to set this stuff and don't depend on the
    * environment.  These propagate to child processes.
