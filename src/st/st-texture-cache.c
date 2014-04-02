@@ -1817,6 +1817,9 @@ st_texture_cache_load_file_simple (StTextureCache *cache,
     {
       texture = clutter_texture_new ();
     }
+
+  g_object_unref (file);
+  g_free (uri);
   return texture;
 }
 
