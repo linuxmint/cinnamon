@@ -747,6 +747,7 @@ Player.prototype = {
             onComplete: Lang.bind(this, function() {*/
                 if (! cover_path || ! GLib.file_test(cover_path, GLib.FileTest.EXISTS)) {
                     this._trackCover.set_child(new St.Icon({icon_name: "media-optical-cd-audio", icon_size: 210, icon_type: St.IconType.FULLCOLOR}));
+                    cover_path = null;
                 }
                 else {
                     let l = new Clutter.BinLayout();
@@ -855,7 +856,6 @@ MyApplet.prototype = {
 
             this._icon_name = '';
             this._icon_path = null;
-            this._icon_path_prev = null;
 
             this.actor.connect('scroll-event', Lang.bind(this, this._onScrollEvent));
 
@@ -974,7 +974,7 @@ MyApplet.prototype = {
                 this._iconTimeoutId = null;
                 if (this['_output'].is_muted) {
                     this.set_applet_icon_symbolic_name('audio-volume-muted');
-                } else if (this._icon_path) {
+                } else if (this.showalbum) {
                     this.setAppletIcon(true, this._icon_path);
                 } else {
                     this.set_applet_icon_symbolic_name('audio-x-generic');
@@ -984,28 +984,22 @@ MyApplet.prototype = {
     },
 
     setAppletIcon: function(player, path) {
-        if (this.showalbum && path) {
+        if (path) {
             if (path === true) {
-                if (!this._icon_path) {
-                    this._icon_path = this._icon_path_prev;
-                }
+                // Restore the icon path from the saved path.
+                path = this._icon_path;
             } else {
-                this._icon_path = this._icon_path_prev = path;
+                this._icon_path = path;
             }
-        } else if (path === false) {
-            // This track has no art, remove the cache as well
-            this._icon_path = this._icon_path_prev = null;
-        } else {
+        } else if (path === null) {
+            // This track has no art, erase the saved path.
             this._icon_path = null;
         }
 
-        if (this._icon_path && player) {
-            if (player === true || player._playerStatus == 'Playing') {
-                this.set_applet_icon_path(this._icon_path);
-            }
+        if (this.showalbum && path && player && (player === true || player._playerStatus == 'Playing')) {
+            this.set_applet_icon_path(path);
         } else {
-            this._icon_path = null;
-            this.setIconName('audio-x-generic');
+            this.setIconName('media-optical-cd-audio');
         }
     },
 
