@@ -197,7 +197,11 @@ class MainWindow:
                     if category["id"] == sp_cat:
                         category["show"] = True
 
-            sidePagesIters[sp_id] = self.store[sp_cat].append([sp.name, sp.icon, sp, sp_cat])
+            # Don't allow item names (and their translations) to be more than 30 chars long. It looks ugly and it creates huge gaps in the icon views
+            name = sp.name            
+            if len(name) > 30:
+                name = "%s..." % name[:30]
+            sidePagesIters[sp_id] = self.store[sp_cat].append([name, sp.icon, sp, sp_cat])
 
         self.min_label_length = 0
         self.min_pix_length = 0
@@ -319,6 +323,11 @@ class MainWindow:
         area = widget.get_area()
 
         widget.set_item_width(self.min_pix_length)
+        widget.set_item_padding(0)
+        widget.set_column_spacing(18)
+        widget.set_row_spacing(18)
+        widget.set_margin(20)
+
         pixbuf_renderer = Gtk.CellRendererPixbuf()
         text_renderer = Gtk.CellRendererText(ellipsize=Pango.EllipsizeMode.NONE, wrap_mode=Pango.WrapMode.WORD_CHAR, wrap_width=0, width_chars=self.min_label_length, alignment=Pango.Alignment.CENTER)
 
