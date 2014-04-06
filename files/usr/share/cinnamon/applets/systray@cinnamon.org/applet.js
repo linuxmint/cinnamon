@@ -22,7 +22,7 @@ MyApplet.prototype = {
                           redisplay: null,
                           registered: null };
 
-        this.actor.style="spacing: 5px;";
+        this.actor.style="spacing: " + (5 * global.ui_scale) + "px;";
     },
 
     on_applet_clicked: function(event) {
@@ -71,8 +71,8 @@ MyApplet.prototype = {
             box.add_actor(icon);
 
             this._insertStatusItem(box, -1);
-            let width = 22;
-            let height = 22;
+            let width = 22 * global.ui_scale;
+            let height = 22 * global.ui_scale;
             let themeNode = box.get_theme_node();
             if (themeNode.get_length('width')) {
                 width = themeNode.get_length('width');
