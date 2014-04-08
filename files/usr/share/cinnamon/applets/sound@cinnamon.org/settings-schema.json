@@ -1,0 +1,7 @@
+{
+    "hideSystray" : {
+        "type" : "checkbox",
+        "description" : "Hide system tray icons for compatible players",
+        "default": true
+    }
+}
