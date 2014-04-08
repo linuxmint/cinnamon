@@ -45,6 +45,8 @@ struct _StTextureCachePrivate
 
   /* File monitors to evict cache data on changes */
   GHashTable *file_monitors; /* char * -> GFileMonitor * */
+
+  double scale;
 };
 
 static void st_texture_cache_dispose (GObject *object);
@@ -137,6 +139,18 @@ on_icon_theme_changed (GtkIconTheme   *icon_theme,
 }
 
 static void
+update_scale_factor (GtkSettings *settings,
+                     GParamSpec *pspec,
+                     gpointer data)
+{
+  StTextureCache *cache = ST_TEXTURE_CACHE (data);
+
+  cache->priv->scale = clutter_backend_get_resolution (clutter_get_default_backend ()) / 96.0;
+
+  on_icon_theme_changed (cache->priv->icon_theme, cache);
+}
+
+static void
 st_texture_cache_init (StTextureCache *self)
 {
   self->priv = g_new0 (StTextureCachePrivate, 1);
@@ -152,6 +166,10 @@ st_texture_cache_init (StTextureCache *self)
   self->priv->file_monitors = g_hash_table_new_full (g_str_hash, g_str_equal,
                                                      g_object_unref, g_object_unref);
 
+  g_signal_connect (gtk_settings_get_default (), "notify::gtk-xft-dpi",
+                    G_CALLBACK (update_scale_factor), self);
+
+  update_scale_factor (gtk_settings_get_default (), NULL, self);
 }
 
 static void
@@ -1019,7 +1037,6 @@ load_gicon_with_colors (StTextureCache    *cache,
  *                            if the icon must not be recolored
  * @icon: the #GIcon to load
  * @size: Size of themed
- * @scale: Scale factor of display
  *
  * This method returns a new #ClutterActor for a given #GIcon. If the
  * icon isn't loaded already, the texture will be filled
@@ -1031,10 +1048,9 @@ ClutterActor *
 st_texture_cache_load_gicon (StTextureCache    *cache,
                              StThemeNode       *theme_node,
                              GIcon             *icon,
-                             gint               size,
-                             gint               scale)
+                             gint               size)
 {
-  return load_gicon_with_colors (cache, icon, size, scale, theme_node ? st_theme_node_get_icon_colors (theme_node) : NULL);
+  return load_gicon_with_colors (cache, icon, size, cache->priv->scale, theme_node ? st_theme_node_get_icon_colors (theme_node) : NULL);
 }
 
 static ClutterActor *
@@ -1422,8 +1438,7 @@ st_texture_cache_load_icon_name (StTextureCache    *cache,
                                  StThemeNode       *theme_node,
                                  const char        *name,
                                  StIconType         icon_type,
-                                 gint               size,
-                                 gint               scale)
+                                 gint               size)
 {
   ClutterActor *texture;
   CoglHandle cogltexture;
@@ -1438,24 +1453,24 @@ st_texture_cache_load_icon_name (StTextureCache    *cache,
     {
     case ST_ICON_APPLICATION:
       themed = g_themed_icon_new (name);
-      texture = load_gicon_with_colors (cache, themed, size, scale, NULL);
+      texture = load_gicon_with_colors (cache, themed, size, cache->priv->scale, NULL);
       g_object_unref (themed);
       if (texture == NULL)
         {
           themed = g_themed_icon_new ("application-x-executable");
-          texture = load_gicon_with_colors (cache, themed, size, scale, NULL);
+          texture = load_gicon_with_colors (cache, themed, size, cache->priv->scale, NULL);
           g_object_unref (themed);
         }
       return CLUTTER_ACTOR (texture);
       break;
     case ST_ICON_DOCUMENT:
       themed = g_themed_icon_new (name);
-      texture = load_gicon_with_colors (cache, themed, size, scale, NULL);
+      texture = load_gicon_with_colors (cache, themed, size, cache->priv->scale, NULL);
       g_object_unref (themed);
       if (texture == NULL)
         {
           themed = g_themed_icon_new ("x-office-document");
-          texture = load_gicon_with_colors (cache, themed, size, scale, NULL);
+          texture = load_gicon_with_colors (cache, themed, size, cache->priv->scale, NULL);
           g_object_unref (themed);
         }
 
@@ -1465,7 +1480,7 @@ st_texture_cache_load_icon_name (StTextureCache    *cache,
       names = symbolic_names_for_icon (name);
       themed = g_themed_icon_new_from_names (names, -1);
       g_strfreev (names);
-      texture = load_gicon_with_colors (cache, themed, size, scale,
+      texture = load_gicon_with_colors (cache, themed, size, cache->priv->scale,
                                         st_theme_node_get_icon_colors (theme_node));
       g_object_unref (themed);
 
@@ -1473,12 +1488,12 @@ st_texture_cache_load_icon_name (StTextureCache    *cache,
       break;
     case ST_ICON_FULLCOLOR:
       themed = g_themed_icon_new_with_default_fallbacks (name);
-      texture = load_gicon_with_colors (cache, themed, size, scale, NULL);
+      texture = load_gicon_with_colors (cache, themed, size, cache->priv->scale, NULL);
       g_object_unref (themed);
       if (texture == NULL)
         {
           themed = g_themed_icon_new ("image-missing");
-          texture = load_gicon_with_colors (cache, themed, size, scale, NULL);
+          texture = load_gicon_with_colors (cache, themed, size, cache->priv->scale, NULL);
           g_object_unref (themed);
         }
 
@@ -1486,9 +1501,10 @@ st_texture_cache_load_icon_name (StTextureCache    *cache,
       break;
     case ST_ICON_FADED:
       themed = g_themed_icon_new_with_default_fallbacks (name);
-      cache_key = g_strdup_printf ("faded-icon:%s,size=%d,scale=%d", name, size, scale);
+      cache_key = g_strdup_printf ("faded-icon:%s,size=%d,scale=%f", name, size, cache->priv->scale);
       data.name = g_strdup (name);
       data.size = size;
+      data.scale = cache->priv->scale;
       cogltexture = st_texture_cache_load (st_texture_cache_get_default (),
                                       cache_key,
                                       ST_TEXTURE_CACHE_POLICY_FOREVER,
@@ -1505,12 +1521,12 @@ st_texture_cache_load_icon_name (StTextureCache    *cache,
       }
       else
       {
-        texture = load_gicon_with_colors (cache, themed, size, scale, NULL);
+        texture = load_gicon_with_colors (cache, themed, size, cache->priv->scale, NULL);
         g_object_unref (themed);
         if (texture == NULL)
         {
           themed = g_themed_icon_new ("image-missing");
-          texture = load_gicon_with_colors (cache, themed, size, scale, NULL);
+          texture = load_gicon_with_colors (cache, themed, size, cache->priv->scale, NULL);
           g_object_unref (themed);
         }
       }
@@ -1545,6 +1561,9 @@ st_texture_cache_load_uri_async (StTextureCache *cache,
   StTextureCachePolicy policy;
   gchar *key;
 
+  int width = available_width == -1 ? -1 : available_width * cache->priv->scale;
+  int height = available_height == -1 ? -1 : available_height * cache->priv->scale;
+
   key = g_strconcat (CACHE_PREFIX_URI, uri, NULL);
 
   policy = ST_TEXTURE_CACHE_POLICY_NONE; /* XXX */
@@ -1565,8 +1584,8 @@ st_texture_cache_load_uri_async (StTextureCache *cache,
       request->key = key;
       request->uri = g_strdup (uri);
       request->policy = policy;
-      request->width = available_width;
-      request->height = available_height;
+      request->width = width;
+      request->height = height;
 
       load_texture_async (cache, request);
     }
@@ -1588,13 +1607,19 @@ st_texture_cache_load_uri_sync_to_cogl_texture (StTextureCache *cache,
   GdkPixbuf *pixbuf;
   char *key;
 
+  int width = available_width == -1 ? -1 : available_width * cache->priv->scale;
+  int height = available_height == -1 ? -1 : available_height * cache->priv->scale;
+
   key = g_strconcat (CACHE_PREFIX_URI, uri, NULL);
 
   texdata = g_hash_table_lookup (cache->priv->keyed_cache, key);
 
   if (texdata == NULL)
     {
-      pixbuf = impl_load_pixbuf_file (uri, available_width, available_height, error);
+      pixbuf = impl_load_pixbuf_file (uri,
+                                      width,
+                                      height,
+                                      error);
       if (!pixbuf)
         goto out;
 
@@ -1629,13 +1654,16 @@ st_texture_cache_load_uri_sync_to_cairo_surface (StTextureCache        *cache,
   GdkPixbuf *pixbuf;
   char *key;
 
+  int width = available_width == -1 ? -1 : available_width * cache->priv->scale;
+  int height = available_height == -1 ? -1 : available_height * cache->priv->scale;
+
   key = g_strconcat (CACHE_PREFIX_URI_FOR_CAIRO, uri, NULL);
 
   surface = g_hash_table_lookup (cache->priv->keyed_cache, key);
 
   if (surface == NULL)
     {
-      pixbuf = impl_load_pixbuf_file (uri, available_width, available_height, error);
+      pixbuf = impl_load_pixbuf_file (uri, width, height, error);
       if (!pixbuf)
         goto out;
 
@@ -1657,6 +1685,47 @@ out:
   g_free (key);
   return surface;
 }
+
+/**
+ * st_texture_cache_load_uri_sync:
+ * @cache: The texture cache instance
+ * @policy: Requested lifecycle of cached data
+ * @uri: uri of the image file from which to create a pixbuf
+ * @available_width: available width for the image, can be -1 if not limited
+ * @available_height: available height for the image, can be -1 if not limited
+ * @error: Return location for error
+ *
+ * Synchronously load an image from a uri.  The image is scaled down to fit the
+ * available width and height imensions, but the image is never scaled up beyond
+ * its actual size. The pixbuf is rotated according to the associated orientation
+ * setting.
+ *
+ * Return value: (transfer none): A new #ClutterActor with the image file loaded if it was
+ *               generated succesfully, %NULL otherwise
+ */
+ClutterActor *
+st_texture_cache_load_uri_sync (StTextureCache *cache,
+                                StTextureCachePolicy policy,
+                                const gchar       *uri,
+                                int                available_width,
+                                int                available_height,
+                                GError            **error)
+{
+  CoglHandle texdata;
+  ClutterTexture *texture;
+
+  texdata = st_texture_cache_load_uri_sync_to_cogl_texture (cache, policy, uri, available_width, available_height, error);
+
+  if (texdata == COGL_INVALID_HANDLE)
+    return NULL;
+
+  texture = create_default_texture ();
+  set_texture_cogl_texture (texture, texdata);
+  cogl_handle_unref (texdata);
+
+  return CLUTTER_ACTOR (texture);
+}
+
 
 /**
  * st_texture_cache_load_file_to_cogl_texture:
@@ -1796,7 +1865,7 @@ static StTextureCache *instance = NULL;
  * @cache: A #StTextureCache
  * @file_path: Filesystem path
  *
- * Asynchronously load an image into a texture.  The texture will be cached
+ * Synchronously load an image into a texture.  The texture will be cached
  * indefinitely.  On error, this function returns an empty texture and prints a warning.
  *
  * Returns: (transfer none): A new #ClutterTexture
@@ -1808,18 +1877,19 @@ st_texture_cache_load_file_simple (StTextureCache *cache,
   GFile *file;
   char *uri;
   ClutterActor *texture;
+  GError *error = NULL;
 
   file = g_file_new_for_path (file_path);
   uri = g_file_get_uri (file);
 
-  texture = st_texture_cache_load_uri_async (cache, uri, -1, -1);
+  texture = st_texture_cache_load_uri_sync (cache, ST_TEXTURE_CACHE_POLICY_FOREVER,
+                                            uri, -1, -1, &error);
   if (texture == NULL)
     {
+      g_warning ("Failed to load %s: %s", file_path, error->message);
+      g_clear_error (&error);
       texture = clutter_texture_new ();
     }
-
-  g_object_unref (file);
-  g_free (uri);
   return texture;
 }
 

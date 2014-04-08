@@ -57,7 +57,7 @@ DocInfo.prototype = {
         }
         else {
             let gicon = this.recentInfo.get_gicon()
-            return St.TextureCache.get_default().load_gicon(null, gicon, size, global.ui_scale);
+            return St.TextureCache.get_default().load_gicon(null, gicon, size);
         }
     },
 

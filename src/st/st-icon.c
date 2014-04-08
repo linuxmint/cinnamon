@@ -505,8 +505,7 @@ st_icon_update (StIcon *icon)
                                                             priv->icon_type != ST_ICON_DOCUMENT) ?
                                                            theme_node : NULL,
                                                            priv->gicon,
-                                                           priv->icon_size,
-                                                           scale);
+                                                           priv->icon_size);
     }
  else if (priv->icon_name)
     {
@@ -514,8 +513,7 @@ st_icon_update (StIcon *icon)
                                                                theme_node,
                                                                priv->icon_name,
                                                                priv->icon_type,
-                                                               priv->icon_size,
-                                                               scale);
+                                                               priv->icon_size);
     }
 
   if (priv->pending_texture)

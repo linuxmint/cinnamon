@@ -176,14 +176,7 @@ cinnamon_app_create_icon_texture (CinnamonApp   *app,
                                int         size)
 {
   GIcon *icon;
-  gint scale;
   ClutterActor *ret;
-  CinnamonGlobal *global;
-  StThemeContext *context;
- 
-  global = cinnamon_global_get ();
-  context = st_theme_context_get_for_stage (cinnamon_global_get_stage (global));
-  g_object_get (context, "scale-factor", &scale, NULL);
 
   ret = NULL;
 
@@ -192,12 +185,12 @@ cinnamon_app_create_icon_texture (CinnamonApp   *app,
 
   icon = g_app_info_get_icon (G_APP_INFO (gmenu_tree_entry_get_app_info (app->entry)));
   if (icon != NULL)
-    ret = st_texture_cache_load_gicon (st_texture_cache_get_default (), NULL, icon, size, scale);
+    ret = st_texture_cache_load_gicon (st_texture_cache_get_default (), NULL, icon, size);
 
   if (ret == NULL)
     {
       icon = g_themed_icon_new ("application-x-executable");
-      ret = st_texture_cache_load_gicon (st_texture_cache_get_default (), NULL, icon, size, scale);
+      ret = st_texture_cache_load_gicon (st_texture_cache_get_default (), NULL, icon, size);
       g_object_unref (icon);
     }
 

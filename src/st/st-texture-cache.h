@@ -83,20 +83,25 @@ ClutterActor *st_texture_cache_bind_pixbuf_property (StTextureCache    *cache,
 ClutterActor *st_texture_cache_load_gicon (StTextureCache *cache,
                                            StThemeNode    *theme_node,
                                            GIcon          *icon,
-                                           gint            size,
-                                           gint            scale);
+                                           gint            size);
 
 ClutterActor *st_texture_cache_load_icon_name (StTextureCache    *cache,
                                  StThemeNode       *theme_node,
                                  const char        *name,
                                  StIconType         icon_type,
-                                 gint               size,
-                                 gint               scale);
+                                 gint               size);
 
 ClutterActor *st_texture_cache_load_uri_async (StTextureCache    *cache,
                                                const gchar       *uri,
                                                int                available_width,
                                                int                available_height);
+
+ClutterActor *st_texture_cache_load_uri_sync (StTextureCache       *cache,
+                                              StTextureCachePolicy  policy,
+                                              const gchar          *uri,
+                                              int                   available_width,
+                                              int                   available_height,
+                                              GError              **error);
 
 CoglHandle    st_texture_cache_load_file_to_cogl_texture (StTextureCache *cache,
                                                           const gchar    *file_path);
