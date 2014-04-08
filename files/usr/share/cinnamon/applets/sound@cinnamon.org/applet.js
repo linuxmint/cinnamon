@@ -12,6 +12,7 @@ const Gvc = imports.gi.Gvc;
 const Pango = imports.gi.Pango;
 const Tooltips = imports.ui.tooltips;
 const Main = imports.ui.main;
+const Settings = imports.ui.settings;
 
 const PropIFace = {
     name: 'org.freedesktop.DBus.Properties',
@@ -794,21 +795,24 @@ MediaPlayerLauncher.prototype = {
 
 };
 
-function MyApplet(metadata, orientation, panel_height) {
-    this._init(metadata, orientation, panel_height);
+function MyApplet(metadata, orientation, panel_height, instanceId) {
+    this._init(metadata, orientation, panel_height, instanceId);
 }
 
 MyApplet.prototype = {
     __proto__: Applet.IconApplet.prototype,
 
-    _init: function(metadata, orientation, panel_height) {
+    _init: function(metadata, orientation, panel_height, instanceId) {
         Applet.IconApplet.prototype._init.call(this, orientation, panel_height);
 
         try {
             this.metadata = metadata;
-            for (let i = 0; i < support_seek.length; i++) {
-                Main.systrayManager.registerRole(support_seek[i], metadata.uuid);
-            }
+            this.settings = new Settings.AppletSettings(this, metadata.uuid, instanceId);
+            this.settings.bindProperty(Settings.BindingDirection.IN, "hideSystray", "hideSystray", function() {
+                if (this.hideSystray) this.registerSystrayIcons();
+                else this.unregisterSystrayIcons();
+            });
+            if (this.hideSystray) this.registerSystrayIcons();
 
             this.menuManager = new PopupMenu.PopupMenuManager(this);
             this.menu = new Applet.AppletPopupMenu(this, orientation);
@@ -867,7 +871,7 @@ MyApplet.prototype = {
     },
 
     on_applet_removed_from_panel : function() {
-        Main.systrayManager.unregisterId(this.metadata.uuid);
+        if (this.hideSystray) this.unregisterSystrayIcons();
         if (this._iconTimeoutId) {
             Mainloop.source_remove(this._iconTimeoutId);
         }
@@ -1221,11 +1225,21 @@ MyApplet.prototype = {
             this._inputTitle.actor.hide();
             this._inputSlider.actor.hide();
         }
+    },
+
+    registerSystrayIcons: function() {
+        for (let i = 0; i < support_seek.length; i++) {
+            Main.systrayManager.registerRole(support_seek[i], this.metadata.uuid);
+        }
+    },
+
+    unregisterSystrayIcons: function() {
+        Main.systrayManager.unregisterId(this.metadata.uuid);
     }
 
 };
 
-function main(metadata, orientation, panel_height) {
-    let myApplet = new MyApplet(metadata, orientation, panel_height);
+function main(metadata, orientation, panel_height, instanceId) {
+    let myApplet = new MyApplet(metadata, orientation, panel_height, instanceId);
     return myApplet;
 }
