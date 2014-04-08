@@ -871,7 +871,7 @@ MyApplet.prototype = {
     },
 
     on_applet_removed_from_panel : function() {
-        if (settings) this.unregisterSystrayIcons();
+        if (this.hideSystray) this.unregisterSystrayIcons();
         if (this._iconTimeoutId) {
             Mainloop.source_remove(this._iconTimeoutId);
         }
