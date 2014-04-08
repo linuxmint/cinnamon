@@ -247,7 +247,7 @@ AppSwitcher3D.prototype = {
             transition: TRANSITION_TYPE,
         });
         
-        let cx = Math.round((monitor.width + ICON_SIZE + ICON_TITLE_SPACING) / 2);
+        let cx = Math.round((monitor.width + (ICON_SIZE * global.ui_scale) + (ICON_TITLE_SPACING * global.ui_scale)) / 2);
         let cy = Math.round(monitor.height * TITLE_POSITION);
         
         this._windowTitle.x = cx - Math.round(this._windowTitle.get_width()/2);
@@ -277,8 +277,8 @@ AppSwitcher3D.prototype = {
         this._applicationIconBox = new St.Bin({
             style_class: 'window-iconbox',
             opacity: 0,
-            x: Math.round(this._windowTitle.x - ICON_SIZE - ICON_TITLE_SPACING),
-            y: Math.round(cy - ICON_SIZE/2)
+            x: Math.round(this._windowTitle.x - (ICON_SIZE * global.ui_scale) - (ICON_TITLE_SPACING * global.ui_scale)),
+            y: Math.round(cy - (ICON_SIZE * global.ui_scale) / 2 )
         });
 
         this._applicationIconBox.add_actor(this._icon);
