@@ -9,17 +9,20 @@ const Mainloop = imports.mainloop;
 const MessageTray = imports.ui.messageTray;
 const Urgency = imports.ui.messageTray.Urgency;
 const NotificationDestroyedReason = imports.ui.messageTray.NotificationDestroyedReason;
+const Settings = imports.ui.settings;
 
-function MyApplet(metadata, orientation, panel_height) {
-    this._init(metadata, orientation, panel_height);
+function MyApplet(metadata, orientation, panel_height, instanceId) {
+    this._init(metadata, orientation, panel_height, instanceId);
 }
 
 MyApplet.prototype = {
     __proto__: Applet.TextIconApplet.prototype,
 
-    _init: function(metadata, orientation, panel_height) {
+    _init: function(metadata, orientation, panel_height, instanceId) {
         Applet.TextIconApplet.prototype._init.call(this, orientation, panel_height);
 
+        this.settings = new Settings.AppletSettings(this, metadata.uuid, instanceId);
+        this.settings.bindProperty(Settings.BindingDirection.IN, "ignoreTransientNotifications", "ignoreTransientNotifications", null, null);
         Gtk.IconTheme.get_default().append_search_path(metadata.path);
         this._orientation = orientation;
         this.menuManager = new PopupMenu.PopupMenuManager(this);
@@ -80,6 +83,12 @@ MyApplet.prototype = {
     },
 
     _notification_added: function (mtray, notification) {
+        
+        // Ignore transient notifications?
+        if (this.ignoreTransientNotifications && notification.isTransient) {
+            return;
+        }
+
         notification.actor.unparent();
         let existing_index = this.notifications.indexOf(notification);
         if (existing_index != -1) {
@@ -225,8 +234,8 @@ MyApplet.prototype = {
     }
 };
 
-function main(metadata, orientation, panel_height) {
-    let myApplet = new MyApplet(metadata, orientation, panel_height);
+function main(metadata, orientation, panel_height, instanceId) {
+    let myApplet = new MyApplet(metadata, orientation, panel_height, instanceId);
     return myApplet;
 }
 
