@@ -1,0 +1,21 @@
+{
+    "showtrack": {
+        "type": "checkbox",
+        "default": false,
+        "description": "Show song information on the panel"
+    },
+    "truncatetext": {
+        "type": "spinbutton",
+        "default": 30,
+        "min": 5,
+        "max": 512,
+        "units": "characters",
+        "step": 1,
+        "description": "        Limit song information to "
+    },
+    "showalbum": {
+        "type": "checkbox",
+        "default": false,
+        "description": "Show album art as icon"
+    }
+}
