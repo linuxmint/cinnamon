@@ -165,7 +165,6 @@ var NON_SETTING_TYPES = {
     }
 };
 
-
 function _provider(xlet, uuid, instanceId, type, string) {
     this._init(xlet, uuid, instanceId, type, string);
 }
@@ -273,11 +272,12 @@ _provider.prototype = {
                 init_json[key]["value"] = init_json[key]["default"]
             }
             init_json["__md5__"] = checksum;
-            let out_file = JSON.stringify(init_json, null, 4);
 
-            let fp = this.settings_file.create(0, null);
-            fp.write(out_file, null);
-            fp.close(null);
+            let f = Gio.file_new_for_path(this.settings_file.get_path());
+            let raw = f.replace(null, false, Gio.FileCreateFlags.NONE, null);
+            let out_file = Gio.BufferedOutputStream.new_sized (raw, 4096);
+            Cinnamon.write_string_to_stream(out_file, JSON.stringify(init_json, null, 4));
+            out_file.close(null);
 
             return true;
         },
@@ -401,12 +401,12 @@ _provider.prototype = {
             }
             new_json["__md5__"] = checksum;
 
-            let out_file = JSON.stringify(new_json, null, 4);
-
             if (this.settings_file.delete(null, null)) {
-                let fp = this.settings_file.create(0, null);
-                fp.write(out_file, null);
-                fp.close;
+                let f = Gio.file_new_for_path(this.settings_file.get_path());
+                let raw = f.replace(null, false, Gio.FileCreateFlags.NONE, null);
+                let out_file = Gio.BufferedOutputStream.new_sized (raw, 4096);
+                Cinnamon.write_string_to_stream(out_file, JSON.stringify(new_json, null, 4));
+                out_file.close(null);
                 global.log("Upgrade complete");
                 return true;
             } else {
@@ -579,11 +579,12 @@ SettingObj.prototype = {
 
     save: function() {
         this.settings_file_monitor.disconnect(this.monitor_id);
-        let raw_file = JSON.stringify(this.json, null, 4);
         if (this.file.delete(null, null)) {
-            let fp = this.file.create(0, null);
-            fp.write(raw_file, null);
-            fp.close;
+            let f = Gio.file_new_for_path(this.file.get_path());
+            let raw = f.replace(null, false, Gio.FileCreateFlags.NONE, null);
+            let out_file = Gio.BufferedOutputStream.new_sized (raw, 4096);
+            Cinnamon.write_string_to_stream(out_file, JSON.stringify(this.json, null, 4));
+            out_file.close(null);
         } else {
             global.logError("Failed gain write access to settings file for applet/desklet '" + this.uuid + "', instance ") + this.instanceId;
         }
