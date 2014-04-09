@@ -17,5 +17,10 @@
         "type": "checkbox",
         "default": false,
         "description": "Show album art as icon"
+    },
+    "hideSystray" : {
+        "type" : "checkbox",
+        "description" : "Hide system tray icons for compatible players",
+        "default": true
     }
 }
