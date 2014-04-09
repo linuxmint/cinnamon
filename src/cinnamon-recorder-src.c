@@ -2,6 +2,7 @@
 
 #include "config.h"
 
+#define GST_USE_UNSTABLE_API
 #include <gst/base/gstpushsrc.h>
 
 #include "cinnamon-recorder-src.h"
@@ -11,6 +12,9 @@ struct _CinnamonRecorderSrc
   GstPushSrc parent;
 
   GMutex *mutex;
+
+  GstClock *clock;
+  GstClockTime last_frame_time;
 
   GstCaps *caps;
   GAsyncQueue *queue;
@@ -33,19 +37,19 @@ enum {
 /* Special marker value once the source is closed */
 #define RECORDER_QUEUE_END ((GstBuffer *)1)
 
-GST_BOILERPLATE(CinnamonRecorderSrc, cinnamon_recorder_src, GstPushSrc, GST_TYPE_PUSH_SRC);
+G_DEFINE_TYPE(CinnamonRecorderSrc, cinnamon_recorder_src, GST_TYPE_PUSH_SRC);
 
 static void
-cinnamon_recorder_src_init (CinnamonRecorderSrc      *src,
-			 CinnamonRecorderSrcClass *klass)
+cinnamon_recorder_src_init (CinnamonRecorderSrc      *src)
 {
+  gst_base_src_set_format (GST_BASE_SRC (src), GST_FORMAT_TIME);
+  gst_base_src_set_live (GST_BASE_SRC (src), TRUE);
+
+  src->clock = gst_system_clock_obtain ();
+  src->last_frame_time = 0;
+
   src->queue = g_async_queue_new ();
   src->mutex = g_mutex_new ();
-}
-
-static void
-cinnamon_recorder_src_base_init (gpointer klass)
-{
 }
 
 static gboolean
@@ -87,20 +91,27 @@ cinnamon_recorder_src_create (GstPushSrc  *push_src,
   GstBuffer *buffer;
 
   if (src->closed)
-    return GST_FLOW_UNEXPECTED;
+    return GST_FLOW_EOS;
 
   buffer = g_async_queue_pop (src->queue);
+  if (src->last_frame_time == 0)
+    src->last_frame_time = gst_clock_get_time (GST_CLOCK (src->clock));
+
   if (buffer == RECORDER_QUEUE_END)
     {
       /* Returning UNEXPECTED here will cause a EOS message to be sent */
       src->closed = TRUE;
-      return GST_FLOW_UNEXPECTED;
+      return GST_FLOW_EOS;
     }
 
   cinnamon_recorder_src_update_memory_used (src,
-					 - (int)(GST_BUFFER_SIZE(buffer) / 1024));
+					 - (int)(gst_buffer_get_size(buffer) / 1024));
 
   *buffer_out = buffer;
+
+  GST_BUFFER_DURATION(*buffer_out) = GST_CLOCK_DIFF (src->last_frame_time, gst_clock_get_time (GST_CLOCK (src->clock)));
+
+  src->last_frame_time = gst_clock_get_time (GST_CLOCK (src->clock));
 
   return GST_FLOW_OK;
 }
@@ -144,7 +155,9 @@ cinnamon_recorder_src_finalize (GObject *object)
 
   g_mutex_free (src->mutex);
 
-  G_OBJECT_CLASS (parent_class)->finalize (object);
+  gst_object_unref (src->clock);
+
+  G_OBJECT_CLASS (cinnamon_recorder_src_parent_class)->finalize (object);
 }
 
 static void
@@ -248,9 +261,9 @@ cinnamon_recorder_src_add_buffer (CinnamonRecorderSrc *src,
   g_return_if_fail (CINNAMON_IS_RECORDER_SRC (src));
   g_return_if_fail (src->caps != NULL);
 
-  gst_buffer_set_caps (buffer, src->caps);
+  gst_base_src_set_caps (GST_BASE_SRC (src), src->caps);
   cinnamon_recorder_src_update_memory_used (src,
-					 (int) (GST_BUFFER_SIZE(buffer) / 1024));
+					 (int)(gst_buffer_get_size(buffer) / 1024));
 
   g_async_queue_push (src->queue, gst_buffer_ref (buffer));
 }
