@@ -4,13 +4,19 @@
         "default": 50,
         "min": 10,
         "max": 200,
-	"units": " ",
+    	"units": " ",
         "description" : "Font size:",
         "step": 1
     },
     "date-format": {
         "type": "entry",
-        "default": "%I:%M %p",
+        "default": "%l:%M %p",
         "description": "Date format:"
+    },
+    "use-custom-format" : {
+        "type" : "checkbox",
+        "default" : false,
+        "description": "Use a custom date format",
+        "tooltip": "Check this to define a custom format for the time in the clock desklet."
     }
 }
