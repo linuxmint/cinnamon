@@ -1,0 +1,7 @@
+{
+    "ignoreTransientNotifications": {
+        "type": "checkbox",
+        "default": true,
+        "description": "Ignore transient notifications"
+    }    
+}
