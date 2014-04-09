@@ -40,7 +40,8 @@ const UPDeviceState = {
 const LabelDisplay = {
     NONE: 'none',
     PERCENT: 'percent',
-    TIME: 'time'
+    TIME: 'time',
+    TIMEPERCENTAGE: 'timepercentage'
 };
 
 const PowerManagerInterface = {
@@ -80,7 +81,7 @@ DeviceItem.prototype = {
     _init: function(device) {
         PopupMenu.PopupBaseMenuItem.prototype._init.call(this, { reactive: false });
 
-        let [device_id, device_type, icon, percentage, state, time] = device;
+        let [device_id, device_type, icon, percentage, state, time, timepercentage] = device;
 
         this._box = new St.BoxLayout({ style_class: 'popup-device-menu-item' });
         this._label = new St.Label({ text: this._deviceTypeToString(device_type) });
@@ -194,6 +195,11 @@ MyApplet.prototype = {
                 settings.set_string(SHOW_PERCENTAGE_KEY, LabelDisplay.TIME);
             }));
             this._displayItem.menu.addMenuItem(this._displayTimeItem);
+            this._displayTimePercentageItem = new PopupMenu.PopupMenuItem(_("Show percentage and time remaining"));
+            this._displayTimePercentageItem.connect('activate', Lang.bind(this, function() {
+                settings.set_string(SHOW_PERCENTAGE_KEY, LabelDisplay.TIMEPERCENTAGE);
+            }));
+            this._displayItem.menu.addMenuItem(this._displayTimePercentageItem);
             this._displayNoneItem = new PopupMenu.PopupMenuItem(_("Hide label"));
             this._displayNoneItem.connect('activate', Lang.bind(this, function() {
                 settings.set_string(SHOW_PERCENTAGE_KEY, LabelDisplay.NONE);
@@ -219,15 +225,20 @@ MyApplet.prototype = {
     _switchLabelDisplay: function(display) {
             this._labelDisplay = display;
 
+            //set the dot before the right entry in the menu
             this._displayPercentageItem.setShowDot(false);
             this._displayNoneItem.setShowDot(false);
             this._displayTimeItem.setShowDot(false);
+            this._displayTimePercentageItem.setShowDot(false);
 
             if (this._labelDisplay == LabelDisplay.PERCENT) {
                 this._displayPercentageItem.setShowDot(true);
             }
             else if (this._labelDisplay == LabelDisplay.TIME) {
                 this._displayTimeItem.setShowDot(true);
+            }
+            else if (this._labelDisplay == LabelDisplay.TIMEPERCENTAGE) {
+                this._displayTimePercentageItem.setShowDot(true);
             }
             else {
                 this._displayNoneItem.setShowDot(true);
@@ -354,6 +365,13 @@ MyApplet.prototype = {
                             let minutes = Math.floor(seconds % 60);
                             let hours = Math.floor(seconds / 60);
                             labelText = C_("time of battery remaining", "%d:%02d").format(hours,minutes);
+                        }
+                        else if (this._labelDisplay == LabelDisplay.TIMEPERCENTAGE) {
+                            let seconds = time / 60;
+                            let minutes = Math.floor(seconds % 60);
+                            let hours = Math.floor(seconds / 60);
+                            labelText = C_("percent of battery remaining", "%d%%").format(Math.round(percentage)) + " (" +
+                                        C_("time of battery remaining", "%d:%02d").format(hours,minutes) + ")";
                         }
 
                         this._mainLabel.set_text(labelText);
