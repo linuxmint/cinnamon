@@ -11,7 +11,7 @@
         "max": 512,
         "units": "characters",
         "step": 1,
-        "description": "        Limit song information to "
+        "description": "Limit song information to"
     },
     "showalbum": {
         "type": "checkbox",
