@@ -95,6 +95,9 @@ AppSwitcher.prototype = {
         this._motionTimeoutId = 0;
         this._checkDestroyedTimeoutId = 0;
         this._currentIndex = this._windows.indexOf(global.display.focus_window);
+        if (this._currentIndex < 0) {
+            this._currentIndex = 0;
+        }
         this._modifierMask = primaryModifier(binding.get_mask());
 
         this._tracker = Cinnamon.WindowTracker.get_default();
