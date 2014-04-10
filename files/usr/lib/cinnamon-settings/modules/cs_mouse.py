@@ -112,7 +112,7 @@ class Module:
 
     def test_button_clicked(self, widget, event):
         if event.type == Gdk.EventType._2BUTTON_PRESS:
-            widget.set_label(_("Success!"))
+            widget.set_label(_("Clicked!"))
             GLib.timeout_add(1000, self.reset_test_button, widget)
         return True
 
