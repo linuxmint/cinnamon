@@ -536,7 +536,6 @@
     <child name="theme" schema="org.cinnamon.theme"/>   
     <child name="recorder" schema="org.cinnamon.recorder"/>
     <child name="keyboard" schema="org.cinnamon.keyboard"/>
-    <child name="power" schema="org.cinnamon.power" />
     <child name="desklets" schema="org.cinnamon.desklets" />
     <child name="sounds" schema="org.cinnamon.sounds" />
 
@@ -579,15 +578,7 @@
       </_description>
     </key>
   </schema>
-  
-  <schema id="org.cinnamon.power" path="/org/cinnamon/power/" gettext-domain="@GETTEXT_PACKAGE">
-      <key name="power-label" type="s">
-          <default>'percent'</default>
-          <_summary>Display percentage in power applet</_summary>
-          <_description>Display battery remaining as percentage or time in power applet.</_description>
-    </key>
-  </schema>
-
+    
   <schema id="org.cinnamon.recorder" path="/org/cinnamon/recorder/"
           gettext-domain="@GETTEXT_PACKAGE@">
     <key name="framerate" type="i">
