@@ -122,7 +122,7 @@ class HotCornerDisplay(Gtk.Label):
         
     def _setCornerColor(self, cr, index):
         if self.cornerEnabled[index]:
-            cr.set_source_rgba(self.activeColor.red, self.activeColor.green, self.activeColor.blue, self.activeColor.alpha)
+            cr.set_source_rgba(0.6, 0.72, 0.49, self.activeColor.alpha) #"0.6, 0.72, 0.49" is the Mint color
         else:
             cr.set_source_rgba(self.inactiveColor.red, self.inactiveColor.green, self.inactiveColor.blue, self.inactiveColor.alpha)
     
@@ -202,7 +202,6 @@ class HotCornerConfiguration():
         self.updateCallback = updateCallback
         self.index = index
         self.functionStore = Gtk.ListStore(str, str)
-        #self.functionStore.append(['disabled', _("Disabled")])
         self.functionStore.append(['expo', _("Workspace Selector")]) #Expo
         self.functionStore.append(['scale', _("Window Selector")]) #Scale
         self.functionStore.append(['custom', _("Custom")])
@@ -216,11 +215,11 @@ class HotCornerConfiguration():
         self.functionCombo.pack_start(rendererText, True)
         self.functionCombo.add_attribute(rendererText, "text", 1)
         
-        self.customEntry = Gtk.Entry()
         self.iconCheckbox = Gtk.CheckButton()
         self.iconCheckbox.set_label(_("Icon visible"))
         self.hoverCheckbox = Gtk.CheckButton()
         self.hoverCheckbox.set_label(_("Hover enabled"))
+        self.customEntry = Gtk.Entry()
         
         self.box.pack_start(self.functionCombo, True, True, 0)
         self.box.pack_start(self.customEntry, True, True, 0)
