@@ -217,6 +217,7 @@ class HotCornerConfiguration():
         self.functionCombo.add_attribute(rendererText, "text", 1)
         
         self.customEntry = Gtk.Entry()
+        self.customEntry.set_no_show_all(True)
         self.iconCheckbox = Gtk.CheckButton()
         self.iconCheckbox.set_label(_("Icon visible"))
         self.hoverCheckbox = Gtk.CheckButton()
