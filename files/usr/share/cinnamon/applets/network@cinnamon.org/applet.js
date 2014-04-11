@@ -756,7 +756,23 @@ NMDeviceModem.prototype = {
         this._connectionType = 'ppp';
 
         this._capabilities = device.current_capabilities;
-        if (this._capabilities & NetworkManager.DeviceModemCapabilities.GSM_UMTS) {
+        // Support new ModemManager1 devices
+        if (device.udi.indexOf('/org/freedesktop/ModemManager1/Modem') == 0) {
+            try {
+                is_wwan = true;
+                this.mobileDevice = new ModemManager.BroadbandModem(device.udi, device.current_capabilities);
+                if (this._capabilities & NetworkManager.DeviceModemCapabilities.GSM_UMTS) {
+                    this._connectionType = NetworkManager.SETTING_GSM_SETTING_NAME;
+                } else if (this._capabilities & NetworkManager.DeviceModemCapabilities.LTE) {
+                    this._connectionType = NetworkManager.SETTING_GSM_SETTING_NAME;
+                } else if (this._capabilities & NetworkManager.DeviceModemCapabilities.CDMA_EVDO) {
+                    this._connectionType = NetworkManager.SETTING_CDMA_SETTING_NAME;
+                }
+            }
+            catch (e){
+                global.logError(e);
+            }
+        } else if (this._capabilities & NetworkManager.DeviceModemCapabilities.GSM_UMTS) {
             is_wwan = true;
             this.mobileDevice = new ModemManager.ModemGsm(device.udi);
             this._connectionType = NetworkManager.SETTING_GSM_SETTING_NAME;
