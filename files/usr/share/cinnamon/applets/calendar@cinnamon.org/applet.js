@@ -136,7 +136,9 @@ MyApplet.prototype = {
             this.set_applet_label(label_string);   
         }
         else {
-            this.set_applet_label(this.clock.get_clock().capitalize());
+            if (this.clock) { // We lose cinnamon-desktop temporarily during suspend
+                this.set_applet_label(this.clock.get_clock().capitalize());
+            }
         }
 
         // Applet content
