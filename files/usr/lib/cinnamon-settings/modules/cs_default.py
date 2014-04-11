@@ -34,7 +34,6 @@ preferred_app_defs = [
     ( "audio/x-vorbis+ogg",      "audio",                    _("M_usic") ),
     ( "video/x-ogm+ogg",         "video",                    _("_Video") ),
     ( "image/jpeg",              "image",                    _("_Photos") )
-    #TODO: Add default terminal selector
 ]
 
 removable_media_defs = [
@@ -344,9 +343,12 @@ class Module:
 
     def setupDefaultApps(self):
         table = ButtonTable(len(preferred_app_defs))
+        term_entryd = GSettingsEntry("", "org.cinnamon.desktop.default-applications.terminal", "exec", None)
         
         for d in preferred_app_defs:
             table.addRow(d[PREF_LABEL], DefaultAppChooserButton(d[PREF_CONTENT_TYPE], d[PREF_GEN_CONTENT_TYPE]))
+        #TODO: Add a combobox selector (2.4?)
+        table.addRow(_("Terminal"), term_entryd)
 
         return ColumnBox(_("Select preferred applications for file types"), table)
 
