@@ -94,7 +94,30 @@ DeviceItem.prototype = {
         this._box.add_actor(this._label);
         this.addActor(this._box);
 
-        let percentLabel = new St.Label({ text: C_("percent of battery remaining", "%d%%").format(Math.round(percentage)) });
+        // IF DISPLAY BY TIME IS SELECTED SHOW TIME ON EACH DEVICE IN MENU
+        let seconds = time / 60;
+        let minutes = Math.floor(seconds % 60);
+        let hours = Math.floor(seconds / 60);
+        let timeText =  C_("time of battery remaining", "%d:%02d").format(hours,minutes);
+        let percentText = C_("percent of battery remaining", "%d%%").format(Math.round(percentage));
+        let combinedText = _(percentText + " (" + timeText +")");
+        let percentLabel = new St.Label();
+	
+        let settings = new Gio.Settings({ schema: POWER_SCHEMA });
+        let labelDisplay = settings.get_string(SHOW_PERCENTAGE_KEY);
+        if (labelDisplay == LabelDisplay.TIME) {
+          percentLabel.text = timeText;
+        } else 
+        if (labelDisplay == LabelDisplay.TIMEPERCENTAGE) {
+          percentLabel.text = combinedText;
+        } else {
+          percentLabel.text = percentText;
+        }
+        /////////////////////
+        // OLD...
+        //let percentLabel = new St.Label({ text: C_("percent of battery remaining", "%d%%").format(Math.round(percentage)) });
+        /////////////////////
+
         this.addActor(percentLabel, { align: St.Align.END });
     },
 
@@ -139,11 +162,10 @@ MyApplet.prototype = {
     _init: function(metadata, orientation, panel_height) {        
         Applet.TextIconApplet.prototype._init.call(this, orientation, panel_height);
         
-        try {
+        try {                                
             this.metadata = metadata;
             Main.systrayManager.registerRole("power", metadata.uuid);
             Main.systrayManager.registerRole("battery", metadata.uuid);
-            
             this.menuManager = new PopupMenu.PopupMenuManager(this);
             this.menu = new Applet.AppletPopupMenu(this, orientation);
             this.menuManager.addMenu(this.menu);            
@@ -176,6 +198,9 @@ MyApplet.prototype = {
 
             this._batteryItem = new PopupMenu.PopupMenuItem('', { reactive: false });
             this._primaryPercentage = new St.Label();
+            // SOMEWHERE TO STORE THE TIME REMAINING IN 00:00 format
+            this._primaryTime = new St.Label();
+            ///////////////
             this._batteryItem.addActor(this._primaryPercentage, { align: St.Align.END });
             this.menu.addMenuItem(this._batteryItem);
 
@@ -185,16 +210,19 @@ MyApplet.prototype = {
             // Setup label display settings
             this._displayItem = new PopupMenu.PopupSubMenuMenuItem(_("Display"));
             this.menu.addMenuItem(this._displayItem);
+
             this._displayPercentageItem = new PopupMenu.PopupMenuItem(_("Show percentage"));
             this._displayPercentageItem.connect('activate', Lang.bind(this, function() {
                 settings.set_string(SHOW_PERCENTAGE_KEY, LabelDisplay.PERCENT);
             }));
             this._displayItem.menu.addMenuItem(this._displayPercentageItem);
+
             this._displayTimeItem = new PopupMenu.PopupMenuItem(_("Show time remaining"));
             this._displayTimeItem.connect('activate', Lang.bind(this, function() {
                 settings.set_string(SHOW_PERCENTAGE_KEY, LabelDisplay.TIME);
             }));
             this._displayItem.menu.addMenuItem(this._displayTimeItem);
+
             this._displayTimePercentageItem = new PopupMenu.PopupMenuItem(_("Show percentage and time remaining"));
             this._displayTimePercentageItem.connect('activate', Lang.bind(this, function() {
                 settings.set_string(SHOW_PERCENTAGE_KEY, LabelDisplay.TIMEPERCENTAGE);
@@ -205,6 +233,7 @@ MyApplet.prototype = {
                 settings.set_string(SHOW_PERCENTAGE_KEY, LabelDisplay.NONE);
             }));
             this._displayItem.menu.addMenuItem(this._displayNoneItem);
+
             this._switchLabelDisplay(this._labelDisplay);
 
             this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
@@ -232,19 +261,30 @@ MyApplet.prototype = {
             this._displayTimePercentageItem.setShowDot(false);
 
             if (this._labelDisplay == LabelDisplay.PERCENT) {
-                this._displayPercentageItem.setShowDot(true);
+               this._displayNoneItem.setShowDot(true);  //HACK TO FORCE LABEL REFRESH
+               this._displayPercentageItem.setShowDot(true);
+               this._displayNoneItem.setShowDot(false); //HACK TO FORCE LABEL REFRESH
             }
             else if (this._labelDisplay == LabelDisplay.TIME) {
-                this._displayTimeItem.setShowDot(true);
-            }
+               this._displayNoneItem.setShowDot(true); //HACK TO FORCE LABEL REFRESH
+               this._displayTimeItem.setShowDot(true);
+               this._displayNoneItem.setShowDot(false); //HACK TO FORCE LABEL REFRESH
+             }
             else if (this._labelDisplay == LabelDisplay.TIMEPERCENTAGE) {
-                this._displayTimePercentageItem.setShowDot(true);
+               this._displayNoneItem.setShowDot(true); //HACK TO FORCE LABEL REFRESH
+               this._displayTimePercentageItem.setShowDot(true);
+               this._displayNoneItem.setShowDot(false); //HACK TO FORCE LABEL REFRESH
             }
             else {
                 this._displayNoneItem.setShowDot(true);
             }
-
-            this._updateLabel();
+            // ENSURE POPUP MENU RE-INDICATES % OR TIME ON SWITCH
+            // ALSO FIXES BUG WHERE SELECT OF TIME NEVER SEEMED
+            // TO UPDATE THE LABEL
+            this._devicesChanged();
+            // OLD
+            //this._updateLabel();
+            //
     },
     
     _readPrimaryDevice: function() {
@@ -263,6 +303,9 @@ MyApplet.prototype = {
                     // 0 is reported when UPower does not have enough data
                     // to estimate battery life
                     this._batteryItem.label.text = _("Estimating...");
+                    // NO SHORT FORM OF TIME ESTIMATE AVAILABLE
+                    this._primaryTime = "";
+                    /////////////////////
                 } else {
                     let minutes = time % 60;
                     let hours = Math.floor(time / 60);
@@ -278,6 +321,10 @@ MyApplet.prototype = {
                         }
                     } else
                         timestring = ngettext("%d minute remaining", "%d minutes remaining", minutes).format(minutes);
+
+                    // SAVE THE SHORT FORM OF TOTAL TIME REMAINING
+                    this._primaryTime = C_("time of battery remaining", "%d:%02d").format(hours,minutes);
+                    //////////////////////
                     this._batteryItem.label.text = timestring;
                     this.set_applet_tooltip(timestring);
                 }
@@ -357,27 +404,55 @@ MyApplet.prototype = {
                     if (device_type == UPDeviceType.BATTERY || device_id == this._primaryDeviceId) {
                         let labelText = "";
 
-                        if (this._labelDisplay == LabelDisplay.PERCENT || time == 0) {
-                            labelText = C_("percent of battery remaining", "%d%%").format(Math.round(percentage));
+                        // TAKE OUT THE TIME=0 CLAUSE BECAUSE THAT APPLIES TO ONE BATTERY ONLY
+                        //if (this._labelDisplay == LabelDisplay.PERCENT || time == 0) {
+                        ///////////////
+                        if (this._labelDisplay == LabelDisplay.PERCENT) {
+                            // THIS LOOP WILL NOT FIND THE PRIMARY DEVICE AND WILL LABEL
+                            // AND RETURN ON THE FIRST BATTERY FOUND. NO GOOD FOR DUAL
+                            // BATTERY LAPTOPS SO WE LABEL PRIMARY PERCENTAGE ON FIRST 
+                            // BATTERY FOUND
+                            labelText = this._primaryPercentage.text; 
+                            // OLD
+                            //labelText = C_("percent of battery remaining", "%d%%").format(Math.round(percentage));
+                            /////////////////
                         }
                         else if (this._labelDisplay == LabelDisplay.TIME) {
                             let seconds = time / 60;
                             let minutes = Math.floor(seconds % 60);
                             let hours = Math.floor(seconds / 60);
-                            labelText = C_("time of battery remaining", "%d:%02d").format(hours,minutes);
+                            // THIS LOOP WILL NOT FIND THE PRIMARY DEVICE AND WILL LABEL
+                            // AND RETURN ON THE FIRST BATTERY FOUND. NO GOOD FOR DUAL
+                            // BATTERY LAPTOPS SO WE LABEL PRIMARY TIME ON FIRST BATTERY 
+                            // FOUND
+                            labelText = this._primaryTime;
+                            // OLD
+                            //labelText = C_("time of battery remaining", "%d:%02d").format(hours,minutes);
+                            /////////////////
                         }
                         else if (this._labelDisplay == LabelDisplay.TIMEPERCENTAGE) {
-                            let seconds = time / 60;
-                            let minutes = Math.floor(seconds % 60);
-                            let hours = Math.floor(seconds / 60);
-                            labelText = C_("percent of battery remaining", "%d%%").format(Math.round(percentage)) + " (" +
-                                        C_("time of battery remaining", "%d:%02d").format(hours,minutes) + ")";
+                            // THIS LOOP WILL NOT FIND THE PRIMARY DEVICE AND WILL LABEL
+                            // AND RETURN ON THE FIRST BATTERY FOUND. NO GOOD FOR DUAL
+                            // BATTERY LAPTOPS SO WE LABEL PRIMARY PERCENTAGE AND TIME 
+                            // ON FIRST BATTERY FOUND
+                            labelText = this._primaryPercentage.text + " (" +
+                                        this._primaryTime + ")";
+                            // OLD
+                            //let seconds = time / 60;
+                            //let minutes = Math.floor(seconds % 60);
+                            //let hours = Math.floor(seconds / 60);
+                            //labelText = C_("percent of battery remaining", "%d%%").format(Math.round(percentage)) + " (" +
+                            //            C_("time of battery remaining", "%d:%02d").format(hours,minutes) + ")";
+                            /////////////////
+
                         }
+
 
                         this._mainLabel.set_text(labelText);
                         return;
                     }
                 }
+
             }
             // Display disabled or no battery found... hot-unplugged?
             this._mainLabel.set_text("");
@@ -387,6 +462,7 @@ MyApplet.prototype = {
     on_applet_removed_from_panel: function() {
         Main.systrayManager.unregisterId(this.metadata.uuid);
     }
+    
 };
 
 function main(metadata, orientation, panel_height) {  
