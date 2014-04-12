@@ -409,7 +409,7 @@ Applet.prototype = {
         let items = this._applet_context_menu._getMenuItems();
 
         if (this.context_menu_item_remove == null) {
-            this.context_menu_item_remove = new MenuItem(_("Remove this applet"), "list-remove", Lang.bind(null, AppletManager._removeAppletFromPanel, this._uuid, this.instance_id));
+            this.context_menu_item_remove = new MenuItem(_("Remove this applet"), "edit-delete", Lang.bind(null, AppletManager._removeAppletFromPanel, this._uuid, this.instance_id));
         }
 
         if (this.context_menu_separator == null) {

@@ -1486,7 +1486,7 @@ function PopupSubMenuMenuItem() {
 PopupSubMenuMenuItem.prototype = {
     __proto__: PopupBaseMenuItem.prototype,
 
-    _init: function(text) {
+    _init: function(text, hide_expander) {
         PopupBaseMenuItem.prototype._init.call(this);
 
         this.actor.add_style_class_name('popup-submenu-menu-item');
@@ -1494,17 +1494,24 @@ PopupSubMenuMenuItem.prototype = {
         let table = new St.Table({ homogeneous: false,
                                       reactive: true });
 
-        this._triangle = new St.Icon({ icon_name: "media-playback-start",
-                              icon_type: St.IconType.SYMBOLIC,
-                              style_class: 'popup-menu-icon' });
+        if (!hide_expander) {
+            this._triangle = new St.Icon({ icon_name: "media-playback-start",
+                                icon_type: St.IconType.SYMBOLIC,
+                                style_class: 'popup-menu-icon' });
 
-        table.add(this._triangle,
-                  {row: 0, col: 0, col_span: 1, x_expand: false, x_align: St.Align.START});
+            table.add(this._triangle,
+                    {row: 0, col: 0, col_span: 1, x_expand: false, x_align: St.Align.START});
 
-        this.label = new St.Label({ text: text });
-        this.label.set_margin_left(6.0);
-        table.add(this.label,
-                  {row: 0, col: 1, col_span: 1, x_align: St.Align.START});
+            this.label = new St.Label({ text: text });
+            this.label.set_margin_left(6.0);
+            table.add(this.label,
+                    {row: 0, col: 1, col_span: 1, x_align: St.Align.START});
+        }
+        else {
+            this.label = new St.Label({ text: text });
+            table.add(this.label,
+                    {row: 0, col: 0, col_span: 1, x_align: St.Align.START});
+        }
 
         this.addActor(table, { expand: true, span: 1, align: St.Align.START });
 
