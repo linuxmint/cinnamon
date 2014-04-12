@@ -113,10 +113,10 @@ WindowManager.prototype = {
         this._cinnamonwm.connect('kill-switch-workspace', Lang.bind(this, this._switchWorkspaceDone));
         this._cinnamonwm.connect('kill-window-effects', Lang.bind(this, function (cinnamonwm, actor) {
             this._minimizeWindowDone(cinnamonwm, actor);
-            this._maximizeWindowDone(cinnamonwm, actor);
-            this._unmaximizeWindowDone(cinnamonwm, actor);
-            this._tileWindowDone(cinnamonwm, actor);
-            this._mapWindowDone(cinnamonwm, actor);
+            this._maximizeWindowDone(cinnamonwm, actor, actor.opacity);
+            this._unmaximizeWindowDone(cinnamonwm, actor, actor.opacity);
+            this._tileWindowDone(cinnamonwm, actor, actor.opacity);
+            this._mapWindowDone(cinnamonwm, actor, actor.opacity);
             this._destroyWindowDone(cinnamonwm, actor);
         }));
 
@@ -211,7 +211,7 @@ WindowManager.prototype = {
                            transition: transition,
                            onComplete: callbackComplete,
                            onCompleteScope: this,
-                           onCompleteParams: [cinnamonwm, actor],
+                           onCompleteParams: [cinnamonwm, actor, actor.opacity],
                            onOverwrite: callbackOverwrite,
                            onOverwriteScope: this,
                            onOverwriteParams: [cinnamonwm, actor]
@@ -227,7 +227,7 @@ WindowManager.prototype = {
                            transition: transition,
                            onComplete: callbackComplete,
                            onCompleteScope: this,
-                           onCompleteParams: [cinnamonwm, actor],
+                           onCompleteParams: [cinnamonwm, actor, actor.opacity],
                            onOverwrite: callbackOverwrite,
                            onOverwriteScope: this,
                            onOverwriteParams: [cinnamonwm, actor]
@@ -356,7 +356,7 @@ WindowManager.prototype = {
                            transition: transition,
                            onComplete: this._tileWindowDone,
                            onCompleteScope: this,
-                           onCompleteParams: [cinnamonwm, actor],
+                           onCompleteParams: [cinnamonwm, actor, actor.opacity],
                            onOverwrite: this._tileWindowOverwrite,
                            onOverwriteScope: this,
                            onOverwriteParams: [cinnamonwm, actor]
@@ -367,11 +367,11 @@ WindowManager.prototype = {
         }
     },
 
-    _tileWindowDone : function(cinnamonwm, actor) {
+    _tileWindowDone : function(cinnamonwm, actor, orig_opacity) {
         if (this._removeEffect(this._tiling, actor)) {
             Tweener.removeTweens(actor);
             actor.set_scale(1.0, 1.0);
-            actor.opacity = 255;
+            actor.opacity = orig_opacity;
             actor.move_anchor_point_from_gravity(Clutter.Gravity.NORTH_WEST);
             cinnamonwm.completed_tile(actor);
         }
@@ -424,7 +424,7 @@ WindowManager.prototype = {
                            transition: transition,
                            onComplete: this._maximizeWindowDone,
                            onCompleteScope: this,
-                           onCompleteParams: [cinnamonwm, actor],
+                           onCompleteParams: [cinnamonwm, actor, actor.opacity],
                            onOverwrite: this._maximizeWindowOverwrite,
                            onOverwriteScope: this,
                            onOverwriteParams: [cinnamonwm, actor]
@@ -435,11 +435,11 @@ WindowManager.prototype = {
         }            
     },
 
-    _maximizeWindowDone : function(cinnamonwm, actor) {
+    _maximizeWindowDone : function(cinnamonwm, actor, orig_opacity) {
         if (this._removeEffect(this._maximizing, actor)) {
             Tweener.removeTweens(actor);
             actor.set_scale(1.0, 1.0);
-            actor.opacity = 255;
+            actor.opacity = orig_opacity;
             actor.move_anchor_point_from_gravity(Clutter.Gravity.NORTH_WEST);
             cinnamonwm.completed_maximize(actor);
         }
@@ -493,7 +493,7 @@ WindowManager.prototype = {
                            transition: transition,
                            onComplete: this._unmaximizeWindowDone,
                            onCompleteScope: this,
-                           onCompleteParams: [cinnamonwm, actor],
+                           onCompleteParams: [cinnamonwm, actor, actor.opacity],
                            onOverwrite: this._unmaximizeWindowOverwrite,
                            onOverwriteScope: this,
                            onOverwriteParams: [cinnamonwm, actor]
@@ -505,11 +505,11 @@ WindowManager.prototype = {
         }
     },
 
-    _unmaximizeWindowDone : function(cinnamonwm, actor) {
+    _unmaximizeWindowDone : function(cinnamonwm, actor, orig_opacity) {
         if (this._removeEffect(this._unmaximizing, actor)) {
             Tweener.removeTweens(actor);
             actor.set_scale(1.0, 1.0);
-            actor.opacity = 255;
+            actor.opacity = orig_opacity;
             actor.move_anchor_point_from_gravity(Clutter.Gravity.NORTH_WEST);
             cinnamonwm.completed_unmaximize(actor);
         }
@@ -605,7 +605,7 @@ WindowManager.prototype = {
                                    transition: "easeOutQuad",
                                    onComplete: this._mapWindowDone,
                                    onCompleteScope: this,
-                                   onCompleteParams: [cinnamonwm, actor],
+                                   onCompleteParams: [cinnamonwm, actor, 255],
                                    onOverwrite: this._mapWindowOverwrite,
                                    onOverwriteScope: this,
                                    onOverwriteParams: [cinnamonwm, actor]
@@ -616,7 +616,7 @@ WindowManager.prototype = {
             return;
         }
         if (!this._shouldAnimate(actor)) {
-            this._completeMap(cinnamonwm, actor);
+            this._completeMap(cinnamonwm, actor, actor.opacity);
             return;
         }
         
@@ -666,7 +666,7 @@ WindowManager.prototype = {
                                        transition: myTransition,
                                        onComplete: this._mapWindowDone,
                                        onCompleteScope: this,
-                                       onCompleteParams: [cinnamonwm, actor],
+                                       onCompleteParams: [cinnamonwm, actor, actor.opacity],
                                        onOverwrite: this._mapWindowOverwrite,
                                        onOverwriteScope: this,
                                        onOverwriteParams: [cinnamonwm, actor]
@@ -683,9 +683,10 @@ WindowManager.prototype = {
         
         if (effect == "fade") {            
             this._mapping.push(actor);
+            let orig_opacity = actor.opacity;
             actor.opacity = 0;
             actor.show();
-            this._fadeWindow(cinnamonwm, actor, 255, time, transition, this._mapWindowDone, this._mapWindowOverwrite);
+            this._fadeWindow(cinnamonwm, actor, orig_opacity, time, transition, this._mapWindowDone, this._mapWindowOverwrite);
         }
         else if (effect == "scale") {
             actor.set_scale(0.0, 0.0);
@@ -699,18 +700,18 @@ WindowManager.prototype = {
         
     },
 
-    _completeMap : function(cinnamonwm, actor) {
+    _completeMap : function(cinnamonwm, actor, orig_opacity) {
         actor.move_anchor_point_from_gravity(Clutter.Gravity.NORTH_WEST);
         actor.set_scale(1.0, 1.0);
-        actor.opacity = 255;
+        actor.opacity = orig_opacity;
         actor.show();
         cinnamonwm.completed_map(actor);
     },
 
-    _mapWindowDone : function(cinnamonwm, actor) {
+    _mapWindowDone : function(cinnamonwm, actor, orig_opacity) {
         if (this._removeEffect(this._mapping, actor)) {
             Tweener.removeTweens(actor);
-            this._completeMap(cinnamonwm, actor);
+            this._completeMap(cinnamonwm, actor, orig_opacity);
         }
     },
 
