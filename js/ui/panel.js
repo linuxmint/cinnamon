@@ -436,7 +436,7 @@ SettingsLauncher.prototype = {
 
 function populateSettingsMenu(menu) {
 
-    menu.troubleshootItem = new PopupMenu.PopupSubMenuMenuItem(_("Troubleshoot"));
+    menu.troubleshootItem = new PopupMenu.PopupSubMenuMenuItem(_("Troubleshoot ..."), true);
     menu.troubleshootItem.menu.addAction(_("Restart Cinnamon"), function(event) {
         global.reexec_self();
     });
@@ -450,6 +450,8 @@ function populateSettingsMenu(menu) {
         confirm.open();
     });
 
+    menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
+    
     menu.addMenuItem(menu.troubleshootItem);
 
     menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
@@ -486,7 +488,7 @@ PanelContextMenu.prototype = {
         let menuItem = new SettingsLauncher(_("Themes"), "themes", "applications-graphics", this);
         this.addMenuItem(menuItem);
 
-        let menuSetting = new SettingsLauncher(_("All settings"), "", "emblem-system", this);
+        let menuSetting = new SettingsLauncher(_("All settings"), "", "preferences-system", this);
         this.addMenuItem(menuSetting);
 
         populateSettingsMenu(this);
