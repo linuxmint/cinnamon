@@ -35,19 +35,19 @@ class Module:
             
             section.add(TitleBarButtonsOrderSelector())
             
-            section.add(self._make_combo_group(_("Action on title bar double-click"),
+            section.add(self._make_titlebar_action_group(_("Action on title bar double-click"),
                                                 "org.cinnamon.desktop.wm.preferences", "action-double-click-titlebar",
                                                 [(i, i.replace("-", " ").title()) for i in ('toggle-shade', 'toggle-maximize', 'toggle-maximize-horizontally', 'toggle-maximize-vertically', 'minimize', 'shade', 'menu', 'lower', 'none')]))
-            section.add(self._make_combo_group(_("Action on title bar middle-click"),
+            section.add(self._make_titlebar_action_group(_("Action on title bar middle-click"),
                                                 "org.cinnamon.desktop.wm.preferences", "action-middle-click-titlebar",
                                                 [(i, i.replace("-", " ").title()) for i in ('toggle-shade', 'toggle-maximize', 'toggle-maximize-horizontally', 'toggle-maximize-vertically', 'minimize', 'shade', 'menu', 'lower', 'none')]))
-            section.add(self._make_combo_group(_("Action on title bar right-click"),
+            section.add(self._make_titlebar_action_group(_("Action on title bar right-click"),
                                                 "org.cinnamon.desktop.wm.preferences", "action-right-click-titlebar",
                                                 [(i, i.replace("-", " ").title()) for i in ('toggle-shade', 'toggle-maximize', 'toggle-maximize-horizontally', 'toggle-maximize-vertically', 'minimize', 'shade', 'menu', 'lower', 'none')]))
        
             scroll_options = [["none", _("Nothing")],["shade", _("Shade and unshade")],["opacity", _("Adjust opacity")]]
 
-            section.add(self._make_combo_group(_("Action on title bar with mouse scroll"),
+            section.add(self._make_titlebar_action_group(_("Action on title bar with mouse scroll"),
                                                "org.cinnamon.desktop.wm.preferences", "action-scroll-titlebar",
                                                scroll_options))
             vbox.add(section)
@@ -76,7 +76,7 @@ class Module:
             vbox.add(section)
         
 
-    def _make_combo_group(self, group_label, root, key, stuff):
+    def _make_titlebar_action_group(self, group_label, root, key, stuff):
         self.size_groups = getattr(self, "size_groups", [SizeGroup.new(SizeGroupMode.HORIZONTAL) for x in range(2)])
         
         box = Gtk.HBox()
@@ -89,6 +89,19 @@ class Module:
         w = GSettingsComboBox("", root, key, None, stuff)
         self.size_groups[1].add_widget(w)
         box.pack_start(w, False, False, 0)
+        
+        return box
+
+    def _make_combo_group(self, group_label, root, key, stuff):
+        box = Gtk.HBox()
+
+        label = Gtk.Label()
+        label.set_markup(group_label)
+        label.props.xalign = 0.0
+        box.pack_start(label, False, False, 2)
+
+        w = GSettingsComboBox("", root, key, None, stuff)
+        box.pack_start(w, False, False, 2)
         
         return box
 
