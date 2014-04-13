@@ -57,14 +57,22 @@ const ZoomRegionIface = {
 // '/org/gnome/Magnifier/ZoomRegion/zoomer1', etc.
 let _zoomRegionInstanceCount = 0;
 
-function CinnamonMagnifier() {
-    this._init();
+function CinnamonMagnifier(start_enabled) {
+    this._init(start_enabled);
 }
 
 CinnamonMagnifier.prototype = {
-    _init: function() {
+    _init: function(start_enabled) {
         this._zoomers = {};
-        DBus.session.exportObject(MAG_SERVICE_PATH, this);
+
+        this.setEnabled(start_enabled);
+    },
+
+    setEnabled: function(enabled) {
+        if (enabled)
+            DBus.session.exportObject(MAG_SERVICE_PATH, this);
+        else
+            DBus.session.unexportObject(this);
     },
 
     /**

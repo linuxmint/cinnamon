@@ -49,7 +49,12 @@ const CROSS_HAIRS_OPACITY_KEY   = 'cross-hairs-opacity';
 const CROSS_HAIRS_LENGTH_KEY    = 'cross-hairs-length';
 const CROSS_HAIRS_CLIP_KEY      = 'cross-hairs-clip';
 
+const MEDIA_KEYS_SCHEMA         = "org.cinnamon.settings-daemon.plugins.media-keys"
+const ZOOM_IN_KEY               = "magnifier-zoom-in"
+const ZOOM_OUT_KEY              = "magnifier-zoom-out"
+
 let magDBusService = null;
+let magInputHandler = null;
 
 function Magnifier() {
     this._init();
@@ -59,6 +64,11 @@ Magnifier.prototype = {
     _init: function() {
         // Magnifier is a manager of ZoomRegions.
         this._zoomRegions = [];
+
+        this.enabled = false;
+
+        this._appSettings = new Gio.Settings({ schema: APPLICATIONS_SCHEMA });
+        this._settings = new Gio.Settings({ schema: MAGNIFIER_SCHEMA });
 
         // Create small clutter tree for the magnified mouse.
         let xfixesCursor = Cinnamon.XFixesCursor.get_for_stage(global.stage);
@@ -75,15 +85,29 @@ Magnifier.prototype = {
 
         let aZoomRegion = new ZoomRegion(this, this._cursorRoot);
         this._zoomRegions.push(aZoomRegion);
-        let showAtLaunch = this._settingsInit(aZoomRegion);
+        let activeAtLaunch = this._settingsInit(aZoomRegion);
         aZoomRegion.scrollContentsTo(this.xMouse, this.yMouse);
 
         xfixesCursor.connect('cursor-change', Lang.bind(this, this._updateMouseSprite));
         this._xfixesCursor = xfixesCursor;
 
+        this._appSettings.connect('changed::' + SHOW_KEY,
+                                  Lang.bind(this, function() {
+            this.enabled = this._appSettings.get_boolean(SHOW_KEY);
+            let factor = parseFloat(this._settings.get_double(MAG_FACTOR_KEY).toFixed(2));
+            this.setActive(this.enabled && factor > 1.0);
+        }));
+
+        this.enabled = this._appSettings.get_boolean(SHOW_KEY);
+
         // Export to dbus.
-        magDBusService = new MagnifierDBus.CinnamonMagnifier();
-        this.setActive(showAtLaunch);
+        magDBusService = new MagnifierDBus.CinnamonMagnifier(this.enabled);
+
+        magInputHandler = new MagnifierInputHandler(this);
+
+        this.setActive(this.enabled && activeAtLaunch);
+
+        this.update_mag_id = 0;
     },
 
     /**
@@ -124,6 +148,30 @@ Magnifier.prototype = {
 
         // Notify interested parties of this change
         this.emit('active-changed', activate);
+    },
+
+    _write_back_mag_factor: function(factor) {
+        this._settings.set_double(MAG_FACTOR_KEY, factor);
+        return false;
+    },
+
+    /**
+     * setMagFactor:
+     * @xMagFactor:     The power to set the horizontal magnification factor to
+     *                  of the magnified view.  A value of 1.0 means no
+     *                  magnification.  A value of 2.0 doubles the size.
+     * @yMagFactor:     The power to set the vertical magnification factor to
+     *                  of the magnified view.
+     */
+    setMagFactor: function(xMagFactor, yMagFactor) {
+        let zr = this.getZoomRegions()[0];
+        zr.setMagFactor(xMagFactor, yMagFactor);
+
+        if (this.update_mag_id > 0) {
+            Mainloop.source_remove (this.update_mag_id);
+            this.update_mag_id = 0;
+        }
+        this.update_mag_id = Mainloop.timeout_add(1000, Lang.bind(this, this._write_back_mag_factor, xMagFactor));
     },
 
     /**
@@ -441,12 +489,11 @@ Magnifier.prototype = {
     },
 
     _settingsInit: function(zoomRegion) {
-        this._appSettings = new Gio.Settings({ schema: APPLICATIONS_SCHEMA });
-        this._settings = new Gio.Settings({ schema: MAGNIFIER_SCHEMA });
-
+        let ret;
         if (zoomRegion) {
             // Mag factor is accurate to two decimal places.
             let aPref = parseFloat(this._settings.get_double(MAG_FACTOR_KEY).toFixed(2));
+            ret = aPref;
             if (aPref != 0.0)
                 zoomRegion.setMagFactor(aPref, aPref);
 
@@ -465,11 +512,6 @@ Magnifier.prototype = {
         let showCrosshairs = this._settings.get_boolean(SHOW_CROSS_HAIRS_KEY);
         this.addCrosshairs();
         this.setCrosshairsVisible(showCrosshairs);
-
-        this._appSettings.connect('changed::' + SHOW_KEY,
-                                  Lang.bind(this, function() {
-            this.setActive(this._appSettings.get_boolean(SHOW_KEY));
-        }));
 
         this._settings.connect('changed::' + SCREEN_POSITION_KEY,
                                Lang.bind(this, this._updateScreenPosition));
@@ -512,7 +554,7 @@ Magnifier.prototype = {
             this.setCrosshairsClip(this._settings.get_boolean(CROSS_HAIRS_CLIP_KEY));
         }));
 
-        return this._appSettings.get_boolean(SHOW_KEY);
+        return ret > 1.0;
    },
 
     _updateScreenPosition: function() {
@@ -531,6 +573,7 @@ Magnifier.prototype = {
             // Mag factor is accurate to two decimal places.
             let magFactor = parseFloat(this._settings.get_double(MAG_FACTOR_KEY).toFixed(2));
             this._zoomRegions[0].setMagFactor(magFactor, magFactor);
+            this.setActive(magFactor > 1.0);
         }
     },
 
@@ -1430,3 +1473,97 @@ Crosshairs.prototype = {
         this._vertBottomHair.set_position((groupWidth - thickness) / 2, bottom);
     }
 };
+
+const INCR = 0.1;
+
+function MagnifierInputHandler(magnifier) {
+    this._init(magnifier);
+}
+
+MagnifierInputHandler.prototype = {
+    _init: function(magnifier) {
+        this.magnifier = magnifier;
+
+        this._zoom_in_id = 0;
+        this._zoom_out_id = 0;
+
+        this.a11y_settings = new Gio.Settings({ schema: APPLICATIONS_SCHEMA });
+        this.a11y_settings.connect("changed::" + SHOW_KEY, Lang.bind(this, this._refresh_state));
+
+        this.media_keys_settings = new Gio.Settings({ schema: MEDIA_KEYS_SCHEMA });
+        this.media_keys_settings.connect("changed", Lang.bind(this, this._refresh_state));
+
+        this._refresh_state();
+    },
+
+    _enable_zoom: function() {
+        if (this._zoom_in_id > 0 || this._zoom_out_id > 0)
+            this._disable_zoom();
+        this._zoom_in_id = global.display.connect('zoom-scroll-in', Lang.bind(this, this._zoom_in));
+        this._zoom_out_id = global.display.connect('zoom-scroll-out', Lang.bind(this, this._zoom_out));
+
+        let kb = this.media_keys_settings.get_string(ZOOM_IN_KEY);
+        Main.keybindingManager.addHotKey("magnifier-zoom-in", kb, Lang.bind(this, this._zoom_in));
+        kb = this.media_keys_settings.get_string(ZOOM_OUT_KEY);
+        Main.keybindingManager.addHotKey("magnifier-zoom-out", kb, Lang.bind(this, this._zoom_out));
+    },
+
+    _disable_zoom: function() {
+        if (this._zoom_in_id > 0)
+            global.display.disconnect(this._zoom_in_id)
+        if (this._zoom_out_id > 0)
+            global.display.disconnect(this._zoom_out_id);
+
+        this._zoom_in_id = 0;
+        this._zoom_out_id = 0;
+
+        Main.keybindingManager.removeHotKey("magnifier-zoom-in");
+        Main.keybindingManager.removeHotKey("magnifier-zoom-out");
+    },
+
+    _refresh_state: function() {
+        this.zoom_active = this.magnifier.isActive();
+        this.current_zoom = 1.0;
+
+        if (this.zoom_active) {
+            let zr = this.magnifier.getZoomRegions()[0];
+            this.current_zoom = zr.getMagFactor();
+        }
+
+        if (this.a11y_settings.get_boolean(SHOW_KEY))
+            this._enable_zoom();
+        else
+            this._disable_zoom();
+    },
+
+    _zoom_in: function(display, screen, event, kb, action) {
+        if (this.zoom_active) {
+            this.current_zoom *= (1.0 + INCR);
+        } else {
+            this.current_zoom *= (1.0 + INCR);
+            this.magnifier.setActive(true)
+            this.zoom_active = true;
+        }
+        try {
+            this.magnifier.setMagFactor(this.current_zoom, this.current_zoom)
+        } catch (e) {
+            this._refresh_state();
+        }
+    },
+
+    _zoom_out: function(display, screen, event, kb, action) {
+        if (this.zoom_active) {
+            this.current_zoom *= (1.0 - INCR);
+            if (this.current_zoom <= 1.0) {
+                this.current_zoom = 1.0;
+                this.magnifier.setActive(false);
+                this.zoom_active = false;
+            }
+            try {
+                this.magnifier.setMagFactor(this.current_zoom, this.current_zoom)
+            } catch (e) {
+                this._refresh_state();
+            }
+        }
+    }
+}

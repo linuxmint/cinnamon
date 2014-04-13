@@ -323,7 +323,7 @@ function start() {
     // This overview object is just a stub for non-user sessions
     overview = new Overview.Overview();
     expo = new Expo.Expo();
-    magnifier = new Magnifier.Magnifier();
+
     statusIconDispatcher = new StatusIconDispatcher.StatusIconDispatcher();  
                     
     if (desktop_layout == LAYOUT_TRADITIONAL) {
@@ -357,6 +357,7 @@ function start() {
     automountManager = new AutomountManager.AutomountManager();
 
     keybindingManager = new Keybindings.KeybindingManager();
+    magnifier = new Magnifier.Magnifier();
 
     Meta.later_add(Meta.LaterType.BEFORE_REDRAW, _checkWorkspaces);
 
