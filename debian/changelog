@@ -1,3 +1,9 @@
+cinnamon (2.2.0) qiana; urgency=medium
+
+  * 2.2.0
+
+ -- Clement Lefebvre <root@linuxmint.com>  Sat, 12 Apr 2014 15:28:43 +0100
+
 cinnamon (2.0.14) petra; urgency=low
 
   * 2.0.14

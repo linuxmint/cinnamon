@@ -101,6 +101,13 @@ AppMenuButtonRightClickMenu.prototype = {
         let itemOnAllWorkspaces = new PopupMenu.PopupMenuItem(_("Visible on all workspaces"));
         itemOnAllWorkspaces.connect('activate', Lang.bind(this, this._toggleOnAllWorkspaces));
 
+        let itemRestoreOpacity = new PopupMenu.PopupMenuItem(_("Restore to full opacity"));
+        itemRestoreOpacity.connect('activate', Lang.bind(this, this._onRestoreOpacity));
+
+        if (this.metaWindow.get_compositor_private().opacity == 255) {
+            itemRestoreOpacity.actor.hide()
+        }
+
         if (mw.is_on_all_workspaces()) {
             itemOnAllWorkspaces.label.set_text(_("Only on this workspace"));
             itemMoveToLeftWorkspace.actor.hide();
@@ -141,6 +148,7 @@ AppMenuButtonRightClickMenu.prototype = {
             itemCloseAllWindows,
             itemCloseOtherWindows,
             new PopupMenu.PopupSeparatorMenuItem(),
+            itemRestoreOpacity,
             itemMinimizeWindow,
             itemMaximizeWindow,
             itemCloseWindow
@@ -148,6 +156,10 @@ AppMenuButtonRightClickMenu.prototype = {
         (this.orientation == St.Side.BOTTOM ? items : items.reverse()).forEach(function(item) {
             this.addMenuItem(item);
         }, this);
+     },
+
+     _onRestoreOpacity: function(actor, event) {
+        this.metaWindow.get_compositor_private().set_opacity(255);
      },
 
      _onToggled: function(actor, isOpening){

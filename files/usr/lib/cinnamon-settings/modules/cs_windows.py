@@ -43,7 +43,13 @@ class Module:
                                                 [(i, i.replace("-", " ").title()) for i in ('toggle-shade', 'toggle-maximize', 'toggle-maximize-horizontally', 'toggle-maximize-vertically', 'minimize', 'shade', 'menu', 'lower', 'none')]))
             section.add(self._make_combo_group(_("Action on title bar right-click"),
                                                 "org.cinnamon.desktop.wm.preferences", "action-right-click-titlebar",
-                                                [(i, i.replace("-", " ").title()) for i in ('toggle-shade', 'toggle-maximize', 'toggle-maximize-horizontally', 'toggle-maximize-vertically', 'minimize', 'shade', 'menu', 'lower', 'none')]))        
+                                                [(i, i.replace("-", " ").title()) for i in ('toggle-shade', 'toggle-maximize', 'toggle-maximize-horizontally', 'toggle-maximize-vertically', 'minimize', 'shade', 'menu', 'lower', 'none')]))
+       
+            scroll_options = [["none", _("Nothing")],["shade", _("Shade and unshade")],["opacity", _("Adjust opacity")]]
+
+            section.add(self._make_combo_group(_("Action on title bar with mouse scroll"),
+                                               "org.cinnamon.desktop.wm.preferences", "action-scroll-titlebar",
+                                               scroll_options))
             vbox.add(section)
 
             vbox.add(Gtk.Separator.new(Gtk.Orientation.HORIZONTAL))

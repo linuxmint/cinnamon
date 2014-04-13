@@ -60,6 +60,8 @@ KEYBINDINGS = [
     [_("Toggle maximization state"), MUFFIN_KEYBINDINGS_SCHEMA, "toggle-maximized", True, "windows"],
     [_("Toggle fullscreen state"), MUFFIN_KEYBINDINGS_SCHEMA, "toggle-fullscreen", True, "windows"],
     [_("Toggle shaded state"), MUFFIN_KEYBINDINGS_SCHEMA, "toggle-shaded", True, "windows"],
+    [_("Increase opacity"), MUFFIN_KEYBINDINGS_SCHEMA, "increase-opacity", True, "windows"],
+    [_("Decrease opacity"), MUFFIN_KEYBINDINGS_SCHEMA, "decrease-opacity", True, "windows"],
     [_("Maximize vertically"), MUFFIN_KEYBINDINGS_SCHEMA, "maximize-vertically", True, "windows"],
     [_("Maximize horizontally"), MUFFIN_KEYBINDINGS_SCHEMA, "maximize-horizontally", True, "windows"],
     [_("Resize window"), MUFFIN_KEYBINDINGS_SCHEMA, "begin-resize", True, "windows"],
