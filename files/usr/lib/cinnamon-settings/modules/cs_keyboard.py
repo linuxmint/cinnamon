@@ -171,6 +171,7 @@ class Module:
             print "Loading Keyboard module"
             self.tabs = []        
             self.notebook = Gtk.Notebook()
+            self.notebook.expand = True
 
             tab = NotebookPage(_("Typing"), False)
             tab.add_widget(GSettingsCheckButton(_("Enable key repeat"), "org.cinnamon.settings-daemon.peripherals.keyboard", "repeat", None))
@@ -331,7 +332,7 @@ class Module:
 
             if widget is not None:
                 cheat_box = Gtk.Box.new(Gtk.Orientation.VERTICAL, 2)
-                cheat_box.pack_start(widget, False, False, 2)
+                cheat_box.pack_start(widget, True, True, 2)
                 cheat_box.set_vexpand(False)
                 widget.show()
                 tab.add_widget(cheat_box)
