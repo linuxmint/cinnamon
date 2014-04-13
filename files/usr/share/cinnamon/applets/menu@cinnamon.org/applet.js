@@ -1841,8 +1841,8 @@ MyApplet.prototype = {
                                       this.menu.passEvents = false;
                                   }));
         
-        this.applicationsBox = new St.BoxLayout({ style_class: 'menu-applications-box', vertical:true });
-        this.applicationsBox.add_style_class_name('inner-box');
+        this.applicationsBox = new St.BoxLayout({ style_class: 'menu-applications-inner-box', vertical:true });
+        this.applicationsBox.add_style_class_name('menu-applications-box'); //this is to support old themes
         this.applicationsScrollBox.add_actor(this.applicationsBox);
         this.applicationsScrollBox.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC);
         this.categoriesApplicationsBox.actor.add_actor(this.categoriesBox);
@@ -1850,8 +1850,8 @@ MyApplet.prototype = {
                      
         this._refreshFavs();
                                                           
-        this.mainBox = new St.BoxLayout({ style_class: 'menu-applications-box', vertical:false });       
-        this.mainBox.add_style_class_name('outer-box');
+        this.mainBox = new St.BoxLayout({ style_class: 'menu-applications-outer-box', vertical:false });       
+        this.mainBox.add_style_class_name('menu-applications-box'); //this is to support old themes
                 
         this.mainBox.add_actor(leftPane, { span: 1 });
         this.mainBox.add_actor(rightPane, { span: 1 });
