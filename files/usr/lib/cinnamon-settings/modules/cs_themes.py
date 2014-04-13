@@ -63,7 +63,8 @@ class ThemesViewSidePage (ExtensionSidePage):
         other_settings_box = Gtk.VBox()
         
         scrolledWindow.add_with_viewport(other_settings_box)
-        
+        other_settings_box.set_border_width(5)
+                
         other_settings_box.pack_start(self._make_group(_("Controls"), "org.cinnamon.desktop.interface", "gtk-theme", self._load_gtk_themes()), False, False, 2)
         other_settings_box.pack_start(self._make_group(_("Icons"), "org.cinnamon.desktop.interface", "icon-theme", self._load_icon_themes()), False, False, 2)
         other_settings_box.pack_start(self._make_group(_("Window borders"), "org.cinnamon.desktop.wm.preferences", "theme", self._load_window_themes()), False, False, 2)
