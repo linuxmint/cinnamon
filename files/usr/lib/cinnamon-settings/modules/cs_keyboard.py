@@ -144,7 +144,6 @@ KEYBINDINGS = [
     [_("Eject"), MEDIA_KEYS_SCHEMA, "eject", False, "media"],
 
     # Universal Access
-    [_("Turn zoom on or off"), MEDIA_KEYS_SCHEMA, "magnifier", False, "accessibility"],
     [_("Zoom in"), MEDIA_KEYS_SCHEMA, "magnifier-zoom-in", False, "accessibility"],
     [_("Zoom out"), MEDIA_KEYS_SCHEMA, "magnifier-zoom-out", False, "accessibility"],
     [_("Turn screen reader on or off"), MEDIA_KEYS_SCHEMA, "screenreader", False, "accessibility"],
