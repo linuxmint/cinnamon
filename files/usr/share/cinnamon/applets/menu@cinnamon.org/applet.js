@@ -1445,8 +1445,26 @@ MyApplet.prototype = {
             }));
             this.categoriesBox.add_actor(this.recentButton.actor);
             this._categoryButtons.push(this.recentButton);
-            
+
             if (this.RecentManager._infosByTimestamp.length > 0) {
+                for (let id = 0; id < MAX_RECENT_FILES && id < this.RecentManager._infosByTimestamp.length; id++) {
+                    let button = new RecentButton(this, this.RecentManager._infosByTimestamp[id]);
+                    this._addEnterEvent(button, Lang.bind(this, function() {
+                            this._clearPrevAppSelection(button.actor);
+                            button.actor.style_class = "menu-application-button-selected";
+                            this.selectedAppTitle.set_text("");
+                            this.selectedAppDescription.set_text(button.file.uri.slice(7).replace(/%20/g, ' '));
+                            }));
+                    button.actor.connect('leave-event', Lang.bind(this, function() {
+                            button.actor.style_class = "menu-application-button";
+                            this._previousSelectedActor = button.actor;
+                            this.selectedAppTitle.set_text("");
+                            this.selectedAppDescription.set_text("");
+                            }));
+                    this._recentButtons.push(button);
+                    this.applicationsBox.add_actor(button.actor);
+                }
+
                 let button = new RecentClearButton(this);
                 this._addEnterEvent(button, Lang.bind(this, function() {
                         this._clearPrevAppSelection(button.actor);
@@ -1455,24 +1473,6 @@ MyApplet.prototype = {
                 button.actor.connect('leave-event', Lang.bind(this, function() {
                         button.actor.style_class = "menu-application-button";
                         this._previousSelectedActor = button.actor;
-                        }));
-                this._recentButtons.push(button);
-                this.applicationsBox.add_actor(button.actor);
-            }
-            
-            for (let id = 0; id < MAX_RECENT_FILES && id < this.RecentManager._infosByTimestamp.length; id++) {
-                let button = new RecentButton(this, this.RecentManager._infosByTimestamp[id]);
-                this._addEnterEvent(button, Lang.bind(this, function() {
-                        this._clearPrevAppSelection(button.actor);
-                        button.actor.style_class = "menu-application-button-selected";
-                        this.selectedAppTitle.set_text("");
-                        this.selectedAppDescription.set_text(button.file.uri.slice(7).replace(/%20/g, ' '));
-                        }));
-                button.actor.connect('leave-event', Lang.bind(this, function() {
-                        button.actor.style_class = "menu-application-button";
-                        this._previousSelectedActor = button.actor;
-                        this.selectedAppTitle.set_text("");
-                        this.selectedAppDescription.set_text("");
                         }));
                 this._recentButtons.push(button);
                 this.applicationsBox.add_actor(button.actor);
