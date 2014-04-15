@@ -67,7 +67,7 @@ class Module:
             section.add_expand(GSettingsRange(_("Timeout:"), _("Short"), _("Long"), 100, 1000, False, "int", False, "org.cinnamon.settings-daemon.peripherals.mouse", "double-click", None, adjustment_step = 1))
             widget = Gtk.Button.new_with_label(_("Double-click test"))
             widget.connect("button-press-event", self.test_button_clicked)
-            section.add(widget)
+            section.add_expand(widget)
             vbox.add(section)
 
             vbox.add(Gtk.Separator.new(Gtk.Orientation.HORIZONTAL))         
