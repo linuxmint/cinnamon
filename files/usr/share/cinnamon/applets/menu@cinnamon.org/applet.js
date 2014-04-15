@@ -1356,16 +1356,26 @@ MyApplet.prototype = {
             this._addEnterEvent(this.placesButton, Lang.bind(this, function() {
                 if (!this.searchActive) {
                     this.placesButton.isHovered = true;
-                    Tweener.addTween(this, {
-                        time: this.hover_delay,
-                        onComplete: function () {
-                            if (this.placesButton.isHovered) {
+                    if (this.hover_delay > 0) {
+                        Tweener.addTween(this, {
+                            time: this.hover_delay,
+                            onComplete: function () {
+                                if (this.placesButton.isHovered) {
+                                    this._clearPrevCatSelection(this.placesButton);
+                                    this.placesButton.actor.style_class = "menu-category-button-selected";
+                                    this.closeApplicationsContextMenus(null, false);
+                                    this._displayButtons(null, -1);
+                                } else {
+                                    this.placesButton.actor.style_class = "menu-category-button";
+                                }
+                            }
+                        });
+                    } else {
                                 this._clearPrevCatSelection(this.placesButton);
                                 this.placesButton.actor.style_class = "menu-category-button-selected";
+                                this.closeApplicationsContextMenus(null, false);
                                 this._displayButtons(null, -1);
-                            }
-                        }
-                    });
+                    }
                     this.makeVectorBox(this.placesButton.actor);
                 }
             }));
@@ -1414,16 +1424,26 @@ MyApplet.prototype = {
             this._addEnterEvent(this.recentButton, Lang.bind(this, function() {
                 if (!this.searchActive) {
                     this.recentButton.isHovered = true;
-                    Tweener.addTween(this, {
-                        time: this.hover_delay,
-                        onComplete: function () {
-                            if (this.recentButton.isHovered) {
-                                this._clearPrevCatSelection(this.recentButton.actor);
-                                this.recentButton.actor.style_class = "menu-category-button-selected";
-                                this._displayButtons(null, null, -1);
+                    if (this.hover_delay > 0) {
+                        Tweener.addTween(this, {
+                            time: this.hover_delay,
+                            onComplete: function () {
+                                if (this.recentButton.isHovered) {
+                                    this._clearPrevCatSelection(this.recentButton.actor);
+                                    this.recentButton.actor.style_class = "menu-category-button-selected";
+                                    this.closeApplicationsContextMenus(null, false);
+                                    this._displayButtons(null, null, -1);
+                                } else {
+                                    this.recentButton.actor.style_class = "menu-category-button";
+                                }
                             }
-                        }
-                    });
+                        });
+                    } else {
+                        this._clearPrevCatSelection(this.recentButton.actor);
+                        this.recentButton.actor.style_class = "menu-category-button-selected";
+                        this.closeApplicationsContextMenus(null, false);
+                        this._displayButtons(null, null, -1);
+                    }
                     this.makeVectorBox(this.recentButton.actor);
                 }
             }));
