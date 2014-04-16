@@ -1050,8 +1050,7 @@ st_texture_cache_load_gicon (StTextureCache    *cache,
                              GIcon             *icon,
                              gint               size)
 {
-  CLutterActor *ret = load_gicon_with_colors (cache, icon, size, cache->priv->scale, theme_node ? st_theme_node_get_icon_colors (theme_node) : NULL);
-  g_signal_connect (ret, "allocation-changed", on_allocation_changed);
+    return load_gicon_with_colors (cache, icon, size, cache->priv->scale, theme_node ? st_theme_node_get_icon_colors (theme_node) : NULL);
 }
 
 static ClutterActor *
