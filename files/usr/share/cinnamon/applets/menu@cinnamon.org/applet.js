@@ -975,7 +975,7 @@ MyApplet.prototype = {
         this.menu.toggle_with_options(false);
        // let f = new Date().getTime();
        // log("time is: " + (f - t).toString());
-    },        /
+    },
            
     _onSourceKeyPress: function(actor, event) {
         let symbol = event.get_key_symbol();
