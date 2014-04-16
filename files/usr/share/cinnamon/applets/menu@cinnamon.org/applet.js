@@ -28,6 +28,8 @@ const MAX_FAV_ICON_SIZE = 32;
 const CATEGORY_ICON_SIZE = 22;
 const APPLICATION_ICON_SIZE = 22;
 const MAX_RECENT_FILES = 20;
+
+const INITIAL_BUTTON_LOAD = 30;
 const MAX_BUTTON_WIDTH = "max-width: 20em;";
 
 const USER_DESKTOP_PATH = FileUtils.getUserDesktopDir();
@@ -916,6 +918,8 @@ MyApplet.prototype = {
             this.settings.bindProperty(Settings.BindingDirection.IN, "search-filesystem", "searchFilesystem", null, null);
 
             St.TextureCache.get_default().connect("icon-theme-changed", Lang.bind(this, this.onIconThemeChanged));
+
+            this._recalc_height();
         }
         catch (e) {
             global.logError(e);
@@ -946,6 +950,12 @@ MyApplet.prototype = {
         this.hover_delay = this.hover_delay_ms / 1000
     },
 
+    _recalc_height: function() {
+        let scrollBoxHeight = (this.leftBox.get_allocation_box().y2-this.leftBox.get_allocation_box().y1) -
+                               (this.searchBox.get_allocation_box().y2-this.searchBox.get_allocation_box().y1);
+        this.applicationsScrollBox.style = "height: "+scrollBoxHeight / global.ui_scale +"px;";
+    },
+
     on_orientation_changed: function (orientation) {
         this.menu.destroy();
         this.menu = new Applet.AppletPopupMenu(this, orientation);
@@ -960,8 +970,11 @@ MyApplet.prototype = {
         Util.spawnCommandLine("cinnamon-menu-editor");
     },
     
-    on_applet_clicked: function(event) {        
+    on_applet_clicked: function(event) {
+        let t = new Date().getTime();
         this.menu.toggle_with_options(false);
+        let f = new Date().getTime();
+        log("time is: " + (f - t).toString());
     },        
            
     _onSourceKeyPress: function(actor, event) {
@@ -990,22 +1003,15 @@ MyApplet.prototype = {
             this._selectedItemIndex = null;
             this._activeContainer = null;
             this._activeActor = null;
-            let monitorHeight = Main.layoutManager.primaryMonitor.height;
-            let applicationsBoxHeight = this.applicationsBox.get_allocation_box().y2-this.applicationsBox.get_allocation_box().y1;
-            let scrollBoxHeight = (this.leftBox.get_allocation_box().y2-this.leftBox.get_allocation_box().y1) -
-                                    (this.searchBox.get_allocation_box().y2-this.searchBox.get_allocation_box().y1);
-            this.applicationsScrollBox.style = "height: "+scrollBoxHeight / global.ui_scale +"px;";
 
-            this.initButtonLoad = 30;
+
             let n = Math.min(this._applicationsButtons.length,
-                             this.initButtonLoad)
+                             INITIAL_BUTTON_LOAD);
             for (let i = 0; i < n; i++) {
-                if (!this._applicationsButtons[i].actor.visible) {
-                    this._applicationsButtons[i].actor.show();
-                }
+                this._applicationsButtons[i].actor.show();
             }
             this._allAppsCategoryButton.actor.style_class = "menu-category-button-selected";
-            Mainloop.idle_add(Lang.bind(this, this._initial_cat_selection));
+            Mainloop.idle_add(Lang.bind(this, this._initial_cat_selection, n));
         } else {
             this.actor.remove_style_pseudo_class('active');
             if (this.searchActive) {
@@ -1023,12 +1029,10 @@ MyApplet.prototype = {
         }
     },
 
-    _initial_cat_selection: function () {
+    _initial_cat_selection: function (start_index) {
         let n = this._applicationsButtons.length;
-        for (let i = this.initButtonLoad; i < n; i++) {
-            if (!this._applicationsButtons[i].actor.visible) {
-                this._applicationsButtons[i].actor.show();
-            }
+        for (let i = start_index; i < n; i++) {
+            this._applicationsButtons[i].actor.show();
         }
     },
 
@@ -1500,6 +1504,8 @@ MyApplet.prototype = {
         }
 
         this._setCategoriesButtonActive(!this.searchActive);
+
+        this._recalc_height();
     },
 
     _refreshApps : function() {
@@ -1716,7 +1722,9 @@ MyApplet.prototype = {
             this._session.ShutdownRemote();
         }));
         
-        this.leftBox.add_actor(button.actor, { y_align: St.Align.END, y_fill: false });                
+        this.leftBox.add_actor(button.actor, { y_align: St.Align.END, y_fill: false });
+
+        this._recalc_height();
     },
    
     _loadCategory: function(dir, top_dir) {
