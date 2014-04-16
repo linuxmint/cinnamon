@@ -971,11 +971,11 @@ MyApplet.prototype = {
     },
     
     on_applet_clicked: function(event) {
-        let t = new Date().getTime();
+       // let t = new Date().getTime();
         this.menu.toggle_with_options(false);
-        let f = new Date().getTime();
-        log("time is: " + (f - t).toString());
-    },        
+       // let f = new Date().getTime();
+       // log("time is: " + (f - t).toString());
+    },        /
            
     _onSourceKeyPress: function(actor, event) {
         let symbol = event.get_key_symbol();
