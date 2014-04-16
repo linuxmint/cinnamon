@@ -559,9 +559,6 @@ Player.prototype = {
         if (metadata["mpris:length"]) {
             // song length in secs
             this._songLength = metadata["mpris:length"] / 1000000;
-            // FIXME upstream
-            if (this._name == "quodlibet")
-                this._songLength = metadata["mpris:length"] / 1000;
             // reset timer
             this._stopTimer();
             if (this._playerStatus == "Playing")
