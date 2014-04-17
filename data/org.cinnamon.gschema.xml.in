@@ -113,17 +113,17 @@
     
     <key name="panel-top-height" type="i">
       <default>25</default>
-      <range min="20" />
+      <range min="20" max="100" />
       <_summary>Panel size</_summary>
       <_description>
         User-defined panel-height for top panel.  Note, this value may be the true value in use at runtime, depending
         on any scaling that may be occurring (for hidpi screens, for instance).
       </_description>
     </key>
-    
+
     <key name="panel-bottom-height" type="i">
       <default>25</default>
-      <range min="20" />
+      <range min="20" max="100"/>
       <_summary>Panel size</_summary>
       <_description>
         User-defined panel-height for bottom panel.  Note, this value may be the true value in use at runtime, depending
