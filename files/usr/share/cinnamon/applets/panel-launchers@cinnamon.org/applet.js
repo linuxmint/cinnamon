@@ -106,8 +106,8 @@ PanelAppLauncher.prototype = {
         this._iconBottomClip = 0;
 
         if (global.settings.get_boolean(PANEL_SCALE_TEXT_ICONS_KEY) && global.settings.get_boolean(PANEL_RESIZABLE_KEY)) {
-            this.icon_height = Math.floor(panel_height * ICON_HEIGHT_FACTOR);
-            this.icon_anim_height = Math.floor(panel_height * ICON_ANIM_FACTOR);
+            this.icon_height = Math.floor((panel_height * ICON_HEIGHT_FACTOR) / global.ui_scale);
+            this.icon_anim_height = Math.floor((panel_height * ICON_ANIM_FACTOR) / global.ui_scale);
         } else {
             this.icon_height = DEFAULT_ICON_SIZE;
             this.icon_anim_height = DEFAULT_ANIM_SIZE;
