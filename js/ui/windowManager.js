@@ -203,7 +203,7 @@ WindowManager.prototype = {
     },
     
     
-    _fadeWindow: function(cinnamonwm, actor, opacity, time, transition, callbackComplete, callbackOverwrite) {        
+    _fadeWindow: function(cinnamonwm, actor, opacity, orig_opacity, time, transition, callbackComplete, callbackOverwrite) {        
         actor.move_anchor_point_from_gravity(Clutter.Gravity.CENTER);        
         Tweener.addTween(actor,
                          { opacity: opacity,                               
@@ -211,10 +211,10 @@ WindowManager.prototype = {
                            transition: transition,
                            onComplete: callbackComplete,
                            onCompleteScope: this,
-                           onCompleteParams: [cinnamonwm, actor, actor.opacity],
+                           onCompleteParams: [cinnamonwm, actor, orig_opacity],
                            onOverwrite: callbackOverwrite,
                            onOverwriteScope: this,
-                           onOverwriteParams: [cinnamonwm, actor]
+                           onOverwriteParams: [cinnamonwm, actor, orig_opacity]
                             });
     },
     
@@ -230,7 +230,7 @@ WindowManager.prototype = {
                            onCompleteParams: [cinnamonwm, actor, actor.opacity],
                            onOverwrite: callbackOverwrite,
                            onOverwriteScope: this,
-                           onOverwriteParams: [cinnamonwm, actor]
+                           onOverwriteParams: [cinnamonwm, actor, actor.opacity]
                             });
     },
 
@@ -292,7 +292,7 @@ WindowManager.prototype = {
 
         if (effect == "fade") {
             this._minimizing.push(actor);
-            this._fadeWindow(cinnamonwm, actor, 0, time, transition, this._minimizeWindowDone, this._minimizeWindowOverwritten);            
+            this._fadeWindow(cinnamonwm, actor, 0, actor.opacity, time, transition, this._minimizeWindowDone, this._minimizeWindowOverwritten);            
         } else if (effect == "scale") {                                
             this._minimizing.push(actor);
             this._scaleWindow(cinnamonwm, actor, 0.0, 0.0, time, transition, this._minimizeWindowDone, this._minimizeWindowOverwritten); 
@@ -301,17 +301,19 @@ WindowManager.prototype = {
         }
     },
 
-    _minimizeWindowDone : function(cinnamonwm, actor) {
+    _minimizeWindowDone : function(cinnamonwm, actor, orig_opacity) {
         if (this._removeEffect(this._minimizing, actor)) {
             Tweener.removeTweens(actor);
             actor.set_scale(1.0, 1.0);
+            actor.opacity = orig_opacity;
             actor.move_anchor_point_from_gravity(Clutter.Gravity.NORTH_WEST);
             cinnamonwm.completed_minimize(actor);
         }
     },
 
-    _minimizeWindowOverwritten : function(cinnamonwm, actor) {
+    _minimizeWindowOverwritten : function(cinnamonwm, actor, orig_opacity) {
         if (this._removeEffect(this._minimizing, actor)) {
+            actor.opacity = orig_opacity;
             cinnamonwm.completed_minimize(actor);
         }
     },
@@ -359,7 +361,7 @@ WindowManager.prototype = {
                            onCompleteParams: [cinnamonwm, actor, actor.opacity],
                            onOverwrite: this._tileWindowOverwrite,
                            onOverwriteScope: this,
-                           onOverwriteParams: [cinnamonwm, actor]
+                           onOverwriteParams: [cinnamonwm, actor, actor.opacity]
                             });
         }
         else {
@@ -377,8 +379,9 @@ WindowManager.prototype = {
         }
     },
 
-    _tileWindowOverwrite : function(cinnamonwm, actor) {
+    _tileWindowOverwrite : function(cinnamonwm, actor, orig_opacity) {
         if (this._removeEffect(this._tiling, actor)) {
+            actor.opacity = orig_opacity;
             cinnamonwm.completed_tile(actor);
         }
     },
@@ -427,7 +430,7 @@ WindowManager.prototype = {
                            onCompleteParams: [cinnamonwm, actor, actor.opacity],
                            onOverwrite: this._maximizeWindowOverwrite,
                            onOverwriteScope: this,
-                           onOverwriteParams: [cinnamonwm, actor]
+                           onOverwriteParams: [cinnamonwm, actor, actor.opacity]
                             });
         }
         else {
@@ -445,8 +448,9 @@ WindowManager.prototype = {
         }
     },
 
-    _maximizeWindowOverwrite : function(cinnamonwm, actor) {
+    _maximizeWindowOverwrite : function(cinnamonwm, actor, orig_opacity) {
         if (this._removeEffect(this._maximizing, actor)) {
+            actor.opacity = orig_opacity;
             cinnamonwm.completed_maximize(actor);
         }
     },
@@ -496,7 +500,7 @@ WindowManager.prototype = {
                            onCompleteParams: [cinnamonwm, actor, actor.opacity],
                            onOverwrite: this._unmaximizeWindowOverwrite,
                            onOverwriteScope: this,
-                           onOverwriteParams: [cinnamonwm, actor]
+                           onOverwriteParams: [cinnamonwm, actor, actor.opacity]
                             });
 
         }
@@ -515,8 +519,9 @@ WindowManager.prototype = {
         }
     },
     
-    _unmaximizeWindowOverwrite : function(cinnamonwm, actor) {
+    _unmaximizeWindowOverwrite : function(cinnamonwm, actor, orig_opacity) {
         if (this._removeEffect(this._unmaximizing, actor)) {
+            actor.opacity = orig_opacity;
             cinnamonwm.completed_unmaximize(actor);
         }
     },
@@ -669,7 +674,7 @@ WindowManager.prototype = {
                                        onCompleteParams: [cinnamonwm, actor, actor.opacity],
                                        onOverwrite: this._mapWindowOverwrite,
                                        onOverwriteScope: this,
-                                       onOverwriteParams: [cinnamonwm, actor]
+                                       onOverwriteParams: [cinnamonwm, actor, actor.opacity]
                                      });
                     return;
                 }
@@ -680,13 +685,14 @@ WindowManager.prototype = {
                 Main.soundManager.play('map');
             }            
         }
-        
+
+        let orig_opacity = actor.opacity;
         if (effect == "fade") {            
             this._mapping.push(actor);
-            let orig_opacity = actor.opacity;
+
             actor.opacity = 0;
             actor.show();
-            this._fadeWindow(cinnamonwm, actor, orig_opacity, time, transition, this._mapWindowDone, this._mapWindowOverwrite);
+            this._fadeWindow(cinnamonwm, actor, orig_opacity, orig_opacity, time, transition, this._mapWindowDone, this._mapWindowOverwrite);
         }
         else if (effect == "scale") {
             actor.set_scale(0.0, 0.0);
@@ -695,7 +701,7 @@ WindowManager.prototype = {
             this._scaleWindow(cinnamonwm, actor, 1, 1, time, transition, this._mapWindowDone, this._mapWindowOverwrite);        
         }
         else {   
-            this._completeMap(cinnamonwm, actor);
+            this._completeMap(cinnamonwm, actor, orig_opacity);
         }
         
     },
@@ -715,9 +721,9 @@ WindowManager.prototype = {
         }
     },
 
-    _mapWindowOverwrite : function(cinnamonwm, actor) {
+    _mapWindowOverwrite : function(cinnamonwm, actor, orig_opacity) {
         if (this._removeEffect(this._mapping, actor)) {
-            this._completeMap(cinnamonwm, actor);
+            this._completeMap(cinnamonwm, actor, orig_opacity);
         }
     },
 
@@ -794,7 +800,7 @@ WindowManager.prototype = {
             this._destroying.push(actor);
                 //Fixes ghost windows bug
             Tweener.removeTweens(actor);
-            this._fadeWindow(cinnamonwm, actor, 0, time, transition, this._destroyWindowDone, this._destroyWindowDone);
+            this._fadeWindow(cinnamonwm, actor, 0, actor.opacity, time, transition, this._destroyWindowDone, this._destroyWindowDone);
         }
         else {
             cinnamonwm.completed_destroy(actor);
