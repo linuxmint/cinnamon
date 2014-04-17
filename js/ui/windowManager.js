@@ -774,12 +774,12 @@ WindowManager.prototype = {
                              });
             return;
         }
-        
-        if (!this._shouldAnimate(actor)) {
+
+        if (!this._shouldAnimate(actor) || window.minimized) {
             cinnamonwm.completed_destroy(actor);
             return;
         }
-                                                
+
         let transition = "easeInSine";
         let effect = "scale";
         let time = 0.25;
