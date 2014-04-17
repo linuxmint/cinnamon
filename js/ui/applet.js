@@ -18,6 +18,7 @@ const COLOR_ICON_HEIGHT_FACTOR = .875;  // Panel height factor for normal color 
 const PANEL_FONT_DEFAULT_HEIGHT = 11.5; // px
 const PANEL_SYMBOLIC_ICON_DEFAULT_HEIGHT = 1.14 * PANEL_FONT_DEFAULT_HEIGHT; // ems conversion
 const DEFAULT_PANEL_HEIGHT = 25;
+const FALLBACK_ICON_HEIGHT = 22;
 
 /**
  * #MenuItem
@@ -483,7 +484,7 @@ IconApplet.prototype = {
             this._applet_icon = new St.Icon({icon_name: icon_name, icon_size: this._panelHeight * COLOR_ICON_HEIGHT_FACTOR / global.ui_scale,
                                             icon_type: St.IconType.FULLCOLOR, reactive: true, track_hover: true, style_class: 'applet-icon' });
         } else {
-            this._applet_icon = new St.Icon({icon_name: icon_name, icon_type: St.IconType.FULLCOLOR, reactive: true, track_hover: true, style_class: 'applet-icon' });
+            this._applet_icon = new St.Icon({icon_name: icon_name, icon_size: FALLBACK_ICON_HEIGHT, icon_type: St.IconType.FULLCOLOR, reactive: true, track_hover: true, style_class: 'applet-icon' });
         }
         this._applet_icon_box.child = this._applet_icon;
         this.__icon_type = St.IconType.FULLCOLOR;
@@ -530,7 +531,7 @@ IconApplet.prototype = {
                 this._applet_icon = new St.Icon({gicon: gicon, icon_size: this._panelHeight * COLOR_ICON_HEIGHT_FACTOR / global.ui_scale,
                                                 icon_type: St.IconType.FULLCOLOR, reactive: true, track_hover: true, style_class: 'applet-icon' });
             } else {
-                this._applet_icon = new St.Icon({gicon: gicon, icon_type: St.IconType.FULLCOLOR, reactive: true, track_hover: true, style_class: 'applet-icon' });
+                this._applet_icon = new St.Icon({gicon: gicon, icon_size: FALLBACK_ICON_HEIGHT, icon_type: St.IconType.FULLCOLOR, reactive: true, track_hover: true, style_class: 'applet-icon' });
             }
             this._applet_icon_box.child = this._applet_icon;
         }
@@ -557,7 +558,7 @@ IconApplet.prototype = {
                 this._applet_icon = new St.Icon({gicon: gicon, icon_size: height,
                                                 icon_type: St.IconType.SYMBOLIC, reactive: true, track_hover: true, style_class: 'applet-icon' });
             } else {
-                this._applet_icon = new St.Icon({gicon: gicon, icon_type: St.IconType.FULLCOLOR, reactive: true, track_hover: true, style_class: 'applet-icon' });
+                this._applet_icon = new St.Icon({gicon: gicon, icon_size: FALLBACK_ICON_HEIGHT, icon_type: St.IconType.FULLCOLOR, reactive: true, track_hover: true, style_class: 'applet-icon' });
             }
             this._applet_icon_box.child = this._applet_icon;
         }
