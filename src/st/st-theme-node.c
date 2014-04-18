@@ -2714,10 +2714,14 @@ st_theme_node_get_font (StThemeNode *node)
 StBorderImage *
 st_theme_node_get_border_image (StThemeNode *node)
 {
-  int i;
+  int i, scale_factor;
 
   if (node->border_image_computed)
     return node->border_image;
+
+  scale_factor = 1;
+
+  g_object_get (node->context, "scale-factor", &scale_factor, NULL);
 
   node->border_image = NULL;
   node->border_image_computed = TRUE;
@@ -2774,7 +2778,8 @@ st_theme_node_get_border_image (StThemeNode *node)
 
               if (term->content.num->type == NUM_GENERIC)
                 {
-                  borders[n_borders] = (int)(0.5 + term->content.num->val);
+
+                  borders[n_borders] = (int)(0.5 + term->content.num->val) * scale_factor;
                   n_borders++;
                 }
               else if (term->content.num->type == NUM_PERCENTAGE)
