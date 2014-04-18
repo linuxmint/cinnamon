@@ -503,6 +503,14 @@
       </description>
     </key>
 
+    <key name="prevent-focus-stealing" type="b">
+      <default>false</default>
+      <summary>Prevents windows that request user attention from stealing focus</summary>
+      <description>
+        When enabled, even if a window requires attention, it is not activated.
+      </description>
+    </key>
+
     <key name="desklet-decorations" type="i">
       <default>1</default>
       <_summary>The decoration level of the desklets</_summary>
