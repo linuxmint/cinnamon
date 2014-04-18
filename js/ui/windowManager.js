@@ -767,10 +767,10 @@ WindowManager.prototype = {
                                transition: "easeOutQuad",
                                onComplete: this._destroyWindowDone,
                                onCompleteScope: this,
-                               onCompleteParams: [cinnamonwm, actor],
+                               onCompleteParams: [cinnamonwm, actor, actor.opacity],
                                onOverwrite: this._destroyWindowDone,
                                onOverwriteScope: this,
-                               onOverwriteParams: [cinnamonwm, actor]
+                               onOverwriteParams: [cinnamonwm, actor, actor.opacity]
                              });
             return;
         }
@@ -794,7 +794,7 @@ WindowManager.prototype = {
         
         if (effect == "scale") {
             this._destroying.push(actor);
-            this._scaleWindow(cinnamonwm, actor, 0.0, 0.0, time, transition, this._destroyWindowDone, this._destroyWindowDone);
+            this._scaleWindow(cinnamonwm, actor, 0, 0, time, transition, this._destroyWindowDone, this._destroyWindowDone);
         }
         else if (effect == "fade") {
             this._destroying.push(actor);
@@ -807,7 +807,7 @@ WindowManager.prototype = {
         }
     },
 
-    _destroyWindowDone : function(cinnamonwm, actor) {
+    _destroyWindowDone : function(cinnamonwm, actor, orig_opacity) {
         if (this._removeEffect(this._destroying, actor)) {
             let parent = actor.get_meta_window().get_transient_for();
             if (parent && actor._parentDestroyId) {
