@@ -1631,7 +1631,6 @@ guint32
 cinnamon_global_get_current_time (CinnamonGlobal *global)
 {
   guint32 time;
-  const ClutterEvent *clutter_event;
 
   /* In case we have a xdnd timestamp use it */
   if (global->xdnd_timestamp != 0)
@@ -1642,7 +1641,7 @@ cinnamon_global_get_current_time (CinnamonGlobal *global)
      from some Clutter event callbacks.
 
      clutter_get_current_event_time() will return the correct time
-     from a Clutter event callback, but may return an out-of-date
+     from a Clutter event callback, but may return CLUTTER_CURRENT_TIME
      timestamp if called at other times.
 
      So we try meta_display_get_current_time() first, since we
@@ -1652,17 +1651,9 @@ cinnamon_global_get_current_time (CinnamonGlobal *global)
 
   time = meta_display_get_current_time (global->meta_display);
   if (time != CLUTTER_CURRENT_TIME)
-      return time;
-  /*
-   * We don't use clutter_get_current_event_time as it can give us a
-   * too old timestamp if there is no current event.
-   */
-  clutter_event = clutter_get_current_event ();
+    return time;
 
-  if (clutter_event != NULL)
-    return clutter_event_get_time (clutter_event);
-  else
-    return CLUTTER_CURRENT_TIME;
+  return clutter_get_current_event_time ();
 }
 
 /**
