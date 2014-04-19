@@ -279,10 +279,10 @@ WindowManager.prototype = {
                                        transition: transition,
                                        onComplete: this._minimizeWindowDone,
                                        onCompleteScope: this,
-                                       onCompleteParams: [cinnamonwm, actor],
+                                       onCompleteParams: [cinnamonwm, actor, actor.opacity],
                                        onOverwrite: this._minimizeWindowOverwritten,
                                        onOverwriteScope: this,
-                                       onOverwriteParams: [cinnamonwm, actor]
+                                       onOverwriteParams: [cinnamonwm, actor, actor.opacity]
                                      });
                     return; // done
                 }
@@ -613,7 +613,7 @@ WindowManager.prototype = {
                                    onCompleteParams: [cinnamonwm, actor, 255],
                                    onOverwrite: this._mapWindowOverwrite,
                                    onOverwriteScope: this,
-                                   onOverwriteParams: [cinnamonwm, actor]
+                                   onOverwriteParams: [cinnamonwm, actor, 255]
                                  });
                 return;
             }
