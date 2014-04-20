@@ -10,6 +10,7 @@ try:
     import collections
     import XletSettingsWidgets
     import dbus
+    from SettingsWidgets import SectionBg
     from gi.repository import Gio, Gtk, GObject, GdkPixbuf
 except Exception, detail:
     print detail
@@ -118,10 +119,9 @@ class XletSetting:
 
     def build_single(self):
         self.nb = None
-        self.view = Gtk.ScrolledWindow()
-        self.view.set_shadow_type(Gtk.ShadowType.IN)
+        self.view = SectionBg()
         self.content_box = Gtk.VBox()
-        self.view.add_with_viewport(self.content_box)
+        self.view.add(self.content_box)
         self.content_box.set_border_width(5)
 
         for instance_key in self.applet_settings.keys():
