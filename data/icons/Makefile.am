@@ -5,8 +5,8 @@ public_icons_themes = \
 	$(NULL)
 
 public_icons = \
-	hicolor_actions_scalable_cs-backgrounds-symbolic.svg \
-	hicolor_actions_scalable_cs-desklets-symbolic.svg \
+	hicolor_actions_scalable_background-change.svg \
+	hicolor_actions_scalable_desklet-add.svg \
 	hicolor_categories_scalable_cs-applets.svg \
 	hicolor_categories_scalable_cs-backgrounds.svg \
 	hicolor_categories_scalable_cs-bluetooth.svg \
