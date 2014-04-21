@@ -242,6 +242,9 @@ HotCorner.prototype = {
             if (!Main.overview.animationInProgress)
                 Main.overview.toggle();
             break;
+        case 'desktop':
+            global.screen.toggle_desktop(global.get_current_time());
+            break;
         default:
             Util.spawnCommandLine(this.action);
         }
