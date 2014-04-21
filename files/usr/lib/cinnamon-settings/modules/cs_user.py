@@ -123,7 +123,6 @@ class Module:
                             self.row = self.row + 1
            
             self.realname_entry = EditableEntry()
-            self.sidePage.add_widget(self.realname_entry)         
             self.realname_entry.connect("changed", self._on_realname_changed)
             self.realname_entry.set_tooltip_text(_("Click to change your name"))
             
