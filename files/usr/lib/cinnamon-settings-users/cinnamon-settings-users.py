@@ -441,7 +441,7 @@ class Module:
                     for picture in pictures:
                         path = os.path.join(face_dir, picture)            
                         file = Gio.File.new_for_path(path)
-                        file_icon = Gio.FileIcon().new(file)
+                        file_icon = Gio.FileIcon.new(file)
                         image = Gtk.Image.new_from_gicon (file_icon, Gtk.IconSize.DIALOG)            
                         menuitem = Gtk.MenuItem()
                         menuitem.add(image)
