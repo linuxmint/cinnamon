@@ -203,8 +203,8 @@ class HotCornerConfiguration():
         self.index = index
         self.functionStore = Gtk.ListStore(str, str)
         #self.functionStore.append(['disabled', _("Disabled")])
-        self.functionStore.append(['expo', _("Workspace Selector")]) #Expo
-        self.functionStore.append(['scale', _("Window Selector")]) #Scale
+        self.functionStore.append(['expo', _("View all workspaces")]) #Expo
+        self.functionStore.append(['scale', _("Expose all windows")]) #Scale
         self.functionStore.append(['desktop', _("Show Desktop")])
         self.functionStore.append(['custom', _("Custom")])
         
