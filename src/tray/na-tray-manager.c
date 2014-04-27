@@ -96,6 +96,7 @@ na_tray_manager_init (NaTrayManager *manager)
 {
   manager->invisible = NULL;
   manager->socket_table = g_hash_table_new (NULL, NULL);
+  manager->scale = 1;
 
   manager->fg.red = 0;
   manager->fg.green = 0;
@@ -270,9 +271,53 @@ na_tray_manager_plug_removed (GtkSocket       *socket,
 
   g_hash_table_remove (manager->socket_table,
                        GINT_TO_POINTER (child->icon_window));
+
   g_signal_emit (manager, manager_signals[TRAY_ICON_REMOVED], 0, child);
 
   /* This destroys the socket. */
+  return FALSE;
+}
+
+typedef struct
+{
+  NaTrayManager *manager;
+  Window window;
+  GtkWidget *child;
+} TrayAddPacket;
+
+static gboolean
+wait_after_added (TrayAddPacket *packet)
+{
+
+  /* If the child wasn't attached, then destroy it */
+  NaTrayManager *manager = NA_TRAY_MANAGER (packet->manager);
+  GtkWidget *child = GTK_WIDGET (packet->child);
+
+  if (!GTK_IS_WINDOW (gtk_widget_get_toplevel (GTK_WIDGET (child))))
+    {
+      gtk_widget_destroy (child);
+      goto out;
+    }
+
+  g_signal_connect (child, "plug_removed",
+            G_CALLBACK (na_tray_manager_plug_removed), manager);
+
+  gtk_socket_add_id (GTK_SOCKET (child), packet->window);
+
+  if (!gtk_socket_get_plug_window (GTK_SOCKET (child)))
+    {
+      /* Embedding failed, we won't get a plug-removed signal */
+      /* This signal destroys the socket */
+      g_signal_emit (manager, manager_signals[TRAY_ICON_REMOVED], 0, child);
+      goto out;
+    }
+
+  g_hash_table_insert (manager->socket_table,
+                       GINT_TO_POINTER (packet->window), child);
+  gtk_widget_show (child);
+
+out:
+  g_object_unref (child);
   return FALSE;
 }
 
@@ -290,37 +335,19 @@ na_tray_manager_handle_dock_request (NaTrayManager       *manager,
       return;
     }
 
-  child = na_tray_child_new (manager->screen, icon_window);
+  child = na_tray_child_new (manager->screen, icon_window, manager->scale);
   if (child == NULL) /* already gone or other error */
     return;
 
   g_signal_emit (manager, manager_signals[TRAY_ICON_ADDED], 0,
 		 child);
 
-  /* If the child wasn't attached, then destroy it */
+  TrayAddPacket *packet = g_new0 (TrayAddPacket, 1);
+  packet->child = g_object_ref (child);
+  packet->window = icon_window;
+  packet->manager = manager;
 
-  if (!GTK_IS_WINDOW (gtk_widget_get_toplevel (GTK_WIDGET (child))))
-    {
-      gtk_widget_destroy (child);
-      return;
-    }
-
-  g_signal_connect (child, "plug_removed",
-		    G_CALLBACK (na_tray_manager_plug_removed), manager);
-
-  gtk_socket_add_id (GTK_SOCKET (child), icon_window);
-
-  if (!gtk_socket_get_plug_window (GTK_SOCKET (child)))
-    {
-      /* Embedding failed, we won't get a plug-removed signal */
-      /* This signal destroys the socket */
-      g_signal_emit (manager, manager_signals[TRAY_ICON_REMOVED], 0, child);
-      return;
-    }
-
-  g_hash_table_insert (manager->socket_table,
-                       GINT_TO_POINTER (icon_window), child);
-  gtk_widget_show (child);
+  g_timeout_add (250, (GSourceFunc) wait_after_added, packet);
 }
 
 static void
@@ -890,6 +917,14 @@ na_tray_manager_set_colors (NaTrayManager *manager,
 
       na_tray_manager_set_colors_property (manager);
     }
+}
+
+void
+na_tray_manager_set_scale (NaTrayManager *manager,
+                           gint           scale)
+{
+    g_return_if_fail (NA_IS_TRAY_MANAGER (manager));
+    manager->scale = scale;
 }
 
 GtkOrientation
