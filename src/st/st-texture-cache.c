@@ -975,8 +975,12 @@ load_gicon_with_colors (StTextureCache    *cache,
   theme = cache->priv->icon_theme;
 
   info = gtk_icon_theme_lookup_by_gicon_for_scale (theme, icon, size, scale, GTK_ICON_LOOKUP_USE_BUILTIN);
-  if (info == NULL)
-    return NULL;
+
+  if (info == NULL) {
+    texture = CLUTTER_ACTOR (create_default_texture ());
+    clutter_actor_set_size (texture, size * scale, size * scale);
+    return texture;
+  }
 
   gicon_string = g_icon_to_string (icon);
   /* A return value of NULL indicates that the icon can not be serialized,
@@ -1042,7 +1046,8 @@ load_gicon_with_colors (StTextureCache    *cache,
  * icon isn't loaded already, the texture will be filled
  * asynchronously.
  *
- * Return Value: (transfer none): A new #ClutterActor for the icon, or %NULL if not found
+ * Return Value: (transfer none): A new #ClutterActor for the icon, or an empty ClutterActor
+ * if none was found.
  */
 ClutterActor *
 st_texture_cache_load_gicon (StTextureCache    *cache,
