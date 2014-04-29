@@ -11,7 +11,6 @@ const St = imports.gi.St;
 const Cinnamon = imports.gi.Cinnamon;
 const Signals = imports.signals;
 const Lang = imports.lang;
-const System = imports.system;
 
 const History = imports.misc.history;
 const Extension = imports.ui.extension;
@@ -683,7 +682,7 @@ Memory.prototype = {
 
         this._gcbutton = new St.Button({ label: 'Full GC',
                                          style_class: 'lg-obj-inspector-button' });
-        this._gcbutton.connect('clicked', Lang.bind(this, function () { System.gc(); this._renderText(); }));
+        this._gcbutton.connect('clicked', Lang.bind(this, function () { global.gc(); this._renderText(); }));
         this.actor.add(this._gcbutton, { x_align: St.Align.START,
                                          x_fill: false });
 

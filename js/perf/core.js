@@ -1,7 +1,5 @@
 // -*- mode: js; js-indent-level: 4; indent-tabs-mode: nil -*-
 
-const System = imports.system;
-
 const Main = imports.ui.main;
 const Scripting = imports.ui.scripting;
 
@@ -101,7 +99,7 @@ function run() {
         Main.overview.hide();
         yield Scripting.waitLeisure();
 
-        System.gc();
+        global.gc();
         yield Scripting.sleep(1000);
         Scripting.collectStatistics();
         Scripting.scriptEvent('afterShowHide');

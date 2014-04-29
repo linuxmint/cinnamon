@@ -87,6 +87,11 @@ void    cinnamon_global_set_pointer             (CinnamonGlobal         *global,
                                               int                 x,
                                               int                 y);
 
+
+/* JavaScript utilities */
+void     cinnamon_global_gc                   (CinnamonGlobal *global);
+void     cinnamon_global_maybe_gc             (CinnamonGlobal *global);
+
 typedef struct {
   guint glibc_uordblks;
 

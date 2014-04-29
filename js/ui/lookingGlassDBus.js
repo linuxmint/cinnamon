@@ -3,7 +3,6 @@
 const Gio = imports.gi.Gio;
 const Main = imports.ui.main;
 const Extension = imports.ui.extension;
-const System = imports.system;
 
 const LG_SERVICE_NAME = 'org.Cinnamon.LookingGlass';
 const LG_SERVICE_PATH = '/org/Cinnamon/LookingGlass';
@@ -100,7 +99,7 @@ CinnamonLookingGlass.prototype = {
     },
     
     FullGc: function() {
-        System.gc();
+        global.gc();
     },
     
     Inspect: function(path) {
