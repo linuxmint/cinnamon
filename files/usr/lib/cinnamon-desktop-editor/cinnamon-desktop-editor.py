@@ -4,7 +4,7 @@ import sys
 import os
 import gettext
 import glob
-from gi.repository import GLib, Gtk, Gio, GMenu, GdkPixbuf
+from gi.repository import GLib, Gtk, Gio, CMenu, GdkPixbuf
 from optparse import OptionParser
 import shutil
 
@@ -406,7 +406,7 @@ class Main:
         if options.mode == "nemo-launcher" and not options.destination_directory:
             parser.error("nemo-launcher mode must be accompanied by the -d argument")
 
-        self.tree = GMenu.Tree.new("cinnamon-applications.menu", GMenu.TreeFlags.INCLUDE_NODISPLAY)
+        self.tree = CMenu.Tree.new("cinnamon-applications.menu", CMenu.TreeFlags.INCLUDE_NODISPLAY)
         if not self.tree.load_sync():
             raise ValueError("can not load menu tree")
 
@@ -478,11 +478,11 @@ class Main:
 
         item_iter = parent.iter()
         item_type = item_iter.next()
-        while item_type != GMenu.TreeItemType.INVALID:
-            if item_type == GMenu.TreeItemType.DIRECTORY:
+        while item_type != CMenu.TreeItemType.INVALID:
+            if item_type == CMenu.TreeItemType.DIRECTORY:
                 item = item_iter.get_directory()
                 self.search_menu_sys(item)
-            elif item_type == GMenu.TreeItemType.ENTRY:
+            elif item_type == CMenu.TreeItemType.ENTRY:
                 item = item_iter.get_entry()
                 if item.get_desktop_file_id() == self.desktop_file:
                     self.orig_file = item.get_desktop_file_path()
