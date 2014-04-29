@@ -116,8 +116,8 @@
       <range min="20" max="100" />
       <_summary>Panel size</_summary>
       <_description>
-        User-defined panel-height for top panel.  Note, this value may be the true value in use at runtime, depending
-        on any scaling that may be occurring (for hidpi screens, for instance).
+        User-defined panel-height for top panel.  Note, this value may or may not be the true value in use at runtime, depending
+        on any scaling that may be occurring (on hidpi screens, for instance).
       </_description>
     </key>
 
@@ -126,8 +126,8 @@
       <range min="20" max="100"/>
       <_summary>Panel size</_summary>
       <_description>
-        User-defined panel-height for bottom panel.  Note, this value may be the true value in use at runtime, depending
-        on any scaling that may be occurring (for hidpi screens, for instance).
+        User-defined panel-height for bottom panel.  Note, this value may or may not be the true value in use at runtime, depending
+        on any scaling that may be occurring (on hidpi screens, for instance).
       </_description>
     </key>
     
