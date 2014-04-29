@@ -317,7 +317,7 @@ MyApplet.prototype = {
         let desktopFiles = global.settings.get_strv(PANEL_LAUNCHERS_KEY);
         let appSys = Cinnamon.AppSystem.get_default();
         let apps = new Array();
-        for (var i in desktopFiles){
+        for (let i = 0; i < desktopFiles.length; i++){
             let app = appSys.lookup_app(desktopFiles[i]);
             let appinfo;
             if (!app) appinfo = Gio.DesktopAppInfo.new_from_filename(CUSTOM_LAUNCHERS_PATH+"/"+desktopFiles[i]);
@@ -335,7 +335,7 @@ MyApplet.prototype = {
         this._launchers = new Array();
 
         let apps = this.loadApps();
-        for (var i in apps){
+        for (let i = 0; i < apps.length; i++){
             let app = apps[i];
             let launcher = new PanelAppLauncher(this, app[0], app[1], this.orientation, this._panelHeight);
             this.myactor.add(launcher.actor);
@@ -371,7 +371,6 @@ MyApplet.prototype = {
 
     showAddLauncherDialog: function(timestamp, launcher){
         if (launcher) {
-            global.logError(launcher.getId());
             Util.spawnCommandLine("cinnamon-desktop-editor -mpanel-launcher -f" + launcher.getId());
         } else {
             Util.spawnCommandLine("cinnamon-desktop-editor -mpanel-launcher");

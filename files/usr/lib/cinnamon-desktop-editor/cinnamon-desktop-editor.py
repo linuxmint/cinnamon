@@ -24,9 +24,6 @@ EXTENSIONS = (".png", ".xpm", ".svg")
 def escape_space(string):
     return string.replace(" ", "\ ")
 
-def unescape_space(string):
-    return string.replace("\ ", " ")
-
 def try_icon_name(filename):
     # Detect if the user picked an icon, and make
     # it into an icon name.
@@ -157,6 +154,36 @@ class ItemEditor(object):
     def check_custom_path(self):
         raise NotImplementedError()
 
+    def sync_widgets(self, name_valid, exec_valid):
+        if name_valid:
+            self.builder.get_object('name-entry').set_icon_from_icon_name(Gtk.EntryIconPosition.SECONDARY, 'ok')
+            self.builder.get_object('name-entry').set_icon_tooltip_text(Gtk.EntryIconPosition.SECONDARY,
+                                                                        _("Valid"))
+        else:
+            self.builder.get_object('name-entry').set_icon_from_icon_name(Gtk.EntryIconPosition.SECONDARY, 'stop')
+            self.builder.get_object('name-entry').set_icon_tooltip_text(Gtk.EntryIconPosition.SECONDARY,
+                                                                        _("Name cannot be blank."))
+
+        if exec_valid:
+            self.builder.get_object('exec-entry').set_icon_from_icon_name(Gtk.EntryIconPosition.SECONDARY, 'ok')
+            self.builder.get_object('exec-entry').set_icon_tooltip_text(Gtk.EntryIconPosition.SECONDARY,
+                                                                        _("Valid"))
+        else:
+            self.builder.get_object('exec-entry').set_icon_from_icon_name(Gtk.EntryIconPosition.SECONDARY, 'stop')
+            self.builder.get_object('exec-entry').set_icon_tooltip_text(Gtk.EntryIconPosition.SECONDARY,
+                                                                        _("Cannot be empty.  Spaces in filenames must be escaped with backslash (\\).\nNot a valid executable line."))
+
+        self.builder.get_object('ok').set_sensitive(name_valid and exec_valid)
+
+    def validate_exec_line(self, string):
+        try:
+            success, parsed = GLib.shell_parse_argv(string)
+            if GLib.find_program_in_path(parsed[0]) or ((not os.path.isdir(parsed[0])) and os.access(parsed[0], os.X_OK)):
+                return True
+        except:
+            pass
+        return False
+
     def get_keyfile_edits(self):
         raise NotImplementedError()
 
@@ -166,7 +193,7 @@ class ItemEditor(object):
         except GLib.GError:
             pass
         else:
-            self.builder.get_object(ctl).set_text(unescape_space(val))
+            self.builder.get_object(ctl).set_text(val)
 
     def set_check(self, ctl, name):
         try:
@@ -237,8 +264,9 @@ class LauncherEditor(ItemEditor):
     def resync_validity(self, *args):
         name_text = self.builder.get_object('name-entry').get_text().strip()
         exec_text = self.builder.get_object('exec-entry').get_text().strip()
-        valid = (name_text is not "" and exec_text is not "")
-        self.builder.get_object('ok').set_sensitive(valid)
+        name_valid = name_text is not ""
+        exec_valid = self.validate_exec_line(exec_text)
+        self.sync_widgets(name_valid, exec_valid)
 
     def load(self):
         super(LauncherEditor, self).load()
@@ -250,7 +278,7 @@ class LauncherEditor(ItemEditor):
 
     def get_keyfile_edits(self):
         return dict(Name=self.builder.get_object('name-entry').get_text(),
-                    Exec=escape_space(self.builder.get_object('exec-entry').get_text()),
+                    Exec=self.builder.get_object('exec-entry').get_text(),
                     Comment=self.builder.get_object('comment-entry').get_text(),
                     Terminal=self.builder.get_object('terminal-check').get_active(),
                     Icon=get_icon_string(self.builder.get_object('icon-image')),
@@ -263,7 +291,7 @@ class LauncherEditor(ItemEditor):
                                         Gtk.STOCK_OK, Gtk.ResponseType.ACCEPT))
         response = chooser.run()
         if response == Gtk.ResponseType.ACCEPT:
-            self.builder.get_object('exec-entry').set_text(chooser.get_filename())
+            self.builder.get_object('exec-entry').set_text(escape_space(chooser.get_filename()))
         chooser.destroy()
 
     def check_custom_path(self):
@@ -332,8 +360,9 @@ class PanelLauncherEditor(ItemEditor):
     def resync_validity(self, *args):
         name_text = self.builder.get_object('name-entry').get_text().strip()
         exec_text = self.builder.get_object('exec-entry').get_text().strip()
-        valid = (name_text is not "" and exec_text is not "")
-        self.builder.get_object('ok').set_sensitive(valid)
+        name_valid = name_text is not ""
+        exec_valid = self.validate_exec_line(exec_text)
+        self.sync_widgets(name_valid, exec_valid)
 
     def load(self):
         super(PanelLauncherEditor, self).load()
@@ -345,7 +374,7 @@ class PanelLauncherEditor(ItemEditor):
 
     def get_keyfile_edits(self):
         return dict(Name=self.builder.get_object('name-entry').get_text(),
-                    Exec=escape_space(self.builder.get_object('exec-entry').get_text()),
+                    Exec=self.builder.get_object('exec-entry').get_text(),
                     Comment=self.builder.get_object('comment-entry').get_text(),
                     Terminal=self.builder.get_object('terminal-check').get_active(),
                     Icon=get_icon_string(self.builder.get_object('icon-image')),
@@ -358,7 +387,7 @@ class PanelLauncherEditor(ItemEditor):
                                         Gtk.STOCK_OK, Gtk.ResponseType.ACCEPT))
         response = chooser.run()
         if response == Gtk.ResponseType.ACCEPT:
-            self.builder.get_object('exec-entry').set_text(chooser.get_filename())
+            self.builder.get_object('exec-entry').set_text(escape_space(chooser.get_filename()))
         chooser.destroy()
 
 class Main:
