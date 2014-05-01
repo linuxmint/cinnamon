@@ -201,12 +201,11 @@ class HotCornerConfiguration():
     def __init__(self, index, updateCallback):
         self.updateCallback = updateCallback
         self.index = index
-        self.functionStore = Gtk.ListStore(str, str)
-        #self.functionStore.append(['disabled', _("Disabled")])
-        self.functionStore.append(['expo', _("Workspace Selector")]) #Expo
-        self.functionStore.append(['scale', _("Window Selector")]) #Scale
-        self.functionStore.append(['desktop', _("Show Desktop")])
-        self.functionStore.append(['custom', _("Custom")])
+        self.functionStore = Gtk.ListStore(str, str)        
+        self.functionStore.append(['expo', _("Show all workspaces")]) #Expo
+        self.functionStore.append(['scale', _("Show all windows")]) #Scale
+        self.functionStore.append(['desktop', _("Show the desktop")])
+        self.functionStore.append(['custom', _("Run a command")])
         
     def build(self):
         self.box = Gtk.VBox.new(3, False)
