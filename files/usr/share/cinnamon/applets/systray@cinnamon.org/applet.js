@@ -17,6 +17,9 @@ MyApplet.prototype = {
     _init: function(orientation, panel_height) {
         Applet.Applet.prototype._init.call(this, orientation, panel_height);
 
+        this.actor.remove_style_class_name("applet-box");
+        this.actor.style="spacing: px;";
+
         this._signals = { added: null,
                           removed: null,
                           redisplay: null,
@@ -29,6 +32,7 @@ MyApplet.prototype = {
         this.manager_container = new Clutter.Actor( { layout_manager: manager } );
 
         this.actor.add_actor (this.manager_container);
+
         this.manager_container.show();
     },
 
