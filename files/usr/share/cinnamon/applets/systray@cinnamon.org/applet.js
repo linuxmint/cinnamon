@@ -18,7 +18,7 @@ MyApplet.prototype = {
         Applet.Applet.prototype._init.call(this, orientation, panel_height);
 
         this.actor.remove_style_class_name("applet-box");
-        this.actor.style="spacing: px;";
+        this.actor.style="spacing: 5px;";
 
         this._signals = { added: null,
                           removed: null,
