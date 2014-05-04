@@ -313,6 +313,7 @@ class Module:
         self.sidePage = sidePage
         self.name = "default"
         self.category = "prefs"
+        self.comment = _("Preferred Applications")
 
     def on_module_selected(self):
         if not self.loaded:

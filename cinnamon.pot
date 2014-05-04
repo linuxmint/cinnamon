@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-05-01 13:37+0100\n"
+"POT-Creation-Date: 2014-05-04 16:01+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -18,7 +18,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=INTEGER; plural=EXPRESSION;\n"
 
-#: generate_additional_files.py:50
+#: generate_additional_files.py:24
 #: files/usr/share/cinnamon/applets/user@cinnamon.org/applet.js:85
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:37
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:228
@@ -26,18 +26,18 @@ msgstr ""
 msgid "System Settings"
 msgstr ""
 
-#: generate_additional_files.py:50
+#: generate_additional_files.py:24
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:38
 msgid "Control Center"
 msgstr ""
 
-#: generate_additional_files.py:63
+#: generate_additional_files.py:37
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:77
 #: files/usr/lib/cinnamon-settings-users/cinnamon-settings-users.py:372
 msgid "Users and Groups"
 msgstr ""
 
-#: generate_additional_files.py:63
+#: generate_additional_files.py:37
 msgid "Add or remove users and groups"
 msgstr ""
 
