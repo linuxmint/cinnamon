@@ -86,7 +86,7 @@ MyApplet.prototype = {
 
             /* dropbox, for some reason, refuses to provide a correct size icon in our new situation.
              * Tried even with stalonetray, same results - all systray icons I tested work fine but dropbox.  I'm
-             * assuming for now it's there problem.  For us, just scale it up.
+             * assuming for now it's their problem.  For us, just scale it up.
              */
             if (["dropbox"].indexOf(role) != -1) {
                 icon.set_scale_full(global.ui_scale, global.ui_scale, icon.get_width() / 2.0, icon.get_width() / 2.0);
