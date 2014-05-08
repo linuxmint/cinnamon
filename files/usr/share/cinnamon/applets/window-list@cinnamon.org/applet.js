@@ -516,7 +516,7 @@ AppMenuButton.prototype = {
     },
 
     _windowHandle: function(fromDrag){
-        has_focus = this.metaWindow.has_focus();
+        let has_focus = this.metaWindow.has_focus();
         if (!this.metaWindow.minimized && !has_focus) {
             this.metaWindow.foreach_transient(function(child) {
                 if (!child.minimized && child.has_focus()) {
