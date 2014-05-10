@@ -563,6 +563,13 @@
       </_description>
     </key>
 
+    <key type="i" name="active-display-scale">
+      <range min="1" max="4" />
+      <default>1</default>
+      <summary>Utility read-only setting used by st library</summary>
+      <description>Current scale factor</description>
+    </key>
+
   </schema>
  
   <schema id="org.cinnamon.theme" path="/org/cinnamon/theme/"

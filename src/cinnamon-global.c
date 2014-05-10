@@ -1005,6 +1005,7 @@ update_scale_factor (GtkSettings *settings,
 
     if (scale != global->ui_scale) {
         global->ui_scale = scale;
+        g_settings_set_int (global->settings, "active-display-scale", scale);
         g_signal_emit_by_name (global, "scale-changed");
     }
   }
