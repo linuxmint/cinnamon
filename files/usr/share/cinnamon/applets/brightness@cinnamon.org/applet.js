@@ -145,7 +145,7 @@ MyApplet.prototype = {
                     this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
                 }
                 
-                this.menu.addSettingsAction(_("Settings"), "screen");
+                this.menu.addSettingsAction(_("Settings"), "power");
 		    }));
         }
         catch (e) {
