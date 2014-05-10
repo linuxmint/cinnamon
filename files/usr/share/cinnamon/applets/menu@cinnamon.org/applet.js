@@ -34,6 +34,16 @@ const MAX_BUTTON_WIDTH = "max-width: 20em;";
 
 const USER_DESKTOP_PATH = FileUtils.getUserDesktopDir();
 
+var UNSAFE_APPS = [
+"cinnamon",
+"mint",
+"nemo",
+"mdm",
+"gdebi",
+"gnome-terminal",
+"system-config-printer",
+];
+
 
 let appsys = Cinnamon.AppSystem.get_default();
 
@@ -255,7 +265,10 @@ GenericApplicationButton.prototype = {
                 menuItem = new ApplicationContextMenuItem(this, _("Add to favorites"), "add_to_favorites");
                 this.menu.addMenuItem(menuItem);
             }
-            if (this.appsMenuButton._canUninstallApps) {
+            var rawName = this.app.get_app_info().get_filename();
+            //RavetcoFX: Some hacky regex replacements :P
+            var naem = rawName.replace(/^.*[\\\/]/, '').replace(/cinnamon-.*$/, 'cinnamon').replace(/mint.*$/, 'mint').replace(/mdm.*$/, 'mdm').replace('.desktop', '');
+            if (this.appsMenuButton._isRemoveAppPresent && ! (UNSAFE_APPS.indexOf(naem) > -1)) {
                 menuItem = new ApplicationContextMenuItem(this, _("Uninstall"), "uninstall");
                 this.menu.addMenuItem(menuItem);
             }
@@ -887,7 +900,7 @@ MyApplet.prototype = {
             this.menuIsOpening = false;
             this._knownApps = new Array(); // Used to keep track of apps that are already installed, so we can highlight newly installed ones
             this._appsWereRefreshed = false;
-            this._canUninstallApps = GLib.file_test("/usr/bin/cinnamon-remove-application", GLib.FileTest.EXISTS);
+            this._isRemoveAppPresent = GLib.file_test("/usr/bin/cinnamon-remove-application", GLib.FileTest.EXISTS);
 
             this.RecentManager = new DocInfo.DocManager();
 
