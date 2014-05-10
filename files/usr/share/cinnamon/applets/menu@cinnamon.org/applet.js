@@ -40,6 +40,7 @@ var UNSAFE_APPS = [
 "nemo",
 "mdm",
 "gdebi",
+"gnome-terminal",
 "system-config-printer",
 ];
 
