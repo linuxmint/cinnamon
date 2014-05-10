@@ -489,7 +489,7 @@ Magnifier.prototype = {
     },
 
     _settingsInit: function(zoomRegion) {
-        let ret;
+        let ret = 1.0;
         if (zoomRegion) {
             // Mag factor is accurate to two decimal places.
             let aPref = parseFloat(this._settings.get_double(MAG_FACTOR_KEY).toFixed(2));
@@ -573,7 +573,7 @@ Magnifier.prototype = {
             // Mag factor is accurate to two decimal places.
             let magFactor = parseFloat(this._settings.get_double(MAG_FACTOR_KEY).toFixed(2));
             this._zoomRegions[0].setMagFactor(magFactor, magFactor);
-            this.setActive(magFactor > 1.0);
+            this.setActive(this.enabled && magFactor > 1.0);
         }
     },
 
