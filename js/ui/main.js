@@ -1,7 +1,6 @@
 // -*- mode: js; js-indent-level: 4; indent-tabs-mode: nil -*-
 /**
  * FILE:main.js
- * @automountManager (AutomountManager.AutomountManager): The automount manager
  * @placesManager (PlacesManager.PlacesManager): The places manager
  * @overview (Overview.Overview): The "scale" overview 
  * @expo (Expo.Expo): The "expo" overview
@@ -52,7 +51,6 @@ const PointerTracker = imports.misc.pointerTracker;
 const SoundManager = imports.ui.soundManager;
 const BackgroundManager = imports.ui.backgroundManager;
 const AppletManager = imports.ui.appletManager;
-const AutomountManager = imports.ui.automountManager;
 const DeskletManager = imports.ui.deskletManager;
 const ExtensionSystem = imports.ui.extensionSystem;
 const Keyboard = imports.ui.keyboard;
@@ -87,8 +85,6 @@ const LAYOUT_FLIPPED = "flipped";
 const LAYOUT_CLASSIC = "classic";
 
 const CIN_LOG_FOLDER = GLib.get_home_dir() + '/.cinnamon/';
-
-let automountManager = null;
 
 let panel = null;
 let panel2 = null;
@@ -354,7 +350,6 @@ function start() {
     windowAttentionHandler = new WindowAttentionHandler.WindowAttentionHandler();
 
     placesManager = new PlacesManager.PlacesManager();    
-    automountManager = new AutomountManager.AutomountManager();
 
     keybindingManager = new Keybindings.KeybindingManager();
     magnifier = new Magnifier.Magnifier();

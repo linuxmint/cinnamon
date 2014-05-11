@@ -195,9 +195,10 @@ PlacesManager.prototype = {
         this._volumeMonitor.connect('mount-added', Lang.bind(this, this._updateDevices));
         this._volumeMonitor.connect('mount-removed', Lang.bind(this, this._updateDevices));
         this._volumeMonitor.connect('mount-changed', Lang.bind(this, this._updateDevices));
-        this._volumeMonitor.connect('drive-connected', Lang.bind(this, this._updateDevices));
-        this._volumeMonitor.connect('drive-disconnected', Lang.bind(this, this._updateDevices));
-        this._volumeMonitor.connect('drive-changed', Lang.bind(this, this._updateDevices));
+        this._volumeMonitor.connect('drive-connected', Lang.bind(this, this._onDriveConnected));
+        this._volumeMonitor.connect('drive-disconnected', Lang.bind(this, this._onDriveDisconnected));
+        this._volumeMonitor.connect('drive-changed', Lang.bind(this, this._updateDevices));    
+
         this._updateDevices();
 
         this._bookmarksPath = GLib.build_filenamev([GLib.get_user_config_dir(), 'gtk-3.0', 'bookmarks']);
@@ -222,6 +223,16 @@ PlacesManager.prototype = {
         }));
 
         this._reloadBookmarks();
+    },
+
+    _onDriveConnected: function() {        
+        Main.soundManager.play('plug');
+        this._updateDevices();
+    },
+
+    _onDriveDisconnected: function() {
+        Main.soundManager.play('unplug');
+        this._updateDevices();
     },
 
     _updateDevices: function() {
