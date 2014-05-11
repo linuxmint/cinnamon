@@ -174,7 +174,7 @@ st_texture_cache_init (StTextureCache *self)
 
   self->priv->settings = g_settings_new ("org.cinnamon");
 
-  g_signal_connect (self->priv->settings, "active-display-scale",
+  g_signal_connect (self->priv->settings, "changed::active-display-scale",
                     G_CALLBACK (update_scale_factor), self);
 
   update_scale_factor (self->priv->settings, "active-display-scale", self);
