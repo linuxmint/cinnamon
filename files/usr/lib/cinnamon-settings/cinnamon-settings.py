@@ -198,7 +198,7 @@ class MainWindow:
                         category["show"] = True
 
             # Don't allow item names (and their translations) to be more than 30 chars long. It looks ugly and it creates huge gaps in the icon views
-            name = sp.name            
+            name = unicode(sp.name,'utf-8')
             if len(name) > 30:
                 name = "%s..." % name[:30]
             sidePagesIters[sp_id] = (self.store[sp_cat].append([name, sp.icon, sp, sp_cat]), sp_cat)
