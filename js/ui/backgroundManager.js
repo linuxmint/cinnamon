@@ -5,6 +5,7 @@ const Gdk = imports.gi.Gdk;
 const Lang = imports.lang;
 const Desktop = imports.gi.CinnamonDesktop;
 const Mainloop = imports.mainloop;
+const Util = imports.misc.util;
 
 function BackgroundManager() {
     this._init();
@@ -25,34 +26,19 @@ BackgroundManager.prototype = {
 
         this._cinnamonSettings = new Gio.Settings({ schema: 'org.cinnamon.desktop.background' }); 
 
-        this.bg = new Desktop.BG();
-        this.bg.connect("changed", Lang.bind(this, this.draw_background));
-        this.bg.connect("transitioned", Lang.bind(this, this.draw_background));
-
         this.connect_screen_signals();
 
         this._cinnamonSettings.connect("changed", Lang.bind(this, this.on_settings_changed_event_cb));
 
-        this.bg.load_from_preferences(this._cinnamonSettings);
         this.draw_background();
     },
 
     draw_background: function() {
-        let display;
-        let n_screens;
-        display = Gdk.Display.get_default();
-        n_screens = display.get_n_screens();
-
-        for (let i = 0; i < n_screens; ++i) {
-            let screen = display.get_screen(i);
-            let root_window = screen.get_root_window();
-            this.bg.create_and_set_surface_as_root(root_window, screen);
-        }
+        Util.trySpawnCommandLine("cinnamon-apply-wallpaper");
     },
 
     on_settings_changed_event_cb: function() {
-        this.bg.load_from_preferences(this._cinnamonSettings);
-        this.bg.set_accountsservice_background(this.bg.get_filename());
+        this.draw_background();
     },
 
     screen_signal_timeout_cb: function() {

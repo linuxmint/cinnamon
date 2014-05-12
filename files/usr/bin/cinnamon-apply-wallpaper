@@ -1,0 +1,21 @@
+#!/usr/bin/env python
+
+import gi
+from gi.repository import CinnamonDesktop, Gio, Gdk
+
+settings = Gio.Settings("org.cinnamon.desktop.background")
+
+bg = CinnamonDesktop.BG()
+
+bg.load_from_preferences(settings)
+bg.set_accountsservice_background(bg.get_filename());
+
+display = Gdk.Display.get_default();
+n_screens = display.get_n_screens();
+
+for i in range(0, n_screens):
+    screen = display.get_screen(i);
+    root_window = screen.get_root_window();
+    bg.create_and_set_surface_as_root(root_window, screen)
+    print root_window
+    print "done"
