@@ -992,7 +992,7 @@ update_scale_factor (GtkSettings *settings,
                      GParamSpec *pspec,
                      gpointer data)
 {
-  gint scale;
+  gint scale = 1;
   CinnamonGlobal *global = CINNAMON_GLOBAL (data);
   ClutterStage *stage = CLUTTER_STAGE (global->stage);
   StThemeContext *context = st_theme_context_get_for_stage (stage);
@@ -1005,10 +1005,11 @@ update_scale_factor (GtkSettings *settings,
 
     if (scale != global->ui_scale) {
         global->ui_scale = scale;
-        g_settings_set_int (global->settings, "active-display-scale", scale);
         g_signal_emit_by_name (global, "scale-changed");
     }
   }
+
+  g_settings_set_int (global->settings, "active-display-scale", scale);
 
    /* Make sure clutter and gdk scaling stays disabled
     * window-scaling-factor doesn't exist yet in clutter < 1.18, but it's a harmless warning
