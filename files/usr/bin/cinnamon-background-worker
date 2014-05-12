@@ -56,7 +56,15 @@ class BackgroundChanger():
 
         # Listen to Cinnamon changes
         self.settings = Gio.Settings("org.cinnamon.desktop.background")        
-        self.settings.connect("changed", self.on_cinnamon_settings_changed);        
+        self.settings.connect("changed", self.on_cinnamon_settings_changed);
+
+        # Listen to resolution/screen changes
+        display = Gdk.Display.get_default()
+        n_screens = display.get_n_screens()
+        for i in range(0, n_screens):
+            screen = display.get_screen(i)
+            screen.connect("monitors-changed", self.on_screen_changes)
+            screen.connect("size-changed", self.on_screen_changes)
 
         # Apply the current background
         self.bg.load_from_preferences(self.settings)
@@ -71,7 +79,12 @@ class BackgroundChanger():
     def on_cinnamon_settings_changed (self, settings, key):
         print "Cinnamon bg changes!"
         self.bg.load_from_preferences(self.settings)
-        self.bg.set_accountsservice_background(self.bg.get_filename())    
+        self.bg.set_accountsservice_background(self.bg.get_filename())
+     
+    def on_screen_changes (self, screen):
+        print "Screen changes!"        
+        self.draw_background()
+        return False
 
     def on_gnome_settings_changed (self, settings, key):
         print "GNOME bg changes!"
