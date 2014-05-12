@@ -1,0 +1,101 @@
+#!/usr/bin/env python
+import sys
+import signal
+import gi
+from gi.repository import CinnamonDesktop, Gio, Gdk, Gtk
+import threading
+
+import commands
+architecture = commands.getoutput("uname -a")
+process_name = 'cinnamon-background-worker'
+if (architecture.find("x86_64") >= 0):
+    import ctypes
+    libc = ctypes.CDLL('libc.so.6')
+    libc.prctl(15, process_name, 0, 0, 0)
+else:
+    import dl
+    if os.path.exists('/lib/libc.so.6'):
+        libc = dl.open('/lib/libc.so.6')
+        libc.call('prctl', 15, process_name, 0, 0, 0)
+    elif os.path.exists('/lib/i386-linux-gnu/libc.so.6'):
+        libc = dl.open('/lib/i386-linux-gnu/libc.so.6')
+        libc.call('prctl', 15, process_name, 0, 0, 0)
+
+
+class ThreadedChanger (threading.Thread):
+    def __init__(self, bg):
+        threading.Thread.__init__(self)
+        self.bg = bg
+        
+    def run(self):
+        display = Gdk.Display.get_default()
+        n_screens = display.get_n_screens()
+        for i in range(0, n_screens):
+            screen = display.get_screen(i)
+            root_window = screen.get_root_window()
+            self.bg.create_and_set_surface_as_root(root_window, screen)       
+            print " ++ Drew the background!"
+
+
+class BackgroundChanger():
+    def __init__(self):
+        print "Initiating a new BackgroundManager!"
+
+        # Initiate the BG object
+        self.bg = CinnamonDesktop.BG()
+        self.bg.connect("changed", self.on_cinnamon_desktop_bg_changed)
+        # self.bg.connect("transitioned", self.on_cinnamon_desktop_bg_changed)
+
+        # Listen to GNOME changes
+        self._string_keys = ["color-shading-type", "picture-options", "picture-uri", "primary-color", "secondary-color"]
+        self._int_keys = ["picture-opacity"]
+        schema = Gio.SettingsSchemaSource.get_default()
+        if schema.lookup("org.gnome.desktop.background", True):
+            self.gnome_settings = Gio.Settings("org.gnome.desktop.background")
+            self.gnome_settings.connect('changed', self.on_gnome_settings_changed)        
+
+        # Listen to Cinnamon changes
+        self.settings = Gio.Settings("org.cinnamon.desktop.background")        
+        self.settings.connect("changed", self.on_cinnamon_settings_changed);
+
+        # Listen to resolution/screen changes
+        display = Gdk.Display.get_default()
+        n_screens = display.get_n_screens()
+        for i in range(0, n_screens):
+            screen = display.get_screen(i)
+            screen.connect("monitors-changed", self.on_screen_changes)
+            screen.connect("size-changed", self.on_screen_changes)
+
+        # Apply the current background
+        self.bg.load_from_preferences(self.settings)
+
+    def draw_background(self):        
+        thread = ThreadedChanger(self.bg)
+        thread.start()        
+
+    def on_cinnamon_desktop_bg_changed (self, arg=None):
+        self.draw_background()
+
+    def on_cinnamon_settings_changed (self, settings, key):
+        print "Cinnamon bg changes!"
+        self.bg.load_from_preferences(self.settings)
+        self.bg.set_accountsservice_background(self.bg.get_filename())
+     
+    def on_screen_changes (self, screen):
+        print "Screen changes!"        
+        self.draw_background()
+        return False
+
+    def on_gnome_settings_changed (self, settings, key):
+        print "GNOME bg changes!"
+        if key in self._string_keys:            
+            gnome_value = self.gnome_settings.get_string(key)
+            if self.settings.get_string(key) != gnome_value:            
+                self.settings.set_string(key, gnome_value)            
+        elif key in self._int_keys:
+            gnome_value = self.gnome_settings.get_int(key)
+            if self.settings.get_int(key) != gnome_value:
+                self.settings.set_int(key, gnome_value)            
+
+changer = BackgroundChanger()
+Gtk.main()

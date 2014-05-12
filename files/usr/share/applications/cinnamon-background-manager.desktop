@@ -1,0 +1,9 @@
+[Desktop Entry]
+Name=Cinnamon Background Manager
+Comment=Listens to changes and draws the Cinnamon background
+Icon=cs-backgrounds
+Exec=cinnamon-background-manager
+Terminal=false
+Type=Application
+NoDisplay=true
+OnlyShowIn=X-Cinnamon;
