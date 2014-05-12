@@ -1,9 +1,0 @@
-#!/usr/bin/env python
-import os, time
-
-while True:    
-    print "Launching a new worker instance..."
-    os.system("/usr/bin/cinnamon-background-worker")
-    time.sleep(1)
-    print ""
-    print ""
