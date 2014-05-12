@@ -287,7 +287,7 @@ function start() {
 
     settingsManager = new Settings.SettingsManager();
 
-    // backgroundManager = new BackgroundManager.BackgroundManager();
+    backgroundManager = new BackgroundManager.BackgroundManager();
     
     deskletContainer = new DeskletManager.DeskletContainer();
 
