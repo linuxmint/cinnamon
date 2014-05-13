@@ -340,7 +340,7 @@ class BaseWidget(object):
     def get_options(self):
         try:
             if self.t or self.tUser:
-                ret = {}
+                ret = collections.OrderedDict()
                 d = self.settings_obj.get_data(self.key)["options"]
                 for key in d.keys():
                     if self.tUser:
