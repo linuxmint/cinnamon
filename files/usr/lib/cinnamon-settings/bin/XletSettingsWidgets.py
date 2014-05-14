@@ -294,7 +294,6 @@ class BaseWidget(object):
                 return self.t(self.settings_obj.get_data(self.key)["tooltip"])
             return self.settings_obj.get_data(self.key)["tooltip"]
         except:
-            print ("Could not find tooltip for key '%s' in xlet '%s'" % (self.key, self.uuid))
             return ""
 
     def get_units(self):
@@ -708,6 +707,9 @@ class RadioGroup(Gtk.VBox, BaseWidget):
                 hbox.add(button)
                 self.entry = Gtk.Entry()
                 hbox.add(self.entry)
+                if self.get_val() == self.get_custom_val():
+                    button.set_active(True)
+                button.orig_key = key
             else:
                 if group is None:
                     button = Gtk.RadioButton.new_with_label_from_widget(None, key)
@@ -715,6 +717,10 @@ class RadioGroup(Gtk.VBox, BaseWidget):
                 else:
                     button = Gtk.RadioButton.new_with_label_from_widget(group, key)
                 hbox.add(button)
+                if self.get_val() == self.model[key]:
+                    button.set_active(True)
+                button.orig_key = key
+
             self.pack_start(hbox, False, False, 2)
 
         if self.entry is not None:
@@ -725,13 +731,6 @@ class RadioGroup(Gtk.VBox, BaseWidget):
 
         self.group = group.get_group()
         for button in self.group:
-            label = button.get_label()
-            if label == "":
-                label = self.custom_key
-            if label == self.custom_key:
-                self.custom_button.set_active(True)
-            elif self.get_val() == self.model[label.decode('utf-8')]: # FIXME
-                button.set_active(True)
             button.handler = button.connect("toggled", self.on_button_activated)
             set_tt(self.get_tooltip(), button)
         self._value_changed_timer = None
@@ -749,7 +748,7 @@ class RadioGroup(Gtk.VBox, BaseWidget):
             if widget is self.custom_button:
                 self.update_custom_settings_value()
             else:
-                self.update_settings_value(widget.get_label())
+                self.update_settings_value(widget.orig_key)
 
     def update_custom_settings_value(self):
         self.set_val(self.entry.get_text())
