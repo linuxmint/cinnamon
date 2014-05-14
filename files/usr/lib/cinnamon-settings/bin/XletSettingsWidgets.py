@@ -730,7 +730,7 @@ class RadioGroup(Gtk.VBox, BaseWidget):
                 label = self.custom_key
             if label == self.custom_key:
                 self.custom_button.set_active(True)
-            elif self.get_val() == self.model[label]:
+            elif self.get_val() == self.model[label.decode('utf-8')]: # FIXME
                 button.set_active(True)
             button.handler = button.connect("toggled", self.on_button_activated)
             set_tt(self.get_tooltip(), button)
