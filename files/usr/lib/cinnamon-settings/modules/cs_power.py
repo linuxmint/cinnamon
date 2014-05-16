@@ -36,6 +36,7 @@ class Module:
         keywords = _("power, suspend, hibernate, laptop, desktop, brightness, screensaver")
         sidePage = SidePage(_("Power Management"), "cs-power", keywords, content_box, is_c_mod=True, module=self)
         self.sidePage = sidePage
+        sidePage.size = 560
         self.name = "power"
         self.category = "hardware"
         self.comment = _("Manage power settings")
