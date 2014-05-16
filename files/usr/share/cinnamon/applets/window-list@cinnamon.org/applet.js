@@ -489,9 +489,14 @@ AppMenuButton.prototype = {
 
     _onButtonRelease: function(actor, event) {
         this._tooltip.hide();
-        if (!this._draggable)
+        if (!this._draggable) {
+            /* non-draggable = off-workspace window demanding attention
+               the only action for these is activation */
+            if (event.get_button() == 1) {
+                this._windowHandle(false);
+            }
             return false;
-
+        }
         if (event.get_button() == 1) {
             if ( this.rightClickMenu.isOpen ) {
                 this.rightClickMenu.toggle();
