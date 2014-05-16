@@ -1148,6 +1148,7 @@ StScrollBar StButton#vhandle:hover {
 	padding-right: 30px;
 	padding-left: 28px;
 	text-align: right;
+          height: 30px;
 }
 
 .menu-selected-app-box:rtl {
