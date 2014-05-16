@@ -1889,6 +1889,11 @@ MyApplet.prototype = {
         this._refreshApps();
 
         this.selectedAppBox = new St.BoxLayout({ style_class: 'menu-selected-app-box', vertical: true });
+
+        let theme_box_height = this.selectedAppBox.get_theme_node().get_length('height');
+        if (theme_box_height == 0)
+            this.selectedAppBox.set_height(30 * global.ui_scale);
+
         this.selectedAppTitle = new St.Label({ style_class: 'menu-selected-app-title', text: "" });
         this.selectedAppBox.add_actor(this.selectedAppTitle);
         this.selectedAppDescription = new St.Label({ style_class: 'menu-selected-app-description', text: "" });
