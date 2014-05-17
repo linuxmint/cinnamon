@@ -229,7 +229,7 @@ NotificationDaemon.prototype = {
 
 	_startExpire: function() {
         if (this.removeOld && this._expireNotifications.length && !this._expireTimer) {
-			this._expireTimer = Mainloop.timeout_add_seconds(Math.max((this._expireNotifications[0].expires-Date.now())/1000, 0), Lang.bind(this, this._expireNotification));
+			this._expireTimer = Mainloop.timeout_add_seconds(Math.max((this._expireNotifications[0].expires-Date.now())/1000, 1), Lang.bind(this, this._expireNotification));
 		}
 	},
 	_stopExpire: function() {
@@ -299,7 +299,7 @@ NotificationDaemon.prototype = {
 		if (!timeout || hints.resident || hints.urgency == 2) {	// Never expires.
 			expires = ndata.expires = 0;
 		} else if (timeout == -1) {	// Default expiration.
-			expires = ndata.expires = Date.now()+this.timeout;
+			expires = ndata.expires = Date.now()+this.timeout*1000;
 		} else {	// Custom expiration.
             expires = ndata.expires = Date.now()+timeout;
 		}
