@@ -3,9 +3,11 @@
 const Clutter = imports.gi.Clutter;
 const DBus = imports.dbus;
 const GLib = imports.gi.GLib;
+const Gio = imports.gi.Gio;
 const Lang = imports.lang;
 const Cinnamon = imports.gi.Cinnamon;
 const St = imports.gi.St;
+const Mainloop = imports.mainloop;
 
 const Config = imports.misc.config;
 const Main = imports.ui.main;
@@ -93,10 +95,21 @@ NotificationDaemon.prototype = {
         this._sources = [];
         this._senderToPid = {};
         this._notifications = {};
+		this._expireNotifications = [];	// List of expiring notifications in order from first to last to expire.
         this._busProxy = new Bus();
 
         Main.statusIconDispatcher.connect('message-icon-added', Lang.bind(this, this._onTrayIconAdded));
         Main.statusIconDispatcher.connect('message-icon-removed', Lang.bind(this, this._onTrayIconRemoved));
+
+		// Settings
+        this.settings = new Gio.Settings({ schema: "org.cinnamon.desktop.notifications" });
+		function setting(self, source, type, camelCase, dashed) {
+			function updater() { self[camelCase] = source["get_"+type](dashed); }
+			source.connect('changed::'+dashed, updater);
+			updater();
+		}
+		setting(this, this.settings, "boolean", "removeOld", "remove-old");
+		setting(this, this.settings, "int", "timeout", "timeout");
 
         Cinnamon.WindowTracker.get_default().connect('notify::focus-app',
             Lang.bind(this, this._onFocusAppChanged));
@@ -104,6 +117,7 @@ NotificationDaemon.prototype = {
             Lang.bind(this, this._onFocusAppChanged));
     },
 
+	// Create an icon for a notification from icon string/path.
     _iconForNotificationData: function(icon, hints, size) {
         let textureCache = St.TextureCache.get_default();
 
@@ -213,10 +227,33 @@ NotificationDaemon.prototype = {
         return source;
     },
 
+	_startExpire: function() {
+        if (this.removeOld && this._expireNotifications.length && !this._expireTimer) {
+			this._expireTimer = Mainloop.timeout_add_seconds(Math.max((this._expireNotifications[0].expires-Date.now())/1000, 0), Lang.bind(this, this._expireNotification));
+		}
+	},
+	_stopExpire: function() {
+        if (!this._expireTimer) {
+			return;
+		}
+        Mainloop.source_remove(this._expireTimer);
+        this._expireTimer = undefined;
+	},
+	_restartExpire: function() {
+        this._stopExpire();
+        this._startExpire();
+	},
+	_expireNotification: function() {
+		var ndata = this._expireNotifications[0];
+        ndata.notification.destroy(MessageTray.NotificationDestroyedReason.EXPIRED);
+	},
+
+	// Sends a notification to the notification daemon. Returns the id allocated to the notification.
     Notify: function(appName, replacesId, icon, summary, body,
                      actions, hints, timeout) {
         let id;
-        
+
+        // Special Cinnamon specific rewrites for message summaries on the fly.
         let rewrites = rewriteRules[appName];
         if (rewrites) {
             for (let i = 0; i < rewrites.length; i++) {
@@ -230,11 +267,9 @@ NotificationDaemon.prototype = {
 
         // Be compatible with the various hints for image data and image path
         // 'image-data' and 'image-path' are the latest name of these hints, introduced in 1.2
-
         if (!hints['image-path'] && hints['image_path'])
             hints['image-path'] = hints['image_path']; // version 1.1 of the spec
-
-        if (!hints['image-data'])
+        if (!hints['image-data'])	// not version 1.2 of the spec?
             if (hints['image_data'])
                 hints['image-data'] = hints['image_data']; // version 1.1 of the spec
             else if (hints['icon_data'] && !hints['image-path'])
@@ -248,6 +283,8 @@ NotificationDaemon.prototype = {
                       actions: actions,
                       hints: hints,
                       timeout: timeout };
+
+		// Does this notification replace another?
         if (replacesId != 0 && this._notifications[replacesId]) {
             ndata.id = id = replacesId;
             ndata.notification = this._notifications[replacesId].notification;
@@ -257,11 +294,34 @@ NotificationDaemon.prototype = {
         }
         this._notifications[id] = ndata;
 
+		// Find expiration timestamp.
+		var expires;
+		if (!timeout || hints.resident || hints.urgency == 2) {	// Never expires.
+			expires = ndata.expires = 0;
+		} else if (timeout == -1) {	// Default expiration.
+			expires = ndata.expires = Date.now()+this.timeout;
+		} else {	// Custom expiration.
+            expires = ndata.expires = Date.now()+timeout;
+		}
+
+		// Does this notification expire?
+		if (expires != 0) {
+			// Find place in the notification queue.
+			let notifications = this._expireNotifications, i;
+			for (i = notifications.length; i > 0; --i) {	// Backwards seach, likely to be faster.
+				if (expires > notifications[i-1].expires) {
+					notifications.splice(i, 0, ndata);
+					break;
+				}
+			}
+			if (i == 0) notifications.unshift(ndata);
+			this._restartExpire()
+		}
+
         let sender = DBus.getCurrentMessageContext().sender;
         let pid = this._senderToPid[sender];
 
         let source = this._getSource(appName, pid, ndata, sender, null);
-
         if (source) {
             this._notifyForSource(source, ndata);
             return id;
@@ -290,7 +350,7 @@ NotificationDaemon.prototype = {
                 // However, keeping these pairs would mean that we would
                 // possibly remove an entry associated with a persistent
                 // source when a transient source for the same sender is
-                // distroyed.
+                // destroyed.
                 if (!source.isTransient) {
                     this._senderToPid[sender] = pid;
                     source.connect('destroy', Lang.bind(this,
@@ -305,13 +365,13 @@ NotificationDaemon.prototype = {
     },
 
     _notifyForSource: function(source, ndata) {
-        let [id, icon, summary, body, actions, hints, notification] =
+        let [id, icon, summary, body, actions, hints, notification, timeout, expires] =
             [ndata.id, ndata.icon, ndata.summary, ndata.body,
-             ndata.actions, ndata.hints, ndata.notification];
+             ndata.actions, ndata.hints, ndata.notification, ndata.timeout, ndata.expires];
 
         let iconActor = this._iconForNotificationData(icon, hints, source.ICON_SIZE);
 
-        if (notification == null) {
+        if (notification == null) {	// Create a new notification!
             notification = new MessageTray.Notification(source, summary, body,
                                                         { icon: iconActor,
                                                           bannerMarkup: true });
@@ -331,6 +391,17 @@ NotificationDaemon.prototype = {
                             notificationClosedReason = NotificationClosedReason.APP_CLOSED;
                             break;
                     }
+                    // Remove from expiring?
+                    if (ndata.expires) {
+						let notifications = this._expireNotifications;
+						for (var i = 0, j = notifications.length; i < j; ++i) {
+							if (notifications[i] == ndata) {
+								notifications.splice(i, 1);
+								break;
+                            }
+						}
+						this._restartExpire();
+					}
                     this._emitNotificationClosed(ndata.id, notificationClosedReason);
                 }));
             notification.connect('action-invoked', Lang.bind(this,
@@ -608,3 +679,4 @@ Source.prototype = {
         MessageTray.Source.prototype.destroy.call(this);
     }
 };
+

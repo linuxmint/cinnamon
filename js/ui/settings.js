@@ -141,11 +141,27 @@ var NUMBER_TYPES = {
             "type",
             "default"
         ]
+    },
+    "timechooser" : {
+        "required-fields": [
+            "type",
+            "default",
+            "min-time",
+            "max-time",
+            "step",
+            "description"
+        ]
     }
 };
 
 var NON_SETTING_TYPES = {
     "header" : {
+        "required-fields": [
+            "type",
+            "description"
+        ]
+    },
+    "description" : {
         "required-fields": [
             "type",
             "description"

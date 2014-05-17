@@ -10,7 +10,8 @@ try:
     import json
     import dbus
     import eyedropper
-    from gi.repository import Gio, Gtk, GObject, Gdk, GdkPixbuf
+    import re
+    from gi.repository import Gio, Gtk, GObject, Gdk, GdkPixbuf, Pango
 except Exception, detail:
     print detail
     sys.exit(1)
@@ -19,11 +20,13 @@ home = os.path.expanduser("~")
 
 setting_dict = {
     "header"          :   "Header", # Not a setting, just a boldface header text
+    "description"     :   "Description", # Not a setting, just normal text
     "separator"       :   "Separator", # not a setting, a horizontal separator
     "entry"           :   "Entry",
     "textview"        :   "TextView",    
     "checkbox"        :   "CheckButton",
     "spinbutton"      :   "SpinButton",
+    "timechooser"     :   "TimeChooser",
     "filechooser"     :   "FileChooser",
     "scale"           :   "Scale",
     "combobox"        :   "ComboBox",
@@ -434,6 +437,15 @@ class Header(Gtk.HBox, BaseWidget):
         self.label.set_markup("<b>%s</b>" % self.get_desc())
         self.pack_start(self.label, False, False, 2)
 
+class Description(Gtk.HBox, BaseWidget):
+    def __init__(self, key, settings_obj, uuid):
+        BaseWidget.__init__(self, key, settings_obj, uuid)
+        super(Description, self).__init__()
+        self.label = Gtk.Label.new()
+        self.label.set_use_markup(True)
+        self.label.set_text(self.get_desc())
+        self.pack_start(self.label, False, False, 2)
+
 class Separator(Gtk.HSeparator, BaseWidget):
     def __init__(self, key, settings_obj, uuid):
         BaseWidget.__init__(self, key, settings_obj, uuid)
@@ -465,6 +477,299 @@ class CheckButton(Gtk.CheckButton, BaseWidget):
 
     def update_dep_state(self, active):
         self.set_sensitive(active)
+
+# Number widget for configuring a time setting (output in seconds).
+
+# Mimics Gtk.SpinButton with the help of this ugly CSS fix, no where else to put it.
+css_provider = Gtk.CssProvider()
+css_provider.load_from_data(".spinbutton { border-width:1px 0px 1px 1px; }")
+
+def TimeChooserButton(icon):
+    button = Gtk.Button()
+    button.set_image(Gtk.Image().new_from_icon_name('list-'+icon+'-symbolic', Gtk.IconSize.BUTTON))
+    button.get_property('image').set_pixel_size(16)
+    style = button.get_style_context()
+    if icon == 'remove':
+        style.add_provider(css_provider, 1000)
+    style.add_class("spinbutton")
+    return button
+
+class TimeChooser(Gtk.HBox, BaseWidget):
+    # Settings
+    def get_format(self):
+        try:
+            return self.settings_obj.get_data(self.key)["format"]
+        except:
+            return "h2:m"
+    def get_max_time(self):
+        try:
+            return self.settings_obj.get_data(self.key)["max-time"]
+        except:
+            print ("Could not get maximum time value for key '%s' in xlet '%s'" % (self.key, self.uuid))
+            return 0
+    def get_min_time(self):
+        try:
+            return self.settings_obj.get_data(self.key)["min-time"]
+        except:
+            print ("Could not get minimum time value for key '%s' in xlet '%s'" % (self.key, self.uuid))
+            return 0
+    def get_show_handles(self):
+        try:
+            return self.settings_obj.get_data(self.key)["show-handles"]
+        except:
+            return True
+    def get_units(self):    # Redefined.
+        try:
+            return self.settings_obj.get_data(self.key)["units"]
+        except:
+            return ""
+
+    def __init__(self, key, settings_obj, uuid):
+        BaseWidget.__init__(self, key, settings_obj, uuid)
+        super(TimeChooser, self).__init__()
+
+        def parse_component(size, index, char, pattern, format, first, last, length, rx, inf, vf):
+            split = re.match(pattern, format)
+            if split:
+                if last != -1:  # Indicates broken chain (eg. "h2:s").
+                    print "Invalid time format for key '{s}' in xlet '{s}'".format(self.key, self.uuid)
+                    return (split.group(2), first, last, length, rx, inf, vf)
+                if first == -1: # Indicates this is the first component.
+                    first = index
+
+                size[index] = int(split.group(1)) if split.group(1) else 2
+
+                if size[index-1]:
+                    rx  = rx + char
+                    inf = inf + char
+                    vf  = vf + char
+                    length = length + 1
+
+                rx = rx + "(\d*)"   # Validation regex.
+                inf = inf + "{:s}"  # Input rebuilder.
+                vf = vf + "{:0="+str(size[index])+"d}"  # Output rebuilder.
+
+                return (split.group(2), first, last, length + size[index], rx, inf, vf)
+            elif first != -1:   # Indicates the previous component was the last.
+                rx = rx + "()"  # Validation regex, placeholder group.
+                last = index
+            return (format, first, last, length, rx, inf, vf)
+        # Parse format string.
+        self.size = [False, False, False, False]
+        format, first, last, length, rx, inf, vf = parse_component(self.size, 0, "?", "^h(\d+):?(.*)", self.get_format(), -1   , -1  ,      0, "^", "" , "")    # Hours
+        format, first, last, length, rx, inf, vf = parse_component(self.size, 1, ":",  "m():?(.*)"   , format           , first, last, length, rx , inf, vf)    # Minutes
+        format, first, last, length, rx, inf, vf = parse_component(self.size, 2, ":",  "s().?(.*)"   , format           , first, last, length, rx , inf, vf)    # Seconds
+        format, first, last, length, rx, inf, vf = parse_component(self.size, 3, ".",  "n(\d+)()$"   , format           , first, last, length, rx , inf, vf)    # Fraction
+        self.first = first
+        self.last = last
+        self.regex = re.compile(rx+"$")
+        self.input_format = inf
+        self.valid_format = vf
+        self.max = [None,59,59,None]
+
+        self.previous_cursor = 0
+
+        # Layout.
+        tts = []    # Store tooltip providers.
+
+        label = Gtk.Label(self.get_desc())
+        self.pack_start(label, False, False, 0)
+        tts.append(label)
+
+        box = Gtk.Box(spacing=0)
+        c = box.get_style_context()
+        c.add_class("linked")
+        self.pack_start(box, False, False, 2)
+        tts.append(box)
+
+        self.entry = Gtk.Entry()
+        self.entry.override_font(Pango.FontDescription("monospace"))
+        self.entry.set_width_chars(length)
+        self._previous = self.get_val_str()
+        self.entry.set_text(self._previous)
+        box.pack_start(self.entry, False, False, 0)
+
+        self.min_time = self.get_min_time()
+        self.max_time = self.get_max_time()
+
+        self.on_changed_handler = self.entry.connect("changed", self.on_changed)
+        self.on_delete_text_handler = self.entry.connect("delete-text", self.on_delete_text)
+        self.entry.connect("focus-out-event", self.on_focus_out_event)
+
+        self.showHandles = self.get_show_handles()
+        if self.showHandles:
+            seconds = self.get_input_seconds()
+
+            self.down_button = TimeChooserButton('remove')
+            self.down_button.connect('button-press-event', self.start_increment, -1)
+            self.down_button.connect('button-release-event', self.stop_increment)
+            self.down_button.set_sensitive(seconds < self.max_time)
+            box.pack_start(self.down_button, False, False, 0)
+
+            self.up_button = TimeChooserButton('add')
+            self.up_button.connect('button-press-event', self.start_increment, 1)
+            self.up_button.connect('button-release-event', self.stop_increment)
+            self.down_button.set_sensitive(seconds > self.min_time)
+            box.pack_start(self.up_button, False, False, 0)
+
+            self.step = self.get_step()
+
+        if self.get_units():
+            units = Gtk.Label(self.get_units())
+            self.pack_start(units, False, False, 2)
+            tts.append(units)
+
+        set_tt(self.get_tooltip(), *tts)
+        self._value_changed_timer = None
+        self.increment_timer = None
+
+    # Increment
+    def start_increment(self, event, something, positive):
+        if self.increment_timer:
+            GObject.source_remove(self.increment_timer)
+        self.increment_counter = 0
+        self.increment_value = self.step*positive
+        self.increment()
+        self.increment_timer = GObject.timeout_add(100, self.increment)
+    def increment(self):
+        seconds = self.get_input_seconds()+self.increment_value
+        cont = True
+        if seconds < self.min_time:
+            seconds = self.min_time
+            cont = False
+        elif seconds > self.max_time:
+            seconds = self.max_time
+            cont = False
+        self.set_val(seconds)
+        self.on_settings_file_changed()
+
+        if self.showHandles:
+            self.up_button.set_sensitive(seconds < self.max_time)
+            self.down_button.set_sensitive(seconds > self.min_time)
+
+        self.increment_counter = self.increment_counter + 1
+        if (self.increment_counter % 8) == 0:
+            self.increment_value = self.increment_value * 2
+
+        return cont
+    def stop_increment(self, event, something):
+        if self.increment_timer == None:
+            return
+        GObject.source_remove(self.increment_timer)
+        self.increment_timer = None
+
+    # Nudge cursor forward one character.
+    def pos_prev(self):
+        self.entry.set_position(self.previous_cursor)
+    # Nudge cursor back one character.
+    def pos_next(self):
+        self.entry.set_position(self.entry.get_position()+1)
+
+    # Convert the current float value (seconds) into time string (hh:mm:ss.ff).
+    def get_val_str(self):
+        arr = []
+        time = self.get_val()
+        arr.append(time%1)  # Fraction
+        time = int(time-arr[0])
+        arr.append(time%60) # Seconds
+        time = (time - arr[1])/60
+        arr.append(time%60) # Minutes
+        arr.append((time - arr[2])/60)  # Hours
+        arr.reverse()
+        return self.valid_format.format(*arr[self.first:self.last])
+    # Convert the input entry text (hh:mm:ss.ff) into list containing [hh,mm,ss,ff] in integer format.
+    def get_input_components(self):
+        split = self.regex.match(self.entry.get_text()).groups()
+        arr = [0,0,0,0]
+        for i in range(0,4):
+            arr[i] = int(split[i]) if split[i] else 0
+        return arr
+    # Convert the input entry text (hh:mm:ss.ff) into float value (seconds), and enforce min/max.
+    def get_input_seconds(self):
+        split = self.get_input_components()
+        seconds = (split[0]*60 + split[1])*60 + split[2] + float("0."+str(split[3]))
+        if (seconds < self.min_time):
+            return self.min_time
+        if (seconds > self.max_time):
+            return self.max_time
+        return seconds
+
+    def revert_input(self):
+        widget = self.entry
+        widget.handler_block(self.on_changed_handler)
+        widget.handler_block(self.on_delete_text_handler)
+        widget.set_text(self._previous)
+        widget.handler_unblock(self.on_delete_text_handler)
+        widget.handler_unblock(self.on_changed_handler)
+
+    # Handle user input via the Entry box.
+    def on_changed(self, widget):
+        cursor = widget.get_position()
+        split = self.regex.match(widget.get_text()) # Validity test.
+        if not split:   # Invalid, force previous value.
+            if cursor != len(self._previous):
+                GObject.timeout_add(0, self.pos_prev)   # Put the cursor back.
+            self.revert_input()
+            return
+
+        self.previous_cursor = cursor
+
+        # Parse components, considering cursor position and correcting user input.
+        cursor = cursor + 1
+        arr = ["0","0","0","0"]
+        pos = 0
+        for i in range(self.first, self.last):
+            val = split.group(i+1)
+            l = len(val)
+            size = self.size[i]
+            if (l > size):  # Too many digits, remove some.
+                if (cursor >= pos) and (cursor < pos+l):    # Cursor lies in this section.
+                    cursor2 = min(cursor-pos, size)
+                    val = val[:cursor2]+val[cursor2+1:cursor2+1+(size-cursor2)]
+                else:   # Too long, but cursor position indicates this is the result of a paste.
+                    val = val[:size]
+            # Jump past dividing character into next section?
+            if (len(val) >= size and cursor-pos == len(val)):
+                GObject.timeout_add(0, self.pos_next)
+            if val and self.max[i] and int(val) > self.max[i]:
+                val = str(self.max[i])
+            arr[i] = val
+            pos += l + 1
+
+        if self.showHandles:
+            seconds = (int(arr[0] or 0)*60 + int(arr[1] or 0))*60 + int(arr[2] or 0) + float("0."+str(arr[3] or "0"))
+            self.up_button.set_sensitive(seconds < self.max_time)
+            self.down_button.set_sensitive(seconds > self.min_time)
+
+        # Rebuild time string.
+        self._previous = self.input_format.format(*arr[self.first:self.last])
+        self.revert_input()
+        self.set_val(self.get_input_seconds())
+    # Prevent the user from deleting the special dividing characters (:.).
+    def on_delete_text(self, widget, start, end):
+        target = self.entry.get_text()[start:end]
+        if ":" in target or "." in target:
+            widget.stop_emission("delete-text")
+    # First update (and validate) internal integer value,
+    # then update Entry box to reflect the final value.
+    def on_focus_out_event(self, widget, event):
+        self.set_val(self.get_input_seconds())
+        self.on_settings_file_changed()
+
+    def on_settings_file_changed(self):
+        widget = self.entry
+        widget.handler_block(self.on_changed_handler)
+        widget.handler_block(self.on_delete_text_handler)
+        widget.set_text(self.get_val_str())
+        widget.handler_unblock(self.on_delete_text_handler)
+        widget.handler_unblock(self.on_changed_handler)
+
+    def update_dep_state(self, active):
+        self.entry.set_sensitive(active)
+        seconds = self.get_input_seconds()
+        if self.showHandles:
+            self.up_button.set_sensitive(active and seconds < self.max_time)
+            self.down_button.set_sensitive(active and seconds > self.min_time)
 
 class SpinButton(Gtk.HBox, BaseWidget):
     def __init__(self, key, settings_obj, uuid):
