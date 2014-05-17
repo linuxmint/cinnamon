@@ -11,4 +11,4 @@ class Module:
         self.name = "notifications"
         self.category = "prefs"
         sidePage.add_widget(GSettingsCheckButton(_("Display notifications"), "org.cinnamon", "display-notifications", None))
-
+        sidePage.add_widget(GSettingsCheckButton(_("Notifications fade out"), "org.cinnamon.desktop.notifications", "fade-on-mouseover", None))
