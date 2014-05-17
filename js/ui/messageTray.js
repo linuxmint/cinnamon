@@ -1052,7 +1052,9 @@ Source.prototype = {
                                         child: this._counterLabel });
         this._counterBin.hide();
 
-        this._iconBin = new St.Bin({ x_fill: true,
+        this._iconBin = new St.Bin({ width: this.ICON_SIZE,
+                                     height: this.ICON_SIZE,
+                                     x_fill: true,
                                      y_fill: true });
 
         this.actor.add_actor(this._iconBin);
@@ -1436,14 +1438,14 @@ MessageTray.prototype = {
         Main.layoutManager.connect('monitors-changed', Lang.bind(this, this._setSizePosition));
 
 		// Settings
-        this.settings = new Gio.Settings({ schema: "org.cinnamon.desktop.notifications" }), self = this;
-		function setting(source, camelCase, dashed) {
-			function updater() { log("updating!"); self[camelCase] = source.get_boolean(dashed); }
+        this.settings = new Gio.Settings({ schema: "org.cinnamon.desktop.notifications" })
+		function setting(self, source, camelCase, dashed) {
+			function updater() { self[camelCase] = source.get_boolean(dashed); }
 			source.connect('changed::'+dashed, updater);
 			updater();
 		}
-		setting(global.settings, "_notificationsEnabled", "display-notifications");
-		setting(this.settings, "fadeOnMouseover", "fade-on-mouseover");
+		setting(this, global.settings, "_notificationsEnabled", "display-notifications");
+		setting(this, this.settings, "fadeOnMouseover", "fade-on-mouseover");
 
         this._setSizePosition();
 
