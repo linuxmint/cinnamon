@@ -117,11 +117,14 @@ class MainWindow:
             sidePage.build()
 
     def maybe_resize(self, sidePage):
+        m, n = self.content_box.get_preferred_size()
+        use_width = WIN_WIDTH
+        if n.width > WIN_WIDTH:
+            use_width = n.width
         if not sidePage.size:
-            m, n = self.content_box.get_preferred_size()
-            self.window.resize(WIN_WIDTH, n.height + self.bar_heights + WIN_H_PADDING)
+            self.window.resize(use_width, n.height + self.bar_heights + WIN_H_PADDING)
         elif sidePage.size > -1:
-            self.window.resize(WIN_WIDTH, sidePage.size + self.bar_heights + WIN_H_PADDING)
+            self.window.resize(use_width, sidePage.size + self.bar_heights + WIN_H_PADDING)
 
     def deselect(self, cat):
         for key in self.side_view.keys():
