@@ -222,6 +222,10 @@ Applet.prototype = {
         }));
     },
 
+    /* FIXME:  This makes no sense - inhibit flag should = panel edit mode, right?
+     *         Needs fixed in dnd.js also, it expects this backwards logic right now
+     */
+
     _setAppletReactivity: function() {
         this._draggable.inhibit = !global.settings.get_boolean('panel-edit-mode');
     },
@@ -253,14 +257,16 @@ Applet.prototype = {
         return this.actor;
     },
 
-    _onButtonPressEvent: function (actor, event) {                      
-        if (!this._draggable.inhibit)
-            return false;
-        if (event.get_button()==1){
-            if (this._applet_context_menu.isOpen) {
-                this._applet_context_menu.toggle(); 
+    _onButtonPressEvent: function (actor, event) {
+        if (event.get_button() == 1) {
+            if (!this._draggable.inhibit) {
+                return false;
+            } else {
+                if (this._applet_context_menu.isOpen) {
+                    this._applet_context_menu.toggle();
+                }
+                this.on_applet_clicked(event);
             }
-            this.on_applet_clicked(event);            
         }
         if (event.get_button()==3){            
             if (this._applet_context_menu._getMenuItems().length > 0) {
