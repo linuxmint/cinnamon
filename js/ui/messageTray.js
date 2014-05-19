@@ -457,6 +457,24 @@ Notification.prototype = {
         this.actor._parent_container = null;
         this.actor.connect('clicked', Lang.bind(this, this._onClicked));
         this.actor.connect('destroy', Lang.bind(this, this._onDestroy));
+		// Transparency on mouse over?
+		if (Main.messageTray.fadeOnMouseover) {
+			// Register to every notification as we intend to support multiple notifications on screen.
+			this.actor.connect('enter-event', Lang.bind(this, function() {
+				Tweener.addTween(this.actor, {
+					opacity: this._table.get_theme_node().get_length('mouseover-opacity'),
+					time: ANIMATION_TIME,
+					transition: 'easeOutQuad'
+				});
+			}));
+			this.actor.connect('leave-event', Lang.bind(this, function() {
+				Tweener.addTween(this.actor, {
+					opacity: this._table.get_theme_node().get_length('opacity') || 255,
+					time: ANIMATION_TIME,
+					transition: 'easeOutQuad'
+				});
+			}));
+		}
 
         this._table = new St.Table({ name: 'notification',
                                      reactive: true });
@@ -1417,11 +1435,15 @@ MessageTray.prototype = {
 
         Main.layoutManager.connect('monitors-changed', Lang.bind(this, this._setSizePosition));
 
-        let onNotificationEnabledUpdated = Lang.bind(this, function() {
-            this._notificationsEnabled = global.settings.get_boolean("display-notifications");
-        });
-        global.settings.connect('changed::display-notifications', onNotificationEnabledUpdated);
-        onNotificationEnabledUpdated();
+		// Settings
+        this.settings = new Gio.Settings({ schema: "org.cinnamon.desktop.notifications" })
+		function setting(self, source, camelCase, dashed) {
+			function updater() { self[camelCase] = source.get_boolean(dashed); }
+			source.connect('changed::'+dashed, updater);
+			updater();
+		}
+		setting(this, global.settings, "_notificationsEnabled", "display-notifications");
+		setting(this, this.settings, "fadeOnMouseover", "fade-on-mouseover");
 
         this._setSizePosition();
 
