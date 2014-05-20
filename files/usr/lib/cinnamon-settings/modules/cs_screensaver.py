@@ -19,7 +19,7 @@ LOCK_DELAY_OPTIONS = [
 class Module:
     def __init__(self, content_box):
         keywords = _("screensaver, lock, password, away, message")
-        sidePage = SidePage(_("Lock Screen"), "cs-screensaver", keywords, content_box, module=self)
+        sidePage = SidePage(_("Screen Locker"), "cs-screensaver", keywords, content_box, module=self)
         self.sidePage = sidePage
         self.name = "screensaver"
         self.category = "prefs"
