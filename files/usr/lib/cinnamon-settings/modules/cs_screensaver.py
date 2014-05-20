@@ -56,7 +56,7 @@ class Module:
             section.add(widget)
             widget = GSettingsCheckButton(_("Ask for a custom message when locking the screen from the menu"), "org.cinnamon.screensaver", "ask-for-away-message", None)
             widget.set_tooltip_text(_("This option allows you to type a message each time you lock the screen from the menu"))
-            section.add(widget)
+            section.add_expand(widget)
             vbox.add(section)
 
 
