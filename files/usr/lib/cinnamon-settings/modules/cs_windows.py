@@ -50,7 +50,7 @@ class Module:
             combo = self._make_titlebar_action_group(_("Action on title bar with mouse scroll"),
                                                       "org.cinnamon.desktop.wm.preferences", "action-scroll-titlebar",
                                                       scroll_options)
-            opacity_spinner = GSettingsSpinButton(_("Minimum (0-255):"), "org.cinnamon.desktop.wm.preferences", "min-window-opacity", None, 0, 255, 1, 1, None)
+            opacity_spinner = GSettingsSpinButton(_("Minimum opacity:"), "org.cinnamon.desktop.wm.preferences", "min-window-opacity", None, 0, 100, 1, 1, _("%"))
 
             combo.pack_start(opacity_spinner, False, False, 2)
 
