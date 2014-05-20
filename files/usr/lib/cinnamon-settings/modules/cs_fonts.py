@@ -30,13 +30,15 @@ class Module:
             
             vbox.add(Gtk.Separator.new(Gtk.Orientation.HORIZONTAL))
 
-            section = Section(_("Font Settings"))        
+            section = Section(_("Font Settings"))
+            aa_options = [["none", _("None")], ["grayscale", _("Grayscale")], ["rgba", _("Rgba")]]
+            hinting_options = [["none", _("None")], ["slight", _("Slight")], ["medium", _("Medium")], ["full", _("Full")]]
             section.add(self.make_combo_group(GSettingsRangeSpin, _("Text scaling factor"), "org.cinnamon.desktop.interface", "text-scaling-factor", None))
-            section.add(self.make_combo_group(GSettingsComboBox, _("Antialiasing"), "org.cinnamon.settings-daemon.plugins.xsettings", "antialiasing", None))
-            section.add(self.make_combo_group(GSettingsComboBox, _("Hinting"), "org.cinnamon.settings-daemon.plugins.xsettings", "hinting", None))
+            section.add(self.make_combo_group(GSettingsComboBox, _("Antialiasing"), "org.cinnamon.settings-daemon.plugins.xsettings", "antialiasing", aa_options))
+            section.add(self.make_combo_group(GSettingsComboBox, _("Hinting"), "org.cinnamon.settings-daemon.plugins.xsettings", "hinting", hinting_options))
             vbox.add(section)
 
-    def make_combo_group(self, widget, group_label, root, key, ex1):
+    def make_combo_group(self, widget, group_label, root, key, stuff):
         self.size_groups = getattr(self, "size_groups", [Gtk.SizeGroup.new(Gtk.SizeGroupMode.HORIZONTAL) for x in range(2)])
         
         box = IndentedHBox()
@@ -49,10 +51,10 @@ class Module:
         if (key == "text-scaling-factor"):
             w = widget("", root, key, None, adjustment_step = 0.1)
         elif (key == "antialiasing"):
-            w = widget("", root, key, None, [(i, i.title()) for i in ("none", "grayscale", "rgba")])
+            w = widget("", root, key, None, stuff)
             w.set_tooltip_text(_("Antialiasing makes on screen text smoother and easier to read"))
         elif (key == "hinting"):
-            w = widget("", root, key, None, [(i, i.title()) for i in ("none", "slight", "medium", "full")])
+            w = widget("", root, key, None, stuff)
             w.set_tooltip_text(_("Hinting allows for producing clear, legible text on screen."))
         else:
             w = widget("", root, key, None)

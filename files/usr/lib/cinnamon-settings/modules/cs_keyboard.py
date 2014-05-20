@@ -290,8 +290,8 @@ class Module:
             self.entry_tree.append_column(entry_column)
 
             self.entry_tree.set_tooltip_text(_("Click to set a new accelerator key.") +
-                                             _("  Press Escape or click again to cancel the operation." +
-                                               "  Press Backspace to clear the existing keybinding."))
+                                             _("  Press Escape or click again to cancel the operation.") +
+                                             _("  Press Backspace to clear the existing keybinding."))
 
             self.main_store = []
 
