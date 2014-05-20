@@ -18,15 +18,9 @@ const Tweener = imports.ui.tweener;
 
 const WINDOW_ANIMATION_TIME = 0.25;
 const DIM_TIME = 0.500;
+const DIM_DESATURATION = 0.6;
+const DIM_BRIGHTNESS = -0.1;
 const UNDIM_TIME = 0.250;
-
-var dimShader = undefined;
-
-function getDimShaderSource() {
-    if (!dimShader)
-        dimShader = Cinnamon.get_file_contents_utf8_sync(global.datadir + '/shaders/dim-window.glsl');
-    return dimShader;
-}
 
 function getTopInvisibleBorder(metaWindow) {
     let outerRect = metaWindow.get_outer_rect();
@@ -40,44 +34,30 @@ function WindowDimmer(actor) {
 
 WindowDimmer.prototype = {
     _init: function(actor) {
-        if (Clutter.feature_available(Clutter.FeatureFlags.SHADERS_GLSL)) {
-            this._effect = new Clutter.ShaderEffect({ shader_type: Clutter.ShaderType.FRAGMENT_SHADER });
-            this._effect.set_shader_source(getDimShaderSource());
-        } else {
-            this._effect = null;
-        }
+
+        this._desaturateEffect = new Clutter.DesaturateEffect();
+        this._brightnessEffect = new Clutter.BrightnessContrastEffect();
+        actor.add_effect(this._desaturateEffect);
+        actor.add_effect(this._brightnessEffect);
 
         this.actor = actor;
+        this._dimFactor = 0.0;
     },
 
-    set dimFraction(fraction) {
-        this._dimFraction = fraction;
-
-        if (this._effect == null)
-            return;
-
-        if (!Meta.prefs_get_attach_modal_dialogs()) {
-            this._effect.enabled = false;
-            return;
-        }
-
-        if (fraction > 0.01) {
-            Cinnamon.shader_effect_set_double_uniform(this._effect, 'height', this.actor.get_height());
-            Cinnamon.shader_effect_set_double_uniform(this._effect, 'fraction', fraction);
-
-            if (!this._effect.actor)
-                this.actor.add_effect(this._effect);
-        } else {
-            if (this._effect.actor)
-                this.actor.remove_effect(this._effect);
-        }
+    setEnabled: function(enabled) {
+        this._desaturateEffect.enabled = enabled;
+        this._brightnessEffect.enabled = enabled;
     },
 
-    get dimFraction() {
-        return this._dimFraction;
+    set dimFactor(factor) {
+        this._dimFactor = factor;
+        this._desaturateEffect.set_factor(factor * DIM_DESATURATION);
+        this._brightnessEffect.set_brightness(factor * DIM_BRIGHTNESS);
     },
 
-    _dimFraction: 0.0
+    get dimFactor() {
+       return this._dimFactor;
+    }
 };
 
 function getWindowDimmer(actor) {
@@ -558,28 +538,44 @@ WindowManager.prototype = {
         let actor = window.get_compositor_private();
         if (!actor)
             return;
-        if (animate)
-            Tweener.addTween(getWindowDimmer(actor),
-                             { dimFraction: 1.0,
+
+        let dimmer = getWindowDimmer(actor);
+        let enabled = Meta.prefs_get_attach_modal_dialogs();
+        dimmer.setEnabled(enabled);
+        if (!enabled)
+            return;
+
+        if (animate) {
+            Tweener.addTween(dimmer,
+                             { dimFactor: 1.0,
                                time: DIM_TIME,
                                transition: 'linear'
                              });
-        else
-            getWindowDimmer(actor).dimFraction = 1.0;
+        } else {
+            getWindowDimmer(actor).dimFactor = 1.0;
+        }
     },
 
     _undimWindow: function(window, animate) {
         let actor = window.get_compositor_private();
         if (!actor)
             return;
-        if (animate)
-            Tweener.addTween(getWindowDimmer(actor),
-                             { dimFraction: 0.0,
+
+        let dimmer = getWindowDimmer(actor);
+        let enabled = Meta.prefs_get_attach_modal_dialogs();
+        dimmer.setEnabled(enabled);
+        if (!enabled)
+            return;
+
+        if (animate) {
+            Tweener.addTween(dimmer,
+                             { dimFactor: 0.0,
                                time: UNDIM_TIME,
                                transition: 'linear'
                              });
-        else
-            getWindowDimmer(actor).dimFraction = 0.0;
+        } else {
+            getWindowDimmer(actor).dimFactor = 0.0;
+        }
     },
 
     _mapWindow : function(cinnamonwm, actor) {           
@@ -1061,14 +1057,14 @@ WindowManager.prototype = {
 
     _showWorkspaceSwitcher : function(display, screen, window, binding) {
         if (binding.get_name() == 'switch-to-workspace-up') {
-        	Main.expo.toggle();
-        	return;                   
+            Main.expo.toggle();
+            return;
         }
         if (binding.get_name() == 'switch-to-workspace-down') {
             Main.overview.toggle();
             return;
         }
-        
+
         if (screen.n_workspaces == 1)
             return;
 
