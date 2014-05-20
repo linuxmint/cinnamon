@@ -47,9 +47,18 @@ class Module:
        
             scroll_options = [["none", _("Nothing")],["shade", _("Shade and unshade")],["opacity", _("Adjust opacity")]]
 
-            section.add(self._make_titlebar_action_group(_("Action on title bar with mouse scroll"),
-                                               "org.cinnamon.desktop.wm.preferences", "action-scroll-titlebar",
-                                               scroll_options))
+            combo = self._make_titlebar_action_group(_("Action on title bar with mouse scroll"),
+                                                      "org.cinnamon.desktop.wm.preferences", "action-scroll-titlebar",
+                                                      scroll_options)
+            opacity_spinner = GSettingsSpinButton(_("Minimum opacity:"), "org.cinnamon.desktop.wm.preferences", "min-window-opacity", None, 0, 100, 1, 1, _("%"))
+
+            combo.pack_start(opacity_spinner, False, False, 2)
+
+            self.wm_settings = Gio.Settings("org.cinnamon.desktop.wm.preferences")
+            self.wm_settings.connect("changed::action-scroll-titlebar", self.update_spinner_visibility, opacity_spinner)
+            self.update_spinner_visibility(self.wm_settings, "action-scroll-titlebar", combo)
+
+            section.add(combo)
             vbox.add(section)
 
             vbox.add(Gtk.Separator.new(Gtk.Orientation.HORIZONTAL))
@@ -75,7 +84,12 @@ class Module:
             section.add(self._make_combo_group(_("Special key to move windows"), "org.cinnamon.desktop.wm.preferences", "mouse-button-modifier", [(i, i.title()) for i in ("","<Alt>","<Super>","<Control>")]))
             section.add(GSettingsSpinButton(_("Window drag/resize threshold"), "org.cinnamon.muffin", "resize-threshold", None, 1, 100, 1, 1, _("Pixels")))        
             vbox.add(section)
-        
+
+    def update_spinner_visibility(self, settings, key, widget):
+        if settings.get_string(key) == "opacity":
+            widget.show()
+        else:
+            widget.hide()
 
     def _make_titlebar_action_group(self, group_label, root, key, stuff):
         self.size_groups = getattr(self, "size_groups", [SizeGroup.new(SizeGroupMode.HORIZONTAL) for x in range(2)])
