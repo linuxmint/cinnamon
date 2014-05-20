@@ -289,9 +289,7 @@ class Module:
             entry_column.set_alignment(.5)
             self.entry_tree.append_column(entry_column)
 
-            self.entry_tree.set_tooltip_text(_("Click to set a new accelerator key.") +
-                                             _("  Press Escape or click again to cancel the operation.") +
-                                             _("  Press Backspace to clear the existing keybinding."))
+            self.entry_tree.set_tooltip_text("%s\n%s\n%s" % (_("Click to set a new accelerator key."), _("Press Escape or click again to cancel the operation."), _("Press Backspace to clear the existing keybinding.")))
 
             self.main_store = []
 
