@@ -112,12 +112,12 @@ WindowManager.prototype = {
         this._switchData = null;
         this._cinnamonwm.connect('kill-switch-workspace', Lang.bind(this, this._switchWorkspaceDone));
         this._cinnamonwm.connect('kill-window-effects', Lang.bind(this, function (cinnamonwm, actor) {
-            this._minimizeWindowDone(cinnamonwm, actor);
+            this._minimizeWindowDone(cinnamonwm, actor, actor.opacity);
             this._maximizeWindowDone(cinnamonwm, actor, actor.opacity);
             this._unmaximizeWindowDone(cinnamonwm, actor, actor.opacity);
             this._tileWindowDone(cinnamonwm, actor, actor.opacity);
             this._mapWindowDone(cinnamonwm, actor, actor.opacity);
-            this._destroyWindowDone(cinnamonwm, actor);
+            this._destroyWindowDone(cinnamonwm, actor, actor.opacity);
         }));
 
         this._cinnamonwm.connect('switch-workspace', Lang.bind(this, this._switchWorkspace));
@@ -757,7 +757,7 @@ WindowManager.prototype = {
 
             actor._parentDestroyId = parent.connect('unmanaged', Lang.bind(this, function () {
                 Tweener.removeTweens(actor);
-                this._destroyWindowDone(cinnamonwm, actor);
+                this._destroyWindowDone(cinnamonwm, actor, actor.opacity);
             }));
 
             Tweener.removeTweens(actor);
