@@ -58,10 +58,10 @@ PopupBaseMenuItem.prototype = {
         this._spacing = 0;
         this.active = false;
         this._activatable = params.reactive && params.activate;
-        this.sensitive = this._activatable && params.sensitive;
+        this.sensitive = true;
         this.focusOnHover = params.focusOnHover;
 
-        this.setSensitive(this.sensitive);
+        this.setSensitive(this._activatable && params.sensitive);
 
         if (params.style_class)
             this.actor.add_style_class_name(params.style_class);
