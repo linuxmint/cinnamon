@@ -933,7 +933,9 @@ MyApplet.prototype = {
     },
 
     openMenu: function() {
-        this.menu.open(false);
+        if (!this._applet_context_menu.isOpen) {
+            this.menu.open(false);
+        }        
     },
 
     _updateActivateOnHover: function() {
