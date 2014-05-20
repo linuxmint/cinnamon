@@ -34,16 +34,20 @@ class Module:
             section = Section(_("Titlebar"))
             
             section.add(TitleBarButtonsOrderSelector())
-            
+
+            action_options = [["toggle-shade", _("Toggle Shade")], ["toggle-maximize", _("Toggle Maximize")],
+                             ["toggle-maximize-horizontally", _("Toggle Maximize Horizontally")], ["toggle-maximize-vertically", _("Toggle Maximize Vertically")],
+                             ["minimize", _("Minimize")], ["shade", _("Shade")], ["menu", _("Menu")], ["lower", _("Lower")], ["none", _("None")]]
+
             section.add(self._make_titlebar_action_group(_("Action on title bar double-click"),
                                                 "org.cinnamon.desktop.wm.preferences", "action-double-click-titlebar",
-                                                [(i, i.replace("-", " ").title()) for i in ('toggle-shade', 'toggle-maximize', 'toggle-maximize-horizontally', 'toggle-maximize-vertically', 'minimize', 'shade', 'menu', 'lower', 'none')]))
+                                                action_options))
             section.add(self._make_titlebar_action_group(_("Action on title bar middle-click"),
                                                 "org.cinnamon.desktop.wm.preferences", "action-middle-click-titlebar",
-                                                [(i, i.replace("-", " ").title()) for i in ('toggle-shade', 'toggle-maximize', 'toggle-maximize-horizontally', 'toggle-maximize-vertically', 'minimize', 'shade', 'menu', 'lower', 'none')]))
+                                                action_options))
             section.add(self._make_titlebar_action_group(_("Action on title bar right-click"),
                                                 "org.cinnamon.desktop.wm.preferences", "action-right-click-titlebar",
-                                                [(i, i.replace("-", " ").title()) for i in ('toggle-shade', 'toggle-maximize', 'toggle-maximize-horizontally', 'toggle-maximize-vertically', 'minimize', 'shade', 'menu', 'lower', 'none')]))
+                                                action_options))
        
             scroll_options = [["none", _("Nothing")],["shade", _("Shade and unshade")],["opacity", _("Adjust opacity")]]
 
@@ -71,7 +75,8 @@ class Module:
             vbox.add(Gtk.Separator.new(Gtk.Orientation.HORIZONTAL))
 
             section = Section(_("Window Focus"))
-            section.add(self._make_combo_group(_("Window focus mode"), "org.cinnamon.desktop.wm.preferences", "focus-mode", [(i, i.title()) for i in ("click","sloppy","mouse")]))
+            focus_options = [["click", _("Click")], ["sloppy", _("Sloppy")], ["mouse", _("Mouse")]]
+            section.add(self._make_combo_group(_("Window focus mode"), "org.cinnamon.desktop.wm.preferences", "focus-mode", focus_options))
             section.add(GSettingsCheckButton(_("Automatically raise focused windows"), "org.cinnamon.desktop.wm.preferences", "auto-raise", None))
             section.add(GSettingsCheckButton(_("Bring windows which require attention to the current workspace"), "org.cinnamon", "bring-windows-to-current-workspace", None))        
             section.add(GSettingsCheckButton(_("Prevent focus stealing"), "org.cinnamon", "prevent-focus-stealing", None))        
