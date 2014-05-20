@@ -51,6 +51,8 @@ class DeskletsViewSidePage (ExtensionSidePage):
 
         label = Gtk.Label()
         label.set_markup("<i><small>%s\n%s</small></i>" % (_("Note: Some desklets require the border/header to be always present"), _("Such requirements override the settings selected here")))
+        label.set_alignment(0.1,0)
+        
 
         desklet_snap = GSettingsCheckButton(_("Snap desklets to grid"), "org.cinnamon", "desklet-snap", None)
         desklet_snap_interval = GSettingsSpinButton(_("Width of desklet snap grid"), "org.cinnamon", "desklet-snap-interval", "org.cinnamon/desklet-snap", 0, 100, 1, 5, "")
