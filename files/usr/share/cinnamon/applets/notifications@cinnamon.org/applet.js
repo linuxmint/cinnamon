@@ -21,39 +21,39 @@ MyApplet.prototype = {
     _init: function(metadata, orientation, panel_height, instanceId) {
         Applet.TextIconApplet.prototype._init.call(this, orientation, panel_height);
 
-		// Settings
+        // Settings
         this.settings = new Settings.AppletSettings(this, metadata.uuid, instanceId);
         this.settings.bindProperty(Settings.BindingDirection.IN, "ignoreTransientNotifications", "ignoreTransientNotifications", null, null);
         this.settings.bindProperty(Settings.BindingDirection.IN, "showEmptyTray", "showEmptyTray", this._show_hide_tray, null);
 
-		// Layout
+        // Layout
         Gtk.IconTheme.get_default().append_search_path(metadata.path);
         this._orientation = orientation;
         this.menuManager = new PopupMenu.PopupMenuManager(this);
 
-		// Lists
+        // Lists
         this.notifications = [];	// The list of notifications, in order from oldest to newest.
 
-		// Events
+        // Events
         Main.messageTray.connect('notify-applet-update', Lang.bind(this, this._notification_added));
         global.settings.connect('changed::panel-edit-mode', Lang.bind(this, this.on_panel_edit_mode_changed));
 
-		// States
+        // States
         this._blinking = false;
         this._blink_toggle = false;
     },
 
     _display: function() {
-		// Always start the applet empty, void of any notifications.
+        // Always start the applet empty, void of any notifications.
         this.set_applet_icon_symbolic_name("empty-notif");
         this.set_applet_tooltip(_("Notifications"));
 
-		// Setup the notification container.
+        // Setup the notification container.
         this._maincontainer = new St.BoxLayout({name: 'traycontainer', vertical: true});
         this._notificationbin = new St.BoxLayout({vertical:true});
         this.button_label_box = new St.BoxLayout();
 
-		// Setup the tray icon.
+        // Setup the tray icon.
         this.menu_label = new PopupMenu.PopupMenuItem(stringify(this.notifications.length));
         this.menu_label.actor.reactive = false;
         this.menu_label.actor.can_focus = false;
@@ -90,7 +90,7 @@ MyApplet.prototype = {
             this.menu.passEvents = false;
         }));
 
-		// Alternative tray icons.
+        // Alternative tray icons.
         this._crit_icon = new St.Icon({icon_name: 'critical-notif', icon_type: St.IconType.SYMBOLIC, reactive: true, track_hover: true, style_class: 'system-status-icon' });
         this._alt_crit_icon = new St.Icon({icon_name: 'alt-critical-notif', icon_type: St.IconType.SYMBOLIC, reactive: true, track_hover: true, style_class: 'system-status-icon' });
 
@@ -212,7 +212,7 @@ MyApplet.prototype = {
         } else {
             this.actor.hide();
         }
-	},
+    },
 
     on_panel_edit_mode_changed: function () {
     },
