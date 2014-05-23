@@ -91,6 +91,7 @@ struct _CinnamonGlobal {
   guint32 xdnd_timestamp;
   gint64 last_gc_end_time;
   guint ui_scale;
+  gboolean gc_active;
 };
 
 enum {
@@ -265,6 +266,8 @@ cinnamon_global_init (CinnamonGlobal *global)
   global->settings = g_settings_new ("org.cinnamon");
 
   global->ui_scale = 1;
+
+  global->gc_active = FALSE;
 
   global->grab_notifier = GTK_WINDOW (gtk_window_new (GTK_WINDOW_TOPLEVEL));
   g_signal_connect (global->grab_notifier, "grab-notify", G_CALLBACK (grab_notify), global);
@@ -1400,6 +1403,7 @@ cinnamon_global_on_gc (GjsContext   *context,
                     CinnamonGlobal  *global)
 {
   global->last_gc_end_time = g_get_monotonic_time ();
+  global->gc_active = FALSE;
 }
 
 /**
@@ -1714,6 +1718,28 @@ typedef struct
 } LeisureClosure;
 
 static gboolean
+context_gc_retry_cb (CinnamonGlobal *global)
+{
+  if (!global->gc_active) {
+    global->gc_active = TRUE;
+    gjs_context_gc (global->js_context);
+  } else
+  /* Only retry once */
+  return FALSE;
+}
+
+static void
+try_context_gc (CinnamonGlobal *global)
+{
+  if (!global->gc_active) {
+    global->gc_active = TRUE;
+    gjs_context_gc (global->js_context);
+  } else {
+    g_timeout_add (100, (GSourceFunc) context_gc_retry_cb, global);
+  }
+}
+
+static gboolean
 run_leisure_functions (gpointer data)
 {
   CinnamonGlobal *global = data;
@@ -1731,7 +1757,7 @@ run_leisure_functions (gpointer data)
    * let's just aggressively GC.  This will help avoid both heap
    * fragmentation, and the GC kicking in when we don't want it to.
    */
-  gjs_context_gc (global->js_context);
+  try_context_gc (global);
 
   /* No leisure closures, so we are done */
   if (global->leisure_closures == NULL)
