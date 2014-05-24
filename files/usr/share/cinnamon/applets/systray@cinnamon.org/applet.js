@@ -76,6 +76,8 @@ MyApplet.prototype = {
                 return;
             }
 
+            let buggyIcons = ["pidgin", "thunderbird"];
+
             global.log("Adding systray: " + role + " (" + icon.get_width() + "x" + icon.get_height() + "px)");            
 
             if (icon.get_parent())
@@ -83,8 +85,12 @@ MyApplet.prototype = {
 
             if (global.settings.get_boolean('panel-scale-text-icons')) {
                 let disp_size = this._panelHeight * ICON_SCALE_FACTOR;
-
-                icon.set_size(disp_size, disp_size);
+                if (icon.get_width() == 1 || icon.get_height() == 1 || buggyIcons.indexOf(role) != -1) {
+                    icon.set_height(disp_size);
+                }
+                else {
+                    icon.set_size(disp_size, disp_size);
+                }
             }
 
             /* dropbox, for some reason, refuses to provide a correct size icon in our new situation.
