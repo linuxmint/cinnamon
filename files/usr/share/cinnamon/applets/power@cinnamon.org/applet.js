@@ -245,14 +245,16 @@ MyApplet.prototype = {
             for (let i = 0; i < devices.length; i++) {
                 let [device_id, device_type] = devices[i];
 
-                if (device_type == UPDeviceType.AC_POWER) {
-                    this.set_applet_tooltip(_("AC adapter"));
-                }
-                else if (device_type == UPDeviceType.BATTERY) {
-                    this.set_applet_tooltip(_("Laptop battery"));
-                }
+                if (this._hasPrimary == false) {
+                	if (device_type == UPDeviceType.AC_POWER) {
+                    	this.set_applet_tooltip(_("AC adapter"));
+                	}
+                	else if (device_type == UPDeviceType.BATTERY) {
+                    	this.set_applet_tooltip(_("Laptop battery"));
+               		}
+               	}
 
-                if (device_type == UPDeviceType.AC_POWER || device_id == this._primaryDeviceId)
+                if (device_type == UPDeviceType.AC_POWER || (this._hasPrimary && device_id == this._primaryDeviceId))
                     continue;
 
                 let item = new DeviceItem (devices[i]);
