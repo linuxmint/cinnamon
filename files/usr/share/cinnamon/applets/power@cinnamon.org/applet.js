@@ -285,39 +285,40 @@ MyApplet.prototype = {
     },
     
     _updateLabel: function() {
-        this._proxy.GetPrimaryDeviceRemote(Lang.bind(this, function(device, error) {
+    	this._mainLabel.set_text("");
+        this._proxy.GetDevicesRemote(Lang.bind(this, function(devices, error) {
             if (error) {
-                this._mainLabel.set_text("");
                 return;
             }
             if (this.labelinfo != "nothing") {
-                let [device_id, device_type, icon, percentage, state, time] = device;
-                // if (device_type == UPDeviceType.AC_POWER || device_type == UPDeviceType.BATTERY) {
-                    let labelText = "";
+            	for (let i = 0; i < devices.length; i++) {
+	                let [device_id, device_type, icon, percentage, state, time] = devices[i];
+	                if (device_type == UPDeviceType.BATTERY || device_id == this._primaryDeviceId) {
+	                    let labelText = "";
 
-                    if (this.labelinfo == "percentage" || time == 0) {
-                        labelText = C_("percent of battery remaining", "%d%%").format(Math.round(percentage));
-                    }
-                    else if (this.labelinfo == "time") {
-                        let seconds = Math.round(time / 60);
-                        let minutes = Math.floor(seconds % 60);
-                        let hours = Math.floor(seconds / 60);
-                        labelText = C_("time of battery remaining", "%d:%02d").format(hours,minutes);
-                    }
-                    else if (this.labelinfo == "percentage_time") {
-                        let seconds = Math.round(time / 60);
-                        let minutes = Math.floor(seconds % 60);
-                        let hours = Math.floor(seconds / 60);
-                        labelText = C_("percent of battery remaining", "%d%%").format(Math.round(percentage)) + " (" +
-                                    C_("time of battery remaining", "%d:%02d").format(hours,minutes) + ")";
-                    }
-
-                    this._mainLabel.set_text(labelText);
-                    return;
-                // }
+	                    if (this.labelinfo == "percentage" || time == 0) {
+	                        labelText = C_("percent of battery remaining", "%d%%").format(Math.round(percentage));
+	                    }
+	                    else if (this.labelinfo == "time") {
+	                        let seconds = Math.round(time / 60);
+	                        let minutes = Math.floor(seconds % 60);
+	                        let hours = Math.floor(seconds / 60);
+	                        labelText = C_("time of battery remaining", "%d:%02d").format(hours,minutes);
+	                    }
+	                    else if (this.labelinfo == "percentage_time") {
+	                        let seconds = Math.round(time / 60);
+	                        let minutes = Math.floor(seconds % 60);
+	                        let hours = Math.floor(seconds / 60);
+	                        labelText = C_("percent of battery remaining", "%d%%").format(Math.round(percentage)) + " (" +
+	                                    C_("time of battery remaining", "%d:%02d").format(hours,minutes) + ")";
+	                    }
+	                    this._mainLabel.set_text(labelText);
+	                    if (device_id == this._primaryDeviceId) {
+	                    	return;
+	                    }
+	            	}
+                }
             }
-            // Display disabled or no battery found... hot-unplugged?
-            this._mainLabel.set_text("");
         }));
     },
     
