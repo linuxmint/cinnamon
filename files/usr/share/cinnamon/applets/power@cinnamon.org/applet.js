@@ -287,9 +287,9 @@ MyApplet.prototype = {
     },
     
     _updateLabel: function() {
-    	this._mainLabel.set_text("");
         this._proxy.GetDevicesRemote(Lang.bind(this, function(devices, error) {
             if (error) {
+            	this._mainLabel.set_text("");
                 return;
             }
             if (this.labelinfo != "nothing") {
