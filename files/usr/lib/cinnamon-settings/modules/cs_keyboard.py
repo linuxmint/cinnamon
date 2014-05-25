@@ -122,8 +122,11 @@ KEYBINDINGS = [
     [_("Shut down"), MEDIA_KEYS_SCHEMA, "shutdown", False, "system"],
     [_("Lock screen"), MEDIA_KEYS_SCHEMA, "screensaver", False, "system"],
     [_("Take a screenshot of an area"), MEDIA_KEYS_SCHEMA, "area-screenshot", False, "system"],
+    [_("Copy a screenshot of an area to clipboard"), MEDIA_KEYS_SCHEMA, "area-screenshot-clip", False, "system"],
     [_("Take a screenshot"), MEDIA_KEYS_SCHEMA, "screenshot", False, "system"],
+    [_("Copy a screenshot to clipboard"), MEDIA_KEYS_SCHEMA, "screenshot-clip", False, "system"],
     [_("Take a screenshot of a window"), MEDIA_KEYS_SCHEMA, "window-screenshot", False, "system"],
+    [_("Copy a screenshot of a window to clipboard"), MEDIA_KEYS_SCHEMA, "window-screenshot-clip", False, "system"],
     [_("Toggle recording desktop (must restart Cinnamon)"), MUFFIN_KEYBINDINGS_SCHEMA, "toggle-recording", True, "system"],
 
     # Launchers
