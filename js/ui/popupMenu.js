@@ -1333,6 +1333,8 @@ PopupSubMenu.prototype = {
 
     _needsScrollbar: function() {
         let topMenu = this._getTopMenu();
+        if(!topMenu)
+            return false;
         let [topMinHeight, topNaturalHeight] = topMenu.actor.get_preferred_height(-1);
         let topThemeNode = topMenu.actor.get_theme_node();
 
