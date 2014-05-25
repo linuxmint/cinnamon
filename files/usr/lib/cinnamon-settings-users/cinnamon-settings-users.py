@@ -144,11 +144,12 @@ class EditableEntry (Gtk.Notebook):
 
 class PasswordDialog(Gtk.Dialog):
 
-    def __init__ (self, user, password_mask):            
+    def __init__ (self, user, password_mask, group_mask):            
         super(PasswordDialog, self).__init__()
 
         self.user = user
         self.password_mask = password_mask
+        self.group_mask = group_mask
 
         self.set_modal(True)
         self.set_skip_taskbar_hint(True)
@@ -212,10 +213,16 @@ class PasswordDialog(Gtk.Dialog):
             self.destroy()
 
     def change_password(self):        
-        newpass = self.new_password.get_text()        
+        newpass = self.new_password.get_text()
         self.user.set_password(newpass, "")
+        os.system("gpasswd -d '%s' nopasswdlogin" % self.user.get_user_name())
+        mask = self.group_mask.get_text()
+        mask = mask.split(", ")
+        mask.remove("nopasswdlogin")
+        mask = ", ".join(mask)
+        self.group_mask.set_text(mask)        
         self.password_mask.set_text(u'\u2022\u2022\u2022\u2022\u2022\u2022')
-        self.destroy()            
+        self.destroy()  
 
     def set_passwords_visibility(self):
         visible = self.show_password.get_active()       
@@ -508,7 +515,7 @@ class Module:
         model, treeiter = self.users_treeview.get_selection().get_selected()
         if treeiter != None:
             user = model[treeiter][INDEX_USER_OBJECT]       
-            dialog = PasswordDialog(user, self.password_mask)                
+            dialog = PasswordDialog(user, self.password_mask, self.groups_label)                
             response = dialog.run()
 
     def _on_groups_button_clicked(self, widget): 
@@ -740,9 +747,9 @@ class Module:
             piter = self.users.append(None, [new_user, pixbuf, description])
             # Add the user to his/her own group and sudo if Administrator was selected
             if dialog.account_type_combo.get_active() == 1:
-                os.system("usermod %s -G %s,sudo" % (username, username)) 
+                os.system("usermod %s -G %s,sudo,nopasswdlogin" % (username, username)) 
             else:
-                os.system("usermod %s -G %s" % (username, username))
+                os.system("usermod %s -G %s,nopasswdlogin" % (username, username))
             self.load_groups()
         dialog.destroy()
 
