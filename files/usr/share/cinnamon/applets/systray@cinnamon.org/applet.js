@@ -1,7 +1,7 @@
 const Lang = imports.lang;
 const St = imports.gi.St;
 const Clutter = imports.gi.Clutter;
-const Mainloop = imports.mainloop;
+
 const Applet = imports.ui.applet;
 const Main = imports.ui.main;
 
@@ -34,9 +34,6 @@ MyApplet.prototype = {
         this.actor.add_actor (this.manager_container);
 
         this.manager_container.show();
-
-        // Call redisplay (in certain cases the systray icons aren't clickable at all as if the systray applet was non-reactive. This call fixes it.)
-   		Mainloop.timeout_add(750, Lang.bind(Main.statusIconDispatcher, Main.statusIconDispatcher.redisplay));
     },
 
     on_applet_clicked: function(event) {
