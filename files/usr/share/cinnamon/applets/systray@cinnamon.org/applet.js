@@ -4,6 +4,7 @@ const Clutter = imports.gi.Clutter;
 
 const Applet = imports.ui.applet;
 const Main = imports.ui.main;
+const Mainloop = imports.mainloop;
 
 const ICON_SCALE_FACTOR = .8; // for custom panel heights, 20 (default icon size) / 25 (default panel height)
 
@@ -19,6 +20,11 @@ MyApplet.prototype = {
 
         this.actor.remove_style_class_name("applet-box");
         this.actor.style="spacing: 5px;";
+
+        this.redisplay_id = 0;
+
+        /* Start at 0 time to always force a redisplay at startup */
+        this.last_redisplay = 0;
 
         this._signals = { added: null,
                           removed: null,
@@ -64,12 +70,41 @@ MyApplet.prototype = {
         }
     },
 
+    /* Only redisplay if it's been more than 2 seconds since the
+       last.  This prevents getting stuck in a redisplay loop.
+     */
+
+    on_redisplay_timeout: function() {
+        let new_time = new Date().getTime();
+        if ((new_time - 2000) > this.last_redisplay) {
+            this.last_redisplay = new_time;
+            Main.statusIconDispatcher.redisplay();
+        }
+        this.redisplay_id = 0;
+        return false;
+    },
+
+    queue_redisplay: function() {
+        this.redisplay_id = Mainloop.timeout_add(250, Lang.bind(this, this.on_redisplay_timeout));
+    },
+
     _onTrayIconAdded: function(o, icon, role) {
+        /* Don't accumulate when we're running a batch of icons,
+           just once when we're all done  */
+        if (this.redisplay_id > 0) {
+            Mainloop.source_remove(this.redisplay_id);
+            this.redisplay_id = 0;
+        }
+
         try {
             let hiddenIcons = Main.systrayManager.getRoles();
 
+            /* Have we an applet for that already? */
             if (hiddenIcons.indexOf(role) != -1 ) {
-                // We've got an applet for that
+                /* We don't need this really, except that if a registered
+                   tray item is the last item received from the tray manager,
+                   we won't get our redisplay called for the rest of them */
+                this.queue_redisplay();
                 return;
             }
 
@@ -102,6 +137,8 @@ MyApplet.prototype = {
         } catch (e) {
             global.logError(e);
         }
+
+        this.queue_redisplay();
     },
 
     _onTrayIconRemoved: function(o, icon) {
