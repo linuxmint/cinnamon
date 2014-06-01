@@ -122,6 +122,8 @@ class IconPicker(object):
 
     def update_icon_preview_cb(self, chooser, preview):
         filename = chooser.get_preview_filename()
+        if filename is None:
+            return
         chooser.set_preview_widget_active(False)
         if os.path.isfile(filename):
             pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(filename, 128, 128)
