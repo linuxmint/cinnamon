@@ -81,6 +81,9 @@ def createSystemInfos():
     if os.path.exists("/etc/linuxmint/info"):
         title = commands.getoutput("awk -F \"=\" '/GRUB_TITLE/ {print $2}' /etc/linuxmint/info")
         infos.append((_("Operating System"), title))    
+    elif os.path.isfile("/etc/arch-release"):
+        title = "Arch Linux"
+        infos.append((_("Operating System"), title))
     else:
         infos.append((_("Operating System"), dname + " " + dversion +  " '" + dsuffix.title() + "' (" + arch + ")"))    
     if 'CINNAMON_VERSION' in os.environ:            
