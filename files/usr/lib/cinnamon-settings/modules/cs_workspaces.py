@@ -31,7 +31,8 @@ class Module:
 
             vbox.add(Gtk.Separator.new(Gtk.Orientation.HORIZONTAL))  
             
-            section = Section(_("Miscellaneous Options"))  
+            section = Section(_("Miscellaneous Options"))
+            section.add(GSettingsSpinButton(_("Number of Workspace's"), "org.cinnamon", "number-workspaces", None, 1, 30, 1, 4, ("(requires Cinnamon restart)")))
             section.add(GSettingsCheckButton(_("Allow cycling through workspaces"), "org.cinnamon.muffin", "workspace-cycle", None))
             section.add(GSettingsCheckButton(_("Only use workspaces on primary monitor (requires Cinnamon restart)"), "org.cinnamon.muffin", "workspaces-only-on-primary", None))
             section.add(GSettingsCheckButton(_("Display Expo view as a grid"), "org.cinnamon", "workspace-expo-view-as-grid", None))
