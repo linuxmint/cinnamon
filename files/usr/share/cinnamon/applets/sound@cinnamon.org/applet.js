@@ -679,6 +679,9 @@ Player.prototype = {
 
     _runTimer: function() {
         if (this._playerStatus == 'Playing') {
+            if (this._timeoutId != 0) {
+                Mainloop.source_remove(this._timeoutId);
+            }
             this._timeoutId = Mainloop.timeout_add_seconds(1, Lang.bind(this, this._runTimer));
             this._currentTime += 1;
             this._updateTimer();
