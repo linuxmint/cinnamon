@@ -246,7 +246,8 @@ class MainWindow:
             self.search_entry.grab_focus()
 
     def on_keypress(self, widget, event):
-        if event.keyval == Gdk.KEY_BackSpace and type(self.window.get_focus()) not in (Gtk.TreeView, Gtk.Entry, Gtk.SpinButton):
+        if event.keyval == Gdk.KEY_BackSpace and (type(self.window.get_focus()) not in
+                                (Gtk.TreeView, Gtk.Entry, Gtk.SpinButton, Gtk.TextView)):
             self.back_to_icon_view(None)
             return True
         return False    
