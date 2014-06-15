@@ -103,9 +103,9 @@ Magnifier.prototype = {
         // Export to dbus.
         magDBusService = new MagnifierDBus.CinnamonMagnifier(this.enabled);
 
-        magInputHandler = new MagnifierInputHandler(this);
-
         this.setActive(this.enabled && activeAtLaunch);
+
+        magInputHandler = new MagnifierInputHandler(this);
 
         this.update_mag_id = 0;
     },
@@ -494,7 +494,7 @@ Magnifier.prototype = {
             // Mag factor is accurate to two decimal places.
             let aPref = parseFloat(this._settings.get_double(MAG_FACTOR_KEY).toFixed(2));
             ret = aPref;
-            if (aPref != 0.0)
+            if (aPref > 1.0)
                 zoomRegion.setMagFactor(aPref, aPref);
 
             aPref = this._settings.get_enum(SCREEN_POSITION_KEY);
@@ -1527,7 +1527,7 @@ MagnifierInputHandler.prototype = {
 
         if (this.zoom_active) {
             let zr = this.magnifier.getZoomRegions()[0];
-            this.current_zoom = zr.getMagFactor();
+            this.current_zoom = zr.getMagFactor()[0];
         }
 
         if (this.a11y_settings.get_boolean(SHOW_KEY))
