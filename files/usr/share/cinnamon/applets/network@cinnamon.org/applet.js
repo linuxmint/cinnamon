@@ -388,7 +388,6 @@ NMDevice.prototype = {
     },
 
     deactivate: function() {	
-		log("DISCONNECT");	
         this.device.disconnect(function() {});
     },
 
@@ -1184,7 +1183,6 @@ NMDeviceWireless.prototype = {
     _networkSortFunction: function(one, two) {
         let oneHasConnection = one.connections.length != 0;
         let twoHasConnection = two.connections.length != 0;
-
         // place known connections first
         // (-1 = good order, 1 = wrong order)
         if (oneHasConnection && !twoHasConnection)
@@ -1192,6 +1190,8 @@ NMDeviceWireless.prototype = {
         else if (!oneHasConnection && twoHasConnection)
             return 1;
 
+        return two.accessPoints[0].strength - one.accessPoints[0].strength;
+/**
         let oneHasSecurity = one.security != NMAccessPointSecurity.NONE;
         let twoHasSecurity = two.security != NMAccessPointSecurity.NONE;
 
@@ -1205,6 +1205,7 @@ NMDeviceWireless.prototype = {
 
         // sort alphabetically
         return GLib.utf8_collate(one.ssidText, two.ssidText);
+**/
     },
 
     _networkCompare: function(network, accessPoint) {
