@@ -349,6 +349,11 @@ class ExtensionSidePage (SidePage):
         buttonbox.pack_start(self.install_button, False, False, 2)
         buttonbox.pack_start(self.select_updated, False, False, 2)
         buttonbox.pack_end(reload_button, False, False, 2)
+
+        buttonbox.set_child_non_homogeneous(self.install_button, True)
+        buttonbox.set_child_non_homogeneous(self.select_updated, True)
+        buttonbox.set_child_non_homogeneous(reload_button, True)
+
         hbox.pack_start(buttonbox, True, True, 5)
         getmore_vbox.pack_end(hbox, False, True, 5)
 
