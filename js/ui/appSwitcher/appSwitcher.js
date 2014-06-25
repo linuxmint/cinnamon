@@ -9,7 +9,6 @@ const Mainloop = imports.mainloop;
 const Main = imports.ui.main;
 const Cinnamon = imports.gi.Cinnamon;
 
-const INITIAL_DELAY_TIMEOUT = 150;
 const CHECK_DESTROYED_TIMEOUT = 100;
 const DISABLE_HOVER_TIMEOUT = 500; // milliseconds
 
@@ -137,7 +136,8 @@ AppSwitcher.prototype = {
         
             // We delay showing the popup so that fast Alt+Tab users aren't
             // disturbed by the popup briefly flashing.
-            this._initialDelayTimeoutId = Mainloop.timeout_add(INITIAL_DELAY_TIMEOUT, Lang.bind(this, this._show));
+            let delay = global.settings.get_int("alttab-switcher-delay");
+            this._initialDelayTimeoutId = Mainloop.timeout_add(delay, Lang.bind(this, this._show));
         }
         return this._haveModal;
     },
