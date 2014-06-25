@@ -86,8 +86,22 @@ class Module:
             vbox.add(Gtk.Separator.new(Gtk.Orientation.HORIZONTAL))
 
             section = Section(_("Moving and Resizing Windows"))
-            section.add(self._make_combo_group(_("Special key to move windows"), "org.cinnamon.desktop.wm.preferences", "mouse-button-modifier", [(i, i.title()) for i in ("","<Alt>","<Super>","<Control>")]))
-            section.add(GSettingsSpinButton(_("Window drag/resize threshold"), "org.cinnamon.muffin", "resize-threshold", None, 1, 100, 1, 1, _("Pixels")))        
+            section.add(
+                GSettingsCheckButton(
+                    _("Use right mouse button to resize"),
+                    "org.cinnamon.desktop.wm.preferences",
+                    "resize-with-right-button", None))
+            keys = [(i, i.title())
+                    for i in ("", "<Alt>", "<Super>", "<Control>")]
+            section.add(
+                self._make_combo_group(
+                    _("Special key to move windows"),
+                    "org.cinnamon.desktop.wm.preferences",
+                    "mouse-button-modifier", keys))
+            section.add(
+                GSettingsSpinButton(
+                    _("Window drag/resize threshold"), "org.cinnamon.muffin",
+                    "resize-threshold", None, 1, 100, 1, 1, _("Pixels")))
             vbox.add(section)
 
     def update_spinner_visibility(self, settings, key, widget):
