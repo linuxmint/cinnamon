@@ -13,6 +13,7 @@ nobase_dist_js_DATA = \
 	misc/params.js		\
 	misc/pointerTracker.js	\
 	misc/screenSaver.js     \
+    misc/timers.js       \
 	misc/util.js		\
 	misc/windowUtils.js		\
 	perf/core.js		\

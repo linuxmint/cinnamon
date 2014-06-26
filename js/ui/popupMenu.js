@@ -15,6 +15,7 @@ const Params = imports.misc.params;
 const Tweener = imports.ui.tweener;
 
 const Util = imports.misc.util;
+const Timers = imports.misc.timers;
 
 const SLIDER_SCROLL_STEP = 0.05; /* Slider scrolling step in % */
 
@@ -1178,6 +1179,7 @@ PopupMenu.prototype = {
         this._boxWrapper.add_actor(this.box);
         this.actor.add_style_class_name('popup-menu');
 
+        this.timer = new Timers.DebugTimer("Popup Menu");
         global.focus_manager.add_group(this.actor);
         this.actor.reactive = true;
     },
@@ -1245,8 +1247,14 @@ PopupMenu.prototype = {
         this._boxPointer.show(animate);
 
         this.actor.raise_top();
-
+log("Open state changed");
+        this.timer.start()
+        this.actor.connect("allocation-changed", Lang.bind(this, this.test));
         this.emit('open-state-changed', true);
+    },
+
+    test: function() {
+        this.timer.stop()
     },
 
     // Setting the max-height won't do any good if the minimum height of the
