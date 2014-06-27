@@ -1179,6 +1179,9 @@ PopupMenu.prototype = {
         this._boxWrapper.add_actor(this.box);
         this.actor.add_style_class_name('popup-menu');
 
+        this.paint_id = 0;
+        this.paint_count = 0;
+        this.animating = false;
         global.focus_manager.add_group(this.actor);
         this.actor.reactive = true;
     },
@@ -1234,6 +1237,13 @@ PopupMenu.prototype = {
         if (this.isOpen)
             return;
 
+        Main.popup_rendering = true;
+
+        if (animate)
+            this.animating = animate;
+        else
+            this.animating = false;
+
         this.setMaxHeight();
 
         this.isOpen = true;
@@ -1243,11 +1253,27 @@ PopupMenu.prototype = {
         global.menuStackLength += 1;
 
         this._boxPointer.setPosition(this.sourceActor, this._arrowAlignment);
-        this._boxPointer.show(animate);
+
+        this.paint_id = this.actor.connect("paint", Lang.bind(this, this.on_paint));
+
+        this._boxPointer.show(animate, Lang.bind(this, function () {
+            this.animating = false;
+        }));
 
         this.actor.raise_top();
 
         this.emit('open-state-changed', true);
+    },
+
+    on_paint: function(actor) {
+        if (this.paint_count < 2 || this.animating) {
+            this.paint_count++;
+            return;
+        }
+
+        this.actor.disconnect(this.paint_id);
+        this.paint_count = 0;
+        Main.popup_rendering = false;
     },
 
     // Setting the max-height won't do any good if the minimum height of the

@@ -1672,7 +1672,7 @@ MyApplet.prototype = {
                 this.selectedAppTitle.set_text("");
                 this.selectedAppDescription.set_text("");
             }));        
-        button.actor.connect('clicked', Lang.bind(this, function() {            
+        button.actor.connect('button-release-event', Lang.bind(this, function() {            
             this.menu.close();
             
             let screensaver_settings = new Gio.Settings({ schema: "org.cinnamon.screensaver" });                        
@@ -1702,7 +1702,7 @@ MyApplet.prototype = {
                 this.selectedAppTitle.set_text("");
                 this.selectedAppDescription.set_text("");
             }));        
-        button.actor.connect('clicked', Lang.bind(this, function() {            
+        button.actor.connect('button-release-event', Lang.bind(this, function() {            
             this.menu.close();
             this._session.LogoutRemote(0);
         }));
@@ -1719,7 +1719,7 @@ MyApplet.prototype = {
                 this.selectedAppTitle.set_text("");
                 this.selectedAppDescription.set_text("");
             }));        
-        button.actor.connect('clicked', Lang.bind(this, function() {            
+        button.actor.connect('button-release-event', Lang.bind(this, function() {            
             this.menu.close();
             this._session.ShutdownRemote();
         }));

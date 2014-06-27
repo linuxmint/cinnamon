@@ -137,6 +137,8 @@ let software_rendering = false;
 let lg_log_file;
 let can_log = false;
 
+let popup_rendering = false;
+
 // Override Gettext localization
 const Gettext = imports.gettext;
 Gettext.bindtextdomain('cinnamon', '/usr/share/cinnamon/locale');
@@ -378,7 +380,7 @@ function start() {
 
     _startDate = new Date();
 
-    global.stage.connect('captured-event', _globalKeyPressHandler);
+    global.stage.connect('captured-event', _stageEventHandler);
 
     global.log('loaded at ' + _startDate);
     log('Cinnamon started at ' + _startDate);
@@ -1058,11 +1060,12 @@ function getWindowActorsForWorkspace(workspaceIndex) {
 // are disabled with a global grab. (When there is a global grab, then
 // all key events will be delivered to the stage, so ::captured-event
 // on the stage can be used for global keybindings.)
-function _globalKeyPressHandler(actor, event) {
+function _stageEventHandler(actor, event) {
     if (modalCount == 0)
         return false;
-    if (event.type() != Clutter.EventType.KEY_PRESS)
-        return false;
+    if (event.type() != Clutter.EventType.KEY_PRESS) {
+        return popup_rendering && event.type() == Clutter.EventType.BUTTON_RELEASE;
+    }
 
     let symbol = event.get_key_symbol();
     let keyCode = event.get_key_code();
