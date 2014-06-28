@@ -1,7 +1,7 @@
 {
  "menu-icon-custom" : {
     "type" : "checkbox",
-    "default" : "false",
+    "default" : false,
     "description" : "Use a custom icon",
     "tooltip" : "Unchecking this allows the theme to set the icon"
  },
