@@ -742,7 +742,7 @@ WindowManager.prototype = {
         if (window.is_attached_dialog()) {
             let parent = window.get_transient_for();
             this._checkDimming(parent, window);
-            if (!this._shouldAnimate()) {
+            if (!this._shouldAnimate() || !window.visible) {
                 cinnamonwm.completed_destroy(actor);
                 return;
             }
