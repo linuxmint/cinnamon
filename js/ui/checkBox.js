@@ -21,7 +21,7 @@ CheckBoxContainer.prototype = {
         this.actor.connect('style-changed', Lang.bind(this,
             function() {
                 let node = this.actor.get_theme_node();
-                this._spacing = node.get_length('spacing');
+                this._spacing = Math.round(node.get_length('spacing'));
             }));
         this.actor.request_mode = Clutter.RequestMode.HEIGHT_FOR_WIDTH;
 
@@ -37,10 +37,23 @@ CheckBoxContainer.prototype = {
     },
 
     _getPreferredWidth: function(actor, forHeight, alloc) {
-        let [minWidth, natWidth] = this._box.get_preferred_width(forHeight);
+        let node = this.actor.get_theme_node();
+        forHeight = node.adjust_for_height(forHeight);
 
-        alloc.min_size = minWidth + this._spacing;
-        alloc.natural_size = natWidth + this._spacing;
+        let [minBoxWidth, natBoxWidth] = this._box.get_preferred_width(forHeight);
+        let boxNode = this._box.get_theme_node();
+        [minBoxWidth, natBoxWidth] = boxNode.adjust_preferred_width(minBoxWidth, natBoxWidth);
+
+        let [minLabelWidth, natLabelWidth] = this.label.get_preferred_width(forHeight);
+        let labelNode = this.label.get_theme_node();
+        [minLabelWidth, natLabelWidth] = labelNode.adjust_preferred_width(minLabelWidth, natLabelWidth);
+
+        let min = minBoxWidth + minLabelWidth + this._spacing;
+        let nat = natBoxWidth + natLabelWidth + this._spacing;
+        [min, nat] = node.adjust_preferred_width(min, nat);
+        
+        alloc.min_size = min;
+        alloc.natural_size = nat;
     },
 
     _getPreferredHeight: function(actor, forWidth, alloc) {
@@ -49,8 +62,8 @@ CheckBoxContainer.prototype = {
         let [minLabelHeight, natLabelHeight] =
             this.label.get_preferred_height(-1);
 
-        alloc.min_size = Math.max(minBoxHeight, 2 * minLabelHeight);
-        alloc.natural_size = Math.max(natBoxHeight, 2 * natLabelHeight);
+        alloc.min_size = Math.max(minBoxHeight, minLabelHeight);
+        alloc.natural_size = Math.max(natBoxHeight, natLabelHeight);
     },
 
     _allocate: function(actor, box, flags) {
@@ -64,14 +77,20 @@ CheckBoxContainer.prototype = {
             this._box.get_preferred_height(-1);
         childBox.x1 = box.x1;
         childBox.x2 = box.x1 + natBoxWidth;
-        childBox.y1 = box.y1;
-        childBox.y2 = box.y1 + natBoxHeight;
+        if (availHeight > natBoxHeight) childBox.y1 = box.y1 + (availHeight-natBoxHeight)/2;
+        else childBox.y1 = box.y1;
+        childBox.y2 = childBox.y1 + natBoxHeight;
         this._box.allocate(childBox, flags);
 
+        let [minLabelWidth, natLabelWidth] =
+            this.label.get_preferred_width(-1);
+        let [minLabelHeight, natLabelHeight] =
+            this.label.get_preferred_height(-1);
         childBox.x1 = box.x1 + natBoxWidth + this._spacing;
-        childBox.x2 = availWidth - childBox.x1;
-        childBox.y1 = box.y1;
-        childBox.y2 = box.y2;
+        childBox.x2 = childBox.x1 + availWidth - natBoxWidth - this._spacing;
+        if (availHeight > natLabelHeight) childBox.y1 = box.y1 + (availHeight-natLabelHeight)/2;
+        else childBox.y1 = box.y1;
+        childBox.y2 = childBox.y1 + natLabelHeight;
         this.label.allocate(childBox, flags);
     }
 };

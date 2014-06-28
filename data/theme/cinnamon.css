@@ -1552,8 +1552,6 @@ StScrollBar StButton#vhandle:hover {
 /* Check Boxes */
 .check-box CinnamonGenericContainer {
     spacing: .2em;
-    min-height: 30px;
-    padding-top: 2px;
 }
 
 .check-box StBin {
