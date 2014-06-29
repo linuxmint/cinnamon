@@ -28,7 +28,8 @@ WindowAttentionHandler.prototype = {
         if (!window || window.has_focus() || window.is_skip_taskbar() ||
             (window.get_wm_class() && (window.get_wm_class().indexOf("Skype") > -1 ||
                                        window.get_wm_class().indexOf("Quassel") > -1 ||
-                                       window.get_wm_class().indexOf("Pidgin") > -1)))
+                                       window.get_wm_class().indexOf("Pidgin") > -1 ||
+                                       window.get_wm_class().indexOf("Kadu") > -1)))
             return;
 
         try {
