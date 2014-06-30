@@ -55,12 +55,14 @@ class Module:
                                                       "org.cinnamon.desktop.wm.preferences", "action-scroll-titlebar",
                                                       scroll_options)
             opacity_spinner = GSettingsSpinButton(_("Minimum opacity:"), "org.cinnamon.desktop.wm.preferences", "min-window-opacity", None, 0, 100, 1, 1, _("%"))
+            opacity_spinner.show_all()
+            opacity_spinner.set_no_show_all(True)
 
             combo.pack_start(opacity_spinner, False, False, 2)
 
             self.wm_settings = Gio.Settings("org.cinnamon.desktop.wm.preferences")
             self.wm_settings.connect("changed::action-scroll-titlebar", self.update_spinner_visibility, opacity_spinner)
-            self.update_spinner_visibility(self.wm_settings, "action-scroll-titlebar", combo)
+            self.update_spinner_visibility(self.wm_settings, "action-scroll-titlebar", opacity_spinner)
 
             section.add(combo)
             vbox.add(section)
