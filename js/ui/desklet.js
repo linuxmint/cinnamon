@@ -12,6 +12,7 @@ const Util = imports.misc.util;
 const DeskletManager = imports.ui.deskletManager;
 const DND = imports.ui.dnd;
 const Main = imports.ui.main;
+const ModalDialog = imports.ui.modalDialog;
 const PopupMenu = imports.ui.popupMenu;
 const Tooltips = imports.ui.tooltips;
 const Tweener = imports.ui.tweener;
@@ -222,6 +223,10 @@ Desklet.prototype = {
             this._menu.addMenuItem(this.context_menu_separator);
         }
         
+        this.context_menu_item_about = new PopupMenu.PopupMenuItem(_("About..."))
+        this.context_menu_item_about.connect("activate", Lang.bind(this, this.openAbout));
+        this._menu.addMenuItem(this.context_menu_item_about);
+        
         if (!this._meta["hide-configuration"] && GLib.file_test(this._meta["path"] + "/settings-schema.json", GLib.FileTest.EXISTS)) {            
             this.context_menu_item_configure = new PopupMenu.PopupMenuItem(_("Configure..."));
             this.context_menu_item_configure.connect("activate", Lang.bind(this, function() {
@@ -233,6 +238,10 @@ Desklet.prototype = {
         this.context_menu_item_remove = new PopupMenu.PopupMenuItem(_("Remove this desklet"));
         this.context_menu_item_remove.connect("activate", Lang.bind(this, this._onRemoveDesklet));
         this._menu.addMenuItem(this.context_menu_item_remove);            
+    },
+
+    openAbout: function() {
+        new ModalDialog.SpicesAboutDialog(this._meta, "desklets");
     }
 };
 Signals.addSignalMethods(Desklet.prototype);
