@@ -1049,6 +1049,7 @@ PopupMenuBase.prototype = {
             // open-state-changed isn't exactly that, but doing it in more
             // precise ways would require a lot more bookkeeping.
             this.connect('open-state-changed', Lang.bind(this, function() { this._updateSeparatorVisibility(menuItem); }));
+            this.box.connect('allocation-changed', Lang.bind(this, function() { this._updateSeparatorVisibility(menuItem); }));
         } else if (menuItem instanceof PopupBaseMenuItem)
             this._connectItemSignals(menuItem);
         else
