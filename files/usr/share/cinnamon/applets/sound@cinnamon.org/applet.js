@@ -479,7 +479,7 @@ Player.prototype = {
         this._wantedSeekValue = 0;
         this._updatePositionSlider();
 
-        this._prop.connect('PropertiesChanged', Lang.bind(this, function(sender, iface, value) {
+        this._propId = this._prop.connect('PropertiesChanged', Lang.bind(this, function(sender, iface, value) {
             if (value["PlaybackStatus"])
                 this._setStatus(iface, value["PlaybackStatus"]);
             if (value["Metadata"])
@@ -493,7 +493,7 @@ Player.prototype = {
             }
         }));
 
-        this._mediaServerPlayer.connect('Seeked', Lang.bind(this, function(sender, value) {
+        this._mediaServerPlayerId = this._mediaServerPlayer.connect('Seeked', Lang.bind(this, function(sender, value) {
             if (value > 0) {
                 this._setPosition(value);
             }
@@ -677,11 +677,26 @@ Player.prototype = {
         this._time.setLabel(this._formatTime(this._currentTime) + " / " + this._formatTime(this._songLength));
     },
 
-    _runTimer: function() {
+    _runTimerCallback: function() {
         if (this._playerStatus == 'Playing') {
-            this._timeoutId = Mainloop.timeout_add_seconds(1, Lang.bind(this, this._runTimer));
             this._currentTime += 1;
             this._updateTimer();
+            return true;
+        }
+
+        return false;
+    },
+
+    _runTimer: function() {
+        if (this._timeoutId != 0) {
+            Mainloop.source_remove(this._timeoutId);
+            this._timeoutId = 0;
+        }
+
+        if (this._playerStatus == 'Playing') {
+            this._currentTime += 1;
+            this._updateTimer();
+            this._timeoutId = Mainloop.timeout_add_seconds(1, Lang.bind(this, this._runTimerCallback));
         }
     },
 
@@ -769,6 +784,16 @@ Player.prototype = {
          this._system_status_button.setIcon(icon);
        else
          this._system_status_button.setIcon('audio-x-generic');
+    },
+
+    cleanup: function() {
+        if (this._timeoutId != 0) {
+            Mainloop.source_remove(this._timeoutId);
+            this._timeoutId = 0;
+        }
+
+        this._prop.disconnect(this._propId);
+        this._mediaServerPlayer.disconnect(this._mediaServerPlayerId);
     }
 
 }
@@ -856,6 +881,7 @@ MyApplet.prototype = {
 
             this._icon_name = '';
             this._icon_path = null;
+            this._iconTimeoutId = 0;
 
             this.actor.connect('scroll-event', Lang.bind(this, this._onScrollEvent));
 
@@ -971,6 +997,8 @@ MyApplet.prototype = {
                 Mainloop.source_remove(this._iconTimeoutId);
             }
             this._iconTimeoutId = Mainloop.timeout_add(3000, Lang.bind(this, function() {
+                if (this._nbPlayers() == 0)
+                    return false;
                 this._iconTimeoutId = null;
                 if (this['_output'].is_muted) {
                     this.set_applet_icon_symbolic_name('audio-volume-muted');
@@ -1025,12 +1053,21 @@ MyApplet.prototype = {
     },
 
     _nbPlayers: function() {
-        return Object.keys(this._players).length;
+        let num = 0;
+        for (let owner in this._players) {
+            if (this._players[owner] != null)
+                num++;
+        }
+
+        return num;
     },
 
     _addPlayer: function(owner) {
         // ensure menu is empty
         this._cleanup();
+        if (this._players[owner])
+            this._players[owner].cleanup();
+        this._players[owner] = null;
         this._volumeControlShown = false;
         this._players[owner] = new Player(this, owner);
         this.menu.addMenuItem(this._players[owner]);
@@ -1044,26 +1081,35 @@ MyApplet.prototype = {
     },
 
     _removePlayer: function(owner) {
-        delete this._players[owner];
         this._cleanup();
+        if (this._players[owner])
+            this._players[owner].cleanup();
+        this._players[owner] = null;
         this._volumeControlShown = false;
-        for (owner in this._players) {
-            this._addPlayer(owner);
-        }
+
         this.menu.emit('players-loaded', true);
 
         this._showFixedElements();
 
-        this.setIconName(this._icon_name);
+        this._icon_path = null;
+        this.setIconName(null);
 
-        this._readOutput();
+        this._readOutput()
     },
 
     _cleanup: function() {
+        if (this._iconTimeoutId != 0) {
+            Mainloop.source_remove(this._iconTimeoutId);
+            this._iconTimeoutId = 0;
+        }
         if (this._outputTitle) this._outputTitle.destroy();
         if (this._outputSlider) this._outputSlider.destroy();
         if (this._inputTitle) this._inputTitle.destroy();
         if (this._inputSlider) this._inputSlider.destroy();
+        this._outputTitle = null;
+        this._outputSlider = null;
+        this._inputTitle = null;
+        this._inputSlider = null;
         this.setAppletTextIcon();
         this.menu.removeAll();
      },
