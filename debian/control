@@ -48,14 +48,12 @@ Architecture: any
 Depends: cinnamon-common (= ${source:Version}),
          cinnamon-translations (>= ${cinnamon:Version}),
          cjs (>= ${cinnamon:Version}),
-         libcjs0c (>= ${cinnamon:Version}),
          cinnamon-desktop-data (>= ${cinnamon:Version}),
          libcinnamon-desktop0 (>= ${cinnamon:Version}),
          libcinnamon-menu-3-0 (>= ${cinnamon:Version}),
          cinnamon-control-center (>= ${cinnamon:Version}),
          cinnamon-settings-daemon (>= ${cinnamon:Version}),
          cinnamon-session (>= ${cinnamon:Version}),
-         libmuffin0 (>= ${cinnamon:Version}),
          gir1.2-muffin-3.0 (>= ${cinnamon:Version}),
          nemo (>= ${cinnamon:Version}),
          cinnamon-screensaver (>= ${cinnamon:Version}),
@@ -97,7 +95,7 @@ Depends: cinnamon-common (= ${source:Version}),
          python-pyinotify,
          metacity,
          gnome-panel | tint2
-Recommends: gnome-themes-standard, gnome-terminal, cinnamon-bluetooth
+Recommends: gnome-themes-standard, gnome-terminal, cinnamon-bluetooth, gksu
 Provides: notification-daemon, x-window-manager
 Description: Cinnamon desktop
  Cinnamon is a modern Linux desktop which provides advanced innovative features and a traditional user experience. It's easy to use, powerful and flexible.
