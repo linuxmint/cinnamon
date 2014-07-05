@@ -376,7 +376,7 @@ Player.prototype = {
 
         this._playerInfo = new TextImageMenuItem(this._getName(), false, "player-stopped", "left", "popup-menu-item");
         this.addMenuItem(this._playerInfo);
-
+        this.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
         this._trackCoverFile = this._trackCoverFileTmp = false;
         this._trackCover = new St.Bin({style_class: 'sound-track-cover', x_align: St.Align.START});
         this._trackCover.set_child(new St.Icon({icon_name: "media-optical-cd-audio", icon_size: 220, icon_type: St.IconType.FULLCOLOR}));
