@@ -764,9 +764,9 @@ Player.prototype = {
                 else {
                     let l = new Clutter.BinLayout();
                     let b = new Clutter.Box();
-                    let c = new Clutter.Texture({height: 210, keep_aspect_ratio: true, filter_quality: 2, filename: cover_path});
+                    let c = new Clutter.Texture({height: 210 * global.ui_scale, keep_aspect_ratio: true, filter_quality: 2, filename: cover_path});
                     b.set_layout_manager(l);
-                    b.set_width(230);
+                    b.set_width(230 * global.ui_scale);
                     b.add_actor(c);
                     this._trackCover.set_child(b);
                 }
