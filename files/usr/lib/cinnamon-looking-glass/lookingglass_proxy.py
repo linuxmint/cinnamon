@@ -13,6 +13,15 @@ class LookingGlassProxy:
     def addStatusChangeCallback(self, callback):
         self._statusChangeCallbacks.append(callback)
 
+    def refreshStatus(self):
+        if self._proxy != None:
+            self._setStatus(True)
+        else:
+            self._setStatus(False)
+
+    def getIsReady(self):
+        return self._proxy != None
+
     def connect(self, name, callback):
         self._signals.append((name, callback))
 

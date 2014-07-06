@@ -11,6 +11,7 @@ const St = imports.gi.St;
 const Cinnamon = imports.gi.Cinnamon;
 const Signals = imports.signals;
 const Lang = imports.lang;
+const DBus = imports.dbus;
 
 const History = imports.misc.history;
 const Extension = imports.ui.extension;
@@ -1261,3 +1262,71 @@ LookingGlass.prototype = {
     }
 };
 Signals.addSignalMethods(LookingGlass.prototype);
+
+const dbusIFace = '\
+<node>                                                      \
+    <interface name="org.Cinnamon.Melange">                 \
+        <method name="show" />                              \
+        <method name="hide" />                              \
+        <method name="getVisible" >                         \
+            <arg type="b" direction="out" name="visible"/>  \
+        </method>                                           \
+        <property name="_open" type="b" access="read" />    \
+    </interface>                                            \
+</node>';
+
+const proxy = Gio.DBusProxy.makeProxyWrapper(dbusIFace);
+
+function Melange() {
+    this._init.apply(this, arguments);
+}
+
+Melange.prototype = {
+    _init: function() {
+        DBus.session.watch_name("org.Cinnamon.Melange", false,
+                    Lang.bind(this, this._melange_found),
+                    Lang.bind(this, this._melange_lost)
+                );
+        this.proxy = null;
+        this._open = false;
+        let kb = global.settings.get_string("looking-glass-keybinding");
+        Main.keybindingManager.addHotKey("looking-glass-toggle", kb, Lang.bind(this, this._key_callback));
+    },
+
+    _key_callback: function() {
+        this.open();
+    },
+
+    ensureProxy: function() {
+        if (!this.proxy)
+            this.proxy = new proxy(Gio.DBus.session, 'org.Cinnamon.Melange', '/org/Cinnamon/Melange');
+    },
+
+    open: function() {
+        this.ensureProxy()
+        this.proxy.showRemote();
+        this.updateVisible();
+    },
+
+    close: function() {
+        this.ensureProxy()
+        this.proxy.hideRemote();
+        this.updateVisible();
+    },
+
+    _melange_found: function() {
+        this.ensureProxy();
+        this.updateVisible();
+    },
+
+    _melange_lost: function() {
+        this.ensureProxy();
+        this._open = false;
+    },
+
+    updateVisible: function() {
+        this.proxy.getVisibleRemote(Lang.bind(this, function(visible) {
+            this._open = visible;
+        }));
+    }
+}

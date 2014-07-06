@@ -66,15 +66,15 @@ CinnamonLookingGlass.prototype = {
     },
 
     Eval: function(code) {
-        Main.createLookingGlass()._evaluate(code);
+        Main.createLegacyLookingGlass()._evaluate(code);
     },
     
     GetResults: function() {
-        return [true, Main.createLookingGlass().rawResults];
+        return [true, Main.createLegacyLookingGlass().rawResults];
     },
     
     AddResult: function(path) {
-        Main.createLookingGlass().addResult(path);
+        Main.createLegacyLookingGlass().addResult(path);
     },
     
     GetErrorStack: function() {
@@ -104,7 +104,7 @@ CinnamonLookingGlass.prototype = {
     
     Inspect: function(path) {
         try {
-            let result = Main.createLookingGlass().inspect(path);
+            let result = Main.createLegacyLookingGlass().inspect(path);
             return [true, result];
         } catch (e) {
             global.logError('Error inspecting path: ' + path, e);
@@ -114,7 +114,7 @@ CinnamonLookingGlass.prototype = {
     
     GetLatestWindowList: function() {
         try {
-            let result = Main.createLookingGlass().getLatestWindowList();
+            let result = Main.createLegacyLookingGlass().getLatestWindowList();
             return [true, result];
         } catch (e) {
             global.logError('Error getting latest window list', e);
@@ -124,7 +124,7 @@ CinnamonLookingGlass.prototype = {
     
     StartInspector: function() {
         try {
-            Main.createLookingGlass().startInspector(true);
+            Main.createLegacyLookingGlass().startInspector(true);
         } catch (e) {
             global.logError('Error starting inspector', e);
         }

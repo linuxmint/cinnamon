@@ -570,6 +570,14 @@
       <description>Current scale factor</description>
     </key>
 
+    <key name="looking-glass-keybinding" type="s">
+      <default>"&lt;Super&gt;l"</default>
+      <_summary>Keybinding for toggling the looking glass</_summary>
+      <_description>
+       Stores the keybinding for toggling the looking glass window
+      </_description>
+    </key>
+
   </schema>
  
   <schema id="org.cinnamon.theme" path="/org/cinnamon/theme/"

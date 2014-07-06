@@ -96,6 +96,7 @@ let overview = null;
 let expo = null;
 let runDialog = null;
 let lookingGlass = null;
+let gtkLookingGlass = null;
 let wm = null;
 let messageTray = null;
 let notificationDaemon = null;
@@ -401,6 +402,8 @@ function start() {
 
     AppletManager.init();
     DeskletManager.init();
+
+    createLookingGlass();
 
     if (software_rendering && !GLib.getenv('CINNAMON_2D')) {
         notifyCinnamon2d();
@@ -1247,11 +1250,25 @@ function popModal(actor, timestamp) {
  *
  * Returns (LookingGlass.LookingGlass): looking glass object
  */
-function createLookingGlass() {
+function createLegacyLookingGlass() {
     if (lookingGlass == null) {
         lookingGlass = new LookingGlass.LookingGlass();
     }
     return lookingGlass;
+}
+
+/**
+ * createLookingGlass:
+ *
+ * Obtains the looking glass object. Create if it does not exist
+ *
+ * Returns (LookingGlass.LookingGlass): looking glass object
+ */
+function createLookingGlass() {
+    if (gtkLookingGlass == null) {
+        gtkLookingGlass = new LookingGlass.Melange();
+    }
+    return gtkLookingGlass;
 }
 
 /**

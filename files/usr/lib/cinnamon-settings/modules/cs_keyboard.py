@@ -15,6 +15,7 @@ CUSTOM_KEYS_SCHEMA = "org.cinnamon.keybindings.custom-keybinding"
 
 MUFFIN_KEYBINDINGS_SCHEMA = "org.cinnamon.muffin.keybindings"
 MEDIA_KEYS_SCHEMA = "org.cinnamon.settings-daemon.plugins.media-keys"
+CINNAMON_SCHEMA = "org.cinnamon"
 
 HAS_DEDICATED_TERMINAL_SHORTCUT = False
 
@@ -49,6 +50,7 @@ KEYBINDINGS = [
     [_("Cycle backwards though open windows"), MUFFIN_KEYBINDINGS_SCHEMA, "switch-windows-backward", True, "cinnamon"],
     [_("Run dialog"), MUFFIN_KEYBINDINGS_SCHEMA, "panel-run-dialog", True, "cinnamon"],
     [_("Menu button (must restart Cinnamon)"), "org.cinnamon.muffin", "overlay-key", False, "cinnamon"],
+    [_("Toggle Looking Glass"), CINNAMON_SCHEMA, "looking-glass-keybinding", False, "cinnamon"],
 
     # Windows - General
     [_("Maximize window"), MUFFIN_KEYBINDINGS_SCHEMA, "maximize", True, "windows"],
