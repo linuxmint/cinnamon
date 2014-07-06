@@ -8,7 +8,7 @@ from gi.repository.Gtk import SizeGroup, SizeGroupMode
 class Module:
     def __init__(self, content_box):
         keywords = _("windows, titlebar, edge, switcher, window list, attention, focus")
-        sidePage = SidePage(_("Windows"), "cs-windows", keywords, content_box, 430, module=self)
+        sidePage = SidePage(_("Windows"), "cs-windows", keywords, content_box, 580, module=self)
         self.sidePage = sidePage
         self.name = "windows"
         self.category = "prefs"
@@ -29,7 +29,15 @@ class Module:
             tab2.add_with_viewport(self.viewbox2)
             
             self.notebook.append_page(tab1, Gtk.Label.new(_("Appearance")))
-            self.notebook.append_page(tab2, Gtk.Label.new(_("Behaviour")))
+            self.notebook.append_page(tab2, Gtk.Label.new(_("Behavior")))
+
+            section = Section(_("Titlebar Buttons"))
+            
+            section.add(TitleBarButtonsOrderSelector())
+
+            self.viewbox1.add(section)
+            
+            self.viewbox1.add(Gtk.Separator.new(Gtk.Orientation.HORIZONTAL))        
 
             section = Section(_("Alt-Tab"))  
             alttab_styles = [["icons", _("Icons only")], ["thumbnails", _("Thumbnails only")],["icons+thumbnails", _("Icons and thumbnails")],["icons+preview", _("Icons and window preview")],["preview", _("Window preview (no icons)")],["coverflow", _("Coverflow (3D)")],["timeline", _("Timeline (3D)")]]
@@ -38,12 +46,16 @@ class Module:
             section.add(GSettingsCheckButton(_("Display the alt-tab switcher on the primary monitor instead of the active one"), "org.cinnamon", "alttab-switcher-enforce-primary-monitor", None))
             self.viewbox1.add(section)
 
-            self.viewbox1.add(Gtk.Separator.new(Gtk.Orientation.HORIZONTAL))        
+            #TODO: Convert to settings api in the window list applet
+            section = Section(_("Window List"))
+            section.add(GSettingsCheckButton(_("Show an alert in the window list when a window from another workspace requires attention"), "org.cinnamon", "window-list-applet-alert", None))
+            section.add(GSettingsCheckButton(_("Enable mouse-wheel scrolling in the window list"), "org.cinnamon", "window-list-applet-scroll", None))        
+            self.viewbox2.add(section)
 
-            section = Section(_("Titlebar"))
+            self.viewbox2.add(Gtk.Separator.new(Gtk.Orientation.HORIZONTAL))
             
-            section.add(TitleBarButtonsOrderSelector())
-
+            section = Section(_("Titlebar Actions"))
+            
             action_options = [["toggle-shade", _("Toggle Shade")], ["toggle-maximize", _("Toggle Maximize")],
                              ["toggle-maximize-horizontally", _("Toggle Maximize Horizontally")], ["toggle-maximize-vertically", _("Toggle Maximize Vertically")],
                              ["minimize", _("Minimize")], ["shade", _("Shade")], ["menu", _("Menu")], ["lower", _("Lower")], ["none", _("None")]]
@@ -74,14 +86,9 @@ class Module:
             self.update_spinner_visibility(self.wm_settings, "action-scroll-titlebar", opacity_spinner)
 
             section.add(combo)
-            self.viewbox1.add(section)
-
-            #TODO: Convert to settings api in the window list applet
-            section = Section(_("Window List"))
-            section.add(GSettingsCheckButton(_("Show an alert in the window list when a window from another workspace requires attention"), "org.cinnamon", "window-list-applet-alert", None))
-            section.add(GSettingsCheckButton(_("Enable mouse-wheel scrolling in the window list"), "org.cinnamon", "window-list-applet-scroll", None))        
+            
             self.viewbox2.add(section)
-
+            
             self.viewbox2.add(Gtk.Separator.new(Gtk.Orientation.HORIZONTAL))
 
             section = Section(_("Window Focus"))
