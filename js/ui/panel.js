@@ -442,7 +442,7 @@ function populateSettingsMenu(menu) {
     });
 
     menu.troubleshootItem.menu.addAction(_("Looking Glass"), function(event) {
-        Main.createGtkLookingGlass().open();
+        Main.createLookingGlass().open();
     });
 
     menu.troubleshootItem.menu.addAction(_("Restore all settings to default"), function(event) {
