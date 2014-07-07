@@ -475,6 +475,7 @@ Player.prototype = {
         this._trackId = {};
         this._getMetadata();
         this._currentTime = 0;
+        this._timerTicker = 0;
         this._getPosition();
         this._wantedSeekValue = 0;
         this._updatePositionSlider();
@@ -679,8 +680,14 @@ Player.prototype = {
 
     _runTimerCallback: function() {
         if (this._playerStatus == 'Playing') {
-            this._currentTime += 1;
-            this._updateTimer();
+            if (this._timerTicker < 10) {
+                this._currentTime += 1;
+                this._timerTicker++;
+                this._updateTimer();
+            } else {
+                this._getPosition();
+                this._timerTicker = 0;
+            }
             return true;
         }
 
@@ -694,8 +701,8 @@ Player.prototype = {
         }
 
         if (this._playerStatus == 'Playing') {
-            this._currentTime += 1;
-            this._updateTimer();
+            this._getPosition()
+            this._timerTicker = 0;
             this._timeoutId = Mainloop.timeout_add_seconds(1, Lang.bind(this, this._runTimerCallback));
         }
     },
@@ -1007,6 +1014,7 @@ MyApplet.prototype = {
                 } else {
                     this.set_applet_icon_symbolic_name('audio-x-generic');
                 }
+                return false;
             }));
         }
     },
