@@ -2033,6 +2033,12 @@ MyApplet.prototype = {
             });
         }
         if (autocompletes) {
+
+            this._transientButtons.forEach( function (item, index) {
+                item.actor.destroy();
+            });
+            this._transientButtons = new Array();
+
             for (let i = 0; i < autocompletes.length; i++) {
                 let button = new TransientButton(this, autocompletes[i]);
                 button.actor.connect('realize', Lang.bind(this, this._onApplicationButtonRealized));
