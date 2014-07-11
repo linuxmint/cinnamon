@@ -290,6 +290,7 @@ MyApplet.prototype = {
                                               style_class: 'panel-launchers-box' });
             global.settings.connect('changed::' + PANEL_LAUNCHERS_KEY, Lang.bind(this, this._onSettingsChanged));
 
+            this._gsettings_proxy = new Array();
             this._launchers = new Array();
 
             this.reload();
@@ -313,15 +314,71 @@ MyApplet.prototype = {
         this.reload();
     },
 
+    sync_gsettings_proxy_to_gsettings: function() {
+        let as = new Array();
+        for (let i = 0; i < this._gsettings_proxy.length; i++) {
+            as.push(this._gsettings_proxy[i].file);
+        }
+        global.settings.set_strv(PANEL_LAUNCHERS_KEY, as);
+    },
+
+    _remove_launcher_from_proxy: function(visible_index) {
+        let j = -1;
+        for (let i = 0; i < this._gsettings_proxy.length; i++) {
+            if (this._gsettings_proxy[i].valid) {
+                j++;
+                if (j == visible_index) {
+                    this._gsettings_proxy.splice(i, 1);
+                    break;
+                }
+            }
+        }
+    },
+
+    _move_launcher_in_proxy: function(launcher, new_index) {
+        let id = launcher.getId();
+        let proxy_member;
+
+        for (let i = 0; i < this._gsettings_proxy.length; i++) {
+            if (this._gsettings_proxy[i].file == id) {
+                proxy_member = this._gsettings_proxy.splice(i, 1)[0];
+                break;
+            }
+        }
+
+        if (!proxy_member)
+            return;
+
+        let j = -1;
+        for (let i = 0; i < this._gsettings_proxy.length; i++) {
+            if (this._gsettings_proxy[i].valid) {
+                j++;
+                if (j == new_index) {
+                    this._gsettings_proxy.splice(i, 0, proxy_member);
+                    return;
+                }
+            }
+        }
+
+        if (new_index == j + 1)
+            this._gsettings_proxy.push(proxy_member);
+    },
+
     loadApps: function() {
         let desktopFiles = global.settings.get_strv(PANEL_LAUNCHERS_KEY);
         let appSys = Cinnamon.AppSystem.get_default();
         let apps = new Array();
-        for (let i = 0; i < desktopFiles.length; i++){
+        this._gsettings_proxy = new Array();
+        for (let i = 0; i < desktopFiles.length; i++) {
             let app = appSys.lookup_app(desktopFiles[i]);
             let appinfo;
             if (!app) appinfo = Gio.DesktopAppInfo.new_from_filename(CUSTOM_LAUNCHERS_PATH+"/"+desktopFiles[i]);
-            if (app || appinfo) apps.push([app, appinfo]);
+            if (app || appinfo) {
+                apps.push([app, appinfo]);
+                this._gsettings_proxy.push( { file: desktopFiles[i], valid: true } );
+            } else {
+                this._gsettings_proxy.push( { file: desktopFiles[i], valid: false } );
+            }
         }
         return apps;
     },
@@ -344,28 +401,26 @@ MyApplet.prototype = {
     },
 
     removeLauncher: function(launcher, delete_file) {
-        let desktopFiles = global.settings.get_strv(PANEL_LAUNCHERS_KEY);
         let i = this._launchers.indexOf(launcher);
-        if (i>=0){
+        if (i >= 0) {
             this._launchers.splice(i, 1);
-            desktopFiles.splice(i, 1);
-            global.settings.set_strv(PANEL_LAUNCHERS_KEY, desktopFiles);
+            this._remove_launcher_from_proxy(i);
         }
-        if (delete_file){
+        if (delete_file) {
             let appid = launcher.getId();
             let file = new Gio.file_new_for_path(CUSTOM_LAUNCHERS_PATH+"/"+appid);
             if (file.query_exists(null)) file.delete(null);
         }
+
+        this.sync_gsettings_proxy_to_gsettings();
     },
 
     moveLauncher: function(launcher, pos) {
-        let desktopFiles = global.settings.get_strv(PANEL_LAUNCHERS_KEY);
         let origpos = this._launchers.indexOf(launcher);
-        if (origpos>=0){
+        if (origpos >= 0) {
             this._launchers.splice(origpos, 1);
-            desktopFiles.splice(origpos, 1);
-            desktopFiles.splice(pos, 0, launcher.getId());
-            global.settings.set_strv(PANEL_LAUNCHERS_KEY, desktopFiles);
+            this._move_launcher_in_proxy(launcher, pos);
+            this.sync_gsettings_proxy_to_gsettings();
         }
     },
 
