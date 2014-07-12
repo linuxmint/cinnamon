@@ -30,7 +30,7 @@ const APPLICATION_ICON_SIZE = 22;
 const MAX_RECENT_FILES = 20;
 
 const INITIAL_BUTTON_LOAD = 30;
-const MAX_BUTTON_WIDTH = "max-width: 20em;";
+const MAX_BUTTON_WIDTH = "max-width: 75em;";   //original: 20em, but it has to be greater to fit results from MetaTracker
 
 const USER_DESKTOP_PATH = FileUtils.getUserDesktopDir();
 
@@ -920,6 +920,13 @@ MyApplet.prototype = {
             St.TextureCache.get_default().connect("icon-theme-changed", Lang.bind(this, this.onIconThemeChanged));
 
             this._recalc_height();
+
+            //DBus interface to MetaTracker
+            const TrackerInterface = <interface name='org.freedesktop.Tracker1.Resources'>
+                <method name='SparqlQuery'><arg type='s' direction='in'/><arg type='aas' direction='out'/></method>
+            </interface>;
+            const TrackerProxy = Gio.DBusProxy.makeProxyWrapper(TrackerInterface);
+            this._tracker_proxy = new TrackerProxy(Gio.DBus.session, 'org.freedesktop.Tracker1', '/org/freedesktop/Tracker1/Resources');  //bus name, object path
         }
         catch (e) {
             global.logError(e);
@@ -2183,8 +2190,28 @@ MyApplet.prototype = {
         var acResults = new Array(); // search box autocompletion results
         if (this.searchFilesystem) {
             // Don't use the pattern here, as filesystem is case sensitive
-            acResults = this._getCompletions(this.searchEntryText.get_text());
+            //acResults = this._getCompletions(this.searchEntryText.get_text());
+
+            //search for files using MetaTracker
+            var homeDir = GLib.get_home_dir();                            // "/home/<username>"
+            var trackerSearchText = this.searchEntryText.get_text();
+            if (trackerSearchText.length >= 3) {
+                //Blocking (synchronous) request for result, there is also an option to call it in not blocking manner.
+                //If MetaTracker is not installed: no error, simply results from file search are not displayed.
+                //If MetaTracker is not working: MetaTracker process will be automatically started and correct results will be displayed.
+                var result = this._tracker_proxy.SparqlQuerySync("SELECT nie:url(?f) WHERE { ?f fts:match '" + trackerSearchText + "' }");
+                for (let i = 0; i < result[0].length ; i++) {
+                    let filename = decodeURI(result[0][i]).substr(7);     //get path from URI: remove "file://" and decode percent encoding
+                    if (filename.indexOf(homeDir) == 0) {                 //Tracker returns also applications: we are not interested in them
+                        filename = "~" + filename.substr(homeDir.length); //make the path shorter: replace "/home/<username>" with "~"
+                        acResults.push(filename);
+                    }
+                    if (acResults.length == 500)                          //show not more than 500 results (like in tracker-needle GUI search tool)
+                        break;
+                }
+            }
         }
+        this._clearAllSelections(true);     //applet displays files wrongly for "enable filesystem path entry in search box"; so we fix this
 
         this._displayButtons(null, placesResults, recentResults, appResults, acResults);
        
