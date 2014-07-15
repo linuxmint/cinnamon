@@ -33,6 +33,17 @@ class Module:
             vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
             bg.add(vbox)
 
+
+            section = Section(_("Date &amp; Time"))
+            widget = GSettingsCheckButton(_("Enable custom date & time formats"), "org.cinnamon.screensaver", "use-custom-format", None)
+            widget.set_tooltip_text(_("Enables custom date and time formats to be used in the lock screen"))
+            section.add(widget)
+            section.add_indented(GSettingsEntry(_("Time Format: "), "org.cinnamon.screensaver", "time-format", None))
+            section.add_indented(GSettingsEntry(_("Date Format: "), "org.cinnamon.screensaver", "date-format", None))
+            vbox.add(section)
+
+            vbox.add(Gtk.Separator.new(Gtk.Orientation.HORIZONTAL))  
+        
             section = Section(_("Lock Settings"))
             widget = GSettingsCheckButton(_("Lock the computer when put to sleep"), "org.cinnamon.settings-daemon.plugins.power", "lock-on-suspend", None)
             widget.set_tooltip_text(_("Enable this option to require a password when the computer wakes up from suspend"))
