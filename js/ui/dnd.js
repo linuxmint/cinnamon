@@ -423,11 +423,6 @@ _Draggable.prototype = {
     _maybeStartDrag:  function(event) {
         if (this._dragCheckId)
             return true;
-        // See if the user has moved the mouse enough to trigger a drag
-        if (this._dragCheckId) {
-            Mainloop.source_remove(this._dragCheckId);
-            this._dragCheckId = null;
-        }
 
         this._dragCheckId = Mainloop.timeout_add(10, Lang.bind(this, this._dragCheckCallback));
 
