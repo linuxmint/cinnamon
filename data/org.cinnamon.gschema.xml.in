@@ -479,6 +479,12 @@
       <_summary>Enforce displaying the alt-tab switcher on the primary monitor instead of the active one</_summary>
     </key>
 
+    <key type="i" name="alttab-switcher-delay">
+      <default>150</default>
+      <_summary>Duration of the effect (in milliseconds)</_summary>
+      <_description>Duration of the effect (in milliseconds)</_description>
+    </key>
+
     <key name="window-list-applet-scroll" type="b">
       <default>false</default>
       <summary>Enable mouse-scroll in window-list applet</summary>

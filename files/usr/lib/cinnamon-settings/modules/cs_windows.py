@@ -23,10 +23,24 @@ class Module:
             bg.add(vbox)
 
             section = Section(_("Alt-Tab"))  
-            alttab_styles = [["icons", _("Icons only")], ["thumbnails", _("Thumbnails only")],["icons+thumbnails", _("Icons and thumbnails")],["icons+preview", _("Icons and window preview")],["preview", _("Window preview (no icons)")],["coverflow", _("Coverflow (3D)")],["timeline", _("Timeline (3D)")]]
+            alttab_styles = [
+                ["icons", _("Icons only")],
+                ["thumbnails", _("Thumbnails only")],
+                ["icons+thumbnails", _("Icons and thumbnails")],
+                ["icons+preview", _("Icons and window preview")],
+                ["preview", _("Window preview (no icons)")],
+                ["coverflow", _("Coverflow (3D)")],
+                ["timeline", _("Timeline (3D)")]
+            ]
             alttab_styles_combo = self._make_combo_group(_("Alt-Tab switcher style"), "org.cinnamon", "alttab-switcher-style", alttab_styles)
             section.add(alttab_styles_combo)
             section.add(GSettingsCheckButton(_("Display the alt-tab switcher on the primary monitor instead of the active one"), "org.cinnamon", "alttab-switcher-enforce-primary-monitor", None))
+            section.add(
+                GSettingsSpinButton(
+                    "Delay before displaying the alt-tab switcher",
+                    "org.cinnamon", "alttab-switcher-delay", dep_key=None,
+                    min=0, max=1000, step=50, page=150, 
+                    units=_("milliseconds")))
             vbox.add(section)
 
             vbox.add(Gtk.Separator.new(Gtk.Orientation.HORIZONTAL))        
