@@ -16,6 +16,8 @@ try:
     import time
     import grp
     import pwd
+    import locale
+    from functools import cmp_to_key
 # Standard setting pages... this can be expanded to include applet dirs maybe?
     mod_files = glob.glob('/usr/lib/cinnamon-settings/modules/*.py')
     mod_files.sort()
@@ -158,6 +160,7 @@ class MainWindow:
 
         self.builder.connect_signals(self)
         self.window.set_has_resize_grip(False)
+        self.unsortedSidePages = []
         self.sidePages = []
         self.settings = Gio.Settings.new("org.cinnamon")
         self.current_cat_widget = None            
@@ -171,7 +174,7 @@ class MainWindow:
             try:
                 mod = modules[i].Module(self.content_box)
                 if self.loadCheck(mod) and self.setParentRefs(mod):
-                    self.sidePages.append((mod.sidePage, mod.name, mod.category))
+                    self.unsortedSidePages.append((mod.sidePage, mod.name, mod.category))
             except:
                 print "Failed to load module %s" % modules[i]
                 import traceback
@@ -180,12 +183,23 @@ class MainWindow:
         for item in CONTROL_CENTER_MODULES:
             ccmodule = SettingsWidgets.CCModule(item[0], item[1], item[2], item[3], item[4], self.content_box)
             if ccmodule.process(self.c_manager):
-                self.sidePages.append((ccmodule.sidePage, ccmodule.name, ccmodule.category))
+                self.unsortedSidePages.append((ccmodule.sidePage, ccmodule.name, ccmodule.category))
 
         for item in STANDALONE_MODULES:
             samodule = SettingsWidgets.SAModule(item[0], item[1], item[2], item[3], item[4], self.content_box)
             if samodule.process():
-                self.sidePages.append((samodule.sidePage, samodule.name, samodule.category))
+                self.unsortedSidePages.append((samodule.sidePage, samodule.name, samodule.category))
+
+        # sort the modules alphabetically according to the current locale
+        sidePageNamesToSort = map(lambda m: m[0].name, self.unsortedSidePages)
+        sortedSidePageNames = sorted(sidePageNamesToSort, key=cmp_to_key(locale.strcoll))
+        for sidePageName in sortedSidePageNames:
+            nextSidePage = None
+            for trySidePage in self.unsortedSidePages:
+                if(trySidePage[0].name == sidePageName):
+                    nextSidePage = trySidePage
+
+            self.sidePages.append(nextSidePage);
 
 
         # create the backing stores for the side nav-view.
