@@ -458,7 +458,7 @@ function populateSettingsMenu(menu) {
 
     // Auto-hide Panel
     let autoHide = global.settings.get_boolean("panel-autohide");
-    let autoHidePanel = new PopupMenu.PopupSwitchMenuItem(_("Auto-hide Panel"), autoHide);
+    let autoHidePanel = new PopupMenu.PopupSwitchMenuItem(_("Auto-hide panel"), autoHide);
     autoHidePanel.connect('toggled', function(item) {
         global.settings.set_boolean("panel-autohide", item.state);
     });
@@ -469,7 +469,7 @@ function populateSettingsMenu(menu) {
 
     // Panel Edit mode
     let editMode = global.settings.get_boolean("panel-edit-mode");
-    let panelEditMode = new PopupMenu.PopupSwitchMenuItem(_("Panel Edit mode"), editMode);
+    let panelEditMode = new PopupMenu.PopupSwitchMenuItem(_("Panel edit mode"), editMode);
     panelEditMode.connect('toggled', function(item) {
         global.settings.set_boolean("panel-edit-mode", item.state);
     });
