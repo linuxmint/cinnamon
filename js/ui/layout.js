@@ -13,6 +13,7 @@ const Tweener = imports.ui.tweener;
 const EdgeFlip = imports.ui.edgeFlip;
 const HotCorner = imports.ui.hotCorner;
 const DeskletManager = imports.ui.deskletManager;
+const Util = imports.misc.util;
 
 const STARTUP_ANIMATION_TIME = 0.2;
 const KEYBOARD_ANIMATION_TIME = 0.5;
@@ -489,6 +490,7 @@ Chrome.prototype = {
         // Need to update struts on new workspaces when they are added
         global.screen.connect('notify::n-workspaces',
                               Lang.bind(this, this._queueUpdateRegions));
+        global.display.connect('window-moved-resized', Lang.bind(this, this.updateRegions));
 
         this._screenSaverActive = false;
         this._screenSaverProxy = new ScreenSaver.ScreenSaverProxy();
@@ -905,18 +907,24 @@ Chrome.prototype = {
             }
         }
 
-        let enable_stage = true;
         let top_windows = global.top_window_group.get_children();
-        for (var i in top_windows){
-            if (top_windows[i]._windowType != Meta.WindowType.TOOLTIP){
-                enable_stage = false;
-                break;
-            }
+
+        let newRects = rects.slice(0);
+        let rectSubtracted = false;
+        for (let i = 0; i < top_windows.length; i++) {
+          let winRect = top_windows[i].get_meta_window().get_input_rect();
+          let subRects = [];
+          for (let j = 0; j < newRects.length; j++) {
+            subRects = subRects.concat(Util.rectSubtract(newRects[j], winRect));
+            rectSubtracted = true;
+          }
+          newRects = subRects;
         }
-        if (enable_stage)
-            global.set_stage_input_region(rects);
-        else
-            global.set_stage_input_region([]);
+        if (rectSubtracted) {
+          rects = newRects;
+        }
+        
+        global.set_stage_input_region(rects);
 
         let screen = global.screen;
         for (let w = 0; w < screen.n_workspaces; w++) {
