@@ -32,30 +32,26 @@ class Module:
         vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
         bg.add(vbox)
 
-        section = Section(_("Desktop Icons"))
-        label = Gtk.Label()
-        label.set_markup(
-            "<i><small>%s</small></i>" %
-            _("Select the items you want to see on the desktop:"))
-        label.get_style_context().add_class("dim-label")
-        section.add(label)
+        show_desktop_icons_key = "show-desktop-icons"        
+        if show_desktop_icons_key in nemo_desktop_keys:            
+            section = Section(_("Desktop Icons"))
+            label = Gtk.Label()
+            label.set_markup("<i><small>%s</small></i>" % _("Select the items you want to see on the desktop:"))
+            label.get_style_context().add_class("dim-label")
+            section.add(label)
 
-        options = [
-            ("computer-icon-visible", _("Computer")),
-            ("home-icon-visible", _("Home")),
-            ("trash-icon-visible", _("Trash")),
-            ("volumes-visible", _("Mounted volumes")),
-            ("network-icon-visible", _("Network"))
-        ]
-        show_desktop_icons_key = "show-desktop-icons"
-        for key, label in options:
-            if key in nemo_desktop_keys:
-                section.add(GSettingsCheckButton(
-                                label, schema, key,
-                                "%s/%s" % (schema, show_desktop_icons_key)))
-
-        if show_desktop_icons_key in nemo_desktop_keys:
-            vbox.add(GSettingsCheckButton(_("Show desktop icons"), schema,
-                                          show_desktop_icons_key, None))
-        vbox.add(section)
-
+            section.add(GSettingsCheckButton(_("Show desktop icons"), schema, show_desktop_icons_key, None))   
+        
+            options = [
+                ("computer-icon-visible", _("Computer")),
+                ("home-icon-visible", _("Home")),
+                ("trash-icon-visible", _("Trash")),
+                ("volumes-visible", _("Mounted volumes")),
+                ("network-icon-visible", _("Network"))
+            ]
+                   
+            for key, label in options:
+                if key in nemo_desktop_keys:
+                    section.add_indented(GSettingsCheckButton(label, schema, key, "%s/%s" % (schema, show_desktop_icons_key)))
+           
+            vbox.add(section)
