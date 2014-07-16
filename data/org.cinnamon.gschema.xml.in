@@ -480,7 +480,7 @@
     </key>
 
     <key type="i" name="alttab-switcher-delay">
-      <default>150</default>
+      <default>100</default>
       <_summary>Duration of the effect (in milliseconds)</_summary>
       <_description>Duration of the effect (in milliseconds)</_description>
     </key>
