@@ -1490,6 +1490,48 @@ StScrollBar StButton#vhandle:hover {
     background-color: rgba(109,170, 0, 0.3);
 }
 /* ===================================================================
+ * About Dialog (applet.js and desklet.js)
+ * ===================================================================*/
+.about-content {
+    width: 550px;
+    height: 250px;
+    spacing: 8px;
+    padding-bottom: 16px;
+}
+
+.about-title {
+    font-size: 2em;
+    font-weight: bold;
+}
+
+.about-uuid {
+    font-size: .8em;
+}
+
+.about-icon {
+    padding-right: 20px;
+}
+
+.about-scrollBox {
+    border: solid 1px grey;
+    border-radius: 4px;
+}
+
+.about-scrollBox-innerBox {
+    padding: 1.2em;
+    spacing: 1.2em;
+}
+
+.about-description {
+    padding-top: 4px;
+}
+
+.about-version {
+    padding-left: 7px;
+}
+
+
+/* ===================================================================
  * Clock Desklet (desklet.js) 
  * ===================================================================*/
 .clock-desklet-label {

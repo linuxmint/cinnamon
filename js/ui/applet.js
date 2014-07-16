@@ -13,7 +13,8 @@ const Util = imports.misc.util;
 const Pango = imports.gi.Pango;
 const Mainloop = imports.mainloop;
 const Flashspot = imports.ui.flashspot;
-	
+const ModalDialog = imports.ui.modalDialog;
+
 const COLOR_ICON_HEIGHT_FACTOR = .875;  // Panel height factor for normal color icons
 const PANEL_FONT_DEFAULT_HEIGHT = 11.5; // px
 const PANEL_SYMBOLIC_ICON_DEFAULT_HEIGHT = 1.14 * PANEL_FONT_DEFAULT_HEIGHT; // ems conversion
@@ -419,14 +420,22 @@ Applet.prototype = {
             this.context_menu_item_remove = new MenuItem(_("Remove this applet"), "edit-delete", Lang.bind(null, AppletManager._removeAppletFromPanel, this._uuid, this.instance_id));
         }
 
+        if (this.context_menu_item_about == null) {
+            this.context_menu_item_about = new MenuItem(_("About..."), "dialog-question", Lang.bind(this, this.openAbout));
+        }
+
         if (this.context_menu_separator == null) {
-                this.context_menu_separator = new PopupMenu.PopupSeparatorMenuItem();
+            this.context_menu_separator = new PopupMenu.PopupSeparatorMenuItem();
         }
 
         if (this._applet_context_menu._getMenuItems().length > 0) {
             this._applet_context_menu.addMenuItem(this.context_menu_separator);
-         }
-        
+        }
+
+        if (items.indexOf(this.context_menu_item_about) == -1) {
+            this._applet_context_menu.addMenuItem(this.context_menu_item_about);
+        }
+
         if (!this._meta["hide-configuration"] && GLib.file_test(this._meta["path"] + "/settings-schema.json", GLib.FileTest.EXISTS)) {     
             if (this.context_menu_item_configure == null) {            
                 this.context_menu_item_configure = new MenuItem(_("Configure..."), "system-run", Lang.bind(this, function() {
@@ -441,6 +450,10 @@ Applet.prototype = {
         if (items.indexOf(this.context_menu_item_remove) == -1) {
             this._applet_context_menu.addMenuItem(this.context_menu_item_remove);
         }
+    },
+
+    openAbout: function() {
+        new ModalDialog.SpicesAboutDialog(this._meta, "applets");
     }
 };
 
