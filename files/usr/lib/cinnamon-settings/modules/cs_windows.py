@@ -104,7 +104,9 @@ class Module:
             section = Section(_("Moving and Resizing Windows"))
 
             special_key_options = [["", _("Disabled")], ["<Alt>", "<Alt>"],["<Super>", "<Super>"],["<Control>", "<Control>"]]
-            section.add(self._make_combo_group(_("Special key to move windows"), "org.cinnamon.desktop.wm.preferences", "mouse-button-modifier", special_key_options))
+            combo = self._make_combo_group(_("Special key to move and resize windows"), "org.cinnamon.desktop.wm.preferences", "mouse-button-modifier", special_key_options)
+            combo.set_tooltip_text(_("While the special key is pressed, windows can be dragged with the left mouse button and resized with the right mouse button."))
+            section.add(combo)
             section.add(GSettingsSpinButton(_("Window drag/resize threshold"), "org.cinnamon.muffin", "resize-threshold", None, 1, 100, 1, 1, _("Pixels")))        
             vbox.add(section)
 
