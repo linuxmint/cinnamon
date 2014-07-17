@@ -249,7 +249,10 @@ Applet.prototype = {
     },
 
     getDragActor: function() {
-        return new Clutter.Clone({ source: this.actor });
+        let clone = new Clutter.Clone({ source: this.actor });
+        clone.width = this.actor.width;
+        clone.height = this.actor.height;
+        return clone;
     },
 
     // Returns the original actor that should align with the actor
