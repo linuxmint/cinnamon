@@ -859,7 +859,7 @@ def paste(destination, source, box=(0, 0), mask=None, force=False):
     :type force: bool
     """
     # Paste on top
-    if source == mask:
+    if mask and source == mask:
         if has_alpha(source):
             # invert_alpha = the transparant pixels of the destination
             if has_alpha(destination) and (destination.size == source.size
