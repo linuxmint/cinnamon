@@ -364,6 +364,8 @@ _Draggable.prototype = {
         this._dragActor.raise_top();
         Cinnamon.util_set_hidden_from_pick(this._dragActor, true);
 
+        Main.pushModal(this._dragActor, global.get_current_time());
+
         this._dragOrigOpacity = this._dragActor.opacity;
         if (this._dragActorOpacity != undefined)
             this._dragActor.opacity = this._dragActorOpacity;

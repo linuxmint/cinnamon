@@ -77,17 +77,19 @@ Desklet.prototype = {
 
         this._draggable = DND.makeDraggable(this.actor, {restoreOnSuccess: true}, Main.deskletContainer.actor);
         this._draggable.connect('drag-begin', Lang.bind(this, this._onDragBegin));
-        this._draggable.connect('drag-end', Lang.bind(this, this._onDragEnd));
-        this._draggable.connect('drag-cancelled', Lang.bind(this, this._onDragEnd));
+        this._draggable.connect('drag-end', Lang.bind(this, this._onDragEndNoOverride));
+        this._draggable.connect('drag-cancelled', Lang.bind(this, this._onDragEndNoOverride));
     },
     
     _onDragBegin: function() {
-        global.set_stage_input_mode(Cinnamon.StageInputMode.FULLSCREEN);
     },
-    
+
+    _onDragEndNoOverride: function() {
+        Main.popModal(this.actor, global.get_current_time());
+    },
+
     _onDragEnd: function() {
-        global.set_stage_input_mode(Cinnamon.StageInputMode.NORMAL);
-        this._trackMouse();
+        // Desklets implement THIS, do NOT override onDragEndNoOverride()!!!
     },
 
     /**
