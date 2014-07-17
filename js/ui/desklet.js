@@ -75,21 +75,16 @@ Desklet.prototype = {
         this.actor._desklet = this;
         this.actor._delegate = this;
 
+        this._drag_end_ids = {"drag-end": 0, "drag-cancelled": 0};
         this._draggable = DND.makeDraggable(this.actor, {restoreOnSuccess: true}, Main.deskletContainer.actor);
-        this._draggable.connect('drag-begin', Lang.bind(this, this._onDragBegin));
-        this._draggable.connect('drag-end', Lang.bind(this, this._onDragEndNoOverride));
-        this._draggable.connect('drag-cancelled', Lang.bind(this, this._onDragEndNoOverride));
-    },
-    
-    _onDragBegin: function() {
-    },
 
-    _onDragEndNoOverride: function() {
-        Main.popModal(this.actor, global.get_current_time());
-    },
+        this._drag_end_ids["drag-end"] = this._draggable.connect('drag-end', Lang.bind(this, function() {
+            Main.popModal(this.actor, global.get_current_time());
+        }));
 
-    _onDragEnd: function() {
-        // Desklets implement THIS, do NOT override onDragEndNoOverride()!!!
+        this._drag_end_ids["drag-cancelled"] = this._draggable.connect('drag-cancelled', Lang.bind(this, function() {
+            Main.popModal(this.actor, global.get_current_time());
+        }));
     },
 
     /**
