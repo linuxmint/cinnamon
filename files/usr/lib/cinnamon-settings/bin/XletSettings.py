@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#! /usr/bin/python
 
 import sys
 
@@ -10,6 +10,7 @@ try:
     import collections
     import XletSettingsWidgets
     import dbus
+    from dbus.mainloop.glib import DBusGMainLoop
     from SettingsWidgets import SectionBg
     from gi.repository import Gio, Gtk, GObject, GdkPixbuf
 except Exception, detail:
@@ -24,6 +25,7 @@ class XletSetting:
         self.parent = parent
         self.type = _type
         self.current_id = None
+        self.activeDBus = False
         self.builder = Gtk.Builder()
         self.builder.add_from_file("/usr/lib/cinnamon-settings/bin/xlet-settings.ui")
         self.content = self.builder.get_object("content")
@@ -59,6 +61,29 @@ class XletSetting:
             self.highlight_button.hide()
         self.more_button.connect("clicked", self.on_more_button_clicked)
         self.remove_button.connect("clicked", self.on_remove_button_clicked)
+        self.try_update_dbus()
+
+    def try_update_dbus(self):
+        try:
+            DBusGMainLoop(set_as_default=True)
+            session_bus = dbus.SessionBus()
+            cinnamon_dbus = session_bus.get_object("org.Cinnamon", "/org/Cinnamon")
+            cinnamon_dbus_Iface = dbus.Interface(cinnamon_dbus, "org.Cinnamon")
+            cinnamon_dbus_Iface.connect_to_signal('SettingsChanged', self.on_settings_change)
+            self.activeDBus = True
+        except Exception, e:
+            print "Cinnamon not running, falling back to python settings engine: ", e
+        for _id in self.setting_factories.keys():
+            self.setting_factories[_id].setDBusActive(self.activeDBus)
+
+    def on_settings_change(self, uuid, instance_id, key, payload):
+        if(self.uuid == uuid and self.current_id == instance_id):
+            #print ("Received signal with message: %s" % payload)
+            widget = self.setting_factories[self.current_id].widgets[key]
+            if(widget != None):
+                node = json.loads(payload.decode('utf-8'));
+                widget.settings_obj.data[key] = node
+                widget.on_settings_file_changed()
 
     def show (self):
         self.content.show_all()
@@ -112,6 +137,7 @@ class XletSetting:
                     instance_id = instance.split(".json")[0]
                     self.applet_settings[instance_id] = js
                     self.setting_factories[instance_id] = XletSettingsWidgets.Factory("%s/%s" % (path, instance), instance_id, self.multi_instance, self.uuid)
+                    self.setting_factories[instance_id].setDBusActive(self.activeDBus)
                 return True
             else:
                 raise Exception("Could not find any active setting files for %s %s" % (self.type, self.uuid))
