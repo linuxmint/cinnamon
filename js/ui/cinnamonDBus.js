@@ -68,7 +68,10 @@ const CinnamonIface = {
                 outSignature: ''
               }
              ],
-    signals: [],
+    signals: [{ name: "SettingsChanged",
+                inSignature:'ssss'
+              }
+             ],
     properties: [{ name: 'OverviewActive',
                    signature: 'b',
                    access: 'readwrite' },
@@ -257,8 +260,15 @@ Cinnamon.prototype = {
         Main.expo.toggle();
     },
 
+    emitSettingsChanged: function(uuid, instance_id, key, payload) {
+        DBus.session.emit_signal('/org/Cinnamon',
+                                 'org.Cinnamon',
+                                 'SettingsChanged',
+                                 'ssss',[uuid, instance_id, key, payload]
+        );
+    },
+
     CinnamonVersion: Config.PACKAGE_VERSION
 };
 
 DBus.conformExport(Cinnamon.prototype, CinnamonIface);
-
