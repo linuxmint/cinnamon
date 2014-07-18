@@ -28,21 +28,11 @@ class Module:
     def on_module_selected(self):
         if not self.loaded:
             print "Loading Screensaver module"
+            schema = "org.cinnamon.screensaver"
             bg = SectionBg()        
             self.sidePage.add_widget(bg)
             vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
             bg.add(vbox)
-
-
-            section = Section(_("Date &amp; Time"))
-            widget = GSettingsCheckButton(_("Enable custom date & time formats"), "org.cinnamon.screensaver", "use-custom-format", None)
-            widget.set_tooltip_text(_("Enables custom date and time formats to be used in the lock screen"))
-            section.add(widget)
-            section.add_indented(GSettingsEntry(_("Time Format: "), "org.cinnamon.screensaver", "time-format", None))
-            section.add_indented(GSettingsEntry(_("Date Format: "), "org.cinnamon.screensaver", "date-format", None))
-            vbox.add(section)
-
-            vbox.add(Gtk.Separator.new(Gtk.Orientation.HORIZONTAL))  
         
             section = Section(_("Lock Settings"))
             widget = GSettingsCheckButton(_("Lock the computer when put to sleep"), "org.cinnamon.settings-daemon.plugins.power", "lock-on-suspend", None)
@@ -59,13 +49,23 @@ class Module:
             section.add(box)
             vbox.add(section)
 
-            vbox.add(Gtk.Separator.new(Gtk.Orientation.HORIZONTAL))       
+            vbox.add(Gtk.Separator.new(Gtk.Orientation.HORIZONTAL))    
+            
+            section = Section(_("Date &amp; Time"))
+            widget = GSettingsCheckButton(_("Use a custom date & time format"), schema, "use-custom-format", None)
+            widget.set_tooltip_text(_("Enables custom date and time formats to be displayed in the lock screen"))
+            section.add(widget)
+            section.add_indented(GSettingsEntry(_("Time Format: "), schema, "time-format", "%s/%s" % (schema, "use-custom-format")))
+            section.add_indented(GSettingsEntry(_("Date Format: "), schema, "date-format", "%s/%s" % (schema, "use-custom-format")))
+            vbox.add(section)
+
+            vbox.add(Gtk.Separator.new(Gtk.Orientation.HORIZONTAL))     
 
             section = Section(_("Away Message"))
-            widget = GSettingsEntry(_("Show this message when the screen is locked: "), "org.cinnamon.screensaver", "default-message", None)
+            widget = GSettingsEntry(_("Show this message when the screen is locked: "), schema, "default-message", None)
             widget.set_tooltip_text(_("This is the default message displayed on your lock screen"))
             section.add_expand(widget)
-            widget = GSettingsCheckButton(_("Ask for a custom message when locking the screen from the menu"), "org.cinnamon.screensaver", "ask-for-away-message", None)
+            widget = GSettingsCheckButton(_("Ask for a custom message when locking the screen from the menu"), schema, "ask-for-away-message", None)
             widget.set_tooltip_text(_("This option allows you to type a message each time you lock the screen from the menu"))
             section.add(widget)
             vbox.add(section)
