@@ -605,6 +605,7 @@ SettingObj.prototype = {
 
     set_value: function(key, val) {
         this.json[key]["value"] = val;
+        Main.cinnamonDBusService.emitSettingsChanged(this.uuid, this.instanceId, key, JSON.stringify(this.json[key], null, 4));
         this.save();
     },
 
