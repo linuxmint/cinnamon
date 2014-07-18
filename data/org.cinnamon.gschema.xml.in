@@ -138,6 +138,14 @@
         Whether the panel icons and text from applets is resized according to the custom panel height
       </_description>
     </key>
+    
+    <key name="panel-troubleshoot" type="b">
+      <default>false</default>
+      <_summary>Show troubleshoot menu on right click</_summary>
+      <_description>
+        Whether to show the troubleshoot menu when right clicking the panel
+      </_description>
+    </key>
 
     <key name="dnd-drag-threshold" type="i">
       <default>8</default>

@@ -436,12 +436,13 @@ SettingsLauncher.prototype = {
 
 function populateSettingsMenu(menu) {
 
+    //Troubleshoot menu
     menu.troubleshootItem = new PopupMenu.PopupSubMenuMenuItem(_("Troubleshoot ..."), true);
     menu.troubleshootItem.menu.addAction(_("Restart Cinnamon"), function(event) {
         global.reexec_self();
     });
 
-    menu.troubleshootItem.menu.addAction(_("Looking Glass"), function(event) {
+    menu.troubleshootItem.menu.addAction(_("Looking glass"), function(event) {
         Main.createLookingGlass().open();
     });
 
@@ -449,23 +450,22 @@ function populateSettingsMenu(menu) {
         let confirm = new ConfirmDialog();
         confirm.open();
     });
+    visible = global.settings.get_boolean("panel-troubleshoot");
+    if (visible) {
+        menu.troubleshootItem.actor.show(); 
+    }
+    else {
+        menu.troubleshootItem.actor.hide();
+    }
 
-    menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
-    
-    menu.addMenuItem(menu.troubleshootItem);
+    //Options menu
+    menu.optionsItem = new PopupMenu.PopupSubMenuMenuItem(_("Options..."), true);
 
-    menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
+    let menuItem = new SettingsLauncher(_("Panel settings"), "panel", "emblem-system", menu.optionsItem.menu);
+    menu.optionsItem.menu.addMenuItem(menuItem)
 
-    // Auto-hide Panel
-    let autoHide = global.settings.get_boolean("panel-autohide");
-    let autoHidePanel = new PopupMenu.PopupSwitchMenuItem(_("Auto-hide panel"), autoHide);
-    autoHidePanel.connect('toggled', function(item) {
-        global.settings.set_boolean("panel-autohide", item.state);
-    });
-    menu.addMenuItem(autoHidePanel);
-    global.settings.connect('changed::panel-autohide', function() {
-        autoHidePanel.setToggleState(global.settings.get_boolean("panel-autohide"));
-    });
+    let menuItem = new SettingsLauncher(_("Themes"), "themes", "applications-graphics", menu.optionsItem.menu);
+    menu.optionsItem.menu.addMenuItem(menuItem)
 
     // Panel Edit mode
     let editMode = global.settings.get_boolean("panel-edit-mode");
@@ -473,9 +473,33 @@ function populateSettingsMenu(menu) {
     panelEditMode.connect('toggled', function(item) {
         global.settings.set_boolean("panel-edit-mode", item.state);
     });
-    menu.addMenuItem(panelEditMode);
+    menu.optionsItem.menu.addMenuItem(panelEditMode);
     global.settings.connect('changed::panel-edit-mode', function() {
         panelEditMode.setToggleState(global.settings.get_boolean("panel-edit-mode"));
+    });
+
+    // Auto-hide Panel
+    let autoHide = global.settings.get_boolean("panel-autohide");
+    let autoHidePanel = new PopupMenu.PopupSwitchMenuItem(_("Auto-hide panel"), autoHide);
+    autoHidePanel.connect('toggled', function(item) {
+        global.settings.set_boolean("panel-autohide", item.state);
+    });
+    menu.optionsItem.menu.addMenuItem(autoHidePanel);
+    global.settings.connect('changed::panel-autohide', function() {
+        autoHidePanel.setToggleState(global.settings.get_boolean("panel-autohide"));
+    });
+
+    menu.addMenuItem(menu.optionsItem);
+    menu.addMenuItem(menu.troubleshootItem);
+    
+    global.settings.connect('changed::panel-troubleshoot', function() {
+        visible = global.settings.get_boolean("panel-troubleshoot");
+        if (visible) {
+            menu.troubleshootItem.actor.show(); 
+        }
+        else {
+            menu.troubleshootItem.actor.hide();
+        }
     });
 }
 
@@ -491,17 +515,8 @@ PanelContextMenu.prototype = {
         Main.uiGroup.add_actor(this.actor);
         this.actor.hide();
 
-        let applet_settings_item = new SettingsLauncher(_("Add applets to the panel"), "applets", "list-add", this);
+        let applet_settings_item = new SettingsLauncher(_("Add applets to panel"), "applets", "list-add", this);
         this.addMenuItem(applet_settings_item);
-
-        let menuItem = new SettingsLauncher(_("Panel settings"), "panel", "emblem-system", this);
-        this.addMenuItem(menuItem);
-
-        let menuItem = new SettingsLauncher(_("Themes"), "themes", "applications-graphics", this);
-        this.addMenuItem(menuItem);
-
-        let menuSetting = new SettingsLauncher(_("All settings"), "", "preferences-system", this);
-        this.addMenuItem(menuSetting);
 
         populateSettingsMenu(this);
     }
