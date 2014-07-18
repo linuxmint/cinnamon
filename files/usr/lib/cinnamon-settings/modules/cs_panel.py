@@ -63,7 +63,7 @@ class Module:
             
             vbox.add(Gtk.Separator.new(Gtk.Orientation.HORIZONTAL))
 
-            hbox = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
-            hbox.set_border_width(6)
-            hbox.add(GSettingsCheckButton(_("Panel edit mode"), "org.cinnamon", "panel-edit-mode", None))
-            vbox.add(hbox)
+            section = Section(_("Other Options"))
+            section.add(GSettingsCheckButton(_("Panel edit mode"), "org.cinnamon", "panel-edit-mode", None))
+            section.add(GSettingsCheckButton(_("Show troubleshoot menu"), "org.cinnamon", "panel-troubleshoot", None)) #RavetcoFX: Maybe this can be removed later on if people don't miss the menu, but still can re-enable in through gsettings 
+            vbox.add(section)
