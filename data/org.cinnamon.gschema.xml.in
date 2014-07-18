@@ -692,7 +692,28 @@
       <description>
         Whether to ask for an away message when locking the screen.
       </description>
-    </key>   
+    </key>
+    <key name="use-custom-format" type="b">
+      <default>false</default>
+      <summary>Whether to define a custom format for the date and time</summary>
+      <description>
+        Whether to use a custom date and time format for the lock screen.
+      </description>
+    </key>
+    <key name="time-format" type="s">
+      <default>"%H:%M"</default>
+      <summary>The custom time format</summary>
+      <description>
+        This is the time format that the lock screen will use if use-custom-format is enabled.
+      </description>
+    </key>
+    <key name="date-format" type="s">
+      <default>"%A %B %e"</default>
+      <summary>The custom date format</summary>
+      <description>
+        This is the date format that the lock screen will use if use-custom-format is enabled.
+      </description>
+    </key>
   </schema>
   
   <schema id="org.cinnamon.desklets" path="/org/cinnamon/desklets/"
