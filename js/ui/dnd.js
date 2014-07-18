@@ -11,7 +11,7 @@ const Main = imports.ui.main;
 const Mainloop = imports.mainloop;
 const Gio = imports.gi.Gio;
 const Desklet = imports.ui.desklet;
-
+const Meta = imports.gi.Meta
 const Params = imports.misc.params;
 
 // Time to scale down to maxDragActorSize
