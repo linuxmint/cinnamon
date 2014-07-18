@@ -459,7 +459,7 @@ function populateSettingsMenu(menu) {
     }
 
     //Options menu
-    menu.optionsItem = new PopupMenu.PopupSubMenuMenuItem(_("Options..."), true);
+    menu.optionsItem = new PopupMenu.PopupSubMenuMenuItem(_("More..."), true);
 
     let menuItem = new SettingsLauncher(_("Panel settings"), "panel", "emblem-system", menu.optionsItem.menu);
     menu.optionsItem.menu.addMenuItem(menuItem)
