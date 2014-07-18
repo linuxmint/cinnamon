@@ -494,6 +494,13 @@ _Draggable.prototype = {
                 }
             }
 
+            if (target instanceof Clutter.Stage || target instanceof Meta.WindowActor) {
+                let result = DragMotionResult.NO_DROP;
+                if (this._setCursor(result)) {
+                    return true;
+                }
+            }
+
             if (this.target) {
                 if (this.target._delegate && this.target._delegate.handleDragOver){
                     let [r, targX, targY] = this.target.transform_stage_point(stageX, stageY);

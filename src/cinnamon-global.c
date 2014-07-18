@@ -646,7 +646,7 @@ cinnamon_global_set_cursor (CinnamonGlobal *global,
       name = "dnd-copy";
       break;
     case CINNAMON_CURSOR_DND_UNSUPPORTED_TARGET:
-      name = "dnd-none";
+      name = "X_cursor";
       break;
     case CINNAMON_CURSOR_POINTING_HAND:
       name = "hand";
