@@ -44,6 +44,12 @@ class Factory():
         self.handler = self.file_monitor.connect("changed", self.on_file_changed)
         self.file_changed_timeout = None
         self.resume_timeout = None
+        self.activeDBus = False
+
+    def setDBusActive(self, active):
+        self.activeDBus = active
+        if active:
+           self.pause_monitor();
 
     def create(self, key, setting_type, uuid):
         try:
@@ -74,9 +80,10 @@ class Factory():
         self.resume_timeout = GObject.timeout_add(2000, self.do_resume)
 
     def do_resume(self):
-        self.file_monitor = self.file_obj.monitor_file(Gio.FileMonitorFlags.SEND_MOVED, None)
-        self.handler = self.file_monitor.connect("changed", self.on_file_changed)
-        self.resume_timeout = None
+        if (not self.activeDBus):
+            self.file_monitor = self.file_obj.monitor_file(Gio.FileMonitorFlags.SEND_MOVED, None)
+            self.handler = self.file_monitor.connect("changed", self.on_file_changed)
+            self.resume_timeout = None
         return False
 
     def reset_to_defaults(self):
