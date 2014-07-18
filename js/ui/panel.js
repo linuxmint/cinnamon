@@ -434,7 +434,7 @@ SettingsLauncher.prototype = {
 
 };
 
-function populateSettingsMenu(menu) {
+function populateSettingsMenu(menu, ah_key) {
 
     menu.troubleshootItem = new PopupMenu.PopupSubMenuMenuItem(_("Troubleshoot ..."), true);
     menu.troubleshootItem.menu.addAction(_("Restart Cinnamon"), function(event) {
@@ -457,14 +457,14 @@ function populateSettingsMenu(menu) {
     menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
 
     // Auto-hide Panel
-    let autoHide = global.settings.get_boolean("panel-autohide");
+    let autoHide = global.settings.get_boolean(ah_key);
     let autoHidePanel = new PopupMenu.PopupSwitchMenuItem(_("Auto-hide panel"), autoHide);
     autoHidePanel.connect('toggled', function(item) {
-        global.settings.set_boolean("panel-autohide", item.state);
+        global.settings.set_boolean(ah_key, item.state);
     });
     menu.addMenuItem(autoHidePanel);
-    global.settings.connect('changed::panel-autohide', function() {
-        autoHidePanel.setToggleState(global.settings.get_boolean("panel-autohide"));
+    global.settings.connect('changed::' + ah_key, function() {
+        autoHidePanel.setToggleState(global.settings.get_boolean(ah_key));
     });
 
     // Panel Edit mode
@@ -479,14 +479,14 @@ function populateSettingsMenu(menu) {
     });
 }
 
-function PanelContextMenu(launcher, orientation) {
-    this._init(launcher, orientation);
+function PanelContextMenu(launcher, orientation, ah_key) {
+    this._init(launcher, orientation, ah_key);
 }
 
 PanelContextMenu.prototype = {
     __proto__: PopupMenu.PopupMenu.prototype,
 
-    _init: function(launcher, orientation) {
+    _init: function(launcher, orientation, ah_key) {
         PopupMenu.PopupMenu.prototype._init.call(this, launcher.actor, 0.0, orientation, 0);
         Main.uiGroup.add_actor(this.actor);
         this.actor.hide();
@@ -503,7 +503,7 @@ PanelContextMenu.prototype = {
         let menuSetting = new SettingsLauncher(_("All settings"), "", "preferences-system", this);
         this.addMenuItem(menuSetting);
 
-        populateSettingsMenu(this);
+        populateSettingsMenu(this, ah_key);
     }
 }
 
@@ -701,7 +701,7 @@ Panel.prototype = {
             orientation = St.Side.BOTTOM;
         }
         
-        this._context_menu = new PanelContextMenu(this, orientation);
+        this._context_menu = new PanelContextMenu(this, orientation, this.panel_ah_key);
         this._menus.addMenu(this._context_menu);   
         
         this._context_menu._boxPointer._container.connect('allocate', Lang.bind(this._context_menu._boxPointer, function(actor, box, flags){
