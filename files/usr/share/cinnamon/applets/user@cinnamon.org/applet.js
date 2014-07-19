@@ -78,17 +78,17 @@ MyApplet.prototype = {
 
             this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
                                                            
-            this.menu.addAction(_("Account Details"), Lang.bind(this, function() {
+            this.menu.addAction(_("Account details"), Lang.bind(this, function() {
                 Util.spawnCommandLine("cinnamon-settings user");
             }));
 
-            this.menu.addAction(_("System Settings"), Lang.bind(this, function() {
+            this.menu.addAction(_("System settings"), Lang.bind(this, function() {
                 Util.spawnCommandLine("cinnamon-settings");
             }));
 
             this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
 
-            this.menu.addAction(_("Lock Screen"), Lang.bind(this, function() {
+            this.menu.addAction(_("Lock screen"), Lang.bind(this, function() {
                 let screensaver_settings = new Gio.Settings({ schema: "org.cinnamon.screensaver" });                        
                 let screensaver_dialog = Gio.file_new_for_path("/usr/bin/cinnamon-screensaver-command");    
                 if (screensaver_dialog.query_exists(null)) {
@@ -103,40 +103,40 @@ MyApplet.prototype = {
                     this._screenSaverProxy.LockRemote();
                 }       
             }));
-
+            let switch_user_string = _("Switch user")
             if (GLib.getenv("XDG_SEAT_PATH")) {
                 // LightDM
-                this.menu.addAction(_("Switch User"), Lang.bind(this, function() {
+                this.menu.addAction(switch_user_string, Lang.bind(this, function() {
                     Util.spawnCommandLine("cinnamon-screensaver-command --lock");
                     Util.spawnCommandLine("dm-tool switch-to-greeter");
                 }));
 
-                this.menu.addAction(_("Guest Session"), Lang.bind(this, function() {
+                this.menu.addAction(_("Guest session"), Lang.bind(this, function() {
                     Util.spawnCommandLine("cinnamon-screensaver-command --lock");
                     Util.spawnCommandLine("dm-tool switch-to-guest");
                 }));
             }
             else if (GLib.file_test("/usr/bin/mdmflexiserver", GLib.FileTest.EXISTS)) {
                 // MDM                
-                this.menu.addAction(_("Switch User"), Lang.bind(this, function() {
+                this.menu.addAction(switch_user_string, Lang.bind(this, function() {
                     Util.spawnCommandLine("mdmflexiserver");
                 }));
             }
             else if (GLib.file_test("/usr/bin/gdmflexiserver", GLib.FileTest.EXISTS)) {
                 // GDM
-                this.menu.addAction(_("Switch User"), Lang.bind(this, function() {
+                this.menu.addAction(switch_user_string, Lang.bind(this, function() {
                     Util.spawnCommandLine("cinnamon-screensaver-command --lock");
                     Util.spawnCommandLine("gdmflexiserver");
                 }));
             }
 
-            this.menu.addAction(_("Log Out..."), Lang.bind(this, function() {
+            this.menu.addAction(_("Logout"), Lang.bind(this, function() {
                 this._session.LogoutRemote(0);
             }));
 
             this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
 
-            this.menu.addAction(_("Power Off..."), Lang.bind(this, function() {
+            this.menu.addAction(_("Quit"), Lang.bind(this, function() {
                 this._session.ShutdownRemote();
             }));
 
