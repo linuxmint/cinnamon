@@ -94,7 +94,11 @@ MyApplet.prototype = {
 
             // https://bugzilla.gnome.org/show_bug.cgi?id=655129
             this._upClient = new UPowerGlib.Client();
-            this._upClient.connect('notify-resume', this._updateClockAndDate);
+            try {
+                this._upClient.connect('notify-resume', this._updateClockAndDate);
+            } catch (e) {
+                this._upClient.connect('notify::resume', this._updateClockAndDate);
+            }
 
             // Start the clock
             this.on_settings_changed();
