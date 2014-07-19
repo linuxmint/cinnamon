@@ -79,11 +79,11 @@ class XletSetting:
     def on_settings_change(self, uuid, instance_id, key, payload):
         if(self.uuid == uuid and self.current_id == instance_id):
             #print ("Received signal with message: %s" % payload)
-            widget = self.setting_factories[self.current_id].widgets[key]
-            if(widget != None):
+            widgets = self.setting_factories[self.current_id].widgets
+            if(key in widgets and widgets[key] != None):
                 node = json.loads(payload.decode('utf-8'));
-                widget.settings_obj.data[key] = node
-                widget.on_settings_file_changed()
+                widgets[key].settings_obj.data[key] = node
+                widgets[key].on_settings_file_changed()
 
     def show (self):
         self.content.show_all()
