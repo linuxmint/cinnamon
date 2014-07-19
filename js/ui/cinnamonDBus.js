@@ -241,7 +241,12 @@ Cinnamon.prototype = {
     },
 
     updateSetting: function(uuid, instance_id, key, payload) {
-        Main.settingsManager.uuids[uuid][instance_id].remote_set(key, payload);
+        let components = Main.settingsManager.uuids[uuid];
+        if(components != null) {
+            let instance = components[instance_id];
+            if(instance)
+                instance.remote_set(key, payload);
+        }
     },
 
     switchWorkspaceLeft: function() {
