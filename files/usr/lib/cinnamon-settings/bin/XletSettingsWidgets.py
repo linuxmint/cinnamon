@@ -83,7 +83,9 @@ class Factory():
         if (not self.activeDBus):
             self.file_monitor = self.file_obj.monitor_file(Gio.FileMonitorFlags.SEND_MOVED, None)
             self.handler = self.file_monitor.connect("changed", self.on_file_changed)
-            self.resume_timeout = None
+        if self.resume_timeout:
+            GObject.source_remove(self.resume_timeout)
+        self.resume_timeout = None
         return False
 
     def reset_to_defaults(self):
