@@ -442,6 +442,9 @@ class ExtensionSidePage (SidePage):
                     else:
                         tooltip.set_text(_("This %s is installed and up-to-date") % (self.noun))
                     return True
+            elif column.get_property('title') == "Score":
+                tooltip.set_text(_("Popularity"))
+                return True
         return False
 
     def model_sort_func(self, model, iter1, iter2, data=None):
