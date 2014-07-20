@@ -13,6 +13,9 @@ const Util = imports.misc.util;
 
 const CUSTOM_LAUNCHERS_PATH = GLib.get_home_dir() + '/.cinnamon/panel-launchers/';
 
+const ICON_SIZE = 48;
+const ANIM_ICON_SIZE = 40;
+
 function MyDesklet(metadata, desklet_id){
     this._init(metadata, desklet_id);
 }
@@ -60,9 +63,9 @@ MyDesklet.prototype = {
 
     _getIconActor: function() {
         if (this._app.create_icon_texture) // Test for the existence of the FUNCTION
-            return this._app.create_icon_texture(48);
+            return this._app.create_icon_texture(ICON_SIZE);
         else
-            return St.TextureCache.get_default().load_gicon(null, this._app.get_icon(), 48);
+            return St.TextureCache.get_default().load_gicon(null, this._app.get_icon(), ICON_SIZE);
     },
 
     on_desklet_clicked: function() {
@@ -106,14 +109,14 @@ MyDesklet.prototype = {
     _animateIcon: function(step){
         if (step>=3) return;
         Tweener.addTween(this._icon,
-                         { width: 40,
-                           height: 40,
+                         { width: ANIM_ICON_SIZE * global.ui_scale,
+                           height: ANIM_ICON_SIZE * global.ui_scale,
                            time: 0.2,
                            transition: 'easeOutQuad',
                            onComplete: function(){
                                Tweener.addTween(this._icon,
-                                                { width: 48,
-                                                  height: 48,
+                                                { width: ICON_SIZE * global.ui_scale,
+                                                  height: ICON_SIZE * global.ui_scale,
                                                   time: 0.2,
                                                   transition: 'easeOutQuad',
                                                   onComplete: function(){
