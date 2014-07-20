@@ -46,13 +46,15 @@ class LookingGlassProxy:
 
     def _initProxy(self):
         try:
-            self._proxy = Gio.DBusProxy.new_for_bus_sync( Gio.BusType.SESSION, Gio.DBusProxyFlags.NONE, None,
-                              LG_DBUS_NAME, LG_DBUS_PATH, LG_DBUS_NAME, None)
-
-            self._proxy.connect("g-signal", self._onSignal)
+            self._proxy = Gio.DBusProxy.new_for_bus( Gio.BusType.SESSION, Gio.DBusProxyFlags.NONE, None,
+                              LG_DBUS_NAME, LG_DBUS_PATH, LG_DBUS_NAME, None, self._onProxyReady, None)
         except dbus.exceptions.DBusException as e:
             print(e)
             self._proxy = None
+
+    def _onProxyReady(self, object, result, data=None):
+        self._proxy = Gio.DBusProxy.new_for_bus_finish(result)
+        self._proxy.connect("g-signal", self._onSignal)
 
 # Proxy Methods:
     def Eval(self, code):
