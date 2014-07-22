@@ -4,6 +4,27 @@ const Lang = imports.lang;
 const Gio = imports.gi.Gio;
 const Main = imports.ui.main;
 const Mainloop = imports.mainloop;
+const DBus = imports.dbus;
+
+const iface = "\
+<node>\
+  <interface name='org.cinnamon.SettingsDaemon.Sound'>\
+    <annotation name='org.freedesktop.DBus.GLib.CSymbol' value='csd_sound_manager'/>\
+    <method name='PlaySoundFile'>\
+      <arg name='id' direction='in' type='u'/>\
+      <arg name='filename' direction='in' type='s'/>\
+    </method>\
+    <method name='PlaySound'>\
+      <arg name='id' direction='in' type='u'/>\
+      <arg name='name' direction='in' type='s'/>\
+    </method>\
+    <method name='CancelSound'>\
+      <arg name='id' direction='in' type='u'/>\
+    </method>\
+  </interface>\
+</node>";
+
+const proxy = Gio.DBusProxy.makeProxyWrapper(iface);
 
 function SoundManager() {
     this._init();
@@ -26,7 +47,17 @@ SoundManager.prototype = {
         Mainloop.timeout_add_seconds(10, Lang.bind(this, function() {
             this.startup_delay = false;
         }));
-    },    
+
+        this.proxy = new proxy(Gio.DBus.session,
+                               'org.cinnamon.SettingsDaemon',
+                               '/org/cinnamon/SettingsDaemon/Sound');
+
+        /* patch public methods into global to keep backward compatibility */
+
+        global.play_theme_sound = Lang.bind(this, this.playSound);
+        global.play_sound_file = Lang.bind(this, this.playSoundFile);
+        global.cancel_sound = Lang.bind(this, this.cancelSound);
+    },
 
     _cacheSettings: function() {
         for (var i in this.keys) {
@@ -48,8 +79,21 @@ SoundManager.prototype = {
         if (this.startup_delay)
             return;
         if (this.enabled[sound] && this.file[sound] != "") {
-            global.play_sound_file(0, this.file[sound]);
+            this.playSoundFile(0, this.file[sound]);
         }
+    },
+
+    /* Public methods. */
+
+    playSoundFile: function(id, filename) {
+        this.proxy.PlaySoundFileRemote(id, filename);
+    },
+
+    playSound: function(id, name) {
+        this.proxy.PlaySoundRemote(id, name);
+    },
+
+    cancelSound: function(id) {
+        this.proxy.CancelSoundRemote(id);
     }
-    
 };

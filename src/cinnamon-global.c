@@ -16,7 +16,6 @@
 
 #include <X11/extensions/Xfixes.h>
 #include <cogl-pango/cogl-pango.h>
-#include <canberra.h>
 #include <clutter/glx/clutter-glx.h>
 #include <clutter/x11/clutter-x11.h>
 #include <gdk/gdkx.h>
@@ -84,9 +83,6 @@ struct _CinnamonGlobal {
   guint work_count;
   GSList *leisure_closures;
   guint leisure_function_id;
-
-  /* For sound notifications */
-  ca_context *sound_context;
 
   guint32 xdnd_timestamp;
   gint64 last_gc_end_time;
@@ -271,10 +267,6 @@ cinnamon_global_init (CinnamonGlobal *global)
   global->gtk_grab_active = FALSE;
 
   global->input_mode = CINNAMON_STAGE_INPUT_MODE_NORMAL;
-
-  ca_context_create (&global->sound_context);
-  ca_context_change_props (global->sound_context, CA_PROP_APPLICATION_NAME, PACKAGE_NAME, CA_PROP_APPLICATION_ID, "org.Cinnamon", NULL);
-  ca_context_open (global->sound_context);
 
   if (!cinnamon_js)
     cinnamon_js = JSDIR;
@@ -1846,54 +1838,6 @@ cinnamon_global_run_at_leisure (CinnamonGlobal         *global,
 
   if (global->work_count == 0)
     schedule_leisure_functions (global);
-}
-
-/**
- * cinnamon_global_play_theme_sound:
- * @global: the #CinnamonGlobal
- * @id: an id, used to cancel later (0 if not needed)
- * @name: the sound name
- *
- * Plays a simple sound picked according to Freedesktop sound theme.
- * Really just a workaround for libcanberra not being introspected.
- */
-void
-cinnamon_global_play_theme_sound (CinnamonGlobal *global,
-                               guint        id,
-                               const char  *name)
-{
-  ca_context_play (global->sound_context, id, CA_PROP_EVENT_ID, name, NULL);
-}
-
-/**
- * cinnamon_global_play_sound_file:
- * @global: the #CinnamonGlobal
- * @id: an id, used to cancel later (0 if not needed)
- * @filename: the filename of the sound
- *
- * Plays a simple sound.
- * Really just a workaround for libcanberra not being introspected.
- */
-void
-cinnamon_global_play_sound_file (CinnamonGlobal *global,
-                               guint        id,
-                               const char  *filename)
-{
-  ca_context_play (global->sound_context, id, CA_PROP_MEDIA_FILENAME, filename, NULL);
-}
-
-/**
- * cinnamon_global_cancel_sound:
- * @global: the #CinnamonGlobal
- * @id: the id previously passed to cinnamon_global_play_theme_sound() or cinnamon_global_play_sound_file()
- *
- * Cancels a sound being played.
- */
-void
-cinnamon_global_cancel_sound (CinnamonGlobal *global,
-                                 guint id)
-{
-  ca_context_cancel (global->sound_context, id);
 }
 
 /*

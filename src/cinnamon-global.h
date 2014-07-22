@@ -134,17 +134,6 @@ void     cinnamon_global_sync_pointer              (CinnamonGlobal  *global);
 GAppLaunchContext *
          cinnamon_global_create_app_launch_context (CinnamonGlobal  *global);
 
-void     cinnamon_global_play_theme_sound          (CinnamonGlobal  *global,
-                                                 guint         id,
-                                                 const char   *name);
-
-void     cinnamon_global_play_sound_file          (CinnamonGlobal  *global,
-                                                 guint         id,
-                                                 const char   *filename);
-
-void     cinnamon_global_cancel_sound             (CinnamonGlobal  *global,
-                                                 guint         id);
-
 void     cinnamon_global_notify_error              (CinnamonGlobal  *global,
                                                  const char   *msg,
                                                  const char   *details);
