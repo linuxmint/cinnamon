@@ -1,4 +1,9 @@
 {
+ "overlay-key" : {
+    "type" : "keybinding",
+    "description" : "Keyboard shortcut to open and close the menu",
+    "default" : "Super_L"
+ },
  "menu-icon-custom" : {
     "type" : "checkbox",
     "default" : false,

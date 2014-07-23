@@ -859,6 +859,10 @@ MyApplet.prototype = {
             this.settings.bindProperty(Settings.BindingDirection.IN, "menu-icon-custom", "menuIconCustom", this._updateIconAndLabel, null);
             this.settings.bindProperty(Settings.BindingDirection.IN, "menu-icon", "menuIcon", this._updateIconAndLabel, null);
             this.settings.bindProperty(Settings.BindingDirection.IN, "menu-label", "menuLabel", this._updateIconAndLabel, null);
+            this.settings.bindProperty(Settings.BindingDirection.IN, "overlay-key", "overlayKey", this._updateKeybinding, null);
+
+            this._updateKeybinding();
+
             Main.themeManager.connect("theme-set", Lang.bind(this, this._updateIconAndLabel));
             this._updateIconAndLabel();
 
@@ -898,14 +902,6 @@ MyApplet.prototype = {
             this.settings.bindProperty(Settings.BindingDirection.IN, "hover-delay", "hover_delay_ms", this._update_hover_delay, null);
             this._update_hover_delay();
 
-            global.display.connect('overlay-key', Lang.bind(this, function(){
-                try{
-                    this.menu.toggle_with_options(false);
-                }
-                catch(e) {
-                    global.logError(e);
-                }
-            }));
             Main.placesManager.connect('places-updated', Lang.bind(this, this._refreshPlacesAndRecent));
             this.RecentManager.connect('changed', Lang.bind(this, this._refreshPlacesAndRecent));
 
@@ -924,6 +920,12 @@ MyApplet.prototype = {
         catch (e) {
             global.logError(e);
         }
+    },
+
+    _updateKeybinding: function() {
+        Main.keybindingManager.addHotKey("overlay-key", this.overlayKey, Lang.bind(this, function() {
+            this.menu.toggle_with_options(false);
+        }));
     },
 
     onIconThemeChanged: function() {
@@ -1084,11 +1086,6 @@ MyApplet.prototype = {
         let action = global.display.get_keybinding_action(keyCode, modifierState);
 
         if (action == Meta.KeyBindingAction.CUSTOM) {
-            return true;
-        }
-
-        if (global.display.get_is_overlay_key(keyCode, modifierState) && this.menu.isOpen) {
-            this.menu.close();
             return true;
         }
 

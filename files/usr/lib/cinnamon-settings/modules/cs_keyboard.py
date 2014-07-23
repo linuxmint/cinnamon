@@ -49,7 +49,6 @@ KEYBINDINGS = [
     [_("Cycle through open windows"), MUFFIN_KEYBINDINGS_SCHEMA, "switch-windows", True, "cinnamon"],
     [_("Cycle backwards though open windows"), MUFFIN_KEYBINDINGS_SCHEMA, "switch-windows-backward", True, "cinnamon"],
     [_("Run dialog"), MUFFIN_KEYBINDINGS_SCHEMA, "panel-run-dialog", True, "cinnamon"],
-    [_("Menu button (must restart Cinnamon)"), "org.cinnamon.muffin", "overlay-key", False, "cinnamon"],
     [_("Toggle Looking Glass"), CINNAMON_SCHEMA, "looking-glass-keybinding", False, "cinnamon"],
 
     # Windows - General
