@@ -1283,10 +1283,11 @@ function Melange() {
 
 Melange.prototype = {
     _init: function() {
-        DBus.session.watch_name("org.Cinnamon.Melange", false,
-                    Lang.bind(this, this._melange_found),
-                    Lang.bind(this, this._melange_lost)
-                );
+        Gio.bus_watch_name(Gio.BusType.SESSION,
+                           "org.Cinnamon.Melange",
+                           Gio.BusNameWatcherFlags.NONE,
+                           Lang.bind(this, this._melange_found),
+                           Lang.bind(this, this._melange_lost));
         this.proxy = null;
         this._open = false;
         let kb = global.settings.get_string("looking-glass-keybinding");
