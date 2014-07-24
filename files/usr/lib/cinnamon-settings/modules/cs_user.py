@@ -397,8 +397,7 @@ class PasswordDialog(Gtk.Dialog):
 
     def change_password(self):
         oldpass = self.current_password.get_text()
-        newpass = self.new_password.get_text()
-        print "Changing %s to %s" % (oldpass, newpass)
+        newpass = self.new_password.get_text()        
         passwd = pexpect.spawn("/usr/bin/passwd")
         time.sleep(0.5)
         passwd.sendline(oldpass)
