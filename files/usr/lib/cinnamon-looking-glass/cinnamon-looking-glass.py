@@ -469,10 +469,19 @@ class CinnamonLog(dbus.service.Object):
         table.attach(self.statusLabel, column, column+1, 1, 2, 0, 0, 1)
         column += 1
 
-        settings = Gio.Settings("org.cinnamon")
-        accel = settings.get_string("looking-glass-keybinding");
-        accel = accel.replace("<", "&lt;")
-        accel = accel.replace(">", "&gt;")
+        settings = Gio.Settings("org.cinnamon.desktop.keybindings")
+        arr = settings.get_strv("looking-glass-keybinding");
+        accel = ""
+        done_one = False;
+
+        for element in arr:
+            if done_one:
+                accel += ", "
+
+            accel += element.replace("<", "&lt;").replace(">", "&gt;")
+            if not done_one:
+                done_one = True
+
         keybinding = Gtk.Label("Current Keybinding")
         keybinding.set_markup('<i>Toggle shortcut: %s</i>' % accel)
 

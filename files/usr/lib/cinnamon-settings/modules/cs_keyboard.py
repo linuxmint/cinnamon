@@ -9,21 +9,13 @@ gettext.install("cinnamon", "/usr/share/cinnamon/locale")
 
 # Keybindings page - check if we need to store custom
 # keybindings to gsettings key as well as GConf (In Mint 14 this is changed)
-CUSTOM_KEYS_PARENT_SCHEMA = "org.cinnamon.keybindings"
-CUSTOM_KEYS_BASENAME = "/org/cinnamon/keybindings/custom-keybindings"
-CUSTOM_KEYS_SCHEMA = "org.cinnamon.keybindings.custom-keybinding"
+CUSTOM_KEYS_PARENT_SCHEMA = "org.cinnamon.desktop.keybindings"
+CUSTOM_KEYS_BASENAME = "/org/cinnamon/desktop/keybindings/custom-keybindings"
+CUSTOM_KEYS_SCHEMA = "org.cinnamon.desktop.keybindings.custom-keybinding"
 
-MUFFIN_KEYBINDINGS_SCHEMA = "org.cinnamon.muffin.keybindings"
-MEDIA_KEYS_SCHEMA = "org.cinnamon.settings-daemon.plugins.media-keys"
-CINNAMON_SCHEMA = "org.cinnamon"
-
-HAS_DEDICATED_TERMINAL_SHORTCUT = False
-
-schema = Gio.Settings(schema = MEDIA_KEYS_SCHEMA)
-key_list = schema.list_keys()
-for key in key_list:
-    if key == "terminal":
-        HAS_DEDICATED_TERMINAL_SHORTCUT = True
+MUFFIN_KEYBINDINGS_SCHEMA = "org.cinnamon.desktop.keybindings.wm"
+MEDIA_KEYS_SCHEMA = "org.cinnamon.desktop.keybindings.media-keys"
+CINNAMON_SCHEMA = "org.cinnamon.desktop.keybindings"
 
 FORBIDDEN_KEYVALS = [
     Gdk.KEY_Home,
@@ -49,7 +41,7 @@ KEYBINDINGS = [
     [_("Cycle through open windows"), MUFFIN_KEYBINDINGS_SCHEMA, "switch-windows", True, "cinnamon"],
     [_("Cycle backwards though open windows"), MUFFIN_KEYBINDINGS_SCHEMA, "switch-windows-backward", True, "cinnamon"],
     [_("Run dialog"), MUFFIN_KEYBINDINGS_SCHEMA, "panel-run-dialog", True, "cinnamon"],
-    [_("Toggle Looking Glass"), CINNAMON_SCHEMA, "looking-glass-keybinding", False, "cinnamon"],
+    [_("Toggle Looking Glass"), CINNAMON_SCHEMA, "looking-glass-keybinding", True, "cinnamon"],
 
     # Windows - General
     [_("Maximize window"), MUFFIN_KEYBINDINGS_SCHEMA, "maximize", True, "windows"],
@@ -119,49 +111,47 @@ KEYBINDINGS = [
     [_("Move window to workspace 12"), MUFFIN_KEYBINDINGS_SCHEMA, "move-to-workspace-12", True, "ws-manage"],
 
     # System
-    [_("Log out"), MEDIA_KEYS_SCHEMA, "logout", False, "system"],
-    [_("Shut down"), MEDIA_KEYS_SCHEMA, "shutdown", False, "system"],
-    [_("Lock screen"), MEDIA_KEYS_SCHEMA, "screensaver", False, "system"],
-    [_("Take a screenshot of an area"), MEDIA_KEYS_SCHEMA, "area-screenshot", False, "system"],
-    [_("Copy a screenshot of an area to clipboard"), MEDIA_KEYS_SCHEMA, "area-screenshot-clip", False, "system"],
-    [_("Take a screenshot"), MEDIA_KEYS_SCHEMA, "screenshot", False, "system"],
-    [_("Copy a screenshot to clipboard"), MEDIA_KEYS_SCHEMA, "screenshot-clip", False, "system"],
-    [_("Take a screenshot of a window"), MEDIA_KEYS_SCHEMA, "window-screenshot", False, "system"],
-    [_("Copy a screenshot of a window to clipboard"), MEDIA_KEYS_SCHEMA, "window-screenshot-clip", False, "system"],
+    [_("Log out"), MEDIA_KEYS_SCHEMA, "logout", True, "system"],
+    [_("Shut down"), MEDIA_KEYS_SCHEMA, "shutdown", True, "system"],
+    [_("Lock screen"), MEDIA_KEYS_SCHEMA, "screensaver", True, "system"],
+    [_("Take a screenshot of an area"), MEDIA_KEYS_SCHEMA, "area-screenshot", True, "system"],
+    [_("Copy a screenshot of an area to clipboard"), MEDIA_KEYS_SCHEMA, "area-screenshot-clip", True, "system"],
+    [_("Take a screenshot"), MEDIA_KEYS_SCHEMA, "screenshot", True, "system"],
+    [_("Copy a screenshot to clipboard"), MEDIA_KEYS_SCHEMA, "screenshot-clip", True, "system"],
+    [_("Take a screenshot of a window"), MEDIA_KEYS_SCHEMA, "window-screenshot", True, "system"],
+    [_("Copy a screenshot of a window to clipboard"), MEDIA_KEYS_SCHEMA, "window-screenshot-clip", True, "system"],
     [_("Toggle recording desktop (must restart Cinnamon)"), MUFFIN_KEYBINDINGS_SCHEMA, "toggle-recording", True, "system"],
 
     # Launchers
-    [_("Launch help browser"), MEDIA_KEYS_SCHEMA, "help", False, "launchers"],
-    [_("Launch calculator"), MEDIA_KEYS_SCHEMA, "calculator", False, "launchers"],
-    [_("Launch email client"), MEDIA_KEYS_SCHEMA, "email", False, "launchers"],
-    [_("Launch web browser"), MEDIA_KEYS_SCHEMA, "www", False, "launchers"],
-    [_("Home folder"), MEDIA_KEYS_SCHEMA, "home", False, "launchers"],
-    [_("Search"), MEDIA_KEYS_SCHEMA, "search", False, "launchers"],
+    [_("Launch terminal"), MEDIA_KEYS_SCHEMA, "terminal", True, "launchers"],
+    [_("Launch help browser"), MEDIA_KEYS_SCHEMA, "help", True, "launchers"],
+    [_("Launch calculator"), MEDIA_KEYS_SCHEMA, "calculator", True, "launchers"],
+    [_("Launch email client"), MEDIA_KEYS_SCHEMA, "email", True, "launchers"],
+    [_("Launch web browser"), MEDIA_KEYS_SCHEMA, "www", True, "launchers"],
+    [_("Home folder"), MEDIA_KEYS_SCHEMA, "home", True, "launchers"],
+    [_("Search"), MEDIA_KEYS_SCHEMA, "search", True, "launchers"],
 
     # Sound and Media
-    [_("Volume mute"), MEDIA_KEYS_SCHEMA, "volume-mute", False, "media"],
-    [_("Volume down"), MEDIA_KEYS_SCHEMA, "volume-down", False, "media"],
-    [_("Volume up"), MEDIA_KEYS_SCHEMA, "volume-up", False, "media"],
-    [_("Launch media player"), MEDIA_KEYS_SCHEMA, "media", False, "media"],
-    [_("Play"), MEDIA_KEYS_SCHEMA, "play", False, "media"],
-    [_("Pause playback"), MEDIA_KEYS_SCHEMA, "pause", False, "media"],
-    [_("Stop playback"), MEDIA_KEYS_SCHEMA, "stop", False, "media"],
-    [_("Previous track"), MEDIA_KEYS_SCHEMA, "previous", False, "media"],
-    [_("Next track"), MEDIA_KEYS_SCHEMA, "next", False, "media"],
-    [_("Eject"), MEDIA_KEYS_SCHEMA, "eject", False, "media"],
+    [_("Volume mute"), MEDIA_KEYS_SCHEMA, "volume-mute", True, "media"],
+    [_("Volume down"), MEDIA_KEYS_SCHEMA, "volume-down", True, "media"],
+    [_("Volume up"), MEDIA_KEYS_SCHEMA, "volume-up", True, "media"],
+    [_("Launch media player"), MEDIA_KEYS_SCHEMA, "media", True, "media"],
+    [_("Play"), MEDIA_KEYS_SCHEMA, "play", True, "media"],
+    [_("Pause playback"), MEDIA_KEYS_SCHEMA, "pause", True, "media"],
+    [_("Stop playback"), MEDIA_KEYS_SCHEMA, "stop", True, "media"],
+    [_("Previous track"), MEDIA_KEYS_SCHEMA, "previous", True, "media"],
+    [_("Next track"), MEDIA_KEYS_SCHEMA, "next", True, "media"],
+    [_("Eject"), MEDIA_KEYS_SCHEMA, "eject", True, "media"],
 
     # Universal Access
-    [_("Zoom in"), MEDIA_KEYS_SCHEMA, "magnifier-zoom-in", False, "accessibility"],
-    [_("Zoom out"), MEDIA_KEYS_SCHEMA, "magnifier-zoom-out", False, "accessibility"],
-    [_("Turn screen reader on or off"), MEDIA_KEYS_SCHEMA, "screenreader", False, "accessibility"],
-    [_("Turn on-screen keyboard on or off"), MEDIA_KEYS_SCHEMA, "on-screen-keyboard", False, "accessibility"],
-    [_("Increase text size"), MEDIA_KEYS_SCHEMA, "increase-text-size", False, "accessibility"],
-    [_("Decrease text size"), MEDIA_KEYS_SCHEMA, "decrease-text-size", False, "accessibility"],
-    [_("High contrast on or off"), MEDIA_KEYS_SCHEMA, "toggle-contrast", False, "accessibility"]
+    [_("Zoom in"), MEDIA_KEYS_SCHEMA, "magnifier-zoom-in", True, "accessibility"],
+    [_("Zoom out"), MEDIA_KEYS_SCHEMA, "magnifier-zoom-out", True, "accessibility"],
+    [_("Turn screen reader on or off"), MEDIA_KEYS_SCHEMA, "screenreader", True, "accessibility"],
+    [_("Turn on-screen keyboard on or off"), MEDIA_KEYS_SCHEMA, "on-screen-keyboard", True, "accessibility"],
+    [_("Increase text size"), MEDIA_KEYS_SCHEMA, "increase-text-size", True, "accessibility"],
+    [_("Decrease text size"), MEDIA_KEYS_SCHEMA, "decrease-text-size", True, "accessibility"],
+    [_("High contrast on or off"), MEDIA_KEYS_SCHEMA, "toggle-contrast", True, "accessibility"]
 ]
-
-if HAS_DEDICATED_TERMINAL_SHORTCUT:
-    KEYBINDINGS.append([_("Launch terminal"), MEDIA_KEYS_SCHEMA, "terminal", False, "launchers"])
 
 class Module:
     def __init__(self, content_box):

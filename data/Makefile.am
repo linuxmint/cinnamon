@@ -63,7 +63,6 @@ gschemas.compiled: $(gsettings_SCHEMAS:.xml=.valid)
 
 all-local: gschemas.compiled
 
-
 EXTRA_DIST =						\
 	cinnamon.desktop.in.in			\
 	$(menu_DATA)					\

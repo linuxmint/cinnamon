@@ -924,7 +924,8 @@ MyApplet.prototype = {
 
     _updateKeybinding: function() {
         Main.keybindingManager.addHotKey("overlay-key", this.overlayKey, Lang.bind(this, function() {
-            this.menu.toggle_with_options(false);
+            if (!Main.overview.visible && !Main.expo.visible)
+                this.menu.toggle_with_options(false);
         }));
     },
 

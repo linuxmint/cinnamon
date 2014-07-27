@@ -1290,8 +1290,9 @@ Melange.prototype = {
                            Lang.bind(this, this._melange_lost));
         this.proxy = null;
         this._open = false;
-        let kb = global.settings.get_string("looking-glass-keybinding");
-        Main.keybindingManager.addHotKey("looking-glass-toggle", kb, Lang.bind(this, this._key_callback));
+        let settings = new Gio.Settings({schema: "org.cinnamon.desktop.keybindings"});
+        let kb = settings.get_strv("looking-glass-keybinding");
+        Main.keybindingManager.addHotKeyArray("looking-glass-toggle", kb, Lang.bind(this, this._key_callback));
     },
 
     _key_callback: function() {

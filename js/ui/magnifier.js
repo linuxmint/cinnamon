@@ -49,7 +49,7 @@ const CROSS_HAIRS_OPACITY_KEY   = 'cross-hairs-opacity';
 const CROSS_HAIRS_LENGTH_KEY    = 'cross-hairs-length';
 const CROSS_HAIRS_CLIP_KEY      = 'cross-hairs-clip';
 
-const MEDIA_KEYS_SCHEMA         = "org.cinnamon.settings-daemon.plugins.media-keys"
+const MEDIA_KEYS_SCHEMA         = "org.cinnamon.desktop.keybindings.media-keys"
 const ZOOM_IN_KEY               = "magnifier-zoom-in"
 const ZOOM_OUT_KEY              = "magnifier-zoom-out"
 
@@ -1502,10 +1502,10 @@ MagnifierInputHandler.prototype = {
         this._zoom_in_id = global.display.connect('zoom-scroll-in', Lang.bind(this, this._zoom_in));
         this._zoom_out_id = global.display.connect('zoom-scroll-out', Lang.bind(this, this._zoom_out));
 
-        let kb = this.media_keys_settings.get_string(ZOOM_IN_KEY);
-        Main.keybindingManager.addHotKey("magnifier-zoom-in", kb, Lang.bind(this, this._zoom_in));
-        kb = this.media_keys_settings.get_string(ZOOM_OUT_KEY);
-        Main.keybindingManager.addHotKey("magnifier-zoom-out", kb, Lang.bind(this, this._zoom_out));
+        let kb = this.media_keys_settings.get_strv(ZOOM_IN_KEY);
+        Main.keybindingManager.addHotKeyArray("magnifier-zoom-in", kb, Lang.bind(this, this._zoom_in));
+        kb = this.media_keys_settings.get_strv(ZOOM_OUT_KEY);
+        Main.keybindingManager.addHotKeyArray("magnifier-zoom-out", kb, Lang.bind(this, this._zoom_out));
     },
 
     _disable_zoom: function() {
