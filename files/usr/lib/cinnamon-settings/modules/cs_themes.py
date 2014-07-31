@@ -68,8 +68,8 @@ class ThemesViewSidePage (ExtensionSidePage):
         other_settings_box.pack_start(self._make_group(_("Controls"), "org.cinnamon.desktop.interface", "gtk-theme", self._load_gtk_themes()), False, False, 2)
         other_settings_box.pack_start(self._make_group(_("Icons"), "org.cinnamon.desktop.interface", "icon-theme", self._load_icon_themes()), False, False, 2)
         other_settings_box.pack_start(self._make_group(_("Window borders"), "org.cinnamon.desktop.wm.preferences", "theme", self._load_window_themes()), False, False, 2)
-        other_settings_box.pack_start(self._make_group(_("Mouse Pointer"), "org.cinnamon.desktop.interface", "cursor-theme", self._load_cursor_themes()), False, False, 2)
-        other_settings_box.pack_start(self._make_group(_("Keybindings"), "org.cinnamon.desktop.interface", "gtk-key-theme", self._load_keybinding_themes()), False, False, 2)
+        other_settings_box.pack_start(self._make_group(_("Mouse pointer"), "org.cinnamon.desktop.interface", "cursor-theme", self._load_cursor_themes()), False, False, 2)
+        
 
         menusHaveIconsCB = GSettingsCheckButton(_("Show icons in menus"), "org.cinnamon.settings-daemon.plugins.xsettings", "menus-have-icons", None)
         other_settings_box.pack_start(menusHaveIconsCB, False, False, 2)
@@ -92,15 +92,6 @@ class ThemesViewSidePage (ExtensionSidePage):
     def _load_icon_themes(self):
         dirs = ("/usr/share/icons", os.path.join(os.path.expanduser("~"), ".icons"))
         valid = walk_directories(dirs, lambda d: os.path.isdir(d) and not os.path.exists(os.path.join(d, "cursors")) and os.path.exists(os.path.join(d, "index.theme")))
-        valid.sort(lambda a,b: cmp(a.lower(), b.lower()))
-        res = []
-        for i in valid:
-            res.append((i, i))
-        return res
-        
-    def _load_keybinding_themes(self):
-        dirs = ("/usr/share/themes", os.path.join(os.path.expanduser("~"), ".themes"))
-        valid = walk_directories(dirs, lambda d: os.path.isfile(os.path.join(d, "gtk-3.0", "gtk-keys.css")) and os.path.isfile(os.path.join(d, "gtk-2.0-key", "gtkrc")))
         valid.sort(lambda a,b: cmp(a.lower(), b.lower()))
         res = []
         for i in valid:
