@@ -95,9 +95,9 @@ MyApplet.prototype = {
             // https://bugzilla.gnome.org/show_bug.cgi?id=655129
             this._upClient = new UPowerGlib.Client();
             try {
-                this._upClient.connect('notify-resume', this._updateClockAndDate);
+                this._upClient.connect('notify-resume', Lang.bind(this, this._updateClockAndDate));
             } catch (e) {
-                this._upClient.connect('notify::resume', this._updateClockAndDate);
+                this._upClient.connect('notify::resume', Lang.bind(this, this._updateClockAndDate));
             }
 
             // Start the clock
