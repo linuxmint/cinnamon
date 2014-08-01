@@ -59,7 +59,7 @@ KeybindingManager.prototype = {
     addHotKey: function(name, bindings_string, callback) {
         if (!bindings_string)
             return false;
-        return this.addHotKeyArray(name, bindings_string.split(","), callback);
+        return this.addHotKeyArray(name, bindings_string.split("::"), callback);
     },
 
     addHotKeyArray: function(name, bindings, callback) {

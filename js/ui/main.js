@@ -185,11 +185,6 @@ function _initUserSession() {
     Meta.keybindings_set_custom_handler('panel-run-dialog', function() {
        getRunDialog().open();
     });
-
-    Meta.keybindings_set_custom_handler('panel-main-menu', function () {
-        expo.toggle();
-    });
-    
 }
 
 function _reparentActor(actor, newParent) {

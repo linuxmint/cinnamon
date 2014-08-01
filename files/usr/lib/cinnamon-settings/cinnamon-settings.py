@@ -263,8 +263,12 @@ class MainWindow:
             self.search_entry.grab_focus()
 
     def on_keypress(self, widget, event):
-        if event.keyval == Gdk.KEY_BackSpace and (type(self.window.get_focus()) not in
-                                (Gtk.TreeView, Gtk.Entry, Gtk.SpinButton, Gtk.TextView)):
+        grab = False
+        device = Gtk.get_current_event_device()
+        if device.get_source() == Gdk.InputSource.KEYBOARD:
+            grab = Gdk.Display.get_default().device_is_grabbed(device)
+        if not grab and event.keyval == Gdk.KEY_BackSpace and (type(self.window.get_focus()) not in
+                    (Gtk.TreeView, Gtk.Entry, Gtk.SpinButton, Gtk.TextView)):
             self.back_to_icon_view(None)
             return True
         return False    
