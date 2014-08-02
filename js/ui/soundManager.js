@@ -4,7 +4,6 @@ const Lang = imports.lang;
 const Gio = imports.gi.Gio;
 const Main = imports.ui.main;
 const Mainloop = imports.mainloop;
-const DBus = imports.dbus;
 
 const iface = "\
 <node>\
