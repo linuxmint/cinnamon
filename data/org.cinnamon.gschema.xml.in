@@ -669,24 +669,7 @@
       </description>
     </key>
   </schema>
-  
-  <schema id="org.cinnamon.screensaver" path="/org/cinnamon/screensaver/">
-    <key name="default-message" type="s">
-      <default>""</default>
-      <summary>Default message for the screensaver</summary>
-      <description>
-        This is the message that appears on the lock screen by default.
-      </description>
-    </key>
-    <key name="ask-for-away-message" type="b">
-      <default>true</default>
-      <summary>Whether to ask for an away message when locking the screen</summary>
-      <description>
-        Whether to ask for an away message when locking the screen.
-      </description>
-    </key>   
-  </schema>
-  
+
   <schema id="org.cinnamon.desklets" path="/org/cinnamon/desklets/"
         gettext-domain="@GETTEXT_PACKAGE@">  
     <child name="launcher" schema="org.cinnamon.desklets.launcher" />
