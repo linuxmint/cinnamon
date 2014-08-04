@@ -5,6 +5,50 @@ const Gio = imports.gi.Gio;
 const SETTINGS_DAEMON_NAME = "org.cinnamon.SettingsDaemon";
 const SETTINGS_DAEMON_POWER_PATH = "/org/cinnamon/SettingsDaemon/Power";
 
+const DBusProperties =
+<interface name="org.freedesktop.DBus.Properties">
+    <method name="Get">
+        <arg direction="in" name="interface" type="s"/>
+        <arg direction="in" name="propname" type="s"/>
+        <arg direction="out" name="value" type="v"/>
+    </method>
+    <method name="Set">
+        <arg direction="in" name="interface" type="s"/>
+        <arg direction="in" name="propname" type="s"/>
+        <arg direction="in" name="value" type="v"/>
+    </method>
+    <method name="GetAll">
+        <arg direction="in" name="interface" type="s"/>
+        <arg direction="out" name="props" type="a{sv}"/>
+    </method>
+    <signal name="PropertiesChanged">
+        <arg type="s" direction="out" />
+        <arg type="a{sv}" direction="out" />
+        <arg type="as" direction="out" />
+    </signal>
+</interface>;
+
+function getDBusProperties(name, path) {
+    let proxy = Gio.DBusProxy.makeProxyWrapper(DBusProperties);
+    return new proxy(Gio.DBus.session,
+                     name,
+                     path);
+}
+
+function getDBusPropertiesAsync(name, path, callback) {
+    let proxy = Gio.DBusProxy.makeProxyWrapper(DBusProperties);
+    return new proxy(Gio.DBus.session,
+                     name,
+                     path,
+                     function (proxy, error) {
+                          if (error) {
+                              log(error.message);
+                              return;
+                          }
+                          callback();
+                     });
+}
+
 let xml = { };
 
 xml['org.cinnamon.SettingsDaemon.Power'] =
@@ -83,6 +127,7 @@ function getDBusProxyAsync(which, callback) {
                               log(error.message);
                               return;
                           }
-                          callback();
+                          if (callback)
+                            callback();
                      });
 }
