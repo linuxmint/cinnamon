@@ -5,23 +5,23 @@ const Gio = imports.gi.Gio;
 const Main = imports.ui.main;
 const Mainloop = imports.mainloop;
 
-const iface = "\
-<node>\
-  <interface name='org.cinnamon.SettingsDaemon.Sound'>\
-    <annotation name='org.freedesktop.DBus.GLib.CSymbol' value='csd_sound_manager'/>\
-    <method name='PlaySoundFile'>\
-      <arg name='id' direction='in' type='u'/>\
-      <arg name='filename' direction='in' type='s'/>\
-    </method>\
-    <method name='PlaySound'>\
-      <arg name='id' direction='in' type='u'/>\
-      <arg name='name' direction='in' type='s'/>\
-    </method>\
-    <method name='CancelSound'>\
-      <arg name='id' direction='in' type='u'/>\
-    </method>\
-  </interface>\
-</node>";
+const iface =
+    "<node> \
+        <interface name='org.cinnamon.SettingsDaemon.Sound'> \
+            <annotation name='org.freedesktop.DBus.GLib.CSymbol' value='csd_sound_manager'/> \
+            <method name='PlaySoundFile'> \
+                <arg name='id' direction='in' type='u'/> \
+                <arg name='filename' direction='in' type='s'/> \
+            </method> \
+            <method name='PlaySound'> \
+                <arg name='id' direction='in' type='u'/> \
+                <arg name='name' direction='in' type='s'/> \
+            </method> \
+            <method name='CancelSound'> \
+                <arg name='id' direction='in' type='u'/> \
+            </method> \
+        </interface> \
+    </node>";
 
 const proxy = Gio.DBusProxy.makeProxyWrapper(iface);
 

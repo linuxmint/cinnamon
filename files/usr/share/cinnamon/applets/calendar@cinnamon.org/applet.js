@@ -67,11 +67,10 @@ MyApplet.prototype = {
             this._date.style_class = 'datemenu-date-label';
             vbox.add(this._date);
            
-            this._eventSource = null;
             this._eventList = null;
 
             // Calendar
-            this._calendar = new Calendar.Calendar(this._eventSource, this.settings);       
+            this._calendar = new Calendar.Calendar(this.settings);
             vbox.add(this._calendar.actor);
 
             let item = new PopupMenu.PopupMenuItem(_("Date and Time Settings"))

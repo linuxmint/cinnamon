@@ -1,53 +1,51 @@
 // -*- mode: js; js-indent-level: 4; indent-tabs-mode: nil -*-
 
-const DBus = imports.dbus;
 const Lang = imports.lang;
+const Gio = imports.gi.Gio;
 
-const ScreenSaverIface = {
-    name: 'org.cinnamon.ScreenSaver',
-    methods: [{ name: 'GetActive',
-                inSignature: '',
-                outSignature: 'b' },
-              { name: 'Lock',
-                inSignature: '' },
-              { name: 'SetActive',
-                inSignature: 'b' }],
-    signals: [{ name: 'ActiveChanged',
-                inSignature: 'b' }]
-};
+const ScreenSaverIface = 
+    '<node> \
+        <interface name="org.gnome.ScreenSaver"> \
+        <method name="GetActive"> \
+            <arg type="b" direction="out" /> \
+        </method> \
+        <method name="Lock" /> \
+        <method name="SetActive"> \
+            <arg type="b" direction="in" /> \
+        </method> \
+        <signal name="ActiveChanged"> \
+            <arg type="b" direction="out" /> \
+        </signal> \
+        </interface> \
+    </node>';
+
+const ScreenSaverInfo = Gio.DBusInterfaceInfo.new_for_xml(ScreenSaverIface);
 
 function ScreenSaverProxy() {
-    this._init();
+    var self = new Gio.DBusProxy({ g_connection: Gio.DBus.session,
+                                   g_interface_name: ScreenSaverInfo.name,
+                                   g_interface_info: ScreenSaverInfo,
+                                   g_name: 'org.gnome.ScreenSaver',
+                                   g_object_path: '/org/gnome/ScreenSaver',
+                                   g_flags: (Gio.DBusProxyFlags.DO_NOT_AUTO_START |
+                                             Gio.DBusProxyFlags.DO_NOT_LOAD_PROPERTIES) });
+    self.init(null);
+    self.screenSaverActive = false;
+
+    self.connectSignal('ActiveChanged', function(proxy, senderName, [isActive]) {
+        self.screenSaverActive = isActive;
+    });
+    self.connect('notify::g-name-owner', function() {
+        if (self.g_name_owner) {
+            self.GetActiveRemote(function(result, excp) {
+                if (result) {
+                    let [isActive] = result;
+                    self.screenSaverActive = isActive;
+                }
+            });
+        } else
+            self.screenSaverActive = false;
+    });
+
+    return self;
 }
-
-ScreenSaverProxy.prototype = {
-    _init: function() {
-        DBus.session.proxifyObject(this,
-                                   'org.cinnamon.ScreenSaver',
-                                   '/org/cinnamon/ScreenSaver');
-
-        DBus.session.watch_name('org.cinnamon.ScreenSaver',
-                                false, // do not launch a name-owner if none exists
-                                Lang.bind(this, this._onSSAppeared),
-                                Lang.bind(this, this._onSSVanished));
-
-        this.screenSaverActive = false;
-        this.connect('ActiveChanged',
-                     Lang.bind(this, this._onActiveChanged));
-    },
-
-    _onSSAppeared: function(owner) {
-        this.GetActiveRemote(Lang.bind(this, function(isActive) {
-            this.screenSaverActive = isActive;
-        }))
-    },
-
-    _onSSVanished: function(oldOwner) {
-        this.screenSaverActive = false;
-    },
-
-    _onActiveChanged: function(object, isActive) {
-        this.screenSaverActive = isActive;
-    }
-};
-DBus.proxifyPrototype(ScreenSaverProxy.prototype, ScreenSaverIface);

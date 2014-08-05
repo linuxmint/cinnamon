@@ -20,15 +20,9 @@
 #include <clutter/x11/clutter-x11.h>
 #include <gdk/gdkx.h>
 #include <gio/gio.h>
-#include <cjs/gjs-module.h>
 #include <girepository.h>
 #include <meta/display.h>
 #include <meta/util.h>
-
-/* Memory report bits */
-#ifdef HAVE_MALLINFO
-#include <malloc.h>
-#endif
 
 #include "cinnamon-enum-types.h"
 #include "cinnamon-global-private.h"
@@ -1158,70 +1152,6 @@ cinnamon_global_destroy_pointer_barrier (CinnamonGlobal *global, guint32 barrier
 #endif
 }
 
-
-/**
- * cinnamon_global_add_extension_importer:
- * @target_object_script: JavaScript code evaluating to a target object
- * @target_property: Name of property to use for importer
- * @directory: Source directory:
- * @error: A #GError
- *
- * This function sets a property named @target_property on the object
- * resulting from the evaluation of @target_object_script code, which
- * acts as a GJS importer for directory @directory.
- *
- * Returns: %TRUE on success
- */
-gboolean
-cinnamon_global_add_extension_importer (CinnamonGlobal *global,
-                                     const char  *target_object_script,
-                                     const char  *target_property,
-                                     const char  *directory,
-                                     GError     **error)
-{
-  jsval target_object;
-  JSContext *context = gjs_context_get_native_context (global->js_context);
-  char *search_path[2] = { 0, 0 };
-
-  JS_BeginRequest (context);
-
-  // This is a bit of a hack; ideally we'd be able to pass our target
-  // object directly into this function, but introspection doesn't
-  // support that at the moment.  Instead evaluate a string to get it.
-  if (!JS_EvaluateScript(context,
-                         JS_GetGlobalObject(context),
-                         target_object_script,
-                         strlen (target_object_script),
-                         "<target_object_script>",
-                         0,
-                         &target_object))
-    {
-      char *message;
-      gjs_log_exception(context,
-                        &message);
-      g_set_error(error,
-                  G_IO_ERROR,
-                  G_IO_ERROR_FAILED,
-                  "%s", message ? message : "(unknown)");
-      g_free(message);
-      goto out_error;
-    }
-
-  if (!JSVAL_IS_OBJECT (target_object))
-    {
-      g_error ("cinnamon_global_add_extension_importer: invalid target object");
-      goto out_error;
-    }
-
-  search_path[0] = (char*)directory;
-  gjs_define_importer (context, JSVAL_TO_OBJECT (target_object), target_property, (const char **)search_path, FALSE);
-  JS_EndRequest (context);
-  return TRUE;
- out_error:
-  JS_EndRequest (context);
-  return FALSE;
-}
-
 /* Code to close all file descriptors before we exec; copied from gspawn.c in GLib.
  *
  * Authors: Padraig O'Briain, Matthias Clasen, Lennart Poettering
@@ -1358,78 +1288,12 @@ cinnamon_global_reexec_self (CinnamonGlobal *global)
   g_ptr_array_free (arr, TRUE);
 }
 
-/**
- * cinnamon_global_gc:
- * @global: A #CinnamonGlobal
- *
- * Start a garbage collection process.  For more information, see
- * https://developer.mozilla.org/En/JS_GC
- */
-void
-cinnamon_global_gc (CinnamonGlobal *global)
-{
-  JSContext *context = gjs_context_get_native_context (global->js_context);
-
-  JS_GC (context);
-}
-
-/**
- * cinnamon_global_maybe_gc:
- * @global: A #CinnamonGlobal
- *
- * Start a garbage collection process when it would free up enough memory
- * to be worth the amount of time it would take
- * https://developer.mozilla.org/en/SpiderMonkey/JSAPI_Reference/JS_MaybeGC
- */
-void
-cinnamon_global_maybe_gc (CinnamonGlobal *global)
-{
-  gjs_context_maybe_gc (global->js_context);
-}
-
 static void
 cinnamon_global_on_gc (GjsContext   *context,
                     CinnamonGlobal  *global)
 {
   global->last_gc_end_time = g_get_monotonic_time ();
 }
-
-/**
- * cinnamon_global_get_memory_info:
- * @global:
- * @meminfo: (out caller-allocates): Output location for memory information
- *
- * Load process-global data about memory usage.
- */
-void
-cinnamon_global_get_memory_info (CinnamonGlobal        *global,
-                              CinnamonMemoryInfo    *meminfo)
-{
-  JSContext *context;
-  gint64 now;
-
-  memset (meminfo, 0, sizeof (*meminfo));
-#ifdef HAVE_MALLINFO
-  {
-    struct mallinfo info = mallinfo ();
-    meminfo->glibc_uordblks = info.uordblks;
-  }
-#endif
-
-  context = gjs_context_get_native_context (global->js_context);
-
-  meminfo->js_bytes = JS_GetGCParameter (JS_GetRuntime (context), JSGC_BYTES);
-
-  meminfo->gjs_boxed = (unsigned int) gjs_counter_boxed.value;
-  meminfo->gjs_gobject = (unsigned int) gjs_counter_object.value;
-  meminfo->gjs_function = (unsigned int) gjs_counter_function.value;
-  meminfo->gjs_closure = (unsigned int) gjs_counter_closure.value;
-
-  now = g_get_monotonic_time ();
-
-  meminfo->last_gc_seconds_ago = (now - global->last_gc_end_time) / G_TIME_SPAN_SECOND;
-}
-
 
 /**
  * cinnamon_global_notify_error:
@@ -1717,13 +1581,6 @@ run_leisure_functions (gpointer data)
   /* We started more work since we scheduled the idle */
   if (global->work_count > 0)
     return FALSE;
-
-  /* Previously we called gjs_maybe_gc().  However, it simply doesn't
-   * trigger often enough.  Garbage collection is very fast here, so
-   * let's just aggressively GC.  This will help avoid both heap
-   * fragmentation, and the GC kicking in when we don't want it to.
-   */
-  gjs_context_gc (global->js_context);
 
   /* No leisure closures, so we are done */
   if (global->leisure_closures == NULL)

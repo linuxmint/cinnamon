@@ -6,6 +6,7 @@ const GLib = imports.gi.GLib;
 const Lang = imports.lang;
 const Signals = imports.signals;
 const St = imports.gi.St;
+const CinnamonJS = imports.gi.CinnamonJS;
 
 const AppletManager = imports.ui.appletManager;
 const Config = imports.misc.config;
@@ -141,7 +142,7 @@ Extension.prototype = {
         }
 
         try {
-            global.add_extension_importer('imports.ui.extension.importObjects', this.uuid, this.meta.path);
+            CinnamonJS.add_extension_importer('imports.ui.extension.importObjects', this.uuid, this.meta.path);
         } catch (e) {
             throw this.logError('Error importing extension ' + this.uuid + ' from path ' + this.meta.path, e);
         }

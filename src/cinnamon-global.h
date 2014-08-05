@@ -87,11 +87,6 @@ void    cinnamon_global_set_pointer             (CinnamonGlobal         *global,
                                               int                 x,
                                               int                 y);
 
-
-/* JavaScript utilities */
-void     cinnamon_global_gc                   (CinnamonGlobal *global);
-void     cinnamon_global_maybe_gc             (CinnamonGlobal *global);
-
 typedef struct {
   guint glibc_uordblks;
 
@@ -123,11 +118,6 @@ void cinnamon_global_run_at_leisure (CinnamonGlobal          *global,
 
 
 /* Misc utilities / Cinnamon API */
-gboolean cinnamon_global_add_extension_importer    (CinnamonGlobal  *global,
-                                                 const char   *target_object_script,
-                                                 const char   *target_property,
-                                                 const char   *directory,
-                                                 GError      **error);
 
 void     cinnamon_global_sync_pointer              (CinnamonGlobal  *global);
 

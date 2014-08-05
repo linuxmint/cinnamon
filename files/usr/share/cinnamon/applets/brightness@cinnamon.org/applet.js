@@ -100,7 +100,8 @@ MyApplet.prototype = {
             let dimSwitchBattery = this._buildItem(_("Dim screen on battery"), DimSettingsSchema, DimSettingsBattery);
             this._settingsMenu.menu.addMenuItem(dimSwitchBattery);
 
-            this._proxy = Interfaces.getDBusProxyAsync("org.cinnamon.SettingsDaemon.Power.Screen", Lang.bind(this, function() {
+            Interfaces.getDBusProxyAsync("org.cinnamon.SettingsDaemon.Power.Screen", Lang.bind(this, function(proxy, error) {
+                this._proxy = proxy;
                 this._proxy.GetPercentageRemote(Lang.bind(this, function(b, error) {
                     if (b != undefined) {
                         this._updateBrightnessLabel(b);

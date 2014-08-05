@@ -11,7 +11,7 @@ const St = imports.gi.St;
 const Cinnamon = imports.gi.Cinnamon;
 const Signals = imports.signals;
 const Lang = imports.lang;
-const DBus = imports.dbus;
+const CinnamonJS = imports.gi.CinnamonJS;
 
 const History = imports.misc.history;
 const Extension = imports.ui.extension;
@@ -693,7 +693,7 @@ Memory.prototype = {
     _renderText: function() {
         if (!this.actor.mapped)
             return;
-        let memInfo = global.get_memory_info();
+        let memInfo = CinnamonJS.get_memory_info();
         this._glibc_uordblks.text = 'glibc_uordblks: ' + memInfo.glibc_uordblks;
         this._js_bytes.text = 'js bytes: ' + memInfo.js_bytes;
         this._gjs_boxed.text = 'gjs_boxed: ' + memInfo.gjs_boxed;
@@ -1024,19 +1024,19 @@ LookingGlass.prototype = {
         let resultObj;
 
         /*  Set up for some reporting about memory impact and execution speed.
-            The performance impact of global.get_memory_info should be 
+            The performance impact of CinnamonJS.get_memory_info should be 
             very small, whereas getting a timestamp might involve some 
             memory allocation, so we grab the timestamp first.
         */
         let ts = new Date().getTime();
-        let memInfo = global.get_memory_info();
+        let memInfo = CinnamonJS.get_memory_info();
         
         try {
             resultObj = eval(fullCmd);
         } catch (e) {
             resultObj = '<exception ' + e + '>';
         }
-        let memInfo2 = global.get_memory_info();
+        let memInfo2 = CinnamonJS.get_memory_info();
         let ts2 = new Date().getTime();
 
         this._pushResult(command, resultObj);
@@ -1263,17 +1263,17 @@ LookingGlass.prototype = {
 };
 Signals.addSignalMethods(LookingGlass.prototype);
 
-const dbusIFace = '\
-<node>                                                      \
-    <interface name="org.Cinnamon.Melange">                 \
-        <method name="show" />                              \
-        <method name="hide" />                              \
-        <method name="getVisible" >                         \
-            <arg type="b" direction="out" name="visible"/>  \
-        </method>                                           \
-        <property name="_open" type="b" access="read" />    \
-    </interface>                                            \
-</node>';
+const dbusIFace =
+    '<node> \
+        <interface name="org.Cinnamon.Melange"> \
+            <method name="show" /> \
+            <method name="hide" /> \
+            <method name="getVisible"> \
+                <arg type="b" direction="out" name="visible"/> \
+            </method> \
+            <property name="_open" type="b" access="read" /> \
+        </interface> \
+    </node>';
 
 const proxy = Gio.DBusProxy.makeProxyWrapper(dbusIFace);
 

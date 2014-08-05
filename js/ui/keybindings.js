@@ -4,7 +4,6 @@ const Gio = imports.gi.Gio;
 const Lang = imports.lang;
 const Util = imports.misc.util;
 const Meta = imports.gi.Meta;
-const DBus = imports.dbus;
 
 const MK = imports.gi.CDesktopEnums.MediaKeyType;
 const CinnamonDesktop = imports.gi.CinnamonDesktop;
@@ -19,14 +18,14 @@ const CUSTOM_KEYS_SCHEMA = "org.cinnamon.desktop.keybindings.custom-keybinding";
 const MEDIA_KEYS_SCHEMA = "org.cinnamon.desktop.keybindings.media-keys"
 
 const iface = "\
-<node>\
-  <interface name='org.cinnamon.SettingsDaemon.KeybindingHandler'>\
-    <annotation name='org.freedesktop.DBus.GLib.CSymbol' value='csd_media_keys_manager'/>\
-    <method name='HandleKeybinding'>\
-      <arg name='type' direction='in' type='u'/>\
-    </method>\
-  </interface>\
-</node>";
+    <node> \
+      <interface name='org.cinnamon.SettingsDaemon.KeybindingHandler'> \
+        <annotation name='org.freedesktop.DBus.GLib.CSymbol' value='csd_media_keys_manager'/> \
+        <method name='HandleKeybinding'> \
+          <arg name='type' direction='in' type='u'/> \
+        </method> \
+      </interface> \
+    </node>";
 
 const proxy = Gio.DBusProxy.makeProxyWrapper(iface);
 

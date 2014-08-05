@@ -3,55 +3,59 @@
 const Gio = imports.gi.Gio;
 const Main = imports.ui.main;
 const Extension = imports.ui.extension;
+const CinnamonJS = imports.gi.CinnamonJS;
 
 const LG_SERVICE_NAME = 'org.Cinnamon.LookingGlass';
 const LG_SERVICE_PATH = '/org/Cinnamon/LookingGlass';
-const LookingGlassIface = <interface name={LG_SERVICE_NAME}>
-<method name="Eval">
-    <arg type="s" direction="in" name="code"/>
-</method>
-<method name="GetResults">
-    <arg type="b" direction="out" name="success"/>
-    <arg type="aa{ss}" direction="out" name="array of dictionary containing keys: command, type, object, index"/>
-</method>
-<method name="AddResult">
-    <arg type="s" direction="in" name="code"/>
-</method>
-<method name="GetErrorStack">
-    <arg type="b" direction="out" name="success"/>
-    <arg type="aa{ss}" direction="out" name="array of dictionary containing keys: timestamp, category, message"/>
-</method>
-<method name="GetMemoryInfo">
-    <arg type="b" direction="out" name="success"/>
-    <arg type="i" direction="out" name="time since last garbage collect"/>
-    <arg type="a{si}" direction="out" name="dictionary mapping name(string) to number of bytes used(int)"/>
-</method>
-<method name="FullGc">
-</method>
-<method name="Inspect">
-    <arg type="s" direction="in" name="code"/>
-    <arg type="b" direction="out" name="success"/>
-    <arg type="aa{ss}" direction="out" name="array of dictionary containing keys: name, type, value, shortValue"/>
-</method>
-<method name="GetLatestWindowList">
-    <arg type="b" direction="out" name="success"/>
-    <arg type="aa{ss}" direction="out" name="array of dictionary containing keys: id, title, wmclass, app"/>
-</method>
-<method name="StartInspector">
-</method>
-<method name="GetExtensionList">
-    <arg type="b" direction="out" name="success"/>
-    <arg type="aa{ss}" direction="out" name="array of dictionary containing keys: status, name, description, uuid, folder, url, type"/>
-</method>
-<method name="ReloadExtension">
-    <arg type="s" direction="in" name="uuid"/>
-</method>
-<signal name="LogUpdate"></signal>
-<signal name="WindowListUpdate"></signal>
-<signal name="ResultUpdate"></signal>
-<signal name="InspectorDone"></signal>
-<signal name="ExtensionListUpdate"></signal>
-</interface>;
+const LookingGlassIface =
+    '<node> \
+        <interface name="org.Cinnamon.LookingGlass"> \
+            <method name="Eval"> \
+                <arg type="s" direction="in" name="code"/> \
+            </method> \
+            <method name="GetResults"> \
+                <arg type="b" direction="out" name="success"/> \
+                <arg type="aa{ss}" direction="out" name="array of dictionary containing keys: command, type, object, index"/> \
+            </method> \
+            <method name="AddResult"> \
+                <arg type="s" direction="in" name="code"/> \
+            </method> \
+            <method name="GetErrorStack"> \
+                <arg type="b" direction="out" name="success"/> \
+                <arg type="aa{ss}" direction="out" name="array of dictionary containing keys: timestamp, category, message"/> \
+            </method> \
+            <method name="GetMemoryInfo"> \
+                <arg type="b" direction="out" name="success"/> \
+                <arg type="i" direction="out" name="time since last garbage collect"/> \
+                <arg type="a{si}" direction="out" name="dictionary mapping name(string) to number of bytes used(int)"/> \
+            </method> \
+            <method name="FullGc"> \
+            </method> \
+            <method name="Inspect"> \
+                <arg type="s" direction="in" name="code"/> \
+                <arg type="b" direction="out" name="success"/> \
+                <arg type="aa{ss}" direction="out" name="array of dictionary containing keys: name, type, value, shortValue"/> \
+            </method> \
+            <method name="GetLatestWindowList"> \
+                <arg type="b" direction="out" name="success"/> \
+                <arg type="aa{ss}" direction="out" name="array of dictionary containing keys: id, title, wmclass, app"/> \
+            </method> \
+            <method name="StartInspector"> \
+            </method> \
+            <method name="GetExtensionList"> \
+                <arg type="b" direction="out" name="success"/> \
+                <arg type="aa{ss}" direction="out" name="array of dictionary containing keys: status, name, description, uuid, folder, url, type"/> \
+            </method> \
+            <method name="ReloadExtension"> \
+                <arg type="s" direction="in" name="uuid"/> \
+            </method> \
+            <signal name="LogUpdate"></signal> \
+            <signal name="WindowListUpdate"></signal> \
+            <signal name="ResultUpdate"></signal> \
+            <signal name="InspectorDone"></signal> \
+            <signal name="ExtensionListUpdate"></signal> \
+        </interface> \
+    </node>';
 
 function CinnamonLookingGlass() {
     this._init();
@@ -82,7 +86,7 @@ CinnamonLookingGlass.prototype = {
     },
     
     GetMemoryInfo: function() {
-        let memInfo = global.get_memory_info();
+        let memInfo = CinnamonJS.get_memory_info();
         let result = [
             true,
             memInfo.last_gc_seconds_ago,

@@ -632,8 +632,8 @@ Panel.prototype = {
         this._panelEditMode = false;
         this._hidetime = 0;
         this._hideable = global.settings.get_boolean(this.panel_ah_key);
-        this._hideTimer = false;
-        this._showTimer = false;
+        this._hideTimer = 0;
+        this._showTimer = 0;
         this._onPanelShowDelayChanged();
         this._onPanelHideDelayChanged();
         this._themeFontSize = null;
@@ -965,9 +965,11 @@ Panel.prototype = {
     _clearTimers: function() {
         if (this._showTimer) {
             Mainloop.source_remove(this._showTimer);
+            this._showTimer = 0;
         }
         if (this._hideTimer) {
             Mainloop.source_remove(this._hideTimer);
+            this._hideTimer = 0;
         }
     },
     
@@ -1015,6 +1017,8 @@ Panel.prototype = {
     }, 
     
     _showPanel: function() {
+        this._clearTimers();
+
         if (this._disabled) return;
 
         if (!this._hidden) return;
@@ -1064,6 +1068,8 @@ Panel.prototype = {
     },
 
     _hidePanel: function(force) {
+        this._clearTimers();
+
         if ((!this._hideable && !force) || global.menuStackLength > 0 || this.isMouseOverPanel) return;
 
         // Force the panel to be on top (hack to correct issues when switching workspace)

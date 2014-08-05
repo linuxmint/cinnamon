@@ -1,6 +1,6 @@
 // -*- mode: js; js-indent-level: 4; indent-tabs-mode: nil -*-
 
-const DBus = imports.dbus;
+const Gio = imports.gi.Gio;
 const Main = imports.ui.main;
 
 const MAG_SERVICE_NAME = 'org.gnome.Magnifier';
@@ -10,69 +10,107 @@ const ZOOM_SERVICE_PATH = '/org/gnome/Magnifier/ZoomRegion';
 
 // Subset of gnome-mag's Magnifier dbus interface -- to be expanded.  See:
 // http://git.gnome.org/browse/gnome-mag/tree/xml/...Magnifier.xml
-const MagnifierIface = {
-    name: MAG_SERVICE_NAME,
-    methods: [
-                { name: 'setActive', inSignature: 'b', outSignature: '' },
-                { name: 'isActive', inSignature: '', outSignature: 'b' },
-                { name: 'showCursor', inSignature: '', outSignature: '' },
-                { name: 'hideCursor', inSignature: '', outSignature: ''  },
-                { name: 'createZoomRegion', inSignature: 'ddaiai', outSignature: 'o' },
-                { name: 'addZoomRegion', inSignature: 'o', outSignature: 'b' },
-                { name: 'getZoomRegions', inSignature: '', outSignature: 'ao' },
-                { name: 'clearAllZoomRegions', inSignature: '', outSignature: '' },
-                { name: 'fullScreenCapable', inSignature: '', outSignature: 'b' },
-
-                { name: 'setCrosswireSize', inSignature: 'i', outSignature: '' },
-                { name: 'getCrosswireSize', inSignature: '', outSignature: 'i' },
-                { name: 'setCrosswireLength', inSignature: 'i', outSignature: '' },
-                { name: 'getCrosswireLength', inSignature: '', outSignature: 'i' },
-                { name: 'setCrosswireClip', inSignature: 'b', outSignature: '' },
-                { name: 'getCrosswireClip', inSignature: '', outSignature: 'b' },
-                { name: 'setCrosswireColor', inSignature: 'u', outSignature: '' },
-                { name: 'getCrosswireColor', inSignature: '', outSignature: 'u' }
-             ],
-    signals: [],
-    properties: []
-};
+const MagnifierIface =
+    '<node> \
+        <interface name="org.gnome.Magnifier"> \
+            <method name="setActive"> \
+                <arg type="b" direction="in" /> \
+            </method> \
+            <method name="isActive"> \
+                <arg type="b" direction="out" /> \
+            </method> \
+            <method name="showCursor" /> \
+            <method name="hideCursor" /> \
+            <method name="createZoomRegion"> \
+                <arg type="d" direction="in" /> \
+                <arg type="d" direction="in" /> \
+                <arg type="ai" direction="in" /> \
+                <arg type="ai" direction="in" /> \
+                <arg type="o" direction="out" /> \
+            </method> \
+            <method name="addZoomRegion"> \
+                <arg type="o" direction="in" /> \
+                <arg type="b" direction="out" /> \
+            </method> \
+            <method name="getZoomRegions"> \
+                <arg type="ao" direction="out" /> \
+            </method> \
+            <method name="clearAllZoomRegions" /> \
+            <method name="fullScreenCapable"> \
+                <arg type="b" direction="out" /> \
+            </method> \
+            <method name="setCrosswireSize"> \
+                <arg type="i" direction="in" /> \
+            </method> \
+            <method name="getCrosswireSize"> \
+                <arg type="i" direction="out" /> \
+            </method> \
+            <method name="setCrosswireLength"> \
+                <arg type="i" direction="in" /> \
+            </method> \
+            <method name="getCrosswireLength"> \
+                <arg type="i" direction="out" /> \
+            </method> \
+            <method name="setCrosswireClip"> \
+                <arg type="b" direction="in" /> \
+            </method> \
+            <method name="getCrosswireClip"> \
+                <arg type="b" direction="out" /> \
+            </method> \
+            <method name="setCrosswireColor"> \
+                <arg type="u" direction="in" /> \
+            </method> \
+            <method name="getCrosswireColor"> \
+                <arg type="u" direction="out" /> \
+            </method> \
+        </interface> \
+    </node>';
 
 // Subset of gnome-mag's ZoomRegion dbus interface -- to be expanded.  See:
 // http://git.gnome.org/browse/gnome-mag/tree/xml/...ZoomRegion.xml
-const ZoomRegionIface = {
-    name: ZOOM_SERVICE_NAME,
-    methods: [
-                { name: 'setMagFactor', inSignature: 'dd', outSignature: ''},
-                { name: 'getMagFactor', inSignature: '', outSignature: 'dd' },
-                { name: 'setRoi', inSignature: 'ai', outSignature: '' },
-                { name: 'getRoi', inSignature: '', outSignature: 'ai' },
-                { name: 'shiftContentsTo', inSignature: 'ii', outSignature: 'b' },
-                { name: 'moveResize', inSignature: 'ai', outSignature: '' }
-             ],
-    signals: [],
-    properties: []
-};
+const ZoomRegionIface =
+    '<node> \
+        <interface name="org.gnome.Magnifier.ZoomRegion"> \
+            <method name="setMagFactor"> \
+                <arg type="d" direction="in" /> \
+                <arg type="d" direction="in" /> \
+            </method> \
+            <method name="getMagFactor"> \
+                <arg type="d" direction="out" /> \
+                <arg type="d" direction="out" /> \
+            </method> \
+            <method name="setRoi"> \
+                <arg type="ai" direction="in" /> \
+            </method> \
+            <method name="getRoi"> \
+                <arg type="ai" direction="out" /> \
+            </method> \
+            <method name="shiftContentsTo"> \
+                <arg type="i" direction="in" /> \
+                <arg type="i" direction="in" /> \
+                <arg type="b" direction="out" /> \
+            </method> \
+            <method name="moveResize"> \
+                <arg type="ai" direction="in" /> \
+            </method> \
+        </interface> \
+    /node';
 
 // For making unique ZoomRegion DBus proxy object paths of the form:
 // '/org/gnome/Magnifier/ZoomRegion/zoomer0',
 // '/org/gnome/Magnifier/ZoomRegion/zoomer1', etc.
 let _zoomRegionInstanceCount = 0;
 
-function CinnamonMagnifier(start_enabled) {
-    this._init(start_enabled);
+function CinnamonMagnifier() {
+    this._init();
 }
 
 CinnamonMagnifier.prototype = {
-    _init: function(start_enabled) {
+    _init: function() {
         this._zoomers = {};
 
-        this.setEnabled(start_enabled);
-    },
-
-    setEnabled: function(enabled) {
-        if (enabled)
-            DBus.session.exportObject(MAG_SERVICE_PATH, this);
-        else
-            DBus.session.unexportObject(this);
+        this._dbusImpl = Gio.DBusExportedObject.wrapJSObject(MagnifierIface, this);
+        this._dbusImpl.export(Gio.DBus.session, MAG_SERVICE_PATH);
     },
 
     /**
@@ -203,10 +241,10 @@ CinnamonMagnifier.prototype = {
         Main.magnifier.clearAllZoomRegions();
         for (let objectPath in this._zoomers) {
             let proxyAndZoomer = this._zoomers[objectPath];
+            proxyAndZoomer.proxy.destroy();
             proxyAndZoomer.proxy = null;
             proxyAndZoomer.zoomRegion = null;
             delete this._zoomers[objectPath];
-            DBus.session.unexportObject(proxyAndZoomer);
         }
         this._zoomers = {};
     },
@@ -308,8 +346,9 @@ function CinnamonMagnifierZoomRegion(zoomerObjectPath, zoomRegion) {
 CinnamonMagnifierZoomRegion.prototype = {
     _init: function(zoomerObjectPath, zoomRegion) {
         this._zoomRegion = zoomRegion;
-        DBus.session.proxifyObject(this, ZOOM_SERVICE_NAME, zoomerObjectPath);
-        DBus.session.exportObject(zoomerObjectPath, this);
+
+        this._dbusImpl = Gio.DBusExportedObject.wrapJSObject(ZoomRegionIface, this);
+        this._dbusImpl.export(Gio.DBus.session, zoomerObjectPath);
     },
 
     /**
@@ -384,8 +423,9 @@ CinnamonMagnifierZoomRegion.prototype = {
     moveResize: function(viewPort) {
         let viewRect = { x: viewPort[0], y: viewPort[1], width: viewPort[2] - viewPort[0], height: viewPort[3] - viewPort[1] };
         this._zoomRegion.setViewPort(viewRect);
+    },
+
+    destroy: function() {
+        this._dbusImpl.unexport();
     }
 };
-
-DBus.conformExport(CinnamonMagnifier.prototype, MagnifierIface);
-DBus.conformExport(CinnamonMagnifierZoomRegion.prototype, ZoomRegionIface);

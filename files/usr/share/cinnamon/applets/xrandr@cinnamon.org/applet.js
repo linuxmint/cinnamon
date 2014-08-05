@@ -1,6 +1,6 @@
 /* -*- mode: js2; js2-basic-offset: 4; indent-tabs-mode: nil -*- */
 
-const DBus = imports.dbus;
+const Interfaces = imports.misc.interfaces;
 const Gdk = imports.gi.Gdk;
 const GLib = imports.gi.GLib;
 const CinnamonDesktop = imports.gi.CinnamonDesktop;
@@ -22,14 +22,6 @@ let rotations = [ [ CinnamonDesktop.RRRotation.ROTATION_0, N_("Normal") ],
 		  [ CinnamonDesktop.RRRotation.ROTATION_180, N_("Upside-down") ]
 		];
 
-const XRandr2Iface = {
-    name: 'org.cinnamon.SettingsDaemon.XRANDR_2',
-    methods: [
-	{ name: 'ApplyConfiguration', inSignature: 'xx', outSignature: '' },
-    ]
-};
-let XRandr2 = DBus.makeProxyClass(XRandr2Iface);
-
 function MyApplet(orientation, panel_height) {
     this._init(orientation, panel_height);
 }
@@ -46,9 +38,11 @@ MyApplet.prototype = {
             
             this.menuManager = new PopupMenu.PopupMenuManager(this);
             this.menu = new Applet.AppletPopupMenu(this, orientation);
-            this.menuManager.addMenu(this.menu);            
-                                
-            this._proxy = new XRandr2(DBus.session, 'org.cinnamon.SettingsDaemon', '/org/cinnamon/SettingsDaemon/XRANDR');
+            this.menuManager.addMenu(this.menu);
+
+            Interfaces.getDBusProxyAsync("org.cinnamon.SettingsDaemon.XRANDR_2", Lang.bind(this, function(proxy, error) {
+                this._proxy = proxy;
+            }));
 
             try {
                 this._screen = new CinnamonDesktop.RRScreen({ gdk_screen: Gdk.Screen.get_default() });

@@ -146,14 +146,11 @@ MyApplet.prototype = {
             this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
             this.menu.addSettingsAction(_("Power Settings"), 'power');
 
-            this._proxy = Interfaces.getDBusProxy("org.cinnamon.SettingsDaemon.Power",
-                                                  Lang.bind(this, this._devicesChanged));
-
-            this._smProxy = Interfaces.getDBusPropertiesAsync(BUS_NAME, OBJECT_PATH, Lang.bind(this, function(proxy, error) {
-                this._smProxy.connectSignal('PropertiesChanged', Lang.bind(this, this._devicesChanged));
+            Interfaces.getDBusProxyAsync("org.cinnamon.SettingsDaemon.Power", Lang.bind(this, function(proxy, error) {
+                this._proxy = proxy;
+                this._proxy.connect("g-properties-changed", Lang.bind(this, this._devicesChanged));
+                this._devicesChanged();
             }));
-
-            this._devicesChanged();
         }
         catch (e) {
             global.logError(e);
@@ -217,7 +214,7 @@ MyApplet.prototype = {
             if (error) {
                 return;
             }
-            devices = result[0];
+            let devices = result[0];
             let position = 0;
             for (let i = 0; i < devices.length; i++) {
                 let [device_id, device_type] = devices[i];
@@ -247,7 +244,7 @@ MyApplet.prototype = {
     },
 
     _devicesChanged: function() {        
-        icon = this._proxy.Icon;
+        let icon = this._proxy.Icon;
         if (icon) {
             this.set_applet_icon_symbolic_name('battery-missing');
             let gicon = Gio.icon_new_for_string(icon);
@@ -268,7 +265,7 @@ MyApplet.prototype = {
             	this._mainLabel.set_text("");
                 return;
             }
-            devices = results[0];
+            let devices = results[0];
             for (let i = 0; i < devices.length; i++) {
                 let [device_id, device_type, icon, percentage, state, time] = devices[i];
                 if (device_type == UPDeviceType.BATTERY || device_id == this._primaryDeviceId) {

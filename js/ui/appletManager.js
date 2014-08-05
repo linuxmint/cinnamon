@@ -7,7 +7,6 @@ const Cinnamon = imports.gi.Cinnamon;
 const Main = imports.ui.main;
 const Applet = imports.ui.applet;
 const Extension = imports.ui.extension;
-const DBus = imports.dbus;
 
 // Maps uuid -> metadata object
 var appletMeta;

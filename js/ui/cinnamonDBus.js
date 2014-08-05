@@ -1,7 +1,7 @@
 // -*- mode: js; js-indent-level: 4; indent-tabs-mode: nil -*-
 
-const DBus = imports.dbus;
 const Lang = imports.lang;
+const Gio = imports.gi.Gio;
 
 const Config = imports.misc.config;
 const Flashspot = imports.ui.flashspot;
@@ -9,73 +9,63 @@ const Main = imports.ui.main;
 const AppletManager = imports.ui.appletManager;
 const DeskletManager = imports.ui.deskletManager;
 
-const CinnamonIface = {
-    name: 'org.Cinnamon',
-    methods: [{ name: 'Eval',
-                inSignature: 's',
-                outSignature: 'bs'
-              },
-              { name: 'ScreenshotArea',
-                inSignature: 'biiiibs',
-                outSignature: ''
-              },
-              { name: 'ScreenshotWindow',
-                inSignature: 'bbbs',
-                outSignature: ''
-              },
-              { name: 'Screenshot',
-                inSignature: 'bbs',
-                outSignature: ''
-              },
-              {
-                name: 'FlashArea',
-                inSignature: 'iiii',
-                outSignature: ''
-              },
-              {
-                name: 'highlightApplet',
-                inSignature: 'sb',
-                outSignature: ''
-              },
-              {
-                name: 'activateCallback',
-                inSignature: 'ssb',
-                outSignature: ''
-              },
-              {
-                name: 'updateSetting',
-                inSignature: 'ssss',
-                outSignature: ''
-              },
-              {
-                name: 'switchWorkspaceRight',
-                inSignature: '',
-                outSignature: ''
-              },
-              {
-                name: 'switchWorkspaceLeft',
-                inSignature: '',
-                outSignature: ''
-              },
-              {
-                name: 'switchWorkspaceUp',
-                inSignature: '',
-                outSignature: ''
-              },
-              {
-                name: 'switchWorkspaceDown',
-                inSignature: '',
-                outSignature: ''
-              }
-             ],
-    signals: [],
-    properties: [{ name: 'OverviewActive',
-                   signature: 'b',
-                   access: 'readwrite' },
-                 { name: 'CinnamonVersion',
-                   signature: 's',
-                   access: 'read' }]
-};
+const CinnamonIface =
+    '<node> \
+        <interface name="org.Cinnamon"> \
+            <method name="Eval"> \
+                <arg type="s" direction="in" name="script" /> \
+                <arg type="b" direction="out" name="success" /> \
+                <arg type="s" direction="out" name="result" /> \
+            </method> \
+            <method name="ScreenshotArea"> \
+                <arg type="b" direction="in" name="include_cursor"/> \
+                <arg type="i" direction="in" name="x"/> \
+                <arg type="i" direction="in" name="y"/> \
+                <arg type="i" direction="in" name="width"/> \
+                <arg type="i" direction="in" name="height"/> \
+                <arg type="b" direction="in" name="flash"/> \
+                <arg type="s" direction="in" name="filename"/> \
+            </method> \
+            <method name="ScreenshotWindow"> \
+                <arg type="b" direction="in" name="include_frame"/> \
+                <arg type="b" direction="in" name="include_cursor"/> \
+                <arg type="b" direction="in" name="flash"/> \
+                <arg type="s" direction="in" name="filename"/> \
+            </method> \
+            <method name="Screenshot"> \
+                <arg type="b" direction="in" name="include_frame"/> \
+                <arg type="b" direction="in" name="flash"/> \
+                <arg type="s" direction="in" name="filename"/> \
+            </method> \
+            <method name="FlashArea"> \
+                <arg type="i" direction="in" name="x"/> \
+                <arg type="i" direction="in" name="y"/> \
+                <arg type="i" direction="in" name="width"/> \
+                <arg type="i" direction="in" name="height"/> \
+            </method> \
+            <method name="highlightApplet"> \
+                <arg type="s" direction="in" /> \
+                <arg type="b" direction="in" /> \
+            </method> \
+            <method name="activateCallback"> \
+                <arg type="s" direction="in" /> \
+                <arg type="s" direction="in" /> \
+                <arg type="b" direction="in" /> \
+            </method> \
+            <method name="updateSetting"> \
+                <arg type="s" direction="in" /> \
+                <arg type="s" direction="in" /> \
+                <arg type="s" direction="in" /> \
+                <arg type="s" direction="in" /> \
+            </method> \
+            <method name="switchWorkspaceRight" /> \
+            <method name="switchWorkspaceLeft" /> \
+            <method name="switchWorkspaceUp" /> \
+            <method name="switchWorkspaceDown" /> \
+            <property name="OverviewActive" type="b" access="readwrite" /> \
+            <property name="CinnamonVersion" type="s" access="read" /> \
+        </interface> \
+    </node>';
 
 function Cinnamon() {
     this._init();
@@ -83,7 +73,8 @@ function Cinnamon() {
 
 Cinnamon.prototype = {
     _init: function() {
-        DBus.session.exportObject('/org/Cinnamon', this);
+        this._dbusImpl = Gio.DBusExportedObject.wrapJSObject(CinnamonIface, this);
+        this._dbusImpl.export(Gio.DBus.session, '/org/Cinnamon');
     },
 
     /**
@@ -257,8 +248,6 @@ Cinnamon.prototype = {
         Main.expo.toggle();
     },
 
+
     CinnamonVersion: Config.PACKAGE_VERSION
 };
-
-DBus.conformExport(Cinnamon.prototype, CinnamonIface);
-

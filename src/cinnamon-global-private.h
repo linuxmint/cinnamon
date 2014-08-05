@@ -4,7 +4,7 @@
 
 #include "cinnamon-global.h"
 
-#include <cjs/gjs.h>
+#include <gjs/gjs.h>
 
 void _cinnamon_global_init            (const char *first_property_name,
                                     ...);
