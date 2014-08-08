@@ -2,7 +2,7 @@
  "overlay-key" : {
     "type" : "keybinding",
     "description" : "Keyboard shortcut to open and close the menu",
-    "default" : "Super_L"
+    "default" : "Super_L::Super_R"
  },
  "menu-icon-custom" : {
     "type" : "checkbox",
