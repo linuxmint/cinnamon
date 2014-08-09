@@ -4,7 +4,7 @@ from SettingsWidgets import *
 
 class Module:
     def __init__(self, content_box):
-        keywords = _("logging, click, notifications")
+        keywords = _("logging, click")
         sidePage = SidePage(_("General"), "cs-general", keywords, content_box, module=self)
         self.sidePage = sidePage
         self.name = "general"
@@ -29,5 +29,4 @@ class Module:
 
             section = Section(_("Miscellaneous Options"))
             section.add(GSettingsCheckButton(_("Log LookingGlass output to ~/.cinnamon/glass.log (Requires Cinnamon restart)"), "org.cinnamon", "enable-looking-glass-logs", None))
-            section.add(GSettingsCheckButton(_("Display notifications"), "org.cinnamon", "display-notifications", None))
             vbox.add(section)
