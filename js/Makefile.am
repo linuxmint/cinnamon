@@ -57,6 +57,7 @@ nobase_dist_js_DATA = \
 	ui/cinnamonMountOperation.js \
 	ui/notificationDaemon.js \
 	ui/overview.js		\
+    ui/overrides.js \
 	ui/panel.js		\
 	ui/panelMenu.js		\
 	ui/placesManager.js  \

@@ -12,6 +12,7 @@ const GLib = imports.gi.GLib;
 const Gtk = imports.gi.Gtk;
 const Cinnamon = imports.gi.Cinnamon;
 const St = imports.gi.St;
+const Overrides = imports.ui.overrides;
 
 // We can't import cinnamon JS modules yet, because they may have
 // variable initializations, etc, that depend on init() already having
@@ -88,4 +89,6 @@ function init() {
 
     Tweener.init();
     String.prototype.format = Format.format;
+
+    Overrides.init();
 }
