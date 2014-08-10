@@ -1691,6 +1691,7 @@ MessageTray.prototype = {
    },
 
     _showNotificationCompleted: function() {
+        this._notificationTimeoutId = 0;
         if (this._notification.urgency != Urgency.CRITICAL) {
             this._updateNotificationTimeout(NOTIFICATION_TIMEOUT * 1000);
         } else if (AppletManager.get_role_provider_exists(AppletManager.Roles.NOTIFICATIONS)) {

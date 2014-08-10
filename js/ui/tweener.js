@@ -90,8 +90,10 @@ function _resetTweenState(target) {
     if (state) {
         if (state.destroyedId)
             state.actor.disconnect(state.destroyedId);
-        if (state.idleCompletedId)
+        if (state.idleCompletedId) {
             Mainloop.source_remove(state.idleCompletedId);
+            state.idleCompletedId = 0;
+        }
     }
 
     target.__CinnamonTweenerState = {};
@@ -142,6 +144,8 @@ function _idleCompleted(target) {
         if (delegate && delegate.onAnimationComplete)
             delegate.onAnimationComplete();
     }
+
+    state.idleCompletedId = 0;
     return false;
 }
 

@@ -1284,7 +1284,9 @@ ExpoThumbnailsBox.prototype = {
                 }
             };
             thumbnail.actor.connect('destroy', Lang.bind(this, function(actor) {
-                setOverviewTimeout(0, null);
+                setOverviewTimeout(0, function() {
+                    overviewTimeoutId = 0;
+                });
                 this.actor.remove_actor(thumbnail.frame);
                 this.actor.remove_actor(actor);
                 this.actor.remove_actor(thumbnail.title);
@@ -1322,6 +1324,7 @@ ExpoThumbnailsBox.prototype = {
                         if (thumbnail.hovering) {
                             thumbnail.overviewModeOn();
                         }
+                        overviewTimeoutId = 0;
                     });
                 }
             }));
@@ -1337,6 +1340,7 @@ ExpoThumbnailsBox.prototype = {
                         if (!thumbnail.hovering) {
                             thumbnail.overviewModeOff();
                         }
+                        overviewTimeoutId = 0;
                     });
                 }
             }));

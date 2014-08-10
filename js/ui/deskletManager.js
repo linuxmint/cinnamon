@@ -24,7 +24,7 @@ var enabledDeskletDefinitions;
 let userDeskletsDir;
 
 let mouseTrackEnabled = false;
-let mouseTrackTimoutId = null;
+let mouseTrackTimoutId = 0;
 
 const ENABLED_DESKLETS_KEY = 'enabled-desklets';
 const DESKLET_SNAP_KEY = 'desklet-snap';
@@ -57,6 +57,7 @@ function enableMouseTracking(enable) {
         mouseTrackTimoutId = Mainloop.timeout_add(500, checkMouseTracking);
     else if (!enable && mouseTrackTimoutId) {
         Mainloop.source_remove(mouseTrackTimoutId);
+        mouseTrackTimoutId = 0;
         for(let desklet_id in deskletObj) {
             deskletObj[desklet_id]._untrackMouse();
         }

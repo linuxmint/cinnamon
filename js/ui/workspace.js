@@ -1106,6 +1106,7 @@ WorkspaceMonitor.prototype = {
 
         this.positionWindows(WindowPositionFlags.ANIMATE);
         this._myWorkspace.emit('focus-refresh-required');
+        this._repositionWindowsId = 0;
         return false;
     },
 
@@ -1346,8 +1347,10 @@ WorkspaceMonitor.prototype = {
         global.screen.disconnect(this._windowEnteredMonitorId);
         global.screen.disconnect(this._windowLeftMonitorId);
 
-        if (this._repositionWindowsId > 0)
+        if (this._repositionWindowsId > 0) {
             Mainloop.source_remove(this._repositionWindowsId);
+            this._repositionWindowsId = 0;
+        }
 
         // Usually, the windows will be destroyed automatically with
         // their parent (this.actor), but we might have a zoomed window
