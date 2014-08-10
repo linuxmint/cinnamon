@@ -26,7 +26,7 @@ typedef struct {
   guint  last_gc_seconds_ago;
 } CinnamonJSMemoryInfo;
 
-void cinnamon_js_get_memory_info (gpointer             *pointer,
+void cinnamon_js_get_memory_info (gpointer              ptr,
                                   gint64                last_gc,
                                   CinnamonJSMemoryInfo *meminfo);
 

@@ -693,7 +693,7 @@ Memory.prototype = {
     _renderText: function() {
         if (!this.actor.mapped)
             return;
-        let memInfo = CinnamonJS.get_memory_info();
+        let memInfo = global.get_memory_info();
         this._glibc_uordblks.text = 'glibc_uordblks: ' + memInfo.glibc_uordblks;
         this._js_bytes.text = 'js bytes: ' + memInfo.js_bytes;
         this._gjs_boxed.text = 'gjs_boxed: ' + memInfo.gjs_boxed;
@@ -1029,14 +1029,14 @@ LookingGlass.prototype = {
             memory allocation, so we grab the timestamp first.
         */
         let ts = new Date().getTime();
-        let memInfo = CinnamonJS.get_memory_info();
+        let memInfo = global.get_memory_info();
         
         try {
             resultObj = eval(fullCmd);
         } catch (e) {
             resultObj = '<exception ' + e + '>';
         }
-        let memInfo2 = CinnamonJS.get_memory_info();
+        let memInfo2 = global.get_memory_info();
         let ts2 = new Date().getTime();
 
         this._pushResult(command, resultObj);

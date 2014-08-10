@@ -4,6 +4,7 @@ const Gio = imports.gi.Gio;
 const Main = imports.ui.main;
 const Extension = imports.ui.extension;
 const CinnamonJS = imports.gi.CinnamonJS;
+const System = imports.system;
 
 const LG_SERVICE_NAME = 'org.Cinnamon.LookingGlass';
 const LG_SERVICE_PATH = '/org/Cinnamon/LookingGlass';
@@ -86,7 +87,7 @@ CinnamonLookingGlass.prototype = {
     },
     
     GetMemoryInfo: function() {
-        let memInfo = CinnamonJS.get_memory_info();
+        let memInfo = global.get_memory_info();
         let result = [
             true,
             memInfo.last_gc_seconds_ago,
@@ -103,7 +104,7 @@ CinnamonLookingGlass.prototype = {
     },
     
     FullGc: function() {
-        global.gc();
+        System.gc();
     },
     
     Inspect: function(path) {

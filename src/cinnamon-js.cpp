@@ -81,18 +81,19 @@ cinnamon_js_add_extension_importer (const char  *target_object_script,
 }
 
 /**
- * cinnamon_js_get_memory_info:
- * @pointer: the #GjsContext from global
+ * cinnamon_js_get_memory_info: (skip)
+ * @ptr: pointer to GjsContext from global
  * @last_gc: The last garbage collection time (passed from global)
  * @meminfo: (out caller-allocates): Output location for memory information
  *
  * Load process-global data about memory usage.
  */
-void cinnamon_js_get_memory_info (gpointer              pointer,
-                                  gint64                last_gc,
-                                  CinnamonJSMemoryInfo *meminfo)
+void
+cinnamon_js_get_memory_info (gpointer              ptr,
+                             gint64                last_gc,
+                             CinnamonJSMemoryInfo *meminfo)
 {
-  GjsContext *gjs_context = GJS_CONTEXT (pointer);
+  GjsContext *gjs_context = GJS_CONTEXT (ptr);
   JSContext *context;
 
   gint64 now;

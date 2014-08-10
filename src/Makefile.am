@@ -121,7 +121,8 @@ cinnamon_public_headers_h =		\
 	cinnamon-util.h			\
 	cinnamon-window-tracker.h		\
 	cinnamon-wm.h			\
-	cinnamon-xfixes-cursor.h
+	cinnamon-xfixes-cursor.h \
+    cinnamon-js.h
 
 libcinnamon_la_SOURCES =		\
 	$(cinnamon_built_sources)		\
@@ -155,7 +156,8 @@ libcinnamon_la_SOURCES =		\
 	cinnamon-util.c			\
 	cinnamon-window-tracker.c		\
 	cinnamon-wm.c			\
-	cinnamon-xfixes-cursor.c
+	cinnamon-xfixes-cursor.c \
+    cinnamon-js.cpp
 
 libcinnamon_la_gir_sources = \
 	$(filter-out %-private.h $(cinnamon_recorder_non_gir_sources), $(cinnamon_public_headers_h) $(libcinnamon_la_SOURCES))
@@ -163,7 +165,7 @@ libcinnamon_la_gir_sources = \
 cinnamon_real_SOURCES =		\
 	main.c
 cinnamon_real_CPPFLAGS = $(cinnamon_cflags)
-cinnamon_real_LDADD = libcinnamon.la $(libcinnamon_la_LIBADD)
+cinnamon_real_LDADD = libcinnamon.la libcinnamon-js.la $(libcinnamon_la_LIBADD)
 cinnamon_real_DEPENDENCIES = libcinnamon.la
 
 ########################################

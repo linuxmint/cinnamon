@@ -31,6 +31,7 @@
 #include "cinnamon-perf-log.h"
 #include "cinnamon-window-tracker.h"
 #include "cinnamon-wm.h"
+#include "cinnamon-js.h"
 #include "st.h"
 
 static CinnamonGlobal *the_object = NULL;
@@ -1061,6 +1062,19 @@ _cinnamon_global_set_plugin (CinnamonGlobal *global,
   update_scale_factor (gtk_settings_get_default (), NULL, global);
 }
 
+/**
+ * cinnamon_global_get_memory_info:
+ * @global: A #CinnamonGlobal
+ * @meminfo: (out caller-allocates): Output location for memory information
+ *
+ * Return value: (transfer none): a generic pointer to the GjsContext
+ */
+void
+cinnamon_global_get_memory_info (CinnamonGlobal *global, CinnamonJSMemoryInfo *meminfo)
+{
+  cinnamon_js_get_memory_info (global->js_context, global->last_gc_end_time, meminfo);
+}
+
 GjsContext *
 _cinnamon_global_get_gjs_context (CinnamonGlobal *global)
 {
@@ -1323,6 +1337,18 @@ grab_notify (GtkWidget *widget, gboolean was_grabbed, gpointer user_data)
 
   /* Update for the new setting of gtk_grab_active */
   cinnamon_global_set_stage_input_mode (global, global->input_mode);
+}
+
+/**
+ * cinnamon_global_get_last_gc_end_time:
+ * @global: A #CinnamonGlobal
+ *
+ * Returns: The timestamp of the last js garbage collection.
+ */
+gint64
+cinnamon_global_get_last_gc_end_time (CinnamonGlobal *global)
+{
+    return global->last_gc_end_time;
 }
 
 /**
