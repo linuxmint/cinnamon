@@ -268,10 +268,8 @@ cinnamon_global_init (CinnamonGlobal *global)
   search_path = g_strsplit (cinnamon_js, ":", -1);
   global->js_context = g_object_new (GJS_TYPE_CONTEXT,
                                      "search-path", search_path,
-                                     "js-version", "1.8",
-                                     "gc-notifications", TRUE,
                                      NULL);
-  g_signal_connect (global->js_context, "gc", G_CALLBACK (cinnamon_global_on_gc), global);
+  // g_signal_connect (global->js_context, "gc", G_CALLBACK (cinnamon_global_on_gc), global);
 
   g_strfreev (search_path);
 }
@@ -1073,6 +1071,18 @@ void
 cinnamon_global_get_memory_info (CinnamonGlobal *global, CinnamonJSMemoryInfo *meminfo)
 {
   cinnamon_js_get_memory_info (global->js_context, global->last_gc_end_time, meminfo);
+}
+
+/**
+ * cinnamon_global_dump_gjs_stack:
+ * @global: A #CinnamonGlobal
+ *
+ * Prints out the gjs stack
+ */
+void
+cinnamon_global_dump_gjs_stack (CinnamonGlobal *global)
+{
+  gjs_dumpstack ();
 }
 
 GjsContext *
