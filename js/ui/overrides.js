@@ -2,9 +2,12 @@
 
 const Gio = imports.gi.Gio
 const Lang = imports.lang;
+const Mainloop = imports.mainloop;
+const GLib = imports.gi.GLib;
 
 function init() {
     overrideGio();
+    overrideMainloop();
 }
 
 function key_exists (obj, key) {
@@ -67,4 +70,15 @@ function overrideGio() {
     Gio.Settings.prototype.set_enum     = function(key, val) { return check_key_and_set(this, Gio._real_set_enum, key, val); }
     Gio.Settings.prototype.get_flags    = function(key)      { return check_key_and_get(this, Gio._real_get_flags, key); }
     Gio.Settings.prototype.set_flags    = function(key, val) { return check_key_and_set(this, Gio._real_set_flags, key, val); }
+}
+
+function overrideMainloop() {
+    Mainloop.__real_source_remove = Mainloop.source_remove;
+
+    Mainloop.source_remove = function (id) {
+        let dump = GLib.MainContext.default().find_source_by_id(id) == null;
+        Mainloop.__real_source_remove(id);
+        if (dump)
+            global.dump_gjs_stack();
+    }
 }
