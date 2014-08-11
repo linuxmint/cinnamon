@@ -26,7 +26,6 @@
 
 #include "cinnamon-enum-types.h"
 #include "cinnamon-global-private.h"
-#include "cinnamon-jsapi-compat-private.h"
 #include "cinnamon-marshal.h"
 #include "cinnamon-perf-log.h"
 #include "cinnamon-window-tracker.h"

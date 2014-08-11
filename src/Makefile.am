@@ -131,7 +131,6 @@ libcinnamon_la_SOURCES =		\
 	cinnamon-app-system-private.h	\
 	cinnamon-embedded-window-private.h	\
 	cinnamon-global-private.h		\
-	cinnamon-jsapi-compat-private.h	\
 	cinnamon-window-tracker-private.h	\
 	cinnamon-wm-private.h		\
 	cinnamon-plugin.c		\
