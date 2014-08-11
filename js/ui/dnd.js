@@ -285,6 +285,8 @@ _Draggable.prototype = {
                         // _dragComplete is not always called by _cancelDrag.
                         this._dragComplete();
                     }
+                    this._dragEventTimeoutId = 0;
+                    return false;
                 }));
         }
     },
