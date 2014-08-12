@@ -17,11 +17,11 @@ BackgroundManager.prototype = {
         this._string_keys = ["color-shading-type", "picture-options", "picture-uri", "primary-color", "secondary-color"];
         this._int_keys = ["picture-opacity"];
 
-        let schema = Gio.SettingsSchemaSource.get_default();
-        if (schema.lookup("org.gnome.desktop.background", true)) {
-            this._gnomeSettings = new Gio.Settings({ schema: 'org.gnome.desktop.background' });
-            this._changedId = this._gnomeSettings.connect('changed', Lang.bind(this, this._onGnomeSettingsChanged));
-        }
+        // The GNOME background is set when the user presses "Set as Wallpaper" in EOG, Firefox and a few other apps
+        // So we listen to the GNOME background key and set the Cinnamon background appropriately when it is changed.
+        // We also use a timeout here because gsettings is super-dodgy at session-startup, it basically fires "changed" signals
+        // on keys which values haven't changed.
+        Mainloop.timeout_add_seconds(10, Lang.bind(this, this.listen_to_gnome_bg_changes));
 
         this._cinnamonSettings = new Gio.Settings({ schema: 'org.cinnamon.desktop.background' }); 
 
@@ -35,6 +35,14 @@ BackgroundManager.prototype = {
 
         this.bg.load_from_preferences(this._cinnamonSettings);
         this.draw_background();
+    },
+
+    listen_to_gnome_bg_changes: function() {
+        let schema = Gio.SettingsSchemaSource.get_default();
+        if (schema.lookup("org.gnome.desktop.background", true)) {
+            this._gnomeSettings = new Gio.Settings({ schema: 'org.gnome.desktop.background' });
+            this._changedId = this._gnomeSettings.connect('changed', Lang.bind(this, this._onGnomeSettingsChanged));            
+        }
     },
 
     draw_background: function() {
