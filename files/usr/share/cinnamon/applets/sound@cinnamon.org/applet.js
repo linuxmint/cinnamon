@@ -324,7 +324,7 @@ Player.prototype = {
         this._wantedSeekValue = 0;
         this._updatePositionSlider();
 
-        this._mediaServerPlayerId = this._mediaServerPlayer.connectSignal('Seeked', Lang.bind(this, function(sender, value) {
+        this._mediaServerPlayerId = this._mediaServerPlayer.connectSignal('Seeked', Lang.bind(this, function(id, sender, value) {
             if (value > 0) {
                 this._setPosition(value);
             }
@@ -538,7 +538,8 @@ Player.prototype = {
             else
                 this._positionSlider.setValue(0);
         }
-        this._time.setLabel(this._formatTime(this._currentTime) + " / " + this._formatTime(this._songLength));
+        if (!this._seeking)
+            this._time.setLabel(this._formatTime(this._currentTime) + " / " + this._formatTime(this._songLength));
     },
 
     _runTimerCallback: function() {
@@ -917,11 +918,12 @@ MyApplet.prototype = {
         if (this._nbPlayers()>0) {
             if (this._iconTimeoutId) {
                 Mainloop.source_remove(this._iconTimeoutId);
+                this._iconTimeoutId = 0;
             }
             this._iconTimeoutId = Mainloop.timeout_add(3000, Lang.bind(this, function() {
                 if (this._nbPlayers() == 0)
                     return false;
-                this._iconTimeoutId = null;
+                this._iconTimeoutId = 0;
                 if (this['_output'].is_muted) {
                     this.set_applet_icon_symbolic_name('audio-volume-muted');
                 } else if (this.showalbum) {

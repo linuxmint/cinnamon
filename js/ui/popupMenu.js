@@ -635,6 +635,7 @@ PopupSliderMenuItem.prototype = {
         if (this._dragging) // don't allow two drags at the same time
             return;
 
+        this.emit('drag-begin');
         this._dragging = true;
 
         // FIXME: we should only grab the specific device that originated
