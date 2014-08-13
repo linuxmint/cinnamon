@@ -976,10 +976,7 @@ MyApplet.prototype = {
     },
     
     on_applet_clicked: function(event) {
-       // let t = new Date().getTime();
         this.menu.toggle_with_options(false);
-       // let f = new Date().getTime();
-       // log("time is: " + (f - t).toString());
     },
            
     _onSourceKeyPress: function(actor, event) {
@@ -1295,6 +1292,7 @@ MyApplet.prototype = {
     maybeUpdateVectorBox: function() {
         if (this.vector_update_loop) {
             Mainloop.source_remove(this.vector_update_loop);
+            this.vector_update_loop = 0;
         }
         this.vector_update_loop = Mainloop.timeout_add(35, Lang.bind(this, this.updateVectorBox));
     },
@@ -1316,9 +1314,7 @@ MyApplet.prototype = {
                 this.destroyVectorBox(actor);
             }
         }
-        if (this.vector_update_loop) {
-            this.vector_update_loop = null;
-        }
+        this.vector_update_loop = 0;
         return false;
     },
 
@@ -1331,10 +1327,6 @@ MyApplet.prototype = {
             this.current_motion_actor.disconnect(this.actor_motion_id);
             this.actor_motion_id = 0;
             this.current_motion_actor = null;
-        }
-        if (this.vector_update_loop) {
-            Mainloop.source_remove(this.vector_update_loop);
-            this.vector_update_loop = null;
         }
     },
 
