@@ -5,7 +5,7 @@
 #include "cinnamon-js.h"
 
 #include <gio/gio.h>
-#include <gjs/gjs-module.h>
+#include <cjs/gjs-module.h>
 
 /* Memory report bits */
 #ifdef HAVE_MALLINFO

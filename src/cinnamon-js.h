@@ -3,7 +3,7 @@
 #define __CINNAMON_JS_H__
 
 #include <glib.h>
-#include <gjs/gjs.h>
+#include <cjs/gjs.h>
 
 G_BEGIN_DECLS
 

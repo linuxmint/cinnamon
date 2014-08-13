@@ -1,6 +1,6 @@
 /* -*- mode: C; c-file-style: "gnu"; indent-tabs-mode: nil; -*- */
 /*
- * Based on gjs/console.c from GJS
+ * Based on cjs/console.c from GJS
  *
  * Copyright (c) 2008  litl, LLC
  * Copyright (c) 2010  Red Hat, Inc.
@@ -33,7 +33,7 @@
 #include <clutter/x11/clutter-x11.h>
 #include <gdk/gdkx.h>
 #include <girepository.h>
-#include <gjs/gjs.h>
+#include <cjs/gjs.h>
 #include <gtk/gtk.h>
 
 #include "cinnamon-global.h"

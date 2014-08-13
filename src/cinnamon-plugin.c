@@ -35,7 +35,7 @@
 #include <GL/glx.h>
 #include <GL/glxext.h>
 #endif
-#include <gjs/gjs.h>
+#include <cjs/gjs.h>
 #include <meta/display.h>
 #include <meta/meta-plugin.h>
 
