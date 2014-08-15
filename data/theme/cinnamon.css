@@ -1433,7 +1433,6 @@ StScrollBar StButton#vhandle:hover {
 	font-weight: bold;
 	color: #ccc;		
 }
-.applet-label:hover,
 .applet-box:hover > .applet-label {
 	color: #fff;
 	text-shadow: white 0px 0px 5px;
@@ -1442,8 +1441,7 @@ StScrollBar StButton#vhandle:hover {
 	color: #ccc;
 	icon-size: 22px;
 }
-.applet-icon:hover,
-.applet-box:hover > .applet-icon {
+.applet-box:hover .applet-icon {
 	color: #fff;
 	icon-shadow: white 0px 0px 3px;
 }
