@@ -1283,15 +1283,15 @@ function Melange() {
 
 Melange.prototype = {
     _init: function() {
-        Gio.bus_watch_name(Gio.BusType.SESSION,
-                           "org.Cinnamon.Melange",
-                           Gio.BusNameWatcherFlags.NONE,
-                           Lang.bind(this, this._melange_found),
-                           Lang.bind(this, this._melange_lost));
         this.proxy = null;
         this._open = false;
-        let settings = new Gio.Settings({schema: "org.cinnamon.desktop.keybindings"});
-        let kb = settings.get_strv("looking-glass-keybinding");
+        this._settings = new Gio.Settings({schema: "org.cinnamon.desktop.keybindings"});
+        this._settings.connect("changed::looking-glass-keybinding", Lang.bind(this, this._update_keybinding));
+        this._update_keybinding();
+    },
+
+    _update_keybinding: function() {
+        let kb = this._settings.get_strv("looking-glass-keybinding");
         Main.keybindingManager.addHotKeyArray("looking-glass-toggle", kb, Lang.bind(this, this._key_callback));
     },
 
@@ -1314,16 +1314,6 @@ Melange.prototype = {
         this.ensureProxy()
         this.proxy.hideRemote();
         this.updateVisible();
-    },
-
-    _melange_found: function() {
-        this.ensureProxy();
-        this.updateVisible();
-    },
-
-    _melange_lost: function() {
-        this.ensureProxy();
-        this._open = false;
     },
 
     updateVisible: function() {

@@ -38,7 +38,6 @@ class LookingGlassProxy:
         if self._proxy:
             return
         self._initProxy()
-        self._setStatus(True)
 
     def _onDisconnect(self, connection, name):
         self._proxy = None
@@ -55,6 +54,7 @@ class LookingGlassProxy:
     def _onProxyReady(self, object, result, data=None):
         self._proxy = Gio.DBusProxy.new_for_bus_finish(result)
         self._proxy.connect("g-signal", self._onSignal)
+        self._setStatus(True)
 
 # Proxy Methods:
     def Eval(self, code):
