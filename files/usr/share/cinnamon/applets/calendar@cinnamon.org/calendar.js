@@ -118,14 +118,14 @@ function _getCalendarDayAbbreviation(dayNumber) {
     // We use 2014/03/02 (months are zero-based in JS) because it was a Sunday
 
     let abbreviations = [
-        new Date(2014, 2, 2).toLocaleFormat('%A').first_cap(),        
-        new Date(2014, 2, 3).toLocaleFormat('%A').first_cap(),
-        new Date(2014, 2, 4).toLocaleFormat('%A').first_cap(),
-        new Date(2014, 2, 5).toLocaleFormat('%A').first_cap(),
-        new Date(2014, 2, 6).toLocaleFormat('%A').first_cap(),
-        new Date(2014, 2, 7).toLocaleFormat('%A').first_cap(),
-        new Date(2014, 2, 8).toLocaleFormat('%A').first_cap()
-    ];  
+        new Date(2014, 2, 2).toLocaleFormat('%a'),
+        new Date(2014, 2, 3).toLocaleFormat('%a'),
+        new Date(2014, 2, 4).toLocaleFormat('%a'),
+        new Date(2014, 2, 5).toLocaleFormat('%a'),
+        new Date(2014, 2, 6).toLocaleFormat('%a'),
+        new Date(2014, 2, 7).toLocaleFormat('%a'),
+        new Date(2014, 2, 8).toLocaleFormat('%a')
+    ];
 
     return abbreviations[dayNumber];
 }
