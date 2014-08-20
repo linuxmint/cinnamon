@@ -76,6 +76,8 @@ KEYBINDINGS = [
     [_("Toggle maximization state"), MUFFIN_KEYBINDINGS_SCHEMA, "toggle-maximized", "windows"],
     [_("Toggle fullscreen state"), MUFFIN_KEYBINDINGS_SCHEMA, "toggle-fullscreen", "windows"],
     [_("Toggle shaded state"), MUFFIN_KEYBINDINGS_SCHEMA, "toggle-shaded", "windows"],
+    [_("Toggle always on top"), MUFFIN_KEYBINDINGS_SCHEMA, "toggle-above", "windows"],
+    [_("Toggle showing window on all workspaces"), MUFFIN_KEYBINDINGS_SCHEMA, "toggle-on-all-workspaces", "windows"],
     [_("Increase opacity"), MUFFIN_KEYBINDINGS_SCHEMA, "increase-opacity", "windows"],
     [_("Decrease opacity"), MUFFIN_KEYBINDINGS_SCHEMA, "decrease-opacity", "windows"],
     [_("Maximize vertically"), MUFFIN_KEYBINDINGS_SCHEMA, "maximize-vertically", "windows"],
@@ -102,7 +104,6 @@ KEYBINDINGS = [
     [_("Push snap up"), MUFFIN_KEYBINDINGS_SCHEMA, "push-snap-up", "win-tiling"],
     [_("Push snap down"), MUFFIN_KEYBINDINGS_SCHEMA, "push-snap-down", "win-tiling"],
     # Windows - Workspace-related
-    [_("Toggle showing window on all workspaces"), MUFFIN_KEYBINDINGS_SCHEMA, "toggle-on-all-workspaces", "win-workspaces"],
     [_("Move window to left workspace"), MUFFIN_KEYBINDINGS_SCHEMA, "move-to-workspace-left", "win-workspaces"],
     [_("Move window to right workspace"), MUFFIN_KEYBINDINGS_SCHEMA, "move-to-workspace-right", "win-workspaces"],
     [_("Move window to workspace 1"), MUFFIN_KEYBINDINGS_SCHEMA, "move-to-workspace-1", "win-workspaces"],
