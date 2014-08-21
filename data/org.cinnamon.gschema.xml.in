@@ -63,6 +63,14 @@
       <_description>If desklet-snap is enabled, the possible positions of desklets will be all integer multiples of the value of "desklet-snap-size"</_description>
     </key>
 
+    <key name="locked-desklets" type="as">
+      <default>[]</default>
+      <_summary>Uuids of locked desklets</_summary>
+      <_description>
+        If a desklet's uuid is listed in this array, it is considered locked and therefore cannot be repositioned through drag-and-drop operations.
+      </_description>
+    </key>
+
     <key name="panel-autohide" type="b">
       <default>false</default>
       <_summary>Auto-hide panel</_summary>
@@ -861,8 +869,8 @@
       <default>[]</default>
       <_summary>Desktop files of the applications to be shown on desktop</_summary>
       <_description>
-	The "launchers" desklet provides a method to show a launcher on the desktop
-	This list maps the desklet id to the desktop file of application.
+        The "launchers" desklet provides a method to show a launcher on the desktop
+        This list maps the desklet id to the desktop file of application.
       </_description>
     </key>
   </schema>

@@ -46,8 +46,11 @@ Desklet.prototype = {
     _init: function(metadata, desklet_id){
         this.metadata = metadata;
         this.instance_id = desklet_id;
-        this.actor = new St.BoxLayout({reactive: true, track_hover: true, vertical: true});
-
+        this.actor = new St.BoxLayout({
+            reactive: true,
+            track_hover: true,
+            vertical: true
+        });
         this._header = new St.Bin({style_class: 'desklet-header'});
         this._header_label = new St.Label();
         this._header_label.set_text('Desklet');
@@ -59,7 +62,8 @@ Desklet.prototype = {
         this.actor.add_actor(this.content);
 
         this._updateDecoration();
-        global.settings.connect('changed::desklet-decorations', Lang.bind(this, this._updateDecoration));
+        global.settings.connect('changed::desklet-decorations',
+                                Lang.bind(this, this._updateDecoration));
 
         this._menu = new PopupMenu.PopupMenu(this.actor, 0.0, St.Side.LEFT, 0);
         this._menuManager = new PopupMenu.PopupMenuManager(this);
@@ -67,7 +71,20 @@ Desklet.prototype = {
         Main.uiGroup.add_actor(this._menu.actor);
         this._menu.actor.hide();
 
-        this.actor.connect('button-press-event', Lang.bind(this, this._onButtonPressEvent));
+        let uuid = metadata['uuid'];
+        let lockedState = DeskletManager.getDeskletLockedState(uuid);
+        this._lockSwitch = new PopupMenu.PopupSwitchMenuItem(
+            _('Lock desklet'), lockedState);
+        this._menu.addMenuItem(this._lockSwitch);
+        this._lockSwitch.connect('toggled', function() {
+            DeskletManager.toggleDeskletLockedState(uuid);
+        });
+        this.setLockedState(lockedState);
+        this._menu.addAction(_("Remove this desklet"),
+                             Lang.bind(this, this._onRemoveDesklet));
+
+        this.actor.connect('button-press-event', 
+                           Lang.bind(this, this._onButtonPressEvent));
 
         this._uuid = null;
         this._dragging = false;
@@ -85,6 +102,16 @@ Desklet.prototype = {
         this._drag_end_ids["drag-cancelled"] = this._draggable.connect('drag-cancelled', Lang.bind(this, function() {
             Main.popModal(this.actor, global.get_current_time());
         }));
+    },
+
+    /**
+     * setLockedState:
+     * @state (boolean): the new locked state of the desklet
+     *
+     * Sets the desklet's locked state to @state
+     */
+    setLockedState: function(state) {
+        this._draggable.inhibit = state;
     },
 
     /**

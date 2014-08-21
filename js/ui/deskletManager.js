@@ -29,6 +29,8 @@ let mouseTrackTimoutId = 0;
 const ENABLED_DESKLETS_KEY = 'enabled-desklets';
 const DESKLET_SNAP_KEY = 'desklet-snap';
 const DESKLET_SNAP_INTERVAL_KEY = 'desklet-snap-interval';
+const LOCKED_DESKLETS_KEY = 'locked-desklets';
+
 /**
  * init:
  *
@@ -45,9 +47,14 @@ function init(){
             hasDesklets = true;
     }
 
-    global.settings.connect('changed::' + ENABLED_DESKLETS_KEY, _onEnabledDeskletsChanged);
-    global.settings.connect('changed::' + DESKLET_SNAP_KEY, _onDeskletSnapChanged);
-    global.settings.connect('changed::' + DESKLET_SNAP_INTERVAL_KEY, _onDeskletSnapChanged);
+    global.settings.connect('changed::' + ENABLED_DESKLETS_KEY,
+                            _onEnabledDeskletsChanged);
+    global.settings.connect('changed::' + DESKLET_SNAP_KEY,
+                            _onDeskletSnapChanged);
+    global.settings.connect('changed::' + DESKLET_SNAP_INTERVAL_KEY,
+                            _onDeskletSnapChanged);
+    global.settings.connect('changed::' + LOCKED_DESKLETS_KEY,
+                            _onLockedDeskletsChanged);
     
     enableMouseTracking(true);
 }
@@ -94,6 +101,8 @@ function checkMouseTracking() {
  * Disable and remove the desklet @uuid:@desklet_id
  */
 function removeDesklet(uuid, desklet_id){
+    _unlockDesklet(uuid);
+
     let list = global.settings.get_strv(ENABLED_DESKLETS_KEY);
     for (let i = 0; i < list.length; i++){
         let definition = list[i];
@@ -340,6 +349,41 @@ function _onDeskletSnapChanged(){
 
     global.settings.set_strv(ENABLED_DESKLETS_KEY, enabledDesklets);
     return;
+}
+
+function _lockDesklet(uuid) {
+    if (getDeskletLockedState(uuid))
+        return;
+    let lockedDesklets = global.settings.get_strv(LOCKED_DESKLETS_KEY);
+    lockedDesklets.push(uuid);
+    global.settings.set_strv(LOCKED_DESKLETS_KEY, lockedDesklets);
+}
+
+function _unlockDesklet(uuid) {
+    if (!getDeskletLockedState(uuid))
+        return;
+    let lockedDesklets = global.settings.get_strv(LOCKED_DESKLETS_KEY);
+    lockedDesklets.splice(lockedDesklets.indexOf(uuid), 1);
+    global.settings.set_strv(LOCKED_DESKLETS_KEY, lockedDesklets);
+}
+
+function getDeskletLockedState(uuid) {
+    let lockedDesklets = global.settings.get_strv(LOCKED_DESKLETS_KEY);
+    return lockedDesklets.indexOf(uuid) !== -1;
+}
+
+function toggleDeskletLockedState(uuid) {
+    if (getDeskletLockedState(uuid))
+        _unlockDesklet(uuid);
+    else
+        _lockDesklet(uuid);
+}
+
+function _onLockedDeskletsChanged() {
+    // Inform the desklets about the new locked state.
+    let lockedDesklets = global.settings.get_strv(LOCKED_DESKLETS_KEY);
+    for (let uuid in enabledDeskletDefinitions.uuidMap) 
+        deskletObj[uuid].setLockedState(lockedDesklets.indexOf(uuid) !== -1);
 }
 
 /**
