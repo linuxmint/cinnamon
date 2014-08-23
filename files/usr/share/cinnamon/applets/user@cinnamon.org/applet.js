@@ -14,6 +14,7 @@ const Main = imports.ui.main;
 const Panel = imports.ui.panel;
 const Settings = imports.ui.settings;
 
+let perfered_name = "";
 
 function MyApplet(orientation, instance_id) {
     this._init(orientation, instance_id);
@@ -34,15 +35,17 @@ MyApplet.prototype = {
                     
             this.menuManager = new PopupMenu.PopupMenuManager(this);
             this.menu = new Applet.AppletPopupMenu(this, orientation);
-            this.menuManager.addMenu(this.menu);                                                                    
+            this.menuManager.addMenu(this.menu);
             this._contentSection = new PopupMenu.PopupMenuSection();
-            this.menu.addMenuItem(this._contentSection);      
+            this.menu.addMenuItem(this._contentSection);
             
             let userBox = new St.BoxLayout({ style_class: 'user-box', reactive: true, vertical: false });
 
             this._userIcon = new St.Bin({ style_class: 'user-icon'});
             
+            this.settings.bindProperty(Settings.BindingDirection.IN, "name-toggle", "name_toggle", this._updatePerferedName, null);
             this.settings.bindProperty(Settings.BindingDirection.IN, "display-name", "disp_name", this._updateLabel, null);
+            this.settings.bindProperty(Settings.BindingDirection.IN, "show-image", "disp_icon", this._onUserChanged, null);
 
             userBox.connect('button-press-event', Lang.bind(this, function() {
                 this.menu.toggle();
@@ -60,7 +63,7 @@ MyApplet.prototype = {
                         { x_fill:  true,
                           y_fill:  false,
                           x_align: St.Align.END,
-                          y_align: St.Align.MIDDLE });    
+                          y_align: St.Align.MIDDLE });
 
             this.menu.addActor(userBox);
 
@@ -141,6 +144,7 @@ MyApplet.prototype = {
             }));
 
             this._user = AccountsService.UserManager.get_default().get_user(GLib.get_user_name());
+            perfered_name = this._user.get_real_name();
             this._userLoadedId = this._user.connect('notify::is_loaded', Lang.bind(this, this._onUserChanged));
             this._userChangedId = this._user.connect('changed', Lang.bind(this, this._onUserChanged));
             this._onUserChanged();
@@ -153,24 +157,42 @@ MyApplet.prototype = {
 
     on_applet_clicked: function(event) {
         this.menu.toggle();        
-    }, 
+    },
+    
+    _updatePerferedName: function() {
+        if (this.name_toggle) {
+            perfered_name = this._user.get_user_name();
+        }
+        else {
+            perfered_name = this._user.get_real_name();
+        }
+        this._updateLabel();
+        this.userLabel.set_text (perfered_name);
+    },
     
     _updateLabel: function() {
         if (this.disp_name) {
-            this.set_applet_label(this._user.get_real_name());
+            this.set_applet_label(perfered_name);
         } else {
             this.set_applet_label("");
         }
     },
 
     _onUserChanged: function() {
+        this._updatePerferedName();
         if (this._user.is_loaded) {
             this.set_applet_tooltip(this._user.get_real_name());   
-            this.userLabel.set_text (this._user.get_real_name());
+            this.userLabel.set_text (perfered_name);
             if (this._userIcon) {
                 let iconFileName = this._user.get_icon_file();
                 let iconFile = Gio.file_new_for_path(iconFileName);
                 let icon;
+                if (this.disp_icon && iconFile.query_exists(null)) {
+                    this.set_applet_icon_path(iconFileName);
+                }
+                else {
+                    this.set_applet_icon_symbolic_name("avatar-default");
+                }
                 if (iconFile.query_exists(null)) {
                     icon = new Gio.FileIcon({file: iconFile});
                 } else {
@@ -178,7 +200,7 @@ MyApplet.prototype = {
                 }
                 let img = St.TextureCache.get_default().load_gicon(null, icon, 48);
                 this._userIcon.set_child (img);
-                this._userIcon.show();               
+                this._userIcon.show();
             }
             this._updateLabel();
         }
