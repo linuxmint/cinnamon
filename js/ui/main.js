@@ -49,6 +49,7 @@ const PointerTracker = imports.misc.pointerTracker;
 
 const SoundManager = imports.ui.soundManager;
 const BackgroundManager = imports.ui.backgroundManager;
+const SlideshowManager = imports.ui.slideshowManager;
 const AppletManager = imports.ui.appletManager;
 const DeskletManager = imports.ui.deskletManager;
 const ExtensionSystem = imports.ui.extensionSystem;
@@ -91,6 +92,7 @@ let panel2 = null;
 
 let soundManager = null;
 let backgroundManager = null;
+let slideshowManager = null;
 let placesManager = null;
 let overview = null;
 let expo = null;
@@ -284,6 +286,8 @@ function start() {
     settingsManager = new Settings.SettingsManager();
 
     backgroundManager = new BackgroundManager.BackgroundManager();
+
+    slideshowManager = new SlideshowManager.SlideshowManager();
     
     deskletContainer = new DeskletManager.DeskletContainer();
 

@@ -67,6 +67,7 @@ nobase_dist_js_DATA = \
 	ui/soundManager.js  \
 	ui/search.js		\
 	ui/settings.js		\
+	ui/slideshowManager.js  \
 	ui/systray.js       \
 	ui/cinnamonDBus.js		\
 	ui/statusIconDispatcher.js	\
