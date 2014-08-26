@@ -1,0 +1,6 @@
+{
+    "launcherList": {
+        "type": "generic",
+        "default": ["firefox.desktop", "gnome-terminal.desktop", "nemo.desktop"]
+    }
+}

@@ -69,7 +69,8 @@ const Type = {
         niceToHaveProperties: [],
         roles: {
             notifications: null,
-            windowlist: null
+            windowlist: null,
+            panellauncher: null
         },
         callbacks: {
             finishExtensionLoad: AppletManager.finishExtensionLoad,

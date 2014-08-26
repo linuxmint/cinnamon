@@ -135,17 +135,17 @@ ApplicationContextMenuItem.prototype = {
     activate: function (event) {
         switch (this._action){
             case "add_to_panel":
-                let settings = new Gio.Settings({ schema: 'org.cinnamon' });
-                let desktopFiles = settings.get_strv('panel-launchers');
-                desktopFiles.push(this._appButton.app.get_id());
-                settings.set_strv('panel-launchers', desktopFiles);
-                if (!Main.AppletManager.get_object_for_uuid("panel-launchers@cinnamon.org")){
-                    var new_applet_id = global.settings.get_int("next-applet-id");
+                if (!Main.AppletManager.get_role_provider_exists(Main.AppletManager.Roles.PANEL_LAUNCHER)) {
+                    let new_applet_id = global.settings.get_int("next-applet-id");
                     global.settings.set_int("next-applet-id", (new_applet_id + 1));
-                    var enabled_applets = global.settings.get_strv("enabled-applets");
+                    let enabled_applets = global.settings.get_strv("enabled-applets");
                     enabled_applets.push("panel1:right:0:panel-launchers@cinnamon.org:" + new_applet_id);
                     global.settings.set_strv("enabled-applets", enabled_applets);
                 }
+
+                let launcherApplet = Main.AppletManager.get_role_provider(Main.AppletManager.Roles.PANEL_LAUNCHER);
+                launcherApplet.acceptNewLauncher(this._appButton.app.get_id());
+
                 this._appButton.toggleMenu();
                 break;
             case "add_to_desktop":

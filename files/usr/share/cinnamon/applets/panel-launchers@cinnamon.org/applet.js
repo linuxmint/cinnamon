@@ -12,6 +12,8 @@ const Tooltips = imports.ui.tooltips;
 const DND = imports.ui.dnd;
 const Tweener = imports.ui.tweener;
 const Util = imports.misc.util;
+const Settings = imports.ui.settings;
+
 
 const DEFAULT_ICON_SIZE = 20;
 const DEFAULT_ANIM_SIZE = 13;
@@ -270,15 +272,15 @@ PanelAppLauncher.prototype = {
     }
 }
 
-function MyApplet(orientation, panel_height) {
-    this._init(orientation, panel_height);
+function MyApplet(metadata, orientation, panel_height, instance_id) {
+    this._init(metadata, orientation, panel_height, instance_id);
 }
 
 MyApplet.prototype = {
     __proto__: Applet.Applet.prototype,
 
-    _init: function(orientation, panel_height) {
-        Applet.Applet.prototype._init.call(this, orientation, panel_height);
+    _init: function(metadata, orientation, panel_height, instance_id) {
+        Applet.Applet.prototype._init.call(this, orientation, panel_height, instance_id);
         this.actor.set_track_hover(false);
         try {
             this.orientation = orientation;
@@ -288,9 +290,11 @@ MyApplet.prototype = {
 
             this.myactor = new St.BoxLayout({ name: 'panel-launchers-box',
                                               style_class: 'panel-launchers-box' });
-            global.settings.connect('changed::' + PANEL_LAUNCHERS_KEY, Lang.bind(this, this._onSettingsChanged));
 
-            this._gsettings_proxy = new Array();
+            this.settings = new Settings.AppletSettings(this, metadata.uuid, instance_id);
+            this.settings.bindProperty(Settings.BindingDirection.BIDIRECTIONAL, "launcherList", "launcherList", this._onSettingsChanged, null);
+
+            this._settings_proxy = new Array();
             this._launchers = new Array();
 
             this.reload();
@@ -314,21 +318,21 @@ MyApplet.prototype = {
         this.reload();
     },
 
-    sync_gsettings_proxy_to_gsettings: function() {
+    sync_settings_proxy_to_settings: function() {
         let as = new Array();
-        for (let i = 0; i < this._gsettings_proxy.length; i++) {
-            as.push(this._gsettings_proxy[i].file);
+        for (let i = 0; i < this._settings_proxy.length; i++) {
+            as.push(this._settings_proxy[i].file);
         }
-        global.settings.set_strv(PANEL_LAUNCHERS_KEY, as);
+        this.launcherList = as;
     },
 
     _remove_launcher_from_proxy: function(visible_index) {
         let j = -1;
-        for (let i = 0; i < this._gsettings_proxy.length; i++) {
-            if (this._gsettings_proxy[i].valid) {
+        for (let i = 0; i < this._settings_proxy.length; i++) {
+            if (this._settings_proxy[i].valid) {
                 j++;
                 if (j == visible_index) {
-                    this._gsettings_proxy.splice(i, 1);
+                    this._settings_proxy.splice(i, 1);
                     break;
                 }
             }
@@ -339,9 +343,9 @@ MyApplet.prototype = {
         let id = launcher.getId();
         let proxy_member;
 
-        for (let i = 0; i < this._gsettings_proxy.length; i++) {
-            if (this._gsettings_proxy[i].file == id) {
-                proxy_member = this._gsettings_proxy.splice(i, 1)[0];
+        for (let i = 0; i < this._settings_proxy.length; i++) {
+            if (this._settings_proxy[i].file == id) {
+                proxy_member = this._settings_proxy.splice(i, 1)[0];
                 break;
             }
         }
@@ -350,34 +354,34 @@ MyApplet.prototype = {
             return;
 
         let j = -1;
-        for (let i = 0; i < this._gsettings_proxy.length; i++) {
-            if (this._gsettings_proxy[i].valid) {
+        for (let i = 0; i < this._settings_proxy.length; i++) {
+            if (this._settings_proxy[i].valid) {
                 j++;
                 if (j == new_index) {
-                    this._gsettings_proxy.splice(i, 0, proxy_member);
+                    this._settings_proxy.splice(i, 0, proxy_member);
                     return;
                 }
             }
         }
 
         if (new_index == j + 1)
-            this._gsettings_proxy.push(proxy_member);
+            this._settings_proxy.push(proxy_member);
     },
 
     loadApps: function() {
-        let desktopFiles = global.settings.get_strv(PANEL_LAUNCHERS_KEY);
+        let desktopFiles = this.launcherList;
         let appSys = Cinnamon.AppSystem.get_default();
         let apps = new Array();
-        this._gsettings_proxy = new Array();
+        this._settings_proxy = new Array();
         for (let i = 0; i < desktopFiles.length; i++) {
             let app = appSys.lookup_app(desktopFiles[i]);
             let appinfo;
             if (!app) appinfo = Gio.DesktopAppInfo.new_from_filename(CUSTOM_LAUNCHERS_PATH+"/"+desktopFiles[i]);
             if (app || appinfo) {
                 apps.push([app, appinfo]);
-                this._gsettings_proxy.push( { file: desktopFiles[i], valid: true } );
+                this._settings_proxy.push( { file: desktopFiles[i], valid: true } );
             } else {
-                this._gsettings_proxy.push( { file: desktopFiles[i], valid: false } );
+                this._settings_proxy.push( { file: desktopFiles[i], valid: false } );
             }
         }
         return apps;
@@ -412,7 +416,7 @@ MyApplet.prototype = {
             if (file.query_exists(null)) file.delete(null);
         }
 
-        this.sync_gsettings_proxy_to_gsettings();
+        this.sync_settings_proxy_to_settings();
     },
 
     moveLauncher: function(launcher, pos) {
@@ -420,7 +424,7 @@ MyApplet.prototype = {
         if (origpos >= 0) {
             this._launchers.splice(origpos, 1);
             this._move_launcher_in_proxy(launcher, pos);
-            this.sync_gsettings_proxy_to_gsettings();
+            this.sync_settings_proxy_to_settings();
         }
     },
 
@@ -531,10 +535,17 @@ MyApplet.prototype = {
         this._clearDragPlaceholder();
         actor.destroy();
         return true;
+    },
+
+    acceptNewLauncher: function(path) {
+        let launchers = this.launcherList;
+        launchers.push(path);
+        this.launcherList = launchers;
+        this.reload();
     }
 };
 
-function main(metadata, orientation, panel_height) {
-    let myApplet = new MyApplet(orientation, panel_height);
+function main(metadata, orientation, panel_height, instance_id) {
+    let myApplet = new MyApplet(metadata, orientation, panel_height, instance_id);
     return myApplet;
 }
