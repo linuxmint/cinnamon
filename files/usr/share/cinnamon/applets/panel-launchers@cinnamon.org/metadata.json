@@ -3,5 +3,6 @@
  "name": "Panel launchers",
  "description": "Launch applications from the panel",
  "icon": "gnome-panel-launcher",
- "role": "panellauncher"
+ "role": "panellauncher",
+ "max-instances": 100
 }

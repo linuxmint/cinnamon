@@ -250,12 +250,6 @@ Extension.prototype = {
             if (!(role in this.type.roles)) {
                 throw this.logError('Unknown role definition: ' + role + ' in metadata.json');
             }
-            
-            let maxInstances;
-            try { maxInstances = parseInt(this.meta['max-instances']); } catch(e) { maxInstances = 1; }
-            if(maxInstances > 1) {
-                throw this.logError(this.type.name + 's with a role can only have one instance. The metadata.json suggests otherwise (max-instances > 1)');
-            }
         }
     },
 
@@ -310,8 +304,7 @@ Extension.prototype = {
         let role = this.meta['role'];
         if(role && this.type.roles[role] != this) {
             if(this.type.roles[role] != null) {
-                this.logError('Role ' + role + ' already taken by ' + this.lowerType + ': ' + this.type.roles[role].uuid);
-                return false;
+                return;
             }
         
             if(roleProvider != null) {
