@@ -6,14 +6,13 @@ const Lang = imports.lang;
 const Gio = imports.gi.Gio;
 const PopupMenu = imports.ui.popupMenu;
 const Main = imports.ui.main;
-const Signals = imports.signals;
 const GLib = imports.gi.GLib;
 const Tooltips = imports.ui.tooltips;
 const DND = imports.ui.dnd;
 const Tweener = imports.ui.tweener;
 const Util = imports.misc.util;
 const Settings = imports.ui.settings;
-
+const Signals = imports.signals;
 
 const DEFAULT_ICON_SIZE = 20;
 const DEFAULT_ANIM_SIZE = 13;
@@ -32,7 +31,6 @@ function PanelAppLauncherMenu(launcher, orientation) {
     this._init(launcher, orientation);
 }
 
-const APPLET_DIR = imports.ui.appletManager._find_applet('panel-launchers@cinnamon.org');
 const CUSTOM_LAUNCHERS_PATH = GLib.get_home_dir() + '/.cinnamon/panel-launchers';
 
 PanelAppLauncherMenu.prototype = {
@@ -133,8 +131,8 @@ PanelAppLauncher.prototype = {
         this._draggable.connect('drag-cancelled', Lang.bind(this, this._onDragCancelled));
         this._draggable.connect('drag-end', Lang.bind(this, this._onDragEnd));
 
-        this._draggable.inhibit = !global.settings.get_boolean(PANEL_LAUNCHERS_DRAGGABLE_KEY) || global.settings.get_boolean(PANEL_EDIT_MODE_KEY);
-        global.settings.connect('changed::' + PANEL_LAUNCHERS_DRAGGABLE_KEY, Lang.bind(this, this._updateInhibit));
+        this._draggable.inhibit = !this.launchersBox.allowDragging || global.settings.get_boolean(PANEL_EDIT_MODE_KEY);
+        this.launchersBox.connect("launcher-draggable-setting-changed", Lang.bind(this, this._updateInhibit));
         global.settings.connect('changed::' + PANEL_EDIT_MODE_KEY, Lang.bind(this, this._updateInhibit));
     },
 
@@ -155,7 +153,7 @@ PanelAppLauncher.prototype = {
     },
 
     _updateInhibit: function(){
-        this._draggable.inhibit = !global.settings.get_boolean(PANEL_LAUNCHERS_DRAGGABLE_KEY) || global.settings.get_boolean(PANEL_EDIT_MODE_KEY);
+        this._draggable.inhibit = !this.launchersBox.allowDragging || global.settings.get_boolean(PANEL_EDIT_MODE_KEY);
     },
 
     getDragActor: function() {
@@ -293,21 +291,36 @@ MyApplet.prototype = {
 
             this.settings = new Settings.AppletSettings(this, metadata.uuid, instance_id);
             this.settings.bindProperty(Settings.BindingDirection.BIDIRECTIONAL, "launcherList", "launcherList", this._onSettingsChanged, null);
+            this.settings.bindProperty(Settings.BindingDirection.IN, "allow-dragging", "allowDragging", this._updateLauncherDrag, null);
 
             this._settings_proxy = new Array();
             this._launchers = new Array();
 
-            this.reload();
-
             this.actor.add(this.myactor);
             this.actor.reactive = global.settings.get_boolean(PANEL_EDIT_MODE_KEY);
             global.settings.connect('changed::' + PANEL_EDIT_MODE_KEY, Lang.bind(this, this._onPanelEditModeChanged));
+
+            this.do_gsettings_import();
+            this.reload();
 
             St.TextureCache.get_default().connect("icon-theme-changed", Lang.bind(this, this.reload));
         }
         catch (e) {
             global.logError(e);
         }
+    },
+
+    _updateLauncherDrag: function() {
+        this.emit("launcher-draggable-setting-changed");
+    },
+
+    do_gsettings_import: function() {
+        let old_launchers = global.settings.get_strv(PANEL_LAUNCHERS_KEY);
+        if (old_launchers.length >= 1 && old_launchers[0] != "DEPRECATED") {
+            this.launcherList = old_launchers;
+        }
+
+        global.settings.set_strv(PANEL_LAUNCHERS_KEY, ["DEPRECATED"]);
     },
 
     _onPanelEditModeChanged: function() {
@@ -544,6 +557,7 @@ MyApplet.prototype = {
         this.reload();
     }
 };
+Signals.addSignalMethods(MyApplet.prototype);
 
 function main(metadata, orientation, panel_height, instance_id) {
     let myApplet = new MyApplet(metadata, orientation, panel_height, instance_id);

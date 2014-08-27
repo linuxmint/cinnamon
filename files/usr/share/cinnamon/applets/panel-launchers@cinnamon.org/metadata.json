@@ -3,6 +3,5 @@
  "name": "Panel launchers",
  "description": "Launch applications from the panel",
  "icon": "gnome-panel-launcher",
- "hide-configuration": true,
  "role": "panellauncher"
 }
