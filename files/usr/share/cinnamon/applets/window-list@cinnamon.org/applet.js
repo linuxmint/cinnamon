@@ -49,6 +49,7 @@ dragHelper.prototype = {
         if (Main.panel2)
             Main.panel2._leavePanel();
         this.dragging = false;
+        this.panel_show_id = 0;
         return false;
     }
 }

@@ -6,12 +6,13 @@ const Lang = imports.lang;
 const Gio = imports.gi.Gio;
 const PopupMenu = imports.ui.popupMenu;
 const Main = imports.ui.main;
-const Signals = imports.signals;
 const GLib = imports.gi.GLib;
 const Tooltips = imports.ui.tooltips;
 const DND = imports.ui.dnd;
 const Tweener = imports.ui.tweener;
 const Util = imports.misc.util;
+const Settings = imports.ui.settings;
+const Signals = imports.signals;
 
 const DEFAULT_ICON_SIZE = 20;
 const DEFAULT_ANIM_SIZE = 13;
@@ -30,7 +31,6 @@ function PanelAppLauncherMenu(launcher, orientation) {
     this._init(launcher, orientation);
 }
 
-const APPLET_DIR = imports.ui.appletManager._find_applet('panel-launchers@cinnamon.org');
 const CUSTOM_LAUNCHERS_PATH = GLib.get_home_dir() + '/.cinnamon/panel-launchers';
 
 PanelAppLauncherMenu.prototype = {
@@ -83,7 +83,10 @@ function PanelAppLauncher(launchersBox, app, appinfo, orientation, panel_height)
 }
 
 PanelAppLauncher.prototype = {
+    __proto__: DND.LauncherDraggable.prototype,
+
     _init: function(launchersBox, app, appinfo, orientation, panel_height) {
+        DND.LauncherDraggable.prototype._init.call(this);
         this.app = app;
         this.appinfo = appinfo;
         this.launchersBox = launchersBox;
@@ -131,8 +134,8 @@ PanelAppLauncher.prototype = {
         this._draggable.connect('drag-cancelled', Lang.bind(this, this._onDragCancelled));
         this._draggable.connect('drag-end', Lang.bind(this, this._onDragEnd));
 
-        this._draggable.inhibit = !global.settings.get_boolean(PANEL_LAUNCHERS_DRAGGABLE_KEY) || global.settings.get_boolean(PANEL_EDIT_MODE_KEY);
-        global.settings.connect('changed::' + PANEL_LAUNCHERS_DRAGGABLE_KEY, Lang.bind(this, this._updateInhibit));
+        this._draggable.inhibit = !this.launchersBox.allowDragging || global.settings.get_boolean(PANEL_EDIT_MODE_KEY);
+        this.launchersBox.connect("launcher-draggable-setting-changed", Lang.bind(this, this._updateInhibit));
         global.settings.connect('changed::' + PANEL_EDIT_MODE_KEY, Lang.bind(this, this._updateInhibit));
     },
 
@@ -153,7 +156,7 @@ PanelAppLauncher.prototype = {
     },
 
     _updateInhibit: function(){
-        this._draggable.inhibit = !global.settings.get_boolean(PANEL_LAUNCHERS_DRAGGABLE_KEY) || global.settings.get_boolean(PANEL_EDIT_MODE_KEY);
+        this._draggable.inhibit = !this.launchersBox.allowDragging || global.settings.get_boolean(PANEL_EDIT_MODE_KEY);
     },
 
     getDragActor: function() {
@@ -270,15 +273,15 @@ PanelAppLauncher.prototype = {
     }
 }
 
-function MyApplet(orientation, panel_height) {
-    this._init(orientation, panel_height);
+function MyApplet(metadata, orientation, panel_height, instance_id) {
+    this._init(metadata, orientation, panel_height, instance_id);
 }
 
 MyApplet.prototype = {
     __proto__: Applet.Applet.prototype,
 
-    _init: function(orientation, panel_height) {
-        Applet.Applet.prototype._init.call(this, orientation, panel_height);
+    _init: function(metadata, orientation, panel_height, instance_id) {
+        Applet.Applet.prototype._init.call(this, orientation, panel_height, instance_id);
         this.actor.set_track_hover(false);
         try {
             this.orientation = orientation;
@@ -288,22 +291,39 @@ MyApplet.prototype = {
 
             this.myactor = new St.BoxLayout({ name: 'panel-launchers-box',
                                               style_class: 'panel-launchers-box' });
-            global.settings.connect('changed::' + PANEL_LAUNCHERS_KEY, Lang.bind(this, this._onSettingsChanged));
 
-            this._gsettings_proxy = new Array();
+            this.settings = new Settings.AppletSettings(this, metadata.uuid, instance_id);
+            this.settings.bindProperty(Settings.BindingDirection.BIDIRECTIONAL, "launcherList", "launcherList", this._onSettingsChanged, null);
+            this.settings.bindProperty(Settings.BindingDirection.IN, "allow-dragging", "allowDragging", this._updateLauncherDrag, null);
+
+            this._settings_proxy = new Array();
             this._launchers = new Array();
-
-            this.reload();
 
             this.actor.add(this.myactor);
             this.actor.reactive = global.settings.get_boolean(PANEL_EDIT_MODE_KEY);
             global.settings.connect('changed::' + PANEL_EDIT_MODE_KEY, Lang.bind(this, this._onPanelEditModeChanged));
+
+            this.do_gsettings_import();
+            this.reload();
 
             St.TextureCache.get_default().connect("icon-theme-changed", Lang.bind(this, this.reload));
         }
         catch (e) {
             global.logError(e);
         }
+    },
+
+    _updateLauncherDrag: function() {
+        this.emit("launcher-draggable-setting-changed");
+    },
+
+    do_gsettings_import: function() {
+        let old_launchers = global.settings.get_strv(PANEL_LAUNCHERS_KEY);
+        if (old_launchers.length >= 1 && old_launchers[0] != "DEPRECATED") {
+            this.launcherList = old_launchers;
+        }
+
+        global.settings.set_strv(PANEL_LAUNCHERS_KEY, ["DEPRECATED"]);
     },
 
     _onPanelEditModeChanged: function() {
@@ -314,21 +334,21 @@ MyApplet.prototype = {
         this.reload();
     },
 
-    sync_gsettings_proxy_to_gsettings: function() {
+    sync_settings_proxy_to_settings: function() {
         let as = new Array();
-        for (let i = 0; i < this._gsettings_proxy.length; i++) {
-            as.push(this._gsettings_proxy[i].file);
+        for (let i = 0; i < this._settings_proxy.length; i++) {
+            as.push(this._settings_proxy[i].file);
         }
-        global.settings.set_strv(PANEL_LAUNCHERS_KEY, as);
+        this.launcherList = as;
     },
 
     _remove_launcher_from_proxy: function(visible_index) {
         let j = -1;
-        for (let i = 0; i < this._gsettings_proxy.length; i++) {
-            if (this._gsettings_proxy[i].valid) {
+        for (let i = 0; i < this._settings_proxy.length; i++) {
+            if (this._settings_proxy[i].valid) {
                 j++;
                 if (j == visible_index) {
-                    this._gsettings_proxy.splice(i, 1);
+                    this._settings_proxy.splice(i, 1);
                     break;
                 }
             }
@@ -339,9 +359,9 @@ MyApplet.prototype = {
         let id = launcher.getId();
         let proxy_member;
 
-        for (let i = 0; i < this._gsettings_proxy.length; i++) {
-            if (this._gsettings_proxy[i].file == id) {
-                proxy_member = this._gsettings_proxy.splice(i, 1)[0];
+        for (let i = 0; i < this._settings_proxy.length; i++) {
+            if (this._settings_proxy[i].file == id) {
+                proxy_member = this._settings_proxy.splice(i, 1)[0];
                 break;
             }
         }
@@ -350,34 +370,40 @@ MyApplet.prototype = {
             return;
 
         let j = -1;
-        for (let i = 0; i < this._gsettings_proxy.length; i++) {
-            if (this._gsettings_proxy[i].valid) {
+        for (let i = 0; i < this._settings_proxy.length; i++) {
+            if (this._settings_proxy[i].valid) {
                 j++;
                 if (j == new_index) {
-                    this._gsettings_proxy.splice(i, 0, proxy_member);
+                    this._settings_proxy.splice(i, 0, proxy_member);
                     return;
                 }
             }
         }
 
         if (new_index == j + 1)
-            this._gsettings_proxy.push(proxy_member);
+            this._settings_proxy.push(proxy_member);
+    },
+
+    loadSingleApp: function(path) {
+        let appSys = Cinnamon.AppSystem.get_default();
+        let app = appSys.lookup_app(path);
+        let appinfo = null;
+        if (!app)
+            appinfo = Gio.DesktopAppInfo.new_from_filename(CUSTOM_LAUNCHERS_PATH+"/"+path);
+        return [app, appinfo]
     },
 
     loadApps: function() {
-        let desktopFiles = global.settings.get_strv(PANEL_LAUNCHERS_KEY);
-        let appSys = Cinnamon.AppSystem.get_default();
+        let desktopFiles = this.launcherList;
         let apps = new Array();
-        this._gsettings_proxy = new Array();
+        this._settings_proxy = new Array();
         for (let i = 0; i < desktopFiles.length; i++) {
-            let app = appSys.lookup_app(desktopFiles[i]);
-            let appinfo;
-            if (!app) appinfo = Gio.DesktopAppInfo.new_from_filename(CUSTOM_LAUNCHERS_PATH+"/"+desktopFiles[i]);
+            let [app, appinfo] = this.loadSingleApp(desktopFiles[i]);
             if (app || appinfo) {
                 apps.push([app, appinfo]);
-                this._gsettings_proxy.push( { file: desktopFiles[i], valid: true } );
+                this._settings_proxy.push( { file: desktopFiles[i], valid: true } );
             } else {
-                this._gsettings_proxy.push( { file: desktopFiles[i], valid: false } );
+                this._settings_proxy.push( { file: desktopFiles[i], valid: false } );
             }
         }
         return apps;
@@ -403,6 +429,7 @@ MyApplet.prototype = {
     removeLauncher: function(launcher, delete_file) {
         let i = this._launchers.indexOf(launcher);
         if (i >= 0) {
+            launcher.actor.destroy();
             this._launchers.splice(i, 1);
             this._remove_launcher_from_proxy(i);
         }
@@ -412,15 +439,44 @@ MyApplet.prototype = {
             if (file.query_exists(null)) file.delete(null);
         }
 
-        this.sync_gsettings_proxy_to_gsettings();
+        this.sync_settings_proxy_to_settings();
+    },
+
+    getDummyLauncher: function(path) {
+        let [app, appinfo] = this.loadSingleApp(path);
+        let dummy;
+        if (app || appinfo) {
+            dummy = new PanelAppLauncher(this, app, appinfo, this.orientation, this._panelHeight);
+        }
+
+        if (dummy && dummy.actor)
+            return dummy.actor;
+        else
+            return null;
+    },
+
+    acceptNewLauncher: function(path) {
+        this.myactor.add(this.getDummyLauncher(path));
+        let launchers = this.launcherList;
+        launchers.push(path);
+        this.launcherList = launchers;
+        this.reload();
+    },
+
+    addForeignLauncher: function(path, position, source) {
+        this.myactor.insert_actor(this.getDummyLauncher(path), position);
+        this._settings_proxy.splice(position, 0, { file: path, valid: true });
+        this.sync_settings_proxy_to_settings();
     },
 
     moveLauncher: function(launcher, pos) {
         let origpos = this._launchers.indexOf(launcher);
         if (origpos >= 0) {
+            launcher.actor.destroy();
+            this.myactor.insert_actor(this.getDummyLauncher(launcher.getId()), pos);
             this._launchers.splice(origpos, 1);
             this._move_launcher_in_proxy(launcher, pos);
-            this.sync_gsettings_proxy_to_gsettings();
+            this.sync_settings_proxy_to_settings();
         }
     },
 
@@ -441,8 +497,7 @@ MyApplet.prototype = {
     },
 
     handleDragOver: function(source, actor, x, y, time) {
-        if (!(source.isDraggableApp || (source instanceof PanelAppLauncher))) return DND.DragMotionResult.NO_DROP;
-
+        if (!(source.isDraggableApp || (source instanceof DND.LauncherDraggable))) return DND.DragMotionResult.NO_DROP;
         let children = this.myactor.get_children();
         let numChildren = children.length;
         let boxWidth = this.myactor.width;
@@ -459,7 +514,7 @@ MyApplet.prototype = {
         if (pos != this._dragPlaceholderPos && pos <= numChildren) {
             if (this._animatingPlaceholdersCount > 0) {
                 let launchersChildren = children.filter(function(actor) {
-                    return actor._delegate instanceof PanelAppLauncher;
+                    return actor._delegate instanceof DND.LauncherDraggable;
                 });
                 this._dragPlaceholderPos = children.indexOf(launchersChildren[pos]);
             } else {
@@ -504,10 +559,10 @@ MyApplet.prototype = {
     },
 
     acceptDrop: function(source, actor, x, y, time) {
-        if (!(source.isDraggableApp || (source instanceof PanelAppLauncher))) return DND.DragMotionResult.NO_DROP;
+        if (!(source.isDraggableApp || (source instanceof DND.LauncherDraggable))) return DND.DragMotionResult.NO_DROP;
 
         let sourceId;
-        if (source instanceof PanelAppLauncher) sourceId = source.getId();
+        if (source instanceof DND.LauncherDraggable) sourceId = source.getId();
         else sourceId = source.get_app_id();
 
         let launcherPos = 0;
@@ -518,23 +573,25 @@ MyApplet.prototype = {
                 continue;
 
             let childId = children[i]._delegate.getId();
-            if (childId == sourceId)
+            if (source === children[i]._delegate)
                 continue;
             launcherPos++;
         }
-        if (source instanceof PanelAppLauncher) this.moveLauncher(source, launcherPos);
-        else{
-            let desktopFiles = global.settings.get_strv(PANEL_LAUNCHERS_KEY);
-            desktopFiles.splice(launcherPos, 0, sourceId);
-            global.settings.set_strv(PANEL_LAUNCHERS_KEY, desktopFiles);
+        if (source instanceof DND.LauncherDraggable && source.launchersBox == this)
+            this.moveLauncher(source, launcherPos);
+        else {
+            if (source instanceof DND.LauncherDraggable)
+                source.launchersBox.removeLauncher(source, false);
+            this.addForeignLauncher(sourceId, launcherPos, source);
         }
         this._clearDragPlaceholder();
         actor.destroy();
         return true;
     }
 };
+Signals.addSignalMethods(MyApplet.prototype);
 
-function main(metadata, orientation, panel_height) {
-    let myApplet = new MyApplet(orientation, panel_height);
+function main(metadata, orientation, panel_height, instance_id) {
+    let myApplet = new MyApplet(metadata, orientation, panel_height, instance_id);
     return myApplet;
 }

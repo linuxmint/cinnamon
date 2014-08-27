@@ -1,0 +1,11 @@
+{
+    "launcherList": {
+        "type": "generic",
+        "default": ["firefox.desktop", "gnome-terminal.desktop", "nemo.desktop"]
+    },
+    "allow-dragging": {
+        "type": "checkbox",
+        "default": true,
+        "description": "Allow dragging of launchers"
+    }
+}

@@ -108,6 +108,11 @@ class Factory():
             warning.destroy()
             print detail
 
+def no_empty_strings(string):
+    if string == "":
+        return " "
+    else:
+        return string
 
 class Settings():
     def __init__(self, file_name, factory, instance_id, multi_instance, uuid):
@@ -117,14 +122,17 @@ class Settings():
         self.multi_instance = multi_instance
         self.uuid = uuid
         try:
-            self.tUser = gettext.translation(self.uuid, home+"/.local/share/locale").ugettext
+            ugettext = gettext.translation(self.uuid, home+"/.local/share/locale").ugettext
+            self.tUser = lambda x: ugettext(no_empty_strings(x))
         except IOError:
             try:
-                self.tUser = gettext.translation(self.uuid, "/usr/share/locale").ugettext
+                ugettext = gettext.translation(self.uuid, "/usr/share/locale").ugettext
+                self.tUser = lambda x: ugettext(no_empty_strings(x))
             except IOError:
                 self.tUser = None
         try:
-            self.t = gettext.translation("cinnamon", "/usr/share/cinnamon/locale").ugettext
+            ugettext = gettext.translation("cinnamon", "/usr/share/cinnamon/locale").ugettext
+            self.t = lambda x: ugettext(no_empty_strings(x))
         except IOError:
             self.t = None
         self.reload()
@@ -274,10 +282,8 @@ class BaseWidget(object):
             if self.tUser:
                 result = self.tUser(self.settings_obj.get_data(self.key)["description"])
                 if result != self.settings_obj.get_data(self.key)["description"]:
-                    print result
                     return result
             if self.t:
-                print self.t(self.settings_obj.get_data(self.key)["description"])
                 return self.t(self.settings_obj.get_data(self.key)["description"])
             return self.settings_obj.get_data(self.key)["description"]
         except:

@@ -188,6 +188,10 @@ class CommandLine(Gtk.Entry):
 
             lookingGlassProxy.Eval(command)
 
+    def doCrash(self):
+        lookingGlassProxy.Eval("new Gio.Settings({schema: 'org.foo.bar'})")
+
+
 class NewLogDialog(Gtk.Dialog):
     def __init__(self, parent):
         Gtk.Dialog.__init__(self, "Add a new file watcher", parent, 0,
@@ -510,6 +514,7 @@ class CinnamonLog(dbus.service.Object):
         menu.append(self.createMenuItem('Add File Watcher', self.onAddFileWatcher))
         menu.append(Gtk.SeparatorMenuItem())
         menu.append(self.createMenuItem('Restart Cinnamon', self.onRestartClicked))
+        menu.append(self.createMenuItem('Crash Cinnamon', self.onCrashClicked))
         menu.append(self.createMenuItem('Reset Cinnamon Settings', self.onResetClicked))
         menu.append(Gtk.SeparatorMenuItem())
         menu.append(self.createMenuItem('About Melange', self.onAboutClicked))
@@ -544,6 +549,9 @@ class CinnamonLog(dbus.service.Object):
     def onRestartClicked(self, menuItem):
         #todo: gets killed when the python process ends, separate it!
         os.system("cinnamon --replace &")
+
+    def onCrashClicked(self, menuItem):
+        self.commandline.doCrash();
 
     def onAboutClicked(self, menuItem):
         dialog = Gtk.MessageDialog(self.window, 0,

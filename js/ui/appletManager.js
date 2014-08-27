@@ -25,7 +25,8 @@ var appletsLoaded = false;
 // the same role?
 const Roles = {
     NOTIFICATIONS: 'notifications',
-    WINDOWLIST: 'windowlist'
+    WINDOWLIST: 'windowlist',
+    PANEL_LAUNCHER: 'panellauncher'
 }
 
 var enabledAppletDefinitions;
@@ -236,10 +237,6 @@ function _removeAppletConfigFile(uuid, instanceId) {
 }
 
 function addAppletToPanels(extension, appletDefinition) {
-    // Try to lock the applets role
-    if(!extension.lockRole(null))
-        return;
-    
     try {
         // Create the applet
         let applet = createApplet(extension, appletDefinition);
@@ -247,8 +244,7 @@ function addAppletToPanels(extension, appletDefinition) {
             return;
         
         // Now actually lock the applets role and set the provider
-        if(!extension.lockRole(applet))
-            return;
+        extension.lockRole(applet);
 
         applet._order = appletDefinition.order;
         applet._extension = extension;

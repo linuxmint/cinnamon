@@ -344,12 +344,9 @@
     </key>
 
     <key name="panel-launchers" type="as">
-      <default>[ 'firefox.desktop', 'gnome-terminal.desktop', 'nemo.desktop']</default>
-      <_summary>Desktop files of the applications to put in the panel launchers applet</_summary>
-      <_description>
-        Cinnamon allows to show applications launchers on the panel.
-        This key lists the desktop files of the applications to show there.
-      </_description>
+      <default>["DEPRECATED"]</default>
+      <_summary>Obsolete - unused</_summary>
+      <_description>Obsolete - unused</_description>
     </key>
 
     <key name="enable-app-monitoring" type="b">
@@ -463,7 +460,7 @@
     
     <key type="b" name="panel-launchers-draggable">
       <default>true</default>
-      <_summary>Whether panel launchers are draggable</_summary>
+      <_summary>Obsolete</_summary>
     </key>
 
     <key name="alttab-switcher-style" type="s">
