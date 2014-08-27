@@ -25,23 +25,21 @@ const PANEL_LAUNCHERS_DRAGGABLE_KEY = 'panel-launchers-draggable';
 const PANEL_RESIZABLE_KEY = 'panel-resizable';
 const PANEL_SCALE_TEXT_ICONS_KEY = 'panel-scale-text-icons';
 
+const CUSTOM_LAUNCHERS_PATH = GLib.get_home_dir() + '/.cinnamon/panel-launchers';
+
 let pressLauncher = null;
 
 function PanelAppLauncherMenu(launcher, orientation) {
     this._init(launcher, orientation);
 }
 
-const CUSTOM_LAUNCHERS_PATH = GLib.get_home_dir() + '/.cinnamon/panel-launchers';
-
 PanelAppLauncherMenu.prototype = {
-    __proto__: PopupMenu.PopupMenu.prototype,
+    __proto__: Applet.AppletPopupMenu.prototype,
 
     _init: function(launcher, orientation) {
         this._launcher = launcher;
 
-        PopupMenu.PopupMenu.prototype._init.call(this, launcher.actor, 0.0, orientation, 0);
-        Main.uiGroup.add_actor(this.actor);
-        this.actor.hide();
+        Applet.AppletPopupMenu.prototype._init.call(this, launcher, orientation);
 
         this.launchItem = new PopupMenu.PopupMenuItem(_("Launch"));
         this.addMenuItem(this.launchItem);
@@ -90,6 +88,7 @@ PanelAppLauncher.prototype = {
         this.app = app;
         this.appinfo = appinfo;
         this.launchersBox = launchersBox;
+        this._applet = launchersBox;
         this.actor = new St.Bin({ style_class: 'panel-launcher',
                                   reactive: true,
                                   can_focus: true,
