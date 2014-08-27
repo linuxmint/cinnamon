@@ -432,6 +432,18 @@ MyApplet.prototype = {
         this.sync_settings_proxy_to_settings();
     },
 
+    acceptNewLauncher: function(path) {
+        let launchers = this.launcherList;
+        launchers.push(path);
+        this.launcherList = launchers;
+        this.reload();
+    },
+
+    addForeignLauncher: function(path, position) {
+        this._settings_proxy.splice(position, 0, { file: path, valid: true });
+        this.sync_settings_proxy_to_settings();
+    },
+
     moveLauncher: function(launcher, pos) {
         let origpos = this._launchers.indexOf(launcher);
         if (origpos >= 0) {
@@ -459,7 +471,6 @@ MyApplet.prototype = {
 
     handleDragOver: function(source, actor, x, y, time) {
         if (!(source.isDraggableApp || (source instanceof PanelAppLauncher))) return DND.DragMotionResult.NO_DROP;
-
         let children = this.myactor.get_children();
         let numChildren = children.length;
         let boxWidth = this.myactor.width;
@@ -535,26 +546,20 @@ MyApplet.prototype = {
                 continue;
 
             let childId = children[i]._delegate.getId();
-            if (childId == sourceId)
+            if (source === children[i]._delegate)
                 continue;
             launcherPos++;
         }
-        if (source instanceof PanelAppLauncher) this.moveLauncher(source, launcherPos);
-        else{
-            let desktopFiles = global.settings.get_strv(PANEL_LAUNCHERS_KEY);
-            desktopFiles.splice(launcherPos, 0, sourceId);
-            global.settings.set_strv(PANEL_LAUNCHERS_KEY, desktopFiles);
+        if (source instanceof PanelAppLauncher && source.launchersBox == this)
+            this.moveLauncher(source, launcherPos);
+        else {
+            if (source instanceof PanelAppLauncher)
+                source.launchersBox.removeLauncher(source, false);
+            this.addForeignLauncher(sourceId, launcherPos);
         }
         this._clearDragPlaceholder();
         actor.destroy();
         return true;
-    },
-
-    acceptNewLauncher: function(path) {
-        let launchers = this.launcherList;
-        launchers.push(path);
-        this.launcherList = launchers;
-        this.reload();
     }
 };
 Signals.addSignalMethods(MyApplet.prototype);
