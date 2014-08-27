@@ -381,15 +381,21 @@ MyApplet.prototype = {
             this._settings_proxy.push(proxy_member);
     },
 
+    loadSingleApp: function(path) {
+        let appSys = Cinnamon.AppSystem.get_default();
+        let app = appSys.lookup_app(path);
+        let appinfo = null;
+        if (!app)
+            appinfo = Gio.DesktopAppInfo.new_from_filename(CUSTOM_LAUNCHERS_PATH+"/"+path);
+        return [app, appinfo]
+    },
+
     loadApps: function() {
         let desktopFiles = this.launcherList;
-        let appSys = Cinnamon.AppSystem.get_default();
         let apps = new Array();
         this._settings_proxy = new Array();
         for (let i = 0; i < desktopFiles.length; i++) {
-            let app = appSys.lookup_app(desktopFiles[i]);
-            let appinfo;
-            if (!app) appinfo = Gio.DesktopAppInfo.new_from_filename(CUSTOM_LAUNCHERS_PATH+"/"+desktopFiles[i]);
+            let [app, appinfo] = this.loadSingleApp(desktopFiles[i]);
             if (app || appinfo) {
                 apps.push([app, appinfo]);
                 this._settings_proxy.push( { file: desktopFiles[i], valid: true } );
@@ -420,6 +426,7 @@ MyApplet.prototype = {
     removeLauncher: function(launcher, delete_file) {
         let i = this._launchers.indexOf(launcher);
         if (i >= 0) {
+            launcher.actor.destroy();
             this._launchers.splice(i, 1);
             this._remove_launcher_from_proxy(i);
         }
@@ -432,14 +439,29 @@ MyApplet.prototype = {
         this.sync_settings_proxy_to_settings();
     },
 
+    getDummyLauncher: function(path) {
+        let [app, appinfo] = this.loadSingleApp(path);
+        let dummy;
+        if (app || appinfo) {
+            dummy = new PanelAppLauncher(this, app, appinfo, this.orientation, this._panelHeight);
+        }
+
+        if (dummy && dummy.actor)
+            return dummy.actor;
+        else
+            return null;
+    },
+
     acceptNewLauncher: function(path) {
+        this.myactor.add(this.getDummyLauncher(path));
         let launchers = this.launcherList;
         launchers.push(path);
         this.launcherList = launchers;
         this.reload();
     },
 
-    addForeignLauncher: function(path, position) {
+    addForeignLauncher: function(path, position, source) {
+        this.myactor.insert_actor(this.getDummyLauncher(path), position);
         this._settings_proxy.splice(position, 0, { file: path, valid: true });
         this.sync_settings_proxy_to_settings();
     },
@@ -447,6 +469,8 @@ MyApplet.prototype = {
     moveLauncher: function(launcher, pos) {
         let origpos = this._launchers.indexOf(launcher);
         if (origpos >= 0) {
+            launcher.actor.destroy();
+            this.myactor.insert_actor(this.getDummyLauncher(launcher.getId()), pos);
             this._launchers.splice(origpos, 1);
             this._move_launcher_in_proxy(launcher, pos);
             this.sync_settings_proxy_to_settings();
@@ -555,7 +579,7 @@ MyApplet.prototype = {
         else {
             if (source instanceof PanelAppLauncher)
                 source.launchersBox.removeLauncher(source, false);
-            this.addForeignLauncher(sourceId, launcherPos);
+            this.addForeignLauncher(sourceId, launcherPos, source);
         }
         this._clearDragPlaceholder();
         actor.destroy();
