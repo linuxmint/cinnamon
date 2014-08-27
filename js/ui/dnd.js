@@ -935,3 +935,18 @@ GenericDragPlaceholderItem.prototype = {
         this.setChild(new St.Bin({ style_class: 'drag-placeholder' }));
     }
 };
+
+function LauncherDraggable() {
+    this._init();
+}
+
+LauncherDraggable.prototype = {
+    _init: function() {
+        this.launchersBox = null;
+    },
+
+    getId: function() {
+        /* Implemented by draggable launchers */
+        global.logError("Could not complete drag-and-drop.  Launcher does not implement LauncherDraggable");
+    }
+};

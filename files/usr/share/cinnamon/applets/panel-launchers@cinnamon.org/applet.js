@@ -83,7 +83,10 @@ function PanelAppLauncher(launchersBox, app, appinfo, orientation, panel_height)
 }
 
 PanelAppLauncher.prototype = {
+    __proto__: DND.LauncherDraggable.prototype,
+
     _init: function(launchersBox, app, appinfo, orientation, panel_height) {
+        DND.LauncherDraggable.prototype._init.call(this);
         this.app = app;
         this.appinfo = appinfo;
         this.launchersBox = launchersBox;
@@ -494,7 +497,7 @@ MyApplet.prototype = {
     },
 
     handleDragOver: function(source, actor, x, y, time) {
-        if (!(source.isDraggableApp || (source instanceof PanelAppLauncher))) return DND.DragMotionResult.NO_DROP;
+        if (!(source.isDraggableApp || (source instanceof DND.LauncherDraggable))) return DND.DragMotionResult.NO_DROP;
         let children = this.myactor.get_children();
         let numChildren = children.length;
         let boxWidth = this.myactor.width;
@@ -511,7 +514,7 @@ MyApplet.prototype = {
         if (pos != this._dragPlaceholderPos && pos <= numChildren) {
             if (this._animatingPlaceholdersCount > 0) {
                 let launchersChildren = children.filter(function(actor) {
-                    return actor._delegate instanceof PanelAppLauncher;
+                    return actor._delegate instanceof DND.LauncherDraggable;
                 });
                 this._dragPlaceholderPos = children.indexOf(launchersChildren[pos]);
             } else {
@@ -556,10 +559,10 @@ MyApplet.prototype = {
     },
 
     acceptDrop: function(source, actor, x, y, time) {
-        if (!(source.isDraggableApp || (source instanceof PanelAppLauncher))) return DND.DragMotionResult.NO_DROP;
+        if (!(source.isDraggableApp || (source instanceof DND.LauncherDraggable))) return DND.DragMotionResult.NO_DROP;
 
         let sourceId;
-        if (source instanceof PanelAppLauncher) sourceId = source.getId();
+        if (source instanceof DND.LauncherDraggable) sourceId = source.getId();
         else sourceId = source.get_app_id();
 
         let launcherPos = 0;
@@ -574,10 +577,10 @@ MyApplet.prototype = {
                 continue;
             launcherPos++;
         }
-        if (source instanceof PanelAppLauncher && source.launchersBox == this)
+        if (source instanceof DND.LauncherDraggable && source.launchersBox == this)
             this.moveLauncher(source, launcherPos);
         else {
-            if (source instanceof PanelAppLauncher)
+            if (source instanceof DND.LauncherDraggable)
                 source.launchersBox.removeLauncher(source, false);
             this.addForeignLauncher(sourceId, launcherPos, source);
         }
