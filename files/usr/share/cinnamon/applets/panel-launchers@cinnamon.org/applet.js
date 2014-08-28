@@ -296,6 +296,7 @@ MyApplet.prototype = {
             this.settings.bindProperty(Settings.BindingDirection.BIDIRECTIONAL, "launcherList", "launcherList", this._onSettingsChanged, null);
             this.settings.bindProperty(Settings.BindingDirection.IN, "allow-dragging", "allowDragging", this._updateLauncherDrag, null);
 
+            this.uuid = metadata.uuid;
             this._settings_proxy = new Array();
             this._launchers = new Array();
 
@@ -435,7 +436,7 @@ MyApplet.prototype = {
         }
         if (delete_file) {
             let appid = launcher.getId();
-            let file = new Gio.file_new_for_path(CUSTOM_LAUNCHERS_PATH+"/"+appid);
+            let file = Gio.file_new_for_path(CUSTOM_LAUNCHERS_PATH+"/"+appid);
             if (file.query_exists(null)) file.delete(null);
         }
 
@@ -481,10 +482,11 @@ MyApplet.prototype = {
     },
 
     showAddLauncherDialog: function(timestamp, launcher){
+        let args = this.uuid + " " + this.instance_id + " " + this.settings.get_file_path();
         if (launcher) {
-            Util.spawnCommandLine("cinnamon-desktop-editor -mpanel-launcher -f" + launcher.getId());
+            Util.spawnCommandLine("cinnamon-desktop-editor -mcinnamon-launcher -f" + launcher.getId() + " " + args);
         } else {
-            Util.spawnCommandLine("cinnamon-desktop-editor -mpanel-launcher");
+            Util.spawnCommandLine("cinnamon-desktop-editor -mcinnamon-launcher " + args);
         }
     },
 

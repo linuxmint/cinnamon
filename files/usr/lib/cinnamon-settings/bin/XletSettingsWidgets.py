@@ -193,6 +193,9 @@ class Settings():
         self.data[key]["value"] = val
         self.try_update_dbus(key)
 
+    def get_value(self, key):
+        return self.data[key]["value"]
+
     def set_custom_value(self, key, val):
         self.data[key]["last-custom-value"] = val
         self.try_update_dbus(key)

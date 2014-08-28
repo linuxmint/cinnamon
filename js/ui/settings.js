@@ -454,6 +454,10 @@ _provider.prototype = {
             this.settings_obj.set_node_from_dbus(key, node);
         },
 
+        get_file_path: function() {
+            return this.settings_file.get_path();
+        },
+
 /* _settings_file_changed:  For convenience only, if you want to handle updating your applet props yourself,
  * connect to this signal on your AppletSettings object to get notified when the json file changes, then
  * you can call AppletSettings.getValue(key) to update your props
