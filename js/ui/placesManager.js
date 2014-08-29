@@ -333,7 +333,7 @@ PlacesManager.prototype = {
             } else {
                 // Asume the bookmark is an unmounted network location
                 // try to mount and open by the default file manager 
-                let icon = Gio.ThemedIcon.new('gnome-fs-network');          
+                let icon = Gio.ThemedIcon.new('network-workgroup');          
                 item = new PlaceInfo('bookmark:' + bookmark, label,
                         function(size) {
                             return St.TextureCache.get_default().load_gicon(null, icon, size);
