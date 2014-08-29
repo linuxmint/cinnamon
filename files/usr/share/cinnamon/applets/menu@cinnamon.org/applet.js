@@ -1653,7 +1653,7 @@ MyApplet.prototype = {
         }
 
         //Lock screen
-        let button = new SystemButton(this, "gnome-lockscreen", launchers.length + 3);        
+        let button = new SystemButton(this, "system-lock-screen", launchers.length + 3);        
         button.actor.connect('enter-event', Lang.bind(this, function() {
                 this.selectedAppTitle.set_text(_("Lock screen"));
                 this.selectedAppDescription.set_text(_("Lock the screen"));             
@@ -1683,7 +1683,7 @@ MyApplet.prototype = {
         this.leftBox.add_actor(button.actor, { y_align: St.Align.END, y_fill: false });                  
         
         //Logout button
-        let button = new SystemButton(this, "gnome-logout", launchers.length + 3);        
+        let button = new SystemButton(this, "system-log-out", launchers.length + 3);        
         button.actor.connect('enter-event', Lang.bind(this, function() {
                 this.selectedAppTitle.set_text(_("Logout"));
                 this.selectedAppDescription.set_text(_("Leave the session"));               
@@ -1700,7 +1700,7 @@ MyApplet.prototype = {
         this.leftBox.add_actor(button.actor, { y_align: St.Align.END, y_fill: false }); 
                         
         //Shutdown button
-        let button = new SystemButton(this, "gnome-shutdown", launchers.length + 3);        
+        let button = new SystemButton(this, "system-shutdown", launchers.length + 3);        
         button.actor.connect('enter-event', Lang.bind(this, function() {
                 this.selectedAppTitle.set_text(_("Quit"));
                 this.selectedAppDescription.set_text(_("Shutdown the computer"));               
