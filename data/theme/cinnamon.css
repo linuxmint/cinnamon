@@ -666,6 +666,9 @@ StScrollBar StButton#vhandle:hover {
 	margin-from-right-edge-of-screen: 20px;
 	width: 34em;
 	color: white;
+    /* The px are a temporary fix until get_theme_node() can return raw numbers. */
+    opacity:255px;
+    mouseover-opacity:96px
 }
 #notification.multi-line-notification {
 	padding-bottom: 8px;
