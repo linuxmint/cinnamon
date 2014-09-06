@@ -103,6 +103,17 @@ MyApplet.prototype = {
             return;
         }
 
+        if (notification.enter_id > 0) {
+            notification.actor.disconnect(notification.enter_id);
+            notification.enter_id = 0;
+        }
+        if (notification.leave_id > 0) {
+            notification.actor.disconnect(notification.leave_id);
+            notification.leave_id = 0;
+        }
+
+        notification.actor.opacity = notification._table.get_theme_node().get_length('opacity') || 255;
+
         notification.actor.unparent();
         let existing_index = this.notifications.indexOf(notification);
         if (existing_index != -1) {	// This notification is already listed.

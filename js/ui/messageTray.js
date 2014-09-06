@@ -447,6 +447,9 @@ Notification.prototype = {
         this._inNotificationBin = false;
         this.dateFormat = _("%l:%M %p");
 
+        this.enter_id = 0;
+        this.leave_id = 0;
+
         source.connect('destroy', Lang.bind(this,
             function (source, reason) {
                 this.destroy(reason);
@@ -460,14 +463,14 @@ Notification.prototype = {
 		// Transparency on mouse over?
 		if (Main.messageTray.fadeOnMouseover) {
 			// Register to every notification as we intend to support multiple notifications on screen.
-			this.actor.connect('enter-event', Lang.bind(this, function() {
+			this.enter_id = this.actor.connect('enter-event', Lang.bind(this, function() {
 				Tweener.addTween(this.actor, {
-					opacity: this._table.get_theme_node().get_length('mouseover-opacity'),
+					opacity: ((Main.messageTray.fadeOpacity / 100) * 255).clamp(0, 255),
 					time: ANIMATION_TIME,
 					transition: 'easeOutQuad'
 				});
 			}));
-			this.actor.connect('leave-event', Lang.bind(this, function() {
+			this.leave_id = this.actor.connect('leave-event', Lang.bind(this, function() {
 				Tweener.addTween(this.actor, {
 					opacity: this._table.get_theme_node().get_length('opacity') || 255,
 					time: ANIMATION_TIME,
@@ -1447,9 +1450,12 @@ MessageTray.prototype = {
 			source.connect('changed::'+dashed, updater);
 			updater();
 		}
-		setting(this, global.settings, "_notificationsEnabled", "display-notifications");
+		setting(this, this.settings, "_notificationsEnabled", "display-notifications");
 		setting(this, this.settings, "fadeOnMouseover", "fade-on-mouseover");
-
+        this.fadeOpacity = this.settings.get_int("fade-opacity");
+        this.settings.connect("changed::fade-opacity", Lang.bind(this, function() {
+            this.fadeOpacity = this.settings.get_int("fade-opacity");
+        }))
         this._setSizePosition();
 
         let updateLockState = Lang.bind(this, function() {

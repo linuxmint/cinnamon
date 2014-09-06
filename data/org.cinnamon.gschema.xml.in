@@ -324,11 +324,6 @@
         Format used for dates.
       </_description>
     </key>
-    
-    <key type="b" name="display-notifications">
-      <default>true</default>
-      <_summary>Whether notifications are to be displayed</_summary>
-    </key>
 
     <key type="i" name="number-workspaces">
         <default>2</default>
