@@ -43,24 +43,25 @@ class Module:
             
         section = Section(_("Behaviour"))
         section.add(GSettingsCheckButton(_("Display notifications"), "org.cinnamon.desktop.notifications", "display-notifications", None))
+        section.add(GSettingsCheckButton(_("Remove old notifications"), "org.cinnamon.desktop.notifications", "remove-old", None))
+        vbox.add(section)
+        
+        vbox.add(Gtk.Separator.new(Gtk.Orientation.HORIZONTAL)) 
+        
+        section = Section(_("Appearance"))
+
         section.add(GSettingsCheckButton(_("Have notifications fade out when hovered over"), "org.cinnamon.desktop.notifications", "fade-on-mouseover", None))
-
         box = Gtk.HBox()
-
         spinner = GSettingsSpinButton(_("Hover opacity"), "org.cinnamon.desktop.notifications", "fade-opacity", "org.cinnamon.desktop.notifications/fade-on-mouseover", 0, 100, 1, 1, _("%"))
         box.pack_start(spinner, False, False, 20)
-
-        button = Gtk.Button(label = _("Send a test notification"))
-        button.connect("clicked", self.send_test)
-
-         # Mimic spinner sensitivity since button isn't a CS widget
-        button.set_sensitive(spinner.get_sensitive())
-        spinner.bind_property("sensitive", button, "sensitive", 0)
-
-        box.pack_start(button, False, False, 2)
         section.add_indented(box)
-
-        section.add(GSettingsCheckButton(_("Remove old notifications"), "org.cinnamon.desktop.notifications", "remove-old", None))
+        
+        section.add(Gtk.Label("")) #Empty row
+        
+        button = Gtk.Button(label = _("Display a test notification"))
+        button.connect("clicked", self.send_test)
+        section.add(button)
+        
         vbox.add(section)
 
     def send_test(self, widget):
