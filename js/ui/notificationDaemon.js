@@ -107,6 +107,8 @@ NotificationDaemon.prototype = {
         this._expireNotifications = []; // List of expiring notifications in order from first to last to expire.
         this._busProxy = new Bus();
 
+        this._expireTimer = 0;
+
         Main.statusIconDispatcher.connect('message-icon-added', Lang.bind(this, this._onTrayIconAdded));
         Main.statusIconDispatcher.connect('message-icon-removed', Lang.bind(this, this._onTrayIconRemoved));
 
@@ -242,11 +244,11 @@ NotificationDaemon.prototype = {
         }
     },
     _stopExpire: function() {
-         if (!this._expireTimer) {
+         if (this._expireTimer == 0) {
             return;
         }
          Mainloop.source_remove(this._expireTimer);
-         this._expireTimer = undefined;
+         this._expireTimer = 0;
     },
     _restartExpire: function() {
          this._stopExpire();
@@ -255,6 +257,8 @@ NotificationDaemon.prototype = {
     _expireNotification: function() {
          let ndata = this._expireNotifications[0];
          ndata.notification.destroy(MessageTray.NotificationDestroyedReason.EXPIRED);
+         this._expireTimer = 0;
+         return false;
     },
  
     // Sends a notification to the notification daemon. Returns the id allocated to the notification.

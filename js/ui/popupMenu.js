@@ -1272,7 +1272,11 @@ PopupMenu.prototype = {
             return;
         }
 
-        this.actor.disconnect(this.paint_id);
+        if (this.paint_id > 0) {
+            this.actor.disconnect(this.paint_id);
+            this.paint_id = 0;
+        }
+
         this.paint_count = 0;
         Main.popup_rendering = false;
     },
