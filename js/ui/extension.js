@@ -304,13 +304,14 @@ Extension.prototype = {
         let role = this.meta['role'];
         if(role && this.type.roles[role] != this) {
             if(this.type.roles[role] != null) {
-                return;
+                return false;
             }
         
             if(roleProvider != null) {
                 this.type.roles[role] = this;
                 this.roleProvider = roleProvider;
                 global.log("Role locked: " + role);
+                return true;
             }
         }
 
