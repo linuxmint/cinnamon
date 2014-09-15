@@ -2,6 +2,7 @@
 
 from SettingsWidgets import *
 from gi.repository import Gio, Gtk, GObject, Gdk
+from gi.repository.Gtk import SizeGroup, SizeGroupMode
 import cgi
 import gettext
 
@@ -243,7 +244,7 @@ class Module:
             headingbox = Gtk.Box.new(Gtk.Orientation.VERTICAL, 2)
             mainbox = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 2)
             headingbox.pack_start(mainbox, True, True, 2)
-            headingbox.pack_end(Gtk.Label.new(_("To edit a keyboard binding, click it and press the new keys, or press backspace to clear it.")), False, False, 1)
+            headingbox.pack_end(self._make_group(_("Keybinding theme"), "org.cinnamon.desktop.interface", "gtk-key-theme", self._load_keybinding_themes()), False, False, 1)
 
             left_vbox = Gtk.Box.new(Gtk.Orientation.VERTICAL, 2)
             right_vbox = Gtk.Box.new(Gtk.Orientation.VERTICAL, 2)
@@ -288,7 +289,7 @@ class Module:
             buttonbox.pack_start(self.remove_custom_button, False, False, 2)
 
             right_vbox.pack_end(buttonbox, False, False, 2)
-
+            
             mainbox.pack_start(left_vbox, False, False, 2)
             mainbox.pack_start(right_vbox, True, True, 2)
 
@@ -325,6 +326,7 @@ class Module:
             kb_column = Gtk.TreeViewColumn(_("Keyboard shortcuts"), kb_name_cell, text=0)
             kb_column.set_alignment(.5)
             self.kb_tree.append_column(kb_column)
+            self.kb_tree.set_tooltip_text(_("To edit a keyboard binding, click it and press the new keys, or press backspace to clear it."))
             self.kb_tree.connect("cursor-changed", self.onKeyBindingChanged)
 
             entry_cell = CellRendererKeybinding(self.entry_tree)
@@ -336,6 +338,7 @@ class Module:
             entry_column = Gtk.TreeViewColumn(_("Keyboard bindings"), entry_cell, text=0)
             entry_column.set_alignment(.5)
             self.entry_tree.append_column(entry_column)
+            
 
             self.entry_tree.set_tooltip_text("%s\n%s\n%s" % (_("Click to set a new accelerator key."), _("Press Escape or click again to cancel the operation."), _("Press Backspace to clear the existing keybinding.")))
 
@@ -649,7 +652,32 @@ class Module:
     def onResetToDefault(self, popup, keybinding):
         keybinding.resetDefaults()
         self.onKeyBindingChanged(self.kb_tree)
+        
+        
+    def _make_group(self, group_label, root, key, schema):
+        self.size_groups = getattr(self, "size_groups", [SizeGroup.new(SizeGroupMode.HORIZONTAL) for x in range(2)])
+        
+        box = Gtk.HBox()
+        label = Gtk.Label()
+        label.set_markup(group_label)
+        label.props.xalign = 0.0
+        self.size_groups[0].add_widget(label)
+        box.pack_start(label, False, False, 4)
 
+        w = GSettingsComboBox("", root, key, None, schema)
+        self.size_groups[1].add_widget(w)
+        box.pack_start(w, False, False, 8)
+        
+        return box
+        
+    def _load_keybinding_themes(self):
+        dirs = ("/usr/share/themes", os.path.join(os.path.expanduser("~"), ".themes"))
+        valid = walk_directories(dirs, lambda d: os.path.isfile(os.path.join(d, "gtk-3.0", "gtk-keys.css")) and os.path.isfile(os.path.join(d, "gtk-2.0-key", "gtkrc")))
+        valid.sort(lambda a,b: cmp(a.lower(), b.lower()))
+        res = []
+        for i in valid:
+            res.append((i, i))
+        return res
 
 class KeyBindingCategory():
     def __init__(self, label, int_name, parent, icon):
