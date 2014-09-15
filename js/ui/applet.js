@@ -14,6 +14,7 @@ const Pango = imports.gi.Pango;
 const Mainloop = imports.mainloop;
 const Flashspot = imports.ui.flashspot;
 const ModalDialog = imports.ui.modalDialog;
+const Signals = imports.signals;
 
 const COLOR_ICON_HEIGHT_FACTOR = .875;  // Panel height factor for normal color icons
 const PANEL_FONT_DEFAULT_HEIGHT = 11.5; // px
@@ -111,6 +112,9 @@ AppletContextMenu.prototype = {
         PopupMenu.PopupMenu.prototype._init.call(this, launcher.actor, 0.0, orientation, 0);
         Main.uiGroup.add_actor(this.actor);
         this.actor.hide();                    
+        launcher.connect("orientation-changed", Lang.bind(this, function(a, orientation) {
+            this.setArrowSide(orientation);
+        }))
     }    
 };
 
@@ -135,10 +139,14 @@ AppletPopupMenu.prototype = {
      * 
      * Constructor function
      */
-    _init: function(launcher, orientation) {    
+    _init: function(launcher, orientation) {
         PopupMenu.PopupMenu.prototype._init.call(this, launcher.actor, 0.0, orientation, 0);
         Main.uiGroup.add_actor(this.actor);
-        this.actor.hide();                    
+        this.actor.hide();
+        if (launcher instanceof Applet)
+            launcher.connect("orientation-changed", Lang.bind(this, this._onOrientationChanged));
+        else if (launcher._applet)
+            launcher._applet.connect("orientation-changed", Lang.bind(this, this._onOrientationChanged));
     },
 
     /**
@@ -153,6 +161,10 @@ AppletPopupMenu.prototype = {
         let maxHeight = Math.round(monitor.height - Main.panel.actor.height - this.actor.get_theme_node().get_length('-boxpointer-gap'));
         if (Main.panel2!==null) maxHeight -= Main.panel2.actor.height;
         this.actor.style = ('max-height: ' + maxHeight / global.ui_scale + 'px;');
+    },
+
+    _onOrientationChanged: function(a, orientation) {
+        this.setArrowSide(orientation);
     }
 }
 
@@ -371,6 +383,7 @@ Applet.prototype = {
         // this._menuManager.addMenu(this._applet_context_menu);
 
         this.on_orientation_changed(orientation);
+        this.emit("orientation-changed", orientation);
         
         // if (this._applet_context_menu.numMenuItems == 0){ // Do not recreate the menu if the applet already handles it in on_orientation_changed
         //     for (var i in menuItems) this._applet_context_menu.addMenuItem(menuItems[i]);
@@ -459,6 +472,7 @@ Applet.prototype = {
         new ModalDialog.SpicesAboutDialog(this._meta, "applets");
     }
 };
+Signals.addSignalMethods(Applet.prototype);
 
 /**
  * #IconApplet:

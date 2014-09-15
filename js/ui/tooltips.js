@@ -1,5 +1,6 @@
 const Mainloop = imports.mainloop;
 const St = imports.gi.St;
+const Applet = imports.ui.applet;
 const Main = imports.ui.main;
 const Lang = imports.lang;
 const Tweener = imports.ui.tweener;
@@ -117,6 +118,12 @@ PanelItemTooltip.prototype = {
         Tooltip.prototype._init.call(this, panelItem.actor, initTitle);
         this._panelItem = panelItem;
         this.orientation = orientation;
+        if (panelItem instanceof Applet.Applet) {
+            panelItem.connect("orientation-changed", Lang.bind(this, this._onOrientationChanged));
+        }
+        else if (panelItem._applet) {
+            panelItem._applet.connect("orientation-changed", Lang.bind(this, this._onOrientationChanged));
+        }
     },
 
     show: function() {
@@ -145,6 +152,10 @@ PanelItemTooltip.prototype = {
 
         this._tooltip.show();
         this._visible = true;
+    },
+
+    _onOrientationChanged: function(a, orientation) {
+        this.orientation = orientation;
     }
 };
 

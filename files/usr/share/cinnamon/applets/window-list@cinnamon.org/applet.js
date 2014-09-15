@@ -56,27 +56,25 @@ dragHelper.prototype = {
 
 let drag_helper = new dragHelper();
 
-function AppMenuButtonRightClickMenu(actor, metaWindow, orientation) {
-    this._init(actor, metaWindow, orientation);
+function AppMenuButtonRightClickMenu(launcher, metaWindow, orientation) {
+    this._init(launcher, metaWindow, orientation);
 }
 
 AppMenuButtonRightClickMenu.prototype = {
-    __proto__: PopupMenu.PopupMenu.prototype,
+    __proto__: Applet.AppletPopupMenu.prototype,
 
-    _init: function(actor, metaWindow, orientation) {
-        //take care of menu initialization        
-        PopupMenu.PopupMenu.prototype._init.call(this, actor, 0.0, orientation, 0);        
-        Main.uiGroup.add_actor(this.actor);
-        this.actor.hide();
-        this.window_list = actor._delegate._applet._windows;
-        actor.connect('key-press-event', Lang.bind(this, this._onSourceKeyPress));        
-        this.connect('open-state-changed', Lang.bind(this, this._onToggled));        
+    _init: function(launcher, metaWindow, orientation) {
+        Applet.AppletPopupMenu.prototype._init.call(this, launcher, orientation);
+        
+        this.window_list = launcher.actor._delegate._applet._windows;
+        launcher.actor.connect('key-press-event', Lang.bind(this, this._onSourceKeyPress));
+        this.connect('open-state-changed', Lang.bind(this, this._onToggled));
 
-        this.metaWindow = metaWindow;
         this.orientation = orientation;
-     },
+        this.metaWindow = metaWindow;
+    },
 
-     _populateMenu: function(){
+    _populateMenu: function(){
         let mw = this.metaWindow;
         let itemCloseWindow = new PopupMenu.PopupMenuItem(_("Close"));
         itemCloseWindow.connect('activate', Lang.bind(this, this._onCloseWindowActivate));
@@ -157,13 +155,13 @@ AppMenuButtonRightClickMenu.prototype = {
         (this.orientation == St.Side.BOTTOM ? items : items.reverse()).forEach(function(item) {
             this.addMenuItem(item);
         }, this);
-     },
+    },
 
-     _onRestoreOpacity: function(actor, event) {
+    _onRestoreOpacity: function(actor, event) {
         this.metaWindow.get_compositor_private().set_opacity(255);
-     },
+    },
 
-     _onToggled: function(actor, isOpening){
+    _onToggled: function(actor, isOpening){
         if (!isOpening) {
             return;
         }
@@ -351,7 +349,7 @@ AppMenuButton.prototype = {
         if (draggable) {
             //set up the right click menu
             this._menuManager = new PopupMenu.PopupMenuManager(this);
-            this.rightClickMenu = new AppMenuButtonRightClickMenu(this.actor, this.metaWindow, orientation);
+            this.rightClickMenu = new AppMenuButtonRightClickMenu(this, this.metaWindow, orientation);
             this._menuManager.addMenu(this.rightClickMenu);
 
             this._draggable = DND.makeDraggable(this.actor);
