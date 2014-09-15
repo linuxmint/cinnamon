@@ -331,7 +331,7 @@ TransientButton.prototype = {
             this.actor.set_style_class_name('menu-application-button');
         } catch (e) {
             this.handler = null;
-            let iconName = this.isPath ? 'gnome-folder' : 'unknown';
+            let iconName = this.isPath ? 'folder' : 'unknown';
             this.icon = new St.Icon({icon_name: iconName, icon_size: APPLICATION_ICON_SIZE, icon_type: St.IconType.FULLCOLOR,});
             // @todo Would be nice to indicate we don't have a handler for this file.
             this.actor.set_style_class_name('menu-application-button');
