@@ -51,11 +51,11 @@ MAX_PIX_WIDTH = 160
 MOUSE_BACK_BUTTON = 8
 
 CATEGORIES = [
-#        Display name                         ID              Show it? Always False to start              Icon
-    {"label": _("Appearance"),            "id": "appear",      "show": False,                       "icon": "cs-cat-appearance"},
-    {"label": _("Preferences"),           "id": "prefs",       "show": False,                       "icon": "cs-cat-prefs"},
-    {"label": _("Hardware"),              "id": "hardware",    "show": False,                       "icon": "cs-cat-hardware"},
-    {"label": _("Administration"),        "id": "admin",       "show": False,                       "icon": "cs-cat-admin"}
+#               Display name                    ID
+    {"label": _("Appearance"),            "id": "appear"},
+    {"label": _("Preferences"),           "id": "prefs"},
+    {"label": _("Hardware"),              "id": "hardware"},
+    {"label": _("Administration"),        "id": "admin"}
 ]
 
 CONTROL_CENTER_MODULES = [
@@ -213,9 +213,6 @@ class MainWindow:
             sp, sp_id, sp_cat = sidepage
             if not self.store.has_key(sp_cat):  #       Label         Icon          sidePage     Category
                 self.store[sidepage[2]] = Gtk.ListStore(str,          str,    object,     str)
-                for category in CATEGORIES:
-                    if category["id"] == sp_cat:
-                        category["show"] = True
 
             # Don't allow item names (and their translations) to be more than 30 chars long. It looks ugly and it creates huge gaps in the icon views
             name = unicode(sp.name,'utf-8')
@@ -307,8 +304,7 @@ class MainWindow:
             widget.destroy()
         self.first_category_done = False # This is just to prevent an extra separator showing up before the first category
         for category in CATEGORIES:
-            if category["show"] is True:
-                self.prepCategory(category)
+            self.prepCategory(category)
         self.side_view_container.show_all()
 
     def get_label_min_width(self, model):
@@ -343,8 +339,6 @@ class MainWindow:
             self.side_view_container.pack_start(widget, False, False, 10)
 
         box = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 4)
-        img = Gtk.Image.new_from_icon_name(category["icon"], Gtk.IconSize.BUTTON)
-        box.pack_start(img, False, False, 4)
 
         widget = Gtk.Label()
         widget.set_use_markup(True)
