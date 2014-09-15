@@ -1554,10 +1554,26 @@ MyApplet.prototype = {
                     dirs.push(iter.get_directory());
                 }
             }
+            
+            let prefCats = ["administration", "preferences"];
 
             dirs = dirs.sort(function(a, b) {
+                    let menuIdA = a.get_menu_id().toLowerCase();
+                    let menuIdB = b.get_menu_id().toLowerCase();
+                    
+                    let prefIdA = prefCats.indexOf(menuIdA);
+                    let prefIdB = prefCats.indexOf(menuIdB);
+                    
+                    if (prefIdA < 0 && prefIdB >= 0) {
+                      return -1;
+                    }
+                    if (prefIdA >= 0 && prefIdB < 0) {
+                      return 1;
+                    }
+                    
                     let nameA = a.get_name().toLowerCase();
                     let nameB = b.get_name().toLowerCase();
+                    
                     if (nameA > nameB) {
                         return 1;
                     }
