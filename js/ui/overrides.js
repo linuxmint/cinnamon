@@ -81,8 +81,12 @@ function overrideMainloop() {
 
     Mainloop.source_remove = function (id) {
         let dump = GLib.MainContext.default().find_source_by_id(id) == null;
-        Mainloop.__real_source_remove(id);
-        if (dump)
+        if (dump) {
+            log("Invalid or null source id used when attempting to run Mainloop.source_remove()");
             global.dump_gjs_stack();
+        }
+        else {
+            Mainloop.__real_source_remove(id);
+        }
     }
 }
