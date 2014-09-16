@@ -28,6 +28,129 @@ except Exception, detail:
     print detail
     sys.exit(1)
 
+class EditableEntry (Gtk.Notebook):
+
+    __gsignals__ = {
+        'changed': (GObject.SIGNAL_RUN_FIRST, None,
+                      (str,))
+    }
+
+    PAGE_BUTTON = 0
+    PAGE_ENTRY = 1
+
+    def __init__ (self):
+        super(EditableEntry, self).__init__()
+
+        self.label = Gtk.Label()
+        self.entry = Gtk.Entry()
+        self.button = Gtk.Button()
+
+        self.button.set_alignment(0.0, 0.5)
+        self.button.set_relief(Gtk.ReliefStyle.NONE)
+        self.append_page(self.button, None);
+        self.append_page(self.entry, None);  
+        self.set_current_page(0)
+        self.set_show_tabs(False)
+        self.set_show_border(False)
+        self.editable = False
+        self.show_all()
+
+        self.button.connect("released", self._on_button_clicked)
+        self.button.connect("activate", self._on_button_clicked)
+        self.entry.connect("activate", self._on_entry_validated)
+        self.entry.connect("changed", self._on_entry_changed)
+
+    def set_text(self, text):
+        self.button.set_label(text)
+        self.entry.set_text(text)
+
+    def _on_button_clicked(self, button):
+        self.set_editable(True)
+
+    def _on_entry_validated(self, entry):
+        self.set_editable(False)
+        self.emit("changed", entry.get_text())
+
+    def _on_entry_changed(self, entry):
+        self.button.set_label(entry.get_text())
+
+    def set_editable(self, editable):        
+        if (editable):
+            self.set_current_page(EditableEntry.PAGE_ENTRY)
+        else:
+            self.set_current_page(EditableEntry.PAGE_BUTTON)
+        self.editable = editable
+
+    def set_tooltip_text(self, tooltip):
+        self.button.set_tooltip_text(tooltip)
+
+    def get_editable(self):
+        return self.editable
+
+    def get_text(self):
+        return self.entry.get_text()
+
+class PictureChooserButton (Gtk.Button):
+
+    def __init__ (self, num_cols):
+        super(PictureChooserButton, self).__init__()
+        self.image = Gtk.Image()
+        self.set_image(self.image)
+        self.menu = Gtk.Menu()
+        self.connect("button-release-event", self._on_button_clicked)
+        self.num_cols = num_cols
+        self.row = 0
+        self.col = 0
+
+    def set_picture_from_file (self, path):
+        self.image.set_from_file(path)
+
+    def popup_menu_below_button (self, menu, widget):  
+        # here I get the coordinates of the button relative to
+        # window (self.window)
+        button_x, button_y = widget.get_allocation().x, widget.get_allocation().y
+
+        # now convert them to X11-relative
+        unused_var, window_x, window_y = widget.get_window().get_origin()
+        x = window_x + button_x
+        y = window_y + button_y
+
+        # now move the menu below the button
+        y += widget.get_allocation().height
+
+        push_in = True # push_in is True so all menu is always inside screen
+        return (x, y, push_in)
+
+    def _on_button_clicked(self, widget, event):
+        if event.button == 1:
+            self.menu.popup(None, None, self.popup_menu_below_button, self, event.button, event.time)
+            self.menu.show_all()
+
+    def _on_picture_selected(self, menuitem, path, callback):
+        if (callback(path)):           
+            self.image.set_from_file(path)            
+
+    def add_picture(self, path, callback):
+        if os.path.exists(path):          
+            file = Gio.File.new_for_path(path)
+            file_icon = Gio.FileIcon(file=file)
+            image = Gtk.Image.new_from_gicon (file_icon, Gtk.IconSize.DIALOG)
+            menuitem = Gtk.MenuItem()
+            menuitem.add(image)
+            menuitem.connect('activate', self._on_picture_selected, path, callback)
+            self.menu.attach(menuitem, self.col, self.col+1, self.row, self.row+1)
+            self.col = (self.col+1) % self.num_cols
+            if (self.col == 0):
+                self.row = self.row + 1
+
+    def add_separator(self):
+        self.row = self.row + 1
+        self.menu.attach(Gtk.SeparatorMenuItem(), 0, self.num_cols, self.row, self.row+1)
+
+    def add_menuitem(self, menuitem):
+        self.row = self.row + 1
+        self.menu.attach(menuitem, 0, self.num_cols, self.row, self.row+1)
+
 class SidePage:
     def __init__(self, name, icon, keywords, content_box = None, size = None, is_c_mod = False, is_standalone = False, exec_name = None, module=None):
         self.name = name
