@@ -53,6 +53,23 @@ class ThemesViewSidePage (ExtensionSidePage):
         self.size_groups[1].add_widget(widget)
         box.pack_start(widget, False, False, 15)        
         return box
+         
+    def create_button_chooser(self, settings, key, path_prefix, path_suffix, themes, callback):        
+        chooser = PictureChooserButton(num_cols=4, picture_size=PICTURE_SIZE)
+        theme = settings.get_string(key)
+        chooser.set_tooltip_text(theme)
+        for path in ["/usr/share/%s/%s/%s/thumbnail.png" % (path_prefix, theme, path_suffix), "~/.%s/%s/%s/thumbnail.png" % (path_prefix, theme, path_suffix), "/usr/share/cinnamon/thumbnails/%s/%s.png" % (path_suffix, theme), "/usr/share/cinnamon/thumbnails/%s/unknown.png" % path_suffix]:
+            if os.path.exists(path):
+                chooser.set_picture_from_file(path)
+                break
+        for theme in themes:
+            theme_name = theme[0]
+            theme_path = theme[1]
+            for path in ["%s/%s/%s/thumbnail.png" % (theme_path, theme_name, path_suffix), "/usr/share/cinnamon/thumbnails/%s/%s.png" % (path_suffix, theme_name), "/usr/share/cinnamon/thumbnails/%s/unknown.png" % path_suffix]:
+                if os.path.exists(path):                    
+                    chooser.add_picture(path, callback, title=theme_name, id=theme_name)
+                    break
+        return chooser
 
     def getAdditionalPage(self):
                         
@@ -74,56 +91,9 @@ class ThemesViewSidePage (ExtensionSidePage):
             path = folder.get_filename()
             self.icon_chooser.add_picture(path, self._on_icon_theme_selected, title=theme, id=theme)
 
-        # Cursor chooser
-        self.cursor_chooser = PictureChooserButton(num_cols=4, picture_size=PICTURE_SIZE)
-        theme = self.settings.get_string('cursor-theme')
-        self.cursor_chooser.set_tooltip_text(theme)
-        for path in ["/usr/share/icons/%s/cursors/thumbnail.png" % theme, "~/.icons/%s/cursors/thumbnail.png" % theme, "/usr/share/cinnamon/thumbnails/cursors/%s.png" % theme, "/usr/share/cinnamon/thumbnails/cursors/unknown.png"]:
-            if os.path.exists(path):
-                self.cursor_chooser.set_picture_from_file(path)
-                break
-        themes = self._load_cursor_themes()
-        for theme in themes:
-            theme_name = theme[0]
-            theme_path = theme[1]
-            for path in ["%s/%s/thumbnail.png" % (theme_path, theme_name), "/usr/share/cinnamon/thumbnails/cursors/%s.png" % theme_name, "/usr/share/cinnamon/thumbnails/cursors/unknown.png"]:
-                if os.path.exists(path):                    
-                    self.cursor_chooser.add_picture(path, self._on_cursor_theme_selected, title=theme_name, id=theme_name)
-                    break          
-
-        # GTK Theme chooser
-        self.theme_chooser = PictureChooserButton(num_cols=4, picture_size=PICTURE_SIZE)
-        theme = self.settings.get_string('gtk-theme')
-        self.theme_chooser.set_tooltip_text(theme)
-        for path in ["/usr/share/themes/%s/gtk-3.0/thumbnail.png" % theme, "~/.themes/%s/gtk-3.0/thumbnail.png" % theme, "/usr/share/cinnamon/thumbnails/gtk/%s.png" % theme, "/usr/share/cinnamon/thumbnails/gtk/unknown.png"]:
-            if os.path.exists(path):
-                self.theme_chooser.set_picture_from_file(path)
-                break
-        themes = self._load_gtk_themes()
-        for theme in themes:
-            theme_name = theme[0]
-            theme_path = theme[1]
-            for path in ["%s/%s/gtk-3.0/thumbnail.png" % (theme_path, theme_name), "/usr/share/cinnamon/thumbnails/gtk/%s.png" % theme_name, "/usr/share/cinnamon/thumbnails/gtk/unknown.png"]:
-                if os.path.exists(path):                    
-                    self.theme_chooser.add_picture(path, self._on_gtk_theme_selected, title=theme_name, id=theme_name)
-                    break          
-
-        # Metacity theme chooser
-        self.metacity_chooser = PictureChooserButton(num_cols=4, picture_size=PICTURE_SIZE)
-        theme = self.wm_settings.get_string('theme')
-        self.metacity_chooser.set_tooltip_text(theme)
-        for path in ["/usr/share/themes/%s/metacity-1/thumbnail.png" % theme, "~/.themes/%s/metacity-1/thumbnail.png" % theme, "/usr/share/cinnamon/thumbnails/metacity/%s.png" % theme, "/usr/share/cinnamon/thumbnails/metacity/unknown.png"]:
-            if os.path.exists(path):
-                self.metacity_chooser.set_picture_from_file(path)
-                break
-        themes = self._load_metacity_themes()
-        for theme in themes:
-            theme_name = theme[0]
-            theme_path = theme[1]
-            for path in ["%s/%s/metacity-1/thumbnail.png" % (theme_path, theme_name), "/usr/share/cinnamon/thumbnails/metacity/%s.png" % theme_name, "/usr/share/cinnamon/thumbnails/metacity/unknown.png"]:
-                if os.path.exists(path):                    
-                    self.metacity_chooser.add_picture(path, self._on_metacity_theme_selected, title=theme_name, id=theme_name)
-                    break          
+        self.cursor_chooser = self.create_button_chooser(self.settings, 'cursor-theme', 'icons', 'cursors', self._load_cursor_themes(), self._on_cursor_theme_selected)
+        self.theme_chooser = self.create_button_chooser(self.settings, 'gtk-theme', 'themes', 'gtk-3.0', self._load_gtk_themes(), self._on_gtk_theme_selected)
+        self.metacity_chooser = self.create_button_chooser(self.wm_settings, 'theme', 'themes', 'metacity-1', self._load_metacity_themes(), self._on_metacity_theme_selected)
 
         scrolledWindow = Gtk.ScrolledWindow()
         scrolledWindow.label = Gtk.Label.new(_("Other settings")) 
@@ -152,43 +122,35 @@ class ThemesViewSidePage (ExtensionSidePage):
         return scrolledWindow
 
     def _on_icon_theme_selected(self, path, theme):
-        # Update the icon theme
         try:
             self.settings.set_string("icon-theme", theme)
             self.icon_chooser.set_tooltip_text(theme)
         except Exception, detail:
-            print detail
-        
+            print detail      
         return True
 
     def _on_metacity_theme_selected(self, path, theme):
-        # Update the icon theme
         try:
             self.wm_settings.set_string("theme", theme)
             self.metacity_chooser.set_tooltip_text(theme)
         except Exception, detail:
-            print detail
-        
+            print detail        
         return True
 
     def _on_gtk_theme_selected(self, path, theme):
-        # Update the icon theme
         try:
             self.settings.set_string("gtk-theme", theme)
             self.theme_chooser.set_tooltip_text(theme)
         except Exception, detail:
-            print detail
-        
+            print detail        
         return True
 
     def _on_cursor_theme_selected(self, path, theme):
-        # Update the icon theme
         try:
             self.settings.set_string("cursor-theme", theme)
             self.cursor_chooser.set_tooltip_text(theme)
         except Exception, detail:
-            print detail
-        
+            print detail        
         return True
 
     def _load_gtk_themes(self):
