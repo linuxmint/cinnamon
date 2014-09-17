@@ -92,10 +92,11 @@ class EditableEntry (Gtk.Notebook):
 
 class PictureChooserButton (Gtk.Button):
 
-    def __init__ (self, num_cols=4, picture_size=None):        
+    def __init__ (self, num_cols=4, button_picture_size=None, menu_pictures_size=None):        
         super(PictureChooserButton, self).__init__()
         self.num_cols = num_cols
-        self.picture_size = picture_size
+        self.button_picture_size = button_picture_size
+        self.menu_pictures_size = menu_pictures_size
         self.row = 0
         self.col = 0
         self.menu = Gtk.Menu()
@@ -104,9 +105,9 @@ class PictureChooserButton (Gtk.Button):
     def set_picture_from_file (self, path):
         file = Gio.File.new_for_path(path)
         file_icon = Gio.FileIcon(file=file)
-        image = Gtk.Image.new_from_gicon (file_icon, self.picture_size)
-        if self.picture_size is not None:
-            image.set_pixel_size(self.picture_size)
+        image = Gtk.Image.new_from_gicon (file_icon, Gtk.IconSize.DIALOG)
+        if self.menu_pictures_size is not None:
+            image.set_pixel_size(self.menu_pictures_size)
         self.set_image(image)
 
     def popup_menu_below_button (self, menu, widget):  
@@ -141,12 +142,12 @@ class PictureChooserButton (Gtk.Button):
 
     def add_picture(self, path, callback, title=None, id=None):
         if os.path.exists(path):          
-            file = Gio.File.new_for_path(path)
-            file_icon = Gio.FileIcon(file=file)
-            image = Gtk.Image.new_from_gicon (file_icon, Gtk.IconSize.DIALOG)
-            menuitem = Gtk.MenuItem()
-            if self.picture_size is not None:
-                image.set_pixel_size(self.picture_size)
+            if self.button_picture_size is None:
+                pixbuf = GdkPixbuf.Pixbuf.new_from_file(path)
+            else:
+                pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_scale(path, -1, self.button_picture_size, True)
+            image = Gtk.Image.new_from_pixbuf (pixbuf)  
+            menuitem = Gtk.MenuItem()            
             if title is not None:
                 vbox = Gtk.VBox()
                 vbox.pack_start(image, False, False, 2)
