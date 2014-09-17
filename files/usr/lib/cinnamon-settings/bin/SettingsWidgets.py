@@ -98,15 +98,16 @@ class PictureChooserButton (Gtk.Button):
         self.picture_size = picture_size
         self.row = 0
         self.col = 0
-        self.image = Gtk.Image()
-        if self.picture_size is not None:
-            self.image.set_pixel_size(self.picture_size)
-        self.set_image(self.image)
         self.menu = Gtk.Menu()
         self.connect("button-release-event", self._on_button_clicked)        
 
     def set_picture_from_file (self, path):
-        self.image.set_from_file(path)
+        file = Gio.File.new_for_path(path)
+        file_icon = Gio.FileIcon(file=file)
+        image = Gtk.Image.new_from_gicon (file_icon, self.picture_size)
+        if self.picture_size is not None:
+            image.set_pixel_size(self.picture_size)
+        self.set_image(image)
 
     def popup_menu_below_button (self, menu, widget):  
         # here I get the coordinates of the button relative to
@@ -136,7 +137,7 @@ class PictureChooserButton (Gtk.Button):
             result = callback(path)
         
         if result:
-            self.image.set_from_file(path)
+            self.set_picture_from_file(path)            
 
     def add_picture(self, path, callback, title=None, id=None):
         if os.path.exists(path):          

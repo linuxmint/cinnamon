@@ -58,14 +58,19 @@ class ThemesViewSidePage (ExtensionSidePage):
         chooser = PictureChooserButton(num_cols=num_cols, picture_size=size)
         theme = settings.get_string(key)
         chooser.set_tooltip_text(theme)
-        for path in ["/usr/share/%s/%s/%s/thumbnail.png" % (path_prefix, theme, path_suffix), "~/.%s/%s/%s/thumbnail.png" % (path_prefix, theme, path_suffix), "/usr/share/cinnamon/thumbnails/%s/%s.png" % (path_suffix, theme), "/usr/share/cinnamon/thumbnails/%s/unknown.png" % path_suffix]:
+        for path in ["/usr/share/%s/%s/%s/thumbnail.png" % (path_prefix, theme, path_suffix), 
+                     os.path.expanduser("~/.%s/%s/%s/thumbnail.png" % (path_prefix, theme, path_suffix)), 
+                     "/usr/share/cinnamon/thumbnails/%s/%s.png" % (path_suffix, theme), 
+                     "/usr/share/cinnamon/thumbnails/%s/unknown.png" % path_suffix]:                        
             if os.path.exists(path):
-                chooser.set_picture_from_file(path)
-                break
+                chooser.set_picture_from_file(path)                
+                break    
         for theme in themes:
             theme_name = theme[0]
             theme_path = theme[1]
-            for path in ["%s/%s/%s/thumbnail.png" % (theme_path, theme_name, path_suffix), "/usr/share/cinnamon/thumbnails/%s/%s.png" % (path_suffix, theme_name), "/usr/share/cinnamon/thumbnails/%s/unknown.png" % path_suffix]:
+            for path in ["%s/%s/%s/thumbnail.png" % (theme_path, theme_name, path_suffix), 
+                         "/usr/share/cinnamon/thumbnails/%s/%s.png" % (path_suffix, theme_name), 
+                         "/usr/share/cinnamon/thumbnails/%s/unknown.png" % path_suffix]:
                 if os.path.exists(path):                    
                     chooser.add_picture(path, callback, title=theme_name, id=theme_name)
                     break
@@ -75,6 +80,7 @@ class ThemesViewSidePage (ExtensionSidePage):
                         
         self.settings = Gio.Settings.new("org.cinnamon.desktop.interface")
         self.wm_settings = Gio.Settings.new("org.cinnamon.desktop.wm.preferences")
+        self.cinnamon_settings = Gio.Settings.new("org.cinnamon.theme")
 
         # Icon chooser
         self.icon_chooser = PictureChooserButton(num_cols=4, picture_size=ICON_SIZE)
@@ -94,6 +100,7 @@ class ThemesViewSidePage (ExtensionSidePage):
         self.cursor_chooser = self.create_button_chooser(self.settings, 'cursor-theme', 'icons', 'cursors', self._load_cursor_themes(), self._on_cursor_theme_selected, size=32, num_cols=4)
         self.theme_chooser = self.create_button_chooser(self.settings, 'gtk-theme', 'themes', 'gtk-3.0', self._load_gtk_themes(), self._on_gtk_theme_selected, size=120, num_cols=3)
         self.metacity_chooser = self.create_button_chooser(self.wm_settings, 'theme', 'themes', 'metacity-1', self._load_metacity_themes(), self._on_metacity_theme_selected, size=100, num_cols=3)
+        self.cinnamon_chooser = self.create_button_chooser(self.cinnamon_settings, 'name', 'themes', 'cinnamon', self._load_cinnamon_themes(), self._on_cinnamon_theme_selected, size=150, num_cols=3)
 
         scrolledWindow = Gtk.ScrolledWindow()
         scrolledWindow.label = Gtk.Label.new(_("Other settings")) 
@@ -107,6 +114,7 @@ class ThemesViewSidePage (ExtensionSidePage):
         section.add(self.make_group(_("Icons"), self.icon_chooser))
         section.add(self.make_group(_("Window borders"), self.metacity_chooser))
         section.add(self.make_group(_("Mouse Pointer"), self.cursor_chooser))
+        section.add(self.make_group(_("Desktop"), self.cinnamon_chooser))
         section.add(self.make_group(_("Keybindings"), GSettingsComboBox("", "org.cinnamon.desktop.interface", "gtk-key-theme", None, self._load_keybinding_themes())))
         vbox.add(section)
 
@@ -151,6 +159,14 @@ class ThemesViewSidePage (ExtensionSidePage):
             self.cursor_chooser.set_tooltip_text(theme)
         except Exception, detail:
             print detail        
+        return True
+
+    def _on_cinnamon_theme_selected(self, path, theme):
+        try:
+            self.cinnamon_settings.set_string("name", theme)
+            self.cinnamon_chooser.set_tooltip_text(theme)
+        except Exception, detail:
+            print detail      
         return True
 
     def _load_gtk_themes(self):
@@ -199,3 +215,11 @@ class ThemesViewSidePage (ExtensionSidePage):
             res.append((i[0], i[1]))
         return res
 
+    def _load_cinnamon_themes(self):
+        dirs = ("/usr/share/themes", os.path.join(os.path.expanduser("~"), ".themes"))
+        valid = walk_directories(dirs, lambda d: os.path.exists(os.path.join(d, "cinnamon")), return_directories=True)
+        valid.sort(lambda a,b: cmp(a[0].lower(), b[0].lower()))
+        res = []
+        for i in valid:
+            res.append((i[0], i[1]))
+        return res
