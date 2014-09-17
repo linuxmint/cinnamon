@@ -57,6 +57,7 @@ class ThemesViewSidePage (ExtensionSidePage):
     def getAdditionalPage(self):
                         
         self.settings = Gio.Settings.new("org.cinnamon.desktop.interface")
+        self.wm_settings = Gio.Settings.new("org.cinnamon.desktop.wm.preferences")
 
         # Icon chooser
         self.icon_chooser = PictureChooserButton(num_cols=4, picture_size=PICTURE_SIZE)
@@ -80,7 +81,6 @@ class ThemesViewSidePage (ExtensionSidePage):
         for path in ["/usr/share/icons/%s/cursors/thumbnail.png" % theme, "~/.icons/%s/cursors/thumbnail.png" % theme, "/usr/share/cinnamon/thumbnails/cursors/%s.png" % theme, "/usr/share/cinnamon/thumbnails/cursors/unknown.png"]:
             if os.path.exists(path):
                 self.cursor_chooser.set_picture_from_file(path)
-                print "--> %s" % path
                 break
         themes = self._load_cursor_themes()
         for theme in themes:
@@ -91,17 +91,51 @@ class ThemesViewSidePage (ExtensionSidePage):
                     self.cursor_chooser.add_picture(path, self._on_cursor_theme_selected, title=theme_name, id=theme_name)
                     break          
 
+        # GTK Theme chooser
+        self.theme_chooser = PictureChooserButton(num_cols=4, picture_size=PICTURE_SIZE)
+        theme = self.settings.get_string('gtk-theme')
+        self.theme_chooser.set_tooltip_text(theme)
+        for path in ["/usr/share/themes/%s/gtk-3.0/thumbnail.png" % theme, "~/.themes/%s/gtk-3.0/thumbnail.png" % theme, "/usr/share/cinnamon/thumbnails/gtk/%s.png" % theme, "/usr/share/cinnamon/thumbnails/gtk/unknown.png"]:
+            if os.path.exists(path):
+                self.theme_chooser.set_picture_from_file(path)
+                break
+        themes = self._load_gtk_themes()
+        for theme in themes:
+            theme_name = theme[0]
+            theme_path = theme[1]
+            for path in ["%s/%s/gtk-3.0/thumbnail.png" % (theme_path, theme_name), "/usr/share/cinnamon/thumbnails/gtk/%s.png" % theme_name, "/usr/share/cinnamon/thumbnails/gtk/unknown.png"]:
+                if os.path.exists(path):                    
+                    self.theme_chooser.add_picture(path, self._on_gtk_theme_selected, title=theme_name, id=theme_name)
+                    break          
+
+        # Metacity theme chooser
+        self.metacity_chooser = PictureChooserButton(num_cols=4, picture_size=PICTURE_SIZE)
+        theme = self.wm_settings.get_string('theme')
+        self.metacity_chooser.set_tooltip_text(theme)
+        for path in ["/usr/share/themes/%s/metacity-1/thumbnail.png" % theme, "~/.themes/%s/metacity-1/thumbnail.png" % theme, "/usr/share/cinnamon/thumbnails/metacity/%s.png" % theme, "/usr/share/cinnamon/thumbnails/metacity/unknown.png"]:
+            if os.path.exists(path):
+                self.metacity_chooser.set_picture_from_file(path)
+                break
+        themes = self._load_metacity_themes()
+        for theme in themes:
+            theme_name = theme[0]
+            theme_path = theme[1]
+            for path in ["%s/%s/metacity-1/thumbnail.png" % (theme_path, theme_name), "/usr/share/cinnamon/thumbnails/metacity/%s.png" % theme_name, "/usr/share/cinnamon/thumbnails/metacity/unknown.png"]:
+                if os.path.exists(path):                    
+                    self.metacity_chooser.add_picture(path, self._on_metacity_theme_selected, title=theme_name, id=theme_name)
+                    break          
+
         scrolledWindow = Gtk.ScrolledWindow()
-        scrolledWindow.label = Gtk.Label.new(_("Other settings"))      
+        scrolledWindow.label = Gtk.Label.new(_("Other settings")) 
 
         bg = SectionBg()        
         vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
         bg.add(vbox)
         
         section = Section(_("Themes"))        
-        section.add(self.make_group(_("Controls"), GSettingsComboBox("", "org.cinnamon.desktop.interface", "gtk-theme", None, self._load_gtk_themes())))
+        section.add(self.make_group(_("Controls"), self.theme_chooser))
         section.add(self.make_group(_("Icons"), self.icon_chooser))
-        section.add(self.make_group(_("Window borders"), GSettingsComboBox("", "org.cinnamon.desktop.wm.preferences", "theme", None, self._load_window_themes())))
+        section.add(self.make_group(_("Window borders"), self.metacity_chooser))
         section.add(self.make_group(_("Mouse Pointer"), self.cursor_chooser))
         section.add(self.make_group(_("Keybindings"), GSettingsComboBox("", "org.cinnamon.desktop.interface", "gtk-key-theme", None, self._load_keybinding_themes())))
         vbox.add(section)
@@ -127,6 +161,26 @@ class ThemesViewSidePage (ExtensionSidePage):
         
         return True
 
+    def _on_metacity_theme_selected(self, path, theme):
+        # Update the icon theme
+        try:
+            self.wm_settings.set_string("theme", theme)
+            self.metacity_chooser.set_tooltip_text(theme)
+        except Exception, detail:
+            print detail
+        
+        return True
+
+    def _on_gtk_theme_selected(self, path, theme):
+        # Update the icon theme
+        try:
+            self.settings.set_string("gtk-theme", theme)
+            self.theme_chooser.set_tooltip_text(theme)
+        except Exception, detail:
+            print detail
+        
+        return True
+
     def _on_cursor_theme_selected(self, path, theme):
         # Update the icon theme
         try:
@@ -140,11 +194,11 @@ class ThemesViewSidePage (ExtensionSidePage):
     def _load_gtk_themes(self):
         """ Only shows themes that have variations for gtk+-3 and gtk+-2 """
         dirs = ("/usr/share/themes", os.path.join(os.path.expanduser("~"), ".themes"))
-        valid = walk_directories(dirs, lambda d: os.path.exists(os.path.join(d, "gtk-2.0")) and os.path.exists(os.path.join(d, "gtk-3.0")))
-        valid.sort(lambda a,b: cmp(a.lower(), b.lower()))
+        valid = walk_directories(dirs, lambda d: os.path.exists(os.path.join(d, "gtk-2.0")) and os.path.exists(os.path.join(d, "gtk-3.0")), return_directories=True)
+        valid.sort(lambda a,b: cmp(a[0].lower(), b[0].lower()))
         res = []
         for i in valid:
-            res.append((i, i))
+            res.append((i[0], i[1]))
         return res
     
     def _load_icon_themes(self):
@@ -174,12 +228,12 @@ class ThemesViewSidePage (ExtensionSidePage):
             res.append((i[0], i[1]))
         return res
         
-    def _load_window_themes(self):
+    def _load_metacity_themes(self):
         dirs = ("/usr/share/themes", os.path.join(os.path.expanduser("~"), ".themes"))
-        valid = walk_directories(dirs, lambda d: os.path.exists(os.path.join(d, "metacity-1")))
-        valid.sort(lambda a,b: cmp(a.lower(), b.lower()))
+        valid = walk_directories(dirs, lambda d: os.path.exists(os.path.join(d, "metacity-1")), return_directories=True)
+        valid.sort(lambda a,b: cmp(a[0].lower(), b[0].lower()))
         res = []
         for i in valid:
-            res.append((i, i))
+            res.append((i[0], i[1]))
         return res
 
