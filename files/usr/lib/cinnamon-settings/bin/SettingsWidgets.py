@@ -92,15 +92,18 @@ class EditableEntry (Gtk.Notebook):
 
 class PictureChooserButton (Gtk.Button):
 
-    def __init__ (self, num_cols):
+    def __init__ (self, num_cols=4, picture_size=None):        
         super(PictureChooserButton, self).__init__()
-        self.image = Gtk.Image()
-        self.set_image(self.image)
-        self.menu = Gtk.Menu()
-        self.connect("button-release-event", self._on_button_clicked)
         self.num_cols = num_cols
+        self.picture_size = picture_size
         self.row = 0
         self.col = 0
+        self.image = Gtk.Image()
+        if self.picture_size is not None:
+            self.image.set_pixel_size(self.picture_size)
+        self.set_image(self.image)
+        self.menu = Gtk.Menu()
+        self.connect("button-release-event", self._on_button_clicked)        
 
     def set_picture_from_file (self, path):
         self.image.set_from_file(path)
@@ -126,18 +129,36 @@ class PictureChooserButton (Gtk.Button):
             self.menu.popup(None, None, self.popup_menu_below_button, self, event.button, event.time)
             self.menu.show_all()
 
-    def _on_picture_selected(self, menuitem, path, callback):
-        if (callback(path)):           
-            self.image.set_from_file(path)            
+    def _on_picture_selected(self, menuitem, path, callback, id=None):
+        if id is not None:
+            result = callback(path, id)
+        else:
+            result = callback(path)
+        
+        if result:
+            self.image.set_from_file(path)
 
-    def add_picture(self, path, callback):
+    def add_picture(self, path, callback, title=None, id=None):
         if os.path.exists(path):          
             file = Gio.File.new_for_path(path)
             file_icon = Gio.FileIcon(file=file)
             image = Gtk.Image.new_from_gicon (file_icon, Gtk.IconSize.DIALOG)
             menuitem = Gtk.MenuItem()
-            menuitem.add(image)
-            menuitem.connect('activate', self._on_picture_selected, path, callback)
+            if self.picture_size is not None:
+                image.set_pixel_size(self.picture_size)
+            if title is not None:
+                vbox = Gtk.VBox()
+                vbox.pack_start(image, False, False, 2)
+                label = Gtk.Label()
+                label.set_text(title)
+                vbox.pack_start(label, False, False, 2)
+                menuitem.add(vbox)
+            else:
+                menuitem.add(image)
+            if id is not None:
+                menuitem.connect('activate', self._on_picture_selected, path, callback, id)
+            else:
+                menuitem.connect('activate', self._on_picture_selected, path, callback)
             self.menu.attach(menuitem, self.col, self.col+1, self.row, self.row+1)
             self.col = (self.col+1) % self.num_cols
             if (self.col == 0):

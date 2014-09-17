@@ -4,6 +4,8 @@ from ExtensionCore import ExtensionSidePage
 from gi.repository.Gtk import SizeGroup, SizeGroupMode
 from SettingsWidgets import *
 
+PICTURE_SIZE = 32
+
 class Module:
     def __init__(self, content_box):
         keywords = _("themes, style")
@@ -39,45 +41,76 @@ class ThemesViewSidePage (ExtensionSidePage):
 
     def fromSettingString(self, string):
         return string
-        
-    def _make_group(self, group_label, root, key, schema):
-        self.size_groups = getattr(self, "size_groups", [SizeGroup.new(SizeGroupMode.HORIZONTAL) for x in range(2)])
-        
-        box = Gtk.HBox()
+
+    def make_group(self, group_label, widget):
+        self.size_groups = getattr(self, "size_groups", [Gtk.SizeGroup.new(Gtk.SizeGroupMode.HORIZONTAL) for x in range(2)])        
+        box = IndentedHBox()
         label = Gtk.Label()
         label.set_markup(group_label)
         label.props.xalign = 0.0
         self.size_groups[0].add_widget(label)
-        box.pack_start(label, False, False, 4)
-
-        w = GSettingsComboBox("", root, key, None, schema)
-        self.size_groups[1].add_widget(w)
-        box.add(w)
-        
+        box.pack_start(label, False, False, 0)        
+        self.size_groups[1].add_widget(widget)
+        box.pack_start(widget, False, False, 15)        
         return box
 
     def getAdditionalPage(self):
-        scrolledWindow = Gtk.ScrolledWindow()
-        scrolledWindow.label = Gtk.Label.new(_("Other settings"))
+                        
+        self.settings = Gio.Settings.new("org.cinnamon.desktop.interface")
 
-        other_settings_box = Gtk.VBox()
+        self.icon_chooser = PictureChooserButton(num_cols=4, picture_size=PICTURE_SIZE)
+        self.icon_chooser.set_tooltip_text(self.settings.get_string('icon-theme'))
         
-        scrolledWindow.add_with_viewport(other_settings_box)
-        other_settings_box.set_border_width(5)
-                
-        other_settings_box.pack_start(self._make_group(_("Controls"), "org.cinnamon.desktop.interface", "gtk-theme", self._load_gtk_themes()), False, False, 2)
-        other_settings_box.pack_start(self._make_group(_("Icons"), "org.cinnamon.desktop.interface", "icon-theme", self._load_icon_themes()), False, False, 2)
-        other_settings_box.pack_start(self._make_group(_("Window borders"), "org.cinnamon.desktop.wm.preferences", "theme", self._load_window_themes()), False, False, 2)
-        other_settings_box.pack_start(self._make_group(_("Mouse Pointer"), "org.cinnamon.desktop.interface", "cursor-theme", self._load_cursor_themes()), False, False, 2)
-        other_settings_box.pack_start(self._make_group(_("Keybindings"), "org.cinnamon.desktop.interface", "gtk-key-theme", self._load_keybinding_themes()), False, False, 2)
+        current_theme = Gtk.IconTheme.get_default()
+        folder = current_theme.lookup_icon("folder", PICTURE_SIZE, 0)
+        path = folder.get_filename()
+        self.icon_chooser.set_picture_from_file(path)
 
-        menusHaveIconsCB = GSettingsCheckButton(_("Show icons in menus"), "org.cinnamon.settings-daemon.plugins.xsettings", "menus-have-icons", None)
-        other_settings_box.pack_start(menusHaveIconsCB, False, False, 2)
+        themes = self._load_icon_themes()
+        for theme in themes:            
+            icon_theme = Gtk.IconTheme()
+            icon_theme.set_custom_theme(theme)
+            folder = icon_theme.lookup_icon("folder", PICTURE_SIZE, Gtk.IconLookupFlags.FORCE_SVG)
+            path = folder.get_filename()
+            self.icon_chooser.add_picture(path, self._on_icon_theme_selected, title=theme, id=theme)
 
-        buttonsHaveIconsCB = GSettingsCheckButton(_("Show icons on buttons"), "org.cinnamon.settings-daemon.plugins.xsettings", "buttons-have-icons", None)
-        other_settings_box.pack_start(buttonsHaveIconsCB, False, False, 2)
+            
+        scrolledWindow = Gtk.ScrolledWindow()
+        scrolledWindow.label = Gtk.Label.new(_("Other settings"))      
+
+        bg = SectionBg()        
+        vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
+        bg.add(vbox)
+        
+        section = Section(_("Themes"))        
+        section.add(self.make_group(_("Controls"), GSettingsComboBox("", "org.cinnamon.desktop.interface", "gtk-theme", None, self._load_gtk_themes())))
+        section.add(self.make_group(_("Icons"), self.icon_chooser))
+        section.add(self.make_group(_("Window borders"), GSettingsComboBox("", "org.cinnamon.desktop.wm.preferences", "theme", None, self._load_window_themes())))
+        section.add(self.make_group(_("Mouse Pointer"), GSettingsComboBox("", "org.cinnamon.desktop.interface", "cursor-theme", None, self._load_cursor_themes())))
+        section.add(self.make_group(_("Keybindings"), GSettingsComboBox("", "org.cinnamon.desktop.interface", "gtk-key-theme", None, self._load_keybinding_themes())))
+        vbox.add(section)
+
+        vbox.add(Gtk.Separator.new(Gtk.Orientation.HORIZONTAL))
+
+        section = Section(_("Options"))
+        section.add(GSettingsCheckButton(_("Show icons in menus"), "org.cinnamon.settings-daemon.plugins.xsettings", "menus-have-icons", None))
+        section.add(GSettingsCheckButton(_("Show icons on buttons"), "org.cinnamon.settings-daemon.plugins.xsettings", "buttons-have-icons", None))
+        vbox.add(section)
+
+        scrolledWindow.add_with_viewport(bg)                                
 
         return scrolledWindow
+
+    def _on_icon_theme_selected(self, path, theme):
+        # Update the icon theme
+        try:
+            self.settings.set_string("icon-theme", theme)
+            self.icon_chooser.set_tooltip_text(theme)
+        except Exception, detail:
+            print detail
+        
+        return True
+
 
     def _load_gtk_themes(self):
         """ Only shows themes that have variations for gtk+-3 and gtk+-2 """
@@ -95,7 +128,7 @@ class ThemesViewSidePage (ExtensionSidePage):
         valid.sort(lambda a,b: cmp(a.lower(), b.lower()))
         res = []
         for i in valid:
-            res.append((i, i))
+            res.append(i)
         return res
         
     def _load_keybinding_themes(self):
