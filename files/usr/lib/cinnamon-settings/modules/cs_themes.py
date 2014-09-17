@@ -120,7 +120,6 @@ class ThemesViewSidePage (ExtensionSidePage):
         section.add(self.make_group(_("Window borders"), self.metacity_chooser))
         section.add(self.make_group(_("Mouse Pointer"), self.cursor_chooser))
         section.add(self.make_group(_("Desktop"), self.cinnamon_chooser))
-        section.add(self.make_group(_("Keybindings"), GSettingsComboBox("", "org.cinnamon.desktop.interface", "gtk-key-theme", None, self._load_keybinding_themes())))
         vbox.add(section)
 
         vbox.add(Gtk.Separator.new(Gtk.Orientation.HORIZONTAL))
@@ -191,15 +190,6 @@ class ThemesViewSidePage (ExtensionSidePage):
         res = []
         for i in valid:
             res.append(i)
-        return res
-        
-    def _load_keybinding_themes(self):
-        dirs = ("/usr/share/themes", os.path.join(os.path.expanduser("~"), ".themes"))
-        valid = walk_directories(dirs, lambda d: os.path.isfile(os.path.join(d, "gtk-3.0", "gtk-keys.css")) and os.path.isfile(os.path.join(d, "gtk-2.0-key", "gtkrc")))
-        valid.sort(lambda a,b: cmp(a.lower(), b.lower()))
-        res = []
-        for i in valid:
-            res.append((i, i))
         return res
         
     def _load_cursor_themes(self):
