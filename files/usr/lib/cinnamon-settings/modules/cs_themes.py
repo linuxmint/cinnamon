@@ -4,7 +4,7 @@ from ExtensionCore import ExtensionSidePage
 from gi.repository.Gtk import SizeGroup, SizeGroupMode
 from SettingsWidgets import *
 
-PICTURE_SIZE = 32
+ICON_SIZE = 48
 
 class Module:
     def __init__(self, content_box):
@@ -54,8 +54,8 @@ class ThemesViewSidePage (ExtensionSidePage):
         box.pack_start(widget, False, False, 15)        
         return box
          
-    def create_button_chooser(self, settings, key, path_prefix, path_suffix, themes, callback):        
-        chooser = PictureChooserButton(num_cols=4, picture_size=PICTURE_SIZE)
+    def create_button_chooser(self, settings, key, path_prefix, path_suffix, themes, callback, size, num_cols):        
+        chooser = PictureChooserButton(num_cols=num_cols, picture_size=size)
         theme = settings.get_string(key)
         chooser.set_tooltip_text(theme)
         for path in ["/usr/share/%s/%s/%s/thumbnail.png" % (path_prefix, theme, path_suffix), "~/.%s/%s/%s/thumbnail.png" % (path_prefix, theme, path_suffix), "/usr/share/cinnamon/thumbnails/%s/%s.png" % (path_suffix, theme), "/usr/share/cinnamon/thumbnails/%s/unknown.png" % path_suffix]:
@@ -77,23 +77,23 @@ class ThemesViewSidePage (ExtensionSidePage):
         self.wm_settings = Gio.Settings.new("org.cinnamon.desktop.wm.preferences")
 
         # Icon chooser
-        self.icon_chooser = PictureChooserButton(num_cols=4, picture_size=PICTURE_SIZE)
+        self.icon_chooser = PictureChooserButton(num_cols=4, picture_size=ICON_SIZE)
         self.icon_chooser.set_tooltip_text(self.settings.get_string('icon-theme'))        
         current_theme = Gtk.IconTheme.get_default()
-        folder = current_theme.lookup_icon("folder", PICTURE_SIZE, 0)
+        folder = current_theme.lookup_icon("folder", ICON_SIZE, 0)
         path = folder.get_filename()
         self.icon_chooser.set_picture_from_file(path)
         themes = self._load_icon_themes()
         for theme in themes:            
             icon_theme = Gtk.IconTheme()
             icon_theme.set_custom_theme(theme)
-            folder = icon_theme.lookup_icon("folder", PICTURE_SIZE, Gtk.IconLookupFlags.FORCE_SVG)
+            folder = icon_theme.lookup_icon("folder", ICON_SIZE, Gtk.IconLookupFlags.FORCE_SVG)
             path = folder.get_filename()
             self.icon_chooser.add_picture(path, self._on_icon_theme_selected, title=theme, id=theme)
 
-        self.cursor_chooser = self.create_button_chooser(self.settings, 'cursor-theme', 'icons', 'cursors', self._load_cursor_themes(), self._on_cursor_theme_selected)
-        self.theme_chooser = self.create_button_chooser(self.settings, 'gtk-theme', 'themes', 'gtk-3.0', self._load_gtk_themes(), self._on_gtk_theme_selected)
-        self.metacity_chooser = self.create_button_chooser(self.wm_settings, 'theme', 'themes', 'metacity-1', self._load_metacity_themes(), self._on_metacity_theme_selected)
+        self.cursor_chooser = self.create_button_chooser(self.settings, 'cursor-theme', 'icons', 'cursors', self._load_cursor_themes(), self._on_cursor_theme_selected, size=32, num_cols=4)
+        self.theme_chooser = self.create_button_chooser(self.settings, 'gtk-theme', 'themes', 'gtk-3.0', self._load_gtk_themes(), self._on_gtk_theme_selected, size=120, num_cols=3)
+        self.metacity_chooser = self.create_button_chooser(self.wm_settings, 'theme', 'themes', 'metacity-1', self._load_metacity_themes(), self._on_metacity_theme_selected, size=100, num_cols=3)
 
         scrolledWindow = Gtk.ScrolledWindow()
         scrolledWindow.label = Gtk.Label.new(_("Other settings")) 
