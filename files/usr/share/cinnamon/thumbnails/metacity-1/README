@@ -1,0 +1,19 @@
+
+ HOW TO MAKE A METACITY THUMBNAIL?
+ ---------------------------------
+
+ - Install ImageMagick ("apt install imagemagick")
+ - Open a window (Nemo for instance)
+ - Press Alt+Print-Screen to take a screenshot of the window
+ - Go to your Pictures directory and move the screenshot to ~/screenshot.png
+ - Open a terminal and type:
+
+	cd
+	convert screenshot.png -gravity north-east -extent 100x32 thumbnail.png
+
+ WHICH THUMBNAIL IS USED BY CINNAMON TO REPRESENT A THEME?
+ ---------------------------------------------------------
+
+ - Cinnamon first tries to find a metacity-1/thumbnail.png file in the theme directory
+ - If it doesn't find any, it looks in /usr/share/cinnamon/thumbnails/metacity-1/
+

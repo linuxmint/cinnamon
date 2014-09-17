@@ -1,0 +1,19 @@
+
+ HOW TO MAKE A GTK THEME THUMBNAIL?
+ ----------------------------------
+
+ - Install ImageMagick ("apt install imagemagick")
+ - Open a terminal and run "cinnamon-preview-gtk-theme mytheme" (where mytheme is the name of the Theme you want to thumbnail)
+ - Press Alt+Print-Screen to take a screenshot of the window
+ - Go to your Pictures directory and move the screenshot to ~/screenshot.png
+ - Open a terminal and type:
+
+	cd
+	convert screenshot.png -gravity north-west -extent 120x35 thumbnail.png
+
+ WHICH THUMBNAIL IS USED BY CINNAMON TO REPRESENT A THEME?
+ ---------------------------------------------------------
+
+ - Cinnamon first tries to find a gtk-3.0/thumbnail.png file in the theme directory
+ - If it doesn't find any, it looks in /usr/share/cinnamon/thumbnails/gtk-3.0/
+
