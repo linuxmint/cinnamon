@@ -370,6 +370,7 @@ class MainWindow:
         area.pack_start(text_renderer, True, True, False)
         area.add_attribute(pixbuf_renderer, "icon-name", 1)
         pixbuf_renderer.set_property("stock-size", Gtk.IconSize.DIALOG)
+        pixbuf_renderer.set_property("follow-state", True)
 
         area.add_attribute(text_renderer, "text", 0)
 
