@@ -279,14 +279,19 @@ def fileexists(program):
             return True
     return False
 
-def walk_directories(dirs, filter_func):
+def walk_directories(dirs, filter_func, return_directories=False):
+    # If return_directories is False: returns a list of valid subdir names
+    # Else: returns a list of valid tuples (subdir-names, parent-directory)
     valid = []
     try:
         for thdir in dirs:
             if os.path.isdir(thdir):
                 for t in os.listdir(thdir):
                     if filter_func(os.path.join(thdir, t)):
-                         valid.append(t)
+                        if return_directories:
+                            valid.append([t, thdir])
+                        else:
+                            valid.append(t)
     except:
         pass
         #logging.critical("Error parsing directories", exc_info=True)
