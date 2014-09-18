@@ -16,6 +16,32 @@ LOCK_DELAY_OPTIONS = [
     (3600, _("After 1 hour"))
 ]
 
+SYNTAX_FORMATING = _("""
+        [Time Formats]
+        %H - Hour of the day, 24-hour clock (00..23)
+        %I - Hour of the day, 12-hour clock (01..12)
+        %l - Hour of the day without extra 0 (1..12)
+        %M - Minute of the hour (00..59)
+        %p - Meridian indicator capitalized (AM or PM)
+        %P - Meridian indicator lowercase (am or pm)
+        %S - Second of the minute (00..60)
+        %Z - Time zone name
+        
+        [Date Formats]
+        %a - The abbreviated weekday name (Sun)
+        %A - The full weekday name (Sunday)
+        %b - The abbreviated month name (Jan)
+        %B - The full month name (January)
+        %d - Day of the month (01..31)
+        %e - Day of the month (1..31)
+        %j - Day of the year (001..366)
+        %m - Month of the year (01..12)
+        %w - Day of the week (Sunday is 0, 0..6)
+        %y - Year without a century (00..99)
+        %Y - Year with century
+        %% - Literal % character
+        """)
+
 class Module:
     def __init__(self, content_box):
         keywords = _("screensaver, lock, password, away, message")
@@ -57,6 +83,13 @@ class Module:
             section.add(widget)
             section.add_indented(GSettingsEntry(_("Time Format: "), schema, "time-format", "%s/%s" % (schema, "use-custom-format")))
             section.add_indented(GSettingsEntry(_("Date Format: "), schema, "date-format", "%s/%s" % (schema, "use-custom-format")))
+            button = Gtk.Button(label = _("Show Date & Time Format Syntax"))
+            button.connect("clicked", self.formats_dialog)
+            section.add_indented(button)
+            label = Gtk.Label()
+            label.set_markup("<i><small>%s</small></i>" % _("Hint: Plain text can be used in place of date and time formats for larger messages."))        
+            label.get_style_context().add_class("dim-label")
+            section.add_indented(label)
             vbox.add(section)
 
             vbox.add(Gtk.Separator.new(Gtk.Orientation.HORIZONTAL))     
@@ -70,5 +103,10 @@ class Module:
             section.add(widget)
             vbox.add(section)
 
+    def formats_dialog(self, widget):
+        info = Gtk.MessageDialog(None, 0, Gtk.MessageType.INFO, Gtk.ButtonsType.OK, "Date & Time Format Syntax")
+        info.format_secondary_text(SYNTAX_FORMATING)
+        info.run()
+        info.destroy()
 
         
