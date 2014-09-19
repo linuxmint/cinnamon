@@ -1809,7 +1809,7 @@ st_widget_sync_hover (StWidget *widget)
   ClutterDeviceManager *device_manager;
   ClutterInputDevice *pointer;
   ClutterActor *pointer_actor;
-  
+
   if (widget->priv->track_hover) {
     device_manager = clutter_device_manager_get_default ();
     pointer = clutter_device_manager_get_core_device (device_manager,
@@ -2989,7 +2989,7 @@ st_widget_destroy_children (StWidget *widget)
  * @widget: An #StWidget
  * @actor: A #ClutterActor
  * @pos: An #int
- * 
+ *
  *
  * A simple compatibility wrapper around clutter_actor_set_child_at_index.
  *

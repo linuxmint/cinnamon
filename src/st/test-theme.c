@@ -173,17 +173,21 @@ assert_background_image (StThemeNode *node,
 			 const char  *node_description,
 			 const char  *expected)
 {
-  const char *value = st_theme_node_get_background_image (node);
-  if (expected == NULL)
-    expected = "(null)";
-  if (value == NULL)
-    value = "(null)";
+  GFile *value = st_theme_node_get_background_image (node);
+  GFile *expected_file;
 
-  if (strcmp (expected, value) != 0)
+  if (expected != NULL && value != NULL)
     {
-      g_print ("%s: %s.background-image: expected: %s, got: %s\n",
-	       test, node_description, expected, value);
-      fail = TRUE;
+      expected_file = g_file_new_for_path (expected);
+
+      if (!g_file_equal (expected_file, value))
+        {
+          char *uri = g_file_get_uri (expected_file);
+          g_print ("%s: %s.background-image: expected: %s, got: %s\n",
+                   test, node_description, expected, uri);
+          fail = TRUE;
+          g_free (uri);
+        }
     }
 }
 

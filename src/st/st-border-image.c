@@ -27,7 +27,7 @@
 struct _StBorderImage {
   GObject parent;
 
-  char *filename;
+  GFile *file;
   int border_top;
   int border_right;
   int border_bottom;
@@ -46,7 +46,7 @@ st_border_image_finalize (GObject *object)
 {
   StBorderImage *image = ST_BORDER_IMAGE (object);
 
-  g_free (image->filename);
+  g_object_unref (image->file);
 
   G_OBJECT_CLASS (st_border_image_parent_class)->finalize (object);
 }
@@ -65,7 +65,7 @@ st_border_image_init (StBorderImage *image)
 }
 
 StBorderImage *
-st_border_image_new (const char *filename,
+st_border_image_new (GFile *file,
                        int         border_top,
                        int         border_right,
                        int         border_bottom,
@@ -75,7 +75,7 @@ st_border_image_new (const char *filename,
 
   image = g_object_new (ST_TYPE_BORDER_IMAGE, NULL);
 
-  image->filename = g_strdup (filename);
+  image->file = g_object_ref (file);
   image->border_top = border_top;
   image->border_right = border_right;
   image->border_bottom = border_bottom;
@@ -84,12 +84,18 @@ st_border_image_new (const char *filename,
   return image;
 }
 
-const char *
-st_border_image_get_filename (StBorderImage *image)
+/**
+ * st_border_image_get_file:
+ * @image: a #StBorder_Image
+ *
+ * Returns: (transfer none): the #GFile for the #StBorder_Image
+ */
+GFile *
+st_border_image_get_file (StBorderImage *image)
 {
   g_return_val_if_fail (ST_IS_BORDER_IMAGE (image), NULL);
 
-  return image->filename;
+  return image->file;
 }
 
 void
@@ -131,5 +137,5 @@ st_border_image_equal (StBorderImage *image,
           image->border_right == other->border_right &&
           image->border_bottom == other->border_bottom &&
           image->border_left == other->border_left &&
-          strcmp (image->filename, other->filename) == 0);
+          g_file_equal (image->file, other->file));
 }
