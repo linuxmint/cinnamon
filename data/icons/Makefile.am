@@ -5,11 +5,9 @@ public_icons_themes = \
 	$(NULL)
 
 public_icons = \
-    hicolor_categories_16x16_cs-desklets.svg \
-    hicolor_categories_16x16_cs-backgrounds.svg \
 	hicolor_categories_scalable_cs-applets.svg \
 	hicolor_categories_scalable_cs-backgrounds.svg \
-    hicolor_categories_scalable_cs-bluetooth.svg \
+	hicolor_categories_scalable_cs-bluetooth.svg \
 	hicolor_categories_scalable_cs-cat-admin.svg \
 	hicolor_categories_scalable_cs-cat-appearance.svg \
 	hicolor_categories_scalable_cs-cat-hardware.svg \
