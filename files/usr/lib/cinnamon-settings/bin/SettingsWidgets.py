@@ -100,7 +100,7 @@ class PictureChooserButton (Gtk.Button):
         self.row = 0
         self.col = 0
         self.menu = Gtk.Menu()
-        self.connect("button-release-event", self._on_button_clicked)        
+        self.connect("button-release-event", self._on_button_clicked)  
 
     def set_picture_from_file (self, path):
         file = Gio.File.new_for_path(path)
@@ -139,6 +139,13 @@ class PictureChooserButton (Gtk.Button):
         
         if result:
             self.set_picture_from_file(path)            
+
+    def clear_menu(self):
+        menu = self.menu
+        self.menu = Gtk.Menu()
+        self.row = 0
+        self.col = 0
+        del menu
 
     def add_picture(self, path, callback, title=None, id=None):
         if os.path.exists(path):          

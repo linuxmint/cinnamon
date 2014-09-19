@@ -84,6 +84,10 @@ class Spice_Harvester:
 
 
         self.progress_window = self.builder.get_object("progress_window")
+        self.progress_window.set_transient_for(window)
+        self.progress_window.set_destroy_with_parent(True)
+        self.progress_window.set_modal(True)
+        self.progress_window.set_position(Gtk.WindowPosition.CENTER_ON_PARENT)
         self.progress_button_abort = self.builder.get_object("btnProgressAbort")
         self.progress_window.connect("delete-event", self.on_progress_close)
         self.progresslabel = self.builder.get_object('progresslabel')

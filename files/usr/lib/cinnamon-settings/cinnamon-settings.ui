@@ -184,15 +184,11 @@
     <property name="valign">start</property>
     <property name="border_width">6</property>
     <property name="resizable">False</property>
-    <property name="window_position">center-on-parent</property>
-    <property name="destroy_with_parent">True</property>
     <property name="icon_name">preferences-other</property>
     <property name="type_hint">normal</property>
     <property name="skip_taskbar_hint">True</property>
     <property name="skip_pager_hint">True</property>
     <property name="deletable">False</property>
-    <property name="transient_for">main_window</property>
-    <property name="attached_to">main_window</property>
     <child internal-child="vbox">
       <object class="GtkBox" id="dialog-vbox3">
         <property name="width_request">300</property>

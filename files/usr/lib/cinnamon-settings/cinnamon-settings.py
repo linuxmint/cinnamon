@@ -138,7 +138,6 @@ class MainWindow:
     ''' Create the UI '''
     @print_timing
     def __init__(self):
-
         self.builder = Gtk.Builder()
         self.builder.add_from_file("/usr/lib/cinnamon-settings/cinnamon-settings.ui")
         self.window = self.builder.get_object("main_window")
@@ -246,7 +245,6 @@ class MainWindow:
 
         # set up larger components.
         self.window.set_title(_("System Settings"))
-        self.window.connect("destroy", self.quit)
         self.button_back.connect('clicked', self.back_to_icon_view)
 
         self.calculate_bar_heights()
@@ -532,9 +530,9 @@ class MainWindow:
     def quit(self, *args):
         Gtk.main_quit()
 
-
 if __name__ == "__main__":
     import signal
-    signal.signal(signal.SIGINT, MainWindow().quit)
+    window = MainWindow()
+    signal.signal(signal.SIGINT, window.quit)
     Gtk.main()
 

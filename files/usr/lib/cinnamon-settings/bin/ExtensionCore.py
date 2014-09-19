@@ -55,7 +55,10 @@ class ExtensionSidePage (SidePage):
         self.icons = []
         self.run_once = False
 
-    def load(self):
+    def load(self, window=None):
+        
+        if window is not None:
+            self.window = window
 
         scrolledWindow = Gtk.ScrolledWindow()   
         scrolledWindow.set_shadow_type(Gtk.ShadowType.ETCHED_IN)   
@@ -368,6 +371,7 @@ class ExtensionSidePage (SidePage):
         self.current_num_updates = 0
 
         self.spices = Spice_Harvester(self.collection_type, self.window, self.builder, self.noun, self.pl_noun)
+
         # if not self.spices.get_webkit_enabled():
         #     getmore_label.set_sensitive(False)
         #     reload_button.set_sensitive(False)
