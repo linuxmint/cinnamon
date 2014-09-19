@@ -57,6 +57,10 @@ class Module:
             section.add(widget)
             section.add_indented(GSettingsEntry(_("Time Format: "), schema, "time-format", "%s/%s" % (schema, "use-custom-format")))
             section.add_indented(GSettingsEntry(_("Date Format: "), schema, "date-format", "%s/%s" % (schema, "use-custom-format")))
+            label = Gtk.Label()
+            label.set_markup("<i><small>%s</small></i>" % _("Hint: Plain text can also be used in place of the date and time format for custom messages."))
+            label.get_style_context().add_class("dim-label")
+            section.add_indented(label)
             vbox.add(section)
 
             vbox.add(Gtk.Separator.new(Gtk.Orientation.HORIZONTAL))     
