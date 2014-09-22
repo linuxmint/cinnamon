@@ -62,8 +62,8 @@ class Module:
             label.get_style_context().add_class("dim-label")
             section.add_indented(label)
             blank_line = Gtk.Label("")
-            #section.add(blank_line)
-            section.add(GSettingsFontButton(_("Font: "), "org.cinnamon.desktop.screensaver", "font-date", None))
+            section.add(GSettingsFontButton(_("Time Font: "), "org.cinnamon.desktop.screensaver", "font-time", None))
+            section.add(GSettingsFontButton(_("Date Font: "), "org.cinnamon.desktop.screensaver", "font-date", None))
             vbox.add(section)
 
             vbox.add(Gtk.Separator.new(Gtk.Orientation.HORIZONTAL))     
