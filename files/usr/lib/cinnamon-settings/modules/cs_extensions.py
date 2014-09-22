@@ -6,13 +6,10 @@ class Module:
     def __init__(self, content_box):
         keywords = _("extension, addon")
         self.name = "extensions"
-        self.comment = _("Manage your Cinnamon extensions")
-        # for i18n replacement in ExtensionCore.py
-        noun = _("extension")
-        pl_noun = _("extensions")
+        self.comment = _("Manage your Cinnamon extensions")            
         # we do not translate Cinnamon
         target = "Cinnamon"
-        sidePage = ExtensionViewSidePage(_("Extensions"), "cs-extensions", keywords, content_box, "extension", noun, pl_noun, target, self)
+        sidePage = ExtensionViewSidePage(_("Extensions"), "cs-extensions", keywords, content_box, "extension", target, self)
         self.sidePage = sidePage
         self.category = "prefs"
 
@@ -27,9 +24,9 @@ class Module:
 
 
 class ExtensionViewSidePage (ExtensionSidePage):
-    def __init__(self, name, icon, keywords, content_box, collection_type, noun, pl_noun, target, module):
+    def __init__(self, name, icon, keywords, content_box, collection_type, target, module):
         self.RemoveString = ""
-        ExtensionSidePage.__init__(self, name, icon, keywords, content_box, collection_type, noun, pl_noun, target, module)
+        ExtensionSidePage.__init__(self, name, icon, keywords, content_box, collection_type, target, module)
 
     def toSettingString(self, uuid, instanceId):
         return uuid

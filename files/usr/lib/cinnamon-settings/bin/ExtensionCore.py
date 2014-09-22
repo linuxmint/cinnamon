@@ -45,12 +45,10 @@ class ExtensionSidePage (SidePage):
     SORT_ENABLED = 3
     SORT_REMOVABLE = 4  
 
-    def __init__(self, name, icon, keywords, content_box, collection_type, noun, pl_noun, target, module=None):
+    def __init__(self, name, icon, keywords, content_box, collection_type, target, module=None):
         SidePage.__init__(self, name, icon, keywords, content_box, -1, module=module)
         self.collection_type = collection_type
-        self.target = target
-        self.noun = noun
-        self.pl_noun = pl_noun
+        self.target = target     
         self.themes = collection_type == "theme"
         self.icons = []
         self.run_once = False
@@ -68,10 +66,26 @@ class ExtensionSidePage (SidePage):
 
         self.search_entry = Gtk.Entry()
         self.search_entry.set_icon_from_icon_name(Gtk.EntryIconPosition.PRIMARY, 'edit-find')
-        self.search_entry.set_placeholder_text(_("Search %s") % (self.pl_noun))
+        self.search_entry.set_placeholder_text(_("Search"))
         self.search_entry.connect('changed', self.on_entry_refilter)
 
-        self.notebook.append_page(extensions_vbox, Gtk.Label.new(_("Installed")))
+        if self.collection_type == "applet":
+            notebook_label = _("Installed applets")
+            notebook_label_get_more = _("Available applets (online)")
+        elif self.collection_type == "desklet":
+            notebook_label = _("Installed desklets")
+            notebook_label_get_more = _("Available desklets (online)")
+        elif self.collection_type == "theme":
+            notebook_label = _("Installed themes")
+            notebook_label_get_more = _("Available themes (online)")
+        elif self.collection_type == "extension":
+            notebook_label = _("Installed extensions")
+            notebook_label_get_more = _("Available extensions (online)")
+        else:
+            notebook_label = _("Installed items")
+            notebook_label_get_more = _("Available items (online)")
+
+        self.notebook.append_page(extensions_vbox, Gtk.Label.new(notebook_label))
 
         self.add_widget(self.notebook)
         self.notebook.expand = True
@@ -151,21 +165,14 @@ class ExtensionSidePage (SidePage):
         else:
             self.instanceButton = Gtk.Button.new_with_label(_("Apply theme"))
         self.instanceButton.connect("clicked", lambda x: self._add_another_instance())
-        if self.collection_type in ("desklet", "applet"):
-            self.instanceButton.set_tooltip_text(_("Some %s can be added multiple times.\n Use this to add another instance. Use panel edit mode to remove a single instance.") % (self.pl_noun))
-        elif self.collection_type == "extension":
-            self.instanceButton.set_tooltip_text(_("Click to enable this %s") % (self.noun))
-        else:
-            self.instanceButton.set_tooltip_text(_("Click to apply this %s") % (self.noun))
+        
         self.instanceButton.set_sensitive(False);
 
         self.configureButton = Gtk.Button.new_with_label(_("Configure"))
         self.configureButton.connect("clicked", self._configure_extension)
-        self.configureButton.set_tooltip_text(_("Configure this %s") % (self.noun))
 
         self.extConfigureButton = Gtk.Button.new_with_label(_("Configure"))
         self.extConfigureButton.connect("clicked", self._external_configure_launch)
-        self.extConfigureButton.set_tooltip_text(_("Configure this %s") % (self.noun))
 
         if not self.themes:
             restoreButton = Gtk.Button.new_with_label(_("Restore to default"))
@@ -178,9 +185,14 @@ class ExtensionSidePage (SidePage):
         renderer_text = Gtk.CellRendererText()
         self.comboshow.pack_start(renderer_text, True)
         showTypes=Gtk.ListStore(int, str)
-        showTypes.append([SHOW_ALL, _("All %s") % (self.pl_noun)])
-        showTypes.append([SHOW_ACTIVE, _("Active %s") % (self.pl_noun)])
-        showTypes.append([SHOW_INACTIVE, _("Inactive %s") % (self.pl_noun)])
+        if self.collection_type == "applet":
+            showTypes.append([SHOW_ALL, _("All applets")])
+            showTypes.append([SHOW_ACTIVE, _("Active applets")])
+            showTypes.append([SHOW_INACTIVE, _("Inactive applets")])
+        elif self.collection_type == "desklet":
+            showTypes.append([SHOW_ALL, _("All desklets")])
+            showTypes.append([SHOW_ACTIVE, _("Active desklets")])
+            showTypes.append([SHOW_INACTIVE, _("Inactive desklets")])
         self.comboshow.set_model(showTypes)
         self.comboshow.set_entry_text_column(1)
         self.comboshow.set_active(0) #All
@@ -188,11 +200,12 @@ class ExtensionSidePage (SidePage):
         self.comboshow.add_attribute(renderer_text, "text", 1)
         self.comboshow.show()
         
-        showLabel = Gtk.Label()
-        showLabel.set_text(_("Show"))
-        showLabel.show()
-        hbox.pack_start(showLabel, False, False, 4)
-        hbox.pack_start(self.comboshow, False, False, 2)
+        if not self.themes:
+            showLabel = Gtk.Label()
+            showLabel.set_text(_("Show"))
+            showLabel.show()
+            hbox.pack_start(showLabel, False, False, 4)
+            hbox.pack_start(self.comboshow, False, False, 2)
         
         hbox.pack_end(self.search_entry, False, False, 4)
         extensions_vbox.pack_start(hbox, False, False, 4)
@@ -239,7 +252,7 @@ class ExtensionSidePage (SidePage):
         getmore_vbox = Gtk.VBox()
         getmore_vbox.set_border_width(0)
 
-        getmore_label = Gtk.Label.new(_("Get more online"))
+        getmore_label = Gtk.Label.new(notebook_label_get_more)
         self.notebook.append_page(getmore_vbox, getmore_label)
         self.notebook.connect("switch-page", self.on_page_changed)
 
@@ -248,8 +261,8 @@ class ExtensionSidePage (SidePage):
         self.gm_combosort.pack_start(renderer_text, True)
         sortTypes=Gtk.ListStore(int, str)
         sortTypes.append([self.SORT_NAME, _("Name")])
-        sortTypes.append([self.SORT_RATING, _("Most popular")])
-        sortTypes.append([self.SORT_DATE_EDITED, _("Latest")])
+        sortTypes.append([self.SORT_RATING, _("Popularity")])
+        sortTypes.append([self.SORT_DATE_EDITED, _("Date")])
         self.gm_combosort.set_model(sortTypes)
         self.gm_combosort.set_entry_text_column(1)
         self.gm_combosort.set_active(1) #Rating
@@ -269,7 +282,7 @@ class ExtensionSidePage (SidePage):
         self.gm_search_entry = Gtk.Entry()
         self.gm_search_entry.connect('changed', self.gm_on_entry_refilter)
         self.gm_search_entry.set_icon_from_icon_name(Gtk.EntryIconPosition.PRIMARY, 'edit-find')
-        self.gm_search_entry.set_placeholder_text(_("Search %s") % (self.pl_noun))
+        self.gm_search_entry.set_placeholder_text(_("Search"))
         hbox.pack_end(self.gm_search_entry, False, False, 4)
         self.search_entry.show()
         
@@ -344,7 +357,7 @@ class ExtensionSidePage (SidePage):
         hbox = Gtk.HBox()        
         buttonbox = Gtk.ButtonBox.new(Gtk.Orientation.HORIZONTAL)
         buttonbox.set_spacing(6)
-        self.install_button = Gtk.Button.new_with_label(_("Install or update selected"))
+        self.install_button = Gtk.Button.new_with_label(_("Install or update selected items"))
         self.select_updated = Gtk.Button.new_from_icon_name("cs-xlet-update", Gtk.IconSize.BUTTON)
         self.select_updated.set_label(_("Select updated"))
 
@@ -370,7 +383,7 @@ class ExtensionSidePage (SidePage):
         self.update_list = {}
         self.current_num_updates = 0
 
-        self.spices = Spice_Harvester(self.collection_type, self.window, self.builder, self.noun, self.pl_noun)
+        self.spices = Spice_Harvester(self.collection_type, self.window, self.builder)
 
         # if not self.spices.get_webkit_enabled():
         #     getmore_label.set_sensitive(False)
@@ -416,7 +429,7 @@ class ExtensionSidePage (SidePage):
             iter = self.modelfilter.get_iter(path)
             if column.get_property('title')=="Read only" and iter != None:
                 if not self.modelfilter.get_value(iter, 6):
-                    tooltip.set_text(_("This %s is read-only, and cannot be uninstalled") % self.noun)
+                    tooltip.set_text(_("Cannot be uninstalled"))
                     return True
                 else:
                     return False
@@ -424,7 +437,7 @@ class ExtensionSidePage (SidePage):
                 count = self.modelfilter.get_value(iter, 2)
                 markup = ""
                 if count > 0:
-                    markup += _("This %s is currently active.") % self.noun
+                    markup += _("In use")
                     if count > 1:
                         markup += _("\n\nInstance count: %d") % count
                     tooltip.set_markup(markup)
@@ -442,9 +455,9 @@ class ExtensionSidePage (SidePage):
                 installed, can_update, is_active = self.version_compare(uuid, date)
                 if installed:
                     if can_update:
-                        tooltip.set_text(_("An update is available for this %s") % (self.noun))
+                        tooltip.set_text(_("Update available"))
                     else:
-                        tooltip.set_text(_("This %s is installed and up-to-date") % (self.noun))
+                        tooltip.set_text(_("Installed and up-to-date"))
                     return True
             elif column.get_property('title') == "Score":
                 tooltip.set_text(_("Popularity"))
@@ -784,7 +797,7 @@ class ExtensionSidePage (SidePage):
         self.install_list = []
         self.load_extensions()
         if need_restart:
-            self.show_info(_("One or more active %s may have been updated.  You probably need to restart Cinnamon for the changes to take effect") % (self.pl_noun))
+            self.show_info(_("Please restart Cinnamon for the changes to take effect"))
 
     def on_spice_load(self, spicesData):
         #print "total spices loaded: %d" % len(spicesData)
@@ -851,7 +864,7 @@ class ExtensionSidePage (SidePage):
     def disable_extension(self, uuid, name, checked):
 
         if (checked > 1):
-            msg = _("There are multiple instances of this %s, do you want to remove them all?\n\n") % (self.noun)
+            msg = _("There are multiple instances, do you want to remove all of them?\n\n")
             msg += self.RemoveString
 
             if not self.show_prompt(msg):
@@ -943,10 +956,10 @@ class ExtensionSidePage (SidePage):
 
     def select_updated_extensions(self):
         if len(self.update_list) > 1:
-            noun = self.pl_noun
+            msg = _("This operation will update the selected items.\n\nDo you want to continue?")
         else:
-            noun = self.noun
-        if not self.show_prompt(_("This operation will update %d installed %s.\n\nDo you want to continue?") % (len(self.update_list), noun)):
+            msg = _("This operation will update the selected item.\n\nDo you want to continue?")
+        if not self.show_prompt(msg):
             return
         for row in self.gm_model:
             uuid = self.gm_model.get_value(row.iter, 0)
@@ -979,23 +992,13 @@ class ExtensionSidePage (SidePage):
     def _selection_changed(self):
         model, treeiter = self.treeview.get_selection().get_selected()
         enabled = False;
-        if self.collection_type in ("applet", "desklet"):
-            tip = _("Some %s can be added multiple times.\nUse this to add another instance. Use panel edit mode to remove a single instance.") % (self.pl_noun)
-        elif self.collection_type == "extension":
-            tip = _("Click to enable this %s") % (self.noun)
-        else:
-            tip = _("Click to apply this %s") % (self.noun)
+        
         if treeiter:
             checked = model.get_value(treeiter, 2);
             max_instances = model.get_value(treeiter, 3);
             enabled = max_instances > checked
-            if self.collection_type in ("applet", "desklet"):
-                if max_instances == 1:
-                    tip += _("\nThis %s does not support multiple instances.") % (self.noun)
-                else:
-                    tip += _("\nThis %s supports max %d instances.") % (self.noun, max_instances)
-        self.instanceButton.set_sensitive(enabled);
-        self.instanceButton.set_tooltip_text(tip)
+        
+        self.instanceButton.set_sensitive(enabled);        
 
         if treeiter:
             self.configureButton.set_visible(self.should_show_config_button(model, treeiter))
@@ -1035,7 +1038,11 @@ class ExtensionSidePage (SidePage):
 
     def _restore_default_extensions(self):
         if not self.themes:
-            if self.show_prompt(_("This will restore the default set of enabled %s.  Are you sure you want to do this?") % (self.pl_noun)):
+            if self.collection_type == "applet":
+                msg = _("This will restore the default set of enabled applets. Are you sure you want to do this?")
+            elif self.collection_type == "desklet":
+                msg = _("This will restore the default set of enabled desklets. Are you sure you want to do this?")            
+            if self.show_prompt(msg):
                 os.system(('gsettings reset org.cinnamon next-%s-id') % (self.collection_type))
                 os.system(('gsettings reset org.cinnamon enabled-%ss') % (self.collection_type))
         else:
