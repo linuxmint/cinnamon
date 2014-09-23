@@ -1098,7 +1098,7 @@ MyApplet.prototype = {
 
             if (this._availablePlayers.length > 0){
                 this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
-                this._launchPlayerItem = new PopupMenu.PopupSubMenuMenuItem(_("Launch player..."));
+                this._launchPlayerItem = new PopupMenu.PopupSubMenuMenuItem(_("Launch player..."), true);
 
                 for (var p=0; p<this._availablePlayers.length; p++){
                     let playerApp = this._availablePlayers[p];
@@ -1127,7 +1127,7 @@ MyApplet.prototype = {
         this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
         this.menu.addSettingsAction(_("Sound Settings"), 'sound');
 
-        this._selectDeviceItem = new PopupMenu.PopupSubMenuMenuItem(_("Output device..."));
+        this._selectDeviceItem = new PopupMenu.PopupSubMenuMenuItem(_("Output device..."), true);
         this.menu.addMenuItem(this._selectDeviceItem);
 
         if (this._showInput){

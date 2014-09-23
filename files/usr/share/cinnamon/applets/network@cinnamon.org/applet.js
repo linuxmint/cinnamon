@@ -592,7 +592,7 @@ NMDevice.prototype = {
 
                 if (j + activeOffset >= NUM_VISIBLE_NETWORKS) {
                     if (!this._overflowItem) {
-                        this._overflowItem = new PopupMenu.PopupSubMenuMenuItem(_("More..."));
+                        this._overflowItem = new PopupMenu.PopupSubMenuMenuItem(_("More..."), true);
                         this.section.addMenuItem(this._overflowItem);
                     }
                     this._overflowItem.menu.addMenuItem(obj.item);
@@ -1567,7 +1567,7 @@ NMDeviceWireless.prototype = {
             this.section.addMenuItem(apObj.item, position);
         } else {
             if (!this._overflowItem) {
-                this._overflowItem = new PopupMenu.PopupSubMenuMenuItem(_("More..."));
+                this._overflowItem = new PopupMenu.PopupSubMenuMenuItem(_("More..."), true);
                 this.section.addMenuItem(this._overflowItem);
             }
             this._overflowItem.menu.addMenuItem(apObj.item, position - NUM_VISIBLE_NETWORKS);
