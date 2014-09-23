@@ -10,6 +10,7 @@ import imtools
 import gettext
 import subprocess
 import tempfile
+import commands
 
 gettext.install("cinnamon", "/usr/share/cinnamon/locale")
 
@@ -52,7 +53,13 @@ class Module:
                                                            buttons=(Gtk.STOCK_OPEN, Gtk.ResponseType.OK,
                                                                    Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL))
 
-            self.default_directory = os.path.join(os.getenv("HOME"), "Pictures")
+            self.default_directory = os.path.expanduser("~/Pictures")
+            xdg_config = os.path.expanduser("~/.config/user-dirs.dirs")
+            if os.path.exists(xdg_config) and os.path.exists("/usr/bin/xdg-user-dir"):
+                path = commands.getoutput("xdg-user-dir PICTURES")
+                if os.path.exists(path):
+                    self.default_directory = path
+
             self.user_backgrounds = self.get_user_backgrounds()
 
             bg = SectionBg()
@@ -285,10 +292,11 @@ class Module:
         res = self.add_folder_dialog.run()
         if res == Gtk.ResponseType.OK:
             folder_path = self.add_folder_dialog.get_filename()
-            folder_name = folder_path.split("/")[-1]
-            self.user_backgrounds.append([False, "folder", folder_name, folder_path, None])
-            self.folder_store.append([False, "folder", folder_name, folder_path, None])
-            self.update_folder_list()
+            if folder_path != self.default_directory:
+                folder_name = folder_path.split("/")[-1]
+                self.user_backgrounds.append([False, "folder", folder_name, folder_path, None])
+                self.folder_store.append([False, "folder", folder_name, folder_path, None])
+                self.update_folder_list()
         self.add_folder_dialog.hide()
 
     def remove_folder(self):
