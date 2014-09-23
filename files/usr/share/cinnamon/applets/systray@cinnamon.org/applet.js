@@ -4,6 +4,7 @@ const Clutter = imports.gi.Clutter;
 
 const Applet = imports.ui.applet;
 const Main = imports.ui.main;
+const Meta = imports.gi.Meta;
 
 const ICON_SCALE_FACTOR = .8; // for custom panel heights, 20 (default icon size) / 25 (default panel height)
 
@@ -73,21 +74,27 @@ MyApplet.prototype = {
                 return;
             }
 
-            let buggyIcons = ["pidgin", "thunderbird"];
+            let buggyIcons = ["pidgin", "thunderbird"];            
 
-            global.log("Adding systray: " + role + " (" + icon.get_width() + "x" + icon.get_height() + "px)");            
+            global.log("Adding systray: " + role + " (" + icon.get_width() + "x" + icon.get_height() + "px)");
 
             if (icon.get_parent())
                 icon.get_parent().remove_child(icon);
 
             if (global.settings.get_boolean('panel-scale-text-icons')) {
                 let disp_size = this._panelHeight * ICON_SCALE_FACTOR;
-                if (icon.get_width() == 1 || icon.get_height() == 1 || buggyIcons.indexOf(role) != -1) {
-                    icon.set_height(disp_size);
-                }
-                else {
-                    icon.set_size(disp_size, disp_size);
-                }
+                if (icon.get_height() != disp_size) {
+                    if (icon.get_width() == 1 || icon.get_height() == 1 || buggyIcons.indexOf(role) != -1) {
+                        if (icon.get_height() > disp_size) {                        
+                            icon.set_height(disp_size);
+                            global.log("   Changed the height of " + role + " (" + icon.get_width() + "x" + icon.get_height() + "px)");
+                        }
+                    }
+                    else {                    
+                        icon.set_size(disp_size, disp_size);
+                        global.log("   Resized " + role + " (" + icon.get_width() + "x" + icon.get_height() + "px)");
+                    }
+                }                
             }
 
             /* dropbox, for some reason, refuses to provide a correct size icon in our new situation.
@@ -96,9 +103,17 @@ MyApplet.prototype = {
              */
             if (["dropbox"].indexOf(role) != -1) {
                 icon.set_scale_full(global.ui_scale, global.ui_scale, icon.get_width() / 2.0, icon.get_width() / 2.0);
+                global.log("   Full-scaled " + role + " (" + icon.get_width() + "x" + icon.get_height() + "px)");
             }
 
             this._insertStatusItem(icon, -1);
+
+            Meta.later_add(Meta.LaterType.BEFORE_REDRAW, function() {
+                icon.hide();
+                icon.show();
+                return false;
+            });
+
         } catch (e) {
             global.logError(e);
         }
