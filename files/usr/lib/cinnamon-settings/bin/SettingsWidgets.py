@@ -92,7 +92,7 @@ class EditableEntry (Gtk.Notebook):
 
 class PictureChooserButton (Gtk.Button):
 
-    def __init__ (self, num_cols=4, button_picture_size=None, menu_pictures_size=None):        
+    def __init__ (self, num_cols=4, button_picture_size=None, menu_pictures_size=None, has_button_label=False):        
         super(PictureChooserButton, self).__init__()
         self.num_cols = num_cols
         self.button_picture_size = button_picture_size
@@ -100,15 +100,24 @@ class PictureChooserButton (Gtk.Button):
         self.row = 0
         self.col = 0
         self.menu = Gtk.Menu()
+        self.button_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=2)
+        self.button_image = Gtk.Image()
+        self.button_box.add(self.button_image)
+        if has_button_label:
+            self.button_label = Gtk.Label()
+            self.button_box.add(self.button_label)
+        self.add(self.button_box)
         self.connect("button-release-event", self._on_button_clicked)  
 
     def set_picture_from_file (self, path):
         file = Gio.File.new_for_path(path)
         file_icon = Gio.FileIcon(file=file)
-        image = Gtk.Image.new_from_gicon (file_icon, Gtk.IconSize.DIALOG)
+        self.button_image.set_from_gicon(file_icon, Gtk.IconSize.DIALOG)
         if self.menu_pictures_size is not None:
-            image.set_pixel_size(self.menu_pictures_size)
-        self.set_image(image)
+            self.button_image.set_pixel_size(self.menu_pictures_size)
+
+    def set_button_label(self, label):
+        self.button_label.set_markup(label)
 
     def popup_menu_below_button (self, menu, widget):  
         # here I get the coordinates of the button relative to
