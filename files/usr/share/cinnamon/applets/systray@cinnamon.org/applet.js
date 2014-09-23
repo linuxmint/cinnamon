@@ -4,7 +4,7 @@ const Clutter = imports.gi.Clutter;
 
 const Applet = imports.ui.applet;
 const Main = imports.ui.main;
-const Meta = imports.gi.Meta;
+const Mainloop = imports.mainloop;
 
 const ICON_SCALE_FACTOR = .8; // for custom panel heights, 20 (default icon size) / 25 (default panel height)
 
@@ -108,10 +108,18 @@ MyApplet.prototype = {
 
             this._insertStatusItem(icon, -1);
 
-            Meta.later_add(Meta.LaterType.BEFORE_REDRAW, function() {
-                icon.hide();
-                icon.show();
-                return false;
+            let timerId = 0;
+            let i = 0;
+            timerId = Mainloop.timeout_add(500, function() {                
+                size = disp_size;
+                if (icon.width == disp_size){
+                    size = disp_size - 1;
+                }
+                icon.set_size(size, size);
+                i++;
+                if (i == 2) {
+                    Mainloop.source_remove(timerId);
+                }
             });
 
         } catch (e) {
