@@ -16,6 +16,15 @@ LOCK_DELAY_OPTIONS = [
     (3600, _("After 1 hour"))
 ]
 
+LOCK_INACTIVE_OPTIONS = [
+    (0,    _("Never")),
+    (60,   _("After 1 minute")),
+    (300,  _("After 5 minutes")),
+    (600,  _("After 10 minutes")),
+    (1800, _("After 30 minutes")),
+    (3600, _("After 1 hour"))
+]
+
 class Module:
     def __init__(self, content_box):
         keywords = _("screensaver, lock, password, away, message")
@@ -47,6 +56,10 @@ class Module:
             widget.set_tooltip_text(_("This option defines the amount of time to wait before locking the screen, after showing the screensaver or after turning off the screen"))
             box.add(widget)
             section.add(box)
+            widget = GSettingsIntComboBox(_("Lock the computer when inactive for"), "org.cinnamon.desktop.session", "idle-delay", None, LOCK_INACTIVE_OPTIONS, use_uint=True)
+            widget.set_tooltip_text(_("This option defines the amount of time to wait before locking the screen, after the computer not being used"))
+            section.add(widget)
+            
             vbox.add(section)
 
             vbox.add(Gtk.Separator.new(Gtk.Orientation.HORIZONTAL))    
