@@ -230,15 +230,15 @@ class Module:
         collection_type = collection[STORE_TYPE]
         collection_path = collection[STORE_PATH]
         collection_source = self.format_source(collection_type, collection_path)
-        self.remove_folder_button.set_sensitive(False)
+        self.remove_folder_button.set_sensitive(True)
 
         if image_source != "" and "://" in image_source:
             while tree_iter != None:                
                 if collection_source == image_source:
                     tree_path = self.collection_store.get_path(tree_iter)
                     self.folder_tree.set_cursor(tree_path)                        
-                    if collection_path != self.default_directory and collection_type != BACKGROUND_COLLECTION_TYPE_XML:
-                        self.remove_folder_button.set_sensitive(True)
+                    if collection_path == self.default_directory or collection_type == BACKGROUND_COLLECTION_TYPE_XML:
+                        self.remove_folder_button.set_sensitive(False)
                     self.update_icon_view(collection_path, collection_type)
                     return
                 tree_iter = self.collection_store.iter_next(tree_iter)
@@ -250,27 +250,26 @@ class Module:
             self._slideshow_schema.set_string("image-source", collection_source)
             tree_path = self.collection_store.get_path(tree_iter)
             self.folder_tree.get_selection().select_path(tree_path)
-            if collection_path != self.default_directory and collection_type != BACKGROUND_COLLECTION_TYPE_XML:
-                self.remove_folder_button.set_sensitive(True)
-                self.update_icon_view(collection_path, collection_type)
+            if collection_path == self.default_directory or collection_type == BACKGROUND_COLLECTION_TYPE_XML:
+                self.remove_folder_button.set_sensitive(False)                
+            self.update_icon_view(collection_path, collection_type)
 
     def on_row_activated(self, tree, path, column):
         self.folder_tree.set_selection(path)
 
     def on_folder_source_changed(self, tree):
-        self.remove_folder_button.set_sensitive(False)
+        self.remove_folder_button.set_sensitive(True)
         if tree.get_selection() is not None:
             folder_paths, iter = tree.get_selection().get_selected()
             if iter :
                 collection_path = folder_paths[iter][STORE_PATH]
                 collection_type = folder_paths[iter][STORE_TYPE]
                 collection_source = self.format_source(collection_type, collection_path)
-                print collection_source
                 if os.path.exists(collection_path):
                     if collection_source != self._slideshow_schema.get_string("image-source"):
                         self._slideshow_schema.set_string("image-source", collection_source)
-                    if collection_path != self.default_directory and collection_type != BACKGROUND_COLLECTION_TYPE_XML:
-                        self.remove_folder_button.set_sensitive(True)
+                    if collection_path == self.default_directory or collection_type == BACKGROUND_COLLECTION_TYPE_XML:
+                        self.remove_folder_button.set_sensitive(False)
                     self.update_icon_view(collection_path, collection_type)
 
     def get_selected_wallpaper(self):
