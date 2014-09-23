@@ -183,7 +183,7 @@ class CinnamonSlideshow(dbus.service.Object):
             self.update_id = GLib.timeout_add_seconds(1, self.start_mainloop)
         else:
             self.update_background()
-            self.update_id = GLib.timeout_add_seconds(5, self.start_mainloop)
+            self.update_id = GLib.timeout_add_seconds(self.delay * 60, self.start_mainloop)
 
     def update_background(self):
         if self.update_in_progress:
