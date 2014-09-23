@@ -57,7 +57,7 @@ class Module:
             box.add(widget)
             section.add(box)
             widget = GSettingsIntComboBox(_("Lock the computer when inactive for"), "org.cinnamon.desktop.session", "idle-delay", None, LOCK_INACTIVE_OPTIONS, use_uint=True)
-            widget.set_tooltip_text(_("This option defines the amount of time to wait before locking the screen, after the computer not being used"))
+            widget.set_tooltip_text(_("This option defines the amount of time to wait before locking the screen, when the computer is not being used"))
             section.add(widget)
             vbox.add(section)
 
