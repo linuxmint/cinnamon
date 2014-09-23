@@ -32,6 +32,11 @@ BACKGROUND_PICTURE_OPTIONS = [
 
 BACKGROUND_ICONS_SIZE = 100
 
+BACKGROUND_COLLECTION_TYPE_DIRECTORY = "directory"
+BACKGROUND_COLLECTION_TYPE_XML = "xml"
+
+(STORE_IS_SEPARATOR, STORE_ICON, STORE_NAME, STORE_PATH, STORE_TYPE) = range(5)
+
 class Module:
     
     def __init__(self, content_box):
@@ -145,11 +150,11 @@ class Module:
             left_vbox.set_border_width(2)
             right_vbox.set_border_width(2)
 
-            self.folder_store = Gtk.ListStore(bool,    # is separator
+            self.collection_store = Gtk.ListStore(bool,    # is separator
                                               str,     # Icon name
-                                              str,     # Folder display name
-                                              str,     # Folder path
-                                              str)     # Name of background properties file or None
+                                              str,     # Display name
+                                              str,     # Path
+                                              str)     # Type of collection
             cell = Gtk.CellRendererText()
             cell.set_alignment(0, 0)
             pb_cell = Gtk.CellRendererPixbuf()
@@ -167,15 +172,15 @@ class Module:
             self.get_system_backgrounds()
 
             tree_separator = [True, None, None, None, None]
-            self.folder_store.append(tree_separator)
+            self.collection_store.append(tree_separator)
 
-            self.folder_store.append([False, "folder-pictures", self.default_directory.split("/")[-1], self.default_directory, None])
+            self.collection_store.append([False, "folder-pictures", self.default_directory.split("/")[-1], self.default_directory, BACKGROUND_COLLECTION_TYPE_DIRECTORY])
 
             if len(self.user_backgrounds) > 0:
                 for item in self.user_backgrounds:
-                    self.folder_store.append(item)
+                    self.collection_store.append(item)
 
-            self.folder_tree.set_model(self.folder_store)
+            self.folder_tree.set_model(self.collection_store)
             self.folder_tree.set_row_separator_func(self.is_row_separator)
 
             self.get_initial_path()
@@ -198,13 +203,9 @@ class Module:
         if os.path.exists(properties_dir):
             for i in os.listdir(properties_dir):
                 if i.endswith(".xml"):
-                    picture_list += self.parse_xml_backgrounds_list(os.path.join(properties_dir, i))
-                    for picture in picture_list:
-                        folder_name = os.path.dirname(picture["filename"])
-                        if not folder_list.count(folder_name):
-                            folder_list.append(folder_name)
-                            display_name = os.path.basename(folder_name).split("-")[-1]
-                            self.folder_store.append([False, "start-here", display_name.capitalize(), folder_name, os.path.join(properties_dir, i)])
+                    xml_path = os.path.join(properties_dir, i)
+                    display_name = i.replace(".xml", "").replace("-", " ").replace("_", " ").split(" ")[-1].capitalize()
+                    self.collection_store.append([False, "start-here", display_name, xml_path, BACKGROUND_COLLECTION_TYPE_XML])
 
     def get_user_backgrounds(self):
         folder_list = []
@@ -215,41 +216,43 @@ class Module:
             for line in folders:
                 folder_path = line.strip("\n")
                 folder_name = folder_path.split("/")[-1]
-                folder_list.append([False, "folder", folder_name, folder_path, None])
+                folder_list.append([False, "folder", folder_name, folder_path, BACKGROUND_COLLECTION_TYPE_DIRECTORY])
         return folder_list
 
+    def format_source(self, type, path):
+        # returns 'type://path'
+        return ("%s://%s" % (type, path))
+
     def get_initial_path(self):
-        initial_folder = self._slideshow_schema.get_string("image-source")
-        tree_iter = self.folder_store.get_iter_first()
-        if initial_folder != "":
-            while tree_iter != None:
-                if self.folder_store[tree_iter][3] == initial_folder:
-                    tree_path = self.folder_store.get_path(tree_iter)
-                    self.folder_tree.set_cursor(tree_path)
-                    if self.folder_store[tree_iter][4] is not None:
-                        self.remove_folder_button.set_sensitive(False)
-                        self.update_icon_view(props=self.folder_store[tree_iter][4])
-                    elif self.folder_store[tree_iter][3] == self.default_directory:
-                        self.remove_folder_button.set_sensitive(False)
-                        self.update_icon_view(path=self.folder_store[tree_iter][3])
-                    else:
+        image_source = self._slideshow_schema.get_string("image-source")
+        tree_iter = self.collection_store.get_iter_first()
+        collection = self.collection_store[tree_iter]
+        collection_type = collection[STORE_TYPE]
+        collection_path = collection[STORE_PATH]
+        collection_source = self.format_source(collection_type, collection_path)
+        self.remove_folder_button.set_sensitive(False)
+
+        if image_source != "" and "://" in image_source:
+            while tree_iter != None:                
+                if collection_source == image_source:
+                    tree_path = self.collection_store.get_path(tree_iter)
+                    self.folder_tree.set_cursor(tree_path)                        
+                    if collection_path != self.default_directory and collection_type != BACKGROUND_COLLECTION_TYPE_XML:
                         self.remove_folder_button.set_sensitive(True)
-                        self.update_icon_view(path=self.folder_store[tree_iter][3])
+                    self.update_icon_view(collection_path, collection_type)
                     return
-                tree_iter = self.folder_store.iter_next(tree_iter)
-        else:
-            self._slideshow_schema.set_string("image-source", self.folder_store[tree_iter][3])
-            tree_path = self.folder_store.get_path(tree_iter)
+                tree_iter = self.collection_store.iter_next(tree_iter)
+                collection = self.collection_store[tree_iter]
+                collection_type = collection[STORE_TYPE]
+                collection_path = collection[STORE_PATH]
+                collection_source = self.format_source(collection_type, collection_path)
+        else:            
+            self._slideshow_schema.set_string("image-source", collection_source)
+            tree_path = self.collection_store.get_path(tree_iter)
             self.folder_tree.get_selection().select_path(tree_path)
-            if self.folder_store[tree_iter][4] is not None:
-                self.remove_folder_button.set_sensitive(False)
-                self.update_icon_view(props=self.folder_store[tree_iter][4])
-            elif self.folder_store[tree_iter][3] == self.default_directory:
-                        self.remove_folder_button.set_sensitive(False)
-                        self.update_icon_view(path=self.folder_store[tree_iter][3])
-            else:
+            if collection_path != self.default_directory and collection_type != BACKGROUND_COLLECTION_TYPE_XML:
                 self.remove_folder_button.set_sensitive(True)
-                self.update_icon_view(path=self.folder_store[tree_iter][3])
+                self.update_icon_view(collection_path, collection_type)
 
     def on_row_activated(self, tree, path, column):
         self.folder_tree.set_selection(path)
@@ -258,18 +261,16 @@ class Module:
         if tree.get_selection() is not None:
             folder_paths, iter = tree.get_selection().get_selected()
             if iter :
-                path = folder_paths[iter][3]
-                if path and path != self._slideshow_schema.get_string("image-source"):
-                    self._slideshow_schema.set_string("image-source", path)
-                    if folder_paths[iter][4] is not None:
-                        self.remove_folder_button.set_sensitive(False)
-                        self.update_icon_view(props=folder_paths[iter][4])
-                    elif self.folder_store[iter][3] == self.default_directory:
-                        self.remove_folder_button.set_sensitive(False)
-                        self.update_icon_view(path=path)
-                    else:
+                collection_path = folder_paths[iter][STORE_PATH]
+                collection_type = folder_paths[iter][STORE_TYPE]
+                collection_source = self.format_source(collection_type, collection_path)
+                print collection_source
+                if os.path.exists(collection_path):
+                    if collection_source != self._slideshow_schema.get_string("image-source"):
+                        self._slideshow_schema.set_string("image-source", collection_source)
+                    if collection_path != self.default_directory and collection_type != BACKGROUND_COLLECTION_TYPE_XML:
                         self.remove_folder_button.set_sensitive(True)
-                        self.update_icon_view(path=path)
+                    self.update_icon_view(collection_path, collection_type)
 
     def get_selected_wallpaper(self):
         selected_items = self.icon_view.get_selected_items()
@@ -294,8 +295,8 @@ class Module:
             folder_path = self.add_folder_dialog.get_filename()
             if folder_path != self.default_directory:
                 folder_name = folder_path.split("/")[-1]
-                self.user_backgrounds.append([False, "folder", folder_name, folder_path, None])
-                self.folder_store.append([False, "folder", folder_name, folder_path, None])
+                self.user_backgrounds.append([False, "folder", folder_name, folder_path, BACKGROUND_COLLECTION_TYPE_DIRECTORY])
+                self.collection_store.append([False, "folder", folder_name, folder_path, BACKGROUND_COLLECTION_TYPE_DIRECTORY])
                 self.update_folder_list()
         self.add_folder_dialog.hide()
 
@@ -304,10 +305,10 @@ class Module:
             self.icon_view.clear()
             folder_paths, iter = self.folder_tree.get_selection().get_selected()
             if iter:
-                path = folder_paths[iter][3]
-                self.folder_store.remove(iter)
+                path = folder_paths[iter][STORE_PATH]
+                self.collection_store.remove(iter)
                 for item in self.user_backgrounds:
-                    if item[3] == path:
+                    if item[STORE_PATH] == path:
                         self.user_backgrounds.remove(item)
                         self.update_folder_list()
                         break
@@ -320,28 +321,29 @@ class Module:
         if len(self.user_backgrounds) == 0:
             file_data = ""
         else:
-            first_path = self.user_backgrounds[0][3]
+            first_path = self.user_backgrounds[0][STORE_PATH]
             file_data = first_path + "\n"
             for folder in self.user_backgrounds:
-                if folder[3] == first_path:
+                if folder[STORE_PATH] == first_path:
                     continue
                 else:
-                    file_data += "%s\n" % folder[3]
+                    file_data += "%s\n" % folder[STORE_PATH]
 
         with open(dest_filename, "w") as f:
             f.write(file_data)
 
-    def update_icon_view(self, path=None, props=None):
+    def update_icon_view(self, path=None, type=None):
         picture_list = []
-        if path:
-            if os.path.exists(path):
-                for i in os.listdir(path):
+        if os.path.exists(path):
+            if type == BACKGROUND_COLLECTION_TYPE_DIRECTORY:
+                files = os.listdir(path)
+                files.sort()
+                for i in files:
                     filename = os.path.join(path, i)
                     if commands.getoutput("file -bi \"%s\"" % filename).startswith("image/"):
                         picture_list.append({"filename": filename})
-        else:
-            if os.path.exists(props):
-                picture_list += self.parse_xml_backgrounds_list(props)
+            elif type == BACKGROUND_COLLECTION_TYPE_XML:        
+                picture_list += self.parse_xml_backgrounds_list(path)
 
         self.icon_view.set_pictures_list(picture_list)
         if self._slideshow_schema.get_boolean("slideshow-enabled"):
