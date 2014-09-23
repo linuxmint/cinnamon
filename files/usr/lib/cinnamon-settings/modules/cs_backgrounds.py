@@ -13,12 +13,6 @@ import tempfile
 
 gettext.install("cinnamon", "/usr/share/cinnamon/locale")
 
-BACKGROUND_MODES = [
-    ("wallpaper", _("Wallpaper")),
-    #("slideshow", _("Slideshow")),
-    #("flickr", _("Flickr"))
-]
-
 BACKGROUND_COLOR_SHADING_TYPES = [
     ("solid", _("None")),
     ("horizontal", _("Horizontal")),
@@ -35,7 +29,7 @@ BACKGROUND_PICTURE_OPTIONS = [
     ("spanned", _("Spanned"))
 ]
 
-BACKGROUND_ICONS_SIZE = 200
+BACKGROUND_ICONS_SIZE = 100
 
 class Module:
     
@@ -50,121 +44,357 @@ class Module:
         if not self.loaded:
             print "Loading Backgrounds module"
 
-            self._gnome_background_schema = Gio.Settings(schema = "org.cinnamon.desktop.background")
-            self._cinnamon_background_schema = Gio.Settings(schema = "org.cinnamon.background")
-            self._add_wallpapers_dialog = AddWallpapersDialog()            
-            self._cinnamon_background_schema.connect("changed::mode", self._on_mode_changed)
+            self._background_schema = Gio.Settings(schema = "org.cinnamon.desktop.background")
+            self._slideshow_schema = Gio.Settings(schema = "org.cinnamon.desktop.background.slideshow")
+            self._slideshow_schema.connect("changed::slideshow-enabled", self.on_slideshow_enabled_changed)
+            self.add_folder_dialog = Gtk.FileChooserDialog(title=_("Add Folder"),
+                                                           action=Gtk.FileChooserAction.SELECT_FOLDER,
+                                                           buttons=(Gtk.STOCK_OPEN, Gtk.ResponseType.OK,
+                                                                   Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL))
 
-            topbox = Gtk.HBox()
-            self.sidePage.add_widget(topbox)
-            topbox.set_spacing(5)
-            
-            # Hide the background mode selection for now since we only support one mode at the moment.. 
-            #l = Gtk.Label.new(_("Mode"))
-            #topbox.pack_start(l, False, False, 0)
-            #self.background_mode = GSettingsComboBox("", "org.cinnamon.background", "mode", None, BACKGROUND_MODES).content_widget
-            #self.background_mode.unparent()
-            #topbox.pack_start(self.background_mode, False, False, 0)
-                            
-            self.remove_wallpaper_button = Gtk.Button.new_with_label(_("Remove"))
-            imageremove = Gtk.Image()
-            imageremove.set_from_icon_name('remove', Gtk.IconSize.BUTTON)
-            if imageremove.get_pixbuf() == None:
-                imageremove.set_from_stock(Gtk.STOCK_REMOVE, Gtk.IconSize.BUTTON)
-            self.remove_wallpaper_button.set_image(imageremove)
-            self.remove_wallpaper_button.get_image().show()
-            self.remove_wallpaper_button.set_no_show_all(True)
-            self.remove_wallpaper_button.set_tooltip_text(_("Remove wallpaper"))
-            self.remove_wallpaper_button.connect("clicked", lambda w: self._remove_selected_wallpaper())
-            self.remove_wallpaper_button.set_sensitive(False)
-            topbox.pack_end(self.remove_wallpaper_button, False, False, 0)
-            self.add_wallpaper_button = Gtk.Button.new_with_label(_("Add"))
-            imageadd = Gtk.Image()
-            imageadd.set_from_icon_name('add', Gtk.IconSize.BUTTON)
-            if imageadd.get_pixbuf() == None:
-                imageadd.set_from_stock(Gtk.STOCK_ADD, Gtk.IconSize.BUTTON)
-            self.add_wallpaper_button.set_image(imageadd)
-            self.add_wallpaper_button.get_image().show()
-            self.add_wallpaper_button.set_tooltip_text(_("Add wallpapers"))
-            self.add_wallpaper_button.connect("clicked", lambda w: self._add_wallpapers())
-            self.add_wallpaper_button.set_no_show_all(True)
-            topbox.pack_end(self.add_wallpaper_button, False, False, 0)
-                    
-            self.mainbox = Gtk.EventBox()
-            self.mainbox.set_visible_window(False)
-            self.sidePage.add_widget(self.mainbox)
-            self.mainbox.expand = True
-            
-            self.wallpaper_pane = BackgroundWallpaperPane(self, self._gnome_background_schema)
-            self.slideshow_pane = BackgroundSlideshowPane(self, self._gnome_background_schema, self._cinnamon_background_schema)
-            if self._cinnamon_background_schema["mode"] == "slideshow":
-                self.mainbox.add(self.slideshow_pane)
-            else:
-                self.mainbox.add(self.wallpaper_pane)
-                self.add_wallpaper_button.show()
-                self.remove_wallpaper_button.show()
+            self.default_directory = os.path.join(os.getenv("HOME"), "Pictures")
+            self.user_backgrounds = self.get_user_backgrounds()
 
-            advanced_options_box = Gtk.HBox()
-            advanced_options_box.set_spacing(10)
+            bg = SectionBg()
+            self.sidePage.add_widget(bg)
 
-            self.sidePage.add_widget(advanced_options_box)
+            mainbox = Gtk.Box.new(Gtk.Orientation.VERTICAL, 2)
+            mainbox.set_border_width(8)
+            bg.add(mainbox)
 
-            l = Gtk.Label.new(_("Picture aspect"))
-            l.set_alignment(0, 0.5)
-            advanced_options_box.pack_start(l, False, False, 0)
-            self.picture_options = GSettingsComboBox("", "org.cinnamon.desktop.background", "picture-options", None, BACKGROUND_PICTURE_OPTIONS)
-            advanced_options_box.pack_start(self.picture_options, False, False, 0)
+            top_hbox = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 2)
+            left_vbox = Gtk.Box.new(Gtk.Orientation.VERTICAL, 0)
+            right_vbox = Gtk.Box.new(Gtk.Orientation.VERTICAL, 0)
+            bottom_vbox = Gtk.Box.new(Gtk.Orientation.VERTICAL, 2)
 
-            l = Gtk.Label.new(_("Gradient"))
-            l.set_alignment(0, 0.5)
-            advanced_options_box.pack_start(l, False, False, 0)
-            self.color_shading_type = GSettingsComboBox("", "org.cinnamon.desktop.background", "color-shading-type", None, BACKGROUND_COLOR_SHADING_TYPES)
-            advanced_options_box.pack_start(self.color_shading_type, False, False, 0)
+            folder_scroller = Gtk.ScrolledWindow.new(None, None)
+            folder_scroller.set_shadow_type(Gtk.ShadowType.IN)
+            folder_scroller.set_policy(Gtk.PolicyType.AUTOMATIC, Gtk.PolicyType.AUTOMATIC)
+            folder_scroller.set_property("min-content-width", 150)
 
-            hbox = Gtk.HBox()
-            l = Gtk.Label.new(_("Colors"))
-            hbox.pack_start(l, False, False, 2)
-            self.primary_color = GSettingsColorChooser("org.cinnamon.desktop.background", "primary-color", None)
-            hbox.pack_start(self.primary_color, False, False, 2)
-            self.secondary_color = GSettingsColorChooser("org.cinnamon.desktop.background", "secondary-color", None)
-            hbox.pack_start(self.secondary_color, False, False, 2)
-            advanced_options_box.pack_start(hbox, False, False, 0)
+            self.folder_tree = Gtk.TreeView.new()
+            self.folder_tree.set_headers_visible(False)
+            folder_scroller.add(self.folder_tree)
 
-    def _on_mode_changed(self, settings, key):
-        for i in self.mainbox.get_children():
-            self.mainbox.remove(i)
-        if self._cinnamon_background_schema["mode"] == "slideshow":
-            self.mainbox.add(self.slideshow_pane)
-            self.add_wallpaper_button.hide()
-            self.remove_wallpaper_button.hide()
-            self.slideshow_pane.update_list()
+            button_toolbar = Gtk.Toolbar.new()
+            button_toolbar.set_icon_size(1)
+            Gtk.StyleContext.add_class(Gtk.Widget.get_style_context(button_toolbar), "inline-toolbar")
+            self.add_folder_button = Gtk.ToolButton.new(None, None)
+            self.add_folder_button.set_icon_name("list-add-symbolic")
+            self.add_folder_button.set_tooltip_text(_("Add new folder"))
+            self.add_folder_button.connect("clicked", lambda w: self.add_new_folder())
+            self.remove_folder_button = Gtk.ToolButton.new(None, None)
+            self.remove_folder_button.set_icon_name("list-remove-symbolic")
+            self.remove_folder_button.set_tooltip_text(_("Remove selected folder"))
+            self.remove_folder_button.connect("clicked", lambda w: self.remove_folder())
+            button_toolbar.insert(self.add_folder_button, 0)
+            button_toolbar.insert(self.remove_folder_button, 1)
+
+            image_scroller = Gtk.ScrolledWindow.new(None, None)
+            image_scroller.set_shadow_type(Gtk.ShadowType.IN)
+            image_scroller.set_policy(Gtk.PolicyType.AUTOMATIC, Gtk.PolicyType.AUTOMATIC)
+
+            self.icon_view = ThreadedIconView()
+            image_scroller.add(self.icon_view)
+            self.icon_view.connect("selection-changed", self.on_wallpaper_selection_changed)
+
+            hbox = IndentedHBox()
+            slideshow_checkbox = GSettingsCheckButton(_("Change background every "), "org.cinnamon.desktop.background.slideshow", "slideshow-enabled", None)
+            delay_button = GSettingsSpinButton("", "org.cinnamon.desktop.background.slideshow", "delay", None, 1, 120, 1, 1, _(" minutes"))
+            hbox.add(slideshow_checkbox)
+            hbox.add(delay_button)
+            bottom_vbox.pack_start(hbox, False, False, 2)
+
+            hbox = IndentedHBox()
+            hbox.add(GSettingsCheckButton(_("Play background images in random order"), "org.cinnamon.desktop.background.slideshow", "random-order", None))
+            bottom_vbox.pack_start(hbox, False, False, 2)
+
+            hbox = IndentedHBox()
+            hbox.add(GSettingsComboBox(_("Picture aspect"), "org.cinnamon.desktop.background", "picture-options", None, BACKGROUND_PICTURE_OPTIONS))
+            bottom_vbox.pack_start(hbox, False, False, 2)
+
+            hbox = IndentedHBox()
+            color_shading_type = GSettingsComboBox(_("Gradient"), "org.cinnamon.desktop.background", "color-shading-type", None, BACKGROUND_COLOR_SHADING_TYPES)
+            label1 = Gtk.Label.new(_("Start color"))
+            primary_color = GSettingsColorChooser("org.cinnamon.desktop.background", "primary-color", None)
+            label2 = Gtk.Label.new(_("End color"))
+            secondary_color = GSettingsColorChooser("org.cinnamon.desktop.background", "secondary-color", None)
+            hbox.pack_start(color_shading_type, False, False, 2)
+            hbox.pack_start(label1, False, False, 2)
+            hbox.pack_start(primary_color, False, False, 2)
+            hbox.pack_start(label2, False, False, 2)
+            hbox.pack_start(secondary_color, False, False, 2)
+            bottom_vbox.pack_start(hbox, False, False, 2)
+
+            right_vbox.pack_start(image_scroller, True, True, 0)
+            left_vbox.pack_start(folder_scroller, True, True, 0)
+            left_vbox.pack_start(button_toolbar, False, False, 0)
+
+            mainbox.pack_start(top_hbox, True, True, 2)
+            top_hbox.pack_start(left_vbox, False, False, 2)
+            top_hbox.pack_start(right_vbox, True, True, 2)
+            mainbox.pack_start(bottom_vbox, False, False, 2)
+
+            left_vbox.set_border_width(2)
+            right_vbox.set_border_width(2)
+
+            self.folder_store = Gtk.ListStore(bool,    # is separator
+                                              str,     # Icon name
+                                              str,     # Folder display name
+                                              str,     # Folder path
+                                              str)     # Name of background properties file or None
+            cell = Gtk.CellRendererText()
+            cell.set_alignment(0, 0)
+            pb_cell = Gtk.CellRendererPixbuf()
+            self.folder_column = Gtk.TreeViewColumn()
+            self.folder_column.pack_start(pb_cell, False)
+            self.folder_column.pack_start(cell, True)
+            self.folder_column.add_attribute(pb_cell, "icon-name", 1)
+            self.folder_column.add_attribute(cell, "text", 2)
+
+            self.folder_column.set_alignment(0)
+
+            self.folder_tree.append_column(self.folder_column)
+            self.folder_tree.connect("cursor-changed", self.on_folder_source_changed)
+
+            self.get_system_backgrounds()
+
+            tree_separator = [True, None, None, None, None]
+            self.folder_store.append(tree_separator)
+
+            self.folder_store.append([False, "folder-pictures", self.default_directory.split("/")[-1], self.default_directory, None])
+
+            if len(self.user_backgrounds) > 0:
+                for item in self.user_backgrounds:
+                    self.folder_store.append(item)
+
+            self.folder_tree.set_model(self.folder_store)
+            self.folder_tree.set_row_separator_func(self.is_row_separator)
+
+            self.get_initial_path()
+
+    def is_row_separator(self, model, iter):
+        return model.get_value(iter, 0)
+
+    def on_slideshow_enabled_changed(self, settings, key):
+        if self._slideshow_schema.get_boolean("slideshow-enabled"):
+            self.icon_view.set_sensitive(False)
+            self.icon_view.set_selection_mode(Gtk.SelectionMode.NONE)
         else:
-            self.mainbox.add(self.wallpaper_pane)
-            self.add_wallpaper_button.show()
-            self.remove_wallpaper_button.show()
-        self.mainbox.show_all()        
+            self.icon_view.set_sensitive(True)
+            self.icon_view.set_selection_mode(Gtk.SelectionMode.SINGLE)
 
-    def _add_wallpapers(self):
-        filenames = self._add_wallpapers_dialog.run()
-        if filenames:
-            dest_dir = os.path.join(os.getenv("HOME"), ".cinnamon", "backgrounds")
-            if not os.path.exists(dest_dir):
-                rec_mkdir(dest_dir)
-            for filename in filenames:
-                dest_filename = os.path.join(dest_dir, os.path.split(filename)[1])
-                fs = open(filename)
-                fd = open(dest_filename, "w")
-                fd.write(fs.read())
-                fs.close()
-                fd.close()
-            
-            self.wallpaper_pane.update_icon_view()
+    def get_system_backgrounds(self):
+        picture_list = []
+        folder_list = []
+        properties_dir = "/usr/share/cinnamon-background-properties"
+        if os.path.exists(properties_dir):
+            for i in os.listdir(properties_dir):
+                if i.endswith(".xml"):
+                    picture_list += self.parse_xml_backgrounds_list(os.path.join(properties_dir, i))
+                    for picture in picture_list:
+                        folder_name = os.path.dirname(picture["filename"])
+                        if not folder_list.count(folder_name):
+                            folder_list.append(folder_name)
+                            display_name = os.path.basename(folder_name).split("-")[-1]
+                            self.folder_store.append([False, "start-here", display_name.capitalize(), folder_name, os.path.join(properties_dir, i)])
+
+    def get_user_backgrounds(self):
+        folder_list = []
+        directory = os.path.join(os.getenv("HOME"), ".cinnamon", "backgrounds", "user-folders.lst")
+        if os.path.isfile(directory):
+            with open(directory) as f:
+                folders = f.readlines()
+            for line in folders:
+                folder_path = line.strip("\n")
+                folder_name = folder_path.split("/")[-1]
+                folder_list.append([False, "folder", folder_name, folder_path, None])
+        return folder_list
+
+    def get_initial_path(self):
+        initial_folder = self._slideshow_schema.get_string("image-source")
+        tree_iter = self.folder_store.get_iter_first()
+        if initial_folder != "":
+            while tree_iter != None:
+                if self.folder_store[tree_iter][3] == initial_folder:
+                    tree_path = self.folder_store.get_path(tree_iter)
+                    self.folder_tree.set_cursor(tree_path)
+                    if self.folder_store[tree_iter][4] is not None:
+                        self.remove_folder_button.set_sensitive(False)
+                        self.update_icon_view(props=self.folder_store[tree_iter][4])
+                    elif self.folder_store[tree_iter][3] == self.default_directory:
+                        self.remove_folder_button.set_sensitive(False)
+                        self.update_icon_view(path=self.folder_store[tree_iter][3])
+                    else:
+                        self.remove_folder_button.set_sensitive(True)
+                        self.update_icon_view(path=self.folder_store[tree_iter][3])
+                    return
+                tree_iter = self.folder_store.iter_next(tree_iter)
+        else:
+            self._slideshow_schema.set_string("image-source", self.folder_store[tree_iter][3])
+            tree_path = self.folder_store.get_path(tree_iter)
+            self.folder_tree.get_selection().select_path(tree_path)
+            if self.folder_store[tree_iter][4] is not None:
+                self.remove_folder_button.set_sensitive(False)
+                self.update_icon_view(props=self.folder_store[tree_iter][4])
+            elif self.folder_store[tree_iter][3] == self.default_directory:
+                        self.remove_folder_button.set_sensitive(False)
+                        self.update_icon_view(path=self.folder_store[tree_iter][3])
+            else:
+                self.remove_folder_button.set_sensitive(True)
+                self.update_icon_view(path=self.folder_store[tree_iter][3])
+
+    def on_row_activated(self, tree, path, column):
+        self.folder_tree.set_selection(path)
+
+    def on_folder_source_changed(self, tree):
+        if tree.get_selection() is not None:
+            folder_paths, iter = tree.get_selection().get_selected()
+            if iter :
+                path = folder_paths[iter][3]
+                if path and path != self._slideshow_schema.get_string("image-source"):
+                    self._slideshow_schema.set_string("image-source", path)
+                    if folder_paths[iter][4] is not None:
+                        self.remove_folder_button.set_sensitive(False)
+                        self.update_icon_view(props=folder_paths[iter][4])
+                    elif self.folder_store[iter][3] == self.default_directory:
+                        self.remove_folder_button.set_sensitive(False)
+                        self.update_icon_view(path=path)
+                    else:
+                        self.remove_folder_button.set_sensitive(True)
+                        self.update_icon_view(path=path)
+
+    def get_selected_wallpaper(self):
+        selected_items = self.icon_view.get_selected_items()
+        if len(selected_items) == 1:
+            path = selected_items[0]
+            iter = self.icon_view.get_model().get_iter(path)
+            return self.icon_view.get_model().get(iter, 0)[0]
+        return None
+
+    def on_wallpaper_selection_changed(self, iconview):
+        wallpaper = self.get_selected_wallpaper()
+        if wallpaper:
+            for key in wallpaper:
+                if key == "filename":
+                    self._background_schema.set_string("picture-uri", "file://" + wallpaper[key])
+                elif key == "options":
+                    self._background_schema.set_string("picture-options", wallpaper[key])
+
+    def add_new_folder(self):
+        res = self.add_folder_dialog.run()
+        if res == Gtk.ResponseType.OK:
+            folder_path = self.add_folder_dialog.get_filename()
+            folder_name = folder_path.split("/")[-1]
+            self.user_backgrounds.append([False, "folder", folder_name, folder_path, None])
+            self.folder_store.append([False, "folder", folder_name, folder_path, None])
+            self.update_folder_list()
+        self.add_folder_dialog.hide()
+
+    def remove_folder(self):
+        if self.folder_tree.get_selection() is not None:
+            self.icon_view.clear()
+            folder_paths, iter = self.folder_tree.get_selection().get_selected()
+            if iter:
+                path = folder_paths[iter][3]
+                self.folder_store.remove(iter)
+                for item in self.user_backgrounds:
+                    if item[3] == path:
+                        self.user_backgrounds.remove(item)
+                        self.update_folder_list()
+                        break
+
+    def update_folder_list(self):
+        dest_dir = os.path.join(os.getenv("HOME"), ".cinnamon", "backgrounds")
+        if not os.path.exists(dest_dir):
+            rec_mkdir(dest_dir)
+        dest_filename = os.path.join(dest_dir, "user-folders.lst")
+        if len(self.user_backgrounds) == 0:
+            file_data = ""
+        else:
+            first_path = self.user_backgrounds[0][3]
+            file_data = first_path + "\n"
+            for folder in self.user_backgrounds:
+                if folder[3] == first_path:
+                    continue
+                else:
+                    file_data += "%s\n" % folder[3]
+
+        with open(dest_filename, "w") as f:
+            f.write(file_data)
+
+    def update_icon_view(self, path=None, props=None):
+        picture_list = []
+        if path:
+            if os.path.exists(path):
+                for i in os.listdir(path):
+                    filename = os.path.join(path, i)
+                    if commands.getoutput("file -bi \"%s\"" % filename).startswith("image/"):
+                        picture_list.append({"filename": filename})
+        else:
+            if os.path.exists(props):
+                picture_list += self.parse_xml_backgrounds_list(props)
+
+        self.icon_view.set_pictures_list(picture_list)
+        if self._slideshow_schema.get_boolean("slideshow-enabled"):
+            self.icon_view.set_sensitive(False)
+        else:
+            self.icon_view.set_sensitive(True)
+
+    def splitLocaleCode(self, localeCode):
+        loc = localeCode.partition("_")
+        loc = (loc[0], loc[2])
+        return loc
     
-    def _remove_selected_wallpaper(self):
-        wallpaper = self.wallpaper_pane.get_selected_wallpaper()
-        os.unlink(wallpaper["filename"])
-        self.wallpaper_pane.update_icon_view()
+    def getLocalWallpaperName(self, names, loc):
+        result = ""
+        mainLocFound = False
+        for wp in names:
+            wpLoc = wp[0]
+            wpName = wp[1]
+            if wpLoc == ("", ""):
+                if not mainLocFound:
+                    result = wpName
+            elif wpLoc[0] == loc[0]:
+                if wpLoc[1] == loc[1]:
+                    return wpName
+                elif wpLoc[1] == "":
+                    result = wpName
+                    mainLocFound = True
+        return result
 
+    def parse_xml_backgrounds_list(self, filename):
+        try:
+            locAttrName = "{http://www.w3.org/XML/1998/namespace}lang"
+            loc = self.splitLocaleCode(locale.getdefaultlocale()[0])
+            res = []
+            subLocaleFound = False
+            f = open(filename)
+            rootNode = lxml.etree.fromstring(f.read())
+            f.close()
+            if rootNode.tag == "wallpapers":
+                for wallpaperNode in rootNode:
+                    if wallpaperNode.tag == "wallpaper" and wallpaperNode.get("deleted") != "true":
+                        wallpaperData = {"metadataFile": filename}
+                        names = []
+                        for prop in wallpaperNode:
+                            if type(prop.tag) == str:
+                                if prop.tag != "name":
+                                    wallpaperData[prop.tag] = prop.text                                
+                                else:
+                                    propAttr = prop.attrib
+                                    wpName = prop.text
+                                    locName = self.splitLocaleCode(propAttr.get(locAttrName)) if propAttr.has_key(locAttrName) else ("", "")
+                                    names.append((locName, wpName))
+                        wallpaperData["name"] = self.getLocalWallpaperName(names, loc)
+                        
+                        if "filename" in wallpaperData and wallpaperData["filename"] != "" and os.path.exists(wallpaperData["filename"]) and os.access(wallpaperData["filename"], os.R_OK):
+                            if wallpaperData["name"] == "":
+                                wallpaperData["name"] = os.path.basename(wallpaperData["filename"])
+                            res.append(wallpaperData)
+            return res
+        except:
+            return []
 
 class PixCache(object):
     
@@ -349,241 +579,3 @@ class ThreadedIconView(Gtk.IconView):
         except Exception, detail:
             print "Failed to read filename from %s: %s" % (filename, detail)
             return None
-    
-
-class BackgroundWallpaperPane (Gtk.VBox):
-    def __init__(self, sidepage, gnome_background_schema):
-        Gtk.VBox.__init__(self)
-        self.set_spacing(5)
-        
-        self._gnome_background_schema = gnome_background_schema
-        self._sidepage = sidepage
-        
-        scw = Gtk.ScrolledWindow()
-        scw.set_policy(Gtk.PolicyType.AUTOMATIC, Gtk.PolicyType.AUTOMATIC)
-        scw.set_shadow_type(Gtk.ShadowType.ETCHED_IN)
-        self.pack_start(scw, True, True, 0)
-        
-        self.icon_view = ThreadedIconView()
-        scw.add(self.icon_view)
-        self.icon_view.connect("selection-changed", self._on_selection_changed)
-        self.update_icon_view()
-        
-    def get_selected_wallpaper(self):
-        selected_items = self.icon_view.get_selected_items()
-        if len(selected_items) == 1:
-            path = selected_items[0]
-            iter = self.icon_view.get_model().get_iter(path)
-            return self.icon_view.get_model().get(iter, 0)[0]
-        return None
-        
-    def _on_selection_changed(self, iconview):
-        self._sidepage.remove_wallpaper_button.set_sensitive(False)
-        wallpaper = self.get_selected_wallpaper()
-        if wallpaper:
-            for key in wallpaper:
-                if key == "filename":
-                    self._gnome_background_schema.set_string("picture-uri", "file://" + wallpaper[key])
-                elif key == "pcolor":
-                    self._gnome_background_schema.set_string("primary-color", wallpaper[key])
-                elif key == "scolor":
-                    self._gnome_background_schema.set_string("secondary-color", wallpaper[key])
-                elif key == "shade_type":
-                    self._gnome_background_schema.set_string("color-shading-type", wallpaper[key])
-                elif key == "options":
-                    self._gnome_background_schema.set_string("picture-options", wallpaper[key])
-            if (not "metadataFile" in wallpaper) or (wallpaper["metadataFile"] == ""):
-                self._sidepage.remove_wallpaper_button.set_sensitive(True)
-    
-    def splitLocaleCode(self, localeCode):
-        loc = localeCode.partition("_")
-        loc = (loc[0], loc[2])
-        return loc
-    
-    def getLocalWallpaperName(self, names, loc):
-        result = ""
-        mainLocFound = False
-        for wp in names:
-            wpLoc = wp[0]
-            wpName = wp[1]
-            if wpLoc == ("", ""):
-                if not mainLocFound:
-                    result = wpName
-            elif wpLoc[0] == loc[0]:
-                if wpLoc[1] == loc[1]:
-                    return wpName
-                elif wpLoc[1] == "":
-                    result = wpName
-                    mainLocFound = True
-        return result
-                        
-                
-        
-    def parse_xml_backgrounds_list(self, filename):
-        try:
-            locAttrName = "{http://www.w3.org/XML/1998/namespace}lang"
-            loc = self.splitLocaleCode(locale.getdefaultlocale()[0])
-            res = []
-            subLocaleFound = False
-            f = open(filename)
-            rootNode = lxml.etree.fromstring(f.read())
-            f.close()
-            if rootNode.tag == "wallpapers":
-                for wallpaperNode in rootNode:
-                    if wallpaperNode.tag == "wallpaper" and wallpaperNode.get("deleted") != "true":
-                        wallpaperData = {"metadataFile": filename}
-                        names = []
-                        for prop in wallpaperNode:
-                            if type(prop.tag) == str:
-                                if prop.tag != "name":
-                                    wallpaperData[prop.tag] = prop.text                                
-                                else:
-                                    propAttr = prop.attrib
-                                    wpName = prop.text
-                                    locName = self.splitLocaleCode(propAttr.get(locAttrName)) if propAttr.has_key(locAttrName) else ("", "")
-                                    names.append((locName, wpName))
-                        wallpaperData["name"] = self.getLocalWallpaperName(names, loc)
-                        
-                        if "filename" in wallpaperData and wallpaperData["filename"] != "" and os.path.exists(wallpaperData["filename"]) and os.access(wallpaperData["filename"], os.R_OK):
-                            if wallpaperData["name"] == "":
-                                wallpaperData["name"] = os.path.basename(wallpaperData["filename"])
-                            res.append(wallpaperData)
-            return res
-        except:
-            return []
-    
-    def update_icon_view(self):
-        pictures_list = []
-        if os.path.exists("/usr/share/cinnamon-background-properties"):
-            for i in os.listdir("/usr/share/cinnamon-background-properties"):
-                if i.endswith(".xml"):
-                    pictures_list += self.parse_xml_backgrounds_list(os.path.join("/usr/share/cinnamon-background-properties", i))
-        
-        path = os.path.join(os.getenv("HOME"), ".cinnamon", "backgrounds")
-        if os.path.exists(path):
-            for i in os.listdir(path):
-                filename = os.path.join(path, i)
-                if commands.getoutput("file -bi \"%s\"" % filename).startswith("image/"):
-                    pictures_list.append({"filename": filename})
-        self.icon_view.set_pictures_list(pictures_list)
-
-class AddWallpapersDialog(Gtk.FileChooserDialog):
-    def __init__(self, parent = None):
-        Gtk.FileChooserDialog.__init__(self, title = _("Add wallpapers"), transient_for = parent, action = Gtk.FileChooserAction.OPEN)
-        self.add_button(Gtk.STOCK_OPEN, Gtk.ResponseType.OK)
-        self.add_button(Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL)
-        self.set_select_multiple(True)
-        filter = Gtk.FileFilter();
-        filter.add_pixbuf_formats ();
-        self.set_filter(filter);
-
-        preview = Gtk.Image()
-        self.set_preview_widget(preview)
-        self.connect("update-preview", self.update_icon_preview_cb, preview)
-
-    def run(self):
-        self.show_all()
-        resp = Gtk.FileChooserDialog.run(self)
-        self.hide()
-        if resp == Gtk.ResponseType.OK:
-            res = self.get_filenames()
-        else:
-            res = []
-        return res
-
-    def update_icon_preview_cb(self, chooser, preview):
-        filename = chooser.get_preview_filename()
-        if filename is None:
-            return
-        chooser.set_preview_widget_active(False)
-        if os.path.isfile(filename):
-            pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(filename, 128, 128)
-            if pixbuf is not None:
-                preview.set_from_pixbuf(pixbuf)
-                chooser.set_preview_widget_active(True)
-
-class BackgroundSlideshowPane(Gtk.Table):
-    def __init__(self, sidepage, gnome_background_schema, cinnamon_background_schema):
-        Gtk.Table.__init__(self)
-        self.set_col_spacings(5)
-        self.set_row_spacings(5)
-        
-        self._cinnamon_background_schema = cinnamon_background_schema
-        
-        l = Gtk.Label.new(_("Folder"))
-        l.set_alignment(0, 0.5)
-        self.attach(l, 0, 1, 0, 1, xoptions = Gtk.AttachOptions.FILL, yoptions = 0)
-        self.folder_selector = Gtk.FileChooserButton()
-        self.folder_selector.set_action(Gtk.FileChooserAction.SELECT_FOLDER)
-        self.folder_selector.connect("file-set", self._on_folder_selected)
-        self.folder_selector.set_filename(self._cinnamon_background_schema["slideshow-folder"])
-        self.attach(self.folder_selector, 1, 2, 0, 1, xoptions = Gtk.AttachOptions.FILL | Gtk.AttachOptions.EXPAND, yoptions = 0)
-        self.recursive_cb = Gtk.CheckButton.new_with_label(_("Recursive listing"))
-        self.recursive_cb.set_active(self._cinnamon_background_schema.get_boolean("slideshow-recursive"))
-        self.recursive_cb.connect("toggled", self._on_recursive_toggled)
-        self.attach(self.recursive_cb, 2, 3, 0, 1, xoptions = Gtk.AttachOptions.FILL, yoptions = 0)
-        
-        l = Gtk.Label.new(_("Delay"))
-        l.set_alignment(0, 0.5)
-        self.attach(l, 0, 1, 1, 2, xoptions = Gtk.AttachOptions.FILL, yoptions = 0)
-        self.delay_button = Gtk.SpinButton()
-        self.attach(self.delay_button, 1, 3, 1, 2, xoptions = Gtk.AttachOptions.FILL | Gtk.AttachOptions.EXPAND, yoptions = 0)
-        self.delay_button.set_increments(1, 10)
-        self.delay_button.set_range(1, 120)
-        self.delay_button.set_value(self._cinnamon_background_schema.get_int("slideshow-delay"))
-        self.delay_button.connect("value-changed", self._on_delay_changed)
-    
-    def _on_recursive_toggled(self, button):
-        self._cinnamon_background_schema.set_boolean("slideshow-recursive", button.get_active())
-        self.update_list()
-    
-    def _on_delay_changed(self, button):
-        self._cinnamon_background_schema.set_int("slideshow-delay", int(button.get_value()))
-        self.update_list()
-    
-    def _on_folder_selected(self, button):
-        self._cinnamon_background_schema.set_string("slideshow-folder", button.get_filename())
-        self.update_list()
-    
-    def update_list(self):
-        thread.start_new_thread(self._do_update_list, (self.folder_selector.get_filename(), self.recursive_cb.get_active(), int(self.delay_button.get_value())))
-    
-    def _list_pictures(self, res, path, files):
-        for i in files:
-            filename = os.path.join(path, i)
-            if commands.getoutput("file -bi \"%s\"" % filename).startswith("image/"):
-                res.append(filename)
-    
-    def _do_update_list(self, folder, recursive, delay, transition_duration = 0):
-        if os.path.exists(folder) and os.path.isdir(folder):
-            files = []
-            if recursive:
-                os.path.walk(folder, self._list_pictures, files)
-            else:
-                for i in os.listdir(folder):
-                    filename = os.path.join(folder, i)
-                    if commands.getoutput("file -bi \"%s\"" % filename).startswith("image/"):
-                        files.append(filename)
-            xml_data = "<background>\n"
-            prev_file = None
-            first_file = None
-            for filename in files:
-                if prev_file:
-                    xml_data += "<transition>\n<duration>%.1f</duration>\n<from>%s</from>\n<to>%s</to>\n</transition>\n" % (transition_duration, prev_file, filename)
-                else:
-                    first_file = filename
-                xml_data += "<static>\n<duration>%.1f</duration>\n<file>%s</file>\n</static>\n" % (60 * delay, filename)
-                prev_file = filename
-            if first_file and prev_file and first_file != prev_file:
-                xml_data += "<transition>\n<duration>%.1f</duration>\n<from>%s</from>\n<to>%s</to>\n</transition>\n" % (transition_duration, prev_file, first_file)
-            xml_data += "</background>"
-            
-            if not os.path.exists(os.path.join(os.getenv("HOME"), ".cinnamon", "backgrounds")):
-                rec_mkdir(os.path.join(os.getenv("HOME"), ".cinnamon", "backgrounds"))
-            filename = os.path.join(os.getenv("HOME"), ".cinnamon", "backgrounds", "slideshow.xml")
-            f = open(filename, "w")
-            f.write(xml_data)
-            f.close()
-            Gio.Settings("org.cinnamon.desktop.background").set_string("picture-uri", "file://" + filename)
-
-
