@@ -258,6 +258,7 @@ class Module:
         self.folder_tree.set_selection(path)
 
     def on_folder_source_changed(self, tree):
+        self.remove_folder_button.set_sensitive(False)
         if tree.get_selection() is not None:
             folder_paths, iter = tree.get_selection().get_selected()
             if iter :
