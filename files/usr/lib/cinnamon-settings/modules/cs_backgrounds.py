@@ -203,7 +203,7 @@ class Module:
                 if i.endswith(".xml"):
                     xml_path = os.path.join(properties_dir, i)
                     display_name = i.replace(".xml", "").replace("-", " ").replace("_", " ").split(" ")[-1].capitalize()
-                    self.collection_store.append([False, "start-here", display_name, xml_path, BACKGROUND_COLLECTION_TYPE_XML])
+                    self.collection_store.append([False, "cs-backgrounds", display_name, xml_path, BACKGROUND_COLLECTION_TYPE_XML])
 
     def get_user_backgrounds(self):
         self.user_backgrounds = []
