@@ -24,6 +24,7 @@ class CinnamonSlideshow(dbus.service.Object):
         self.used_image_playlist = []
         self.images_ready = False
         self.update_in_progress = False
+        self.current_image = self.background_settings.get_string("picture-uri")
 
         self.update_id = 0
 
@@ -68,6 +69,7 @@ class CinnamonSlideshow(dbus.service.Object):
         self.slideshow_settings.connect("changed::delay", self.on_delay_changed)
         self.slideshow_settings.connect("changed::image-source", self.on_slideshow_source_changed)
         self.slideshow_settings.connect("changed::random-order", self.on_random_order_changed)
+        self.background_settings.connect("changed::picture-uri", self.on_picture_uri_changed)
 
     def connect_folder_monitor(self):
         folder_path = Gio.file_new_for_path(self.collection_path)
@@ -174,6 +176,13 @@ class CinnamonSlideshow(dbus.service.Object):
     def on_random_order_changed(self, settings, key):
         self.random_order = self.slideshow_settings.get_boolean("random-order")
 
+    def on_picture_uri_changed(self, settings, key):
+        if self.update_in_progress:
+            return
+        else:
+            if self.background_settings.get_string("picture-uri") != self.current_image:
+                self.slideshow_settings.set_boolean("slideshow-enabled", False)
+
     def start_mainloop(self):
         if self.update_id > 0:
             GLib.source_remove(self.update_id)
@@ -197,6 +206,7 @@ class CinnamonSlideshow(dbus.service.Object):
         next_image = self.get_next_image_from_list()
         if next_image is not None:
             self.background_settings.set_string("picture-uri", next_image)
+            self.current_image = next_image
 
         self.update_in_progress = False
 
