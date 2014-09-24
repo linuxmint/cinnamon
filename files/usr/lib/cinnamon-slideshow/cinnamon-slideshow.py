@@ -24,6 +24,7 @@ class CinnamonSlideshow(dbus.service.Object):
         self.used_image_playlist = []
         self.images_ready = False
         self.update_in_progress = False
+        self.current_image = self.background_settings.get_string("picture-uri")
 
         self.update_id = 0
 
@@ -189,6 +190,10 @@ class CinnamonSlideshow(dbus.service.Object):
         if self.update_in_progress:
             return
 
+        if self.background_settings.get_string("picture-uri") != self.current_image:
+            self.slideshow_settings.set_boolean("slideshow-enabled", False)
+            return
+
         self.update_in_progress = True
 
         if len(self.image_playlist) == 0:
@@ -197,6 +202,7 @@ class CinnamonSlideshow(dbus.service.Object):
         next_image = self.get_next_image_from_list()
         if next_image is not None:
             self.background_settings.set_string("picture-uri", next_image)
+            self.current_image = next_image
 
         self.update_in_progress = False
 
