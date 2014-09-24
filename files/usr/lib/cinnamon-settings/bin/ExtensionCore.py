@@ -193,6 +193,10 @@ class ExtensionSidePage (SidePage):
             showTypes.append([SHOW_ALL, _("All desklets")])
             showTypes.append([SHOW_ACTIVE, _("Active desklets")])
             showTypes.append([SHOW_INACTIVE, _("Inactive desklets")])
+        elif self.collection_type == "extension":
+            showTypes.append([SHOW_ALL, _("All extensions")])
+            showTypes.append([SHOW_ACTIVE, _("Active extensions")])
+            showTypes.append([SHOW_INACTIVE, _("Inactive extensions")])
         self.comboshow.set_model(showTypes)
         self.comboshow.set_entry_text_column(1)
         self.comboshow.set_active(0) #All
