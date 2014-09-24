@@ -112,13 +112,13 @@ class Module:
 
             hbox = IndentedHBox()
             slideshow_checkbox = GSettingsCheckButton(_("Change background every "), "org.cinnamon.desktop.background.slideshow", "slideshow-enabled", None)
-            delay_button = GSettingsSpinButton("", "org.cinnamon.desktop.background.slideshow", "delay", None, 1, 120, 1, 1, _(" minutes"))
+            delay_button = GSettingsSpinButton("", "org.cinnamon.desktop.background.slideshow", "delay", "org.cinnamon.desktop.background.slideshow/slideshow-enabled", 1, 120, 1, 1, _(" minutes"))
             hbox.add(slideshow_checkbox)
             hbox.add(delay_button)
             bottom_vbox.pack_start(hbox, False, False, 2)
 
             hbox = IndentedHBox()
-            hbox.add(GSettingsCheckButton(_("Play background images in random order"), "org.cinnamon.desktop.background.slideshow", "random-order", None))
+            hbox.add(GSettingsCheckButton(_("Play background images in random order"), "org.cinnamon.desktop.background.slideshow", "random-order", "org.cinnamon.desktop.background.slideshow/slideshow-enabled"))
             bottom_vbox.pack_start(hbox, False, False, 2)
 
             hbox = IndentedHBox()
