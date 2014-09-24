@@ -223,7 +223,7 @@ class Module:
                 self.user_backgrounds.append([False, icon, folder_name, folder_path, BACKGROUND_COLLECTION_TYPE_DIRECTORY])
         else:
             # Add XDG PICTURE DIR            
-            self.user_backgrounds.append([False, "folder-pictures", xdg_pictures_directory.split("/")[-1], xdg_pictures_directory, BACKGROUND_COLLECTION_TYPE_DIRECTORY])            
+            self.user_backgrounds.append([False, "folder-pictures", self.xdg_pictures_directory.split("/")[-1], self.xdg_pictures_directory, BACKGROUND_COLLECTION_TYPE_DIRECTORY])            
             self.update_folder_list()
 
     def format_source(self, type, path):
