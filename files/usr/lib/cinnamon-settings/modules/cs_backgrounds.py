@@ -50,6 +50,8 @@ class Module:
         if not self.loaded:
             print "Loading Backgrounds module"
 
+            self.shown_collection = None # Which collection is displayed in the UI
+
             self._background_schema = Gio.Settings(schema = "org.cinnamon.desktop.background")
             self._slideshow_schema = Gio.Settings(schema = "org.cinnamon.desktop.background.slideshow")
             self._slideshow_schema.connect("changed::slideshow-enabled", self.on_slideshow_enabled_changed)
@@ -82,7 +84,7 @@ class Module:
             folder_scroller = Gtk.ScrolledWindow.new(None, None)
             folder_scroller.set_shadow_type(Gtk.ShadowType.IN)
             folder_scroller.set_policy(Gtk.PolicyType.AUTOMATIC, Gtk.PolicyType.AUTOMATIC)
-            folder_scroller.set_property("min-content-width", 150)
+            folder_scroller.set_property("min-content-width", 150)            
 
             self.folder_tree = Gtk.TreeView.new()
             self.folder_tree.set_headers_visible(False)
@@ -349,23 +351,25 @@ class Module:
             f.write(file_data)
 
     def update_icon_view(self, path=None, type=None):
-        picture_list = []
-        if os.path.exists(path):
-            if type == BACKGROUND_COLLECTION_TYPE_DIRECTORY:
-                files = os.listdir(path)
-                files.sort()
-                for i in files:
-                    filename = os.path.join(path, i)
-                    if commands.getoutput("file -bi \"%s\"" % filename).startswith("image/"):
-                        picture_list.append({"filename": filename})
-            elif type == BACKGROUND_COLLECTION_TYPE_XML:        
-                picture_list += self.parse_xml_backgrounds_list(path)
+        if path != self.shown_collection:
+            self.shown_collection = path
+            picture_list = []
+            if os.path.exists(path):
+                if type == BACKGROUND_COLLECTION_TYPE_DIRECTORY:
+                    files = os.listdir(path)
+                    files.sort()
+                    for i in files:
+                        filename = os.path.join(path, i)
+                        if commands.getoutput("file -bi \"%s\"" % filename).startswith("image/"):
+                            picture_list.append({"filename": filename})
+                elif type == BACKGROUND_COLLECTION_TYPE_XML:        
+                    picture_list += self.parse_xml_backgrounds_list(path)
 
-        self.icon_view.set_pictures_list(picture_list)
-        if self._slideshow_schema.get_boolean("slideshow-enabled"):
-            self.icon_view.set_sensitive(False)
-        else:
-            self.icon_view.set_sensitive(True)
+            self.icon_view.set_pictures_list(picture_list)
+            if self._slideshow_schema.get_boolean("slideshow-enabled"):
+                self.icon_view.set_sensitive(False)
+            else:
+                self.icon_view.set_sensitive(True)
 
     def splitLocaleCode(self, localeCode):
         loc = localeCode.partition("_")
