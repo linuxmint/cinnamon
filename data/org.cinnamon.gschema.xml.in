@@ -309,6 +309,22 @@
       </_description>
     </key>
 
+     <key name="desktop-effects-startup-transition" type="s">
+      <default>"easeOutQuad"</default>
+      <_summary>Transition used for session startup</_summary>
+      <_description>
+       A Tweener transition
+      </_description>
+    </key>
+    
+    <key type="i" name="desktop-effects-startup-time">
+      <default>500</default>
+      <_summary>Duration of the effect (in milliseconds)</_summary>
+      <_description>
+       Duration of the effect (in milliseconds)    
+      </_description>
+    </key>
+
     <key name="desktop-layout" type="s">
       <default>"traditional"</default>
       <_summary>Layout style</_summary>
