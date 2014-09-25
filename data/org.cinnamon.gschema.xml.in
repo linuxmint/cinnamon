@@ -308,6 +308,14 @@
        Duration of the effect (in milliseconds)    
       </_description>
     </key>
+    
+    <key type="b" name="startup-animation">
+      <default>true</default>
+      <_summary>Whether the startup animation is enabled</_summary>
+      <_description>
+       Whether the startup animation is enabled   
+      </_description>
+    </key>
 
     <key name="desktop-layout" type="s">
       <default>"traditional"</default>

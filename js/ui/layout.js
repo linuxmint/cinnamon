@@ -103,8 +103,11 @@ LayoutManager.prototype = {
         this.edgeLeft.delay = this.edgeFlipDelay;
 
         this.hotCornerManager = new HotCorner.HotCornerManager();
+        
+        let startupAnimationEnabled = global.settings.get_boolean("startup-animation");
+        let desktopEffectsEnabled = global.settings.get_boolean("desktop-effects");
 
-        if (!GLib.getenv('CINNAMON_SOFTWARE_RENDERING') && !GLib.getenv('CINNAMON_2D')) {
+        if (desktopEffectsEnabled && startupAnimationEnabled && !GLib.getenv('CINNAMON_SOFTWARE_RENDERING') && !GLib.getenv('CINNAMON_2D')) {
             this._prepareStartupAnimation();    
         }        
     },
