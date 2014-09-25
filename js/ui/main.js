@@ -299,6 +299,16 @@ function start() {
                         for (let i = 0; i < children.length; i++)
                             children[i].allocate_preferred_size(flags);
                     });
+    this.uiGroup.connect('get-preferred-width',
+                    function(actor, forHeight, alloc) {
+                        let width = global.stage.width;
+                        [alloc.min_size, alloc.natural_size] = [width, width];
+                    });
+    this.uiGroup.connect('get-preferred-height',
+                    function(actor, forWidth, alloc) {
+                        let height = global.stage.height;
+                        [alloc.min_size, alloc.natural_size] = [height, height];
+                    });
     St.set_ui_root(global.stage, uiGroup);
 
     global.reparentActor(global.background_actor, uiGroup);
