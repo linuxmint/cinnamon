@@ -245,9 +245,18 @@ class Module:
             headingbox.pack_start(mainbox, True, True, 2)
             headingbox.pack_end(Gtk.Label.new(_("To edit a keyboard binding, click it and press the new keys, or press backspace to clear it.")), False, False, 1)
 
+            paned = Gtk.Paned(orientation = Gtk.Orientation.HORIZONTAL)
+
             left_vbox = Gtk.Box.new(Gtk.Orientation.VERTICAL, 2)
             right_vbox = Gtk.Box.new(Gtk.Orientation.VERTICAL, 2)
-            
+
+            paned.add1(left_vbox)
+
+            right_scroller = Gtk.ScrolledWindow.new(None, None)
+            right_scroller.set_policy(Gtk.PolicyType.AUTOMATIC, Gtk.PolicyType.NEVER)
+            right_scroller.add(right_vbox)
+            paned.add2(right_scroller)
+
             category_scroller = Gtk.ScrolledWindow.new(None, None)
             category_scroller.set_shadow_type(Gtk.ShadowType.IN)
             
@@ -272,7 +281,7 @@ class Module:
             left_vbox.pack_start(category_scroller, True, True, 2)
                     
             category_scroller.add(self.cat_tree)
-            category_scroller.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC)
+            category_scroller.set_policy(Gtk.PolicyType.AUTOMATIC, Gtk.PolicyType.AUTOMATIC)
             kb_name_scroller.add(self.kb_tree)
             kb_name_scroller.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC)
             entry_scroller.add(self.entry_tree)
@@ -289,8 +298,7 @@ class Module:
 
             right_vbox.pack_end(buttonbox, False, False, 2)
 
-            mainbox.pack_start(left_vbox, False, False, 2)
-            mainbox.pack_start(right_vbox, True, True, 2)
+            mainbox.pack_start(paned, True, True, 2)
 
             left_vbox.set_border_width(2)
             right_vbox.set_border_width(2)
@@ -350,6 +358,7 @@ class Module:
                         category.add(KeyBinding(binding[0], binding[1], binding[2], binding[3]))
 
             cat_iters = {}
+            longest_cat_label = " "
 
             for category in self.main_store:
                 if category.parent == None:
@@ -360,6 +369,13 @@ class Module:
                     self.cat_store.set_value(cat_iters[category.int_name], 0, category.icon)
                 self.cat_store.set_value(cat_iters[category.int_name], 1, category.label)
                 self.cat_store.set_value(cat_iters[category.int_name], 2, category)
+                if len(category.label) > len(longest_cat_label):
+                    longest_cat_label = category.label
+
+            layout = self.cat_tree.create_pango_layout(longest_cat_label)
+            w, h = layout.get_pixel_size()
+
+            paned.set_position(max(w, 200))
 
             self.loadCustoms()
             self.cat_tree.set_model(self.cat_store)
