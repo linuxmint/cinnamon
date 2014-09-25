@@ -86,6 +86,9 @@ class Module:
             effects = [["none", _("None")], ["scale", _("Scale")]]
             section.add(self.make_effect_group(_("Tiling and snapping windows:"), "tile", effects))
             
+            #STARTUP ANIMATION
+            section.add(self.make_effect_group(_("Session startup:"), "startup", None))
+            
             vbox.add(section)
 
     def make_effect_group(self, group_label, key, effects):
@@ -100,9 +103,10 @@ class Module:
         label.props.xalign = 0.0
         self.size_groups[0].add_widget(label)
         box.add(label)
-        w = GSettingsComboBox("", root, template % (key, "effect"), path, effects)
-        self.size_groups[1].add_widget(w)
-        box.add(w)
+        if (effects):
+            w = GSettingsComboBox("", root, template % (key, "effect"), path, effects)
+            self.size_groups[1].add_widget(w)
+            box.add(w)
         w = GSettingsComboBox("", root, template % (key, "transition"), path, self.transition_effects)
         self.size_groups[2].add_widget(w)
         box.add(w)

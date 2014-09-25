@@ -15,7 +15,6 @@ const EdgeFlip = imports.ui.edgeFlip;
 const HotCorner = imports.ui.hotCorner;
 const DeskletManager = imports.ui.deskletManager;
 
-const STARTUP_ANIMATION_TIME = 0.5;
 const KEYBOARD_ANIMATION_TIME = 0.5;
 
 function LayoutManager() {
@@ -382,14 +381,24 @@ LayoutManager.prototype = {
     },
 
     _startupAnimation: function() {
+        
+        let transition = "easeOutQuad";
+        let time = 0.5;
+        try{
+            transition = global.settings.get_string("desktop-effects-startup-transition");
+            time = global.settings.get_int("desktop-effects-startup-time") / 1000;
+        }
+        catch(e) {
+            log(e);
+        }
         // Don't animate the strut
         this._chrome.freezeUpdateRegions();
         Tweener.addTween(Main.uiGroup,
                          { scale_x: 1,
                            scale_y: 1,
                            opacity: 255,
-                           time: STARTUP_ANIMATION_TIME,
-                           transition: 'easeOutQuad',
+                           time: time,
+                           transition: transition,
                            onComplete: this._startupAnimationComplete,
                            onCompleteScope: this });       
     },
