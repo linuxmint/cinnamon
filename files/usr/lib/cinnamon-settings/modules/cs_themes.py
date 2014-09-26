@@ -10,7 +10,7 @@ class Module:
     def __init__(self, content_box):
         self.keywords = _("themes, style")
         self.icon = "cs-themes"
-        sidePage = SidePage(_("Themes"), self.icon, self.keywords, content_box, 500, module=self)
+        sidePage = SidePage(_("Themes"), self.icon, self.keywords, content_box, module=self)
         self.sidePage = sidePage
         self.comment = _("Manage themes to change how your desktop looks")
         self.name = "themes"
@@ -122,8 +122,9 @@ class Module:
         return box
          
     def create_button_chooser(self, settings, key, path_prefix, path_suffix, button_picture_size, menu_pictures_size, num_cols):        
-        chooser = PictureChooserButton(num_cols=num_cols, button_picture_size=button_picture_size, menu_pictures_size=menu_pictures_size)
+        chooser = PictureChooserButton(num_cols=num_cols, button_picture_size=button_picture_size, menu_pictures_size=menu_pictures_size, has_button_label=True)
         theme = settings.get_string(key)
+        chooser.set_button_label(theme)
         chooser.set_tooltip_text(theme)
         if path_suffix == "cinnamon" and theme == "cinnamon":
             chooser.set_picture_from_file("/usr/share/cinnamon/theme/thumbnail.png")
@@ -158,6 +159,7 @@ class Module:
     def _on_icon_theme_selected(self, path, theme):
         try:
             self.settings.set_string("icon-theme", theme)
+            self.icon_chooser.set_button_label(theme)
             self.icon_chooser.set_tooltip_text(theme)
         except Exception, detail:
             print detail      
@@ -166,6 +168,7 @@ class Module:
     def _on_metacity_theme_selected(self, path, theme):
         try:
             self.wm_settings.set_string("theme", theme)
+            self.metacity_chooser.set_button_label(theme)
             self.metacity_chooser.set_tooltip_text(theme)
         except Exception, detail:
             print detail        
@@ -174,6 +177,7 @@ class Module:
     def _on_gtk_theme_selected(self, path, theme):
         try:
             self.settings.set_string("gtk-theme", theme)
+            self.theme_chooser.set_button_label(theme)
             self.theme_chooser.set_tooltip_text(theme)
         except Exception, detail:
             print detail        
@@ -182,6 +186,7 @@ class Module:
     def _on_cursor_theme_selected(self, path, theme):
         try:
             self.settings.set_string("cursor-theme", theme)
+            self.cursor_chooser.set_button_label(theme)
             self.cursor_chooser.set_tooltip_text(theme)
         except Exception, detail:
             print detail        
@@ -190,6 +195,7 @@ class Module:
     def _on_cinnamon_theme_selected(self, path, theme):
         try:
             self.cinnamon_settings.set_string("name", theme)
+            self.cinnamon_chooser.set_button_label(theme)
             self.cinnamon_chooser.set_tooltip_text(theme)
         except Exception, detail:
             print detail      
