@@ -25,6 +25,8 @@ const iface =
 
 const proxy = Gio.DBusProxy.makeProxyWrapper(iface);
 
+const PLAY_ONCE_FLAG = 8675309;
+
 function SoundManager() {
     this._init();
 }
@@ -79,6 +81,19 @@ SoundManager.prototype = {
             return;
         if (this.enabled[sound] && this.file[sound] != "") {
             this.playSoundFile(0, this.file[sound]);
+        }
+    },
+
+    /* We want the login sound synced to the fade-in animation
+     * but we don't want it playing every time someone restarts
+     * Cinnamon - passing PLAY_ONCE_FLAG will let the sound handler
+     * know not to play this more than once for its lifetime (usually
+     * for the session.)
+     */
+
+    play_once_per_session: function(sound) {
+        if (this.enabled[sound] && this.file[sound] != "") {
+            this.playSoundFile(PLAY_ONCE_FLAG, this.file[sound]);
         }
     },
 

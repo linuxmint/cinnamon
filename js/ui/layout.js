@@ -387,6 +387,7 @@ LayoutManager.prototype = {
     _startupAnimation: function() {
         // Don't animate the strut
         this._chrome.freezeUpdateRegions();
+        Main.soundManager.play_once_per_session('login');
         Tweener.addTween(Main.uiGroup,
                          { scale_x: 1,
                            scale_y: 1,
