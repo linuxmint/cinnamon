@@ -144,6 +144,7 @@ class CinnamonSlideshow(dbus.service.Object):
         if self.collection_type == BACKGROUND_COLLECTION_TYPE_DIRECTORY:
             self.connect_folder_monitor()
         self.gather_images()
+        self.loop_counter = self.slideshow_settings.get_int("delay")
         self.start_mainloop()
 
     def on_monitored_folder_changed(self, monitor, file1, file2, event_type):
