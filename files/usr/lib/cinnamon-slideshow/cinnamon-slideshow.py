@@ -27,6 +27,7 @@ class CinnamonSlideshow(dbus.service.Object):
         self.current_image = self.background_settings.get_string("picture-uri")
 
         self.update_id = 0
+        self.loop_counter = self.slideshow_settings.get_int("delay")
 
         self.folder_monitor = None
         self.folder_monitor_id = 0
@@ -56,7 +57,6 @@ class CinnamonSlideshow(dbus.service.Object):
         return ("%s://%s" % (type, path))
 
     def load_settings(self):
-        self.delay = self.slideshow_settings.get_int("delay")
         self.random_order = self.slideshow_settings.get_boolean("random-order")
         self.collection = self.slideshow_settings.get_string("image-source")
         self.collection_path = ""
@@ -66,7 +66,6 @@ class CinnamonSlideshow(dbus.service.Object):
             self.collection_path = os.path.expanduser(self.collection_path)
 
     def connect_signals(self):
-        self.slideshow_settings.connect("changed::delay", self.on_delay_changed)
         self.slideshow_settings.connect("changed::image-source", self.on_slideshow_source_changed)
         self.slideshow_settings.connect("changed::random-order", self.on_random_order_changed)
         self.background_settings.connect("changed::picture-uri", self.on_picture_uri_changed)
@@ -128,13 +127,6 @@ class CinnamonSlideshow(dbus.service.Object):
             self.image_playlist.sort()
         self.images_ready = True
 
-    def on_delay_changed(self, settings, key):
-        if self.update_id > 0:
-            GLib.source_remove(self.update_id)
-            self.update_id = 0
-        self.delay = self.slideshow_settings.get_int("delay")
-        self.start_mainloop()
-
     def on_slideshow_source_changed(self, settings, key):
         if self.update_id > 0:
             GLib.source_remove(self.update_id)
@@ -152,6 +144,7 @@ class CinnamonSlideshow(dbus.service.Object):
         if self.collection_type == BACKGROUND_COLLECTION_TYPE_DIRECTORY:
             self.connect_folder_monitor()
         self.gather_images()
+        self.loop_counter = self.slideshow_settings.get_int("delay")
         self.start_mainloop()
 
     def on_monitored_folder_changed(self, monitor, file1, file2, event_type):
@@ -191,8 +184,13 @@ class CinnamonSlideshow(dbus.service.Object):
         if not self.images_ready:
             self.update_id = GLib.timeout_add_seconds(1, self.start_mainloop)
         else:
-            self.update_background()
-            self.update_id = GLib.timeout_add_seconds(self.delay * 60, self.start_mainloop)
+            if self.loop_counter >= self.slideshow_settings.get_int("delay"):
+                self.loop_counter = 1
+                self.update_background()
+                self.update_id = GLib.timeout_add_seconds(60, self.start_mainloop)
+            else:
+                self.loop_counter = self.loop_counter + 1
+                self.update_id = GLib.timeout_add_seconds(60, self.start_mainloop)
 
     def update_background(self):
         if self.update_in_progress:
