@@ -128,12 +128,12 @@ class PictureChooserButton (Gtk.Button):
         wrect = widget.get_allocation()
         mrect = menu.get_allocation()
 
-        unused_var, window_x, window_y = widget.get_window().get_origin()
+        unused_var, window_x, window_y = window.get_origin()
 
         # Position left edge of the menu with the right edge of the button
         x = window_x + wrect.x + wrect.width
         # Center the menu vertically with respect to the monitor
-        y = warea.y + (warea.height / 2) - (menu.get_allocation().height / 2)
+        y = warea.y + (warea.height / 2) - (mrect.height / 2)
 
         # Now, check if we're still touching the button - we want the right edge
         # of the button always 100% touching the menu
