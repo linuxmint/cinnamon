@@ -120,25 +120,36 @@ class PictureChooserButton (Gtk.Button):
         self.button_label.set_markup(label)
 
     def popup_menu_below_button (self, menu, widget):  
-        # here I get the coordinates of the button relative to
-        # window (self.window)
-        button_x, button_y = widget.get_allocation().x, widget.get_allocation().y
+        window = widget.get_window()
+        screen = window.get_screen()
+        monitor = screen.get_monitor_at_window(window)
 
-        # now convert them to X11-relative
+        warea = screen.get_monitor_workarea(monitor)
+        wrect = widget.get_allocation()
+        mrect = menu.get_allocation()
+
         unused_var, window_x, window_y = widget.get_window().get_origin()
-        x = window_x + button_x
-        y = window_y + button_y
 
-        # now move the menu below the button
-        y += widget.get_allocation().height
+        # Position left edge of the menu with the right edge of the button
+        x = window_x + wrect.x + wrect.width
+        # Center the menu vertically with respect to the monitor
+        y = warea.y + (warea.height / 2) - (menu.get_allocation().height / 2)
+
+        # Now, check if we're still touching the button - we want the right edge
+        # of the button always 100% touching the menu
+
+        if y > (window_y + wrect.y):
+            y = y - (y - (window_y + wrect.y))
+        elif (y + mrect.height) < (window_y + wrect.y + wrect.height):
+            y = y + ((window_y + wrect.y + wrect.height) - (y + mrect.height))
 
         push_in = True # push_in is True so all menu is always inside screen
         return (x, y, push_in)
 
     def _on_button_clicked(self, widget, event):
         if event.button == 1:
-            self.menu.popup(None, None, self.popup_menu_below_button, self, event.button, event.time)
             self.menu.show_all()
+            self.menu.popup(None, None, self.popup_menu_below_button, self, event.button, event.time)
 
     def _on_picture_selected(self, menuitem, path, callback, id=None):
         if id is not None:
