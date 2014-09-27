@@ -46,6 +46,7 @@ const Meta = imports.gi.Meta;
 const Cinnamon = imports.gi.Cinnamon;
 const St = imports.gi.St;
 const PointerTracker = imports.misc.pointerTracker;
+const Lang = imports.lang;
 
 const SoundManager = imports.ui.soundManager;
 const BackgroundManager = imports.ui.backgroundManager;
@@ -321,6 +322,19 @@ function start() {
     global.reparentActor(global.top_window_group, global.stage);
 
     layoutManager = new Layout.LayoutManager();
+
+    let startupAnimationEnabled = global.settings.get_boolean("startup-animation");
+    let desktopEffectsEnabled = global.settings.get_boolean("desktop-effects");
+
+    let do_animation = desktopEffectsEnabled &&
+                       startupAnimationEnabled &&
+                       !GLib.getenv('CINNAMON_SOFTWARE_RENDERING') &&
+                       !GLib.getenv('CINNAMON_2D');
+
+    if (do_animation) {
+        layoutManager._prepareStartupAnimation();
+    }
+
     let pointerTracker = new PointerTracker.PointerTracker();
     pointerTracker.setPosition(layoutManager.primaryMonitor.x + layoutManager.primaryMonitor.width/2,
         layoutManager.primaryMonitor.y + layoutManager.primaryMonitor.height/2);
@@ -420,6 +434,27 @@ function start() {
 
     if (software_rendering && !GLib.getenv('CINNAMON_2D')) {
         notifyCinnamon2d();
+    }
+
+    let sound_settings = new Gio.Settings( {schema: "org.cinnamon.sounds"} );
+    let do_login_sound = sound_settings.get_boolean("login-enabled");
+
+    // We're mostly prepared for the startup animation
+    // now, but since a lot is going on asynchronously
+    // during startup, let's defer the startup animation
+    // until the event loop is uncontended and idle.
+    // This helps to prevent us from running the animation
+    // when the system is bogged down
+    if (do_animation) {
+        let id = GLib.idle_add(GLib.PRIORITY_LOW, Lang.bind(this, function() {
+            if (do_login_sound)
+                soundManager.play_once_per_session('login');
+            layoutManager._startupAnimation();
+            return GLib.SOURCE_REMOVE;
+        }));
+    } else {
+        if (do_login_sound)
+            soundManager.play_once_per_session('login');
     }
 }
 

@@ -103,13 +103,6 @@ LayoutManager.prototype = {
         this.edgeLeft.delay = this.edgeFlipDelay;
 
         this.hotCornerManager = new HotCorner.HotCornerManager();
-        
-        let startupAnimationEnabled = global.settings.get_boolean("startup-animation");
-        let desktopEffectsEnabled = global.settings.get_boolean("desktop-effects");
-
-        if (desktopEffectsEnabled && startupAnimationEnabled && !GLib.getenv('CINNAMON_SOFTWARE_RENDERING') && !GLib.getenv('CINNAMON_2D')) {
-            this._prepareStartupAnimation();    
-        }        
     },
     
     _toggleExpo: function() {
@@ -370,24 +363,11 @@ LayoutManager.prototype = {
         Main.uiGroup.scale_x = Main.uiGroup.scale_y = 0.75;
         Main.uiGroup.opacity = 0;
         global.window_group.set_clip(monitor.x, monitor.y, monitor.width, monitor.height);
-    
-        // We're mostly prepared for the startup animation
-        // now, but since a lot is going on asynchronously
-        // during startup, let's defer the startup animation
-        // until the event loop is uncontended and idle.
-        // This helps to prevent us from running the animation
-        // when the system is bogged down
-        let id = GLib.idle_add(GLib.PRIORITY_LOW, Lang.bind(this, function() {
-            this._startupAnimation();
-            return GLib.SOURCE_REMOVE;
-        }));
-        GLib.Source.set_name_by_id(id, '[cinnamon] this._startupAnimation');
     },
 
     _startupAnimation: function() {
         // Don't animate the strut
         this._chrome.freezeUpdateRegions();
-        Main.soundManager.play_once_per_session('login');
         Tweener.addTween(Main.uiGroup,
                          { scale_x: 1,
                            scale_y: 1,
