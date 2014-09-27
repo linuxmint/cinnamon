@@ -219,6 +219,8 @@ __proto__: ModalDialog.ModalDialog.prototype,
         let entry = new St.Entry({ style_class: 'run-dialog-entry' });
         CinnamonEntry.addContextMenu(entry);
 
+        entry.label_actor = label;
+
         this._entryText = entry.clutter_text;
         this.contentLayout.add(entry, { y_align: St.Align.START });
         this.setInitialKeyFocus(this._entryText);

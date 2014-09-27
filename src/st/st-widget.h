@@ -170,6 +170,17 @@ void              st_set_ui_root (ClutterStage     *stage,
                                   ClutterContainer *container);
 ClutterContainer *st_get_ui_root (ClutterStage     *stage);
 
+/* accessibility methods */
+void                  st_widget_set_accessible_role       (StWidget *widget,
+                                                           AtkRole role);
+AtkRole               st_widget_get_accessible_role       (StWidget *widget);
+void                  st_widget_add_accessible_state      (StWidget *widget,
+                                                           AtkStateType state);
+void                  st_widget_remove_accessible_state   (StWidget *widget,
+                                                           AtkStateType state);
+void                  st_widget_set_accessible_name       (StWidget *widget,
+                                                           const gchar *name);
+const gchar *         st_widget_get_accessible_name       (StWidget *widget);
 G_END_DECLS
 
 #endif /* __ST_WIDGET_H__ */

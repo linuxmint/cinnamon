@@ -3,6 +3,7 @@
 const Clutter = imports.gi.Clutter;
 const Lang = imports.lang;
 const St = imports.gi.St;
+const Atk = imports.gi.Atk;
 const Cinnamon = imports.gi.Cinnamon;
 const Signals = imports.signals;
 const Gio = imports.gi.Gio;
@@ -41,7 +42,8 @@ ModalDialog.prototype = {
 
         this._group = new St.Group({ visible: false,
                                      x: 0,
-                                     y: 0 });
+                                     y: 0,
+                                     accessible_role: Atk.Role.DIALOG });
         Main.uiGroup.add_actor(this._group);
 
         let constraint = new Clutter.BindConstraint({ source: global.stage,

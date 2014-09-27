@@ -9,6 +9,7 @@ const Main = imports.ui.main;
 const PopupMenu = imports.ui.popupMenu;
 const AppFavorites = imports.ui.appFavorites;
 const Gtk = imports.gi.Gtk;
+const Atk = imports.gi.Atk;
 const Gio = imports.gi.Gio;
 const Signals = imports.signals;
 const GnomeSession = imports.misc.gnomeSession;
@@ -404,6 +405,7 @@ ApplicationButton.prototype = {
         this.addActor(this.label);
         this._draggable = DND.makeDraggable(this.actor);
         this.isDraggableApp = true;
+        this.actor.label_actor = this.label;
         this.icon.realize();
         this.label.realize();
     },     
@@ -795,6 +797,7 @@ CategoryButton.prototype = {
                 this.icon.realize();
             }
         }
+        this.actor.accessible_role = Atk.Role.LIST_ITEM;
         this.addActor(this.label);
         this.label.realize();
     }
@@ -2175,7 +2178,9 @@ MyApplet.prototype = {
 
         this.categoriesApplicationsBox = new CategoriesApplicationsBox();
         rightPane.add_actor(this.categoriesApplicationsBox.actor);
-        this.categoriesBox = new St.BoxLayout({ style_class: 'menu-categories-box', vertical: true });
+        this.categoriesBox = new St.BoxLayout({ style_class: 'menu-categories-box',
+                                                vertical: true,
+                                                accessible_role: Atk.Role.LIST });
         this.applicationsScrollBox = new St.ScrollView({ x_fill: true, y_fill: false, y_align: St.Align.START, style_class: 'vfade menu-applications-scrollbox' });
 
         this.a11y_settings = new Gio.Settings({ schema: "org.cinnamon.desktop.a11y.applications" });

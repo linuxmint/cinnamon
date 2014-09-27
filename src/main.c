@@ -20,7 +20,7 @@
 #include <meta/meta-plugin.h>
 #include <meta/prefs.h>
 
-#include "cinnamon-a11y.h"
+#include <atk-bridge.h>
 #include "cinnamon-global.h"
 #include "cinnamon-global-private.h"
 #include "cinnamon-perf-log.h"
@@ -168,6 +168,20 @@ malloc_statistics_callback (CinnamonPerfLog *perf_log,
                                      "malloc.usedSize",
                                      info.uordblks);
 #endif
+}
+
+static void
+cinnamon_a11y_init (void)
+{
+  if (clutter_get_accessibility_enabled () == FALSE)
+    {
+      g_warning ("Accessibility: clutter has no accessibility enabled"
+                 " skipping the atk-bridge load");
+    }
+  else
+    {
+      atk_bridge_adaptor_init (NULL, NULL);
+    }
 }
 
 static void

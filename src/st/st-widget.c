@@ -46,6 +46,7 @@
 #include "st-widget-accessible.h"
 
 #include <gtk/gtk.h>
+#include <atk/atk-enum-types.h>
 
 /*
  * Forward declaration for sake of StWidgetChild
@@ -77,8 +78,11 @@ struct _StWidgetPrivate
   StTextDirection   direction;
 
   AtkObject *accessible;
+  AtkRole accessible_role;
+  AtkStateSet *local_state_set;
 
   ClutterActor *label_actor;
+  gchar *accessible_name;
 };
 
 /**
@@ -107,7 +111,9 @@ enum
   PROP_HOVER,
   PROP_CAN_FOCUS,
   PROP_LABEL_ACTOR,
-  PROP_IMPORTANT
+  PROP_IMPORTANT,
+  PROP_ACCESSIBLE_ROLE,
+  PROP_ACCESSIBLE_NAME
 };
 
 enum
@@ -122,7 +128,7 @@ static guint signals[LAST_SIGNAL] = { 0, };
 
 gfloat st_slow_down_factor = 1.0;
 
-G_DEFINE_ABSTRACT_TYPE (StWidget, st_widget, CLUTTER_TYPE_ACTOR);
+G_DEFINE_TYPE (StWidget, st_widget, CLUTTER_TYPE_ACTOR);
 
 #define ST_WIDGET_GET_PRIVATE(obj)    (G_TYPE_INSTANCE_GET_PRIVATE ((obj), ST_TYPE_WIDGET, StWidgetPrivate))
 
@@ -201,6 +207,14 @@ st_widget_set_property (GObject      *gobject,
       clutter_actor_queue_relayout ((ClutterActor *) gobject);
       break;
 
+    case PROP_ACCESSIBLE_ROLE:
+      st_widget_set_accessible_role (actor, g_value_get_enum (value));
+      break;
+
+    case PROP_ACCESSIBLE_NAME:
+      st_widget_set_accessible_name (actor, g_value_get_string (value));
+      break;
+
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (gobject, prop_id, pspec);
       break;
@@ -264,6 +278,14 @@ st_widget_get_property (GObject    *gobject,
 
     case PROP_IMPORTANT:
       g_value_set_boolean (value, priv->important);
+      break;
+
+    case PROP_ACCESSIBLE_ROLE:
+      g_value_set_enum (value, st_widget_get_accessible_role (actor));
+      break;
+
+    case PROP_ACCESSIBLE_NAME:
+      g_value_set_string (value, priv->accessible_name);
       break;
 
     default:
@@ -338,6 +360,8 @@ st_widget_finalize (GObject *gobject)
 
   g_free (priv->style_class);
   g_free (priv->pseudo_class);
+  g_object_unref (priv->local_state_set);
+  g_free (priv->accessible_name);
 
   G_OBJECT_CLASS (st_widget_parent_class)->finalize (gobject);
 }
@@ -1032,6 +1056,33 @@ st_widget_class_init (StWidgetClass *klass)
                                                         ST_PARAM_READWRITE));
 
   /**
+   * StWidget:accessible-role:
+   *
+   * The accessible role of this object
+   */
+  g_object_class_install_property (gobject_class,
+                                   PROP_ACCESSIBLE_ROLE,
+                                   g_param_spec_enum ("accessible-role",
+                                                      "Accessible Role",
+                                                      "The accessible role of this object",
+                                                      ATK_TYPE_ROLE,
+                                                      ATK_ROLE_INVALID,
+                                                      G_PARAM_READWRITE));
+
+  /**
+  * StWidget:accessible-name:
+  *
+  * Object instance's name for assistive technology access.
+  */
+  g_object_class_install_property (gobject_class,
+                                   PROP_ACCESSIBLE_NAME,
+                                   g_param_spec_string ("accessible-name",
+                                                        "Accessible name",
+                                                        "Object instance's name for assistive technology access.",
+                                                        NULL,
+                                                        ST_PARAM_READWRITE));
+
+  /**
    * StWidget::style-changed:
    * @widget: the #StWidget
    *
@@ -1475,6 +1526,7 @@ st_widget_init (StWidget *actor)
   actor->priv = priv = ST_WIDGET_GET_PRIVATE (actor);
   priv->is_stylable = TRUE;
   priv->transition_animation = NULL;
+  priv->local_state_set = atk_state_set_new ();
 
   /* connect style changed */
   g_signal_connect (actor, "notify::name", G_CALLBACK (st_widget_name_notify), NULL);
@@ -2258,6 +2310,167 @@ st_widget_set_label_actor (StWidget     *widget,
     }
 }
 
+ /**
+ * st_widget_set_accessible_name:
+ * @widget: widget to set the accessible name for
+ * @name: (allow-none): a character string to be set as the accessible name
+ *
+ * This method sets @name as the accessible name for @widget.
+ *
+ * Usually you will have no need to set the accessible name for an
+ * object, as usually there is a label for most of the interface
+ * elements. So in general it is better to just use
+ * @st_widget_set_label_actor. This method is only required when you
+ * need to set an accessible name and there is no available label
+ * object.
+ *
+ */
+void
+st_widget_set_accessible_name (StWidget *widget,
+                               const gchar *name)
+{
+  g_return_if_fail (ST_IS_WIDGET (widget));
+
+  if (widget->priv->accessible_name != NULL)
+    g_free (widget->priv->accessible_name);
+
+  widget->priv->accessible_name = g_strdup (name);
+  g_object_notify (G_OBJECT (widget), "accessible-name");
+}
+
+/**
+ * st_widget_get_accessible_name:
+ * @widget: widget to get the accessible name for
+ *
+ * Gets the accessible name for this widget. See
+ * st_widget_set_accessible_name() for more information.
+ *
+ * Return value: a character string representing the accessible name
+ * of the widget.
+ */
+const gchar *
+st_widget_get_accessible_name (StWidget *widget)
+{
+  g_return_val_if_fail (ST_IS_WIDGET (widget), NULL);
+
+  return widget->priv->accessible_name;
+}
+
+/**
+ * st_widget_set_accessible_role:
+ * @widget: widget to set the accessible role for
+ * @role: The role to use
+ *
+ * This method sets @role as the accessible role for @widget. This
+ * role describes what kind of user interface element @widget is and
+ * is provided so that assistive technologies know how to present
+ * @widget to the user.
+ *
+ * Usually you will have no need to set the accessible role for an
+ * object, as this information is extracted from the context of the
+ * object (ie: a #StButton has by default a push button role). This
+ * method is only required when you need to redefine the role
+ * currently associated with the widget, for instance if it is being
+ * used in an unusual way (ie: a #StButton used as a togglebutton), or
+ * if a generic object is used directly (ie: a container as a menu
+ * item).
+ *
+ * If @role is #ATK_ROLE_INVALID, the role will not be changed
+ * and the accessible's default role will be used instead.
+ */
+void
+st_widget_set_accessible_role (StWidget *widget,
+                               AtkRole role)
+{
+  g_return_if_fail (ST_IS_WIDGET (widget));
+
+  widget->priv->accessible_role = role;
+
+  g_object_notify (G_OBJECT (widget), "accessible-role");
+}
+
+/**
+ * st_widget_get_accessible_role:
+ * @widget: widget to get the accessible role for
+ *
+ * Gets the #AtkRole for this widget. See
+ * st_widget_set_accessible_role() for more information.
+ *
+ * Return value: accessible #AtkRole for this widget
+ */
+AtkRole
+st_widget_get_accessible_role (StWidget *widget)
+{
+  AtkObject *accessible = NULL;
+  AtkRole role = ATK_ROLE_INVALID;
+
+  g_return_val_if_fail (ST_IS_WIDGET (widget), ATK_ROLE_INVALID);
+
+  if (widget->priv->accessible_role != ATK_ROLE_INVALID)
+    role = widget->priv->accessible_role;
+  else if (widget->priv->accessible != NULL)
+    role = atk_object_get_role (accessible);
+
+  return role;
+}
+
+static void
+notify_accessible_state_change (StWidget *widget,
+                                AtkStateType state,
+                                gboolean value)
+{
+  if (widget->priv->accessible != NULL)
+    atk_object_notify_state_change (widget->priv->accessible, state, value);
+}
+
+/**
+ * st_widget_add_accessible_state:
+ * @widget: A #StWidget
+ * @state: #AtkStateType state to add
+ *
+ * This method adds @state as one of the accessible states for
+ * @widget. The list of states of a widget describes the current state
+ * of user interface element @widget and is provided so that assistive
+ * technologies know how to present @widget to the user.
+ *
+ * Usually you will have no need to add accessible states for an
+ * object, as the accessible object can extract most of the states
+ * from the object itself (ie: a #StButton knows when it is pressed).
+ * This method is only required when one cannot extract the
+ * information automatically from the object itself (i.e.: a generic
+ * container used as a toggle menu item will not automatically include
+ * the toggled state).
+ *
+ */
+void
+st_widget_add_accessible_state (StWidget *widget,
+                                AtkStateType state)
+{
+  g_return_if_fail (ST_IS_WIDGET (widget));
+
+  if (atk_state_set_add_state (widget->priv->local_state_set, state))
+    notify_accessible_state_change (widget, state, TRUE);
+}
+
+/**
+ * st_widget_remove_accessible_state:
+ * @widget: A #StWidget
+ * @state: #AtkState state to remove
+ *
+ * This method removes @state as on of the accessible states for
+ * @widget. See st_widget_add_accessible_state() for more information.
+ *
+ */
+void
+st_widget_remove_accessible_state (StWidget *widget,
+                                   AtkStateType state)
+{
+  g_return_if_fail (ST_IS_WIDGET (widget));
+
+  if (atk_state_set_remove_state (widget->priv->local_state_set, state))
+    notify_accessible_state_change (widget, state, FALSE);
+}
+
 /******************************************************************************/
 /*************************** ACCESSIBILITY SUPPORT ****************************/
 /******************************************************************************/
@@ -2272,6 +2485,7 @@ static void st_widget_accessible_dispose    (GObject *gobject);
 static AtkStateSet *st_widget_accessible_ref_state_set (AtkObject *obj);
 static void         st_widget_accessible_initialize    (AtkObject *obj,
                                                         gpointer   data);
+static AtkRole      st_widget_accessible_get_role      (AtkObject *obj);
 
 /* Private methods */
 static void on_pseudo_class_notify (GObject    *gobject,
@@ -2283,7 +2497,7 @@ static void on_can_focus_notify    (GObject    *gobject,
 static void on_label_notify        (GObject    *gobject,
                                     GParamSpec *pspec,
                                     gpointer    data);
-static void check_selected         (StWidgetAccessible *self,
+static void check_pseudo_class     (StWidgetAccessible *self,
                                     StWidget *widget);
 static void check_labels           (StWidgetAccessible *self,
                                     StWidget *widget);
@@ -2298,6 +2512,7 @@ struct _StWidgetAccessiblePrivate
 {
   /* Cached values (used to avoid extra notifications) */
   gboolean selected;
+  gboolean checked;
 
   /* The current_label. Right now there are the proper atk
    * relationships between this object and the label
@@ -2327,6 +2542,28 @@ st_widget_get_accessible (ClutterActor *actor)
   return widget->priv->accessible;
 }
 
+static const gchar *
+st_widget_accessible_get_name (AtkObject *obj)
+{
+  const gchar* name = NULL;
+
+  g_return_val_if_fail (ST_IS_WIDGET_ACCESSIBLE (obj), NULL);
+
+  name = ATK_OBJECT_CLASS (st_widget_accessible_parent_class)->get_name (obj);
+  if (name == NULL)
+    {
+      StWidget *widget = NULL;
+
+      widget = ST_WIDGET (atk_gobject_accessible_get_object (ATK_GOBJECT_ACCESSIBLE (obj)));
+
+      if (widget == NULL)
+        name = NULL;
+      else
+        name = widget->priv->accessible_name;
+    }
+
+  return name;
+}
 
 static void
 st_widget_accessible_class_init (StWidgetAccessibleClass *klass)
@@ -2338,6 +2575,8 @@ st_widget_accessible_class_init (StWidgetAccessibleClass *klass)
 
   atk_class->ref_state_set = st_widget_accessible_ref_state_set;
   atk_class->initialize = st_widget_accessible_initialize;
+  atk_class->get_role = st_widget_accessible_get_role;
+  atk_class->get_name = st_widget_accessible_get_name;
 
   g_type_class_add_private (gobject_class, sizeof (StWidgetAccessiblePrivate));
 }
@@ -2364,6 +2603,13 @@ st_widget_accessible_dispose (GObject *gobject)
   G_OBJECT_CLASS (st_widget_accessible_parent_class)->dispose (gobject);
 }
 
+static void
+on_accessible_name_notify (GObject *gobject,
+                           GParamSpec *pspec,
+                           AtkObject *accessible)
+{
+  g_object_notify (G_OBJECT (accessible), "accessible-name");
+}
 
 static void
 st_widget_accessible_initialize (AtkObject *obj,
@@ -2383,11 +2629,15 @@ st_widget_accessible_initialize (AtkObject *obj,
                     G_CALLBACK (on_label_notify),
                     obj);
 
+  g_signal_connect (data, "notify::accessible-name",
+                    G_CALLBACK (on_accessible_name_notify),
+                    obj);
+
   /* Check the cached selected state and notify the first selection.
    * Ie: it is required to ensure a first notification when Alt+Tab
    * popup appears
    */
-  check_selected (ST_WIDGET_ACCESSIBLE (obj), ST_WIDGET (data));
+  check_pseudo_class (ST_WIDGET_ACCESSIBLE (obj), ST_WIDGET (data));
   check_labels (ST_WIDGET_ACCESSIBLE (obj), ST_WIDGET (data));
 }
 
@@ -2395,6 +2645,7 @@ static AtkStateSet *
 st_widget_accessible_ref_state_set (AtkObject *obj)
 {
   AtkStateSet *result = NULL;
+  AtkStateSet *aux_set = NULL;
   ClutterActor *actor = NULL;
   StWidget *widget = NULL;
   StWidgetAccessible *self = NULL;
@@ -2415,6 +2666,9 @@ st_widget_accessible_ref_state_set (AtkObject *obj)
   if (self->priv->selected)
     atk_state_set_add_state (result, ATK_STATE_SELECTED);
 
+  if (self->priv->checked)
+    atk_state_set_add_state (result, ATK_STATE_CHECKED);
+
   /* On clutter there isn't any tip to know if a actor is focusable or
    * not, anyone can receive the key_focus. For this reason
    * cally_actor sets any actor as FOCUSABLE. This is not the case on
@@ -2426,7 +2680,34 @@ st_widget_accessible_ref_state_set (AtkObject *obj)
   else
     atk_state_set_remove_state (result, ATK_STATE_FOCUSABLE);
 
+  /* We add the states added externally if required */
+  if (!atk_state_set_is_empty (widget->priv->local_state_set))
+    {
+      aux_set = atk_state_set_or_sets (result, widget->priv->local_state_set);
+
+      g_object_unref (result); /* previous result will not be used */
+      result = aux_set;
+    }
+
   return result;
+}
+
+static AtkRole
+st_widget_accessible_get_role (AtkObject *obj)
+{
+  StWidget *widget = NULL;
+
+  g_return_val_if_fail (ST_IS_WIDGET_ACCESSIBLE (obj), ATK_ROLE_INVALID);
+
+  widget = ST_WIDGET (atk_gobject_accessible_get_object (ATK_GOBJECT_ACCESSIBLE (obj)));
+
+  if (widget == NULL)
+    return ATK_ROLE_INVALID;
+
+  if (widget->priv->accessible_role != ATK_ROLE_INVALID)
+    return widget->priv->accessible_role;
+
+  return ATK_OBJECT_CLASS (st_widget_accessible_parent_class)->get_role (obj);
 }
 
 static void
@@ -2434,27 +2715,32 @@ on_pseudo_class_notify (GObject    *gobject,
                         GParamSpec *pspec,
                         gpointer    data)
 {
-  check_selected (ST_WIDGET_ACCESSIBLE (data),
-                  ST_WIDGET (gobject));
+  check_pseudo_class (ST_WIDGET_ACCESSIBLE (data),
+                      ST_WIDGET (gobject));
 }
 
+
+
 /*
- * This method checks if the widget is selected, and notify a atk
- * state change if required
+ * In some cases the only way to check some states are checking the
+ * pseudo-class. Like if the object is selected (see bug 637830) or if
+ * the object is toggled. This method also notifies a state change if
+ * the value is different to the one cached.
  *
- * In order to decide if there was a selection, we use the current
- * pseudo-class of the widget searching for "selected", the current
- * homogeneus way to check if a item is selected (see bug 637830)
+ * We also assume that if the object uses that pseudo-class, it makes
+ * sense to notify that state change. It would be possible to refine
+ * that behaviour checking the role (ie: notify CHECKED changes only
+ * for CHECK_BUTTON roles).
  *
- * In a ideal world we would have a more standard way to check if the
- * item is selected or not, like the widget-context (as in the case of
+ * In a ideal world we would have a more standard way to get the
+ * state, like the widget-context (as in the case of
  * gtktreeview-cells), or something like the property "can-focus". But
  * for the moment this is enough, and we can update that in the future
  * if required.
  */
 static void
-check_selected (StWidgetAccessible *self,
-                StWidget *widget)
+check_pseudo_class (StWidgetAccessible *self,
+                    StWidget *widget)
 {
   gboolean found = FALSE;
 
@@ -2466,6 +2752,17 @@ check_selected (StWidgetAccessible *self,
       self->priv->selected = found;
       atk_object_notify_state_change (ATK_OBJECT (self),
                                       ATK_STATE_SELECTED,
+                                      found);
+    }
+
+
+  found = st_widget_has_style_pseudo_class (widget,
+                                            "checked");
+  if (found != self->priv->checked)
+    {
+      self->priv->checked = found;
+      atk_object_notify_state_change (ATK_OBJECT (self),
+                                      ATK_STATE_CHECKED,
                                       found);
     }
 }

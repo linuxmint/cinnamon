@@ -7,6 +7,7 @@ const Lang = imports.lang;
 const Cinnamon = imports.gi.Cinnamon;
 const Signals = imports.signals;
 const St = imports.gi.St;
+const Atk = imports.gi.Atk;
 
 const BoxPointer = imports.ui.boxpointer;
 const DND = imports.ui.dnd;
@@ -45,7 +46,8 @@ PopupBaseMenuItem.prototype = {
         this.actor = new Cinnamon.GenericContainer({ style_class: 'popup-menu-item',
                                                   reactive: params.reactive,
                                                   track_hover: params.reactive,
-                                                  can_focus: params.reactive });
+                                                  can_focus: params.reactive,
+                                                  accessible_role: Atk.Role.MENU_ITEM });
         this.actor.connect('get-preferred-width', Lang.bind(this, this._getPreferredWidth));
         this.actor.connect('get-preferred-height', Lang.bind(this, this._getPreferredHeight));
         this.actor.connect('allocate', Lang.bind(this, this._allocate));
@@ -185,12 +187,14 @@ PopupBaseMenuItem.prototype = {
             this._dot = new St.DrawingArea({ style_class: 'popup-menu-item-dot' });
             this._dot.connect('repaint', Lang.bind(this, this._onRepaintDot));
             this.actor.add_actor(this._dot);
+            this.actor.add_accessible_state (Atk.StateType.CHECKED);
         } else {
             if (!this._dot)
                 return;
 
             this._dot.destroy();
             this._dot = null;
+            this.actor.remove_accessible_state (Atk.StateType.CHECKED);
         }
     },
 
@@ -395,6 +399,7 @@ PopupMenuItem.prototype = {
 
         this.label = new St.Label({ text: text });
         this.addActor(this.label);
+        this.actor.label_actor = this.label;
     }
 };
 
@@ -728,7 +733,8 @@ function Switch() {
 
 Switch.prototype = {
     _init: function(state) {
-        this.actor = new St.Bin({ style_class: 'toggle-switch' });
+        this.actor = new St.Bin({ style_class: 'toggle-switch' ,
+                                  accessible_role: Atk.Role.CHECK_BOX});
         // Translators: this MUST be either "toggle-switch-us"
         // (for toggle switches containing the English words
         // "ON" and "OFF") or "toggle-switch-intl" (for toggle
@@ -764,6 +770,10 @@ PopupSwitchMenuItem.prototype = {
         this.label = new St.Label({ text: text });
         this._switch = new Switch(active);
 
+        this.actor.accessible_role = Atk.Role.CHECK_MENU_ITEM
+        this.checkAccessibleState();
+        this.actor.label_actor = this.label;
+
         this.addActor(this.label);
 
         this._statusBin = new St.Bin({ x_align: St.Align.END });
@@ -782,11 +792,14 @@ PopupSwitchMenuItem.prototype = {
             this._statusBin.child = this._statusLabel;
             this.actor.reactive = false;
             this.actor.can_focus = false;
+            this.actor.accessible_role = Atk.Role.MENU_ITEM
         } else {
             this._statusBin.child = this._switch.actor;
             this.actor.reactive = true;
             this.actor.can_focus = true;
+            this.actor.accessible_role = Atk.Role.CHECK_MENU_ITEM
         }
+        this.checkAccessibleState();
     },
 
     activate: function(event) {
@@ -800,6 +813,7 @@ PopupSwitchMenuItem.prototype = {
     toggle: function() {
         this._switch.toggle();
         this.emit('toggled', this._switch.state);
+        this.checkAccessibleState();
     },
 
     get state() {
@@ -808,6 +822,20 @@ PopupSwitchMenuItem.prototype = {
 
     setToggleState: function(state) {
         this._switch.setToggleState(state);
+        this.checkAccessibleState();
+    },
+
+    checkAccessibleState: function() {
+        switch (this.actor.accessible_role) {
+            case Atk.Role.CHECK_MENU_ITEM:
+                if (this._switch.state)
+                    this.actor.add_accessible_state (Atk.StateType.CHECKED);
+                else
+                    this.actor.remove_accessible_state (Atk.StateType.CHECKED);
+                break;
+            default:
+                this.actor.remove_accessible_state (Atk.StateType.CHECKED);
+        }
     }
 };
 
@@ -1546,7 +1574,7 @@ PopupSubMenuMenuItem.prototype = {
             table.add(this.label,
                     {row: 0, col: 0, col_span: 1, x_align: St.Align.START});
         }
-
+        this.actor.label_actor = this.label;
         this.addActor(table, { expand: true, span: 1, align: St.Align.START });
 
         this.menu = new PopupSubMenu(this.actor, this._triangle);
@@ -1696,6 +1724,9 @@ PopupComboBoxMenuItem.prototype = {
         PopupBaseMenuItem.prototype._init.call(this, params);
 
         this._itemBox = new Cinnamon.Stack();
+
+        this.actor.accessible_role = Atk.Role.COMBO_BOX;
+
         this.addActor(this._itemBox);
 
         let expander = new St.Label({ text: '\u2304' });
@@ -1791,6 +1822,11 @@ PopupComboBoxMenuItem.prototype = {
                          Lang.bind(this, this._itemActivated, position));
     },
 
+    checkAccessibleLabel: function() {
+        let activeItem = this._menu.getActiveItem();
+        this.actor.label_actor = activeItem.label;
+    },
+
     setActiveItem: function(position) {
         let item = this._items[position];
         if (!item)
@@ -1801,6 +1837,8 @@ PopupComboBoxMenuItem.prototype = {
         this._activeItemPos = position;
         for (let i = 0; i < this._items.length; i++)
             this._items[i].visible = (i == this._activeItemPos);
+
+        this.checkAccessibleLabel();
     },
 
     setItemVisible: function(position, visible) {

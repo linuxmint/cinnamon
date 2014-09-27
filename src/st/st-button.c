@@ -740,12 +740,31 @@ static void          st_button_accessible_initialize (AtkObject *obj,
 
 G_DEFINE_TYPE (StButtonAccessible, st_button_accessible, ST_TYPE_WIDGET_ACCESSIBLE)
 
+static const gchar *
+st_button_accessible_get_name (AtkObject *obj)
+{
+  StButton *button = NULL;
+  const gchar *name = NULL;
+
+  button = ST_BUTTON (atk_gobject_accessible_get_object (ATK_GOBJECT_ACCESSIBLE (obj)));
+
+  if (button == NULL)
+    return NULL;
+
+  name = ATK_OBJECT_CLASS (st_button_accessible_parent_class)->get_name (obj);
+  if (name != NULL)
+    return name;
+
+  return button->priv->text;
+}
+
 static void
 st_button_accessible_class_init (StButtonAccessibleClass *klass)
 {
   AtkObjectClass *atk_class = ATK_OBJECT_CLASS (klass);
 
   atk_class->initialize = st_button_accessible_initialize;
+  atk_class->get_name = st_button_accessible_get_name;
 }
 
 static void
@@ -755,10 +774,21 @@ st_button_accessible_init (StButtonAccessible *self)
 }
 
 static void
+st_button_accessible_notify_label_cb (StButton   *button,
+                                      GParamSpec *psec,
+                                      AtkObject  *accessible)
+{
+  g_object_notify (G_OBJECT (accessible), "accessible-name");
+}
+
+static void
 st_button_accessible_initialize (AtkObject *obj,
                                 gpointer   data)
 {
   ATK_OBJECT_CLASS (st_button_accessible_parent_class)->initialize (obj, data);
 
   obj->role = ATK_ROLE_PUSH_BUTTON;
+
+  g_signal_connect (data, "notify::label",
+                    G_CALLBACK (st_button_accessible_notify_label_cb), obj);
 }

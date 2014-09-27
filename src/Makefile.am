@@ -137,8 +137,6 @@ libcinnamon_la_SOURCES =		\
 	cinnamon-wm-private.h		\
 	cinnamon-plugin.c		\
 	cinnamon-app.c			\
-	cinnamon-a11y.h			\
-	cinnamon-a11y.c			\
 	cinnamon-app-system.c		\
 	cinnamon-arrow.c			\
 	cinnamon-doc-system.c		\

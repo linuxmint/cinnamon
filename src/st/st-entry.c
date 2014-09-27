@@ -66,6 +66,8 @@
 #include "st-clipboard.h"
 #include "st-private.h"
 
+#include "st-widget-accessible.h"
+
 #define HAS_FOCUS(actor) (clutter_actor_get_stage (actor) && clutter_stage_get_key_focus ((ClutterStage *) clutter_actor_get_stage (actor)) == actor)
 
 
@@ -109,6 +111,8 @@ struct _StEntryPrivate
 static guint entry_signals[LAST_SIGNAL] = { 0, };
 
 G_DEFINE_TYPE (StEntry, st_entry, ST_TYPE_WIDGET);
+
+static GType st_entry_accessible_get_type (void) G_GNUC_CONST;
 
 static void
 st_entry_set_property (GObject      *gobject,
@@ -669,6 +673,7 @@ st_entry_class_init (StEntryClass *klass)
 
   widget_class->style_changed = st_entry_style_changed;
   widget_class->navigate_focus = st_entry_navigate_focus;
+  widget_class->get_accessible_type = st_entry_accessible_get_type;
 
   pspec = g_param_spec_object ("clutter-text",
 			       "Clutter Text",
@@ -1046,3 +1051,97 @@ st_entry_set_secondary_icon_from_file (StEntry     *entry,
 
 }
 
+/******************************************************************************/
+/*************************** ACCESSIBILITY SUPPORT ****************************/
+/******************************************************************************/
+
+#define ST_TYPE_ENTRY_ACCESSIBLE         (st_entry_accessible_get_type ())
+#define ST_ENTRY_ACCESSIBLE(o)           (G_TYPE_CHECK_INSTANCE_CAST ((o), ST_TYPE_ENTRY_ACCESSIBLE, StEntryAccessible))
+#define ST_IS_ENTRY_ACCESSIBLE(o)        (G_TYPE_CHECK_INSTANCE_TYPE ((o), ST_TYPE_ENTRY_ACCESSIBLE))
+#define ST_ENTRY_ACCESSIBLE_CLASS(c)     (G_TYPE_CHECK_CLASS_CAST ((c),    ST_TYPE_ENTRY_ACCESSIBLE, StEntryAccessibleClass))
+#define ST_IS_ENTRY_ACCESSIBLE_CLASS(c)  (G_TYPE_CHECK_CLASS_TYPE ((c),    ST_TYPE_ENTRY_ACCESSIBLE))
+#define ST_ENTRY_ACCESSIBLE_GET_CLASS(o) (G_TYPE_INSTANCE_GET_CLASS ((o),  ST_TYPE_ENTRY_ACCESSIBLE, StEntryAccessibleClass))
+
+typedef struct _StEntryAccessible  StEntryAccessible;
+typedef struct _StEntryAccessibleClass  StEntryAccessibleClass;
+
+struct _StEntryAccessible
+{
+  StWidgetAccessible parent;
+};
+
+struct _StEntryAccessibleClass
+{
+  StWidgetAccessibleClass parent_class;
+};
+
+G_DEFINE_TYPE (StEntryAccessible, st_entry_accessible, ST_TYPE_WIDGET_ACCESSIBLE)
+
+static void
+st_entry_accessible_init (StEntryAccessible *self)
+{
+  /* initialization done on AtkObject->initialize */
+}
+
+static void
+st_entry_accessible_initialize (AtkObject *obj,
+                                gpointer   data)
+{
+  ATK_OBJECT_CLASS (st_entry_accessible_parent_class)->initialize (obj, data);
+
+  /* StEntry is behaving as a StImText container */
+  atk_object_set_role (obj, ATK_ROLE_PANEL);
+}
+
+static gint
+st_entry_accessible_get_n_children (AtkObject *obj)
+{
+  StEntry *entry = NULL;
+
+  g_return_val_if_fail (ST_IS_ENTRY_ACCESSIBLE (obj), 0);
+
+  entry = ST_ENTRY (atk_gobject_accessible_get_object (ATK_GOBJECT_ACCESSIBLE (obj)));
+
+  if (entry == NULL)
+    return 0;
+
+  if (entry->priv->entry == NULL)
+    return 0;
+  else
+    return 1;
+}
+
+static AtkObject*
+st_entry_accessible_ref_child (AtkObject *obj,
+                               gint       i)
+{
+  StEntry *entry = NULL;
+  AtkObject *result = NULL;
+
+  g_return_val_if_fail (ST_IS_ENTRY_ACCESSIBLE (obj), NULL);
+  g_return_val_if_fail (i == 0, NULL);
+
+  entry = ST_ENTRY (atk_gobject_accessible_get_object (ATK_GOBJECT_ACCESSIBLE (obj)));
+
+  if (entry == NULL)
+    return NULL;
+
+  if (entry->priv->entry == NULL)
+    return NULL;
+
+  result = clutter_actor_get_accessible (entry->priv->entry);
+  g_object_ref (result);
+
+  return result;
+}
+
+
+static void
+st_entry_accessible_class_init (StEntryAccessibleClass *klass)
+{
+  AtkObjectClass *atk_class = ATK_OBJECT_CLASS (klass);
+
+  atk_class->initialize = st_entry_accessible_initialize;
+  atk_class->get_n_children = st_entry_accessible_get_n_children;
+  atk_class->ref_child= st_entry_accessible_ref_child;
+}
