@@ -365,7 +365,7 @@ class Module:
                 elif type == BACKGROUND_COLLECTION_TYPE_XML:        
                     picture_list += self.parse_xml_backgrounds_list(path)
 
-            self.icon_view.set_pictures_list(picture_list)
+            self.icon_view.set_pictures_list(picture_list, path)
             if self._slideshow_schema.get_boolean("slideshow-enabled"):
                 self.icon_view.set_sensitive(False)
             else:
@@ -482,10 +482,14 @@ class ThreadedIconView(Gtk.IconView):
     def __init__(self):
         Gtk.IconView.__init__(self)
         self.set_item_width(BACKGROUND_ICONS_SIZE * 1.1)
-        self._model = Gtk.ListStore(object, GdkPixbuf.Pixbuf, str)
-        self.set_model(self._model)
+        self._model = Gtk.ListStore(object, GdkPixbuf.Pixbuf, str, str)
+        self._model_filter = self._model.filter_new()
+        self._model_filter.set_visible_func(self.visible_func)
+        self.set_model(self._model_filter)
 
         area = self.get_area()
+
+        self.current_path = None
 
         pixbuf_renderer = Gtk.CellRendererPixbuf()
         text_renderer = Gtk.CellRendererText(ellipsize=Pango.EllipsizeMode.END)
@@ -505,11 +509,16 @@ class ThreadedIconView(Gtk.IconView):
         
         self._loaded_data = []
         self._loaded_data_lock = thread.allocate_lock()
-    
-    def set_pictures_list(self, pictures_list):
+
+    def visible_func(self, model, iter, data=None):
+        item_path = model.get_value(iter, 3)
+        return item_path == self.current_path
+
+    def set_pictures_list(self, pictures_list, path = None):
         self.clear()
+        self.current_path = path
         for i in pictures_list:
-            self.add_picture(i)
+            self.add_picture(i, path)
     
     def clear(self):
         self._loading_queue_lock.acquire()
@@ -527,7 +536,7 @@ class ThreadedIconView(Gtk.IconView):
         
         self._model.clear()
     
-    def add_picture(self, picture):
+    def add_picture(self, picture, path):
         self._loading_queue_lock.acquire()
         self._loading_queue.append(picture)
         self._loading_queue_lock.release()
@@ -541,7 +550,7 @@ class ThreadedIconView(Gtk.IconView):
         
         if start_loading:
             GLib.timeout_add(100, self._check_loading_progress)
-            thread.start_new_thread(self._do_load, ())
+            thread.start_new_thread(self._do_load, (path,))
     
     def _check_loading_progress(self):
         self._loading_lock.acquire()
@@ -559,7 +568,7 @@ class ThreadedIconView(Gtk.IconView):
         
         return res
     
-    def _do_load(self):
+    def _do_load(self, path):
         finished = False
         while not finished:
             self._loading_queue_lock.acquire()
@@ -586,7 +595,7 @@ class ThreadedIconView(Gtk.IconView):
                     dimensions = "%dx%d" % (pix[1], pix[2])
                     
                     self._loaded_data_lock.acquire()
-                    self._loaded_data.append((to_load, pix[0], "<b>%s</b>\n<sub>%s<span foreground='#555555'>%s</span></sub>" % (label, artist, dimensions)))                    
+                    self._loaded_data.append((to_load, pix[0], "<b>%s</b>\n<sub>%s<span foreground='#555555'>%s</span></sub>" % (label, artist, dimensions), path))                    
                     self._loaded_data_lock.release()
                 
         self._loading_lock.acquire()
