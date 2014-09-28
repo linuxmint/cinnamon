@@ -20,6 +20,9 @@ class CinnamonSlideshow(dbus.service.Object):
         self.slideshow_settings = Gio.Settings(schema="org.cinnamon.desktop.background.slideshow")
         self.background_settings = Gio.Settings(schema="org.cinnamon.desktop.background")
 
+        if self.slideshow_settings.get_boolean("slideshow-paused"):
+            self.slideshow_settings.set_boolean("slideshow-paused", False)
+
         self.image_playlist = []
         self.used_image_playlist = []
         self.images_ready = False
@@ -184,7 +187,7 @@ class CinnamonSlideshow(dbus.service.Object):
         if not self.images_ready:
             self.update_id = GLib.timeout_add_seconds(1, self.start_mainloop)
         else:
-            if self.loop_counter >= self.slideshow_settings.get_int("delay"):
+            if self.loop_counter >= self.slideshow_settings.get_int("delay") and not self.slideshow_settings.get_boolean("slideshow-paused"):
                 self.loop_counter = 1
                 self.update_background()
                 self.update_id = GLib.timeout_add_seconds(60, self.start_mainloop)
