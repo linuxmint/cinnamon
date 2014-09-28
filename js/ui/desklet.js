@@ -8,6 +8,7 @@ const Meta = imports.gi.Meta;
 const Signals = imports.signals;
 const St = imports.gi.St;
 const Util = imports.misc.util;
+const Flashspot = imports.ui.flashspot;
 
 const DeskletManager = imports.ui.deskletManager;
 const DND = imports.ui.dnd;
@@ -162,6 +163,30 @@ Desklet.prototype = {
 
     on_desklet_clicked: function(event) {
         // Implemented by Desklets        
+    },
+
+    on_desklet_added_to_desktop_internal: function(userEnabled) {
+        if (userEnabled) {
+            Mainloop.timeout_add(300, Lang.bind(this, function() {
+                let [x, y] = this.actor.get_transformed_position();
+                let [w, h] = this.actor.get_transformed_size();
+                let flashspot = new Flashspot.Flashspot({ x : x, y : y, width: w, height: h});
+                flashspot.fire();
+                return false;
+            }));
+        }
+
+        this.on_desklet_added_to_desktop(userEnabled);
+    },
+
+    /**
+     * on_desklet_added_to_desktop:
+     *
+     * This function is called by deskletManager when the desklet is added to the desktop.
+     *
+     * This is meant to be overridden in individual applets.
+     */
+    on_desklet_added_to_desktop: function(userEnabled) {
     },
 
     _onButtonReleaseEvent: function(actor, event) {

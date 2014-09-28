@@ -21,6 +21,8 @@ var deskletObj = {};
 
 var enabledDeskletDefinitions;
 
+var deskletsLoaded = false;
+
 let userDeskletsDir;
 
 let mouseTrackEnabled = false;
@@ -38,6 +40,8 @@ function init(){
     deskletMeta = Extension.meta;
     desklets = Extension.importObjects;
 
+    deskletsLoaded = false
+
     enabledDeskletDefinitions = getEnabledDeskletDefinitions();
     let hasDesklets = false;
     for (let uuid in enabledDeskletDefinitions.uuidMap) {
@@ -48,7 +52,8 @@ function init(){
     global.settings.connect('changed::' + ENABLED_DESKLETS_KEY, _onEnabledDeskletsChanged);
     global.settings.connect('changed::' + DESKLET_SNAP_KEY, _onDeskletSnapChanged);
     global.settings.connect('changed::' + DESKLET_SNAP_INTERVAL_KEY, _onDeskletSnapChanged);
-    
+
+    deskletsLoaded = true
     enableMouseTracking(true);
 }
 
@@ -255,6 +260,9 @@ function _loadDesklet(extension, deskletDefinition) {
             extension._loadedDefinitions = {};
         }
         extension._loadedDefinitions[deskletDefinition.desklet_id] = deskletDefinition;
+
+        desklet.on_desklet_added_to_desktop_internal(deskletsLoaded);
+
     } catch (e) {
         extension.logError('Failed to load desklet: ' + deskletDefinition.uuid + "/" + deskletDefinition.desklet_id, e);
     }
