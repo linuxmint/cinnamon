@@ -314,7 +314,21 @@ Applet.prototype = {
     on_applet_clicked: function(event) {
         // Implemented by Applets        
     },
-    
+
+    on_applet_added_to_panel_internal: function(userEnabled) {
+        if (userEnabled) {
+            Mainloop.timeout_add(300, Lang.bind(this, function() {
+                let [x, y] = this.actor.get_transformed_position();
+                let [w, h] = this.actor.get_transformed_size();
+                let flashspot = new Flashspot.Flashspot({ x : x, y : y, width: w, height: h});
+                flashspot.fire();
+                return false;
+            }));
+        }
+
+        this.on_applet_added_to_panel(userEnabled);
+    },
+
     /**
      * on_applet_added_to_panel:
      * 
@@ -323,20 +337,6 @@ Applet.prototype = {
      * This is meant to be overridden in individual applets.
      */
     on_applet_added_to_panel: function(userEnabled) {
-        if (userEnabled) {
-            let [x, y] = this.actor.get_transformed_position();
-            let [w, h] = this.actor.get_transformed_size();
-            h = Math.max(h, this.panelHeight);
-
-            let flashspot = new Flashspot.Flashspot({ x : x, y : y, width: w, height: h});
-            flashspot.fire();
-            let timeoutId = Mainloop.timeout_add(300, Lang.bind(this, function() {
-                let flashspot = new Flashspot.Flashspot({ x : x, y : y, width: w, height: h});
-                flashspot.fire();
-                Mainloop.source_remove(timeoutId);
-                return false;
-            }));
-        }
     },
 
     /**

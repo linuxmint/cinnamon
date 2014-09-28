@@ -287,7 +287,7 @@ function addAppletToPanels(extension, appletDefinition) {
         }
         extension._loadedDefinitions[appletDefinition.applet_id] = appletDefinition;
         
-        applet.on_applet_added_to_panel(appletsLoaded);
+        applet.on_applet_added_to_panel_internal(appletsLoaded);
     }
     catch(e) {
         extension.unlockRole();
