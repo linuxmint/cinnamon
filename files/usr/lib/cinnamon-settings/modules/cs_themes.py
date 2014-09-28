@@ -2,7 +2,9 @@
 
 from ExtensionCore import ExtensionSidePage
 from gi.repository.Gtk import SizeGroup, SizeGroupMode
+from gi.repository import GLib, GObject
 from SettingsWidgets import *
+from threading import Thread
 
 ICON_SIZE = 48
 
@@ -28,8 +30,6 @@ class Module:
             self.theme_chooser = self.create_button_chooser(self.settings, 'gtk-theme', 'themes', 'gtk-3.0', button_picture_size=35, menu_pictures_size=120, num_cols=4)
             self.metacity_chooser = self.create_button_chooser(self.wm_settings, 'theme', 'themes', 'metacity-1', button_picture_size=32, menu_pictures_size=100, num_cols=4)
             self.cinnamon_chooser = self.create_button_chooser(self.cinnamon_settings, 'name', 'themes', 'cinnamon', button_picture_size=60, menu_pictures_size=100, num_cols=4)
-
-            self.refresh()
 
             bg = SectionBg()        
             vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
@@ -65,6 +65,7 @@ class Module:
                     file_monitor.connect("changed", self.on_file_changed)
                     self.monitors.append(file_monitor)
 
+            self.refresh()
 
     def on_file_changed(self, file, other, event, data):
         self.refresh()
@@ -77,13 +78,20 @@ class Module:
         choosers.append((self.cinnamon_chooser, "cinnamon", self._load_cinnamon_themes(), self._on_cinnamon_theme_selected))
         choosers.append((self.icon_chooser, "icons", self._load_icon_themes(), self._on_icon_theme_selected))
         for chooser in choosers:
+            chooser[0].set_sensitive(False)
+            chooser[0].spinner.show()
+            chooser[0].spinner.start()
+
             chooser_obj = chooser[0]
             path_suffix = chooser[1]
             themes = chooser[2]
             callback = chooser[3]
-            self.refresh_chooser(chooser_obj, path_suffix, themes, callback)
+            payload = (chooser_obj, path_suffix, themes, callback)
+            thread.start_new_thread(self.refresh_chooser, (payload,))
 
-    def refresh_chooser(self, chooser, path_suffix, themes, callback):
+    def refresh_chooser(self, payload):
+        (chooser, path_suffix, themes, callback) = payload
+
         chooser.clear_menu()
         if path_suffix == "icons":            
             for theme in themes:
@@ -104,6 +112,10 @@ class Module:
                     if os.path.exists(path):                    
                         chooser.add_picture(path, callback, title=theme_name, id=theme_name)
                         break
+        chooser.spinner.stop()
+        chooser.spinner.hide()
+        chooser.set_sensitive(True)
+        thread.exit()
 
     def _setParentRef(self, window, builder):
         self.sidePage.builder = builder
@@ -118,7 +130,14 @@ class Module:
         box.pack_start(label, False, False, 0) 
         if add_widget_to_size_group:       
             self.size_groups[1].add_widget(widget)
-        box.pack_start(widget, False, False, 15)        
+        box.pack_start(widget, False, False, 15)
+        if add_widget_to_size_group:
+            spinner = Gtk.Spinner()
+            widget.spinner = spinner
+            valid, w, h = Gtk.IconSize.lookup(Gtk.IconSize.DIALOG)
+            spinner.set_no_show_all(True)
+            spinner.set_size_request(w, h)
+            box.pack_start(spinner, True, True, 2)
         return box
          
     def create_button_chooser(self, settings, key, path_prefix, path_suffix, button_picture_size, menu_pictures_size, num_cols):        
