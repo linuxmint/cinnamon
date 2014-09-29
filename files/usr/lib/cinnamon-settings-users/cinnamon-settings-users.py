@@ -45,9 +45,10 @@ class GroupDialog (Gtk.Dialog):
             print detail        
 
     def _on_entry_changed(self, entry):
-        if " " in entry.get_text():
+        name = entry.get_text()
+        if " " in name or name.lower() != name:
             entry.set_icon_from_stock(Gtk.EntryIconPosition.SECONDARY, Gtk.STOCK_DIALOG_WARNING)
-            entry.set_icon_tooltip_text(Gtk.EntryIconPosition.SECONDARY, _("The group name cannot contain space characters"))
+            entry.set_icon_tooltip_text(Gtk.EntryIconPosition.SECONDARY, _("The group name cannot contain upper-case or space characters"))
             self.set_response_sensitive(Gtk.ResponseType.OK, False)
         else:
             entry.set_icon_from_stock(Gtk.EntryIconPosition.SECONDARY, None)
@@ -313,9 +314,9 @@ class NewUserDialog(Gtk.Dialog):
         fullname = self.realname_entry.get_text()
         username = self.username_entry.get_text()
         valid = True
-        if " " in username:
+        if " " in username or username.lower() != username:
             self.username_entry.set_icon_from_stock(Gtk.EntryIconPosition.SECONDARY, Gtk.STOCK_DIALOG_WARNING)
-            self.username_entry.set_icon_tooltip_text(Gtk.EntryIconPosition.SECONDARY, _("The username cannot contain space characters"))
+            self.username_entry.set_icon_tooltip_text(Gtk.EntryIconPosition.SECONDARY, _("The username cannot contain upper-case or space characters"))
             valid = False
         else:
             self.username_entry.set_icon_from_stock(Gtk.EntryIconPosition.SECONDARY, None)     
