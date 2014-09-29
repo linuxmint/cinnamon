@@ -181,11 +181,11 @@ class Module:
                     self.collection_store.append(item)
 
             self.folder_tree.set_model(self.collection_store)
-            self.folder_tree.set_row_separator_func(self.is_row_separator)
+            self.folder_tree.set_row_separator_func(self.is_row_separator, None)
 
             self.get_initial_path()
 
-    def is_row_separator(self, model, iter):
+    def is_row_separator(self, model, iter, data):
         return model.get_value(iter, 0)
 
     def on_slideshow_enabled_changed(self, settings, key):
