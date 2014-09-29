@@ -34,7 +34,7 @@ class MainWindow:
         self.image = self.builder.get_object("image_face")
                     
         self.window.set_title(_("Lock screen"))
-        self.window.set_icon_from_file("/usr/lib/cinnamon-settings/data/icons/screensaver.svg")
+        self.window.set_icon_name("cs-screensaver")
                 
         self.builder.get_object("label_description").set_markup("<i>%s</i>" % _("Please type an away message for the lock screen"))
         self.builder.get_object("label_away_message").set_markup("<b>%s: </b>" % real_name)
