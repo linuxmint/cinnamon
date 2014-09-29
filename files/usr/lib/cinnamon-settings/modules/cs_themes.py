@@ -99,7 +99,7 @@ class Module:
                 folder = icon_theme.lookup_icon("folder", ICON_SIZE, Gtk.IconLookupFlags.FORCE_SVG)
                 path = folder.get_filename()
                 chooser.add_picture(path, callback, title=theme, id=theme)
-                chooser.increment_loading_progress(inc)
+                GObject.timeout_add(5, self.increment_progress, (chooser,inc))
         else:
             if path_suffix == "cinnamon":
                 chooser.add_picture("/usr/share/cinnamon/theme/thumbnail.png", callback, title="cinnamon", id="cinnamon") 
@@ -112,12 +112,16 @@ class Module:
                     if os.path.exists(path):                    
                         chooser.add_picture(path, callback, title=theme_name, id=theme_name)
                         break
-                chooser.increment_loading_progress(inc)
-        chooser.set_sensitive(True)
-        GObject.timeout_add(1000, self.hide_progress, chooser)
+                GObject.timeout_add(5, self.increment_progress, (chooser, inc))
+        GObject.timeout_add(500, self.hide_progress, chooser)
         thread.exit()
 
+    def increment_progress(self, payload):
+        (chooser, inc) = payload
+        chooser.increment_loading_progress(inc)
+
     def hide_progress(self, chooser):
+        chooser.set_sensitive(True)
         chooser.reset_loading_progress()
 
     def _setParentRef(self, window, builder):
