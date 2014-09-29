@@ -39,9 +39,9 @@ class Module:
             section.add(self.make_group(_("Controls"), self.theme_chooser))                       
             section.add(self.make_group(_("Mouse Pointer"), self.cursor_chooser))
             section.add(self.make_group(_("Desktop"), self.cinnamon_chooser))
-            button = Gtk.LinkButton()
+            button = Gtk.LinkButton("http://www.elgoog.moc")
             button.set_label(_("Add/remove desktop themes..."))
-            button.connect("clicked", self.add_remove_cinnamon_themes)
+            button.connect("activate-link", self.add_remove_cinnamon_themes)
             section.add(self.make_group("", button, add_widget_to_size_group=False))
             vbox.add(section)
 
@@ -175,6 +175,7 @@ class Module:
         page.load(window=window)
         box.pack_start(page.notebook, True, True, 6)
         window.show_all()
+        return True
 
     def _on_icon_theme_selected(self, path, theme):
         try:
