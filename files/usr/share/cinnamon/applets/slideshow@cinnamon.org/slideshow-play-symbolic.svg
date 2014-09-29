@@ -14,7 +14,7 @@
    width="16"
    version="1.1"
    inkscape:version="0.48.4 r9939"
-   sodipodi:docname="video-display-symbolic.svg">
+   sodipodi:docname="slideshow-play-symbolic.svg">
   <defs
      id="defs10" />
   <sodipodi:namedview
@@ -30,12 +30,12 @@
      inkscape:window-height="922"
      id="namedview8"
      showgrid="true"
-     inkscape:snap-bbox="true"
+     inkscape:snap-bbox="false"
      inkscape:zoom="41.716694"
-     inkscape:cx="8.0610968"
+     inkscape:cx="4.0579033"
      inkscape:cy="8.1482271"
-     inkscape:window-x="431"
-     inkscape:window-y="29"
+     inkscape:window-x="294"
+     inkscape:window-y="28"
      inkscape:window-maximized="0"
      inkscape:current-layer="svg7384">
     <inkscape:grid
@@ -66,4 +66,13 @@
      d="M 4.91,14 A 1.0011,1.0011 0 1 0 5,16 h 6 a 1.0001,1.0001 0 1 0 0,-2 H 5 a 1.0001,1.0001 0 0 0 -0.0937,0 z"
      style="text-indent:0;text-transform:none;block-progression:tb;color:#bebebe;fill:#bebebe"
      id="path11751-2" />
+  <g
+     transform="matrix(0.81712632,0,0,0.69964909,-64.398899,-423.0818)"
+     id="layer12">
+    <path
+       d="m 84,609 v 10 h 0.90625 0.094 c 0.17491,10e-4 0.34778,-0.0388 0.5,-0.125 l 7,-4 c 0.3107,-0.17189 0.46875,-0.52345 0.46875,-0.875 0,-0.35155 -0.15805,-0.70311 -0.46875,-0.875 l -7,-4 c -0.152,-0.09 -0.325,-0.13 -0.5,-0.13 H 84.9065 z"
+       style="text-indent:0;text-transform:none;block-progression:tb;color:#000000;fill:#bebebe"
+       id="path3807-1-1-9-38-4"
+       inkscape:connector-curvature="0" />
+  </g>
 </svg>
