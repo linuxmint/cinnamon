@@ -107,7 +107,50 @@ class PictureChooserButton (Gtk.Button):
             self.button_label = Gtk.Label()
             self.button_box.add(self.button_label)
         self.add(self.button_box)
-        self.connect("button-release-event", self._on_button_clicked)  
+        self.connect("button-release-event", self._on_button_clicked)
+        self.progress = 0.0
+
+        context = self.get_style_context()
+        # context.remove_class("button")
+        context.add_class("gtkstyle-fallback")
+        self.color = context.get_background_color(Gtk.StateFlags.SELECTED)
+        # context.remove_class("gtkstyle-fallback")
+        # context.add_class("button")
+
+        self.connect_after("draw", self.on_draw) 
+
+    def on_draw(self, widget, cr, data=None):
+        if self.progress == 0:
+            return False
+        box = widget.get_allocation()
+
+        context = widget.get_style_context()
+        c = context.get_background_color(Gtk.StateFlags.SELECTED)
+
+        max_length = box.width * .6
+        start = (box.width - max_length) / 2
+        y = box.height - 5
+
+        cr.save()
+
+        cr.set_source_rgba(c.red, c.green, c.blue, c.alpha)
+        cr.set_line_width(3)
+        cr.set_line_cap(1)
+        cr.move_to(start, y)
+        cr.line_to(start + (self.progress * max_length), y)
+        cr.stroke()
+
+        cr.restore()
+        return False
+
+    def increment_loading_progress(self, inc):
+        progress = self.progress + inc
+        self.progress = min(1.0, progress)
+        self.queue_draw()
+
+    def reset_loading_progress(self):
+        self.progress = 0.0
+        self.queue_draw()
 
     def set_picture_from_file (self, path):
         file = Gio.File.new_for_path(path)
