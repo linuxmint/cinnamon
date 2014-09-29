@@ -97,8 +97,9 @@ class Module:
                 icon_theme = Gtk.IconTheme()
                 icon_theme.set_custom_theme(theme)
                 folder = icon_theme.lookup_icon("folder", ICON_SIZE, Gtk.IconLookupFlags.FORCE_SVG)
-                path = folder.get_filename()
-                chooser.add_picture(path, callback, title=theme, id=theme)
+                if folder:
+                    path = folder.get_filename()
+                    chooser.add_picture(path, callback, title=theme, id=theme)
                 GObject.timeout_add(5, self.increment_progress, (chooser,inc))
         else:
             if path_suffix == "cinnamon":
@@ -267,4 +268,3 @@ class Module:
         for i in valid:
             res.append((i[0], i[1]))
         return res
-
