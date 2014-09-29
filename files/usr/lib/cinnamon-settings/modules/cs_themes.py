@@ -76,6 +76,7 @@ class Module:
         choosers.append((self.cinnamon_chooser, "cinnamon", self._load_cinnamon_themes(), self._on_cinnamon_theme_selected))
         choosers.append((self.icon_chooser, "icons", self._load_icon_themes(), self._on_icon_theme_selected))
         for chooser in choosers:
+            chooser[0].clear_menu()
             chooser[0].set_sensitive(False)
             chooser[0].progress = 0.0
 
@@ -90,7 +91,7 @@ class Module:
         (chooser, path_suffix, themes, callback) = payload
 
         inc = 1.0 / len(themes) 
-        chooser.clear_menu()
+
         if path_suffix == "icons":            
             for theme in themes:
                 icon_theme = Gtk.IconTheme()

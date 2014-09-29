@@ -111,11 +111,7 @@ class PictureChooserButton (Gtk.Button):
         self.progress = 0.0
 
         context = self.get_style_context()
-        # context.remove_class("button")
         context.add_class("gtkstyle-fallback")
-        self.color = context.get_background_color(Gtk.StateFlags.SELECTED)
-        # context.remove_class("gtkstyle-fallback")
-        # context.add_class("button")
 
         self.connect_after("draw", self.on_draw) 
 
@@ -208,7 +204,7 @@ class PictureChooserButton (Gtk.Button):
         self.menu = Gtk.Menu()
         self.row = 0
         self.col = 0
-        del menu
+        menu.destroy()
 
     def add_picture(self, path, callback, title=None, id=None):
         if os.path.exists(path):          
