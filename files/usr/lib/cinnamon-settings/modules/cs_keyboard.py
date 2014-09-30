@@ -62,7 +62,7 @@ KEYBINDINGS = [
     [_("Toggle Scale"), MUFFIN_KEYBINDINGS_SCHEMA, "switch-to-workspace-down", "general"],
     [_("Toggle Expo"), MUFFIN_KEYBINDINGS_SCHEMA, "switch-to-workspace-up", "general"],
     [_("Cycle through open windows"), MUFFIN_KEYBINDINGS_SCHEMA, "switch-windows", "general"],
-    [_("Cycle backwards though open windows"), MUFFIN_KEYBINDINGS_SCHEMA, "switch-windows-backward", "general"],
+    [_("Cycle backwards through open windows"), MUFFIN_KEYBINDINGS_SCHEMA, "switch-windows-backward", "general"],
     [_("Run dialog"), MUFFIN_KEYBINDINGS_SCHEMA, "panel-run-dialog", "general"],
     # General - Troubleshooting
     [_("Toggle Looking Glass"), CINNAMON_SCHEMA, "looking-glass-keybinding", "trouble"],
