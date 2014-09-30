@@ -1,5 +1,6 @@
 const Lang = imports.lang;
 const Gio = imports.gi.Gio;
+const Main = imports.ui.main;
 const Applet = imports.ui.applet;
 const PopupMenu = imports.ui.popupMenu;
 const Util = imports.misc.util;
@@ -41,6 +42,13 @@ MyApplet.prototype = {
             this.enable_slideshow_switch = new PopupMenu.PopupSwitchMenuItem(_("Slideshow Active"), this._slideshowSettings.get_boolean("slideshow-enabled"));
             this._applet_context_menu.addMenuItem(this.enable_slideshow_switch);
             this.enable_slideshow_switch.connect("toggled", Lang.bind(this, this._on_slideshow_enabled_toggled));
+
+            this._applet_context_menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
+
+            this.next_image_context_menu_item = new Applet.MenuItem(_("Next Image"), "media-seek-forward", Lang.bind(this, this.get_next_image));
+            this._applet_context_menu.addMenuItem(this.next_image_context_menu_item);
+
+            this._applet_context_menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
 
             this.open_settings_context_menu_item = new Applet.MenuItem(_("Background Settings"), "preferences-desktop-wallpaper", Lang.bind(this, function() {
                 Util.spawnCommandLine("cinnamon-settings backgrounds")
@@ -99,6 +107,10 @@ MyApplet.prototype = {
             this.set_applet_icon_symbolic_path(AppletDirectory + '/slideshow-play-symbolic.svg');
             this.set_applet_tooltip(_("Click to pause the current slideshow"));
         }
+    },
+
+    get_next_image: function() {
+        Main.slideshowManager.getNextImage();
     }
 };
 

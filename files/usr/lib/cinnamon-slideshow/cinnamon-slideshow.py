@@ -47,6 +47,15 @@ class CinnamonSlideshow(dbus.service.Object):
 
         ml.quit()
 
+    @dbus.service.method(SLIDESHOW_DBUS_NAME, in_signature='', out_signature='')
+    def getNextImage(self):
+        if self.update_id > 0:
+            GLib.source_remove(self.update_id)
+            self.update_id = 0
+
+        self.loop_counter = self.slideshow_settings.get_int("delay")
+        self.start_mainloop()        
+
     def setup_slideshow(self):        
         self.load_settings()
         self.connect_signals()
