@@ -170,3 +170,10 @@ def removeWhitespaceNodes(node):
             removeWhitespaceNodes(child)
     for node in remove_list:
         node.parentNode.removeChild(node)
+
+def menuSortKey(node):
+    prefCats = ["administration", "preferences"]
+    key = node.get_menu_id().lower()
+    name = node.get_name().lower()
+    if key in prefCats: name = "zzzz" + name # Hack for prefCats to be sorted at the end
+    return name
