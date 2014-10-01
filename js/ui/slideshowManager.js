@@ -9,6 +9,7 @@ const dbusIFace =
         <interface name="org.Cinnamon.Slideshow"> \
             <method name="begin" /> \
             <method name="end" /> \
+            <method name="getNextImage" /> \
         </interface> \
     </node>';
 
@@ -50,5 +51,10 @@ SlideshowManager.prototype = {
     end: function() {
         this.ensureProxy();
         this.proxy.endRemote();
+    },
+
+    getNextImage: function() {
+        this.ensureProxy();
+        this.proxy.getNextImageRemote();
     }
 };
