@@ -8,7 +8,7 @@ from gi.repository.Gtk import SizeGroup, SizeGroupMode
 class Module:
     def __init__(self, content_box):
         keywords = _("windows, titlebar, edge, switcher, window list, attention, focus")
-        sidePage = SidePage(_("Windows"), "cs-windows", keywords, content_box, module=self)
+        sidePage = SidePage(_("Window Management"), "cs-windows", keywords, content_box, module=self)
         self.sidePage = sidePage
         self.name = "windows"
         self.category = "prefs"
@@ -17,10 +17,14 @@ class Module:
     def on_module_selected(self):
         if not self.loaded:
             print "Loading Windows module"
-            bg = SectionBg()        
-            self.sidePage.add_widget(bg)
-            vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
-            bg.add(vbox)
+            
+            self.tabs = []
+            self.notebook = Gtk.Notebook()
+            self.viewbox1 = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
+            self.viewbox2 = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
+            
+            self.notebook.append_page(self.viewbox1, Gtk.Label.new(_("Windows")))
+            self.notebook.append_page(self.viewbox2, Gtk.Label.new(_("Other")))
 
             section = Section(_("Alt-Tab"))  
             alttab_styles = [
@@ -34,16 +38,16 @@ class Module:
             ]
             alttab_styles_combo = self._make_combo_group(_("Alt-Tab switcher style"), "org.cinnamon", "alttab-switcher-style", alttab_styles)
             section.add(alttab_styles_combo)
-            section.add(GSettingsCheckButton(_("Display the alt-tab switcher on the primary monitor instead of the active one"), "org.cinnamon", "alttab-switcher-enforce-primary-monitor", None))
+            section.add(GSettingsCheckButton(_("Display the alt-tab switcher on the primary display instead of the active one"), "org.cinnamon", "alttab-switcher-enforce-primary-monitor", None))
             section.add(
-                GSettingsSpinButton(
-                    "Delay before displaying the alt-tab switcher",
+                GSettingsSpinButton(_(
+                    "Delay before displaying the alt-tab switcher"),
                     "org.cinnamon", "alttab-switcher-delay", dep_key=None,
                     min=0, max=1000, step=50, page=150, 
                     units=_("milliseconds")))
-            vbox.add(section)
+            self.viewbox2.add(section)
 
-            vbox.add(Gtk.Separator.new(Gtk.Orientation.HORIZONTAL))        
+            self.viewbox2.add(Gtk.Separator.new(Gtk.Orientation.HORIZONTAL))        
 
             section = Section(_("Titlebar"))
             
@@ -66,7 +70,7 @@ class Module:
        
             scroll_options = [["none", _("Nothing")],["shade", _("Shade and unshade")],["opacity", _("Adjust opacity")]]
 
-            combo = self._make_titlebar_action_group(_("Action on title bar with mouse scroll"),
+            combo = self._make_titlebar_action_group(_("Action on title bar mouse scroll"),
                                                       "org.cinnamon.desktop.wm.preferences", "action-scroll-titlebar",
                                                       scroll_options)
             opacity_spinner = GSettingsSpinButton(_("Minimum opacity:"), "org.cinnamon.desktop.wm.preferences", "min-window-opacity", None, 0, 100, 1, 1, _("%"))
@@ -80,16 +84,16 @@ class Module:
             self.update_spinner_visibility(self.wm_settings, "action-scroll-titlebar", opacity_spinner)
 
             section.add(combo)
-            vbox.add(section)
+            self.viewbox1.add(section)
 
-            vbox.add(Gtk.Separator.new(Gtk.Orientation.HORIZONTAL))
+            self.viewbox1.add(Gtk.Separator.new(Gtk.Orientation.HORIZONTAL))
 
             section = Section(_("Window List"))
             section.add(GSettingsCheckButton(_("Show an alert in the window list when a window from another workspace requires attention"), "org.cinnamon", "window-list-applet-alert", None))
             section.add(GSettingsCheckButton(_("Enable mouse-wheel scrolling in the window list"), "org.cinnamon", "window-list-applet-scroll", None))        
-            vbox.add(section)
+            self.viewbox2.add(section)
 
-            vbox.add(Gtk.Separator.new(Gtk.Orientation.HORIZONTAL))
+            self.viewbox2.add(Gtk.Separator.new(Gtk.Orientation.HORIZONTAL))
 
             section = Section(_("Window Focus"))
             focus_options = [["click", _("Click")], ["sloppy", _("Sloppy")], ["mouse", _("Mouse")]]
@@ -98,9 +102,9 @@ class Module:
             section.add(GSettingsCheckButton(_("Bring windows which require attention to the current workspace"), "org.cinnamon", "bring-windows-to-current-workspace", None))        
             section.add(GSettingsCheckButton(_("Prevent focus stealing"), "org.cinnamon", "prevent-focus-stealing", None))        
             section.add(GSettingsCheckButton(_("Attach dialog windows to their parent window's titlebar"), "org.cinnamon.muffin", "attach-modal-dialogs", None))
-            vbox.add(section)
+            self.viewbox1.add(section)
 
-            vbox.add(Gtk.Separator.new(Gtk.Orientation.HORIZONTAL))
+            self.viewbox1.add(Gtk.Separator.new(Gtk.Orientation.HORIZONTAL))
 
             section = Section(_("Moving and Resizing Windows"))
 
@@ -109,7 +113,10 @@ class Module:
             combo.set_tooltip_text(_("While the special key is pressed, windows can be dragged with the left mouse button and resized with the right mouse button."))
             section.add(combo)
             section.add(GSettingsSpinButton(_("Window drag/resize threshold"), "org.cinnamon.muffin", "resize-threshold", None, 1, 100, 1, 1, _("Pixels")))        
-            vbox.add(section)
+            self.viewbox1.add(section)
+            
+            self.notebook.expand = True
+            self.sidePage.add_widget(self.notebook)
 
     def update_spinner_visibility(self, settings, key, widget):
         if settings.get_string(key) == "opacity":
@@ -129,7 +136,7 @@ class Module:
 
         w = GSettingsComboBox("", root, key, None, stuff)
         self.size_groups[1].add_widget(w)
-        box.pack_start(w, False, False, 0)
+        box.pack_start(w, False, False, 2)
         
         return box
 
