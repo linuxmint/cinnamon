@@ -31,6 +31,8 @@ def getProcessOut(command):
 def getGraphicsInfos():
     cards = {}
     count = 0
+    envpath = os.environ["PATH"]
+    os.environ["PATH"] = envpath + ":/usr/local/sbin:/usr/sbin:/sbin"
     for card in getProcessOut(("lspci")):
         if not "VGA" in card:
             continue
@@ -43,6 +45,7 @@ def getGraphicsInfos():
         if cardName:
             cards[count] = (cardName)
             count += 1
+    os.environ["PATH"] = envpath
     return cards
 
 def getDiskSize():
