@@ -61,7 +61,6 @@ class MenuEditor(object):
             pass
 
         self.loadDOM()
-        self.save()
 
     def restoreTree(self, menu):
         item_iter = menu.iter()
