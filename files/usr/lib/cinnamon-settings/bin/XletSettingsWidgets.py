@@ -729,6 +729,14 @@ class ComboBox(Gtk.HBox, BaseWidget):
 
     def update_dependents(self):
         val = self.get_val()
+        try:
+            val = int(val)
+            except:
+                try:
+                    val = float(val)
+                except:
+                    pass
+
         for dep in self.dependents:
 	    if(dep[1]):
 		if(not dep[1][0]):
@@ -823,6 +831,13 @@ class RadioGroup(Gtk.VBox, BaseWidget):
 
     def update_dependents(self):
         val = self.get_val()
+        try:
+            val = int(val)
+            except:
+                try:
+                    val = float(val)
+                except:
+                    pass
         for dep in self.dependents:
 	    if(dep[1]):
 		if(not dep[1][0]):
