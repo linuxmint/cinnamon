@@ -273,6 +273,12 @@ class BaseWidget(object):
             ^
             (!)?				#1: optional not operator
             (\S+)				#2: Dependency key
+            (?:
+                \s*
+                (<=?|>=?|==|!=)	#3: comparsion operator
+                \s*
+                (.+)			#4: comparsion value
+            )?
             $
         """, re.X);
 
@@ -286,6 +292,18 @@ class BaseWidget(object):
 
         if match.group(1):                      #not operator
             return (key, match.group(1))
+        elif match.group(3) and match.group(4): #comparsion operator
+            value = match.group(4)
+            #int, float conversation
+            try:
+                value = int(value)
+            except:
+                try:
+                    value = float(value)
+                except:
+                    pass
+
+            return (key, match.group(3), value)
         else:                                   #no operator
             return (key)
 
@@ -699,10 +717,35 @@ class ComboBox(Gtk.HBox, BaseWidget):
         self.handler = self.combo.connect("changed", self.on_my_value_changed)
         self.combo.show_all()
 
+    def add_dependent(self, widget, arg):
+        if arg[0] == "!":
+            print ("The operator '" + arg[0] + "' is not supported by a ComboBox widget as dependence. The UUID is: " + self.uuid)
+            arg = ()
+        self.dependents.append((widget, arg))
+
     def on_my_value_changed(self, widget):
         tree_iter = widget.get_active_iter()
         if tree_iter != None:
             self.set_val(self.model[tree_iter][1])
+
+        self.update_dependents()
+
+    def update_dependents(self):
+        val = self.get_val()
+        for dep in self.dependents:
+            if(dep[1] and dep[1][1]):
+                if(dep[1][0] == "=="):      # == operator
+                    self.settings_obj.factory.widgets[dep[0]].update_dep_state(val == dep[1][1])
+                elif(dep[1][0] == "!="):    # != operator
+                    self.settings_obj.factory.widgets[dep[0]].update_dep_state(val != dep[1][1])
+                elif(dep[1][0] == "<"):     # < operator
+                    self.settings_obj.factory.widgets[dep[0]].update_dep_state(val < dep[1][1])
+                elif(dep[1][0] == "<="):    # <= operator
+                    self.settings_obj.factory.widgets[dep[0]].update_dep_state(val <= dep[1][1])
+                elif(dep[1][0] == ">"):     # > operator
+                    self.settings_obj.factory.widgets[dep[0]].update_dep_state(val > dep[1][1])
+                elif(dep[1][0] == ">="):    # >= operator
+                    self.settings_obj.factory.widgets[dep[0]].update_dep_state(val >= dep[1][1])
 
     def on_settings_file_changed(self):
         self.combo.handler_block(self.handler)
@@ -758,6 +801,7 @@ class RadioGroup(Gtk.VBox, BaseWidget):
                 button.orig_key = key
 
             self.pack_start(hbox, False, False, 2)
+        self.handler = self.scale.connect('value-changed', self.update_dependents)
 
         if self.entry is not None:
             self.entry.set_text(self.get_custom_val())
@@ -770,6 +814,30 @@ class RadioGroup(Gtk.VBox, BaseWidget):
             button.handler = button.connect("toggled", self.on_button_activated)
             set_tt(self.get_tooltip(), button)
         self._value_changed_timer = None
+
+    def add_dependent(self, widget, arg):
+        if arg[0] == "!":
+            print ("The operator '" + arg[0] + "' is not supported by a RadioGroup widget as dependence. The UUID is: " + self.uuid)
+            arg = ()
+        self.dependents.append((widget, arg))
+
+    def update_dependents(self):
+        val = self.get_val()
+        print val
+        for dep in self.dependents:
+            if(dep[1] and dep[1][1]):
+                if(dep[1][0] == "=="):      # == operator
+                    self.settings_obj.factory.widgets[dep[0]].update_dep_state(val == dep[1][1])
+                elif(dep[1][0] == "!="):    # != operator
+                    self.settings_obj.factory.widgets[dep[0]].update_dep_state(val != dep[1][1])
+                elif(dep[1][0] == "<"):     # < operator
+                    self.settings_obj.factory.widgets[dep[0]].update_dep_state(val < dep[1][1])
+                elif(dep[1][0] == "<="):    # <= operator
+                    self.settings_obj.factory.widgets[dep[0]].update_dep_state(val <= dep[1][1])
+                elif(dep[1][0] == ">"):     # > operator
+                    self.settings_obj.factory.widgets[dep[0]].update_dep_state(val > dep[1][1])
+                elif(dep[1][0] == ">="):    # >= operator
+                    self.settings_obj.factory.widgets[dep[0]].update_dep_state(val >= dep[1][1])
 
     def on_custom_focus(self, event, widget):
         self.custom_button.set_active(True)
