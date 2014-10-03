@@ -27,16 +27,28 @@
  },
  "combo-selection" : {
     "type": "combobox",
-    "default" : "option 1",
+    "default" : 1,
     "description" : "Please pick an option:",
     "options" : {
-        "First Choice" : "option 1",
-        "Second Choice" : "option 2",
-        "Third Choice" : "option 3",
-        "Fourth Choice" : "option 4"
+        "First Choice" : 1,
+        "Second Choice" : 2,
+        "Third Choice" : 3,
+        "Fourth Choice" : 4
     },
     "tooltip" : "A combo selection can select between int, boolean, float, and string values"
  },
+ "options": {
+	"type": "radiogroup",
+	"default": 0.2,
+	"description": "Please pick another option:",
+	"options": {
+		"I": 0.2,
+		"II": 0.4,
+		"III": 0.6
+	},
+	"tooltip": "A radio group can select between int, boolean, float, and string values. You can't change the value? Well, set the Combobox to the fourth choice, and here you go!",
+	"dependency": "combo-selection == 4"
+},
  "scale-demo" : {
     "type" : "scale",
     "default" : 0.5,
