@@ -10,6 +10,7 @@ try:
     import json
     import dbus
     import eyedropper
+    import re
     from gi.repository import Gio, Gtk, GObject, Gdk, GdkPixbuf
 except Exception, detail:
     print detail
@@ -251,22 +252,42 @@ class BaseWidget(object):
         self.dependents = []
         dep_key = self.get_dependency()
         if dep_key is not None:
-            if dep_key in self.settings_obj.factory.widgets:
-                self.settings_obj.factory.widgets[dep_key].add_dependent(self.key)
+            if dep_key[0] in self.settings_obj.factory.widgets:
+                self.settings_obj.factory.widgets[dep_key[0]].add_dependent(self.key, dep_key[1:3])
             else:
                 print ("Dependency key does not exist for key " + self.key + ".  The dependency MUST come before the dependent.  The UUID is: " + self.uuid)
 
     def on_settings_file_changed(self):
         pass
 
-    def add_dependent(self, key):
+    def add_dependent(self, key, arg):
         print ("Can only bind dependency to a CheckButton widget.  Ignoring dependency key.  The UUID is: " + self.uuid)
 
     def get_dependency(self):
         try:
-            return self.settings_obj.get_data(self.key)["dependency"]
+            dep = self.settings_obj.get_data(self.key)["dependency"]
         except:
             return None
+
+        pattern = re.compile("""
+            ^
+            (!)?				#1: optional not operator
+            (\S+)				#2: Dependency key
+            $
+        """, re.X);
+
+        match = pattern.match(dep)
+
+        if match is None:
+            print ("Dependency key could not be parsed for key " + self.key + ".  The UUID is: " + self.uuid)
+            return None
+
+        key = match.group(2)
+
+        if match.group(1):                      #not operator
+            return (key, match.group(1))
+        else:                                   #no operator
+            return (key)
 
     def update_dependents(self):
         pass
@@ -456,8 +477,11 @@ class CheckButton(Gtk.CheckButton, BaseWidget):
         self.handler = self.connect('toggled', self.on_my_value_changed)
         set_tt(self.get_tooltip(), self)
 
-    def add_dependent(self, widget):
-        self.dependents.append(widget)
+    def add_dependent(self, widget, arg):
+        if arg[0] and arg[0] != "!":
+            print ("The operator '" + arg[0] + "' is not supported by a CheckBox widget as dependence. The UUID is: " + self.uuid)
+            arg = ()
+        self.dependents.append((widget, arg))
 
     def on_my_value_changed(self, widget):
         self.set_val(self.get_active())
@@ -465,7 +489,10 @@ class CheckButton(Gtk.CheckButton, BaseWidget):
 
     def update_dependents(self):
         for dep in self.dependents:
-            self.settings_obj.factory.widgets[dep].update_dep_state(self.get_active())
+			if(dep[1] and dep[1][0] == "!"): #not operator
+				self.settings_obj.factory.widgets[dep[0]].update_dep_state(not self.get_active())
+			else:
+				self.settings_obj.factory.widgets[dep[0]].update_dep_state(self.get_active())
 
     def on_settings_file_changed(self):
         self.handler_block(self.handler)
