@@ -57,8 +57,8 @@ class Module:
             self._slideshow_schema.connect("changed::slideshow-enabled", self.on_slideshow_enabled_changed)
             self.add_folder_dialog = Gtk.FileChooserDialog(title=_("Add Folder"),
                                                            action=Gtk.FileChooserAction.SELECT_FOLDER,
-                                                           buttons=(Gtk.STOCK_OPEN, Gtk.ResponseType.OK,
-                                                                   Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL))            
+                                                           buttons=(Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL,
+                                                                   Gtk.STOCK_OPEN, Gtk.ResponseType.OK))            
 
             self.xdg_pictures_directory = os.path.expanduser("~/Pictures")
             xdg_config = os.path.expanduser("~/.config/user-dirs.dirs")
