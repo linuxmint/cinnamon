@@ -54,8 +54,6 @@ class MainWindow(object):
         self.tree.get_object('edit_cut').set_sensitive(False)
         self.tree.get_object('edit_copy').set_sensitive(False)
         self.tree.get_object('edit_paste').set_sensitive(False)
-        self.tree.get_object('move_up_button').set_sensitive(False)
-        self.tree.get_object('move_down_button').set_sensitive(False)
         self.cut_copy_buffer = None
         self.file_id = None
         self.last_tree = None
@@ -390,8 +388,6 @@ class MainWindow(object):
         count =  menus.iter_n_children(parent_iter)
         can_go_up = index > 0 and isinstance(menu, CMenu.TreeDirectory)
         can_go_down = index < count - 1 and isinstance(menu, CMenu.TreeDirectory)
-        self.tree.get_object('move_up_button').set_sensitive(can_go_up)
-        self.tree.get_object('move_down_button').set_sensitive(can_go_down)
         self.last_tree = "menu_tree"
 
     def on_item_tree_show_toggled(self, cell, path):
@@ -434,8 +430,6 @@ class MainWindow(object):
         index = items.get_path(iter).get_indices()[0]
         can_go_up = index > 0 and isinstance(item, CMenu.TreeDirectory)
         can_go_down = index < len(items) - 1 and isinstance(item, CMenu.TreeDirectory)
-        self.tree.get_object('move_up_button').set_sensitive(can_go_up)
-        self.tree.get_object('move_down_button').set_sensitive(can_go_down)
         self.last_tree = "item_tree"
 
     def on_item_tree_row_activated(self, treeview, path, column):
@@ -492,27 +486,6 @@ class MainWindow(object):
     def on_item_tree_key_press_event(self, item_tree, event):
         if event.keyval == Gdk.KEY_Delete:
             self.on_edit_delete_activate(item_tree)
-
-    def on_move_up_button_clicked(self, button):
-        item_tree = self.tree.get_object(self.last_tree)
-        items, iter = item_tree.get_selection().get_selected()
-        if not iter:
-            return
-
-        item = items[iter][3]
-        before = items[items.iter_previous(iter)][3]
-
-        self.editor.moveItem(item.get_parent(), item, before=before)    
-
-    def on_move_down_button_clicked(self, button):
-        item_tree = self.tree.get_object(self.last_tree)
-        items, iter = item_tree.get_selection().get_selected()
-        if not iter:
-            return
-
-        item = items[iter][3]
-        after = items[iter][3]
-        self.editor.moveItem(item.get_parent(), item, after=after)
 
     def on_restore_button_clicked(self, button):
         self.editor.restoreToSystem()

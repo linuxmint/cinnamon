@@ -61,7 +61,6 @@ class MenuEditor(object):
             pass
 
         self.loadDOM()
-        self.save()
 
     def restoreTree(self, menu):
         item_iter = menu.iter()
@@ -106,11 +105,15 @@ class MenuEditor(object):
 
         item_iter = parent.iter()
         item_type = item_iter.next()
+        items = [];
         while item_type != CMenu.TreeItemType.INVALID:
             if item_type == CMenu.TreeItemType.DIRECTORY:
                 item = item_iter.get_directory()
-                yield (item, self.isVisible(item))
+                items.append(item)
             item_type = item_iter.next()
+        items.sort(key=util.menuSortKey)
+        for item in items:
+          yield (item, self.isVisible(item))
 
     def getContents(self, item):
         contents = []
