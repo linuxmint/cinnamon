@@ -34,6 +34,8 @@ const MAX_BUTTON_WIDTH = "max-width: 20em;";
 
 const USER_DESKTOP_PATH = FileUtils.getUserDesktopDir();
 
+const PRIVACY_SCHEMA = "org.cinnamon.desktop.privacy";
+const REMEMBER_RECENT_KEY = "remember-recent-files";
 
 let appsys = Cinnamon.AppSystem.get_default();
 
@@ -494,6 +496,38 @@ RecentButton.prototype = {
     }
 };
 
+function GenericButton(label, icon, reactive, callback) {
+    this._init(label, icon, reactive, callback);
+}
+
+GenericButton.prototype = {
+    __proto__: PopupMenu.PopupBaseMenuItem.prototype,
+
+    _init: function(label, icon, reactive, callback) {
+        PopupMenu.PopupBaseMenuItem.prototype._init.call(this, {hover: false});
+        this.actor.set_style_class_name('menu-application-button');
+        this.actor._delegate = this;
+        this.button_name = "";
+
+        this.label = new St.Label({ text: label, style_class: 'menu-application-button-label' });
+
+        if (icon != null) {
+            let icon_actor = new St.Icon({ icon_name: icon, icon_type: St.IconType.FULLCOLOR, icon_size: APPLICATION_ICON_SIZE});
+            this.addActor(icon_actor);
+        }
+
+        this.addActor(this.label);
+        this.label.realize();
+
+        this.actor.reactive = reactive;
+        this.callback = callback;
+    },
+
+    _onButtonReleaseEvent: function (actor, event) {
+        this.callback();
+    }
+}
+
 function RecentClearButton(appsMenuButton) {
     this._init(appsMenuButton);
 }
@@ -894,6 +928,7 @@ MyApplet.prototype = {
             this._canUninstallApps = GLib.file_test("/usr/bin/cinnamon-remove-application", GLib.FileTest.EXISTS);
 
             this.RecentManager = new DocInfo.DocManager();
+            this.privacy_settings = new Gio.Settings( {schema: PRIVACY_SCHEMA} );
 
             this._display();
             appsys.connect('installed-changed', Lang.bind(this, this._refreshApps));
@@ -904,6 +939,7 @@ MyApplet.prototype = {
 
             Main.placesManager.connect('places-updated', Lang.bind(this, this._refreshPlacesAndRecent));
             this.RecentManager.connect('changed', Lang.bind(this, this._refreshPlacesAndRecent));
+            this.privacy_settings.connect("changed::" + REMEMBER_RECENT_KEY, Lang.bind(this, this._refreshPlacesAndRecent));
 
             this._fileFolderAccessActive = false;
 
@@ -1462,26 +1498,22 @@ MyApplet.prototype = {
             this.categoriesBox.add_actor(this.recentButton.actor);
             this._categoryButtons.push(this.recentButton);
 
-            if (this.RecentManager._infosByTimestamp.length > 0) {
-                for (let id = 0; id < MAX_RECENT_FILES && id < this.RecentManager._infosByTimestamp.length; id++) {
-                    let button = new RecentButton(this, this.RecentManager._infosByTimestamp[id]);
-                    this._addEnterEvent(button, Lang.bind(this, function() {
-                            this._clearPrevAppSelection(button.actor);
-                            button.actor.style_class = "menu-application-button-selected";
-                            this.selectedAppTitle.set_text("");
-                            this.selectedAppDescription.set_text(button.file.uri.slice(7).replace(/%20/g, ' '));
-                            }));
-                    button.actor.connect('leave-event', Lang.bind(this, function() {
-                            button.actor.style_class = "menu-application-button";
-                            this._previousSelectedActor = button.actor;
-                            this.selectedAppTitle.set_text("");
-                            this.selectedAppDescription.set_text("");
-                            }));
-                    this._recentButtons.push(button);
-                    this.applicationsBox.add_actor(button.actor);
-                }
+            if (!this.privacy_settings.get_boolean(REMEMBER_RECENT_KEY)) {
+                let button = new GenericButton(_("Recent file tracking is currently disabled system-wide."), null, false, null);
+                this._recentButtons.push(button);
+                this.applicationsBox.add_actor(button.actor);
 
-                let button = new RecentClearButton(this);
+                this._addEnterEvent(button, Lang.bind(this, function() {
+                        this._clearPrevAppSelection(button.actor);
+                        }));
+                button.actor.connect('leave-event', Lang.bind(this, function() {
+                        this._previousSelectedActor = button.actor;
+                        }));
+
+                button = new GenericButton(_("Click here to enable"), "ok", true, Lang.bind(this, function () {
+                    this.privacy_settings.set_boolean(REMEMBER_RECENT_KEY, true);
+                }));
+
                 this._addEnterEvent(button, Lang.bind(this, function() {
                         this._clearPrevAppSelection(button.actor);
                         button.actor.style_class = "menu-application-button-selected";
@@ -1490,14 +1522,52 @@ MyApplet.prototype = {
                         button.actor.style_class = "menu-application-button";
                         this._previousSelectedActor = button.actor;
                         }));
+
                 this._recentButtons.push(button);
                 this.applicationsBox.add_actor(button.actor);
+            } else {
+                if (this.RecentManager._infosByTimestamp.length > 0) {
+                    for (let id = 0; id < MAX_RECENT_FILES && id < this.RecentManager._infosByTimestamp.length; id++) {
+                        let button = new RecentButton(this, this.RecentManager._infosByTimestamp[id]);
+                        this._addEnterEvent(button, Lang.bind(this, function() {
+                                this._clearPrevAppSelection(button.actor);
+                                button.actor.style_class = "menu-application-button-selected";
+                                this.selectedAppTitle.set_text("");
+                                this.selectedAppDescription.set_text(button.file.uri.slice(7).replace(/%20/g, ' '));
+                                }));
+                        button.actor.connect('leave-event', Lang.bind(this, function() {
+                                button.actor.style_class = "menu-application-button";
+                                this._previousSelectedActor = button.actor;
+                                this.selectedAppTitle.set_text("");
+                                this.selectedAppDescription.set_text("");
+                                }));
+                        this._recentButtons.push(button);
+                        this.applicationsBox.add_actor(button.actor);
+                    }
+
+                    let button = new RecentClearButton(this);
+                    this._addEnterEvent(button, Lang.bind(this, function() {
+                            this._clearPrevAppSelection(button.actor);
+                            button.actor.style_class = "menu-application-button-selected";
+                            }));
+                    button.actor.connect('leave-event', Lang.bind(this, function() {
+                            button.actor.style_class = "menu-application-button";
+                            this._previousSelectedActor = button.actor;
+                            }));
+                    this._recentButtons.push(button);
+                    this.applicationsBox.add_actor(button.actor);
+                } else {
+                    let button = new GenericButton(_("No recent documents"), null, false, null);
+                    this._recentButtons.push(button);
+                    this.applicationsBox.add_actor(button.actor);
+                }
             }
         }
 
         this._setCategoriesButtonActive(!this.searchActive);
 
         this._recalc_height();
+        this._resizeApplicationsBox();
     },
 
     _refreshApps : function() {
@@ -1643,6 +1713,7 @@ MyApplet.prototype = {
         this._appsWereRefreshed = true;
 
         this._refreshPlacesAndRecent();
+        this._resizeApplicationsBox();
     },
 
     _refreshFavs : function() {
@@ -1789,7 +1860,6 @@ MyApplet.prototype = {
                             }
                         }
                     
-                        applicationButton.actor.connect('realize', Lang.bind(this, this._onApplicationButtonRealized));
                         applicationButton.actor.connect('leave-event', Lang.bind(this, this._appLeaveEvent, applicationButton));
                         this._addEnterEvent(applicationButton, Lang.bind(this, this._appEnterEvent, applicationButton));
                         this._applicationsButtons.push(applicationButton);
@@ -1982,13 +2052,25 @@ MyApplet.prototype = {
         }
     },
     
-    _onApplicationButtonRealized: function(actor) {
-        if (actor.get_width() > this._applicationsBoxWidth){
-            this._applicationsBoxWidth = actor.get_width();
+    _resize_actor_iter: function(actor) {
+        let [min, nat] = actor.get_preferred_width(-1.0);
+        if (nat > this._applicationsBoxWidth){
+            this._applicationsBoxWidth = nat;
             this.applicationsBox.set_width(this._applicationsBoxWidth + 42); // The answer to life...
         }
     },
-    
+
+    _resizeApplicationsBox: function() {
+        this._applicationsBoxWidth = 0;
+        this.applicationsBox.set_width(-1);
+        let child = this.applicationsBox.get_first_child();
+        this._resize_actor_iter(child);
+
+        while ((child = child.get_next_sibling()) != null) {
+            this._resize_actor_iter(child);
+        }
+    },
+
     _displayButtons: function(appCategory, places, recent, apps, autocompletes){
         if (appCategory) {
             if (appCategory == "all") {
@@ -2064,7 +2146,6 @@ MyApplet.prototype = {
 
             for (let i = 0; i < autocompletes.length; i++) {
                 let button = new TransientButton(this, autocompletes[i]);
-                button.actor.connect('realize', Lang.bind(this, this._onApplicationButtonRealized));
                 button.actor.connect('leave-event', Lang.bind(this, this._appLeaveEvent, button));
                 this._addEnterEvent(button, Lang.bind(this, this._appEnterEvent, button));
                 this._transientButtons.push(button);
