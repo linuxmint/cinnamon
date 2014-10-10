@@ -1511,6 +1511,7 @@ MyApplet.prototype = {
                         }));
 
                 button = new GenericButton(_("Click here to enable"), "ok", true, Lang.bind(this, function () {
+                    this.menu.close()
                     this.privacy_settings.set_boolean(REMEMBER_RECENT_KEY, true);
                 }));
 
