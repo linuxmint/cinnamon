@@ -1,0 +1,8 @@
+[Desktop Entry]
+Icon=cs-privacy
+Exec=cinnamon-settings privacy
+Type=Application
+OnlyShowIn=X-Cinnamon;
+Categories=Settings;
+Name=Privacy
+Comment=Cinnamon privacy settings
