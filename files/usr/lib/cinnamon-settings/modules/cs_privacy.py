@@ -28,13 +28,13 @@ class Module:
 
             section.add(GSettingsCheckButton(_("Remember recently accessed files"), PRIVACY_SCHEMA, GTK_RECENT_ENABLE_KEY, None))
 
+            box = Gtk.HBox()
             self.rb1 = Gtk.RadioButton.new_with_label(None, _("Never forget old files"))
-            self.settings.bind(GTK_RECENT_ENABLE_KEY, self.rb1, "sensitive", Gio.SettingsBindFlags.GET)
+            box.pack_start(self.rb1, False, False, 2)
+            self.settings.bind(GTK_RECENT_ENABLE_KEY, box, "sensitive", Gio.SettingsBindFlags.GET)
 
             spinbox = Gtk.HBox()
-
             self.rb2 = Gtk.RadioButton.new_with_label_from_widget(self.rb1, _("Forget a file after"))
-
             spinbox.pack_start(self.rb2, False, False, 2)
             self.settings.bind(GTK_RECENT_ENABLE_KEY, spinbox, "sensitive", Gio.SettingsBindFlags.GET)
 
@@ -42,13 +42,12 @@ class Module:
             self.spinner.set_digits(0)
             self.spinner.set_increments(1, 10)
             self.spinner.connect("value-changed", self.update_spinner_suffix)
-
             spinbox.pack_start(self.spinner, False, False, 2)
 
             self.suffix = Gtk.Label(label=_("days"))
             spinbox.pack_start(self.suffix, False, False, 2)
 
-            section.add_indented(self.rb1)
+            section.add_indented(box)
             section.add_indented(spinbox)
 
             vbox.add(section)
