@@ -37,6 +37,7 @@ public_icons = \
 	hicolor_categories_scalable_cs-panel.svg \
 	hicolor_categories_scalable_cs-power.svg \
 	hicolor_categories_scalable_cs-printer.svg \
+	hicolor_categories_scalable_cs-privacy.svg \
 	hicolor_categories_scalable_cs-region.svg \
 	hicolor_categories_scalable_cs-screensaver.svg \
 	hicolor_categories_scalable_cs-screen.svg \
