@@ -23,6 +23,8 @@ var enabledDeskletDefinitions;
 
 var deskletsLoaded = false;
 
+var deskletsDragging = false;
+
 let userDeskletsDir;
 
 let mouseTrackEnabled = false;
@@ -53,7 +55,7 @@ function init(){
     global.settings.connect('changed::' + DESKLET_SNAP_KEY, _onDeskletSnapChanged);
     global.settings.connect('changed::' + DESKLET_SNAP_INTERVAL_KEY, _onDeskletSnapChanged);
 
-    deskletsLoaded = true
+    deskletsLoaded = true;
     enableMouseTracking(true);
 }
 
@@ -261,8 +263,9 @@ function _loadDesklet(extension, deskletDefinition) {
         }
         extension._loadedDefinitions[deskletDefinition.desklet_id] = deskletDefinition;
 
-        desklet.on_desklet_added_to_desktop_internal(deskletsLoaded);
+        desklet.on_desklet_added_to_desktop_internal(deskletsLoaded && !deskletsDragging);
 
+        deskletsDragging = false;
     } catch (e) {
         extension.logError('Failed to load desklet: ' + deskletDefinition.uuid + "/" + deskletDefinition.desklet_id, e);
     }
@@ -394,6 +397,8 @@ DeskletContainer.prototype = {
     },
 
     handleDragOver: function(source, actor, x, y, time) {
+        deskletsDragging = true;
+
         if (!global.settings.get_boolean(DESKLET_SNAP_KEY))
             return DND.DragMotionResult.MOVE_DROP;
 
