@@ -8,6 +8,7 @@ const Clutter = imports.gi.Clutter;
 const St = imports.gi.St;
 const PopupMenu = imports.ui.popupMenu;
 const GLib = imports.gi.GLib;
+const Gtk = imports.gi.Gtk;
 const Gvc = imports.gi.Gvc;
 const Pango = imports.gi.Pango;
 const Tooltips = imports.ui.tooltips;
@@ -19,7 +20,6 @@ const MEDIA_PLAYER_2_NAME = "org.mpris.MediaPlayer2";
 const MEDIA_PLAYER_2_PLAYER_NAME = "org.mpris.MediaPlayer2.Player";
 
 /* global values */
-let icon_path = "/usr/share/cinnamon/theme/";
 let compatible_players = [
     'clementine', 'mpd', 'exaile', 'banshee', 'rhythmbox', 'rhythmbox3',
     'pragha', 'quodlibet', 'guayadeque', 'amarok', 'googlemusicframe', 'xbmc',
@@ -152,12 +152,12 @@ TextImageMenuItem.prototype = {
 
     // retrieve an icon image
     _getIconImage: function(icon_name) {
-         let icon_file = icon_path + icon_name + ".svg";
-         let file = Gio.file_new_for_path(icon_file);
-         let icon_uri = file.get_uri();
+        let icon_file = Gtk.IconTheme.get_default().lookup_icon(icon_name, 16, 0).get_filename(); //look into the gtk search paths for the icon
+        let file = Gio.file_new_for_path(icon_file);
+        let icon_uri = file.get_uri();
 
-         return St.TextureCache.get_default().load_uri_async(icon_uri, 16, 16);
-    },
+        return St.TextureCache.get_default().load_uri_async(icon_uri, 16, 16);
+	},
 }
 
 function Player() {
