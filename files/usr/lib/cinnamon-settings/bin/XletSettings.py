@@ -141,8 +141,8 @@ class XletSetting:
                     self.content_box.pack_start(widgets[widget_key], False, False, 2)
                 if len(widgets[widget_key].dependents) > 0:
                     widgets[widget_key].update_dependents()
+            self.current_id = instance_key
         self.content.pack_start(self.view, True, True, 2)
-        self.current_id = instance_key
 
     def build_notebook(self):
         self.nb = Gtk.Notebook()
