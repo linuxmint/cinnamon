@@ -114,7 +114,7 @@ function TextImageMenuItem() {
 TextImageMenuItem.prototype = {
     __proto__: PopupMenu.PopupBaseMenuItem.prototype,
 
-    _init: function(text, icon, image, align, style) {
+    _init: function(text, icon, align, style) {
         PopupMenu.PopupBaseMenuItem.prototype._init.call(this);
 
         this.actor = new St.BoxLayout({style_class: style});
