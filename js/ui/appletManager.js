@@ -53,7 +53,8 @@ function finishExtensionLoad(extension) {
     let definitions = enabledAppletDefinitions.uuidMap[extension.uuid];
     if (definitions) {
         for(let i=0; i<definitions.length; i++) {
-            addAppletToPanels(extension, definitions[i]);
+            if (!addAppletToPanels(extension, definitions[i]))
+                return false;
         }
     }
     return true;
@@ -241,7 +242,7 @@ function addAppletToPanels(extension, appletDefinition) {
         // Create the applet
         let applet = createApplet(extension, appletDefinition);
         if(applet == null)
-            return;
+            return false;
         
         // Now actually lock the applets role and set the provider
         extension.lockRole(applet);
@@ -286,12 +287,15 @@ function addAppletToPanels(extension, appletDefinition) {
             extension._loadedDefinitions = {};
         }
         extension._loadedDefinitions[appletDefinition.applet_id] = appletDefinition;
-        
+
         applet.on_applet_added_to_panel_internal(appletsLoaded);
+
+        return true;
     }
     catch(e) {
         extension.unlockRole();
         extension.logError('Failed to load applet: ' + appletDefinition.uuid + "/" + appletDefinition.applet_id, e);
+        return false;
     }
 }
 

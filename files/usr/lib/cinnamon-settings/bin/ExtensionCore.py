@@ -58,6 +58,10 @@ class ExtensionSidePage (SidePage):
         if window is not None:
             self.window = window
 
+        self.running_uuids = None
+        self._proxy = None
+        self._signals = []
+
         scrolledWindow = Gtk.ScrolledWindow()   
         scrolledWindow.set_shadow_type(Gtk.ShadowType.ETCHED_IN)   
         scrolledWindow.set_border_width(6) 
@@ -400,8 +404,42 @@ class ExtensionSidePage (SidePage):
 
         if not self.themes:
             self.spices.scrubConfigDirs(self.enabled_extensions)
+            try:
+                Gio.DBusProxy.new_for_bus(Gio.BusType.SESSION, Gio.DBusProxyFlags.NONE, None,
+                                          "org.Cinnamon", "/org/Cinnamon", "org.Cinnamon", None, self._on_proxy_ready, None)
+            except dbus.exceptions.DBusException as e:
+                print(e)
+                self._proxy = None
 
         self.search_entry.grab_focus()
+
+    def refresh_running_uuids(self):
+        try:
+            if self._proxy:
+                self.running_uuids = self._proxy.GetRunningXletUUIDs('(s)', self.collection_type)
+            else:
+                self.running_uuids = None
+        except:
+            self.running_uuids = None
+
+    def _on_proxy_ready (self, object, result, data=None):
+        self._proxy = Gio.DBusProxy.new_for_bus_finish(result)
+        self._proxy.connect("g-signal", self._on_signal)
+        self._enabled_extensions_changed()
+
+    def _on_signal(self, proxy, sender_name, signal_name, params):
+        for name, callback in self._signals:
+            if signal_name == name:
+                callback(*params)
+
+    def connect_proxy(self, name, callback):
+        self._signals.append((name, callback))
+
+    def disconnect_proxy(self, name):
+        for signal in self._signals:
+            if name in signal:
+                self._signals.remove(signal)
+                break
 
     def check_third_arg(self):
         if len(sys.argv) > 2 and not self.run_once:
@@ -444,6 +482,10 @@ class ExtensionSidePage (SidePage):
                     markup += _("In use")
                     if count > 1:
                         markup += _("\n\nInstance count: %d") % count
+                    tooltip.set_markup(markup)
+                    return True
+                elif count < 0:
+                    markup += _("Problem loading - please check Looking Glass or your system's error log");
                     tooltip.set_markup(markup)
                     return True
         return False
@@ -498,42 +540,40 @@ class ExtensionSidePage (SidePage):
 
                     uuid = self.modelfilter.get_value(iter, 0)
                     name = self.modelfilter.get_value(iter, 5)
+                    checked = self.modelfilter.get_value(iter, 2)
 
                     if self.should_show_config_button(self.modelfilter, iter):
                         item = Gtk.MenuItem(_("Configure"))
                         item.connect('activate', lambda x: self._configure_extension())
-                        item.set_sensitive(self.modelfilter.get_value(iter, 2) > 0)
+                        item.set_sensitive(checked > 0)
                         popup.add(item)
                         popup.add(Gtk.SeparatorMenuItem())
 
                     if self.should_show_ext_config_button(self.modelfilter, iter):
                         item = Gtk.MenuItem(_("Configure"))
                         item.connect('activate', lambda x: self._external_configure_launch())
-                        item.set_sensitive(self.modelfilter.get_value(iter, 2) > 0)
+                        item.set_sensitive(checked > 0)
                         popup.add(item)
                         popup.add(Gtk.SeparatorMenuItem())
 
-                    if self.modelfilter.get_value(iter, 2) > 0 and not self.themes:
-                        checked = self.modelfilter.get_value(iter, 2)
-                        item = Gtk.MenuItem(_("Remove from %s") % (self.target))
-                        item.connect('activate', lambda x: self.disable_extension(uuid, name, checked))
-                        popup.add(item)
+                    if not self.themes:
+                        if checked != 0:
+                            item = Gtk.MenuItem(_("Remove from %s") % (self.target))
+                            item.connect('activate', lambda x: self.disable_extension(uuid, name, checked))
+                            popup.add(item)
 
                         max_instances = self.modelfilter.get_value(iter, 3);
-                        can_instance = max_instances == -1 or ((max_instances > 0) and (max_instances > checked))
+                        can_instance = checked != -1 and (max_instances == -1 or ((max_instances > 0) and (max_instances > checked)))
+
                         if can_instance:
                             item = Gtk.MenuItem(_("Add to %s") % (self.target))
-                            item.connect('activate', lambda x: self.instance_extension(uuid))
+                            item.connect('activate', lambda x: self.enable_extension(uuid, name))
                             popup.add(item)
                     else:
-                        if not self.themes:
-                            item = Gtk.MenuItem(_("Add to %s") % (self.target))
-                        else:
-                            item = Gtk.MenuItem(_("Apply theme"))
+                        item = Gtk.MenuItem(_("Apply theme"))
                         item.connect('activate', lambda x: self.enable_extension(uuid, name))
                         popup.add(item)
-                        
-                    
+
                     item = Gtk.MenuItem(_("Uninstall"))
                     if self.modelfilter.get_value(iter, 6):
                         schema_filename = self.modelfilter.get_value(iter, 12)
@@ -543,7 +583,6 @@ class ExtensionSidePage (SidePage):
                         item.set_sensitive(False)
                     popup.add(item)
 
-                    #popup.add(item)
                     popup.show_all()
                     popup.popup(None, None, None, None, event.button, event.time)
 
@@ -555,11 +594,15 @@ class ExtensionSidePage (SidePage):
    
     def _is_active_data_func(self, column, cell, model, iter, data=None):
         enabled = model.get_value(iter, 2) > 0
-        if (enabled):
+        error = model.get_value(iter, 2) < 0
+        if enabled:
             if not self.themes:
                 icon = "cs-xlet-running"
             else:
                 icon = "cs-xlet-installed"
+        elif error:
+            if not self.themes:
+                icon = "cs-xlet-error"
         else:
             icon = ""
         cell.set_property('icon-name', icon)
@@ -748,11 +791,11 @@ class ExtensionSidePage (SidePage):
             return False
 
         if self.showFilter == SHOW_ALL:
-            return enabled >= 0 and (query == "" or query in extensionName.lower())
+            return (query == "" or query in extensionName.lower())
         elif self.showFilter == SHOW_ACTIVE:
             return enabled > 0 and (query == "" or query in extensionName.lower())
         elif self.showFilter == SHOW_INACTIVE:
-            return enabled == 0 and (query == "" or query in extensionName.lower())
+            return enabled <= 0 and (query == "" or query in extensionName.lower())
         else:
             return False
 
@@ -858,6 +901,10 @@ class ExtensionSidePage (SidePage):
             else:
                 extension_id = 0
             self.enabled_extensions.append(self.toSettingString(uuid, extension_id))
+
+            if self._proxy:
+                self.connect_proxy("XletAddedComplete", self.xlet_added_callback)
+
             self.settings.set_strv(("enabled-%ss") % (self.collection_type), self.enabled_extensions)
         else:
             if uuid == "STOCK":
@@ -865,8 +912,41 @@ class ExtensionSidePage (SidePage):
             else:
                 self.settings.set_string("name", name)
 
-    def disable_extension(self, uuid, name, checked):
+    def xlet_added_callback(self, success, uuid):
+        if not success:
+            self.disable_extension(uuid, "", 0)
 
+            msg = _("""
+There was a problem loading the selected item, and it has been disabled.\n\n
+Check your system log and the Cinnamon LookingGlass log for any issues.
+Please contact the developer.""")
+
+            dialog = Gtk.MessageDialog(transient_for = None,
+                                       modal = True,
+                                       message_type = Gtk.MessageType.ERROR)
+            esc = cgi.escape(msg)
+            dialog.set_markup(esc)
+
+            if self.do_logs_exist():
+                dialog.add_button(_("View logfile(s)"), 1)
+
+            dialog.add_button(_("Close"), 2)
+
+            dialog.connect("response", self.on_xlet_error_dialog_response)
+
+            dialog.show_all()
+            response = dialog.run()
+            dialog.destroy()
+
+        self.disconnect_proxy("XletAddedComplete")
+
+        GObject.timeout_add(100, self._enabled_extensions_changed)
+
+    def on_xlet_error_dialog_response(self, widget, id):
+        if id == 1:
+            self.show_logs()
+
+    def disable_extension(self, uuid, name, checked=0):
         if (checked > 1):
             msg = _("There are multiple instances, do you want to remove all of them?\n\n")
             msg += self.RemoveString
@@ -897,15 +977,6 @@ class ExtensionSidePage (SidePage):
     def on_uninstall_finished(self, uuid):
         self.load_extensions()
 
-    def instance_extension(self, uuid):
-        if self.collection_type in ("applet", "desklet"):
-            extension_id = self.settings.get_int(("next-%s-id") % (self.collection_type));
-            self.settings.set_int(("next-%s-id") % (self.collection_type), (extension_id+1));
-        else:
-            extension_id = 0
-        self.enabled_extensions.append(self.toSettingString(uuid, extension_id))
-        self.settings.set_strv(("enabled-%ss") % (self.collection_type), self.enabled_extensions)
-
     def on_page_changed(self, notebook, page, page_num):
         if page_num == 1 and len(self.gm_model) == 0:
             self.load_spices()
@@ -921,12 +992,13 @@ class ExtensionSidePage (SidePage):
     def _enabled_extensions_changed(self):
         last_selection = ''
         model, treeiter = self.treeview.get_selection().get_selected()
+        self.refresh_running_uuids()
 
         if self.themes:
             self.enabled_extensions = [self.settings.get_string("name")]
         else:
             self.enabled_extensions = self.settings.get_strv(("enabled-%ss") % (self.collection_type))
-        
+
         uuidCount = {}
         for enabled_extension in self.enabled_extensions:
             try:
@@ -947,8 +1019,14 @@ class ExtensionSidePage (SidePage):
                     uuid = "STOCK"
                 else:
                     uuid = self.model.get_value(row.iter, 5)
-            if(uuid in uuidCount):
-                self.model.set_value(row.iter, 2, uuidCount[uuid])
+            if uuid in uuidCount:
+                if self.running_uuids is not None:
+                    if uuid in self.running_uuids:
+                        self.model.set_value(row.iter, 2, uuidCount[uuid])
+                    else:
+                        self.model.set_value(row.iter, 2, -1)
+                else:
+                    self.model.set_value(row.iter, 2, uuidCount[uuid])
             else:
                 self.model.set_value(row.iter, 2, 0)
         self._selection_changed()
@@ -988,10 +1066,7 @@ class ExtensionSidePage (SidePage):
     def _add_another_instance_iter(self, treeiter):
         uuid = self.modelfilter.get_value(treeiter, 0);
         name = self.modelfilter.get_value(treeiter, 5)
-        if not self.themes:
-            self.instance_extension(uuid)
-        else:
-            self.enable_extension(uuid, name)
+        self.enable_extension(uuid, name)
         
     def _selection_changed(self):
         model, treeiter = self.treeview.get_selection().get_selected()
@@ -1000,15 +1075,14 @@ class ExtensionSidePage (SidePage):
         if treeiter:
             checked = model.get_value(treeiter, 2);
             max_instances = model.get_value(treeiter, 3);
-            enabled = max_instances > checked
-        
-        self.instanceButton.set_sensitive(enabled);        
+            enabled = (checked != -1) and (max_instances > checked)
 
-        if treeiter:
+            self.instanceButton.set_sensitive(enabled);
+
             self.configureButton.set_visible(self.should_show_config_button(model, treeiter))
-            self.configureButton.set_sensitive(checked)
+            self.configureButton.set_sensitive(checked > 0)
             self.extConfigureButton.set_visible(self.should_show_ext_config_button(model, treeiter))
-            self.extConfigureButton.set_sensitive(checked)
+            self.extConfigureButton.set_sensitive(checked > 0)
 
     def should_show_config_button(self, model, iter):
         hide_override = model.get_value(iter, 7)
@@ -1284,3 +1358,22 @@ class ExtensionSidePage (SidePage):
         dialog.show_all()
         response = dialog.run()
         dialog.destroy()
+
+################################## LOG FILE OPENING SPECIFICS
+
+# Other distros can add appropriate instructions to these two methods
+# to open the correct locations
+
+    def do_logs_exist(self):
+        return os.path.exists("%s/.cinnamon/glass.log" % (home)) or \
+               os.path.exists("%s/.xsession-errors" % (home))
+
+    def show_logs(self):
+        glass_path = "%s/.cinnamon/glass.log" % (home)
+        if os.path.exists(glass_path):
+            subprocess.Popen(["xdg-open", glass_path])
+
+        xerror_path = "%s/.xsession-errors" % (home)
+        if os.path.exists(xerror_path):
+            subprocess.Popen(["xdg-open", xerror_path])
+

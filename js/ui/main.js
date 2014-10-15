@@ -145,6 +145,8 @@ let popup_rendering = false;
 let gnomeSessionProxy = null;
 let sessionInhibitCookie = 0;
 
+let xlet_startup_error = false;
+
 // Override Gettext localization
 const Gettext = imports.gettext;
 Gettext.bindtextdomain('cinnamon', '/usr/share/cinnamon/locale');
@@ -436,6 +438,9 @@ function start() {
         notifyCinnamon2d();
     }
 
+    if (xlet_startup_error)
+        Mainloop.timeout_add_seconds(3, notifyXletStartupError);
+
     let sound_settings = new Gio.Settings( {schema: "org.cinnamon.sounds"} );
     let do_login_sound = sound_settings.get_boolean("login-enabled");
 
@@ -468,8 +473,15 @@ function notifyCinnamon2d() {
                    _(" troubleshooting purposes."), icon);
 }
 
-function loadSoundSettings() {
-
+function notifyXletStartupError() {
+    let icon = new St.Icon({ icon_name: 'dialog-warning',
+                             icon_type: St.IconType.FULLCOLOR,
+                             icon_size: 36 });
+    warningNotify(_("Problems during Cinnamon startup"),
+                  _("Cinnamon started successfully, but one or more applets, desklets or extensions failed to load.\n\n") +
+                  _("Check your system log and the Cinnamon LookingGlass log for any issues.  ") +
+                  _("You can disable the offending extension(s) in Cinnamon Settings to prevent this message from recurring.  ") +
+                  _("Please contact the developer."), icon);
 
 }
 
@@ -860,8 +872,22 @@ function criticalNotify(msg, details, icon) {
     let source = new MessageTray.SystemNotificationSource();
     messageTray.add(source);
     let notification = new MessageTray.Notification(source, msg, details, { icon: icon });
-    notification.setTransient(true);
+    notification.setTransient(false);
     notification.setUrgency(MessageTray.Urgency.CRITICAL);
+    source.notify(notification);
+}
+
+/**
+ * warningNotify:
+ * @msg: A warning message
+ * @details: Additional information
+ */
+function warningNotify(msg, details, icon) {
+    let source = new MessageTray.SystemNotificationSource();
+    messageTray.add(source);
+    let notification = new MessageTray.Notification(source, msg, details, { icon: icon });
+    notification.setTransient(false);
+    notification.setUrgency(MessageTray.Urgency.WARNING);
     source.notify(notification);
 }
 

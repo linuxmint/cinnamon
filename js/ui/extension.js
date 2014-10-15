@@ -378,17 +378,19 @@ function loadExtension(uuid, type) {
         try {
             let dir = findExtensionDirectory(uuid, type);
             if(dir == null) {
-                global.logError(type.name + ' ' + uuid + ' not found.');
-                return null;
+                throw (type.name + ' ' + uuid + ' not found.');
             }
             extension = new Extension(dir, type);
             forgetMeta = false;
 
             if(!type.callbacks.finishExtensionLoad(extension))
-                return null;
+                throw (type.name + ' ' + uuid + ': Could not create applet object.');
 
             extension.finalize();
+            Main.cinnamonDBusService.EmitXletAddedComplete(true, uuid);
         } catch(e) {
+            Main.cinnamonDBusService.EmitXletAddedComplete(false, uuid);
+            Main.xlet_startup_error = true;
             forgetExtension(uuid, forgetMeta);
             if(e._alreadyLogged)
                 e = undefined;

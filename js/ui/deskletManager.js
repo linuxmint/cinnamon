@@ -150,7 +150,8 @@ function finishExtensionLoad(extension) {
     let definitions = enabledDeskletDefinitions.uuidMap[extension.uuid];
     if (definitions) {
         for(let i=0; i<definitions.length; i++) {
-            _loadDesklet(extension, definitions[i]);
+            if (!_loadDesklet(extension, definitions[i]))
+                return false;
         }
     }
     return true;
