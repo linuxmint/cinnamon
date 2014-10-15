@@ -931,12 +931,12 @@ Please contact the developer.""")
                 dialog.add_button(_("View logfile(s)"), 1)
 
             dialog.add_button(_("Close"), 2)
+            dialog.set_default_response(2)
 
             dialog.connect("response", self.on_xlet_error_dialog_response)
 
             dialog.show_all()
             response = dialog.run()
-            dialog.destroy()
 
         self.disconnect_proxy("XletAddedComplete")
 
@@ -945,6 +945,8 @@ Please contact the developer.""")
     def on_xlet_error_dialog_response(self, widget, id):
         if id == 1:
             self.show_logs()
+        elif id == 2:
+            widget.destroy()
 
     def disable_extension(self, uuid, name, checked=0):
         if (checked > 1):
