@@ -226,15 +226,21 @@ Cinnamon.prototype = {
         let list = null;
         let res = [];
 
-        if (type == "applet")
+        if (type == "applet") {
             list = AppletManager.appletObj;
-        else if (type == "desklet")
+            for (let key in list) {
+                res.push(list[key]._uuid);
+            }
+        } else if (type == "desklet") {
             list = DeskletManager.deskletObj;
-        else
-            list = ExtensionSystem.extensionStateObjs;
-
-        for (let key in list) {
-            res.push(list[key]._uuid);
+            for (let key in list) {
+                res.push(list[key]._uuid);
+            }
+        } else {
+            list = ExtensionSystem.runningExtensions;
+            for (let uuid in list) {
+                res.push(uuid);
+            }
         }
 
         return res;
