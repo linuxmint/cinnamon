@@ -109,9 +109,13 @@ class Module:
             vbox.add(Gtk.Separator.new(Gtk.Orientation.HORIZONTAL))
                            
             section = Section(_("Advanced"))
-            section.add(Gtk.Label(_("Options for single-button touchpads:")))  
-            section.add_indented(GSettingsCheckButton(_("Emulate right click by clicking with two fingers"), "org.cinnamon.settings-daemon.peripherals.touchpad", "two-finger-click", "org.cinnamon.settings-daemon.peripherals.touchpad/touchpad-enabled"))   
-            section.add_indented(GSettingsCheckButton(_("Emulate middle click by clicking with three fingers"), "org.cinnamon.settings-daemon.peripherals.touchpad", "three-finger-click", "org.cinnamon.settings-daemon.peripherals.touchpad/touchpad-enabled"))   
+            section.add(Gtk.Label(_("Options for single-button touchpads:")))
+
+
+            button_list = [[0, _("Disabled")], [1, _("Left button")], [2, _("Middle button")], [3, _("Right button")]]
+
+            section.add_indented(GSettingsIntComboBox(_("Two-finger click emulation:"), "org.cinnamon.settings-daemon.peripherals.touchpad", "two-finger-click", "org.cinnamon.settings-daemon.peripherals.touchpad/touchpad-enabled", button_list, False))
+            section.add_indented(GSettingsIntComboBox(_("Three-finger click emulation:"), "org.cinnamon.settings-daemon.peripherals.touchpad", "three-finger-click", "org.cinnamon.settings-daemon.peripherals.touchpad/touchpad-enabled", button_list, False))
             vbox.add(section)
             
             self.touchbox.pack_start(vbox, False, False, 2)                
