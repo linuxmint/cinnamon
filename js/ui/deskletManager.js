@@ -243,16 +243,16 @@ function _removeDeskletConfigFile(uuid, instanceId) {
 function _loadDesklet(extension, deskletDefinition) {
     // Try to lock the desklets role
     if(!extension.lockRole(null))
-        return;
+        return false;
     
     try {
         let desklet = _createDesklets(extension, deskletDefinition);
         if (!desklet)
-            return;
+            return false;
         
         // Now actually lock the desklets role and set the provider
         if(!extension.lockRole(desklet))
-            return;
+            return false;
 
         desklet._extension = extension;
 
@@ -267,8 +267,11 @@ function _loadDesklet(extension, deskletDefinition) {
         desklet.on_desklet_added_to_desktop_internal(deskletsLoaded && !deskletsDragging);
 
         deskletsDragging = false;
+
+        return true;
     } catch (e) {
         extension.logError('Failed to load desklet: ' + deskletDefinition.uuid + "/" + deskletDefinition.desklet_id, e);
+        return false;
     }
 }
 
