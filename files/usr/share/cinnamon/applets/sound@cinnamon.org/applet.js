@@ -19,7 +19,6 @@ const MEDIA_PLAYER_2_NAME = "org.mpris.MediaPlayer2";
 const MEDIA_PLAYER_2_PLAYER_NAME = "org.mpris.MediaPlayer2.Player";
 
 /* global values */
-let icon_path = "/usr/share/cinnamon/theme/";
 let compatible_players = [
     'clementine', 'mpd', 'exaile', 'banshee', 'rhythmbox', 'rhythmbox3',
     'pragha', 'quodlibet', 'guayadeque', 'amarok', 'googlemusicframe', 'xbmc',
@@ -115,18 +114,12 @@ function TextImageMenuItem() {
 TextImageMenuItem.prototype = {
     __proto__: PopupMenu.PopupBaseMenuItem.prototype,
 
-    _init: function(text, icon, image, align, style) {
+    _init: function(text, icon, align, style) {
         PopupMenu.PopupBaseMenuItem.prototype._init.call(this);
 
         this.actor = new St.BoxLayout({style_class: style});
         this.actor.add_style_pseudo_class('active');
-        if (icon) {
-            this.icon = new St.Icon({icon_name: icon});
-        }
-        if (image) {
-            this.icon = new St.Bin();
-            this.icon.set_child(this._getIconImage(image));
-        }
+        this.icon = new St.Icon({icon_name: icon, icon_type: St.IconType.SYMBOLIC, icon_size: 16});
         this.text = new St.Label({text: text});
         if (align === "left") {
             this.actor.add_actor(this.icon, { span: 0 });
@@ -144,20 +137,7 @@ TextImageMenuItem.prototype = {
 
     setIcon: function(icon) {
         this.icon.icon_name = icon;
-    },
-
-    setImage: function(image) {
-        this.icon.set_child(this._getIconImage(image));
-    },
-
-    // retrieve an icon image
-    _getIconImage: function(icon_name) {
-         let icon_file = icon_path + icon_name + ".svg";
-         let file = Gio.file_new_for_path(icon_file);
-         let icon_uri = file.get_uri();
-
-         return St.TextureCache.get_default().load_uri_async(icon_uri, 16, 16);
-    },
+    }
 }
 
 function Player() {
@@ -213,7 +193,7 @@ Player.prototype = {
         if (!this._prop || !this._mediaServerPlayer || !this._mediaServer)
             return;
 
-        this._playerInfo = new TextImageMenuItem(this._getName(), false, "player-stopped", "left", "popup-menu-item");
+        this._playerInfo = new TextImageMenuItem(this._getName(), "media-playback-stop", "left", "popup-menu-item");
         this.addMenuItem(this._playerInfo);
         this.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
         this._trackCoverFile = this._trackCoverFileTmp = false;
@@ -511,23 +491,25 @@ Player.prototype = {
         this._playerStatus = status;
         if (status == "Playing") {
             this._playButton.setIcon("media-playback-pause");
+            this._playerInfo.setIcon("media-playback-start");
             this._system_status_button.setAppletTextIcon(this, true);
             this._runTimer();
         }
         else if (status == "Paused") {
             this._playButton.setIcon("media-playback-start");
+            this._playerInfo.setIcon("media-playback-pause");
             this._system_status_button.setAppletTextIcon(this, false);
             this._pauseTimer();
         }
         else if (status == "Stopped") {
             this._playButton.setIcon("media-playback-start");
+            this._playerInfo.setIcon("media-playback-stop");
             this._system_status_button.setAppletTextIcon(this, false);
             this._stopTimer();
         } else {
             this._system_status_button.setAppletTextIcon(this, false);
         }
 
-        this._playerInfo.setImage("player-" + status.toLowerCase());
         this._setName(status);
     },
 
@@ -1111,7 +1093,7 @@ MyApplet.prototype = {
         }
 
         this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
-        this._outputTitle = new TextImageMenuItem(_("Volume"), "audio-volume-high", false, "right", "sound-volume-menu-item");
+        this._outputTitle = new TextImageMenuItem(_("Volume"), "audio-volume-high", "right", "sound-volume-menu-item");
         this._outputSlider = new PopupMenu.PopupSliderMenuItem(0);
         this._outputSlider.connect('value-changed', Lang.bind(this, this._sliderChanged, '_output'));
         this._outputSlider.connect('drag-end', Lang.bind(this, this._notifyVolumeChange));
