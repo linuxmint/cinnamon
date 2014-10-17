@@ -117,20 +117,25 @@ class Module:
     def on_module_selected(self):
         if not self.loaded:
             print "Loading Info module"
-            infos = createSystemInfos()
+            self.infos = createSystemInfos()
 
             bg = SectionBg()
-            self.sidePage.add_widget(bg)                        
+            box = Gtk.VBox()
+            box.pack_start(bg, False, False, 10)
+            self.sidePage.add_widget(box)                        
             
-            table = Gtk.Table.new(len(infos), 2, False)
+            table = Gtk.Table.new(len(self.infos), 2, False)
             table.set_margin_top(8)
             table.set_margin_bottom(8)
             table.set_row_spacings(8)
             table.set_col_spacings(15)
+
             bg.add(table)
+            clipboard = Gtk.Button(_("Copy to clipboard"))
+            clipboard.connect("clicked", lambda w: self.copy_to_clipboard())                         
 
             row = 0
-            for (key, value) in infos:
+            for (key, value) in self.infos:
                 labelKey = Gtk.Label.new(key)
                 labelKey.set_alignment(1, 0.5)
                 labelKey.get_style_context().add_class("dim-label")
@@ -139,4 +144,13 @@ class Module:
                 table.attach(labelKey, 0, 1, row, row+1)
                 table.attach(labelValue, 1, 2, row, row+1)
                 row += 1
-                
+            box.pack_end(clipboard, False, False, 2)
+            
+
+    def copy_to_clipboard(self):
+            clipboard = Gtk.Clipboard.get(Gdk.SELECTION_CLIPBOARD)
+            clipboard.set_text(_("System Info:\n"),-1)
+            for (key, value) in self.infos:
+                clipboard.set_text(clipboard.wait_for_text()+key+value+"\n", -1)
+                clipboard.store()
+            
