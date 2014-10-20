@@ -552,6 +552,8 @@ class CheckButton(Gtk.CheckButton, BaseWidget):
         self.set_active(self.get_val())
         self.handler_unblock(self.handler)
 
+        self.update_dependents()
+
     def update_dep_state(self, active):
         self.set_sensitive(active)
 
@@ -767,6 +769,8 @@ class ComboBox(Gtk.HBox, DependencyWidgetMiscType, BaseWidget):
                 self.combo.set_active_id(option_name)
         self.combo.handler_unblock(self.handler)
 
+        self.update_dependents()
+
     def update_dep_state(self, active):
         self.combo.set_sensitive(active)
 
@@ -877,6 +881,8 @@ class RadioGroup(Gtk.VBox, DependencyWidgetMiscType, BaseWidget):
                 self.custom_button.handler_block(self.custom_button.handler)
                 self.custom_button.set_active(True)
                 self.custom_button.handler_unblock(self.custom_button.handler)
+
+        self.update_dependents()
 
     def update_dep_state(self, active):
         for button in self.group:
