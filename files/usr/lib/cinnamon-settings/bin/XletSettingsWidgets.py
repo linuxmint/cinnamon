@@ -456,6 +456,41 @@ class BaseWidget(object):
         except:
             return 200            
 
+class DependencyWidgetMiscType(object):
+    def add_dependent(self, widget, arg):
+        self.dependents.append((widget, arg))
+
+    def update_dependents(self):
+        val = self.get_val()
+        try:
+            val = int(val)
+        except:
+            try:
+                val = float(val)
+            except:
+                pass
+
+        for dep in self.dependents:
+            if(dep[1]):
+                if(not dep[1][0]):
+                    self.settings_obj.factory.widgets[dep[0]].update_dep_state(bool(val))
+                elif(dep[1][0] == "!"):        # not operator
+                    self.settings_obj.factory.widgets[dep[0]].update_dep_state(not bool(val))
+                elif(dep[1][1] is not None):
+                    if(dep[1][0] == "=="):      # == operator
+                        self.settings_obj.factory.widgets[dep[0]].update_dep_state(val == dep[1][1])
+                    elif(dep[1][0] == "!="):    # != operator
+                        self.settings_obj.factory.widgets[dep[0]].update_dep_state(val != dep[1][1])
+                    elif(dep[1][0] == "<"):     # < operator
+                        self.settings_obj.factory.widgets[dep[0]].update_dep_state(val < dep[1][1])
+                    elif(dep[1][0] == "<="):    # <= operator
+                        self.settings_obj.factory.widgets[dep[0]].update_dep_state(val <= dep[1][1])
+                    elif(dep[1][0] == ">"):     # > operator
+                        self.settings_obj.factory.widgets[dep[0]].update_dep_state(val > dep[1][1])
+                    elif(dep[1][0] == ">="):    # >= operator
+                        self.settings_obj.factory.widgets[dep[0]].update_dep_state(val >= dep[1][1])
+
+
 def set_tt(tt, *widgets):
     for widget in widgets:
         widget.set_tooltip_text(tt)
@@ -678,7 +713,7 @@ class ColorChooser(Gtk.HBox, BaseWidget):
     def update_dep_state(self, active):
         self.chooser.set_sensitive(active)
 
-class ComboBox(Gtk.HBox, BaseWidget):
+class ComboBox(Gtk.HBox, DependencyWidgetMiscType, BaseWidget):
     def __init__(self, key, settings_obj, uuid):
         BaseWidget.__init__(self, key, settings_obj, uuid)
         super(ComboBox, self).__init__()
@@ -717,46 +752,12 @@ class ComboBox(Gtk.HBox, BaseWidget):
         self.handler = self.combo.connect("changed", self.on_my_value_changed)
         self.combo.show_all()
 
-    def add_dependent(self, widget, arg):
-        self.dependents.append((widget, arg))
-
     def on_my_value_changed(self, widget):
         tree_iter = widget.get_active_iter()
         if tree_iter != None:
             self.set_val(self.model[tree_iter][1])
 
         self.update_dependents()
-
-    def update_dependents(self):
-        val = self.get_val()
-        try:
-            val = int(val)
-        except:
-            try:
-                val = float(val)
-            except:
-                pass
-
-        for dep in self.dependents:
-            if(dep[1]):
-                if(not dep[1][0]):
-                    self.settings_obj.factory.widgets[dep[0]].update_dep_state(bool(val))
-                elif(dep[1][0] == "!"):        # not operator
-                    self.settings_obj.factory.widgets[dep[0]].update_dep_state(not bool(val))
-                elif(dep[1][1] is not None):
-                    if(dep[1][0] == "=="):      # == operator
-                        self.settings_obj.factory.widgets[dep[0]].update_dep_state(val == dep[1][1])
-                    elif(dep[1][0] == "!="):    # != operator
-                        self.settings_obj.factory.widgets[dep[0]].update_dep_state(val != dep[1][1])
-                    elif(dep[1][0] == "<"):     # < operator
-                        self.settings_obj.factory.widgets[dep[0]].update_dep_state(val < dep[1][1])
-                    elif(dep[1][0] == "<="):    # <= operator
-                        self.settings_obj.factory.widgets[dep[0]].update_dep_state(val <= dep[1][1])
-                    elif(dep[1][0] == ">"):     # > operator
-                        self.settings_obj.factory.widgets[dep[0]].update_dep_state(val > dep[1][1])
-                    elif(dep[1][0] == ">="):    # >= operator
-                        self.settings_obj.factory.widgets[dep[0]].update_dep_state(val >= dep[1][1])
-
 
     def on_settings_file_changed(self):
         self.combo.handler_block(self.handler)
@@ -769,7 +770,7 @@ class ComboBox(Gtk.HBox, BaseWidget):
     def update_dep_state(self, active):
         self.combo.set_sensitive(active)
 
-class RadioGroup(Gtk.VBox, BaseWidget):
+class RadioGroup(Gtk.VBox, DependencyWidgetMiscType, BaseWidget):
     def __init__(self, key, settings_obj, uuid):
         BaseWidget.__init__(self, key, settings_obj, uuid)
         super(RadioGroup, self).__init__()
@@ -824,38 +825,6 @@ class RadioGroup(Gtk.VBox, BaseWidget):
             button.handler = button.connect("toggled", self.on_button_activated)
             set_tt(self.get_tooltip(), button)
         self._value_changed_timer = None
-
-    def add_dependent(self, widget, arg):
-        self.dependents.append((widget, arg))
-
-    def update_dependents(self):
-        val = self.get_val()
-        try:
-            val = int(val)
-        except:
-            try:
-                val = float(val)
-            except:
-                pass
-        for dep in self.dependents:
-            if(dep[1]):
-                if(not dep[1][0]):
-                    self.settings_obj.factory.widgets[dep[0]].update_dep_state(bool(val))
-                elif(dep[1][0] == "!"):		# not operator
-                    self.settings_obj.factory.widgets[dep[0]].update_dep_state(not bool(val))
-                elif(dep[1][1] is not None):
-                    if(dep[1][0] == "=="):      # == operator
-                        self.settings_obj.factory.widgets[dep[0]].update_dep_state(val == dep[1][1])
-                    elif(dep[1][0] == "!="):    # != operator
-                        self.settings_obj.factory.widgets[dep[0]].update_dep_state(val != dep[1][1])
-                    elif(dep[1][0] == "<"):     # < operator
-                        self.settings_obj.factory.widgets[dep[0]].update_dep_state(val < dep[1][1])
-                    elif(dep[1][0] == "<="):    # <= operator
-                        self.settings_obj.factory.widgets[dep[0]].update_dep_state(val <= dep[1][1])
-                    elif(dep[1][0] == ">"):     # > operator
-                        self.settings_obj.factory.widgets[dep[0]].update_dep_state(val > dep[1][1])
-                    elif(dep[1][0] == ">="):    # >= operator
-                        self.settings_obj.factory.widgets[dep[0]].update_dep_state(val >= dep[1][1])
 
     def on_custom_focus(self, event, widget):
         self.custom_button.set_active(True)
