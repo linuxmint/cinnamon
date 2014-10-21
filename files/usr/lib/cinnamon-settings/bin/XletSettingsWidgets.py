@@ -271,13 +271,17 @@ class BaseWidget(object):
 
         pattern = re.compile("""
             ^
-            (!)?				#1: optional not operator
-            (\S+)				#2: Dependency key
+            (!)?                #1: optional not operator
+            (\S+)               #2: Dependency key
             (?:
                 \s*
-                (<=?|>=?|==|!=)	#3: comparsion operator
+                (<=?|>=?|==|!=) #3: comparsion operator
                 \s*
-                (.+)			#4: comparsion value
+                (               #4: comparsion value
+                    (["']).+\5      #string
+                    |
+                    \d*(?:\.\d*)?   #number
+                )
             )?
             $
         """, re.X);
@@ -285,7 +289,7 @@ class BaseWidget(object):
         match = pattern.match(dep)
 
         if match is None:
-            print ("Dependency key could not be parsed for key " + self.key + ".  The UUID is: " + self.uuid)
+            print "Dependency key %s could not be parsed for key %s.  The UUID is: %s" % (dep, self.key, self.uuid)
             return None
 
         key = match.group(2)
@@ -293,17 +297,17 @@ class BaseWidget(object):
         if match.group(1):                      #not operator
             return (key, match.group(1))
         elif match.group(3) and match.group(4): #comparsion operator
+            operator = match.group(3)
             value = match.group(4)
-            #int, float conversation
-            try:
-                value = int(value)
-            except:
-                try:
-                    value = float(value)
-                except:
-                    pass
+            if match.group(5):      #string
+                value = value[1:-1]     #removing the quotes
+                if operator != "==" and operator != "!=":   #<, >, <= and >= operators should not be defined for strings
+                    print "Dependency key %s could not be parsed for key %s: the operator %s should not be used for strings.  The UUID is: %s" % (dep, self.key, operator, self.uuid)
+                    return None
+            else:
+                value = float(value)
 
-            return (key, match.group(3), value)
+            return (key, operator, value)
         else:                                   #no operator
             return (key,)
 
@@ -463,32 +467,36 @@ class DependencyWidgetMiscType(object):
     def update_dependents(self):
         val = self.get_val()
         try:
-            val = int(val)
+            val = float(val)
         except:
-            try:
-                val = float(val)
-            except:
-                pass
+            pass
 
         for dep in self.dependents:
-            if(dep[1]):
-                if(not dep[1][0]):
-                    self.settings_obj.factory.widgets[dep[0]].update_dep_state(bool(val))
-                elif(dep[1][0] == "!"):        # not operator
-                    self.settings_obj.factory.widgets[dep[0]].update_dep_state(not bool(val))
-                elif(dep[1][1] is not None):
-                    if(dep[1][0] == "=="):      # == operator
-                        self.settings_obj.factory.widgets[dep[0]].update_dep_state(val == dep[1][1])
-                    elif(dep[1][0] == "!="):    # != operator
-                        self.settings_obj.factory.widgets[dep[0]].update_dep_state(val != dep[1][1])
-                    elif(dep[1][0] == "<"):     # < operator
-                        self.settings_obj.factory.widgets[dep[0]].update_dep_state(val < dep[1][1])
-                    elif(dep[1][0] == "<="):    # <= operator
-                        self.settings_obj.factory.widgets[dep[0]].update_dep_state(val <= dep[1][1])
-                    elif(dep[1][0] == ">"):     # > operator
-                        self.settings_obj.factory.widgets[dep[0]].update_dep_state(val > dep[1][1])
-                    elif(dep[1][0] == ">="):    # >= operator
-                        self.settings_obj.factory.widgets[dep[0]].update_dep_state(val >= dep[1][1])
+            if dep[1]:
+                dep_state = None
+                if not dep[1][0]:
+                    dep_state = bool(val)
+                elif dep[1][0] == "!":          # not operator
+                    dep_state = not bool(val)
+                elif dep[1][1] is not None:
+                    if dep[1][0] == "==":       # == operator
+                        dep_state = val == dep[1][1]
+                    elif dep[1][0] == "!=":     # != operator
+                        dep_state = val != dep[1][1]
+                    elif type(val) == float:
+                        if dep[1][0] == "<":        # < operator
+                            dep_state = val < dep[1][1]
+                        elif dep[1][0] == "<=":     # <= operator
+                            dep_state = val <= dep[1][1]
+                        elif dep[1][0] == ">":      # > operator
+                            dep_state = val > dep[1][1]
+                        elif dep[1][0] == ">=":     # >= operator
+                            dep_state = val >= dep[1][1]
+
+                if dep_state is not None:
+                    self.settings_obj.factory.widgets[dep[0]].update_dep_state(dep_state)
+                else:
+                    print "Dependent %s of %s can not be updated.  The UUID is: %s" % (dep[0], self.key, self.uuid)
 
 
 def set_tt(tt, *widgets):
