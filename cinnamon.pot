@@ -3,12 +3,13 @@
 # This file is distributed under the same license as the PACKAGE package.
 # FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
 #
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:919
 #, fuzzy
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-10-10 12:56-0400\n"
+"POT-Creation-Date: 2014-10-22 10:30+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -63,8 +64,8 @@ msgstr ""
 
 #: src/cinnamon-util.c:244
 #: files/usr/lib/cinnamon-settings/modules/cs_keyboard.py:170
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:69
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:289
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:73
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:293
 msgid "Search"
 msgstr ""
 
@@ -75,6 +76,7 @@ msgstr ""
 
 #: src/gvc/gvc-mixer-control.c:1082
 #: files/usr/lib/cinnamon-settings/modules/cs_mouse.py:95
+#: files/usr/lib/cinnamon-settings/modules/cs_mouse.py:115
 #: files/usr/lib/cinnamon-settings/modules/cs_tiling.py:26
 #: files/usr/lib/cinnamon-settings/modules/cs_windows.py:107
 msgid "Disabled"
@@ -232,28 +234,54 @@ msgstr ""
 msgid "Reload Code"
 msgstr ""
 
-#: js/ui/main.js:465
+#: js/ui/main.js:470
 msgid "Running in software rendering mode"
 msgstr ""
 
-#: js/ui/main.js:466
+#: js/ui/main.js:471
 msgid ""
 "Cinnamon is currently running without video hardware acceleration and, as a "
 "result, you may observe much higher than normal CPU usage.\n"
 "\n"
 msgstr ""
 
-#: js/ui/main.js:467
+#: js/ui/main.js:472
 msgid ""
 "There could be a problem with your drivers or some other issue.  For the "
 "best experience, it is recommended that you only use this mode for"
 msgstr ""
 
-#: js/ui/main.js:468
+#: js/ui/main.js:473
 msgid " troubleshooting purposes."
 msgstr ""
 
-#: js/ui/main.js:523
+#: js/ui/main.js:480
+msgid "Problems during Cinnamon startup"
+msgstr ""
+
+#: js/ui/main.js:481
+msgid ""
+"Cinnamon started successfully, but one or more applets, desklets or "
+"extensions failed to load.\n"
+"\n"
+msgstr ""
+
+#: js/ui/main.js:482
+msgid ""
+"Check your system log and the Cinnamon LookingGlass log for any issues.  "
+msgstr ""
+
+#: js/ui/main.js:483
+msgid ""
+"You can disable the offending extension(s) in Cinnamon Settings to prevent "
+"this message from recurring.  "
+msgstr ""
+
+#: js/ui/main.js:484
+msgid "Please contact the developer."
+msgstr ""
+
+#: js/ui/main.js:535
 msgid "WORKSPACE"
 msgstr ""
 
@@ -357,6 +385,7 @@ msgstr ""
 #: files/usr/share/cinnamon/applets/window-list@cinnamon.org/applet.js:79
 #: files/usr/lib/cinnamon-settings/modules/cs_default.py:242
 #: files/usr/lib/cinnamon-settings/modules/cs_windows.py:193
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:933
 #: files/usr/lib/cinnamon-settings/bin/Spices.py:110
 msgid "Close"
 msgstr ""
@@ -536,7 +565,7 @@ msgid "Add to favorites"
 msgstr ""
 
 #: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:261
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:537
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:577
 msgid "Uninstall"
 msgstr ""
 
@@ -992,89 +1021,89 @@ msgstr ""
 msgid "Click to pause the current slideshow"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:35
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:34
 msgid "Playing"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:36
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:35
 msgid "Paused"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:37
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:36
 msgid "Stopped"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:235
-#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:452
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:215
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:432
 msgid "Unknown Artist"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:236
-#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:456
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:216
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:436
 msgid "Unknown Album"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:237
-#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:460
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:217
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:440
 msgid "Unknown Title"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:248
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:228
 msgid "Previous"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:251
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:231
 #: files/usr/lib/cinnamon-settings/modules/cs_keyboard.py:176
 msgid "Play"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:254
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:234
 msgid "Stop"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:257
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:237
 msgid "Next"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:299
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:279
 msgid "Open Player"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:307
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:287
 msgid "Quit Player"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:808
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:790
 msgid "Mute output"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:809
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:791
 msgid "Mute input"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:1101
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:1083
 msgid "Launch player..."
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:1114
-#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:1176
-#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:1177
-#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:1182
-#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:1183
-#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:1202
-#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:1203
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:1096
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:1158
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:1159
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:1164
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:1165
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:1184
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:1185
 msgid "Volume"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:1121
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:1103
 msgid "Microphone"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:1128
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:1110
 msgid "Sound Settings"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:1130
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:1112
 msgid "Output device..."
 msgstr ""
 
@@ -1296,7 +1325,7 @@ msgid "startup, programs, boot, init, session"
 msgstr ""
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:79
-msgid "Device Drivers"
+msgid "Driver Manager"
 msgstr ""
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:79
@@ -1439,7 +1468,7 @@ msgid "Picture"
 msgstr ""
 
 #: files/usr/lib/cinnamon-settings-users/cinnamon-settings-users.py:498
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:267
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:271
 msgid "Name"
 msgstr ""
 
@@ -2839,7 +2868,7 @@ msgid "Keyboard bindings"
 msgstr ""
 
 #: files/usr/lib/cinnamon-settings/modules/cs_keyboard.py:348
-#: files/usr/lib/cinnamon-settings/bin/XletSettingsWidgets.py:1064
+#: files/usr/lib/cinnamon-settings/bin/XletSettingsWidgets.py:1068
 msgid "Click to set a new accelerator key."
 msgstr ""
 
@@ -2926,12 +2955,12 @@ msgid "Command:"
 msgstr ""
 
 #: files/usr/lib/cinnamon-settings/modules/cs_keyboard.py:799
-#: files/usr/lib/cinnamon-settings/bin/XletSettingsWidgets.py:834
+#: files/usr/lib/cinnamon-settings/bin/XletSettingsWidgets.py:838
 msgid "Select a file"
 msgstr ""
 
 #: files/usr/lib/cinnamon-settings/modules/cs_keyboard.py:887
-#: files/usr/lib/cinnamon-settings/bin/XletSettingsWidgets.py:1087
+#: files/usr/lib/cinnamon-settings/bin/XletSettingsWidgets.py:1091
 msgid "Pick an accelerator"
 msgstr ""
 
@@ -3025,7 +3054,7 @@ msgid "Timeout:"
 msgstr ""
 
 #: files/usr/lib/cinnamon-settings/modules/cs_mouse.py:68
-#: files/usr/lib/cinnamon-settings/modules/cs_mouse.py:128
+#: files/usr/lib/cinnamon-settings/modules/cs_mouse.py:132
 msgid "Double-click test"
 msgstr ""
 
@@ -3093,15 +3122,27 @@ msgstr ""
 msgid "Options for single-button touchpads:"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/modules/cs_mouse.py:113
-msgid "Emulate right click by clicking with two fingers"
+#: files/usr/lib/cinnamon-settings/modules/cs_mouse.py:115
+msgid "Left button"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/modules/cs_mouse.py:114
-msgid "Emulate middle click by clicking with three fingers"
+#: files/usr/lib/cinnamon-settings/modules/cs_mouse.py:115
+msgid "Middle button"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/modules/cs_mouse.py:123
+#: files/usr/lib/cinnamon-settings/modules/cs_mouse.py:115
+msgid "Right button"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/modules/cs_mouse.py:117
+msgid "Two-finger click emulation:"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/modules/cs_mouse.py:118
+msgid "Three-finger click emulation:"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/modules/cs_mouse.py:127
 msgid "Success!"
 msgstr ""
 
@@ -3325,20 +3366,20 @@ msgstr ""
 msgid "Remember recently accessed files"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/modules/cs_privacy.py:31
+#: files/usr/lib/cinnamon-settings/modules/cs_privacy.py:32
 msgid "Never forget old files"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/modules/cs_privacy.py:36
+#: files/usr/lib/cinnamon-settings/modules/cs_privacy.py:37
 msgid "Forget a file after"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/modules/cs_privacy.py:48
-#: files/usr/lib/cinnamon-settings/modules/cs_privacy.py:74
+#: files/usr/lib/cinnamon-settings/modules/cs_privacy.py:47
+#: files/usr/lib/cinnamon-settings/modules/cs_privacy.py:73
 msgid "days"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/modules/cs_privacy.py:72
+#: files/usr/lib/cinnamon-settings/modules/cs_privacy.py:71
 msgid "day"
 msgstr ""
 
@@ -3919,147 +3960,146 @@ msgstr ""
 msgid "Display Expo view as a grid"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:73
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:77
 msgid "Installed applets"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:74
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:78
 msgid "Available applets (online)"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:76
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:80
 msgid "Installed desklets"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:77
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:81
 msgid "Available desklets (online)"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:79
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:83
 msgid "Installed themes"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:80
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:84
 msgid "Available themes (online)"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:82
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:86
 msgid "Installed extensions"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:83
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:87
 msgid "Available extensions (online)"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:85
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:89
 msgid "Installed items"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:86
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:90
 msgid "Available items (online)"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:164
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:525
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:530
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:168
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:569
 #, c-format
 msgid "Add to %s"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:166
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:532
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:170
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:573
 msgid "Apply theme"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:171
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:174
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:503
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:510
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:175
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:178
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:546
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:553
 msgid "Configure"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:178
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:182
 msgid "Restore to default"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:180
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:184
 msgid "Restore default theme"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:189
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:193
 msgid "All applets"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:190
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:194
 msgid "Active applets"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:191
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:195
 msgid "Inactive applets"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:193
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:197
 msgid "All desklets"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:194
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:198
 msgid "Active desklets"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:195
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:199
 msgid "Inactive desklets"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:197
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:201
 msgid "All extensions"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:198
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:202
 msgid "Active extensions"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:199
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:203
 msgid "Inactive extensions"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:209
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:213
 msgid "Show"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:268
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:467
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:272
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:509
 msgid "Popularity"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:269
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:273
 msgid "Date"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:280
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:284
 msgid "Sort by"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:364
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:368
 msgid "Install or update selected items"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:366
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:370
 msgid "Select updated"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:368
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:372
 msgid "Refresh list"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:436
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:474
 msgid "Cannot be uninstalled"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:444
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:482
 msgid "In use"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:446
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:484
 #, c-format
 msgid ""
 "\n"
@@ -4067,82 +4107,90 @@ msgid ""
 "Instance count: %d"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:462
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:488
+msgid "Problem loading - please check Looking Glass or your system's error log"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:504
 msgid "Update available"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:464
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:506
 msgid "Installed and up-to-date"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:518
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:561
 #, c-format
 msgid "Remove from %s"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:660
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:703
 msgid "Unmark"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:666
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:709
 msgid "Mark for upgrade"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:668
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:711
 msgid "Mark for installation"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:672
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:694
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:715
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:737
 msgid "More info"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:804
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:847
 msgid "Please restart Cinnamon for the changes to take effect"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:871
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:931
+msgid "View logfile(s)"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:953
 msgid ""
 "There are multiple instances, do you want to remove all of them?\n"
 "\n"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:892
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:974
 #, c-format
 msgid "Are you sure you want to completely remove %s?"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:963
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:1043
 msgid ""
 "This operation will update the selected items.\n"
 "\n"
 "Do you want to continue?"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:965
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:1045
 msgid ""
 "This operation will update the selected item.\n"
 "\n"
 "Do you want to continue?"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:981
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:1061
 #, c-format
 msgid "%d updates available!"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:983
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:1063
 #, c-format
 msgid "%d update available!"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:1046
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:1122
 msgid ""
 "This will restore the default set of enabled applets. Are you sure you want "
 "to do this?"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:1048
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:1124
 msgid ""
 "This will restore the default set of enabled desklets. Are you sure you want "
 "to do this?"
@@ -4322,11 +4370,11 @@ msgid ""
 "The original configuration file is unchanged."
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/bin/XletSettingsWidgets.py:216
+#: files/usr/lib/cinnamon-settings/bin/XletSettingsWidgets.py:207
 msgid "Possible incompatible versions"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/bin/XletSettingsWidgets.py:220
+#: files/usr/lib/cinnamon-settings/bin/XletSettingsWidgets.py:211
 msgid ""
 "The MD5 tags for the file you are trying to import and the existing file do "
 "not match.\n"
@@ -4338,27 +4386,27 @@ msgid ""
 "Are you sure you want to proceed?"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/bin/XletSettingsWidgets.py:831
+#: files/usr/lib/cinnamon-settings/bin/XletSettingsWidgets.py:835
 msgid "Select a directory to use"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/bin/XletSettingsWidgets.py:842
+#: files/usr/lib/cinnamon-settings/bin/XletSettingsWidgets.py:846
 msgid "Directories"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/bin/XletSettingsWidgets.py:915
+#: files/usr/lib/cinnamon-settings/bin/XletSettingsWidgets.py:919
 msgid "Choose an Icon"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/bin/XletSettingsWidgets.py:922
+#: files/usr/lib/cinnamon-settings/bin/XletSettingsWidgets.py:926
 msgid "Image files"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/bin/XletSettingsWidgets.py:1065
+#: files/usr/lib/cinnamon-settings/bin/XletSettingsWidgets.py:1069
 msgid "  Press Escape or click again to cancel the operation."
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/bin/XletSettingsWidgets.py:1170
+#: files/usr/lib/cinnamon-settings/bin/XletSettingsWidgets.py:1174
 msgid "<not set>"
 msgstr ""
 
@@ -4372,6 +4420,136 @@ msgstr ""
 
 #: files/usr/bin/cinnamon-launcher:15
 msgid "Do you want to restart Cinnamon?"
+msgstr ""
+
+#. photoframe@cinnamon.org->settings-schema.json->fade-delay->description
+msgid "Fade delay:"
+msgstr ""
+
+#. #-#-#-#-#  cinnamon-json.pot  #-#-#-#-#
+#. photoframe@cinnamon.org->settings-schema.json->fade-delay->units
+#. #-#-#-#-#  cinnamon-json.pot  #-#-#-#-#
+#. photoframe@cinnamon.org->settings-schema.json->delay->units
+msgid "seconds"
+msgstr ""
+
+#. photoframe@cinnamon.org->settings-schema.json->effect->description
+msgid "Special effect:"
+msgstr ""
+
+#. photoframe@cinnamon.org->settings-schema.json->effect->options
+msgid "Sepia"
+msgstr ""
+
+#. photoframe@cinnamon.org->settings-schema.json->effect->options
+msgid "Black and White"
+msgstr ""
+
+#. photoframe@cinnamon.org->settings-schema.json->height->description
+msgid "Height:"
+msgstr ""
+
+#. #-#-#-#-#  cinnamon-json.pot  #-#-#-#-#
+#. photoframe@cinnamon.org->settings-schema.json->height->units
+#. #-#-#-#-#  cinnamon-json.pot  #-#-#-#-#
+#. photoframe@cinnamon.org->settings-schema.json->width->units
+#. #-#-#-#-#  cinnamon-json.pot  #-#-#-#-#
+#. settings-example@cinnamon.org->settings-schema.json->spinner-number->units
+msgid "pixels"
+msgstr ""
+
+#. photoframe@cinnamon.org->settings-schema.json->delay->description
+msgid "Delay:"
+msgstr ""
+
+#. photoframe@cinnamon.org->settings-schema.json->width->description
+msgid "Width:"
+msgstr ""
+
+#. photoframe@cinnamon.org->settings-schema.json->directory->description
+msgid "Folder:"
+msgstr ""
+
+#. photoframe@cinnamon.org->settings-schema.json->quality->description
+msgid "Image quality:"
+msgstr ""
+
+#. clock@cinnamon.org->settings-schema.json->text-color->description
+msgid "Text color:"
+msgstr ""
+
+#. clock@cinnamon.org->settings-schema.json->text-color->tooltip
+msgid "Click the button to select a new text color"
+msgstr ""
+
+#. clock@cinnamon.org->settings-schema.json->font-size->description
+msgid "Font size:"
+msgstr ""
+
+#. clock@cinnamon.org->settings-schema.json->font-size->units
+msgid " "
+msgstr ""
+
+#. #-#-#-#-#  cinnamon-json.pot  #-#-#-#-#
+#. clock@cinnamon.org->settings-schema.json->use-custom-format->description
+#. #-#-#-#-#  cinnamon-json.pot  #-#-#-#-#
+#. calendar@cinnamon.org->settings-schema.json->use-custom-format->description
+msgid "Use a custom date format"
+msgstr ""
+
+#. clock@cinnamon.org->settings-schema.json->use-custom-format->tooltip
+msgid "Check this to define a custom format for the time in the clock desklet."
+msgstr ""
+
+#. #-#-#-#-#  cinnamon-json.pot  #-#-#-#-#
+#. clock@cinnamon.org->settings-schema.json->date-format->description
+#. #-#-#-#-#  cinnamon-json.pot  #-#-#-#-#
+#. calendar@cinnamon.org->settings-schema.json->custom-format->description
+msgid "Date format:"
+msgstr ""
+
+#. #-#-#-#-#  cinnamon-json.pot  #-#-#-#-#
+#. clock@cinnamon.org->settings-schema.json->date-format->tooltip
+#. #-#-#-#-#  cinnamon-json.pot  #-#-#-#-#
+#. calendar@cinnamon.org->settings-schema.json->custom-format->tooltip
+msgid "Set your custom format here."
+msgstr ""
+
+#. calendar@cinnamon.org->settings-schema.json->use-custom-format->tooltip
+msgid ""
+"Check this to define a custom format for the date in the calendar applet."
+msgstr ""
+
+#. calendar@cinnamon.org->settings-schema.json->format-button->description
+msgid "Show information on date format syntax"
+msgstr ""
+
+#. calendar@cinnamon.org->settings-schema.json->format-button->tooltip
+msgid "Click this button to know more about the syntax for date formats."
+msgstr ""
+
+#. calendar@cinnamon.org->settings-schema.json->show-week-numbers->description
+msgid "Show week numbers in calendar"
+msgstr ""
+
+#. calendar@cinnamon.org->settings-schema.json->show-week-numbers->tooltip
+msgid "Check this to show week numbers in the calendar."
+msgstr ""
+
+#. power@cinnamon.org->settings-schema.json->labelinfo->options
+msgid "Hide label"
+msgstr ""
+
+#. power@cinnamon.org->settings-schema.json->labelinfo->options
+msgid "Show time remaining"
+msgstr ""
+
+#. power@cinnamon.org->settings-schema.json->labelinfo->options
+msgid "Show percentage and time remaining"
+msgstr ""
+
+#. power@cinnamon.org->settings-schema.json->labelinfo->options
+msgid "Show percentage"
 msgstr ""
 
 #. sound@cinnamon.org->settings-schema.json->hideSystray->description
@@ -4394,12 +4572,93 @@ msgstr ""
 msgid "characters"
 msgstr ""
 
-#. expo@cinnamon.org->settings-schema.json->activate-on-hover->description
-msgid "Activate expo on hover"
-msgstr ""
-
 #. user@cinnamon.org->settings-schema.json->display-name->description
 msgid "Display user name on panel"
+msgstr ""
+
+#. menu@cinnamon.org->settings-schema.json->menu-editor-button->description
+msgid "Open the menu editor"
+msgstr ""
+
+#. menu@cinnamon.org->settings-schema.json->menu-editor-button->tooltip
+msgid "Press this button to customize your menu entries."
+msgstr ""
+
+#. menu@cinnamon.org->settings-schema.json->menu-icon-custom->description
+msgid "Use a custom icon"
+msgstr ""
+
+#. menu@cinnamon.org->settings-schema.json->menu-icon-custom->tooltip
+msgid "Unchecking this allows the theme to set the icon"
+msgstr ""
+
+#. menu@cinnamon.org->settings-schema.json->show-recent->description
+msgid "Show recent files"
+msgstr ""
+
+#. menu@cinnamon.org->settings-schema.json->show-recent->tooltip
+msgid "Choose whether or not to show a recent file list in the menu."
+msgstr ""
+
+#. menu@cinnamon.org->settings-schema.json->hover-delay->description
+msgid "Menu hover delay:"
+msgstr ""
+
+#. menu@cinnamon.org->settings-schema.json->hover-delay->tooltip
+msgid "Delay between switching categories"
+msgstr ""
+
+#. menu@cinnamon.org->settings-schema.json->search-filesystem->description
+msgid "Enable filesystem path entry in search box"
+msgstr ""
+
+#. menu@cinnamon.org->settings-schema.json->search-filesystem->tooltip
+msgid "Allows path entry in the menu search box."
+msgstr ""
+
+#. menu@cinnamon.org->settings-schema.json->menu-icon->description
+msgid "Icon"
+msgstr ""
+
+#. menu@cinnamon.org->settings-schema.json->menu-icon->tooltip
+msgid "Select an icon to show in the panel."
+msgstr ""
+
+#. menu@cinnamon.org->settings-schema.json->overlay-key->description
+msgid "Keyboard shortcut to open and close the menu"
+msgstr ""
+
+#. menu@cinnamon.org->settings-schema.json->menu-label->description
+msgid "Text"
+msgstr ""
+
+#. menu@cinnamon.org->settings-schema.json->menu-label->tooltip
+msgid "Enter custom text to show in the panel."
+msgstr ""
+
+#. menu@cinnamon.org->settings-schema.json->activate-on-hover->description
+msgid "Open the menu when I move my mouse over it"
+msgstr ""
+
+#. menu@cinnamon.org->settings-schema.json->activate-on-hover->tooltip
+msgid "Enable opening the menu when the mouse enters the applet"
+msgstr ""
+
+#. menu@cinnamon.org->settings-schema.json->enable-autoscroll->description
+msgid "Enable autoscrolling in application list"
+msgstr ""
+
+#. menu@cinnamon.org->settings-schema.json->enable-autoscroll->tooltip
+msgid ""
+"Choose whether or not to enable smooth autoscrolling in the application list."
+msgstr ""
+
+#. menu@cinnamon.org->settings-schema.json->show-places->description
+msgid "Show bookmarks and places"
+msgstr ""
+
+#. menu@cinnamon.org->settings-schema.json->show-places->tooltip
+msgid "Choose whether or not to show bookmarks and places in the menu."
 msgstr ""
 
 #. settings-example@cinnamon.org->settings-schema.json->head->description
@@ -4524,15 +4783,6 @@ msgid ""
 "in the panel"
 msgstr ""
 
-#. #-#-#-#-#  cinnamon-json.pot  #-#-#-#-#
-#. settings-example@cinnamon.org->settings-schema.json->spinner-number->units
-#. #-#-#-#-#  cinnamon-json.pot  #-#-#-#-#
-#. photoframe@cinnamon.org->settings-schema.json->height->units
-#. #-#-#-#-#  cinnamon-json.pot  #-#-#-#-#
-#. photoframe@cinnamon.org->settings-schema.json->width->units
-msgid "pixels"
-msgstr ""
-
 #. panel-launchers@cinnamon.org->settings-schema.json->allow-
 #. dragging->description
 msgid "Allow dragging of launchers"
@@ -4557,10 +4807,6 @@ msgstr ""
 msgid "Check this to show the tray even when there are no new notifications."
 msgstr ""
 
-#. scale@cinnamon.org->settings-schema.json->activate-on-hover->description
-msgid "Activate scale on hover"
-msgstr ""
-
 #. spacer@cinnamon.org->settings-schema.json->width->description
 msgid "Amount of space in pixels"
 msgstr ""
@@ -4569,212 +4815,14 @@ msgstr ""
 msgid "Adjust this to increase or decrease the width of this spacer"
 msgstr ""
 
-#. #-#-#-#-#  cinnamon-json.pot  #-#-#-#-#
-#. calendar@cinnamon.org->settings-schema.json->use-custom-format->description
-#. #-#-#-#-#  cinnamon-json.pot  #-#-#-#-#
-#. clock@cinnamon.org->settings-schema.json->use-custom-format->description
-msgid "Use a custom date format"
-msgstr ""
-
-#. calendar@cinnamon.org->settings-schema.json->use-custom-format->tooltip
-msgid ""
-"Check this to define a custom format for the date in the calendar applet."
-msgstr ""
-
-#. calendar@cinnamon.org->settings-schema.json->format-button->description
-msgid "Show information on date format syntax"
-msgstr ""
-
-#. calendar@cinnamon.org->settings-schema.json->format-button->tooltip
-msgid "Click this button to know more about the syntax for date formats."
-msgstr ""
-
-#. calendar@cinnamon.org->settings-schema.json->show-week-numbers->description
-msgid "Show week numbers in calendar"
-msgstr ""
-
-#. calendar@cinnamon.org->settings-schema.json->show-week-numbers->tooltip
-msgid "Check this to show week numbers in the calendar."
-msgstr ""
-
-#. #-#-#-#-#  cinnamon-json.pot  #-#-#-#-#
-#. calendar@cinnamon.org->settings-schema.json->custom-format->description
-#. #-#-#-#-#  cinnamon-json.pot  #-#-#-#-#
-#. clock@cinnamon.org->settings-schema.json->date-format->description
-msgid "Date format:"
-msgstr ""
-
-#. #-#-#-#-#  cinnamon-json.pot  #-#-#-#-#
-#. calendar@cinnamon.org->settings-schema.json->custom-format->tooltip
-#. #-#-#-#-#  cinnamon-json.pot  #-#-#-#-#
-#. clock@cinnamon.org->settings-schema.json->date-format->tooltip
-msgid "Set your custom format here."
-msgstr ""
-
-#. power@cinnamon.org->settings-schema.json->labelinfo->options
-msgid "Hide label"
-msgstr ""
-
-#. power@cinnamon.org->settings-schema.json->labelinfo->options
-msgid "Show time remaining"
-msgstr ""
-
-#. power@cinnamon.org->settings-schema.json->labelinfo->options
-msgid "Show percentage and time remaining"
-msgstr ""
-
-#. power@cinnamon.org->settings-schema.json->labelinfo->options
-msgid "Show percentage"
-msgstr ""
-
-#. menu@cinnamon.org->settings-schema.json->menu-editor-button->description
-msgid "Open the menu editor"
-msgstr ""
-
-#. menu@cinnamon.org->settings-schema.json->menu-editor-button->tooltip
-msgid "Press this button to customize your menu entries."
-msgstr ""
-
-#. menu@cinnamon.org->settings-schema.json->menu-icon-custom->description
-msgid "Use a custom icon"
-msgstr ""
-
-#. menu@cinnamon.org->settings-schema.json->menu-icon-custom->tooltip
-msgid "Unchecking this allows the theme to set the icon"
-msgstr ""
-
-#. menu@cinnamon.org->settings-schema.json->show-recent->description
-msgid "Show recent files"
-msgstr ""
-
-#. menu@cinnamon.org->settings-schema.json->show-recent->tooltip
-msgid "Choose whether or not to show a recent file list in the menu."
-msgstr ""
-
-#. menu@cinnamon.org->settings-schema.json->hover-delay->description
-msgid "Menu hover delay:"
-msgstr ""
-
-#. menu@cinnamon.org->settings-schema.json->hover-delay->tooltip
-msgid "Delay between switching categories"
-msgstr ""
-
-#. menu@cinnamon.org->settings-schema.json->search-filesystem->description
-msgid "Enable filesystem path entry in search box"
-msgstr ""
-
-#. menu@cinnamon.org->settings-schema.json->search-filesystem->tooltip
-msgid "Allows path entry in the menu search box."
-msgstr ""
-
-#. menu@cinnamon.org->settings-schema.json->menu-icon->description
-msgid "Icon"
-msgstr ""
-
-#. menu@cinnamon.org->settings-schema.json->menu-icon->tooltip
-msgid "Select an icon to show in the panel."
-msgstr ""
-
-#. menu@cinnamon.org->settings-schema.json->overlay-key->description
-msgid "Keyboard shortcut to open and close the menu"
-msgstr ""
-
-#. menu@cinnamon.org->settings-schema.json->menu-label->description
-msgid "Text"
-msgstr ""
-
-#. menu@cinnamon.org->settings-schema.json->menu-label->tooltip
-msgid "Enter custom text to show in the panel."
-msgstr ""
-
-#. menu@cinnamon.org->settings-schema.json->activate-on-hover->description
-msgid "Open the menu when I move my mouse over it"
-msgstr ""
-
-#. menu@cinnamon.org->settings-schema.json->activate-on-hover->tooltip
-msgid "Enable opening the menu when the mouse enters the applet"
-msgstr ""
-
-#. menu@cinnamon.org->settings-schema.json->enable-autoscroll->description
-msgid "Enable autoscrolling in application list"
-msgstr ""
-
-#. menu@cinnamon.org->settings-schema.json->enable-autoscroll->tooltip
-msgid ""
-"Choose whether or not to enable smooth autoscrolling in the application list."
-msgstr ""
-
-#. menu@cinnamon.org->settings-schema.json->show-places->description
-msgid "Show bookmarks and places"
-msgstr ""
-
-#. menu@cinnamon.org->settings-schema.json->show-places->tooltip
-msgid "Choose whether or not to show bookmarks and places in the menu."
+#. scale@cinnamon.org->settings-schema.json->activate-on-hover->description
+msgid "Activate scale on hover"
 msgstr ""
 
 #. keyboard@cinnamon.org->settings-schema.json->use-flags->description
 msgid "Use flags to display keyboard layouts"
 msgstr ""
 
-#. clock@cinnamon.org->settings-schema.json->text-color->description
-msgid "Text color:"
-msgstr ""
-
-#. clock@cinnamon.org->settings-schema.json->text-color->tooltip
-msgid "Click the button to select a new text color"
-msgstr ""
-
-#. clock@cinnamon.org->settings-schema.json->font-size->description
-msgid "Font size:"
-msgstr ""
-
-#. clock@cinnamon.org->settings-schema.json->font-size->units
-msgid " "
-msgstr ""
-
-#. clock@cinnamon.org->settings-schema.json->use-custom-format->tooltip
-msgid "Check this to define a custom format for the time in the clock desklet."
-msgstr ""
-
-#. photoframe@cinnamon.org->settings-schema.json->fade-delay->description
-msgid "Fade delay:"
-msgstr ""
-
-#. #-#-#-#-#  cinnamon-json.pot  #-#-#-#-#
-#. photoframe@cinnamon.org->settings-schema.json->fade-delay->units
-#. #-#-#-#-#  cinnamon-json.pot  #-#-#-#-#
-#. photoframe@cinnamon.org->settings-schema.json->delay->units
-msgid "seconds"
-msgstr ""
-
-#. photoframe@cinnamon.org->settings-schema.json->effect->description
-msgid "Special effect:"
-msgstr ""
-
-#. photoframe@cinnamon.org->settings-schema.json->effect->options
-msgid "Sepia"
-msgstr ""
-
-#. photoframe@cinnamon.org->settings-schema.json->effect->options
-msgid "Black and White"
-msgstr ""
-
-#. photoframe@cinnamon.org->settings-schema.json->height->description
-msgid "Height:"
-msgstr ""
-
-#. photoframe@cinnamon.org->settings-schema.json->delay->description
-msgid "Delay:"
-msgstr ""
-
-#. photoframe@cinnamon.org->settings-schema.json->width->description
-msgid "Width:"
-msgstr ""
-
-#. photoframe@cinnamon.org->settings-schema.json->directory->description
-msgid "Folder:"
-msgstr ""
-
-#. photoframe@cinnamon.org->settings-schema.json->quality->description
-msgid "Image quality:"
+#. expo@cinnamon.org->settings-schema.json->activate-on-hover->description
+msgid "Activate expo on hover"
 msgstr ""
