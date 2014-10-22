@@ -108,12 +108,6 @@ class Factory():
             warning.destroy()
             print detail
 
-def no_empty_strings(string):
-    if string == "":
-        return " "
-    else:
-        return string
-
 class Settings():
     def __init__(self, file_name, factory, instance_id, multi_instance, uuid):
         self.file_name = file_name
@@ -122,17 +116,14 @@ class Settings():
         self.multi_instance = multi_instance
         self.uuid = uuid
         try:
-            ugettext = gettext.translation(self.uuid, home+"/.local/share/locale").ugettext
-            self.tUser = lambda x: ugettext(no_empty_strings(x))
+            self.tUser = gettext.translation(self.uuid, home+"/.local/share/locale").ugettext
         except IOError:
             try:
-                ugettext = gettext.translation(self.uuid, "/usr/share/locale").ugettext
-                self.tUser = lambda x: ugettext(no_empty_strings(x))
+                self.tUser = gettext.translation(self.uuid, "/usr/share/locale").ugettext
             except IOError:
                 self.tUser = None
         try:
-            ugettext = gettext.translation("cinnamon", "/usr/share/cinnamon/locale").ugettext
-            self.t = lambda x: ugettext(no_empty_strings(x))
+            self.t = gettext.translation("cinnamon", "/usr/share/cinnamon/locale").ugettext
         except IOError:
             self.t = None
         self.reload()
@@ -282,38 +273,47 @@ class BaseWidget(object):
 
     def get_desc(self):
         try:
+            desc = self.settings_obj.get_data(self.key)["description"]
+            if desc == "":
+                return desc
             if self.tUser:
-                result = self.tUser(self.settings_obj.get_data(self.key)["description"])
-                if result != self.settings_obj.get_data(self.key)["description"]:
+                result = self.tUser(desc)
+                if result != desc:
                     return result
             if self.t:
-                return self.t(self.settings_obj.get_data(self.key)["description"])
-            return self.settings_obj.get_data(self.key)["description"]
+                return self.t(desc)
+            return desc
         except:
             print ("Could not find description for key '%s' in xlet '%s'" % (self.key, self.uuid))
             return ""
 
     def get_tooltip(self):
         try:
+            tt = self.settings_obj.get_data(self.key)["tooltip"]
+            if tt == "":
+                return tt
             if self.tUser:
-                result = self.tUser(self.settings_obj.get_data(self.key)["tooltip"])
-                if result != self.settings_obj.get_data(self.key)["tooltip"]:
+                result = self.tUser(tt)
+                if result != tt:
                     return result
             if self.t:
-                return self.t(self.settings_obj.get_data(self.key)["tooltip"])
-            return self.settings_obj.get_data(self.key)["tooltip"]
+                return self.t(tt)
+            return tt
         except:
             return ""
 
     def get_units(self):
         try:
+            units = self.settings_obj.get_data(self.key)["units"]
+            if units == "":
+                return units
             if self.tUser:
-                result = self.tUser(self.settings_obj.get_data(self.key)["units"])
-                if result != self.settings_obj.get_data(self.key)["units"]:
+                result = self.tUser(units)
+                if result != units:
                     return result
             if self.t:
-                return self.t(self.settings_obj.get_data(self.key)["units"])
-            return self.settings_obj.get_data(self.key)["units"]
+                return self.t(units)
+            return units
         except:
             print ("Could not find units for key '%s' in xlet '%s'" % (self.key, self.uuid))
             return ""
@@ -351,12 +351,16 @@ class BaseWidget(object):
                 ret = collections.OrderedDict()
                 d = self.settings_obj.get_data(self.key)["options"]
                 for key in d.keys():
+                    if key == "":
+                        fixed_key = " "
+                    else:
+                        fixed_key = key
                     if self.tUser:
-                        translated_key = self.tUser(key)
-                        if translated_key != key or not self.t:
+                        translated_key = self.tUser(fixed_key)
+                        if translated_key != fixed_key or not self.t:
                             ret[translated_key] = d[key]
                         elif self.t:
-                            translated_key = self.t(key)
+                            translated_key = self.t(fixed_key)
                             ret[translated_key] = d[key]
                     elif self.t:
                         translated_key = self.t(key)
