@@ -15,7 +15,7 @@ const CUSTOM_KEYS_PARENT_SCHEMA = "org.cinnamon.desktop.keybindings";
 const CUSTOM_KEYS_BASENAME = "/org/cinnamon/desktop/keybindings/custom-keybindings";
 const CUSTOM_KEYS_SCHEMA = "org.cinnamon.desktop.keybindings.custom-keybinding";
 
-const MEDIA_KEYS_SCHEMA = "org.cinnamon.desktop.keybindings.media-keys"
+const MEDIA_KEYS_SCHEMA = "org.cinnamon.desktop.keybindings.media-keys";
 
 const iface = "\
     <node> \
@@ -45,9 +45,8 @@ KeybindingManager.prototype = {
         this.kb_schema.connect("changed::custom-list", Lang.bind(this, this.on_customs_changed));
 
         this.media_key_settings = new Gio.Settings({ schema: MEDIA_KEYS_SCHEMA });
-        this.media_key_settings.connect("changed", Lang.bind(this, this.setup_media_keys));
+        this.media_key_settings.connect("change-event", Lang.bind(this, this.setup_media_keys));
         this.setup_media_keys();
-
     },
 
     on_customs_changed: function(settings, key) {
@@ -65,14 +64,24 @@ KeybindingManager.prototype = {
         if (this.bindings[name]) {
             global.display.remove_custom_keybinding(name);
         }
+
         if (!bindings) {
-            global.logError("Empty keybinding set for " + name + ", ignoring");
-            if (this.bindings[name]) {
+            global.logError("Missing bindings array for keybinding: " + name);
+            return false;
+        }
+
+        let empty = true;
+        for (let i = 0; empty && (i < bindings.length); i++) {
+            empty = bindings[i].toString().trim() == "";
+        }
+
+        if (empty) {
+            if (this.bindings[name])
                 this.bindings[name] = undefined;
-            }
             global.display.rebuild_keybindings();
             return true;
         }
+
         if (!global.display.add_custom_keybinding(name, bindings, callback)) {
             global.logError("Warning, unable to bind hotkey with name '" + name + "'.  The selected keybinding could already be in use.");
             global.display.rebuild_keybindings();
@@ -80,6 +89,7 @@ KeybindingManager.prototype = {
         } else {
             this.bindings[name] = bindings;
         }
+
         global.display.rebuild_keybindings();
         return true;
     },
@@ -116,8 +126,6 @@ KeybindingManager.prototype = {
     setup_media_keys: function() {
         for (let i = 0; i < MK.SEPARATOR; i++) {
             let bindings = this.media_key_settings.get_strv(CinnamonDesktop.desktop_get_media_key_string(i));
-            if (!bindings)
-                continue;
             this.addHotKeyArray("media-keys-" + i.toString(),
                            bindings,
                            Lang.bind(this, this.on_global_media_key_pressed, i));
@@ -125,12 +133,11 @@ KeybindingManager.prototype = {
 
         for (let i = MK.SEPARATOR + 1; i < MK.LAST; i++) {
             let bindings = this.media_key_settings.get_strv(CinnamonDesktop.desktop_get_media_key_string(i));
-            if (!bindings)
-                continue;
             this.addHotKeyArray("media-keys-" + i.toString(),
                            bindings,
                            Lang.bind(this, this.on_media_key_pressed, i));
         }
+        return true;
     },
 
     on_global_media_key_pressed: function(display, screen, event, kb, action) {
