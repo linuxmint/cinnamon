@@ -537,13 +537,17 @@ class Module:
             dialog.destroy()
             return
 
-        i = 0
         parent = Gio.Settings.new(CUSTOM_KEYS_PARENT_SCHEMA)
         array = parent.get_strv("custom-list")
+        num_array = []
         for entry in array:
-            if i == int(entry.replace("custom", "")):
+            num_array.append(int(entry.replace("custom", "")))
+        num_array.sort()
+
+        i = 0
+        while True:
+            if i in num_array:
                 i += 1
-                continue
             else:
                 break
 
