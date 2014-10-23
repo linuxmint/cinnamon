@@ -533,7 +533,7 @@ class Module:
 
         dialog.show_all()
         response = dialog.run()
-        if response == Gtk.ResponseType.CANCEL:
+        if response == Gtk.ResponseType.CANCEL or response == Gtk.ResponseType.DELETE_EVENT:
             dialog.destroy()
             return
 
@@ -612,7 +612,7 @@ class Module:
                 dialog.command_entry.set_text(keybinding.action)
                 dialog.show_all()
                 response = dialog.run()
-                if response == Gtk.ResponseType.CANCEL:
+                if response == Gtk.ResponseType.CANCEL or response == Gtk.ResponseType.DELETE_EVENT:
                     dialog.destroy()
                     return
 
