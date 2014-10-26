@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-10-22 10:30+0200\n"
+"POT-Creation-Date: 2014-10-26 22:22+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -544,96 +544,105 @@ msgstr ""
 msgid "Keyboard Settings"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:174
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:184
 msgid "Please provide your password to uninstall this application"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:247
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:257
 msgid "Add to panel"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:250
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:260
 msgid "Add to desktop"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:254
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:264
 msgid "Remove from favorites"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:257
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:267
 msgid "Add to favorites"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:261
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:271
 #: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:577
 msgid "Uninstall"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:542
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:565
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:589
+msgid "Open with "
+msgstr ""
+
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:600
+msgid "Open with other application..."
+msgstr ""
+
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:664
 #: files/usr/share/cinnamon/applets/recent@cinnamon.org/applet.js:91
 msgid "Clear list"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:580
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:704
 msgid "All Applications"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:607
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:731
 msgid "Places"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:627
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:751
 msgid "Recent Files"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:874
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:1012
 #: files/usr/lib/cinnamon-settings/modules/cs_windows.py:55
 #: files/usr/lib/cinnamon-settings/modules/cs_windows.py:192
 msgid "Menu"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:1502
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:1665
 #: files/usr/share/cinnamon/applets/recent@cinnamon.org/applet.js:69
 msgid "Recent file tracking is currently disabled system-wide."
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:1513
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:1676
 #: files/usr/share/cinnamon/applets/recent@cinnamon.org/applet.js:74
 msgid "Click here to enable"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:1561
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:1725
 #: files/usr/share/cinnamon/applets/recent@cinnamon.org/applet.js:95
 msgid "No recent documents"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:1763
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:1937
 #: files/usr/lib/cinnamon-settings/modules/cs_keyboard.py:140
 msgid "Lock screen"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:1764
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:1938
 #: files/usr/lib/cinnamon-settings/modules/cs_power.py:9
 msgid "Lock the screen"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:1793
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:1965
 msgid "Logout"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:1794
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:1966
 msgid "Leave the session"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:1810
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:1980
 msgid "Quit"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:1811
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:1981
 msgid "Shutdown the computer"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:1935
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2104
 msgid "Type to search..."
 msgstr ""
 
@@ -852,7 +861,7 @@ msgid "Launch"
 msgstr ""
 
 #: files/usr/share/cinnamon/applets/panel-launchers@cinnamon.org/applet.js:48
-#: files/usr/lib/cinnamon-settings/modules/cs_keyboard.py:781
+#: files/usr/lib/cinnamon-settings/modules/cs_keyboard.py:785
 msgid "Add"
 msgstr ""
 
@@ -1133,7 +1142,7 @@ msgid "Empty Trash?"
 msgstr ""
 
 #: files/usr/share/cinnamon/applets/trash@cinnamon.org/applet.js:118
-#: files/usr/lib/cinnamon-settings/modules/cs_keyboard.py:786
+#: files/usr/lib/cinnamon-settings/modules/cs_keyboard.py:790
 msgid "Cancel"
 msgstr ""
 
@@ -2153,6 +2162,17 @@ msgid "Miscellaneous Options"
 msgstr ""
 
 #: files/usr/lib/cinnamon-settings/modules/cs_general.py:31
+msgid "Disable compositing for full-screen windows"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/modules/cs_general.py:32
+msgid ""
+"Select this option to let full-screen applications skip the compositing "
+"manager and run at maximum speed. Unselect it if you're experiencing screen-"
+"tearing in full screen mode."
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/modules/cs_general.py:34
 msgid ""
 "Log LookingGlass output to ~/.cinnamon/glass.log (Requires Cinnamon restart)"
 msgstr ""
@@ -2851,7 +2871,7 @@ msgid ""
 msgstr ""
 
 #: files/usr/lib/cinnamon-settings/modules/cs_keyboard.py:291
-#: files/usr/lib/cinnamon-settings/modules/cs_keyboard.py:782
+#: files/usr/lib/cinnamon-settings/modules/cs_keyboard.py:786
 msgid "Add custom shortcut"
 msgstr ""
 
@@ -2915,51 +2935,51 @@ msgstr ""
 msgid "Do you want to continue with this operation?"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/modules/cs_keyboard.py:658
+#: files/usr/lib/cinnamon-settings/modules/cs_keyboard.py:662
 msgid "Reset to default"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/modules/cs_keyboard.py:768
-#: files/usr/lib/cinnamon-settings/modules/cs_keyboard.py:867
+#: files/usr/lib/cinnamon-settings/modules/cs_keyboard.py:772
+#: files/usr/lib/cinnamon-settings/modules/cs_keyboard.py:871
 msgid "unassigned"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/modules/cs_keyboard.py:769
+#: files/usr/lib/cinnamon-settings/modules/cs_keyboard.py:773
 msgid "Super-"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/modules/cs_keyboard.py:770
-#: files/usr/lib/cinnamon-settings/modules/cs_keyboard.py:773
+#: files/usr/lib/cinnamon-settings/modules/cs_keyboard.py:774
+#: files/usr/lib/cinnamon-settings/modules/cs_keyboard.py:777
 msgid "Ctrl-"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/modules/cs_keyboard.py:771
+#: files/usr/lib/cinnamon-settings/modules/cs_keyboard.py:775
 msgid "Shift-"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/modules/cs_keyboard.py:772
+#: files/usr/lib/cinnamon-settings/modules/cs_keyboard.py:776
 msgid "Alt-"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/modules/cs_keyboard.py:779
+#: files/usr/lib/cinnamon-settings/modules/cs_keyboard.py:783
 msgid "Update"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/modules/cs_keyboard.py:790
+#: files/usr/lib/cinnamon-settings/modules/cs_keyboard.py:794
 #: files/usr/lib/cinnamon-settings/modules/cs_user.py:66
 msgid "Name:"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/modules/cs_keyboard.py:791
+#: files/usr/lib/cinnamon-settings/modules/cs_keyboard.py:795
 msgid "Command:"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/modules/cs_keyboard.py:799
+#: files/usr/lib/cinnamon-settings/modules/cs_keyboard.py:803
 #: files/usr/lib/cinnamon-settings/bin/XletSettingsWidgets.py:838
 msgid "Select a file"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/modules/cs_keyboard.py:887
+#: files/usr/lib/cinnamon-settings/modules/cs_keyboard.py:891
 #: files/usr/lib/cinnamon-settings/bin/XletSettingsWidgets.py:1091
 msgid "Pick an accelerator"
 msgstr ""
