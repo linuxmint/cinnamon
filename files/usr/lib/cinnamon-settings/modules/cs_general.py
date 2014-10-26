@@ -28,5 +28,8 @@ class Module:
             vbox.add(Gtk.Separator.new(Gtk.Orientation.HORIZONTAL))       
 
             section = Section(_("Miscellaneous Options"))
+            button = GSettingsCheckButton(_("Disable compositing for full-screen windows"), "org.cinnamon.muffin", "unredirect-fullscreen-windows", None)
+            button.set_tooltip_text(_("Select this option to let full-screen applications skip the compositing manager and run at maximum speed. Unselect it if you're experiencing screen-tearing in full screen mode."))
+            section.add(button)
             section.add(GSettingsCheckButton(_("Log LookingGlass output to ~/.cinnamon/glass.log (Requires Cinnamon restart)"), "org.cinnamon", "enable-looking-glass-logs", None))
             vbox.add(section)
