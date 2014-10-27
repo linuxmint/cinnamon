@@ -1446,6 +1446,11 @@ StScrollBar StButton#vhandle:hover {
 	icon-shadow: white 0px 0px 3px;
 }
 
+.systray-applet-box {
+    padding-left: 2px;
+    padding-right: 2px;
+}
+
 /* ===================================================================
  * Desklets (desklet.js) 
  * ===================================================================*/

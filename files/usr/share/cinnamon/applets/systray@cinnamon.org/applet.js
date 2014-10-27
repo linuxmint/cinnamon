@@ -17,9 +17,7 @@ MyApplet.prototype = {
 
     _init: function(orientation, panel_height) {
         Applet.Applet.prototype._init.call(this, orientation, panel_height);
-
-        this.actor.remove_style_class_name("applet-box");
-        this.actor.style="spacing: 5px;";
+        this.actor.set_style_class_name("systray-applet-box");
 
         this._signals = { added: null,
                           removed: null,
