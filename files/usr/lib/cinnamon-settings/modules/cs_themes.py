@@ -55,6 +55,12 @@ class Module:
             self.sidePage.add_widget(bg)
             self.builder = self.sidePage.builder
 
+            for path in [os.path.expanduser("~/.themes"), os.path.expanduser("~/.icons")]:
+                try:
+                    os.makedirs(path)
+                except OSError:
+                    pass
+
             self.monitors = []
             for path in [os.path.expanduser("~/.themes"), "/usr/share/themes", os.path.expanduser("~/.icons"), "/usr/share/icons"]:
                 if os.path.exists(path):
