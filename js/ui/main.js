@@ -77,7 +77,6 @@ const Util = imports.misc.util;
 const Keybindings = imports.ui.keybindings;
 const Settings = imports.ui.settings;
 const Systray = imports.ui.systray;
-const GnomeSession = imports.misc.gnomeSession;
 
 const DEFAULT_BACKGROUND_COLOR = new Clutter.Color();
 DEFAULT_BACKGROUND_COLOR.from_pixel(0x2266bbff);
@@ -141,9 +140,6 @@ let lg_log_file;
 let can_log = false;
 
 let popup_rendering = false;
-
-let gnomeSessionProxy = null;
-let sessionInhibitCookie = 0;
 
 let xlet_startup_error = false;
 
@@ -429,10 +425,6 @@ function start() {
     DeskletManager.init();
 
     createLookingGlass();
-
-    GnomeSession.SessionManager(function(proxy, error) {
-        gnomeSessionProxy = proxy;
-    })
 
     if (software_rendering && !GLib.getenv('CINNAMON_2D')) {
         notifyCinnamon2d();
@@ -1237,15 +1229,6 @@ function pushModal(actor, timestamp) {
         Meta.disable_unredirect_for_screen(global.screen);
     }
 
-    if (sessionInhibitCookie == 0)
-        gnomeSessionProxy.InhibitRemote("cinnamon-main-inhibitor",
-                                        0,
-                                        "prevent screen blank during modal",
-                                        13,
-                                        function(cookie) {
-                                            sessionInhibitCookie = cookie;
-                                        });
-
     global.set_stage_input_mode(Cinnamon.StageInputMode.FULLSCREEN);
 
     modalCount += 1;
@@ -1321,11 +1304,6 @@ function popModal(actor, timestamp) {
 
     if (modalCount > 0)
         return;
-
-    if (sessionInhibitCookie > 0) {
-        gnomeSessionProxy.UninhibitRemote(sessionInhibitCookie);
-        sessionInhibitCookie = 0;
-    }
 
     global.end_modal(timestamp);
     global.set_stage_input_mode(Cinnamon.StageInputMode.NORMAL);

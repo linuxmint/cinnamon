@@ -57,16 +57,6 @@ const SessionManagerIface = '\
         <method name="CanShutdown"> \
             <arg type="b" direction="out" /> \
         </method> \
-        <method name="Inhibit"> \
-            <arg type="s" direction="in" /> \
-            <arg type="u" direction="in" /> \
-            <arg type="s" direction="in" /> \
-            <arg type="u" direction="in" /> \
-            <arg type="u" direction="out" /> \
-        </method> \
-        <method name="Uninhibit"> \
-            <arg type="u" direction="in" /> \
-        </method> \
     </interface> \
 </node>';
 
