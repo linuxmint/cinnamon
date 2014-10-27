@@ -91,7 +91,8 @@ class Module:
             themes = chooser[2]
             callback = chooser[3]
             payload = (chooser_obj, path_suffix, themes, callback)
-            thread.start_new_thread(self.refresh_chooser, (payload,))
+            self.refresh_chooser(payload)
+            # thread.start_new_thread(self.refresh_chooser, (payload,))
 
     def refresh_chooser(self, payload):
         (chooser, path_suffix, themes, callback) = payload
@@ -121,7 +122,7 @@ class Module:
                         break
                 GObject.timeout_add(5, self.increment_progress, (chooser, inc))
         GObject.timeout_add(500, self.hide_progress, chooser)
-        thread.exit()
+        # thread.exit()
 
     def increment_progress(self, payload):
         (chooser, inc) = payload
