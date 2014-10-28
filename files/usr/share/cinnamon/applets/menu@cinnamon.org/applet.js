@@ -1400,13 +1400,9 @@ MyApplet.prototype = {
                 parent._vis_iter.reloadVisible();
             }
             let _maybePreviousActor = this._activeActor;
-            if (_maybePreviousActor && this._activeContainer === this.applicationsBox) {
+            if (_maybePreviousActor && this._activeContainer !== this.categoriesBox) {
                 this._previousSelectedActor = _maybePreviousActor;
-                this._clearPrevAppSelection();
-            }
-            if (_maybePreviousActor && this._activeContainer === this.favoritesBox) {
-                this._previousSelectedActor = _maybePreviousActor;
-                this._clearPrevFavSelection();
+                this._clearPrevSelection();
             }
             if (parent === this.categoriesBox && !this.searchActive) {
                 this._previousSelectedActor = _maybePreviousActor;
@@ -1421,15 +1417,13 @@ MyApplet.prototype = {
         button.actor.connect('enter-event', _callback);
     },
 
-    _clearPrevFavSelection: function(actor) {
+    _clearPrevSelection: function(actor) {
         if (this._previousSelectedActor && this._previousSelectedActor != actor) {
-            this._previousSelectedActor.remove_style_pseudo_class("hover");
-        }
-    },
-
-    _clearPrevAppSelection: function(actor) {
-        if (this._previousSelectedActor && this._previousSelectedActor != actor) {
-            this._previousSelectedActor.style_class = "menu-application-button";
+            if (this._previousSelectedActor._delegate instanceof ApplicationButton)
+                this._previousSelectedActor.style_class = "menu-application-button";
+            else if (this._previousSelectedActor._delegate instanceof FavoritesButton ||
+                     this._previousSelectedActor._delegate instanceof SystemButton)
+                this._previousSelectedActor.remove_style_pseudo_class("hover");
         }
     },
 
@@ -1599,7 +1593,7 @@ MyApplet.prototype = {
                 let place = places[i];
                 let button = new PlaceButton(this, place, place.name);
                 this._addEnterEvent(button, Lang.bind(this, function() {
-                        this._clearPrevAppSelection(button.actor);
+                        this._clearPrevSelection(button.actor);
                         button.actor.style_class = "menu-application-button-selected";
                         this.selectedAppTitle.set_text("");
                         this.selectedAppDescription.set_text(button.place.id.slice(16).replace(/%20/g, ' '));
@@ -1667,7 +1661,7 @@ MyApplet.prototype = {
                 this.applicationsBox.add_actor(button.actor);
 
                 this._addEnterEvent(button, Lang.bind(this, function() {
-                        this._clearPrevAppSelection(button.actor);
+                        this._clearPrevSelection(button.actor);
                         }));
                 button.actor.connect('leave-event', Lang.bind(this, function() {
                         this._previousSelectedActor = button.actor;
@@ -1679,7 +1673,7 @@ MyApplet.prototype = {
                 }));
 
                 this._addEnterEvent(button, Lang.bind(this, function() {
-                        this._clearPrevAppSelection(button.actor);
+                        this._clearPrevSelection(button.actor);
                         button.actor.style_class = "menu-application-button-selected";
                         }));
                 button.actor.connect('leave-event', Lang.bind(this, function() {
@@ -1694,7 +1688,7 @@ MyApplet.prototype = {
                     for (let id = 0; id < MAX_RECENT_FILES && id < this.RecentManager._infosByTimestamp.length; id++) {
                         let button = new RecentButton(this, this.RecentManager._infosByTimestamp[id]);
                         this._addEnterEvent(button, Lang.bind(this, function() {
-                                this._clearPrevAppSelection(button.actor);
+                                this._clearPrevSelection(button.actor);
                                 button.actor.style_class = "menu-application-button-selected";
                                 this.selectedAppTitle.set_text("");
                                 this.selectedAppDescription.set_text(button.file.uri.slice(7).replace(/%20/g, ' '));
@@ -1712,7 +1706,7 @@ MyApplet.prototype = {
 
                     let button = new RecentClearButton(this);
                     this._addEnterEvent(button, Lang.bind(this, function() {
-                            this._clearPrevAppSelection(button.actor);
+                            this._clearPrevSelection(button.actor);
                             button.actor.style_class = "menu-application-button-selected";
                             }));
                     button.actor.connect('leave-event', Lang.bind(this, function() {
@@ -2063,7 +2057,7 @@ MyApplet.prototype = {
         else
             this.selectedAppDescription.set_text("");
         this._previousVisibleIndex = this.appBoxIter.getVisibleIndex(applicationButton.actor);
-        this._clearPrevAppSelection(applicationButton.actor);
+        this._clearPrevSelection(applicationButton.actor);
         applicationButton.actor.style_class = "menu-application-button-selected";
     },
 
