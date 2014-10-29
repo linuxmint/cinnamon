@@ -97,7 +97,9 @@ class Module:
     def refresh_chooser(self, payload):
         (chooser, path_suffix, themes, callback) = payload
 
-        inc = 1.0 / len(themes) 
+        inc = 1.0
+        if len(themes) > 0:
+            inc = 1.0 / len(themes)
 
         if path_suffix == "icons":            
             for theme in themes:
