@@ -232,15 +232,20 @@ ClassicSwitcher.prototype = {
                     if (!this._thumbnails)
                         this._createThumbnails();
                     this._thumbnails.highlight(0, false);
+                    this._thumbnailTimeoutId = 0;
             }));
         }
     },
 
     _onDestroy: function() {
-        if (this._thumbnailTimeoutId)
+        if (this._thumbnailTimeoutId != 0) {
             Mainloop.source_remove(this._thumbnailTimeoutId);
-        if (this._displayPreviewTimeoutId)
+            this._thumbnailTimeoutId = 0;
+        }
+        if (this._displayPreviewTimeoutId != 0) {
             Mainloop.source_remove(this._displayPreviewTimeoutId);
+            this._displayPreviewTimeoutId = 0;
+        }
     },
 
     _appActivated : function(appSwitcher, n) {
