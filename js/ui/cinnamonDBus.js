@@ -63,6 +63,8 @@ const CinnamonIface =
             <method name="switchWorkspaceLeft" /> \
             <method name="switchWorkspaceUp" /> \
             <method name="switchWorkspaceDown" /> \
+            <method name="JumpToNewWorkspace" /> \
+            <method name="RemoveCurrentWorkspace" /> \
             <method name="GetRunningXletUUIDs"> \
                 <arg type="s" direction="in" /> \
                 <arg type="as" direction="out" /> \
@@ -283,6 +285,21 @@ Cinnamon.prototype = {
 
     switchWorkspaceDown: function() {
         Main.expo.toggle();
+    },
+
+    JumpToNewWorkspace: function() {
+        Main._addWorkspace();
+        let num = global.screen.get_n_workspaces();
+        if (global.screen.get_workspace_by_index(num - 1) != null) {
+            global.screen.get_workspace_by_index(num - 1).activate(global.get_current_time());
+        }
+    },
+
+    RemoveCurrentWorkspace: function() {
+        let index = global.screen.get_active_workspace_index();
+        if (global.screen.get_workspace_by_index(index) != null) {
+            Main._removeWorkspace(global.screen.get_workspace_by_index(index));
+        }
     },
 
     CinnamonVersion: Config.PACKAGE_VERSION

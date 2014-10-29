@@ -104,6 +104,7 @@ KEYBINDINGS = [
     [_("Push snap up"), MUFFIN_KEYBINDINGS_SCHEMA, "push-snap-up", "win-tiling"],
     [_("Push snap down"), MUFFIN_KEYBINDINGS_SCHEMA, "push-snap-down", "win-tiling"],
     # Windows - Workspace-related
+    [_("Move window to new workspace"), MUFFIN_KEYBINDINGS_SCHEMA, "move-to-workspace-new", "win-workspaces"],
     [_("Move window to left workspace"), MUFFIN_KEYBINDINGS_SCHEMA, "move-to-workspace-left", "win-workspaces"],
     [_("Move window to right workspace"), MUFFIN_KEYBINDINGS_SCHEMA, "move-to-workspace-right", "win-workspaces"],
     [_("Move window to workspace 1"), MUFFIN_KEYBINDINGS_SCHEMA, "move-to-workspace-1", "win-workspaces"],

@@ -55,6 +55,12 @@ class Module:
             self.sidePage.add_widget(bg)
             self.builder = self.sidePage.builder
 
+            for path in [os.path.expanduser("~/.themes"), os.path.expanduser("~/.icons")]:
+                try:
+                    os.makedirs(path)
+                except OSError:
+                    pass
+
             self.monitors = []
             for path in [os.path.expanduser("~/.themes"), "/usr/share/themes", os.path.expanduser("~/.icons"), "/usr/share/icons"]:
                 if os.path.exists(path):
@@ -85,12 +91,15 @@ class Module:
             themes = chooser[2]
             callback = chooser[3]
             payload = (chooser_obj, path_suffix, themes, callback)
-            thread.start_new_thread(self.refresh_chooser, (payload,))
+            self.refresh_chooser(payload)
+            # thread.start_new_thread(self.refresh_chooser, (payload,))
 
     def refresh_chooser(self, payload):
         (chooser, path_suffix, themes, callback) = payload
 
-        inc = 1.0 / len(themes) 
+        inc = 1.0
+        if len(themes) > 0:
+            inc = 1.0 / len(themes)
 
         if path_suffix == "icons":            
             for theme in themes:
@@ -115,7 +124,7 @@ class Module:
                         break
                 GObject.timeout_add(5, self.increment_progress, (chooser, inc))
         GObject.timeout_add(500, self.hide_progress, chooser)
-        thread.exit()
+        # thread.exit()
 
     def increment_progress(self, payload):
         (chooser, inc) = payload

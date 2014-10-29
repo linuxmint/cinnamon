@@ -556,14 +556,18 @@ RecentButton.prototype = {
             }
             let menuItem;
 
+            menuItem = new PopupMenu.PopupMenuItem(_("Open with"), { reactive: false });
+            menuItem.actor.style = "font-weight: bold";
+            this.menu.addMenuItem(menuItem);
+
             let file = Gio.File.new_for_uri(this.file.uri);
 
             let default_info = Gio.AppInfo.get_default_for_type(this.file.mimeType, !this.hasLocalPath(file));
 
             if (default_info) {
                 menuItem = new RecentContextMenuItem(this,
-                                                     _("Open with ") + default_info.get_display_name(),
-                                                     true,
+                                                     default_info.get_display_name(),
+                                                     false,
                                                      Lang.bind(this, function() {
                                                          default_info.launch([file], null, null);
                                                          this.toggleMenu();
@@ -586,7 +590,7 @@ RecentButton.prototype = {
                     continue;
 
                 menuItem = new RecentContextMenuItem(this,
-                                                     _("Open with ") + info.get_display_name(),
+                                                     info.get_display_name(),
                                                      false,
                                                      Lang.bind(this, function() {
                                                          info.launch([file], null, null);
@@ -596,15 +600,17 @@ RecentButton.prototype = {
                 this.menu.addMenuItem(menuItem);
             }
 
-            menuItem = new RecentContextMenuItem(this,
-                                                 _("Open with other application..."),
-                                                 false,
-                                                 Lang.bind(this, function() {
-                                                     Util.spawnCommandLine("nemo-open-with " + this.file.uri);
-                                                     this.toggleMenu();
-                                                     this.appsMenuButton.menu.close();
-                                                 }));
-            this.menu.addMenuItem(menuItem);
+            if (GLib.find_program_in_path ("nemo-open-with") != null) {
+                menuItem = new RecentContextMenuItem(this,
+                                                     _("Other application..."),
+                                                     false,
+                                                     Lang.bind(this, function() {
+                                                         Util.spawnCommandLine("nemo-open-with " + this.file.uri);
+                                                         this.toggleMenu();
+                                                         this.appsMenuButton.menu.close();
+                                                     }));
+                this.menu.addMenuItem(menuItem);
+            }
         }
         this.menu.toggle();
     },
@@ -1400,13 +1406,9 @@ MyApplet.prototype = {
                 parent._vis_iter.reloadVisible();
             }
             let _maybePreviousActor = this._activeActor;
-            if (_maybePreviousActor && this._activeContainer === this.applicationsBox) {
+            if (_maybePreviousActor && this._activeContainer !== this.categoriesBox) {
                 this._previousSelectedActor = _maybePreviousActor;
-                this._clearPrevAppSelection();
-            }
-            if (_maybePreviousActor && this._activeContainer === this.favoritesBox) {
-                this._previousSelectedActor = _maybePreviousActor;
-                this._clearPrevFavSelection();
+                this._clearPrevSelection();
             }
             if (parent === this.categoriesBox && !this.searchActive) {
                 this._previousSelectedActor = _maybePreviousActor;
@@ -1421,15 +1423,15 @@ MyApplet.prototype = {
         button.actor.connect('enter-event', _callback);
     },
 
-    _clearPrevFavSelection: function(actor) {
+    _clearPrevSelection: function(actor) {
         if (this._previousSelectedActor && this._previousSelectedActor != actor) {
-            this._previousSelectedActor.remove_style_pseudo_class("hover");
-        }
-    },
-
-    _clearPrevAppSelection: function(actor) {
-        if (this._previousSelectedActor && this._previousSelectedActor != actor) {
-            this._previousSelectedActor.style_class = "menu-application-button";
+            if (this._previousSelectedActor._delegate instanceof ApplicationButton ||
+                this._previousSelectedActor._delegate instanceof RecentButton ||
+                this._previousSelectedActor._delegate instanceof PlaceButton)
+                this._previousSelectedActor.style_class = "menu-application-button";
+            else if (this._previousSelectedActor._delegate instanceof FavoritesButton ||
+                     this._previousSelectedActor._delegate instanceof SystemButton)
+                this._previousSelectedActor.remove_style_pseudo_class("hover");
         }
     },
 
@@ -1464,7 +1466,7 @@ MyApplet.prototype = {
         let right_x = appbox_x - bx;
         let xformed_mouse_x = mx-bx;
         let xformed_mouse_y = my-by;
-        let w = right_x-xformed_mouse_x;
+        let w = Math.max(right_x-xformed_mouse_x, 0);
 
         let ulc_y = xformed_mouse_y + 0;
         let llc_y = xformed_mouse_y + 0;
@@ -1504,7 +1506,7 @@ MyApplet.prototype = {
             let [appbox_x, appbox_y] = this.applicationsBox.get_transformed_position();
             let right_x = appbox_x - bx;
             if ((right_x-xformed_mouse_x) > 0) {
-                this.vectorBox.width = right_x-xformed_mouse_x;
+                this.vectorBox.width = Math.max(right_x-xformed_mouse_x, 0);
                 this.vectorBox.set_position(xformed_mouse_x, 0);
                 this.vectorBox.urc_x = this.vectorBox.width;
                 this.vectorBox.lrc_x = this.vectorBox.width;
@@ -1599,7 +1601,7 @@ MyApplet.prototype = {
                 let place = places[i];
                 let button = new PlaceButton(this, place, place.name);
                 this._addEnterEvent(button, Lang.bind(this, function() {
-                        this._clearPrevAppSelection(button.actor);
+                        this._clearPrevSelection(button.actor);
                         button.actor.style_class = "menu-application-button-selected";
                         this.selectedAppTitle.set_text("");
                         this.selectedAppDescription.set_text(button.place.id.slice(16).replace(/%20/g, ' '));
@@ -1667,7 +1669,7 @@ MyApplet.prototype = {
                 this.applicationsBox.add_actor(button.actor);
 
                 this._addEnterEvent(button, Lang.bind(this, function() {
-                        this._clearPrevAppSelection(button.actor);
+                        this._clearPrevSelection(button.actor);
                         }));
                 button.actor.connect('leave-event', Lang.bind(this, function() {
                         this._previousSelectedActor = button.actor;
@@ -1679,7 +1681,7 @@ MyApplet.prototype = {
                 }));
 
                 this._addEnterEvent(button, Lang.bind(this, function() {
-                        this._clearPrevAppSelection(button.actor);
+                        this._clearPrevSelection(button.actor);
                         button.actor.style_class = "menu-application-button-selected";
                         }));
                 button.actor.connect('leave-event', Lang.bind(this, function() {
@@ -1694,7 +1696,7 @@ MyApplet.prototype = {
                     for (let id = 0; id < MAX_RECENT_FILES && id < this.RecentManager._infosByTimestamp.length; id++) {
                         let button = new RecentButton(this, this.RecentManager._infosByTimestamp[id]);
                         this._addEnterEvent(button, Lang.bind(this, function() {
-                                this._clearPrevAppSelection(button.actor);
+                                this._clearPrevSelection(button.actor);
                                 button.actor.style_class = "menu-application-button-selected";
                                 this.selectedAppTitle.set_text("");
                                 this.selectedAppDescription.set_text(button.file.uri.slice(7).replace(/%20/g, ' '));
@@ -1712,7 +1714,7 @@ MyApplet.prototype = {
 
                     let button = new RecentClearButton(this);
                     this._addEnterEvent(button, Lang.bind(this, function() {
-                            this._clearPrevAppSelection(button.actor);
+                            this._clearPrevSelection(button.actor);
                             button.actor.style_class = "menu-application-button-selected";
                             }));
                     button.actor.connect('leave-event', Lang.bind(this, function() {
@@ -2063,7 +2065,7 @@ MyApplet.prototype = {
         else
             this.selectedAppDescription.set_text("");
         this._previousVisibleIndex = this.appBoxIter.getVisibleIndex(applicationButton.actor);
-        this._clearPrevAppSelection(applicationButton.actor);
+        this._clearPrevSelection(applicationButton.actor);
         applicationButton.actor.style_class = "menu-application-button-selected";
     },
 

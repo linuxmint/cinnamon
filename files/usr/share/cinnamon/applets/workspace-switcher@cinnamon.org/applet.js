@@ -1,6 +1,7 @@
 const St = imports.gi.St;
 const Lang = imports.lang;
 const Applet = imports.ui.applet;
+const Main = imports.ui.main;
 
 function MyApplet(orientation, panel_height) {
     this._init(orientation, panel_height);
@@ -21,7 +22,13 @@ MyApplet.prototype = {
             global.screen.connect('notify::n-workspaces', Lang.bind(this, this._createButtons));
             global.window_manager.connect('switch-workspace', Lang.bind(this, this._updateButtons));   
             this.on_panel_edit_mode_changed();
-            global.settings.connect('changed::panel-edit-mode', Lang.bind(this, this.on_panel_edit_mode_changed));                       
+            global.settings.connect('changed::panel-edit-mode', Lang.bind(this, this.on_panel_edit_mode_changed));
+
+            let expo = new Applet.MenuItem(_("Manage workspaces (Expo)"), "view-grid-symbolic", Lang.bind(this, function() {
+                if (!Main.expo.animationInProgress)
+                    Main.expo.toggle();
+            }));
+            this._applet_context_menu.addMenuItem(expo);
         }
         catch (e) {
             global.logError(e);
