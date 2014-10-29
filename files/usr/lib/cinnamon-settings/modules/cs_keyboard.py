@@ -151,7 +151,7 @@ KEYBINDINGS = [
     [_("Toggle recording desktop (must restart Cinnamon)"), MUFFIN_KEYBINDINGS_SCHEMA, "toggle-recording", "sys-screen"],
     # System - Hardware
     [_("Re-detect display devices"), MEDIA_KEYS_SCHEMA, "video-outputs", "sys-hw"],
-    [_("Rotate diplay"), MEDIA_KEYS_SCHEMA, "video-rotation", "sys-hw"],
+    [_("Rotate display"), MEDIA_KEYS_SCHEMA, "video-rotation", "sys-hw"],
     [_("Increase screen brightness"), MEDIA_KEYS_SCHEMA, "screen-brightness-up", "sys-hw"],
     [_("Decrease screen brightness"), MEDIA_KEYS_SCHEMA, "screen-brightness-down", "sys-hw"],
     [_("Toggle keyboard backlight"), MEDIA_KEYS_SCHEMA, "kbd-brightness-toggle", "sys-hw"],
