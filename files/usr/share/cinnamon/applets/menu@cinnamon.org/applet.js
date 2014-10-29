@@ -556,14 +556,18 @@ RecentButton.prototype = {
             }
             let menuItem;
 
+            menuItem = new PopupMenu.PopupMenuItem(_("Open with"), { reactive: false });
+            menuItem.actor.style = "font-weight: bold";
+            this.menu.addMenuItem(menuItem);
+
             let file = Gio.File.new_for_uri(this.file.uri);
 
             let default_info = Gio.AppInfo.get_default_for_type(this.file.mimeType, !this.hasLocalPath(file));
 
             if (default_info) {
                 menuItem = new RecentContextMenuItem(this,
-                                                     _("Open with ") + default_info.get_display_name(),
-                                                     true,
+                                                     default_info.get_display_name(),
+                                                     false,
                                                      Lang.bind(this, function() {
                                                          default_info.launch([file], null, null);
                                                          this.toggleMenu();
@@ -586,7 +590,7 @@ RecentButton.prototype = {
                     continue;
 
                 menuItem = new RecentContextMenuItem(this,
-                                                     _("Open with ") + info.get_display_name(),
+                                                     info.get_display_name(),
                                                      false,
                                                      Lang.bind(this, function() {
                                                          info.launch([file], null, null);
@@ -596,15 +600,17 @@ RecentButton.prototype = {
                 this.menu.addMenuItem(menuItem);
             }
 
-            menuItem = new RecentContextMenuItem(this,
-                                                 _("Open with other application..."),
-                                                 false,
-                                                 Lang.bind(this, function() {
-                                                     Util.spawnCommandLine("nemo-open-with " + this.file.uri);
-                                                     this.toggleMenu();
-                                                     this.appsMenuButton.menu.close();
-                                                 }));
-            this.menu.addMenuItem(menuItem);
+            if (GLib.find_program_in_path ("nemo-open-with") != null) {
+                menuItem = new RecentContextMenuItem(this,
+                                                     _("Other application..."),
+                                                     false,
+                                                     Lang.bind(this, function() {
+                                                         Util.spawnCommandLine("nemo-open-with " + this.file.uri);
+                                                         this.toggleMenu();
+                                                         this.appsMenuButton.menu.close();
+                                                     }));
+                this.menu.addMenuItem(menuItem);
+            }
         }
         this.menu.toggle();
     },
