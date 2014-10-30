@@ -43,7 +43,7 @@ class Module:
             
         section = Section(_("Behaviour"))
         section.add(GSettingsCheckButton(_("Display notifications"), "org.cinnamon.desktop.notifications", "display-notifications", None))
-        section.add(GSettingsCheckButton(_("Remove old notifications"), "org.cinnamon.desktop.notifications", "remove-old", None))
+        section.add(GSettingsCheckButton(_("Remove notifications after their timeout is reached"), "org.cinnamon.desktop.notifications", "remove-old", None))
         vbox.add(section)
         
         vbox.add(Gtk.Separator.new(Gtk.Orientation.HORIZONTAL)) 
