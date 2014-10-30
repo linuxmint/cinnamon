@@ -26,26 +26,26 @@ MyApplet.prototype = {
             if (this._slideshowSettings.get_boolean("slideshow-enabled")) {
                 if (!this._slideshowSettings.get_boolean("slideshow-paused")) {
                     this.set_applet_icon_symbolic_path(AppletDirectory + '/slideshow-play-symbolic.svg');
-                    this.set_applet_tooltip(_("Click to pause the currently active slideshow"));
+                    this.set_applet_tooltip(_("Click to pause the slideshow"));
                 } else {
                     this.set_applet_icon_symbolic_path(AppletDirectory + '/slideshow-pause-symbolic.svg');
-                    this.set_applet_tooltip(_("Click to resume the currently active slideshow"));
+                    this.set_applet_tooltip(_("Click to resume the slideshow"));
                 }
             } else {
                 this.set_applet_icon_symbolic_path(AppletDirectory + '/slideshow-disabled-symbolic.svg');
-                this.set_applet_tooltip(_("No slideshow currently active. Right click to activate or configure"));
+                this.set_applet_tooltip(_("The slideshow is disabled"));
             }
 
             this._slideshowSettings.connect("changed::slideshow-enabled", Lang.bind(this, this._on_slideshow_enabled_changed));
             this._slideshowSettings.connect("changed::slideshow-paused", Lang.bind(this, this._on_slideshow_paused_changed));
 
-            this.enable_slideshow_switch = new PopupMenu.PopupSwitchMenuItem(_("Slideshow Active"), this._slideshowSettings.get_boolean("slideshow-enabled"));
+            this.enable_slideshow_switch = new PopupMenu.PopupSwitchMenuItem(_("Slideshow"), this._slideshowSettings.get_boolean("slideshow-enabled"));
             this._applet_context_menu.addMenuItem(this.enable_slideshow_switch);
             this.enable_slideshow_switch.connect("toggled", Lang.bind(this, this._on_slideshow_enabled_toggled));
 
             this._applet_context_menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
 
-            this.next_image_context_menu_item = new Applet.MenuItem(_("Next Image"), "media-seek-forward", Lang.bind(this, this.get_next_image));
+            this.next_image_context_menu_item = new Applet.MenuItem(_("Next Background"), "media-seek-forward", Lang.bind(this, this.get_next_image));
             this._applet_context_menu.addMenuItem(this.next_image_context_menu_item);
 
             this._applet_context_menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
@@ -66,11 +66,11 @@ MyApplet.prototype = {
             if (!this._slideshowSettings.get_boolean("slideshow-paused")) {
                 this._slideshowSettings.set_boolean("slideshow-paused", true);
                 this.set_applet_icon_symbolic_path(AppletDirectory + '/slideshow-pause-symbolic.svg');
-                this.set_applet_tooltip(_("Click to resume the currently active slideshow"));
+                this.set_applet_tooltip(_("Click to resume the slideshow"));
             } else {
                 this._slideshowSettings.set_boolean("slideshow-paused", false);
                 this.set_applet_icon_symbolic_path(AppletDirectory + '/slideshow-play-symbolic.svg');
-                this.set_applet_tooltip(_("Click to pause the currently active slideshow"));
+                this.set_applet_tooltip(_("Click to pause the slideshow"));
             }
         }
     },
@@ -79,11 +79,11 @@ MyApplet.prototype = {
         if (this._slideshowSettings.get_boolean("slideshow-enabled")) {
             this._slideshowSettings.set_boolean("slideshow-enabled", false);
             this.set_applet_icon_symbolic_path(AppletDirectory + '/slideshow-disabled-symbolic.svg');
-            this.set_applet_tooltip(_("No slideshow currently active. Right click to activate or configure"));
+            this.set_applet_tooltip(_("The slideshow is disabled"));
         } else {
             this._slideshowSettings.set_boolean("slideshow-enabled", true);
             this.set_applet_icon_symbolic_path(AppletDirectory + '/slideshow-play-symbolic.svg');
-            this.set_applet_tooltip(_("Click to pause the currently active slideshow"));
+            this.set_applet_tooltip(_("Click to pause the slideshow"));
         }
     },
 
@@ -91,21 +91,21 @@ MyApplet.prototype = {
         if (this._slideshowSettings.get_boolean("slideshow-enabled")) {
             this.enable_slideshow_switch.setToggleState(true);
             this.set_applet_icon_symbolic_path(AppletDirectory + '/slideshow-play-symbolic.svg');
-            this.set_applet_tooltip(_("Click to pause the currently active slideshow"));
+            this.set_applet_tooltip(_("Click to pause the slideshow"));
         } else {
             this.enable_slideshow_switch.setToggleState(false);
             this.set_applet_icon_symbolic_path(AppletDirectory + '/slideshow-disabled-symbolic.svg');
-            this.set_applet_tooltip(_("No slideshow currently active. Right click to activate or configure"));
+            this.set_applet_tooltip(_("The slideshow is disabled"));
         }
     },
 
     _on_slideshow_paused_changed: function() {
         if (this._slideshowSettings.get_boolean("slideshow-paused")) {
             this.set_applet_icon_symbolic_path(AppletDirectory + '/slideshow-pause-symbolic.svg');
-            this.set_applet_tooltip(_("Click to resume the current slideshow"));
+            this.set_applet_tooltip(_("Click to resume the slideshow"));
         } else {
             this.set_applet_icon_symbolic_path(AppletDirectory + '/slideshow-play-symbolic.svg');
-            this.set_applet_tooltip(_("Click to pause the current slideshow"));
+            this.set_applet_tooltip(_("Click to pause the slideshow"));
         }
     },
 
