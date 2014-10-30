@@ -65,6 +65,7 @@ const CinnamonIface =
             <method name="switchWorkspaceDown" /> \
             <method name="JumpToNewWorkspace" /> \
             <method name="RemoveCurrentWorkspace" /> \
+            <method name="ShowExpo" /> \
             <method name="GetRunningXletUUIDs"> \
                 <arg type="s" direction="in" /> \
                 <arg type="as" direction="out" /> \
@@ -300,6 +301,11 @@ Cinnamon.prototype = {
         if (global.screen.get_workspace_by_index(index) != null) {
             Main._removeWorkspace(global.screen.get_workspace_by_index(index));
         }
+    },
+
+    ShowExpo: function() {
+        if (!Main.expo.animationInProgress)
+            Main.expo.toggle();
     },
 
     CinnamonVersion: Config.PACKAGE_VERSION
