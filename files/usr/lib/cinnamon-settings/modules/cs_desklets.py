@@ -9,8 +9,7 @@ class Module:
         keywords = _("desklet, desktop, slideshow")
         self.name = "desklets"
         self.comment = _("Manage your Cinnamon desklets")       
-        target = _("desktop")
-        sidePage = DeskletsViewSidePage(_("Desklets"), "cs-desklets", keywords, content_box, "desklet", target, self)
+        sidePage = DeskletsViewSidePage(_("Desklets"), "cs-desklets", keywords, content_box, "desklet", self)
         self.sidePage = sidePage
         self.category = "prefs"
 
@@ -25,9 +24,9 @@ class Module:
 
 
 class DeskletsViewSidePage (ExtensionSidePage):
-    def __init__(self, name, icon, keywords, content_box, collection_type, target, module):
+    def __init__(self, name, icon, keywords, content_box, collection_type, module):
         self.RemoveString = _("You can remove specific instances from the desktop via that desklet's context menu")
-        ExtensionSidePage.__init__(self, name, icon, keywords, content_box, collection_type, target, module)
+        ExtensionSidePage.__init__(self, name, icon, keywords, content_box, collection_type, module)
 
     def toSettingString(self, uuid, instanceId):
         return ("%s:%d:0:100") % (uuid, instanceId)

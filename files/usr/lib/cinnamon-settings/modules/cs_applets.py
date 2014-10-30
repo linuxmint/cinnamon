@@ -6,9 +6,8 @@ class Module:
     def __init__(self, content_box):
         keywords = _("applet")
         self.name = "applets"       
-        target = _("panel")
         self.comment = _("Manage Cinnamon applets")
-        sidePage = AppletsViewSidePage(_("Applets"), "cs-applets", keywords, content_box, "applet", target, self)
+        sidePage = AppletsViewSidePage(_("Applets"), "cs-applets", keywords, content_box, "applet", self)
         self.sidePage = sidePage
         self.category = "prefs"
 
@@ -22,9 +21,9 @@ class Module:
         self.sidePage.builder = builder
 
 class AppletsViewSidePage (ExtensionSidePage):
-    def __init__(self, name, icon, keywords, content_box, collection_type, target, module):
+    def __init__(self, name, icon, keywords, content_box, collection_type, module):
         self.RemoveString = _("You can remove specific instances in panel edit mode via the context menu.")
-        ExtensionSidePage.__init__(self, name, icon, keywords, content_box, collection_type, target, module)
+        ExtensionSidePage.__init__(self, name, icon, keywords, content_box, collection_type, module)
 
     def toSettingString(self, uuid, instanceId):
         return ("panel1:right:0:%s:%d") % (uuid, instanceId)

@@ -45,10 +45,9 @@ class ExtensionSidePage (SidePage):
     SORT_ENABLED = 3
     SORT_REMOVABLE = 4  
 
-    def __init__(self, name, icon, keywords, content_box, collection_type, target, module=None):
+    def __init__(self, name, icon, keywords, content_box, collection_type, module=None):
         SidePage.__init__(self, name, icon, keywords, content_box, -1, module=module)
         self.collection_type = collection_type
-        self.target = target     
         self.themes = collection_type == "theme"
         self.icons = []
         self.run_once = False
@@ -164,10 +163,18 @@ class ExtensionSidePage (SidePage):
         
         scrolledWindow.add(self.treeview)
         self.treeview.connect('button_press_event', self.on_button_press_event)
-        if not self.themes:
-            self.instanceButton = Gtk.Button.new_with_label(_("Add to %s") % (self.target))
-        else:
+        
+        if self.collection_type == "applet":
+            self.instanceButton = Gtk.Button.new_with_label(_("Add to panel"))
+        elif self.collection_type == "desklet":
+            self.instanceButton = Gtk.Button.new_with_label(_("Add to desktop"))
+        elif self.collection_type == "extension":
+            self.instanceButton = Gtk.Button.new_with_label(_("Add to Cinnamon"))
+        elif self.collection_type == "theme":
             self.instanceButton = Gtk.Button.new_with_label(_("Apply theme"))
+        else:
+            self.instanceButton = Gtk.Button.new_with_label(_("Add"))
+        
         self.instanceButton.connect("clicked", lambda x: self._add_another_instance())
         
         self.instanceButton.set_sensitive(False);
@@ -558,7 +565,14 @@ class ExtensionSidePage (SidePage):
 
                     if not self.themes:
                         if checked != 0:
-                            item = Gtk.MenuItem(_("Remove from %s") % (self.target))
+                            if self.collection_type == "applet":
+                                item = Gtk.MenuItem(_("Remove from panel"))
+                            elif self.collection_type == "desklet":
+                                item = Gtk.MenuItem(_("Remove from desktop"))
+                            elif self.collection_type == "extension":
+                                item = Gtk.MenuItem(_("Remove from Cinnamon"))                            
+                            else:
+                                item = Gtk.MenuItem(_("Remove"))                            
                             item.connect('activate', lambda x: self.disable_extension(uuid, name, checked))
                             popup.add(item)
 
@@ -566,7 +580,14 @@ class ExtensionSidePage (SidePage):
                         can_instance = checked != -1 and (max_instances == -1 or ((max_instances > 0) and (max_instances > checked)))
 
                         if can_instance:
-                            item = Gtk.MenuItem(_("Add to %s") % (self.target))
+                            if self.collection_type == "applet":
+                                item = Gtk.MenuItem(_("Add to panel"))
+                            elif self.collection_type == "desklet":
+                                item = Gtk.MenuItem(_("Add to desktop"))
+                            elif self.collection_type == "extension":
+                                item = Gtk.MenuItem(_("Add to Cinnamon"))                            
+                            else:
+                                item = Gtk.MenuItem(_("Add"))                            
                             item.connect('activate', lambda x: self.enable_extension(uuid, name))
                             popup.add(item)
                     else:
