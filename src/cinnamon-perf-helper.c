@@ -318,6 +318,7 @@ main (int argc, char **argv)
   if (!g_option_context_parse (context, &argc, &argv, &error))
     {
       g_print ("option parsing failed: %s\n", error->message);
+      g_option_context_free (context);
       return 1;
     }
 
@@ -344,5 +345,6 @@ main (int argc, char **argv)
 
   gtk_main ();
 
+  g_option_context_free (context);
   return 0;
 }
