@@ -120,7 +120,7 @@ class Module:
             bottom_vbox.pack_start(hbox, False, False, 2)
 
             hbox = IndentedHBox()
-            hbox.add(GSettingsCheckButton(_("Play background images in random order"), "org.cinnamon.desktop.background.slideshow", "random-order", "org.cinnamon.desktop.background.slideshow/slideshow-enabled"))
+            hbox.add(GSettingsCheckButton(_("Random order"), "org.cinnamon.desktop.background.slideshow", "random-order", "org.cinnamon.desktop.background.slideshow/slideshow-enabled"))
             bottom_vbox.pack_start(hbox, False, False, 2)
 
             hbox = IndentedHBox()
