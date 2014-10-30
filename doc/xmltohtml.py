@@ -175,6 +175,9 @@ def convertXMLtoHTML(xml):
         if child.tag == "object":
             objects_list.append(child)
 
+    if len(objects_list) == 0:
+        raise NameError("Empty XML File")
+
     for item in objects_list:
         # Add separator
         html.extend(["<hr class=\"obj-obj-separator\" />"])

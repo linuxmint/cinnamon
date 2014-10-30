@@ -2,6 +2,8 @@ Running ./create-do.py will parse JS code in js/ui/ into html documentation.
 
 The html files will be created in Cinnamon/doc/output-html/
 
+The markdown files will be created in Cinnamon.wiki/ - this is to push the files to the wiki on GitHub
+
 Format of Documentation
 =======================
 Functions
@@ -34,4 +36,3 @@ File
  * Description of file
  */
 
- 
