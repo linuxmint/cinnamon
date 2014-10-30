@@ -81,6 +81,10 @@ function removeDragMonitor(monitor) {
         }
 }
 
+/**
+ * #_Draggable
+ */
+
 function _Draggable(actor, params, target) {
     this._init(actor, params, target);
 }

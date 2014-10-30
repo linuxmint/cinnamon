@@ -1486,7 +1486,7 @@ PopupSubMenu.prototype = {
 };
 
 /**
- * PopupMenuSection:
+ * #PopupMenuSection
  *
  * A section of a PopupMenu which is handled like a submenu
  * (you can add and remove items, you can destroy it, you

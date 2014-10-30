@@ -101,6 +101,10 @@ const ZoomRegionIface =
 // '/org/gnome/Magnifier/ZoomRegion/zoomer1', etc.
 let _zoomRegionInstanceCount = 0;
 
+/**
+ * #CinnamonMagnifier
+ */
+
 function CinnamonMagnifier() {
     this._init();
 }
@@ -334,7 +338,7 @@ CinnamonMagnifier.prototype = {
 };
 
 /**
- * CinnamonMagnifierZoomRegion:
+ * #CinnamonMagnifierZoomRegion
  * Object that implements the DBus ZoomRegion interface.
  * @zoomerObjectPath:   String that is the path to a DBus ZoomRegion.
  * @zoomRegion:         The actual zoom region associated with the object path.

@@ -178,11 +178,14 @@ Button.prototype = {
 };
 Signals.addSignalMethods(Button.prototype);
 
-/* SystemStatusButton:
+/**
+ * #SystemStatusButton:
  *
  * This class manages one System Status indicator (network, keyboard,
  * volume, bluetooth...), which is just a PanelMenuButton with an
  * icon and a tooltip
+ *
+ * Inherits: PanelMenu.Button
  */
 function SystemStatusButton() {
     this._init.apply(this, arguments);
