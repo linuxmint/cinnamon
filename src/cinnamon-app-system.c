@@ -824,6 +824,6 @@ GSList *
 cinnamon_app_system_search_settings (CinnamonAppSystem  *self,
                                   GSList          *terms)
 {
-  GSList *null_list;
+  GSList *null_list = NULL; /* if this is just a stub, let's at least do zero-init */
   return null_list;
 }
