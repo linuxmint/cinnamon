@@ -145,7 +145,7 @@ let xlet_startup_error = false;
 
 // Override Gettext localization
 const Gettext = imports.gettext;
-Gettext.bindtextdomain('cinnamon', '/usr/share/cinnamon/locale');
+Gettext.bindtextdomain('cinnamon', '/usr/share/locale');
 Gettext.textdomain('cinnamon');
 const _ = Gettext.gettext;
 

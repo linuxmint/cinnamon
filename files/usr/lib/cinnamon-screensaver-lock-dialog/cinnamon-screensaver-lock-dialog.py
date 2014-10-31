@@ -8,7 +8,7 @@ import pwd
 import socket
 
 # i18n
-gettext.install("cinnamon", "/usr/share/cinnamon/locale")
+gettext.install("cinnamon", "/usr/share/locale")
 
 class MainWindow:
   

@@ -15,7 +15,7 @@ sys.path.insert(0,'/usr/lib/cinnamon-settings')
 from bin import XletSettingsWidgets
 
 # i18n
-gettext.install("cinnamon", "/usr/share/cinnamon/locale")
+gettext.install("cinnamon", "/usr/share/locale")
 # i18n for menu item
 
 _ = gettext.gettext

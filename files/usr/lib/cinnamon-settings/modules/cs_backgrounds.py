@@ -12,7 +12,7 @@ import subprocess
 import tempfile
 import commands
 
-gettext.install("cinnamon", "/usr/share/cinnamon/locale")
+gettext.install("cinnamon", "/usr/share/locale")
 
 BACKGROUND_COLOR_SHADING_TYPES = [
     ("solid", _("None")),

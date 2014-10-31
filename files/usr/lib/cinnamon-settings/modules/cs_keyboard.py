@@ -5,7 +5,7 @@ from gi.repository import Gio, Gtk, GObject, Gdk
 import cgi
 import gettext
 
-gettext.install("cinnamon", "/usr/share/cinnamon/locale")
+gettext.install("cinnamon", "/usr/share/locale")
 
 # Keybindings page - check if we need to store custom
 # keybindings to gsettings key as well as GConf (In Mint 14 this is changed)

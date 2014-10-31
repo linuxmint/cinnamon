@@ -7,7 +7,7 @@ FALLBACK_ARGS = ("--replace",)
 import os, sys, gettext
 from gi.repository import Gtk
 
-gettext.install("cinnamon", "/usr/share/cinnamon/locale")
+gettext.install("cinnamon", "/usr/share/locale")
 
 def confirm_restart():
     d = Gtk.MessageDialog(None, 0, Gtk.MessageType.WARNING, Gtk.ButtonsType.YES_NO)

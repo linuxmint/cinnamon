@@ -123,7 +123,7 @@ class Settings():
             except IOError:
                 self.tUser = None
         try:
-            self.t = gettext.translation("cinnamon", "/usr/share/cinnamon/locale").ugettext
+            self.t = gettext.translation("cinnamon", "/usr/share/locale").ugettext
         except IOError:
             self.t = None
         self.reload()

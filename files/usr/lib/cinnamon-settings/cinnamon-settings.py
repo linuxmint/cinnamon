@@ -34,7 +34,7 @@ except Exception, detail:
     sys.exit(1)
 
 # i18n
-gettext.install("cinnamon", "/usr/share/cinnamon/locale")
+gettext.install("cinnamon", "/usr/share/locale")
 # i18n for menu item
 menuName = _("System Settings")
 menuComment = _("Control Center")
