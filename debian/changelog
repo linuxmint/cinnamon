@@ -1,3 +1,9 @@
+cinnamon (2.4.0) rebecca; urgency=medium
+
+  * 2.4.0
+
+ -- Clement Lefebvre <root@linuxmint.com>  Fri, 31 Oct 2014 23:21:29 +0100
+
 cinnamon (2.3.0) unstable; urgency=medium
 
   * 2.3.0
