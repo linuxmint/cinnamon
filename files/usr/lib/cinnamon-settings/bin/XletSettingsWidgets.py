@@ -10,7 +10,6 @@ try:
     import json
     import dbus
     import eyedropper
-    import re
     from gi.repository import Gio, Gtk, GObject, Gdk, GdkPixbuf
 except Exception, detail:
     print detail
@@ -269,38 +268,16 @@ class BaseWidget(object):
         except:
             return None
 
-        pattern = re.compile("""
-            ^
-            (!)?                #1: optional not operator
-            (\S+)               #2: Dependency key
-            (?:
-                \s*
-                (<=?|>=?|==|!=) #3: comparsion operator
-                \s*
-                (               #4: comparsion value
-                    (["']).+\5      #string
-                    |
-                    \d*(?:\.\d*)?   #number
-                )
-            )?
-            $
-        """, re.X);
+        dep = dep.split(" ")
+        key = dep[0]
 
-        match = pattern.match(dep)
-
-        if match is None:
-            print "Dependency key %s could not be parsed for key %s.  The UUID is: %s" % (dep, self.key, self.uuid)
-            return None
-
-        key = match.group(2)
-
-        if match.group(1):                      #not operator
-            return (key, match.group(1))
-        elif match.group(3) and match.group(4): #comparsion operator
-            operator = match.group(3)
-            value = match.group(4)
-            if match.group(5):      #string
-                value = value[1:-1]     #removing the quotes
+        if key[0] == "!":               #not operator
+            return (key[1:], "!")
+        elif len(dep) == 3:             #comparsion operator
+            operator = dep[1]
+            value = dep[2]
+            if value[0] in "'\"" and value[-1] in "'\"":    #string
+                value = value[1:-1]         #removing the quotes
                 if operator != "==" and operator != "!=":   #<, >, <= and >= operators should not be defined for strings
                     print "Dependency key %s could not be parsed for key %s: the operator %s should not be used for strings.  The UUID is: %s" % (dep, self.key, operator, self.uuid)
                     return None
@@ -308,7 +285,7 @@ class BaseWidget(object):
                 value = float(value)
 
             return (key, operator, value)
-        else:                                   #no operator
+        else:                           #no operator
             return (key,)
 
     def update_dependents(self):
