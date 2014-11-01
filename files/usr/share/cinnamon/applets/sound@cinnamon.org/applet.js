@@ -1130,17 +1130,17 @@ MyApplet.prototype = {
             return;
         }
         let volume = value * this._volumeMax;
-        let prev_muted = this[property].is_muted;
-        if (volume < 1) {
+        let muted;
+        if (value < .01) {
             this[property].volume = 0;
-            if (!prev_muted)
-                this[property].change_is_muted(true);
+            muted = true;
         } else {
             this[property].volume = volume;
-            if (prev_muted)
-                this[property].change_is_muted(false);
+            muted = false;
         }
         this[property].push_volume();
+        if (this[property].is_muted !== muted)
+            this[property].change_is_muted(muted);
     },
 
     _notifyVolumeChange: function() {        
@@ -1161,8 +1161,8 @@ MyApplet.prototype = {
             } else {
                 this.setIconName(this._volumeToIcon(this._output.volume));
                 this._outputTitle.setIcon(this._volumeToIcon(this._output.volume));
-                this.set_applet_tooltip(_("Volume") + ": " + Math.floor(this._output.volume / this._volumeMax * 100) + "%");
-                this._outputTitle.setText(_("Volume") + ": " + Math.floor(this._output.volume / this._volumeMax * 100) + "%");
+                this.set_applet_tooltip(_("Volume") + ": " + Math.round(this._output.volume / this._volumeMax * 100) + "%");
+                this._outputTitle.setText(_("Volume") + ": " + Math.round(this._output.volume / this._volumeMax * 100) + "%");
                 this.mute_out_switch.setToggleState(false);
             }
         } else if (property == '_input') {
@@ -1181,13 +1181,13 @@ MyApplet.prototype = {
         if (property == '_output' && !this._output.is_muted) {
             this._outputTitle.setIcon(this._volumeToIcon(this._output.volume));
             this.setIconName(this._volumeToIcon(this._output.volume));
-            this.set_applet_tooltip(_("Volume") + ": " + Math.floor(this._output.volume / this._volumeMax * 100) + "%");
-            this._outputTitle.setText(_("Volume") + ": " + Math.floor(this._output.volume / this._volumeMax * 100) + "%");
+            this.set_applet_tooltip(_("Volume") + ": " + Math.round(this._output.volume / this._volumeMax * 100) + "%");
+            this._outputTitle.setText(_("Volume") + ": " + Math.round(this._output.volume / this._volumeMax * 100) + "%");
         }
     },
 
     _volumeToIcon: function(volume) {
-        if (volume <= 0) {
+        if (volume < 1) {
             return 'audio-volume-muted';
         } else {
             let n = Math.floor(3 * volume / this._volumeMax) + 1;
