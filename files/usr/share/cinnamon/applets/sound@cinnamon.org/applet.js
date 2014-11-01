@@ -1097,6 +1097,7 @@ MyApplet.prototype = {
         this._outputSlider = new PopupMenu.PopupSliderMenuItem(0);
         this._outputSlider.connect('value-changed', Lang.bind(this, this._sliderChanged, '_output'));
         this._outputSlider.connect('drag-end', Lang.bind(this, this._notifyVolumeChange));
+        this._outputSlider.actor.connect('scroll-event', Lang.bind(this, this._notifyVolumeChange));
         this.menu.addMenuItem(this._outputTitle);
         this.menu.addMenuItem(this._outputSlider);
         this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
@@ -1104,6 +1105,7 @@ MyApplet.prototype = {
         this._inputSlider = new PopupMenu.PopupSliderMenuItem(0);
         this._inputSlider.connect('value-changed', Lang.bind(this, this._sliderChanged, '_input'));
         this._inputSlider.connect('drag-end', Lang.bind(this, this._notifyVolumeChange));
+        this._inputSlider.actor.connect('scroll-event', Lang.bind(this, this._notifyVolumeChange));
         this.menu.addMenuItem(this._inputTitle);
         this.menu.addMenuItem(this._inputSlider);
         this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
