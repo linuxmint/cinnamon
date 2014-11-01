@@ -871,8 +871,8 @@ MyApplet.prototype = {
         }
         else if (direction == Clutter.ScrollDirection.UP) {
             this._output.volume = Math.min(this._volumeMax, currentVolume + this._volumeMax * VOLUME_ADJUSTMENT_STEP);
-            this._output.change_is_muted(false);
             this._output.push_volume();
+            this._output.change_is_muted(false);
         }
 
         this._notifyVolumeChange();
