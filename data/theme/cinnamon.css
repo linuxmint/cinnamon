@@ -1443,7 +1443,8 @@ StScrollBar StButton#vhandle:hover {
 }
 .applet-box:hover .applet-icon {
 	color: #fff;
-	icon-shadow: white 0px 0px 3px;
+/* Broken with GNOME 3.14 (icon-size is not honoured)
+ *	icon-shadow: white 0px 0px 3px;*/
 }
 
 /* ===================================================================
