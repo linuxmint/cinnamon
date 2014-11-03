@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-11-03 10:56+0100\n"
+"POT-Creation-Date: 2014-11-03 11:13+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -72,6 +72,10 @@ msgstr ""
 #: src/cinnamon-util.c:294
 #, c-format
 msgid "%1$s: %2$s"
+msgstr ""
+
+#: src/main.c:223
+msgid "Print version"
 msgstr ""
 
 #: src/gvc/gvc-mixer-control.c:1082
@@ -1205,6 +1209,23 @@ msgstr ""
 msgid "Manage workspaces (Expo)"
 msgstr ""
 
+#: files/usr/share/cinnamon/applets/xrandr@cinnamon.org/applet.js:19
+#: files/usr/lib/cinnamon-settings/modules/cs_general.py:23
+msgid "Normal"
+msgstr ""
+
+#: files/usr/share/cinnamon/applets/xrandr@cinnamon.org/applet.js:20
+msgid "Left"
+msgstr ""
+
+#: files/usr/share/cinnamon/applets/xrandr@cinnamon.org/applet.js:21
+msgid "Right"
+msgstr ""
+
+#: files/usr/share/cinnamon/applets/xrandr@cinnamon.org/applet.js:22
+msgid "Upside-down"
+msgstr ""
+
 #. #-#-#-#-#  uniq-cinnamon-json.pot  #-#-#-#-#
 #. power@cinnamon.org->settings-schema.json->labelinfo->description
 #: files/usr/share/cinnamon/applets/xrandr@cinnamon.org/applet.js:37
@@ -1483,6 +1504,7 @@ msgstr ""
 
 #: files/usr/lib/cinnamon-settings-users/cinnamon-settings-users.py:498
 #: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:278
+#: files/usr/lib/cinnamon-menu-editor/cme/MainWindow.py:152
 msgid "Name"
 msgstr ""
 
@@ -2143,10 +2165,6 @@ msgstr ""
 
 #: files/usr/lib/cinnamon-settings/modules/cs_general.py:23
 msgid "Auto"
-msgstr ""
-
-#: files/usr/lib/cinnamon-settings/modules/cs_general.py:23
-msgid "Normal"
 msgstr ""
 
 #: files/usr/lib/cinnamon-settings/modules/cs_general.py:23
@@ -4087,6 +4105,7 @@ msgid "Inactive extensions"
 msgstr ""
 
 #: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:220
+#: files/usr/lib/cinnamon-menu-editor/cme/MainWindow.py:165
 msgid "Show"
 msgstr ""
 
@@ -4455,6 +4474,30 @@ msgstr ""
 
 #: files/usr/bin/cinnamon-launcher:15
 msgid "Do you want to restart Cinnamon?"
+msgstr ""
+
+#: files/usr/lib/cinnamon-menu-editor/cme/MainWindow.py:173
+msgid "Item"
+msgstr ""
+
+#: files/usr/lib/cinnamon-menu-editor/cinnamon-menu-editor.ui.h:1
+msgid "Main Menu"
+msgstr ""
+
+#: files/usr/lib/cinnamon-menu-editor/cinnamon-menu-editor.ui.h:2
+msgid "Restore the default menu layout"
+msgstr ""
+
+#: files/usr/lib/cinnamon-menu-editor/cinnamon-menu-editor.ui.h:3
+msgid "Restore System Configuration"
+msgstr ""
+
+#: files/usr/lib/cinnamon-menu-editor/cinnamon-menu-editor.ui.h:4
+msgid "_New Menu"
+msgstr ""
+
+#: files/usr/lib/cinnamon-menu-editor/cinnamon-menu-editor.ui.h:5
+msgid "Ne_w Item"
 msgstr ""
 
 #. photoframe@cinnamon.org->settings-schema.json->fade-delay->description

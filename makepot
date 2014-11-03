@@ -1,8 +1,13 @@
 #!/bin/bash
-xgettext --language=C --keyword=_ --output=cinnamon-source.pot generate_additional_files.py src/*.c src/*/*.c js/*/*.js files/usr/share/cinnamon/applets/*/applet.js files/usr/share/cinnamon/desklets/*/desklet.js files/usr/lib/cinnamon-settings/*.py files/usr/lib/cinnamon-settings-users/*.py files/usr/lib/cinnamon-settings/modules/*.py files/usr/lib/cinnamon-settings/bin/ExtensionCore.py files/usr/lib/cinnamon-settings/bin/eyedropper.py files/usr/lib/cinnamon-settings/bin/Spices.py files/usr/lib/cinnamon-settings/bin/XletSettings.py files/usr/lib/cinnamon-settings/bin/XletSettingsWidgets.py files/usr/share/cinnamon/desklets/*/*.py files/usr/lib/cinnamon-screensaver-lock-dialog/*.py files/usr/bin/cinnamon-launcher
+
+intltool-extract --type=gettext/glade files/usr/lib/cinnamon-menu-editor/cinnamon-menu-editor.ui
+
+xgettext --language=C --keyword=_ --keyword=N_ --output=cinnamon-source.pot generate_additional_files.py src/*.c src/*/*.c js/*/*.js files/usr/share/cinnamon/applets/*/applet.js files/usr/share/cinnamon/desklets/*/desklet.js files/usr/lib/cinnamon-settings/*.py files/usr/lib/cinnamon-settings-users/*.py files/usr/lib/cinnamon-settings/modules/*.py files/usr/lib/cinnamon-settings/bin/ExtensionCore.py files/usr/lib/cinnamon-settings/bin/eyedropper.py files/usr/lib/cinnamon-settings/bin/Spices.py files/usr/lib/cinnamon-settings/bin/XletSettings.py files/usr/lib/cinnamon-settings/bin/XletSettingsWidgets.py files/usr/share/cinnamon/desklets/*/*.py files/usr/lib/cinnamon-screensaver-lock-dialog/*.py files/usr/bin/cinnamon-launcher files/usr/lib/cinnamon-menu-editor/cme/*.py files/usr/lib/cinnamon-menu-editor/cinnamon-menu-editor.ui.h
 cd files
 usr/lib/cinnamon-json-makepot/cinnamon-json-makepot.py ../cinnamon-json
 cd ..
 msguniq cinnamon-json.pot > uniq-cinnamon-json.pot
 msgcat cinnamon-source.pot uniq-cinnamon-json.pot > cinnamon.pot
 rm -f cinnamon-source.pot cinnamon-json.pot uniq-cinnamon-json.pot
+
+rm -f files/usr/lib/cinnamon-menu-editor/cinnamon-menu-editor.ui.h
