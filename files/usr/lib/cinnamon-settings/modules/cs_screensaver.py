@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 
-import os
 from SettingsWidgets import *
 
 LOCK_DELAY_OPTIONS = [
