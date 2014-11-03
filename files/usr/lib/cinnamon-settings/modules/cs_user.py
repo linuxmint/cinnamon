@@ -8,6 +8,7 @@ import time
 from random import randint
 import shutil
 import PIL
+import os
 
 class Module:
     def __init__(self, content_box):
