@@ -1868,8 +1868,9 @@ MyApplet.prototype = {
         }
         // Sort apps and add to applicationsBox
         this._applicationsButtons.sort(function(a, b) {
-            let sr = a.app.get_name().toLowerCase() > b.app.get_name().toLowerCase();
-            return sr;
+            a = Util.latinise(a.app.get_name().toLowerCase());
+            b = Util.latinise(b.app.get_name().toLowerCase());
+            return a > b;
         });
 
         for (let i = 0; i < this._applicationsButtons.length; i++) {
