@@ -145,7 +145,7 @@ class DefaultTerminalButton(Gtk.AppChooserButton):
             icon_val = Gio.DesktopAppInfo.get_string(self.this_item, "Icon")
             #terminals don't have mime types, so we check for "TerminalEmulator" under the "Category" key in desktop files
             if (cat_val is not None and "TerminalEmulator" in cat_val):
-                if (exec_val is not None and name_val is not None and icon_val is not None):
+                if (exec_val is not None and name_val is not None and icon_val is not None and not "gksu" in exec_val):
                     self.append_custom_item(exec_val, name_val, Gio.ThemedIcon.new(icon_val))
                     self.active_items.append(exec_val)
                     if (self.key_value == exec_val):
