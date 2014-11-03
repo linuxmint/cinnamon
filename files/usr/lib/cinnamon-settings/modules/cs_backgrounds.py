@@ -5,7 +5,6 @@ sys.path.append('/usr/lib/cinnamon-settings/bin')
 from SettingsWidgets import *
 import os
 from gi.repository import Gio, Gtk, GObject, Gdk, Pango, GLib
-import dbus
 import imtools
 import gettext
 import subprocess
