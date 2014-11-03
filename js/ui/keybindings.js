@@ -45,7 +45,7 @@ KeybindingManager.prototype = {
         this.kb_schema.connect("changed::custom-list", Lang.bind(this, this.on_customs_changed));
 
         this.media_key_settings = new Gio.Settings({ schema: MEDIA_KEYS_SCHEMA });
-        this.media_key_settings.connect("change-event", Lang.bind(this, this.setup_media_keys));
+        this.media_key_settings.connect("changed", Lang.bind(this, this.setup_media_keys));
         this.setup_media_keys();
     },
 
