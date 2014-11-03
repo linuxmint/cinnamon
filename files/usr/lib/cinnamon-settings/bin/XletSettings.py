@@ -45,7 +45,9 @@ class XletSetting:
         self.back_to_list_button.set_label(self.applet_meta["name"])
         self.back_to_list_button.set_tooltip_text(_("Back to list"))
         self.more_button.set_tooltip_text(_("More actions..."))
+        self.remove_button.set_label(_("Remove"))
         self.remove_button.set_tooltip_text(_("Remove the current instance of this %s") % self.type)
+        self.highlight_button.set_label(_("Highlight"))
         self.highlight_button.set_tooltip_text(_("Momentarily highlight the %s on your desktop") % self.type)
         if len(self.applet_settings.keys()) > 1:
             self.build_notebook()

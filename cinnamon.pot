@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-10-30 13:47+0100\n"
+"POT-Creation-Date: 2014-11-03 10:56+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -297,6 +297,7 @@ msgstr ""
 #: js/ui/messageTray.js:1277
 #: files/usr/share/cinnamon/applets/panel-launchers@cinnamon.org/applet.js:56
 #: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:575
+#: files/usr/lib/cinnamon-settings/bin/XletSettings.py:48
 msgid "Remove"
 msgstr ""
 
@@ -4340,43 +4341,47 @@ msgstr ""
 msgid "More actions..."
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/bin/XletSettings.py:48
+#: files/usr/lib/cinnamon-settings/bin/XletSettings.py:49
 #, c-format
 msgid "Remove the current instance of this %s"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/bin/XletSettings.py:49
+#: files/usr/lib/cinnamon-settings/bin/XletSettings.py:50
+msgid "Highlight"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/bin/XletSettings.py:51
 #, c-format
 msgid "Momentarily highlight the %s on your desktop"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/bin/XletSettings.py:178
+#: files/usr/lib/cinnamon-settings/bin/XletSettings.py:180
 #, c-format
 msgid "Instance %d"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/bin/XletSettings.py:243
+#: files/usr/lib/cinnamon-settings/bin/XletSettings.py:245
 msgid "Reset to defaults"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/bin/XletSettings.py:248
+#: files/usr/lib/cinnamon-settings/bin/XletSettings.py:250
 msgid "Import from a file"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/bin/XletSettings.py:253
+#: files/usr/lib/cinnamon-settings/bin/XletSettings.py:255
 msgid "Export to a file"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/bin/XletSettings.py:264
+#: files/usr/lib/cinnamon-settings/bin/XletSettings.py:266
 msgid "Select a JSON file to import"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/bin/XletSettings.py:271
-#: files/usr/lib/cinnamon-settings/bin/XletSettings.py:291
+#: files/usr/lib/cinnamon-settings/bin/XletSettings.py:273
+#: files/usr/lib/cinnamon-settings/bin/XletSettings.py:293
 msgid "JSON files"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/bin/XletSettings.py:283
+#: files/usr/lib/cinnamon-settings/bin/XletSettings.py:285
 msgid "Select or enter file to export to"
 msgstr ""
 
