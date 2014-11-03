@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-11-03 11:13+0100\n"
+"POT-Creation-Date: 2014-11-03 11:44+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -1352,7 +1352,7 @@ msgid "login, mdm, gdm, manager, user, password, startup, switch"
 msgstr ""
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:78
-msgid "Startup Programs"
+msgid "Startup Applications"
 msgstr ""
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:78
