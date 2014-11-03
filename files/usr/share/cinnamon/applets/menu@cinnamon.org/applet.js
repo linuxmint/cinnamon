@@ -1227,10 +1227,13 @@ MyApplet.prototype = {
         try {
             if (this.menuIconCustom &&
                (this.menuIcon == "" ||
-               (GLib.path_is_absolute(this.menuIcon) && GLib.file_test(this.menuIcon, GLib.FileTest.EXISTS))))
+               (GLib.path_is_absolute(this.menuIcon) && GLib.file_test(this.menuIcon, GLib.FileTest.EXISTS)))) {
+                if (this.menuIcon.search("-symbolic") != -1)
+                    this.set_applet_icon_symbolic_path(this.menuIcon);
+                else
                     this.set_applet_icon_path(this.menuIcon);
-            else if (this.menuIconCustom &&
-                     Gtk.IconTheme.get_default().has_icon(this.menuIcon)) {
+            } else if (this.menuIconCustom &&
+                       Gtk.IconTheme.get_default().has_icon(this.menuIcon)) {
                 if (this.menuIcon.search("-symbolic") != -1)
                     this.set_applet_icon_symbolic_name(this.menuIcon);
                 else
