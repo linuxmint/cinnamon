@@ -18,13 +18,13 @@ LOCK_DELAY_OPTIONS = [
 
 LOCK_INACTIVE_OPTIONS = [
     (0,    _("Never")),
-    (60,   _("After 1 minute")),
-    (300,  _("After 5 minutes")),
-    (600,  _("After 10 minutes")),
-    (900,  _("After 15 minutes")),
-    (1800, _("After 30 minutes")),
-    (2700, _("After 45 minutes")),
-    (3600, _("After 1 hour"))
+    (60,   _("For 1 minute")),
+    (300,  _("For 5 minutes")),
+    (600,  _("For 10 minutes")),
+    (900,  _("For 15 minutes")),
+    (1800, _("For 30 minutes")),
+    (2700, _("For 45 minutes")),
+    (3600, _("For 1 hour"))
 ]
 
 class Module:
