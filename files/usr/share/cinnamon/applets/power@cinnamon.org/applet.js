@@ -240,7 +240,8 @@ MyApplet.prototype = {
     },
 
     on_panel_height_changed: function() {
-        this._devicesChanged();
+        if (this._proxy)
+            this._devicesChanged();
     },
 
     _devicesChanged: function() {        
