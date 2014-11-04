@@ -270,16 +270,20 @@ MyApplet.prototype = {
                 let [device_id, device_type, icon, percentage, state, time] = devices[i];
                 if (device_type == UPDeviceType.BATTERY || device_id == this._primaryDeviceId) {
                     let labelText = "";
-
-                    if (this.labelinfo == "percentage" || time == 0) {
-                        labelText = C_("percent of battery remaining", "%d%%").format(Math.round(percentage));
+                    if (this.labelinfo == "nothing") {
+                        ;
                     }
-                    else if (this.labelinfo == "time") {
+                    else if (this.labelinfo == "time" && time != 0) {
                         let seconds = Math.round(time / 60);
                         let minutes = Math.floor(seconds % 60);
                         let hours = Math.floor(seconds / 60);
                         labelText = C_("time of battery remaining", "%d:%02d").format(hours,minutes);
                     }
+                    else if (this.labelinfo == "percentage" ||
+                             (this.labelinfo == "percentage_time" && time == 0)) {
+                        labelText = C_("percent of battery remaining", "%d%%").format(Math.round(percentage));
+                    }
+
                     else if (this.labelinfo == "percentage_time") {
                         let seconds = Math.round(time / 60);
                         let minutes = Math.floor(seconds % 60);
