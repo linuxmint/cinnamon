@@ -199,12 +199,28 @@ class Module:
         picture_list = []
         folder_list = []
         properties_dir = "/usr/share/cinnamon-background-properties"
+        backgrounds = []
         if os.path.exists(properties_dir):
             for i in os.listdir(properties_dir):
                 if i.endswith(".xml"):
                     xml_path = os.path.join(properties_dir, i)
                     display_name = i.replace(".xml", "").replace("-", " ").replace("_", " ").split(" ")[-1].capitalize()
-                    self.collection_store.append([False, "cs-backgrounds", display_name, xml_path, BACKGROUND_COLLECTION_TYPE_XML])
+                    icon = "cs-backgrounds"
+                    order = 10
+                    # Special case for Linux Mint. We don't want to use 'start-here' here as it wouldn't work depending on the theme.
+                    # Also, other distros should get equal treatment. If they define cinnamon-backgrounds and use their own distro name, we should add support for it.
+                    if display_name == "Retro":                      
+                        icon = "cs-retro"
+                        order = 20 # place retro bgs at the end
+                    if display_name == "Linuxmint":                        
+                        display_name = "Linux Mint"
+                        icon = "cs-linuxmint"
+                        order = 0
+                    backgrounds.append([[False, icon, display_name, xml_path, BACKGROUND_COLLECTION_TYPE_XML], display_name, order])
+
+        backgrounds.sort(key=lambda x: (x[2], x[1]))
+        for background in backgrounds:
+            self.collection_store.append(background[0])
 
     def get_user_backgrounds(self):
         self.user_backgrounds = []
