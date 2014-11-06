@@ -17,6 +17,8 @@ try:
     import grp
     import pwd
     import locale
+    import urllib2
+    import proxygsettings
     from functools import cmp_to_key
 # Standard setting pages... this can be expanded to include applet dirs maybe?
     mod_files = glob.glob('/usr/lib/cinnamon-settings/modules/*.py')
@@ -532,7 +534,14 @@ class MainWindow:
 
 if __name__ == "__main__":
     import signal
+    
+    ps = proxygsettings.get_proxy_settings()
+    if ps:
+        proxy = urllib2.ProxyHandler(ps)
+    else:
+        proxy = urllib2.ProxyHandler()
+    urllib2.install_opener(urllib2.build_opener(proxy))
+    
     window = MainWindow()
     signal.signal(signal.SIGINT, window.quit)
     Gtk.main()
-
