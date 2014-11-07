@@ -866,4 +866,27 @@
       </_description>
     </key>
   </schema>
+
+  <schema id="org.cinnamon.keybindings" path="/org/cinnamon/keybindings/">
+    <key name="custom-list" type="as">
+      <default>[]</default>
+      <_summary>deprecated - moved to org.cinnamon.desktop.keybindings</_summary>
+    </key>
+  </schema>
+
+  <schema id="org.cinnamon.keybindings.custom-keybinding">
+    <key name="name" type="s">
+      <default>''</default>
+      <_summary>deprecated - moved to org.cinnamon.desktop.keybindings</_summary>
+    </key>
+    <key name="binding" type="s">
+      <default>''</default>
+      <_summary>deprecated - moved to org.cinnamon.desktop.keybindings</_summary>
+    </key>
+    <key name="command" type="s">
+      <default>''</default>
+      <_summary>deprecated - moved to org.cinnamon.desktop.keybindings</_summary>
+    </key>
+  </schema>
+
 </schemalist>
