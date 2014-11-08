@@ -1,3 +1,26 @@
+cinnamon (2.4.1) rebecca; urgency=medium
+
+  * Sound Applet: use Math.round instead of .floor on volume values and better mute handling
+  * Sound Applet: play sound "volume" on scroll event of the sliders
+  * Sound Applet: scrollevent on the icon: 0% -> 5% instead of 0% -> 10%
+  * Notifications applet: Don't show empty tray by default
+  * Utils: added a string latinise function Menu Applet: applied this new latinise function to sort the applications
+  * keybindings: change signal name to listen for media key changes.
+  * Cinnamon Settings, extension-core: l10n fix for Highlight and Remove buttons
+  * l10n fixes for Menu Editor
+  * l10n fix in Cinnamon Settings
+  * Cinnamon Settings: Give MDM the same label as present in mdmsetup.desktop
+  * Hide root terminal from terminal selection list as it doesn't work
+  * menu applet: recognize symbolic icon file paths for the applet icon
+  * power applet: make applet label configurable when plugged in, improve logic a bit when deciding what to show.
+  * power applet: prevent device refresh before proxy is acquired (caused by panel height change callback which is called when the applet is loaded, but sometimes before the async acquisition of _proxy is completed.)
+  * Use system proxy settings in cinnamon-settings
+  * Settings, backgrounds: Sort system collections, special-case Linux Mint (composed name) and Retro collections - icons/display_name
+  * Add settings for cinnamon-session timer
+  * re-add deprecated keybinding schema to allow migration script to work
+
+ -- Clement Lefebvre <root@linuxmint.com>  Sat, 08 Nov 2014 10:13:36 +0100
+
 cinnamon (2.4.0) rebecca; urgency=medium
 
   * 2.4.0
