@@ -318,6 +318,9 @@ wait_after_added (TrayAddPacket *packet)
 
 out:
   g_object_unref (child);
+
+  /* Free it since we tell the caller to stop calling us by returning FALSE */
+  g_free (packet);
   return FALSE;
 }
 
