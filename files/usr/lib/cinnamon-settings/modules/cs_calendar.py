@@ -33,5 +33,8 @@ class Module:
             section = Section(_("Date Format"))
             section.add(GSettingsCheckButton(_("Use 24h clock"), "org.cinnamon.desktop.interface", "clock-use-24h", None))
             section.add(GSettingsCheckButton(_("Display the date"), "org.cinnamon.desktop.interface", "clock-show-date", None))
-            section.add(GSettingsCheckButton(_("Display seconds"), "org.cinnamon.desktop.interface", "clock-show-seconds", None))        
+            section.add(GSettingsCheckButton(_("Display seconds"), "org.cinnamon.desktop.interface", "clock-show-seconds", None))
+
+            days = [[7, _("Use locale default")], [0, _("Sunday")], [1, _("Monday")]]
+            section.add(GSettingsIntComboBox(_("First day of week"), "org.cinnamon.desktop.interface", "first-day-of-week", None, days))
             vbox.add(section)
