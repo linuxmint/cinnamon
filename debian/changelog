@@ -1,3 +1,10 @@
+cinnamon (2.4.2) rebecca; urgency=medium
+
+  * photoframe desklet: fix mega leak, don't cache all images, destroy old images.
+  * photoframe desklet: cancel the update timer when removing the desklet.
+
+ -- Clement Lefebvre <root@linuxmint.com>  Mon, 10 Nov 2014 11:00:28 +0100
+
 cinnamon (2.4.1) rebecca; urgency=medium
 
   * Sound Applet: use Math.round instead of .floor on volume values and better mute handling
