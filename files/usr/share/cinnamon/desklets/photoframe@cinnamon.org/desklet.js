@@ -114,6 +114,11 @@ MyDesklet.prototype = {
             this.dir_monitor.disconnect(this.dir_monitor_id)
             this.dir_monitor_id = null
         }
+
+        if (this.update_id != 0) {
+            Mainloop.source_remove(this.update_id);
+            this.update_id = 0;
+        }
     },
 
     setup_display: function() {
@@ -157,6 +162,8 @@ MyDesklet.prototype = {
             
             this.updateInProgress = false;
             this.currentPicture = null;
+
+            this.update_id = 0;
             this._update_loop();
         }
     },
