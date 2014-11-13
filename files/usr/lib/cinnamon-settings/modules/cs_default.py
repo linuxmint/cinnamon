@@ -382,7 +382,7 @@ class Module:
         for d in preferred_app_defs:
             table.addRow(d[PREF_LABEL], DefaultAppChooserButton(d[PREF_CONTENT_TYPE], d[PREF_GEN_CONTENT_TYPE]))
                 
-        table.addRow(_("Terminal"), DefaultTerminalButton())
+        table.addRow(_("Te_rminal"), DefaultTerminalButton())
 
         return ColumnBox(_("Select your preferred applications"), table)
 

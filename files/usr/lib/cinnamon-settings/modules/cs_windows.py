@@ -37,7 +37,7 @@ class Module:
             section.add(GSettingsCheckButton(_("Display the alt-tab switcher on the primary monitor instead of the active one"), "org.cinnamon", "alttab-switcher-enforce-primary-monitor", None))
             section.add(
                 GSettingsSpinButton(
-                    "Delay before displaying the alt-tab switcher",
+                    _("Delay before displaying the alt-tab switcher"),
                     "org.cinnamon", "alttab-switcher-delay", dep_key=None,
                     min=0, max=1000, step=50, page=150, 
                     units=_("milliseconds")))

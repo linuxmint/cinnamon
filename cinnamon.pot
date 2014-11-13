@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-11-08 09:46+0100\n"
+"POT-Creation-Date: 2014-11-13 13:53+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -1859,7 +1859,7 @@ msgid "Removable Media"
 msgstr ""
 
 #: files/usr/lib/cinnamon-settings/modules/cs_default.py:385
-msgid "Terminal"
+msgid "Te_rminal"
 msgstr ""
 
 #: files/usr/lib/cinnamon-settings/modules/cs_default.py:387
@@ -3830,6 +3830,10 @@ msgstr ""
 #: files/usr/lib/cinnamon-settings/modules/cs_windows.py:37
 msgid ""
 "Display the alt-tab switcher on the primary monitor instead of the active one"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/modules/cs_windows.py:40
+msgid "Delay before displaying the alt-tab switcher"
 msgstr ""
 
 #: files/usr/lib/cinnamon-settings/modules/cs_windows.py:48
