@@ -1,3 +1,9 @@
+cinnamon (2.4.3) rebecca; urgency=medium
+
+  * Small l10n fixes, refreshed desktop files
+
+ -- Clement Lefebvre <root@linuxmint.com>  Thu, 13 Nov 2014 13:56:14 +0100
+
 cinnamon (2.4.2) rebecca; urgency=medium
 
   * photoframe desklet: fix mega leak, don't cache all images, destroy old images.
