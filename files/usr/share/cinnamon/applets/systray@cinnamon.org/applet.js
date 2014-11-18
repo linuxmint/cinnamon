@@ -110,18 +110,20 @@ MyApplet.prototype = {
 
             let timerId = 0;
             let i = 0;
-            timerId = Mainloop.timeout_add(500, function() { 
-                let disp_size = this._panelHeight * ICON_SCALE_FACTOR;
-                let size = disp_size;
-                if (icon.width == disp_size){
-                    size = disp_size - 1;
+            timerId = Mainloop.timeout_add(500, Lang.bind(this, function() {               
+                if (global.settings.get_boolean('panel-scale-text-icons')) {
+                    let disp_size = this._panelHeight * ICON_SCALE_FACTOR;
+                    let size = disp_size;
+                    if (icon.width == disp_size){
+                        size = disp_size - 1;
+                    }
+                    icon.set_size(size, size);
                 }
-                icon.set_size(size, size);
                 i++;
                 if (i == 2) {
                     Mainloop.source_remove(timerId);
                 }
-            });
+            }));
 
         } catch (e) {
             global.logError(e);
