@@ -406,6 +406,7 @@ StScrollBar StButton#vhandle:hover {
 
 .window-close-area {
 	background-image: url("trash-icon.png");
+	background-size: 100px;
 	background-color: rgba(60, 60, 60, 0.8);
 	border: 4px solid rgba(128,128,128,0.8);
 	border-bottom-width: 0px;
