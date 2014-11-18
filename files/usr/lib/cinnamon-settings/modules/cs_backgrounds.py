@@ -132,7 +132,7 @@ class Module:
             primary_color = GSettingsColorChooser("org.cinnamon.desktop.background", "primary-color", None)
             label2 = Gtk.Label.new(_("End color"))
             secondary_color = GSettingsColorChooser("org.cinnamon.desktop.background", "secondary-color", None)
-            hbox.pack_start(color_shading_type, False, False, 2)
+            hbox.pack_start(color_shading_type, False, False, 0)
             hbox.pack_start(label1, False, False, 2)
             hbox.pack_start(primary_color, False, False, 2)
             hbox.pack_start(label2, False, False, 2)
