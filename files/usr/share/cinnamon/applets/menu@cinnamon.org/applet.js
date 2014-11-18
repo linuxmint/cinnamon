@@ -634,6 +634,8 @@ GenericButton.prototype = {
         this.button_name = "";
 
         this.label = new St.Label({ text: label, style_class: 'menu-application-button-label' });
+        this.label.clutter_text.ellipsize = Pango.EllipsizeMode.END; 
+        this.label.set_style(MAX_BUTTON_WIDTH);
 
         if (icon != null) {
             let icon_actor = new St.Icon({ icon_name: icon, icon_type: St.IconType.FULLCOLOR, icon_size: APPLICATION_ICON_SIZE});
