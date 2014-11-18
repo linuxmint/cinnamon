@@ -342,7 +342,7 @@ class OtherTypeDialog(Gtk.Dialog):
 class Module:
     def __init__(self, content_box):
         keywords = _("media, defaults, applications, programs, removable, browser, email, calendar, music, videos, photos, images, cd, autostart, autoplay")
-        sidePage = SidePage(_("Preferred Applications"), "cs-default-applications", keywords, content_box, 350, module=self)
+        sidePage = SidePage(_("Preferred Applications"), "cs-default-applications", keywords, content_box, 370, module=self)
         self.sidePage = sidePage
         self.name = "default"
         self.category = "prefs"
