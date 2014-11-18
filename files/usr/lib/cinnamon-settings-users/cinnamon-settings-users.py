@@ -668,10 +668,13 @@ class Module:
 #USER CALLBACKS
 
     def on_user_selection(self, selection):
+        self.password_button.set_sensitive(True)
+        self.password_button.set_tooltip_text("")
+
         model, treeiter = selection.get_selected()
         if treeiter != None:
             user = model[treeiter][INDEX_USER_OBJECT]
-            self.builder.get_object("button_delete_user").set_sensitive(True)   
+            self.builder.get_object("button_delete_user").set_sensitive(True)
             self.realname_entry.set_text(user.get_real_name())
 
             if user.get_password_mode() == AccountsService.UserPasswordMode.REGULAR:
@@ -706,6 +709,10 @@ class Module:
             else:
                 self.builder.get_object("button_delete_user").set_sensitive(True)
                 self.builder.get_object("button_delete_user").set_tooltip_text("")
+
+            if os.path.exists("/home/.ecryptfs/%s" % user.get_user_name()):
+                self.password_button.set_sensitive(False)
+                self.password_button.set_tooltip_text(_("The user's home directory is encrypted. To preserve access to the encrypted directory, only the user should change this password."))
 
         else:
             self.builder.get_object("button_delete_user").set_sensitive(False)

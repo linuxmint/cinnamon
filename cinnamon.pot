@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-11-13 13:53+0100\n"
+"POT-Creation-Date: 2014-11-18 15:22+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -587,71 +587,71 @@ msgstr ""
 msgid "Other application..."
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:670
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:672
 #: files/usr/share/cinnamon/applets/recent@cinnamon.org/applet.js:91
 msgid "Clear list"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:710
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:712
 msgid "All Applications"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:737
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:739
 msgid "Places"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:757
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:759
 msgid "Recent Files"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:1018
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:1020
 #: files/usr/lib/cinnamon-settings/modules/cs_windows.py:55
 #: files/usr/lib/cinnamon-settings/modules/cs_windows.py:192
 msgid "Menu"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:1670
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:1672
 #: files/usr/share/cinnamon/applets/recent@cinnamon.org/applet.js:69
 msgid "Recent file tracking is currently disabled system-wide."
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:1681
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:1683
 #: files/usr/share/cinnamon/applets/recent@cinnamon.org/applet.js:74
 msgid "Click here to enable"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:1730
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:1732
 #: files/usr/share/cinnamon/applets/recent@cinnamon.org/applet.js:95
 msgid "No recent documents"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:1943
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:1945
 #: files/usr/lib/cinnamon-settings/modules/cs_keyboard.py:141
 msgid "Lock screen"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:1944
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:1946
 #: files/usr/lib/cinnamon-settings/modules/cs_power.py:9
 msgid "Lock the screen"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:1971
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:1973
 msgid "Logout"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:1972
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:1974
 msgid "Leave the session"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:1986
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:1988
 msgid "Quit"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:1987
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:1989
 msgid "Shutdown the computer"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2110
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2112
 msgid "Type to search..."
 msgstr ""
 
@@ -1390,54 +1390,54 @@ msgid "The group name cannot contain upper-case or space characters"
 msgstr ""
 
 #: files/usr/lib/cinnamon-settings-users/cinnamon-settings-users.py:161
-#: files/usr/lib/cinnamon-settings/modules/cs_user.py:231
+#: files/usr/lib/cinnamon-settings/modules/cs_user.py:233
 msgid "New password"
 msgstr ""
 
 #: files/usr/lib/cinnamon-settings-users/cinnamon-settings-users.py:161
-#: files/usr/lib/cinnamon-settings/modules/cs_user.py:235
+#: files/usr/lib/cinnamon-settings/modules/cs_user.py:237
 msgid "Confirm password"
 msgstr ""
 
 #: files/usr/lib/cinnamon-settings-users/cinnamon-settings-users.py:165
-#: files/usr/lib/cinnamon-settings/modules/cs_user.py:246
+#: files/usr/lib/cinnamon-settings/modules/cs_user.py:248
 msgid "Generate a password"
 msgstr ""
 
 #: files/usr/lib/cinnamon-settings-users/cinnamon-settings-users.py:171
 #: files/usr/lib/cinnamon-settings-users/cinnamon-settings-users.py:177
-#: files/usr/lib/cinnamon-settings/modules/cs_user.py:252
-#: files/usr/lib/cinnamon-settings/modules/cs_user.py:258
+#: files/usr/lib/cinnamon-settings/modules/cs_user.py:254
+#: files/usr/lib/cinnamon-settings/modules/cs_user.py:260
 msgid "Your new password needs to be at least 8 characters long"
 msgstr ""
 
 #: files/usr/lib/cinnamon-settings-users/cinnamon-settings-users.py:185
-#: files/usr/lib/cinnamon-settings/modules/cs_user.py:266
+#: files/usr/lib/cinnamon-settings/modules/cs_user.py:268
 msgid "Show password"
 msgstr ""
 
 #: files/usr/lib/cinnamon-settings-users/cinnamon-settings-users.py:191
-#: files/usr/lib/cinnamon-settings/modules/cs_user.py:272
+#: files/usr/lib/cinnamon-settings/modules/cs_user.py:274
 msgid "An error occured. Your password was not changed."
 msgstr ""
 
 #: files/usr/lib/cinnamon-settings-users/cinnamon-settings-users.py:202
-#: files/usr/lib/cinnamon-settings/modules/cs_user.py:283
+#: files/usr/lib/cinnamon-settings/modules/cs_user.py:285
 msgid "Change"
 msgstr ""
 
 #: files/usr/lib/cinnamon-settings-users/cinnamon-settings-users.py:255
-#: files/usr/lib/cinnamon-settings/modules/cs_user.py:363
+#: files/usr/lib/cinnamon-settings/modules/cs_user.py:365
 msgid "Passwords do not match"
 msgstr ""
 
 #: files/usr/lib/cinnamon-settings-users/cinnamon-settings-users.py:259
-#: files/usr/lib/cinnamon-settings/modules/cs_user.py:367
+#: files/usr/lib/cinnamon-settings/modules/cs_user.py:369
 msgid "Too short"
 msgstr ""
 
 #: files/usr/lib/cinnamon-settings-users/cinnamon-settings-users.py:262
-#: files/usr/lib/cinnamon-settings/modules/cs_user.py:370
+#: files/usr/lib/cinnamon-settings/modules/cs_user.py:372
 msgid "OK"
 msgstr ""
 
@@ -1517,37 +1517,43 @@ msgstr ""
 msgid "Images"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings-users/cinnamon-settings-users.py:680
+#: files/usr/lib/cinnamon-settings-users/cinnamon-settings-users.py:683
 msgid "No password set"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings-users/cinnamon-settings-users.py:682
+#: files/usr/lib/cinnamon-settings-users/cinnamon-settings-users.py:685
 msgid "Set at login"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings-users/cinnamon-settings-users.py:705
+#: files/usr/lib/cinnamon-settings-users/cinnamon-settings-users.py:708
 msgid "This user is currently logged in"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings-users/cinnamon-settings-users.py:718
+#: files/usr/lib/cinnamon-settings-users/cinnamon-settings-users.py:715
+msgid ""
+"The user's home directory is encrypted. To preserve access to the encrypted "
+"directory, only the user should change this password."
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings-users/cinnamon-settings-users.py:725
 #, c-format
 msgid ""
 "Are you sure you want to permanently delete %s and all the files associated "
 "with this user?"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings-users/cinnamon-settings-users.py:776
+#: files/usr/lib/cinnamon-settings-users/cinnamon-settings-users.py:783
 #, c-format
 msgid "This group is set as %s's primary group"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings-users/cinnamon-settings-users.py:788
+#: files/usr/lib/cinnamon-settings-users/cinnamon-settings-users.py:795
 #, c-format
 msgid "Are you sure you want to permanently delete %s?"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings-users/cinnamon-settings-users.py:803
-#: files/usr/lib/cinnamon-settings-users/cinnamon-settings-users.py:814
+#: files/usr/lib/cinnamon-settings-users/cinnamon-settings-users.py:810
+#: files/usr/lib/cinnamon-settings-users/cinnamon-settings-users.py:821
 msgid "Group Name"
 msgstr ""
 
@@ -3775,11 +3781,11 @@ msgstr ""
 msgid "Password:"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/modules/cs_user.py:227
+#: files/usr/lib/cinnamon-settings/modules/cs_user.py:229
 msgid "Current password"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/modules/cs_user.py:348
+#: files/usr/lib/cinnamon-settings/modules/cs_user.py:350
 msgid "Wrong password"
 msgstr ""
 
