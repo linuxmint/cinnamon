@@ -196,8 +196,10 @@ class Module:
 
     def load_user_info(self, user, param):
         self.realname_entry.set_text(user.get_real_name())
-        if os.path.exists(user.get_icon_file()):
-            self.face_button.set_picture_from_file(user.get_icon_file())
+        for path in [os.path.join(self.accountService.get_home_dir(), ".face"), user.get_icon_file(), "/usr/share/pixmaps/faces/user-generic.png"]:
+            if os.path.exists(path):
+                self.face_button.set_picture_from_file(path)
+                break
 
     def _on_realname_changed(self, widget, text):
         self.accountService.set_real_name(text)       
