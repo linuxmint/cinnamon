@@ -66,12 +66,12 @@ MyApplet.prototype = {
     
     _display: function() {
         if (!this.privacy_settings.get_boolean(REMEMBER_RECENT_KEY)) {
-            let item = new PopupMenu.PopupMenuItem(_("Recent file tracking is currently disabled system-wide."));
+            let item = new PopupMenu.PopupMenuItem(_("Recent file tracking is currently disabled."));
             item.actor.reactive = false;
             this.menu.addMenuItem(item);
 
             let icon = new St.Icon({ icon_name: 'ok', icon_type: St.IconType.FULLCOLOR, icon_size: 16 });
-            item = new MyPopupMenuItem(icon, _("Click here to enable"), {});
+            item = new MyPopupMenuItem(icon, _("Click here to enable it"), {});
             item.connect("activate", Lang.bind(this, function () {
                 this.privacy_settings.set_boolean(REMEMBER_RECENT_KEY, true);
             }))
