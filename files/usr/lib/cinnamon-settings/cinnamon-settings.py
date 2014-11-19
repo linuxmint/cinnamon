@@ -501,7 +501,7 @@ class MainWindow:
 
     def setParentRefs (self, mod):
         try:
-            mod._setParentRef(self.window, self.builder)
+            mod._setParentRef(self.window)
         except AttributeError:
             pass
         return True

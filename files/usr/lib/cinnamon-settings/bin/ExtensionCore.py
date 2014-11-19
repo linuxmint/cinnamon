@@ -398,7 +398,7 @@ class ExtensionSidePage (SidePage):
         self.update_list = {}
         self.current_num_updates = 0
 
-        self.spices = Spice_Harvester(self.collection_type, self.window, self.builder)
+        self.spices = Spice_Harvester(self.collection_type, self.window)
 
         # if not self.spices.get_webkit_enabled():
         #     getmore_label.set_sensitive(False)

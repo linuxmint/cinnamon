@@ -134,8 +134,8 @@ class Module:
         chooser.set_sensitive(True)
         chooser.reset_loading_progress()
 
-    def _setParentRef(self, window, builder):
-        self.sidePage.builder = builder
+    def _setParentRef(self, window):
+        pass
 
     def make_group(self, group_label, widget, add_widget_to_size_group=True):
         self.size_groups = getattr(self, "size_groups", [Gtk.SizeGroup.new(Gtk.SizeGroupMode.HORIZONTAL) for x in range(2)])        
@@ -182,7 +182,6 @@ class Module:
         window.set_border_width(6)
         window.set_position(Gtk.WindowPosition.CENTER)        
         page = ExtensionSidePage(self.name, self.icon, self.keywords, box, "theme", None)
-        page.builder = self.builder
         page.load(window=window)
         box.pack_start(page.notebook, True, True, 6)
         window.show_all()

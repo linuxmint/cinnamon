@@ -64,7 +64,7 @@ def removeEmptyFolders(path):
         os.rmdir(path)
 
 class Spice_Harvester:
-    def __init__(self, collection_type, window, builder):
+    def __init__(self, collection_type, window):
         self.collection_type = collection_type        
         self.cache_folder = self.get_cache_folder()
         self.install_folder = self.get_install_folder()
@@ -78,8 +78,8 @@ class Spice_Harvester:
             self.has_cache = True
         
         self.window = window
-        self.builder = builder
-
+        self.builder = Gtk.Builder()
+        self.builder.add_from_file("/usr/lib/cinnamon-settings/cinnamon-settings-spice-progress.ui")
         self.progress_window = self.builder.get_object("progress_window")
         self.progress_window.set_transient_for(window)
         self.progress_window.set_destroy_with_parent(True)

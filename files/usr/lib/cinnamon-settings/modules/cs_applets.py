@@ -16,9 +16,8 @@ class Module:
             print "Loading Applets module"
             self.sidePage.load()
 
-    def _setParentRef(self, window, builder):
+    def _setParentRef(self, window):
         self.sidePage.window = window
-        self.sidePage.builder = builder
 
 class AppletsViewSidePage (ExtensionSidePage):
     def __init__(self, name, icon, keywords, content_box, collection_type, module):
