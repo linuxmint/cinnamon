@@ -1,3 +1,23 @@
+cinnamon (2.4.4) rebecca; urgency=medium
+
+  * Xlets: silently ignore uninstalled items
+  * Theme: Fixed Expo trash-icon not fitting in button
+  * Fixed: settings/backgrounds Gradient and Picture Aspect text not aligned on the left side
+  * Point the onscreen keyboard to the proper gsettings key
+  * Settings/Default: Added a bit more height
+  * Settings/Account Details: Fixed button not showing any icon when user has no "face" picture
+  * Menu applet: Fixed "recent" label making menu too wide
+  * Systray applet: Fixed icons getting resized to 20px..
+  * Users and Groups admin tool: Don't allow root to modify the password for user whose home dir is encrypted
+  * Menu applet: don't show recent if it's disabled in privacy settings
+  * Fixes applet name in 'About' modal
+  * cinnamon-settings: Fixed spices progress window becoming corrupted after refreshing themes.  Allow each xlet page to own its own GtkBuilder for generating the refresh dialog.
+  * Fixed 2d session requirements
+  * Prevent cinnamon crash when an invalid gsettings schema is used. Many thanks and all credit to @lestscape (#3692)
+  * Revert "[window list applet] Fix attention visibility on mouse hover" ~ possible cause of temporary DE freezes
+
+ -- Clement Lefebvre <root@linuxmint.com>  Sun, 23 Nov 2014 14:55:09 +0100
+
 cinnamon (2.4.3) rebecca; urgency=medium
 
   * Small l10n fixes, refreshed desktop files
