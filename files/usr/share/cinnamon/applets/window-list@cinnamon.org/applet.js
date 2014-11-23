@@ -369,8 +369,6 @@ AppMenuButton.prototype = {
         this.scroll_connector = null;
         this.on_scroll_mode_changed();
         this._needsAttention = false;
-        this.actor.connect('enter-event', Lang.bind(this, this._onEnterEvent));
-        this.actor.connect('leave-event', Lang.bind(this, this._onLeaveEvent));
     },
     
     on_panel_edit_mode_changed: function() {
@@ -378,17 +376,6 @@ AppMenuButton.prototype = {
             this._inEditMode = this._draggable.inhibit = global.settings.get_boolean("panel-edit-mode");
         }
     }, 
-
-    _onEnterEvent: function() {
-        if (this._needsAttention) {
-            this.actor.set_track_hover(false);
-            this.actor.set_hover(false);
-        }
-    },
-    
-    _onLeaveEvent: function() {
-        this.actor.set_track_hover(true);
-    },
 
     on_scroll_mode_changed: function() {
         let scrollable = global.settings.get_boolean("window-list-applet-scroll");
