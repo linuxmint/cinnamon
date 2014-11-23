@@ -889,4 +889,7 @@
     </key>
   </schema>
 
+  <schema id="org.cinnamon.invalid-schema" path="/org/cinnamon/invalid-schema/">
+  </schema>
+
 </schemalist>

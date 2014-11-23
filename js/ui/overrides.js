@@ -14,6 +14,17 @@ function init() {
     };
 }
 
+function check_schema_and_init(obj, method, params) {
+    let listShemas = Gio.Settings.list_schemas();
+    if(listShemas.indexOf(params.schema) != -1) {
+        method.call(obj, params);
+    } else {
+        method.call(obj, { schema: "org.cinnamon.invalid-schema" });
+        log("GSettings schema not found: " + params.schema);
+        throw new Error("GSettings schema not found: " + params.schema);
+    }
+}
+
 function key_exists (obj, key) {
     return obj.list_keys().indexOf(key) != -1;
 }
@@ -37,6 +48,7 @@ function check_key_and_set (obj, method, key, val) {
 }
 
 function overrideGio() {
+    Gio._real_init         = Gio.Settings.prototype._init;
     Gio._real_get_value    = Gio.Settings.prototype.get_value;
     Gio._real_set_value    = Gio.Settings.prototype.set_value;
     Gio._real_get_boolean  = Gio.Settings.prototype.get_boolean;
@@ -56,6 +68,7 @@ function overrideGio() {
     Gio._real_get_flags    = Gio.Settings.prototype.get_flags;
     Gio._real_set_flags    = Gio.Settings.prototype.set_flags;
 
+    Gio.Settings.prototype._init        = function(params)   { check_schema_and_init(this, Gio._real_init, params); }
     Gio.Settings.prototype.get_value    = function(key)      { return check_key_and_get(this, Gio._real_get_value, key); }
     Gio.Settings.prototype.set_value    = function(key, val) { return check_key_and_set(this, Gio._real_set_value, key, val); }
     Gio.Settings.prototype.get_boolean  = function(key)      { return check_key_and_get(this, Gio._real_get_boolean, key); }
@@ -84,8 +97,7 @@ function overrideMainloop() {
         if (dump) {
             log("Invalid or null source id used when attempting to run Mainloop.source_remove()");
             global.dump_gjs_stack();
-        }
-        else {
+        } else {
             Mainloop.__real_source_remove(id);
         }
     }
