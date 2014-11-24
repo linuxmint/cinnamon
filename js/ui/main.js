@@ -311,12 +311,21 @@ function start() {
     St.set_ui_root(global.stage, uiGroup);
 
     global.reparentActor(global.background_actor, uiGroup);
+    global.background_actor.hide();
     global.reparentActor(global.bottom_window_group, uiGroup);
     uiGroup.add_actor(deskletContainer.actor);
     global.reparentActor(global.window_group, uiGroup);
     global.reparentActor(global.overlay_group, uiGroup);
 
-    global.stage.add_actor(uiGroup);
+    let stage_bg = new Clutter.Actor();
+    let constraint = new Clutter.BindConstraint({ source: global.stage, coordinate: Clutter.BindCoordinate.ALL, offset: 0 })
+    stage_bg.add_constraint(constraint);
+    stage_bg.set_background_color(new Clutter.Color({red: 0, green: 0, blue: 0, alpha: 255}));
+    stage_bg.set_size(global.screen_width, global.screen_height);
+    global.stage.add_actor(stage_bg);
+
+    stage_bg.add_actor(uiGroup);
+
     global.reparentActor(global.top_window_group, global.stage);
 
     layoutManager = new Layout.LayoutManager();
@@ -450,6 +459,7 @@ function start() {
             return GLib.SOURCE_REMOVE;
         }));
     } else {
+        global.background_actor.show();
         if (do_login_sound)
             soundManager.play_once_per_session('login');
     }

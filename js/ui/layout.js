@@ -362,6 +362,7 @@ LayoutManager.prototype = {
                                      y / global.screen_height);
         Main.uiGroup.scale_x = Main.uiGroup.scale_y = 0.75;
         Main.uiGroup.opacity = 0;
+        global.background_actor.show();
         global.window_group.set_clip(monitor.x, monitor.y, monitor.width, monitor.height);
     },
 
