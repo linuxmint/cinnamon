@@ -311,6 +311,7 @@ function start() {
     St.set_ui_root(global.stage, uiGroup);
 
     global.reparentActor(global.background_actor, uiGroup);
+    global.background_actor.hide();
     global.reparentActor(global.bottom_window_group, uiGroup);
     uiGroup.add_actor(deskletContainer.actor);
     global.reparentActor(global.window_group, uiGroup);
@@ -458,6 +459,7 @@ function start() {
             return GLib.SOURCE_REMOVE;
         }));
     } else {
+        global.background_actor.show();
         if (do_login_sound)
             soundManager.play_once_per_session('login');
     }
