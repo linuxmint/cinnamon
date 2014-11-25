@@ -50,6 +50,7 @@ class Module:
             print "Loading Backgrounds module"
 
             self.shown_collection = None # Which collection is displayed in the UI
+            self.show_separator = False
 
             self._background_schema = Gio.Settings(schema = "org.cinnamon.desktop.background")
             self._slideshow_schema = Gio.Settings(schema = "org.cinnamon.desktop.background.slideshow")
@@ -132,7 +133,7 @@ class Module:
             primary_color = GSettingsColorChooser("org.cinnamon.desktop.background", "primary-color", None)
             label2 = Gtk.Label.new(_("End color"))
             secondary_color = GSettingsColorChooser("org.cinnamon.desktop.background", "secondary-color", None)
-            hbox.pack_start(color_shading_type, False, False, 0)
+            hbox.pack_start(color_shading_type, False, False, 2)
             hbox.pack_start(label1, False, False, 2)
             hbox.pack_start(primary_color, False, False, 2)
             hbox.pack_start(label2, False, False, 2)
@@ -173,7 +174,8 @@ class Module:
             self.get_system_backgrounds()
 
             tree_separator = [True, None, None, None, None]
-            self.collection_store.append(tree_separator)            
+            if self.show_separator:
+                self.collection_store.append(tree_separator)            
 
             if len(self.user_backgrounds) > 0:
                 for item in self.user_backgrounds:
@@ -201,6 +203,7 @@ class Module:
         properties_dir = "/usr/share/cinnamon-background-properties"
         backgrounds = []
         if os.path.exists(properties_dir):
+            self.show_separator = True
             for i in os.listdir(properties_dir):
                 if i.endswith(".xml"):
                     xml_path = os.path.join(properties_dir, i)
