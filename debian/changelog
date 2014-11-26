@@ -1,3 +1,9 @@
+cinnamon (2.4.5) rebecca; urgency=medium
+
+  * Fixed startup animation
+
+ -- Clement Lefebvre <root@linuxmint.com>  Wed, 26 Nov 2014 22:21:25 +0100
+
 cinnamon (2.4.4) rebecca; urgency=medium
 
   * Xlets: silently ignore uninstalled items
