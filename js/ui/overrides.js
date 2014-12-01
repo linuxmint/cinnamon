@@ -15,8 +15,12 @@ function init() {
 }
 
 function check_schema_and_init(obj, method, params) {
-    let listShemas = Gio.Settings.list_schemas();
-    if(listShemas.indexOf(params.schema) != -1) {
+    if (!params.schema) {
+        method.call(obj, params);
+        return;
+    }
+    let listSchemas = Gio.Settings.list_schemas();
+    if (listSchemas.indexOf(params.schema) != -1) {
         method.call(obj, params);
     } else {
         method.call(obj, { schema: "org.cinnamon.invalid-schema" });
