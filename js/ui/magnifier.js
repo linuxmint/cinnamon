@@ -152,6 +152,7 @@ Magnifier.prototype = {
 
     _write_back_mag_factor: function(factor) {
         this._settings.set_double(MAG_FACTOR_KEY, factor);
+        this.update_mag_id = 0;
         return false;
     },
 
