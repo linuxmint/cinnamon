@@ -21,6 +21,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -53,5 +54,5 @@
      stroke-width=".5"
      fill="#ccc"
      id="path4"
-     style="fill:#ffffff;fill-opacity:0.70196080000000005;stroke:#fffcff;stroke-opacity:0.7019608" />
+     style="fill:#ffffff;fill-opacity:0.87058824;stroke:#fffcff;stroke-opacity:0.87058824000000001" />
 </svg>

@@ -12,7 +12,7 @@
    version="1.1"
    id="svg2"
    inkscape:version="0.48.5 r10040"
-   sodipodi:docname="calendar-arrow-left.svg">
+   sodipodi:docname="calendar-arrow-right.svg">
   <metadata
      id="metadata10">
     <rdf:RDF>
@@ -21,6 +21,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -42,16 +43,16 @@
      inkscape:zoom="14.75"
      inkscape:cx="8"
      inkscape:cy="8"
-     inkscape:window-x="501"
-     inkscape:window-y="213"
+     inkscape:window-x="356"
+     inkscape:window-y="120"
      inkscape:window-maximized="0"
      inkscape:current-layer="svg2" />
   <path
-     d="m11.75 14v-12l-7.75 6z"
+     d="m5.25 14v-12l7.5 6z"
      stroke="#ccc"
      stroke-linecap="round"
      stroke-width=".5"
      fill="#ccc"
      id="path4"
-     style="fill:#ffffff;fill-opacity:0.70196080000000005;stroke:#fffcff;stroke-opacity:0.7019608" />
+     style="fill:#ffffff;fill-opacity:0.87058824000000001;stroke:#ffffff;stroke-opacity:0.87058824" />
 </svg>
