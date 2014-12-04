@@ -233,8 +233,8 @@ MyDesklet.prototype = {
             } else {
                 this._bin.set_child(this.currentPicture);
             }
-
-            old_pic.destroy();
+            if (old_pic)
+                old_pic.destroy();
         } catch (e) {
             global.logError(e);
         } finally {

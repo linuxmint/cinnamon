@@ -9,6 +9,14 @@ function init() {
     overrideGio();
     overrideMainloop();
 
+    String.prototype.capitalize = function() {
+        return this.charAt(0).toUpperCase() + this.slice(1);
+    }
+
+    String.prototype.first_cap = function() {
+        return this.charAt(0).toUpperCase();
+    }
+
     Number.prototype.clamp = function(min, max) {
         return Math.min(Math.max(this, min), max);
     };

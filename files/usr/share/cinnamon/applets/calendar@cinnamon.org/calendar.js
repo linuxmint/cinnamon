@@ -14,14 +14,6 @@ const MSECS_IN_DAY = 24 * 60 * 60 * 1000;
 const WEEKDATE_HEADER_WIDTH_DIGITS = 3;
 const SHOW_WEEKDATE_KEY = 'show-weekdate';
 
-String.prototype.capitalize = function() {
-    return this.charAt(0).toUpperCase() + this.slice(1);
-}
-
-String.prototype.first_cap = function() {
-    return this.charAt(0).toUpperCase();
-}
-
 // in org.cinnamon.desktop.interface
 const CLOCK_FORMAT_KEY        = 'clock-format';
 
