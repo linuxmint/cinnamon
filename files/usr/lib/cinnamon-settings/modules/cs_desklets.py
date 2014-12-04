@@ -27,7 +27,10 @@ class DeskletsViewSidePage (ExtensionSidePage):
         ExtensionSidePage.__init__(self, name, icon, keywords, content_box, collection_type, module)
 
     def toSettingString(self, uuid, instanceId):
-        return ("%s:%d:0:100") % (uuid, instanceId)
+        screen = Gdk.Screen.get_default()
+        primary = screen.get_primary_monitor()
+        primary_rect = screen.get_monitor_geometry(primary)
+        return ("%s:%d:%d:%d") % (uuid, instanceId, primary_rect.x + 100, primary_rect.y + 100)
 
     def fromSettingString(self, string):
         uuid, instanceId, x, y = string.split(":")
