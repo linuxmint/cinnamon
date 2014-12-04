@@ -112,7 +112,7 @@ MyApplet.prototype = {
             notification.leave_id = 0;
         }
 
-        notification.actor.opacity = notification._table.get_theme_node().get_length('opacity') || 255;
+        notification.actor.opacity = (notification._table.get_theme_node().get_length('opacity') / global.ui_scale) || 255;
 
         notification.actor.unparent();
         let existing_index = this.notifications.indexOf(notification);

@@ -472,7 +472,7 @@ Notification.prototype = {
 			}));
 			this.leave_id = this.actor.connect('leave-event', Lang.bind(this, function() {
 				Tweener.addTween(this.actor, {
-					opacity: this._table.get_theme_node().get_length('opacity') || 255,
+					opacity: (this._table.get_theme_node().get_length('opacity') / global.ui_scale) || 255,
 					time: ANIMATION_TIME,
 					transition: 'easeOutQuad'
 				});
