@@ -787,10 +787,15 @@ FavoritesButton.prototype = {
         this.addActor(icon);
         icon.realize()
 
-        this._draggable = DND.makeDraggable(this.actor);     
+        this._draggable = DND.makeDraggable(this.actor);
+        this._draggable.connect('drag-end', Lang.bind(this, this._onDragEnd));
         this.isDraggableApp = true;
     },
-    
+
+    _onDragEnd: function() {
+        this.actor.get_parent()._delegate._clearDragPlaceholder()
+    },
+
     get_app_id: function() {
         return this.app.get_id();
     },
