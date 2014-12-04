@@ -147,6 +147,7 @@ PanelAppLauncher.prototype = {
     _onDragEnd: function() {
         this._dragging = false;
         this._tooltip.preventShow = false;
+        this._applet._clearDragPlaceholder();
     },
 
     _onDragCancelled: function() {
@@ -585,7 +586,6 @@ MyApplet.prototype = {
                 source.launchersBox.removeLauncher(source, false);
             this.addForeignLauncher(sourceId, launcherPos, source);
         }
-        this._clearDragPlaceholder();
         actor.destroy();
         return true;
     }
