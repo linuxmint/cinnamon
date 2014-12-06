@@ -318,17 +318,9 @@ StScrollBar StButton#vhandle:hover {
 }
 
 .panel-top {
-    border: 1px solid #424242;
-    border-left: none;
-    border-right: none;
-    border-top: none;
 }
 
 .panel-bottom {
-    border: 1px solid #424242;
-    border-left: none;
-    border-right: none;
-    border-bottom: none;
 }
 
 .panel-status-button {
