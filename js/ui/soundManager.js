@@ -13,6 +13,11 @@ const iface =
                 <arg name='id' direction='in' type='u'/> \
                 <arg name='filename' direction='in' type='s'/> \
             </method> \
+            <method name='PlaySoundFileVolume'> \
+                <arg name='id' direction='in' type='u'/> \
+                <arg name='filename' direction='in' type='s'/> \
+                <arg name='volume' direction='in' type='s'/> \
+            </method> \
             <method name='PlaySound'> \
                 <arg name='id' direction='in' type='u'/> \
                 <arg name='name' direction='in' type='s'/> \
@@ -44,7 +49,7 @@ SoundManager.prototype = {
         this._cacheSettings();                
         this._cacheDesktopSettings();   
         this.settings.connect("changed", Lang.bind(this, this._cacheSettings));
-        this.settings.connect("changed", Lang.bind(this, this._cacheDesktopSettings));
+        this.desktop_settings.connect("changed", Lang.bind(this, this._cacheDesktopSettings));
         Mainloop.timeout_add_seconds(10, Lang.bind(this, function() {
             this.startup_delay = false;
         }));
@@ -84,6 +89,14 @@ SoundManager.prototype = {
         }
     },
 
+    playVolume: function(sound, volume) {
+        if (this.startup_delay)
+            return;
+        if (this.enabled[sound] && this.file[sound] != "") {
+            this.playSoundFileVolume(0, this.file[sound], volume);
+        }
+    },
+
     /* We want the login sound synced to the fade-in animation
      * but we don't want it playing every time someone restarts
      * Cinnamon - passing PLAY_ONCE_FLAG will let the sound handler
@@ -101,6 +114,14 @@ SoundManager.prototype = {
 
     playSoundFile: function(id, filename) {
         this.proxy.PlaySoundFileRemote(id, filename);
+    },
+
+    playSoundFileVolume: function(id, filename, volume) {
+        //ignore volume parameter if it is not valid (no mute)
+        if (!Number.isFinite(volume) || Number.isNaN(volume) || volume < 0)
+            this.playSoundFile(id, filename);
+        else
+            this.proxy.PlaySoundFileVolumeRemote(id, filename, volume + "");
     },
 
     playSound: function(id, name) {

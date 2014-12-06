@@ -35,9 +35,6 @@ dist_theme_DATA = \
     theme/menu-symbolic.svg        \
     theme/overview-hover.png       \
     theme/overview.png             \
-    theme/player-paused.svg        \
-    theme/player-playing.svg       \
-    theme/player-stopped.svg       \
     theme/process-working.svg      \
     theme/radiobutton-off.svg      \
     theme/radiobutton.svg          \

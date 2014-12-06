@@ -712,6 +712,11 @@ _setting.prototype = {
             return;
         state ? this.obj.watch(this.applet_var, Lang.bind(this, this._on_applet_changed_value)) :
                 this.obj.unwatch(this.applet_var);
+
+        //add a save function for objects or arrays
+        if(typeof(this.obj[this.applet_var]) === "object" && !this.obj[this.applet_var].save){
+            this.obj[this.applet_var].save = Lang.bind(this, this.set_val, this.obj[this.applet_var]);
+        }
     },
 
     _on_applet_changed_value: function (obj, oldval, newval) {
