@@ -116,12 +116,15 @@ class Module:
             for theme in themes:
                 theme_name = theme[0]
                 theme_path = theme[1]
-                for path in ["%s/%s/%s/thumbnail.png" % (theme_path, theme_name, path_suffix), 
+                try:
+                    for path in ["%s/%s/%s/thumbnail.png" % (theme_path, theme_name, path_suffix), 
                              "/usr/share/cinnamon/thumbnails/%s/%s.png" % (path_suffix, theme_name), 
                              "/usr/share/cinnamon/thumbnails/%s/unknown.png" % path_suffix]:
-                    if os.path.exists(path):                    
-                        chooser.add_picture(path, callback, title=theme_name, id=theme_name)
-                        break
+                        if os.path.exists(path):
+                            chooser.add_picture(path, callback, title=theme_name, id=theme_name)
+                            break
+                except:
+                    chooser.add_picture("/usr/share/cinnamon/thumbnails/%s/unknown.png" % path_suffix, callback, title=theme_name, id=theme_name)
                 GObject.timeout_add(5, self.increment_progress, (chooser, inc))
         GObject.timeout_add(500, self.hide_progress, chooser)
         # thread.exit()
@@ -164,14 +167,17 @@ class Module:
             path = folder.get_filename()
             chooser.set_picture_from_file(path)
         else:
-            for path in ["/usr/share/%s/%s/%s/thumbnail.png" % (path_prefix, theme, path_suffix), 
-                         os.path.expanduser("~/.%s/%s/%s/thumbnail.png" % (path_prefix, theme, path_suffix)), 
-                         "/usr/share/cinnamon/thumbnails/%s/%s.png" % (path_suffix, theme), 
-                         "/usr/share/cinnamon/thumbnails/%s/unknown.png" % path_suffix]:                        
-                if os.path.exists(path):
-                    chooser.set_picture_from_file(path)
-                    break        
-        return chooser    
+            try:
+                for path in ["/usr/share/%s/%s/%s/thumbnail.png" % (path_prefix, theme, path_suffix), 
+                             os.path.expanduser("~/.%s/%s/%s/thumbnail.png" % (path_prefix, theme, path_suffix)), 
+                             "/usr/share/cinnamon/thumbnails/%s/%s.png" % (path_suffix, theme), 
+                             "/usr/share/cinnamon/thumbnails/%s/unknown.png" % path_suffix]:                        
+                    if os.path.exists(path):
+                        chooser.set_picture_from_file(path)
+                        break        
+            except:
+                chooser.set_picture_from_file("/usr/share/cinnamon/thumbnails/%s/unknown.png" % path_suffix)
+        return chooser
 
     def add_remove_cinnamon_themes(self, widget):
         window = Gtk.Window()
