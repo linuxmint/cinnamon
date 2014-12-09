@@ -117,7 +117,7 @@ class CinnamonSlideshow(dbus.service.Object):
             file_list = all_files
             if len(files) is not 0:
                 file_list = file_list.extend(files)
-                enumerator.next_files_async(100, GLib.PRIORITY_LOW, None, on_next_file_complete)
+                enumerator.next_files_async(100, GLib.PRIORITY_LOW, None, on_next_file_complete, None)
             else:
                 enumerator.close(None)
                 self.ensure_file_is_image(file_list)
