@@ -101,14 +101,15 @@ class CinnamonSlideshow(dbus.service.Object):
                                                         Gio.FileQueryInfoFlags.NONE,
                                                         GLib.PRIORITY_LOW,
                                                         None,
-                                                        self.gather_images_cb)
+                                                        self.gather_images_cb,
+                                                        None)
         elif self.collection_type == BACKGROUND_COLLECTION_TYPE_XML:
             pictures = self.parse_xml_backgrounds_list(self.collection_path)
             for picture in pictures:                
                 filename = picture["filename"]
                 self.add_image_to_playlist(filename)
 
-    def gather_images_cb(self, obj, res):
+    def gather_images_cb(self, obj, res, user_data):
         all_files = []
         enumerator = obj.enumerate_children_finish(res)
         def on_next_file_complete(obj, res, user_data=all_files):
