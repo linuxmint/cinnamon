@@ -522,7 +522,7 @@ compute_shrinks (StBoxLayout *self,
   int n_possible_shrink_children = 0;
   for (l = children, i = 0; l; l = l->next, i++)
     {
-      ClutterActor *child = l->data;
+      ClutterActor *child;
       gfloat child_min, child_nat;
       gboolean child_fill;
       gboolean fixed;
