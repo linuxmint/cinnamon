@@ -721,7 +721,7 @@ AppMenuButton.prototype = {
       let tracker = Cinnamon.WindowTracker.get_default();
       let app = tracker.get_window_app(this.metaWindow);
 
-      if (global.settings.get_boolean('panel-scale-text-icons') && global.settings.get_boolean('panel-resizable')) {
+      if (this._applet._scaleMode) {
         this.iconSize = Math.round(panel_height * ICON_HEIGHT_FACTOR / global.ui_scale);
       }
       else {
@@ -876,15 +876,15 @@ MyAppletAlertBox.prototype = {
     },
 }
 
-function MyApplet(orientation, panel_height) {
-    this._init(orientation, panel_height);
+function MyApplet(orientation, panel_height, instance_id) {
+    this._init(orientation, panel_height, instance_id);
 }
 
 MyApplet.prototype = {
     __proto__: Applet.Applet.prototype,
 
-    _init: function(orientation, panel_height) {        
-        Applet.Applet.prototype._init.call(this, orientation, panel_height);
+    _init: function(orientation, panel_height, instance_id) {        
+        Applet.Applet.prototype._init.call(this, orientation, panel_height, instance_id);
         this.actor.set_track_hover(false);
         try {                    
             this.orientation = orientation;
@@ -1175,7 +1175,7 @@ MyApplet.prototype = {
     }
 };
 
-function main(metadata, orientation, panel_height) {  
-    let myApplet = new MyApplet(orientation, panel_height);
+function main(metadata, orientation, panel_height, instance_id) {  
+    let myApplet = new MyApplet(orientation, panel_height, instance_id);
     return myApplet;      
 }

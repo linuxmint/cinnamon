@@ -1,4 +1,5 @@
 const Applet = imports.ui.applet;
+
 const Clutter = imports.gi.Clutter;
 const St = imports.gi.St;
 const Cinnamon = imports.gi.Cinnamon;
@@ -22,8 +23,6 @@ const ICON_ANIM_FACTOR = .65;
 const PANEL_EDIT_MODE_KEY = 'panel-edit-mode';
 const PANEL_LAUNCHERS_KEY = 'panel-launchers';
 const PANEL_LAUNCHERS_DRAGGABLE_KEY = 'panel-launchers-draggable';
-const PANEL_RESIZABLE_KEY = 'panel-resizable';
-const PANEL_SCALE_TEXT_ICONS_KEY = 'panel-scale-text-icons';
 
 const CUSTOM_LAUNCHERS_PATH = GLib.get_home_dir() + '/.cinnamon/panel-launchers';
 
@@ -76,14 +75,14 @@ PanelAppLauncherMenu.prototype = {
     }
 }
 
-function PanelAppLauncher(launchersBox, app, appinfo, orientation, panel_height) {
-    this._init(launchersBox, app, appinfo, orientation, panel_height);
+function PanelAppLauncher(launchersBox, app, appinfo, orientation, panel_height, scale) {
+    this._init(launchersBox, app, appinfo, orientation, panel_height, scale);
 }
 
 PanelAppLauncher.prototype = {
     __proto__: DND.LauncherDraggable.prototype,
 
-    _init: function(launchersBox, app, appinfo, orientation, panel_height) {
+    _init: function(launchersBox, app, appinfo, orientation, panel_height, scale) {
         DND.LauncherDraggable.prototype._init.call(this);
         this.app = app;
         this.appinfo = appinfo;
@@ -107,7 +106,7 @@ PanelAppLauncher.prototype = {
         this.actor.add_actor(this._iconBox);
         this._iconBottomClip = 0;
 
-        if (global.settings.get_boolean(PANEL_SCALE_TEXT_ICONS_KEY) && global.settings.get_boolean(PANEL_RESIZABLE_KEY)) {
+        if (scale) {
             this.icon_height = Math.floor((panel_height * ICON_HEIGHT_FACTOR) / global.ui_scale);
             this.icon_anim_height = Math.floor((panel_height * ICON_ANIM_FACTOR) / global.ui_scale);
         } else {
@@ -421,7 +420,7 @@ MyApplet.prototype = {
         let apps = this.loadApps();
         for (let i = 0; i < apps.length; i++){
             let app = apps[i];
-            let launcher = new PanelAppLauncher(this, app[0], app[1], this.orientation, this._panelHeight);
+            let launcher = new PanelAppLauncher(this, app[0], app[1], this.orientation, this._panelHeight, this._scaleMode);
             this.myactor.add(launcher.actor);
             this._launchers.push(launcher);
         }

@@ -48,6 +48,10 @@ const CinnamonIface =
                 <arg type="s" direction="in" /> \
                 <arg type="b" direction="in" /> \
             </method> \
+            <method name="highlightPanel"> \
+                <arg type="i" direction="in" /> \
+                <arg type="b" direction="in" /> \
+            </method> \
             <method name="activateCallback"> \
                 <arg type="s" direction="in" /> \
                 <arg type="s" direction="in" /> \
@@ -260,6 +264,10 @@ Cinnamon.prototype = {
             let [w, h] = actor.get_transformed_size();
             this.FlashArea(x, y, w, h)
         }
+    },
+
+    highlightPanel: function(id, highlight) {
+        Main.panelManager.panels[id].highlight(highlight);
     },
 
     activateCallback: function(callback, id, id_is_instance) {

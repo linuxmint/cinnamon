@@ -22,15 +22,15 @@ let rotations = [ [ CinnamonDesktop.RRRotation.ROTATION_0, N_("Normal") ],
 		  [ CinnamonDesktop.RRRotation.ROTATION_180, N_("Upside-down") ]
 		];
 
-function MyApplet(orientation, panel_height) {
-    this._init(orientation, panel_height);
+function MyApplet(orientation, panel_height, instance_id) {
+    this._init(orientation, panel_height, instance_id);
 }
 
 MyApplet.prototype = {
     __proto__: Applet.IconApplet.prototype,
 
-    _init: function(orientation, panel_height) {        
-        Applet.IconApplet.prototype._init.call(this, orientation, panel_height);
+    _init: function(orientation, panel_height, instance_id) {        
+        Applet.IconApplet.prototype._init.call(this, orientation, panel_height, instance_id);
         
         try {        
             this.set_applet_icon_symbolic_name("preferences-desktop-display");
@@ -140,8 +140,8 @@ MyApplet.prototype = {
     
 };
 
-function main(metadata, orientation, panel_height) {  
-    let myApplet = new MyApplet(orientation, panel_height);
+function main(metadata, orientation, panel_height, instance_id) {  
+    let myApplet = new MyApplet(orientation, panel_height, instance_id);
     return myApplet;      
 }
 

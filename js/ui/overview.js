@@ -291,7 +291,7 @@ Overview.prototype = {
 
         this.workspacesView = new WorkspacesView.WorkspacesView();
         global.overlay_group.add_actor(this.workspacesView.actor);
-        Main.disablePanels();
+        Main.panelManager.disablePanels();
 
         this._group.opacity = 0;
         Tweener.addTween(this._group,
@@ -399,7 +399,7 @@ Overview.prototype = {
 
         this.animationInProgress = true;
         this._hideInProgress = true;
-        Main.enablePanels();
+        Main.panelManager.enablePanels();
 
         this.workspacesView.hide();
 

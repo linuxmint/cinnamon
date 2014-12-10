@@ -27,6 +27,19 @@ const TIME_DELTA = 1500;
 
 const APPLETS_DROP_ANIMATION_TIME = 0.2;
 
+const PANEL_AUTOHIDE_KEY = "panels-autohide";
+const PANEL_SHOW_DELAY_KEY = "panels-show-delay";
+const PANEL_HIDE_DELAY_KEY = "panels-hide-delay";
+const PANEL_HEIGHT_KEY = "panels-height";
+const PANEL_RESIZABLE_KEY = "panels-resizable";
+const PANEL_SCALE_TEXT_ICONS_KEY = "panels-scale-text-icons";
+
+const DEFAULT_VALUES = {"panels-autohide": "false",
+                        "panels-show-delay": "0",
+                        "panels-hide-delay": "0",
+                        "panels-height": "25",
+                        "panels-resizable": "false",
+                        "panels-scale-text-icons": "false"};
 // To make sure the panel corners blend nicely with the panel,
 // we draw background and borders the same way, e.g. drawing
 // them as filled shapes from the outside inwards instead of
@@ -69,6 +82,117 @@ function _unpremultiply(color) {
     return new Clutter.Color({ red: red, green: green,
                                blue: blue, alpha: color.alpha });
 };
+
+
+/**
+ * PanelManager
+ * 
+ * @short_description: Manager of Cinnamon panels
+ *
+ * #PanelManager creates panels and startup and
+ * provides methods for easier access of panels
+ */
+function PanelManager() {
+    this._init();
+}
+
+PanelManager.prototype = {
+    _init: function() {
+        this.panels = [];
+        this.panelsMeta = []; // Properties of panels in format [<monitor index>, <bottomPosition>]
+
+        let panelProperties = global.settings.get_strv("panels-enabled");
+        for (let i in panelProperties) {
+            let elements = panelProperties[i].split(":");
+            if (elements.length != 3) {
+                global.log("Invalid panel definition: " + panelProperties[i]);
+                continue;
+            }
+
+            let ID = parseInt(elements[0]);
+            if (this.panels[ID]) {
+                global.log("Multiple panels with same ID (" + ID + ") are found");
+                continue;
+            }
+
+            this.panels.length = Math.max(this.panels.length, ID+1);
+            this.panelsMeta.length = Math.max(this.panels.length, ID+1);
+
+            let repeat = false;
+            for (let i in this.panelsMeta) {
+                if ((this.panelsMeta[i][0] == elements[1]) && (this.panelsMeta[i][1] == elements[2])) {
+                    global.log("Conflicting panel definitions: " + panelProperties);
+                    repeat = true;
+                    break;
+                }
+            }
+
+            if (repeat) continue;
+
+            this.panels[ID] = new Panel(ID, parseInt(elements[1]), elements[2]=="bottom");
+            this.panelsMeta[ID] = [elements[1], elements[2]];
+
+        }
+    },
+
+    /**
+     * disablePanels:
+     *
+     * Disables (hide and lock) all panels
+     */
+    disablePanels: function() {
+        for (let i in this.panels) {
+            if (this.panels[i])
+                this.panels[i].disable();
+        }
+    },
+
+    /**
+     * enablePanels:
+     *
+     * Enables all panels
+     */
+    enablePanels: function() {
+        for (let i in this.panels) {
+            if (this.panels[i])
+                this.panels[i].enable();
+        }
+    },
+
+    /**
+     * getPanelInMonitor:
+     * @monitorIndex (integer): index of monitor
+     *
+     * Retrieves all the panels in the monitor of index @monitorIndex
+     *
+     * Returns: an array of panels
+     */
+    getPanelsInMonitor: function(monitorIndex) {
+        let returnValue = [];
+        for (let i in this.panels) {
+            if (this.panels[i].monitorId == monitorIndex)
+                returnValue.push(this.panels[i]);
+        }
+        return returnValue;
+    },
+
+    /**
+     * getPanel:
+     * @monitorIndex (integer): index of monitor
+     * @bottomPosition (boolean): whether the bottom panel is wanted
+     *
+     * Gets a specific panel in monitor @monitorIndex (bottom panel if @bottomPosition is true)
+     *
+     * Returns: the panel required (null if panel not found)
+     */
+    getPanel: function(monitorIndex, bottomPosition) {
+        for (let i in this.panels) {
+            if (this.panels[i].monitorId == monitorIndex && this.panels[i].bottomPosition == bottomPosition)
+                return this.panels[i];
+        }
+        return null;
+    }
+}
 
 function AnimatedIcon(name, size) {
     this._init(name, size);
@@ -434,7 +558,7 @@ SettingsLauncher.prototype = {
 
 };
 
-function populateSettingsMenu(menu, ah_key) {
+function populateSettingsMenu(menu, panelId) {
 
     menu.troubleshootItem = new PopupMenu.PopupSubMenuMenuItem(_("Troubleshoot ..."), true);
     menu.troubleshootItem.menu.addAction(_("Restart Cinnamon"), function(event) {
@@ -457,14 +581,43 @@ function populateSettingsMenu(menu, ah_key) {
     menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
 
     // Auto-hide Panel
-    let autoHide = global.settings.get_boolean(ah_key);
-    let autoHidePanel = new PopupMenu.PopupSwitchMenuItem(_("Auto-hide panel"), autoHide);
+    let values = global.settings.get_strv(PANEL_AUTOHIDE_KEY);
+    let property;
+    for (let i = 0; i < values.length; i++){
+        if (values[i].split(":")[0]==panelId){
+            property=values[i].split(":")[1];
+            break;
+        }
+    }
+    if (!property){
+        property = DEFAULT_VALUES[PANEL_AUTOHIDE_KEY];
+        values.push(this.panelID + ":" + property);
+        global.settings.set_strv(PANEL_AUTOHIDE_KEY, values);
+    }
+    let autoHidePanel = new PopupMenu.PopupSwitchMenuItem(_("Auto-hide panel"), property == "true");
     autoHidePanel.connect('toggled', function(item) {
-        global.settings.set_boolean(ah_key, item.state);
+        let values = global.settings.get_strv(PANEL_AUTOHIDE_KEY);
+        let property;
+        for (let i = 0; i < values.length; i++){
+            if (values[i].split(":")[0] == panelId){
+                values[i] = panelId + ":" + (item.state ? "true" : "false");
+                break;
+            }
+        }
+        global.settings.set_strv(PANEL_AUTOHIDE_KEY, values);
     });
+
     menu.addMenuItem(autoHidePanel);
-    global.settings.connect('changed::' + ah_key, function() {
-        autoHidePanel.setToggleState(global.settings.get_boolean(ah_key));
+    global.settings.connect('changed::' + PANEL_AUTOHIDE_KEY, function() {
+        let values = global.settings.get_strv(PANEL_AUTOHIDE_KEY);
+        let property;
+        for (let i = 0; i < values.length; i++){
+            if (values[i].split(":")[0]==panelId){
+                property=values[i].split(":")[1];
+                break;
+            }
+        }
+        autoHidePanel.setToggleState(property == "true");
     });
 
     // Panel Edit mode
@@ -479,14 +632,14 @@ function populateSettingsMenu(menu, ah_key) {
     });
 }
 
-function PanelContextMenu(launcher, orientation, ah_key) {
-    this._init(launcher, orientation, ah_key);
+function PanelContextMenu(launcher, orientation, panelId) {
+    this._init(launcher, orientation, panelId);
 }
 
 PanelContextMenu.prototype = {
     __proto__: PopupMenu.PopupMenu.prototype,
 
-    _init: function(launcher, orientation, ah_key) {
+    _init: function(launcher, orientation, panelId) {
         PopupMenu.PopupMenu.prototype._init.call(this, launcher.actor, 0.0, orientation, 0);
         Main.uiGroup.add_actor(this.actor);
         this.actor.hide();
@@ -494,7 +647,7 @@ PanelContextMenu.prototype = {
         let applet_settings_item = new SettingsLauncher(_("Add applets to the panel"), "applets", "list-add", this);
         this.addMenuItem(applet_settings_item);
 
-        let menuItem = new SettingsLauncher(_("Panel settings"), "panel", "emblem-system", this);
+        let menuItem = new SettingsLauncher(_("Panel settings"), "panel " + panelId, "emblem-system", this);
         this.addMenuItem(menuItem);
 
         let menuItem = new SettingsLauncher(_("Themes"), "themes", "applications-graphics", this);
@@ -503,7 +656,7 @@ PanelContextMenu.prototype = {
         let menuSetting = new SettingsLauncher(_("All settings"), "", "preferences-system", this);
         this.addMenuItem(menuSetting);
 
-        populateSettingsMenu(this, ah_key);
+        populateSettingsMenu(this, panelId);
     }
 }
 
@@ -607,54 +760,33 @@ PanelZoneDNDHandler.prototype = {
 }
 
 
-function Panel(bottomPosition, isPrimary) {
-    this._init(bottomPosition, isPrimary);
+function Panel(id, monitorId, bottomPosition) {
+    this._init(id, monitorId, bottomPosition);
 }
 
 Panel.prototype = {
-    _init : function(bottomPosition, isPrimary) {
-
-        Gtk.IconTheme.get_default().append_search_path("/usr/lib/cinnamon-settings/data/icons/");
-
+    _init : function(id, monitorId, bottomPosition) {
+        this.panelId = id;
+        this.monitorId = monitorId;
+        this.monitor = global.screen.get_monitor_geometry(monitorId);
         this.bottomPosition = bottomPosition;
-        this.isPrimary = isPrimary;
-        if (this.isPrimary) {
-            this.panel_ah_key = "panel-autohide";
-            this.panel_sd_key = "panel-show-delay";
-            this.panel_hd_key = "panel-hide-delay";
-        } else {
-            this.panel_ah_key = "panel2-autohide";
-            this.panel_sd_key = "panel2-show-delay";
-            this.panel_hd_key = "panel2-hide-delay";
-        }
+
     	this._hidden = false;
         this._disabled = false;
         this._panelEditMode = false;
         this._hidetime = 0;
-        this._hideable = global.settings.get_boolean(this.panel_ah_key);
+        this._hideable = this._getProperty(PANEL_AUTOHIDE_KEY, "b")
         this._hideTimer = 0;
         this._showTimer = 0;
-        this._onPanelShowDelayChanged();
-        this._onPanelHideDelayChanged();
         this._themeFontSize = null;
+        this.scaleMode = false;
 
         this.actor = new Cinnamon.GenericContainer({ name: 'panel',
                                                   reactive: true });
         this.actor._delegate = this;
 
-        if (global.settings.get_boolean('panel-resizable')) {
-            if (bottomPosition) {
-                this.actor.set_height(global.settings.get_int('panel-bottom-height') * global.ui_scale);
-            }
-            else {
-                this.actor.set_height(global.settings.get_int('panel-top-height') * global.ui_scale);
-            }
-        }
-        if (this.bottomPosition) {
-            global.settings.connect("changed::panel-bottom-height", Lang.bind(this, this._processPanelSize));
-        }
-        else {
-            global.settings.connect("changed::panel-top-height", Lang.bind(this, this._processPanelSize));
+        if (this._getProperty(PANEL_RESIZABLE_KEY, "b")) {
+            this.actor.set_height(this._getProperty(PANEL_HEIGHT_KEY, "i") * global.ui_scale);
         }
 
         this._menus = new PopupMenu.PopupMenuManager(this);
@@ -669,40 +801,25 @@ Panel.prototype = {
         this.actor.add_actor(this._rightBox);
         this._rightBoxDNDHandler = new PanelZoneDNDHandler(this._rightBox);
 
-        if (this.actor.get_direction() == St.TextDirection.RTL)
+
+        if (this.actor.get_direction() == St.TextDirection.RTL) {
             this._leftCorner = new PanelCorner(this._rightBox, St.Side.LEFT);
-        else
+            this._rightCorner = new PanelCorner(this._leftBox, St.Side.RIGHT);
+        } else {
             this._leftCorner = new PanelCorner(this._leftBox, St.Side.LEFT);
+            this._rightCorner = new PanelCorner(this._rightBox, St.Side.RIGHT);
+        }
 
         this.actor.add_actor(this._leftCorner.actor);
-
-        if (this.actor.get_direction() == St.TextDirection.RTL)
-            this._rightCorner = new PanelCorner(this._leftBox, St.Side.RIGHT);
-        else
-            this._rightCorner = new PanelCorner(this._rightBox, St.Side.RIGHT);
         this.actor.add_actor(this._rightCorner.actor);
 
-        this.actor.connect('get-preferred-width', Lang.bind(this, this._getPreferredWidth));
-        this.actor.connect('get-preferred-height', Lang.bind(this, this._getPreferredHeight));
-        this.actor.connect('allocate', Lang.bind(this, this._allocate));
 
         /* right */
         this._status_area_order = [];
         this._status_area_cinnamon_implementation = {};
 
-        this.actor.connect('leave-event', Lang.bind(this, this._leavePanel));
-        this.actor.connect('enter-event', Lang.bind(this, this._enterPanel));
-        global.settings.connect("changed::" + this.panel_ah_key, Lang.bind(this, this._processPanelAutoHide));
-        global.settings.connect("changed::" + this.panel_sd_key, Lang.bind(this, this._onPanelShowDelayChanged));
-        global.settings.connect("changed::" + this.panel_hd_key, Lang.bind(this, this._onPanelHideDelayChanged));
-
-        let orientation = St.Side.TOP;
-        if (bottomPosition) {
-            orientation = St.Side.BOTTOM;
-        }
-        
-        this._context_menu = new PanelContextMenu(this, orientation, this.panel_ah_key);
-        this._menus.addMenu(this._context_menu);   
+        this._context_menu = new PanelContextMenu(this, bottomPosition ? St.Side.BOTTOM: St.Side.TOP, id);
+        this._menus.addMenu(this._context_menu);
         
         this._context_menu._boxPointer._container.connect('allocate', Lang.bind(this._context_menu._boxPointer, function(actor, box, flags){
                     this._xPosition = this._xpos;
@@ -710,18 +827,109 @@ Panel.prototype = {
         }));
 
         this.actor.connect('button-press-event', Lang.bind(this, this._onButtonPressEvent));
-
-        global.settings.connect("changed::panel-edit-mode", Lang.bind(this, this._onPanelEditModeChanged));
-        global.settings.connect("changed::panel-resizable", Lang.bind(this, this._processPanelSize));
-        global.settings.connect("changed::panel-scale-text-icons", Lang.bind(this, this._onScaleTextIconsChanged))
-        this.actor.connect('style-changed', Lang.bind(this, this._processPanelSize));
+        this.actor.connect('style-changed', Lang.bind(this, this._moveResizePanel));
         this.actor.connect('parent-set', Lang.bind(this, this._onPanelEditModeChanged));
+        this.actor.connect('leave-event', Lang.bind(this, this._leavePanel));
+        this.actor.connect('enter-event', Lang.bind(this, this._enterPanel));
+        this.actor.connect('get-preferred-width', Lang.bind(this, this._getPreferredWidth));
+        this.actor.connect('get-preferred-height', Lang.bind(this, this._getPreferredHeight));
+        this.actor.connect('allocate', Lang.bind(this, this._allocate));
+
+        global.settings.connect("changed::" + PANEL_AUTOHIDE_KEY, Lang.bind(this, this._processPanelAutoHide));
+        global.settings.connect("changed::" + PANEL_HEIGHT_KEY, Lang.bind(this, this._moveResizePanel));
+        global.settings.connect("changed::" + PANEL_RESIZABLE_KEY, Lang.bind(this, this._moveResizePanel));
+        global.settings.connect("changed::" + PANEL_SCALE_TEXT_ICONS_KEY, Lang.bind(this, this._onScaleTextIconsChanged));
+        global.settings.connect("changed::panel-edit-mode", Lang.bind(this, this._onPanelEditModeChanged));
+
+        global.screen.connect("monitors-changed", Lang.bind(this, this._moveResizePanel));
+
+        /* Generate panelbox */
+        this._leftPanelBarrier = 0;
+        this._rightPanelBarrier = 0;
+        this.panelBox = new St.BoxLayout({ name: 'panelBox',
+                                           vertical: true });
+        Main.layoutManager.addChrome(this.panelBox, { addToWindowgroup: false });
+        this.panelBox.connect('allocation-changed', Lang.bind(this, this._updatePanelBarriers));
+        this.panelBox.add_actor(this.actor)
+
+        this._moveResizePanel();
+    },
+
+    /**
+     * highlight:
+     * @highlight (boolean): whether to turn on or off
+     *
+     * Turns on/off the highlight of the panel
+     */
+    highlight: function(highlight) {
+        if (highlight)
+            this.actor.add_style_pseudo_class('highlight');
+        else
+            this.actor.remove_style_pseudo_class('highlight');
     },
 
     isHideable: function() {
         return this._hideable;
     },
     
+    /**
+     * _getProperty
+     * @key (string): name of gsettings key
+     * @type (string): (optional) type of data requested. "b" for boolean, "i" for integer. Default value is string
+     *
+     * Gets the desired property of the panel from gsettings
+     *
+     * Returns: property required
+     */
+    _getProperty: function(key, type){
+        let values = global.settings.get_strv(key);
+        let property;
+        for (let i = 0; i < values.length; i++){
+            if (values[i].split(":")[0]==this.panelId){
+                property=values[i].split(":")[1];
+                break;
+            }
+        }
+        if (!property){
+            property = DEFAULT_VALUES[key];
+            values.push(this.panelId + ":" + property);
+            global.settings.set_strv(key, values);
+        }
+        switch (type){
+        case "b":
+            return property=="true";
+        case "i":
+            return parseInt(property);
+        default:
+            return property;
+        }
+    },
+
+    _updatePanelBarriers: function() {
+        if (this._leftPanelBarrier)
+            global.destroy_pointer_barrier(this._leftPanelBarrier);
+        if (this._rightPanelBarrier)
+            global.destroy_pointer_barrier(this._rightPanelBarrier);
+
+        if (this.panelBox.height) {
+            let panelTop = (this.bottomPosition ? this.monitor.y + this.monitor.height - this.panelBox.height : this.monitor.y);
+            let panelBottom = (this.bottomPosition ? this.monitor.y + this.monitor.height : this.monitor.y + this.panelBox.height);
+
+            this._leftPanelBarrier = global.create_pointer_barrier(
+                this.monitor.x, panelTop,
+                this.monitor.x, panelBottom,
+                1 /* BarrierPositiveX */);
+
+            this._rightPanelBarrier = global.create_pointer_barrier(
+                this.monitor.x + this.monitor.width, panelTop,
+                this.monitor.x + this.monitor.width, panelBottom,
+                4 /* BarrierNegativeX */);
+        } else {
+            this._leftPanelBarrier = 0;
+            this._rightPanelBarrier = 0;
+        }
+    },
+
     _onPanelEditModeChanged: function() {
         let old_mode = this._panelEditMode;
         if (global.settings.get_boolean("panel-edit-mode")) {
@@ -782,16 +990,8 @@ Panel.prototype = {
         return;
     },
         
-    _onPanelShowDelayChanged: function() {  
-       this._showDelay = global.settings.get_int(this.panel_sd_key);
-    },
-    
-    _onPanelHideDelayChanged: function() {  
-       this._hideDelay = global.settings.get_int(this.panel_hd_key);
-    },
-    
     _processPanelAutoHide: function() {  
-        this._hideable = global.settings.get_boolean(this.panel_ah_key) && !this._panelEditMode;
+        this._hideable = this._getProperty(PANEL_AUTOHIDE_KEY, "b") && !this._panelEditMode;
         // Show a glimpse of the panel irrespective of the new setting,
         // in order to force a region update.
         // Techically, this should not be necessary if the function is called
@@ -801,34 +1001,35 @@ Panel.prototype = {
         this._hidePanel(true); // force hide
         this._showPanel();
 
-        if (this._hideable == true) {
+        if (this._hideable) {
             this._hidePanel();
         }
+        Main.layoutManager._chrome.modifyActorParams(this.panelBox, { affectsStruts: !this._hideable });
     },
 
-    _processPanelSize: function() {
+    _moveResizePanel: function() {
+        this.monitor = global.screen.get_monitor_geometry(this.monitorId);
+
         let panelHeight;
-        let panelResizable = global.settings.get_boolean("panel-resizable");
+
+        let panelResizable = this._getProperty(PANEL_RESIZABLE_KEY, "b");
         if (panelResizable) {
-            if (this.bottomPosition) {
-                panelHeight = global.settings.get_int("panel-bottom-height") * global.ui_scale;
-            }
-            else {
-                panelHeight = global.settings.get_int("panel-top-height") * global.ui_scale;
-            }
-        }
-        else {
+            panelHeight = this._getProperty(PANEL_HEIGHT_KEY, "i") * global.ui_scale;
+        } else {
             let themeNode = this.actor.get_theme_node();
             panelHeight = themeNode.get_length("height");
             if (!panelHeight || panelHeight == 0) {
                 panelHeight = 25 * global.ui_scale;
             }
         }
+
         if (!this._themeFontSize) {
-                let themeNode = this.actor.get_theme_node();
-                this._themeFontSize = themeNode.get_length("font-size");
-            }
-        if (global.settings.get_boolean("panel-scale-text-icons") && global.settings.get_boolean("panel-resizable")) {
+            let themeNode = this.actor.get_theme_node();
+            this._themeFontSize = themeNode.get_length("font-size");
+        }
+
+        this.scaleMode = this._getProperty(PANEL_RESIZABLE_KEY, "b") && this._getProperty(PANEL_SCALE_TEXT_ICONS_KEY, "b");
+        if (this.scaleMode) {
             let textheight = (panelHeight / (Applet.DEFAULT_PANEL_HEIGHT * global.ui_scale) * (Applet.PANEL_FONT_DEFAULT_HEIGHT * global.ui_scale));
             this.actor.set_style('font-size: ' + textheight / global.ui_scale + 'px;');
         } else {
@@ -836,22 +1037,24 @@ Panel.prototype = {
         }
         this.actor.set_height(panelHeight);
         this._processPanelAutoHide();
-        AppletManager.updateAppletPanelHeights();
+
+        this.panelBox.set_size(this.monitor.width, panelHeight);
+        this.panelBox.set_position(this.monitor.x, this.bottomPosition ? this.monitor.y + this.monitor.height - panelHeight : this.monitor.y);
+
+        // AppletManager might not be initialized yet
+        if (AppletManager.enabledApplets)
+            AppletManager.updateAppletPanelHeights();
     },
 
     _onScaleTextIconsChanged: function() {
-        let panelHeight;
-        if (this.bottomPosition) {
-            panelHeight = global.settings.get_int("panel-bottom-height");
-        }
-        else {
-            panelHeight = global.settings.get_int("panel-top-height");
-        }
+        let panelHeight = this._getProperty(PANEL_HEIGHT_KEY, "i");
+        this.scaleMode = this._getProperty(PANEL_RESIZABLE_KEY, "b") && this._getProperty(PANEL_SCALE_TEXT_ICONS_KEY, "b");
+
         if (!this._themeFontSize) {
             let themeNode = this.actor.get_theme_node();
             this._themeFontSize = themeNode.get_length("font-size");
         }
-        if (global.settings.get_boolean("panel-scale-text-icons") && global.settings.get_boolean("panel-resizable")) {
+        if (this.scaleMode) {
             let textheight = (panelHeight / Applet.DEFAULT_PANEL_HEIGHT) * Applet.PANEL_FONT_DEFAULT_HEIGHT;
             this.actor.set_style('font-size: ' + textheight + 'px;');
         } else {
@@ -976,8 +1179,9 @@ Panel.prototype = {
     _enterPanel: function() {
         this.isMouseOverPanel = true;
         this._clearTimers();
-        if (this._showDelay > 0) {
-            this._showTimer = Mainloop.timeout_add(this._showDelay, Lang.bind(this, this._showPanel));
+        let showDelay = this._getProperty(PANEL_SHOW_DELAY_KEY, "i");
+        if (showDelay > 0) {
+            this._showTimer = Mainloop.timeout_add(showDelay, Lang.bind(this, this._showPanel));
         }
         else {
             this._showPanel();
@@ -987,8 +1191,9 @@ Panel.prototype = {
     _leavePanel:function() {
         this.isMouseOverPanel = false;
         this._clearTimers();
-        if (this._hideDelay > 0 && !this._disabled) {
-            this._hideTimer = Mainloop.timeout_add(this._hideDelay, Lang.bind(this, this._hidePanel));
+        let hideDelay = this._getProperty(PANEL_HIDE_DELAY_KEY, "i");
+        if (hideDelay > 0 && !this._disabled) {
+            this._hideTimer = Mainloop.timeout_add(hideDelay, Lang.bind(this, this._hidePanel));
         }
         else {
             this._hidePanel();
@@ -1032,10 +1237,7 @@ Panel.prototype = {
 
         let height = this.actor.get_height();
         let animationTime = AUTOHIDE_ANIMATION_TIME;
-        let y = this.bottomPosition ?
-            Main.layoutManager.bottomMonitor.y + Main.layoutManager.bottomMonitor.height - height :
-            Main.layoutManager.primaryMonitor.y;
-
+        let y = this.bottomPosition ? this.monitor.y + this.monitor.height - height : this.monitor.y
 
         let params = { y: height - 1,
                         time: animationTime + 0.1,
@@ -1049,10 +1251,16 @@ Panel.prototype = {
                         { y: y,
                         time: animationTime,
                         transition: 'easeOutQuad',
-                        onUpdate: function() {
+                        onUpdate: Lang.bind(this, function(origY, bottomPosition) {
                             // Force the layout manager to update the input region
                             Main.layoutManager._chrome.updateRegions()
-                        }
+
+                            let height = Math.abs(this.actor.get_parent().y - origY);
+                            let y = bottomPosition? 0 : this.actor.height - height;
+
+                            this.actor.set_clip(0, y, this.monitor.width, height);
+                        }),
+                        onUpdateParams: [this.bottomPosition ? this.monitor.y + this.monitor.height : this.monitor.y - height, this.bottomPosition]
                         });
 
         params = { opacity: 255,
@@ -1077,18 +1285,22 @@ Panel.prototype = {
 
         let height = this.actor.get_height();
         let animationTime = AUTOHIDE_ANIMATION_TIME;
-        let y = this.bottomPosition ?
-            Main.layoutManager.bottomMonitor.y + Main.layoutManager.bottomMonitor.height - 1 :
-            Main.layoutManager.primaryMonitor.y - height + 1;
+        let y = this.bottomPosition ? this.monitor.y + this.monitor.height - 1 : this.monitor.y - height + 1;
         
         Tweener.addTween(this.actor.get_parent(), { 
             y: y,
             time: animationTime,
             transition: 'easeOutQuad',
-            onUpdate: function() {
+            onUpdate: Lang.bind(this, function(targetY, bottomPosition) {
                 // Force the layout manager to update the input region
                 Main.layoutManager._chrome.updateRegions()
-            }
+
+                let height = Math.abs(this.actor.get_parent().y - targetY) + 1;
+                let y = bottomPosition ? 0 : this.actor.height - height;
+
+                this.actor.set_clip(0, y, this.monitor.width, height);
+            }),
+            onUpdateParams: [y, this.bottomPosition]
         });
 
         let params = { y: 0,

@@ -864,10 +864,10 @@ LookingGlass.prototype = {
         this._updateFont();
 
         // We want it to appear to slide out from underneath the panel
-        Main.layoutManager.panelBox.add_actor(this.actor);
+        Main.panelManager.panels[1].panelBox.add_actor(this.actor);
         this.actor.lower_bottom();
-        Main.layoutManager.panelBox.connect('allocation-changed',
-                                            Lang.bind(this, this._queueResize));
+        Main.panelManager.panels[1].panelBox.connect('allocation-changed',
+                                                     Lang.bind(this, this._queueResize));
         Main.layoutManager.keyboardBox.connect('allocation-changed',
                                                Lang.bind(this, this._queueResize));
 

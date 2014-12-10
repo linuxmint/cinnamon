@@ -530,6 +530,7 @@ class MainWindow:
         self.current_sidepage = None   
     
     def quit(self, *args):
+        self.window.destroy()
         Gtk.main_quit()
 
 if __name__ == "__main__":
