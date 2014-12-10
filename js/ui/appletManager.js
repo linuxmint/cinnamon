@@ -162,7 +162,7 @@ function onEnabledAppletsChanged() {
         // Remove all applet instances that do not exist in the definition anymore.
         for (let applet_id in oldEnabledAppletDefinitions.idMap) {
             if(!enabledAppletDefinitions.idMap[applet_id]) {
-                removeAppletFromPanels(enabledAppletDefinitions.idMap[applet_id]);
+                removeAppletFromPanels(oldEnabledAppletDefinitions.idMap[applet_id]);
             }
         }
         
