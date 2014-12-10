@@ -17,6 +17,9 @@ class Module:
         self.model = Gtk.ListStore(str, str)
         self.highlight_function = dbus.SessionBus().get_object("org.Cinnamon", "/org/Cinnamon").get_dbus_method("highlightPanel", "org.Cinnamon")
         self.widgets = []
+        self.panel_id = None
+        if len(sys.argv) > 2:
+            self.panel_id = sys.argv[2]
 
     def on_module_selected(self):
         if not self.loaded:
@@ -27,9 +30,6 @@ class Module:
             vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
             bg.add(vbox)
 
-            self.panel_id = None
-            if len(sys.argv) > 2:
-                self.panel_id = sys.argv[2]
 
             self.combo_box = Gtk.ComboBox.new_with_model(self.model)
             renderer_text = Gtk.CellRendererText()
@@ -81,10 +81,11 @@ class Module:
 
             self.combo_box.connect("changed", self.on_combo_box_changed)
             # Widget is only hidden when switching panels
-            self.combo_box.connect("hide", self.on_combo_box_destroy)
+            self.combo_box.connect("unmap", self.on_combo_box_destroy)
             self.combo_box.connect("destroy", self.on_combo_box_destroy)
 
             self.on_panel_list_changed("org.cinnamon", "panels-enabled")
+        self.on_combo_box_changed(self.combo_box)
 
 
     def on_panel_list_changed(self, schema, key):
