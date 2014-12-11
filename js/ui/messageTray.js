@@ -21,8 +21,8 @@ const Util = imports.misc.util;
 const AppletManager = imports.ui.appletManager;
 
 const ANIMATION_TIME = .2;
-const NOTIFICATION_TIMEOUT = 4;
-const NOTIFICATION_CRITICAL_TIMEOUT_WITH_APPLET = 10;
+//const NOTIFICATION_TIMEOUT = 4;
+//const NOTIFICATION_CRITICAL_TIMEOUT_WITH_APPLET = 10;
 const SUMMARY_TIMEOUT = 1;
 const LONGER_SUMMARY_TIMEOUT = 4;
 
@@ -460,24 +460,24 @@ Notification.prototype = {
         this.actor._parent_container = null;
         this.actor.connect('clicked', Lang.bind(this, this._onClicked));
         this.actor.connect('destroy', Lang.bind(this, this._onDestroy));
-		// Transparency on mouse over?
-		if (Main.messageTray.fadeOnMouseover) {
-			// Register to every notification as we intend to support multiple notifications on screen.
-			this.enter_id = this.actor.connect('enter-event', Lang.bind(this, function() {
-				Tweener.addTween(this.actor, {
-					opacity: ((Main.messageTray.fadeOpacity / 100) * 255).clamp(0, 255),
-					time: ANIMATION_TIME,
-					transition: 'easeOutQuad'
-				});
-			}));
-			this.leave_id = this.actor.connect('leave-event', Lang.bind(this, function() {
-				Tweener.addTween(this.actor, {
-					opacity: (this._table.get_theme_node().get_length('opacity') / global.ui_scale) || 255,
-					time: ANIMATION_TIME,
-					transition: 'easeOutQuad'
-				});
-			}));
-		}
+        // Transparency on mouse over
+        if (Main.messageTray.fadeOnMouseover) {
+            // Register to every notification as we intend to support multiple notifications on screen.
+            this.enter_id = this.actor.connect('enter-event', Lang.bind(this, function() {
+                Tweener.addTween(this.actor, {
+                    opacity: ((Main.messageTray.fadeOpacity / 100) * 255).clamp(0, 255),
+                    time: ANIMATION_TIME,
+                    transition: 'easeOutQuad'
+                });
+            }));
+            this.leave_id = this.actor.connect('leave-event', Lang.bind(this, function() {
+                Tweener.addTween(this.actor, {
+                    opacity: (this._table.get_theme_node().get_length('opacity') / global.ui_scale) || 255,
+                    time: ANIMATION_TIME,
+                    transition: 'easeOutQuad'
+                });
+            }));
+        }
 
         this._table = new St.Table({ name: 'notification',
                                      reactive: true });
@@ -1443,19 +1443,30 @@ MessageTray.prototype = {
 
         Main.layoutManager.connect('monitors-changed', Lang.bind(this, this._setSizePosition));
 
-		// Settings
+        // Settings
         this.settings = new Gio.Settings({ schema: "org.cinnamon.desktop.notifications" })
-		function setting(self, source, camelCase, dashed) {
-			function updater() { self[camelCase] = source.get_boolean(dashed); }
-			source.connect('changed::'+dashed, updater);
-			updater();
-		}
-		setting(this, this.settings, "_notificationsEnabled", "display-notifications");
-		setting(this, this.settings, "fadeOnMouseover", "fade-on-mouseover");
+        function setting(self, source, camelCase, dashed) {
+            function updater() { self[camelCase] = source.get_boolean(dashed); }
+            source.connect('changed::'+dashed, updater);
+            updater();
+        }
+        setting(this, this.settings, "_notificationsEnabled", "display-notifications");
+        setting(this, this.settings, "fadeOnMouseover", "fade-on-mouseover");
+        
         this.fadeOpacity = this.settings.get_int("fade-opacity");
+        this.normalTimeout = this.settings.get_int("timeout-time");
+        this.critTimeout = this.settings.get_int("critical-timeout-time");
+        
+        this.settings.connect("changed::timeout-time", Lang.bind(this, function() {
+            this.normalTimeout = this.settings.get_int("timeout-time");
+        }));
+        this.settings.connect("changed::critical-timeout-time", Lang.bind(this, function() {
+            this.critTimeout = this.settings.get_int("critical-timeout-time");
+        }));
         this.settings.connect("changed::fade-opacity", Lang.bind(this, function() {
             this.fadeOpacity = this.settings.get_int("fade-opacity");
-        }))
+        }));
+        
         this._setSizePosition();
 
         let updateLockState = Lang.bind(this, function() {
@@ -1721,9 +1732,9 @@ MessageTray.prototype = {
     _showNotificationCompleted: function() {
         this._notificationTimeoutId = 0;
         if (this._notification.urgency != Urgency.CRITICAL) {
-            this._updateNotificationTimeout(NOTIFICATION_TIMEOUT * 1000);
+            this._updateNotificationTimeout(this.normalTimeout); //1
         } else if (AppletManager.get_role_provider_exists(AppletManager.Roles.NOTIFICATIONS)) {
-            this._updateNotificationTimeout(NOTIFICATION_CRITICAL_TIMEOUT_WITH_APPLET * 1000);
+            this._updateNotificationTimeout(this.critTimeout); //2
         }
     },
 
@@ -1734,8 +1745,7 @@ MessageTray.prototype = {
         }
         if (timeout > 0)
             this._notificationTimeoutId =
-                Mainloop.timeout_add(timeout,
-                                     Lang.bind(this, this._notificationTimeout));
+                Mainloop.timeout_add(timeout, Lang.bind(this, this._notificationTimeout));
     },
 
     _notificationTimeout: function() {
