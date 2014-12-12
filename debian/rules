@@ -4,6 +4,9 @@
 # Uncomment this to turn on verbose mode.
 #export DH_VERBOSE=1
 
+# turn on Makefile verbose mode
+export V=1
+
 export LDFLAGS+=-Wl,--as-needed
 
 # To avoid running configure twice (because gnome-autogen.sh)
@@ -21,7 +24,7 @@ CINNAMON_VERSION := $(shell echo $(VERSION) | sed 's/\(.*.*\)\..*/\1.0/')
 DH_GENCONTROL_ARGS = -Vcinnamon:Version=$(CINNAMON_VERSION)
 
 %:
-	dh  $@ --with autoreconf,python2 $(DH_PARALLEL_OPTION)
+	dh  $@ --with autoreconf,python2,gir $(DH_PARALLEL_OPTION)
 
 
 override_dh_autoreconf:
@@ -43,10 +46,14 @@ override_dh_strip:
 	dh_strip --dbg-package=cinnamon-dbg
 
 override_dh_makeshlibs:
-	dh_makeshlibs -Xplugin
+	dh_makeshlibs -Xplugin -X/usr/lib/cinnamon
 
 override_dh_girepository:
 	dh_girepository -l src -p/usr/lib/$(DEB_HOST_MULTIARCH)/muffin /usr/lib/cinnamon
 
 override_dh_gencontrol:
 	dh_gencontrol -- $(DH_GENCONTROL_ARGS)
+
+override_dh_builddeb:
+	dh_builddeb -- -Zxz -z9
+
