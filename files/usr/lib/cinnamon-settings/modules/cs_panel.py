@@ -19,7 +19,8 @@ class Module:
         self.widgets = []
         self.panel_id = None
         if len(sys.argv) > 2:
-            self.panel_id = sys.argv[2]
+            if sys.argv[1] == "panel":
+                self.panel_id = sys.argv[2]
 
     def on_module_selected(self):
         if not self.loaded:
