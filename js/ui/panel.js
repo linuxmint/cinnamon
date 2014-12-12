@@ -801,7 +801,6 @@ Panel.prototype = {
         this.actor.add_actor(this._rightBox);
         this._rightBoxDNDHandler = new PanelZoneDNDHandler(this._rightBox);
 
-
         if (this.actor.get_direction() == St.TextDirection.RTL) {
             this._leftCorner = new PanelCorner(this._rightBox, St.Side.LEFT);
             this._rightCorner = new PanelCorner(this._leftBox, St.Side.RIGHT);
@@ -813,6 +812,10 @@ Panel.prototype = {
         this.actor.add_actor(this._leftCorner.actor);
         this.actor.add_actor(this._rightCorner.actor);
 
+        if (this.bottomPosition)
+            this.actor.add_style_class_name('panel-bottom')
+        else
+            this.actor.add_style_class_name('panel-top')
 
         /* right */
         this._status_area_order = [];
