@@ -644,7 +644,7 @@ PanelContextMenu.prototype = {
         Main.uiGroup.add_actor(this.actor);
         this.actor.hide();
 
-        let applet_settings_item = new SettingsLauncher(_("Add applets to the panel"), "applets", "list-add", this);
+        let applet_settings_item = new SettingsLauncher(_("Add applets to the panel"), "applets panel" + panelId, "list-add", this);
         this.addMenuItem(applet_settings_item);
 
         let menuItem = new SettingsLauncher(_("Panel settings"), "panel " + panelId, "emblem-system", this);
