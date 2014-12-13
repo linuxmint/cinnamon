@@ -374,7 +374,6 @@ function start() {
     expo.init();
 
     _initUserSession();
-    statusIconDispatcher.start(panelManager.panels[1].actor);
 
     // Provide the bus object for gnome-session to
     // initiate logouts.

@@ -48,6 +48,7 @@ MyApplet.prototype = {
     },
 
     on_applet_added_to_panel: function() {
+        Main.statusIconDispatcher.start(this.actor.get_parent().get_parent());
         this._signals.added = Main.statusIconDispatcher.connect('status-icon-added', Lang.bind(this, this._onTrayIconAdded));
         this._signals.removed = Main.statusIconDispatcher.connect('status-icon-removed', Lang.bind(this, this._onTrayIconRemoved));
         this._signals.redisplay = Main.statusIconDispatcher.connect('before-redisplay', Lang.bind(this, this._onBeforeRedisplay));
