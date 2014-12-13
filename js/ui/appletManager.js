@@ -542,14 +542,7 @@ function updateAppletsOnPanel (panel) {
 function unloadAppletsOnPanel (panel) {
     for (let applet_id in enabledAppletDefinitions.idMap){
         if(enabledAppletDefinitions.idMap[applet_id].panel == panel) {
-            try {
-                appletObj[applet_id]._onAppletRemovedFromPanel();
-            } catch (e) {
-                global.logError("Error during onAppletRemovedFromPanel() call on applet: " + enabledAppletDefinitions.uuid + "/" + enabledAppletDefinitions.applet_id, e);
-            }
-
-            delete appletObj[applet_id]._extension._loadedDefinitions[applet_id];
-            delete appletObj[applet_id];
+            removeAppletFromPanels(enabledAppletDefinitions.idMap[applet_id]);
         }
     }
 }
