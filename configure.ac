@@ -9,7 +9,7 @@ AC_CONFIG_AUX_DIR([config])
 AC_SUBST([PACKAGE_NAME], ["$PACKAGE_NAME"])
 AC_SUBST([PACKAGE_VERSION], ["$PACKAGE_VERSION"])
 
-AM_INIT_AUTOMAKE([1.11 no-dist-gzip dist-xz tar-ustar foreign])
+AM_INIT_AUTOMAKE([1.11 no-dist-gzip dist-xz subdir-objects tar-ustar foreign])
 AM_MAINTAINER_MODE([enable])
 
 m4_ifdef([AM_SILENT_RULES],[AM_SILENT_RULES([yes])])
