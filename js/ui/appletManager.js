@@ -475,7 +475,7 @@ function loadAppletsOnPanel(panel) {
         if(definition.panelNo == panel.panelId) {
             let location;
             // Update appletDefinition
-            switch (definition.location_label[1]){
+            switch (definition.location_label){
             case "center":
                 location = panel._centerBox;
                 break;
