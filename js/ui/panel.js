@@ -1000,6 +1000,8 @@ Panel.prototype = {
      */
     destroy: function() {
         AppletManager.unloadAppletsOnPanel(this);
+        this._context_menu.close();
+
         this._leftBox.destroy();
         this._centerBox.destroy();
         this._rightBox.destroy();
