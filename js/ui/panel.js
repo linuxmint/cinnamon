@@ -109,30 +109,10 @@ PanelManager.prototype = {
                 continue;
             }
 
-            let ID = parseInt(elements[0]);
-            if (this.panels[ID]) {
-                global.log("Multiple panels with same ID (" + ID + ") are found");
-                continue;
-            }
-
-            this.panels.length = Math.max(this.panels.length, ID+1);
-            this.panelsMeta.length = Math.max(this.panels.length, ID+1);
-
-            let repeat = false;
-            for (let i in this.panelsMeta) {
-                if ((this.panelsMeta[i][0] == elements[1]) && (this.panelsMeta[i][1] == elements[2])) {
-                    global.log("Conflicting panel definitions: " + panelProperties);
-                    repeat = true;
-                    break;
-                }
-            }
-
-            if (repeat) continue;
-
-            this.panels[ID] = new Panel(ID, parseInt(elements[1]), elements[2]=="bottom");
-            this.panelsMeta[ID] = [elements[1], elements[2]];
-
+            this._loadPanel(parseInt(elements[0]), elements[1], elements[2]=="bottom");
         }
+
+        global.settings.connect("changed::panels-enabled", Lang.bind(this, this._onPanelsEnabledChanged));
     },
 
     /**
@@ -191,6 +171,81 @@ PanelManager.prototype = {
                 return this.panels[i];
         }
         return null;
+    },
+
+    /**
+     * _loadPanel:
+     * @ID (integer): panel id
+     * @monitorIndex (integer): index of monitor of panel
+     * @bottomPosition (boolean): whether the panel should be at the bottom or not
+     * @panelList (array): (optional) the list in which the new panel should be appended to (not necessarily this.panels, c.f. _onPanelsEnabledChanged) Default: this.panels
+     *
+     * Loads a panel with the given properties and appends it to @panelList. @panelList is usually this.panels but is a different array when used by _onPanelsEnabledChanged.
+     *
+     * Returns (Panel.Panel): Panel created
+     */
+    _loadPanel: function(ID, monitorIndex, bottomPosition, panelList) {
+        if (!panelList) panelList = this.panels;
+
+        if (panelList[ID]) {
+            global.log("Multiple panels with same ID (" + ID + ") are found");
+            return null;
+        }
+
+        panelList.length = Math.max(panelList.length, ID+1);
+        this.panelsMeta.length = Math.max(this.panels.length, ID+1);
+
+        let repeat = false;
+        for (let i in this.panelsMeta) {
+            if ((this.panelsMeta[i][0] == monitorIndex) && (this.panelsMeta[i][1] == bottomPosition)) {
+                global.log("Conflicting panel definitions: " + ID + ":" + monitorIndex + ":" + (bottomPosition ? "bottom" : "top" ));
+                repeat = true;
+                break;
+            }
+        }
+
+        if (repeat) return null;
+
+        panelList[ID] = new Panel(ID, monitorIndex, bottomPosition);
+        this.panelsMeta[ID] = [monitorIndex, bottomPosition];
+
+        return panelList[ID];
+    },
+
+    _onPanelsEnabledChanged: function() {
+        let newPanels = new Array(this.panels.length);
+        this.panelsMeta = [];
+
+        let panelProperties = global.settings.get_strv("panels-enabled");
+        for (let i = 0; i < panelProperties.length; i ++) {
+            let elements = panelProperties[i].split(":");
+            if (elements.length != 3) {
+                global.log("Invalid panel definition: " + panelProperties[i]);
+                continue;
+            }
+
+            let ID = parseInt(elements[0]);
+
+            // If panel is moved
+            if (this.panels[ID]) {
+                // Move panel object to newPanels
+                newPanels[ID] = this.panels[ID];
+                this.panels[ID] = null;
+
+                newPanels[ID].updatePosition(parseInt(elements[1]),elements[2]=="bottom");
+                AppletManager.updateAppletsOnPanel(newPanels[ID]);
+                this.panelsMeta[ID] = [elements[1], elements[2]];
+            } else {
+                let panel = this._loadPanel(ID, parseInt(elements[1]), elements[2]=="bottom", newPanels);
+                AppletManager.loadAppletsOnPanel(panel);
+            }
+        }
+
+        // Destroy removed panels
+        for (let i in this.panels)
+            if (this.panels[i]) this.panels[i].destroy();
+
+        this.panels = newPanels;
     }
 }
 
@@ -779,6 +834,8 @@ Panel.prototype = {
         this._hideTimer = 0;
         this._showTimer = 0;
         this._themeFontSize = null;
+        this._destroyed = false;
+
         this.scaleMode = false;
 
         this.actor = new Cinnamon.GenericContainer({ name: 'panel',
@@ -856,6 +913,49 @@ Panel.prototype = {
         this.panelBox.add_actor(this.actor)
 
         this._moveResizePanel();
+    },
+
+
+    /**
+     * updatePosition:
+     * @monitorIndex: integer, index of monitor
+     * @bottomPosition, boolean, whether it should be placed at bottom
+     *
+     * Moves the panel to the monitor @monitorIndex and position @bottomPosition
+     */
+    updatePosition: function(monitorIndex, bottomPosition) {
+        this.monitorIndex = monitorIndex;
+        this.bottomPosition = bottomPosition;
+
+        this.monitor = global.screen.get_monitor_geometry(monitorIndex);
+        Mainloop.idle_add(Lang.bind(this, this._moveResizePanel));
+
+        let orientation = bottomPosition ? St.Side.BOTTOM : St.Side.TOP;
+        this._context_menu = new PanelContextMenu(this, orientation, this.panelId);
+    },
+
+    /**
+     * destroy:
+     *
+     * Destroys the panel
+     */
+    destroy: function() {
+        AppletManager.unloadAppletsOnPanel(this);
+        this._leftBox.destroy();
+        this._centerBox.destroy();
+        this._rightBox.destroy();
+
+        this._rightCorner.actor.destroy();
+        this._leftCorner.actor.destroy();
+
+        this.actor.destroy();
+        this.panelBox.destroy();
+        this._context_menu.destroy();
+
+        this._menus = null;
+        this.monitor = null;
+
+        this._destroyed = true;
     },
 
     /**
@@ -1011,6 +1111,7 @@ Panel.prototype = {
     },
 
     _moveResizePanel: function() {
+        if (this._destroyed) return false;
         this.monitor = global.screen.get_monitor_geometry(this.monitorId);
 
         let panelHeight;
@@ -1047,6 +1148,8 @@ Panel.prototype = {
         // AppletManager might not be initialized yet
         if (AppletManager.enabledApplets)
             AppletManager.updateAppletPanelHeights();
+
+        return true;
     },
 
     _onScaleTextIconsChanged: function() {
