@@ -602,6 +602,8 @@ class Module:
 
     def update_preview_cb (self, dialog, preview):      
         filename = dialog.get_preview_filename()
+        if filename is None:
+            return        
         dialog.set_preview_widget_active(False)
         if os.path.isfile(filename):
             pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(filename, 128, 128)
