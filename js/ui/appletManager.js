@@ -249,6 +249,8 @@ function _removeAppletConfigFile(uuid, instanceId) {
 }
 
 function addAppletToPanels(extension, appletDefinition) {
+    if (!appletDefinition.panel) return true;
+
     try {
         // Create the applet
         let applet = createApplet(extension, appletDefinition);
@@ -471,6 +473,7 @@ function loadAppletsOnPanel(panel) {
     for (let applet_id in enabledAppletDefinitions.idMap){
         definition = enabledAppletDefinitions.idMap[applet_id];
         if(definition.panelNo == panel.panelId) {
+            let location;
             // Update appletDefinition
             switch (definition.location_label[1]){
             case "center":
@@ -521,7 +524,6 @@ function updateAppletsOnPanel (panel) {
                 location = panel._leftBox;
             }
 
-            definition.panel = panel;
             definition.location = location;
             definition.orientation = orientation;
 
@@ -543,7 +545,7 @@ function unloadAppletsOnPanel (panel) {
             try {
                 appletObj[applet_id]._onAppletRemovedFromPanel();
             } catch (e) {
-                global.logError("Error during on_applet_removed_from_panel() call on applet: " + appletDefinition.uuid + "/" + appletDefinition.applet_id, e);
+                global.logError("Error during onAppletRemovedFromPanel() call on applet: " + enabledAppletDefinitions.uuid + "/" + enabledAppletDefinitions.applet_id, e);
             }
 
             delete appletObj[applet_id]._extension._loadedDefinitions[applet_id];
