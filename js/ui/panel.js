@@ -140,6 +140,23 @@ PanelManager.prototype = {
     },
 
     /**
+     * removePanel:
+     * @panelId (int): Panel id of the panel to be removed
+     *
+     * Remove the panel from the list panels-enabled
+     */
+    removePanel: function(panelId) {
+        let list = global.settings.get_strv("panels-enabled");
+        for (let i in list) {
+            if (list[i].split(":")[0] == panelId) {
+                list.splice(i, 1);
+                break;
+            }
+        }
+        global.settings.set_strv("panels-enabled", list);
+    },
+
+    /**
      * getPanelInMonitor:
      * @monitorIndex (integer): index of monitor
      *
@@ -575,6 +592,41 @@ ConfirmDialog.prototype = {
 	]);
     },
 };
+
+function IconMenuItem() {
+    this._init.apply(this, arguments);
+}
+
+IconMenuItem.prototype = {
+    __proto__: PopupMenu.PopupBaseMenuItem.prototype,
+
+    _init: function (text, iconName, params) {
+        PopupMenu.PopupBaseMenuItem.prototype._init.call(this, params);
+ 
+        let table = new St.Table({ homogeneous: false,
+                                   reactive: true });
+
+        this.label = new St.Label({ text: text });
+        this._icon = new St.Icon({ icon_name: iconName,
+                                   icon_type: St.IconType.SYMBOLIC,
+                                   style_class: 'popup-menu-icon' });
+
+        table.add(this._icon,
+                  {row: 0, col: 0, col_span: 1, x_expand: false, x_align: St.Align.START});
+
+        table.add(this.label,
+                  {row: 0, col: 1, col_span: 1, x_align: St.Align.START});
+
+        this.label.set_margin_left(6.0)
+
+        this.addActor(table, { expand: true, span: 1, align: St.Align.START });
+    },
+
+    setIcon: function(name) {
+        this._icon.icon_name = name;
+    }
+};
+
 function SettingsLauncher(label, keyword, icon, menu) {
     this._init(label, keyword, icon, menu);
 }
@@ -698,6 +750,7 @@ PanelContextMenu.prototype = {
         PopupMenu.PopupMenu.prototype._init.call(this, launcher.actor, 0.0, orientation, 0);
         Main.uiGroup.add_actor(this.actor);
         this.actor.hide();
+        this.panelId = panelId;
 
         let applet_settings_item = new SettingsLauncher(_("Add applets to the panel"), "applets panel" + panelId, "list-add", this);
         this.addMenuItem(applet_settings_item);
@@ -710,6 +763,12 @@ PanelContextMenu.prototype = {
 
         let menuSetting = new SettingsLauncher(_("All settings"), "", "preferences-system", this);
         this.addMenuItem(menuSetting);
+
+        let menuItem = new IconMenuItem(_("Remove panel"), "list-remove");
+        menuItem.activate = Lang.bind(this, function() {
+            Main.panelManager.removePanel(this.panelId);
+        });
+        this.addMenuItem(menuItem);
 
         populateSettingsMenu(this, panelId);
     }
