@@ -125,7 +125,7 @@ class DefaultAppChooserButton(Gtk.AppChooserButton):
                 if info.set_as_default_for_type ("x-scheme-handler/https") == False:
                     print "Failed to set '%s' as the default application for '%s'" % (info.get_name(), "x-scheme-handler/https")
 
-class DefaultTerminalButton(Gtk.AppChooserButton):
+class DefaultTerminalButton(Gtk.AppChooserButton): #TODO: See if we can get this to change the x-terminal-emulator default to allow it to be a more global change rather then just cinnamon/nemo
     def __init__(self):
         super(DefaultTerminalButton, self).__init__()
         self.connect("changed", self.onChanged)
@@ -145,7 +145,8 @@ class DefaultTerminalButton(Gtk.AppChooserButton):
             icon_val = Gio.DesktopAppInfo.get_string(self.this_item, "Icon")
             #terminals don't have mime types, so we check for "TerminalEmulator" under the "Category" key in desktop files
             if (cat_val is not None and "TerminalEmulator" in cat_val):
-                if (exec_val is not None and name_val is not None and icon_val is not None and not "gksu" in exec_val):
+                #this crazy if statement makes sure remaining desktop file info is not empty, then prevents root terminals from showing, then prevents repeating terminals from trying to being added which leave a blank space and Gtk-WARNING's
+                if (exec_val is not None and name_val is not None and icon_val is not None and not "gksu" in exec_val and exec_val not in self.active_items):
                     self.append_custom_item(exec_val, name_val, Gio.ThemedIcon.new(icon_val))
                     self.active_items.append(exec_val)
                     if (self.key_value == exec_val):
