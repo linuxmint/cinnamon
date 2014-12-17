@@ -1097,6 +1097,8 @@ Panel.prototype = {
         this._showTimer = 0;
         this._themeFontSize = null;
         this._destroyed = false;
+        this._settingsSignals = [];
+        this._screenSignal;
 
         this.scaleMode = false;
 
@@ -1157,13 +1159,13 @@ Panel.prototype = {
         this.actor.connect('get-preferred-height', Lang.bind(this, this._getPreferredHeight));
         this.actor.connect('allocate', Lang.bind(this, this._allocate));
 
-        global.settings.connect("changed::" + PANEL_AUTOHIDE_KEY, Lang.bind(this, this._processPanelAutoHide));
-        global.settings.connect("changed::" + PANEL_HEIGHT_KEY, Lang.bind(this, this._moveResizePanel));
-        global.settings.connect("changed::" + PANEL_RESIZABLE_KEY, Lang.bind(this, this._moveResizePanel));
-        global.settings.connect("changed::" + PANEL_SCALE_TEXT_ICONS_KEY, Lang.bind(this, this._onScaleTextIconsChanged));
-        global.settings.connect("changed::panel-edit-mode", Lang.bind(this, this._onPanelEditModeChanged));
+        this._settingsSignals.push(global.settings.connect("changed::" + PANEL_AUTOHIDE_KEY, Lang.bind(this, this._processPanelAutoHide)));
+        this._settingsSignals.push(global.settings.connect("changed::" + PANEL_HEIGHT_KEY, Lang.bind(this, this._moveResizePanel)));
+        this._settingsSignals.push(global.settings.connect("changed::" + PANEL_RESIZABLE_KEY, Lang.bind(this, this._moveResizePanel)));
+        this._settingsSignals.push(global.settings.connect("changed::" + PANEL_SCALE_TEXT_ICONS_KEY, Lang.bind(this, this._onScaleTextIconsChanged)));
+        this._settingsSignals.push(global.settings.connect("changed::panel-edit-mode", Lang.bind(this, this._onPanelEditModeChanged)));
 
-        global.screen.connect("monitors-changed", Lang.bind(this, this._moveResizePanel));
+        this._screenSignal = global.screen.connect("monitors-changed", Lang.bind(this, this._moveResizePanel));
 
         /* Generate panelbox */
         this._leftPanelBarrier = 0;
@@ -1218,6 +1220,12 @@ Panel.prototype = {
         this.actor.destroy();
         this.panelBox.destroy();
         this._context_menu.destroy();
+
+        let i = this._settingsSignals.length;
+        while (i--) {
+            global.settings.disconnect(this._settingsSignals[i]);
+        }
+        global.screen.disconnect(this._screenSignal);
 
         this._menus = null;
         this.monitor = null;
