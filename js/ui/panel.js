@@ -115,6 +115,7 @@ PanelManager.prototype = {
         this.addPanelMode = false;
 
         global.settings.connect("changed::panels-enabled", Lang.bind(this, this._onPanelsEnabledChanged));
+        global.settings.connect("changed::panel-edit-mode", Lang.bind(this, this._onPanelEditModeChanged));
     },
 
     /**
@@ -335,6 +336,13 @@ PanelManager.prototype = {
 
         this.panels = newPanels;
         this.panelsMeta = newMeta;
+    },
+
+    _onPanelEditModeChanged: function() {
+        if (!global.settings.get_boolean("panel-edit-mode")) {
+            if (this.addPanelMode)
+                this._destroyDummyPanels();
+        }
     },
 
     /**
