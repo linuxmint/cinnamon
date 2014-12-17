@@ -921,6 +921,7 @@ PanelContextMenu.prototype = {
         Main.uiGroup.add_actor(this.actor);
         this.actor.hide();
         this.panelId = panelId;
+        global.settings.connect('changed::panel-edit-mode', Lang.bind(this, this._onPanelEditModeChanged));
 
         let applet_settings_item = new SettingsLauncher(_("Add applets to the panel"), "applets panel" + panelId, "list-add", this);
         this.addMenuItem(applet_settings_item);
@@ -934,27 +935,40 @@ PanelContextMenu.prototype = {
         let menuSetting = new SettingsLauncher(_("All settings"), "", "preferences-system", this);
         this.addMenuItem(menuSetting);
 
+        this.panelSettingsSection = new PopupMenu.PopupMenuSection();
+
         let menuItem = new IconMenuItem(_("Remove panel"), "list-remove");
         menuItem.activate = Lang.bind(this, function() {
             Main.panelManager.removePanel(this.panelId);
         });
-        this.addMenuItem(menuItem);
+        this.panelSettingsSection.addMenuItem(menuItem);
 
         let menuItem = new IconMenuItem(_("Add panel"), "list-add");
         menuItem.activate = Lang.bind(this, function() {
             Main.panelManager.addPanelQuery();
             this.close();
         });
-        this.addMenuItem(menuItem);
+        this.panelSettingsSection.addMenuItem(menuItem);
 
         let menuItem = new IconMenuItem(_("Move panel"), "go-first-rtl");
         menuItem.activate = Lang.bind(this, function() {
             Main.panelManager.movePanelQuery(this.panelId);
             this.close();
         });
-        this.addMenuItem(menuItem);
+        this.panelSettingsSection.addMenuItem(menuItem);
+
+        this.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
+        this.addMenuItem(this.panelSettingsSection);
 
         populateSettingsMenu(this, panelId);
+        this._onPanelEditModeChanged();
+    },
+
+    _onPanelEditModeChanged: function() {
+        if (global.settings.get_boolean('panel-edit-mode'))
+            this.panelSettingsSection.actor.show();
+        else
+            this.panelSettingsSection.actor.hide();
     }
 }
 
