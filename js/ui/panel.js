@@ -1196,7 +1196,7 @@ Panel.prototype = {
      * Moves the panel to the monitor @monitorIndex and position @bottomPosition
      */
     updatePosition: function(monitorIndex, bottomPosition) {
-        this.monitorIndex = monitorIndex;
+        this.monitorId = monitorIndex
         this.bottomPosition = bottomPosition;
 
         this.monitor = global.screen.get_monitor_geometry(monitorIndex);
