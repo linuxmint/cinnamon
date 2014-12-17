@@ -1185,7 +1185,7 @@ Panel.prototype = {
         this.bottomPosition = bottomPosition;
 
         this.monitor = global.screen.get_monitor_geometry(monitorIndex);
-        Mainloop.idle_add(Lang.bind(this, this._moveResizePanel));
+        this._moveResizePanel();
         this._context_menu = new PanelContextMenu(this, bottomPosition ? St.Side.BOTTOM: St.Side.TOP, this.panelId);
         this._menus.addMenu(this._context_menu);
         this._context_menu._boxPointer._container.connect('allocate', Lang.bind(this._context_menu._boxPointer, function(actor, box, flags){
