@@ -221,6 +221,12 @@ StScrollBar StButton#vhandle:hover {
 #panel:highlight {
     background-color: #aa5555;
 }
+.panel-dummy {
+    background-color: rgba(50, 50, 50, 0.4);
+}
+.panel-dummy:entered {
+    background-color: rgba(255, 35, 35, 0.4);
+}
 #panelLeft {
 	spacing: 4px;
 }
