@@ -263,13 +263,15 @@ PanelManager.prototype = {
      * @monitorIndex (integer): index of monitor of panel
      * @bottomPosition (boolean): whether the panel should be at the bottom or not
      * @panelList (array): (optional) the list in which the new panel should be appended to (not necessarily this.panels, c.f. _onPanelsEnabledChanged) Default: this.panels
+     * @metaList(array): (optional) the list in which the new panel metadata should be appended to (not necessarily this.panelsMeta, c.f. _onPanelsEnabledChanged) Default: this.panelsMeta
      *
      * Loads a panel with the given properties and appends it to @panelList. @panelList is usually this.panels but is a different array when used by _onPanelsEnabledChanged.
      *
      * Returns (Panel.Panel): Panel created
      */
-    _loadPanel: function(ID, monitorIndex, bottomPosition, panelList) {
+    _loadPanel: function(ID, monitorIndex, bottomPosition, panelList, metaList) {
         if (!panelList) panelList = this.panels;
+        if (!metaList) metaList = this.panelsMeta;
 
         if (panelList[ID]) {
             global.log("Multiple panels with same ID (" + ID + ") are found");
@@ -277,11 +279,11 @@ PanelManager.prototype = {
         }
 
         panelList.length = Math.max(panelList.length, ID+1);
-        this.panelsMeta.length = Math.max(this.panels.length, ID+1);
+        metaList.length = panelList.length;
 
         let repeat = false;
-        for (let i in this.panelsMeta) {
-            if ((this.panelsMeta[i][0] == monitorIndex) && (this.panelsMeta[i][1] == bottomPosition)) {
+        for (let i in metaList) {
+            if ((metaList[i][0] == monitorIndex) && (metaList[i][1] == bottomPosition)) {
                 global.log("Conflicting panel definitions: " + ID + ":" + monitorIndex + ":" + (bottomPosition ? "bottom" : "top" ));
                 repeat = true;
                 break;
@@ -291,14 +293,14 @@ PanelManager.prototype = {
         if (repeat) return null;
 
         panelList[ID] = new Panel(ID, monitorIndex, bottomPosition);
-        this.panelsMeta[ID] = [monitorIndex, bottomPosition];
+        metaList[ID] = [monitorIndex, bottomPosition];
 
         return panelList[ID];
     },
 
     _onPanelsEnabledChanged: function() {
         let newPanels = new Array(this.panels.length);
-        this.panelsMeta = [];
+        let newMeta = new Array(this.panels.length);
 
         let panelProperties = global.settings.get_strv("panels-enabled");
         for (let i = 0; i < panelProperties.length; i ++) {
@@ -314,13 +316,15 @@ PanelManager.prototype = {
             if (this.panels[ID]) {
                 // Move panel object to newPanels
                 newPanels[ID] = this.panels[ID];
+                newMeta[ID] = [parseInt(elements[1]), elements[2]=="bottom"];
                 this.panels[ID] = null;
 
-                newPanels[ID].updatePosition(parseInt(elements[1]),elements[2]=="bottom");
-                AppletManager.updateAppletsOnPanel(newPanels[ID]);
-                this.panelsMeta[ID] = [elements[1], elements[2] == "bottom"];
+                if (newMeta[ID][0] != this.panelsMeta[ID][0] || newMeta[ID][1] != this.panelsMeta[ID][1]) {
+                    newPanels[ID].updatePosition(newMeta[ID][0], newMeta[ID][1]);
+                    AppletManager.updateAppletsOnPanel(newPanels[ID]);
+                }
             } else {
-                let panel = this._loadPanel(ID, parseInt(elements[1]), elements[2]=="bottom", newPanels);
+                let panel = this._loadPanel(ID, parseInt(elements[1]), elements[2]=="bottom", newPanels, newMeta);
                 AppletManager.loadAppletsOnPanel(panel);
             }
         }
@@ -330,6 +334,7 @@ PanelManager.prototype = {
             if (this.panels[i]) this.panels[i].destroy();
 
         this.panels = newPanels;
+        this.panelsMeta = newMeta;
     },
 
     /**
