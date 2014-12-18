@@ -1103,12 +1103,12 @@ class Keybinding(Gtk.HBox, BaseWidget):
         self.disconnect(self.event_id)
         self.ungrab()
         self.event_id = None
-        if event.keyval == Gdk.KEY_Escape:
+        if ((event.state & ~Gdk.ModifierType.MOD2_MASK) == 0) and event.keyval == Gdk.KEY_Escape:
             self.set_button_text()
             self.teaching = False
             self.teach_button = None
             return True
-        if event.keyval == Gdk.KEY_BackSpace:
+        if ((event.state & ~Gdk.ModifierType.MOD2_MASK) == 0) and event.keyval == Gdk.KEY_BackSpace:
             self.teaching = False
             self.value = self.place_value("")
             self.set_val(self.value)

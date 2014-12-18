@@ -904,11 +904,11 @@ class CellRendererKeybinding(Gtk.CellRendererText):
         widget.disconnect(self.event_id)
         self.ungrab()
         self.event_id = None
-        if event.state == 0 and event.keyval == Gdk.KEY_Escape:
+        if ((event.state & ~Gdk.ModifierType.MOD2_MASK) == 0) and event.keyval == Gdk.KEY_Escape:
             self.set_label(self.cur_val)
             self.teaching = False
             return True
-        if event.keyval == Gdk.KEY_BackSpace:
+        if ((event.state & ~Gdk.ModifierType.MOD2_MASK) == 0) and event.keyval == Gdk.KEY_BackSpace:
             self.teaching = False
             self.set_label()
             self.emit("accel-cleared", self.path)
