@@ -496,9 +496,9 @@ class Module:
             for keybinding in category.keybindings:
                 for entry in keybinding.entries:
                     found = False
-                    if accel_string == entry:
+                    if accel_string.lower() == entry.lower():
                         found = True
-                    elif accel_string.replace("<Primary>", "<Control>") == entry:
+                    elif accel_string.replace("<Primary>", "<Control>").lower() == entry.lower():
                         found = True
 
                     if found and keybinding.label != current_keybinding.label:
