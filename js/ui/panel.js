@@ -800,6 +800,18 @@ ConfirmDialog.prototype = {
     },
 };
 
+function SelectPanelMenuItem(id, callback) {
+    this._init(id, callback);
+}
+
+SelectPanelMenuItem.prototype = {
+    __proto__: PopupMenu.PopupMenuItem.prototype,
+
+    _init: function(id, callback) {
+        PopupMenu.PopupMenuItem.prototype._init.call(this, "Panel " + id);
+    }
+}
+
 function IconMenuItem() {
     this._init.apply(this, arguments);
 }
@@ -987,10 +999,24 @@ PanelContextMenu.prototype = {
         });
         this.panelSettingsSection.addMenuItem(menuItem);
 
-        let menuItem = new IconMenuItem(_("Move panel"), "go-first-rtl");
+        let menuItem = new IconMenuItem(_("Move panel"), "move");
         menuItem.activate = Lang.bind(this, function() {
             Main.panelManager.movePanelQuery(this.panelId);
             this.close();
+        });
+        this.panelSettingsSection.addMenuItem(menuItem);
+
+        let menuItem = new IconMenuItem(_("Copy applet configuration"), "edit-copy");
+        menuItem.activate = Lang.bind(this, function() {
+            AppletManager.copyAppletConfiguration(this.panelId);
+            this.close();
+        });
+        this.panelSettingsSection.addMenuItem(menuItem);
+
+        let menuItem = new IconMenuItem(_("Paste applet configuration"), "edit-paste");
+        menuItem.activate = Lang.bind(this, function() {
+            let dialog = new AppletManager.ConfirmPasteDialog(this.panelId);
+            dialog.open();
         });
         this.panelSettingsSection.addMenuItem(menuItem);
 

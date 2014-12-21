@@ -4,9 +4,12 @@ const GLib = imports.gi.GLib;
 const Gio = imports.gi.Gio;
 const St = imports.gi.St;
 const Cinnamon = imports.gi.Cinnamon;
+const Lang = imports.lang;
+
 const Main = imports.ui.main;
 const Applet = imports.ui.applet;
 const Extension = imports.ui.extension;
+const ModalDialog = imports.ui.modalDialog;
 
 // Maps uuid -> metadata object
 var appletMeta;
@@ -30,6 +33,7 @@ const Roles = {
 }
 
 let enabledAppletDefinitions;
+let clipboard = [];
 
 function init() {
     appletMeta = Extension.meta;
@@ -545,4 +549,79 @@ function unloadAppletsOnPanel (panel) {
             removeAppletFromPanels(enabledAppletDefinitions.idMap[applet_id]);
         }
     }
+}
+
+function ConfirmPasteDialog(panelId){
+    this._init(panelId);
+}
+
+ConfirmPasteDialog.prototype = {
+    __proto__: ModalDialog.ModalDialog.prototype,
+
+    _init: function(panelId){
+        ModalDialog.ModalDialog.prototype._init.call(this);
+
+        this.panelId = panelId;
+        let label;
+        if (clipboard.length == 0) {
+            label = new St.Label({text: _("Clipboard empty. Please first copy from another panel") + "\n\n"});
+	    this.setButtons([
+                {
+                    label: _("Ok"),
+                    action: Lang.bind(this, function(){
+                        this.close();
+                    })
+                }
+            ]);
+        } else {
+            label = new St.Label({text: _("Pasting applet configuration will remove all existing applets on this panel. Are you sure you want to paste?") + "\n\n"});
+	    this.setButtons([
+                {
+                    label: _("Yes"),
+                    action: Lang.bind(this, function(){
+                        this.close();
+                        pasteAppletConfiguration(this.panelId);
+                    })
+                },
+                {
+                    label: _("No"),
+                    action: Lang.bind(this, function(){
+                        this.close();
+                    })
+                }
+            ]);
+        }
+
+	this.contentLayout.add(label);
+    },
+};
+
+function copyAppletConfiguration(panelId) {
+    let def = enabledAppletDefinitions.idMap;
+    clipboard = [];
+    for (let i in def) {
+        if (def[i].panelNo == panelId) {
+            clipboard.push(def[i]);
+        }
+    }
+}
+
+function pasteAppletConfiguration(panelId) {
+    let raw = global.settings.get_strv("enabled-applets");
+
+    // Remove existing applets on panel
+    let i = raw.length;
+    while(i--) { // Do a reverse loop to prevent skipping items after splicing
+        if (raw[i].split(":")[0].slice(5) == panelId)
+            raw.splice(i,1);
+    }
+
+    let len = clipboard.length;
+    let nextId = global.settings.get_int("next-applet-id");
+    for (let i = 0; i < len; i++) {
+        raw.push("panel" + panelId + ":" + clipboard[i].location_label + ":" + clipboard[i].order + ":" + clipboard[i].uuid + ":" + nextId);
+        nextId ++;
+    }
+    global.settings.set_int("next-applet-id", nextId);
+    global.settings.set_strv("enabled-applets", raw);
 }
