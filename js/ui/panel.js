@@ -116,6 +116,7 @@ PanelManager.prototype = {
 
         global.settings.connect("changed::panels-enabled", Lang.bind(this, this._onPanelsEnabledChanged));
         global.settings.connect("changed::panel-edit-mode", Lang.bind(this, this._onPanelEditModeChanged));
+        global.screen.connect("monitors-changed", Lang.bind(this, this._onMonitorsChanged));
     },
 
     /**
@@ -284,7 +285,7 @@ PanelManager.prototype = {
 
         let repeat = false;
         for (let i in metaList) {
-            if ((metaList[i][0] == monitorIndex) && (metaList[i][1] == bottomPosition)) {
+            if ((metaList[i][0] == monitorIndex) && (metaList[i][1] == bottomPosition) && i != ID) {
                 global.log("Conflicting panel definitions: " + ID + ":" + monitorIndex + ":" + (bottomPosition ? "bottom" : "top" ));
                 repeat = true;
                 break;
@@ -293,8 +294,14 @@ PanelManager.prototype = {
 
         if (repeat) return null;
 
-        panelList[ID] = new Panel(ID, monitorIndex, bottomPosition);
         metaList[ID] = [monitorIndex, bottomPosition];
+
+        if (monitorIndex < 0 || monitorIndex >= global.screen.get_n_monitors()) {
+            global.log("Monitor " + monitorIndex + " not found. Not creating panel");
+            return null;
+        }
+
+        panelList[ID] = new Panel(ID, monitorIndex, bottomPosition);
 
         return panelList[ID];
     },
@@ -326,7 +333,8 @@ PanelManager.prototype = {
                 }
             } else {
                 let panel = this._loadPanel(ID, parseInt(elements[1]), elements[2]=="bottom", newPanels, newMeta);
-                AppletManager.loadAppletsOnPanel(panel);
+                if (panel)
+                    AppletManager.loadAppletsOnPanel(panel);
             }
         }
 
@@ -336,6 +344,22 @@ PanelManager.prototype = {
 
         this.panels = newPanels;
         this.panelsMeta = newMeta;
+    },
+
+    _onMonitorsChanged: function() {
+        let monitorCount = global.screen.get_n_monitors();
+        for (let i in this.panelsMeta) {
+            if (this.panelsMeta[i] && !this.panels[i]) { // If there is a meta but not a panel, i.e. panel could not create due to non-existent monitor, try again.
+                let panel = this._loadPanel(i, this.panelsMeta[i][0], this.panelsMeta[i][1]);
+                if (panel)
+                    AppletManager.loadAppletsOnPanel(panel);
+            } else if (this.panelsMeta[i][0] >= monitorCount) { // Monitor of the panel went missing
+                this.panels[i].destroy();
+                delete this.panels[i];
+            } else { // Nothing happens. Re-allocate panel
+                this.panels[i]._moveResizePanel();
+            }
+        }
     },
 
     _onPanelEditModeChanged: function() {
@@ -1106,7 +1130,6 @@ Panel.prototype = {
         this._themeFontSize = null;
         this._destroyed = false;
         this._settingsSignals = [];
-        this._screenSignal;
 
         this.scaleMode = false;
 
@@ -1173,8 +1196,6 @@ Panel.prototype = {
         this._settingsSignals.push(global.settings.connect("changed::" + PANEL_SCALE_TEXT_ICONS_KEY, Lang.bind(this, this._onScaleTextIconsChanged)));
         this._settingsSignals.push(global.settings.connect("changed::panel-edit-mode", Lang.bind(this, this._onPanelEditModeChanged)));
 
-        this._screenSignal = global.screen.connect("monitors-changed", Lang.bind(this, this._moveResizePanel));
-
         /* Generate panelbox */
         this._leftPanelBarrier = 0;
         this._rightPanelBarrier = 0;
@@ -1215,6 +1236,8 @@ Panel.prototype = {
      * Destroys the panel
      */
     destroy: function() {
+        if (this._destroyed) return;
+
         AppletManager.unloadAppletsOnPanel(this);
         this._context_menu.close();
 
@@ -1233,12 +1256,12 @@ Panel.prototype = {
         while (i--) {
             global.settings.disconnect(this._settingsSignals[i]);
         }
-        global.screen.disconnect(this._screenSignal);
 
         this._menus = null;
         this.monitor = null;
 
         this._destroyed = true;
+        return;
     },
 
     /**
