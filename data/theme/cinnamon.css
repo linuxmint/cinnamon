@@ -1666,3 +1666,19 @@ StScrollBar StButton#vhandle:hover {
     padding-top: 20px;
     text-align: center;
 }
+
+/* Media keys OSD popup */
+.osd-window {
+    background: rgba(80,80,80,0.8);
+    border: 2px solid #a5a5a5;
+    border-radius: 8px;
+    padding: 20px;
+    color: white;
+    spacing: 1em;
+}
+
+.osd-window .level {
+    height: 0.7em;
+    border-radius: 0.3em;
+    background-color: rgba(190,190,190,0.2);
+}
