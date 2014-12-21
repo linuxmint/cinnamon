@@ -107,8 +107,8 @@ function getAppletDefinition(definition) {
     // - applet_id is a unique id assigned to the applet instance when added.
     let elements = definition.split(":");
     if (elements.length > 4) {
-        let panelNo = parseInt(elements[0].slice(5));
-        let panel = Main.panelManager.panels[panelNo];
+        let panelId = parseInt(elements[0].slice(5));
+        let panel = Main.panelManager.panels[panelId];
         let orientation;
         let order;
         try { order = parseInt(elements[2]); } catch(e) { order = 0; }
@@ -131,7 +131,7 @@ function getAppletDefinition(definition) {
         
         return {
             panel: panel,
-            panelNo: panelNo,
+            panelId: panelId,
             orientation: orientation,
             location: location,
             location_label: elements[1],
@@ -476,7 +476,7 @@ function loadAppletsOnPanel(panel) {
 
     for (let applet_id in enabledAppletDefinitions.idMap){
         definition = enabledAppletDefinitions.idMap[applet_id];
-        if(definition.panelNo == panel.panelId) {
+        if(definition.panelId == panel.panelId) {
             let location;
             // Update appletDefinition
             switch (definition.location_label){
@@ -600,7 +600,7 @@ function copyAppletConfiguration(panelId) {
     let def = enabledAppletDefinitions.idMap;
     clipboard = [];
     for (let i in def) {
-        if (def[i].panelNo == panelId) {
+        if (def[i].panelId == panelId) {
             clipboard.push(def[i]);
         }
     }

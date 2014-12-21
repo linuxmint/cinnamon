@@ -162,12 +162,12 @@ PanelManager.prototype = {
 
     /**
      * addPanel:
-     * @monitorId (integer): monitor to be added to
+     * @monitorIndex (integer): monitor to be added to
      * @bottomPosition (boolean): whether the panel is added to the bottom
      *
      * Adds a new panel to the specified position
      */
-    addPanel: function(monitorId, bottomPosition) {
+    addPanel: function(monitorIndex, bottomPosition) {
         let list = global.settings.get_strv("panels-enabled");
         let i = -1;
 
@@ -176,7 +176,7 @@ PanelManager.prototype = {
             if (!this.panelsMeta[++i])
                 break;
 
-        list.push(i + ":" + monitorId + ":" + (bottomPosition ? "bottom" : "top"));
+        list.push(i + ":" + monitorIndex + ":" + (bottomPosition ? "bottom" : "top"));
         global.settings.set_strv("panels-enabled", list);
 
         // Delete all panel dummies
@@ -186,18 +186,18 @@ PanelManager.prototype = {
 
     /**
      * movePanel:
-     * @monitorId (integer): monitor to be added to
+     * @monitorIndex (integer): monitor to be added to
      * @bottomPosition (boolean): whether the panel is added to the bottom
      *
      * Moves the panel of id this.moveId to the specified position
      */
-    movePanel: function(monitorId, bottomPosition) {
+    movePanel: function(monitorIndex, bottomPosition) {
         let list = global.settings.get_strv("panels-enabled");
         let i = -1;
 
         for (let i in list) {
             if (list[i].split(":")[0] == this.moveId) {
-                list[i] = this.moveId + ":" + monitorId + ":" + (bottomPosition ? "bottom" : "top");
+                list[i] = this.moveId + ":" + monitorIndex + ":" + (bottomPosition ? "bottom" : "top");
                 break;
             }
         }
@@ -236,7 +236,7 @@ PanelManager.prototype = {
     getPanelsInMonitor: function(monitorIndex) {
         let returnValue = [];
         for (let i in this.panels) {
-            if (this.panels[i].monitorId == monitorIndex)
+            if (this.panels[i].monitorIndex == monitorIndex)
                 returnValue.push(this.panels[i]);
         }
         return returnValue;
@@ -253,7 +253,7 @@ PanelManager.prototype = {
      */
     getPanel: function(monitorIndex, bottomPosition) {
         for (let i in this.panels) {
-            if (this.panels[i].monitorId == monitorIndex && this.panels[i].bottomPosition == bottomPosition)
+            if (this.panels[i].monitorIndex == monitorIndex && this.panels[i].bottomPosition == bottomPosition)
                 return this.panels[i];
         }
         return null;
@@ -429,16 +429,16 @@ PanelManager.prototype = {
  * #PanelDummy creates some boxes at possible panel locations for users to 
  * select where to place their new panels
  */
-function PanelDummy(monitorId, bottomPosition, callback) {
-    this._init(monitorId, bottomPosition, callback);
+function PanelDummy(monitorIndex, bottomPosition, callback) {
+    this._init(monitorIndex, bottomPosition, callback);
 }
 
 PanelDummy.prototype = {
-    _init: function(monitorId, bottomPosition, callback) {
-        this.monitorId = monitorId;
+    _init: function(monitorIndex, bottomPosition, callback) {
+        this.monitorIndex = monitorIndex;
         this.bottomPosition = bottomPosition;
         this.callback = callback;
-        this.monitor = global.screen.get_monitor_geometry(monitorId);
+        this.monitor = global.screen.get_monitor_geometry(monitorIndex);
         
         this.actor = new Cinnamon.GenericContainer({style_class: "panel-dummy", reactive: true, track_hover: true});
         Main.layoutManager.addChrome(this.actor, { addToWindowgroup: false });
@@ -452,7 +452,7 @@ PanelDummy.prototype = {
     },
 
     _onClicked: function() {
-        this.callback(this.monitorId, this.bottomPosition);
+        this.callback(this.monitorIndex, this.bottomPosition);
     },
 
     _onEnter: function() {
@@ -917,7 +917,7 @@ function populateSettingsMenu(menu, panelId) {
     }
     if (!property){
         property = DEFAULT_VALUES[PANEL_AUTOHIDE_KEY];
-        values.push(this.panelID + ":" + property);
+        values.push(this.panelId + ":" + property);
         global.settings.set_strv(PANEL_AUTOHIDE_KEY, values);
     }
     let autoHidePanel = new PopupMenu.PopupSwitchMenuItem(_("Auto-hide panel"), property == "true");
@@ -1135,15 +1135,15 @@ PanelZoneDNDHandler.prototype = {
 }
 
 
-function Panel(id, monitorId, bottomPosition) {
-    this._init(id, monitorId, bottomPosition);
+function Panel(id, monitorIndex, bottomPosition) {
+    this._init(id, monitorIndex, bottomPosition);
 }
 
 Panel.prototype = {
-    _init : function(id, monitorId, bottomPosition) {
+    _init : function(id, monitorIndex, bottomPosition) {
         this.panelId = id;
-        this.monitorId = monitorId;
-        this.monitor = global.screen.get_monitor_geometry(monitorId);
+        this.monitorIndex = monitorIndex;
+        this.monitor = global.screen.get_monitor_geometry(monitorIndex);
         this.bottomPosition = bottomPosition;
 
     	this._hidden = false;
@@ -1243,7 +1243,7 @@ Panel.prototype = {
      * Moves the panel to the monitor @monitorIndex and position @bottomPosition
      */
     updatePosition: function(monitorIndex, bottomPosition) {
-        this.monitorId = monitorIndex
+        this.monitorIndex = monitorIndex
         this.bottomPosition = bottomPosition;
 
         this.monitor = global.screen.get_monitor_geometry(monitorIndex);
@@ -1444,7 +1444,7 @@ Panel.prototype = {
 
     _moveResizePanel: function() {
         if (this._destroyed) return false;
-        this.monitor = global.screen.get_monitor_geometry(this.monitorId);
+        this.monitor = global.screen.get_monitor_geometry(this.monitorIndex);
 
         let panelHeight;
 
