@@ -546,6 +546,15 @@
       <default>true</default>
       <_summary>Whether or not to show possible completions in the run dialog (Alt-F2)</_summary>
     </key>
+    
+    <key type="s" name="show-media-keys-osd">
+      <default>"medium"</default>
+      <_summary>Whether the media keys osd is disabled or its relative display size</_summary>
+      <_description>
+      Allows setting of the default size of the media keys osd or disables it completely.
+      Possible values are "small", "medium", "large", or "disabled".
+      </_description>
+    </key>
 
     <child name="theme" schema="org.cinnamon.theme"/>   
     <child name="recorder" schema="org.cinnamon.recorder"/>

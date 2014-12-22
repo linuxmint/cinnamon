@@ -4,11 +4,15 @@ const Lang = imports.lang;
 const Main = imports.ui.main;
 const Mainloop = imports.mainloop;
 const Tweener = imports.ui.tweener;
-// const Layout = imports.ui.layout;
+const Gio = imports.gi.Gio;
 
 const LEVEL_ANIMATION_TIME = 0.1;
 const FADE_TIME = 0.1;
 const HIDE_TIMEOUT = 1500;
+
+const OSD_LARGE = 110;
+const OSD_MEDIUM = 95;
+const OSD_SMALL = 80;
 
 function LevelBar() {
     this._init();
@@ -75,6 +79,12 @@ function OsdWindow() {
 OsdWindow.prototype = {
     _init: function() {
         this._popupSize = 0;
+
+        this._osdSettings = new Gio.Settings({ schema: "org.cinnamon" });
+        this._osdSettings.connect("changed::show-media-keys-osd", Lang.bind(this, this._onOsdSettingsChanged));
+
+        // this._osdBaseSize = this._onOsdSettingsChanged();
+
         this.actor = new St.BoxLayout({ style_class: 'osd-window',
                                        vertical: true });
 
@@ -88,7 +98,7 @@ OsdWindow.prototype = {
         this._reset();
 
         Main.layoutManager.connect('monitors-changed', Lang.bind(this, this._monitorsChanged));
-        this._monitorsChanged();
+        this._onOsdSettingsChanged();
 
         Main.layoutManager.addChrome(this.actor, { affectsInputRegion: false });
     },
@@ -117,6 +127,9 @@ OsdWindow.prototype = {
     },
 
     show: function() {
+        if (this._osdBaseSize == undefined)
+            return;
+
         if (!this._icon.gicon)
             return;
 
@@ -155,12 +168,32 @@ OsdWindow.prototype = {
         let scaleW = monitor.width / 640.0;
         let scaleH = monitor.height / 480.0;
         let scale = Math.min(scaleW, scaleH);
-        this._popupSize = 80 * Math.max(1, scale); //110
+        this._popupSize = this._osdBaseSize * Math.max(1, scale); //110
 
         let scaleFactor = St.ThemeContext.get_for_stage(global.stage).scale_factor;
         this._icon.icon_size = this._popupSize / (2 * scaleFactor);
         this.actor.set_size(this._popupSize, this._popupSize);
-        this.actor.translation_y = monitor.height - (this._popupSize + this._popupSize / 2);
+        this.actor.translation_y = monitor.height - (this._popupSize + (50 * scaleFactor));
         this.actor.translation_x = (monitor.width / 2) - (this._popupSize / 2);
+    },
+
+    _onOsdSettingsChanged: function() {
+        let currentSize = this._osdSettings.get_string("show-media-keys-osd");
+
+        switch (currentSize) {
+            case "disabled":
+                this._osdBaseSize = null;
+                break;
+            case "small":
+                this._osdBaseSize = OSD_SMALL;
+                break;
+            case "large":
+                this._osdBaseSize = OSD_LARGE;
+                break;
+            default:
+                this._osdBaseSize = OSD_MEDIUM;
+        }
+
+        this._monitorsChanged();
     }
 };
