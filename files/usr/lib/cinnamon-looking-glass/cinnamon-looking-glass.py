@@ -188,7 +188,7 @@ class CommandLine(Gtk.Entry):
             lookingGlassProxy.Eval(command)
 
     def doCrash(self):
-        lookingGlassProxy.Eval("new Gio.Settings({schema: 'org.foo.bar'})")
+        lookingGlassProxy.Eval("global.segfault()")
 
 
 class NewLogDialog(Gtk.Dialog):
