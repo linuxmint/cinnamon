@@ -69,7 +69,6 @@ const NotificationDaemon = imports.ui.notificationDaemon;
 const WindowAttentionHandler = imports.ui.windowAttentionHandler;
 const Scripting = imports.ui.scripting;
 const CinnamonDBus = imports.ui.cinnamonDBus;
-const LookingGlassDBus = imports.ui.lookingGlassDBus;
 const WindowManager = imports.ui.windowManager;
 const ThemeManager = imports.ui.themeManager;
 const Magnifier = imports.ui.magnifier;
@@ -100,14 +99,12 @@ let overview = null;
 let expo = null;
 let runDialog = null;
 let lookingGlass = null;
-let gtkLookingGlass = null;
 let wm = null;
 let messageTray = null;
 let notificationDaemon = null;
 let windowAttentionHandler = null;
 let recorder = null;
 let cinnamonDBusService = null;
-let lookingGlassDBusService = null;
 let modalCount = 0;
 let modalActorFocusStack = [];
 let uiGroup = null;
@@ -249,7 +246,6 @@ function start() {
     Gio.DesktopAppInfo.set_desktop_env('X-Cinnamon');
 
     cinnamonDBusService = new CinnamonDBus.Cinnamon();
-    lookingGlassDBusService = new LookingGlassDBus.CinnamonLookingGlass();
 
     // Ensure CinnamonWindowTracker and CinnamonAppUsage are initialized; this will
     // also initialize CinnamonAppSystem first.  CinnamonAppSystem
@@ -894,8 +890,8 @@ function _log(category, msg) {
                          category: category,
                          message: text };
     _errorLogStack.push(out);
-    if(lookingGlassDBusService)
-        lookingGlassDBusService.emitLogUpdate();
+    if (lookingGlass)
+        lookingGlass.emitLogUpdate();
     if (can_log) lg_log_file.write(renderLogLine(out), null);
 }
 
@@ -1287,25 +1283,11 @@ function popModal(actor, timestamp) {
  *
  * Returns (LookingGlass.LookingGlass): looking glass object
  */
-function createLegacyLookingGlass() {
+function createLookingGlass() {
     if (lookingGlass == null) {
-        lookingGlass = new LookingGlass.LookingGlass();
+        lookingGlass = new LookingGlass.Melange();
     }
     return lookingGlass;
-}
-
-/**
- * createLookingGlass:
- *
- * Obtains the looking glass object. Create if it does not exist
- *
- * Returns (LookingGlass.LookingGlass): looking glass object
- */
-function createLookingGlass() {
-    if (gtkLookingGlass == null) {
-        gtkLookingGlass = new LookingGlass.Melange();
-    }
-    return gtkLookingGlass;
 }
 
 /**
