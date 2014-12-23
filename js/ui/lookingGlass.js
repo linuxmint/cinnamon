@@ -449,10 +449,10 @@ Melange.prototype = {
         }));
     },
 
-    _pushResult: function(command, obj) {
+    _pushResult: function(command, obj, tooltip) {
         let index = this._results.length;
         let result = {"o": obj, "index": index};
-        this.rawResults.push({command: command, type: typeof(obj), object: objectToString(obj), index: index.toString()});
+        this.rawResults.push({command: command, type: typeof(obj), object: objectToString(obj), index: index.toString(), tooltip: tooltip});
         this.emitResultUpdate();
         
         this._results.push(result);
@@ -532,28 +532,19 @@ Melange.prototype = {
         let memInfo2 = global.get_memory_info();
         let ts2 = new Date().getTime();
 
-        this._pushResult(command, resultObj);
+        let tooltip = _("Memory information (Final / Diff):") + "\n";
+        tooltip += '    uordblks: ' + (memInfo2.glibc_uordblks) + " / " + (memInfo2.glibc_uordblks - memInfo.glibc_uordblks) + "\n" + 
+                   '    js_bytes: ' + (memInfo2.js_bytes) + " / " + (memInfo2.js_bytes - memInfo.js_bytes) + "\n" + 
+                   '    gjs_boxed: ' + (memInfo2.gjs_boxed) + " / " + (memInfo2.gjs_boxed - memInfo.gjs_boxed) + "\n" + 
+                   '    gjs_gobject: ' + (memInfo2.gjs_gobject) + " / " + (memInfo2.gjs_gobject - memInfo.gjs_gobject) + "\n" + 
+                   '    gjs_function: ' + (memInfo2.gjs_function) + " / " + (memInfo2.gjs_function - memInfo.gjs_function) + "\n" + 
+                   '    gjs_closure: ' + (memInfo2.gjs_closure) + " / " + (memInfo2.gjs_closure - memInfo.gjs_closure) + "\n";
 
-        let memdata = [
-            'uordblks: ' + (memInfo2.glibc_uordblks),
-            'js_bytes: ' + (memInfo2.js_bytes),
-            'gjs_boxed: ' + (memInfo2.gjs_boxed),
-            'gjs_gobject: ' + (memInfo2.gjs_gobject),
-            'gjs_function: ' + (memInfo2.gjs_function),
-            'gjs_closure: ' + (memInfo2.gjs_closure)
-        ];
-        this._pushResult("<memstate>", memdata.join('; '));
-        let memdataDiff = [
-            'uordblks: ' + (memInfo2.glibc_uordblks - memInfo.glibc_uordblks),
-            'js_bytes: ' + (memInfo2.js_bytes - memInfo.js_bytes),
-            'gjs_boxed: ' + (memInfo2.gjs_boxed - memInfo.gjs_boxed),
-            'gjs_gobject: ' + (memInfo2.gjs_gobject - memInfo.gjs_gobject),
-            'gjs_function: ' + (memInfo2.gjs_function - memInfo.gjs_function),
-            'gjs_closure: ' + (memInfo2.gjs_closure - memInfo.gjs_closure)
-        ];
-        this._pushResult("<memdiff>", memdataDiff.join('; '));
-        this._pushResult("<execution time (ms)>", ts2 - ts);
-        this._entry.text = '';
+        tooltip += _("Execution time (ms): ") + (ts2 - ts);
+
+        this._pushResult(command, resultObj, tooltip);
+
+        return;
     },
 
     // DBus function
@@ -571,7 +562,7 @@ Melange.prototype = {
         } catch (e) {
             resultObj = '<exception ' + e + '>';
         }
-        this._pushResult(path, resultObj);
+        this._pushResult(path, resultObj, "");
     },
 
     // DBus function
@@ -629,7 +620,7 @@ Melange.prototype = {
             let inspector = new Inspector();
             inspector.connect('target', Lang.bind(this, function(i, target, stageX, stageY) {
                 this._pushResult('<inspect x:' + stageX + ' y:' + stageY + '>',
-                                 target);
+                                 target, "");
             }));
             inspector.connect('closed', Lang.bind(this, function() {
                 this.emitInspectorDone();

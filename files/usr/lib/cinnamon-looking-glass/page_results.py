@@ -3,7 +3,7 @@ from gi.repository import Gio, Gtk, GObject, Gdk, Pango, GLib
 
 class ModulePage(BaseListView):
     def __init__(self, parent):
-        store = Gtk.ListStore(int, str, str, str)
+        store = Gtk.ListStore(int, str, str, str, str)
         BaseListView.__init__(self, store)
 
         self.parent = parent
@@ -14,6 +14,7 @@ class ModulePage(BaseListView):
         self.createTextColumn(1, "Name")
         self.createTextColumn(2, "Type")
         self.createTextColumn(3, "Value")
+        self.treeView.set_tooltip_column(4)
 
         self.treeView.connect("row-activated", self.onRowActivated)
 
@@ -49,8 +50,8 @@ class ModulePage(BaseListView):
         if success:
             try:
                 for item in data:
-                    self.store.append([int(item["index"]), item["command"], item["type"], item["object"]])
-                    self.parent.activatePage("results")
+                    self.store.append([int(item["index"]), item["command"], item["type"], item["object"], item["tooltip"]])
+                self.parent.activatePage("results")
             except Exception as e:
                 print e
 
