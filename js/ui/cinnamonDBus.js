@@ -269,7 +269,8 @@ Cinnamon.prototype = {
     },
 
     highlightPanel: function(id, highlight) {
-        Main.panelManager.panels[id].highlight(highlight);
+        if (Main.panelManager.panels[id])
+            Main.panelManager.panels[id].highlight(highlight);
     },
 
     addPanelQuery: function() {
