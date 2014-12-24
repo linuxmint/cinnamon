@@ -52,6 +52,8 @@ const CinnamonIface =
                 <arg type="i" direction="in" /> \
                 <arg type="b" direction="in" /> \
             </method> \
+            <method name="addPanelQuery"> \
+            </method> \
             <method name="activateCallback"> \
                 <arg type="s" direction="in" /> \
                 <arg type="s" direction="in" /> \
@@ -268,6 +270,10 @@ Cinnamon.prototype = {
 
     highlightPanel: function(id, highlight) {
         Main.panelManager.panels[id].highlight(highlight);
+    },
+
+    addPanelQuery: function() {
+        Main.panelManager.addPanelQuery();
     },
 
     activateCallback: function(callback, id, id_is_instance) {

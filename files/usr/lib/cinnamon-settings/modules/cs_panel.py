@@ -15,7 +15,8 @@ class Module:
         self.settings = Gio.Settings.new("org.cinnamon");
         self.settings.connect("changed::panels-enabled", self.on_panel_list_changed)
         self.model = Gtk.ListStore(str, str)
-        self.highlight_function = dbus.SessionBus().get_object("org.Cinnamon", "/org/Cinnamon").get_dbus_method("highlightPanel", "org.Cinnamon")
+        self.proxy = dbus.SessionBus().get_object("org.Cinnamon", "/org/Cinnamon")
+
         self.widgets = []
         self.panel_id = None
         if len(sys.argv) > 2:
@@ -31,14 +32,14 @@ class Module:
             vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
             bg.add(vbox)
 
-
+            self.panel_content = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
             self.combo_box = Gtk.ComboBox.new_with_model(self.model)
             renderer_text = Gtk.CellRendererText()
             self.combo_box.pack_start(renderer_text, True)
             self.combo_box.add_attribute(renderer_text, "text", 1)
             self.combo_box.set_id_column(0)
 
-            vbox.pack_start(self.combo_box, False, False, 2)
+            self.panel_content.pack_start(self.combo_box, False, False, 2)
 
             section = Section(_("Auto Hide Options"))
 
@@ -53,9 +54,9 @@ class Module:
             widget = PanelSpinButton(_("Hide delay"), "org.cinnamon", "panels-hide-delay", "org.cinnamon/panels-autohide", 0, 2000, 50, 200, _("milliseconds"), self.panel_id)
             section.add_indented(widget)
             self.widgets.append(widget)
-            vbox.add(section)
+            self.panel_content.add(section)
 
-            vbox.add(Gtk.Separator.new(Gtk.Orientation.HORIZONTAL))
+            self.panel_content.add(Gtk.Separator.new(Gtk.Orientation.HORIZONTAL))
 
             section = Section(_("Size Options"))
 
@@ -71,14 +72,20 @@ class Module:
             widget.add_mark(25.0, Gtk.PositionType.TOP, None)
             section.add_indented_expand(widget)
             self.widgets.append(widget)
-            vbox.add(section)
+            self.panel_content.add(section)
 
-            vbox.add(Gtk.Separator.new(Gtk.Orientation.HORIZONTAL))
+            self.panel_content.add(Gtk.Separator.new(Gtk.Orientation.HORIZONTAL))
+
+            vbox.add(self.panel_content)
 
             hbox = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
             hbox.set_border_width(6)
             hbox.add(GSettingsCheckButton(_("Panel edit mode"), "org.cinnamon", "panel-edit-mode", None))
             vbox.add(hbox)
+
+            add_panel_button = Gtk.Button(label=_("Add new panel"))
+            vbox.add(add_panel_button)
+            add_panel_button.connect("clicked", self.on_add_panel)
 
             self.combo_box.connect("changed", self.on_combo_box_changed)
             # Widget is only hidden when switching panels
@@ -88,6 +95,8 @@ class Module:
             self.on_panel_list_changed("org.cinnamon", "panels-enabled")
         self.on_combo_box_changed(self.combo_box)
 
+    def on_add_panel(self, widget):
+        self.proxy.addPanelQuery(dbus_interface='org.Cinnamon')
 
     def on_panel_list_changed(self, schema, key):
         self.model.clear()
@@ -107,20 +116,25 @@ class Module:
         self.combo_box.set_active_iter(selected)
         # Settings active iter will trigger on_combo_box_changed and highlight/set panel_id
 
+        if len(panels) == 0:
+            self.panel_content.hide()
+        else:
+            self.panel_content.show()
+
     def on_combo_box_changed(self, widget):
         if self.panel_id:
-            self.highlight_function(int(self.panel_id), False)
+            self.proxy.highlightPanel(int(self.panel_id), False, dbus_interface='org.Cinnamon')
 
         self.panel_id = self.combo_box.get_active_id()
         if self.panel_id:
-            self.highlight_function(int(self.panel_id), True)
+            self.proxy.highlightPanel(int(self.panel_id), True, dbus_interface='org.Cinnamon')
 
         for widget in self.widgets:
             widget.set_panel_id(self.panel_id)
 
     def on_combo_box_destroy(self, widget):
         if self.panel_id:
-            self.highlight_function(int(self.panel_id), False)
+            self.proxy.highlightPanel(int(self.panel_id), False, dbus_interface='org.Cinnamon')
 
 class PanelCheckButton(Gtk.CheckButton):
     def __init__(self, label, schema, key, dep_key, panel_id):
