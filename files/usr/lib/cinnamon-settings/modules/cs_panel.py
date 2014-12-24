@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 import sys
 import dbus
+from gi.repository import GLib
 from SettingsWidgets import *
 
 class Module:
@@ -92,12 +93,22 @@ class Module:
             self.combo_box.connect("unmap", self.on_combo_box_destroy)
             self.combo_box.connect("destroy", self.on_combo_box_destroy)
 
-            self.on_panel_list_changed("org.cinnamon", "panels-enabled")
+            vbox.connect("show", self.update_view)
+            # When the sidepage is shown, "show" is called on all widgets. We need to check again if we want to show panel_content
+
+        self.on_panel_list_changed("org.cinnamon", "panels-enabled")
         self.on_combo_box_changed(self.combo_box)
 
     def on_add_panel(self, widget):
         self.proxy.addPanelQuery(dbus_interface='org.Cinnamon')
 
+    def update_view(self, widget):
+        if len(self.model) == 0:
+            GLib.idle_add(self.panel_content.hide)
+            # Wait for a while so that the window gets the right size
+        else:
+            self.panel_content.show()
+        
     def on_panel_list_changed(self, schema, key):
         self.model.clear()
         panels = self.settings.get_strv("panels-enabled")
@@ -133,6 +144,7 @@ class Module:
             widget.set_panel_id(self.panel_id)
 
     def on_combo_box_destroy(self, widget):
+        self.proxy.destroyDummyPanels(dbus_interface='org.Cinnamon')
         if self.panel_id:
             self.proxy.highlightPanel(int(self.panel_id), False, dbus_interface='org.Cinnamon')
 

@@ -222,7 +222,8 @@ PanelManager.prototype = {
             delete this.dummyPanels[i][1];
         }
         this.addPanelMode = false;
-        Main.keybindingManager.removeHotKey('close-add-panel');
+        if (Main.keybindingManager.bindings['close-add-panel'])
+            Main.keybindingManager.removeHotKey('close-add-panel');
     },
 
     /**

@@ -54,6 +54,8 @@ const CinnamonIface =
             </method> \
             <method name="addPanelQuery"> \
             </method> \
+            <method name="destroyDummyPanels"> \
+            </method> \
             <method name="activateCallback"> \
                 <arg type="s" direction="in" /> \
                 <arg type="s" direction="in" /> \
@@ -275,6 +277,10 @@ Cinnamon.prototype = {
 
     addPanelQuery: function() {
         Main.panelManager.addPanelQuery();
+    },
+
+    destroyDummyPanels: function() {
+        Main.panelManager._destroyDummyPanels();
     },
 
     activateCallback: function(callback, id, id_is_instance) {
