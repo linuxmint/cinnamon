@@ -93,9 +93,10 @@ class LogView(Gtk.ScrolledWindow):
                 print e
 
 class ModulePage(WindowAndActionBars):
-    def __init__(self):
+    def __init__(self, parent):
         self.view = LogView()
         WindowAndActionBars.__init__(self, self.view)
+        self.parent = parent;
 
         self.addToggleButton("info", "dialog-information", "Show/Hide Messages tagged as 'info'")
         self.addToggleButton("warning", "dialog-warning", "Show/Hide Messages tagged as 'warning'")

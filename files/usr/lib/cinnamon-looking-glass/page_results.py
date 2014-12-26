@@ -2,9 +2,12 @@ from pageutils import *
 from gi.repository import Gio, Gtk, GObject, Gdk, Pango, GLib
 
 class ModulePage(BaseListView):
-    def __init__(self):
+    def __init__(self, parent):
         store = Gtk.ListStore(int, str, str, str)
         BaseListView.__init__(self, store)
+
+        self.parent = parent
+        self.adjust = self.get_vadjustment()
 
         column = self.createTextColumn(0, "ID")
         column.set_cell_data_func(self.rendererText, self.cellDataFuncID)
@@ -18,6 +21,11 @@ class ModulePage(BaseListView):
         lookingGlassProxy.connect("ResultUpdate", self.getUpdates)
         lookingGlassProxy.connect("InspectorDone", self.onInspectorDone)
         lookingGlassProxy.addStatusChangeCallback(self.onStatusChange)
+
+        self.connect("size-allocate", self.scrollToBottom);
+
+    def scrollToBottom (self, widget, data):
+        self.adjust.set_value(self.adjust.get_upper())
 
     def cellDataFuncID(self, column, cell, model, iter, data=None):
         cell.set_property("text", "r(%d)" %  model.get_value(iter, 0))
@@ -42,6 +50,7 @@ class ModulePage(BaseListView):
             try:
                 for item in data:
                     self.store.append([int(item["index"]), item["command"], item["type"], item["object"]])
+                    self.parent.activatePage("results")
             except Exception as e:
                 print e
 

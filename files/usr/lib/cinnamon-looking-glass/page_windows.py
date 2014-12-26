@@ -2,9 +2,10 @@ from pageutils import *
 from gi.repository import Gio, Gtk, GObject, Gdk, Pango, GLib
 
 class ModulePage(BaseListView):
-    def __init__(self):
+    def __init__(self, parent):
         store = Gtk.ListStore(int, str, str, str)
         BaseListView.__init__(self, store)
+        self.parent = parent
 
         column = self.createTextColumn(0, "ID")
         column.set_cell_data_func(self.rendererText, self.cellDataFuncID)

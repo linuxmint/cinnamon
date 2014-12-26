@@ -600,7 +600,7 @@ class CinnamonLog(dbus.service.Object):
         module.lookingGlassProxy = self.lookingGlassProxy
         module.cinnamonLog = self
         label = Gtk.Label(text)
-        page = module.ModulePage()
+        page = module.ModulePage(self)
         self.pages[moduleName] = page
         self.notebook.append_page(page, label)
 

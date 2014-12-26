@@ -3,9 +3,10 @@ import os
 from gi.repository import Gio, Gtk, GObject, Gdk, Pango, GLib
 
 class ModulePage(pageutils.BaseListView):
-    def __init__(self):
+    def __init__(self, parent):
         store = Gtk.ListStore(str, str, str, str, str, str, str)
         pageutils.BaseListView.__init__(self, store)
+        self.parent = parent;
 
         column = self.createTextColumn(0, "Status")
         self.createTextColumn(1, "Type")
