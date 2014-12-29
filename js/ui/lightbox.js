@@ -8,7 +8,7 @@ const Params = imports.misc.params;
 const Tweener = imports.ui.tweener;
 
 /**
- * Lightbox:
+ * #Lightbox
  * @container: parent Clutter.Container
  * @params: (optional) additional parameters:
  *           - inhibitEvents: whether to inhibit events for @container

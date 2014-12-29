@@ -11,7 +11,7 @@ const Tweener = imports.ui.tweener;
 const POPUP_ANIMATION_TIME = 0.15;
 
 /**
- * BoxPointer:
+ * #BoxPointer
  * @side: side to draw the arrow on
  * @binProperties: Properties to set on contained bin
  *
