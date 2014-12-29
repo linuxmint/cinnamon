@@ -162,6 +162,12 @@ var NON_SETTING_TYPES = {
             "description",
             "callback"
         ]
+    },
+    "label" : {
+        "required-fields": [
+            "type",
+            "description"
+        ]
     }
 };
 
