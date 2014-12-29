@@ -13,18 +13,11 @@ class ModulePage(BaseListView):
         self.createTextColumn(3, "Value")
 
         self.treeView.connect("row-activated", self.onRowActivated)
-        self.treeView.connect("button-press-event", self.onButtonPress)
 
         self.getUpdates()
         lookingGlassProxy.connect("ResultUpdate", self.getUpdates)
         lookingGlassProxy.connect("InspectorDone", self.onInspectorDone)
         lookingGlassProxy.addStatusChangeCallback(self.onStatusChange)
-
-        #Popup menu
-        self.popup = Gtk.Menu()
-        clear = Gtk.MenuItem('Clear all results')
-        self.popup.append(clear)
-        self.popup.show_all()
 
     def cellDataFuncID(self, column, cell, model, iter, data=None):
         cell.set_property("text", "r(%d)" %  model.get_value(iter, 0))
@@ -37,12 +30,6 @@ class ModulePage(BaseListView):
         value = self.store.get_value(iter, 3)
 
         cinnamonLog.pages["inspect"].inspectElement("r(%d)" % id, objType, name, value)
-
-    def onButtonPress(self, treeview, event):
-        if event.button == 3:
-            treeview.grab_focus()
-            self.popup.popup( None, None, None, None, event.button, event.time)
-            return True
 
     def onStatusChange(self, online):
         if online:
