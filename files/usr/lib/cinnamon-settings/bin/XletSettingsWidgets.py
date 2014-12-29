@@ -1045,6 +1045,7 @@ class Keybinding(Gtk.HBox, BaseWidget):
         self.value = self.get_val()
         if self.get_desc() != "":
             self.pack_start(self.label, False, False, 2)
+            set_tt(self.get_tooltip(), self.label)
 
         self.buttons = []
         self.teach_button = None
