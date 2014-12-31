@@ -97,8 +97,7 @@ Depends: cinnamon-common (= ${source:Version}),
          gkbd-capplet,
          python-pyinotify,
          metacity,
-         gnome-panel | tint2,
-         libjs-jquery (>= 1.4)
+         gnome-panel | tint2
 Recommends: gnome-themes-standard, gnome-terminal, cinnamon-bluetooth
 Provides: notification-daemon, x-window-manager
 Description: Modern Linux desktop
