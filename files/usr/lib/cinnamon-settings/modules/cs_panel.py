@@ -140,8 +140,8 @@ class Module:
         if self.panel_id:
             self.proxy.highlightPanel(int(self.panel_id), True, dbus_interface='org.Cinnamon')
 
-        for widget in self.widgets:
-            widget.set_panel_id(self.panel_id)
+            for widget in self.widgets:
+                widget.set_panel_id(self.panel_id)
 
     def on_combo_box_destroy(self, widget):
         self.proxy.destroyDummyPanels(dbus_interface='org.Cinnamon')
