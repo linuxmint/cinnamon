@@ -92,12 +92,17 @@ WindowManager.prototype = {
         this._switchData = null;
         this._cinnamonwm.connect('kill-switch-workspace', Lang.bind(this, this._switchWorkspaceDone));
         this._cinnamonwm.connect('kill-window-effects', Lang.bind(this, function (cinnamonwm, actor) {
-            this._minimizeWindowDone(cinnamonwm, actor, actor.opacity);
-            this._maximizeWindowDone(cinnamonwm, actor, actor.opacity);
-            this._unmaximizeWindowDone(cinnamonwm, actor, actor.opacity);
-            this._tileWindowDone(cinnamonwm, actor, actor.opacity);
-            this._mapWindowDone(cinnamonwm, actor, actor.opacity);
-            this._destroyWindowDone(cinnamonwm, actor, actor.opacity);
+            let opacity = 255;
+
+            if (actor.orig_opactity)
+                opacity = actor.orig_opacity;
+
+            this._minimizeWindowDone(cinnamonwm, actor, opacity);
+            this._maximizeWindowDone(cinnamonwm, actor, opacity);
+            this._unmaximizeWindowDone(cinnamonwm, actor, opacity);
+            this._tileWindowDone(cinnamonwm, actor, opacity);
+            this._mapWindowDone(cinnamonwm, actor, opacity);
+            this._destroyWindowDone(cinnamonwm, actor, opacity);
         }));
 
         this._cinnamonwm.connect('switch-workspace', Lang.bind(this, this._switchWorkspace));
@@ -223,6 +228,8 @@ WindowManager.prototype = {
         actor.get_meta_window()._cinnamonwm_minimize_transition = undefined;
         actor.get_meta_window()._cinnamonwm_minimize_time = undefined;
 
+        actor.orig_opacity = actor.opacity;
+
         if (!this._shouldAnimate(actor)) {
             cinnamonwm.completed_minimize(actor);
             return;
@@ -300,6 +307,9 @@ WindowManager.prototype = {
 
     _tileWindow : function (cinnamonwm, actor, targetX, targetY, targetWidth, targetHeight) {
         Main.soundManager.play('tile');
+
+        actor.orig_opacity = actor.opacity;
+
         if (!this._shouldAnimate(actor)) {
             cinnamonwm.completed_tile(actor);
             return;
@@ -368,6 +378,9 @@ WindowManager.prototype = {
 
     _maximizeWindow : function(cinnamonwm, actor, targetX, targetY, targetWidth, targetHeight) {
         Main.soundManager.play('maximize');
+
+        actor.orig_opacity = actor.opacity;
+
         if (!this._shouldAnimate(actor)) {
             cinnamonwm.completed_maximize(actor);
             return;
@@ -437,6 +450,9 @@ WindowManager.prototype = {
 
     _unmaximizeWindow : function(cinnamonwm, actor, targetX, targetY, targetWidth, targetHeight) {
         Main.soundManager.play('unmaximize');
+
+        actor.orig_opacity = actor.opacity;
+
         if (!this._shouldAnimate(actor)) {
             cinnamonwm.completed_unmaximize(actor);
             return;
@@ -593,6 +609,9 @@ WindowManager.prototype = {
 
             actor._windowType = type;
         }));
+
+        actor.orig_opacity = actor.opacity;
+
         if (actor.meta_window.is_attached_dialog()) {
             this._checkDimming(actor.get_meta_window().get_transient_for());
             if (this._shouldAnimate()) {
@@ -683,7 +702,7 @@ WindowManager.prototype = {
         }
 
         let orig_opacity = actor.opacity;
-        if (effect == "fade") {            
+        if (effect == "fade") {
             this._mapping.push(actor);
 
             actor.opacity = 0;
@@ -728,6 +747,8 @@ WindowManager.prototype = {
         if (actor.meta_window.get_window_type() == Meta.WindowType.NORMAL) {
             Main.soundManager.play('close');
         }
+
+        actor.orig_opacity = actor.opacity;
 
         let window = actor.meta_window;
         if (actor._notifyWindowTypeSignalId) {

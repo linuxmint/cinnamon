@@ -1034,6 +1034,9 @@ SPECIAL_MODS = (["Super_L",    "<Super>"],
                 ["Shift_L",    "<Shift>"],
                 ["Shift_R",    "<Shift>"])
 
+# Ignore capslock and numlock when in teach mode
+IGNORED_MOD_MASK = (Gdk.ModifierType.MOD2_MASK | Gdk.ModifierType.LOCK_MASK)
+
 class Keybinding(Gtk.HBox, BaseWidget):
     def __init__(self, key, settings_obj, uuid):
         BaseWidget.__init__(self, key, settings_obj, uuid)
@@ -1103,12 +1106,12 @@ class Keybinding(Gtk.HBox, BaseWidget):
         self.disconnect(self.event_id)
         self.ungrab()
         self.event_id = None
-        if event.keyval == Gdk.KEY_Escape:
+        if ((event.state & ~IGNORED_MOD_MASK) == 0) and event.keyval == Gdk.KEY_Escape:
             self.set_button_text()
             self.teaching = False
             self.teach_button = None
             return True
-        if event.keyval == Gdk.KEY_BackSpace:
+        if ((event.state & ~IGNORED_MOD_MASK) == 0) and event.keyval == Gdk.KEY_BackSpace:
             self.teaching = False
             self.value = self.place_value("")
             self.set_val(self.value)

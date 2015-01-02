@@ -144,6 +144,19 @@ PanelManager.prototype = {
     },
 
     /**
+     * setPanelsOpacity:
+     * @opacity (int): opacity of panels
+     *
+     * Sets the opacity of all hideable panels to @opacity
+     */
+    setPanelsOpacity: function(opacity) {
+        for (let i in this.panels) {
+            if (this.panels[i] && this.panels[i].isHideable())
+                this.panels[i].opacity = opacity;
+        }
+    },
+
+    /**
      * removePanel:
      * @panelId (int): Panel id of the panel to be removed
      *
