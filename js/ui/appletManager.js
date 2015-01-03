@@ -531,8 +531,10 @@ function updateAppletsOnPanel (panel) {
             definition.location = location;
             definition.orientation = orientation;
 
-            appletObj[applet_id].setPanelHeight(height);
-            appletObj[applet_id].setOrientation(orientation);
+            if (appletObj[applet_id]) {
+                appletObj[applet_id].setPanelHeight(height);
+                appletObj[applet_id].setOrientation(orientation);
+            }
         }
     }
 }
