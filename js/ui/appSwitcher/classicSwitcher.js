@@ -291,13 +291,14 @@ ClassicSwitcher.prototype = {
         // Use a cancellable timeout to avoid flickering effect when tabbing rapidly through the set.
         if (this._displayPreviewTimeoutId) {
             Mainloop.source_remove(this._displayPreviewTimeoutId);
+            this._displayPreviewTimeoutId = 0;
         }
         let delay = PREVIEW_DELAY_TIMEOUT;
         this._displayPreviewTimeoutId = Mainloop.timeout_add(delay, Lang.bind(this, this._showWindowPreview));
     },
     
     _showWindowPreview: function() {
-        this._displayPreviewTimeoutId = null;
+        this._displayPreviewTimeoutId = 0;
 
         let childBox = new Clutter.ActorBox();
 
