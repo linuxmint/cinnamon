@@ -323,8 +323,6 @@ key_is_modifier (guint16 keyval)
 static GdkEventKey *
 key_event_to_gdk (ClutterKeyEvent *event_clutter)
 {
-  GdkDisplay *display = gdk_display_get_default ();
-  GdkKeymap *keymap = gdk_keymap_get_for_display (display);
   GdkEventKey *event_gdk;
   event_gdk = (GdkEventKey *)gdk_event_new ((event_clutter->type == CLUTTER_KEY_PRESS) ?
                                             GDK_KEY_PRESS : GDK_KEY_RELEASE);
@@ -343,10 +341,6 @@ key_event_to_gdk (ClutterKeyEvent *event_clutter)
    * out of state, so won't make the situation worse if the server
    * doesn't support XKB; we'll just end up with group == 0 */
   event_gdk->group = XkbGroupForCoreState (event_gdk->state);
-
-  gdk_keymap_translate_keyboard_state (keymap, event_gdk->hardware_keycode,
-                                       event_gdk->state, event_gdk->group,
-                                       &event_gdk->keyval, NULL, NULL, NULL);
 
   if (event_clutter->unicode_value)
     {
