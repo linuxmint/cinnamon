@@ -347,14 +347,6 @@ ClassicSwitcher.prototype = {
         }
     },
 
-    _timeoutPopupThumbnails: function() {
-        if (!this._thumbnails)
-            this._createThumbnails();
-        this._thumbnailTimeoutId = 0;
-        this._thumbnailsFocused = false;
-        return false;
-    },
-
     _destroyThumbnails : function() {
         if (!this._thumbnails) {
             return;
