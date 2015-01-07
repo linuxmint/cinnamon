@@ -4,22 +4,13 @@ const Gio = imports.gi.Gio
 const Lang = imports.lang;
 const Mainloop = imports.mainloop;
 const GLib = imports.gi.GLib;
+const GObject = imports.gi.GObject;
 
 function init() {
     overrideGio();
+    overrideGObject();
     overrideMainloop();
-
-    String.prototype.capitalize = function() {
-        return this.charAt(0).toUpperCase() + this.slice(1);
-    }
-
-    String.prototype.first_cap = function() {
-        return this.charAt(0).toUpperCase();
-    }
-
-    Number.prototype.clamp = function(min, max) {
-        return Math.min(Math.max(this, min), max);
-    };
+    overrideJS();
 }
 
 function check_schema_and_init(obj, method, params) {
@@ -101,6 +92,18 @@ function overrideGio() {
     Gio.Settings.prototype.set_flags    = function(key, val) { return check_key_and_set(this, Gio._real_set_flags, key, val); }
 }
 
+function overrideGObject() {
+    GObject.Object.prototype.disconnect = function(id) {
+        if (GObject.signal_handler_is_connected (this, id))
+            return GObject.signal_handler_disconnect(this, id);
+        else {
+            log("Invalid or null signal handler id used when attempting to .disconnect from an object.");
+            global.dump_gjs_stack();
+            return false;
+        }
+    };
+}
+
 function overrideMainloop() {
     Mainloop.__real_source_remove = Mainloop.source_remove;
 
@@ -113,4 +116,18 @@ function overrideMainloop() {
             Mainloop.__real_source_remove(id);
         }
     }
+}
+
+function overrideJS() {
+    String.prototype.capitalize = function() {
+        return this.charAt(0).toUpperCase() + this.slice(1);
+    }
+
+    String.prototype.first_cap = function() {
+        return this.charAt(0).toUpperCase();
+    }
+
+    Number.prototype.clamp = function(min, max) {
+        return Math.min(Math.max(this, min), max);
+    };
 }
