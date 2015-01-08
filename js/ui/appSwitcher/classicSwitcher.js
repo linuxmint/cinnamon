@@ -191,6 +191,7 @@ ClassicSwitcher.prototype = {
         this._appList.connect('item-entered', Lang.bind(this, this._appEntered));
         
         this._appIcons = this._appList.icons;
+        this.actor.get_allocation_box();
     },
 
     _selectNext: function() {
