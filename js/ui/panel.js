@@ -377,6 +377,11 @@ PanelManager.prototype = {
                 this.panels[i]._moveResizePanel();
             }
         }
+
+        if (this.addPanelMode) {
+            this._destroyDummyPanels();
+            this._showDummyPanels(this.dummyCallback);
+        }
     },
 
     _onPanelEditModeChanged: function() {
@@ -409,6 +414,7 @@ PanelManager.prototype = {
     _showDummyPanels: function(callback) {
         let monitorCount = global.screen.get_n_monitors();
         let panelCount = monitorCount * 2;
+        this.dummyCallback = callback;
         this.dummyPanels = [];
         while (this.dummyPanels.push([]) < monitorCount); // Generate a 2D array of length monitorCount
 
