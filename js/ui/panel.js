@@ -117,6 +117,8 @@ PanelManager.prototype = {
         global.settings.connect("changed::panels-enabled", Lang.bind(this, this._onPanelsEnabledChanged));
         global.settings.connect("changed::panel-edit-mode", Lang.bind(this, this._onPanelEditModeChanged));
         global.screen.connect("monitors-changed", Lang.bind(this, this._onMonitorsChanged));
+
+        this._osd = null;
     },
 
     /**
@@ -235,6 +237,7 @@ PanelManager.prototype = {
             delete this.dummyPanels[i][1];
         }
         this.addPanelMode = false;
+        this._osd.hide();
         if (Main.keybindingManager.bindings['close-add-panel'])
             Main.keybindingManager.removeHotKey('close-add-panel');
     },
@@ -429,6 +432,18 @@ PanelManager.prototype = {
                     this._destroyDummyPanels();
             }));
 
+            if (!this._osd) {
+                this._osd = new St.Bin({style_class: "panel-change-osd"});
+                let text = new St.Label({text: _("Select new position of panel")});
+                this._osd.set_child(text);
+                Main.layoutManager.addChrome(this._osd, { visibleInFullscreen: false, affectsInputRegion: false});
+            }
+            let monitor = Main.layoutManager.primaryMonitor;
+            let x = monitor.x + (monitor.width - this._osd.width)/2;
+            let y = monitor.y + (monitor.height - this._osd.height)/2;
+
+            this._osd.set_position(x, y);
+            this._osd.show();
             return true;
         }
         return false;
