@@ -53,7 +53,6 @@ const BackgroundManager = imports.ui.backgroundManager;
 const SlideshowManager = imports.ui.slideshowManager;
 const AppletManager = imports.ui.appletManager;
 const SearchProviderManager = imports.ui.searchProviderManager;
-const AutomountManager = imports.ui.automountManager;
 const DeskletManager = imports.ui.deskletManager;
 const ExtensionSystem = imports.ui.extensionSystem;
 const Keyboard = imports.ui.keyboard;

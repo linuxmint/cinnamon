@@ -2556,7 +2556,6 @@ MyApplet.prototype = {
             try{
             for (var i in results){
                 let button = new SearchProviderResultButton(this, provider, results[i]);
-                button.actor.connect('realize', Lang.bind(this, this._onApplicationButtonRealized));
                 button.actor.connect('leave-event', Lang.bind(this, this._appLeaveEvent, button));
                 this._addEnterEvent(button, Lang.bind(this, this._appEnterEvent, button));
                 this._searchProviderButtons.push(button);
