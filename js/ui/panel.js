@@ -440,7 +440,7 @@ PanelManager.prototype = {
 
             if (!this._osd) {
                 this._osd = new St.Bin({style_class: "panel-change-osd"});
-                let text = new St.Label({text: _("Select new position of panel")});
+                let text = new St.Label({text: _("Select new position of panel. Esc to cancel.")});
                 this._osd.set_child(text);
                 Main.layoutManager.addChrome(this._osd, { visibleInFullscreen: false, affectsInputRegion: false});
             }
