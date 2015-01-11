@@ -434,7 +434,7 @@ function start() {
     AppletManager.init();
     DeskletManager.init();
     SearchProviderManager.init();
-
+    
     createLookingGlass();
 
     if (software_rendering && !GLib.getenv('CINNAMON_2D')) {
