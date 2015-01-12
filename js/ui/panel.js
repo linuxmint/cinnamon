@@ -1723,6 +1723,9 @@ Panel.prototype = {
 
                             this.actor.set_clip(0, y, this.monitor.width, height);
                         }),
+                        onComplete: Lang.bind(this, function() {
+                            this.actor.remove_clip();
+                        }),
                         onUpdateParams: [this.bottomPosition ? this.monitor.y + this.monitor.height : this.monitor.y - height, this.bottomPosition]
                         });
 
@@ -1762,6 +1765,9 @@ Panel.prototype = {
                 let y = bottomPosition ? 0 : this.actor.height - height;
 
                 this.actor.set_clip(0, y, this.monitor.width, height);
+            }),
+            onComplete: Lang.bind(this, function() {
+                this.actor.remove_clip();
             }),
             onUpdateParams: [y, this.bottomPosition]
         });
