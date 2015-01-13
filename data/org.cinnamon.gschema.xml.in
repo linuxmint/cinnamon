@@ -578,6 +578,14 @@
       </_description>
     </key>
 
+    <key name="hide-tile-hud" type="b">
+      <default>false</default>
+      <_summary>Prevent the tile HUD from showing</_summary>
+      <_description>
+        Hide the tile HUD.
+      </_description>
+    </key>
+
     <key type="i" name="active-display-scale">
       <range min="1" max="4" />
       <default>1</default>
