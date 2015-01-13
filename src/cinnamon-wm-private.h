@@ -37,6 +37,21 @@ void _cinnamon_wm_switch_workspace      (CinnamonWM             *wm,
                                       gint                 from,
                                       gint                 to,
                                       MetaMotionDirection  direction);
+
+void _cinnamon_wm_show_tile_preview     (CinnamonWM         *wm,
+                                         MetaWindow         *window,
+                                         MetaRectangle      *tile_rect,
+                                         int                tile_monitor,
+                                         guint              snap_queued);
+void _cinnamon_wm_hide_tile_preview     (CinnamonWM         *wm);
+
+void _cinnamon_wm_show_hud_preview     (CinnamonWM          *wm,
+                                        guint               current_proximity_zone,
+                                        MetaRectangle       *work_area,
+                                        guint               snap_queued);
+
+void _cinnamon_wm_hide_hud_preview     (CinnamonWM         *wm);
+
 void _cinnamon_wm_kill_window_effects   (CinnamonWM             *wm,
                                       MetaWindowActor     *actor);
 void _cinnamon_wm_kill_switch_workspace (CinnamonWM             *wm);
