@@ -2357,9 +2357,11 @@ MyApplet.prototype = {
      _onSearchTextChanged: function (se, prop) {
         if (this.menuIsOpening) {
             this.menuIsOpening = false;
-            return false;
+            return;
         } else {
             let searchString = this.searchEntry.get_text();
+            if (searchString == '' && !this.searchActive)
+                return;
             this.searchActive = searchString != '';
             this._fileFolderAccessActive = this.searchActive && this.searchFilesystem;
             this._clearAllSelections();
@@ -2384,7 +2386,7 @@ MyApplet.prototype = {
                 this._setCategoriesButtonActive(true);
                 this._select_category(null, this._allAppsCategoryButton);
             }
-            return false;
+            return;
         }
     },
 
