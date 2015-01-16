@@ -542,7 +542,7 @@ IconApplet.prototype = {
             let height = (this._panelHeight / DEFAULT_PANEL_HEIGHT) * PANEL_SYMBOLIC_ICON_DEFAULT_HEIGHT / global.ui_scale;
             this._applet_icon = new St.Icon({icon_name: icon_name, icon_size: height, icon_type: St.IconType.SYMBOLIC, reactive: true, track_hover: true, style_class: 'system-status-icon' });
         } else {
-            this._applet_icon = new St.Icon({icon_name: icon_name, icon_type: St.IconType.SYMBOLIC, reactive: true, track_hover: true, style_class: 'system-status-icon' });
+            this._applet_icon = new St.Icon({icon_name: icon_name, icon_size: PANEL_SYMBOLIC_ICON_DEFAULT_HEIGHT, icon_type: St.IconType.SYMBOLIC, reactive: true, track_hover: true, style_class: 'system-status-icon' });
         }
         this._applet_icon_box.child = this._applet_icon;
         this.__icon_type = St.IconType.SYMBOLIC;
@@ -594,7 +594,7 @@ IconApplet.prototype = {
                 this._applet_icon = new St.Icon({gicon: gicon, icon_size: height,
                                                 icon_type: St.IconType.SYMBOLIC, reactive: true, track_hover: true, style_class: 'system-status-icon' });
             } else {
-                this._applet_icon = new St.Icon({gicon: gicon, icon_type: St.IconType.SYMBOLIC, reactive: true, track_hover: true, style_class: 'system-status-icon' });
+                this._applet_icon = new St.Icon({gicon: gicon, icon_size: PANEL_SYMBOLIC_ICON_DEFAULT_HEIGHT, icon_type: St.IconType.SYMBOLIC, reactive: true, track_hover: true, style_class: 'system-status-icon' });
             }
             this._applet_icon_box.child = this._applet_icon;
         }
