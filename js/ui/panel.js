@@ -478,6 +478,16 @@ PanelDummy.prototype = {
         this.actor = new Cinnamon.GenericContainer({style_class: "panel-dummy", reactive: true, track_hover: true});
         Main.layoutManager.addChrome(this.actor, { addToWindowgroup: false });
 
+        if (!this.actor.get_theme_node().lookup_color("background-color", false, null)[0]) {
+            this.noStyle = true;
+            this.actor.name = "panel";
+            if (this.bottomPosition)
+                this.actor.add_style_class_name("panel-bottom");
+            else
+                this.actor.add_style_class_name("panel-top");
+            this.actor.opacity = 100;
+        }
+
         this.actor.set_size(this.monitor.width, 25);
         this.actor.set_position(this.monitor.x, bottomPosition ? this.monitor.y + this.monitor.height - 25 : this.monitor.y);
 
@@ -492,10 +502,14 @@ PanelDummy.prototype = {
 
     _onEnter: function() {
         this.actor.add_style_pseudo_class('entered');
+        if (this.noStyle)
+            this.actor.opacity = 160;
     },
 
     _onLeave: function() {
         this.actor.remove_style_pseudo_class('entered');
+        if (this.noStyle)
+            this.actor.opacity = 100;
     },
 
     /**
