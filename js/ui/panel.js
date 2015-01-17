@@ -958,13 +958,13 @@ function populateSettingsMenu(menu, panelId) {
     panelSettingsSection = new PopupMenu.PopupSubMenuMenuItem(_("Modify panel..."), true);
 
     let menuItem = new IconMenuItem(_("Remove panel"), "list-remove");
-    menuItem.activate = Lang.bind(this, function() {
+    menuItem.activate = Lang.bind(menu, function() {
         Main.panelManager.removePanel(panelId);
     });
     panelSettingsSection.menu.addMenuItem(menuItem);
 
     let menuItem = new IconMenuItem(_("Add panel"), "list-add");
-    menuItem.activate = Lang.bind(this, function() {
+    menuItem.activate = Lang.bind(menu, function() {
         Main.panelManager.addPanelQuery();
         this.close();
     });
