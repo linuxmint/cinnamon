@@ -1300,6 +1300,22 @@ MyApplet.prototype = {
         this.emit('destroy');
     },
 
+    _set_default_menu_icon: function() {
+        let path = global.datadir + "/theme/menu.svg";
+        if (GLib.file_test(path, GLib.FileTest.EXISTS)) {
+            this.set_applet_icon_path(path);
+            return;
+        }
+
+        path = global.datadir + "/theme/menu-symbolic.svg";
+        if (GLib.file_test(path, GLib.FileTest.EXISTS)) {
+            this.set_applet_icon_symbolic_path(path);
+            return;
+        }
+        /* If all else fails, this will yield no icon */
+        this.set_applet_icon_path("");
+    },
+
     _updateIconAndLabel: function(){
         try {
             if (this.menuIconCustom &&
@@ -1316,8 +1332,7 @@ MyApplet.prototype = {
                 else
                     this.set_applet_icon_name(this.menuIcon);
             }
-            else if (Gtk.IconTheme.get_default().has_icon("menu")) this.set_applet_icon_name("menu");
-            else this.set_applet_icon_path(global.datadir + '/theme/menu.svg');
+            else this._set_default_menu_icon();
         } catch(e) {
            global.logWarning("Could not load icon file \""+this.menuIcon+"\" for menu button");
         }
@@ -2434,9 +2449,11 @@ MyApplet.prototype = {
      _onSearchTextChanged: function (se, prop) {
         if (this.menuIsOpening) {
             this.menuIsOpening = false;
-            return false;
+            return;
         } else {
             let searchString = this.searchEntry.get_text();
+            if (searchString == '' && !this.searchActive)
+                return;
             this.searchActive = searchString != '';
             this._fileFolderAccessActive = this.searchActive && this.searchFilesystem;
             this._clearAllSelections();
@@ -2461,7 +2478,7 @@ MyApplet.prototype = {
                 this._setCategoriesButtonActive(true);
                 this._select_category(null, this._allAppsCategoryButton);
             }
-            return false;
+            return;
         }
     },
 

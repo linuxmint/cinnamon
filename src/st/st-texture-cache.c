@@ -988,7 +988,8 @@ load_gicon_with_colors (StTextureCache    *cache,
   /* Do theme lookups in the main thread to avoid thread-unsafety */
   theme = cache->priv->icon_theme;
 
-  info = gtk_icon_theme_lookup_by_gicon_for_scale (theme, icon, size, scale, GTK_ICON_LOOKUP_USE_BUILTIN);
+  info = gtk_icon_theme_lookup_by_gicon_for_scale (theme, icon, size, scale, GTK_ICON_LOOKUP_USE_BUILTIN |
+                                                                             GTK_ICON_LOOKUP_FORCE_SIZE);
 
   if (info == NULL) {
     texture = CLUTTER_ACTOR (create_default_texture ());
