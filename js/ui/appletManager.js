@@ -598,6 +598,38 @@ ConfirmPasteDialog.prototype = {
     },
 };
 
+function ConfirmClearDialog(panelId){
+    this._init(panelId);
+}
+
+ConfirmClearDialog.prototype = {
+    __proto__: ModalDialog.ModalDialog.prototype,
+
+    _init: function(panelId){
+        ModalDialog.ModalDialog.prototype._init.call(this);
+
+        this.panelId = panelId;
+        let label = new St.Label({text: _("Are you sure you want to clear all applets on this panel?") + "\n\n"});
+        this.setButtons([
+                {
+                    label: _("Yes"),
+                    action: Lang.bind(this, function(){
+                        this.close();
+                        clearAppletConfiguration(this.panelId);
+                    })
+                },
+                {
+                    label: _("No"),
+                    action: Lang.bind(this, function(){
+                        this.close();
+                    })
+                }
+        ]);
+
+	this.contentLayout.add(label);
+    },
+};
+
 function copyAppletConfiguration(panelId) {
     let def = enabledAppletDefinitions.idMap;
     clipboard = [];
@@ -606,6 +638,18 @@ function copyAppletConfiguration(panelId) {
             clipboard.push(def[i]);
         }
     }
+}
+
+function clearAppletConfiguration(panelId) {
+    let raw = global.settings.get_strv("enabled-applets");
+
+    // Remove existing applets on panel
+    let i = raw.length;
+    while(i--) { // Do a reverse loop to prevent skipping items after splicing
+        if (raw[i].split(":")[0].slice(5) == panelId)
+            raw.splice(i,1);
+    }
+    global.settings.set_strv("enabled-applets", raw);
 }
 
 function pasteAppletConfiguration(panelId) {

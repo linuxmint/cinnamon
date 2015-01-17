@@ -444,6 +444,7 @@ PanelManager.prototype = {
                 this._osd.set_child(text);
                 Main.layoutManager.addChrome(this._osd, { visibleInFullscreen: false, affectsInputRegion: false});
             }
+
             let monitor = Main.layoutManager.primaryMonitor;
             let x = monitor.x + (monitor.width - this._osd.width)/2;
             let y = monitor.y + (monitor.height - this._osd.height)/2;
@@ -990,6 +991,14 @@ function populateSettingsMenu(menu, panelId) {
         dialog.open();
     });
     panelSettingsSection.menu.addMenuItem(menuItem);
+
+    let menuItem = new IconMenuItem(_("Clear all applets"), "edit-clear-all");
+    menuItem.activate = Lang.bind(menu, function() {
+        let dialog = new AppletManager.ConfirmClearDialog(this.panelId);
+        dialog.open();
+    });
+    panelSettingsSection.menu.addMenuItem(menuItem);
+
 
     menu.addMenuItem(panelSettingsSection);
 
