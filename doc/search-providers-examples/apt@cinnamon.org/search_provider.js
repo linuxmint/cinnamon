@@ -32,7 +32,7 @@ function perform_search(pattern){
             last_search_pid = pid;
             search_results = new Array();
             
-            Mainloop.timeout_add(100, Lang.bind(this, function(stream, pid){
+            Mainloop.timeout_add(500, Lang.bind(this, function(stream, pid){
                 if (pid != last_search_pid){
                     return false;
                 }
