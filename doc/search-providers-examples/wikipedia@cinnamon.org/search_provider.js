@@ -38,8 +38,7 @@ function perform_search(pattern){
                 results_cache[p].push({
                     id: result_urls[i],
                     label: result_titles[i],
-                    description: result_descriptions[i],
-                    icon: new St.Icon({gicon: wikipedia_gicon, icon_size: 22, icon_type: St.IconType.FULLCOLOR, reactive: true, track_hover: true, style_class: 'applet-icon'})
+                    description: result_descriptions[i]
                 });
             }
             push_results(results_cache[p]);
@@ -53,6 +52,10 @@ function perform_search(pattern){
 }
  
 function push_results(results){
+    for (var i in results)
+    {
+        results[i].icon = new St.Icon({gicon: wikipedia_gicon, icon_size: 22, icon_type: St.IconType.FULLCOLOR, reactive: true, track_hover: true, style_class: 'applet-icon'});
+    }
     send_results(results);
 }
  
