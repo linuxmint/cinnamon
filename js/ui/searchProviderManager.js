@@ -2,6 +2,7 @@
 
 const Extension = imports.ui.extension;
 const GLib = imports.gi.GLib;
+const Lang = imports.lang;
 
 // Maps uuid -> importer object (extension directory tree)
 var extensions;
@@ -73,20 +74,20 @@ function launch_all(pattern, callback){
                 supports_locale = true;
             }
             if (supports_locale){
-                provider.send_results = function(results){
-                    callback(provider, results);
-                };
-                provider.get_locale_string = function(key){
-                    if (extensionMeta[enabledSearchProviders[i]] && extensionMeta[enabledSearchProviders[i]].locale_data && extensionMeta[enabledSearchProviders[i]].locale_data[key]){
+                provider.send_results = Lang.bind(this, function(results, p, cb){
+                    cb(p, results);
+                }, provider, callback);
+                provider.get_locale_string = Lang.bind(this, function(key, providerData){
+                    if (extensionMeta[providerData] && extensionMeta[providerData].locale_data && extensionMeta[providerData].locale_data[key]){
                         language_names = GLib.get_language_names();
                         for (var j in language_names){
-                            if (extensionMeta[enabledSearchProviders[i]].locale_data[key][language_names[j]]){
-                                return extensionMeta[enabledSearchProviders[i]].locale_data[key][language_names[j]];
+                            if (extensionMeta[providerData].locale_data[key][language_names[j]]){
+                                return extensionMeta[providerData].locale_data[key][language_names[j]];
                             }
                         }
                     }
                     return "";
-                }
+                }, enabledSearchProviders[i]);
                 provider.perform_search(pattern);
             }
         }
