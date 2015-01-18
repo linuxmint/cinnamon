@@ -435,7 +435,7 @@ function SearchProviderResultButton(appsMenuButton, provider, result) {
 }
 
 SearchProviderResultButton.prototype = {
-    __proto__: PopupMenu.PopupSubMenuMenuItem.prototype,
+    __proto__: PopupMenu.PopupBaseMenuItem.prototype,
     
     _init: function(appsMenuButton, provider, result) {
         this.provider = provider;
@@ -1361,7 +1361,7 @@ MyApplet.prototype = {
             return true;
         }
 
-        let index = this._selectedItemIndex;   
+        index = this._selectedItemIndex;   
 
         if (this._activeContainer === null && symbol == Clutter.KEY_Up) {
             this._activeContainer = this.applicationsBox;
@@ -1522,6 +1522,7 @@ MyApplet.prototype = {
         if (this._previousSelectedActor && this._previousSelectedActor != actor) {
             if (this._previousSelectedActor._delegate instanceof ApplicationButton ||
                 this._previousSelectedActor._delegate instanceof RecentButton ||
+                this._previousSelectedActor._delegate instanceof SearchProviderResultButton ||
                 this._previousSelectedActor._delegate instanceof PlaceButton)
                 this._previousSelectedActor.style_class = "menu-application-button";
             else if (this._previousSelectedActor._delegate instanceof FavoritesButton ||
