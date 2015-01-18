@@ -84,6 +84,7 @@ const CinnamonIface =
                 <arg type="as" direction="out" /> \
             </method> \
             <property name="OverviewActive" type="b" access="readwrite" /> \
+            <property name="ExpoActive" type="b" access="readwrite" /> \
             <property name="CinnamonVersion" type="s" access="read" /> \
             <signal name="XletAddedComplete"> \
                 <arg type="b" direction="out" /> \
@@ -236,6 +237,17 @@ Cinnamon.prototype = {
             Main.overview.show();
         else
             Main.overview.hide();
+    },
+
+    get ExpoActive() {
+        return Main.expo.visible;
+    },
+
+    set ExpoActive(visible) {
+        if (visible)
+            Main.expo.show();
+        else
+            Main.expo.hide();
     },
 
     _getXletObject: function(id, id_is_instance) {
