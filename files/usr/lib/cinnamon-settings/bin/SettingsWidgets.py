@@ -209,10 +209,10 @@ class PictureChooserButton (Gtk.Button):
 
     def add_picture(self, path, callback, title=None, id=None):
         if os.path.exists(path):          
-            if self.button_picture_size is None:
+            if self.menu_pictures_size is None:
                 pixbuf = GdkPixbuf.Pixbuf.new_from_file(path)
             else:
-                pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_scale(path, -1, self.button_picture_size, True)
+                pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_scale(path, -1, self.menu_pictures_size, True)
             image = Gtk.Image.new_from_pixbuf (pixbuf)  
             menuitem = Gtk.MenuItem()            
             if title is not None:
