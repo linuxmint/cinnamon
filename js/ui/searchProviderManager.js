@@ -59,6 +59,7 @@ function launch_all(pattern, callback){
     var provider, supports_locale, language_names;
     for (var i in enabledSearchProviders){
         provider = get_object_for_uuid(enabledSearchProviders[i]);
+        provider.uuid = enabledSearchProviders[i];
         if (provider)
         {
             if (extensionMeta[enabledSearchProviders[i]] && extensionMeta[enabledSearchProviders[i]].supported_locales){
