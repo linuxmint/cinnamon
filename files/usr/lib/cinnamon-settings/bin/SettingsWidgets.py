@@ -149,11 +149,12 @@ class PictureChooserButton (Gtk.Button):
         self.queue_draw()
 
     def set_picture_from_file (self, path):
-        file = Gio.File.new_for_path(path)
-        file_icon = Gio.FileIcon(file=file)
-        self.button_image.set_from_gicon(file_icon, Gtk.IconSize.DIALOG)
-        if self.menu_pictures_size is not None:
-            self.button_image.set_pixel_size(self.menu_pictures_size)
+        if os.path.exists(path):
+            if self.button_picture_size is None:
+                pixbuf = GdkPixbuf.Pixbuf.new_from_file(path)
+            else:
+                pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_scale(path, -1, self.button_picture_size, True)
+            self.button_image.set_from_pixbuf(pixbuf)
 
     def set_button_label(self, label):
         self.button_label.set_markup(label)
@@ -208,10 +209,10 @@ class PictureChooserButton (Gtk.Button):
 
     def add_picture(self, path, callback, title=None, id=None):
         if os.path.exists(path):          
-            if self.button_picture_size is None:
+            if self.menu_pictures_size is None:
                 pixbuf = GdkPixbuf.Pixbuf.new_from_file(path)
             else:
-                pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_scale(path, -1, self.button_picture_size, True)
+                pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_scale(path, -1, self.menu_pictures_size, True)
             image = Gtk.Image.new_from_pixbuf (pixbuf)  
             menuitem = Gtk.MenuItem()            
             if title is not None:
