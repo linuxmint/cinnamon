@@ -2573,12 +2573,15 @@ MyApplet.prototype = {
         SearchProviderManager.launch_all(pattern, Lang.bind(this, function(provider, results){
             try{
             for (var i in results){
-                let button = new SearchProviderResultButton(this, provider, results[i]);
-                button.actor.connect('leave-event', Lang.bind(this, this._appLeaveEvent, button));
-                this._addEnterEvent(button, Lang.bind(this, this._appEnterEvent, button));
-                this._searchProviderButtons.push(button);
-                this.applicationsBox.add_actor(button.actor);
-                button.actor.realize();
+                if (results[i].type != 'software')
+                {
+                    let button = new SearchProviderResultButton(this, provider, results[i]);
+                    button.actor.connect('leave-event', Lang.bind(this, this._appLeaveEvent, button));
+                    this._addEnterEvent(button, Lang.bind(this, this._appEnterEvent, button));
+                    this._searchProviderButtons.push(button);
+                    this.applicationsBox.add_actor(button.actor);
+                    button.actor.realize();
+                }
             }
             }catch(e){global.log(e);}
         }));
