@@ -476,7 +476,6 @@ SearchProviderResultButton.prototype = {
         if (this.icon){
             this.addActor(this.icon);
         }
-
         this.label = new St.Label({ text: result.label, style_class: 'menu-application-button-label' });
         this.addActor(this.label);
         this.isDraggableApp = false;
@@ -494,8 +493,14 @@ SearchProviderResultButton.prototype = {
     },
     
     activate: function(event) {
-        this.provider.on_result_selected(this.result);
-        this.appsMenuButton.menu.close();
+        try{
+            this.provider.on_result_selected(this.result);
+            this.appsMenuButton.menu.close();
+        }
+        catch(e)
+        {
+            global.logError(e);
+        }
     }
 }
 

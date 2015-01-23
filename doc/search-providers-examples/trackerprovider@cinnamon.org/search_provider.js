@@ -50,5 +50,5 @@ function perform_search(pattern)
 }
 
 function on_result_selected(result){
-    
+    Util.spawn(['xdg-open', result.url]);
 }
