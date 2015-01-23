@@ -23,7 +23,7 @@ class Module:
         if not self.loaded:
             print "Loading User module"
        
-            self.face_button = PictureChooserButton(num_cols=4, button_picture_size=48, menu_pictures_size=96)
+            self.face_button = PictureChooserButton(num_cols=4, button_picture_size=96, menu_pictures_size=64)
             self.face_button.set_alignment(0.0, 0.5)
             self.face_button.set_tooltip_text(_("Click to change your picture"))
 
