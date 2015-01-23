@@ -7,6 +7,7 @@ var current_pattern;
 function dbus_push_results(pattern, results)
 {
     var basename;
+    var final_results = new Array();
     if (pattern == current_pattern)
     {
         try{
@@ -24,7 +25,11 @@ function dbus_push_results(pattern, results)
                     
                     case "software":
                         var results_parts = results[i]["url"].split("/");
-                        var app = Cinnamon.AppSystem.get_default().lookup_app(results_parts[results_parts.length - 1].split(".desktop")[0] + ".desktop")
+                        var app = Cinnamon.AppSystem.get_default().lookup_app(results_parts[results_parts.length - 1].split(".desktop")[0] + ".desktop");
+                        if (!app)
+                        {
+                            continue;
+                        }
                         results[i].label = app.get_name();
                         results[i].icon_app = app;
                         break;
@@ -33,6 +38,7 @@ function dbus_push_results(pattern, results)
                         results[i].label = decodeURIComponent(results[i]["url"]);
                         break;
                 }
+                final_results.push(results[i]);
             }
             send_results(results);
         }
