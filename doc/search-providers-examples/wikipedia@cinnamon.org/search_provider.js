@@ -37,6 +37,7 @@ function perform_search(pattern){
             {
                 results_cache[p].push({
                     id: result_urls[i],
+                    url: result_urls[i],
                     label: result_titles[i],
                     description: result_descriptions[i]
                 });
@@ -60,5 +61,5 @@ function push_results(results){
 }
  
 function on_result_selected(result){
-    Util.spawn(['xdg-open', result.id]);
+    Util.spawn(['xdg-open', result.url]);
 }
