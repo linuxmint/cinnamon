@@ -20,6 +20,3 @@ if __name__ == "__main__":
     dbus = session_bus.get_object("org.Cinnamon", "/org/Cinnamon")
     PushResults = dbus.get_dbus_method('PushSearchProviderResults', 'org.Cinnamon')
     PushResults('apt@cinnamon.org', sys.argv[1], json.dumps(results))
-    #~ f = open("/home/glebihan/Desktop/test.test", "w")
-    #~ f.write(data)
-    #~ f.close()
