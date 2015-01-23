@@ -59,39 +59,45 @@ function get_object_for_uuid(uuid){
 function launch_all(pattern, callback){
     var provider, supports_locale, language_names;
     for (var i in enabledSearchProviders){
-        provider = get_object_for_uuid(enabledSearchProviders[i]);
-        provider.uuid = enabledSearchProviders[i];
-        if (provider)
-        {
-            if (extensionMeta[enabledSearchProviders[i]] && extensionMeta[enabledSearchProviders[i]].supported_locales){
-                supports_locale = false;
-                language_names = GLib.get_language_names();
-                for (var j in language_names){
-                    if (extensionMeta[enabledSearchProviders[i]].supported_locales.indexOf(language_names[j]) != -1){
-                        supports_locale = true;
-                        break;
-                    }
-                }
-            }else{
-                supports_locale = true;
-            }
-            if (supports_locale){
-                provider.send_results = Lang.bind(this, function(results, p, cb){
-                    cb(p, results);
-                }, provider, callback);
-                provider.get_locale_string = Lang.bind(this, function(key, providerData){
-                    if (extensionMeta[providerData] && extensionMeta[providerData].locale_data && extensionMeta[providerData].locale_data[key]){
-                        language_names = GLib.get_language_names();
-                        for (var j in language_names){
-                            if (extensionMeta[providerData].locale_data[key][language_names[j]]){
-                                return extensionMeta[providerData].locale_data[key][language_names[j]];
-                            }
+        try{
+            provider = get_object_for_uuid(enabledSearchProviders[i]);
+            provider.uuid = enabledSearchProviders[i];
+            if (provider)
+            {
+                if (extensionMeta[enabledSearchProviders[i]] && extensionMeta[enabledSearchProviders[i]].supported_locales){
+                    supports_locale = false;
+                    language_names = GLib.get_language_names();
+                    for (var j in language_names){
+                        if (extensionMeta[enabledSearchProviders[i]].supported_locales.indexOf(language_names[j]) != -1){
+                            supports_locale = true;
+                            break;
                         }
                     }
-                    return "";
-                }, enabledSearchProviders[i]);
-                provider.perform_search(pattern);
+                }else{
+                    supports_locale = true;
+                }
+                if (supports_locale){
+                    provider.send_results = Lang.bind(this, function(results, p, cb){
+                        cb(p, results);
+                    }, provider, callback);
+                    provider.get_locale_string = Lang.bind(this, function(key, providerData){
+                        if (extensionMeta[providerData] && extensionMeta[providerData].locale_data && extensionMeta[providerData].locale_data[key]){
+                            language_names = GLib.get_language_names();
+                            for (var j in language_names){
+                                if (extensionMeta[providerData].locale_data[key][language_names[j]]){
+                                    return extensionMeta[providerData].locale_data[key][language_names[j]];
+                                }
+                            }
+                        }
+                        return "";
+                    }, enabledSearchProviders[i]);
+                    provider.perform_search(pattern);
+                }
             }
+        }
+        catch(e)
+        {
+            global.logError(e);
         }
     }
 }
