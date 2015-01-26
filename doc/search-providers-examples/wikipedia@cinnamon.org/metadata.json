@@ -1,0 +1,11 @@
+{
+    "description": "Wikipedia", 
+    "uuid": "wikipedia@cinnamon.org", 
+    "name": "Wikipedia",
+    "supported_locales": ["en"],
+    "locale_data": {
+        "wikipedia_url": {
+            "en": "https://en.wikipedia.org/w/api.php?action=opensearch&search=%s&format=json&limit=5"
+        }
+    }
+}

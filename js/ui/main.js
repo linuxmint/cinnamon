@@ -52,6 +52,7 @@ const SoundManager = imports.ui.soundManager;
 const BackgroundManager = imports.ui.backgroundManager;
 const SlideshowManager = imports.ui.slideshowManager;
 const AppletManager = imports.ui.appletManager;
+const SearchProviderManager = imports.ui.searchProviderManager;
 const DeskletManager = imports.ui.deskletManager;
 const ExtensionSystem = imports.ui.extensionSystem;
 const Keyboard = imports.ui.keyboard;
@@ -432,7 +433,8 @@ function start() {
 
     AppletManager.init();
     DeskletManager.init();
-
+    SearchProviderManager.init();
+    
     createLookingGlass();
 
     if (software_rendering && !GLib.getenv('CINNAMON_2D')) {
