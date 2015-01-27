@@ -50,6 +50,15 @@
         which should be loaded. uuids should be put in the form uuid:id:x:y, where id is used to distinguish between multiple instances of the same desklet
       </_description>
     </key>
+    
+    <key name="enabled-search-providers" type="as">
+      <default>[]</default>
+      <_summary>Uuids of search providers to enable</_summary>
+      <_description>
+        Cinnamon search providers have a uuid property; this key lists search providers
+        which should be loaded.
+      </_description>
+    </key>
 
     <key name="desklet-snap" type="b">
       <default>true</default>

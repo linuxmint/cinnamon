@@ -157,10 +157,10 @@ ExpoWindowClone.prototype = {
     },
 
     killUrgencyTimeout: function() {
-        if (this.urgencyTimeout) {
+        if (this.urgencyTimeout != 0) {
             Mainloop.source_remove(this.urgencyTimeout);
+            this.urgencyTimeout = 0;
         }
-        this.urgencyTimeout = 0;
     },
 
     showUrgencyState: function(params) {
@@ -199,6 +199,7 @@ ExpoWindowClone.prototype = {
             this.killUrgencyTimeout();
             this.urgencyTimeout = Mainloop.timeout_add(750, Lang.bind(this, function() {
                 this.showUrgencyState({showUrgent:!force, reps: params.reps - (force ? 0 : 1)});
+                this.urgencyTimeout = 0;
             }));
         }
     },

@@ -9,6 +9,7 @@ const Main = imports.ui.main;
 const AppletManager = imports.ui.appletManager;
 const DeskletManager = imports.ui.deskletManager;
 const ExtensionSystem = imports.ui.extensionSystem;
+const SearchProviderManager = imports.ui.searchProviderManager;
 
 const CinnamonIface =
     '<node> \
@@ -76,6 +77,11 @@ const CinnamonIface =
                 <arg type="b" direction="out" /> \
                 <arg type="s" direction="out" /> \
             </signal> \
+            <method name="PushSearchProviderResults"> \
+                <arg type="s" direction="in" name="uuid" /> \
+                <arg type="s" direction="in" name="pattern" /> \
+                <arg type="s" direction="in" name="results" /> \
+            </method> \
         </interface> \
     </node>';
 
@@ -306,6 +312,11 @@ Cinnamon.prototype = {
     ShowExpo: function() {
         if (!Main.expo.animationInProgress)
             Main.expo.toggle();
+    },
+    
+    PushSearchProviderResults: function(uuid, pattern, results)
+    {
+        SearchProviderManager.get_object_for_uuid(uuid).dbus_push_results(pattern, JSON.parse(results));
     },
 
     CinnamonVersion: Config.PACKAGE_VERSION

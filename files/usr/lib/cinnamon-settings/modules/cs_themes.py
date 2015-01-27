@@ -25,9 +25,9 @@ class Module:
             
             self.icon_chooser = self.create_button_chooser(self.settings, 'icon-theme', 'icons', 'icons', button_picture_size=ICON_SIZE, menu_pictures_size=ICON_SIZE, num_cols=4)
             self.cursor_chooser = self.create_button_chooser(self.settings, 'cursor-theme', 'icons', 'cursors', button_picture_size=32, menu_pictures_size=32, num_cols=4)
-            self.theme_chooser = self.create_button_chooser(self.settings, 'gtk-theme', 'themes', 'gtk-3.0', button_picture_size=35, menu_pictures_size=120, num_cols=4)
-            self.metacity_chooser = self.create_button_chooser(self.wm_settings, 'theme', 'themes', 'metacity-1', button_picture_size=32, menu_pictures_size=100, num_cols=4)
-            self.cinnamon_chooser = self.create_button_chooser(self.cinnamon_settings, 'name', 'themes', 'cinnamon', button_picture_size=60, menu_pictures_size=100, num_cols=4)
+            self.theme_chooser = self.create_button_chooser(self.settings, 'gtk-theme', 'themes', 'gtk-3.0', button_picture_size=35, menu_pictures_size=35, num_cols=4)
+            self.metacity_chooser = self.create_button_chooser(self.wm_settings, 'theme', 'themes', 'metacity-1', button_picture_size=32, menu_pictures_size=32, num_cols=4)
+            self.cinnamon_chooser = self.create_button_chooser(self.cinnamon_settings, 'name', 'themes', 'cinnamon', button_picture_size=60, menu_pictures_size=60, num_cols=4)
 
             bg = SectionBg()        
             vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
@@ -116,12 +116,15 @@ class Module:
             for theme in themes:
                 theme_name = theme[0]
                 theme_path = theme[1]
-                for path in ["%s/%s/%s/thumbnail.png" % (theme_path, theme_name, path_suffix), 
+                try:
+                    for path in ["%s/%s/%s/thumbnail.png" % (theme_path, theme_name, path_suffix), 
                              "/usr/share/cinnamon/thumbnails/%s/%s.png" % (path_suffix, theme_name), 
                              "/usr/share/cinnamon/thumbnails/%s/unknown.png" % path_suffix]:
-                    if os.path.exists(path):                    
-                        chooser.add_picture(path, callback, title=theme_name, id=theme_name)
-                        break
+                        if os.path.exists(path):
+                            chooser.add_picture(path, callback, title=theme_name, id=theme_name)
+                            break
+                except:
+                    chooser.add_picture("/usr/share/cinnamon/thumbnails/%s/unknown.png" % path_suffix, callback, title=theme_name, id=theme_name)
                 GObject.timeout_add(5, self.increment_progress, (chooser, inc))
         GObject.timeout_add(500, self.hide_progress, chooser)
         # thread.exit()
@@ -164,14 +167,17 @@ class Module:
             path = folder.get_filename()
             chooser.set_picture_from_file(path)
         else:
-            for path in ["/usr/share/%s/%s/%s/thumbnail.png" % (path_prefix, theme, path_suffix), 
-                         os.path.expanduser("~/.%s/%s/%s/thumbnail.png" % (path_prefix, theme, path_suffix)), 
-                         "/usr/share/cinnamon/thumbnails/%s/%s.png" % (path_suffix, theme), 
-                         "/usr/share/cinnamon/thumbnails/%s/unknown.png" % path_suffix]:                        
-                if os.path.exists(path):
-                    chooser.set_picture_from_file(path)
-                    break        
-        return chooser    
+            try:
+                for path in ["/usr/share/%s/%s/%s/thumbnail.png" % (path_prefix, theme, path_suffix), 
+                             os.path.expanduser("~/.%s/%s/%s/thumbnail.png" % (path_prefix, theme, path_suffix)), 
+                             "/usr/share/cinnamon/thumbnails/%s/%s.png" % (path_suffix, theme), 
+                             "/usr/share/cinnamon/thumbnails/%s/unknown.png" % path_suffix]:                        
+                    if os.path.exists(path):
+                        chooser.set_picture_from_file(path)
+                        break        
+            except:
+                chooser.set_picture_from_file("/usr/share/cinnamon/thumbnails/%s/unknown.png" % path_suffix)
+        return chooser
 
     def add_remove_cinnamon_themes(self, widget):
         window = Gtk.Window()

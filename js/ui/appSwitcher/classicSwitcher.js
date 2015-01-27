@@ -191,6 +191,7 @@ ClassicSwitcher.prototype = {
         this._appList.connect('item-entered', Lang.bind(this, this._appEntered));
         
         this._appIcons = this._appList.icons;
+        this.actor.get_allocation_box();
     },
 
     _selectNext: function() {
@@ -291,13 +292,14 @@ ClassicSwitcher.prototype = {
         // Use a cancellable timeout to avoid flickering effect when tabbing rapidly through the set.
         if (this._displayPreviewTimeoutId) {
             Mainloop.source_remove(this._displayPreviewTimeoutId);
+            this._displayPreviewTimeoutId = 0;
         }
         let delay = PREVIEW_DELAY_TIMEOUT;
         this._displayPreviewTimeoutId = Mainloop.timeout_add(delay, Lang.bind(this, this._showWindowPreview));
     },
     
     _showWindowPreview: function() {
-        this._displayPreviewTimeoutId = null;
+        this._displayPreviewTimeoutId = 0;
 
         let childBox = new Clutter.ActorBox();
 
@@ -344,14 +346,6 @@ ClassicSwitcher.prototype = {
                             transition: 'linear'
                             });
         }
-    },
-
-    _timeoutPopupThumbnails: function() {
-        if (!this._thumbnails)
-            this._createThumbnails();
-        this._thumbnailTimeoutId = 0;
-        this._thumbnailsFocused = false;
-        return false;
     },
 
     _destroyThumbnails : function() {

@@ -12,6 +12,7 @@ const AppletManager = imports.ui.appletManager;
 const Config = imports.misc.config;
 const DeskletManager = imports.ui.deskletManager;
 const ExtensionSystem = imports.ui.extensionSystem;
+const SearchProviderManager = imports.ui.searchProviderManager;
 const Main = imports.ui.main;
 
 const State = {
@@ -91,6 +92,18 @@ const Type = {
             finishExtensionLoad: DeskletManager.finishExtensionLoad,
             prepareExtensionUnload: DeskletManager.prepareExtensionUnload
         }
+    },
+    SEARCH_PROVIDER: {
+        name: 'Search provider',
+        folder: 'search_providers',
+        requiredFunctions: ['perform_search', 'on_result_selected'],
+        requiredProperties: ['uuid', 'name', 'description'],
+        niceToHaveProperties: [],
+        roles: {},
+        callbacks: {
+            finishExtensionLoad: SearchProviderManager.finishExtensionLoad,
+            prepareExtensionUnload: SearchProviderManager.prepareExtensionUnload
+        }
     }
 };
 
@@ -124,7 +137,7 @@ Extension.prototype = {
         this.uuid = dir.get_basename();
         this.dir = dir;
         this.type = type;
-        this.lowerType = type.name.toLowerCase();
+        this.lowerType = type.name.toLowerCase().replace(" ", "_");
         this.theme = null;
         this.stylesheet = null;
         this.meta = createMetaDummy(this.uuid, dir.get_path(), State.INITIALIZING);

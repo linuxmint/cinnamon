@@ -23,7 +23,7 @@ class Module:
         if not self.loaded:
             print "Loading User module"
        
-            self.face_button = PictureChooserButton(num_cols=4, button_picture_size=48, menu_pictures_size=96)
+            self.face_button = PictureChooserButton(num_cols=4, button_picture_size=96, menu_pictures_size=64)
             self.face_button.set_alignment(0.0, 0.5)
             self.face_button.set_tooltip_text(_("Click to change your picture"))
 
@@ -196,7 +196,7 @@ class Module:
 
     def load_user_info(self, user, param):
         self.realname_entry.set_text(user.get_real_name())
-        for path in [os.path.join(self.accountService.get_home_dir(), ".face"), user.get_icon_file(), "/usr/share/pixmaps/faces/user-generic.png"]:
+        for path in [os.path.join(self.accountService.get_home_dir(), ".face"), user.get_icon_file(), "/usr/share/cinnamon/faces/user-generic.png"]:
             if os.path.exists(path):
                 self.face_button.set_picture_from_file(path)
                 break

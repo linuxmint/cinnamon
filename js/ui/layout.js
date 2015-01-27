@@ -350,8 +350,10 @@ LayoutManager.prototype = {
         // the UI group to get the correct allocation for the struts.
         this._chrome.updateRegions();
 
-        this.panelBox.hide();
-        this.panelBox2.hide();
+        if (Main.panel && Main.panel.isHideable())
+            this.panelBox.opacity = 0;
+        if (Main.panel2 && Main.panel2.isHideable())
+            this.panelBox2.opacity = 0;
         this.keyboardBox.hide();
 
         let monitor = this.primaryMonitor;
@@ -383,8 +385,8 @@ LayoutManager.prototype = {
         global.stage.no_clear_hint = true;
         this._coverPane.destroy();
         this._coverPane = null;
-        this.panelBox.show();
-        this.panelBox2.show();
+        this.panelBox.opacity = 255;
+        this.panelBox2.opacity = 255;
         this.keyboardBox.show();
         global.window_group.remove_clip();
         this._chrome.thawUpdateRegions();

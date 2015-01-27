@@ -33,6 +33,9 @@ FORBIDDEN_KEYVALS = [
     Gdk.KEY_Mode_switch
 ]
 
+# Ignore capslock and numlock when in teach mode
+IGNORED_MOD_MASK = (int(Gdk.ModifierType.MOD2_MASK) | int(Gdk.ModifierType.LOCK_MASK))
+
 CATEGORIES = [
 
 #   Label                   id                  parent
@@ -493,9 +496,9 @@ class Module:
             for keybinding in category.keybindings:
                 for entry in keybinding.entries:
                     found = False
-                    if accel_string == entry:
+                    if accel_string.lower() == entry.lower():
                         found = True
-                    elif accel_string.replace("<Primary>", "<Control>") == entry:
+                    elif accel_string.replace("<Primary>", "<Control>").lower() == entry.lower():
                         found = True
 
                     if found and keybinding.label != current_keybinding.label:
@@ -904,11 +907,11 @@ class CellRendererKeybinding(Gtk.CellRendererText):
         widget.disconnect(self.event_id)
         self.ungrab()
         self.event_id = None
-        if event.state == 0 and event.keyval == Gdk.KEY_Escape:
+        if ((int(event.state) & 0xff & ~IGNORED_MOD_MASK) == 0) and event.keyval == Gdk.KEY_Escape:
             self.set_label(self.cur_val)
             self.teaching = False
             return True
-        if event.keyval == Gdk.KEY_BackSpace:
+        if ((int(event.state) & 0xff & ~IGNORED_MOD_MASK) == 0) and event.keyval == Gdk.KEY_BackSpace:
             self.teaching = False
             self.set_label()
             self.emit("accel-cleared", self.path)

@@ -103,7 +103,12 @@ function getAppletDefinition(definition) {
     // - applet_id is a unique id assigned to the applet instance when added.
     let elements = definition.split(":");
     if (elements.length > 4) {
-        let panel = elements[0] == "panel2" && Main.panel2 ? Main.panel2 : Main.panel;
+        if (elements[0] == "panel2" && !Main.panel2) {
+            global.logError("Applet '" + elements[3] + "' not loaded because its panel does not exist. " +
+                            "You can go into applet settings, remove, then re-add the applet.");
+            return null;
+        }
+        let panel = elements[0] == "panel2" ? Main.panel2 : Main.panel;
         let orientation = panel.bottomPosition ? St.Side.BOTTOM : St.Side.TOP;
         let order;
         try { order = parseInt(elements[2]); } catch(e) { order = 0; }

@@ -1,3 +1,45 @@
+cinnamon (2.4.6) rebecca; urgency=medium
+
+  * Settings: Fix occasional GTK-Warning and blank menu entry in the terminal selection, some comments
+  * overrides: only check gsettings schema when it's actually provided.
+  * magnifier.js: fix source id warning
+  * notifications: fix default opacity being doubled in hidpi mode.
+  * desklets: Make sure a new desklet is placed in a visible portion of the primary monitor.
+  * photo desklet: Fix a warning, clock desklet: move some String class overrides to js/ui/overrides.js so they can be used in the desklet as well as the calendar applet.
+  * panel applet: always remove the drag placeholder after a drag (not just after a successful one)
+  * menu applet: always remove a favorites drag placeholder after a drag (not just after a successful one)
+  * Added missing dependency on gir1.2-notify-0.7
+  * Cinnamon Settings: Properly handle themes which thumbnail isn't readable
+  * cinnamon-slideshow: fix introspection for some Fixes #3742
+  * fix user added picture slideshow
+  * fix 'genericpath.py:29:isfile:TypeError: coercing to Unicode: need string or buffer, NoneType found'
+  * sound applet: fixed #3735 - mute on middle click
+  * windowManager.js: Fix opacity issues when using fade mapping, and other effects involving opacity changes.
+  * cinnamon-settings keyboard: fix Escape key handling to cancel keybinding teach mode (when numlock is on), and allow backspace to be used as a hotkey when modified.
+  * keybindings: Ignore capslock for teach mode
+  * keybindings: force lower case when comparing existing keybindings for collisions.
+  * Fixed scroll direction in window list applet
+  * layout.js: don't hide/show the panels during the startup animation, make them temporarily transparent instead - this fixes an issue when panel auto-hide is active, the animation will complete, and you'll see a temporary blank area where the panel would be, as the chrome adjusts to the panel.
+  * layout.js: Only alter panel behavior during animation when the panel auto-hide is actually active - it 'looks' better during startup for any non-auto-hidden panel.
+  * appletManager.js: Don't dump orphaned applets into the remaining panel when changing layouts from double to single panel.  They are silently ignored. They will show as having an issue in applet settings (red dot) and a looking glass log note, describing how to fix, if desired.
+  * keybindings: Filter out reserved GdkModifierTypes - they can interfere with keybindings on certain systems.
+  * classicSwitcher.js: prevent warning from an errant source id.
+  * app switcher:  Fix double-destroy when activating a minimized window. The app switchers listen for the 'map' signal from windows - a mapping signal triggers an _activateWindow, and we also get an activate from actually selecting the window in the first place.
+  * st-im-text.c: Fix capslock in StEntry widgets.
+  * expoThumbnail.js: Fix warning from invalid source id.
+  * overrides.js: Add dump_stack when .disconnecting with an invalid ID.
+  * classicSwitcher.js: Force a re-allocation of the alt-tab container when a thumbnail/preview is removed.
+  * Fixed default avatar image path
+  * menu applet: Don't reset the category when dragging an app.
+  * st-texture-cache.c: Make sure the pixbuf requested ends up with the correct-sized texture (instead of the original texture size) - StIcon's update_shadow_material method was getting a bad size to generate the shadow/blur.
+  * Rename the stock cinnamon menu applet icon so it gets rendered correctly as a symbolic icon.
+  * applet.js: Make sure set_applet_icon_symbolic_name and _path use a good size when scale mode is off.  Also reduce the padding of the menu-symbolic.svg icon so its visible size is more in line with other symbolic icons.
+  * menu applet: Fix logic surrounding the default icon.
+  * Fixed the PictureChooserButton in Gtk 3.14, compatible with 3.10.
+  * Cinnamon Settings: Fixed menu picture sizes in PictureChooserButton in Gtk 3.14, compatible with 3.10.
+
+ -- Clement Lefebvre <root@linuxmint.com>  Mon, 19 Jan 2015 16:42:40 +0100
+
 cinnamon (2.4.5) rebecca; urgency=medium
 
   * Fixed startup animation

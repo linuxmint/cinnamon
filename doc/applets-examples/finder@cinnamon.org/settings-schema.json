@@ -1,0 +1,7 @@
+{
+ "launch_shortcut": {
+    "type" : "keybinding",
+    "default" : "<Super>F1",
+    "description" : "Keyboard shortcut to show the search entry"
+ }
+}
