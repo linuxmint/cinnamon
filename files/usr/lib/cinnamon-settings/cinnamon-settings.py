@@ -117,6 +117,7 @@ class MainWindow:
             sidePage.build()
             self.content_box_sw.show()
             self.button_back.show()
+            self.button_info.hide()
             self.current_sidepage = sidePage
             self.maybe_resize(sidePage)
         else:
@@ -153,6 +154,9 @@ class MainWindow:
         self.button_back = self.builder.get_object("button_back")
         self.button_back.set_label(_("All Settings"))
         self.button_back.hide()
+        self.button_info = self.builder.get_object("button_info")
+        self.button_info.set_label(_("System Info"))
+        self.button_info.show()
 
         self.search_entry = self.builder.get_object("search_box")
         self.search_entry.connect("changed", self.onSearchTextChanged)
@@ -248,6 +252,8 @@ class MainWindow:
         # set up larger components.
         self.window.set_title(_("System Settings"))
         self.button_back.connect('clicked', self.back_to_icon_view)
+        
+        self.button_info.connect('clicked', self.open_info_sidepage)
 
         self.calculate_bar_heights()
 
@@ -524,10 +530,14 @@ class MainWindow:
                 for c_widget in c_widgets:
                     c_widget.hide()
         self.button_back.hide()
+        self.button_info.show()
         self.side_view_sw.show()
         self.search_entry.show()
         self.search_entry.grab_focus()
-        self.current_sidepage = None   
+        self.current_sidepage = None
+        
+    def open_info_sidepage(self, widget):
+        self.go_to_sidepage("hardware", 10)
     
     def quit(self, *args):
         Gtk.main_quit()
