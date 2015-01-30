@@ -16,6 +16,10 @@ try:
     import time
     import grp
     import pwd
+    import locale
+    import urllib2
+    import proxygsettings
+    from functools import cmp_to_key
 # Standard setting pages... this can be expanded to include applet dirs maybe?
     mod_files = glob.glob('/usr/lib/cinnamon-settings/modules/*.py')
     mod_files.sort()
@@ -32,7 +36,7 @@ except Exception, detail:
     sys.exit(1)
 
 # i18n
-gettext.install("cinnamon", "/usr/share/cinnamon/locale")
+gettext.install("cinnamon", "/usr/share/locale")
 # i18n for menu item
 menuName = _("System Settings")
 menuComment = _("Control Center")
@@ -45,6 +49,8 @@ MIN_LABEL_WIDTH = 16
 MAX_LABEL_WIDTH = 25
 MIN_PIX_WIDTH = 100
 MAX_PIX_WIDTH = 160
+
+MOUSE_BACK_BUTTON = 8
 
 CATEGORIES = [
 #        Display name                         ID              Show it? Always False to start              Icon
@@ -70,9 +76,9 @@ STANDALONE_MODULES = [
     [_("Printers"),                      "system-config-printer",        "cs-printer",         "hardware",       _("printers, laser, inkjet")],    
     [_("Firewall"),                      "gufw",                         "cs-firewall",        "admin",          _("firewall, block, filter, programs")],
     [_("Languages"),                     "mintlocale",                   "cs-language",        "prefs",          _("language, install, foreign")],
-    [_("Login Screen"),                  "gksu /usr/sbin/mdmsetup",      "cs-login",           "admin",          _("login, mdm, gdm, manager, user, password, startup, switch")],
-    [_("Startup Programs"),              "cinnamon-session-properties",  "cs-startup-programs","prefs",          _("startup, programs, boot, init, session")],
-    [_("Device Drivers"),                "mintdrivers",                  "cs-drivers",         "admin",          _("video, driver, wifi, card, hardware, proprietary, nvidia, radeon, nouveau, fglrx")],
+    [_("Login Window"),                  "gksu /usr/sbin/mdmsetup",      "cs-login",           "admin",          _("login, mdm, gdm, manager, user, password, startup, switch")],
+    [_("Startup Applications"),          "cinnamon-session-properties",  "cs-startup-programs","prefs",          _("startup, programs, boot, init, session")],
+    [_("Driver Manager"),                "mintdrivers",                  "cs-drivers",         "admin",          _("video, driver, wifi, card, hardware, proprietary, nvidia, radeon, nouveau, fglrx")],
     [_("Software Sources"),              "mintsources",                  "cs-sources",         "admin",          _("ppa, repository, package, source, download")],
     [_("Users and Groups"),              "cinnamon-settings-users",      "cs-user-accounts",   "admin",          _("user, users, account, accounts, group, groups, password")]
 ]
@@ -117,11 +123,14 @@ class MainWindow:
             sidePage.build()
 
     def maybe_resize(self, sidePage):
+        m, n = self.content_box.get_preferred_size()
+        use_width = WIN_WIDTH
+        if n.width > WIN_WIDTH:
+            use_width = n.width
         if not sidePage.size:
-            m, n = self.content_box.get_preferred_size()
-            self.window.resize(WIN_WIDTH, n.height + self.bar_heights + WIN_H_PADDING)
+            self.window.resize(use_width, n.height + self.bar_heights + WIN_H_PADDING)
         elif sidePage.size > -1:
-            self.window.resize(WIN_WIDTH, sidePage.size + self.bar_heights + WIN_H_PADDING)
+            self.window.resize(use_width, sidePage.size + self.bar_heights + WIN_H_PADDING)
 
     def deselect(self, cat):
         for key in self.side_view.keys():
@@ -131,7 +140,6 @@ class MainWindow:
     ''' Create the UI '''
     @print_timing
     def __init__(self):
-
         self.builder = Gtk.Builder()
         self.builder.add_from_file("/usr/lib/cinnamon-settings/cinnamon-settings.ui")
         self.window = self.builder.get_object("main_window")
@@ -151,10 +159,12 @@ class MainWindow:
         self.search_entry.connect("icon-press", self.onClearSearchBox)
         self.window.connect("destroy", self.quit)
         self.window.connect("key-press-event", self.on_keypress)
+        self.window.connect("button-press-event", self.on_buttonpress)
         self.window.show()
 
         self.builder.connect_signals(self)
         self.window.set_has_resize_grip(False)
+        self.unsortedSidePages = []
         self.sidePages = []
         self.settings = Gio.Settings.new("org.cinnamon")
         self.current_cat_widget = None            
@@ -168,7 +178,7 @@ class MainWindow:
             try:
                 mod = modules[i].Module(self.content_box)
                 if self.loadCheck(mod) and self.setParentRefs(mod):
-                    self.sidePages.append((mod.sidePage, mod.name, mod.category))
+                    self.unsortedSidePages.append((mod.sidePage, mod.name, mod.category))
             except:
                 print "Failed to load module %s" % modules[i]
                 import traceback
@@ -177,12 +187,23 @@ class MainWindow:
         for item in CONTROL_CENTER_MODULES:
             ccmodule = SettingsWidgets.CCModule(item[0], item[1], item[2], item[3], item[4], self.content_box)
             if ccmodule.process(self.c_manager):
-                self.sidePages.append((ccmodule.sidePage, ccmodule.name, ccmodule.category))
+                self.unsortedSidePages.append((ccmodule.sidePage, ccmodule.name, ccmodule.category))
 
         for item in STANDALONE_MODULES:
             samodule = SettingsWidgets.SAModule(item[0], item[1], item[2], item[3], item[4], self.content_box)
             if samodule.process():
-                self.sidePages.append((samodule.sidePage, samodule.name, samodule.category))
+                self.unsortedSidePages.append((samodule.sidePage, samodule.name, samodule.category))
+
+        # sort the modules alphabetically according to the current locale
+        sidePageNamesToSort = map(lambda m: m[0].name, self.unsortedSidePages)
+        sortedSidePageNames = sorted(sidePageNamesToSort, key=cmp_to_key(locale.strcoll))
+        for sidePageName in sortedSidePageNames:
+            nextSidePage = None
+            for trySidePage in self.unsortedSidePages:
+                if(trySidePage[0].name == sidePageName):
+                    nextSidePage = trySidePage
+
+            self.sidePages.append(nextSidePage);
 
 
         # create the backing stores for the side nav-view.
@@ -198,10 +219,10 @@ class MainWindow:
                         category["show"] = True
 
             # Don't allow item names (and their translations) to be more than 30 chars long. It looks ugly and it creates huge gaps in the icon views
-            name = sp.name            
+            name = unicode(sp.name,'utf-8')
             if len(name) > 30:
                 name = "%s..." % name[:30]
-            sidePagesIters[sp_id] = self.store[sp_cat].append([name, sp.icon, sp, sp_cat])
+            sidePagesIters[sp_id] = (self.store[sp_cat].append([name, sp.icon, sp, sp_cat]), sp_cat)
 
         self.min_label_length = 0
         self.min_pix_length = 0
@@ -226,21 +247,34 @@ class MainWindow:
 
         # set up larger components.
         self.window.set_title(_("System Settings"))
-        self.window.connect("destroy", self.quit)
         self.button_back.connect('clicked', self.back_to_icon_view)
 
         self.calculate_bar_heights()
 
         # Select the first sidePage
         if len(sys.argv) > 1 and sys.argv[1] in sidePagesIters.keys():
-            first_page_iter = sidePagesIters[sys.argv[1]]
-            self.findPath(first_page_iter)
+            (iter, cat) = sidePagesIters[sys.argv[1]]
+            path = self.store[cat].get_path(iter)
+            if path:
+                self.go_to_sidepage(cat, path)
+            else:
+                self.search_entry.grab_focus()
         else:
             self.search_entry.grab_focus()
 
     def on_keypress(self, widget, event):
-        if event.keyval == Gdk.KEY_BackSpace and type(self.window.get_focus()) != Gtk.Entry and \
-                                                 type(self.window.get_focus()) != Gtk.TreeView:
+        grab = False
+        device = Gtk.get_current_event_device()
+        if device.get_source() == Gdk.InputSource.KEYBOARD:
+            grab = Gdk.Display.get_default().device_is_grabbed(device)
+        if not grab and event.keyval == Gdk.KEY_BackSpace and (type(self.window.get_focus()) not in
+                    (Gtk.TreeView, Gtk.Entry, Gtk.SpinButton, Gtk.TextView)):
+            self.back_to_icon_view(None)
+            return True
+        return False    
+    
+    def on_buttonpress(self, widget, event):
+        if event.button == MOUSE_BACK_BUTTON:
             self.back_to_icon_view(None)
             return True
         return False    
@@ -336,6 +370,7 @@ class MainWindow:
         area.pack_start(text_renderer, True, True, False)
         area.add_attribute(pixbuf_renderer, "icon-name", 1)
         pixbuf_renderer.set_property("stock-size", Gtk.IconSize.DIALOG)
+        pixbuf_renderer.set_property("follow-state", True)
 
         area.add_attribute(text_renderer, "text", 0)
 
@@ -464,15 +499,9 @@ class MainWindow:
             iter = self.storeFilter[id].iter_next(iter)
         return visible
 
-    def findPath (self, name):
-        for key in self.store.keys():
-            path = self.store[key].get_path(name)
-            if path is not None:
-                self.go_to_sidepage(key, path)
-
     def setParentRefs (self, mod):
         try:
-            mod._setParentRef(self.window, self.builder)
+            mod._setParentRef(self.window)
         except AttributeError:
             pass
         return True
@@ -503,9 +532,16 @@ class MainWindow:
     def quit(self, *args):
         Gtk.main_quit()
 
-
 if __name__ == "__main__":
     import signal
-    signal.signal(signal.SIGINT, MainWindow().quit)
+    
+    ps = proxygsettings.get_proxy_settings()
+    if ps:
+        proxy = urllib2.ProxyHandler(ps)
+    else:
+        proxy = urllib2.ProxyHandler()
+    urllib2.install_opener(urllib2.build_opener(proxy))
+    
+    window = MainWindow()
+    signal.signal(signal.SIGINT, window.quit)
     Gtk.main()
-

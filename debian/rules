@@ -45,9 +45,8 @@ override_dh_strip:
 override_dh_makeshlibs:
 	dh_makeshlibs -Xplugin
 
-override_dh_shlibdeps:
-	dh_shlibdeps
-	dh_girepository -l src -p/usr/lib/muffin /usr/lib/cinnamon
+override_dh_girepository:
+	dh_girepository -l src -p/usr/lib/$(DEB_HOST_MULTIARCH)/muffin /usr/lib/cinnamon
 
 override_dh_gencontrol:
 	dh_gencontrol -- $(DH_GENCONTROL_ARGS)

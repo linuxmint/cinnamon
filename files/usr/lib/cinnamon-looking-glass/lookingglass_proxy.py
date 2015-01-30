@@ -13,6 +13,15 @@ class LookingGlassProxy:
     def addStatusChangeCallback(self, callback):
         self._statusChangeCallbacks.append(callback)
 
+    def refreshStatus(self):
+        if self._proxy != None:
+            self._setStatus(True)
+        else:
+            self._setStatus(False)
+
+    def getIsReady(self):
+        return self._proxy != None
+
     def connect(self, name, callback):
         self._signals.append((name, callback))
 
@@ -29,7 +38,6 @@ class LookingGlassProxy:
         if self._proxy:
             return
         self._initProxy()
-        self._setStatus(True)
 
     def _onDisconnect(self, connection, name):
         self._proxy = None
@@ -37,13 +45,16 @@ class LookingGlassProxy:
 
     def _initProxy(self):
         try:
-            self._proxy = Gio.DBusProxy.new_for_bus_sync( Gio.BusType.SESSION, Gio.DBusProxyFlags.NONE, None,
-                              LG_DBUS_NAME, LG_DBUS_PATH, LG_DBUS_NAME, None)
-
-            self._proxy.connect("g-signal", self._onSignal)
+            self._proxy = Gio.DBusProxy.new_for_bus( Gio.BusType.SESSION, Gio.DBusProxyFlags.NONE, None,
+                              LG_DBUS_NAME, LG_DBUS_PATH, LG_DBUS_NAME, None, self._onProxyReady, None)
         except dbus.exceptions.DBusException as e:
             print(e)
             self._proxy = None
+
+    def _onProxyReady(self, object, result, data=None):
+        self._proxy = Gio.DBusProxy.new_for_bus_finish(result)
+        self._proxy.connect("g-signal", self._onSignal)
+        self._setStatus(True)
 
 # Proxy Methods:
     def Eval(self, code):

@@ -9,10 +9,12 @@ nobase_dist_js_DATA = \
 	misc/gnomeSession.js	\
 	misc/gridNavigator.js	\
 	misc/history.js		\
+	misc/interfaces.js \
 	misc/modemManager.js	\
 	misc/params.js		\
 	misc/pointerTracker.js	\
 	misc/screenSaver.js     \
+	misc/timers.js       \
 	misc/util.js		\
 	misc/windowUtils.js		\
 	perf/core.js		\
@@ -23,8 +25,8 @@ nobase_dist_js_DATA = \
 	ui/appSwitcher/timelineSwitcher.js	\
 	ui/applet.js		\
 	ui/appletManager.js	\
+	ui/searchProviderManager.js	\
 	ui/appFavorites.js	\
-	ui/automountManager.js  \
 	ui/backgroundManager.js    \
 	ui/boxpointer.js	\
 	ui/checkBox.js		\
@@ -40,7 +42,7 @@ nobase_dist_js_DATA = \
 	ui/extensionSystem.js	\
 	ui/flashspot.js		\
 	ui/hotCorner.js		\
-    ui/keybindings.js   \
+	ui/keybindings.js   \
 	ui/keyboard.js		\
 	ui/layout.js		\
 	ui/lightbox.js		\
@@ -56,6 +58,7 @@ nobase_dist_js_DATA = \
 	ui/cinnamonMountOperation.js \
 	ui/notificationDaemon.js \
 	ui/overview.js		\
+    ui/overrides.js \
 	ui/panel.js		\
 	ui/panelMenu.js		\
 	ui/placesManager.js  \
@@ -65,7 +68,8 @@ nobase_dist_js_DATA = \
 	ui/soundManager.js  \
 	ui/search.js		\
 	ui/settings.js		\
-    ui/systray.js       \
+	ui/slideshowManager.js  \
+	ui/systray.js       \
 	ui/cinnamonDBus.js		\
 	ui/statusIconDispatcher.js	\
 	ui/themeManager.js	\

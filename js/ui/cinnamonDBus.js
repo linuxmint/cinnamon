@@ -1,81 +1,89 @@
 // -*- mode: js; js-indent-level: 4; indent-tabs-mode: nil -*-
 
-const DBus = imports.dbus;
 const Lang = imports.lang;
-
+const Gio = imports.gi.Gio;
+const GLib = imports.gi.GLib;
 const Config = imports.misc.config;
 const Flashspot = imports.ui.flashspot;
 const Main = imports.ui.main;
 const AppletManager = imports.ui.appletManager;
 const DeskletManager = imports.ui.deskletManager;
+const ExtensionSystem = imports.ui.extensionSystem;
+const SearchProviderManager = imports.ui.searchProviderManager;
 
-const CinnamonIface = {
-    name: 'org.Cinnamon',
-    methods: [{ name: 'Eval',
-                inSignature: 's',
-                outSignature: 'bs'
-              },
-              { name: 'ScreenshotArea',
-                inSignature: 'biiiibs',
-                outSignature: ''
-              },
-              { name: 'ScreenshotWindow',
-                inSignature: 'bbbs',
-                outSignature: ''
-              },
-              { name: 'Screenshot',
-                inSignature: 'bbs',
-                outSignature: ''
-              },
-              {
-                name: 'FlashArea',
-                inSignature: 'iiii',
-                outSignature: ''
-              },
-              {
-                name: 'highlightApplet',
-                inSignature: 'sb',
-                outSignature: ''
-              },
-              {
-                name: 'activateCallback',
-                inSignature: 'ssb',
-                outSignature: ''
-              },
-              {
-                name: 'updateSetting',
-                inSignature: 'ssss',
-                outSignature: ''
-              },
-              {
-                name: 'switchWorkspaceRight',
-                inSignature: '',
-                outSignature: ''
-              },
-              {
-                name: 'switchWorkspaceLeft',
-                inSignature: '',
-                outSignature: ''
-              },
-              {
-                name: 'switchWorkspaceUp',
-                inSignature: '',
-                outSignature: ''
-              },
-              {
-                name: 'switchWorkspaceDown',
-                inSignature: '',
-                outSignature: ''
-              }
-             ],
-    signals: [],
-    properties: [{ name: 'OverviewActive',
-                   signature: 'b',
-                   access: 'readwrite' },
-                 { name: 'CinnamonVersion',
-                   signature: 's',
-                   access: 'read' }]
-};
+const CinnamonIface =
+    '<node> \
+        <interface name="org.Cinnamon"> \
+            <method name="Eval"> \
+                <arg type="s" direction="in" name="script" /> \
+                <arg type="b" direction="out" name="success" /> \
+                <arg type="s" direction="out" name="result" /> \
+            </method> \
+            <method name="ScreenshotArea"> \
+                <arg type="b" direction="in" name="include_cursor"/> \
+                <arg type="i" direction="in" name="x"/> \
+                <arg type="i" direction="in" name="y"/> \
+                <arg type="i" direction="in" name="width"/> \
+                <arg type="i" direction="in" name="height"/> \
+                <arg type="b" direction="in" name="flash"/> \
+                <arg type="s" direction="in" name="filename"/> \
+            </method> \
+            <method name="ScreenshotWindow"> \
+                <arg type="b" direction="in" name="include_frame"/> \
+                <arg type="b" direction="in" name="include_cursor"/> \
+                <arg type="b" direction="in" name="flash"/> \
+                <arg type="s" direction="in" name="filename"/> \
+            </method> \
+            <method name="Screenshot"> \
+                <arg type="b" direction="in" name="include_frame"/> \
+                <arg type="b" direction="in" name="flash"/> \
+                <arg type="s" direction="in" name="filename"/> \
+            </method> \
+            <method name="FlashArea"> \
+                <arg type="i" direction="in" name="x"/> \
+                <arg type="i" direction="in" name="y"/> \
+                <arg type="i" direction="in" name="width"/> \
+                <arg type="i" direction="in" name="height"/> \
+            </method> \
+            <method name="highlightApplet"> \
+                <arg type="s" direction="in" /> \
+                <arg type="b" direction="in" /> \
+            </method> \
+            <method name="activateCallback"> \
+                <arg type="s" direction="in" /> \
+                <arg type="s" direction="in" /> \
+                <arg type="b" direction="in" /> \
+            </method> \
+            <method name="updateSetting"> \
+                <arg type="s" direction="in" /> \
+                <arg type="s" direction="in" /> \
+                <arg type="s" direction="in" /> \
+                <arg type="s" direction="in" /> \
+            </method> \
+            <method name="switchWorkspaceRight" /> \
+            <method name="switchWorkspaceLeft" /> \
+            <method name="switchWorkspaceUp" /> \
+            <method name="switchWorkspaceDown" /> \
+            <method name="JumpToNewWorkspace" /> \
+            <method name="RemoveCurrentWorkspace" /> \
+            <method name="ShowExpo" /> \
+            <method name="GetRunningXletUUIDs"> \
+                <arg type="s" direction="in" /> \
+                <arg type="as" direction="out" /> \
+            </method> \
+            <property name="OverviewActive" type="b" access="readwrite" /> \
+            <property name="CinnamonVersion" type="s" access="read" /> \
+            <signal name="XletAddedComplete"> \
+                <arg type="b" direction="out" /> \
+                <arg type="s" direction="out" /> \
+            </signal> \
+            <method name="PushSearchProviderResults"> \
+                <arg type="s" direction="in" name="uuid" /> \
+                <arg type="s" direction="in" name="pattern" /> \
+                <arg type="s" direction="in" name="results" /> \
+            </method> \
+        </interface> \
+    </node>';
 
 function Cinnamon() {
     this._init();
@@ -83,7 +91,8 @@ function Cinnamon() {
 
 Cinnamon.prototype = {
     _init: function() {
-        DBus.session.exportObject('/org/Cinnamon', this);
+        this._dbusImpl = Gio.DBusExportedObject.wrapJSObject(CinnamonIface, this);
+        this._dbusImpl.export(Gio.DBus.session, '/org/Cinnamon');
     },
 
     /**
@@ -218,6 +227,34 @@ Cinnamon.prototype = {
         return obj
     },
 
+    EmitXletAddedComplete: function(success, uuid, name) {
+        this._dbusImpl.emit_signal('XletAddedComplete', GLib.Variant.new('(bs)', [success,uuid]));
+    },
+
+    GetRunningXletUUIDs: function(type) {
+        let list = null;
+        let res = [];
+
+        if (type == "applet") {
+            list = AppletManager.appletObj;
+            for (let key in list) {
+                res.push(list[key]._uuid);
+            }
+        } else if (type == "desklet") {
+            list = DeskletManager.deskletObj;
+            for (let key in list) {
+                res.push(list[key]._uuid);
+            }
+        } else {
+            list = ExtensionSystem.runningExtensions;
+            for (let uuid in list) {
+                res.push(uuid);
+            }
+        }
+
+        return res;
+    },
+
     highlightApplet: function(id, id_is_instance) {
         let obj = this._getXletObject(id, id_is_instance);
         if (!obj)
@@ -257,8 +294,30 @@ Cinnamon.prototype = {
         Main.expo.toggle();
     },
 
+    JumpToNewWorkspace: function() {
+        Main._addWorkspace();
+        let num = global.screen.get_n_workspaces();
+        if (global.screen.get_workspace_by_index(num - 1) != null) {
+            global.screen.get_workspace_by_index(num - 1).activate(global.get_current_time());
+        }
+    },
+
+    RemoveCurrentWorkspace: function() {
+        let index = global.screen.get_active_workspace_index();
+        if (global.screen.get_workspace_by_index(index) != null) {
+            Main._removeWorkspace(global.screen.get_workspace_by_index(index));
+        }
+    },
+
+    ShowExpo: function() {
+        if (!Main.expo.animationInProgress)
+            Main.expo.toggle();
+    },
+    
+    PushSearchProviderResults: function(uuid, pattern, results)
+    {
+        SearchProviderManager.get_object_for_uuid(uuid).dbus_push_results(pattern, JSON.parse(results));
+    },
+
     CinnamonVersion: Config.PACKAGE_VERSION
 };
-
-DBus.conformExport(Cinnamon.prototype, CinnamonIface);
-

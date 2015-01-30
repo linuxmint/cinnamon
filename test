@@ -11,12 +11,6 @@ cp -R data/theme /usr/share/cinnamon/
 cp data/org.cinnamon.gschema.xml /usr/share/glib-2.0/schemas/
 glib-compile-schemas /usr/share/glib-2.0/schemas/
 
-sudo rm -rf /usr/share/glib-2.0/schemas/org.cinnamon.applets.*.gschema.xml
-sudo rm -rf /usr/share/glib-2.0/schemas/org.cinnamon.desklets.*.gschema.xml
-sudo rm -rf /usr/share/glib-2.0/schemas/org.cinnamon.extensions.*.gschema.xml
-sudo rm -rf /usr/share/cinnamon/applets/*@cinnamon.org
-sudo rm -rf /usr/share/cinnamon/desklets/*@cinnamon.org
-sudo rm -rf /usr/share/cinnamon/extensions/*@cinnamon.org
 sudo rm -rf /usr/lib/cinnamon-settings
 sudo rm -rf /usr/lib/cinnamon-menu-editor
 sudo cp -R files/usr /

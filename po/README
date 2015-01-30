@@ -2,7 +2,7 @@ Translations are done on Launchpad.
 
 From Launchpad we export two sets of files:
 
-- The mo files go to files/usr/share/cinnamon/locale/ and eventually end up in the Cinnamon package itself
+- The mo files go to files/usr/share/locale/ and eventually end up in the Cinnamon package itself
 - The po files go to po/po-files/. They are not compiled into mo files (this is done by Launchpad) but are present in this archive as source for the mo files.
 
 

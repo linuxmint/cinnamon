@@ -67,11 +67,10 @@ MyApplet.prototype = {
             this._date.style_class = 'datemenu-date-label';
             vbox.add(this._date);
            
-            this._eventSource = null;
             this._eventList = null;
 
             // Calendar
-            this._calendar = new Calendar.Calendar(this._eventSource, this.settings);       
+            this._calendar = new Calendar.Calendar(this.settings);
             vbox.add(this._calendar.actor);
 
             let item = new PopupMenu.PopupMenuItem(_("Date and Time Settings"))
@@ -94,7 +93,11 @@ MyApplet.prototype = {
 
             // https://bugzilla.gnome.org/show_bug.cgi?id=655129
             this._upClient = new UPowerGlib.Client();
-            this._upClient.connect('notify-resume', this._updateClockAndDate);
+            try {
+                this._upClient.connect('notify-resume', Lang.bind(this, this._updateClockAndDate));
+            } catch (e) {
+                this._upClient.connect('notify::resume', Lang.bind(this, this._updateClockAndDate));
+            }
 
             // Start the clock
             this.on_settings_changed();
@@ -136,7 +139,9 @@ MyApplet.prototype = {
             this.set_applet_label(label_string);   
         }
         else {
-            this.set_applet_label(this.clock.get_clock().capitalize());
+            if (this.clock) { // We lose cinnamon-desktop temporarily during suspend
+                this.set_applet_label(this.clock.get_clock().capitalize());
+            }
         }
 
         // Applet content

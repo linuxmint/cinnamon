@@ -157,10 +157,10 @@ ExpoWindowClone.prototype = {
     },
 
     killUrgencyTimeout: function() {
-        if (this.urgencyTimeout) {
+        if (this.urgencyTimeout != 0) {
             Mainloop.source_remove(this.urgencyTimeout);
+            this.urgencyTimeout = 0;
         }
-        this.urgencyTimeout = 0;
     },
 
     showUrgencyState: function(params) {
@@ -199,6 +199,7 @@ ExpoWindowClone.prototype = {
             this.killUrgencyTimeout();
             this.urgencyTimeout = Mainloop.timeout_add(750, Lang.bind(this, function() {
                 this.showUrgencyState({showUrgent:!force, reps: params.reps - (force ? 0 : 1)});
+                this.urgencyTimeout = 0;
             }));
         }
     },
@@ -1284,7 +1285,9 @@ ExpoThumbnailsBox.prototype = {
                 }
             };
             thumbnail.actor.connect('destroy', Lang.bind(this, function(actor) {
-                setOverviewTimeout(0, null);
+                setOverviewTimeout(0, function() {
+                    overviewTimeoutId = 0;
+                });
                 this.actor.remove_actor(thumbnail.frame);
                 this.actor.remove_actor(actor);
                 this.actor.remove_actor(thumbnail.title);
@@ -1322,6 +1325,7 @@ ExpoThumbnailsBox.prototype = {
                         if (thumbnail.hovering) {
                             thumbnail.overviewModeOn();
                         }
+                        overviewTimeoutId = 0;
                     });
                 }
             }));
@@ -1337,6 +1341,7 @@ ExpoThumbnailsBox.prototype = {
                         if (!thumbnail.hovering) {
                             thumbnail.overviewModeOff();
                         }
+                        overviewTimeoutId = 0;
                     });
                 }
             }));

@@ -30,6 +30,8 @@ MyApplet.prototype = {
             this._screenSaverProxy = new ScreenSaver.ScreenSaverProxy();
             this.settings = new Settings.AppletSettings(this, "user@cinnamon.org", instance_id);
 
+            this.notif_settings = new Gio.Settings({ schema: "org.cinnamon.desktop.notifications" })
+
             this.set_applet_icon_symbolic_name("avatar-default");
                     
             this.menuManager = new PopupMenu.PopupMenuManager(this);
@@ -65,14 +67,14 @@ MyApplet.prototype = {
             this.menu.addActor(userBox);
 
             this.notificationsSwitch = new PopupMenu.PopupSwitchMenuItem(_("Notifications"), this._toggleNotifications);
-            global.settings.connect('changed::display-notifications', Lang.bind(this, function() {
-                this.notificationsSwitch.setToggleState(global.settings.get_boolean("display-notifications"));
+            this.notif_settings.connect('changed::display-notifications', Lang.bind(this, function() {
+                this.notificationsSwitch.setToggleState(this.notif_settings.get_boolean("display-notifications"));
             }));
             this.notificationsSwitch.connect('toggled', Lang.bind(this, function() {
-                global.settings.set_boolean("display-notifications", this.notificationsSwitch.state);
+                this.notif_settings.set_boolean("display-notifications", this.notificationsSwitch.state);
             }));
 
-            this.notificationsSwitch.setToggleState(global.settings.get_boolean("display-notifications"));
+            this.notificationsSwitch.setToggleState(this.notif_settings.get_boolean("display-notifications"));
 
             this.menu.addMenuItem(this.notificationsSwitch);
 
@@ -89,7 +91,7 @@ MyApplet.prototype = {
             this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
 
             this.menu.addAction(_("Lock Screen"), Lang.bind(this, function() {
-                let screensaver_settings = new Gio.Settings({ schema: "org.cinnamon.screensaver" });                        
+                let screensaver_settings = new Gio.Settings({ schema: "org.cinnamon.desktop.screensaver" });
                 let screensaver_dialog = Gio.file_new_for_path("/usr/bin/cinnamon-screensaver-command");    
                 if (screensaver_dialog.query_exists(null)) {
                     if (screensaver_settings.get_boolean("ask-for-away-message")) {                                    

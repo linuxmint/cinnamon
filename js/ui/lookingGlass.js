@@ -11,6 +11,7 @@ const St = imports.gi.St;
 const Cinnamon = imports.gi.Cinnamon;
 const Signals = imports.signals;
 const Lang = imports.lang;
+const CinnamonJS = imports.gi.CinnamonJS;
 
 const History = imports.misc.history;
 const Extension = imports.ui.extension;
@@ -1023,7 +1024,7 @@ LookingGlass.prototype = {
         let resultObj;
 
         /*  Set up for some reporting about memory impact and execution speed.
-            The performance impact of global.get_memory_info should be 
+            The performance impact of CinnamonJS.get_memory_info should be 
             very small, whereas getting a timestamp might involve some 
             memory allocation, so we grab the timestamp first.
         */
@@ -1261,3 +1262,63 @@ LookingGlass.prototype = {
     }
 };
 Signals.addSignalMethods(LookingGlass.prototype);
+
+const dbusIFace =
+    '<node> \
+        <interface name="org.Cinnamon.Melange"> \
+            <method name="show" /> \
+            <method name="hide" /> \
+            <method name="getVisible"> \
+                <arg type="b" direction="out" name="visible"/> \
+            </method> \
+            <property name="_open" type="b" access="read" /> \
+        </interface> \
+    </node>';
+
+const proxy = Gio.DBusProxy.makeProxyWrapper(dbusIFace);
+
+function Melange() {
+    this._init.apply(this, arguments);
+}
+
+Melange.prototype = {
+    _init: function() {
+        this.proxy = null;
+        this._open = false;
+        this._settings = new Gio.Settings({schema: "org.cinnamon.desktop.keybindings"});
+        this._settings.connect("changed::looking-glass-keybinding", Lang.bind(this, this._update_keybinding));
+        this._update_keybinding();
+    },
+
+    _update_keybinding: function() {
+        let kb = this._settings.get_strv("looking-glass-keybinding");
+        Main.keybindingManager.addHotKeyArray("looking-glass-toggle", kb, Lang.bind(this, this._key_callback));
+    },
+
+    _key_callback: function() {
+        this.open();
+    },
+
+    ensureProxy: function() {
+        if (!this.proxy)
+            this.proxy = new proxy(Gio.DBus.session, 'org.Cinnamon.Melange', '/org/Cinnamon/Melange');
+    },
+
+    open: function() {
+        this.ensureProxy()
+        this.proxy.showRemote();
+        this.updateVisible();
+    },
+
+    close: function() {
+        this.ensureProxy()
+        this.proxy.hideRemote();
+        this.updateVisible();
+    },
+
+    updateVisible: function() {
+        this.proxy.getVisibleRemote(Lang.bind(this, function(visible) {
+            this._open = visible;
+        }));
+    }
+}

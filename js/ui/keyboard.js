@@ -2,7 +2,6 @@
 
 const Caribou = imports.gi.Caribou;
 const Clutter = imports.gi.Clutter;
-const DBus = imports.dbus;
 const Gdk = imports.gi.Gdk;
 const Gio = imports.gi.Gio;
 const GLib = imports.gi.GLib;
@@ -38,28 +37,30 @@ const PRETTY_KEYS = {
     'Alt_L': 'Alt'
 };
 
-const CaribouKeyboardIface = {
-    name: 'org.gnome.Caribou.Keyboard',
-    methods:    [ { name: 'Show',
-                    inSignature: 'u',
-                    outSignature: ''
-                  },
-                  { name: 'Hide',
-                    inSignature: 'u',
-                    outSignature: ''
-                  },
-                  { name: 'SetCursorLocation',
-                    inSignature: 'iiii',
-                    outSignature: ''
-                  },
-                  { name: 'SetEntryLocation',
-                    inSignature: 'iiii',
-                    outSignature: ''
-                  } ],
-    properties: [ { name: 'Name',
-                    signature: 's',
-                    access: 'read' } ]
-};
+const CaribouKeyboardIface = 
+    "<node> \
+        <interface name='org.gnome.Caribou.Keyboard'> \
+            <method name='Show'> \
+                <arg type='u' direction='in' /> \
+            </method> \
+            <method name='Hide'> \
+                <arg type='u' direction='in' /> \
+            </method> \
+            <method name='SetCursorLocation'> \
+                <arg type='i' direction='in' /> \
+                <arg type='i' direction='in' /> \
+                <arg type='i' direction='in' /> \
+                <arg type='i' direction='in' /> \
+            </method> \
+            <method name='SetEntryLocation'> \
+                <arg type='i' direction='in' /> \
+                <arg type='i' direction='in' /> \
+                <arg type='i' direction='in' /> \
+                <arg type='i' direction='in' /> \
+            </method> \
+            <property name='Name' access='read' type='s' /> \
+        </interface> \
+    </node>";
 
 function Key() {
     this._init.apply(this, arguments);
@@ -199,7 +200,8 @@ function Keyboard() {
 
 Keyboard.prototype = {
     _init: function () {
-        DBus.session.exportObject('/org/gnome/Caribou/Keyboard', this);
+        this._impl = Gio.DBusExportedObject.wrapJSObject(CaribouKeyboardIface, this);
+        this._impl.export(Gio.DBus.session, '/org/gnome/Caribou/Keyboard');
 
         this.actor = null;
 
@@ -541,7 +543,6 @@ Keyboard.prototype = {
         return 'cinnamon';
     }
 };
-DBus.conformExport(Keyboard.prototype, CaribouKeyboardIface);
 
 function KeyboardSource() {
     this._init.apply(this, arguments);

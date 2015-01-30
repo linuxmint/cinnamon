@@ -5,7 +5,7 @@ const St = imports.gi.St;
 const PopupMenu = imports.ui.popupMenu;
 const GLib = imports.gi.GLib;
 const Gio = imports.gi.Gio;
-const DBus = imports.dbus;
+const Interfaces = imports.misc.interfaces;
 
 /* constants */
 const DimSettingsSchema = "org.cinnamon.settings-daemon.plugins.power";
@@ -13,25 +13,6 @@ const DimSettingsAc = "idle-dim-ac";
 const DimSettingsBattery = "idle-dim-battery";
 const PowerBusName = 'org.cinnamon.SettingsDaemon';
 const PowerObjectPath = '/org/cinnamon/SettingsDaemon/Power';
-
-/* DBus interface */
-const PowerManagerInterface = {
-    name: 'org.cinnamon.SettingsDaemon.Power.Screen',
-    methods:
-        [
-            { name: 'GetPercentage', inSignature: '', outSignature: 'u' },
-            { name: 'SetPercentage', inSignature: 'u', outSignature: 'u' },
-            { name: 'StepUp', inSignature: '', outSignature: 'u' },
-            { name: 'StepDown', inSignature: '', outSignature: 'u' },
-        ],
-    signals:
-        [
-            { name: 'Changed', inSignature: '', outSignature: '' },
-        ]
-};
-
-/* DBus magic */
-let PowerManagerProxy = DBus.makeProxyClass(PowerManagerInterface);
 
 /* TextImageMenuItem taken from sound@cinnamon.org applet */
 let icon_path = "/usr/share/cinnamon/theme/";
@@ -100,8 +81,6 @@ MyApplet.prototype = {
         Applet.IconApplet.prototype._init.call(this, orientation, panel_height);
         
         try {
-            this._proxy = new PowerManagerProxy(DBus.session, PowerBusName, PowerObjectPath);
-            
             this.menuManager = new PopupMenu.PopupMenuManager(this);
             this.menu = new Applet.AppletPopupMenu(this, orientation);
             this.menuManager.addMenu(this.menu);            
@@ -120,33 +99,31 @@ MyApplet.prototype = {
             this._settingsMenu.menu.addMenuItem(dimSwitchAc);
             let dimSwitchBattery = this._buildItem(_("Dim screen on battery"), DimSettingsSchema, DimSettingsBattery);
             this._settingsMenu.menu.addMenuItem(dimSwitchBattery);
-                      
-            //initial update.
-            //We have to wait until dbus calls back to decide whether to display brightness controls.
-            //Therefore, we will put that code into callback function.
-            //Since dbus should be quick, the user won't face an empty menu.
-            this._proxy.GetPercentageRemote(Lang.bind(this, function(b) {
-                if (b != undefined) {
-                    this._updateBrightnessLabel(b);
-                    this._brightnessSlider.setValue(b / 100);
+
+            Interfaces.getDBusProxyAsync("org.cinnamon.SettingsDaemon.Power.Screen", Lang.bind(this, function(proxy, error) {
+                this._proxy = proxy;
+                this._proxy.GetPercentageRemote(Lang.bind(this, function(b, error) {
+                    if (b != undefined) {
+                        this._updateBrightnessLabel(b);
+                        this._brightnessSlider.setValue(b / 100);
+                        
+                        //add menu items to menu
+                        this.menu.addMenuItem(this._brightnessTitle);
+                        this.menu.addMenuItem(this._brightnessSlider);
+                        this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
+                        this.menu.addMenuItem(this._settingsMenu);
                     
-                    //add menu items to menu
-                    this.menu.addMenuItem(this._brightnessTitle);
-                    this.menu.addMenuItem(this._brightnessSlider);
-                    this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
-                    this.menu.addMenuItem(this._settingsMenu);
-                
-                    //get notified
-                    this._proxy.connect('Changed', Lang.bind(this, this._getBrightness));
-                    this.actor.connect('scroll-event', Lang.bind(this, this._onScrollEvent));
-                } else {
-                    this.set_applet_tooltip(_("Brightness"));
-                    this.menu.addMenuItem(new PopupMenu.PopupMenuItem(_("Brightness not available"), { reactive: false }));
-                    this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
-                }
-                
-                this.menu.addSettingsAction(_("Settings"), "screen");
-		    }));
+                        //get notified
+                        this._proxy.connectSignal('Changed', Lang.bind(this, this._getBrightness));
+                        this.actor.connect('scroll-event', Lang.bind(this, this._onScrollEvent));
+                    } else {
+                        this.set_applet_tooltip(_("Brightness"));
+                        this.menu.addMenuItem(new PopupMenu.PopupMenuItem(_("Brightness not available"), { reactive: false }));
+                        this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
+                    }
+                    this.menu.addSettingsAction(_("Settings"), "power");
+                }));
+            }));
         }
         catch (e) {
             global.logError(e);

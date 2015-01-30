@@ -1,7 +1,6 @@
 // -*- mode: js; js-indent-level: 4; indent-tabs-mode: nil -*-
 /**
  * FILE:main.js
- * @automountManager (AutomountManager.AutomountManager): The automount manager
  * @placesManager (PlacesManager.PlacesManager): The places manager
  * @overview (Overview.Overview): The "scale" overview 
  * @expo (Expo.Expo): The "expo" overview
@@ -39,7 +38,6 @@
  */
 
 const Clutter = imports.gi.Clutter;
-const DBus= imports.dbus;
 const Gio = imports.gi.Gio;
 const GLib = imports.gi.GLib;
 const Gtk = imports.gi.Gtk;
@@ -48,11 +46,13 @@ const Meta = imports.gi.Meta;
 const Cinnamon = imports.gi.Cinnamon;
 const St = imports.gi.St;
 const PointerTracker = imports.misc.pointerTracker;
+const Lang = imports.lang;
 
 const SoundManager = imports.ui.soundManager;
 const BackgroundManager = imports.ui.backgroundManager;
+const SlideshowManager = imports.ui.slideshowManager;
 const AppletManager = imports.ui.appletManager;
-const AutomountManager = imports.ui.automountManager;
+const SearchProviderManager = imports.ui.searchProviderManager;
 const DeskletManager = imports.ui.deskletManager;
 const ExtensionSystem = imports.ui.extensionSystem;
 const Keyboard = imports.ui.keyboard;
@@ -88,18 +88,18 @@ const LAYOUT_CLASSIC = "classic";
 
 const CIN_LOG_FOLDER = GLib.get_home_dir() + '/.cinnamon/';
 
-let automountManager = null;
-
 let panel = null;
 let panel2 = null;
 
 let soundManager = null;
 let backgroundManager = null;
+let slideshowManager = null;
 let placesManager = null;
 let overview = null;
 let expo = null;
 let runDialog = null;
 let lookingGlass = null;
+let gtkLookingGlass = null;
 let wm = null;
 let messageTray = null;
 let notificationDaemon = null;
@@ -140,9 +140,13 @@ let software_rendering = false;
 let lg_log_file;
 let can_log = false;
 
+let popup_rendering = false;
+
+let xlet_startup_error = false;
+
 // Override Gettext localization
 const Gettext = imports.gettext;
-Gettext.bindtextdomain('cinnamon', '/usr/share/cinnamon/locale');
+Gettext.bindtextdomain('cinnamon', '/usr/share/locale');
 Gettext.textdomain('cinnamon');
 const _ = Gettext.gettext;
 
@@ -186,11 +190,6 @@ function _initUserSession() {
     Meta.keybindings_set_custom_handler('panel-run-dialog', function() {
        getRunDialog().open();
     });
-
-    Meta.keybindings_set_custom_handler('panel-main-menu', function () {
-        expo.toggle();
-    });
-    
 }
 
 function _reparentActor(actor, newParent) {
@@ -251,11 +250,6 @@ function start() {
 
     cinnamonDBusService = new CinnamonDBus.Cinnamon();
     lookingGlassDBusService = new LookingGlassDBus.CinnamonLookingGlass();
-    // Force a connection now; dbus.js will do this internally
-    // if we use its name acquisition stuff but we aren't right
-    // now; to do so we'd need to convert from its async calls
-    // back into sync ones.
-    DBus.session.flush();
 
     // Ensure CinnamonWindowTracker and CinnamonAppUsage are initialized; this will
     // also initialize CinnamonAppSystem first.  CinnamonAppSystem
@@ -292,6 +286,8 @@ function start() {
     settingsManager = new Settings.SettingsManager();
 
     backgroundManager = new BackgroundManager.BackgroundManager();
+
+    slideshowManager = new SlideshowManager.SlideshowManager();
     
     deskletContainer = new DeskletManager.DeskletContainer();
 
@@ -303,18 +299,50 @@ function start() {
                         for (let i = 0; i < children.length; i++)
                             children[i].allocate_preferred_size(flags);
                     });
+    this.uiGroup.connect('get-preferred-width',
+                    function(actor, forHeight, alloc) {
+                        let width = global.stage.width;
+                        [alloc.min_size, alloc.natural_size] = [width, width];
+                    });
+    this.uiGroup.connect('get-preferred-height',
+                    function(actor, forWidth, alloc) {
+                        let height = global.stage.height;
+                        [alloc.min_size, alloc.natural_size] = [height, height];
+                    });
     St.set_ui_root(global.stage, uiGroup);
 
     global.reparentActor(global.background_actor, uiGroup);
+    global.background_actor.hide();
     global.reparentActor(global.bottom_window_group, uiGroup);
     uiGroup.add_actor(deskletContainer.actor);
     global.reparentActor(global.window_group, uiGroup);
     global.reparentActor(global.overlay_group, uiGroup);
 
-    global.stage.add_actor(uiGroup);
+    let stage_bg = new Clutter.Actor();
+    let constraint = new Clutter.BindConstraint({ source: global.stage, coordinate: Clutter.BindCoordinate.ALL, offset: 0 })
+    stage_bg.add_constraint(constraint);
+    stage_bg.set_background_color(new Clutter.Color({red: 0, green: 0, blue: 0, alpha: 255}));
+    stage_bg.set_size(global.screen_width, global.screen_height);
+    global.stage.add_actor(stage_bg);
+
+    stage_bg.add_actor(uiGroup);
+
     global.reparentActor(global.top_window_group, global.stage);
 
     layoutManager = new Layout.LayoutManager();
+
+    let startupAnimationEnabled = global.settings.get_boolean("startup-animation");
+    let desktopEffectsEnabled = global.settings.get_boolean("desktop-effects");
+
+    let do_animation = desktopEffectsEnabled &&
+                       startupAnimationEnabled &&
+                       !GLib.getenv('CINNAMON_SOFTWARE_RENDERING') &&
+                       !GLib.getenv('CINNAMON_2D');
+
+    if (do_animation) {
+        layoutManager._prepareStartupAnimation();
+    }
+
     let pointerTracker = new PointerTracker.PointerTracker();
     pointerTracker.setPosition(layoutManager.primaryMonitor.x + layoutManager.primaryMonitor.width/2,
         layoutManager.primaryMonitor.y + layoutManager.primaryMonitor.height/2);
@@ -323,7 +351,7 @@ function start() {
     // This overview object is just a stub for non-user sessions
     overview = new Overview.Overview();
     expo = new Expo.Expo();
-    magnifier = new Magnifier.Magnifier();
+
     statusIconDispatcher = new StatusIconDispatcher.StatusIconDispatcher();  
                     
     if (desktop_layout == LAYOUT_TRADITIONAL) {
@@ -354,9 +382,9 @@ function start() {
     windowAttentionHandler = new WindowAttentionHandler.WindowAttentionHandler();
 
     placesManager = new PlacesManager.PlacesManager();    
-    automountManager = new AutomountManager.AutomountManager();
 
     keybindingManager = new Keybindings.KeybindingManager();
+    magnifier = new Magnifier.Magnifier();
 
     Meta.later_add(Meta.LaterType.BEFORE_REDRAW, _checkWorkspaces);
 
@@ -381,7 +409,7 @@ function start() {
 
     _startDate = new Date();
 
-    global.stage.connect('captured-event', _globalKeyPressHandler);
+    global.stage.connect('captured-event', _stageEventHandler);
 
     global.log('loaded at ' + _startDate);
     log('Cinnamon started at ' + _startDate);
@@ -405,9 +433,37 @@ function start() {
 
     AppletManager.init();
     DeskletManager.init();
+    SearchProviderManager.init();
+    
+    createLookingGlass();
 
     if (software_rendering && !GLib.getenv('CINNAMON_2D')) {
         notifyCinnamon2d();
+    }
+
+    if (xlet_startup_error)
+        Mainloop.timeout_add_seconds(3, notifyXletStartupError);
+
+    let sound_settings = new Gio.Settings( {schema: "org.cinnamon.sounds"} );
+    let do_login_sound = sound_settings.get_boolean("login-enabled");
+
+    // We're mostly prepared for the startup animation
+    // now, but since a lot is going on asynchronously
+    // during startup, let's defer the startup animation
+    // until the event loop is uncontended and idle.
+    // This helps to prevent us from running the animation
+    // when the system is bogged down
+    if (do_animation) {
+        let id = GLib.idle_add(GLib.PRIORITY_LOW, Lang.bind(this, function() {
+            if (do_login_sound)
+                soundManager.play_once_per_session('login');
+            layoutManager._startupAnimation();
+            return GLib.SOURCE_REMOVE;
+        }));
+    } else {
+        global.background_actor.show();
+        if (do_login_sound)
+            soundManager.play_once_per_session('login');
     }
 }
 
@@ -421,8 +477,15 @@ function notifyCinnamon2d() {
                    _(" troubleshooting purposes."), icon);
 }
 
-function loadSoundSettings() {
-
+function notifyXletStartupError() {
+    let icon = new St.Icon({ icon_name: 'dialog-warning',
+                             icon_type: St.IconType.FULLCOLOR,
+                             icon_size: 36 });
+    warningNotify(_("Problems during Cinnamon startup"),
+                  _("Cinnamon started successfully, but one or more applets, desklets or extensions failed to load.\n\n") +
+                  _("Check your system log and the Cinnamon LookingGlass log for any issues.  ") +
+                  _("You can disable the offending extension(s) in Cinnamon Settings to prevent this message from recurring.  ") +
+                  _("Please contact the developer."), icon);
 
 }
 
@@ -813,8 +876,22 @@ function criticalNotify(msg, details, icon) {
     let source = new MessageTray.SystemNotificationSource();
     messageTray.add(source);
     let notification = new MessageTray.Notification(source, msg, details, { icon: icon });
-    notification.setTransient(true);
+    notification.setTransient(false);
     notification.setUrgency(MessageTray.Urgency.CRITICAL);
+    source.notify(notification);
+}
+
+/**
+ * warningNotify:
+ * @msg: A warning message
+ * @details: Additional information
+ */
+function warningNotify(msg, details, icon) {
+    let source = new MessageTray.SystemNotificationSource();
+    messageTray.add(source);
+    let notification = new MessageTray.Notification(source, msg, details, { icon: icon });
+    notification.setTransient(false);
+    notification.setUrgency(MessageTray.Urgency.WARNING);
     source.notify(notification);
 }
 
@@ -1059,11 +1136,12 @@ function getWindowActorsForWorkspace(workspaceIndex) {
 // are disabled with a global grab. (When there is a global grab, then
 // all key events will be delivered to the stage, so ::captured-event
 // on the stage can be used for global keybindings.)
-function _globalKeyPressHandler(actor, event) {
+function _stageEventHandler(actor, event) {
     if (modalCount == 0)
         return false;
-    if (event.type() != Clutter.EventType.KEY_PRESS)
-        return false;
+    if (event.type() != Clutter.EventType.KEY_PRESS) {
+        return popup_rendering && event.type() == Clutter.EventType.BUTTON_RELEASE;
+    }
 
     let symbol = event.get_key_symbol();
     let keyCode = event.get_key_code();
@@ -1251,11 +1329,25 @@ function popModal(actor, timestamp) {
  *
  * Returns (LookingGlass.LookingGlass): looking glass object
  */
-function createLookingGlass() {
+function createLegacyLookingGlass() {
     if (lookingGlass == null) {
         lookingGlass = new LookingGlass.LookingGlass();
     }
     return lookingGlass;
+}
+
+/**
+ * createLookingGlass:
+ *
+ * Obtains the looking glass object. Create if it does not exist
+ *
+ * Returns (LookingGlass.LookingGlass): looking glass object
+ */
+function createLookingGlass() {
+    if (gtkLookingGlass == null) {
+        gtkLookingGlass = new LookingGlass.Melange();
+    }
+    return gtkLookingGlass;
 }
 
 /**

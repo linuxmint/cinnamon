@@ -5,6 +5,8 @@ public_icons_themes = \
 	$(NULL)
 
 public_icons = \
+	hicolor_categories_16x16_cs-desklets.svg \
+	hicolor_categories_16x16_cs-backgrounds.svg \
 	hicolor_categories_scalable_cs-applets.svg \
 	hicolor_categories_scalable_cs-backgrounds.svg \
 	hicolor_categories_scalable_cs-bluetooth.svg \
@@ -27,14 +29,18 @@ public_icons = \
 	hicolor_categories_scalable_cs-general.svg \
 	hicolor_categories_scalable_cs-keyboard.svg \
 	hicolor_categories_scalable_cs-language.svg \
+	hicolor_categories_scalable_cs-linuxmint.svg \
 	hicolor_categories_scalable_cs-login.svg \
 	hicolor_categories_scalable_cs-mouse.svg \
 	hicolor_categories_scalable_cs-network.svg \
+	hicolor_categories_scalable_cs-notifications.svg \
 	hicolor_categories_scalable_cs-overview.svg \
 	hicolor_categories_scalable_cs-panel.svg \
 	hicolor_categories_scalable_cs-power.svg \
 	hicolor_categories_scalable_cs-printer.svg \
+	hicolor_categories_scalable_cs-privacy.svg \
 	hicolor_categories_scalable_cs-region.svg \
+	hicolor_categories_scalable_cs-retro.svg \
 	hicolor_categories_scalable_cs-screensaver.svg \
 	hicolor_categories_scalable_cs-screen.svg \
 	hicolor_categories_scalable_cs-sound.svg \
@@ -48,6 +54,7 @@ public_icons = \
 	hicolor_categories_scalable_cs-user.svg \
 	hicolor_categories_scalable_cs-windows.svg \
 	hicolor_categories_scalable_cs-workspaces.svg \
+	hicolor_emblems_scalable_cs-xlet-error.svg \
 	hicolor_emblems_scalable_cs-xlet-installed.svg \
 	hicolor_emblems_scalable_cs-xlet-running.svg \
 	hicolor_emblems_scalable_cs-xlet-system.svg \

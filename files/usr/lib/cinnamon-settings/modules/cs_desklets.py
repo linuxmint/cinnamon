@@ -8,12 +8,8 @@ class Module:
     def __init__(self, content_box):
         keywords = _("desklet, desktop, slideshow")
         self.name = "desklets"
-        self.comment = _("Manage your Cinnamon desklets")
-        # for i18n replacement in ExtensionCore.py
-        noun = _("desklet")
-        pl_noun = _("desklets")
-        target = _("desktop")
-        sidePage = DeskletsViewSidePage(_("Desklets"), "cs-desklets", keywords, content_box, "desklet", noun, pl_noun, target, self)
+        self.comment = _("Manage your Cinnamon desklets")       
+        sidePage = DeskletsViewSidePage(_("Desklets"), "cs-desklets", keywords, content_box, "desklet", self)
         self.sidePage = sidePage
         self.category = "prefs"
 
@@ -22,18 +18,19 @@ class Module:
             print "Loading Desklets module"
             self.sidePage.load()
 
-    def _setParentRef(self, window, builder):
+    def _setParentRef(self, window):
         self.sidePage.window = window
-        self.sidePage.builder = builder
-
 
 class DeskletsViewSidePage (ExtensionSidePage):
-    def __init__(self, name, icon, keywords, content_box, collection_type, noun, pl_noun, target, module):
+    def __init__(self, name, icon, keywords, content_box, collection_type, module):
         self.RemoveString = _("You can remove specific instances from the desktop via that desklet's context menu")
-        ExtensionSidePage.__init__(self, name, icon, keywords, content_box, collection_type, noun, pl_noun, target, module)
+        ExtensionSidePage.__init__(self, name, icon, keywords, content_box, collection_type, module)
 
     def toSettingString(self, uuid, instanceId):
-        return ("%s:%d:0:100") % (uuid, instanceId)
+        screen = Gdk.Screen.get_default()
+        primary = screen.get_primary_monitor()
+        primary_rect = screen.get_monitor_geometry(primary)
+        return ("%s:%d:%d:%d") % (uuid, instanceId, primary_rect.x + 100, primary_rect.y + 100)
 
     def fromSettingString(self, string):
         uuid, instanceId, x, y = string.split(":")
@@ -51,6 +48,8 @@ class DeskletsViewSidePage (ExtensionSidePage):
 
         label = Gtk.Label()
         label.set_markup("<i><small>%s\n%s</small></i>" % (_("Note: Some desklets require the border/header to be always present"), _("Such requirements override the settings selected here")))
+        label.set_alignment(0.1,0)
+        
 
         desklet_snap = GSettingsCheckButton(_("Snap desklets to grid"), "org.cinnamon", "desklet-snap", None)
         desklet_snap_interval = GSettingsSpinButton(_("Width of desklet snap grid"), "org.cinnamon", "desklet-snap-interval", "org.cinnamon/desklet-snap", 0, 100, 1, 5, "")

@@ -1,5 +1,5 @@
 AC_PREREQ(2.63)
-AC_INIT([cinnamon],[2.0.14],[https://bugzilla.gnome.org/enter_bug.cgi?product=cinnamon],[cinnamon])
+AC_INIT([cinnamon],[2.4.6],[https://bugzilla.gnome.org/enter_bug.cgi?product=cinnamon],[cinnamon])
 
 AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_SRCDIR([src/cinnamon-global.c])
@@ -16,6 +16,7 @@ m4_ifdef([AM_SILENT_RULES],[AM_SILENT_RULES([yes])])
 
 # Checks for programs.
 AC_PROG_CC
+AC_PROG_CXX
 # Needed for per-target cflags, like in cinnamon-taskpanel
 AM_PROG_CC_C_O
 
@@ -62,7 +63,7 @@ AM_CONDITIONAL(BUILD_RECORDER, $build_recorder)
 
 CLUTTER_MIN_VERSION=1.7.5
 GOBJECT_INTROSPECTION_MIN_VERSION=0.10.1
-GJS_MIN_VERSION=1.9.0
+GJS_MIN_VERSION=2.3.1
 MUFFIN_MIN_VERSION=1.9.1
 GTK_MIN_VERSION=3.0.0
 GIO_MIN_VERSION=2.29.10
@@ -80,9 +81,10 @@ PKG_CHECK_MODULES(CINNAMON, gio-2.0 >= $GIO_MIN_VERSION
 			       clutter-x11-1.0 >= $CLUTTER_MIN_VERSION
                                libstartup-notification-1.0 >= $STARTUP_NOTIFICATION_MIN_VERSION
                                gobject-introspection-1.0 >= $GOBJECT_INTROSPECTION_MIN_VERSION
-			       libcanberra
                                polkit-agent-1 >= $POLKIT_MIN_VERSION xfixes
                                libnm-glib libnm-util gnome-keyring-1)
+
+PKG_CHECK_MODULES(CINNAMON_JS, gio-2.0 cjs-internals-1.0 >= $GJS_MIN_VERSION)
 
 PKG_CHECK_MODULES(CINNAMON_PERF_HELPER, gtk+-3.0 gio-2.0)
 

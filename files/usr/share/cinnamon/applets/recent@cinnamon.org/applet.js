@@ -6,6 +6,9 @@ const PopupMenu = imports.ui.popupMenu;
 const Lang = imports.lang;
 const Applet = imports.ui.applet;
 
+const PRIVACY_SCHEMA = "org.cinnamon.desktop.privacy";
+const REMEMBER_RECENT_KEY = "remember-recent-files";
+
 function MyPopupMenuItem()
 {
     this._init.apply(this, arguments);
@@ -45,8 +48,12 @@ MyApplet.prototype = {
             this.menuManager.addMenu(this.menu);            
                                                                 
             this.RecentManager = new DocInfo.DocManager();
+            this.privacy_settings = new Gio.Settings( {schema: PRIVACY_SCHEMA} );
+
             this._display();
+
             this.RecentManager.connect('changed', Lang.bind(this, this._redisplay));
+            this.privacy_settings.connect("changed::" + REMEMBER_RECENT_KEY, Lang.bind(this, this._redisplay));
         }
         catch (e) {
             global.logError(e);
@@ -58,6 +65,20 @@ MyApplet.prototype = {
     },
     
     _display: function() {
+        if (!this.privacy_settings.get_boolean(REMEMBER_RECENT_KEY)) {
+            let item = new PopupMenu.PopupMenuItem(_("Recent file tracking is currently disabled."));
+            item.actor.reactive = false;
+            this.menu.addMenuItem(item);
+
+            let icon = new St.Icon({ icon_name: 'ok', icon_type: St.IconType.FULLCOLOR, icon_size: 16 });
+            item = new MyPopupMenuItem(icon, _("Click here to enable it"), {});
+            item.connect("activate", Lang.bind(this, function () {
+                this.privacy_settings.set_boolean(REMEMBER_RECENT_KEY, true);
+            }))
+            this.menu.addMenuItem(item);
+
+            return;
+        }
         for (let id = 0; id < 15 && id < this.RecentManager._infosByTimestamp.length; id++) {
             let icon = this.RecentManager._infosByTimestamp[id].createIcon(22);
             let menuItem = new MyPopupMenuItem(icon, this.RecentManager._infosByTimestamp[id].name, {});

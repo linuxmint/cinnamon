@@ -24,6 +24,8 @@ import dbus, dbus.service, dbus.glib
 from pageutils import *
 from lookingglass_proxy import LookingGlassProxy
 from dbus.mainloop.glib import DBusGMainLoop
+import signal
+signal.signal(signal.SIGINT, signal.SIG_DFL)
 
 MELANGE_DBUS_NAME = "org.Cinnamon.Melange"
 MELANGE_DBUS_PATH = "/org/Cinnamon/Melange"
@@ -185,6 +187,10 @@ class CommandLine(Gtk.Entry):
             self.settings.set_strv("looking-glass-history", self.history)
 
             lookingGlassProxy.Eval(command)
+
+    def doCrash(self):
+        lookingGlassProxy.Eval("new Gio.Settings({schema: 'org.foo.bar'})")
+
 
 class NewLogDialog(Gtk.Dialog):
     def __init__(self, parent):
@@ -362,37 +368,51 @@ class ClosableTabLabel(Gtk.Box):
 
 class CinnamonLog(dbus.service.Object):
     def __init__ (self):
+        global lookingGlassProxy
+        lookingGlassProxy = LookingGlassProxy()
+        self.lookingGlassProxy = lookingGlassProxy
+        lookingGlassProxy.addStatusChangeCallback(self.setStatus)
+
         self.window = None
+        self.run()
+
         dbus.service.Object.__init__ (self, dbus.SessionBus (), MELANGE_DBUS_PATH, MELANGE_DBUS_NAME)
 
-    @dbus.service.method (MELANGE_DBUS_NAME, in_signature='b', out_signature='')
-    def show(self, startInspector):
-        if self.window is not None:
-            if startInspector and lookingGlassProxy:
-                lookingGlassProxy.StartInspector()
-                self.window.hide()
-            elif self.window.get_visible():
-                self.window.hide()
-            else:
-                self.showAndFocus()
+    @dbus.service.method (MELANGE_DBUS_NAME, in_signature='', out_signature='')
+    def show(self):
+        if self.window.get_visible():
+            self.window.hide()
         else:
-            self.run()
-            if startInspector and lookingGlassProxy:
-                lookingGlassProxy.StartInspector()
-                self.window.hide()
-            Gtk.main()
+            self.showAndFocus()
+
+    @dbus.service.method (MELANGE_DBUS_NAME, in_signature='', out_signature='')
+    def hide(self):
+        self.window.hide()
+
+    @dbus.service.method (MELANGE_DBUS_NAME, in_signature='', out_signature='b')
+    def getVisible(self):
+        return self.window.get_visible()
+
+    @dbus.service.method (MELANGE_DBUS_NAME, in_signature='', out_signature='')
+    def doInspect(self):
+        if self.lookingGlassProxy:
+            self.lookingGlassProxy.StartInspector()
+            self.window.hide()
 
     def showAndFocus(self):
         self.window.present()
+        self.window.show_all()
+        self.lookingGlassProxy.refreshStatus()
         screen = self.window.get_screen()
         geom = screen.get_monitor_geometry(screen.get_primary_monitor())
         w, h = self.window.get_size()
         self.window.resize(geom.width, h)
         self.window.move(geom.x, geom.y)
-        self.window.set_focus(self.commandline)
+        self.commandline.grab_focus()
 
     def run(self):
         self.window = Gtk.Window(Gtk.WindowType.TOPLEVEL)
+        self.window.set_type_hint(Gdk.WindowTypeHint.UTILITY)
         screen = self.window.get_screen()
         geom = screen.get_monitor_geometry(screen.get_primary_monitor())
 
@@ -400,9 +420,9 @@ class CinnamonLog(dbus.service.Object):
         self.window.set_decorated(False)
         self.window.set_skip_taskbar_hint(True)
         self.window.set_keep_above(True)
-        self.window.set_default_size(geom.width, 200)
-        self.window.set_has_resize_grip(False)
+        self.window.set_default_size(geom.width, 200 * self.window.get_scale_factor())
         self.window.move(geom.x,geom.y)
+        self.window.stick()
 
         self.window.connect("delete_event", self.onDelete)
         self.window.connect("key-press-event", self.onKeyPress)
@@ -446,22 +466,42 @@ class CinnamonLog(dbus.service.Object):
         table.attach(self.commandline, column, column+1, 1, 2, Gtk.AttachOptions.EXPAND|Gtk.AttachOptions.FILL, 0, 3, 2)
         column += 1
 
-        global statusLabel
-        statusLabel = Gtk.Label("Status")
-        statusLabel.set_markup(" <span foreground='red'>[ Cinnamon is OFFLINE! ]</span> ")
-        statusLabel.set_tooltip_text("The connection to cinnamon is broken")
-        table.attach(statusLabel, column, column+1, 1, 2, 0, 0, 1)
+        self.statusLabel = Gtk.Label("Status")
+        self.statusLabel.set_markup(" <span foreground='red'>[ Cinnamon is OFFLINE! ]</span> ")
+        self.statusLabel.set_tooltip_text("The connection to cinnamon is broken")
+        self.statusLabel.set_no_show_all(True)
+        table.attach(self.statusLabel, column, column+1, 1, 2, 0, 0, 1)
         column += 1
 
+        settings = Gio.Settings("org.cinnamon.desktop.keybindings")
+        arr = settings.get_strv("looking-glass-keybinding");
+        accel = ""
+        done_one = False;
+
+        for element in arr:
+            if done_one:
+                accel += ", "
+
+            accel += element.replace("<", "&lt;").replace(">", "&gt;")
+            if not done_one:
+                done_one = True
+
+        keybinding = Gtk.Label("Current Keybinding")
+        keybinding.set_markup('<i>Toggle shortcut: %s</i>' % accel)
+
         actionButton = self.createActionButton()
-        table.attach(actionButton, column, column+1, 1, 2, 0, 0, 1)
+
+        box = Gtk.HBox()
+        box.pack_start(keybinding, False, False, 3)
+        box.pack_start(actionButton, False, False, 3)
+
+        table.attach(box, column, column+1, 1, 2, 0, 0, 1)
 
         grip = ResizeGrip(self.window)
         table.attach(grip, 0, numColumns, 2, 3, Gtk.AttachOptions.EXPAND|Gtk.AttachOptions.FILL, 0, 0, 0)
 
-        self.window.show_all()
         self.activatePage("results")
-        setStatus(True)
+        self.setStatus(True)
         self.window.set_focus(self.commandline)
 
     def createMenuItem(self, text, callback):
@@ -474,6 +514,7 @@ class CinnamonLog(dbus.service.Object):
         menu.append(self.createMenuItem('Add File Watcher', self.onAddFileWatcher))
         menu.append(Gtk.SeparatorMenuItem())
         menu.append(self.createMenuItem('Restart Cinnamon', self.onRestartClicked))
+        menu.append(self.createMenuItem('Crash Cinnamon', self.onCrashClicked))
         menu.append(self.createMenuItem('Reset Cinnamon Settings', self.onResetClicked))
         menu.append(Gtk.SeparatorMenuItem())
         menu.append(self.createMenuItem('About Melange', self.onAboutClicked))
@@ -508,6 +549,9 @@ class CinnamonLog(dbus.service.Object):
     def onRestartClicked(self, menuItem):
         #todo: gets killed when the python process ends, separate it!
         os.system("cinnamon --replace &")
+
+    def onCrashClicked(self, menuItem):
+        self.commandline.doCrash();
 
     def onAboutClicked(self, menuItem):
         dialog = Gtk.MessageDialog(self.window, 0,
@@ -545,7 +589,7 @@ class CinnamonLog(dbus.service.Object):
         return False
 
     def onPickerClicked(self, widget):
-        lookingGlassProxy.StartInspector()
+        self.lookingGlassProxy.StartInspector()
         self.window.hide()
 
     def createDummyPage(self, text, description):
@@ -554,7 +598,7 @@ class CinnamonLog(dbus.service.Object):
 
     def createPage(self, text, moduleName):
         module = __import__("page_%s" % moduleName)
-        module.lookingGlassProxy = lookingGlassProxy
+        module.lookingGlassProxy = self.lookingGlassProxy
         module.cinnamonLog = self
         label = Gtk.Label(text)
         page = module.ModulePage()
@@ -562,23 +606,18 @@ class CinnamonLog(dbus.service.Object):
         self.notebook.append_page(page, label)
 
     def activatePage(self, moduleName):
-        self.showAndFocus()
         page = self.notebook.page_num(self.pages[moduleName])
         self.notebook.set_current_page(page)
 
-def setStatus(status):
-    if status:
-        statusLabel.hide()
-    else:
-        statusLabel.show()
+    def setStatus(self, status):
+        if status:
+            self.statusLabel.hide()
+        else:
+            self.statusLabel.show()
 
 if __name__ == "__main__":
     GObject.type_register(ResizeGrip)
     DBusGMainLoop(set_as_default=True)
-
-    global lookingGlassProxy
-    lookingGlassProxy = LookingGlassProxy()
-    lookingGlassProxy.addStatusChangeCallback(setStatus)
 
     sessionBus = dbus.SessionBus ()
     request = sessionBus.request_name(MELANGE_DBUS_NAME, dbus.bus.NAME_FLAG_DO_NOT_QUEUE)
@@ -588,5 +627,12 @@ if __name__ == "__main__":
         object = sessionBus.get_object(MELANGE_DBUS_NAME, MELANGE_DBUS_PATH)
         app = dbus.Interface(object, MELANGE_DBUS_NAME)
 
-    startInspector = len(sys.argv) == 2 and sys.argv[1] == 'inspect'
-    app.show(startInspector)
+    daemon = len(sys.argv) == 2 and sys.argv[1] == "daemon"
+    inspect = len(sys.argv) == 2 and sys.argv[1] == "inspect"
+
+    if inspect:
+        app.doInspect()
+    elif not daemon:
+        app.show()
+
+    Gtk.main()

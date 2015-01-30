@@ -6,11 +6,13 @@ const GLib = imports.gi.GLib;
 const Lang = imports.lang;
 const Signals = imports.signals;
 const St = imports.gi.St;
+const CinnamonJS = imports.gi.CinnamonJS;
 
 const AppletManager = imports.ui.appletManager;
 const Config = imports.misc.config;
 const DeskletManager = imports.ui.deskletManager;
 const ExtensionSystem = imports.ui.extensionSystem;
+const SearchProviderManager = imports.ui.searchProviderManager;
 const Main = imports.ui.main;
 
 const State = {
@@ -68,7 +70,8 @@ const Type = {
         niceToHaveProperties: [],
         roles: {
             notifications: null,
-            windowlist: null
+            windowlist: null,
+            panellauncher: null
         },
         callbacks: {
             finishExtensionLoad: AppletManager.finishExtensionLoad,
@@ -88,6 +91,18 @@ const Type = {
         callbacks: {
             finishExtensionLoad: DeskletManager.finishExtensionLoad,
             prepareExtensionUnload: DeskletManager.prepareExtensionUnload
+        }
+    },
+    SEARCH_PROVIDER: {
+        name: 'Search provider',
+        folder: 'search_providers',
+        requiredFunctions: ['perform_search', 'on_result_selected'],
+        requiredProperties: ['uuid', 'name', 'description'],
+        niceToHaveProperties: [],
+        roles: {},
+        callbacks: {
+            finishExtensionLoad: SearchProviderManager.finishExtensionLoad,
+            prepareExtensionUnload: SearchProviderManager.prepareExtensionUnload
         }
     }
 };
@@ -122,7 +137,7 @@ Extension.prototype = {
         this.uuid = dir.get_basename();
         this.dir = dir;
         this.type = type;
-        this.lowerType = type.name.toLowerCase();
+        this.lowerType = type.name.toLowerCase().replace(" ", "_");
         this.theme = null;
         this.stylesheet = null;
         this.meta = createMetaDummy(this.uuid, dir.get_path(), State.INITIALIZING);
@@ -141,7 +156,7 @@ Extension.prototype = {
         }
 
         try {
-            global.add_extension_importer('imports.ui.extension.importObjects', this.uuid, this.meta.path);
+            CinnamonJS.add_extension_importer('imports.ui.extension.importObjects', this.uuid, this.meta.path);
         } catch (e) {
             throw this.logError('Error importing extension ' + this.uuid + ' from path ' + this.meta.path, e);
         }
@@ -248,12 +263,6 @@ Extension.prototype = {
             if (!(role in this.type.roles)) {
                 throw this.logError('Unknown role definition: ' + role + ' in metadata.json');
             }
-            
-            let maxInstances;
-            try { maxInstances = parseInt(this.meta['max-instances']); } catch(e) { maxInstances = 1; }
-            if(maxInstances > 1) {
-                throw this.logError(this.type.name + 's with a role can only have one instance. The metadata.json suggests otherwise (max-instances > 1)');
-            }
         }
     },
 
@@ -308,7 +317,6 @@ Extension.prototype = {
         let role = this.meta['role'];
         if(role && this.type.roles[role] != this) {
             if(this.type.roles[role] != null) {
-                this.logError('Role ' + role + ' already taken by ' + this.lowerType + ': ' + this.type.roles[role].uuid);
                 return false;
             }
         
@@ -316,6 +324,7 @@ Extension.prototype = {
                 this.type.roles[role] = this;
                 this.roleProvider = roleProvider;
                 global.log("Role locked: " + role);
+                return true;
             }
         }
 
@@ -381,18 +390,30 @@ function loadExtension(uuid, type) {
         var forgetMeta = true;
         try {
             let dir = findExtensionDirectory(uuid, type);
-            if(dir == null) {
-                global.logError(type.name + ' ' + uuid + ' not found.');
-                return null;
+            if (dir == null) {
+                throw ("not-found");
             }
             extension = new Extension(dir, type);
             forgetMeta = false;
 
             if(!type.callbacks.finishExtensionLoad(extension))
-                return null;
+                throw (type.name + ' ' + uuid + ': Could not create applet object.');
 
             extension.finalize();
-        } catch(e) {
+            Main.cinnamonDBusService.EmitXletAddedComplete(true, uuid);
+        } catch (e) {
+            /* Silently fail to load xlets that aren't actually installed - 
+               but no error, since the user can't do anything about it anyhow
+               (short of editing gsettings).  Silent failure is consistent with
+               other reactions in Cinnamon to missing items (e.g. panel launchers
+               just don't show up if their program isn't installed, but we don't
+               remove them or anything) */
+            if (e == "not-found") {
+                forgetExtension(uuid, forgetMeta);
+                return null;
+            }
+            Main.cinnamonDBusService.EmitXletAddedComplete(false, uuid);
+            Main.xlet_startup_error = true;
             forgetExtension(uuid, forgetMeta);
             if(e._alreadyLogged)
                 e = undefined;

@@ -10,6 +10,7 @@ try:
     import collections
     import XletSettingsWidgets
     import dbus
+    from SettingsWidgets import SectionBg
     from gi.repository import Gio, Gtk, GObject, GdkPixbuf
 except Exception, detail:
     print detail
@@ -44,7 +45,9 @@ class XletSetting:
         self.back_to_list_button.set_label(self.applet_meta["name"])
         self.back_to_list_button.set_tooltip_text(_("Back to list"))
         self.more_button.set_tooltip_text(_("More actions..."))
+        self.remove_button.set_label(_("Remove"))
         self.remove_button.set_tooltip_text(_("Remove the current instance of this %s") % self.type)
+        self.highlight_button.set_label(_("Highlight"))
         self.highlight_button.set_tooltip_text(_("Momentarily highlight the %s on your desktop") % self.type)
         if len(self.applet_settings.keys()) > 1:
             self.build_notebook()
@@ -118,10 +121,9 @@ class XletSetting:
 
     def build_single(self):
         self.nb = None
-        self.view = Gtk.ScrolledWindow()
-        self.view.set_shadow_type(Gtk.ShadowType.IN)
+        self.view = SectionBg()
         self.content_box = Gtk.VBox()
-        self.view.add_with_viewport(self.content_box)
+        self.view.add(self.content_box)
         self.content_box.set_border_width(5)
 
         for instance_key in self.applet_settings.keys():
@@ -141,8 +143,8 @@ class XletSetting:
                     self.content_box.pack_start(widgets[widget_key], False, False, 2)
                 if len(widgets[widget_key].dependents) > 0:
                     widgets[widget_key].update_dependents()
+            self.current_id = instance_key
         self.content.pack_start(self.view, True, True, 2)
-        self.current_id = instance_key
 
     def build_notebook(self):
         self.nb = Gtk.Notebook()

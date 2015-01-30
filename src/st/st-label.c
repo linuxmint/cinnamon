@@ -60,6 +60,8 @@ struct _StLabelPrivate
 {
   ClutterActor *label;
 
+  gboolean orphan;
+
   CoglHandle    text_shadow_material;
   float         shadow_width;
   float         shadow_height;
@@ -303,6 +305,7 @@ st_label_init (StLabel *label)
   label->priv->text_shadow_material = COGL_INVALID_HANDLE;
   label->priv->shadow_width = -1.;
   label->priv->shadow_height = -1.;
+  label->priv->orphan = FALSE;
 
   clutter_actor_set_parent (priv->label, CLUTTER_ACTOR (label));
 }
@@ -337,9 +340,25 @@ st_label_new (const gchar *text)
 const gchar *
 st_label_get_text (StLabel *label)
 {
+  StLabelPrivate *priv;
+  ClutterText *ctext;
+
   g_return_val_if_fail (ST_IS_LABEL (label), NULL);
 
-  return clutter_text_get_text (CLUTTER_TEXT (label->priv->label));
+  priv = label->priv;
+  ctext = CLUTTER_TEXT (priv->label);
+
+  if (priv->orphan)
+    return NULL;
+
+  if (ctext == NULL) {
+    g_printerr ("Cinnamon WARNING: Possible orphan label being accessed via st_label_get_text().  Check your timers and handlers!\n"
+                "Address: %p\n", (void *) label);
+    priv->orphan = TRUE;
+    return NULL;
+  }
+
+  return clutter_text_get_text (ctext);
 }
 
 /**
@@ -361,6 +380,16 @@ st_label_set_text (StLabel     *label,
 
   priv = label->priv;
   ctext = CLUTTER_TEXT (priv->label);
+
+  if (priv->orphan)
+    return;
+
+  if (ctext == NULL) {
+    g_printerr ("Cinnamon WARNING: Possible orphan label being accessed via st_label_set_text().  Check your timers and handlers!\n"
+                "Address: %p  Text: %s\n", (void *) label, text);
+    priv->orphan = TRUE;
+    return;
+  }
 
   if (clutter_text_get_editable (ctext) ||
       g_strcmp0 (clutter_text_get_text (ctext), text) != 0)

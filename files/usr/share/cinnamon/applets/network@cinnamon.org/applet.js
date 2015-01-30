@@ -388,7 +388,6 @@ NMDevice.prototype = {
     },
 
     deactivate: function() {	
-		log("DISCONNECT");	
         this.device.disconnect(function() {});
     },
 
@@ -593,7 +592,7 @@ NMDevice.prototype = {
 
                 if (j + activeOffset >= NUM_VISIBLE_NETWORKS) {
                     if (!this._overflowItem) {
-                        this._overflowItem = new PopupMenu.PopupSubMenuMenuItem(_("More..."));
+                        this._overflowItem = new PopupMenu.PopupSubMenuMenuItem(_("More..."), true);
                         this.section.addMenuItem(this._overflowItem);
                     }
                     this._overflowItem.menu.addMenuItem(obj.item);
@@ -756,7 +755,23 @@ NMDeviceModem.prototype = {
         this._connectionType = 'ppp';
 
         this._capabilities = device.current_capabilities;
-        if (this._capabilities & NetworkManager.DeviceModemCapabilities.GSM_UMTS) {
+        // Support new ModemManager1 devices
+        if (device.udi.indexOf('/org/freedesktop/ModemManager1/Modem') == 0) {
+            try {
+                is_wwan = true;
+                this.mobileDevice = new ModemManager.BroadbandModem(device.udi, device.current_capabilities);
+                if (this._capabilities & NetworkManager.DeviceModemCapabilities.GSM_UMTS) {
+                    this._connectionType = NetworkManager.SETTING_GSM_SETTING_NAME;
+                } else if (this._capabilities & NetworkManager.DeviceModemCapabilities.LTE) {
+                    this._connectionType = NetworkManager.SETTING_GSM_SETTING_NAME;
+                } else if (this._capabilities & NetworkManager.DeviceModemCapabilities.CDMA_EVDO) {
+                    this._connectionType = NetworkManager.SETTING_CDMA_SETTING_NAME;
+                }
+            }
+            catch (e){
+                global.logError(e);
+            }
+        } else if (this._capabilities & NetworkManager.DeviceModemCapabilities.GSM_UMTS) {
             is_wwan = true;
             this.mobileDevice = new ModemManager.ModemGsm(device.udi);
             this._connectionType = NetworkManager.SETTING_GSM_SETTING_NAME;
@@ -1168,7 +1183,6 @@ NMDeviceWireless.prototype = {
     _networkSortFunction: function(one, two) {
         let oneHasConnection = one.connections.length != 0;
         let twoHasConnection = two.connections.length != 0;
-
         // place known connections first
         // (-1 = good order, 1 = wrong order)
         if (oneHasConnection && !twoHasConnection)
@@ -1176,6 +1190,8 @@ NMDeviceWireless.prototype = {
         else if (!oneHasConnection && twoHasConnection)
             return 1;
 
+        return two.accessPoints[0].strength - one.accessPoints[0].strength;
+/**
         let oneHasSecurity = one.security != NMAccessPointSecurity.NONE;
         let twoHasSecurity = two.security != NMAccessPointSecurity.NONE;
 
@@ -1189,6 +1205,7 @@ NMDeviceWireless.prototype = {
 
         // sort alphabetically
         return GLib.utf8_collate(one.ssidText, two.ssidText);
+**/
     },
 
     _networkCompare: function(network, accessPoint) {
@@ -1550,7 +1567,7 @@ NMDeviceWireless.prototype = {
             this.section.addMenuItem(apObj.item, position);
         } else {
             if (!this._overflowItem) {
-                this._overflowItem = new PopupMenu.PopupSubMenuMenuItem(_("More..."));
+                this._overflowItem = new PopupMenu.PopupSubMenuMenuItem(_("More..."), true);
                 this.section.addMenuItem(this._overflowItem);
             }
             this._overflowItem.menu.addMenuItem(apObj.item, position - NUM_VISIBLE_NETWORKS);

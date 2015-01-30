@@ -58,10 +58,10 @@ PopupBaseMenuItem.prototype = {
         this._spacing = 0;
         this.active = false;
         this._activatable = params.reactive && params.activate;
-        this.sensitive = this._activatable && params.sensitive;
+        this.sensitive = true;
         this.focusOnHover = params.focusOnHover;
 
-        this.setSensitive(this.sensitive);
+        this.setSensitive(this._activatable && params.sensitive);
 
         if (params.style_class)
             this.actor.add_style_class_name(params.style_class);
@@ -635,6 +635,7 @@ PopupSliderMenuItem.prototype = {
         if (this._dragging) // don't allow two drags at the same time
             return;
 
+        this.emit('drag-begin');
         this._dragging = true;
 
         // FIXME: we should only grab the specific device that originated
@@ -1049,6 +1050,7 @@ PopupMenuBase.prototype = {
             // open-state-changed isn't exactly that, but doing it in more
             // precise ways would require a lot more bookkeeping.
             this.connect('open-state-changed', Lang.bind(this, function() { this._updateSeparatorVisibility(menuItem); }));
+            this.box.connect('allocation-changed', Lang.bind(this, function() { this._updateSeparatorVisibility(menuItem); }));
         } else if (menuItem instanceof PopupBaseMenuItem)
             this._connectItemSignals(menuItem);
         else
@@ -1178,6 +1180,9 @@ PopupMenu.prototype = {
         this._boxWrapper.add_actor(this.box);
         this.actor.add_style_class_name('popup-menu');
 
+        this.paint_id = 0;
+        this.paint_count = 0;
+        this.animating = false;
         global.focus_manager.add_group(this.actor);
         this.actor.reactive = true;
     },
@@ -1233,6 +1238,13 @@ PopupMenu.prototype = {
         if (this.isOpen)
             return;
 
+        Main.popup_rendering = true;
+
+        if (animate)
+            this.animating = animate;
+        else
+            this.animating = false;
+
         this.setMaxHeight();
 
         this.isOpen = true;
@@ -1242,11 +1254,31 @@ PopupMenu.prototype = {
         global.menuStackLength += 1;
 
         this._boxPointer.setPosition(this.sourceActor, this._arrowAlignment);
-        this._boxPointer.show(animate);
+
+        this.paint_id = this.actor.connect("paint", Lang.bind(this, this.on_paint));
+
+        this._boxPointer.show(animate, Lang.bind(this, function () {
+            this.animating = false;
+        }));
 
         this.actor.raise_top();
 
         this.emit('open-state-changed', true);
+    },
+
+    on_paint: function(actor) {
+        if (this.paint_count < 2 || this.animating) {
+            this.paint_count++;
+            return;
+        }
+
+        if (this.paint_id > 0) {
+            this.actor.disconnect(this.paint_id);
+            this.paint_id = 0;
+        }
+
+        this.paint_count = 0;
+        Main.popup_rendering = false;
     },
 
     // Setting the max-height won't do any good if the minimum height of the
@@ -1333,6 +1365,8 @@ PopupSubMenu.prototype = {
 
     _needsScrollbar: function() {
         let topMenu = this._getTopMenu();
+        if(!topMenu)
+            return false;
         let [topMinHeight, topNaturalHeight] = topMenu.actor.get_preferred_height(-1);
         let topThemeNode = topMenu.actor.get_theme_node();
 
@@ -1486,7 +1520,7 @@ function PopupSubMenuMenuItem() {
 PopupSubMenuMenuItem.prototype = {
     __proto__: PopupBaseMenuItem.prototype,
 
-    _init: function(text) {
+    _init: function(text, hide_expander) {
         PopupBaseMenuItem.prototype._init.call(this);
 
         this.actor.add_style_class_name('popup-submenu-menu-item');
@@ -1494,17 +1528,24 @@ PopupSubMenuMenuItem.prototype = {
         let table = new St.Table({ homogeneous: false,
                                       reactive: true });
 
-        this._triangle = new St.Icon({ icon_name: "media-playback-start",
-                              icon_type: St.IconType.SYMBOLIC,
-                              style_class: 'popup-menu-icon' });
+        if (!hide_expander) {
+            this._triangle = new St.Icon({ icon_name: "media-playback-start",
+                                icon_type: St.IconType.SYMBOLIC,
+                                style_class: 'popup-menu-icon' });
 
-        table.add(this._triangle,
-                  {row: 0, col: 0, col_span: 1, x_expand: false, x_align: St.Align.START});
+            table.add(this._triangle,
+                    {row: 0, col: 0, col_span: 1, x_expand: false, x_align: St.Align.START});
 
-        this.label = new St.Label({ text: text });
-        this.label.set_margin_left(6.0);
-        table.add(this.label,
-                  {row: 0, col: 1, col_span: 1, x_align: St.Align.START});
+            this.label = new St.Label({ text: text });
+            this.label.set_margin_left(6.0);
+            table.add(this.label,
+                    {row: 0, col: 1, col_span: 1, x_align: St.Align.START});
+        }
+        else {
+            this.label = new St.Label({ text: text });
+            table.add(this.label,
+                    {row: 0, col: 0, col_span: 1, x_align: St.Align.START});
+        }
 
         this.addActor(table, { expand: true, span: 1, align: St.Align.START });
 

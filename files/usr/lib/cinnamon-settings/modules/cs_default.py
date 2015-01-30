@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 from SettingsWidgets import *
+from gi.repository import *
 
 PREF_MEDIA_AUTORUN_NEVER = "autorun-never"
 PREF_MEDIA_AUTORUN_X_CONTENT_START_APP = "autorun-x-content-start-app"
@@ -12,6 +13,7 @@ CUSTOM_ITEM_DO_NOTHING = "cc-item-do-nothing"
 CUSTOM_ITEM_OPEN_FOLDER = "cc-item-open-folder"
 
 MEDIA_HANDLING_SCHEMA = "org.cinnamon.desktop.media-handling"
+TERMINAL_SCHEMA = "org.cinnamon.desktop.default-applications.terminal"
 
 PREF_CONTENT_TYPE = 0
 PREF_GEN_CONTENT_TYPE = 1
@@ -27,14 +29,13 @@ preferred_app_defs = [
     # hence the "*" pattern
     ( "x-scheme-handler/http",   "x-scheme-handler/http",      _("_Web") ),
     ( "x-scheme-handler/mailto", "x-scheme-handler/mailto",    _("_Mail") ),
-    ( "text/plain",              "text",                       _("Text") ), #TODO: Add mnemonic once we are out of M16 release to preserve i18n for now
+    ( "text/plain",              "text",                       _("_Text") ),
 
     # 1st mimetype is to let us find apps
     # 2nd mimetype is to set default handler for (so we handle all of that type, not just a specific format)
     ( "audio/x-vorbis+ogg",      "audio",                    _("M_usic") ),
     ( "video/x-ogm+ogg",         "video",                    _("_Video") ),
     ( "image/jpeg",              "image",                    _("_Photos") )
-    #TODO: Add default terminal selector
 ]
 
 removable_media_defs = [
@@ -124,6 +125,39 @@ class DefaultAppChooserButton(Gtk.AppChooserButton):
                 if info.set_as_default_for_type ("x-scheme-handler/https") == False:
                     print "Failed to set '%s' as the default application for '%s'" % (info.get_name(), "x-scheme-handler/https")
 
+class DefaultTerminalButton(Gtk.AppChooserButton): #TODO: See if we can get this to change the x-terminal-emulator default to allow it to be a more global change rather then just cinnamon/nemo
+    def __init__(self):
+        super(DefaultTerminalButton, self).__init__()
+        self.connect("changed", self.onChanged)
+        
+        apps = Gio.app_info_get_all()
+        self.this_item = []
+        self.active_items = []
+        self.settings = Gio.Settings.new(TERMINAL_SCHEMA)
+        self.key_value = self.settings.get_string("exec")
+        x1 = 0
+        
+        while (self.this_item is not None and x1 < len(apps)):
+            self.this_item = apps[x1]
+            cat_val = Gio.DesktopAppInfo.get_categories(self.this_item)
+            exec_val = Gio.DesktopAppInfo.get_string(self.this_item, "Exec")
+            name_val = Gio.DesktopAppInfo.get_string(self.this_item, "Name")
+            icon_val = Gio.DesktopAppInfo.get_string(self.this_item, "Icon")
+            #terminals don't have mime types, so we check for "TerminalEmulator" under the "Category" key in desktop files
+            if (cat_val is not None and "TerminalEmulator" in cat_val):
+                #this crazy if statement makes sure remaining desktop file info is not empty, then prevents root terminals from showing, then prevents repeating terminals from trying to being added which leave a blank space and Gtk-WARNING's
+                if (exec_val is not None and name_val is not None and icon_val is not None and not "gksu" in exec_val and exec_val not in self.active_items):
+                    self.append_custom_item(exec_val, name_val, Gio.ThemedIcon.new(icon_val))
+                    self.active_items.append(exec_val)
+                    if (self.key_value == exec_val):
+                        self.set_active_custom_item(self.key_value)
+            x1 += 1
+
+    def onChanged(self, button):
+        index_num = button.get_active()
+        command_key = self.active_items[index_num]
+        self.settings.set_string("exec", command_key)
+        
 class CustomAppChooserButton(Gtk.AppChooserButton):
     def __init__(self, media_settings, content_type, heading=None):
         super(CustomAppChooserButton, self).__init__(content_type=content_type)
@@ -309,10 +343,11 @@ class OtherTypeDialog(Gtk.Dialog):
 class Module:
     def __init__(self, content_box):
         keywords = _("media, defaults, applications, programs, removable, browser, email, calendar, music, videos, photos, images, cd, autostart, autoplay")
-        sidePage = SidePage(_("Preferred Applications"), "cs-default-applications", keywords, content_box, 330, module=self)
+        sidePage = SidePage(_("Preferred Applications"), "cs-default-applications", keywords, content_box, 370, module=self)
         self.sidePage = sidePage
         self.name = "default"
         self.category = "prefs"
+        self.comment = _("Preferred Applications")
 
     def on_module_selected(self):
         if not self.loaded:
@@ -347,8 +382,10 @@ class Module:
         
         for d in preferred_app_defs:
             table.addRow(d[PREF_LABEL], DefaultAppChooserButton(d[PREF_CONTENT_TYPE], d[PREF_GEN_CONTENT_TYPE]))
+                
+        table.addRow(_("Te_rminal"), DefaultTerminalButton())
 
-        return ColumnBox(_("Select preferred applications for file types"), table)
+        return ColumnBox(_("Select your preferred applications"), table)
 
     def onMoreClicked(self, button):
         self.other_type_dialog.doShow(button.get_toplevel())

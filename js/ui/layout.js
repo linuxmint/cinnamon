@@ -1,6 +1,7 @@
 // -*- mode: js; js-indent-level: 4; indent-tabs-mode: nil -*-
 
 const Clutter = imports.gi.Clutter;
+const GLib = imports.gi.GLib;
 const Lang = imports.lang;
 const Mainloop = imports.mainloop;
 const Meta = imports.gi.Meta;
@@ -14,7 +15,7 @@ const EdgeFlip = imports.ui.edgeFlip;
 const HotCorner = imports.ui.hotCorner;
 const DeskletManager = imports.ui.deskletManager;
 
-const STARTUP_ANIMATION_TIME = 0.2;
+const STARTUP_ANIMATION_TIME = 0.5;
 const KEYBOARD_ANIMATION_TIME = 0.5;
 
 function LayoutManager() {
@@ -92,8 +93,7 @@ LayoutManager.prototype = {
     // not exist yet when the LayoutManager was constructed.
     init: function() {
         this._chrome.init();
-
-        this._startupAnimation();
+        
         this.edgeRight = new EdgeFlip.EdgeFlipper(St.Side.RIGHT, Main.wm.actionFlipWorkspaceRight);
         this.edgeLeft = new EdgeFlip.EdgeFlipper(St.Side.LEFT, Main.wm.actionFlipWorkspaceLeft);
 
@@ -318,32 +318,77 @@ LayoutManager.prototype = {
         return this.monitors[this.focusIndex];
     },
 
+    // Startup Animations
+    //
+    // We have two different animations, depending on whether we're a greeter
+    // or a normal session.
+    //
+    // In the greeter, we want to animate the panel from the top, and smoothly
+    // fade the login dialog on top of whatever plymouth left on screen which
+    // we get as a still frame background before drawing anything else.
+    //
+    // Here we just have the code to animate the panel, and fade up the background.
+    // The login dialog animation is handled by modalDialog.js
+    //
+    // When starting a normal user session, we want to grow it out of the middle
+    // of the screen.
+    //
+    // Usually, we don't want to paint the stage background color because the
+    // MetaBackgroundActor inside global.window_group covers the entirety of the
+    // screen. So, we set no_clear_hint at the end of the animation.
+
+    _prepareStartupAnimation: function() {
+        // During the initial transition, add a simple actor to block all events,
+        // so they don't get delivered to X11 windows that have been transformed.
+        this._coverPane = new Clutter.Actor({ opacity: 0,
+                                              width: global.screen_width,
+                                              height: global.screen_height,
+                                              reactive: true });
+        this.addChrome(this._coverPane);
+
+        // We need to force an update of the regions now before we scale
+        // the UI group to get the correct allocation for the struts.
+        this._chrome.updateRegions();
+
+        if (Main.panel && Main.panel.isHideable())
+            this.panelBox.opacity = 0;
+        if (Main.panel2 && Main.panel2.isHideable())
+            this.panelBox2.opacity = 0;
+        this.keyboardBox.hide();
+
+        let monitor = this.primaryMonitor;
+        let x = monitor.x + monitor.width / 2.0;
+        let y = monitor.y + monitor.height / 2.0;
+
+        Main.uiGroup.set_pivot_point(x / global.screen_width,
+                                     y / global.screen_height);
+        Main.uiGroup.scale_x = Main.uiGroup.scale_y = 0.75;
+        Main.uiGroup.opacity = 0;
+        global.background_actor.show();
+        global.window_group.set_clip(monitor.x, monitor.y, monitor.width, monitor.height);
+    },
+
     _startupAnimation: function() {
         // Don't animate the strut
         this._chrome.freezeUpdateRegions();
-
-        let params = { anchor_y: 0,
-                       time: STARTUP_ANIMATION_TIME,
-                       transition: 'easeOutQuad',
-                       onComplete: this._startupAnimationComplete,
-                       onCompleteScope: this
-                     };
-        
-        if (Main.desktop_layout == Main.LAYOUT_TRADITIONAL) {
-          this.panelBox.anchor_y  = -(this.panelBox.height);
-        }
-        else if (Main.desktop_layout == Main.LAYOUT_FLIPPED) {
-          this.panelBox.anchor_y  =   this.panelBox.height;
-        }
-        else if (Main.desktop_layout == Main.LAYOUT_CLASSIC) {
-          this.panelBox.anchor_y  =   this.panelBox.height;
-          this.panelBox2.anchor_y = -(this.panelBox2.height);
-        }
-        Tweener.addTween(this.panelBox, params);
-        Tweener.addTween(this.panelBox2, params);
+        Tweener.addTween(Main.uiGroup,
+                         { scale_x: 1,
+                           scale_y: 1,
+                           opacity: 255,
+                           time: STARTUP_ANIMATION_TIME,
+                           transition: 'easeOutQuad',
+                           onComplete: this._startupAnimationComplete,
+                           onCompleteScope: this });       
     },
 
     _startupAnimationComplete: function() {
+        global.stage.no_clear_hint = true;
+        this._coverPane.destroy();
+        this._coverPane = null;
+        this.panelBox.opacity = 255;
+        this.panelBox2.opacity = 255;
+        this.keyboardBox.show();
+        global.window_group.remove_clip();
         this._chrome.thawUpdateRegions();
     },
 
@@ -492,7 +537,7 @@ Chrome.prototype = {
 
         this._screenSaverActive = false;
         this._screenSaverProxy = new ScreenSaver.ScreenSaverProxy();
-        this._screenSaverProxy.connect('ActiveChanged', Lang.bind(this, this._onScreenSaverActiveChanged));
+        this._screenSaverProxy.connectSignal('ActiveChanged', Lang.bind(this, this._onScreenSaverActiveChanged));
         this._screenSaverProxy.GetActiveRemote(Lang.bind(this,
             function(result, err) {
                 if (!err)

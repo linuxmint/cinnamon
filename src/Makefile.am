@@ -59,7 +59,8 @@ generated_script_substitutions = \
 	    -e "s|@pkglibexecdir[@]|$(pkglibexecdir)|" \
 	    -e "s|@PYTHON[@]|$(PYTHON)|" \
 	    -e "s|@VERSION[@]|$(VERSION)|" \
-	    -e "s|@sysconfdir[@]|$(sysconfdir)|"
+	    -e "s|@sysconfdir[@]|$(sysconfdir)|" \
+        -e "s|@GJS_CONSOLE[@]|$(GJS_CONSOLE)|"
 
 cinnamon-jhbuild: cinnamon-jhbuild.in cinnamon-real Makefile
 	$(AM_V_GEN) sed $(generated_script_substitutions) $< > $@.tmp && mv $@.tmp $@ && chmod a+x $@
@@ -80,7 +81,7 @@ cinnamon_cflags =				\
 	$(CINNAMON_CFLAGS)			\
 	-I$(srcdir)/tray			\
 	-DVERSION=\"$(VERSION)\"		\
-	-DLOCALEDIR=\"$(datadir)/cinnamon/locale\" 	\
+	-DLOCALEDIR=\"$(datadir)/locale\" 	\
 	-DDATADIR=\"$(datadir)\"		\
 	-DCINNAMON_LIBEXECDIR=\"$(libexecdir)\"	\
 	-DCINNAMON_DATADIR=\"$(pkgdatadir)\"	\
@@ -89,7 +90,7 @@ cinnamon_cflags =				\
 	-DJSDIR=\"$(pkgdatadir)/js\"
 
 privlibdir = $(pkglibdir)
-privlib_LTLIBRARIES = libcinnamon.la
+privlib_LTLIBRARIES = libcinnamon.la libcinnamon-js.la
 
 cinnamon_built_sources = \
 	cinnamon-marshal.h \
@@ -120,7 +121,8 @@ cinnamon_public_headers_h =		\
 	cinnamon-util.h			\
 	cinnamon-window-tracker.h		\
 	cinnamon-wm.h			\
-	cinnamon-xfixes-cursor.h
+	cinnamon-xfixes-cursor.h \
+    cinnamon-js.h
 
 libcinnamon_la_SOURCES =		\
 	$(cinnamon_built_sources)		\
@@ -129,7 +131,6 @@ libcinnamon_la_SOURCES =		\
 	cinnamon-app-system-private.h	\
 	cinnamon-embedded-window-private.h	\
 	cinnamon-global-private.h		\
-	cinnamon-jsapi-compat-private.h	\
 	cinnamon-window-tracker-private.h	\
 	cinnamon-wm-private.h		\
 	cinnamon-plugin.c		\
@@ -154,7 +155,8 @@ libcinnamon_la_SOURCES =		\
 	cinnamon-util.c			\
 	cinnamon-window-tracker.c		\
 	cinnamon-wm.c			\
-	cinnamon-xfixes-cursor.c
+	cinnamon-xfixes-cursor.c \
+    cinnamon-js.cpp
 
 libcinnamon_la_gir_sources = \
 	$(filter-out %-private.h $(cinnamon_recorder_non_gir_sources), $(cinnamon_public_headers_h) $(libcinnamon_la_SOURCES))
@@ -162,8 +164,25 @@ libcinnamon_la_gir_sources = \
 cinnamon_real_SOURCES =		\
 	main.c
 cinnamon_real_CPPFLAGS = $(cinnamon_cflags)
-cinnamon_real_LDADD = libcinnamon.la $(libcinnamon_la_LIBADD)
+cinnamon_real_LDADD = libcinnamon.la libcinnamon-js.la $(libcinnamon_la_LIBADD)
 cinnamon_real_DEPENDENCIES = libcinnamon.la
+
+########################################
+
+libcinnamon_js_la_SOURCES =      \
+    cinnamon-js.h          \
+    cinnamon-js.cpp            \
+    $(NULL)
+
+libcinnamon_js_la_LIBADD =       \
+    $(CINNAMON_JS_LIBS)      \
+    $(NULL)
+
+libcinnamon_js_la_LDFLAGS =      \
+    -avoid-version
+
+libcinnamon_js_la_CPPFLAGS =     \
+    $(CINNAMON_JS_CFLAGS)
 
 ########################################
 
@@ -202,7 +221,7 @@ cinnamon_perf_helper_LDADD = $(CINNAMON_PERF_HELPER_LIBS)
 noinst_PROGRAMS += run-js-test
 
 run_js_test_CPPFLAGS = $(cinnamon_cflags)
-run_js_test_LDADD = libcinnamon.la $(libcinnamon_la_LIBADD)
+run_js_test_LDADD = libcinnamon.la $(CINNAMON_JS_LIBS) $(libcinnamon_la_LIBADD)
 run_js_test_LDFLAGS = -export-dynamic
 
 run_js_test_SOURCES =			\
@@ -275,6 +294,13 @@ Cinnamon_0_1_gir_SCANNERFLAGS = --include-uninstalled=$(builddir)/St-1.0.gir \
 	--add-include-path=$(MUFFIN_GIR_DIR) $(if $(BLUETOOTH_DIR),-L $(BLUETOOTH_DIR),)
 INTROSPECTION_GIRS += Cinnamon-0.1.gir
 CLEANFILES += Cinnamon-0.1.gir
+
+CinnamonJS-0.1.gir: libcinnamon-js.la
+CinnamonJS_0_1_gir_CFLAGS = $(libcinnamon_la_CPPFLAGS) -I $(srcdir)
+CinnamonJS_0_1_gir_LIBS = libcinnamon-js.la
+CinnamonJS_0_1_gir_FILES = $(libcinnamon_js_la_SOURCES)
+INTROSPECTION_GIRS += CinnamonJS-0.1.gir
+CLEANFILES += CinnamonJS-0.1.gir
 
 St-1.0.gir: libst-1.0.la
 St_1_0_gir_INCLUDES = Clutter-1.0 Gtk-3.0

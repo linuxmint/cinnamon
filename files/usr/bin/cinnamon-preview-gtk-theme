@@ -1,0 +1,43 @@
+#!/usr/bin/env python
+
+import gi, sys
+from gi.repository import Gtk
+
+if __name__ == '__main__':
+    import signal
+    signal.signal(signal.SIGINT, signal.SIG_DFL)
+
+    if len(sys.argv) != 2:
+        print "Usage: cinnamon-preview-gtk-theme theme-name"
+        exit(1)
+    else:
+        theme_name = sys.argv[1]        
+        settings = Gtk.Settings.get_default()
+        settings.set_string_property ("gtk-theme-name", theme_name, "gtkrc:0");
+
+        window = Gtk.Window()
+
+        vbox = Gtk.VBox()
+        hbox = Gtk.HBox()
+        button = Gtk.Button()
+        check = Gtk.CheckButton()
+        check.set_active(True)
+        radio = Gtk.RadioButton()
+        hbox.pack_start(button, False, False, 2)
+        button.set_label("Button")
+        hbox.pack_start(check, False, False, 2)
+        hbox.pack_start(radio, False, False, 2)
+
+        vbox.pack_start(hbox, False, False, 2)    
+
+        window.add(vbox)
+        
+        window.set_default_size(320, 200)
+
+        window.set_decorated(False)
+        window.show_all()
+
+
+        window.connect("destroy", Gtk.main_quit)
+        Gtk.main()
+

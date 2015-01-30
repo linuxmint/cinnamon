@@ -2334,6 +2334,8 @@ st_widget_accessible_dispose (GObject *gobject)
       g_object_unref (self->priv->current_label);
       self->priv->current_label = NULL;
     }
+
+  G_OBJECT_CLASS (st_widget_accessible_parent_class)->dispose (gobject);
 }
 
 

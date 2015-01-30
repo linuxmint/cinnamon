@@ -1,7 +1,7 @@
 const Applet = imports.ui.applet;
 const Mainloop = imports.mainloop;
 const Gio = imports.gi.Gio;
-const DBus = imports.dbus;
+const Interfaces = imports.misc.interfaces;
 const Lang = imports.lang;
 const Cinnamon = imports.gi.Cinnamon;
 const Clutter = imports.gi.Clutter;
@@ -14,93 +14,11 @@ const Tooltips = imports.ui.tooltips;
 const Main = imports.ui.main;
 const Settings = imports.ui.settings;
 
-const PropIFace = {
-    name: 'org.freedesktop.DBus.Properties',
-    signals: [{ name: 'PropertiesChanged',
-                inSignature: 'a{sv}'}]
-};
-
-const MediaServer2IFace = {
-    name: 'org.mpris.MediaPlayer2',
-    methods: [{ name: 'Raise',
-                inSignature: '',
-                outSignature: '' },
-              { name: 'Quit',
-                inSignature: '',
-                outSignature: '' }],
-    properties: [{ name: 'CanRaise',
-                   signature: 'b',
-                   access: 'read'},
-                 { name: 'CanQuit',
-                   signature: 'b',
-                   access: 'read'}],
-};
-
-const MediaServer2PlayerIFace = {
-    name: 'org.mpris.MediaPlayer2.Player',
-    methods: [{ name: 'PlayPause',
-                inSignature: '',
-                outSignature: '' },
-              { name: 'Pause',
-                inSignature: '',
-                outSignature: '' },
-              { name: 'Play',
-                inSignature: '',
-                outSignature: '' },
-              { name: 'Stop',
-                inSignature: '',
-                outSignature: '' },
-              { name: 'Next',
-                inSignature: '',
-                outSignature: '' },
-              { name: 'Previous',
-                inSignature: '',
-                outSignature: '' },
-              { name: 'SetPosition',
-                inSignature: 'ox',
-                outSignature: '' }],
-    properties: [{ name: 'Metadata',
-                   signature: 'a{sv}',
-                   access: 'read'},
-                 { name: 'Shuffle',
-                   signature: 'b',
-                   access: 'readwrite'},
-                 { name: 'Rate',
-                   signature: 'd',
-                   access: 'readwrite'},
-                 { name: 'LoopStatus',
-                   signature: 'b',
-                   access: 'readwrite'},
-                 { name: 'Volume',
-                   signature: 'd',
-                   access: 'readwrite'},
-                 { name: 'PlaybackStatus',
-                   signature: 's',
-                   access: 'read'},
-                 { name: 'Position',
-                   signature: 'x',
-                   access: 'read'},
-                 { name: 'CanGoNext',
-                   signature: 'b',
-                   access: 'read'},
-                 { name: 'CanGoPrevious',
-                   signature: 'b',
-                   access: 'read'},
-                 { name: 'CanPlay',
-                   signature: 'b',
-                   access: 'read'},
-                 { name: 'CanPause',
-                   signature: 'b',
-                   access: 'read'},
-                 { name: 'CanSeek',
-                   signature: 'b',
-                   access: 'read'}],
-    signals: [{ name: 'Seeked',
-                inSignature: 'x' }]
-};
+const MEDIA_PLAYER_2_PATH = "/org/mpris/MediaPlayer2";
+const MEDIA_PLAYER_2_NAME = "org.mpris.MediaPlayer2";
+const MEDIA_PLAYER_2_PLAYER_NAME = "org.mpris.MediaPlayer2.Player";
 
 /* global values */
-let icon_path = "/usr/share/cinnamon/theme/";
 let compatible_players = [
     'clementine', 'mpd', 'exaile', 'banshee', 'rhythmbox', 'rhythmbox3',
     'pragha', 'quodlibet', 'guayadeque', 'amarok', 'googlemusicframe', 'xbmc',
@@ -122,133 +40,6 @@ const VOLUME_ADJUSTMENT_STEP = 0.05; /* Volume adjustment step in % */
 
 const ICON_SIZE = 28;
 
-
-function Prop() {
-    this._init.apply(this, arguments);
-}
-
-Prop.prototype = {
-    _init: function(owner) {
-        DBus.session.proxifyObject(this, owner, '/org/mpris/MediaPlayer2', this);
-    }
-}
-DBus.proxifyPrototype(Prop.prototype, PropIFace)
-
-function MediaServer2() {
-    this._init.apply(this, arguments);
-}
-
-MediaServer2.prototype = {
-    _init: function(owner) {
-        DBus.session.proxifyObject(this, owner, '/org/mpris/MediaPlayer2', this);
-    },
-    getRaise: function(callback) {
-        this.GetRemote('CanRaise', Lang.bind(this,
-            function(raise, ex) {
-                if (!ex)
-                    callback(this, raise);
-            }));
-    },
-    getQuit: function(callback) {
-        this.GetRemote('CanQuit', Lang.bind(this,
-            function(quit, ex) {
-                if (!ex)
-                    callback(this, quit);
-            }));
-    }
-}
-DBus.proxifyPrototype(MediaServer2.prototype, MediaServer2IFace)
-
-function MediaServer2Player() {
-    this._init.apply(this, arguments);
-}
-
-MediaServer2Player.prototype = {
-    _init: function(owner) {
-        this._owner = owner;
-        DBus.session.proxifyObject(this, owner, '/org/mpris/MediaPlayer2', this);
-    },
-    getMetadata: function(callback) {
-        this.GetRemote('Metadata', Lang.bind(this,
-            function(metadata, ex) {
-                if (!ex)
-                    callback(this, metadata);
-            }));
-    },
-    getPlaybackStatus: function(callback) {
-        this.GetRemote('PlaybackStatus', Lang.bind(this,
-            function(status, ex) {
-                if (!ex)
-                    callback(this, status);
-            }));
-    },
-    getRate: function(callback) {
-        this.GetRemote('Rate', Lang.bind(this,
-            function(rate, ex) {
-                if (!ex)
-                    callback(this, rate);
-            }));
-    },
-    getPosition: function(callback) {
-        this.GetRemote('Position', Lang.bind(this,
-            function(position, ex) {
-                if (!ex)
-                    callback(this, position);
-            }));
-    },
-    setPosition: function(value) {
-        this.SetRemote('Position', value);
-    },
-    getShuffle: function(callback) {
-        this.GetRemote('Shuffle', Lang.bind(this,
-            function(shuffle, ex) {
-                if (!ex)
-                    callback(this, shuffle);
-            }));
-    },
-    setShuffle: function(value) {
-        this.SetRemote('Shuffle', value);
-    },
-    getVolume: function(callback) {
-        this.GetRemote('Volume', Lang.bind(this,
-            function(volume, ex) {
-                if (!ex)
-                    callback(this, volume);
-            }));
-    },
-    setVolume: function(value) {
-        this.SetRemote('Volume', parseFloat(value));
-    },
-    getRepeat: function(callback) {
-        this.GetRemote('LoopStatus', Lang.bind(this,
-            function(repeat, ex) {
-                if (!ex) {
-                    if (repeat == "None")
-                        repeat = false
-                    else
-                        repeat = true
-                    callback(this, repeat);
-                }
-            }));
-    },
-    setRepeat: function(value) {
-        if (value)
-            value = "Playlist"
-        else
-            value = "None"
-        this.SetRemote('LoopStatus', value);
-    },
-    getCanSeek: function(callback) {
-        this.GetRemote('CanSeek', Lang.bind(this,
-            function(canSeek, err) {
-                if (!err) {
-                    callback(this, canSeek);
-                }
-            }));
-    }
-}
-DBus.proxifyPrototype(MediaServer2Player.prototype, MediaServer2PlayerIFace)
-
 function TrackInfo() {
     this._init.apply(this, arguments);
 }
@@ -265,7 +56,7 @@ TrackInfo.prototype = {
         return this.actor;
     },
     setLabel: function(label) {
-        this.label.text = label;
+        this.label.text = label.toString();
     },
     getLabel: function() {
         return this.label.text.toString();
@@ -302,6 +93,18 @@ ControlButton.prototype = {
     setIcon: function(icon) {
         this.icon.icon_name = icon;
     },
+
+    enable: function() {
+        this.button.remove_style_pseudo_class('disabled');
+        this.button.can_focus = true;
+        this.button.reactive = true;
+    },
+
+    disable: function() {
+        this.button.add_style_pseudo_class('disabled');
+        this.button.can_focus = false;
+        this.button.reactive = false;
+    }
 }
 
 function TextImageMenuItem() {
@@ -311,18 +114,12 @@ function TextImageMenuItem() {
 TextImageMenuItem.prototype = {
     __proto__: PopupMenu.PopupBaseMenuItem.prototype,
 
-    _init: function(text, icon, image, align, style) {
+    _init: function(text, icon, align, style) {
         PopupMenu.PopupBaseMenuItem.prototype._init.call(this);
 
         this.actor = new St.BoxLayout({style_class: style});
         this.actor.add_style_pseudo_class('active');
-        if (icon) {
-            this.icon = new St.Icon({icon_name: icon});
-        }
-        if (image) {
-            this.icon = new St.Bin();
-            this.icon.set_child(this._getIconImage(image));
-        }
+        this.icon = new St.Icon({icon_name: icon, icon_type: St.IconType.SYMBOLIC, icon_size: 16});
         this.text = new St.Label({text: text});
         if (align === "left") {
             this.actor.add_actor(this.icon, { span: 0 });
@@ -340,20 +137,7 @@ TextImageMenuItem.prototype = {
 
     setIcon: function(icon) {
         this.icon.icon_name = icon;
-    },
-
-    setImage: function(image) {
-        this.icon.set_child(this._getIconImage(image));
-    },
-
-    // retrieve an icon image
-    _getIconImage: function(icon_name) {
-         let icon_file = icon_path + icon_name + ".svg";
-         let file = Gio.file_new_for_path(icon_file);
-         let icon_uri = file.get_uri();
-
-         return St.TextureCache.get_default().load_uri_async(icon_uri, 16, 16);
-    },
+    }
 }
 
 function Player() {
@@ -363,20 +147,55 @@ function Player() {
 Player.prototype = {
     __proto__: PopupMenu.PopupMenuSection.prototype,
 
-    _init: function(system_status_button, owner) {
+    _init: function(system_status_button, busname, owner) {
         PopupMenu.PopupMenuSection.prototype._init.call(this);
-
         this.showPosition = true; // @todo: Get from settings
         this._owner = owner;
+        this._busName = busname;
         this._system_status_button = system_status_button;
-        this._name = this._owner.split('.')[3];
-        this._mediaServerPlayer = new MediaServer2Player(owner);
-        this._mediaServer = new MediaServer2(owner);
-        this._prop = new Prop(owner);
+        this._name = this._busName.split('.')[3];
 
-        this._playerInfo = new TextImageMenuItem(this._getName(), false, "player-stopped", "left", "popup-menu-item");
+        Interfaces.getDBusProxyWithOwnerAsync(MEDIA_PLAYER_2_NAME,
+                                              this._busName,
+                                              Lang.bind(this, function(proxy, error) {
+                                                  if (error) {
+                                                      log(error);
+                                                  } else {
+                                                      this._mediaServer = proxy;
+                                                      this._dbus_acquired();
+                                                  }
+                                              }));
+
+        Interfaces.getDBusProxyWithOwnerAsync(MEDIA_PLAYER_2_PLAYER_NAME,
+                                              this._busName,
+                                              Lang.bind(this, function(proxy, error) {
+                                                  if (error) {
+                                                      log(error)
+                                                  } else {
+                                                      this._mediaServerPlayer = proxy;
+                                                      this._dbus_acquired();
+                                                  }
+                                              }));
+
+        Interfaces.getDBusPropertiesAsync(this._busName,
+                                          MEDIA_PLAYER_2_PATH,
+                                          Lang.bind(this, function(proxy, error) {
+                                              if (error) {
+                                                  log(error)
+                                              } else {
+                                                  this._prop = proxy;
+                                                  this._dbus_acquired();
+                                              }
+                                          }));
+    },
+
+    _dbus_acquired: function() {
+        if (!this._prop || !this._mediaServerPlayer || !this._mediaServer)
+            return;
+
+        this._playerInfo = new TextImageMenuItem(this._getName(), "media-playback-stop", "left", "popup-menu-item");
         this.addMenuItem(this._playerInfo);
-
+        this.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
         this._trackCoverFile = this._trackCoverFileTmp = false;
         this._trackCover = new St.Bin({style_class: 'sound-track-cover', x_align: St.Align.START});
         this._trackCover.set_child(new St.Icon({icon_name: "media-optical-cd-audio", icon_size: 220, icon_type: St.IconType.FULLCOLOR}));
@@ -434,7 +253,14 @@ Player.prototype = {
             let time = item._value * this._songLength;
             this._time.setLabel(this._formatTime(time) + " / " + this._formatTime(this._songLength));
         }));
+
+        this._seeking = false;
+
+        this._positionSlider.connect('drag-begin', Lang.bind(this, function(item) {
+            this._seeking = true;
+        }));
         this._positionSlider.connect('drag-end', Lang.bind(this, function(item) {
+            this._seeking = false;
             let time = item._value * this._songLength;
             this._time.setLabel(this._formatTime(time) + " / " + this._formatTime(this._songLength));
             this._wantedSeekValue = Math.round(time * 1000000);
@@ -447,53 +273,38 @@ Player.prototype = {
         this._seekControls.set_child(this.seekControls);
         this.addActor(this._seekControls);
 
-        this._mediaServer.getRaise(Lang.bind(this, function(sender, raise) {
-            if (raise) {
-                this._raiseButton = new ControlButton('go-up',
-                    Lang.bind(this, function () { this._mediaServer.RaiseRemote(); this._system_status_button.menu.actor.hide(); }));
-                this._raiseButtonTooltip = new Tooltips.Tooltip(this._raiseButton.button, _("Open Player"));
-                this.controls.add_actor(this._raiseButton.getActor());
-            }
-        }));
+        if (this._mediaServer.CanRaise) {
+            this._raiseButton = new ControlButton('go-up',
+                Lang.bind(this, function () { this._mediaServer.RaiseRemote(); this._system_status_button.menu.actor.hide(); }));
+            this._raiseButtonTooltip = new Tooltips.Tooltip(this._raiseButton.button, _("Open Player"));
+            this.controls.add_actor(this._raiseButton.getActor());
+        }
 
-        this._mediaServer.getQuit(Lang.bind(this, function(sender, quit) {
-            if (quit) {
-                this._quitButton = new ControlButton('window-close',
-                    Lang.bind(this, function () { this._mediaServer.QuitRemote(); }));
-                this.controls.add_actor(this._quitButton.getActor());
-                this._quitButtonTooltip = new Tooltips.Tooltip(this._quitButton.button, _("Quit Player"));
-            }
-        }));
+        if (this._mediaServer.CanQuit) {
+            this._quitButton = new ControlButton('window-close',
+                Lang.bind(this, function () { this._mediaServer.QuitRemote(); }));
+            this.controls.add_actor(this._quitButton.getActor());
+            this._quitButtonTooltip = new Tooltips.Tooltip(this._quitButton.button, _("Quit Player"));
+        }
 
         /* this players don't support seek */
-        if (support_seek.indexOf(this._name) == -1) {
+        // if (support_seek.indexOf(this._name) == -1) {
+        if (!this._getCanSeek()) {
             this._time.hide();
             this.showPosition = false;
-            this._positionSlider.actor.hide();
+            this.sliderBin.hide();
         }
-        this._getStatus();
+
+        this._timeoutId = 0;
+        this._setStatus(this._mediaServerPlayer.PlaybackStatus)
         this._trackId = {};
-        this._getMetadata();
+        this._setMetadata(this._mediaServerPlayer.Metadata);
         this._currentTime = 0;
-        this._getPosition();
+        this._timerTicker = 0;
         this._wantedSeekValue = 0;
         this._updatePositionSlider();
 
-        this._prop.connect('PropertiesChanged', Lang.bind(this, function(sender, iface, value) {
-            if (value["PlaybackStatus"])
-                this._setStatus(iface, value["PlaybackStatus"]);
-            if (value["Metadata"])
-                this._setMetadata(iface, value["Metadata"]);
-            //qmmp
-            if(sender._dbusBusName == 'org.mpris.MediaPlayer2.qmmp') {
-                if (value["playbackStatus"])
-                    this._setStatus(iface, value["playbackStatus"]);
-                if (value["metadata"])
-                    this._setMetadata(sender, value["metadata"]);
-            }
-        }));
-
-        this._mediaServerPlayer.connect('Seeked', Lang.bind(this, function(sender, value) {
+        this._mediaServerPlayerId = this._mediaServerPlayer.connectSignal('Seeked', Lang.bind(this, function(id, sender, value) {
             if (value > 0) {
                 this._setPosition(value);
             }
@@ -511,7 +322,16 @@ Player.prototype = {
             this._wantedSeekValue = 0;
         }));
 
-        Mainloop.timeout_add(1000, Lang.bind(this, this._getPosition));
+        this._propChangedId = this._prop.connectSignal('PropertiesChanged', Lang.bind(this, function(proxy, sender, [iface, props]) {
+                if (props.PlaybackStatus)
+                    this._setStatus(props.PlaybackStatus.unpack());
+                if (props.Metadata)
+                    this._setMetadata(props.Metadata.deep_unpack());
+                if (props.CanGoNext || props.CanGoPrevious)
+                    this._updateControls();
+        }));
+
+        this._getPosition();
     },
 
     _getName: function() {
@@ -523,20 +343,44 @@ Player.prototype = {
         this._playerInfo.setText(this._getName() + " - " + _(status));
     },
 
+    _updateControls: function() {
+        this._prop.GetRemote(MEDIA_PLAYER_2_PLAYER_NAME, 'CanGoNext',
+                             Lang.bind(this, function(value, err) {
+                                let canGoNext = true;
+                                if (!err)
+                                    canGoNext = value[0].unpack();
+                                if (canGoNext)
+                                    this._nextButton.enable();
+                                else
+                                    this._nextButton.disable();
+                                })
+                            );
+
+        this._prop.GetRemote(MEDIA_PLAYER_2_PLAYER_NAME, 'CanGoPrevious',
+                             Lang.bind(this, function(value, err) {
+                                let canGoPrevious = true;
+                                if (!err)
+                                    canGoPrevious = value[0].unpack();
+                                if (canGoPrevious)
+                                    this._prevButton.enable();
+                                else
+                                    this._prevButton.disable();
+                                })
+                            );
+    },
+
     _updatePositionSlider: function(position) {
-        this._mediaServerPlayer.getCanSeek(Lang.bind(this, function(sender, canSeek) {
-            this._canSeek = canSeek;
+        this._canSeek = this._getCanSeek();
 
-            if (this._songLength == 0 || position == false)
-                this._canSeek = false
+        if (this._songLength == 0 || position == false)
+            this._canSeek = false
 
-            // Clem: The following code was commented out. When the next song started, it resulted in hiding the sound menu, making it hard for the user to repeatedly click on the next song button.
-            // There's probably a better fix and this was not tested with players which don't support seeking, but it fixes the regression created by the slider (apparently when the slider is hidden it closes the menu)
-            // if (this._playerStatus == "Playing" && this._canSeek && this.showPosition)
-            //     this._positionSlider.actor.show();
-            // else
-            //     this._positionSlider.actor.hide();
-        }));
+        // Clem: The following code was commented out. When the next song started, it resulted in hiding the sound menu, making it hard for the user to repeatedly click on the next song button.
+        // There's probably a better fix and this was not tested with players which don't support seeking, but it fixes the regression created by the slider (apparently when the slider is hidden it closes the menu)
+        // if (this._playerStatus == "Playing" && this._canSeek && this.showPosition)
+        //     this._positionSlider.actor.show();
+        // else
+        //     this._positionSlider.actor.hide();
     },
 
     _setPosition: function(value) {
@@ -550,48 +394,59 @@ Player.prototype = {
     },
 
     _getPosition: function() {
-        this._mediaServerPlayer.getPosition(Lang.bind(this, function(sender, value) {
-            this._setPosition(value);
+        this._prop.GetRemote(MEDIA_PLAYER_2_PLAYER_NAME, 'Position', Lang.bind(this, function(position, ex) {
+            if (!ex) {
+                this._setPosition(position[0].get_int64());
+            }
         }));
     },
 
-    _setMetadata: function(sender, metadata) {
+    _getCanSeek: function() {
+        let can_seek = true;
+        this._prop.GetRemote(MEDIA_PLAYER_2_PLAYER_NAME, 'CanSeek', Lang.bind(this, function(position, ex) {
+            if (!ex) {
+                can_seek = position[0].get_boolean();
+            }
+        }));
+        return can_seek;
+    },
+
+    _setMetadata: function(metadata) {
+        if (!metadata)
+            return;
         if (metadata["mpris:length"]) {
-            // song length in secs
-            this._songLength = metadata["mpris:length"] / 1000000;
-            // FIXME upstream
-            if (this._name == "quodlibet")
-                this._songLength = metadata["mpris:length"] / 1000;
-            // reset timer
             this._stopTimer();
             if (this._playerStatus == "Playing")
                 this._runTimer();
+            // song length in secs
+            this._songLength = metadata["mpris:length"].unpack() / 1000000;
         }
         else {
             this._songLength = 0;
             this._stopTimer();
         }
-        if (metadata["xesam:artist"])
-            this._artist.setLabel(metadata["xesam:artist"].toString());
+        if (metadata["xesam:artist"]) {
+            this._artist.setLabel(metadata["xesam:artist"].deep_unpack());
+        }
         else
             this._artist.setLabel(_("Unknown Artist"));
         if (metadata["xesam:album"])
-            this._album.setLabel(metadata["xesam:album"].toString());
+            this._album.setLabel(metadata["xesam:album"].unpack());
         else
             this._album.setLabel(_("Unknown Album"));
         if (metadata["xesam:title"])
-            this._title.setLabel(metadata["xesam:title"].toString());
+            this._title.setLabel(metadata["xesam:title"].unpack());
         else
             this._title.setLabel(_("Unknown Title"));
 
         if (metadata["mpris:trackid"]) {
-            this._trackObj = metadata["mpris:trackid"];
+            this._trackObj = metadata["mpris:trackid"].unpack();
         }
 
         let change = false;
         if (metadata["mpris:artUrl"]) {
-            if (this._trackCoverFile != metadata["mpris:artUrl"].toString()) {
-                this._trackCoverFile = metadata["mpris:artUrl"].toString();
+            if (this._trackCoverFile != metadata["mpris:artUrl"].unpack()) {
+                this._trackCoverFile = metadata["mpris:artUrl"].unpack();
                 
                 if ( this._name === "spotify" )
                     this._trackCoverFile = this._trackCoverFile.replace("/thumb/", "/300/");
@@ -627,64 +482,74 @@ Player.prototype = {
         this._system_status_button.setAppletTextIcon(this, true);
     },
 
-    _getMetadata: function() {
-        this._mediaServerPlayer.getMetadata(Lang.bind(this,
-            this._setMetadata
-        ));
-    },
-
-    _setStatus: function(sender, status) {
+    _setStatus: function(status) {
+        if (!status)
+            return;
         this._updatePositionSlider();
+        if (status == this._playerStatus)
+            return;
         this._playerStatus = status;
         if (status == "Playing") {
             this._playButton.setIcon("media-playback-pause");
+            this._playerInfo.setIcon("media-playback-start");
             this._system_status_button.setAppletTextIcon(this, true);
             this._runTimer();
         }
         else if (status == "Paused") {
             this._playButton.setIcon("media-playback-start");
+            this._playerInfo.setIcon("media-playback-pause");
             this._system_status_button.setAppletTextIcon(this, false);
             this._pauseTimer();
         }
         else if (status == "Stopped") {
             this._playButton.setIcon("media-playback-start");
+            this._playerInfo.setIcon("media-playback-stop");
             this._system_status_button.setAppletTextIcon(this, false);
             this._stopTimer();
         } else {
             this._system_status_button.setAppletTextIcon(this, false);
         }
 
-        this._playerInfo.setImage("player-" + status.toLowerCase());
         this._setName(status);
     },
 
-    _getStatus: function() {
-        this._mediaServerPlayer.getPlaybackStatus(Lang.bind(this,
-            this._setStatus
-        ));
-    },
-
-    _updateRate: function() {
-        this._mediaServerPlayer.getRate(Lang.bind(this, function(sender, rate) {
-            this._rate = rate;
-        }));
-    },
-
     _updateTimer: function() {
-        if (this.showPosition && this._canSeek) {
+        if (!this._seeking && this.showPosition && this._canSeek) {
             if (!isNaN(this._currentTime) && !isNaN(this._songLength) && this._currentTime > 0)
                 this._positionSlider.setValue(this._currentTime / this._songLength);
             else
                 this._positionSlider.setValue(0);
         }
-        this._time.setLabel(this._formatTime(this._currentTime) + " / " + this._formatTime(this._songLength));
+        if (!this._seeking)
+            this._time.setLabel(this._formatTime(this._currentTime) + " / " + this._formatTime(this._songLength));
+    },
+
+    _runTimerCallback: function() {
+        if (this._playerStatus == 'Playing') {
+            if (this._timerTicker < 10) {
+                this._currentTime += 1;
+                this._timerTicker++;
+                this._updateTimer();
+            } else {
+                this._getPosition();
+                this._timerTicker = 0;
+            }
+            return true;
+        }
+
+        return false;
     },
 
     _runTimer: function() {
+        if (this._timeoutId != 0) {
+            Mainloop.source_remove(this._timeoutId);
+            this._timeoutId = 0;
+        }
+
         if (this._playerStatus == 'Playing') {
-            this._timeoutId = Mainloop.timeout_add_seconds(1, Lang.bind(this, this._runTimer));
-            this._currentTime += 1;
-            this._updateTimer();
+            this._getPosition()
+            this._timerTicker = 0;
+            this._timeoutId = Mainloop.timeout_add_seconds(1, Lang.bind(this, this._runTimerCallback));
         }
     },
 
@@ -752,9 +617,9 @@ Player.prototype = {
                 else {
                     let l = new Clutter.BinLayout();
                     let b = new Clutter.Box();
-                    let c = new Clutter.Texture({height: 210, keep_aspect_ratio: true, filter_quality: 2, filename: cover_path});
+                    let c = new Clutter.Texture({height: 210 * global.ui_scale, keep_aspect_ratio: true, filter_quality: 2, filename: cover_path});
                     b.set_layout_manager(l);
-                    b.set_width(230);
+                    b.set_width(230 * global.ui_scale);
                     b.add_actor(c);
                     this._trackCover.set_child(b);
                 }
@@ -772,6 +637,18 @@ Player.prototype = {
          this._system_status_button.setIcon(icon);
        else
          this._system_status_button.setIcon('audio-x-generic');
+    },
+
+    destroy: function() {
+        if (this._timeoutId != 0) {
+            Mainloop.source_remove(this._timeoutId);
+            this._timeoutId = 0;
+        }
+        if (this._mediaServerPlayer)
+            this._mediaServerPlayer.disconnectSignal(this._mediaServerPlayerId);
+        if (this._prop)
+            this._prop.disconnectSignal(this._propChangedId);
+        PopupMenu.PopupMenuSection.prototype.destroy.call(this);
     }
 
 }
@@ -811,6 +688,7 @@ MyApplet.prototype = {
 
     _init: function(metadata, orientation, panel_height, instanceId) {
         Applet.TextIconApplet.prototype._init.call(this, orientation, panel_height);
+
         try {
             this.metadata = metadata;
             this.settings = new Settings.AppletSettings(this, metadata.uuid, instanceId);
@@ -829,15 +707,61 @@ MyApplet.prototype = {
 
             this.set_applet_icon_symbolic_name('audio-x-generic');
 
-            // menu not showed by default
             this._players = {};
-            // watch players
-            for (var p=0; p<compatible_players.length; p++) {
-                DBus.session.watch_name('org.mpris.MediaPlayer2.'+compatible_players[p], false,
-                    Lang.bind(this, this._addPlayer),
-                    Lang.bind(this, this._removePlayer)
-                );
-            }
+
+/* TODO *********************
+ *
+ * While I don't think we can do away with our hardcoded player lists entirely,
+ * the way the listener is implemented now allows for an unknown player, that supports
+ * the mpris interfaces, can be discovered and controlled by the applet.
+ *
+ * It would be neat to be able to add these discovered players automatically to the
+ * launchers list, so that next time, the program can be launched from the applet.
+ *
+ * org.mpris.MediaPlayer2.Identity can tell you the display name of the program.
+ * org.mpris.MediaPlayer2.DesktopEntry can tell you the desktop file name (for the icon, etc..)
+ *
+ * So, when an unknown player is found, some pertinent information gets taken, and added
+ * to an applet settings list.  At startup, supported_players and this list can be aggregated
+ * to determine what launchers to add to the applet.
+ *
+ */
+
+            Interfaces.getDBusAsync(Lang.bind(this, function (proxy, error) {
+                this._dbus = proxy;
+
+                // player DBus name pattern
+                let name_regex = /^org\.mpris\.MediaPlayer2\./;
+                // load players
+                this._dbus.ListNamesRemote(Lang.bind(this,
+                    function(names) {
+                        for (let n in names[0]) {
+                            let name = names[0][n];
+                            if (name_regex.test(name)) {
+                                this._dbus.GetNameOwnerRemote(name, Lang.bind(this,
+                                    function(owner) {
+                                        this._addPlayer(name, owner);
+                                    }
+                                ));
+                            }
+                        }
+                    }
+                ));
+
+               // watch players
+               this._ownerChangedId = this._dbus.connectSignal('NameOwnerChanged', Lang.bind(this,
+                   function(proxy, sender, [name, old_owner, new_owner]) {
+                       if (name_regex.test(name)) {
+                           if (new_owner && !old_owner)
+                               this._addPlayer(name, new_owner);
+                           else if (old_owner && !new_owner && this._players[old_owner])
+                               this._removePlayer(name, old_owner);
+                           else
+                               this._changePlayerOwner(name, old_owner, new_owner);
+                       }
+                   }
+               ));
+            }));
 
             this._control = new Gvc.MixerControl({ name: 'Cinnamon Volume Control' });
             this._control.connect('state-changed', Lang.bind(this, this._onControlStateChanged));
@@ -859,6 +783,7 @@ MyApplet.prototype = {
 
             this._icon_name = '';
             this._icon_path = null;
+            this._iconTimeoutId = 0;
 
             this.actor.connect('scroll-event', Lang.bind(this, this._onScrollEvent));
 
@@ -890,17 +815,20 @@ MyApplet.prototype = {
         }
 
         if (this.showtrack || this.showalbum) {
-            for (owner in this._players) {
-                this._addPlayer(owner);
+            for (let name in this._players) {
+                this._addPlayer(null, name);
             }
         }
     },
 
     on_applet_removed_from_panel : function() {
-        if (this.hideSystray) this.unregisterSystrayIcons();
+        if (this.hideSystray)
+            this.unregisterSystrayIcons();
         if (this._iconTimeoutId) {
             Mainloop.source_remove(this._iconTimeoutId);
         }
+
+        this._dbus.disconnectSignal(this._ownerChangedId);
     },
 
     on_applet_clicked: function(event) {
@@ -943,27 +871,19 @@ MyApplet.prototype = {
         }
         else if (direction == Clutter.ScrollDirection.UP) {
             this._output.volume = Math.min(this._volumeMax, currentVolume + this._volumeMax * VOLUME_ADJUSTMENT_STEP);
-            this._output.change_is_muted(false);
             this._output.push_volume();
+            this._output.change_is_muted(false);
         }
 
         this._notifyVolumeChange();
     },
 
-    _onButtonReleaseEvent: function (actor, event) {
-        Applet.TextIconApplet.prototype._onButtonReleaseEvent.call(this, actor, event);
-
-        if (event.get_button() == 2) {
-            if (this._output.is_muted)
-                this._output.change_is_muted(false);
-            else {
-                this._output.change_is_muted(true);
-            }
-
-            this._output.push_volume();
+    _onButtonPressEvent: function (actor, event) {
+        //mute on middle click
+        if(event.get_button() === 2){
+            this._toggle_out_mute();
         }
-
-        return true;
+        return Applet.Applet.prototype._onButtonPressEvent.call(this, actor, event);
     },
 
     setIconName: function(icon) {
@@ -972,9 +892,12 @@ MyApplet.prototype = {
         if (this._nbPlayers()>0) {
             if (this._iconTimeoutId) {
                 Mainloop.source_remove(this._iconTimeoutId);
+                this._iconTimeoutId = 0;
             }
             this._iconTimeoutId = Mainloop.timeout_add(3000, Lang.bind(this, function() {
-                this._iconTimeoutId = null;
+                if (this._nbPlayers() == 0)
+                    return false;
+                this._iconTimeoutId = 0;
                 if (this['_output'].is_muted) {
                     this.set_applet_icon_symbolic_name('audio-volume-muted');
                 } else if (this.showalbum) {
@@ -982,6 +905,7 @@ MyApplet.prototype = {
                 } else {
                     this.set_applet_icon_symbolic_name('audio-x-generic');
                 }
+                return false;
             }));
         }
     },
@@ -1028,45 +952,98 @@ MyApplet.prototype = {
     },
 
     _nbPlayers: function() {
-        return Object.keys(this._players).length;
-    },
-
-    _addPlayer: function(owner) {
-        // ensure menu is empty
-        this._cleanup();
-        this._volumeControlShown = false;
-        this._players[owner] = new Player(this, owner);
-        this.menu.addMenuItem(this._players[owner]);
-        this.menu.emit('players-loaded', true);
-
-        this._showFixedElements();
-
-        this.setIconName(this._icon_name);
-
-        this._readOutput();
-    },
-
-    _removePlayer: function(owner) {
-        delete this._players[owner];
-        this._cleanup();
-        this._volumeControlShown = false;
-        for (owner in this._players) {
-            this._addPlayer(owner);
+        let num = 0;
+        for (let owner in this._players) {
+            if (this._players[owner] != undefined)
+                num++;
         }
-        this.menu.emit('players-loaded', true);
+        return num;
+    },
 
-        this._showFixedElements();
+    _removeOtherPlayers: function(newBusName) {
+        if (this._nbPlayers() == 0)
+            return;
 
-        this.setIconName(this._icon_name);
+        let num = 0;
+        for (let owner in this._players) {
+            if (this._players[owner]._busName != newBusName) {
+                this._players[owner].destroy();
+                delete this._players[owner];
+            }
+        }
+    },
 
-        this._readOutput();
+    _isInstance: function(busName) {
+        // MPRIS instances are in the form
+        //   org.mpris.MediaPlayer2.name.instanceXXXX
+        // ...except for VLC, which to this day uses
+        //   org.mpris.MediaPlayer2.name-XXXX
+        return busName.split('.').length > 4 ||
+                /^org\.mpris\.MediaPlayer2\.vlc-\d+$/.test(busName);
+    },
+
+    _addPlayer: function(busName, owner) {
+        let position;
+        if (this._players[owner]) {
+            let prevName = this._players[owner]._busName;
+            // HAVE: ADDING: ACTION:
+            // master master reject, cannot happen
+            // master instance upgrade to instance
+            // instance master reject, duplicate
+            // instance instance reject, cannot happen
+            if (this._isInstance(busName) && !this._isInstance(prevName))
+                this._players[owner]._busName = busName;
+            else
+                return;
+        } else if (owner) {
+            this._removeOtherPlayers(busName);
+            this._cleanup()
+            this._volumeControlShown = false;
+            this._players[owner] = new Player(this, busName, owner);
+            this.menu.addMenuItem(this._players[owner]);
+            this.menu.emit('players-loaded', true);
+            this._showFixedElements();
+            this.setIconName(this._icon_name);
+            this._readOutput();
+        }
+    },
+
+    _removePlayer: function(busName, owner) {
+        if (this._players[owner]) {
+            this._players[owner].destroy();
+            delete this._players[owner];
+            this._cleanup();
+            this._volumeControlShown = false;
+            this.menu.emit('players-loaded', true);
+            this._showFixedElements();
+            this._icon_path = null;
+            this.setIconName(null);
+            this._readOutput();
+        }
+    },
+
+    _changePlayerOwner: function(busName, oldOwner, newOwner) {
+        if (this._players[oldOwner] && busName == this._players[oldOwner]._busName) {
+            this._players[newOwner] = this._players[oldOwner];
+            this._players[newOwner].owner = newOwner;
+            delete this._players[oldOwner];
+            this._readOutput();
+        }
     },
 
     _cleanup: function() {
+        if (this._iconTimeoutId != 0) {
+            Mainloop.source_remove(this._iconTimeoutId);
+            this._iconTimeoutId = 0;
+        }
         if (this._outputTitle) this._outputTitle.destroy();
         if (this._outputSlider) this._outputSlider.destroy();
         if (this._inputTitle) this._inputTitle.destroy();
         if (this._inputSlider) this._inputSlider.destroy();
+        this._outputTitle = null;
+        this._outputSlider = null;
+        this._inputTitle = null;
+        this._inputSlider = null;
         this.setAppletTextIcon();
         this.menu.removeAll();
      },
@@ -1095,7 +1072,7 @@ MyApplet.prototype = {
 
             if (this._availablePlayers.length > 0){
                 this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
-                this._launchPlayerItem = new PopupMenu.PopupSubMenuMenuItem(_("Launch player..."));
+                this._launchPlayerItem = new PopupMenu.PopupSubMenuMenuItem(_("Launch player..."), true);
 
                 for (var p=0; p<this._availablePlayers.length; p++){
                     let playerApp = this._availablePlayers[p];
@@ -1108,10 +1085,11 @@ MyApplet.prototype = {
         }
 
         this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
-        this._outputTitle = new TextImageMenuItem(_("Volume"), "audio-volume-high", false, "right", "sound-volume-menu-item");
+        this._outputTitle = new TextImageMenuItem(_("Volume"), "audio-volume-high", "right", "sound-volume-menu-item");
         this._outputSlider = new PopupMenu.PopupSliderMenuItem(0);
         this._outputSlider.connect('value-changed', Lang.bind(this, this._sliderChanged, '_output'));
         this._outputSlider.connect('drag-end', Lang.bind(this, this._notifyVolumeChange));
+        this._outputSlider.actor.connect('scroll-event', Lang.bind(this, this._notifyVolumeChange));
         this.menu.addMenuItem(this._outputTitle);
         this.menu.addMenuItem(this._outputSlider);
         this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
@@ -1119,12 +1097,13 @@ MyApplet.prototype = {
         this._inputSlider = new PopupMenu.PopupSliderMenuItem(0);
         this._inputSlider.connect('value-changed', Lang.bind(this, this._sliderChanged, '_input'));
         this._inputSlider.connect('drag-end', Lang.bind(this, this._notifyVolumeChange));
+        this._inputSlider.actor.connect('scroll-event', Lang.bind(this, this._notifyVolumeChange));
         this.menu.addMenuItem(this._inputTitle);
         this.menu.addMenuItem(this._inputSlider);
         this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
         this.menu.addSettingsAction(_("Sound Settings"), 'sound');
 
-        this._selectDeviceItem = new PopupMenu.PopupSubMenuMenuItem(_("Output device..."));
+        this._selectDeviceItem = new PopupMenu.PopupSubMenuMenuItem(_("Output device..."), true);
         this.menu.addMenuItem(this._selectDeviceItem);
 
         if (this._showInput){
@@ -1145,17 +1124,17 @@ MyApplet.prototype = {
             return;
         }
         let volume = value * this._volumeMax;
-        let prev_muted = this[property].is_muted;
-        if (volume < 1) {
+        let muted;
+        if (value < .01) {
             this[property].volume = 0;
-            if (!prev_muted)
-                this[property].change_is_muted(true);
+            muted = true;
         } else {
             this[property].volume = volume;
-            if (prev_muted)
-                this[property].change_is_muted(false);
+            muted = false;
         }
         this[property].push_volume();
+        if (this[property].is_muted !== muted)
+            this[property].change_is_muted(muted);
     },
 
     _notifyVolumeChange: function() {        
@@ -1176,8 +1155,8 @@ MyApplet.prototype = {
             } else {
                 this.setIconName(this._volumeToIcon(this._output.volume));
                 this._outputTitle.setIcon(this._volumeToIcon(this._output.volume));
-                this.set_applet_tooltip(_("Volume") + ": " + Math.floor(this._output.volume / this._volumeMax * 100) + "%");
-                this._outputTitle.setText(_("Volume") + ": " + Math.floor(this._output.volume / this._volumeMax * 100) + "%");
+                this.set_applet_tooltip(_("Volume") + ": " + Math.round(this._output.volume / this._volumeMax * 100) + "%");
+                this._outputTitle.setText(_("Volume") + ": " + Math.round(this._output.volume / this._volumeMax * 100) + "%");
                 this.mute_out_switch.setToggleState(false);
             }
         } else if (property == '_input') {
@@ -1196,13 +1175,13 @@ MyApplet.prototype = {
         if (property == '_output' && !this._output.is_muted) {
             this._outputTitle.setIcon(this._volumeToIcon(this._output.volume));
             this.setIconName(this._volumeToIcon(this._output.volume));
-            this.set_applet_tooltip(_("Volume") + ": " + Math.floor(this._output.volume / this._volumeMax * 100) + "%");
-            this._outputTitle.setText(_("Volume") + ": " + Math.floor(this._output.volume / this._volumeMax * 100) + "%");
+            this.set_applet_tooltip(_("Volume") + ": " + Math.round(this._output.volume / this._volumeMax * 100) + "%");
+            this._outputTitle.setText(_("Volume") + ": " + Math.round(this._output.volume / this._volumeMax * 100) + "%");
         }
     },
 
     _volumeToIcon: function(volume) {
-        if (volume <= 0) {
+        if (volume < 1) {
             return 'audio-volume-muted';
         } else {
             let n = Math.floor(3 * volume / this._volumeMax) + 1;
@@ -1310,7 +1289,6 @@ MyApplet.prototype = {
     unregisterSystrayIcons: function() {
         Main.systrayManager.unregisterId(this.metadata.uuid);
     }
-
 };
 
 function main(metadata, orientation, panel_height, instanceId) {

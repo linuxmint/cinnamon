@@ -6,8 +6,8 @@ const Extension = imports.ui.extension;
 var extensions;
 // Maps uuid -> metadata object
 var extensionMeta;
-// Maps uuid -> extension state object (returned from init())
-const extensionStateObjs = {};
+// Lists extension uuid's that are currently active;
+const runningExtensions = {};
 // Arrays of uuids
 var enabledExtensions;
 
@@ -33,7 +33,7 @@ function prepareExtensionUnload(extension) {
     } catch (e) {
         extension.logError('Failed to evaluate \'disable\' function on extension: ' + extension.uuid, e);
     }
-    delete extensionStateObjs[extension.uuid];
+    delete runningExtensions[extension.uuid];
 }
 
 // Callback for extension.js
@@ -41,10 +41,9 @@ function finishExtensionLoad(extension) {
     if(!extension.lockRole(extension.module)) {
         return false;
     }
-    
-    let stateObj;
+
     try {
-        stateObj = extension.module.init(extension.meta);
+        extension.module.init(extension.meta);
     } catch (e) {
         extension.logError('Failed to evaluate \'init\' function on extension: ' + extension.uuid, e);
         return false;
@@ -55,9 +54,8 @@ function finishExtensionLoad(extension) {
         extension.logError('Failed to evaluate \'enable\' function on extension: ' + extension.uuid, e);
         return false;
     }
-    
-    extensionStateObjs[extension.uuid] = stateObj;
 
+    runningExtensions[extension.uuid] = true;
     return true;
 }
 

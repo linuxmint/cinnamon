@@ -7,12 +7,12 @@ FALLBACK_ARGS = ("--replace",)
 import os, sys, gettext
 from gi.repository import Gtk
 
-gettext.install("cinnamon", "/usr/share/cinnamon/locale")
+gettext.install("cinnamon", "/usr/share/locale")
 
 def confirm_restart():
     d = Gtk.MessageDialog(None, 0, Gtk.MessageType.WARNING, Gtk.ButtonsType.YES_NO)
     d.set_keep_above(True)
-    d.set_markup("<span size='large'><b>%s</b></span>\n\n%s" % (_("Do you want to restart Cinnamon?"), _("Cinnamon just crashed. You are currently running in Fallback Mode.")))
+    d.set_markup("<span size='large'><b>%s</b></span>\n\n%s" % (_("Cinnamon just crashed. You are currently running in Fallback Mode."), _("Do you want to restart Cinnamon?")))
     d.show_all()
     resp = d.run()
     d.destroy()

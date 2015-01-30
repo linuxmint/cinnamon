@@ -49,33 +49,32 @@ dragHelper.prototype = {
         if (Main.panel2)
             Main.panel2._leavePanel();
         this.dragging = false;
+        this.panel_show_id = 0;
         return false;
     }
 }
 
 let drag_helper = new dragHelper();
 
-function AppMenuButtonRightClickMenu(actor, metaWindow, orientation) {
-    this._init(actor, metaWindow, orientation);
+function AppMenuButtonRightClickMenu(launcher, metaWindow, orientation) {
+    this._init(launcher, metaWindow, orientation);
 }
 
 AppMenuButtonRightClickMenu.prototype = {
-    __proto__: PopupMenu.PopupMenu.prototype,
+    __proto__: Applet.AppletPopupMenu.prototype,
 
-    _init: function(actor, metaWindow, orientation) {
-        //take care of menu initialization        
-        PopupMenu.PopupMenu.prototype._init.call(this, actor, 0.0, orientation, 0);        
-        Main.uiGroup.add_actor(this.actor);
-        this.actor.hide();
-        this.window_list = actor._delegate._applet._windows;
-        actor.connect('key-press-event', Lang.bind(this, this._onSourceKeyPress));        
-        this.connect('open-state-changed', Lang.bind(this, this._onToggled));        
+    _init: function(launcher, metaWindow, orientation) {
+        Applet.AppletPopupMenu.prototype._init.call(this, launcher, orientation);
+        
+        this.window_list = launcher.actor._delegate._applet._windows;
+        launcher.actor.connect('key-press-event', Lang.bind(this, this._onSourceKeyPress));
+        this.connect('open-state-changed', Lang.bind(this, this._onToggled));
 
-        this.metaWindow = metaWindow;
         this.orientation = orientation;
-     },
+        this.metaWindow = metaWindow;
+    },
 
-     _populateMenu: function(){
+    _populateMenu: function(){
         let mw = this.metaWindow;
         let itemCloseWindow = new PopupMenu.PopupMenuItem(_("Close"));
         itemCloseWindow.connect('activate', Lang.bind(this, this._onCloseWindowActivate));
@@ -100,6 +99,13 @@ AppMenuButtonRightClickMenu.prototype = {
         
         let itemOnAllWorkspaces = new PopupMenu.PopupMenuItem(_("Visible on all workspaces"));
         itemOnAllWorkspaces.connect('activate', Lang.bind(this, this._toggleOnAllWorkspaces));
+
+        let itemRestoreOpacity = new PopupMenu.PopupMenuItem(_("Restore to full opacity"));
+        itemRestoreOpacity.connect('activate', Lang.bind(this, this._onRestoreOpacity));
+
+        if (this.metaWindow.get_compositor_private().opacity == 255) {
+            itemRestoreOpacity.actor.hide()
+        }
 
         if (mw.is_on_all_workspaces()) {
             itemOnAllWorkspaces.label.set_text(_("Only on this workspace"));
@@ -141,6 +147,7 @@ AppMenuButtonRightClickMenu.prototype = {
             itemCloseAllWindows,
             itemCloseOtherWindows,
             new PopupMenu.PopupSeparatorMenuItem(),
+            itemRestoreOpacity,
             itemMinimizeWindow,
             itemMaximizeWindow,
             itemCloseWindow
@@ -148,9 +155,13 @@ AppMenuButtonRightClickMenu.prototype = {
         (this.orientation == St.Side.BOTTOM ? items : items.reverse()).forEach(function(item) {
             this.addMenuItem(item);
         }, this);
-     },
+    },
 
-     _onToggled: function(actor, isOpening){
+    _onRestoreOpacity: function(actor, event) {
+        this.metaWindow.get_compositor_private().set_opacity(255);
+    },
+
+    _onToggled: function(actor, isOpening){
         if (!isOpening) {
             return;
         }
@@ -338,7 +349,7 @@ AppMenuButton.prototype = {
         if (draggable) {
             //set up the right click menu
             this._menuManager = new PopupMenu.PopupMenuManager(this);
-            this.rightClickMenu = new AppMenuButtonRightClickMenu(this.actor, this.metaWindow, orientation);
+            this.rightClickMenu = new AppMenuButtonRightClickMenu(this, this.metaWindow, orientation);
             this._menuManager.addMenu(this.rightClickMenu);
 
             this._draggable = DND.makeDraggable(this.actor);
@@ -395,10 +406,10 @@ AppMenuButton.prototype = {
             }
         }
         let target;
-        if (direction == 1) {
+        if (direction == 0) {
             target = ((current - 1) >= 0) ? (current - 1) : (num_windows - 1);
         }
-        if (direction == 0) {
+        if (direction == 1) {
             target = ((current + 1) <= num_windows - 1) ? (current + 1) : 0;
         }
         Main.activateWindow(this.window_list[vis_windows[target]].metaWindow, global.get_current_time());
@@ -477,9 +488,14 @@ AppMenuButton.prototype = {
 
     _onButtonRelease: function(actor, event) {
         this._tooltip.hide();
-        if (!this._draggable)
+        if (!this._draggable) {
+            /* non-draggable = off-workspace window demanding attention
+               the only action for these is activation */
+            if (event.get_button() == 1) {
+                this._windowHandle(false);
+            }
             return false;
-
+        }
         if (event.get_button() == 1) {
             if ( this.rightClickMenu.isOpen ) {
                 this.rightClickMenu.toggle();
@@ -504,7 +520,15 @@ AppMenuButton.prototype = {
     },
 
     _windowHandle: function(fromDrag){
-        if ( this.metaWindow.has_focus() ) {
+        let has_focus = this.metaWindow.has_focus();
+        if (!this.metaWindow.minimized && !has_focus) {
+            this.metaWindow.foreach_transient(function(child) {
+                if (!child.minimized && child.has_focus()) {
+                    has_focus = true;
+                }
+            });
+        }
+        if ( has_focus ) {
             if (fromDrag){
                 return;
             }
@@ -681,7 +705,10 @@ AppMenuButton.prototype = {
     },
     
     getDragActor: function() {
-        return new Clutter.Clone({ source: this.actor });
+        let clone = new Clutter.Clone({ source: this.actor });
+        clone.width = this.actor.width;
+        clone.height = this.actor.height;
+        return clone;
     },
 
     // Returns the original actor that should align with the actor

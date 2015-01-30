@@ -4,7 +4,7 @@ from SettingsWidgets import *
 
 class Module:
     def __init__(self, content_box):
-        keywords = _("logging, click, notifications")
+        keywords = _("logging, click")
         sidePage = SidePage(_("General"), "cs-general", keywords, content_box, module=self)
         self.sidePage = sidePage
         self.name = "general"
@@ -28,6 +28,11 @@ class Module:
             vbox.add(Gtk.Separator.new(Gtk.Orientation.HORIZONTAL))       
 
             section = Section(_("Miscellaneous Options"))
+            button = GSettingsCheckButton(_("Disable compositing for full-screen windows"), "org.cinnamon.muffin", "unredirect-fullscreen-windows", None)
+            button.set_tooltip_text(_("Select this option to let full-screen applications skip the compositing manager and run at maximum speed. Unselect it if you're experiencing screen-tearing in full screen mode."))
+            section.add(button)
+            section.add(GSettingsCheckButton(_("Enable timer when logging out or shutting down"), "org.cinnamon.SessionManager", "quit-delay-toggle", None))
+            spin = GSettingsSpinButton(_("Timer delay:"), "org.cinnamon.SessionManager", "quit-time-delay", "org.cinnamon.SessionManager/quit-delay-toggle", 0, 36000, 1, 60, _("seconds"))
+            section.add_indented(spin)
             section.add(GSettingsCheckButton(_("Log LookingGlass output to ~/.cinnamon/glass.log (Requires Cinnamon restart)"), "org.cinnamon", "enable-looking-glass-logs", None))
-            section.add(GSettingsCheckButton(_("Display notifications"), "org.cinnamon", "display-notifications", None))
             vbox.add(section)

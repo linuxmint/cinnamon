@@ -8,15 +8,24 @@
         "description" : "Font size:",
         "step": 1
     },
-    "date-format": {
-        "type": "entry",
-        "default": "%l:%M %p",
-        "description": "Date format:"
+    "text-color" : {
+	    "type": "colorchooser",
+	    "default" : "rgb(255,255,255)",
+	    "description" : "Text color:",
+	    "tooltip" : "Click the button to select a new text color"
     },
     "use-custom-format" : {
         "type" : "checkbox",
         "default" : false,
         "description": "Use a custom date format",
         "tooltip": "Check this to define a custom format for the time in the clock desklet."
+    },
+    "date-format": {
+        "type": "entry",
+        "dependency" : "use-custom-format",
+        "default": "%l:%M %p",
+        "description": "Date format:",
+        "indent": true,
+        "tooltip" : "Set your custom format here."
     }
 }

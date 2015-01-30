@@ -31,6 +31,8 @@ def getProcessOut(command):
 def getGraphicsInfos():
     cards = {}
     count = 0
+    envpath = os.environ["PATH"]
+    os.environ["PATH"] = envpath + ":/usr/local/sbin:/usr/sbin:/sbin"
     for card in getProcessOut(("lspci")):
         if not "VGA" in card:
             continue
@@ -43,6 +45,7 @@ def getGraphicsInfos():
         if cardName:
             cards[count] = (cardName)
             count += 1
+    os.environ["PATH"] = envpath
     return cards
 
 def getDiskSize():
@@ -81,6 +84,9 @@ def createSystemInfos():
     if os.path.exists("/etc/linuxmint/info"):
         title = commands.getoutput("awk -F \"=\" '/GRUB_TITLE/ {print $2}' /etc/linuxmint/info")
         infos.append((_("Operating System"), title))    
+    elif os.path.isfile("/etc/arch-release"):
+        title = "Arch Linux"
+        infos.append((_("Operating System"), title))
     else:
         infos.append((_("Operating System"), dname + " " + dversion +  " '" + dsuffix.title() + "' (" + arch + ")"))    
     if 'CINNAMON_VERSION' in os.environ:            
@@ -111,12 +117,17 @@ class Module:
     def on_module_selected(self):
         if not self.loaded:
             print "Loading Info module"
-            infos = createSystemInfos()                        
+            infos = createSystemInfos()
+
+            bg = SectionBg()
+            self.sidePage.add_widget(bg)                        
             
             table = Gtk.Table.new(len(infos), 2, False)
+            table.set_margin_top(8)
+            table.set_margin_bottom(8)
             table.set_row_spacings(8)
             table.set_col_spacings(15)
-            self.sidePage.add_widget(table)
+            bg.add(table)
 
             row = 0
             for (key, value) in infos:

@@ -46,6 +46,7 @@ struct _NaTrayChild
   guint has_alpha : 1;
   guint composited : 1;
   guint parent_relative_bg : 1;
+  gint scale;
 };
 
 struct _NaTrayChildClass
@@ -56,7 +57,8 @@ struct _NaTrayChildClass
 GType           na_tray_child_get_type        (void);
 
 GtkWidget      *na_tray_child_new            (GdkScreen    *screen,
-                                              Window        icon_window);
+                                              Window        icon_window,
+                                              gint          scale);
 char           *na_tray_child_get_title      (NaTrayChild  *child);
 gboolean        na_tray_child_has_alpha      (NaTrayChild  *child);
 void            na_tray_child_set_composited (NaTrayChild  *child,

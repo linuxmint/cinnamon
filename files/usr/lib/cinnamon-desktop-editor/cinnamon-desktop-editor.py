@@ -4,15 +4,18 @@ import sys
 import os
 import gettext
 import glob
-from gi.repository import GLib, Gtk, Gio, GMenu, GdkPixbuf
+from gi.repository import GLib, Gtk, Gio, CMenu, GdkPixbuf
 from optparse import OptionParser
 import shutil
 
 sys.path.insert(0,'/usr/lib/cinnamon-menu-editor')
 from cme import util
 
+sys.path.insert(0,'/usr/lib/cinnamon-settings')
+from bin import XletSettingsWidgets
+
 # i18n
-gettext.install("cinnamon", "/usr/share/cinnamon/locale")
+gettext.install("cinnamon", "/usr/share/locale")
 # i18n for menu item
 
 _ = gettext.gettext
@@ -23,9 +26,6 @@ EXTENSIONS = (".png", ".xpm", ".svg")
 
 def escape_space(string):
     return string.replace(" ", "\ ")
-
-def unescape_space(string):
-    return string.replace("\ ", " ")
 
 def try_icon_name(filename):
     # Detect if the user picked an icon, and make
@@ -125,6 +125,8 @@ class IconPicker(object):
 
     def update_icon_preview_cb(self, chooser, preview):
         filename = chooser.get_preview_filename()
+        if filename is None:
+            return
         chooser.set_preview_widget_active(False)
         if os.path.isfile(filename):
             pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(filename, 128, 128)
@@ -157,6 +159,36 @@ class ItemEditor(object):
     def check_custom_path(self):
         raise NotImplementedError()
 
+    def sync_widgets(self, name_valid, exec_valid):
+        if name_valid:
+            self.builder.get_object('name-entry').set_icon_from_icon_name(Gtk.EntryIconPosition.SECONDARY, 'ok')
+            self.builder.get_object('name-entry').set_icon_tooltip_text(Gtk.EntryIconPosition.SECONDARY,
+                                                                        _("Valid"))
+        else:
+            self.builder.get_object('name-entry').set_icon_from_icon_name(Gtk.EntryIconPosition.SECONDARY, 'stop')
+            self.builder.get_object('name-entry').set_icon_tooltip_text(Gtk.EntryIconPosition.SECONDARY,
+                                                                        _("Name cannot be blank."))
+
+        if exec_valid:
+            self.builder.get_object('exec-entry').set_icon_from_icon_name(Gtk.EntryIconPosition.SECONDARY, 'ok')
+            self.builder.get_object('exec-entry').set_icon_tooltip_text(Gtk.EntryIconPosition.SECONDARY,
+                                                                        _("Valid"))
+        else:
+            self.builder.get_object('exec-entry').set_icon_from_icon_name(Gtk.EntryIconPosition.SECONDARY, 'stop')
+            self.builder.get_object('exec-entry').set_icon_tooltip_text(Gtk.EntryIconPosition.SECONDARY,
+                                                                        _("Cannot be empty.  Spaces in filenames must be escaped with backslash (\\).\nNot a valid executable line."))
+
+        self.builder.get_object('ok').set_sensitive(name_valid and exec_valid)
+
+    def validate_exec_line(self, string):
+        try:
+            success, parsed = GLib.shell_parse_argv(string)
+            if GLib.find_program_in_path(parsed[0]) or ((not os.path.isdir(parsed[0])) and os.access(parsed[0], os.X_OK)):
+                return True
+        except:
+            pass
+        return False
+
     def get_keyfile_edits(self):
         raise NotImplementedError()
 
@@ -166,7 +198,7 @@ class ItemEditor(object):
         except GLib.GError:
             pass
         else:
-            self.builder.get_object(ctl).set_text(unescape_space(val))
+            self.builder.get_object(ctl).set_text(val)
 
     def set_check(self, ctl, name):
         try:
@@ -237,8 +269,9 @@ class LauncherEditor(ItemEditor):
     def resync_validity(self, *args):
         name_text = self.builder.get_object('name-entry').get_text().strip()
         exec_text = self.builder.get_object('exec-entry').get_text().strip()
-        valid = (name_text is not "" and exec_text is not "")
-        self.builder.get_object('ok').set_sensitive(valid)
+        name_valid = name_text is not ""
+        exec_valid = self.validate_exec_line(exec_text)
+        self.sync_widgets(name_valid, exec_valid)
 
     def load(self):
         super(LauncherEditor, self).load()
@@ -250,7 +283,7 @@ class LauncherEditor(ItemEditor):
 
     def get_keyfile_edits(self):
         return dict(Name=self.builder.get_object('name-entry').get_text(),
-                    Exec=escape_space(self.builder.get_object('exec-entry').get_text()),
+                    Exec=self.builder.get_object('exec-entry').get_text(),
                     Comment=self.builder.get_object('comment-entry').get_text(),
                     Terminal=self.builder.get_object('terminal-check').get_active(),
                     Icon=get_icon_string(self.builder.get_object('icon-image')),
@@ -263,7 +296,7 @@ class LauncherEditor(ItemEditor):
                                         Gtk.STOCK_OK, Gtk.ResponseType.ACCEPT))
         response = chooser.run()
         if response == Gtk.ResponseType.ACCEPT:
-            self.builder.get_object('exec-entry').set_text(chooser.get_filename())
+            self.builder.get_object('exec-entry').set_text(escape_space(chooser.get_filename()))
         chooser.destroy()
 
     def check_custom_path(self):
@@ -301,7 +334,7 @@ class DirectoryEditor(ItemEditor):
         pass
 
 
-class PanelLauncherEditor(ItemEditor):
+class CinnamonLauncherEditor(ItemEditor):
     ui_file = '/usr/lib/cinnamon-desktop-editor/launcher-editor.ui'
 
     def build_ui(self):
@@ -332,11 +365,12 @@ class PanelLauncherEditor(ItemEditor):
     def resync_validity(self, *args):
         name_text = self.builder.get_object('name-entry').get_text().strip()
         exec_text = self.builder.get_object('exec-entry').get_text().strip()
-        valid = (name_text is not "" and exec_text is not "")
-        self.builder.get_object('ok').set_sensitive(valid)
+        name_valid = name_text is not ""
+        exec_valid = self.validate_exec_line(exec_text)
+        self.sync_widgets(name_valid, exec_valid)
 
     def load(self):
-        super(PanelLauncherEditor, self).load()
+        super(CinnamonLauncherEditor, self).load()
         self.set_text('name-entry', "Name")
         self.set_text('exec-entry', "Exec")
         self.set_text('comment-entry', "Comment")
@@ -345,7 +379,7 @@ class PanelLauncherEditor(ItemEditor):
 
     def get_keyfile_edits(self):
         return dict(Name=self.builder.get_object('name-entry').get_text(),
-                    Exec=escape_space(self.builder.get_object('exec-entry').get_text()),
+                    Exec=self.builder.get_object('exec-entry').get_text(),
                     Comment=self.builder.get_object('comment-entry').get_text(),
                     Terminal=self.builder.get_object('terminal-check').get_active(),
                     Icon=get_icon_string(self.builder.get_object('icon-image')),
@@ -358,7 +392,7 @@ class PanelLauncherEditor(ItemEditor):
                                         Gtk.STOCK_OK, Gtk.ResponseType.ACCEPT))
         response = chooser.run()
         if response == Gtk.ResponseType.ACCEPT:
-            self.builder.get_object('exec-entry').set_text(chooser.get_filename())
+            self.builder.get_object('exec-entry').set_text(escape_space(chooser.get_filename()))
         chooser.destroy()
 
 class Main:
@@ -376,8 +410,11 @@ class Main:
             parser.error("directory and launcher modes must be accompanied by the -o argument")
         if options.mode == "nemo-launcher" and not options.destination_directory:
             parser.error("nemo-launcher mode must be accompanied by the -d argument")
+        if options.mode == "cinnamon-launcher" and len(args) < 3:
+            parser.error("cinnamon-launcher mode must have the following syntax:\n\
+                         cinnamon-desktop-editor -mcinnamon-launcher [-ffoo.desktop] <uuid> <instance-id> <json-path>")
 
-        self.tree = GMenu.Tree.new("cinnamon-applications.menu", GMenu.TreeFlags.INCLUDE_NODISPLAY)
+        self.tree = CMenu.Tree.new("cinnamon-applications.menu", CMenu.TreeFlags.INCLUDE_NODISPLAY)
         if not self.tree.load_sync():
             raise ValueError("can not load menu tree")
 
@@ -385,6 +422,12 @@ class Main:
         self.orig_file = options.original_desktop_file
         self.desktop_file = options.desktop_file
         self.dest_dir = options.destination_directory
+
+        if options.mode == "cinnamon-launcher":
+            self.uuid = args[0]
+            self.iid = args[1]
+            self.json_path = args[2]
+
         if self.desktop_file is not None:
             self.get_desktop_path()
 
@@ -394,8 +437,8 @@ class Main:
         elif self.mode == "launcher":
             editor = LauncherEditor(self.orig_file, self.launcher_cb)
             editor.dialog.show_all()
-        elif self.mode == "panel-launcher":
-            editor = PanelLauncherEditor(self.orig_file, self.panel_launcher_cb)
+        elif self.mode == "cinnamon-launcher":
+            editor = CinnamonLauncherEditor(self.orig_file, self.panel_launcher_cb)
             editor.dialog.show_all()
         elif self.mode == "nemo-launcher":
             editor = LauncherEditor(self.orig_file, self.nemo_launcher_cb, self.dest_dir)
@@ -411,8 +454,9 @@ class Main:
 
     def panel_launcher_cb(self, success, dest_path):
         if success:
-            settings = Gio.Settings.new("org.cinnamon")
-            launchers = settings.get_strv("panel-launchers")
+            factory = XletSettingsWidgets.Factory(self.json_path, self.iid, False, self.uuid)
+
+            launchers = factory.settings.get_value("launcherList")
             if self.desktop_file is None:
                 launchers.append(os.path.split(dest_path)[1])
             else:
@@ -420,7 +464,7 @@ class Main:
                 if i >= 0:
                     del launchers[i]
                     launchers.insert(i, os.path.split(dest_path)[1])
-            settings.set_strv("panel-launchers", launchers)
+            factory.settings.set_value("launcherList", launchers)
             if self.desktop_file is None:
                 self.ask_menu_launcher(dest_path)
         self.end()
@@ -449,11 +493,11 @@ class Main:
 
         item_iter = parent.iter()
         item_type = item_iter.next()
-        while item_type != GMenu.TreeItemType.INVALID:
-            if item_type == GMenu.TreeItemType.DIRECTORY:
+        while item_type != CMenu.TreeItemType.INVALID:
+            if item_type == CMenu.TreeItemType.DIRECTORY:
                 item = item_iter.get_directory()
                 self.search_menu_sys(item)
-            elif item_type == GMenu.TreeItemType.ENTRY:
+            elif item_type == CMenu.TreeItemType.ENTRY:
                 item = item_iter.get_entry()
                 if item.get_desktop_file_id() == self.desktop_file:
                     self.orig_file = item.get_desktop_file_path()

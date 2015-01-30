@@ -32,7 +32,7 @@ dist_theme_DATA = \
     theme/close.svg                \
     theme/close-window.svg         \
     theme/corner-ripple.png        \
-    theme/menu.svg                 \
+    theme/menu-symbolic.svg        \
     theme/overview-hover.png       \
     theme/overview.png             \
     theme/player-paused.svg        \
@@ -63,16 +63,9 @@ gschemas.compiled: $(gsettings_SCHEMAS:.xml=.valid)
 
 all-local: gschemas.compiled
 
-
-shadersdir = $(pkgdatadir)/shaders
-shaders_DATA = \
-	shaders/dim-window.glsl
-
-
 EXTRA_DIST =						\
 	cinnamon.desktop.in.in			\
 	$(menu_DATA)					\
-	$(shaders_DATA)					\
 	org.cinnamon.gschema.xml.in
 
 CLEANFILES =						\

@@ -195,9 +195,10 @@ PlacesManager.prototype = {
         this._volumeMonitor.connect('mount-added', Lang.bind(this, this._updateDevices));
         this._volumeMonitor.connect('mount-removed', Lang.bind(this, this._updateDevices));
         this._volumeMonitor.connect('mount-changed', Lang.bind(this, this._updateDevices));
-        this._volumeMonitor.connect('drive-connected', Lang.bind(this, this._updateDevices));
-        this._volumeMonitor.connect('drive-disconnected', Lang.bind(this, this._updateDevices));
-        this._volumeMonitor.connect('drive-changed', Lang.bind(this, this._updateDevices));
+        this._volumeMonitor.connect('drive-connected', Lang.bind(this, this._onDriveConnected));
+        this._volumeMonitor.connect('drive-disconnected', Lang.bind(this, this._onDriveDisconnected));
+        this._volumeMonitor.connect('drive-changed', Lang.bind(this, this._updateDevices));    
+
         this._updateDevices();
 
         this._bookmarksPath = GLib.build_filenamev([GLib.get_user_config_dir(), 'gtk-3.0', 'bookmarks']);
@@ -222,6 +223,16 @@ PlacesManager.prototype = {
         }));
 
         this._reloadBookmarks();
+    },
+
+    _onDriveConnected: function() {        
+        Main.soundManager.play('plug');
+        this._updateDevices();
+    },
+
+    _onDriveDisconnected: function() {
+        Main.soundManager.play('unplug');
+        this._updateDevices();
     },
 
     _updateDevices: function() {
@@ -322,7 +333,7 @@ PlacesManager.prototype = {
             } else {
                 // Asume the bookmark is an unmounted network location
                 // try to mount and open by the default file manager 
-                let icon = Gio.ThemedIcon.new('gnome-fs-network');          
+                let icon = Gio.ThemedIcon.new('network-workgroup');          
                 item = new PlaceInfo('bookmark:' + bookmark, label,
                         function(size) {
                             return St.TextureCache.get_default().load_gicon(null, icon, size);

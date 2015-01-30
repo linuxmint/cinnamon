@@ -8,10 +8,12 @@ const Meta = imports.gi.Meta;
 const Signals = imports.signals;
 const St = imports.gi.St;
 const Util = imports.misc.util;
+const Flashspot = imports.ui.flashspot;
 
 const DeskletManager = imports.ui.deskletManager;
 const DND = imports.ui.dnd;
 const Main = imports.ui.main;
+const ModalDialog = imports.ui.modalDialog;
 const PopupMenu = imports.ui.popupMenu;
 const Tooltips = imports.ui.tooltips;
 const Tweener = imports.ui.tweener;
@@ -66,7 +68,7 @@ Desklet.prototype = {
         Main.uiGroup.add_actor(this._menu.actor);
         this._menu.actor.hide();
 
-        this.actor.connect('button-press-event', Lang.bind(this, this._onButtonPressEvent));
+        this.actor.connect('button-release-event', Lang.bind(this, this._onButtonReleaseEvent));
 
         this._uuid = null;
         this._dragging = false;
@@ -74,19 +76,16 @@ Desklet.prototype = {
         this.actor._desklet = this;
         this.actor._delegate = this;
 
+        this._drag_end_ids = {"drag-end": 0, "drag-cancelled": 0};
         this._draggable = DND.makeDraggable(this.actor, {restoreOnSuccess: true}, Main.deskletContainer.actor);
-        this._draggable.connect('drag-begin', Lang.bind(this, this._onDragBegin));
-        this._draggable.connect('drag-end', Lang.bind(this, this._onDragEnd));
-        this._draggable.connect('drag-cancelled', Lang.bind(this, this._onDragEnd));
-    },
-    
-    _onDragBegin: function() {
-        global.set_stage_input_mode(Cinnamon.StageInputMode.FULLSCREEN);
-    },
-    
-    _onDragEnd: function() {
-        global.set_stage_input_mode(Cinnamon.StageInputMode.NORMAL);
-        this._trackMouse();
+
+        this._drag_end_ids["drag-end"] = this._draggable.connect('drag-end', Lang.bind(this, function() {
+            Main.popModal(this.actor, global.get_current_time());
+        }));
+
+        this._drag_end_ids["drag-cancelled"] = this._draggable.connect('drag-cancelled', Lang.bind(this, function() {
+            Main.popModal(this.actor, global.get_current_time());
+        }));
     },
 
     /**
@@ -166,7 +165,31 @@ Desklet.prototype = {
         // Implemented by Desklets        
     },
 
-    _onButtonPressEvent: function(actor, event){        
+    on_desklet_added_to_desktop_internal: function(userEnabled) {
+        if (userEnabled) {
+            Mainloop.timeout_add(300, Lang.bind(this, function() {
+                let [x, y] = this.actor.get_transformed_position();
+                let [w, h] = this.actor.get_transformed_size();
+                let flashspot = new Flashspot.Flashspot({ x : x, y : y, width: w, height: h});
+                flashspot.fire();
+                return false;
+            }));
+        }
+
+        this.on_desklet_added_to_desktop(userEnabled);
+    },
+
+    /**
+     * on_desklet_added_to_desktop:
+     *
+     * This function is called by deskletManager when the desklet is added to the desktop.
+     *
+     * This is meant to be overridden in individual applets.
+     */
+    on_desklet_added_to_desktop: function(userEnabled) {
+    },
+
+    _onButtonReleaseEvent: function(actor, event) {
         if (event.get_button() == 3) {
             this._menu.toggle();
             // Check if menu gets out of monitor. Move menu to left side if so
@@ -222,6 +245,10 @@ Desklet.prototype = {
             this._menu.addMenuItem(this.context_menu_separator);
         }
         
+        this.context_menu_item_about = new PopupMenu.PopupMenuItem(_("About..."))
+        this.context_menu_item_about.connect("activate", Lang.bind(this, this.openAbout));
+        this._menu.addMenuItem(this.context_menu_item_about);
+        
         if (!this._meta["hide-configuration"] && GLib.file_test(this._meta["path"] + "/settings-schema.json", GLib.FileTest.EXISTS)) {            
             this.context_menu_item_configure = new PopupMenu.PopupMenuItem(_("Configure..."));
             this.context_menu_item_configure.connect("activate", Lang.bind(this, function() {
@@ -233,6 +260,10 @@ Desklet.prototype = {
         this.context_menu_item_remove = new PopupMenu.PopupMenuItem(_("Remove this desklet"));
         this.context_menu_item_remove.connect("activate", Lang.bind(this, this._onRemoveDesklet));
         this._menu.addMenuItem(this.context_menu_item_remove);            
+    },
+
+    openAbout: function() {
+        new ModalDialog.SpicesAboutDialog(this._meta, "desklets");
     }
 };
 Signals.addSignalMethods(Desklet.prototype);

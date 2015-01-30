@@ -406,6 +406,7 @@ StScrollBar StButton#vhandle:hover {
 
 .window-close-area {
 	background-image: url("trash-icon.png");
+	background-size: 100px;
 	background-color: rgba(60, 60, 60, 0.8);
 	border: 4px solid rgba(128,128,128,0.8);
 	border-bottom-width: 0px;
@@ -1061,7 +1062,13 @@ StScrollBar StButton#vhandle:hover {
 	padding-right: 30px;
 	padding-bottom: 10px;
 }
-.menu-applications-box {
+.menu-applications-inner-box {
+	padding-top: 10px;
+	padding-left: 10px;
+	padding-right: 10px;
+	padding-bottom: 0px;
+}
+.menu-applications-outer-box {
 	padding-top: 10px;
 	padding-left: 10px;
 	padding-right: 10px;
@@ -1142,6 +1149,7 @@ StScrollBar StButton#vhandle:hover {
 	padding-right: 30px;
 	padding-left: 28px;
 	text-align: right;
+          height: 30px;
 }
 
 .menu-selected-app-box:rtl {
@@ -1426,7 +1434,6 @@ StScrollBar StButton#vhandle:hover {
 	font-weight: bold;
 	color: #ccc;		
 }
-.applet-label:hover,
 .applet-box:hover > .applet-label {
 	color: #fff;
 	text-shadow: white 0px 0px 5px;
@@ -1435,8 +1442,7 @@ StScrollBar StButton#vhandle:hover {
 	color: #ccc;
 	icon-size: 22px;
 }
-.applet-icon:hover,
-.applet-box:hover > .applet-icon {
+.applet-box:hover .applet-icon {
 	color: #fff;
 	icon-shadow: white 0px 0px 3px;
 }
@@ -1482,6 +1488,48 @@ StScrollBar StButton#vhandle:hover {
     border: 2px solid #6daa00;
     background-color: rgba(109,170, 0, 0.3);
 }
+/* ===================================================================
+ * About Dialog (applet.js and desklet.js)
+ * ===================================================================*/
+.about-content {
+    width: 550px;
+    height: 250px;
+    spacing: 8px;
+    padding-bottom: 16px;
+}
+
+.about-title {
+    font-size: 2em;
+    font-weight: bold;
+}
+
+.about-uuid {
+    font-size: .8em;
+}
+
+.about-icon {
+    padding-right: 20px;
+}
+
+.about-scrollBox {
+    border: solid 1px grey;
+    border-radius: 4px;
+}
+
+.about-scrollBox-innerBox {
+    padding: 1.2em;
+    spacing: 1.2em;
+}
+
+.about-description {
+    padding-top: 4px;
+}
+
+.about-version {
+    padding-left: 7px;
+}
+
+
 /* ===================================================================
  * Clock Desklet (desklet.js) 
  * ===================================================================*/
@@ -1545,8 +1593,6 @@ StScrollBar StButton#vhandle:hover {
 /* Check Boxes */
 .check-box CinnamonGenericContainer {
     spacing: .2em;
-    min-height: 30px;
-    padding-top: 2px;
 }
 
 .check-box StBin {

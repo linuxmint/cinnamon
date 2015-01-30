@@ -1,6 +1,5 @@
 // -*- mode: js; js-indent-level: 4; indent-tabs-mode: nil -*-
 
-const DBus = imports.dbus;
 const Gio = imports.gi.Gio;
 const Mainloop = imports.mainloop;
 const Meta = imports.gi.Meta;
@@ -70,24 +69,24 @@ function waitLeisure() {
     };
 }
 
-const PerfHelperIface = {
-    name: 'org.Cinnamon.PerfHelper',
-    methods: [{ name: 'CreateWindow', inSignature: 'iibb', outSignature: '' },
-              { name: 'WaitWindows', inSignature: '', outSignature: '' },
-              { name: 'DestroyWindows', inSignature: '', outSignature: ''}]
-};
+const PerfHelperIface =
+    '<node> \
+        <interface name="org.gnome.Shell.PerfHelper"> \
+            <method name="CreateWindow"> \
+                <arg type="i" direction="in" /> \
+                <arg type="i" direction="in" /> \
+                <arg type="b" direction="in" /> \
+                <arg type="b" direction="in" /> \
+            </method> \
+            <method name="WaitWindows" /> \
+            <method name="DestroyWindows" /> \
+        </interface> \
+    </node>';
 
-const PerfHelper = function () {
-    this._init();
-};
-
-PerfHelper.prototype = {
-     _init: function() {
-         DBus.session.proxifyObject(this, 'org.Cinnamon.PerfHelper', '/org/Cinnamon/PerfHelper');
-     }
-};
-
-DBus.proxifyPrototype(PerfHelper.prototype, PerfHelperIface);
+var PerfHelperProxy = Gio.DBusProxy.makeProxyWrapper(PerfHelperIface);
+function PerfHelper() {
+    return new PerfHelperProxy(Gio.DBus.session, 'org.gnome.Shell.PerfHelper', '/org/gnome/Shell/PerfHelper');
+}
 
 let _perfHelper = null;
 function _getPerfHelper() {

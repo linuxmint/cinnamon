@@ -21,10 +21,14 @@ var deskletObj = {};
 
 var enabledDeskletDefinitions;
 
+var deskletsLoaded = false;
+
+var deskletsDragging = false;
+
 let userDeskletsDir;
 
 let mouseTrackEnabled = false;
-let mouseTrackTimoutId = null;
+let mouseTrackTimoutId = 0;
 
 const ENABLED_DESKLETS_KEY = 'enabled-desklets';
 const DESKLET_SNAP_KEY = 'desklet-snap';
@@ -38,6 +42,8 @@ function init(){
     deskletMeta = Extension.meta;
     desklets = Extension.importObjects;
 
+    deskletsLoaded = false
+
     enabledDeskletDefinitions = getEnabledDeskletDefinitions();
     let hasDesklets = false;
     for (let uuid in enabledDeskletDefinitions.uuidMap) {
@@ -48,7 +54,8 @@ function init(){
     global.settings.connect('changed::' + ENABLED_DESKLETS_KEY, _onEnabledDeskletsChanged);
     global.settings.connect('changed::' + DESKLET_SNAP_KEY, _onDeskletSnapChanged);
     global.settings.connect('changed::' + DESKLET_SNAP_INTERVAL_KEY, _onDeskletSnapChanged);
-    
+
+    deskletsLoaded = true;
     enableMouseTracking(true);
 }
 
@@ -57,6 +64,7 @@ function enableMouseTracking(enable) {
         mouseTrackTimoutId = Mainloop.timeout_add(500, checkMouseTracking);
     else if (!enable && mouseTrackTimoutId) {
         Mainloop.source_remove(mouseTrackTimoutId);
+        mouseTrackTimoutId = 0;
         for(let desklet_id in deskletObj) {
             deskletObj[desklet_id]._untrackMouse();
         }
@@ -142,7 +150,8 @@ function finishExtensionLoad(extension) {
     let definitions = enabledDeskletDefinitions.uuidMap[extension.uuid];
     if (definitions) {
         for(let i=0; i<definitions.length; i++) {
-            _loadDesklet(extension, definitions[i]);
+            if (!_loadDesklet(extension, definitions[i]))
+                return false;
         }
     }
     return true;
@@ -234,16 +243,16 @@ function _removeDeskletConfigFile(uuid, instanceId) {
 function _loadDesklet(extension, deskletDefinition) {
     // Try to lock the desklets role
     if(!extension.lockRole(null))
-        return;
+        return false;
     
     try {
         let desklet = _createDesklets(extension, deskletDefinition);
         if (!desklet)
-            return;
+            return false;
         
         // Now actually lock the desklets role and set the provider
         if(!extension.lockRole(desklet))
-            return;
+            return false;
 
         desklet._extension = extension;
 
@@ -254,8 +263,15 @@ function _loadDesklet(extension, deskletDefinition) {
             extension._loadedDefinitions = {};
         }
         extension._loadedDefinitions[deskletDefinition.desklet_id] = deskletDefinition;
+
+        desklet.on_desklet_added_to_desktop_internal(deskletsLoaded && !deskletsDragging);
+
+        deskletsDragging = false;
+
+        return true;
     } catch (e) {
         extension.logError('Failed to load desklet: ' + deskletDefinition.uuid + "/" + deskletDefinition.desklet_id, e);
+        return false;
     }
 }
 
@@ -385,6 +401,8 @@ DeskletContainer.prototype = {
     },
 
     handleDragOver: function(source, actor, x, y, time) {
+        deskletsDragging = true;
+
         if (!global.settings.get_boolean(DESKLET_SNAP_KEY))
             return DND.DragMotionResult.MOVE_DROP;
 

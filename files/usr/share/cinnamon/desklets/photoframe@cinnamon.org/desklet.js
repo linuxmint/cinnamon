@@ -92,6 +92,8 @@ MyDesklet.prototype = {
             Mainloop.source_remove(this.update_id);
         this.update_id = null;
         this._setup_dir_monitor();
+        if (this.currentPicture)
+            this.currentPicture.destroy();
         this._photoFrame.destroy();
         this.setup_display();
     },
@@ -111,6 +113,11 @@ MyDesklet.prototype = {
         if (this.dir_monitor_id && this.dir_monitor) {
             this.dir_monitor.disconnect(this.dir_monitor_id)
             this.dir_monitor_id = null
+        }
+
+        if (this.update_id != 0) {
+            Mainloop.source_remove(this.update_id);
+            this.update_id = 0;
         }
     },
 
@@ -142,12 +149,12 @@ MyDesklet.prototype = {
         }
 
         if (this.dir_file.query_exists(null)) {
-            let fileEnum = this.dir_file.enumerate_children('standard::*', Gio.FileQueryInfoFlags.NONE, null);
+            let fileEnum = this.dir_file.enumerate_children('standard::type,standard::name', Gio.FileQueryInfoFlags.NONE, null);
             let info;
             while ((info = fileEnum.next_file(null)) != null) {
                 let fileType = info.get_file_type();
                 if (fileType != Gio.FileType.DIRECTORY) {
-                    this._loadImage(this.dir + "/" + info.get_name());
+                    this._images.push(this.dir + "/" + info.get_name());
                 }
             }
 
@@ -155,6 +162,8 @@ MyDesklet.prototype = {
             
             this.updateInProgress = false;
             this.currentPicture = null;
+
+            this.update_id = 0;
             this._update_loop();
         }
     },
@@ -170,49 +179,62 @@ MyDesklet.prototype = {
         }
         this.updateInProgress = true;
         try {
-            let image;
+            let image_path;
             if (!this.shuffle){
-                image = this._images.shift();
-                this._images.push(image);
+                image_path = this._images.shift();
+                this._images.push(image_path);
             } else {
-                image = this._images[Math.floor(Math.random() * this._images.length)];
+                image_path = this._images[Math.floor(Math.random() * this._images.length)];
             }
 
-            if (image){
-                let height, width;
-                let imageRatio = image.width/image.height;
-                let frameRatio = this.width/this.height;
-
-                if (imageRatio > frameRatio) {
-                    width = this.width;
-                    height = this.width / imageRatio;
-                } else {
-                    height = this.height;
-                    width = this.height * imageRatio;
-                }
-
-                image.set_size(width, height);
-
-                this.currentPicture = image;
-                if (this.fade_delay > 0) {
-                    Tweener.addTween(this._bin,
-                                     { opacity: 0,
-                                       time: this.fade_delay,
-                                       transition: 'easeInSine',
-                                       onComplete: Lang.bind(this, function() {
-                                                                 this._bin.set_child(this.currentPicture);
-                                                                 Tweener.addTween(this._bin,
-                                                                                  { opacity: 255,
-                                                                                    time: this.fade_delay,
-                                                                                    transition: 'easeInSine'
-                                                                                  });
-                                                             })
-                                     });
-                } else {
-                    this._bin.set_child(this.currentPicture);
-                }
-                
+            if (!image_path) {
+                this.updateInProgress = false;
+                return;
             }
+
+            let image = this._loadImage(image_path);
+
+            if (image == null) {
+                this.updateInProgress = false;
+                return;
+            }
+
+            let height, width;
+            let imageRatio = image.width/image.height;
+            let frameRatio = this.width/this.height;
+
+            if (imageRatio > frameRatio) {
+                width = this.width;
+                height = this.width / imageRatio;
+            } else {
+                height = this.height;
+                width = this.height * imageRatio;
+            }
+
+            image.set_size(width, height);
+
+            let old_pic = this.currentPicture;
+            this.currentPicture = image;
+
+            if (this.fade_delay > 0) {
+                Tweener.addTween(this._bin,
+                                 { opacity: 0,
+                                   time: this.fade_delay,
+                                   transition: 'easeInSine',
+                                   onComplete: Lang.bind(this, function() {
+                                                             this._bin.set_child(this.currentPicture);
+                                                             Tweener.addTween(this._bin,
+                                                                              { opacity: 255,
+                                                                                time: this.fade_delay,
+                                                                                transition: 'easeInSine'
+                                                                              });
+                                                         })
+                                 });
+            } else {
+                this._bin.set_child(this.currentPicture);
+            }
+            if (old_pic)
+                old_pic.destroy();
         } catch (e) {
             global.logError(e);
         } finally {
@@ -241,10 +263,10 @@ MyDesklet.prototype = {
 
             let image = St.TextureCache.get_default().load_uri_async(uri, this.width, this.height);
 
-            image._path = filePath;
-            this._images.push(image);
+            return image;
         } catch (x) {
-            // Do nothing. Probably a non-image is in the folder
+            // Probably a non-image is in the folder
+            return null;
         }
     },
 }

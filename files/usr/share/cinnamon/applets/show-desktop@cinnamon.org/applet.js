@@ -11,7 +11,7 @@ MyApplet.prototype = {
     _init: function(orientation, panel_height) {
         Applet.IconApplet.prototype._init.call(this, orientation, panel_height);
         
-        this.set_applet_icon_name("desktop");
+        this.set_applet_icon_name("user-desktop");
         this.set_applet_tooltip(_("Show desktop"));
     },
     

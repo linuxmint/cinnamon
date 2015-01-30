@@ -8,74 +8,12 @@ import time
 from random import randint
 import shutil
 import PIL
-
-class EditableEntry (Gtk.Notebook):
-
-    __gsignals__ = {
-        'changed': (GObject.SIGNAL_RUN_FIRST, None,
-                      (str,))
-    }
-
-    PAGE_BUTTON = 0
-    PAGE_ENTRY = 1
-
-    def __init__ (self):
-        super(EditableEntry, self).__init__()
-
-        self.label = Gtk.Label()
-        self.entry = Gtk.Entry()
-        self.button = Gtk.Button()
-
-        self.button.set_alignment(0.0, 0.5)
-        self.button.set_relief(Gtk.ReliefStyle.NONE)
-        self.append_page(self.button, None);
-        self.append_page(self.entry, None);  
-        self.set_current_page(0)
-        self.set_show_tabs(False)
-        self.set_show_border(False)
-        self.editable = False
-        self.show_all()
-
-        self.button.connect("released", self._on_button_clicked)
-        self.button.connect("activate", self._on_button_clicked)
-        self.entry.connect("activate", self._on_entry_validated)
-        self.entry.connect("changed", self._on_entry_changed)
-
-    def set_text(self, text):
-        self.button.set_label(text)
-        self.entry.set_text(text)
-
-    def _on_button_clicked(self, button):
-        self.set_editable(True)
-
-    def _on_entry_validated(self, entry):
-        self.set_editable(False)
-        self.emit("changed", entry.get_text())
-
-    def _on_entry_changed(self, entry):
-        self.button.set_label(entry.get_text())
-
-    def set_editable(self, editable):        
-        if (editable):
-            self.set_current_page(EditableEntry.PAGE_ENTRY)
-        else:
-            self.set_current_page(EditableEntry.PAGE_BUTTON)
-        self.editable = editable
-
-    def set_tooltip_text(self, tooltip):
-        self.button.set_tooltip_text(tooltip)
-
-    def get_editable(self):
-        return self.editable
-
-    def get_text(self):
-        return self.entry.get_text()
-
+import os
 
 class Module:
     def __init__(self, content_box):
         keywords = _("user, account, information, details")
-        sidePage = SidePage(_("Account details"), "cs-user", keywords, content_box, module=self)
+        sidePage = SidePage(_("Account details"), "cs-user", keywords, content_box, 200, module=self)
         self.sidePage = sidePage
         self.name = "user"
         self.category = "prefs"
@@ -85,45 +23,25 @@ class Module:
         if not self.loaded:
             print "Loading User module"
        
-            self.face_button = Gtk.Button()
-            self.face_image = Gtk.Image()  
-            self.face_button.set_image(self.face_image)
-            self.face_image.set_from_file("/usr/share/cinnamon/faces/user-generic.png")      
+            self.face_button = PictureChooserButton(num_cols=4, button_picture_size=96, menu_pictures_size=64)
             self.face_button.set_alignment(0.0, 0.5)
             self.face_button.set_tooltip_text(_("Click to change your picture"))
-
-            self.menu = Gtk.Menu()
 
             self.face_photo_menuitem = Gtk.MenuItem.new_with_label(_("Take a photo..."))
             self.face_photo_menuitem.connect('activate', self._on_face_photo_menuitem_activated)         
 
-            self.separator = Gtk.SeparatorMenuItem()
             self.face_browse_menuitem = Gtk.MenuItem.new_with_label(_("Browse for more pictures..."))       
-            self.face_browse_menuitem.connect('activate', self._on_face_browse_menuitem_activated)         
-            self.face_button.connect("button-release-event", self.menu_display)
-
-            self.row = 0
-            col = 0       
-            num_cols = 4
+            self.face_browse_menuitem.connect('activate', self._on_face_browse_menuitem_activated)
+           
             face_dirs = ["/usr/share/cinnamon/faces"]
             for face_dir in face_dirs:
-                if os.path.exists(face_dir):
+                if os.path.exists(face_dir):                    
                     pictures = sorted(os.listdir(face_dir))
                     for picture in pictures:
-                        path = os.path.join(face_dir, picture)            
-                        file = Gio.File.new_for_path(path)
-                        file_icon = Gio.FileIcon(file=file)
-                        image = Gtk.Image.new_from_gicon (file_icon, Gtk.IconSize.DIALOG)            
-                        menuitem = Gtk.MenuItem()
-                        menuitem.add(image)
-                        menuitem.connect('activate', self._on_face_menuitem_activated, path)
-                        self.menu.attach(menuitem, col, col+1, self.row, self.row+1)            
-                        col = (col+1) % num_cols            
-                        if (col == 0):
-                            self.row = self.row + 1
+                        path = os.path.join(face_dir, picture)
+                        self.face_button.add_picture(path, self._on_face_menuitem_activated)
            
             self.realname_entry = EditableEntry()
-            self.sidePage.add_widget(self.realname_entry)         
             self.realname_entry.connect("changed", self._on_realname_changed)
             self.realname_entry.set_tooltip_text(_("Click to change your name"))
             
@@ -166,8 +84,7 @@ class Module:
             self.accountService = AccountsService.UserManager.get_default().get_user(current_user)
             self.accountService.connect('notify::is-loaded', self.load_user_info)       
 
-            self.row = self.row + 1
-            self.menu.attach(self.separator, 0, 4, self.row, self.row+1)    
+            self.face_button.add_separator()
 
             webcam_detected = False
             try:
@@ -181,20 +98,22 @@ class Module:
                 print detail
 
             if (webcam_detected):
-                self.menu.attach(self.face_photo_menuitem, 0, 4, self.row+1, self.row+2)
-                self.menu.attach(self.face_browse_menuitem, 0, 4, self.row+2, self.row+3)
+                self.face_button.add_menuitem(self.face_photo_menuitem)
+                self.face_button.add_menuitem(self.face_browse_menuitem)
             else:
-                self.menu.attach(self.face_browse_menuitem, 0, 4, self.row+1, self.row+2)
-
+                self.face_button.add_menuitem(self.face_browse_menuitem)
     
-    def update_preview_cb (self, dialog, preview):      
-        filename = dialog.get_preview_filename()
+    def update_preview_cb (self, dialog, preview):
+        filename = dialog.get_preview_filename()        
         dialog.set_preview_widget_active(False)
-        if os.path.isfile(filename):
-            pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(filename, 128, 128)
-            if pixbuf is not None:      
-                preview.set_from_pixbuf (pixbuf)      
-                dialog.set_preview_widget_active(True)                            
+        if filename is not None and os.path.isfile(filename):
+            try:
+                pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(filename, 128, 128)
+                if pixbuf is not None:      
+                    preview.set_from_pixbuf (pixbuf)      
+                    dialog.set_preview_widget_active(True)                            
+            except:
+                pass
     
     def _on_face_photo_menuitem_activated(self, menuitem):
         try:
@@ -225,7 +144,7 @@ class Module:
                     face_path = os.path.join(self.accountService.get_home_dir(), ".face")
                     image.save(face_path, "png")
                     self.accountService.set_icon_file(face_path)
-                    self.face_image.set_from_file(face_path)
+                    self.face_button.set_picture_from_file(face_path)                    
         except Exception, detail:
             print detail
 
@@ -265,41 +184,22 @@ class Module:
             face_path = os.path.join(self.accountService.get_home_dir(), ".face")
             image.save(face_path, "png")
             self.accountService.set_icon_file(face_path)
-            self.face_image.set_from_file(face_path)
+            self.face_button.set_picture_from_file(face_path)            
 
         dialog.destroy()
 
-    def _on_face_menuitem_activated(self, menuitem, path):        
+    def _on_face_menuitem_activated(self, path):
         if os.path.exists(path):
-            self.accountService.set_icon_file(path)
-            self.face_image.set_from_file(path)
+            self.accountService.set_icon_file(path)            
             shutil.copy(path, os.path.join(self.accountService.get_home_dir(), ".face"))
-    
-    def menu_display(self, widget, event):
-        if event.button == 1:
-            self.menu.popup(None, None, self.popup_menu_below_button, self.face_button, event.button, event.time)
-            self.menu.show_all()
-
-    def popup_menu_below_button (self, menu, widget):  
-        # here I get the coordinates of the button relative to
-        # window (self.window)
-        button_x, button_y = widget.get_allocation().x, widget.get_allocation().y
-
-        # now convert them to X11-relative
-        unused_var, window_x, window_y = widget.get_window().get_origin()
-        x = window_x + button_x
-        y = window_y + button_y
-
-        # now move the menu below the button
-        y += widget.get_allocation().height
-
-        push_in = True # push_in is True so all menu is always inside screen
-        return (x, y, push_in)
+            return True
 
     def load_user_info(self, user, param):
         self.realname_entry.set_text(user.get_real_name())
-        if os.path.exists(user.get_icon_file()):
-            self.face_image.set_from_file(user.get_icon_file())        
+        for path in [os.path.join(self.accountService.get_home_dir(), ".face"), user.get_icon_file(), "/usr/share/cinnamon/faces/user-generic.png"]:
+            if os.path.exists(path):
+                self.face_button.set_picture_from_file(path)
+                break
 
     def _on_realname_changed(self, widget, text):
         self.accountService.set_real_name(text)       
@@ -398,8 +298,7 @@ class PasswordDialog(Gtk.Dialog):
 
     def change_password(self):
         oldpass = self.current_password.get_text()
-        newpass = self.new_password.get_text()
-        print "Changing %s to %s" % (oldpass, newpass)
+        newpass = self.new_password.get_text()        
         passwd = pexpect.spawn("/usr/bin/passwd")
         time.sleep(0.5)
         passwd.sendline(oldpass)

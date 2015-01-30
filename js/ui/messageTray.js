@@ -447,6 +447,9 @@ Notification.prototype = {
         this._inNotificationBin = false;
         this.dateFormat = _("%l:%M %p");
 
+        this.enter_id = 0;
+        this.leave_id = 0;
+
         source.connect('destroy', Lang.bind(this,
             function (source, reason) {
                 this.destroy(reason);
@@ -457,6 +460,24 @@ Notification.prototype = {
         this.actor._parent_container = null;
         this.actor.connect('clicked', Lang.bind(this, this._onClicked));
         this.actor.connect('destroy', Lang.bind(this, this._onDestroy));
+		// Transparency on mouse over?
+		if (Main.messageTray.fadeOnMouseover) {
+			// Register to every notification as we intend to support multiple notifications on screen.
+			this.enter_id = this.actor.connect('enter-event', Lang.bind(this, function() {
+				Tweener.addTween(this.actor, {
+					opacity: ((Main.messageTray.fadeOpacity / 100) * 255).clamp(0, 255),
+					time: ANIMATION_TIME,
+					transition: 'easeOutQuad'
+				});
+			}));
+			this.leave_id = this.actor.connect('leave-event', Lang.bind(this, function() {
+				Tweener.addTween(this.actor, {
+					opacity: (this._table.get_theme_node().get_length('opacity') / global.ui_scale) || 255,
+					time: ANIMATION_TIME,
+					transition: 'easeOutQuad'
+				});
+			}));
+		}
 
         this._table = new St.Table({ name: 'notification',
                                      reactive: true });
@@ -1376,12 +1397,17 @@ function MessageTray() {
 
 MessageTray.prototype = {
     _init: function() {
-        this._presence = new GnomeSession.Presence();
+        this._presence = new GnomeSession.Presence(Lang.bind(this, function(proxy, error) {
+            this._onStatusChanged(proxy.status);
+        }));
+
         this._userStatus = GnomeSession.PresenceStatus.AVAILABLE;
         this._busy = false;
         this._backFromAway = false;
-        this._presence.connect('StatusChanged', Lang.bind(this, this._onStatusChanged));
-        this._presence.getStatus(Lang.bind(this, this._onStatusChanged));
+
+        this._presence.connectSignal('StatusChanged', Lang.bind(this, function(proxy, senderName, [status]) {
+            this._onStatusChanged(status);
+        }));
 
         this._notificationBin = new St.Bin();
         this._notificationBin.hide();
@@ -1417,12 +1443,19 @@ MessageTray.prototype = {
 
         Main.layoutManager.connect('monitors-changed', Lang.bind(this, this._setSizePosition));
 
-        let onNotificationEnabledUpdated = Lang.bind(this, function() {
-            this._notificationsEnabled = global.settings.get_boolean("display-notifications");
-        });
-        global.settings.connect('changed::display-notifications', onNotificationEnabledUpdated);
-        onNotificationEnabledUpdated();
-
+		// Settings
+        this.settings = new Gio.Settings({ schema: "org.cinnamon.desktop.notifications" })
+		function setting(self, source, camelCase, dashed) {
+			function updater() { self[camelCase] = source.get_boolean(dashed); }
+			source.connect('changed::'+dashed, updater);
+			updater();
+		}
+		setting(this, this.settings, "_notificationsEnabled", "display-notifications");
+		setting(this, this.settings, "fadeOnMouseover", "fade-on-mouseover");
+        this.fadeOpacity = this.settings.get_int("fade-opacity");
+        this.settings.connect("changed::fade-opacity", Lang.bind(this, function() {
+            this.fadeOpacity = this.settings.get_int("fade-opacity");
+        }))
         this._setSizePosition();
 
         let updateLockState = Lang.bind(this, function() {
@@ -1536,7 +1569,7 @@ MessageTray.prototype = {
         this._updateState();
     },
 
-    _onStatusChanged: function(presence, status) {
+    _onStatusChanged: function(status) {
         this._backFromAway = (this._userStatus == GnomeSession.PresenceStatus.IDLE && this._userStatus != status);
         this._userStatus = status;
 
@@ -1686,6 +1719,7 @@ MessageTray.prototype = {
    },
 
     _showNotificationCompleted: function() {
+        this._notificationTimeoutId = 0;
         if (this._notification.urgency != Urgency.CRITICAL) {
             this._updateNotificationTimeout(NOTIFICATION_TIMEOUT * 1000);
         } else if (AppletManager.get_role_provider_exists(AppletManager.Roles.NOTIFICATIONS)) {

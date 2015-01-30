@@ -1,13 +1,18 @@
 {
+ "overlay-key" : {
+    "type" : "keybinding",
+    "description" : "Keyboard shortcut to open and close the menu",
+    "default" : "Super_L::Super_R"
+ },
  "menu-icon-custom" : {
     "type" : "checkbox",
-    "default" : "false",
+    "default" : false,
     "description" : "Use a custom icon",
     "tooltip" : "Unchecking this allows the theme to set the icon"
  },
  "menu-icon" : {
     "type" : "iconfilechooser",
-    "default" : "/usr/share/cinnamon/theme/menu.svg",
+    "default" : "/usr/share/cinnamon/theme/menu-symbolic.svg",
     "description" : "Icon",
     "tooltip" : "Select an icon to show in the panel.",
     "dependency" : "menu-icon-custom",
@@ -18,12 +23,6 @@
     "default" : "Menu",
     "description" : "Text",
     "tooltip" : "Enter custom text to show in the panel."
- }, 
- "show-recent" : {
-    "type" : "checkbox",
-    "default" : true,
-    "description": "Show recent files",
-    "tooltip": "Choose whether or not to show a recent file list in the menu."
  },
  "show-places" : {
     "type" : "checkbox",

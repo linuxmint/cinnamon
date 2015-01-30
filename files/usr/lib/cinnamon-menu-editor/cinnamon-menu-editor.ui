@@ -275,55 +275,6 @@
                                   </packing>
                                 </child>
                                 <child>
-                                  <object class="GtkAlignment" id="alignment12">
-                                    <property name="visible">True</property>
-                                    <property name="xalign">0.5</property>
-                                    <property name="yalign">0.5</property>
-                                    <property name="xscale">1</property>
-                                    <property name="yscale">1</property>
-                                    <property name="top_padding">12</property>
-                                    <property name="bottom_padding">0</property>
-                                    <property name="left_padding">0</property>
-                                    <property name="right_padding">0</property>
-                                    <child>
-                                      <object class="GtkVButtonBox" id="vbuttonbox2">
-                                        <property name="visible">True</property>
-                                        <property name="layout_style">GTK_BUTTONBOX_START</property>
-                                        <property name="spacing">6</property>
-                                        <child>
-                                          <object class="GtkButton" id="move_up_button">
-                                            <property name="label" translatable="yes">Move Up</property>
-                                            <property name="visible">True</property>
-                                            <property name="can_default">True</property>
-                                            <property name="can_focus">True</property>
-                                            <property name="relief">GTK_RELIEF_NORMAL</property>
-                                            <property name="focus_on_click">True</property>
-                                            <property name="image">move_up_image</property>
-                                            <signal handler="on_move_up_button_clicked" name="clicked"/>
-                                          </object>
-                                        </child>
-                                        <child>
-                                          <object class="GtkButton" id="move_down_button">
-                                            <property name="label" translatable="yes">Move Down</property>
-                                            <property name="visible">True</property>
-                                            <property name="can_default">True</property>
-                                            <property name="can_focus">True</property>
-                                            <property name="relief">GTK_RELIEF_NORMAL</property>
-                                            <property name="focus_on_click">True</property>
-                                            <property name="image">move_down_image</property>
-                                            <signal handler="on_move_down_button_clicked" name="clicked"/>
-                                          </object>
-                                        </child>
-                                      </object>
-                                    </child>
-                                  </object>
-                                  <packing>
-                                    <property name="padding">0</property>
-                                    <property name="expand">True</property>
-                                    <property name="fill">True</property>
-                                  </packing>
-                                </child>
-                                <child>
                                   <object class="GtkAlignment" id="alignment20">
                                     <property name="visible">True</property>
                                     <property name="xalign">0.5</property>

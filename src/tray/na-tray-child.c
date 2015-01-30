@@ -97,34 +97,27 @@ na_tray_child_style_set (GtkWidget *widget,
    */
 }
 
-#if 0
-/* This is adapted from code that was commented out in na-tray-manager.c; the
- * code in na-tray-manager.c wouldn't have worked reliably, this will. So maybe
- * it can be reenabled. On other hand, things seem to be working fine without
- * it.
- *
- * If reenabling, you need to hook it up in na_tray_child_class_init().
- */
-static void
-na_tray_child_size_request (GtkWidget      *widget,
-                            GtkRequisition *request)
-{
-  GTK_WIDGET_CLASS (na_tray_child_parent_class)->size_request (widget, request);
+#define SIZE_BASELINE 20
 
-  /*
-   * Make sure the icons have a meaningful size ..
-   */ 
-  if ((request->width < 16) || (request->height < 16))
-    {
-      gint nw = MAX (24, request->width);
-      gint nh = MAX (24, request->height);
-      g_warning ("Tray icon has requested a size of (%ix%i), resizing to (%ix%i)", 
-                 req.width, req.height, nw, nh);
-      request->width = nw;
-      request->height = nh;
-    }
+static void
+na_tray_child_get_preferred_height (GtkWidget      *widget,
+                                  gint *min_size,
+                                  gint *natural_size)
+{
+    gint scaled_size = SIZE_BASELINE * NA_TRAY_CHILD (widget)->scale;
+    *min_size = scaled_size;
+    *natural_size = scaled_size;
 }
-#endif
+
+static void
+na_tray_child_get_preferred_width (GtkWidget      *widget,
+                                  gint *min_size,
+                                  gint *natural_size)
+{
+    gint scaled_size = SIZE_BASELINE * NA_TRAY_CHILD (widget)->scale;
+    *min_size = scaled_size;
+    *natural_size = scaled_size;
+}
 
 static void
 na_tray_child_size_allocate (GtkWidget      *widget,
@@ -220,6 +213,7 @@ na_tray_child_draw (GtkWidget *widget,
 static void
 na_tray_child_init (NaTrayChild *child)
 {
+    child->scale = 1;
 }
 
 static void
@@ -236,11 +230,14 @@ na_tray_child_class_init (NaTrayChildClass *klass)
   widget_class->realize = na_tray_child_realize;
   widget_class->size_allocate = na_tray_child_size_allocate;
   widget_class->draw = na_tray_child_draw;
+  widget_class->get_preferred_height = na_tray_child_get_preferred_height;
+  widget_class->get_preferred_width = na_tray_child_get_preferred_width;
 }
 
 GtkWidget *
 na_tray_child_new (GdkScreen *screen,
-                   Window     icon_window)
+                   Window     icon_window,
+                   gint       scale)
 {
   XWindowAttributes window_attributes;
   Display *xdisplay;
@@ -274,6 +271,7 @@ na_tray_child_new (GdkScreen *screen,
 
   child = g_object_new (NA_TYPE_TRAY_CHILD, NULL);
   child->icon_window = icon_window;
+  child->scale = scale;
 
   gtk_widget_set_visual (GTK_WIDGET (child), visual);
 

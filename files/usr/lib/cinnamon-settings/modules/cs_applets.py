@@ -5,13 +5,9 @@ from ExtensionCore import ExtensionSidePage
 class Module:
     def __init__(self, content_box):
         keywords = _("applet")
-        self.name = "applets"
-        # for i18n replacement in ExtensionCore.py
-        noun = _("applet")
-        pl_noun = _("applets")
-        target = _("panel")
+        self.name = "applets"       
         self.comment = _("Manage Cinnamon applets")
-        sidePage = AppletsViewSidePage(_("Applets"), "cs-applets", keywords, content_box, "applet", noun, pl_noun, target, self)
+        sidePage = AppletsViewSidePage(_("Applets"), "cs-applets", keywords, content_box, "applet", self)
         self.sidePage = sidePage
         self.category = "prefs"
 
@@ -20,14 +16,13 @@ class Module:
             print "Loading Applets module"
             self.sidePage.load()
 
-    def _setParentRef(self, window, builder):
+    def _setParentRef(self, window):
         self.sidePage.window = window
-        self.sidePage.builder = builder
 
 class AppletsViewSidePage (ExtensionSidePage):
-    def __init__(self, name, icon, keywords, content_box, collection_type, noun, pl_noun, target, module):
+    def __init__(self, name, icon, keywords, content_box, collection_type, module):
         self.RemoveString = _("You can remove specific instances in panel edit mode via the context menu.")
-        ExtensionSidePage.__init__(self, name, icon, keywords, content_box, collection_type, noun, pl_noun, target, module)
+        ExtensionSidePage.__init__(self, name, icon, keywords, content_box, collection_type, module)
 
     def toSettingString(self, uuid, instanceId):
         return ("panel1:right:0:%s:%d") % (uuid, instanceId)

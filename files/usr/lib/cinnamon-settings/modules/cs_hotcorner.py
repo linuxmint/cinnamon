@@ -35,9 +35,14 @@ class Module:
                 props = item.split(":")
                 self.properties.append(props)
 
+            bg = SectionBg()
+
             table = Gtk.Table.new(2, 3, False)
             table.set_row_spacings(5)
-            table.set_col_spacings(5)
+            table.set_col_spacings(10)
+            table.set_margin_top(2)
+            table.set_margin_bottom(2)
+            table.set_border_width(8)
 
             self.cornerDisplay = HotCornerDisplay()
             table.attach(self.cornerDisplay, 1, 2, 0, 2)
@@ -48,7 +53,8 @@ class Module:
             
             self.cornerDisplay.set_size_request(200, 250)
             
-            self.sidePage.add_widget(table)
+            self.sidePage.add_widget(bg)
+            bg.add(table)
         
             self.on_settings_changed(self.settings, "overview-corner")
        
@@ -201,11 +207,11 @@ class HotCornerConfiguration():
     def __init__(self, index, updateCallback):
         self.updateCallback = updateCallback
         self.index = index
-        self.functionStore = Gtk.ListStore(str, str)
-        #self.functionStore.append(['disabled', _("Disabled")])
-        self.functionStore.append(['expo', _("Workspace Selector")]) #Expo
-        self.functionStore.append(['scale', _("Window Selector")]) #Scale
-        self.functionStore.append(['custom', _("Custom")])
+        self.functionStore = Gtk.ListStore(str, str)        
+        self.functionStore.append(['expo', _("Show all workspaces")]) #Expo
+        self.functionStore.append(['scale', _("Show all windows")]) #Scale
+        self.functionStore.append(['desktop', _("Show the desktop")])
+        self.functionStore.append(['custom', _("Run a command")])
         
     def build(self):
         self.box = Gtk.VBox.new(3, False)
@@ -217,6 +223,7 @@ class HotCornerConfiguration():
         self.functionCombo.add_attribute(rendererText, "text", 1)
         
         self.customEntry = Gtk.Entry()
+        self.customEntry.set_no_show_all(True)
         self.iconCheckbox = Gtk.CheckButton()
         self.iconCheckbox.set_label(_("Icon visible"))
         self.hoverCheckbox = Gtk.CheckButton()
@@ -255,9 +262,11 @@ class HotCornerConfiguration():
             self.functionCombo.set_active(0)
         elif function == "scale":
             self.functionCombo.set_active(1)
+        elif function == "desktop":
+            self.functionCombo.set_active(2)
         else:
             hideCustomEntry = False
-            self.functionCombo.set_active(2)
+            self.functionCombo.set_active(3)
             if self.customEntry.get_text() != function:
                 self.customEntry.set_text(function)
             

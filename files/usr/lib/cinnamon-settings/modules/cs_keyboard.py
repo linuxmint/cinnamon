@@ -5,24 +5,17 @@ from gi.repository import Gio, Gtk, GObject, Gdk
 import cgi
 import gettext
 
-gettext.install("cinnamon", "/usr/share/cinnamon/locale")
+gettext.install("cinnamon", "/usr/share/locale")
 
 # Keybindings page - check if we need to store custom
 # keybindings to gsettings key as well as GConf (In Mint 14 this is changed)
-CUSTOM_KEYS_PARENT_SCHEMA = "org.cinnamon.keybindings"
-CUSTOM_KEYS_BASENAME = "/org/cinnamon/keybindings/custom-keybindings"
-CUSTOM_KEYS_SCHEMA = "org.cinnamon.keybindings.custom-keybinding"
+CUSTOM_KEYS_PARENT_SCHEMA = "org.cinnamon.desktop.keybindings"
+CUSTOM_KEYS_BASENAME = "/org/cinnamon/desktop/keybindings/custom-keybindings"
+CUSTOM_KEYS_SCHEMA = "org.cinnamon.desktop.keybindings.custom-keybinding"
 
-MUFFIN_KEYBINDINGS_SCHEMA = "org.cinnamon.muffin.keybindings"
-MEDIA_KEYS_SCHEMA = "org.cinnamon.settings-daemon.plugins.media-keys"
-
-HAS_DEDICATED_TERMINAL_SHORTCUT = False
-
-schema = Gio.Settings(schema = MEDIA_KEYS_SCHEMA)
-key_list = schema.list_keys()
-for key in key_list:
-    if key == "terminal":
-        HAS_DEDICATED_TERMINAL_SHORTCUT = True
+MUFFIN_KEYBINDINGS_SCHEMA = "org.cinnamon.desktop.keybindings.wm"
+MEDIA_KEYS_SCHEMA = "org.cinnamon.desktop.keybindings.media-keys"
+CINNAMON_SCHEMA = "org.cinnamon.desktop.keybindings"
 
 FORBIDDEN_KEYVALS = [
     Gdk.KEY_Home,
@@ -40,120 +33,173 @@ FORBIDDEN_KEYVALS = [
     Gdk.KEY_Mode_switch
 ]
 
-KEYBINDINGS = [
-    #   KB Label                        Schema                  Key name               Array?  Category
-    # Cinnamon stuff
-    [_("Toggle Scale"), MUFFIN_KEYBINDINGS_SCHEMA, "switch-to-workspace-down", True, "cinnamon"],
-    [_("Toggle Expo"), MUFFIN_KEYBINDINGS_SCHEMA, "switch-to-workspace-up", True, "cinnamon"],
-    [_("Cycle through open windows"), MUFFIN_KEYBINDINGS_SCHEMA, "switch-windows", True, "cinnamon"],
-    [_("Cycle backwards though open windows"), MUFFIN_KEYBINDINGS_SCHEMA, "switch-windows-backward", True, "cinnamon"],
-    [_("Run dialog"), MUFFIN_KEYBINDINGS_SCHEMA, "panel-run-dialog", True, "cinnamon"],
-    [_("Menu button (must restart Cinnamon)"), "org.cinnamon.muffin", "overlay-key", False, "cinnamon"],
+# Ignore capslock and numlock when in teach mode
+IGNORED_MOD_MASK = (int(Gdk.ModifierType.MOD2_MASK) | int(Gdk.ModifierType.LOCK_MASK))
 
-    # Windows - General
-    [_("Maximize window"), MUFFIN_KEYBINDINGS_SCHEMA, "maximize", True, "windows"],
-    [_("Unmaximize window"), MUFFIN_KEYBINDINGS_SCHEMA, "unmaximize", True, "windows"],
-    [_("Minimize window"), MUFFIN_KEYBINDINGS_SCHEMA, "minimize", True, "windows"],
-    [_("Close window"), MUFFIN_KEYBINDINGS_SCHEMA, "close", True, "windows"],
-    [_("Show desktop"), MUFFIN_KEYBINDINGS_SCHEMA, "show-desktop", True, "windows"],
-    [_("Activate window menu"), MUFFIN_KEYBINDINGS_SCHEMA, "activate-window-menu", True, "windows"],
-    [_("Toggle maximization state"), MUFFIN_KEYBINDINGS_SCHEMA, "toggle-maximized", True, "windows"],
-    [_("Toggle fullscreen state"), MUFFIN_KEYBINDINGS_SCHEMA, "toggle-fullscreen", True, "windows"],
-    [_("Toggle shaded state"), MUFFIN_KEYBINDINGS_SCHEMA, "toggle-shaded", True, "windows"],
-    [_("Maximize vertically"), MUFFIN_KEYBINDINGS_SCHEMA, "maximize-vertically", True, "windows"],
-    [_("Maximize horizontally"), MUFFIN_KEYBINDINGS_SCHEMA, "maximize-horizontally", True, "windows"],
-    [_("Resize window"), MUFFIN_KEYBINDINGS_SCHEMA, "begin-resize", True, "windows"],
-    [_("Move window"), MUFFIN_KEYBINDINGS_SCHEMA, "begin-move", True, "windows"],
-    [_("Center window in screen"), MUFFIN_KEYBINDINGS_SCHEMA, "move-to-center", True, "windows"],
-    [_("Move window to upper-right"), MUFFIN_KEYBINDINGS_SCHEMA, "move-to-corner-ne", True, "windows"],
-    [_("Move window to upper-left"), MUFFIN_KEYBINDINGS_SCHEMA, "move-to-corner-nw", True, "windows"],
-    [_("Move window to lower-right"), MUFFIN_KEYBINDINGS_SCHEMA, "move-to-corner-se", True, "windows"],
-    [_("Move window to lower-left"), MUFFIN_KEYBINDINGS_SCHEMA, "move-to-corner-sw", True, "windows"],
-    [_("Move window to right edge"), MUFFIN_KEYBINDINGS_SCHEMA, "move-to-side-e", True, "windows"],
-    [_("Move window to top edge"), MUFFIN_KEYBINDINGS_SCHEMA, "move-to-side-n", True, "windows"],
-    [_("Move window to bottom edge"), MUFFIN_KEYBINDINGS_SCHEMA, "move-to-side-s", True, "windows"],
-    [_("Move window to left edge"), MUFFIN_KEYBINDINGS_SCHEMA, "move-to-side-w", True, "windows"],
+CATEGORIES = [
 
-    # Window Tiling and Snapping
-    [_("Push tile left"), MUFFIN_KEYBINDINGS_SCHEMA, "push-tile-left", True, "window-tiling"],
-    [_("Push tile right"), MUFFIN_KEYBINDINGS_SCHEMA, "push-tile-right", True, "window-tiling"],
-    [_("Push tile up"), MUFFIN_KEYBINDINGS_SCHEMA, "push-tile-up", True, "window-tiling"],
-    [_("Push tile down"), MUFFIN_KEYBINDINGS_SCHEMA, "push-tile-down", True, "window-tiling"],
-    [_("Push snap left"), MUFFIN_KEYBINDINGS_SCHEMA, "push-snap-left", True, "window-tiling"],
-    [_("Push snap right"), MUFFIN_KEYBINDINGS_SCHEMA, "push-snap-right", True, "window-tiling"],
-    [_("Push snap up"), MUFFIN_KEYBINDINGS_SCHEMA, "push-snap-up", True, "window-tiling"],
-    [_("Push snap down"), MUFFIN_KEYBINDINGS_SCHEMA, "push-snap-down", True, "window-tiling"],
+#   Label                   id                  parent
+#(child)Label                       id                  parent       
 
-    # Workspace management
-    [_("Toggle showing window on all workspaces"), MUFFIN_KEYBINDINGS_SCHEMA, "toggle-on-all-workspaces", True, "ws-manage"],
-    [_("Switch to left workspace"), MUFFIN_KEYBINDINGS_SCHEMA, "switch-to-workspace-left", True, "ws-manage"],
-    [_("Switch to right workspace"), MUFFIN_KEYBINDINGS_SCHEMA, "switch-to-workspace-right", True, "ws-manage"],
-    [_("Switch to workspace 1"), MUFFIN_KEYBINDINGS_SCHEMA, "switch-to-workspace-1", True, "ws-manage"],
-    [_("Switch to workspace 2"), MUFFIN_KEYBINDINGS_SCHEMA, "switch-to-workspace-2", True, "ws-manage"],
-    [_("Switch to workspace 3"), MUFFIN_KEYBINDINGS_SCHEMA, "switch-to-workspace-3", True, "ws-manage"],
-    [_("Switch to workspace 4"), MUFFIN_KEYBINDINGS_SCHEMA, "switch-to-workspace-4", True, "ws-manage"],
-    [_("Switch to workspace 5"), MUFFIN_KEYBINDINGS_SCHEMA, "switch-to-workspace-5", True, "ws-manage"],
-    [_("Switch to workspace 6"), MUFFIN_KEYBINDINGS_SCHEMA, "switch-to-workspace-6", True, "ws-manage"],
-    [_("Switch to workspace 7"), MUFFIN_KEYBINDINGS_SCHEMA, "switch-to-workspace-7", True, "ws-manage"],
-    [_("Switch to workspace 8"), MUFFIN_KEYBINDINGS_SCHEMA, "switch-to-workspace-8", True, "ws-manage"],
-    [_("Switch to workspace 9"), MUFFIN_KEYBINDINGS_SCHEMA, "switch-to-workspace-9", True, "ws-manage"],
-    [_("Switch to workspace 10"), MUFFIN_KEYBINDINGS_SCHEMA, "switch-to-workspace-10", True, "ws-manage"],
-    [_("Switch to workspace 11"), MUFFIN_KEYBINDINGS_SCHEMA, "switch-to-workspace-11", True, "ws-manage"],
-    [_("Switch to workspace 12"), MUFFIN_KEYBINDINGS_SCHEMA, "switch-to-workspace-12", True, "ws-manage"],
-    [_("Move window to left workspace"), MUFFIN_KEYBINDINGS_SCHEMA, "move-to-workspace-left", True, "ws-manage"],
-    [_("Move window to right workspace"), MUFFIN_KEYBINDINGS_SCHEMA, "move-to-workspace-right", True, "ws-manage"],
-    [_("Move window to workspace 1"), MUFFIN_KEYBINDINGS_SCHEMA, "move-to-workspace-1", True, "ws-manage"],
-    [_("Move window to workspace 2"), MUFFIN_KEYBINDINGS_SCHEMA, "move-to-workspace-2", True, "ws-manage"],
-    [_("Move window to workspace 3"), MUFFIN_KEYBINDINGS_SCHEMA, "move-to-workspace-3", True, "ws-manage"],
-    [_("Move window to workspace 4"), MUFFIN_KEYBINDINGS_SCHEMA, "move-to-workspace-4", True, "ws-manage"],
-    [_("Move window to workspace 5"), MUFFIN_KEYBINDINGS_SCHEMA, "move-to-workspace-5", True, "ws-manage"],
-    [_("Move window to workspace 6"), MUFFIN_KEYBINDINGS_SCHEMA, "move-to-workspace-6", True, "ws-manage"],
-    [_("Move window to workspace 7"), MUFFIN_KEYBINDINGS_SCHEMA, "move-to-workspace-7", True, "ws-manage"],
-    [_("Move window to workspace 8"), MUFFIN_KEYBINDINGS_SCHEMA, "move-to-workspace-8", True, "ws-manage"],
-    [_("Move window to workspace 9"), MUFFIN_KEYBINDINGS_SCHEMA, "move-to-workspace-9", True, "ws-manage"],
-    [_("Move window to workspace 10"), MUFFIN_KEYBINDINGS_SCHEMA, "move-to-workspace-10", True, "ws-manage"],
-    [_("Move window to workspace 11"), MUFFIN_KEYBINDINGS_SCHEMA, "move-to-workspace-11", True, "ws-manage"],
-    [_("Move window to workspace 12"), MUFFIN_KEYBINDINGS_SCHEMA, "move-to-workspace-12", True, "ws-manage"],
-
-    # System
-    [_("Log out"), MEDIA_KEYS_SCHEMA, "logout", False, "system"],
-    [_("Shut down"), MEDIA_KEYS_SCHEMA, "shutdown", False, "system"],
-    [_("Lock screen"), MEDIA_KEYS_SCHEMA, "screensaver", False, "system"],
-    [_("Toggle recording desktop (must restart Cinnamon)"), MUFFIN_KEYBINDINGS_SCHEMA, "toggle-recording", True, "system"],
-
-    # Launchers
-    [_("Launch help browser"), MEDIA_KEYS_SCHEMA, "help", False, "launchers"],
-    [_("Launch calculator"), MEDIA_KEYS_SCHEMA, "calculator", False, "launchers"],
-    [_("Launch email client"), MEDIA_KEYS_SCHEMA, "email", False, "launchers"],
-    [_("Launch web browser"), MEDIA_KEYS_SCHEMA, "www", False, "launchers"],
-    [_("Home folder"), MEDIA_KEYS_SCHEMA, "home", False, "launchers"],
-    [_("Search"), MEDIA_KEYS_SCHEMA, "search", False, "launchers"],
-
-    # Sound and Media
-    [_("Volume mute"), MEDIA_KEYS_SCHEMA, "volume-mute", False, "media"],
-    [_("Volume down"), MEDIA_KEYS_SCHEMA, "volume-down", False, "media"],
-    [_("Volume up"), MEDIA_KEYS_SCHEMA, "volume-up", False, "media"],
-    [_("Launch media player"), MEDIA_KEYS_SCHEMA, "media", False, "media"],
-    [_("Play"), MEDIA_KEYS_SCHEMA, "play", False, "media"],
-    [_("Pause playback"), MEDIA_KEYS_SCHEMA, "pause", False, "media"],
-    [_("Stop playback"), MEDIA_KEYS_SCHEMA, "stop", False, "media"],
-    [_("Previous track"), MEDIA_KEYS_SCHEMA, "previous", False, "media"],
-    [_("Next track"), MEDIA_KEYS_SCHEMA, "next", False, "media"],
-    [_("Eject"), MEDIA_KEYS_SCHEMA, "eject", False, "media"],
-
-    # Universal Access
-    [_("Turn zoom on or off"), MEDIA_KEYS_SCHEMA, "magnifier", False, "accessibility"],
-    [_("Zoom in"), MEDIA_KEYS_SCHEMA, "magnifier-zoom-in", False, "accessibility"],
-    [_("Zoom out"), MEDIA_KEYS_SCHEMA, "magnifier-zoom-out", False, "accessibility"],
-    [_("Turn screen reader on or off"), MEDIA_KEYS_SCHEMA, "screenreader", False, "accessibility"],
-    [_("Turn on-screen keyboard on or off"), MEDIA_KEYS_SCHEMA, "on-screen-keyboard", False, "accessibility"],
-    [_("Increase text size"), MEDIA_KEYS_SCHEMA, "increase-text-size", False, "accessibility"],
-    [_("Decrease text size"), MEDIA_KEYS_SCHEMA, "decrease-text-size", False, "accessibility"],
-    [_("High contrast on or off"), MEDIA_KEYS_SCHEMA, "toggle-contrast", False, "accessibility"]
+    [_("General"),          "general",          None,       "preferences-desktop-keyboard-shortcuts"],
+        [_("Troubleshooting"),      "trouble",          "general",      None],
+    [_("Windows"),          "windows",          None,       "preferences-system-windows"],
+        [_("Positioning"),          "win-position",     "windows",      None],
+        [_("Tiling and Snapping"),  "win-tiling",       "windows",      None],
+        [_("Inter-workspace"),      "win-workspaces",   "windows",      None],
+    [_("Workspaces"),       "workspaces",       None,       "display"],
+        [_("Direct Navigation"),    "ws-navi",          "workspaces",   None],
+    [_("System"),           "system",           None,       "preferences-system"],
+        [_("Hardware"),             "sys-hw",           "system",       None],
+        [_("Screenshots and Recording"),"sys-screen",   "system",       None],
+    [_("Launchers"),        "launchers",        None,       "applications-utilities"],
+    [_("Sound and Media"),  "media",            None,       "applications-multimedia"],
+        [_("Quiet Keys"),           "media-quiet",      "media",        None],
+    [_("Universal Access"), "accessibility",    None,       "access"],
+    [_("Custom Shortcuts"), "custom",           None,       "gnome-panel-launcher"]
 ]
 
-if HAS_DEDICATED_TERMINAL_SHORTCUT:
-    KEYBINDINGS.append([_("Launch terminal"), MEDIA_KEYS_SCHEMA, "terminal", False, "launchers"])
+KEYBINDINGS = [
+    #   KB Label                        Schema                  Key name               Array?  Category
+    # General
+    [_("Toggle Scale"), MUFFIN_KEYBINDINGS_SCHEMA, "switch-to-workspace-down", "general"],
+    [_("Toggle Expo"), MUFFIN_KEYBINDINGS_SCHEMA, "switch-to-workspace-up", "general"],
+    [_("Cycle through open windows"), MUFFIN_KEYBINDINGS_SCHEMA, "switch-windows", "general"],
+    [_("Cycle backwards through open windows"), MUFFIN_KEYBINDINGS_SCHEMA, "switch-windows-backward", "general"],
+    [_("Run dialog"), MUFFIN_KEYBINDINGS_SCHEMA, "panel-run-dialog", "general"],
+    # General - Troubleshooting
+    [_("Toggle Looking Glass"), CINNAMON_SCHEMA, "looking-glass-keybinding", "trouble"],
+    # Windows
+    [_("Maximize window"), MUFFIN_KEYBINDINGS_SCHEMA, "maximize", "windows"],
+    [_("Unmaximize window"), MUFFIN_KEYBINDINGS_SCHEMA, "unmaximize", "windows"],
+    [_("Minimize window"), MUFFIN_KEYBINDINGS_SCHEMA, "minimize", "windows"],
+    [_("Close window"), MUFFIN_KEYBINDINGS_SCHEMA, "close", "windows"],
+    [_("Show desktop"), MUFFIN_KEYBINDINGS_SCHEMA, "show-desktop", "windows"],
+    [_("Activate window menu"), MUFFIN_KEYBINDINGS_SCHEMA, "activate-window-menu", "windows"],
+    [_("Toggle maximization state"), MUFFIN_KEYBINDINGS_SCHEMA, "toggle-maximized", "windows"],
+    [_("Toggle fullscreen state"), MUFFIN_KEYBINDINGS_SCHEMA, "toggle-fullscreen", "windows"],
+    [_("Toggle shaded state"), MUFFIN_KEYBINDINGS_SCHEMA, "toggle-shaded", "windows"],
+    [_("Toggle always on top"), MUFFIN_KEYBINDINGS_SCHEMA, "toggle-above", "windows"],
+    [_("Toggle showing window on all workspaces"), MUFFIN_KEYBINDINGS_SCHEMA, "toggle-on-all-workspaces", "windows"],
+    [_("Increase opacity"), MUFFIN_KEYBINDINGS_SCHEMA, "increase-opacity", "windows"],
+    [_("Decrease opacity"), MUFFIN_KEYBINDINGS_SCHEMA, "decrease-opacity", "windows"],
+    [_("Maximize vertically"), MUFFIN_KEYBINDINGS_SCHEMA, "maximize-vertically", "windows"],
+    [_("Maximize horizontally"), MUFFIN_KEYBINDINGS_SCHEMA, "maximize-horizontally", "windows"],
+    # Windows - Positioning
+    [_("Resize window"), MUFFIN_KEYBINDINGS_SCHEMA, "begin-resize", "win-position"],
+    [_("Move window"), MUFFIN_KEYBINDINGS_SCHEMA, "begin-move", "win-position"],
+    [_("Center window in screen"), MUFFIN_KEYBINDINGS_SCHEMA, "move-to-center", "win-position"],
+    [_("Move window to upper-right"), MUFFIN_KEYBINDINGS_SCHEMA, "move-to-corner-ne", "win-position"],
+    [_("Move window to upper-left"), MUFFIN_KEYBINDINGS_SCHEMA, "move-to-corner-nw", "win-position"],
+    [_("Move window to lower-right"), MUFFIN_KEYBINDINGS_SCHEMA, "move-to-corner-se", "win-position"],
+    [_("Move window to lower-left"), MUFFIN_KEYBINDINGS_SCHEMA, "move-to-corner-sw", "win-position"],
+    [_("Move window to right edge"), MUFFIN_KEYBINDINGS_SCHEMA, "move-to-side-e", "win-position"],
+    [_("Move window to top edge"), MUFFIN_KEYBINDINGS_SCHEMA, "move-to-side-n", "win-position"],
+    [_("Move window to bottom edge"), MUFFIN_KEYBINDINGS_SCHEMA, "move-to-side-s", "win-position"],
+    [_("Move window to left edge"), MUFFIN_KEYBINDINGS_SCHEMA, "move-to-side-w", "win-position"],
+    # Windows - Tiling and Snapping
+    [_("Push tile left"), MUFFIN_KEYBINDINGS_SCHEMA, "push-tile-left", "win-tiling"],
+    [_("Push tile right"), MUFFIN_KEYBINDINGS_SCHEMA, "push-tile-right", "win-tiling"],
+    [_("Push tile up"), MUFFIN_KEYBINDINGS_SCHEMA, "push-tile-up", "win-tiling"],
+    [_("Push tile down"), MUFFIN_KEYBINDINGS_SCHEMA, "push-tile-down", "win-tiling"],
+    [_("Push snap left"), MUFFIN_KEYBINDINGS_SCHEMA, "push-snap-left", "win-tiling"],
+    [_("Push snap right"), MUFFIN_KEYBINDINGS_SCHEMA, "push-snap-right", "win-tiling"],
+    [_("Push snap up"), MUFFIN_KEYBINDINGS_SCHEMA, "push-snap-up", "win-tiling"],
+    [_("Push snap down"), MUFFIN_KEYBINDINGS_SCHEMA, "push-snap-down", "win-tiling"],
+    # Windows - Workspace-related
+    [_("Move window to new workspace"), MUFFIN_KEYBINDINGS_SCHEMA, "move-to-workspace-new", "win-workspaces"],
+    [_("Move window to left workspace"), MUFFIN_KEYBINDINGS_SCHEMA, "move-to-workspace-left", "win-workspaces"],
+    [_("Move window to right workspace"), MUFFIN_KEYBINDINGS_SCHEMA, "move-to-workspace-right", "win-workspaces"],
+    [_("Move window to workspace 1"), MUFFIN_KEYBINDINGS_SCHEMA, "move-to-workspace-1", "win-workspaces"],
+    [_("Move window to workspace 2"), MUFFIN_KEYBINDINGS_SCHEMA, "move-to-workspace-2", "win-workspaces"],
+    [_("Move window to workspace 3"), MUFFIN_KEYBINDINGS_SCHEMA, "move-to-workspace-3", "win-workspaces"],
+    [_("Move window to workspace 4"), MUFFIN_KEYBINDINGS_SCHEMA, "move-to-workspace-4", "win-workspaces"],
+    [_("Move window to workspace 5"), MUFFIN_KEYBINDINGS_SCHEMA, "move-to-workspace-5", "win-workspaces"],
+    [_("Move window to workspace 6"), MUFFIN_KEYBINDINGS_SCHEMA, "move-to-workspace-6", "win-workspaces"],
+    [_("Move window to workspace 7"), MUFFIN_KEYBINDINGS_SCHEMA, "move-to-workspace-7", "win-workspaces"],
+    [_("Move window to workspace 8"), MUFFIN_KEYBINDINGS_SCHEMA, "move-to-workspace-8", "win-workspaces"],
+    [_("Move window to workspace 9"), MUFFIN_KEYBINDINGS_SCHEMA, "move-to-workspace-9", "win-workspaces"],
+    [_("Move window to workspace 10"), MUFFIN_KEYBINDINGS_SCHEMA, "move-to-workspace-10", "win-workspaces"],
+    [_("Move window to workspace 11"), MUFFIN_KEYBINDINGS_SCHEMA, "move-to-workspace-11", "win-workspaces"],
+    [_("Move window to workspace 12"), MUFFIN_KEYBINDINGS_SCHEMA, "move-to-workspace-12", "win-workspaces"],
+    # Workspaces
+    [_("Switch to left workspace"), MUFFIN_KEYBINDINGS_SCHEMA, "switch-to-workspace-left", "workspaces"],
+    [_("Switch to right workspace"), MUFFIN_KEYBINDINGS_SCHEMA, "switch-to-workspace-right", "workspaces"],
+    # Workspaces - Direct Nav
+    [_("Switch to workspace 1"), MUFFIN_KEYBINDINGS_SCHEMA, "switch-to-workspace-1", "ws-navi"],
+    [_("Switch to workspace 2"), MUFFIN_KEYBINDINGS_SCHEMA, "switch-to-workspace-2", "ws-navi"],
+    [_("Switch to workspace 3"), MUFFIN_KEYBINDINGS_SCHEMA, "switch-to-workspace-3", "ws-navi"],
+    [_("Switch to workspace 4"), MUFFIN_KEYBINDINGS_SCHEMA, "switch-to-workspace-4", "ws-navi"],
+    [_("Switch to workspace 5"), MUFFIN_KEYBINDINGS_SCHEMA, "switch-to-workspace-5", "ws-navi"],
+    [_("Switch to workspace 6"), MUFFIN_KEYBINDINGS_SCHEMA, "switch-to-workspace-6", "ws-navi"],
+    [_("Switch to workspace 7"), MUFFIN_KEYBINDINGS_SCHEMA, "switch-to-workspace-7", "ws-navi"],
+    [_("Switch to workspace 8"), MUFFIN_KEYBINDINGS_SCHEMA, "switch-to-workspace-8", "ws-navi"],
+    [_("Switch to workspace 9"), MUFFIN_KEYBINDINGS_SCHEMA, "switch-to-workspace-9", "ws-navi"],
+    [_("Switch to workspace 10"), MUFFIN_KEYBINDINGS_SCHEMA, "switch-to-workspace-10", "ws-navi"],
+    [_("Switch to workspace 11"), MUFFIN_KEYBINDINGS_SCHEMA, "switch-to-workspace-11", "ws-navi"],
+    [_("Switch to workspace 12"), MUFFIN_KEYBINDINGS_SCHEMA, "switch-to-workspace-12", "ws-navi"],
+    # System
+    [_("Log out"), MEDIA_KEYS_SCHEMA, "logout", "system"],
+    [_("Shut down"), MEDIA_KEYS_SCHEMA, "shutdown", "system"],
+    [_("Lock screen"), MEDIA_KEYS_SCHEMA, "screensaver", "system"],
+    [_("Suspend"), MEDIA_KEYS_SCHEMA, "suspend", "system"],
+    [_("Hibernate"), MEDIA_KEYS_SCHEMA, "hibernate", "system"],
+    # System - Screenshots
+    [_("Take a screenshot of an area"), MEDIA_KEYS_SCHEMA, "area-screenshot", "sys-screen"],
+    [_("Copy a screenshot of an area to clipboard"), MEDIA_KEYS_SCHEMA, "area-screenshot-clip", "sys-screen"],
+    [_("Take a screenshot"), MEDIA_KEYS_SCHEMA, "screenshot", "sys-screen"],
+    [_("Copy a screenshot to clipboard"), MEDIA_KEYS_SCHEMA, "screenshot-clip", "sys-screen"],
+    [_("Take a screenshot of a window"), MEDIA_KEYS_SCHEMA, "window-screenshot", "sys-screen"],
+    [_("Copy a screenshot of a window to clipboard"), MEDIA_KEYS_SCHEMA, "window-screenshot-clip", "sys-screen"],
+    [_("Toggle recording desktop (must restart Cinnamon)"), MUFFIN_KEYBINDINGS_SCHEMA, "toggle-recording", "sys-screen"],
+    # System - Hardware
+    [_("Re-detect display devices"), MEDIA_KEYS_SCHEMA, "video-outputs", "sys-hw"],
+    [_("Rotate display"), MEDIA_KEYS_SCHEMA, "video-rotation", "sys-hw"],
+    [_("Increase screen brightness"), MEDIA_KEYS_SCHEMA, "screen-brightness-up", "sys-hw"],
+    [_("Decrease screen brightness"), MEDIA_KEYS_SCHEMA, "screen-brightness-down", "sys-hw"],
+    [_("Toggle keyboard backlight"), MEDIA_KEYS_SCHEMA, "kbd-brightness-toggle", "sys-hw"],
+    [_("Increase keyboard backlight level"), MEDIA_KEYS_SCHEMA, "kbd-brightness-up", "sys-hw"],
+    [_("Decrease keyboard backlight level"), MEDIA_KEYS_SCHEMA, "kbd-brightness-down", "sys-hw"],
+    [_("Toggle touchpad state"), MEDIA_KEYS_SCHEMA, "touchpad-toggle", "sys-hw"],
+    [_("Turn touchpad on"), MEDIA_KEYS_SCHEMA, "touchpad-on", "sys-hw"],
+    [_("Turn touchpad off"), MEDIA_KEYS_SCHEMA, "touchpad-off", "sys-hw"],
+    [_("Show power statistics"), MEDIA_KEYS_SCHEMA, "battery", "sys-hw"],
+    # Launchers
+    [_("Launch terminal"), MEDIA_KEYS_SCHEMA, "terminal", "launchers"],
+    [_("Launch help browser"), MEDIA_KEYS_SCHEMA, "help", "launchers"],
+    [_("Launch calculator"), MEDIA_KEYS_SCHEMA, "calculator", "launchers"],
+    [_("Launch email client"), MEDIA_KEYS_SCHEMA, "email", "launchers"],
+    [_("Launch web browser"), MEDIA_KEYS_SCHEMA, "www", "launchers"],
+    [_("Home folder"), MEDIA_KEYS_SCHEMA, "home", "launchers"],
+    [_("Search"), MEDIA_KEYS_SCHEMA, "search", "launchers"],
+    # Sound and Media
+    [_("Volume mute"), MEDIA_KEYS_SCHEMA, "volume-mute", "media"],
+    [_("Volume down"), MEDIA_KEYS_SCHEMA, "volume-down", "media"],
+    [_("Volume up"), MEDIA_KEYS_SCHEMA, "volume-up", "media"],
+    [_("Launch media player"), MEDIA_KEYS_SCHEMA, "media", "media"],
+    [_("Play"), MEDIA_KEYS_SCHEMA, "play", "media"],
+    [_("Pause playback"), MEDIA_KEYS_SCHEMA, "pause", "media"],
+    [_("Stop playback"), MEDIA_KEYS_SCHEMA, "stop", "media"],
+    [_("Previous track"), MEDIA_KEYS_SCHEMA, "previous", "media"],
+    [_("Next track"), MEDIA_KEYS_SCHEMA, "next", "media"],
+    [_("Eject"), MEDIA_KEYS_SCHEMA, "eject", "media"],
+    [_("Rewind"), MEDIA_KEYS_SCHEMA, "audio-rewind", "media"],
+    [_("Fast-forward"), MEDIA_KEYS_SCHEMA, "audio-forward", "media"],
+    [_("Repeat"), MEDIA_KEYS_SCHEMA, "audio-repeat", "media"],
+    [_("Shuffle"), MEDIA_KEYS_SCHEMA, "audio-random", "media"],
+    # Sound and Media Quiet
+    [_("Volume mute (Quiet)"), MEDIA_KEYS_SCHEMA, "mute-quiet", "media-quiet"],    # Not sure this is even necessary
+    [_("Volume down (Quiet)"), MEDIA_KEYS_SCHEMA, "volume-down", "media-quiet"],
+    [_("Volume up (Quiet)"), MEDIA_KEYS_SCHEMA, "volume-up", "media-quiet"],
+    # Universal Access
+    [_("Zoom in"), CINNAMON_SCHEMA, "magnifier-zoom-in", "accessibility"],
+    [_("Zoom out"), CINNAMON_SCHEMA, "magnifier-zoom-out", "accessibility"],
+    [_("Turn screen reader on or off"), MEDIA_KEYS_SCHEMA, "screenreader", "accessibility"],
+    [_("Turn on-screen keyboard on or off"), MEDIA_KEYS_SCHEMA, "on-screen-keyboard", "accessibility"],
+    [_("Increase text size"), MEDIA_KEYS_SCHEMA, "increase-text-size", "accessibility"],
+    [_("Decrease text size"), MEDIA_KEYS_SCHEMA, "decrease-text-size", "accessibility"],
+    [_("High contrast on or off"), MEDIA_KEYS_SCHEMA, "toggle-contrast", "accessibility"]
+]
 
 class Module:
     def __init__(self, content_box):
@@ -169,6 +215,7 @@ class Module:
             print "Loading Keyboard module"
             self.tabs = []        
             self.notebook = Gtk.Notebook()
+            self.notebook.expand = True
 
             tab = NotebookPage(_("Typing"), False)
             tab.add_widget(GSettingsCheckButton(_("Enable key repeat"), "org.cinnamon.settings-daemon.peripherals.keyboard", "repeat", None))
@@ -202,9 +249,18 @@ class Module:
             headingbox.pack_start(mainbox, True, True, 2)
             headingbox.pack_end(Gtk.Label.new(_("To edit a keyboard binding, click it and press the new keys, or press backspace to clear it.")), False, False, 1)
 
+            paned = Gtk.Paned(orientation = Gtk.Orientation.HORIZONTAL)
+
             left_vbox = Gtk.Box.new(Gtk.Orientation.VERTICAL, 2)
             right_vbox = Gtk.Box.new(Gtk.Orientation.VERTICAL, 2)
-            
+
+            paned.add1(left_vbox)
+
+            right_scroller = Gtk.ScrolledWindow.new(None, None)
+            right_scroller.set_policy(Gtk.PolicyType.AUTOMATIC, Gtk.PolicyType.NEVER)
+            right_scroller.add(right_vbox)
+            paned.add2(right_scroller)
+
             category_scroller = Gtk.ScrolledWindow.new(None, None)
             category_scroller.set_shadow_type(Gtk.ShadowType.IN)
             
@@ -229,7 +285,7 @@ class Module:
             left_vbox.pack_start(category_scroller, True, True, 2)
                     
             category_scroller.add(self.cat_tree)
-            category_scroller.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.NEVER)
+            category_scroller.set_policy(Gtk.PolicyType.AUTOMATIC, Gtk.PolicyType.AUTOMATIC)
             kb_name_scroller.add(self.kb_tree)
             kb_name_scroller.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC)
             entry_scroller.add(self.entry_tree)
@@ -246,13 +302,13 @@ class Module:
 
             right_vbox.pack_end(buttonbox, False, False, 2)
 
-            mainbox.pack_start(left_vbox, False, False, 2)
-            mainbox.pack_start(right_vbox, True, True, 2)
+            mainbox.pack_start(paned, True, True, 2)
 
             left_vbox.set_border_width(2)
             right_vbox.set_border_width(2)
 
-            self.cat_store = Gtk.ListStore(str,     # The category name
+            self.cat_store = Gtk.TreeStore(str,     # Icon name or None
+                                           str,     # The category name
                                            object)  # The category object
 
             self.kb_store = Gtk.ListStore( str,   # Keybinding name
@@ -262,9 +318,15 @@ class Module:
                                               object) # Keybinding object
 
             cell = Gtk.CellRendererText()
-            cell.set_alignment(.5,0)
-            cat_column = Gtk.TreeViewColumn(_("Categories"), cell, text=0)
-            cat_column.set_alignment(.5)
+            cell.set_alignment(0,0)
+            pb_cell = Gtk.CellRendererPixbuf()
+            cat_column = Gtk.TreeViewColumn(_("Categories"))
+            cat_column.pack_start(pb_cell, False)
+            cat_column.pack_start(cell, True)
+            cat_column.add_attribute(pb_cell, "icon-name", 0)
+            cat_column.add_attribute(cell, "text", 1)
+
+            cat_column.set_alignment(0)
             cat_column.set_property('min-width', 200)
 
             self.cat_tree.append_column(cat_column)
@@ -287,31 +349,37 @@ class Module:
             entry_column.set_alignment(.5)
             self.entry_tree.append_column(entry_column)
 
-            self.entry_tree.set_tooltip_text(_("Click to set a new accelerator key.") +
-                                             _("  Press Escape or click again to cancel the operation." +
-                                               "  Press Backspace to clear the existing keybinding."))
+            self.entry_tree.set_tooltip_text("%s\n%s\n%s" % (_("Click to set a new accelerator key."), _("Press Escape or click again to cancel the operation."), _("Press Backspace to clear the existing keybinding.")))
 
             self.main_store = []
 
-            # categories                                Display name        internal category
-            self.main_store.append(KeyBindingCategory("Cinnamon", "cinnamon"))
-            self.main_store.append(KeyBindingCategory(_("Windows"), "windows"))
-            self.main_store.append(KeyBindingCategory(_("Window Tiling"), "window-tiling"))
-            self.main_store.append(KeyBindingCategory(_("Workspace Management"), "ws-manage"))
-            self.main_store.append(KeyBindingCategory(_("System"), "system"))
-            self.main_store.append(KeyBindingCategory(_("Launchers"), "launchers"))
-            self.main_store.append(KeyBindingCategory(_("Sound and Media"), "media"))
-            self.main_store.append(KeyBindingCategory(_("Universal Access"), "accessibility"))
-            self.main_store.append(KeyBindingCategory(_("Custom Shortcuts"), "custom"))
+            for cat in CATEGORIES:
+                self.main_store.append(KeyBindingCategory(cat[0], cat[1], cat[2], cat[3]))
 
             for binding in KEYBINDINGS:
                 for category in self.main_store:
-                    if category.int_name == binding[4]:
-                        category.add(KeyBinding(binding[0], binding[1], binding[2], binding[3], binding[4]))
-          #              print bindings.index(binding)  # remove, only for catching segfaults when adding bindings
+                    if category.int_name == binding[3]:
+                        category.add(KeyBinding(binding[0], binding[1], binding[2], binding[3]))
+
+            cat_iters = {}
+            longest_cat_label = " "
 
             for category in self.main_store:
-                self.cat_store.append((category.label, category))
+                if category.parent == None:
+                    cat_iters[category.int_name] = self.cat_store.append(None)
+                else:
+                    cat_iters[category.int_name] = self.cat_store.append(cat_iters[category.parent])
+                if category.icon:
+                    self.cat_store.set_value(cat_iters[category.int_name], 0, category.icon)
+                self.cat_store.set_value(cat_iters[category.int_name], 1, category.label)
+                self.cat_store.set_value(cat_iters[category.int_name], 2, category)
+                if len(category.label) > len(longest_cat_label):
+                    longest_cat_label = category.label
+
+            layout = self.cat_tree.create_pango_layout(longest_cat_label)
+            w, h = layout.get_pixel_size()
+
+            paned.set_position(max(w, 200))
 
             self.loadCustoms()
             self.cat_tree.set_model(self.cat_store)
@@ -329,7 +397,7 @@ class Module:
 
             if widget is not None:
                 cheat_box = Gtk.Box.new(Gtk.Orientation.VERTICAL, 2)
-                cheat_box.pack_start(widget, False, False, 2)
+                cheat_box.pack_start(widget, True, True, 2)
                 cheat_box.set_vexpand(False)
                 widget.show()
                 tab.add_widget(cheat_box)
@@ -349,7 +417,7 @@ class Module:
         if tree.get_selection() is not None:
             categories, iter = tree.get_selection().get_selected()
             if iter:
-                category = categories[iter][1]
+                category = categories[iter][2]
                 if category.int_name is not "custom":
                     for keybinding in category.keybindings:
                         self.kb_store.append((keybinding.label, keybinding))
@@ -371,7 +439,7 @@ class Module:
             custom_kb = CustomKeyBinding(entry,
                                          schema.get_string("name"),
                                          schema.get_string("command"),
-                                         schema.get_string("binding"))
+                                         schema.get_strv("binding"))
             self.kb_store.append((custom_kb.label, custom_kb))
             for category in self.main_store:
                 if category.int_name is "custom":
@@ -383,15 +451,10 @@ class Module:
             keybindings, iter = tree.get_selection().get_selected()
             if iter:
                 keybinding = keybindings[iter][1]
-                if isinstance(keybinding, KeyBinding):
-                    for entry in keybinding.entries:
-                        if entry is not "_invalid_":
-                            self.entry_store.append((clean_kb(entry), entry))
-                    self.remove_custom_button.set_property('sensitive', False)
-                else:
-                    self.entry_store.append((clean_kb(keybinding.entries[0]), keybinding))
-                    self.remove_custom_button.set_property('sensitive', True)
-
+                for entry in keybinding.entries:
+                    if entry is not "_invalid_":
+                        self.entry_store.append((clean_kb(entry), entry))
+                self.remove_custom_button.set_property('sensitive', isinstance(keybinding, CustomKeyBinding))
 
     def onEntryChanged(self, cell, path, keyval, mask, keycode, entry_store):
         accel_string = Gtk.accelerator_name(keyval, mask)
@@ -433,9 +496,9 @@ class Module:
             for keybinding in category.keybindings:
                 for entry in keybinding.entries:
                     found = False
-                    if accel_string == entry:
+                    if accel_string.lower() == entry.lower():
                         found = True
-                    elif accel_string.replace("<Primary>", "<Control>") == entry:
+                    elif accel_string.replace("<Primary>", "<Control>").lower() == entry.lower():
                         found = True
 
                     if found and keybinding.label != current_keybinding.label:
@@ -474,17 +537,21 @@ class Module:
 
         dialog.show_all()
         response = dialog.run()
-        if response == Gtk.ResponseType.CANCEL:
+        if response == Gtk.ResponseType.CANCEL or response == Gtk.ResponseType.DELETE_EVENT:
             dialog.destroy()
             return
 
-        i = 0
         parent = Gio.Settings.new(CUSTOM_KEYS_PARENT_SCHEMA)
         array = parent.get_strv("custom-list")
+        num_array = []
         for entry in array:
-            if i == int(entry.replace("custom", "")):
+            num_array.append(int(entry.replace("custom", "")))
+        num_array.sort()
+
+        i = 0
+        while True:
+            if i in num_array:
                 i += 1
-                continue
             else:
                 break
 
@@ -496,10 +563,10 @@ class Module:
         new_schema = Gio.Settings.new_with_path(CUSTOM_KEYS_SCHEMA, new_path)
         new_schema.set_string("name", dialog.name_entry.get_text())
         new_schema.set_string("command", dialog.command_entry.get_text().replace("%20", "\ "))
-        new_schema.set_string("binding", "")
+        new_schema.set_strv("binding", ())
         i = 0
         for cat in self.cat_store:
-            if cat[1].int_name is "custom":
+            if cat[2].int_name is "custom":
                 self.cat_tree.set_cursor(str(i), self.cat_tree.get_column(0), False)
             i += 1
         i = 0
@@ -537,7 +604,7 @@ class Module:
 
         i = 0
         for cat in self.cat_store:
-            if cat[1].int_name is "custom":
+            if cat[2].int_name is "custom":
                 self.cat_tree.set_cursor(str(i), self.cat_tree.get_column(0), False)
             i += 1
 
@@ -553,7 +620,7 @@ class Module:
                 dialog.command_entry.set_text(keybinding.action)
                 dialog.show_all()
                 response = dialog.run()
-                if response == Gtk.ResponseType.CANCEL:
+                if response == Gtk.ResponseType.CANCEL or response == Gtk.ResponseType.DELETE_EVENT:
                     dialog.destroy()
                     return
 
@@ -563,7 +630,7 @@ class Module:
 
                 i = 0
                 for cat in self.cat_store:
-                    if cat[1].int_name is "custom":
+                    if cat[2].int_name is "custom":
                         self.cat_tree.set_cursor(str(i), self.cat_tree.get_column(0), False)
                     i += 1
                 i = 0
@@ -609,8 +676,10 @@ class Module:
 
 
 class KeyBindingCategory():
-    def __init__(self, label, int_name):
+    def __init__(self, label, int_name, parent, icon):
         self.label = label
+        self.parent = parent
+        self.icon = icon
         self.int_name = int_name
         self.keybindings = []
 
@@ -621,32 +690,25 @@ class KeyBindingCategory():
         del self.keybindings[:]
 
 class KeyBinding():
-    def __init__(self, label, schema, key, is_array, category):
+    def __init__(self, label, schema, key, category):
         self.key = key
         self.label = label
-        self.is_array = is_array
         self.entries = [ ]
         self.settings = Gio.Settings.new(schema)
         self.loadSettings()
 
     def loadSettings(self):
         del self.entries[:]
-        if self.is_array:
-            self.entries = self.get_array(self.settings.get_strv(self.key))
-        else:
-            self.entries = self.get_array(self.settings.get_string(self.key))
+        self.entries = self.get_array(self.settings.get_strv(self.key))
 
     def get_array(self, raw_array):
         result = []
-        if self.is_array:
-            for entry in raw_array:
-                result.append(entry)
-            while (len(result) < 3):
-                result.append("")
-        else:
-            result.append(raw_array)
-            while (len(result) < 3):
-                result.append("_invalid_")
+
+        for entry in raw_array:
+            result.append(entry)
+        while (len(result) < 3):
+            result.append("")
+   
         return result
 
     def setBinding(self, index, val):
@@ -657,14 +719,11 @@ class KeyBinding():
         self.writeSettings()
 
     def writeSettings(self):
-        if self.is_array:
-            array = []
-            for entry in self.entries:
-                if entry is not "":
-                    array.append(entry)
-            self.settings.set_strv(self.key, array)
-        else:
-            self.settings.set_string(self.key, self.entries[0])
+        array = []
+        for entry in self.entries:
+            if entry is not "":
+                array.append(entry)
+        self.settings.set_strv(self.key, array)
 
     def resetDefaults(self):
         self.settings.reset(self.key)
@@ -675,8 +734,16 @@ class CustomKeyBinding():
         self.path = path
         self.label = label
         self.action = action
-        self.entries = []
-        self.entries.append(binding)
+        self.entries = self.get_array(binding)
+
+    def get_array(self, raw_array):
+        result = []
+
+        for entry in raw_array:
+            result.append(entry)
+        while (len(result) < 3):
+            result.append("")
+        return result
 
     def setBinding(self, index, val):
         if val is not None:
@@ -691,7 +758,12 @@ class CustomKeyBinding():
 
         settings.set_string("name", self.label)
         settings.set_string("command", self.action)
-        settings.set_string("binding", self.entries[0])
+
+        array = []
+        for entry in self.entries:
+            if entry is not "":
+                array.append(entry)
+        settings.set_strv("binding", array)
 
         # Touch the custom-list key, this will trigger a rebuild in cinnamon
         parent = Gio.Settings.new(CUSTOM_KEYS_PARENT_SCHEMA)
@@ -835,11 +907,11 @@ class CellRendererKeybinding(Gtk.CellRendererText):
         widget.disconnect(self.event_id)
         self.ungrab()
         self.event_id = None
-        if event.keyval == Gdk.KEY_Escape:
+        if ((int(event.state) & 0xff & ~IGNORED_MOD_MASK) == 0) and event.keyval == Gdk.KEY_Escape:
             self.set_label(self.cur_val)
             self.teaching = False
             return True
-        if event.keyval == Gdk.KEY_BackSpace:
+        if ((int(event.state) & 0xff & ~IGNORED_MOD_MASK) == 0) and event.keyval == Gdk.KEY_BackSpace:
             self.teaching = False
             self.set_label()
             self.emit("accel-cleared", self.path)

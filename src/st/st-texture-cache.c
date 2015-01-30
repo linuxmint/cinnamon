@@ -33,6 +33,8 @@
 #define CACHE_PREFIX_RAW_CHECKSUM "raw-checksum:"
 #define CACHE_PREFIX_COMPRESSED_CHECKSUM "compressed-checksum:"
 
+static int active_scale = 1;
+
 struct _StTextureCachePrivate
 {
   GtkIconTheme *icon_theme;
@@ -45,6 +47,8 @@ struct _StTextureCachePrivate
 
   /* File monitors to evict cache data on changes */
   GHashTable *file_monitors; /* char * -> GFileMonitor * */
+
+  GSettings *settings;
 
   double scale;
 };
@@ -139,13 +143,15 @@ on_icon_theme_changed (GtkIconTheme   *icon_theme,
 }
 
 static void
-update_scale_factor (GtkSettings *settings,
-                     GParamSpec *pspec,
+update_scale_factor (GSettings *settings,
+                     gchar *key,
                      gpointer data)
 {
   StTextureCache *cache = ST_TEXTURE_CACHE (data);
 
-  cache->priv->scale = clutter_backend_get_resolution (clutter_get_default_backend ()) / 96.0;
+  cache->priv->scale = g_settings_get_int (settings, key);
+
+  active_scale = cache->priv->scale;
 
   on_icon_theme_changed (cache->priv->icon_theme, cache);
 }
@@ -166,10 +172,12 @@ st_texture_cache_init (StTextureCache *self)
   self->priv->file_monitors = g_hash_table_new_full (g_str_hash, g_str_equal,
                                                      g_object_unref, g_object_unref);
 
-  g_signal_connect (gtk_settings_get_default (), "notify::gtk-xft-dpi",
+  self->priv->settings = g_settings_new ("org.cinnamon");
+
+  g_signal_connect (self->priv->settings, "changed::active-display-scale",
                     G_CALLBACK (update_scale_factor), self);
 
-  update_scale_factor (gtk_settings_get_default (), NULL, self);
+  update_scale_factor (self->priv->settings, "active-display-scale", self);
 }
 
 static void
@@ -183,6 +191,14 @@ st_texture_cache_dispose (GObject *object)
                                             (gpointer) on_icon_theme_changed,
                                             self);
       self->priv->icon_theme = NULL;
+    }
+
+  if (self->priv->settings)
+    {
+      g_signal_handlers_disconnect_by_func (self->priv->settings,
+                                            (gpointer) update_scale_factor, self);
+      g_object_unref (self->priv->settings);
+      self->priv->settings = NULL;
     }
 
   g_clear_pointer (&self->priv->keyed_cache, g_hash_table_destroy);
@@ -343,10 +359,8 @@ on_image_size_prepared (GdkPixbufLoader *pixbuf_loader,
     final_height = scaled_height;
   }
 
-  double scale = clutter_backend_get_resolution (clutter_get_default_backend ()) / 96.0;
-
-  final_width = (int)((double) final_width * scale);
-  final_height = (int)((double) final_height * scale);  
+  final_width = (int)((double) final_width * active_scale);
+  final_height = (int)((double) final_height * active_scale);
   gdk_pixbuf_loader_set_size (pixbuf_loader, final_width, final_height);
 }
 
@@ -974,9 +988,14 @@ load_gicon_with_colors (StTextureCache    *cache,
   /* Do theme lookups in the main thread to avoid thread-unsafety */
   theme = cache->priv->icon_theme;
 
-  info = gtk_icon_theme_lookup_by_gicon_for_scale (theme, icon, size, scale, GTK_ICON_LOOKUP_USE_BUILTIN);
-  if (info == NULL)
-    return NULL;
+  info = gtk_icon_theme_lookup_by_gicon_for_scale (theme, icon, size, scale, GTK_ICON_LOOKUP_USE_BUILTIN |
+                                                                             GTK_ICON_LOOKUP_FORCE_SIZE);
+
+  if (info == NULL) {
+    texture = CLUTTER_ACTOR (create_default_texture ());
+    clutter_actor_set_size (texture, size * scale, size * scale);
+    return texture;
+  }
 
   gicon_string = g_icon_to_string (icon);
   /* A return value of NULL indicates that the icon can not be serialized,
@@ -1042,7 +1061,8 @@ load_gicon_with_colors (StTextureCache    *cache,
  * icon isn't loaded already, the texture will be filled
  * asynchronously.
  *
- * Return Value: (transfer none): A new #ClutterActor for the icon, or %NULL if not found
+ * Return Value: (transfer none): A new #ClutterActor for the icon, or an empty ClutterActor
+ * if none was found.
  */
 ClutterActor *
 st_texture_cache_load_gicon (StTextureCache    *cache,
@@ -1050,7 +1070,7 @@ st_texture_cache_load_gicon (StTextureCache    *cache,
                              GIcon             *icon,
                              gint               size)
 {
-  return load_gicon_with_colors (cache, icon, size, cache->priv->scale, theme_node ? st_theme_node_get_icon_colors (theme_node) : NULL);
+    return load_gicon_with_colors (cache, icon, size, cache->priv->scale, theme_node ? st_theme_node_get_icon_colors (theme_node) : NULL);
 }
 
 static ClutterActor *

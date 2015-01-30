@@ -5,6 +5,8 @@ const Lang = imports.lang;
 const St = imports.gi.St;
 const Cinnamon = imports.gi.Cinnamon;
 const Signals = imports.signals;
+const Gio = imports.gi.Gio;
+const Pango = imports.gi.Pango;
 
 const Params = imports.misc.params;
 
@@ -316,3 +318,124 @@ ModalDialog.prototype = {
     }
 };
 Signals.addSignalMethods(ModalDialog.prototype);
+
+function SpicesAboutDialog(metadata, type) {
+    this._init(metadata, type);
+}
+
+SpicesAboutDialog.prototype = {
+    __proto__: ModalDialog.prototype,
+    
+    _init: function(metadata, type) {
+        try {
+            ModalDialog.prototype._init.call(this, {});
+            
+            let contentBox = new St.BoxLayout({vertical: true, style_class: "about-content" });
+            this.contentLayout.add_actor(contentBox);
+            
+            let topBox = new St.BoxLayout();
+            contentBox.add_actor(topBox);
+            
+            //icon
+            let icon;
+            if (metadata.icon) icon = new St.Icon({icon_name: metadata.icon, icon_size: 48, icon_type: St.IconType.FULLCOLOR, style_class: "about-icon"});
+            else {
+                let file = Gio.file_new_for_path(metadata.path + "/icon.png");
+                if (file.query_exists(null)) {
+                    let gicon = new Gio.FileIcon({file: file});
+                    icon = new St.Icon({gicon: gicon, icon_size: 48, icon_type: St.IconType.FULLCOLOR, style_class: "about-icon"});
+                }
+                else {
+                    icon = new St.Icon({icon_name: "cs-"+type, icon_size: 48, icon_type: St.IconType.FULLCOLOR, style_class: "about-icon"});
+                }
+            }
+            topBox.add_actor(icon);
+            
+            let topTextBox = new St.BoxLayout({vertical: true});
+            topBox.add_actor(topTextBox);
+            
+            /*title*/
+            let titleBox = new St.BoxLayout();
+            topTextBox.add_actor(titleBox);
+            
+            let title = new St.Label({text: metadata.name, style_class: "about-title"});
+            titleBox.add_actor(title);
+            
+            if (metadata.version) {
+                let versionBin = new St.Bin({x_align: St.Align.START, y_align: St.Align.END});
+                titleBox.add_actor(versionBin);
+                let version = new St.Label({text: " v" + metadata.version, style_class: "about-version"});
+                versionBin.add_actor(version);
+            }
+            
+            //uuid
+            let uuid = new St.Label({text: metadata.uuid, style_class: "about-uuid"});
+            topTextBox.add_actor(uuid);
+            
+            //description
+            let desc = new St.Label({text: metadata.description, style_class: "about-description"});
+            let dText = desc.clutter_text;
+            topTextBox.add_actor(desc);
+            
+            /*optional content*/
+            let scrollBox = new St.ScrollView({style_class: "about-scrollBox"});
+            contentBox.add(scrollBox, {expand: true});
+            let infoBox = new St.BoxLayout({vertical: true, style_class: "about-scrollBox-innerBox"});
+            scrollBox.add_actor(infoBox);
+            
+            //comments
+            if (metadata.comments) {
+                let comments = new St.Label({text: "Comments:\n\t" + metadata.comments});
+                let cText = comments.clutter_text;
+                cText.ellipsize = Pango.EllipsizeMode.NONE;
+                cText.line_wrap = true;
+                cText.set_line_wrap_mode(Pango.WrapMode.WORD_CHAR);
+                infoBox.add_actor(comments);
+            }
+            
+            //website
+            if (metadata.website) {
+                let wsBox = new St.BoxLayout({vertical: true});
+                infoBox.add_actor(wsBox);
+                
+                let wLabel = new St.Label({text: "Website:"});
+                wsBox.add_actor(wLabel);
+                
+                let wsButton = new St.Button({x_align: St.Align.START, style_class: "cinnamon-link", name: "about-website"});
+                wsBox.add_actor(wsButton);
+                let website = new St.Label({text: metadata.website});
+                let wtext = website.clutter_text;
+                wtext.ellipsize = Pango.EllipsizeMode.NONE;
+                wtext.line_wrap = true;
+                wtext.set_line_wrap_mode(Pango.WrapMode.WORD_CHAR);
+                wsButton.add_actor(website);
+                wsButton.connect("clicked", Lang.bind(this, this.launchSite, metadata.website));
+            }
+            
+            //contributors
+            if (metadata.contributors) {
+                let list = metadata.contributors.split(",").join("\n\t");
+                let contributors = new St.Label({text: "Contributors:\n\t" + list});
+                infoBox.add_actor(contributors);
+            }
+            
+            //dialog close button
+            this.setButtons([
+                {label: "Close", key: "", focus: true, action: Lang.bind(this, this._onOk)}
+            ]);
+            
+            this.open(global.get_current_time());
+        } catch(e) {
+            global.log(e);
+        }
+    },
+    
+    _onOk: function() {
+        this.close(global.get_current_time());
+    },
+    
+    launchSite: function(a, b, site) {
+        Util.spawnCommandLine("xdg-open " + site);
+        this.close(global.get_current_time());
+    }
+}

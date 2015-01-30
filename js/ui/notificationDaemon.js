@@ -1,7 +1,7 @@
 // -*- mode: js; js-indent-level: 4; indent-tabs-mode: nil -*-
 
 const Clutter = imports.gi.Clutter;
-const DBus = imports.dbus;
+const Gio = imports.gi.Gio;
 const GLib = imports.gi.GLib;
 const Lang = imports.lang;
 const Cinnamon = imports.gi.Cinnamon;
@@ -11,52 +11,62 @@ const Config = imports.misc.config;
 const Main = imports.ui.main;
 const MessageTray = imports.ui.messageTray;
 const Params = imports.misc.params;
+const Mainloop = imports.mainloop;
 
 let nextNotificationId = 1;
 
-// Should really be defined in dbus.js
-const BusIface = {
-    name: 'org.freedesktop.DBus',
-    methods: [{ name: 'GetConnectionUnixProcessID',
-                inSignature: 's',
-                outSignature: 'i' }]
-};
+// Should really be defined in Gio.js
+const BusIface = 
+    '<node> \
+        <interface name="org.freedesktop.DBus"> \
+            <method name="GetConnectionUnixProcessID"> \
+                <arg type="s" direction="in" /> \
+                <arg type="u" direction="out" /> \
+            </method> \
+        </interface> \
+    </node>';
 
-const Bus = function () {
-    this._init();
-};
+var BusProxy = Gio.DBusProxy.makeProxyWrapper(BusIface);
+function Bus() {
+    return new BusProxy(Gio.DBus.session, 'org.freedesktop.DBus', '/org/freedesktop/DBus');
+}
 
-Bus.prototype = {
-     _init: function() {
-         DBus.session.proxifyObject(this, 'org.freedesktop.DBus', '/org/freedesktop/DBus');
-     }
-};
-
-DBus.proxifyPrototype(Bus.prototype, BusIface);
-
-const NotificationDaemonIface = {
-    name: 'org.freedesktop.Notifications',
-    methods: [{ name: 'Notify',
-                inSignature: 'susssasa{sv}i',
-                outSignature: 'u'
-              },
-              { name: 'CloseNotification',
-                inSignature: 'u',
-                outSignature: ''
-              },
-              { name: 'GetCapabilities',
-                inSignature: '',
-                outSignature: 'as'
-              },
-              { name: 'GetServerInformation',
-                inSignature: '',
-                outSignature: 'ssss'
-              }],
-    signals: [{ name: 'NotificationClosed',
-                inSignature: 'uu' },
-              { name: 'ActionInvoked',
-                inSignature: 'us' }]
-};
+const NotificationDaemonIface =
+    '<node> \
+        <interface name="org.freedesktop.Notifications"> \
+            <method name="Notify"> \
+                <arg type="s" direction="in"/> \
+                <arg type="u" direction="in"/> \
+                <arg type="s" direction="in"/> \
+                <arg type="s" direction="in"/> \
+                <arg type="s" direction="in"/> \
+                <arg type="as" direction="in"/> \
+                <arg type="a{sv}" direction="in"/> \
+                <arg type="i" direction="in"/> \
+                <arg type="u" direction="out"/> \
+            </method> \
+            <method name="CloseNotification"> \
+                <arg type="u" direction="in"/> \
+            </method> \
+            <method name="GetCapabilities"> \
+                <arg type="as" direction="out"/> \
+            </method> \
+            <method name="GetServerInformation"> \
+                <arg type="s" direction="out"/> \
+                <arg type="s" direction="out"/> \
+                <arg type="s" direction="out"/> \
+                <arg type="s" direction="out"/> \
+            </method> \
+            <signal name="NotificationClosed"> \
+                <arg type="u"/> \
+                <arg type="u"/> \
+            </signal> \
+            <signal name="ActionInvoked"> \
+                <arg type="u"/> \
+                <arg type="s"/> \
+            </signal> \
+        </interface> \
+    </node>';
 
 const NotificationClosedReason = {
     EXPIRED: 1,
@@ -88,15 +98,29 @@ function NotificationDaemon() {
 
 NotificationDaemon.prototype = {
     _init: function() {
-        DBus.session.exportObject('/org/freedesktop/Notifications', this);
+        this._dbusImpl = Gio.DBusExportedObject.wrapJSObject(NotificationDaemonIface, this);
+        this._dbusImpl.export(Gio.DBus.session, '/org/freedesktop/Notifications');
 
         this._sources = [];
         this._senderToPid = {};
         this._notifications = {};
+        this._expireNotifications = []; // List of expiring notifications in order from first to last to expire.
         this._busProxy = new Bus();
+
+        this._expireTimer = 0;
 
         Main.statusIconDispatcher.connect('message-icon-added', Lang.bind(this, this._onTrayIconAdded));
         Main.statusIconDispatcher.connect('message-icon-removed', Lang.bind(this, this._onTrayIconRemoved));
+
+// Settings
+        this.settings = new Gio.Settings({ schema: "org.cinnamon.desktop.notifications" });
+        function setting(self, source, type, camelCase, dashed) {
+            function updater() { self[camelCase] = source["get_"+type](dashed); }
+            source.connect('changed::'+dashed, updater);
+            updater();
+        }
+        setting(this, this.settings, "boolean", "removeOld", "remove-old");
+        setting(this, this.settings, "int", "timeout", "timeout");
 
         Cinnamon.WindowTracker.get_default().connect('notify::focus-app',
             Lang.bind(this, this._onFocusAppChanged));
@@ -104,6 +128,7 @@ NotificationDaemon.prototype = {
             Lang.bind(this, this._onFocusAppChanged));
     },
 
+   // Create an icon for a notification from icon string/path.
     _iconForNotificationData: function(icon, hints, size) {
         let textureCache = St.TextureCache.get_default();
 
@@ -213,10 +238,40 @@ NotificationDaemon.prototype = {
         return source;
     },
 
-    Notify: function(appName, replacesId, icon, summary, body,
-                     actions, hints, timeout) {
+    _startExpire: function() {
+         if (this.removeOld && this._expireNotifications.length && !this._expireTimer) {
+            this._expireTimer = Mainloop.timeout_add_seconds(Math.max((this._expireNotifications[0].expires-Date.now())/1000, 1), Lang.bind(this, this._expireNotification));
+        }
+    },
+    _stopExpire: function() {
+         if (this._expireTimer == 0) {
+            return;
+        }
+         Mainloop.source_remove(this._expireTimer);
+         this._expireTimer = 0;
+    },
+    _restartExpire: function() {
+         this._stopExpire();
+         this._startExpire();
+    },
+    _expireNotification: function() {
+         let ndata = this._expireNotifications[0];
+         ndata.notification.destroy(MessageTray.NotificationDestroyedReason.EXPIRED);
+         this._expireTimer = 0;
+         return false;
+    },
+ 
+    // Sends a notification to the notification daemon. Returns the id allocated to the notification.
+    NotifyAsync: function(params, invocation) {
+        let [appName, replacesId, icon, summary, body, actions, hints, timeout] = params;
         let id;
-        
+
+        for (let hint in hints) {
+            // unpack the variants
+            hints[hint] = hints[hint].deep_unpack();
+        }
+
+        // Special Cinnamon specific rewrites for message summaries on the fly.
         let rewrites = rewriteRules[appName];
         if (rewrites) {
             for (let i = 0; i < rewrites.length; i++) {
@@ -234,7 +289,7 @@ NotificationDaemon.prototype = {
         if (!hints['image-path'] && hints['image_path'])
             hints['image-path'] = hints['image_path']; // version 1.1 of the spec
 
-        if (!hints['image-data'])
+        if (!hints['image-data']) // not version 1.2 of the spec?
             if (hints['image_data'])
                 hints['image-data'] = hints['image_data']; // version 1.1 of the spec
             else if (hints['icon_data'] && !hints['image-path'])
@@ -248,6 +303,7 @@ NotificationDaemon.prototype = {
                       actions: actions,
                       hints: hints,
                       timeout: timeout };
+        // Does this notification replace another?
         if (replacesId != 0 && this._notifications[replacesId]) {
             ndata.id = id = replacesId;
             ndata.notification = this._notifications[replacesId].notification;
@@ -257,61 +313,89 @@ NotificationDaemon.prototype = {
         }
         this._notifications[id] = ndata;
 
-        let sender = DBus.getCurrentMessageContext().sender;
+        // Find expiration timestamp.
+        let expires;
+        if (!timeout || hints.resident || hints.urgency == 2) { // Never expires.
+            expires = ndata.expires = 0;
+        } else if (timeout == -1) { // Default expiration.
+            expires = ndata.expires = Date.now()+this.timeout*1000;
+        } else {    // Custom expiration.
+             expires = ndata.expires = Date.now()+timeout;
+        }
+ 
+        // Does this notification expire?
+        if (expires != 0) {
+            // Find place in the notification queue.
+            let notifications = this._expireNotifications, i;
+            for (i = notifications.length; i > 0; --i) {    // Backwards seach, likely to be faster.
+                if (expires > notifications[i-1].expires) {
+                    notifications.splice(i, 0, ndata);
+                    break;
+                }
+            }
+            if (i == 0) notifications.unshift(ndata);
+            this._restartExpire()
+        }
+
+        let sender = invocation.get_sender();
         let pid = this._senderToPid[sender];
 
         let source = this._getSource(appName, pid, ndata, sender, null);
 
         if (source) {
             this._notifyForSource(source, ndata);
-            return id;
+            return invocation.return_value(GLib.Variant.new('(u)', [id]));
         }
 
         if (replacesId) {
             // There's already a pending call to GetConnectionUnixProcessID,
             // which will see the new notification data when it finishes,
             // so we don't have to do anything.
-            return id;
+            return invocation.return_value(GLib.Variant.new('(u)', [id]));
         }
 
-        this._busProxy.GetConnectionUnixProcessIDRemote(sender, Lang.bind(this,
-            function (pid, ex) {
-                // The app may have updated or removed the notification
-                ndata = this._notifications[id];
-                if (!ndata)
-                    return;
+        this._busProxy.GetConnectionUnixProcessIDRemote(sender, Lang.bind(this, function (result, excp) {
+            // The app may have updated or removed the notification
+            ndata = this._notifications[id];
+            if (!ndata)
+                return;
 
-                source = this._getSource(appName, pid, ndata, sender, null);
+            if (excp) {
+                logError(excp, 'Call to GetConnectionUnixProcessID failed');
+                return;
+            }
 
-                // We only store sender-pid entries for persistent sources.
-                // Removing the entries once the source is destroyed
-                // would result in the entries associated with transient
-                // sources removed once the notification is shown anyway.
-                // However, keeping these pairs would mean that we would
-                // possibly remove an entry associated with a persistent
-                // source when a transient source for the same sender is
-                // distroyed.
-                if (!source.isTransient) {
-                    this._senderToPid[sender] = pid;
-                    source.connect('destroy', Lang.bind(this,
-                        function() {
-                            delete this._senderToPid[sender];
-                        }));
-                }
-                this._notifyForSource(source, ndata);
-            }));
+            let [pid] = result;
+            source = this._getSource(appName, pid, ndata, sender);
 
-        return id;
+            // We only store sender-pid entries for persistent sources.
+            // Removing the entries once the source is destroyed
+            // would result in the entries associated with transient
+            // sources removed once the notification is shown anyway.
+            // However, keeping these pairs would mean that we would
+            // possibly remove an entry associated with a persistent
+            // source when a transient source for the same sender is
+            // destroyed.
+            if (!source.isTransient) {
+                this._senderToPid[sender] = pid;
+                source.connect('destroy', Lang.bind(this, function() {
+                    delete this._senderToPid[sender];
+                }));
+            }
+            this._notifyForSource(source, ndata);
+        }));
+
+        return invocation.return_value(GLib.Variant.new('(u)', [id]));
     },
 
     _notifyForSource: function(source, ndata) {
-        let [id, icon, summary, body, actions, hints, notification] =
+        let [id, icon, summary, body, actions, hints, notification, timeout, expires] =
             [ndata.id, ndata.icon, ndata.summary, ndata.body,
-             ndata.actions, ndata.hints, ndata.notification];
+             ndata.actions, ndata.hints, ndata.notification, ndata.timeout, ndata.expires];
 
         let iconActor = this._iconForNotificationData(icon, hints, source.ICON_SIZE);
 
-        if (notification == null) {
+        if (notification == null) {    // Create a new notification!
             notification = new MessageTray.Notification(source, summary, body,
                                                         { icon: iconActor,
                                                           bannerMarkup: true });
@@ -330,6 +414,17 @@ NotificationDaemon.prototype = {
                         case MessageTray.NotificationDestroyedReason.SOURCE_CLOSED:
                             notificationClosedReason = NotificationClosedReason.APP_CLOSED;
                             break;
+                    }
+                    // Remove from expiring?
+                    if (ndata.expires) {
+                        let notifications = this._expireNotifications;
+                        for (var i = 0, j = notifications.length; i < j; ++i) {
+                            if (notifications[i] == ndata) {
+                                notifications.splice(i, 1);
+                                break;
+                             }
+                        }
+                        this._restartExpire();
                     }
                     this._emitNotificationClosed(ndata.id, notificationClosedReason);
                 }));
@@ -441,17 +536,13 @@ NotificationDaemon.prototype = {
     },
 
     _emitNotificationClosed: function(id, reason) {
-        DBus.session.emit_signal('/org/freedesktop/Notifications',
-                                 'org.freedesktop.Notifications',
-                                 'NotificationClosed', 'uu',
-                                 [id, reason]);
+        this._dbusImpl.emit_signal('NotificationClosed',
+                                   GLib.Variant.new('(uu)', [id, reason]));
     },
 
     _emitActionInvoked: function(id, action) {
-        DBus.session.emit_signal('/org/freedesktop/Notifications',
-                                 'org.freedesktop.Notifications',
-                                 'ActionInvoked', 'us',
-                                 [id, action]);
+        this._dbusImpl.emit_signal('ActionInvoked',
+                                   GLib.Variant.new('(us)', [id, action]));
     },
 
     _onTrayIconAdded: function(o, icon) {
@@ -464,8 +555,6 @@ NotificationDaemon.prototype = {
             source.destroy();
     }
 };
-
-DBus.conformExport(NotificationDaemon.prototype, NotificationDaemonIface);
 
 function Source(title, pid, sender, trayIcon) {
     this._init(title, pid, sender, trayIcon);
@@ -481,15 +570,12 @@ Source.prototype = {
 
         this.pid = pid;
         if (sender)
-            // TODO: dbus-glib implementation of watch_name() doesn’t return an id to be used for
-            // unwatch_name() or implement unwatch_name(), however when we move to using GDBus implementation,
-            // we should save the id here and call unwatch_name() with it in destroy().
-            // Moving to GDBus is the work in progress: https://bugzilla.gnome.org/show_bug.cgi?id=648651
-            // and https://bugzilla.gnome.org/show_bug.cgi?id=622921 .
-            DBus.session.watch_name(sender,
-                                    false,
-                                    null,
-                                    Lang.bind(this, this._onNameVanished));
+            this._nameWatcherId = Gio.DBus.session.watch_name(sender,
+                                                              Gio.BusNameWatcherFlags.NONE,
+                                                              null,
+                                                              Lang.bind(this, this._onNameVanished));
+        else
+            this._nameWatcherId = 0;
 
         this._setApp();
         if (this.app)
@@ -605,6 +691,10 @@ Source.prototype = {
     },
 
     destroy: function() {
+        if (this._nameWatcherId) {
+            Gio.DBus.session.unwatch_name(this._nameWatcherId);
+            this._nameWatcherId = 0;
+        }
         MessageTray.Source.prototype.destroy.call(this);
     }
 };

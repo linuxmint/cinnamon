@@ -256,6 +256,14 @@ cinnamon_tray_manager_manage_stage (CinnamonTrayManager *manager,
 
   g_object_unref (stage_window);
 
+  gint scale = 1;
+
+  g_object_get (cinnamon_global_get (),
+                "ui_scale", &scale,
+                NULL);
+
+  na_tray_manager_set_scale (manager->priv->na_manager, scale);
+
   na_tray_manager_manage_screen (manager->priv->na_manager, screen);
 
   g_signal_connect (theme_widget, "style-changed",

@@ -28,6 +28,8 @@ MyDesklet.prototype = {
 
         this.settings.bindProperty(Settings.BindingDirection.IN, "font-size", "size", this._onSettingsChanged, null);
         
+        this.settings.bindProperty(Settings.BindingDirection.IN, "text-color", "color", this._onSettingsChanged, null);
+        
         this.settings.bindProperty(Settings.BindingDirection.IN, "use-custom-format", "use_custom_format", this._onSettingsChanged, null);
         
         this._menu.addSettingsAction(_("Date and Time Settings"), "calendar")
@@ -37,7 +39,7 @@ MyDesklet.prototype = {
     },
 
     _onSettingsChanged: function(){
-        this._date.style="font-size: " + this.size + "pt";
+        this._date.style="font-size: " + this.size + "pt;\ncolor: " + this.color;
         this._updateDate();
     },
 

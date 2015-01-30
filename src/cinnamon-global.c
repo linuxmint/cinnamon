@@ -16,28 +16,21 @@
 
 #include <X11/extensions/Xfixes.h>
 #include <cogl-pango/cogl-pango.h>
-#include <canberra.h>
 #include <clutter/glx/clutter-glx.h>
 #include <clutter/x11/clutter-x11.h>
 #include <gdk/gdkx.h>
 #include <gio/gio.h>
-#include <cjs/gjs-module.h>
 #include <girepository.h>
 #include <meta/display.h>
 #include <meta/util.h>
 
-/* Memory report bits */
-#ifdef HAVE_MALLINFO
-#include <malloc.h>
-#endif
-
 #include "cinnamon-enum-types.h"
 #include "cinnamon-global-private.h"
-#include "cinnamon-jsapi-compat-private.h"
 #include "cinnamon-marshal.h"
 #include "cinnamon-perf-log.h"
 #include "cinnamon-window-tracker.h"
 #include "cinnamon-wm.h"
+#include "cinnamon-js.h"
 #include "st.h"
 
 static CinnamonGlobal *the_object = NULL;
@@ -84,9 +77,6 @@ struct _CinnamonGlobal {
   guint work_count;
   GSList *leisure_closures;
   guint leisure_function_id;
-
-  /* For sound notifications */
-  ca_context *sound_context;
 
   guint32 xdnd_timestamp;
   gint64 last_gc_end_time;
@@ -272,19 +262,13 @@ cinnamon_global_init (CinnamonGlobal *global)
 
   global->input_mode = CINNAMON_STAGE_INPUT_MODE_NORMAL;
 
-  ca_context_create (&global->sound_context);
-  ca_context_change_props (global->sound_context, CA_PROP_APPLICATION_NAME, PACKAGE_NAME, CA_PROP_APPLICATION_ID, "org.Cinnamon", NULL);
-  ca_context_open (global->sound_context);
-
   if (!cinnamon_js)
     cinnamon_js = JSDIR;
   search_path = g_strsplit (cinnamon_js, ":", -1);
   global->js_context = g_object_new (GJS_TYPE_CONTEXT,
                                      "search-path", search_path,
-                                     "js-version", "1.8",
-                                     "gc-notifications", TRUE,
                                      NULL);
-  g_signal_connect (global->js_context, "gc", G_CALLBACK (cinnamon_global_on_gc), global);
+  // g_signal_connect (global->js_context, "gc", G_CALLBACK (cinnamon_global_on_gc), global);
 
   g_strfreev (search_path);
 }
@@ -646,7 +630,7 @@ cinnamon_global_set_cursor (CinnamonGlobal *global,
       name = "dnd-copy";
       break;
     case CINNAMON_CURSOR_DND_UNSUPPORTED_TARGET:
-      name = "dnd-none";
+      name = "X_cursor";
       break;
     case CINNAMON_CURSOR_POINTING_HAND:
       name = "hand";
@@ -992,7 +976,7 @@ update_scale_factor (GtkSettings *settings,
                      GParamSpec *pspec,
                      gpointer data)
 {
-  gint scale;
+  gint scale = 1;
   CinnamonGlobal *global = CINNAMON_GLOBAL (data);
   ClutterStage *stage = CLUTTER_STAGE (global->stage);
   StThemeContext *context = st_theme_context_get_for_stage (stage);
@@ -1009,10 +993,15 @@ update_scale_factor (GtkSettings *settings,
     }
   }
 
+  g_settings_set_int (global->settings, "active-display-scale", scale);
+
    /* Make sure clutter and gdk scaling stays disabled
-    * window-scaling-factor doesn't exist yet in clutter < 1.18, but it's a harmless warning
-    * and lets those that can, take advantage of it */
-  g_object_set (clutter_settings_get_default (), "window-scaling-factor", 1, NULL);
+    * window-scaling-factor doesn't exist yet in clutter < 1.18 */
+  if (g_object_class_find_property (G_OBJECT_GET_CLASS (clutter_settings_get_default ()),
+                                    "window-scaling-factor"))
+    {
+      g_object_set (clutter_settings_get_default (), "window-scaling-factor", 1, NULL);
+    }
   gdk_x11_display_set_window_scale (gdk_display_get_default (), 1);
 }
 
@@ -1071,6 +1060,31 @@ _cinnamon_global_set_plugin (CinnamonGlobal *global,
   global->focus_manager = st_focus_manager_get_for_stage (global->stage);
 
   update_scale_factor (gtk_settings_get_default (), NULL, global);
+}
+
+/**
+ * cinnamon_global_get_memory_info:
+ * @global: A #CinnamonGlobal
+ * @meminfo: (out caller-allocates): Output location for memory information
+ *
+ * Return value: (transfer none): a generic pointer to the GjsContext
+ */
+void
+cinnamon_global_get_memory_info (CinnamonGlobal *global, CinnamonJSMemoryInfo *meminfo)
+{
+  cinnamon_js_get_memory_info (global->js_context, global->last_gc_end_time, meminfo);
+}
+
+/**
+ * cinnamon_global_dump_gjs_stack:
+ * @global: A #CinnamonGlobal
+ *
+ * Prints out the gjs stack
+ */
+void
+cinnamon_global_dump_gjs_stack (CinnamonGlobal *global)
+{
+  gjs_dumpstack ();
 }
 
 GjsContext *
@@ -1162,70 +1176,6 @@ cinnamon_global_destroy_pointer_barrier (CinnamonGlobal *global, guint32 barrier
 
   XFixesDestroyPointerBarrier (global->xdisplay, (PointerBarrier)barrier);
 #endif
-}
-
-
-/**
- * cinnamon_global_add_extension_importer:
- * @target_object_script: JavaScript code evaluating to a target object
- * @target_property: Name of property to use for importer
- * @directory: Source directory:
- * @error: A #GError
- *
- * This function sets a property named @target_property on the object
- * resulting from the evaluation of @target_object_script code, which
- * acts as a GJS importer for directory @directory.
- *
- * Returns: %TRUE on success
- */
-gboolean
-cinnamon_global_add_extension_importer (CinnamonGlobal *global,
-                                     const char  *target_object_script,
-                                     const char  *target_property,
-                                     const char  *directory,
-                                     GError     **error)
-{
-  jsval target_object;
-  JSContext *context = gjs_context_get_native_context (global->js_context);
-  char *search_path[2] = { 0, 0 };
-
-  JS_BeginRequest (context);
-
-  // This is a bit of a hack; ideally we'd be able to pass our target
-  // object directly into this function, but introspection doesn't
-  // support that at the moment.  Instead evaluate a string to get it.
-  if (!JS_EvaluateScript(context,
-                         JS_GetGlobalObject(context),
-                         target_object_script,
-                         strlen (target_object_script),
-                         "<target_object_script>",
-                         0,
-                         &target_object))
-    {
-      char *message;
-      gjs_log_exception(context,
-                        &message);
-      g_set_error(error,
-                  G_IO_ERROR,
-                  G_IO_ERROR_FAILED,
-                  "%s", message ? message : "(unknown)");
-      g_free(message);
-      goto out_error;
-    }
-
-  if (!JSVAL_IS_OBJECT (target_object))
-    {
-      g_error ("cinnamon_global_add_extension_importer: invalid target object");
-      goto out_error;
-    }
-
-  search_path[0] = (char*)directory;
-  gjs_define_importer (context, JSVAL_TO_OBJECT (target_object), target_property, (const char **)search_path, FALSE);
-  JS_EndRequest (context);
-  return TRUE;
- out_error:
-  JS_EndRequest (context);
-  return FALSE;
 }
 
 /* Code to close all file descriptors before we exec; copied from gspawn.c in GLib.
@@ -1364,78 +1314,12 @@ cinnamon_global_reexec_self (CinnamonGlobal *global)
   g_ptr_array_free (arr, TRUE);
 }
 
-/**
- * cinnamon_global_gc:
- * @global: A #CinnamonGlobal
- *
- * Start a garbage collection process.  For more information, see
- * https://developer.mozilla.org/En/JS_GC
- */
-void
-cinnamon_global_gc (CinnamonGlobal *global)
-{
-  JSContext *context = gjs_context_get_native_context (global->js_context);
-
-  JS_GC (context);
-}
-
-/**
- * cinnamon_global_maybe_gc:
- * @global: A #CinnamonGlobal
- *
- * Start a garbage collection process when it would free up enough memory
- * to be worth the amount of time it would take
- * https://developer.mozilla.org/en/SpiderMonkey/JSAPI_Reference/JS_MaybeGC
- */
-void
-cinnamon_global_maybe_gc (CinnamonGlobal *global)
-{
-  gjs_context_maybe_gc (global->js_context);
-}
-
 static void
 cinnamon_global_on_gc (GjsContext   *context,
                     CinnamonGlobal  *global)
 {
   global->last_gc_end_time = g_get_monotonic_time ();
 }
-
-/**
- * cinnamon_global_get_memory_info:
- * @global:
- * @meminfo: (out caller-allocates): Output location for memory information
- *
- * Load process-global data about memory usage.
- */
-void
-cinnamon_global_get_memory_info (CinnamonGlobal        *global,
-                              CinnamonMemoryInfo    *meminfo)
-{
-  JSContext *context;
-  gint64 now;
-
-  memset (meminfo, 0, sizeof (*meminfo));
-#ifdef HAVE_MALLINFO
-  {
-    struct mallinfo info = mallinfo ();
-    meminfo->glibc_uordblks = info.uordblks;
-  }
-#endif
-
-  context = gjs_context_get_native_context (global->js_context);
-
-  meminfo->js_bytes = JS_GetGCParameter (JS_GetRuntime (context), JSGC_BYTES);
-
-  meminfo->gjs_boxed = (unsigned int) gjs_counter_boxed.value;
-  meminfo->gjs_gobject = (unsigned int) gjs_counter_object.value;
-  meminfo->gjs_function = (unsigned int) gjs_counter_function.value;
-  meminfo->gjs_closure = (unsigned int) gjs_counter_closure.value;
-
-  now = g_get_monotonic_time ();
-
-  meminfo->last_gc_seconds_ago = (now - global->last_gc_end_time) / G_TIME_SPAN_SECOND;
-}
-
 
 /**
  * cinnamon_global_notify_error:
@@ -1465,6 +1349,18 @@ grab_notify (GtkWidget *widget, gboolean was_grabbed, gpointer user_data)
 
   /* Update for the new setting of gtk_grab_active */
   cinnamon_global_set_stage_input_mode (global, global->input_mode);
+}
+
+/**
+ * cinnamon_global_get_last_gc_end_time:
+ * @global: A #CinnamonGlobal
+ *
+ * Returns: The timestamp of the last js garbage collection.
+ */
+gint64
+cinnamon_global_get_last_gc_end_time (CinnamonGlobal *global)
+{
+    return global->last_gc_end_time;
 }
 
 /**
@@ -1631,7 +1527,6 @@ guint32
 cinnamon_global_get_current_time (CinnamonGlobal *global)
 {
   guint32 time;
-  const ClutterEvent *clutter_event;
 
   /* In case we have a xdnd timestamp use it */
   if (global->xdnd_timestamp != 0)
@@ -1642,7 +1537,7 @@ cinnamon_global_get_current_time (CinnamonGlobal *global)
      from some Clutter event callbacks.
 
      clutter_get_current_event_time() will return the correct time
-     from a Clutter event callback, but may return an out-of-date
+     from a Clutter event callback, but may return CLUTTER_CURRENT_TIME
      timestamp if called at other times.
 
      So we try meta_display_get_current_time() first, since we
@@ -1652,17 +1547,9 @@ cinnamon_global_get_current_time (CinnamonGlobal *global)
 
   time = meta_display_get_current_time (global->meta_display);
   if (time != CLUTTER_CURRENT_TIME)
-      return time;
-  /*
-   * We don't use clutter_get_current_event_time as it can give us a
-   * too old timestamp if there is no current event.
-   */
-  clutter_event = clutter_get_current_event ();
+    return time;
 
-  if (clutter_event != NULL)
-    return clutter_event_get_time (clutter_event);
-  else
-    return CLUTTER_CURRENT_TIME;
+  return clutter_get_current_event_time ();
 }
 
 /**
@@ -1732,13 +1619,6 @@ run_leisure_functions (gpointer data)
   /* We started more work since we scheduled the idle */
   if (global->work_count > 0)
     return FALSE;
-
-  /* Previously we called gjs_maybe_gc().  However, it simply doesn't
-   * trigger often enough.  Garbage collection is very fast here, so
-   * let's just aggressively GC.  This will help avoid both heap
-   * fragmentation, and the GC kicking in when we don't want it to.
-   */
-  gjs_context_gc (global->js_context);
 
   /* No leisure closures, so we are done */
   if (global->leisure_closures == NULL)
@@ -1853,54 +1733,6 @@ cinnamon_global_run_at_leisure (CinnamonGlobal         *global,
 
   if (global->work_count == 0)
     schedule_leisure_functions (global);
-}
-
-/**
- * cinnamon_global_play_theme_sound:
- * @global: the #CinnamonGlobal
- * @id: an id, used to cancel later (0 if not needed)
- * @name: the sound name
- *
- * Plays a simple sound picked according to Freedesktop sound theme.
- * Really just a workaround for libcanberra not being introspected.
- */
-void
-cinnamon_global_play_theme_sound (CinnamonGlobal *global,
-                               guint        id,
-                               const char  *name)
-{
-  ca_context_play (global->sound_context, id, CA_PROP_EVENT_ID, name, NULL);
-}
-
-/**
- * cinnamon_global_play_sound_file:
- * @global: the #CinnamonGlobal
- * @id: an id, used to cancel later (0 if not needed)
- * @filename: the filename of the sound
- *
- * Plays a simple sound.
- * Really just a workaround for libcanberra not being introspected.
- */
-void
-cinnamon_global_play_sound_file (CinnamonGlobal *global,
-                               guint        id,
-                               const char  *filename)
-{
-  ca_context_play (global->sound_context, id, CA_PROP_MEDIA_FILENAME, filename, NULL);
-}
-
-/**
- * cinnamon_global_cancel_sound:
- * @global: the #CinnamonGlobal
- * @id: the id previously passed to cinnamon_global_play_theme_sound() or cinnamon_global_play_sound_file()
- *
- * Cancels a sound being played.
- */
-void
-cinnamon_global_cancel_sound (CinnamonGlobal *global,
-                                 guint id)
-{
-  ca_context_cancel (global->sound_context, id);
 }
 
 /*

@@ -50,6 +50,15 @@
         which should be loaded. uuids should be put in the form uuid:id:x:y, where id is used to distinguish between multiple instances of the same desklet
       </_description>
     </key>
+    
+    <key name="enabled-search-providers" type="as">
+      <default>[]</default>
+      <_summary>Uuids of search providers to enable</_summary>
+      <_description>
+        Cinnamon search providers have a uuid property; this key lists search providers
+        which should be loaded.
+      </_description>
+    </key>
 
     <key name="desklet-snap" type="b">
       <default>true</default>
@@ -113,21 +122,21 @@
     
     <key name="panel-top-height" type="i">
       <default>25</default>
-      <range min="20" />
+      <range min="20" max="100" />
       <_summary>Panel size</_summary>
       <_description>
-        User-defined panel-height for top panel.  Note, this value may be the true value in use at runtime, depending
-        on any scaling that may be occurring (for hidpi screens, for instance).
+        User-defined panel-height for top panel.  Note, this value may or may not be the true value in use at runtime, depending
+        on any scaling that may be occurring (on hidpi screens, for instance).
       </_description>
     </key>
-    
+
     <key name="panel-bottom-height" type="i">
       <default>25</default>
-      <range min="20" />
+      <range min="20" max="100"/>
       <_summary>Panel size</_summary>
       <_description>
-        User-defined panel-height for bottom panel.  Note, this value may be the true value in use at runtime, depending
-        on any scaling that may be occurring (for hidpi screens, for instance).
+        User-defined panel-height for bottom panel.  Note, this value may or may not be the true value in use at runtime, depending
+        on any scaling that may be occurring (on hidpi screens, for instance).
       </_description>
     </key>
     
@@ -308,6 +317,14 @@
        Duration of the effect (in milliseconds)    
       </_description>
     </key>
+    
+    <key type="b" name="startup-animation">
+      <default>true</default>
+      <_summary>Whether the startup animation is enabled</_summary>
+      <_description>
+       Whether the startup animation is enabled   
+      </_description>
+    </key>
 
     <key name="desktop-layout" type="s">
       <default>"traditional"</default>
@@ -324,11 +341,6 @@
         Format used for dates.
       </_description>
     </key>
-    
-    <key type="b" name="display-notifications">
-      <default>true</default>
-      <_summary>Whether notifications are to be displayed</_summary>
-    </key>
 
     <key type="i" name="number-workspaces">
         <default>2</default>
@@ -338,18 +350,15 @@
     </key>
 
     <key name="overview-corner" type="as">
-      <default>['expo:false:false', 'scale:false:false', 'scale:false:false', 'scale:false:false']</default>
+      <default>['expo:false:false', 'scale:false:false', 'scale:false:false', 'desktop:false:false']</default>
       <_summary>Properties of overview corners</_summary>
       <_description>Properties of overview corners, in the form functionality:hover:icon. The order in which properties are displayed is top left, top right, bottom left, bottom right.</_description>
     </key>
 
     <key name="panel-launchers" type="as">
-      <default>[ 'firefox.desktop', 'gnome-terminal.desktop', 'nemo.desktop']</default>
-      <_summary>Desktop files of the applications to put in the panel launchers applet</_summary>
-      <_description>
-        Cinnamon allows to show applications launchers on the panel.
-        This key lists the desktop files of the applications to show there.
-      </_description>
+      <default>["DEPRECATED"]</default>
+      <_summary>Obsolete - unused</_summary>
+      <_description>Obsolete - unused</_description>
     </key>
 
     <key name="enable-app-monitoring" type="b">
@@ -364,7 +373,7 @@
     </key>
 
     <key name="favorite-apps" type="as">
-      <default>[ 'firefox.desktop', 'mintInstall.desktop', 'cinnamon-settings.desktop', 'xchat.desktop', 'gnome-terminal.desktop', 'nemo.desktop' ]</default>
+      <default>[ 'firefox.desktop', 'mintInstall.desktop', 'cinnamon-settings.desktop', 'hexchat.desktop', 'gnome-terminal.desktop', 'nemo.desktop' ]</default>
       <_summary>List of desktop file IDs for favorite applications</_summary>
       <_description>
         The applications corresponding to these identifiers
@@ -415,7 +424,7 @@
     </key>
 
     <key name="enable-looking-glass-logs" type="b">
-      <default>false</default>
+      <default>true</default>
       <_summary>Enable or disable sending Looking Glass global.log output to file</_summary>
       <_description>
         Whether looking glass log data is written to the file: ~/.cinnamon/glass.log or not
@@ -463,7 +472,7 @@
     
     <key type="b" name="panel-launchers-draggable">
       <default>true</default>
-      <_summary>Whether panel launchers are draggable</_summary>
+      <_summary>Obsolete</_summary>
     </key>
 
     <key name="alttab-switcher-style" type="s">
@@ -477,6 +486,12 @@
     <key type="b" name="alttab-switcher-enforce-primary-monitor">
       <default>false</default>
       <_summary>Enforce displaying the alt-tab switcher on the primary monitor instead of the active one</_summary>
+    </key>
+
+    <key type="i" name="alttab-switcher-delay">
+      <default>100</default>
+      <_summary>Duration of the effect (in milliseconds)</_summary>
+      <_description>Duration of the effect (in milliseconds)</_description>
     </key>
 
     <key name="window-list-applet-scroll" type="b">
@@ -500,6 +515,14 @@
       <summary>Brings windows requiring attention to the current workspace</summary>
       <description>
         When enabled, if a window requires attention, it is brought to the current workspace.
+      </description>
+    </key>
+
+    <key name="prevent-focus-stealing" type="b">
+      <default>false</default>
+      <summary>Prevents windows that request user attention from stealing focus</summary>
+      <description>
+        When enabled, even if a window requires attention, it is not activated.
       </description>
     </key>
 
@@ -536,7 +559,6 @@
     <child name="theme" schema="org.cinnamon.theme"/>   
     <child name="recorder" schema="org.cinnamon.recorder"/>
     <child name="keyboard" schema="org.cinnamon.keyboard"/>
-    <child name="power" schema="org.cinnamon.power" />
     <child name="desklets" schema="org.cinnamon.desklets" />
     <child name="sounds" schema="org.cinnamon.sounds" />
 
@@ -554,6 +576,13 @@
       <_description>
         Hide the snap OSD.
       </_description>
+    </key>
+
+    <key type="i" name="active-display-scale">
+      <range min="1" max="4" />
+      <default>1</default>
+      <summary>Utility read-only setting used by st library</summary>
+      <description>Current scale factor</description>
     </key>
 
   </schema>
@@ -579,15 +608,7 @@
       </_description>
     </key>
   </schema>
-  
-  <schema id="org.cinnamon.power" path="/org/cinnamon/power/" gettext-domain="@GETTEXT_PACKAGE">
-      <key name="power-label" type="s">
-          <default>'percent'</default>
-          <_summary>Display percentage in power applet</_summary>
-          <_description>Display battery remaining as percentage or time in power applet.</_description>
-    </key>
-  </schema>
-
+    
   <schema id="org.cinnamon.recorder" path="/org/cinnamon/recorder/"
           gettext-domain="@GETTEXT_PACKAGE@">
     <key name="framerate" type="i">
@@ -657,24 +678,7 @@
       </description>
     </key>
   </schema>
-  
-  <schema id="org.cinnamon.screensaver" path="/org/cinnamon/screensaver/">
-    <key name="default-message" type="s">
-      <default>""</default>
-      <summary>Default message for the screensaver</summary>
-      <description>
-        This is the message that appears on the lock screen by default.
-      </description>
-    </key>
-    <key name="ask-for-away-message" type="b">
-      <default>true</default>
-      <summary>Whether to ask for an away message when locking the screen</summary>
-      <description>
-        Whether to ask for an away message when locking the screen.
-      </description>
-    </key>   
-  </schema>
-  
+
   <schema id="org.cinnamon.desklets" path="/org/cinnamon/desklets/"
         gettext-domain="@GETTEXT_PACKAGE@">  
     <child name="launcher" schema="org.cinnamon.desklets.launcher" />
@@ -875,28 +879,26 @@
   <schema id="org.cinnamon.keybindings" path="/org/cinnamon/keybindings/">
     <key name="custom-list" type="as">
       <default>[]</default>
-      <_summary>List of gsettings custom keybinding paths to look in</_summary>
-      <_description>
-      </_description>
+      <_summary>deprecated - moved to org.cinnamon.desktop.keybindings</_summary>
     </key>
   </schema>
 
   <schema id="org.cinnamon.keybindings.custom-keybinding">
     <key name="name" type="s">
       <default>''</default>
-      <_summary>Name</_summary>
-      <_description>Name of the custom binding</_description>
+      <_summary>deprecated - moved to org.cinnamon.desktop.keybindings</_summary>
     </key>
     <key name="binding" type="s">
       <default>''</default>
-      <_summary>Binding</_summary>
-      <_description>Binding for the custom binding</_description>
+      <_summary>deprecated - moved to org.cinnamon.desktop.keybindings</_summary>
     </key>
     <key name="command" type="s">
       <default>''</default>
-      <_summary>Command</_summary>
-      <_description>Command to run when the binding is invoked</_description>
+      <_summary>deprecated - moved to org.cinnamon.desktop.keybindings</_summary>
     </key>
+  </schema>
+
+  <schema id="org.cinnamon.invalid-schema" path="/org/cinnamon/invalid-schema/">
   </schema>
 
 </schemalist>

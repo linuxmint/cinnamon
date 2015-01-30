@@ -1,0 +1,14 @@
+{
+    "labelinfo": {
+        "type": "radiogroup",
+        "description": "Display",
+        "default": "percentage",
+        "options" : {
+            "Show percentage": "percentage",
+            "Show time remaining": "time",
+            "Show percentage and time remaining": "percentage_time",
+            "Hide label": "nothing"
+        }
+    
+    }
+}

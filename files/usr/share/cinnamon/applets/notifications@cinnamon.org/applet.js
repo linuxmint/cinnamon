@@ -21,31 +21,46 @@ MyApplet.prototype = {
     _init: function(metadata, orientation, panel_height, instanceId) {
         Applet.TextIconApplet.prototype._init.call(this, orientation, panel_height);
 
+        // Settings
         this.settings = new Settings.AppletSettings(this, metadata.uuid, instanceId);
         this.settings.bindProperty(Settings.BindingDirection.IN, "ignoreTransientNotifications", "ignoreTransientNotifications", null, null);
+        this.settings.bindProperty(Settings.BindingDirection.IN, "showEmptyTray", "showEmptyTray", this._show_hide_tray, null);
+
+        // Layout
         Gtk.IconTheme.get_default().append_search_path(metadata.path);
         this._orientation = orientation;
         this.menuManager = new PopupMenu.PopupMenuManager(this);
-        this.notif_count = 0;
-        this.notifications = [];
+
+        // Lists
+        this.notifications = [];	// The list of notifications, in order from oldest to newest.
+
+        // Events
         Main.messageTray.connect('notify-applet-update', Lang.bind(this, this._notification_added));
         global.settings.connect('changed::panel-edit-mode', Lang.bind(this, this.on_panel_edit_mode_changed));
+
+        // States
         this._blinking = false;
         this._blink_toggle = false;
     },
 
     _display: function() {
+        // Always start the applet empty, void of any notifications.
         this.set_applet_icon_symbolic_name("empty-notif");
         this.set_applet_tooltip(_("Notifications"));
+
+        // Setup the notification container.
         this._maincontainer = new St.BoxLayout({name: 'traycontainer', vertical: true});
         this._notificationbin = new St.BoxLayout({vertical:true});
         this.button_label_box = new St.BoxLayout();
-        this.menu_text = stringify(this.notif_count);
-        this.menu_label = new PopupMenu.PopupMenuItem(this.menu_text);
+
+        // Setup the tray icon.
+        this.menu_label = new PopupMenu.PopupMenuItem(stringify(this.notifications.length));
         this.menu_label.actor.reactive = false;
         this.menu_label.actor.can_focus = false;
         this.menu_label.label.add_style_class_name('popup-subtitle-menu-item');
+
         this.clear_separator = new PopupMenu.PopupSeparatorMenuItem();
+
         this.clear_action = new PopupMenu.PopupMenuItem(_("Clear notifications"));
         this.clear_action.connect('activate', Lang.bind(this, this._clear_all));
         this.clear_action.actor.hide();
@@ -68,34 +83,43 @@ MyApplet.prototype = {
         this.scrollview.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC);
 
         let vscroll = this.scrollview.get_vscroll_bar();
-        vscroll.connect('scroll-start',
-                        Lang.bind(this, function() {
-                                      this.menu.passEvents = true;
-                                  }));
-        vscroll.connect('scroll-stop',
-                        Lang.bind(this, function() {
-                                      this.menu.passEvents = false;
-                                  }));
+        vscroll.connect('scroll-start', Lang.bind(this, function() {
+            this.menu.passEvents = true;
+        }));
+        vscroll.connect('scroll-stop', Lang.bind(this, function() {
+            this.menu.passEvents = false;
+        }));
 
+        // Alternative tray icons.
         this._crit_icon = new St.Icon({icon_name: 'critical-notif', icon_type: St.IconType.SYMBOLIC, reactive: true, track_hover: true, style_class: 'system-status-icon' });
         this._alt_crit_icon = new St.Icon({icon_name: 'alt-critical-notif', icon_type: St.IconType.SYMBOLIC, reactive: true, track_hover: true, style_class: 'system-status-icon' });
+
         this.update_list();
     },
 
-    _notification_added: function (mtray, notification) {
-        
+    _notification_added: function (mtray, notification) {	// Notification event handler.
         // Ignore transient notifications?
         if (this.ignoreTransientNotifications && notification.isTransient) {
             return;
         }
 
+        if (notification.enter_id > 0) {
+            notification.actor.disconnect(notification.enter_id);
+            notification.enter_id = 0;
+        }
+        if (notification.leave_id > 0) {
+            notification.actor.disconnect(notification.leave_id);
+            notification.leave_id = 0;
+        }
+
+        notification.actor.opacity = (notification._table.get_theme_node().get_length('opacity') / global.ui_scale) || 255;
+
         notification.actor.unparent();
         let existing_index = this.notifications.indexOf(notification);
-        if (existing_index != -1) {
+        if (existing_index != -1) {	// This notification is already listed.
             if (notification._destroyed) {
                 this.notifications.splice(existing_index, 1);
-            }
-            else {
+            } else {
                 notification._inNotificationBin = true;
                 global.reparentActor(notification.actor, this._notificationbin);
                 notification.expand();
@@ -103,19 +127,22 @@ MyApplet.prototype = {
             }
             this.update_list();
             return;
-        }
-        if (notification._destroyed) {
+        } else if (notification._destroyed) {
             return;
         }
+        // Add notification to list.
         notification._inNotificationBin = true;
         this.notifications.push(notification);
+        // Steal the notication panel.
         notification.expand();
         this._notificationbin.add(notification.actor)
         notification.actor._parent_container = this._notificationbin;
         notification.actor.add_style_class_name('notification-applet-padding');
+        // Register for desctruction.
         notification.connect('clicked', Lang.bind(this, this._item_clicked, false));
         notification.connect('destroy', Lang.bind(this, this._item_clicked, true));
         notification._timeLabel.show();
+
         this.update_list();
     },
 
@@ -132,13 +159,14 @@ MyApplet.prototype = {
 
     update_list: function () {
         try {
-            this.notif_count = this.notifications.length;
-            if (this.notif_count > 0) {
-                //this.clear_separator.actor.show();
+            let count = this.notifications.length;
+            if (count > 0) {	// There are notifications.
+                this.actor.show();
                 this.clear_action.actor.show();
-                this.set_applet_label(this.notif_count.toString());
+                this.set_applet_label(count.toString());
+                // Find max urgency and derive list icon.
                 let max_urgency = -1;
-                for (let i = 0; i < this.notif_count; i++) {
+                for (let i = 0; i < count; i++) {
                     let cur_urgency = this.notifications[i].urgency;
                     if (cur_urgency > max_urgency)
                         max_urgency = cur_urgency;
@@ -160,14 +188,16 @@ MyApplet.prototype = {
                         }
                         break;
                 }
-            } else {
+            } else {	// There are no notifications.
                 this._blinking = false;
                 this.set_applet_label('');
                 this.set_applet_icon_symbolic_name("empty-notif");
-                //this.clear_separator.actor.hide();
                 this.clear_action.actor.hide();
+                if (!this.showEmptyTray) {
+                    this.actor.hide();
+                }
             }
-            this.menu_label.label.set_text(stringify(this.notif_count));
+            this.menu_label.label.set_text(stringify(count));
             this._notificationbin.queue_relayout();
         }
         catch (e) {
@@ -185,6 +215,14 @@ MyApplet.prototype = {
         }
         this.notifications = [];
         this.update_list();
+    },
+
+    _show_hide_tray: function() {	// Show or hide the notification tray.
+        if (this.notifications.length || this.showEmptyTray) {
+            this.actor.show();
+        } else {
+            this.actor.hide();
+        }
     },
 
     on_panel_edit_mode_changed: function () {

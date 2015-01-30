@@ -4,61 +4,30 @@ const Gio = imports.gi.Gio;
 const Lang = imports.lang;
 const Util = imports.misc.util;
 const Meta = imports.gi.Meta;
-const DBus = imports.dbus;
+
+const MK = imports.gi.CDesktopEnums.MediaKeyType;
+const CinnamonDesktop = imports.gi.CinnamonDesktop;
 
 const CSD_DBUS_NAME = "org.cinnamon.SettingsDaemon";
 const CSD_DBUS_PATH = "/org/cinnamon/SettingsDaemon/KeybindingHandler";
 
-const CUSTOM_KEYS_PARENT_SCHEMA = "org.cinnamon.keybindings";
-const CUSTOM_KEYS_BASENAME = "/org/cinnamon/keybindings/custom-keybindings";
-const CUSTOM_KEYS_SCHEMA = "org.cinnamon.keybindings.custom-keybinding";
+const CUSTOM_KEYS_PARENT_SCHEMA = "org.cinnamon.desktop.keybindings";
+const CUSTOM_KEYS_BASENAME = "/org/cinnamon/desktop/keybindings/custom-keybindings";
+const CUSTOM_KEYS_SCHEMA = "org.cinnamon.desktop.keybindings.custom-keybinding";
 
-const MEDIA_KEYS_SCHEMA = "org.cinnamon.settings-daemon.plugins.media-keys"
+const MEDIA_KEYS_SCHEMA = "org.cinnamon.desktop.keybindings.media-keys";
 
-/* Enums and gsettings key names - enums for ref, to match up with
-   cinnamon-settings-daemon shortcuts-list.h
+const iface = "\
+    <node> \
+      <interface name='org.cinnamon.SettingsDaemon.KeybindingHandler'> \
+        <annotation name='org.freedesktop.DBus.GLib.CSymbol' value='csd_media_keys_manager'/> \
+        <method name='HandleKeybinding'> \
+          <arg name='type' direction='in' type='u'/> \
+        </method> \
+      </interface> \
+    </node>";
 
-   value: enum value, of MediaKeyType
-   key: gsettings key (in media-keys schema)
-   kb: hardcoded keybinding
-
-   key and kb are mutually exclusive, as in shortcuts-list.h
-   Eventually maybe hardcoded bindings should be configurable
-
-   We don't need everything here, just items we may want to access
-   while a modal cinnamon dialog is open, otherwise we're better off
-   just having c-s-d handling it.
-*/
-
-var MediaKeyTypes = {
-  MUTE_KEY                    : {value: 3,  key: "volume-mute",             kb: null                    },
-  VOLUME_DOWN_KEY             : {value: 4,  key: "volume-down",             kb: null                    },
-  VOLUME_UP_KEY               : {value: 5,  key: "volume-up",               kb: null                    },
-  EJECT_KEY                   : {value: 11, key: "eject",                   kb: null                    },
-  MEDIA_KEY                   : {value: 13, key: "media",                   kb: null                    },
-  SCREENSHOT_KEY              : {value: 19, key: "screenshot",              kb: null                    },
-  WINDOW_SCREENSHOT_KEY       : {value: 20, key: "window-screenshot",       kb: null                    },
-  PLAY_KEY                    : {value: 27, key: "play",                    kb: null                    },
-  PAUSE_KEY                   : {value: 28, key: "pause",                   kb: null                    },
-  STOP_KEY                    : {value: 29, key: "stop",                    kb: null                    },
-  PREVIOUS_KEY                : {value: 30, key: "previous",                kb: null                    },
-  NEXT_KEY                    : {value: 31, key: "next",                    kb: null                    },
-  REWIND_KEY                  : {value: 32, key: null,                      kb: "XF86AudioRewind"       },
-  FORWARD_KEY                 : {value: 33, key: null,                      kb: "XF86AudioForward"      },
-  REPEAT_KEY                  : {value: 34, key: null,                      kb: "XF86AudioRepeat"       },
-  RANDOM_KEY                  : {value: 35, key: null,                      kb: "XF86AudioRandomPlay"   }
-};
-
-const MediaKeysManagerInterface = {
-    name: 'org.cinnamon.SettingsDaemon.KeybindingHandler',
-    methods:
-        [
-            { name: 'HandleKeybinding', inSignature: 'u', outSignature: '' }
-        ],
-    signals: []
-};
-
-let MediaKeysManagerProxy = DBus.makeProxyClass(MediaKeysManagerInterface);
+const proxy = Gio.DBusProxy.makeProxyWrapper(iface);
 
 function KeybindingManager() {
     this._init();
@@ -66,16 +35,18 @@ function KeybindingManager() {
 
 KeybindingManager.prototype = {
     _init: function() {
-        this._proxy = new MediaKeysManagerProxy(DBus.session, CSD_DBUS_NAME, CSD_DBUS_PATH);
+        this._proxy = new proxy(Gio.DBus.session,
+                                'org.cinnamon.SettingsDaemon',
+                                '/org/cinnamon/SettingsDaemon/KeybindingHandler');
+
         this.bindings = [];
         this.kb_schema = Gio.Settings.new(CUSTOM_KEYS_PARENT_SCHEMA);
         this.setup_custom_keybindings();
         this.kb_schema.connect("changed::custom-list", Lang.bind(this, this.on_customs_changed));
 
-        this.csd_kb_settings = new Gio.Settings({ schema: MEDIA_KEYS_SCHEMA });
-        this.csd_kb_settings.connect("changed", Lang.bind(this, this.setup_media_keys));
+        this.media_key_settings = new Gio.Settings({ schema: MEDIA_KEYS_SCHEMA });
+        this.media_key_settings.connect("changed", Lang.bind(this, this.setup_media_keys));
         this.setup_media_keys();
-
     },
 
     on_customs_changed: function(settings, key) {
@@ -83,25 +54,42 @@ KeybindingManager.prototype = {
         this.setup_custom_keybindings();
     },
 
-    addHotKey: function(name, binding, callback) {
+    addHotKey: function(name, bindings_string, callback) {
+        if (!bindings_string)
+            return false;
+        return this.addHotKeyArray(name, bindings_string.split("::"), callback);
+    },
+
+    addHotKeyArray: function(name, bindings, callback) {
         if (this.bindings[name]) {
             global.display.remove_custom_keybinding(name);
         }
-        if (binding == "") {
-            global.logError("Empty keybinding set for " + name + ", ignoring");
-            if (this.bindings[name]) {
+
+        if (!bindings) {
+            global.logError("Missing bindings array for keybinding: " + name);
+            return false;
+        }
+
+        let empty = true;
+        for (let i = 0; empty && (i < bindings.length); i++) {
+            empty = bindings[i].toString().trim() == "";
+        }
+
+        if (empty) {
+            if (this.bindings[name])
                 this.bindings[name] = undefined;
-            }
             global.display.rebuild_keybindings();
             return true;
         }
-        if (!global.display.add_custom_keybinding(name, binding, callback)) {
+
+        if (!global.display.add_custom_keybinding(name, bindings, callback)) {
             global.logError("Warning, unable to bind hotkey with name '" + name + "'.  The selected keybinding could already be in use.");
             global.display.rebuild_keybindings();
             return false;
         } else {
-            this.bindings[name] = binding;
+            this.bindings[name] = bindings;
         }
+
         global.display.rebuild_keybindings();
         return true;
     },
@@ -119,9 +107,9 @@ KeybindingManager.prototype = {
             let custom_path = CUSTOM_KEYS_BASENAME + "/" + list[i] + "/";
             let schema = Gio.Settings.new_with_path(CUSTOM_KEYS_SCHEMA, custom_path);
             let command = schema.get_string("command");
-            let binding = schema.get_string("binding");
+            let binding = schema.get_strv("binding");
             let name = list[i];
-            this.addHotKey(name, binding, Lang.bind(this, function() {
+            this.addHotKeyArray(name, binding, Lang.bind(this, function() {
                 Util.spawnCommandLine(command);
             }))
         }
@@ -136,25 +124,29 @@ KeybindingManager.prototype = {
     },
 
     setup_media_keys: function() {
-        for (let type in MediaKeyTypes) {
-            if (MediaKeyTypes[type].key) {
-                let keybinding = this.csd_kb_settings.get_string(MediaKeyTypes[type].key);
-                this.addHotKey("settings-daemon-" + type.toString(),
-                               keybinding,
-                               Lang.bind(this, this.on_media_key_pressed, MediaKeyTypes[type].value));
-            } else if (MediaKeyTypes[type].kb) {
-                let keybinding = MediaKeyTypes[type].kb;
-                this.addHotKey("settings-daemon-" + type.toString(),
-                               keybinding,
-                               Lang.bind(this, this.on_media_key_pressed, MediaKeyTypes[type].value));
-            } else {
-                global.logError("Invalid media-keys keybinding: " + type.toString());
-            }
+        for (let i = 0; i < MK.SEPARATOR; i++) {
+            let bindings = this.media_key_settings.get_strv(CinnamonDesktop.desktop_get_media_key_string(i));
+            this.addHotKeyArray("media-keys-" + i.toString(),
+                           bindings,
+                           Lang.bind(this, this.on_global_media_key_pressed, i));
         }
+
+        for (let i = MK.SEPARATOR + 1; i < MK.LAST; i++) {
+            let bindings = this.media_key_settings.get_strv(CinnamonDesktop.desktop_get_media_key_string(i));
+            this.addHotKeyArray("media-keys-" + i.toString(),
+                           bindings,
+                           Lang.bind(this, this.on_media_key_pressed, i));
+        }
+        return true;
+    },
+
+    on_global_media_key_pressed: function(display, screen, event, kb, action) {
+        this._proxy.HandleKeybindingRemote(action);
     },
 
     on_media_key_pressed: function(display, screen, event, kb, action) {
-        this._proxy.HandleKeybindingRemote(action);
+        if (Main.modalCount == 0 && !Main.overview.visible && !Main.expo.visible)
+            this._proxy.HandleKeybindingRemote(action);
     }
 };
 Signals.addSignalMethods(KeybindingManager.prototype);

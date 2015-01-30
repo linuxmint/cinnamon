@@ -64,10 +64,8 @@ def removeEmptyFolders(path):
         os.rmdir(path)
 
 class Spice_Harvester:
-    def __init__(self, collection_type, window, builder, noun, pl_noun):
-        self.collection_type = collection_type
-        self.noun = noun
-        self.pl_noun = pl_noun
+    def __init__(self, collection_type, window):
+        self.collection_type = collection_type        
         self.cache_folder = self.get_cache_folder()
         self.install_folder = self.get_install_folder()
         self.index_cache = {}
@@ -80,10 +78,13 @@ class Spice_Harvester:
             self.has_cache = True
         
         self.window = window
-        self.builder = builder
-
-
+        self.builder = Gtk.Builder()
+        self.builder.add_from_file("/usr/lib/cinnamon-settings/cinnamon-settings-spice-progress.ui")
         self.progress_window = self.builder.get_object("progress_window")
+        self.progress_window.set_transient_for(window)
+        self.progress_window.set_destroy_with_parent(True)
+        self.progress_window.set_modal(True)
+        self.progress_window.set_position(Gtk.WindowPosition.CENTER_ON_PARENT)
         self.progress_button_abort = self.builder.get_object("btnProgressAbort")
         self.progress_window.connect("delete-event", self.on_progress_close)
         self.progresslabel = self.builder.get_object('progresslabel')
@@ -243,7 +244,7 @@ class Spice_Harvester:
         if (self.has_cache and not force):
             self.load_cache()
         else:
-            self.progresslabel.set_text(_("Refreshing %s index...") % (self.noun))
+            self.progresslabel.set_text(_("Refreshing index..."))
             self.progress_window.show()
             self.refresh_cache()
 
@@ -277,7 +278,7 @@ class Spice_Harvester:
             self.errorMessage(_("Something went wrong with the spices download.  Please try refreshing the list again."), str(detail))
 
     def load_assets(self):
-        self.progresslabel.set_text(_("Refreshing %s cache...") % (self.noun))
+        self.progresslabel.set_text(_("Refreshing cache..."))
         self.progress_button_abort.set_sensitive(True)
         needs_refresh = 0
         used_thumbs = []

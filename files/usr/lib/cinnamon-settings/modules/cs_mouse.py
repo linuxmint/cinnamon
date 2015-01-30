@@ -1,13 +1,12 @@
 #!/usr/bin/env python
 
-import os
 from gi.repository import Gtk, Gdk, GLib
 from SettingsWidgets import *
 
 class Module:
     def __init__(self, content_box):
         keywords = _("mouse, touchpad, synaptic, double-click")
-        sidePage = SidePage(_("Mouse and Touchpad"), "cs-mouse", keywords, content_box, 500, module=self)
+        sidePage = SidePage(_("Mouse and Touchpad"), "cs-mouse", keywords, content_box, 520, module=self)
         self.sidePage = sidePage
         self.comment = _("Control mouse and touchpad settings")
         self.name = "mouse"
@@ -67,7 +66,7 @@ class Module:
             section.add_expand(GSettingsRange(_("Timeout:"), _("Short"), _("Long"), 100, 1000, False, "int", False, "org.cinnamon.settings-daemon.peripherals.mouse", "double-click", None, adjustment_step = 1))
             widget = Gtk.Button.new_with_label(_("Double-click test"))
             widget.connect("button-press-event", self.test_button_clicked)
-            section.add(widget)
+            section.add_expand(widget)
             vbox.add(section)
 
             vbox.add(Gtk.Separator.new(Gtk.Orientation.HORIZONTAL))         
@@ -85,8 +84,8 @@ class Module:
 
             section = Section(_("General"))  
             section.add(GSettingsCheckButton(_("Enable touchpad"), "org.cinnamon.settings-daemon.peripherals.touchpad", "touchpad-enabled", None))
+            section.add(GSettingsCheckButton(_("Tap to click"), "org.cinnamon.settings-daemon.peripherals.touchpad", "tap-to-click", "org.cinnamon.settings-daemon.peripherals.touchpad/touchpad-enabled"))   
             section.add(GSettingsCheckButton(_("Disable touchpad while typing"), "org.cinnamon.settings-daemon.peripherals.touchpad", "disable-while-typing", "org.cinnamon.settings-daemon.peripherals.touchpad/touchpad-enabled"))
-            section.add(GSettingsCheckButton(_("Enable mouseclicks with touchpad"), "org.cinnamon.settings-daemon.peripherals.touchpad", "tap-to-click", "org.cinnamon.settings-daemon.peripherals.touchpad/touchpad-enabled"))   
             vbox.add(section)
             
             vbox.add(Gtk.Separator.new(Gtk.Orientation.HORIZONTAL))
@@ -104,7 +103,19 @@ class Module:
             section = Section(_("Pointer Speed"))  
             section.add_expand(GSettingsRange(_("Acceleration:"), _("Slow"), _("Fast"), 1.0, 10.0, False, "double", False, "org.cinnamon.settings-daemon.peripherals.touchpad", "motion-acceleration", "org.cinnamon.settings-daemon.peripherals.touchpad/touchpad-enabled", adjustment_step = 1.0))
             section.add_expand(GSettingsRange(_("Sensitivity:"), _("Low"), _("High"), 1, 10, False, "int", False, "org.cinnamon.settings-daemon.peripherals.touchpad", "motion-threshold", "org.cinnamon.settings-daemon.peripherals.touchpad/touchpad-enabled", adjustment_step = 1))
-            vbox.add(section)                            
+            vbox.add(section) 
+
+            vbox.add(Gtk.Separator.new(Gtk.Orientation.HORIZONTAL))
+                           
+            section = Section(_("Advanced"))
+            section.add(Gtk.Label(_("Options for single-button touchpads:")))
+
+
+            button_list = [[0, _("Disabled")], [1, _("Left button")], [2, _("Middle button")], [3, _("Right button")]]
+
+            section.add_indented(GSettingsIntComboBox(_("Two-finger click emulation:"), "org.cinnamon.settings-daemon.peripherals.touchpad", "two-finger-click", "org.cinnamon.settings-daemon.peripherals.touchpad/touchpad-enabled", button_list, False))
+            section.add_indented(GSettingsIntComboBox(_("Three-finger click emulation:"), "org.cinnamon.settings-daemon.peripherals.touchpad", "three-finger-click", "org.cinnamon.settings-daemon.peripherals.touchpad/touchpad-enabled", button_list, False))
+            vbox.add(section)
             
             self.touchbox.pack_start(vbox, False, False, 2)                
 
@@ -119,4 +130,3 @@ class Module:
     def reset_test_button(self, widget):
         widget.set_label(_("Double-click test"))
         return False
-

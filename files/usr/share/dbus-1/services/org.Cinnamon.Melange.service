@@ -1,0 +1,4 @@
+[D-BUS Service]
+Name=org.Cinnamon.Melange
+Exec=/usr/bin/cinnamon-looking-glass daemon
+

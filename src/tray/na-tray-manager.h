@@ -63,6 +63,7 @@ struct _NaTrayManager
 
   GList *messages;
   GHashTable *socket_table;
+  gint scale;
 };
 
 struct _NaTrayManagerClass
@@ -101,7 +102,8 @@ void            na_tray_manager_set_colors      (NaTrayManager      *manager,
 						 GdkColor           *error,
 						 GdkColor           *warning,
 						 GdkColor           *success);
-
+void            na_tray_manager_set_scale       (NaTrayManager      *manager,
+                                                 gint                scale);
 
 G_END_DECLS
 

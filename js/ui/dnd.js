@@ -11,7 +11,7 @@ const Main = imports.ui.main;
 const Mainloop = imports.mainloop;
 const Gio = imports.gi.Gio;
 const Desklet = imports.ui.desklet;
-
+const Meta = imports.gi.Meta
 const Params = imports.misc.params;
 
 // Time to scale down to maxDragActorSize
@@ -285,6 +285,8 @@ _Draggable.prototype = {
                         // _dragComplete is not always called by _cancelDrag.
                         this._dragComplete();
                     }
+                    this._dragEventTimeoutId = 0;
+                    return false;
                 }));
         }
     },
@@ -364,6 +366,8 @@ _Draggable.prototype = {
         this._dragActor.raise_top();
         Cinnamon.util_set_hidden_from_pick(this._dragActor, true);
 
+        Main.pushModal(this._dragActor, global.get_current_time());
+
         this._dragOrigOpacity = this._dragActor.opacity;
         if (this._dragActorOpacity != undefined)
             this._dragActor.opacity = this._dragActorOpacity;
@@ -423,11 +427,6 @@ _Draggable.prototype = {
     _maybeStartDrag:  function(event) {
         if (this._dragCheckId)
             return true;
-        // See if the user has moved the mouse enough to trigger a drag
-        if (this._dragCheckId) {
-            Mainloop.source_remove(this._dragCheckId);
-            this._dragCheckId = null;
-        }
 
         this._dragCheckId = Mainloop.timeout_add(10, Lang.bind(this, this._dragCheckCallback));
 
@@ -494,6 +493,13 @@ _Draggable.prototype = {
                     if (this._setCursor(result)) {
                         return true;
                     }
+                }
+            }
+
+            if (target instanceof Clutter.Stage || target instanceof Meta.WindowActor) {
+                let result = DragMotionResult.NO_DROP;
+                if (this._setCursor(result)) {
+                    return true;
                 }
             }
 
@@ -927,5 +933,20 @@ GenericDragPlaceholderItem.prototype = {
     _init: function() {
         GenericDragItemContainer.prototype._init.call(this);
         this.setChild(new St.Bin({ style_class: 'drag-placeholder' }));
+    }
+};
+
+function LauncherDraggable() {
+    this._init();
+}
+
+LauncherDraggable.prototype = {
+    _init: function() {
+        this.launchersBox = null;
+    },
+
+    getId: function() {
+        /* Implemented by draggable launchers */
+        global.logError("Could not complete drag-and-drop.  Launcher does not implement LauncherDraggable");
     }
 };

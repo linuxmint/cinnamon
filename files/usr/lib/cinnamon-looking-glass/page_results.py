@@ -59,5 +59,6 @@ class ModulePage(BaseListView):
                 print e
 
     def onInspectorDone(self):
+        cinnamonLog.show()
         cinnamonLog.activatePage("results")
         self.getUpdates()

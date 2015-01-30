@@ -9,7 +9,7 @@ import PIL
 from PIL import Image
 from random import randint
 
-gettext.install("cinnamon", "/usr/share/cinnamon/locale")
+gettext.install("cinnamon", "/usr/share/locale")
 
 (INDEX_USER_OBJECT, INDEX_USER_PICTURE, INDEX_USER_DESCRIPTION) = range(3)
 (INDEX_GID, INDEX_GROUPNAME) = range(2)
@@ -45,9 +45,10 @@ class GroupDialog (Gtk.Dialog):
             print detail        
 
     def _on_entry_changed(self, entry):
-        if " " in entry.get_text():
+        name = entry.get_text()
+        if " " in name or name.lower() != name:
             entry.set_icon_from_stock(Gtk.EntryIconPosition.SECONDARY, Gtk.STOCK_DIALOG_WARNING)
-            entry.set_icon_tooltip_text(Gtk.EntryIconPosition.SECONDARY, _("The group name cannot contain space characters"))
+            entry.set_icon_tooltip_text(Gtk.EntryIconPosition.SECONDARY, _("The group name cannot contain upper-case or space characters"))
             self.set_response_sensitive(Gtk.ResponseType.OK, False)
         else:
             entry.set_icon_from_stock(Gtk.EntryIconPosition.SECONDARY, None)
@@ -144,11 +145,12 @@ class EditableEntry (Gtk.Notebook):
 
 class PasswordDialog(Gtk.Dialog):
 
-    def __init__ (self, user, password_mask):            
+    def __init__ (self, user, password_mask, group_mask):            
         super(PasswordDialog, self).__init__()
 
         self.user = user
         self.password_mask = password_mask
+        self.group_mask = group_mask
 
         self.set_modal(True)
         self.set_skip_taskbar_hint(True)
@@ -212,10 +214,16 @@ class PasswordDialog(Gtk.Dialog):
             self.destroy()
 
     def change_password(self):        
-        newpass = self.new_password.get_text()        
+        newpass = self.new_password.get_text()
         self.user.set_password(newpass, "")
+        os.system("gpasswd -d '%s' nopasswdlogin" % self.user.get_user_name())
+        mask = self.group_mask.get_text()
+        mask = mask.split(", ")
+        mask.remove("nopasswdlogin")
+        mask = ", ".join(mask)
+        self.group_mask.set_text(mask)        
         self.password_mask.set_text(u'\u2022\u2022\u2022\u2022\u2022\u2022')
-        self.destroy()            
+        self.destroy()  
 
     def set_passwords_visibility(self):
         visible = self.show_password.get_active()       
@@ -306,9 +314,9 @@ class NewUserDialog(Gtk.Dialog):
         fullname = self.realname_entry.get_text()
         username = self.username_entry.get_text()
         valid = True
-        if " " in username:
+        if " " in username or username.lower() != username:
             self.username_entry.set_icon_from_stock(Gtk.EntryIconPosition.SECONDARY, Gtk.STOCK_DIALOG_WARNING)
-            self.username_entry.set_icon_tooltip_text(Gtk.EntryIconPosition.SECONDARY, _("The username cannot contain space characters"))
+            self.username_entry.set_icon_tooltip_text(Gtk.EntryIconPosition.SECONDARY, _("The username cannot contain upper-case or space characters"))
             valid = False
         else:
             self.username_entry.set_icon_from_stock(Gtk.EntryIconPosition.SECONDARY, None)     
@@ -441,7 +449,7 @@ class Module:
                     for picture in pictures:
                         path = os.path.join(face_dir, picture)            
                         file = Gio.File.new_for_path(path)
-                        file_icon = Gio.FileIcon().new(file)
+                        file_icon = Gio.FileIcon.new(file)
                         image = Gtk.Image.new_from_gicon (file_icon, Gtk.IconSize.DIALOG)            
                         menuitem = Gtk.MenuItem()
                         menuitem.add(image)
@@ -508,7 +516,7 @@ class Module:
         model, treeiter = self.users_treeview.get_selection().get_selected()
         if treeiter != None:
             user = model[treeiter][INDEX_USER_OBJECT]       
-            dialog = PasswordDialog(user, self.password_mask)                
+            dialog = PasswordDialog(user, self.password_mask, self.groups_label)                
             response = dialog.run()
 
     def _on_groups_button_clicked(self, widget): 
@@ -594,6 +602,8 @@ class Module:
 
     def update_preview_cb (self, dialog, preview):      
         filename = dialog.get_preview_filename()
+        if filename is None:
+            return        
         dialog.set_preview_widget_active(False)
         if os.path.isfile(filename):
             pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(filename, 128, 128)
@@ -660,10 +670,13 @@ class Module:
 #USER CALLBACKS
 
     def on_user_selection(self, selection):
+        self.password_button.set_sensitive(True)
+        self.password_button.set_tooltip_text("")
+
         model, treeiter = selection.get_selected()
         if treeiter != None:
             user = model[treeiter][INDEX_USER_OBJECT]
-            self.builder.get_object("button_delete_user").set_sensitive(True)   
+            self.builder.get_object("button_delete_user").set_sensitive(True)
             self.realname_entry.set_text(user.get_real_name())
 
             if user.get_password_mode() == AccountsService.UserPasswordMode.REGULAR:
@@ -698,6 +711,10 @@ class Module:
             else:
                 self.builder.get_object("button_delete_user").set_sensitive(True)
                 self.builder.get_object("button_delete_user").set_tooltip_text("")
+
+            if os.path.exists("/home/.ecryptfs/%s" % user.get_user_name()):
+                self.password_button.set_sensitive(False)
+                self.password_button.set_tooltip_text(_("The user's home directory is encrypted. To preserve access to the encrypted directory, only the user should change this password."))
 
         else:
             self.builder.get_object("button_delete_user").set_sensitive(False)
@@ -740,9 +757,9 @@ class Module:
             piter = self.users.append(None, [new_user, pixbuf, description])
             # Add the user to his/her own group and sudo if Administrator was selected
             if dialog.account_type_combo.get_active() == 1:
-                os.system("usermod %s -G %s,sudo" % (username, username)) 
+                os.system("usermod %s -G %s,sudo,nopasswdlogin" % (username, username)) 
             else:
-                os.system("usermod %s -G %s" % (username, username))
+                os.system("usermod %s -G %s,nopasswdlogin" % (username, username))
             self.load_groups()
         dialog.destroy()
 
