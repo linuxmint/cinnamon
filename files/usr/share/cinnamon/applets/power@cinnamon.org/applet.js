@@ -310,4 +310,3 @@ function main(metadata, orientation, panel_height, instanceId) {
     let myApplet = new MyApplet(metadata, orientation, panel_height, instanceId);
     return myApplet;      
 }
-
