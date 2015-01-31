@@ -17,6 +17,7 @@ const Main = imports.ui.main;
 const Tweener = imports.ui.tweener;
 
 const WINDOW_ANIMATION_TIME = 0.25;
+const TILE_HUD_ANIMATION_TIME = 0.15;
 const DIM_TIME = 0.500;
 const DIM_DESATURATION = 0.6;
 const DIM_BRIGHTNESS = -0.1;
@@ -339,7 +340,7 @@ HudPreview.prototype = {
                            width: this._animatedW,
                            height: this._animatedH, 
                            opacity: 255,
-                           time: WINDOW_ANIMATION_TIME,
+                           time: TILE_HUD_ANIMATION_TIME,
                            transition: 'easeOutQuad' });
         }
     },
@@ -354,7 +355,7 @@ HudPreview.prototype = {
                            width: this._w,
                            height: this._h,
                            opacity: 0,
-                           time: WINDOW_ANIMATION_TIME,
+                           time: TILE_HUD_ANIMATION_TIME,
                            transition: 'easeOutQuad',
                            onComplete: Lang.bind(this, this._reset) });
     },
