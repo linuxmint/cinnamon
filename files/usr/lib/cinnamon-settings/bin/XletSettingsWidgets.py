@@ -242,22 +242,42 @@ class BaseWidget(object):
         self.dependents = []
         dep_key = self.get_dependency()
         if dep_key is not None:
-            if dep_key in self.settings_obj.factory.widgets:
-                self.settings_obj.factory.widgets[dep_key].add_dependent(self.key)
+            if dep_key[0] in self.settings_obj.factory.widgets:
+                self.settings_obj.factory.widgets[dep_key[0]].add_dependent(self.key, dep_key[1:3])
             else:
                 print ("Dependency key does not exist for key " + self.key + ".  The dependency MUST come before the dependent.  The UUID is: " + self.uuid)
 
     def on_settings_file_changed(self):
         pass
 
-    def add_dependent(self, key):
+    def add_dependent(self, key, arg):
         print ("Can only bind dependency to a CheckButton widget.  Ignoring dependency key.  The UUID is: " + self.uuid)
 
     def get_dependency(self):
         try:
-            return self.settings_obj.get_data(self.key)["dependency"]
+            dep = self.settings_obj.get_data(self.key)["dependency"]
         except:
             return None
+
+        dep = dep.split(" ")
+        key = dep[0]
+
+        if key[0] == "!":               #not operator
+            return (key[1:], "!")
+        elif len(dep) == 3:             #comparsion operator
+            operator = dep[1]
+            value = dep[2]
+            if value[0] in "'\"" and value[-1] in "'\"":    #string
+                value = value[1:-1]         #removing the quotes
+                if operator != "==" and operator != "!=":   #<, >, <= and >= operators should not be defined for strings
+                    print "Dependency key %s could not be parsed for key %s: the operator %s should not be used for strings.  The UUID is: %s" % (dep, self.key, operator, self.uuid)
+                    return None
+            else:
+                value = float(value)
+
+            return (key, operator, value)
+        else:                           #no operator
+            return (key,)
 
     def update_dependents(self):
         pass
@@ -421,6 +441,45 @@ class BaseWidget(object):
         except:
             return 200            
 
+class DependencyWidgetMiscType(object):
+    def add_dependent(self, widget, arg):
+        self.dependents.append((widget, arg))
+
+    def update_dependents(self):
+        val = self.get_val()
+        try:
+            val = float(val)
+        except:
+            pass
+
+        for dep in self.dependents:
+            if dep[1]:
+                dep_state = None
+                if not dep[1][0]:
+                    dep_state = bool(val)
+                elif dep[1][0] == "!":          # not operator
+                    dep_state = not bool(val)
+                elif dep[1][1] is not None:
+                    if dep[1][0] == "==":       # == operator
+                        dep_state = val == dep[1][1]
+                    elif dep[1][0] == "!=":     # != operator
+                        dep_state = val != dep[1][1]
+                    elif type(val) == float:
+                        if dep[1][0] == "<":        # < operator
+                            dep_state = val < dep[1][1]
+                        elif dep[1][0] == "<=":     # <= operator
+                            dep_state = val <= dep[1][1]
+                        elif dep[1][0] == ">":      # > operator
+                            dep_state = val > dep[1][1]
+                        elif dep[1][0] == ">=":     # >= operator
+                            dep_state = val >= dep[1][1]
+
+                if dep_state is not None:
+                    self.settings_obj.factory.widgets[dep[0]].update_dep_state(dep_state)
+                else:
+                    print "Dependent %s of %s can not be updated.  The UUID is: %s" % (dep[0], self.key, self.uuid)
+
+
 def set_tt(tt, *widgets):
     for widget in widgets:
         widget.set_tooltip_text(tt)
@@ -460,8 +519,11 @@ class CheckButton(Gtk.CheckButton, BaseWidget):
         self.handler = self.connect('toggled', self.on_my_value_changed)
         set_tt(self.get_tooltip(), self)
 
-    def add_dependent(self, widget):
-        self.dependents.append(widget)
+    def add_dependent(self, widget, arg):
+        if arg and arg[0] != "!":
+            print ("The operator '" + arg[0] + "' is not supported by a CheckBox widget as dependence. The UUID is: " + self.uuid)
+            arg = ()
+        self.dependents.append((widget, arg))
 
     def on_my_value_changed(self, widget):
         self.set_val(self.get_active())
@@ -469,12 +531,17 @@ class CheckButton(Gtk.CheckButton, BaseWidget):
 
     def update_dependents(self):
         for dep in self.dependents:
-            self.settings_obj.factory.widgets[dep].update_dep_state(self.get_active())
+            if(dep[1] and dep[1][0] == "!"): #not operator
+                self.settings_obj.factory.widgets[dep[0]].update_dep_state(not self.get_active())
+            else:
+                self.settings_obj.factory.widgets[dep[0]].update_dep_state(self.get_active())
 
     def on_settings_file_changed(self):
         self.handler_block(self.handler)
         self.set_active(self.get_val())
         self.handler_unblock(self.handler)
+
+        self.update_dependents()
 
     def update_dep_state(self, active):
         self.set_sensitive(active)
@@ -637,7 +704,7 @@ class ColorChooser(Gtk.HBox, BaseWidget):
     def update_dep_state(self, active):
         self.chooser.set_sensitive(active)
 
-class ComboBox(Gtk.HBox, BaseWidget):
+class ComboBox(Gtk.HBox, DependencyWidgetMiscType, BaseWidget):
     def __init__(self, key, settings_obj, uuid):
         BaseWidget.__init__(self, key, settings_obj, uuid)
         super(ComboBox, self).__init__()
@@ -681,6 +748,8 @@ class ComboBox(Gtk.HBox, BaseWidget):
         if tree_iter != None:
             self.set_val(self.model[tree_iter][1])
 
+        self.update_dependents()
+
     def on_settings_file_changed(self):
         self.combo.handler_block(self.handler)
         options = self.get_options()
@@ -689,10 +758,12 @@ class ComboBox(Gtk.HBox, BaseWidget):
                 self.combo.set_active_id(option_name)
         self.combo.handler_unblock(self.handler)
 
+        self.update_dependents()
+
     def update_dep_state(self, active):
         self.combo.set_sensitive(active)
 
-class RadioGroup(Gtk.VBox, BaseWidget):
+class RadioGroup(Gtk.VBox, DependencyWidgetMiscType, BaseWidget):
     def __init__(self, key, settings_obj, uuid):
         BaseWidget.__init__(self, key, settings_obj, uuid)
         super(RadioGroup, self).__init__()
@@ -762,6 +833,7 @@ class RadioGroup(Gtk.VBox, BaseWidget):
                 self.update_custom_settings_value()
             else:
                 self.update_settings_value(widget.orig_key)
+            self.update_dependents()
 
     def update_custom_settings_value(self):
         self.set_val(self.entry.get_text())
@@ -798,6 +870,8 @@ class RadioGroup(Gtk.VBox, BaseWidget):
                 self.custom_button.handler_block(self.custom_button.handler)
                 self.custom_button.set_active(True)
                 self.custom_button.handler_unblock(self.custom_button.handler)
+
+        self.update_dependents()
 
     def update_dep_state(self, active):
         for button in self.group:
