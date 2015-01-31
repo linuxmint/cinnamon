@@ -103,7 +103,8 @@ StThemeNode *st_theme_node_new (StThemeContext *context,
                                 const char     *element_id,
                                 const char     *element_class,
                                 const char     *pseudo_class,
-                                const char     *inline_style);
+                                const char     *inline_style,
+                                gboolean        important);
 
 StThemeNode *st_theme_node_get_parent (StThemeNode *node);
 
