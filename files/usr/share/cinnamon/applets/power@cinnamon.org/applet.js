@@ -169,7 +169,7 @@ MyApplet.prototype = {
                 this._batteryItem.actor.hide();                
                 return;
             }
-            let [device_id, device_type, icon, percentage, state, seconds] = device;
+            let [device_id, device_type, icon, percentage, state, seconds] = device[0];
             if (device_type == UPDeviceType.BATTERY) {
                 this._hasPrimary = true;
                 let time = Math.round(seconds / 60);
