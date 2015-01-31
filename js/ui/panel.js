@@ -412,6 +412,9 @@ PanelManager.prototype = {
     },
 
     _showDummyPanels: function(callback) {
+        if (this.addPanelMode)
+            return false;
+
         let monitorCount = global.screen.get_n_monitors();
         let panelCount = monitorCount * 2;
         this.dummyCallback = callback;
@@ -423,37 +426,37 @@ PanelManager.prototype = {
             panelCount --;
         }
 
-        if (panelCount != 0) {
-            for (let i = 0; i < monitorCount; i++) {
-                for (let j = 0; j < 2; j++) {
-                    if (this.dummyPanels[i][j] != false) {
-                        this.dummyPanels[i][j] = new PanelDummy(i, j == 0, callback);
-                    }
+        if (panelCount == 0)
+            return false;
+
+        for (let i = 0; i < monitorCount; i++) {
+            for (let j = 0; j < 2; j++) {
+                if (this.dummyPanels[i][j] != false) {
+                    this.dummyPanels[i][j] = new PanelDummy(i, j == 0, callback);
                 }
             }
-
-            this.addPanelMode = true;
-            Main.keybindingManager.addHotKey('close-add-panel', 'Escape', Lang.bind(this, function() {
-                if (this.addPanelMode)
-                    this._destroyDummyPanels();
-            }));
-
-            if (!this._osd) {
-                this._osd = new St.Bin({style_class: "panel-change-osd"});
-                let text = new St.Label({text: _("Select new position of panel. Esc to cancel.")});
-                this._osd.set_child(text);
-                Main.layoutManager.addChrome(this._osd, { visibleInFullscreen: false, affectsInputRegion: false});
-            }
-
-            let monitor = Main.layoutManager.primaryMonitor;
-            let x = monitor.x + (monitor.width - this._osd.width)/2;
-            let y = monitor.y + (monitor.height - this._osd.height)/2;
-
-            this._osd.set_position(x, y);
-            this._osd.show();
-            return true;
         }
-        return false;
+
+        this.addPanelMode = true;
+        Main.keybindingManager.addHotKey('close-add-panel', 'Escape', Lang.bind(this, function() {
+            if (this.addPanelMode)
+                this._destroyDummyPanels();
+        }));
+
+        if (!this._osd) {
+            this._osd = new St.Bin({style_class: "panel-change-osd"});
+            let text = new St.Label({text: _("Select new position of panel. Esc to cancel.")});
+            this._osd.set_child(text);
+            Main.layoutManager.addChrome(this._osd, { visibleInFullscreen: false, affectsInputRegion: false});
+        }
+
+        let monitor = Main.layoutManager.primaryMonitor;
+        let x = monitor.x + (monitor.width - this._osd.width)/2;
+        let y = monitor.y + (monitor.height - this._osd.height)/2;
+
+        this._osd.set_position(x, y);
+        this._osd.show();
+        return true;
     }
 }
 
