@@ -7,7 +7,6 @@ import tempfile
 import shutil
 import sqlite3
 import json
-import dbus
 import urlparse
 import subprocess
 
@@ -78,7 +77,4 @@ if __name__ == "__main__":
             if results[i]['domain'] in domains_to_favicons:
                 results[i]['icon_filename'] = domains_to_favicons[results[i]['domain']]
         
-        session_bus = dbus.SessionBus()
-        dbus = session_bus.get_object("org.Cinnamon", "/org/Cinnamon")
-        PushResults = dbus.get_dbus_method('PushSearchProviderResults', 'org.Cinnamon')
-        PushResults('chromium-history@cinnamon.org', sys.argv[1], json.dumps(results))
+        print json.dumps(results)

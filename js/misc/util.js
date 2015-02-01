@@ -63,6 +63,14 @@ function spawn(argv) {
     return pid;
 }
 
+let subprocess_id = 0;
+let subprocess_callbacks = {};
+function spawn_async(args, callback) {
+    subprocess_id++;
+    subprocess_callbacks[subprocess_id] = callback;
+    spawn(new Array("cinnamon-subprocess-wrapper", subprocess_id.toString()).concat(args));
+}
+
 // spawnCommandLine:
 // @command_line: a command line
 //

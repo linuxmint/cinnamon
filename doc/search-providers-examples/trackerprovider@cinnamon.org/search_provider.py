@@ -4,7 +4,6 @@ import subprocess
 import sys
 import gettext
 import json
-import dbus
 from gi.repository import Tracker
 
 gettext.install("cinnamon", "/usr/share/locale")
@@ -60,8 +59,4 @@ if __name__ == "__main__":
     final_results = []
     for i in results:
         final_results += results[i]
-    print final_results
-    session_bus = dbus.SessionBus()
-    dbus = session_bus.get_object("org.Cinnamon", "/org/Cinnamon")
-    PushResults = dbus.get_dbus_method('PushSearchProviderResults', 'org.Cinnamon')
-    PushResults('trackerprovider@cinnamon.org', sys.argv[1], json.dumps(final_results))
+    print json.dumps(final_results)

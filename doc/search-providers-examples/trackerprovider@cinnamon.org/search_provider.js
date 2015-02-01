@@ -1,16 +1,18 @@
+const Lang = imports.lang;
 const Util = imports.misc.util;
 const Cinnamon = imports.gi.Cinnamon;
 const SearchProviderManager = imports.ui.searchProviderManager;
 
 var current_pattern;
 
-function dbus_push_results(pattern, results)
+function dbus_push_results(results, pattern)
 {
     var basename;
     var final_results = new Array();
     if (pattern == current_pattern)
     {
         try{
+            results = JSON.parse(results);
             for (var i in results)
             {
                 switch (results[i].type)
@@ -52,7 +54,7 @@ function dbus_push_results(pattern, results)
 function perform_search(pattern)
 {
     current_pattern = pattern;
-    Util.spawn(['python', SearchProviderManager.extensionMeta['trackerprovider@cinnamon.org'].path + '/search_provider.py', pattern]);
+    Util.spawn_async(['python', SearchProviderManager.extensionMeta['trackerprovider@cinnamon.org'].path + '/search_provider.py', pattern], Lang.bind(this, dbus_push_results, pattern));
 }
 
 function on_result_selected(result){
