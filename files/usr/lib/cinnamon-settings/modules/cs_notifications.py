@@ -44,6 +44,12 @@ class Module:
         section = Section(_("Behaviour"))
         section.add(GSettingsCheckButton(_("Display notifications"), "org.cinnamon.desktop.notifications", "display-notifications", None))
         section.add(GSettingsCheckButton(_("Remove notifications after their timeout is reached"), "org.cinnamon.desktop.notifications", "remove-old", None))
+        box = Gtk.HBox()
+        box.pack_start(GSettingsSpinButton(_("Notification timeout"), "org.cinnamon.desktop.notifications", "timeout-time", None, 0, 3600000, 100, 100, _("ms")), False, False, 20)
+        section.add_indented(box)
+        box = Gtk.HBox()
+        box.pack_start(GSettingsSpinButton(_("Critical notification timeout"), "org.cinnamon.desktop.notifications", "critical-timeout-time", None, 0, 3600000, 100, 100, _("ms")), False, False, 20)
+        section.add_indented(box)
         vbox.add(section)
         
         vbox.add(Gtk.Separator.new(Gtk.Orientation.HORIZONTAL)) 
@@ -56,13 +62,17 @@ class Module:
         box.pack_start(spinner, False, False, 20)
         section.add_indented(box)
         
-        section.add(Gtk.Label("")) #Empty row
+        vbox.add(section)
         
+        vbox.add(Gtk.Separator.new(Gtk.Orientation.HORIZONTAL))
+        vbox.add(Gtk.Label(""))
+        box = Gtk.HBox()
         button = Gtk.Button(label = _("Display a test notification"))
         button.connect("clicked", self.send_test)
-        section.add(button)
+        box.pack_start(button, True, True, 46)
         
-        vbox.add(section)
+        vbox.add(box)
+    
 
     def send_test(self, widget):
         n = Notify.Notification.new("This is a test notification", content, "dialog-warning")
