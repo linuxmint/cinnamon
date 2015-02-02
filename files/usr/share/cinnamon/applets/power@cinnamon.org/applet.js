@@ -59,6 +59,7 @@ DeviceItem.prototype = {
         this._box.add_actor(this._label);
         this.addActor(this._box);
 
+
         let percentLabel = new St.Label({ text: C_("percent of battery remaining", "%d%%").format(Math.round(percentage)) });
         this.addActor(percentLabel, { align: St.Align.END });
     },
@@ -91,6 +92,16 @@ DeviceItem.prototype = {
                 return _("Unknown");
         }
     }
+}
+
+function secondsToTime(sec){
+var d=new Date(0,0,0);
+d.setSeconds(+sec);   
+    return {
+        "h": d.getHours(),
+        "m": d.getMinutes(),
+        "s": d.getSeconds()
+    };
 }
 
 function MyApplet(metadata, orientation, panel_height, instanceId) {
@@ -140,8 +151,9 @@ MyApplet.prototype = {
             this._primaryPercentage = new St.Label();
             this._batteryItem.addActor(this._primaryPercentage, { align: St.Align.END });
             this.menu.addMenuItem(this._batteryItem);
+            this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
 
-            this._otherDevicePosition = 1;
+            this._otherDevicePosition = 2;
             
             this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
             this.menu.addSettingsAction(_("Power Settings"), 'power');
@@ -169,19 +181,20 @@ MyApplet.prototype = {
                 this._batteryItem.actor.hide();                
                 return;
             }
-            let [device_id, device_type, icon, percentage, state, seconds] = device[0];
+            let [device_id, device_type, icon, percentage, state, time] = device[0];
             if (device_type == UPDeviceType.BATTERY) {
                 this._hasPrimary = true;
-                let time = Math.round(seconds / 60);
+                let convTime = secondsToTime(time);
+                let hours = convTime.h;
+                let minutes = convTime.m;
+
                 if (time == 0) {
                     // 0 is reported when UPower does not have enough data
                     // to estimate battery life
                     this._batteryItem.label.text = _("Estimating...");
                 } else {
-                    let minutes = time % 60;
-                    let hours = Math.floor(time / 60);
                     let timestring;
-                    if (time > 60) {
+                    if (hours > 0) {
                         if (minutes == 0) {
                             timestring = ngettext("%d hour remaining", "%d hours remaining", hours).format(hours);
                         } else {
@@ -228,7 +241,7 @@ MyApplet.prototype = {
                		}
                	}
 
-                if (device_type == UPDeviceType.AC_POWER || (this._hasPrimary && device_id == this._primaryDeviceId))
+               if (device_type == UPDeviceType.AC_POWER)
                     continue;
 
                 let item = new DeviceItem (devices[i]);
@@ -261,12 +274,12 @@ MyApplet.prototype = {
     },
     
     _updateLabel: function() {
-        this._proxy.GetDevicesRemote(Lang.bind(this, function(results, error) {
+        this._proxy.GetPrimaryDeviceRemote(Lang.bind(this, function(results, error) {
             if (error) {
             	this._mainLabel.set_text("");
                 return;
             }
-            let devices = results[0];
+            let devices = results;
             for (let i = 0; i < devices.length; i++) {
                 let [device_id, device_type, icon, percentage, state, time] = devices[i];
                 if (device_type == UPDeviceType.BATTERY || device_id == this._primaryDeviceId) {
@@ -275,10 +288,8 @@ MyApplet.prototype = {
                         ;
                     }
                     else if (this.labelinfo == "time" && time != 0) {
-                        let seconds = Math.round(time / 60);
-                        let minutes = Math.floor(seconds % 60);
-                        let hours = Math.floor(seconds / 60);
-                        labelText = C_("time of battery remaining", "%d:%02d").format(hours,minutes);
+                        let convTime = secondsToTime(time);
+                        labelText = C_("time of battery remaining", "%d:%02d").format(convTime.h,convTime.m);
                     }
                     else if (this.labelinfo == "percentage" ||
                              (this.labelinfo == "percentage_time" && time == 0)) {
@@ -286,11 +297,9 @@ MyApplet.prototype = {
                     }
 
                     else if (this.labelinfo == "percentage_time") {
-                        let seconds = Math.round(time / 60);
-                        let minutes = Math.floor(seconds % 60);
-                        let hours = Math.floor(seconds / 60);
+                        let convTime = secondsToTime(time);
                         labelText = C_("percent of battery remaining", "%d%%").format(Math.round(percentage)) + " (" +
-                                    C_("time of battery remaining", "%d:%02d").format(hours,minutes) + ")";
+                                    C_("time of battery remaining", "%d:%02d").format(convTime.h,convTime.m) + ")";
                     }
                     this._mainLabel.set_text(labelText);
                     if (device_id == this._primaryDeviceId) {
