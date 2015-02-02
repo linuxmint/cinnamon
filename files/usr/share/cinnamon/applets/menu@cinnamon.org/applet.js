@@ -965,10 +965,6 @@ FavoritesBox.prototype = {
     handleDragOver : function(source, actor, x, y, time) {
         let app = source.app;
 
-        // Don't allow favoriting of transient apps
-        if (app == null || app.is_window_backed() || (!(source instanceof FavoritesButton) && app.get_id() in AppFavorites.getAppFavorites().getFavoriteMap()))
-            return DND.DragMotionResult.NO_DROP;
-
         let favorites = AppFavorites.getAppFavorites().getFavorites();
         let numFavorites = favorites.length;
 
@@ -986,7 +982,7 @@ FavoritesBox.prototype = {
             numChildren--;
         }
 
-        let pos = Math.round(y * numFavorites / boxHeight);
+        let pos = Math.round(y * numChildren / boxHeight);
 
         if (pos != this._dragPlaceholderPos && pos <= numFavorites) {
             if (this._animatingPlaceholdersCount > 0) {
@@ -1033,22 +1029,12 @@ FavoritesBox.prototype = {
                 this._dragPlaceholder.animateIn();
         }
 
-        let srcIsFavorite = (favPos != -1);
-
-        if (srcIsFavorite)
-            return DND.DragMotionResult.MOVE_DROP;
-
-        return DND.DragMotionResult.COPY_DROP;
+        return DND.DragMotionResult.MOVE_DROP;
     },
     
     // Draggable target interface
     acceptDrop : function(source, actor, x, y, time) {
         let app = source.app;
-
-        // Don't allow favoriting of transient apps
-        if (app == null || app.is_window_backed()) {
-            return false;
-        }
 
         let id = app.get_id();
 
