@@ -112,6 +112,8 @@ PanelManager.prototype = {
             this._loadPanel(parseInt(elements[0]), elements[1], elements[2]=="bottom");
         }
 
+        this._setMainPanel();
+
         this.addPanelMode = false;
 
         global.settings.connect("changed::panels-enabled", Lang.bind(this, this._onPanelsEnabledChanged));
@@ -121,7 +123,7 @@ PanelManager.prototype = {
         this._osd = null;
     },
 
-    /**
+   /**
      * disablePanels:
      *
      * Disables (hide and lock) all panels
@@ -361,6 +363,8 @@ PanelManager.prototype = {
 
         this.panels = newPanels;
         this.panelsMeta = newMeta;
+
+        this._setMainPanel();
     },
 
     _onMonitorsChanged: function() {
@@ -382,6 +386,8 @@ PanelManager.prototype = {
             this._destroyDummyPanels();
             this._showDummyPanels(this.dummyCallback);
         }
+
+        this._setMainPanel();
     },
 
     _onPanelEditModeChanged: function() {
@@ -457,8 +463,18 @@ PanelManager.prototype = {
         this._osd.set_position(x, y);
         this._osd.show();
         return true;
+    },
+
+    // Set Main.panel so that applets that look for it don't break
+    _setMainPanel: function() {
+        for (i = 0; i < this.panels.length; i++) {
+            if (this.panels[i]) {
+                Main.panel = this.panels[i];
+                break;
+            }
+        }
     }
-}
+} 
 
 /**
  * PanelDummy

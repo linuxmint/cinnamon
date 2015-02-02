@@ -87,6 +87,7 @@ const LAYOUT_CLASSIC = "classic";
 
 const CIN_LOG_FOLDER = GLib.get_home_dir() + '/.cinnamon/';
 
+let panel = null;
 let soundManager = null;
 let backgroundManager = null;
 let slideshowManager = null;
