@@ -22,7 +22,8 @@ LevelBar.prototype = {
 
         this.actor = new St.Bin({ style_class: 'level',
                                   x_fill: true,
-                                  y_fill: true });
+                                  y_fill: true,
+                                  important: true });
         this._bar = new St.DrawingArea();
         this._bar.connect('repaint', Lang.bind(this, this._repaint));
 
@@ -82,7 +83,8 @@ OsdWindow.prototype = {
         this._osdSettings.connect("changed::show-media-keys-osd", Lang.bind(this, this._onOsdSettingsChanged));
 
         this.actor = new St.BoxLayout({ style_class: 'osd-window',
-                                       vertical: true });
+                                       vertical: true,
+                                       important: true });
 
         this._icon = new St.Icon();
         this.actor.add(this._icon, { expand: true });
