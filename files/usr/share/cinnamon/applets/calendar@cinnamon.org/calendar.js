@@ -84,8 +84,9 @@ function _getCalendarWeekForDate(date) {
     let midnightDate = new Date(date.getFullYear(), date.getMonth(), date.getDate());
     // Need to get Monday to be 1 ... Sunday to be 7
     let dayOfWeek = 1 + ((midnightDate.getDay() + 6) % 7);
+    // Need to use 12 noon instead of midnight to work around DST
     let nearestThursday = new Date(midnightDate.getFullYear(), midnightDate.getMonth(),
-                                   midnightDate.getDate() + (4 - dayOfWeek));
+                                   midnightDate.getDate() + (4 - dayOfWeek), 11);
 
     let jan1st = new Date(nearestThursday.getFullYear(), 0, 1);
     let diffDate = nearestThursday - jan1st;
