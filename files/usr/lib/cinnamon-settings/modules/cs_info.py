@@ -50,7 +50,7 @@ def getGraphicsInfos():
 
 def getDiskSize():
     disksize = 0
-    for line in getProcessOut("df"):
+    for line in getProcessOut(("df", "-l")):
         if line.startswith("/"):
             disksize += float(line.split()[1])
             
@@ -74,12 +74,11 @@ def getProcInfos():
 def createSystemInfos():    
     procInfos = getProcInfos()
     infos = []
-    (dname, dversion, dsuffix) = platform.linux_distribution()
     arch = platform.machine().replace("_", "-")    
     (memsize, memunit) = procInfos['mem_total'].split(" ")
     processorName = procInfos['cpu_name'].replace("(R)", u"\u00A9").replace("(TM)", u"\u2122")
     if 'cpu_cores' in procInfos:
-        processorName = processorName + " x " + procInfos['cpu_cores']
+        processorName = processorName + u" \u00D7 " + procInfos['cpu_cores']
     
     if os.path.exists("/etc/linuxmint/info"):
         title = commands.getoutput("awk -F \"=\" '/GRUB_TITLE/ {print $2}' /etc/linuxmint/info")
@@ -88,7 +87,10 @@ def createSystemInfos():
         title = "Arch Linux"
         infos.append((_("Operating System"), title))
     else:
-        infos.append((_("Operating System"), dname + " " + dversion +  " '" + dsuffix.title() + "' (" + arch + ")"))    
+        s = '%s (%s)' % (' '.join(platform.linux_distribution()), arch)
+        # Normalize spacing in distribution name
+        s = re.sub('\s{2,}', ' ', s)
+        infos.append((_("Operating System"), s))
     if 'CINNAMON_VERSION' in os.environ:            
         infos.append((_("Cinnamon Version"), os.environ['CINNAMON_VERSION']))
     infos.append((_("Linux Kernel"), platform.release()))
