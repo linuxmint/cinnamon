@@ -94,13 +94,16 @@ DeviceItem.prototype = {
     }
 }
 
-function secondsToTime(sec){
-var d=new Date(0,0,0);
-d.setSeconds(+sec);   
+function secondsToTime(seconds){
+   let hours = Math.floor(seconds / 3600);
+   let remainingSeconds = Math.round(seconds % 3600);
+   let minutes = Math.floor(remainingSeconds / 60);
+   let seconds = Math.round(remainingSeconds % 60);
+
     return {
-        "h": d.getHours(),
-        "m": d.getMinutes(),
-        "s": d.getSeconds()
+        "h": hours,
+        "m": minutes,
+        "s": seconds
     };
 }
 
