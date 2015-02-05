@@ -252,6 +252,11 @@ MyApplet.prototype = {
                 this.menu.addMenuItem(item, this._otherDevicePosition + position);
                 position++;
             }
+            /* Do not show the percent in the summary if there is only one battery */
+            if (position <= 1) {
+                    this._primaryPercentage.text = "";                        
+            }
+
         }));
     },
 
