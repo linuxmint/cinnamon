@@ -139,15 +139,6 @@
       </_description>
     </key>
 
-    <key name="dnd-drag-threshold" type="i">
-      <default>8</default>
-      <range min="1" max="200" />
-      <_summary>DND drag threshold</_summary>
-      <_description>
-        Amount of motion to ignore before registering a drag-and-drop intent on panel objects
-      </_description>
-    </key>
-
     <key name="desktop-effects" type="b">
       <default>true</default>
       <_summary>Enable desktop effects</_summary>
