@@ -181,7 +181,7 @@ MyApplet.prototype = {
             if (error) {
                 this._hasPrimary = false;
                 this._primaryDeviceId = null;
-                this._batteryItem.actor.hide();                
+                //this._batteryItem.actor.hide();
                 return;
             }
             let [device_id, device_type, icon, percentage, state, time] = device[0];
@@ -215,7 +215,7 @@ MyApplet.prototype = {
                 this._batteryItem.actor.show();
             } else {
                 this._hasPrimary = false;
-                this._batteryItem.actor.hide();
+                //this._batteryItem.actor.hide();
             }
 
             this._primaryDeviceId = device_id;
@@ -232,8 +232,9 @@ MyApplet.prototype = {
             }
             let devices = result[0];
             let position = 0;
+            let timeToCharged = 0;
             for (let i = 0; i < devices.length; i++) {
-                let [device_id, device_type] = devices[i];
+                let [device_id, device_type, icon, percentage, state, time] = devices[i];
 
                 if (this._hasPrimary == false) {
                 	if (device_type == UPDeviceType.AC_POWER) {
@@ -246,6 +247,29 @@ MyApplet.prototype = {
 
                if (device_type == UPDeviceType.AC_POWER)
                     continue;
+
+               if (state == UPDeviceState.CHARGING) {
+                    global.log( i + " Time to charged " + timeToCharged + " > " + (timeToCharged+time));
+                    timeToCharged = timeToCharged + time;
+                    let convTime = secondsToTime(timeToCharged);
+                    let hours = convTime.h;
+                    let minutes = convTime.m;
+                    this._primaryPercentage.text = C_("percent of battery remaining", "%d%%").format(Math.round(percentage));
+
+                    if (minutes == 0) {
+                         if (hours == 0) {
+                              this._batteryItem.label.text = _("Fully charged");
+                         } else {
+                               this._batteryItem.label.text = _("Charging - " + hours + " hours remaining");
+                         }
+                    } else {
+                         if (hours == 0) {
+                              this._batteryItem.label.text = _("Charging - " + minutes + " minutes remaining");
+                         } else {
+                              this._batteryItem.label.text = _("Charging - " + hours + " hours " + minutes + " minutes remaining");
+                         }
+                     }
+                }
 
                 let item = new DeviceItem (devices[i]);
                 this._deviceItems.push(item);
