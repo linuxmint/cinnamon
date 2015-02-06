@@ -131,14 +131,6 @@ _Draggable.prototype = {
         this._eventsGrabbed = false;
 
         this._dragCheckId = null;
-
-        this._dragThreshold = 8;
-        global.settings.connect('changed::dnd-drag-threshold', Lang.bind(this, this._onDragThresholdChanged));
-        this._onDragThresholdChanged();
-    },
-
-    _onDragThresholdChanged : function (settings, key) {
-        this._dragThreshold = global.settings.get_int("dnd-drag-threshold");
     },
 
     _onButtonPress : function (actor, event) {
@@ -413,8 +405,9 @@ _Draggable.prototype = {
             this._dragCheckId = null;
             return false;
         }
-        if ((Math.abs(x - this._dragStartX) > this._dragThreshold ||
-             Math.abs(y - this._dragStartY) > this._dragThreshold)) {
+        let threshold = Gtk.Settings.get_default().gtk_dnd_drag_threshold;
+        if ((Math.abs(x - this._dragStartX) > threshold ||
+             Math.abs(y - this._dragStartY) > threshold)) {
             this.startDrag(x, y, global.get_current_time());
             this._updateDragPosition(null, x, y);
             this._dragCheckId = null;

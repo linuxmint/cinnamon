@@ -40,6 +40,8 @@ class Module:
             section.add(GSettingsCheckButton(_("Left handed (mouse buttons inverted)"), "org.cinnamon.settings-daemon.peripherals.mouse", "left-handed", None))
             section.add(GSettingsCheckButton(_("Show position of pointer when the Control key is pressed"), "org.cinnamon.settings-daemon.peripherals.mouse", "locate-pointer", None))
             section.add(GSettingsCheckButton(_("Emulate middle click by clicking both left and right buttons"), "org.cinnamon.settings-daemon.peripherals.mouse", "middle-button-enabled", None))            
+            section.add(GSettingsSpinButton(_("Drag-and-drop threshold"), "org.cinnamon.settings-daemon.peripherals.mouse", "drag-threshold", None, 1, 400, 1, 1, _("Pixels")))
+
             vbox.add(section)
             
             vbox.add(Gtk.Separator.new(Gtk.Orientation.HORIZONTAL))
@@ -71,11 +73,6 @@ class Module:
 
             vbox.add(Gtk.Separator.new(Gtk.Orientation.HORIZONTAL))         
 
-            section = Section(_("Drag and drop"))  
-            section.add(GSettingsSpinButton(_("Cinnamon drag threshold"), "org.cinnamon", "dnd-drag-threshold", None, 1, 400, 1, 1, _("Pixels")))
-            section.add(GSettingsSpinButton(_("GTK drag threshold"), "org.cinnamon.settings-daemon.peripherals.mouse", "drag-threshold", None, 1, 400, 1, 1, _("Pixels")))
-            vbox.add(section)            
-    
             self.mousebox.pack_start(vbox, False, False, 2)
 
             # Touchpad
