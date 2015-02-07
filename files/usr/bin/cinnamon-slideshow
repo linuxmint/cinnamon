@@ -1,5 +1,6 @@
-#! /usr/bin/python
+#!/usr/bin/python
 
 import os
 
-os.system("/usr/lib/cinnamon-slideshow/cinnamon-slideshow.py")
+os.execvp("/usr/lib/cinnamon-slideshow/cinnamon-slideshow.py", ("",))
+
