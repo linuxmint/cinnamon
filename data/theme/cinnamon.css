@@ -1682,3 +1682,59 @@ StScrollBar StButton#vhandle:hover {
     border-radius: 0.3em;
     background-color: rgba(190,190,190,0.2);
 }
+
+.tile-preview,
+.tile-hud {
+    background-color: rgba(85, 85, 85, 0.5);
+    border: 2px solid rgba(134, 134, 134, 0.8);
+}
+
+.tile-preview.snap,
+.tile-hud.snap {
+    background-color: rgba(134, 134, 170, 0.5);
+    border: 2px solid rgba(85, 85, 85, 0.8);
+}
+
+.tile-hud:top {
+    border-top-width: 0px;
+    border-radius: 0px 0px 8px 8px;
+}
+
+.tile-hud:bottom {
+    border-bottom-width: 0px;
+    border-radius: 8px 8px 0px 0px;
+}
+
+.tile-hud:left {
+    border-left-width: 0px;
+    border-radius: 0px 8px 8px 0px;
+}
+
+.tile-hud:right {
+    border-right-width: 0px;
+    border-radius: 8px 0px 0px 8px;
+}
+
+.tile-hud:top-left {
+    border-top-width: 0px;
+    border-left-width: 0px;
+    border-radius: 0px 0px 8px 0px;
+}
+
+.tile-hud:top-right {
+    border-top-width: 0px;
+    border-right-width: 0px;
+    border-radius: 0px 0px 0px 8px;
+}
+
+.tile-hud:bottom-left {
+    border-bottom-width: 0px;
+    border-left-width: 0px;
+    border-radius: 0px 8px 0px 0px;
+}
+
+.tile-hud:bottom-right {
+    border-bottom-width: 0px;
+    border-right-width: 0px;
+    border-radius: 8px 0px 0px 0px;
+}
