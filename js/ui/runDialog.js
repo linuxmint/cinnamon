@@ -206,7 +206,7 @@ __proto__: ModalDialog.ModalDialog.prototype,
 
                                    // rt is short for "reload theme"
                                    'rt': Lang.bind(this, function() {
-                                       Main.loadTheme();
+                                       Main.themeManager._changeTheme();
                                    })
                                  };
 
