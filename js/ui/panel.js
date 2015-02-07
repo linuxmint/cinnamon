@@ -190,7 +190,7 @@ PanelManager.prototype = {
      */
     addPanel: function(monitorIndex, bottomPosition) {
         let list = global.settings.get_strv("panels-enabled");
-        let i = -1;
+        let i = 0; // Start counting at 1 for compatibility
 
         // Magic: Keep recursing until there is a free panel id
         while (true)
