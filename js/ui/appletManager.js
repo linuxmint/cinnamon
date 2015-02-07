@@ -630,6 +630,31 @@ ConfirmClearDialog.prototype = {
     },
 };
 
+function NotifySkipDialog(){
+    this._init();
+}
+
+NotifySkipDialog.prototype = {
+    __proto__: ModalDialog.ModalDialog.prototype,
+
+    _init: function(panelId){
+        ModalDialog.ModalDialog.prototype._init.call(this);
+
+        let label = new St.Label({text: _("Certain applets do not allow multiple instances and were not copied") + "\n\n"});
+        this.setButtons([
+                {
+                    label: _("OK"),
+                    action: Lang.bind(this, function(){
+                        this.close();
+                    })
+                }
+        ]);
+
+	this.contentLayout.add(label);
+    },
+};
+
+
 function copyAppletConfiguration(panelId) {
     let def = enabledAppletDefinitions.idMap;
     clipboard = [];
@@ -662,6 +687,7 @@ function pasteAppletConfiguration(panelId) {
             raw.splice(i,1);
     }
 
+    let skipped = false;
     let len = clipboard.length;
     let nextId = global.settings.get_int("next-applet-id");
     for (let i = 0; i < len; i++) {
@@ -678,8 +704,15 @@ function pasteAppletConfiguration(panelId) {
         if (count < max) {
             raw.push("panel" + panelId + ":" + clipboard[i].location_label + ":" + clipboard[i].order + ":" + clipboard[i].uuid + ":" + nextId);
             nextId ++;
+        } else {
+            skipped = true;
         }
     }
     global.settings.set_int("next-applet-id", nextId);
     global.settings.set_strv("enabled-applets", raw);
+
+    if (skipped) {
+        let dialog = new NotifySkipDialog();
+        dialog.open();
+    }
 }
