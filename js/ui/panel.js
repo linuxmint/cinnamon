@@ -16,6 +16,7 @@ const AppletManager = imports.ui.appletManager;
 const Util = imports.misc.util;
 const ModalDialog = imports.ui.modalDialog;
 const Gtk = imports.gi.Gtk;
+const Signals = imports.signals;
 
 const BUTTON_DND_ACTIVATION_TIMEOUT = 250;
 
@@ -100,6 +101,7 @@ PanelManager.prototype = {
     _init: function() {
         this.panels = [];
         this.panelsMeta = []; // Properties of panels in format [<monitor index>, <bottomPosition>]
+        this.canAdd = true; // Whether there is space for more panels to be added
 
         let panelProperties = global.settings.get_strv("panels-enabled");
         for (let i in panelProperties) {
@@ -121,6 +123,8 @@ PanelManager.prototype = {
         global.screen.connect("monitors-changed", Lang.bind(this, this._onMonitorsChanged));
 
         this._osd = null;
+
+        this._checkCanAdd();
     },
 
    /**
@@ -325,6 +329,21 @@ PanelManager.prototype = {
         return panelList[ID];
     },
 
+    _checkCanAdd: function() {
+        let monitorCount = global.screen.get_n_monitors();
+        let panelCount = monitorCount * 2;
+
+        for (let i in this.panelsMeta) {
+            if (this.panelsMeta[i][0] >= monitorCount) // Monitor does not exist
+                continue;
+            panelCount --;
+        }
+        if (this.canAdd != (panelCount != 0)) {
+            this.canAdd = (panelCount != 0);
+            this.emit('can-add-changed', this.canAdd);
+        }
+    },
+
     _onPanelsEnabledChanged: function() {
         let newPanels = new Array(this.panels.length);
         let newMeta = new Array(this.panels.length);
@@ -365,6 +384,7 @@ PanelManager.prototype = {
         this.panelsMeta = newMeta;
 
         this._setMainPanel();
+        this._checkCanAdd();
     },
 
     _onMonitorsChanged: function() {
@@ -388,6 +408,7 @@ PanelManager.prototype = {
         }
 
         this._setMainPanel();
+        this._checkCanAdd();
     },
 
     _onPanelEditModeChanged: function() {
@@ -418,22 +439,19 @@ PanelManager.prototype = {
     },
 
     _showDummyPanels: function(callback) {
-        if (this.addPanelMode)
+        if (this.addPanelMode || !this.canAdd)
             return false;
 
         let monitorCount = global.screen.get_n_monitors();
-        let panelCount = monitorCount * 2;
         this.dummyCallback = callback;
         this.dummyPanels = [];
-        while (this.dummyPanels.push([]) < monitorCount); // Generate a 2D array of length monitorCount
+        while (this.dummyPanels.push([]) < monitorCount); // Generate a 2D array of length monitorCount; Push returns new length of array
 
         for (let i in this.panelsMeta) {
+            if (this.panelsMeta[i][0] >= monitorCount) // Monitor does not exist
+                continue;
             this.dummyPanels[this.panelsMeta[i][0]][this.panelsMeta[i][1] ? 0 : 1] = false;
-            panelCount --;
         }
-
-        if (panelCount == 0)
-            return false;
 
         for (let i = 0; i < monitorCount; i++) {
             for (let j = 0; j < 2; j++) {
@@ -475,6 +493,7 @@ PanelManager.prototype = {
         }
     }
 } 
+Signals.addSignalMethods(PanelManager.prototype);
 
 /**
  * PanelDummy
@@ -975,7 +994,7 @@ function populateSettingsMenu(menu, panelId) {
 
     menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
 
-    panelSettingsSection = new PopupMenu.PopupSubMenuMenuItem(_("Modify panel..."), true);
+    let panelSettingsSection = new PopupMenu.PopupSubMenuMenuItem(_("Modify panel..."), true);
 
     let menuItem = new IconMenuItem(_("Remove panel"), "list-remove");
     menuItem.activate = Lang.bind(menu, function() {
@@ -983,19 +1002,19 @@ function populateSettingsMenu(menu, panelId) {
     });
     panelSettingsSection.menu.addMenuItem(menuItem);
 
-    let menuItem = new IconMenuItem(_("Add panel"), "list-add");
-    menuItem.activate = Lang.bind(menu, function() {
+    menu.addPanelItem = new IconMenuItem(_("Add panel"), "list-add");
+    menu.addPanelItem.activate = Lang.bind(menu, function() {
         Main.panelManager.addPanelQuery();
         this.close();
     });
-    panelSettingsSection.menu.addMenuItem(menuItem);
+    panelSettingsSection.menu.addMenuItem(menu.addPanelItem);
 
-    let menuItem = new IconMenuItem(_("Move panel"), "move");
-    menuItem.activate = Lang.bind(menu, function() {
+    menu.movePanelItem = new IconMenuItem(_("Move panel"), "move");
+    menu.movePanelItem.activate = Lang.bind(menu, function() {
         Main.panelManager.movePanelQuery(this.panelId);
         this.close();
     });
-    panelSettingsSection.menu.addMenuItem(menuItem);
+    panelSettingsSection.menu.addMenuItem(menu.movePanelItem);
 
     let menuItem = new IconMenuItem(_("Copy applet configuration"), "edit-copy");
     menuItem.activate = Lang.bind(menu, function() {
@@ -1099,6 +1118,15 @@ PanelContextMenu.prototype = {
         this.addMenuItem(menuSetting);
 
         populateSettingsMenu(this, panelId);
+        Mainloop.idle_add(Lang.bind(this, function() { // Wait till Main.panelManager is created
+            Main.panelManager.connect("can-add-changed", Lang.bind(this, this._onCanAddChanged));
+            this._onCanAddChanged(Main.panelManager.canAdd);
+        }));
+    },
+
+    _onCanAddChanged: function(canAdd) {
+        this.movePanelItem.setSensitive(Main.panelManager.canAdd);
+        this.addPanelItem.setSensitive(Main.panelManager.canAdd);
     }
 }
 
