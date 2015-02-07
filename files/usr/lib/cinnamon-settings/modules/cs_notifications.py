@@ -18,6 +18,13 @@ sit amet lobortis. Donec sit amet nisi turpis. Morbi aliquet \
 aliquam ullamcorper. 
 """
 
+MEDIA_KEYS_OSD_SIZES = [
+    ("disabled", _("Disabled")),
+    ("small", _("Small")),
+    ("medium", _("Medium")),
+    ("large", _("Large"))
+]
+
 class Module:
     def __init__(self, content_box):
         keywords = _("notifications")
@@ -51,17 +58,20 @@ class Module:
         section = Section(_("Appearance"))
 
         section.add(GSettingsCheckButton(_("Have notifications fade out when hovered over"), "org.cinnamon.desktop.notifications", "fade-on-mouseover", None))
-        box = Gtk.HBox()
-        spinner = GSettingsSpinButton(_("Hover opacity"), "org.cinnamon.desktop.notifications", "fade-opacity", "org.cinnamon.desktop.notifications/fade-on-mouseover", 0, 100, 1, 1, _("%"))
-        box.pack_start(spinner, False, False, 20)
-        section.add_indented(box)
-        
-        section.add(Gtk.Label("")) #Empty row
-        
+        section.add_indented(GSettingsSpinButton(_("Hover opacity"), "org.cinnamon.desktop.notifications", "fade-opacity", "org.cinnamon.desktop.notifications/fade-on-mouseover", 0, 100, 1, 1, _("%")))
+
         button = Gtk.Button(label = _("Display a test notification"))
         button.connect("clicked", self.send_test)
-        section.add(button)
+        section.add_expand(button)
         
+        vbox.add(section)
+
+        vbox.add(Gtk.Separator.new(Gtk.Orientation.HORIZONTAL))
+
+        section = Section(_("Media keys OSD"))
+        
+        section.add(GSettingsComboBox(_("Media keys OSD size"), "org.cinnamon", "show-media-keys-osd", None, MEDIA_KEYS_OSD_SIZES))
+
         vbox.add(section)
 
     def send_test(self, widget):

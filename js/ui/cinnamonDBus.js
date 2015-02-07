@@ -40,6 +40,9 @@ const CinnamonIface =
                 <arg type="b" direction="in" name="flash"/> \
                 <arg type="s" direction="in" name="filename"/> \
             </method> \
+            <method name="ShowOSD"> \
+                <arg type="a{sv}" direction="in" name="params"/> \
+            </method> \
             <method name="FlashArea"> \
                 <arg type="i" direction="in" name="x"/> \
                 <arg type="i" direction="in" name="y"/> \
@@ -195,6 +198,20 @@ Cinnamon.prototype = {
         screenshot.screenshot(include_cursor, filename,
                           Lang.bind(this, this._onScreenshotComplete,
                                     flash, invocation));
+    },
+
+    ShowOSD: function(params) {
+        for (let param in params)
+            params[param] = params[param].deep_unpack();
+
+        let icon = null;
+        if (params['icon'])
+            icon = Gio.Icon.new_for_string(params['icon']);
+
+        Main.osdWindow.setIcon(icon);
+        Main.osdWindow.setLevel(params['level']);
+        if (params)
+            Main.osdWindow.show();
     },
 
     FlashArea: function(x, y, width, height) {

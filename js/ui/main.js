@@ -57,6 +57,7 @@ const DeskletManager = imports.ui.deskletManager;
 const ExtensionSystem = imports.ui.extensionSystem;
 const Keyboard = imports.ui.keyboard;
 const MessageTray = imports.ui.messageTray;
+const OsdWindow = imports.ui.osdWindow;
 const Overview = imports.ui.overview;
 const Expo = imports.ui.expo;
 const Panel = imports.ui.panel;
@@ -95,6 +96,7 @@ let soundManager = null;
 let backgroundManager = null;
 let slideshowManager = null;
 let placesManager = null;
+let osdWindow = null;
 let overview = null;
 let expo = null;
 let runDialog = null;
@@ -348,6 +350,7 @@ function start() {
         layoutManager.primaryMonitor.y + layoutManager.primaryMonitor.height/2);
 
     xdndHandler = new XdndHandler.XdndHandler();
+    osdWindow = new OsdWindow.OsdWindow();
     // This overview object is just a stub for non-user sessions
     overview = new Overview.Overview();
     expo = new Expo.Expo();
