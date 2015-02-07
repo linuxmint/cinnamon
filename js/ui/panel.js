@@ -468,7 +468,7 @@ PanelManager.prototype = {
         }));
 
         if (!this._osd) {
-            this._osd = new St.Bin({style_class: "panel-change-osd"});
+            this._osd = new St.Bin({style_class: "panel-change-osd", important: true});
             let text = new St.Label({text: _("Select new position of panel. Esc to cancel.")});
             this._osd.set_child(text);
             Main.layoutManager.addChrome(this._osd, { visibleInFullscreen: false, affectsInputRegion: false});
@@ -514,18 +514,8 @@ PanelDummy.prototype = {
         this.callback = callback;
         this.monitor = global.screen.get_monitor_geometry(monitorIndex);
         
-        this.actor = new Cinnamon.GenericContainer({style_class: "panel-dummy", reactive: true, track_hover: true});
+        this.actor = new Cinnamon.GenericContainer({style_class: "panel-dummy", reactive: true, track_hover: true, important: true});
         Main.layoutManager.addChrome(this.actor, { addToWindowgroup: false });
-
-        if (!this.actor.get_theme_node().lookup_color("background-color", false, null)[0]) {
-            this.noStyle = true;
-            this.actor.name = "panel";
-            if (this.bottomPosition)
-                this.actor.add_style_class_name("panel-bottom");
-            else
-                this.actor.add_style_class_name("panel-top");
-            this.actor.opacity = 100;
-        }
 
         this.actor.set_size(this.monitor.width, 25);
         this.actor.set_position(this.monitor.x, bottomPosition ? this.monitor.y + this.monitor.height - 25 : this.monitor.y);
