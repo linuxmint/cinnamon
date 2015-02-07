@@ -27,6 +27,7 @@ class Module:
             section.add_indented(GSettingsComboBox(_("Modifier to use for toggling between tile and snap mode"), "org.cinnamon.muffin", "snap-modifier", "org.cinnamon.muffin/edge-tiling", modifiers))
             section.add_indented(GSettingsCheckButton(_("Maximize, instead of tile, when dragging a window to the top edge"), "org.cinnamon.muffin", "tile-maximize", "org.cinnamon.muffin/edge-tiling"))
             section.add_indented(GSettingsCheckButton(_("Prevent the snap on-screen-display from showing"), "org.cinnamon", "hide-snap-osd", "org.cinnamon.muffin/edge-tiling"))
+            section.add_indented(GSettingsCheckButton(_("Prevent the tile heads-up-display from showing"), "org.cinnamon", "hide-tile-hud", "org.cinnamon.muffin/edge-tiling"))
             vbox.add(section)
             
             vbox.add(Gtk.Separator.new(Gtk.Orientation.HORIZONTAL))
