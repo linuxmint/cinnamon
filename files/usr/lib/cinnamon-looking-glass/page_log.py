@@ -68,9 +68,9 @@ class LogView(Gtk.ScrolledWindow):
         else:
             entry = self.append("warning", 0, "================ DBus connection lost ===============")
         self.textbuffer.insert_with_tags(iter, entry.formattedText, self.typeTags[entry.category])
-        self.getUpdates()
+        self.getUpdates(True)
 
-    def getUpdates(self):
+    def getUpdates(self, reread = False):
         success, data = lookingGlassProxy.GetErrorStack()
         if success:
             try:
@@ -78,9 +78,13 @@ class LogView(Gtk.ScrolledWindow):
                 if dataSize > 0:
                     # If this is a completely new log, start reading at the beginning
                     firstMessageTime = data[0]["timestamp"]
-                    if self.addedMessages > dataSize or self.firstMessageTime != firstMessageTime:
+                    if self.addedMessages > dataSize or self.firstMessageTime != firstMessageTime or reread:
                         self.firstMessageTime = firstMessageTime
                         self.addedMessages = 0
+
+                    if reread:
+                        start, end = self.textbuffer.get_bounds()
+                        self.textbuffer.delete(start, end)
 
                     self.textview.hide()
                     iter = self.textbuffer.get_end_iter()
