@@ -9,6 +9,8 @@ const Main = imports.ui.main;
 const AppletManager = imports.ui.appletManager;
 const DeskletManager = imports.ui.deskletManager;
 const ExtensionSystem = imports.ui.extensionSystem;
+const SearchProviderManager = imports.ui.searchProviderManager;
+const Util = imports.misc.util;
 
 const CinnamonIface =
     '<node> \
@@ -37,6 +39,9 @@ const CinnamonIface =
                 <arg type="b" direction="in" name="include_frame"/> \
                 <arg type="b" direction="in" name="flash"/> \
                 <arg type="s" direction="in" name="filename"/> \
+            </method> \
+            <method name="ShowOSD"> \
+                <arg type="a{sv}" direction="in" name="params"/> \
             </method> \
             <method name="FlashArea"> \
                 <arg type="i" direction="in" name="x"/> \
@@ -84,6 +89,10 @@ const CinnamonIface =
                 <arg type="b" direction="out" /> \
                 <arg type="s" direction="out" /> \
             </signal> \
+            <method name="PushSubprocessResult"> \
+                <arg type="i" direction="in" name="process_id" /> \
+                <arg type="s" direction="in" name="result" /> \
+            </method> \
         </interface> \
     </node>';
 
@@ -197,6 +206,20 @@ Cinnamon.prototype = {
         screenshot.screenshot(include_cursor, filename,
                           Lang.bind(this, this._onScreenshotComplete,
                                     flash, invocation));
+    },
+
+    ShowOSD: function(params) {
+        for (let param in params)
+            params[param] = params[param].deep_unpack();
+
+        let icon = null;
+        if (params['icon'])
+            icon = Gio.Icon.new_for_string(params['icon']);
+
+        Main.osdWindow.setIcon(icon);
+        Main.osdWindow.setLevel(params['level']);
+        if (params)
+            Main.osdWindow.show();
     },
 
     FlashArea: function(x, y, width, height) {
@@ -327,6 +350,14 @@ Cinnamon.prototype = {
     ShowExpo: function() {
         if (!Main.expo.animationInProgress)
             Main.expo.toggle();
+    },
+    
+    PushSubprocessResult: function(process_id, result)
+    {
+        if (Util.subprocess_callbacks[process_id])
+        {
+            Util.subprocess_callbacks[process_id](result);
+        }
     },
 
     CinnamonVersion: Config.PACKAGE_VERSION

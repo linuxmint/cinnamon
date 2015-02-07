@@ -32,7 +32,7 @@ dist_theme_DATA = \
     theme/close.svg                \
     theme/close-window.svg         \
     theme/corner-ripple.png        \
-    theme/menu.svg                 \
+    theme/menu-symbolic.svg        \
     theme/overview-hover.png       \
     theme/overview.png             \
     theme/player-paused.svg        \

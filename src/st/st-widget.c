@@ -70,6 +70,7 @@ struct _StWidgetPrivate
   gboolean      track_hover : 1;
   gboolean      hover : 1;
   gboolean      can_focus : 1;
+  gboolean      important : 1;
 
   StTooltip    *tooltip;
 
@@ -105,7 +106,8 @@ enum
   PROP_TRACK_HOVER,
   PROP_HOVER,
   PROP_CAN_FOCUS,
-  PROP_LABEL_ACTOR
+  PROP_LABEL_ACTOR,
+  PROP_IMPORTANT
 };
 
 enum
@@ -194,6 +196,11 @@ st_widget_set_property (GObject      *gobject,
       st_widget_set_label_actor (actor, g_value_get_object (value));
       break;
 
+    case PROP_IMPORTANT:
+      actor->priv->important = g_value_get_boolean (value);
+      clutter_actor_queue_relayout ((ClutterActor *) gobject);
+      break;
+
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (gobject, prop_id, pspec);
       break;
@@ -253,6 +260,10 @@ st_widget_get_property (GObject    *gobject,
 
     case PROP_LABEL_ACTOR:
       g_value_set_object (value, priv->label_actor);
+      break;
+
+    case PROP_IMPORTANT:
+      g_value_set_boolean (value, priv->important);
       break;
 
     default:
@@ -574,8 +585,8 @@ get_root_theme_node (ClutterStage *stage)
  * The theme node is used to access standard and custom CSS
  * properties of the widget.
  *
- * Note: it is a fatal error to call this on a widget that is
- *  not been added to a stage.
+ * Note: this should only be called on a widget that has been
+ * added to the stage
  *
  * Return value: (transfer none): the theme node for the widget.
  *   This is owned by the widget. When attributes of the widget
@@ -639,7 +650,8 @@ st_widget_get_theme_node (StWidget *widget)
                                     clutter_actor_get_name (CLUTTER_ACTOR (widget)),
                                     priv->style_class,
                                     pseudo_class,
-                                    priv->inline_style);
+                                    priv->inline_style,
+                                    priv->important);
 
       if (pseudo_class != direction_pseudo_class)
         g_free (pseudo_class);
@@ -990,6 +1002,20 @@ st_widget_class_init (StWidgetClass *klass)
                                 ST_PARAM_READWRITE);
   g_object_class_install_property (gobject_class,
                                    PROP_CAN_FOCUS,
+                                   pspec);
+
+  /**
+   * StWidget:important:
+   *
+   * Whether or not the fallback theme should be used for lookups in case the user theme fails.
+   */
+  pspec = g_param_spec_boolean ("important",
+                                "Important",
+                                "Whether the widget styling should be looked up in the fallback theme",
+                                FALSE,
+                                ST_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY);
+  g_object_class_install_property (gobject_class,
+                                   PROP_IMPORTANT,
                                    pspec);
 
   /**

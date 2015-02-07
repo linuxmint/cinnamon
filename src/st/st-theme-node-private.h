@@ -80,6 +80,7 @@ struct _StThemeNode {
   GStrv element_classes;
   GStrv pseudo_classes;
   char *inline_style;
+  gboolean important;
 
   CRDeclaration **properties;
   int n_properties;

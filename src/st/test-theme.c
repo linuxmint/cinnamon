@@ -440,22 +440,22 @@ main (int argc, char **argv)
 
   root = st_theme_context_get_root_node (context);
   group1 = st_theme_node_new (context, root, NULL,
-                              CLUTTER_TYPE_GROUP, "group1", NULL, NULL, NULL);
+                              CLUTTER_TYPE_GROUP, "group1", NULL, NULL, NULL, FALSE);
   text1 = st_theme_node_new  (context, group1, NULL,
-                              CLUTTER_TYPE_TEXT, "text1", "special-text", NULL, NULL);
+                              CLUTTER_TYPE_TEXT, "text1", "special-text", NULL, NULL, FALSE);
   text2 = st_theme_node_new  (context, group1, NULL,
-                              CLUTTER_TYPE_TEXT, "text2", NULL, NULL, NULL);
+                              CLUTTER_TYPE_TEXT, "text2", NULL, NULL, NULL, FALSE);
   group2 = st_theme_node_new (context, root, NULL,
-                              CLUTTER_TYPE_GROUP, "group2", NULL, NULL, NULL);
+                              CLUTTER_TYPE_GROUP, "group2", NULL, NULL, NULL, FALSE);
   text3 = st_theme_node_new  (context, group2, NULL,
                               CLUTTER_TYPE_TEXT, "text3", NULL, NULL,
-                              "color: #0000ff; padding-bottom: 12px;");
+                              "color: #0000ff; padding-bottom: 12px;", FALSE);
   text4 = st_theme_node_new  (context, group2, NULL,
-                              CLUTTER_TYPE_TEXT, "text4", NULL, "visited hover", NULL);
+                              CLUTTER_TYPE_TEXT, "text4", NULL, "visited hover", NULL, FALSE);
   group3 = st_theme_node_new (context, group2, NULL,
-                              CLUTTER_TYPE_GROUP, "group3", NULL, "hover", NULL);
+                              CLUTTER_TYPE_GROUP, "group3", NULL, "hover", NULL, FALSE);
   cairo_texture = st_theme_node_new (context, root, NULL,
-                                     CLUTTER_TYPE_CAIRO_TEXTURE, "cairoTexture", NULL, NULL, NULL);
+                                     CLUTTER_TYPE_CAIRO_TEXTURE, "cairoTexture", NULL, NULL, NULL, FALSE);
 
   test_defaults ();
   test_lengths ();

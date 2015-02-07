@@ -25,6 +25,7 @@ nobase_dist_js_DATA = \
 	ui/appSwitcher/timelineSwitcher.js	\
 	ui/applet.js		\
 	ui/appletManager.js	\
+	ui/searchProviderManager.js	\
 	ui/appFavorites.js	\
 	ui/backgroundManager.js    \
 	ui/boxpointer.js	\
@@ -55,6 +56,7 @@ nobase_dist_js_DATA = \
 	ui/modalDialog.js	\
 	ui/cinnamonEntry.js	\
 	ui/cinnamonMountOperation.js \
+    ui/osdWindow.js \
 	ui/notificationDaemon.js \
 	ui/overview.js		\
     ui/overrides.js \

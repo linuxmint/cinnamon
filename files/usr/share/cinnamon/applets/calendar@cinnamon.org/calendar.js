@@ -78,23 +78,6 @@ function _formatEventTime(event, clockFormat) {
     return ret;
 }
 
-function _getCalendarWeekForDate(date) {
-    // Based on the algorithms found here:
-    // http://en.wikipedia.org/wiki/Talk:ISO_week_date
-    let midnightDate = new Date(date.getFullYear(), date.getMonth(), date.getDate());
-    // Need to get Monday to be 1 ... Sunday to be 7
-    let dayOfWeek = 1 + ((midnightDate.getDay() + 6) % 7);
-    let nearestThursday = new Date(midnightDate.getFullYear(), midnightDate.getMonth(),
-                                   midnightDate.getDate() + (4 - dayOfWeek));
-
-    let jan1st = new Date(nearestThursday.getFullYear(), 0, 1);
-    let diffDate = nearestThursday - jan1st;
-    let dayNumber = Math.floor(Math.abs(diffDate) / MSECS_IN_DAY);
-    let weekNumber = Math.floor(dayNumber / 7) + 1;
-
-    return weekNumber;
-}
-
 function _getDigitWidth(actor){
     let context = actor.get_pango_context();
     let themeNode = actor.get_theme_node();
@@ -408,7 +391,7 @@ Calendar.prototype = {
                            { row: row, col: offsetCols + (7 + iter.getDay() - this._weekStart) % 7 });
 
             if (this.show_week_numbers && iter.getDay() == 4) {
-                let label = new St.Label({ text: _getCalendarWeekForDate(iter).toString(),
+                let label = new St.Label({ text: iter.toLocaleFormat('%V'),
                                            style_class: 'calendar-day-base calendar-week-number'});
                 this.actor.add(label,
                                { row: row, col: 0, y_align: St.Align.MIDDLE });

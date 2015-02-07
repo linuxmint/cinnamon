@@ -52,10 +52,12 @@ const SoundManager = imports.ui.soundManager;
 const BackgroundManager = imports.ui.backgroundManager;
 const SlideshowManager = imports.ui.slideshowManager;
 const AppletManager = imports.ui.appletManager;
+const SearchProviderManager = imports.ui.searchProviderManager;
 const DeskletManager = imports.ui.deskletManager;
 const ExtensionSystem = imports.ui.extensionSystem;
 const Keyboard = imports.ui.keyboard;
 const MessageTray = imports.ui.messageTray;
+const OsdWindow = imports.ui.osdWindow;
 const Overview = imports.ui.overview;
 const Expo = imports.ui.expo;
 const Panel = imports.ui.panel;
@@ -93,6 +95,7 @@ let backgroundManager = null;
 let slideshowManager = null;
 let placesManager = null;
 let panelManager = null;
+let osdWindow = null;
 let overview = null;
 let expo = null;
 let runDialog = null;
@@ -341,6 +344,7 @@ function start() {
         layoutManager.primaryMonitor.y + layoutManager.primaryMonitor.height/2);
 
     xdndHandler = new XdndHandler.XdndHandler();
+    osdWindow = new OsdWindow.OsdWindow();
     // This overview object is just a stub for non-user sessions
     overview = new Overview.Overview();
     expo = new Expo.Expo();
@@ -406,7 +410,8 @@ function start() {
 
     AppletManager.init();
     DeskletManager.init();
-
+    SearchProviderManager.init();
+    
     createLookingGlass();
 
     if (software_rendering && !GLib.getenv('CINNAMON_2D')) {
@@ -790,7 +795,7 @@ function setThemeStylesheet(cssStylesheet)
  */
 function loadTheme() {
     let themeContext = St.ThemeContext.get_for_stage (global.stage);
-    let theme = new St.Theme ();
+    let theme = new St.Theme ({ fallback_stylesheet: _defaultCssStylesheet });
     let stylesheetLoaded = false;
     if (_cssStylesheet != null) {
         stylesheetLoaded = theme.load_stylesheet(_cssStylesheet);

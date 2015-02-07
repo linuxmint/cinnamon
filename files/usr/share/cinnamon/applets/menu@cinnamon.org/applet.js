@@ -22,6 +22,7 @@ const DocInfo = imports.misc.docInfo;
 const GLib = imports.gi.GLib;
 const Settings = imports.ui.settings;
 const Pango = imports.gi.Pango;
+const SearchProviderManager = imports.ui.searchProviderManager;
 
 const ICON_SIZE = 16;
 const MAX_FAV_ICON_SIZE = 32;
@@ -428,6 +429,80 @@ ApplicationButton.prototype = {
         return this.actor;
     }
 };
+
+function SearchProviderResultButton(appsMenuButton, provider, result) {
+    this._init(appsMenuButton, provider, result);
+}
+
+SearchProviderResultButton.prototype = {
+    __proto__: PopupMenu.PopupBaseMenuItem.prototype,
+    
+    _init: function(appsMenuButton, provider, result) {
+        this.provider = provider;
+        this.result = result;
+
+        this.appsMenuButton = appsMenuButton;
+        PopupMenu.PopupBaseMenuItem.prototype._init.call(this, {hover: false});
+        this.actor.set_style_class_name('menu-application-button');
+
+        // We need this fake app to help appEnterEvent/appLeaveEvent 
+        // work with our search result.
+        this.app = {
+            get_app_info: {
+                get_filename: function() {
+                    return result.id;
+                }
+            },
+            get_id: function() {
+                return -1;
+            },
+            get_description: function() {
+                return result.description;
+            },
+            get_name: function() {
+                return result.label;
+            }
+        };
+        
+        this.icon = null;
+        if (result.icon){
+            this.icon = result.icon;
+        }else if (result.icon_app){
+            this.icon = result.icon_app.create_icon_texture(APPLICATION_ICON_SIZE);
+        }else if (result.icon_filename){
+            this.icon = new St.Icon({gicon: new Gio.FileIcon({file: Gio.file_new_for_path(result.icon_filename)}), icon_size: APPLICATION_ICON_SIZE});
+        }
+        
+        if (this.icon){
+            this.addActor(this.icon);
+        }
+        this.label = new St.Label({ text: result.label, style_class: 'menu-application-button-label' });
+        this.addActor(this.label);
+        this.isDraggableApp = false;
+        if (this.icon) {
+            this.icon.realize();
+        }
+        this.label.realize();
+    },
+    
+    _onButtonReleaseEvent: function (actor, event) {
+        if (event.get_button() == 1){
+            this.activate(event);
+        }
+        return true;
+    },
+    
+    activate: function(event) {
+        try{
+            this.provider.on_result_selected(this.result);
+            this.appsMenuButton.menu.close();
+        }
+        catch(e)
+        {
+            global.logError(e);
+        }
+    }
+}
 
 function PlaceButton(appsMenuButton, place, button_name) {
     this._init(appsMenuButton, place, button_name);
@@ -890,10 +965,6 @@ FavoritesBox.prototype = {
     handleDragOver : function(source, actor, x, y, time) {
         let app = source.app;
 
-        // Don't allow favoriting of transient apps
-        if (app == null || app.is_window_backed() || (!(source instanceof FavoritesButton) && app.get_id() in AppFavorites.getAppFavorites().getFavoriteMap()))
-            return DND.DragMotionResult.NO_DROP;
-
         let favorites = AppFavorites.getAppFavorites().getFavorites();
         let numFavorites = favorites.length;
 
@@ -911,7 +982,7 @@ FavoritesBox.prototype = {
             numChildren--;
         }
 
-        let pos = Math.round(y * numFavorites / boxHeight);
+        let pos = Math.round(y * numChildren / boxHeight);
 
         if (pos != this._dragPlaceholderPos && pos <= numFavorites) {
             if (this._animatingPlaceholdersCount > 0) {
@@ -958,22 +1029,12 @@ FavoritesBox.prototype = {
                 this._dragPlaceholder.animateIn();
         }
 
-        let srcIsFavorite = (favPos != -1);
-
-        if (srcIsFavorite)
-            return DND.DragMotionResult.MOVE_DROP;
-
-        return DND.DragMotionResult.COPY_DROP;
+        return DND.DragMotionResult.MOVE_DROP;
     },
     
     // Draggable target interface
     acceptDrop : function(source, actor, x, y, time) {
         let app = source.app;
-
-        // Don't allow favoriting of transient apps
-        if (app == null || app.is_window_backed()) {
-            return false;
-        }
 
         let id = app.get_id();
 
@@ -1064,6 +1125,7 @@ MyApplet.prototype = {
             this._transientButtons = new Array();
             this._recentButtons = new Array();
             this._categoryButtons = new Array();
+            this._searchProviderButtons = new Array();
             this._selectedItemIndex = null;
             this._previousSelectedActor = null;
             this._previousVisibleIndex = null;
@@ -1229,6 +1291,22 @@ MyApplet.prototype = {
         this.emit('destroy');
     },
 
+    _set_default_menu_icon: function() {
+        let path = global.datadir + "/theme/menu.svg";
+        if (GLib.file_test(path, GLib.FileTest.EXISTS)) {
+            this.set_applet_icon_path(path);
+            return;
+        }
+
+        path = global.datadir + "/theme/menu-symbolic.svg";
+        if (GLib.file_test(path, GLib.FileTest.EXISTS)) {
+            this.set_applet_icon_symbolic_path(path);
+            return;
+        }
+        /* If all else fails, this will yield no icon */
+        this.set_applet_icon_path("");
+    },
+
     _updateIconAndLabel: function(){
         try {
             if (this.menuIconCustom &&
@@ -1245,8 +1323,7 @@ MyApplet.prototype = {
                 else
                     this.set_applet_icon_name(this.menuIcon);
             }
-            else if (Gtk.IconTheme.get_default().has_icon("menu")) this.set_applet_icon_name("menu");
-            else this.set_applet_icon_path(global.datadir + '/theme/menu.svg');
+            else this._set_default_menu_icon();
         } catch(e) {
            global.logWarning("Could not load icon file \""+this.menuIcon+"\" for menu button");
         }
@@ -1275,7 +1352,7 @@ MyApplet.prototype = {
             return true;
         }
 
-        let index = this._selectedItemIndex;   
+        index = this._selectedItemIndex;   
 
         if (this._activeContainer === null && symbol == Clutter.KEY_Up) {
             this._activeContainer = this.applicationsBox;
@@ -1436,6 +1513,7 @@ MyApplet.prototype = {
         if (this._previousSelectedActor && this._previousSelectedActor != actor) {
             if (this._previousSelectedActor._delegate instanceof ApplicationButton ||
                 this._previousSelectedActor._delegate instanceof RecentButton ||
+                this._previousSelectedActor._delegate instanceof SearchProviderResultButton ||
                 this._previousSelectedActor._delegate instanceof PlaceButton)
                 this._previousSelectedActor.style_class = "menu-application-button";
             else if (this._previousSelectedActor._delegate instanceof FavoritesButton ||
@@ -2327,6 +2405,12 @@ MyApplet.prototype = {
                 button.actor.realize();
             }
         }
+        
+        this._searchProviderButtons.forEach( function (item, index) {
+            if (item.actor.visible) {
+                item.actor.hide();
+            }
+        });
     },
 
     _setCategoriesButtonActive: function(active) {         
@@ -2357,9 +2441,11 @@ MyApplet.prototype = {
      _onSearchTextChanged: function (se, prop) {
         if (this.menuIsOpening) {
             this.menuIsOpening = false;
-            return false;
+            return;
         } else {
             let searchString = this.searchEntry.get_text();
+            if (searchString == '' && !this.searchActive)
+                return;
             this.searchActive = searchString != '';
             this._fileFolderAccessActive = this.searchActive && this.searchFilesystem;
             this._clearAllSelections();
@@ -2384,7 +2470,7 @@ MyApplet.prototype = {
                 this._setCategoriesButtonActive(true);
                 this._select_category(null, this._allAppsCategoryButton);
             }
-            return false;
+            return;
         }
     },
 
@@ -2474,6 +2560,23 @@ MyApplet.prototype = {
                 item_actor._delegate.emit('enter-event');
             }
         }
+        
+        SearchProviderManager.launch_all(pattern, Lang.bind(this, function(provider, results){
+            try{
+            for (var i in results){
+                if (results[i].type != 'software')
+                {
+                    let button = new SearchProviderResultButton(this, provider, results[i]);
+                    button.actor.connect('leave-event', Lang.bind(this, this._appLeaveEvent, button));
+                    this._addEnterEvent(button, Lang.bind(this, this._appEnterEvent, button));
+                    this._searchProviderButtons.push(button);
+                    this.applicationsBox.add_actor(button.actor);
+                    button.actor.realize();
+                }
+            }
+            }catch(e){global.log(e);}
+        }));
+        
         return false;
     },
 

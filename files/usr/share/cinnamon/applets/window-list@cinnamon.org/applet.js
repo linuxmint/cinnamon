@@ -406,10 +406,10 @@ AppMenuButton.prototype = {
             }
         }
         let target;
-        if (direction == 1) {
+        if (direction == 0) {
             target = ((current - 1) >= 0) ? (current - 1) : (num_windows - 1);
         }
-        if (direction == 0) {
+        if (direction == 1) {
             target = ((current + 1) <= num_windows - 1) ? (current + 1) : 0;
         }
         Main.activateWindow(this.window_list[vis_windows[target]].metaWindow, global.get_current_time());

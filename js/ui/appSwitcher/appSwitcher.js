@@ -91,6 +91,7 @@ AppSwitcher.prototype = {
         this._windows = getWindowsForBinding(binding);
         
         this._haveModal = false;
+        this._destroyed = false;
         this._motionTimeoutId = 0;
         this._checkDestroyedTimeoutId = 0;
         this._currentIndex = this._windows.indexOf(global.display.focus_window);
@@ -390,9 +391,10 @@ AppSwitcher.prototype = {
                     this.destroy();
                 else {
                     this._windows.splice(i, 1);
-                    this._previews[i].destroy();
-                    this._previews.splice(i, 1);
-                    
+                    if (this._previews && this._previews[i]) {
+                        this._previews[i].destroy();
+                        this._previews.splice(i, 1);
+                    }
                     if (i < this._currentIndex)
                         this._currentIndex--;
                     else
@@ -409,7 +411,8 @@ AppSwitcher.prototype = {
 
     _activateSelected: function() {
         Main.activateWindow(this._windows[this._currentIndex], global.get_current_time());
-        this.destroy();
+        if (!this._destroyed)
+            this.destroy();
     },
 
     _showDesktop: function() {
@@ -421,6 +424,7 @@ AppSwitcher.prototype = {
     },
 
     destroy: function() {
+        this._destroyed = true;
         this._popModal();
         
         if (this._initialDelayTimeoutId !== 0)

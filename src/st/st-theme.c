@@ -66,12 +66,16 @@ struct _StTheme
   char *application_stylesheet;
   char *default_stylesheet;
   char *theme_stylesheet;
+
+  char *fallback_stylesheet;
+
   GSList *custom_stylesheets;
 
   GHashTable *stylesheets_by_filename;
   GHashTable *filenames_by_stylesheet;
 
   CRCascade *cascade;
+  CRStyleSheet *fallback_cr_stylesheet;
 };
 
 struct _StThemeClass
@@ -84,7 +88,8 @@ enum
   PROP_0,
   PROP_APPLICATION_STYLESHEET,
   PROP_THEME_STYLESHEET,
-  PROP_DEFAULT_STYLESHEET
+  PROP_DEFAULT_STYLESHEET,
+  PROP_FALLBACK_STYLESHEET
 };
 
 enum
@@ -158,6 +163,20 @@ st_theme_class_init (StThemeClass *klass)
                                    g_param_spec_string ("default-stylesheet",
                                                         "Default Stylesheet",
                                                         "Stylesheet with global default styling",
+                                                        NULL,
+                                                        G_PARAM_READABLE | G_PARAM_WRITABLE | G_PARAM_CONSTRUCT_ONLY));
+
+  /**
+   * StTheme:fallback-stylesheet:
+   *
+   * Fallback stylesheet - non-cascading.  It is applied only if the user-selected stylesheets
+   * fail to return any properties, and the StWidget has its "important" property set.
+   */
+  g_object_class_install_property (object_class,
+                                   PROP_FALLBACK_STYLESHEET,
+                                   g_param_spec_string ("fallback-stylesheet",
+                                                        "Fallback Stylesheet",
+                                                        "Fallback stylesheet for important system widgets.",
                                                         NULL,
                                                         G_PARAM_READABLE | G_PARAM_WRITABLE | G_PARAM_CONSTRUCT_ONLY));
 
@@ -316,6 +335,8 @@ st_theme_constructor (GType                  type,
   theme_stylesheet = parse_stylesheet_nofail (theme->theme_stylesheet);
   default_stylesheet = parse_stylesheet_nofail (theme->default_stylesheet);
 
+  theme->fallback_cr_stylesheet = parse_stylesheet_nofail (theme->fallback_stylesheet);
+
   theme->cascade = cr_cascade_new (application_stylesheet,
                                    theme_stylesheet,
                                    default_stylesheet);
@@ -345,6 +366,7 @@ st_theme_finalize (GObject * object)
   g_free (theme->application_stylesheet);
   g_free (theme->theme_stylesheet);
   g_free (theme->default_stylesheet);
+  g_free (theme->fallback_stylesheet);
 
   if (theme->cascade)
     {
@@ -401,6 +423,18 @@ st_theme_set_property (GObject      *object,
 
         break;
       }
+    case PROP_FALLBACK_STYLESHEET:
+      {
+        const char *path = g_value_get_string (value);
+
+        if (path != theme->fallback_stylesheet)
+          {
+            g_free (theme->fallback_stylesheet);
+            theme->fallback_stylesheet = g_strdup (path);
+          }
+
+        break;
+      }
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
       break;
@@ -425,6 +459,9 @@ st_theme_get_property (GObject    *object,
       break;
     case PROP_DEFAULT_STYLESHEET:
       g_value_set_string (value, theme->default_stylesheet);
+      break;
+    case PROP_FALLBACK_STYLESHEET:
+      g_value_set_string (value, theme->fallback_stylesheet);
       break;
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
@@ -1005,6 +1042,26 @@ _st_theme_get_matched_properties (StTheme        *theme,
 
   return props;
 }
+
+GPtrArray *
+_st_theme_get_matched_properties_fallback (StTheme        *theme,
+                                           StThemeNode    *node)
+{
+  g_return_val_if_fail (ST_IS_THEME (theme), NULL);
+  g_return_val_if_fail (ST_IS_THEME_NODE (node), NULL);
+
+  GPtrArray *props = g_ptr_array_new ();
+
+  if (theme->fallback_cr_stylesheet)
+    add_matched_properties (theme, theme->fallback_cr_stylesheet, node, props);
+
+  /* We count on a stable sort here so that later declarations come
+   * after earlier declarations */
+  g_ptr_array_sort (props, compare_declarations);
+
+  return props;
+}
+
 
 /* Resolve an url from an url() reference in a stylesheet into an absolute
  * local filename, if possible. The resolution here is distinctly lame and

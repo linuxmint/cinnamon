@@ -219,7 +219,8 @@ st_theme_node_new (StThemeContext    *context,
                    const char        *element_id,
                    const char        *element_class,
                    const char        *pseudo_class,
-                   const char        *inline_style)
+                   const char        *inline_style,
+                   gboolean           important)
 {
   StThemeNode *node;
 
@@ -244,6 +245,7 @@ st_theme_node_new (StThemeContext    *context,
                         G_CALLBACK (on_custom_stylesheets_changed), node);
     }
 
+  node->important = (parent_node ? parent_node->important : FALSE) || important;
   node->element_type = element_type;
   node->element_id = g_strdup (element_id);
   node->element_classes = split_on_whitespace (element_class);
@@ -456,7 +458,11 @@ ensure_properties (StThemeNode *node)
       node->properties_computed = TRUE;
 
       if (node->theme)
-        properties = _st_theme_get_matched_properties (node->theme, node);
+        {
+          properties = _st_theme_get_matched_properties (node->theme, node);
+          if ((!properties || properties->len == 0) && node->important)
+            properties = _st_theme_get_matched_properties_fallback (node->theme, node);
+        }
 
       if (node->inline_style)
         {

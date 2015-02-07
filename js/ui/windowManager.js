@@ -947,7 +947,7 @@ WindowManager.prototype = {
             let current_workspace_index = global.screen.get_active_workspace_index();
             let monitor = Main.layoutManager.primaryMonitor;
             if (this._workspace_osd == null)
-                this._workspace_osd = new St.Label({style_class:'workspace-osd'});
+                this._workspace_osd = new St.Label({style_class:'workspace-osd', important: true});
             this._workspace_osd.set_text(Main.getWorkspaceName(current_workspace_index));
             this._workspace_osd.set_opacity = 0;
             Main.layoutManager.addChrome(this._workspace_osd, { visibleInFullscreen: false, affectsInputRegion: false });
@@ -988,7 +988,7 @@ WindowManager.prototype = {
     _showSnapOSD : function() {
         if (!global.settings.get_boolean("hide-snap-osd")) {
             if (this._snap_osd == null) {
-                this._snap_osd = new St.BoxLayout({ vertical: true, style_class: "snap-osd" });
+                this._snap_osd = new St.BoxLayout({ vertical: true, style_class: "snap-osd", important: true });
                 let snap_info = new St.Label();
                 let settings = new Gio.Settings({ schema: "org.cinnamon.muffin" });
                 let mod = settings.get_string("snap-modifier");
