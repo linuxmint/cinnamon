@@ -14,13 +14,43 @@ const TimelineSwitcher = imports.ui.appSwitcher.timelineSwitcher;
 const ClassicSwitcher = imports.ui.appSwitcher.classicSwitcher;
 
 const Main = imports.ui.main;
+const ModalDialog = imports.ui.modalDialog;
 const Tweener = imports.ui.tweener;
 
 const WINDOW_ANIMATION_TIME = 0.25;
+const TILE_HUD_ANIMATION_TIME = 0.15;
 const DIM_TIME = 0.500;
 const DIM_DESATURATION = 0.6;
 const DIM_BRIGHTNESS = -0.1;
 const UNDIM_TIME = 0.250;
+
+/* edge zones for tiling/snapping identification
+   copied from muffin/src/core/window-private.h
+
+  ___________________________
+  | 4          0          5 |
+  |                         |
+  |                         |
+  |                         |
+  |                         |
+  |  2                   3  |
+  |                         |
+  |                         |
+  |                         |
+  |                         |
+  | 7          1          6 |
+  |_________________________|
+
+*/
+
+const ZONE_TOP = 0;
+const ZONE_BOTTOM = 1;
+const ZONE_LEFT = 2;
+const ZONE_RIGHT = 3;
+const ZONE_TL = 4;
+const ZONE_TR = 5;
+const ZONE_BR = 6;
+const ZONE_BL = 7;
 
 function getTopInvisibleBorder(metaWindow) {
     let outerRect = metaWindow.get_outer_rect();
@@ -67,6 +97,298 @@ function getWindowDimmer(actor) {
     return actor._windowDimmer;
 }
 
+function TilePreview() {
+    this._init();
+}
+
+TilePreview.prototype = {
+    _init: function() {
+        this.actor = new St.Bin({ style_class: 'tile-preview', important: true });
+        global.window_group.add_actor(this.actor);
+
+        this._snapQueued = 0;
+        this._reset();
+        this._showing = false;
+    },
+
+    show: function(window, tileRect, monitorIndex, snapQueued) {
+        let windowActor = window.get_compositor_private();
+        if (!windowActor)
+            return;
+
+        if (this._snapQueued != snapQueued) {
+            this._updateStyle();
+            this._snapQueued = snapQueued;
+        }
+
+        if (this._rect && this._rect.equal(tileRect))
+            return;
+
+        let changeMonitor = (this._monitorIndex == -1 ||
+                             this._monitorIndex != monitorIndex);
+
+        this._monitorIndex = monitorIndex;
+        this._rect = tileRect;
+        let monitor = Main.layoutManager.monitors[monitorIndex];
+
+        if (!this._showing || changeMonitor) {
+            let monitorRect = new Meta.Rectangle({ x: monitor.x,
+                                                   y: monitor.y,
+                                                   width: monitor.width,
+                                                   height: monitor.height });
+            let [, rect] = window.get_outer_rect().intersect(monitorRect);
+            this.actor.set_size(rect.width, rect.height);
+            this.actor.set_position(rect.x, rect.y);
+            this.actor.opacity = 0;
+        }
+        
+        this._showing = true;
+        this.actor.show();
+        windowActor.raise_top();
+        this.actor.opacity = 0;
+
+        Tweener.addTween(this.actor,
+                         { x: tileRect.x,
+                           y: tileRect.y,
+                           width: tileRect.width,
+                           height: tileRect.height, 
+                           opacity: 255,
+                           time: WINDOW_ANIMATION_TIME,
+                           transition: 'easeOutQuad' });
+    },
+
+    hide: function() {
+        if (!this._showing)
+            return;
+
+        this._showing = false;
+        Tweener.addTween(this.actor,
+                         { opacity: 0,
+                           time: WINDOW_ANIMATION_TIME,
+                           transition: 'easeOutQuad',
+                           onComplete: Lang.bind(this, this._reset) });
+    },
+
+    _reset: function() {
+        this.actor.hide();
+        this._rect = null;
+        this._monitorIndex = -1;
+    },
+
+    _updateStyle: function() {
+        if (this.actor.has_style_class_name('snap'))
+            this.actor.remove_style_class_name('snap');
+        else
+            this.actor.add_style_class_name('snap');
+    }
+};
+
+function HudPreview() {
+    this._init();
+}
+
+HudPreview.prototype = {
+    _init: function() {
+        this.actor = new St.Bin({ style_class: 'tile-hud', important: true });
+        global.window_group.add_actor(this.actor);
+
+        this._tileHudSettings = new Gio.Settings({ schema: "org.cinnamon.muffin" });
+        this._tileHudSettings.connect("changed::tile-hud-threshold", Lang.bind(this, this._onTileHudSettingsChanged));
+
+        this._onTileHudSettingsChanged();
+        this._snapQueued = 0;
+
+        this._reset();
+        this._showing = false;
+    },
+
+    show: function(currentProximityZone, workArea, snapQueued) {
+        let changeZone = (this._zone != currentProximityZone);
+
+        if (this._snapQueued != snapQueued) {
+            this._updateSnapStyle();
+            this._snapQueued = snapQueued;
+        }
+
+        let pseudoClass = null;
+
+        if (!this._showing || changeZone) {
+            this._zone = currentProximityZone;
+
+            let monitorRect = workArea;
+            let tileGap = this._hudSize + 10;
+
+            switch(this._zone) {
+                case ZONE_TOP:
+                    this._x = monitorRect.x + tileGap;
+                    this._y = monitorRect.y;
+                    this._w = monitorRect.width - (tileGap * 2);
+                    this._h = 0;
+                    this._animatedX = this._x;
+                    this._animatedY = this._y;
+                    this._animatedW = this._w;
+                    this._animatedH = this._h + this._hudSize;
+                    this.actor.set_size(this._w, this._h);
+                    this.actor.set_position(this._x, this._y);
+                    pseudoClass = 'top';
+                    break;
+                case ZONE_BOTTOM:
+                    this._x = monitorRect.x + tileGap;
+                    this._y = monitorRect.y + monitorRect.height;
+                    this._w = monitorRect.width - (tileGap * 2);
+                    this._h = 0;
+                    this._animatedX = this._x;
+                    this._animatedY = this._y - this._hudSize;
+                    this._animatedW = this._w;
+                    this._animatedH = this._h + this._hudSize;
+                    this.actor.set_size(this._w, this._h);
+                    this.actor.set_position(this._x, this._y);
+                    pseudoClass = 'bottom';
+                    break;
+                case ZONE_LEFT:
+                    this._x = monitorRect.x;
+                    this._y = monitorRect.y + tileGap;
+                    this._w = 0;
+                    this._h = monitorRect.height - (tileGap * 2);
+                    this._animatedX = this._x;
+                    this._animatedY = this._y;
+                    this._animatedW = this._w + this._hudSize;
+                    this._animatedH = this._h;
+                    this.actor.set_size(this._w, this._h);
+                    this.actor.set_position(this._x, this._y);
+                    pseudoClass = 'left';
+                    break;
+                case ZONE_RIGHT:
+                    this._x = monitorRect.x + monitorRect.width;
+                    this._y = monitorRect.y + tileGap;
+                    this._w = 0;
+                    this._h = monitorRect.height - (tileGap * 2);
+                    this._animatedX = this._x - this._hudSize;
+                    this._animatedY = this._y;
+                    this._animatedW = this._w + this._hudSize;
+                    this._animatedH = this._h;
+                    this.actor.set_size(this._w, this._h);
+                    this.actor.set_position(this._x, this._y);
+                    pseudoClass = 'right';
+                    break;
+                case ZONE_TL:
+                    this._x = monitorRect.x;
+                    this._y = monitorRect.y;
+                    this._w = 0;
+                    this._h = 0;
+                    this._animatedX = this._x;
+                    this._animatedY = this._y;
+                    this._animatedW = this._w + this._hudSize;
+                    this._animatedH = this._h + this._hudSize;
+                    this.actor.set_size(this._w, this._h);
+                    this.actor.set_position(this._x, this._y);
+                    pseudoClass = 'top-left';
+                    break;
+                case ZONE_TR:
+                    this._x = monitorRect.x + monitorRect.width;
+                    this._y = monitorRect.y;
+                    this._w = 0;
+                    this._h = 0;
+                    this._animatedX = this._x - this._hudSize;
+                    this._animatedY = this._y;
+                    this._animatedW = this._w + this._hudSize;
+                    this._animatedH = this._h + this._hudSize;
+                    this.actor.set_size(this._w, this._h);
+                    this.actor.set_position(this._x, this._y);
+                    pseudoClass = 'top-right';
+                    break;
+                case ZONE_BL:
+                    this._x = monitorRect.x;
+                    this._y = monitorRect.y + monitorRect.height;
+                    this._w = 0;
+                    this._h = 0;
+                    this._animatedX = this._x;
+                    this._animatedY = this._y - this._hudSize;
+                    this._animatedW = this._w + this._hudSize;
+                    this._animatedH = this._h + this._hudSize;
+                    this.actor.set_size(this._w, this._h);
+                    this.actor.set_position(this._x, this._y);
+                    pseudoClass = 'bottom-left';
+                    break;
+                case ZONE_BR:
+                    this._x = monitorRect.x + monitorRect.width;
+                    this._y = monitorRect.y + monitorRect.height;
+                    this._w = 0;
+                    this._h = 0;
+                    this._animatedX = this._x - this._hudSize;
+                    this._animatedY = this._y - this._hudSize;
+                    this._animatedW = this._w + this._hudSize;
+                    this._animatedH = this._h + this._hudSize;
+                    this.actor.set_size(this._w, this._h);
+                    this.actor.set_position(this._x, this._y);
+                    pseudoClass = 'bottom-right';
+                    break;
+                default:
+                    this.hide();
+                    return;
+
+            }
+            this._updateStyle(pseudoClass);
+
+            this._showing = true;
+            this.actor.show();
+            this.actor.raise_top();
+            this.actor.opacity = 0;
+
+            Tweener.addTween(this.actor,
+                         { x: this._animatedX,
+                           y: this._animatedY,
+                           width: this._animatedW,
+                           height: this._animatedH, 
+                           opacity: 255,
+                           time: TILE_HUD_ANIMATION_TIME,
+                           transition: 'easeOutQuad' });
+        }
+    },
+
+    hide: function() {
+        if (!this._showing)
+            return;
+        this._showing = false;
+        Tweener.addTween(this.actor,
+                         { x: this._x,
+                           y: this._y,
+                           width: this._w,
+                           height: this._h,
+                           opacity: 0,
+                           time: TILE_HUD_ANIMATION_TIME,
+                           transition: 'easeOutQuad',
+                           onComplete: Lang.bind(this, this._reset) });
+    },
+
+    _reset: function () {
+        this.actor.hide();
+        this._zone = -1;
+    },
+
+    _onTileHudSettingsChanged: function() {
+        let scaleFactor = St.ThemeContext.get_for_stage(global.stage).scale_factor;
+        this._hudSize = this._tileHudSettings.get_int("tile-hud-threshold") * scaleFactor;
+
+    },
+
+    _updateStyle: function(pseudoClass) {
+        let currentStyle = this.actor.get_style_pseudo_class();
+        if (currentStyle)
+            this.actor.remove_style_pseudo_class(currentStyle);
+        if (pseudoClass) {
+            this.actor.set_style_pseudo_class(pseudoClass);
+        }
+    },
+
+    _updateSnapStyle: function() {
+        if (this.actor.has_style_class_name('snap'))
+            this.actor.remove_style_class_name('snap');
+        else
+            this.actor.add_style_class_name('snap');
+    }
+}
+
 function WindowManager() {
     this._init();
 }
@@ -82,8 +404,11 @@ WindowManager.prototype = {
         this._mapping = [];
         this._destroying = [];
 
-        this._snap_osd = null;
+        this._snapOsd = null;
         this._workspace_osd = null;
+
+        this._tilePreview = null;
+        this._hudPreview = null;
 
         this._dimmedWindows = [];
 
@@ -110,6 +435,10 @@ WindowManager.prototype = {
         this._cinnamonwm.connect('maximize', Lang.bind(this, this._maximizeWindow));
         this._cinnamonwm.connect('unmaximize', Lang.bind(this, this._unmaximizeWindow));
         this._cinnamonwm.connect('tile', Lang.bind(this, this._tileWindow));
+        this._cinnamonwm.connect('show-tile-preview', Lang.bind(this, this._showTilePreview));
+        this._cinnamonwm.connect('hide-tile-preview', Lang.bind(this, this._hideTilePreview));
+        this._cinnamonwm.connect('show-hud-preview', Lang.bind(this, this._showHudPreview));
+        this._cinnamonwm.connect('hide-hud-preview', Lang.bind(this, this._hideHudPreview));
         this._cinnamonwm.connect('map', Lang.bind(this, this._mapWindow));
         this._cinnamonwm.connect('destroy', Lang.bind(this, this._destroyWindow));
         
@@ -149,6 +478,8 @@ WindowManager.prototype = {
         global.screen.connect ("show-snap-osd", Lang.bind (this, this._showSnapOSD));
         global.screen.connect ("hide-snap-osd", Lang.bind (this, this._hideSnapOSD));
         global.screen.connect ("show-workspace-osd", Lang.bind (this, this.showWorkspaceOSD));
+
+        this.settings = new Gio.Settings({schema: "org.cinnamon.muffin"});
     },
 
     blockAnimations: function() {
@@ -940,6 +1271,32 @@ WindowManager.prototype = {
         cinnamonwm.completed_switch_workspace();                        
     },
 
+    _showTilePreview: function(cinnamonwm, window, tileRect, monitorIndex, snapQueued) {
+        if (!this._tilePreview)
+            this._tilePreview = new TilePreview();
+        this._tilePreview.show(window, tileRect, monitorIndex, snapQueued);
+    },
+
+    _hideTilePreview: function(cinnamonwm) {
+        if (!this._tilePreview)
+            return;
+        this._tilePreview.hide();
+    },
+
+    _showHudPreview: function(cinnamonwm, currentProximityZone, workArea, snapQueued) {
+        if (!global.settings.get_boolean("hide-tile-hud")) {
+            if (!this._hudPreview)
+                this._hudPreview = new HudPreview();
+            this._hudPreview.show(currentProximityZone, workArea, snapQueued);
+        }
+    },
+
+    _hideHudPreview: function(cinnamonwm) {
+        if (!this._hudPreview)
+            return;
+        this._hudPreview.hide();
+    },
+
     showWorkspaceOSD : function() {
         this._hideSnapOSD();
         this._hideWorkspaceOSD();
@@ -985,48 +1342,29 @@ WindowManager.prototype = {
         }
     },
 
-    _showSnapOSD : function() {
+    _showSnapOSD : function(metaScreen, monitorIndex) {
         if (!global.settings.get_boolean("hide-snap-osd")) {
-            if (this._snap_osd == null) {
-                this._snap_osd = new St.BoxLayout({ vertical: true, style_class: "snap-osd", important: true });
-                let snap_info = new St.Label();
-                let settings = new Gio.Settings({ schema: "org.cinnamon.muffin" });
-                let mod = settings.get_string("snap-modifier");
+            if (this._snapOsd == null) {
+                this._snapOsd = new ModalDialog.InfoOSD();
+
+                let mod = this.settings.get_string("snap-modifier");
                 if (mod == "Super")
-                    snap_info.set_text (_("Hold <Super> to enter snap mode"));
+                    this._snapOsd.addText(_("Hold <Super> to enter snap mode"));
                 else if (mod == "Alt")
-                    snap_info.set_text (_("Hold <Alt> to enter snap mode"));
+                    this._snapOsd.addText(_("Hold <Alt> to enter snap mode"));
                 else if (mod == "Control")
-                    snap_info.set_text (_("Hold <Ctrl> to enter snap mode"));
+                    this._snapOsd.addText(_("Hold <Ctrl> to enter snap mode"));
                 else if (mod == "Shift")
-                    snap_info.set_text (_("Hold <Shift> to enter snap mode"));
-                let flip_info = new St.Label();
-                flip_info.set_text (_("Use the arrow keys to shift workspaces"));
-                if (mod != "")
-                    this._snap_osd.add (snap_info, { y_align: St.Align.START });
-                this._snap_osd.add (flip_info, { y_align: St.Align.END });
-                Main.layoutManager.addChrome(this._snap_osd, { visibleInFullscreen: false, affectsInputRegion: false});
+                    this._snapOsd.addText(_("Hold <Shift> to enter snap mode"));
+                this._snapOsd.addText(_("Use the arrow keys to shift workspaces"));
             }
-            this._snap_osd.set_opacity = 0;
-            let monitor = Main.layoutManager.primaryMonitor;
-            let workspace_osd_x = global.settings.get_int("workspace-osd-x");
-            let workspace_osd_y = global.settings.get_int("workspace-osd-y");
-            let [minX, maxX, minY, maxY] = [5, 95, 5, 95];
-            let delta = (workspace_osd_x - minX) / (maxX - minX);
-            let x = Math.round((monitor.width * workspace_osd_x / 100) - (this._snap_osd.width * delta));
-            delta = (workspace_osd_y - minY) / (maxY - minY);
-            let y = Math.round((monitor.height * workspace_osd_y / 100) - (this._snap_osd.height * delta));
-            this._snap_osd.set_position(x, y);
-            this._snap_osd.show_all();
+            this._snapOsd.show(monitorIndex);
         }
     },
 
     _hideSnapOSD : function() {
-        if (this._snap_osd != null) {
-            this._snap_osd.hide();
-            Main.layoutManager.removeChrome(this._snap_osd);
-            this._snap_osd.destroy();
-            this._snap_osd = null;
+        if (this._snapOsd != null) {
+            this._snapOsd.hide();
         }
     },
 

@@ -439,3 +439,172 @@ SpicesAboutDialog.prototype = {
         this.close(global.get_current_time());
     }
 }
+
+/**
+ * #ConfirmDialog
+ * @callback (function): Callback when "Yes" is clicked
+ *
+ * A confirmation dialog that calls @callback if user clicks yes. Destroys
+ * itself afterwards
+ *
+ * Inherits: ModalDialog.ModalDialog
+ */
+function ConfirmDialog(label, callback){
+    this._init(label, callback);
+}
+
+ConfirmDialog.prototype = {
+    __proto__: ModalDialog.prototype,
+
+    /**
+     * _init:
+     * @label (string): label to display on the confirm dialog
+     * @callback (function): function to call when user clicks "yes"
+     *
+     * Constructor function.
+     */
+    _init: function(label, callback){
+        ModalDialog.prototype._init.call(this);
+        this.contentLayout.add(new St.Label({text: label}));
+        this.callback = callback;
+
+        this.setButtons([
+            {
+                label: _("Yes"),
+                action: Lang.bind(this, function(){
+                    this.destroy();
+                    this.callback();
+                })
+            },
+            {
+                label: _("No"),
+                action: Lang.bind(this, function(){
+                    this.destroy();
+                })
+            }
+        ]);
+    },
+};
+
+/**
+ * #NotifyDialog
+ *
+ * A notification dialog that displays a message to user. Destroys itself after
+ * user clicks "OK"
+ *
+ * Inherits: ModalDialog.ModalDialog
+ */
+function NotifyDialog(label){
+    this._init(label);
+}
+
+NotifyDialog.prototype = {
+    __proto__: ModalDialog.prototype,
+
+    /**
+     * _init:
+     * @label (string): label to display on the notify dialog
+     *
+     * Constructor function.
+     */
+    _init: function(label){
+        ModalDialog.prototype._init.call(this);
+        this.contentLayout.add(new St.Label({text: label}));
+
+        this.setButtons([
+            {
+                label: _("OK"),
+                action: Lang.bind(this, this.destroy)
+            }
+        ]);
+    },
+};
+
+/**
+ * #InfoOSD
+ * @actor (St.BoxLayout): actor of the OSD
+ *
+ * Creates an OSD to show information to user at the center of the screen. Can display texts or general St.Actors.
+ */
+function InfoOSD(text) {
+    this._init(text);
+}
+
+InfoOSD.prototype = {
+
+    /**
+     * _init:
+     * @text (string): (optional) Text to display on the OSD
+     *
+     * Constructor function. Creates an OSD and adds it to the chrome. Adds a
+     * label with text @text if specified.
+     */
+    _init: function(text) {
+        this.actor = new St.BoxLayout({vertical: true, style_class: "info-osd", important: true});
+        if (text) {
+            let label = new St.Label({text: text});
+            this.actor.add(label);
+        }
+        Main.layoutManager.addChrome(this.actor, {visibleInFullscreen: false, affectsInputRegion: false});
+    },
+
+    /**
+     * show:
+     * @monitorIndex (int): (optional) Monitor to display OSD on. Default is primary monitor
+     * 
+     * Shows the OSD at the center of monitor @monitorIndex. Shows at the
+     * primary monitor if not specified.
+     */
+    show: function(monitorIndex) {
+        if (!monitorIndex) monitorIndex = 0;
+        let monitor = Main.layoutManager.monitors[monitorIndex];
+
+        let x = monitor.x + Math.round((monitor.width - this.actor.width)/2);
+        let y = monitor.y + Math.round((monitor.height - this.actor.height)/2);
+
+        this.actor.set_position(x, y);
+        this.actor.show();
+    },
+
+    /**
+     * hide:
+     *
+     * Hides the OSD.
+     */
+    hide: function() {
+        this.actor.hide();
+    },
+
+    /**
+     * destroy:
+     * 
+     * Destroys the OSD
+     */
+    destroy: function() {
+        Main.layoutManager.removeChrome(this.actor);
+        this.actor.destroy();
+    },
+
+    /**
+     * addText:
+     * @text (string): text to display
+     * @params (JSON): parameters to be used when adding text
+     *
+     * Adds a text label displaying @text to the OSD
+     */
+    addText: function(text, params) {
+        let label = new St.Label({text: text});
+        this.actor.add(label, params);
+    },
+
+    /**
+     * addActor:
+     * @actor (St.Actor): actor to add
+     * @params (JSON): parameters to be used when adding actor
+     *
+     * Adds the actor @actor to the OSD
+     */
+    addActor: function(actor, params) {
+        this.actor.add(actor, params);
+    }
+}

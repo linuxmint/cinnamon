@@ -20,6 +20,7 @@ home = os.path.expanduser("~")
 setting_dict = {
     "header"          :   "Header", # Not a setting, just a boldface header text
     "separator"       :   "Separator", # not a setting, a horizontal separator
+    "label"           :   "Label", # Not a setting, just a text label
     "entry"           :   "Entry",
     "textview"        :   "TextView",    
     "checkbox"        :   "CheckButton",
@@ -445,6 +446,15 @@ class Header(Gtk.HBox, BaseWidget):
         self.label = Gtk.Label()
         self.label.set_use_markup(True)
         self.label.set_markup("<b>%s</b>" % self.get_desc())
+        self.pack_start(self.label, False, False, 2)
+
+class Label(Gtk.HBox, BaseWidget):
+    def __init__(self, key, settings_obj, uuid):
+        BaseWidget.__init__(self, key, settings_obj, uuid)
+        super(Label, self).__init__()
+        self.label = Gtk.Label()
+        self.label.set_use_markup(True)
+        self.label.set_markup(self.get_desc())
         self.pack_start(self.label, False, False, 2)
 
 class Separator(Gtk.HSeparator, BaseWidget):
@@ -1045,6 +1055,7 @@ class Keybinding(Gtk.HBox, BaseWidget):
         self.value = self.get_val()
         if self.get_desc() != "":
             self.pack_start(self.label, False, False, 2)
+            set_tt(self.get_tooltip(), self.label)
 
         self.buttons = []
         self.teach_button = None
