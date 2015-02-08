@@ -102,7 +102,7 @@ function TilePreview() {
 
 TilePreview.prototype = {
     _init: function() {
-        this.actor = new St.Bin({ style_class: 'tile-preview' });
+        this.actor = new St.Bin({ style_class: 'tile-preview', important: true });
         global.window_group.add_actor(this.actor);
 
         this._snapQueued = 0;
@@ -188,7 +188,7 @@ function HudPreview() {
 
 HudPreview.prototype = {
     _init: function() {
-        this.actor = new St.Bin({ style_class: 'tile-hud' });
+        this.actor = new St.Bin({ style_class: 'tile-hud', important: true });
         global.window_group.add_actor(this.actor);
 
         this._tileHudSettings = new Gio.Settings({ schema: "org.cinnamon.muffin" });
