@@ -367,35 +367,6 @@ PanelCorner.prototype = {
     }
 };
 
-function ConfirmDialog(){
-    this._init();
-}
-
-ConfirmDialog.prototype = {
-    __proto__: ModalDialog.ModalDialog.prototype,
-
-    _init: function(){
-	ModalDialog.ModalDialog.prototype._init.call(this);
-	let label = new St.Label({text: "Are you sure you want to restore all settings to default?\n\n"});
-	this.contentLayout.add(label);
-
-	this.setButtons([
-	    {
-		label: _("Yes"),
-		action: Lang.bind(this, function(){
-                    Util.spawnCommandLine("gsettings reset-recursively org.cinnamon");
-                    global.reexec_self();
-		})
-	    },
-	    {
-		label: _("No"),
-		action: Lang.bind(this, function(){
-		    this.close();
-		})
-	    }
-	]);
-    },
-};
 function SettingsLauncher(label, keyword, icon, menu) {
     this._init(label, keyword, icon, menu);
 }
@@ -446,7 +417,11 @@ function populateSettingsMenu(menu, ah_key) {
     });
 
     menu.troubleshootItem.menu.addAction(_("Restore all settings to default"), function(event) {
-        let confirm = new ConfirmDialog();
+        let confirm = new ModalDialog.ConfirmDialog("Are you sure you want to restore all settings to default?\n\n",
+                function() {
+                    Util.spawnCommandLine("gsettings reset-recursively org.cinnamon");
+                    global.reexec_self();
+                });
         confirm.open();
     });
 

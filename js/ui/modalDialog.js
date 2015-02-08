@@ -439,3 +439,34 @@ SpicesAboutDialog.prototype = {
         this.close(global.get_current_time());
     }
 }
+
+function ConfirmDialog(label, callback){
+    this._init(label, callback);
+}
+
+ConfirmDialog.prototype = {
+    __proto__: ModalDialog.prototype,
+
+    _init: function(label, callback){
+	ModalDialog.prototype._init.call(this);
+	this.contentLayout.add(new St.Label({text: label}));
+        this.callback = callback;
+
+	this.setButtons([
+	    {
+		label: _("Yes"),
+		action: Lang.bind(this, function(){
+                    this.close();
+                    this.callback();
+		})
+	    },
+	    {
+		label: _("No"),
+		action: Lang.bind(this, function(){
+		    this.close();
+		})
+	    }
+	]);
+    },
+};
+

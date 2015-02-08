@@ -297,37 +297,6 @@ const ThumbnailState = {
     DESTROYED :     7
 };
 
-function ConfirmationDialog(prompt, yesAction, yesFocused){
-    this._init(prompt, yesAction, yesFocused);
-}
-
-ConfirmationDialog.prototype = {
-    __proto__: ModalDialog.ModalDialog.prototype,
-
-    _init: function(prompt, yesAction, yesFocused) {
-        ModalDialog.ModalDialog.prototype._init.call(this);
-        let label = new St.Label({text: prompt});
-        this.contentLayout.add(label);
-
-        this.setButtons([
-            {
-                label: _("Yes"),
-                focused: yesFocused,
-                action: Lang.bind(this, function(){
-                    yesAction();
-                    this.close();
-                })
-            },
-            {
-                label: _("No"),
-                action: Lang.bind(this, function(){
-                    this.close();
-                })
-            }
-        ]);
-    },
-};
-
 /**
  * @metaWorkspace: a #Meta.Workspace
  */
@@ -936,7 +905,7 @@ ExpoWorkspaceThumbnail.prototype = {
             this.highlight();
             let prompt = _("Are you sure you want to remove workspace \"%s\"?\n\n").format(
                 Main.getWorkspaceName(this.metaWorkspace.index()));
-            let confirm = new ConfirmationDialog(prompt, removeAction, true);
+            let confirm = new ModalDialog.ConfirmDialog(prompt, removeAction);
             confirm.open();
         }
         else {
