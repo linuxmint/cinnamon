@@ -444,7 +444,8 @@ SpicesAboutDialog.prototype = {
  * #ConfirmDialog
  * @callback (function): Callback when "Yes" is clicked
  *
- * A confirmation dialog that calls @callback if user clicks yes.
+ * A confirmation dialog that calls @callback if user clicks yes. Destroys
+ * itself afterwards
  *
  * Inherits: ModalDialog.ModalDialog
  */
@@ -471,14 +472,14 @@ ConfirmDialog.prototype = {
 	    {
 		label: _("Yes"),
 		action: Lang.bind(this, function(){
-                    this.close();
+                    this.destroy();
                     this.callback();
 		})
 	    },
 	    {
 		label: _("No"),
 		action: Lang.bind(this, function(){
-		    this.close();
+		    this.destroy();
 		})
 	    }
 	]);
