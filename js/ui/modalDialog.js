@@ -440,6 +440,14 @@ SpicesAboutDialog.prototype = {
     }
 }
 
+/**
+ * #ConfirmDialog
+ * @callback (function): Callback when "Yes" is clicked
+ *
+ * A confirmation dialog that calls @callback if user clicks yes.
+ *
+ * Inherits: ModalDialog.ModalDialog
+ */
 function ConfirmDialog(label, callback){
     this._init(label, callback);
 }
@@ -447,6 +455,13 @@ function ConfirmDialog(label, callback){
 ConfirmDialog.prototype = {
     __proto__: ModalDialog.prototype,
 
+    /**
+     * _init:
+     * @label (string): label to display on the confirm dialog
+     * @callback (function): function to call when user clicks "yes"
+     *
+     * Constructor function.
+     */
     _init: function(label, callback){
 	ModalDialog.prototype._init.call(this);
 	this.contentLayout.add(new St.Label({text: label}));
@@ -470,11 +485,25 @@ ConfirmDialog.prototype = {
     },
 };
 
+/**
+ * #InfoOSD
+ * @actor (St.BoxLayout): actor of the OSD
+ *
+ * Creates an OSD to show information to user at the center of the screen. Can display texts or general St.Actors.
+ */
 function InfoOSD(text) {
     this._init(text);
 }
 
 InfoOSD.prototype = {
+
+    /**
+     * _init:
+     * @text (string): (optional) Text to display on the OSD
+     *
+     * Constructor function. Creates an OSD and adds it to the chrome. Adds a
+     * label with text @text if specified.
+     */
     _init: function(text) {
         this.actor = new St.BoxLayout({vertical: true, style_class: "info-osd", important: true});
         if (text) {
@@ -484,6 +513,13 @@ InfoOSD.prototype = {
         Main.layoutManager.addChrome(this.actor, {visibleInFullscreen: false, affectsInputRegion: false});
     },
 
+    /**
+     * show:
+     * @monitorIndex (int): (optional) Monitor to display OSD on. Default is primary monitor
+     * 
+     * Shows the OSD at the center of monitor @monitorIndex. Shows at the
+     * primary monitor if not specified.
+     */
     show: function(monitorIndex) {
         if (!monitorIndex) monitorIndex = 0;
         let monitor = Main.layoutManager.monitors[monitorIndex];
@@ -495,20 +531,44 @@ InfoOSD.prototype = {
         this.actor.show();
     },
 
+    /**
+     * hide:
+     *
+     * Hides the OSD.
+     */
     hide: function() {
         this.actor.hide();
     },
 
+    /**
+     * destroy:
+     * 
+     * Destroys the OSD
+     */
     destroy: function() {
         Main.layoutManager.removeChrome(this.actor);
         this.actor.destroy();
     },
 
+    /**
+     * addText:
+     * @text (string): text to display
+     * @params (JSON): parameters to be used when adding text
+     *
+     * Adds a text label displaying @text to the OSD
+     */
     addText: function(text, params) {
         let label = new St.Label({text: text});
         this.actor.add(label, params);
     },
 
+    /**
+     * addActor:
+     * @actor (St.Actor): actor to add
+     * @params (JSON): parameters to be used when adding actor
+     *
+     * Adds the actor @actor to the OSD
+     */
     addActor: function(actor, params) {
         this.actor.add(actor, params);
     }
