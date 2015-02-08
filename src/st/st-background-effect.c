@@ -237,7 +237,7 @@ st_background_effect_pre_paint (ClutterEffect *effect)
        || ( posy != self->posy_old)
        || ( width != self->width_old)
        || ( height != self->height_old)
-       || (time_used > 50.0d))
+       || (time_used > 50.0))
 
   {
     self->posx_old = posx;
