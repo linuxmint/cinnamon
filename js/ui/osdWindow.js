@@ -42,6 +42,13 @@ LevelBar.prototype = {
         this._bar.queue_repaint();
     },
 
+    setLevelBarHeight: function(sizeMultiplier) {
+        let themeNode = this.actor.get_theme_node();
+        let height = themeNode.get_height();
+        let newHeight = Math.floor(height * sizeMultiplier);
+        this.actor.set_height(newHeight);
+    },
+
     _repaint:function() {
         let cr = this._bar.get_context();
 
@@ -105,12 +112,6 @@ OsdWindow.prototype = {
         this._icon.gicon = icon;
     },
 
-    setLabel: function(label) {
-        this._label.visible = (label != undefined);
-        if (label)
-            this._label.text = label;
-    },
-
     setLevel: function(level) {
         this._level.actor.visible = (level != undefined);
         if (level != undefined) {
@@ -132,6 +133,7 @@ OsdWindow.prototype = {
             return;
 
         if (!this.actor.visible) {
+            this._level.setLevelBarHeight(this._sizeMultiplier);
             this.actor.show();
             this.actor.raise_top();
             this.actor.opacity = 0;
@@ -177,20 +179,22 @@ OsdWindow.prototype = {
 
     _onOsdSettingsChanged: function() {
         let currentSize = this._osdSettings.get_string("show-media-keys-osd");
-        let scaleFactor = St.ThemeContext.get_for_stage(global.stage).scale_factor;
 
         switch (currentSize) {
             case "disabled":
                 this._osdBaseSize = null;
                 break;
             case "small":
-                this._osdBaseSize = OSD_SIZE - (30 * scaleFactor);
+                this._sizeMultiplier = 0.7;
+                this._osdBaseSize = Math.floor(OSD_SIZE * this._sizeMultiplier);
                 break;
             case "large":
+                this._sizeMultiplier = 1.0;
                 this._osdBaseSize = OSD_SIZE;
                 break;
             default:
-                this._osdBaseSize = OSD_SIZE - (15 * scaleFactor);
+                this._sizeMultiplier = 0.85;
+                this._osdBaseSize = Math.floor(OSD_SIZE * this._sizeMultiplier);
         }
 
         this._monitorsChanged();
