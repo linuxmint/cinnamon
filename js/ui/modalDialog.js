@@ -487,6 +487,40 @@ ConfirmDialog.prototype = {
 };
 
 /**
+ * #NotifyDialog
+ *
+ * A notification dialog that displays a message to user. Destroys itself after
+ * user clicks "OK"
+ *
+ * Inherits: ModalDialog.ModalDialog
+ */
+function NotifyDialog(label){
+    this._init(label);
+}
+
+NotifyDialog.prototype = {
+    __proto__: ModalDialog.prototype,
+
+    /**
+     * _init:
+     * @label (string): label to display on the notify dialog
+     *
+     * Constructor function.
+     */
+    _init: function(label){
+	ModalDialog.prototype._init.call(this);
+	this.contentLayout.add(new St.Label({text: label}));
+
+	this.setButtons([
+	    {
+		label: _("OK"),
+		action: Lang.bind(this, this.destroy)
+	    }
+	]);
+    },
+};
+
+/**
  * #InfoOSD
  * @actor (St.BoxLayout): actor of the OSD
  *
