@@ -1076,7 +1076,7 @@ void
 st_widget_set_theme (StWidget  *actor,
                      StTheme   *theme)
 {
-  StWidgetPrivate *priv = actor->priv;
+  StWidgetPrivate *priv;
 
   g_return_if_fail (ST_IS_WIDGET (actor));
 
@@ -1425,7 +1425,7 @@ void
 st_widget_set_style (StWidget  *actor,
                      const gchar *style)
 {
-  StWidgetPrivate *priv = actor->priv;
+  StWidgetPrivate *priv;
 
   g_return_if_fail (ST_IS_WIDGET (actor));
 

@@ -492,7 +492,6 @@ st_scroll_view_get_preferred_width (ClutterActor *actor,
 {
   StScrollViewPrivate *priv = ST_SCROLL_VIEW (actor)->priv;
   StThemeNode *theme_node = st_widget_get_theme_node (ST_WIDGET (actor));
-  gboolean account_for_vscrollbar = FALSE;
   gfloat min_width = 0, natural_width;
   gfloat child_min_width, child_natural_width;
 
@@ -519,25 +518,7 @@ st_scroll_view_get_preferred_width (ClutterActor *actor,
       break;
     }
 
-  switch (priv->vscrollbar_policy)
-    {
-    case GTK_POLICY_NEVER:
-      account_for_vscrollbar = FALSE;
-      break;
-    case GTK_POLICY_ALWAYS:
-      account_for_vscrollbar = TRUE;
-      break;
-    case GTK_POLICY_AUTOMATIC:
-      /* For automatic scrollbars, we always request space for the vertical
-       * scrollbar; we won't know whether we actually need one until our
-       * height is assigned in allocate().
-       */
-      account_for_vscrollbar = TRUE;
-      break;
-    }
-
-  account_for_vscrollbar = priv->vscrollbar_policy != GTK_POLICY_NEVER;
-  if (account_for_vscrollbar)
+  if (priv->vscrollbar_policy != GTK_POLICY_NEVER)
     {
       float sb_width = get_scrollbar_width (ST_SCROLL_VIEW (actor), for_height);
 
