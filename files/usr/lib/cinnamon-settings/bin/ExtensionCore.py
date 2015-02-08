@@ -185,10 +185,15 @@ class ExtensionSidePage (SidePage):
         self.extConfigureButton = Gtk.Button.new_with_label(_("Configure"))
         self.extConfigureButton.connect("clicked", self._external_configure_launch)
 
-        if not self.themes:
-            restoreButton = Gtk.Button.new_with_label(_("Restore to default"))
-        else:
+        if self.collection_type == "theme":
             restoreButton = Gtk.Button.new_with_label(_("Restore default theme"))
+        elif self.collection_type == "desklet":
+            restoreButton = Gtk.Button.new_with_label(_("Remove all desklets"))
+        elif self.collection_type == "extension":
+            restoreButton = Gtk.Button.new_with_label(_("Disable all extensions"))
+        else:
+            restoreButton = Gtk.Button.new_with_label(_("Restore to default"))
+
         restoreButton.connect("clicked", lambda x: self._restore_default_extensions())
         
         hbox = Gtk.HBox()
