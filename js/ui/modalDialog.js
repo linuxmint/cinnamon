@@ -470,3 +470,46 @@ ConfirmDialog.prototype = {
     },
 };
 
+function InfoOSD(text) {
+    this._init(text);
+}
+
+InfoOSD.prototype = {
+    _init: function(text) {
+        this.actor = new St.BoxLayout({vertical: true, style_class: "info-osd", important: true});
+        if (text) {
+            let label = new St.Label({text: text});
+            this.actor.add(label);
+        }
+        Main.layoutManager.addChrome(this.actor, {visibleInFullscreen: false, affectsInputRegion: false});
+    },
+
+    show: function(monitorIndex) {
+        if (!monitorIndex) monitorIndex = 0;
+        let monitor = Main.layoutManager.monitors[monitorIndex];
+
+        let x = monitor.x + Math.round((monitor.width - this.actor.width)/2);
+        let y = monitor.y + Math.round((monitor.height - this.actor.height)/2);
+
+        this.actor.set_position(x, y);
+        this.actor.show();
+    },
+
+    hide: function() {
+        this.actor.hide();
+    },
+
+    destroy: function() {
+        Main.layoutManager.removeChrome(this.actor);
+        this.actor.destroy();
+    },
+
+    addText: function(text, params) {
+        let label = new St.Label({text: text});
+        this.actor.add(label, params);
+    },
+
+    addActor: function(actor, params) {
+        this.actor.add(actor, params);
+    }
+}

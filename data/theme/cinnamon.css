@@ -848,6 +848,21 @@ StScrollBar StButton#vhandle:hover {
 .modal-dialog-button:focus {
 	padding: 3px 31px 4px;
 }
+
+/* Info OSD popup */
+.info-osd {
+    font-size: 18pt;
+    border-radius: 24px;
+    background-color: rgba(85, 85, 85, 0.9);
+    border: 2px solid #868686;
+    color: #babdb6;
+    padding-right: 20px;
+    padding-left: 20px;
+    padding-bottom: 20px;
+    padding-top: 20px;
+    text-align: center;
+}
+
 /* ===================================================================
  * Run dialog
  * ===================================================================*/
@@ -1650,21 +1665,6 @@ StScrollBar StButton#vhandle:hover {
 
 .flashspot {
    background-color: white;
-}
-
-/* Snap/tile OSD popup */
-
-.snap-osd {
-    font-size: 18pt;
-    border-radius: 24px;
-    background-color: rgba(85, 85, 85, 0.9);
-    border: 2px solid #868686;
-    color: #babdb6;
-    padding-right: 20px;
-    padding-left: 20px;
-    padding-bottom: 20px;
-    padding-top: 20px;
-    text-align: center;
 }
 
 /* Media keys OSD popup */
