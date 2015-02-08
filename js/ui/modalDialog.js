@@ -464,25 +464,25 @@ ConfirmDialog.prototype = {
      * Constructor function.
      */
     _init: function(label, callback){
-	ModalDialog.prototype._init.call(this);
-	this.contentLayout.add(new St.Label({text: label}));
+        ModalDialog.prototype._init.call(this);
+        this.contentLayout.add(new St.Label({text: label}));
         this.callback = callback;
 
-	this.setButtons([
-	    {
-		label: _("Yes"),
-		action: Lang.bind(this, function(){
+        this.setButtons([
+            {
+                label: _("Yes"),
+                action: Lang.bind(this, function(){
                     this.destroy();
                     this.callback();
-		})
-	    },
-	    {
-		label: _("No"),
-		action: Lang.bind(this, function(){
-		    this.destroy();
-		})
-	    }
-	]);
+                })
+            },
+            {
+                label: _("No"),
+                action: Lang.bind(this, function(){
+                    this.destroy();
+                })
+            }
+        ]);
     },
 };
 
@@ -508,15 +508,15 @@ NotifyDialog.prototype = {
      * Constructor function.
      */
     _init: function(label){
-	ModalDialog.prototype._init.call(this);
-	this.contentLayout.add(new St.Label({text: label}));
+        ModalDialog.prototype._init.call(this);
+        this.contentLayout.add(new St.Label({text: label}));
 
-	this.setButtons([
-	    {
-		label: _("OK"),
-		action: Lang.bind(this, this.destroy)
-	    }
-	]);
+        this.setButtons([
+            {
+                label: _("OK"),
+                action: Lang.bind(this, this.destroy)
+            }
+        ]);
     },
 };
 
