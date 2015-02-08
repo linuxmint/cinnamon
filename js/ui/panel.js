@@ -468,17 +468,9 @@ PanelManager.prototype = {
         }));
 
         if (!this._osd) {
-            this._osd = new St.Bin({style_class: "panel-change-osd", important: true});
-            let text = new St.Label({text: _("Select new position of panel. Esc to cancel.")});
-            this._osd.set_child(text);
-            Main.layoutManager.addChrome(this._osd, { visibleInFullscreen: false, affectsInputRegion: false});
+            this._osd = new ModalDialog.InfoOSD(_("Select new position of panel. Esc to cancel."));
         }
 
-        let monitor = Main.layoutManager.primaryMonitor;
-        let x = monitor.x + (monitor.width - this._osd.width)/2;
-        let y = monitor.y + (monitor.height - this._osd.height)/2;
-
-        this._osd.set_position(x, y);
         this._osd.show();
         return true;
     },
@@ -977,14 +969,27 @@ function populateSettingsMenu(menu, panelId) {
 
     let menuItem = new IconMenuItem(_("Paste applet configuration"), "edit-paste");
     menuItem.activate = Lang.bind(menu, function() {
-        let dialog = new AppletManager.ConfirmPasteDialog(this.panelId);
+        let dialog;
+        if (AppletManager.clipboard.length == 0)
+            dialog = new ModalDialog.NotifyDialog(
+                    _("Clipboard empty. Please first copy from another panel") + "\n\n");
+        else
+            dialog = new ModalDialog.ConfirmDialog(
+                    _("Pasting applet configuration will remove all existing applets on this panel. Are you sure you want to paste?") + "\n\n",
+                    Lang.bind(this, function() {
+                        AppletManager.pasteAppletConfiguration(this.panelId);
+                    }));
         dialog.open();
     });
     panelSettingsSection.menu.addMenuItem(menuItem);
 
     let menuItem = new IconMenuItem(_("Clear all applets"), "edit-clear-all");
     menuItem.activate = Lang.bind(menu, function() {
-        let dialog = new AppletManager.ConfirmClearDialog(this.panelId);
+        let dialog = new ModalDialog.ConfirmDialog(
+                _("Are you sure you want to clear all applets on this panel?") + "\n\n",
+                Lang.bind(this, function() {
+                    AppletManager.clearAppletConfiguration(this.panelId);
+                }));
         dialog.open();
     });
     panelSettingsSection.menu.addMenuItem(menuItem);

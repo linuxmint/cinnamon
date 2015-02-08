@@ -553,108 +553,6 @@ function unloadAppletsOnPanel (panel) {
     }
 }
 
-function ConfirmPasteDialog(panelId){
-    this._init(panelId);
-}
-
-ConfirmPasteDialog.prototype = {
-    __proto__: ModalDialog.ModalDialog.prototype,
-
-    _init: function(panelId){
-        ModalDialog.ModalDialog.prototype._init.call(this);
-
-        this.panelId = panelId;
-        let label;
-        if (clipboard.length == 0) {
-            label = new St.Label({text: _("Clipboard empty. Please first copy from another panel") + "\n\n"});
-	    this.setButtons([
-                {
-                    label: _("Ok"),
-                    action: Lang.bind(this, function(){
-                        this.close();
-                    })
-                }
-            ]);
-        } else {
-            label = new St.Label({text: _("Pasting applet configuration will remove all existing applets on this panel. Are you sure you want to paste?") + "\n\n"});
-	    this.setButtons([
-                {
-                    label: _("Yes"),
-                    action: Lang.bind(this, function(){
-                        this.close();
-                        pasteAppletConfiguration(this.panelId);
-                    })
-                },
-                {
-                    label: _("No"),
-                    action: Lang.bind(this, function(){
-                        this.close();
-                    })
-                }
-            ]);
-        }
-
-	this.contentLayout.add(label);
-    },
-};
-
-function ConfirmClearDialog(panelId){
-    this._init(panelId);
-}
-
-ConfirmClearDialog.prototype = {
-    __proto__: ModalDialog.ModalDialog.prototype,
-
-    _init: function(panelId){
-        ModalDialog.ModalDialog.prototype._init.call(this);
-
-        this.panelId = panelId;
-        let label = new St.Label({text: _("Are you sure you want to clear all applets on this panel?") + "\n\n"});
-        this.setButtons([
-                {
-                    label: _("Yes"),
-                    action: Lang.bind(this, function(){
-                        this.close();
-                        clearAppletConfiguration(this.panelId);
-                    })
-                },
-                {
-                    label: _("No"),
-                    action: Lang.bind(this, function(){
-                        this.close();
-                    })
-                }
-        ]);
-
-	this.contentLayout.add(label);
-    },
-};
-
-function NotifySkipDialog(){
-    this._init();
-}
-
-NotifySkipDialog.prototype = {
-    __proto__: ModalDialog.ModalDialog.prototype,
-
-    _init: function(panelId){
-        ModalDialog.ModalDialog.prototype._init.call(this);
-
-        let label = new St.Label({text: _("Certain applets do not allow multiple instances and were not copied") + "\n\n"});
-        this.setButtons([
-                {
-                    label: _("OK"),
-                    action: Lang.bind(this, function(){
-                        this.close();
-                    })
-                }
-        ]);
-
-	this.contentLayout.add(label);
-    },
-};
-
-
 function copyAppletConfiguration(panelId) {
     let def = enabledAppletDefinitions.idMap;
     clipboard = [];
@@ -712,7 +610,7 @@ function pasteAppletConfiguration(panelId) {
     global.settings.set_strv("enabled-applets", raw);
 
     if (skipped) {
-        let dialog = new NotifySkipDialog();
+        let dialog = new ModalDialog.NotifyDialog(_("Certain applets do not allow multiple instances and were not copied") + "\n\n");
         dialog.open();
     }
 }
