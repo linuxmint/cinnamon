@@ -14,6 +14,7 @@ const TimelineSwitcher = imports.ui.appSwitcher.timelineSwitcher;
 const ClassicSwitcher = imports.ui.appSwitcher.classicSwitcher;
 
 const Main = imports.ui.main;
+const ModalDialog = imports.ui.modalDialog;
 const Tweener = imports.ui.tweener;
 
 const WINDOW_ANIMATION_TIME = 0.25;
@@ -403,7 +404,7 @@ WindowManager.prototype = {
         this._mapping = [];
         this._destroying = [];
 
-        this._snap_osd = null;
+        this._snapOsd = null;
         this._workspace_osd = null;
 
         this._tilePreview = null;
@@ -477,6 +478,8 @@ WindowManager.prototype = {
         global.screen.connect ("show-snap-osd", Lang.bind (this, this._showSnapOSD));
         global.screen.connect ("hide-snap-osd", Lang.bind (this, this._hideSnapOSD));
         global.screen.connect ("show-workspace-osd", Lang.bind (this, this.showWorkspaceOSD));
+
+        this.settings = new Gio.Settings({schema: "org.cinnamon.muffin"});
     },
 
     blockAnimations: function() {
@@ -1341,46 +1344,27 @@ WindowManager.prototype = {
 
     _showSnapOSD : function(metaScreen, monitorIndex) {
         if (!global.settings.get_boolean("hide-snap-osd")) {
-            if (this._snap_osd == null) {
-                this._snap_osd = new St.BoxLayout({ vertical: true, style_class: "snap-osd", important: true });
-                let snap_info = new St.Label();
-                let settings = new Gio.Settings({ schema: "org.cinnamon.muffin" });
-                let mod = settings.get_string("snap-modifier");
+            if (this._snapOsd == null) {
+                this._snapOsd = new ModalDialog.InfoOSD();
+
+                let mod = this.settings.get_string("snap-modifier");
                 if (mod == "Super")
-                    snap_info.set_text (_("Hold <Super> to enter snap mode"));
+                    this._snapOsd.addText(_("Hold <Super> to enter snap mode"));
                 else if (mod == "Alt")
-                    snap_info.set_text (_("Hold <Alt> to enter snap mode"));
+                    this._snapOsd.addText(_("Hold <Alt> to enter snap mode"));
                 else if (mod == "Control")
-                    snap_info.set_text (_("Hold <Ctrl> to enter snap mode"));
+                    this._snapOsd.addText(_("Hold <Ctrl> to enter snap mode"));
                 else if (mod == "Shift")
-                    snap_info.set_text (_("Hold <Shift> to enter snap mode"));
-                let flip_info = new St.Label();
-                flip_info.set_text (_("Use the arrow keys to shift workspaces"));
-                if (mod != "")
-                    this._snap_osd.add (snap_info, { y_align: St.Align.START });
-                this._snap_osd.add (flip_info, { y_align: St.Align.END });
-                Main.layoutManager.addChrome(this._snap_osd, { visibleInFullscreen: false, affectsInputRegion: false});
+                    this._snapOsd.addText(_("Hold <Shift> to enter snap mode"));
+                this._snapOsd.addText(_("Use the arrow keys to shift workspaces"));
             }
-            this._snap_osd.set_opacity = 0;
-            let monitor = Main.layoutManager.monitors[monitorIndex];
-            let workspace_osd_x = global.settings.get_int("workspace-osd-x");
-            let workspace_osd_y = global.settings.get_int("workspace-osd-y");
-            let [minX, maxX, minY, maxY] = [5, 95, 5, 95];
-            let delta = (workspace_osd_x - minX) / (maxX - minX);
-            let x = (Math.round((monitor.width * workspace_osd_x / 100) - (this._snap_osd.width * delta))) + monitor.x;
-            delta = (workspace_osd_y - minY) / (maxY - minY);
-            let y = (Math.round((monitor.height * workspace_osd_y / 100) - (this._snap_osd.height * delta))) + monitor.y;
-            this._snap_osd.set_position(x, y);
-            this._snap_osd.show_all();
+            this._snapOsd.show(monitorIndex);
         }
     },
 
     _hideSnapOSD : function() {
-        if (this._snap_osd != null) {
-            this._snap_osd.hide();
-            Main.layoutManager.removeChrome(this._snap_osd);
-            this._snap_osd.destroy();
-            this._snap_osd = null;
+        if (this._snapOsd != null) {
+            this._snapOsd.hide();
         }
     },
 
