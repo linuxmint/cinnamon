@@ -1,14 +1,12 @@
 const Lang = imports.lang;
 const Gio = imports.gi.Gio;
+const Gtk = imports.gi.Gtk;
 const Main = imports.ui.main;
 const Applet = imports.ui.applet;
 const PopupMenu = imports.ui.popupMenu;
 const Util = imports.misc.util;
 const Gettext = imports.gettext.domain("cinnamon-applets");
 const _ = Gettext.gettext;
-
-const appletUUID = 'slideshow@cinnamon.org';
-const AppletDirectory = imports.ui.appletManager.appletMeta[appletUUID].path;
 
 function MyApplet(metadata, orientation, panel_height, instanceId) {
     this._init(metadata, orientation, panel_height, instanceId);
@@ -23,16 +21,17 @@ MyApplet.prototype = {
         this._slideshowSettings = new Gio.Settings({ schema: 'org.cinnamon.desktop.background.slideshow' });
 
         try {
+            Gtk.IconTheme.get_default().append_search_path(metadata.path);
             if (this._slideshowSettings.get_boolean("slideshow-enabled")) {
                 if (!this._slideshowSettings.get_boolean("slideshow-paused")) {
-                    this.set_applet_icon_symbolic_path(AppletDirectory + '/slideshow-play-symbolic.svg');
+                    this.set_applet_icon_symbolic_name('slideshow-play-symbolic.svg');
                     this.set_applet_tooltip(_("Click to pause the slideshow"));
                 } else {
-                    this.set_applet_icon_symbolic_path(AppletDirectory + '/slideshow-pause-symbolic.svg');
+                    this.set_applet_icon_symbolic_name('slideshow-pause-symbolic.svg');
                     this.set_applet_tooltip(_("Click to resume the slideshow"));
                 }
             } else {
-                this.set_applet_icon_symbolic_path(AppletDirectory + '/slideshow-disabled-symbolic.svg');
+                this.set_applet_icon_symbolic_name('slideshow-disabled-symbolic.svg');
                 this.set_applet_tooltip(_("The slideshow is disabled"));
             }
 
@@ -65,11 +64,11 @@ MyApplet.prototype = {
         if (this._slideshowSettings.get_boolean("slideshow-enabled")) {
             if (!this._slideshowSettings.get_boolean("slideshow-paused")) {
                 this._slideshowSettings.set_boolean("slideshow-paused", true);
-                this.set_applet_icon_symbolic_path(AppletDirectory + '/slideshow-pause-symbolic.svg');
+                this.set_applet_icon_symbolic_name('slideshow-pause-symbolic.svg');
                 this.set_applet_tooltip(_("Click to resume the slideshow"));
             } else {
                 this._slideshowSettings.set_boolean("slideshow-paused", false);
-                this.set_applet_icon_symbolic_path(AppletDirectory + '/slideshow-play-symbolic.svg');
+                this.set_applet_icon_symbolic_name('slideshow-play-symbolic.svg');
                 this.set_applet_tooltip(_("Click to pause the slideshow"));
             }
         }
@@ -78,11 +77,11 @@ MyApplet.prototype = {
     _on_slideshow_enabled_toggled: function() {
         if (this._slideshowSettings.get_boolean("slideshow-enabled")) {
             this._slideshowSettings.set_boolean("slideshow-enabled", false);
-            this.set_applet_icon_symbolic_path(AppletDirectory + '/slideshow-disabled-symbolic.svg');
+            this.set_applet_icon_symbolic_name('slideshow-disabled-symbolic.svg');
             this.set_applet_tooltip(_("The slideshow is disabled"));
         } else {
             this._slideshowSettings.set_boolean("slideshow-enabled", true);
-            this.set_applet_icon_symbolic_path(AppletDirectory + '/slideshow-play-symbolic.svg');
+            this.set_applet_icon_symbolic_name('slideshow-play-symbolic.svg');
             this.set_applet_tooltip(_("Click to pause the slideshow"));
         }
     },
@@ -90,21 +89,21 @@ MyApplet.prototype = {
     _on_slideshow_enabled_changed: function() {
         if (this._slideshowSettings.get_boolean("slideshow-enabled")) {
             this.enable_slideshow_switch.setToggleState(true);
-            this.set_applet_icon_symbolic_path(AppletDirectory + '/slideshow-play-symbolic.svg');
+            this.set_applet_icon_symbolic_name('slideshow-play-symbolic.svg');
             this.set_applet_tooltip(_("Click to pause the slideshow"));
         } else {
             this.enable_slideshow_switch.setToggleState(false);
-            this.set_applet_icon_symbolic_path(AppletDirectory + '/slideshow-disabled-symbolic.svg');
+            this.set_applet_icon_symbolic_name('slideshow-disabled-symbolic.svg');
             this.set_applet_tooltip(_("The slideshow is disabled"));
         }
     },
 
     _on_slideshow_paused_changed: function() {
         if (this._slideshowSettings.get_boolean("slideshow-paused")) {
-            this.set_applet_icon_symbolic_path(AppletDirectory + '/slideshow-pause-symbolic.svg');
+            this.set_applet_icon_symbolic_name('slideshow-pause-symbolic.svg');
             this.set_applet_tooltip(_("Click to resume the slideshow"));
         } else {
-            this.set_applet_icon_symbolic_path(AppletDirectory + '/slideshow-play-symbolic.svg');
+            this.set_applet_icon_symbolic_name('slideshow-play-symbolic.svg');
             this.set_applet_tooltip(_("Click to pause the slideshow"));
         }
     },
