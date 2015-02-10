@@ -16,7 +16,6 @@ const AppletManager = imports.ui.appletManager;
 const Util = imports.misc.util;
 const ModalDialog = imports.ui.modalDialog;
 const Gtk = imports.gi.Gtk;
-const Signals = imports.signals;
 
 const BUTTON_DND_ACTIVATION_TIMEOUT = 250;
 
@@ -122,8 +121,11 @@ PanelManager.prototype = {
         global.settings.connect("changed::panel-edit-mode", Lang.bind(this, this._onPanelEditModeChanged));
         global.screen.connect("monitors-changed", Lang.bind(this, this._onMonitorsChanged));
 
-        this._osd = null;
-
+        this._addOsd = new ModalDialog.InfoOSD(_("Select position of new panel. Esc to cancel."));
+        this._moveOsd = new ModalDialog.InfoOSD(_("Select new position of panel. Esc to cancel."));
+        this._addOsd.hide();
+        this._moveOsd.hide();
+ 
         this._checkCanAdd();
     },
 
@@ -243,7 +245,8 @@ PanelManager.prototype = {
             delete this.dummyPanels[i][1];
         }
         this.addPanelMode = false;
-        this._osd.hide();
+        this._addOsd.hide();
+        this._moveOsd.hide();
         if (Main.keybindingManager.bindings['close-add-panel'])
             Main.keybindingManager.removeHotKey('close-add-panel');
     },
@@ -340,7 +343,6 @@ PanelManager.prototype = {
         }
         if (this.canAdd != (panelCount != 0)) {
             this.canAdd = (panelCount != 0);
-            this.emit('can-add-changed', this.canAdd);
         }
     },
 
@@ -425,6 +427,7 @@ PanelManager.prototype = {
      */
     addPanelQuery: function() {
         this._showDummyPanels(Lang.bind(this, this.addPanel));
+        this._addOsd.show();
     },
 
     /**
@@ -436,6 +439,7 @@ PanelManager.prototype = {
     movePanelQuery: function(id) {
         this.moveId = id;
         this._showDummyPanels(Lang.bind(this, this.movePanel));
+        this._moveOsd.show();
     },
 
     _showDummyPanels: function(callback) {
@@ -467,17 +471,12 @@ PanelManager.prototype = {
                 this._destroyDummyPanels();
         }));
 
-        if (!this._osd) {
-            this._osd = new ModalDialog.InfoOSD(_("Select new position of panel. Esc to cancel."));
-        }
-
-        this._osd.show();
-        return true;
+       return true;
     },
 
     // Set Main.panel so that applets that look for it don't break
     _setMainPanel: function() {
-        for (i = 0; i < this.panels.length; i++) {
+        for (let i = 0; i < this.panels.length; i++) {
             if (this.panels[i]) {
                 Main.panel = this.panels[i];
                 break;
@@ -485,7 +484,6 @@ PanelManager.prototype = {
         }
     }
 } 
-Signals.addSignalMethods(PanelManager.prototype);
 
 /**
  * PanelDummy
@@ -960,31 +958,26 @@ function populateSettingsMenu(menu, panelId) {
     });
     panelSettingsSection.menu.addMenuItem(menu.movePanelItem);
 
-    let menuItem = new IconMenuItem(_("Copy applet configuration"), "edit-copy");
-    menuItem.activate = Lang.bind(menu, function() {
+    menu.copyAppletItem = new IconMenuItem(_("Copy applet configuration"), "edit-copy");
+    menu.copyAppletItem.activate = Lang.bind(menu, function() {
         AppletManager.copyAppletConfiguration(this.panelId);
         this.close();
     });
-    panelSettingsSection.menu.addMenuItem(menuItem);
+    panelSettingsSection.menu.addMenuItem(menu.copyAppletItem);
 
-    let menuItem = new IconMenuItem(_("Paste applet configuration"), "edit-paste");
-    menuItem.activate = Lang.bind(menu, function() {
-        let dialog;
-        if (AppletManager.clipboard.length == 0)
-            dialog = new ModalDialog.NotifyDialog(
-                    _("Clipboard empty. Please first copy from another panel") + "\n\n");
-        else
-            dialog = new ModalDialog.ConfirmDialog(
-                    _("Pasting applet configuration will remove all existing applets on this panel. Are you sure you want to paste?") + "\n\n",
-                    Lang.bind(this, function() {
-                        AppletManager.pasteAppletConfiguration(this.panelId);
-                    }));
+    menu.pasteAppletItem = new IconMenuItem(_("Paste applet configuration"), "edit-paste");
+    menu.pasteAppletItem.activate = Lang.bind(menu, function() {
+        let dialog = new ModalDialog.ConfirmDialog(
+                _("Pasting applet configuration will remove all existing applets on this panel. DO you want to continue?") + "\n\n",
+                Lang.bind(this, function() {
+                    AppletManager.pasteAppletConfiguration(this.panelId);
+                }));
         dialog.open();
     });
-    panelSettingsSection.menu.addMenuItem(menuItem);
+    panelSettingsSection.menu.addMenuItem(menu.pasteAppletItem);
 
-    let menuItem = new IconMenuItem(_("Clear all applets"), "edit-clear-all");
-    menuItem.activate = Lang.bind(menu, function() {
+    menu.clearAppletItem = new IconMenuItem(_("Clear all applets"), "edit-clear-all");
+    menu.clearAppletItem.activate = Lang.bind(menu, function() {
         let dialog = new ModalDialog.ConfirmDialog(
                 _("Are you sure you want to clear all applets on this panel?") + "\n\n",
                 Lang.bind(this, function() {
@@ -992,7 +985,7 @@ function populateSettingsMenu(menu, panelId) {
                 }));
         dialog.open();
     });
-    panelSettingsSection.menu.addMenuItem(menuItem);
+    panelSettingsSection.menu.addMenuItem(menu.clearAppletItem);
 
 
     menu.addMenuItem(panelSettingsSection);
@@ -1075,15 +1068,25 @@ PanelContextMenu.prototype = {
         this.addMenuItem(menuSetting);
 
         populateSettingsMenu(this, panelId);
-        Mainloop.idle_add(Lang.bind(this, function() { // Wait till Main.panelManager is created
-            Main.panelManager.connect("can-add-changed", Lang.bind(this, this._onCanAddChanged));
-            this._onCanAddChanged(Main.panelManager.canAdd);
-        }));
     },
 
-    _onCanAddChanged: function(canAdd) {
+    open: function(animate) {
+        PopupMenu.PopupMenu.prototype.open.call(this, animate);
+
         this.movePanelItem.setSensitive(Main.panelManager.canAdd);
         this.addPanelItem.setSensitive(Main.panelManager.canAdd);
+        this.pasteAppletItem.setSensitive(AppletManager.clipboard.length != 0);
+
+        let defs = AppletManager.enabledAppletDefinitions.idMap;
+        let nonEmpty = false;
+        for (let i in defs) {
+            if (defs[i].panelId == this.panelId) {
+                nonEmpty = true;
+                break;
+            }
+        }
+        this.copyAppletItem.setSensitive(nonEmpty);
+        this.clearAppletItem.setSensitive(nonEmpty);
     }
 }
 
