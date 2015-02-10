@@ -1278,12 +1278,9 @@ Panel.prototype = {
         this._settingsSignals.push(global.settings.connect("changed::panel-edit-mode", Lang.bind(this, this._onPanelEditModeChanged)));
 
         /* Generate panelbox */
-        this._leftPanelBarrier = 0;
-        this._rightPanelBarrier = 0;
         this.panelBox = new St.BoxLayout({ name: 'panelBox',
                                            vertical: true });
         Main.layoutManager.addChrome(this.panelBox, { addToWindowgroup: false });
-        this.panelBox.connect('allocation-changed', Lang.bind(this, this._updatePanelBarriers));
         this.panelBox.add_actor(this.actor)
 
         this._moveResizePanel();
@@ -1392,31 +1389,6 @@ Panel.prototype = {
             return parseInt(property);
         default:
             return property;
-        }
-    },
-
-    _updatePanelBarriers: function() {
-        if (this._leftPanelBarrier)
-            global.destroy_pointer_barrier(this._leftPanelBarrier);
-        if (this._rightPanelBarrier)
-            global.destroy_pointer_barrier(this._rightPanelBarrier);
-
-        if (this.panelBox.height) {
-            let panelTop = (this.bottomPosition ? this.monitor.y + this.monitor.height - this.panelBox.height : this.monitor.y);
-            let panelBottom = (this.bottomPosition ? this.monitor.y + this.monitor.height : this.monitor.y + this.panelBox.height);
-
-            this._leftPanelBarrier = global.create_pointer_barrier(
-                this.monitor.x, panelTop,
-                this.monitor.x, panelBottom,
-                1 /* BarrierPositiveX */);
-
-            this._rightPanelBarrier = global.create_pointer_barrier(
-                this.monitor.x + this.monitor.width - 1, panelTop,
-                this.monitor.x + this.monitor.width - 1, panelBottom,
-                4 /* BarrierNegativeX */);
-        } else {
-            this._leftPanelBarrier = 0;
-            this._rightPanelBarrier = 0;
         }
     },
 
