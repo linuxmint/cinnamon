@@ -29,7 +29,8 @@ override_dh_autoreconf:
 
 override_dh_auto_configure:
 	dh_auto_configure -- --enable-compile-warnings=yes \
-	                     --disable-schemas-install
+	                     --disable-schemas-install\
+			     --enable-gtk-doc
 
 # Disable checks since they are not functional for the moment
 override_dh_auto_test:

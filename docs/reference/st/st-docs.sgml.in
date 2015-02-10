@@ -1,0 +1,64 @@
+<?xml version="1.0"?>
+<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.3//EN"
+               "http://www.oasis-open.org/docbook/xml/4.3/docbookx.dtd"
+[
+  <!ENTITY % local.common.attrib "xmlns:xi  CDATA  #FIXED 'http://www.w3.org/2003/XInclude'">
+]>
+<book id="index">
+  <bookinfo>
+    <title>St Reference Manual</title>
+    <releaseinfo>
+      for St @VERSION@.
+      <!--The latest version of this documentation can be found on-line at
+      <ulink role="online-location" url="http://[SERVER]/st/index.html">http://[SERVER]/st/</ulink>.-->
+    </releaseinfo>
+  </bookinfo>
+
+  <part>
+    <title>API reference</title>
+    <chapter id="base">
+      <title>Abstract classes and Interfaces</title>
+      <xi:include href="xml/st-widget.xml"/>
+      <xi:include href="xml/st-widget-accessible.xml"/>
+      <xi:include href="xml/st-scrollable.xml"/>
+    </chapter>
+    <chapter id="widgets">
+      <title>Widgets</title>
+      <xi:include href="xml/st-button.xml"/>
+      <xi:include href="xml/st-drawing-area.xml"/>
+      <xi:include href="xml/st-entry.xml"/>
+      <xi:include href="xml/st-icon.xml"/>
+      <xi:include href="xml/st-label.xml"/>
+    </chapter>
+    <chapter id="containers">
+      <title>Containers</title>
+      <xi:include href="xml/st-bin.xml"/>
+      <xi:include href="xml/st-box-layout.xml"/>
+      <xi:include href="xml/st-scroll-view.xml"/>
+      <xi:include href="xml/st-table.xml"/>
+    </chapter>
+
+    <chapter id="styling">
+      <title>Styling</title>
+      <xi:include href="xml/st-theme.xml"/>
+      <xi:include href="xml/st-theme-context.xml"/>
+      <xi:include href="xml/st-theme-node.xml"/>
+      <xi:include href="xml/st-theme-node-transition.xml"/>
+      <xi:include href="xml/st-texture-cache.xml"/>
+    </chapter>
+  </part>
+  <chapter id="object-tree">
+    <title>Object Hierarchy</title>
+     <xi:include href="xml/tree_index.sgml"/>
+  </chapter>
+  <index id="api-index-full">
+    <title>API Index</title>
+    <xi:include href="xml/api-index-full.xml"><xi:fallback /></xi:include>
+  </index>
+  <index id="deprecated-api-index" role="deprecated">
+    <title>Index of deprecated API</title>
+    <xi:include href="xml/api-index-deprecated.xml"><xi:fallback /></xi:include>
+  </index>
+
+  <xi:include href="xml/annotation-glossary.xml"><xi:fallback /></xi:include>
+</book>
