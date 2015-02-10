@@ -53,6 +53,14 @@ const CinnamonIface =
                 <arg type="s" direction="in" /> \
                 <arg type="b" direction="in" /> \
             </method> \
+            <method name="highlightPanel"> \
+                <arg type="i" direction="in" /> \
+                <arg type="b" direction="in" /> \
+            </method> \
+            <method name="addPanelQuery"> \
+            </method> \
+            <method name="destroyDummyPanels"> \
+            </method> \
             <method name="activateCallback"> \
                 <arg type="s" direction="in" /> \
                 <arg type="s" direction="in" /> \
@@ -283,6 +291,19 @@ Cinnamon.prototype = {
             let [w, h] = actor.get_transformed_size();
             this.FlashArea(x, y, w, h)
         }
+    },
+
+    highlightPanel: function(id, highlight) {
+        if (Main.panelManager.panels[id])
+            Main.panelManager.panels[id].highlight(highlight);
+    },
+
+    addPanelQuery: function() {
+        Main.panelManager.addPanelQuery();
+    },
+
+    destroyDummyPanels: function() {
+        Main.panelManager._destroyDummyPanels();
     },
 
     activateCallback: function(callback, id, id_is_instance) {

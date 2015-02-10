@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-
+import sys
 from ExtensionCore import ExtensionSidePage
 
 class Module:
@@ -25,7 +25,11 @@ class AppletsViewSidePage (ExtensionSidePage):
         ExtensionSidePage.__init__(self, name, icon, keywords, content_box, collection_type, module)
 
     def toSettingString(self, uuid, instanceId):
-        return ("panel1:right:0:%s:%d") % (uuid, instanceId)
+        panelno = "panel1"
+        if len(sys.argv) > 2:
+            if sys.argv[1] == "applets" and sys.argv[2][0:5] == "panel":
+                panelno = sys.argv[2]
+        return (panelno + ":right:0:%s:%d") % (uuid, instanceId)
 
     def fromSettingString(self, string):
         panel, side, position, uuid, instanceId = string.split(":")

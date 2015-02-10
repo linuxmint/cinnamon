@@ -270,15 +270,15 @@ cinnamon_recorder_init (CinnamonRecorder *recorder)
   
   // Get bottom panel height from settings so we don't overlap it
   // with our recording indicators.
-  GVariant *variant = NULL;
-  GSettings *desktop_settings;
+  //  GVariant *variant = NULL;
+  //  GSettings *desktop_settings;
   
-  desktop_settings = g_settings_new (SCHEMA_CINNAMON);
-  variant = g_settings_get_value (desktop_settings, PANEL_HEIGHT_KEY);
-  g_variant_get (variant, "i", &recorder->height_adjust);
+  //  desktop_settings = g_settings_new (SCHEMA_CINNAMON);
+  //  variant = g_settings_get_value (desktop_settings, PANEL_HEIGHT_KEY);
+  //  g_variant_get (variant, "i", &recorder->height_adjust);
   
-  g_variant_unref (variant);
-  g_object_unref (desktop_settings);
+  //  g_variant_unref (variant);
+  //  g_object_unref (desktop_settings);
   
   
   recorder->recording_icon = create_recording_icon ();

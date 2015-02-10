@@ -8,15 +8,15 @@ const Mainloop = imports.mainloop;
 
 const ICON_SCALE_FACTOR = .8; // for custom panel heights, 20 (default icon size) / 25 (default panel height)
 
-function MyApplet(orientation, panel_height) {
-    this._init(orientation, panel_height);
+function MyApplet(orientation, panel_height, instance_id) {
+    this._init(orientation, panel_height, instance_id);
 }
 
 MyApplet.prototype = {
     __proto__: Applet.Applet.prototype,
 
-    _init: function(orientation, panel_height) {
-        Applet.Applet.prototype._init.call(this, orientation, panel_height);
+    _init: function(orientation, panel_height, instance_id) {
+        Applet.Applet.prototype._init.call(this, orientation, panel_height, instance_id);
 
         this.actor.remove_style_class_name("applet-box");
         this.actor.style="spacing: 5px;";
@@ -48,6 +48,7 @@ MyApplet.prototype = {
     },
 
     on_applet_added_to_panel: function() {
+        Main.statusIconDispatcher.start(this.actor.get_parent().get_parent());
         this._signals.added = Main.statusIconDispatcher.connect('status-icon-added', Lang.bind(this, this._onTrayIconAdded));
         this._signals.removed = Main.statusIconDispatcher.connect('status-icon-removed', Lang.bind(this, this._onTrayIconRemoved));
         this._signals.redisplay = Main.statusIconDispatcher.connect('before-redisplay', Lang.bind(this, this._onBeforeRedisplay));
@@ -81,7 +82,7 @@ MyApplet.prototype = {
             if (icon.get_parent())
                 icon.get_parent().remove_child(icon);
 
-            if (global.settings.get_boolean('panel-scale-text-icons')) {
+            if (this._scaleMode) {
                 let disp_size = this._panelHeight * ICON_SCALE_FACTOR;
                 if (icon.get_height() != disp_size) {
                     if (icon.get_width() == 1 || icon.get_height() == 1 || buggyIcons.indexOf(role) != -1) {
@@ -111,7 +112,7 @@ MyApplet.prototype = {
             let timerId = 0;
             let i = 0;
             timerId = Mainloop.timeout_add(500, Lang.bind(this, function() {               
-                if (global.settings.get_boolean('panel-scale-text-icons')) {
+                if (this._scaleMode) {
                     let disp_size = this._panelHeight * ICON_SCALE_FACTOR;
                     let size = disp_size;
                     if (icon.width == disp_size){
@@ -155,7 +156,7 @@ MyApplet.prototype = {
 
 };
 
-function main(metadata, orientation, panel_height) {
-    let myApplet = new MyApplet(orientation, panel_height);
+function main(metadata, orientation, panel_height, instance_id) {
+    let myApplet = new MyApplet(orientation, panel_height, instance_id);
     return myApplet;
 }

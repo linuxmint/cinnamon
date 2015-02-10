@@ -90,12 +90,11 @@ const LAYOUT_CLASSIC = "classic";
 const CIN_LOG_FOLDER = GLib.get_home_dir() + '/.cinnamon/';
 
 let panel = null;
-let panel2 = null;
-
 let soundManager = null;
 let backgroundManager = null;
 let slideshowManager = null;
 let placesManager = null;
+let panelManager = null;
 let osdWindow = null;
 let overview = null;
 let expo = null;
@@ -133,8 +132,7 @@ let workspace_names = [];
 
 let background = null;
 
-let desktop_layout;
-let applet_side = St.Side.BOTTOM;
+let applet_side = St.Side.TOP; // Kept to maintain compatibility. Doesn't seem to be used anywhere
 let deskletContainer = null;
 
 let software_rendering = false;
@@ -270,14 +268,6 @@ function start() {
     global.stage.color = DEFAULT_BACKGROUND_COLOR;
     global.stage.no_clear_hint = true;
     
-    desktop_layout = global.settings.get_string("desktop-layout"); 
-    if (desktop_layout == LAYOUT_FLIPPED) {
-        applet_side = St.Side.TOP;        
-    }
-    else if (desktop_layout == LAYOUT_CLASSIC) {
-        applet_side = St.Side.TOP;        
-    }
-    
     Gtk.IconTheme.get_default().append_search_path("/usr/share/cinnamon/icons/");
     _defaultCssStylesheet = global.datadir + '/theme/cinnamon.css';    
 
@@ -332,6 +322,7 @@ function start() {
     global.reparentActor(global.top_window_group, global.stage);
 
     layoutManager = new Layout.LayoutManager();
+    panelManager = new Panel.PanelManager();
 
     let startupAnimationEnabled = global.settings.get_boolean("startup-animation");
     let desktopEffectsEnabled = global.settings.get_boolean("desktop-effects");
@@ -356,26 +347,7 @@ function start() {
     expo = new Expo.Expo();
 
     statusIconDispatcher = new StatusIconDispatcher.StatusIconDispatcher();  
-                    
-    if (desktop_layout == LAYOUT_TRADITIONAL) {
-        panel = new Panel.Panel(true, true);
-        panel.actor.add_style_class_name('panel-bottom');
-        layoutManager.panelBox.add(panel.actor);
-    }
-    else if (desktop_layout == LAYOUT_FLIPPED) {
-        panel = new Panel.Panel(false, true);
-        panel.actor.add_style_class_name('panel-top');
-        layoutManager.panelBox.add(panel.actor);
-    }
-    else {
-        desktop_layout == LAYOUT_CLASSIC;
-        panel = new Panel.Panel(false, true);
-        panel2 = new Panel.Panel(true, false);
-        panel.actor.add_style_class_name('panel-top');
-        panel2.actor.add_style_class_name('panel-bottom');
-        layoutManager.panelBox.add(panel.actor);   
-        layoutManager.panelBox2.add(panel2.actor);   
-    }
+
     layoutManager._updateBoxes();
     
     wm = new WindowManager.WindowManager();
@@ -404,7 +376,6 @@ function start() {
     expo.init();
 
     _initUserSession();
-    statusIconDispatcher.start(panel.actor);
 
     // Provide the bus object for gnome-session to
     // initiate logouts.
@@ -490,25 +461,6 @@ function notifyXletStartupError() {
                   _("You can disable the offending extension(s) in Cinnamon Settings to prevent this message from recurring.  ") +
                   _("Please contact the developer."), icon);
 
-}
-
-function enablePanels() {
-    if (panel) panel.enable();
-    if (panel2) panel2.enable();
-}
-
-function disablePanels() {
-    if (panel) panel.disable();
-    if (panel2) panel2.disable();
-}
-
-function getPanels() {
-    let panels = [];
-    if(panel)
-        panels.push(panel);
-    if(panel2)
-        panels.push(panel2);
-    return panels;
 }
 
 let _workspaces = [];

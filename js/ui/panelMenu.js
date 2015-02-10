@@ -121,7 +121,7 @@ Button.prototype = {
             // Setting the max-height won't do any good if the minimum height of the
             // menu is higher then the screen; it's useful if part of the menu is
             // scrollable so the minimum height is smaller than the natural height
-            let monitor = Main.layoutManager.primaryMonitor;
+            let monitor = Main.layoutManager.findMonitorForActor(this.launcher.actor);
             this.menu.actor.style = ('max-height: ' +
                                      Math.round(monitor.height - Main.panel.actor.height) +
                                      'px;');

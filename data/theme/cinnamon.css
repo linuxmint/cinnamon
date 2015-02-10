@@ -218,6 +218,27 @@ StScrollBar StButton#vhandle:hover {
 	font-weight: normal;
 	height: 25px;
 }
+#panel:highlight {
+    background-color: #aa5555;
+}
+.panel-dummy {
+    background-color: rgba(50, 50, 50, 0.4);
+}
+.panel-dummy:entered {
+    background-color: rgba(255, 35, 35, 0.4);
+}
+.panel-change-osd {
+    font-size: 18pt;
+    border-radius: 24px;
+    background-color: rgba(85, 85, 85, 0.9);
+    border: 2px solid #868686;
+    color: #babdb6;
+    padding-right: 20px;
+    padding-left: 20px;
+    padding-bottom: 20px;
+    padding-top: 20px;
+    text-align: center;
+}
 #panelLeft {
 	spacing: 4px;
 }
