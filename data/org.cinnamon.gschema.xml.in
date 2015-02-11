@@ -17,7 +17,8 @@
       <_description>
         Cinnamon extensions have a uuid property; this key lists extensions
         which should be loaded.  disabled-extensions overrides this setting for
-        extensions that appear in both lists.
+        extensions that appear in both lists. Append ! in front of uuid to 
+        override version check
       </_description>
     </key>
     
@@ -26,7 +27,8 @@
       <_summary>Uuids of applets to enable</_summary>
       <_description>
         Cinnamon applets have a uuid property; this key lists applets
-        which should be loaded.
+        which should be loaded. Append ! in front of uuid to override version
+        check.
       </_description>
     </key>
 
@@ -47,7 +49,7 @@
       <_summary>Uuids of desklets to enable</_summary>
       <_description>
         Cinnamon desklets have a uuid property; this key lists desklets
-        which should be loaded. uuids should be put in the form uuid:id:x:y, where id is used to distinguish between multiple instances of the same desklet
+        which should be loaded. uuids should be put in the form uuid:id:x:y, where id is used to distinguish between multiple instances of the same desklet. Append ! in front of uuid to override version check.
       </_description>
     </key>
     

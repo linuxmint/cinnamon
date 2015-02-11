@@ -128,12 +128,12 @@ function createMetaDummy(uuid, path, state) {
 }
 
 // The Extension object itself
-function Extension(dir, type) {
-    this._init(dir, type);
+function Extension(dir, type, force) {
+    this._init(dir, type, force);
 }
 
 Extension.prototype = {
-    _init: function(dir, type) {
+    _init: function(dir, type, force) {
         this.uuid = dir.get_basename();
         this.dir = dir;
         this.type = type;
@@ -144,7 +144,8 @@ Extension.prototype = {
         this.startTime = new Date().getTime();
 
         this.loadMetaData(dir.get_child('metadata.json'));
-        this.validateMetaData();
+        if (!force)
+            this.validateMetaData();
 
         this.ensureFileExists(dir.get_child(this.lowerType + '.js'));
         this.loadStylesheet(dir.get_child('stylesheet.css'));
@@ -389,11 +390,11 @@ function loadExtension(uuid, type) {
     if(!extension) {
         var forgetMeta = true;
         try {
-            let dir = findExtensionDirectory(uuid, type);
+            let dir = findExtensionDirectory(uuid.replace(/!/,''), type);
             if (dir == null) {
                 throw ("not-found");
             }
-            extension = new Extension(dir, type);
+            extension = new Extension(dir, type, uuid.indexOf("!") == 0);
             forgetMeta = false;
 
             if(!type.callbacks.finishExtensionLoad(extension))
