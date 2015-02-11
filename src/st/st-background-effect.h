@@ -65,7 +65,7 @@ struct _StBackgroundEffectClass
 
 GType   st_background_effect_get_type (void) G_GNUC_CONST;
 
-ClutterEffect *st_background_effect_new ();
+ClutterEffect *st_background_effect_new (void);
 
 G_END_DECLS
 #endif /* __ST_BACKGROUND_EFFECT_H__ */

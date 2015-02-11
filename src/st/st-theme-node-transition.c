@@ -220,6 +220,8 @@ static gboolean
 setup_framebuffers (StThemeNodeTransition *transition,
                     const ClutterActorBox *allocation)
 {
+  ClutterBackend *backend = clutter_get_default_backend ();
+  CoglContext *ctx = clutter_backend_get_cogl_context (backend);
   StThemeNodeTransitionPrivate *priv = transition->priv;
   CoglColor clear_color = { 0, 0, 0, 0 };
   guint width, height;
@@ -235,15 +237,23 @@ setup_framebuffers (StThemeNodeTransition *transition,
 
   if (priv->old_texture)
     cogl_handle_unref (priv->old_texture);
-  priv->old_texture = cogl_texture_new_with_size (width, height,
-                                                  COGL_TEXTURE_NO_SLICING,
-                                                  COGL_PIXEL_FORMAT_ANY);
+  priv->old_texture = COGL_TEXTURE (cogl_texture_2d_new_with_size (ctx,
+                                                                   width,
+                                                                   height
+#if COGL_VERSION < COGL_VERSION_ENCODE (1, 18, 0)
+                                                                   ,COGL_PIXEL_FORMAT_ANY
+#endif
+                                                                   ));
 
   if (priv->new_texture)
     cogl_handle_unref (priv->new_texture);
-  priv->new_texture = cogl_texture_new_with_size (width, height,
-                                                  COGL_TEXTURE_NO_SLICING,
-                                                  COGL_PIXEL_FORMAT_ANY);
+  priv->new_texture = COGL_TEXTURE (cogl_texture_2d_new_with_size (ctx,
+                                                                   width,
+                                                                   height
+#if COGL_VERSION < COGL_VERSION_ENCODE (1, 18, 0)
+                                                                   ,COGL_PIXEL_FORMAT_ANY
+#endif
+                                                                   ));
 
   g_return_val_if_fail (priv->old_texture != COGL_INVALID_HANDLE, FALSE);
   g_return_val_if_fail (priv->new_texture != COGL_INVALID_HANDLE, FALSE);
