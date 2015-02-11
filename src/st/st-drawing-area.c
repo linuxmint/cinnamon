@@ -79,6 +79,8 @@ st_drawing_area_dispose (GObject *object)
 static void
 st_drawing_area_paint (ClutterActor *self)
 {
+  ClutterBackend *backend = clutter_get_default_backend ();
+  CoglContext *ctx = clutter_backend_get_cogl_context (backend);
   StDrawingArea *area = ST_DRAWING_AREA (self);
   StDrawingAreaPrivate *priv = area->priv;
   StThemeNode *theme_node = st_widget_get_theme_node (ST_WIDGET (self));
@@ -111,9 +113,13 @@ st_drawing_area_paint (ClutterActor *self)
     {
       if (priv->texture == COGL_INVALID_HANDLE)
         {
-          priv->texture = cogl_texture_new_with_size (width, height,
-                                                      COGL_TEXTURE_NONE,
-                                                      CLUTTER_CAIRO_FORMAT_ARGB32);
+          priv->texture = COGL_TEXTURE (cogl_texture_2d_new_with_size (ctx,
+                                                                       width,
+                                                                       height
+#if COGL_VERSION < COGL_VERSION_ENCODE (1, 18, 0)
+                                                                       ,CLUTTER_CAIRO_FORMAT_ARGB32
+#endif
+                                                                       ));
           priv->needs_repaint = TRUE;
         }
 

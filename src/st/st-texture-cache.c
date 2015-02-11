@@ -68,7 +68,7 @@ static guint signals[LAST_SIGNAL] = { 0, };
 G_DEFINE_TYPE(StTextureCache, st_texture_cache, G_TYPE_OBJECT);
 
 /* We want to preserve the aspect ratio by default, also the default
- * material for an empty texture is full opacity white, which we
+ * pipeline for an empty texture is full opacity white, which we
  * definitely don't want.  Skip that by setting 0 opacity.
  */
 static ClutterTexture *
@@ -81,7 +81,7 @@ create_default_texture (void)
 
 /* Reverse the opacity we added while loading */
 static void
-set_texture_cogl_texture (ClutterTexture *clutter_texture, CoglHandle cogl_texture)
+set_texture_cogl_texture (ClutterTexture *clutter_texture, CoglTexture *cogl_texture)
 {
   clutter_texture_set_cogl_texture (clutter_texture, cogl_texture);
   g_object_set (clutter_texture, "opacity", 255, NULL);
@@ -166,7 +166,7 @@ st_texture_cache_init (StTextureCache *self)
                     G_CALLBACK (on_icon_theme_changed), self);
 
   self->priv->keyed_cache = g_hash_table_new_full (g_str_hash, g_str_equal,
-                                                   g_free, cogl_handle_unref);
+                                                   g_free, cogl_object_unref);
   self->priv->outstanding_requests = g_hash_table_new_full (g_str_hash, g_str_equal,
                                                             g_free, NULL);
   self->priv->file_monitors = g_hash_table_new_full (g_str_hash, g_str_equal,
@@ -561,14 +561,16 @@ load_pixbuf_async_finish (StTextureCache *cache, GAsyncResult *result, GError **
   return g_simple_async_result_get_op_res_gpointer (simple);
 }
 
-static CoglHandle
-data_to_cogl_handle (const guchar *data,
-                     gboolean      has_alpha,
-                     int           width,
-                     int           height,
-                     int           rowstride,
-                     gboolean      add_padding)
+static CoglTexture *
+data_to_cogl_texture (const guchar *data,
+                      gboolean      has_alpha,
+                      int           width,
+                      int           height,
+                      int           rowstride,
+                      gboolean      add_padding)
 {
+  ClutterBackend *backend = clutter_get_default_backend ();
+  CoglContext *ctx = clutter_backend_get_cogl_context (backend);
   CoglHandle texture, offscreen;
   CoglColor clear_color;
   guint size;
@@ -577,17 +579,24 @@ data_to_cogl_handle (const guchar *data,
   size = MAX (width, height);
 
   if (!add_padding || width == height)
-    return cogl_texture_new_from_data (width,
-                                       height,
-                                       COGL_TEXTURE_NONE,
-                                       has_alpha ? COGL_PIXEL_FORMAT_RGBA_8888 : COGL_PIXEL_FORMAT_RGB_888,
-                                       COGL_PIXEL_FORMAT_ANY,
-                                       rowstride,
-                                       data);
+    return COGL_TEXTURE (cogl_texture_2d_new_from_data (ctx,
+                                                        width,
+                                                        height,
+                                                        has_alpha ? COGL_PIXEL_FORMAT_RGBA_8888 : COGL_PIXEL_FORMAT_RGB_888,
+#if COGL_VERSION < COGL_VERSION_ENCODE (1, 18, 0)
+                                                        COGL_PIXEL_FORMAT_ANY,
+#endif
+                                                        rowstride,
+                                                        data,
+                                                        NULL));
 
-  texture = cogl_texture_new_with_size (size, size,
-                                        COGL_TEXTURE_NO_SLICING,
-                                        COGL_PIXEL_FORMAT_ANY);
+  texture = cogl_texture_2d_new_with_size (ctx,
+                                           size,
+                                           size
+#if COGL_VERSION < COGL_VERSION_ENCODE (1, 18, 0)
+                                           ,COGL_PIXEL_FORMAT_ANY
+#endif
+                                           );
 
   offscreen = cogl_offscreen_new_to_texture (texture);
 
@@ -600,13 +609,16 @@ data_to_cogl_handle (const guchar *data,
       cogl_object_unref (offscreen);
       g_clear_error (&error);
 
-      return cogl_texture_new_from_data (width,
-                                         height,
-                                         COGL_TEXTURE_NONE,
-                                         has_alpha ? COGL_PIXEL_FORMAT_RGBA_8888 : COGL_PIXEL_FORMAT_RGB_888,
-                                         COGL_PIXEL_FORMAT_ANY,
-                                         rowstride,
-                                         data);
+      return COGL_TEXTURE (cogl_texture_2d_new_from_data (ctx,
+                                                          width,
+                                                          height,
+                                                          has_alpha ? COGL_PIXEL_FORMAT_RGBA_8888 : COGL_PIXEL_FORMAT_RGB_888,
+#if COGL_VERSION < COGL_VERSION_ENCODE (1, 18, 0)
+                                                          COGL_PIXEL_FORMAT_ANY,
+#endif
+                                                          rowstride,
+                                                          data,
+                                                          NULL));
   }
 
   cogl_color_set_from_4ub (&clear_color, 0, 0, 0, 0);
@@ -626,16 +638,16 @@ data_to_cogl_handle (const guchar *data,
   return texture;
 }
 
-static CoglHandle
-pixbuf_to_cogl_handle (GdkPixbuf *pixbuf,
-                       gboolean   add_padding)
+static CoglTexture *
+pixbuf_to_cogl_texture (GdkPixbuf *pixbuf,
+                        gboolean   add_padding)
 {
-  return data_to_cogl_handle (gdk_pixbuf_get_pixels (pixbuf),
-                              gdk_pixbuf_get_has_alpha (pixbuf),
-                              gdk_pixbuf_get_width (pixbuf),
-                              gdk_pixbuf_get_height (pixbuf),
-                              gdk_pixbuf_get_rowstride (pixbuf),
-                              add_padding);
+  return data_to_cogl_texture (gdk_pixbuf_get_pixels (pixbuf),
+                               gdk_pixbuf_get_has_alpha (pixbuf),
+                               gdk_pixbuf_get_width (pixbuf),
+                               gdk_pixbuf_get_height (pixbuf),
+                               gdk_pixbuf_get_rowstride (pixbuf),
+                               add_padding);
 }
 
 static cairo_surface_t *
@@ -665,7 +677,7 @@ finish_texture_load (AsyncTextureLoadData *data,
 {
   GSList *iter;
   StTextureCache *cache;
-  CoglHandle texdata = NULL;
+  CoglTexture *texdata = NULL;
 
   cache = data->cache;
 
@@ -674,7 +686,7 @@ finish_texture_load (AsyncTextureLoadData *data,
   if (pixbuf == NULL)
     goto out;
 
-  texdata = pixbuf_to_cogl_handle (pixbuf, data->enforced_square);
+  texdata = pixbuf_to_cogl_texture (pixbuf, data->enforced_square);
 
   if (data->policy != ST_TEXTURE_CACHE_POLICY_NONE)
     {
@@ -683,7 +695,7 @@ finish_texture_load (AsyncTextureLoadData *data,
       if (!g_hash_table_lookup_extended (cache->priv->keyed_cache, data->key,
                                          &orig_key, &value))
         {
-          cogl_handle_ref (texdata);
+          cogl_object_ref (texdata);
           g_hash_table_insert (cache->priv->keyed_cache, g_strdup (data->key),
                                texdata);
         }
@@ -697,7 +709,7 @@ finish_texture_load (AsyncTextureLoadData *data,
 
 out:
   if (texdata)
-    cogl_handle_unref (texdata);
+    cogl_object_unref (texdata);
 
   texture_load_data_free (data);
 }
@@ -788,7 +800,7 @@ st_texture_cache_reset_texture (StTextureCachePropertyBind *bind,
                                 const char                 *propname)
 {
   GdkPixbuf *pixbuf;
-  CoglHandle texdata;
+  CoglTexture *texdata;
 
   g_object_get (bind->source, propname, &pixbuf, NULL);
 
@@ -796,11 +808,11 @@ st_texture_cache_reset_texture (StTextureCachePropertyBind *bind,
 
   if (pixbuf != NULL)
     {
-      texdata = pixbuf_to_cogl_handle (pixbuf, FALSE);
+      texdata = pixbuf_to_cogl_texture (pixbuf, FALSE);
       g_object_unref (pixbuf);
 
       clutter_texture_set_cogl_texture (bind->texture, texdata);
-      cogl_handle_unref (texdata);
+      cogl_object_unref (texdata);
 
       clutter_actor_set_opacity (CLUTTER_ACTOR (bind->texture), 255);
     }
@@ -843,7 +855,7 @@ st_texture_cache_free_bind (gpointer data)
  *
  * Create a #ClutterTexture which tracks the #GdkPixbuf value of a GObject property
  * named by @property_name.  Unlike other methods in StTextureCache, the underlying
- * CoglHandle is not shared by default with other invocations to this method.
+ * #CoglTexture is not shared by default with other invocations to this method.
  *
  * If the source object is destroyed, the texture will continue to show the last
  * value of the property.
@@ -894,7 +906,7 @@ st_texture_cache_bind_pixbuf_property (StTextureCache    *cache,
  *
  * Returns: (transfer full): A newly-referenced handle to the texture
  */
-CoglHandle
+CoglTexture *
 st_texture_cache_load (StTextureCache       *cache,
                        const char           *key,
                        StTextureCachePolicy  policy,
@@ -902,7 +914,7 @@ st_texture_cache_load (StTextureCache       *cache,
                        void                 *data,
                        GError              **error)
 {
-  CoglHandle texture;
+  CoglTexture *texture;
 
   texture = g_hash_table_lookup (cache->priv->keyed_cache, key);
   if (!texture)
@@ -911,9 +923,9 @@ st_texture_cache_load (StTextureCache       *cache,
       if (texture)
         g_hash_table_insert (cache->priv->keyed_cache, g_strdup (key), texture);
       else
-        return COGL_INVALID_HANDLE;
+        return NULL;
     }
-  cogl_handle_ref (texture);
+  cogl_object_ref (texture);
   return texture;
 }
 
@@ -938,7 +950,7 @@ ensure_request (StTextureCache        *cache,
                 AsyncTextureLoadData **request,
                 ClutterActor          *texture)
 {
-  CoglHandle texdata;
+  CoglTexture *texdata;
   AsyncTextureLoadData *pending;
   gboolean had_pending;
 
@@ -1077,7 +1089,7 @@ static ClutterActor *
 load_from_pixbuf (GdkPixbuf *pixbuf)
 {
   ClutterTexture *texture;
-  CoglHandle texdata;
+  CoglTexture *texdata;
   int width = gdk_pixbuf_get_width (pixbuf);
   int height = gdk_pixbuf_get_height (pixbuf);
 
@@ -1085,11 +1097,11 @@ load_from_pixbuf (GdkPixbuf *pixbuf)
 
   clutter_actor_set_size (CLUTTER_ACTOR (texture), width, height);
 
-  texdata = pixbuf_to_cogl_handle (pixbuf, FALSE);
+  texdata = pixbuf_to_cogl_texture (pixbuf, FALSE);
 
   set_texture_cogl_texture (texture, texdata);
 
-  cogl_handle_unref (texdata);
+  cogl_object_unref (texdata);
   return CLUTTER_ACTOR (texture);
 }
 
@@ -1341,17 +1353,19 @@ typedef struct {
   int scale;
 } CreateFadedIconData;
 
-static CoglHandle
+static CoglTexture *
 create_faded_icon_cpu (StTextureCache *cache,
                                  const char     *key,
                                  void           *datap,
                                  GError        **error)
 {
+  ClutterBackend *backend = clutter_get_default_backend ();
+  CoglContext *ctx = clutter_backend_get_cogl_context (backend);
   CreateFadedIconData *data = datap;
   char *name;
   GdkPixbuf *pixbuf;
   int size;
-  CoglHandle texture;
+  CoglTexture *texture;
   gint width, height, rowstride;
   guint8 n_channels;
   gboolean have_alpha;
@@ -1389,13 +1403,14 @@ create_faded_icon_cpu (StTextureCache *cache,
     }
 
   if (info == NULL)
-    return COGL_INVALID_HANDLE;
+    return NULL;
 
   pixbuf = gtk_icon_info_load_icon (info, NULL);
   gtk_icon_info_free (info);
 
+
   if (pixbuf == NULL)
-    return COGL_INVALID_HANDLE;
+    return NULL;
 
   width = gdk_pixbuf_get_width (pixbuf);
   height = gdk_pixbuf_get_height (pixbuf);
@@ -1426,13 +1441,16 @@ create_faded_icon_cpu (StTextureCache *cache,
         }
     }
 
-  texture = cogl_texture_new_from_data (width,
-                                        height,
-                                        COGL_TEXTURE_NONE,
-                                        have_alpha ? COGL_PIXEL_FORMAT_RGBA_8888 : COGL_PIXEL_FORMAT_RGB_888,
-                                        COGL_PIXEL_FORMAT_ANY,
-                                        rowstride,
-                                        pixels);
+  texture = COGL_TEXTURE (cogl_texture_2d_new_from_data (ctx,
+                                                         width,
+                                                         height,
+                                                         have_alpha ? COGL_PIXEL_FORMAT_RGBA_8888 : COGL_PIXEL_FORMAT_RGB_888,
+#if COGL_VERSION < COGL_VERSION_ENCODE (1, 18, 0)
+                                                         COGL_PIXEL_FORMAT_ANY,
+#endif
+                                                         rowstride,
+                                                         pixels,
+                                                         NULL));
   g_free (pixels);
   g_object_unref (pixbuf);
 
@@ -1461,7 +1479,7 @@ st_texture_cache_load_icon_name (StTextureCache    *cache,
                                  gint               size)
 {
   ClutterActor *texture;
-  CoglHandle cogltexture;
+  CoglTexture *cogltexture;
   GIcon *themed;
   char **names;
   char *cache_key;
@@ -1534,7 +1552,7 @@ st_texture_cache_load_icon_name (StTextureCache    *cache,
       g_free (data.name);
       g_free (cache_key);
 
-      if (cogltexture != COGL_INVALID_HANDLE)
+      if (cogltexture != NULL)
       {
         texture = clutter_texture_new ();
         clutter_texture_set_cogl_texture (CLUTTER_TEXTURE (texture), cogltexture);
@@ -1615,7 +1633,7 @@ st_texture_cache_load_uri_async (StTextureCache *cache,
   return CLUTTER_ACTOR (texture);
 }
 
-static CoglHandle
+static CoglTexture *
 st_texture_cache_load_uri_sync_to_cogl_texture (StTextureCache *cache,
                                                 StTextureCachePolicy policy,
                                                 const gchar    *uri,
@@ -1623,7 +1641,7 @@ st_texture_cache_load_uri_sync_to_cogl_texture (StTextureCache *cache,
                                                 int             available_height,
                                                 GError         **error)
 {
-  CoglHandle texdata;
+  CoglTexture *texdata;
   GdkPixbuf *pixbuf;
   char *key;
 
@@ -1643,17 +1661,17 @@ st_texture_cache_load_uri_sync_to_cogl_texture (StTextureCache *cache,
       if (!pixbuf)
         goto out;
 
-      texdata = pixbuf_to_cogl_handle (pixbuf, FALSE);
+      texdata = pixbuf_to_cogl_texture (pixbuf, FALSE);
       g_object_unref (pixbuf);
 
       if (policy == ST_TEXTURE_CACHE_POLICY_FOREVER)
         {
-          cogl_handle_ref (texdata);
+          cogl_object_ref (texdata);
           g_hash_table_insert (cache->priv->keyed_cache, g_strdup (key), texdata);
         }
     }
   else
-    cogl_handle_ref (texdata);
+    cogl_object_ref (texdata);
 
   ensure_monitor_for_uri (cache, uri);
 
@@ -1731,38 +1749,38 @@ st_texture_cache_load_uri_sync (StTextureCache *cache,
                                 int                available_height,
                                 GError            **error)
 {
-  CoglHandle texdata;
+  CoglTexture *texdata;
   ClutterTexture *texture;
 
   texdata = st_texture_cache_load_uri_sync_to_cogl_texture (cache, policy, uri, available_width, available_height, error);
 
-  if (texdata == COGL_INVALID_HANDLE)
+  if (texdata == NULL)
     return NULL;
 
   texture = create_default_texture ();
   set_texture_cogl_texture (texture, texdata);
-  cogl_handle_unref (texdata);
+  cogl_object_unref (texdata);
 
   return CLUTTER_ACTOR (texture);
 }
 
 
 /**
- * st_texture_cache_load_file_to_cogl_texture:
+ * st_texture_cache_load_file_to_cogl_texture: (skip)
  * @cache: A #StTextureCache
  * @file_path: Path to a file in supported image format
  *
  * This function synchronously loads the given file path
  * into a COGL texture.  On error, a warning is emitted
- * and %COGL_INVALID_HANDLE is returned.
+ * and %NULL is returned.
  *
- * Returns: (transfer full): a new #CoglHandle
+ * Returns: (transfer full): a new #CoglTexture
  */
-CoglHandle
+CoglTexture *
 st_texture_cache_load_file_to_cogl_texture (StTextureCache *cache,
                                             const gchar    *file_path)
 {
-  CoglHandle texture;
+  CoglTexture *texture;
   GFile *file;
   char *uri;
   GError *error = NULL;
@@ -1779,7 +1797,7 @@ st_texture_cache_load_file_to_cogl_texture (StTextureCache *cache,
     {
       g_warning ("Failed to load %s: %s", file_path, error->message);
       g_clear_error (&error);
-      return COGL_INVALID_HANDLE;
+      return NULL;
     }
   return texture;
 }
@@ -1849,7 +1867,7 @@ st_texture_cache_load_from_raw (StTextureCache    *cache,
                                 GError           **error)
 {
   ClutterTexture *texture;
-  CoglHandle texdata;
+  CoglTexture *texdata;
   char *key;
   char *checksum;
 
@@ -1868,7 +1886,7 @@ st_texture_cache_load_from_raw (StTextureCache    *cache,
   texdata = g_hash_table_lookup (cache->priv->keyed_cache, key);
   if (texdata == NULL)
     {
-      texdata = data_to_cogl_handle (data, has_alpha, width, height, rowstride, TRUE);
+      texdata = data_to_cogl_texture (data, has_alpha, width, height, rowstride, TRUE);
       g_hash_table_insert (cache->priv->keyed_cache, g_strdup (key), texdata);
     }
 

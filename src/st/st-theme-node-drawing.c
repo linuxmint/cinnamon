@@ -68,6 +68,8 @@ elliptical_arc (cairo_t *cr,
 static CoglHandle
 create_corner_material (StCornerSpec *corner)
 {
+  ClutterBackend *backend = clutter_get_default_backend ();
+  CoglContext *ctx = clutter_backend_get_cogl_context (backend);
   CoglHandle texture;
   cairo_t *cr;
   cairo_surface_t *surface;
@@ -165,12 +167,15 @@ create_corner_material (StCornerSpec *corner)
 
   cairo_surface_destroy (surface);
 
-  texture = cogl_texture_new_from_data (size, size,
-                                        COGL_TEXTURE_NONE,
-                                        CLUTTER_CAIRO_FORMAT_ARGB32,
-                                        COGL_PIXEL_FORMAT_ANY,
-                                        rowstride,
-                                        data);
+  texture = COGL_TEXTURE (cogl_texture_2d_new_from_data (ctx, size, size,
+                                                         CLUTTER_CAIRO_FORMAT_ARGB32,
+#if COGL_VERSION < COGL_VERSION_ENCODE (1, 18, 0)
+                                                         COGL_PIXEL_FORMAT_ANY,
+#endif
+                                                         rowstride,
+                                                         data,
+                                                         NULL));
+
   g_free (data);
   g_assert (texture != COGL_INVALID_HANDLE);
 
@@ -930,6 +935,8 @@ paint_inset_box_shadow_to_cairo_context (StThemeNode     *node,
 static CoglHandle
 st_theme_node_prerender_background (StThemeNode *node)
 {
+  ClutterBackend *backend = clutter_get_default_backend ();
+  CoglContext *ctx = clutter_backend_get_cogl_context (backend);
   StBorderImage *border_image;
   CoglHandle texture;
   guint radius[4];
@@ -1249,13 +1256,16 @@ st_theme_node_prerender_background (StThemeNode *node)
   if (interior_path != NULL)
     cairo_path_destroy (interior_path);
 
-  texture = cogl_texture_new_from_data (paint_box.x2 - paint_box.x1,
-                                        paint_box.y2 - paint_box.y1,
-                                        COGL_TEXTURE_NONE,
-                                        CLUTTER_CAIRO_FORMAT_ARGB32,
-                                        COGL_PIXEL_FORMAT_ANY,
-                                        rowstride,
-                                        data);
+  texture = COGL_TEXTURE (cogl_texture_2d_new_from_data (ctx,
+                                                         paint_box.x2 - paint_box.x1,
+                                                         paint_box.y2 - paint_box.y1,
+                                                         CLUTTER_CAIRO_FORMAT_ARGB32,
+#if COGL_VERSION < COGL_VERSION_ENCODE (1, 18, 0)
+                                                         COGL_PIXEL_FORMAT_ANY,
+#endif
+                                                         rowstride,
+                                                         data,
+                                                         NULL));
 
   cairo_destroy (cr);
   cairo_surface_destroy (surface);
@@ -1320,6 +1330,8 @@ st_theme_node_render_resources (StThemeNode   *node,
                                 float          width,
                                 float          height)
 {
+  ClutterBackend *backend = clutter_get_default_backend ();
+  CoglContext *ctx = clutter_backend_get_cogl_context (backend);
   StTextureCache *texture_cache;
   StBorderImage *border_image;
   gboolean has_border;
@@ -1438,10 +1450,13 @@ st_theme_node_render_resources (StThemeNode   *node,
           int texture_width = ceil (width);
           int texture_height = ceil (height);
 
-          buffer = cogl_texture_new_with_size (texture_width,
-                                               texture_height,
-                                               COGL_TEXTURE_NO_SLICING,
-                                               COGL_PIXEL_FORMAT_ANY);
+          buffer = COGL_TEXTURE (cogl_texture_2d_new_with_size (ctx,
+                                                                texture_width,
+                                                                texture_height
+#if COGL_VERSION < COGL_VERSION_ENCODE (1, 18, 0)
+                                                                ,COGL_PIXEL_FORMAT_ANY
+#endif
+                                                                ));
           offscreen = cogl_offscreen_new_to_texture (buffer);
 
           if (offscreen != COGL_INVALID_HANDLE)
