@@ -839,6 +839,53 @@ PopupSwitchMenuItem.prototype = {
     }
 };
 
+/**
+ * #PopupIconMenuItem:
+ *
+ * This is a popup menu item displaying an icon and a text. The icon is
+ * displayed to the left of the text. #PopupImageMenuItem is a similar,
+ * deprecated item, that displays the icon to the right of the text, which is
+ * ugly in most cases. Do not use it. If you think you need to display the icon
+ * on the right, make your own menu item (by copy and pasting the code found
+ * below) because PopupImageMenuItem is deprecated and may disappear any time.
+ */
+function PopupIconMenuItem() {
+    this._init.apply(this, arguments);
+}
+
+PopupIconMenuItem.prototype = {
+    __proto__: PopupBaseMenuItem.prototype,
+
+    _init: function (text, iconName, iconType, params) {
+        PopupBaseMenuItem.prototype._init.call(this, params);
+
+        this.label = new St.Label({text: text});
+        this._icon = new St.Icon({ style_class: 'popup-menu-icon',
+            icon_name: iconName,
+            icon_type: iconType}); 
+        this.addActor(this._icon);
+        this.addActor(this.label);
+    },
+
+    setIconSymbolicName: function (iconName) {
+        this._icon = new St.Icon({ style_class: 'popup-menu-icon',
+            icon_name: iconName,
+            icon_type: St.IconType.SYMBOLIC});
+    },
+
+    setIconName: function (iconName) {
+        this._icon = new St.Icon({ style_class: 'popup-menu-icon',
+            icon_name: iconName,
+            icon_type: St.IconType.FULLCOLOR});
+    },
+
+    // Override columnWidths so that the popup menu doesn't separate the icon and the label
+    setColumnWidths: function() {
+        this._columnWidths = null;
+    }
+}
+
+// Deprecated. Do not use
 function PopupImageMenuItem() {
     this._init.apply(this, arguments);
 }
