@@ -3,7 +3,7 @@
  * FILE:main.js
  * @placesManager (PlacesManager.PlacesManager): The places manager
  * @overview (Overview.Overview): The "scale" overview 
-n * @expo (Expo.Expo): The "expo" overview
+ * @expo (Expo.Expo): The "expo" overview
  * @runDialog (RunDialog.RunDialog): The run dialog
  * @lookingGlass (LookingGlass.LookingGlass): The looking glass
  * @wm (WindowManager.WindowManager): The window manager
@@ -261,9 +261,6 @@ function start() {
     // be predictable anyways.
     tracker = Cinnamon.WindowTracker.get_default();
     Cinnamon.AppSystem.get_default();
-
-    // Add Cinnamon icons to the Gtk icon list
-    Gtk.IconTheme.get_default().append_search_path("/usr/lib/cinnamon-settings/data/icons/");
 
     // The stage is always covered so Clutter doesn't need to clear it; however
     // the color is used as the default contents for the Muffin root background
