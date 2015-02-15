@@ -322,6 +322,9 @@ function start() {
     global.reparentActor(global.top_window_group, global.stage);
 
     layoutManager = new Layout.LayoutManager();
+
+    Panel.checkPanelUpgrade();
+
     panelManager = new Panel.PanelManager();
 
     let startupAnimationEnabled = global.settings.get_boolean("startup-animation");

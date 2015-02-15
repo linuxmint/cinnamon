@@ -40,6 +40,12 @@ const DEFAULT_VALUES = {"panels-autohide": "false",
                         "panels-height": "25",
                         "panels-resizable": "false",
                         "panels-scale-text-icons": "false"};
+
+const Direction = {
+    LEFT  : 0,
+    RIGHT : 1
+}
+
 // To make sure the panel corners blend nicely with the panel,
 // we draw background and borders the same way, e.g. drawing
 // them as filled shapes from the outside inwards instead of
@@ -83,6 +89,53 @@ function _unpremultiply(color) {
                                blue: blue, alpha: color.alpha });
 };
 
+/* checkPanelUpgrade:
+ *
+ *Run from main, prior to PanelManager being initialized
+ * this handles the one-time transition between panel implementations
+ * to make this transition invisible to the user.  We will evaluate the
+ * desktop-layout key, and pre-set applets-enabled and panels-enabled
+ * appropriately.
+ */
+
+function checkPanelUpgrade()
+{
+    let oldLayout = global.settings.get_string("desktop-layout");
+
+    let doIt = false;
+
+    /* GLib >= 2.4 has get_user_value, use that if possible - this being null
+     * indicates either the user never changed from the default "traditional"
+     * panel layout, or else this upgrade has already been performed (since
+     * with this set of patches, its default value goes from traditional to nothing.)
+     * Either way, we don't need to do anything in this case.  With glib < 2.4,
+     * we instead check if the value is set to "" - either by result of the new
+     * default, or by this upgrade already having been run.
+     */
+
+    try {
+        doIt = (global.settings.get_user_value("desktop-layout") != null)
+    } catch (e) {
+        doIt = (global.settings.get_string("desktop-layout") != "");
+    }
+
+    if (!doIt)
+        return;
+
+    switch (oldLayout) {
+        case "flipped":
+            global.settings.set_strv("panels-enabled", ["1:0:top"]);
+            break;
+        case "classic":
+            global.settings.set_strv("panels-enabled", ["1:0:top", "2:0:bottom"]);
+            break;
+        case "traditional": /* Default (explicitly set) - no processing needed */
+        default:
+            break;
+    }
+
+    global.settings.reset("desktop-layout");
+}
 
 /**
  * PanelManager
@@ -110,7 +163,7 @@ PanelManager.prototype = {
                 continue;
             }
 
-            this._loadPanel(parseInt(elements[0]), elements[1], elements[2]=="bottom");
+            this._loadPanel(parseInt(elements[0]), parseInt(elements[1]), elements[2]=="bottom");
         }
 
         this._setMainPanel();
@@ -201,7 +254,7 @@ PanelManager.prototype = {
 
         // Add default values
         outerLoop:
-        for (key in DEFAULT_VALUES) {
+        for (let key in DEFAULT_VALUES) {
             let settings = global.settings.get_strv(key);
             for (let j = 0; j < settings.length; j++){
                 if (settings[j].split(":")[0] == i){
@@ -292,9 +345,34 @@ PanelManager.prototype = {
      */
     getPanel: function(monitorIndex, bottomPosition) {
         for (let i in this.panels) {
+            if (!this.panels[i])
+                continue;
             if (this.panels[i].monitorIndex == monitorIndex && this.panels[i].bottomPosition == bottomPosition)
                 return this.panels[i];
         }
+        return null;
+    },
+
+    getAdjacentPanel: function(currentPanelObj, direction) {
+        if (!(currentPanelObj instanceof Panel))
+            return null;
+
+        if (direction == Direction.LEFT &&
+            currentPanelObj.monitorIndex == 0)
+            return null;
+        else if (direction == Direction.RIGHT &&
+                 currentPanelObj.monitorIndex == (global.screen.get_n_monitors() - 1))
+            return null;
+
+        switch (direction) {
+            case Direction.LEFT:
+                return this.getPanel(currentPanelObj.monitorIndex - 1, currentPanelObj.bottomPosition);
+                break;
+            case Direction.RIGHT:
+                return this.getPanel(currentPanelObj.monitorIndex + 1, currentPanelObj.bottomPosition);
+                break;
+        }
+
         return null;
     },
 
@@ -359,6 +437,12 @@ PanelManager.prototype = {
         }
     },
 
+    _updateAllPointerBarriers: function() {
+        this.panels.forEach(function(panel) {
+            panel._updatePanelBarriers();
+        });
+    },
+
     _onPanelsEnabledChanged: function() {
         let newPanels = new Array(this.panels.length);
         let newMeta = new Array(this.panels.length);
@@ -400,6 +484,7 @@ PanelManager.prototype = {
 
         this._setMainPanel();
         this._checkCanAdd();
+        this._updateAllPointerBarriers();
     },
 
     _onMonitorsChanged: function() {
@@ -440,7 +525,7 @@ PanelManager.prototype = {
      */
     addPanelQuery: function() {
         if (this.addPanelMode || !this.canAdd)
-            return false;
+            return;
 
         this._showDummyPanels(Lang.bind(this, this.addPanel));
         this._addOsd.show();
@@ -454,7 +539,7 @@ PanelManager.prototype = {
      */
     movePanelQuery: function(id) {
         if (this.addPanelMode || !this.canAdd)
-            return false;
+            return;
 
         this.moveId = id;
         this._showDummyPanels(Lang.bind(this, this.movePanel));
@@ -523,8 +608,8 @@ PanelDummy.prototype = {
         this.actor = new Cinnamon.GenericContainer({style_class: "panel-dummy", reactive: true, track_hover: true, important: true});
         Main.layoutManager.addChrome(this.actor, { addToWindowgroup: false });
 
-        this.actor.set_size(this.monitor.width, 25);
-        this.actor.set_position(this.monitor.x, bottomPosition ? this.monitor.y + this.monitor.height - 25 : this.monitor.y);
+        this.actor.set_size(this.monitor.width, 25 * global.ui_scale);
+        this.actor.set_position(this.monitor.x, bottomPosition ? this.monitor.y + this.monitor.height - (25 * global.ui_scale) : this.monitor.y);
 
         this.actor.connect('button-press-event', Lang.bind(this, this._onClicked));
         this.actor.connect('enter-event', Lang.bind(this, this._onEnter));
@@ -1292,11 +1377,15 @@ Panel.prototype = {
         this._settingsSignals.push(global.settings.connect("changed::" + PANEL_RESIZABLE_KEY, Lang.bind(this, this._moveResizePanel)));
         this._settingsSignals.push(global.settings.connect("changed::" + PANEL_SCALE_TEXT_ICONS_KEY, Lang.bind(this, this._onScaleTextIconsChanged)));
         this._settingsSignals.push(global.settings.connect("changed::panel-edit-mode", Lang.bind(this, this._onPanelEditModeChanged)));
+        this._settingsSignals.push(global.settings.connect("changed::no-adjacent-panel-barriers", Lang.bind(this, this._updatePanelBarriers)));
 
         /* Generate panelbox */
+        this._leftPanelBarrier = 0;
+        this._rightPanelBarrier = 0;
         this.panelBox = new St.BoxLayout({ name: 'panelBox',
                                            vertical: true });
         Main.layoutManager.addChrome(this.panelBox, { addToWindowgroup: false });
+        this.panelBox.connect('allocation-changed', Lang.bind(this, this._updatePanelBarriers));
         this.panelBox.add_actor(this.actor)
 
         this._moveResizePanel();
@@ -1334,6 +1423,7 @@ Panel.prototype = {
 
         AppletManager.unloadAppletsOnPanel(this);
         this._context_menu.close();
+        this._context_menu.destroy();
 
         this._leftBox.destroy();
         this._centerBox.destroy();
@@ -1344,7 +1434,6 @@ Panel.prototype = {
 
         this.actor.destroy();
         this.panelBox.destroy();
-        this._context_menu.destroy();
 
         let i = this._settingsSignals.length;
         while (i--) {
@@ -1405,6 +1494,51 @@ Panel.prototype = {
             return parseInt(property);
         default:
             return property;
+        }
+    },
+
+    _updatePanelBarriers: function() {
+        if (this._leftPanelBarrier)
+            global.destroy_pointer_barrier(this._leftPanelBarrier);
+        if (this._rightPanelBarrier)
+            global.destroy_pointer_barrier(this._rightPanelBarrier);
+
+        let noLeft = false;
+        let noRight = false;
+        let noBarriers = global.settings.get_boolean("no-adjacent-panel-barriers");
+
+        if (Main.panelManager.getAdjacentPanel(this, Direction.LEFT) != null) {
+            noLeft = noBarriers;
+        }
+
+        if (Main.panelManager.getAdjacentPanel(this, Direction.RIGHT) != null) {
+            noRight = noBarriers;
+        }
+
+        if (this.panelBox.height) {
+            let panelTop = (this.bottomPosition ? this.monitor.y + this.monitor.height - this.panelBox.height : this.monitor.y);
+            let panelBottom = (this.bottomPosition ? this.monitor.y + this.monitor.height : this.monitor.y + this.panelBox.height);
+
+            if (!noLeft) {
+                this._leftPanelBarrier = global.create_pointer_barrier(
+                    this.monitor.x, panelTop,
+                    this.monitor.x, panelBottom,
+                    1 /* BarrierPositiveX */);
+            } else {
+                this._leftPanelBarrier = 0;
+            }
+
+            if (!noRight) {
+                this._rightPanelBarrier = global.create_pointer_barrier(
+                    this.monitor.x + this.monitor.width - 1, panelTop,
+                    this.monitor.x + this.monitor.width - 1, panelBottom,
+                    4 /* BarrierNegativeX */);
+            } else {
+                this._rightPanelBarrier = 0;
+            }
+        } else {
+            this._leftPanelBarrier = 0;
+            this._rightPanelBarrier = 0;
         }
     },
 

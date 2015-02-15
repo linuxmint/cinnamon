@@ -1,13 +1,18 @@
 #!/usr/bin/env python
 import sys
 import dbus
-from gi.repository import GLib
+from gi.repository import GLib, Gtk, Gdk
 from SettingsWidgets import *
+
+class Monitor:
+    def __init__(self):
+        self.top = -1
+        self.bottom = -1
 
 class Module:
     def __init__(self, content_box):
         keywords = _("panel, height, bottom, top, autohide, size, layout")
-        sidePage = SidePage(_("Panel"), "cs-panel", keywords, content_box, module=self)
+        sidePage = SidePage(_("Panel"), "cs-panel", keywords, content_box, 450, module=self)
         self.sidePage = sidePage
         self.name = "panel"
         self.category = "prefs"
@@ -15,32 +20,39 @@ class Module:
 
         self.settings = Gio.Settings.new("org.cinnamon");
         self.settings.connect("changed::panels-enabled", self.on_panel_list_changed)
-        self.model = Gtk.ListStore(str, str)
         self.proxy = dbus.SessionBus().get_object("org.Cinnamon", "/org/Cinnamon")
 
         self.widgets = []
         self.panel_id = None
         if len(sys.argv) > 2:
             if sys.argv[1] == "panel":
-                self.panel_id = sys.argv[2]
+                self.panel_id = int(sys.argv[2])
+        else:
+            self.panel_id = -1
 
     def on_module_selected(self):
         if not self.loaded:
             print "Loading Panel module"
 
-            bg = SectionBg()        
-            self.sidePage.add_widget(bg)
+            self.monitor_layout = []
+            self.panels = []
+
+            self.panel_bg = SectionBg()
+            self.sidePage.add_widget(self.panel_bg)
             vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
-            bg.add(vbox)
+            self.panel_bg.add(vbox)
 
             self.panel_content = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
-            self.combo_box = Gtk.ComboBox.new_with_model(self.model)
-            renderer_text = Gtk.CellRendererText()
-            self.combo_box.pack_start(renderer_text, True)
-            self.combo_box.add_attribute(renderer_text, "text", 1)
-            self.combo_box.set_id_column(0)
 
-            self.panel_content.pack_start(self.combo_box, False, False, 2)
+            self.previous_button = Gtk.Button(_("Previous panel"))
+            self.next_button = Gtk.Button(_("Next panel"))
+
+            buttonbox = Gtk.HBox(margin=6)
+
+            buttonbox.pack_start(self.previous_button, False, False, 2)
+            buttonbox.pack_start(self.next_button, False, False, 2)
+
+            self.panel_content.add(buttonbox)
 
             section = Section(_("Auto Hide Options"))
 
@@ -74,76 +86,131 @@ class Module:
             section.add_indented_expand(widget)
             self.widgets.append(widget)
             self.panel_content.add(section)
-
-            self.panel_content.add(Gtk.Separator.new(Gtk.Orientation.HORIZONTAL))
-
             vbox.add(self.panel_content)
 
-            hbox = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
-            hbox.set_border_width(6)
-            hbox.add(GSettingsCheckButton(_("Panel edit mode"), "org.cinnamon", "panel-edit-mode", None))
-            vbox.add(hbox)
 
-            add_panel_button = Gtk.Button(label=_("Add new panel"))
-            vbox.add(add_panel_button)
-            add_panel_button.connect("clicked", self.on_add_panel)
+            bg = SectionBg()
+            self.sidePage.add_widget(bg)
 
-            self.combo_box.connect("changed", self.on_combo_box_changed)
-            # Widget is only hidden when switching panels
-            self.combo_box.connect("unmap", self.on_combo_box_destroy)
-            self.combo_box.connect("destroy", self.on_combo_box_destroy)
+            section = Section(_("General Panel Options"))
+            bg.add(section)
 
-            vbox.connect("show", self.update_view)
-            # When the sidepage is shown, "show" is called on all widgets. We need to check again if we want to show panel_content
+            hbox = Gtk.Box(Gtk.Orientation.HORIZONTAL)
+            section.add(hbox)
+
+            self.add_panel_button = Gtk.Button(label=_("Add new panel"))
+
+            hbox.pack_start(self.add_panel_button, False, False, 2)
+            toggle_button = Gtk.ToggleButton(label=_("Panel edit mode"))
+
+            self.settings.bind("panel-edit-mode", toggle_button, "active", Gio.SettingsBindFlags.DEFAULT)
+            hbox.pack_start(toggle_button, False, False, 2)
+
+            section.add(GSettingsCheckButton(_("Allow the pointer to pass through the edges of adjacent panels"), "org.cinnamon", "no-adjacent-panel-barriers", None))
+
+            self.add_panel_button.connect("clicked", self.on_add_panel)
+            self.previous_button.connect("clicked", self.on_previous_panel)
+            self.next_button.connect("clicked", self.on_next_panel)
+
+            self.panel_content.connect("map", self.on_panel_list_changed)
+            self.panel_content.connect("unmap", self.restore_panels)
+            self.panel_content.connect("destroy", self.restore_panels)
 
         self.on_panel_list_changed("org.cinnamon", "panels-enabled")
-        self.on_combo_box_changed(self.combo_box)
 
     def on_add_panel(self, widget):
         self.proxy.addPanelQuery(dbus_interface='org.Cinnamon')
 
-    def update_view(self, widget):
-        if len(self.model) == 0:
-            GLib.idle_add(self.panel_content.hide)
-            # Wait for a while so that the window gets the right size
-        else:
-            self.panel_content.show()
-        
-    def on_panel_list_changed(self, schema, key):
-        self.model.clear()
-        panels = self.settings.get_strv("panels-enabled")
-        selected = None
-        for panel in panels:
-            titer = self.model.insert_before(None, None)
-            panel_id = panel.split(":")[0]
-            self.model.set_value(titer, 0, panel_id)
-            self.model.set_value(titer, 1, "Panel " + panel_id)
-            if panel_id == self.panel_id:
-                selected = titer
-
-        if not selected:
-            selected = self.model.get_iter_first()
-
-        self.combo_box.set_active_iter(selected)
-        # Settings active iter will trigger on_combo_box_changed and highlight/set panel_id
-
-        if len(panels) == 0:
-            self.panel_content.hide()
-        else:
-            self.panel_content.show()
-
-    def on_combo_box_changed(self, widget):
+    def on_previous_panel(self, widget):
         if self.panel_id:
             self.proxy.highlightPanel(int(self.panel_id), False, dbus_interface='org.Cinnamon')
 
-        self.panel_id = self.combo_box.get_active_id()
+        current = self.panels.index(self.panel_id)
+
+        if current - 1 >= 0:
+            self.panel_id = self.panels[current - 1]
+        else:
+            self.panel_id = self.panels[len(self.panels) - 1]
+
         if self.panel_id:
             self.proxy.highlightPanel(int(self.panel_id), True, dbus_interface='org.Cinnamon')
-
             for widget in self.widgets:
                 widget.set_panel_id(self.panel_id)
 
-    def on_combo_box_destroy(self, widget):
+    def on_next_panel(self, widget):
+        if self.panel_id:
+            self.proxy.highlightPanel(int(self.panel_id), False, dbus_interface='org.Cinnamon')
+
+        current = self.panels.index(self.panel_id)
+
+        if current + 1 < len(self.panels):
+            self.panel_id = self.panels[current + 1]
+        else:
+            self.panel_id = self.panels[0]
+
+        if self.panel_id:
+            self.proxy.highlightPanel(int(self.panel_id), True, dbus_interface='org.Cinnamon')
+            for widget in self.widgets:
+                widget.set_panel_id(self.panel_id)
+
+    def on_panel_list_changed(self, arg1=None, arg2=None):
+        panels = self.settings.get_strv("panels-enabled")
+
+        n_mons = Gdk.Screen.get_default().get_n_monitors()
+
+        self.monitor_layout = []
+        self.panels = []
+
+        for i in range(0, n_mons):
+            self.monitor_layout.append(Monitor())
+
+        selected = None
+        for panel in panels:
+            panel_id, monitor_id, position = panel.split(":")
+            panel_id = int(panel_id)
+            monitor_id = int(monitor_id)
+            if monitor_id < n_mons:
+                if "top" in position:
+                    self.monitor_layout[monitor_id].top = panel_id
+                else:
+                    self.monitor_layout[monitor_id].bottom = panel_id
+
+        # Index the panels for the next/previous buttons
+        for i in range(0, n_mons):
+            for j in (self.monitor_layout[i].top, self.monitor_layout[i].bottom):
+                if j != -1:
+                    self.panels.append(j)
+
+        if len(self.panels) == 0:
+            self.panel_bg.hide()
+        else:
+            self.panel_bg.show()
+
+        show_add = False
+        for i in range(0, n_mons):
+            if self.monitor_layout[i].top == -1 or self.monitor_layout[i].bottom == -1:
+                show_add = True
+                break
+            i += 1
+
+        self.add_panel_button.set_sensitive(show_add)
+        self.next_button.set_sensitive(len(self.panels) > 1)
+        self.previous_button.set_sensitive(len(self.panels) > 1)
+
+        try:
+            current_idx = self.panels.index(self.panel_id)
+        except:
+            current_idx = 0
+
+        if len(self.panels) == 0:
+            return
+
+        self.panel_id = self.panels[current_idx]
+
+        if self.panel_id:
+            self.proxy.highlightPanel(self.panel_id, True, dbus_interface='org.Cinnamon')
+
+    def restore_panels(self, widget):
         self.proxy.destroyDummyPanels(dbus_interface='org.Cinnamon')
         if self.panel_id:
             self.proxy.highlightPanel(int(self.panel_id), False, dbus_interface='org.Cinnamon')
@@ -152,7 +219,7 @@ class PanelCheckButton(Gtk.CheckButton):
     def __init__(self, label, schema, key, dep_key, panel_id):
         self.key = key
         self.dep_key = dep_key
-        self.panel_id = panel_id
+        self.panel_id = str(panel_id)
 
         super(PanelCheckButton, self).__init__(label)
         self.settings = Gio.Settings.new(schema)
@@ -208,7 +275,7 @@ class PanelCheckButton(Gtk.CheckButton):
         settings.set_strv(key, values)
 
     def set_panel_id(self, panel_id):
-        self.panel_id = panel_id
+        self.panel_id = str(panel_id)
         self.on_my_setting_changed(None, None)
         if self.dep_key:
             self.on_dependency_setting_changed(None, None)
@@ -218,7 +285,7 @@ class PanelSpinButton(Gtk.HBox):
         self.key = key
         self.min = min
         self.max = max
-        self.panel_id = panel_id
+        self.panel_id = str(panel_id)
         self.dep_key = dep_key
         super(PanelSpinButton, self).__init__()
         self.label = Gtk.Label(label)
@@ -302,7 +369,7 @@ class PanelSpinButton(Gtk.HBox):
         settings.set_strv(key, values)
 
     def set_panel_id(self, panel_id):
-        self.panel_id = panel_id
+        self.panel_id = str(panel_id)
         self.on_my_setting_changed(None, None)
         if self.dep_key:
             self.on_dependency_setting_changed(None, None)
@@ -313,7 +380,7 @@ class PanelIntRange(Gtk.HBox):
         self.key = key
         self.dep_key = dep_key
         self.settings = Gio.Settings.new(schema)
-        self.panel_id = panel_id
+        self.panel_id = str(panel_id)
 
         self.value = self.get_int(self.settings, self.key) * 1.0
         self.label = Gtk.Label.new(label)
@@ -475,7 +542,7 @@ class PanelIntRange(Gtk.HBox):
         settings.set_strv(key, values)
 
     def set_panel_id(self, panel_id):
-        self.panel_id = panel_id
+        self.panel_id = str(panel_id)
         self.on_my_setting_changed(None, None)
         if self.dep_key:
             self.on_dependency_setting_changed(None, None)

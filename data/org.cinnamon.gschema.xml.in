@@ -311,10 +311,10 @@
     </key>
 
     <key name="desktop-layout" type="s">
-      <default>"traditional"</default>
-      <_summary>Layout style</_summary>
+      <default>""</default>
+      <_summary>(Deprecated) Layout style</_summary>
       <_description>
-       Layout styles: traditional (1 panel at the bottom), flipped (1 panel on top), classic (1 panel on top, 1 panel at the bottom)
+       (Deprecated) Layout styles - pre-2.6
       </_description>
     </key>
     
@@ -446,6 +446,11 @@
     <key name="saved-session-presence" type="i">
       <default>0</default>
       <_summary></_summary>
+    </key>
+
+    <key name="no-adjacent-panel-barriers" type="b">
+      <default>false</default>
+      <_summary>Whether to omit pointer barriers between adjacent panels.</_summary>
     </key>
 
     <key type="b" name="panel-edit-mode">
