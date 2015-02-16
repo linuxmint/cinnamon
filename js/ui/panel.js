@@ -199,6 +199,19 @@ PanelManager.prototype = {
             if (!this.panelsMeta[++i])
                 break;
 
+        // Add default values
+        outerLoop:
+        for (key in DEFAULT_VALUES) {
+            let settings = global.settings.get_strv(key);
+            for (let j = 0; j < settings.length; j++){
+                if (settings[j].split(":")[0] == i){
+                    continue outerLoop;
+                }
+            }
+            settings.push(i + ":" + DEFAULT_VALUES[key]);
+            global.settings.set_strv(key, settings);
+        }
+
         list.push(i + ":" + monitorIndex + ":" + (bottomPosition ? "bottom" : "top"));
         global.settings.set_strv("panels-enabled", list);
 
@@ -426,6 +439,9 @@ PanelManager.prototype = {
      * Prompts user where to add the panel
      */
     addPanelQuery: function() {
+        if (this.addPanelMode || !this.canAdd)
+            return false;
+
         this._showDummyPanels(Lang.bind(this, this.addPanel));
         this._addOsd.show();
     },
@@ -437,15 +453,15 @@ PanelManager.prototype = {
      * Prompts user where to move the panel
      */
     movePanelQuery: function(id) {
+        if (this.addPanelMode || !this.canAdd)
+            return false;
+
         this.moveId = id;
         this._showDummyPanels(Lang.bind(this, this.movePanel));
         this._moveOsd.show();
     },
 
     _showDummyPanels: function(callback) {
-        if (this.addPanelMode || !this.canAdd)
-            return false;
-
         let monitorCount = global.screen.get_n_monitors();
         this.dummyCallback = callback;
         this.dummyPanels = [];
