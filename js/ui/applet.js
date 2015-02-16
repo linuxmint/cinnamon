@@ -143,6 +143,7 @@ AppletPopupMenu.prototype = {
         PopupMenu.PopupMenu.prototype._init.call(this, launcher.actor, 0.0, orientation, 0);
         Main.uiGroup.add_actor(this.actor);
         this.actor.hide();
+        this.launcher = launcher;
         if (launcher instanceof Applet)
             launcher.connect("orientation-changed", Lang.bind(this, this._onOrientationChanged));
         else if (launcher._applet)
@@ -157,9 +158,25 @@ AppletPopupMenu.prototype = {
      * too many children
      */
     setMaxHeight: function() {
-        let monitor = Main.layoutManager.primaryMonitor;
-        let maxHeight = Math.round(monitor.height - Main.panel.actor.height - this.actor.get_theme_node().get_length('-boxpointer-gap'));
-        if (Main.panel2!==null) maxHeight -= Main.panel2.actor.height;
+        let [x, y] = this.launcher.actor.get_transformed_position();
+
+        let i = 0;
+        let monitor;
+        for (; i < global.screen.get_n_monitors(); i++) {
+            monitor = global.screen.get_monitor_geometry(i);
+            if (x >= monitor.x && x < monitor.x + monitor.width &&
+                x >= monitor.y && y < monitor.y + monitor.height) {
+                break;
+            }
+        }
+
+        let maxHeight = monitor.height - this.actor.get_theme_node().get_length('-boxpointer-gap');
+
+        let panels = Main.panelManager.getPanelsInMonitor(i);
+        for (let j in panels) {
+            maxHeight -= panels[j].actor.height;
+        }
+
         this.actor.style = ('max-height: ' + maxHeight / global.ui_scale + 'px;');
     },
 
@@ -223,9 +240,19 @@ Applet.prototype = {
     	this._draggable.connect('drag-cancelled', Lang.bind(this, this._onDragCancelled));
         this._draggable.connect('drag-end', Lang.bind(this, this._onDragEnd));        
 
-        this._scaleMode = false;
+        try {
+            this._scaleMode = AppletManager.enabledAppletDefinitions.idMap[instance_id].panel.scaleMode;
+        } catch (e) {
+            // Sometimes applets are naughty and don't pass us our instance_id. In that case, we just find the first non-empty panel and pretend we are on it.
+            for (let i in Main.panelManager.panels) {
+                this._scaleMode = true;
+                if (Main.panelManager.panels[i]) {
+                    this._scaleMode = Main.panelManager.panels[i].scaleMode;
+                }
+            }
+        }
         this._applet_tooltip_text = "";
-        this._scaleMode = global.settings.get_boolean('panel-scale-text-icons') && global.settings.get_boolean('panel-resizable');
+
         this.context_menu_item_remove = null;
         this.context_menu_separator = null;
 
@@ -414,6 +441,7 @@ Applet.prototype = {
         if (panel_height && panel_height > 0) {
             this._panelHeight = panel_height;
         }
+        this._scaleMode = AppletManager.enabledAppletDefinitions.idMap[this.instance_id].panel.scaleMode;
         this.on_panel_height_changed();
     },
     
@@ -603,7 +631,7 @@ IconApplet.prototype = {
     },
 
     on_panel_height_changed: function() {
-        this._scaleMode = global.settings.get_boolean('panel-scale-text-icons') && global.settings.get_boolean('panel-resizable');
+        this._scaleMode = AppletManager.enabledAppletDefinitions.idMap[this.instance_id].panel.scaleMode;
         if (this._applet_icon_box.child) {
             this._applet_icon_box.child.destroy();
         }

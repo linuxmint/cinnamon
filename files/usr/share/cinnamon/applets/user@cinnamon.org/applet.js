@@ -15,15 +15,15 @@ const Panel = imports.ui.panel;
 const Settings = imports.ui.settings;
 
 
-function MyApplet(orientation, instance_id) {
-    this._init(orientation, instance_id);
+function MyApplet(orientation, panel_height, instance_id) {
+    this._init(orientation, panel_height, instance_id);
 }
 
 MyApplet.prototype = {
     __proto__: Applet.TextIconApplet.prototype,
 
-    _init: function(orientation, instance_id) {        
-        Applet.TextIconApplet.prototype._init.call(this, orientation, instance_id);
+    _init: function(orientation, panel_height, instance_id) {
+        Applet.TextIconApplet.prototype._init.call(this, orientation, panel_height, instance_id);
         
         try {
             this._session = new GnomeSession.SessionManager();
@@ -191,7 +191,7 @@ MyApplet.prototype = {
     },
 };
 
-function main(metadata, orientation, instance_id) {  
-    let myApplet = new MyApplet(orientation, instance_id);
+function main(metadata, orientation, panel_height, instance_id) {  
+    let myApplet = new MyApplet(orientation, panel_height, instance_id);
     return myApplet;      
 }

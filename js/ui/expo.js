@@ -321,7 +321,7 @@ Expo.prototype = {
         }));
 
         this._gradient.show();
-        Main.disablePanels();
+        Main.panelManager.disablePanels();
 
         this._background.dim_factor = 1;
         Tweener.addTween(this._background,
@@ -390,7 +390,7 @@ Expo.prototype = {
         let activeWorkspace = this._expo.lastActiveWorkspace;
 
         if (!options || !options.toScale ) {
-            Main.enablePanels();
+            Main.panelManager.enablePanels();
             activeWorkspace.overviewModeOff(true, true);
         }
 

@@ -8,15 +8,15 @@ const St = imports.gi.St;
 const Main = imports.ui.main;
 const Gtk = imports.gi.Gtk;
 
-function MyApplet(metadata, orientation, panel_height) {
-    this._init(metadata, orientation, panel_height);
+function MyApplet(metadata, orientation, panel_height, instance_id) {
+    this._init(metadata, orientation, panel_height, instance_id);
 };
 
 MyApplet.prototype = {
     __proto__: Applet.IconApplet.prototype,
 
-    _init: function(metadata, orientation, panel_height) {
-        Applet.IconApplet.prototype._init.call(this, orientation, panel_height);
+    _init: function(metadata, orientation, panel_height, instance_id) {
+        Applet.IconApplet.prototype._init.call(this, orientation, panel_height, instance_id);
 
         try {
             Gtk.IconTheme.get_default().append_search_path(metadata.path);
@@ -126,7 +126,7 @@ MyApplet.prototype = {
     }
 };
 
-function main(metadata, orientation, panel_height) {
-    let myApplet = new MyApplet(metadata, orientation, panel_height);
+function main(metadata, orientation, panel_height, instance_id) {
+    let myApplet = new MyApplet(metadata, orientation, panel_height, instance_id);
     return myApplet;
 }
