@@ -3,6 +3,7 @@
 const Cinnamon = imports.gi.Cinnamon;
 const Gio = imports.gi.Gio;
 const GLib = imports.gi.GLib;
+const Gtk = imports.gi.Gtk;
 const Lang = imports.lang;
 const Signals = imports.signals;
 const St = imports.gi.St;
@@ -140,6 +141,7 @@ Extension.prototype = {
         this.lowerType = type.name.toLowerCase().replace(" ", "_");
         this.theme = null;
         this.stylesheet = null;
+        this.iconDirectory = null;
         this.meta = createMetaDummy(this.uuid, dir.get_path(), State.INITIALIZING);
         this.startTime = new Date().getTime();
 
@@ -154,6 +156,7 @@ Extension.prototype = {
                 this.loadStylesheet(this.dir.get_child('stylesheet.css'));
             }));
         }
+        this.loadIconDirectory(dir);
 
         try {
             CinnamonJS.add_extension_importer('imports.ui.extension.importObjects', this.uuid, this.meta.path);
@@ -206,6 +209,7 @@ Extension.prototype = {
         if(this.meta.state == State.INITIALIZING) {
             this.unlockRole();
             this.unloadStylesheet();
+            this.unloadIconDirectory();
             forgetExtension(this.uuid);
         }
         error._alreadyLogged = true;
@@ -303,6 +307,29 @@ Extension.prototype = {
                 this.theme.unload_stylesheet(this.stylesheet);
             } catch (e) {
                 global.logError('Error unloading stylesheet', e);
+            }
+        }
+    },
+    
+    loadIconDirectory: function(dir) {
+        let iconDir = dir.get_child("icons");
+        if (iconDir.query_exists(null)) {
+            let path = iconDir.get_path();
+            this.iconDirectory = path;
+            Gtk.IconTheme.get_default().append_search_path(path);
+        }
+    },
+    
+    unloadIconDirectory: function() {
+        if (this.iconDirectory) {
+            let iconTheme = Gtk.IconTheme.get_default();
+            let searchPath = iconTheme.get_search_path();
+            for (let i = 0; i < searchPath.length; i++) {
+                if (searchPath[i] == this.iconDirectory) {
+                    searchPath.splice(i,1);
+                    iconTheme.set_search_path(searchPath);
+                    break;
+                }
             }
         }
     },
@@ -438,6 +465,7 @@ function unloadExtension(uuid) {
             global.logError('Error disabling ' + extension.lowerType + ' ' + extension.uuid, e);
         }
         extension.unloadStylesheet();
+        extension.unloadIconDirectory();
 
         extension.type.emit('extension-unloaded', extension.uuid);
 

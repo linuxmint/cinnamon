@@ -1,6 +1,5 @@
 const Lang = imports.lang;
 const Gio = imports.gi.Gio;
-const Gtk = imports.gi.Gtk;
 const Main = imports.ui.main;
 const Applet = imports.ui.applet;
 const PopupMenu = imports.ui.popupMenu;
@@ -21,7 +20,6 @@ MyApplet.prototype = {
         this._slideshowSettings = new Gio.Settings({ schema: 'org.cinnamon.desktop.background.slideshow' });
 
         try {
-            Gtk.IconTheme.get_default().append_search_path(metadata.path);
             if (this._slideshowSettings.get_boolean("slideshow-enabled")) {
                 if (!this._slideshowSettings.get_boolean("slideshow-paused")) {
                     this.set_applet_icon_symbolic_name('slideshow-play-symbolic.svg');

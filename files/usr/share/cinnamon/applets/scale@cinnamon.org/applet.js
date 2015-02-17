@@ -1,7 +1,6 @@
 const Applet = imports.ui.applet;
 const Lang = imports.lang;
 const Main = imports.ui.main;
-const Gtk = imports.gi.Gtk;
 const Settings = imports.ui.settings;
 
 function MyApplet(metadata, orientation, panel_height, instance_id) {
@@ -15,7 +14,6 @@ MyApplet.prototype = {
         Applet.IconApplet.prototype._init.call(this, orientation, panel_height, instance_id);
 
         try {            
-            Gtk.IconTheme.get_default().append_search_path(metadata.path);
             this.set_applet_icon_symbolic_name("cinnamon-scale");
             this.set_applet_tooltip(_("Scale"));            
             this._hover_activates = false;            
