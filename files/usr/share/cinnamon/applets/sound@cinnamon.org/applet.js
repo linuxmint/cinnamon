@@ -687,7 +687,7 @@ MyApplet.prototype = {
     __proto__: Applet.TextIconApplet.prototype,
 
     _init: function(metadata, orientation, panel_height, instanceId) {
-        Applet.TextIconApplet.prototype._init.call(this, orientation, panel_height);
+        Applet.TextIconApplet.prototype._init.call(this, orientation, panel_height, instanceId);
 
         try {
             this.metadata = metadata;

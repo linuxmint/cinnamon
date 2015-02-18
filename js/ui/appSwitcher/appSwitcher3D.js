@@ -70,8 +70,7 @@ AppSwitcher3D.prototype = {
         this.actor.show();
         this._background.show();
 
-        let panels = Main.getPanels();
-        panels.forEach(function(panel) { panel.actor.set_reactive(false); });
+        Main.panelManager.panels.forEach(function(panel) { panel.actor.set_reactive(false); });
 
         Tweener.addTween(this._background, {
             dim_factor: DIM_FACTOR,
@@ -130,8 +129,7 @@ AppSwitcher3D.prototype = {
         }
 
         // panels
-        let panels = Main.getPanels();
-        panels.forEach(function(panel) { panel.actor.set_reactive(true); });
+        Main.panelManager.panels.forEach(function(panel) { panel.actor.set_reactive(true); });
 
         // background
         Tweener.removeTweens(this._background);

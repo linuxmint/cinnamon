@@ -72,79 +72,72 @@
       <_description>If desklet-snap is enabled, the possible positions of desklets will be all integer multiples of the value of "desklet-snap-size"</_description>
     </key>
 
-    <key name="panel-autohide" type="b">
-      <default>false</default>
+    <key name="panels-enabled" type="as">
+      <default>['1:0:bottom']</default>
+      <_summary>List of panels used</_summary>
+      <_description>
+        Panels are listed in the following format: panelID:monitor:position, where monitor is the monitor number (0 for primary), and position is either top or bottom
+      </_description>
+    </key>
+
+    <key name="panels-autohide" type="as">
+      <default>['1:false']</default>
       <_summary>Auto-hide panel</_summary>
       <_description>
         Whether the panel autohides or not.
       </_description>
     </key>
     
-    <key type="i" name="panel-show-delay">
-      <default>0</default>
+    <key name="panels-show-delay" type="as">
+      <default>['1:0']</default>
       <summary>Duration of the delay before a hidden panel is shown</summary>
       <description>Duration of the delay (in milliseconds)</description>
     </key>
     
-    <key type="i" name="panel-hide-delay">
-      <default>0</default>
+    <key name="panels-hide-delay" type="as">
+      <default>['1:0']</default>
       <summary>Duration of the delay before a shown panel is hidden</summary>
       <description>Duration of the delay (in milliseconds)</description>
     </key>
 
-    <key name="panel2-autohide" type="b">
-      <default>false</default>
-      <_summary>Auto-hide panel</_summary>
-      <_description>
-        Whether the panel autohides or not.
-      </_description>
-    </key>
-
-    <key type="i" name="panel2-show-delay">
-      <default>0</default>
-      <summary>Duration of the delay before a hidden panel is shown</summary>
-      <description>Duration of the delay (in milliseconds)</description>
-    </key>
-
-    <key type="i" name="panel2-hide-delay">
-      <default>0</default>
-      <summary>Duration of the delay before a shown panel is hidden</summary>
-      <description>Duration of the delay (in milliseconds)</description>
-    </key>
-
-    <key name="panel-resizable" type="b">
-      <default>false</default>
+    <key name="panels-resizable" type="as">
+      <default>['1:false']</default>
       <_summary>Resizable panel</_summary>
       <_description>
         Whether the panel uses a user-defined height
       </_description>
     </key>
     
-    <key name="panel-top-height" type="i">
-      <default>25</default>
-      <range min="20" max="100" />
+    <key name="panels-height" type="as">
+      <default>['1:25']</default>
       <_summary>Panel size</_summary>
       <_description>
-        User-defined panel-height for top panel.  Note, this value may or may not be the true value in use at runtime, depending
+        User-defined panel-height for panels.  Note, this value may or may not be the true value in use at runtime, depending
         on any scaling that may be occurring (on hidpi screens, for instance).
       </_description>
     </key>
 
-    <key name="panel-bottom-height" type="i">
-      <default>25</default>
-      <range min="20" max="100"/>
-      <_summary>Panel size</_summary>
-      <_description>
-        User-defined panel-height for bottom panel.  Note, this value may or may not be the true value in use at runtime, depending
-        on any scaling that may be occurring (on hidpi screens, for instance).
-      </_description>
-    </key>
-    
-    <key name="panel-scale-text-icons" type="b">
-      <default>false</default>
+    <key name="panels-scale-text-icons" type="as">
+      <default>['1:false']</default>
       <_summary>Scale panel applet text and icons</_summary>
       <_description>
         Whether the panel icons and text from applets is resized according to the custom panel height
+      </_description>
+    </key>
+
+    <key name="panel-resizable" type="b">
+      <default>false</default>
+      <_summary>(Deprecated) Resizable panel</_summary>
+      <_description>
+        (Deprecated) Retained to avoid applets who read the property from crashing Cinnamon
+      </_description>
+    </key>
+
+    <key name="panel-scale-text-icons" type="b">
+      <default>false</default>
+      <_summary>(Deprecated) Scale panel applet text and icons</_summary>
+      <_description>
+        (Deprecated) Retained to avoid applets who read the property from crashing Cinnamon
       </_description>
     </key>
 

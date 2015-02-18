@@ -29,28 +29,11 @@ LayoutManager.prototype = {
         this.primaryMonitor = null;
         this.primaryIndex = -1;
         this.hotCornerManager = null;
-        this._leftPanelBarrier = 0;
-        this._rightPanelBarrier = 0;
-        this._leftPanelBarrier2 = 0;
-        this._rightPanelBarrier2 = 0;
         this.edgeRight = null;
         this.edgeLeft = null;
         this._chrome = new Chrome(this);
         this.enabledEdgeFlip = global.settings.get_boolean("enable-edge-flip");
         this.edgeFlipDelay = global.settings.get_int("edge-flip-delay");
-
-        this.panelBox = new St.BoxLayout({ name: 'panelBox',
-                                           vertical: true });
-
-        this.panelBox2 = new St.BoxLayout({ name: 'panelBox',
-                                            vertical: true });        
-
-        this.addChrome(this.panelBox, { addToWindowgroup: false });
-        this.addChrome(this.panelBox2, { addToWindowgroup: false });
-        this.panelBox.connect('allocation-changed',
-                              Lang.bind(this, this._updatePanelBarriers));
-        this.panelBox2.connect('allocation-changed',
-                               Lang.bind(this, this._updatePanelBarriers));
 
         this.keyboardBox = new St.BoxLayout({ name: 'keyboardBox',
                                               reactive: true,
@@ -58,16 +41,10 @@ LayoutManager.prototype = {
         this.addChrome(this.keyboardBox, { visibleInFullscreen: true });
         this._keyboardHeightNotifyId = 0;
 
-        this._processPanelSettings();
         this._monitorsChanged();
 
         global.settings.connect("changed::enable-edge-flip", Lang.bind(this, this._onEdgeFlipChanged));
         global.settings.connect("changed::edge-flip-delay", Lang.bind(this, this._onEdgeFlipChanged));
-        global.settings.connect("changed::panel-autohide", Lang.bind(this, this._processPanelSettings));
-        global.settings.connect("changed::panel2-autohide", Lang.bind(this, this._processPanelSettings));
-        global.settings.connect("changed::panel-resizable", Lang.bind(this, this._processPanelSettings));
-        global.settings.connect("changed::panel-bottom-height", Lang.bind(this, this._processPanelSettings));
-        global.settings.connect("changed::panel-top-height", Lang.bind(this, this._processPanelSettings));
         global.screen.connect('restacked', Lang.bind(this, this._windowsRestacked));
         global.screen.connect('monitors-changed',
                               Lang.bind(this, this._monitorsChanged));
@@ -117,19 +94,6 @@ LayoutManager.prototype = {
         }
     },
     
-    _processPanelSettings: function() {
-        if (this._processPanelSettingsTimeout) {
-            Mainloop.source_remove(this._processPanelSettingsTimeout);
-        }
-        // delay this action somewhat, to let others do their thing before us
-        this._processPanelSettingsTimeout = Mainloop.timeout_add(0, Lang.bind(this, function() {
-            this._processPanelSettingsTimeout = 0;
-            this._updateBoxes();
-            this._chrome.modifyActorParams(this.panelBox, { affectsStruts: Main.panel && !Main.panel.isHideable() });
-            this._chrome.modifyActorParams(this.panelBox2, { affectsStruts: Main.panel2 && !Main.panel2.isHideable() });
-        }));
-    },
-    
     _updateMonitors: function() {
         let screen = global.screen;
 
@@ -164,115 +128,10 @@ LayoutManager.prototype = {
     _updateBoxes: function() {
         this._updateHotCorners();
 
-        let getPanelHeight = function(panel) {
-            let panelHeight = 0;
-            if (panel) {
-                panelHeight = panel.actor.get_height();
-            }
-            return panelHeight;
-        };
-
-        let p1height = getPanelHeight(Main.panel);
-
-        if (Main.desktop_layout == Main.LAYOUT_TRADITIONAL) {
-            this.panelBox.set_size(this.bottomMonitor.width, p1height);
-            this.panelBox.set_position(this.bottomMonitor.x, this.bottomMonitor.y + this.bottomMonitor.height - p1height);
-        }
-        else if (Main.desktop_layout == Main.LAYOUT_FLIPPED) {
-            this.panelBox.set_size(this.primaryMonitor.width, p1height);
-            this.panelBox.set_position(this.primaryMonitor.x, this.primaryMonitor.y);
-        }
-        else if (Main.desktop_layout == Main.LAYOUT_CLASSIC) { 
-            let p2height = getPanelHeight(Main.panel2);
-
-            this.panelBox.set_size(this.primaryMonitor.width, p1height);
-            this.panelBox.set_position(this.primaryMonitor.x, this.primaryMonitor.y);
-
-            this.panelBox2.set_size(this.bottomMonitor.width, p2height);
-            this.panelBox2.set_position(this.bottomMonitor.x, this.bottomMonitor.y + this.bottomMonitor.height - p2height);
-        }
-
         this.keyboardBox.set_position(this.bottomMonitor.x,
                                       this.bottomMonitor.y + this.bottomMonitor.height);
         this.keyboardBox.set_size(this.bottomMonitor.width, -1);
         this._chrome._queueUpdateRegions();
-    },
-
-    getPorthole: function() {
-        let porthole = {};
-        let screen = {x: 0, y: 0, width: global.screen_width, height: global.screen_height};
-        
-        let getPanelHeight = function(panel) {
-            let panelHeight = 0;
-            let hideable = true;
-            if (panel) {
-                panelHeight = panel.actor.get_height();
-                hideable = panel.isHideable();
-            }
-            return hideable ? 0 : panelHeight;
-        };
-        let p1height = getPanelHeight(Main.panel);
-        if (Main.desktop_layout == Main.LAYOUT_TRADITIONAL) {       
-            porthole.x = screen.x; porthole.y = screen.y;
-            porthole.width = screen.width; porthole.height = screen.height - p1height;
-        }
-        else if (Main.desktop_layout == Main.LAYOUT_FLIPPED) {         
-            porthole.x = screen.x; porthole.y = screen.y + p1height;
-            porthole.width = screen.width; porthole.height = screen.height - p1height;
-        }
-        else if (Main.desktop_layout == Main.LAYOUT_CLASSIC) {
-            let p2height = getPanelHeight(Main.panel2);
-            porthole.x = screen.x; porthole.y = screen.y + p1height;
-            porthole.width = screen.width; porthole.height = screen.height - p1height - p2height;
-        }
-        return porthole;
-    },
-
-    _updatePanelBarriers: function(panelBox) {
-        let leftPanelBarrier;
-        let rightPanelBarrier;
-        if (panelBox==this.panelBox){
-            leftPanelBarrier = this._leftPanelBarrier;
-            rightPanelBarrier = this._rightPanelBarrier;
-        }else{
-            leftPanelBarrier = this._leftPanelBarrier2;
-            rightPanelBarrier = this._rightPanelBarrier2;
-        }
-        if (leftPanelBarrier)
-            global.destroy_pointer_barrier(leftPanelBarrier);
-        if (rightPanelBarrier)
-            global.destroy_pointer_barrier(rightPanelBarrier);
-
-        if (panelBox.height) {                        
-            if ((Main.desktop_layout == Main.LAYOUT_TRADITIONAL && panelBox==this.panelBox) || (Main.desktop_layout == Main.LAYOUT_CLASSIC && panelBox==this.panelBox2)) {
-                let monitor = this.bottomMonitor;
-                leftPanelBarrier = global.create_pointer_barrier(monitor.x, monitor.y + monitor.height - panelBox.height,
-                                                                 monitor.x, monitor.y + monitor.height,
-                                                                 1 /* BarrierPositiveX */);
-                rightPanelBarrier = global.create_pointer_barrier(monitor.x + monitor.width, monitor.y + monitor.height - panelBox.height,
-                                                                  monitor.x + monitor.width, monitor.y + monitor.height,
-                                                                  4 /* BarrierNegativeX */);
-            }
-            else {
-                let primary = this.primaryMonitor;
-                leftPanelBarrier = global.create_pointer_barrier(primary.x, primary.y,
-                                                                 primary.x, primary.y + panelBox.height,
-                                                                 1 /* BarrierPositiveX */);
-                rightPanelBarrier = global.create_pointer_barrier(primary.x + primary.width, primary.y,
-                                                                  primary.x + primary.width, primary.y + panelBox.height,
-                                                                  4 /* BarrierNegativeX */);
-            }
-        } else {
-            leftPanelBarrier = 0;
-            rightPanelBarrier = 0;
-        }
-        if (panelBox==this.panelBox){
-            this._leftPanelBarrier = leftPanelBarrier;
-            this._rightPanelBarrier = rightPanelBarrier;
-        }else{
-            this._leftPanelBarrier2 = leftPanelBarrier;
-            this._rightPanelBarrier2 = rightPanelBarrier;
-        }
     },
 
     _monitorsChanged: function() {
@@ -350,10 +209,8 @@ LayoutManager.prototype = {
         // the UI group to get the correct allocation for the struts.
         this._chrome.updateRegions();
 
-        if (Main.panel && Main.panel.isHideable())
-            this.panelBox.opacity = 0;
-        if (Main.panel2 && Main.panel2.isHideable())
-            this.panelBox2.opacity = 0;
+        Main.panelManager.setPanelsOpacity(0);
+
         this.keyboardBox.hide();
 
         let monitor = this.primaryMonitor;
@@ -385,8 +242,9 @@ LayoutManager.prototype = {
         global.stage.no_clear_hint = true;
         this._coverPane.destroy();
         this._coverPane = null;
-        this.panelBox.opacity = 255;
-        this.panelBox2.opacity = 255;
+
+        Main.panelManager.setPanelsOpacity(255);
+
         this.keyboardBox.show();
         global.window_group.remove_clip();
         this._chrome.thawUpdateRegions();
