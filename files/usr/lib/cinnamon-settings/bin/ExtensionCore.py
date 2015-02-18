@@ -1197,7 +1197,11 @@ Please contact the developer.""")
                             extension_description = data["description"]                          
                             try: extension_max_instances = int(data["max-instances"])
                             except KeyError: extension_max_instances = 1
-                            except ValueError: extension_max_instances = 1
+                            except ValueError:
+                                if "infinite" in data["max-instances"]:
+                                    extension_max_instances = 0x7fffffff
+                                else:
+                                    extension_max_instances = 1
 
                             try: extension_role = data["role"]
                             except KeyError: extension_role = None

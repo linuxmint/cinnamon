@@ -666,13 +666,13 @@ class Spice_Harvester:
         for uuid in active_list.keys():
             if (os.path.exists(os.path.join(settings_dir, uuid))):
                 dir_list = os.listdir(os.path.join(settings_dir, uuid))
+                fn = str(uuid) + ".json"
+                if fn in dir_list and len(dir_list) == 1:
+                    dir_list.remove(fn)
                 for id in active_list[uuid]:
                     fn = str(id) + ".json"
                     if fn in dir_list:
                         dir_list.remove(fn)
-                fn = str(uuid) + ".json"
-                if fn in dir_list:
-                    dir_list.remove(fn)
                 for jetsam in dir_list:
                     try:
                         os.remove(os.path.join(settings_dir, uuid, jetsam))

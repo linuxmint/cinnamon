@@ -498,7 +498,10 @@ function findExtensionDirectoryIn(uuid, dir) {
 function get_max_instances (uuid) {
     if (uuid in meta) {
         if ("max-instances" in meta[uuid]) {
-            return parseInt(meta[uuid]["max-instances"]);
+            let i = meta[uuid]["max-instances"];
+            if (isNaN(i) && i == "infinite")
+                return 0x7fffffff; // G_MAXINT32
+            return parseInt(i);
         }
     }
     return 1;

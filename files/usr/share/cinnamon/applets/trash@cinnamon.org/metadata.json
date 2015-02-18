@@ -3,5 +3,6 @@
  "name": "Trash",
  "description": "Control the trash from the panel",
  "icon": "user-trash",
- "localedir": "/usr/share/locale"
+ "localedir": "/usr/share/locale",
+ "max-instances": "infinite"
 }
