@@ -1655,7 +1655,7 @@ Panel.prototype = {
         this.panelBox.set_position(this.monitor.x, this.bottomPosition ? this.monitor.y + this.monitor.height - panelHeight : this.monitor.y);
 
         // AppletManager might not be initialized yet
-        if (AppletManager.enabledApplets)
+        if (AppletManager.appletsLoaded)
             AppletManager.updateAppletPanelHeights();
 
         return true;
