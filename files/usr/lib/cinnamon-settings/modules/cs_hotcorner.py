@@ -19,7 +19,7 @@ class Module:
         self.name = "hotcorner"
         self.category = "prefs"
 
-    def on_module_selected(self):
+    def on_module_selected(self, switch_container):
         if not self.loaded:
             print "Loading HotCorner module"  
 

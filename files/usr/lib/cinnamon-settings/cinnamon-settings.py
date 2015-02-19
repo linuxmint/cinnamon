@@ -114,13 +114,14 @@ class MainWindow:
             self.side_view_sw.hide()
             self.search_entry.hide()
             self.window.set_title(sidePage.name)
-            sidePage.build()
+            sidePage.build(self.switch_container)
             self.content_box_sw.show()
             self.button_back.show()
+            self.switch_container.show()
             self.current_sidepage = sidePage
             self.maybe_resize(sidePage)
         else:
-            sidePage.build()
+            sidePage.build(self.switch_container)
 
     def maybe_resize(self, sidePage):
         m, n = self.content_box.get_preferred_size()
@@ -151,7 +152,10 @@ class MainWindow:
         self.content_box = self.builder.get_object("content_box")
         self.content_box_sw = self.builder.get_object("content_box_sw")
         self.button_back = self.builder.get_object("button_back")
-        self.button_back.set_label(_("All Settings"))
+        self.button_back.set_tooltip_text(_("Back to all settings"))
+        self.switch_container = self.builder.get_object("switch_container")
+        m, n = self.button_back.get_preferred_width()
+        self.switch_container.set_margin_right(n)
         self.button_back.hide()
 
         self.search_entry = self.builder.get_object("search_box")
@@ -524,6 +528,10 @@ class MainWindow:
                 for c_widget in c_widgets:
                     c_widget.hide()
         self.button_back.hide()
+        switch_container_content = self.switch_container.get_children()
+        for widget in switch_container_content:
+            widget.hide()
+        self.switch_container.hide()
         self.side_view_sw.show()
         self.search_entry.show()
         self.search_entry.grab_focus()

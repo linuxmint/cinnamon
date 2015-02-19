@@ -35,7 +35,7 @@ class Module:
         self.category = "prefs"
         self.comment = _("Manage screen lock settings")        
 
-    def on_module_selected(self):
+    def on_module_selected(self, switch_container):
         if not self.loaded:
             print "Loading Screensaver module"
             schema = "org.cinnamon.desktop.screensaver"

@@ -11,7 +11,7 @@ class Module:
         self.sidePage = sidePage
         self.category = "prefs"
 
-    def on_module_selected(self):
+    def on_module_selected(self, switch_container):
         if not self.loaded:
             print "Loading Applets module"
             self.sidePage.load()
