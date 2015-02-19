@@ -145,7 +145,6 @@ TilePreview.prototype = {
         this._showing = true;
         this.actor.show();
         windowActor.raise_top();
-        this.actor.opacity = 0;
 
         Tweener.addTween(this.actor,
                          { x: tileRect.x,
