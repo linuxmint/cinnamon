@@ -11,6 +11,7 @@ const Meta = imports.gi.Meta;
 const Tooltips = imports.ui.tooltips;
 const DND = imports.ui.dnd;
 const Mainloop = imports.mainloop;
+const Gdk = imports.gi.Gdk;
 
 const PANEL_ICON_SIZE = 24; // this is for the spinner when loading
 const DEFAULT_ICON_SIZE = 16; // too bad this can't be defined in theme (cinnamon-app.create_icon_texture returns a clutter actor, not a themable object -
@@ -876,6 +877,34 @@ MyAppletAlertBox.prototype = {
     },
 }
 
+function AppletSignals(appletObj) {
+    this._init(appletObj);
+}
+
+AppletSignals.prototype = {
+    _init: function(appletObj) {
+        this.appletObj = appletObj;
+        this.storage = {};
+    },
+
+    connect: function(obj, sig_name, callback) {
+        let id = obj.connect(sig_name, Lang.bind(this.appletObj, callback));
+        this.storage[sig_name] = [obj, id];
+    },
+
+    disconnect: function(sig_name) {
+        let [obj, id] = this.storage[sig_name];
+        obj.disconnect(id);
+        delete this.storage[sig_name];
+    },
+
+    disconnect_all_signals: function() {
+        for (let sig_name in this.storage) {
+            this.disconnect(sig_name);
+        }
+    }
+}
+
 function MyApplet(orientation, panel_height, instance_id) {
     this._init(orientation, panel_height, instance_id);
 }
@@ -905,36 +934,68 @@ MyApplet.prototype = {
 
             this._windows = new Array();
             this._alertWindows = new Array();
-            let tracker = Cinnamon.WindowTracker.get_default();
-            tracker.connect('notify::focus-app', Lang.bind(this, this._onFocus));
-            global.screen.get_display().connect('notify::focus-window', Lang.bind(this, this._onFocusWindow));
 
-            this.switchWorkspaceHandler = global.window_manager.connect('switch-workspace',
-                                            Lang.bind(this, this._refreshItems));
-            
-            global.window_manager.connect('minimize',
-                                            Lang.bind(this, this._onWindowStateChange));
-            global.window_manager.connect('maximize',
-                                            Lang.bind(this, this._onWindowStateChange));
-            global.window_manager.connect('unmaximize',
-                                            Lang.bind(this, this._onWindowStateChange));
-            global.window_manager.connect('map',
-                                            Lang.bind(this, this._onWindowStateChange));
-            global.window_manager.connect('tile',
-                                            Lang.bind(this, this._onWindowStateChange));
-                                            
+            this.signals = new AppletSignals(this);
+
+            let tracker = Cinnamon.WindowTracker.get_default();
+
+            this.monitor_watch_list = []
+
+            this.signals.connect(tracker, "notify::focus-app", this._onFocus);
+            this.signals.connect(global.screen.get_display(), "notify::focus-window", this._onFocusWindow);
+            this.signals.connect(global.screen, 'window-entered-monitor', this._windowEnteredMonitor);
+            this.signals.connect(global.screen, 'window-left-monitor', this._windowLeftMonitor);
+            this.signals.connect(global.screen, 'notify::n-workspaces', this._changeWorkspaces);
+            this.signals.connect(global.screen, 'monitors-changed', this._monitorLayoutChanged);
+            this.signals.connect(global.window_manager, 'switch-workspace',this._refreshItems);
+            this.signals.connect(global.window_manager, 'minimize', this._onWindowStateChange);
+            this.signals.connect(global.window_manager, 'maximize', this._onWindowStateChange);
+            this.signals.connect(global.window_manager, 'unmaximize', this._onWindowStateChange);
+            this.signals.connect(global.window_manager, 'map', this._onWindowStateChange);
+            this.signals.connect(global.window_manager, 'tile', this._onWindowStateChange);
+            this.signals.connect(global.settings, "changed::window-list-applet-alert", this._updateAttentionGrabber);
+            this.signals.connect(global.settings, "changed::panel-edit-mode", this.on_panel_edit_mode_changed);
+
             this._workspaces = [];
             this._changeWorkspaces();
-            global.screen.connect('notify::n-workspaces',
-                                    Lang.bind(this, this._changeWorkspaces));
+
             this._urgent_signal = null;
-            global.settings.connect('changed::window-list-applet-alert', Lang.bind(this, this._updateAttentionGrabber));
             this._updateAttentionGrabber();
             // this._container.connect('allocate', Lang.bind(Main.panel, this._allocateBoxes)); 
-            global.settings.connect('changed::panel-edit-mode', Lang.bind(this, this.on_panel_edit_mode_changed));
         }
         catch (e) {
             global.logError(e);
+        }
+    },
+
+    on_applet_removed_from_panel: function() {
+        this.signals.disconnect_all_signals();
+    },
+
+    on_applet_added_to_panel: function() {
+        this._updateMonitorsWatched();
+    },
+
+    on_applet_instances_changed: function() {
+        this.monitor_watch_list = this._updateMonitorsWatched();
+
+        this._update_watched_windows();
+    },
+
+    _monitorLayoutChanged: function() {
+        this.monitor_watch_list = this._updateMonitorsWatched();
+
+        this._update_watched_windows();
+    },
+
+    _update_watched_windows: function() {
+        let windows = global.display.list_windows(0);
+
+        for (let i in windows) {
+            if (this._shouldAdd(windows[i]))
+                this._addWindow(windows[i]);
+            else
+                this._removeWindow(windows[i]);
         }
     },
 
@@ -1083,9 +1144,50 @@ MyApplet.prototype = {
         return false;
     },
 
-    _windowAdded: function(metaWorkspace, metaWindow) {
-        if (!Main.isInteresting(metaWindow))
-            return;        
+    _updateMonitorsWatched: function() {
+        let n_mons = Gdk.Screen.get_default().get_n_monitors();
+        let on_primary = this.panel.monitorIndex == Main.layoutManager.primaryIndex;
+        let instances = Main.AppletManager.getRunningInstancesForUuid(this._uuid);
+
+        let watch_list = [];
+
+        /* Simple cases */
+        if (n_mons == 1) {
+            return [Main.layoutManager.primaryIndex];
+        }
+
+        if (instances.length > 1 && !on_primary)
+            return [this.panel.monitorIndex];
+
+        /* Only an instance on the primary monitor should get this far -
+         * it will be responsible for any monitors not covered individually */
+
+        for (let i = 0; i < n_mons; i++) {
+            watch_list.push(i);
+        }
+
+        /* If we're the only instance, watch all monitors */
+
+        if (instances.length == 1)
+            return watch_list;
+
+        /* Otherwise, subtract the monitors that are individually covered */
+
+        for (let i in instances) {
+            if (instances[i] == this)
+                continue;
+            let i_monitor = instances[i].panel.monitorIndex;
+            let idx = watch_list.indexOf(i_monitor);
+            if (idx != -1) {
+                watch_list.splice(idx, 1);
+            }
+        }
+
+        return watch_list;
+
+    },
+
+    _addWindow: function(metaWindow) {
         for ( let i=0; i<this._windows.length; ++i ) {
             if ( this._windows[i].metaWindow == metaWindow ) {
                 return;
@@ -1095,11 +1197,11 @@ MyApplet.prototype = {
         let appbutton = new AppMenuButton(this, metaWindow, true, this.orientation, this._panelHeight, true);
         this._windows.push(appbutton);
         this.myactor.add(appbutton.actor);
-        if (metaWorkspace.index() != global.screen.get_active_workspace_index())
+        if (global.screen.get_active_workspace() != metaWindow.get_workspace())
             appbutton.actor.hide();
     },
 
-    _windowRemoved: function(metaWorkspace, metaWindow) {
+    _removeWindow: function(metaWindow) {
         for ( let i=0; i<this._windows.length; ++i ) {
             if ( this._windows[i].metaWindow == metaWindow ) {
                 this.myactor.remove_actor(this._windows[i].actor);
@@ -1108,9 +1210,44 @@ MyApplet.prototype = {
                 break;
             }
         }
+    },
+
+    _shouldAdd: function(metaWindow) {
+        if (!Main.isInteresting(metaWindow))
+            return false;
+
+        if (this.monitor_watch_list.indexOf(metaWindow.get_monitor()) == -1)
+            return false;
+
+        return true;
+    },
+
+    _windowAdded: function(metaWorkspace, metaWindow) {
+        if (this._shouldAdd(metaWindow))
+            this._addWindow(metaWindow);
+
         this.calculate_alert_positions();
     },
-    
+
+    _windowRemoved: function(metaWorkspace, metaWindow) {
+        this._removeWindow(metaWindow);
+
+        this.calculate_alert_positions();
+    },
+
+    _windowEnteredMonitor: function(screen, monitor, metaWindow) {
+        if (this._shouldAdd(metaWindow))
+            this._addWindow(metaWindow);
+
+        this.calculate_alert_positions();
+    },
+
+    _windowLeftMonitor: function(screen, monitor, metaWindow) {
+        this._removeWindow(metaWindow);
+
+        this.calculate_alert_positions();
+    },
+
     _changeWorkspaces: function() {
         for ( let i=0; i<this._workspaces.length; ++i ) {
             let ws = this._workspaces[i];

@@ -233,6 +233,11 @@ function removeAppletFromPanels(appletDefinition) {
 
         _removeAppletConfigFile(appletDefinition.uuid, appletDefinition.applet_id);
 
+        /* normal occurs during _onAppletRemovedFromPanel, but when a panel is removed,
+         * appletObj hasn't had the instance removed yet, so let's run it one more time
+         * here when everything has been updated.
+         */
+        callAppletInstancesChanged(appletDefinition.uuid);
     }
 }
 
@@ -614,3 +619,31 @@ function pasteAppletConfiguration(panelId) {
         dialog.open();
     }
 }
+
+function getRunningInstancesForUuid(uuid) {
+    if(!enabledAppletDefinitions)
+        return null;
+
+    let result = [];
+
+    for (let applet_id in enabledAppletDefinitions.idMap) {
+        if (appletObj[applet_id]) {
+            if (uuid == appletObj[applet_id]._uuid) {
+                result.push(appletObj[applet_id]);
+            }
+        }
+    }
+
+    return result
+}
+
+function callAppletInstancesChanged(uuid) {
+    for (let applet_id in enabledAppletDefinitions.idMap) {
+        if (appletObj[applet_id]) {
+            if (uuid == appletObj[applet_id]._uuid) {
+                appletObj[applet_id].on_applet_instances_changed();
+            }
+        }
+    }
+}
+

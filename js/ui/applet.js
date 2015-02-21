@@ -342,6 +342,21 @@ Applet.prototype = {
         // Implemented by Applets        
     },
 
+
+    /**
+     * on_applet_instances_changed:
+     *
+     * This function is called when an applet _of the same uuid_
+     * is added or removed from the panels.  It is intended to
+     * assist in delegation of responsibilities between duplicate
+     * applet instances.
+     * 
+     * This is meant to be overridden in individual applets
+     */
+    on_applet_instances_changed: function() {
+
+    },
+
     on_applet_added_to_panel_internal: function(userEnabled) {
         if (userEnabled) {
             Mainloop.timeout_add(300, Lang.bind(this, function() {
@@ -354,6 +369,8 @@ Applet.prototype = {
         }
 
         this.on_applet_added_to_panel(userEnabled);
+
+        Main.AppletManager.callAppletInstancesChanged(this._uuid);
     },
 
     /**
@@ -380,6 +397,8 @@ Applet.prototype = {
     _onAppletRemovedFromPanel: function() {
         global.settings.disconnect(this._panelEditModeChangedId);
         this.on_applet_removed_from_panel();
+
+        Main.AppletManager.callAppletInstancesChanged(this._uuid);
     },
 
     /**
@@ -498,7 +517,7 @@ Applet.prototype = {
 
     openAbout: function() {
         new ModalDialog.SpicesAboutDialog(this._meta, "applets");
-    }
+    },
 };
 Signals.addSignalMethods(Applet.prototype);
 
