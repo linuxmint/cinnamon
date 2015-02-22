@@ -40,9 +40,10 @@ class MemoryView(BaseListView):
         self.getUpdates()
 
 class ModulePage(WindowAndActionBars):
-    def __init__(self):
+    def __init__(self, parent):
         self.view = MemoryView()
         WindowAndActionBars.__init__(self, self.view)
+        self.parent = parent
 
         refresh = ImageButton("view-refresh")
         refresh.set_tooltip_text("Refresh")

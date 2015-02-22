@@ -1792,3 +1792,16 @@ gboolean _cinnamon_global_check_xdnd_event (CinnamonGlobal  *global,
 
     return FALSE;
 }
+
+/**
+ * cinnamon_global_segfault:
+ * @global: the #CinnamonGlobal
+ *
+ * Crashes Cinnamon by causing a segfault
+ */
+void
+cinnamon_global_segfault (CinnamonGlobal *global)
+{
+  int *ptr = NULL;
+  g_strdup_printf ("%d", *ptr);
+}

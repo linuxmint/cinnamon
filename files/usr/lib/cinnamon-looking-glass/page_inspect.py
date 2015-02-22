@@ -28,9 +28,10 @@ class InspectView(BaseListView):
             self.store.append([item["name"], item["type"], item["shortValue"], item["value"], path + "." + item["name"]])
 
 class ModulePage(WindowAndActionBars):
-    def __init__(self):
+    def __init__(self, parent):
         self.view = InspectView(self)
         WindowAndActionBars.__init__(self, self.view)
+        self.parent = parent
 
         self.back = ImageButton("back")
         self.back.set_tooltip_text("Go back")
