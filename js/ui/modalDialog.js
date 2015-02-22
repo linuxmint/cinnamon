@@ -561,11 +561,15 @@ InfoOSD.prototype = {
         if (!monitorIndex) monitorIndex = 0;
         let monitor = Main.layoutManager.monitors[monitorIndex];
 
+        // The actor has to be shown first so that the width and height can be calculated properly
+        this.actor.opacity = 0;
+        this.actor.show();
+
         let x = monitor.x + Math.round((monitor.width - this.actor.width)/2);
         let y = monitor.y + Math.round((monitor.height - this.actor.height)/2);
 
         this.actor.set_position(x, y);
-        this.actor.show();
+        this.actor.opacity = 255;
     },
 
     /**
