@@ -1,0 +1,5 @@
+{
+    "description": "Solves basic mathematical operations", 
+    "uuid": "calc@cinnamon.org", 
+    "name": "Calculator Search Provider"
+}
