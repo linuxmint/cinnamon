@@ -3,5 +3,5 @@
  "name": "Spacer",
  "description": "Add some space between your other applets",
  "icon": "view-restore",
- "max-instances": "infinite"
+ "max-instances": -1
 }

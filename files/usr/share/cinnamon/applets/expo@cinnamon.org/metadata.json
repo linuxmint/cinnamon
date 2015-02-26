@@ -2,5 +2,5 @@
 "uuid": "expo@cinnamon.org",
 "name": "Expo",
 "description": "Click or hover to activate Expo view",
-"max-instances": "infinite"
+"max-instances": -1
 }

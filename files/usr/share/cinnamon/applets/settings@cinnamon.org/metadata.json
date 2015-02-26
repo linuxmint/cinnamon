@@ -3,5 +3,5 @@
  "name": "Settings Applet",
  "description": "Cinnamon Settings",
  "icon": "preferences-system",
- "max-instances": "infinite"
+ "max-instances": -1
 }

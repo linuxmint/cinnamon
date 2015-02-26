@@ -595,6 +595,11 @@ function pasteAppletConfiguration(panelId) {
     let nextId = global.settings.get_int("next-applet-id");
     for (let i = 0; i < len; i++) {
         let max = Extension.get_max_instances(clipboard[i].uuid);
+        if (max == -1) {
+            raw.push("panel" + panelId + ":" + clipboard[i].location_label + ":" + clipboard[i].order + ":" + clipboard[i].uuid + ":" + nextId);
+            nextId ++;
+            continue;
+        }
         let curr = enabledAppletDefinitions.uuidMap[clipboard[i].uuid];
         let count = curr.length;
         if (count >= max) { // If we have more applets that allowed, we see if we any of them are removed above

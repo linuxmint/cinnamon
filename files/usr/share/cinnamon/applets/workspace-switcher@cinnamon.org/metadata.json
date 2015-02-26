@@ -3,5 +3,5 @@
  "name": "Workspace switcher",
  "description": "Select the workspace from the panel",
  "icon": "gnome-panel-workspace-switcher",
- "max-instances": "infinite"
+ "max-instances": -1
 }

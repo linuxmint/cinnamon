@@ -3,5 +3,5 @@
  "name": "Calendar",
  "description": "The Cinnamon calendar applet",
  "icon": "stock_calendar",
- "max-instances": "infinite"
+ "max-instances": -1
 }
