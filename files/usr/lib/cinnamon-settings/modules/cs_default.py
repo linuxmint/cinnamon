@@ -135,10 +135,10 @@ class DefaultTerminalButton(Gtk.AppChooserButton): #TODO: See if we can get this
         self.active_items = []
         self.settings = Gio.Settings.new(TERMINAL_SCHEMA)
         self.key_value = self.settings.get_string("exec")
-        x1 = 0
+        count_up = 0
         
-        while (self.this_item is not None and x1 < len(apps)):
-            self.this_item = apps[x1]
+        while (self.this_item is not None and count_up < len(apps)):
+            self.this_item = apps[count_up]
             cat_val = Gio.DesktopAppInfo.get_categories(self.this_item)
             exec_val = Gio.DesktopAppInfo.get_string(self.this_item, "Exec")
             name_val = Gio.DesktopAppInfo.get_string(self.this_item, "Name")
@@ -151,7 +151,7 @@ class DefaultTerminalButton(Gtk.AppChooserButton): #TODO: See if we can get this
                     self.active_items.append(exec_val)
                     if (self.key_value == exec_val):
                         self.set_active_custom_item(self.key_value)
-            x1 += 1
+            count_up += 1
 
     def onChanged(self, button):
         index_num = button.get_active()
