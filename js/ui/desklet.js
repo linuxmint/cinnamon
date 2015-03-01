@@ -78,14 +78,6 @@ Desklet.prototype = {
 
         this._drag_end_ids = {"drag-end": 0, "drag-cancelled": 0};
         this._draggable = DND.makeDraggable(this.actor, {restoreOnSuccess: true}, Main.deskletContainer.actor);
-
-        this._drag_end_ids["drag-end"] = this._draggable.connect('drag-end', Lang.bind(this, function() {
-            Main.popModal(this.actor, global.get_current_time());
-        }));
-
-        this._drag_end_ids["drag-cancelled"] = this._draggable.connect('drag-cancelled', Lang.bind(this, function() {
-            Main.popModal(this.actor, global.get_current_time());
-        }));
     },
 
     /**
