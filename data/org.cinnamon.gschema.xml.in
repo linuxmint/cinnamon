@@ -156,7 +156,15 @@
         Whether to enable desktop effects on dialog boxes.
       </_description>
     </key>
-    
+
+    <key type="s" name="desktop-effects-style">
+      <default>"cinnamon"</default>
+      <_summary>The style of desktop effects</_summary>
+      <_description>
+        An overall style used for desktop effects
+      </_description>
+    </key>
+
     <key type="s" name="desktop-effects-close-effect">
       <default>"none"</default>
       <_summary>Effect used when closing windows</_summary>
