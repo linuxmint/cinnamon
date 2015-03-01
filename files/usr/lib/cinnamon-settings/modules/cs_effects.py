@@ -83,33 +83,29 @@ class Module:
             for name, sets in COMBINATIONS.items():
                 self.effect_sets[name] = (EFFECT_SETS[sets[0]], TRANSITIONS_SETS[sets[1]], TIME_SETS[sets[2]])
 
-            self.chooser = GSettingsComboBox(_("Effects style"), "org.cinnamon", "desktop-effects-style", "org.cinnamon/desktop-effects", OPTIONS)
-            self.chooser.content_widget.connect("changed", self.on_value_changed)
-
             section = Section(_("Enable Effects"))
             section.add(GSettingsCheckButton(_("Enable fade effect on Cinnamon scrollboxes (like the Menu application list)"), "org.cinnamon", "enable-vfade", None))
             section.add(GSettingsCheckButton(_("Enable desktop effects"), "org.cinnamon", "desktop-effects", None))
             section.add_indented(GSettingsCheckButton(_("Enable session startup animation"), "org.cinnamon", "startup-animation", "org.cinnamon/desktop-effects"))
             section.add_indented(GSettingsCheckButton(_("Enable desktop effects on dialog boxes"), "org.cinnamon", "desktop-effects-on-dialogs", "org.cinnamon/desktop-effects"))
-            section.add_indented(self.chooser)
             vbox.add(section)
 
             self.schema.connect("changed::desktop-effects", self.on_desktop_effects_enabled_changed)
 
             vbox.add(Gtk.Separator.new(Gtk.Orientation.HORIZONTAL))
 
-            self.custom_checkbutton = Gtk.CheckButton(active = self.is_custom(), label = "<b>%s</b>" % _("Customize Effects"), margin_left = 5)
+            section = Section(_("Style"))
+
+            self.chooser = GSettingsComboBox(_("Effects style"), "org.cinnamon", "desktop-effects-style", "org.cinnamon/desktop-effects", OPTIONS)
+            self.chooser.content_widget.connect("changed", self.on_value_changed)
+            section.add(self.chooser)
+
+            self.custom_checkbutton = Gtk.CheckButton(active = self.is_custom(), label = _("Customize"), margin_left = 5)
             self.custom_checkbutton.get_children()[0].set_use_markup(True)
             self.custom_checkbutton.connect("toggled", self.update_effects)
-            vbox.pack_start(self.custom_checkbutton, False, True, 0)
+            section.add(self.custom_checkbutton)
 
-            self.grid = Gtk.Grid(row_spacing = 5, column_spacing = 5, border_width = 12)
-
-            i = 1
-            for text in [_("Effect"), _("Transition"), _("Duration")]:
-                label = Gtk.Label(text)
-                self.grid.attach(label, i, 0, 1, 1)
-                i += 1
+            self.grid = Gtk.Grid(row_spacing = 5, column_spacing = 5)
 
             #MAPPING WINDOWS
             effects = [
@@ -122,25 +118,26 @@ class Module:
                 ["flyDown", _("Fly down")],
                 ["traditional", _("Traditional")]
             ]
-            self.make_effect_group(_("Mapping windows:"), "map", effects, 1)
+            self.make_effect_group(_("Mapping windows:"), "map", effects, 0)
 
             #CLOSING WINDOWS
-            self.make_effect_group(_("Closing windows:"), "close", effects, 2)
+            self.make_effect_group(_("Closing windows:"), "close", effects, 1)
 
             #MINIMIZING WINDOWS
-            self.make_effect_group(_("Minimizing windows:"), "minimize", effects, 3)
+            self.make_effect_group(_("Minimizing windows:"), "minimize", effects, 2)
 
             #MAXIMIZING WINDOWS
             effects = [["none", _("None")], ["scale", _("Scale")]]
-            self.make_effect_group(_("Maximizing windows:"), "maximize", effects, 4)
+            self.make_effect_group(_("Maximizing windows:"), "maximize", effects, 3)
 
             #UNMAXIMIZING WINDOWS
-            self.make_effect_group(_("Unmaximizing windows:"), "unmaximize", effects, 5)
+            self.make_effect_group(_("Unmaximizing windows:"), "unmaximize", effects, 4)
 
             #TILING WINDOWS
-            self.make_effect_group(_("Tiling and snapping windows:"), "tile", effects, 6)
+            self.make_effect_group(_("Tiling and snapping windows:"), "tile", effects, 5)
 
-            vbox.add(self.grid)
+            section.add_indented(self.grid)
+            vbox.add(section)
             self.update_effects(self.custom_checkbutton)
 
     def make_effect_group(self, group_label, key, effects, row):
@@ -195,6 +192,9 @@ class Module:
 
     def on_desktop_effects_enabled_changed(self, schema, key):
         active = schema.get_boolean(key)
+
+        if not active and schema.get_boolean("desktop-effects-on-dialogs"):
+            schema.set_boolean("desktop-effects-on-dialogs", False)
 
         self.custom_checkbutton.set_sensitive(active)
         self.update_effects(self.custom_checkbutton)
