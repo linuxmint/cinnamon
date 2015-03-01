@@ -83,6 +83,13 @@ var STRING_TYPES = {
             "options"
         ]
     },
+    "tween" : {
+        "required-fields": [
+            "type",
+            "default",
+            "description"
+        ]
+    },
     "keybinding" : {
         "required-fields": [
             "type",

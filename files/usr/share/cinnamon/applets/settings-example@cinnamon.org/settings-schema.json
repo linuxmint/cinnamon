@@ -67,6 +67,12 @@
     "dependency" : "use-custom-label",
     "tooltip" : "Set your custom label here.  This field is unavailable unless the checkbox above is enabled"
  },
+ "tween-function" : {
+    "type" : "tween",
+    "default" : "EaseNone",
+    "description" : "Animation type",
+    "tooltip": "A tween chooser has as value a string, which you can pass as transition to Tweener.addTween()"
+ },
  "demo-button" : {
     "type" : "button",
     "description" : "Don't Press This Button!!!",

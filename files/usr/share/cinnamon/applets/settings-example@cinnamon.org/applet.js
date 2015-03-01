@@ -3,7 +3,8 @@ const Lang = imports.lang;
 const PopupMenu = imports.ui.popupMenu;
 const Mainloop = imports.mainloop;
 const Settings = imports.ui.settings;  // Needed for settings API
-const Gio = imports.gi.Gio
+const Gio = imports.gi.Gio;
+const Tweener = imports.ui.tweener;
 const Main = imports.ui.main;
 
 function MyApplet(orientation, panel_height, instance_id) {
@@ -58,6 +59,11 @@ MyApplet.prototype = {
         this.settings.bindProperty(Settings.BindingDirection.IN,
                                  "custom-label",
                                  "custom_label",
+                                 this.on_settings_changed,
+                                 null);
+        this.settings.bindProperty(Settings.BindingDirection.IN,
+                                 "tween-function",
+                                 "tween_function",
                                  this.on_settings_changed,
                                  null);
         this.settings.bindProperty(Settings.BindingDirection.IN,
@@ -131,6 +137,21 @@ MyApplet.prototype = {
         let timeoutId = Mainloop.timeout_add(3000, Lang.bind(this, function() {
             this.on_settings_changed();
         }));
+
+        //animate icon
+        Tweener.addTween(this._applet_icon, {
+            margin_left: 10,
+            time: .5,
+            transition: this.tween_function,
+            onComplete: function(){
+                Tweener.addTween(this._applet_icon, {
+                    margin_left: 0,
+                    time: .5,
+                    transition: this.tween_function
+                });
+            },
+           onCompleteScope: this
+        });
     },
 
     on_hotkey_triggered: function() {
