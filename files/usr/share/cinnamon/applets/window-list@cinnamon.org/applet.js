@@ -515,7 +515,7 @@ AppMenuButton.prototype = {
         if (event.get_button() == 3) {
             this.rightClickMenu.mouseEvent = event;
             this.rightClickMenu.toggle();
-            return true;
+            return false;
         }
         return false;
     },
