@@ -129,8 +129,8 @@ class ExtensionSidePage (SidePage):
         self.treeview.append_column(isActiveColumn)
         self.treeview.set_headers_visible(False)
         
-        self.model = Gtk.TreeStore(str, str, int, int, object, str, int, bool, str, long, str, str, str, int)
-        #                          uuid, desc, enabled, max-instances, icon, name, read-only, hide-config-button, ext-setting-app, edit-date, read-only icon, active icon, schema file name (for uninstall), settings type
+        self.model = Gtk.TreeStore(str, str, int, int, object, str, int, bool, str, long, str, str, str, int, bool)
+        #                          uuid, desc, enabled, max-instances, icon, name, read-only, hide-config-button, ext-setting-app, edit-date, read-only icon, active icon, schema file name (for uninstall), settings type, version_supported
 
         self.modelfilter = self.model.filter_new()
         self.showFilter = SHOW_ALL
@@ -553,6 +553,7 @@ class ExtensionSidePage (SidePage):
                     uuid = self.modelfilter.get_value(iter, 0)
                     name = self.modelfilter.get_value(iter, 5)
                     checked = self.modelfilter.get_value(iter, 2)
+                    version_check = self.modelfilter.get_value(iter, 14)
 
                     if self.should_show_config_button(self.modelfilter, iter):
                         item = Gtk.MenuItem(_("Configure"))
@@ -593,7 +594,7 @@ class ExtensionSidePage (SidePage):
                                 item = Gtk.MenuItem(_("Add to Cinnamon"))                            
                             else:
                                 item = Gtk.MenuItem(_("Add"))                            
-                            item.connect('activate', lambda x: self.enable_extension(uuid, name))
+                            item.connect('activate', lambda x: self.enable_extension(uuid, name, version_check))
                             popup.add(item)
                     else:
                         item = Gtk.MenuItem(_("Apply theme"))
@@ -919,13 +920,20 @@ class ExtensionSidePage (SidePage):
             self.gm_model.set_value(iter, 5, extensionData['name'])
             self.gm_model.set_value(iter, 6, int(extensionData['last_edited']))
 
-    def enable_extension(self, uuid, name):
+    def enable_extension(self, uuid, name, version_check = True):
+        if not version_check:
+            if not self.show_prompt(_("Extension %s is not compatible with current version of cinnamon. Using it may break your system. Load anyway?") % uuid):
+                return
+            else:
+                uuid = "!" + uuid
+
         if not self.themes:
             if self.collection_type in ("applet", "desklet"):
                 extension_id = self.settings.get_int(("next-%s-id") % (self.collection_type));
                 self.settings.set_int(("next-%s-id") % (self.collection_type), (extension_id+1));
             else:
                 extension_id = 0
+
             self.enabled_extensions.append(self.toSettingString(uuid, extension_id))
 
             if self._proxy:
@@ -1030,7 +1038,7 @@ Please contact the developer.""")
         uuidCount = {}
         for enabled_extension in self.enabled_extensions:
             try:
-                uuid = self.fromSettingString(enabled_extension)
+                uuid = self.fromSettingString(enabled_extension).lstrip("!")
                 if uuid == "":
                     uuid = "STOCK"
                 if uuid in uuidCount:
@@ -1092,9 +1100,10 @@ Please contact the developer.""")
             self.select_updated.hide()
 
     def _add_another_instance_iter(self, treeiter):
-        uuid = self.modelfilter.get_value(treeiter, 0);
+        uuid = self.modelfilter.get_value(treeiter, 0)
         name = self.modelfilter.get_value(treeiter, 5)
-        self.enable_extension(uuid, name)
+        version_check = self.modelfilter.get_value(treeiter, 14)
+        self.enable_extension(uuid, name, version_check)
         
     def _selection_changed(self):
         model, treeiter = self.treeview.get_selection().get_selected()
@@ -1228,6 +1237,14 @@ Please contact the developer.""")
                             except KeyError: schema_filename = ""
                             except ValueError: schema_filename = ""
 
+                            version_supported = False
+                            curr_ver = subprocess.check_output(["cinnamon", "--version"]).splitlines()[0].split(" ")[1]
+                            try:
+                                version_supported = curr_ver in data["cinnamon-version"] or curr_ver.rsplit(".", 1)[0] in data["cinnamon-version"]
+                            except KeyError: version_supported = True # Don't check version if not specified.
+                            except ValueError: version_supported = True
+
+
                             if ext_config_app != "" and not os.path.exists(ext_config_app):
                                 ext_config_app = ""
 
@@ -1241,7 +1258,7 @@ Please contact the developer.""")
                                     if extension_uuid in enabled_extension:
                                         found += 1
 
-                                self.model.set_value(iter, 0, extension_uuid)                
+                                self.model.set_value(iter, 0, extension_uuid)
                                 self.model.set_value(iter, 1, '<b>%s</b>\n<b><span foreground="#333333" size="xx-small">%s</span></b>\n<i><span foreground="#555555" size="x-small">%s</span></i>' % (extension_name, extension_uuid, extension_description))                                  
                                 self.model.set_value(iter, 2, found)
                                 self.model.set_value(iter, 3, extension_max_instances)
@@ -1250,7 +1267,7 @@ Please contact the developer.""")
                                 size = ROW_SIZE * self.window.get_scale_factor()
                                 if "icon" in data:
                                     extension_icon = data["icon"]
-                                    theme = Gtk.IconTheme.get_default()                                                    
+                                    theme = Gtk.IconTheme.get_default()
                                     if theme.has_icon(extension_icon):
                                         img = theme.load_icon(extension_icon, size, 0)
                                 elif os.path.exists("%s/%s/icon.png" % (directory, extension)):
@@ -1287,6 +1304,7 @@ Please contact the developer.""")
                                 self.model.set_value(iter, 11, icon)
                                 self.model.set_value(iter, 12, schema_filename)
                                 self.model.set_value(iter, 13, setting_type)
+                                self.model.set_value(iter, 14, version_supported)
 
                     except Exception, detail:
                         print "Failed to load extension %s: %s" % (extension, detail)
