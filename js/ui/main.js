@@ -462,6 +462,20 @@ function notifyXletStartupError() {
 
 }
 
+/* Provided by panelManager now, but kept here for xlet compatibility */
+
+function enablePanels() {
+    panelManager.enablePanels();
+}
+
+function disablePanels() {
+    panelManager.disablePanels();
+}
+
+function getPanels() {
+    return panelManager.getPanels();
+}
+
 let _workspaces = [];
 let _checkWorkspacesId = 0;
 

@@ -335,6 +335,18 @@ PanelManager.prototype = {
     },
 
     /**
+     * getPanels:
+     *
+     * Retrieves all panels
+     *
+     * Returns: an array of panels
+     */
+
+    getPanels: function() {
+        return this.panels;
+    },
+
+    /**
      * getPanel:
      * @monitorIndex (integer): index of monitor
      * @bottomPosition (boolean): whether the bottom panel is wanted
