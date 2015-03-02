@@ -6,7 +6,6 @@ const Mainloop = imports.mainloop;
 const PopupMenu = imports.ui.popupMenu;
 const St = imports.gi.St;
 const Main = imports.ui.main;
-const Gtk = imports.gi.Gtk;
 
 function MyApplet(metadata, orientation, panel_height, instance_id) {
     this._init(metadata, orientation, panel_height, instance_id);
@@ -19,7 +18,6 @@ MyApplet.prototype = {
         Applet.IconApplet.prototype._init.call(this, orientation, panel_height, instance_id);
 
         try {
-            Gtk.IconTheme.get_default().append_search_path(metadata.path);
             this.set_applet_icon_symbolic_name("windows-quick-list");
             this.set_applet_tooltip(_("All windows"));
             this.menu = new Applet.AppletPopupMenu(this, orientation);

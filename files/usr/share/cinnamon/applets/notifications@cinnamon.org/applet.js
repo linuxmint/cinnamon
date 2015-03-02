@@ -27,7 +27,6 @@ MyApplet.prototype = {
         this.settings.bindProperty(Settings.BindingDirection.IN, "showEmptyTray", "showEmptyTray", this._show_hide_tray, null);
 
         // Layout
-        Gtk.IconTheme.get_default().append_search_path(metadata.path);
         this._orientation = orientation;
         this.menuManager = new PopupMenu.PopupMenuManager(this);
 
