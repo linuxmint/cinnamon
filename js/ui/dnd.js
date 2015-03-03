@@ -93,11 +93,14 @@ const _Draggable = new Lang.Class({
             this.target = target;
         }
 
-        if (!params.manualMode)
-            this.actor.connect('button-press-event',
-                               Lang.bind(this, this._onButtonPress));
+        this.buttonPressEventId = 0;
+        this.destroyEventId = 0;
 
-        this.actor.connect('destroy', Lang.bind(this, function() {
+        if (!params.manualMode)
+            this.buttonPressEventId = this.actor.connect('button-press-event',
+                                                    Lang.bind(this, this._onButtonPress));
+
+        this.destroyEventId = this.actor.connect('destroy', Lang.bind(this, function() {
             this._actorDestroyed = true;
 
             if (this._dragInProgress && this._dragCancellable)
