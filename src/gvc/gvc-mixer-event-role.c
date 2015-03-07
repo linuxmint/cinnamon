@@ -103,6 +103,10 @@ static gboolean
 gvc_mixer_event_role_change_is_muted (GvcMixerStream *stream,
                                       gboolean        is_muted)
 {
+        /* Apply change straight away so that we don't get a race with
+         * gvc_mixer_event_role_push_volume().
+         * See https://bugs.freedesktop.org/show_bug.cgi?id=51413 */
+        gvc_mixer_stream_set_is_muted (stream, is_muted);
         return update_settings (GVC_MIXER_EVENT_ROLE (stream),
                                 is_muted, NULL);
 }
@@ -207,7 +211,7 @@ gvc_mixer_event_role_finalize (GObject *object)
 /**
  * gvc_mixer_event_role_new: (skip)
  * @context:
- * @device:
+ * @index:
  * @channel_map:
  *
  * Returns:

@@ -10,7 +10,7 @@ service_in_files =
 
 -include $(INTROSPECTION_MAKEFILE)
 INTROSPECTION_GIRS =
-INTROSPECTION_SCANNER_ARGS = --warn-all --warn-error --add-include-path=$(srcdir)
+INTROSPECTION_SCANNER_ARGS = --warn-all --add-include-path=$(srcdir)
 INTROSPECTION_COMPILER_ARGS = --includedir=$(srcdir) --includedir=$(MUFFIN_TYPELIB_DIR)
 
 typelibdir = $(pkglibdir)

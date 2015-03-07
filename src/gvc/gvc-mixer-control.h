@@ -24,6 +24,7 @@
 #include <glib-object.h>
 #include "gvc-mixer-stream.h"
 #include "gvc-mixer-card.h"
+#include "gvc-mixer-ui-device.h"
 
 G_BEGIN_DECLS
 
@@ -68,6 +69,18 @@ typedef struct
                                         guint            id);
         void (*default_source_changed) (GvcMixerControl *control,
                                         guint            id);
+        void (*active_output_update)   (GvcMixerControl *control,
+                                        guint            id);
+        void (*active_input_update)    (GvcMixerControl *control,
+                                        guint            id);
+        void (*output_added)           (GvcMixerControl *control,
+                                        guint            id);
+        void (*input_added)            (GvcMixerControl *control,
+                                        guint            id);
+        void (*output_removed)         (GvcMixerControl *control,
+                                        guint            id);
+        void (*input_removed)          (GvcMixerControl *control,
+                                        guint            id);
 } GvcMixerControlClass;
 
 GType               gvc_mixer_control_get_type            (void);
@@ -84,22 +97,37 @@ GSList *            gvc_mixer_control_get_sources         (GvcMixerControl *cont
 GSList *            gvc_mixer_control_get_sink_inputs     (GvcMixerControl *control);
 GSList *            gvc_mixer_control_get_source_outputs  (GvcMixerControl *control);
 
-GvcMixerStream *    gvc_mixer_control_lookup_stream_id    (GvcMixerControl *control,
-                                                           guint            id);
-GvcMixerCard   *    gvc_mixer_control_lookup_card_id      (GvcMixerControl *control,
-                                                           guint            id);
+GvcMixerStream *        gvc_mixer_control_lookup_stream_id          (GvcMixerControl *control,
+                                                                     guint            id);
+GvcMixerCard   *        gvc_mixer_control_lookup_card_id            (GvcMixerControl *control,
+                                                                     guint            id);
+GvcMixerUIDevice *      gvc_mixer_control_lookup_output_id          (GvcMixerControl *control,
+                                                                     guint            id);
+GvcMixerUIDevice *      gvc_mixer_control_lookup_input_id           (GvcMixerControl *control,
+                                                                     guint            id);
+GvcMixerUIDevice *      gvc_mixer_control_lookup_device_from_stream (GvcMixerControl *control,
+                                                                     GvcMixerStream *stream);
 
-GvcMixerStream *    gvc_mixer_control_get_default_sink     (GvcMixerControl *control);
-GvcMixerStream *    gvc_mixer_control_get_default_source   (GvcMixerControl *control);
-GvcMixerStream *    gvc_mixer_control_get_event_sink_input (GvcMixerControl *control);
+GvcMixerStream *        gvc_mixer_control_get_default_sink     (GvcMixerControl *control);
+GvcMixerStream *        gvc_mixer_control_get_default_source   (GvcMixerControl *control);
+GvcMixerStream *        gvc_mixer_control_get_event_sink_input (GvcMixerControl *control);
 
-gboolean            gvc_mixer_control_set_default_sink     (GvcMixerControl *control,
-                                                            GvcMixerStream  *stream);
-gboolean            gvc_mixer_control_set_default_source   (GvcMixerControl *control,
-                                                            GvcMixerStream  *stream);
+gboolean                gvc_mixer_control_set_default_sink     (GvcMixerControl *control,
+                                                                GvcMixerStream  *stream);
+gboolean                gvc_mixer_control_set_default_source   (GvcMixerControl *control,
+                                                                GvcMixerStream  *stream);
 
-gdouble             gvc_mixer_control_get_vol_max_norm      (GvcMixerControl *control);
-gdouble             gvc_mixer_control_get_vol_max_amplified (GvcMixerControl *control);
+gdouble                 gvc_mixer_control_get_vol_max_norm                  (GvcMixerControl *control);
+gdouble                 gvc_mixer_control_get_vol_max_amplified             (GvcMixerControl *control);
+void                    gvc_mixer_control_change_output                     (GvcMixerControl *control,
+                                                                             GvcMixerUIDevice* output);
+void                    gvc_mixer_control_change_input                      (GvcMixerControl *control,
+                                                                             GvcMixerUIDevice* input);
+GvcMixerStream*         gvc_mixer_control_get_stream_from_device            (GvcMixerControl *control,
+                                                                             GvcMixerUIDevice *device);
+gboolean                gvc_mixer_control_change_profile_on_selected_device (GvcMixerControl *control,
+                                                                             GvcMixerUIDevice *device,
+                                                                             const gchar* profile);
 
 GvcMixerControlState gvc_mixer_control_get_state            (GvcMixerControl *control);
 

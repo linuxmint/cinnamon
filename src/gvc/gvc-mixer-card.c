@@ -2,6 +2,7 @@
  *
  * Copyright (C) 2008 William Jon McCann
  * Copyright (C) 2009 Bastien Nocera
+ * Copyright (C) Conor Curran 2011 <conor.curran@canonical.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -49,6 +50,7 @@ struct GvcMixerCardPrivate
         char          *human_profile;
         GList         *profiles;
         pa_operation  *profile_op;
+        GList         *ports;
 };
 
 enum
@@ -274,9 +276,28 @@ gvc_mixer_card_get_profiles (GvcMixerCard *card)
         return card->priv->profiles;
 }
 
-static int
-sort_profiles (GvcMixerCardProfile *a,
-               GvcMixerCardProfile *b)
+
+/**
+ * gvc_mixer_card_get_ports:
+ *
+ * Return value: (transfer none) (element-type GvcMixerCardPort):
+ */
+const GList *
+gvc_mixer_card_get_ports (GvcMixerCard *card)
+{
+        g_return_val_if_fail (GVC_IS_MIXER_CARD (card), NULL);
+        return card->priv->ports;
+}
+
+/**
+ * gvc_mixer_card_profile_compare:
+ *
+ * Return value: 1 if @a has a higher priority, -1 if @b has a higher
+ * priority, 0 if @a and @b have the same priority.
+ */
+int
+gvc_mixer_card_profile_compare (GvcMixerCardProfile *a,
+                                GvcMixerCardProfile *b)
 {
         if (a->priority == b->priority)
                 return 0;
@@ -296,7 +317,40 @@ gvc_mixer_card_set_profiles (GvcMixerCard *card,
         g_return_val_if_fail (GVC_IS_MIXER_CARD (card), FALSE);
         g_return_val_if_fail (card->priv->profiles == NULL, FALSE);
 
-        card->priv->profiles = g_list_sort (profiles, (GCompareFunc) sort_profiles);
+        card->priv->profiles = g_list_sort (profiles, (GCompareFunc) gvc_mixer_card_profile_compare);
+
+        return TRUE;
+}
+
+/**
+ * gvc_mixer_card_get_gicon:
+ * @card:
+ *
+ * Return value: (transfer full) (element-type GIcon):
+ */
+GIcon *
+gvc_mixer_card_get_gicon (GvcMixerCard *card)
+{
+        g_return_val_if_fail (GVC_IS_MIXER_CARD (card), NULL);
+
+        if (card->priv->icon_name == NULL)
+                return NULL;
+
+        return g_themed_icon_new_with_default_fallbacks (card->priv->icon_name);
+}
+
+/**
+ * gvc_mixer_card_set_ports:
+ * @profiles: (transfer full) (element-type GvcMixerCardPort):
+ */
+gboolean
+gvc_mixer_card_set_ports (GvcMixerCard *card,
+                          GList          *ports)
+{
+        g_return_val_if_fail (GVC_IS_MIXER_CARD (card), FALSE);
+        g_return_val_if_fail (card->priv->ports == NULL, FALSE);
+
+        card->priv->ports = ports;
 
         return TRUE;
 }

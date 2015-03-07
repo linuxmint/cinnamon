@@ -3,6 +3,7 @@
  * Copyright (C) 2006-2008 Lennart Poettering
  * Copyright (C) 2008 Sjoerd Simons <sjoerd@luon.net>
  * Copyright (C) 2008 William Jon McCann
+ * Copyright (C) 2012 Conor Curran
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -43,6 +44,7 @@
 #include "gvc-mixer-card-private.h"
 #include "gvc-channel-map-private.h"
 #include "gvc-mixer-control-private.h"
+#include "gvc-mixer-ui-device.h"
 
 #define GVC_MIXER_CONTROL_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), GVC_TYPE_MIXER_CONTROL, GvcMixerControlPrivate))
 
@@ -80,7 +82,20 @@ struct GvcMixerControlPrivate
         GHashTable       *clients;
         GHashTable       *cards;
 
-        GvcMixerStream   *new_default_stream; /* new default stream, used in gvc_mixer_control_set_default_sink () */
+        GvcMixerStream   *new_default_sink_stream; /* new default sink stream, used in gvc_mixer_control_set_default_sink () */
+        GvcMixerStream   *new_default_source_stream; /* new default source stream, used in gvc_mixer_control_set_default_source () */
+
+        GHashTable       *ui_outputs; /* UI visible outputs */
+        GHashTable       *ui_inputs;  /* UI visible inputs */
+
+        /* When we change profile on a device that is not the server default sink,
+         * it will jump back to the default sink set by the server to prevent the
+         * audio setup from being 'outputless'.
+         *
+         * All well and good but then when we get the new stream created for the
+         * new profile how do we know that this is the intended default or selected
+         * device the user wishes to use. */
+        guint            profile_swapping_device_id;
 
         GvcMixerControlState state;
 };
@@ -93,6 +108,12 @@ enum {
         CARD_REMOVED,
         DEFAULT_SINK_CHANGED,
         DEFAULT_SOURCE_CHANGED,
+        ACTIVE_OUTPUT_UPDATE,
+        ACTIVE_INPUT_UPDATE,
+        OUTPUT_ADDED,
+        INPUT_ADDED,
+        OUTPUT_REMOVED,
+        INPUT_REMOVED,
         LAST_SIGNAL
 };
 
@@ -132,15 +153,14 @@ gvc_mixer_control_get_event_sink_input (GvcMixerControl *control)
 
 static void
 gvc_mixer_control_stream_restore_cb (pa_context *c,
+				     GvcMixerStream *new_stream,
                                      const pa_ext_stream_restore_info *info,
-                                     int eol,
-                                     void *userdata)
+                                     GvcMixerControl *control)
 {
         pa_operation *o;
-        GvcMixerControl *control = (GvcMixerControl *) userdata;
         pa_ext_stream_restore_info new_info;
 
-        if (eol || control->priv->new_default_stream == NULL)
+        if (new_stream == NULL)
                 return;
 
         new_info.name = info->name;
@@ -148,7 +168,7 @@ gvc_mixer_control_stream_restore_cb (pa_context *c,
         new_info.volume = info->volume;
         new_info.mute = info->mute;
 
-        new_info.device = gvc_mixer_stream_get_name (control->priv->new_default_stream);
+        new_info.device = gvc_mixer_stream_get_name (new_stream);
 
         o = pa_ext_stream_restore_write (control->priv->pa_context,
                                          PA_UPDATE_REPLACE,
@@ -161,9 +181,98 @@ gvc_mixer_control_stream_restore_cb (pa_context *c,
                 return;
         }
 
-        g_debug ("Changed default device for %s to %s", info->name, info->device);
+        g_debug ("Changed default device for %s to %s", info->name, new_info.device);
 
         pa_operation_unref (o);
+}
+
+static void
+gvc_mixer_control_stream_restore_sink_cb (pa_context *c,
+                                          const pa_ext_stream_restore_info *info,
+                                          int eol,
+                                          void *userdata)
+{
+        GvcMixerControl *control = (GvcMixerControl *) userdata;
+        if (eol || info == NULL || !g_str_has_prefix(info->name, "sink-input-by"))
+                return;
+        gvc_mixer_control_stream_restore_cb (c, control->priv->new_default_sink_stream, info, control);
+}
+
+static void
+gvc_mixer_control_stream_restore_source_cb (pa_context *c,
+                                            const pa_ext_stream_restore_info *info,
+                                            int eol,
+                                            void *userdata)
+{
+        GvcMixerControl *control = (GvcMixerControl *) userdata;
+        if (eol || info == NULL || !g_str_has_prefix(info->name, "source-output-by"))
+                return;
+        gvc_mixer_control_stream_restore_cb (c, control->priv->new_default_source_stream, info, control);
+}
+
+/**
+ * gvc_mixer_control_lookup_device_from_stream:
+ * @control:
+ * @stream:
+ * Returns: (transfer none): a #GvcUIDevice or %NULL
+ */
+GvcMixerUIDevice *
+gvc_mixer_control_lookup_device_from_stream (GvcMixerControl *control,
+                                             GvcMixerStream *stream)
+{
+        GList                   *devices, *d;
+        gboolean                 is_network_stream;
+        const GList             *ports;
+        GvcMixerUIDevice        *ret;
+
+        if (GVC_IS_MIXER_SOURCE (stream))
+               devices = g_hash_table_get_values (control->priv->ui_inputs);
+        else
+               devices = g_hash_table_get_values (control->priv->ui_outputs);
+
+        ret = NULL;
+        ports = gvc_mixer_stream_get_ports (stream);
+        is_network_stream = (ports == NULL);
+
+        for (d = devices; d != NULL; d = d->next) {
+                GvcMixerUIDevice *device = d->data;
+                gint stream_id = G_MAXINT;
+
+                g_object_get (G_OBJECT (device),
+                             "stream-id", &stream_id,
+                              NULL);
+
+                if (is_network_stream &&
+                    stream_id == gvc_mixer_stream_get_id (stream)) {
+                        g_debug ("lookup device from stream - %s - it is a network_stream ",
+                                 gvc_mixer_ui_device_get_description (device));
+                        ret = device;
+                        break;
+                } else if (!is_network_stream) {
+                        const GvcMixerStreamPort *port;
+                        port = gvc_mixer_stream_get_port (stream);
+
+                        if (stream_id == gvc_mixer_stream_get_id (stream) &&
+                            g_strcmp0 (gvc_mixer_ui_device_get_port (device),
+                                       port->port) == 0) {
+                                g_debug ("lookup-device-from-stream found device: device description '%s', device port = '%s', device stream id %i AND stream port = '%s' stream id '%u' and stream description '%s'",
+                                         gvc_mixer_ui_device_get_description (device),
+                                         gvc_mixer_ui_device_get_port (device),
+                                         stream_id,
+                                         port->port,
+                                         gvc_mixer_stream_get_id (stream),
+                                         gvc_mixer_stream_get_description (stream));
+                                ret = device;
+                                break;
+                        }
+                }
+        }
+
+        g_debug ("gvc_mixer_control_lookup_device_from_stream - Could not find a device for stream '%s'",gvc_mixer_stream_get_description (stream));
+
+        g_list_free (devices);
+
+        return ret;
 }
 
 gboolean
@@ -175,6 +284,7 @@ gvc_mixer_control_set_default_sink (GvcMixerControl *control,
         g_return_val_if_fail (GVC_IS_MIXER_CONTROL (control), FALSE);
         g_return_val_if_fail (GVC_IS_MIXER_STREAM (stream), FALSE);
 
+        g_debug ("about to set default sink on server");
         o = pa_context_set_default_sink (control->priv->pa_context,
                                          gvc_mixer_stream_get_name (stream),
                                          NULL,
@@ -187,11 +297,11 @@ gvc_mixer_control_set_default_sink (GvcMixerControl *control,
 
         pa_operation_unref (o);
 
-        control->priv->new_default_stream = stream;
-        g_object_add_weak_pointer (G_OBJECT (stream), (gpointer *) &control->priv->new_default_stream);
+        control->priv->new_default_sink_stream = stream;
+        g_object_add_weak_pointer (G_OBJECT (stream), (gpointer *) &control->priv->new_default_sink_stream);
 
         o = pa_ext_stream_restore_read (control->priv->pa_context,
-                                        gvc_mixer_control_stream_restore_cb,
+                                        gvc_mixer_control_stream_restore_sink_cb,
                                         control);
 
         if (o == NULL) {
@@ -209,6 +319,7 @@ gboolean
 gvc_mixer_control_set_default_source (GvcMixerControl *control,
                                       GvcMixerStream  *stream)
 {
+        GvcMixerUIDevice* input;
         pa_operation *o;
 
         g_return_val_if_fail (GVC_IS_MIXER_CONTROL (control), FALSE);
@@ -224,6 +335,28 @@ gvc_mixer_control_set_default_source (GvcMixerControl *control,
         }
 
         pa_operation_unref (o);
+
+        control->priv->new_default_source_stream = stream;
+        g_object_add_weak_pointer (G_OBJECT (stream), (gpointer *) &control->priv->new_default_source_stream);
+
+        o = pa_ext_stream_restore_read (control->priv->pa_context,
+                                        gvc_mixer_control_stream_restore_source_cb,
+                                        control);
+
+        if (o == NULL) {
+                g_warning ("pa_ext_stream_restore_read() failed: %s",
+                           pa_strerror (pa_context_errno (control->priv->pa_context)));
+                return FALSE;
+        }
+
+        pa_operation_unref (o);
+
+        /* source change successful, update the UI. */
+        input = gvc_mixer_control_lookup_device_from_stream (control, stream);
+        g_signal_emit (G_OBJECT (control),
+                       signals[ACTIVE_INPUT_UPDATE],
+                       0,
+                       gvc_mixer_ui_device_get_id (input));
 
         return TRUE;
 }
@@ -313,6 +446,261 @@ gvc_mixer_control_lookup_card_id (GvcMixerControl *control,
 
         return gvc_mixer_control_lookup_id (control->priv->cards, id);
 }
+
+/**
+ * gvc_mixer_control_lookup_output_id:
+ * @control:
+ * @id:
+ * Returns: (transfer none):
+ */
+GvcMixerUIDevice *
+gvc_mixer_control_lookup_output_id (GvcMixerControl *control,
+                                    guint            id)
+{
+        g_return_val_if_fail (GVC_IS_MIXER_CONTROL (control), NULL);
+
+        return gvc_mixer_control_lookup_id (control->priv->ui_outputs, id);
+}
+
+/**
+ * gvc_mixer_control_lookup_input_id:
+ * @control:
+ * @id:
+ * Returns: (transfer none):
+ */
+GvcMixerUIDevice *
+gvc_mixer_control_lookup_input_id (GvcMixerControl *control,
+                                    guint            id)
+{
+        g_return_val_if_fail (GVC_IS_MIXER_CONTROL (control), NULL);
+
+        return gvc_mixer_control_lookup_id (control->priv->ui_inputs, id);
+}
+
+/**
+ * gvc_mixer_control_get_stream_from_device:
+ * @control:
+ * @device:
+ * Returns: (transfer none):
+ */
+GvcMixerStream *
+gvc_mixer_control_get_stream_from_device (GvcMixerControl *control,
+                                          GvcMixerUIDevice *device)
+{
+        gint stream_id;
+
+        g_return_val_if_fail (GVC_IS_MIXER_CONTROL (control), NULL);
+        g_return_val_if_fail (GVC_IS_MIXER_UI_DEVICE (device), NULL);
+
+        stream_id = gvc_mixer_ui_device_get_stream_id (device);
+
+        if (stream_id == GVC_MIXER_UI_DEVICE_INVALID) {
+                g_debug ("gvc_mixer_control_get_stream_from_device - device has a null stream");
+                return NULL;
+        }
+        return gvc_mixer_control_lookup_stream_id (control, stream_id);
+}
+
+/**
+ * gvc_mixer_control_change_profile_on_selected_device:
+ * @control:
+ * @device:
+ * @profile: Can be null if any profile present on this port is okay
+ * Returns: This method will attempt to swap the profile on the card of
+ * the device with given profile name.  If successfull it will set the
+ * preferred profile on that device so as we know the next time the user
+ * moves to that device it should have this profile active.
+ */
+gboolean
+gvc_mixer_control_change_profile_on_selected_device (GvcMixerControl  *control,
+                                                     GvcMixerUIDevice *device,
+                                                     const gchar      *profile)
+{
+        const gchar         *best_profile;
+        GvcMixerCardProfile *current_profile;
+        GvcMixerCard        *card;
+
+        g_object_get (G_OBJECT (device), "card", &card, NULL);
+        current_profile = gvc_mixer_card_get_profile (card);
+
+        if (current_profile)
+                best_profile = gvc_mixer_ui_device_get_best_profile (device, profile, current_profile->profile);
+        else
+                best_profile = profile;
+
+        g_assert (best_profile);
+
+        g_debug ("Selected '%s', moving to profile '%s' on card '%s' on stream id %i",
+                profile ? profile : "(any)", best_profile,
+                gvc_mixer_card_get_name (card),
+                gvc_mixer_ui_device_get_stream_id (device));
+
+        g_debug ("default sink name = %s and default sink id %u",
+                 control->priv->default_sink_name,
+                 control->priv->default_sink_id);
+
+        control->priv->profile_swapping_device_id = gvc_mixer_ui_device_get_id (device);
+
+        if (gvc_mixer_card_change_profile (card, best_profile)) {
+                gvc_mixer_ui_device_set_user_preferred_profile (device, best_profile);
+                return TRUE;
+        }
+        return FALSE;
+}
+
+/**
+ * gvc_mixer_control_change_output:
+ * @control:
+ * @output:
+ * This method is called from the UI when the user selects a previously unselected device.
+ * - Firstly it queries the stream from the device.
+ *   - It assumes that if the stream is null that it cannot be a bluetooth or network stream (they never show unless they have valid sinks and sources)
+ *   In the scenario of a NULL stream on the device
+ *        - It fetches the device's preferred profile or if NUll the profile with the highest priority on that device.
+ *        - It then caches this device in control->priv->cached_desired_output_id so that when the update_sink triggered
+ *          from when we attempt to change profile we will know exactly what device to highlight on that stream.
+ *        - It attempts to swap the profile on the card from that device and returns.
+ * - Next, it handles network or bluetooth streams that only require their stream to be made the default.
+ * - Next it deals with port changes so if the stream's active port is not the same as the port on the device
+ *   it will attempt to change the port on that stream to be same as the device. If this fails it will return.
+ * - Finally it will set this new stream to be the default stream and emit a signal for the UI confirming the active output device.
+ */
+void
+gvc_mixer_control_change_output (GvcMixerControl *control,
+                                 GvcMixerUIDevice* output)
+{
+        GvcMixerStream           *stream;
+        GvcMixerStream           *default_stream;
+        const GvcMixerStreamPort *active_port;
+        const gchar              *output_port;
+
+        g_debug ("control change output");
+
+        stream = gvc_mixer_control_get_stream_from_device (control, output);
+        if (stream == NULL) {
+                gvc_mixer_control_change_profile_on_selected_device (control,
+                        output, NULL);
+                return;
+        }
+
+        /* Handle a network sink as a portless or cardless device */
+        if (!gvc_mixer_ui_device_has_ports (output)) {
+                g_debug ("Did we try to move to a software/bluetooth sink ?");
+                if (gvc_mixer_control_set_default_sink (control, stream)) {
+                        /* sink change was successful,  update the UI.*/
+                        g_signal_emit (G_OBJECT (control),
+                                       signals[ACTIVE_OUTPUT_UPDATE],
+                                       0,
+                                       gvc_mixer_ui_device_get_id (output));
+                }
+                else {
+                        g_warning ("Failed to set default sink with stream from output %s",
+                                   gvc_mixer_ui_device_get_description (output));
+                }
+                return;
+        }
+
+        active_port = gvc_mixer_stream_get_port (stream);
+        output_port = gvc_mixer_ui_device_get_port (output);
+        /* First ensure the correct port is active on the sink */
+        if (g_strcmp0 (active_port->port, output_port) != 0) {
+                g_debug ("Port change, switch to = %s", output_port);
+                if (gvc_mixer_stream_change_port (stream, output_port) == FALSE) {
+                        g_warning ("Could not change port !");
+                        return;
+                }
+        }
+
+        default_stream = gvc_mixer_control_get_default_sink (control);
+
+        /* Finally if we are not on the correct stream, swap over. */
+        if (stream != default_stream) {
+                GvcMixerUIDevice* output;
+
+                g_debug ("Attempting to swap over to stream %s ",
+                         gvc_mixer_stream_get_description (stream));
+                if (gvc_mixer_control_set_default_sink (control, stream)) {
+                        output = gvc_mixer_control_lookup_device_from_stream (control, stream);
+                        g_signal_emit (G_OBJECT (control),
+                                       signals[ACTIVE_OUTPUT_UPDATE],
+                                       0,
+                                       gvc_mixer_ui_device_get_id (output));
+                } else {
+                        /* If the move failed for some reason reset the UI. */
+                        output = gvc_mixer_control_lookup_device_from_stream (control, default_stream);
+                        g_signal_emit (G_OBJECT (control),
+                                       signals[ACTIVE_OUTPUT_UPDATE],
+                                       0,
+                                       gvc_mixer_ui_device_get_id (output));
+                }
+        }
+}
+
+
+/**
+ * gvc_mixer_control_change_input:
+ * @control:
+ * @input:
+ * This method is called from the UI when the user selects a previously unselected device.
+ * - Firstly it queries the stream from the device.
+ *   - It assumes that if the stream is null that it cannot be a bluetooth or network stream (they never show unless they have valid sinks and sources)
+ *   In the scenario of a NULL stream on the device
+ *        - It fetches the device's preferred profile or if NUll the profile with the highest priority on that device.
+ *        - It then caches this device in control->priv->cached_desired_input_id so that when the update_source triggered
+ *          from when we attempt to change profile we will know exactly what device to highlight on that stream.
+ *        - It attempts to swap the profile on the card from that device and returns.
+ * - Next, it handles network or bluetooth streams that only require their stream to be made the default.
+ * - Next it deals with port changes so if the stream's active port is not the same as the port on the device
+ *   it will attempt to change the port on that stream to be same as the device. If this fails it will return.
+ * - Finally it will set this new stream to be the default stream and emit a signal for the UI confirming the active input device.
+ */
+void
+gvc_mixer_control_change_input (GvcMixerControl *control,
+                                GvcMixerUIDevice* input)
+{
+        GvcMixerStream           *stream;
+        GvcMixerStream           *default_stream;
+        const GvcMixerStreamPort *active_port;
+        const gchar              *input_port;
+
+        stream = gvc_mixer_control_get_stream_from_device (control, input);
+        if (stream == NULL) {
+                gvc_mixer_control_change_profile_on_selected_device (control,
+                        input, NULL);
+                return;
+        }
+
+        /* Handle a network sink as a portless/cardless device */
+        if (!gvc_mixer_ui_device_has_ports (input)) {
+                g_debug ("Did we try to move to a software/bluetooth source ?");
+                if (! gvc_mixer_control_set_default_source (control, stream)) {
+                        g_warning ("Failed to set default source with stream from input %s",
+                                   gvc_mixer_ui_device_get_description (input));
+                }
+                return;
+        }
+
+        active_port = gvc_mixer_stream_get_port (stream);
+        input_port = gvc_mixer_ui_device_get_port (input);
+        /* First ensure the correct port is active on the sink */
+        if (g_strcmp0 (active_port->port, input_port) != 0) {
+                g_debug ("Port change, switch to = %s", input_port);
+                if (gvc_mixer_stream_change_port (stream, input_port) == FALSE) {
+                        g_warning ("Could not change port!");
+                        return;
+                }
+        }
+
+        default_stream = gvc_mixer_control_get_default_source (control);
+
+        /* Finally if we are not on the correct stream, swap over. */
+        if (stream != default_stream) {
+                g_debug ("change-input - attempting to swap over to stream %s",
+                         gvc_mixer_stream_get_description (stream));
+                gvc_mixer_control_set_default_source (control, stream);
+        }
+}
+
 
 static void
 listify_hash_values_hfunc (gpointer key,
@@ -511,6 +899,30 @@ gvc_mixer_control_get_state (GvcMixerControl *control)
         return control->priv->state;
 }
 
+static void
+on_default_source_port_notify (GObject        *object,
+                               GParamSpec     *pspec,
+                               GvcMixerControl *control)
+{
+        char             *port;
+        GvcMixerUIDevice *input;
+
+        g_object_get (object, "port", &port, NULL);
+        input = gvc_mixer_control_lookup_device_from_stream (control,
+                                                             GVC_MIXER_STREAM (object));
+
+        g_debug ("on_default_source_port_notify - moved to port '%s' which SHOULD ?? correspond to output '%s'",
+                 port,
+                 gvc_mixer_ui_device_get_description (input));
+
+        g_signal_emit (G_OBJECT (control),
+                       signals[ACTIVE_INPUT_UPDATE],
+                       0,
+                       gvc_mixer_ui_device_get_id (input));
+
+        g_free (port);
+}
+
 
 static void
 _set_default_source (GvcMixerControl *control,
@@ -531,13 +943,56 @@ _set_default_source (GvcMixerControl *control,
         new_id = gvc_mixer_stream_get_id (stream);
 
         if (control->priv->default_source_id != new_id) {
+                GvcMixerUIDevice *input;
                 control->priv->default_source_id = new_id;
                 control->priv->default_source_is_set = TRUE;
                 g_signal_emit (control,
                                signals[DEFAULT_SOURCE_CHANGED],
                                0,
                                new_id);
+
+                if (control->priv->default_source_is_set) {
+                        g_signal_handlers_disconnect_by_func (gvc_mixer_control_get_default_source (control),
+                                                              on_default_source_port_notify,
+                                                              control);
+                }
+
+                g_signal_connect (stream,
+                                  "notify::port",
+                                  G_CALLBACK (on_default_source_port_notify),
+                                  control);
+
+                input = gvc_mixer_control_lookup_device_from_stream (control, stream);
+
+                g_signal_emit (G_OBJECT (control),
+                               signals[ACTIVE_INPUT_UPDATE],
+                               0,
+                               gvc_mixer_ui_device_get_id (input));
         }
+}
+
+static void
+on_default_sink_port_notify (GObject        *object,
+                             GParamSpec     *pspec,
+                             GvcMixerControl *control)
+{
+        char             *port;
+        GvcMixerUIDevice *output;
+
+        g_object_get (object, "port", &port, NULL);
+
+        output = gvc_mixer_control_lookup_device_from_stream (control,
+                                                              GVC_MIXER_STREAM (object));
+        if (output != NULL) {
+                g_debug ("on_default_sink_port_notify - moved to port %s - which SHOULD correspond to output %s",
+                         port,
+                         gvc_mixer_ui_device_get_description (output));
+                g_signal_emit (G_OBJECT (control),
+                               signals[ACTIVE_OUTPUT_UPDATE],
+                               0,
+                               gvc_mixer_ui_device_get_id (output));
+        }
+        g_free (port);
 }
 
 static void
@@ -563,12 +1018,34 @@ _set_default_sink (GvcMixerControl *control,
         new_id = gvc_mixer_stream_get_id (stream);
 
         if (control->priv->default_sink_id != new_id) {
+                GvcMixerUIDevice *output;
+                if (control->priv->default_sink_is_set) {
+                        g_signal_handlers_disconnect_by_func (gvc_mixer_control_get_default_sink (control),
+                                                              on_default_sink_port_notify,
+                                                              control);
+                }
+
                 control->priv->default_sink_id = new_id;
+
                 control->priv->default_sink_is_set = TRUE;
                 g_signal_emit (control,
                                signals[DEFAULT_SINK_CHANGED],
                                0,
                                new_id);
+
+                g_signal_connect (stream,
+                                  "notify::port",
+                                  G_CALLBACK (on_default_sink_port_notify),
+                                  control);
+
+                output = gvc_mixer_control_lookup_device_from_stream (control, stream);
+
+                g_debug ("active_sink change");
+
+                g_signal_emit (G_OBJECT (control),
+                               signals[ACTIVE_OUTPUT_UPDATE],
+                               0,
+                               gvc_mixer_ui_device_get_id (output));
         }
 }
 
@@ -590,7 +1067,7 @@ _stream_has_name (gpointer        key,
         return FALSE;
 }
 
-static GvcMixerStream  *
+static GvcMixerStream *
 find_stream_for_name (GvcMixerControl *control,
                       const char      *name)
 {
@@ -659,6 +1136,7 @@ update_server (GvcMixerControl      *control,
                 update_default_source_from_name (control, info->default_source_name);
         }
         if (info->default_sink_name != NULL) {
+                g_debug ("update server");
                 update_default_sink_from_name (control, info->default_sink_name);
         }
 }
@@ -699,6 +1177,201 @@ add_stream (GvcMixerControl *control,
                        signals[STREAM_ADDED],
                        0,
                        gvc_mixer_stream_get_id (stream));
+}
+
+/* This method will match individual stream ports against its corresponding device
+ * It does this by:
+ * - iterates through our devices and finds the one where the card-id on the device is the same as the card-id on the stream
+ *   and the port-name on the device is the same as the streamport-name.
+ * This should always find a match and is used exclusively by sync_devices().
+ */
+static gboolean
+match_stream_with_devices (GvcMixerControl    *control,
+                           GvcMixerStreamPort *stream_port,
+                           GvcMixerStream     *stream)
+{
+        GList                   *devices, *d;
+        guint                    stream_card_id;
+        guint                    stream_id;
+        gboolean                 in_possession = FALSE;
+
+        stream_id      =  gvc_mixer_stream_get_id (stream);
+        stream_card_id =  gvc_mixer_stream_get_card_index (stream);
+
+        devices  = g_hash_table_get_values (GVC_IS_MIXER_SOURCE (stream) ? control->priv->ui_inputs : control->priv->ui_outputs);
+
+        for (d = devices; d != NULL; d = d->next) {
+                GvcMixerUIDevice *device;
+                gint              device_stream_id;
+                gchar            *device_port_name;
+                gchar            *origin;
+                gchar            *description;
+                GvcMixerCard     *card;
+                gint              card_id;
+
+                device = d->data;
+                g_object_get (G_OBJECT (device),
+                             "stream-id", &device_stream_id,
+                             "card", &card,
+                             "origin", &origin,
+                             "description", &description,
+                             "port-name", &device_port_name,
+                              NULL);
+
+                card_id = gvc_mixer_card_get_index (card);
+
+                g_debug ("Attempt to match_stream update_with_existing_outputs - Try description : '%s', origin : '%s', device port name : '%s', card : %p, AGAINST stream port: '%s', sink card id %i",
+                         description,
+                         origin,
+                         device_port_name,
+                         card,
+                         stream_port->port,
+                         stream_card_id);
+
+                if (stream_card_id == card_id &&
+                    g_strcmp0 (device_port_name, stream_port->port) == 0) {
+                        g_debug ("Match device with stream: We have a match with description: '%s', origin: '%s', cached already with device id %u, so set stream id to %i",
+                                 description,
+                                 origin,
+                                 gvc_mixer_ui_device_get_id (device),
+                                 stream_id);
+
+                        g_object_set (G_OBJECT (device),
+                                      "stream-id", (gint)stream_id,
+                                      NULL);
+                        in_possession = TRUE;
+                }
+
+                g_free (device_port_name);
+                g_free (origin);
+                g_free (description);
+
+                if (in_possession == TRUE)
+                        break;
+        }
+
+        g_list_free (devices);
+        return in_possession;
+}
+
+/*
+ * This method attempts to match a sink or source with its relevant UI device.
+ * GvcMixerStream can represent both a sink or source.
+ * Using static card port introspection implies that we know beforehand what
+ * outputs and inputs are available to the user.
+ * But that does not mean that all of these inputs and outputs are available to be used.
+ * For instance we might be able to see that there is a HDMI port available but if
+ * we are on the default analog stereo output profile there is no valid sink for
+ * that HDMI device. We first need to change profile and when update_sink() is called
+ * only then can we match the new hdmi sink with its corresponding device.
+ *
+ * Firstly it checks to see if the incoming stream has no ports.
+ * - If a stream has no ports but has a valid card ID (bluetooth), it will attempt
+ *   to match the device with the stream using the card id.
+ * - If a stream has no ports and no valid card id, it goes ahead and makes a new
+ *   device (software/network devices are only detectable at the sink/source level)
+ * If the stream has ports it will match each port against the stream using match_stream_with_devices().
+ *
+ * This method should always find a match.
+ */
+static void
+sync_devices (GvcMixerControl *control,
+              GvcMixerStream* stream)
+{
+        /* Go through ports to see what outputs can be created. */
+        const GList *stream_ports;
+        const GList *n = NULL;
+        gboolean     is_output = !GVC_IS_MIXER_SOURCE (stream);
+        gint         stream_port_count = 0;
+
+        stream_ports = gvc_mixer_stream_get_ports (stream);
+
+        if (stream_ports == NULL) {
+                GvcMixerUIDevice *device;
+                /* Bluetooth, no ports but a valid card */
+                if (gvc_mixer_stream_get_card_index (stream) != PA_INVALID_INDEX) {
+                        GList *devices, *d;
+                        gboolean in_possession = FALSE;
+
+                        devices = g_hash_table_get_values (is_output ? control->priv->ui_outputs : control->priv->ui_inputs);
+
+                        for (d = devices; d != NULL; d = d->next) {
+                                GvcMixerCard *card;
+                                gint card_id;
+
+                                device = d->data;
+
+                                g_object_get (G_OBJECT (device),
+                                             "card", &card,
+                                              NULL);
+                                card_id = gvc_mixer_card_get_index (card);
+                                g_debug ("sync devices, device description - '%s', device card id - %i, stream description - %s, stream card id - %i",
+                                         gvc_mixer_ui_device_get_description (device),
+                                         card_id,
+                                         gvc_mixer_stream_get_description (stream),
+                                         gvc_mixer_stream_get_card_index (stream));
+                                if (card_id == gvc_mixer_stream_get_card_index (stream)) {
+                                        in_possession = TRUE;
+                                        break;
+                                }
+                        }
+                        g_list_free (devices);
+
+                        if (!in_possession) {
+                                g_warning ("Couldn't match the portless stream (with card) - '%s' is it an input ? -> %i, streams card id -> %i",
+                                           gvc_mixer_stream_get_description (stream),
+                                           GVC_IS_MIXER_SOURCE (stream),
+                                           gvc_mixer_stream_get_card_index (stream));
+                                return;
+                        }
+
+                        g_object_set (G_OBJECT (device),
+                                      "stream-id", (gint)gvc_mixer_stream_get_id (stream),
+                                      "description", gvc_mixer_stream_get_description (stream),
+                                      "origin", "", /*Leave it empty for these special cases*/
+                                      "port-name", NULL,
+                                      "port-available", TRUE,
+                                      NULL);
+                } else { /* Network sink/source has no ports and no card. */
+                        GObject *object;
+
+                        object = g_object_new (GVC_TYPE_MIXER_UI_DEVICE,
+                                               "stream-id", (gint)gvc_mixer_stream_get_id (stream),
+                                               "description", gvc_mixer_stream_get_description (stream),
+                                               "origin", "", /* Leave it empty for these special cases */
+                                               "port-name", NULL,
+                                               "port-available", TRUE,
+                                                NULL);
+                        device = GVC_MIXER_UI_DEVICE (object);
+
+                        g_hash_table_insert (is_output ? control->priv->ui_outputs : control->priv->ui_inputs,
+                                             GUINT_TO_POINTER (gvc_mixer_ui_device_get_id (device)),
+                                             g_object_ref (device));
+
+                }
+                g_signal_emit (G_OBJECT (control),
+                               signals[is_output ? OUTPUT_ADDED : INPUT_ADDED],
+                               0,
+                               gvc_mixer_ui_device_get_id (device));
+
+                return;
+        }
+
+        /* Go ahead and make sure to match each port against a previously created device */
+        for (n = stream_ports; n != NULL; n = n->next) {
+
+                GvcMixerStreamPort *stream_port;
+                stream_port = n->data;
+                stream_port_count ++;
+
+                if (match_stream_with_devices (control, stream_port, stream))
+                        continue;
+
+                g_warning ("Sync_devices: Failed to match stream id: %u, description: '%s', origin: '%s'",
+                           gvc_mixer_stream_get_id (stream),
+                           stream_port->human_port,
+                           gvc_mixer_stream_get_description (stream));
+        }
 }
 
 static void
@@ -753,14 +1426,17 @@ set_icon_name_from_proplist (GvcMixerStream *stream,
         gvc_mixer_stream_set_icon_name (stream, t);
 }
 
+/*
+ * Called when anything changes with a sink.
+ */
 static void
 update_sink (GvcMixerControl    *control,
              const pa_sink_info *info)
 {
-        GvcMixerStream *stream;
+        GvcMixerStream  *stream;
         gboolean        is_new;
         pa_volume_t     max_volume;
-        GvcChannelMap  *map;
+        GvcChannelMap   *map;
         char            map_buff[PA_CHANNEL_MAP_SNPRINT_MAX];
 
         pa_channel_map_snprint (map_buff, PA_CHANNEL_MAP_SNPRINT_MAX, &info->channel_map);
@@ -776,17 +1452,16 @@ update_sink (GvcMixerControl    *control,
         is_new = FALSE;
         stream = g_hash_table_lookup (control->priv->sinks,
                                       GUINT_TO_POINTER (info->index));
+
         if (stream == NULL) {
-#if PA_MICRO > 15
                 GList *list = NULL;
                 guint i;
-#endif /* PA_MICRO > 15 */
 
                 map = gvc_channel_map_new_from_pa_channel_map (&info->channel_map);
                 stream = gvc_mixer_sink_new (control->priv->pa_context,
                                              info->index,
                                              map);
-#if PA_MICRO > 15
+
                 for (i = 0; i < info->n_ports; i++) {
                         GvcMixerStreamPort *port;
 
@@ -794,12 +1469,15 @@ update_sink (GvcMixerControl    *control,
                         port->port = g_strdup (info->ports[i]->name);
                         port->human_port = g_strdup (info->ports[i]->description);
                         port->priority = info->ports[i]->priority;
+                        port->available = info->ports[i]->available != PA_PORT_AVAILABLE_NO;
+
                         list = g_list_prepend (list, port);
                 }
                 gvc_mixer_stream_set_ports (stream, list);
-#endif /* PA_MICRO > 15 */
+
                 g_object_unref (map);
                 is_new = TRUE;
+
         } else if (gvc_mixer_stream_is_running (stream)) {
                 /* Ignore events if volume changes are outstanding */
                 g_debug ("Ignoring event, volume changes are outstanding");
@@ -811,20 +1489,59 @@ update_sink (GvcMixerControl    *control,
         gvc_mixer_stream_set_card_index (stream, info->card);
         gvc_mixer_stream_set_description (stream, info->description);
         set_icon_name_from_proplist (stream, info->proplist, "audio-card");
+        gvc_mixer_stream_set_sysfs_path (stream, pa_proplist_gets (info->proplist, "sysfs.path"));
         gvc_mixer_stream_set_volume (stream, (guint)max_volume);
         gvc_mixer_stream_set_is_muted (stream, info->mute);
         gvc_mixer_stream_set_can_decibel (stream, !!(info->flags & PA_SINK_DECIBEL_VOLUME));
         gvc_mixer_stream_set_base_volume (stream, (guint32) info->base_volume);
-#if PA_MICRO > 15
-        if (info->active_port != NULL)
-                gvc_mixer_stream_set_port (stream, info->active_port->name);
-#endif /* PA_MICRO > 15 */
+
+        /* Messy I know but to set the port everytime regardless of whether it has changed will cost us a
+         * port change notify signal which causes the frontend to resync.
+         * Only update the UI when something has changed. */
+        if (info->active_port != NULL) {
+                if (is_new)
+                        gvc_mixer_stream_set_port (stream, info->active_port->name);
+                else {
+                        const GvcMixerStreamPort *active_port;
+                        active_port = gvc_mixer_stream_get_port (stream);
+                        if (active_port == NULL ||
+                            g_strcmp0 (active_port->port, info->active_port->name) != 0) {
+                                g_debug ("update sink - apparently a port update");
+                                gvc_mixer_stream_set_port (stream, info->active_port->name);
+                        }
+                }
+        }
 
         if (is_new) {
+                g_debug ("update sink - is new");
+
                 g_hash_table_insert (control->priv->sinks,
                                      GUINT_TO_POINTER (info->index),
                                      g_object_ref (stream));
                 add_stream (control, stream);
+                /* Always sink on a new stream to able to assign the right stream id
+                 * to the appropriate outputs (multiple potential outputs per stream). */
+                sync_devices (control, stream);
+        }
+
+        /*
+         * When we change profile on a device that is not the server default sink,
+         * it will jump back to the default sink set by the server to prevent the audio setup from being 'outputless'.
+         * All well and good but then when we get the new stream created for the new profile how do we know
+         * that this is the intended default or selected device the user wishes to use.
+         * This is messy but it's the only reliable way that it can be done without ripping the whole thing apart.
+         */
+        if (control->priv->profile_swapping_device_id != GVC_MIXER_UI_DEVICE_INVALID) {
+                GvcMixerUIDevice *dev = NULL;
+                dev = gvc_mixer_control_lookup_output_id (control, control->priv->profile_swapping_device_id);
+                if (dev != NULL) {
+                        /* now check to make sure this new stream is the same stream just matched and set on the device object */
+                        if (gvc_mixer_ui_device_get_stream_id (dev) == gvc_mixer_stream_get_id (stream)) {
+                                g_debug ("Looks like we profile swapped on a non server default sink");
+                                gvc_mixer_control_set_default_sink (control, stream);
+                        }
+                }
+                control->priv->profile_swapping_device_id = GVC_MIXER_UI_DEVICE_INVALID;
         }
 
         if (control->priv->default_sink_name != NULL
@@ -835,6 +1552,7 @@ update_sink (GvcMixerControl    *control,
 
         if (map == NULL)
                 map = (GvcChannelMap *) gvc_mixer_stream_get_channel_map (stream);
+
         gvc_channel_map_volume_changed (map, &info->volume, FALSE);
 }
 
@@ -863,17 +1581,15 @@ update_source (GvcMixerControl      *control,
         stream = g_hash_table_lookup (control->priv->sources,
                                       GUINT_TO_POINTER (info->index));
         if (stream == NULL) {
-#if PA_MICRO > 15
                 GList *list = NULL;
                 guint i;
-#endif /* PA_MICRO > 15 */
                 GvcChannelMap *map;
 
                 map = gvc_channel_map_new_from_pa_channel_map (&info->channel_map);
                 stream = gvc_mixer_source_new (control->priv->pa_context,
                                                info->index,
                                                map);
-#if PA_MICRO > 15
+
                 for (i = 0; i < info->n_ports; i++) {
                         GvcMixerStreamPort *port;
 
@@ -884,7 +1600,6 @@ update_source (GvcMixerControl      *control,
                         list = g_list_prepend (list, port);
                 }
                 gvc_mixer_stream_set_ports (stream, list);
-#endif /* PA_MICRO > 15 */
 
                 g_object_unref (map);
                 is_new = TRUE;
@@ -904,18 +1619,44 @@ update_source (GvcMixerControl      *control,
         gvc_mixer_stream_set_is_muted (stream, info->mute);
         gvc_mixer_stream_set_can_decibel (stream, !!(info->flags & PA_SOURCE_DECIBEL_VOLUME));
         gvc_mixer_stream_set_base_volume (stream, (guint32) info->base_volume);
-#if PA_MICRO > 15
-        if (info->active_port != NULL)
-                gvc_mixer_stream_set_port (stream, info->active_port->name);
-#endif /* PA_MICRO > 15 */
+        g_debug ("update source");
+
+        if (info->active_port != NULL) {
+                if (is_new)
+                        gvc_mixer_stream_set_port (stream, info->active_port->name);
+                else {
+                        const GvcMixerStreamPort *active_port;
+                        active_port = gvc_mixer_stream_get_port (stream);
+                        if (active_port == NULL ||
+                            g_strcmp0 (active_port->port, info->active_port->name) != 0) {
+                                g_debug ("update source - apparently a port update");
+                                gvc_mixer_stream_set_port (stream, info->active_port->name);
+                        }
+                }
+        }
 
         if (is_new) {
                 g_hash_table_insert (control->priv->sources,
                                      GUINT_TO_POINTER (info->index),
                                      g_object_ref (stream));
                 add_stream (control, stream);
+                sync_devices (control, stream);
         }
 
+        if (control->priv->profile_swapping_device_id != GVC_MIXER_UI_DEVICE_INVALID) {
+                GvcMixerUIDevice *dev = NULL;
+
+                dev = gvc_mixer_control_lookup_input_id (control, control->priv->profile_swapping_device_id);
+
+                if (dev != NULL) {
+                        /* now check to make sure this new stream is the same stream just matched and set on the device object */
+                        if (gvc_mixer_ui_device_get_stream_id (dev) == gvc_mixer_stream_get_id (stream)) {
+                                g_debug ("Looks like we profile swapped on a non server default sink");
+                                gvc_mixer_control_set_default_source (control, stream);
+                        }
+                }
+                control->priv->profile_swapping_device_id = GVC_MIXER_UI_DEVICE_INVALID;
+        }
         if (control->priv->default_source_name != NULL
             && info->name != NULL
             && strcmp (control->priv->default_source_name, info->name) == 0) {
@@ -1111,10 +1852,189 @@ card_num_streams_to_status (guint sinks,
         return ret;
 }
 
+// A utility method to gather which card profiles are relevant to the port .
+static GList *
+determine_profiles_for_port (pa_card_port_info *port,
+                             GList* card_profiles)
+{
+        gint i;
+        GList *supported_profiles = NULL;
+        GList *p;
+        for (i = 0; i < port->n_profiles; i++) {
+                for (p = card_profiles; p != NULL; p = p->next) {
+                        GvcMixerCardProfile *prof;
+                        prof = p->data;
+                        if (g_strcmp0 (port->profiles[i]->name, prof->profile) == 0)
+                                supported_profiles = g_list_append (supported_profiles, prof);
+                }
+        }
+        g_debug ("%i profiles supported on port %s",
+                 g_list_length (supported_profiles),
+                 port->description);
+        return g_list_sort (supported_profiles, (GCompareFunc) gvc_mixer_card_profile_compare);
+}
+
+static gboolean
+is_card_port_an_output (GvcMixerCardPort* port)
+{
+        return port->direction == PA_DIRECTION_OUTPUT ? TRUE : FALSE;
+}
+
+/*
+ * This method will create a ui device for the given port.
+ */
+static void
+create_ui_device_from_port (GvcMixerControl* control,
+                            GvcMixerCardPort* port,
+                            GvcMixerCard* card)
+{
+        GvcMixerUIDeviceDirection  direction;
+        GObject                   *object;
+        GvcMixerUIDevice          *uidevice;
+        gboolean                   available = port->available != PA_PORT_AVAILABLE_NO;
+
+        direction = (is_card_port_an_output (port) == TRUE) ? UIDeviceOutput : UIDeviceInput;
+
+        object = g_object_new (GVC_TYPE_MIXER_UI_DEVICE,
+                               "type", (uint)direction,
+                               "card", card,
+                               "port-name", port->port,
+                               "description", port->human_port,
+                               "origin", gvc_mixer_card_get_name (card),
+                               "port-available", available,
+                               NULL);
+
+        uidevice = GVC_MIXER_UI_DEVICE (object);
+        gvc_mixer_ui_device_set_profiles (uidevice, port->profiles);
+
+        g_hash_table_insert (is_card_port_an_output (port) ? control->priv->ui_outputs : control->priv->ui_inputs,
+                             GUINT_TO_POINTER (gvc_mixer_ui_device_get_id (uidevice)),
+                             g_object_ref (uidevice));
+
+
+        if (available) {
+                g_signal_emit (G_OBJECT (control),
+                               signals[is_card_port_an_output (port) ? OUTPUT_ADDED : INPUT_ADDED],
+                               0,
+                               gvc_mixer_ui_device_get_id (uidevice));
+        }
+
+        g_debug ("create_ui_device_from_port, direction %u, description '%s', origin '%s', port available %i", 
+                 direction,
+                 port->human_port,
+                 gvc_mixer_card_get_name (card),
+                 available);
+}
+
+/*
+ * This method will match up GvcMixerCardPorts with existing devices.
+ * A match is achieved if the device's card-id and the port's card-id are the same
+ * && the device's port-name and the card-port's port member are the same.
+ * A signal is then sent adding or removing that device from the UI depending on the availability of the port.
+ */
+static void
+match_card_port_with_existing_device (GvcMixerControl   *control,
+                                      GvcMixerCardPort  *card_port,
+                                      GvcMixerCard      *card,
+                                      gboolean           available)
+{
+        GList                   *d;
+        GList                   *devices;
+        GvcMixerUIDevice        *device;
+        gboolean                 is_output = is_card_port_an_output (card_port);
+
+        devices  = g_hash_table_get_values (is_output ? control->priv->ui_outputs : control->priv->ui_inputs);
+
+        for (d = devices; d != NULL; d = d->next) {
+                GvcMixerCard *device_card;
+                gchar        *device_port_name;
+
+                device = d->data;
+                g_object_get (G_OBJECT (device),
+                             "card", &device_card,
+                             "port-name", &device_port_name,
+                              NULL);
+
+                if (g_strcmp0 (card_port->port, device_port_name) == 0 &&
+                        device_card == card) {
+                        g_debug ("Found the relevant device %s, update its port availability flag to %i, is_output %i",
+                                 device_port_name,
+                                 available,
+                                 is_output);
+                        g_object_set (G_OBJECT (device),
+                                      "port-available", available, NULL);
+                        g_signal_emit (G_OBJECT (control),
+                                       is_output ? signals[available ? OUTPUT_ADDED : OUTPUT_REMOVED] : signals[available ? INPUT_ADDED : INPUT_REMOVED],
+                                       0,
+                                       gvc_mixer_ui_device_get_id (device));
+               }
+               g_free (device_port_name);
+        }
+
+        g_list_free (devices);
+}
+
+static void
+create_ui_device_from_card (GvcMixerControl *control,
+                            GvcMixerCard    *card)
+{
+        GObject          *object;
+        GvcMixerUIDevice *in;
+        GvcMixerUIDevice *out;
+        const GList      *profiles;
+
+        /* For now just create two devices and presume this device is multi directional
+         * Ensure to remove both on card removal (available to false by default) */
+        profiles = gvc_mixer_card_get_profiles (card);
+
+        g_debug ("Portless card just registered - %i", gvc_mixer_card_get_index (card));
+
+        object = g_object_new (GVC_TYPE_MIXER_UI_DEVICE,
+                               "type", UIDeviceInput,
+                               "description", gvc_mixer_card_get_name (card),
+                               "origin", "", /* Leave it empty for these special cases */
+                               "port-name", NULL,
+                               "port-available", FALSE,
+                               "card", card,
+                               NULL);
+        in = GVC_MIXER_UI_DEVICE (object);
+        gvc_mixer_ui_device_set_profiles (in, profiles);
+
+        g_hash_table_insert (control->priv->ui_inputs,
+                             GUINT_TO_POINTER (gvc_mixer_ui_device_get_id (in)),
+                             g_object_ref (in));
+        object = g_object_new (GVC_TYPE_MIXER_UI_DEVICE,
+                               "type", UIDeviceOutput,
+                               "description", gvc_mixer_card_get_name (card),
+                               "origin", "", /* Leave it empty for these special cases */
+                               "port-name", NULL,
+                               "port-available", FALSE,
+                               "card", card,
+                               NULL);
+        out = GVC_MIXER_UI_DEVICE (object);
+        gvc_mixer_ui_device_set_profiles (out, profiles);
+
+        g_hash_table_insert (control->priv->ui_outputs,
+                             GUINT_TO_POINTER (gvc_mixer_ui_device_get_id (out)),
+                             g_object_ref (out));
+}
+
+/*
+ * At this point we can determine all devices available to us (besides network 'ports')
+ * This is done by the following:
+ *
+ * - gvc_mixer_card and gvc_mixer_card_ports are created and relevant setters are called.
+ * - First it checks to see if it's a portless card. Bluetooth devices are portless AFAIHS.
+ *        If so it creates two devices, an input and an output.
+ * - If it's a 'normal' card with ports it will create a new ui-device or
+ *   synchronise port availability with the existing device cached for that port on this card. */
+
 static void
 update_card (GvcMixerControl      *control,
              const pa_card_info   *info)
 {
+        const GList  *card_ports = NULL;
+        const GList  *m = NULL;
         GvcMixerCard *card;
         gboolean      is_new = FALSE;
 #if 1
@@ -1145,11 +2065,12 @@ update_card (GvcMixerControl      *control,
         card = g_hash_table_lookup (control->priv->cards,
                                     GUINT_TO_POINTER (info->index));
         if (card == NULL) {
-                GList *list = NULL;
+                GList *profile_list = NULL;
+                GList *port_list = NULL;
 
                 for (i = 0; i < info->n_profiles; i++) {
-                        struct pa_card_profile_info pi = info->profiles[i];
                         GvcMixerCardProfile *profile;
+                        struct pa_card_profile_info pi = info->profiles[i];
 
                         profile = g_new0 (GvcMixerCardProfile, 1);
                         profile->profile = g_strdup (pi.name);
@@ -1158,11 +2079,24 @@ update_card (GvcMixerControl      *control,
                         profile->n_sinks = pi.n_sinks;
                         profile->n_sources = pi.n_sources;
                         profile->priority = pi.priority;
-                        list = g_list_prepend (list, profile);
+                        profile_list = g_list_prepend (profile_list, profile);
                 }
                 card = gvc_mixer_card_new (control->priv->pa_context,
                                            info->index);
-                gvc_mixer_card_set_profiles (card, list);
+                gvc_mixer_card_set_profiles (card, profile_list);
+
+                for (i = 0; i < info->n_ports; i++) {
+                        GvcMixerCardPort *port;
+                        port = g_new0 (GvcMixerCardPort, 1);
+                        port->port = g_strdup (info->ports[i]->name);
+                        port->human_port = g_strdup (info->ports[i]->description);
+                        port->priority = info->ports[i]->priority;
+                        port->available = info->ports[i]->available;
+                        port->direction = info->ports[i]->direction;
+                        port->profiles = determine_profiles_for_port (info->ports[i], profile_list);
+                        port_list = g_list_prepend (port_list, port);
+                }
+                gvc_mixer_card_set_ports (card, port_list);
                 is_new = TRUE;
         }
 
@@ -1174,6 +2108,37 @@ update_card (GvcMixerControl      *control,
                 g_hash_table_insert (control->priv->cards,
                                      GUINT_TO_POINTER (info->index),
                                      g_object_ref (card));
+        }
+
+        card_ports = gvc_mixer_card_get_ports (card);
+
+        if (card_ports == NULL && is_new) {
+                g_debug ("Portless card just registered - %s", gvc_mixer_card_get_name (card));
+                create_ui_device_from_card (control, card);
+        }
+
+        for (m = card_ports; m != NULL; m = m->next) {
+                GvcMixerCardPort *card_port;
+                card_port = m->data;
+                if (is_new)
+                        create_ui_device_from_port (control, card_port, card);
+                else {
+                        for (i = 0; i < info->n_ports; i++) {
+                                if (g_strcmp0 (card_port->port, info->ports[i]->name) == 0) {
+                                        if ((card_port->available == PA_PORT_AVAILABLE_NO) !=  (info->ports[i]->available == PA_PORT_AVAILABLE_NO)) {
+                                                card_port->available = info->ports[i]->available;
+                                                g_debug ("sync port availability on card %i, card port name '%s', new available value %i",
+                                                          gvc_mixer_card_get_index (card),
+                                                          card_port->port,
+                                                          card_port->available);
+                                                match_card_port_with_existing_device (control,
+                                                                                      card_port,
+                                                                                      card,
+                                                                                      card_port->available != PA_PORT_AVAILABLE_NO);
+                                        }
+                                }
+                        }
+                }
         }
         g_signal_emit (G_OBJECT (control),
                        signals[CARD_ADDED],
@@ -1341,7 +2306,7 @@ _pa_context_get_server_info_cb (pa_context           *context,
                 g_warning ("Server info callback failure");
                 return;
         }
-
+        g_debug ("get server info");
         update_server (control, i);
         dec_outstanding (control);
 }
@@ -1395,7 +2360,7 @@ update_event_role_stream (GvcMixerControl                  *control,
         max_volume = pa_cvolume_max (&info->volume);
 
         gvc_mixer_stream_set_name (stream, _("System Sounds"));
-        gvc_mixer_stream_set_icon_name (stream, "multimedia-volume-control");
+        gvc_mixer_stream_set_icon_name (stream, "cin-multimedia-volume-control");
         gvc_mixer_stream_set_volume (stream, (guint)max_volume);
         gvc_mixer_stream_set_is_muted (stream, info->mute);
 
@@ -1628,6 +2593,32 @@ static void
 remove_card (GvcMixerControl *control,
              guint            index)
 {
+
+        GList *devices, *d;
+
+        devices = g_list_concat (g_hash_table_get_values (control->priv->ui_inputs),
+                                 g_hash_table_get_values (control->priv->ui_outputs));
+
+        for (d = devices; d != NULL; d = d->next) {
+                GvcMixerCard *card;
+                GvcMixerUIDevice *device = d->data;
+
+                g_object_get (G_OBJECT (device), "card", &card, NULL);
+
+                if (gvc_mixer_card_get_index (card) == index) {
+                        g_signal_emit (G_OBJECT (control),
+                                       signals[gvc_mixer_ui_device_is_output (device) ? OUTPUT_REMOVED : INPUT_REMOVED],
+                                       0,
+                                       gvc_mixer_ui_device_get_id (device));
+                        g_debug ("Card removal remove device %s",
+                                 gvc_mixer_ui_device_get_description (device));
+                        g_hash_table_remove (gvc_mixer_ui_device_is_output (device) ? control->priv->ui_outputs : control->priv->ui_inputs,
+                                             GUINT_TO_POINTER (gvc_mixer_ui_device_get_id (device)));
+                }
+        }
+
+        g_list_free (devices);
+
         g_hash_table_remove (control->priv->cards,
                              GUINT_TO_POINTER (index));
 
@@ -1641,17 +2632,44 @@ static void
 remove_sink (GvcMixerControl *control,
              guint            index)
 {
-        GvcMixerStream *stream;
+        GvcMixerStream   *stream;
+        GvcMixerUIDevice *device;
 
-#if 0
         g_debug ("Removing sink: index=%u", index);
-#endif
 
         stream = g_hash_table_lookup (control->priv->sinks,
                                       GUINT_TO_POINTER (index));
-        if (stream == NULL) {
+        if (stream == NULL)
                 return;
+
+        device = gvc_mixer_control_lookup_device_from_stream (control, stream);
+
+        if (device != NULL) {
+                gvc_mixer_ui_device_invalidate_stream (device);
+                if (!gvc_mixer_ui_device_has_ports (device)) {
+                        g_signal_emit (G_OBJECT (control),
+                                       signals[OUTPUT_REMOVED],
+                                       0,
+                                       gvc_mixer_ui_device_get_id (device));
+                } else {
+                        GList *devices, *d;
+
+                        devices = g_hash_table_get_values (control->priv->ui_outputs);
+
+                        for (d = devices; d != NULL; d = d->next) {
+                                gint stream_id = GVC_MIXER_UI_DEVICE_INVALID;
+                                device = d->data;
+                                g_object_get (G_OBJECT (device),
+                                             "stream-id", &stream_id,
+                                              NULL);
+                                if (stream_id == gvc_mixer_stream_get_id (stream))
+                                        gvc_mixer_ui_device_invalidate_stream (device);
+                        }
+
+                        g_list_free (devices);
+                }
         }
+
         g_hash_table_remove (control->priv->sinks,
                              GUINT_TO_POINTER (index));
 
@@ -1662,17 +2680,44 @@ static void
 remove_source (GvcMixerControl *control,
                guint            index)
 {
-        GvcMixerStream *stream;
+        GvcMixerStream   *stream;
+        GvcMixerUIDevice *device;
 
-#if 0
         g_debug ("Removing source: index=%u", index);
-#endif
 
         stream = g_hash_table_lookup (control->priv->sources,
                                       GUINT_TO_POINTER (index));
-        if (stream == NULL) {
+        if (stream == NULL)
                 return;
+
+        device = gvc_mixer_control_lookup_device_from_stream (control, stream);
+
+        if (device != NULL) {
+                gvc_mixer_ui_device_invalidate_stream (device);
+                if (!gvc_mixer_ui_device_has_ports (device)) {
+                        g_signal_emit (G_OBJECT (control),
+                                       signals[INPUT_REMOVED],
+                                       0,
+                                       gvc_mixer_ui_device_get_id (device));
+                } else {
+                        GList *devices, *d;
+
+                        devices = g_hash_table_get_values (control->priv->ui_inputs);
+
+                        for (d = devices; d != NULL; d = d->next) {
+                                gint stream_id = GVC_MIXER_UI_DEVICE_INVALID;
+                                device = d->data;
+                                g_object_get (G_OBJECT (device),
+                                             "stream-id", &stream_id,
+                                              NULL);
+                                if (stream_id == gvc_mixer_stream_get_id (stream))
+                                        gvc_mixer_ui_device_invalidate_stream (device);
+                        }
+
+                        g_list_free (devices);
+                }
         }
+
         g_hash_table_remove (control->priv->sources,
                              GUINT_TO_POINTER (index));
 
@@ -1685,9 +2730,8 @@ remove_sink_input (GvcMixerControl *control,
 {
         GvcMixerStream *stream;
 
-#if 0
         g_debug ("Removing sink input: index=%u", index);
-#endif
+
         stream = g_hash_table_lookup (control->priv->sink_inputs,
                                       GUINT_TO_POINTER (index));
         if (stream == NULL) {
@@ -1705,9 +2749,7 @@ remove_source_output (GvcMixerControl *control,
 {
         GvcMixerStream *stream;
 
-#if 0
         g_debug ("Removing source output: index=%u", index);
-#endif
 
         stream = g_hash_table_lookup (control->priv->source_outputs,
                                       GUINT_TO_POINTER (index));
@@ -1810,12 +2852,13 @@ gvc_mixer_control_ready (GvcMixerControl *control)
         pa_operation_unref (o);
 
         req_update_server_info (control, -1);
+        req_update_card (control, -1);
         req_update_client_info (control, -1);
         req_update_sink_info (control, -1);
         req_update_source_info (control, -1);
         req_update_sink_input_info (control, -1);
         req_update_source_output_info (control, -1);
-        req_update_card (control, -1);
+
 
         control->priv->n_outstanding = 6;
 
@@ -1862,7 +2905,7 @@ gvc_mixer_new_pa_context (GvcMixerControl *self)
                           "org.gnome.VolumeControl");
         pa_proplist_sets (proplist,
                           PA_PROP_APPLICATION_ICON_NAME,
-                          "multimedia-volume-control");
+                          "cin-multimedia-volume-control");
         pa_proplist_sets (proplist,
                           PA_PROP_APPLICATION_VERSION,
                           PACKAGE_VERSION);
@@ -2042,6 +3085,14 @@ gvc_mixer_control_dispose (GObject *object)
                 g_hash_table_destroy (control->priv->cards);
                 control->priv->cards = NULL;
         }
+        if (control->priv->ui_outputs != NULL) {
+                g_hash_table_destroy (control->priv->ui_outputs);
+                control->priv->ui_outputs = NULL;
+        }
+        if (control->priv->ui_inputs != NULL) {
+                g_hash_table_destroy (control->priv->ui_inputs);
+                control->priv->ui_inputs = NULL;
+        }
 
         G_OBJECT_CLASS (gvc_mixer_control_parent_class)->dispose (object);
 }
@@ -2098,6 +3149,7 @@ gvc_mixer_control_constructor (GType                  type,
         self = GVC_MIXER_CONTROL (object);
 
         gvc_mixer_new_pa_context (self);
+        self->priv->profile_swapping_device_id = GVC_MIXER_UI_DEVICE_INVALID;
 
         return object;
 }
@@ -2177,9 +3229,57 @@ gvc_mixer_control_class_init (GvcMixerControlClass *klass)
                               NULL, NULL,
                               g_cclosure_marshal_VOID__UINT,
                               G_TYPE_NONE, 1, G_TYPE_UINT);
-
+        signals [ACTIVE_OUTPUT_UPDATE] =
+                g_signal_new ("active-output-update",
+                              G_TYPE_FROM_CLASS (klass),
+                              G_SIGNAL_RUN_LAST,
+                              G_STRUCT_OFFSET (GvcMixerControlClass, active_output_update),
+                              NULL, NULL,
+                              g_cclosure_marshal_VOID__UINT,
+                              G_TYPE_NONE, 1, G_TYPE_UINT);
+        signals [ACTIVE_INPUT_UPDATE] =
+                g_signal_new ("active-input-update",
+                              G_TYPE_FROM_CLASS (klass),
+                              G_SIGNAL_RUN_LAST,
+                              G_STRUCT_OFFSET (GvcMixerControlClass, active_input_update),
+                              NULL, NULL,
+                              g_cclosure_marshal_VOID__UINT,
+                              G_TYPE_NONE, 1, G_TYPE_UINT);
+        signals [OUTPUT_ADDED] =
+                g_signal_new ("output-added",
+                              G_TYPE_FROM_CLASS (klass),
+                              G_SIGNAL_RUN_LAST,
+                              G_STRUCT_OFFSET (GvcMixerControlClass, output_added),
+                              NULL, NULL,
+                              g_cclosure_marshal_VOID__UINT,
+                              G_TYPE_NONE, 1, G_TYPE_UINT);
+        signals [INPUT_ADDED] =
+                g_signal_new ("input-added",
+                              G_TYPE_FROM_CLASS (klass),
+                              G_SIGNAL_RUN_LAST,
+                              G_STRUCT_OFFSET (GvcMixerControlClass, input_added),
+                              NULL, NULL,
+                              g_cclosure_marshal_VOID__UINT,
+                              G_TYPE_NONE, 1, G_TYPE_UINT);
+        signals [OUTPUT_REMOVED] =
+                g_signal_new ("output-removed",
+                              G_TYPE_FROM_CLASS (klass),
+                              G_SIGNAL_RUN_LAST,
+                              G_STRUCT_OFFSET (GvcMixerControlClass, output_removed),
+                              NULL, NULL,
+                              g_cclosure_marshal_VOID__UINT,
+                              G_TYPE_NONE, 1, G_TYPE_UINT);
+        signals [INPUT_REMOVED] =
+                g_signal_new ("input-removed",
+                              G_TYPE_FROM_CLASS (klass),
+                              G_SIGNAL_RUN_LAST,
+                              G_STRUCT_OFFSET (GvcMixerControlClass, input_removed),
+                              NULL, NULL,
+                              g_cclosure_marshal_VOID__UINT,
+                              G_TYPE_NONE, 1, G_TYPE_UINT);
         g_type_class_add_private (klass, sizeof (GvcMixerControlPrivate));
 }
+
 
 static void
 gvc_mixer_control_init (GvcMixerControl *control)
@@ -2198,6 +3298,8 @@ gvc_mixer_control_init (GvcMixerControl *control)
         control->priv->sink_inputs = g_hash_table_new_full (NULL, NULL, NULL, (GDestroyNotify)g_object_unref);
         control->priv->source_outputs = g_hash_table_new_full (NULL, NULL, NULL, (GDestroyNotify)g_object_unref);
         control->priv->cards = g_hash_table_new_full (NULL, NULL, NULL, (GDestroyNotify)g_object_unref);
+        control->priv->ui_outputs = g_hash_table_new_full (NULL, NULL, NULL, (GDestroyNotify)g_object_unref);
+        control->priv->ui_inputs = g_hash_table_new_full (NULL, NULL, NULL, (GDestroyNotify)g_object_unref);
 
         control->priv->clients = g_hash_table_new_full (NULL, NULL, NULL, (GDestroyNotify)g_free);
 
@@ -2229,11 +3331,6 @@ gvc_mixer_control_new (const char *name)
                                 NULL);
         return GVC_MIXER_CONTROL (control);
 }
-
-/* FIXME: Remove when PA 0.9.23 is used */
-#ifndef PA_VOLUME_UI_MAX
-#define PA_VOLUME_UI_MAX pa_sw_volume_from_dB(+11.0)
-#endif
 
 gdouble
 gvc_mixer_control_get_vol_max_norm (GvcMixerControl *control)

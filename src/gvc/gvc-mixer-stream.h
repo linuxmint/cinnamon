@@ -61,6 +61,7 @@ typedef struct
         char *port;
         char *human_port;
         guint priority;
+        gboolean available;
 } GvcMixerStreamPort;
 
 GType               gvc_mixer_stream_get_type        (void);
@@ -85,6 +86,7 @@ gboolean            gvc_mixer_stream_change_is_muted (GvcMixerStream *stream,
 gboolean            gvc_mixer_stream_is_running      (GvcMixerStream *stream);
 const char *        gvc_mixer_stream_get_name        (GvcMixerStream *stream);
 const char *        gvc_mixer_stream_get_icon_name   (GvcMixerStream *stream);
+const char *        gvc_mixer_stream_get_sysfs_path  (GvcMixerStream *stream);
 GIcon *             gvc_mixer_stream_get_gicon       (GvcMixerStream *stream);
 const char *        gvc_mixer_stream_get_description (GvcMixerStream *stream);
 const char *        gvc_mixer_stream_get_application_id (GvcMixerStream *stream);
@@ -107,6 +109,8 @@ gboolean            gvc_mixer_stream_set_description (GvcMixerStream *stream,
                                                       const char     *description);
 gboolean            gvc_mixer_stream_set_icon_name   (GvcMixerStream *stream,
                                                       const char     *name);
+gboolean            gvc_mixer_stream_set_sysfs_path  (GvcMixerStream *stream,
+                                                      const char     *sysfs_path);
 gboolean            gvc_mixer_stream_set_is_event_stream (GvcMixerStream *stream,
                                                           gboolean is_event_stream);
 gboolean            gvc_mixer_stream_set_is_virtual  (GvcMixerStream *stream,

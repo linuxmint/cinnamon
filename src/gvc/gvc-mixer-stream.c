@@ -48,6 +48,7 @@ struct GvcMixerStreamPrivate
         char          *description;
         char          *application_id;
         char          *icon_name;
+        char          *sysfs_path;
         gboolean       is_muted;
         gboolean       can_decibel;
         gboolean       is_event_stream;
@@ -70,6 +71,7 @@ enum
         PROP_DESCRIPTION,
         PROP_APPLICATION_ID,
         PROP_ICON_NAME,
+        PROP_SYSFS_PATH,
         PROP_VOLUME,
         PROP_DECIBEL,
         PROP_IS_MUTED,
@@ -388,6 +390,13 @@ gvc_mixer_stream_get_icon_name (GvcMixerStream *stream)
         return stream->priv->icon_name;
 }
 
+const char *
+gvc_mixer_stream_get_sysfs_path (GvcMixerStream *stream)
+{
+        g_return_val_if_fail (GVC_IS_MIXER_STREAM (stream), NULL);
+        return stream->priv->sysfs_path;
+}
+
 /**
  * gvc_mixer_stream_get_gicon:
  * @stream: a #GvcMixerStream
@@ -412,6 +421,19 @@ gvc_mixer_stream_set_icon_name (GvcMixerStream *stream,
         g_free (stream->priv->icon_name);
         stream->priv->icon_name = g_strdup (icon_name);
         g_object_notify (G_OBJECT (stream), "icon-name");
+
+        return TRUE;
+}
+
+gboolean
+gvc_mixer_stream_set_sysfs_path (GvcMixerStream *stream,
+                                 const char     *sysfs_path)
+{
+        g_return_val_if_fail (GVC_IS_MIXER_STREAM (stream), FALSE);
+
+        g_free (stream->priv->sysfs_path);
+        stream->priv->sysfs_path = g_strdup (sysfs_path);
+        g_object_notify (G_OBJECT (stream), "sysfs-path");
 
         return TRUE;
 }
@@ -595,6 +617,9 @@ gvc_mixer_stream_set_property (GObject       *object,
         case PROP_ICON_NAME:
                 gvc_mixer_stream_set_icon_name (self, g_value_get_string (value));
                 break;
+	case PROP_SYSFS_PATH:
+		gvc_mixer_stream_set_sysfs_path (self, g_value_get_string (value));
+		break;
         case PROP_VOLUME:
                 gvc_mixer_stream_set_volume (self, g_value_get_ulong (value));
                 break;
@@ -658,6 +683,9 @@ gvc_mixer_stream_get_property (GObject     *object,
         case PROP_ICON_NAME:
                 g_value_set_string (value, self->priv->icon_name);
                 break;
+	case PROP_SYSFS_PATH:
+		g_value_set_string (value, self->priv->sysfs_path);
+		break;
         case PROP_VOLUME:
                 g_value_set_ulong (value,
                                    pa_cvolume_max(gvc_channel_map_get_cvolume(self->priv->channel_map)));
@@ -860,6 +888,13 @@ gvc_mixer_stream_class_init (GvcMixerStreamClass *klass)
                                                               NULL,
                                                               G_PARAM_READWRITE|G_PARAM_CONSTRUCT));
         g_object_class_install_property (gobject_class,
+                                         PROP_SYSFS_PATH,
+                                         g_param_spec_string ("sysfs-path",
+                                                              "Sysfs path",
+                                                              "Sysfs path for the device associated with this stream",
+                                                              NULL,
+                                                              G_PARAM_READWRITE|G_PARAM_CONSTRUCT));
+        g_object_class_install_property (gobject_class,
                                          PROP_IS_MUTED,
                                          g_param_spec_boolean ("is-muted",
                                                                "is muted",
@@ -944,6 +979,9 @@ gvc_mixer_stream_finalize (GObject *object)
 
         g_free (mixer_stream->priv->icon_name);
         mixer_stream->priv->icon_name = NULL;
+
+        g_free (mixer_stream->priv->sysfs_path);
+        mixer_stream->priv->sysfs_path = NULL;
 
         g_free (mixer_stream->priv->port);
         mixer_stream->priv->port = NULL;

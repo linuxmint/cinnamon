@@ -29,6 +29,9 @@ libgvc_la_gir_sources = \
 	gvc/gvc-mixer-source-output.c	\
 	gvc/gvc-mixer-event-role.h	\
 	gvc/gvc-mixer-event-role.c	\
+	gvc/gvc-mixer-ui-device.h	\
+	gvc/gvc-mixer-ui-device.c	\
+	gvc/gvc-mixer-control.h		\
 	gvc/gvc-mixer-control.h		\
 	gvc/gvc-mixer-control.c
 

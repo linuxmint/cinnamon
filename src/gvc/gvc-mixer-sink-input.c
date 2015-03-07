@@ -144,7 +144,7 @@ gvc_mixer_sink_input_finalize (GObject *object)
  * gvc_mixer_sink_input_new: (skip)
  * @context:
  * @index:
- * @map:
+ * @channel_map:
  *
  * Returns:
  */
