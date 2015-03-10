@@ -4,7 +4,7 @@ from SettingsWidgets import *
 import windowEffects
 
 EFFECT_SETS = {
-    "cinnamon": ("traditional", "traditional", "traditional", "scale", "scale", "scale"),
+    "cinnamon": ("traditional", "traditional", "traditional", "scale", "none",  "scale"),
     "scale":    ("scale",       "scale",       "scale",       "scale", "scale", "scale"),
     "fade":     ("fade",        "fade",        "fade",        "scale", "scale", "scale"),
     "blend":    ("blend",       "blend",       "blend",       "scale", "scale", "scale"),
