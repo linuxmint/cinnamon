@@ -16,7 +16,7 @@ class Module:
         self.name = "themes"
         self.category = "appear"
 
-    def on_module_selected(self):
+    def on_module_selected(self, switch_container):
         if not self.loaded:
             print "Loading Themes module"            
             self.settings = Gio.Settings.new("org.cinnamon.desktop.interface")

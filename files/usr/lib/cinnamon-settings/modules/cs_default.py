@@ -349,32 +349,33 @@ class Module:
         self.category = "prefs"
         self.comment = _("Preferred Applications")
 
-    def on_module_selected(self):
+    def on_module_selected(self, switch_container):
         if not self.loaded:
             print "Loading Default module"
 
-            self.tabs = []
-            self.notebook = Gtk.Notebook()
-            self.viewbox1 = Gtk.VBox()
-            self.viewbox2 = Gtk.VBox()
-            
-            default = Gtk.ScrolledWindow()
-            default.add_with_viewport(self.viewbox1)
-            
-            media = Gtk.ScrolledWindow()
-            media.add_with_viewport(self.viewbox2)
-            
-            self.notebook.append_page(default, Gtk.Label.new(_("Preferred Applications")))
-            self.notebook.append_page(media, Gtk.Label.new(_("Removable Media")))
+            stack = SettingsStack()
+            self.sidePage.add_widget(stack)
 
+            self.stack_switcher = Gtk.StackSwitcher()
+            self.stack_switcher.set_halign(Gtk.Align.CENTER)
+            self.stack_switcher.set_stack(stack)
+            switch_container.pack_start(self.stack_switcher, True, True, 0)
+
+            bg = SectionBg()
+            vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
+            bg.add(vbox)
+            stack.add_titled(bg, "preferred", _("Preferred Applications"))
             widget = self.setupDefaultApps()
-            self.viewbox1.pack_start(widget, False, False, 2)
+            vbox.pack_start(widget, False, False, 2)
 
+            bg = SectionBg()
+            vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
+            bg.add(vbox)
+            stack.add_titled(bg, "removable", _("Removable Media"))
             widget = self.setupMedia()
-            self.viewbox2.pack_start(widget, False, False, 2)                        
+            vbox.pack_start(widget, False, False, 2)
 
-            self.notebook.expand = True
-            self.sidePage.add_widget(self.notebook)
+        self.stack_switcher.show()
             
 
     def setupDefaultApps(self):

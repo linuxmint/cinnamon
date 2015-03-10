@@ -13,7 +13,7 @@ class Module:
         self.category = "appear"
         self.comment = _("Configure system fonts")        
 
-    def on_module_selected(self):
+    def on_module_selected(self, switch_container):
         if not self.loaded:
             print "Loading Fonts module"
             bg = SectionBg()        

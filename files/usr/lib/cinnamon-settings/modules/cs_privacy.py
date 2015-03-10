@@ -16,7 +16,7 @@ class Module:
         self.category = "prefs"
         self.settings = Gio.Settings(schema=PRIVACY_SCHEMA)
 
-    def on_module_selected(self):
+    def on_module_selected(self, switch_container):
         if not self.loaded:
             print "Loading Privacy module"
             bg = SectionBg()        

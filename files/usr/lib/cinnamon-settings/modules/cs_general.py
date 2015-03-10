@@ -11,7 +11,7 @@ class Module:
         self.comment = _("Miscellaneous Cinnamon preferences")
         self.category = "prefs"        
 
-    def on_module_selected(self):
+    def on_module_selected(self, switch_container):
         if not self.loaded:
             print "Loading General module"
             bg = SectionBg()        

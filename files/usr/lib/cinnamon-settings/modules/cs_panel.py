@@ -30,7 +30,7 @@ class Module:
         else:
             self.panel_id = -1
 
-    def on_module_selected(self):
+    def on_module_selected(self, switch_container):
         if not self.loaded:
             print "Loading Panel module"
 

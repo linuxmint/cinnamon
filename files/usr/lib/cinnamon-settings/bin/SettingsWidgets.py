@@ -265,14 +265,14 @@ class SidePage:
     def add_widget(self, widget):
         self.widgets.append(widget)        
 
-    def build(self):        
+    def build(self, switch_container):        
         # Clear all the widgets from the content box
         widgets = self.content_box.get_children()
         for widget in widgets:
             self.content_box.remove(widget)
 
         if (self.module is not None):
-            self.module.on_module_selected()
+            self.module.on_module_selected(switch_container)
             self.module.loaded = True
 
         # Add our own widgets
@@ -429,6 +429,13 @@ class SectionBg(Gtk.Viewport):
         style = self.get_style_context()
         style.add_class("section-bg")
         self.expand = True # Tells CS to give expand us to the whole window
+
+class SettingsStack(Gtk.Stack):
+    def __init__(self):
+        Gtk.Stack.__init__(self)
+        self.set_transition_type(Gtk.StackTransitionType.CROSSFADE)
+        self.set_transition_duration(150)
+        self.expand = True
 
 class IndentedHBox(Gtk.HBox):
     def __init__(self):

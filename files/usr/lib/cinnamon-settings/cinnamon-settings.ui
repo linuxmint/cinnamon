@@ -22,32 +22,69 @@
             <property name="can_focus">False</property>
             <property name="toolbar_style">icons</property>
             <child>
-              <object class="GtkToolItem" id="toolbutton2">
+              <object class="GtkToolItem" id="toolbutton1">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="valign">center</property>
                 <child>
-                  <object class="GtkButtonBox" id="buttonbox2">
+                  <object class="GtkBox" id="box2">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
-                    <property name="halign">start</property>
-                    <property name="valign">start</property>
-                    <property name="homogeneous">True</property>
-                    <property name="layout_style">start</property>
                     <child>
                       <object class="GtkButton" id="button_back">
-                        <property name="label" translatable="yes">button</property>
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="receives_default">True</property>
-                        <property name="margin_left">6</property>
                         <property name="focus_on_click">False</property>
+                        <child>
+                          <object class="GtkImage" id="image1">
+                            <property name="visible">True</property>
+                            <property name="can_focus">False</property>
+                            <property name="icon_name">go-previous</property>
+                          </object>
+                        </child>
+                        <style>
+                          <class name="raised"/>
+                          <class name="image-button"/>
+                        </style>
                       </object>
                       <packing>
                         <property name="expand">False</property>
                         <property name="fill">False</property>
                         <property name="position">0</property>
-                        <property name="non_homogeneous">True</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkBox" id="switch_container">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <child>
+                          <placeholder/>
+                        </child>
+                      </object>
+                      <packing>
+                        <property name="expand">True</property>
+                        <property name="fill">True</property>
+                        <property name="position">1</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkEntry" id="search_box">
+                        <property name="visible">True</property>
+                        <property name="can_focus">True</property>
+                        <property name="halign">start</property>
+                        <property name="invisible_char">●</property>
+                        <property name="width_chars">25</property>
+                        <property name="caps_lock_warning">False</property>
+                        <property name="primary_icon_stock">gtk-find</property>
+                        <property name="secondary_icon_stock">gtk-clear</property>
+                        <property name="placeholder_text">Search...</property>
+                      </object>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="fill">True</property>
+                        <property name="pack_type">end</property>
+                        <property name="position">2</property>
                       </packing>
                     </child>
                   </object>
@@ -55,31 +92,6 @@
                 <style>
                   <class name="raised"/>
                 </style>
-              </object>
-              <packing>
-                <property name="expand">False</property>
-                <property name="homogeneous">False</property>
-              </packing>
-            </child>
-            <child>
-              <object class="GtkToolItem" id="search_container">
-                <property name="visible">True</property>
-                <property name="can_focus">False</property>
-                <property name="halign">end</property>
-                <child>
-                  <object class="GtkEntry" id="search_box">
-                    <property name="visible">True</property>
-                    <property name="can_focus">True</property>
-                    <property name="halign">start</property>
-                    <property name="margin_right">6</property>
-                    <property name="invisible_char">●</property>
-                    <property name="width_chars">25</property>
-                    <property name="caps_lock_warning">False</property>
-                    <property name="primary_icon_stock">gtk-find</property>
-                    <property name="secondary_icon_stock">gtk-clear</property>
-                    <property name="placeholder_text">Search...</property>
-                  </object>
-                </child>
               </object>
               <packing>
                 <property name="expand">True</property>

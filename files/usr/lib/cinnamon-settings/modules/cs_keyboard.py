@@ -210,39 +210,54 @@ class Module:
         self.name = "keyboard"
         self.category = "hardware"
 
-    def on_module_selected(self):
+    def on_module_selected(self, switch_container):
         if not self.loaded:
             print "Loading Keyboard module"
-            self.tabs = []        
-            self.notebook = Gtk.Notebook()
-            self.notebook.expand = True
 
-            tab = NotebookPage(_("Typing"), False)
-            tab.add_widget(GSettingsCheckButton(_("Enable key repeat"), "org.cinnamon.settings-daemon.peripherals.keyboard", "repeat", None))
+            stack = SettingsStack()
+            self.sidePage.add_widget(stack)
+
+            self.stack_switcher = Gtk.StackSwitcher()
+            self.stack_switcher.set_halign(Gtk.Align.CENTER)
+            self.stack_switcher.set_stack(stack)
+            switch_container.pack_start(self.stack_switcher, True, True, 0)
+
+            bg = SectionBg()
+            vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
+            vbox.set_border_width(6)
+            vbox.set_spacing(6)
+            bg.add(vbox)
+            stack.add_titled(bg, "typing", _("Typing"))
+
+            vbox.add(GSettingsCheckButton(_("Enable key repeat"), "org.cinnamon.settings-daemon.peripherals.keyboard", "repeat", None))
             box = IndentedHBox()
             slider = GSettingsRange(_("Repeat delay:"), _("Short"), _("Long"), 100, 2000, False, "uint", False, "org.cinnamon.settings-daemon.peripherals.keyboard", "delay",
                                                                             "org.cinnamon.settings-daemon.peripherals.keyboard/repeat", adjustment_step = 10)
             box.pack_start(slider, True, True, 0)
-            tab.add_widget(box)
+            vbox.add(box)
             box = IndentedHBox()
             slider = GSettingsRange(_("Repeat speed:"), _("Slow"), _("Fast"), 20, 2000, True, "uint", True, "org.cinnamon.settings-daemon.peripherals.keyboard", "repeat-interval",
                                                                             "org.cinnamon.settings-daemon.peripherals.keyboard/repeat", adjustment_step = 1)
             box.pack_start(slider, True, True, 0)
-            tab.add_widget(box)
-            tab.add_widget(Gtk.Separator.new(Gtk.Orientation.HORIZONTAL))
+            vbox.add(box)
+            vbox.add(Gtk.Separator.new(Gtk.Orientation.HORIZONTAL))
             
-            tab.add_widget(GSettingsCheckButton(_("Text cursor blinks"), "org.cinnamon.desktop.interface", "cursor-blink", None))
+            vbox.add(GSettingsCheckButton(_("Text cursor blinks"), "org.cinnamon.desktop.interface", "cursor-blink", None))
             box = IndentedHBox()
             slider = GSettingsRange(_("Blink speed:"), _("Slow"), _("Fast"), 100, 2500, True, "int", False, "org.cinnamon.desktop.interface", "cursor-blink-time",
                                                                             "org.cinnamon.desktop.interface/cursor-blink", adjustment_step = 10)
             box.pack_start(slider, True, True, 0)
-            tab.add_widget(box)
-            tab.add_widget(Gtk.Separator.new(Gtk.Orientation.HORIZONTAL))
-            tab.add_widget(Gtk.Label.new(_("Test Box")))
-            tab.add_widget(Gtk.Entry())
-            self.addNotebookTab(tab)
+            vbox.add(box)
+            vbox.add(Gtk.Separator.new(Gtk.Orientation.HORIZONTAL))
+            vbox.add(Gtk.Label.new(_("Test Box")))
+            vbox.add(Gtk.Entry())
 
-            tab = NotebookPage(_("Keyboard shortcuts"), True)
+            bg = SectionBg()
+            vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
+            vbox.set_border_width(6)
+            vbox.set_spacing(6)
+            bg.add(vbox)
+            stack.add_titled(bg, "shortcuts", _("Shortcuts"))
 
             headingbox = Gtk.Box.new(Gtk.Orientation.VERTICAL, 2)
             mainbox = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 2)
@@ -386,10 +401,14 @@ class Module:
             self.kb_tree.set_model(self.kb_store)
             self.entry_tree.set_model(self.entry_store)
 
-            tab.add_widget(headingbox)
-            self.addNotebookTab(tab)
-            
-            tab = NotebookPage(_("Keyboard layouts"), True)
+            vbox.pack_start(headingbox, True, True, 0)
+
+            bg = SectionBg()
+            vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
+            vbox.set_border_width(6)
+            vbox.set_spacing(6)
+            bg.add(vbox)
+            stack.add_titled(bg, "layouts", _("Layouts"))
             try:
                 widget = self.sidePage.content_box.c_manager.get_c_widget("region")
             except:
@@ -400,13 +419,9 @@ class Module:
                 cheat_box.pack_start(widget, True, True, 2)
                 cheat_box.set_vexpand(False)
                 widget.show()
-                tab.add_widget(cheat_box)
-            
-            self.addNotebookTab(tab)        
+                vbox.pack_start(cheat_box, True, True, 0)
 
-            self.sidePage.add_widget(self.notebook)
-            for tab in self.tabs:
-                tab.build()
+        self.stack_switcher.show()
 
     def addNotebookTab(self, tab):
         self.notebook.append_page(tab.tab, Gtk.Label.new(tab.name))
@@ -820,30 +835,6 @@ class AddCustomDialog(Gtk.Dialog):
     def onEntriesChanged(self, widget):
         ok_enabled = self.name_entry.get_text().strip() is not "" and self.command_entry.get_text().strip() is not ""
         self.set_response_sensitive(Gtk.ResponseType.OK, ok_enabled)
-
-class NotebookPage:
-    def __init__(self, name, expanding):
-        self.name = name
-        self.widgets = []
-        self.expanding = expanding
-        self.tab = Gtk.ScrolledWindow()
-        self.content_box = Gtk.VBox()
-
-    def add_widget(self, widget):
-        self.widgets.append(widget)
-
-    def build(self):
-        # Clear all the widgets from the content box
-        widgets = self.content_box.get_children()
-        for widget in widgets:
-            self.content_box.remove(widget)
-        for widget in self.widgets:
-            self.content_box.pack_start(widget, self.expanding, self.expanding, 2)
-        self.tab.add_with_viewport(self.content_box)
-        self.content_box.set_border_width(5)
-        self.tab.set_min_content_height(410)
-        self.content_box.show_all()
-  
 
 SPECIAL_MODS = (["Super_L",    "<Super>"],
                 ["Super_R",    "<Super>"],

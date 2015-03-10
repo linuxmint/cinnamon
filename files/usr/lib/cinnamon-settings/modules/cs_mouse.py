@@ -6,35 +6,30 @@ from SettingsWidgets import *
 class Module:
     def __init__(self, content_box):
         keywords = _("mouse, touchpad, synaptic, double-click")
-        sidePage = SidePage(_("Mouse and Touchpad"), "cs-mouse", keywords, content_box, 520, module=self)
+        sidePage = SidePage(_("Mouse and Touchpad"), "cs-mouse", keywords, content_box, module=self)
         self.sidePage = sidePage
         self.comment = _("Control mouse and touchpad settings")
         self.name = "mouse"
         self.category = "hardware"
 
-    def on_module_selected(self):
+    def on_module_selected(self, switch_container):
         if not self.loaded:
             print "Loading Mouse module"
 
-            self.tabs = []
-            self.mousebox = Gtk.VBox()
-            self.touchbox = Gtk.VBox()
+            stack = SettingsStack()
+            self.sidePage.add_widget(stack)
 
-            self.notebook = Gtk.Notebook()
-
-            mouse = Gtk.ScrolledWindow()
-            mouse.add_with_viewport(self.mousebox)
-
-            touch = Gtk.ScrolledWindow()
-            touch.add_with_viewport(self.touchbox)
-            
-            self.notebook.append_page(mouse, Gtk.Label.new(_("Mouse")))
-            self.notebook.append_page(touch, Gtk.Label.new(_("Touchpad")))
-            self.notebook.expand = True
+            self.stack_switcher = Gtk.StackSwitcher()
+            self.stack_switcher.set_halign(Gtk.Align.CENTER)
+            self.stack_switcher.set_stack(stack)
+            switch_container.pack_start(self.stack_switcher, True, True, 0)
 
             # Mouse
-
+            
+            bg = SectionBg()
             vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
+            bg.add(vbox)
+            stack.add_titled(bg, "mouse", _("Mouse"))
 
             section = Section(_("General"))  
             section.add(GSettingsCheckButton(_("Left handed (mouse buttons inverted)"), "org.cinnamon.settings-daemon.peripherals.mouse", "left-handed", None))
@@ -71,13 +66,12 @@ class Module:
             section.add_expand(widget)
             vbox.add(section)
 
-            vbox.add(Gtk.Separator.new(Gtk.Orientation.HORIZONTAL))         
-
-            self.mousebox.pack_start(vbox, False, False, 2)
-
             # Touchpad
 
+            bg = SectionBg()
             vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
+            bg.add(vbox)
+            stack.add_titled(bg, "touchpad", _("Touchpad"))
 
             section = Section(_("General"))  
             section.add(GSettingsCheckButton(_("Enable touchpad"), "org.cinnamon.settings-daemon.peripherals.touchpad", "touchpad-enabled", None))
@@ -112,11 +106,8 @@ class Module:
 
             section.add_indented(GSettingsIntComboBox(_("Two-finger click emulation:"), "org.cinnamon.settings-daemon.peripherals.touchpad", "two-finger-click", "org.cinnamon.settings-daemon.peripherals.touchpad/touchpad-enabled", button_list, False))
             section.add_indented(GSettingsIntComboBox(_("Three-finger click emulation:"), "org.cinnamon.settings-daemon.peripherals.touchpad", "three-finger-click", "org.cinnamon.settings-daemon.peripherals.touchpad/touchpad-enabled", button_list, False))
-            vbox.add(section)
-            
-            self.touchbox.pack_start(vbox, False, False, 2)                
 
-            self.sidePage.add_widget(self.notebook)            
+        self.stack_switcher.show()            
 
     def test_button_clicked(self, widget, event):
         if event.type == Gdk.EventType._2BUTTON_PRESS:

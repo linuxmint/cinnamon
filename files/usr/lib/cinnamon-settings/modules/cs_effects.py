@@ -69,8 +69,7 @@ class Module:
         self.name = "effects"
         self.category = "appear"
         self.comment = _("Control Cinnamon visual effects.")
-
-    def on_module_selected(self):
+    def on_module_selected(self, switch_container):
         if not self.loaded:
             print "Loading Effects module"
             bg = SectionBg()

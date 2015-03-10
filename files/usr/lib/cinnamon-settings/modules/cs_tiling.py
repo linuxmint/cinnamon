@@ -12,7 +12,7 @@ class Module:
         self.comment = _("Manage window tiling preferences")
         self.category = "prefs"        
 
-    def on_module_selected(self):
+    def on_module_selected(self, switch_container):
         if not self.loaded:
             print "Loading Tiling module"
             bg = SectionBg()        
