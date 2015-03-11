@@ -216,13 +216,14 @@ class PasswordDialog(Gtk.Dialog):
     def change_password(self):        
         newpass = self.new_password.get_text()
         self.user.set_password(newpass, "")
-        os.system("gpasswd -d '%s' nopasswdlogin" % self.user.get_user_name())
         mask = self.group_mask.get_text()
-        mask = mask.split(", ")
-        mask.remove("nopasswdlogin")
-        mask = ", ".join(mask)
-        self.group_mask.set_text(mask)        
-        self.password_mask.set_text(u'\u2022\u2022\u2022\u2022\u2022\u2022')
+        if "nopasswdlogin" in mask:
+            os.system("gpasswd -d '%s' nopasswdlogin" % self.user.get_user_name())
+            mask = mask.split(", ")
+            mask.remove("nopasswdlogin")
+            mask = ", ".join(mask)
+            self.group_mask.set_text(mask)
+            self.password_mask.set_text(u'\u2022\u2022\u2022\u2022\u2022\u2022')
         self.destroy()  
 
     def set_passwords_visibility(self):
