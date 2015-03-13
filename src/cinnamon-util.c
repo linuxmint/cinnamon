@@ -544,10 +544,11 @@ int
 cinnamon_util_get_week_start ()
 {
   /* Try to get first weekday from gsettings */
-  /* If 7, continue to get the locale's first weekday */
+  /* If the value from gsettings is not in the range 0-6,
+   * continue to get the locale's first weekday */
   GSettings *settings = g_settings_new (DESKTOP_SCHEMA);
   int week_start = g_settings_get_int (settings, FIRST_WEEKDAY_KEY);
-  if (week_start != 7) return week_start;
+  if (0 <= week_start && week_start < 7) return week_start;
 
 #ifdef HAVE__NL_TIME_FIRST_WEEKDAY
   union { unsigned int word; char *string; } langinfo;
