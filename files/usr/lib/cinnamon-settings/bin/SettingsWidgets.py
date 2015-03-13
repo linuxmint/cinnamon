@@ -433,7 +433,7 @@ class SectionBg(Gtk.Viewport):
 class SettingsStack(Gtk.Stack):
     def __init__(self):
         Gtk.Stack.__init__(self)
-        self.set_transition_type(Gtk.StackTransitionType.CROSSFADE)
+        self.set_transition_type(Gtk.StackTransitionType.SLIDE_LEFT_RIGHT)
         self.set_transition_duration(150)
         self.expand = True
 
