@@ -216,6 +216,9 @@ class Module:
                         display_name = "Linux Mint"
                         icon = "cs-linuxmint"
                         order = 0
+                    if display_name == "Debian":
+                        icon = "cs-debian"
+                        order = 1
                     backgrounds.append([[False, icon, display_name, xml_path, BACKGROUND_COLLECTION_TYPE_XML], display_name, order])
 
         backgrounds.sort(key=lambda x: (x[2], x[1]))
