@@ -12,6 +12,7 @@ const Tooltips = imports.ui.tooltips;
 const DND = imports.ui.dnd;
 const Mainloop = imports.mainloop;
 const Gdk = imports.gi.Gdk;
+const Settings = imports.ui.settings;
 
 const PANEL_ICON_SIZE = 24; // this is for the spinner when loading
 const DEFAULT_ICON_SIZE = 16; // too bad this can't be defined in theme (cinnamon-app.create_icon_texture returns a clutter actor, not a themable object -
@@ -265,15 +266,15 @@ AppMenuButtonRightClickMenu.prototype = {
 
 };
 
-function AppMenuButton(applet, metaWindow, animation, orientation, panel_height, draggable) {
-    this._init(applet, metaWindow, animation, orientation, panel_height, draggable);
+function AppMenuButton(applet, metaWindow, animation, orientation, panel_height, draggable, scrollable) {
+    this._init(applet, metaWindow, animation, orientation, panel_height, draggable, scrollable);
 }
 
 AppMenuButton.prototype = {
 //    __proto__ : AppMenuButton.prototype,
 
     
-    _init: function(applet, metaWindow, animation, orientation, panel_height, draggable) {
+    _init: function(applet, metaWindow, animation, orientation, panel_height, draggable, scrollable) {
                
         this.actor = new St.Bin({ style_class: 'window-list-item-box',
 								  reactive: true,
@@ -364,11 +365,10 @@ AppMenuButton.prototype = {
         this._inEditMode = undefined;
         this.on_panel_edit_mode_changed();
         global.settings.connect('changed::panel-edit-mode', Lang.bind(this, this.on_panel_edit_mode_changed));
-        global.settings.connect('changed::window-list-applet-scroll', Lang.bind(this, this.on_scroll_mode_changed));
         this.window_list = this.actor._delegate._applet._windows;
         this.alert_list = this.actor._delegate._applet._alertWindows;
         this.scroll_connector = null;
-        this.on_scroll_mode_changed();
+        this.on_scroll_mode_changed(scrollable);
         this._needsAttention = false;
     },
     
@@ -378,8 +378,7 @@ AppMenuButton.prototype = {
         }
     }, 
 
-    on_scroll_mode_changed: function() {
-        let scrollable = global.settings.get_boolean("window-list-applet-scroll");
+    on_scroll_mode_changed: function(scrollable) {
         if (scrollable) {
             this.scroll_connector = this.actor.connect('scroll-event', Lang.bind(this, this._onScrollEvent));
         } else {
@@ -919,6 +918,19 @@ MyApplet.prototype = {
             this.orientation = orientation;
             this.dragInProgress = false;
 
+            this.settings = new Settings.AppletSettings(this, "window-list@cinnamon.org", instance_id);
+
+            this.settings.bindProperty(Settings.BindingDirection.IN,
+                                       "enable-alerts",
+                                       "enable_alerts",
+                                       this._updateAttentionGrabber,
+                                       null);
+            this.settings.bindProperty(Settings.BindingDirection.IN,
+                                       "enable-scrolling",
+                                       "scrollable",
+                                       this.on_enable_scroll_changed,
+                                       null);
+
             this.myactorbox = new MyAppletBox(this);
             this.leftAlertBox = new MyAppletAlertBox(this);
             this.rightAlertBox = new MyAppletAlertBox(this);
@@ -953,7 +965,6 @@ MyApplet.prototype = {
             this.signals.connect(global.window_manager, 'unmaximize', this._onWindowStateChange);
             this.signals.connect(global.window_manager, 'map', this._onWindowStateChange);
             this.signals.connect(global.window_manager, 'tile', this._onWindowStateChange);
-            this.signals.connect(global.settings, "changed::window-list-applet-alert", this._updateAttentionGrabber);
             this.signals.connect(global.settings, "changed::panel-edit-mode", this.on_panel_edit_mode_changed);
 
             this._workspaces = [];
@@ -1022,13 +1033,22 @@ MyApplet.prototype = {
     },
 
     _updateAttentionGrabber: function() {
-        let active = global.settings.get_boolean('window-list-applet-alert');
-        if (active) {
+        if (this.enable_alerts) {
             this._urgent_signal = global.display.connect('window-marked-urgent', Lang.bind(this, this._onWindowDemandsAttention));
         } else {
             if (this._urgent_signal) {
                 global.display.disconnect(this._urgent_signal);
             }
+        }
+    },
+
+    on_enable_scroll_changed: function() {
+        for (let i = 0; i < this._windows.length; i++) {
+            this._windows[i].on_scroll_mode_changed(this.scrollable);
+        }
+
+        for (let i = 0; i < this._alertWindows.length; i++) {
+            this._alertWindows[i].on_scroll_mode_changed(this.scrollable);
         }
     },
 
@@ -1046,7 +1066,7 @@ MyApplet.prototype = {
                     this._alertWindows = this._alertWindows.filter(function(alertWindow) {
                         return alertWindow.metaWindow != window; // we don't want duplicates
                     }, this);
-                    let alertButton = new AppMenuButton(this, window, true, this.orientation, this._panelHeight, false);
+                    let alertButton = new AppMenuButton(this, window, true, this.orientation, this._panelHeight, false, this.scrollable);
                     this._alertWindows.push(alertButton);
                     this.calculate_alert_positions();
                 }
@@ -1194,7 +1214,7 @@ MyApplet.prototype = {
             }
         }
 
-        let appbutton = new AppMenuButton(this, metaWindow, true, this.orientation, this._panelHeight, true);
+        let appbutton = new AppMenuButton(this, metaWindow, true, this.orientation, this._panelHeight, true, this.scrollable);
         this._windows.push(appbutton);
         this.myactor.add(appbutton.actor);
         if (global.screen.get_active_workspace() != metaWindow.get_workspace())
