@@ -17,6 +17,7 @@ class Module:
         if not self.loaded:
             print "Loading Desklets module"
             self.sidePage.load(switch_container)
+        self.sidePage.stack_switcher.show()
 
     def _setParentRef(self, window):
         self.sidePage.window = window
