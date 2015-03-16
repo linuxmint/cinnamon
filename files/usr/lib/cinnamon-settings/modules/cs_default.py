@@ -354,23 +354,24 @@ class Module:
             print "Loading Default module"
 
             stack = SettingsStack()
-            self.sidePage.add_widget(stack)
+            bg = SectionBg()
+            bg.add(stack)
+
+            self.sidePage.add_widget(bg)
 
             self.stack_switcher = Gtk.StackSwitcher()
             self.stack_switcher.set_halign(Gtk.Align.CENTER)
             self.stack_switcher.set_stack(stack)
             switch_container.pack_start(self.stack_switcher, True, True, 0)
 
-            bg = SectionBg()
             vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
-            bg.add(vbox)
+            stack.add(vbox)
             stack.add_titled(bg, "preferred", _("Preferred Applications"))
             widget = self.setupDefaultApps()
             vbox.pack_start(widget, False, False, 2)
 
-            bg = SectionBg()
             vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
-            bg.add(vbox)
+            stack.add(vbox)
             stack.add_titled(bg, "removable", _("Removable Media"))
             widget = self.setupMedia()
             vbox.pack_start(widget, False, False, 2)

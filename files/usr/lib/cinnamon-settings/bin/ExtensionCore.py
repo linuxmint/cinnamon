@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 try:
-    from SettingsWidgets import SidePage
+    from SettingsWidgets import SidePage, SettingsStack, SectionBg
     import XletSettings
     from Spices import Spice_Harvester
     #from Spices import *
@@ -52,8 +52,8 @@ class ExtensionSidePage (SidePage):
         self.icons = []
         self.run_once = False
 
-    def load(self, window=None):
-        
+    def load(self, switch_container, window=None):
+
         if window is not None:
             self.window = window
 
@@ -64,7 +64,22 @@ class ExtensionSidePage (SidePage):
         scrolledWindow = Gtk.ScrolledWindow()   
         scrolledWindow.set_shadow_type(Gtk.ShadowType.ETCHED_IN)   
         scrolledWindow.set_border_width(6) 
-        self.notebook = Gtk.Notebook()
+
+        self.stack = SettingsStack()
+        self.stack_switcher = Gtk.StackSwitcher()
+        self.stack_switcher.set_halign(Gtk.Align.CENTER)
+        self.stack_switcher.set_stack(self.stack)
+
+        if window:
+            self.vbox = Gtk.VBox()
+            self.vbox.pack_start(self.stack_switcher, False, True, 2)
+            self.vbox.pack_start(self.stack, True, True, 2)
+        else:
+            switch_container.pack_start(self.stack_switcher, True, True, 0)
+            self.stack_switcher.show()
+
+        self.add_widget(self.stack)
+
         extensions_vbox = Gtk.VBox()
 
         self.search_entry = Gtk.Entry()
@@ -73,25 +88,24 @@ class ExtensionSidePage (SidePage):
         self.search_entry.connect('changed', self.on_entry_refilter)
 
         if self.collection_type == "applet":
-            notebook_label = _("Installed applets")
-            notebook_label_get_more = _("Available applets (online)")
+            stack_label = _("Installed applets")
+            stack_label_get_more = _("Available applets (online)")
         elif self.collection_type == "desklet":
-            notebook_label = _("Installed desklets")
-            notebook_label_get_more = _("Available desklets (online)")
+            stack_label = _("Installed desklets")
+            stack_label_get_more = _("Available desklets (online)")
         elif self.collection_type == "theme":
-            notebook_label = _("Installed themes")
-            notebook_label_get_more = _("Available themes (online)")
+            stack_label = _("Installed themes")
+            stack_label_get_more = _("Available themes (online)")
         elif self.collection_type == "extension":
-            notebook_label = _("Installed extensions")
-            notebook_label_get_more = _("Available extensions (online)")
+            stack_label = _("Installed extensions")
+            stack_label_get_more = _("Available extensions (online)")
         else:
-            notebook_label = _("Installed items")
-            notebook_label_get_more = _("Available items (online)")
+            stack_label = _("Installed items")
+            stack_label_get_more = _("Available items (online)")
 
-        self.notebook.append_page(extensions_vbox, Gtk.Label.new(notebook_label))
+        self.stack.add_titled(extensions_vbox, "installed", stack_label)
 
-        self.add_widget(self.notebook)
-        self.notebook.expand = True
+        self.stack.expand = True
 
         self.treeview = Gtk.TreeView()
         self.treeview.set_rules_hint(True)
@@ -226,7 +240,7 @@ class ExtensionSidePage (SidePage):
             showLabel.show()
             hbox.pack_start(showLabel, False, False, 4)
             hbox.pack_start(self.comboshow, False, False, 2)
-        
+
         hbox.pack_end(self.search_entry, False, False, 4)
         extensions_vbox.pack_start(hbox, False, False, 4)
         hbox.set_border_width(3);
@@ -272,9 +286,8 @@ class ExtensionSidePage (SidePage):
         getmore_vbox = Gtk.VBox()
         getmore_vbox.set_border_width(0)
 
-        getmore_label = Gtk.Label.new(notebook_label_get_more)
-        self.notebook.append_page(getmore_vbox, getmore_label)
-        self.notebook.connect("switch-page", self.on_page_changed)
+        self.stack.add_titled(getmore_vbox, "more", stack_label_get_more)
+        self.stack.connect("notify::visible-child-name", self.on_page_changed)
 
         self.gm_combosort = Gtk.ComboBox()
         renderer_text = Gtk.CellRendererText()
@@ -410,7 +423,7 @@ class ExtensionSidePage (SidePage):
         #     reload_button.set_sensitive(False)
         extra_page = self.getAdditionalPage()
         if extra_page:
-            self.notebook.append_page(extra_page, extra_page.label)
+            self.stack.add_titled(extra_page, "extra", extra_page.label)
 
         self.content_box.show_all()
 
@@ -1013,13 +1026,14 @@ Please contact the developer.""")
     def on_uninstall_finished(self, uuid):
         self.load_extensions()
 
-    def on_page_changed(self, notebook, page, page_num):
-        if page_num == 1 and len(self.gm_model) == 0:
+    def on_page_changed(self, *args):
+        name = self.stack.get_visible_child_name()
+        if name == "more" and len(self.gm_model) == 0:
             self.load_spices()
-        GLib.timeout_add(1, self.focus, page_num)
+        GLib.timeout_add(1, self.focus, name)
 
-    def focus(self, page_num):
-        if page_num == 0:
+    def focus(self, name):
+        if name == "installed":
             self.search_entry.grab_focus()
         else:
             self.gm_search_entry.grab_focus()
@@ -1137,7 +1151,7 @@ Please contact the developer.""")
             uuid = model.get_value(treeiter, 0)
             settingContainer = XletSettings.XletSetting(uuid, self, self.collection_type)
             self.content_box.pack_start(settingContainer.content, True, True, 2)
-            self.notebook.hide()
+            self.stack.hide()
             settingContainer.show()
 
     def _external_configure_launch(self, widget = None):
@@ -1149,7 +1163,7 @@ Please contact the developer.""")
 
     def _close_configure(self, settingContainer):
         settingContainer.content.hide()
-        self.notebook.show_all()
+        self.stack.show_all()
 
     def _restore_default_extensions(self):
         if not self.themes:

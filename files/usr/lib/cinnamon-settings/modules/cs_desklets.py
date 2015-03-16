@@ -16,7 +16,7 @@ class Module:
     def on_module_selected(self, switch_container):
         if not self.loaded:
             print "Loading Desklets module"
-            self.sidePage.load()
+            self.sidePage.load(switch_container)
 
     def _setParentRef(self, window):
         self.sidePage.window = window
@@ -38,7 +38,7 @@ class DeskletsViewSidePage (ExtensionSidePage):
 
     def getAdditionalPage(self):
         scrolled_window = Gtk.ScrolledWindow()
-        scrolled_window.label = Gtk.Label.new(_("General Desklets Settings"))
+        scrolled_window.label = _("General Desklets Settings")
         config_vbox = Gtk.VBox()
         scrolled_window.add_with_viewport(config_vbox)
         config_vbox.set_border_width(5)
