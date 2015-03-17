@@ -17,7 +17,9 @@ class Module:
             print "Loading Mouse module"
 
             stack = SettingsStack()
-            self.sidePage.add_widget(stack)
+            bg = SectionBg()
+            bg.add(stack)
+            self.sidePage.add_widget(bg)
 
             self.stack_switcher = Gtk.StackSwitcher()
             self.stack_switcher.set_halign(Gtk.Align.CENTER)
@@ -25,11 +27,8 @@ class Module:
             switch_container.pack_start(self.stack_switcher, True, True, 0)
 
             # Mouse
-            
-            bg = SectionBg()
             vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
-            bg.add(vbox)
-            stack.add_titled(bg, "mouse", _("Mouse"))
+            stack.add_titled(vbox, "mouse", _("Mouse"))
 
             section = Section(_("General"))  
             section.add(GSettingsCheckButton(_("Left handed (mouse buttons inverted)"), "org.cinnamon.settings-daemon.peripherals.mouse", "left-handed", None))
@@ -68,10 +67,8 @@ class Module:
 
             # Touchpad
 
-            bg = SectionBg()
             vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
-            bg.add(vbox)
-            stack.add_titled(bg, "touchpad", _("Touchpad"))
+            stack.add_titled(vbox, "touchpad", _("Touchpad"))
 
             section = Section(_("General"))  
             section.add(GSettingsCheckButton(_("Enable touchpad"), "org.cinnamon.settings-daemon.peripherals.touchpad", "touchpad-enabled", None))

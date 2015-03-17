@@ -14,7 +14,8 @@ class Module:
     def on_module_selected(self, switch_container):
         if not self.loaded:
             print "Loading Applets module"
-            self.sidePage.load()
+            self.sidePage.load(switch_container)
+        self.sidePage.stack_switcher.show()
 
     def _setParentRef(self, window):
         self.sidePage.window = window

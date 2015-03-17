@@ -188,8 +188,8 @@ class Module:
         window.set_border_width(6)
         window.set_position(Gtk.WindowPosition.CENTER)        
         page = ExtensionSidePage(self.name, self.icon, self.keywords, box, "theme", None)
-        page.load(window=window)
-        box.pack_start(page.notebook, True, True, 6)
+        page.load(None, window=window)
+        box.pack_start(page.vbox, True, True, 6)
         window.show_all()
         return True
 

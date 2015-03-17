@@ -215,19 +215,19 @@ class Module:
             print "Loading Keyboard module"
 
             stack = SettingsStack()
-            self.sidePage.add_widget(stack)
+            bg = SectionBg()
+            bg.add(stack)
+            self.sidePage.add_widget(bg)
 
             self.stack_switcher = Gtk.StackSwitcher()
             self.stack_switcher.set_halign(Gtk.Align.CENTER)
             self.stack_switcher.set_stack(stack)
             switch_container.pack_start(self.stack_switcher, True, True, 0)
 
-            bg = SectionBg()
             vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
             vbox.set_border_width(6)
             vbox.set_spacing(6)
-            bg.add(vbox)
-            stack.add_titled(bg, "typing", _("Typing"))
+            stack.add_titled(vbox, "typing", _("Typing"))
 
             vbox.add(GSettingsCheckButton(_("Enable key repeat"), "org.cinnamon.settings-daemon.peripherals.keyboard", "repeat", None))
             box = IndentedHBox()
@@ -252,12 +252,10 @@ class Module:
             vbox.add(Gtk.Label.new(_("Test Box")))
             vbox.add(Gtk.Entry())
 
-            bg = SectionBg()
             vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
             vbox.set_border_width(6)
             vbox.set_spacing(6)
-            bg.add(vbox)
-            stack.add_titled(bg, "shortcuts", _("Shortcuts"))
+            stack.add_titled(vbox, "shortcuts", _("Shortcuts"))
 
             headingbox = Gtk.Box.new(Gtk.Orientation.VERTICAL, 2)
             mainbox = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 2)
@@ -403,12 +401,10 @@ class Module:
 
             vbox.pack_start(headingbox, True, True, 0)
 
-            bg = SectionBg()
             vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
             vbox.set_border_width(6)
             vbox.set_spacing(6)
-            bg.add(vbox)
-            stack.add_titled(bg, "layouts", _("Layouts"))
+            stack.add_titled(vbox, "layouts", _("Layouts"))
             try:
                 widget = self.sidePage.content_box.c_manager.get_c_widget("region")
             except:
