@@ -10,6 +10,7 @@ try:
     import os.path
     import sys
     import time
+    import thread
     import urllib2
     import os
     import os.path
@@ -871,12 +872,13 @@ class ExtensionSidePage (SidePage):
     def load_spices(self, force=False):
         # if self.spices.get_webkit_enabled():
         self.update_list = {}
-        self.spices.load(self.on_spice_load, force)
+
+        thread.start_new_thread(self.spices.load, (self.on_spice_load, force))
 
     def install_extensions(self):
         if len(self.install_list) > 0:
-            self.spices.install_all(self.install_list, self.install_finished)
-    
+            thread.start_new_thread(self.spices.install_all, (self.install_list, self.install_finished))
+
     def install_finished(self, need_restart):
         for row in self.gm_model:
             self.gm_model.set_value(row.iter, 2, 0)
@@ -1021,8 +1023,9 @@ Please contact the developer.""")
         if not self.show_prompt(_("Are you sure you want to completely remove %s?") % (obj)):
             return
         self.disable_extension(uuid, name, 0)
-        self.spices.uninstall(uuid, name, schema_filename, self.on_uninstall_finished)
-    
+
+        thread.start_new_thread(self.spices.uninstall, (uuid, name, schema_filename, self.on_uninstall_finished))
+
     def on_uninstall_finished(self, uuid):
         self.load_extensions()
 
@@ -1030,7 +1033,7 @@ Please contact the developer.""")
         name = self.stack.get_visible_child_name()
         if name == "more" and len(self.gm_model) == 0:
             self.load_spices()
-        GLib.timeout_add(1, self.focus, name)
+        self.focus(name)
 
     def focus(self, name):
         if name == "installed":
