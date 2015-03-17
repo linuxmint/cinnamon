@@ -354,10 +354,8 @@ class Module:
             print "Loading Default module"
 
             stack = SettingsStack()
-            bg = SectionBg()
-            bg.add(stack)
 
-            self.sidePage.add_widget(bg)
+            self.sidePage.add_widget(stack)
 
             self.stack_switcher = Gtk.StackSwitcher()
             self.stack_switcher.set_halign(Gtk.Align.CENTER)

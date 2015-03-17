@@ -68,12 +68,10 @@ class Module:
 
             self.get_user_backgrounds()
 
-            bg = SectionBg()
-            self.sidePage.add_widget(bg)
-
             mainbox = Gtk.Box.new(Gtk.Orientation.VERTICAL, 2)
+            mainbox.expand = True
             mainbox.set_border_width(8)
-            bg.add(mainbox)
+            self.sidePage.add_widget(mainbox)
 
             top_hbox = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 2)
             left_vbox = Gtk.Box.new(Gtk.Orientation.VERTICAL, 0)

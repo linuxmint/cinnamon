@@ -119,15 +119,12 @@ class Module:
             print "Loading Info module"
             infos = createSystemInfos()
 
-            bg = SectionBg()
-            self.sidePage.add_widget(bg)                        
-            
             table = Gtk.Table.new(len(infos), 2, False)
             table.set_margin_top(8)
             table.set_margin_bottom(8)
             table.set_row_spacings(8)
             table.set_col_spacings(15)
-            bg.add(table)
+            self.sidePage.add_widget(table)
 
             row = 0
             for (key, value) in infos:

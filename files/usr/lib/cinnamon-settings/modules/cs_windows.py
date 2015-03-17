@@ -29,10 +29,8 @@ class Module:
 
             # Titlebar
 
-            bg = SectionBg()        
             vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
-            bg.add(vbox)
-            stack.add_titled(bg, "titlebar", _("Titlebar"))
+            stack.add_titled(vbox, "titlebar", _("Titlebar"))
 
             section = Section(_("Buttons"))
             
@@ -75,10 +73,8 @@ class Module:
 
             # Behavior
 
-            bg = SectionBg()        
             vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
-            bg.add(vbox)
-            stack.add_titled(bg, "behavior", _("Behavior"))
+            stack.add_titled(vbox, "behavior", _("Behavior"))
 
             section = Section(_("Window Focus"))
 
@@ -106,10 +102,8 @@ class Module:
 
             # Alt Tab
 
-            bg = SectionBg()        
             vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
-            bg.add(vbox)
-            stack.add_titled(bg, "alttab", _("Alt-Tab"))
+            stack.add_titled(vbox, "alttab", _("Alt-Tab"))
 
             section = Section(_("Alt-Tab"))  
             
