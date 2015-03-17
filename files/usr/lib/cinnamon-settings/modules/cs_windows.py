@@ -17,37 +17,31 @@ class Module:
     def on_module_selected(self, switch_container):
         if not self.loaded:
             print "Loading Windows module"
+
+            stack = SettingsStack()
+            self.sidePage.add_widget(stack)
+
+            self.stack_switcher = Gtk.StackSwitcher()
+            self.stack_switcher.set_halign(Gtk.Align.CENTER)
+            self.stack_switcher.set_stack(stack)
+            self.stack_switcher.set_homogeneous(True)
+            switch_container.pack_start(self.stack_switcher, True, True, 0)
+
+            # Titlebar
+
             bg = SectionBg()        
-            self.sidePage.add_widget(bg)
             vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
             bg.add(vbox)
+            stack.add_titled(bg, "titlebar", _("Titlebar"))
 
-            section = Section(_("Alt-Tab"))  
-            alttab_styles = [
-                ["icons", _("Icons only")],
-                ["thumbnails", _("Thumbnails only")],
-                ["icons+thumbnails", _("Icons and thumbnails")],
-                ["icons+preview", _("Icons and window preview")],
-                ["preview", _("Window preview (no icons)")],
-                ["coverflow", _("Coverflow (3D)")],
-                ["timeline", _("Timeline (3D)")]
-            ]
-            alttab_styles_combo = self._make_combo_group(_("Alt-Tab switcher style"), "org.cinnamon", "alttab-switcher-style", alttab_styles)
-            section.add(alttab_styles_combo)
-            section.add(GSettingsCheckButton(_("Display the alt-tab switcher on the primary monitor instead of the active one"), "org.cinnamon", "alttab-switcher-enforce-primary-monitor", None))
-            section.add(
-                GSettingsSpinButton(
-                    _("Delay before displaying the alt-tab switcher"),
-                    "org.cinnamon", "alttab-switcher-delay", dep_key=None,
-                    min=0, max=1000, step=50, page=150, 
-                    units=_("milliseconds")))
-            vbox.add(section)
-
-            vbox.add(Gtk.Separator.new(Gtk.Orientation.HORIZONTAL))        
-
-            section = Section(_("Titlebar"))
+            section = Section(_("Buttons"))
             
             section.add(TitleBarButtonsOrderSelector())
+            vbox.add(section)
+
+            vbox.add(Gtk.Separator.new(Gtk.Orientation.HORIZONTAL))
+
+            section = Section(_("Actions"))
 
             action_options = [["toggle-shade", _("Toggle Shade")], ["toggle-maximize", _("Toggle Maximize")],
                              ["toggle-maximize-horizontally", _("Toggle Maximize Horizontally")], ["toggle-maximize-vertically", _("Toggle Maximize Vertically")],
@@ -72,26 +66,22 @@ class Module:
             opacity_spinner = GSettingsSpinButton(_("Minimum opacity:"), "org.cinnamon.desktop.wm.preferences", "min-window-opacity", None, 0, 100, 1, 1, _("%"))
             opacity_spinner.show_all()
             opacity_spinner.set_no_show_all(True)
-
             combo.pack_start(opacity_spinner, False, False, 2)
-
             self.wm_settings = Gio.Settings("org.cinnamon.desktop.wm.preferences")
             self.wm_settings.connect("changed::action-scroll-titlebar", self.update_spinner_visibility, opacity_spinner)
             self.update_spinner_visibility(self.wm_settings, "action-scroll-titlebar", opacity_spinner)
-
             section.add(combo)
             vbox.add(section)
 
-            vbox.add(Gtk.Separator.new(Gtk.Orientation.HORIZONTAL))
+            # Behavior
 
-            section = Section(_("Window List"))
-            section.add(GSettingsCheckButton(_("Show an alert in the window list when a window from another workspace requires attention"), "org.cinnamon", "window-list-applet-alert", None))
-            section.add(GSettingsCheckButton(_("Enable mouse-wheel scrolling in the window list"), "org.cinnamon", "window-list-applet-scroll", None))        
-            vbox.add(section)
-
-            vbox.add(Gtk.Separator.new(Gtk.Orientation.HORIZONTAL))
+            bg = SectionBg()        
+            vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
+            bg.add(vbox)
+            stack.add_titled(bg, "behavior", _("Behavior"))
 
             section = Section(_("Window Focus"))
+
             focus_options = [["click", _("Click")], ["sloppy", _("Sloppy")], ["mouse", _("Mouse")]]
             section.add(self._make_combo_group(_("Window focus mode"), "org.cinnamon.desktop.wm.preferences", "focus-mode", focus_options))
             section.add(GSettingsCheckButton(_("Automatically raise focused windows"), "org.cinnamon.desktop.wm.preferences", "auto-raise", None))
@@ -104,12 +94,46 @@ class Module:
 
             section = Section(_("Moving and Resizing Windows"))
 
+            placement_options = [["automatic", _("Automatic")], ["pointer", _("Cursor")], ["manual", _("Manual")], ["center", _("Center")]]
+            combo = self._make_combo_group(_("Location of newly opened windows"), "org.cinnamon.muffin", "placement-mode", placement_options)
+            section.add(combo)
             special_key_options = [["", _("Disabled")], ["<Alt>", "<Alt>"],["<Super>", "<Super>"],["<Control>", "<Control>"]]
             combo = self._make_combo_group(_("Special key to move and resize windows"), "org.cinnamon.desktop.wm.preferences", "mouse-button-modifier", special_key_options)
             combo.set_tooltip_text(_("While the special key is pressed, windows can be dragged with the left mouse button and resized with the right mouse button."))
             section.add(combo)
             section.add(GSettingsSpinButton(_("Window drag/resize threshold"), "org.cinnamon.muffin", "resize-threshold", None, 1, 100, 1, 1, _("Pixels")))        
             vbox.add(section)
+
+            # Alt Tab
+
+            bg = SectionBg()        
+            vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
+            bg.add(vbox)
+            stack.add_titled(bg, "alttab", _("Alt-Tab"))
+
+            section = Section(_("Alt-Tab"))  
+            
+            alttab_styles = [
+                ["icons", _("Icons only")],
+                ["thumbnails", _("Thumbnails only")],
+                ["icons+thumbnails", _("Icons and thumbnails")],
+                ["icons+preview", _("Icons and window preview")],
+                ["preview", _("Window preview (no icons)")],
+                ["coverflow", _("Coverflow (3D)")],
+                ["timeline", _("Timeline (3D)")]
+            ]
+            alttab_styles_combo = self._make_combo_group(_("Alt-Tab switcher style"), "org.cinnamon", "alttab-switcher-style", alttab_styles)
+            section.add(alttab_styles_combo)
+            section.add(GSettingsCheckButton(_("Display the alt-tab switcher on the primary monitor instead of the active one"), "org.cinnamon", "alttab-switcher-enforce-primary-monitor", None))
+            section.add(
+                GSettingsSpinButton(
+                    _("Delay before displaying the alt-tab switcher"),
+                    "org.cinnamon", "alttab-switcher-delay", dep_key=None,
+                    min=0, max=1000, step=50, page=150, 
+                    units=_("milliseconds")))
+            vbox.add(section)
+
+        self.stack_switcher.show()
 
     def update_spinner_visibility(self, settings, key, widget):
         if settings.get_string(key) == "opacity":
@@ -129,7 +153,7 @@ class Module:
 
         w = GSettingsComboBox("", root, key, None, stuff)
         self.size_groups[1].add_widget(w)
-        box.pack_start(w, False, False, 0)
+        box.pack_start(w, False, False, 4)
         
         return box
 

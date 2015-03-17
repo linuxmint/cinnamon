@@ -493,22 +493,6 @@
       <_description>Duration of the effect (in milliseconds)</_description>
     </key>
 
-    <key name="window-list-applet-scroll" type="b">
-      <default>false</default>
-      <summary>Enable mouse-scroll in window-list applet</summary>
-      <description>
-        When enabled the mouse wheel can scroll through the items in the window list applet.
-      </description>
-    </key>
-    
-    <key name="window-list-applet-alert" type="b">
-      <default>true</default>
-      <summary>Enable window list alerts</summary>
-      <description>
-        Enable window list alerts
-      </description>
-    </key>
-
     <key name="bring-windows-to-current-workspace" type="b">
       <default>false</default>
       <summary>Brings windows requiring attention to the current workspace</summary>
