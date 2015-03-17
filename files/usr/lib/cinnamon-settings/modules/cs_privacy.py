@@ -19,10 +19,8 @@ class Module:
     def on_module_selected(self, switch_container):
         if not self.loaded:
             print "Loading Privacy module"
-            bg = SectionBg()        
-            self.sidePage.add_widget(bg)
             vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
-            bg.add(vbox)
+            self.sidePage.add_widget(vbox)
 
             section = Section(_("Recent files"))
 

@@ -15,12 +15,9 @@ class Module:
     def on_module_selected(self, switch_container):
         if not self.loaded:
             print "Loading Calendar module"
-            bg = SectionBg()        
-            bg.expand = True
-            self.sidePage.add_widget(bg)
             vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
-            bg.add(vbox)
-                    
+            self.sidePage.add_widget(vbox)
+
             try:
                 section = Section(_("Date Settings"))
                 widget = self.sidePage.content_box.c_manager.get_c_widget("datetime")

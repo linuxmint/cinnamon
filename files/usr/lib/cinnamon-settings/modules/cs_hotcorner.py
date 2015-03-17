@@ -35,8 +35,6 @@ class Module:
                 props = item.split(":")
                 self.properties.append(props)
 
-            bg = SectionBg()
-
             table = Gtk.Table.new(2, 3, False)
             table.set_row_spacings(5)
             table.set_col_spacings(10)
@@ -53,8 +51,7 @@ class Module:
             
             self.cornerDisplay.set_size_request(200, 250)
             
-            self.sidePage.add_widget(bg)
-            bg.add(table)
+            self.sidePage.add_widget(table)
         
             self.on_settings_changed(self.settings, "overview-corner")
        

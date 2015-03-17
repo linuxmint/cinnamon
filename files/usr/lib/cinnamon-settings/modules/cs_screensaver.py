@@ -39,10 +39,8 @@ class Module:
         if not self.loaded:
             print "Loading Screensaver module"
             schema = "org.cinnamon.desktop.screensaver"
-            bg = SectionBg()        
-            self.sidePage.add_widget(bg)
             vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
-            bg.add(vbox)
+            self.sidePage.add_widget(vbox)
 
             section = Section(_("Lock Settings"))
             widget = GSettingsCheckButton(_("Lock the computer when put to sleep"), "org.cinnamon.settings-daemon.plugins.power", "lock-on-suspend", None)

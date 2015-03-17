@@ -16,10 +16,8 @@ class Module:
     def on_module_selected(self, switch_container):
         if not self.loaded:
             print "Loading Fonts module"
-            bg = SectionBg()        
-            self.sidePage.add_widget(bg)
             vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
-            bg.add(vbox)
+            self.sidePage.add_widget(vbox)
             
             section = Section(_("Font Selection"))
             section.add(self.make_combo_group(GSettingsFontButton, _("Default font"), "org.cinnamon.desktop.interface", "font-name", None))
