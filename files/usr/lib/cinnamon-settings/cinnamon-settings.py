@@ -112,11 +112,10 @@ class MainWindow:
         iterator = self.store[cat].get_iter(path)
         sidePage = self.store[cat].get_value(iterator,2)
         if not sidePage.is_standalone:
-            self.side_view_sw.hide()
             self.search_entry.hide()
             self.window.set_title(sidePage.name)
             sidePage.build(self.switch_container)
-            self.content_box_sw.show()
+            self.main_stack.set_visible_child_name("content_box_page")
             self.button_back.show()
             self.switch_container.show()
             self.current_sidepage = sidePage
@@ -147,11 +146,15 @@ class MainWindow:
         self.window = self.builder.get_object("main_window")
         self.top_bar = self.builder.get_object("top_bar")
         self.side_view = {}
+        self.main_stack = self.builder.get_object("main_stack")
+        self.main_stack.set_transition_type(Gtk.StackTransitionType.CROSSFADE)
+        self.main_stack.set_transition_duration(300)
         self.side_view_container = self.builder.get_object("category_box")
         self.side_view_sw = self.builder.get_object("side_view_sw")
         self.side_view_sw.show_all()
         self.content_box = self.builder.get_object("content_box")
         self.content_box_sw = self.builder.get_object("content_box_sw")
+        self.content_box_sw.show_all()
         self.button_back = self.builder.get_object("button_back")
         self.button_back.set_tooltip_text(_("Back to all settings"))
         self.switch_container = self.builder.get_object("switch_container")
@@ -520,7 +523,6 @@ class MainWindow:
     def back_to_icon_view(self, widget):
         self.window.set_title(_("System Settings"))
         self.window.resize(WIN_WIDTH, WIN_HEIGHT)
-        self.content_box_sw.hide()
         children = self.content_box.get_children()
         for child in children:
             child.hide()
@@ -533,7 +535,7 @@ class MainWindow:
         for widget in switch_container_content:
             widget.hide()
         self.switch_container.hide()
-        self.side_view_sw.show()
+        self.main_stack.set_visible_child_name("side_view_page")
         self.search_entry.show()
         self.search_entry.grab_focus()
         self.current_sidepage = None   

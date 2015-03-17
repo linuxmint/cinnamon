@@ -109,7 +109,7 @@
           </packing>
         </child>
         <child>
-          <object class="GtkVBox" id="vbox1">
+          <object class="GtkStack" id="main_stack">
             <property name="visible">True</property>
             <property name="can_focus">False</property>
             <child>
@@ -141,8 +141,7 @@
                 </child>
               </object>
               <packing>
-                <property name="expand">True</property>
-                <property name="fill">True</property>
+                <property name="name">side_view_page</property>
                 <property name="position">1</property>
               </packing>
             </child>
@@ -175,8 +174,7 @@
                 </child>
               </object>
               <packing>
-                <property name="expand">True</property>
-                <property name="fill">True</property>
+                <property name="name">content_box_page</property>
                 <property name="position">2</property>
               </packing>
             </child>
