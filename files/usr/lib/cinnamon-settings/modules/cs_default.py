@@ -365,14 +365,12 @@ class Module:
             switch_container.pack_start(self.stack_switcher, True, True, 0)
 
             vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
-            stack.add(vbox)
-            stack.add_titled(bg, "preferred", _("Preferred Applications"))
+            stack.add_titled(vbox, "preferred", _("Preferred Applications"))
             widget = self.setupDefaultApps()
             vbox.pack_start(widget, False, False, 2)
 
             vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
-            stack.add(vbox)
-            stack.add_titled(bg, "removable", _("Removable Media"))
+            stack.add_titled(vbox, "removable", _("Removable Media"))
             widget = self.setupMedia()
             vbox.pack_start(widget, False, False, 2)
 
