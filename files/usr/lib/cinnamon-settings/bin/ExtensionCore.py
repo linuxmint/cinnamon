@@ -887,7 +887,7 @@ class ExtensionSidePage (SidePage):
             self.show_info(_("Please restart Cinnamon for the changes to take effect"))
 
     def on_spice_load(self, spicesData):
-        #print "total spices loaded: %d" % len(spicesData)
+        # print "total spices loaded: %d" % len(spicesData)
         self.gm_model.clear()
         self.install_button.set_sensitive(False)
         for uuid in spicesData:

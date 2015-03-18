@@ -23,6 +23,8 @@ try:
     import cgi
     import subprocess
     import thread
+    from time import sleep
+    from PIL import Image
 except Exception, detail:
     print detail
     sys.exit(1)
@@ -67,12 +69,50 @@ def removeEmptyFolders(path):
         print "Removing empty folder:", path
         os.rmdir(path)
 
+class ThreadedDownloader:
+    MAX_THREADS = 5
+
+    def __init__(self):
+        self.jobs = []
+        self.thread_ids = []
+
+    def get_n_jobs(self):
+        return len(self.jobs)
+
+    def busy(self):
+        return len(self.jobs) > 0 or len(self.thread_ids) > 0
+
+    def push(self, job):
+        self.jobs.insert(0, job)
+
+        self.check_start_job()
+
+    def check_start_job(self):
+        if len(self.jobs) > 0:
+            if len(self.thread_ids) == 5:
+                return
+
+            func, payload = self.jobs.pop()
+            handle = thread.start_new_thread(func, payload)
+            self.thread_ids.append(handle)
+
+            self.check_start_job()
+
+    def prune_thread(self, tid):
+        try:
+            self.thread_ids.remove(tid)
+        except:
+            pass
+
+        self.check_start_job()
+
 class Spice_Harvester:
     def __init__(self, collection_type, window):
         self.collection_type = collection_type        
         self.cache_folder = self.get_cache_folder()
         self.install_folder = self.get_install_folder()
         self.index_cache = {}
+        self.download_manager = ThreadedDownloader()
         self.error = None
         self.themes = collection_type == "theme"
         
@@ -247,11 +287,12 @@ class Spice_Harvester:
         self.abort_download = ABORT_NONE
         if (self.has_cache and not force):
             self.load_cache()
+            ui_thread_do(onDone, self.index_cache)
         else:
             ui_thread_do(self.ui_refreshing_index)
+            self.refresh_cache_done_callback = onDone
             self.refresh_cache()
 
-        ui_thread_do(onDone, self.index_cache)
         thread.exit()
 
     def ui_refreshing_index(self):
@@ -261,14 +302,14 @@ class Spice_Harvester:
         self.progress_bar_pulse()
 
     def refresh_cache(self, load_assets=True):
-        self.download_url = self.get_index_url()
+        download_url = self.get_index_url()
         
         filename = os.path.join(self.cache_folder, "index.json")
         f = open(filename, 'w')
-        self.download(f, filename)
+        self.download(f, filename, download_url)
         
         self.load_cache()
-        #print "Loaded index, now we know about %d spices." % len(self.index_cache)
+        # print "Loaded index, now we know about %d spices." % len(self.index_cache)
         
         if load_assets:
             ui_thread_do(self.ui_refreshing_cache)
@@ -292,7 +333,7 @@ class Spice_Harvester:
 
     def load_assets(self):
         needs_refresh = 0
-        used_thumbs = []
+        self.used_thumbs = []
 
         uuids = self.index_cache.keys()
 
@@ -300,11 +341,11 @@ class Spice_Harvester:
             if not self.themes:
                 icon_basename = os.path.basename(self.index_cache[uuid]['icon'])
                 icon_path = os.path.join(self.cache_folder, icon_basename)
-                used_thumbs.append(icon_basename)
+                self.used_thumbs.append(icon_basename)
             else:
                 icon_basename = self.sanitize_thumb(os.path.basename(self.index_cache[uuid]['screenshot']))
                 icon_path = os.path.join(self.cache_folder, icon_basename)
-                used_thumbs.append(icon_basename)
+                self.used_thumbs.append(icon_basename)
 
             self.index_cache[uuid]['icon_filename'] = icon_basename
             self.index_cache[uuid]['icon_path'] = icon_path
@@ -315,32 +356,56 @@ class Spice_Harvester:
         self.download_total_files = needs_refresh
         self.download_current_file = 0
 
+        need_to_download = False
+
         for uuid in uuids:
             if self.abort_download > ABORT_NONE:
                 return
 
             icon_path = self.index_cache[uuid]['icon_path']
-            if not os.path.isfile(icon_path):
+            if not os.path.isfile(icon_path) or self.is_bad_image(icon_path):
+                need_to_download = True
                 #self.progress_bar_pulse()
                 self.download_current_file += 1
                 f = open(icon_path, 'w')
+                download_url = ""
                 if not self.themes:
-                    self.download_url = URL_SPICES_HOME + self.index_cache[uuid]['icon']
+                    download_url = URL_SPICES_HOME + self.index_cache[uuid]['icon']
                 else:
-                    self.download_url = URL_SPICES_HOME + "/uploads/themes/thumbs/" + self.index_cache[uuid]['icon_filename']
-                valid = True
-                try:
-                    urllib2.urlopen(self.download_url).getcode()
-                except:
-                    valid = False
-                if valid:
-                    self.download(f, icon_path)
+                    download_url = URL_SPICES_HOME + "/uploads/themes/thumbs/" + self.index_cache[uuid]['icon_filename']
+                self.download_manager.push((self.load_assets_thread, (f, icon_path, download_url)))
+                # thread.start_new_thread(self.load_assets_thread, (f, icon_path, download_url))
+        if not need_to_download:
+            self.load_assets_done()
 
+    def is_bad_image(self, path):
+        try:
+            image = Image.open(path)
+        except IOError:
+            return True
+        return False
+
+    def load_assets_thread(self, f, icon_path, url):
+        valid = True
+        try:
+            urllib2.urlopen(url).getcode()
+        except:
+            valid = False
+        if valid:
+            self.download(f, icon_path, url)
+
+        self.load_assets_done()
+        thread.exit()
+
+    def load_assets_done(self):
+        self.download_manager.prune_thread(thread.get_ident())
+        if self.download_manager.busy():
+            return
         # Cleanup obsolete thumbs
         trash = []
         flist = os.listdir(self.cache_folder)
         for f in flist:
-            if f not in used_thumbs and f != "index.json":
+            if f not in self.used_thumbs and f != "index.json":
                 trash.append(f)
         for t in trash:
             try:
@@ -349,7 +414,7 @@ class Spice_Harvester:
                 pass
 
         ui_thread_do(self.progress_window.hide)
-
+        ui_thread_do(self.refresh_cache_done_callback, self.index_cache)
         self.download_total_files = 0
         self.download_current_file = 0
 
@@ -387,7 +452,7 @@ class Spice_Harvester:
         #print "Start downloading and installation"
         title = self.index_cache[uuid]['name']
 
-        self.download_url = URL_SPICES_HOME + self.index_cache[uuid]['file'];
+        download_url = URL_SPICES_HOME + self.index_cache[uuid]['file'];
         self.current_uuid = uuid
 
         ui_thread_do(self.ui_installing_xlet, title)
@@ -399,7 +464,7 @@ class Spice_Harvester:
             dirname = tempfile.mkdtemp()
             f = os.fdopen(fd, 'wb')
             try:
-                self.download(f, filename)
+                self.download(f, filename, download_url)
                 dest = os.path.join(self.install_folder, uuid)
                 schema_filename = ""
                 zip = zipfile.ZipFile(filename)
@@ -458,7 +523,7 @@ class Spice_Harvester:
             dirname = tempfile.mkdtemp()
             f = os.fdopen(fd, 'wb')
             try:
-                self.download(f, filename)
+                self.download(f, filename, download_url)
                 dest = self.install_folder
                 zip = zipfile.ZipFile(filename)
                 zip.extractall(dirname)
@@ -591,8 +656,7 @@ class Spice_Harvester:
             while Gtk.events_pending():
                 Gtk.main_iteration()
 
-    def download(self, outfd, outfile):
-        url = self.download_url
+    def download(self, outfd, outfile, url):
         ui_thread_do(self.progress_button_abort.set_sensitive, True)
         try:
             self.url_retrieve(url, outfd, self.reporthook)
@@ -610,8 +674,8 @@ class Spice_Harvester:
 
     def reporthook(self, count, blockSize, totalSize):
         if self.download_total_files > 1:
-            fraction = (float(self.download_current_file) / float(self.download_total_files));
-            self.progressbar.set_text("%s - %d / %d files" % (str(int(fraction*100)) + '%', self.download_current_file, self.download_total_files))
+            fraction = 1.0 - (float(self.download_manager.get_n_jobs()) / float(self.download_total_files))
+            self.progressbar.set_text("%s - %d / %d files" % (str(int(fraction*100)) + '%', self.download_total_files - self.download_manager.get_n_jobs(), self.download_total_files))
         else:
             fraction = count * blockSize / float((totalSize / blockSize + 1) *
                 (blockSize))
