@@ -70,7 +70,7 @@ def removeEmptyFolders(path):
         os.rmdir(path)
 
 class ThreadedDownloader:
-    MAX_THREADS = 5
+    MAX_THREADS = 10
 
     def __init__(self):
         self.jobs = []
@@ -89,7 +89,7 @@ class ThreadedDownloader:
 
     def check_start_job(self):
         if len(self.jobs) > 0:
-            if len(self.thread_ids) == 5:
+            if len(self.thread_ids) == self.MAX_THREADS:
                 return
 
             func, payload = self.jobs.pop()
