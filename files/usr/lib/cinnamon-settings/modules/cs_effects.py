@@ -69,7 +69,7 @@ class Module:
         self.name = "effects"
         self.category = "appear"
         self.comment = _("Control Cinnamon visual effects.")
-    def on_module_selected(self, switch_container):
+    def on_module_selected(self):
         if not self.loaded:
             print "Loading Effects module"
             vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)

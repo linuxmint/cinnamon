@@ -19,7 +19,7 @@ class Module:
         self.category = "prefs"
         self.comment = _("Change your user preferences and password")                        
 
-    def on_module_selected(self, switch_container):
+    def on_module_selected(self):
         if not self.loaded:
             print "Loading User module"
        

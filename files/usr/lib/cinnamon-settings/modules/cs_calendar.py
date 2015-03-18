@@ -12,7 +12,7 @@ class Module:
         self.comment = _("Manage date and time settings")
         self.category = "prefs"        
                 
-    def on_module_selected(self, switch_container):
+    def on_module_selected(self):
         if not self.loaded:
             print "Loading Calendar module"
             vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)

@@ -16,7 +16,7 @@ class Module:
         self.name = "themes"
         self.category = "appear"
 
-    def on_module_selected(self, switch_container):
+    def on_module_selected(self):
         if not self.loaded:
             print "Loading Themes module"            
             self.settings = Gio.Settings.new("org.cinnamon.desktop.interface")
@@ -186,7 +186,7 @@ class Module:
         window.set_border_width(6)
         window.set_position(Gtk.WindowPosition.CENTER)        
         page = ExtensionSidePage(self.name, self.icon, self.keywords, box, "theme", None)
-        page.load(None, window=window)
+        page.load(window=window)
         box.pack_start(page.vbox, True, True, 6)
         window.show_all()
         return True

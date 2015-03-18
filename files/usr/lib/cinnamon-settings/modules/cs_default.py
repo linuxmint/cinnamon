@@ -349,31 +349,23 @@ class Module:
         self.category = "prefs"
         self.comment = _("Preferred Applications")
 
-    def on_module_selected(self, switch_container):
+    def on_module_selected(self):
         if not self.loaded:
             print "Loading Default module"
 
-            stack = SettingsStack()
-
-            self.sidePage.add_widget(stack)
-
-            self.stack_switcher = Gtk.StackSwitcher()
-            self.stack_switcher.set_halign(Gtk.Align.CENTER)
-            self.stack_switcher.set_stack(stack)
-            switch_container.pack_start(self.stack_switcher, True, True, 0)
+            self.sidePage.stack = SettingsStack()
+            self.sidePage.add_widget(self.sidePage.stack)
 
             vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
-            stack.add_titled(vbox, "preferred", _("Preferred Applications"))
+            self.sidePage.stack.add_titled(vbox, "preferred", _("Preferred Applications"))
             widget = self.setupDefaultApps()
             vbox.pack_start(widget, False, False, 2)
 
             vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
-            stack.add_titled(vbox, "removable", _("Removable Media"))
+            self.sidePage.stack.add_titled(vbox, "removable", _("Removable Media"))
             widget = self.setupMedia()
             vbox.pack_start(widget, False, False, 2)
 
-        self.stack_switcher.show()
-            
 
     def setupDefaultApps(self):
         table = ButtonTable(len(preferred_app_defs))

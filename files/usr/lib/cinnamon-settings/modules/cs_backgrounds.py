@@ -45,7 +45,7 @@ class Module:
         self.category = "appear"
         self.comment = _("Change your desktop's background")
 
-    def on_module_selected(self, switch_container):
+    def on_module_selected(self):
         if not self.loaded:
             print "Loading Backgrounds module"
 

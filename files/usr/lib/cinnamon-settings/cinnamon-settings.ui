@@ -55,12 +55,10 @@
                       </packing>
                     </child>
                     <child>
-                      <object class="GtkBox" id="switch_container">
+                      <object class="GtkStackSwitcher" id="stack_switcher">
                         <property name="visible">True</property>
-                        <property name="can_focus">False</property>
-                        <child>
-                          <placeholder/>
-                        </child>
+                        <property name="halign">center</property>
+                        <property name="homogeneous">True</property>
                       </object>
                       <packing>
                         <property name="expand">True</property>
@@ -141,6 +139,7 @@
                 </child>
               </object>
               <packing>
+                <property name="title">Hello World</property>
                 <property name="name">side_view_page</property>
                 <property name="position">1</property>
               </packing>

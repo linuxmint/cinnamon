@@ -259,21 +259,21 @@ class SidePage:
         self.size = size
         self.topWindow = None
         self.builder = None
-        self.stack_switcher = None
+        self.stack = None
         if self.module != None:
             self.module.loaded = False
 
     def add_widget(self, widget):
         self.widgets.append(widget)        
 
-    def build(self, switch_container):        
+    def build(self):
         # Clear all the widgets from the content box
         widgets = self.content_box.get_children()
         for widget in widgets:
             self.content_box.remove(widget)
 
         if (self.module is not None):
-            self.module.on_module_selected(switch_container)
+            self.module.on_module_selected()
             self.module.loaded = True
 
         # Add our own widgets
@@ -306,22 +306,12 @@ class SidePage:
                         for c_widget in c_widgets:
                             c_widget.show()
 
-                    # child.get_children()[0] is the CC Panel object (child is
-                    # a box, but will only contain one subwidget). This is
-                    # usually a bin, but profound hackery might turn it into a
-                    # VBox. So we call get_children()[0] again to obtain the 
-                    # primary widget of the panel. We look # in here to see if
-                    # there is a stack switcher. If found, we move it to the
-                    # switch container
-                    for i in child.get_children()[0].get_children()[0]:
-                        if isinstance(i, Gtk.StackSwitcher):
-                            self.stack_switcher = i
-                            break
-
-                    if self.stack_switcher:
-                        self.stack_switcher.show()
-                        self.stack_switcher.get_parent().remove(self.stack_switcher)
-                        switch_container.pack_start(self.stack_switcher, True, True, 0)
+                    # Look for a stack recursively
+                    for i in child:
+                        for j in i:
+                            for k in j:
+                                if isinstance(k, Gtk.Stack):
+                                    self.stack = k
             else:
                 self.content_box.show_all()
                 try:
