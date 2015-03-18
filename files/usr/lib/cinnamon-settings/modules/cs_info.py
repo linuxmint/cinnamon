@@ -50,11 +50,16 @@ def getGraphicsInfos():
 
 def getDiskSize():
     disksize = 0
+    moreThanOnce = 0
     for line in getProcessOut("df"):
-        if line.startswith("/"):
+        if line.startswith("/dev/"):
+            moreThanOnce += 1
             disksize += float(line.split()[1])
             
-    return disksize
+    if (moreThanOnce > 1):
+        return disksize, True
+    else:
+        return disksize, False
 
 def getProcInfos():
     infos = [
@@ -97,7 +102,13 @@ def createSystemInfos():
         infos.append((_("Memory"), '%.1f %s' % ((float(memsize)/(1024*1024)), _("GiB"))))
     else:
         infos.append((_("Memory"), procInfos['mem_total']))
-    infos.append((_("Hard Drive"), '%.1f %s' % ((getDiskSize() / (1000*1000)), _("GB"))))
+        
+    diskSize, multipleDisks = getDiskSize()
+    if (multipleDisks):
+        diskText = _("Hard Drives")
+    else:
+        diskText = _("Hard Drive")
+    infos.append((diskText, '%.1f %s' % ((diskSize / (1000*1000)), _("GB"))))
 
     cards = getGraphicsInfos()
     for card in cards:
