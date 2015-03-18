@@ -14,23 +14,17 @@ class Module:
         self.category = "prefs"
         self.comment = _("Manage window preferences")        
 
-    def on_module_selected(self, switch_container):
+    def on_module_selected(self):
         if not self.loaded:
             print "Loading Windows module"
 
-            stack = SettingsStack()
-            self.sidePage.add_widget(stack)
-
-            self.stack_switcher = Gtk.StackSwitcher()
-            self.stack_switcher.set_halign(Gtk.Align.CENTER)
-            self.stack_switcher.set_stack(stack)
-            self.stack_switcher.set_homogeneous(True)
-            switch_container.pack_start(self.stack_switcher, True, True, 0)
+            self.sidePage.stack = SettingsStack()
+            self.sidePage.add_widget(self.sidePage.stack)
 
             # Titlebar
 
             vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
-            stack.add_titled(vbox, "titlebar", _("Titlebar"))
+            self.sidePage.stack.add_titled(vbox, "titlebar", _("Titlebar"))
 
             section = Section(_("Buttons"))
             
@@ -74,7 +68,7 @@ class Module:
             # Behavior
 
             vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
-            stack.add_titled(vbox, "behavior", _("Behavior"))
+            self.sidePage.stack.add_titled(vbox, "behavior", _("Behavior"))
 
             section = Section(_("Window Focus"))
 
@@ -103,7 +97,7 @@ class Module:
             # Alt Tab
 
             vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
-            stack.add_titled(vbox, "alttab", _("Alt-Tab"))
+            self.sidePage.stack.add_titled(vbox, "alttab", _("Alt-Tab"))
 
             section = Section(_("Alt-Tab"))  
             
@@ -126,8 +120,6 @@ class Module:
                     min=0, max=1000, step=50, page=150, 
                     units=_("milliseconds")))
             vbox.add(section)
-
-        self.stack_switcher.show()
 
     def update_spinner_visibility(self, settings, key, widget):
         if settings.get_string(key) == "opacity":

@@ -14,7 +14,7 @@ class Module:
     def shouldLoad(self):
         return True
 
-    def on_module_selected(self, switch_container):
+    def on_module_selected(self):
         if not self.loaded:
             print "Loading Workspaces module"
             vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)

@@ -12,7 +12,7 @@ class Module:
         self.comment = _("Manage window tiling preferences")
         self.category = "prefs"        
 
-    def on_module_selected(self, switch_container):
+    def on_module_selected(self):
         if not self.loaded:
             print "Loading Tiling module"
             vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)

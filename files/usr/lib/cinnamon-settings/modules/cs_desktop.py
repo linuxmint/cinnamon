@@ -18,7 +18,7 @@ class Module:
             return True
         return False
 
-    def on_module_selected(self, switch_container):
+    def on_module_selected(self):
         if self.loaded:
             return
 

@@ -53,7 +53,7 @@ class ExtensionSidePage (SidePage):
         self.icons = []
         self.run_once = False
 
-    def load(self, switch_container, window=None):
+    def load(self, window=None):
 
         if window is not None:
             self.window = window
@@ -67,17 +67,15 @@ class ExtensionSidePage (SidePage):
         scrolledWindow.set_border_width(6) 
 
         self.stack = SettingsStack()
-        self.stack_switcher = Gtk.StackSwitcher()
-        self.stack_switcher.set_halign(Gtk.Align.CENTER)
-        self.stack_switcher.set_stack(self.stack)
+        if window is not None:
+            self.stack_switcher = Gtk.StackSwitcher()
+            self.stack_switcher.set_halign(Gtk.Align.CENTER)
+            self.stack_switcher.set_stack(self.stack)
+            self.stack_switcher.set_homogeneous(True)
 
-        if window:
             self.vbox = Gtk.VBox()
             self.vbox.pack_start(self.stack_switcher, False, True, 2)
             self.vbox.pack_start(self.stack, True, True, 2)
-        else:
-            switch_container.pack_start(self.stack_switcher, True, True, 0)
-            self.stack_switcher.show()
 
         self.add_widget(self.stack)
 

@@ -12,21 +12,16 @@ class Module:
         self.name = "mouse"
         self.category = "hardware"
 
-    def on_module_selected(self, switch_container):
+    def on_module_selected(self):
         if not self.loaded:
             print "Loading Mouse module"
 
-            stack = SettingsStack()
-            self.sidePage.add_widget(stack)
-
-            self.stack_switcher = Gtk.StackSwitcher()
-            self.stack_switcher.set_halign(Gtk.Align.CENTER)
-            self.stack_switcher.set_stack(stack)
-            switch_container.pack_start(self.stack_switcher, True, True, 0)
+            self.sidePage.stack = SettingsStack()
+            self.sidePage.add_widget(self.sidePage.stack)
 
             # Mouse
             vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
-            stack.add_titled(vbox, "mouse", _("Mouse"))
+            self.sidePage.stack.add_titled(vbox, "mouse", _("Mouse"))
 
             section = Section(_("General"))  
             section.add(GSettingsCheckButton(_("Left handed (mouse buttons inverted)"), "org.cinnamon.settings-daemon.peripherals.mouse", "left-handed", None))
@@ -66,7 +61,7 @@ class Module:
             # Touchpad
 
             vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
-            stack.add_titled(vbox, "touchpad", _("Touchpad"))
+            self.sidePage.stack.add_titled(vbox, "touchpad", _("Touchpad"))
 
             section = Section(_("General"))  
             section.add(GSettingsCheckButton(_("Enable touchpad"), "org.cinnamon.settings-daemon.peripherals.touchpad", "touchpad-enabled", None))
@@ -101,8 +96,6 @@ class Module:
 
             section.add_indented(GSettingsIntComboBox(_("Two-finger click emulation:"), "org.cinnamon.settings-daemon.peripherals.touchpad", "two-finger-click", "org.cinnamon.settings-daemon.peripherals.touchpad/touchpad-enabled", button_list, False))
             section.add_indented(GSettingsIntComboBox(_("Three-finger click emulation:"), "org.cinnamon.settings-daemon.peripherals.touchpad", "three-finger-click", "org.cinnamon.settings-daemon.peripherals.touchpad/touchpad-enabled", button_list, False))
-
-        self.stack_switcher.show()            
 
     def test_button_clicked(self, widget, event):
         if event.type == Gdk.EventType._2BUTTON_PRESS:

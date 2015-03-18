@@ -40,7 +40,7 @@ class Module:
         self.category = "hardware"
         self.comment = _("Manage power settings")
 
-    def on_module_selected(self, switch_container):
+    def on_module_selected(self):
         if not self.loaded:
             print "Loading Power module"
             try:

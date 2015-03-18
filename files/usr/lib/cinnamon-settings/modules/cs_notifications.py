@@ -34,7 +34,7 @@ class Module:
         self.comment = _("Notification preferences")
         self.category = "prefs"
 
-    def on_module_selected(self, switch_container):
+    def on_module_selected(self):
         if self.loaded:
             return
 

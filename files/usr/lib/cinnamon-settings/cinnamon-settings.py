@@ -112,16 +112,19 @@ class MainWindow:
         iterator = self.store[cat].get_iter(path)
         sidePage = self.store[cat].get_value(iterator,2)
         if not sidePage.is_standalone:
-            self.search_entry.hide()
             self.window.set_title(sidePage.name)
-            sidePage.build(self.switch_container)
+            sidePage.build()
+            if sidePage.stack:
+                self.stack_switcher.set_stack(sidePage.stack)
+                self.stack_switcher.set_opacity(1)
+            else:
+                self.stack_switcher.set_opacity(0)
             self.main_stack.set_visible_child_name("content_box_page")
-            self.button_back.show()
-            self.switch_container.show()
+            self.header_stack.set_visible_child_name("content_box")
             self.current_sidepage = sidePage
             self.maybe_resize(sidePage)
         else:
-            sidePage.build(self.switch_container)
+            sidePage.build()
 
     def maybe_resize(self, sidePage):
         m, n = self.content_box.get_preferred_size()
@@ -148,7 +151,10 @@ class MainWindow:
         self.side_view = {}
         self.main_stack = self.builder.get_object("main_stack")
         self.main_stack.set_transition_type(Gtk.StackTransitionType.CROSSFADE)
-        self.main_stack.set_transition_duration(300)
+        self.main_stack.set_transition_duration(150)
+        self.header_stack = self.builder.get_object("header_stack")
+        self.header_stack.set_transition_type(Gtk.StackTransitionType.CROSSFADE)
+        self.header_stack.set_transition_duration(150)
         self.side_view_container = self.builder.get_object("category_box")
         self.side_view_sw = self.builder.get_object("side_view_sw")
         self.side_view_sw.show_all()
@@ -157,14 +163,19 @@ class MainWindow:
         self.content_box_sw.show_all()
         self.button_back = self.builder.get_object("button_back")
         self.button_back.set_tooltip_text(_("Back to all settings"))
-        self.switch_container = self.builder.get_object("switch_container")
+
+        self.stack_switcher = self.builder.get_object("stack_switcher")
+        # Set stack to random thing and make opacity 0 so that the heading bar
+        # does not resize when switching between pages
+        self.stack_switcher.set_stack(self.main_stack)
+
         m, n = self.button_back.get_preferred_width()
-        self.switch_container.set_margin_right(n)
-        self.button_back.hide()
+        self.stack_switcher.set_margin_right(n)
 
         self.search_entry = self.builder.get_object("search_box")
         self.search_entry.connect("changed", self.onSearchTextChanged)
         self.search_entry.connect("icon-press", self.onClearSearchBox)
+
         self.window.connect("destroy", self.quit)
         self.window.connect("key-press-event", self.on_keypress)
         self.window.connect("button-press-event", self.on_buttonpress)
@@ -530,13 +541,8 @@ class MainWindow:
                 c_widgets = child.get_children()
                 for c_widget in c_widgets:
                     c_widget.hide()
-        self.button_back.hide()
-        switch_container_content = self.switch_container.get_children()
-        for widget in switch_container_content:
-            widget.hide()
-        self.switch_container.hide()
         self.main_stack.set_visible_child_name("side_view_page")
-        self.search_entry.show()
+        self.header_stack.set_visible_child_name("side_view")
         self.search_entry.grab_focus()
         self.current_sidepage = None   
     

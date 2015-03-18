@@ -114,7 +114,7 @@ class Module:
         self.category = "hardware"
         self.comment = _("Display system information")
         
-    def on_module_selected(self, switch_container):
+    def on_module_selected(self):
         if not self.loaded:
             print "Loading Info module"
             infos = createSystemInfos()

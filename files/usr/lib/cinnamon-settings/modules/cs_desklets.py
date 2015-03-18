@@ -13,11 +13,10 @@ class Module:
         self.sidePage = sidePage
         self.category = "prefs"
 
-    def on_module_selected(self, switch_container):
+    def on_module_selected(self):
         if not self.loaded:
             print "Loading Desklets module"
-            self.sidePage.load(switch_container)
-        self.sidePage.stack_switcher.show()
+            self.sidePage.load()
 
     def _setParentRef(self, window):
         self.sidePage.window = window
