@@ -112,14 +112,15 @@ class MainWindow:
         iterator = self.store[cat].get_iter(path)
         sidePage = self.store[cat].get_value(iterator,2)
         if not sidePage.is_standalone:
-            self.search_entry.hide()
             self.window.set_title(sidePage.name)
             sidePage.build()
             if sidePage.stack:
                 self.stack_switcher.set_stack(sidePage.stack)
                 self.stack_switcher.set_opacity(1)
+            else:
+                self.stack_switcher.set_opacity(0)
             self.main_stack.set_visible_child_name("content_box_page")
-            self.button_back.set_opacity(1)
+            self.header_stack.set_visible_child_name("content_box")
             self.current_sidepage = sidePage
             self.maybe_resize(sidePage)
         else:
@@ -150,7 +151,10 @@ class MainWindow:
         self.side_view = {}
         self.main_stack = self.builder.get_object("main_stack")
         self.main_stack.set_transition_type(Gtk.StackTransitionType.CROSSFADE)
-        self.main_stack.set_transition_duration(300)
+        self.main_stack.set_transition_duration(150)
+        self.header_stack = self.builder.get_object("header_stack")
+        self.header_stack.set_transition_type(Gtk.StackTransitionType.CROSSFADE)
+        self.header_stack.set_transition_duration(150)
         self.side_view_container = self.builder.get_object("category_box")
         self.side_view_sw = self.builder.get_object("side_view_sw")
         self.side_view_sw.show_all()
@@ -164,11 +168,9 @@ class MainWindow:
         # Set stack to random thing and make opacity 0 so that the heading bar
         # does not resize when switching between pages
         self.stack_switcher.set_stack(self.main_stack)
-        self.stack_switcher.set_opacity(0)
 
         m, n = self.button_back.get_preferred_width()
         self.stack_switcher.set_margin_right(n)
-        self.button_back.set_opacity(0)
 
         self.search_entry = self.builder.get_object("search_box")
         self.search_entry.connect("changed", self.onSearchTextChanged)
@@ -539,11 +541,8 @@ class MainWindow:
                 c_widgets = child.get_children()
                 for c_widget in c_widgets:
                     c_widget.hide()
-        self.button_back.set_opacity(0)
-        self.stack_switcher.set_stack(self.main_stack)
-        self.stack_switcher.set_opacity(0)
         self.main_stack.set_visible_child_name("side_view_page")
-        self.search_entry.show()
+        self.header_stack.set_visible_child_name("side_view")
         self.search_entry.grab_focus()
         self.current_sidepage = None   
     
