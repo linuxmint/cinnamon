@@ -119,7 +119,7 @@ class MainWindow:
                 self.stack_switcher.set_stack(sidePage.stack)
                 self.stack_switcher.set_opacity(1)
             self.main_stack.set_visible_child_name("content_box_page")
-            self.button_back.show()
+            self.button_back.set_opacity(1)
             self.current_sidepage = sidePage
             self.maybe_resize(sidePage)
         else:
@@ -168,7 +168,7 @@ class MainWindow:
 
         m, n = self.button_back.get_preferred_width()
         self.stack_switcher.set_margin_right(n)
-        self.button_back.hide()
+        self.button_back.set_opacity(0)
 
         self.search_entry = self.builder.get_object("search_box")
         self.search_entry.connect("changed", self.onSearchTextChanged)
@@ -539,7 +539,7 @@ class MainWindow:
                 c_widgets = child.get_children()
                 for c_widget in c_widgets:
                     c_widget.hide()
-        self.button_back.hide()
+        self.button_back.set_opacity(0)
         self.stack_switcher.set_stack(self.main_stack)
         self.stack_switcher.set_opacity(0)
         self.main_stack.set_visible_child_name("side_view_page")
