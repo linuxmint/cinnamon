@@ -1248,14 +1248,6 @@ StScrollBar StButton#vhandle:hover {
 .sound-seek-slider {
    width: 140px;   
 }
-.sound-volume-menu-item {
-	padding: .4em 1.75em;
-}
-.sound-volume-menu-item StIcon {
-	icon-size: 1.14em;
-	padding-left: 8px;
-	padding-right: 8px;
-}
 .sound-playback-control {
 	padding-top: 5px;
 	padding-bottom: 10px;

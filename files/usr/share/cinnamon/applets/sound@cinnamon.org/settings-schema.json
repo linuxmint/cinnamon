@@ -15,6 +15,15 @@
         "dependency": "showtrack",
         "indent": true
     },
+    "middleClickAction": {
+        "type": "combobox",
+        "default": "mute",
+        "options": {
+            "Toggle Mute": "mute",
+            "Toggle Play / Pause": "player"
+        },
+        "description": "Action on middle click"
+    },
     "showalbum": {
         "type": "checkbox",
         "default": false,
@@ -24,5 +33,9 @@
         "type" : "checkbox",
         "description" : "Hide system tray icons for compatible players",
         "default": true
+    },
+    "_knownPlayers": {
+        "type": "generic",
+        "default": ["banshee", "vlc"]
     }
 }
