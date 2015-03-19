@@ -38,7 +38,7 @@ class ModulePage(pageutils.BaseListView):
     def onViewSource(self, menuItem):
         iter = self.store.get_iter(self.selectedPath)
         folder = self.store.get_value(iter, 5)
-        os.system("gnome-open \"" + folder + "\" &")
+        os.system("xdg-open \"" + folder + "\" &")
 
     def onReloadCode(self, menuItem):
         iter = self.store.get_iter(self.selectedPath)
@@ -48,7 +48,7 @@ class ModulePage(pageutils.BaseListView):
     def onViewWebPage(self, menuItem):
         iter = self.store.get_iter(self.selectedPath)
         url = self.store.get_value(iter, 6)
-        os.system("gnome-open \"" + url + "\" &")
+        os.system("xdg-open \"" + url + "\" &")
 
     def on_button_press_event(self, treeview, event):
         x = int(event.x)
