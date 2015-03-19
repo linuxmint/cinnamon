@@ -306,12 +306,18 @@ class SidePage:
                         for c_widget in c_widgets:
                             c_widget.show()
 
+                    def recursively_iterate(parent):
+                        if self.stack:
+                            return
+                        for child in parent:
+                            if isinstance(child, Gtk.Stack):
+                                self.stack = child
+                                break
+                            elif isinstance(child, Gtk.Container):
+                                recursively_iterate(child)
+
                     # Look for a stack recursively
-                    for i in child:
-                        for j in i:
-                            for k in j:
-                                if isinstance(k, Gtk.Stack):
-                                    self.stack = k
+                    recursively_iterate(child)
             else:
                 self.content_box.show_all()
                 try:
