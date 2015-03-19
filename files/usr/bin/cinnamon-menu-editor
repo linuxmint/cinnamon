@@ -1,4 +1,4 @@
-#! /usr/bin/python -OOt
+#! /usr/bin/python2 -OOt
 
 import sys
 sys.path.insert(0,'/usr/lib/cinnamon-menu-editor')
