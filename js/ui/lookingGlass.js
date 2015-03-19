@@ -1,25 +1,18 @@
 // -*- mode: js; js-indent-level: 4; indent-tabs-mode: nil -*-
 
+const Cinnamon = imports.gi.Cinnamon;
 const Clutter = imports.gi.Clutter;
 const Cogl = imports.gi.Cogl;
-const GLib = imports.gi.GLib;
 const Gio = imports.gi.Gio;
-const Gtk = imports.gi.Gtk;
-const Meta = imports.gi.Meta;
-const Pango = imports.gi.Pango;
-const St = imports.gi.St;
-const Cinnamon = imports.gi.Cinnamon;
-const Signals = imports.signals;
 const Lang = imports.lang;
-const CinnamonJS = imports.gi.CinnamonJS;
-
-const History = imports.misc.history;
-const Extension = imports.ui.extension;
-const Link = imports.ui.link;
-const CinnamonEntry = imports.ui.cinnamonEntry;
-const Tweener = imports.ui.tweener;
-const Main = imports.ui.main;
+const Meta = imports.gi.Meta;
+const Signals = imports.signals;
+const St = imports.gi.St;
 const System = imports.system;
+
+const Extension = imports.ui.extension;
+const History = imports.misc.history;
+const Main = imports.ui.main;
 
 /* Imports...feel free to add here as needed */
 var commandHeader = 'const Clutter = imports.gi.Clutter; ' +
