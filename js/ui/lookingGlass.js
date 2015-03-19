@@ -639,11 +639,12 @@ Melange.prototype = {
                         uuid: uuid,
                         folder: meta.path,
                         url: meta.url ? meta.url : '',
-                        type: Extension.objects[uuid].type.name
+                        type: meta.type.name,
+                        error_message: meta.error ? meta.error : _("Loaded successfully"),
+                        error: meta.error ? "true" : "false" // Must use string due to dbus restrictions
                     });
                 }
             }
-        
             return [true, extensionList];
         } catch (e) {
             global.logError('Error getting the extension list', e);

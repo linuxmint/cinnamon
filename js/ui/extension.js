@@ -124,8 +124,8 @@ for(var key in Type) {
 }
 
 // Create a dummy metadata object when metadata parsing failed or was not done yet.
-function createMetaDummy(uuid, path, state) {
-    return { name: uuid, description: 'Metadata load failed', state: state, path: path, error: '' };
+function createMetaDummy(uuid, path, state, type) {
+    return { name: uuid, description: 'Metadata load failed', state: state, path: path, error: '', type: type };
 }
 
 // The Extension object itself
@@ -142,7 +142,7 @@ Extension.prototype = {
         this.theme = null;
         this.stylesheet = null;
         this.iconDirectory = null;
-        this.meta = createMetaDummy(this.uuid, dir.get_path(), State.INITIALIZING);
+        this.meta = createMetaDummy(this.uuid, dir.get_path(), State.INITIALIZING, type);
         this.startTime = new Date().getTime();
 
         this.loadMetaData(dir.get_child('metadata.json'));
@@ -222,22 +222,24 @@ Extension.prototype = {
     },
 
     loadMetaData: function(metadataFile) {
-        this.ensureFileExists(metadataFile);
 
         let oldState = this.meta.state;
         let oldPath = this.meta.path;
 
         try {
+            this.ensureFileExists(metadataFile);
             let metadataContents = Cinnamon.get_file_contents_utf8_sync(metadataFile.get_path());
             this.meta = JSON.parse(metadataContents);
             
             // Store some additional crap here
             this.meta.state = oldState;
             this.meta.path = oldPath;
+            this.meta.type = this.type;
+            this.meta.error = '';
 
             meta[this.uuid] = this.meta;
         } catch (e) {
-            this.meta = createMetaDummy(this.uuid, oldPath, oldState);
+            this.meta = createMetaDummy(this.uuid, oldPath, State.ERROR, this.type);
             meta[this.uuid] = this.meta;
             throw this.logError('Failed to load/parse metadata.json', e);
         }
@@ -415,14 +417,12 @@ function getMetaStateString(state) {
 function loadExtension(uuid, type) {
     let extension = objects[uuid];
     if(!extension) {
-        var forgetMeta = true;
         try {
             let dir = findExtensionDirectory(uuid.replace(/!/,''), type);
             if (dir == null) {
                 throw ("not-found");
             }
             extension = new Extension(dir, type, uuid.indexOf("!") == 0);
-            forgetMeta = false;
 
             if(!type.callbacks.finishExtensionLoad(extension))
                 throw (type.name + ' ' + uuid + ': Could not create applet object.');
@@ -437,15 +437,18 @@ function loadExtension(uuid, type) {
                just don't show up if their program isn't installed, but we don't
                remove them or anything) */
             if (e == "not-found") {
-                forgetExtension(uuid, forgetMeta);
+                forgetExtension(uuid, true);
                 return null;
             }
             Main.cinnamonDBusService.EmitXletAddedComplete(false, uuid);
             Main.xlet_startup_error = true;
-            forgetExtension(uuid, forgetMeta);
+            forgetExtension(uuid);
             if(e._alreadyLogged)
                 e = undefined;
             global.logError('Could not load ' + type.name.toLowerCase() + ' ' + uuid, e);
+            meta[uuid].state = State.ERROR;
+            if (!meta[uuid].name)
+                meta[uuid].name = uuid
             return null;
         }
     }
