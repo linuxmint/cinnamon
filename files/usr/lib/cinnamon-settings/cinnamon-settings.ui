@@ -34,6 +34,7 @@
                       <object class="GtkBox" id="hbox2">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
+                        <property name="border_width">1</property>
                         <child>
                           <object class="GtkEntry" id="search_box">
                             <property name="visible">True</property>
@@ -63,6 +64,7 @@
                       <object class="GtkBox" id="box2">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
+                        <property name="border_width">1</property>
                         <child>
                           <object class="GtkButton" id="button_back">
                             <property name="visible">True</property>
