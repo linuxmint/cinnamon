@@ -77,6 +77,7 @@ class Module:
             left_vbox = Gtk.Box.new(Gtk.Orientation.VERTICAL, 0)
             right_vbox = Gtk.Box.new(Gtk.Orientation.VERTICAL, 0)
             bottom_vbox = Gtk.Box.new(Gtk.Orientation.VERTICAL, 2)
+            bottom_vbox.set_margin_left(2)
 
             folder_scroller = Gtk.ScrolledWindow.new(None, None)
             folder_scroller.set_shadow_type(Gtk.ShadowType.IN)
@@ -109,22 +110,22 @@ class Module:
             image_scroller.add(self.icon_view)
             self.icon_view.connect("selection-changed", self.on_wallpaper_selection_changed)
 
-            hbox = IndentedHBox()
+            hbox = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
             slideshow_checkbox = GSettingsCheckButton(_("Change background every "), "org.cinnamon.desktop.background.slideshow", "slideshow-enabled", None)
             delay_button = GSettingsSpinButton("", "org.cinnamon.desktop.background.slideshow", "delay", "org.cinnamon.desktop.background.slideshow/slideshow-enabled", 1, 120, 1, 1, _(" minutes"))
             hbox.add(slideshow_checkbox)
             hbox.add(delay_button)
             bottom_vbox.pack_start(hbox, False, False, 2)
 
-            hbox = IndentedHBox()
+            hbox = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
             hbox.add(GSettingsCheckButton(_("Random order"), "org.cinnamon.desktop.background.slideshow", "random-order", "org.cinnamon.desktop.background.slideshow/slideshow-enabled"))
             bottom_vbox.pack_start(hbox, False, False, 2)
 
-            hbox = IndentedHBox()
+            hbox = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
             hbox.add(GSettingsComboBox(_("Picture aspect"), "org.cinnamon.desktop.background", "picture-options", None, BACKGROUND_PICTURE_OPTIONS))
             bottom_vbox.pack_start(hbox, False, False, 2)
 
-            hbox = IndentedHBox()
+            hbox = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
             color_shading_type = GSettingsComboBox(_("Gradient"), "org.cinnamon.desktop.background", "color-shading-type", None, BACKGROUND_COLOR_SHADING_TYPES)
             label1 = Gtk.Label.new(_("Start color"))
             primary_color = GSettingsColorChooser("org.cinnamon.desktop.background", "primary-color", None)
@@ -138,13 +139,13 @@ class Module:
             bottom_vbox.pack_start(hbox, False, False, 2)
 
             right_vbox.pack_start(image_scroller, True, True, 0)
+            right_vbox.pack_start(bottom_vbox, False, False, 4)
             left_vbox.pack_start(folder_scroller, True, True, 0)
             left_vbox.pack_start(button_toolbar, False, False, 0)
 
             mainbox.pack_start(top_hbox, True, True, 2)
             top_hbox.pack_start(left_vbox, False, False, 2)
             top_hbox.pack_start(right_vbox, True, True, 2)
-            mainbox.pack_start(bottom_vbox, False, False, 2)
 
             left_vbox.set_border_width(2)
             right_vbox.set_border_width(2)
