@@ -24,10 +24,12 @@ class Module:
 
         self.widgets = []
         self.panel_id = None
-        if len(sys.argv) > 2:
-            if sys.argv[1] == "panel":
+        try:
+            if len(sys.argv) > 2 and sys.argv[1] == "panel":
                 self.panel_id = int(sys.argv[2])
-        else:
+            else:
+                self.panel_id = int(self.settings.get_strv("panels-enabled")[0].split(":")[0])
+        except:
             self.panel_id = -1
 
     def on_module_selected(self):
@@ -123,7 +125,7 @@ class Module:
 
     def on_previous_panel(self, widget):
         if self.panel_id:
-            self.proxy.highlightPanel(int(self.panel_id), False, dbus_interface='org.Cinnamon')
+            self.proxy.highlightPanel(self.panel_id, False, dbus_interface='org.Cinnamon')
 
         current = self.panels.index(self.panel_id)
 
@@ -133,13 +135,13 @@ class Module:
             self.panel_id = self.panels[len(self.panels) - 1]
 
         if self.panel_id:
-            self.proxy.highlightPanel(int(self.panel_id), True, dbus_interface='org.Cinnamon')
+            self.proxy.highlightPanel(self.panel_id, True, dbus_interface='org.Cinnamon')
             for widget in self.widgets:
                 widget.set_panel_id(self.panel_id)
 
     def on_next_panel(self, widget):
         if self.panel_id:
-            self.proxy.highlightPanel(int(self.panel_id), False, dbus_interface='org.Cinnamon')
+            self.proxy.highlightPanel(self.panel_id, False, dbus_interface='org.Cinnamon')
 
         current = self.panels.index(self.panel_id)
 
@@ -149,7 +151,7 @@ class Module:
             self.panel_id = self.panels[0]
 
         if self.panel_id:
-            self.proxy.highlightPanel(int(self.panel_id), True, dbus_interface='org.Cinnamon')
+            self.proxy.highlightPanel(self.panel_id, True, dbus_interface='org.Cinnamon')
             for widget in self.widgets:
                 widget.set_panel_id(self.panel_id)
 
@@ -209,11 +211,13 @@ class Module:
 
         if self.panel_id:
             self.proxy.highlightPanel(self.panel_id, True, dbus_interface='org.Cinnamon')
+            for widget in self.widgets:
+                widget.set_panel_id(self.panel_id)
 
     def restore_panels(self, widget):
         self.proxy.destroyDummyPanels(dbus_interface='org.Cinnamon')
         if self.panel_id:
-            self.proxy.highlightPanel(int(self.panel_id), False, dbus_interface='org.Cinnamon')
+            self.proxy.highlightPanel(self.panel_id, False, dbus_interface='org.Cinnamon')
 
 class PanelCheckButton(Gtk.CheckButton):
     def __init__(self, label, schema, key, dep_key, panel_id):
