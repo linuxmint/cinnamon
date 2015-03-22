@@ -20,7 +20,8 @@ class PanelSettingsPage(SettingsPage):
         section = SettingsBox(_("Settings"))
         self.add(section)
 
-        widget = PanelSwitch(_("Auto-hide panel"), "org.cinnamon", "panels-autohide", self.panel_id)
+        options = [["true", _("Auto hide panel")], ["false", _("Always show panel")], ["intel", _("Intelligently hide panel")]]
+        widget = PanelComboBox(_("Auto-hide panel"), "org.cinnamon", "panels-autohide", self.panel_id, options)
         section.add_row(widget)
         self.widgets.append(widget)
 
@@ -302,15 +303,12 @@ class PanelWidget(SettingsWidget):
 
     def get_int(self, settings, key):
         values = settings.get_strv(key)
-        prop = None
+        prop = 0
         for value in values:
             if value.split(":")[0] == self.panel_id:
                 prop = value.split(":")[1]
 
-        if prop:
-            return int(prop)
-
-        return 0
+        return int(prop)
 
     def set_int(self, settings, key, value):
         values = settings.get_strv(key)
@@ -321,6 +319,27 @@ class PanelWidget(SettingsWidget):
                 _set = True
         if not _set:
             values.append(self.panel_id + ":" + str(int(value)))
+
+        settings.set_strv(key, values)
+
+    def get_string(self, settings, key):
+        values = settings.get_strv(key)
+        prop = ""
+        for value in values:
+            if value.split(":")[0] == self.panel_id:
+                prop = value.split(":")[1]
+
+        return prop
+
+    def set_string(self, settings, key, value):
+        values = settings.get_strv(key)
+        _set = False
+        for i, val in enumerate(values):
+            if val.split(":")[0] == self.panel_id:
+                values[i] = self.panel_id + ":" + value
+                _set = True
+        if not _set:
+            values.append(self.panel_id + ":" + value)
 
         settings.set_strv(key, values)
 
@@ -457,3 +476,46 @@ class PanelRange(PanelWidget):
 
     def add_mark(self, value, position, markup):
         self.content_widget.add_mark(value, position, markup)
+
+class PanelComboBox(PanelWidget):
+    def __init__(self, label, schema, key, panel_id, options, dep_key=None):
+        super(PanelComboBox, self).__init__(dep_key, panel_id)
+
+        self.settings = Gio.Settings.new(schema)
+        self.key = key
+        self.option_map = {}
+
+        self.label = Gtk.Label.new(label)
+        self.model = Gtk.ListStore(str, str)
+
+        selected = None
+        for option in options:
+            iter = self.model.insert_before(None, None)
+            option.append(iter)
+            self.model.set_value(iter, 0, option[0])
+            self.model.set_value(iter, 1, option[1])
+            self.option_map[option[0]] = iter
+
+        self.content_widget = Gtk.ComboBox.new_with_model(self.model)
+        renderer_text = Gtk.CellRendererText()
+        self.content_widget.pack_start(renderer_text, True)
+        self.content_widget.add_attribute(renderer_text, "text", 1)
+
+        self.pack_start(self.label, False, False, 2)
+        self.pack_end(self.content_widget, False, False, 2)
+        self.content_widget.show_all()
+
+        self.content_widget.connect('changed', self.on_my_value_changed)
+        self.settings.connect("changed::" + self.key, self.on_my_setting_changed)
+
+        self.on_my_setting_changed()
+
+    def on_my_value_changed(self, widget):
+        tree_iter = widget.get_active_iter()
+        if tree_iter != None:
+            value = self.model[tree_iter][0]
+            self.set_string(self.settings, self.key, value)
+
+    def on_my_setting_changed(self, *args):
+        self.value = self.get_string(self.settings, self.key)
+        self.content_widget.set_active_iter(self.option_map[self.value])
