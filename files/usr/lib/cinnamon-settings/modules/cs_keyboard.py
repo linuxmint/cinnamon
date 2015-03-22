@@ -47,6 +47,7 @@ CATEGORIES = [
         [_("Positioning"),          "win-position",     "windows",      None],
         [_("Tiling and Snapping"),  "win-tiling",       "windows",      None],
         [_("Inter-workspace"),      "win-workspaces",   "windows",      None],
+        [_("Inter-monitor"),        "win-monitors",     "windows",      None],
     [_("Workspaces"),       "workspaces",       None,       "display"],
         [_("Direct Navigation"),    "ws-navi",          "workspaces",   None],
     [_("System"),           "system",           None,       "preferences-system"],
@@ -124,6 +125,9 @@ KEYBINDINGS = [
     [_("Move window to workspace 10"), MUFFIN_KEYBINDINGS_SCHEMA, "move-to-workspace-10", "win-workspaces"],
     [_("Move window to workspace 11"), MUFFIN_KEYBINDINGS_SCHEMA, "move-to-workspace-11", "win-workspaces"],
     [_("Move window to workspace 12"), MUFFIN_KEYBINDINGS_SCHEMA, "move-to-workspace-12", "win-workspaces"],
+    #Windows - Monitor-related
+    [_("Move window to left monitor"), MUFFIN_KEYBINDINGS_SCHEMA, "move-to-monitor-left", "win-monitors"],
+    [_("Move window to right monitor"), MUFFIN_KEYBINDINGS_SCHEMA, "move-to-monitor-right", "win-monitors"],
     # Workspaces
     [_("Switch to left workspace"), MUFFIN_KEYBINDINGS_SCHEMA, "switch-to-workspace-left", "workspaces"],
     [_("Switch to right workspace"), MUFFIN_KEYBINDINGS_SCHEMA, "switch-to-workspace-right", "workspaces"],
