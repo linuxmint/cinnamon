@@ -3,8 +3,6 @@
 # Todo:
 # - TextTag.invisible does not work nicely with scrollheight, find out why
 #   - (Sometimes scrollbars think there is more or less to scroll than there actually is after showing/hiding entries in page_log.py)
-# - if cinnamon --replace was called from Melange, it will be killed when this process is closed
-#   - Currently only occurs when Melange is started by Geany.
 # - Add insert button to "simple types" inspect dialog ? is there actual use for these types inserted as results ?
 # - Load all enabled log categories and window height from gsettings
 # - Make CommandLine entry & history work more like a normal terminal
@@ -545,8 +543,7 @@ class CinnamonLog(dbus.service.Object):
         content.destroy()
         
     def onRestartClicked(self, menuItem):
-        #todo: gets killed when the python process ends, separate it!
-        os.system("cinnamon --replace &")
+        os.system("nohup cinnamon --replace > /dev/null 2>&1 &")
 
     def onCrashClicked(self, menuItem):
         self.commandline.doCrash();
