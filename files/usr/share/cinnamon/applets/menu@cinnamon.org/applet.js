@@ -1940,9 +1940,6 @@ MyApplet.prototype = {
         }
 
         this._appsWereRefreshed = true;
-
-        this._refreshPlacesAndRecent();
-        this._resizeApplicationsBox();
     },
 
     _favEnterEvent : function(button) {
@@ -1957,7 +1954,6 @@ MyApplet.prototype = {
             this.selectedAppTitle.set_text(button.name);
             this.selectedAppDescription.set_text(button.desc);
         }
-        
     },
 
     _favLeaveEvent : function(widget, event, button) {
@@ -1970,7 +1966,7 @@ MyApplet.prototype = {
     _refreshFavs : function() {
         //Remove all favorites
         this.favoritesBox.destroy_all_children();
-         
+
         //Load favorites again
         this._favoritesButtons = new Array();
         let launchers = global.settings.get_strv('favorite-apps');
@@ -2211,8 +2207,6 @@ MyApplet.prototype = {
         this.favoritesBox = fav_obj.actor;
         this.leftBox.add_actor(this.favoritesBox, { y_align: St.Align.END, y_fill: false });
 
-        this._refreshFavs();
-
         this.mainBox = new St.BoxLayout({ style_class: 'menu-applications-outer-box', vertical:false });       
         this.mainBox.add_style_class_name('menu-applications-box'); //this is to support old themes
                 
@@ -2220,8 +2214,6 @@ MyApplet.prototype = {
         this.mainBox.add_actor(rightPane, { span: 1 });
         
         section.actor.add_actor(this.mainBox);
-
-        this._refreshApps();
 
         this.selectedAppBox = new St.BoxLayout({ style_class: 'menu-selected-app-box', vertical: true });
 
