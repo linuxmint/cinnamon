@@ -349,8 +349,23 @@ cinnamon_doc_system_init (CinnamonDocSystem *self)
   self->priv->deleted_infos = g_hash_table_new_full (NULL, NULL, (GDestroyNotify)gtk_recent_info_unref, NULL);
   self->priv->infos_by_uri = g_hash_table_new_full (g_str_hash, g_str_equal, NULL, (GDestroyNotify)gtk_recent_info_unref);
 
+
+  GList *items, *iter;
+  self->priv->infos_by_timestamp = NULL;
+  items = gtk_recent_manager_get_items (self->priv->manager);
+  for (iter = items; iter; iter = iter->next)
+    {
+      GtkRecentInfo *info = iter->data;
+      const char *uri = gtk_recent_info_get_uri (info);
+      /* uri is owned by the info */
+      g_hash_table_insert (self->priv->infos_by_uri, (char*) uri, info);
+      self->priv->infos_by_timestamp = g_slist_prepend (self->priv->infos_by_timestamp, info);
+    }
+  g_list_free (items);
+
+  self->priv->infos_by_timestamp = g_slist_sort (self->priv->infos_by_timestamp, sort_infos_by_timestamp_descending);
+
   g_signal_connect (self->priv->manager, "changed", G_CALLBACK(cinnamon_doc_system_on_recent_changed), self);
-  cinnamon_doc_system_on_recent_changed (self->priv->manager, self);
 }
 
 /**

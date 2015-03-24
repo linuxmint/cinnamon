@@ -134,11 +134,11 @@ DocManager.prototype = {
         this._thumbnail_factory = new Desktop.DesktopThumbnailFactory();
         this._infosByTimestamp = [];
         this._infosByUri = {};
+        this._load();
         this._docSystem.connect('changed', Lang.bind(this, this._reload));
-        this._reload();
     },
 
-    _reload: function() {
+    _load: function() {
         let docs = this._docSystem.get_all();
         this._infosByTimestamp = [];
         this._infosByUri = {};
@@ -148,6 +148,10 @@ DocManager.prototype = {
             this._infosByTimestamp.push(docInfo);
             this._infosByUri[docInfo.uri] = docInfo;
         }
+    },
+
+    _reload: function() {
+        this._load();
         this.emit('changed');
     },
 
