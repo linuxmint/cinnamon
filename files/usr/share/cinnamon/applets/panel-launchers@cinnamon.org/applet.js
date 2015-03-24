@@ -304,7 +304,6 @@ MyApplet.prototype = {
             global.settings.connect('changed::' + PANEL_EDIT_MODE_KEY, Lang.bind(this, this._onPanelEditModeChanged));
 
             this.do_gsettings_import();
-            this.reload();
 
             St.TextureCache.get_default().connect("icon-theme-changed", Lang.bind(this, this.reload));
         }
