@@ -993,7 +993,9 @@ update_scale_factor (GtkSettings *settings,
     }
   }
 
-  g_settings_set_int (global->settings, "active-display-scale", scale);
+  if (g_settings_get_int (global->settings, "active-display-scale") != scale) {
+    g_settings_set_int (global->settings, "active-display-scale", scale);
+  }
 
    /* Make sure clutter and gdk scaling stays disabled
     * window-scaling-factor doesn't exist yet in clutter < 1.18 */
