@@ -1085,9 +1085,8 @@ MyApplet.prototype = {
     _init: function(orientation, panel_height, instance_id) {        
         Applet.TextIconApplet.prototype._init.call(this, orientation, panel_height, instance_id);
         
-        try {                    
+        try {
             this.set_applet_tooltip(_("Menu"));
-                                    
             this.menuManager = new PopupMenu.PopupMenuManager(this);
             this.menu = new Applet.AppletPopupMenu(this, orientation);
             this.menuManager.addMenu(this.menu);   
@@ -1096,7 +1095,7 @@ MyApplet.prototype = {
 
             this.settings = new Settings.AppletSettings(this, "menu@cinnamon.org", instance_id);
 
-            this.settings.bindProperty(Settings.BindingDirection.IN, "show-places", "showPlaces", this._refreshPlacesAndRecent, null);
+            this.settings.bindProperty(Settings.BindingDirection.IN, "show-places", "showPlaces", this._refreshPlaces, null);
 
             this.settings.bindProperty(Settings.BindingDirection.IN, "activate-on-hover", "activateOnHover", this._updateActivateOnHover, null);
             this._updateActivateOnHover();
@@ -1140,31 +1139,22 @@ MyApplet.prototype = {
             this._knownApps = new Array(); // Used to keep track of apps that are already installed, so we can highlight newly installed ones
             this._appsWereRefreshed = false;
             this._canUninstallApps = GLib.file_test("/usr/bin/cinnamon-remove-application", GLib.FileTest.EXISTS);
-
             this.RecentManager = new DocInfo.DocManager();
             this.privacy_settings = new Gio.Settings( {schema: PRIVACY_SCHEMA} );
-
             this._display();
             appsys.connect('installed-changed', Lang.bind(this, this._refreshApps));
             AppFavorites.getAppFavorites().connect('changed', Lang.bind(this, this._refreshFavs));
-
             this.settings.bindProperty(Settings.BindingDirection.IN, "hover-delay", "hover_delay_ms", this._update_hover_delay, null);
             this._update_hover_delay();
-
-            Main.placesManager.connect('places-updated', Lang.bind(this, this._refreshPlacesAndRecent));
-            this.RecentManager.connect('changed', Lang.bind(this, this._refreshPlacesAndRecent));
-            this.privacy_settings.connect("changed::" + REMEMBER_RECENT_KEY, Lang.bind(this, this._refreshPlacesAndRecent));
-
+            Main.placesManager.connect('places-updated', Lang.bind(this, this._refreshPlaces));
+            this.RecentManager.connect('changed', Lang.bind(this, this._refreshRecent));
+            this.privacy_settings.connect("changed::" + REMEMBER_RECENT_KEY, Lang.bind(this, this._refreshRecent));
             this._fileFolderAccessActive = false;
-
             this._pathCompleter = new Gio.FilenameCompleter();
             this._pathCompleter.set_dirs_only(false);
             this.lastAcResults = new Array();
-
             this.settings.bindProperty(Settings.BindingDirection.IN, "search-filesystem", "searchFilesystem", null, null);
-
             St.TextureCache.get_default().connect("icon-theme-changed", Lang.bind(this, this.onIconThemeChanged));
-
             this._recalc_height();
         }
         catch (e) {
@@ -1182,7 +1172,8 @@ MyApplet.prototype = {
     onIconThemeChanged: function() {
         this._refreshApps();
         this._refreshFavs();
-        this._refreshPlacesAndRecent;
+        this._refreshPlaces();
+        this._refreshRecent();
     },
 
     openMenu: function() {
@@ -1621,21 +1612,17 @@ MyApplet.prototype = {
         }
     },
 
-    _refreshPlacesAndRecent : function() {
+    _refreshPlaces : function() {
         for (let i = 0; i < this._placesButtons.length; i ++) {
             this._placesButtons[i].actor.destroy();
         }
-        for (let i = 0; i < this._recentButtons.length; i ++) {
-            this._recentButtons[i].actor.destroy();
-        }
+
         for (let i = 0; i < this._categoryButtons.length; i++) {
-            if (this._categoryButtons[i] instanceof PlaceCategoryButton ||
-                this._categoryButtons[i] instanceof RecentCategoryButton) {
+            if (this._categoryButtons[i] instanceof PlaceCategoryButton) {
                 this._categoryButtons[i].actor.destroy();
             }
         }
         this._placesButtons = new Array();
-        this._recentButtons = new Array();
 
         // Now generate Places category and places buttons and add to the list
         if (this.showPlaces) {
@@ -1705,6 +1692,24 @@ MyApplet.prototype = {
                 this.applicationsBox.add_actor(button.actor);
             }
         }
+
+        this._setCategoriesButtonActive(!this.searchActive);
+
+        this._recalc_height();
+        this._resizeApplicationsBox();
+    },
+
+    _refreshRecent : function() {
+        for (let i = 0; i < this._recentButtons.length; i ++) {
+            this._recentButtons[i].actor.destroy();
+        }
+        for (let i = 0; i < this._categoryButtons.length; i++) {
+            if (this._categoryButtons[i] instanceof RecentCategoryButton) {
+                this._categoryButtons[i].actor.destroy();
+            }
+        }
+        this._recentButtons = new Array();
+
         // Now generate recent category and recent files buttons and add to the list
         if (this.privacy_settings.get_boolean(REMEMBER_RECENT_KEY)) {
             this.recentButton = new RecentCategoryButton();
