@@ -126,6 +126,8 @@ class Module:
 
             hbox = IndentedHBox()
             color_shading_type = GSettingsComboBox(_("Gradient"), "org.cinnamon.desktop.background", "color-shading-type", None, BACKGROUND_COLOR_SHADING_TYPES)
+            
+            
             label1 = Gtk.Label.new(_("Start color"))
             primary_color = GSettingsColorChooser("org.cinnamon.desktop.background", "primary-color", None)
             label2 = Gtk.Label.new(_("End color"))
@@ -203,16 +205,16 @@ class Module:
                 if i.endswith(".xml"):
                     xml_path = os.path.join(properties_dir, i)
                     display_name = i.replace(".xml", "").replace("-", " ").replace("_", " ").split(" ")[-1].capitalize()
-                    icon = "cs-backgrounds"
+                    icon = "cs-backgrounds-small"
                     order = 10
                     # Special case for Linux Mint. We don't want to use 'start-here' here as it wouldn't work depending on the theme.
                     # Also, other distros should get equal treatment. If they define cinnamon-backgrounds and use their own distro name, we should add support for it.
                     if display_name == "Retro":                      
-                        icon = "cs-retro"
+                        icon = "cs-retro-small"
                         order = 20 # place retro bgs at the end
                     if display_name == "Linuxmint":                        
                         display_name = "Linux Mint"
-                        icon = "cs-linuxmint"
+                        icon = "cs-linuxmint-small"
                         order = 0
                     backgrounds.append([[False, icon, display_name, xml_path, BACKGROUND_COLLECTION_TYPE_XML], display_name, order])
 
@@ -474,7 +476,7 @@ class PixCache(object):
                 if size:
                     img.thumbnail((size, size), Image.ANTIALIAS)                                                                                                    
                 img = imtools.round_image(img, {}, False, None, 3, 255)  
-                img = imtools.drop_shadow(img, 4, 4, background_color=(255, 255, 255, 0), shadow_color=0x444444, border=8, shadow_blur=3, force_background_color=False, cache=None)        
+                img = imtools.drop_shadow(img, 4, 4, background_color=(255, 255, 255, 0), shadow_color=0x444444, border=8, shadow_blur=1, force_background_color=False, cache=None)        
                 # Convert Image -> Pixbuf (save to file, GTK3 is not reliable for that)
                 f = tempfile.NamedTemporaryFile(delete=False)
                 temp_filename = f.name
