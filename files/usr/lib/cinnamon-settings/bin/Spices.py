@@ -350,7 +350,7 @@ class Spice_Harvester:
             self.index_cache[uuid]['icon_filename'] = icon_basename
             self.index_cache[uuid]['icon_path'] = icon_path
 
-            if not os.path.isfile(icon_path):
+            if not os.path.isfile(icon_path) or self.is_bad_image(icon_path):
                 needs_refresh += 1
 
         self.download_total_files = needs_refresh
