@@ -213,6 +213,8 @@ function start() {
     global.logError = _logError;
     global.log = _logInfo;
 
+    let cinnamonStartTime = new Date().getTime();
+
     if (global.settings.get_boolean("enable-looking-glass-logs")) {
         try {
             let log_filename = Gio.file_parse_name(CIN_LOG_FOLDER + '/glass.log');
@@ -256,7 +258,10 @@ function start() {
     // races for now we initialize it here.  It's better to
     // be predictable anyways.
     tracker = Cinnamon.WindowTracker.get_default();
+
+    let startTime = new Date().getTime();
     Cinnamon.AppSystem.get_default();
+    global.log('Cinnamon.AppSystem.get_default() started in %d ms'.format(new Date().getTime() - startTime));
 
     // The stage is always covered so Clutter doesn't need to clear it; however
     // the color is used as the default contents for the Muffin root background
@@ -404,10 +409,13 @@ function start() {
 
     _nWorkspacesChanged();
 
+    startTime = new Date().getTime();
     AppletManager.init();
+    global.log('AppletManager.init() started in %d ms'.format(new Date().getTime() - startTime));
+
     DeskletManager.init();
     SearchProviderManager.init();
-    
+
     createLookingGlass();
 
     if (software_rendering && !GLib.getenv('CINNAMON_2D')) {
@@ -438,6 +446,8 @@ function start() {
         if (do_login_sound)
             soundManager.play_once_per_session('login');
     }
+
+    global.log('Cinnamon took %d ms to start'.format(new Date().getTime() - cinnamonStartTime));
 }
 
 function notifyCinnamon2d() {
