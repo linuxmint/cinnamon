@@ -10,6 +10,7 @@ const Gio = imports.gi.Gio;
 const Pango = imports.gi.Pango;
 
 const Params = imports.misc.params;
+const Util = imports.misc.util;
 
 const Lightbox = imports.ui.lightbox;
 const Main = imports.ui.main;
