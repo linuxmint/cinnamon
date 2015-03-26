@@ -1220,13 +1220,7 @@ MyApplet.prototype = {
                 availablePlayers.push(app);
         }
 
-        //we call this instead of menu.removeAll(), because this would destroy the actors, but we need them, so use remove
-        let children = this._launchPlayerItem.menu._getMenuItems();
-        for(let i = 0; i < children.length; i++){
-            let item = children[i];
-            item.remove();
-            item.emit("destroy");
-        }
+        this._launchPlayerItem.menu.removeAll();
 
         if (availablePlayers.length > 0){
             for (var p = 0; p < availablePlayers.length; p++){
