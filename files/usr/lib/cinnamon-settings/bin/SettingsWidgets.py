@@ -453,6 +453,79 @@ class SettingsStack(Gtk.Stack):
         self.set_transition_duration(150)
         self.expand = True
 
+class SettingsRevealer(Gtk.Revealer):
+    def __init__(self, schema, key):
+        Gtk.Revealer.__init__(self)
+        self.set_transition_type(Gtk.RevealerTransitionType.SLIDE_DOWN)
+        self.set_transition_duration(150)
+        self.key = key
+        self.settings = Gio.Settings.new(schema)
+        if self.settings.get_boolean(self.key):
+            self.set_reveal_child(True)
+        else:
+            self.set_reveal_child(False)
+        self.settings.connect("changed::"+self.key, self.on_my_setting_changed)
+
+    def on_my_setting_changed(self, settings, key):
+        if self.settings.get_boolean(self.key):
+            self.set_reveal_child(True)
+        else:
+            self.set_reveal_child(False)
+
+class SettingsPage(Gtk.Box):
+    def __init__(self):
+        Gtk.Box.__init__(self)
+        self.set_orientation(Gtk.Orientation.VERTICAL)
+        self.set_spacing(15)
+        self.set_margin_left(80)
+        self.set_margin_right(80)
+        self.set_margin_top(15)
+        self.set_margin_bottom(15)
+
+class SettingsBox(Gtk.Frame):
+    def __init__(self, title):
+        Gtk.Frame.__init__(self)
+        self.set_shadow_type(Gtk.ShadowType.IN)
+        style = self.get_style_context()
+        style.add_class("view")
+        self.size_group = Gtk.SizeGroup()
+        self.size_group.set_mode(Gtk.SizeGroupMode.VERTICAL)
+
+        box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
+        self.add(box)
+
+        toolbar = Gtk.Toolbar.new()
+        Gtk.StyleContext.add_class(Gtk.Widget.get_style_context(toolbar), "primary-toolbar")
+        label = Gtk.Label.new()
+        label.set_markup("<b>%s</b>" % title)
+        title_holder = Gtk.ToolItem()
+        title_holder.add(label)
+        toolbar.add(title_holder)
+        box.add(toolbar)
+
+        self.listbox = Gtk.ListBox()
+        self.listbox.set_selection_mode(Gtk.SelectionMode.NONE)
+        self.listbox.set_header_func(self._list_header_func, None)
+        box.add(self.listbox)
+
+    def add_row(self, widget):
+        row = Gtk.ListBoxRow()
+        row.add(widget)
+        self.listbox.add(row)
+
+    def _list_header_func(self, row, before, user_data):
+        if before and not row.get_header():
+            row.set_header(Gtk.Separator(orientation=Gtk.Orientation.HORIZONTAL))
+
+class SettingsRow(Gtk.Box):
+    def __init__(self):
+        Gtk.Box.__init__(self)
+        self.set_orientation(Gtk.Orientation.HORIZONTAL)
+        self.set_spacing(20)
+        self.set_border_width(5)
+        self.set_margin_left(40)
+        self.set_margin_right(40)
+
 class IndentedHBox(Gtk.HBox):
     def __init__(self):
         super(IndentedHBox, self).__init__()
@@ -491,6 +564,40 @@ class GSettingsCheckButton(Gtk.CheckButton):
         self.connectorId = self.connect('toggled', self.on_my_value_changed)
 
     def on_my_value_changed(self, widget):
+        self.settings.set_boolean(self.key, self.get_active())
+
+    def on_dependency_setting_changed(self, settings, dep_key):
+        if not self.dependency_invert:
+            self.set_sensitive(self.dep_settings.get_boolean(self.dep_key))
+        else:
+            self.set_sensitive(not self.dep_settings.get_boolean(self.dep_key))
+
+class GSettingsSwitch(Gtk.Switch):    
+    def __init__(self, schema, key, dep_key):
+        self.key = key
+        self.dep_key = dep_key
+        super(GSettingsSwitch, self).__init__()
+        self.settings = Gio.Settings.new(schema)        
+        self.set_active(self.settings.get_boolean(self.key))
+        self.settings.connect("changed::"+self.key, self.on_my_setting_changed)
+        self.connectorId = self.connect('notify::active', self.on_my_value_changed)
+        self.dependency_invert = False
+        if self.dep_key is not None:
+            if self.dep_key[0] == '!':
+                self.dependency_invert = True
+                self.dep_key = self.dep_key[1:]
+            split = self.dep_key.split('/')
+            self.dep_settings = Gio.Settings.new(split[0])
+            self.dep_key = split[1]
+            self.dep_settings.connect("changed::"+self.dep_key, self.on_dependency_setting_changed)
+            self.on_dependency_setting_changed(self, None)
+
+    def on_my_setting_changed(self, settings, key):
+        self.disconnect(self.connectorId)                     #  panel-edit-mode can trigger changed:: twice in certain instances,
+        self.set_active(self.settings.get_boolean(self.key))  #  so disconnect temporarily when we are simply updating the widget state
+        self.connectorId = self.connect('notify::active', self.on_my_value_changed)
+
+    def on_my_value_changed(self, widget, gparam):
         self.settings.set_boolean(self.key, self.get_active())
 
     def on_dependency_setting_changed(self, settings, dep_key):
@@ -753,14 +860,10 @@ class GSettingsRange(Gtk.HBox):
         elif self.valtype == "double":
             self.value = self.settings.get_double(self.key) * 1.0
         self.label = Gtk.Label.new(label)
-        self.label.set_alignment(1.0, 0.5)
-        self.label.set_size_request(150, -1)
         self.low_label = Gtk.Label()
-        self.low_label.set_alignment(0.5, 0.5)
-        self.low_label.set_size_request(60, -1)
+        self.low_label.set_alignment(1.0, 0.75)
         self.hi_label = Gtk.Label()
-        self.hi_label.set_alignment(0.5, 0.5)
-        self.hi_label.set_size_request(60, -1)
+        self.hi_label.set_alignment(1.0, 0.75)
         self.low_label.set_markup("<i><small>%s</small></i>" % low_label)
         self.hi_label.set_markup("<i><small>%s</small></i>" % hi_label)
         self.inverted = inverted
@@ -770,19 +873,19 @@ class GSettingsRange(Gtk.HBox):
         self._min = low_limit * 1.0
         self._max = hi_limit * 1.0
         self.content_widget = Gtk.Scale.new_with_range(Gtk.Orientation.HORIZONTAL, 0, 1, (self._step / self._range))
-        self.content_widget.set_size_request(300, 0)
         self.content_widget.set_value(self.to_corrected(self.value))
         self.content_widget.set_draw_value(False);
 
-        self.grid = Gtk.Grid()
         if (label != ""):
-            self.grid.attach(self.label, 0, 0, 1, 1)
+            self.label.set_margin_right(6)
+            self.pack_start(self.label, False, False, 0)
         if (low_label != ""):
-            self.grid.attach(self.low_label, 1, 0, 1, 1)
-        self.grid.attach(self.content_widget, 2, 0, 1, 1)
+            self.low_label.set_margin_right(6)
+            self.pack_start(self.low_label, False, False, 0)
+        self.pack_start(self.content_widget, True, True, 0)
         if (hi_label != ""):
-            self.grid.attach(self.hi_label, 3, 0, 1, 1)
-        self.pack_start(self.grid, True, True, 2)
+            self.hi_label.set_margin_left(6)
+            self.pack_start(self.hi_label, False, False, 0)
         self._dragging = False
         self.content_widget.connect('value-changed', self.on_my_value_changed)
         self.content_widget.connect('button-press-event', self.on_mouse_down)
