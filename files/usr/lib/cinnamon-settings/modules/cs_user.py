@@ -1,8 +1,11 @@
-#!/usr/bin/env python
+#!/usr/bin/env python2
 
 from SettingsWidgets import *
 from gi.repository import AccountsService, GLib
-import PAM
+try:
+    import PAM
+except:
+    import pam
 import pexpect
 import time
 from random import randint

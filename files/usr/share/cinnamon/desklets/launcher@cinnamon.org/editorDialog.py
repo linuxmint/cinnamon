@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python2
 #-*-indent-tabs-mode: nil-*-
 
 import sys

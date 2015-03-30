@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python2
 
 from ExtensionCore import ExtensionSidePage
 from gi.repository.Gtk import SizeGroup, SizeGroupMode

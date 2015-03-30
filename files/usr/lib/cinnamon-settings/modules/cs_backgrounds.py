@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python2
 
 import sys
 sys.path.append('/usr/lib/cinnamon-settings/bin')
