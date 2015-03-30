@@ -337,10 +337,9 @@
     </key>
 
     <key type="i" name="number-workspaces">
-        <default>2</default>
-        <_summary>Number of workspaces in Cinnamon session</_summary>
-        <_description>
-                Number of Workspaces</_description>
+        <default>0</default>
+        <_summary>(Deprecated) Number of workspaces</_summary>
+      <_description>(Deprecated) Number of Workspaces - pre-2.6, even though you shouldn't use it even on &lt;2.6 releases. Use org.cinnamon.desktop.wm.preferences num-workspaces instead.</_description>
     </key>
 
     <key name="overview-corner" type="as">
@@ -376,10 +375,10 @@
     </key>
     
     <key name="workspace-name-overrides" type="as">
-      <default>[]</default>
-      <_summary>List of non-default workspace names</_summary>
+      <default>['DEPRECATED']</default>
+      <_summary>(Deprecated) List of non-default workspace names</_summary>
       <_description>
-        The user-set names of the workspaces.
+        (Deprecated) The user-set names of the workspaces. Deprecated since 2.6. Use org.cinnamon.desktop.wm.preferences workspace-names instead.
       </_description>
     </key>
     
