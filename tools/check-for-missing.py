@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python2
 #
 # This is a simple script that we use to check for files in git
 # and not in the distribution. It was previously written in cinnamon

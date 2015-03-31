@@ -1,4 +1,4 @@
-#! /usr/bin/python
+#! /usr/bin/python2
 
 from gi.repository import Gio, GLib
 import dbus, dbus.service, dbus.glib
