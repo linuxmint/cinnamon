@@ -5,7 +5,7 @@ from gi.repository import AccountsService, GLib
 try:
     import PAM
 except:
-    import pam
+    import pam as PAM
 import pexpect
 import time
 from random import randint
