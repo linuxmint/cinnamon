@@ -1,3 +1,30 @@
+cinnamon (2.4.7) rebecca; urgency=medium
+
+  [ Clement Lefebvre ]
+  * Fixed calendar in clock applet makes mistake on week number - https://bugzilla.gnome.org/show_bug.cgi?id=736722
+
+  [ dalcde ]
+  * Update xlet stylesheet as well on rt
+
+  [ Rob Adams ]
+  * Add missing tooltip for Keybinding xlet widget
+
+  [ Monsta ]
+  * fix one more memleak
+
+  [ JosephMcc ]
+  * Tweak how the panel icon is used to prevent occasionally getting an oversized icons when restarting cinnamon or changing cinnamon themes
+
+  [ Michael Webster ]
+  * slideshow: use os.execvp instead of os.system to launch to keep cinnamon-slideshow from having child processes.
+  * applet.js: once more allow the theme to control symbolic icon heights - caused by https://github.com/linuxmint/Cinnamon/commit/2cfffbcf6d496d455a7b1fd59504d0030222432b
+  * mouse/dnd: merge Cinnamon dnd threshold back to using the Gtk one - this reverts what was done in 8388640bed1b6e7582fc7, which was a workaround for buggy drag-and-drop behavior in Cinnamon (losing tracking when dragging off a panel, etc..) - this no longer applies, so having two settings now is just confusing and excessive.
+  * dnd.js: refactor to eliminate dnd freeze bug
+  * st: Use a more up-to-date cogl API when creating textures (efforts to reduce freezes) - see http://pastebin.com/a1uiMx5j for suspect backtrace.
+  * dnd.js: Allow control over certain callbacks.
+
+ -- Clement Lefebvre <root@linuxmint.com>  Tue, 31 Mar 2015 09:47:28 +0200
+
 cinnamon (2.4.6) rebecca; urgency=medium
 
   * Settings: Fix occasional GTK-Warning and blank menu entry in the terminal selection, some comments
