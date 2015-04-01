@@ -267,7 +267,7 @@ Player.prototype = {
 
     _init: function(system_status_button, busname, owner) {
         PopupMenu.PopupMenuSection.prototype._init.call(this);
-        this._playerInfo = new PlayerInfo(this);
+        this._playerInfo = new TrackInfo("", "");
         this.showPosition = true; // @todo: Get from settings
         this._owner = owner;
         this._busName = busname;
@@ -306,6 +306,13 @@ Player.prototype = {
                                                   this._dbus_acquired();
                                               }
                                           }));
+    },
+
+    get playerInfo() {
+        this._playerInfo = new TrackInfo("", "");
+        if (this._prop && this._mediaServerPlayer && this._mediaServer)
+            this._setStatus(this._mediaServerPlayer.PlaybackStatus);
+        return this._playerInfo.actor;
     },
 
     _dbus_acquired: function() {
@@ -784,19 +791,6 @@ Player.prototype = {
 
 }
 
-function PlayerInfo(){
-    this._init.apply(this, arguments);
-}
-
-PlayerInfo.prototype = {
-    __proto__: TrackInfo.prototype,
-
-    _init: function(player){
-        TrackInfo.prototype._init.call(this, "", "");
-        this.player = player;
-    }
-};
-
 function MediaPlayerLauncher(app, menu) {
     this._init(app, menu);
 }
@@ -1238,12 +1232,11 @@ MyApplet.prototype = {
 
             if(this._playerSelector.actor.get_children()[0])
                 this._playerSelector.removeActor(this._playerSelector.actor.get_children()[0]);
-            this._playerSelector._children = [];
             this._playerSelector.menu.removeAll();
 
             //go through the players list and create the player info (icon + label)
             for(let i in this._players) {
-                let info = this._players[i]._playerInfo.actor;
+                let info = this._players[i].playerInfo;
                 //set it as the actor to the player selector if it is the active one, else add it to the menu to be chosen
                 if (this._activePlayer == i)
                     this._playerSelector.addActor(info);
