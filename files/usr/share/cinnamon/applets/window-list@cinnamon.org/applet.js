@@ -19,6 +19,7 @@ const DEFAULT_ICON_SIZE = 16; // too bad this can't be defined in theme (cinnamo
                               // probably something that could be addressed
 const SPINNER_ANIMATION_TIME = 1;
 const ICON_HEIGHT_FACTOR = .64;
+const MAX_TEXT_LENGTH = 1000;
 
 /* TODO: dragHelper will need to be reworked once more flexible panel configuration is merged */
 
@@ -435,6 +436,12 @@ AppMenuButton.prototype = {
         let tracker = Cinnamon.WindowTracker.get_default();
         let app = tracker.get_window_app(this.metaWindow);
         if (!title) title = app ? app.get_name() : '?';
+
+        //glitches appear when there are whitespaces like \n or U+2028
+        title = title.replace(/\s/g, " ");
+        //if the text is too long, Cinnamon could crash cause of a "Failed to create texture 2d due to size/format constraints" cogl error
+        if (title.length > MAX_TEXT_LENGTH)
+            title = title.substr(0, MAX_TEXT_LENGTH);
 
         if (this.metaWindow.minimized) {
             return "["+ title +"]";                        
