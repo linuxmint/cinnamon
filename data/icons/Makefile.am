@@ -16,6 +16,7 @@ public_icons = \
 	hicolor_categories_scalable_cs-cat-prefs.svg \
 	hicolor_categories_scalable_cs-color.svg \
 	hicolor_categories_scalable_cs-date-time.svg \
+	hicolor_categories_scalable_cs-debian.svg \
 	hicolor_categories_scalable_cs-default-applications.svg \
 	hicolor_categories_scalable_cs-desklets.svg \
 	hicolor_categories_scalable_cs-desktop-effects.svg \
