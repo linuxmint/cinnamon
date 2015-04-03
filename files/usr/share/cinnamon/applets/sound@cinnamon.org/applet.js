@@ -19,9 +19,10 @@ const MEDIA_PLAYER_2_NAME = "org.mpris.MediaPlayer2";
 const MEDIA_PLAYER_2_PLAYER_NAME = "org.mpris.MediaPlayer2.Player";
 
 /* global values */
-let support_seek = [
+let players_without_seek_support = ['spotify'];
+let players_with_seek_support = [
     'clementine', 'banshee', 'rhythmbox', 'rhythmbox3', 'pragha', 'quodlibet',
-    'amarok', 'xnoise', 'gmusicbrowser', 'spotify', 'vlc', 'gnome-mplayer',
+    'amarok', 'xnoise', 'gmusicbrowser', 'vlc', 'gnome-mplayer',
     'qmmp', 'deadbeef', 'audacious'];
 /* dummy vars for translation */
 let x = _("Playing");
@@ -538,6 +539,13 @@ Player.prototype = {
                 can_seek = position[0].get_boolean();
             }
         }));
+        // Some players say they "CanSeek" but don't actually give their position over dbus (spotify for instance)
+        for (i = 0; i < players_without_seek_support.length; i++) {
+            if (players_without_seek_support[i] === this._name) {
+                can_seek = false;
+                break;
+            }
+        }
         return can_seek;
     },
 
@@ -1428,8 +1436,11 @@ MyApplet.prototype = {
     },
 
     registerSystrayIcons: function() {
-        for (let i = 0; i < support_seek.length; i++) {
-            Main.systrayManager.registerRole(support_seek[i], this.metadata.uuid);
+        for (let i = 0; i < players_with_seek_support.length; i++) {
+            Main.systrayManager.registerRole(players_with_seek_support[i], this.metadata.uuid);
+        }
+        for (let i = 0; i < players_without_seek_support.length; i++) {
+            Main.systrayManager.registerRole(players_without_seek_support[i], this.metadata.uuid);
         }
     },
 
