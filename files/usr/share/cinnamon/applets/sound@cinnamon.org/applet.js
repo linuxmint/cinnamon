@@ -111,7 +111,7 @@ function VolumeSlider(){
 VolumeSlider.prototype = {
     __proto__: PopupMenu.PopupSliderMenuItem.prototype,
 
-    _init: function(applet, stream, tooltip){
+    _init: function(applet, stream, tooltip, app_icon){
         PopupMenu.PopupSliderMenuItem.prototype._init.call(this, 0);
         this.applet = applet;
 
@@ -124,8 +124,15 @@ VolumeSlider.prototype = {
 
         this.connect("value-changed", Lang.bind(this, this._onValueChanged));
 
-        this.iconName = this.isMic? "microphone-sensitivity-none" : "audio-volume-muted";
-        this.icon = new St.Icon({icon_name: this.iconName, icon_type: St.IconType.SYMBOLIC, icon_size: 16});
+        this.app_icon = app_icon;
+        if (this.app_icon == null) {
+            this.iconName = this.isMic? "microphone-sensitivity-none" : "audio-volume-muted";
+            this.icon = new St.Icon({icon_name: this.iconName, icon_type: St.IconType.SYMBOLIC, icon_size: 16});
+        }
+        else {
+            this.icon = new St.Icon({icon_name: this.app_icon, icon_type: St.IconType.FULLCOLOR, icon_size: 16});
+        }
+
         this.actor.add_actor(this.icon);
 
         this.connectWithStream(stream);
@@ -175,10 +182,12 @@ VolumeSlider.prototype = {
     _update: function(){
         let value = (!this.stream || this.stream.is_muted)? 0 : this.stream.volume / this.applet._volumeMax;
         let percentage = Math.round(value * 100) + "%";
-        let iconName = this._volumeToIcon(value);
 
         this.tooltip.set_text(this.tooltipText + percentage);
-        this.icon.icon_name = iconName;
+        let iconName = this._volumeToIcon(value);
+        if (this.app_icon == null) {
+            this.icon.icon_name = iconName;
+        }
         this.setValue(value);
 
         //send data to applet
@@ -235,27 +244,37 @@ StreamMenuSection.prototype = {
         PopupMenu.PopupMenuSection.prototype._init.call(this);
 
         let iconName = stream.icon_name;
-        //banshee sends the icon name audio, hardcoding it here as a workaround
-        if(iconName === "audio")
-            iconName = "banshee";
-
         let name = stream.name;
-        if(name.length > 16)
+
+        // capitalize the stream name
+        if (name.length > 2) {
+            name = name.charAt(0).toUpperCase() + name.slice(1);
+        }
+
+        // Trim stream name
+        if(name.length > 16) {
             name = name.substring(0, 16) + "... ";
+        }
 
-        let icon = new St.Icon({icon_name: iconName, icon_type: St.IconType.FULLCOLOR, icon_size: 16});
-        let label = new St.Label({text: name, margin_left: 5});
-
-        let box = new St.BoxLayout();
-        box.add_actor(icon);
-        box.add_actor(label);
+        // Special cases
+        if(name === "Banshee") {
+            iconName = "banshee";
+        }
+        else if (name === "Spotify") {
+            iconName = "spotify";
+        }
+        if(name === "VBox") {
+            name = "Virtualbox";
+            iconName = "virtualbox";
+        }
+        else if (iconName === "audio") {
+            iconName = "audio-x-generic";
+        }
 
         let item = new PopupMenu.PopupBaseMenuItem({reactive: false});
-        item.addActor(box);
+        let slider = new VolumeSlider(applet, stream, name, iconName);
+        item.addActor(slider.actor);
         this.addMenuItem(item);
-
-        let slider = new VolumeSlider(applet, stream);
-        this.addMenuItem(slider);
     }
 }
 
@@ -1189,7 +1208,7 @@ MyApplet.prototype = {
         this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem);
         //between these two separators will be the player MenuSection (position 3)
         this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem);
-        this._outputVolumeSection = new VolumeSlider(this, null, _("Volume"));
+        this._outputVolumeSection = new VolumeSlider(this, null, _("Volume"), null);
         this._outputVolumeSection.connect("values-changed", Lang.bind(this, this._outputValuesChanged));
         this._outputApplicationsMenu = new PopupMenu.PopupSubMenuMenuItem(_("Applications..."), true);
         this._selectOutputDeviceItem = new PopupMenu.PopupSubMenuMenuItem(_("Output device..."), true);
@@ -1202,7 +1221,7 @@ MyApplet.prototype = {
         this._selectOutputDeviceItem.actor.hide();
 
         this._inputSection = new PopupMenu.PopupMenuSection;
-        this._inputVolumeSection = new VolumeSlider(this, null, _("Microphone"));
+        this._inputVolumeSection = new VolumeSlider(this, null, _("Microphone"), null);
         this._selectInputDeviceItem = new PopupMenu.PopupSubMenuMenuItem(_("Input device..."), true);
 
         this._inputSection.addMenuItem(this._inputVolumeSection);
