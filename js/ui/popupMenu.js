@@ -768,38 +768,24 @@ PopupSwitchMenuItem.prototype = {
         PopupBaseMenuItem.prototype._init.call(this, params);
 
         this.label = new St.Label({ text: text });
+        this._statusLabel = new St.Label({ text: '', style_class: 'popup-inactive-menu-item' });
+
         this._switch = new Switch(active);
 
-        this.actor.accessible_role = Atk.Role.CHECK_MENU_ITEM
-        this.checkAccessibleState();
-        this.actor.label_actor = this.label;
-
         this.addActor(this.label);
+        this.addActor(this._statusLabel);
 
         this._statusBin = new St.Bin({ x_align: St.Align.END });
-        this.addActor(this._statusBin,
-                      { expand: true, span: -1, align: St.Align.END });
-
-        this._statusLabel = new St.Label({ text: '',
-                                           style_class: 'popup-inactive-menu-item'
-                                         });
+        this.addActor(this._statusBin, { expand: true, span: -1, align: St.Align.END });
         this._statusBin.child = this._switch.actor;
     },
 
     setStatus: function(text) {
         if (text != null) {
-            this._statusLabel.text = text;
-            this._statusBin.child = this._statusLabel;
-            this.actor.reactive = false;
-            this.actor.can_focus = false;
-            this.actor.accessible_role = Atk.Role.MENU_ITEM
+            this._statusLabel.set_text(text);
         } else {
-            this._statusBin.child = this._switch.actor;
-            this.actor.reactive = true;
-            this.actor.can_focus = true;
-            this.actor.accessible_role = Atk.Role.CHECK_MENU_ITEM
+            this._statusLabel.set_text('');
         }
-        this.checkAccessibleState();
     },
 
     activate: function(event) {
@@ -813,7 +799,6 @@ PopupSwitchMenuItem.prototype = {
     toggle: function() {
         this._switch.toggle();
         this.emit('toggled', this._switch.state);
-        this.checkAccessibleState();
     },
 
     get state() {
@@ -822,20 +807,6 @@ PopupSwitchMenuItem.prototype = {
 
     setToggleState: function(state) {
         this._switch.setToggleState(state);
-        this.checkAccessibleState();
-    },
-
-    checkAccessibleState: function() {
-        switch (this.actor.accessible_role) {
-            case Atk.Role.CHECK_MENU_ITEM:
-                if (this._switch.state)
-                    this.actor.add_accessible_state (Atk.StateType.CHECKED);
-                else
-                    this.actor.remove_accessible_state (Atk.StateType.CHECKED);
-                break;
-            default:
-                this.actor.remove_accessible_state (Atk.StateType.CHECKED);
-        }
     }
 };
 
