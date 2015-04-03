@@ -2,6 +2,7 @@ const Applet = imports.ui.applet;
 const Mainloop = imports.mainloop;
 const Gio = imports.gi.Gio;
 const Interfaces = imports.misc.interfaces;
+const Util = imports.misc.util;
 const Lang = imports.lang;
 const Cinnamon = imports.gi.Cinnamon;
 const Clutter = imports.gi.Clutter;
@@ -411,7 +412,16 @@ Player.prototype = {
 
         if (this._mediaServer.CanRaise) {
             this._raiseButton = new ControlButton('go-up',
-                Lang.bind(this, function () { this._mediaServer.RaiseRemote(); this._system_status_button.menu.actor.hide(); }));
+                Lang.bind(this, function () {
+                    if (this._name === "spotify") {
+                        // Spotify isn't able to raise via Dbus once its main UI is closed
+                        Util.spawn(['spotify']);
+                    }
+                    else {
+                        this._mediaServer.RaiseRemote();
+                    }
+                    this._system_status_button.menu.actor.hide();
+                }));
             this._raiseButtonTooltip = new Tooltips.Tooltip(this._raiseButton.button, _("Open Player"));
             this.controls.add_actor(this._raiseButton.getActor());
         }
