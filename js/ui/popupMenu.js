@@ -120,11 +120,9 @@ PopupBaseMenuItem.prototype = {
 
         if (activeChanged) {
             this.active = active;
-            if (active) {
-                this.actor.add_style_pseudo_class('active');
-                if (this.focusOnHover) this.actor.grab_key_focus();
-            } else
-                this.actor.remove_style_pseudo_class('active');
+            this.actor.change_style_pseudo_class('active', active);
+            if (this.focusOnHover && this.active) this.actor.grab_key_focus();
+
             this.emit('active-changed', active);
         }
     },
@@ -139,10 +137,7 @@ PopupBaseMenuItem.prototype = {
         this.actor.reactive = sensitive;
         this.actor.can_focus = sensitive;
 
-        if (sensitive)
-            this.actor.remove_style_pseudo_class('insensitive');
-        else
-            this.actor.add_style_pseudo_class('insensitive');
+        this.actor.change_style_pseudo_class('insensitive', !sensitive);
         this.emit('sensitive-changed', sensitive);
     },
 
@@ -745,10 +740,7 @@ Switch.prototype = {
     },
 
     setToggleState: function(state) {
-        if (state)
-            this.actor.add_style_pseudo_class('checked');
-        else
-            this.actor.remove_style_pseudo_class('checked');
+        this.actor.change_style_pseudo_class('checked', state);
         this.state = state;
     },
 
@@ -1554,10 +1546,7 @@ PopupSubMenuMenuItem.prototype = {
     },
 
     _subMenuOpenStateChanged: function(menu, open) {
-        if (open)
-            this.actor.add_style_pseudo_class('open');
-        else
-            this.actor.remove_style_pseudo_class('open');
+        this.actor.change_style_pseudo_class('open', open);
     },
 
     destroy: function() {

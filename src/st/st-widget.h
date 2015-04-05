@@ -92,6 +92,9 @@ GType st_widget_get_type (void) G_GNUC_CONST;
 
 void                  st_widget_set_style_pseudo_class    (StWidget        *actor,
                                                            const gchar     *pseudo_class_list);
+void                  st_widget_change_style_pseudo_class (StWidget        *actor,
+                                                           const gchar     *pseudo_class,
+                                                           gboolean         add);
 void                  st_widget_add_style_pseudo_class    (StWidget        *actor,
                                                            const gchar     *pseudo_class);
 void                  st_widget_remove_style_pseudo_class (StWidget        *actor,

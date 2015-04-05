@@ -1421,6 +1421,28 @@ st_widget_set_style_pseudo_class (StWidget    *actor,
 }
 
 /**
+ * st_widget_change_style_pseudo_class:
+ * @actor: a #StWidget
+ * @pseudo_class: a pseudo class string
+ * @add: whether to add or remove pseudo class
+ *
+ * Adds @pseudo_class to @actor's pseudo class list if @add is true,
+ * removes if @add is false.
+ */
+void
+st_widget_change_style_pseudo_class (StWidget    *actor,
+                                     const gchar *pseudo_class,
+                                     gboolean     add)
+{
+  g_return_if_fail (ST_IS_WIDGET (actor));
+  g_return_if_fail (pseudo_class != NULL);
+
+  if (add)
+    st_widget_add_style_pseudo_class(actor, pseudo_class);
+  else
+    st_widget_remove_style_pseudo_class(actor, pseudo_class);
+}
+/**
  * st_widget_add_style_pseudo_class:
  * @actor: a #StWidget
  * @pseudo_class: a pseudo class string

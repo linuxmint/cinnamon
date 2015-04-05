@@ -657,10 +657,7 @@ st_button_set_checked (StButton *button,
     {
       button->priv->is_checked = checked;
 
-      if (checked)
-        st_widget_add_style_pseudo_class (ST_WIDGET (button), "checked");
-      else
-        st_widget_remove_style_pseudo_class (ST_WIDGET (button), "checked");
+      st_widget_change_style_pseudo_class (ST_WIDGET (button), "checked", checked);
     }
 
   g_object_notify (G_OBJECT (button), "checked");
