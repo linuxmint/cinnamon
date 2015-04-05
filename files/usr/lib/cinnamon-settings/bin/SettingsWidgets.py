@@ -564,6 +564,8 @@ class SettingsBox(Gtk.Frame):
         list_box.set_selection_mode(Gtk.SelectionMode.NONE)
         row = Gtk.ListBoxRow()
         row.add(widget)
+        if isinstance(widget, GSettingsSwitch):
+            list_box.connect("row-activated", widget.clicked)
         list_box.add(row)
         vbox.add(list_box)
         self.box.add(vbox)
@@ -578,6 +580,8 @@ class SettingsBox(Gtk.Frame):
         list_box.set_selection_mode(Gtk.SelectionMode.NONE)
         row = Gtk.ListBoxRow()
         row.add(widget)
+        if isinstance(widget, GSettingsSwitch):
+            list_box.connect("row-activated", widget.clicked)
         list_box.add(row)
         vbox.add(list_box)
         revealer = SettingsRevealer(schema, key)
@@ -681,6 +685,9 @@ class GSettingsSwitch(SettingsWidget):
         if schema:
             self.settings = self.get_settings(schema)
             self.settings.bind(key, self.content_widget, "active", Gio.SettingsBindFlags.DEFAULT)
+
+    def clicked(self, listbox, row, data=None):
+        self.content_widget.set_active(not self.content_widget.get_active())
 
 class GSettingsSpinButton(SettingsWidget):
     def __init__(self, label, schema, key, units="", mini=None, maxi=None, step=1, page=None, dep_key=None, size_group=None):
