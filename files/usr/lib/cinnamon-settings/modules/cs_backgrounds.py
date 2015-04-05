@@ -11,6 +11,8 @@ import thread
 import subprocess
 import tempfile
 import commands
+import locale
+import lxml.etree
 from PIL import Image
 
 gettext.install("cinnamon", "/usr/share/locale")
@@ -443,7 +445,9 @@ class Module:
                                 wallpaperData["name"] = os.path.basename(wallpaperData["filename"])
                             res.append(wallpaperData)
             return res
-        except:
+        except Exception, detail:
+            print "Could not parse %s!" % filename
+            print detail
             return []
 
 class PixCache(object):
