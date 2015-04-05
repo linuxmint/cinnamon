@@ -95,7 +95,7 @@ class Module:
 
         self.up_client = UPowerGlib.Client()
 
-        csd_power_proxy = Gio.DBusProxy.new_sync(
+        self.csd_power_proxy = Gio.DBusProxy.new_sync(
                 Gio.bus_get_sync(Gio.BusType.SESSION, None),
                 Gio.DBusProxyFlags.NONE,
                 None,
@@ -104,9 +104,7 @@ class Module:
                 "org.cinnamon.SettingsDaemon.Power",
                 None)
 
-        # UPowerGlib segfaults when trying to get device. Use CSD instead
-        devices = csd_power_proxy.GetDevices()
-        device_types = [x[1] for x in csd_power_proxy.GetDevices()]
+        device_types = [x[1] for x in self.csd_power_proxy.GetDevices()]
 
         self.has_battery = UPowerGlib.DeviceKind.BATTERY in device_types or UPowerGlib.DeviceKind.UPS in device_types
         self.has_lid = self.up_client.get_lid_is_present()
@@ -163,12 +161,77 @@ class Module:
 
         # Batteries
 
-        battery_page = SettingsPage()
-        show_battery_page = False
-        secondary_settings = None
-        primary_settings = None
+        self.battery_page = SettingsPage()
+        self.show_battery_page = False
         self.battery_label_size_group = Gtk.SizeGroup(Gtk.SizeGroupMode.HORIZONTAL)
 
+        self.build_battery_page()
+        self.csd_power_proxy.connect("g-properties-changed", self.build_battery_page)
+
+        primary_output = None
+        try:
+            screen = CinnamonDesktop.RRScreen.new(Gdk.Screen.get_default())
+            outputs = CinnamonDesktop.RRScreen.list_outputs(screen)
+            for output in outputs:
+                if (output.is_connected() and output.is_laptop() and output.get_backlight_min() >= 0 and output.get_backlight_max() > 0):
+                    primary_output = output
+                    break
+        except Exception, detail:
+            print "Failed to query backlight information in cs_power module: %s" % detail
+
+        if primary_output is None:
+            if self.show_battery_page:
+                self.sidePage.stack.add_titled(power_page, "power", _("Power"))
+                self.sidePage.stack.add_titled(self.battery_page, "batteries", _("Batteries"))
+            else:
+                self.sidePage.add_widget(power_page)
+            return
+
+        proxy = Gio.DBusProxy.new_sync(
+                Gio.bus_get_sync(Gio.BusType.SESSION, None),
+                Gio.DBusProxyFlags.NONE,
+                None,
+                "org.cinnamon.SettingsDaemon",
+                "/org/cinnamon/SettingsDaemon/Power",
+                "org.cinnamon.SettingsDaemon.Power.Screen",
+                None)
+
+        try:
+            brightness = proxy.GetPercentage()
+        except:
+            if self.show_battery_page:
+                self.sidePage.stack.add_titled(power_page, "power", _("Power"))
+                self.sidePage.stack.add_titled(self.battery_page, "batteries", _("Batteries"))
+            else:
+                self.sidePage.add_widget(power_page)
+        else:
+            self.sidePage.stack.add_titled(power_page, "power", _("Power"))
+            if self.show_battery_page:
+                self.sidePage.stack.add_titled(self.battery_page, "batteries", _("Batteries"))
+
+            page = SettingsPage()
+            self.sidePage.stack.add_titled(page, "brightness", _("Brightness"))
+
+            size_group = Gtk.SizeGroup(mode=Gtk.SizeGroupMode.HORIZONTAL)
+
+            section = page.add_section(_("Screen brightness"))
+            section.add_row(BrightnessSlider(section, proxy))
+
+            section.add_row(GSettingsSwitch(_("On battery, dim screen when inactive"), "org.cinnamon.settings-daemon.plugins.power", "idle-dim-battery"))
+
+            section.add_reveal_row(GSettingsComboBox(_("Brightness level when inactive"), "org.cinnamon.settings-daemon.plugins.power", "idle-brightness", IDLE_BRIGHTNESS_OPTIONS, valtype="int", size_group=size_group), "org.cinnamon.settings-daemon.plugins.power", "idle-dim-battery")
+
+            section.add_reveal_row(GSettingsComboBox(_("Dim screen after inactive for"), "org.cinnamon.settings-daemon.plugins.power", "idle-dim-time", IDLE_DELAY_OPTIONS, valtype="int", size_group=size_group), "org.cinnamon.settings-daemon.plugins.power", "idle-dim-battery")
+
+    def build_battery_page(self, *args):
+        #destroy all widgets in this page
+        self.battery_page.foreach(Gtk.Widget.destroy)
+
+        secondary_settings = None
+        primary_settings = None
+
+        # UPowerGlib segfaults when trying to get device. Use CSD instead
+        devices = self.csd_power_proxy.GetDevices()
 
         have_primary = False
         ups_as_primary = False
@@ -186,84 +249,34 @@ class Module:
                 pass # Do nothing
             elif device[1] == UPowerGlib.DeviceKind.UPS and ups_as_primary:
                 if not primary_settings:
-                    primary_settings = battery_page.add_section(_("Batteries"))
+                    primary_settings = self.battery_page.add_section(_("Batteries"))
                     primary_settings.add_row(self.set_device_ups_primary(device))
-                    show_battery_page = True
+                    self.show_battery_page = True
                 else:
                     primary_settings.add_row(self.set_device_ups_primary(device))
             elif device[1] == UPowerGlib.DeviceKind.BATTERY and not ups_as_primary:
                 if not have_primary:
                     if not primary_settings:
-                        primary_settings = battery_page.add_section(_("Batteries"))
+                        primary_settings = self.battery_page.add_section(_("Batteries"))
                         primary_settings.add_row(self.set_device_battery_primary(device))
-                        show_battery_page = True
-                    have_primary == True
+                        self.show_battery_page = True
+                    have_primary = True
                 else:
                     widget = set_device_battery_additional(device)
                     if widget:
                         primary_settings.add_row(widget)
             else:
                 if not secondary_settings:
-                    secondary_settings = battery_page.add_section(_("Devices"))
+                    secondary_settings = self.battery_page.add_section(_("Devices"))
                     secondary_settings.add_row(self.add_battery_device_secondary(device))
-                    show_battery_page = True
+                    self.show_battery_page = True
                 else:
                     secondary_settings.add_row(self.add_battery_device_secondary(device))
 
-        primary_output = None
-        try:
-            screen = CinnamonDesktop.RRScreen.new(Gdk.Screen.get_default())
-            outputs = CinnamonDesktop.RRScreen.list_outputs(screen)
-            for output in outputs:
-                if (output.is_connected() and output.is_laptop() and output.get_backlight_min() >= 0 and output.get_backlight_max() > 0):
-                    primary_output = output
-                    break
-        except Exception, detail:
-            print "Failed to query backlight information in cs_power module: %s" % detail
-
-        if primary_output is None:
-            if show_battery_page:
-                self.sidePage.stack.add_titled(power_page, "power", _("Power"))
-                self.sidePage.stack.add_titled(battery_page, "batteries", _("Batteries"))
-            else:
-                self.sidePage.add_widget(power_page)
-            return
-
-        proxy = Gio.DBusProxy.new_sync(
-                Gio.bus_get_sync(Gio.BusType.SESSION, None),
-                Gio.DBusProxyFlags.NONE,
-                None,
-                "org.cinnamon.SettingsDaemon",
-                "/org/cinnamon/SettingsDaemon/Power",
-                "org.cinnamon.SettingsDaemon.Power.Screen",
-                None)
-
-        try:
-            brightness = proxy.GetPercentage()
-        except:
-            if show_battery_page:
-                self.sidePage.stack.add_titled(power_page, "power", _("Power"))
-                self.sidePage.stack.add_titled(battery_page, "batteries", _("Batteries"))
-            else:
-                self.sidePage.add_widget(power_page)
-        else:
-            self.sidePage.stack.add_titled(power_page, "power", _("Power"))
-            if show_battery_page:
-                self.sidePage.stack.add_titled(battery_page, "batteries", _("Batteries"))
-
-            page = SettingsPage()
-            self.sidePage.stack.add_titled(page, "brightness", _("Brightness"))
-
-            size_group = Gtk.SizeGroup(mode=Gtk.SizeGroupMode.HORIZONTAL)
-
-            section = page.add_section(_("Screen brightness"))
-            section.add_row(BrightnessSlider(section, proxy))
-
-            section.add_row(GSettingsSwitch(_("On battery, dim screen when inactive"), "org.cinnamon.settings-daemon.plugins.power", "idle-dim-battery"))
-
-            section.add_reveal_row(GSettingsComboBox(_("Brightness level when inactive"), "org.cinnamon.settings-daemon.plugins.power", "idle-brightness", IDLE_BRIGHTNESS_OPTIONS, valtype="int", size_group=size_group), "org.cinnamon.settings-daemon.plugins.power", "idle-dim-battery")
-
-            section.add_reveal_row(GSettingsComboBox(_("Dim screen after inactive for"), "org.cinnamon.settings-daemon.plugins.power", "idle-dim-time", IDLE_DELAY_OPTIONS, valtype="int", size_group=size_group), "org.cinnamon.settings-daemon.plugins.power", "idle-dim-battery")
+        #show all the widgets in this page, but not the page itself
+        visible = self.battery_page.get_visible()
+        self.battery_page.show_all()
+        self.battery_page.set_visible(visible)
 
     def set_device_ups_primary(self, device):
         percentage = device[3]
