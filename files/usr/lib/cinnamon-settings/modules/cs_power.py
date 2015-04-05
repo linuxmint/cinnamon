@@ -490,6 +490,8 @@ def get_available_options():
     return lid_options, button_power_options, critical_options
 
 class BrightnessSlider(SettingsWidget):
+    step = 5
+
     def __init__(self, section, proxy):
         super(BrightnessSlider, self).__init__()
         self.set_orientation(Gtk.Orientation.VERTICAL)
