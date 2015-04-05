@@ -135,6 +135,7 @@ class Module:
 
 
         have_primary = False
+        ups_as_primary = False
 
         # first we look for a discharging UPS, which is promoted to the
         # primary device if it's discharging. Otherwise we use the first
