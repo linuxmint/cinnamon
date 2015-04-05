@@ -7,49 +7,62 @@ from SettingsWidgets import *
 ICON_SIZE = 48
 
 class Module:
+    comment = _("Manage themes to change how your desktop looks")
+    name = "themes"
+    category = "appear"
+
     def __init__(self, content_box):
         self.keywords = _("themes, style")
         self.icon = "cs-themes"
         sidePage = SidePage(_("Themes"), self.icon, self.keywords, content_box, module=self)
         self.sidePage = sidePage
-        self.comment = _("Manage themes to change how your desktop looks")
-        self.name = "themes"
-        self.category = "appear"
 
     def on_module_selected(self):
         if not self.loaded:
-            print "Loading Themes module"            
+            print "Loading Themes module"
             self.settings = Gio.Settings.new("org.cinnamon.desktop.interface")
             self.wm_settings = Gio.Settings.new("org.cinnamon.desktop.wm.preferences")
             self.cinnamon_settings = Gio.Settings.new("org.cinnamon.theme")
-            
+
             self.icon_chooser = self.create_button_chooser(self.settings, 'icon-theme', 'icons', 'icons', button_picture_size=ICON_SIZE, menu_pictures_size=ICON_SIZE, num_cols=4)
             self.cursor_chooser = self.create_button_chooser(self.settings, 'cursor-theme', 'icons', 'cursors', button_picture_size=32, menu_pictures_size=32, num_cols=4)
             self.theme_chooser = self.create_button_chooser(self.settings, 'gtk-theme', 'themes', 'gtk-3.0', button_picture_size=35, menu_pictures_size=35, num_cols=4)
             self.metacity_chooser = self.create_button_chooser(self.wm_settings, 'theme', 'themes', 'metacity-1', button_picture_size=32, menu_pictures_size=32, num_cols=4)
             self.cinnamon_chooser = self.create_button_chooser(self.cinnamon_settings, 'name', 'themes', 'cinnamon', button_picture_size=60, menu_pictures_size=60, num_cols=4)
 
-            vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
-            self.sidePage.add_widget(vbox)
-            
-            section = Section(_("Themes"))        
-            section.add(self.make_group(_("Window borders"), self.metacity_chooser))
-            section.add(self.make_group(_("Icons"), self.icon_chooser)) 
-            section.add(self.make_group(_("Controls"), self.theme_chooser))                       
-            section.add(self.make_group(_("Mouse Pointer"), self.cursor_chooser))
-            section.add(self.make_group(_("Desktop"), self.cinnamon_chooser))
+            page = SettingsPage()
+            self.sidePage.add_widget(page)
+
+            settings = page.add_section(_("Themes"))
+
+            widget = self.make_group(_("Window borders"), self.metacity_chooser)
+            settings.add_row(widget)
+
+            widget = self.make_group(_("Icons"), self.icon_chooser)
+            settings.add_row(widget)
+
+            widget = self.make_group(_("Controls"), self.theme_chooser)
+            settings.add_row(widget)
+
+            widget = self.make_group(_("Mouse Pointer"), self.cursor_chooser)
+            settings.add_row(widget)
+
+            widget = self.make_group(_("Desktop"), self.cinnamon_chooser)
+            center_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
             button = Gtk.LinkButton("http://www.elgoog.moc")
             button.set_label(_("Add/remove desktop themes..."))
             button.connect("activate-link", self.add_remove_cinnamon_themes)
-            section.add(self.make_group("", button, add_widget_to_size_group=False))
-            vbox.add(section)
+            center_box.pack_end(button, False, False, 0)
+            widget.pack_start(center_box, False, False, 0)
+            settings.add_row(widget)
 
-            vbox.add(Gtk.Separator.new(Gtk.Orientation.HORIZONTAL))
+            settings = page.add_section(_("Options"))
 
-            section = Section(_("Options"))
-            section.add(GSettingsCheckButton(_("Show icons in menus"), "org.cinnamon.settings-daemon.plugins.xsettings", "menus-have-icons", None))
-            section.add(GSettingsCheckButton(_("Show icons on buttons"), "org.cinnamon.settings-daemon.plugins.xsettings", "buttons-have-icons", None))                        
-            vbox.add(section)
+            widget = GSettingsSwitch(_("Show icons in menus"), "org.cinnamon.settings-daemon.plugins.xsettings", "menus-have-icons")
+            settings.add_row(widget)
+
+            widget = GSettingsSwitch(_("Show icons on buttons"), "org.cinnamon.settings-daemon.plugins.xsettings", "buttons-have-icons")
+            settings.add_row(widget)
 
             self.builder = self.sidePage.builder
 
@@ -99,7 +112,7 @@ class Module:
         if len(themes) > 0:
             inc = 1.0 / len(themes)
 
-        if path_suffix == "icons":            
+        if path_suffix == "icons":
             for theme in themes:
                 icon_theme = Gtk.IconTheme()
                 icon_theme.set_custom_theme(theme)
@@ -110,13 +123,13 @@ class Module:
                 GObject.timeout_add(5, self.increment_progress, (chooser,inc))
         else:
             if path_suffix == "cinnamon":
-                chooser.add_picture("/usr/share/cinnamon/theme/thumbnail.png", callback, title="cinnamon", id="cinnamon") 
+                chooser.add_picture("/usr/share/cinnamon/theme/thumbnail.png", callback, title="cinnamon", id="cinnamon")
             for theme in themes:
                 theme_name = theme[0]
                 theme_path = theme[1]
                 try:
-                    for path in ["%s/%s/%s/thumbnail.png" % (theme_path, theme_name, path_suffix), 
-                             "/usr/share/cinnamon/thumbnails/%s/%s.png" % (path_suffix, theme_name), 
+                    for path in ["%s/%s/%s/thumbnail.png" % (theme_path, theme_name, path_suffix),
+                             "/usr/share/cinnamon/thumbnails/%s/%s.png" % (path_suffix, theme_name),
                              "/usr/share/cinnamon/thumbnails/%s/unknown.png" % path_suffix]:
                         if os.path.exists(path):
                             chooser.add_picture(path, callback, title=theme_name, id=theme_name)
@@ -139,20 +152,20 @@ class Module:
         pass
 
     def make_group(self, group_label, widget, add_widget_to_size_group=True):
-        self.size_groups = getattr(self, "size_groups", [Gtk.SizeGroup.new(Gtk.SizeGroupMode.HORIZONTAL) for x in range(2)])        
-        box = IndentedHBox()
+        self.size_groups = getattr(self, "size_groups", [Gtk.SizeGroup.new(Gtk.SizeGroupMode.HORIZONTAL) for x in range(2)])
+        box = SettingsWidget()
         label = Gtk.Label()
         label.set_markup(group_label)
         label.props.xalign = 0.0
         self.size_groups[0].add_widget(label)
-        box.pack_start(label, False, False, 0) 
-        if add_widget_to_size_group:       
+        box.pack_start(label, False, False, 0)
+        if add_widget_to_size_group:
             self.size_groups[1].add_widget(widget)
-        box.pack_start(widget, False, False, 15)
+        box.pack_end(widget, False, False, 0)
 
         return box
-         
-    def create_button_chooser(self, settings, key, path_prefix, path_suffix, button_picture_size, menu_pictures_size, num_cols):        
+
+    def create_button_chooser(self, settings, key, path_prefix, path_suffix, button_picture_size, menu_pictures_size, num_cols):
         chooser = PictureChooserButton(num_cols=num_cols, button_picture_size=button_picture_size, menu_pictures_size=menu_pictures_size, has_button_label=True)
         theme = settings.get_string(key)
         chooser.set_button_label(theme)
@@ -166,13 +179,13 @@ class Module:
             chooser.set_picture_from_file(path)
         else:
             try:
-                for path in ["/usr/share/%s/%s/%s/thumbnail.png" % (path_prefix, theme, path_suffix), 
-                             os.path.expanduser("~/.%s/%s/%s/thumbnail.png" % (path_prefix, theme, path_suffix)), 
-                             "/usr/share/cinnamon/thumbnails/%s/%s.png" % (path_suffix, theme), 
-                             "/usr/share/cinnamon/thumbnails/%s/unknown.png" % path_suffix]:                        
+                for path in ["/usr/share/%s/%s/%s/thumbnail.png" % (path_prefix, theme, path_suffix),
+                             os.path.expanduser("~/.%s/%s/%s/thumbnail.png" % (path_prefix, theme, path_suffix)),
+                             "/usr/share/cinnamon/thumbnails/%s/%s.png" % (path_suffix, theme),
+                             "/usr/share/cinnamon/thumbnails/%s/unknown.png" % path_suffix]:
                     if os.path.exists(path):
                         chooser.set_picture_from_file(path)
-                        break        
+                        break
             except:
                 chooser.set_picture_from_file("/usr/share/cinnamon/thumbnails/%s/unknown.png" % path_suffix)
         return chooser
@@ -184,7 +197,7 @@ class Module:
         window.set_title(_("Desktop themes"))
         window.set_default_size(640, 480)
         window.set_border_width(6)
-        window.set_position(Gtk.WindowPosition.CENTER)        
+        window.set_position(Gtk.WindowPosition.CENTER)
         page = ExtensionSidePage(self.name, self.icon, self.keywords, box, "theme", None)
         page.load(window=window)
         box.pack_start(page.vbox, True, True, 6)
@@ -197,7 +210,7 @@ class Module:
             self.icon_chooser.set_button_label(theme)
             self.icon_chooser.set_tooltip_text(theme)
         except Exception, detail:
-            print detail      
+            print detail
         return True
 
     def _on_metacity_theme_selected(self, path, theme):
@@ -206,7 +219,7 @@ class Module:
             self.metacity_chooser.set_button_label(theme)
             self.metacity_chooser.set_tooltip_text(theme)
         except Exception, detail:
-            print detail        
+            print detail
         return True
 
     def _on_gtk_theme_selected(self, path, theme):
@@ -215,7 +228,7 @@ class Module:
             self.theme_chooser.set_button_label(theme)
             self.theme_chooser.set_tooltip_text(theme)
         except Exception, detail:
-            print detail        
+            print detail
         return True
 
     def _on_cursor_theme_selected(self, path, theme):
@@ -224,7 +237,7 @@ class Module:
             self.cursor_chooser.set_button_label(theme)
             self.cursor_chooser.set_tooltip_text(theme)
         except Exception, detail:
-            print detail        
+            print detail
         return True
 
     def _on_cinnamon_theme_selected(self, path, theme):
@@ -233,7 +246,7 @@ class Module:
             self.cinnamon_chooser.set_button_label(theme)
             self.cinnamon_chooser.set_tooltip_text(theme)
         except Exception, detail:
-            print detail      
+            print detail
         return True
 
     def _load_gtk_themes(self):
@@ -245,7 +258,7 @@ class Module:
         for i in valid:
             res.append((i[0], i[1]))
         return res
-    
+
     def _load_icon_themes(self):
         dirs = ("/usr/share/icons", os.path.join(os.path.expanduser("~"), ".icons"))
         valid = walk_directories(dirs, lambda d: os.path.isdir(d) and not os.path.exists(os.path.join(d, "cursors")) and os.path.exists(os.path.join(d, "index.theme")))
@@ -254,7 +267,7 @@ class Module:
         for i in valid:
             res.append(i)
         return res
-        
+
     def _load_cursor_themes(self):
         dirs = ("/usr/share/icons", os.path.join(os.path.expanduser("~"), ".icons"))
         valid = walk_directories(dirs, lambda d: os.path.isdir(d) and os.path.exists(os.path.join(d, "cursors")), return_directories=True)
@@ -263,7 +276,7 @@ class Module:
         for i in valid:
             res.append((i[0], i[1]))
         return res
-        
+
     def _load_metacity_themes(self):
         dirs = ("/usr/share/themes", os.path.join(os.path.expanduser("~"), ".themes"))
         valid = walk_directories(dirs, lambda d: os.path.exists(os.path.join(d, "metacity-1")), return_directories=True)
@@ -277,7 +290,7 @@ class Module:
         dirs = ("/usr/share/themes", os.path.join(os.path.expanduser("~"), ".themes"))
         valid = walk_directories(dirs, lambda d: os.path.exists(os.path.join(d, "cinnamon")), return_directories=True)
         valid.sort(lambda a,b: cmp(a[0].lower(), b[0].lower()))
-        res = []        
+        res = []
         for i in valid:
             res.append((i[0], i[1]))
         return res

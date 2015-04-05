@@ -7,9 +7,11 @@ import os
 from gi.repository import Gio, Gtk, GObject, Gdk, Pango, GLib
 import imtools
 import gettext
+import thread
 import subprocess
 import tempfile
 import commands
+from PIL import Image
 
 gettext.install("cinnamon", "/usr/share/locale")
 
@@ -37,17 +39,20 @@ BACKGROUND_COLLECTION_TYPE_XML = "xml"
 (STORE_IS_SEPARATOR, STORE_ICON, STORE_NAME, STORE_PATH, STORE_TYPE) = range(5)
 
 class Module:
-    
+    name = "backgrounds"
+    category = "appear"
+    comment = _("Change your desktop's background")
+
     def __init__(self, content_box):
         keywords = _("background, picture, screenshot, slideshow")
-        self.sidePage = SidePage(_("Backgrounds"), "cs-backgrounds", keywords, content_box, 500, module=self)        
-        self.name = "backgrounds"
-        self.category = "appear"
-        self.comment = _("Change your desktop's background")
+        self.sidePage = SidePage(_("Backgrounds"), "cs-backgrounds", keywords, content_box, 500, module=self)
 
     def on_module_selected(self):
         if not self.loaded:
             print "Loading Backgrounds module"
+
+            self.sidePage.stack = SettingsStack()
+            self.sidePage.add_widget(self.sidePage.stack)
 
             self.shown_collection = None # Which collection is displayed in the UI
 
@@ -57,7 +62,7 @@ class Module:
             self.add_folder_dialog = Gtk.FileChooserDialog(title=_("Add Folder"),
                                                            action=Gtk.FileChooserAction.SELECT_FOLDER,
                                                            buttons=(Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL,
-                                                                   Gtk.STOCK_OPEN, Gtk.ResponseType.OK))            
+                                                                   Gtk.STOCK_OPEN, Gtk.ResponseType.OK))
 
             self.xdg_pictures_directory = os.path.expanduser("~/Pictures")
             xdg_config = os.path.expanduser("~/.config/user-dirs.dirs")
@@ -68,20 +73,21 @@ class Module:
 
             self.get_user_backgrounds()
 
-            mainbox = Gtk.Box.new(Gtk.Orientation.VERTICAL, 2)
+            # Images
+
+            mainbox = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 2)
             mainbox.expand = True
             mainbox.set_border_width(8)
-            self.sidePage.add_widget(mainbox)
 
-            top_hbox = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 2)
+            self.sidePage.stack.add_titled(mainbox, "images", _("Images"))
+
             left_vbox = Gtk.Box.new(Gtk.Orientation.VERTICAL, 0)
             right_vbox = Gtk.Box.new(Gtk.Orientation.VERTICAL, 0)
-            bottom_vbox = Gtk.Box.new(Gtk.Orientation.VERTICAL, 2)
 
             folder_scroller = Gtk.ScrolledWindow.new(None, None)
             folder_scroller.set_shadow_type(Gtk.ShadowType.IN)
             folder_scroller.set_policy(Gtk.PolicyType.AUTOMATIC, Gtk.PolicyType.AUTOMATIC)
-            folder_scroller.set_property("min-content-width", 150)            
+            folder_scroller.set_property("min-content-width", 150)
 
             self.folder_tree = Gtk.TreeView.new()
             self.folder_tree.set_headers_visible(False)
@@ -109,42 +115,12 @@ class Module:
             image_scroller.add(self.icon_view)
             self.icon_view.connect("selection-changed", self.on_wallpaper_selection_changed)
 
-            hbox = IndentedHBox()
-            slideshow_checkbox = GSettingsCheckButton(_("Change background every "), "org.cinnamon.desktop.background.slideshow", "slideshow-enabled", None)
-            delay_button = GSettingsSpinButton("", "org.cinnamon.desktop.background.slideshow", "delay", "org.cinnamon.desktop.background.slideshow/slideshow-enabled", 1, 120, 1, 1, _(" minutes"))
-            hbox.add(slideshow_checkbox)
-            hbox.add(delay_button)
-            bottom_vbox.pack_start(hbox, False, False, 2)
-
-            hbox = IndentedHBox()
-            hbox.add(GSettingsCheckButton(_("Random order"), "org.cinnamon.desktop.background.slideshow", "random-order", "org.cinnamon.desktop.background.slideshow/slideshow-enabled"))
-            bottom_vbox.pack_start(hbox, False, False, 2)
-
-            hbox = IndentedHBox()
-            hbox.add(GSettingsComboBox(_("Picture aspect"), "org.cinnamon.desktop.background", "picture-options", None, BACKGROUND_PICTURE_OPTIONS))
-            bottom_vbox.pack_start(hbox, False, False, 2)
-
-            hbox = IndentedHBox()
-            color_shading_type = GSettingsComboBox(_("Gradient"), "org.cinnamon.desktop.background", "color-shading-type", None, BACKGROUND_COLOR_SHADING_TYPES)
-            label1 = Gtk.Label.new(_("Start color"))
-            primary_color = GSettingsColorChooser("org.cinnamon.desktop.background", "primary-color", None)
-            label2 = Gtk.Label.new(_("End color"))
-            secondary_color = GSettingsColorChooser("org.cinnamon.desktop.background", "secondary-color", None)
-            hbox.pack_start(color_shading_type, False, False, 0)
-            hbox.pack_start(label1, False, False, 2)
-            hbox.pack_start(primary_color, False, False, 2)
-            hbox.pack_start(label2, False, False, 2)
-            hbox.pack_start(secondary_color, False, False, 2)
-            bottom_vbox.pack_start(hbox, False, False, 2)
-
             right_vbox.pack_start(image_scroller, True, True, 0)
             left_vbox.pack_start(folder_scroller, True, True, 0)
             left_vbox.pack_start(button_toolbar, False, False, 0)
 
-            mainbox.pack_start(top_hbox, True, True, 2)
-            top_hbox.pack_start(left_vbox, False, False, 2)
-            top_hbox.pack_start(right_vbox, True, True, 2)
-            mainbox.pack_start(bottom_vbox, False, False, 2)
+            mainbox.pack_start(left_vbox, False, False, 2)
+            mainbox.pack_start(right_vbox, True, True, 2)
 
             left_vbox.set_border_width(2)
             right_vbox.set_border_width(2)
@@ -171,7 +147,7 @@ class Module:
             self.get_system_backgrounds()
 
             tree_separator = [True, None, None, None, None]
-            self.collection_store.append(tree_separator)            
+            self.collection_store.append(tree_separator)
 
             if len(self.user_backgrounds) > 0:
                 for item in self.user_backgrounds:
@@ -181,6 +157,37 @@ class Module:
             self.folder_tree.set_row_separator_func(self.is_row_separator, None)
 
             self.get_initial_path()
+
+            # Settings
+
+            page = SettingsPage()
+
+            settings = page.add_section(_("Background Settings"))
+
+            size_group = Gtk.SizeGroup.new(Gtk.SizeGroupMode.HORIZONTAL)
+
+            self.sidePage.stack.add_titled(page, "settings", _("Settings"))
+
+            widget = GSettingsSwitch(_("Play backgrounds as a slideshow"), "org.cinnamon.desktop.background.slideshow", "slideshow-enabled")
+            settings.add_row(widget)
+
+            widget = GSettingsSpinButton(_("Delay"), "org.cinnamon.desktop.background.slideshow", "delay", _("minutes"), 1, 120)
+            settings.add_reveal_row(widget, "org.cinnamon.desktop.background.slideshow", "slideshow-enabled")
+
+            widget = GSettingsSwitch(_("Play images in random order"), "org.cinnamon.desktop.background.slideshow", "random-order")
+            settings.add_reveal_row(widget, "org.cinnamon.desktop.background.slideshow", "slideshow-enabled")
+
+            widget = GSettingsComboBox(_("Picture aspect"), "org.cinnamon.desktop.background", "picture-options", BACKGROUND_PICTURE_OPTIONS, size_group=size_group)
+            settings.add_row(widget)
+
+            widget = GSettingsComboBox(_("Background gradient"), "org.cinnamon.desktop.background", "color-shading-type", BACKGROUND_COLOR_SHADING_TYPES, size_group=size_group)
+            settings.add_row(widget)
+
+            widget = GSettingsColorChooser(_("Gradient start color"), "org.cinnamon.desktop.background", "primary-color", size_group=size_group)
+            settings.add_row(widget)
+
+            widget = GSettingsColorChooser(_("Gradient end color"), "org.cinnamon.desktop.background", "secondary-color", size_group=size_group)
+            settings.add_row(widget)
 
     def is_row_separator(self, model, iter, data):
         return model.get_value(iter, 0)
@@ -207,10 +214,10 @@ class Module:
                     order = 10
                     # Special case for Linux Mint. We don't want to use 'start-here' here as it wouldn't work depending on the theme.
                     # Also, other distros should get equal treatment. If they define cinnamon-backgrounds and use their own distro name, we should add support for it.
-                    if display_name == "Retro":                      
+                    if display_name == "Retro":
                         icon = "cs-retro"
                         order = 20 # place retro bgs at the end
-                    if display_name == "Linuxmint":                        
+                    if display_name == "Linuxmint":
                         display_name = "Linux Mint"
                         icon = "cs-linuxmint"
                         order = 0
@@ -235,8 +242,8 @@ class Module:
                     icon = "folder"
                 self.user_backgrounds.append([False, icon, folder_name, folder_path, BACKGROUND_COLLECTION_TYPE_DIRECTORY])
         else:
-            # Add XDG PICTURE DIR            
-            self.user_backgrounds.append([False, "folder-pictures", self.xdg_pictures_directory.split("/")[-1], self.xdg_pictures_directory, BACKGROUND_COLLECTION_TYPE_DIRECTORY])            
+            # Add XDG PICTURE DIR
+            self.user_backgrounds.append([False, "folder-pictures", self.xdg_pictures_directory.split("/")[-1], self.xdg_pictures_directory, BACKGROUND_COLLECTION_TYPE_DIRECTORY])
             self.update_folder_list()
 
     def format_source(self, type, path):
@@ -254,10 +261,10 @@ class Module:
             self.remove_folder_button.set_sensitive(True)
 
             if image_source != "" and "://" in image_source:
-                while tree_iter != None:                
+                while tree_iter != None:
                     if collection_source == image_source:
                         tree_path = self.collection_store.get_path(tree_iter)
-                        self.folder_tree.set_cursor(tree_path)                        
+                        self.folder_tree.set_cursor(tree_path)
                         if collection_type == BACKGROUND_COLLECTION_TYPE_XML:
                             self.remove_folder_button.set_sensitive(False)
                         self.update_icon_view(collection_path, collection_type)
@@ -267,12 +274,12 @@ class Module:
                     collection_type = collection[STORE_TYPE]
                     collection_path = collection[STORE_PATH]
                     collection_source = self.format_source(collection_type, collection_path)
-            else:            
+            else:
                 self._slideshow_schema.set_string("image-source", collection_source)
                 tree_path = self.collection_store.get_path(tree_iter)
                 self.folder_tree.get_selection().select_path(tree_path)
                 if collection_type == BACKGROUND_COLLECTION_TYPE_XML:
-                    self.remove_folder_button.set_sensitive(False)                
+                    self.remove_folder_button.set_sensitive(False)
                 self.update_icon_view(collection_path, collection_type)
         except Exception, detail:
             print detail
@@ -375,7 +382,7 @@ class Module:
                         filename = os.path.join(path, i)
                         if commands.getoutput("file -bi \"%s\"" % filename).startswith("image/"):
                             picture_list.append({"filename": filename})
-                elif type == BACKGROUND_COLLECTION_TYPE_XML:        
+                elif type == BACKGROUND_COLLECTION_TYPE_XML:
                     picture_list += self.parse_xml_backgrounds_list(path)
 
             self.icon_view.set_pictures_list(picture_list, path)
@@ -388,7 +395,7 @@ class Module:
         loc = localeCode.partition("_")
         loc = (loc[0], loc[2])
         return loc
-    
+
     def getLocalWallpaperName(self, names, loc):
         result = ""
         mainLocFound = False
@@ -423,14 +430,14 @@ class Module:
                         for prop in wallpaperNode:
                             if type(prop.tag) == str:
                                 if prop.tag != "name":
-                                    wallpaperData[prop.tag] = prop.text                                
+                                    wallpaperData[prop.tag] = prop.text
                                 else:
                                     propAttr = prop.attrib
                                     wpName = prop.text
                                     locName = self.splitLocaleCode(propAttr.get(locAttrName)) if propAttr.has_key(locAttrName) else ("", "")
                                     names.append((locName, wpName))
                         wallpaperData["name"] = self.getLocalWallpaperName(names, loc)
-                        
+
                         if "filename" in wallpaperData and wallpaperData["filename"] != "" and os.path.exists(wallpaperData["filename"]) and os.access(wallpaperData["filename"], os.R_OK):
                             if wallpaperData["name"] == "":
                                 wallpaperData["name"] = os.path.basename(wallpaperData["filename"])
@@ -440,10 +447,10 @@ class Module:
             return []
 
 class PixCache(object):
-    
+
     def __init__(self):
         self._data = {}
-    
+
     def get_pix(self, filename, size = None):
         try:
             mimetype = subprocess.check_output(["file", "-bi", filename]).split(";")[0]
@@ -467,18 +474,18 @@ class PixCache(object):
                     img = Image.open(tmp_filename)
                     os.unlink(tmp_filename)
                 else:
-                    img = Image.open(filename)             
+                    img = Image.open(filename)
                 (width, height) = img.size
                 if img.mode != 'RGB':
-                    img = img.convert('RGB')                
+                    img = img.convert('RGB')
                 if size:
-                    img.thumbnail((size, size), Image.ANTIALIAS)                                                                                                    
-                img = imtools.round_image(img, {}, False, None, 3, 255)  
-                img = imtools.drop_shadow(img, 4, 4, background_color=(255, 255, 255, 0), shadow_color=0x444444, border=8, shadow_blur=3, force_background_color=False, cache=None)        
+                    img.thumbnail((size, size), Image.ANTIALIAS)
+                img = imtools.round_image(img, {}, False, None, 3, 255)
+                img = imtools.drop_shadow(img, 4, 4, background_color=(255, 255, 255, 0), shadow_color=0x444444, border=8, shadow_blur=3, force_background_color=False, cache=None)
                 # Convert Image -> Pixbuf (save to file, GTK3 is not reliable for that)
                 f = tempfile.NamedTemporaryFile(delete=False)
                 temp_filename = f.name
-                f.close()        
+                f.close()
                 img.save(temp_filename, "png")
                 pix = [GdkPixbuf.Pixbuf.new_from_file(temp_filename), width, height]
                 os.unlink(temp_filename)
@@ -512,14 +519,14 @@ class ThreadedIconView(Gtk.IconView):
         area.pack_start(text_renderer, True, False, False)
         self.add_attribute (pixbuf_renderer, "pixbuf", 1)
         self.add_attribute (text_renderer, "markup", 2)
-        text_renderer.set_property("alignment", Pango.Alignment.CENTER)        
+        text_renderer.set_property("alignment", Pango.Alignment.CENTER)
 
         self._loading_queue = []
         self._loading_queue_lock = thread.allocate_lock()
-        
+
         self._loading_lock = thread.allocate_lock()
         self._loading = False
-        
+
         self._loaded_data = []
         self._loaded_data_lock = thread.allocate_lock()
 
@@ -532,12 +539,12 @@ class ThreadedIconView(Gtk.IconView):
         self.current_path = path
         for i in pictures_list:
             self.add_picture(i, path)
-    
+
     def clear(self):
         self._loading_queue_lock.acquire()
         self._loading_queue = []
         self._loading_queue_lock.release()
-        
+
         self._loading_lock.acquire()
         is_loading = self._loading
         self._loading_lock.release()
@@ -546,25 +553,25 @@ class ThreadedIconView(Gtk.IconView):
             self._loading_lock.acquire()
             is_loading = self._loading
             self._loading_lock.release()
-        
+
         self._model.clear()
-    
+
     def add_picture(self, picture, path):
         self._loading_queue_lock.acquire()
         self._loading_queue.append(picture)
         self._loading_queue_lock.release()
-        
+
         start_loading = False
         self._loading_lock.acquire()
         if not self._loading:
             self._loading = True
             start_loading = True
         self._loading_lock.release()
-        
+
         if start_loading:
             GLib.timeout_add(100, self._check_loading_progress)
             thread.start_new_thread(self._do_load, (path,))
-    
+
     def _check_loading_progress(self):
         self._loading_lock.acquire()
         self._loaded_data_lock.acquire()
@@ -575,12 +582,12 @@ class ThreadedIconView(Gtk.IconView):
             self._loaded_data = self._loaded_data[1:]
         self._loading_lock.release()
         self._loaded_data_lock.release()
-        
+
         for i in to_load:
             self._model.append(i)
-        
+
         return res
-    
+
     def _do_load(self, path):
         finished = False
         while not finished:
@@ -606,15 +613,15 @@ class ThreadedIconView(Gtk.IconView):
                     else:
                         artist = ""
                     dimensions = "%dx%d" % (pix[1], pix[2])
-                    
+
                     self._loaded_data_lock.acquire()
-                    self._loaded_data.append((to_load, pix[0], "<b>%s</b>\n<sub>%s<span foreground='#555555'>%s</span></sub>" % (label, artist, dimensions), path))                    
+                    self._loaded_data.append((to_load, pix[0], "<b>%s</b>\n<sub>%s<span foreground='#555555'>%s</span></sub>" % (label, artist, dimensions), path))
                     self._loaded_data_lock.release()
-                
+
         self._loading_lock.acquire()
         self._loading = False
-        self._loading_lock.release()                 
-        
+        self._loading_lock.release()
+
     def getFirstFileFromBackgroundXml(self, filename):
         try:
             f = open(filename)

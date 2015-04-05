@@ -159,7 +159,7 @@ def drop_shadow(image, horizontal_offset=5, vertical_offset=5,
     return back
 
 def round_image(image, cache={}, round_all=True, rounding_type=None,
-        radius=100, opacity=255, pos=ROUNDED_POS, back_color='#FFFFFF'):                    
+        radius=100, opacity=255, pos=ROUNDED_POS, back_color='#FFFFFF'):
 
     if image.mode != 'RGBA':
         image = image.convert('RGBA')
@@ -229,7 +229,7 @@ def create_corner(radius=100, opacity=255, factor=2):
     draw.pieslice((0, 0, 2 * factor * radius, 2 * factor * radius),
         180, 270, fill=opacity)
     corner = corner.resize((radius, radius), Image.ANTIALIAS)
-    return corner  
+    return corner
 
 def get_format(ext):
     """Guess the image format by the file extension.

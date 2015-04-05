@@ -3,13 +3,14 @@
 from ExtensionCore import ExtensionSidePage
 
 class Module:
+    name = "extensions"
+    category = "prefs"
+    comment = _("Manage your Cinnamon extensions")
+
     def __init__(self, content_box):
         keywords = _("extension, addon")
-        self.name = "extensions"
-        self.comment = _("Manage your Cinnamon extensions")            
         sidePage = ExtensionViewSidePage(_("Extensions"), "cs-extensions", keywords, content_box, "extension", self)
         self.sidePage = sidePage
-        self.category = "prefs"
 
     def on_module_selected(self):
         if not self.loaded:

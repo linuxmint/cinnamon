@@ -1,33 +1,73 @@
 #!/usr/bin/env python2
 
-try:
-    import os
-    import os.path
-    import commands
-    import sys
-    import string    
-    import gettext
-    from gi.repository import Gio, Gtk, GObject, Gdk
-    from gi.repository import GdkPixbuf 
-    from gi.repository import GConf
-    import json
-    import dbus
-    import time
-    from datetime import datetime
-    import thread
-    import urllib
-    import lxml.etree
-    import locale    
-    import imtools
-    from PIL import Image
-    import tempfile
-    import math
-    import subprocess
-    import tweenEquations
+from gi.repository import Gio, Gtk, GObject, Gdk, GLib, GdkPixbuf
+import math
+import os
+import subprocess
+import traceback
 
-except Exception, detail:
-    print detail
-    sys.exit(1)
+settings_objects = {}
+
+# Monkey patch Gio.Settings object
+def __setitem__(self, key, value):
+    # set_value() aborts the program on an unknown key
+    if key not in self:
+        raise KeyError('unknown key: %r' % (key,))
+
+    # determine type string of this key
+    range = self.get_range(key)
+    type_ = range.get_child_value(0).get_string()
+    v = range.get_child_value(1)
+    if type_ == 'type':
+        # v is boxed empty array, type of its elements is the allowed value type
+        assert v.get_child_value(0).get_type_string().startswith('a')
+        type_str = v.get_child_value(0).get_type_string()[1:]
+    elif type_ == 'enum':
+        # v is an array with the allowed values
+        assert v.get_child_value(0).get_type_string().startswith('a')
+        type_str = v.get_child_value(0).get_child_value(0).get_type_string()
+    elif type_ == 'flags':
+        # v is an array with the allowed values
+        assert v.get_child_value(0).get_type_string().startswith('a')
+        type_str = v.get_child_value(0).get_type_string()
+    elif type_ == 'range':
+        # type_str is a tuple giving the range
+        assert v.get_child_value(0).get_type_string().startswith('(')
+        type_str = v.get_child_value(0).get_type_string()[1]
+
+    if not self.set_value(key, GLib.Variant(type_str, value)):
+        raise ValueError("value '%s' for key '%s' is outside of valid range" % (value, key))
+
+def bind_with_mapping(self, key, widget, prop, flags, key_to_prop, prop_to_key):
+    self._ignore_key_changed = False
+
+    def key_changed(settings, key):
+        if self._ignore_key_changed:
+            return
+        self._ignore_prop_changed = True
+        widget.set_property(prop, key_to_prop(self[key]))
+        self._ignore_prop_changed = False
+
+    def prop_changed(widget, param):
+        if self._ignore_prop_changed:
+            return
+        self._ignore_key_changed = True
+        self[key] = prop_to_key(widget.get_property(prop))
+        self._ignore_key_changed = False
+
+    if not (flags & (Gio.SettingsBindFlags.SET | Gio.SettingsBindFlags.GET)): # ie Gio.SettingsBindFlags.DEFAULT
+       flags |= Gio.SettingsBindFlags.SET | Gio.SettingsBindFlags.GET
+    if flags & Gio.SettingsBindFlags.GET:
+        key_changed(self, key)
+        if not (flags & Gio.SettingsBindFlags.GET_NO_CHANGES):
+            self.connect('changed::' + key, key_changed)
+    if flags & Gio.SettingsBindFlags.SET:
+        widget.connect('notify::' + prop, prop_changed)
+    if not (flags & Gio.SettingsBindFlags.NO_SENSITIVITY):
+        self.bind_writable(key, widget, "sensitive", False)
+
+Gio.Settings.bind_with_mapping = bind_with_mapping
+Gio.Settings.__setitem__ = __setitem__
 
 class EditableEntry (Gtk.Notebook):
 
@@ -46,10 +86,10 @@ class EditableEntry (Gtk.Notebook):
         self.entry = Gtk.Entry()
         self.button = Gtk.Button()
 
-        self.button.set_alignment(0.0, 0.5)
+        self.button.set_alignment(1.0, 0.5)
         self.button.set_relief(Gtk.ReliefStyle.NONE)
         self.append_page(self.button, None);
-        self.append_page(self.entry, None);  
+        self.append_page(self.entry, None);
         self.set_current_page(0)
         self.set_show_tabs(False)
         self.set_show_border(False)
@@ -75,7 +115,7 @@ class EditableEntry (Gtk.Notebook):
     def _on_entry_changed(self, entry):
         self.button.set_label(entry.get_text())
 
-    def set_editable(self, editable):        
+    def set_editable(self, editable):
         if (editable):
             self.set_current_page(EditableEntry.PAGE_ENTRY)
         else:
@@ -149,7 +189,7 @@ class PictureChooserButton(BaseChooserButton):
         context = self.get_style_context()
         context.add_class("gtkstyle-fallback")
 
-        self.connect_after("draw", self.on_draw) 
+        self.connect_after("draw", self.on_draw)
 
     def on_draw(self, widget, cr, data=None):
         if self.progress == 0:
@@ -200,9 +240,9 @@ class PictureChooserButton(BaseChooserButton):
             result = callback(path, id)
         else:
             result = callback(path)
-        
+
         if result:
-            self.set_picture_from_file(path)            
+            self.set_picture_from_file(path)
 
     def clear_menu(self):
         menu = self.menu
@@ -212,13 +252,13 @@ class PictureChooserButton(BaseChooserButton):
         menu.destroy()
 
     def add_picture(self, path, callback, title=None, id=None):
-        if os.path.exists(path):          
+        if os.path.exists(path):
             if self.menu_pictures_size is None:
                 pixbuf = GdkPixbuf.Pixbuf.new_from_file(path)
             else:
                 pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_scale(path, -1, self.menu_pictures_size, True)
-            image = Gtk.Image.new_from_pixbuf (pixbuf)  
-            menuitem = Gtk.MenuItem()            
+            image = Gtk.Image.new_from_pixbuf (pixbuf)
+            menuitem = Gtk.MenuItem()
             if title is not None:
                 vbox = Gtk.VBox()
                 vbox.pack_start(image, False, False, 2)
@@ -264,7 +304,7 @@ class SidePage:
             self.module.loaded = False
 
     def add_widget(self, widget):
-        self.widgets.append(widget)        
+        self.widgets.append(widget)
 
     def build(self):
         # Clear all the widgets from the content box
@@ -276,56 +316,60 @@ class SidePage:
             self.module.on_module_selected()
             self.module.loaded = True
 
+        if self.is_standalone:
+            subprocess.Popen(self.exec_name.split())
+            return
+
         # Add our own widgets
+        for widget in self.widgets:
+            if hasattr(widget, 'expand'):
+                self.content_box.pack_start(widget, True, True, 2)
+            else:
+                self.content_box.pack_start(widget, False, False, 2)
+
         # C modules are sort of messy - they check the desktop type
         # (for Unity or GNOME) and show/hide UI items depending on
         # the result - so we cannot just show_all on the widget, it will
         # mess up these modifications - so for these, we just show the
         # top-level widget
-        if not self.is_standalone:
-            for widget in self.widgets:
-                if hasattr(widget, 'expand'):
-                    self.content_box.pack_start(widget, True, True, 2)
-                else:
-                    self.content_box.pack_start(widget, False, False, 2)
-            if self.is_c_mod:
-                self.content_box.show()
-                children = self.content_box.get_children()
-                for child in children:
-                    child.show()
-                    if child.get_name() != "c_box":
-                        pass
+        if not self.is_c_mod:
+            self.content_box.show_all()
+            try:
+                self.check_third_arg()
+            except:
+                pass
+            return
 
-                    c_widgets = child.get_children()
-                    if not c_widgets:
-                        c_widget = self.content_box.c_manager.get_c_widget(self.exec_name)
-                        if c_widget is not None:
-                            child.pack_start(c_widget, False, False, 2)
-                            c_widget.show()
-                    else:
-                        for c_widget in c_widgets:
-                            c_widget.show()
+        self.content_box.show()
+        for child in self.content_box:
+            child.show()
 
-                    def recursively_iterate(parent):
-                        if self.stack:
-                            return
-                        for child in parent:
-                            if isinstance(child, Gtk.Stack):
-                                self.stack = child
-                                break
-                            elif isinstance(child, Gtk.Container):
-                                recursively_iterate(child)
+            # C modules can have non-C parts. C parts are all named c_box
+            if child.get_name() != "c_box":
+                pass
 
-                    # Look for a stack recursively
-                    recursively_iterate(child)
+            c_widgets = child.get_children()
+            if not c_widgets:
+                c_widget = self.content_box.c_manager.get_c_widget(self.exec_name)
+                if c_widget is not None:
+                    child.pack_start(c_widget, False, False, 2)
+                    c_widget.show()
             else:
-                self.content_box.show_all()
-                try:
-                    self.check_third_arg()
-                except:
-                    pass
-        else:
-            subprocess.Popen(self.exec_name.split())
+                for c_widget in c_widgets:
+                    c_widget.show()
+
+            def recursively_iterate(parent):
+                if self.stack:
+                    return
+                for child in parent:
+                    if isinstance(child, Gtk.Stack):
+                        self.stack = child
+                        break
+                    elif isinstance(child, Gtk.Container):
+                        recursively_iterate(child)
+
+            # Look for a stack recursively
+            recursively_iterate(child)
 
 class CCModule:
     def __init__(self, label, mod_id, icon, category, keywords, content_box):
@@ -354,19 +398,14 @@ class SAModule:
     def process (self):
         name = self.name.replace("gksudo ", "")
         name = name.replace("gksu ", "")
-        return fileexists(name.split()[0])
+        name = name.split()[0]
 
-def fileexists(program):
-
-    def is_exe(fpath):
-        return os.path.isfile(fpath) and os.access(fpath, os.X_OK)
-
-    for path in os.environ["PATH"].split(os.pathsep):
-        path = path.strip('"')
-        exe_file = os.path.join(path, program)
-        if is_exe(exe_file):
-            return True
-    return False
+        for path in os.environ["PATH"].split(os.pathsep):
+            path = path.strip('"')
+            exe_file = os.path.join(path, name)
+            if os.path.isfile(exe_file) and os.access(exe_file, os.X_OK):
+                return True
+        return False
 
 def walk_directories(dirs, filter_func, return_directories=False):
     # If return_directories is False: returns a list of valid subdir names
@@ -389,7 +428,7 @@ def walk_directories(dirs, filter_func, return_directories=False):
 def rec_mkdir(path):
     if os.path.exists(path):
         return
-    
+
     rec_mkdir(os.path.split(path)[0])
 
     if os.path.exists(path):
@@ -453,6 +492,136 @@ class SettingsStack(Gtk.Stack):
         self.set_transition_duration(150)
         self.expand = True
 
+class SettingsRevealer(Gtk.Revealer):
+    def __init__(self, schema=None, key=None):
+        Gtk.Revealer.__init__(self)
+
+        self.box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=15)
+        Gtk.Revealer.add(self, self.box)
+
+        self.set_transition_type(Gtk.RevealerTransitionType.SLIDE_DOWN)
+        self.set_transition_duration(150)
+
+        if schema:
+            self.settings = Gio.Settings.new(schema)
+            self.settings.bind(key, self, "reveal-child", Gio.SettingsBindFlags.GET)
+
+    def add(self, widget):
+        self.box.pack_start(widget, False, True, 0)
+
+class SettingsPage(Gtk.Box):
+    def __init__(self):
+        Gtk.Box.__init__(self)
+        self.set_orientation(Gtk.Orientation.VERTICAL)
+        self.set_spacing(15)
+        self.set_margin_left(80)
+        self.set_margin_right(80)
+        self.set_margin_top(15)
+        self.set_margin_bottom(15)
+
+    def add_section(self, title):
+        section = SettingsBox(title)
+        self.pack_start(section, False, False, 0)
+
+        return section
+
+    def add_reveal_section(self, title, schema=None, key=None):
+        section = SettingsBox(title)
+        revealer = SettingsRevealer(schema, key)
+        revealer.add(section)
+        self.pack_start(revealer, False, False, 0)
+
+        return section
+
+class SettingsBox(Gtk.Frame):
+    def __init__(self, title):
+        Gtk.Frame.__init__(self)
+        self.set_shadow_type(Gtk.ShadowType.IN)
+        style = self.get_style_context()
+        style.add_class("view")
+        self.size_group = Gtk.SizeGroup()
+        self.size_group.set_mode(Gtk.SizeGroupMode.VERTICAL)
+
+        self.box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
+        self.add(self.box)
+
+        toolbar = Gtk.Toolbar.new()
+        Gtk.StyleContext.add_class(Gtk.Widget.get_style_context(toolbar), "primary-toolbar")
+        label = Gtk.Label.new()
+        label.set_markup("<b>%s</b>" % title)
+        title_holder = Gtk.ToolItem()
+        title_holder.add(label)
+        toolbar.add(title_holder)
+        self.box.add(toolbar)
+
+        self.need_separator = False
+
+    def add_row(self, widget):
+        vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
+        if self.need_separator:
+            vbox.add(Gtk.Separator(orientation=Gtk.Orientation.HORIZONTAL))
+        list_box = Gtk.ListBox()
+        list_box.set_selection_mode(Gtk.SelectionMode.NONE)
+        row = Gtk.ListBoxRow()
+        row.add(widget)
+        list_box.add(row)
+        vbox.add(list_box)
+        self.box.add(vbox)
+
+        self.need_separator = True
+
+    def add_reveal_row(self, widget, schema=None, key=None):
+        vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
+        if self.need_separator:
+            vbox.add(Gtk.Separator(orientation=Gtk.Orientation.HORIZONTAL))
+        list_box = Gtk.ListBox()
+        list_box.set_selection_mode(Gtk.SelectionMode.NONE)
+        row = Gtk.ListBoxRow()
+        row.add(widget)
+        list_box.add(row)
+        vbox.add(list_box)
+        revealer = SettingsRevealer(schema, key)
+        widget.revealer = revealer
+        revealer.add(vbox)
+        self.box.add(revealer)
+
+        self.need_separator = True
+
+class SettingsWidget(Gtk.Box):
+    def __init__(self, dep_key=None):
+        Gtk.Box.__init__(self)
+        self.set_orientation(Gtk.Orientation.HORIZONTAL)
+        self.set_spacing(20)
+        self.set_border_width(5)
+        self.set_margin_left(20)
+        self.set_margin_right(20)
+
+        if dep_key:
+            flag = Gio.SettingsBindFlags.GET
+            if dep_key[0] == "!":
+                dep_key = dep_key[1:]
+                flag |= Gio.Settings.BindFlags.INVERT_BOOLEAN
+
+            split = dep_key.split("/")
+            dep_settings = Gio.Settings.new(split[0])
+            dep_settings.bind(split[1], self, "sensitive", flag)
+
+    def add_to_size_group(self, group):
+        group.add_widget(self.content_widget)
+
+    def fill_row(self):
+        self.set_border_width(0)
+        self.set_margin_left(0)
+        self.set_margin_right(0)
+
+    def get_settings(self, schema):
+        global settings_objects
+        try:
+            return settings_objects[schema]
+        except:
+            settings_objects[schema] = Gio.Settings.new(schema)
+            return settings_objects[schema]
+
 class IndentedHBox(Gtk.HBox):
     def __init__(self):
         super(IndentedHBox, self).__init__()
@@ -465,12 +634,12 @@ class IndentedHBox(Gtk.HBox):
     def add_expand(self, item):
         self.pack_start(item, True, True, 0)
 
-class GSettingsCheckButton(Gtk.CheckButton):    
+class GSettingsCheckButton(Gtk.CheckButton):
     def __init__(self, label, schema, key, dep_key):
         self.key = key
         self.dep_key = dep_key
         super(GSettingsCheckButton, self).__init__(label = label)
-        self.settings = Gio.Settings.new(schema)        
+        self.settings = Gio.Settings.new(schema)
         self.set_active(self.settings.get_boolean(self.key))
         self.settings.connect("changed::"+self.key, self.on_my_setting_changed)
         self.connectorId = self.connect('toggled', self.on_my_value_changed)
@@ -499,712 +668,267 @@ class GSettingsCheckButton(Gtk.CheckButton):
         else:
             self.set_sensitive(not self.dep_settings.get_boolean(self.dep_key))
 
-class GSettingsSpinButton(Gtk.HBox):    
-    def __init__(self, label, schema, key, dep_key, min, max, step, page, units):
+class GSettingsSwitch(SettingsWidget):
+    def __init__(self, label, schema=None, key=None, dep_key=None):
         self.key = key
-        self.min = min
-        self.max = max
-        self.dep_key = dep_key
-        super(GSettingsSpinButton, self).__init__()        
-        self.label = Gtk.Label.new(label)       
+        super(GSettingsSwitch, self).__init__(dep_key=dep_key)
+
+        self.content_widget = Gtk.Switch()
+        self.label = Gtk.Label(label)
+        self.pack_start(self.label, False, False, 0)
+        self.pack_end(self.content_widget, False, False, 0)
+
+        if schema:
+            self.settings = self.get_settings(schema)
+            self.settings.bind(key, self.content_widget, "active", Gio.SettingsBindFlags.DEFAULT)
+
+class GSettingsSpinButton(SettingsWidget):
+    def __init__(self, label, schema, key, units="", mini=None, maxi=None, step=1, page=None, dep_key=None, size_group=None):
+        super(GSettingsSpinButton, self).__init__(dep_key=dep_key)
+        self.key = key
+        self.timer = None
+
+        if units:
+            label += " (%s)" % units
+        self.label = Gtk.Label.new(label)
         self.content_widget = Gtk.SpinButton()
-        self.units = Gtk.Label.new(units)        
-        if (label != ""):       
-            self.pack_start(self.label, False, False, 2)
-        self.pack_start(self.content_widget, False, False, 2)
-        if (units != ""):
-            self.pack_start(self.units, False, False, 2)
-        
-        #self.content_widget.set_editable(False)
-        self.settings = Gio.Settings.new(schema)
+
+        self.pack_start(self.label, False, False, 0)
+        self.pack_end(self.content_widget, False, False, 0)
+
+        self.settings = self.get_settings(schema)
+
         range = self.settings.get_range(self.key)
-        if range[0] == "range":
-            rangeDefault = (1 << 32) - 1
-            rangeMin = rangeDefault
-            rangeMax = rangeDefault
-            range = range[1]
-            rangeMin = range[0] if range[0] < rangeDefault else rangeDefault
-            rangeMax = range[1] if range[1] < rangeDefault else rangeDefault
-            self.min = min if min > rangeMin else rangeMin
-            self.max = max if max < rangeMax else rangeMax
-        self.content_widget.set_range(self.min, self.max)
+        if mini == None or maxi == None:
+            mini = range[1][0]
+            maxi = range[1][1]
+        elif range[0] == "range":
+            mini = max(mini, range[1][0])
+            maxi = min(maxi, range[1][1])
+
+        if not page:
+            page = step
+
+        self.content_widget.set_range(mini, maxi)
         self.content_widget.set_increments(step, page)
-        self.content_widget.set_value(self.settings.get_int(self.key))
-        self.settings.connect("changed::"+self.key, self.on_my_setting_changed)
-        self.content_widget.connect('value-changed', self.on_my_value_changed)
-        self.dependency_invert = False
-        if self.dep_key is not None:
-            if self.dep_key[0] == '!':
-                self.dependency_invert = True
-                self.dep_key = self.dep_key[1:]
-            split = self.dep_key.split('/')
-            self.dep_settings = Gio.Settings.new(split[0])
-            self.dep_key = split[1]
-            self.dep_settings.connect("changed::"+self.dep_key, self.on_dependency_setting_changed)
-            self.on_dependency_setting_changed(self, None)
-        self._value_changed_timer = None
 
-    def on_my_setting_changed(self, settings, key):
-        self.content_widget.set_value(self.settings.get_int(self.key))
+        self.settings.bind(key, self.content_widget.get_adjustment(), "value", Gio.SettingsBindFlags.GET)
+        self.content_widget.connect("value-changed", self.apply_later)
 
-    def on_my_value_changed(self, widget):
-        if self._value_changed_timer:
-            GObject.source_remove(self._value_changed_timer)
-        self._value_changed_timer = GObject.timeout_add(300, self.update_settings_value)
-    
-    def update_settings_value(self):
-        self.settings.set_int(self.key, self.content_widget.get_value())
-        self._value_changed_timer = None
-        return False
+        if size_group:
+            self.add_to_size_group(size_group)
 
-    def on_dependency_setting_changed(self, settings, dep_key):
-        if not self.dependency_invert:
-            self.set_sensitive(self.dep_settings.get_boolean(self.dep_key))
-        else:
-            self.set_sensitive(not self.dep_settings.get_boolean(self.dep_key))
+    def apply_later(self, *args):
+        def apply(self):
+            self.settings[self.key] = self.content_widget.get_value()
+            self.timer = None
 
-class GSettingsEntry(Gtk.HBox):    
-    def __init__(self, label, schema, key, dep_key):
+        if self.timer:
+            GLib.source_remove(self.timer)
+        self.timer = GLib.timeout_add(300, apply, self)
+
+class GSettingsEntry(SettingsWidget):
+    def __init__(self, label, schema, key, dep_key=None, size_group=None):
+        super(GSettingsEntry, self).__init__(dep_key=dep_key)
         self.key = key
-        self.dep_key = dep_key
-        super(GSettingsEntry, self).__init__()
-        self.label = Gtk.Label.new(label)       
+        self.label = Gtk.Label.new(label)
         self.content_widget = Gtk.Entry()
-        self.pack_start(self.label, False, False, 5)        
-        self.add(self.content_widget)     
-        self.settings = Gio.Settings.new(schema)        
-        self.content_widget.set_text(self.settings.get_string(self.key))
-        self.settings.connect("changed::"+self.key, self.on_my_setting_changed)
-        self.content_widget.connect('focus-out-event', self.on_my_value_changed)     
-        self.content_widget.show_all()
-        self.dependency_invert = False
-        if self.dep_key is not None:
-            if self.dep_key[0] == '!':
-                self.dependency_invert = True
-                self.dep_key = self.dep_key[1:]
-            split = self.dep_key.split('/')
-            self.dep_settings = Gio.Settings.new(split[0])
-            self.dep_key = split[1]
-            self.dep_settings.connect("changed::"+self.dep_key, self.on_dependency_setting_changed)
-            self.on_dependency_setting_changed(self, None)
 
-    def on_my_setting_changed(self, settings, key):
-        self.content_widget.set_text(self.settings.get_string(self.key))
+        self.pack_start(self.label, False, False, 0)
+        self.pack_end(self.content_widget, False, False, 0)
+        self.settings = self.get_settings(schema)
 
-    def on_my_value_changed(self, event, widget):        
-        self.settings.set_string(self.key, self.content_widget.get_text())
+        self.settings.bind(key, self.content_widget, "text", Gio.SettingsBindFlags.DEFAULT)
 
-    def on_dependency_setting_changed(self, settings, dep_key):
-        if not self.dependency_invert:
-            self.set_sensitive(self.dep_settings.get_boolean(self.dep_key))
-        else:
-            self.set_sensitive(not self.dep_settings.get_boolean(self.dep_key))
+        if size_group:
+            self.add_to_size_group(size_group)
 
-
-class GSettingsFileChooser(Gtk.HBox):
-    def __init__(self, label, schema, key, dep_key, show_none_cb = False):
+class GSettingsFontButton(SettingsWidget):
+    def __init__(self, label, schema, key, dep_key=None, size_group=None):
+        super(GSettingsFontButton, self).__init__(dep_key=dep_key)
         self.key = key
-        self.dep_key = dep_key
-        self.show_none_cb = show_none_cb
-        super(GSettingsFileChooser, self).__init__()
-        self.label = Gtk.Label.new(label)       
-        self.content_widget = Gtk.FileChooserButton()
-        self.pack_start(self.label, False, False, 2)
-        self.add(self.content_widget)
-        self.settings = Gio.Settings.new(schema)
-        value = self.settings.get_string(self.key)     
-        if value != "":
-            self.content_widget.set_filename(value)
 
-        if self.show_none_cb:
-            self.show_none_cb_widget = Gtk.CheckButton(_("None"))
-            self.show_none_cb_widget.set_active(value=="")
-            self.pack_start(self.show_none_cb_widget, False, False, 5)        
-            if value=="":
-                self.content_widget.set_sensitive(False)
-        
-        self.content_widget.connect('file-set', self.on_my_value_changed)
-        if self.show_none_cb:
-            self.show_none_cb_widget.connect('toggled', self.on_my_value_changed)
-        self.content_widget.show_all()
-        self.dependency_invert = False
-        if self.dep_key is not None:
-            if self.dep_key[0] == '!':
-                self.dependency_invert = True
-                self.dep_key = self.dep_key[1:]
-            split = self.dep_key.split('/')
-            self.dep_settings = Gio.Settings.new(split[0])
-            self.dep_key = split[1]
-            self.dep_settings.connect("changed::"+self.dep_key, self.on_dependency_setting_changed)
-            self.on_dependency_setting_changed(self, None)
-
-    def on_my_value_changed(self, widget):
-        if self.show_none_cb:
-            if self.show_none_cb_widget.get_active():
-                value = ""
-                self.content_widget.set_sensitive(False)
-            else:
-                value = self.content_widget.get_filename()
-                if value==None:
-                    value = ""
-                self.content_widget.set_sensitive(True)
-        else:
-            value = self.content_widget.get_filename()
-            if value==None:
-                value = ""
-        self.settings.set_string(self.key, value)
-
-    def on_dependency_setting_changed(self, settings, dep_key):        
-        if not self.dependency_invert:
-            self.set_sensitive(self.dep_settings.get_boolean(self.dep_key))
-        else:
-            self.set_sensitive(not self.dep_settings.get_boolean(self.dep_key))
-
-class GSettingsFontButton(Gtk.HBox):
-    def __init__(self, label, schema, key, dep_key):
-        self.key = key
-        self.dep_key = dep_key
-        super(GSettingsFontButton, self).__init__()
-        self.settings = Gio.Settings.new(schema)
-        self.value = self.settings.get_string(key)
-        
+        self.settings = self.get_settings(schema)
         self.label = Gtk.Label.new(label)
 
         self.content_widget = Gtk.FontButton()
-        self.content_widget.set_font_name(self.value)
-        
+
         if (label != ""):
-            self.pack_start(self.label, False, False, 2)
-        self.pack_start(self.content_widget, False, False, 2)
-        self.content_widget.connect('font-set', self.on_my_value_changed)
-        self.content_widget.show_all()
-        self.dependency_invert = False
-        if self.dep_key is not None:
-            if self.dep_key[0] == '!':
-                self.dependency_invert = True
-                self.dep_key = self.dep_key[1:]
-            split = self.dep_key.split('/')
-            self.dep_settings = Gio.Settings.new(split[0])
-            self.dep_key = split[1]
-            self.dep_settings.connect("changed::"+self.dep_key, self.on_dependency_setting_changed)
-            self.on_dependency_setting_changed(self, None)
+            self.pack_start(self.label, False, False, 0)
+        self.pack_end(self.content_widget, False, False, 0)
 
-    def on_my_value_changed(self, widget):
-        self.settings.set_string(self.key, widget.get_font_name())
+        self.settings.bind(key, self.content_widget, "font-name", Gio.SettingsBindFlags.DEFAULT)
 
-    def on_dependency_setting_changed(self, settings, dep_key):
-        if not self.dependency_invert:
-            self.set_sensitive(self.dep_settings.get_boolean(self.dep_key))
-        else:
-            self.set_sensitive(not self.dep_settings.get_boolean(self.dep_key))
+        if size_group:
+            self.add_to_size_group(size_group)
 
-#class GSettingsRange(Gtk.HBox):
-#    def __init__(self, label, schema, key, dep_key, **options):
-#        self.key = key
-#        self.dep_key = dep_key
-#        super(GSettingsRange, self).__init__()
-#        self.settings = Gio.Settings.new(schema)
-#        self.value = self.settings.get_double(self.key)
-#        
-#        self.label = Gtk.Label.new(label)
-#
-#        #returned variant is range:(min, max)
-#        _min, _max = self.settings.get_range(self.key)[1]
-#
-#        self.content_widget = Gtk.HScale.new_with_range(_min, _max, options.get('adjustment_step', 1))
-#        self.content_widget.set_value(self.value)
-#        if (label != ""):
-#            self.pack_start(self.label, False, False, 2)
-#        self.pack_start(self.content_widget, True, True, 2)
-#        self.content_widget.connect('value-changed', self.on_my_value_changed)
-#        self.content_widget.show_all()
-#        self.dependency_invert = False
-#        if self.dep_key is not None:
-#            if self.dep_key[0] == '!':
-#                self.dependency_invert = True
-#                self.dep_key = self.dep_key[1:]
-#            split = self.dep_key.split('/')
-#            self.dep_settings = Gio.Settings.new(split[0])
-#            self.dep_key = split[1]
-#            self.dep_settings.connect("changed::"+self.dep_key, self.on_dependency_setting_changed)
-#            self.on_dependency_setting_changed(self, None)
-#
-#    def on_my_value_changed(self, widget):
-#        self.settings.set_double(self.key, widget.get_value())
-#
-#    def on_dependency_setting_changed(self, settings, dep_key):
-#        if not self.dependency_invert:
-#            self.set_sensitive(self.dep_settings.get_boolean(self.dep_key))
-#        else:
-#            self.set_sensitive(not self.dep_settings.get_boolean(self.dep_key))
+class GSettingsRange(SettingsWidget):
+    def __init__(self, label, schema, key, min_label, max_label, mini=None, maxi=None, step=None, invert=False, log=False, dep_key=None):
+        super(GSettingsRange, self).__init__(dep_key=dep_key)
+        self.set_orientation(Gtk.Orientation.VERTICAL)
+        self.set_spacing(0)
 
-class GSettingsRange(Gtk.HBox):
-    def __init__(self, label, low_label, hi_label, low_limit, hi_limit, inverted, valtype, exponential, schema, key, dep_key, **options):
-        super(GSettingsRange, self).__init__()
         self.key = key
-        self.dep_key = dep_key
-        self.settings = Gio.Settings.new(schema)
-        self.valtype = valtype
+        self.settings = self.get_settings(schema)
+        self.log = log
+        self.invert = invert
+        self.timer = None
 
-        if self.valtype == "int":
-            self.value = self.settings.get_int(self.key) * 1.0
-        elif self.valtype == "uint":
-            self.value = self.settings.get_uint(self.key) * 1.0
-        elif self.valtype == "double":
-            self.value = self.settings.get_double(self.key) * 1.0
+        hbox = Gtk.Box()
+
         self.label = Gtk.Label.new(label)
-        self.label.set_alignment(1.0, 0.5)
-        self.label.set_size_request(150, -1)
-        self.low_label = Gtk.Label()
-        self.low_label.set_alignment(0.5, 0.5)
-        self.low_label.set_size_request(60, -1)
-        self.hi_label = Gtk.Label()
-        self.hi_label.set_alignment(0.5, 0.5)
-        self.hi_label.set_size_request(60, -1)
-        self.low_label.set_markup("<i><small>%s</small></i>" % low_label)
-        self.hi_label.set_markup("<i><small>%s</small></i>" % hi_label)
-        self.inverted = inverted
-        self.exponential = exponential
-        self._range = (hi_limit - low_limit) * 1.0
-        self._step = options.get('adjustment_step', 1)
-        self._min = low_limit * 1.0
-        self._max = hi_limit * 1.0
-        self.content_widget = Gtk.Scale.new_with_range(Gtk.Orientation.HORIZONTAL, 0, 1, (self._step / self._range))
-        self.content_widget.set_size_request(300, 0)
-        self.content_widget.set_value(self.to_corrected(self.value))
-        self.content_widget.set_draw_value(False);
+        self.label.set_halign(Gtk.Align.CENTER)
 
-        self.grid = Gtk.Grid()
-        if (label != ""):
-            self.grid.attach(self.label, 0, 0, 1, 1)
-        if (low_label != ""):
-            self.grid.attach(self.low_label, 1, 0, 1, 1)
-        self.grid.attach(self.content_widget, 2, 0, 1, 1)
-        if (hi_label != ""):
-            self.grid.attach(self.hi_label, 3, 0, 1, 1)
-        self.pack_start(self.grid, True, True, 2)
-        self._dragging = False
-        self.content_widget.connect('value-changed', self.on_my_value_changed)
-        self.content_widget.connect('button-press-event', self.on_mouse_down)
-        self.content_widget.connect('button-release-event', self.on_mouse_up)
-        self.content_widget.connect("scroll-event", self.on_mouse_scroll_event)
-        self.content_widget.show_all()
-        self.dependency_invert = False
-        if self.dep_key is not None:
-            if self.dep_key[0] == '!':
-                self.dependency_invert = True
-                self.dep_key = self.dep_key[1:]
-            split = self.dep_key.split('/')
-            self.dep_settings = Gio.Settings.new(split[0])
-            self.dep_key = split[1]
-            self.dep_settings.connect("changed::"+self.dep_key, self.on_dependency_setting_changed)
-            self.on_dependency_setting_changed(self, None)
+        self.min_label= Gtk.Label()
+        self.max_label = Gtk.Label()
+        self.min_label.set_alignment(1.0, 0.75)
+        self.max_label.set_alignment(1.0, 0.75)
+        self.min_label.set_margin_right(6)
+        self.max_label.set_margin_left(6)
+        self.min_label.set_markup("<i><small>%s</small></i>" % min_label)
+        self.max_label.set_markup("<i><small>%s</small></i>" % max_label)
 
-# halt writing gsettings during dragging
-# it can take a long time to process all
-# those updates, and the system can crash
+        range = self.settings.get_range(self.key)
+        if mini == None or maxi == None:
+            mini = range[1][0]
+            maxi = range[1][1]
+        elif range[0] == "range":
+            mini = max(mini, range[1][0])
+            maxi = min(maxi, range[1][1])
 
-    def on_mouse_down(self, widget, event):
-        self._dragging = True
+        if log:
+            mini = math.log(mini)
+            maxi = math.log(maxi)
 
-    def on_mouse_up(self, widget, event):
-        self._dragging = False
-        self.on_my_value_changed(widget)
+        if step is None:
+            self.step = (maxi - mini) * 0.02
+        else:
+            self.step = math.log(step) if log else step
 
-    def on_mouse_scroll_event(self, widget, event):
-        found, delta_x, delta_y = event.get_scroll_deltas()
-        if found:
-            add = delta_y < 0
-            uncorrected = self.from_corrected(widget.get_value())
-            if add:
-                corrected = self.to_corrected(uncorrected + self._step)
+        self.content_widget = Gtk.Scale.new_with_range(Gtk.Orientation.HORIZONTAL, mini, maxi, self.step)
+        self.content_widget.set_inverted(invert)
+        self.content_widget.set_draw_value(False)
+
+        if invert:
+            self.step *= -1 # Gtk.Scale.new_with_range want a positive value, but our custom scroll handler wants a negative value
+
+        hbox.pack_start(self.min_label, False, False, 0)
+        hbox.pack_start(self.content_widget, True, True, 0)
+        hbox.pack_start(self.max_label, False, False, 0)
+
+        self.pack_start(self.label, False, False, 0)
+        self.pack_start(hbox, True, True, 6)
+
+        self.content_widget.connect("scroll-event", self.on_scroll_event)
+
+        if log:
+            self.settings.bind_with_mapping(
+                    key,
+                    self.content_widget.get_adjustment(),
+                    "value",
+                    Gio.SettingsBindFlags.GET | Gio.SettingsBindFlags.NO_SENSITIVITY,
+                    lambda x: math.log(x),
+                    None)
+        else:
+            self.settings.bind(key, self.content_widget.get_adjustment(), "value", Gio.SettingsBindFlags.GET | Gio.SettingsBindFlags.NO_SENSITIVITY)
+
+        self.content_widget.connect("value-changed", self.apply_later)
+
+    def apply_later(self, *args):
+        def apply(self):
+            if self.log:
+                self.settings[self.key] = math.exp(self.content_widget.get_value())
             else:
-                corrected = self.to_corrected(uncorrected - self._step)
-            widget.set_value(corrected)
+                self.settings[self.key] = self.content_widget.get_value()
+            self.timer = None
+
+        if self.timer:
+            GLib.source_remove(self.timer)
+        self.timer = GLib.timeout_add(300, apply, self)
+
+    def on_scroll_event(self, widget, event):
+        found, delta_x, delta_y = event.get_scroll_deltas()
+
+        # If you scroll up, delta_y < 0. This is a weird world
+        widget.set_value(widget.get_value() - delta_y * self.step)
+
         return True
 
-    def on_my_value_changed(self, widget):
-        if self._dragging:
-            return
-        corrected = self.from_corrected(widget.get_value())
-        if self.valtype == "int":
-            self.settings.set_int(self.key, corrected)
-        elif self.valtype == "uint":
-            self.settings.set_uint(self.key, corrected)
-        elif self.valtype == "double":
-            self.settings.set_double(self.key, corrected)
-
-    def on_dependency_setting_changed(self, settings, dep_key):
-        if not self.dependency_invert:
-            self.set_sensitive(self.dep_settings.get_boolean(self.dep_key))
-        else:
-            self.set_sensitive(not self.dep_settings.get_boolean(self.dep_key))
-
-    def to_corrected(self, value):
-        result = 0.0
-        if self.exponential:
-            k = (math.log(self._max) - math.log(self._min)) / (self._range / self._step)
-            a = self._max / math.exp(k * self._range)
-            cur_val_step = (1 / (k / math.log(value / a))) / self._range
-            if self.inverted:
-                result = 1 - cur_val_step
-            else:
-                result = cur_val_step
-        else:
-            if self.inverted:
-                result = 1 - ((value - self._min) / self._range)
-            else:
-                result = (value - self._min) / self._range
-        return result
-
-    def from_corrected(self, value):
-        result = 0.0
-        if self.exponential:
-            k = (math.log(self._max)-math.log(self._min))/(self._range / self._step)
-            a = self._max / math.exp(k * self._range)
-            if self.inverted:
-                cur_val_step = (1 - value) * self._range
-                result = a * math.exp(k * cur_val_step)
-            else:
-                cur_val_step = value * self._range
-                result =  a * math.exp(k * cur_val_step)
-        else:
-            if self.inverted:
-                result = ((1 - value) * self._range) + self._min
-            else:
-                result =  (value * self._range) + self._min
-        return round(result)
-
     def add_mark(self, value, position, markup):
-        self.content_widget.add_mark((value - self._min) / self._range, position, markup)
-
-class GSettingsRangeSpin(Gtk.HBox):
-    def __init__(self, label, schema, key, dep_key, **options):
-        self.key = key
-        self.dep_key = dep_key
-        super(GSettingsRangeSpin, self).__init__()
-        self.label = Gtk.Label.new(label)
-        self.content_widget = Gtk.SpinButton()
-
-        if (label != ""):
-            self.pack_start(self.label, False, False, 2)
-        self.pack_start(self.content_widget, False, False, 2)
-
-        self.settings = Gio.Settings.new(schema)
-
-        _min, _max = self.settings.get_range(self.key)[1]
-        _increment = options.get('adjustment_step', 1)
-
-        self.content_widget.set_range(_min, _max)
-        self.content_widget.set_increments(_increment, _increment)
-        #self.content_widget.set_editable(False)
-        self.content_widget.set_digits(1)
-        self.content_widget.set_value(self.settings.get_double(self.key))
-
-        self.settings.connect("changed::"+self.key, self.on_my_setting_changed)
-        self.content_widget.connect('value-changed', self.on_my_value_changed)
-        self.dependency_invert = False
-        if self.dep_key is not None:
-            if self.dep_key[0] == '!':
-                self.dependency_invert = True
-                self.dep_key = self.dep_key[1:]
-            split = self.dep_key.split('/')
-            self.dep_settings = Gio.Settings.new(split[0])
-            self.dep_key = split[1]
-            self.dep_settings.connect("changed::"+self.dep_key, self.on_dependency_setting_changed)
-            self.on_dependency_setting_changed(self, None)
-
-    def on_my_setting_changed(self, settings, key):
-        value = self.settings.get_double(self.key)
-        if value != self.content_widget.get_value():
-            self.content_widget.set_value(value)
-
-    def on_my_value_changed(self, widget):
-        self.settings.set_double(self.key, self.content_widget.get_value())
-
-    def on_dependency_setting_changed(self, settings, dep_key):
-        if not self.dependency_invert:
-            self.set_sensitive(self.dep_settings.get_boolean(self.dep_key))
+        if self.log:
+            self.content_widget.add_mark(math.log(value), position, markup)
         else:
-            self.set_sensitive(not self.dep_settings.get_boolean(self.dep_key))
+            self.content_widget.add_mark(value, position, markup)
 
-class GSettingsComboBox(Gtk.HBox):    
-    def __init__(self, label, schema, key, dep_key, options):
+class GSettingsComboBox(SettingsWidget):
+    def __init__(self, label, schema, key, options, valtype="string", dep_key=None, size_group=None):
+        super(GSettingsComboBox, self).__init__(dep_key=dep_key)
+
+        self.settings = self.get_settings(schema)
         self.key = key
-        self.dep_key = dep_key
-        super(GSettingsComboBox, self).__init__()
-        self.settings = Gio.Settings.new(schema)        
-        self.value = self.settings.get_string(self.key)
-                      
-        self.label = Gtk.Label.new(label)       
-        self.model = Gtk.ListStore(str, str)
-        selected = None
-        for option in options:
-            iter = self.model.insert_before(None, None)
-            self.model.set_value(iter, 0, option[0])                
-            self.model.set_value(iter, 1, option[1])                        
-            if (option[0] == self.value):
-                selected = iter
-                                
-        self.content_widget = Gtk.ComboBox.new_with_model(self.model)   
-        renderer_text = Gtk.CellRendererText()
-        self.content_widget.pack_start(renderer_text, True)
-        self.content_widget.add_attribute(renderer_text, "text", 1)     
-        
-        if selected is not None:
-            self.content_widget.set_active_iter(selected)
-        
-        if (label != ""):
-            self.pack_start(self.label, False, False, 2)                
-        self.pack_start(self.content_widget, True, True, 2)                     
-        self.content_widget.connect('changed', self.on_my_value_changed)
-        self.content_widget.show_all()
-        self.dependency_invert = False
-        if self.dep_key is not None:
-            if self.dep_key[0] == '!':
-                self.dependency_invert = True
-                self.dep_key = self.dep_key[1:]
-            split = self.dep_key.split('/')
-            self.dep_settings = Gio.Settings.new(split[0])
-            self.dep_key = split[1]
-            self.dep_settings.connect("changed::"+self.dep_key, self.on_dependency_setting_changed)
-            self.on_dependency_setting_changed(self, None)
-
-    def on_my_value_changed(self, widget):
-        tree_iter = widget.get_active_iter()
-        if tree_iter != None:            
-            value = self.model[tree_iter][0]            
-            self.settings.set_string(self.key, value)
-
-    def on_dependency_setting_changed(self, settings, dep_key):
-        if not self.dependency_invert:
-            self.set_sensitive(self.dep_settings.get_boolean(self.dep_key))
-        else:
-            self.set_sensitive(not self.dep_settings.get_boolean(self.dep_key))
-
-class GSettingsIntComboBox(Gtk.HBox):
-    def __init__(self, label, schema, key, dep_key, options, use_uint=False):
-        self.key = key
-        self.dep_key = dep_key
-        self.use_uint = use_uint
-        super(GSettingsIntComboBox, self).__init__()
-        self.settings = Gio.Settings.new(schema)
-        if self.use_uint:
-            self.value = self.settings.get_uint(self.key)
-        else:
-            self.value = self.settings.get_int(self.key)
+        self.valtype = valtype
+        self.option_map = {}
 
         self.label = Gtk.Label.new(label)
-        self.model = Gtk.ListStore(int, str)
+        if valtype == "string":
+            self.model = Gtk.ListStore(str, str)
+        else:
+            self.model = Gtk.ListStore(int, str)
+
         selected = None
         for option in options:
             iter = self.model.insert_before(None, None)
             self.model.set_value(iter, 0, option[0])
             self.model.set_value(iter, 1, option[1])
-            if (option[0] == self.value):
-                selected = iter
+            self.option_map[option[0]] = iter
 
         self.content_widget = Gtk.ComboBox.new_with_model(self.model)
         renderer_text = Gtk.CellRendererText()
         self.content_widget.pack_start(renderer_text, True)
         self.content_widget.add_attribute(renderer_text, "text", 1)
 
-        if selected is not None:
-            self.content_widget.set_active_iter(selected)
-
-        if (label != ""):
-            self.pack_start(self.label, False, False, 2)
-        self.pack_start(self.content_widget, False, True, 2)
-        self.content_widget.connect('changed', self.on_my_value_changed)
+        self.pack_start(self.label, False, False, 0)
+        self.pack_end(self.content_widget, False, False, 0)
         self.content_widget.show_all()
-        self.dependency_invert = False
-        if self.dep_key is not None:
-            if self.dep_key[0] == '!':
-                self.dependency_invert = True
-                self.dep_key = self.dep_key[1:]
-            split = self.dep_key.split('/')
-            self.dep_settings = Gio.Settings.new(split[0])
-            self.dep_key = split[1]
-            self.dep_settings.connect("changed::"+self.dep_key, self.on_dependency_setting_changed)
-            self.on_dependency_setting_changed(self, None)
+
+        self.content_widget.connect('changed', self.on_my_value_changed)
+        self.settings.connect("changed::" + self.key, self.on_my_setting_changed)
+        self.on_my_setting_changed()
+
+        if size_group:
+            self.add_to_size_group(size_group)
 
     def on_my_value_changed(self, widget):
         tree_iter = widget.get_active_iter()
         if tree_iter != None:
-            value = self.model[tree_iter][0]
-            if self.use_uint:
-                self.settings.set_uint(self.key, value)
-            else:
-                self.settings.set_int(self.key, value)
+            self.value = self.model[tree_iter][0]
+            self.settings[self.key] = self.value
 
-    def on_dependency_setting_changed(self, settings, dep_key):
-        if not self.dependency_invert:
-            self.set_sensitive(self.dep_settings.get_boolean(self.dep_key))
-        else:
-            self.set_sensitive(not self.dep_settings.get_boolean(self.dep_key))
-
-class GSettingsUIntComboBox(Gtk.HBox):
-    def __init__(self, label, schema, key, options):
-        self.key = key
-        super(GSettingsUIntComboBox, self).__init__()
-        self.settings = Gio.Settings.new(schema)
-        self.value = self.settings.get_uint(self.key)
-
-        self.label = Gtk.Label.new(label)
-        self.model = Gtk.ListStore(int, str)
-        selected = None
-        for option in options:
-            iter = self.model.insert_before(None, None)
-            self.model.set_value(iter, 0, option[0])
-            self.model.set_value(iter, 1, option[1])
-            if (option[0] == self.value):
-                selected = iter
-
-        self.content_widget = Gtk.ComboBox.new_with_model(self.model)
-        renderer_text = Gtk.CellRendererText()
-        self.content_widget.pack_start(renderer_text, True)
-        self.content_widget.add_attribute(renderer_text, "text", 1)
-
-        if selected is not None:
-            self.content_widget.set_active_iter(selected)
-
-        if (label != ""):
-            self.pack_start(self.label, False, False, 2)
-        self.pack_start(self.content_widget, False, True, 2)
-        self.content_widget.connect('changed', self.on_my_value_changed)
-        self.content_widget.show_all()
-
-    def on_my_value_changed(self, widget):
-        tree_iter = widget.get_active_iter()
-        if tree_iter != None:
-            value = self.model[tree_iter][0]
-            self.settings.set_uint(self.key, value)
+    def on_my_setting_changed(self, *args):
+        self.value = self.settings[self.key]
+        try:
+            self.content_widget.set_active_iter(self.option_map[self.value])
+        except:
+            self.content_widget.set_active_iter(None)
 
 
-class GSettingsColorChooser(Gtk.ColorButton):
-    def __init__(self, schema, key, dep_key):
-        Gtk.ColorButton.__init__(self)
-        self._schema = Gio.Settings.new(schema)
-        self._key = key
-        self.dep_key = dep_key
-        self.set_value(self._schema[self._key])
-        self.connect("color-set", self._on_color_set)
-        self._schema.connect("changed::"+key, self._on_settings_value_changed)
-        self.dependency_invert = False
-        if self.dep_key is not None:
-            if self.dep_key[0] == '!':
-                self.dependency_invert = True
-                self.dep_key = self.dep_key[1:]
-            split = self.dep_key.split('/')
-            self.dep_settings = Gio.Settings.new(split[0])
-            self.dep_key = split[1]
-            self.dep_settings.connect("changed::"+self.dep_key, self.on_dependency_setting_changed)
-            self.on_dependency_setting_changed(self, None)
+class GSettingsColorChooser(SettingsWidget):
+    def __init__(self, label, schema, key, dep_key=None, size_group=None):
+        super(GSettingsColorChooser, self).__init__(dep_key=dep_key)
 
-    def _on_settings_value_changed(self, schema, key):
-        self.set_value(schema[key])
-    def _on_color_set(self, *args):
-        self._schema.set_string(self._key, self.get_value())
-    def get_value(self):
-        return self.get_color().to_string()
-    def set_value(self, value):
-        self.set_color(Gdk.color_parse(value))
+        self.label = Gtk.Label(label)
+        self.content_widget = Gtk.ColorButton()
+        self.pack_start(self.label, False, False, 0)
+        self.pack_end(self.content_widget, False, False, 0)
 
-    def on_dependency_setting_changed(self, settings, dep_key):
-        if not self.dependency_invert:
-            self.set_sensitive(self.dep_settings.get_boolean(self.dep_key))
-        else:
-            self.set_sensitive(not self.dep_settings.get_boolean(self.dep_key))
+        self.settings = self.get_settings(schema)
+        self.settings.bind_with_mapping(
+                key,
+                self.content_widget,
+                "color",
+                Gio.SettingsBindFlags.DEFAULT,
+                Gdk.color_parse,
+                Gdk.Color.to_string)
 
-# class GConfFontButton(Gtk.HBox):
-#     def __init__(self, label, key):
-#         self.key = key
-#         super(GConfFontButton, self).__init__()
-#         self.settings = gconf.client_get_default()
-#         self.value = self.settings.get_string(key)
-        
-#         self.label = Gtk.Label.new(label)
-
-#         self.content_widget = Gtk.FontButton()
-#         self.content_widget.set_font_name(self.value)
-        
-#         if (label != ""):
-#             self.pack_start(self.label, False, False, 2)
-#         self.pack_start(self.content_widget, False, False, 2)
-#         self.content_widget.connect('font-set', self.on_my_value_changed)
-#         self.content_widget.show_all()
-#     def on_my_value_changed(self, widget):
-#         self.settings.set_string(self.key, widget.get_font_name())
-
-# class GConfComboBox(Gtk.HBox):    
-#     def __init__(self, label, key, options, init_value = ""):  
-#         self.key = key
-#         super(GConfComboBox, self).__init__()
-#         self.settings = gconf.client_get_default()  
-#         self.value = self.settings.get_string(self.key)
-#         if not self.value:
-#             self.value = init_value
-                      
-#         self.label = Gtk.Label.new(label)       
-#         self.model = Gtk.ListStore(str, str)
-#         selected = None
-#         for option in options:
-#             iter = self.model.insert_before(None, None)
-#             self.model.set_value(iter, 0, option[0])                
-#             self.model.set_value(iter, 1, option[1])                        
-#             if (option[0] == self.value):
-#                 selected = iter
-                                
-#         self.content_widget = Gtk.ComboBox.new_with_model(self.model)   
-#         renderer_text = Gtk.CellRendererText()
-#         self.content_widget.pack_start(renderer_text, True)
-#         self.content_widget.add_attribute(renderer_text, "text", 1)     
-        
-#         if selected is not None:
-#             self.content_widget.set_active_iter(selected)
-        
-#         if (label != ""):
-#             self.pack_start(self.label, False, False, 2)                
-#         self.pack_start(self.content_widget, False, False, 2)                     
-#         self.content_widget.connect('changed', self.on_my_value_changed)
-#         # The on_my_setting_changed callback raises a segmentation fault, need to investigate that
-#         #self.settings.add_dir(os.path.split(key)[0], gconf.CLIENT_PRELOAD_NONE)
-#         #self.settings.notify_add(self.key, self.on_my_setting_changed)
-#         self.content_widget.show_all()
-        
-#     def on_my_value_changed(self, widget):
-#         tree_iter = widget.get_active_iter()
-#         if tree_iter != None:            
-#             value = self.model[tree_iter][0]            
-#             self.settings.set_string(self.key, value)
-#     def on_my_setting_changed(self, client, cnxn_id, entry, args):
-#         print entry
-
-# class GConfCheckButton(Gtk.CheckButton):    
-#     def __init__(self, label, key):        
-#         self.key = key
-#         super(GConfCheckButton, self).__init__(label)       
-#         self.settings = gconf.client_get_default()
-#         self.set_active(self.settings.get_bool(self.key))
-#         self.settings.notify_add(self.key, self.on_my_setting_changed)
-#         self.connect('toggled', self.on_my_value_changed)            
-    
-#     def on_my_setting_changed(self, client, cnxn_id, entry):
-#         value = entry.value.get_bool()
-#         self.set_active(value)
-        
-#     def on_my_value_changed(self, widget):
-#         self.settings.set_bool(self.key, self.get_active())
-
-class DBusCheckButton(Gtk.CheckButton):    
-    def __init__(self, label, service, path, get_method, set_method):        
-        super(DBusCheckButton, self).__init__(label)     
-        proxy = dbus.SystemBus().get_object(service, path)
-        self.dbus_iface = dbus.Interface(proxy, dbus_interface=service)
-        self.dbus_get_method = get_method
-        self.dbus_set_method = set_method
-        self.set_active(getattr(self.dbus_iface, get_method)()[1])
-        self.connect('toggled', self.on_my_value_changed)
-        
-    def on_my_value_changed(self, widget):
-        getattr(self.dbus_iface, self.dbus_set_method)(self.get_active())
+        if size_group:
+            self.add_to_size_group(size_group)

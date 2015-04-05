@@ -24,7 +24,7 @@ setting_dict = {
     "separator"       :   "Separator", # not a setting, a horizontal separator
     "label"           :   "Label", # Not a setting, just a text label
     "entry"           :   "Entry",
-    "textview"        :   "TextView",    
+    "textview"        :   "TextView",
     "checkbox"        :   "CheckButton",
     "spinbutton"      :   "SpinButton",
     "filechooser"     :   "FileChooser",
@@ -418,12 +418,12 @@ class BaseWidget(object):
             return self.settings_obj.get_data(self.key)["indent"]
         except:
             return False
-            
+
     def get_height(self):
         try:
             return self.settings_obj.get_data(self.key)["height"]
         except:
-            return 200            
+            return 200
 
 def set_tt(tt, *widgets):
     for widget in widgets:
@@ -606,7 +606,7 @@ class TextView(Gtk.HBox, BaseWidget):
         self.textview.handler_unblock(self.handler)
 
     def update_dep_state(self, active):
-        self.textview.set_sensitive(active)        
+        self.textview.set_sensitive(active)
 
 class ColorChooser(Gtk.HBox, BaseWidget):
     def __init__(self, key, settings_obj, uuid):
@@ -939,7 +939,7 @@ class IconFileChooser(Gtk.HBox, BaseWidget):
         filter_text.set_name(_("Image files"))
         filter_text.add_mime_type("image/*")
         dialog.add_filter(filter_text)
-        
+
         preview = Gtk.Image()
         dialog.set_preview_widget(preview)
         dialog.connect("update-preview", self.update_icon_preview_cb, preview)
@@ -974,7 +974,7 @@ class IconFileChooser(Gtk.HBox, BaseWidget):
     def update_dep_state(self, active):
         self.entry.set_sensitive(active)
         self.image_button.set_sensitive(active)
-        
+
     #Updates the preview widget
     def update_icon_preview_cb(self, dialog, preview):
         filename = dialog.get_preview_filename()

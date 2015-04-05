@@ -2,6 +2,7 @@
 
 from SettingsWidgets import *
 import windowEffects
+import tweenEquations
 
 EFFECT_SETS = {
     "cinnamon": ("traditional", "traditional", "traditional", "scale", "scale", "scale"),
@@ -55,56 +56,82 @@ OPTIONS = (
    #for previous versions
     ("default",    _("Default"))
 )
+TYPES = ("map", "close", "minimize", "maximize", "unmaximize", "tile")
+SCHEMA = "org.cinnamon"
+DEP_PATH = "org.cinnamon/desktop-effects"
+KEY_TEMPLATE = "desktop-effects-%s-%s"
 
 class Module:
-    types = ("map", "close", "minimize", "maximize", "unmaximize", "tile")
-    root = "org.cinnamon"
-    path = "org.cinnamon/desktop-effects"
-    template = "desktop-effects-%s-%s"
+    name = "effects"
+    category = "appear"
+    comment = _("Control Cinnamon visual effects.")
 
     def __init__(self, content_box):
         keywords = _("effects, fancy, window")
         sidePage = SidePage(_("Effects"), "cs-desktop-effects", keywords, content_box, module=self)
         self.sidePage = sidePage
-        self.name = "effects"
-        self.category = "appear"
-        self.comment = _("Control Cinnamon visual effects.")
+
     def on_module_selected(self):
         if not self.loaded:
             print "Loading Effects module"
-            vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
-            self.sidePage.add_widget(vbox)
 
-            self.schema = Gio.Settings(self.root)
+            self.sidePage.stack = SettingsStack()
+            self.sidePage.add_widget(self.sidePage.stack)
+
+            self.schema = Gio.Settings(SCHEMA)
             self.effect_sets = {}
             for name, sets in COMBINATIONS.items():
                 self.effect_sets[name] = (EFFECT_SETS[sets[0]], TRANSITIONS_SETS[sets[1]], TIME_SETS[sets[2]])
 
-            section = Section(_("Enable Effects"))
-            section.add(GSettingsCheckButton(_("Enable fade effect on Cinnamon scrollboxes (like the Menu application list)"), "org.cinnamon", "enable-vfade", None))
-            section.add(GSettingsCheckButton(_("Enable desktop effects"), "org.cinnamon", "desktop-effects", None))
-            section.add_indented(GSettingsCheckButton(_("Enable session startup animation"), "org.cinnamon", "startup-animation", "org.cinnamon/desktop-effects"))
-            section.add_indented(GSettingsCheckButton(_("Enable desktop effects on dialog boxes"), "org.cinnamon", "desktop-effects-on-dialogs", "org.cinnamon/desktop-effects"))
-            vbox.add(section)
+            # Enable effects
+
+            page = SettingsPage()
+            self.sidePage.stack.add_titled(page, "effects", _("Enable effects"))
+
+            settings = page.add_section(_("Enable Effects"))
+
+            widget = GSettingsSwitch(_("Window effects"), "org.cinnamon", "desktop-effects")
+            settings.add_row(widget)
+
+            widget = GSettingsSwitch(_("Effects on dialog boxes"), "org.cinnamon", "desktop-effects-on-dialogs")
+            settings.add_reveal_row(widget, "org.cinnamon", "desktop-effects")
+
+            self.chooser = GSettingsComboBox(_("Effects style"), "org.cinnamon", "desktop-effects-style", OPTIONS)
+            self.chooser.content_widget.connect("changed", self.on_value_changed)
+            settings.add_reveal_row(self.chooser, "org.cinnamon", "desktop-effects")
+
+            widget = GSettingsSwitch(_("Fade effect on Cinnamon scrollboxes (like the Menu application list)"), "org.cinnamon", "enable-vfade")
+            settings.add_row(widget)
+
+            widget = GSettingsSwitch(_("Session startup animation"), "org.cinnamon", "startup-animation")
+            settings.add_row(widget)
 
             self.schema.connect("changed::desktop-effects", self.on_desktop_effects_enabled_changed)
 
-            vbox.add(Gtk.Separator.new(Gtk.Orientation.HORIZONTAL))
+            # Customize
 
-            section = Section(_("Style"))
+            page = SettingsPage()
+            self.sidePage.stack.add_titled(page, "customize", _("Customize"))
 
-            self.chooser = GSettingsComboBox(_("Effects style"), "org.cinnamon", "desktop-effects-style", "org.cinnamon/desktop-effects", OPTIONS)
-            self.chooser.content_widget.connect("changed", self.on_value_changed)
-            section.add(self.chooser)
+            box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
+            label = Gtk.Label()
+            label.set_markup("<b>%s</b>" % _("Customize settings"))
+            box.pack_start(label, False, False, 0)
+            self.custom_switch = Gtk.Switch(active = self.is_custom())
+            box.pack_end(self.custom_switch, False, False, 0)
+            self.custom_switch.connect("notify::active", self.update_effects)
+            page.add(box)
 
-            self.custom_checkbutton = Gtk.CheckButton(active = self.is_custom(), label = _("Customize"), margin_left = 5)
-            self.custom_checkbutton.get_children()[0].set_use_markup(True)
-            self.custom_checkbutton.connect("toggled", self.update_effects)
-            section.add(self.custom_checkbutton)
+            self.revealer = Gtk.Revealer()
+            self.revealer.set_transition_type(Gtk.RevealerTransitionType.SLIDE_DOWN)
+            self.revealer.set_transition_duration(150)
+            page.add(self.revealer)
+            settings = SettingsBox(_("Effect"))
+            self.revealer.add(settings)
 
-            self.grid = Gtk.Grid(row_spacing = 5, column_spacing = 5)
+            self.size_group = Gtk.SizeGroup.new(Gtk.SizeGroupMode.HORIZONTAL)
 
-            #MAPPING WINDOWS
+            # MAPPING WINDOWS
             effects = [
                 ["none",    _("None")],
                 ["scale",   _("Scale")],
@@ -115,57 +142,75 @@ class Module:
                 ["flyDown", _("Fly down")],
                 ["traditional", _("Traditional")]
             ]
-            self.make_effect_group(_("Mapping windows:"), "map", effects, 0)
 
-            #CLOSING WINDOWS
-            self.make_effect_group(_("Closing windows:"), "close", effects, 1)
+            widget = self.make_effect_group(_("Mapping windows"), "map", effects)
+            settings.add_row(widget)
 
-            #MINIMIZING WINDOWS
-            self.make_effect_group(_("Minimizing windows:"), "minimize", effects, 2)
+            # CLOSING WINDOWS
+            widget = self.make_effect_group(_("Closing windows"), "close", effects)
+            settings.add_row(widget)
 
-            #MAXIMIZING WINDOWS
+            # MINIMIZING WINDOWS
+            widget = self.make_effect_group(_("Minimizing windows"), "minimize", effects)
+            settings.add_row(widget)
+
+            # MAXIMIZING WINDOWS
             effects = [["none", _("None")], ["scale", _("Scale")]]
-            self.make_effect_group(_("Maximizing windows:"), "maximize", effects, 3)
+            widget = self.make_effect_group(_("Maximizing windows"), "maximize", effects)
+            settings.add_row(widget)
 
-            #UNMAXIMIZING WINDOWS
-            self.make_effect_group(_("Unmaximizing windows:"), "unmaximize", effects, 4)
+            # UNMAXIMIZING WINDOWS
+            widget = self.make_effect_group(_("Unmaximizing windows"), "unmaximize", effects)
+            settings.add_row(widget)
 
-            #TILING WINDOWS
-            self.make_effect_group(_("Tiling and snapping windows:"), "tile", effects, 5)
+            # TILING WINDOWS
+            widget = self.make_effect_group(_("Tiling and snapping windows"), "tile", effects)
+            settings.add_row(widget)
 
-            section.add_indented(self.grid)
-            vbox.add(section)
-            self.update_effects(self.custom_checkbutton)
+            self.update_effects(self.custom_switch, None)
 
-    def make_effect_group(self, group_label, key, effects, row):
+    def make_effect_group(self, group_label, key, effects):
         tmin, tmax, tstep, tdefault = (0, 2000, 50, 200)
+
+        row =SettingsWidget()
+        row.set_spacing(5)
 
         label = Gtk.Label()
         label.set_markup(group_label)
         label.props.xalign = 0.0
-        self.grid.attach(label, 0, row, 1, 1)
+        row.pack_start(label, False, False, 0)
 
-        effect = GSettingsEffectChooserButton(self.root, self.template % (key, "effect"), self.path, effects, key)
-        tween = GSettingsTweenChooserButton(self.root, self.template % (key, "transition"), self.path)
-        time = GSettingsSpinButton("", self.root, self.template % (key, "time"), self.path, tmin, tmax, tstep, tdefault, _("milliseconds"))
+        label = Gtk.Label(_("ms"))
+        row.pack_end(label, False, False, 0)
 
-        self.grid.attach(effect, 1, row, 1, 1)
-        self.grid.attach(tween, 2, row, 1, 1)
-        self.grid.attach(time, 3, row, 1, 1)
+        effect = GSettingsEffectChooserButton(SCHEMA, KEY_TEMPLATE % (key, "effect"), DEP_PATH, effects, key)
+        self.size_group.add_widget(effect)
+        tween = GSettingsTweenChooserButton(SCHEMA, KEY_TEMPLATE % (key, "transition"), DEP_PATH)
+        self.size_group.add_widget(tween)
+        time = GSettingsSpinButton("", SCHEMA, KEY_TEMPLATE % (key, "time"), dep_key=DEP_PATH, mini=tmin, maxi=tmax, step=tstep, page=tdefault)
+        time.set_border_width(0)
+        time.set_margin_right(0)
+        time.set_margin_left(0)
+        time.set_spacing(0)
+        row.pack_end(time, False, False, 0)
+        row.pack_end(tween, False, False, 0)
+        row.pack_end(effect, False, False, 0)
 
-        effect.bind_transition(self.template % (key, "transition"))
-        effect.bind_time(self.template % (key, "time"))
-        tween.bind_time(self.template % (key, "time"))
+        effect.bind_transition(KEY_TEMPLATE % (key, "transition"))
+        effect.bind_time(KEY_TEMPLATE % (key, "time"))
+        tween.bind_time(KEY_TEMPLATE % (key, "time"))
+
+        return row
 
     def is_custom(self):
         effects = []
         transitions = []
         times = []
 
-        for i in self.types:
-            effects.append(self.schema.get_string(self.template % (i, "effect")))
-            transitions.append(self.schema.get_string(self.template % (i, "transition")))
-            times.append(self.schema.get_int(self.template % (i, "time")))
+        for i in TYPES:
+            effects.append(self.schema.get_string(KEY_TEMPLATE % (i, "effect")))
+            transitions.append(self.schema.get_string(KEY_TEMPLATE % (i, "transition")))
+            times.append(self.schema.get_int(KEY_TEMPLATE % (i, "time")))
 
         value = (tuple(effects), tuple(transitions), tuple(times))
         return value != self.effect_sets[self.chooser.value]
@@ -173,16 +218,16 @@ class Module:
     def on_value_changed(self, widget):
         value = self.effect_sets[self.schema.get_string("desktop-effects-style")]
         j = 0
-        for i in self.types:
-            self.schema.set_string(self.template % (i, "effect"), value[0][j])
-            self.schema.set_string(self.template % (i, "transition"), value[1][j])
-            self.schema.set_int(self.template % (i, "time"), value[2][j])
+        for i in TYPES:
+            self.schema.set_string(KEY_TEMPLATE % (i, "effect"), value[0][j])
+            self.schema.set_string(KEY_TEMPLATE % (i, "transition"), value[1][j])
+            self.schema.set_int(KEY_TEMPLATE % (i, "time"), value[2][j])
             j += 1
 
-    def update_effects(self, checkbutton):
-        active = checkbutton.get_active()
+    def update_effects(self, switch, gparam):
+        active = switch.get_active()
 
-        self.grid.set_sensitive(active)
+        self.revealer.set_reveal_child(active)
         #when unchecking the checkbutton, reset the values
         if not active:
             self.on_value_changed(self.chooser)
@@ -193,8 +238,7 @@ class Module:
         if not active and schema.get_boolean("desktop-effects-on-dialogs"):
             schema.set_boolean("desktop-effects-on-dialogs", False)
 
-        self.custom_checkbutton.set_sensitive(active)
-        self.update_effects(self.custom_checkbutton)
+        self.update_effects(self.custom_switch, None)
 
 class GSettingsEffectChooserButton(BaseChooserButton):
     def __init__(self, schema, key, dep_key, options, effect):
