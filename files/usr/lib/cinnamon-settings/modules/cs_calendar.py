@@ -4,31 +4,32 @@ from SettingsWidgets import *
 from gi.repository import Gtk
 
 class Module:
+    name = "calendar"
+    comment = _("Manage date and time settings")
+    category = "prefs"
+
     def __init__(self, content_box):
         keywords = _("time, date, calendar, format, network, sync")
-        sidePage = SidePage(_("Date & Time"), "cs-date-time", keywords, content_box, module=self)
-        self.sidePage = sidePage
-        self.name = "calendar"
-        self.comment = _("Manage date and time settings")
-        self.category = "prefs"        
-                
+        self.sidePage = SidePage(_("Date & Time"), "cs-date-time", keywords, content_box, module=self)
+
     def on_module_selected(self):
         if not self.loaded:
             print "Loading Calendar module"
-            vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
-            self.sidePage.add_widget(vbox)
+
+            page = SettingsPage()
+            self.sidePage.add_widget(page)
 
             try:
-                section = Section(_("Date Settings"))
-                widget = self.sidePage.content_box.c_manager.get_c_widget("datetime")
-                section.add_expand(widget)            
-                vbox.add(section)
-                vbox.add(Gtk.Separator.new(Gtk.Orientation.HORIZONTAL))
-            except Exception, detail:
-                print detail            
+                settings = page.add_section(_("Settings"))
+                widget = SettingsWidget()
+                content = self.sidePage.content_box.c_manager.get_c_widget("datetime")
+                widget.pack_start(content, False, False, 0)
+                settings.add_row(widget)
 
-            section = Section(_("Date Format"))
-            section.add(GSettingsCheckButton(_("Use 24h clock"), "org.cinnamon.desktop.interface", "clock-use-24h", None))
-            section.add(GSettingsCheckButton(_("Display the date"), "org.cinnamon.desktop.interface", "clock-show-date", None))
-            section.add(GSettingsCheckButton(_("Display seconds"), "org.cinnamon.desktop.interface", "clock-show-seconds", None))        
-            vbox.add(section)
+            except Exception, detail:
+                print detail
+
+            settings = page.add_section(_("Format"))
+            settings.add_row(GSettingsSwitch(_("Use 24h clock"), "org.cinnamon.desktop.interface", "clock-use-24h"))
+            settings.add_row(GSettingsSwitch(_("Display the date"), "org.cinnamon.desktop.interface", "clock-show-date"))
+            settings.add_row(GSettingsSwitch(_("Display seconds"), "org.cinnamon.desktop.interface", "clock-show-seconds"))

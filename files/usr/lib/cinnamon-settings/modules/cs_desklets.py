@@ -5,13 +5,13 @@ from gi.repository import Gtk
 from SettingsWidgets import *
 
 class Module:
+    comment = _("Manage your Cinnamon desklets")
+    name = "desklets"
+    category = "prefs"
+
     def __init__(self, content_box):
         keywords = _("desklet, desktop, slideshow")
-        self.name = "desklets"
-        self.comment = _("Manage your Cinnamon desklets")       
-        sidePage = DeskletsViewSidePage(_("Desklets"), "cs-desklets", keywords, content_box, "desklet", self)
-        self.sidePage = sidePage
-        self.category = "prefs"
+        self.sidePage = DeskletsViewSidePage(_("Desklets"), "cs-desklets", keywords, content_box, "desklet", self)
 
     def on_module_selected(self):
         if not self.loaded:
@@ -37,26 +37,26 @@ class DeskletsViewSidePage (ExtensionSidePage):
         return uuid
 
     def getAdditionalPage(self):
-        scrolled_window = Gtk.ScrolledWindow()
-        scrolled_window.label = _("General Desklets Settings")
-        config_vbox = Gtk.VBox()
-        scrolled_window.add_with_viewport(config_vbox)
-        config_vbox.set_border_width(5)
+        page = SettingsPage()
+        page.label = _("General Desklets Settings")
+
+        settings = page.add_section(_("General Desklets Settings"))
 
         dec = [[0, _("No decoration")], [1, _("Border only")], [2, _("Border and header")]]
-        dec_combo = GSettingsIntComboBox(_("Decoration of desklets"), "org.cinnamon", "desklet-decorations", None, dec)
+        widget = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
+        combo_box = GSettingsComboBox(_("Decoration of desklets"), "org.cinnamon", "desklet-decorations", dec, valtype="int")
+        widget.pack_start(combo_box, False, False, 0)
+        line1 = Gtk.Label()
+        line1.set_markup("<i><small>%s</small></i>" % _("Note: Some desklets require the border/header to be always present"))
+        line1.get_style_context().add_class("dim-label")
+        widget.pack_start(line1, True, True, 0)
+        line2 = Gtk.Label()
+        line2.set_markup("<i><small>%s</small></i>" % _("Such requirements override the settings selected here"))
+        line2.get_style_context().add_class("dim-label")
+        widget.pack_start(line2, True, True, 0)
+        settings.add_row(widget)
 
-        label = Gtk.Label()
-        label.set_markup("<i><small>%s\n%s</small></i>" % (_("Note: Some desklets require the border/header to be always present"), _("Such requirements override the settings selected here")))
-        label.set_alignment(0.1,0)
-        
+        settings.add_row(GSettingsSwitch(_("Snap desklets to grid"), "org.cinnamon", "desklet-snap"))
+        settings.add_reveal_row(GSettingsSpinButton(_("Width of desklet snap grid"), "org.cinnamon", "desklet-snap-interval", "", 0, 100, 1, 5), "org.cinnamon", "desklet-snap")
 
-        desklet_snap = GSettingsCheckButton(_("Snap desklets to grid"), "org.cinnamon", "desklet-snap", None)
-        desklet_snap_interval = GSettingsSpinButton(_("Width of desklet snap grid"), "org.cinnamon", "desklet-snap-interval", "org.cinnamon/desklet-snap", 0, 100, 1, 5, "")
-
-        config_vbox.pack_start(dec_combo, False, False, 2)
-        config_vbox.pack_start(label, False, False, 2)
-        config_vbox.pack_start(desklet_snap, False, False, 2)
-        config_vbox.pack_start(desklet_snap_interval, False, False, 2)
-
-        return scrolled_window
+        return page

@@ -3,13 +3,12 @@ import sys
 from ExtensionCore import ExtensionSidePage
 
 class Module:
+    name = "applets"
+    comment = _("Manage Cinnamon applets")
+    category = "prefs"
+
     def __init__(self, content_box):
-        keywords = _("applet")
-        self.name = "applets"       
-        self.comment = _("Manage Cinnamon applets")
-        sidePage = AppletsViewSidePage(_("Applets"), "cs-applets", keywords, content_box, "applet", self)
-        self.sidePage = sidePage
-        self.category = "prefs"
+        self.sidePage = AppletsViewSidePage(_("Applets"), "cs-applets", _("applet"), content_box, "applet", self)
 
     def on_module_selected(self):
         if not self.loaded:

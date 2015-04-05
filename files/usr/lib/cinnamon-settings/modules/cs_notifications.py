@@ -15,7 +15,7 @@ Praesent interdum, dui sit amet convallis rutrum, velit nunc \
 sollicitudin erat, ac viverra leo eros in nulla. Morbi feugiat \
 feugiat est. Nam non libero dolor. Duis egestas sodales massa \
 sit amet lobortis. Donec sit amet nisi turpis. Morbi aliquet \
-aliquam ullamcorper. 
+aliquam ullamcorper.
 """
 
 MEDIA_KEYS_OSD_SIZES = [
@@ -26,50 +26,57 @@ MEDIA_KEYS_OSD_SIZES = [
 ]
 
 class Module:
+    name = "notifications"
+    comment = _("Notification preferences")
+    category = "prefs"
+
     def __init__(self, content_box):
         keywords = _("notifications")
         sidePage = SidePage(_("Notifications"), "cs-notifications", keywords, content_box, module=self)
         self.sidePage = sidePage
-        self.name = "notifications"
-        self.comment = _("Notification preferences")
-        self.category = "prefs"
 
     def on_module_selected(self):
         if self.loaded:
             return
 
-        print "Loading notifications module"
+        print "Loading Notifications module"
 
         Notify.init("cinnamon-settings-notifications-test")
 
-        vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
-        self.sidePage.add_widget(vbox)
-            
-        section = Section(_("Behaviour"))
-        section.add(GSettingsCheckButton(_("Display notifications"), "org.cinnamon.desktop.notifications", "display-notifications", None))
-        section.add(GSettingsCheckButton(_("Remove notifications after their timeout is reached"), "org.cinnamon.desktop.notifications", "remove-old", None))
-        vbox.add(section)
-        
-        vbox.add(Gtk.Separator.new(Gtk.Orientation.HORIZONTAL)) 
-        
-        section = Section(_("Appearance"))
+        page = SettingsPage()
+        self.sidePage.add_widget(page)
 
-        section.add(GSettingsCheckButton(_("Have notifications fade out when hovered over"), "org.cinnamon.desktop.notifications", "fade-on-mouseover", None))
-        section.add_indented(GSettingsSpinButton(_("Hover opacity"), "org.cinnamon.desktop.notifications", "fade-opacity", "org.cinnamon.desktop.notifications/fade-on-mouseover", 0, 100, 1, 1, _("%")))
+        settings = page.add_section(_("Notification settings"))
 
+        switch = GSettingsSwitch(_("Enable notifications"), "org.cinnamon.desktop.notifications", "display-notifications")
+        settings.add_row(switch)
+
+        switch = GSettingsSwitch(_("Remove notifications after their timeout is reached"), "org.cinnamon.desktop.notifications", "remove-old")
+        settings.add_reveal_row(switch, "org.cinnamon.desktop.notifications", "display-notifications")
+
+        switch = GSettingsSwitch(_("Have notifications fade out when hovered over"), "org.cinnamon.desktop.notifications", "fade-on-mouseover")
+        settings.add_reveal_row(switch, "org.cinnamon.desktop.notifications", "display-notifications")
+
+        spin = GSettingsSpinButton(_("Hover opacity"), "org.cinnamon.desktop.notifications", "fade-opacity", _("%"), 0, 100)
+        settings.add_reveal_row(spin)
+        spin.revealer.settings = Gio.Settings.new("org.cinnamon.desktop.notifications")
+
+        def on_settings_changed(*args):
+            spin.revealer.set_reveal_child(spin.revealer.settings["fade-on-mouseover"] and spin.revealer.settings["display-notifications"])
+        spin.revealer.settings.connect("changed::fade-on-mouseover", on_settings_changed)
+        spin.revealer.settings.connect("changed::display-notifications", on_settings_changed)
+        on_settings_changed()
+
+        widget = SettingsWidget()
         button = Gtk.Button(label = _("Display a test notification"))
         button.connect("clicked", self.send_test)
-        section.add_expand(button)
-        
-        vbox.add(section)
+        widget.pack_start(button, True, True, 0)
+        settings.add_row(widget)
 
-        vbox.add(Gtk.Separator.new(Gtk.Orientation.HORIZONTAL))
+        settings = page.add_section(_("Media keys OSD"))
 
-        section = Section(_("Media keys OSD"))
-        
-        section.add(GSettingsComboBox(_("Media keys OSD size"), "org.cinnamon", "show-media-keys-osd", None, MEDIA_KEYS_OSD_SIZES))
-
-        vbox.add(section)
+        combo = GSettingsComboBox(_("Media keys OSD size"), "org.cinnamon", "show-media-keys-osd", MEDIA_KEYS_OSD_SIZES)
+        settings.add_row(combo)
 
     def send_test(self, widget):
         n = Notify.Notification.new("This is a test notification", content, "dialog-warning")

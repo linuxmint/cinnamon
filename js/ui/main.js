@@ -329,10 +329,8 @@ function start() {
     panelManager = new Panel.PanelManager();
 
     let startupAnimationEnabled = global.settings.get_boolean("startup-animation");
-    let desktopEffectsEnabled = global.settings.get_boolean("desktop-effects");
 
-    let do_animation = desktopEffectsEnabled &&
-                       startupAnimationEnabled &&
+    let do_animation = startupAnimationEnabled &&
                        !GLib.getenv('CINNAMON_SOFTWARE_RENDERING') &&
                        !GLib.getenv('CINNAMON_2D');
 

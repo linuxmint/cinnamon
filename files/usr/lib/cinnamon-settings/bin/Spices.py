@@ -108,19 +108,19 @@ class ThreadedDownloader:
 
 class Spice_Harvester:
     def __init__(self, collection_type, window):
-        self.collection_type = collection_type        
+        self.collection_type = collection_type
         self.cache_folder = self.get_cache_folder()
         self.install_folder = self.get_install_folder()
         self.index_cache = {}
         self.download_manager = ThreadedDownloader()
         self.error = None
         self.themes = collection_type == "theme"
-        
+
         if not os.path.exists(os.path.join(self.cache_folder, "index.json")):
             self.has_cache = False
         else:
             self.has_cache = True
-        
+
         self.window = window
         self.builder = Gtk.Builder()
         self.builder.add_from_file("/usr/lib/cinnamon-settings/cinnamon-settings-spice-progress.ui")
@@ -161,11 +161,11 @@ class Spice_Harvester:
 
         # if self.get_webkit_enabled():
         #     self.browser = WebKit.WebView()
-            
+
         #     self.browser.connect('button-press-event', lambda w, e: e.button == 3)
         #     self.browser.connect('title-changed', self.browser_title_changed)
         #     self.browser.connect('console-message' , self.browser_console_message)
-        
+
         #     settings = WebKit.WebSettings()
         #     settings.set_property('enable-xss-auditor', False)
         #     settings.set_property('enable-file-access-from-file-uris', True)
@@ -181,7 +181,7 @@ class Spice_Harvester:
 
     def get_webkit_enabled(self):
         return HAS_WEBKIT
-    
+
     def close_select_detail(self):
         self.spiceDetail.hide()
         if callable(self.on_detail_select):
@@ -196,7 +196,7 @@ class Spice_Harvester:
         if hasattr(self, 'on_detail_close') and callable(self.on_detail_close):
             self.on_detail_close(self)
 
-    def show_detail(self, uuid, onSelect=None, onClose=None):        
+    def show_detail(self, uuid, onSelect=None, onClose=None):
         self.on_detail_select = onSelect
         self.on_detail_close = onClose
 
@@ -209,14 +209,14 @@ class Spice_Harvester:
             self.load(lambda x: self.show_detail(uuid))
             return
 
-        appletData = self.index_cache[uuid] 
+        appletData = self.index_cache[uuid]
 
-        # Browsing the info within the app would be great (ala mintinstall) but until it is fully ready 
-        # and it gives a better experience (layout, comments, reviewing) than 
-        # browsing online we will open the link with an external browser 
+        # Browsing the info within the app would be great (ala mintinstall) but until it is fully ready
+        # and it gives a better experience (layout, comments, reviewing) than
+        # browsing online we will open the link with an external browser
         os.system("xdg-open '%s/%ss/view/%s'" % (URL_SPICES_HOME, self.collection_type, appletData['spices-id']))
         return
-        
+
         # screenshot_filename = os.path.basename(appletData['screenshot'])
         # screenshot_path = os.path.join(self.get_cache_folder(), screenshot_filename)
         # appletData['screenshot_path'] = screenshot_path
@@ -303,14 +303,14 @@ class Spice_Harvester:
 
     def refresh_cache(self, load_assets=True):
         download_url = self.get_index_url()
-        
+
         filename = os.path.join(self.cache_folder, "index.json")
         f = open(filename, 'w')
         self.download(f, filename, download_url)
-        
+
         self.load_cache()
         # print "Loaded index, now we know about %d spices." % len(self.index_cache)
-        
+
         if load_assets:
             ui_thread_do(self.ui_refreshing_cache)
             self.load_assets()
@@ -630,13 +630,13 @@ class Spice_Harvester:
 
     # def download_with_progressbar(self, outfd, outfile, caption='Please wait..', waitForClose=True):
     #     self.progressbar.set_fraction(0)
-    #     self.progressbar.set_text('0%')        
+    #     self.progressbar.set_text('0%')
     #     self.progresslabel.set_text(caption)
     #     self.progress_window.show()
 
     #     while Gtk.events_pending():
     #         Gtk.main_iteration()
-        
+
     #     self.progress_bar_pulse()
     #     self.download(outfd, outfile)
 
@@ -646,7 +646,7 @@ class Spice_Harvester:
     #     else:
     #         self.progress_button_abort.set_sensitive(False)
 
-    def progress_bar_pulse(self):       
+    def progress_bar_pulse(self):
         count = 0
         self.progressbar.set_pulse_step(0.1)
         while count < 1:
@@ -689,10 +689,10 @@ class Spice_Harvester:
         while Gtk.events_pending():
             Gtk.main_iteration()
 
-    def url_retrieve(self, url, f, reporthook):        
+    def url_retrieve(self, url, f, reporthook):
         #Like the one in urllib. Unlike urllib.retrieve url_retrieve
         #can be interrupted. KeyboardInterrupt exception is rasied when
-        #interrupted.        
+        #interrupted.
         count = 0
         blockSize = 1024 * 8
         try:

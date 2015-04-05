@@ -39,7 +39,7 @@ IGNORED_MOD_MASK = (int(Gdk.ModifierType.MOD2_MASK) | int(Gdk.ModifierType.LOCK_
 CATEGORIES = [
 
 #   Label                   id                  parent
-#(child)Label                       id                  parent       
+#(child)Label                       id                  parent
 
     [_("General"),          "general",          None,       "preferences-desktop-keyboard-shortcuts"],
         [_("Troubleshooting"),      "trouble",          "general",      None],
@@ -204,13 +204,14 @@ KEYBINDINGS = [
 ]
 
 class Module:
+    comment = _("Manage keyboard settings and shortcuts")
+    name = "keyboard"
+    category = "hardware"
+
     def __init__(self, content_box):
         keywords = _("keyboard, shortcut, hotkey")
         sidePage = SidePage(_("Keyboard"), "cs-keyboard", keywords, content_box, module=self)
         self.sidePage = sidePage
-        self.comment = _("Manage keyboard settings and shortcuts")
-        self.name = "keyboard"
-        self.category = "hardware"
 
     def on_module_selected(self):
         if not self.loaded:
@@ -219,33 +220,33 @@ class Module:
             self.sidePage.stack = SettingsStack()
             self.sidePage.add_widget(self.sidePage.stack)
 
-            vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
-            vbox.set_border_width(6)
-            vbox.set_spacing(6)
-            self.sidePage.stack.add_titled(vbox, "typing", _("Typing"))
+            # Typing
 
-            vbox.add(GSettingsCheckButton(_("Enable key repeat"), "org.cinnamon.settings-daemon.peripherals.keyboard", "repeat", None))
-            box = IndentedHBox()
-            slider = GSettingsRange(_("Repeat delay:"), _("Short"), _("Long"), 100, 2000, False, "uint", False, "org.cinnamon.settings-daemon.peripherals.keyboard", "delay",
-                                                                            "org.cinnamon.settings-daemon.peripherals.keyboard/repeat", adjustment_step = 10)
-            box.pack_start(slider, True, True, 0)
-            vbox.add(box)
-            box = IndentedHBox()
-            slider = GSettingsRange(_("Repeat speed:"), _("Slow"), _("Fast"), 20, 2000, True, "uint", True, "org.cinnamon.settings-daemon.peripherals.keyboard", "repeat-interval",
-                                                                            "org.cinnamon.settings-daemon.peripherals.keyboard/repeat", adjustment_step = 1)
-            box.pack_start(slider, True, True, 0)
-            vbox.add(box)
-            vbox.add(Gtk.Separator.new(Gtk.Orientation.HORIZONTAL))
-            
-            vbox.add(GSettingsCheckButton(_("Text cursor blinks"), "org.cinnamon.desktop.interface", "cursor-blink", None))
-            box = IndentedHBox()
-            slider = GSettingsRange(_("Blink speed:"), _("Slow"), _("Fast"), 100, 2500, True, "int", False, "org.cinnamon.desktop.interface", "cursor-blink-time",
-                                                                            "org.cinnamon.desktop.interface/cursor-blink", adjustment_step = 10)
-            box.pack_start(slider, True, True, 0)
-            vbox.add(box)
-            vbox.add(Gtk.Separator.new(Gtk.Orientation.HORIZONTAL))
-            vbox.add(Gtk.Label.new(_("Test Box")))
-            vbox.add(Gtk.Entry())
+            page = SettingsPage()
+
+            settings = page.add_section(_("Key repeat"))
+
+            self.sidePage.stack.add_titled(page, "typing", _("Typing"))
+
+            switch = GSettingsSwitch(_("Enable key repeat"), "org.cinnamon.settings-daemon.peripherals.keyboard", "repeat")
+            settings.add_row(switch)
+
+            slider = GSettingsRange(_("Repeat delay:"), "org.cinnamon.settings-daemon.peripherals.keyboard", "delay", _("Short"), _("Long"), 100, 2000)
+            settings.add_reveal_row(slider, "org.cinnamon.settings-daemon.peripherals.keyboard", "repeat")
+
+            slider = GSettingsRange(_("Repeat speed:"), "org.cinnamon.settings-daemon.peripherals.keyboard", "repeat-interval", _("Slow"), _("Fast"), 20, 2000, invert=True, log=True)
+            settings.add_reveal_row(slider, "org.cinnamon.settings-daemon.peripherals.keyboard", "repeat")
+
+            settings = page.add_section(_("Text cursor"))
+
+            switch = GSettingsSwitch(_("Text cursor blinks"), "org.cinnamon.desktop.interface", "cursor-blink")
+            settings.add_row(switch)
+
+            slider = GSettingsRange(_("Blink speed:"), "org.cinnamon.desktop.interface", "cursor-blink-time", _("Slow"), _("Fast"), 100, 2500, invert=True)
+            settings.add_reveal_row(slider, "org.cinnamon.desktop.interface", "cursor-blink")
+
+            # vbox.add(Gtk.Label.new(_("Test Box")))
+            # vbox.add(Gtk.Entry())
 
             vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
             vbox.set_border_width(6)
@@ -271,18 +272,18 @@ class Module:
 
             category_scroller = Gtk.ScrolledWindow.new(None, None)
             category_scroller.set_shadow_type(Gtk.ShadowType.IN)
-            
+
             kb_name_scroller = Gtk.ScrolledWindow.new(None, None)
             kb_name_scroller.set_shadow_type(Gtk.ShadowType.IN)
-            
+
             entry_scroller = Gtk.ScrolledWindow.new(None, None)
             entry_scroller.set_shadow_type(Gtk.ShadowType.IN)
-            
+
             right_vbox.pack_start(kb_name_scroller, False, False, 2)
             right_vbox.pack_start(entry_scroller, False, False, 2)
             kb_name_scroller.set_property('min-content-height', 150)
             entry_scroller.set_property('min-content-height', 100)
-            self.cat_tree = Gtk.TreeView.new()        
+            self.cat_tree = Gtk.TreeView.new()
             self.kb_tree = Gtk.TreeView.new()
             self.entry_tree = Gtk.TreeView.new()
 
@@ -291,7 +292,7 @@ class Module:
             self.kb_tree.connect('popup-menu', self.onContextMenuPopup)
 
             left_vbox.pack_start(category_scroller, True, True, 2)
-                    
+
             category_scroller.add(self.cat_tree)
             category_scroller.set_policy(Gtk.PolicyType.AUTOMATIC, Gtk.PolicyType.AUTOMATIC)
             kb_name_scroller.add(self.kb_tree)
@@ -660,7 +661,7 @@ class Module:
                     path, col, cellx, celly = info
                     tree.grab_focus()
                     tree.set_cursor(path, col, 0)
-            else: 
+            else:
                 path = model.get_path(iter)
                 button = 0
                 event_time = 0
@@ -712,7 +713,7 @@ class KeyBinding():
             result.append(entry)
         while (len(result) < 3):
             result.append("")
-   
+
         return result
 
     def setBinding(self, index, val):

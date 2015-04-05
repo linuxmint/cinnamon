@@ -69,11 +69,11 @@ other_defs = [
 class ColumnBox(Gtk.VBox):
     def __init__(self, title, content):
         super(ColumnBox, self).__init__()
-        
+
         label = Gtk.Label.new("")
         label.set_markup('<b>%s\n</b>' % title)
         label.set_alignment(0.5, 0.5)
-        
+
         self.set_homogeneous(False)
         self.pack_start(label, False, False, 6)
         self.pack_end(content, True, True, 0)
@@ -85,24 +85,21 @@ class ButtonTable(Gtk.Table):
         self.set_col_spacings(15)
         self.attach(Gtk.Label.new(""), 2, 3, 0, lines, Gtk.AttachOptions.EXPAND|Gtk.AttachOptions.FILL, 0, 0, 0)
         self.row = 0
-        
+
     def addRow(self, label, button):
         if label:
             label = MnemonicLabel(label, button)
             self.attach(label, 0, 1, self.row, self.row+1, Gtk.AttachOptions.EXPAND|Gtk.AttachOptions.FILL, 0, 0, 0)
         self.attach(button, 1, 2, self.row, self.row+1, Gtk.AttachOptions.FILL, 0, 0, 0)
         self.row += 1
-        
+
     def forgetRow(self):
         self.row -= 1
-    
+
 class MnemonicLabel(Gtk.Label):
     def __init__(self, text, widget):
         super(MnemonicLabel, self).__init__(label = "")
         self.set_text_with_mnemonic(text)
-        
-        self.set_alignment(1, 0.5)
-        self.get_style_context().add_class("dim-label")
         self.set_mnemonic_widget(widget)
 
 class DefaultAppChooserButton(Gtk.AppChooserButton):
@@ -129,14 +126,14 @@ class DefaultTerminalButton(Gtk.AppChooserButton): #TODO: See if we can get this
     def __init__(self):
         super(DefaultTerminalButton, self).__init__()
         self.connect("changed", self.onChanged)
-        
+
         apps = Gio.app_info_get_all()
         self.this_item = []
         self.active_items = []
         self.settings = Gio.Settings.new(TERMINAL_SCHEMA)
         self.key_value = self.settings.get_string("exec")
         count_up = 0
-        
+
         while (self.this_item is not None and count_up < len(apps)):
             self.this_item = apps[count_up]
             cat_val = Gio.DesktopAppInfo.get_categories(self.this_item)
@@ -157,7 +154,7 @@ class DefaultTerminalButton(Gtk.AppChooserButton): #TODO: See if we can get this
         index_num = button.get_active()
         command_key = self.active_items[index_num]
         self.settings.set_string("exec", command_key)
-        
+
 class CustomAppChooserButton(Gtk.AppChooserButton):
     def __init__(self, media_settings, content_type, heading=None):
         super(CustomAppChooserButton, self).__init__(content_type=content_type)
@@ -193,7 +190,7 @@ class CustomAppChooserButton(Gtk.AppChooserButton):
 
         self.connect("changed", self.onChanged)
         self.connect("custom-item-activated", self.onCustomItemActivated)
-        
+
     def onChanged(self, button):
         info = self.get_app_info()
         if info:
@@ -210,18 +207,18 @@ class CustomAppChooserButton(Gtk.AppChooserButton):
             self.setPreferences(False, False, True)
         elif item == CUSTOM_ITEM_DO_NOTHING:
             self.setPreferences(False, True, False)
-    
+
     def getPreference(self, settings_key):
         strv = self.media_settings.get_strv(settings_key)
         return strv != None and self.get_content_type() in strv
-        
+
     def getPreferences(self):
         pref_start_app = self.getPreference( PREF_MEDIA_AUTORUN_X_CONTENT_START_APP)
         pref_ignore = self.getPreference(PREF_MEDIA_AUTORUN_X_CONTENT_IGNORE)
         pref_open_folder = self.getPreference(PREF_MEDIA_AUTORUN_X_CONTENT_OPEN_FOLDER)
 
         return (pref_start_app, pref_ignore, pref_open_folder)
-        
+
     def setPreference(self, pref_value, settings_key):
         array = self.media_settings.get_strv(settings_key)
         content_type = self.get_content_type()
@@ -229,7 +226,7 @@ class CustomAppChooserButton(Gtk.AppChooserButton):
         if pref_value:
             array.append(content_type)
         self.media_settings.set_strv(settings_key, array)
-        
+
     def setPreferences(self, pref_start_app, pref_ignore, pref_open_folder):
         self.setPreference(pref_start_app, PREF_MEDIA_AUTORUN_X_CONTENT_START_APP)
         self.setPreference(pref_ignore, PREF_MEDIA_AUTORUN_X_CONTENT_IGNORE)
@@ -243,14 +240,14 @@ class OtherTypeDialog(Gtk.Dialog):
         self.add_button(_("Close"), Gtk.ResponseType.OK)
 
         self.set_default_size(350, 100)
-        
+
         self.media_settings = media_settings
-        
+
         list_store = Gtk.ListStore(str, str)
         list_store.set_sort_column_id (1, Gtk.SortType.ASCENDING)
         self.type_combo = Gtk.ComboBox.new_with_model(list_store)
         self.application_combo = None
-                
+
         content_types = Gio.content_types_get_registered()
         for content_type in content_types:
             if self.acceptContentType(content_type):
@@ -261,17 +258,17 @@ class OtherTypeDialog(Gtk.Dialog):
         self.type_combo.add_attribute (renderer,"text", 0)
 
         self.type_combo.set_active(False)
-        
+
         table = ButtonTable(2)
         table.addRow(_("_Type:"), self.type_combo)
         self.table = table
-        
+
         self.vbox.pack_start(ColumnBox(_("Select how other media should be handled"), table), True, True, 6)
-        
+
         self.vbox.show()
 
         self.type_combo.connect("changed", self.onTypeComboChanged)
-              
+
     def acceptContentType(self, content_type):
         if not content_type.startswith("x-content/"):
             return False
@@ -279,7 +276,7 @@ class OtherTypeDialog(Gtk.Dialog):
             if Gio.content_type_is_a(content_type, d[DEF_CONTENT_TYPE]):
                 return False
         return True
-        
+
     def getDescription(self, content_type):
         for d in other_defs:
             if content_type == d[DEF_CONTENT_TYPE]:
@@ -293,9 +290,9 @@ class OtherTypeDialog(Gtk.Dialog):
         if description == None:
             print "Content type '%s' is missing from the info panel" % content_type
             return Gio.content_type_get_description(content_type)
-            
+
         return description
-        
+
     def doShow(self, topLevel):
         self.set_transient_for(topLevel)
         self.set_modal(True)
@@ -304,10 +301,10 @@ class OtherTypeDialog(Gtk.Dialog):
         self.onTypeComboChanged(self.type_combo)
         self.present()
         self.show_all()
-    
+
     def onDelete(self, *args):
         return self.hide_on_delete()
-        
+
     def doHide(self):
         self.hide()
         if self.application_combo != None:
@@ -317,7 +314,7 @@ class OtherTypeDialog(Gtk.Dialog):
 
     def onResponse(self, dialog, response):
         self.doHide()
-            
+
     def onTypeComboChanged(self, type_combo):
         iter = type_combo.get_active_iter()
         if not iter:
@@ -341,68 +338,105 @@ class OtherTypeDialog(Gtk.Dialog):
         self.table.addRow(_("_Action:"), self.application_combo)
 
 class Module:
+    name = "default"
+    category = "prefs"
+    comment = _("Preferred Applications")
+
     def __init__(self, content_box):
         keywords = _("media, defaults, applications, programs, removable, browser, email, calendar, music, videos, photos, images, cd, autostart, autoplay")
-        sidePage = SidePage(_("Preferred Applications"), "cs-default-applications", keywords, content_box, 370, module=self)
+        sidePage = SidePage(_("Preferred Applications"), "cs-default-applications", keywords, content_box, module=self)
         self.sidePage = sidePage
-        self.name = "default"
-        self.category = "prefs"
-        self.comment = _("Preferred Applications")
 
     def on_module_selected(self):
         if not self.loaded:
             print "Loading Default module"
 
+            self.media_settings = Gio.Settings.new(MEDIA_HANDLING_SCHEMA)
+            self.other_type_dialog = OtherTypeDialog(self.media_settings)
+
             self.sidePage.stack = SettingsStack()
             self.sidePage.add_widget(self.sidePage.stack)
 
-            vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
-            self.sidePage.stack.add_titled(vbox, "preferred", _("Preferred Applications"))
-            widget = self.setupDefaultApps()
-            vbox.pack_start(widget, False, False, 2)
+            # Preferred applications
 
-            vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
-            self.sidePage.stack.add_titled(vbox, "removable", _("Removable Media"))
-            widget = self.setupMedia()
-            vbox.pack_start(widget, False, False, 2)
+            page = SettingsPage()
+            self.sidePage.stack.add_titled(page, "preferred", _("Preferred applications"))
 
 
-    def setupDefaultApps(self):
-        table = ButtonTable(len(preferred_app_defs))
-        
-        for d in preferred_app_defs:
-            table.addRow(d[PREF_LABEL], DefaultAppChooserButton(d[PREF_CONTENT_TYPE], d[PREF_GEN_CONTENT_TYPE]))
-                
-        table.addRow(_("Te_rminal"), DefaultTerminalButton())
+            settings = page.add_section(_("Preferred applications"))
 
-        return ColumnBox(_("Select your preferred applications"), table)
+            size_group = Gtk.SizeGroup.new(Gtk.SizeGroupMode.HORIZONTAL)
+
+            for d in preferred_app_defs:
+                widget = SettingsWidget()
+                button = DefaultAppChooserButton(d[PREF_CONTENT_TYPE], d[PREF_GEN_CONTENT_TYPE])
+                label = MnemonicLabel(d[PREF_LABEL], button)
+                size_group.add_widget(button)
+                widget.pack_start(label, False, False, 0)
+                widget.pack_end(button, False, False, 0)
+                settings.add_row(widget)
+
+            widget = SettingsWidget()
+            button = DefaultTerminalButton()
+            label = MnemonicLabel(_("Te_rminal"), button)
+            size_group.add_widget(button)
+            widget.pack_start(label, False, False, 0)
+            widget.pack_end(button, False, False, 0)
+            settings.add_row(widget)
+
+            # Removable media
+
+            page = SettingsPage()
+            self.sidePage.stack.add_titled(page, "removable", _("Removable media"))
+
+            switch = InvertedSwitch("", MEDIA_HANDLING_SCHEMA, PREF_MEDIA_AUTORUN_NEVER)
+            switch.label.set_markup("<b>%s</b>" % _("Prompt or start programs on media insertion"))
+            switch.fill_row()
+            page.add(switch)
+
+            settings = SettingsBox(_("Removable media"))
+            switch.revealer.add(settings)
+            page.pack_start(switch.revealer, False, False, 0)
+
+            size_group = Gtk.SizeGroup.new(Gtk.SizeGroupMode.HORIZONTAL)
+
+            for d in removable_media_defs:
+                widget = SettingsWidget()
+                button = CustomAppChooserButton(self.media_settings, d[DEF_CONTENT_TYPE], d[DEF_HEADING])
+                label = MnemonicLabel(d[PREF_LABEL], button)
+                size_group.add_widget(button)
+                widget.pack_start(label, False, False, 0)
+                widget.pack_end(button, False, False, 0)
+                settings.add_row(widget)
+
+            widget = SettingsWidget()
+            more = Gtk.Button.new_with_mnemonic(_("_Other Media..."))
+            more.connect("clicked", self.onMoreClicked)
+            widget.pack_start(more, True, True, 0)
+            settings.add_row(widget)
 
     def onMoreClicked(self, button):
         self.other_type_dialog.doShow(button.get_toplevel())
 
-    def setupMedia(self):
-        self.media_settings = Gio.Settings.new(MEDIA_HANDLING_SCHEMA)
-        
-        self.other_type_dialog = OtherTypeDialog(self.media_settings)
-        
-        hbox = Gtk.VBox()
-        hbox.set_border_width(6)
-        hboxToggle = Gtk.VBox()        
-        hbox.add(hboxToggle)
+class InvertedSwitch(SettingsWidget):
+    def __init__(self, label, schema, key):
+        self.key = key
+        super(InvertedSwitch, self).__init__()
 
-        table = ButtonTable(len(removable_media_defs)+1)
-        hboxToggle.add(table)
-        
-        for d in removable_media_defs:
-            table.addRow(d[DEF_LABEL], CustomAppChooserButton(self.media_settings, d[DEF_CONTENT_TYPE], d[DEF_HEADING]))
+        self.revealer = SettingsRevealer()
 
-        more = Gtk.Button.new_with_mnemonic(_("_Other Media..."))
-        more.connect("clicked", self.onMoreClicked)
-        table.addRow(None, more)
+        self.content_widget = Gtk.Switch()
+        self.content_widget.connect("notify::active", self.on_my_value_changed)
+        self.label = Gtk.Label(label)
+        self.pack_start(self.label, False, False, 0)
+        self.pack_end(self.content_widget, False, False, 0)
 
-        never = Gtk.CheckButton.new_with_mnemonic(_("_Never prompt or start programs on media insertion"))
-        hbox.pack_start(never, False, False, 2)
-        self.media_settings.bind(PREF_MEDIA_AUTORUN_NEVER, never, "active", Gio.SettingsBindFlags.DEFAULT)
-        self.media_settings.bind(PREF_MEDIA_AUTORUN_NEVER, hboxToggle, "sensitive", Gio.SettingsBindFlags.INVERT_BOOLEAN)
+        self.settings = Gio.Settings.new(schema)
+        self.content_widget.set_active(not (self.settings.get_boolean(self.key)))
 
-        return ColumnBox(_("Select how media should be handled"), hbox)
+    def on_my_value_changed(self, widget, gparam):
+        active = widget.get_active()
+
+        self.settings.set_boolean(self.key, not active)
+        self.revealer.set_reveal_child(active)
+

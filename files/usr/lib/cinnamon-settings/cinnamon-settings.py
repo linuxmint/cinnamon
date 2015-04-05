@@ -4,39 +4,39 @@ import sys
 reload(sys)
 sys.setdefaultencoding('utf-8')
 
-try:
-    sys.path.append('/usr/lib/cinnamon-settings/modules')
-    sys.path.append('/usr/lib/cinnamon-settings/bin')
-    import os
-    import glob
-    import gettext
-    from gi.repository import Gio, Gtk, GObject, GdkPixbuf, GLib, Pango, Gdk, cairo
-    import SettingsWidgets
-    import capi
-    import time
-    import grp
-    import pwd
-    import locale
-    import urllib2
-    import proxygsettings
-    from functools import cmp_to_key
-# Standard setting pages... this can be expanded to include applet dirs maybe?
-    mod_files = glob.glob('/usr/lib/cinnamon-settings/modules/*.py')
-    mod_files.sort()
-    if len(mod_files) is 0:
-        raise Exception("No settings modules found!!")
-    for i in range(len(mod_files)):
-        mod_files[i] = mod_files[i].split('/')[5]
-        mod_files[i] = mod_files[i].split('.')[0]
-        if mod_files[i][0:3] != "cs_":
-            raise Exception("Settings modules must have a prefix of 'cs_' !!")
-    modules = map(__import__, mod_files)
-except Exception, detail:
-    print detail
-    sys.exit(1)
+sys.path.append('/usr/lib/cinnamon-settings/modules')
+sys.path.append('/usr/lib/cinnamon-settings/bin')
+import os
+import glob
+import gettext
+from gi.repository import Gio, Gtk, GObject, GdkPixbuf, GLib, Pango, Gdk, cairo
+import SettingsWidgets
+import capi
+import time
+import traceback
+import locale
+import urllib2
+import proxygsettings
+from functools import cmp_to_key
 
 # i18n
 gettext.install("cinnamon", "/usr/share/locale")
+
+# Standard setting pages... this can be expanded to include applet dirs maybe?
+mod_files = glob.glob('/usr/lib/cinnamon-settings/modules/*.py')
+mod_files.sort()
+if len(mod_files) is 0:
+    print "No settings modules found!!"
+    sys.exit(1)
+
+mod_files = [x.split('/')[5].split('.')[0] for x in mod_files]
+
+for mod_file in mod_files:
+    if mod_file[0:3] != "cs_":
+        raise Exception("Settings modules must have a prefix of 'cs_' !!")
+
+modules = map(__import__, mod_files)
+
 # i18n for menu item
 menuName = _("System Settings")
 menuComment = _("Control Center")
@@ -64,8 +64,8 @@ CONTROL_CENTER_MODULES = [
 #         Label                              Module ID                Icon                         Category      Keywords for filter
     [_("Networking"),                       "network",            "cs-network",                 "hardware",      _("network, wireless, wifi, ethernet, broadband, internet")],
     [_("Display"),                          "display",            "cs-display",                 "hardware",      _("display, screen, monitor, layout, resolution, dual, lcd")],
-    [_("Bluetooth"),                        "bluetooth",          "cs-bluetooth",               "hardware",      _("bluetooth, dongle, transfer, mobile")], 
-    [_("Accessibility"),                 "universal-access",   "cs-universal-access",           "prefs",         _("magnifier, talk, access, zoom, keys, contrast")],
+    [_("Bluetooth"),                        "bluetooth",          "cs-bluetooth",               "hardware",      _("bluetooth, dongle, transfer, mobile")],
+    [_("Accessibility"),                    "universal-access",   "cs-universal-access",        "prefs",         _("magnifier, talk, access, zoom, keys, contrast")],
     [_("Sound"),                            "sound",              "cs-sound",                   "hardware",      _("sound, speakers, headphones, test")],
     [_("Color"),                            "color",              "cs-color",                   "hardware",      _("color, profile, display, printer, output")],
     [_("Graphics Tablet"),                  "wacom",              "cs-tablet",                  "hardware",      _("wacom, digitize, tablet, graphics, calibrate, stylus")]
@@ -73,7 +73,7 @@ CONTROL_CENTER_MODULES = [
 
 STANDALONE_MODULES = [
 #         Label                          Executable                          Icon                Category        Keywords for filter
-    [_("Printers"),                      "system-config-printer",        "cs-printer",         "hardware",       _("printers, laser, inkjet")],    
+    [_("Printers"),                      "system-config-printer",        "cs-printer",         "hardware",       _("printers, laser, inkjet")],
     [_("Firewall"),                      "gufw",                         "cs-firewall",        "admin",          _("firewall, block, filter, programs")],
     [_("Languages"),                     "mintlocale",                   "cs-language",        "prefs",          _("language, install, foreign")],
     [_("Login Window"),                  "gksu /usr/sbin/mdmsetup",      "cs-login",           "admin",          _("login, mdm, gdm, manager, user, password, startup, switch")],
@@ -108,7 +108,7 @@ class MainWindow:
             if filtered_path is not None:
                 self.go_to_sidepage(cat, filtered_path)
 
-    def go_to_sidepage(self, cat, path):        
+    def go_to_sidepage(self, cat, path):
         iterator = self.store[cat].get_iter(path)
         sidePage = self.store[cat].get_value(iterator,2)
         if not sidePage.is_standalone:
@@ -122,6 +122,11 @@ class MainWindow:
             self.main_stack.set_visible_child_name("content_box_page")
             self.header_stack.set_visible_child_name("content_box")
             self.current_sidepage = sidePage
+            width = 0
+            for widget in self.top_bar:
+                m, n = widget.get_preferred_width()
+                width += n
+            self.top_bar.set_size_request(width + 20, -1)
             self.maybe_resize(sidePage)
         else:
             sidePage.build()
@@ -186,21 +191,20 @@ class MainWindow:
         self.unsortedSidePages = []
         self.sidePages = []
         self.settings = Gio.Settings.new("org.cinnamon")
-        self.current_cat_widget = None            
+        self.current_cat_widget = None
 
         self.current_sidepage = None
         self.c_manager = capi.CManager()
         self.content_box.c_manager = self.c_manager
         self.bar_heights = 0
 
-        for i in range(len(modules)):
+        for module in modules:
             try:
-                mod = modules[i].Module(self.content_box)
+                mod = module.Module(self.content_box)
                 if self.loadCheck(mod) and self.setParentRefs(mod):
                     self.unsortedSidePages.append((mod.sidePage, mod.name, mod.category))
             except:
-                print "Failed to load module %s" % modules[i]
-                import traceback
+                print "Failed to load module %s" % module
                 traceback.print_exc()
 
         for item in CONTROL_CENTER_MODULES:
@@ -290,13 +294,13 @@ class MainWindow:
                     (Gtk.TreeView, Gtk.Entry, Gtk.SpinButton, Gtk.TextView)):
             self.back_to_icon_view(None)
             return True
-        return False    
-    
+        return False
+
     def on_buttonpress(self, widget, event):
         if event.button == MOUSE_BACK_BUTTON:
             self.back_to_icon_view(None)
             return True
-        return False    
+        return False
 
     def calculate_bar_heights(self):
         h = 0
@@ -313,7 +317,7 @@ class MainWindow:
 
     def filter_visible_function(self, model, iter, user_data = None):
         sidePage = model.get_value(iter, 2)
-        text = self.search_entry.get_text().lower()       
+        text = self.search_entry.get_text().lower()
         if sidePage.name.lower().find(text) > -1 or \
            sidePage.keywords.lower().find(text) > -1:
             return True
@@ -544,22 +548,22 @@ class MainWindow:
         self.main_stack.set_visible_child_name("side_view_page")
         self.header_stack.set_visible_child_name("side_view")
         self.search_entry.grab_focus()
-        self.current_sidepage = None   
-    
+        self.current_sidepage = None
+
     def quit(self, *args):
         self.window.destroy()
         Gtk.main_quit()
 
 if __name__ == "__main__":
     import signal
-    
+
     ps = proxygsettings.get_proxy_settings()
     if ps:
         proxy = urllib2.ProxyHandler(ps)
     else:
         proxy = urllib2.ProxyHandler()
     urllib2.install_opener(urllib2.build_opener(proxy))
-    
+
     window = MainWindow()
     signal.signal(signal.SIGINT, window.quit)
     Gtk.main()
