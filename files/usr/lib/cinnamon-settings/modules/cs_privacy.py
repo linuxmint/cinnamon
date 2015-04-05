@@ -47,7 +47,6 @@ class Module:
             vbox.add(Gtk.Separator(orientation=Gtk.Orientation.HORIZONTAL))
             list_box = Gtk.ListBox()
             row = Gtk.ListBoxRow()
-            row.set_selectable(False)
             row.add(widget)
             list_box.add(row)
             vbox.add(list_box)
