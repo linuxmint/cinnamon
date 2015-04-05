@@ -39,6 +39,42 @@ SLEEP_DELAY_OPTIONS = [
     (0, _("Never"))
 ]
 
+def get_timestring(time_seconds):
+    minutes = int((time_seconds / 60.0) + 0.5)
+
+    if minutes == 0:
+        time_string = _("Unknown time")
+        return time_string
+
+    if minutes < 60:
+        if minutes == 1:
+            time_string = ("%d " % minutes) + _("minute")
+        else:
+            time_string = ("%d " % minutes) + _("minutes")
+        return time_string
+
+    hours = minutes / 60
+    minutes = minutes % 60
+
+    if minutes == 0:
+        if hours == 1:
+            time_string = ("%d " % hours) + _("hour")
+            return time_string
+        else:
+            time_sting = ("%d " % hours) + _("hours")
+            return time_string
+
+    if hours == 1:
+        if minutes == 1:
+            time_string = ("%d " % hours + _("hour")) + (" %d " % minutes + _("minute"))
+            return time_string
+        else:
+            time_string = ("%d " % hours + _("hour")) + (" %d " % minutes + _("minutes"))
+            return time_string
+
+    time_string = ("%d " % hours + _("hours")) + (" %d " % minutes + _("minutes"))
+    return time_string
+
 
 CSD_SCHEMA = "org.cinnamon.settings-daemon.plugins.power"
 
@@ -228,42 +264,6 @@ class Module:
             section.add_reveal_row(GSettingsComboBox(_("Brightness level when inactive"), "org.cinnamon.settings-daemon.plugins.power", "idle-brightness", IDLE_BRIGHTNESS_OPTIONS, valtype="int", size_group=size_group), "org.cinnamon.settings-daemon.plugins.power", "idle-dim-battery")
 
             section.add_reveal_row(GSettingsComboBox(_("Dim screen after inactive for"), "org.cinnamon.settings-daemon.plugins.power", "idle-dim-time", IDLE_DELAY_OPTIONS, valtype="int", size_group=size_group), "org.cinnamon.settings-daemon.plugins.power", "idle-dim-battery")
-
-    def get_timestring(time_seconds):
-        minutes = int((time_seconds / 60.0) + 0.5)
-
-        if minutes == 0:
-            time_string = _("Unknown time")
-            return time_string
-
-        if minutes < 60:
-            if minutes == 1:
-                time_string = ("%d " % minutes) + _("minute")
-            else:
-                time_string = ("%d " % minutes) + _("minutes")
-            return time_string
-
-        hours = minutes / 60
-        minutes = minutes % 60
-
-        if minutes == 0:
-            if hours == 1:
-                time_string = ("%d " % hours) + _("hour")
-                return time_string
-            else:
-                time_sting = ("%d " % hours) + _("hours")
-                return time_string
-
-        if hours == 1:
-            if minutes == 1:
-                time_string = ("%d " % hours + _("hour")) + (" %d " % minutes + _("minute"))
-                return time_string
-            else:
-                time_string = ("%d " % hours + _("hour")) + (" %d " % minutes + _("minutes"))
-                return time_string
-
-        time_string = ("%d " % hours + _("hours")) + (" %d " % minutes + _("minutes"))
-        return time_string
 
     def set_device_ups_primary(self, device):
         percentage = device[3]
