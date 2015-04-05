@@ -83,15 +83,14 @@ LayoutManager.prototype = {
     },
     
     _toggleExpo: function() {
-        if (!Main.expo.animationInProgress) {
-            if (Main.overview.visible) {
-                this._activationTime = Date.now() / 1000;
-                Main.overview.hide();
-                Main.expo.toggle();
-            } else {
-                Main.expo.toggle();
-            }
+        if (Main.expo.animationInProgress)
+            return;
+
+        if (Main.overview.visible) {
+            this._activationTime = Date.now() / 1000;
+            Main.overview.hide();
         }
+        Main.expo.toggle();
     },
     
     _updateMonitors: function() {
@@ -176,25 +175,6 @@ LayoutManager.prototype = {
     get focusMonitor() {
         return this.monitors[this.focusIndex];
     },
-
-    // Startup Animations
-    //
-    // We have two different animations, depending on whether we're a greeter
-    // or a normal session.
-    //
-    // In the greeter, we want to animate the panel from the top, and smoothly
-    // fade the login dialog on top of whatever plymouth left on screen which
-    // we get as a still frame background before drawing anything else.
-    //
-    // Here we just have the code to animate the panel, and fade up the background.
-    // The login dialog animation is handled by modalDialog.js
-    //
-    // When starting a normal user session, we want to grow it out of the middle
-    // of the screen.
-    //
-    // Usually, we don't want to paint the stage background color because the
-    // MetaBackgroundActor inside global.window_group covers the entirety of the
-    // screen. So, we set no_clear_hint at the end of the animation.
 
     _prepareStartupAnimation: function() {
         // During the initial transition, add a simple actor to block all events,
