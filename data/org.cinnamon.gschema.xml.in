@@ -562,17 +562,17 @@
       </_description>
     </key>
 
-    <key name="hide-snap-osd" type="b">
-      <default>false</default>
-      <_summary>Prevent the tile/snap OSD from showing</_summary>
+    <key name="show-snap-osd" type="b">
+      <default>true</default>
+      <_summary>Show the tile/snap OSD</_summary>
       <_description>
         Hide the snap OSD.
       </_description>
     </key>
 
-    <key name="hide-tile-hud" type="b">
-      <default>false</default>
-      <_summary>Prevent the tile HUD from showing</_summary>
+    <key name="show-tile-hud" type="b">
+      <default>true</default>
+      <_summary>Show the tile HUD</_summary>
       <_description>
         Hide the tile HUD.
       </_description>

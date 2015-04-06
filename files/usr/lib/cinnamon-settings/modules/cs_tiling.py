@@ -34,8 +34,8 @@ class Module:
 
             settings.add_row(GSettingsSwitch(_("Maximize, instead of tile, when dragging a window to the top edge"), "org.cinnamon.muffin", "tile-maximize"))
 
-            settings.add_row(GSettingsSwitch(_("Prevent the snap on-screen-display from showing"), "org.cinnamon", "hide-snap-osd"))
+            settings.add_row(GSettingsSwitch(_("Show snap on-screen-display"), "org.cinnamon", "show-snap-osd"))
 
-            settings.add_row(GSettingsSwitch(_("Prevent the tile heads-up-display from showing"), "org.cinnamon", "hide-tile-hud"))
+            settings.add_row(GSettingsSwitch(_("Show tile heads-up-display"), "org.cinnamon", "show-tile-hud"))
 
             settings.add_row(GSettingsSwitch(_("Legacy window snapping (hold <Shift> while dragging a window)"), "org.cinnamon.muffin", "legacy-snap"))
