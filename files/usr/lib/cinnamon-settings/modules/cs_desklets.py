@@ -38,7 +38,7 @@ class DeskletsViewSidePage (ExtensionSidePage):
 
     def getAdditionalPage(self):
         page = SettingsPage()
-        page.label = _("General Desklets Settings")
+        page.label = _("General Settings")
 
         settings = page.add_section(_("General Desklets Settings"))
 
