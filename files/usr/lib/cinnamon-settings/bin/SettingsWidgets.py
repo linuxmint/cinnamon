@@ -69,18 +69,18 @@ def bind_with_mapping(self, key, widget, prop, flags, key_to_prop, prop_to_key):
 Gio.Settings.bind_with_mapping = bind_with_mapping
 Gio.Settings.__setitem__ = __setitem__
 
-class EditableEntry (Gtk.Notebook):
+class EditableEntry (Gtk.Stack):
 
     __gsignals__ = {
         'changed': (GObject.SIGNAL_RUN_FIRST, None,
                       (str,))
     }
 
-    PAGE_BUTTON = 0
-    PAGE_ENTRY = 1
-
     def __init__ (self):
         super(EditableEntry, self).__init__()
+
+        self.set_transition_type(Gtk.StackTransitionType.CROSSFADE)
+        self.set_transition_duration(150)
 
         self.label = Gtk.Label()
         self.entry = Gtk.Entry()
@@ -88,11 +88,9 @@ class EditableEntry (Gtk.Notebook):
 
         self.button.set_alignment(1.0, 0.5)
         self.button.set_relief(Gtk.ReliefStyle.NONE)
-        self.append_page(self.button, None);
-        self.append_page(self.entry, None);
-        self.set_current_page(0)
-        self.set_show_tabs(False)
-        self.set_show_border(False)
+        self.add_named(self.button, "button");
+        self.add_named(self.entry, "entry");
+        self.set_visible_child_name("button")
         self.editable = False
         self.show_all()
 
@@ -117,9 +115,9 @@ class EditableEntry (Gtk.Notebook):
 
     def set_editable(self, editable):
         if (editable):
-            self.set_current_page(EditableEntry.PAGE_ENTRY)
+            self.set_visible_child_name("entry")
         else:
-            self.set_current_page(EditableEntry.PAGE_BUTTON)
+            self.set_visible_child_name("button")
         self.editable = editable
 
     def set_tooltip_text(self, tooltip):
