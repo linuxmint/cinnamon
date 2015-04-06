@@ -92,23 +92,34 @@ class EditableEntry (Gtk.Stack):
         self.add_named(self.entry, "entry");
         self.set_visible_child_name("button")
         self.editable = False
+        self.current_text = None
         self.show_all()
 
         self.button.connect("released", self._on_button_clicked)
         self.button.connect("activate", self._on_button_clicked)
         self.entry.connect("activate", self._on_entry_validated)
         self.entry.connect("changed", self._on_entry_changed)
+        self.entry.connect("focus-out-event", self._on_focus_lost)
 
     def set_text(self, text):
         self.button.set_label(text)
         self.entry.set_text(text)
+        self.current_text = text
+
+    def _on_focus_lost(self, widget, event):
+        self.button.set_label(self.current_text)
+        self.entry.set_text(self.current_text)
+
+        self.set_editable(False)
 
     def _on_button_clicked(self, button):
         self.set_editable(True)
+        self.entry.grab_focus()
 
     def _on_entry_validated(self, entry):
         self.set_editable(False)
         self.emit("changed", entry.get_text())
+        self.current_text = entry.get_text()
 
     def _on_entry_changed(self, entry):
         self.button.set_label(entry.get_text())
