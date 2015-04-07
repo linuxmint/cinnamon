@@ -449,7 +449,11 @@ Player.prototype = {
 
         this._timeoutId = 0;
         //_timerInterval should stay in sync with the Rate property
-        this._timerInterval = this._mediaServerPlayer.Rate;
+        this._timerInterval = 1;
+        let interval = Math.round(1000 / this._mediaServerPlayer.Rate);
+        if(interval > 0 && isFinite(interval))
+            this._timerInterval = interval;
+
         this._setStatus(this._mediaServerPlayer.PlaybackStatus);
         this._trackId = {};
         this._setMetadata(this._mediaServerPlayer.Metadata);
@@ -483,8 +487,13 @@ Player.prototype = {
                     this._setMetadata(props.Metadata.deep_unpack());
                 if (props.CanGoNext || props.CanGoPrevious)
                     this._updateControls();
-                if (props.Rate)
-                    this._runTimer(props.Rate.unpack());
+                if (props.Rate) {
+                    let interval = Math.round(1000 / props.Rate.unpack());
+                    if (interval > 0 && isFinite(interval)) {
+                        this._timerInterval = interval;
+                        this._runTimer();
+                    }
+                }
         }));
 
         //get the desktop entry and pass it to the applet
@@ -719,19 +728,16 @@ Player.prototype = {
         return false;
     },
 
-    _runTimer: function(interval) {
+    _runTimer: function() {
         if (this._timeoutId != 0) {
             Mainloop.source_remove(this._timeoutId);
             this._timeoutId = 0;
         }
 
-        if (interval)
-            this._timerInterval = interval;
-
         if (this._playerStatus == 'Playing') {
             this._getPosition();
             this._timerTicker = 0;
-            this._timeoutId = Mainloop.timeout_add(Math.round(1000 / this._timerInterval), Lang.bind(this, this._runTimerCallback));
+            this._timeoutId = Mainloop.timeout_add(this._timerInterval, Lang.bind(this, this._runTimerCallback));
         }
     },
 
