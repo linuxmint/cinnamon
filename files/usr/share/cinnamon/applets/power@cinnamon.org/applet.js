@@ -14,6 +14,7 @@ const DimSettingsSchema = "org.cinnamon.settings-daemon.plugins.power";
 const DimSettingsAc = "idle-dim-ac";
 const DimSettingsBattery = "idle-dim-battery";
 const BrightnessBusName = "org.cinnamon.SettingsDaemon.Power.Screen";
+const KeyboardBusName = "org.cinnamon.SettingsDaemon.Power.Keyboard";
 
 const UPDeviceType = {
     UNKNOWN: 0,
@@ -97,14 +98,14 @@ DeviceItem.prototype = {
     }
 }
 
-function BrightnessSlider(applet){
-    this._init(applet);
+function BrightnessSlider(applet, label, icon, busName){
+    this._init(applet, label, icon, busName);
 }
 
 BrightnessSlider.prototype = {
     __proto__: PopupMenu.PopupSliderMenuItem.prototype,
 
-    _init: function(applet){
+    _init: function(applet, label, icon, busName){
         PopupMenu.PopupSliderMenuItem.prototype._init.call(this, 0);
         this.actor.hide();
 
@@ -118,44 +119,34 @@ BrightnessSlider.prototype = {
             this._seeking = false;
         }));
 
-        this.icon = new St.Icon({icon_name: "display-brightness-symbolic", icon_type: St.IconType.SYMBOLIC, icon_size: 16});
+        this.icon = new St.Icon({icon_name: icon, icon_type: St.IconType.SYMBOLIC, icon_size: 16});
         this.removeActor(this._slider);
         this.addActor(this.icon, {span: 0});
         this.addActor(this._slider, {span: -1, expand: true});
 
-        this.tooltipText = _("Brightness");
+        this.label = label;
+        this.toolTipText = label;
         this.tooltip = new Tooltips.Tooltip(this.actor, this.tooltipText);
 
-        Interfaces.getDBusProxyAsync(BrightnessBusName, Lang.bind(this, function(proxy, error) {
+        Interfaces.getDBusProxyAsync(busName, Lang.bind(this, function(proxy, error) {
             this._proxy = proxy;
             this._proxy.GetPercentageRemote(Lang.bind(this, this._dbusAcquired));
         }));
     },
 
     _dbusAcquired: function(b, error){
-        if (b != undefined) {
-            this._updateBrightnessLabel(b);
-            this.setValue(b / 100);
-            this.connect("value-changed", Lang.bind(this, this._sliderChanged));
-            this._applet.actor.connect('scroll-event', Lang.bind(this, this._onScrollEvent));
+        if(error)
+            return;
 
-            this.actor.show();
+        this._updateBrightnessLabel(b);
+        this.setValue(b / 100);
+        this.connect("value-changed", Lang.bind(this, this._sliderChanged));
 
-            //get notified
-            this._proxy.connectSignal('Changed', Lang.bind(this, this._getBrightness));
-            this._applet.menu.connect("open-state-changed", Lang.bind(this, this._getBrightnessForcedUpdate));
-        }
-    },
+        this.actor.show();
 
-    _onScrollEvent: function(actor, event) {
-        let direction = event.get_scroll_direction();
-        if (direction == Clutter.ScrollDirection.UP) {
-                this._proxy.StepUpRemote(Lang.bind(this, function(b) {}));
-        }
-        else if (direction == Clutter.ScrollDirection.DOWN) {
-                this._proxy.StepDownRemote(Lang.bind(this, function(b) {}));
-        }
-        this._getBrightnessForcedUpdate();
+        //get notified
+        this._proxy.connectSignal('Changed', Lang.bind(this, this._getBrightness));
+        this._applet.menu.connect("open-state-changed", Lang.bind(this, this._getBrightnessForcedUpdate));
     },
 
     _sliderChanged: function(slider, value) {
@@ -183,7 +174,7 @@ BrightnessSlider.prototype = {
     },
 
     _updateBrightnessLabel: function(value) {
-        this.tooltipText = _("Brightness");
+        this.tooltipText = this.label;
         if(value)
             this.tooltipText += ": " + value + "%";
 
@@ -207,7 +198,7 @@ MyApplet.prototype = {
             this.metadata = metadata;
 
             this.settings = new Settings.AppletSettings(this, metadata.uuid, instanceId);
-            this.settings.bindProperty(Settings.BindingDirection.IN, "labelinfo", "labelinfo", this._updateLabel, null);
+            this.settings.bindProperty(Settings.BindingDirection.IN, "labelinfo", "labelinfo", Lang.bind(this, this._updateLabel), null);
 
             Main.systrayManager.registerRole("power", metadata.uuid);
             Main.systrayManager.registerRole("battery", metadata.uuid);
@@ -216,32 +207,21 @@ MyApplet.prototype = {
             this.menu = new Applet.AppletPopupMenu(this, orientation);
             this.menuManager.addMenu(this.menu);
 
-            this.brightness = new BrightnessSlider(this);
+            this.brightness = new BrightnessSlider(this, _("Brightness"), "display-brightness", BrightnessBusName);
+            this.keyboard = new BrightnessSlider(this, _("Keyboard"), "keyboard-brightness", KeyboardBusName);
             this.menu.addMenuItem(this.brightness);
-
-            let icon = this.actor.get_children()[0];
-            this.actor.remove_actor(icon);
-            let box = new St.BoxLayout({ name: 'batteryBox' });
-            this.actor.add_actor(box);
-            let iconBox = new St.Bin();
-            box.add(iconBox, { y_align: St.Align.MIDDLE, y_fill: false });
-            this._mainLabel = new St.Label();
-            this._mainLabel.clutter_text.ellipsize = Pango.EllipsizeMode.NONE;
-            box.add(this._mainLabel, { y_align: St.Align.MIDDLE, y_fill: false });
-            iconBox.child = icon;
+            this.menu.addMenuItem(this.keyboard);
 
             this._deviceItems = [ ];
             this._hasPrimary = false;
             this._primaryDeviceId = null;
-
-            let applet = this;
 
             this._batteryItem = new PopupMenu.PopupMenuItem('', { reactive: false });
             this._primaryPercentage = new St.Label();
             this._batteryItem.addActor(this._primaryPercentage, { align: St.Align.END });
             this.menu.addMenuItem(this._batteryItem);
 
-            this._otherDevicePosition = 1;
+            this._otherDevicePosition = 3;
 
             this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
 
@@ -255,6 +235,8 @@ MyApplet.prototype = {
             this.menu.addMenuItem(settingsMenu);
             this.menu.addSettingsAction(_("Power Settings"), 'power');
 
+            this.actor.connect("scroll-event", Lang.bind(this, this._onScrollEvent));
+
             Interfaces.getDBusProxyAsync("org.cinnamon.SettingsDaemon.Power", Lang.bind(this, function(proxy, error) {
                 this._proxy = proxy;
                 this._proxy.connect("g-properties-changed", Lang.bind(this, this._devicesChanged));
@@ -267,11 +249,41 @@ MyApplet.prototype = {
     },
 
     updateTooltip: function(){
-        this.set_applet_tooltip(this.brightness.tooltipText + "\n" + this.tooltipText);
+        let tooltip = [];
+
+        //show brightness and keyboard information in the tooltip only if they are also visible in the menu
+        if(this.brightness.actor.visible)
+            tooltip.push(this.brightness.tooltipText);
+
+        if(this.keyboard.actor.visible)
+            tooltip.push(this.keyboard.tooltipText);
+
+        tooltip.push(this.tooltipText);
+
+        this.set_applet_tooltip(tooltip.join("\n"));
+    },
+
+    _onButtonPressEvent: function(actor, event){
+        //toggle keyboard brightness on middle click
+        if(event.get_button() === 2){
+            this.keyboard._proxy.ToggleRemote(function(){});
+        }
+        return Applet.Applet.prototype._onButtonPressEvent.call(this, actor, event);
     },
 
     on_applet_clicked: function(event) {
         this.menu.toggle();
+    },
+
+    _onScrollEvent: function(actor, event) {
+        //adjust screen brightness on scroll
+        let direction = event.get_scroll_direction();
+        if (direction == Clutter.ScrollDirection.UP) {
+            this.brightness._proxy.StepUpRemote(function(){});
+        } else if (direction == Clutter.ScrollDirection.DOWN) {
+            this.brightness._proxy.StepDownRemote(function(){});
+        }
+        this.brightness._getBrightnessForcedUpdate();
     },
 
     _readPrimaryDevice: function() {
@@ -361,25 +373,25 @@ MyApplet.prototype = {
     },
 
     _devicesChanged: function() {
+        this._readPrimaryDevice();
+        this._readOtherDevices();
+        this._updateIcon();
+        this._updateLabel();
+    },
+
+    _updateIcon: function(){
         let icon = this._proxy.Icon;
-        if (icon) {
+        if(icon){
             this.set_applet_icon_symbolic_name('battery-missing');
             let gicon = Gio.icon_new_for_string(icon);
             this._applet_icon.gicon = gicon;
-            this.actor.show();
-        } else {
-            this.menu.close();
-            this.actor.hide();
         }
-        this._readPrimaryDevice();
-        this._readOtherDevices();
-        this._updateLabel();
     },
 
     _updateLabel: function() {
         this._proxy.GetDevicesRemote(Lang.bind(this, function(results, error) {
             if (error) {
-                this._mainLabel.set_text("");
+                this.set_applet_label("");
                 return;
             }
             let devices = results[0];
@@ -408,7 +420,7 @@ MyApplet.prototype = {
                         labelText = C_("percent of battery remaining", "%d%%").format(Math.round(percentage)) + " (" +
                                     C_("time of battery remaining", "%d:%02d").format(hours,minutes) + ")";
                     }
-                    this._mainLabel.set_text(labelText);
+                    this.set_applet_label(labelText);
                     if (device_id == this._primaryDeviceId) {
                         return;
                     }

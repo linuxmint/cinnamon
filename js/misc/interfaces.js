@@ -143,6 +143,15 @@ xml['org.cinnamon.SettingsDaemon.Power.Keyboard'] =
             <method name='Toggle'> \
                 <arg type='u' name='new_percentage' direction='out'/> \
             </method> \
+            <method name='GetPercentage'> \
+                <arg type='u' name='percentage' direction='out'/> \
+            </method> \
+            <method name='SetPercentage'> \
+                <arg type='u' name='percentage' direction='in'/> \
+                <arg type='u' name='new_percentage' direction='out'/> \
+            </method> \
+            <signal name='Changed'> \
+            </signal> \
         </interface> \
     </node>",
     SETTINGS_DAEMON_NAME,
