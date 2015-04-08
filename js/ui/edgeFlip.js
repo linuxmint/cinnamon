@@ -24,36 +24,38 @@ EdgeFlipper.prototype = {
     },
 
     _checkOver: function(){
-        let mask;
-        [this.xMouse, this.yMouse, mask] = global.get_pointer();
-        if (!(mask & Clutter.ModifierType.BUTTON1_MASK)) {
-            if (this.side == St.Side.RIGHT){
-                if (this.xMouse + 2 > global.screen_width){
-                    this._onMouseEnter();
-                } else {
-                    this._onMouseLeave();
-                }
-            } else if (this.side == St.Side.LEFT){
-                if (this.xMouse < 2 ){
-                    this._onMouseEnter();
-                } else {
-                    this._onMouseLeave();
-                }
-            } else if (this.side == St.Side.BOTTOM){
-                if (this.yMouse + 2 > global.screen_height) {
-                    this._onMouseEnter();
-                } else {
-                    this._onMouseLeave();
-                }
-            } else if (this.side == St.Side.TOP){
-                if (this.yMouse < 2){
-                    this._onMouseEnter();
-                } else {
-                    this._onMouseLeave();
+        if (this.enabled) {
+            let mask;
+            [this.xMouse, this.yMouse, mask] = global.get_pointer();
+            if (!(mask & Clutter.ModifierType.BUTTON1_MASK)) {
+                if (this.side == St.Side.RIGHT){
+                    if (this.xMouse + 2 > global.screen_width){
+                        this._onMouseEnter();
+                    } else {
+                        this._onMouseLeave();
+                    }
+                } else if (this.side == St.Side.LEFT){
+                    if (this.xMouse < 2 ){
+                        this._onMouseEnter();
+                    } else {
+                        this._onMouseLeave();
+                    }
+                } else if (this.side == St.Side.BOTTOM){
+                    if (this.yMouse + 2 > global.screen_height) {
+                        this._onMouseEnter();
+                    } else {
+                        this._onMouseLeave();
+                    }
+                } else if (this.side == St.Side.TOP){
+                    if (this.yMouse < 2){
+                        this._onMouseEnter();
+                    } else {
+                        this._onMouseLeave();
+                    }
                 }
             }
+            Mainloop.timeout_add(Math.max(this.delay, 200), Lang.bind(this, this._checkOver));
         }
-        Mainloop.timeout_add(Math.max(this.delay / 2, 200), Lang.bind(this, this._checkOver));
     },
 
     _onMouseEnter: function(){
