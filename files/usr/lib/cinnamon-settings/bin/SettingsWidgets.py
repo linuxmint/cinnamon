@@ -69,18 +69,18 @@ def bind_with_mapping(self, key, widget, prop, flags, key_to_prop, prop_to_key):
 Gio.Settings.bind_with_mapping = bind_with_mapping
 Gio.Settings.__setitem__ = __setitem__
 
-class EditableEntry (Gtk.Notebook):
+class EditableEntry (Gtk.Stack):
 
     __gsignals__ = {
         'changed': (GObject.SIGNAL_RUN_FIRST, None,
                       (str,))
     }
 
-    PAGE_BUTTON = 0
-    PAGE_ENTRY = 1
-
     def __init__ (self):
         super(EditableEntry, self).__init__()
+
+        self.set_transition_type(Gtk.StackTransitionType.CROSSFADE)
+        self.set_transition_duration(150)
 
         self.label = Gtk.Label()
         self.entry = Gtk.Entry()
@@ -88,38 +88,47 @@ class EditableEntry (Gtk.Notebook):
 
         self.button.set_alignment(1.0, 0.5)
         self.button.set_relief(Gtk.ReliefStyle.NONE)
-        self.append_page(self.button, None);
-        self.append_page(self.entry, None);
-        self.set_current_page(0)
-        self.set_show_tabs(False)
-        self.set_show_border(False)
+        self.add_named(self.button, "button");
+        self.add_named(self.entry, "entry");
+        self.set_visible_child_name("button")
         self.editable = False
+        self.current_text = None
         self.show_all()
 
         self.button.connect("released", self._on_button_clicked)
         self.button.connect("activate", self._on_button_clicked)
         self.entry.connect("activate", self._on_entry_validated)
         self.entry.connect("changed", self._on_entry_changed)
+        self.entry.connect("focus-out-event", self._on_focus_lost)
 
     def set_text(self, text):
         self.button.set_label(text)
         self.entry.set_text(text)
+        self.current_text = text
+
+    def _on_focus_lost(self, widget, event):
+        self.button.set_label(self.current_text)
+        self.entry.set_text(self.current_text)
+
+        self.set_editable(False)
 
     def _on_button_clicked(self, button):
         self.set_editable(True)
+        self.entry.grab_focus()
 
     def _on_entry_validated(self, entry):
         self.set_editable(False)
         self.emit("changed", entry.get_text())
+        self.current_text = entry.get_text()
 
     def _on_entry_changed(self, entry):
         self.button.set_label(entry.get_text())
 
     def set_editable(self, editable):
         if (editable):
-            self.set_current_page(EditableEntry.PAGE_ENTRY)
+            self.set_visible_child_name("entry")
         else:
-            self.set_current_page(EditableEntry.PAGE_BUTTON)
+            self.set_visible_child_name("button")
         self.editable = editable
 
     def set_tooltip_text(self, tooltip):
@@ -564,6 +573,8 @@ class SettingsBox(Gtk.Frame):
         list_box.set_selection_mode(Gtk.SelectionMode.NONE)
         row = Gtk.ListBoxRow()
         row.add(widget)
+        if isinstance(widget, GSettingsSwitch):
+            list_box.connect("row-activated", widget.clicked)
         list_box.add(row)
         vbox.add(list_box)
         self.box.add(vbox)
@@ -578,6 +589,8 @@ class SettingsBox(Gtk.Frame):
         list_box.set_selection_mode(Gtk.SelectionMode.NONE)
         row = Gtk.ListBoxRow()
         row.add(widget)
+        if isinstance(widget, GSettingsSwitch):
+            list_box.connect("row-activated", widget.clicked)
         list_box.add(row)
         vbox.add(list_box)
         revealer = SettingsRevealer(schema, key)
@@ -681,6 +694,9 @@ class GSettingsSwitch(SettingsWidget):
         if schema:
             self.settings = self.get_settings(schema)
             self.settings.bind(key, self.content_widget, "active", Gio.SettingsBindFlags.DEFAULT)
+
+    def clicked(self, listbox, row, data=None):
+        self.content_widget.set_active(not self.content_widget.get_active())
 
 class GSettingsSpinButton(SettingsWidget):
     def __init__(self, label, schema, key, units="", mini=None, maxi=None, step=1, page=None, dep_key=None, size_group=None):

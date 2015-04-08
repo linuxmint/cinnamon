@@ -826,7 +826,7 @@ WindowManager.prototype = {
     },
 
     _showHudPreview: function(cinnamonwm, currentProximityZone, workArea, snapQueued) {
-        if (!global.settings.get_boolean("hide-tile-hud")) {
+        if (global.settings.get_boolean("show-tile-hud")) {
             if (!this._hudPreview)
                 this._hudPreview = new HudPreview();
             this._hudPreview.show(currentProximityZone, workArea, snapQueued);
@@ -885,7 +885,7 @@ WindowManager.prototype = {
     },
 
     _showSnapOSD : function(metaScreen, monitorIndex) {
-        if (!global.settings.get_boolean("hide-snap-osd")) {
+        if (global.settings.get_boolean("show-snap-osd")) {
             if (this._snapOsd == null) {
                 this._snapOsd = new ModalDialog.InfoOSD();
 
