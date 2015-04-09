@@ -209,8 +209,6 @@ cinnamon_app_create_faded_icon_cpu (StTextureCache *cache,
                                  void           *datap,
                                  GError        **error)
 {
-  ClutterBackend *backend = clutter_get_default_backend ();
-  CoglContext *ctx = clutter_backend_get_cogl_context (backend);
   CreateFadedIconData *data = datap;
   CinnamonApp *app;
   GdkPixbuf *pixbuf;
@@ -290,14 +288,13 @@ cinnamon_app_create_faded_icon_cpu (StTextureCache *cache,
         }
     }
 
-  texture = COGL_TEXTURE (cogl_texture_2d_new_from_data (ctx, width, height,
-                                                         have_alpha ? COGL_PIXEL_FORMAT_RGBA_8888 : COGL_PIXEL_FORMAT_RGB_888,
-#if COGL_VERSION < COGL_VERSION_ENCODE (1, 18, 0)
-                                                         COGL_PIXEL_FORMAT_ANY,
-#endif
-                                                         rowstride,
-                                                         pixels,
-                                                         NULL));
+  texture = cogl_texture_new_from_data (width,
+                                        height,
+                                        COGL_TEXTURE_NONE,
+                                        have_alpha ? COGL_PIXEL_FORMAT_RGBA_8888 : COGL_PIXEL_FORMAT_RGB_888,
+                                        COGL_PIXEL_FORMAT_ANY,
+                                        rowstride,
+                                        pixels);
   g_free (pixels);
   g_object_unref (pixbuf);
 
