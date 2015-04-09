@@ -118,7 +118,7 @@ class Module:
 
         section = power_page.add_section(_("Power Options"))
 
-        lid_options, button_power_options, critical_options = get_available_options()
+        lid_options, button_power_options, critical_options = get_available_options(self.up_client)
 
         size_group = Gtk.SizeGroup(mode=Gtk.SizeGroupMode.HORIZONTAL)
 
@@ -439,7 +439,7 @@ class Module:
 
         return widget
 
-def get_available_options():
+def get_available_options(up_client):
     can_suspend = False
     can_hibernate = False
 
@@ -461,8 +461,8 @@ def get_available_options():
 
     # New versions of upower does not have get_can_suspend function
     try:
-        can_suspend = can_suspend or self.up_client.get_can_suspend()
-        can_hibernate = can_hibernate or self.up_client.get_can_hibernate()
+        can_suspend = can_suspend or up_client.get_can_suspend()
+        can_hibernate = can_hibernate or up_client.get_can_hibernate()
     except:
         pass
 
@@ -528,7 +528,7 @@ class BrightnessSlider(SettingsWidget):
         self.min_label.set_markup("<i><small>0%</small></i>")
         self.max_label.set_markup("<i><small>100%</small></i>")
 
-        self.content_widget = Gtk.Scale.new_with_range(Gtk.Orientation.HORIZONTAL, 1, 100, 2)
+        self.content_widget = Gtk.Scale.new_with_range(Gtk.Orientation.HORIZONTAL, 1, 100, 5)
         self.content_widget.set_draw_value(False)
 
         hbox.pack_start(self.min_label, False, False, 0)
