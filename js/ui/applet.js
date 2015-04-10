@@ -22,70 +22,12 @@ const PANEL_SYMBOLIC_ICON_DEFAULT_HEIGHT = 1.14 * PANEL_FONT_DEFAULT_HEIGHT; // 
 const DEFAULT_PANEL_HEIGHT = 25;
 const FALLBACK_ICON_HEIGHT = 22;
 
-/**
- * #MenuItem
- * @_text (string): Text to be displayed in the menu item
- * @_icon (string): Name of icon to be displayed in the menu item
- * @_callback (Function): Callback function when the menu item is clicked
- * @icon (St.Icon): Icon of the menu item
- * 
- * A menu item that contains an icon, a text and responds to clicks
- * 
- * Inherits: PopupMenu.PopupBaseMenuItem
- */
+// Deprecated. Do not use
 function MenuItem(label, icon, callback) {
-    this._init(label, icon, callback);
+    this.__proto__ = PopupMenu.PopupIconMenuItem.prototype;
+    PopupMenu.PopupIconMenuItem.prototype._init.call(this, label, icon, St.IconType.SYMBOLIC);
+    this.connect('activate', callback);
 }
-
-MenuItem.prototype = {
-    __proto__: PopupMenu.PopupBaseMenuItem.prototype,
-
-    /**
-     * _init:
-     * @text (string): text to be displayed in the menu item
-     * @icon (string): name of icon to be displayed in the menu item
-     * @callback (Function): callback function to be called when the menu item is clicked
-     * 
-     * Constructor function
-     */
-    _init: function(text, icon, callback) {
-        PopupMenu.PopupBaseMenuItem.prototype._init.call(this);
-        
-        this._text = text;
-        this._icon = icon;
-        this._callback = callback;
-
-        let table = new St.Table({ homogeneous: false,
-                                      reactive: true });
-
-        this.icon = new St.Icon({ icon_name: icon,
-                              icon_type: St.IconType.SYMBOLIC,
-                              style_class: 'popup-menu-icon' });
-
-        table.add(this.icon,
-                  {row: 0, col: 0, col_span: 1, x_expand: false, x_align: St.Align.START});
-
-        this.label = new St.Label({ text: text });
-        this.label.set_margin_left(6.0)
-        table.add(this.label,
-                  {row: 0, col: 1, col_span: 1, x_align: St.Align.START});
-
-        this.addActor(table, { expand: true, span: 1, align: St.Align.START});
-
-        this.connect('activate', callback);
-    },
-    
-    /**
-     * clone:
-     * 
-     * Clones the menu item
-     * 
-     * Returns (MenuItem): a clone of this menu item
-     */
-    clone: function(){
-        return new MenuItem(this._text, this._icon, this._callback);
-    }
-};
 
 /**
  * #AppletContextMenu
@@ -410,31 +352,8 @@ Applet.prototype = {
      * This function should only be called by appletManager
      */
     setOrientation: function (orientation) {
-        // let menuItems = new Array();
-        // let oldMenuItems = this._applet_context_menu._getMenuItems();
-        // for (var i in oldMenuItems){
-        //     if (oldMenuItems[i] instanceof MenuItem) { // in case some applets don't use the standards
-        //         if (oldMenuItems[i] !== this.context_menu_separator && oldMenuItems[i] !== this.context_menu_item_remove) {
-        //             menuItems.push(oldMenuItems[i].clone());
-        //         }
-        //     }
-        // }
-        // this._menuManager.removeMenu(this._applet_context_menu);
-        
-        // this._applet_tooltip.destroy();
-        // this._applet_tooltip = new Tooltips.PanelItemTooltip(this, this._applet_tooltip_text, orientation);
-
-        // this._applet_context_menu.destroy();
-        // this._applet_context_menu = new AppletContextMenu(this, orientation);
-        // this._menuManager.addMenu(this._applet_context_menu);
-
         this.on_orientation_changed(orientation);
         this.emit("orientation-changed", orientation);
-        
-        // if (this._applet_context_menu.numMenuItems == 0){ // Do not recreate the menu if the applet already handles it in on_orientation_changed
-        //     for (var i in menuItems) this._applet_context_menu.addMenuItem(menuItems[i]);
-        // }
-
         this.finalizeContextMenu();
     },
     
@@ -480,11 +399,19 @@ Applet.prototype = {
         let items = this._applet_context_menu._getMenuItems();
 
         if (this.context_menu_item_remove == null) {
-            this.context_menu_item_remove = new MenuItem(_("Remove this applet"), "edit-delete", Lang.bind(null, AppletManager._removeAppletFromPanel, this._uuid, this.instance_id));
+            this.context_menu_item_remove = new PopupMenu.PopupIconMenuItem(_("Remove this applet"),
+                    "edit-delete",
+                   St.IconType.SYMBOLIC);
+            this.context_menu_item_remove.connect('activate', Lang.bind(this, function() {
+                AppletManager._removeAppletFromPanel(this._uuid, this.instance_id);
+            }));
         }
 
         if (this.context_menu_item_about == null) {
-            this.context_menu_item_about = new MenuItem(_("About..."), "dialog-question", Lang.bind(this, this.openAbout));
+            this.context_menu_item_about = new PopupMenu.PopupIconMenuItem(_("About..."),
+                    "dialog-question",
+                    St.IconType.SYMBOLIC);
+            this.context_menu_item_about.connect('activate', Lang.bind(this, this.openAbout));
         }
 
         if (this.context_menu_separator == null) {

@@ -1,5 +1,6 @@
 const Lang = imports.lang;
 const Gio = imports.gi.Gio;
+const St = imports.gi.St;
 const Main = imports.ui.main;
 const Applet = imports.ui.applet;
 const PopupMenu = imports.ui.popupMenu;
@@ -42,12 +43,18 @@ MyApplet.prototype = {
 
             this._applet_context_menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
 
-            this.next_image_context_menu_item = new Applet.MenuItem(_("Next Background"), "media-seek-forward", Lang.bind(this, this.get_next_image));
+            this.next_image_context_menu_item = new PopupMenu.PopupIconMenuItem(_("Next Background"),
+                    "media-seek-forward",
+                    St.IconType.SYMBOLIC);
+            this.next_image_context_menu_item.connect('activate', Lang.bind(this, this.get_next_image));
             this._applet_context_menu.addMenuItem(this.next_image_context_menu_item);
 
             this._applet_context_menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
 
-            this.open_settings_context_menu_item = new Applet.MenuItem(_("Background Settings"), "preferences-desktop-wallpaper", Lang.bind(this, function() {
+            this.open_settings_context_menu_item = new PopupMenu.PopupIconMenuItem(_("Background Settings"),
+                    "preferences-desktop-wallpaper",
+                    St.IconType.SYMBOLIC);
+            this.open_settings_context_menu_item.connect('activate', Lang.bind(this, function() {
                 Util.spawnCommandLine("cinnamon-settings backgrounds")
             }));
             this._applet_context_menu.addMenuItem(this.open_settings_context_menu_item);

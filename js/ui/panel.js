@@ -951,76 +951,21 @@ PanelCorner.prototype = {
     }
 };
 
-function IconMenuItem() {
-    this._init.apply(this, arguments);
-}
-
-IconMenuItem.prototype = {
-    __proto__: PopupMenu.PopupBaseMenuItem.prototype,
-
-    _init: function (text, iconName, params) {
-        PopupMenu.PopupBaseMenuItem.prototype._init.call(this, params);
- 
-        let table = new St.Table({ homogeneous: false,
-                                   reactive: true });
-
-        this.label = new St.Label({ text: text });
-        this._icon = new St.Icon({ icon_name: iconName,
-                                   icon_type: St.IconType.SYMBOLIC,
-                                   style_class: 'popup-menu-icon' });
-
-        table.add(this._icon,
-                  {row: 0, col: 0, col_span: 1, x_expand: false, x_align: St.Align.START});
-
-        table.add(this.label,
-                  {row: 0, col: 1, col_span: 1, x_align: St.Align.START});
-
-        this.label.set_margin_left(6.0)
-
-        this.addActor(table, { expand: true, span: 1, align: St.Align.START });
-    },
-
-    setIcon: function(name) {
-        this._icon.icon_name = name;
-    }
-};
-
-function SettingsLauncher(label, keyword, icon, menu) {
-    this._init(label, keyword, icon, menu);
+function SettingsLauncher(label, keyword, icon) {
+    this._init(label, keyword, icon);
 }
 
 SettingsLauncher.prototype = {
-    __proto__: PopupMenu.PopupBaseMenuItem.prototype,
+    __proto__: PopupMenu.PopupIconMenuItem.prototype,
 
-    _init: function (label, keyword, icon, menu) {
-        PopupMenu.PopupBaseMenuItem.prototype._init.call(this, {});
+    _init: function (label, keyword, icon) {
+        PopupMenu.PopupIconMenuItem.prototype._init.call(this, label, icon, St.IconType.SYMBOLIC);
 
-        this._menu = menu;
         this._keyword = keyword;
-        let table = new St.Table({ homogeneous: false,
-                                      reactive: true });
-
-        this.label = new St.Label({ text: label });
-        this._icon = new St.Icon({icon_name: icon, icon_type: St.IconType.SYMBOLIC,
-                                  style_class: 'popup-menu-icon' });
-
-        table.add(this._icon,
-                  {row: 0, col: 0, col_span: 1, x_expand: false, x_align: St.Align.START});
-
-        table.add(this.label,
-                  {row: 0, col: 1, col_span: 1, x_align: St.Align.START});
-
-        this.label.set_margin_left(6.0)
-
-        this.addActor(table, { expand: true, span: 1, align: St.Align.START });
+        this.connect('activate', function() {
+            Util.spawnCommandLine("cinnamon-settings " + this._keyword);
+        });
     },
-
-    activate: function (event) {
-    	this._menu.actor.hide();
-        Util.spawnCommandLine("cinnamon-settings " + this._keyword);
-        return true;
-    }
-
 };
 
 function populateSettingsMenu(menu, panelId) {
@@ -1168,16 +1113,16 @@ PanelContextMenu.prototype = {
         this.actor.hide();
         this.panelId = panelId;
 
-        let applet_settings_item = new SettingsLauncher(_("Add applets to the panel"), "applets panel" + panelId, "list-add", this);
+        let applet_settings_item = new SettingsLauncher(_("Add applets to the panel"), "applets panel" + panelId, "list-add");
         this.addMenuItem(applet_settings_item);
 
-        let menuItem = new SettingsLauncher(_("Panel settings"), "panel " + panelId, "emblem-system", this);
+        let menuItem = new SettingsLauncher(_("Panel settings"), "panel " + panelId, "emblem-system");
         this.addMenuItem(menuItem);
 
-        let menuItem = new SettingsLauncher(_("Themes"), "themes", "applications-graphics", this);
+        let menuItem = new SettingsLauncher(_("Themes"), "themes", "applications-graphics");
         this.addMenuItem(menuItem);
 
-        let menuSetting = new SettingsLauncher(_("All settings"), "", "preferences-system", this);
+        let menuSetting = new SettingsLauncher(_("All settings"), "", "preferences-system");
         this.addMenuItem(menuSetting);
 
         populateSettingsMenu(this, panelId);
