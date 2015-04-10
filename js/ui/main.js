@@ -24,7 +24,6 @@
  * @themeManager (ThemeManager.ThemeManager): The theme manager
  * @dynamicWorkspaces (boolean): Whether dynamic workspaces are to be used.
  *                               This is not yet implemented
- * @nWorks (int): Number of workspaces
  * @tracker (Cinnamon.WindowTracker): The window tracker
  * @workspace_names (array): Names of workspace
  * @background (null): Unused
@@ -120,10 +119,10 @@ let _startDate;
 let _defaultCssStylesheet = null;
 let _cssStylesheet = null;
 let dynamicWorkspaces = null;
-let nWorks = null;
 let tracker = null;
 let settingsManager = null;
 let systrayManager = null;
+let wmSettings = null;
 
 let workspace_names = [];
 
@@ -365,12 +364,7 @@ function start() {
 
     Meta.later_add(Meta.LaterType.BEFORE_REDRAW, _checkWorkspaces);
 
-    nWorks = global.settings.get_int("number-workspaces");
     dynamicWorkspaces = false; // This should be configurable
-
-    if (!dynamicWorkspaces) {
-        _staticWorkspaces();
-    }
     
     layoutManager.init();
     keyboard.init();
@@ -397,7 +391,8 @@ function start() {
         Scripting.runPerfScript(module, perfOutput);
     }
     
-    workspace_names = global.settings.get_strv("workspace-name-overrides");  
+    wmSettings = new Gio.Settings({schema: "org.cinnamon.desktop.wm.preferences"})
+    workspace_names = wmSettings.get_strv("workspace-names");
 
     global.screen.connect('notify::n-workspaces', _nWorkspacesChanged);
 
@@ -505,7 +500,7 @@ function _fillWorkspaceNames(index) {
 function _trimWorkspaceNames(index) {
     // trim empty or out-of-bounds names from the end.
     for (let i = workspace_names.length - 1;
-            i >= 0 && (i >= nWorks || !workspace_names[i].length); --i)
+            i >= 0 && (i >= global.screen.n_workspaces || !workspace_names[i].length); --i)
     {
         workspace_names.pop();
     }
@@ -530,7 +525,7 @@ function setWorkspaceName(index, name) {
             "" :
             name);
         _trimWorkspaceNames();
-        global.settings.set_strv("workspace-name-overrides", workspace_names);
+        wmSettings.set_strv("workspace-names", workspace_names);
     }
 }
 
@@ -567,23 +562,19 @@ function hasDefaultWorkspaceName(index) {
 function _addWorkspace() {
     if (dynamicWorkspaces)
         return false;
-    nWorks++;
-    global.settings.set_int("number-workspaces", nWorks);
-    _staticWorkspaces();
+    global.screen.append_new_workspace(false, global.get_current_time());
     return true;
 }
 
 function _removeWorkspace(workspace) {
-    if (nWorks == 1 || dynamicWorkspaces)
+    if (global.screen.n_workspaces == 1 || dynamicWorkspaces)
         return false;
-    nWorks--;
     let index = workspace.index();
     if (index < workspace_names.length) {
         workspace_names.splice (index,1);
     }
     _trimWorkspaceNames();
-    global.settings.set_strv("workspace-name-overrides", workspace_names);
-    global.settings.set_int("number-workspaces", nWorks);
+    wmSettings.set_strv("workspace-names", workspace_names);
     global.screen.remove_workspace(workspace, global.get_current_time());
     return true;
 }
@@ -611,25 +602,6 @@ function moveWindowToNewWorkspace(metaWindow, switchToNewWorkspace) {
         });
     }
     metaWindow.change_workspace_by_index(global.screen.n_workspaces, true, global.get_current_time());
-}
-
-function _staticWorkspaces() {
-    let i;
-    let dif = nWorks - global.screen.n_workspaces;
-    if (dif > 0) {
-        for (let i = 0; i < dif; i++)
-            global.screen.append_new_workspace(false, global.get_current_time());
-    } else {
-        if (nWorks == 0)
-            return false;
-        for (let i = 0; i > dif; i--){
-            let removeWorkspaceIndex = global.screen.n_workspaces - 1;
-            let removeWorkspace = global.screen.get_workspace_by_index(removeWorkspaceIndex);
-            let lastRemoved = removeWorkspace._lastRemovedWindow;
-            global.screen.remove_workspace(removeWorkspace, global.get_current_time()); 
-        }    
-    }
-    return true;
 }
 
 function _checkWorkspaces() {
@@ -734,7 +706,6 @@ function _queueCheckWorkspaces() {
 }
 
 function _nWorkspacesChanged() {
-    nWorks = global.screen.n_workspaces;
     if (!dynamicWorkspaces)
         return false;
 
