@@ -860,6 +860,10 @@ PopupIconMenuItem.prototype = {
     // Override columnWidths so that the popup menu doesn't separate the icon and the label
     setColumnWidths: function() {
         this._columnWidths = null;
+    },
+
+    getColumnWidths: function() {
+        return [];
     }
 }
 
