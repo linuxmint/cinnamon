@@ -1459,10 +1459,7 @@ Panel.prototype = {
      * Turns on/off the highlight of the panel
      */
     highlight: function(highlight) {
-        if (highlight)
-            this.actor.add_style_pseudo_class('highlight');
-        else
-            this.actor.remove_style_pseudo_class('highlight');
+        this.actor.change_style_pseudo_class('highlight', highlight);
     },
 
     isHideable: function() {
@@ -1549,18 +1546,11 @@ Panel.prototype = {
 
     _onPanelEditModeChanged: function() {
         let old_mode = this._panelEditMode;
-        if (global.settings.get_boolean("panel-edit-mode")) {
-            this._panelEditMode = true;
-            this._leftBox.add_style_pseudo_class('dnd');
-            this._centerBox.add_style_pseudo_class('dnd');
-            this._rightBox.add_style_pseudo_class('dnd');
-        }
-        else {
-            this._panelEditMode = false;
-            this._leftBox.remove_style_pseudo_class('dnd');
-            this._centerBox.remove_style_pseudo_class('dnd');
-            this._rightBox.remove_style_pseudo_class('dnd');
-        }
+
+        this._panelEditMode = global.settings.get_boolean("panel-edit-mode");
+        this._leftBox.change_style_pseudo_class('dnd', this._panelEditMode);
+        this._centerBox.change_style_pseudo_class('dnd', this._panelEditMode);
+        this._rightBox.change_style_pseudo_class('dnd', this._panelEditMode);
 
         if (old_mode != this._panelEditMode) {
             this._processPanelAutoHide();
