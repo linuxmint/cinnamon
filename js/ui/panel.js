@@ -996,34 +996,34 @@ function populateSettingsMenu(menu, panelId) {
 
     let panelSettingsSection = new PopupMenu.PopupSubMenuMenuItem(_("Modify panel ..."), true);
 
-    let menuItem = new IconMenuItem(_("Remove panel"), "list-remove");
+    let menuItem = new PopupMenu.PopupIconMenuItem(_("Remove panel"), "list-remove", St.IconType.SYMBOLIC);
     menuItem.activate = Lang.bind(menu, function() {
         Main.panelManager.removePanel(panelId);
     });
     panelSettingsSection.menu.addMenuItem(menuItem);
 
-    menu.addPanelItem = new IconMenuItem(_("Add panel"), "list-add");
+    menu.addPanelItem = new PopupMenu.PopupIconMenuItem(_("Add panel"), "list-add", St.IconType.SYMBOLIC);
     menu.addPanelItem.activate = Lang.bind(menu, function() {
         Main.panelManager.addPanelQuery();
         this.close();
     });
     panelSettingsSection.menu.addMenuItem(menu.addPanelItem);
 
-    menu.movePanelItem = new IconMenuItem(_("Move panel"), "move");
+    menu.movePanelItem = new PopupMenu.PopupIconMenuItem(_("Move panel"), "move", St.IconType.SYMBOLIC);
     menu.movePanelItem.activate = Lang.bind(menu, function() {
         Main.panelManager.movePanelQuery(this.panelId);
         this.close();
     });
     panelSettingsSection.menu.addMenuItem(menu.movePanelItem);
 
-    menu.copyAppletItem = new IconMenuItem(_("Copy applet configuration"), "edit-copy");
+    menu.copyAppletItem = new PopupMenu.PopupIconMenuItem(_("Copy applet configuration"), "edit-copy", St.IconType.SYMBOLIC);
     menu.copyAppletItem.activate = Lang.bind(menu, function() {
         AppletManager.copyAppletConfiguration(this.panelId);
         this.close();
     });
     panelSettingsSection.menu.addMenuItem(menu.copyAppletItem);
 
-    menu.pasteAppletItem = new IconMenuItem(_("Paste applet configuration"), "edit-paste");
+    menu.pasteAppletItem = new PopupMenu.PopupIconMenuItem(_("Paste applet configuration"), "edit-paste", St.IconType.SYMBOLIC);
     menu.pasteAppletItem.activate = Lang.bind(menu, function() {
         let dialog = new ModalDialog.ConfirmDialog(
                 _("Pasting applet configuration will remove all existing applets on this panel. DO you want to continue?") + "\n\n",
@@ -1034,7 +1034,7 @@ function populateSettingsMenu(menu, panelId) {
     });
     panelSettingsSection.menu.addMenuItem(menu.pasteAppletItem);
 
-    menu.clearAppletItem = new IconMenuItem(_("Clear all applets"), "edit-clear-all");
+    menu.clearAppletItem = new PopupMenu.PopupIconMenuItem(_("Clear all applets"), "edit-clear-all", St.IconType.SYMBOLIC);
     menu.clearAppletItem.activate = Lang.bind(menu, function() {
         let dialog = new ModalDialog.ConfirmDialog(
                 _("Are you sure you want to clear all applets on this panel?") + "\n\n",
