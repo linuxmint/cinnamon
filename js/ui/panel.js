@@ -1391,15 +1391,9 @@ Panel.prototype = {
         this._settingsSignals.push(global.settings.connect("changed::panel-edit-mode", Lang.bind(this, this._onPanelEditModeChanged)));
         this._settingsSignals.push(global.settings.connect("changed::no-adjacent-panel-barriers", Lang.bind(this, this._updatePanelBarriers)));
 
-        /* Generate panelbox */
         this._leftPanelBarrier = 0;
         this._rightPanelBarrier = 0;
-        this.panelBox = new St.BoxLayout({ name: 'panelBox',
-                                           vertical: true });
-        Main.layoutManager.addChrome(this.panelBox, { addToWindowgroup: false });
-        this.panelBox.connect('allocation-changed', Lang.bind(this, this._updatePanelBarriers));
-        this.panelBox.add_actor(this.actor)
-
+        Main.layoutManager.addChrome(this.actor, { addToWindowgroup: false });
         this._moveResizePanel();
     },
 
@@ -1445,7 +1439,6 @@ Panel.prototype = {
         this._leftCorner.actor.destroy();
 
         this.actor.destroy();
-        this.panelBox.destroy();
 
         let i = this._settingsSignals.length;
         while (i--) {
@@ -1527,9 +1520,9 @@ Panel.prototype = {
             noRight = noBarriers;
         }
 
-        if (this.panelBox.height) {
-            let panelTop = (this.bottomPosition ? this.monitor.y + this.monitor.height - this.panelBox.height : this.monitor.y);
-            let panelBottom = (this.bottomPosition ? this.monitor.y + this.monitor.height : this.monitor.y + this.panelBox.height);
+        if (this.actor.height) {
+            let panelTop = (this.bottomPosition ? this.monitor.y + this.monitor.height - this.actor.height : this.monitor.y);
+            let panelBottom = (this.bottomPosition ? this.monitor.y + this.monitor.height : this.monitor.y + this.actor.height);
 
             if (!noLeft) {
                 this._leftPanelBarrier = global.create_pointer_barrier(
@@ -1628,7 +1621,7 @@ Panel.prototype = {
         if (this._hideable) {
             this._hidePanel();
         }
-        Main.layoutManager._chrome.modifyActorParams(this.panelBox, { affectsStruts: !this._hideable });
+        Main.layoutManager._chrome.modifyActorParams(this.actor, { affectsStruts: !this._hideable });
     },
 
     _moveResizePanel: function() {
@@ -1663,8 +1656,8 @@ Panel.prototype = {
         this.actor.set_height(panelHeight);
         this._processPanelAutoHide();
 
-        this.panelBox.set_size(this.monitor.width, panelHeight);
-        this.panelBox.set_position(this.monitor.x, this.bottomPosition ? this.monitor.y + this.monitor.height - panelHeight : this.monitor.y);
+        this.actor.set_size(this.monitor.width, panelHeight);
+        this.actor.set_position(this.monitor.x, this.bottomPosition ? this.monitor.y + this.monitor.height - panelHeight : this.monitor.y);
 
         // AppletManager might not be initialized yet
         if (AppletManager.appletsLoaded)
@@ -1790,6 +1783,8 @@ Panel.prototype = {
         childBox.y1 = allocHeight;
         childBox.y2 = allocHeight + cornerHeight;
         this._rightCorner.actor.allocate(childBox, flags);
+
+        this._updatePanelBarriers();
     },
     
     _clearTimers: function() {
@@ -1874,7 +1869,7 @@ Panel.prototype = {
         Tweener.addTween(this._leftCorner.actor, params);
         Tweener.addTween(this._rightCorner.actor, params);
 
-        Tweener.addTween(this.actor.get_parent(),
+        Tweener.addTween(this.actor,
                         { y: y,
                         time: animationTime,
                         transition: 'easeOutQuad',
@@ -1882,7 +1877,7 @@ Panel.prototype = {
                             // Force the layout manager to update the input region
                             Main.layoutManager._chrome.updateRegions()
 
-                            let height = Math.abs(this.actor.get_parent().y - origY);
+                            let height = Math.abs(this.actor.y - origY);
                             let y = bottomPosition? 0 : this.actor.height - height;
 
                             this.actor.set_clip(0, y, this.monitor.width, height);
@@ -1917,7 +1912,7 @@ Panel.prototype = {
         let animationTime = AUTOHIDE_ANIMATION_TIME;
         let y = this.bottomPosition ? this.monitor.y + this.monitor.height - 1 : this.monitor.y - height + 1;
         
-        Tweener.addTween(this.actor.get_parent(), { 
+        Tweener.addTween(this.actor, {
             y: y,
             time: animationTime,
             transition: 'easeOutQuad',
@@ -1925,7 +1920,7 @@ Panel.prototype = {
                 // Force the layout manager to update the input region
                 Main.layoutManager._chrome.updateRegions()
 
-                let height = Math.abs(this.actor.get_parent().y - targetY) + 1;
+                let height = Math.abs(this.actor.y - targetY) + 1;
                 let y = bottomPosition ? 0 : this.actor.height - height;
 
                 this.actor.set_clip(0, y, this.monitor.width, height);
