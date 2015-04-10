@@ -134,7 +134,9 @@ VolumeSlider.prototype = {
             this.icon = new St.Icon({icon_name: this.app_icon, icon_type: St.IconType.FULLCOLOR, icon_size: 16});
         }
 
-        this.actor.add_actor(this.icon);
+        this.removeActor(this._slider);
+        this.addActor(this.icon, {span: 0});
+        this.addActor(this._slider, {span: -1, expand: true});
 
         this.connectWithStream(stream);
     },
@@ -207,30 +209,6 @@ VolumeSlider.prototype = {
             icon = "high";
 
         return this.isMic? "microphone-sensitivity-" + icon : "audio-volume-" + icon;
-    },
-
-    _allocate: function(actor, box, flags){
-        let iconBox = new Clutter.ActorBox;
-        let sliderBox = new Clutter.ActorBox;
-
-        let [minWidth, naturalWidth] = this.icon.get_preferred_width(-1);
-        iconBox.x1 = box.x1;
-        iconBox.x2 = box.x1 + naturalWidth;
-
-        sliderBox.x1 = box.x1 + naturalWidth + this._spacing;
-        sliderBox.x2 = box.x2;
-
-        let height = box.y2 - box.y1;
-        let [minHeight, naturalHeight] = this.icon.get_preferred_height(iconBox.x2 - iconBox.x1);
-        iconBox.y1 = Math.round(box.y1 + (height - naturalHeight) / 2);
-        iconBox.y2 = iconBox.y1 + naturalHeight;
-
-        [minHeight, naturalHeight] = this._slider.get_preferred_height(sliderBox.x2 - sliderBox.x1);
-        sliderBox.y1 = Math.round(box.y1 + (height - naturalHeight) / 2);
-        sliderBox.y2 = iconBox.y1 + naturalHeight;
-
-        this.icon.allocate(iconBox, flags);
-        this._slider.allocate(sliderBox, flags);
     }
 }
 

@@ -152,7 +152,7 @@ PopupBaseMenuItem.prototype = {
     },
 
     // adds an actor to the menu item; @params can contain %span
-    // (column span; defaults to 1, -1 means "all the remaining width"),
+    // (column span; defaults to 1, -1 means "all the remaining width", 0 means "no new column after this actor"),
     // %expand (defaults to #false), and %align (defaults to
     // #St.Align.START)
     addActor: function(child, params) {
@@ -219,8 +219,14 @@ PopupBaseMenuItem.prototype = {
         for (let i = 0, col = 0; i < this._children.length; i++) {
             let child = this._children[i];
             let [min, natural] = child.actor.get_preferred_width(-1);
-            widths[col++] = natural;
-            if (child.span > 1) {
+
+            if (widths[col])
+                widths[col] += this._spacing + natural;
+            else
+                widths[col] = natural;
+
+            if (child.span > 0) {
+                col++;
                 for (let j = 1; j < child.span; j++)
                     widths[col++] = 0;
             }
@@ -307,6 +313,12 @@ PopupBaseMenuItem.prototype = {
             x = box.x1;
         else
             x = box.x2;
+
+        let cols;
+        //clone _columnWidths, if it exists, to be able to modify it without any impact
+        if (this._columnWidths instanceof Array)
+            cols = this._columnWidths.slice(0);
+
         // if direction is ltr, x is the right edge of the last added
         // actor, and it's constantly increasing, whereas if rtl, x is
         // the left edge and it decreases
@@ -316,16 +328,19 @@ PopupBaseMenuItem.prototype = {
 
             let [minWidth, naturalWidth] = child.actor.get_preferred_width(-1);
             let availWidth, extraWidth;
-            if (this._columnWidths) {
+            if (cols) {
                 if (child.span == -1) {
                     if (direction == St.TextDirection.LTR)
                         availWidth = box.x2 - x;
                     else
                         availWidth = x - box.x1;
+                } else if (child.span == 0) {
+                    availWidth = naturalWidth;
+                    cols[col] -= naturalWidth + this._spacing;
                 } else {
                     availWidth = 0;
                     for (let j = 0; j < child.span; j++)
-                        availWidth += this._columnWidths[col++];
+                        availWidth += cols[col++];
                 }
                 extraWidth = availWidth - naturalWidth;
             } else {
