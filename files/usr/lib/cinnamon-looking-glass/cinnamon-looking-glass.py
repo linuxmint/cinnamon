@@ -3,9 +3,6 @@
 # Todo:
 # - TextTag.invisible does not work nicely with scrollheight, find out why
 #   - (Sometimes scrollbars think there is more or less to scroll than there actually is after showing/hiding entries in page_log.py)
-# - if cinnamon --replace was called from Melange, it will be killed when this process is closed
-#   - Currently only occurs when Melange is started by Geany.
-# - List extensions that failed to load ?
 # - Add insert button to "simple types" inspect dialog ? is there actual use for these types inserted as results ?
 # - Load all enabled log categories and window height from gsettings
 # - Make CommandLine entry & history work more like a normal terminal
@@ -52,7 +49,6 @@ class MenuButton(Gtk.Button):
                 y + (extents.height-h)-(extents.width-w)/2 + allocation.y,
                 allocation.width,
                 allocation.height)
-
 
 class ResizeGrip(Gtk.Widget):
     def __init__(self, parent):
@@ -370,7 +366,8 @@ class CinnamonLog(dbus.service.Object):
         global lookingGlassProxy
         lookingGlassProxy = LookingGlassProxy()
         self.lookingGlassProxy = lookingGlassProxy
-        lookingGlassProxy.addStatusChangeCallback(self.setStatus)
+        # The status label is shown iff we are not okay
+        lookingGlassProxy.addStatusChangeCallback(lambda x: self.statusLabel.set_visible(not x))
 
         self.window = None
         self.run()
@@ -485,7 +482,7 @@ class CinnamonLog(dbus.service.Object):
             if not done_one:
                 done_one = True
 
-        keybinding = Gtk.Label("Current Keybinding")
+        keybinding = Gtk.Label()
         keybinding.set_markup('<i>Toggle shortcut: %s</i>' % accel)
 
         actionButton = self.createActionButton()
@@ -500,7 +497,7 @@ class CinnamonLog(dbus.service.Object):
         table.attach(grip, 0, numColumns, 2, 3, Gtk.AttachOptions.EXPAND|Gtk.AttachOptions.FILL, 0, 0, 0)
 
         self.activatePage("results")
-        self.setStatus(True)
+        self.statusLabel.hide()
         self.window.set_focus(self.commandline)
 
     def createMenuItem(self, text, callback):
@@ -512,18 +509,15 @@ class CinnamonLog(dbus.service.Object):
         menu = Gtk.Menu()
         menu.append(self.createMenuItem('Add File Watcher', self.onAddFileWatcher))
         menu.append(Gtk.SeparatorMenuItem())
-        menu.append(self.createMenuItem('Restart Cinnamon', self.onRestartClicked))
-        menu.append(self.createMenuItem('Crash Cinnamon', self.onCrashClicked))
+        menu.append(self.createMenuItem('Restart Cinnamon', lambda x: os.system("nohup cinnamon --replace > /dev/null 2>&1 &")))
+        menu.append(self.createMenuItem('Crash Cinnamon', lambda x: self.commandline.doCrash()))
         menu.append(self.createMenuItem('Reset Cinnamon Settings', self.onResetClicked))
         menu.append(Gtk.SeparatorMenuItem())
         menu.append(self.createMenuItem('About Melange', self.onAboutClicked))
-        menu.append(self.createMenuItem('Quit', self.onExitClicked))
+        menu.append(self.createMenuItem('Quit', lambda x: Gtk.main_quit()))
         menu.show_all()
 
-        if hasattr(Gtk, 'MenuButton'):
-            button = Gtk.MenuButton(u"Actions \u25BE")
-        else:
-            button = MenuButton(u"Actions \u25BE")
+        button = Gtk.MenuButton(u"Actions \u25BE")
         button.set_popup(menu)
         return button
 
@@ -545,28 +539,21 @@ class CinnamonLog(dbus.service.Object):
         self.notebook.remove_page(self.notebook.page_num(content))
         content.destroy()
         
-    def onRestartClicked(self, menuItem):
-        #todo: gets killed when the python process ends, separate it!
-        os.system("cinnamon --replace &")
-
-    def onCrashClicked(self, menuItem):
-        self.commandline.doCrash();
-
     def onAboutClicked(self, menuItem):
         dialog = Gtk.MessageDialog(self.window, 0,
                                    Gtk.MessageType.QUESTION, Gtk.ButtonsType.CLOSE);
 
         dialog.set_title("About Melange")
-        dialog.set_markup("<b>Melange</b> is a GTK3 alternative to the built-in javascript debugger <i>Looking Glass</i>"
-                           + "\n\nPressing <i>Escape</i> while Melange has focus will hide the window."
-                           +"\nIf you want to exit Melange, use ALT+F4 or the <u>Actions</u> menu button."
-                           + "\n\nIf you defined a hotkey for Melange, pressing it while Melange is visible it will be hidden.")
+        dialog.set_markup("""\
+<b>Melange</b> is a GTK3 alternative to the built-in javascript debugger <i>Looking Glass</i>
+
+Pressing <i>Escape</i> while Melange has focus will hide the window.
+If you want to exit Melange, use ALT+F4 or the <u>Actions</u> menu button.
+
+If you defined a hotkey for Melange, pressing it while Melange is visible it will be hidden.""")
 
         dialog.run()
         dialog.destroy()
-
-    def onExitClicked(self, menuItem):
-        Gtk.main_quit()
 
     def onResetClicked(self, menuItem):
         dialog = Gtk.MessageDialog(self.window, 0,
@@ -607,12 +594,6 @@ class CinnamonLog(dbus.service.Object):
     def activatePage(self, moduleName):
         page = self.notebook.page_num(self.pages[moduleName])
         self.notebook.set_current_page(page)
-
-    def setStatus(self, status):
-        if status:
-            self.statusLabel.hide()
-        else:
-            self.statusLabel.show()
 
 if __name__ == "__main__":
     GObject.type_register(ResizeGrip)

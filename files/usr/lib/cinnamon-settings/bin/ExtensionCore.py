@@ -1370,6 +1370,7 @@ Please contact the developer.""")
                                 icon = ""
                             self.model.set_value(iter, 11, icon)
                             self.model.set_value(iter, 13, SETTING_TYPE_NONE)
+                            self.model.set_value(iter, 14, True)
                     except Exception, detail:
                         print "Failed to load extension %s: %s" % (theme, detail)
 
