@@ -353,6 +353,7 @@ class PanelSpinButton(PanelWidget):
     def __init__(self, label, schema, key, panel_id, units="", mini=None, maxi=None, step=1, page=None, dep_key=None):
         super(PanelSpinButton, self).__init__(dep_key, panel_id)
         self.key = key
+        self._value_changed_timer = None
 
         if units:
             label += " (%s)" % units
