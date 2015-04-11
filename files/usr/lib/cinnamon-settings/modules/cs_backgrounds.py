@@ -203,27 +203,31 @@ class Module:
             self.icon_view.set_selection_mode(Gtk.SelectionMode.SINGLE)
 
     def get_system_backgrounds(self):
-        picture_list = []
-        folder_list = []
-        properties_dir = "/usr/share/cinnamon-background-properties"
         backgrounds = []
-        if os.path.exists(properties_dir):
-            for i in os.listdir(properties_dir):
-                if i.endswith(".xml"):
-                    xml_path = os.path.join(properties_dir, i)
-                    display_name = i.replace(".xml", "").replace("-", " ").replace("_", " ").split(" ")[-1].capitalize()
-                    icon = "cs-backgrounds"
-                    order = 10
-                    # Special case for Linux Mint. We don't want to use 'start-here' here as it wouldn't work depending on the theme.
-                    # Also, other distros should get equal treatment. If they define cinnamon-backgrounds and use their own distro name, we should add support for it.
-                    if display_name == "Retro":
-                        icon = "cs-retro"
-                        order = 20 # place retro bgs at the end
-                    if display_name == "Linuxmint":
-                        display_name = "Linux Mint"
-                        icon = "cs-linuxmint"
-                        order = 0
-                    backgrounds.append([[False, icon, display_name, xml_path, BACKGROUND_COLLECTION_TYPE_XML], display_name, order])
+        properties_dirs = ["/usr/share/cinnamon-background-properties", "/usr/share/gnome-background-properties"]
+
+        for prop_dir in properties_dirs:
+            if not os.path.exists(prop_dir):
+                continue
+
+            for i in os.listdir(prop_dir):
+                if not i.endswith(".xml"):
+                    continue
+
+                xml_path = os.path.join(prop_dir, i)
+                display_name = i.replace(".xml", "").replace("-", " ").replace("_", " ").split(" ")[-1].capitalize()
+                icon = "cs-backgrounds"
+                order = 10
+                # Special case for Linux Mint. We don't want to use 'start-here' here as it wouldn't work depending on the theme.
+                # Also, other distros should get equal treatment. If they define cinnamon-backgrounds and use their own distro name, we should add support for it.
+                if display_name == "Retro":
+                    icon = "cs-retro"
+                    order = 20 # place retro bgs at the end
+                if display_name == "Linuxmint":
+                    display_name = "Linux Mint"
+                    icon = "cs-linuxmint"
+                    order = 0
+                backgrounds.append([[False, icon, display_name, xml_path, BACKGROUND_COLLECTION_TYPE_XML], display_name, order])
 
         backgrounds.sort(key=lambda x: (x[2], x[1]))
         for background in backgrounds:
