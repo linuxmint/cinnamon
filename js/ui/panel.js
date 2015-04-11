@@ -1026,7 +1026,7 @@ function populateSettingsMenu(menu, panelId) {
     menu.pasteAppletItem = new PopupMenu.PopupIconMenuItem(_("Paste applet configuration"), "edit-paste", St.IconType.SYMBOLIC);
     menu.pasteAppletItem.activate = Lang.bind(menu, function() {
         let dialog = new ModalDialog.ConfirmDialog(
-                _("Pasting applet configuration will remove all existing applets on this panel. DO you want to continue?") + "\n\n",
+                _("Pasting applet configuration will remove all existing applets on this panel. Do you want to continue?") + "\n\n",
                 Lang.bind(this, function() {
                     AppletManager.pasteAppletConfiguration(this.panelId);
                 }));
