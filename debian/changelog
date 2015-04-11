@@ -1,3 +1,9 @@
+cinnamon (2.5.0) unstable; urgency=medium
+
+  * bump for development
+
+ -- Michael Webster <miketwebster@gmail.com>  Sat, 11 Apr 2015 08:37:01 -0400
+
 cinnamon (2.4.6) rebecca; urgency=medium
 
   * Settings: Fix occasional GTK-Warning and blank menu entry in the terminal selection, some comments
