@@ -1804,6 +1804,10 @@ Panel.prototype = {
         Tweener.addTween(this._leftCorner.actor, params);
         Tweener.addTween(this._rightCorner.actor, params);
 
+        this._leftBox.show();
+        this._centerBox.show();
+        this._rightBox.show();
+
         Tweener.addTween(this.actor,
                         { y: y,
                         time: animationTime,
@@ -1862,6 +1866,9 @@ Panel.prototype = {
             }),
             onComplete: Lang.bind(this, function() {
                 this.actor.remove_clip();
+                this._leftBox.hide();
+                this._centerBox.hide();
+                this._rightBox.hide();
             }),
             onUpdateParams: [y, this.bottomPosition]
         });
