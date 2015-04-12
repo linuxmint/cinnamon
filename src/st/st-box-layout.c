@@ -73,6 +73,7 @@ enum {
 
   PROP_VERTICAL,
   PROP_PACK_START,
+  PROP_ALIGN_END,
 
   PROP_HADJUST,
   PROP_VADJUST
@@ -84,6 +85,7 @@ struct _StBoxLayoutPrivate
 
   guint         is_vertical : 1;
   guint         is_pack_start : 1;
+  guint         is_align_end : 1;
 
   StAdjustment *hadjustment;
   StAdjustment *vadjustment;
@@ -219,6 +221,10 @@ st_box_layout_get_property (GObject    *object,
       g_value_set_boolean (value, priv->is_pack_start);
       break;
 
+    case PROP_ALIGN_END:
+      g_value_set_boolean (value, priv->is_align_end);
+      break;
+
     case PROP_HADJUST:
       scrollable_get_adjustments (ST_SCROLLABLE (object), &adjustment, NULL);
       g_value_set_object (value, adjustment);
@@ -250,6 +256,10 @@ st_box_layout_set_property (GObject      *object,
 
     case PROP_PACK_START:
       st_box_layout_set_pack_start (box, g_value_get_boolean (value));
+      break;
+
+    case PROP_ALIGN_END:
+      st_box_layout_set_align_end (box, g_value_get_boolean (value));
       break;
 
     case PROP_HADJUST:
@@ -625,8 +635,11 @@ st_box_layout_allocate (ClutterActor          *actor,
   gint n_expand_children = 0, i;
   gfloat expand_amount, shrink_amount;
   BoxChildShrink *shrinks = NULL;
-  gboolean flip = (st_widget_get_direction (ST_WIDGET (actor)) == ST_TEXT_DIRECTION_RTL)
+                 // Home-made logical xor
+  gboolean flip = (!(st_widget_get_direction (ST_WIDGET (actor)) == ST_TEXT_DIRECTION_RTL) != !priv->is_align_end)
                    && (!priv->is_vertical);
+
+  gboolean reverse_order = (!priv->is_align_end != !priv->is_pack_start);
 
   CLUTTER_ACTOR_CLASS (st_box_layout_parent_class)->allocate (actor, box,
                                                               flags);
@@ -741,7 +754,7 @@ st_box_layout_allocate (ClutterActor          *actor,
   else
     position = content_box.x1;
 
-  if (priv->is_pack_start)
+  if (reverse_order)
     {
       l = g_list_last (children);
       i = g_list_length (children);
@@ -752,7 +765,6 @@ st_box_layout_allocate (ClutterActor          *actor,
       i = 0;
     }
     
-  gboolean firstchild = TRUE;
   gfloat init_padding = (avail_width/2) - (natural_width/2);
   while (l)
     {
@@ -799,13 +811,9 @@ st_box_layout_allocate (ClutterActor          *actor,
 
       if (flip) {
         next_position = position - child_allocated;
-        if (xalign == ST_ALIGN_CENTER_SPECIAL && next_position < content_box.x1)
-          next_position = content_box.x1;
       }
       else {
         next_position = position + child_allocated;
-        if (xalign == ST_ALIGN_CENTER_SPECIAL && next_position > content_box.x2)
-          next_position = content_box.x2;
       }
 
       if (priv->is_vertical)
@@ -824,32 +832,11 @@ st_box_layout_allocate (ClutterActor          *actor,
         {
           if (flip)
             {
-              if (firstchild && xalign == ST_ALIGN_CENTER_SPECIAL)
-                {
-                  position -= init_padding;
-                  next_position = position - child_allocated;
-                  firstchild = FALSE;
-                }
-                if (xalign == ST_ALIGN_CENTER_SPECIAL && position > content_box.x2) {
-                  position = content_box.x2;
-                }
               child_box.x1 = (int)(0.5 + next_position);
               child_box.x2 = (int)(0.5 + position);
             }
           else
             {
-              if (firstchild && xalign == ST_ALIGN_CENTER_SPECIAL)
-                {
-                  position += init_padding;
-                  if (position < content_box.x1) {
-                    position = content_box.x1;
-                  }
-                  next_position = position + child_allocated;
-                  firstchild = FALSE;
-                }
-              if (xalign == ST_ALIGN_CENTER_SPECIAL && position < content_box.x1) {
-                    position = content_box.x1;
-                  }
               child_box.x1 = (int)(0.5 + position);
               child_box.x2 = (int)(0.5 + next_position);
             }
@@ -868,7 +855,7 @@ st_box_layout_allocate (ClutterActor          *actor,
         position = next_position + priv->spacing;
 
     next_child:
-      if (priv->is_pack_start)
+      if (reverse_order)
         {
           l = l->prev;
           i--;
@@ -1128,6 +1115,13 @@ st_box_layout_class_init (StBoxLayoutClass *klass)
                                 ST_PARAM_READWRITE);
   g_object_class_install_property (object_class, PROP_PACK_START, pspec);
 
+  pspec = g_param_spec_boolean ("align-end",
+                                "Align End",
+                                "Whether the children should be flushed to the end",
+                                FALSE,
+                                ST_PARAM_READWRITE);
+  g_object_class_install_property (object_class, PROP_ALIGN_END, pspec);
+
   /* StScrollable properties */
   g_object_class_override_property (object_class,
                                     PROP_HADJUST,
@@ -1234,6 +1228,45 @@ st_box_layout_get_pack_start (StBoxLayout *box)
   g_return_val_if_fail (ST_IS_BOX_LAYOUT (box), FALSE);
 
   return box->priv->is_pack_start;
+}
+
+/**
+ * st_box_layout_set_align_end:
+ * @box: A #StBoxLayout
+ * @align_end: %TRUE if the layout should use align-end
+ *
+ * Set the value of the #StBoxLayout::align-end property.
+ *
+ */
+void
+st_box_layout_set_align_end (StBoxLayout *box,
+                             gboolean     align_end)
+{
+  g_return_if_fail (ST_IS_BOX_LAYOUT (box));
+
+  if (box->priv->is_align_end != align_end)
+    {
+      box->priv->is_align_end = align_end;
+      clutter_actor_queue_relayout ((ClutterActor*) box);
+
+      g_object_notify (G_OBJECT (box), "align-end");
+    }
+}
+
+/**
+ * st_box_layout_get_align_end:
+ * @box: A #StBoxLayout
+ *
+ * Get the value of the #StBoxLayout::align-end property.
+ *
+ * Returns: %TRUE if align-end is enabled
+ */
+gboolean
+st_box_layout_get_align_end (StBoxLayout *box)
+{
+  g_return_val_if_fail (ST_IS_BOX_LAYOUT (box), FALSE);
+
+  return box->priv->is_align_end;
 }
 
 /**

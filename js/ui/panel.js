@@ -1288,7 +1288,7 @@ Panel.prototype = {
         this._centerBox = new St.BoxLayout({ name: 'panelCenter' });
         this.actor.add_actor(this._centerBox);
         this._centerBoxDNDHandler = new PanelZoneDNDHandler(this._centerBox);
-        this._rightBox = new St.BoxLayout({ name: 'panelRight' });
+        this._rightBox = new St.BoxLayout({ name: 'panelRight', align_end: true});
         this.actor.add_actor(this._rightBox);
         this._rightBoxDNDHandler = new PanelZoneDNDHandler(this._rightBox);
 
@@ -1638,27 +1638,35 @@ Panel.prototype = {
         let [rightMinWidth, rightNaturalWidth] = this._rightBox.get_preferred_width(-1);
 
         let leftWidth = Math.max(leftNaturalWidth, 25);
-        let centerWidth = centerMinWidth;
+        let centerWidth = Math.max(centerNaturalWidth, 25);
         let rightWidth = Math.max(rightNaturalWidth, 25);
 
-        let space_needed = leftWidth + centerWidth + rightWidth;
-        if (space_needed <= allocWidth) {
-            // If we've more space than we need, expand the center zone
-            let space_left = allocWidth - space_needed;
-            centerWidth = centerWidth + space_left;
-        }
-        else {
-            let space_missing = space_needed - allocWidth;
-            // If there isn't enough space, reduce the size of the largest zone (likely to contain more shrinkable content)
+        let space_missing = leftWidth + centerWidth + rightWidth - allocWidth;
+        if (space_missing > 0) {
+            /* If there isn't enough space, reduce the size of the largest zone
+             * (likely to contain more shrinkable content). We don't have to
+             * adjust centerWidth in any case, since the actual allocation
+             * always allocates it to use all the space between the left and
+             * right boxes without regards to the width it demands */
             if (leftWidth >= centerWidth && leftWidth >= rightWidth) {
                 leftWidth = Math.max(leftWidth - space_missing, leftMinWidth);
             }
-            else if (centerWidth >= rightWidth) {
-                centerWidth = Math.max(centerWidth - space_missing, centerMinWidth);
-            }
-            else {
+            else if (rightWidth >= centerWidth) {
                 rightWidth = Math.max(rightWidth - space_missing, rightMinWidth);
             }
+        } else if (centerWidth < allocWidth - 2 * Math.max(leftWidth, rightWidth)) {
+            /* If there is enough space, expand the left and right boxes to
+             * equal widths so that the center region is center */
+            leftWidth = Math.round((allocWidth - centerWidth) / 2);
+            rightWidth = leftWidth;
+        } else {
+            /* There is a bit space left, but the central region is occupied.
+             * Expand the smaller region so that the central region is as close
+             * to the center as possible */
+            if (leftWidth > rightWidth)
+                rightWidth = allocWidth - leftWidth - centerWidth;
+            else
+                leftWidth = allocWidth - rightWidth - centerWidth;
         }
 
         let leftBoundary = leftWidth;
