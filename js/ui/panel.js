@@ -1826,18 +1826,20 @@ Panel.prototype = {
             this._showHideTimer = 0;
         }
 
+        /* Use a timeout_add even if delay is 0 to avoid "flashing" of panel.
+         * Otherwise, if, say hideDelay is 0 and showDelay is 1000, when you
+         * move over an applet, leave and enter events are fired consecutively.
+         * Then the leave-event causes the panel hides instantly, causing a
+         * further leave-event (since the mouse actually left the panel), which
+         * clears the showPanel timer, and the panel won't show up again. If a
+         * timeout_add is used for showDelay, the hide timeout will be cancelled
+         * by the coming enter-event, and the panel remains open. */
         if (this._shouldShow) {
             let showDelay = this._getProperty(PANEL_SHOW_DELAY_KEY, "i");
-            if (showDelay > 0)
-                this._showHideTimer = Mainloop.timeout_add(showDelay, Lang.bind(this, this._showPanel))
-            else
-                this._showPanel();
+            this._showHideTimer = Mainloop.timeout_add(showDelay, Lang.bind(this, this._showPanel))
         } else {
             let hideDelay = this._getProperty(PANEL_HIDE_DELAY_KEY, "i");
-            if (hideDelay > 0 && !this._disabled)
-                this._showHideTimer = Mainloop.timeout_add(hideDelay, Lang.bind(this, this._hidePanel))
-            else
-                this._hidePanel();
+            this._showHideTimer = Mainloop.timeout_add(hideDelay, Lang.bind(this, this._hidePanel))
         }
     },
     
