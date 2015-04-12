@@ -33,6 +33,7 @@
  */
 
 #include "st-drawing-area.h"
+#include "st-cogl-wrapper.h"
 
 #include <cairo.h>
 
@@ -111,9 +112,9 @@ st_drawing_area_paint (ClutterActor *self)
     {
       if (priv->texture == COGL_INVALID_HANDLE)
         {
-          priv->texture = cogl_texture_new_with_size (width, height,
-                                                      COGL_TEXTURE_NONE,
-                                                      CLUTTER_CAIRO_FORMAT_ARGB32);
+          priv->texture = st_cogl_texture_new_with_size_wrapper (width, height,
+                                                                 COGL_TEXTURE_NONE,
+                                                                 CLUTTER_CAIRO_FORMAT_ARGB32);
           priv->needs_repaint = TRUE;
         }
 

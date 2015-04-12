@@ -29,6 +29,7 @@
 #include "st-theme-node.h"
 #include "st-scroll-bar.h"
 #include "st-scrollable.h"
+#include "st-cogl-wrapper.h"
 
 #include <clutter/clutter.h>
 #include <cogl/cogl.h>
@@ -170,10 +171,9 @@ st_scroll_view_fade_create_texture (ClutterOffscreenEffect *effect,
                                     gfloat                  min_width,
                                     gfloat                  min_height)
 {
-  return cogl_texture_new_with_size (min_width,
-                                     min_height,
-                                     COGL_TEXTURE_NO_SLICING,
-                                     COGL_PIXEL_FORMAT_RGBA_8888_PRE);
+  return st_cogl_texture_new_with_size_wrapper (min_width, min_height,
+                                                COGL_TEXTURE_NO_SLICING,
+                                                COGL_PIXEL_FORMAT_RGBA_8888_PRE);
 }
 
 static void

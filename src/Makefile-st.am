@@ -5,6 +5,8 @@ st_cflags =					\
 	-DG_DISABLE_DEPRECATED			\
 	-DG_LOG_DOMAIN=\"St\"			\
 	-DST_COMPILATION			\
+	-DCLUTTER_ENABLE_EXPERIMENTAL_API   \
+	-DCOGL_ENABLE_EXPERIMENTAL_API  \
 	-DPACKAGE_DATA_DIR=\"$(pkgdatadir)\"	\
 	$(ST_CFLAGS)				\
 	$(NULL)
@@ -50,7 +52,7 @@ st-enum-types.h: stamp-st-enum-types.h Makefile
 stamp-st-enum-types.h: $(source_h) $(srcdir)/st/st-enum-types.h.in $(st_source_h)
 	$(AM_V_GEN) (							\
 	  $(GLIB_MKENUMS)						\
-	    --template $(srcdir)/st/st-enum-types.h.in				\
+		--template $(srcdir)/st/st-enum-types.h.in				\
 	  $(addprefix $(srcdir)/, $(st_source_h)) ) >> $@.tmp &&		\
 	(cmp -s $@.tmp st-enum-types.h || cp $@.tmp st-enum-types.h) &&	\
 	rm -f $@.tmp &&							\
@@ -59,7 +61,7 @@ stamp-st-enum-types.h: $(source_h) $(srcdir)/st/st-enum-types.h.in $(st_source_h
 st-enum-types.c: stamp-st-enum-types.h $(srcdir)/st/st-enum-types.c.in
 	$(AM_V_GEN) (				\
 	  $(GLIB_MKENUMS)			\
-	    --template $(srcdir)/st/st-enum-types.c.in	\
+		--template $(srcdir)/st/st-enum-types.c.in	\
 	  $(addprefix $(srcdir)/,$(st_source_h)) ) >> $@.tmp &&		\
 	cp $@.tmp $@ &&				\
 	rm -f $@.tmp
@@ -74,6 +76,7 @@ st_source_h =					\
 	st/st-box-layout-child.h		\
 	st/st-button.h				\
 	st/st-clipboard.h			\
+    st/st-cogl-wrapper.h      \
 	st/st-container.h			\
 	st/st-drawing-area.h			\
 	st/st-entry.h				\
@@ -84,7 +87,7 @@ st_source_h =					\
 	st/st-im-text.h				\
 	st/st-label.h				\
 	st/st-overflow-box.h			\
-    st/st-polygon.h             \
+	st/st-polygon.h             \
 	st/st-private.h				\
 	st/st-scrollable.h			\
 	st/st-scroll-bar.h			\
@@ -133,6 +136,7 @@ st_source_c =					\
 	st/st-box-layout-child.c		\
 	st/st-button.c				\
 	st/st-clipboard.c			\
+    st/st-cogl-wrapper.c      \
 	st/st-container.c			\
 	st/st-drawing-area.c			\
 	st/st-entry.c				\
@@ -143,7 +147,7 @@ st_source_c =					\
 	st/st-im-text.c				\
 	st/st-label.c				\
 	st/st-overflow-box.c			\
-    st/st-polygon.c             \
+	st/st-polygon.c             \
 	st/st-private.c				\
 	st/st-scrollable.c			\
 	st/st-scroll-bar.c			\

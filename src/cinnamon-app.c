@@ -288,13 +288,12 @@ cinnamon_app_create_faded_icon_cpu (StTextureCache *cache,
         }
     }
 
-  texture = cogl_texture_new_from_data (width,
-                                        height,
-                                        COGL_TEXTURE_NONE,
-                                        have_alpha ? COGL_PIXEL_FORMAT_RGBA_8888 : COGL_PIXEL_FORMAT_RGB_888,
-                                        COGL_PIXEL_FORMAT_ANY,
-                                        rowstride,
-                                        pixels);
+    texture = st_cogl_texture_new_from_data_wrapper (width, height,
+                                                     COGL_TEXTURE_NONE,
+                                                     have_alpha ? COGL_PIXEL_FORMAT_RGBA_8888 : COGL_PIXEL_FORMAT_RGB_888,
+                                                     COGL_PIXEL_FORMAT_ANY,
+                                                     rowstride, pixels);
+
   g_free (pixels);
   g_object_unref (pixbuf);
 

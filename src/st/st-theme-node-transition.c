@@ -20,6 +20,7 @@
  */
 
 #include "st-theme-node-transition.h"
+#include "st-cogl-wrapper.h"
 
 enum {
   COMPLETED,
@@ -235,15 +236,17 @@ setup_framebuffers (StThemeNodeTransition *transition,
 
   if (priv->old_texture)
     cogl_handle_unref (priv->old_texture);
-  priv->old_texture = cogl_texture_new_with_size (width, height,
-                                                  COGL_TEXTURE_NO_SLICING,
-                                                  COGL_PIXEL_FORMAT_ANY);
+
+  priv->old_texture = st_cogl_texture_new_with_size_wrapper (width, height,
+                                                             COGL_TEXTURE_NO_SLICING,
+                                                             COGL_PIXEL_FORMAT_ANY);
 
   if (priv->new_texture)
     cogl_handle_unref (priv->new_texture);
-  priv->new_texture = cogl_texture_new_with_size (width, height,
-                                                  COGL_TEXTURE_NO_SLICING,
-                                                  COGL_PIXEL_FORMAT_ANY);
+
+  priv->new_texture = st_cogl_texture_new_with_size_wrapper (width, height,
+                                                             COGL_TEXTURE_NO_SLICING,
+                                                             COGL_PIXEL_FORMAT_ANY);
 
   g_return_val_if_fail (priv->old_texture != COGL_INVALID_HANDLE, FALSE);
   g_return_val_if_fail (priv->new_texture != COGL_INVALID_HANDLE, FALSE);

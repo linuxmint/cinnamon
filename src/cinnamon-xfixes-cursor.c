@@ -4,6 +4,8 @@
 
 #include "cinnamon-xfixes-cursor.h"
 
+#include "st.h"
+
 #include <clutter/x11/clutter-x11.h>
 #include <X11/extensions/Xfixes.h>
 
@@ -231,13 +233,12 @@ xfixes_cursor_reset_image (CinnamonXFixesCursor *xfixes_cursor)
       free_cursor_data = TRUE;
     }
 
-  sprite = cogl_texture_new_from_data (cursor_image->width,
-                                       cursor_image->height,
-                                       COGL_TEXTURE_NONE,
-                                       CLUTTER_CAIRO_FORMAT_ARGB32,
-                                       COGL_PIXEL_FORMAT_ANY,
-                                       cursor_image->width * 4, /* stride */
-                                       cursor_data);
+  sprite = st_cogl_texture_new_from_data_wrapper (cursor_image->width, cursor_image->height,
+                                                  COGL_TEXTURE_NONE,
+                                                  CLUTTER_CAIRO_FORMAT_ARGB32,
+                                                  COGL_PIXEL_FORMAT_ANY,
+                                                  cursor_image->width * 4,
+                                                  cursor_data);
 
   if (free_cursor_data)
     g_free (cursor_data);

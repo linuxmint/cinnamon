@@ -1,53 +1,13 @@
 #include "st-background-effect.h"
+#include "st-cogl-wrapper.h"
 #define ST_BACKGROUND_EFFECT_CLASS(klass)    (G_TYPE_CHECK_CLASS_CAST ((klass), ST_TYPE_BACKGROUND_EFFECT, StBackgroundEffectClass))
 #define ST_IS_BACKGROUND_EFFECT_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE ((klass), ST_TYPE_BACKGROUND_EFFECT))
 #define ST_BACKGROUND_EFFECT_GET_CLASS(obj)  (G_TYPE_INSTANCE_GET_CLASS ((obj), ST_TYPE_BACKGROUND_EFFECT, StBackgroundEffectClass))
 
 G_DEFINE_TYPE (StBackgroundEffect, st_background_effect, CLUTTER_TYPE_OFFSCREEN_EFFECT);
 
-#define CLUTTER_ENABLE_EXPERIMENTAL_API
-
-#include "cogl/cogl.h"
 #include <gio/gio.h>
 #include <math.h>
-
-typedef enum
-{
-  COGL_PIPELINE_CULL_FACE_MODE_NONE,
-  COGL_PIPELINE_CULL_FACE_MODE_FRONT,
-  COGL_PIPELINE_CULL_FACE_MODE_BACK,
-  COGL_PIPELINE_CULL_FACE_MODE_BOTH
-} CoglPipelineCullFaceMode;
-
-typedef enum
-{
-  COGL_PIPELINE_FILTER_NEAREST                = 0x2600,
-  COGL_PIPELINE_FILTER_LINEAR                 = 0x2601,
-  COGL_PIPELINE_FILTER_NEAREST_MIPMAP_NEAREST = 0x2700,
-  COGL_PIPELINE_FILTER_LINEAR_MIPMAP_NEAREST  = 0x2701,
-  COGL_PIPELINE_FILTER_NEAREST_MIPMAP_LINEAR  = 0x2702,
-  COGL_PIPELINE_FILTER_LINEAR_MIPMAP_LINEAR   = 0x2703
-} CoglPipelineFilter;
-
-typedef enum
-{
-  COGL_PIPELINE_WRAP_MODE_REPEAT          = 0x2901,
-  COGL_PIPELINE_WRAP_MODE_MIRRORED_REPEAT = 0x8370,
-  COGL_PIPELINE_WRAP_MODE_CLAMP_TO_EDGE   = 0x812F,
-  COGL_PIPELINE_WRAP_MODE_AUTOMATIC       = 0x0207
-} CoglPipelineWrapMode;
-
-typedef enum
-{
-  COGL_PIPELINE_ALPHA_FUNC_NEVER    = 0x0200,
-  COGL_PIPELINE_ALPHA_FUNC_LESS     = 0x0201,
-  COGL_PIPELINE_ALPHA_FUNC_EQUAL    = 0x0202,
-  COGL_PIPELINE_ALPHA_FUNC_LEQUAL   = 0x0203,
-  COGL_PIPELINE_ALPHA_FUNC_GREATER  = 0x0204,
-  COGL_PIPELINE_ALPHA_FUNC_NOTEQUAL = 0x0205,
-  COGL_PIPELINE_ALPHA_FUNC_GEQUAL   = 0x0206,
-  COGL_PIPELINE_ALPHA_FUNC_ALWAYS   = 0x0207
-} CoglPipelineAlphaFunc;
 
 enum
 {
@@ -59,82 +19,6 @@ enum
 };
 
 static GParamSpec *obj_props[PROP_LAST];
-
-extern void
-cogl_pipeline_set_uniform_float (CoglPipeline *pipeline,
-                                 int uniform_location,
-                                 int n_components,
-                                 int count,
-                                 const float *value);
-extern void
-cogl_pipeline_set_layer_texture (CoglPipeline *pipeline,
-                                 int           layer_index,
-                                 CoglTexture  *texture);
-extern void
-cogl_pipeline_set_color4ub (CoglPipeline *pipeline,
-                            guint8        red,
-                            guint8        green,
-                            guint8        blue,
-                            guint8        alpha);
-
-extern CoglContext *clutter_backend_get_cogl_context (ClutterBackend *backend);
-
-extern CoglPipeline *cogl_pipeline_new (CoglContext *context);
-
-extern CoglPipeline *cogl_pipeline_copy (CoglPipeline *source);
-
-extern void
-cogl_pipeline_add_layer_snippet (CoglPipeline *pipeline,
-                                 int layer,
-                                 CoglSnippet *snippet);
-
-extern void
-cogl_pipeline_set_layer_wrap_mode (CoglPipeline *pipeline,
-                                   int layer_index,
-                                   CoglPipelineWrapMode mode);
-
-extern void
-cogl_pipeline_set_cull_face_mode (CoglPipeline *pipeline,
-                                  CoglPipelineCullFaceMode cull_face_mode);
-
-extern void
-cogl_pipeline_set_layer_filters (CoglPipeline *pipeline,
-                                 int layer_index,
-                                 CoglPipelineFilter min_filter,
-                                 CoglPipelineFilter mag_filter);
-
-extern void
-cogl_pipeline_set_layer_null_texture (CoglPipeline *pipeline,
-                                      int layer_index,
-                                      CoglTextureType texure_type);
-
-extern int
-cogl_pipeline_get_uniform_location (CoglPipeline *pipeline,
-                                    const char *uniform_name);
-
-extern void
-cogl_pipeline_set_alpha_test_function (CoglPipeline *pipeline,
-                                       CoglPipelineAlphaFunc alpha_func,
-                                       float alpha_reference);
-extern void                
-cogl_pipeline_set_color_mask (CoglPipeline *pipeline,
-                              CoglColorMask color_mask);
-
-extern gboolean            
-cogl_pipeline_set_blend (CoglPipeline *pipeline,
-                         const char *blend_string,
-                         GError **error);
-
-extern void
-cogl_pipeline_set_uniform_1i (CoglPipeline *pipeline,
-                              int uniform_location,
-                              int value);
-
-extern gboolean
-cogl_pipeline_set_layer_combine (CoglPipeline *pipeline,
-                                 int           layer_index,
-                                 const char   *blend_string,
-                                 GError      **error);
 
 static const gchar *box_blur_glsl_declarations =
   "uniform vec3 pixel_step;\n"
@@ -276,13 +160,13 @@ st_background_effect_pre_paint (ClutterEffect *effect)
                 self->bg_texture = NULL;
               }
 
-            self->bg_texture = cogl_texture_new_from_data  (self->bg_width_i,
-                                                            self->bg_height_i,
-                                                            COGL_TEXTURE_NO_SLICING,
-                                                            COGL_PIXEL_FORMAT_RGBA_8888_PRE,
-                                                            COGL_PIXEL_FORMAT_RGBA_8888_PRE,
-                                                            rowstride,
-                                                            data);
+            self->bg_texture = st_cogl_texture_new_from_data_wrapper  (self->bg_width_i,
+                                                                       self->bg_height_i,
+                                                                       COGL_TEXTURE_NO_SLICING,
+                                                                       COGL_PIXEL_FORMAT_RGBA_8888_PRE,
+                                                                       COGL_PIXEL_FORMAT_RGBA_8888_PRE,
+                                                                       rowstride,
+                                                                       data);
 
             g_free (data);
 
@@ -351,9 +235,9 @@ st_background_effect_pre_paint (ClutterEffect *effect)
                   self->bg_sub_texture = NULL;
                 }
 
-              self->bg_sub_texture = cogl_texture_new_with_size (self->bg_width_i, self->bg_height_i,
-                                                                 COGL_TEXTURE_NO_SLICING,
-                                                                 COGL_PIXEL_FORMAT_RGBA_8888_PRE);
+              self->bg_sub_texture = st_cogl_texture_new_with_size_wrapper (self->bg_width_i, self->bg_height_i,
+                                                                            COGL_TEXTURE_NO_SLICING,
+                                                                            COGL_PIXEL_FORMAT_RGBA_8888_PRE);
 
               cogl_pipeline_set_layer_texture (self->pipeline0, 0, self->bg_texture);
 
@@ -540,10 +424,9 @@ st_background_effect_set_property (GObject      *gobject,
       GFile *file = g_file_new_for_path (g_strdup (self->bumpmap_location));
       if (g_file_query_exists (file, NULL))
         {
-          self->bg_bumpmap = cogl_texture_new_from_file (self->bumpmap_location,
-                                                         COGL_TEXTURE_NO_SLICING,
-                                                         COGL_PIXEL_FORMAT_RGBA_8888_PRE,
-                                                         NULL);
+          self->bg_bumpmap = st_cogl_texture_new_from_file_wrapper (self->bumpmap_location,
+                                                                    COGL_TEXTURE_NO_SLICING,
+                                                                    COGL_PIXEL_FORMAT_RGBA_8888_PRE);
         }
 
       g_object_unref (file);
@@ -791,10 +674,9 @@ st_background_effect_init (StBackgroundEffect *self)
 
   self->bumpmap_location = "/usr/share/cinnamon/bumpmaps/frost.png";
 
-  self->bg_bumpmap = cogl_texture_new_from_file (self->bumpmap_location,
-                                                 COGL_TEXTURE_NO_SLICING,
-                                                 COGL_PIXEL_FORMAT_RGBA_8888_PRE,
-                                                 NULL);
+  self->bg_bumpmap = st_cogl_texture_new_from_file_wrapper (self->bumpmap_location,
+                                                            COGL_TEXTURE_NO_SLICING,
+                                                            COGL_PIXEL_FORMAT_RGBA_8888_PRE);
   if (self->bg_bumpmap != NULL)
     {
       self->bumptex_width_i = cogl_texture_get_width (self->bg_bumpmap);
