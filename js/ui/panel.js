@@ -1637,40 +1637,69 @@ Panel.prototype = {
         let [centerMinWidth, centerNaturalWidth] = this._centerBox.get_preferred_width(-1);
         let [rightMinWidth, rightNaturalWidth] = this._rightBox.get_preferred_width(-1);
 
-        let leftWidth = Math.max(leftNaturalWidth, 25);
-        let centerWidth = Math.max(centerNaturalWidth, 25);
-        let rightWidth = Math.max(rightNaturalWidth, 25);
+        let totalMinWidth = leftMinWidth + centerMinWidth + rightMinWidth;
+        let totalNaturalWidth = leftNaturalWidth + centerNaturalWidth + rightNaturalWidth;
 
-        let space_missing = leftWidth + centerWidth + rightWidth - allocWidth;
-        if (space_missing > 0) {
-            /* If there isn't enough space, reduce the size of the largest zone
-             * (likely to contain more shrinkable content). We don't have to
-             * adjust centerWidth in any case, since the actual allocation
-             * always allocates it to use all the space between the left and
-             * right boxes without regards to the width it demands */
-            if (leftWidth >= centerWidth && leftWidth >= rightWidth) {
-                leftWidth = Math.max(leftWidth - space_missing, leftMinWidth);
-            }
-            else if (rightWidth >= centerWidth) {
-                rightWidth = Math.max(rightWidth - space_missing, rightMinWidth);
-            }
-        } else if (centerWidth < allocWidth - 2 * Math.max(leftWidth, rightWidth)) {
-            /* If there is enough space, expand the left and right boxes to
-             * equal widths so that the center region is center */
-            leftWidth = Math.round((allocWidth - centerWidth) / 2);
-            rightWidth = leftWidth;
-        } else {
-            /* There is a bit space left, but the central region is occupied.
-             * Expand the smaller region so that the central region is as close
-             * to the center as possible */
-            if (leftWidth > rightWidth)
-                rightWidth = allocWidth - leftWidth - centerWidth;
-            else
-                leftWidth = allocWidth - rightWidth - centerWidth;
+        let sideMinWidth = Math.max(leftMinWidth, rightMinWidth);
+        let sideNaturalWidth = Math.max(leftNaturalWidth, rightNaturalWidth);
+        let totalCenteredMinWidth = centerMinWidth - 2 * sideMinWidth;
+        let totalCenteredNaturalWidth = centerNaturalWidth - 2 * sideNaturalWidth;
+
+        let leftWidth, centerWidth, rightWidth;
+
+        let centerBoxOccupied = this._centerBox.get_children().length > 0;
+
+        /* If panel edit mode, pretend central box is occupied and give it at
+         * least width 25 so that things can be dropped into it */
+        if (this._panelEditMode) {
+            centerBoxOccupied = true;
+            centerMinWidth = Math.max(centerMinWidth, 25);
+            centerNaturalWidth = Math.max(centerNaturalWidth, 25);
         }
 
-        let leftBoundary = leftWidth;
-        let rightBoundary = allocWidth - rightWidth;
+        if (totalCenteredNaturalWidth < allocWidth && centerBoxOccupied) {
+            /* We can give everything their natural width and center will still
+             * be centered. */
+            leftWidth = (allocWidth - centerNaturalWidth) / 2;
+            rightWidth = leftWidth;
+        } else if (totalCenteredMinWidth < allocWidth && centerBoxOccupied) {
+            /* Center can be centered as without shrinking things too much.
+             * First give everything the minWidth they want, and they distribute
+             * the remaining space proportional to how much the regions want. */
+            let totalRemaining = allocWidth - totalCenteredMinWidth;
+            let totalWant = totalCenteredNaturalWidth - totalCenteredMinWidth;
+
+            leftWidth = sideMinWidth + (sideNaturalWidth - sideMinWidth) / totalWant * totalRemaining;
+            rightWidth = leftWidth;
+        } else if (totalNaturalWidth < allocWidth) {
+            /* Center cannot be centered even if things are at their min width,
+             * but there is enough space as long as we don't bother about
+             * centering. Expand the smaller region so that the central region
+             * is as close to the center as possible. */
+            if (leftNaturalWidth > rightNaturalWidth) {
+                rightWidth = allocWidth - leftNaturalWidth - centerNaturalWidth;
+                leftWidth = leftNaturalWidth;
+            } else {
+                leftWidth = allocWidth - rightNaturalWidth - centerNaturalWidth;
+                rightWidth = rightNaturalWidth;
+            }
+        } else if (totalMinWidth < allocWidth) {
+            /* There is enough space for minWidth but not for naturalWidth.
+             * Allocate the minWidth and then divide the remaining space
+             * according to how much more they want. */
+            let totalRemaining = allocWidth - totalMinWidth;
+            let totalWant = totalNaturalWidth - totalMinWidth
+
+            leftWidth = leftMinWidth + (leftNaturalWidth - leftMinWidth) / totalWant * totalRemaining;
+            rightWidth = rightMinWidth + (rightNaturalWidth - rightMinWidth) / totalWant * totalRemaining;
+        } else {
+            /* Scale everything down according to their minWidth. */
+            leftWidth = leftMinWidth / totalMinWidth * allocWidth;
+            rightWidth = rightMinWidth / totalMinWidth * allocWidth;
+        }
+
+        let leftBoundary = Math.round(leftWidth);
+        let rightBoundary = Math.round(allocWidth - rightWidth);
         if (this.actor.get_direction() == St.TextDirection.RTL) {
             leftBoundary = allocWidth - leftWidth;
             rightBoundary = rightWidth;
@@ -1689,8 +1718,6 @@ Panel.prototype = {
         }
         this._leftBox.allocate(childBox, flags);
 
-        childBox.y1 = 0;
-        childBox.y2 = allocHeight;
         if (this.actor.get_direction() == St.TextDirection.RTL) {
             childBox.x1 = rightBoundary;
             childBox.x2 = leftBoundary;
@@ -1700,8 +1727,6 @@ Panel.prototype = {
         }
         this._centerBox.allocate(childBox, flags);
 
-        childBox.y1 = 0;
-        childBox.y2 = allocHeight;
         if (this.actor.get_direction() == St.TextDirection.RTL) {
             childBox.x1 = 0;
             childBox.x2 = rightBoundary;
