@@ -1319,6 +1319,10 @@ Panel.prototype = {
                     this._xPosition = this._xpos;
                     this._shiftActor();
         }));
+        
+        this._leftPanelBarrier = 0;
+        this._rightPanelBarrier = 0;
+        Main.layoutManager.addChrome(this.actor, { addToWindowgroup: false });
 
         this.actor.connect('button-press-event', Lang.bind(this, this._onButtonPressEvent));
         this.actor.connect('style-changed', Lang.bind(this, this._moveResizePanel));
@@ -1336,12 +1340,8 @@ Panel.prototype = {
         this._settingsSignals.push(global.settings.connect("changed::panel-edit-mode", Lang.bind(this, this._onPanelEditModeChanged)));
         this._settingsSignals.push(global.settings.connect("changed::no-adjacent-panel-barriers", Lang.bind(this, this._updatePanelBarriers)));
 
-        this._leftPanelBarrier = 0;
-        this._rightPanelBarrier = 0;
-        Main.layoutManager.addChrome(this.actor, { addToWindowgroup: false });
         this._moveResizePanel();
     },
-
 
     /**
      * updatePosition:
