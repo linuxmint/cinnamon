@@ -846,15 +846,13 @@ PopupIconMenuItem.prototype = {
     },
 
     setIconSymbolicName: function (iconName) {
-        this._icon = new St.Icon({ style_class: 'popup-menu-icon',
-            icon_name: iconName,
-            icon_type: St.IconType.SYMBOLIC});
+        this._icon.set_icon_name(iconName);
+        this._icon.set_icon_type(St.IconType.SYMBOLIC);
     },
 
     setIconName: function (iconName) {
-        this._icon = new St.Icon({ style_class: 'popup-menu-icon',
-            icon_name: iconName,
-            icon_type: St.IconType.FULLCOLOR});
+        this._icon.set_icon_name(iconName);
+        this._icon.set_icon_type(St.IconType.FULLCOLOR);
     },
 
     // Override columnWidths so that the popup menu doesn't separate the icon and the label
