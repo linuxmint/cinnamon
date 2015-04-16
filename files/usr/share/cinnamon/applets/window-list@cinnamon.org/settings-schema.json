@@ -8,5 +8,10 @@
       "type" : "checkbox",
       "default" : false,
       "description" : "Enable mouse-wheel scrolling in the window list"
+  },
+  "middle-click-close": {
+      "type": "checkbox",
+      "default": true,
+      "description": "Middle click to close window"
   }
 }

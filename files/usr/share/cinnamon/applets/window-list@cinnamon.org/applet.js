@@ -267,15 +267,15 @@ AppMenuButtonRightClickMenu.prototype = {
 
 };
 
-function AppMenuButton(applet, metaWindow, animation, orientation, panel_height, draggable, scrollable) {
-    this._init(applet, metaWindow, animation, orientation, panel_height, draggable, scrollable);
+function AppMenuButton(applet, metaWindow, animation, orientation, panel_height, draggable, scrollable, middleClickClose) {
+    this._init(applet, metaWindow, animation, orientation, panel_height, draggable, scrollable, middleClickClose);
 }
 
 AppMenuButton.prototype = {
 //    __proto__ : AppMenuButton.prototype,
 
     
-    _init: function(applet, metaWindow, animation, orientation, panel_height, draggable, scrollable) {
+    _init: function(applet, metaWindow, animation, orientation, panel_height, draggable, scrollable, middleClickClose) {
                
         this.actor = new St.Bin({ style_class: 'window-list-item-box',
 								  reactive: true,
@@ -369,8 +369,9 @@ AppMenuButton.prototype = {
         this.window_list = this.actor._delegate._applet._windows;
         this.alert_list = this.actor._delegate._applet._alertWindows;
         this.scroll_connector = null;
-        this.on_scroll_mode_changed(scrollable);
+        this.onScrollModeChanged(scrollable);
         this._needsAttention = false;
+        this.middleClickClose = middleClickClose;
     },
     
     on_panel_edit_mode_changed: function() {
@@ -379,7 +380,7 @@ AppMenuButton.prototype = {
         }
     }, 
 
-    on_scroll_mode_changed: function(scrollable) {
+    onScrollModeChanged: function(scrollable) {
         if (scrollable) {
             this.scroll_connector = this.actor.connect('scroll-event', Lang.bind(this, this._onScrollEvent));
         } else {
@@ -508,7 +509,7 @@ AppMenuButton.prototype = {
                 this.rightClickMenu.toggle();
             }
             this._windowHandle(false);
-        } else if (event.get_button() == 2)
+        } else if (event.get_button() == 2 && this.middleClickClose)
             this.metaWindow.delete(global.get_current_time());
         return true;
     },
@@ -935,7 +936,12 @@ MyApplet.prototype = {
             this.settings.bindProperty(Settings.BindingDirection.IN,
                                        "enable-scrolling",
                                        "scrollable",
-                                       this.on_enable_scroll_changed,
+                                       this.onEnableScrollChanged,
+                                       null);
+            this.settings.bindProperty(Settings.BindingDirection.IN,
+                                       "middle-click-close",
+                                       "middleClickClose",
+                                       this.onMiddleClickCloseChanged,
                                        null);
 
             this.myactorbox = new MyAppletBox(this);
@@ -1049,15 +1055,26 @@ MyApplet.prototype = {
         }
     },
 
-    on_enable_scroll_changed: function() {
+    onEnableScrollChanged: function() {
         for (let i = 0; i < this._windows.length; i++) {
-            this._windows[i].on_scroll_mode_changed(this.scrollable);
+            this._windows[i].onScrollModeChanged(this.scrollable);
         }
 
         for (let i = 0; i < this._alertWindows.length; i++) {
-            this._alertWindows[i].on_scroll_mode_changed(this.scrollable);
+            this._alertWindows[i].onScrollModeChanged(this.scrollable);
         }
     },
+
+    onMiddleClickCloseChanged: function() {
+        for (let i = 0; i < this._windows.length; i++) {
+            this._windows[i].middleClickClose = this.middleClickClose;
+        }
+
+        for (let i = 0; i < this._alertWindows.length; i++) {
+            this._alertWindows[i].middleClickClose = this.middleClickClose;
+        }
+    },
+
 
     on_applet_clicked: function(event) {
     },
@@ -1073,7 +1090,7 @@ MyApplet.prototype = {
                     this._alertWindows = this._alertWindows.filter(function(alertWindow) {
                         return alertWindow.metaWindow != window; // we don't want duplicates
                     }, this);
-                    let alertButton = new AppMenuButton(this, window, true, this.orientation, this._panelHeight, false, this.scrollable);
+                    let alertButton = new AppMenuButton(this, window, true, this.orientation, this._panelHeight, false, this.scrollable, this.middleClickClose);
                     this._alertWindows.push(alertButton);
                     this.calculate_alert_positions();
                 }
@@ -1221,7 +1238,7 @@ MyApplet.prototype = {
             }
         }
 
-        let appbutton = new AppMenuButton(this, metaWindow, true, this.orientation, this._panelHeight, true, this.scrollable);
+        let appbutton = new AppMenuButton(this, metaWindow, true, this.orientation, this._panelHeight, true, this.scrollable, this.middleClickClose);
         this._windows.push(appbutton);
         this.myactor.add(appbutton.actor);
         if (global.screen.get_active_workspace() != metaWindow.get_workspace())
