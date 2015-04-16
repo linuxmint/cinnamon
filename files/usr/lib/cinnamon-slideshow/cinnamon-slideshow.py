@@ -4,7 +4,8 @@ from gi.repository import Gio, GLib
 import dbus, dbus.service, dbus.glib
 from dbus.mainloop.glib import DBusGMainLoop
 import random
-import os, locale, lxml.etree
+import os, locale
+from xml.etree import ElementTree
 
 SLIDESHOW_DBUS_NAME = "org.Cinnamon.Slideshow"
 SLIDESHOW_DBUS_PATH = "/org/Cinnamon/Slideshow"
@@ -274,7 +275,7 @@ class CinnamonSlideshow(dbus.service.Object):
             res = []
             subLocaleFound = False
             f = open(filename)
-            rootNode = lxml.etree.fromstring(f.read())
+            rootNode = ElementTree.fromstring(f.read())
             f.close()
             if rootNode.tag == "wallpapers":
                 for wallpaperNode in rootNode:

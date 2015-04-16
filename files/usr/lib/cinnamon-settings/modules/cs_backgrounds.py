@@ -12,7 +12,7 @@ import subprocess
 import tempfile
 import commands
 import locale
-import lxml.etree
+from xml.etree import ElementTree
 from PIL import Image
 
 gettext.install("cinnamon", "/usr/share/locale")
@@ -422,7 +422,7 @@ class Module:
             res = []
             subLocaleFound = False
             f = open(filename)
-            rootNode = lxml.etree.fromstring(f.read())
+            rootNode = ElementTree.fromstring(f.read())
             f.close()
             if rootNode.tag == "wallpapers":
                 for wallpaperNode in rootNode:
@@ -629,7 +629,7 @@ class ThreadedIconView(Gtk.IconView):
     def getFirstFileFromBackgroundXml(self, filename):
         try:
             f = open(filename)
-            rootNode = lxml.etree.fromstring(f.read())
+            rootNode = ElementTree.fromstring(f.read())
             f.close()
             if rootNode.tag == "background":
                 for backgroundNode in rootNode:
