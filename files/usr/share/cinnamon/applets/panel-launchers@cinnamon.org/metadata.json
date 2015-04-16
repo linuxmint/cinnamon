@@ -4,5 +4,5 @@
  "description": "Launch applications from the panel",
  "icon": "gnome-panel-launcher",
  "role": "panellauncher",
- "max-instances": "infinite"
+ "max-instances": -1
 }

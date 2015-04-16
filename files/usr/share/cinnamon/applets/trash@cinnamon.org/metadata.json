@@ -4,5 +4,5 @@
  "description": "Control the trash from the panel",
  "icon": "user-trash",
  "localedir": "/usr/share/locale",
- "max-instances": "infinite"
+ "max-instances": -1
 }

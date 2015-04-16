@@ -3,5 +3,5 @@
  "name": "Recent documents",
  "description": "Access the documents you recently opened",
  "icon": "document-open-recent",
- "max-instances": "infinite"
+ "max-instances": -1
 }

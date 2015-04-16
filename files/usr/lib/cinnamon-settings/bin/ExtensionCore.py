@@ -1100,7 +1100,7 @@ Please contact the developer.""")
         if treeiter:
             checked = model.get_value(treeiter, 2);
             max_instances = model.get_value(treeiter, 3);
-            enabled = (checked != -1) and (max_instances > checked)
+            enabled = checked != -1 and (max_instances == -1 or ((max_instances > 0) and (max_instances > checked)))
 
             self.instanceButton.set_sensitive(enabled);
 
@@ -1195,10 +1195,7 @@ Please contact the developer.""")
                             try: extension_max_instances = int(data["max-instances"])
                             except KeyError: extension_max_instances = 1
                             except ValueError:
-                                if "infinite" in data["max-instances"]:
-                                    extension_max_instances = 0x7fffffff
-                                else:
-                                    extension_max_instances = 1
+                                extension_max_instances = 1
 
                             try: extension_role = data["role"]
                             except KeyError: extension_role = None

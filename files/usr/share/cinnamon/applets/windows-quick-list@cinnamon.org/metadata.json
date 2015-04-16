@@ -2,5 +2,5 @@
 "uuid": "windows-quick-list@cinnamon.org",
 "name": "Windows Quick List",
 "description": "Quickly access windows from all workspaces",
- "max-instances": "infinite"
+ "max-instances": -1
 }

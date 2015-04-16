@@ -3,5 +3,5 @@
  "name": "Keyboard",
  "description": "Keyboard layout",
  "icon": "keyboard",
- "max-instances": "infinite"
+ "max-instances": -1
 }

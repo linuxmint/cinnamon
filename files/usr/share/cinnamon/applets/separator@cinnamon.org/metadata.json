@@ -3,5 +3,5 @@
  "name": "Separator",
  "description": "A separator icon which can be added multiple times",
  "icon": "gnome-panel-separator",
- "max-instances": "infinite"
+ "max-instances": -1
 }

@@ -3,5 +3,5 @@
  "name": "Show desktop",
  "description": "Minimize all windows",
  "icon": "desktop",
- "max-instances": "infinite"
+ "max-instances": -1
 }

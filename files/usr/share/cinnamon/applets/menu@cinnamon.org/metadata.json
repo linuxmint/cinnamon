@@ -3,5 +3,5 @@
  "name": "Menu",
  "description": "Main Cinnamon menu",
  "icon": "applications-other",
- "max-instances": "infinite"
+ "max-instances": -1
 }

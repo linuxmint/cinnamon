@@ -3,5 +3,5 @@
  "name": "Removable drives",
  "description": "Access removable drives",
  "icon": "media-eject",
- "max-instances": "infinite"
+ "max-instances": -1
 }

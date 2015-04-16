@@ -3,5 +3,5 @@
  "name": "Accessibility",
  "description": "Accessibility applet",
  "icon": "preferences-desktop-accessibility",
- "max-instances": "infinite"
+ "max-instances": -1
 }
