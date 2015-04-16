@@ -474,9 +474,7 @@ IconApplet.prototype = {
     _init: function(orientation, panel_height, instance_id) {
         Applet.prototype._init.call(this, orientation, panel_height, instance_id);
         this._applet_icon_box = new St.Bin();
-        this.actor.add(this._applet_icon_box, { y_align: St.Align.MIDDLE, y_fill: false });
-        this.__icon_type = null;
-        this.__icon_name = null;
+        this.actor.add(this._applet_icon_box, {a_align: St.Align.MIDDLE, y_fill: false });
     },
 
     /**
@@ -488,17 +486,11 @@ IconApplet.prototype = {
      * The icon will be full color
      */
     set_applet_icon_name: function (icon_name) {
-        if (this._applet_icon_box.child) this._applet_icon_box.child.destroy();
-        this._applet_icon_box.child = null;
-        if (this._scaleMode) {
-            this._applet_icon = new St.Icon({icon_name: icon_name, icon_size: this._panelHeight * COLOR_ICON_HEIGHT_FACTOR / global.ui_scale,
-                                            icon_type: St.IconType.FULLCOLOR, reactive: true, track_hover: true, style_class: 'applet-icon' });
-        } else {
-            this._applet_icon = new St.Icon({icon_name: icon_name, icon_size: FALLBACK_ICON_HEIGHT, icon_type: St.IconType.FULLCOLOR, reactive: true, track_hover: true, style_class: 'applet-icon' });
-        }
-        this._applet_icon_box.child = this._applet_icon;
-        this.__icon_type = St.IconType.FULLCOLOR;
-        this.__icon_name = icon_name;
+        this._ensureIcon()
+
+        this._applet_icon.set_icon_name(icon_name);
+        this._applet_icon.set_icon_type(St.IconType.FULLCOLOR);
+        this._setStyle();
     },
 
     /**
@@ -510,17 +502,11 @@ IconApplet.prototype = {
      * The icon will be symbolic
      */
     set_applet_icon_symbolic_name: function (icon_name) {
-        if (this._applet_icon_box.child) this._applet_icon_box.child.destroy();
-        this._applet_icon_box.child = null;
-        if (this._scaleMode) {
-            let height = (this._panelHeight / DEFAULT_PANEL_HEIGHT) * PANEL_SYMBOLIC_ICON_DEFAULT_HEIGHT / global.ui_scale;
-            this._applet_icon = new St.Icon({icon_name: icon_name, icon_size: height, icon_type: St.IconType.SYMBOLIC, reactive: true, track_hover: true, style_class: 'system-status-icon' });
-        } else {
-            this._applet_icon = new St.Icon({icon_name: icon_name, icon_type: St.IconType.SYMBOLIC, reactive: true, track_hover: true, style_class: 'system-status-icon' });
-        }
-        this._applet_icon_box.child = this._applet_icon;
-        this.__icon_type = St.IconType.SYMBOLIC;
-        this.__icon_name = icon_name;
+        this._ensureIcon()
+
+        this._applet_icon.set_icon_name(icon_name);
+        this._applet_icon.set_icon_type(St.IconType.SYMBOLIC);
+        this._setStyle();
     },
 
     /**
@@ -532,21 +518,16 @@ IconApplet.prototype = {
      * The icon will be full color
      */
     set_applet_icon_path: function (icon_path) {
-        if (this._applet_icon_box.child) this._applet_icon_box.child.destroy();
-        this._applet_icon_box.child = null;
-        if (icon_path){
+        this._ensureIcon()
+
+        try {
             let file = Gio.file_new_for_path(icon_path);
-            let gicon = new Gio.FileIcon({ file: file });
-            if (this._scaleMode) {
-                this._applet_icon = new St.Icon({gicon: gicon, icon_size: this._panelHeight * COLOR_ICON_HEIGHT_FACTOR / global.ui_scale,
-                                                icon_type: St.IconType.FULLCOLOR, reactive: true, track_hover: true, style_class: 'applet-icon' });
-            } else {
-                this._applet_icon = new St.Icon({gicon: gicon, icon_size: FALLBACK_ICON_HEIGHT, icon_type: St.IconType.FULLCOLOR, reactive: true, track_hover: true, style_class: 'applet-icon' });
-            }
-            this._applet_icon_box.child = this._applet_icon;
+            this._applet_icon.set_gicon(new Gio.FileIcon({ file: file }));
+            this._applet_icon.set_icon_type(St.IconType.FULLCOLOR);
+            this._setStyle();
+        } catch (e) {
+            global.log(e);
         }
-        this.__icon_type = -1;
-        this.__icon_name = icon_path;
     },
 
     /**
@@ -558,42 +539,45 @@ IconApplet.prototype = {
      * The icon will be symbolic
      */
     set_applet_icon_symbolic_path: function(icon_path) {
-        if (this._applet_icon_box.child) this._applet_icon_box.child.destroy();
-        this._applet_icon_box.child = null;
-        if (icon_path){
+        this._ensureIcon()
+
+        try {
             let file = Gio.file_new_for_path(icon_path);
-            let gicon = new Gio.FileIcon({ file: file });
-            if (this._scaleMode) {
-                let height = (this._panelHeight / DEFAULT_PANEL_HEIGHT) * PANEL_SYMBOLIC_ICON_DEFAULT_HEIGHT / global.ui_scale;
-                this._applet_icon = new St.Icon({gicon: gicon, icon_size: height,
-                                                icon_type: St.IconType.SYMBOLIC, reactive: true, track_hover: true, style_class: 'system-status-icon' });
-            } else {
-                this._applet_icon = new St.Icon({gicon: gicon, icon_type: St.IconType.SYMBOLIC, reactive: true, track_hover: true, style_class: 'system-status-icon' });
-            }
-            this._applet_icon_box.child = this._applet_icon;
+            this._applet_icon.set_gicon(new Gio.FileIcon({ file: file }));
+            this._applet_icon.set_icon_type(St.IconType.SYMBOLIC);
+            this._setStyle();
+        } catch (e) {
+            global.log(e);
         }
-        this.__icon_type = -1;
-        this.__icon_name = icon_path;
+    },
+
+    _ensureIcon: function() {
+        if (!this._applet_icon)
+            this._applet_icon = new St.Icon({ reactive: true, track_hover: true, style_class: 'applet-icon' });
+
+        this._applet_icon_box.set_child(this._applet_icon);
+    },
+
+    _setStyle: function() {
+        switch (this._applet_icon.get_icon_type()) {
+            case St.IconType.FULLCOLOR:
+                this._applet_icon.set_icon_size(this._scaleMode ?
+                        this._panelHeight * COLOR_ICON_HEIGHT_FACTOR / global.ui_scale :
+                        FALLBACK_ICON_HEIGHT);
+                this._applet_icon.set_style_class_name('applet-icon');
+                break;
+            case St.IconType.SYMBOLIC:
+                this._applet_icon.set_icon_size(this._scaleMode ?
+                        (this._panelHeight / DEFAULT_PANEL_HEIGHT) * PANEL_SYMBOLIC_ICON_DEFAULT_HEIGHT / global.ui_scale :
+                        -1);
+                this._applet_icon.set_style_class_name('system-status-icon');
+        }
     },
 
     on_panel_height_changed: function() {
         this._scaleMode = AppletManager.enabledAppletDefinitions.idMap[this.instance_id].panel.scaleMode;
-        if (this._applet_icon_box.child) {
-            this._applet_icon_box.child.destroy();
-        }
-        switch (this.__icon_type) {
-            case St.IconType.FULLCOLOR:
-                this.set_applet_icon_name(this.__icon_name);
-                break;
-            case St.IconType.SYMBOLIC:
-                this.set_applet_icon_symbolic_name(this.__icon_name);
-                break;
-            case -1:
-                this.set_applet_icon_path(this.__icon_name);
-                break;
-            default:
-                break;
-        }
+        if (this._applet_icon)
+            this._setStyle();
     }
 };
 
