@@ -783,7 +783,7 @@ AppletSettings.prototype = {
     },
 
     _get_is_multi_instance_xlet: function(uuid) {
-        return Extension.get_max_instances(uuid) > 1;
+        return Extension.get_max_instances(uuid) != 1;
     },
 };
 
