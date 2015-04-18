@@ -100,7 +100,7 @@ class XletSetting:
     def get_settings_for_applet(self, path):
         if "max-instances" in self.applet_meta:
             try:
-                self.multi_instance = int(self.applet_meta["max-instances"]) > 1
+                self.multi_instance = int(self.applet_meta["max-instances"]) != 1
             except:
                 if "infinite" in self.applet_meta["max-instances"]:
                     self.multi_instance = True
