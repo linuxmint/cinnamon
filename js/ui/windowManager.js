@@ -459,7 +459,9 @@ WindowManager.prototype = {
         Meta.keybindings_set_custom_handler('switch-group-backward',
                                             Lang.bind(this, this._startAppSwitcher));
         Meta.keybindings_set_custom_handler('switch-panels',
-                                            Lang.bind(this, this._startA11ySwitcher));
+                                            Lang.bind(this, this._startAppSwitcher));
+        Meta.keybindings_set_custom_handler('switch-panels-backward',
+                                            Lang.bind(this, this._startAppSwitcher));
 
         Main.overview.connect('showing', Lang.bind(this, function() {
             for (let i = 0; i < this._dimmedWindows.length; i++)
@@ -905,10 +907,6 @@ WindowManager.prototype = {
     },
 
     _startAppSwitcher : function(display, screen, window, binding) {
-        this._createAppSwitcher(binding);
-    },
-
-    _startA11ySwitcher : function(display, screen, window, binding) {
         this._createAppSwitcher(binding);
     },
 
