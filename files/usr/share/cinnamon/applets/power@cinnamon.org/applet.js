@@ -482,6 +482,9 @@ MyApplet.prototype = {
             let gicon = Gio.icon_new_for_string(icon);
             this._applet_icon.gicon = gicon;
         }
+        else {
+            this.set_applet_icon_symbolic_name('goa-panel');
+        }
     },
 
     _updateLabel: function() {
