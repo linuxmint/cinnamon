@@ -372,7 +372,7 @@ class PanelSpinButton(PanelWidget):
     def __init__(self, label, schema, key, panel_id, units="", mini=None, maxi=None, step=1, page=None, dep_key=None):
         super(PanelSpinButton, self).__init__(dep_key, panel_id)
         self.key = key
-        self._value_changed_timer = None
+        self._changed_timer = None
 
         if units:
             label += " (%s)" % units
@@ -397,16 +397,27 @@ class PanelSpinButton(PanelWidget):
         self.on_my_setting_changed()
 
     def on_my_setting_changed(self, *args):
-        self.content_widget.set_value(self.get_int(self.settings, self.key))
+        def apply(self):
+            self.content_widget.set_value(self.get_int(self.settings, self.key))
+            self._changed_timer = None
+
+        if self._changed_timer:
+            GLib.source_remove(self._changed_timer)
+        self._changed_timer = GLib.timeout_add(300, apply, self)
 
     def on_my_value_changed(self, widget):
-        if self._value_changed_timer:
-            GLib.source_remove(self._value_changed_timer)
-        self._value_changed_timer = GLib.timeout_add(300, self.update_settings_value)
+        def apply(self):
+            self.set_int(self.settings, self.key, self.content_widget.get_value())
+            self._changed_timer = None
+
+        if self._changed_timer:
+            GLib.source_remove(self._changed_timer)
+        self._changed_timer = GLib.timeout_add(300, apply, self)
+
+    def update_widget_value(self):
+        return False
 
     def update_settings_value(self):
-        self.set_int(self.settings, self.key, self.content_widget.get_value())
-        self._value_changed_timer = None
         return False
 
 class PanelRange(PanelWidget):
@@ -419,7 +430,7 @@ class PanelRange(PanelWidget):
         self.key = key
         self.settings = Gio.Settings.new(schema)
         self.panel_id = str(panel_id)
-        self.timer = None
+        self._changed_timer = None
 
         hbox = Gtk.Box()
 
@@ -462,17 +473,22 @@ class PanelRange(PanelWidget):
         return True
 
     def on_my_setting_changed(self, *args):
-        self.content_widget.set_value(self.get_int(self.settings, self.key))
+        def apply(self):
+            self.content_widget.set_value(self.get_int(self.settings, self.key))
+            self._changed_timer = None
+
+        if self._changed_timer:
+            GLib.source_remove(self._changed_timer)
+        self._changed_timer = GLib.timeout_add(300, apply, self)
 
     def on_my_value_changed(self, widget):
-        if self.timer:
-            GLib.source_remove(self.timer)
-        # We are always int
-        self.timer = GLib.timeout_add(300, self.update_value)
+        def apply(self):
+            self.set_int(self.settings, self.key, self.content_widget.get_value())
+            self._changed_timer = None
 
-    def update_value(self):
-        self.timer = 0
-        self.set_int(self.settings, self.key, self.content_widget.get_value())
+        if self._changed_timer:
+            GLib.source_remove(self._changed_timer)
+        self._changed_timer = GLib.timeout_add(300, apply, self)
 
     def add_mark(self, value, position, markup):
         self.content_widget.add_mark(value, position, markup)
