@@ -451,8 +451,6 @@ Signals.addSignalMethods(Applet.prototype);
 /**
  * #IconApplet:
  * @_applet_icon (St.Icon): Actor of the icon
- * @__icon_type (St.IconType): Type of the icon (FULLCOLOR/SYMBOLIC)
- * @__icon_name (string): Name of icon
  * 
  * Applet that contains an icon
  * 
