@@ -1173,7 +1173,6 @@ PanelZoneDNDHandler.prototype = {
         this._panelZone._delegate = this;
         this._dragPlaceholder = null;
         this._dragPlaceholderPos = -1;
-        this._animatingPlaceholdersCount = 0;
     },
 
     handleDragOver: function(source, actor, x, y, time) {
@@ -1196,11 +1195,6 @@ PanelZoneDNDHandler.prototype = {
             if (appletPos != -1 && pos == appletPos) {
                 if (this._dragPlaceholder) {
                     this._dragPlaceholder.animateOutAndDestroy();
-                    this._animatingPlaceholdersCount++;
-                    this._dragPlaceholder.actor.connect('destroy',
-                        Lang.bind(this, function() {
-                            this._animatingPlaceholdersCount--;
-                        }));
                 }
                 this._dragPlaceholder = null;
 
@@ -1475,6 +1469,27 @@ Panel.prototype = {
         default:
             return property;
         }
+    },
+
+    handleDragOver: function(source, actor, x, y, time) {
+        this._enterPanel();
+        if (this._dragShowId > 0)
+            Mainloop.source_remove(this._dragShowId);
+
+        let leaveIfOut = Lang.bind(this, function() {
+            let [x, y, whatever] = global.get_pointer();
+            this.actor.sync_hover();
+            if (this.actor.x < x && x < this.actor.x + this.actor.width &&
+                this.actor.y < y && y < this.actor.y + this.actor.height) {
+                return true;
+            } else {
+                this._leavePanel();
+                return false;
+            }
+        });
+
+        this._dragShowId = Mainloop.timeout_add(500, leaveIfOut);
+        return DND.DragMotionResult.NO_DROP;
     },
 
     _updatePanelBarriers: function() {
