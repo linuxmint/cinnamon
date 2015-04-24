@@ -279,8 +279,8 @@ class Module:
             entry_scroller = Gtk.ScrolledWindow.new(None, None)
             entry_scroller.set_shadow_type(Gtk.ShadowType.IN)
 
-            right_vbox.pack_start(kb_name_scroller, False, False, 2)
-            right_vbox.pack_start(entry_scroller, False, False, 2)
+            right_vbox.pack_start(kb_name_scroller, True, True, 2)
+            right_vbox.pack_start(entry_scroller, True, True, 2)
             kb_name_scroller.set_property('min-content-height', 150)
             entry_scroller.set_property('min-content-height', 100)
             self.cat_tree = Gtk.TreeView.new()
