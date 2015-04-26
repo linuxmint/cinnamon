@@ -5,7 +5,7 @@ import windowEffects
 import tweenEquations
 
 EFFECT_SETS = {
-    "cinnamon": ("traditional", "traditional", "traditional", "scale", "scale", "scale"),
+    "cinnamon": ("traditional", "traditional", "traditional", "none",  "none",  "none"),
     "scale":    ("scale",       "scale",       "scale",       "scale", "scale", "scale"),
     "fade":     ("fade",        "fade",        "fade",        "scale", "scale", "scale"),
     "blend":    ("blend",       "blend",       "blend",       "scale", "scale", "scale"),
@@ -16,14 +16,14 @@ EFFECT_SETS = {
 }
 
 TRANSITIONS_SETS = {
-    "cinnamon": ("easeOutQuad",    "easeInExpo",    "easeOutExpo", "easeInExpo", "easeNone",       "easeInQuad"),
+    "cinnamon": ("easeOutQuad",    "easeOutQuad",   "easeInQuad",  "easeInExpo", "easeNone",       "easeInQuad"),
     "normal":   ("easeOutSine",    "easeInBack",    "easeInSine",  "easeInBack", "easeOutBounce",  "easeInBack"),
     "extra":    ("easeOutElastic", "easeOutBounce", "easeOutExpo", "easeInExpo", "easeOutElastic", "easeInExpo"),
     "fade":     ("easeOutQuart",   "easeInQuart",   "easeInQuart", "easeInBack", "easeOutBounce",  "easeInBack")
 }
 
 TIME_SETS = {
-    "cinnamon": (150, 150, 200, 100, 100, 100),
+    "cinnamon": (175, 175, 200, 100, 100, 100),
     "slow":     (400, 400, 400, 100, 100, 100),
     "normal":   (250, 250, 250, 100, 100, 100),
     "fast":     (100, 100, 100, 100, 100, 100),

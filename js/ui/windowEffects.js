@@ -225,7 +225,7 @@ Close.prototype = {
             case Meta.WindowType.NORMAL:
                 actor.set_pivot_point(0, 0);
                 this._scaleWindow(cinnamonwm, actor, 0.8, 0.8, time, transition);
-                this._fadeWindow(cinnamonwm, actor, 0.5, time, transition);
+                this._fadeWindow(cinnamonwm, actor, 0, time, transition);
                 break;
             case Meta.WindowType.MODAL_DIALOG:
             case Meta.WindowType.DIALOG:
