@@ -38,7 +38,8 @@ Build-Depends: debhelper (>= 8),
                libxss-dev,
                libpulse-dev,
                libpolkit-agent-1-dev (>= 0.100),
-               libjson-glib-dev (>= 0.13.2)
+               libjson-glib-dev (>= 0.13.2),
+               gtk-doc-tools
 Standards-Version: 3.9.1
 Homepage: http://cinnamon.linuxmint.com
 
@@ -121,3 +122,12 @@ Description: Cinnamon desktop (Common data files)
  Cinnamon is a modern Linux desktop which provides advanced innovative features and a traditional user experience. It's easy to use, powerful and flexible.
  .
  This package contains the architecture independent files needed by Cinnamon
+
+Package: cinnamon-doc
+Section: doc
+Architecture: all
+Depends: ${misc:Depends}, devhelp
+Description: Cinnamon documentation
+ Cinnamon is a modern Linux desktop which provides advanced innovative features and a traditional user experience. It's easy to use, powerful and flexible.
+ .
+ This package contains the code documentation for various Cinnamon components.

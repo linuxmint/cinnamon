@@ -221,10 +221,17 @@ AC_SUBST(CINNAMON_SYSTEM_CA_FILE,["$with_ca_certificates"])
 BROWSER_PLUGIN_DIR="${BROWSER_PLUGIN_DIR:-"\${libdir}/mozilla/plugins"}"
 AC_ARG_VAR([BROWSER_PLUGIN_DIR],[Where to install the plugin to])
 
+GTK_DOC_CHECK([1.15], [--flavour no-tmpl])
 AC_CONFIG_FILES([
   Makefile
   data/Makefile
   data/icons/Makefile
+  docs/Makefile
+  docs/reference/Makefile
+  docs/reference/cinnamon/Makefile
+  docs/reference/cinnamon/cinnamon-docs.sgml
+  docs/reference/st/Makefile
+  docs/reference/st/st-docs.sgml
   js/Makefile
   js/misc/config.js
   src/Makefile
