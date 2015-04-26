@@ -1351,7 +1351,7 @@ PopupMenu.prototype = {
 
         for (let i in Main.panelManager.panels) {
             if (Main.panelManager.panels[i])
-                Main.panelManager.panels[i]._hidePanel();
+                Main.panelManager.updatePanelsVisibility();
         }
 
         if (this._activeMenuItem)

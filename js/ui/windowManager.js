@@ -544,6 +544,7 @@ WindowManager.prototype = {
             delete actor.current_effect_name;
             effect._end(actor);
             cinnamonwm[effect.wmCompleteName](actor);
+            Main.panelManager.updatePanelsVisibility();
         }
     },
 

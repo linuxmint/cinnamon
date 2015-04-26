@@ -7,6 +7,7 @@ const Mainloop = imports.mainloop;
 const Pango = imports.gi.Pango;
 const Cinnamon = imports.gi.Cinnamon;
 const St = imports.gi.St;
+
 const PopupMenu = imports.ui.popupMenu;
 const Main = imports.ui.main;
 const Tweener = imports.ui.tweener;
@@ -363,6 +364,21 @@ PanelManager.prototype = {
                 return this.panels[i];
         }
         return null;
+    },
+
+    /**
+     * updatePanelsVisibility:
+     *
+     * Prompts every panel to update its visibility (show/hide). This is used
+     * by WindowManager after window map/tile/etc animations, and after popup
+     * menus close.
+     */
+    updatePanelsVisibility: function() {
+        for (let i in this.panels) {
+             if (!this.panels[i])
+                 continue;
+             this.panels[i]._updatePanelVisibility();
+        }
     },
 
     getAdjacentPanel: function(currentPanelObj, direction) {
@@ -962,9 +978,9 @@ SettingsLauncher.prototype = {
         PopupMenu.PopupIconMenuItem.prototype._init.call(this, label, icon, St.IconType.SYMBOLIC);
 
         this._keyword = keyword;
-        this.connect('activate', function() {
+        this.connect('activate', Lang.bind(this, function() {
             Util.spawnCommandLine("cinnamon-settings " + this._keyword);
-        });
+        }));
     },
 };
 
@@ -1049,7 +1065,7 @@ function populateSettingsMenu(menu, panelId) {
     menu.addMenuItem(panelSettingsSection);
 
     // Auto-hide Panel
-    let values = global.settings.get_strv(PANEL_AUTOHIDE_KEY);
+/*    let values = global.settings.get_strv(PANEL_AUTOHIDE_KEY);
     let property;
     for (let i = 0; i < values.length; i++){
         if (values[i].split(":")[0]==panelId){
@@ -1086,7 +1102,7 @@ function populateSettingsMenu(menu, panelId) {
             }
         }
         autoHidePanel.setToggleState(property == "true");
-    });
+    });*/
 
     // Panel Edit mode
     let editMode = global.settings.get_boolean("panel-edit-mode");
@@ -1263,7 +1279,7 @@ Panel.prototype = {
         this._disabled = false;
         this._panelEditMode = false;
         this._hidetime = 0;
-        this._hideable = this._getProperty(PANEL_AUTOHIDE_KEY, "b")
+        this._autohideSettings = this._getProperty(PANEL_AUTOHIDE_KEY, "s");
         this._hideTimer = 0;
         this._showTimer = 0;
         this._themeFontSize = null;
@@ -1336,12 +1352,12 @@ Panel.prototype = {
         this._settingsSignals.push(global.settings.connect("changed::panel-edit-mode", Lang.bind(this, this._onPanelEditModeChanged)));
         this._settingsSignals.push(global.settings.connect("changed::no-adjacent-panel-barriers", Lang.bind(this, this._updatePanelBarriers)));
 
+
         this._leftPanelBarrier = 0;
         this._rightPanelBarrier = 0;
         Main.layoutManager.addChrome(this.actor, { addToWindowgroup: false });
         this._moveResizePanel();
     },
-
 
     /**
      * updatePosition:
@@ -1390,6 +1406,19 @@ Panel.prototype = {
             global.settings.disconnect(this._settingsSignals[i]);
         }
 
+        if (this._focusChangedSignal) {
+            global.display.disconnect(this._focusChangedSignal);
+            this._focusChangedSignal = undefined;
+            if (this._focusWindow) {
+                this._focusWindow.disconnect(this._focusSignal1);
+                this._focusWindow.disconnect(this._focusSignal2);
+                this._focusWindow = undefined;
+                this.signal1 = undefined;
+                this.signal2 = undefined;
+            }
+        }
+
+
         this._menus = null;
         this.monitor = null;
 
@@ -1408,7 +1437,7 @@ Panel.prototype = {
     },
 
     isHideable: function() {
-        return this._hideable;
+        return this._autohideSettings != "true";
     },
     
     /**
@@ -1541,22 +1570,56 @@ Panel.prototype = {
         }
         return;
     },
-        
-    _processPanelAutoHide: function() {  
-        this._hideable = this._getProperty(PANEL_AUTOHIDE_KEY, "b") && !this._panelEditMode;
-        // Show a glimpse of the panel irrespective of the new setting,
-        // in order to force a region update.
-        // Techically, this should not be necessary if the function is called
-        // when auto-hide is in effect and is not changing, but experience
-        // shows that not flashing the panels may lead to "phantom panels"
-        // where the panels should be if auto-hide was on.
-        this._hidePanel(true); // force hide
-        this._showPanel();
 
-        if (this._hideable) {
-            this._hidePanel();
+    _onFocusChanged: function() {
+        if (global.display.focus_window &&
+            this._focusWindow == global.display.focus_window.get_compositor_private())
+            return;
+
+        if (this._focusWindow && this._focusSignal1) {
+            this._focusWindow.disconnect(this._focusSignal1);
+            this._focusWindow.disconnect(this._focusSignal2);
+            this._focusSignal1 = undefined;
+            this._focusSignal2 = undefined;
         }
-        Main.layoutManager._chrome.modifyActorParams(this.actor, { affectsStruts: !this._hideable });
+
+        if (!global.display.focus_window)
+            return;
+
+        this._focusWindow = global.display.focus_window.get_compositor_private();
+        this._focusSignal1 = this._focusWindow.connect("position-changed",
+                Lang.bind(this, this._updatePanelVisibility));
+        this._focusSignal2 = this._focusWindow.connect("size-changed",
+                Lang.bind(this, this._updatePanelVisibility));
+        this._updatePanelVisibility();
+    },
+
+    _processPanelAutoHide: function() {  
+        this._autohideSettings = this._getProperty(PANEL_AUTOHIDE_KEY, "s");
+
+        if (this._autohideSettings == "intel") {
+            if (!this._focusChangedSignal) {
+                this._focusChangedSignal = global.display.connect("notify::focus-window",
+                        Lang.bind(this, this._onFocusChanged));
+                this._onFocusChanged();
+            }
+        } else {
+            if (this._focusChangedSignal) {
+                global.display.disconnect(this._focusChangedSignal);
+                this._focusChangedSignal = undefined;
+                if (this._focusWindow) {
+                    this._focusWindow.disconnect(this._focusSignal1);
+                    this._focusWindow.disconnect(this._focusSignal2);
+                    this._focusWindow = undefined;
+                    this.signal1 = undefined;
+                    this.signal2 = undefined;
+                }
+            }
+        }
+
+        this._updatePanelVisibility();
+
+        Main.layoutManager._chrome.modifyActorParams(this.actor, { affectsStruts: this._autohideSettings == "false" });
     },
 
     _moveResizePanel: function() {
@@ -1722,39 +1785,72 @@ Panel.prototype = {
         this._updatePanelBarriers();
     },
     
-    _clearTimers: function() {
-        if (this._showTimer) {
-            Mainloop.source_remove(this._showTimer);
-            this._showTimer = 0;
+    _updatePanelVisibility: function() {
+        // false = autohide, true = always show, intel = Intelligent
+        switch (this._autohideSettings) {
+        case "false":
+            this._shouldShow = true;
+            break;
+        case "true":
+            this._shouldShow = this._mouseEntered;
+            break;
+        default:
+            if (this._mouseEntered || !global.display.focus_window) {
+                this._shouldShow = true;
+                break;
+            }
+            /* Calculate the y instead of getting the actor y since the
+             * actor might be hidden*/
+            let y = this.bottomPosition ?
+                 this.monitor.y + this.monitor.height - this.actor.height :
+                 this.monitor.y;
+
+            let a = this.actor;
+            let b = global.display.focus_window.get_compositor_private();
+            /* Magic to check whether the panel position overlaps with the
+             * current focused window */
+            this._shouldShow =
+                !(Math.max(a.x, b.x) < Math.min(a.x + a.width, b.x + b.width) &&
+                  Math.max(y, b.y) < Math.min(y + a.height, b.y + b.height));
         }
-        if (this._hideTimer) {
-            Mainloop.source_remove(this._hideTimer);
-            this._hideTimer = 0;
+
+        if (this._panelEditMode)
+            this._shouldShow = true;
+
+        this._queueShowHidePanel();
+    },
+
+    _queueShowHidePanel: function() {
+        if (this._showHideTimer) {
+            Mainloop.source_remove(this._showHideTimer);
+            this._showHideTimer = 0;
+        }
+
+        /* Use a timeout_add even if delay is 0 to avoid "flashing" of panel.
+         * Otherwise, if, say hideDelay is 0 and showDelay is 1000, when you
+         * move over an applet, leave and enter events are fired consecutively.
+         * Then the leave-event causes the panel hides instantly, causing a
+         * further leave-event (since the mouse actually left the panel), which
+         * clears the showPanel timer, and the panel won't show up again. If a
+         * timeout_add is used for showDelay, the hide timeout will be cancelled
+         * by the coming enter-event, and the panel remains open. */
+        if (this._shouldShow) {
+            let showDelay = this._getProperty(PANEL_SHOW_DELAY_KEY, "i");
+            this._showHideTimer = Mainloop.timeout_add(showDelay, Lang.bind(this, this._showPanel))
+        } else {
+            let hideDelay = this._getProperty(PANEL_HIDE_DELAY_KEY, "i");
+            this._showHideTimer = Mainloop.timeout_add(hideDelay, Lang.bind(this, this._hidePanel))
         }
     },
     
     _enterPanel: function() {
-        this.isMouseOverPanel = true;
-        this._clearTimers();
-        let showDelay = this._getProperty(PANEL_SHOW_DELAY_KEY, "i");
-        if (showDelay > 0) {
-            this._showTimer = Mainloop.timeout_add(showDelay, Lang.bind(this, this._showPanel));
-        }
-        else {
-            this._showPanel();
-        }
+        this._mouseEntered = true;
+        this._updatePanelVisibility();
     },
 
     _leavePanel:function() {
-        this.isMouseOverPanel = false;
-        this._clearTimers();
-        let hideDelay = this._getProperty(PANEL_HIDE_DELAY_KEY, "i");
-        if (hideDelay > 0 && !this._disabled) {
-            this._hideTimer = Mainloop.timeout_add(hideDelay, Lang.bind(this, this._hidePanel));
-        }
-        else {
-            this._hidePanel();
-        }
+        this._mouseEntered = false;
+        this._updatePanelVisibility();
     }, 
 
     enable: function() {
@@ -1779,15 +1875,11 @@ Panel.prototype = {
     }, 
     
     _showPanel: function() {
-        this._clearTimers();
+        this._showHideTimer = 0;
 
         if (this._disabled) return;
 
         if (!this._hidden) return;
-
-        if (Main.lookingGlass != null && Main.lookingGlass._open) {
-            return;
-        }
 
         // Force the panel to be on top (hack to correct issues when switching workspace)
         Main.layoutManager._windowsRestacked();
@@ -1840,9 +1932,9 @@ Panel.prototype = {
     },
 
     _hidePanel: function(force) {
-        this._clearTimers();
+        this._showHideTimer = 0;
 
-        if ((!this._hideable && !force) || global.menuStackLength > 0 || this.isMouseOverPanel) return;
+        if ((this._shouldShow && !force) || global.menuStackLength > 0) return;
 
         // Force the panel to be on top (hack to correct issues when switching workspace)
         Main.layoutManager._windowsRestacked();
