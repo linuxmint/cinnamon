@@ -1207,7 +1207,7 @@ StScrollBar StButton#vhandle:hover {
 	border-radius: 4px;
 	padding: 5px;
 }
-.sound-button:hover {
+.sound-button:hover, .sound-button:active {
 	border: 1px solid white;
 }
 .sound-button StIcon {
