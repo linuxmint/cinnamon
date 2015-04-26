@@ -231,7 +231,7 @@ AC_CONFIG_FILES([
   docs/reference/cinnamon/Makefile
   docs/reference/cinnamon/cinnamon-docs.sgml
   docs/reference/st/Makefile
-  docs/reference/st/st-docs.sgml
+  docs/reference/st/cinnamon-st-docs.sgml
   js/Makefile
   js/misc/config.js
   src/Makefile

@@ -6,9 +6,9 @@
 ]>
 <book id="index">
   <bookinfo>
-    <title>St Reference Manual</title>
+    <title>Cinnamon St Reference Manual</title>
     <releaseinfo>
-      for St @VERSION@.
+      for Cinnamon @VERSION@.
       <!--The latest version of this documentation can be found on-line at
       <ulink role="online-location" url="http://[SERVER]/st/index.html">http://[SERVER]/st/</ulink>.-->
     </releaseinfo>
