@@ -1,1 +1,1 @@
-SUBDIRS = cinnamon st
+SUBDIRS = cinnamon cinnamon-js st

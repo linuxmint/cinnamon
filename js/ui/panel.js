@@ -139,7 +139,7 @@ function checkPanelUpgrade()
 }
 
 /**
- * PanelManager
+ * #PanelManager
  * 
  * @short_description: Manager of Cinnamon panels
  *
@@ -615,8 +615,7 @@ PanelManager.prototype = {
 } 
 
 /**
- * PanelDummy
- * 
+ * #PanelDummy
  * @short_description: Dummy panels for users to select new position of panel
  *
  * #PanelDummy creates some boxes at possible panel locations for users to 
