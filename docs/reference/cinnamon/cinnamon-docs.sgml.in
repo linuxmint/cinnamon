@@ -13,6 +13,11 @@
   </bookinfo>
 
   <chapter>
+    <title>Javascript</title>
+    <xi:include href="js/applet.xml"/>
+  </chapter>
+
+  <chapter>
     <title>Actors</title>
     <xi:include href="xml/cinnamon-generic-container.xml"/>
     <xi:include href="xml/cinnamon-slicer.xml"/>

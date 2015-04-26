@@ -1,0 +1,113 @@
+<?xml version="1.0"?>
+<!DOCTYPE refentry PUBLIC "-//OASIS//DTD DocBook XML V4.3//EN"
+"http://www.oasis-open.org/docbook/xml/4.3/docbookx.dtd"
+[
+<!ENTITY % local.common.attrib "xmlns:xi  CDATA  #FIXED 'http://www.w3.org/2003/XInclude'">
+]>
+<refentry id="Applet-Applet">
+  <refmeta>
+    <refentrytitle role="top_of_page" id="Applet.Applet.top_of_page">Applet</refentrytitle>
+    <manvolnum>3</manvolnum>
+    <refmiscinfo>
+      Applet
+    </refmiscinfo>
+  </refmeta>
+  <refnamediv>
+    <refname>Applet</refname>
+    <refpurpose>Applets to be put into panels</refpurpose>
+  </refnamediv>
+
+  <refsect1 id="Applet-Applet.functions" role="functions_proto">
+    <title role="functions_proto.title">Functions</title>
+    <informaltable pgwide="1" frame="none">
+      <tgroup cols="2">
+        <colspec colname="functions_return" colwidth="150px"/>
+        <colspec colname="functions_name"/>
+        <tbody>
+          <row>
+            <entry role="function_type">
+              <link linkend="void">
+                <returnvalue>Applet.Applet</returnvalue>
+              </link>
+            </entry>
+            <entry role="function_name">
+              <link linkend="Applet-Applet-new">new Applet.Applet</link>&#160;<phrase role="c_punctuation">()</phrase>
+            </entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </informaltable>
+  </refsect1>
+  <refsect1 id="Applet-Applet.properties" role="properties">
+    <title role="properties.title">Properties</title>
+    <informaltable frame="none">
+      <tgroup cols="3">
+        <colspec colname="properties_type" colwidth="150px"/>
+        <colspec colname="properties_name" colwidth="300px"/>
+        <tbody>
+          <row>
+            <entry role="property_type">
+              <link linkend="StBoxLayout"><type>StBoxLayout</type></link>
+            </entry>
+            <entry role="property_name">
+              <link linkend="Applet-Applet--actor">actor</link>
+            </entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </informaltable>
+  </refsect1>
+  <refsect1 id="StWidget.object-hierarchy" role="object_hierarchy">
+    <title role="object_hierarchy.title">Object Hierarchy</title>
+    <screen>
+      <link linkend="Object">Object</link>
+      <phrase role="lineart">&#9584;&#9472;&#9472;</phrase> Applet.Applet
+    </screen>
+  </refsect1>
+
+  <refsect1 id="StWidget.description" role="desc">
+    <title role="desc.title">Description</title>
+    <para><link linkend="Applet-Applet"><type>Applet.Applet</type></link> is a class for other Applets to inherit</para>
+  </refsect1>
+  <refsect1 id="StWidget.functions_details" role="details">
+    <title role="details.title">Functions</title>
+    <refsect2 id="st-widget-set-style-pseudo-class" role="function">
+      <title>new Applet.Applet&#160;()</title>
+      <indexterm zone="Applet-Applet-new"><primary>new Applet.Applet</primary></indexterm>
+      <programlisting language="C"><link linkend="Applet-Applet"><returnvalue>Applet.Applet</returnvalue></link>
+new Applet.Applet (<parameter><link linkend="StSide"><type>StSide</type></link> orientation</parameter>,
+                   <parameter><link linkend="int"   ><type>int</type></link>    panelHeight</parameter>,
+                   <parameter><link linkend="int"   ><type>int</type></link>    instanceId</parameter>);</programlisting>
+      <para>Creates a new <link linkend="Applet-Applet">Applet.Applet</link> object.</para>
+      <refsect3 role="parameters">
+        <title>Parameters</title>
+        <informaltable role="parameters_table" pgwide="1" frame="none">
+          <tgroup cols="3">
+            <colspec colname="parameters_name" colwidth="150px"/>
+            <colspec colname="parameters_description"/>
+            <colspec colname="parameters_annotations" colwidth="200px"/>
+            <tbody>
+              <row><entry role="parameter_name"><para>orientation</para></entry>
+                <entry role="parameter_description"><para>orientation of panel containing actor</para></entry>
+                <entry role="parameter_annotations"></entry></row>
+              <row><entry role="parameter_name"><para>panelHeight</para></entry>
+                <entry role="parameter_description"><para>the height of the panel</para></entry>
+                <entry role="parameter_annotations"></entry></row>
+        </tbody></tgroup></informaltable>
+      </refsect3>
+    </refsect2>
+  </refsect1>
+
+  <refsect1 id="Applet-Applet.property-details" role="property_details">
+    <title role="property_details.title">Property Details</title>
+    <refsect2 id="Applet-Applet--actor" role="property">
+      <title>
+      </title>
+      <indexterm zone="Applet-Applet--actor">
+        <primary>Applet-Applet:actor</primary>
+      </indexterm>
+      <programlisting>  “actor”                    <link linkend="StBoxLayout"><type>StBoxLayout</type></link></programlisting>
+      <para>The applet actor.</para>
+    </refsect2>
+  </refsect1>
+</refentry>
