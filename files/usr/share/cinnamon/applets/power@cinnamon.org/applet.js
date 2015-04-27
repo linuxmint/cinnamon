@@ -189,106 +189,6 @@ BrightnessSlider.prototype = {
     }
 };
 
-const INHIBIT_IDLE_FLAG = 8; /* idle inhibit only */
-
-function InhibitSwitch() {
-    this._init.apply(this);
-}
-
-InhibitSwitch.prototype = {
-    __proto__: PopupMenu.PopupBaseMenuItem.prototype,
-
-    _init: function(params) {
-        PopupMenu.PopupBaseMenuItem.prototype._init.call(this, params);
-
-        this.label = new St.Label({ text: _("Prevent system idling") });
-
-        this._statusIcon = new St.Icon({ style_class: 'popup-menu-icon',
-                                           icon_type: St.IconType.SYMBOLIC,
-                                           icon_name: "dialog-warning-symbolic",
-                                          reactive: true});
-
-        this._switch = new PopupMenu.Switch(false);
-
-        this.addActor(this.label);
-        this.addActor(this._statusIcon);
-
-        this._statusBin = new St.Bin({ x_align: St.Align.END });
-        this.addActor(this._statusBin, { expand: true, span: -1, align: St.Align.END });
-        this._statusBin.child = this._switch.actor;
-
-        this.actor.hide();
-        this.tooltip = new Tooltips.Tooltip(this._statusIcon, "");
-
-        this.sessionProxy = null;
-        this.sessionCookie = null;
-        this.sigAddedId = 0
-        this.sigRemovedId = 0
-
-        GnomeSession.SessionManager(Lang.bind(this, function(proxy, error) {
-            if (error)
-                return;
-
-            this.sessionProxy = proxy;
-            this.actor.show();
-            this.updateStatus();
-            this.propId = this.sessionProxy.connect("g-properties-changed",
-                                                    Lang.bind(this, this.updateStatus));
-        }));
-    },
-
-    activate: function(event) {
-        if (this._switch.actor.mapped) {
-            this._switch.toggle();
-        }
-
-        this.toggled(this._switch.state);
-
-        PopupMenu.PopupBaseMenuItem.prototype.activate.call(this, event, true);
-    },
-
-    updateStatus: function(o) {
-        this.sessionProxy.IsInhibitedRemote(INHIBIT_IDLE_FLAG, Lang.bind(this, function(is_inhibited) {
-            if (is_inhibited[0] && !this.sessionCookie) {
-                this.tooltip.set_text(_("Another program is already inhibiting idle"));
-                this._statusIcon.show();
-            } else {
-                this.tooltip.set_text("");
-                this._statusIcon.hide();
-            }
-        }));
-    },
-
-    toggled: function(active) {
-        if (active && !this.sessionCookie) {
-            this.sessionProxy.InhibitRemote("power@cinnamon.org",
-                                            0,
-                                            "prevent idle functions like screen blanking and dimming",
-                                            INHIBIT_IDLE_FLAG,
-                                            Lang.bind(this, function(cookie) {
-                                                this.sessionCookie = cookie;
-                                                this.updateStatus();
-                                            }));
-        } else if (!active && this.sessionCookie) {
-            this.sessionProxy.UninhibitRemote(this.sessionCookie);
-            this.sessionCookie = null;
-            this.updateStatus();
-        }
-    },
-
-    kill: function() {
-        if (!this.sessionProxy)
-            return;
-
-        if (this.sessionCookie) {
-            this.sessionProxy.UninhibitRemote(this.sessionCookie);
-            this.sessionCookie = null;
-        }
-
-        this.sessionProxy.disconnect(this.propId);
-    }
-};
-
 function MyApplet(metadata, orientation, panel_height, instanceId) {
     this._init(metadata, orientation, panel_height, instanceId);
 }
@@ -326,9 +226,6 @@ MyApplet.prototype = {
             this.menu.addMenuItem(this.keyboard);
 
             this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
-
-            this.inhibitSwitch = new InhibitSwitch();
-            this.menu.addMenuItem(this.inhibitSwitch);
 
             this.menu.addSettingsAction(_("Power Settings"), 'power');
 
@@ -489,7 +386,6 @@ MyApplet.prototype = {
 
     on_applet_removed_from_panel: function() {
         Main.systrayManager.unregisterId(this.metadata.uuid);
-        this.inhibitSwitch.kill();
     }
 };
 
