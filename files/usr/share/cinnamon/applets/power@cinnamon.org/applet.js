@@ -372,6 +372,61 @@ MyApplet.prototype = {
         this.brightness._getBrightnessForcedUpdate();
     },
 
+    _getDeviceStatus: function(device) {
+    	status = ""
+    	let [device_id, device_type, icon, percentage, state, seconds] = device;
+    	if (device_type == UPDeviceType.BATTERY) {
+            let time = Math.round(seconds / 60);
+            
+            let minutes = time % 60;
+            let hours = Math.floor(time / 60);
+         
+            if (state == UPDeviceState.CHARGING) {
+            	if (time > 60) {
+                    if (minutes == 0) {
+                        status = ngettext("Charging - %d hour until fully charged", "Charging - %d hours until fully charged", hours).format(hours);
+                    } 
+                    else {
+                        /* TRANSLATORS: this is a time string, as in "%d hours %d minutes remaining" */
+                        let template = _("Charging - %d %s %d %s until fully charged");
+                        status = template.format (hours, ngettext("hour", "hours", hours), minutes, ngettext("minute", "minutes", minutes));
+                    }
+                } 
+                else {
+                    status = ngettext("Charging - %d minute until fully charged", "Charging - %d minutes until fully charged", minutes).format(minutes);
+                }
+            }
+            else if (state == UPDeviceState.FULLY_CHARGED) {
+            	status = _("Fully charged");
+            }
+            else {
+            	if (time == 0) {
+            		// 0 is reported when UPower does not have enough data to estimate battery life
+            		status = _("Estimating...");
+            	}
+            	else if (time > 60) {
+                    if (minutes == 0) {
+                        status = ngettext("Using battery power - %d hour remaining", "Using battery power - %d hours remaining", hours).format(hours);
+                    } 
+                    else {
+                        /* TRANSLATORS: this is a time string, as in "%d hours %d minutes remaining" */
+                        let template = _("Using battery power - %d %s %d %s remaining");
+                        status = template.format (hours, ngettext("hour", "hours", hours), minutes, ngettext("minute", "minutes", minutes));
+                    }
+                } 
+                else {
+                    status = ngettext("Using battery power - %d minute remaining", "Using battery power - %d minutes remaining", minutes).format(minutes);
+                }
+            }
+        } 
+        else {
+            this._hasPrimary = false;
+            this._batteryItem.actor.hide();
+        }
+
+        return status;
+    },
+
     _readPrimaryDevice: function() {
         this._proxy.GetPrimaryDeviceRemote(Lang.bind(this, function(device, error) {
             if (error) {
@@ -389,30 +444,11 @@ MyApplet.prototype = {
             let [device_id, device_type, icon, percentage, state, seconds] = device;
             if (device_type == UPDeviceType.BATTERY) {
                 this._hasPrimary = true;
-                let time = Math.round(seconds / 60);
-                if (time == 0) {
-                    // 0 is reported when UPower does not have enough data
-                    // to estimate battery life
-                    this._batteryItem.label.text = _("Estimating...");
-                } else {
-                    let minutes = time % 60;
-                    let hours = Math.floor(time / 60);
-                    let timestring;
-                    if (time > 60) {
-                        if (minutes == 0) {
-                            timestring = ngettext("Using battery power - %d hour remaining", "Using battery power - %d hours remaining", hours).format(hours);
-                        } else {
-                            /* TRANSLATORS: this is a time string, as in "%d hours %d minutes remaining" */
-                            let template = _("Using battery power - %d %s %d %s remaining");
-                            timestring = template.format (hours, ngettext("hour", "hours", hours), minutes, ngettext("minute", "minutes", minutes));
-                        }
-                    } else
-                        timestring = ngettext("Using battery power - %d minute remaining", "Using battery power - %d minutes remaining", minutes).format(minutes);
-                    this._batteryItem.label.text = timestring;
-                    this.tooltipText = timestring;
-                    this.updateTooltip();
-                }
-                this._primaryPercentage.text = C_("percent of battery remaining", "%d%%").format(Math.round(percentage));
+                let status = this._getDeviceStatus(device);
+                this._batteryItem.label.text = status;
+                this.tooltipText = status;
+                this.updateTooltip();
+                this._primaryPercentage.text = "%d%%".format(Math.round(percentage));
                 this._batteryItem.actor.show();
             } else {
                 this._hasPrimary = false;
@@ -434,21 +470,19 @@ MyApplet.prototype = {
             let devices = result[0];
             let position = 0;
             for (let i = 0; i < devices.length; i++) {
-                let [device_id, device_type] = devices[i];
-
-                if (this._hasPrimary == false) {
-                    if (device_type == UPDeviceType.AC_POWER) {
-                        this.tooltipText = _("AC adapter");
-                        this.updateTooltip();
-                    }
-                    else if (device_type == UPDeviceType.BATTERY) {
-                        this.tooltipText = _("Laptop battery");
-                        this.updateTooltip();
-                    }
-                }
+                let [device_id, device_type, icon, percentage, state, seconds] = devices[i];
 
                 if (device_type == UPDeviceType.AC_POWER || (this._hasPrimary && device_id == this._primaryDeviceId))
                     continue;
+
+                if (this._hasPrimary == false) {
+                	// We didn't find any primary device.. 
+                    if (device_type == UPDeviceType.BATTERY) {
+                    	let status = this._getDeviceStatus(devices[i]);
+                        this.tooltipText = status;
+                        this.updateTooltip();
+                    }
+                }
 
                 let item = new DeviceItem (devices[i]);
                 this._deviceItems.push(item);
