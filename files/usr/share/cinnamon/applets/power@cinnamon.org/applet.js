@@ -105,19 +105,20 @@ DeviceItem.prototype = {
     }
 }
 
-function BrightnessSlider(applet, label, icon, busName){
-    this._init(applet, label, icon, busName);
+function BrightnessSlider(applet, label, icon, busName, minimum_value){
+    this._init(applet, label, icon, busName, minimum_value);
 }
 
 BrightnessSlider.prototype = {
     __proto__: PopupMenu.PopupSliderMenuItem.prototype,
 
-    _init: function(applet, label, icon, busName){
+    _init: function(applet, label, icon, busName, minimum_value){
         PopupMenu.PopupSliderMenuItem.prototype._init.call(this, 0);
         this.actor.hide();
 
         this._applet = applet;
         this._seeking = false;
+        this._minimum_value = minimum_value;
 
         this.connect("drag-begin", Lang.bind(this, function(){
             this._seeking = true;
@@ -157,6 +158,9 @@ BrightnessSlider.prototype = {
     },
 
     _sliderChanged: function(slider, value) {
+        if (value < this._minimum_value) {
+            value = this._minimum_value;
+        }
         this._setBrightness(Math.round(value * 100));
     },
 
@@ -220,8 +224,8 @@ MyApplet.prototype = {
 
             this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
 
-            this.brightness = new BrightnessSlider(this, _("Brightness"), "display-brightness", BrightnessBusName);
-            this.keyboard = new BrightnessSlider(this, _("Keyboard backlight"), "keyboard-brightness", KeyboardBusName);
+            this.brightness = new BrightnessSlider(this, _("Brightness"), "display-brightness", BrightnessBusName, 0.01);
+            this.keyboard = new BrightnessSlider(this, _("Keyboard backlight"), "keyboard-brightness", KeyboardBusName, 0);
             this.menu.addMenuItem(this.brightness);
             this.menu.addMenuItem(this.keyboard);
 
