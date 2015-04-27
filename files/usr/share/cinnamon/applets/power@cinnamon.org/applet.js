@@ -390,6 +390,12 @@ MyApplet.prototype = {
                 this._batteryItem.actor.hide();
                 return;
             }
+            
+            if (device.length == 1) {
+                // Primary Device can be an array of primary devices rather than a single device, in that case, take the first one.
+            	device = device[0];
+            }
+
             let [device_id, device_type, icon, percentage, state, seconds] = device;
             if (device_type == UPDeviceType.BATTERY) {
                 this._hasPrimary = true;
