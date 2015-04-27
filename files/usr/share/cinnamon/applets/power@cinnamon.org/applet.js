@@ -309,7 +309,7 @@ MyApplet.prototype = {
             this.menuManager.addMenu(this.menu);
 
             this.brightness = new BrightnessSlider(this, _("Brightness"), "display-brightness", BrightnessBusName);
-            this.keyboard = new BrightnessSlider(this, _("Keyboard"), "keyboard-brightness", KeyboardBusName);
+            this.keyboard = new BrightnessSlider(this, _("Keyboard backlight"), "keyboard-brightness", KeyboardBusName);
             this.menu.addMenuItem(this.brightness);
             this.menu.addMenuItem(this.keyboard);
 
