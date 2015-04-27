@@ -180,7 +180,6 @@ BrightnessSlider.prototype = {
             this.tooltipText += ": " + value + "%";
 
         this.tooltip.set_text(this.tooltipText);
-        this._applet.updateTooltip();
     }
 };
 
@@ -346,16 +345,7 @@ MyApplet.prototype = {
 
     updateTooltip: function(){
         let tooltip = [];
-
-        //show brightness and keyboard information in the tooltip only if they are also visible in the menu
-        if(this.brightness.actor.visible)
-            tooltip.push(this.brightness.tooltipText);
-
-        if(this.keyboard.actor.visible)
-            tooltip.push(this.keyboard.tooltipText);
-
         tooltip.push(this.tooltipText);
-
         this.set_applet_tooltip(tooltip.join("\n"));
     },
 
@@ -410,15 +400,14 @@ MyApplet.prototype = {
                     let timestring;
                     if (time > 60) {
                         if (minutes == 0) {
-                            timestring = ngettext("%d hour remaining", "%d hours remaining", hours).format(hours);
+                            timestring = ngettext("Using battery power - %d hour remaining", "Using battery power - %d hours remaining", hours).format(hours);
                         } else {
                             /* TRANSLATORS: this is a time string, as in "%d hours %d minutes remaining" */
-                            let template = _("%d %s %d %s remaining");
-
+                            let template = _("Using battery power - %d %s %d %s remaining");
                             timestring = template.format (hours, ngettext("hour", "hours", hours), minutes, ngettext("minute", "minutes", minutes));
                         }
                     } else
-                        timestring = ngettext("%d minute remaining", "%d minutes remaining", minutes).format(minutes);
+                        timestring = ngettext("Using battery power - %d minute remaining", "Using battery power - %d minutes remaining", minutes).format(minutes);
                     this._batteryItem.label.text = timestring;
                     this.tooltipText = timestring;
                     this.updateTooltip();
