@@ -1241,6 +1241,7 @@ MyApplet.prototype = {
         let appbutton = new AppMenuButton(this, metaWindow, true, this.orientation, this._panelHeight, true, this.scrollable, this.middleClickClose);
         this._windows.push(appbutton);
         this.myactor.add(appbutton.actor);
+        appbutton.doFocus();
         if (global.screen.get_active_workspace() != metaWindow.get_workspace())
             appbutton.actor.hide();
     },
