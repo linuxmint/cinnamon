@@ -376,7 +376,7 @@ MyApplet.prototype = {
                                 let gicon = Gio.icon_new_for_string(icon);
                                 this._applet_icon.gicon = gicon;
                             }
-                            this.showed_panel_info = true;
+                            showed_panel_info = true;
                         }
                     }
 
