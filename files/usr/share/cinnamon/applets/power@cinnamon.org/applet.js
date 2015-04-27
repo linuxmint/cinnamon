@@ -42,6 +42,35 @@ const UPDeviceState = {
     PENDING_DISCHARGE: 6
 };
 
+function deviceTypeToString(type) {
+    switch (type) {
+        case UPDeviceType.AC_POWER:
+            return _("AC adapter");
+        case UPDeviceType.BATTERY:
+            return _("Laptop battery");
+        case UPDeviceType.UPS:
+            return _("UPS");
+        case UPDeviceType.MONITOR:
+            return _("Monitor");
+        case UPDeviceType.MOUSE:
+            return _("Mouse");
+        case UPDeviceType.KEYBOARD:
+            return _("Keyboard");
+        case UPDeviceType.PDA:
+            return _("PDA");
+        case UPDeviceType.PHONE:
+            return _("Cell phone");
+        case UPDeviceType.MEDIA_PLAYER:
+            return _("Media player");
+        case UPDeviceType.TABLET:
+            return _("Tablet");
+        case UPDeviceType.COMPUTER:
+            return _("Computer");
+        default:
+            return _("Unknown");
+    }
+}
+
 function DeviceItem() {
     this._init.apply(this, arguments);
 }
@@ -56,16 +85,16 @@ DeviceItem.prototype = {
 
         this._box = new St.BoxLayout({ style_class: 'popup-device-menu-item' });
         this._vbox = new St.BoxLayout({ style_class: 'popup-device-menu-item', vertical: true});
-        this._label = new St.Label({ text: this._deviceTypeToString(device_type) });
+        this.label = new St.Label({ text: deviceTypeToString(device_type) });
         let statusLabel = new St.Label({ text: status, style_class: 'popup-inactive-menu-item' });
-        let percentLabel = new St.Label({ text: "%d%%".format(Math.round(percentage))});
+        percentLabel = new St.Label({ text: "%d%%".format(Math.round(percentage))});
 
         this._icon = new St.Icon({ gicon: Gio.icon_new_for_string(icon),
                                    icon_type: St.IconType.SYMBOLIC,
                                    style_class: 'popup-menu-icon' });
 
         this._box.add_actor(this._icon);
-        this._box.add_actor(this._label);
+        this._box.add_actor(this.label);
         this._box.add_actor(percentLabel);
 
         this._vbox.add_actor(this._box);
@@ -73,35 +102,6 @@ DeviceItem.prototype = {
         
         this.addActor(this._vbox);
 
-    },
-
-    _deviceTypeToString: function(type) {
-        switch (type) {
-            case UPDeviceType.AC_POWER:
-                return _("AC adapter");
-            case UPDeviceType.BATTERY:
-                return _("Laptop battery");
-            case UPDeviceType.UPS:
-                return _("UPS");
-            case UPDeviceType.MONITOR:
-                return _("Monitor");
-            case UPDeviceType.MOUSE:
-                return _("Mouse");
-            case UPDeviceType.KEYBOARD:
-                return _("Keyboard");
-            case UPDeviceType.PDA:
-                return _("PDA");
-            case UPDeviceType.PHONE:
-                return _("Cell phone");
-            case UPDeviceType.MEDIA_PLAYER:
-                return _("Media player");
-            case UPDeviceType.TABLET:
-                return _("Tablet");
-            case UPDeviceType.COMPUTER:
-                return _("Computer");
-            default:
-                return _("Unknown");
-        }
     }
 }
 
@@ -270,50 +270,48 @@ MyApplet.prototype = {
     },
 
     _getDeviceStatus: function(device) {
-        status = ""
+        let status = ""
         let [device_id, device_type, icon, percentage, state, seconds] = device;
-        if (device_type == UPDeviceType.BATTERY) {
-            let time = Math.round(seconds / 60);
-            
-            let minutes = time % 60;
-            let hours = Math.floor(time / 60);
-         
-            if (state == UPDeviceState.CHARGING) {
-                if (time > 60) {
-                    if (minutes == 0) {
-                        status = ngettext("Charging - %d hour until fully charged", "Charging - %d hours until fully charged", hours).format(hours);
-                    } 
-                    else {
-                        /* TRANSLATORS: this is a time string, as in "%d hours %d minutes remaining" */
-                        let template = _("Charging - %d %s %d %s until fully charged");
-                        status = template.format (hours, ngettext("hour", "hours", hours), minutes, ngettext("minute", "minutes", minutes));
-                    }
+
+        let time = Math.round(seconds / 60);
+        
+        let minutes = time % 60;
+        let hours = Math.floor(time / 60);
+     
+        if (state == UPDeviceState.CHARGING) {
+            if (time > 60) {
+                if (minutes == 0) {
+                    status = ngettext("Charging - %d hour until fully charged", "Charging - %d hours until fully charged", hours).format(hours);
                 } 
                 else {
-                    status = ngettext("Charging - %d minute until fully charged", "Charging - %d minutes until fully charged", minutes).format(minutes);
+                    /* TRANSLATORS: this is a time string, as in "%d hours %d minutes remaining" */
+                    let template = _("Charging - %d %s %d %s until fully charged");
+                    status = template.format (hours, ngettext("hour", "hours", hours), minutes, ngettext("minute", "minutes", minutes));
                 }
-            }
-            else if (state == UPDeviceState.FULLY_CHARGED) {
-                status = _("Fully charged");
-            }
+            } 
             else {
-                if (time == 0) {
-                    // 0 is reported when UPower does not have enough data to estimate battery life
-                    status = _("Estimating...");
-                }
-                else if (time > 60) {
-                    if (minutes == 0) {
-                        status = ngettext("Using battery power - %d hour remaining", "Using battery power - %d hours remaining", hours).format(hours);
-                    } 
-                    else {
-                        /* TRANSLATORS: this is a time string, as in "%d hours %d minutes remaining" */
-                        let template = _("Using battery power - %d %s %d %s remaining");
-                        status = template.format (hours, ngettext("hour", "hours", hours), minutes, ngettext("minute", "minutes", minutes));
-                    }
+                status = ngettext("Charging - %d minute until fully charged", "Charging - %d minutes until fully charged", minutes).format(minutes);
+            }
+        }
+        else if (state == UPDeviceState.FULLY_CHARGED) {
+            status = _("Fully charged");
+        }
+        else {
+            if (time == 0) {
+                status = _("Using battery power");
+            }
+            else if (time > 60) {
+                if (minutes == 0) {
+                    status = ngettext("Using battery power - %d hour remaining", "Using battery power - %d hours remaining", hours).format(hours);
                 } 
                 else {
-                    status = ngettext("Using battery power - %d minute remaining", "Using battery power - %d minutes remaining", minutes).format(minutes);
+                    /* TRANSLATORS: this is a time string, as in "%d hours %d minutes remaining" */
+                    let template = _("Using battery power - %d %s %d %s remaining");
+                    status = template.format (hours, ngettext("hour", "hours", hours), minutes, ngettext("minute", "minutes", minutes));
                 }
+            } 
+            else {
+                status = ngettext("Using battery power - %d minute remaining", "Using battery power - %d minutes remaining", minutes).format(minutes);
             }
         }
 
@@ -347,6 +345,9 @@ MyApplet.prototype = {
             this._deviceItems.forEach(function(i) { i.destroy(); });
             this._deviceItems = [];
 
+            let showed_panel_info = false;
+            let devices_stats = [];
+
             if (!error) {
                 let devices = result[0];
                 let position = 0;
@@ -357,10 +358,12 @@ MyApplet.prototype = {
                         continue;
 
                     let status = this._getDeviceStatus(devices[i]);
+                    let stats = "%s (%d%%)".format(deviceTypeToString(device_type), percentage);
+                    devices_stats.push(stats);
 
                     if (this._primaryDeviceId == null || this._primaryDeviceId == device_id) {
                         // Info for the primary battery (either the primary device, or any battery device if there is no primary device)
-                        if (device_type == UPDeviceType.BATTERY) {
+                        if (device_type == UPDeviceType.BATTERY && !showed_panel_info) {
                             this.set_applet_tooltip(status);
                             if (this.showpercentage) {
                                 this.set_applet_label("%d%%".format(Math.round(percentage)));
@@ -368,24 +371,39 @@ MyApplet.prototype = {
                             else {
                                 this.set_applet_label("");
                             }
+                            if(icon){
+                                this.set_applet_icon_symbolic_name('battery-missing');
+                                let gicon = Gio.icon_new_for_string(icon);
+                                this._applet_icon.gicon = gicon;
+                            }
+                            this.showed_panel_info = true;
                         }
                     }
 
                     let item = new DeviceItem (devices[i], status);
                     this._deviceItems.push(item);
                     this.menu.addMenuItem(item, this._otherDevicePosition + position);
+                    this.num_devices = this.num_devices + 1;
                     position++;
                 }
             }
+
+            // If we have devices in the menu but none are shown in the panel, show a summary
+            if (this._deviceItems.length > 0 && !showed_panel_info) {
+                this.set_applet_tooltip(devices_stats.join(", "));
+                let icon = this._proxy.Icon;
+                if(icon){
+                    this.set_applet_icon_symbolic_name('battery-full');
+                    let gicon = Gio.icon_new_for_string(icon);
+                    this._applet_icon.gicon = gicon;
+                }
+                else {
+                    this.set_applet_icon_symbolic_name('battery-full');
+                }
+            }
+
         }));
         
-        // Update the panel icon
-        let icon = this._proxy.Icon;
-        if(icon){
-            this.set_applet_icon_symbolic_name('battery-missing');
-            let gicon = Gio.icon_new_for_string(icon);
-            this._applet_icon.gicon = gicon;
-        }
     },
 
     on_applet_removed_from_panel: function() {
