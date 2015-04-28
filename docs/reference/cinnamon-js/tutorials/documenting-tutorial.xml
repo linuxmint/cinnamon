@@ -1,0 +1,28 @@
+<chapter id="documenting-tutorial">
+  <title>Tutorials</title>
+  <para>It is also possible to write tutorials that are not part of the code. For example, this. They can be found in <code>docs/reference/cinnamon-js/tutorials/</code>, and are included into the cinnamon documentation via the <code>docs/reference/cinnamon-js/tutorial.xml</code> file. These are plain docbook items, and existing docbook tutorials are suitable.</para> 
+  <para>The following sections will guide you through the DocBook weirdness</para>
+
+  <sect2 id="documenting-code-tutorial-general">
+    <title>General tips</title>
+    <para>To show &gt; and &lt;, you have to escape the characters in the standard HTML way. To show inline code, use the <code>&lt;code&gt;</code> tag. To display multi-line code, use the <code>&lt;programlisting&gt;</code> tag. To enable line-numbering, you have to enclose <code>&lt;programlisting&gt;</code> inside an <code>&lt;informalexample&gt;</code> tag. Apparently only examples need line numbering.</para>
+
+    <para>If your tutorial doesn't compile properly, it is very likely that you missed a <code>&lt;/para&gt;</code> tag.</para>
+  </sect2>
+
+  <sect2>
+    <title>Part, Chapter and Sections</title>
+
+    <para>A document is composed of parts; parts are composed of chapters; chapters are composed of sections; and sections are composed of, well, more sections. It is possible to skip some layers, eg. put sections into parts, or chapters directly into documents, and there are good reasons to do so.</para>
+
+    <para>All three types of things behave differently. Parts are numbered with roman numerals. For example, a part might be labeled</para>
+    <informalexample>
+      I. Code documentation
+    </informalexample>
+    <para>Chapters and sections are not numbered. Sections can be nested. For example, you can put a section inside a section. The layering (obviously) matters. DocBook automatically counts and determines which layer each section belongs to, but it can also be done manually. A <code>&lt;sect1&gt;</code> tag refers to a layer 1 section, a <code>&lt;sect2&gt;</code> tag refers to a layer 2 section. By why would you want to do that, if DocBook can do it automatically?</para>
+
+    <para>The answer is chunking and the table of contents. Chunking is the act of splitting different sections into different pages. Different parts and chapters are always chunked, and so are layer 1 sections. A section appears on the table of contents if and only if it is a part, a chapter, or a layer 1 section inside a chapter (but a layer 1 section directly inside a part is not displayed).</para>
+
+    <para>So if you wish to use chapters but do not want the layer 1 sections to be chunked, you will want to directly place a layer 2 section inside the chapter. Similarly, if you don't want your subsections to appear in the table of contents, use a layer 2 section without a layer 1 section.</para>
+  </sect2>
+</chapter>
