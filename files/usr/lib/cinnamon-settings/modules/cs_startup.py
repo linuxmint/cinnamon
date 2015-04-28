@@ -584,8 +584,7 @@ class AutostartRow(Gtk.ListBoxRow):
 
         if self.app.icon:
             if GLib.path_is_absolute(self.app.icon):
-                iconfile = icon.to_string()
-                shown_icon = GdkPixbuf.Pixbuf.new_from_file_at_scale(iconfile, 24, 24, True)
+                shown_icon = GdkPixbuf.Pixbuf.new_from_file_at_scale(self.app.icon, 24, 24, True)
                 img = Gtk.Image.new_from_pixbuf(shown_icon)
             else:
                 pixbuf = icon_theme.load_icon(self.app.icon, 24, Gtk.IconLookupFlags.FORCE_SIZE)
