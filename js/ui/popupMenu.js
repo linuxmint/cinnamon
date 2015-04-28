@@ -364,6 +364,10 @@ PopupBaseMenuItem.prototype = {
                     childBox.x1 = x;
                     childBox.x2 = x + naturalWidth;
                 }
+                
+                //when somehow the actor is wider than the box, cut it off
+                if(childBox.x2 > box.x2)
+                    childBox.x2 = box.x2;
             } else {
                 if (child.expand) {
                     childBox.x1 = x - availWidth;
@@ -380,6 +384,10 @@ PopupBaseMenuItem.prototype = {
                     childBox.x2 = x;
                     childBox.x1 = x - naturalWidth;
                 }
+                
+                //when somehow the actor is wider than the box, cut it off
+                if(childBox.x1 < box.x1)
+                    childBox.x1 = box.x1;
             }
 
             let [minHeight, naturalHeight] = child.actor.get_preferred_height(childBox.x2 - childBox.x1);
@@ -840,8 +848,8 @@ PopupIconMenuItem.prototype = {
         this.label = new St.Label({text: text});
         this._icon = new St.Icon({ style_class: 'popup-menu-icon',
             icon_name: iconName,
-            icon_type: iconType}); 
-        this.addActor(this._icon);
+            icon_type: iconType});
+        this.addActor(this._icon, {span: 0});
         this.addActor(this.label);
     },
 
@@ -853,15 +861,6 @@ PopupIconMenuItem.prototype = {
     setIconName: function (iconName) {
         this._icon.set_icon_name(iconName);
         this._icon.set_icon_type(St.IconType.FULLCOLOR);
-    },
-
-    // Override columnWidths so that the popup menu doesn't separate the icon and the label
-    setColumnWidths: function() {
-        this._columnWidths = null;
-    },
-
-    getColumnWidths: function() {
-        return [];
     }
 }
 
