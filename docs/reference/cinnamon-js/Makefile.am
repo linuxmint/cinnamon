@@ -4,8 +4,6 @@
 # We require automake 1.6 at least.
 AUTOMAKE_OPTIONS = 1.6
 
-RUN_SCRIPT := $(shell python gen_doc.py $(PACKAGE_VERSION))
-
 # This is a blank Makefile.am for using gtk-doc.
 # Copy this to your project's API docs directory and modify the variables to
 # suit your project. See the GTK+ Makefiles in gtk+/docs/reference for examples
@@ -24,7 +22,10 @@ DOC_MAIN_SGML_FILE=$(DOC_MODULE)-docs.sgml
 # Directories containing the source code
 # gtk-doc will search all .c and .h files beneath these paths
 # for inline comments documenting functions and macros.
-DOC_SOURCE_DIR=
+# This is a hack to run the script when generating the document. By placing the
+# call here, it is called only if the gtk doc wants to be built, since variables
+# are evaluated when referenced.
+DOC_SOURCE_DIR=$(shell python gen_doc.py $(PACKAGE_VERSION))
 
 # Extra options to pass to gtkdoc-scangobj. Not normally needed.
 SCANGOBJ_OPTIONS=
