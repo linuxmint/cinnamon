@@ -1,7 +1,6 @@
 <xi:include href="tutorials/documenting-code.xml"/>
 <xi:include href="tutorials/building.xml"/>
 <part>
-  <title>Applet</title>
+  <title>Extension system</title>
   <xi:include href="tutorials/write-applet.xml"/>
-  <xi:include href="tutorials/xlet-settings.xml"/>
 </part>
