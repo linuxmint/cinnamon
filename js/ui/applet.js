@@ -271,8 +271,10 @@ Applet.prototype = {
      * Sets the tooltip of the applet
      */
     set_applet_tooltip: function (text) {
-        this._applet_tooltip_text = text;
-        this._applet_tooltip.set_text(text);
+        if (text != this._applet_tooltip_text) {
+            this._applet_tooltip_text = text;
+            this._applet_tooltip.set_text(text);
+        }
     },
 
     /**

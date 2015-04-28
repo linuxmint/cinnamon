@@ -219,6 +219,7 @@ MyApplet.prototype = {
 
             this._deviceItems = [ ];
             this._primaryDeviceId = null;
+            this.panel_icon_name = ''; // remember the panel icon name (so we only set it when it actually changes)
 
             this._otherDevicePosition = 0;
 
@@ -371,7 +372,8 @@ MyApplet.prototype = {
                             else {
                                 this.set_applet_label("");
                             }
-                            if(icon){
+                            if(icon && icon != this.panel_icon_name){
+                                this.panel_icon_name = icon;
                                 this.set_applet_icon_symbolic_name('battery-missing');
                                 let gicon = Gio.icon_new_for_string(icon);
                                 this._applet_icon.gicon = gicon;
@@ -398,13 +400,19 @@ MyApplet.prototype = {
                 if (!showed_panel_info) {
                     this.set_applet_tooltip(devices_stats.join(", "));
                     let icon = this._proxy.Icon;
-                    if(icon){
-                        this.set_applet_icon_symbolic_name('battery-full');
-                        let gicon = Gio.icon_new_for_string(icon);
-                        this._applet_icon.gicon = gicon;
+                    if(icon) {
+                        if (icon != this.panel_icon_name){
+                            this.panel_icon_name = icon;
+                            this.set_applet_icon_symbolic_name('battery-full');
+                            let gicon = Gio.icon_new_for_string(icon);
+                            this._applet_icon.gicon = gicon;
+                        }
                     }
                     else {
-                        this.set_applet_icon_symbolic_name('battery-full');
+                        if (this.panel_icon_name != 'battery-full') {
+                            this.panel_icon_name = 'battery-full';
+                            this.set_applet_icon_symbolic_name('battery-full');
+                        }
                     }
                 }
             }
