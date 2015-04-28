@@ -108,8 +108,14 @@ def write_sgml(files, version):
       for Cinnamon {0}.
     </releaseinfo>
   </bookinfo>
-
 '''.format(version))
+
+    f = open('tutorials.xml', 'r')
+    sgml.write(f.read())
+
+    sgml.write('''
+  <part>
+    <title>Cinnamon Javascript Reference</title>''')
 
     for _file in files:
         if not _file.is_interesting() and len(_file.objects) == 0:
@@ -127,7 +133,7 @@ def write_sgml(files, version):
 
         sgml.write('  </chapter>\n\n')
 
-    sgml.write('</book>\n')
+    sgml.write('</part></book>\n')
 
 
 def create_file(obj, name):

@@ -1,0 +1,10 @@
+<part>
+  <title>Documentation writing</title>
+  <xi:include href="tutorials/documenting-source.xml"/>
+  <xi:include href="tutorials/documenting-tutorial.xml"/>
+</part>
+<xi:include href="tutorials/building.xml"/>
+<part>
+  <title>Extension system</title>
+  <xi:include href="tutorials/write-applet.xml"/>
+</part>
