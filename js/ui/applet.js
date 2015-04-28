@@ -31,6 +31,7 @@ function MenuItem(label, icon, callback) {
 
 /**
  * #AppletContextMenu
+ * @short_description: Applet right-click menu
  * 
  * A context menu (right-click menu) to be used by an applet
  * 
@@ -62,6 +63,7 @@ AppletContextMenu.prototype = {
 
 /**
  * #AppletPopupMenu:
+ * @short_description: Applet left-click menu
  * 
  * A popupmenu menu (left-click menu) to be used by an applet
  * 
@@ -129,6 +131,8 @@ AppletPopupMenu.prototype = {
 
 /**
  * #Applet
+ * @short_description: Base applet class
+ *
  * @actor (St.BoxLayout): Actor of the applet
  * @_uuid (string): UUID of the applet
  * @instance_id (int): Instance id of the applet
@@ -138,7 +142,7 @@ AppletPopupMenu.prototype = {
  * @_scaleMode (boolean): Whether the applet scales according to the panel size
  * @_applet_tooltip (Tooltips.PanelItemTooltip): The tooltip of the applet
  * @_menuManager (PopupMenu.PopupMenuManager): The menu manager of the applet
- * @_applet_context_menu (AppletContextMenu): The context menu of the applet
+ * @_applet_context_menu (Applet.AppletContextMenu): The context menu of the applet
  * @_applet_tooltip_text (string): Text of the tooltip
  * 
  * Base applet class that other applets can inherit
@@ -475,6 +479,8 @@ Signals.addSignalMethods(Applet.prototype);
 
 /**
  * #IconApplet:
+ * @short_description: Applet with icon
+ *
  * @_applet_icon (St.Icon): Actor of the icon
  * 
  * Applet that contains an icon
@@ -606,6 +612,7 @@ IconApplet.prototype = {
 
 /**
  * #TextApplet:
+ * @short_description: Applet with label
  * @_applet_label (St.Label): Label of the applet
  *
  * Applet that displays a text
@@ -650,6 +657,7 @@ TextApplet.prototype = {
 
 /**
  * #TextIconApplet:
+ * @short_description: Applet with icon and label
  * @_applet_label (St.Label): Label of the applet
  *
  * Applet that displays an icon and a text. The icon is on the left of the text

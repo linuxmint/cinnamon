@@ -25,7 +25,7 @@ const DESKLET_DESTROY_TIME = 0.5;
 /**
  * #Desklet
  * @metadata (dictionary): Metadata of desklet
- * @actor (St.Actor): Actor of desklet
+ * @actor (St.BoxLayout): Actor of desklet
  * @content (St.Bin): The actor containing the content of the actor
  * @instance_id (int): Instance id of the desklet
  *

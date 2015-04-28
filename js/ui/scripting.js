@@ -169,7 +169,7 @@ function destroyTestWindows() {
 
 /**
  * defineScriptEvent
- * @name: The event will be called script.<name>
+ * @name: The event will be called script.
  * @description: Short human-readable description of the event
  *
  * Convenience function to define a zero-argument performance event
