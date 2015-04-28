@@ -7,5 +7,6 @@
 <part id="extension-system">
   <title>Extension system</title>
   <xi:include href="tutorials/write-applet.xml"/>
+  <xi:include href="tutorials/xlet-versioning.xml"/>
   <xi:include href="tutorials/xlet-settings.xml"/>
 </part>
