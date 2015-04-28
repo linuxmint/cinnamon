@@ -2,6 +2,6 @@
     "showpercentage": {
         "type": "checkbox",
         "description": "Show percentage",
-        "default": true
+        "default": false
     }
 }
