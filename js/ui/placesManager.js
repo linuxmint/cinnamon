@@ -189,15 +189,17 @@ PlacesManager.prototype = {
         * Show devices, code more or less ported from nemo-places-sidebar.c
         */
         this._volumeMonitor = Gio.VolumeMonitor.get();
-        this._volumeMonitor.connect('volume-added', Lang.bind(this, this._updateDevices));
-        this._volumeMonitor.connect('volume-removed',Lang.bind(this, this._updateDevices));
-        this._volumeMonitor.connect('volume-changed', Lang.bind(this, this._updateDevices));
-        this._volumeMonitor.connect('mount-added', Lang.bind(this, this._updateDevices));
-        this._volumeMonitor.connect('mount-removed', Lang.bind(this, this._updateDevices));
-        this._volumeMonitor.connect('mount-changed', Lang.bind(this, this._updateDevices));
+        this._volumeMonitor.connect('volume-added', Lang.bind(this, this._onVolumeAdded));
+        this._volumeMonitor.connect('volume-removed',Lang.bind(this, this._onVolumeRemoved));
+        this._volumeMonitor.connect('volume-changed', Lang.bind(this, this._onVolumeChanged));
+        this._volumeMonitor.connect('mount-added', Lang.bind(this, this._onMountAdded));
+        this._volumeMonitor.connect('mount-removed', Lang.bind(this, this._onMountRemoved));
+        this._volumeMonitor.connect('mount-changed', Lang.bind(this, this._onMountChanged));
         this._volumeMonitor.connect('drive-connected', Lang.bind(this, this._onDriveConnected));
         this._volumeMonitor.connect('drive-disconnected', Lang.bind(this, this._onDriveDisconnected));
-        this._volumeMonitor.connect('drive-changed', Lang.bind(this, this._updateDevices));    
+        this._volumeMonitor.connect('drive-changed', Lang.bind(this, this._onDriveChanged));
+
+        this._deviceUpdateAwaiting = false;
 
         this._updateDevices();
 
@@ -225,17 +227,57 @@ PlacesManager.prototype = {
         this._reloadBookmarks();
     },
 
-    _onDriveConnected: function() {        
+    // Mounting a device triggers a lot of different events, wait 3 seconds and try to only call this._updateDevices() once
+    _updateDevicesAsync: function() {
+        if (this._deviceUpdateAwaiting == false) {
+            this._deviceUpdateAwaiting = true;
+            Mainloop.timeout_add(3000, Lang.bind(this, function () {
+                this._updateDevices();
+            }));
+        }
+    },
+
+    _onVolumeAdded: function() {
+        this._updateDevicesAsync();
+    },
+
+    _onVolumeRemoved: function() {
+        this._updateDevicesAsync();
+    },
+
+    _onVolumeChanged: function() {
+        this._updateDevicesAsync();
+    },
+
+    _onMountAdded: function() {
+        this._updateDevicesAsync();
+    },
+
+    _onMountRemoved: function() {
+        this._updateDevicesAsync();
+    },
+
+    _onMountChanged: function() {
+        this._updateDevicesAsync();
+    },
+
+    _onDriveConnected: function() {
         Main.soundManager.play('plug');
-        this._updateDevices();
+        this._updateDevicesAsync();
     },
 
     _onDriveDisconnected: function() {
         Main.soundManager.play('unplug');
-        this._updateDevices();
+        this._updateDevicesAsync();
+    },
+
+    _onDriveChanged: function() {
+        this._updateDevicesAsync();
     },
 
     _updateDevices: function() {
+        this._deviceUpdateAwaiting = false;
+        global.log("PlacesManager: Updating devices");
         this._mounts = [];
 
         /* first go through all connected drives */
