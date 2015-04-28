@@ -22,6 +22,7 @@ DOC_MAIN_SGML_FILE=$(DOC_MODULE)-docs.sgml
 # Directories containing the source code
 # gtk-doc will search all .c and .h files beneath these paths
 # for inline comments documenting functions and macros.
+#
 # This is a hack to run the script when generating the document. By placing the
 # call here, it is called only if the gtk doc wants to be built, since variables
 # are evaluated when referenced.
@@ -52,7 +53,7 @@ FIXXREF_OPTIONS=
 # Used for dependencies. The docs will be rebuilt if any of these change.
 # e.g. HFILE_GLOB=$(top_srcdir)/gtk/*.h
 # e.g. CFILE_GLOB=$(top_srcdir)/gtk/*.c
-HFILE_GLOB=
+HFILE_GLOB=tutorials.xml tutorials/* *.py
 CFILE_GLOB=
 
 # Extra header to include when scanning, which are not under DOC_SOURCE_DIR

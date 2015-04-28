@@ -1,0 +1,13 @@
+<?xml version='1.0'?>
+<!DOCTYPE book PUBLIC '-//OASIS//DTD DocBook XML V4.3//EN'
+               'http://www.oasis-open.org/docbook/xml/4.3/docbookx.dtd'
+[
+  <!ENTITY % local.common.attrib "xmlns:xi  CDATA  #FIXED 'http://www.w3.org/2003/XInclude'">
+]>
+
+<chapter id="write-applet">
+  <title>Writing applets</title>
+  Writing an applet is easy. Very easy.
+
+  We have better documentation for the <link linkend="xlet-settings">Settings API</link>
+</chapter>

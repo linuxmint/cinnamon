@@ -1,0 +1,154 @@
+<?xml version='1.0'?>
+<!DOCTYPE book PUBLIC '-//OASIS//DTD DocBook XML V4.3//EN'
+'http://www.oasis-open.org/docbook/xml/4.3/docbookx.dtd'
+[
+<!ENTITY % local.common.attrib "xmlns:xi  CDATA  #FIXED 'http://www.w3.org/2003/XInclude'">
+]>
+
+<part id="documenting-code">
+  <title>Code documentation</title>
+  <chapter id="documenting-code-source">
+    <title>Documentation in source</title>
+    <para>
+      The C part of Cinnamon can be documented using standard gtk-doc format, and there should be plenty of tutorials on that. The JavaScript part of Cinnamon can also be documented using something that resembles gtk-doc format.
+    </para>
+
+    <para> Currently, we support documenting files (eg. <code>main.js</code>), objects (eg. <code>Applet.Applet</code>) and functions (including functions of files and functions of objects).  </para>
+
+    <para>
+      The documentation appears as a comment <emphasis>right before</emphasis> the thing it describes. In the case of a file, it should appear at the very beginning of the file. If a object is declared using <code>prototype</code>, then it can appear right before either the function declaration or the prototype declaration, ie. before line 1 or line 5 in the example below.
+    </para>
+    <informalexample>
+      <programlisting language="javascript">
+        function Applet() {
+            this._init()
+        }
+
+        Applet.prototype = {
+            _init: function() {
+
+            }
+        }
+      </programlisting>
+    </informalexample>
+    <para>
+      The general format of a piece of code documentation is as follows:
+    </para>
+    <informalexample>
+      <programlisting>
+        /**
+        * name_of_thing:
+        * @short_description: one-line description
+        * @prop1 (type): description
+        * @prop2 (type): description
+        * @prop3 (type): description
+        *
+        * Long description
+        *
+        * Second paragraph of long description
+        */
+      </programlisting>
+    </informalexample>
+    <para>
+      A comment block should always start with
+    </para>
+    <informalexample>
+      <programlisting>
+        /**
+      </programlisting>
+    </informalexample>
+    <para>
+      Avoid starting comments with this (use <code>/*</code> instead) even though the parser should be smart enough to not parse them, but if they look too like a piece of documentation, the parser might get confused.
+    </para>
+
+    <para>
+      The next line is the name of the thing being documented. Function, object and file documentation are distinguished using this line. They should look, respectively, like this:
+    </para>
+    <informalexample>
+      <programlisting>
+        * function_name:
+        * #ObjectName:
+        * FILE:filename.js
+      </programlisting>
+    </informalexample>
+    <para>Note that we do not have to include the namespace of an object, ie. it is <code>#ObjectName</code>, not <code>#FileName.ObjectName.</code></para>
+
+    <para>Afterwards is a short description. This is only needed for files and objects, and will be ignored for functions. It is optional, but things look ugly without it. Note that it has to be short, hence the name. It is shown in the contents page in the form</para>
+
+    <informalexample>
+      Object.Name - short description
+    </informalexample>
+
+    <para> Afterwards, all the properties of the thing should be listed. A "property" is a globally accessible variable in the case of a file, a genuine property in the case of an object, and a parameter for a function. The type of the property is optional, but leaving it out makes the documentation less helpful and also more ugly. If the description is too long, break it into two rows using a *single* line break. Single line breaks are always ignored. For example,</para>
+    <informalexample>
+      <programlisting>
+        * @prop (type): this is a very long description. Oh my gosh I am
+        * running out of space!
+      </programlisting>
+    </informalexample>
+
+    <para>After the properties, a description of the thing should be given. Use *two* line breaks to signify the end of the properties section, and write as normal. It is okay to separate two properties with two line breaks, but not recommended. For example,</para>
+
+    <informalexample>
+      <programlisting>
+        * @prop1 (type): hello
+        *
+        * @prop2 (type): world
+      </programlisting>
+    </informalexample>
+
+    <para>is fine, but two line breaks within a property description is not. eg</para>
+
+    <informalexample>
+      <programlisting>
+        * @prop1 (type): line 1
+        *
+        * line 2
+        * @prop2 (type): hello world
+      </programlisting>
+    </informalexample>
+
+    <para>is bad (line 2 will be treated as a description of the object itself).  In the description section, two line breaks will be translated into an actual line break, and a single line break is ignored.</para>
+
+    <para>At the end, in the case of a function, a return value can be specified in the form</para>
+
+    <informalexample>
+      <programlisting>
+        * Returns (type): description of what is returned
+      </programlisting>
+    </informalexample>
+
+    <para>Despite looking like a property, the description can in fact have multiple paragraphs. The following is valid</para>
+
+    <informalexample>
+      <programlisting>
+        * Returns (type): hey this function returns a really cool thing!
+        * Want to know what it is?
+        *
+        * It is a random number!
+      </programlisting>
+    </informalexample>
+
+    <para>Objects should indicate what they directly inherit in the description, using the form</para>
+
+    <informalexample>
+      <programlisting>
+        * Inherits: Applet.Applet
+      </programlisting>
+    </informalexample>
+    <para>Note that the namespace is required.</para>
+  </chapter>
+  <chapter id="documenting-code-tutorial">
+    <title>Tutorials</title>
+    <para>It is also possible to write tutorials that are not part of the code. For example, this. They can be found in <code>docs/reference/cinnamon-js/tutorials/</code>, and are included into the cinnamon documentation via the <code>docs/reference/cinnamon-js/tutorial.xml</code> file. These are plain docbook items, and existing docbook tutorials are suitable. You should use a &lt;part&gt; for a top-level page, &lt;chapter&gt; for pages that belong to a top-level structure, and &lt;section&gt; for sections within a page.</para>
+
+    <section id="documenting-code-tutorial-tips">
+      <title>Tutorial writing tips</title>
+      <para>DocBook behaves weirdly, so there are some peculiar rules to follow.</para>
+
+      <para>To show &gt; and &lt;, you have to escape the characters in the standard HTML way. To show inline code, use the <code>&lt;code&gt;</code> tag. To display multi-line code, use the <code>&lt;programlisting language="javascript"&gt;</code> tag (replace javascript with your favorite language"). To enable line-numbering, you have to enclose <code>&lt;programlisting&gt;</code> inside an <code>&lt;informalexample&gt;</code> tag. Apparently only examples need line numbering.</para>
+
+      <para>If your tutorial doesn't compile properly, it is very likely that you missed a <code>&lt;/para&gt;</code> tag.</para>
+    </section>
+  </chapter>
+</part>
