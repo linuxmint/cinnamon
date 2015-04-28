@@ -1378,6 +1378,11 @@ Panel.prototype = {
                     this._xPosition = this._xpos;
                     this._shiftActor();
         }));
+
+        if (this.bottomPosition)
+            this.actor.set_style_class_name('panel-bottom')
+        else
+            this.actor.set_style_class_name('panel-top')
     },
 
     /**
