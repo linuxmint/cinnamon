@@ -388,22 +388,28 @@ MyApplet.prototype = {
                 }
             }
 
-            // If we have devices in the menu but none are shown in the panel, show a summary
-            if (this._deviceItems.length > 0 && !showed_panel_info) {
-                this.set_applet_tooltip(devices_stats.join(", "));
-                let icon = this._proxy.Icon;
-                if(icon){
-                    this.set_applet_icon_symbolic_name('battery-full');
-                    let gicon = Gio.icon_new_for_string(icon);
-                    this._applet_icon.gicon = gicon;
-                }
-                else {
-                    this.set_applet_icon_symbolic_name('battery-full');
+            // Disable the applet if we don't have any devices
+            if (this._deviceItems.length == 0) {
+                this.set_applet_enabled(false);
+            }
+            else {
+                this.set_applet_enabled(true);
+                // If we have devices in the menu but none are shown in the panel, show a summary
+                if (!showed_panel_info) {
+                    this.set_applet_tooltip(devices_stats.join(", "));
+                    let icon = this._proxy.Icon;
+                    if(icon){
+                        this.set_applet_icon_symbolic_name('battery-full');
+                        let gicon = Gio.icon_new_for_string(icon);
+                        this._applet_icon.gicon = gicon;
+                    }
+                    else {
+                        this.set_applet_icon_symbolic_name('battery-full');
+                    }
                 }
             }
 
         }));
-        
     },
 
     on_applet_removed_from_panel: function() {

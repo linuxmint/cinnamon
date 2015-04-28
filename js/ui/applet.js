@@ -170,6 +170,7 @@ Applet.prototype = {
         this._newOrder = null; //  Used when moving an applet
         this._panelLocation = null; // Backlink to the panel location our applet is in, set by Cinnamon.
         this._newPanelLocation = null; //  Used when moving an applet
+        this._applet_enabled = true; // Whether the applet is enabled or not (if not it hides in the panel as if it wasn't there)
 
         this._panelHeight = panel_height ? panel_height : 25;
         this.instance_id = instance_id; // Needed by appletSettings
@@ -243,19 +244,21 @@ Applet.prototype = {
     },
 
     _onButtonPressEvent: function (actor, event) {
-        if (event.get_button() == 1) {
-            if (!this._draggable.inhibit) {
-                return false;
-            } else {
-                if (this._applet_context_menu.isOpen) {
-                    this._applet_context_menu.toggle();
+        if (this._applet_enabled) {
+            if (event.get_button() == 1) {
+                if (!this._draggable.inhibit) {
+                    return false;
+                } else {
+                    if (this._applet_context_menu.isOpen) {
+                        this._applet_context_menu.toggle();
+                    }
+                    this.on_applet_clicked(event);
                 }
-                this.on_applet_clicked(event);
             }
-        }
-        if (event.get_button()==3){            
-            if (this._applet_context_menu._getMenuItems().length > 0) {
-                this._applet_context_menu.toggle();			
+            if (event.get_button()==3){            
+                if (this._applet_context_menu._getMenuItems().length > 0) {
+                    this._applet_context_menu.toggle();			
+                }
             }
         }
         return true;
@@ -270,6 +273,26 @@ Applet.prototype = {
     set_applet_tooltip: function (text) {
         this._applet_tooltip_text = text;
         this._applet_tooltip.set_text(text);
+    },
+
+    /**
+     * set_applet_enabled:
+     * @enabled (boolean): whether this applet is enabled or not
+     * 
+     * Sets whether the applet is enabled or not
+     * A disabled applet sets its padding to 0px and doesn't react to clicks
+     */
+    set_applet_enabled: function (enabled) {
+        if (enabled != this._applet_enabled) {
+            this._applet_enabled = enabled;
+            if (enabled) {
+                this.actor.set_style_class_name('applet-box');
+            }
+            else {
+                this.set_applet_tooltip('');
+                this.actor.set_style("padding:0px;");
+            }
+        }
     },
 
     /**
