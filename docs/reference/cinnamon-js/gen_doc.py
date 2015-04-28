@@ -1,0 +1,281 @@
+#!/usr/bin/env python
+# coding: utf-8
+
+# This parser starts by parsing all the javascript code, and representing each
+# file/object/function as a python class. Afterwards, each object is gone
+# through individually to produce the gtk-doc-friendly xml files
+#
+# The parsers uses the concept of state. At each line, the parser takes a
+# particular state, and behaves accordingly. Conversely, the contents of the
+# lines can cause the parser to change state.
+
+# In normal text, the parser is in STATE_NORMAL, in which all it does is keep
+# track of scopes and the number of '{' and '}' brackets. In a comment block
+# that is not documentation, the parser takes STATE_COMMENT and ignores
+# everything until we leave the comment.
+#
+# When the parser sees /**, it enters STATE_INIT, which tells us that the next
+# line is important. The next line is usually in the form
+#
+# * function_name:
+#
+# or
+#
+# * #ObjectName:
+#
+# At this point, we create a JSFunction or JSObject object, and enter the next
+# STATE_PROPERTY. Here the parser parses the properties of the form
+#
+# * @prop (type): description
+#
+# until it reaches something that is not a property (signified by two line
+# breaks not followed by another property). Then the parser drops to
+# STATE_DESCRIPTION, and reads every line and puts it into the object's
+# description.
+#
+# STATE_DESCRIPTION continues until the comment block ends, or if it encounters
+#
+# * Returns (type): description
+#
+# Then it morphs into STATE_RETURN, and puts the remaining lines into the
+# description of the return value. Alternatively, in the case of objects,
+#
+# * Inherits: Object.Class
+#
+# specifies the ancestor of an object. If the parser reads this line, it drops
+# to STATE_COMMENT because there shouldn't be anything interesting afterwards.
+
+import sys
+import os
+import xml.etree.ElementTree as ET
+import re
+from gen_lib import *
+files = []
+objects = {}
+
+ROOT_DIR = os.path.abspath(os.path.dirname(sys.argv[0])) + '/../../../'
+JS_UI_DIR = ROOT_DIR + 'js/ui/'
+
+TYPE_REGEX = r'\w*\.?\w+'
+COMMENT_REGEX = re.compile(r'/\*([^*]|(\*[^/]))*\*+/')
+RETURNS_REGEX = re.compile(r'^Returns\s*\(?(' + TYPE_REGEX + ')?\)?:(.*)')
+INHERITS_REGEX = re.compile(r'^Inherits:\s*(' + TYPE_REGEX + ')\s*$')
+PROPERTY_REGEX = re.compile(r'^@(\w+)\s*\(?(' + TYPE_REGEX + ')?\)?:(.*)')
+FILE_NAME_REGEX = re.compile(r'FILE:(\w+\.js):?')
+FUNCTION_NAME_REGEX = re.compile(r'^(\w+):?\s*$')
+OBJECT_NAME_REGEX = re.compile(r'^#(\w+):?\s*$')
+FILE_REGEX = re.compile(r'\w*\.js')
+COMMENT_START_REGEX = re.compile(r'\s*\*\s*')
+
+STATE_NORMAL = 0
+STATE_PROPERTY = 1
+STATE_DESCRIPTION = 2
+STATE_RETURN = 3
+STATE_NAME = 4
+STATE_INIT = 5
+STATE_COMMENT = 6
+
+################################################################################
+################################################################################
+##                        The legendary parse function                        ##
+################################################################################
+################################################################################
+_files = os.listdir(JS_UI_DIR)
+_files.sort()
+
+for _file in _files:
+    if not FILE_REGEX.match(_file):
+        continue
+
+    file_obj = open(JS_UI_DIR + _file, 'r')
+
+    curr_file = JSFile(_file, _file[0].capitalize() + _file[1:-3])
+
+    files.append(curr_file)
+
+    bracket_count = 0 # no. of '{' - no. of '}'
+
+    # The current object - it is either the top-level file or the JSObject we
+    # are parsing.
+    curr_obj = curr_file
+
+    # The current item being processed, either the top-level file, description
+    # of the object or a function
+    curr_item = curr_file
+
+    # The current property, if any
+    curr_prop = None
+
+    state = STATE_NORMAL
+
+    scope = ''
+
+    for line in file_obj:
+################################################################################
+#                       Process all unimportant comments                       #
+################################################################################
+
+        # Strip ' * ' at the beginning of each long comment block
+        if state == STATE_PROPERTY    or \
+           state == STATE_DESCRIPTION or \
+           state == STATE_RETURN      or \
+           state == STATE_INIT:
+
+            line = COMMENT_START_REGEX.sub('', line)
+            if len(line) > 0 and line[0] == '/':
+                state = STATE_NORMAL
+                curr_item = None
+                continue
+
+        # If we are in a (useless) comment, skip unless comment ends in this row
+        elif state == STATE_COMMENT:
+            if line.find('*/') == -1:
+                continue
+            else:
+                line = line[line.find('*/') + 2:]
+                state = STATE_NORMAL
+
+        # In normal cases, strip comments if necessary, unless it is the
+        # beginning of a doc block, in which case we set the STATE_INIT state
+        else:
+            if '//' in line:
+                line = line[:line.find(r'//')]
+
+            if '/*' in line:
+                # Strip all in-line comments, eg. 'asdf /* asdf */ asdf'
+                line = COMMENT_REGEX.sub('', line)
+                if '/**' in line:
+                    state = STATE_INIT
+                    continue
+                if '/*' in line:
+                    line = line[:line.find(r'/*')]
+                    state = STATE_COMMENT
+
+################################################################################
+#                         Process actual useful content                        #
+################################################################################
+
+        if state == STATE_INIT:
+            if FILE_NAME_REGEX.match(line) and bracket_count == 0:
+                curr_item = curr_file
+                curr_obj = curr_file
+                state = STATE_PROPERTY
+
+            elif OBJECT_NAME_REGEX.match(line) and bracket_count == 0:
+                curr_item = JSObject(OBJECT_NAME_REGEX.match(line).group(1))
+                curr_obj = curr_item
+                objects[curr_file.name + '.' + curr_obj.name] = curr_item
+                curr_file.add_object(curr_item)
+                state = STATE_PROPERTY
+
+            elif FUNCTION_NAME_REGEX.match(line) and \
+                 ((bracket_count == 1 and curr_obj != curr_file) or \
+                  (bracket_count == 0 and curr_obj == curr_file)):
+                curr_item = JSFunction(FUNCTION_NAME_REGEX.match(line).group(1))
+                curr_obj.add_function(curr_item)
+                state = STATE_PROPERTY
+
+            else:
+                state = STATE_COMMENT
+
+            continue
+
+        if state == STATE_PROPERTY:
+            if len(line) == 0:
+                if curr_prop is not None:
+                    curr_prop = None
+                    continue
+                else:
+                    # Ignore blank lines if nothing has happened yet
+                    continue
+
+            prop = PROPERTY_REGEX.match(line)
+
+            if prop:
+                curr_prop = JSProperty(*prop.groups())
+                curr_item.add_property(curr_prop)
+            else:
+                if curr_prop:
+                    curr_prop.append_description(line)
+                else:
+                    # The next block will parse this description properly
+                    state = STATE_DESCRIPTION
+
+        if state == STATE_DESCRIPTION:
+            if RETURNS_REGEX.match(line):
+                state = STATE_RETURN
+                curr_prop = JSProperty('Returns', *RETURNS_REGEX.match(line).groups())
+                curr_item.set_return(curr_prop)
+            elif INHERITS_REGEX.match(line):
+                # Anything after the inherit line shouldn't be there
+                state = STATE_COMMENT 
+                curr_item.set_inherit(INHERITS_REGEX.match(line).group(1))
+            else:
+                curr_item.append_description(line)
+            continue
+
+        if state == STATE_RETURN:
+            curr_prop.append_description(line)
+
+        # Here state should be STATE_NORMAL. It might be, in fact,
+        # STATE_COMMENT, since the line ends with /*, and the state is set to
+        # STATE_COMMENT for preparation of the next line. However, the
+        # remaining of the line should be treated as a normal line. If we are
+        # genuinely inside a comment, we would have `continue`ed at the
+        # beginning.
+        if state == STATE_NORMAL or state == STATE_COMMENT:
+            # the "scope" variable will be last updated before we enter the
+            # scope, so will be the "function thing() {}" or "thing.prototype =
+            # {" line. We use this to check if we are parsing the right thing.
+            if bracket_count == 0:
+                scope = line
+
+            bracket_count += line.count('{') - line.count('}')
+
+            if bracket_count == 0:
+                # Cinnamon-style objects and Lang.Class objects
+                if curr_obj.name + '.prototype' in scope or \
+                   re.match(curr_obj.name + r'\s*=\s*Lang\.Class', scope):
+                    curr_obj = curr_file
+                    curr_item = curr_file
+
+################################################################################
+################################################################################
+##                               Generate the XML                             ##
+################################################################################
+################################################################################
+
+write_sgml(files, sys.argv[1] if len(sys.argv) > 1 else "")
+
+try:
+    os.mkdir('ui')
+except OSError:
+    pass
+
+for _file in files:
+    if _file.is_interesting():
+        file_obj = create_file(_file, _file.name)
+
+        write_function_header_block(file_obj, _file, _file.name)
+        write_properties_header_block(file_obj, _file, _file.name)
+        write_description_block(file_obj, _file, _file.name)
+        write_functions_block(file_obj, _file, _file.name)
+        write_properties_block(file_obj, _file, _file.name)
+
+        close_file(file_obj)
+
+    for obj in _file.objects:
+        name = _file.name + "-" + obj.name
+
+        file_obj = create_file(obj, name)
+
+        write_function_header_block(file_obj, obj, name)
+        write_properties_header_block(file_obj, obj, name)
+        write_heirarchy_block(file_obj, obj, name)
+        write_description_block(file_obj, obj, name)
+        write_functions_block(file_obj, obj, name)
+        write_properties_block(file_obj, obj, name)
+
+        close_file(file_obj)
+
+

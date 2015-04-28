@@ -527,7 +527,7 @@ NotifyDialog.prototype = {
  * #InfoOSD
  * @actor (St.BoxLayout): actor of the OSD
  *
- * Creates an OSD to show information to user at the center of the screen. Can display texts or general St.Actors.
+ * Creates an OSD to show information to user at the center of the screen. Can display texts or general St.Widgets.
  */
 function InfoOSD(text) {
     this._init(text);
@@ -606,7 +606,7 @@ InfoOSD.prototype = {
 
     /**
      * addActor:
-     * @actor (St.Actor): actor to add
+     * @actor (St.Widget): actor to add
      * @params (JSON): parameters to be used when adding actor
      *
      * Adds the actor @actor to the OSD

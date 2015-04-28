@@ -1,0 +1,89 @@
+<part id="building">
+  <title>Building Cinnamon</title>
+  <section id="debian-based">
+    <title>Debian-based systems</title>
+    <section>
+      <title>Add APT sources repositories</title>
+      <para>
+        Open /etc/apt/sources.list. For each deb line, add the same line with deb replaced with deb-src. For instance, here's how it should look like in Linux Mint 13:
+      </para>
+      <screen>
+        deb http://packages.linuxmint.com maya main upstream import
+        deb-src http://packages.linuxmint.com maya main upstream import
+
+        deb http://archive.ubuntu.com/ubuntu/ precise main restricted universe multiverse
+        deb-src http://archive.ubuntu.com/ubuntu/ precise main restricted universe multiverse
+
+        deb http://archive.ubuntu.com/ubuntu/ precise-updates main restricted universe multiverse
+        deb-src http://archive.ubuntu.com/ubuntu/ precise-updates main restricted universe multiverse
+
+        deb http://extras.ubuntu.com/ubuntu precise main
+        deb-src http://extras.ubuntu.com/ubuntu precise main
+      </screen>
+    </section>
+    <section>
+      <title>Get build dependencies</title>
+      <para>Then we install the packages needed to compile the cinnamon stack. Run the following in a terminal (as root):</para>
+      <screen>
+        apt-get update
+        apt-get install dpkg-dev
+        sudo apt-get build-dep cinnamon cinnamon-control-center cinnamon-desktop cinnamon-menus cinnamon-screensaver cinnamon-session cinnamon-settings-daemon cinnamon-translations cjs muffin nemo
+      </screen>
+      <para>Now get the latest git code for everything. Run (not as root):</para>
+      <screen>
+        git clone git://github.com/linuxmint/cinnamon.git
+        git clone git://github.com/linuxmint/cinnamon-control-center.git
+        git clone git://github.com/linuxmint/cinnamon-desktop.git
+        git clone git://github.com/linuxmint/cinnamon-menus.git
+        git clone git://github.com/linuxmint/cinnamon-screensaver.git
+        git clone git://github.com/linuxmint/cinnamon-session.git
+        git clone git://github.com/linuxmint/cinnamon-settings-daemon.git
+        git clone git://github.com/linuxmint/cinnamon-translations.git
+        git clone git://github.com/linuxmint/cjs.git
+        git clone git://github.com/linuxmint/muffin.git
+        git clone git://github.com/linuxmint/nemo.git
+      </screen>
+    </section>
+    <section>
+      <title>Compile and install the stack</title>
+      <para>Build and install in the following order. Some packages are required to be <emphasis>installed</emphasis> prior to building later packages. See below for how to build and install.</para>
+      <screen>
+        cinnamon-translations
+        cinnamon-desktop
+        cinnamon-menus
+        **INSTALL PRECEDING PACKAGES**
+        cinnamon-session
+        cinnamon-settings-daemon
+        cinnamon-screensaver
+        cjs
+        **INSTALL PRECEDING PACKAGES**
+        cinnamon-control-center
+        muffin
+        **INSTALL PRECEDING PACKAGES**
+        cinnamon
+        nemo
+        **INSTALL PRECEDING PACKAGES**
+      </screen>
+      <para>To build a package:</para>
+      <screen>
+        cd *package-name*
+        dpkg-buildpackage
+        cd ..
+      </screen>
+      <para>To install a package:</para>
+      <screen>
+        sudo dpkg -i *packages produced*
+      </screen>
+    </section>
+    <section>
+      <title>Optional: Compiling from stable branch</title>
+      <para>The instructions above compile the Cinnamon stack from their "master" branch, which isn't always stable. To compile from the stable branch, instead of the usual building procedure, you need to to the following (for all packages):</para>
+      <screen>
+        cd *package-name*
+        git checkout stable
+        dpkg-buildpackage
+        cd ..
+      </screen>
+    </section>
+  </section>
+</part>

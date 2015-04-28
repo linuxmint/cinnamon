@@ -193,6 +193,12 @@ AC_ARG_ENABLE(jhbuild-wrapper-script,
   AS_HELP_STRING([--jhbuild-wrapper-script=yes],[Make "cinnamon" script work for jhbuild]),,enable_jhbuild_wrapper_script=no)
 AM_CONDITIONAL(USE_JHBUILD_WRAPPER_SCRIPT, test "x$enable_jhbuild_wrapper_script" = xyes)
 
+AC_ARG_ENABLE([gtk-doc],
+  AC_HELP_STRING([--enable-gtk-doc],
+                 [use gtk-doc to build documentation [[default=yes]]]),,
+  enable_gtk_doc=yes)
+
+
 AC_MSG_CHECKING([location of system Certificate Authority list])
 AC_ARG_WITH(ca-certificates,
             [AC_HELP_STRING([--with-ca-certificates=@<:@path@:>@],
@@ -230,6 +236,7 @@ AC_CONFIG_FILES([
   docs/reference/Makefile
   docs/reference/cinnamon/Makefile
   docs/reference/cinnamon/cinnamon-docs.sgml
+  docs/reference/cinnamon-js/Makefile
   docs/reference/st/Makefile
   docs/reference/st/cinnamon-st-docs.sgml
   js/Makefile
