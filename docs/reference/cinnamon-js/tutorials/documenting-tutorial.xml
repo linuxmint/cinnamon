@@ -24,5 +24,7 @@
     <para>The answer is chunking and the table of contents. Chunking is the act of splitting different sections into different pages. Different parts and chapters are always chunked, and so are layer 1 sections. A section appears on the table of contents if and only if it is a part, a chapter, or a layer 1 section inside a chapter (but a layer 1 section directly inside a part is not displayed).</para>
 
     <para>So if you wish to use chapters but do not want the layer 1 sections to be chunked, you will want to directly place a layer 2 section inside the chapter. Similarly, if you don't want your subsections to appear in the table of contents, use a layer 2 section without a layer 1 section.</para>
+
+    <para>As of the time of writing this documentation, there is no method to change the gtk-doc chunking and toc rules, as confirmed by the gtk-doc maintainer.</para>
   </sect2>
 </chapter>
