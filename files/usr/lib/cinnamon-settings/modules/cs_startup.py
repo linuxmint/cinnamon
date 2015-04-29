@@ -583,12 +583,15 @@ class AutostartRow(Gtk.ListBoxRow):
         icon_theme = Gtk.IconTheme.get_for_screen(screen)
 
         if self.app.icon:
-            if GLib.path_is_absolute(self.app.icon):
-                shown_icon = GdkPixbuf.Pixbuf.new_from_file_at_scale(self.app.icon, 24, 24, True)
-                img = Gtk.Image.new_from_pixbuf(shown_icon)
-            else:
-                pixbuf = icon_theme.load_icon(self.app.icon, 24, Gtk.IconLookupFlags.FORCE_SIZE)
-                img = Gtk.Image.new_from_pixbuf(pixbuf) 
+            try:
+                if GLib.path_is_absolute(self.app.icon):
+                    shown_icon = GdkPixbuf.Pixbuf.new_from_file_at_scale(self.app.icon, 24, 24, True)
+                    img = Gtk.Image.new_from_pixbuf(shown_icon)
+                else:
+                    pixbuf = icon_theme.load_icon(self.app.icon, 24, Gtk.IconLookupFlags.FORCE_SIZE)
+                    img = Gtk.Image.new_from_pixbuf(pixbuf)
+            except:
+                img = Gtk.Image.new_from_gicon(Gio.ThemedIcon.new(DEFAULT_ICON), Gtk.IconSize.LARGE_TOOLBAR) 
         else:
             img = Gtk.Image.new_from_gicon(Gio.ThemedIcon.new(DEFAULT_ICON), Gtk.IconSize.LARGE_TOOLBAR)
         grid.attach(img, 0, 0, 1, 1)    
