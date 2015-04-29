@@ -116,7 +116,7 @@ def write_sgml(files, version):
     sgml.write(f.read())
 
     sgml.write('''
-  <part>
+  <part id="cinnamon-js-reference">
     <title>Cinnamon Javascript Reference</title>''')
 
     for _file in files:
@@ -124,14 +124,14 @@ def write_sgml(files, version):
             continue
 
         sgml.write('''
-  <chapter>
+  <chapter id="cinnamon-js-ui-{0}-section">
     <title>{0}</title>
 '''.format(_file.name))
         if _file.is_interesting():
-            sgml.write('    <xi:include href=\'ui/{0}.xml\'/>\n'.format(_file.name));
+            sgml.write('    <xi:include href="ui/{0}.xml"/>\n'.format(_file.name));
 
         for obj in _file.objects:
-            sgml.write('    <xi:include href=\'ui/{0}-{1}.xml\'/>\n'.format(_file.name, obj.name));
+            sgml.write('    <xi:include href="ui/{0}-{1}.xml"/>\n'.format(_file.name, obj.name));
 
         sgml.write('  </chapter>\n\n')
 
