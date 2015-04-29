@@ -555,13 +555,25 @@ class SettingsBox(Gtk.Frame):
         self.add(self.box)
 
         toolbar = Gtk.Toolbar.new()
-        Gtk.StyleContext.add_class(Gtk.Widget.get_style_context(toolbar), "primary-toolbar")
+        toolbar_context = toolbar.get_style_context()
+        Gtk.StyleContext.add_class(Gtk.Widget.get_style_context(toolbar), "cs-header")
+
         label = Gtk.Label.new()
         label.set_markup("<b>%s</b>" % title)
         title_holder = Gtk.ToolItem()
         title_holder.add(label)
         toolbar.add(title_holder)
         self.box.add(toolbar)
+
+        toolbar_separator = Gtk.Separator(orientation=Gtk.Orientation.HORIZONTAL)
+        self.box.add(toolbar_separator)
+        separator_context = toolbar_separator.get_style_context()
+        frame_color = self.get_style_context().get_border_color(Gtk.StateFlags.NORMAL).to_string()
+        css_provider = Gtk.CssProvider()
+        css_provider.load_from_data(".separator { -GtkWidget-wide-separators: 0; \
+                                                   color: %s;                    \
+                                                }" % frame_color)
+        separator_context.add_provider(css_provider, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
 
         self.need_separator = False
 
