@@ -11,6 +11,8 @@
 # 2013. Did you ever take
 # that trip to Iceland?
 
+import re
+
 class JSThing():
     def append_description(self, desc):
         if len(desc) == 0:
@@ -19,7 +21,7 @@ class JSThing():
             self.description += ' ' + desc.strip().replace('<', '&lt;').replace('>', '&gt;')
 
     def get_xml_description(self):
-        return "\n".join("<para>{0}</para>".format(x) for x in self.description.split("\n"))
+        return re.sub('@(\w*)', '<code>\g<1></code>', "".join("<para>{0}</para>".format(x) for x in self.description.split("\n")))
 
     def add_property(self, prop):
         if prop.name == "short_description":
