@@ -93,8 +93,6 @@ static void gnome_cinnamon_plugin_hide_hud_preview (MetaPlugin *plugin);
 
 static void gnome_cinnamon_plugin_kill_window_effects   (MetaPlugin      *plugin,
                                                       MetaWindowActor *actor);
-static void gnome_cinnamon_plugin_kill_switch_workspace (MetaPlugin      *plugin);
-
 
 static gboolean              gnome_cinnamon_plugin_xevent_filter (MetaPlugin *plugin,
                                                                XEvent     *event);
@@ -162,7 +160,6 @@ gnome_cinnamon_plugin_class_init (CinnamonPluginClass *klass)
 
 
   plugin_class->kill_window_effects   = gnome_cinnamon_plugin_kill_window_effects;
-  plugin_class->kill_switch_workspace = gnome_cinnamon_plugin_kill_switch_workspace;
 
   plugin_class->xevent_filter    = gnome_cinnamon_plugin_xevent_filter;
   plugin_class->plugin_info      = gnome_cinnamon_plugin_plugin_info;
@@ -344,12 +341,6 @@ gnome_cinnamon_plugin_kill_window_effects (MetaPlugin         *plugin,
                                         MetaWindowActor    *actor)
 {
   _cinnamon_wm_kill_window_effects (get_cinnamon_wm(), actor);
-}
-
-static void
-gnome_cinnamon_plugin_kill_switch_workspace (MetaPlugin         *plugin)
-{
-  _cinnamon_wm_kill_switch_workspace (get_cinnamon_wm());
 }
 
 static void
