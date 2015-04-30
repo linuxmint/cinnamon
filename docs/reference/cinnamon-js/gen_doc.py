@@ -54,8 +54,11 @@ files = []
 objects = {}
 
 ROOT_DIR = os.path.abspath(os.path.dirname(sys.argv[0])) + '/../../../'
-JS_UI_DIR = ROOT_DIR + 'js/ui/'
-JS_MISC_DIR = ROOT_DIR + 'js/misc/'
+if len(sys.argv) > 1:
+    ROOT_DIR = sys.argv[1]
+
+JS_UI_DIR = os.path.join(ROOT_DIR, 'js/ui/')
+JS_MISC_DIR = os.path.join(ROOT_DIR, 'js/misc/')
 
 TYPE_REGEX = r'\w*\.?\w+'
 COMMENT_REGEX = re.compile(r'/\*([^*]|(\*[^/]))*\*+/')
@@ -64,6 +67,7 @@ INHERITS_REGEX = re.compile(r'^Inherits:\s*(' + TYPE_REGEX + ')\s*$')
 PROPERTY_REGEX = re.compile(r'^@(\w+)\s*\(?(' + TYPE_REGEX + ')?\)?:(.*)')
 FILE_NAME_REGEX = re.compile(r'FILE:(\w+\.js):?')
 FUNCTION_NAME_REGEX = re.compile(r'^(\w+):?\s*$')
+
 OBJECT_NAME_REGEX = re.compile(r'^#(\w+):?\s*$')
 FILE_REGEX = re.compile(r'\w*\.js')
 COMMENT_START_REGEX = re.compile(r'\s*\*\s*')
@@ -259,7 +263,7 @@ for _file in _files:
 ################################################################################
 ################################################################################
 
-write_sgml(files, sys.argv[1] if len(sys.argv) > 1 else "")
+write_sgml(files, sys.argv[2] if len(sys.argv) > 2 else "")
 
 try:
     os.mkdir('ui')

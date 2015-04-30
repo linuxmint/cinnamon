@@ -1,6 +1,6 @@
 ## Process this file with automake to produce Makefile.in
-$(DOC_MAIN_SGML_FILE):
-	python gen_doc.py $(PACKAGE_VERSION)
+$(DOC_MAIN_SGML_FILE): $(top_srcdir)/js/*/* gen_lib.py gen_doc.py tutorials.xml tutorials/*
+	./gen_doc.py $(top_srcdir) $(PACKAGE_VERSION)
 
 # We require automake 1.6 at least.
 AUTOMAKE_OPTIONS = 1.6
