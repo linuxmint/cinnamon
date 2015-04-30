@@ -11,6 +11,8 @@
 # 2013. Did you ever take
 # that trip to Iceland?
 
+import re
+
 class JSThing():
     def append_description(self, desc):
         if len(desc) == 0:
@@ -19,7 +21,7 @@ class JSThing():
             self.description += ' ' + desc.strip().replace('<', '&lt;').replace('>', '&gt;')
 
     def get_xml_description(self):
-        return "\n".join("<para>{0}</para>".format(x) for x in self.description.split("\n"))
+        return re.sub('@(\w*)', '<code>\g<1></code>', "".join("<para>{0}</para>".format(x) for x in self.description.split("\n")))
 
     def add_property(self, prop):
         if prop.name == "short_description":
@@ -114,7 +116,7 @@ def write_sgml(files, version):
     sgml.write(f.read())
 
     sgml.write('''
-  <part>
+  <part id="cinnamon-js-reference">
     <title>Cinnamon Javascript Reference</title>''')
 
     for _file in files:
@@ -122,14 +124,14 @@ def write_sgml(files, version):
             continue
 
         sgml.write('''
-  <chapter>
+  <chapter id="cinnamon-js-ui-{0}-section">
     <title>{0}</title>
 '''.format(_file.name))
         if _file.is_interesting():
-            sgml.write('    <xi:include href=\'ui/{0}.xml\'/>\n'.format(_file.name));
+            sgml.write('    <xi:include href="ui/{0}.xml"/>\n'.format(_file.name));
 
         for obj in _file.objects:
-            sgml.write('    <xi:include href=\'ui/{0}-{1}.xml\'/>\n'.format(_file.name, obj.name));
+            sgml.write('    <xi:include href="ui/{0}-{1}.xml"/>\n'.format(_file.name, obj.name));
 
         sgml.write('  </chapter>\n\n')
 

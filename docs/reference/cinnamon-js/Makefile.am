@@ -1,6 +1,6 @@
 ## Process this file with automake to produce Makefile.in
 $(DOC_MAIN_SGML_FILE):
-	python gen_doc.py
+	python gen_doc.py $(PACKAGE_VERSION)
 
 # We require automake 1.6 at least.
 AUTOMAKE_OPTIONS = 1.6

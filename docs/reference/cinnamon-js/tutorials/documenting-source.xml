@@ -128,5 +128,19 @@
     </programlisting>
   </informalexample>
   <para>Note that the namespace is required.</para>
+
+  <sect2>
+    <title>Automatic substitutions</title>
+    <para>The current parser is able to perform several substitutions:</para>
+    <itemizedlist>
+      <listitem>
+        The type of a property specified will be automatically converted to a link to the documentation of that type, if available.
+      </listitem>
+      <listitem>
+        In the description of itmes, <code>@word</code> will be automatically converted to code format, ie. enclosed within <code>&lt;code&gt;</code> tags.
+      </listitem>
+    </itemizedlist>
+
+  </sect2>
 </chapter>
 
