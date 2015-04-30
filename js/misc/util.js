@@ -31,14 +31,16 @@ const _urlRegexp = new RegExp(
         ')' +
     ')', 'gi');
 
-// findUrls:
-// @str: string to find URLs in
-//
-// Searches @str for URLs and returns an array of objects with %url
-// properties showing the matched URL string, and %pos properties indicating
-// the position within @str where the URL was found.
-//
-// Return value: the list of match objects, as described above
+/**
+ * findUrls:
+ * @str: string to find URLs in
+ *
+ * Searches @str for URLs and returns an array of objects with %url
+ * properties showing the matched URL string, and %pos properties indicating
+ * the position within @str where the URL was found.
+ *
+ * Returns: the list of match objects, as described above
+ */
 function findUrls(str) {
     let res = [], match;
     while ((match = _urlRegexp.exec(str)))
@@ -46,11 +48,13 @@ function findUrls(str) {
     return res;
 }
 
-// spawn:
-// @argv: an argv array
-//
-// Runs @argv in the background, handling any errors that occur
-// when trying to start the program.
+/**
+ * spawn:
+ * @argv: an argv array
+ *
+ * Runs @argv in the background, handling any errors that occur
+ * when trying to start the program.
+ */
 function spawn(argv) {
     let pid;
 
@@ -71,11 +75,13 @@ function spawn_async(args, callback) {
     spawn(new Array("cinnamon-subprocess-wrapper", subprocess_id.toString()).concat(args));
 }
 
-// spawnCommandLine:
-// @command_line: a command line
-//
-// Runs @command_line in the background, handling any errors that
-// occur when trying to parse or start the program.
+/**
+ * spawnCommandLine:
+ * @command_line: a command line
+ *
+ * Runs @command_line in the background, handling any errors that
+ * occur when trying to parse or start the program.
+ */
 function spawnCommandLine(command_line) {
     let pid;
 
@@ -89,11 +95,13 @@ function spawnCommandLine(command_line) {
     return pid;
 }
 
-// trySpawn:
-// @argv: an argv array
-//
-// Runs @argv in the background. If launching @argv fails,
-// this will throw an error.
+/**
+ * trySpawn:
+ * @argv: an argv array
+ *
+ * Runs @argv in the background. If launching @argv fails,
+ * this will throw an error.
+ */
 function trySpawn(argv)
 {
     try {
@@ -117,11 +125,13 @@ function trySpawn(argv)
     }
 }
 
-// trySpawnCommandLine:
-// @command_line: a command line
-//
-// Runs @command_line in the background. If launching @command_line
-// fails, this will throw an error.
+/**
+ * trySpawnCommandLine:
+ * @command_line: a command line
+ *
+ * Runs @command_line in the background. If launching @command_line
+ * fails, this will throw an error.
+ */
 function trySpawnCommandLine(command_line) {
     let pid;
 
@@ -143,11 +153,13 @@ function _handleSpawnError(command, err) {
     Main.notifyError(title, err.message);
 }
 
-// killall:
-// @processName: a process name
-//
-// Kills @processName. If no process with the given name is found,
-// this will fail silently.
+/**
+ * killall:
+ * @processName: a process name
+ *
+ * Kills @processName. If no process with the given name is found,
+ * this will fail silently.
+ */
 function killall(processName) {
     try {
         // pkill is more portable than killall, but on Linux at least
@@ -303,6 +315,7 @@ const _LATINISE_REGEX = {
 /**
  * latinise:
  * @string (string): a string
+ *
  * Returns (string): @string, replaced accented chars
  */
 function latinise(string){
