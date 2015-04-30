@@ -382,7 +382,7 @@ class SidePage:
 
 class CCModule:
     def __init__(self, label, mod_id, icon, category, keywords, content_box):
-        sidePage = SidePage(label, icon, keywords, content_box, False, True, False, mod_id)
+        sidePage = SidePage(label, icon, keywords, content_box, size=-1, is_c_mod=True, is_standalone=False, exec_name=mod_id, module=None)
         self.sidePage = sidePage
         self.name = mod_id
         self.category = category

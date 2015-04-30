@@ -36,7 +36,7 @@ class ExtensionSidePage (SidePage):
     SORT_REMOVABLE = 4
 
     def __init__(self, name, icon, keywords, content_box, collection_type, module=None):
-        SidePage.__init__(self, name, icon, keywords, content_box, -1, module=module)
+        SidePage.__init__(self, name, icon, keywords, content_box, module=module)
         self.collection_type = collection_type
         self.themes = collection_type == "theme"
         self.icons = []

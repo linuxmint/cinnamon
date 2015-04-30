@@ -17,7 +17,7 @@ class Module:
 
     def __init__(self, content_box):
         keywords = _("hotcorner, overview, scale, expo")
-        sidePage = SidePage(_("Hot Corners"), "cs-overview", keywords, content_box, module=self)
+        sidePage = SidePage(_("Hot Corners"), "cs-overview", keywords, content_box, -1, module=self)
         self.sidePage = sidePage
 
     def on_module_selected(self):

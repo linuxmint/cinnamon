@@ -20,7 +20,7 @@ class Module:
 
     def __init__(self, content_box):
         keywords = _("user, account, information, details")
-        sidePage = SidePage(_("Account details"), "cs-user", keywords, content_box, 260, module=self)
+        sidePage = SidePage(_("Account details"), "cs-user", keywords, content_box, module=self)
         self.sidePage = sidePage
 
     def on_module_selected(self):

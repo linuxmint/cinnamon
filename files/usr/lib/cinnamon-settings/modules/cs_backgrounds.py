@@ -47,7 +47,7 @@ class Module:
 
     def __init__(self, content_box):
         keywords = _("background, picture, screenshot, slideshow")
-        self.sidePage = SidePage(_("Backgrounds"), "cs-backgrounds", keywords, content_box, 500, module=self)
+        self.sidePage = SidePage(_("Backgrounds"), "cs-backgrounds", keywords, content_box, module=self)
 
     def on_module_selected(self):
         if not self.loaded:

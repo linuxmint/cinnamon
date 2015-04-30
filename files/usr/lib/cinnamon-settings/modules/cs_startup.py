@@ -22,7 +22,7 @@ class Module:
 
     def __init__(self, content_box):
         keywords = _("startup, programs, boot, init, session")
-        sidePage = SidePage(_("Startup Applications"), "cs-startup-programs", keywords, content_box, 350, module=self)
+        sidePage = SidePage(_("Startup Applications"), "cs-startup-programs", keywords, content_box, module=self)
         self.sidePage = sidePage
 
     def on_module_selected(self):

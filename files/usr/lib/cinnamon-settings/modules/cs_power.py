@@ -85,7 +85,7 @@ class Module:
 
     def __init__(self, content_box):
         keywords = _("power, suspend, hibernate, laptop, desktop, brightness, screensaver")
-        self.sidePage = SidePage(_("Power Management"), "cs-power", keywords, content_box, module=self)
+        self.sidePage = SidePage(_("Power Management"), "cs-power", keywords, content_box, -1, module=self)
 
     def on_module_selected(self):
         if self.loaded:
