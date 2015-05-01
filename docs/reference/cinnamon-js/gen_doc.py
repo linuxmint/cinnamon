@@ -71,7 +71,7 @@ FUNCTION_NAME_REGEX = re.compile(r'^(\w+):?\s*$')
 OBJECT_NAME_REGEX = re.compile(r'^#(\w+):?\s*$')
 FILE_REGEX = re.compile(r'\w*\.js')
 COMMENT_START_REGEX = re.compile(r'\s*\*\s*')
-BLOCK_START_REGEX = re.compile(r'^/\*\*\s*$')
+BLOCK_START_REGEX = re.compile(r'^\s*/\*\*\s*$')
 STRING_REGEX = re.compile(r'\'[^\']*\'|"[^"]*"')
 
 STATE_NORMAL = 0
@@ -252,8 +252,8 @@ for _file in _files:
 
             if bracket_count == 0:
                 # Cinnamon-style objects and Lang.Class objects
-                if curr_obj.name + '.prototype' in scope or \
-                   re.match(curr_obj.name + r'\s*=\s*Lang\.Class', scope):
+                if curr_obj.orig_name + '.prototype' in scope or \
+                   re.match(curr_obj.orig_name + r'\s*=\s*Lang\.Class', scope):
                     curr_obj = curr_file
                     curr_item = curr_file
 
@@ -277,27 +277,5 @@ except OSError:
 
 
 for _file in files:
-    if _file.is_interesting():
-        file_obj = create_file(_file)
-
-        write_function_header_block(file_obj, _file)
-        write_properties_header_block(file_obj, _file)
-        write_description_block(file_obj, _file)
-        write_functions_block(file_obj, _file)
-        write_properties_block(file_obj, _file)
-
-        close_file(file_obj)
-
     for obj in _file.objects:
         file_obj = create_file(obj)
-
-        write_function_header_block(file_obj, obj)
-        write_properties_header_block(file_obj, obj)
-        write_heirarchy_block(file_obj, obj)
-        write_description_block(file_obj, obj)
-        write_functions_block(file_obj, obj)
-        write_properties_block(file_obj, obj)
-
-        close_file(file_obj)
-
-
