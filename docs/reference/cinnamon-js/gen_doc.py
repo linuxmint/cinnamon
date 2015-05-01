@@ -54,7 +54,11 @@ files = []
 objects = {}
 
 ROOT_DIR = os.path.abspath(os.path.dirname(sys.argv[0])) + '/../../../'
-JS_UI_DIR = ROOT_DIR + 'js/ui/'
+if len(sys.argv) > 1:
+    ROOT_DIR = sys.argv[1]
+
+JS_UI_DIR = os.path.join(ROOT_DIR, 'js/ui/')
+JS_MISC_DIR = os.path.join(ROOT_DIR, 'js/misc/')
 
 TYPE_REGEX = r'\w*\.?\w+'
 COMMENT_REGEX = re.compile(r'/\*([^*]|(\*[^/]))*\*+/')
@@ -63,9 +67,12 @@ INHERITS_REGEX = re.compile(r'^Inherits:\s*(' + TYPE_REGEX + ')\s*$')
 PROPERTY_REGEX = re.compile(r'^@(\w+)\s*\(?(' + TYPE_REGEX + ')?\)?:(.*)')
 FILE_NAME_REGEX = re.compile(r'FILE:(\w+\.js):?')
 FUNCTION_NAME_REGEX = re.compile(r'^(\w+):?\s*$')
+
 OBJECT_NAME_REGEX = re.compile(r'^#(\w+):?\s*$')
 FILE_REGEX = re.compile(r'\w*\.js')
 COMMENT_START_REGEX = re.compile(r'\s*\*\s*')
+BLOCK_START_REGEX = re.compile(r'^/\*\*\s*$')
+STRING_REGEX = re.compile(r'\'[^\']*\'|"[^"]*"')
 
 STATE_NORMAL = 0
 STATE_PROPERTY = 1
@@ -80,16 +87,22 @@ STATE_COMMENT = 6
 ##                        The legendary parse function                        ##
 ################################################################################
 ################################################################################
-_files = os.listdir(JS_UI_DIR)
-_files.sort()
+ui_files = [os.path.join(JS_UI_DIR, x) for x in os.listdir(JS_UI_DIR)]
+ui_files.sort()
+
+misc_files = [os.path.join(JS_MISC_DIR, x) for x in os.listdir(JS_MISC_DIR)]
+misc_files.sort()
+
+_files = ui_files + misc_files
 
 for _file in _files:
-    if not FILE_REGEX.match(_file):
+    parts = _file.split("/")
+    if not FILE_REGEX.match(parts[-1]):
         continue
 
-    file_obj = open(JS_UI_DIR + _file, 'r')
+    file_obj = open(_file, 'r')
 
-    curr_file = JSFile(_file, _file[0].capitalize() + _file[1:-3])
+    curr_file = JSFile(parts[-2], parts[-1][:-3])
 
     files.append(curr_file)
 
@@ -144,7 +157,7 @@ for _file in _files:
             if '/*' in line:
                 # Strip all in-line comments, eg. 'asdf /* asdf */ asdf'
                 line = COMMENT_REGEX.sub('', line)
-                if '/**' in line:
+                if BLOCK_START_REGEX.match(line):
                     state = STATE_INIT
                     continue
                 if '/*' in line:
@@ -230,6 +243,11 @@ for _file in _files:
             if bracket_count == 0:
                 scope = line
 
+            # Don't count the brackets inside strings. STRING_REGEX recognizes
+            # ' and " but doesn't know if they are esacped. So replace away all
+            # escaped quotes
+            line = STRING_REGEX.sub('', line.replace("\\'", "").replace('\\"', ''))
+
             bracket_count += line.count('{') - line.count('}')
 
             if bracket_count == 0:
@@ -245,36 +263,40 @@ for _file in _files:
 ################################################################################
 ################################################################################
 
-write_sgml(files, sys.argv[1] if len(sys.argv) > 1 else "")
+write_sgml(files, sys.argv[2] if len(sys.argv) > 2 else "")
 
 try:
     os.mkdir('ui')
 except OSError:
     pass
 
+try:
+    os.mkdir('misc')
+except OSError:
+    pass
+
+
 for _file in files:
     if _file.is_interesting():
-        file_obj = create_file(_file, _file.name)
+        file_obj = create_file(_file)
 
-        write_function_header_block(file_obj, _file, _file.name)
-        write_properties_header_block(file_obj, _file, _file.name)
-        write_description_block(file_obj, _file, _file.name)
-        write_functions_block(file_obj, _file, _file.name)
-        write_properties_block(file_obj, _file, _file.name)
+        write_function_header_block(file_obj, _file)
+        write_properties_header_block(file_obj, _file)
+        write_description_block(file_obj, _file)
+        write_functions_block(file_obj, _file)
+        write_properties_block(file_obj, _file)
 
         close_file(file_obj)
 
     for obj in _file.objects:
-        name = _file.name + "-" + obj.name
+        file_obj = create_file(obj)
 
-        file_obj = create_file(obj, name)
-
-        write_function_header_block(file_obj, obj, name)
-        write_properties_header_block(file_obj, obj, name)
-        write_heirarchy_block(file_obj, obj, name)
-        write_description_block(file_obj, obj, name)
-        write_functions_block(file_obj, obj, name)
-        write_properties_block(file_obj, obj, name)
+        write_function_header_block(file_obj, obj)
+        write_properties_header_block(file_obj, obj)
+        write_heirarchy_block(file_obj, obj)
+        write_description_block(file_obj, obj)
+        write_functions_block(file_obj, obj)
+        write_properties_block(file_obj, obj)
 
         close_file(file_obj)
 

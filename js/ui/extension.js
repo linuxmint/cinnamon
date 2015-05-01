@@ -485,46 +485,21 @@ function forgetExtension(uuid, forgetMeta) {
 }
 
 function findExtensionDirectory(uuid, type) {
-    let directory = findExtensionDirectoryIn(uuid, type.userDir);
-    if (directory == null) {
-        let systemDataDirs = GLib.get_system_data_dirs();
-        for (let i = 0; i < systemDataDirs.length; i++) {
-            let dirPath = systemDataDirs[i] + '/cinnamon/' + type.folder;
-            let dir = Gio.file_new_for_path(dirPath);
-            if (dir.query_exists(null))
-                directory = findExtensionDirectoryIn(uuid, dir);
-                if (directory != null) {
-                    break;
-                }
-            }
+    let dirPath = type.userDir + "/" + uuid;
+    let dir = Gio.file_new_for_path(dirPath);
+    if (dir.query_file_type(Gio.FileQueryInfoFlags.NONE, null)
+            == Gio.FileType.DIRECTORY)
+        return dir;
+
+    let systemDataDirs = GLib.get_system_data_dirs();
+    for (let datadir of systemDataDirs) {
+        dirPath = datadir + '/cinnamon/' + type.folder + '/' + uuid;
+        dir = Gio.file_new_for_path(dirPath);
+        if (dir.query_file_type(Gio.FileQueryInfoFlags.NONE, null)
+                == Gio.FileType.DIRECTORY)
+            return dir;
     }
-    return directory;
-}
-
-function findExtensionDirectoryIn(uuid, dir) {
-    try {
-        let fileEnum = dir.enumerate_children('standard::*', Gio.FileQueryInfoFlags.NONE, null);
-
-        let directory = null;
-        let info;
-        while ((info = fileEnum.next_file(null)) != null) {
-            let fileType = info.get_file_type();
-            if (fileType != Gio.FileType.DIRECTORY)
-                continue;
-            let name = info.get_name();
-            if (name == uuid) {
-                let child = dir.get_child(name);
-                directory = child;
-                break;
-            }
-        }
-
-        fileEnum.close(null);
-        return directory;
-    } catch (e) {
-        global.logError('Error looking for extension ' + uuid + ' in directory ' + dir, e);
-       return null;
-    }
+    return null;
 }
 
 function get_max_instances (uuid) {

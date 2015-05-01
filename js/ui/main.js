@@ -5,7 +5,7 @@
  * @overview (Overview.Overview): The "scale" overview 
  * @expo (Expo.Expo): The "expo" overview
  * @runDialog (RunDialog.RunDialog): The run dialog
- * @lookingGlass (LookingGlass.LookingGlass): The looking glass
+ * @lookingGlass (LookingGlass.Melange): The looking glass object
  * @wm (WindowManager.WindowManager): The window manager
  * @messageTray (MessageTray.MessageTray): The mesesage tray
  * @notificationDaemon (NotificationDaemon.NotificationDaemon): The notification daemon
@@ -14,19 +14,33 @@
  * @cinnamonDBusService (CinnamonDBus.Cinnamon): The cinnamon dbus object
  * @modalCount (int): The number of modals "pushed"
  * @modalActorFocusStack (array): Array of pushed modal actors
- * @uiGroup (Cinnamon.GenericContainer): The group containing all Cinnamon
- *                                       and Muffin actors
+ * @uiGroup (Cinnamon.GenericContainer): The group containing all Cinnamon and
+ * Muffin actors
+ *
  * @magnifier (Magnifier.Magnifier): The magnifier
  * @xdndHandler (XdndHandler.XdndHandler): The X DND handler
  * @statusIconDispatcher (StatusIconDispatcher.StatusIconDispatcher): The status icon dispatcher
  * @keyboard (Keyboard.Keyboard): The keyboard object
  * @layoutManager (Layout.LayoutManager): The layout manager
+ * @panelManager (Panel.PanelManager): The panel manager. This is responsible
+ * for handling events relating to panels, eg. showing all panels.
+ *
  * @themeManager (ThemeManager.ThemeManager): The theme manager
+ * @soundManager (SoundManager.SoundManager): The sound manager
+ * @settingsManager (Settings.SettingsManager): The manager of the xlet Settings API
+ * @backgroundManager (BackgroundManager.BackgroundManager): This listens to
+ * changes in the GNOME background settings and mirrors them to the Cinnamon
+ * settings, since many applications have a "Set background" button that
+ * modifies the GNOME background settings.
+ *
+ * @slideshowManager (SlideshowManager.SlideshowManager): This is responsible
+ * for managing the background slideshow, since the background "slideshow" is
+ * created by cinnamon changing the active background gsetting every x minutes.
+ *
  * @dynamicWorkspaces (boolean): Whether dynamic workspaces are to be used.
  *                               This is not yet implemented
  * @tracker (Cinnamon.WindowTracker): The window tracker
  * @workspace_names (array): Names of workspace
- * @background (null): Unused
  * @deskletContainer (DeskletManager.DeskletContainer): The desklet container 
  * @software_rendering (boolean): Whether software rendering is used
  * @lg_log_file (Gio.FileOutputStream): The stream used to log looking messages
@@ -1274,7 +1288,7 @@ function popModal(actor, timestamp) {
  *
  * Obtains the looking glass object. Create if it does not exist
  *
- * Returns (LookingGlass.LookingGlass): looking glass object
+ * Returns (LookingGlass.Melange): looking glass object
  */
 function createLookingGlass() {
     if (lookingGlass == null) {
