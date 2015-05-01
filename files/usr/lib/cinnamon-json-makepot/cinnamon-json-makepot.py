@@ -85,13 +85,6 @@ class Main:
             Will create "fr.po" for the French language.  A translator can use a utility
             such as poedit to add translations to this file, or edit the file manually.
 
-            If you get duplicate message definition errors when running msginit, run:
-
-            msguniq myapplet.pot > fixed.pot
-
-            This will combine any duplicate definitions and allow you to then run msginit with
-            fixed.pot.
-
             .po files can be added to a "po" folder in your applet's directory,
             and will be compiled and installed into the system when the applet is installed
             via Cinnamon Settings.
@@ -144,7 +137,7 @@ class Main:
         else:
             self.po = polib.POFile()
 
-        print "Scanning settings-schema.json..."
+        print "Scanning metadata.json and settings-schema.json..."
         self.scan_dirs()
 
         if append:
@@ -211,29 +204,51 @@ class Main:
                     fp.close()
                     self.current_parent_dir = os.path.split(root)[1]
                     self.extract_strings(data)
+                elif file == "metadata.json":
+                    fp = open(os.path.join(root, file))
+                    data = json.load(fp)
+                    fp.close()
+
+                    for key in data:
+                        if key in ("name", "description"):
+                            comment = "%s->metadata.json->%s" % (os.path.split(root)[1], key)
+                            self.save_entry(data[key], comment)
 
     def extract_strings(self, data, parent=""):
         for key in data.keys():
             if key in ("description", "tooltip", "units"):
                 comment = "%s->settings-schema.json->%s->%s" % (self.current_parent_dir, parent, key)
-                entry = polib.POEntry(comment=comment)
-                entry.msgid = data[key]
-                if entry.msgid != "":                    
-                    self.po.append(entry)
+                self.save_entry(data[key], comment)
             elif key in "options":
                 opt_data = data[key]
                 for option in opt_data.keys():
                     if opt_data[option] == "custom":
                         continue
                     comment = "%s->settings-schema.json->%s->%s" % (self.current_parent_dir, parent, key)
-                    entry = polib.POEntry(comment=comment)
-                    entry.msgid = option
-                    if entry.msgid != "":                    
-                        self.po.append(entry)
+                    self.save_entry(option, comment)
             try:
                 self.extract_strings(data[key], key)
             except AttributeError:
                 pass
+
+    def save_entry(self, msgid, comment):
+        try:
+            msgid = msgid.encode("ascii")
+        except UnicodeEncodeError:
+            return
+
+        if not msgid.strip():
+            return
+
+        entry = self.po.find(msgid)
+        if entry:
+            if comment not in entry.comment:
+                if entry.comment:
+                    entry.comment += "\n"
+                entry.comment += comment
+        else:
+            entry = polib.POEntry(msgid = msgid, comment = comment)
+            self.po.append(entry)
 
 if __name__ == "__main__":
     Main()

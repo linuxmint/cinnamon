@@ -18,6 +18,29 @@ except Exception, detail:
 
 home = os.path.expanduser("~")
 
+translations = {}
+
+def translate(uuid, string):
+    #check for a translation for this xlet
+    if uuid not in translations:
+        try:
+            translations[uuid] = gettext.translation(uuid, home + "/.local/share/locale").ugettext
+        except IOError:
+            try:
+                translations[uuid] = gettext.translation(uuid, "/usr/share/locale").ugettext
+            except IOError:
+                translations[uuid] = None
+
+    #do not translate whitespaces
+    if not string.strip():
+        return string
+
+    if translations[uuid]:
+        result = translations[uuid](string)
+        if result != string:
+            return result
+    return _(string)
+
 class XletSetting:
 
     def __init__(self, uuid, parent, _type):
@@ -42,7 +65,7 @@ class XletSetting:
             image = Gtk.Image().new_from_icon_name(self.applet_meta["icon"], Gtk.IconSize.BUTTON)
             self.back_to_list_button.set_image(image)
             self.back_to_list_button.get_property('image').set_padding(5, 0)
-        self.back_to_list_button.set_label(self.applet_meta["name"])
+        self.back_to_list_button.set_label(translate(uuid, self.applet_meta["name"]))
         self.back_to_list_button.set_tooltip_text(_("Back to list"))
         self.more_button.set_tooltip_text(_("More actions..."))
         self.remove_button.set_label(_("Remove"))

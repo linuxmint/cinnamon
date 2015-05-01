@@ -11,6 +11,7 @@ from gi.repository import Gio, Gtk, GObject, Gdk, GdkPixbuf, Pango, GLib
 import dbus
 import cgi
 import subprocess
+import gettext
 
 home = os.path.expanduser("~")
 
@@ -1189,9 +1190,10 @@ Please contact the developer.""")
                             json_data=open("%s/%s/metadata.json" % (directory, extension)).read()
                             setting_type = 0
                             data = json.loads(json_data)
+
                             extension_uuid = data["uuid"]
-                            extension_name = data["name"]
-                            extension_description = data["description"]
+                            extension_name = XletSettings.translate(data["uuid"], data["name"])
+                            extension_description = XletSettings.translate(data["uuid"], data["description"])
                             try: extension_max_instances = int(data["max-instances"])
                             except KeyError: extension_max_instances = 1
                             except ValueError:
