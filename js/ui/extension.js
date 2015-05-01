@@ -114,10 +114,12 @@ for(var key in Type) {
     Signals.addSignalMethods(type);
 
     let path = GLib.build_filenamev([global.userdatadir, type.folder]);
-    type.userDir = Gio.file_new_for_path(path);
+    type.userDir = path;
+
+    let dir = Gio.file_new_for_path(type.userDir)
     try {
-        if (!type.userDir.query_exists(null))
-            type.userDir.make_directory_with_parents(null);
+        if (!dir.query_exists(null))
+            dir.make_directory_with_parents(null);
     } catch (e) {
         global.logError(e);
     }
@@ -149,15 +151,20 @@ Extension.prototype = {
         if (!force)
             this.validateMetaData();
 
-        this.ensureFileExists(dir.get_child(this.lowerType + '.js'));
-        this.loadStylesheet(dir.get_child('stylesheet.css'));
+        if (this.meta.multiversion) {
+            this.dir = findExtensionSubdirectory(this.dir);
+            this.meta.path = this.dir.get_path();
+        }
+
+        this.ensureFileExists(this.dir.get_child(this.lowerType + '.js'));
+        this.loadStylesheet(this.dir.get_child('stylesheet.css'));
         
         if (this.stylesheet) {
             Main.themeManager.connect('theme-set', Lang.bind(this, function() {
                 this.loadStylesheet(this.dir.get_child('stylesheet.css'));
             }));
         }
-        this.loadIconDirectory(dir);
+        this.loadIconDirectory(this.dir);
 
         try {
             CinnamonJS.add_extension_importer('imports.ui.extension.importObjects', this.uuid, this.meta.path);
@@ -399,6 +406,34 @@ function versionCheck(required, current) {
     return false;
 }
 
+/**
+ * versionLeq:
+ * @a (string): the first version
+ * @b (string): the second version
+ *
+ * Returns: whether a <= b
+ */
+function versionLeq(a, b) {
+    a = a.split('.');
+    b = b.split('.');
+
+    if (a.length == 2)
+        a.push(0);
+
+    if (b.length == 2)
+        b.push(0);
+
+    for (let i = 0; i < 3; i++) {
+        if (a[i] == b[i])
+            continue;
+        else if (a[i] > b[i])
+            return false;
+        else
+            return true;
+    }
+    return true;
+}
+
 // Returns a string version of a State value
 function getMetaStateString(state) {
     switch (state) {
@@ -418,7 +453,7 @@ function loadExtension(uuid, type) {
     let extension = objects[uuid];
     if(!extension) {
         try {
-            let dir = findExtensionDirectory(uuid.replace(/!/,''), type);
+            let dir = findExtensionDirectory(uuid.replace(/^!/,''), type);
             if (dir == null) {
                 throw ("not-found");
             }
@@ -500,6 +535,49 @@ function findExtensionDirectory(uuid, type) {
             return dir;
     }
     return null;
+}
+
+/**
+ * findExtensionSubdirectory:
+ * @dir (Gio.File): directory to search in
+ *
+ * For extensions that are shipped with multiple versions in different
+ * directories, look for the largest available version that is less than or
+ * equal to the current running version. If no such version is found, the
+ * original directory is returned.
+ *
+ * Returns (Gio.File): directory object of the desired directory.
+ */
+function findExtensionSubdirectory(dir) {
+    try {
+        let fileEnum = dir.enumerate_children('standard::*', Gio.FileQueryInfoFlags.NONE, null);
+
+        let info;
+        let largest = null;
+        while ((info = fileEnum.next_file(null)) != null) {
+            let fileType = info.get_file_type();
+            if (fileType != Gio.FileType.DIRECTORY)
+                continue;
+
+            let name = info.get_name();
+            if (!name.match(/^[0-9]+\.[0-9]+(\.[0-9]+)?$/))
+                continue;
+
+            if (versionLeq(name, Config.PACKAGE_VERSION) &&
+                (!largest || versionLeq(largest[0], name))) {
+                largest = [name, fileEnum.get_child(info)];
+            }
+        }
+
+        fileEnum.close(null);
+        if (largest)
+            return largest[1];
+        else
+            return dir;
+    } catch (e) {
+        global.logError('Error looking for extension version for ' + dir.get_basename() + ' in directory ' + dir, e);
+        return dir;
+    }
 }
 
 function get_max_instances (uuid) {
