@@ -1,0 +1,122 @@
+<chapter id="using-documentation">
+  <title>Using documentation</title>
+  <sect2>
+    <title>Overview</title>
+    <para>The documentation of Cinnamon is separated into 3 different parts (4 if you count muffin). What you are currently reading is part of the Javascript reference, which describes the Javascript part of Cinnamon. This also includes the general top-level overviews and tutorials you will need for Cinnamon. This is named the "Cinnamon Javascript Reference Manual".</para>
+
+    <para>The first few sections of the JS part are top-level descriptions and overviews, while the last part is a technical reference for the individual functions and objects available in Cinnamon. Note that this documentation is aimed at both applet/extension developers and Cinnamon developers themselves. So depending on who you are, some of the information might be entirely irrelevant.</para>
+
+    <para>The second part of the documentation is for the C part of Cinnamon, which is simply refered to as the "Cinnamon Reference Manual".</para>
+
+    <para>The last part is the documentation for Shell toolkit, or St. This is the graphical toolkit used to draw widgets on the screen (similar to Gtk).</para>
+
+    <para>The modules covered by this documentation are those imported via <code>imports.ui.*</code> and <code>imports.misc.*</code>. The <link linkend="CinnamonGlobal"><code>global</code></link> object is documented in the C part of Cinnamon, as well as things accessed through <code>imports.gi.Cinnamon</code>. Things accessed through <code>imports.gi.St</code> are, unsurprisingly, documented in the St part.</para>
+
+    <para><code>imports.gi.Meta</code> refers to Muffin, while others (eg. <code>imports.gi.Gio</code>) are third-party (usually GNOME) libraries that are documented elsewhere.</para>
+  </sect2>
+
+  <sect2>
+    <title>Accessing the documentation</title>
+    <para>There are two ways of accessing this documentation, one of which is what you are currently using. The first method is accessing it online, which will be availble at <ulink url="http://cinnamon.linuxmint.com">http://cinnamon.linuxmint.com</ulink>.</para>
+
+    <para>The second method is to access it locally. Install the program <code>devhelp</code> and the <code>cinnamon-doc</code> package (might be named differently in different distros or included in the <code>cinnamon</code> package itself). Then run the program <code>devhelp</code> to access all documentations you have installed in your system (not limited to Cinnamon).</para>
+  </sect2>
+
+  <sect2>
+    <title>Javascript documentation</title>
+    <para>The Javascript documentation is divided into sections according to the files they are from. The title of each section is how you want to import it. For example, if you want to use the <code>IconApplet</code> object from <code>imports.ui.applet</code>, then you type <code>imports.ui.applet.IconApplet</code>. Since that is very cumbersome to type, we usually declare it as a constant first. For example, you will often see</para>
+
+    <informalexample>
+      <programlisting>
+        const Applet = imports.ui.applet;
+      </programlisting>
+    </informalexample>
+
+    <para>This way you can access the <code>IconApplet</code> object via <code>Applet.IconApplet</code> instead. This is how the individual pages are named as well.</para>
+
+    <para>The <code>_init</code> function of each object is the constructor. So if you want to know what happens when you call <code>new Applet.Applet</code>, you look at the <code>_init</code> function of <code>Applet.Applet</code>. There usually isn't much helpful information apart form what each argument does.</para>
+
+    <para>Each object comes with an object hierarchy, documented in the Object Hierarchy section. For example, <code>Applet.IconApplet</code> inherits <code>Applet.Applet</code>. The child can, obviously, access the functions and properties of the parent. However, this information is not repeated in every child. So if you cannot find the function you want in the <code>Applet.IconApplet</code> page, you can look at the <code>Applet.Applet</code> page as well. This is also true for the C documentation</para>
+  </sect2>
+
+  <sect2>
+    <title>C documentation</title>
+    <para>The items described here are common to all C modules imported, not just those relating to Cinnamon.</para>
+
+    <para>Reading the documentation of C modules is tricky, since they are written for C, and we are in Javascript. In particular, C has no concept of objects, while Javascript does. Thus the naming convention of many things are different when used in Cinnamon, and the documentation is not directly applicable. The following sections will describe how to translate C into Javascript.</para>
+
+    <sect3>
+      <title>Objects</title>
+      <para>C has no concept of objects, but GObject allows C code to create things that look like objects. For example, <code>St.Bin</code> is something that looks like an object, and acts like an object in Javascript. If you want to look up the documentation of <code>St.Bin</code>, you search for <code>StBin</code> (without the ".") and the documentation will come up.</para>
+
+      <para>The removal of the "." is since, in Javascript, we first import the whole St, and then take the "<code>Bin</code>" object from St. This concept is non-existent in C. In C, it is simply StBin.</para>
+
+      <para>Translating object names is the easiest of all.</para>
+    </sect3>
+    <sect3>
+      <title>Functions</title>
+      <para>If you look at the page of <link linkend="StBin"><code>StBin</code></link>, you will see that the functions have very long names like <code>st_bin_get_child</code>. Since we are just pretending to have objects via GObjects, and objects do not genuinely exist in C, the functions do not "belong" to the objects. We simply put the name of the object in front of the function name and trust people will actually use it on the proper object.</para>
+
+      <para>In C, objects are imported as if they were objects, and functions <emphasis>do</emphasis> belong to the objects. So if <code>actor</code> is an <code>StBin</code>, we do not do <code>st_bin_get_child(actor)</code>, but simply <code>actor.get_child()</code>.</para>
+
+      <para>Note that the C documentation always tells you that the first argument to the function is the object itself. For example, <code>st_bin_get_child</code> takes in an <code>StBin</code> as the argument. We do not need to supply this.</para>
+
+      <para>Note also that not all functions are available for use in Javascript. If some functions are considered to be too C-like to be used in other languages, it will not be availble. There is generally no simple way to figure out whether the functions are available, but usually they are. If they are not, Cinnamon will complain loudly that the function doesn't exist. So the best way to know is to try it.</para>
+    </sect3>
+
+    <sect3>
+      <title>Properties</title>
+      <para>GObjects have properties. These can generally accessed directly. For example, if <code>actor</code> is an <code>StBin</code> and you want to access the <code>x-fill</code> property, you can use <code>actor.x_fill</code>. Note that we translate <code>-</code> to <code>_</code>.</para>
+
+      <para>Sometimes, for some absurd reason, the properties cannot be accessed directly. In this case, there is still hope. You can access the property via <code>actor.get_property("x-fill")</code> and <code>actor.set_property("x-fill", false)</code>.</para>
+    </sect3>
+
+    <sect3>
+      <title>Enums</title>
+      <para>Enums are the trickiest of all. An example of an enum you might see is as follows:</para>
+
+      <informalexample>
+        <refsect2 role="enum">
+          <title>enum StButtonMask</title>
+          <indexterm><primary>StButtonMask</primary></indexterm>
+          <para>A mask representing which mouse buttons an StButton responds to.</para>
+          <refsect3 role="enum_members">
+            <title>Members</title>
+            <informaltable role="enum_members_table" pgwide="1" frame="none">
+              <tgroup cols="3">
+                <colspec colname="enum_members_name" colwidth="300px"/>
+                <colspec colname="enum_members_description"/>
+                <colspec colname="enum_members_annotations" colwidth="200px"/>
+                <tbody>
+                  <row role="constant"><entry role="enum_member_name"><para>ST_BUTTON_ONE</para></entry>
+                    <entry role="enum_member_description"><para>button 1 (left)</para>
+                    </entry>
+                    <entry role="enum_member_annotations"></entry>
+                  </row>
+                  <row role="constant"><entry role="enum_member_name"><para>ST_BUTTON_TWO</para></entry>
+                    <entry role="enum_member_description"><para>button 2 (middle)</para>
+                    </entry>
+                    <entry role="enum_member_annotations"></entry>
+                  </row>
+                  <row role="constant"><entry role="enum_member_name"><para>ST_BUTTON_THREE</para></entry>
+                    <entry role="enum_member_description"><para>button 3 (right)</para>
+                    </entry>
+                    <entry role="enum_member_annotations"></entry>
+                  </row>
+                </tbody>
+              </tgroup>
+            </informaltable>
+          </refsect3>
+        </refsect2>
+      </informalexample>
+
+      <para>The correct way to access these enums is <code>St.ButtonMask.ONE</code>. We first start with the namespace St, then the name of the enums. Note that this does <emphasis>not</emphasis> relate to the name of the members of the enum. For example, if the individual enum members are called <code>HELLO_WORLD</code> in C, you still access them by starting with <code>St.ButtonMask</code>.</para>
+
+      <para>What to put after <code>St.ButtonMask</code> is trickier - it is the name of the member, but what should you take? You usually have to strip out some things from the left. In this case, you remove the <code>ST_BUTTON</code> and retain <code>ONE</code>. There is no fixed rule to what to remove. However, it is usually the name of the object (<code>StButton</code> in this case), or the name of the whole group of enum.</para>
+
+      <para>You can save yourself some guessing by typing <code>St.ButtonMask</code> in looking glass. Double-clicking into it will show you what you can access. In this case it shows <code>ONE, TWO, THREE</code>.</para>
+
+      <para>Note that both <code>St</code> and <code>ButtonMask</code> are in CamelCase, but the name of the enum member uses CAPS_WITH_UNDERSCORE.</para>
+    </sect3>
+  </sect2>
+</chapter>

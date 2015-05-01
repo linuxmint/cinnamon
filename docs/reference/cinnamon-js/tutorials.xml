@@ -1,5 +1,6 @@
-<part id="documentation-writing">
-  <title>Documentation writing</title>
+<part id="documentation">
+  <title>Documentation</title>
+  <xi:include href="tutorials/using-documentation.xml"/>
   <xi:include href="tutorials/documenting-source.xml"/>
   <xi:include href="tutorials/documenting-tutorial.xml"/>
 </part>
