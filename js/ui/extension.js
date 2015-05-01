@@ -114,10 +114,12 @@ for(var key in Type) {
     Signals.addSignalMethods(type);
 
     let path = GLib.build_filenamev([global.userdatadir, type.folder]);
-    type.userDir = Gio.file_new_for_path(path);
+    type.userDir = path;
+
+    let dir = Gio.file_new_for_path(type.userDir)
     try {
-        if (!type.userDir.query_exists(null))
-            type.userDir.make_directory_with_parents(null);
+        if (!dir.query_exists(null))
+            dir.make_directory_with_parents(null);
     } catch (e) {
         global.logError(e);
     }
