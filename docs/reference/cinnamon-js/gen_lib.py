@@ -395,23 +395,23 @@ def get_hierarchy(obj):
     except KeyError:
         pass
 
-    count = 0
+    count = 1
     hierarchy_strs = []
     for item in hierarchy:
         try:
             hierarchy_strs.append(HIERARCHY_ITEM_FORMAT.format(
-                spacing = ' ' * (count * 4 + 6),
+                spacing = ' ' * count * 4,
                 prefix = objects[item].prefix,
                 name = item))
         except KeyError:
             hierarchy_strs.append(HIERARCHY_ITEM_FORMAT.format(
-                spacing = ' ' * (count * 4 + 6),
+                spacing = ' ' * count * 4,
                 prefix = "void",
                 name = item))
         count += 1
 
     hierarchy_strs.append(HIERARCHY_ITEM_FORMAT.format(
-        spacing = ' ' * (count * 4 + 6),
+        spacing = ' ' * count * 4,
         prefix = "void",
         name = obj.name))
 
