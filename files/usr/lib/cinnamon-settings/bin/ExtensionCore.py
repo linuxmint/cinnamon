@@ -1337,7 +1337,7 @@ Please contact the developer.""")
                             if os.path.exists(os.path.join(path, "thumbnail.png")):
                                 icon_path = os.path.join(path, "thumbnail.png")
                             else:
-                                icon_path = "/usr/lib/cinnamon-settings/data/icons/themes.svg"
+                                icon_path = "/usr/share/cinnamon/theme/thumbnail-generic.png"
                             size = 60 * self.window.get_scale_factor()
                             img = GdkPixbuf.Pixbuf.new_from_file_at_size(icon_path, -1, size)
 
