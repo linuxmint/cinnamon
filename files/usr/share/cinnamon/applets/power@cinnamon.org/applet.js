@@ -87,7 +87,7 @@ DeviceItem.prototype = {
         this._vbox = new St.BoxLayout({ style_class: 'popup-device-menu-item', vertical: true});
         this.label = new St.Label({ text: deviceTypeToString(device_type) });
         let statusLabel = new St.Label({ text: status, style_class: 'popup-inactive-menu-item' });
-        percentLabel = new St.Label({ text: "%d%%".format(Math.round(percentage))});
+        let percentLabel = new St.Label({ text: "%d%%".format(Math.round(percentage))});
 
         this._icon = new St.Icon({ gicon: Gio.icon_new_for_string(icon),
                                    icon_type: St.IconType.SYMBOLIC,
@@ -204,47 +204,42 @@ MyApplet.prototype = {
     _init: function(metadata, orientation, panel_height, instanceId) {
         Applet.TextIconApplet.prototype._init.call(this, orientation, panel_height, instanceId);
 
-        try {
-            this.metadata = metadata;
+        this.metadata = metadata;
 
-            this.settings = new Settings.AppletSettings(this, metadata.uuid, instanceId);
-            this.settings.bindProperty(Settings.BindingDirection.IN, "showpercentage", "showpercentage", Lang.bind(this, this._devicesChanged), null);
+        this.settings = new Settings.AppletSettings(this, metadata.uuid, instanceId);
+        this.settings.bindProperty(Settings.BindingDirection.IN, "showpercentage", "showpercentage", Lang.bind(this, this._devicesChanged), null);
 
-            Main.systrayManager.registerRole("power", metadata.uuid);
-            Main.systrayManager.registerRole("battery", metadata.uuid);
+        Main.systrayManager.registerRole("power", metadata.uuid);
+        Main.systrayManager.registerRole("battery", metadata.uuid);
 
-            this.menuManager = new PopupMenu.PopupMenuManager(this);
-            this.menu = new Applet.AppletPopupMenu(this, orientation);
-            this.menuManager.addMenu(this.menu);
+        this.menuManager = new PopupMenu.PopupMenuManager(this);
+        this.menu = new Applet.AppletPopupMenu(this, orientation);
+        this.menuManager.addMenu(this.menu);
 
-            this._deviceItems = [ ];
-            this._primaryDeviceId = null;
-            this.panel_icon_name = ''; // remember the panel icon name (so we only set it when it actually changes)
+        this._deviceItems = [ ];
+        this._primaryDeviceId = null;
+        this.panel_icon_name = ''; // remember the panel icon name (so we only set it when it actually changes)
 
-            this._otherDevicePosition = 0;
+        this._otherDevicePosition = 0;
 
-            this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
+        this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
 
-            this.brightness = new BrightnessSlider(this, _("Brightness"), "display-brightness", BrightnessBusName, 0.01);
-            this.keyboard = new BrightnessSlider(this, _("Keyboard backlight"), "keyboard-brightness", KeyboardBusName, 0);
-            this.menu.addMenuItem(this.brightness);
-            this.menu.addMenuItem(this.keyboard);
+        this.brightness = new BrightnessSlider(this, _("Brightness"), "display-brightness", BrightnessBusName, 0.01);
+        this.keyboard = new BrightnessSlider(this, _("Keyboard backlight"), "keyboard-brightness", KeyboardBusName, 0);
+        this.menu.addMenuItem(this.brightness);
+        this.menu.addMenuItem(this.keyboard);
 
-            this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
+        this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
 
-            this.menu.addSettingsAction(_("Power Settings"), 'power');
+        this.menu.addSettingsAction(_("Power Settings"), 'power');
 
-            this.actor.connect("scroll-event", Lang.bind(this, this._onScrollEvent));
+        this.actor.connect("scroll-event", Lang.bind(this, this._onScrollEvent));
 
-            Interfaces.getDBusProxyAsync("org.cinnamon.SettingsDaemon.Power", Lang.bind(this, function(proxy, error) {
-                this._proxy = proxy;
-                this._proxy.connect("g-properties-changed", Lang.bind(this, this._devicesChanged));
-                this._devicesChanged();
-            }));
-        }
-        catch (e) {
-            global.logError(e);
-        }
+        Interfaces.getDBusProxyAsync("org.cinnamon.SettingsDaemon.Power", Lang.bind(this, function(proxy, error) {
+            this._proxy = proxy;
+            this._proxy.connect("g-properties-changed", Lang.bind(this, this._devicesChanged));
+            this._devicesChanged();
+        }));
     },
 
     _onButtonPressEvent: function(actor, event){

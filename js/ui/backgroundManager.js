@@ -35,11 +35,11 @@ BackgroundManager.prototype = {
     },
 
     _onGnomeSettingsChanged: function() {
-        somethingChanged = false;
+        let somethingChanged = false;
         for (var i in this._string_keys) {
-            key = this._string_keys[i];
-            value = this._string_values[i];
-            newValue = this._gnomeSettings.get_string(key);
+            let key = this._string_keys[i];
+            let value = this._string_values[i];
+            let newValue = this._gnomeSettings.get_string(key);
             if (value != newValue) {
                 global.log("BackgroundManager: org.gnome.desktop.background %s changed (%s -> %s)!".format(key, value, newValue));
                 this._string_values[i] = newValue;
@@ -47,9 +47,9 @@ BackgroundManager.prototype = {
             }
         }
         for (var i in this._int_keys) {
-            key = this._int_keys[i];
-            value = this._int_values[i];
-            newValue = this._gnomeSettings.get_int(key);
+            let key = this._int_keys[i];
+            let value = this._int_values[i];
+            let newValue = this._gnomeSettings.get_int(key);
             if (value != newValue) {
                 global.log("BackgroundManager: org.gnome.desktop.background %s changed (%d -> %d)!".format(key, value, newValue));
                 this._int_values[i] = newValue;
@@ -62,15 +62,13 @@ BackgroundManager.prototype = {
     },
 
     _overwriteCinnamonSettings: function() {
-        for (var i in this._string_keys) {
-            let key = this._string_keys[i];
+        for (var key of this._string_keys) {
             let gnomeValue = this._gnomeSettings.get_string(key);
             if (this._cinnamonSettings.get_string(key) != gnomeValue) {
                 this._cinnamonSettings.set_string(key, gnomeValue);
             }
         }
-        for (var i in this._int_keys) {
-            let key = this._int_keys[i];
+        for (var key of this._int_keys) {
             let gnomeValue = this._gnomeSettings.get_int(key);
             if (this._cinnamonSettings.get_int(key) != gnomeValue) {
                 this._cinnamonSettings.set_int(key, gnomeValue);
