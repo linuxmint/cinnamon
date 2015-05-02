@@ -242,16 +242,19 @@ AppMenuButton.prototype = {
     },
 
     _onDragBegin: function() {
+        this.actor.hide();
         this._tooltip.hide();
         this._tooltip.preventShow = true;
     },
 
     _onDragEnd: function() {
+        this.actor.show();
         this._applet.clearDragPlaceholder();
         this._tooltip.preventShow = false;
     },
 
     _onDragCancelled: function() {
+        this.actor.show();
         this._applet.clearDragPlaceholder();
         this._tooltip.preventShow = false;
     },
@@ -939,60 +942,42 @@ MyApplet.prototype = {
         if (!(source instanceof AppMenuButton))
             return DND.DragMotionResult.NO_DROP;
 
-        /* If we haven't stsarted dragging (_dragPlaceholder doesn't exist), do
-         * nothing if directly above source actor */
-        if (!this._dragPlaceholder &&
-            source.actor.x < x && x < source.actor.x + source.actor.width) {
-            return DND.DragMotionResult.CONTINUE;
-        }
-
         let children = this.actor.get_children();
 
-        let pos = children.length - 1;
-        while (x < children[pos].get_allocation_box().x1 + children[pos].width / 2)
-            pos --;
-
-        if (pos == this._dragPlaceholderPos)
-            return DND.DragMotionResult.MOVE_DROP;
+        let pos = children.length;
+        while (pos-- && x < children[pos].get_allocation_box().x1 + children[pos].width / 2);
 
         this._dragPlaceholderPos = pos;
 
-        /* If the placeholder already exists, we just move it, but if we are
-         * adding it, expand its size in an animation */
-        let fadeIn;
-        if (this._dragPlaceholder) {
-            this._dragPlaceholder.actor.destroy();
-            fadeIn = false;
+        if (this._dragPlaceholder == undefined) {
+            this._dragPlaceholder = new DND.GenericDragPlaceholderItem();
+            this._dragPlaceholder.child.set_width (source.actor.width);
+            this._dragPlaceholder.child.set_height (source.actor.height);
+            this.actor.insert_actor(this._dragPlaceholder.actor,
+                    this._dragPlaceholderPos);
         } else {
-            fadeIn = true;
+            this.actor.move_child(this._dragPlaceholder.actor,
+                    this._dragPlaceholderPos);
         }
-
-        this._dragPlaceholder = new DND.GenericDragPlaceholderItem();
-        this._dragPlaceholder.child.set_width (source.actor.width);
-        this._dragPlaceholder.child.set_height (source.actor.height);
-        this.actor.insert_actor(this._dragPlaceholder.actor,
-                this._dragPlaceholderPos);
-        if (fadeIn)
-            this._dragPlaceholder.animateIn();
 
         return DND.DragMotionResult.MOVE_DROP;
     },
 
     acceptDrop: function(source, actor, x, y, time) {
         if (!(source instanceof AppMenuButton)) return false;
-        if (!this._dragPlaceholderPos) return false;
+        if (this._dragPlaceholderPos == undefined) return false;
 
         this.actor.move_child(source.actor, this._dragPlaceholderPos);
-        this.clearDragPlaceholder();
-        actor.destroy();
 
         return true;
     },
 
     clearDragPlaceholder: function() {
-        this._dragPlaceholder.actor.destroy();
-        this._dragPlaceholder = null;
-        this._dragPlaceholderPos = null;
+        if (this._dragPlaceholder) {
+            this._dragPlaceholder.actor.destroy();
+            this._dragPlaceholder = undefined;
+            this._dragPlaceholderPos = undefined;
+        }
     }
 };
 
