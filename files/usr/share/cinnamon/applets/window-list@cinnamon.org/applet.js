@@ -170,7 +170,7 @@ AppMenuButton.prototype = {
             this.rightClickMenu = new AppMenuButtonRightClickMenu(this, this.metaWindow, this._applet.orientation);
             this._menuManager.addMenu(this.rightClickMenu);
 
-            this._draggable = DND.makeDraggable(this.actor);
+            this._draggable = DND.makeDraggable(this.actor, null, this._applet.actor);
             this._draggable.connect('drag-begin', Lang.bind(this, this._onDragBegin));
             this._draggable.connect('drag-cancelled', Lang.bind(this, this._onDragCancelled));
             this._draggable.connect('drag-end', Lang.bind(this, this._onDragEnd));
@@ -242,6 +242,7 @@ AppMenuButton.prototype = {
     },
 
     _onDragBegin: function() {
+        this._draggable._overrideY = this.actor.get_transformed_position()[1];
         this.actor.hide();
         this._tooltip.hide();
         this._tooltip.preventShow = true;
@@ -945,7 +946,7 @@ MyApplet.prototype = {
         let children = this.actor.get_children();
 
         let pos = children.length;
-        while (pos-- && x < children[pos].get_allocation_box().x1 + children[pos].width / 2);
+        while (--pos && x < children[pos].get_allocation_box().x1 + children[pos].width / 2);
 
         this._dragPlaceholderPos = pos;
 
