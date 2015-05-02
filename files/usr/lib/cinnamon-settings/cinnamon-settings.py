@@ -181,6 +181,8 @@ class MainWindow:
         self.content_box_sw.show_all()
         self.button_back = self.builder.get_object("button_back")
         self.button_back.set_tooltip_text(_("Back to all settings"))
+        button_image = self.builder.get_object("image1")
+        button_image.props.icon_size = Gtk.IconSize.MENU
 
         self.stack_switcher = self.builder.get_object("stack_switcher")
         # Set stack to random thing and make opacity 0 so that the heading bar
