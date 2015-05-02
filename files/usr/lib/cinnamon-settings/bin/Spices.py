@@ -625,9 +625,6 @@ class Spice_Harvester:
         self.progress_window.hide()
         return
 
-    def on_refresh_clicked(self):
-        self.load_index()
-
     # def download_with_progressbar(self, outfd, outfile, caption='Please wait..', waitForClose=True):
     #     self.progressbar.set_fraction(0)
     #     self.progressbar.set_text('0%')
