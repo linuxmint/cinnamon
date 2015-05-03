@@ -318,7 +318,7 @@ def write_sgml(files, version):
 
         entries = []
         if _file.is_interesting():
-            _file.objects.append(_file)
+            _file.objects.insert(0, _file)
 
         entries = [SGML_ENTRY_FORMAT.format(
             directory = _file.directory,
