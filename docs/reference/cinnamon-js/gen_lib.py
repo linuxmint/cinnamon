@@ -65,6 +65,7 @@ class JSFile(JSThing):
     def __init__ (self, directory, name):
         self.directory = directory
         self.name = name[0].capitalize() + name[1:]
+        self.orig_name = self.name
         self.imports = "imports.{0}.{1}".format(directory, name)
         self.prefix = directory + "-" + name
         self.description = ''
@@ -77,7 +78,7 @@ class JSFile(JSThing):
         return len(self.functions) + len(self.properties) + len(self.description) > 0
 
     def add_function(self, func):
-        self.functions.append(func) 
+        self.functions.append(func)
 
     def add_object(self, obj):
         self.objects.append(obj)
@@ -89,6 +90,7 @@ class JSFile(JSThing):
 class JSObject(JSThing):
     def __init__ (self, name):
         self.name = name
+        self.orig_name = name
         self.inherit = ''
         self.description = ''
         self.short_description = ''
@@ -104,9 +106,8 @@ class JSObject(JSThing):
     def set_inherit(self, inherit):
         self.inherit = inherit
 
-def write_sgml(files, version):
-    sgml = open('cinnamon-js-docs.sgml', 'w')
-    sgml.write('''<?xml version='1.0'?>
+SGML_FORMAT = '''\
+<?xml version='1.0'?>
 <!DOCTYPE book PUBLIC '-//OASIS//DTD DocBook XML V4.3//EN'
                'http://www.oasis-open.org/docbook/xml/4.3/docbookx.dtd'
 [
@@ -116,261 +117,378 @@ def write_sgml(files, version):
   <bookinfo>
     <title>Cinnamon Javascript Reference Manual</title>
     <releaseinfo>
-      for Cinnamon {0}.
+      for Cinnamon {version}.
     </releaseinfo>
   </bookinfo>
-'''.format(version))
-
-    f = open('tutorials.xml', 'r')
-    sgml.write(f.read())
-
-    sgml.write('''
+  {tutorials}
   <part id="cinnamon-js-reference">
-    <title>Cinnamon Javascript Reference</title>''')
+    <title>Cinnamon Javascript Reference</title>
+    {chapters}
+  </part>
+</book>'''
 
-    for _file in files:
-        if not _file.is_interesting() and len(_file.objects) == 0:
-            continue
+SGML_CHAPTER_FORMAT = '''
+<chapter id="cinnamon-js-{prefix}-section">
+  <title>{title}</title>
+  {entries}
+</chapter>'''
 
-        sgml.write('''
-  <chapter id="cinnamon-js-{0}-section">
-    <title>{1}</title>
-'''.format(_file.prefix, _file.imports))
-        if _file.is_interesting():
-            sgml.write('    <xi:include href="{0}/{1}.xml"/>\n'.format(_file.directory, _file.name));
+SGML_ENTRY_FORMAT = '<xi:include href="{directory}/{name}.xml"/>'
 
-        for obj in _file.objects:
-            sgml.write('    <xi:include href="{0}/{1}.xml"/>\n'.format(_file.directory, obj.name));
-
-        sgml.write('  </chapter>\n\n')
-
-    sgml.write('</part></book>\n')
-
-
-def create_file(obj):
-    file_obj = open('{0}/{1}.xml'.format(obj.directory, obj.name), 'w')
-    file_obj.write('''<?xml version='1.0'?>
+FILE_FORMAT = '''\
+<?xml version='1.0'?>
 <!DOCTYPE refentry PUBLIC '-//OASIS//DTD DocBook XML V4.3//EN'
 'http://www.oasis-open.org/docbook/xml/4.3/docbookx.dtd'
 [
 <!ENTITY % local.common.attrib "xmlns:xi  CDATA  #FIXED 'http://www.w3.org/2003/XInclude'">
 ]>
-<refentry id="cinnamon-js-{0}">
+<refentry id="cinnamon-js-{prefix}">
   <refmeta>
-    <refentrytitle role="top_of_page" id="cinnamon-js-{0}.top_of_page">{1}</refentrytitle>
+    <refentrytitle role="top_of_page" id="cinnamon-js-{prefix}.top_of_page">{name}</refentrytitle>
     <manvolnum>3</manvolnum>
     <refmiscinfo>
-      {1}
+      {name}
     </refmiscinfo>
   </refmeta>
   <refnamediv>
-    <refname>{1}</refname>
-    <refpurpose>{2}</refpurpose>
+    <refname>{name}</refname>
+    <refpurpose>{short_description}</refpurpose>
   </refnamediv>
-'''.format(obj.prefix, obj.name.replace("-", "."), obj.short_description))
+  {func_header}
+  {prop_header}
+  {hierarchy}
+  {functions}
+  {properties}
+</refentry>
+'''
+
+FUNCTION_HEADER_FORMAT = '''
+<refsect1 id="cinnamon-js-{prefix}.functions" role="functions_proto">
+  <title role="functions_proto.title">Functions</title>
+  <informaltable pgwide="1" frame="none">
+    <tgroup cols="2">
+      <colspec colname="functions_return" colwidth="150px"/>
+      <colspec colname="functions_name"/>
+      <tbody>
+        {function_headers}
+      </tbody>
+    </tgroup>
+  </informaltable>
+</refsect1>
+'''
+
+FUNCTION_HEADER_ITEM_FORMAT = '''
+<row>
+  <entry role="function_type">
+    <link linkend="{return_link}">
+      <returnvalue>{return_name}</returnvalue>
+    </link>
+  </entry>
+  <entry role="function_name">
+    <link linkend="cinnamon-js-{prefix}-{name}">{name}</link>&#160;<phrase role="c_punctuation">()</phrase>
+  </entry>
+</row>
+'''
+
+PROPERTY_HEADER_FORMAT = '''
+<refsect1 id="cinnamon-js-{prefix}.properties" role="properties">
+  <title role="properties.title">Properties</title>
+  <informaltable frame="none">
+    <tgroup cols="3">
+      <colspec colname="properties_type" colwidth="150px"/>
+      <colspec colname="properties_name" colwidth="300px"/>
+      <tbody>
+        {property_headers}
+      </tbody>
+    </tgroup>
+  </informaltable>
+</refsect1>
+'''
+
+PROPERTY_HEADER_ITEM_FORMAT = '''
+<row>
+  <entry role="property_type">
+    <link linkend="{type_link}"><type>{type_name}</type></link>
+  </entry>
+  <entry role="property_name">
+    <link linkend="cinnamon-js-{prefix}--{name}">{name}</link>
+  </entry>
+</row>
+'''
+
+HIERARCHY_FORMAT = '''
+<refsect1 id="cinnamon-js-{prefix}.object-hierarchy" role="object_hierarchy">
+  <title role="object_hierarchy.title">Object Hierarchy</title>
+  <screen>
+    <link linkend="Object">Object</link>
+{hierarchy}
+  </screen>
+</refsect1>
+'''
+
+HIERARCHY_ITEM_FORMAT = '{spacing}<phrase role="lineart">&#9584;&#9472;&#9472;</phrase> <link linkend="cinnamon-js-{prefix}">{name}</link>'
+
+DESCRIPTION_FORMAT = '''
+<refsect1 id="cinnamon-js-{prefix}.description" role="desc">
+  <title role="desc.title">Description</title>
+  {description}
+</refsect1>
+'''
+
+FUNCTIONS_FORMAT = '''
+<refsect1 id="cinnamon-js-{prefix}.functions_details" role="details">
+  <title role="details.title">Functions</title>
+  {functions}
+</refsect1>
+'''
+
+FUNCTION_ITEM_FORMAT = '''
+<refsect2 id="cinnamon-js-{prefix}-{name}" role="function">
+  <title>{name}&#160;()</title>
+  <indexterm zone="cinnamon-js-{prefix}-{name}"><primary>{name}</primary></indexterm>
+  <programlisting language="javascript">
+<link linkend="{return_link}"><returnvalue>{return_type}</returnvalue></link>
+{name} ({inline_params});</programlisting>
+  {description}
+  {params}
+  {return_desc}
+</refsect2>
+'''
+
+FUNC_PARAMETERS_FORMAT = '''
+<refsect3 role="parameters">
+  <title>Parameters</title>
+  <informaltable role="parameters_table" pgwide="1" frame="none">
+    <tgroup cols="3">
+      <colspec colname="parameters_name" colwidth="150px"/>
+      <colspec colname="parameters_description"/>
+      <colspec colname="parameters_annotations" colwidth="200px"/>
+      <tbody>
+        {param_items}
+      </tbody>
+    </tgroup>
+  </informaltable>
+</refsect3>
+'''
+
+INLINE_PARAMETER_FORMAT = '<parameter><link linkend="{type_link}"><type>{type_name}</type></link>{name}</parameter>'
+
+FUNC_PARAMETERS_ITEM_FORMAT = '''
+<row>
+  <entry role="parameter_name"><para>{name}</para></entry>
+  <entry role="parameter_description"><para>{description}</para></entry>
+  <entry role="parameter_annotations"></entry>
+</row>
+'''
+
+FUNC_RETURN_FORMAT = '''
+<refsect3 role="returns">
+  <title>Returns</title>
+  {desc}
+</refsect3>
+'''
+
+PROPERTIES_FORMAT = '''
+<refsect1 id="cinnamon-js-{prefix}.property-details" role="property_details">
+  <title role="property_details.title">Property Details</title>
+  {properties}
+</refsect1>
+'''
+
+PROPERTIES_ITEM_FORMAT = '''
+<refsect2 id="cinnamon-js-{prefix}--{name}" role="property">
+  <title>The “{name}” property</title>
+  <indexterm zone="cinnamon-js-{prefix}--{name}">
+    <primary>cinnamon-js-{prefix}:{name}</primary>
+  </indexterm>
+  <programlisting>  {disp_name}  <link linkend="{type_link}"><type>{type_name}</type></link></programlisting>
+  {description}
+</refsect2>
+'''
+
+def write_sgml(files, version):
+    sgml = open('cinnamon-js-docs.sgml', 'w')
+    tutorials = open('tutorials.xml', 'r')
+
+    chapters = []
+
+    for _file in files:
+        if not _file.is_interesting() and len(_file.objects) == 0:
+            continue
+
+        entries = []
+        if _file.is_interesting():
+            _file.objects.append(_file)
+
+        entries = [SGML_ENTRY_FORMAT.format(
+            directory = _file.directory,
+            name = obj.name) for obj in _file.objects]
+
+        chapters.append(SGML_CHAPTER_FORMAT.format(
+            prefix = _file.prefix,
+            title = _file.imports,
+            entries = "\n".join(entries)))
+
+    sgml.write(SGML_FORMAT.format(
+        version = version,
+        tutorials = tutorials.read(),
+        chapters = "\n".join(chapters)))
+
+def create_file(obj):
+    file_obj = open('{0}/{1}.xml'.format(obj.directory, obj.name), 'w')
+    file_obj.write(FILE_FORMAT.format(
+        prefix = obj.prefix,
+        name = obj.name.replace("-", "."),
+        short_description = obj.short_description,
+        func_header = get_function_header(obj),
+        prop_header = get_properties_header(obj),
+        hierarchy = get_hierarchy(obj),
+        functions = get_functions(obj),
+        properties = get_properties(obj)))
 
     return file_obj
 
-def write_function_header_block(file_obj, obj):
+def get_function_header(obj):
     if len(obj.functions) == 0:
-        return;
+        return ""
 
-    file_obj.write('''
-  <refsect1 id="cinnamon-js-{0}.functions" role="functions_proto">
-    <title role="functions_proto.title">Functions</title>
-    <informaltable pgwide="1" frame="none">
-      <tgroup cols="2">
-        <colspec colname="functions_return" colwidth="150px"/>
-        <colspec colname="functions_name"/>
-        <tbody>'''.format(obj.prefix))
+    functions = [FUNCTION_HEADER_ITEM_FORMAT.format(
+                return_link = func.return_value.get_type_link(),
+                return_name = func.return_value.arg_type,
+                prefix = obj.prefix,
+                name = func.name) for func in obj.functions]
 
-    for func in obj.functions:
-        file_obj.write('''
-          <row>
-            <entry role="function_type">
-              <link linkend="{0}">
-                <returnvalue>{1}</returnvalue>
-              </link>
-            </entry>
-            <entry role="function_name">
-              <link linkend="cinnamon-js-{2}-{3}">{3}</link>&#160;<phrase role="c_punctuation">()</phrase>
-            </entry>
-          </row>'''.format(func.return_value.get_type_link(), func.return_value.arg_type, obj.prefix, func.name))
-    file_obj.write('''
-        </tbody>
-      </tgroup>
-    </informaltable>
-  </refsect1>''')
+    return FUNCTION_HEADER_FORMAT.format(
+            prefix = obj.prefix,
+            function_headers = "\n".join(functions))
 
-def write_properties_header_block(file_obj, obj):
+def get_properties_header( obj):
     if len(obj.properties) == 0:
-        return
+        return ""
 
-    file_obj.write('''
-  <refsect1 id="Cinnamon-js-{0}.properties" role="properties">
-    <title role="properties.title">Properties</title>
-    <informaltable frame="none">
-      <tgroup cols="3">
-        <colspec colname="properties_type" colwidth="150px"/>
-        <colspec colname="properties_name" colwidth="300px"/>
-        <tbody>'''.format(obj.prefix))
+    properties = [PROPERTY_HEADER_ITEM_FORMAT.format(
+        type_link = prop.get_type_link(),
+        type_name = prop.arg_type,
+        prefix = obj.prefix,
+        name = prop.name) for prop in obj.properties]
 
-    for prop in obj.properties:
-        file_obj.write('''
-          <row>
-            <entry role="property_type">
-              <link linkend="{0}"><type>{1}</type></link>
-            </entry>
-            <entry role="property_name">
-              <link linkend="cinnamon-js-{2}--{3}">{3}</link>
-            </entry>
-          </row>'''.format(prop.get_type_link(), prop.arg_type, obj.prefix, prop.name));
-    file_obj.write('''
-        </tbody>
-      </tgroup>
-    </informaltable>
-  </refsect1>''')
+    return PROPERTY_HEADER_FORMAT.format(
+        prefix = obj.prefix,
+        property_headers = "\n".join(properties))
 
-def write_heirarchy_block(file_obj, obj):
+def get_hierarchy(obj):
     from gen_doc import objects
 
+    if isinstance(obj, JSFile):
+        return ""
+
+
     name = obj.name.replace('-', '.')
-    heirarchy = []
+    hierarchy = []
     try:
         while True:
             name = objects[name].inherit
-            if name in heirarchy:
+            if name in hierarchy:
                 break
             if name:
-                heirarchy.insert(0, name)
+                hierarchy.insert(0, name)
     except KeyError:
         pass
 
-    file_obj.write('''
-  <refsect1 id="cinnamon-js-{0}.object-hierarchy" role="object_hierarchy">
-    <title role="object_hierarchy.title">Object Hierarchy</title>
-    <screen>
-      <link linkend="Object">Object</link>'''.format(obj.prefix))
-    count = 0
-    for item in heirarchy:
+    count = 1
+    hierarchy_strs = []
+    for item in hierarchy:
         try:
-            file_obj.write('''
-{0}<phrase role="lineart">&#9584;&#9472;&#9472;</phrase> <link linkend="cinnamon-js-{1}">{2}</link>'''.format(' ' * (count * 4 + 6), objects[item].prefix, item))
+            hierarchy_strs.append(HIERARCHY_ITEM_FORMAT.format(
+                spacing = ' ' * count * 4,
+                prefix = objects[item].prefix,
+                name = item))
         except KeyError:
-            file_obj.write('''
-{0}<phrase role="lineart">&#9584;&#9472;&#9472;</phrase>{1}'''.format(' ' * (count * 4 + 6), item))
+            hierarchy_strs.append(HIERARCHY_ITEM_FORMAT.format(
+                spacing = ' ' * count * 4,
+                prefix = "void",
+                name = item))
         count += 1
 
-    file_obj.write('''
-{0}<phrase role="lineart">&#9584;&#9472;&#9472;</phrase> {1}'''.format(' ' * (count * 4 + 6), obj.name.replace("-", ".")))
-    file_obj.write('''
-    </screen>
-  </refsect1>''')
+    hierarchy_strs.append(HIERARCHY_ITEM_FORMAT.format(
+        spacing = ' ' * count * 4,
+        prefix = "void",
+        name = obj.name))
 
-def write_description_block(file_obj, obj):
+    return HIERARCHY_FORMAT.format(
+        prefix = obj.prefix,
+        hierarchy = "\n".join(hierarchy_strs))
+
+def get_description(obj):
     if len(obj.description) == 0:
-        return
-    
-    file_obj.write('''
-  <refsect1 id="cinnamon-js-{0}.description" role="desc">
-    <title role="desc.title">Description</title>
-    {1}
-  </refsect1>'''.format(obj.prefix, obj.get_xml_description()))
+        return ""
 
-def write_functions_block(file_obj, obj):
+    return DESCRIPTION_FORMAT.format(
+            prefix=obj.prefix,
+            description = obj.get_xml_description())
+
+def get_functions(obj):
     if len(obj.functions) == 0:
-        return
+        return ""
 
-    file_obj.write('''
-  <refsect1 id="cinnamon-js-{0}.functions_details" role="details">
-    <title role="details.title">Functions</title>'''.format(obj.prefix))
+    functions = []
+
     for func in obj.functions:
-        file_obj.write('''
-    <refsect2 id="cinnamon-js-{0}-{1}" role="function">
-      <title>{1}&#160;()</title>
-      <indexterm zone="cinnamon-js-{0}-{1}"><primary>{1}</primary></indexterm>
-      <programlisting language="javascript">
-<link linkend="{2}"><returnvalue>{3}</returnvalue></link>
-'''.format(
-            obj.prefix,
-            func.name,
-            func.return_value.get_type_link(),
-            func.return_value.arg_type))
-
-        file_obj.write(func.name + " (")
+        inline_params = ""
+        params = ""
         if len(func.properties) > 0:
+            # Calculate how long the argument types are and make the arguments
+            # align
             max_length = max(len(x.arg_type) for x in func.properties) + 3
-            # If no parameter has argument types, don't show that silly whitespace
+            # If no parameter has argument types, don't show that silly
+            # whitespace
             if max_length == 3:
                 max_length = 0
 
-            file_obj.write((',\n' + ' ' * (len(func.name) + 2)).join(
-                '<parameter><link linkend="{0}"><type>{1}</type></link>{2}</parameter>'.format(
-                    x.get_type_link(),
-                    x.arg_type,
-                    " " * (max_length - len(x.arg_type)) + x.name) for x in func.properties))
-        file_obj.write(');</programlisting>\n')
-       
-        file_obj.write(func.get_xml_description())
+            inline_params = [INLINE_PARAMETER_FORMAT.format(
+                type_link = param.get_type_link(),
+                type_name = param.arg_type,
+                name = " " * (max_length - len(param.arg_type)) + param.name) for param in func.properties]
 
-        if len(func.properties) > 0:
-            file_obj.write('''
-      <refsect3 role="parameters">
-        <title>Parameters</title>
-        <informaltable role="parameters_table" pgwide="1" frame="none">
-          <tgroup cols="3">
-            <colspec colname="parameters_name" colwidth="150px"/>
-            <colspec colname="parameters_description"/>
-            <colspec colname="parameters_annotations" colwidth="200px"/>
-            <tbody>''')
+            inline_params = (',\n' + ' ' * (len(func.name) + 2)).join(inline_params)
 
-            for prop in func.properties:
-                file_obj.write('''
-              <row><entry role="parameter_name"><para>{0}</para></entry>
-                <entry role="parameter_description"><para>{1}</para></entry>
-                <entry role="parameter_annotations"></entry></row>'''.format(prop.name, prop.description))
-            file_obj.write('''
-        </tbody></tgroup></informaltable>
-      </refsect3>''')
+            params = [FUNC_PARAMETERS_ITEM_FORMAT.format(
+                name = param.name,
+                description = param.description) for param in func.properties]
 
+            params = FUNC_PARAMETERS_FORMAT.format(param_items = '\n'.join(params))
+
+        return_desc = ""
         if func.return_value.name is not None:
-            file_obj.write('<refsect3 role="returns"><title>Returns</title>{0}</refsect3>'.format(func.return_value.get_xml_description()))
+            return_desc = FUNC_RETURN_FORMAT.format(desc=func.return_value.get_xml_description())
 
+        functions.append(FUNCTION_ITEM_FORMAT.format(
+            prefix = obj.prefix,
+            name = func.name,
+            return_link = func.return_value.get_type_link(),
+            return_type = func.return_value.arg_type,
+            description = func.get_xml_description(),
+            inline_params = inline_params,
+            params = params,
+            return_desc = return_desc))
 
-        file_obj.write('''\n</refsect2>''')
+    return FUNCTIONS_FORMAT.format(
+            prefix = obj.prefix,
+            functions = "\n".join(functions))
 
-    file_obj.write('\n  </refsect1>');
-
-def write_properties_block(file_obj, obj):
+def get_properties(obj):
     if len(obj.properties) == 0:
-        return
+        return ""
 
-    file_obj.write('''
-  <refsect1 id="cinnamon-js-{0}.property-details" role="property_details">
-    <title role="property_details.title">Property Details</title>'''.format(obj.prefix))
+    properties = [PROPERTIES_ITEM_FORMAT.format(
+        prefix = obj.prefix,
+        name = prop.name,
+        disp_name = ('“' + prop.name + '”').ljust(25),
+        type_link = prop.get_type_link(),
+        type_name = prop.arg_type,
+        description = prop.get_xml_description()) for prop in obj.properties]
 
-    for prop in obj.properties:
-        file_obj.write('''
-    <refsect2 id="cinnamon-js-{0}--{1}" role="property">
-      <title>
-      The “{1}” property
-      </title>
-      <indexterm zone="cinnamon-js-{0}--{1}">
-        <primary>cinnamon-js-{0}:{1}</primary>
-      </indexterm>
-      <programlisting language="javascript">  {2}  <link linkend="{3}"><type>{4}</type></link></programlisting>
-      {5}
-    </refsect2>'''.format(
-        obj.prefix,
-        prop.name,
-        ('“' + prop.name + '”').ljust(25),
-        prop.get_type_link(),
-        prop.arg_type, 
-        prop.get_xml_description()))
-    file_obj.write('''\n  </refsect1>''')
-
-def close_file(file_obj):
-    file_obj.write('''</refentry>''')
-    file_obj.close()
-
+    return PROPERTIES_FORMAT.format(
+         prefix = obj.prefix,
+         properties = "\n".join(properties))
 
