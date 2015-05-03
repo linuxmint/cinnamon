@@ -10,6 +10,9 @@
 #include <langinfo.h>
 #endif
 
+#define DESKTOP_SCHEMA "org.cinnamon.desktop.interface"
+#define FIRST_WEEKDAY_KEY "first-day-of-week"
+
 #include <libxml/parser.h>
 #include <libxml/tree.h>
 #include <libxml/xmlmemory.h>
@@ -540,7 +543,13 @@ cinnamon_util_format_date (const char *format,
 int
 cinnamon_util_get_week_start ()
 {
-  int week_start;
+  /* Try to get first weekday from gsettings */
+  /* If the value from gsettings is not in the range 0-6,
+   * continue to get the locale's first weekday */
+  GSettings *settings = g_settings_new (DESKTOP_SCHEMA);
+  int week_start = g_settings_get_int (settings, FIRST_WEEKDAY_KEY);
+  if (0 <= week_start && week_start < 7) return week_start;
+
 #ifdef HAVE__NL_TIME_FIRST_WEEKDAY
   union { unsigned int word; char *string; } langinfo;
   int week_1stday = 0;
