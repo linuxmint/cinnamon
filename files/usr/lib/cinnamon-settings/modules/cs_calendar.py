@@ -33,3 +33,5 @@ class Module:
             settings.add_row(GSettingsSwitch(_("Use 24h clock"), "org.cinnamon.desktop.interface", "clock-use-24h"))
             settings.add_row(GSettingsSwitch(_("Display the date"), "org.cinnamon.desktop.interface", "clock-show-date"))
             settings.add_row(GSettingsSwitch(_("Display seconds"), "org.cinnamon.desktop.interface", "clock-show-seconds"))
+            days = [[7, _("Use locale default")], [0, _("Sunday")], [1, _("Monday")]]
+            settings.add_row(GSettingsIntComboBox(_("First day of week"), "org.cinnamon.desktop.interface", "first-day-of-week", None, days))
