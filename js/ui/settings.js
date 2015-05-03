@@ -214,7 +214,7 @@ _provider.prototype = {
                 return;
             }
             this.multi_instance = this._get_is_multi_instance_xlet(this.uuid);
-            if (this.multi_instance && !this.instanceId) {
+            if (this.multi_instance && this.instanceId == undefined) {
                 global.logError(this.xlet_str + "Settings fatal error!");
                 global.logError("Multi-instanciable xlet with no instance ID supplied");
                 global.logError("The UUID is " + this.uuid);
