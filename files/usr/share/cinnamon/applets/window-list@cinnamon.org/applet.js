@@ -860,6 +860,15 @@ MyApplet.prototype = {
                 window.setDisplayTitle();
     },
 
+    // Used by windowManager for traditional minimize and map effect
+    getOriginFromWindow: function(metaWindow) {
+        for (let window of this._windows)
+            if (window.metaWindow == metaWindow)
+                return window.actor;
+
+        return false;
+    },
+
     _updateWatchedMonitors: function() {
         let n_mons = Gdk.Screen.get_default().get_n_monitors();
         let on_primary = this.panel.monitorIndex == Main.layoutManager.primaryIndex;
