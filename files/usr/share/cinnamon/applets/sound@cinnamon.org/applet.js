@@ -49,6 +49,10 @@ TrackInfo.prototype = {
         this.label.text = label.toString();
     },
 
+    getLabel: function() {
+        return this.label.text.toString();
+    },
+
     getColumnWidths: function(){
         return [0];
     }
