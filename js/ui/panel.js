@@ -90,15 +90,15 @@ function _unpremultiply(color) {
                                blue: blue, alpha: color.alpha });
 };
 
-/* checkPanelUpgrade:
+/**
+ * checkPanelUpgrade:
  *
- *Run from main, prior to PanelManager being initialized
+ * Run from main, prior to PanelManager being initialized
  * this handles the one-time transition between panel implementations
  * to make this transition invisible to the user.  We will evaluate the
  * desktop-layout key, and pre-set applets-enabled and panels-enabled
  * appropriately.
  */
-
 function checkPanelUpgrade()
 {
     let oldLayout = global.settings.get_string("desktop-layout");
@@ -1262,7 +1262,25 @@ PanelZoneDNDHandler.prototype = {
     }
 }
 
-
+/**
+ * #Panel:
+ * @panelId (int): the id of the panel
+ * @monitorIndex (int): the index of the monitor containing the panel
+ * @monitor (Meta.Rectangle): the geometry (bounding box) of the monitor
+ * @bottomPosition (boolean): whether the panel is at the bottom of the screen
+ * @actor (Cinnamon.GenericContainer): the actor of the panel
+ * @scaleMode (boolean): whether the applets should scale with the panel
+ *
+ * @_leftBox (St.BoxLayout): the box containing all the applets in the left region
+ * @_centerBox (St.BoxLayout): the box containing all the applets in the center region
+ * @_rightBox (St.BoxLayout): the box containing all the applets in the right region
+ * @_hidden (boolean): whether the panel is currently hidden
+ * @_disabled (boolean): whether the panel is disabled
+ * @_panelEditMode (boolean): whether the panel edit mode is on
+ * @_context_menu (Panel.PanelContextMenu): the context menu of the panel
+ *
+ * This represents a panel on the screen.
+ */
 function Panel(id, monitorIndex, bottomPosition) {
     this._init(id, monitorIndex, bottomPosition);
 }
@@ -1277,10 +1295,7 @@ Panel.prototype = {
     	this._hidden = false;
         this._disabled = false;
         this._panelEditMode = false;
-        this._hidetime = 0;
         this._autohideSettings = this._getProperty(PANEL_AUTOHIDE_KEY, "s");
-        this._hideTimer = 0;
-        this._showTimer = 0;
         this._themeFontSize = null;
         this._destroyed = false;
         this._settingsSignals = [];
@@ -1322,10 +1337,6 @@ Panel.prototype = {
             this.actor.add_style_class_name('panel-bottom')
         else
             this.actor.add_style_class_name('panel-top')
-
-        /* right */
-        this._status_area_order = [];
-        this._status_area_cinnamon_implementation = {};
 
         this._context_menu = new PanelContextMenu(this, bottomPosition ? St.Side.BOTTOM: St.Side.TOP, id);
         this._menus.addMenu(this._context_menu);
@@ -1440,6 +1451,11 @@ Panel.prototype = {
         this.actor.change_style_pseudo_class('highlight', highlight);
     },
 
+    /**
+     * isHideable:
+     *
+     * Returns: whether the panel can be hidden (auto-hide or intellihide)
+     */
     isHideable: function() {
         return this._autohideSettings != "true";
     },
@@ -1626,6 +1642,12 @@ Panel.prototype = {
         Main.layoutManager._chrome.modifyActorParams(this.actor, { affectsStruts: this._autohideSettings == "false" });
     },
 
+    /**
+     * _moveResizePanel:
+     *
+     * Function to update the panel position and size according to settings
+     * values.
+     */
     _moveResizePanel: function() {
         if (this._destroyed) return false;
         this.monitor = global.screen.get_monitor_geometry(this.monitorIndex);
@@ -1788,7 +1810,14 @@ Panel.prototype = {
 
         this._updatePanelBarriers();
     },
-    
+
+    /**
+     * _updatePanelVisibility:
+     *
+     * Checks whether the panel should show based on the autohide settings and
+     * position of mouse/active window. It then calls the _queueShowHidePanel
+     * function to show or hide the panel as necessary.
+     */
     _updatePanelVisibility: function() {
         // false = autohide, true = always show, intel = Intelligent
         switch (this._autohideSettings) {
@@ -1824,6 +1853,12 @@ Panel.prototype = {
         this._queueShowHidePanel();
     },
 
+    /**
+     * _queueShowHidePanel:
+     *
+     * Makes the panel show or hide after a delay specified by
+     * panels-show-delay and panels-hide-delay.
+     */
     _queueShowHidePanel: function() {
         if (this._showHideTimer) {
             Mainloop.source_remove(this._showHideTimer);
@@ -1857,27 +1892,44 @@ Panel.prototype = {
         this._updatePanelVisibility();
     }, 
 
-    enable: function() {
-        this._disabled = false;
-        this.actor.show();
-        Tweener.addTween(this.actor, {
-            opacity: 255, 
-            time: AUTOHIDE_ANIMATION_TIME, 
-            transition: 'easeOutQuad'
-        });
-    }, 
-    
+    /**
+     * disable:
+     *
+     * Disables the panel by settings the opacity to 0 and hides if autohide is
+     * enable. The actor is then hidden after the animation.
+     */
     disable: function() {
         this._disabled = true;
         this._leavePanel();
         Tweener.addTween(this.actor, {
-            opacity: 0, 
-            time: AUTOHIDE_ANIMATION_TIME, 
-            transition: 'easeOutQuad', 
+            opacity: 0,
+            time: AUTOHIDE_ANIMATION_TIME,
+            transition: 'easeOutQuad',
             onComplete: this.actor.hide
         });
     }, 
-    
+
+    /**
+     * enable:
+     *
+     * Reverses the effects of the disable function.
+     */
+    enable: function() {
+        this._disabled = false;
+        this.actor.show();
+        Tweener.addTween(this.actor, {
+            opacity: 255,
+            time: AUTOHIDE_ANIMATION_TIME,
+            transition: 'easeOutQuad'
+        });
+    },
+
+    /**
+     * _showPanel:
+     *
+     * A function to force the panel to show. This has no effect if the panel
+     * is disabled.
+     */
     _showPanel: function() {
         this._showHideTimer = 0;
 
@@ -1935,6 +1987,15 @@ Panel.prototype = {
         this._hidden = false;
     },
 
+    /**
+     * _hidePanel:
+     * @force (boolean): whether or not to force the hide.
+     *
+     * This hides the panel unless this._shouldShow is false. This behaviour is
+     * overridden if the @force argument is set to true. However, the panel
+     * will always not be hidden if a menu is open, regardless of the value of
+     * @force.
+     */
     _hidePanel: function(force) {
         this._showHideTimer = 0;
 
@@ -1988,5 +2049,4 @@ Panel.prototype = {
 
         this._hidden = true;
     },
-
 };
