@@ -546,8 +546,8 @@ class SettingsBox(Gtk.Frame):
     def __init__(self, title):
         Gtk.Frame.__init__(self)
         self.set_shadow_type(Gtk.ShadowType.IN)
-        style = self.get_style_context()
-        style.add_class("view")
+        frame_style = self.get_style_context()
+        frame_style.add_class("view")
         self.size_group = Gtk.SizeGroup()
         self.size_group.set_mode(Gtk.SizeGroupMode.VERTICAL)
 
@@ -568,7 +568,7 @@ class SettingsBox(Gtk.Frame):
         toolbar_separator = Gtk.Separator(orientation=Gtk.Orientation.HORIZONTAL)
         self.box.add(toolbar_separator)
         separator_context = toolbar_separator.get_style_context()
-        frame_color = self.get_style_context().get_border_color(Gtk.StateFlags.NORMAL).to_string()
+        frame_color = frame_style.get_border_color(Gtk.StateFlags.NORMAL).to_string()
         css_provider = Gtk.CssProvider()
         css_provider.load_from_data(".separator { -GtkWidget-wide-separators: 0; \
                                                    color: %s;                    \
