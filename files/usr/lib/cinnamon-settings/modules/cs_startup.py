@@ -344,21 +344,31 @@ class AutostartBox(Gtk.Box):
         self.set_orientation(Gtk.Orientation.VERTICAL)
         frame = Gtk.Frame()
         frame.set_shadow_type(Gtk.ShadowType.IN)
-        style = frame.get_style_context()
-        style.add_class("view")
+        frame_style = frame.get_style_context()
+        frame_style.add_class("view")
         self.pack_start(frame, True, True, 0)
 
         main_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
         frame.add(main_box)
 
         toolbar = Gtk.Toolbar.new()
-        Gtk.StyleContext.add_class(Gtk.Widget.get_style_context(toolbar), "primary-toolbar")
+        Gtk.StyleContext.add_class(Gtk.Widget.get_style_context(toolbar), "cs-header")
         label = Gtk.Label.new()
         label.set_markup("<b>%s</b>" % title)
         title_holder = Gtk.ToolItem()
         title_holder.add(label)
         toolbar.add(title_holder)
         main_box.add(toolbar)
+
+        toolbar_separator = Gtk.Separator(orientation=Gtk.Orientation.HORIZONTAL)
+        main_box.add(toolbar_separator)
+        separator_context = toolbar_separator.get_style_context()
+        frame_color = frame_style.get_border_color(Gtk.StateFlags.NORMAL).to_string()
+        css_provider = Gtk.CssProvider()
+        css_provider.load_from_data(".separator { -GtkWidget-wide-separators: 0; \
+                                                   color: %s;                    \
+                                                }" % frame_color)
+        separator_context.add_provider(css_provider, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
 
         scw = Gtk.ScrolledWindow.new()
         scw.expand = True
