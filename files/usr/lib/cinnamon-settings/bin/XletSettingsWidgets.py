@@ -10,6 +10,7 @@ try:
     import json
     import dbus
     import eyedropper
+    import XletSettings
     import tweenEquations
     import math
     from gi.repository import Gio, Gtk, GObject, Gdk, GdkPixbuf
@@ -119,17 +120,6 @@ class Settings():
         self.instance_id = instance_id
         self.multi_instance = multi_instance
         self.uuid = uuid
-        try:
-            self.tUser = gettext.translation(self.uuid, home+"/.local/share/locale").ugettext
-        except IOError:
-            try:
-                self.tUser = gettext.translation(self.uuid, "/usr/share/locale").ugettext
-            except IOError:
-                self.tUser = None
-        try:
-            self.t = gettext.translation("cinnamon", "/usr/share/locale").ugettext
-        except IOError:
-            self.t = None
         self.reload()
 
     def reload (self):
@@ -232,14 +222,6 @@ class Settings():
 class BaseWidget(object):
     def __init__(self, key, settings_obj, uuid):
         self.settings_obj = settings_obj
-        if self.settings_obj.tUser:
-            self.tUser = self.settings_obj.tUser
-        else:
-            self.tUser = None
-        if self.settings_obj.t:
-            self.t = self.settings_obj.t
-        else:
-            self.t = None
         self.key = key
         self.uuid = uuid
         self.handler = None
@@ -278,15 +260,7 @@ class BaseWidget(object):
     def get_desc(self):
         try:
             desc = self.settings_obj.get_data(self.key)["description"]
-            if desc == "":
-                return desc
-            if self.tUser:
-                result = self.tUser(desc)
-                if result != desc:
-                    return result
-            if self.t:
-                return self.t(desc)
-            return desc
+            return XletSettings.translate(self.uuid, desc)
         except:
             print ("Could not find description for key '%s' in xlet '%s'" % (self.key, self.uuid))
             return ""
@@ -294,30 +268,14 @@ class BaseWidget(object):
     def get_tooltip(self):
         try:
             tt = self.settings_obj.get_data(self.key)["tooltip"]
-            if tt == "":
-                return tt
-            if self.tUser:
-                result = self.tUser(tt)
-                if result != tt:
-                    return result
-            if self.t:
-                return self.t(tt)
-            return tt
+            return XletSettings.translate(self.uuid, tt)
         except:
             return ""
 
     def get_units(self):
         try:
             units = self.settings_obj.get_data(self.key)["units"]
-            if units == "":
-                return units
-            if self.tUser:
-                result = self.tUser(units)
-                if result != units:
-                    return result
-            if self.t:
-                return self.t(units)
-            return units
+            return XletSettings.translate(self.uuid, units)
         except:
             print ("Could not find units for key '%s' in xlet '%s'" % (self.key, self.uuid))
             return ""
@@ -351,27 +309,13 @@ class BaseWidget(object):
 
     def get_options(self):
         try:
-            if self.t or self.tUser:
-                ret = collections.OrderedDict()
-                d = self.settings_obj.get_data(self.key)["options"]
-                for key in d.keys():
-                    if key == "":
-                        fixed_key = " "
-                    else:
-                        fixed_key = key
-                    if self.tUser:
-                        translated_key = self.tUser(fixed_key)
-                        if translated_key != fixed_key or not self.t:
-                            ret[translated_key] = d[key]
-                        elif self.t:
-                            translated_key = self.t(fixed_key)
-                            ret[translated_key] = d[key]
-                    elif self.t:
-                        translated_key = self.t(key)
-                        ret[translated_key] = d[key]
-                return ret
-            else:
-                return self.settings_obj.get_data(self.key)["options"]
+            ret = collections.OrderedDict()
+            d = self.settings_obj.get_data(self.key)["options"]
+            for key in d:
+                ret[XletSettings.translate(self.uuid, key)] = d[key]
+
+            return ret
+
         except Exception, detail:
             print ("Could not find options for key '%s' in xlet '%s'" % (self.key, self.uuid))
             print detail

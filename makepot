@@ -2,12 +2,11 @@
 
 intltool-extract --type=gettext/glade files/usr/lib/cinnamon-menu-editor/cinnamon-menu-editor.ui
 
-xgettext --language=C --keyword=_ --keyword=N_ --output=cinnamon-source.pot generate_additional_files.py src/*.c src/*/*.c js/*/*.js files/usr/share/cinnamon/applets/*/applet.js files/usr/share/cinnamon/desklets/*/desklet.js files/usr/lib/cinnamon-settings/*.py files/usr/lib/cinnamon-settings-users/*.py files/usr/lib/cinnamon-settings/modules/*.py files/usr/lib/cinnamon-settings/bin/ExtensionCore.py files/usr/lib/cinnamon-settings/bin/eyedropper.py files/usr/lib/cinnamon-settings/bin/Spices.py files/usr/lib/cinnamon-settings/bin/XletSettings.py files/usr/lib/cinnamon-settings/bin/XletSettingsWidgets.py files/usr/share/cinnamon/desklets/*/*.py files/usr/lib/cinnamon-screensaver-lock-dialog/*.py files/usr/bin/cinnamon-launcher files/usr/lib/cinnamon-menu-editor/cme/*.py files/usr/lib/cinnamon-menu-editor/cinnamon-menu-editor.ui.h
+xgettext --language=C --keyword=_ --keyword=N_ --output=cinnamon.pot src/*.c src/*/*.c files/usr/lib/cinnamon-menu-editor/cinnamon-menu-editor.ui.h
+xgettext --language=JavaScript --keyword=_ --keyword=N_ --output=cinnamon.pot --join-existing --from-code=UTF-8 js/*/*.js files/usr/share/cinnamon/*/*/*.js
+xgettext --language=Python --keyword=_ --output=cinnamon.pot --join-existing generate_additional_files.py files/usr/share/cinnamon/*/*/*.py files/usr/lib/*/*.py files/usr/lib/cinnamon-settings/*/*.py files/usr/bin/cinnamon-launcher files/usr/lib/cinnamon-menu-editor/cme/*.py
 cd files
-usr/lib/cinnamon-json-makepot/cinnamon-json-makepot.py ../cinnamon-json
+usr/lib/cinnamon-json-makepot/cinnamon-json-makepot.py ../cinnamon
 cd ..
-msguniq cinnamon-json.pot > uniq-cinnamon-json.pot
-msgcat cinnamon-source.pot uniq-cinnamon-json.pot > cinnamon.pot
-rm -f cinnamon-source.pot cinnamon-json.pot uniq-cinnamon-json.pot
 
 rm -f files/usr/lib/cinnamon-menu-editor/cinnamon-menu-editor.ui.h
