@@ -32,6 +32,9 @@ const objects = {};
 // Maps uuid -> metadata object
 const meta = {};
 
+// Maps uuid -> directory
+const dirs = {};
+
 /**
  * const Type:
  * @EXTENSION: Cinnamon extensions
@@ -131,13 +134,13 @@ function createMetaDummy(uuid, path, state, type) {
 }
 
 // The Extension object itself
-function Extension(dir, type, force) {
-    this._init(dir, type, force);
+function Extension(dir, type, force, uuid) {
+    this._init(dir, type, force, uuid);
 }
 
 Extension.prototype = {
-    _init: function(dir, type, force) {
-        this.uuid = dir.get_basename();
+    _init: function(dir, type, force, uuid) {
+        this.uuid = uuid;
         this.dir = dir;
         this.type = type;
         this.lowerType = type.name.toLowerCase().replace(" ", "_");
@@ -154,6 +157,7 @@ Extension.prototype = {
         if (this.meta.multiversion) {
             this.dir = findExtensionSubdirectory(this.dir);
             this.meta.path = this.dir.get_path();
+            dirs[this.uuid] = this.dir;
         }
 
         this.ensureFileExists(this.dir.get_child(this.lowerType + '.js'));
@@ -450,14 +454,18 @@ function getMetaStateString(state) {
 }
 
 function loadExtension(uuid, type) {
+    let force = uuid.indexOf("1") == 0;
+    uuid = uuid.replace(/^!/,'');
+
     let extension = objects[uuid];
     if(!extension) {
         try {
-            let dir = findExtensionDirectory(uuid.replace(/^!/,''), type);
-            if (dir == null) {
+            dirs[uuid] = findExtensionDirectory(uuid, type);
+
+            if (dirs[uuid] == null)
                 throw ("not-found");
-            }
-            extension = new Extension(dir, type, uuid.indexOf("!") == 0);
+
+            extension = new Extension(dirs[uuid], type, force, uuid);
 
             if(!type.callbacks.finishExtensionLoad(extension))
                 throw (type.name + ' ' + uuid + ': Could not create applet object.');
@@ -560,7 +568,7 @@ function findExtensionSubdirectory(dir) {
                 continue;
 
             let name = info.get_name();
-            if (!name.match(/^[0-9]+\.[0-9]+(\.[0-9]+)?$/))
+            if (!name.match(/^[1-9][0-9]*\.[0-9]+(\.[0-9]+)?$/))
                 continue;
 
             if (versionLeq(name, Config.PACKAGE_VERSION) &&

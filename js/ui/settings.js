@@ -208,7 +208,7 @@ _provider.prototype = {
             }
             this.instanceId = instanceId;
             this.valid = false;
-            this.applet_dir = Extension.findExtensionDirectory(this.uuid, this.ext_type);
+            this.applet_dir = Extension.dirs[this.uuid];
             if (!this.applet_dir) {
                 global.logError("Could not find installation directory for " + this.uuid);
                 return;
