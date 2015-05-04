@@ -2,6 +2,10 @@
 $(DOC_MAIN_SGML_FILE): $(top_srcdir)/js/*/* gen_lib.py gen_doc.py tutorials.xml tutorials/*
 	./gen_doc.py $(top_srcdir) $(PACKAGE_VERSION)
 
+# we want $(DOC_MAIN_SGML_FILE) to be built before sgml-build
+# and sgml-build depends on $(DOC_MODULE)-sections.txt
+$(DOC_MODULE)-sections.txt: $(DOC_MAIN_SGML_FILE)
+
 # We require automake 1.6 at least.
 AUTOMAKE_OPTIONS = 1.6
 
@@ -50,7 +54,7 @@ FIXXREF_OPTIONS=
 # Used for dependencies. The docs will be rebuilt if any of these change.
 # e.g. HFILE_GLOB=$(top_srcdir)/gtk/*.h
 # e.g. CFILE_GLOB=$(top_srcdir)/gtk/*.c
-HFILE_GLOB=tutorials.xml tutorials/* *.py
+HFILE_GLOB=
 CFILE_GLOB=
 
 # Extra header to include when scanning, which are not under DOC_SOURCE_DIR
