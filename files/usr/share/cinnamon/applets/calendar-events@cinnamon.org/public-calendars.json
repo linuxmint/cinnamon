@@ -1,0 +1,211 @@
+{
+    "base" : "http://www.google.com/calendar/feeds/",
+    "generic" : "%23holiday%40group.v.calendar.google.com/public/full",
+    "locales" : [
+                {
+                "locale" : "en_gb",
+                "country": "uk",
+                "enOnly": true
+                },
+
+                {
+                "locale": "en_us",
+                "country": "usa",
+                "enOnly": true
+                },
+                {
+                "locale": "zh_cn",
+                "country": "china",
+                "enOnly": false
+                },
+                {
+                "locale": "zh_hk",
+                "country": "hong_kong",
+                "enOnly": false
+                },
+                {
+                "locale": "zh_sg",
+                "country": "singapore",
+                "enOnly": false
+                },
+                {
+                "locale": "zh_tw",
+                "country": "taiwan",
+                "enOnly": false
+                },
+
+                {
+                "locale": "da",
+                "country": "danish",
+                "enOnly": false
+                },
+
+                {
+                "locale": "nl_nl",
+                "country": "dutch",
+                "enOnly": false
+                },
+
+                {
+                "locale": "en_au",
+                "country": "australia",
+                "enOnly": false
+                },
+
+                {
+                "locale": "en_ca",
+                "country": "canadian",
+                "enOnly": false
+                },
+
+                {
+                "locale": "en_in",
+                "country": "indian",
+                "enOnly": false
+                },
+
+                {
+                "locale": "en_ie",
+                "country": "irish",
+                "enOnly": false
+                },
+
+                {
+                "locale": "en_nz",
+                "country": "new_zealand",
+                "enOnly": false
+                },
+
+                {
+                "locale": "en_ph",
+                "country": "phillipines",
+                "enOnly": false
+                },
+
+                {
+                "locale": "en_za",
+                "country": "south_africa",
+                "enOnly": false
+                },
+
+                {
+                "locale": "fi",
+                "country": "finnish",
+                "enOnly": false
+                },
+
+                {
+                "locale": "fr_fr",
+                "country": "french",
+                "enOnly": false
+                },
+
+                {
+                "locale": "de_at",
+                "country": "austrian",
+                "enOnly": false
+                },
+
+                {
+                "locale": "de_de",
+                "country": "german",
+                "enOnly": false
+                },
+
+                {
+                "locale": "el",
+                "country": "greek",
+                "enOnly": false
+                },
+
+                {
+                "locale": "id",
+                "country": "indonesian",
+                "enOnly": false
+                },
+
+                {
+                "locale": "it_it",
+                "country": "italian",
+                "enOnly": false
+                },
+
+                {
+                "locale": "ja",
+                "country": "japanese",
+                "enOnly": false
+                },
+
+                {
+                "locale": "ko",
+                "country": "south_korea",
+                "enOnly": false
+                },
+
+                {
+                "locale": "ms_my",
+                "country": "malaysia",
+                "enOnly": false
+                },
+
+                {
+                "locale": "no_no",
+                "country": "norwegian",
+                "enOnly": false
+                },
+
+                {
+                "locale": "pl",
+                "country": "polish",
+                "enOnly": false
+                },
+
+                {
+                "locale": "pt_br",
+                "country": "brazilian",
+                "enOnly": false
+                },
+
+                {
+                "locale": "pt_pt",
+                "country": "portuguese",
+                "enOnly": false
+                },
+
+                {
+                "locale": "ru",
+                "country": "russian",
+                "enOnly": false
+                },
+
+                {
+                "locale": "es_mx",
+                "country": "mexican",
+                "enOnly": false
+                },
+
+                {
+                "locale": "es_es",
+                "country": "spain",
+                "enOnly": false
+                },
+
+                {
+                "locale": "sv_se",
+                "country": "swedish",
+                "enOnly": false
+                },
+
+                {
+                "locale": "th",
+                "country": "thai",
+                "enOnly": false
+                },
+
+                {
+                "locale": "vi",
+                "country": "vietnamese",
+                "enOnly": false
+                }
+                ]
+}

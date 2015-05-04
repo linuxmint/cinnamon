@@ -1,0 +1,6 @@
+{
+	"uuid": "calendar-events@cinnamon.org",
+	"name": "Cinnamon Calendar and Events",
+	"description": "Display upcoming events from your Google Calendar and Public Holidays",
+	"icon": "stock_calendar"
+}
