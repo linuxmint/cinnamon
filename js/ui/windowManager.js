@@ -669,12 +669,9 @@ WindowManager.prototype = {
         }));
 
         if (actor.get_meta_window()._cinnamonwm_has_origin === true) {
-            try {
-                this._startWindowEffect(cinnamonwm, "unminimize", actor, null, "minimize");
+            // Returns false if unable to find window origin
+            if (this._startWindowEffect(cinnamonwm, "unminimize", actor, null, "minimize"))
                 return;
-            } catch(e){
-                //catch "no origin found"
-            }
         } else if (actor.meta_window.get_window_type() == Meta.WindowType.NORMAL) {
             Main.soundManager.play('map');
         }
