@@ -18,5 +18,10 @@
       "type": "checkbox",
       "default": true,
       "description": "Middle click to close window"
+  },
+  "buttons-use-entire-space": {
+      "type": "checkbox",
+      "default": false,
+      "description": "Window buttons can have different sizes and use the entire space available"
   }
 }

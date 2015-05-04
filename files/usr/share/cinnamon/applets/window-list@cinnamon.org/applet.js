@@ -419,9 +419,16 @@ AppMenuButton.prototype = {
     },
 
     _getPreferredWidth: function(actor, forHeight, alloc) {
-        let [minSize, naturalSize] = this._iconBox.get_preferred_width(forHeight);
+        let [minSize, naturalSize] = this._label.get_preferred_width(forHeight);
         alloc.min_size = minSize; // minimum size just enough for icon if we ever get that many apps going
-        alloc.natural_size = 150 * global.ui_scale;
+        if (this._applet.buttonsUseEntireSpace) {
+            alloc.natural_size = alloc.natural_size + naturalSize + 10 * global.ui_scale;
+            alloc.natural_size = Math.max(alloc.natural_size, 150 * global.ui_scale);
+
+        }
+        else {
+            alloc.natural_size = 150 * global.ui_scale;
+        }
     },
 
     _getPreferredHeight: function(actor, forWidth, alloc) {
@@ -702,8 +709,6 @@ MyApplet.prototype = {
         this._windows = [];
         this._monitorWatchList = [];
 
-        this.instance_id = instance_id;
-
         this.settings = new Settings.AppletSettings(this, "window-list@cinnamon.org", this.instance_id);
 
         this.settings.bindProperty(Settings.BindingDirection.IN,
@@ -724,6 +729,10 @@ MyApplet.prototype = {
                 "middle-click-close",
                 "middleClickClose",
                 null, null);
+        this.settings.bindProperty(Settings.BindingDirection.IN,
+                "buttons-use-entire-space",
+                "buttonsUseEntireSpace",
+                this._refreshItems, null);
 
         this.signals = new SignalManager(this);
 
