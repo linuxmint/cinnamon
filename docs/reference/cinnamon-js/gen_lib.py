@@ -62,6 +62,10 @@ class JSProperty(JSThing):
         else:
             if self.arg_type in objects:
                 return "cinnamon-js-" + objects[self.arg_type].prefix
+            elif self.arg_type.startswith("Gio"):
+                return self.arg_type.replace("Gio.", "G")
+            elif self.arg_type.startswith("GLib"):
+                return self.arg_type.replace("GLib.", "G")
             else:
                 return self.arg_type.replace('.', '')
 
