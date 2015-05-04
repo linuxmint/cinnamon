@@ -294,11 +294,7 @@ function addAppletToPanels(extension, appletDefinition) {
             appletDefinition.location.remove_actor(appletsToMove[i]);
         }
 
-        if (appletDefinition.center) {
-            appletDefinition.location.add(applet.actor, {x_align: St.Align.CENTER_SPECIAL});
-        } else {
-            appletDefinition.location.add(applet.actor);
-        }
+        appletDefinition.location.add(applet.actor);
 
         applet._panelLocation = appletDefinition.location;
         for (let i=0; i<appletsToMove.length; i++) {
