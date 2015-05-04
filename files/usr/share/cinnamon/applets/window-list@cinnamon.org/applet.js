@@ -61,6 +61,7 @@ const PopupMenu = imports.ui.popupMenu;
 const Settings = imports.ui.settings;
 const Tooltips = imports.ui.tooltips;
 const Tweener = imports.ui.tweener;
+const Util = imports.misc.util;
 
 const DEFAULT_ICON_SIZE = 16; // too bad this can't be defined in theme (cinnamon-app.create_icon_texture returns a clutter actor, not a themable object -
                               // probably something that could be addressed
@@ -530,6 +531,7 @@ AppMenuButtonRightClickMenu.prototype = {
     _init: function(launcher, metaWindow, orientation) {
         Applet.AppletPopupMenu.prototype._init.call(this, launcher, orientation);
 
+        this._launcher = launcher;
         this._windows = launcher._applet._windows;
         this.connect('open-state-changed', Lang.bind(this, this._onToggled));
 
@@ -543,6 +545,13 @@ AppMenuButtonRightClickMenu.prototype = {
         let mw = this.metaWindow;
         let item;
         let length;
+        item = new PopupMenu.PopupIconMenuItem(_("Configure the window list"), "system-run", St.IconType.SYMBOLIC);
+        item.connect('activate', Lang.bind(this, function() {
+            Util.spawnCommandLine("cinnamon-settings applets window-list@cinnamon.org " + this._launcher._applet.instance_id);
+        }));
+        this.addMenuItem(item);
+
+        this.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
 
         // Move to workspace
         if ((length = global.screen.n_workspaces) > 1) {
@@ -693,7 +702,9 @@ MyApplet.prototype = {
         this._windows = [];
         this._monitorWatchList = [];
 
-        this.settings = new Settings.AppletSettings(this, "window-list@cinnamon.org", instance_id);
+        this.instance_id = instance_id;
+
+        this.settings = new Settings.AppletSettings(this, "window-list@cinnamon.org", this.instance_id);
 
         this.settings.bindProperty(Settings.BindingDirection.IN,
                 "enable-alerts",
