@@ -21,7 +21,11 @@ class JSThing():
             self.description += ' ' + desc.strip().replace('<', '&lt;').replace('>', '&gt;')
 
     def get_xml_description(self):
-        return re.sub('@(\w*)', '<code>\g<1></code>', "".join("<para>{0}</para>".format(x) for x in self.description.split("\n")))
+        stuff = "".join("<para>{0}</para>".format(x) for x in self.description.split("\n"))
+        stuff = re.sub('@(\w*)', '<code>\g<1></code>', stuff)
+        stuff = re.sub('\*\*([^*]*)\*\*', '<emphasis role="strong">\g<1></emphasis>', stuff)
+        stuff = re.sub('\*([^*]*)\*', '<emphasis>\g<1></emphasis>', stuff)
+        return stuff
 
     def add_property(self, prop):
         if prop.name == "short_description":
@@ -318,7 +322,7 @@ def write_sgml(files, version):
 
         entries = []
         if _file.is_interesting():
-            _file.objects.append(_file)
+            _file.objects.insert(0, _file)
 
         entries = [SGML_ENTRY_FORMAT.format(
             directory = _file.directory,
