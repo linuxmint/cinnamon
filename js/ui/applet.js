@@ -134,11 +134,18 @@ AppletPopupMenu.prototype = {
  * @short_description: Base applet class
  *
  * @actor (St.BoxLayout): Actor of the applet
- * @_uuid (string): UUID of the applet
  * @instance_id (int): Instance id of the applet
- * @_panelLocation (St.BoxLayout): Panel sector containing the applet
- * @_order (int): The order of the applet within a panel location
- * @_draggable (DND._Draggable): The draggable object of the applet
+ * @_uuid (string): UUID of the applet. This is set by appletManager *after*
+ * the applet is loaded.
+ * @_panelLocation (St.BoxLayout): Panel sector containing the applet. This is
+ * set by appletManager *after* the applet is loaded.
+ * @panel (Panel.Panel): The panel object containing the applet. This is set by
+ * appletManager *after* the applet is loaded.
+ * @_meta (JSON): The metadata of the applet. This is set by appletManager
+ * *after* the applet is loaded.
+ * @_order (int): The order of the applet within a panel location This is set
+ * by appletManager *after* the applet is loaded.
+ * @_draggable (Dnd._Draggable): The draggable object of the applet
  * @_scaleMode (boolean): Whether the applet scales according to the panel size
  * @_applet_tooltip (Tooltips.PanelItemTooltip): The tooltip of the applet
  * @_menuManager (PopupMenu.PopupMenuManager): The menu manager of the applet
