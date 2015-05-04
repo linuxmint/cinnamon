@@ -644,8 +644,10 @@ AppMenuButton.prototype = {
         alloc.min_size = minSize; // minimum size just enough for icon if we ever get that many apps going
         alloc.natural_size = naturalSize;
         [minSize, naturalSize] = this._label.get_preferred_width(forHeight);
-	alloc.min_size = alloc.min_size + Math.max(0, minSize - Math.floor(alloc.min_size / 2));
-        alloc.natural_size = 150 * global.ui_scale;
+        alloc.min_size = alloc.min_size + Math.max(0, minSize - Math.floor(alloc.min_size / 2));
+        alloc.natural_size = alloc.natural_size + naturalSize + 10 * global.ui_scale;
+        alloc.natural_size = Math.max(alloc.natural_size, 150 * global.ui_scale);
+
     },
 
     _getContentPreferredHeight: function(actor, forWidth, alloc) {
