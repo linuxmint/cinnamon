@@ -1063,46 +1063,6 @@ function populateSettingsMenu(menu, panelId) {
 
     menu.addMenuItem(panelSettingsSection);
 
-    // Auto-hide Panel
-/*    let values = global.settings.get_strv(PANEL_AUTOHIDE_KEY);
-    let property;
-    for (let i = 0; i < values.length; i++){
-        if (values[i].split(":")[0]==panelId){
-            property=values[i].split(":")[1];
-            break;
-        }
-    }
-    if (!property){
-        property = DEFAULT_VALUES[PANEL_AUTOHIDE_KEY];
-        values.push(this.panelId + ":" + property);
-        global.settings.set_strv(PANEL_AUTOHIDE_KEY, values);
-    }
-    let autoHidePanel = new PopupMenu.PopupSwitchMenuItem(_("Auto-hide panel"), property == "true");
-    autoHidePanel.connect('toggled', function(item) {
-        let values = global.settings.get_strv(PANEL_AUTOHIDE_KEY);
-        let property;
-        for (let i = 0; i < values.length; i++){
-            if (values[i].split(":")[0] == panelId){
-                values[i] = panelId + ":" + (item.state ? "true" : "false");
-                break;
-            }
-        }
-        global.settings.set_strv(PANEL_AUTOHIDE_KEY, values);
-    });
-
-    menu.addMenuItem(autoHidePanel);
-    global.settings.connect('changed::' + PANEL_AUTOHIDE_KEY, function() {
-        let values = global.settings.get_strv(PANEL_AUTOHIDE_KEY);
-        let property;
-        for (let i = 0; i < values.length; i++){
-            if (values[i].split(":")[0]==panelId){
-                property=values[i].split(":")[1];
-                break;
-            }
-        }
-        autoHidePanel.setToggleState(property == "true");
-    });*/
-
     // Panel Edit mode
     let editMode = global.settings.get_boolean("panel-edit-mode");
     let panelEditMode = new PopupMenu.PopupSwitchMenuItem(_("Panel edit mode"), editMode);
