@@ -81,6 +81,8 @@ const _Draggable = new Lang.Class({
     _init : function(actor, params, target) {
         params = Params.parse(params, { manualMode: false,
                                         restoreOnSuccess: false,
+                                        overrideX: undefined,
+                                        overrideY: undefined,
                                         dragActorMaxSize: undefined,
                                         dragActorOpacity: undefined });
 
@@ -112,6 +114,8 @@ const _Draggable = new Lang.Class({
         this._restoreOnSuccess = params.restoreOnSuccess;
         this._dragActorMaxSize = params.dragActorMaxSize;
         this._dragActorOpacity = params.dragActorOpacity;
+        this._overrideX = params.overrideX;
+        this._overrideY = params.overrideY;
 
         this._buttonDown = false; // The mouse button has been pressed and has not yet been released.
         this._dragInProgress = false; // The drag has been started, and has not been dropped or cancelled yet.
@@ -342,8 +346,7 @@ const _Draggable = new Lang.Class({
                                        let currentScale = this._dragActor.scale_x / origScale;
                                        this._dragOffsetX = currentScale * origDragOffsetX;
                                        this._dragOffsetY = currentScale * origDragOffsetY;
-                                       this._dragActor.set_position(this._dragX + this._dragOffsetX,
-                                                                    this._dragY + this._dragOffsetY);
+                                       this._setDragActorPosition();
                                    },
                                    onUpdateScope: this });
             }
@@ -368,11 +371,14 @@ const _Draggable = new Lang.Class({
         this._updateHoverId = 0;
         let target = null;
 
+        let x = this._overrideX == undefined ? this._dragX : this._overrideX;
+        let y = this._overrideY == undefined ? this._dragY : this._overrideY;
+
         if (this.target)
             target = this.target;
         else
-            target = this._dragActor.get_stage().get_actor_at_pos(Clutter.PickMode.ALL,
-                                                                  this._dragX, this._dragY);
+            target = this._dragActor.get_stage().get_actor_at_pos(Clutter.PickMode.ALL, x, y);
+
         let dragEvent = {
             x: this._dragX,
             y: this._dragY,
@@ -393,7 +399,7 @@ const _Draggable = new Lang.Class({
 
         while (target) {
             if (target._delegate && target._delegate.handleDragOver) {
-                let [r, targX, targY] = target.transform_stage_point(this._dragX, this._dragY);
+                let [r, targX, targY] = target.transform_stage_point(x, y);
                 // We currently loop through all parents on drag-over even if one of the children has handled it.
                 // We can check the return value of the function and break the loop if it's true if we don't want
                 // to continue checking the parents.
@@ -427,16 +433,27 @@ const _Draggable = new Lang.Class({
         let [stageX, stageY] = event.get_coords();
         this._dragX = stageX;
         this._dragY = stageY;
-        this._dragActor.set_position(stageX + this._dragOffsetX,
-                                     stageY + this._dragOffsetY);
+
+        this._setDragActorPosition();
 
         this._queueUpdateDragHover();
         return true;
     },
 
+    _setDragActorPosition: function() {
+        this._dragActor.x = this._overrideX == undefined ?
+            this._dragX + this._dragOffsetX : this._overrideX;
+
+        this._dragActor.y = this._overrideY == undefined ?
+            this._dragY + this._dragOffsetY : this._overrideY;
+    },
+
     _dragActorDropped: function(event) {
         let [dropX, dropY] = event.get_coords();
         let target = null;
+
+        if (this._overrideX != undefined) dropX = this._overrideX;
+        if (this._overrideY != undefined) dropY = this._overrideY;
 
         if (this.target)
             target = this.target;
