@@ -70,7 +70,7 @@ FUNCTION_NAME_REGEX = re.compile(r'^(\w+):?\s*$')
 
 OBJECT_NAME_REGEX = re.compile(r'^#(\w+):?\s*$')
 FILE_REGEX = re.compile(r'\w*\.js')
-COMMENT_START_REGEX = re.compile(r'\s*\*\s*')
+COMMENT_START_REGEX = re.compile(r'^\s*\*\s*')
 BLOCK_START_REGEX = re.compile(r'^\s*/\*\*\s*$')
 STRING_REGEX = re.compile(r'\'[^\']*\'|"[^"]*"')
 

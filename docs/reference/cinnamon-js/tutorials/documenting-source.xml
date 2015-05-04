@@ -139,6 +139,9 @@
       <listitem>
         In the description of itmes, <code>@word</code> will be automatically converted to code format, ie. enclosed within <code>&lt;code&gt;</code> tags.
       </listitem>
+      <listitem>
+        In the description of items, <code>*text more text*</code> will be shown in italics and <code>**text more text**</code> will be shown in bold.
+      </listitem>
     </itemizedlist>
 
   </sect2>
