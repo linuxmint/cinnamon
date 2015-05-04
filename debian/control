@@ -114,8 +114,8 @@ Description: Debugging symbols for the Cinnamon desktop
  This package contains the debugging symbols.
 
 Package: cinnamon-common
-Replaces: cinnamon (<< 1.7.1)
-Breaks: cinnamon (<< 1.7.1)
+Replaces: cinnamon (<< ${cinnamon:Version})
+Breaks: cinnamon (<< ${cinnamon:Version})
 Architecture: all
 Depends: ${misc:Depends}, python
 Description: Cinnamon desktop (Common data files)
