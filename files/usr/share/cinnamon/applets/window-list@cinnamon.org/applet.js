@@ -544,21 +544,6 @@ AppMenuButtonRightClickMenu.prototype = {
         let item;
         let length;
 
-        // Move to monitor
-        if ((length = Main.layoutManager.monitors.length) > 1) {
-            Main.layoutManager.monitors.forEach(function (monitor, index) {
-                if (index === mw.get_monitor()) return;
-
-                item = new PopupMenu.PopupMenuItem(_("Move to monitor %d").format(index + 1));
-                item.connect('activate', function() {
-                    mw.move_to_monitor(index);
-                });
-                this.addMenuItem(item);
-            }, this);
-        }
-
-        this.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
-
         // Move to workspace
         if ((length = global.screen.n_workspaces) > 1) {
             if (mw.is_on_all_workspaces()) {
@@ -573,22 +558,6 @@ AppMenuButtonRightClickMenu.prototype = {
                     mw.stick();
                 });
                 this.addMenuItem(item);
-
-                if (mw.get_workspace().get_neighbor(Meta.MotionDirection.LEFT) != mw.get_workspace()) {
-                    item = new PopupMenu.PopupMenuItem(_("Move to left workspace"));
-                    item.connect('activate', function() {
-                        mw.change_workspace(mw.get_workspace().get_neighbor(Meta.MotionDirection.LEFT));
-                    });
-                    this.addMenuItem(item);
-                }
-
-                if (mw.get_workspace().get_neighbor(Meta.MotionDirection.RIGHT) != mw.get_workspace()) {
-                    item = new PopupMenu.PopupMenuItem(_("Move to right workspace"));
-                    item.connect('activate', function() {
-                        mw.change_workspace(mw.get_workspace().get_neighbor(Meta.MotionDirection.RIGHT));
-                    });
-                    this.addMenuItem(item);
-                }
 
                 item = new PopupMenu.PopupSubMenuMenuItem(_("Move to another workspace ..."), true);
                 this.addMenuItem(item);
@@ -606,6 +575,28 @@ AppMenuButtonRightClickMenu.prototype = {
                             });
                 }
             }
+        }
+
+        // Move to monitor
+        if ((length = Main.layoutManager.monitors.length) == 2) {
+            Main.layoutManager.monitors.forEach(function (monitor, index) {
+                if (index === mw.get_monitor()) return;
+                item = new PopupMenu.PopupMenuItem(_("Move to the other monitor"));
+                item.connect('activate', function() {
+                    mw.move_to_monitor(index);
+                });
+                this.addMenuItem(item);
+            }, this);
+        }
+        else if ((length = Main.layoutManager.monitors.length) > 2) {
+            Main.layoutManager.monitors.forEach(function (monitor, index) {
+                if (index === mw.get_monitor()) return;
+                item = new PopupMenu.PopupMenuItem(_("Move to monitor %d").format(index + 1));
+                item.connect('activate', function() {
+                    mw.move_to_monitor(index);
+                });
+                this.addMenuItem(item);
+            }, this);
         }
 
         this.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
