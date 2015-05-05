@@ -70,7 +70,7 @@
     Object.Name - short description
   </informalexample>
 
-  <para> Afterwards, all the properties of the thing should be listed. A "property" is a globally accessible variable in the case of a file, a genuine property in the case of an object, and a parameter for a function. The type of the property is optional, but leaving it out makes the documentation less helpful and also more ugly. If the description is too long, break it into two rows using a *single* line break. Single line breaks are always ignored. For example,</para>
+  <para>Afterwards, all the properties of the thing should be listed. A "property" is a globally accessible variable in the case of a file, a genuine property in the case of an object, and a parameter for a function. The type of the property is optional, but leaving it out makes the documentation less helpful and also more ugly. If the description is too long to fit in one line, break it into two rows using a *single* line break. Single line breaks are always ignored when parsing. For example,</para>
   <informalexample>
     <programlisting>
       * @prop (type): this is a very long description. Oh my gosh I am
@@ -78,7 +78,7 @@
     </programlisting>
   </informalexample>
 
-  <para>After the properties, a description of the thing should be given. Use *two* line breaks to signify the end of the properties section, and write as normal. It is okay to separate two properties with two line breaks, but not recommended. For example,</para>
+  <para>After the properties, a description of the thing should be given. Use *two* line breaks to signify the end of the properties section, and write as normal. It is okay to separate two properties with two line breaks. For example,</para>
 
   <informalexample>
     <programlisting>
@@ -99,7 +99,18 @@
     </programlisting>
   </informalexample>
 
-  <para>is bad (line 2 will be treated as a description of the object itself).  In the description section, two line breaks will be translated into an actual line break, and a single line break is ignored.</para>
+  <para>is bad (line 2 will be treated as a description of the object itself). Instead, if you want the property description to have multiple paragraphs, put a <code>\</code> character in place of the empty line, ie.</para>
+
+  <informalexample>
+    <programlisting>
+      * @prop1 (type): line 1
+      * \
+      * line 2
+      * @prop2 (type): hello world
+    </programlisting>
+  </informalexample>
+
+  <para>In the description section, two line breaks will be translated into an actual line break, and single line breaks are ignored.</para>
 
   <para>At the end, in the case of a function, a return value can be specified in the form</para>
 

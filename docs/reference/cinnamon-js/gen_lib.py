@@ -15,7 +15,7 @@ import re
 
 class JSThing():
     def append_description(self, desc):
-        if len(desc) == 0:
+        if len(desc) == 0 or desc.strip() == '\\':
             self.description += "\n"
         else:
             self.description += ' ' + desc.strip().replace('<', '&lt;').replace('>', '&gt;')
@@ -284,7 +284,7 @@ INLINE_PARAMETER_FORMAT = '<parameter><link linkend="{type_link}"><type>{type_na
 FUNC_PARAMETERS_ITEM_FORMAT = '''
 <row>
   <entry role="parameter_name"><para>{name}</para></entry>
-  <entry role="parameter_description"><para>{description}</para></entry>
+  <entry role="parameter_description">{description}</entry>
   <entry role="parameter_annotations"></entry>
 </row>
 '''
@@ -462,7 +462,7 @@ def get_functions(obj):
 
             params = [FUNC_PARAMETERS_ITEM_FORMAT.format(
                 name = param.name,
-                description = param.description) for param in func.properties]
+                description = param.get_xml_description()) for param in func.properties]
 
             params = FUNC_PARAMETERS_FORMAT.format(param_items = '\n'.join(params))
 

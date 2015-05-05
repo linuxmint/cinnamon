@@ -50,6 +50,7 @@ import os
 import xml.etree.ElementTree as ET
 import re
 from gen_lib import *
+
 files = []
 objects = {}
 
