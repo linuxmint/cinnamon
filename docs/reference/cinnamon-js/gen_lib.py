@@ -421,7 +421,7 @@ def get_hierarchy(obj):
     hierarchy_strs.append(HIERARCHY_ITEM_FORMAT.format(
         spacing = ' ' * count * 4,
         prefix = "void",
-        name = obj.name))
+        name = obj.name.replace('-', '.')))
 
     return HIERARCHY_FORMAT.format(
         prefix = obj.prefix,
