@@ -65,7 +65,7 @@ COMMENT_REGEX = re.compile(r'/\*([^*]|(\*[^/]))*\*+/')
 RETURNS_REGEX = re.compile(r'^Returns\s*\(?(' + TYPE_REGEX + ')?\)?:(.*)')
 INHERITS_REGEX = re.compile(r'^Inherits:\s*(' + TYPE_REGEX + ')\s*$')
 PROPERTY_REGEX = re.compile(r'^@(\w+)\s*\(?(' + TYPE_REGEX + ')?\)?:(.*)')
-FILE_NAME_REGEX = re.compile(r'FILE:(\w+\.js):?')
+FILE_NAME_REGEX = re.compile(r'FILE:\s*(\w+\.js):?')
 FUNCTION_NAME_REGEX = re.compile(r'^(\w+):?\s*$')
 
 OBJECT_NAME_REGEX = re.compile(r'^#(\w+):?\s*$')
