@@ -21,7 +21,10 @@
  * @xdndHandler (XdndHandler.XdndHandler): The X DND handler
  * @statusIconDispatcher (StatusIconDispatcher.StatusIconDispatcher): The status icon dispatcher
  * @keyboard (Keyboard.Keyboard): The keyboard object
- * @layoutManager (Layout.LayoutManager): The layout manager
+ * @layoutManager (Layout.LayoutManager): The layout manager. All actors that
+ * are part of the Cinnamon UI ar handled by the layout manager, which will
+ * determine when to show and hide the actors etc.
+ *
  * @panelManager (Panel.PanelManager): The panel manager. This is responsible
  * for handling events relating to panels, eg. showing all panels.
  *
@@ -37,8 +40,11 @@
  * for managing the background slideshow, since the background "slideshow" is
  * created by cinnamon changing the active background gsetting every x minutes.
  *
- * @dynamicWorkspaces (boolean): Whether dynamic workspaces are to be used.
- *                               This is not yet implemented
+ * @keybindingManager (KeybindingManager.KeybindingManager): The keybinding manager
+ * @systrayManager (Systray.SystrayManager): The systray manager
+ *
+ * @osdWindow (OsdWindow.OsdWindow): Osd window that pops up when you use media
+ * keys.
  * @tracker (Cinnamon.WindowTracker): The window tracker
  * @workspace_names (array): Names of workspace
  * @deskletContainer (DeskletManager.DeskletContainer): The desklet container 
@@ -46,6 +52,9 @@
  * @lg_log_file (Gio.FileOutputStream): The stream used to log looking messages
  *                                      to ~/.cinnamon/glass.log
  * @can_log (boolean): Whether looking glass log to file can be used
+ * @popup_rendering (boolean): Whether a popup is in the process of rendering
+ * @xlet_startup_error (boolean): Whether there was at least one xlet that did
+ * not manage to load
  *
  * The main file is responsible for launching Cinnamon as well as creating its components. Most components of Cinnamon can be accessed through main
  */
@@ -139,8 +148,6 @@ let systrayManager = null;
 let wmSettings = null;
 
 let workspace_names = [];
-
-let background = null;
 
 let applet_side = St.Side.TOP; // Kept to maintain compatibility. Doesn't seem to be used anywhere
 let deskletContainer = null;

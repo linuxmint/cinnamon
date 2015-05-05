@@ -34,7 +34,7 @@ const Main = imports.ui.main;
 
 /**
  * sleep:
- * @milliseconds: number of milliseconds to wait
+ * @milliseconds (int): number of milliseconds to wait
  *
  * Used within an automation script to pause the the execution of the
  * current script for the specified amount of time. Use as
@@ -76,12 +76,8 @@ function waitLeisure() {
 
 const PerfHelperIface =
     '<node> \
-        <interface name="org.gnome.Shell.PerfHelper"> \
-            <method name="CreateWindow"> \
-                <arg type="i" direction="in" /> \
-                <arg type="i" direction="in" /> \
-                <arg type="b" direction="in" /> \
-                <arg type="b" direction="in" /> \
+        <interface name="org.Cinnamon.PerfHelper"> \
+            <method name="CreateWindow"> \ <arg type="i" direction="in" /> \ <arg type="i" direction="in" /> \ <arg type="b" direction="in" /> \ <arg type="b" direction="in" /> \
             </method> \
             <method name="WaitWindows" /> \
             <method name="DestroyWindows" /> \
@@ -90,7 +86,7 @@ const PerfHelperIface =
 
 var PerfHelperProxy = Gio.DBusProxy.makeProxyWrapper(PerfHelperIface);
 function PerfHelper() {
-    return new PerfHelperProxy(Gio.DBus.session, 'org.gnome.Shell.PerfHelper', '/org/gnome/Shell/PerfHelper');
+    return new PerfHelperProxy(Gio.DBus.session, 'org.Cinnamon.PerfHelper', '/org/Cinnamon/PerfHelper');
 }
 
 let _perfHelper = null;
@@ -103,10 +99,10 @@ function _getPerfHelper() {
 
 /**
  * createTestWindow:
- * @width: width of window, in pixels
- * @height: height of window, in pixels
- * @alpha: whether the window should be alpha transparent
- * @maximized: whethe the window should be created maximized
+ * @width (int): width of window, in pixels
+ * @height (int): height of window, in pixels
+ * @alpha (boolean): whether the window should be alpha transparent
+ * @maximized (boolean): whethe the window should be created maximized
  *
  * Creates a window using cinnamon-perf-helper for testing purposes.
  * While this function can be used with yield in an automation
@@ -174,8 +170,8 @@ function destroyTestWindows() {
 
 /**
  * defineScriptEvent
- * @name: The event will be called script.
- * @description: Short human-readable description of the event
+ * @name (string): The event will be called script.
+ * @description (string): Short human-readable description of the event
  *
  * Convenience function to define a zero-argument performance event
  * within the 'script' namespace that is reserved for events defined locally
@@ -189,7 +185,7 @@ function defineScriptEvent(name, description) {
 
 /**
  * scriptEvent
- * @name: Name registered with defineScriptEvent()
+ * @name (string): Name registered with defineScriptEvent()
  *
  * Convenience function to record a script-local performance event
  * previously defined with defineScriptEvent
@@ -318,7 +314,7 @@ function _collect(scriptModule, outputFile) {
 }
 
 /**
- * runPerfScript
+ * runPerfScript:
  * @scriptModule: module object with run and finish functions
  *    and event handlers
  *
