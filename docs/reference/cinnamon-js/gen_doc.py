@@ -279,4 +279,4 @@ except OSError:
 
 for _file in files:
     for obj in _file.objects:
-        file_obj = create_file(obj)
+        create_file(obj)

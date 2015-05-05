@@ -165,6 +165,7 @@ FILE_FORMAT = '''\
   {func_header}
   {prop_header}
   {hierarchy}
+  {description}
   {functions}
   {properties}
 </refentry>
@@ -351,10 +352,11 @@ def create_file(obj):
         func_header = get_function_header(obj),
         prop_header = get_properties_header(obj),
         hierarchy = get_hierarchy(obj),
+        description = get_description(obj),
         functions = get_functions(obj),
         properties = get_properties(obj)))
 
-    return file_obj
+    file_obj.close()
 
 def get_function_header(obj):
     if len(obj.functions) == 0:
