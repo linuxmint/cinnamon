@@ -1,6 +1,7 @@
 // -*- mode: js; js-indent-level: 4; indent-tabs-mode: nil -*-
 /**
  * FILE:main.js
+ * @short_description: This is the heart of Cinnamon, the mother of everything.
  * @placesManager (PlacesManager.PlacesManager): The places manager
  * @overview (Overview.Overview): The "scale" overview 
  * @expo (Expo.Expo): The "expo" overview
@@ -67,7 +68,10 @@
  * @xlet_startup_error (boolean): Whether there was at least one xlet that did
  * not manage to load
  *
- * The main file is responsible for launching Cinnamon as well as creating its components. Most components of Cinnamon can be accessed through main
+ * The main file is responsible for launching Cinnamon as well as creating its
+ * components. The C part of cinnamon calls the @start() function, which then
+ * initializes all of cinnamon. Most components of Cinnamon can be accessed
+ * through main.
  */
 
 const Clutter = imports.gi.Clutter;
