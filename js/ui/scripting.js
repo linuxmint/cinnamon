@@ -9,7 +9,7 @@ const Main = imports.ui.main;
 
 /**
  * FILE:scripting.js
- * @short_description: scripts for driving cinnamon in an automated fasion
+ * @short_description: Scripts for driving cinnamon in an automated fasion
  *
  * This module provides functionality for driving Cinnamon user interface
  * in an automated fashion. The primary current use case for this is

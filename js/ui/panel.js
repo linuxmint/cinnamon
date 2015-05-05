@@ -1218,6 +1218,8 @@ PanelZoneDNDHandler.prototype = {
 
 /**
  * #Panel:
+ * @short_description: A panel object on the monitor
+ *
  * @panelId (int): the id of the panel
  * @monitorIndex (int): the index of the monitor containing the panel
  * @monitor (Meta.Rectangle): the geometry (bounding box) of the monitor
