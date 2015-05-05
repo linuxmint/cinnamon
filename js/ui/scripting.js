@@ -7,25 +7,30 @@ const Cinnamon = imports.gi.Cinnamon;
 
 const Main = imports.ui.main;
 
-// This module provides functionality for driving Cinnamon user interface
-// in an automated fashion. The primary current use case for this is
-// automated performance testing (see runPerfScript()), but it could
-// be applied to other forms of automation, such as testing for
-// correctness as well.
-//
-// When scripting an automated test we want to make a series of calls
-// in a linear fashion, but we also want to be able to let the main
-// loop run so actions can finish. For this reason we write the script
-// as a generator function that yields when it want to let the main
-// loop run.
-//
-//    yield Scripting.sleep(1000);
-//    main.overview.show();
-//    yield Scripting.waitLeisure();
-//
-// While it isn't important to the person writing the script, the actual
-// yielded result is a function that the caller uses to provide the
-// callback for resuming the script.
+/**
+ * FILE:scripting.js
+ * @short_description: scripts for driving cinnamon in an automated fasion
+ *
+ * This module provides functionality for driving Cinnamon user interface
+ * in an automated fashion. The primary current use case for this is
+ * automated performance testing (see runPerfScript()), but it could
+ * be applied to other forms of automation, such as testing for
+ * correctness as well.
+ *
+ * When scripting an automated test we want to make a series of calls
+ * in a linear fashion, but we also want to be able to let the main
+ * loop run so actions can finish. For this reason we write the script
+ * as a generator function that yields when it want to let the main
+ * loop run.
+ *
+ *    yield Scripting.sleep(1000);
+ *    main.overview.show();
+ *    yield Scripting.waitLeisure();
+ *
+ * While it isn't important to the person writing the script, the actual
+ * yielded result is a function that the caller uses to provide the
+ * callback for resuming the script.
+ */
 
 /**
  * sleep:
