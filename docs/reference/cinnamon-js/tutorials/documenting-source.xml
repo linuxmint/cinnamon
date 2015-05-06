@@ -6,9 +6,7 @@
 
   <para> Currently, we support documenting files (eg. <code>main.js</code>), objects (eg. <code>Applet.Applet</code>) and functions (including functions of files and functions of objects).  </para>
 
-  <para>
-    The documentation appears as a comment <emphasis>right before</emphasis> the thing it describes. In the case of a file, it should appear at the very beginning of the file. If a object is declared using <code>prototype</code>, then it can appear right before either the function declaration or the prototype declaration, ie. before line 1 or line 5 in the example below.
-  </para>
+  <para> The documentation appears as a comment <emphasis>right before</emphasis> the thing it describes. In the case of a file, it should appear at the very beginning of the file. If a object is declared using <code>prototype</code>, then it can appear right before either the function declaration or the prototype declaration, ie. before line 1 or line 5 in the example below.  </para>
   <informalexample>
     <programlisting>
       function Applet() {
@@ -153,8 +151,31 @@
       <listitem>
         In the description of items, <code>*text more text*</code> will be shown in italics and <code>**text more text**</code> will be shown in bold.
       </listitem>
-    </itemizedlist>
+      <listitem>
+        Code blocks can be enclosed in descriptions as follows:
+        <informalexample>
+          <programlisting>
+```
+this.is = some + code
+```
+          </programlisting>
+        </informalexample>
+      </listitem>
+      <listitem>
+        Unordered lists can be created as follows:
+        <informalexample>
+          <programlisting>
+- List item 1
+- List item 2
+  \
+  Continuing item 2 with `\`
 
+No longer an item
+          </programlisting>
+        </informalexample>
+        Lists cannot be nested, but code blocks can appear in lists
+      </listitem>
+    </itemizedlist>
   </sect2>
 </chapter>
 

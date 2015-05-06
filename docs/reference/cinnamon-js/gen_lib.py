@@ -15,17 +15,89 @@ import re
 
 class JSThing():
     def append_description(self, desc):
-        if len(desc) == 0 or desc.strip() == '\\':
-            self.description += "\n"
-        else:
-            self.description += ' ' + desc.strip().replace('<', '&lt;').replace('>', '&gt;')
+        self.description += desc.replace('<', '&lt;').replace('>', '&gt;')
 
-    def get_xml_description(self):
-        stuff = "".join("<para>{0}</para>".format(x) for x in self.description.split("\n"))
-        stuff = re.sub('@(\w*)', '<code>\g<1></code>', stuff)
-        stuff = re.sub('\*\*([^*]*)\*\*', '<emphasis role="strong">\g<1></emphasis>', stuff)
-        stuff = re.sub('\*([^*]*)\*', '<emphasis>\g<1></emphasis>', stuff)
-        return stuff
+    def get_xml_description(self, description = None):
+        if description is None:
+            description = self.description
+
+        stuff = description.split('\n')
+        joined = ['']
+
+        in_code = False
+        in_list = False
+
+        for line in stuff:
+            if line.strip() == '```':
+                if in_code:
+                    joined[-1] += '```'
+                    joined.append('')
+                else:
+                    if in_list:
+                        joined[-1] += '\n```'
+                    else:
+                        joined.append('```\n')
+                in_code = not in_code
+                continue
+
+            if in_code:
+                joined[-1] += '\n' + line
+                continue
+
+            line = line.strip()
+            if line == '\\' and in_list:
+                joined[-1] += '\n\n'
+            elif len(line) == 0 or line == '\\':
+                # New line if empty
+                joined.append('')
+                in_list = False
+            else:
+                if joined[-1] == '' and line.startswith('- '):
+                    in_list = True
+                if line.startswith('- '):
+                    joined.append('')
+
+                joined[-1] += ' ' + line
+
+        description = ''
+        in_list = False
+
+        list_buffer = []
+        for line in joined:
+            if line.split('\n')[0].strip() == '```':
+                description += '<informalexample><programlisting>{0}</programlisting></informalexample>'\
+                        .format(line.replace('```', ''))
+                continue
+            
+            if line == '':
+                continue
+
+            line = line.strip()
+            if line.startswith('-'):
+                in_list = True
+                list_buffer.append(self.get_xml_description(line[1:]))
+                continue
+
+            if in_list:
+                description += '<itemizedlist>' + \
+                        '\n'.join('<listitem>{0}</listitem>'.format(item) for item in list_buffer) + \
+                        '</itemizedlist>'
+                list_buffer = []
+                in_list = False
+
+            line = re.sub('@(\w*)', '<code>\g<1></code>', line)
+            line = re.sub('\*\*([^*]*)\*\*', '<emphasis role="strong">\g<1></emphasis>', line)
+            line = re.sub('\*([^*]*)\*', '<emphasis>\g<1></emphasis>', line)
+
+            description += '<para>{0}</para>'.format(line)
+
+        if in_list:
+            description += '<itemizedlist>' + \
+                    '\n'.join('<listitem>{0}</listitem>'.format(item) for item in list_buffer) + \
+                    '</itemizedlist>'
+            list_buffer = []
+
+        return description
 
     def add_property(self, prop):
         if prop.name == "short_description":
@@ -52,7 +124,7 @@ class JSProperty(JSThing):
         self.name = name
         self.arg_type = arg_type if arg_type else ''
         self.description = ''
-        self.append_description(desc)
+        self.append_description(desc + "\n")
 
     def get_type_link(self):
         from gen_doc import objects
