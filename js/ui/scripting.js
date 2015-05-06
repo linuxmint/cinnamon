@@ -352,7 +352,7 @@ function _collect(scriptModule, outputFile) {
  *
  * After running the script and collecting statistics from the
  * event log, Cinnamon will exit.
- **/
+ */
 function runPerfScript(scriptModule, outputFile) {
     Cinnamon.PerfLog.get_default().set_enabled(true);
 

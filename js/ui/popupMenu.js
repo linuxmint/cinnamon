@@ -1541,12 +1541,14 @@ PopupSubMenu.prototype = {
 };
 
 /**
- * PopupMenuSection:
+ * #PopupMenuSection:
  *
  * A section of a PopupMenu which is handled like a submenu
  * (you can add and remove items, you can destroy it, you
  * can add it to another menu), but is completely transparent
  * to the user
+ *
+ * Inherits: PopupMenu.PopupMenuBase
  */
 function PopupMenuSection() {
     this._init.apply(this, arguments);
@@ -1566,6 +1568,7 @@ PopupMenuSection.prototype = {
     // deliberately ignore any attempt to open() or close()
     open: function(animate) { },
     close: function() { },
+
 }
 
 function PopupSubMenuMenuItem() {
