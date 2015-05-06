@@ -53,6 +53,7 @@
 #include <string.h>
 
 #include <glib.h>
+#include <gtk/gtk.h>
 
 #include <clutter/clutter.h>
 
@@ -93,6 +94,9 @@ enum
 #define ST_ENTRY_GET_PRIVATE(obj)     (G_TYPE_INSTANCE_GET_PRIVATE ((obj), ST_TYPE_ENTRY, StEntryPrivate))
 #define ST_ENTRY_PRIV(x) ((StEntry *) x)->priv
 
+static void         st_entry_check_cursor_blink       (StEntry       *entry);
+static void         st_entry_pend_cursor_blink        (StEntry       *entry);
+static void         st_entry_reset_blink_time         (StEntry       *entry);
 
 struct _StEntryPrivate
 {
@@ -106,6 +110,9 @@ struct _StEntryPrivate
 
   gboolean      hint_visible;
   gboolean      capslock_warning_shown;
+  guint         blink_time;
+  guint         blink_timeout;
+  gboolean      cursor_visible;
 };
 
 static guint entry_signals[LAST_SIGNAL] = { 0, };
@@ -213,6 +220,12 @@ st_entry_dispose (GObject *object)
   StEntry *entry = ST_ENTRY (object);
   StEntryPrivate *priv = entry->priv;
   GdkKeymap *keymap;
+
+  if (priv->blink_timeout)
+    {
+      g_source_remove (priv->blink_timeout);
+      priv->blink_timeout = 0;
+    }
 
   if (priv->entry)
     {
@@ -455,6 +468,176 @@ st_entry_allocate (ClutterActor          *actor,
   clutter_actor_allocate (priv->entry, &child_box, flags);
 }
 
+#define CURSOR_ON_MULTIPLIER 2
+#define CURSOR_OFF_MULTIPLIER 1
+#define CURSOR_PEND_MULTIPLIER 3
+#define CURSOR_DIVIDER 3
+
+static gboolean
+cursor_blinks (StEntry *entry)
+{
+  StEntryPrivate *priv = entry->priv;
+
+  if (clutter_actor_has_key_focus (CLUTTER_ACTOR (priv->entry)) &&
+      clutter_text_get_editable (CLUTTER_TEXT (priv->entry)) &&
+      clutter_text_get_selection_bound (CLUTTER_TEXT (priv->entry)) == clutter_text_get_cursor_position (CLUTTER_TEXT (priv->entry)))
+    {
+      gboolean blink;
+      g_object_get (gtk_settings_get_default (), "gtk-cursor-blink", &blink, NULL);
+
+      return blink;
+    }
+  else
+    return FALSE;
+}
+
+static gint
+get_cursor_time (StEntry *entry)
+{
+  gint time;
+  g_object_get (gtk_settings_get_default (), "gtk-cursor-blink-time", &time, NULL);
+
+  return time;
+}
+
+static gint
+get_cursor_blink_timeout (StEntry *entry)
+{
+  gint timeout;
+  g_object_get (gtk_settings_get_default (), "gtk-cursor-blink-timeout", &timeout, NULL);
+
+  return timeout;
+}
+
+static void
+show_cursor (StEntry *entry)
+{
+  StEntryPrivate *priv = entry->priv;
+
+  if (!priv->cursor_visible)
+    {
+      priv->cursor_visible = TRUE;
+      clutter_text_set_cursor_visible (CLUTTER_TEXT (priv->entry), TRUE);
+    }
+}
+
+static void
+hide_cursor (StEntry *entry)
+{
+  StEntryPrivate *priv = entry->priv;
+
+  if (priv->cursor_visible)
+    {
+      priv->cursor_visible = FALSE;
+      clutter_text_set_cursor_visible (CLUTTER_TEXT (priv->entry), FALSE);
+    }
+}
+
+/*
+ * Blink!
+ */
+static gint
+blink_cb (gpointer data)
+{
+  StEntry *entry;
+  StEntryPrivate *priv;
+  gint blink_timeout;
+
+  entry = ST_ENTRY (data);
+  priv = entry->priv;
+
+  if (!clutter_actor_has_key_focus (priv->entry))
+    {
+      g_warning ("StEntry - did not receive key-focus-out event. If you\n"
+         "connect a handler to this signal, it must return\n"
+         "FALSE so the StEntry gets the event as well");
+
+      st_entry_check_cursor_blink (entry);
+
+      return FALSE;
+    }
+  g_assert (clutter_text_get_selection_bound (CLUTTER_TEXT (priv->entry)) == clutter_text_get_cursor_position (CLUTTER_TEXT (priv->entry)));
+
+  blink_timeout = get_cursor_blink_timeout (entry);
+  if (priv->blink_time > 1000 * blink_timeout &&
+      blink_timeout < G_MAXINT/1000)
+    {
+      /* we've blinked enough without the user doing anything, stop blinking */
+      show_cursor (entry);
+      priv->blink_timeout = 0;
+    }
+  else if (priv->cursor_visible)
+    {
+      hide_cursor (entry);
+      priv->blink_timeout = clutter_threads_add_timeout (get_cursor_time (entry) * CURSOR_OFF_MULTIPLIER / CURSOR_DIVIDER,
+                        blink_cb,
+                        entry);
+    }
+  else
+    {
+      show_cursor (entry);
+      priv->blink_time += get_cursor_time (entry);
+      priv->blink_timeout = clutter_threads_add_timeout (get_cursor_time (entry) * CURSOR_ON_MULTIPLIER / CURSOR_DIVIDER,
+                        blink_cb,
+                        entry);
+    }
+
+  /* Remove ourselves */
+  return FALSE;
+}
+
+static void
+st_entry_check_cursor_blink (StEntry *entry)
+{
+  StEntryPrivate *priv = entry->priv;
+
+  if (cursor_blinks (entry))
+    {
+      if (!priv->blink_timeout)
+    {
+      show_cursor (entry);
+      priv->blink_timeout = clutter_threads_add_timeout (get_cursor_time (entry) * CURSOR_ON_MULTIPLIER / CURSOR_DIVIDER,
+                        blink_cb,
+                        entry);
+    }
+    }
+  else
+    {
+      if (priv->blink_timeout)
+    {
+      g_source_remove (priv->blink_timeout);
+      priv->blink_timeout = 0;
+    }
+
+      priv->cursor_visible = TRUE;
+    }
+}
+
+static void
+st_entry_pend_cursor_blink (StEntry *entry)
+{
+  StEntryPrivate *priv = entry->priv;
+
+  if (cursor_blinks (entry))
+    {
+      if (priv->blink_timeout != 0)
+    g_source_remove (priv->blink_timeout);
+
+      priv->blink_timeout = clutter_threads_add_timeout (get_cursor_time (entry) * CURSOR_PEND_MULTIPLIER / CURSOR_DIVIDER,
+                                                     blink_cb,
+                                                     entry);
+      show_cursor (entry);
+    }
+}
+
+static void
+st_entry_reset_blink_time (StEntry *entry)
+{
+  StEntryPrivate *priv = entry->priv;
+
+  priv->blink_time = 0;
+}
+
 static void
 clutter_text_focus_in_cb (ClutterText  *text,
                           ClutterActor *actor)
@@ -478,7 +661,9 @@ clutter_text_focus_in_cb (ClutterText  *text,
 
   st_widget_remove_style_pseudo_class (ST_WIDGET (actor), "indeterminate");
   st_widget_add_style_pseudo_class (ST_WIDGET (actor), "focus");
-  clutter_text_set_cursor_visible (text, TRUE);
+
+  st_entry_reset_blink_time (entry);
+  st_entry_check_cursor_blink (entry);
 }
 
 static void
@@ -499,7 +684,8 @@ clutter_text_focus_out_cb (ClutterText  *text,
       clutter_text_set_text (text, priv->hint);
       st_widget_add_style_pseudo_class (ST_WIDGET (actor), "indeterminate");
     }
-  clutter_text_set_cursor_visible (text, FALSE);
+
+  st_entry_check_cursor_blink (entry);
   remove_capslock_feedback (entry);
 
   keymap = gdk_keymap_get_for_display (gdk_display_get_default ());
@@ -515,6 +701,13 @@ clutter_text_password_char_cb (GObject    *object,
 
   if (clutter_text_get_password_char (CLUTTER_TEXT (entry->priv->entry)) == 0)
     remove_capslock_feedback (entry);
+}
+
+static void
+clutter_text_cursor_changed (ClutterText *text, ClutterActor *actor)
+{
+  st_entry_reset_blink_time (ST_ENTRY (actor));
+  st_entry_pend_cursor_blink (ST_ENTRY (actor));
 }
 
 static void
@@ -576,6 +769,9 @@ st_entry_key_press_event (ClutterActor    *actor,
                           ClutterKeyEvent *event)
 {
   StEntryPrivate *priv = ST_ENTRY_PRIV (actor);
+
+  st_entry_reset_blink_time (ST_ENTRY (actor));
+  st_entry_pend_cursor_blink (ST_ENTRY (actor));
 
   /* This is expected to handle events that were emitted for the inner
      ClutterText. They only reach this function if the ClutterText
@@ -747,12 +943,18 @@ st_entry_init (StEntry *entry)
   g_signal_connect (priv->entry, "notify::password-char",
                     G_CALLBACK (clutter_text_password_char_cb), entry);
 
+  g_signal_connect (priv->entry, "cursor-changed",
+                    G_CALLBACK (clutter_text_cursor_changed), entry);
+
   priv->spacing = 6.0f;
 
   clutter_actor_set_parent (priv->entry, CLUTTER_ACTOR (entry));
   clutter_actor_set_reactive ((ClutterActor *) entry, TRUE);
 
   /* set cursor hidden until we receive focus */
+  priv->blink_timeout = 0;
+  priv->blink_time = 0;
+  priv->cursor_visible = FALSE;
   clutter_text_set_cursor_visible ((ClutterText *) priv->entry, FALSE);
 }
 
