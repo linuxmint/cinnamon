@@ -548,6 +548,8 @@ cinnamon_util_get_week_start ()
    * continue to get the locale's first weekday */
   GSettings *settings = g_settings_new (DESKTOP_SCHEMA);
   int week_start = g_settings_get_int (settings, FIRST_WEEKDAY_KEY);
+  g_object_unref (settings);
+
   if (0 <= week_start && week_start < 7) return week_start;
 
 #ifdef HAVE__NL_TIME_FIRST_WEEKDAY
