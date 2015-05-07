@@ -47,7 +47,6 @@ nobase_dist_js_DATA = \
 	ui/keyboard.js		\
 	ui/layout.js		\
 	ui/lightbox.js		\
-	ui/link.js		\
 	ui/lookingGlass.js	\
 	ui/magnifier.js		\
 	ui/magnifierDBus.js	\
@@ -56,10 +55,10 @@ nobase_dist_js_DATA = \
 	ui/modalDialog.js	\
 	ui/cinnamonEntry.js	\
 	ui/cinnamonMountOperation.js \
-    ui/osdWindow.js \
+	ui/osdWindow.js \
 	ui/notificationDaemon.js \
 	ui/overview.js		\
-    ui/overrides.js \
+	ui/overrides.js \
 	ui/panel.js		\
 	ui/panelMenu.js		\
 	ui/placesManager.js  \
