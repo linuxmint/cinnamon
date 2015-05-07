@@ -1218,7 +1218,7 @@ PanelZoneDNDHandler.prototype = {
 
 /**
  * #Panel:
- * @short_description: A panel on the monitor that contains applets
+ * @short_description: A panel object on the monitor
  *
  * @panelId (int): the id of the panel
  * @monitorIndex (int): the index of the monitor containing the panel

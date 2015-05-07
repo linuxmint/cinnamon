@@ -45,11 +45,15 @@
 
     <para>Reading the documentation of C modules is tricky, since they are written for C, and we are in Javascript. In particular, C has no concept of objects, while Javascript does. Thus the naming convention of many things are different when used in Cinnamon, and the documentation is not directly applicable. The following sections will describe how to translate C into Javascript.</para>
 
+    <para>Note that most of these apply to Python and other non-C language.</para>
+
     <sect3>
       <title>Objects</title>
       <para>C has no concept of objects, but GObject allows C code to create things that look like objects. For example, <code>St.Bin</code> is something that looks like an object, and acts like an object in Javascript. If you want to look up the documentation of <code>St.Bin</code>, you search for <code>StBin</code> (without the ".") and the documentation will come up.</para>
 
       <para>The removal of the "." is since, in Javascript, we first import the whole St, and then take the "<code>Bin</code>" object from St. This concept is non-existent in C. In C, it is simply StBin.</para>
+
+      <para>A notable exception is with <code>Gio</code> and <code>GLib</code> objects, in which the <code>G</code> prefix is used in C for both while <code>Gio</code> and <code>GLib</code> is used in Javascript. For example, the C object is <code>GSettings</code> while the Javascript object is <code>Gio.Settings</code>.</para>
 
       <para>Translating object names is the easiest of all.</para>
     </sect3>
@@ -62,6 +66,8 @@
       <para>Note that the C documentation always tells you that the first argument to the function is the object itself. For example, <code>st_bin_get_child</code> takes in an <code>StBin</code> as the argument. We do not need to supply this.</para>
 
       <para>Note also that not all functions are available for use in Javascript. If some functions are considered to be too C-like to be used in other languages, it will not be availble. There is generally no simple way to figure out whether the functions are available, but usually they are. If they are not, Cinnamon will complain loudly that the function doesn't exist. So the best way to know is to try it.</para>
+
+      <para>Again, <code>Gio</code> and <code>GLib</code> functions use the <code>g_</code> prefix, eg <code>g_settings_set_int</code> instead of <code>gio_settings_get_int</code>.</para>
     </sect3>
 
     <sect3>

@@ -1,6 +1,7 @@
 // -*- mode: js; js-indent-level: 4; indent-tabs-mode: nil -*-
 /**
  * FILE:main.js
+ * @short_description: This is the heart of Cinnamon, the mother of everything.
  * @placesManager (PlacesManager.PlacesManager): The places manager
  * @overview (Overview.Overview): The "scale" overview 
  * @expo (Expo.Expo): The "expo" overview
@@ -21,33 +22,56 @@
  * @xdndHandler (XdndHandler.XdndHandler): The X DND handler
  * @statusIconDispatcher (StatusIconDispatcher.StatusIconDispatcher): The status icon dispatcher
  * @keyboard (Keyboard.Keyboard): The keyboard object
- * @layoutManager (Layout.LayoutManager): The layout manager
- * @panelManager (Panel.PanelManager): The panel manager. This is responsible
- * for handling events relating to panels, eg. showing all panels.
+ * @layoutManager (Layout.LayoutManager): The layout manager.
+ * \
+ * All actors that are part of the Cinnamon UI ar handled by the layout
+ * manager, which will determine when to show and hide the actors etc.
+ *
+ * @panelManager (Panel.PanelManager): The panel manager.
+ * \
+ * This is responsible for handling events relating to panels, eg. showing all
+ * panels.
  *
  * @themeManager (ThemeManager.ThemeManager): The theme manager
  * @soundManager (SoundManager.SoundManager): The sound manager
  * @settingsManager (Settings.SettingsManager): The manager of the xlet Settings API
- * @backgroundManager (BackgroundManager.BackgroundManager): This listens to
- * changes in the GNOME background settings and mirrors them to the Cinnamon
- * settings, since many applications have a "Set background" button that
- * modifies the GNOME background settings.
  *
- * @slideshowManager (SlideshowManager.SlideshowManager): This is responsible
- * for managing the background slideshow, since the background "slideshow" is
- * created by cinnamon changing the active background gsetting every x minutes.
+ * @backgroundManager (BackgroundManager.BackgroundManager): The background
+ * manager.
+ * \
+ * This listens to changes in the GNOME background settings and mirrors them to
+ * the Cinnamon settings, since many applications have a "Set background"
+ * button that modifies the GNOME background settings.
  *
- * @dynamicWorkspaces (boolean): Whether dynamic workspaces are to be used.
- *                               This is not yet implemented
+ * @slideshowManager (SlideshowManager.SlideshowManager): The slideshow manager.
+ * \
+ * This is responsible for managing the background slideshow, since the
+ * background "slideshow" is created by cinnamon changing the active background
+ * gsetting every x minutes.
+ *
+ * @keybindingManager (KeybindingManager.KeybindingManager): The keybinding manager
+ * @systrayManager (Systray.SystrayManager): The systray manager
+ *
+ * @osdWindow (OsdWindow.OsdWindow): Osd window that pops up when you use media
+ * keys.
  * @tracker (Cinnamon.WindowTracker): The window tracker
  * @workspace_names (array): Names of workspace
- * @deskletContainer (DeskletManager.DeskletContainer): The desklet container 
+ * @deskletContainer (DeskletManager.DeskletContainer): The desklet container.
+ * \
+ * This is a container that contains all the desklets as childs. Its actor is
+ * put between @global.bottom_window_group and @global.uiGroup.
  * @software_rendering (boolean): Whether software rendering is used
  * @lg_log_file (Gio.FileOutputStream): The stream used to log looking messages
  *                                      to ~/.cinnamon/glass.log
  * @can_log (boolean): Whether looking glass log to file can be used
+ * @popup_rendering (boolean): Whether a popup is in the process of rendering
+ * @xlet_startup_error (boolean): Whether there was at least one xlet that did
+ * not manage to load
  *
- * The main file is responsible for launching Cinnamon as well as creating its components. Most components of Cinnamon can be accessed through main
+ * The main file is responsible for launching Cinnamon as well as creating its
+ * components. The C part of cinnamon calls the @start() function, which then
+ * initializes all of cinnamon. Most components of Cinnamon can be accessed
+ * through main.
  */
 
 const Clutter = imports.gi.Clutter;
@@ -139,8 +163,6 @@ let systrayManager = null;
 let wmSettings = null;
 
 let workspace_names = [];
-
-let background = null;
 
 let applet_side = St.Side.TOP; // Kept to maintain compatibility. Doesn't seem to be used anywhere
 let deskletContainer = null;

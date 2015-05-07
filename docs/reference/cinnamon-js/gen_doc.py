@@ -50,6 +50,7 @@ import os
 import xml.etree.ElementTree as ET
 import re
 from gen_lib import *
+
 files = []
 objects = {}
 
@@ -60,17 +61,18 @@ if len(sys.argv) > 1:
 JS_UI_DIR = os.path.join(ROOT_DIR, 'js/ui/')
 JS_MISC_DIR = os.path.join(ROOT_DIR, 'js/misc/')
 
-TYPE_REGEX = r'\w*\.?\w+'
+# Allow types like "object/string"
+TYPE_REGEX = r'\w*\.?\w+/?\w*\.?\w*'
 COMMENT_REGEX = re.compile(r'/\*([^*]|(\*[^/]))*\*+/')
 RETURNS_REGEX = re.compile(r'^Returns\s*\(?(' + TYPE_REGEX + ')?\)?:(.*)')
 INHERITS_REGEX = re.compile(r'^Inherits:\s*(' + TYPE_REGEX + ')\s*$')
 PROPERTY_REGEX = re.compile(r'^@(\w+)\s*\(?(' + TYPE_REGEX + ')?\)?:(.*)')
-FILE_NAME_REGEX = re.compile(r'FILE:(\w+\.js):?')
+FILE_NAME_REGEX = re.compile(r'FILE:\s*(\w+\.js):?')
 FUNCTION_NAME_REGEX = re.compile(r'^(\w+):?\s*$')
 
 OBJECT_NAME_REGEX = re.compile(r'^#(\w+):?\s*$')
 FILE_REGEX = re.compile(r'\w*\.js')
-COMMENT_START_REGEX = re.compile(r'^\s*\*\s*')
+COMMENT_START_REGEX = re.compile(r'^\s*\* ?')
 BLOCK_START_REGEX = re.compile(r'^\s*/\*\*\s*$')
 STRING_REGEX = re.compile(r'\'[^\']*\'|"[^"]*"')
 
@@ -194,7 +196,7 @@ for _file in _files:
             continue
 
         if state == STATE_PROPERTY:
-            if len(line) == 0:
+            if len(line.strip()) == 0:
                 if curr_prop is not None:
                     curr_prop = None
                     continue
@@ -278,4 +280,4 @@ except OSError:
 
 for _file in files:
     for obj in _file.objects:
-        file_obj = create_file(obj)
+        create_file(obj)
