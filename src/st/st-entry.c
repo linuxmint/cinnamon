@@ -556,7 +556,12 @@ blink_cb (gpointer data)
 
       return FALSE;
     }
-  g_assert (clutter_text_get_selection_bound (CLUTTER_TEXT (priv->entry)) == clutter_text_get_cursor_position (CLUTTER_TEXT (priv->entry)));
+
+  if (clutter_text_get_selection_bound (CLUTTER_TEXT (priv->entry)) != clutter_text_get_cursor_position (CLUTTER_TEXT (priv->entry)))
+    {
+      st_entry_check_cursor_blink (entry);
+      return FALSE;
+    }
 
   blink_timeout = get_cursor_blink_timeout (entry);
   if (priv->blink_time > 1000 * blink_timeout &&
@@ -701,6 +706,17 @@ clutter_text_password_char_cb (GObject    *object,
 
   if (clutter_text_get_password_char (CLUTTER_TEXT (entry->priv->entry)) == 0)
     remove_capslock_feedback (entry);
+}
+
+static void
+clutter_text_selection_bound_cb (GObject    *object,
+                                 GParamSpec *pspec,
+                                 gpointer    user_data)
+{
+  StEntry *entry = ST_ENTRY (user_data);
+
+  st_entry_reset_blink_time (entry);
+  st_entry_pend_cursor_blink (entry);
 }
 
 static void
@@ -942,6 +958,9 @@ st_entry_init (StEntry *entry)
 
   g_signal_connect (priv->entry, "notify::password-char",
                     G_CALLBACK (clutter_text_password_char_cb), entry);
+
+  g_signal_connect (priv->entry, "notify::selection-bound",
+                    G_CALLBACK (clutter_text_selection_bound_cb), entry);
 
   g_signal_connect (priv->entry, "cursor-changed",
                     G_CALLBACK (clutter_text_cursor_changed), entry);
