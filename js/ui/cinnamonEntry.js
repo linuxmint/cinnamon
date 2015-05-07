@@ -112,7 +112,7 @@ function _setMenuAlignment(entry, stageX) {
         entry._menu.setSourceAlignment(entryX / entry.width);
 };
 
-function _onClicked(action, actor) {
+function _onClicked(actor, action) {
     let entry = actor._menu ? actor : actor.get_parent();
 
     if (entry._menu.isOpen) {
@@ -122,20 +122,6 @@ function _onClicked(action, actor) {
         _setMenuAlignment(entry, stageX);
         entry._menu.open();
     }
-};
-
-function _onLongPress(action, actor, state) {
-    let entry = actor._menu ? actor : actor.get_parent();
-
-    if (state == Clutter.LongPressState.QUERY)
-        return action.get_button() == 1 && !entry._menu.isOpen;
-
-    if (state == Clutter.LongPressState.ACTIVATE) {
-        let [stageX, stageY] = action.get_coords();
-        _setMenuAlignment(entry, stageX);
-        entry._menu.open();
-    }
-    return false;
 };
 
 function _onPopup(actor) {
@@ -154,20 +140,10 @@ function addContextMenu(entry, params) {
     entry._menuManager = new PopupMenu.PopupMenuManager({ actor: entry });
     entry._menuManager.addMenu(entry._menu);
 
-    let clickAction;
-
     // Add a click action to both the entry and its clutter_text; the former
     // so padding is included in the clickable area, the latter because the
     // event processing of ClutterText prevents event-bubbling.
-    clickAction = new Clutter.ClickAction();
-    clickAction.connect('clicked', _onClicked);
-    clickAction.connect('long-press', _onLongPress);
-    entry.clutter_text.add_action(clickAction);
-
-    clickAction = new Clutter.ClickAction();
-    clickAction.connect('clicked', _onClicked);
-    clickAction.connect('long-press', _onLongPress);
-    entry.add_action(clickAction);
-
+    entry.connect('button-press-event', _onClicked);
+    entry.clutter_text.connect('button-press-event', _onClicked);
     entry.connect('popup-menu', _onPopup);
 }
