@@ -4,6 +4,7 @@
   <xi:include href="tutorials/documenting-source.xml"/>
   <xi:include href="tutorials/documenting-tutorial.xml"/>
 </part>
+<xi:include href="tutorials/antifeature.xml"/>
 <xi:include href="tutorials/building.xml"/>
 <part id="extension-system">
   <title>Extension system</title>

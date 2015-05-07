@@ -1,0 +1,17 @@
+<part id="antifeature">
+  <title>Features not in Cinnamon</title>
+  <para>Someone suggested on the issue tracker that Cinnamon should document features it doesn't implement, to save users from looking for non-existent features. So this is a not-so-comprehensive list of what we don't do:</para>
+  <itemizedlist>
+    <listitem>Tame dragons</listitem>
+    <listitem>World domination</listitem>
+    <listitem>Solve your homework problems</listitem>
+    <listitem>End world hunger</listitem>
+    <listitem>Take cat pictures</listitem>
+    <listitem>Build treehouses</listitem>
+    <listitem>Make delicious sandwiches (not even if you use sudo)</listitem>
+    <listitem>Make you rich</listitem>
+    <listitem>Prove Riemann Hypothesis</listitem>
+    <listitem>Find exoplanets</listitem>
+    <listitem>Save the princess and make you a prince</listitem>
+  </itemizedlist>
+</part>
