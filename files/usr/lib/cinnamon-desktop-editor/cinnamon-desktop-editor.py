@@ -53,11 +53,11 @@ def try_icon_name(filename):
     return parts[3]
 
 def get_icon_string(image):
-    filename = image.props.file
+    filename = image._file
     if filename is not None:
         return try_icon_name(filename)
 
-    return image.props.icon_name
+    return image._icon_name
 
 def strip_extensions(icon):
     if icon.endswith(EXTENSIONS):
@@ -67,9 +67,13 @@ def strip_extensions(icon):
 
 def set_icon_string(image, icon):
     if GLib.path_is_absolute(icon):
-        image.props.file = icon
+        image._file = icon
+        pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(icon, 64, 64)
+        if pixbuf is not None:
+            image.set_from_pixbuf(pixbuf)
     else:
-        image.props.icon_name = strip_extensions(icon)
+        image._icon_name = strip_extensions(icon)
+        image.set_from_icon_name (strip_extensions (icon), Gtk.IconSize.BUTTON)
 
 def ask(msg):
     dialog = Gtk.MessageDialog(None,
@@ -120,7 +124,7 @@ class IconPicker(object):
 
         response = chooser.run()
         if response == Gtk.ResponseType.ACCEPT:
-            self.image.props.file = chooser.get_filename()
+            set_icon_string (self.image, chooser.get_filename())
         chooser.destroy()
 
     def update_icon_preview_cb(self, chooser, preview):
@@ -145,6 +149,10 @@ class ItemEditor(object):
         self.dialog = self.builder.get_object('editor')
 
         self.dialog.connect('response', self.on_response)
+
+        icon = self.builder.get_object('icon-image')
+        icon._file = None
+        icon._icon_name = None
 
         self.build_ui()
 
