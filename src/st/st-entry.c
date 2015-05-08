@@ -609,12 +609,12 @@ st_entry_check_cursor_blink (StEntry *entry)
   else
     {
       if (priv->blink_timeout)
-    {
-      g_source_remove (priv->blink_timeout);
-      priv->blink_timeout = 0;
-    }
+        {
+          g_source_remove (priv->blink_timeout);
+          priv->blink_timeout = 0;
+        }
 
-      priv->cursor_visible = TRUE;
+      show_cursor (entry);
     }
 }
 
@@ -689,7 +689,6 @@ clutter_text_focus_out_cb (ClutterText  *text,
       clutter_text_set_text (text, priv->hint);
       st_widget_add_style_pseudo_class (ST_WIDGET (actor), "indeterminate");
     }
-
   st_entry_check_cursor_blink (entry);
   remove_capslock_feedback (entry);
 
