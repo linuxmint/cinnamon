@@ -350,7 +350,12 @@ MyApplet.prototype = {
                 for (let i = 0; i < devices.length; i++) {
                     let [device_id, device_type, icon, percentage, state, seconds] = devices[i];
 
+                    // Ignore AC_POWER devices
                     if (device_type == UPDeviceType.AC_POWER)
+                        continue;
+
+                    // Ignore devices which state is unknown
+                    if (state == UPDeviceState.UNKNOWN)
                         continue;
 
                     let status = this._getDeviceStatus(devices[i]);
