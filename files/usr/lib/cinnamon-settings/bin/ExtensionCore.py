@@ -6,6 +6,7 @@ from Spices import Spice_Harvester
 import sys
 import thread
 import os
+import re
 import json
 from gi.repository import Gio, Gtk, GObject, Gdk, GdkPixbuf, Pango, GLib
 import dbus
@@ -24,6 +25,29 @@ SETTING_TYPE_INTERNAL = 1
 SETTING_TYPE_EXTERNAL = 2
 
 ROW_SIZE = 32
+
+curr_ver = subprocess.check_output(["cinnamon", "--version"]).splitlines()[0].split(" ")[1]
+
+def find_extension_subdir(directory):
+    largest = [0]
+    curr_a = curr_ver.split(".")
+
+    for subdir in os.listdir(directory):
+        if not os.path.isdir(os.path.join(directory, subdir)):
+            continue
+
+        if not re.match(r'^[1-9][0-9]*\.[0-9]+(\.[0-9]+)?$', subdir):
+            continue
+
+        subdir_a = subdir.split(".")
+
+        if cmp(subdir_a, curr_a) <= 0 and cmp(largest, subdir_a) <= 0:
+            largest = subdir_a
+
+    if len(largest) == 1:
+        return directory
+    else:
+        return os.path.join(directory, ".".join(largest))
 
 class SurfaceWrapper:
     def __init__(self, surface):
@@ -1179,199 +1203,213 @@ Please contact the developer.""")
 
     def load_extensions_in(self, directory, stock_theme = False):
         if not self.themes:  # Applet, Desklet, Extension handling
-            if os.path.exists(directory) and os.path.isdir(directory):
-                extensions = os.listdir(directory)
-                extensions.sort()
-                for extension in extensions:
-                    if self.uuid_already_in_list(extension):
+            if not (os.path.exists(directory) and os.path.isdir(directory)):
+                return
+
+            extensions = os.listdir(directory)
+            extensions.sort()
+            for extension in extensions:
+                if self.uuid_already_in_list(extension):
+                    continue
+
+                extension_dir = "%s/%s" % (directory, extension)
+                try:
+                    if not (os.path.exists("%s/metadata.json" % extension_dir)):
                         continue
+
+                    json_data=open("%s/metadata.json" % extension_dir).read()
+                    setting_type = 0
+                    data = json.loads(json_data)
+                    extension_uuid = data["uuid"]
+                    extension_name = XletSettings.translate(data["uuid"], data["name"])
+                    extension_description = XletSettings.translate(data["uuid"], data["description"])
+                    try: extension_max_instances = int(data["max-instances"])
+                    except KeyError: extension_max_instances = 1
+                    except ValueError:
+                        extension_max_instances = 1
+
+                    try: extension_role = data["role"]
+                    except KeyError: extension_role = None
+                    except ValueError: extension_role = None
+
+                    try: hide_config_button = data["hide-configuration"]
+                    except KeyError: hide_config_button = False
+                    except ValueError: hide_config_button = False
+
+                    if "multiversion" in data and data["multiversion"]:
+                        extension_dir = find_extension_subdir(extension_dir)
+
                     try:
-                        if os.path.exists("%s/%s/metadata.json" % (directory, extension)):
-                            json_data=open("%s/%s/metadata.json" % (directory, extension)).read()
-                            setting_type = 0
-                            data = json.loads(json_data)
+                        ext_config_app = os.path.join(extension_dir, data["external-configuration-app"])
+                        setting_type = SETTING_TYPE_EXTERNAL
+                    except KeyError: ext_config_app = ""
+                    except ValueError: ext_config_app = ""
 
-                            extension_uuid = data["uuid"]
-                            extension_name = XletSettings.translate(data["uuid"], data["name"])
-                            extension_description = XletSettings.translate(data["uuid"], data["description"])
-                            try: extension_max_instances = int(data["max-instances"])
-                            except KeyError: extension_max_instances = 1
-                            except ValueError:
-                                extension_max_instances = 1
+                    if os.path.exists("%s/settings-schema.json" % extension_dir):
+                        setting_type = SETTING_TYPE_INTERNAL
 
-                            try: extension_role = data["role"]
-                            except KeyError: extension_role = None
-                            except ValueError: extension_role = None
+                    try: last_edited = data["last-edited"]
+                    except KeyError: last_edited = -1
+                    except ValueError: last_edited = -1
 
-                            try: hide_config_button = data["hide-configuration"]
-                            except KeyError: hide_config_button = False
-                            except ValueError: hide_config_button = False
+                    try: schema_filename = data["schema-file"]
+                    except KeyError: schema_filename = ""
+                    except ValueError: schema_filename = ""
 
-                            try:
-                                ext_config_app = os.path.join(directory, extension, data["external-configuration-app"])
-                                setting_type = SETTING_TYPE_EXTERNAL
-                            except KeyError: ext_config_app = ""
-                            except ValueError: ext_config_app = ""
-
-                            if os.path.exists("%s/%s/settings-schema.json" % (directory, extension)):
-                                setting_type = SETTING_TYPE_INTERNAL
-
-                            try: last_edited = data["last-edited"]
-                            except KeyError: last_edited = -1
-                            except ValueError: last_edited = -1
-
-                            try: schema_filename = data["schema-file"]
-                            except KeyError: schema_filename = ""
-                            except ValueError: schema_filename = ""
-
-                            version_supported = False
-                            curr_ver = subprocess.check_output(["cinnamon", "--version"]).splitlines()[0].split(" ")[1]
-                            try:
-                                version_supported = curr_ver in data["cinnamon-version"] or curr_ver.rsplit(".", 1)[0] in data["cinnamon-version"]
-                            except KeyError: version_supported = True # Don't check version if not specified.
-                            except ValueError: version_supported = True
+                    version_supported = False
+                    try:
+                        version_supported = curr_ver in data["cinnamon-version"] or curr_ver.rsplit(".", 1)[0] in data["cinnamon-version"]
+                    except KeyError: version_supported = True # Don't check version if not specified.
+                    except ValueError: version_supported = True
 
 
-                            if ext_config_app != "" and not os.path.exists(ext_config_app):
-                                ext_config_app = ""
+                    if ext_config_app != "" and not os.path.exists(ext_config_app):
+                        ext_config_app = ""
 
-                            if extension_max_instances < -1:
-                                extension_max_instances = 1
+                    if extension_max_instances < -1:
+                        extension_max_instances = 1
 
-                            if self.search_entry.get_text().upper() in (extension_name + extension_description).upper():
-                                iter = self.model.insert_before(None, None)
-                                found = 0
-                                for enabled_extension in self.enabled_extensions:
-                                    if extension_uuid in enabled_extension:
-                                        found += 1
+                    if not (self.search_entry.get_text().upper() in (extension_name + extension_description).upper()):
+                        continue
 
-                                self.model.set_value(iter, 0, extension_uuid)
-                                self.model.set_value(iter, 1, '<b>%s</b>\n<b><span foreground="#333333" size="xx-small">%s</span></b>\n<i><span foreground="#555555" size="x-small">%s</span></i>' % (extension_name, extension_uuid, extension_description))
-                                self.model.set_value(iter, 2, found)
-                                self.model.set_value(iter, 3, extension_max_instances)
+                    iter = self.model.insert_before(None, None)
+                    found = sum(extension_uuid in x for x in self.enabled_extensions)
 
-                                img = None
-                                size = ROW_SIZE * self.window.get_scale_factor()
-                                if "icon" in data:
-                                    extension_icon = data["icon"]
-                                    theme = Gtk.IconTheme.get_default()
-                                    if theme.has_icon(extension_icon):
-                                        img = theme.load_icon(extension_icon, size, 0)
-                                elif os.path.exists("%s/%s/icon.png" % (directory, extension)):
-                                    img = GdkPixbuf.Pixbuf.new_from_file_at_size("%s/%s/icon.png" % (directory, extension), size, size)
+                    self.model.set_value(iter, 0, extension_uuid)
+                    self.model.set_value(iter, 1, '''\
+<b>%s</b>
+<b><span foreground="#333333" size="xx-small">%s</span></b>
+<i><span foreground="#555555" size="x-small">%s</span></i>''' % (extension_name, extension_uuid, extension_description))
 
-                                if img is None:
-                                    theme = Gtk.IconTheme.get_default()
-                                    if theme.has_icon("cs-%ss" % (self.collection_type)):
-                                        img = theme.load_icon("cs-%ss" % (self.collection_type), size, 0)
+                    self.model.set_value(iter, 2, found)
+                    self.model.set_value(iter, 3, extension_max_instances)
 
-                                surface = Gdk.cairo_surface_create_from_pixbuf (img, self.window.get_scale_factor(), self.window.get_window())
-                                wrapper = SurfaceWrapper(surface)
+                    img = None
+                    size = ROW_SIZE * self.window.get_scale_factor()
+                    if "icon" in data:
+                        extension_icon = data["icon"]
+                        theme = Gtk.IconTheme.get_default()
+                        if theme.has_icon(extension_icon):
+                            img = theme.load_icon(extension_icon, size, 0)
+                    elif os.path.exists("%s/icon.png" % extension_dir):
+                        img = GdkPixbuf.Pixbuf.new_from_file_at_size("%s/icon.png" % extension_dir, size, size)
 
-                                self.model.set_value(iter, 4, wrapper)
+                    if img is None:
+                        theme = Gtk.IconTheme.get_default()
+                        if theme.has_icon("cs-%ss" % (self.collection_type)):
+                            img = theme.load_icon("cs-%ss" % (self.collection_type), size, 0)
 
-                                self.model.set_value(iter, 5, extension_name)
-                                self.model.set_value(iter, 6, os.access(directory, os.W_OK))
-                                self.model.set_value(iter, 7, hide_config_button)
-                                self.model.set_value(iter, 8, ext_config_app)
-                                self.model.set_value(iter, 9, long(last_edited))
+                    surface = Gdk.cairo_surface_create_from_pixbuf (img, self.window.get_scale_factor(), self.window.get_window())
+                    wrapper = SurfaceWrapper(surface)
 
-                                if (os.access(directory, os.W_OK)):
-                                    icon = ""
-                                else:
-                                    icon = "cs-xlet-system"
+                    self.model.set_value(iter, 4, wrapper)
 
-                                self.model.set_value(iter, 10, icon)
+                    self.model.set_value(iter, 5, extension_name)
+                    self.model.set_value(iter, 6, os.access(directory, os.W_OK))
+                    self.model.set_value(iter, 7, hide_config_button)
+                    self.model.set_value(iter, 8, ext_config_app)
+                    self.model.set_value(iter, 9, long(last_edited))
 
-                                if (found):
-                                    icon = "cs-xlet-running"
-                                else:
-                                    icon = ""
+                    if (os.access(directory, os.W_OK)):
+                        icon = ""
+                    else:
+                        icon = "cs-xlet-system"
 
-                                self.model.set_value(iter, 11, icon)
-                                self.model.set_value(iter, 12, schema_filename)
-                                self.model.set_value(iter, 13, setting_type)
-                                self.model.set_value(iter, 14, version_supported)
+                    self.model.set_value(iter, 10, icon)
 
-                    except Exception, detail:
-                        print "Failed to load extension %s: %s" % (extension, detail)
+                    if (found):
+                        icon = "cs-xlet-running"
+                    else:
+                        icon = ""
+
+                    self.model.set_value(iter, 11, icon)
+                    self.model.set_value(iter, 12, schema_filename)
+                    self.model.set_value(iter, 13, setting_type)
+                    self.model.set_value(iter, 14, version_supported)
+
+                except Exception, detail:
+                    print "Failed to load extension %s: %s" % (extension, detail)
+
         else: # Theme handling
-            if os.path.exists(directory) and os.path.isdir(directory):
-                if stock_theme:
-                    themes = ["cinnamon"]
-                else:
-                    themes = os.listdir(directory)
-                themes.sort()
-                for theme in themes:
-                    if self.uuid_already_in_list(theme):
+            if not (os.path.exists(directory) and os.path.isdir(directory)):
+                return
+
+            if stock_theme:
+                themes = ["cinnamon"]
+            else:
+                themes = os.listdir(directory)
+            themes.sort()
+            for theme in themes:
+                if self.uuid_already_in_list(theme):
+                    continue
+                try:
+                    if stock_theme:
+                        path = os.path.join(directory, theme, "theme")
+                    else:
+                        path = os.path.join(directory, theme, "cinnamon")
+                    if not (os.path.exists(path) and os.path.isdir(path)):
                         continue
-                    try:
-                        if stock_theme:
-                            path = os.path.join(directory, theme, "theme")
-                        else:
-                            path = os.path.join(directory, theme, "cinnamon")
-                        if os.path.exists(path) and os.path.isdir(path):
-                            theme_last_edited = -1
-                            theme_uuid = ""
-                            metadata = os.path.join(path, "metadata.json")
-                            if os.path.exists(metadata):
-                                json_data=open(metadata).read()
-                                data = json.loads(json_data)
-                                try: theme_last_edited = data["last-edited"]
-                                except KeyError: theme_last_edited = -1
-                                except ValueError: theme_last_edited = -1
-                                try: theme_uuid = data["uuid"]
-                                except KeyError: theme_uuid = ""
-                                except ValueError: theme_uuid = ""
-                            if stock_theme:
-                                theme_name = "Cinnamon"
-                                theme_uuid = "STOCK"
-                            else:
-                                theme_name = theme
-                            theme_description = ""
-                            iter = self.model.insert_before(None, None)
-                            found = 0
-                            for enabled_theme in self.enabled_extensions:
-                                if enabled_theme == theme_name:
-                                    found = 1
-                                elif enabled_theme == "" and theme_uuid == "STOCK":
-                                    found = 1
-                            if os.path.exists(os.path.join(path, "thumbnail.png")):
-                                icon_path = os.path.join(path, "thumbnail.png")
-                            else:
-                                icon_path = "/usr/share/cinnamon/theme/thumbnail-generic.png"
-                            size = 60 * self.window.get_scale_factor()
-                            img = GdkPixbuf.Pixbuf.new_from_file_at_size(icon_path, -1, size)
+                    theme_last_edited = -1
+                    theme_uuid = ""
+                    metadata = os.path.join(path, "metadata.json")
+                    if os.path.exists(metadata):
+                        json_data=open(metadata).read()
+                        data = json.loads(json_data)
+                        try: theme_last_edited = data["last-edited"]
+                        except KeyError: theme_last_edited = -1
+                        except ValueError: theme_last_edited = -1
+                        try: theme_uuid = data["uuid"]
+                        except KeyError: theme_uuid = ""
+                        except ValueError: theme_uuid = ""
+                    if stock_theme:
+                        theme_name = "Cinnamon"
+                        theme_uuid = "STOCK"
+                    else:
+                        theme_name = theme
+                    theme_description = ""
+                    iter = self.model.insert_before(None, None)
+                    found = 0
+                    for enabled_theme in self.enabled_extensions:
+                        if enabled_theme == theme_name:
+                            found = 1
+                        elif enabled_theme == "" and theme_uuid == "STOCK":
+                            found = 1
+                    if os.path.exists(os.path.join(path, "thumbnail.png")):
+                        icon_path = os.path.join(path, "thumbnail.png")
+                    else:
+                        icon_path = "/usr/share/cinnamon/theme/thumbnail-generic.png"
+                    size = 60 * self.window.get_scale_factor()
+                    img = GdkPixbuf.Pixbuf.new_from_file_at_size(icon_path, -1, size)
 
-                            surface = Gdk.cairo_surface_create_from_pixbuf (img, self.window.get_scale_factor(), self.window.get_window())
-                            wrapper = SurfaceWrapper(surface)
+                    surface = Gdk.cairo_surface_create_from_pixbuf (img, self.window.get_scale_factor(), self.window.get_window())
+                    wrapper = SurfaceWrapper(surface)
 
-                            self.model.set_value(iter, 0, theme_uuid)
-                            self.model.set_value(iter, 1, '<b>%s</b>' % (theme_name))
-                            self.model.set_value(iter, 2, found)
-                            self.model.set_value(iter, 3, 1)
-                            self.model.set_value(iter, 4, wrapper)
-                            self.model.set_value(iter, 5, theme_name)
-                            self.model.set_value(iter, 6, os.access(directory, os.W_OK))
-                            self.model.set_value(iter, 7, True)
-                            self.model.set_value(iter, 8, "")
-                            self.model.set_value(iter, 9, long(theme_last_edited))
+                    self.model.set_value(iter, 0, theme_uuid)
+                    self.model.set_value(iter, 1, '<b>%s</b>' % (theme_name))
+                    self.model.set_value(iter, 2, found)
+                    self.model.set_value(iter, 3, 1)
+                    self.model.set_value(iter, 4, wrapper)
+                    self.model.set_value(iter, 5, theme_name)
+                    self.model.set_value(iter, 6, os.access(directory, os.W_OK))
+                    self.model.set_value(iter, 7, True)
+                    self.model.set_value(iter, 8, "")
+                    self.model.set_value(iter, 9, long(theme_last_edited))
 
-                            if (os.access(directory, os.W_OK)):
-                                icon = ""
-                            else:
-                                icon = "cs-xlet-system"
+                    if (os.access(directory, os.W_OK)):
+                        icon = ""
+                    else:
+                        icon = "cs-xlet-system"
 
-                            self.model.set_value(iter, 10, icon)
-                            if (found):
-                                icon = "cs-xlet-installed"
-                            else:
-                                icon = ""
-                            self.model.set_value(iter, 11, icon)
-                            self.model.set_value(iter, 13, SETTING_TYPE_NONE)
-                            self.model.set_value(iter, 14, True)
-                    except Exception, detail:
-                        print "Failed to load extension %s: %s" % (theme, detail)
+                    self.model.set_value(iter, 10, icon)
+                    if (found):
+                        icon = "cs-xlet-installed"
+                    else:
+                        icon = ""
+                    self.model.set_value(iter, 11, icon)
+                    self.model.set_value(iter, 13, SETTING_TYPE_NONE)
+                    self.model.set_value(iter, 14, True)
+                except Exception, detail:
+                    print "Failed to load extension %s: %s" % (theme, detail)
 
     def show_prompt(self, msg):
         dialog = Gtk.MessageDialog(transient_for = None,
