@@ -1,12 +1,7 @@
 /* Window-list applet
  *
- * The applet code consists of four main object. The SignalManager,
- * AppMenuButton, AppMenuButtonRightClickMenu and the main applet code.
- *
- * The SignalManager is a helper object that manages the signals the applet
- * connects to, providing handy functions to connect and disconnect to signals.
- * This should be moved to the main Cinnamon code to be available for
- * everything.
+ * The applet code consists of three main object. AppMenuButton,
+ * AppMenuButtonRightClickMenu and the main applet code.
  *
  * The main applet object listens to different events and updates the window
  * list accordingly. Since addition/removal of windows is emitted by the
@@ -59,6 +54,7 @@ const Main = imports.ui.main;
 const Panel = imports.ui.panel;
 const PopupMenu = imports.ui.popupMenu;
 const Settings = imports.ui.settings;
+const SignalManager = imports.misc.signalManager;
 const Tooltips = imports.ui.tooltips;
 const Tweener = imports.ui.tweener;
 const Util = imports.misc.util;
@@ -68,52 +64,6 @@ const DEFAULT_ICON_SIZE = 16; // too bad this can't be defined in theme (cinnamo
 const ICON_HEIGHT_FACTOR = .64;
 const MAX_TEXT_LENGTH = 1000;
 const FLASH_INTERVAL = 500;
-
-function SignalManager(object) {
-    this._init(object);
-}
-
-SignalManager.prototype = {
-    _init: function(object) {
-        this.object = object;
-        this.storage = new Map();
-    },
-
-    connect: function(obj, sigName, callback) {
-        if (!this.storage.has(sigName))
-            this.storage.set(sigName, []);
-
-        let id = obj.connect(sigName, Lang.bind(this.object, callback));
-        this.storage.get(sigName).push([obj, id]);
-    },
-
-    disconnect: function(sigName, obj) {
-        if (!this.storage.has(sigName))
-            return;
-
-        let list = this.storage.get(sigName);
-
-        if (!obj) {
-            for (let item of list)
-                item[0].disconnect(item[1]);
-
-            this.storage.delete(sigName);
-        } else {
-            for (let item of list)
-                if (item[0] == obj)
-                    item[0].disconnect(item[1]);
-            if (list.length == 0)
-                this.storage.delete(sigName);
-        }
-    },
-
-    disconnectAllSignals: function() {
-        for (let signals of this.storage.values())
-            for (let item of signals)
-                item[0].disconnect(item[1]);
-        this.storage.clear();
-    }
-}
 
 function AppMenuButton(applet, metaWindow, alert) {
     this._init(applet, metaWindow, alert);
@@ -741,7 +691,7 @@ MyApplet.prototype = {
                 "buttonsUseEntireSpace",
                 this._refreshItems, null);
 
-        this.signals = new SignalManager(this);
+        this.signals = new SignalManager.SignalManager(this);
 
         let tracker = Cinnamon.WindowTracker.get_default();
         this.signals.connect(tracker, "notify::focus-app", this._onFocus);
