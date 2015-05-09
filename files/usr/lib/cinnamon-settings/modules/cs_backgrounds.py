@@ -2,19 +2,18 @@
 
 import sys
 sys.path.append('/usr/lib/cinnamon-settings/bin')
+from  flickrapi import FlickrApi
 from SettingsWidgets import *
 import os
-from flickrapi import FlickrApi
 from gi.repository import Gio, Gtk, GObject, Gdk, Pango, GLib
-import dbus
 import imtools
 import gettext
 import subprocess
 import tempfile
 import commands
+import time
 
-gettext.install("cinnamon", "/usr/share/cinnamon/locale")
-
+gettext.install("cinnamon", "/usr/share/locale")
 BACKGROUND_COLOR_SHADING_TYPES = [
     ("solid", _("None")),
     ("horizontal", _("Horizontal")),
@@ -33,6 +32,7 @@ BACKGROUND_PICTURE_OPTIONS = [
 
 BACKGROUND_ICONS_SIZE = 100
 
+BACKGROUND_COLLECTION_TYPE_FLICKR = "flickr"
 BACKGROUND_COLLECTION_TYPE_DIRECTORY = "directory"
 BACKGROUND_COLLECTION_TYPE_XML = "xml"
 
@@ -51,6 +51,7 @@ class Module:
         if not self.loaded:
             print "Loading Backgrounds module"
 
+            self.flickrApi = FlickrApi(); #Loading the FlickrApi
             self.shown_collection = None # Which collection is displayed in the UI
 
             self._background_schema = Gio.Settings(schema = "org.cinnamon.desktop.background")
@@ -58,8 +59,8 @@ class Module:
             self._slideshow_schema.connect("changed::slideshow-enabled", self.on_slideshow_enabled_changed)
             self.add_folder_dialog = Gtk.FileChooserDialog(title=_("Add Folder"),
                                                            action=Gtk.FileChooserAction.SELECT_FOLDER,
-                                                           buttons=(Gtk.STOCK_OPEN, Gtk.ResponseType.OK,
-                                                                   Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL))            
+                                                           buttons=(Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL,
+                                                                   Gtk.STOCK_OPEN, Gtk.ResponseType.OK))            
 
             self.xdg_pictures_directory = os.path.expanduser("~/Pictures")
             xdg_config = os.path.expanduser("~/.config/user-dirs.dirs")
@@ -106,8 +107,9 @@ class Module:
             self.remove_folder_button.set_tooltip_text(_("Remove selected folder"))
             self.remove_folder_button.connect("clicked", lambda w: self.remove_folder())
             button_toolbar.insert(self.add_folder_button, 0)
-            button_toolbar.insert(self.add_flickr_button, 1)
-            button_toolbar.insert(self.remove_folder_button, 2)
+            button_toolbar.insert(self.remove_folder_button, 1)
+            button_toolbar.insert(Gtk.SeparatorToolItem(), 2)
+            button_toolbar.insert(self.add_flickr_button, 3)
 
             image_scroller = Gtk.ScrolledWindow.new(None, None)
             image_scroller.set_shadow_type(Gtk.ShadowType.IN)
@@ -125,7 +127,7 @@ class Module:
             bottom_vbox.pack_start(hbox, False, False, 2)
 
             hbox = IndentedHBox()
-            hbox.add(GSettingsCheckButton(_("Play background images in random order"), "org.cinnamon.desktop.background.slideshow", "random-order", "org.cinnamon.desktop.background.slideshow/slideshow-enabled"))
+            hbox.add(GSettingsCheckButton(_("Random order"), "org.cinnamon.desktop.background.slideshow", "random-order", "org.cinnamon.desktop.background.slideshow/slideshow-enabled"))
             bottom_vbox.pack_start(hbox, False, False, 2)
 
             hbox = IndentedHBox()
@@ -138,7 +140,7 @@ class Module:
             primary_color = GSettingsColorChooser("org.cinnamon.desktop.background", "primary-color", None)
             label2 = Gtk.Label.new(_("End color"))
             secondary_color = GSettingsColorChooser("org.cinnamon.desktop.background", "secondary-color", None)
-            hbox.pack_start(color_shading_type, False, False, 2)
+            hbox.pack_start(color_shading_type, False, False, 0)
             hbox.pack_start(label1, False, False, 2)
             hbox.pack_start(primary_color, False, False, 2)
             hbox.pack_start(label2, False, False, 2)
@@ -205,12 +207,28 @@ class Module:
         picture_list = []
         folder_list = []
         properties_dir = "/usr/share/cinnamon-background-properties"
+        backgrounds = []
         if os.path.exists(properties_dir):
             for i in os.listdir(properties_dir):
                 if i.endswith(".xml"):
                     xml_path = os.path.join(properties_dir, i)
                     display_name = i.replace(".xml", "").replace("-", " ").replace("_", " ").split(" ")[-1].capitalize()
-                    self.collection_store.append([False, "cs-backgrounds", display_name, xml_path, BACKGROUND_COLLECTION_TYPE_XML])
+                    icon = "cs-backgrounds"
+                    order = 10
+                    # Special case for Linux Mint. We don't want to use 'start-here' here as it wouldn't work depending on the theme.
+                    # Also, other distros should get equal treatment. If they define cinnamon-backgrounds and use their own distro name, we should add support for it.
+                    if display_name == "Retro":                      
+                        icon = "cs-retro"
+                        order = 20 # place retro bgs at the end
+                    if display_name == "Linuxmint":                        
+                        display_name = "Linux Mint"
+                        icon = "cs-linuxmint"
+                        order = 0
+                    backgrounds.append([[False, icon, display_name, xml_path, BACKGROUND_COLLECTION_TYPE_XML], display_name, order])
+
+        backgrounds.sort(key=lambda x: (x[2], x[1]))
+        for background in backgrounds:
+            self.collection_store.append(background[0])
 
     def get_user_backgrounds(self):
         self.user_backgrounds = []
@@ -223,11 +241,14 @@ class Module:
                 folder_name = folder_path.split("/")[-1]
                 if folder_path == self.xdg_pictures_directory:
                     icon = "folder-pictures"
+                    source_type = BACKGROUND_COLLECTION_TYPE_DIRECTORY
                 elif "/.cache/cinnamon/flickr/" in folder_path:
                     icon = "flickr"
+                    source_type = BACKGROUND_COLLECTION_TYPE_FLICKR
                 else:
                     icon = "folder"
-                self.user_backgrounds.append([False, icon, folder_name, folder_path, BACKGROUND_COLLECTION_TYPE_DIRECTORY])
+                    source_type = BACKGROUND_COLLECTION_TYPE_DIRECTORY
+                self.user_backgrounds.append([False, icon, folder_name, folder_path, source_type])
         else:
             # Add XDG PICTURE DIR            
             self.user_backgrounds.append([False, "folder-pictures", self.xdg_pictures_directory.split("/")[-1], self.xdg_pictures_directory, BACKGROUND_COLLECTION_TYPE_DIRECTORY])            
@@ -281,6 +302,8 @@ class Module:
             if iter :
                 collection_path = folder_paths[iter][STORE_PATH]
                 collection_type = folder_paths[iter][STORE_TYPE]
+                #if (collection_type == "flickr" and os.path.isfile(collection_path + "/.downloading")):
+                #download in progress
                 collection_source = self.format_source(collection_type, collection_path)
                 if os.path.exists(collection_path):
                     if collection_source != self._slideshow_schema.get_string("image-source"):
@@ -306,7 +329,8 @@ class Module:
                 elif key == "options":
                     self._background_schema.set_string("picture-options", wallpaper[key])
     def add_flickr_source(self):
-        flickr = Gtk.Dialog()
+        flickr = Gtk.MessageDialog()
+        flickr.format_secondary_text(_("Provide an author's url on flickr to use his photos as backgrounds")) 
         flickr.set_title(_("Add Flickr Source"))
         flickr.value = Gtk.Entry()
         flickr.label = Gtk.Label(_("Author's url: "))
@@ -315,29 +339,28 @@ class Module:
         flickr.box.pack_start(flickr.value, False, 0, 5,)
         flickr.get_content_area().pack_start(flickr.box, False, 0 ,5)
         flickr.show_all()
-        flickr.add_buttons(Gtk.STOCK_OK, Gtk.ResponseType.OK, Gtk.STOCK_CLOSE, Gtk.ResponseType.CLOSE)
+        flickr.add_buttons(Gtk.STOCK_OK, Gtk.ResponseType.OK, Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL)
         res = flickr.run()
         if res == Gtk.ResponseType.OK:
             try:
-                user = FlickrApi.get_user_from_url(flickr.value.get_text())
+                user = self.flickrApi.get_user_from_url(flickr.value.get_text())
             except IOError:
                 error_dialog = Gtk.MessageDialog(title=_("Connection Error"), message_type=Gtk.MessageType.ERROR, message_format=_("You may be disconnected or the URI is not valid!"),buttons= Gtk.ButtonsType.CANCEL)
-                flickr.hide()
                 error_dialog.run()
-                error_dialog.hide()
+                error_dialog.destroy()
                 return 0
             if user is not None:
-                Popen(["/usr/lib/cinnamon-settings/bin/flickrapi.py", 'author', 'photos', user['user_id']])
-                path = FlickrApi.path + FlickrApi.service + "/" + user['user_name']
-                self.user_backgrounds.append([False, "flickr", user['user_name'], path, BACKGROUND_COLLECTION_TYPE_DIRECTORY])
-                self.collection_store.append([False, "flickr", user['user_name'], path, BACKGROUND_COLLECTION_TYPE_DIRECTORY])
+                subprocess.Popen(["/usr/lib/cinnamon-settings/bin/flickrapi.py", 'author', 'photos', user['user_id']])
+                path = self.flickrApi.path + self.flickrApi.service + "/" + user['user_name']
+                self.user_backgrounds.append([False, "flickr", user['user_name'], path, BACKGROUND_COLLECTION_TYPE_FLICKR])
+                self.collection_store.append([False, "flickr", user['user_name'], path, BACKGROUND_COLLECTION_TYPE_FLICKR])
                 self.update_folder_list()
-                flickr.hide()         
             else:
-                error_dialog = Gtk.MessageDialog(title=_("Lookup Error"), message_type=Gtk.MessageType.ERROR, message_format=_("User has not been found, check the entered URI"),buttons= Gtk.ButtonsType.CANCEL)
-                flickr.hide()         
+                error_dialog = Gtk.MessageDialog(title=_("Lookup Error"), message_type=Gtk.MessageType.ERROR, message_format=_("User has not been found, check the entered URI"),buttons= Gtk.ButtonsType.CANCEL)   
                 error_dialog.run()
-                error_dialog.hide()
+                error_dialog.destroy()
+        flickr.destroy()      
+
 
     def add_new_folder(self):
         res = self.add_folder_dialog.run()
@@ -364,6 +387,15 @@ class Module:
             folder_paths, iter = self.folder_tree.get_selection().get_selected()
             if iter:
                 path = folder_paths[iter][STORE_PATH]
+                #on flickr remove files (only files) in cache folder
+                if folder_paths[iter][STORE_TYPE]==BACKGROUND_COLLECTION_TYPE_FLICKR:
+                    for the_file in os.listdir(path):
+                        file_path = os.path.join(path, the_file)
+                        try:
+                            if os.path.isfile(file_path):
+                                os.unlink(file_path)
+                        except Exception, e:
+                            print e
                 self.collection_store.remove(iter)
                 for item in self.user_backgrounds:
                     if item[STORE_PATH] == path:
@@ -395,7 +427,7 @@ class Module:
             self.shown_collection = path
             picture_list = []
             if os.path.exists(path):
-                if type == BACKGROUND_COLLECTION_TYPE_DIRECTORY:
+                if (type == BACKGROUND_COLLECTION_TYPE_DIRECTORY or type == BACKGROUND_COLLECTION_TYPE_FLICKR):
                     files = os.listdir(path)
                     files.sort()
                     for i in files:
