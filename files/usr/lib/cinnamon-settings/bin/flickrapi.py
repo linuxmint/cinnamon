@@ -4,6 +4,7 @@ import sys
 import xml.etree.ElementTree as ElementTree
 import os.path
 import urllib
+import subprocess
 from os.path import expanduser
 
 
@@ -97,12 +98,17 @@ class FlickrApi():
             urllib.urlretrieve(url, local_url)
         return local_url
 
-    def store_photos(self, photos, folder="mix/"):
+    def store_photos(self, photos, folder="mix"):
         """
         Downloads all the photos
         """
+        #Tmp file, after downloading delete
+        tmp_file_path = self.path + self.service + "/" + folder + "/.downloading"
+        subprocess.Popen(["/usr/bin/touch", tmp_file_path]);
         for photo in photos:
             self.get_local_url(photo, folder)
+        os.remove(tmp_file_path)
+        
 
 if __name__ == '__main__':
         flickr = FlickrApi()
@@ -115,6 +121,3 @@ if __name__ == '__main__':
                 flickr.store_photos(flickr.get_user_photos(sys.argv[3]), user["user_name"])
             #elif sys.argv[2].replace(" ", "") == "profile":
             #   print flickr.get_author_profile_photo(sys.argv[3])
-
-if __import__("flickrapi"):
-    FlickrApi=FlickrApi()
