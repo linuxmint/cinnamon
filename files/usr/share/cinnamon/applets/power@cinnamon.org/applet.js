@@ -390,9 +390,22 @@ MyApplet.prototype = {
                 }
             }
 
-            // Disable the applet if we don't have any devices
+            // If there are no battery devices, show brightness info or disable the applet
             if (this._deviceItems.length == 0) {
-                this.set_applet_enabled(false);
+                if (this.brightness.actor.visible) {
+                    // Show the brightness info
+                    this.set_applet_tooltip(_("Brightness"));
+                    this.set_applet_icon_symbolic_name('display-brightness');
+                }
+                else if (this.keyboard.actor.visible) {
+                    // Show the brightness info
+                    this.set_applet_tooltip(_("Keyboard backlight"));
+                    this.set_applet_icon_symbolic_name('keyboard-brightness');
+                }
+                else {
+                    // Disable the applet
+                    this.set_applet_enabled(false);
+                }
             }
             else {
                 this.set_applet_enabled(true);
