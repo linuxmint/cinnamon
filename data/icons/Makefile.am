@@ -59,6 +59,7 @@ public_icons = \
 	hicolor_emblems_scalable_cs-xlet-running.svg \
 	hicolor_emblems_scalable_cs-xlet-system.svg \
 	hicolor_emblems_scalable_cs-xlet-update.svg \
+	hicolor_places_scalable_flickr.svg \
 	$(NULL)
 
 EXTRA_DIST = \

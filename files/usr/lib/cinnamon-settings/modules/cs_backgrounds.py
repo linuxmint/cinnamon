@@ -4,6 +4,7 @@ import sys
 sys.path.append('/usr/lib/cinnamon-settings/bin')
 from SettingsWidgets import *
 import os
+from flickrapi import FlickrApi
 from gi.repository import Gio, Gtk, GObject, Gdk, Pango, GLib
 import imtools
 import gettext
@@ -102,12 +103,16 @@ class Module:
             self.add_folder_button.set_icon_name("list-add-symbolic")
             self.add_folder_button.set_tooltip_text(_("Add new folder"))
             self.add_folder_button.connect("clicked", lambda w: self.add_new_folder())
+            self.add_flickr_button = Gtk.ToolButton.new(None, None)
+            self.add_flickr_button.set_icon_name("flickr")
+            self.add_flickr_button.connect("clicked", lambda w: self.add_flickr_source())
             self.remove_folder_button = Gtk.ToolButton.new(None, None)
             self.remove_folder_button.set_icon_name("list-remove-symbolic")
             self.remove_folder_button.set_tooltip_text(_("Remove selected folder"))
             self.remove_folder_button.connect("clicked", lambda w: self.remove_folder())
             button_toolbar.insert(self.add_folder_button, 0)
-            button_toolbar.insert(self.remove_folder_button, 1)
+            button_toolbar.insert(self.add_flickr_button, 1)
+            button_toolbar.insert(self.remove_folder_button, 2)
 
             image_scroller = Gtk.ScrolledWindow.new(None, None)
             image_scroller.set_shadow_type(Gtk.ShadowType.IN)
@@ -240,6 +245,8 @@ class Module:
                 folder_name = folder_path.split("/")[-1]
                 if folder_path == self.xdg_pictures_directory:
                     icon = "folder-pictures"
+                elif "/.cache/cinnamon/flickr/" in folder_path:
+                    icon = "flickr"
                 else:
                     icon = "folder"
                 self.user_backgrounds.append([False, icon, folder_name, folder_path, BACKGROUND_COLLECTION_TYPE_DIRECTORY])
@@ -320,6 +327,39 @@ class Module:
                     self._background_schema.set_string("picture-uri", "file://" + wallpaper[key])
                 elif key == "options":
                     self._background_schema.set_string("picture-options", wallpaper[key])
+    def add_flickr_source(self):
+        flickr = Gtk.Dialog()
+        flickr.set_title(_("Add Flickr Source"))
+        flickr.value = Gtk.Entry()
+        flickr.label = Gtk.Label(_("Author's url: "))
+        flickr.box = Gtk.HBox()
+        flickr.box.pack_start(flickr.label, False, 0, 5,)
+        flickr.box.pack_start(flickr.value, False, 0, 5,)
+        flickr.get_content_area().pack_start(flickr.box, False, 0 ,5)
+        flickr.show_all()
+        flickr.add_buttons(Gtk.STOCK_OK, Gtk.ResponseType.OK, Gtk.STOCK_CLOSE, Gtk.ResponseType.CLOSE)
+        res = flickr.run()
+        if res == Gtk.ResponseType.OK:
+            try:
+                user = FlickrApi.get_user_from_url(flickr.value.get_text())
+            except IOError:
+                error_dialog = Gtk.MessageDialog(title=_("Connection Error"), message_type=Gtk.MessageType.ERROR, message_format=_("You may be disconnected or the URI is not valid!"),buttons= Gtk.ButtonsType.CANCEL)
+                flickr.hide()
+                error_dialog.run()
+                error_dialog.hide()
+                return 0
+            if user is not None:
+                Popen(["/usr/lib/cinnamon-settings/bin/flickrapi.py", 'author', 'photos', user['user_id']])
+                path = FlickrApi.path + FlickrApi.service + "/" + user['user_name']
+                self.user_backgrounds.append([False, "flickr", user['user_name'], path, BACKGROUND_COLLECTION_TYPE_DIRECTORY])
+                self.collection_store.append([False, "flickr", user['user_name'], path, BACKGROUND_COLLECTION_TYPE_DIRECTORY])
+                self.update_folder_list()
+                flickr.hide()         
+            else:
+                error_dialog = Gtk.MessageDialog(title=_("Lookup Error"), message_type=Gtk.MessageType.ERROR, message_format=_("User has not been found, check the entered URI"),buttons= Gtk.ButtonsType.CANCEL)
+                flickr.hide()         
+                error_dialog.run()
+                error_dialog.hide()
 
     def add_new_folder(self):
         res = self.add_folder_dialog.run()
