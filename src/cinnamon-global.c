@@ -1113,10 +1113,11 @@ _cinnamon_global_get_gjs_context (CinnamonGlobal *global)
  */
 gboolean
 cinnamon_global_begin_modal (CinnamonGlobal *global,
-                          guint32      timestamp)
+                          guint32      timestamp,
+                          MetaModalOptions  options)
 {
   return meta_plugin_begin_modal (global->plugin, global->stage_xwindow,
-                                  None, 0, timestamp);
+                                  None, options, timestamp);
 }
 
 /**

@@ -1209,15 +1209,18 @@ function _findModal(actor) {
  * @timestamp is optionally used to associate the call with a specific user
  * initiated event.  If not provided then the value of
  * global.get_current_time() is assumed.
+ * 
+ * @options: optional Meta.ModalOptions flags to indicate that the
+ *           pointer is alrady grabbed
  *
  * Returns (boolean): true iff we successfully acquired a grab or already had one
  */
-function pushModal(actor, timestamp) {
+function pushModal(actor, timestamp, options) {
     if (timestamp == undefined)
         timestamp = global.get_current_time();
 
     if (modalCount == 0) {
-        if (!global.begin_modal(timestamp)) {
+        if (!global.begin_modal(timestamp, options ? options : 0)) {
             log('pushModal: invocation of begin_modal failed');
             return false;
         }
