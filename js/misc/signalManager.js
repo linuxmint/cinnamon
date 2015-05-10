@@ -20,10 +20,37 @@ const Lang = imports.lang;
  * use the @disconnectAllSignals function when the object is destroyed, to
  * avoid keeping track of all the signals manually.
  *
- * Note that every Javascript object should have its own @SignalManager, and
- * use it to connect signals of all objects it takes care of. For example, the
- * panel will have one `SignalManger` object, which manages all signals from
- * `GSettings`, `global.screen` etc.
+ * However, this is not always needed. If you are connecting to a signal of
+ * your actor, the signals are automatically disconnected when you destroy the
+ * actor. Using the SignalManager to disconnect all signals is only needed when
+ * connecting to objects that persists after the object disappears.
+ *
+ * Every Javascript object should have its own @SignalManager, and use it to
+ * connect signals of all objects it takes care of. For example, the panel will
+ * have one `SignalManger` object, which manages all signals from `GSettings`,
+ * `global.screen` etc.
+ *
+ * An example usage is as follows:
+ * ```
+ * MyApplet.prototype = {
+ *     __proto__: Applet.Applet.prototype,
+ *
+ *     _init: function(orientation, panelHeight, instanceId) {
+ *         Applet.Applet.prototype._init.call(this, orientation, panelHeight, instanceId);
+ *
+ *         this._signalManager = new SignalManager.SignalManager(this);
+ *         this._signalManager.connect(global.settings, "changed::foo", this._onChanged);
+ *     },
+ *
+ *     _onChanged: function() {
+ *         // Do something
+ *     },
+ *
+ *     on_applet_removed_from_panel: function() {
+ *         this._signalManager.disconnectAllSignals();
+ *     }
+ * }
+ * ```
  */
 function SignalManager(object) {
     this._init(object);
