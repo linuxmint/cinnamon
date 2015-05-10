@@ -1,3 +1,4 @@
+const GObject = imports.gi.GObject;
 const Lang = imports.lang;
 
 /**
@@ -100,7 +101,9 @@ SignalManager.prototype = {
 
         for (let signal of this.storage.get(sigName))
             if ((!obj || signal[0] == obj) &&
-                (!callback || signal[2] == callback))
+                (!callback || signal[2] == callback) &&
+                signal[0] &&
+                GObject.signal_handler_is_connected(signal[0], signal[1]))
                 return true;
 
         return false;
@@ -118,17 +121,25 @@ SignalManager.prototype = {
      * disconnects the signal on all objects, but can be fine-tuned with the
      * optional @obj and @callback arguments.
      *
-     * This function will do nothing if no such signal is connected. So checks
-     * need not be performed before calling this function.
+     * This function will do nothing if no such signal is connected, the object
+     * no longer exists, or the signal is somehow already disconnected. So
+     * checks need not be performed before calling this function.
      */
     disconnect: function(sigName, obj, callback) {
         if (!this.storage.has(sigName))
             return;
 
-        for (let signal of this.storage.get(sigName))
+        this.storage.get(sigName).forEach(function (signal, i) {
             if ((!obj || signal[0] == obj) &&
-                (!callback || signal[2] == callback))
-                item[0].disconnect(item[1]);
+                (!callback || signal[2] == callback)) {
+                // Check if the item still exists and the signal is connected
+                if (signal[0] &&
+                    GObject.signal_handler_is_connected(signal[0], signal[1]))
+                    signal[0].disconnect(signal[1]);
+
+                this.storage.get(sigName).splice(i, 1);
+            }
+        });
 
         if (this.storage.get(sigName).length == 0)
             this.storage.delete(sigName);
@@ -142,8 +153,11 @@ SignalManager.prototype = {
      */
     disconnectAllSignals: function() {
         for (let signals of this.storage.values())
-            for (let item of signals)
-                item[0].disconnect(item[1]);
+            for (let signal of signals)
+                if (signal[0] &&
+                    GObject.signal_handler_is_connected(signal[0], signal[1]))
+                    signal[0].disconnect(signal[1]);
+
         this.storage.clear();
     }
 }
