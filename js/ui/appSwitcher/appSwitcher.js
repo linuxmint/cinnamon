@@ -112,6 +112,10 @@ AppSwitcher.prototype = {
 
     _setupModal: function() {
         this._haveModal = Main.pushModal(this.actor);
+        if (!this._haveModal) {
+            // Probably someone else has a pointer grab, try again with keyboard only
+            this._haveModal = Main.pushModal(this.actor, global.get_current_time(), Meta.ModalOptions.POINTER_ALREADY_GRABBED);
+        }
         if (!this._haveModal)
             this._activateSelected();
         else {
