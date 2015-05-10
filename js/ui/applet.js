@@ -94,28 +94,6 @@ AppletPopupMenu.prototype = {
             launcher._applet.connect("orientation-changed", Lang.bind(this, this._onOrientationChanged));
     },
 
-    /**
-     * setMaxHeight:
-     * 
-     * Sets the maximum height of the monitor so that it does not expand pass
-     * the monitor when it has too many children. This is called when the
-     * popupmenu opens
-     */
-    setMaxHeight: function() {
-        let monitor = Main.layoutManager.findMonitorForActor(this.launcher.actor)
-
-        let maxHeight = monitor.height - this.actor.get_theme_node().get_length('-boxpointer-gap');
-
-        let panels = Main.panelManager.getPanelsInMonitor(Main.layoutManager.monitors.indexOf(monitor));
-
-        for (let panel of panels)
-            maxHeight -= panel.actor.height;
-
-        this.actor.style = 'max-height: ' + maxHeight / global.ui_scale + 'px; ' +
-            'max-width: ' + (monitor.width - 20)/ global.ui_scale + 'px;';
-        // PopupMenus have 10px margins      ^
-    },
-
     _onOrientationChanged: function(a, orientation) {
         this.setArrowSide(orientation);
     }
