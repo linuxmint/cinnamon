@@ -454,7 +454,7 @@ function getMetaStateString(state) {
 }
 
 function loadExtension(uuid, type) {
-    let force = uuid.indexOf("1") == 0;
+    let force = uuid.indexOf("!") == 0;
     uuid = uuid.replace(/^!/,'');
 
     let extension = objects[uuid];
