@@ -1,0 +1,45 @@
+#! /usr/bin/env python2
+# -*- coding=utf-8 -*-
+
+from gi.repository import Gio, Gtk
+import os
+import pwd
+import sys
+import subprocess
+
+def preload_theme(theme_name):
+    theme = Gtk.IconTheme()
+    theme.set_custom_theme(theme_name)
+    for i in Gio.AppInfo.get_all():
+        icon = i.get_icon()
+        if type(icon) == Gio.ThemedIcon:
+            try:
+                theme.load_icon(i.get_icon().to_string(), 22, 0)
+            except:
+                pass
+
+if __name__ == "__main__":
+    if os.getuid() == 0:
+        has_encrypted_home = False
+        
+        for p in pwd.getpwall():
+            if p.pw_uid >= 1000 and p.pw_shell and p.pw_shell != '/bin/false':
+                if not os.path.exists("/home/.ecryptfs/%s" % p.pw_name):
+                    subprocess.call(["su", p.pw_name, "-c", os.path.realpath(sys.argv[0])])
+                else:
+                    has_encrypted_home = True
+        if has_encrypted_home:
+            theme_list = []
+            if os.path.exists("/etc/cinnamon/preload/iconthemes.d/") and os.path.isdir("/etc/cinnamon/preload/iconthemes.d/"):
+                for i in os.listdir("/etc/cinnamon/preload/iconthemes.d/"):
+                    f = open(os.path.join("/etc/cinnamon/preload/iconthemes.d/", i))
+                    theme_list += f.read().splitlines()
+                    f.close()
+            for theme in theme_list:
+                if theme:
+                    preload_theme(theme)
+                    
+        os.system("find /usr/share/cinnamon/applets -type f -exec cat {} \\; > /dev/null")
+    else:
+        theme_name = Gio.Settings("org.cinnamon.desktop.interface").get_string("icon-theme")
+        preload_theme(theme_name)
