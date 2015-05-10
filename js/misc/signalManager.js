@@ -71,11 +71,14 @@ SignalManager.prototype = {
      * @obj (Object): the object whose signal we are listening to
      * @sigName (string): the name of the signal we are listening to
      * @callback (function): the callback function
-     * force (boolean): whether to connect again even if it is connected
+     * @nobind (boolean): (optional) set to `true` if the function should not
+     * be binded to the owner of the signal manager
+     * @force (boolean): whether to connect again even if it is connected
      *
      * This listens to the signal @sigName from @obj and calls @callback when
      * the signal is emitted. @callback is automatically binded to the object
-     * owning the @SignalManager (as specified in the constructor).
+     * owning the @SignalManager (as specified in the constructor), unless the
+     * @nobind argument is set to `true`
      *
      * This checks whether the signal is already connected and will not connect
      * again if it is already connected. This behaviour can be overridden by
@@ -95,14 +98,20 @@ SignalManager.prototype = {
      * signal name, then the object (since the object is rarely passed in other
      * functions).
      */
-    connect: function(obj, sigName, callback, force) {
+    connect: function(obj, sigName, callback, nobind, force) {
         if (!this.storage.has(sigName))
             this.storage.set(sigName, []);
 
         if (!force && this.isConnected(sigName, obj, callback))
             return
 
-        let id = obj.connect(sigName, Lang.bind(this.object, callback));
+        let id;
+
+        if (nobind)
+            id = obj.connect(sigName, callback);
+        else
+            id = obj.connect(sigName, Lang.bind(this.object, callback));
+
         this.storage.get(sigName).push([obj, id, callback]);
     },
 
