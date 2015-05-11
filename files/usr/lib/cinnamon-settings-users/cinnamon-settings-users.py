@@ -320,7 +320,7 @@ class NewUserDialog(Gtk.Dialog):
         fullname = self.realname_entry.get_text()
         username = self.username_entry.get_text()
         valid = True
-        if re.search('[^[a-z0-9_.-]', username):
+        if re.search('[^a-z0-9_.-]', username):
             self.username_entry.set_icon_from_stock(Gtk.EntryIconPosition.SECONDARY, Gtk.STOCK_DIALOG_WARNING)
             self.username_entry.set_icon_tooltip_text(Gtk.EntryIconPosition.SECONDARY, _("Invalid username"))
             valid = False
