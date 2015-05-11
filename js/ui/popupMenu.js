@@ -1339,6 +1339,18 @@ PopupMenu.prototype = {
     // menu is higher then the screen; it's useful if part of the menu is
     // scrollable so the minimum height is smaller than the natural height
     setMaxHeight: function() {
+        let monitor = Main.layoutManager.findMonitorForActor(this.sourceActor)
+
+        let maxHeight = monitor.height - this.actor.get_theme_node().get_length('-boxpointer-gap');
+
+        let panels = Main.panelManager.getPanelsInMonitor(Main.layoutManager.monitors.indexOf(monitor));
+
+        for (let panel of panels)
+            maxHeight -= panel.actor.height;
+
+        this.actor.style = 'max-height: ' + maxHeight / global.ui_scale + 'px; ' +
+            'max-width: ' + (monitor.width - 20)/ global.ui_scale + 'px;';
+        // PopupMenus have 10px margins      ^
     },
 
     close: function(animate) {
