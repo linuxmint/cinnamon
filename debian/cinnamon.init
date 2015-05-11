@@ -9,8 +9,11 @@
 set -e
 
 case "$1" in
-  start)
+  start|restart)
         su -c cinnamon-preload-wrapper
+  ;;
+  stop)
+        exit 0
   ;;
   *)
         echo "Usage: /etc/init.d/cinnamon {start}"
