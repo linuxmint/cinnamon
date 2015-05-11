@@ -5,6 +5,7 @@ const Clutter = imports.gi.Clutter;
 const Applet = imports.ui.applet;
 const Main = imports.ui.main;
 const Mainloop = imports.mainloop;
+const SignalManager = imports.misc.signalManager;
 
 const ICON_SCALE_FACTOR = .8; // for custom panel heights, 20 (default icon size) / 25 (default panel height)
 
@@ -21,10 +22,7 @@ MyApplet.prototype = {
         this.actor.remove_style_class_name("applet-box");
         this.actor.style="spacing: 5px;";
 
-        this._signals = { added: null,
-                          removed: null,
-                          redisplay: null,
-                          registered: null };
+        this._signalManager = new SignalManager.SignalManager(this);
 
         let manager = new Clutter.BoxLayout( { spacing: 2 * global.ui_scale,
                                                homogeneous: true,
@@ -41,18 +39,16 @@ MyApplet.prototype = {
     },
 
     on_applet_removed_from_panel: function () {
-        Main.statusIconDispatcher.disconnect(this._signals.added);
-        Main.statusIconDispatcher.disconnect(this._signals.removed);
-        Main.statusIconDispatcher.disconnect(this._signals.redisplay);
-        Main.systrayManager.disconnect(this._signals.registered);
+        this._signalManager.disconnectAllSignals();
     },
 
     on_applet_added_to_panel: function() {
         Main.statusIconDispatcher.start(this.actor.get_parent().get_parent());
-        this._signals.added = Main.statusIconDispatcher.connect('status-icon-added', Lang.bind(this, this._onTrayIconAdded));
-        this._signals.removed = Main.statusIconDispatcher.connect('status-icon-removed', Lang.bind(this, this._onTrayIconRemoved));
-        this._signals.redisplay = Main.statusIconDispatcher.connect('before-redisplay', Lang.bind(this, this._onBeforeRedisplay));
-        this._signals.registered = Main.systrayManager.connect("changed", Lang.bind(Main.statusIconDispatcher, Main.statusIconDispatcher.redisplay));
+
+        this._signalManager.connect(Main.statusIconDispatcher, 'status-icon-added', this._onTrayIconAdded);
+        this._signalManager.connect(Main.statusIconDispatcher, 'status-icon-removed', this._onTrayIconRemoved);
+        this._signalManager.connect(Main.statusIconDispatcher, 'before-redisplay', this._onBeforeRedisplay);
+        this._signalManager.connect(Main.systrayManager, "changed", Main.statusIconDispatcher.redisplay, true);
     },
 
     on_panel_height_changed: function() {

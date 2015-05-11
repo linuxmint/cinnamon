@@ -8,15 +8,16 @@ const Pango = imports.gi.Pango;
 const Cinnamon = imports.gi.Cinnamon;
 const St = imports.gi.St;
 
-const PopupMenu = imports.ui.popupMenu;
-const Main = imports.ui.main;
-const Tweener = imports.ui.tweener;
 const Applet = imports.ui.applet;
-const DND = imports.ui.dnd;
 const AppletManager = imports.ui.appletManager;
-const Util = imports.misc.util;
-const ModalDialog = imports.ui.modalDialog;
+const DND = imports.ui.dnd;
 const Gtk = imports.gi.Gtk;
+const Main = imports.ui.main;
+const ModalDialog = imports.ui.modalDialog;
+const PopupMenu = imports.ui.popupMenu;
+const SignalManager = imports.misc.signalManager;
+const Tweener = imports.ui.tweener;
+const Util = imports.misc.util;
 
 const BUTTON_DND_ACTIVATION_TIMEOUT = 250;
 
@@ -1254,7 +1255,7 @@ Panel.prototype = {
         this._autohideSettings = this._getProperty(PANEL_AUTOHIDE_KEY, "s");
         this._themeFontSize = null;
         this._destroyed = false;
-        this._settingsSignals = [];
+        this._signalManager = new SignalManager.SignalManager(this);
 
         this.scaleMode = false;
 
@@ -1316,12 +1317,12 @@ Panel.prototype = {
         this.actor.connect('get-preferred-height', Lang.bind(this, this._getPreferredHeight));
         this.actor.connect('allocate', Lang.bind(this, this._allocate));
 
-        this._settingsSignals.push(global.settings.connect("changed::" + PANEL_AUTOHIDE_KEY, Lang.bind(this, this._processPanelAutoHide)));
-        this._settingsSignals.push(global.settings.connect("changed::" + PANEL_HEIGHT_KEY, Lang.bind(this, this._moveResizePanel)));
-        this._settingsSignals.push(global.settings.connect("changed::" + PANEL_RESIZABLE_KEY, Lang.bind(this, this._moveResizePanel)));
-        this._settingsSignals.push(global.settings.connect("changed::" + PANEL_SCALE_TEXT_ICONS_KEY, Lang.bind(this, this._onScaleTextIconsChanged)));
-        this._settingsSignals.push(global.settings.connect("changed::panel-edit-mode", Lang.bind(this, this._onPanelEditModeChanged)));
-        this._settingsSignals.push(global.settings.connect("changed::no-adjacent-panel-barriers", Lang.bind(this, this._updatePanelBarriers)));
+        this._signalManager.connect(global.settings, "changed::" + PANEL_AUTOHIDE_KEY, this._processPanelAutoHide);
+        this._signalManager.connect(global.settings, "changed::" + PANEL_HEIGHT_KEY, this._moveResizePanel);
+        this._signalManager.connect(global.settings, "changed::" + PANEL_RESIZABLE_KEY, this._moveResizePanel);
+        this._signalManager.connect(global.settings, "changed::" + PANEL_SCALE_TEXT_ICONS_KEY, this._onScaleTextIconsChanged);
+        this._signalManager.connect(global.settings, "changed::panel-edit-mode", this._onPanelEditModeChanged);
+        this._signalManager.connect(global.settings, "changed::no-adjacent-panel-barriers", this._updatePanelBarriers);
 
     },
 
@@ -1372,23 +1373,7 @@ Panel.prototype = {
 
         this.actor.destroy();
 
-        let i = this._settingsSignals.length;
-        while (i--) {
-            global.settings.disconnect(this._settingsSignals[i]);
-        }
-
-        if (this._focusChangedSignal) {
-            global.display.disconnect(this._focusChangedSignal);
-            this._focusChangedSignal = undefined;
-            if (this._focusWindow) {
-                this._focusWindow.disconnect(this._focusSignal1);
-                this._focusWindow.disconnect(this._focusSignal2);
-                this._focusWindow = undefined;
-                this.signal1 = undefined;
-                this.signal2 = undefined;
-            }
-        }
-
+        this._signalManager.disconnectAllSignals()
 
         this._menus = null;
         this.monitor = null;
@@ -1573,21 +1558,15 @@ Panel.prototype = {
             this._focusWindow == global.display.focus_window.get_compositor_private())
             return;
 
-        if (this._focusWindow && this._focusSignal1) {
-            this._focusWindow.disconnect(this._focusSignal1);
-            this._focusWindow.disconnect(this._focusSignal2);
-            this._focusSignal1 = undefined;
-            this._focusSignal2 = undefined;
-        }
+        this._signalManager.disconnect("position-changed");
+        this._signalManager.disconnect("size-changed");
 
         if (!global.display.focus_window)
             return;
 
         this._focusWindow = global.display.focus_window.get_compositor_private();
-        this._focusSignal1 = this._focusWindow.connect("position-changed",
-                Lang.bind(this, this._updatePanelVisibility));
-        this._focusSignal2 = this._focusWindow.connect("size-changed",
-                Lang.bind(this, this._updatePanelVisibility));
+        this._signalManager.connect(this._focusWindow, "position-changed", this._updatePanelVisibility);
+        this._signalManager.connect(this._focusWindow, "size-changed", this._updatePanelVisibility);
         this._updatePanelVisibility();
     },
 
@@ -1595,23 +1574,12 @@ Panel.prototype = {
         this._autohideSettings = this._getProperty(PANEL_AUTOHIDE_KEY, "s");
 
         if (this._autohideSettings == "intel") {
-            if (!this._focusChangedSignal) {
-                this._focusChangedSignal = global.display.connect("notify::focus-window",
-                        Lang.bind(this, this._onFocusChanged));
-                this._onFocusChanged();
-            }
+            this._signalManager.connect(global.display, "notify::focus-window", this._onFocusChanged);
+            this._onFocusChanged();
         } else {
-            if (this._focusChangedSignal) {
-                global.display.disconnect(this._focusChangedSignal);
-                this._focusChangedSignal = undefined;
-                if (this._focusWindow) {
-                    this._focusWindow.disconnect(this._focusSignal1);
-                    this._focusWindow.disconnect(this._focusSignal2);
-                    this._focusWindow = undefined;
-                    this.signal1 = undefined;
-                    this.signal2 = undefined;
-                }
-            }
+            this._signalManager.disconnect("notify::focus-window");
+            this._signalManager.disconnect("position-changed");
+            this._signalManager.disconnect("size-changed");
         }
 
         this._updatePanelVisibility();

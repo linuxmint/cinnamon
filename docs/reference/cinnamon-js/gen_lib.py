@@ -86,6 +86,7 @@ class JSThing():
                 in_list = False
 
             line = re.sub('@(\w*)', '<code>\g<1></code>', line)
+            line = re.sub('`([^`]*)`', '<code>\g<1></code>', line)
             line = re.sub('\*\*([^*]*)\*\*', '<emphasis role="strong">\g<1></emphasis>', line)
             line = re.sub('\*([^*]*)\*', '<emphasis>\g<1></emphasis>', line)
 
