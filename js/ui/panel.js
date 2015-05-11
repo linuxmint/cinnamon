@@ -171,9 +171,9 @@ PanelManager.prototype = {
 
         this.addPanelMode = false;
 
-        global.settings.connect("changed::panels-enabled", Lang.bind(this, this._onPanelsEnabledChanged));
-        global.settings.connect("changed::panel-edit-mode", Lang.bind(this, this._onPanelEditModeChanged));
-        global.screen.connect("monitors-changed", Lang.bind(this, this._onMonitorsChanged));
+        this._panelsEnabledId = global.settings.connect("changed::panels-enabled", Lang.bind(this, this._onPanelsEnabledChanged));
+        this._panelEditModeId = global.settings.connect("changed::panel-edit-mode", Lang.bind(this, this._onPanelEditModeChanged));
+        this._monitorsChangedId = global.screen.connect("monitors-changed", Lang.bind(this, this._onMonitorsChanged));
 
         this._addOsd = new ModalDialog.InfoOSD(_("Select position of new panel. Esc to cancel."));
         this._moveOsd = new ModalDialog.InfoOSD(_("Select new position of panel. Esc to cancel."));
@@ -1296,11 +1296,16 @@ Panel.prototype = {
 
         this._context_menu = new PanelContextMenu(this, bottomPosition ? St.Side.BOTTOM: St.Side.TOP, id);
         this._menus.addMenu(this._context_menu);
-        
+
         this._context_menu._boxPointer._container.connect('allocate', Lang.bind(this._context_menu._boxPointer, function(actor, box, flags){
                     this._xPosition = this._xpos;
                     this._shiftActor();
         }));
+
+        this._leftPanelBarrier = 0;
+        this._rightPanelBarrier = 0;
+        Main.layoutManager.addChrome(this.actor, { addToWindowgroup: false });
+        this._moveResizePanel();
 
         this.actor.connect('button-press-event', Lang.bind(this, this._onButtonPressEvent));
         this.actor.connect('style-changed', Lang.bind(this, this._moveResizePanel));
@@ -1318,11 +1323,6 @@ Panel.prototype = {
         this._settingsSignals.push(global.settings.connect("changed::panel-edit-mode", Lang.bind(this, this._onPanelEditModeChanged)));
         this._settingsSignals.push(global.settings.connect("changed::no-adjacent-panel-barriers", Lang.bind(this, this._updatePanelBarriers)));
 
-
-        this._leftPanelBarrier = 0;
-        this._rightPanelBarrier = 0;
-        Main.layoutManager.addChrome(this.actor, { addToWindowgroup: false });
-        this._moveResizePanel();
     },
 
     /**
