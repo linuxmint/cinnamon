@@ -1,0 +1,7 @@
+description     "Cinnamon cache preloader"
+author          "Linux Mint <root@linuxmint.com>"
+
+start on (runlevel [2345] and filesystem and started dbus)
+stop on runlevel [016]
+
+exec su -c cinnamon-init-cache
