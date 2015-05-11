@@ -533,8 +533,12 @@ function updateAppletsOnPanel (panel) {
             definition.orientation = orientation;
 
             if (appletObj[applet_id]) {
-                appletObj[applet_id].setPanelHeight(height);
-                appletObj[applet_id].setOrientation(orientation);
+                try {
+                    appletObj[applet_id].setPanelHeight(height);
+                    appletObj[applet_id].setOrientation(orientation);
+                } catch (e) {
+                    global.logError("Error during setPanelHeight() and setOrientation() call on applet: " + definition.uuid + "/" + applet_id, e);
+                }
             }
         }
     }
