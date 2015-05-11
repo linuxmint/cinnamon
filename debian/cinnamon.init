@@ -10,7 +10,7 @@ set -e
 
 case "$1" in
   start)
-        su -c cinnamon-init-cache
+        su -c cinnamon-preload-wrapper
   ;;
   *)
         echo "Usage: /etc/init.d/cinnamon {start}"

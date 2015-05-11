@@ -6,8 +6,11 @@ import os
 import pwd
 import sys
 import subprocess
+import syslog
+import time
 
 def preload_theme(theme_name):
+    start = time.time()
     theme = Gtk.IconTheme()
     theme.set_custom_theme(theme_name)
     for i in Gio.AppInfo.get_all():
@@ -17,11 +20,12 @@ def preload_theme(theme_name):
                 theme.load_icon(i.get_icon().to_string(), 22, 0)
             except:
                 pass
+    syslog.syslog('Loading %s took %0.2f seconds' % (theme_name, (time.time()-start)))
 
 if __name__ == "__main__":
     if os.getuid() == 0:
+        start = time.time()
         has_encrypted_home = False
-        
         for p in pwd.getpwall():
             if p.pw_uid >= 1000 and p.pw_shell and p.pw_shell != '/bin/false':
                 if not os.path.exists("/home/.ecryptfs/%s" % p.pw_name):
@@ -29,17 +33,23 @@ if __name__ == "__main__":
                 else:
                     has_encrypted_home = True
         if has_encrypted_home:
+            syslog.syslog("Encrypted home directories detected, loading default themes")
             theme_list = []
             if os.path.exists("/etc/cinnamon/preload/iconthemes.d/") and os.path.isdir("/etc/cinnamon/preload/iconthemes.d/"):
                 for i in os.listdir("/etc/cinnamon/preload/iconthemes.d/"):
                     f = open(os.path.join("/etc/cinnamon/preload/iconthemes.d/", i))
+                    print f
                     theme_list += f.read().splitlines()
                     f.close()
             for theme in theme_list:
                 if theme:
+                    syslog.syslog("Loading default theme %s" % theme)
                     preload_theme(theme)
-                    
+
+        syslog.syslog("Loading applets")
         os.system("find /usr/share/cinnamon/applets -type f -exec cat {} \\; > /dev/null")
+        syslog.syslog('Took %0.2f seconds' % ((time.time()-start)))
     else:
         theme_name = Gio.Settings("org.cinnamon.desktop.interface").get_string("icon-theme")
+        syslog.syslog("Loading theme %s for user ID %d" % (theme_name, os.getuid()))
         preload_theme(theme_name)
