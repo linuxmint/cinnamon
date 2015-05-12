@@ -167,7 +167,7 @@ SignalManager.prototype = {
         if (!this.storage.has(sigName))
             return;
 
-        this.storage.get(sigName).forEach(function (signal, i) {
+        this.storage.get(sigName).forEach(Lang.bind(this, function (signal, i) {
             if ((!obj || signal[0] == obj) &&
                 (!callback || signal[2] == callback)) {
                 // Check if the item still exists and the signal is connected
@@ -177,7 +177,7 @@ SignalManager.prototype = {
 
                 this.storage.get(sigName).splice(i, 1);
             }
-        });
+        }));
 
         if (this.storage.get(sigName).length == 0)
             this.storage.delete(sigName);
