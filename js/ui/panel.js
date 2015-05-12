@@ -1307,10 +1307,10 @@ Panel.prototype = {
         this._rightPanelBarrier = 0;
         Main.layoutManager.addChrome(this.actor, { addToWindowgroup: false });
         this._moveResizePanel();
+        this._onPanelEditModeChanged();
 
         this.actor.connect('button-press-event', Lang.bind(this, this._onButtonPressEvent));
         this.actor.connect('style-changed', Lang.bind(this, this._moveResizePanel));
-        this.actor.connect('parent-set', Lang.bind(this, this._onPanelEditModeChanged));
         this.actor.connect('leave-event', Lang.bind(this, this._leavePanel));
         this.actor.connect('enter-event', Lang.bind(this, this._enterPanel));
         this.actor.connect('get-preferred-width', Lang.bind(this, this._getPreferredWidth));
@@ -1440,6 +1440,7 @@ Panel.prototype = {
             Mainloop.source_remove(this._dragShowId);
 
         let leaveIfOut = Lang.bind(this, function() {
+            this._dragShowId = 0;
             let [x, y, whatever] = global.get_pointer();
             this.actor.sync_hover();
             if (this.actor.x < x && x < this.actor.x + this.actor.width &&
