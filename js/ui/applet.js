@@ -22,7 +22,10 @@ const PANEL_SYMBOLIC_ICON_DEFAULT_HEIGHT = 1.14 * PANEL_FONT_DEFAULT_HEIGHT; // 
 const DEFAULT_PANEL_HEIGHT = 25;
 const FALLBACK_ICON_HEIGHT = 22;
 
-// Deprecated. Do not use
+/**
+ * #MenuItem
+ * @short_description: Deprecated. Use #PopupMenu.PopupIconMenuItem instead.
+ */
 function MenuItem(label, icon, callback) {
     this.__proto__ = PopupMenu.PopupIconMenuItem.prototype;
     PopupMenu.PopupIconMenuItem.prototype._init.call(this, label, icon, St.IconType.SYMBOLIC);
