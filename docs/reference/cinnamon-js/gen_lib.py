@@ -13,6 +13,23 @@
 
 import re
 
+def get_type_link(typ, file):
+    from gen_doc import objects
+
+    if typ == '':
+        return "void"
+    else:
+        if typ in objects:
+            return "cinnamon-js-" + objects[typ].prefix
+        elif file.name + "." + typ in objects:
+            return "cinnamon-js-" + objects[file.name + "." + typ].prefix
+        elif typ.startswith("Gio"):
+            return typ.replace("Gio.", "G")
+        elif typ.startswith("GLib"):
+            return typ.replace("GLib.", "G")
+        else:
+            return typ.replace('.', '')
+
 class JSThing():
     def append_description(self, desc):
         self.description += desc.replace('<', '&lt;').replace('>', '&gt;')
@@ -89,6 +106,7 @@ class JSThing():
             line = re.sub('`([^`]*)`', '<code>\g<1></code>', line)
             line = re.sub('\*\*([^*]*)\*\*', '<emphasis role="strong">\g<1></emphasis>', line)
             line = re.sub('\*([^*]*)\*', '<emphasis>\g<1></emphasis>', line)
+            line = re.sub('#([\w.]*)', lambda x: '<link linkend="{link}"><code>{name}</code></link>'.format(link = get_type_link(x.group(1), self.file), name = x.group(1)), line)
 
             description += '<para>{0}</para>'.format(line)
 
@@ -105,6 +123,7 @@ class JSThing():
             self.short_description = prop.description
         else:
             self.properties.append(prop)
+            prop.file = self.file
 
 class JSFunction(JSThing):
     def __init__ (self, name):
@@ -114,11 +133,9 @@ class JSFunction(JSThing):
         self.properties = []
         self.return_value = JSProperty(None, '', '')
 
-    def add_function(self, func):
-        self.functions.append(func)
-
     def set_return(self, retval):
         self.return_value = retval
+        retval.file = self.file
 
 class JSProperty(JSThing):
     def __init__ (self, name, arg_type, desc):
@@ -126,21 +143,6 @@ class JSProperty(JSThing):
         self.arg_type = arg_type if arg_type else ''
         self.description = ''
         self.append_description(desc + "\n")
-
-    def get_type_link(self):
-        from gen_doc import objects
-
-        if self.arg_type == '':
-            return "void"
-        else:
-            if self.arg_type in objects:
-                return "cinnamon-js-" + objects[self.arg_type].prefix
-            elif self.arg_type.startswith("Gio"):
-                return self.arg_type.replace("Gio.", "G")
-            elif self.arg_type.startswith("GLib"):
-                return self.arg_type.replace("GLib.", "G")
-            else:
-                return self.arg_type.replace('.', '')
 
 class JSFile(JSThing):
     def __init__ (self, directory, name):
@@ -154,12 +156,14 @@ class JSFile(JSThing):
         self.properties = []
         self.objects = []
         self.functions = []
+        self.file = self
 
     def is_interesting(self):
         return len(self.functions) + len(self.properties) + len(self.description) > 0
 
     def add_function(self, func):
         self.functions.append(func)
+        func.file = self
 
     def add_object(self, obj):
         self.objects.append(obj)
@@ -167,6 +171,7 @@ class JSFile(JSThing):
         obj.directory = self.directory
         obj.prefix = self.prefix + "-" + obj.name
         obj.name = self.name + "-" + obj.name
+        obj.file = self
 
 class JSObject(JSThing):
     def __init__ (self, name):
@@ -183,6 +188,7 @@ class JSObject(JSThing):
 
     def add_function(self, func):
         self.functions.append(func)
+        func.file = self.file
 
     def set_inherit(self, inherit):
         self.inherit = inherit
@@ -436,7 +442,7 @@ def get_function_header(obj):
         return ""
 
     functions = [FUNCTION_HEADER_ITEM_FORMAT.format(
-                return_link = func.return_value.get_type_link(),
+                return_link = get_type_link(func.return_value.arg_type, obj.file),
                 return_name = func.return_value.arg_type,
                 prefix = obj.prefix,
                 name = func.name) for func in obj.functions]
@@ -445,12 +451,12 @@ def get_function_header(obj):
             prefix = obj.prefix,
             function_headers = "\n".join(functions))
 
-def get_properties_header( obj):
+def get_properties_header(obj):
     if len(obj.properties) == 0:
         return ""
 
     properties = [PROPERTY_HEADER_ITEM_FORMAT.format(
-        type_link = prop.get_type_link(),
+        type_link = get_type_link(prop.arg_type, obj.file),
         type_name = prop.arg_type,
         prefix = obj.prefix,
         name = prop.name) for prop in obj.properties]
@@ -529,7 +535,7 @@ def get_functions(obj):
                 max_length = 0
 
             inline_params = [INLINE_PARAMETER_FORMAT.format(
-                type_link = param.get_type_link(),
+                type_link = get_type_link(param.arg_type, obj.file),
                 type_name = param.arg_type,
                 name = " " * (max_length - len(param.arg_type)) + param.name) for param in func.properties]
 
@@ -548,7 +554,7 @@ def get_functions(obj):
         functions.append(FUNCTION_ITEM_FORMAT.format(
             prefix = obj.prefix,
             name = func.name,
-            return_link = func.return_value.get_type_link(),
+            return_link = get_type_link(func.return_value.arg_type, obj.file),
             return_type = func.return_value.arg_type,
             description = func.get_xml_description(),
             inline_params = inline_params,
@@ -567,7 +573,7 @@ def get_properties(obj):
         prefix = obj.prefix,
         name = prop.name,
         disp_name = ('“' + prop.name + '”').ljust(25),
-        type_link = prop.get_type_link(),
+        type_link = get_type_link(prop.arg_type, obj.file),
         type_name = prop.arg_type,
         description = prop.get_xml_description()) for prop in obj.properties]
 
