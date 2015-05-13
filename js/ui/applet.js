@@ -262,8 +262,8 @@ Applet.prototype = {
      * set_applet_enabled:
      * @enabled (boolean): whether this applet is enabled or not
      * 
-     * Sets whether the applet is enabled or not
-     * A disabled applet sets its padding to 0px and doesn't react to clicks
+     * Sets whether the applet is enabled or not. A disabled applet sets its
+     * padding to 0px and doesn't react to clicks
      */
     set_applet_enabled: function (enabled) {
         if (enabled != this._applet_enabled) {
@@ -294,10 +294,9 @@ Applet.prototype = {
     /**
      * on_applet_instances_changed:
      *
-     * This function is called when an applet _of the same uuid_
-     * is added or removed from the panels.  It is intended to
-     * assist in delegation of responsibilities between duplicate
-     * applet instances.
+     * This function is called when an applet *of the same uuid* is added or
+     * removed from the panels. It is intended to assist in delegation of
+     * responsibilities between duplicate applet instances.
      * 
      * This is meant to be overridden in individual applets
      */
