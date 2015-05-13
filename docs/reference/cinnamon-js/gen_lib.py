@@ -30,6 +30,15 @@ def get_type_link(typ, file):
         else:
             return typ.replace('.', '')
 
+def markup(line, obj):
+    line = re.sub('@(\w*)', '<code>\g<1></code>', line)
+    line = re.sub('`([^`]*)`', '<code>\g<1></code>', line)
+    line = re.sub('\*\*([^*]*)\*\*', '<emphasis role="strong">\g<1></emphasis>', line)
+    line = re.sub('\*([^*]*)\*', '<emphasis>\g<1></emphasis>', line)
+    line = re.sub('#([\w.]*)', lambda x: '<link linkend="{link}"><code>{name}</code></link>'.format(link = get_type_link(x.group(1), obj.file), name = x.group(1)), line)
+
+    return line
+
 class JSThing():
     def append_description(self, desc):
         self.description += desc.replace('<', '&lt;').replace('>', '&gt;')
@@ -102,12 +111,7 @@ class JSThing():
                 list_buffer = []
                 in_list = False
 
-            line = re.sub('@(\w*)', '<code>\g<1></code>', line)
-            line = re.sub('`([^`]*)`', '<code>\g<1></code>', line)
-            line = re.sub('\*\*([^*]*)\*\*', '<emphasis role="strong">\g<1></emphasis>', line)
-            line = re.sub('\*([^*]*)\*', '<emphasis>\g<1></emphasis>', line)
-            line = re.sub('#([\w.]*)', lambda x: '<link linkend="{link}"><code>{name}</code></link>'.format(link = get_type_link(x.group(1), self.file), name = x.group(1)), line)
-
+            line = markup(line, self.file)
             description += '<para>{0}</para>'.format(line)
 
         if in_list:
@@ -120,16 +124,16 @@ class JSThing():
 
     def add_property(self, prop):
         if prop.name == "short_description":
-            self.short_description = prop.description
+            self.short_description = prop
         else:
             self.properties.append(prop)
-            prop.file = self.file
+        prop.file = self.file
 
 class JSFunction(JSThing):
     def __init__ (self, name):
         self.name = name
         self.description = ''
-        self.short_description = ''
+        self.short_description = JSProperty(None, '', '')
         self.properties = []
         self.return_value = JSProperty(None, '', '')
 
@@ -152,7 +156,7 @@ class JSFile(JSThing):
         self.imports = "imports.{0}.{1}".format(directory, name)
         self.prefix = directory + "-" + name
         self.description = ''
-        self.short_description = ''
+        self.short_description = JSProperty(None, '', '')
         self.properties = []
         self.objects = []
         self.functions = []
@@ -179,7 +183,7 @@ class JSObject(JSThing):
         self.orig_name = name
         self.inherit = ''
         self.description = ''
-        self.short_description = ''
+        self.short_description = JSProperty(None, '', '')
         self.parent = None
         self.directory = None
         self.prefix = None
@@ -427,7 +431,7 @@ def create_file(obj):
     file_obj.write(FILE_FORMAT.format(
         prefix = obj.prefix,
         name = obj.name.replace("-", "."),
-        short_description = obj.short_description,
+        short_description = markup(obj.short_description.description, obj),
         func_header = get_function_header(obj),
         prop_header = get_properties_header(obj),
         hierarchy = get_hierarchy(obj),
