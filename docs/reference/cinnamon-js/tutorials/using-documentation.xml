@@ -38,7 +38,7 @@
 
     <para>Certain variables and functions are prepended with <code>_</code>, eg. <code>_showPanel</code>. These are private variables and functions which shouldn't be accessed normally, and is there purely for referencial purposes. It is generally not a good idea to use them in applets/desklets. Within Cinnamon itself, you may use them when necessary.</para>
 
-    <para>Note that the <code>_init</code> is also a private function, and you also shouldn't call it directly (unless you are inheriting the object). It is implicitly called when you call the constructor (which technically can be totally unrelated to the <code>_init</code> function.</code>
+    <para>Note that the <code>_init</code> is also a private function, and you also shouldn't call it directly (unless you are inheriting the object). It is implicitly called when you call the constructor (which technically can be totally unrelated to the <code>_init</code> function.</para>
 
     <para>Each object comes with an object hierarchy, documented in the Object Hierarchy section. For example, <code>Applet.IconApplet</code> inherits <code>Applet.Applet</code>. The child can, obviously, access the functions and properties of the parent. However, this information is not repeated in every child. So if you cannot find the function you want in the <code>Applet.IconApplet</code> page, you can look at the <code>Applet.Applet</code> page as well. This is also true for the C documentation.</para>
   </sect2>
