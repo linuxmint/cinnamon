@@ -48,7 +48,7 @@ MyApplet.prototype = {
         this._signalManager.connect(Main.statusIconDispatcher, 'status-icon-added', this._onTrayIconAdded);
         this._signalManager.connect(Main.statusIconDispatcher, 'status-icon-removed', this._onTrayIconRemoved);
         this._signalManager.connect(Main.statusIconDispatcher, 'before-redisplay', this._onBeforeRedisplay);
-        this._signalManager.connect(Main.systrayManager, "changed", Main.statusIconDispatcher.redisplay, true);
+        this._signalManager.connect(Main.systrayManager, "changed", Main.statusIconDispatcher.redisplay, Main.statusIconDispatcher);
     },
 
     on_panel_height_changed: function() {
