@@ -126,7 +126,7 @@ MyApplet.prototype = {
         this.inhibitSwitch = new InhibitSwitch();
         this.menu.addMenuItem(this.inhibitSwitch);
 
-        this.set_applet_icon_symbolic_name('starred');
+        this.set_applet_icon_symbolic_name('inhibit');
 
         this.set_applet_tooltip(_("Inhibit applet"))
 
