@@ -30,8 +30,6 @@ MyApplet.prototype = {
             this._screenSaverProxy = new ScreenSaver.ScreenSaverProxy();
             this.settings = new Settings.AppletSettings(this, "user@cinnamon.org", instance_id);
 
-            this.notif_settings = new Gio.Settings({ schema: "org.cinnamon.desktop.notifications" })
-
             this.set_applet_icon_symbolic_name("avatar-default");
                     
             this.menuManager = new PopupMenu.PopupMenuManager(this);
@@ -66,23 +64,7 @@ MyApplet.prototype = {
 
             this.menu.addActor(userBox);
 
-            this.notificationsSwitch = new PopupMenu.PopupSwitchMenuItem(_("Notifications"), this._toggleNotifications);
-            this.notif_settings.connect('changed::display-notifications', Lang.bind(this, function() {
-                this.notificationsSwitch.setToggleState(this.notif_settings.get_boolean("display-notifications"));
-            }));
-            this.notificationsSwitch.connect('toggled', Lang.bind(this, function() {
-                this.notif_settings.set_boolean("display-notifications", this.notificationsSwitch.state);
-            }));
-
-            this.notificationsSwitch.setToggleState(this.notif_settings.get_boolean("display-notifications"));
-
-            this.menu.addMenuItem(this.notificationsSwitch);
-
             this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
-                                                           
-            this.menu.addAction(_("Account Details"), Lang.bind(this, function() {
-                Util.spawnCommandLine("cinnamon-settings user");
-            }));
 
             this.menu.addAction(_("System Settings"), Lang.bind(this, function() {
                 Util.spawnCommandLine("cinnamon-settings");
