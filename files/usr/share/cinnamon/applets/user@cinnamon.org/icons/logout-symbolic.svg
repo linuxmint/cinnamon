@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:xlink="http://www.w3.org/1999/xlink"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   id="svg7384"
+   height="16.024"
+   width="16"
+   version="1.1"
+   inkscape:version="0.48.4 r9939"
+   sodipodi:docname="logout-symbolic.svg">
+  <defs
+     id="defs10">
+    <linearGradient
+       x1="29.826593"
+       y1="51.954468"
+       x2="65.693901"
+       y2="51.954468"
+       id="linearGradient2947"
+       xlink:href="#StandardGradient-8"
+       gradientUnits="userSpaceOnUse"
+       gradientTransform="matrix(0,1,-1,0,183,0)" />
+    <linearGradient
+       x1="11.347495"
+       y1="5.999567"
+       x2="11.347495"
+       y2="16.013096"
+       id="StandardGradient-8"
+       gradientUnits="userSpaceOnUse"
+       gradientTransform="translate(-3,-2.9995677)">
+      <stop
+         id="stop3177-6"
+         style="stop-color:#000000;stop-opacity:0.86274511"
+         offset="0" />
+      <stop
+         id="stop3179-8"
+         style="stop-color:#000000;stop-opacity:0.47058824"
+         offset="1" />
+    </linearGradient>
+  </defs>
+  <sodipodi:namedview
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1"
+     objecttolerance="10"
+     gridtolerance="10"
+     guidetolerance="10"
+     inkscape:pageopacity="0"
+     inkscape:pageshadow="2"
+     inkscape:window-width="1920"
+     inkscape:window-height="1146"
+     id="namedview8"
+     showgrid="false"
+     inkscape:zoom="14.727908"
+     inkscape:cx="-2.7279323"
+     inkscape:cy="8.0120001"
+     inkscape:window-x="0"
+     inkscape:window-y="0"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="svg7384" />
+  <metadata
+     id="metadata90">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title>Gnome Symbolic Icon Theme</dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <title
+     id="title9167">Gnome Symbolic Icon Theme</title>
+  <path
+     inkscape:connector-curvature="0"
+     d="m 6.3165505,2.0029766 c -3.298358,0 -5.96838205,2.6834065 -5.96838205,5.9817656 0,3.2983548 2.67002405,5.9683808 5.96838205,5.9683808 2.713716,0 5.0116975,-1.804574 5.7408915,-4.2822446 l -1.819955,0 C 9.5817905,11.184004 8.0703115,12.240224 6.3165505,12.240224 c -2.352349,0 -4.255483,-1.903132 -4.255483,-4.2554818 0,-2.3523513 1.903134,-4.2688664 4.255483,-4.2688664 1.732761,0 3.226164,1.0412304 3.8941725,2.5292029 l 1.833337,0 C 11.298088,3.7910679 9.0111175,2.0029766 6.3165505,2.0029766 z m 6.8649815,3.8138772 0,1.2846745 -4.2688685,0 0,1.7128989 4.2688685,0 0,1.2846748 2.569349,-2.1277418 -2.569349,-2.1545064 z"
+     id="path2945"
+     style="fill:#bebebe;fill-opacity:1;display:inline" />
+</svg>

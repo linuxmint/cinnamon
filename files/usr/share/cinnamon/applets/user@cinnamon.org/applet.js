@@ -66,63 +66,79 @@ MyApplet.prototype = {
 
             this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
 
-            this.menu.addAction(_("System Settings"), Lang.bind(this, function() {
+            item = new PopupMenu.PopupIconMenuItem(_("System Settings"), "preferences-system", St.IconType.SYMBOLIC);
+            item.connect('activate', Lang.bind(this, function() {
                 Util.spawnCommandLine("cinnamon-settings");
             }));
+            this.menu.addMenuItem(item);
 
             this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
 
-            this.menu.addAction(_("Lock Screen"), Lang.bind(this, function() {
+            item = new PopupMenu.PopupIconMenuItem(_("Lock Screen"), "lock-screen", St.IconType.SYMBOLIC);
+            item.connect('activate', Lang.bind(this, function() {
                 let screensaver_settings = new Gio.Settings({ schema: "org.cinnamon.desktop.screensaver" });
-                let screensaver_dialog = Gio.file_new_for_path("/usr/bin/cinnamon-screensaver-command");    
+                let screensaver_dialog = Gio.file_new_for_path("/usr/bin/cinnamon-screensaver-command");
                 if (screensaver_dialog.query_exists(null)) {
-                    if (screensaver_settings.get_boolean("ask-for-away-message")) {                                    
+                    if (screensaver_settings.get_boolean("ask-for-away-message")) {
                         Util.spawnCommandLine("cinnamon-screensaver-lock-dialog");
                     }
                     else {
                         Util.spawnCommandLine("cinnamon-screensaver-command --lock");
                     }
                 }
-                else {                    
+                else {
                     this._screenSaverProxy.LockRemote();
-                }       
+                }
             }));
+            this.menu.addMenuItem(item);
 
             if (GLib.getenv("XDG_SEAT_PATH")) {
                 // LightDM
-                this.menu.addAction(_("Switch User"), Lang.bind(this, function() {
+                item = new PopupMenu.PopupIconMenuItem(_("Switch User"), "switch-user", St.IconType.SYMBOLIC);
+                item.connect('activate', Lang.bind(this, function() {
                     Util.spawnCommandLine("cinnamon-screensaver-command --lock");
                     Util.spawnCommandLine("dm-tool switch-to-greeter");
                 }));
+                this.menu.addMenuItem(item);
 
-                this.menu.addAction(_("Guest Session"), Lang.bind(this, function() {
+                item = new PopupMenu.PopupIconMenuItem(_("Guest Session"), "guest-session", St.IconType.SYMBOLIC);
+                item.connect('activate', Lang.bind(this, function() {
                     Util.spawnCommandLine("cinnamon-screensaver-command --lock");
                     Util.spawnCommandLine("dm-tool switch-to-guest");
                 }));
+                this.menu.addMenuItem(item);
             }
             else if (GLib.file_test("/usr/bin/mdmflexiserver", GLib.FileTest.EXISTS)) {
-                // MDM                
-                this.menu.addAction(_("Switch User"), Lang.bind(this, function() {
+                // MDM
+                item = new PopupMenu.PopupIconMenuItem(_("Switch User"), "switch-user", St.IconType.SYMBOLIC);
+                item.connect('activate', Lang.bind(this, function() {
                     Util.spawnCommandLine("mdmflexiserver");
                 }));
+                this.menu.addMenuItem(item);
             }
             else if (GLib.file_test("/usr/bin/gdmflexiserver", GLib.FileTest.EXISTS)) {
                 // GDM
-                this.menu.addAction(_("Switch User"), Lang.bind(this, function() {
+                item = new PopupMenu.PopupIconMenuItem(_("Switch User"), "switch-user", St.IconType.SYMBOLIC);
+                item.connect('activate', Lang.bind(this, function() {
                     Util.spawnCommandLine("cinnamon-screensaver-command --lock");
                     Util.spawnCommandLine("gdmflexiserver");
                 }));
+                this.menu.addMenuItem(item);
             }
 
-            this.menu.addAction(_("Log Out..."), Lang.bind(this, function() {
+            item = new PopupMenu.PopupIconMenuItem(_("Log Out..."), "logout", St.IconType.SYMBOLIC);
+            item.connect('activate', Lang.bind(this, function() {
                 this._session.LogoutRemote(0);
             }));
+            this.menu.addMenuItem(item);
 
             this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
 
-            this.menu.addAction(_("Power Off..."), Lang.bind(this, function() {
+            item = new PopupMenu.PopupIconMenuItem(_("Power Off..."), "shutdown", St.IconType.SYMBOLIC);
+            item.connect('activate', Lang.bind(this, function() {
                 this._session.ShutdownRemote();
             }));
+            this.menu.addMenuItem(item);
 
             this._user = AccountsService.UserManager.get_default().get_user(GLib.get_user_name());
             this._userLoadedId = this._user.connect('notify::is_loaded', Lang.bind(this, this._onUserChanged));
