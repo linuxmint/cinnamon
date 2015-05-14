@@ -131,7 +131,7 @@ MyApplet.prototype = {
         this.set_applet_tooltip(_("Inhibit applet"))
 
         this.notif_settings = new Gio.Settings({ schema: "org.cinnamon.desktop.notifications" })
-        this.notificationsSwitch = new PopupMenu.PopupSwitchMenuItem(_("Disable notifications"), this._toggleNotifications);
+        this.notificationsSwitch = new PopupMenu.PopupSwitchMenuItem(_("Disable notifications"), !this.notif_settings.get_boolean("display-notifications"));
 
         this.notif_settings.connect('changed::display-notifications', Lang.bind(this, function() {
             this.notificationsSwitch.setToggleState(!this.notif_settings.get_boolean("display-notifications"));
@@ -139,7 +139,6 @@ MyApplet.prototype = {
         this.notificationsSwitch.connect('toggled', Lang.bind(this, function() {
             this.notif_settings.set_boolean("display-notifications", !this.notificationsSwitch.state);
         }));
-        this.notificationsSwitch.setToggleState(!this.notif_settings.get_boolean("display-notifications"));
 
         this.menu.addMenuItem(this.notificationsSwitch);
     },
