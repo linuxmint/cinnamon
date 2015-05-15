@@ -70,7 +70,10 @@ class Module:
         self.settings.bind(GTK_RECENT_MAX_AGE, self.spinner, "value", Gio.SettingsBindFlags.DEFAULT)
 
     def unbind_spinner(self):
-        Gio.Settings.unbind(hash(self.spinner), "value")
+        try:
+            Gio.Settings.unbind(self.spinner, "value")
+        except:
+            Gio.Settings.unbind(hash(self.spinner), "value")
 
     def on_indefinite_toggled(self, widget, gparam):
         active = widget.get_active()
