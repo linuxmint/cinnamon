@@ -240,8 +240,6 @@ Keyboard.prototype = {
         this._keyboard = null;
         this.actor.destroy();
         this.actor = null;
-
-        this._destroySource();
     },
 
     _setupKeyboard: function(show) {
@@ -264,13 +262,11 @@ Keyboard.prototype = {
         // this means enforcing LTR for all locales.
         this.actor.text_direction = Clutter.TextDirection.LTR;
 
-        this._keyboardNotifyId = this._keyboard.connect('notify::active-group', Lang.bind(this, this._onGroupChanged));
-        this._focusNotifyId = global.stage.connect('notify::key-focus', Lang.bind(this, this._onKeyFocusChanged));
+        //this._keyboardNotifyId = this._keyboard.connect('notify::active-group', Lang.bind(this, this._onGroupChanged));
+        //this._focusNotifyId = global.stage.connect('notify::key-focus', Lang.bind(this, this._onKeyFocusChanged));
 
         if (show)
             this.show();
-        else
-            this._createSource();
     },
 
     _onKeyFocusChanged: function () {
@@ -315,35 +311,6 @@ Keyboard.prototype = {
         this._setActiveLayer();
     },
 
-    _getTrayIcon: function () {
-        let trayButton = new St.Button ({ label: _("tray"),
-                                          style_class: 'keyboard-key' });
-        trayButton.key_width = 1;
-        trayButton.connect('button-press-event', Lang.bind(this, function () {
-            if (Main.messageTray) Main.messageTray.toggle();
-        }));
-
-        Main.overview.connect('showing', Lang.bind(this, function () {
-            trayButton.reactive = false;
-            trayButton.add_style_pseudo_class('grayed');
-        }));
-        Main.overview.connect('hiding', Lang.bind(this, function () {
-            trayButton.reactive = true;
-            trayButton.remove_style_pseudo_class('grayed');
-        }));
-
-        Main.expo.connect('showing', Lang.bind(this, function () {
-            trayButton.reactive = false;
-            trayButton.add_style_pseudo_class('grayed');
-        }));
-        Main.expo.connect('hiding', Lang.bind(this, function () {
-            trayButton.reactive = true;
-            trayButton.remove_style_pseudo_class('grayed');
-        }));
-
-        return trayButton;
-    },
-
     _addRows : function (keys, layout) {
         let keyboard_row = new St.BoxLayout();
         for (let i = 0; i < keys.length; ++i) {
@@ -362,9 +329,6 @@ Keyboard.prototype = {
                     left_box.add(button.actor);
                 if (key.name == 'Caribou_Prefs') {
                     key.connect('key-released', Lang.bind(this, this.hide));
-
-                    // Add new key for hiding message tray
-                    right_box.add(this._getTrayIcon());
                 }
             }
             keyboard_row.add(left_box, { expand: true, x_fill: false, x_align: St.Align.START });
@@ -381,7 +345,6 @@ Keyboard.prototype = {
                 this._numOfVertKeys = rows.length;
             this._addRows(row.get_columns(), layout);
         }
-
     },
 
     _redraw: function () {
@@ -454,31 +417,13 @@ Keyboard.prototype = {
         this._current_page.show();
     },
 
-    _createSource: function () {
-        if (this._source == null) {
-            this._source = new KeyboardSource(this);
-            this._source.setTransient(true);
-            if (Main.messageTray) Main.messageTray.add(this._source);
-        }
-    },
-
-    _destroySource: function () {
-        if (this._source) {
-            this._source.destroy();
-            this._source = null;
-        }
-    },
-
     show: function () {
         this._redraw();
-
         Main.layoutManager.showKeyboard();
-        this._destroySource();
     },
 
     hide: function () {
         Main.layoutManager.hideKeyboard();
-        this._createSource();
     },
 
     _moveTemporarily: function () {
@@ -536,39 +481,5 @@ Keyboard.prototype = {
 
     get Name() {
         return 'cinnamon';
-    }
-};
-
-function KeyboardSource() {
-    this._init.apply(this, arguments);
-}
-
-KeyboardSource.prototype = {
-    __proto__: MessageTray.Source.prototype,
-
-    _init: function(keyboard) {
-        this._keyboard = keyboard;
-        MessageTray.Source.prototype._init.call(this, _("Keyboard"));
-
-        this._setSummaryIcon(this.createNotificationIcon());
-    },
-
-    createNotificationIcon: function() {
-        return new St.Icon({ icon_name: 'input-keyboard',
-                             icon_type: St.IconType.SYMBOLIC,
-                             icon_size: this.ICON_SIZE });
-    },
-
-     handleSummaryClick: function() {
-        let event = Clutter.get_current_event();
-        if (event.type() != Clutter.EventType.BUTTON_RELEASE)
-            return false;
-
-        this.open();
-        return true;
-    },
-
-    open: function() {
-        this._keyboard.show();
     }
 };
