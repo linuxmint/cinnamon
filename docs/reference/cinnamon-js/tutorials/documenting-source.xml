@@ -152,7 +152,7 @@
         Links to other objects can be done with a <code>#Hash</code>. If you are linking to an object within the same file, you may omit the namespace, eg. using <code>#Applet</code> in <code>Applet.AppletContextMenu</code>. However, if it is from a different file, the namespace must be included.
       </listitem>
       <listitem>
-        Links to functions and properties within the same object can be donce with a <code>%percentage sign</code>. The inclusion of <code>this.</code> is optional, ie. you can refer to them using either <code>%this.prop</code> or <code>%prop</code>. If there are functions and properties that take the same name, the function will be linked to (because I had to pick one to have priority).
+        Links to functions and properties within the same object can be donce with a <code>%percentage sign</code>. The inclusion of <code>this.</code> is optional, ie. you can refer to them using either <code>%this.prop</code> or <code>%prop</code>. The brackets after a function are also optional, eg. <code>this.hide()</code> and <code>this.hide</code> are both acceptable. If there are functions and properties that take the same name, the property will be linked to, unless the name ends with <code>()</code>, in which case it will always be a function.
       </listitem>
       <listitem>
         Code blocks can be enclosed in descriptions as follows:

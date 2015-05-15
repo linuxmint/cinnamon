@@ -50,14 +50,15 @@ def markup(line, obj):
         prop_names = [x.name for x in obj.object.properties]
 
         ln_res = re.sub('^this\.', '', res)
+        ln_res = re.sub('\(\)$', '', ln_res)
 
-        if ln_res in func_names:
-            return '<link linkend="cinnamon-js-{prefix}-{ln_res}"><code>{res}</code></link>'.format(
+        if ln_res in prop_names and not res.endswith("()"):
+            return '<link linkend="cinnamon-js-{prefix}--{ln_res}"><code>{res}</code></link>'.format(
                     prefix = obj.object.prefix,
                     res = res,
                     ln_res = ln_res)
-        elif ln_res in prop_names:
-            return '<link linkend="cinnamon-js-{prefix}--{ln_res}"><code>{res}</code></link>'.format(
+        elif ln_res in func_names:
+            return '<link linkend="cinnamon-js-{prefix}-{ln_res}"><code>{res}</code></link>'.format(
                     prefix = obj.object.prefix,
                     res = res,
                     ln_res = ln_res)
