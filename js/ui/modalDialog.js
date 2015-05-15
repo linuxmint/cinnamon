@@ -332,7 +332,7 @@ ModalDialog.prototype = {
      *
      * Drop modal status without closing the dialog; this makes the
      * dialog insensitive as well, so it needs to be followed shortly
-     * by either a close() or a pushModal()
+     * by either a %close() or a %pushModal()
      */
     popModal: function(timestamp) {
         if (!this._hasModal)
@@ -382,7 +382,7 @@ ModalDialog.prototype = {
      * @timestamp (int): (optional) timestamp optionally used to associate the
      * call with a specific user initiated event
      *
-     * This method is like close, but fades the dialog out much slower,
+     * This method is like %close(), but fades the dialog out much slower,
      * and leaves the lightbox in place. Once in the faded out state,
      * the dialog can be brought back by an open call, or the lightbox
      * can be dismissed by a close call.
@@ -390,6 +390,7 @@ ModalDialog.prototype = {
      * The main point of this method is to give some indication to the user
      * that the dialog reponse has been acknowledged but will take a few
      * moments before being processed.
+     *
      * e.g., if a user clicked "Log Out" then the dialog should go away
      * imediately, but the lightbox should remain until the logout is
      * complete.
@@ -639,8 +640,8 @@ NotifyDialog.prototype = {
  * guide them how to add a panel.
  *
  * This does not destroy itself, and the caller of this is responsible for
- * destroying it after usage (via the `destroy` function), or hiding it with
- * `hide` for later reuse.
+ * destroying it after usage (via the %destroy function), or hiding it with
+ * %hide for later reuse.
  */
 function InfoOSD(text) {
     this._init(text);
@@ -666,7 +667,8 @@ InfoOSD.prototype = {
 
     /**
      * show:
-     * @monitorIndex (int): (optional) Monitor to display OSD on. Default is primary monitor
+     * @monitorIndex (int): (optional) Monitor to display OSD on. Default is
+     * primary monitor
      * 
      * Shows the OSD at the center of monitor @monitorIndex. Shows at the
      * primary monitor if not specified.
