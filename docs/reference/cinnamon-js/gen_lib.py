@@ -35,7 +35,36 @@ def markup(line, obj):
     line = re.sub('`([^`]*)`', '<code>\g<1></code>', line)
     line = re.sub('\*\*([^*]*)\*\*', '<emphasis role="strong">\g<1></emphasis>', line)
     line = re.sub('\*([^*]*)\*', '<emphasis>\g<1></emphasis>', line)
-    line = re.sub('#([\w.]*)', lambda x: '<link linkend="{link}"><code>{name}</code></link>'.format(link = get_type_link(x.group(1), obj.file), name = x.group(1)), line)
+
+    def format_type_link(match):
+        res = match.group(1)
+        return '<link linkend="{link}"><code>{name}</code></link>'.format(
+                link = get_type_link(res, obj.file),
+                name = res)
+
+    line = re.sub('#([\w.]*)', format_type_link, line)
+
+    def format_func_link(match):
+        res = match.group(1)
+        func_names = [x.name for x in obj.object.functions]
+        prop_names = [x.name for x in obj.object.properties]
+
+        ln_res = re.sub('^this\.', '', res)
+
+        if ln_res in func_names:
+            return '<link linkend="cinnamon-js-{prefix}-{ln_res}"><code>{res}</code></link>'.format(
+                    prefix = obj.object.prefix,
+                    res = res,
+                    ln_res = ln_res)
+        elif ln_res in prop_names:
+            return '<link linkend="cinnamon-js-{prefix}--{ln_res}"><code>{res}</code></link>'.format(
+                    prefix = obj.object.prefix,
+                    res = res,
+                    ln_res = ln_res)
+        else:
+            return '<code>{name}</code>'.format(name = res)
+
+    line = re.sub('%([\w.\(\)]*)', format_func_link, line)
 
     return line
 
@@ -111,7 +140,7 @@ class JSThing():
                 list_buffer = []
                 in_list = False
 
-            line = markup(line, self.file)
+            line = markup(line, self)
             description += '<para>{0}</para>'.format(line)
 
         if in_list:
@@ -140,6 +169,7 @@ class JSFunction(JSThing):
     def set_return(self, retval):
         self.return_value = retval
         retval.file = self.file
+        retval.obj = self.object
 
 class JSProperty(JSThing):
     def __init__ (self, name, arg_type, desc):
@@ -161,6 +191,7 @@ class JSFile(JSThing):
         self.objects = []
         self.functions = []
         self.file = self
+        self.object = self
 
     def is_interesting(self):
         return len(self.functions) + len(self.properties) + len(self.description) > 0
@@ -168,6 +199,7 @@ class JSFile(JSThing):
     def add_function(self, func):
         self.functions.append(func)
         func.file = self
+        func.object = self
 
     def add_object(self, obj):
         self.objects.append(obj)
@@ -189,10 +221,12 @@ class JSObject(JSThing):
         self.prefix = None
         self.functions = []
         self.properties = []
+        self.object = self
 
     def add_function(self, func):
         self.functions.append(func)
         func.file = self.file
+        func.object = self
 
     def set_inherit(self, inherit):
         self.inherit = inherit
