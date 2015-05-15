@@ -24,13 +24,13 @@ const DESKLET_DESTROY_TIME = 0.5;
 
 /**
  * #Desklet
+ * @short_description: Base desklet class to be inherited
  * @metadata (dictionary): Metadata of desklet
  * @actor (St.BoxLayout): Actor of desklet
  * @content (St.Bin): The actor containing the content of the actor
  * @instance_id (int): Instance id of the desklet
  *
- * #Desklet is a base class in which other desklets
- * can inherit
+ * #Desklet is a base class in which other desklets can inherit
  */
 function Desklet(metadata, desklet_id){
     this._init(metadata, desklet_id);

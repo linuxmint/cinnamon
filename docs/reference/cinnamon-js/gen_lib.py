@@ -65,7 +65,7 @@ def markup(line, obj):
         else:
             return '<code>{name}</code>'.format(name = res)
 
-    line = re.sub('%([\w.\(\)]*)', format_func_link, line)
+    line = re.sub('%((this.)?[\w]*\(?\)?)', format_func_link, line)
 
     return line
 
@@ -158,6 +158,7 @@ class JSThing():
         else:
             self.properties.append(prop)
         prop.file = self.file
+        prop.object = self.object
 
 class JSFunction(JSThing):
     def __init__ (self, name):
@@ -463,10 +464,11 @@ def write_sgml(files, version):
 
 def create_file(obj):
     file_obj = open('{0}/{1}.xml'.format(obj.directory, obj.name), 'w')
+    short_description = obj.short_description.description.replace("\n", " ").strip()
     file_obj.write(FILE_FORMAT.format(
         prefix = obj.prefix,
         name = obj.name.replace("-", "."),
-        short_description = markup(obj.short_description.description, obj),
+        short_description = markup(short_description, obj),
         func_header = get_function_header(obj),
         prop_header = get_properties_header(obj),
         hierarchy = get_hierarchy(obj),

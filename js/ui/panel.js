@@ -1,5 +1,12 @@
-// -*- mode: js; js-indent-level: 4; indent-tabs-mode: nil -*-
-
+/**
+ * FILE:panel.js
+ * @short_description: The file responsible for managing panels
+ *
+ * This file is where everything about panels happens. #Main will create a
+ * #PanelManager object, which is responsible for creating and moving panels.
+ * There is also a %checkPanelUpgrade function used as a transition between the
+ * old panel settings and the new panel settings.
+ */
 const Cairo = imports.cairo;
 const Clutter = imports.gi.Clutter;
 const Lang = imports.lang;
