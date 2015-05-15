@@ -194,7 +194,6 @@ AppMenuButton.prototype = {
 
     _onDragBegin: function() {
         this._draggable._overrideY = this.actor.get_transformed_position()[1];
-        this.actor.hide();
         this._tooltip.hide();
         this._tooltip.preventShow = true;
     },
@@ -920,10 +919,11 @@ MyApplet.prototype = {
         if (!(source instanceof AppMenuButton))
             return DND.DragMotionResult.NO_DROP;
 
+        source.actor.hide();
         let children = this.actor.get_children();
 
         let pos = children.length;
-        while (--pos && x < children[pos].get_allocation_box().x1 + children[pos].width / 2);
+        while (--pos && x < children[pos].get_allocation_box().x1);
 
         this._dragPlaceholderPos = pos;
 
