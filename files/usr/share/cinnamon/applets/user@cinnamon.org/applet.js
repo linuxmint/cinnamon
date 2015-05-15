@@ -66,7 +66,7 @@ MyApplet.prototype = {
 
             this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
 
-            item = new PopupMenu.PopupIconMenuItem(_("System Settings"), "preferences-system", St.IconType.SYMBOLIC);
+            let item = new PopupMenu.PopupIconMenuItem(_("System Settings"), "preferences-system", St.IconType.SYMBOLIC);
             item.connect('activate', Lang.bind(this, function() {
                 Util.spawnCommandLine("cinnamon-settings");
             }));

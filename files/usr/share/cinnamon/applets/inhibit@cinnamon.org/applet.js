@@ -8,24 +8,27 @@ const GnomeSession = imports.misc.gnomeSession;
 
 const INHIBIT_IDLE_FLAG = 8; /* idle inhibit only */
 
-function InhibitSwitch() {
-    this._init.apply(this);
+function InhibitSwitch(applet) {
+    this._init(applet);
 }
 
 InhibitSwitch.prototype = {
     __proto__: PopupMenu.PopupBaseMenuItem.prototype,
 
-    _init: function(params) {
-        PopupMenu.PopupBaseMenuItem.prototype._init.call(this, params);
+    _init: function(applet) {
 
-        this.label = new St.Label({ text: _("Disable power management") });
+        this._applet = applet;
+
+        PopupMenu.PopupBaseMenuItem.prototype._init.call(this);
+
+        this.label = new St.Label({ text: _("Power management") });
 
         this._statusIcon = new St.Icon({ style_class: 'popup-menu-icon',
                                            icon_type: St.IconType.SYMBOLIC,
                                            icon_name: "dialog-warning-symbolic",
                                           reactive: true});
 
-        this._switch = new PopupMenu.Switch(false);
+        this._switch = new PopupMenu.Switch(true);
 
         this.addActor(this.label);
         this.addActor(this._statusIcon);
@@ -66,8 +69,18 @@ InhibitSwitch.prototype = {
 
     updateStatus: function(o) {
         this.sessionProxy.IsInhibitedRemote(INHIBIT_IDLE_FLAG, Lang.bind(this, function(is_inhibited) {
+            if (is_inhibited[0]) {
+                this._applet.set_applet_icon_symbolic_name('inhibit-active');
+                this._applet.set_applet_tooltip(_("Power management: inhibited"));
+            }
+            else {
+                this._applet.set_applet_icon_symbolic_name('inhibit');
+                this._applet.set_applet_tooltip(_("Power management: active"));
+            }
+
             if (is_inhibited[0] && !this.sessionCookie) {
-                this.tooltip.set_text(_("Another program is already disabling power management"));
+                this.tooltip.set_text(_("Power management is already inhibited by another program"));
+                this._applet.set_applet_tooltip(_("Power management: inhibited by another program"));
                 this._statusIcon.show();
             } else {
                 this.tooltip.set_text("");
@@ -77,7 +90,7 @@ InhibitSwitch.prototype = {
     },
 
     toggled: function(active) {
-        if (active && !this.sessionCookie) {
+        if (!active && !this.sessionCookie) {
             this.sessionProxy.InhibitRemote("inhibit@cinnamon.org",
                                             0,
                                             "prevent idle functions like screen blanking and dimming",
@@ -86,7 +99,7 @@ InhibitSwitch.prototype = {
                                                 this.sessionCookie = cookie;
                                                 this.updateStatus();
                                             }));
-        } else if (!active && this.sessionCookie) {
+        } else if (active && this.sessionCookie) {
             this.sessionProxy.UninhibitRemote(this.sessionCookie);
             this.sessionCookie = null;
             this.updateStatus();
@@ -123,21 +136,20 @@ MyApplet.prototype = {
         this.menu = new Applet.AppletPopupMenu(this, orientation);
         this.menuManager.addMenu(this.menu);
 
-        this.inhibitSwitch = new InhibitSwitch();
+        this.inhibitSwitch = new InhibitSwitch(this);
         this.menu.addMenuItem(this.inhibitSwitch);
 
         this.set_applet_icon_symbolic_name('inhibit');
-
         this.set_applet_tooltip(_("Inhibit applet"))
 
         this.notif_settings = new Gio.Settings({ schema: "org.cinnamon.desktop.notifications" })
-        this.notificationsSwitch = new PopupMenu.PopupSwitchMenuItem(_("Disable notifications"), !this.notif_settings.get_boolean("display-notifications"));
+        this.notificationsSwitch = new PopupMenu.PopupSwitchMenuItem(_("Notifications"), this.notif_settings.get_boolean("display-notifications"));
 
         this.notif_settings.connect('changed::display-notifications', Lang.bind(this, function() {
-            this.notificationsSwitch.setToggleState(!this.notif_settings.get_boolean("display-notifications"));
+            this.notificationsSwitch.setToggleState(this.notif_settings.get_boolean("display-notifications"));
         }));
         this.notificationsSwitch.connect('toggled', Lang.bind(this, function() {
-            this.notif_settings.set_boolean("display-notifications", !this.notificationsSwitch.state);
+            this.notif_settings.set_boolean("display-notifications", this.notificationsSwitch.state);
         }));
 
         this.menu.addMenuItem(this.notificationsSwitch);
