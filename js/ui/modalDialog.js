@@ -28,11 +28,33 @@ const State = {
     FADED_OUT: 4
 };
 
+/**
+ * #ModalDialog:
+ * @short_description: A generic object that displays a modal dialog
+ * @state (ModalDialog.State): The state of the modal dialog, which may be
+ * `ModalDialog.State.OPENED`, `CLOSED`, `OPENING`, `CLOSING` or `FADED_OUT`.
+ * @contentLayout (St.BoxLayout): The box containing the contents of the modal
+ * dialog (excluding the buttons)
+ *
+ * The #ModalDialog object is a generic popup dialog in Cinnamon. It can either
+ * be created directly and then manipulated afterwards, or used as a base class
+ * for more sophisticated modal dialog.
+ *
+ * For simple usage such as displaying a message, or asking for confirmation,
+ * the #ConfirmDialog and #NotifyDialog classes may be used instead.
+ */
 function ModalDialog() {
     this._init();
 }
 
 ModalDialog.prototype = {
+    /**
+     * _init:
+     * @params (JSON): parameters for the modal dialog. Options include
+     * @cinnamonReactive, which determines whether the modal dialog should
+     * block Cinnamon input, and @styleClass, which is the style class the
+     * modal dialog should use.
+     */
     _init: function(params) {
         params = Params.parse(params, { cinnamonReactive: false,
                                         styleClass: null });
@@ -100,10 +122,48 @@ ModalDialog.prototype = {
         this._savedKeyFocus = null;
     },
 
+    /**
+     * destroy:
+     *
+     * Destroys the modal dialog
+     */
     destroy: function() {
         this._group.destroy();
     },
 
+    /**
+     * setButtons:
+     * @buttons (array): the buttons to display in the modal dialog
+     *
+     * This sets the buttons in the modal dialog. The buttons is an array of
+     * JSON objects, each of which corresponds to one button.
+     *
+     * Each JSON object *must* contain @label and @action, which are the text
+     * displayed on the button and the callback function to use when the button
+     * is clicked respectively.
+     *
+     * Optional arguments include @focused, which determines whether the button
+     * is initially focused, and @key, which is a keybinding associated with
+     * the button press such that pressing the keybinding will have the same
+     * effect as clicking the button.
+     *
+     *
+     * An example usage is
+     * ```
+     * dialog.setButtons([
+     *     {
+     *         label: _("Cancel"),
+     *         action: Lang.bind(this, this.callback),
+     *         key: Clutter.Escape
+     *     },
+     *     {
+     *         label: _("OK"),
+     *         action: Lang.bind(this, this.destroy),
+     *         key: Clutter.Return
+     *     }
+     * ]);
+     * ```
+     */
     setButtons: function(buttons) {
         let hadChildren = this._buttonLayout.get_children() > 0;
 
@@ -221,6 +281,13 @@ ModalDialog.prototype = {
         this._initialKeyFocus = actor;
     },
 
+    /**
+     * open:
+     * @timestamp (int): (optional) timestamp optionally used to associate the
+     * call with a specific user initiated event
+     *
+     * Opens and displays the modal dialog.
+     */
     open: function(timestamp) {
         if (this.state == State.OPENED || this.state == State.OPENING)
             return true;
@@ -232,6 +299,13 @@ ModalDialog.prototype = {
         return true;
     },
 
+    /**
+     * close:
+     * @timestamp (int): (optional) timestamp optionally used to associate the
+     * call with a specific user initiated event
+     *
+     * Closes the modal dialog.
+     */
     close: function(timestamp) {
         if (this.state == State.CLOSED || this.state == State.CLOSING)
             return;
@@ -252,9 +326,15 @@ ModalDialog.prototype = {
                          });
     },
 
-    // Drop modal status without closing the dialog; this makes the
-    // dialog insensitive as well, so it needs to be followed shortly
-    // by either a close() or a pushModal()
+    /**
+     * popModal:
+     * @timestamp (int): (optional) timestamp optionally used to associate the
+     * call with a specific user initiated event
+     *
+     * Drop modal status without closing the dialog; this makes the
+     * dialog insensitive as well, so it needs to be followed shortly
+     * by either a close() or a pushModal()
+     */
     popModal: function(timestamp) {
         if (!this._hasModal)
             return;
@@ -272,6 +352,14 @@ ModalDialog.prototype = {
             this._eventBlocker.raise_top();
     },
 
+    /**
+     * pushModal:
+     * @timestamp (int): (optional) timestamp optionally used to associate the
+     * call with a specific user initiated event
+     *
+     * Pushes the modal to the modal stack so that it grabs the required
+     * inputs.
+     */
     pushModal: function (timestamp) {
         if (this._hasModal)
             return true;
@@ -290,17 +378,23 @@ ModalDialog.prototype = {
         return true;
     },
 
-    // This method is like close, but fades the dialog out much slower,
-    // and leaves the lightbox in place. Once in the faded out state,
-    // the dialog can be brought back by an open call, or the lightbox
-    // can be dismissed by a close call.
-    //
-    // The main point of this method is to give some indication to the user
-    // that the dialog reponse has been acknowledged but will take a few
-    // moments before being processed.
-    // e.g., if a user clicked "Log Out" then the dialog should go away
-    // imediately, but the lightbox should remain until the logout is
-    // complete.
+    /**
+     * _fadeOutDialog:
+     * @timestamp (int): (optional) timestamp optionally used to associate the
+     * call with a specific user initiated event
+     *
+     * This method is like close, but fades the dialog out much slower,
+     * and leaves the lightbox in place. Once in the faded out state,
+     * the dialog can be brought back by an open call, or the lightbox
+     * can be dismissed by a close call.
+     *
+     * The main point of this method is to give some indication to the user
+     * that the dialog reponse has been acknowledged but will take a few
+     * moments before being processed.
+     * e.g., if a user clicked "Log Out" then the dialog should go away
+     * imediately, but the lightbox should remain until the logout is
+     * complete.
+     */
     _fadeOutDialog: function(timestamp) {
         if (this.state == State.CLOSED || this.state == State.CLOSING)
             return;
@@ -322,13 +416,28 @@ ModalDialog.prototype = {
 };
 Signals.addSignalMethods(ModalDialog.prototype);
 
+/**
+ * #SpicesAboutDialog:
+ * @short_description: A dialog for a spice "about" window
+ *
+ * This is a window that displays an about dialog for Cinnamon "spices".
+ *
+ * This is usually used by Cinnamon itself via an "About" right click menu, but
+ * individual spices can also use this to open an about dialog if they wish.
+ */
 function SpicesAboutDialog(metadata, type) {
     this._init(metadata, type);
 }
 
 SpicesAboutDialog.prototype = {
     __proto__: ModalDialog.prototype,
-    
+
+    /**
+     * _init:
+     * metadata (JSON): the metadata object of the spice
+     * type (string): the type of the spice, which should be "applet",
+     * "desklet" or "extension"
+     */
     _init: function(metadata, type) {
         try {
             ModalDialog.prototype._init.call(this, {});
@@ -445,10 +554,11 @@ SpicesAboutDialog.prototype = {
 
 /**
  * #ConfirmDialog
+ * @short_description: A simple dialog with a "Yes" and "No" button.
  * @callback (function): Callback when "Yes" is clicked
  *
- * A confirmation dialog that calls @callback if user clicks yes. Destroys
- * itself afterwards
+ * A confirmation dialog that calls @callback and then destroys itself if user
+ * clicks "Yes". If the user clicks "No", the dialog simply destroys itself.
  *
  * Inherits: ModalDialog.ModalDialog
  */
@@ -491,6 +601,8 @@ ConfirmDialog.prototype = {
 
 /**
  * #NotifyDialog
+ * @short_description: A simple dialog that presents a message with an "OK"
+ * button.
  *
  * A notification dialog that displays a message to user. Destroys itself after
  * user clicks "OK"
@@ -525,9 +637,17 @@ NotifyDialog.prototype = {
 
 /**
  * #InfoOSD
+ * @short_description: An OSD that displays information to users
  * @actor (St.BoxLayout): actor of the OSD
  *
- * Creates an OSD to show information to user at the center of the screen. Can display texts or general St.Widgets.
+ * Creates an OSD to show information to user at the center of the screen. Can
+ * display texts or a general #St.Widget. This is useful as "hints" to the
+ * user, eg. the popup shown when the user clicks the "Add panel" button to
+ * guide them how to add a panel.
+ *
+ * This does not destroy itself, and the caller of this is responsible for
+ * destroying it after usage (via the `destroy` function), or hiding it with
+ * `hide` for later reuse.
  */
 function InfoOSD(text) {
     this._init(text);
