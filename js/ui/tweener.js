@@ -10,6 +10,7 @@ const Tweener = imports.tweener.tweener;
 
 /**
  * FILE:tweener.js
+ * @short_description: File providing tweening functions
  *
  * This is a wrapper around imports.tweener.tweener that adds a bit of
  * Clutter integration and some additional callbacks:
@@ -402,6 +403,7 @@ function registerSpecialPropertySplitter(name, splitFunction, parameters) {
 
 /**
  * #ClutterFrameTicker:
+ * @short_description: Object used internally for clutter animations
  *
  * The 'FrameTicker' object is an object used to feed new frames to
  * Tweener so it can update values and redraw. The default frame

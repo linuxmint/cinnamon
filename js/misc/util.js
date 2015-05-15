@@ -1,4 +1,13 @@
-// -*- mode: js; js-indent-level: 4; indent-tabs-mode: nil -*-
+/**
+ * FILE:util.js
+ * @short_description: File providing certain utility functions
+ *
+ * This file includes certain useful utility functions such as running external
+ * commands. It is generally a good idea to use the functions defined here
+ * instead of tapping into GLib directly since this adds some wrappers around
+ * the functions that make them more Cinnamon-friendly and provides helpful
+ * error messages.
+ */
 
 const GLib = imports.gi.GLib;
 
