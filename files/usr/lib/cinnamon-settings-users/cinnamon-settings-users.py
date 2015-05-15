@@ -634,7 +634,12 @@ class Module:
             self.menu.popup(None, None, self.popup_menu_below_button, self.face_button, event.button, event.time)
             self.menu.show_all()
 
-    def popup_menu_below_button (self, menu, widget):  
+    def popup_menu_below_button (self, *args):
+        # the introspection for GtkMenuPositionFunc seems to change with each Gtk version,
+        # this is a workaround to make sure we get the menu and the widget
+        menu = args[0]
+        widget = args[-1]
+
         # here I get the coordinates of the button relative to
         # window (self.window)
         button_x, button_y = widget.get_allocation().x, widget.get_allocation().y

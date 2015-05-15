@@ -1035,7 +1035,11 @@ class TweenChooser(Gtk.Button):
             print detail
 
     #Imports from PictureChooserButton
-    def popup_menu_below_button (self, menu, widget):
+    def popup_menu_below_button (self, *args):
+        # the introspection for GtkMenuPositionFunc seems to change with each Gtk version,
+        # this is a workaround to make sure we get the menu and the widget
+        menu = args[0]
+        widget = args[-1]
         window = widget.get_window()
         screen = window.get_screen()
         monitor = screen.get_monitor_at_window(window)
