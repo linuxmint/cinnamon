@@ -18,25 +18,6 @@ const KEYBOARD_TYPE = 'keyboard-type';
 const A11Y_APPLICATIONS_SCHEMA = 'org.cinnamon.desktop.a11y.applications';
 const SHOW_KEYBOARD = 'screen-keyboard-enabled';
 
-// Key constants taken from Antler
-// FIXME: ought to be moved into libcaribou
-const PRETTY_KEYS = {
-    'BackSpace': '\u232b',
-    'space': ' ',
-    'Return': '\u23ce',
-    'Caribou_Prefs': '\u2328',
-    'Caribou_ShiftUp': '\u2b06',
-    'Caribou_ShiftDown': '\u2b07',
-    'Caribou_Emoticons': '\u263a',
-    'Caribou_Symbols': '123',
-    'Caribou_Symbols_More': '{#*',
-    'Caribou_Alpha': 'Abc',
-    'Tab': 'Tab',
-    'Escape': 'Esc',
-    'Control_L': 'Ctrl',
-    'Alt_L': 'Alt'
-};
-
 const CaribouKeyboardIface = 
     "<node> \
         <interface name='org.gnome.Caribou.Keyboard'> \
@@ -101,17 +82,7 @@ Key.prototype = {
     },
 
     _makeKey: function () {
-        let label = this._key.name;
-
-        if (label.length > 1) {
-            let pretty = PRETTY_KEYS[label];
-            if (pretty)
-                label = pretty;
-            else
-                label = this._getUnichar(this._key);
-        }
-
-        label = GLib.markup_escape_text(label, -1);
+        let label = GLib.markup_escape_text(this._key.label, -1);
         let button = new St.Button ({ label: label,
                                       style_class: 'keyboard-key' });
 
@@ -204,8 +175,9 @@ Keyboard.prototype = {
         this._impl.export(Gio.DBus.session, '/org/gnome/Caribou/Keyboard');
 
         this.actor = null;
+        this._focusInExtendedKeys = false;
 
-        this._timestamp = global.get_current_time();
+        this._timestamp = global.display.get_current_time_roundtrip();
         Main.layoutManager.connect('monitors-changed', Lang.bind(this, this._redraw));
 
         this._keyboardSettings = new Gio.Settings({ schema: KEYBOARD_SCHEMA });
@@ -217,6 +189,20 @@ Keyboard.prototype = {
 
     init: function () {
         this._redraw();
+    },
+
+    // _compareTimestamp:
+    //
+    // Compare two timestamps taking into account
+    // CURRENT_TIME (0)
+    _compareTimestamp: function(one, two) {
+        if (one == two)
+            return 0;
+        if (one == Clutter.CURRENT_TIME)
+            return 1;
+        if (two == Clutter.CURRENT_TIME)
+            return -1;
+        return one - two;
     },
 
     _settingsChanged: function (settings, key) {
@@ -273,6 +259,11 @@ Keyboard.prototype = {
 
         this._addKeys();
 
+        // Keys should be layout according to the group, not the
+        // locale; as Caribou already provides the expected layout,
+        // this means enforcing LTR for all locales.
+        this.actor.text_direction = Clutter.TextDirection.LTR;
+
         this._keyboardNotifyId = this._keyboard.connect('notify::active-group', Lang.bind(this, this._onGroupChanged));
         this._focusNotifyId = global.stage.connect('notify::key-focus', Lang.bind(this, this._onKeyFocusChanged));
 
@@ -287,7 +278,9 @@ Keyboard.prototype = {
 
         // Showing an extended key popup and clicking a key from the extended keys
         // will grab focus, but ignore that
-        if (focus && (focus._extended_keys || (focus._key && focus._key.extended_key)))
+        let extendedKeysWereFocused = this._focusInExtendedKeys;
+        this._focusInExtendedKeys = focus && (focus._extended_keys || focus.extended_key);
+        if (this._focusInExtendedKeys || extendedKeysWereFocused)
             return;
 
         let time = global.get_current_time();
@@ -507,10 +500,11 @@ Keyboard.prototype = {
         if (!this._enableKeyboard)
             return;
 
-        if (timestamp - this._timestamp < 0)
+        if (this._compareTimestamp(timestamp, this._timestamp) < 0)
             return;
 
-        this._timestamp = timestamp;
+        if (timestamp != Clutter.CURRENT_TIME)
+            this._timestamp = timestamp;
         this.show();
     },
 
@@ -518,10 +512,11 @@ Keyboard.prototype = {
         if (!this._enableKeyboard)
             return;
 
-        if (timestamp - this._timestamp < 0)
+        if (this._compareTimestamp(timestamp, this._timestamp) < 0)
             return;
 
-        this._timestamp = timestamp;
+        if (timestamp != Clutter.CURRENT_TIME)
+            this._timestamp = timestamp;
         this.hide();
     },
 
