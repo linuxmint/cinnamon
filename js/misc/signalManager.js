@@ -11,23 +11,23 @@ const Lang = imports.lang;
  * signals connected, and each signal is represented by an `[object, signalId,
  * callback]` triplet.
  *
- * The @SignalManager is a convenience object for managing signals. If you use
+ * The #SignalManager is a convenience object for managing signals. If you use
  * this to connect signals, you can later disconnect them by signal name or
  * just disconnect everything! No need to keep track of those annoying
  * @signalIds by yourself anymore!
  *
- * A common use case is to use the signalManager to connect to signals and then
+ * A common use case is to use the #SignalManager to connect to signals and then
  * use the @disconnectAllSignals function when the object is destroyed, to
  * avoid keeping track of all the signals manually.
  *
  * However, this is not always needed. If you are connecting to a signal of
  * your actor, the signals are automatically disconnected when you destroy the
- * actor. Using the SignalManager to disconnect all signals is only needed when
+ * actor. Using the #SignalManager to disconnect all signals is only needed when
  * connecting to objects that persists after the object disappears.
  *
  * Every Javascript object should have its own @SignalManager, and use it to
  * connect signals of all objects it takes care of. For example, the panel will
- * have one `SignalManger` object, which manages all signals from `GSettings`,
+ * have one #SignalManger object, which manages all signals from #GSettings,
  * `global.screen` etc.
  *
  * An example usage is as follows:
@@ -59,7 +59,7 @@ function SignalManager(object) {
 SignalManager.prototype = {
     /**
      * _init:
-     * @object (Object): the object owning the @SignalManager (usually @this)
+     * @object (Object): the object owning the #SignalManager (usually @this)
      */
     _init: function(object) {
         this.object = object;
@@ -186,7 +186,7 @@ SignalManager.prototype = {
     /**
      * disconnectAllSignals:
      *
-     * Disconnects *all signals* managed by the signal manager. This is useful
+     * Disconnects *all signals* managed by the #SignalManager. This is useful
      * in the @destroy function of objects.
      */
     disconnectAllSignals: function() {
