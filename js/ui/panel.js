@@ -4,6 +4,7 @@ const Cairo = imports.cairo;
 const Clutter = imports.gi.Clutter;
 const Lang = imports.lang;
 const Mainloop = imports.mainloop;
+const Meta = imports.gi.Meta;
 const Pango = imports.gi.Pango;
 const Cinnamon = imports.gi.Cinnamon;
 const St = imports.gi.St;
@@ -1576,9 +1577,16 @@ Panel.prototype = {
 
         if (this._autohideSettings == "intel") {
             this._signalManager.connect(global.display, "notify::focus-window", this._onFocusChanged);
+            /* focus-window signal is emitted when the workspace change
+             * animation starts. When the animation ends, we do the position
+             * check again because the windows have moved. We cannot use
+             * _onFocusChanged because _onFocusChanged does nothing when there
+             * is no actual focus change. */
+            this._signalManager.connect(global.window_manager, "switch-workspace-complete", this._updatePanelVisibility);
             this._onFocusChanged();
         } else {
             this._signalManager.disconnect("notify::focus-window");
+            this._signalManager.disconnect("switch-workspace-complete");
             this._signalManager.disconnect("position-changed");
             this._signalManager.disconnect("size-changed");
         }
@@ -1834,10 +1842,12 @@ Panel.prototype = {
             this._shouldShow = this._mouseEntered;
             break;
         default:
-            if (this._mouseEntered || !global.display.focus_window) {
+            if (this._mouseEntered || !global.display.focus_window ||
+                global.display.focus_window.get_window_type() == Meta.WindowType.DESKTOP) {
                 this._shouldShow = true;
                 break;
             }
+
             /* Calculate the y instead of getting the actor y since the
              * actor might be hidden*/
             let y = this.bottomPosition ?
