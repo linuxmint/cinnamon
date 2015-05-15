@@ -57,11 +57,13 @@ class Module:
         self.sidePage.stack.add_titled(page, "screensaver", _("Screensaver"))
         settings = page.add_section(_("Select screensaver"))
 
+        self.scrollWindow = Gtk.ScrolledWindow()
         self.tree_view = Gtk.TreeView()
         #                          uuid, name, description, path, type
         self.model = Gtk.ListStore(str,  str,  str,         str,  str)
         self.tree_view.set_model(self.model)
         self.tree_view.set_tooltip_column(2)
+        self.scrollWindow.set_min_content_height(140)
 
         renderer = Gtk.CellRendererText.new()
         renderer.set_property("xpad", 30)
@@ -74,7 +76,8 @@ class Module:
         self.tree_view.set_headers_visible(False)
         self.tree_view.connect("row-activated", self.on_row_activated)
         self.tree_view.set_activate_on_single_click(True)
-        settings.box.add(self.tree_view)
+        self.scrollWindow.add(self.tree_view)
+        settings.box.add(self.scrollWindow)
 
         self.socket_box = Gtk.Box()
         self.socket_box.override_background_color(Gtk.StateFlags.NORMAL, Gdk.RGBA(0, 0, 0, 1))
@@ -84,7 +87,7 @@ class Module:
         if self.current_name == "webkit@cinnamon.org":
             self.current_name = self.settings.get_string("screensaver-webkit-theme")
 
-        iter = self.model.append(["", "Blank Screen", "Blank Screen", "", "default"])
+        iter = self.model.append(["", _("Blank screen"), _("Blank screen"), "", "default"])
         if self.current_name == "":
             self.tree_view.get_selection().select_iter(iter)
             self.on_row_activated(self.tree_view, self.model.get_path(iter), None)
@@ -103,9 +106,6 @@ class Module:
             if not os.path.isdir(path):
                 continue
 
-            if os.path.basename(path.rstrip('/')) == "xscreensaver@cinnamon.org":
-                continue
-
             # Recurse inside if it is webkit
             if os.path.basename(path.rstrip('/')) == "webkit@cinnamon.org":
                 webkits = [os.path.join(path, x) for x in os.listdir(path)]
@@ -120,6 +120,14 @@ class Module:
 
                     self.parse_dir(theme, path, "webkit")
                 continue
+
+            if os.path.basename(path.rstrip('/')) == "xscreensaver@cinnamon.org":
+                if os.path.exists(os.path.join(path, 'main')):
+                    self.xscreensaver_executable = os.path.join(path, 'main')
+
+        if self.xscreensaver_executable is not None:
+            for theme in sorted(os.listdir("/usr/lib/xscreensaver")):
+                iter = self.model.append([theme, "Xscreensaver: %s" % theme.capitalize(), theme, theme, "xscreensaver"])
 
             self.parse_dir(path, path, "standalone")
 
@@ -157,7 +165,7 @@ class Module:
         settings.add_row(widget)
 
         settings.add_row(GSettingsFontButton(_("Font"), "org.cinnamon.desktop.screensaver", "font-message"))
-        
+
         widget = GSettingsSwitch(_("Ask for a custom message when locking the screen from the menu"), schema, "ask-for-away-message")
         widget.set_tooltip_text(_("This option allows you to type a message each time you lock the screen from the menu"))
         settings.add_row(widget)
@@ -210,6 +218,8 @@ class Module:
 
     def on_row_activated(self, widget, path, column):
         iter = self.tree_view.get_selection().get_selected()[1]
+        if not iter or not self.model[iter]:
+            return
         uuid = self.model[iter][0]
         print uuid
         path = self.model[iter][3]
@@ -219,6 +229,9 @@ class Module:
         elif ss_type == 'webkit':
             self.settings.set_string('screensaver-name', 'webkit@cinnamon.org')
             self.settings.set_string('screensaver-webkit-theme', uuid)
+        elif ss_type == 'xscreensaver':
+            self.settings.set_string('screensaver-name', 'xscreensaver@cinnamon.org')
+            self.settings.set_string('xscreensaver-hack', uuid)
         else:
             self.settings.set_string('screensaver-name', uuid)
 
@@ -227,6 +240,8 @@ class Module:
 
         if ss_type == 'webkit':
             command = [self.webkit_executable, "--plugin", uuid]
+        elif ss_type == 'xscreensaver':
+            command = [self.xscreensaver_executable, "--hack", uuid]
         else:
             command = os.path.join(path, "main")
 
