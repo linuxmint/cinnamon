@@ -65,7 +65,7 @@ def markup(line, obj):
         else:
             return '<code>{name}</code>'.format(name = res)
 
-    line = re.sub('%([\w.\(\)]*)', format_func_link, line)
+    line = re.sub('%((this.)?[\w]*\(?\)?)', format_func_link, line)
 
     return line
 
@@ -158,6 +158,7 @@ class JSThing():
         else:
             self.properties.append(prop)
         prop.file = self.file
+        prop.object = self.object
 
 class JSFunction(JSThing):
     def __init__ (self, name):
