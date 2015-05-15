@@ -5,9 +5,9 @@ const Lang = imports.lang;
  * #SignalManager:
  * @short_description: A convenience object for managing signals
  * @_object (Object): The object owning the SignalManager. All callbacks are
- * binded to @object.
- * @_storage (Map): A map that stores all the connected signals. @storage is
- * indexed by the name of the signal, and each item in @storage is an array of
+ * binded to %_object unless otherwise specified.
+ * @_storage (Map): A map that stores all the connected signals. %_storage is
+ * indexed by the name of the signal, and each item in %_storage is an array of
  * signals connected, and each signal is represented by an `[object, signalId,
  * callback]` triplet.
  *
@@ -77,10 +77,9 @@ SignalManager.prototype = {
      * @force (boolean): whether to connect again even if it is connected
      *
      * This listens to the signal @sigName from @obj and calls @callback when
-     * the signal is emitted. @callback is automatically binded to the object
-     * owning the #SignalManager (as specified in the constructor), unless the
-     * @bind argument is set to something else, in which case the function will
-     * be binded to @bind.
+     * the signal is emitted. @callback is automatically binded to
+     * %this._object, unless the @bind argument is set to something else, in
+     * which case the function will be binded to @bind.
      *
      * This checks whether the signal is already connected and will not connect
      * again if it is already connected. This behaviour can be overridden by
