@@ -1196,6 +1196,8 @@ function _findModal(actor) {
  * pushModal:
  * @actor (Clutter.Actor): actor which will be given keyboard focus
  * @timestamp (int): optional timestamp
+ * @options (Meta.ModalOptions): (optional) flags to indicate that the pointer
+ * is alrady grabbed
  *
  * Ensure we are in a mode where all keyboard and mouse input goes to
  * the stage, and focus @actor. Multiple calls to this function act in
@@ -1210,9 +1212,6 @@ function _findModal(actor) {
  * initiated event.  If not provided then the value of
  * global.get_current_time() is assumed.
  * 
- * @options: optional Meta.ModalOptions flags to indicate that the
- *           pointer is alrady grabbed
- *
  * Returns (boolean): true iff we successfully acquired a grab or already had one
  */
 function pushModal(actor, timestamp, options) {
