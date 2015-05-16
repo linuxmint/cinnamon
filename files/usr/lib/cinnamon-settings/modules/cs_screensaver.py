@@ -45,6 +45,7 @@ class Module:
         print "Loading Screensaver module"
 
         self.proc = None
+        self.xscreensaver_executable = None
 
         schema = "org.cinnamon.desktop.screensaver"
         self.settings = Gio.Settings.new(schema)
