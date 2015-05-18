@@ -23,6 +23,10 @@ def get_type_link(typ, file):
             return "cinnamon-js-" + objects[typ].prefix
         elif file.name + "." + typ in objects:
             return "cinnamon-js-" + objects[file.name + "." + typ].prefix
+        elif typ.endswith("s") and typ[:-1] in objects:
+            return "cinnamon-js-" + objects[typ[:-1]].prefix
+        elif typ.endswith("s") and file.name + "." + typ[:-1] in objects:
+            return "cinnamon-js-" + objects[file.name + "." + typ[:-1]].prefix
         elif typ.startswith("Gio"):
             return typ.replace("Gio.", "G")
         elif typ.startswith("GLib"):
@@ -42,7 +46,7 @@ def markup(line, obj):
                 link = get_type_link(res, obj.file),
                 name = res)
 
-    line = re.sub('#([\w.]*)', format_type_link, line)
+    line = re.sub('#(([\w]*\.)?[\w]+)', format_type_link, line)
 
     def format_func_link(match):
         res = match.group(1)
