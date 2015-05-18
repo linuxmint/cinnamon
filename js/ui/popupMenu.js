@@ -1309,8 +1309,8 @@ Signals.addSignalMethods(PopupMenuBase.prototype);
  * @short_description: An actual popup menu
  * @_boxPointer (Boxpointer.BoxPointer): The box pointer object that actually
  * draws the popup menu.
- * @actor (St.Bin): the actor of the popup menu, stolen from the %_boxPointer.
- * @animating (boolean): whether the popup menu is currently performing the
+ * @actor (St.Bin): The actor of the popup menu, stolen from the %_boxPointer.
+ * @animating (boolean): Whether the popup menu is currently performing the
  * open/close animation.
  */
 function PopupMenu() {
@@ -1525,6 +1525,22 @@ PopupMenu.prototype = {
     }
 };
 
+/**
+ * #PopupSubMenu
+ * @short_description: A submenu that can show and hide
+ * @actor (St.ScrollView): The actor of the submenu.
+ *
+ * A submenu to be included in #PopupMenus/#PopupMenuSections. You usually
+ * don't want to create these manually. Instead you want to create a
+ * #PopupSubMenuMenuItem, which creates a #PopupSubMenu, and shows/hides the
+ * menu when clicked.
+ *
+ * Since submenus are usually used to hide long lists of things, they are
+ * automatically put into a #St.ScrollView such that their height will be limited
+ * by the css max-height property.
+ *
+ * Inherits: PopupMenu.PopupMenuBase
+ */
 function PopupSubMenu() {
     this._init.apply(this, arguments);
 }
@@ -1532,15 +1548,19 @@ function PopupSubMenu() {
 PopupSubMenu.prototype = {
     __proto__: PopupMenuBase.prototype,
 
+    /**
+     * _init:
+     * @sourceActor (St.Widget): the actor that owns the popup menu
+     * @sourceArrow (St.Icon): (optional) a little arrow object inside the
+     * #PopupSubMenuMenuItem. When the submenu opens, the arrow is rotated by
+     * pi/2 clockwise to denote the status of the submenu.
+     */
     _init: function(sourceActor, sourceArrow) {
         PopupMenuBase.prototype._init.call(this, sourceActor);
 
         this._arrow = sourceArrow;
         if (this._arrow) this._arrow.rotation_center_z_gravity = Clutter.Gravity.CENTER;
 
-        // Since a function of a submenu might be to provide a "More.." expander
-        // with long content, we make it scrollable - the scrollbar will only take
-        // effect if a CSS max-height is set on the top menu.
         this.actor = new St.ScrollView({ style_class: 'popup-sub-menu',
                                          hscrollbar_policy: Gtk.PolicyType.NEVER,
                                          vscrollbar_policy: Gtk.PolicyType.NEVER });
@@ -1593,6 +1613,12 @@ PopupSubMenu.prototype = {
         return topMaxHeight >= 0 && topNaturalHeight >= topMaxHeight;
     },
 
+    /**
+     * open:
+     * @animate (boolean): whether the animate the open effect
+     *
+     * Opens the submenu
+     */
     open: function(animate) {
         if (this.isOpen)
             return;
@@ -1646,6 +1672,12 @@ PopupSubMenu.prototype = {
         }
     },
 
+    /**
+     * close:
+     * @animate (boolean): whether the animate the close effect
+     *
+     * Closes the submenu
+     */
     close: function(animate) {
         if (!this.isOpen)
             return;
@@ -1706,11 +1738,16 @@ PopupSubMenu.prototype = {
 
 /**
  * #PopupMenuSection:
+ * @short_description: A section of a #PopupMenu that is transparent to user
  *
- * A section of a PopupMenu which is handled like a submenu
- * (you can add and remove items, you can destroy it, you
- * can add it to another menu), but is completely transparent
- * to the user
+ * A section of a PopupMenu which is handled like a submenu (you can add and
+ * remove items, you can destroy it, you can add it to another menu), but is
+ * completely transparent to the user. This is helpful for grouping things
+ * together so that you can manage them in bulk. A common use case might be to
+ * let an object inherit a #PopupMenuSection and then add the whole object to a
+ * popup menu.
+ *
+ * Note that you cannot close a #PopupMenuSection.
  *
  * Inherits: PopupMenu.PopupMenuBase
  */
