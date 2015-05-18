@@ -95,6 +95,7 @@ Depends: cinnamon-common (= ${source:Version}),
          gkbd-capplet,
          python-pyinotify,
          metacity,
+         xscreensaver,
          gnome-panel | tint2
 Recommends: gnome-themes-standard, gnome-terminal, cinnamon-bluetooth
 Provides: notification-daemon, x-window-manager
