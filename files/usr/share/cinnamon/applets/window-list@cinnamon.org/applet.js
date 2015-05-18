@@ -716,10 +716,6 @@ MyApplet.prototype = {
 
     on_applet_removed_from_panel: function() {
         this.signals.disconnectAllSignals();
-        for (let ws of this.workspaces) {
-            ws[0].disconnect(ws[1]);
-            ws[0].disconnect(ws[2]);
-        }
     },
 
     on_applet_instances_changed: function() {
