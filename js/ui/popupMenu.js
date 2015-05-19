@@ -819,6 +819,7 @@ PopupSwitchMenuItem.prototype = {
 
 /**
  * #PopupIconMenuItem:
+ * @short_description: A menu item with an icon and a text.
  *
  * This is a popup menu item displaying an icon and a text. The icon is
  * displayed to the left of the text. #PopupImageMenuItem is a similar,
@@ -834,6 +835,14 @@ function PopupIconMenuItem() {
 PopupIconMenuItem.prototype = {
     __proto__: PopupBaseMenuItem.prototype,
 
+    /**
+     * _init:
+     * @text (string): text to display in the label
+     * @iconName (string): name of the icon used
+     * @iconType (St.IconType): the type of icon (usually #St.IconType.SYMBOLIC
+     * or #St.IconType.FULLCOLOR)
+     * @params (JSON): parameters to pass to %PopupMenu.PopupBaseMenuItem._init
+     */
     _init: function (text, iconName, iconType, params) {
         PopupBaseMenuItem.prototype._init.call(this, params);
 
@@ -845,11 +854,23 @@ PopupIconMenuItem.prototype = {
         this.addActor(this.label);
     },
 
+    /**
+     * setIconSymbolicName:
+     * @iconName (string): name of the icon
+     *
+     * Changes the icon to a symbolic icon with name @iconName.
+     */
     setIconSymbolicName: function (iconName) {
         this._icon.set_icon_name(iconName);
         this._icon.set_icon_type(St.IconType.SYMBOLIC);
     },
 
+    /**
+     * setIconName:
+     * @iconName (string): name of the icon
+     *
+     * Changes the icon to a full color icon with name @iconName.
+     */
     setIconName: function (iconName) {
         this._icon.set_icon_name(iconName);
         this._icon.set_icon_type(St.IconType.FULLCOLOR);
