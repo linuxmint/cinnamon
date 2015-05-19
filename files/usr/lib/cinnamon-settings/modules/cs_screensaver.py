@@ -1,7 +1,7 @@
 #!/usr/bin/env python2
 
 from SettingsWidgets import *
-from gi.repository import Gtk, Gdk, GLib
+from gi.repository import Gtk, Gdk, GLib, Pango
 import os, json, subprocess, re
 from xml.etree import ElementTree
 
@@ -31,6 +31,10 @@ LOCK_INACTIVE_OPTIONS = [
 
 XSCREENSAVER_PATH = "/usr/share/xscreensaver/config/"
 
+def list_header_func(row, before, user_data):
+    if before and not row.get_header():
+        row.set_header(Gtk.Separator(orientation=Gtk.Orientation.HORIZONTAL))
+
 class Module:
     name = "screensaver"
     category = "prefs"
@@ -47,9 +51,6 @@ class Module:
 
         print "Loading Screensaver module"
 
-        self.proc = None
-        self.xscreensaver_executable = None
-
         schema = "org.cinnamon.desktop.screensaver"
         self.settings = Gio.Settings.new(schema)
 
@@ -58,106 +59,10 @@ class Module:
 
         # Screensaver
         page = SettingsPage()
+        page.expand = True
         self.sidePage.stack.add_titled(page, "screensaver", _("Screensaver"))
-        settings = page.add_section(_("Select screensaver"))
-
-        self.scrollWindow = Gtk.ScrolledWindow()
-        self.tree_view = Gtk.TreeView()
-        #                          uuid, name, description, path, type
-        self.model = Gtk.ListStore(str,  str,  str,         str,  str)
-        self.tree_view.set_model(self.model)
-        self.tree_view.set_tooltip_column(2)
-        self.scrollWindow.set_min_content_height(140)
-
-        renderer = Gtk.CellRendererText.new()
-        renderer.set_property("xpad", 30)
-
-        name_column = Gtk.TreeViewColumn("Name", renderer, text=1)
-        name_column.set_expand(True)
-        name_column.set_property("sizing", Gtk.TreeViewColumnSizing.FIXED)
-        self.tree_view.append_column(name_column)
-
-        self.tree_view.set_headers_visible(False)
-        self.tree_view.connect("row-activated", self.on_row_activated)
-        self.tree_view.set_activate_on_single_click(True)
-        self.scrollWindow.add(self.tree_view)
-        settings.box.add(self.scrollWindow)
-
-        self.socket_box = Gtk.Box()
-        self.socket_box.override_background_color(Gtk.StateFlags.NORMAL, Gdk.RGBA(0, 0, 0, 1))
-        page.pack_start(self.socket_box, True, True, 0)
-
-        self.current_name = self.settings.get_string("screensaver-name")
-        if self.current_name == "webkit@cinnamon.org":
-            self.current_name = self.settings.get_string("screensaver-webkit-theme")
-        elif self.current_name == "xscreensaver@cinnamon.org":
-            self.current_name = "xscreensaver-" + self.settings.get_string("xscreensaver-hack")
-
-        iter = self.model.append(["", _("Blank screen"), _("Blank screen"), "", "default"])
-        if self.current_name == "":
-            self.tree_view.get_selection().select_iter(iter)
-            self.on_row_activated(self.tree_view, self.model.get_path(iter), None)
-
-        dirs = [os.path.expanduser("~/.local/share/cinnamon-screensaver/screensavers")] + \
-               [os.path.join(x, "cinnamon-screensaver/screensavers/") for x in GLib.get_system_data_dirs()]
-
-        things = []
-        for directory in dirs:
-            if not os.path.isdir(directory):
-                continue
-
-            things += [os.path.join(directory, x) for x in os.listdir(directory)]
-
-        for path in things:
-            if not os.path.isdir(path):
-                continue
-
-            # Recurse inside if it is webkit
-            if os.path.basename(path.rstrip('/')) == "webkit@cinnamon.org":
-                webkits = [os.path.join(path, x) for x in os.listdir(path)]
-
-                for theme in webkits:
-                    if os.path.basename(theme) == 'main':
-                        self.webkit_executable = theme
-                        continue
-
-                    if not os.path.isdir(theme):
-                        continue
-
-                    self.parse_dir(theme, path, "webkit")
-                continue
-
-            if os.path.basename(path.rstrip('/')) == "xscreensaver@cinnamon.org":
-                if os.path.exists(os.path.join(path, 'main')):
-                    self.xscreensaver_executable = os.path.join(path, 'main')
-
-                continue
-
-            self.parse_dir(path, path, "standalone")
-
-        if self.xscreensaver_executable is not None:
-            for item in sorted(os.listdir(XSCREENSAVER_PATH)):
-                if not item.endswith(".xml"):
-                    continue
-
-                path = os.path.join(XSCREENSAVER_PATH, item)
-                try:
-                    tree = ElementTree.parse(path);
-                    root = tree.getroot()
-
-                    name = root.attrib["name"]
-                    # fixme: these should be translatable
-                    label = root.attrib["_label"]
-                    description = root.find("_description").text.strip()
-
-                    iter = self.model.append([name, "XScreenSaver: " + label, description, XSCREENSAVER_PATH, "xscreensaver"])
-
-                    if self.current_name == "xscreensaver-" + name:
-                        self.tree_view.get_selection().select_iter(iter)
-                except:
-                    print "Unable to parse xscreensaver information at %s" % path
-
-        self.socket_box.connect("map", lambda x: self.on_row_activated(None, None, None))
+        settings = ScreensaverBox(_("Select screensaver"))
+        page.pack_start(settings, True, True, 0)
 
         # Settings
         page = SettingsPage()
@@ -219,6 +124,141 @@ class Module:
         widget = GSettingsFontButton(_("Date Font"), "org.cinnamon.desktop.screensaver", "font-date", size_group=size_group)
         settings.add_row(widget)
 
+class ScreensaverBox(Gtk.Box):
+    def __init__(self, title):
+        Gtk.Box.__init__(self)
+        self.set_orientation(Gtk.Orientation.VERTICAL)
+        frame = Gtk.Frame()
+        frame.set_shadow_type(Gtk.ShadowType.IN)
+        frame_style = frame.get_style_context()
+        frame_style.add_class("view")
+        self.pack_start(frame, True, True, 0)
+
+        schema = "org.cinnamon.desktop.screensaver"
+        self.settings = Gio.Settings.new(schema)
+
+        self.webkit_executable = None
+        self.xscreensaver_executable = None
+        self.proc = None
+
+        self.current_name = self.settings.get_string("screensaver-name")
+        if self.current_name == "webkit@cinnamon.org":
+            self.current_name = self.settings.get_string("screensaver-webkit-theme")
+        elif self.current_name == "xscreensaver@cinnamon.org":
+            self.current_name = "xscreensaver-" + self.settings.get_string("xscreensaver-hack")
+
+        self.main_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
+        frame.add(self.main_box)
+
+        toolbar = Gtk.Toolbar.new()
+        Gtk.StyleContext.add_class(Gtk.Widget.get_style_context(toolbar), "cs-header")
+        label = Gtk.Label.new()
+        label.set_markup("<b>%s</b>" % title)
+        title_holder = Gtk.ToolItem()
+        title_holder.add(label)
+        toolbar.add(title_holder)
+        self.main_box.add(toolbar)
+
+        toolbar_separator = Gtk.Separator(orientation=Gtk.Orientation.HORIZONTAL)
+        self.main_box.add(toolbar_separator)
+        separator_context = toolbar_separator.get_style_context()
+        frame_color = frame_style.get_border_color(Gtk.StateFlags.NORMAL).to_string()
+        css_provider = Gtk.CssProvider()
+        css_provider.load_from_data(".separator { -GtkWidget-wide-separators: 0; \
+                                                   color: %s;                    \
+                                                }" % frame_color)
+        separator_context.add_provider(css_provider, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
+
+        self.socket_box = Gtk.Box()
+        self.socket_box.set_border_width(30)
+        self.socket_box.set_size_request(-1, 300)
+        self.socket_box.override_background_color(Gtk.StateFlags.NORMAL, Gdk.RGBA(0, 0, 0, 1))
+        self.main_box.pack_start(self.socket_box, False, False, 0)
+
+        self.main_box.add(Gtk.Separator(orientation=Gtk.Orientation.HORIZONTAL))
+
+        scw = Gtk.ScrolledWindow.new()
+        scw.expand = True
+        scw.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC)
+        scw.set_shadow_type(Gtk.ShadowType.NONE)
+        self.main_box.pack_start(scw, True, True, 0)
+
+        self.list_box = Gtk.ListBox()
+        self.list_box.set_selection_mode(Gtk.SelectionMode.SINGLE)
+        self.list_box.set_header_func(list_header_func, None)
+        self.list_box.connect("row-activated", self.on_row_activated)
+        scw.add(self.list_box)
+
+        self.gather_screensavers()
+
+        self.socket_box.connect("map", lambda x: self.on_row_activated(None, None))
+
+    def gather_screensavers(self):
+        row = ScreensaverRow("", _("Lock screen"), _("The standard cinnamon lock screen"), "", "default")
+        self.add_row(row)
+        if self.current_name == "":
+            self.list_box.select_row(row)
+
+        dirs = [os.path.expanduser("~/.local/share/cinnamon-screensaver/screensavers")] + \
+               [os.path.join(x, "cinnamon-screensaver/screensavers/") for x in GLib.get_system_data_dirs()]
+
+        things = []
+        for directory in dirs:
+            if not os.path.isdir(directory):
+                continue
+
+            things += [os.path.join(directory, x) for x in os.listdir(directory)]
+
+        for path in things:
+            if not os.path.isdir(path):
+                continue
+
+            # Recurse inside if it is webkit
+            if os.path.basename(path.rstrip('/')) == "webkit@cinnamon.org":
+                webkits = [os.path.join(path, x) for x in os.listdir(path)]
+
+                for theme in webkits:
+                    if os.path.basename(theme) == 'main':
+                        self.webkit_executable = theme
+                        continue
+
+                    if not os.path.isdir(theme):
+                        continue
+
+                    self.parse_dir(theme, path, "webkit")
+                continue
+
+            if os.path.basename(path.rstrip('/')) == "xscreensaver@cinnamon.org":
+                if os.path.exists(os.path.join(path, 'main')):
+                    self.xscreensaver_executable = os.path.join(path, 'main')
+
+                continue
+
+            self.parse_dir(path, path, "standalone")
+
+        if self.xscreensaver_executable is not None:
+            for item in sorted(os.listdir(XSCREENSAVER_PATH)):
+                if not item.endswith(".xml"):
+                    continue
+
+                path = os.path.join(XSCREENSAVER_PATH, item)
+                try:
+                    tree = ElementTree.parse(path);
+                    root = tree.getroot()
+
+                    name = root.attrib["name"]
+                    # fixme: these should be translatable
+                    label = root.attrib["_label"]
+                    description = root.find("_description").text.strip()
+
+                    row = ScreensaverRow(name, label, description, XSCREENSAVER_PATH, "xscreensaver")
+                    self.add_row(row)
+
+                    if self.current_name == "xscreensaver-" + name:
+                        self.list_box.select_row(row)
+                except:
+                    print "Unable to parse xscreensaver information at %s" % path
+
     def parse_dir(self, path, directory, ss_type):
         try:
             metadata = open(os.path.join(path, "metadata.json"), 'r').read()
@@ -236,20 +276,23 @@ class Module:
             except ValueError:
                 description = None
 
-            iter = self.model.append([uuid, name, description, directory, ss_type])
+            row = ScreensaverRow(uuid, name, description, directory, ss_type)
+            self.add_row(row)
+
             if self.current_name == uuid:
-                self.tree_view.get_selection().select_iter(iter)
+                self.list_box.select_row(row)
         except:
             print "Unable to parse screensaver information at %s" % path
 
-    def on_row_activated(self, widget, path, column):
-        iter = self.tree_view.get_selection().get_selected()[1]
-        if not iter or not self.model[iter]:
+    def on_row_activated(self, list_box, row):
+        row = self.list_box.get_selected_row()
+        if not row:
             return
-        uuid = self.model[iter][0]
-        print uuid
-        path = self.model[iter][3]
-        ss_type = self.model[iter][4]
+
+        uuid = row.uuid
+        path = row.path
+        ss_type = row.ss_type
+
         if uuid == '':
             self.settings.set_string('screensaver-name', '')
         elif ss_type == 'webkit':
@@ -288,3 +331,47 @@ class Module:
                 socket.add_id(int(match.group(1)))
                 break
             line = self.proc.stdout.readline()
+
+    def add_row(self, row):
+        self.list_box.add(row)
+
+class ScreensaverRow(Gtk.ListBoxRow):
+    def __init__(self, uuid, name, description, path, ss_type):
+        Gtk.ListBoxRow.__init__(self)
+        self.uuid = uuid
+        self.name = name
+        self.short_description = description.split('\n', 1)[0]
+        self.description = description
+        self.path = path
+        self.ss_type = ss_type
+
+        self.set_tooltip_text(self.description)
+
+        widget = SettingsWidget()
+        grid = Gtk.Grid()
+        grid.set_column_spacing(15)
+        widget.pack_start(grid, True, True, 0)
+
+        self.desc_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
+        self.desc_box.props.hexpand = True
+        self.desc_box.props.halign = Gtk.Align.START
+        self.name_label = Gtk.Label.new()
+        self.name_label.set_markup("<b>%s</b>" % self.name)
+        self.name_label.props.xalign = 0.0
+        self.desc_box.add(self.name_label)
+        self.comment_label = Gtk.Label.new()
+        self.comment_label.set_markup("<small>%s</small>" % self.short_description)
+        self.comment_label.props.xalign = 0.0
+        self.comment_label.set_ellipsize(Pango.EllipsizeMode.END)
+        self.comment_label.set_max_width_chars(80)
+        self.desc_box.add(self.comment_label)
+
+        grid.attach(self.desc_box, 0, 0, 1, 1)
+
+        type_box = Gtk.Box()
+        type_label = Gtk.Label.new()
+        type_label.set_markup("<small><i>%s</i></small>" % self.ss_type)
+        type_box.pack_start(type_label, True, True, 0)
+        grid.attach_next_to(type_box, self.desc_box, Gtk.PositionType.RIGHT, 1, 1)
+
+        self.add(widget)
