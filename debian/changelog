@@ -1,3 +1,9 @@
+cinnamon (2.6.0) rafaela; urgency=medium
+
+  * 2.6.0 
+
+ -- Clement Lefebvre <root@linuxmint.com>  Tue, 19 May 2015 17:50:50 +0200
+
 cinnamon (2.5.0) unstable; urgency=medium
 
   * bump for development
