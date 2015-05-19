@@ -3,6 +3,7 @@
 from SettingsWidgets import *
 from gi.repository import Gtk, Gdk, GLib
 import os, json, subprocess, re
+from xml.etree import ElementTree
 
 LOCK_DELAY_OPTIONS = [
     (0, _("Immediately")),
@@ -28,6 +29,8 @@ LOCK_INACTIVE_OPTIONS = [
     (3600, _("After 1 hour"))
 ]
 
+XSCREENSAVER_PATH = "/usr/share/xscreensaver/config/"
+
 class Module:
     name = "screensaver"
     category = "prefs"
@@ -45,6 +48,7 @@ class Module:
         print "Loading Screensaver module"
 
         self.proc = None
+        self.xscreensaver_executable = None
 
         schema = "org.cinnamon.desktop.screensaver"
         self.settings = Gio.Settings.new(schema)
@@ -86,6 +90,8 @@ class Module:
         self.current_name = self.settings.get_string("screensaver-name")
         if self.current_name == "webkit@cinnamon.org":
             self.current_name = self.settings.get_string("screensaver-webkit-theme")
+        elif self.current_name == "xscreensaver@cinnamon.org":
+            self.current_name = "xscreensaver-" + self.settings.get_string("xscreensaver-hack")
 
         iter = self.model.append(["", _("Blank screen"), _("Blank screen"), "", "default"])
         if self.current_name == "":
@@ -125,11 +131,31 @@ class Module:
                 if os.path.exists(os.path.join(path, 'main')):
                     self.xscreensaver_executable = os.path.join(path, 'main')
 
-        if self.xscreensaver_executable is not None:
-            for theme in sorted(os.listdir("/usr/lib/xscreensaver")):
-                iter = self.model.append([theme, "Xscreensaver: %s" % theme.capitalize(), theme, theme, "xscreensaver"])
+                continue
 
             self.parse_dir(path, path, "standalone")
+
+        if self.xscreensaver_executable is not None:
+            for item in sorted(os.listdir(XSCREENSAVER_PATH)):
+                if not item.endswith(".xml"):
+                    continue
+
+                path = os.path.join(XSCREENSAVER_PATH, item)
+                try:
+                    tree = ElementTree.parse(path);
+                    root = tree.getroot()
+
+                    name = root.attrib["name"]
+                    # fixme: these should be translatable
+                    label = root.attrib["_label"]
+                    description = root.find("_description").text.strip()
+
+                    iter = self.model.append([name, "XScreenSaver: " + label, description, XSCREENSAVER_PATH, "xscreensaver"])
+
+                    if self.current_name == "xscreensaver-" + name:
+                        self.tree_view.get_selection().select_iter(iter)
+                except:
+                    print "Unable to parse xscreensaver information at %s" % path
 
         self.socket_box.connect("map", lambda x: self.on_row_activated(None, None, None))
 
