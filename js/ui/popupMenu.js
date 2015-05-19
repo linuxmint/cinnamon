@@ -604,6 +604,7 @@ PopupSliderMenuItem.prototype = {
         let sliderHeight = themeNode.get_length('-slider-height');
 
         let sliderBorderWidth = themeNode.get_length('-slider-border-width');
+        let sliderBorderRadius = Math.min(width, sliderHeight) / 2;
 
         let sliderBorderColor = themeNode.get_color('-slider-border-color');
         let sliderColor = themeNode.get_color('-slider-background-color');
@@ -611,47 +612,38 @@ PopupSliderMenuItem.prototype = {
         let sliderActiveBorderColor = themeNode.get_color('-slider-active-border-color');
         let sliderActiveColor = themeNode.get_color('-slider-active-background-color');
 
-        cr.setSourceRGBA (
-            sliderActiveColor.red / 255,
-            sliderActiveColor.green / 255,
-            sliderActiveColor.blue / 255,
-            sliderActiveColor.alpha / 255);
-        cr.rectangle(handleRadius, (height - sliderHeight) / 2, sliderWidth * this._value, sliderHeight);
+        const TAU = Math.PI * 2;
+
+        let handleX = handleRadius + (width - 2 * handleRadius) * this._value;
+
+        cr.arc(sliderBorderRadius + sliderBorderWidth, height / 2, sliderBorderRadius, TAU * 1/4, TAU * 3/4);
+        cr.lineTo(handleX, (height - sliderHeight) / 2);
+        cr.lineTo(handleX, (height + sliderHeight) / 2);
+        cr.lineTo(sliderBorderRadius + sliderBorderWidth, (height + sliderHeight) / 2);
+        Clutter.cairo_set_source_color(cr, sliderActiveColor);
         cr.fillPreserve();
-        cr.setSourceRGBA (
-            sliderActiveBorderColor.red / 255,
-            sliderActiveBorderColor.green / 255,
-            sliderActiveBorderColor.blue / 255,
-            sliderActiveBorderColor.alpha / 255);
+        Clutter.cairo_set_source_color(cr, sliderActiveBorderColor);
         cr.setLineWidth(sliderBorderWidth);
         cr.stroke();
 
-        cr.setSourceRGBA (
-            sliderColor.red / 255,
-            sliderColor.green / 255,
-            sliderColor.blue / 255,
-            sliderColor.alpha / 255);
-        cr.rectangle(handleRadius + sliderWidth * this._value, (height - sliderHeight) / 2, sliderWidth * (1 - this._value), sliderHeight);
+        cr.arc(width - sliderBorderRadius - sliderBorderWidth, height / 2, sliderBorderRadius, TAU * 3/4, TAU * 1/4);
+        cr.lineTo(handleX, (height + sliderHeight) / 2);
+        cr.lineTo(handleX, (height - sliderHeight) / 2);
+        cr.lineTo(width - sliderBorderRadius - sliderBorderWidth, (height - sliderHeight) / 2);
+        Clutter.cairo_set_source_color(cr, sliderColor);
         cr.fillPreserve();
-        cr.setSourceRGBA (
-            sliderBorderColor.red / 255,
-            sliderBorderColor.green / 255,
-            sliderBorderColor.blue / 255,
-            sliderBorderColor.alpha / 255);
+        Clutter.cairo_set_source_color(cr, sliderBorderColor);
         cr.setLineWidth(sliderBorderWidth);
         cr.stroke();
 
         let handleY = height / 2;
-        let handleX = handleRadius + (width - 2 * handleRadius) * this._value;
 
         let color = themeNode.get_foreground_color();
-        cr.setSourceRGBA (
-            color.red / 255,
-            color.green / 255,
-            color.blue / 255,
-            color.alpha / 255);
+        Clutter.cairo_set_source_color(cr, color);
         cr.arc(handleX, handleY, handleRadius, 0, 2 * Math.PI);
         cr.fill();
+
+        cr.$dispose();
     },
 
     _startDragging: function(actor, event) {
