@@ -48,28 +48,53 @@ def markup(line, obj):
 
     line = re.sub('#(([\w]*\.)?[\w]+)', format_type_link, line)
 
-    def format_func_link(match):
-        res = match.group(1)
-        func_names = [x.name for x in obj.object.functions]
-        prop_names = [x.name for x in obj.object.properties]
-
-        ln_res = re.sub('^this\.', '', res)
-        ln_res = re.sub('\(\)$', '', ln_res)
-
-        if ln_res in prop_names and not res.endswith("()"):
-            return '<link linkend="cinnamon-js-{prefix}--{ln_res}"><code>{res}</code></link>'.format(
-                    prefix = obj.object.prefix,
-                    res = res,
-                    ln_res = ln_res)
-        elif ln_res in func_names:
-            return '<link linkend="cinnamon-js-{prefix}-{ln_res}"><code>{res}</code></link>'.format(
-                    prefix = obj.object.prefix,
-                    res = res,
-                    ln_res = ln_res)
+    def format_ext_link(match):
+        if match.group(1):
+            full = match.group(1) + match.group(3)
         else:
-            return '<code>{name}</code>'.format(name = res)
+            full = match.group(3)
 
-    line = re.sub('%((this.)?[\w]*\(?\)?)', format_func_link, line)
+        if match.group(4):
+            full += match.group(4)
+
+        owner = match.group(1)
+        if owner:
+            owner = owner[:-1] # remove trailing .
+        else:
+            owner = "this"
+
+        thing = match.group(3)
+
+        from gen_doc import objects
+
+        object = None
+        if owner == "this":
+            object = obj.object
+        if owner in objects:
+            object = objects[owner]
+        elif obj.file.name + "." + owner in objects:
+            object = objects[obj.file.name + "." +  owner]
+
+        if object is None:
+            return '<code>{name}</code>'.format(name = full)
+
+        func_names = [x.name for x in object.functions]
+        prop_names = [x.name for x in object.properties]
+
+        if thing in prop_names and not full.endswith("()"):
+            return '<link linkend="cinnamon-js-{prefix}--{thing}"><code>{full}</code></link>'.format(
+                    prefix = object.prefix,
+                    thing = thing,
+                    full = full)
+        elif thing in func_names:
+            return '<link linkend="cinnamon-js-{prefix}-{thing}"><code>{full}</code></link>'.format(
+                    prefix = object.prefix,
+                    thing = thing,
+                    full = full)
+        else:
+            return '<code>{name}</code>'.format(name = full)
+
+    line = re.sub('%(([\w]+\.)?[\w]+\.)?([\w]+)(\(\))?', format_ext_link, line)
 
     return line
 
