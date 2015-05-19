@@ -239,32 +239,36 @@ class ScreensaverBox(Gtk.Box):
 
         if self.xscreensaver_executable is not None and os.path.exists(XSCREENSAVER_PATH):
             xscreensavers = []
-            for item in sorted(os.listdir(XSCREENSAVER_PATH)):
-                if not item.endswith(".xml"):
-                    continue
+            try:
+                gettext.install("xscreensaver", "/usr/share/locale")
+                    
+                for item in sorted(os.listdir(XSCREENSAVER_PATH)):
+                    if not item.endswith(".xml"):
+                        continue
 
-                path = os.path.join(XSCREENSAVER_PATH, item)
-                try:
-                    tree = ElementTree.parse(path);
-                    root = tree.getroot()
+                    path = os.path.join(XSCREENSAVER_PATH, item)
+                    try:
+                        tree = ElementTree.parse(path);
+                        root = tree.getroot()
 
-                    name = root.attrib["name"]
-                    label = root.attrib["_label"]
-                    description = root.find("_description").text.strip()
-                    gettext.install("xscreensaver", "/usr/share/locale")
-                    label = _(label)
-                    description = _(description)
-                    gettext.install("cinnamon", "/usr/share/locale")
-                    row = ScreensaverRow(name, label, description, XSCREENSAVER_PATH, "xscreensaver")
-                    xscreensavers.append(row)
-                except Exception, detail:
-                    print "Unable to parse xscreensaver information at %s: %s" % (path, detail)
+                        name = root.attrib["name"]
+                        label = root.attrib["_label"]
+                        description = root.find("_description").text.strip()
+                        label = _(label)
+                        description = _(description)
+                        row = ScreensaverRow(name, label, description, XSCREENSAVER_PATH, "xscreensaver")
+                        xscreensavers.append(row)
+                    except Exception, detail:
+                        print "Unable to parse xscreensaver information at %s: %s" % (path, detail)
 
-            xscreensavers = sorted(xscreensavers, key=lambda x: x.name)
-            for xscreensaver in xscreensavers:
-                self.add_row(xscreensaver)
-                if self.current_name == "xscreensaver-" + xscreensaver.uuid:
-                    self.list_box.select_row(xscreensaver)
+                xscreensavers = sorted(xscreensavers, key=lambda x: x.name)
+                for xscreensaver in xscreensavers:
+                    self.add_row(xscreensaver)
+                    if self.current_name == "xscreensaver-" + xscreensaver.uuid:
+                        self.list_box.select_row(xscreensaver)
+                gettext.install("cinnamon", "/usr/share/locale")
+            except Exception, detail:
+                print "Unable to parse xscreensaver hacks: %s" % detail
 
     def parse_dir(self, path, directory, ss_type):
         try:
