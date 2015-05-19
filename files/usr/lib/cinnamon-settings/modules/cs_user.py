@@ -11,6 +11,7 @@ import time
 from random import randint
 import shutil
 import PIL
+from PIL import Image
 import os
 
 class Module:
