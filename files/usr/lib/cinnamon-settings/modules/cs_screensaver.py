@@ -4,6 +4,7 @@ from SettingsWidgets import *
 from gi.repository import Gtk, Gdk, GLib, Pango
 import os, json, subprocess, re
 from xml.etree import ElementTree
+import gettext
 
 LOCK_DELAY_OPTIONS = [
     (0, _("Immediately")),
@@ -237,6 +238,7 @@ class ScreensaverBox(Gtk.Box):
             self.parse_dir(path, path, "standalone")
 
         if self.xscreensaver_executable is not None and os.path.exists(XSCREENSAVER_PATH):
+            xscreensavers = []
             for item in sorted(os.listdir(XSCREENSAVER_PATH)):
                 if not item.endswith(".xml"):
                     continue
@@ -247,17 +249,22 @@ class ScreensaverBox(Gtk.Box):
                     root = tree.getroot()
 
                     name = root.attrib["name"]
-                    # fixme: these should be translatable
                     label = root.attrib["_label"]
                     description = root.find("_description").text.strip()
-
+                    gettext.install("xscreensaver", "/usr/share/locale")
+                    label = _(label)
+                    description = _(description)
+                    gettext.install("cinnamon", "/usr/share/locale")
                     row = ScreensaverRow(name, label, description, XSCREENSAVER_PATH, "xscreensaver")
-                    self.add_row(row)
+                    xscreensavers.append(row)
+                except Exception, detail:
+                    print "Unable to parse xscreensaver information at %s: %s" % (path, detail)
 
-                    if self.current_name == "xscreensaver-" + name:
-                        self.list_box.select_row(row)
-                except:
-                    print "Unable to parse xscreensaver information at %s" % path
+            xscreensavers = sorted(xscreensavers, key=lambda x: x.name)
+            for xscreensaver in xscreensavers:
+                self.add_row(xscreensaver)
+                if self.current_name == "xscreensaver-" + xscreensaver.uuid:
+                    self.list_box.select_row(xscreensaver)
 
     def parse_dir(self, path, directory, ss_type):
         try:
