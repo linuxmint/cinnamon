@@ -236,7 +236,7 @@ class ScreensaverBox(Gtk.Box):
 
             self.parse_dir(path, path, "standalone")
 
-        if self.xscreensaver_executable is not None:
+        if self.xscreensaver_executable is not None and os.path.exists(XSCREENSAVER_PATH):
             for item in sorted(os.listdir(XSCREENSAVER_PATH)):
                 if not item.endswith(".xml"):
                     continue
