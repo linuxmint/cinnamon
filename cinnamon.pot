@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-05-19 17:44+0200\n"
+"POT-Creation-Date: 2015-05-19 18:22+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -511,10 +511,6 @@ msgstr ""
 
 #: files/usr/share/cinnamon/applets/calendar@cinnamon.org/applet.js:89
 msgid "%A %B %e, %Y"
-msgstr ""
-
-#: files/usr/share/cinnamon/applets/calendar@cinnamon.org/calendar.js:161
-msgid "calendar:MY"
 msgstr ""
 
 #. expo@cinnamon.org->metadata.json->name

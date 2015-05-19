@@ -158,7 +158,8 @@ Calendar.prototype = {
 
         // Find the ordering for month/year in the calendar heading
 
-        switch (Gettext_gtk30.gettext('calendar:MY')) {
+        let var_name = 'calendar:MY';
+        switch (Gettext_gtk30.gettext(var_name)) {
         case 'calendar:MY':
             this._headerMonthFirst = true;
             break;
