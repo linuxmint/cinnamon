@@ -996,7 +996,8 @@ MyApplet.prototype = {
 
     _init: function(orientation, panel_height, instance_id) {        
         Applet.TextIconApplet.prototype._init.call(this, orientation, panel_height, instance_id);
-        
+        this.initial_load_done = false;
+
         try {
             this.set_applet_tooltip(_("Menu"));
             this.menuManager = new PopupMenu.PopupMenuManager(this);
@@ -1151,8 +1152,15 @@ MyApplet.prototype = {
         this.menu.actor.add_style_class_name('menu-background');
         this.menu.connect('open-state-changed', Lang.bind(this, this._onOpenStateChanged));
         this._display();
+
+        if (this.initial_load_done)
+            this._refreshAll();
     },
-    
+
+    on_applet_added_to_panel: function () {
+        this.initial_load_done = true;
+    },
+
     _launch_editor: function() {
         Util.spawnCommandLine("cinnamon-menu-editor");
     },
