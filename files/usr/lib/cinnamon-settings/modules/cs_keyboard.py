@@ -518,10 +518,10 @@ class Module:
                                     Gtk.ButtonsType.YES_NO,
                                     None)
                         dialog.set_default_size(400, 200)
-                        msg = _("This key combination, \'<b>%s</b>\' is currently in use by \'<b>%s</b>\'.  ")
-                        msg += _("If you continue, the combination will be reassigned to \'<b>%s</b>.\'\n\n")
+                        msg = _("This key combination, <b>%(combination)s</b> is currently in use by <b>%(old)s</b>.  ")
+                        msg += _("If you continue, the combination will be reassigned to <b>%(new)s</b>.\n\n")
                         msg += _("Do you want to continue with this operation?")
-                        dialog.set_markup(msg % (clean_kb(accel_string), cgi.escape(keybinding.label), cgi.escape(current_keybinding.label)))
+                        dialog.set_markup(msg % {'combination':clean_kb(accel_string), 'old':cgi.escape(keybinding.label), 'new':cgi.escape(current_keybinding.label)})
                         dialog.show_all()
                         response = dialog.run()
                         dialog.destroy()
