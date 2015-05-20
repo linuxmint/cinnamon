@@ -1,5 +1,5 @@
 ## Process this file with automake to produce Makefile.in
-$(DOC_MAIN_SGML_FILE): $(top_srcdir)/js/*/* gen_lib.py gen_doc.py tutorials.xml tutorials/*
+$(DOC_MAIN_SGML_FILE): $(top_srcdir)/js/*/* gen_lib.py gen_doc.py tutorials/*
 	./gen_doc.py $(top_srcdir) $(PACKAGE_VERSION)
 
 # we want $(DOC_MAIN_SGML_FILE) to be built before sgml-build

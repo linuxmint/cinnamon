@@ -465,7 +465,7 @@ PROPERTIES_ITEM_FORMAT = '''
 
 def write_sgml(files, version):
     sgml = open('cinnamon-js-docs.sgml', 'w')
-    tutorials = open('tutorials.xml', 'r')
+    tutorials = open('tutorials/index.xml', 'r')
 
     chapters = []
 
