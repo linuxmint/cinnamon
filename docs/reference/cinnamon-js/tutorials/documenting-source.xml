@@ -152,7 +152,27 @@
         Links to other objects can be done with a <code>#Hash</code>. If you are linking to an object within the same file, you may omit the namespace, eg. using <code>#Applet</code> in <code>Applet.AppletContextMenu</code>. However, if it is from a different file, the namespace must be included.
       </listitem>
       <listitem>
-        Links to functions and properties within the same object can be donce with a <code>%percentage sign</code>. The inclusion of <code>this.</code> is optional, ie. you can refer to them using either <code>%this.prop</code> or <code>%prop</code>. The brackets after a function are also optional, eg. <code>this.hide()</code> and <code>this.hide</code> are both acceptable. If there are functions and properties that take the same name, the property will be linked to, unless the name ends with <code>()</code>, in which case it will always be a function.
+        <para>
+          Links to functions and properties of other objects with a <code>%percentage sign</code>. If you wish to link to functions of the same object, the following four are acceptable:
+        </para>
+        <itemizedlist>
+          <listitem><code>this.func</code></listitem>
+          <listitem><code>this.func()</code></listitem>
+          <listitem><code>func</code></listitem>
+          <listitem><code>func()</code></listitem>
+        </itemizedlist>
+        <para>
+          Of course, if it is a property, then you would never want to include the <code>()</code> brackets. To refer to functions of other objects, you have to type the full name of the object. The namespace can be omitted if the object is in the same file. For example, the following are acceptable (assuming you are inside <code>popupMenu.js</code>.
+        </para>
+        <itemizedlist>
+          <listitem><code>PopupMenu.PopupBaseMenuItem._init</code></listitem>
+          <listitem><code>PopupMenu.PopupBaseMenuItem._init()</code></listitem>
+          <listitem><code>PopupBaseMenuItem._init</code></listitem>
+          <listitem><code>PopupBaseMenuItem._init()</code></listitem>
+        </itemizedlist>
+        <para>
+          If there are functions and properties that take the same name, the property will be linked to, unless the name ends with <code>()</code>, in which case it will always be a function.
+        </para>
       </listitem>
       <listitem>
         Code blocks can be enclosed in descriptions as follows:

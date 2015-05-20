@@ -819,6 +819,7 @@ PopupSwitchMenuItem.prototype = {
 
 /**
  * #PopupIconMenuItem:
+ * @short_description: A menu item with an icon and a text.
  *
  * This is a popup menu item displaying an icon and a text. The icon is
  * displayed to the left of the text. #PopupImageMenuItem is a similar,
@@ -834,6 +835,14 @@ function PopupIconMenuItem() {
 PopupIconMenuItem.prototype = {
     __proto__: PopupBaseMenuItem.prototype,
 
+    /**
+     * _init:
+     * @text (string): text to display in the label
+     * @iconName (string): name of the icon used
+     * @iconType (St.IconType): the type of icon (usually #St.IconType.SYMBOLIC
+     * or #St.IconType.FULLCOLOR)
+     * @params (JSON): parameters to pass to %PopupMenu.PopupBaseMenuItem._init
+     */
     _init: function (text, iconName, iconType, params) {
         PopupBaseMenuItem.prototype._init.call(this, params);
 
@@ -845,11 +854,23 @@ PopupIconMenuItem.prototype = {
         this.addActor(this.label);
     },
 
+    /**
+     * setIconSymbolicName:
+     * @iconName (string): name of the icon
+     *
+     * Changes the icon to a symbolic icon with name @iconName.
+     */
     setIconSymbolicName: function (iconName) {
         this._icon.set_icon_name(iconName);
         this._icon.set_icon_type(St.IconType.SYMBOLIC);
     },
 
+    /**
+     * setIconName:
+     * @iconName (string): name of the icon
+     *
+     * Changes the icon to a full color icon with name @iconName.
+     */
     setIconName: function (iconName) {
         this._icon.set_icon_name(iconName);
         this._icon.set_icon_type(St.IconType.FULLCOLOR);
@@ -880,11 +901,37 @@ PopupImageMenuItem.prototype = {
     }
 };
 
+/**
+ * #PopupMenuBase
+ * @short_description: The base class of all popup menus
+ * @sourceActor (St.Widget): The actor that owns the popup menu
+ * @box (St.BoxLayout): The box containing the popup menu widgets.
+ * @isOpen (boolean): Whether the popup menu is open.
+ * @blockSourceEvents (boolean): If set, we don't send events (including
+ * crossing events) to the source actor for the menu which causes its prelight
+ * state to freeze
+ *
+ * @passEvents (boolean): Can be set while a menu is up to let all events
+ * through without special menu handling useful for scrollbars in menus, and
+ * probably not otherwise.
+ *
+ * @firstMenuItem (PopupMenu.PopupBaseMenuItem): The first item in the popup
+ * menu
+ * @numMenuItems (int): The number of items in the popup menu.
+ *
+ * This is a base popup menu class for more sophisticated popup menus to
+ * inherit. This cannot be instantiated.
+ */
 function PopupMenuBase() {
     throw new TypeError('Trying to instantiate abstract class PopupMenuBase');
 }
 
 PopupMenuBase.prototype = {
+    /**
+     * _init:
+     * @sourceActor (St.Widget): the actor that owns the popup menu
+     * @styleClass (string): (optional) the style class of the popup menu
+     */
     _init: function(sourceActor, styleClass) {
         this.sourceActor = sourceActor;
 
@@ -898,19 +945,23 @@ PopupMenuBase.prototype = {
         this.length = 0;
 
         this.isOpen = false;
-
-        // If set, we don't send events (including crossing events) to the source actor
-        // for the menu which causes its prelight state to freeze
         this.blockSourceEvents = false;
-
-        // Can be set while a menu is up to let all events through without special
-        // menu handling useful for scrollbars in menus, and probably not otherwise.
         this.passEvents = false;
 
         this._activeMenuItem = null;
         this._childMenus = [];
     },
 
+    /**
+     * addAction:
+     * @title (string): the text to display on the item
+     * @callback (function): the function to call when clicked
+     *
+     * Adds a #PopupMenuItem with label @title to the menu. When the item is
+     * clicked, @callback will be called.
+     *
+     * Returns (PopupMenu.PopupMenuItem): the menu item created.
+     */
     addAction: function(title, callback) {
         let menuItem = new PopupMenuItem(title);
         this.addMenuItem(menuItem);
@@ -921,6 +972,17 @@ PopupMenuBase.prototype = {
         return menuItem;
     },
 
+    /**
+     * addSettingsAction:
+     * @title (string): the text to display on the item
+     * @module (string): the module to launch
+     *
+     * Adds a #PopupMenuItem with label @title to the menu. When the item is
+     * clicked, Cinnamon Settings will be launched with the module @module
+     * activated.
+     *
+     * Returns (PopupMenu.PopupMenuItem): the menu item created.
+     */
     addSettingsAction: function(title, module) {		
         let menuItem = this.addAction(title, function() {
                            Util.spawnCommandLine("cinnamon-settings " + module);
@@ -928,6 +990,16 @@ PopupMenuBase.prototype = {
         return menuItem;
     },
 
+    /**
+     * addCommandLineAction:
+     * @title (string): the text to display on the item
+     * @cmd (string): the command to call
+     *
+     * Adds a #PopupMenuItem with label @title to the menu. When the item is
+     * clicked, the command @cmd will be executed.
+     *
+     * Returns (PopupMenu.PopupMenuItem): the menu item created.
+     */
     addCommandlineAction: function(title, cmd) {
         let menuItem = this.addAction(title, function() {
                            Util.spawnCommandLine(cmd);
@@ -935,10 +1007,22 @@ PopupMenuBase.prototype = {
         return menuItem
     },
 
+    /**
+     * isChildMenu:
+     * @menu (PopupMenu.PopupMenuBase): the menu of interest
+     *
+     * Returns: whether @menu is a submenu of this menu.
+     */
     isChildMenu: function(menu) {
         return this._childMenus.indexOf(menu) != -1;
     },
 
+    /**
+     * addChildMenu:
+     * @menu (PopupMenu.PopupMenuBase): the menu of interest
+     *
+     * Makes @menu a submenu of this menu.
+     */
     addChildMenu: function(menu) {
         if (this.isChildMenu(menu))
             return;
@@ -947,6 +1031,12 @@ PopupMenuBase.prototype = {
         this.emit('child-menu-added', menu);
     },
 
+    /**
+     * removeChildMenu:
+     * @menu (PopupMenuBase): the menu of interest
+     *
+     * Removes @menu from the current menu if it is a child
+     */
     removeChildMenu: function(menu) {
         let index = this._childMenus.indexOf(menu);
 
@@ -957,14 +1047,6 @@ PopupMenuBase.prototype = {
         this.emit('child-menu-removed', menu);
     },
 
-    /**
-     * _connectSubMenuSignals:
-     * @object: a menu item, or a menu section
-     * @menu: a sub menu, or a menu section
-     *
-     * Connects to signals on @menu that are necessary for
-     * operating the submenu, and stores the ids on @object.
-     */
     _connectSubMenuSignals: function(object, menu) {
         object._subMenuActivateId = menu.connect('activate', Lang.bind(this, function(submenu, submenuItem, keepMenu) {
             this.emit('activate');
@@ -1057,6 +1139,15 @@ PopupMenuBase.prototype = {
         menuItem.actor.show();
     },
 
+    /**
+     * addMenuItem:
+     * @menuItem (PopupMenu.PopupBaseMenuItem): the item to include (can also
+     * be a #PopupMenuSection)
+     * @position (int): (optional) position to add the item at (empty for end
+     * of menu)
+     *
+     * Adds the @menuItem to the menu.
+     */
     addMenuItem: function(menuItem, position) {
         let before_item = null;
         if (position == undefined) {
@@ -1105,6 +1196,14 @@ PopupMenuBase.prototype = {
         this.length++;
     },
 
+    /**
+     * getColumnWidths:
+     *
+     * Gets the width of each column this thing has. In popup menus, everything
+     * is put into columns, and the columns of all items align. This is used
+     * internally and shouldn't be fiddled with unless you are implementing
+     * other popup menu items.
+     */
     getColumnWidths: function() {
         let columnWidths = [];
         let items = this.box.get_children();
@@ -1122,6 +1221,13 @@ PopupMenuBase.prototype = {
         return columnWidths;
     },
 
+    /**
+     * setColumnWidths:
+     * @widths (array): the widths of each column
+     *
+     * Sets the widths of each column according to @widths so that things can
+     * align.
+     */
     setColumnWidths: function(widths) {
         let items = this.box.get_children();
         for (let i = 0; i < items.length; i++) {
@@ -1164,6 +1270,11 @@ PopupMenuBase.prototype = {
         return this._getMenuItems().length;
     },
 
+    /**
+     * removeAll:
+     *
+     * Clears everything inside the menu.
+     */
     removeAll: function() {
         let children = this._getMenuItems();
         for (let i = 0; i < children.length; i++) {
@@ -1172,6 +1283,11 @@ PopupMenuBase.prototype = {
         }
     },
 
+    /**
+     * toggle:
+     *
+     * Toggles the open/close state of the menu.
+     */
     toggle: function() {
         if (this.isOpen)
             this.close(true);
@@ -1179,6 +1295,14 @@ PopupMenuBase.prototype = {
             this.open(true);
     },
 
+    /**
+     * toggle_with_options:
+     * @animate (boolean): whether or not to animate the open/close.
+     * @onComplete (function): the function to call when the toggle action
+     * completes.
+     *
+     * Toggles the open/close state of the menu with extra parameters
+     */
     toggle_with_options: function (animate, onComplete) {
         if (this.isOpen) {
             this.close(animate, onComplete);
@@ -1187,6 +1311,11 @@ PopupMenuBase.prototype = {
         }
     },
 
+    /**
+     * destroy:
+     *
+     * Destroys the popup menu completely.
+     */
     destroy: function() {
         this.removeAll();
         this.actor.destroy();
@@ -1196,6 +1325,15 @@ PopupMenuBase.prototype = {
 };
 Signals.addSignalMethods(PopupMenuBase.prototype);
 
+/**
+ * #PopupMenu
+ * @short_description: An actual popup menu
+ * @_boxPointer (Boxpointer.BoxPointer): The box pointer object that actually
+ * draws the popup menu.
+ * @actor (St.Bin): The actor of the popup menu, stolen from the %_boxPointer.
+ * @animating (boolean): Whether the popup menu is currently performing the
+ * open/close animation.
+ */
 function PopupMenu() {
     this._init.apply(this, arguments);
 }
@@ -1203,6 +1341,18 @@ function PopupMenu() {
 PopupMenu.prototype = {
     __proto__: PopupMenuBase.prototype,
 
+    /**
+     * _init:
+     * @sourceActor (St.Widget): the actor that owns the popup menu
+     * @arrowAlignment (real): the position of the popup menu arrow relative to
+     * the popup menu. If 0.0, the arrow will be at the left of the popup menu.
+     * If 1.0, the arrow will be at the right of the popup menu, and numbers in
+     * between will put the arrow somewhere between the left and the right (if
+     * the popup menu opens sideways, 0.0 and 1.0 correspond to top and bottom
+     * respectively). Providing a value outside the range [0, 1] will cause
+     * unexpected behaviour.
+     * @arrowSide (St.Side): the arrow side of the menu. See %setArrowSide() for details
+     */
     _init: function(sourceActor, arrowAlignment, arrowSide) {
         PopupMenuBase.prototype._init.call (this, sourceActor, 'popup-menu-content');
 
@@ -1276,10 +1426,26 @@ PopupMenu.prototype = {
         this._boxPointer.setArrowOrigin(origin);
     },
 
+    /**
+     * setSourceAlignment:
+     * @alignment (real): the position of the arrow relative to the source
+     * actor.
+     *
+     * If set to 0.0, the arrow will appear at the left end of the source
+     * actor; 1.0 for right (0.0/1.0 for top/bottom for sideways arrows). The
+     * default value is 0.5, which means the arrow appears at the center of the
+     * source actor.
+     */
     setSourceAlignment: function(alignment) {
         this._boxPointer.setSourceAlignment(alignment);
     },
 
+    /**
+     * open:
+     * @animate (boolean): whether the animate the open effect
+     *
+     * Opens the popup menu
+     */
     open: function(animate) {
         if (this.isOpen)
             return;
@@ -1327,9 +1493,18 @@ PopupMenu.prototype = {
         Main.popup_rendering = false;
     },
 
-    // Setting the max-height won't do any good if the minimum height of the
-    // menu is higher then the screen; it's useful if part of the menu is
-    // scrollable so the minimum height is smaller than the natural height
+    /**
+     * setMaxHeight:
+     *
+     * This function is called internally to set the max-height and max-width
+     * properties of the popup menu such that it does not grow to a size larger
+     * than the monitor. Individual popup menus can override this method to
+     * change the max height/width if they really want to.
+     *
+     * Note that setting the max-height won't do any good if the minimum height
+     * of the menu is higher then the screen; it's useful if part of the menu
+     * is scrollable so the minimum height is smaller than the natural height.
+     */
     setMaxHeight: function() {
         let monitor = Main.layoutManager.findMonitorForActor(this.sourceActor)
 
@@ -1345,6 +1520,12 @@ PopupMenu.prototype = {
         // PopupMenus have 10px margins      ^
     },
 
+    /**
+     * close:
+     * @animate (boolean): whether the animate the close effect
+     *
+     * Closes the popup menu.
+     */
     close: function(animate) {
         if (!this.isOpen)
             return;
@@ -1365,6 +1546,22 @@ PopupMenu.prototype = {
     }
 };
 
+/**
+ * #PopupSubMenu
+ * @short_description: A submenu that can show and hide
+ * @actor (St.ScrollView): The actor of the submenu.
+ *
+ * A submenu to be included in #PopupMenus/#PopupMenuSections. You usually
+ * don't want to create these manually. Instead you want to create a
+ * #PopupSubMenuMenuItem, which creates a #PopupSubMenu, and shows/hides the
+ * menu when clicked.
+ *
+ * Since submenus are usually used to hide long lists of things, they are
+ * automatically put into a #St.ScrollView such that their height will be limited
+ * by the css max-height property.
+ *
+ * Inherits: PopupMenu.PopupMenuBase
+ */
 function PopupSubMenu() {
     this._init.apply(this, arguments);
 }
@@ -1372,15 +1569,19 @@ function PopupSubMenu() {
 PopupSubMenu.prototype = {
     __proto__: PopupMenuBase.prototype,
 
+    /**
+     * _init:
+     * @sourceActor (St.Widget): the actor that owns the popup menu
+     * @sourceArrow (St.Icon): (optional) a little arrow object inside the
+     * #PopupSubMenuMenuItem. When the submenu opens, the arrow is rotated by
+     * pi/2 clockwise to denote the status of the submenu.
+     */
     _init: function(sourceActor, sourceArrow) {
         PopupMenuBase.prototype._init.call(this, sourceActor);
 
         this._arrow = sourceArrow;
         if (this._arrow) this._arrow.rotation_center_z_gravity = Clutter.Gravity.CENTER;
 
-        // Since a function of a submenu might be to provide a "More.." expander
-        // with long content, we make it scrollable - the scrollbar will only take
-        // effect if a CSS max-height is set on the top menu.
         this.actor = new St.ScrollView({ style_class: 'popup-sub-menu',
                                          hscrollbar_policy: Gtk.PolicyType.NEVER,
                                          vscrollbar_policy: Gtk.PolicyType.NEVER });
@@ -1433,6 +1634,12 @@ PopupSubMenu.prototype = {
         return topMaxHeight >= 0 && topNaturalHeight >= topMaxHeight;
     },
 
+    /**
+     * open:
+     * @animate (boolean): whether the animate the open effect
+     *
+     * Opens the submenu
+     */
     open: function(animate) {
         if (this.isOpen)
             return;
@@ -1486,6 +1693,12 @@ PopupSubMenu.prototype = {
         }
     },
 
+    /**
+     * close:
+     * @animate (boolean): whether the animate the close effect
+     *
+     * Closes the submenu
+     */
     close: function(animate) {
         if (!this.isOpen)
             return;
@@ -1546,11 +1759,16 @@ PopupSubMenu.prototype = {
 
 /**
  * #PopupMenuSection:
+ * @short_description: A section of a #PopupMenu that is transparent to user
  *
- * A section of a PopupMenu which is handled like a submenu
- * (you can add and remove items, you can destroy it, you
- * can add it to another menu), but is completely transparent
- * to the user
+ * A section of a PopupMenu which is handled like a submenu (you can add and
+ * remove items, you can destroy it, you can add it to another menu), but is
+ * completely transparent to the user. This is helpful for grouping things
+ * together so that you can manage them in bulk. A common use case might be to
+ * let an object inherit a #PopupMenuSection and then add the whole object to a
+ * popup menu.
+ *
+ * Note that you cannot close a #PopupMenuSection.
  *
  * Inherits: PopupMenu.PopupMenuBase
  */
