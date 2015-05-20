@@ -1,3 +1,9 @@
+cinnamon (2.6.1) rafaela; urgency=medium
+
+  * cs_screensaver.py: ellipsize description when necessary
+
+ -- Clement Lefebvre <root@linuxmint.com>  Wed, 20 May 2015 09:28:56 +0200
+
 cinnamon (2.6.0) rafaela; urgency=medium
 
   * 2.6.0 
