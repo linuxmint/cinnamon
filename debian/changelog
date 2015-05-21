@@ -1,3 +1,16 @@
+cinnamon (2.6.2) rafaela; urgency=medium
+
+  [ Dexter Chua ]
+  * docs: Move tutorial index to tutorials/ folder
+  * docs: include image used in source
+
+  [ Clement Lefebvre ]
+  * Gettext fixes
+  * Gettext fix: "Lock Screen" is ambiguous in English, we decided in 2.4 it would be translated as the action, whereas "Screen Locker" would be the noun.
+  * Gettext fix: Can't use adjectives without nouns
+
+ -- Clement Lefebvre <root@linuxmint.com>  Thu, 21 May 2015 12:41:46 +0200
+
 cinnamon (2.6.1) rafaela; urgency=medium
 
   * cs_screensaver.py: ellipsize description when necessary
