@@ -67,7 +67,7 @@ IGNORE_HFILES=
 
 # Images to copy into HTML directory.
 # e.g. HTML_IMAGES=$(top_srcdir)/gtk/stock-icons/stock_about_24.png
-HTML_IMAGES=
+HTML_IMAGES=tutorials/settings.png
 
 # SGML files where gtk-doc abbrevations (#GtkWidget) are expanded
 # These files must be listed here *and* in content_files
