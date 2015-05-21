@@ -195,7 +195,7 @@ class ScreensaverBox(Gtk.Box):
         self.socket_box.connect("map", lambda x: self.on_row_activated(None, None))
 
     def gather_screensavers(self):
-        row = ScreensaverRow("", _("Lock screen"), _("The standard cinnamon lock screen"), "", "default")
+        row = ScreensaverRow("", _("Screen Locker"), _("The standard cinnamon lock screen"), "", "default")
         self.add_row(row)
         if self.current_name == "":
             self.list_box.select_row(row)
