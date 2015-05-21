@@ -171,20 +171,20 @@ class ItemEditor(object):
         if name_valid:
             self.builder.get_object('name-entry').set_icon_from_icon_name(Gtk.EntryIconPosition.SECONDARY, 'ok')
             self.builder.get_object('name-entry').set_icon_tooltip_text(Gtk.EntryIconPosition.SECONDARY,
-                                                                        _("Valid"))
+                                                                        _("Valid name"))
         else:
             self.builder.get_object('name-entry').set_icon_from_icon_name(Gtk.EntryIconPosition.SECONDARY, 'stop')
             self.builder.get_object('name-entry').set_icon_tooltip_text(Gtk.EntryIconPosition.SECONDARY,
-                                                                        _("Name cannot be blank."))
+                                                                        _("The name cannot be empty."))
 
         if exec_valid:
             self.builder.get_object('exec-entry').set_icon_from_icon_name(Gtk.EntryIconPosition.SECONDARY, 'ok')
             self.builder.get_object('exec-entry').set_icon_tooltip_text(Gtk.EntryIconPosition.SECONDARY,
-                                                                        _("Valid"))
+                                                                        _("Valid executable"))
         else:
             self.builder.get_object('exec-entry').set_icon_from_icon_name(Gtk.EntryIconPosition.SECONDARY, 'stop')
             self.builder.get_object('exec-entry').set_icon_tooltip_text(Gtk.EntryIconPosition.SECONDARY,
-                                                                        _("Cannot be empty.  Spaces in filenames must be escaped with backslash (\\).\nNot a valid executable line."))
+                                                                        _("The executable is not valid. It cannot be empty and spaces in the path must be escaped with backslash (\\)."))
 
         self.builder.get_object('ok').set_sensitive(name_valid and exec_valid)
 

@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-05-19 18:22+0200\n"
+"POT-Creation-Date: 2015-05-21 11:26+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -1399,18 +1399,21 @@ msgid "Choose an icon"
 msgstr ""
 
 #: files/usr/lib/cinnamon-desktop-editor/cinnamon-desktop-editor.py:174
-#: files/usr/lib/cinnamon-desktop-editor/cinnamon-desktop-editor.py:183
-msgid "Valid"
+msgid "Valid name"
 msgstr ""
 
 #: files/usr/lib/cinnamon-desktop-editor/cinnamon-desktop-editor.py:178
-msgid "Name cannot be blank."
+msgid "The name cannot be empty."
+msgstr ""
+
+#: files/usr/lib/cinnamon-desktop-editor/cinnamon-desktop-editor.py:183
+msgid "Valid executable"
 msgstr ""
 
 #: files/usr/lib/cinnamon-desktop-editor/cinnamon-desktop-editor.py:187
 msgid ""
-"Cannot be empty.  Spaces in filenames must be escaped with backslash (\\).\n"
-"Not a valid executable line."
+"The executable is not valid. It cannot be empty and spaces in the path must "
+"be escaped with backslash (\\)."
 msgstr ""
 
 #: files/usr/lib/cinnamon-desktop-editor/cinnamon-desktop-editor.py:249
@@ -5000,251 +5003,8 @@ msgstr ""
 msgid "Item"
 msgstr ""
 
-#. trash@cinnamon.org->metadata.json->description
-msgid "Control the trash from the panel"
-msgstr ""
-
-#. workspace-switcher@cinnamon.org->metadata.json->description
-msgid "Select the workspace from the panel"
-msgstr ""
-
-#. workspace-switcher@cinnamon.org->metadata.json->name
-msgid "Workspace switcher"
-msgstr ""
-
-#. network@cinnamon.org->metadata.json->description
-msgid "Network manager applet"
-msgstr ""
-
-#. scale@cinnamon.org->settings-schema.json->activate-on-hover->description
-msgid "Activate scale on hover"
-msgstr ""
-
-#. scale@cinnamon.org->metadata.json->description
-msgid "Click or hover to activate Scale view"
-msgstr ""
-
-#. menu@cinnamon.org->settings-schema.json->menu-editor-button->description
-msgid "Open the menu editor"
-msgstr ""
-
-#. menu@cinnamon.org->settings-schema.json->menu-editor-button->tooltip
-msgid "Press this button to customize your menu entries."
-msgstr ""
-
-#. menu@cinnamon.org->settings-schema.json->menu-icon-custom->description
-msgid "Use a custom icon"
-msgstr ""
-
-#. menu@cinnamon.org->settings-schema.json->menu-icon-custom->tooltip
-msgid "Unchecking this allows the theme to set the icon"
-msgstr ""
-
-#. menu@cinnamon.org->settings-schema.json->hover-delay->description
-msgid "Menu hover delay:"
-msgstr ""
-
-#. menu@cinnamon.org->settings-schema.json->hover-delay->tooltip
-msgid "Delay between switching categories"
-msgstr ""
-
-#. menu@cinnamon.org->settings-schema.json->search-filesystem->description
-msgid "Enable filesystem path entry in search box"
-msgstr ""
-
-#. menu@cinnamon.org->settings-schema.json->search-filesystem->tooltip
-msgid "Allows path entry in the menu search box."
-msgstr ""
-
-#. menu@cinnamon.org->settings-schema.json->menu-icon->description
-msgid "Icon"
-msgstr ""
-
-#. menu@cinnamon.org->settings-schema.json->menu-icon->tooltip
-msgid "Select an icon to show in the panel."
-msgstr ""
-
-#. menu@cinnamon.org->settings-schema.json->overlay-key->description
-msgid "Keyboard shortcut to open and close the menu"
-msgstr ""
-
-#. menu@cinnamon.org->settings-schema.json->menu-label->description
-msgid "Text"
-msgstr ""
-
-#. menu@cinnamon.org->settings-schema.json->menu-label->tooltip
-msgid "Enter custom text to show in the panel."
-msgstr ""
-
-#. menu@cinnamon.org->settings-schema.json->activate-on-hover->description
-msgid "Open the menu when I move my mouse over it"
-msgstr ""
-
-#. menu@cinnamon.org->settings-schema.json->activate-on-hover->tooltip
-msgid "Enable opening the menu when the mouse enters the applet"
-msgstr ""
-
-#. menu@cinnamon.org->settings-schema.json->enable-autoscroll->description
-msgid "Enable autoscrolling in application list"
-msgstr ""
-
-#. menu@cinnamon.org->settings-schema.json->enable-autoscroll->tooltip
-msgid ""
-"Choose whether or not to enable smooth autoscrolling in the application "
-"list."
-msgstr ""
-
-#. menu@cinnamon.org->settings-schema.json->show-places->description
-msgid "Show bookmarks and places"
-msgstr ""
-
-#. menu@cinnamon.org->settings-schema.json->show-places->tooltip
-msgid "Choose whether or not to show bookmarks and places in the menu."
-msgstr ""
-
-#. menu@cinnamon.org->metadata.json->description
-msgid "Main Cinnamon menu"
-msgstr ""
-
-#. windows-quick-list@cinnamon.org->metadata.json->description
-msgid "Quickly access windows from all workspaces"
-msgstr ""
-
-#. windows-quick-list@cinnamon.org->metadata.json->name
-msgid "Windows Quick List"
-msgstr ""
-
-#. panel-launchers@cinnamon.org->settings-schema.json->allow-
-#. dragging->description
-msgid "Allow dragging of launchers"
-msgstr ""
-
-#. panel-launchers@cinnamon.org->metadata.json->description
-msgid "Launch applications from the panel"
-msgstr ""
-
-#. panel-launchers@cinnamon.org->metadata.json->name
-msgid "Panel launchers"
-msgstr ""
-
-#. on-screen-keyboard@cinnamon.org->metadata.json->description
-msgid "A Cinnamon applet to launch the on-screen keyboard"
-msgstr ""
-
-#. on-screen-keyboard@cinnamon.org->metadata.json->name
-msgid "On-Screen keyboard"
-msgstr ""
-
 #. xrandr@cinnamon.org->metadata.json->description
 msgid "XRandR monitor control applet"
-msgstr ""
-
-#. expo@cinnamon.org->settings-schema.json->activate-on-hover->description
-msgid "Activate expo on hover"
-msgstr ""
-
-#. expo@cinnamon.org->metadata.json->description
-msgid "Click or hover to activate Expo view"
-msgstr ""
-
-#. user@cinnamon.org->settings-schema.json->display-name->description
-msgid "Display user name on panel"
-msgstr ""
-
-#. user@cinnamon.org->metadata.json->name
-msgid "User Applet"
-msgstr ""
-
-#. user@cinnamon.org->metadata.json->description
-msgid ""
-"An applet to access your account details, switch users and quickly logout or"
-" power off the computer"
-msgstr ""
-
-#. a11y@cinnamon.org->metadata.json->description
-msgid "Accessibility applet"
-msgstr ""
-
-#. show-desktop@cinnamon.org->metadata.json->description
-msgid "Minimize all windows"
-msgstr ""
-
-#. recent@cinnamon.org->metadata.json->description
-msgid "Access the documents you recently opened"
-msgstr ""
-
-#. separator@cinnamon.org->metadata.json->description
-msgid "A separator icon which can be added multiple times"
-msgstr ""
-
-#. separator@cinnamon.org->metadata.json->name
-msgid "Separator"
-msgstr ""
-
-#. calendar@cinnamon.org->settings-schema.json->use-custom-format->description
-#. clock@cinnamon.org->settings-schema.json->use-custom-format->description
-msgid "Use a custom date format"
-msgstr ""
-
-#. calendar@cinnamon.org->settings-schema.json->use-custom-format->tooltip
-msgid ""
-"Check this to define a custom format for the date in the calendar applet."
-msgstr ""
-
-#. calendar@cinnamon.org->settings-schema.json->format-button->description
-msgid "Show information on date format syntax"
-msgstr ""
-
-#. calendar@cinnamon.org->settings-schema.json->format-button->tooltip
-msgid "Click this button to know more about the syntax for date formats."
-msgstr ""
-
-#. calendar@cinnamon.org->settings-schema.json->show-week-numbers->description
-msgid "Show week numbers in calendar"
-msgstr ""
-
-#. calendar@cinnamon.org->settings-schema.json->show-week-numbers->tooltip
-msgid "Check this to show week numbers in the calendar."
-msgstr ""
-
-#. calendar@cinnamon.org->settings-schema.json->custom-format->description
-#. clock@cinnamon.org->settings-schema.json->date-format->description
-msgid "Date format:"
-msgstr ""
-
-#. calendar@cinnamon.org->settings-schema.json->custom-format->tooltip
-#. clock@cinnamon.org->settings-schema.json->date-format->tooltip
-msgid "Set your custom format here."
-msgstr ""
-
-#. calendar@cinnamon.org->metadata.json->description
-msgid "The Cinnamon calendar applet"
-msgstr ""
-
-#. calendar@cinnamon.org->metadata.json->name
-msgid "Calendar"
-msgstr ""
-
-#. inhibit@cinnamon.org->metadata.json->description
-msgid ""
-"This applet is used to disable notifications and power management (including"
-" the screensaver and the session from going idle)"
-msgstr ""
-
-#. inhibit@cinnamon.org->metadata.json->name
-msgid "Inhibit Applet"
-msgstr ""
-
-#. systray@cinnamon.org->metadata.json->description
-msgid "An applet which hosts all the system tray icons"
-msgstr ""
-
-#. systray@cinnamon.org->metadata.json->name
-msgid "System Tray"
-msgstr ""
-
-#. removable-drives@cinnamon.org->metadata.json->description
-msgid "Access removable drives"
 msgstr ""
 
 #. spacer@cinnamon.org->settings-schema.json->width->description
@@ -5263,147 +5023,24 @@ msgstr ""
 msgid "Spacer"
 msgstr ""
 
-#. slideshow@cinnamon.org->metadata.json->description
-msgid "Basic controls for the Cinnamon slideshow"
-msgstr ""
-
-#. slideshow@cinnamon.org->metadata.json->name
-msgid "Slideshow Controls"
-msgstr ""
-
-#. window-list@cinnamon.org->settings-schema.json->buttons-use-entire-
-#. space->description
-msgid ""
-"Window buttons can have different sizes and use the entire space available"
-msgstr ""
-
-#. window-list@cinnamon.org->settings-schema.json->reverse-
-#. scrolling->description
-msgid "Reverse the direction of mouse-wheel scrolling in the window list"
-msgstr ""
-
-#. window-list@cinnamon.org->settings-schema.json->enable-alerts->description
-msgid ""
-"Show an alert in the window list when a window from another workspace "
-"requires attention"
-msgstr ""
-
-#. window-list@cinnamon.org->settings-schema.json->enable-
-#. scrolling->description
-msgid "Enable mouse-wheel scrolling in the window list"
-msgstr ""
-
-#. window-list@cinnamon.org->settings-schema.json->middle-click-
-#. close->description
-msgid "Middle click to close window"
-msgstr ""
-
-#. window-list@cinnamon.org->metadata.json->description
-msgid "Main Cinnamon window list"
-msgstr ""
-
-#. window-list@cinnamon.org->metadata.json->name
-msgid "Window list"
-msgstr ""
-
-#. notifications@cinnamon.org->settings-
-#. schema.json->ignoreTransientNotifications->description
-msgid "Ignore transient notifications"
-msgstr ""
-
-#. notifications@cinnamon.org->settings-
-#. schema.json->ignoreTransientNotifications->tooltip
-msgid "Check this to ignore transient notifications."
-msgstr ""
-
-#. notifications@cinnamon.org->settings-
-#. schema.json->showEmptyTray->description
-msgid "Show empty tray"
-msgstr ""
-
-#. notifications@cinnamon.org->settings-schema.json->showEmptyTray->tooltip
-msgid "Check this to show the tray even when there are no new notifications."
-msgstr ""
-
-#. notifications@cinnamon.org->metadata.json->description
-msgid "Click to display and manage system notifications"
-msgstr ""
-
-#. power@cinnamon.org->settings-schema.json->showpercentage->description
-msgid "Show percentage"
-msgstr ""
-
-#. power@cinnamon.org->metadata.json->description
-msgid "Cinnamon power management applet"
-msgstr ""
-
-#. power@cinnamon.org->metadata.json->name
-msgid "Power Manager"
-msgstr ""
-
-#. sound@cinnamon.org->settings-schema.json->positionLabelType->description
-msgid "Position label"
-msgstr ""
-
-#. sound@cinnamon.org->settings-schema.json->positionLabelType->options
-msgid "Countdown"
-msgstr ""
-
-#. sound@cinnamon.org->settings-schema.json->positionLabelType->options
-msgid "Song length"
-msgstr ""
-
-#. sound@cinnamon.org->settings-schema.json->playerControl->description
-msgid "Control Players"
-msgstr ""
-
-#. sound@cinnamon.org->settings-schema.json->hideSystray->description
-msgid "Hide system tray icons for compatible players"
-msgstr ""
-
-#. sound@cinnamon.org->settings-schema.json->showalbum->description
-msgid "Show album art as icon"
-msgstr ""
-
-#. sound@cinnamon.org->settings-
-#. schema.json->extendedPlayerControl->description
-msgid "Show Loop and Shuffle controls"
-msgstr ""
-
-#. sound@cinnamon.org->settings-schema.json->middleClickAction->options
-msgid "Toggle Play / Pause"
-msgstr ""
-
-#. sound@cinnamon.org->settings-schema.json->middleClickAction->options
-msgid "Toggle Mute"
-msgstr ""
-
-#. sound@cinnamon.org->settings-schema.json->middleClickAction->description
-msgid "Action on middle click"
-msgstr ""
-
-#. sound@cinnamon.org->settings-schema.json->truncatetext->description
-msgid "Limit song information to"
-msgstr ""
-
-#. sound@cinnamon.org->settings-schema.json->truncatetext->units
-msgid "characters"
-msgstr ""
-
-#. sound@cinnamon.org->settings-schema.json->showtrack->description
-msgid "Show song information on the panel"
-msgstr ""
-
-#. sound@cinnamon.org->metadata.json->description
-msgid "A Cinnamon applet to control sound and music"
-msgstr ""
-
 #. keyboard@cinnamon.org->settings-schema.json->use-flags->description
 msgid "Use flags to display keyboard layouts"
 msgstr ""
 
 #. keyboard@cinnamon.org->metadata.json->description
 msgid "Keyboard layout"
+msgstr ""
+
+#. systray@cinnamon.org->metadata.json->description
+msgid "An applet which hosts all the system tray icons"
+msgstr ""
+
+#. systray@cinnamon.org->metadata.json->name
+msgid "System Tray"
+msgstr ""
+
+#. trash@cinnamon.org->metadata.json->description
+msgid "Control the trash from the panel"
 msgstr ""
 
 #. settings-example@cinnamon.org->settings-schema.json->tween-
@@ -5550,12 +5187,403 @@ msgstr ""
 msgid "Settings API Demo"
 msgstr ""
 
+#. calendar@cinnamon.org->settings-schema.json->use-custom-format->description
+#. clock@cinnamon.org->settings-schema.json->use-custom-format->description
+msgid "Use a custom date format"
+msgstr ""
+
+#. calendar@cinnamon.org->settings-schema.json->use-custom-format->tooltip
+msgid ""
+"Check this to define a custom format for the date in the calendar applet."
+msgstr ""
+
+#. calendar@cinnamon.org->settings-schema.json->format-button->description
+msgid "Show information on date format syntax"
+msgstr ""
+
+#. calendar@cinnamon.org->settings-schema.json->format-button->tooltip
+msgid "Click this button to know more about the syntax for date formats."
+msgstr ""
+
+#. calendar@cinnamon.org->settings-schema.json->show-week-numbers->description
+msgid "Show week numbers in calendar"
+msgstr ""
+
+#. calendar@cinnamon.org->settings-schema.json->show-week-numbers->tooltip
+msgid "Check this to show week numbers in the calendar."
+msgstr ""
+
+#. calendar@cinnamon.org->settings-schema.json->custom-format->description
+#. clock@cinnamon.org->settings-schema.json->date-format->description
+msgid "Date format:"
+msgstr ""
+
+#. calendar@cinnamon.org->settings-schema.json->custom-format->tooltip
+#. clock@cinnamon.org->settings-schema.json->date-format->tooltip
+msgid "Set your custom format here."
+msgstr ""
+
+#. calendar@cinnamon.org->metadata.json->description
+msgid "The Cinnamon calendar applet"
+msgstr ""
+
+#. calendar@cinnamon.org->metadata.json->name
+msgid "Calendar"
+msgstr ""
+
+#. a11y@cinnamon.org->metadata.json->description
+msgid "Accessibility applet"
+msgstr ""
+
+#. recent@cinnamon.org->metadata.json->description
+msgid "Access the documents you recently opened"
+msgstr ""
+
+#. menu@cinnamon.org->settings-schema.json->menu-editor-button->description
+msgid "Open the menu editor"
+msgstr ""
+
+#. menu@cinnamon.org->settings-schema.json->menu-editor-button->tooltip
+msgid "Press this button to customize your menu entries."
+msgstr ""
+
+#. menu@cinnamon.org->settings-schema.json->menu-icon-custom->description
+msgid "Use a custom icon"
+msgstr ""
+
+#. menu@cinnamon.org->settings-schema.json->menu-icon-custom->tooltip
+msgid "Unchecking this allows the theme to set the icon"
+msgstr ""
+
+#. menu@cinnamon.org->settings-schema.json->hover-delay->description
+msgid "Menu hover delay:"
+msgstr ""
+
+#. menu@cinnamon.org->settings-schema.json->hover-delay->tooltip
+msgid "Delay between switching categories"
+msgstr ""
+
+#. menu@cinnamon.org->settings-schema.json->search-filesystem->description
+msgid "Enable filesystem path entry in search box"
+msgstr ""
+
+#. menu@cinnamon.org->settings-schema.json->search-filesystem->tooltip
+msgid "Allows path entry in the menu search box."
+msgstr ""
+
+#. menu@cinnamon.org->settings-schema.json->menu-icon->description
+msgid "Icon"
+msgstr ""
+
+#. menu@cinnamon.org->settings-schema.json->menu-icon->tooltip
+msgid "Select an icon to show in the panel."
+msgstr ""
+
+#. menu@cinnamon.org->settings-schema.json->overlay-key->description
+msgid "Keyboard shortcut to open and close the menu"
+msgstr ""
+
+#. menu@cinnamon.org->settings-schema.json->menu-label->description
+msgid "Text"
+msgstr ""
+
+#. menu@cinnamon.org->settings-schema.json->menu-label->tooltip
+msgid "Enter custom text to show in the panel."
+msgstr ""
+
+#. menu@cinnamon.org->settings-schema.json->activate-on-hover->description
+msgid "Open the menu when I move my mouse over it"
+msgstr ""
+
+#. menu@cinnamon.org->settings-schema.json->activate-on-hover->tooltip
+msgid "Enable opening the menu when the mouse enters the applet"
+msgstr ""
+
+#. menu@cinnamon.org->settings-schema.json->enable-autoscroll->description
+msgid "Enable autoscrolling in application list"
+msgstr ""
+
+#. menu@cinnamon.org->settings-schema.json->enable-autoscroll->tooltip
+msgid ""
+"Choose whether or not to enable smooth autoscrolling in the application "
+"list."
+msgstr ""
+
+#. menu@cinnamon.org->settings-schema.json->show-places->description
+msgid "Show bookmarks and places"
+msgstr ""
+
+#. menu@cinnamon.org->settings-schema.json->show-places->tooltip
+msgid "Choose whether or not to show bookmarks and places in the menu."
+msgstr ""
+
+#. menu@cinnamon.org->metadata.json->description
+msgid "Main Cinnamon menu"
+msgstr ""
+
+#. expo@cinnamon.org->settings-schema.json->activate-on-hover->description
+msgid "Activate expo on hover"
+msgstr ""
+
+#. expo@cinnamon.org->metadata.json->description
+msgid "Click or hover to activate Expo view"
+msgstr ""
+
+#. separator@cinnamon.org->metadata.json->description
+msgid "A separator icon which can be added multiple times"
+msgstr ""
+
+#. separator@cinnamon.org->metadata.json->name
+msgid "Separator"
+msgstr ""
+
+#. panel-launchers@cinnamon.org->settings-schema.json->allow-
+#. dragging->description
+msgid "Allow dragging of launchers"
+msgstr ""
+
+#. panel-launchers@cinnamon.org->metadata.json->description
+msgid "Launch applications from the panel"
+msgstr ""
+
+#. panel-launchers@cinnamon.org->metadata.json->name
+msgid "Panel launchers"
+msgstr ""
+
+#. scale@cinnamon.org->settings-schema.json->activate-on-hover->description
+msgid "Activate scale on hover"
+msgstr ""
+
+#. scale@cinnamon.org->metadata.json->description
+msgid "Click or hover to activate Scale view"
+msgstr ""
+
+#. sound@cinnamon.org->settings-schema.json->positionLabelType->description
+msgid "Position label"
+msgstr ""
+
+#. sound@cinnamon.org->settings-schema.json->positionLabelType->options
+msgid "Countdown"
+msgstr ""
+
+#. sound@cinnamon.org->settings-schema.json->positionLabelType->options
+msgid "Song length"
+msgstr ""
+
+#. sound@cinnamon.org->settings-schema.json->playerControl->description
+msgid "Control Players"
+msgstr ""
+
+#. sound@cinnamon.org->settings-schema.json->hideSystray->description
+msgid "Hide system tray icons for compatible players"
+msgstr ""
+
+#. sound@cinnamon.org->settings-schema.json->showalbum->description
+msgid "Show album art as icon"
+msgstr ""
+
+#. sound@cinnamon.org->settings-
+#. schema.json->extendedPlayerControl->description
+msgid "Show Loop and Shuffle controls"
+msgstr ""
+
+#. sound@cinnamon.org->settings-schema.json->middleClickAction->options
+msgid "Toggle Play / Pause"
+msgstr ""
+
+#. sound@cinnamon.org->settings-schema.json->middleClickAction->options
+msgid "Toggle Mute"
+msgstr ""
+
+#. sound@cinnamon.org->settings-schema.json->middleClickAction->description
+msgid "Action on middle click"
+msgstr ""
+
+#. sound@cinnamon.org->settings-schema.json->truncatetext->description
+msgid "Limit song information to"
+msgstr ""
+
+#. sound@cinnamon.org->settings-schema.json->truncatetext->units
+msgid "characters"
+msgstr ""
+
+#. sound@cinnamon.org->settings-schema.json->showtrack->description
+msgid "Show song information on the panel"
+msgstr ""
+
+#. sound@cinnamon.org->metadata.json->description
+msgid "A Cinnamon applet to control sound and music"
+msgstr ""
+
+#. network@cinnamon.org->metadata.json->description
+msgid "Network manager applet"
+msgstr ""
+
+#. removable-drives@cinnamon.org->metadata.json->description
+msgid "Access removable drives"
+msgstr ""
+
+#. windows-quick-list@cinnamon.org->metadata.json->description
+msgid "Quickly access windows from all workspaces"
+msgstr ""
+
+#. windows-quick-list@cinnamon.org->metadata.json->name
+msgid "Windows Quick List"
+msgstr ""
+
+#. power@cinnamon.org->settings-schema.json->showpercentage->description
+msgid "Show percentage"
+msgstr ""
+
+#. power@cinnamon.org->metadata.json->description
+msgid "Cinnamon power management applet"
+msgstr ""
+
+#. power@cinnamon.org->metadata.json->name
+msgid "Power Manager"
+msgstr ""
+
+#. inhibit@cinnamon.org->metadata.json->description
+msgid ""
+"This applet is used to disable notifications and power management (including"
+" the screensaver and the session from going idle)"
+msgstr ""
+
+#. inhibit@cinnamon.org->metadata.json->name
+msgid "Inhibit Applet"
+msgstr ""
+
 #. settings@cinnamon.org->metadata.json->description
 msgid "Cinnamon Settings"
 msgstr ""
 
 #. settings@cinnamon.org->metadata.json->name
 msgid "Settings Applet"
+msgstr ""
+
+#. window-list@cinnamon.org->settings-schema.json->buttons-use-entire-
+#. space->description
+msgid ""
+"Window buttons can have different sizes and use the entire space available"
+msgstr ""
+
+#. window-list@cinnamon.org->settings-schema.json->reverse-
+#. scrolling->description
+msgid "Reverse the direction of mouse-wheel scrolling in the window list"
+msgstr ""
+
+#. window-list@cinnamon.org->settings-schema.json->enable-alerts->description
+msgid ""
+"Show an alert in the window list when a window from another workspace "
+"requires attention"
+msgstr ""
+
+#. window-list@cinnamon.org->settings-schema.json->enable-
+#. scrolling->description
+msgid "Enable mouse-wheel scrolling in the window list"
+msgstr ""
+
+#. window-list@cinnamon.org->settings-schema.json->middle-click-
+#. close->description
+msgid "Middle click to close window"
+msgstr ""
+
+#. window-list@cinnamon.org->metadata.json->description
+msgid "Main Cinnamon window list"
+msgstr ""
+
+#. window-list@cinnamon.org->metadata.json->name
+msgid "Window list"
+msgstr ""
+
+#. workspace-switcher@cinnamon.org->metadata.json->description
+msgid "Select the workspace from the panel"
+msgstr ""
+
+#. workspace-switcher@cinnamon.org->metadata.json->name
+msgid "Workspace switcher"
+msgstr ""
+
+#. on-screen-keyboard@cinnamon.org->metadata.json->description
+msgid "A Cinnamon applet to launch the on-screen keyboard"
+msgstr ""
+
+#. on-screen-keyboard@cinnamon.org->metadata.json->name
+msgid "On-Screen keyboard"
+msgstr ""
+
+#. show-desktop@cinnamon.org->metadata.json->description
+msgid "Minimize all windows"
+msgstr ""
+
+#. slideshow@cinnamon.org->metadata.json->description
+msgid "Basic controls for the Cinnamon slideshow"
+msgstr ""
+
+#. slideshow@cinnamon.org->metadata.json->name
+msgid "Slideshow Controls"
+msgstr ""
+
+#. notifications@cinnamon.org->settings-
+#. schema.json->ignoreTransientNotifications->description
+msgid "Ignore transient notifications"
+msgstr ""
+
+#. notifications@cinnamon.org->settings-
+#. schema.json->ignoreTransientNotifications->tooltip
+msgid "Check this to ignore transient notifications."
+msgstr ""
+
+#. notifications@cinnamon.org->settings-
+#. schema.json->showEmptyTray->description
+msgid "Show empty tray"
+msgstr ""
+
+#. notifications@cinnamon.org->settings-schema.json->showEmptyTray->tooltip
+msgid "Check this to show the tray even when there are no new notifications."
+msgstr ""
+
+#. notifications@cinnamon.org->metadata.json->description
+msgid "Click to display and manage system notifications"
+msgstr ""
+
+#. user@cinnamon.org->settings-schema.json->display-name->description
+msgid "Display user name on panel"
+msgstr ""
+
+#. user@cinnamon.org->metadata.json->name
+msgid "User Applet"
+msgstr ""
+
+#. user@cinnamon.org->metadata.json->description
+msgid ""
+"An applet to access your account details, switch users and quickly logout or"
+" power off the computer"
+msgstr ""
+
+#. clock@cinnamon.org->settings-schema.json->text-color->description
+msgid "Text color:"
+msgstr ""
+
+#. clock@cinnamon.org->settings-schema.json->text-color->tooltip
+msgid "Click the button to select a new text color"
+msgstr ""
+
+#. clock@cinnamon.org->settings-schema.json->font-size->description
+msgid "Font size:"
+msgstr ""
+
+#. clock@cinnamon.org->settings-schema.json->use-custom-format->tooltip
+msgid ""
+"Check this to define a custom format for the time in the clock desklet."
+msgstr ""
+
+#. clock@cinnamon.org->metadata.json->description
+msgid "A desklet that displays the time"
+msgstr ""
+
+#. clock@cinnamon.org->metadata.json->name
+msgid "Clock desklet"
 msgstr ""
 
 #. launcher@cinnamon.org->metadata.json->description
@@ -5608,29 +5636,4 @@ msgstr ""
 
 #. photoframe@cinnamon.org->metadata.json->name
 msgid "Digital photo frame"
-msgstr ""
-
-#. clock@cinnamon.org->settings-schema.json->text-color->description
-msgid "Text color:"
-msgstr ""
-
-#. clock@cinnamon.org->settings-schema.json->text-color->tooltip
-msgid "Click the button to select a new text color"
-msgstr ""
-
-#. clock@cinnamon.org->settings-schema.json->font-size->description
-msgid "Font size:"
-msgstr ""
-
-#. clock@cinnamon.org->settings-schema.json->use-custom-format->tooltip
-msgid ""
-"Check this to define a custom format for the time in the clock desklet."
-msgstr ""
-
-#. clock@cinnamon.org->metadata.json->description
-msgid "A desklet that displays the time"
-msgstr ""
-
-#. clock@cinnamon.org->metadata.json->name
-msgid "Clock desklet"
 msgstr ""
