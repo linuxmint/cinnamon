@@ -100,7 +100,12 @@ class ExtensionSidePage (SidePage):
         self.search_entry.set_placeholder_text(_("Search"))
         self.search_entry.connect('changed', self.on_entry_refilter)
 
-        self.stack.add_titled(extensions_vbox, "installed", _("Installed"))
+        if self.collection_type == "applet":
+            self.stack.add_titled(extensions_vbox, "installed", _("Installed applets"))
+        elif self.collection_type == "desklet":
+            self.stack.add_titled(extensions_vbox, "installed", _("Installed desklets"))
+        elif self.collection_type == "extension":
+            self.stack.add_titled(extensions_vbox, "installed", _("Installed extensions"))
 
         self.stack.expand = True
 
@@ -283,7 +288,13 @@ class ExtensionSidePage (SidePage):
         getmore_vbox = Gtk.VBox()
         getmore_vbox.set_border_width(0)
 
-        self.stack.add_titled(getmore_vbox, "more", _("Available (online)"))
+        if self.collection_type == "applet":
+            self.stack.add_titled(getmore_vbox, "more", _("Available applets (online)"))
+        elif self.collection_type == "desklet":
+            self.stack.add_titled(getmore_vbox, "more", _("Available desklets (online)"))
+        elif self.collection_type == "extension":
+            self.stack.add_titled(getmore_vbox, "more", _("Available extensions (online)"))
+
         self.stack.connect("notify::visible-child-name", self.on_page_changed)
 
         self.gm_combosort = Gtk.ComboBox()

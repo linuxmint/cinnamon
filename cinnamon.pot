@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-05-21 11:26+0200\n"
+"POT-Creation-Date: 2015-05-21 11:37+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -40,7 +40,7 @@ msgstr ""
 
 #: src/cinnamon-util.c:247
 #: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:100
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:315
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:326
 #: files/usr/lib/cinnamon-settings/modules/cs_keyboard.py:182
 msgid "Search"
 msgstr ""
@@ -253,7 +253,7 @@ msgstr ""
 
 #: js/ui/messageTray.js:1278
 #: files/usr/share/cinnamon/applets/panel-launchers@cinnamon.org/applet.js:55
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:591
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:602
 #: files/usr/lib/cinnamon-settings/bin/XletSettings.py:71
 #: files/usr/lib/cinnamon-settings/modules/cs_startup.py:411
 msgid "Remove"
@@ -399,7 +399,7 @@ msgstr ""
 
 #: js/ui/workspace.js:1495
 #: files/usr/share/cinnamon/applets/window-list@cinnamon.org/applet.js:633
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:978
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:989
 #: files/usr/lib/cinnamon-settings/bin/Spices.py:154
 #: files/usr/lib/cinnamon-settings/modules/cs_default.py:240
 #: files/usr/lib/cinnamon-settings/modules/cs_windows.py:179
@@ -566,14 +566,14 @@ msgid "Please provide your password to uninstall this application"
 msgstr ""
 
 #: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:259
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:179
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:600
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:184
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:611
 msgid "Add to panel"
 msgstr ""
 
 #: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:262
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:181
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:602
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:186
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:613
 msgid "Add to desktop"
 msgstr ""
 
@@ -586,7 +586,7 @@ msgid "Add to favorites"
 msgstr ""
 
 #: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:273
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:614
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:625
 msgid "Uninstall"
 msgstr ""
 
@@ -621,7 +621,6 @@ msgstr ""
 
 #: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:1950
 #: files/usr/lib/cinnamon-settings/modules/cs_keyboard.py:152
-#: files/usr/lib/cinnamon-settings/modules/cs_screensaver.py:198
 msgid "Lock screen"
 msgstr ""
 
@@ -870,8 +869,8 @@ msgid "Launch"
 msgstr ""
 
 #: files/usr/share/cinnamon/applets/panel-launchers@cinnamon.org/applet.js:47
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:187
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:606
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:192
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:617
 #: files/usr/lib/cinnamon-settings/modules/cs_keyboard.py:799
 #: files/usr/lib/cinnamon-settings/modules/cs_startup.py:400
 #: files/usr/lib/cinnamon-settings/modules/cs_startup.py:680
@@ -1434,6 +1433,7 @@ msgstr ""
 
 #: files/usr/lib/cinnamon-screensaver-lock-dialog/cinnamon-screensaver-lock-dialog.py:36
 #: files/usr/lib/cinnamon-settings/modules/cs_screensaver.py:46
+#: files/usr/lib/cinnamon-settings/modules/cs_screensaver.py:198
 msgid "Screen Locker"
 msgstr ""
 
@@ -1689,7 +1689,7 @@ msgid "Picture"
 msgstr ""
 
 #: files/usr/lib/cinnamon-settings-users/cinnamon-settings-users.py:504
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:293
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:304
 #: files/usr/lib/cinnamon-settings/modules/cs_startup.py:697
 #: files/usr/lib/cinnamon-settings/modules/cs_user.py:62
 #: files/usr/lib/cinnamon-menu-editor/cme/MainWindow.py:152
@@ -1747,123 +1747,139 @@ msgstr ""
 msgid "Group Name"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:103
-msgid "Installed"
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:104
+msgid "Installed applets"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:183
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:604
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:106
+msgid "Installed desklets"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:108
+msgid "Installed extensions"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:188
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:615
 msgid "Add to Cinnamon"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:185
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:610
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:190
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:621
 msgid "Apply theme"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:193
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:196
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:569
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:576
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:198
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:201
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:580
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:587
 msgid "Configure"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:200
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:205
 msgid "Restore default theme"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:202
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:207
 msgid "Remove all desklets"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:204
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:209
 msgid "Disable all extensions"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:206
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:211
 msgid "Restore to default"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:216
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:221
 msgid "All applets"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:217
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:222
 msgid "Active applets"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:218
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:223
 msgid "Inactive applets"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:220
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:225
 msgid "All desklets"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:221
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:226
 msgid "Active desklets"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:222
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:227
 msgid "Inactive desklets"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:224
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:229
 msgid "All extensions"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:225
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:230
 msgid "Active extensions"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:226
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:231
 msgid "Inactive extensions"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:236
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:241
 #: files/usr/lib/cinnamon-menu-editor/cme/MainWindow.py:165
 msgid "Show"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:286
-msgid "Available (online)"
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:292
+msgid "Available applets (online)"
 msgstr ""
 
 #: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:294
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:531
+msgid "Available desklets (online)"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:296
+msgid "Available extensions (online)"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:305
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:542
 msgid "Popularity"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:295
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:306
 #: files/usr/lib/cinnamon-settings/modules/cs_screensaver.py:107
 msgid "Date"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:306
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:317
 msgid "Sort by"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:390
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:401
 msgid "Install or update selected items"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:392
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:403
 msgid "Select updated"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:394
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:405
 msgid "Refresh list"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:496
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:507
 msgid "Cannot be uninstalled"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:504
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:515
 msgid "In use"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:506
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:517
 #, python-format
 msgid ""
 "\n"
@@ -1871,60 +1887,60 @@ msgid ""
 "Instance count: %d"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:510
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:521
 msgid ""
 "Problem loading - please check Looking Glass or your system's error log"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:526
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:537
 msgid "Update available"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:528
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:539
 msgid "Installed and up-to-date"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:585
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:596
 msgid "Remove from panel"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:587
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:598
 msgid "Remove from desktop"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:589
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:600
 msgid "Remove from Cinnamon"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:740
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:751
 msgid "Unmark"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:746
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:757
 msgid "Mark for upgrade"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:748
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:759
 msgid "Mark for installation"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:752
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:774
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:763
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:785
 msgid "More info"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:885
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:896
 msgid "Please restart Cinnamon for the changes to take effect"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:936
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:947
 #, python-format
 msgid ""
 "Extension %s is not compatible with current version of cinnamon. Using it "
 "may break your system. Load anyway?"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:964
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:975
 msgid ""
 "\n"
 "There was a problem loading the selected item, and it has been disabled.\n"
@@ -1934,52 +1950,52 @@ msgid ""
 "Please contact the developer."
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:976
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:987
 msgid "View logfile(s)"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:998
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:1009
 msgid ""
 "There are multiple instances, do you want to remove all of them?\n"
 "\n"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:1019
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:1030
 #, python-format
 msgid "Are you sure you want to completely remove %s?"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:1090
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:1101
 msgid ""
 "This operation will update the selected items.\n"
 "\n"
 "Do you want to continue?"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:1092
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:1103
 msgid ""
 "This operation will update the selected item.\n"
 "\n"
 "Do you want to continue?"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:1108
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:1119
 #, python-format
 msgid "%d updates available!"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:1110
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:1121
 #, python-format
 msgid "%d update available!"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:1170
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:1181
 msgid ""
 "This will restore the default set of enabled applets. Are you sure you want "
 "to do this?"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:1172
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:1183
 msgid ""
 "This will restore the default set of enabled desklets. Are you sure you want"
 " to do this?"
