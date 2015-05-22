@@ -173,9 +173,14 @@ class Module:
             screen = CinnamonDesktop.RRScreen.new(Gdk.Screen.get_default())
             outputs = CinnamonDesktop.RRScreen.list_outputs(screen)
             for output in outputs:
-                if (output.is_connected() and output.is_laptop() and output.get_backlight_min() >= 0 and output.get_backlight_max() > 0):
-                    primary_output = output
-                    break
+                if (output.is_connected() and output.is_laptop()):
+                    try:
+                        # Try to get the backlight info, if it fails just move on (we used to rely on output.get_backlight_min() and output.get_backlight_max() but these aren't reliable)
+                        output.get_backlight()
+                        primary_output = output
+                        break
+                    except:
+                        pass
         except Exception, detail:
             print "Failed to query backlight information in cs_power module: %s" % detail
 
