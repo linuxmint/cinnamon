@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-05-21 11:37+0200\n"
+"POT-Creation-Date: 2015-05-22 13:42+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -40,7 +40,7 @@ msgstr ""
 
 #: src/cinnamon-util.c:247
 #: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:100
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:326
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:330
 #: files/usr/lib/cinnamon-settings/modules/cs_keyboard.py:182
 msgid "Search"
 msgstr ""
@@ -253,7 +253,7 @@ msgstr ""
 
 #: js/ui/messageTray.js:1278
 #: files/usr/share/cinnamon/applets/panel-launchers@cinnamon.org/applet.js:55
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:602
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:606
 #: files/usr/lib/cinnamon-settings/bin/XletSettings.py:71
 #: files/usr/lib/cinnamon-settings/modules/cs_startup.py:411
 msgid "Remove"
@@ -399,7 +399,7 @@ msgstr ""
 
 #: js/ui/workspace.js:1495
 #: files/usr/share/cinnamon/applets/window-list@cinnamon.org/applet.js:633
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:989
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:993
 #: files/usr/lib/cinnamon-settings/bin/Spices.py:154
 #: files/usr/lib/cinnamon-settings/modules/cs_default.py:240
 #: files/usr/lib/cinnamon-settings/modules/cs_windows.py:179
@@ -566,14 +566,14 @@ msgid "Please provide your password to uninstall this application"
 msgstr ""
 
 #: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:259
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:184
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:611
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:186
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:615
 msgid "Add to panel"
 msgstr ""
 
 #: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:262
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:186
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:613
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:188
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:617
 msgid "Add to desktop"
 msgstr ""
 
@@ -586,7 +586,7 @@ msgid "Add to favorites"
 msgstr ""
 
 #: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:273
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:625
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:629
 msgid "Uninstall"
 msgstr ""
 
@@ -869,8 +869,8 @@ msgid "Launch"
 msgstr ""
 
 #: files/usr/share/cinnamon/applets/panel-launchers@cinnamon.org/applet.js:47
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:192
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:617
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:194
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:621
 #: files/usr/lib/cinnamon-settings/modules/cs_keyboard.py:799
 #: files/usr/lib/cinnamon-settings/modules/cs_startup.py:400
 #: files/usr/lib/cinnamon-settings/modules/cs_startup.py:680
@@ -891,7 +891,7 @@ msgid "Laptop battery"
 msgstr ""
 
 #: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:52
-#: files/usr/lib/cinnamon-settings/modules/cs_power.py:306
+#: files/usr/lib/cinnamon-settings/modules/cs_power.py:311
 msgid "UPS"
 msgstr ""
 
@@ -920,24 +920,24 @@ msgid "Cell phone"
 msgstr ""
 
 #: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:64
-#: files/usr/lib/cinnamon-settings/modules/cs_power.py:390
+#: files/usr/lib/cinnamon-settings/modules/cs_power.py:395
 msgid "Media player"
 msgstr ""
 
 #: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:66
-#: files/usr/lib/cinnamon-settings/modules/cs_power.py:381
+#: files/usr/lib/cinnamon-settings/modules/cs_power.py:386
 msgid "Tablet"
 msgstr ""
 
 #: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:68
 #: files/usr/lib/cinnamon-settings/modules/cs_desktop.py:43
-#: files/usr/lib/cinnamon-settings/modules/cs_power.py:393
+#: files/usr/lib/cinnamon-settings/modules/cs_power.py:398
 msgid "Computer"
 msgstr ""
 
 #: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:227
 #: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:397
-#: files/usr/lib/cinnamon-settings/modules/cs_power.py:213
+#: files/usr/lib/cinnamon-settings/modules/cs_power.py:218
 msgid "Brightness"
 msgstr ""
 
@@ -989,12 +989,12 @@ msgstr[0] ""
 msgstr[1] ""
 
 #: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:293
-#: files/usr/lib/cinnamon-settings/modules/cs_power.py:347
+#: files/usr/lib/cinnamon-settings/modules/cs_power.py:352
 msgid "Fully charged"
 msgstr ""
 
 #: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:297
-#: files/usr/lib/cinnamon-settings/modules/cs_power.py:331
+#: files/usr/lib/cinnamon-settings/modules/cs_power.py:336
 msgid "Using battery power"
 msgstr ""
 
@@ -1259,8 +1259,8 @@ msgid "Cancel"
 msgstr ""
 
 #: files/usr/share/cinnamon/applets/trash@cinnamon.org/applet.js:132
-#: files/usr/lib/cinnamon-settings/modules/cs_power.py:335
-#: files/usr/lib/cinnamon-settings/modules/cs_power.py:349
+#: files/usr/lib/cinnamon-settings/modules/cs_power.py:340
+#: files/usr/lib/cinnamon-settings/modules/cs_power.py:354
 msgid "Empty"
 msgstr ""
 
@@ -1273,7 +1273,7 @@ msgid "System Settings"
 msgstr ""
 
 #: files/usr/share/cinnamon/applets/user@cinnamon.org/applet.js:77
-#: files/usr/lib/cinnamon-settings/modules/cs_power.py:482
+#: files/usr/lib/cinnamon-settings/modules/cs_power.py:487
 msgid "Lock Screen"
 msgstr ""
 
@@ -1689,7 +1689,7 @@ msgid "Picture"
 msgstr ""
 
 #: files/usr/lib/cinnamon-settings-users/cinnamon-settings-users.py:504
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:304
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:308
 #: files/usr/lib/cinnamon-settings/modules/cs_startup.py:697
 #: files/usr/lib/cinnamon-settings/modules/cs_user.py:62
 #: files/usr/lib/cinnamon-menu-editor/cme/MainWindow.py:152
@@ -1759,127 +1759,135 @@ msgstr ""
 msgid "Installed extensions"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:188
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:615
-msgid "Add to Cinnamon"
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:110
+msgid "Installed themes"
 msgstr ""
 
 #: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:190
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:621
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:619
+msgid "Add to Cinnamon"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:192
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:625
 msgid "Apply theme"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:198
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:201
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:580
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:587
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:200
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:203
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:584
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:591
 msgid "Configure"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:205
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:207
 msgid "Restore default theme"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:207
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:209
 msgid "Remove all desklets"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:209
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:211
 msgid "Disable all extensions"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:211
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:213
 msgid "Restore to default"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:221
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:223
 msgid "All applets"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:222
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:224
 msgid "Active applets"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:223
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:225
 msgid "Inactive applets"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:225
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:227
 msgid "All desklets"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:226
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:228
 msgid "Active desklets"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:227
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:229
 msgid "Inactive desklets"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:229
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:231
 msgid "All extensions"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:230
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:232
 msgid "Active extensions"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:231
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:233
 msgid "Inactive extensions"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:241
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:243
 #: files/usr/lib/cinnamon-menu-editor/cme/MainWindow.py:165
 msgid "Show"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:292
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:294
 msgid "Available applets (online)"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:294
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:296
 msgid "Available desklets (online)"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:296
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:298
 msgid "Available extensions (online)"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:305
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:542
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:300
+msgid "Available themes (online)"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:309
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:546
 msgid "Popularity"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:306
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:310
 #: files/usr/lib/cinnamon-settings/modules/cs_screensaver.py:107
 msgid "Date"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:317
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:321
 msgid "Sort by"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:401
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:405
 msgid "Install or update selected items"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:403
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:407
 msgid "Select updated"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:405
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:409
 msgid "Refresh list"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:507
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:511
 msgid "Cannot be uninstalled"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:515
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:519
 msgid "In use"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:517
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:521
 #, python-format
 msgid ""
 "\n"
@@ -1887,60 +1895,60 @@ msgid ""
 "Instance count: %d"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:521
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:525
 msgid ""
 "Problem loading - please check Looking Glass or your system's error log"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:537
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:541
 msgid "Update available"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:539
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:543
 msgid "Installed and up-to-date"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:596
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:600
 msgid "Remove from panel"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:598
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:602
 msgid "Remove from desktop"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:600
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:604
 msgid "Remove from Cinnamon"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:751
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:755
 msgid "Unmark"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:757
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:761
 msgid "Mark for upgrade"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:759
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:763
 msgid "Mark for installation"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:763
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:785
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:767
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:789
 msgid "More info"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:896
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:900
 msgid "Please restart Cinnamon for the changes to take effect"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:947
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:951
 #, python-format
 msgid ""
 "Extension %s is not compatible with current version of cinnamon. Using it "
 "may break your system. Load anyway?"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:975
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:979
 msgid ""
 "\n"
 "There was a problem loading the selected item, and it has been disabled.\n"
@@ -1950,52 +1958,52 @@ msgid ""
 "Please contact the developer."
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:987
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:991
 msgid "View logfile(s)"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:1009
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:1013
 msgid ""
 "There are multiple instances, do you want to remove all of them?\n"
 "\n"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:1030
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:1034
 #, python-format
 msgid "Are you sure you want to completely remove %s?"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:1101
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:1105
 msgid ""
 "This operation will update the selected items.\n"
 "\n"
 "Do you want to continue?"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:1103
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:1107
 msgid ""
 "This operation will update the selected item.\n"
 "\n"
 "Do you want to continue?"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:1119
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:1123
 #, python-format
 msgid "%d updates available!"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:1121
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:1125
 #, python-format
 msgid "%d update available!"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:1181
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:1185
 msgid ""
 "This will restore the default set of enabled applets. Are you sure you want "
 "to do this?"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:1183
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:1187
 msgid ""
 "This will restore the default set of enabled desklets. Are you sure you want"
 " to do this?"
@@ -2514,9 +2522,9 @@ msgstr ""
 
 #: files/usr/lib/cinnamon-settings/modules/cs_default.py:179
 #: files/usr/lib/cinnamon-settings/modules/cs_power.py:12
-#: files/usr/lib/cinnamon-settings/modules/cs_power.py:478
-#: files/usr/lib/cinnamon-settings/modules/cs_power.py:487
+#: files/usr/lib/cinnamon-settings/modules/cs_power.py:483
 #: files/usr/lib/cinnamon-settings/modules/cs_power.py:492
+#: files/usr/lib/cinnamon-settings/modules/cs_power.py:497
 msgid "Do nothing"
 msgstr ""
 
@@ -3408,16 +3416,16 @@ msgstr ""
 
 #: files/usr/lib/cinnamon-settings/modules/cs_keyboard.py:153
 #: files/usr/lib/cinnamon-settings/modules/cs_power.py:8
-#: files/usr/lib/cinnamon-settings/modules/cs_power.py:476
-#: files/usr/lib/cinnamon-settings/modules/cs_power.py:483
+#: files/usr/lib/cinnamon-settings/modules/cs_power.py:481
+#: files/usr/lib/cinnamon-settings/modules/cs_power.py:488
 msgid "Suspend"
 msgstr ""
 
 #: files/usr/lib/cinnamon-settings/modules/cs_keyboard.py:154
 #: files/usr/lib/cinnamon-settings/modules/cs_power.py:10
-#: files/usr/lib/cinnamon-settings/modules/cs_power.py:477
-#: files/usr/lib/cinnamon-settings/modules/cs_power.py:485
-#: files/usr/lib/cinnamon-settings/modules/cs_power.py:491
+#: files/usr/lib/cinnamon-settings/modules/cs_power.py:482
+#: files/usr/lib/cinnamon-settings/modules/cs_power.py:490
+#: files/usr/lib/cinnamon-settings/modules/cs_power.py:496
 msgid "Hibernate"
 msgstr ""
 
@@ -4069,7 +4077,7 @@ msgid "Allow the pointer to pass through the edges of adjacent panels"
 msgstr ""
 
 #: files/usr/lib/cinnamon-settings/modules/cs_power.py:9
-#: files/usr/lib/cinnamon-settings/modules/cs_power.py:484
+#: files/usr/lib/cinnamon-settings/modules/cs_power.py:489
 msgid "Shutdown immediately"
 msgstr ""
 
@@ -4200,112 +4208,112 @@ msgstr ""
 msgid "When the battery is critically low"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/modules/cs_power.py:184
-#: files/usr/lib/cinnamon-settings/modules/cs_power.py:203
+#: files/usr/lib/cinnamon-settings/modules/cs_power.py:189
 #: files/usr/lib/cinnamon-settings/modules/cs_power.py:208
+#: files/usr/lib/cinnamon-settings/modules/cs_power.py:213
 msgid "Power"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/modules/cs_power.py:185
-#: files/usr/lib/cinnamon-settings/modules/cs_power.py:204
-#: files/usr/lib/cinnamon-settings/modules/cs_power.py:210
-#: files/usr/lib/cinnamon-settings/modules/cs_power.py:252
-#: files/usr/lib/cinnamon-settings/modules/cs_power.py:260
+#: files/usr/lib/cinnamon-settings/modules/cs_power.py:190
+#: files/usr/lib/cinnamon-settings/modules/cs_power.py:209
+#: files/usr/lib/cinnamon-settings/modules/cs_power.py:215
+#: files/usr/lib/cinnamon-settings/modules/cs_power.py:257
+#: files/usr/lib/cinnamon-settings/modules/cs_power.py:265
 msgid "Batteries"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/modules/cs_power.py:217
-#: files/usr/lib/cinnamon-settings/modules/cs_power.py:519
+#: files/usr/lib/cinnamon-settings/modules/cs_power.py:222
+#: files/usr/lib/cinnamon-settings/modules/cs_power.py:524
 msgid "Screen brightness"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/modules/cs_power.py:220
+#: files/usr/lib/cinnamon-settings/modules/cs_power.py:225
 msgid "On battery, dim screen when inactive"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/modules/cs_power.py:222
+#: files/usr/lib/cinnamon-settings/modules/cs_power.py:227
 msgid "Brightness level when inactive"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/modules/cs_power.py:224
+#: files/usr/lib/cinnamon-settings/modules/cs_power.py:229
 msgid "Dim screen after inactive for"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/modules/cs_power.py:270
+#: files/usr/lib/cinnamon-settings/modules/cs_power.py:275
 msgid "Devices"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/modules/cs_power.py:292
+#: files/usr/lib/cinnamon-settings/modules/cs_power.py:297
 #, python-format
 msgid "Caution low UPS, %s remaining"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/modules/cs_power.py:294
+#: files/usr/lib/cinnamon-settings/modules/cs_power.py:299
 #, python-format
 msgid "Using UPS power - %s remaining"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/modules/cs_power.py:300
+#: files/usr/lib/cinnamon-settings/modules/cs_power.py:305
 msgid "Caution low UPS"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/modules/cs_power.py:302
+#: files/usr/lib/cinnamon-settings/modules/cs_power.py:307
 msgid "Using UPS power"
-msgstr ""
-
-#: files/usr/lib/cinnamon-settings/modules/cs_power.py:319
-#, python-format
-msgid "Charging - %s until fully charged"
-msgstr ""
-
-#: files/usr/lib/cinnamon-settings/modules/cs_power.py:322
-#, python-format
-msgid "Caution low battery, %s remaining"
 msgstr ""
 
 #: files/usr/lib/cinnamon-settings/modules/cs_power.py:324
 #, python-format
-msgid "Using battery power - %s remaining"
+msgid "Charging - %s until fully charged"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/modules/cs_power.py:327
+#, python-format
+msgid "Caution low battery, %s remaining"
 msgstr ""
 
 #: files/usr/lib/cinnamon-settings/modules/cs_power.py:329
+#, python-format
+msgid "Using battery power - %s remaining"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/modules/cs_power.py:334
 msgid "Charging"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/modules/cs_power.py:333
+#: files/usr/lib/cinnamon-settings/modules/cs_power.py:338
 msgid "Charging - fully charged"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/modules/cs_power.py:339
-#: files/usr/lib/cinnamon-settings/modules/cs_power.py:396
+#: files/usr/lib/cinnamon-settings/modules/cs_power.py:344
+#: files/usr/lib/cinnamon-settings/modules/cs_power.py:401
 msgid "Battery"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/modules/cs_power.py:355
+#: files/usr/lib/cinnamon-settings/modules/cs_power.py:360
 msgid "Secondary battery"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/modules/cs_power.py:372
+#: files/usr/lib/cinnamon-settings/modules/cs_power.py:377
 msgid "Uninterruptible power supply"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/modules/cs_power.py:375
+#: files/usr/lib/cinnamon-settings/modules/cs_power.py:380
 msgid "Wireless mouse"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/modules/cs_power.py:378
+#: files/usr/lib/cinnamon-settings/modules/cs_power.py:383
 msgid "Wireless Keyboard"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/modules/cs_power.py:384
+#: files/usr/lib/cinnamon-settings/modules/cs_power.py:389
 msgid "Personal digital assistant"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/modules/cs_power.py:387
+#: files/usr/lib/cinnamon-settings/modules/cs_power.py:392
 msgid "Cellphone"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/modules/cs_power.py:486
+#: files/usr/lib/cinnamon-settings/modules/cs_power.py:491
 msgid "Ask"
 msgstr ""
 

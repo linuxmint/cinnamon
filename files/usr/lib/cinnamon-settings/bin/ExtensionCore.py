@@ -106,6 +106,8 @@ class ExtensionSidePage (SidePage):
             self.stack.add_titled(extensions_vbox, "installed", _("Installed desklets"))
         elif self.collection_type == "extension":
             self.stack.add_titled(extensions_vbox, "installed", _("Installed extensions"))
+        elif self.collection_type == "theme":
+            self.stack.add_titled(extensions_vbox, "installed", _("Installed themes"))
 
         self.stack.expand = True
 
@@ -294,6 +296,8 @@ class ExtensionSidePage (SidePage):
             self.stack.add_titled(getmore_vbox, "more", _("Available desklets (online)"))
         elif self.collection_type == "extension":
             self.stack.add_titled(getmore_vbox, "more", _("Available extensions (online)"))
+        elif self.collection_type == "theme":
+            self.stack.add_titled(getmore_vbox, "more", _("Available themes (online)"))
 
         self.stack.connect("notify::visible-child-name", self.on_page_changed)
 
