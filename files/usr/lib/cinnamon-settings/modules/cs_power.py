@@ -246,7 +246,7 @@ class Module:
         # listed laptop battery as the primary device
 
         for device in devices:
-            if device[1] == UPowerGlib.DeviceKind.UPS and device_states[i] == UPowerGlib.DeviceState.DISCHARGING:
+            if device[1] == UPowerGlib.DeviceKind.UPS and device[4] == UPowerGlib.DeviceState.DISCHARGING:
                 ups_as_primary = True
 
         for device in devices:
