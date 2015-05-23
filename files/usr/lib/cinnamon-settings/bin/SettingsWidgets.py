@@ -841,6 +841,10 @@ class GSettingsRange(SettingsWidget):
         self.content_widget.set_inverted(invert)
         self.content_widget.set_draw_value(False)
 
+        val = self.settings.get_value(self.key)
+        if val.get_type_string() == "i":
+            self.content_widget.set_round_digits(0)
+
         if invert:
             self.step *= -1 # Gtk.Scale.new_with_range want a positive value, but our custom scroll handler wants a negative value
 
