@@ -318,6 +318,11 @@ class ScreensaverBox(Gtk.Box):
         if ss_type == 'default':
             self.socket_box.forall(lambda x: x.destroy())
 
+            px = GdkPixbuf.Pixbuf.new_from_file_at_size("/usr/share/cinnamon/thumbnails/wallclock.png", -1, 240)
+            w = Gtk.Image.new_from_pixbuf(px)
+            w.show()
+            self.socket_box.pack_start(w, True, True, 0)
+
         if ss_type == 'webkit':
             command = [self.webkit_executable, "--plugin", uuid]
         elif ss_type == 'xscreensaver':
