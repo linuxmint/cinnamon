@@ -106,6 +106,12 @@ class MainWindow:
             filtered_path = side_view.get_model().convert_path_to_child_path(selected_items[0])
             if filtered_path is not None:
                 self.go_to_sidepage(cat, filtered_path)
+    
+    def _on_sidepage_hide_stack(self):
+        self.stack_switcher.set_opacity(0)
+        
+    def _on_sidepage_show_stack(self):
+        self.stack_switcher.set_opacity(1)
 
     def go_to_sidepage(self, cat, path):
         iterator = self.store[cat].get_iter(path)
@@ -115,7 +121,13 @@ class MainWindow:
             sidePage.build()
             if sidePage.stack:
                 self.stack_switcher.set_stack(sidePage.stack)
-                self.stack_switcher.set_opacity(1)
+                if sidePage.stack.get_visible():
+                    self.stack_switcher.set_opacity(1)
+                else:
+                    self.stack_switcher.set_opacity(0)
+                if hasattr(sidePage, "connect_proxy"):
+                    sidePage.connect_proxy("hide_stack", self._on_sidepage_hide_stack)
+                    sidePage.connect_proxy("show_stack", self._on_sidepage_show_stack)
             else:
                 self.stack_switcher.set_opacity(0)
             self.main_stack.set_visible_child_name("content_box_page")
