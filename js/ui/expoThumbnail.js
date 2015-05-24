@@ -847,6 +847,9 @@ ExpoWorkspaceThumbnail.prototype = {
     },
 
     onScrollEvent: function (actor, event) {
+        if (Main.expo.animationInProgress)
+            return;
+
         switch ( event.get_scroll_direction() ) {
         case Clutter.ScrollDirection.UP:
             Main.wm.actionMoveWorkspaceLeft();
@@ -1701,6 +1704,9 @@ ExpoThumbnailsBox.prototype = {
     },
 
     onScrollEvent: function (actor, event) {
+        if (Main.expo.animationInProgress)
+            return;
+
         switch ( event.get_scroll_direction() ) {
         case Clutter.ScrollDirection.UP:
             Main.wm.actionMoveWorkspaceUp();
