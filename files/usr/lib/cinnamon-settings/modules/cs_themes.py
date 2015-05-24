@@ -49,7 +49,7 @@ class Module:
 
             widget = self.make_group(_("Desktop"), self.cinnamon_chooser)
             center_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
-            button = Gtk.LinkButton()
+            button = Gtk.LinkButton("")
             button.set_label(_("Add/remove desktop themes..."))
             button.connect("activate-link", self.add_remove_cinnamon_themes)
             center_box.pack_end(button, False, False, 0)

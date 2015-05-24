@@ -562,7 +562,7 @@ class SettingsBox(Gtk.Frame):
         toolbar_context = toolbar.get_style_context()
         Gtk.StyleContext.add_class(Gtk.Widget.get_style_context(toolbar), "cs-header")
 
-        label = Gtk.Label.new()
+        label = Gtk.Label()
         label.set_markup("<b>%s</b>" % title)
         title_holder = Gtk.ToolItem()
         title_holder.add(label)
