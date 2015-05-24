@@ -1,6 +1,4 @@
 ## Process this file with automake to produce Makefile.in
-$(DOC_MAIN_SGML_FILE): $(top_srcdir)/js/*/* gen_lib.py gen_doc.py
-	./gen_doc.py $(top_srcdir) $(PACKAGE_VERSION)
 
 # we want $(DOC_MAIN_SGML_FILE) to be built before sgml-build
 # and sgml-build depends on $(DOC_MODULE)-sections.txt
@@ -15,7 +13,7 @@ AUTOMAKE_OPTIONS = 1.6
 # of using the various options.
 
 # The name of the module, e.g. 'glib'.
-DOC_MODULE=cinnamon-js
+DOC_MODULE=cinnamon-tutorials
 
 # Uncomment for versioned docs and specify the version of the module, e.g. '2'.
 #DOC_MODULE_VERSION=2
@@ -67,12 +65,32 @@ IGNORE_HFILES=
 
 # Images to copy into HTML directory.
 # e.g. HTML_IMAGES=$(top_srcdir)/gtk/stock-icons/stock_about_24.png
-HTML_IMAGES=
+HTML_IMAGES=tutorials/settings.png
+
+# Extra SGML files that are included by $(DOC_MAIN_SGML_FILE).
+# e.g. content_files=running.sgml building.sgml changes-2.0.sgml
+content_files= \
+	building.xml \
+	documenting-source.xml \
+	documenting-tutorial.xml \
+	using-documentation.xml \
+	write-applet.xml \
+	xlet-settings.xml \
+	xlet-versioning.xml \
+        $(NULL)
 
 # SGML files where gtk-doc abbrevations (#GtkWidget) are expanded
 # These files must be listed here *and* in content_files
 # e.g. expand_content_files=running.sgml
-expand_content_files=
+expand_content_files= \
+	building.xml \
+	documenting-source.xml \
+	documenting-tutorial.xml \
+	using-documentation.xml \
+	write-applet.xml \
+	xlet-settings.xml \
+	xlet-versioning.xml \
+        $(NULL)
 
 # CFLAGS and LDFLAGS for compiling gtkdoc-scangobj with your library.
 # Only needed if you are using gtkdoc-scangobj to dynamically query widget
