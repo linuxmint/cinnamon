@@ -70,10 +70,12 @@ class Module:
         self.settings.bind(GTK_RECENT_MAX_AGE, self.spinner, "value", Gio.SettingsBindFlags.DEFAULT)
 
     def unbind_spinner(self):
-        try:
-            Gio.Settings.unbind(self.spinner, "value")
-        except:
-            Gio.Settings.unbind(hash(self.spinner), "value")
+        # This should have self.settings.unbind or something.. but unbind is broken via introspection
+        # in more than one glib version.  This achieves the same thing (preventing updates to the spinner)
+        # by overwriting the .DEFAULT binding with a .GET_NO_CHANGES which only fetches the settings value
+        # once at binding time.
+        self.settings.bind(GTK_RECENT_MAX_AGE, self.spinner, "value",
+                           Gio.SettingsBindFlags.GET | Gio.SettingsBindFlags.GET_NO_CHANGES)
 
     def on_indefinite_toggled(self, widget, gparam):
         active = widget.get_active()
