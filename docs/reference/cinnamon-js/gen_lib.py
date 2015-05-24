@@ -276,11 +276,7 @@ SGML_FORMAT = '''\
       for Cinnamon {version}.
     </releaseinfo>
   </bookinfo>
-  {tutorials}
-  <part id="cinnamon-js-reference">
-    <title>Cinnamon Javascript Reference</title>
-    {chapters}
-  </part>
+  {chapters}
 </book>'''
 
 SGML_CHAPTER_FORMAT = '''
@@ -465,7 +461,6 @@ PROPERTIES_ITEM_FORMAT = '''
 
 def write_sgml(files, version):
     sgml = open('cinnamon-js-docs.sgml', 'w')
-    tutorials = open('tutorials/index.xml', 'r')
 
     chapters = []
 
@@ -488,7 +483,6 @@ def write_sgml(files, version):
 
     sgml.write(SGML_FORMAT.format(
         version = version,
-        tutorials = tutorials.read(),
         chapters = "\n".join(chapters)))
 
 def create_file(obj):

@@ -2,22 +2,22 @@
   <title>Using documentation</title>
   <sect2>
     <title>Overview</title>
-    <para>The documentation of Cinnamon is separated into 3 different parts (4 if you count muffin). What you are currently reading is part of the Javascript reference, which describes the Javascript part of Cinnamon. This also includes the general top-level overviews and tutorials you will need for Cinnamon. This is named the "Cinnamon Javascript Reference Manual".</para>
+    <para>The documentation of Cinnamon is separated into 4 different parts (5 if you count muffin). What you are currently reading is the tutorials, which includes the general top-level overviews and tutorials you will need for Cinnamon. This is named "Cinnamon Tutorials".</para>
 
-    <para>The first few sections of the JS part are top-level descriptions and overviews, while the last part is a technical reference for the individual functions and objects available in Cinnamon. Note that this documentation is aimed at both applet/extension developers and Cinnamon developers themselves. So depending on who you are, some of the information might be entirely irrelevant.</para>
+    <para>The second part of the Javascript reference, which describes the Javascript part of Cinnamon. This is named the "Cinnamon Javascript Reference Manual". This is a technical reference for the individual functions and objects available in Cinnamon. Note that this documentation is aimed at both applet/extension developers and Cinnamon developers themselves. So depending on who you are, some of the information might be entirely irrelevant.</para>
 
     <para>The second part of the documentation is for the C part of Cinnamon, which is simply refered to as the "Cinnamon Reference Manual".</para>
 
     <para>The last part is the documentation for Shell toolkit, or St. This is the graphical toolkit used to draw widgets on the screen (similar to Gtk).</para>
 
-    <para>The modules covered by this documentation are those imported via <code>imports.ui.*</code> and <code>imports.misc.*</code>. The <link linkend="CinnamonGlobal"><code>global</code></link> object is documented in the C part of Cinnamon, as well as things accessed through <code>imports.gi.Cinnamon</code>. Things accessed through <code>imports.gi.St</code> are, unsurprisingly, documented in the St part.</para>
+    <para>The modules covered by the Javascript documentation are those imported via <code>imports.ui.*</code> and <code>imports.misc.*</code>. The <link linkend="CinnamonGlobal"><code>global</code></link> object is documented in the C part of Cinnamon, as well as things accessed through <code>imports.gi.Cinnamon</code>. Things accessed through <code>imports.gi.St</code> are, unsurprisingly, documented in the St part.</para>
 
     <para><code>imports.gi.Meta</code> refers to Muffin, while others (eg. <code>imports.gi.Gio</code>) are third-party (usually GNOME) libraries that are documented elsewhere.</para>
   </sect2>
 
   <sect2>
     <title>Accessing the documentation</title>
-    <para>There are two ways of accessing this documentation, one of which is what you are currently using. The first method is accessing it online, which will be availble at <ulink url="http://cinnamon.linuxmint.com">http://cinnamon.linuxmint.com</ulink>.</para>
+    <para>There are two ways of accessing this documentation, one of which is what you are currently using. The first method is accessing it online, which will be availble at <ulink url="http://linuxmint.github.io">http://linuxmint.github.io</ulink>.</para>
 
     <para>The second method is to access it locally. Install the program <code>devhelp</code> and the <code>cinnamon-doc</code> package (might be named differently in different distros or included in the <code>cinnamon</code> package itself). Then run the program <code>devhelp</code> to access all documentations you have installed in your system (not limited to Cinnamon).</para>
   </sect2>

@@ -1,6 +1,7 @@
 <chapter id="documenting-tutorial">
   <title>Writing tutorials</title>
-  <para>It is also possible to write tutorials that are not part of the code. For example, this. They can be found in <code>docs/reference/cinnamon-js/tutorials/</code>, and are included into the cinnamon documentation via the <code>docs/reference/cinnamon-js/index.xml</code> file. These are plain docbook items, and existing docbook tutorials are suitable.</para> 
+  <para>It is also possible to write tutorials that are not part of the code. For example, this. They can be found in <code>docs/reference/cinnamon-tutorials/</code>, and are included into the cinnamon documentation via the <code>docs/reference/cinnamon-tutorials/cinnamon-tutorials-docs.sgml.in</code> file. These are plain docbook items, and existing docbook tutorials are suitable.</para>
+
   <para>The following sections will guide you through the DocBook weirdness</para>
 
   <sect2 id="documenting-code-tutorial-general">
