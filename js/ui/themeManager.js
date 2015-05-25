@@ -24,15 +24,15 @@ ThemeManager.prototype = {
     
     _findTheme: function(themeName) {
         let themeDirectory = null;
-        let path = GLib.get_home_dir() + '/.themes/' + themeName + "/cinnamon/";
-        let file = Gio.file_new_for_path(path + "cinnamon.css");
+        let path = GLib.build_filenamev([GLib.get_home_dir(), '.themes', themeName, 'cinnamon']);
+        let file = Gio.file_new_for_path(GLib.build_filenamev([path, 'cinnamon.css']));
         if (file.query_exists(null))
             themeDirectory = path;
         else {
             let sysdirs = GLib.get_system_data_dirs();
             for (let i = 0; i < sysdirs.length; i++) {
-                path = sysdirs[i] + '/themes/' + themeName + "/cinnamon/";
-                let file = Gio.file_new_for_path(path + "cinnamon.css");
+                path = GLib.build_filenamev([sysdirs[i], 'themes', themeName, 'cinnamon']);
+                let file = Gio.file_new_for_path(GLib.build_filenamev([path, 'cinnamon.css']));
                 if (file.query_exists(null)) {
                     themeDirectory = path;
                     break;
@@ -59,7 +59,7 @@ ThemeManager.prototype = {
 
         if (_themeName) {
             this.themeDirectory = this._findTheme(_themeName);
-            if (this.themeDirectory) _stylesheet = this.themeDirectory + "cinnamon.css";
+            if (this.themeDirectory) _stylesheet = GLib.build_filenamev([this.themeDirectory, 'cinnamon.css']);
         }
 
         if (_stylesheet)
@@ -72,7 +72,7 @@ ThemeManager.prototype = {
             iconTheme.append_search_path(this.themeDirectory);
             global.log('added icon directory: ' + this.themeDirectory);
         }
-        this.emit("theme-set");
+        this.emit('theme-set');
     }
 };
 Signals.addSignalMethods(ThemeManager.prototype);
