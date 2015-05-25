@@ -1008,7 +1008,7 @@ MyApplet.prototype = {
 
             this.settings = new Settings.AppletSettings(this, "menu@cinnamon.org", instance_id);
 
-            this.settings.bindProperty(Settings.BindingDirection.IN, "show-places", "showPlaces", this._refreshPlaces, null);
+            this.settings.bindProperty(Settings.BindingDirection.IN, "show-places", "showPlaces", this._refreshBelowApps, null);
 
             this.settings.bindProperty(Settings.BindingDirection.IN, "activate-on-hover", "activateOnHover", this._updateActivateOnHover, null);
             this._updateActivateOnHover();
@@ -1055,11 +1055,11 @@ MyApplet.prototype = {
             this.RecentManager = new DocInfo.DocManager();
             this.privacy_settings = new Gio.Settings( {schema: PRIVACY_SCHEMA} );
             this._display();
-            appsys.connect('installed-changed', Lang.bind(this, this._refreshApps));
+            appsys.connect('installed-changed', Lang.bind(this, this._refreshAll));
             AppFavorites.getAppFavorites().connect('changed', Lang.bind(this, this._refreshFavs));
             this.settings.bindProperty(Settings.BindingDirection.IN, "hover-delay", "hover_delay_ms", this._update_hover_delay, null);
             this._update_hover_delay();
-            Main.placesManager.connect('places-updated', Lang.bind(this, this._refreshPlaces));
+            Main.placesManager.connect('places-updated', Lang.bind(this, this._refreshBelowApps));
             this.RecentManager.connect('changed', Lang.bind(this, this._refreshRecent));
             this.privacy_settings.connect("changed::" + REMEMBER_RECENT_KEY, Lang.bind(this, this._refreshRecent));
             this._fileFolderAccessActive = false;
@@ -1114,6 +1114,11 @@ MyApplet.prototype = {
     _refreshAll: function() {
         this._refreshApps();
         this._refreshFavs();
+        this._refreshPlaces();
+        this._refreshRecent();
+    },
+
+    _refreshBelowApps: function() {
         this._refreshPlaces();
         this._refreshRecent();
     },
