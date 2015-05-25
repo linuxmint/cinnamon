@@ -383,11 +383,10 @@ MyApplet.prototype = {
     },
 
     _move_launcher_in_proxy: function(launcher, new_index) {
-        let id = launcher.getId();
         let proxy_member;
 
         for (let i = 0; i < this._settings_proxy.length; i++) {
-            if (this._settings_proxy[i].file == id) {
+            if (this._settings_proxy[i].launcher == launcher) {
                 proxy_member = this._settings_proxy.splice(i, 1)[0];
                 break;
             }
@@ -420,22 +419,6 @@ MyApplet.prototype = {
         return [app, appinfo]
     },
 
-    loadApps: function() {
-        let desktopFiles = this.launcherList;
-        let apps = new Array();
-        this._settings_proxy = new Array();
-        for (let i = 0; i < desktopFiles.length; i++) {
-            let [app, appinfo] = this.loadSingleApp(desktopFiles[i]);
-            if (app || appinfo) {
-                apps.push([app, appinfo]);
-                this._settings_proxy.push( { file: desktopFiles[i], valid: true } );
-            } else {
-                this._settings_proxy.push( { file: desktopFiles[i], valid: false } );
-            }
-        }
-        return apps;
-    },
-
     on_panel_height_changed: function() {
         this.reload();
     },
@@ -443,14 +426,23 @@ MyApplet.prototype = {
     reload: function() {
         this.myactor.destroy_children();
         this._launchers = new Array();
+        this._settings_proxy = new Array();
 
-        let apps = this.loadApps();
-        for (let i = 0; i < apps.length; i++){
-            let app = apps[i];
-            let launcher = new PanelAppLauncher(this, app[0], app[1], this.orientation, this._panelHeight, this._scaleMode);
-            this.myactor.add(launcher.actor);
-            this._launchers.push(launcher);
+        for (let file of this.launcherList) {
+            let [app, appinfo] = this.loadSingleApp(file);
+
+            if (app || appinfo) {
+                let launcher = new PanelAppLauncher(this, app, appinfo,
+                        this.orientation, this._panelHeight, this._scaleMode);
+                this.myactor.add(launcher.actor);
+                this._launchers.push(launcher);
+
+                this._settings_proxy.push({ file: file, valid: true, launcher: launcher });
+            } else {
+                this._settings_proxy.push({ file: file, valid: false });
+            }
         }
+
     },
 
     removeLauncher: function(launcher, delete_file) {
