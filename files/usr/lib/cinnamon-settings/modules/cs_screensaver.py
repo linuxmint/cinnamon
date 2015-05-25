@@ -192,7 +192,7 @@ class ScreensaverBox(Gtk.Box):
 
         self.gather_screensavers()
 
-        self.socket_box.connect("map", lambda x: self.on_row_activated(None, None))
+        self.socket_box.connect("map", self.on_mapped)
 
     def gather_screensavers(self):
         row = ScreensaverRow("", _("Screen Locker"), _("The standard cinnamon lock screen"), "", "default")
@@ -347,6 +347,17 @@ class ScreensaverBox(Gtk.Box):
                 socket.add_id(int(match.group(1)))
                 break
             line = self.proc.stdout.readline()
+
+    def on_mapped(self, widget):
+        self.on_row_activated(None, None)
+        GObject.idle_add(self.idle_scroll_to_selection)
+
+    def idle_scroll_to_selection(self):
+        row = self.list_box.get_selected_row()
+        alloc = row.get_allocation()
+
+        adjustment = self.list_box.get_adjustment()
+        adjustment.set_value(alloc.y)
 
     def add_row(self, row):
         self.list_box.add(row)
