@@ -316,7 +316,7 @@ class ScreensaverBox(Gtk.Box):
             self.settings.set_string('screensaver-name', uuid)
 
         if ss_type == 'default':
-            self.socket_box.forall(lambda x, y: x.destroy(), None)
+            self.socket_box.foreach(lambda x, y: x.destroy(), None)
 
         if ss_type == 'webkit':
             command = [self.webkit_executable, "--plugin", uuid]
@@ -335,7 +335,7 @@ class ScreensaverBox(Gtk.Box):
         while line:
             match = re.match('^\s*WINDOW ID=(\d+)\s*$', line.decode())
             if match:
-                self.socket_box.forall(lambda x, y: x.destroy(), None)
+                self.socket_box.foreach(lambda x, y: x.destroy(), None)
                 socket = Gtk.Socket()
                 socket.show()
                 self.socket_box.pack_start(socket, True, True, 0)
