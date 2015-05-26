@@ -71,28 +71,12 @@ MyApplet.prototype = {
                 return;
             }
 
-            let buggyIcons = ["pidgin", "thunderbird"];            
-
             global.log("Adding systray: " + role + " (" + icon.get_width() + "x" + icon.get_height() + "px)");
 
             if (icon.get_parent())
                 icon.get_parent().remove_child(icon);
 
-            if (this._scaleMode) {
-                let disp_size = this._panelHeight * ICON_SCALE_FACTOR;
-                if (icon.get_height() != disp_size) {
-                    if (icon.get_width() == 1 || icon.get_height() == 1 || buggyIcons.indexOf(role) != -1) {
-                        if (icon.get_height() > disp_size) {                        
-                            icon.set_height(disp_size);
-                            global.log("   Changed the height of " + role + " (" + icon.get_width() + "x" + icon.get_height() + "px)");
-                        }
-                    }
-                    else {                    
-                        icon.set_size(disp_size, disp_size);
-                        global.log("   Resized " + role + " (" + icon.get_width() + "x" + icon.get_height() + "px)");
-                    }
-                }                
-            }
+            this.resize_icon(icon, role);
 
             /* dropbox, for some reason, refuses to provide a correct size icon in our new situation.
              * Tried even with stalonetray, same results - all systray icons I tested work fine but dropbox.  I'm
@@ -107,15 +91,8 @@ MyApplet.prototype = {
 
             let timerId = 0;
             let i = 0;
-            timerId = Mainloop.timeout_add(500, Lang.bind(this, function() {               
-                if (this._scaleMode) {
-                    let disp_size = this._panelHeight * ICON_SCALE_FACTOR;
-                    let size = disp_size;
-                    if (icon.width == disp_size){
-                        size = disp_size - 1;
-                    }
-                    icon.set_size(size, size);
-                }
+            timerId = Mainloop.timeout_add(500, Lang.bind(this, function() {
+                this.resize_icon(icon, role);
                 i++;
                 if (i == 2) {
                     Mainloop.source_remove(timerId);
@@ -124,6 +101,23 @@ MyApplet.prototype = {
 
         } catch (e) {
             global.logError(e);
+        }
+    },
+
+    resize_icon: function(icon, role) {
+        if (this._scaleMode) {
+            let disp_size = this._panelHeight * ICON_SCALE_FACTOR;
+            let size;
+            if (icon.get_height() != disp_size) {
+                size = disp_size;
+            }
+            else {
+                // Force a resize with a slightly different size
+                size = disp_size - 1;
+            }
+
+            icon.set_size(size, size);
+            global.log("Resized " + role + " (" + icon.get_width() + "x" + icon.get_height() + "px)");
         }
     },
 
