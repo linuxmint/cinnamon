@@ -31,18 +31,20 @@
       Here’s a basic example of a <code>settings-schema.json</code> file, that can
       define settings for your applet:
     </para>
-    <programlisting>
-      {
-          "width": {
-              "type" : "scale",
-              "default" : 10,
-              "min" : 2,
-              "max" : 400,
-              "step" : 1,
-              "description" : "Amount of space in pixels"
-          }
-      }
-    </programlisting>
+    <informalexample>
+      <programlisting>
+        {
+            "width": {
+                "type" : "scale",
+                "default" : 10,
+                "min" : 2,
+                "max" : 400,
+                "step" : 1,
+                "description" : "Amount of space in pixels"
+            }
+        }
+      </programlisting>
+    </informalexample>
     <para>
       The most important item here to start is the key: <code>"width"</code>. This is what your applet is going to specify when binding a property to the setting provider. Within the <code>width</code> node are the various details specific to that key, and differ depending on what type of setting you’ll be using.
     </para>
