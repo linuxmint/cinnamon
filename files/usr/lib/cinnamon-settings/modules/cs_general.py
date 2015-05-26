@@ -25,6 +25,19 @@ class Module:
             combo = GSettingsComboBox(_("User interface scaling:"), "org.cinnamon.desktop.interface", "scaling-factor", ui_scales, valtype="uint")
             settings.add_row(combo)
 
+            # Some applications hard code the GNOME path for HiDPI settings,
+            # which is stupid, but we'll be nice and supply them with the right
+            # values.
+            schema = Gio.SettingsSchemaSource.get_default().lookup("org.gnome.desktop.interface", False)
+            if schema is not None:
+                gnome_settings = Gio.Settings("org.gnome.desktop.interface")
+                def on_changed (widget):
+                    tree_iter = widget.get_active_iter()
+                    if tree_iter is not None:
+                        gnome_settings["scaling-factor"] = combo.model[tree_iter][0]
+
+                combo.content_widget.connect('changed', on_changed)
+
             settings = page.add_section(_("Miscellaneous Options"))
 
             switch = GSettingsSwitch(_("Disable compositing for full-screen windows"), "org.cinnamon.muffin", "unredirect-fullscreen-windows")

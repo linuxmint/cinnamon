@@ -153,7 +153,7 @@ class ScreensaverBox(Gtk.Box):
 
         toolbar = Gtk.Toolbar.new()
         Gtk.StyleContext.add_class(Gtk.Widget.get_style_context(toolbar), "cs-header")
-        label = Gtk.Label.new()
+        label = Gtk.Label()
         label.set_markup("<b>%s</b>" % title)
         title_holder = Gtk.ToolItem()
         title_holder.add(label)
@@ -178,7 +178,7 @@ class ScreensaverBox(Gtk.Box):
 
         self.main_box.add(Gtk.Separator(orientation=Gtk.Orientation.HORIZONTAL))
 
-        scw = Gtk.ScrolledWindow.new()
+        scw = Gtk.ScrolledWindow()
         scw.expand = True
         scw.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC)
         scw.set_shadow_type(Gtk.ShadowType.NONE)
@@ -192,7 +192,7 @@ class ScreensaverBox(Gtk.Box):
 
         self.gather_screensavers()
 
-        self.socket_box.connect("map", lambda x: self.on_row_activated(None, None))
+        self.socket_box.connect("map", self.on_mapped)
 
     def gather_screensavers(self):
         row = ScreensaverRow("", _("Screen Locker"), _("The standard cinnamon lock screen"), "", "default")
@@ -316,7 +316,12 @@ class ScreensaverBox(Gtk.Box):
             self.settings.set_string('screensaver-name', uuid)
 
         if ss_type == 'default':
-            self.socket_box.forall(lambda x: x.destroy())
+            self.socket_box.foreach(lambda x, y: x.destroy(), None)
+
+            px = GdkPixbuf.Pixbuf.new_from_file_at_size("/usr/share/cinnamon/thumbnails/wallclock.png", -1, 240)
+            w = Gtk.Image.new_from_pixbuf(px)
+            w.show()
+            self.socket_box.pack_start(w, True, True, 0)
 
         if ss_type == 'webkit':
             command = [self.webkit_executable, "--plugin", uuid]
@@ -335,13 +340,24 @@ class ScreensaverBox(Gtk.Box):
         while line:
             match = re.match('^\s*WINDOW ID=(\d+)\s*$', line.decode())
             if match:
-                self.socket_box.forall(lambda x: x.destroy())
+                self.socket_box.foreach(lambda x, y: x.destroy(), None)
                 socket = Gtk.Socket()
                 socket.show()
                 self.socket_box.pack_start(socket, True, True, 0)
                 socket.add_id(int(match.group(1)))
                 break
             line = self.proc.stdout.readline()
+
+    def on_mapped(self, widget):
+        self.on_row_activated(None, None)
+        GObject.idle_add(self.idle_scroll_to_selection)
+
+    def idle_scroll_to_selection(self):
+        row = self.list_box.get_selected_row()
+        alloc = row.get_allocation()
+
+        adjustment = self.list_box.get_adjustment()
+        adjustment.set_value(alloc.y)
 
     def add_row(self, row):
         self.list_box.add(row)
@@ -375,11 +391,11 @@ class ScreensaverRow(Gtk.ListBoxRow):
         self.desc_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
         self.desc_box.props.hexpand = True
         self.desc_box.props.halign = Gtk.Align.START
-        self.name_label = Gtk.Label.new()
+        self.name_label = Gtk.Label()
         self.name_label.set_markup("<b>%s</b>" % self.name)
         self.name_label.props.xalign = 0.0
         self.desc_box.add(self.name_label)
-        self.comment_label = Gtk.Label.new()
+        self.comment_label = Gtk.Label()
         self.comment_label.set_markup("<small>%s</small>" % self.short_description)
         self.comment_label.props.xalign = 0.0
         self.comment_label.set_ellipsize(Pango.EllipsizeMode.END)
@@ -389,7 +405,7 @@ class ScreensaverRow(Gtk.ListBoxRow):
         grid.attach(self.desc_box, 0, 0, 1, 1)
 
         type_box = Gtk.Box()
-        type_label = Gtk.Label.new()
+        type_label = Gtk.Label()
         type_label.set_markup("<small><i>%s</i></small>" % self.ss_type)
         type_box.pack_start(type_label, True, True, 0)
         grid.attach_next_to(type_box, self.desc_box, Gtk.PositionType.RIGHT, 1, 1)

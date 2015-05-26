@@ -60,28 +60,19 @@ class Module:
         keywords = _("panel, height, bottom, top, autohide, size, layout")
         self.sidePage = SidePage(_("Panel"), "cs-panel", keywords, content_box, module=self)
 
-        self.settings = Gio.Settings.new("org.cinnamon");
-        self.settings.connect("changed::panels-enabled", self.on_panel_list_changed)
-        self.proxy = Gio.DBusProxy.new_sync(
-                Gio.bus_get_sync(Gio.BusType.SESSION, None),
-                Gio.DBusProxyFlags.NONE,
-                None,
-                "org.Cinnamon",
-                "/org/Cinnamon",
-                "org.Cinnamon",
-                None)
-
-        try:
-            if len(sys.argv) > 2 and sys.argv[1] == "panel":
-                self.panel_id = int(sys.argv[2])
-            else:
-                self.panel_id = int(self.settings.get_strv("panels-enabled")[0].split(":")[0])
-        except:
-            self.panel_id = -1
-
     def on_module_selected(self):
         if not self.loaded:
             print "Loading Panel module"
+
+            self.settings = Gio.Settings.new("org.cinnamon");
+
+            try:
+                if len(sys.argv) > 2 and sys.argv[1] == "panel":
+                    self.panel_id = int(sys.argv[2])
+                else:
+                    self.panel_id = int(self.settings.get_strv("panels-enabled")[0].split(":")[0])
+            except:
+                self.panel_id = -1
 
             self.monitor_layout = []
             self.panels = []
@@ -93,7 +84,6 @@ class Module:
             controller.fill_row()
             controller.pack_start(self.previous_button, False, False, 0)
             controller.pack_end(self.next_button, False, False, 0)
-
             self.previous_button.connect("clicked", self.on_previous_panel)
             self.next_button.connect("clicked", self.on_next_panel)
 
@@ -134,18 +124,42 @@ class Module:
 
             section.add_row(GSettingsSwitch(_("Allow the pointer to pass through the edges of adjacent panels"), "org.cinnamon", "no-adjacent-panel-barriers"))
 
-            self.add_panel_button.connect("clicked", self.on_add_panel)
+            self.add_panel_button.set_sensitive(False)
+
             self.revealer.connect("map", self.on_panel_list_changed)
+            self.settings.connect("changed::panels-enabled", self.on_panel_list_changed)
+
+            self.proxy = None
+
+            try:
+                Gio.DBusProxy.new_for_bus(Gio.BusType.SESSION, Gio.DBusProxyFlags.NONE, None,
+                                          "org.Cinnamon", "/org/Cinnamon", "org.Cinnamon", None, self._on_proxy_ready, None)
+            except dbus.exceptions.DBusException as e:
+                print(e)
+                self.proxy = None
+
+        self.on_panel_list_changed()
+
+    def _on_proxy_ready (self, object, result, data=None):
+        self.proxy = Gio.DBusProxy.new_for_bus_finish(result)
+
+        if not self.proxy.get_name_owner():
+            self.proxy = None
+
+        if self.proxy:
             self.revealer.connect("unmap", self.restore_panels)
             self.revealer.connect("destroy", self.restore_panels)
 
-        self.on_panel_list_changed()
+            self.add_panel_button.connect("clicked", self.on_add_panel)
+            self.add_panel_button.set_sensitive(True)
+
+            self.proxy.highlightPanel('(ib)', self.panel_id, True)
 
     def on_add_panel(self, widget):
         self.proxy.addPanelQuery()
 
     def on_previous_panel(self, widget):
-        if self.panel_id:
+        if self.panel_id and self.proxy:
             self.proxy.highlightPanel('(ib)', self.panel_id, False)
 
         current = self.panels.index(self.panel_id)
@@ -157,14 +171,15 @@ class Module:
 
         self.config_stack.set_transition_type(Gtk.StackTransitionType.SLIDE_RIGHT)
 
-        self.proxy.highlightPanel('(ib)', self.panel_id, True)
+        if self.proxy:
+            self.proxy.highlightPanel('(ib)', self.panel_id, True)
         self.pending_visible.set_panel_id(self.panel_id)
 
         self.pending_visible, self.current_visible = self.current_visible, self.pending_visible
         self.config_stack.set_visible_child(self.current_visible)
 
     def on_next_panel(self, widget):
-        if self.panel_id:
+        if self.panel_id and self.proxy:
             self.proxy.highlightPanel('(ib)', self.panel_id, False)
 
         current = self.panels.index(self.panel_id)
@@ -176,7 +191,8 @@ class Module:
 
         self.config_stack.set_transition_type(Gtk.StackTransitionType.SLIDE_LEFT)
 
-        self.proxy.highlightPanel('(ib)', self.panel_id, True)
+        if self.proxy:
+            self.proxy.highlightPanel('(ib)', self.panel_id, True)
         self.pending_visible.set_panel_id(self.panel_id)
 
         self.pending_visible, self.current_visible = self.current_visible, self.pending_visible
@@ -231,9 +247,9 @@ class Module:
         if len(self.panels) == 0:
             return
 
-
         if self.panel_id != self.panels[current_idx]:
-            self.proxy.highlightPanel('(ib)', self.panel_id, False)
+            if self.proxy:
+                self.proxy.highlightPanel('(ib)', self.panel_id, False)
             self.panel_id = self.panels[current_idx]
 
             self.pending_visible.set_panel_id(self.panel_id)
@@ -241,7 +257,8 @@ class Module:
             self.pending_visible, self.current_visible = self.current_visible, self.pending_visible
             self.config_stack.set_visible_child(self.current_visible)
 
-        self.proxy.highlightPanel('(ib)', self.panel_id, True)
+        if self.proxy:
+            self.proxy.highlightPanel('(ib)', self.panel_id, True)
 
     def restore_panels(self, widget):
         self.proxy.destroyDummyPanels()
@@ -534,4 +551,6 @@ class PanelComboBox(PanelWidget):
 
     def on_my_setting_changed(self, *args):
         self.value = self.get_string(self.settings, self.key)
+        if self.value == "":
+            return
         self.content_widget.set_active_iter(self.option_map[self.value])

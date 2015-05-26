@@ -230,7 +230,7 @@ class Module:
 
     def build_battery_page(self, *args):
         #destroy all widgets in this page
-        self.battery_page.foreach(Gtk.Widget.destroy)
+        self.battery_page.foreach(Gtk.Widget.destroy, None)
 
         secondary_settings = None
         primary_settings = None

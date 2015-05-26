@@ -562,7 +562,7 @@ class SettingsBox(Gtk.Frame):
         toolbar_context = toolbar.get_style_context()
         Gtk.StyleContext.add_class(Gtk.Widget.get_style_context(toolbar), "cs-header")
 
-        label = Gtk.Label.new()
+        label = Gtk.Label()
         label.set_markup("<b>%s</b>" % title)
         title_holder = Gtk.ToolItem()
         title_holder.add(label)
@@ -744,6 +744,11 @@ class GSettingsSpinButton(SettingsWidget):
         self.content_widget.set_range(mini, maxi)
         self.content_widget.set_increments(step, page)
 
+        digits = 0
+        if (step and '.' in str(step)):
+            digits = len(str(step).split('.')[1])
+        self.content_widget.set_digits(digits)
+
         self.settings.bind(key, self.content_widget.get_adjustment(), "value", Gio.SettingsBindFlags.GET)
         self.content_widget.connect("value-changed", self.apply_later)
 
@@ -840,6 +845,10 @@ class GSettingsRange(SettingsWidget):
         self.content_widget = Gtk.Scale.new_with_range(Gtk.Orientation.HORIZONTAL, mini, maxi, self.step)
         self.content_widget.set_inverted(invert)
         self.content_widget.set_draw_value(False)
+
+        val = self.settings.get_value(self.key)
+        if val.get_type_string() == "i":
+            self.content_widget.set_round_digits(0)
 
         if invert:
             self.step *= -1 # Gtk.Scale.new_with_range want a positive value, but our custom scroll handler wants a negative value
