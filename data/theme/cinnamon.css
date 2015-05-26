@@ -914,7 +914,7 @@ StScrollBar StButton#vhandle:hover {
  * ===================================================================*/
 
 #keyboard {
-	background: rgba(0,0,0,0.8);
+	background-color: #555555;
 }
 .keyboard-layout {
 	spacing: 10px;
