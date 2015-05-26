@@ -876,13 +876,16 @@ class AppChooserDialog(Gtk.Dialog):
 
         icon = a.get_icon()
         if icon:
-            if GLib.path_is_absolute(icon.to_string()):
-                iconfile = icon.to_string()
-                shown_icon = GdkPixbuf.Pixbuf.new_from_file_at_scale(iconfile, 24, 24, True)
-                img = Gtk.Image.new_from_pixbuf(shown_icon)
-            else:
-                pixbuf = icon_theme.load_icon(icon.to_string(), 24, Gtk.IconLookupFlags.FORCE_SIZE)
-                img = Gtk.Image.new_from_pixbuf(pixbuf)
+            try:
+                if GLib.path_is_absolute(icon.to_string()):
+                    iconfile = icon.to_string()
+                    shown_icon = GdkPixbuf.Pixbuf.new_from_file_at_scale(iconfile, 24, 24, True)
+                    img = Gtk.Image.new_from_pixbuf(shown_icon)
+                else:
+                    pixbuf = icon_theme.load_icon(icon.to_string(), 24, Gtk.IconLookupFlags.FORCE_SIZE)
+                    img = Gtk.Image.new_from_pixbuf(pixbuf)
+            except:
+                img = Gtk.Image.new_from_gicon(Gio.ThemedIcon.new(DEFAULT_ICON), Gtk.IconSize.LARGE_TOOLBAR)
         else:
             img = Gtk.Image.new_from_gicon(Gio.ThemedIcon.new(DEFAULT_ICON), Gtk.IconSize.LARGE_TOOLBAR)
         grid.attach(img, 0, 0, 1, 1)
