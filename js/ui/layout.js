@@ -38,7 +38,7 @@ LayoutManager.prototype = {
         this.keyboardBox = new St.BoxLayout({ name: 'keyboardBox',
                                               reactive: true,
                                               track_hover: true });
-        this.addChrome(this.keyboardBox, { visibleInFullscreen: true });
+        this.addChrome(this.keyboardBox, { visibleInFullscreen: true, affectsStruts: true });
         this._keyboardHeightNotifyId = 0;
 
         this._monitorsChanged();
