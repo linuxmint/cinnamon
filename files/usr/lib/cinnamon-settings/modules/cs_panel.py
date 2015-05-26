@@ -122,7 +122,7 @@ class Module:
             buttons.pack_end(toggle_button, False, False, 2)
             section.add_row(buttons)
 
-            section.add_row(GSettingsSwitch(_("Allow the pointer to pass through the edges of adjacent panels"), "org.cinnamon", "no-adjacent-panel-barriers"))
+            section.add_row(GSettingsSwitch(_("Allow the pointer to pass through the edges of panels"), "org.cinnamon", "no-adjacent-panel-barriers"))
 
             self.add_panel_button.set_sensitive(False)
 
