@@ -744,6 +744,11 @@ class GSettingsSpinButton(SettingsWidget):
         self.content_widget.set_range(mini, maxi)
         self.content_widget.set_increments(step, page)
 
+        digits = 0
+        if (step and '.' in str(step)):
+            digits = len(str(step).split('.')[1])
+        self.content_widget.set_digits(digits)
+
         self.settings.bind(key, self.content_widget.get_adjustment(), "value", Gio.SettingsBindFlags.GET)
         self.content_widget.connect("value-changed", self.apply_later)
 
