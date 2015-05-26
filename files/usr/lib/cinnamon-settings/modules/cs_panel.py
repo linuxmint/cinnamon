@@ -206,10 +206,9 @@ class Module:
         self.monitor_layout = []
         self.panels = []
 
-        for i in range(0, n_mons):
+        for i in range(n_mons):
             self.monitor_layout.append(Monitor())
 
-        selected = None
         for panel in panels:
             panel_id, monitor_id, position = panel.split(":")
             panel_id = int(panel_id)
@@ -521,7 +520,6 @@ class PanelComboBox(PanelWidget):
         self.label = Gtk.Label.new(label)
         self.model = Gtk.ListStore(str, str)
 
-        selected = None
         for option in options:
             iter = self.model.insert_before(None, None)
             option.append(iter)
@@ -550,7 +548,8 @@ class PanelComboBox(PanelWidget):
             self.set_string(self.settings, self.key, value)
 
     def on_my_setting_changed(self, *args):
-        self.value = self.get_string(self.settings, self.key)
-        if self.value == "":
-            return
-        self.content_widget.set_active_iter(self.option_map[self.value])
+        try:
+            self.value = self.get_string(self.settings, self.key)
+            self.content_widget.set_active_iter(self.option_map[self.value])
+        except:
+            pass
