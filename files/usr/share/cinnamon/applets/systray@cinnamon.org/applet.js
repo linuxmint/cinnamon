@@ -116,8 +116,33 @@ MyApplet.prototype = {
                 size = disp_size - 1;
             }
 
+            // Don't try to scale buggy icons, give them predefined sizes
+            // This, in the case of pidgin, fixes the icon being cropped in the systray
+            if (["pidgin", "thunderbird"].indexOf(role) != -1) {
+                if (disp_size < 22) {
+                    size = 16;
+                }
+                else if (disp_size < 32) {
+                    size = 22;
+                }
+                else if (disp_size < 48) {
+                    size = 32;
+                }
+                else {
+                    size = 48;
+                }
+            }
+
             icon.set_size(size, size);
+
             global.log("Resized " + role + " (" + icon.get_width() + "x" + icon.get_height() + "px)");
+        }
+        else {
+            // Force buggy icon size when not in scale mode
+            if (["pidgin", "thunderbird"].indexOf(role) != -1) {
+                icon.set_size(16, 16);
+                global.log("Resized " + role + " (" + icon.get_width() + "x" + icon.get_height() + "px)");
+            }
         }
     },
 
