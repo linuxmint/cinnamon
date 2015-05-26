@@ -12,7 +12,7 @@ const Settings = imports.ui.settings;
 
 const MSECS_IN_DAY = 24 * 60 * 60 * 1000;
 const WEEKDATE_HEADER_WIDTH_DIGITS = 3;
-const SHOW_WEEKDATE_KEY = 'show-weekdate';
+const SHOW_WEEKDATE_KEY = 'show-week-numbers';
 const FIRST_WEEKDAY_KEY = 'first-day-of-week';
 const DESKTOP_SCHEMA = 'org.cinnamon.desktop.interface';
 
