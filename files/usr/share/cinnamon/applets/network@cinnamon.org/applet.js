@@ -1949,15 +1949,27 @@ MyApplet.prototype = {
                 }
             }
 
-            if (a['default'])
+            if (a['default']) {
                 default_ip4 = a;
-            if (a.default6)
+            }
+            if (a.default6) {
                 default_ip6 = a;
+            }
 
-            if (!activated && a.state == NetworkManager.ActiveConnectionState.ACTIVATED)
-                activated = a;
-            if (a.state == NetworkManager.ActiveConnectionState.ACTIVATING)
+            if (a.state == NetworkManager.ActiveConnectionState.ACTIVATED) {
+                if (activated) {
+                    // We already found an activated device, consider this one activated if it's the default IPV4 or IPV6
+                    if (a['default'] || a.default6) {
+                        activated = a;
+                    }
+                }
+                else {
+                    activated = a;
+                }
+            }
+            if (a.state == NetworkManager.ActiveConnectionState.ACTIVATING) {
                 activating = a;
+            }
 
             if (!a._primaryDevice) {
                 if (a._type != NetworkManager.SETTING_VPN_SETTING_NAME) {
