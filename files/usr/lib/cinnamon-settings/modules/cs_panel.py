@@ -247,7 +247,6 @@ class Module:
         if len(self.panels) == 0:
             return
 
-
         if self.panel_id != self.panels[current_idx]:
             if self.proxy:
                 self.proxy.highlightPanel('(ib)', self.panel_id, False)
@@ -552,4 +551,6 @@ class PanelComboBox(PanelWidget):
 
     def on_my_setting_changed(self, *args):
         self.value = self.get_string(self.settings, self.key)
+        if self.value == "":
+            return
         self.content_widget.set_active_iter(self.option_map[self.value])
