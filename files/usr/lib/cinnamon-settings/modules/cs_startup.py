@@ -353,7 +353,7 @@ class AutostartBox(Gtk.Box):
 
         toolbar = Gtk.Toolbar.new()
         Gtk.StyleContext.add_class(Gtk.Widget.get_style_context(toolbar), "cs-header")
-        label = Gtk.Label.new()
+        label = Gtk.Label()
         label.set_markup("<b>%s</b>" % title)
         title_holder = Gtk.ToolItem()
         title_holder.add(label)
@@ -370,7 +370,7 @@ class AutostartBox(Gtk.Box):
                                                 }" % frame_color)
         separator_context.add_provider(css_provider, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
 
-        scw = Gtk.ScrolledWindow.new()
+        scw = Gtk.ScrolledWindow()
         scw.expand = True
         scw.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC)
         scw.set_shadow_type(Gtk.ShadowType.NONE)
@@ -613,11 +613,11 @@ class AutostartRow(Gtk.ListBoxRow):
         self.desc_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
         self.desc_box.props.hexpand = True
         self.desc_box.props.halign = Gtk.Align.START
-        self.name_label = Gtk.Label.new()
+        self.name_label = Gtk.Label()
         self.name_label.set_markup("<b>%s</b>" % self.app.name)
         self.name_label.props.xalign = 0.0
         self.desc_box.add(self.name_label)
-        self.comment_label = Gtk.Label.new()
+        self.comment_label = Gtk.Label()
         self.comment_label.set_markup("<small>%s</small>" % self.app.comment)
         self.comment_label.props.xalign = 0.0
         self.comment_label.set_ellipsize(Pango.EllipsizeMode.END)
@@ -631,7 +631,7 @@ class AutostartRow(Gtk.ListBoxRow):
         self.delay_box.set_margin_right(15)
         label = Gtk.Label(_("Delay"))
         self.delay_box.pack_start(label, False, False, 0)
-        self.delay_time_label = Gtk.Label.new()
+        self.delay_time_label = Gtk.Label()
         self.delay_time_label.set_markup("%s" % self.app.delay)
         self.delay_time_label.get_style_context().add_class("dim-label")
         self.delay_box.pack_start(self.delay_time_label, False, False, 0)
