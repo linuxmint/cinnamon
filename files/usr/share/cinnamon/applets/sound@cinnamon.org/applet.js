@@ -20,11 +20,10 @@ const MEDIA_PLAYER_2_NAME = "org.mpris.MediaPlayer2";
 const MEDIA_PLAYER_2_PLAYER_NAME = "org.mpris.MediaPlayer2.Player";
 
 /* global values */
-let players_without_seek_support = ['spotify'];
+let players_without_seek_support = ['spotify', 'totem', 'gnome-mplayer', 'pithos'];
 let players_with_seek_support = [
     'clementine', 'banshee', 'rhythmbox', 'rhythmbox3', 'pragha', 'quodlibet',
-    'amarok', 'xnoise', 'gmusicbrowser', 'vlc', 'gnome-mplayer',
-    'qmmp', 'deadbeef', 'audacious'];
+    'amarok', 'xnoise', 'gmusicbrowser', 'vlc', 'qmmp', 'deadbeef', 'audacious'];
 /* dummy vars for translation */
 let x = _("Playing");
 x = _("Paused");
@@ -442,17 +441,12 @@ Player.prototype = {
         this._applet._updatePlayerMenuItems();
 
         /* this players don't support seek */
-        if (!this._getCanSeek()) {
+        if (!this._getCanSeek() || this._mediaServerPlayer.Rate != 1) {
             this.showPosition = false;
             this._positionSlider.actor.hide();
         }
 
         this._timeoutId = 0;
-        //_timerInterval should stay in sync with the Rate property
-        this._timerInterval = 1;
-        let interval = Math.round(1000 / this._mediaServerPlayer.Rate);
-        if(interval > 0 && isFinite(interval))
-            this._timerInterval = interval;
 
         this._setStatus(this._mediaServerPlayer.PlaybackStatus);
         this._trackId = {};
@@ -487,13 +481,6 @@ Player.prototype = {
                     this._setMetadata(props.Metadata.deep_unpack());
                 if (props.CanGoNext || props.CanGoPrevious)
                     this._updateControls();
-                if (props.Rate) {
-                    let interval = Math.round(1000 / props.Rate.unpack());
-                    if (interval > 0 && isFinite(interval)) {
-                        this._timerInterval = interval;
-                        this._runTimer();
-                    }
-                }
                 if (props.LoopStatus)
                     this._setLoopStatus(props.LoopStatus.unpack());
                 if (props.Shuffle)
@@ -762,15 +749,17 @@ Player.prototype = {
     },
 
     _runTimer: function() {
-        if (this._timeoutId != 0) {
-            Mainloop.source_remove(this._timeoutId);
-            this._timeoutId = 0;
-        }
+        if (this._canSeek) {
+            if (this._timeoutId != 0) {
+                Mainloop.source_remove(this._timeoutId);
+                this._timeoutId = 0;
+            }
 
-        if (this._playerStatus == 'Playing') {
-            this._getPosition();
-            this._timerTicker = 0;
-            this._timeoutId = Mainloop.timeout_add(this._timerInterval, Lang.bind(this, this._runTimerCallback));
+            if (this._playerStatus == 'Playing') {
+                this._getPosition();
+                this._timerTicker = 0;
+                this._timeoutId = Mainloop.timeout_add(1000, Lang.bind(this, this._runTimerCallback));
+            }
         }
     },
 
