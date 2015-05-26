@@ -28,9 +28,3 @@ class ExtensionViewSidePage (ExtensionSidePage):
     def toSettingString(self, uuid, instanceId):
         return uuid
 
-    def fromSettingString(self, string):
-        return string
-
-    def getAdditionalPage(self):
-        return None
-

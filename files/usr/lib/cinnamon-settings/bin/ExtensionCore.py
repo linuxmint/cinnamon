@@ -1095,6 +1095,9 @@ Please contact the developer.""")
                 self.model.set_value(row.iter, 2, 0)
         self._selection_changed()
 
+    def fromSettingString(self, string):
+        return string
+
     def _add_another_instance(self):
         model, treeiter = self.treeview.get_selection().get_selected()
         if treeiter:
