@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-05-22 13:42+0200\n"
+"POT-Creation-Date: 2015-05-27 12:12+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -154,7 +154,7 @@ msgstr ""
 msgid "Remove this desklet"
 msgstr ""
 
-#: js/ui/expoThumbnail.js:896
+#: js/ui/expoThumbnail.js:899
 #, javascript-format
 msgid ""
 "Are you sure you want to remove workspace \"%s\"?\n"
@@ -243,7 +243,7 @@ msgid "WORKSPACE"
 msgstr ""
 
 #: js/ui/messageTray.js:449
-#: files/usr/share/cinnamon/applets/notifications@cinnamon.org/applet.js:250
+#: files/usr/share/cinnamon/applets/notifications@cinnamon.org/applet.js:251
 msgid "%l:%M %p"
 msgstr ""
 
@@ -285,78 +285,78 @@ msgstr ""
 msgid "Select new position of panel. Esc to cancel."
 msgstr ""
 
-#: js/ui/panel.js:997
+#: js/ui/panel.js:974
 msgid "Troubleshoot ..."
 msgstr ""
 
-#: js/ui/panel.js:998
+#: js/ui/panel.js:975
 msgid "Restart Cinnamon"
 msgstr ""
 
-#: js/ui/panel.js:1002
+#: js/ui/panel.js:979
 msgid "Looking Glass"
 msgstr ""
 
-#: js/ui/panel.js:1006
+#: js/ui/panel.js:983
 msgid "Restore all settings to default"
 msgstr ""
 
-#: js/ui/panel.js:1021
+#: js/ui/panel.js:998
 msgid "Modify panel ..."
 msgstr ""
 
-#: js/ui/panel.js:1023
+#: js/ui/panel.js:1000
 msgid "Remove panel"
 msgstr ""
 
-#: js/ui/panel.js:1029
+#: js/ui/panel.js:1006
 msgid "Add panel"
 msgstr ""
 
-#: js/ui/panel.js:1036
+#: js/ui/panel.js:1013
 msgid "Move panel"
 msgstr ""
 
-#: js/ui/panel.js:1043
+#: js/ui/panel.js:1020
 msgid "Copy applet configuration"
 msgstr ""
 
-#: js/ui/panel.js:1050
+#: js/ui/panel.js:1027
 msgid "Paste applet configuration"
 msgstr ""
 
-#: js/ui/panel.js:1053
+#: js/ui/panel.js:1030
 msgid ""
 "Pasting applet configuration will remove all existing applets on this panel."
 " Do you want to continue?"
 msgstr ""
 
-#: js/ui/panel.js:1061
+#: js/ui/panel.js:1038
 msgid "Clear all applets"
 msgstr ""
 
-#: js/ui/panel.js:1064
+#: js/ui/panel.js:1041
 msgid "Are you sure you want to clear all applets on this panel?"
 msgstr ""
 
-#: js/ui/panel.js:1077 files/usr/lib/cinnamon-settings/modules/cs_panel.py:129
+#: js/ui/panel.js:1054 files/usr/lib/cinnamon-settings/modules/cs_panel.py:119
 msgid "Panel edit mode"
 msgstr ""
 
-#: js/ui/panel.js:1100
+#: js/ui/panel.js:1077
 msgid "Add applets to the panel"
 msgstr ""
 
-#: js/ui/panel.js:1103
+#: js/ui/panel.js:1080
 msgid "Panel settings"
 msgstr ""
 
-#: js/ui/panel.js:1106 files/usr/lib/cinnamon-settings/modules/cs_themes.py:17
+#: js/ui/panel.js:1083 files/usr/lib/cinnamon-settings/modules/cs_themes.py:17
 #: files/usr/lib/cinnamon-settings/modules/cs_themes.py:36
 msgid "Themes"
 msgstr ""
 
-#: js/ui/panel.js:1109
+#: js/ui/panel.js:1086
 msgid "All settings"
 msgstr ""
 
@@ -544,7 +544,7 @@ msgstr ""
 
 #. notifications@cinnamon.org->metadata.json->name
 #: files/usr/share/cinnamon/applets/inhibit@cinnamon.org/applet.js:146
-#: files/usr/share/cinnamon/applets/notifications@cinnamon.org/applet.js:48
+#: files/usr/share/cinnamon/applets/notifications@cinnamon.org/applet.js:49
 #: files/usr/lib/cinnamon-settings/modules/cs_notifications.py:35
 msgid "Notifications"
 msgstr ""
@@ -614,38 +614,38 @@ msgstr ""
 msgid "Menu"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:1741
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:1746
 #: files/usr/share/cinnamon/applets/recent@cinnamon.org/applet.js:95
 msgid "No recent documents"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:1950
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:1955
 #: files/usr/lib/cinnamon-settings/modules/cs_keyboard.py:152
 msgid "Lock screen"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:1951
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:1956
 #: files/usr/lib/cinnamon-settings/modules/cs_power.py:7
 msgid "Lock the screen"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:1978
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:1983
 msgid "Logout"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:1979
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:1984
 msgid "Leave the session"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:1993
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:1998
 msgid "Quit"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:1994
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:1999
 msgid "Shutdown the computer"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2117
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2122
 msgid "Type to search..."
 msgstr ""
 
@@ -766,90 +766,90 @@ msgstr ""
 msgid "Activation of network connection failed"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:2112
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:2124
 msgid "Networking is disabled"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:2131
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:2143
 msgid "No connection"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:2137
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:2149
 msgid "Connecting to the cellular network..."
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:2141
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:2153
 msgid "Connecting to the wireless network..."
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:2145
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:2157
 msgid "Connecting to the wired network..."
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:2149
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:2161
 msgid "Connecting to the VPN..."
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:2155
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:2167
 msgid "Connecting to the network..."
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:2171
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:2183
 msgid "Connected to the wireless network"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:2174
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:2186
 msgid "Wireless connection"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:2184
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:2196
 msgid "Connected to the wired network"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:2195
-#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:2200
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:2207
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:2212
 msgid "Connected to the cellular network"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:2205
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:2217
 msgid "Connected to the VPN"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:2211
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:2223
 msgid "Connected to the network"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/notifications@cinnamon.org/applet.js:63
+#: files/usr/share/cinnamon/applets/notifications@cinnamon.org/applet.js:64
 msgid "Clear notifications"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/notifications@cinnamon.org/applet.js:283
+#: files/usr/share/cinnamon/applets/notifications@cinnamon.org/applet.js:284
 msgid "No notifications"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/notifications@cinnamon.org/applet.js:286
+#: files/usr/share/cinnamon/applets/notifications@cinnamon.org/applet.js:287
 msgid " notification"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/notifications@cinnamon.org/applet.js:289
+#: files/usr/share/cinnamon/applets/notifications@cinnamon.org/applet.js:290
 msgid " notifications"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/notifications@cinnamon.org/applet.js:303
+#: files/usr/share/cinnamon/applets/notifications@cinnamon.org/applet.js:311
 msgid " (Just now)"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/notifications@cinnamon.org/applet.js:306
+#: files/usr/share/cinnamon/applets/notifications@cinnamon.org/applet.js:314
 #, javascript-format
 msgid " (%s seconds ago)"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/notifications@cinnamon.org/applet.js:309
+#: files/usr/share/cinnamon/applets/notifications@cinnamon.org/applet.js:317
 #, javascript-format
 msgid " (%s minute ago)"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/notifications@cinnamon.org/applet.js:312
+#: files/usr/share/cinnamon/applets/notifications@cinnamon.org/applet.js:320
 #, javascript-format
 msgid " (%s minutes ago)"
 msgstr ""
@@ -1107,122 +1107,122 @@ msgstr ""
 msgid "Background Settings"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:29
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:28
 msgid "Playing"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:30
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:29
 msgid "Paused"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:31
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:30
 msgid "Stopped"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:349
-#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:613
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:348
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:600
 msgid "Unknown Artist"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:350
-#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:617
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:349
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:604
 msgid "Unknown Album"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:351
-#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:621
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:350
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:608
 msgid "Unknown Title"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:360
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:359
 msgid "Previous"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:363
-#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:678
-#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:684
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:362
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:665
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:671
 #: files/usr/lib/cinnamon-settings/modules/cs_keyboard.py:188
 msgid "Play"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:366
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:365
 msgid "Stop"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:369
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:368
 msgid "Next"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:382
-#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:708
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:381
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:695
 msgid "Consecutive Playing"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:388
-#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:722
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:387
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:709
 msgid "No Shuffle"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:422
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:421
 msgid "Open Player"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:436
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:435
 msgid "Quit Player"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:672
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:659
 msgid "Pause"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:710
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:697
 msgid "Repeat Single"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:712
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:699
 msgid "Repeat All"
 msgstr ""
 
 #. photoframe@cinnamon.org->settings-schema.json->shuffle->description
-#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:722
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:709
 #: files/usr/lib/cinnamon-settings/modules/cs_keyboard.py:197
 msgid "Shuffle"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:1014
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:1003
 msgid "Mute output"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:1015
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:1004
 msgid "Mute input"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:1266
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:1255
 msgid "Launch player..."
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:1278
-#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:1402
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:1267
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:1391
 msgid "Volume"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:1280
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:1269
 msgid "Applications..."
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:1281
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:1270
 msgid "Output device..."
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:1291
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:1280
 msgid "Microphone"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:1292
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:1281
 msgid "Input device..."
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:1303
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:1292
 msgid "Sound Settings"
 msgstr ""
 
@@ -1267,8 +1267,8 @@ msgstr ""
 #: files/usr/share/cinnamon/applets/user@cinnamon.org/applet.js:69
 #: generate_additional_files.py:24
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:41
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:287
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:554
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:299
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:566
 msgid "System Settings"
 msgstr ""
 
@@ -1563,7 +1563,7 @@ msgstr ""
 msgid "user, users, account, accounts, group, groups, password"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:183
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:195
 msgid "Back to all settings"
 msgstr ""
 
@@ -1973,37 +1973,37 @@ msgstr ""
 msgid "Are you sure you want to completely remove %s?"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:1105
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:1108
 msgid ""
 "This operation will update the selected items.\n"
 "\n"
 "Do you want to continue?"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:1107
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:1110
 msgid ""
 "This operation will update the selected item.\n"
 "\n"
 "Do you want to continue?"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:1123
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:1126
 #, python-format
 msgid "%d updates available!"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:1125
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:1128
 #, python-format
 msgid "%d update available!"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:1185
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:1190
 msgid ""
 "This will restore the default set of enabled applets. Are you sure you want "
 "to do this?"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:1187
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:1192
 msgid ""
 "This will restore the default set of enabled desklets. Are you sure you want"
 " to do this?"
@@ -2916,37 +2916,37 @@ msgstr ""
 msgid "User interface scaling:"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/modules/cs_general.py:28
+#: files/usr/lib/cinnamon-settings/modules/cs_general.py:41
 #: files/usr/lib/cinnamon-settings/modules/cs_workspaces.py:52
 msgid "Miscellaneous Options"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/modules/cs_general.py:30
+#: files/usr/lib/cinnamon-settings/modules/cs_general.py:43
 msgid "Disable compositing for full-screen windows"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/modules/cs_general.py:31
+#: files/usr/lib/cinnamon-settings/modules/cs_general.py:44
 msgid ""
 "Select this option to let full-screen applications skip the compositing "
 "manager and run at maximum speed. Unselect it if you're experiencing screen-"
 "tearing in full screen mode."
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/modules/cs_general.py:34
+#: files/usr/lib/cinnamon-settings/modules/cs_general.py:47
 msgid "Enable timer when logging out or shutting down"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/modules/cs_general.py:37
+#: files/usr/lib/cinnamon-settings/modules/cs_general.py:50
 msgid "Timer delay"
 msgstr ""
 
 #. photoframe@cinnamon.org->settings-schema.json->fade-delay->units
 #. photoframe@cinnamon.org->settings-schema.json->delay->units
-#: files/usr/lib/cinnamon-settings/modules/cs_general.py:37
+#: files/usr/lib/cinnamon-settings/modules/cs_general.py:50
 msgid "seconds"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/modules/cs_general.py:40
+#: files/usr/lib/cinnamon-settings/modules/cs_general.py:53
 msgid ""
 "Log LookingGlass output to ~/.cinnamon/glass.log (Requires Cinnamon restart)"
 msgstr ""
@@ -3191,11 +3191,11 @@ msgid "Decrease opacity"
 msgstr ""
 
 #: files/usr/lib/cinnamon-settings/modules/cs_keyboard.py:89
-msgid "Maximize vertically"
+msgid "Toggle vertical maximization"
 msgstr ""
 
 #: files/usr/lib/cinnamon-settings/modules/cs_keyboard.py:90
-msgid "Maximize horizontally"
+msgid "Toggle horizontal maximization"
 msgstr ""
 
 #: files/usr/lib/cinnamon-settings/modules/cs_keyboard.py:92
@@ -4056,24 +4056,24 @@ msgstr ""
 msgid "Panel"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/modules/cs_panel.py:89
+#: files/usr/lib/cinnamon-settings/modules/cs_panel.py:80
 msgid "Previous panel"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/modules/cs_panel.py:90
+#: files/usr/lib/cinnamon-settings/modules/cs_panel.py:81
 msgid "Next panel"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/modules/cs_panel.py:123
+#: files/usr/lib/cinnamon-settings/modules/cs_panel.py:113
 msgid "General Panel Options"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/modules/cs_panel.py:126
+#: files/usr/lib/cinnamon-settings/modules/cs_panel.py:116
 msgid "Add new panel"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/modules/cs_panel.py:135
-msgid "Allow the pointer to pass through the edges of adjacent panels"
+#: files/usr/lib/cinnamon-settings/modules/cs_panel.py:125
+msgid "Allow the pointer to pass through the edges of panels"
 msgstr ""
 
 #: files/usr/lib/cinnamon-settings/modules/cs_power.py:9
