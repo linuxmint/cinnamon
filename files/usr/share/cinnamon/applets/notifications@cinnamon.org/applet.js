@@ -2,6 +2,7 @@ const Applet = imports.ui.applet;
 const Lang = imports.lang;
 const Main = imports.ui.main;
 const Gtk = imports.gi.Gtk;
+const Gio = imports.gi.Gio;
 const PopupMenu = imports.ui.popupMenu;
 const St = imports.gi.St;
 const Clutter = imports.gi.Clutter;
@@ -295,9 +296,16 @@ function stringify(count) {
 }
 
 function timeify(orig_time) {
+    let settings = new Gio.Settings({schema: 'org.cinnamon.desktop.interface'});
+    let use_24h = settings.get_boolean('clock-use-24h');
     let now = new Date();
     let diff = Math.floor((now.getTime() - orig_time.getTime()) / 1000); // get diff in seconds
-    let str = orig_time.toLocaleTimeString();
+    let str;
+    if (use_24h) {
+        str = orig_time.toLocaleFormat('%T');
+    } else {
+        str = orig_time.toLocaleFormat('%r');
+    }
     switch (true) {
         case (diff <= 15):
             str += _(" (Just now)");
