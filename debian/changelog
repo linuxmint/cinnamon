@@ -1,3 +1,59 @@
+cinnamon (2.6.3) rafaela; urgency=medium
+
+  [ Clement Lefebvre ]
+  * Power settings: Don't rely on output.get_backlight_min|max() to show brightness controls as it's not reliable with all hardware. Try to get backlight() info directly to see if it's supported instead.
+  * Theme settings: Fixed regression caused by gettext fix ;)
+  * Power settings: Don't show "When the battery is critically low" option with upower 1.0 (it no longer supports that)
+  * Power settings: Don't use variables that don't exist (in UPS handling)
+  * Calendar applet: Refresh view when show-week-numbers setting is changed
+  * Network applet: Properly detect active VPN connection at session start when updating the panel icon
+  * On-Screen keyboard: Affect Struts
+  * On-Screen keyboard: Removed transparent background in default theme.
+  * Sound applet: Only read position for seek-supported players, only support seek when playback rate is 1.0, don't support seek for Totem/GNOME-MPlayer/Pithos (either getting or setting the position isn't fully functional), only update the position timer once every second
+  * Systray applet: Factorize icon resize code, removed special cases (we know they don't work for pidgin and thunderbird)
+  * Systray applet: force natural icon sizes for known buggy icons (pidgin, thunderbird)
+  * Keyboard settings: Renamed horizontal/vertical maximization options
+
+  [ Dexter Chua ]
+  * cinnamon-slideshow.py: fix crash when file change
+  * expo.js: don't respond to scrolls when animating
+  * docs: Split out tutorials
+  * cs_general.py: Sync GNOME HiDPI settings
+  * Fix panel launcher dnd
+  * cinnamon-settings: be compatible with old gi
+  *  cs_screensaver.py: use gtk_container_foreach instead of gtk_container_forall
+  * docs: Fix doc image not showing
+  * docs: Fix missing syntax highlight
+  * cs_panel.py: better protection against broken panel config
+
+  [ Gwendal Le Bihan ]
+  * Don't show stack switcher on applet configuration page
+  * Follow date format setting in notification applet
+
+  [ Didenko Vladimir ]
+  * Load default icon if icon theme doesn't have application icon
+
+  [ Michael Webster ]
+  * js/docInfo.js: don't make a thumbnail factory (it never gets used)
+  * cinnamon-settings: invert mouse sensitivity setting so it makes sense, eliminate rubber-banding of GSettingsRange by restricting int setting types to whole number adjustments in the slider.
+  * cs_privacy: replace broken unbind() - take advantage of the behavior that a new binding will overwrite a previous one on the same object property.
+  * Add image for default screensaver preview.
+  * cs_screensaver.py: bring the currently selected screensaver row into view when the panel is displayed.
+  * menu applet: when refreshing happens, apps, recent and places need to end up in the same order as before.  Also, since we empty the whole container during an app refresh, we need to rebuild recent and places.  When places change, we need to refresh recent also (to maintain order).
+  * SettingsWidgets: display the correct number of SpinButton digits depending on the step value. (fixes issue with font scale spinner)
+  * cs_panel: don't connect to settings until the page has been constructed. Don't crash and burn if cinnamon isn't running.
+  * cs_panel: don't crash when there aren't any panels
+
+  [ JosephMcc ]
+  * osd: fix the media keys osd not showing on top of full screen windows
+  * remove double '/' from paths
+  * allow disabling of pointer barriers on all panels
+
+  [ pixunil ]
+  * Added missing method to ExtensionSidePage class, which blocked the update of the indicator of the active theme
+
+ -- Clement Lefebvre <root@linuxmint.com>  Wed, 27 May 2015 10:30:20 +0200
+
 cinnamon (2.6.2) rafaela; urgency=medium
 
   [ Dexter Chua ]
