@@ -390,29 +390,6 @@ PanelManager.prototype = {
         }
     },
 
-    getAdjacentPanel: function(currentPanelObj, direction) {
-        if (!(currentPanelObj instanceof Panel))
-            return null;
-
-        if (direction == Direction.LEFT &&
-            currentPanelObj.monitorIndex == 0)
-            return null;
-        else if (direction == Direction.RIGHT &&
-                 currentPanelObj.monitorIndex == (global.screen.get_n_monitors() - 1))
-            return null;
-
-        switch (direction) {
-            case Direction.LEFT:
-                return this.getPanel(currentPanelObj.monitorIndex - 1, currentPanelObj.bottomPosition);
-                break;
-            case Direction.RIGHT:
-                return this.getPanel(currentPanelObj.monitorIndex + 1, currentPanelObj.bottomPosition);
-                break;
-        }
-
-        return null;
-    },
-
     /**
      * _loadPanel:
      * @ID (integer): panel id
@@ -1470,38 +1447,25 @@ Panel.prototype = {
         if (this._rightPanelBarrier)
             global.destroy_pointer_barrier(this._rightPanelBarrier);
 
-        let noLeft = false;
-        let noRight = false;
         let noBarriers = global.settings.get_boolean("no-adjacent-panel-barriers");
-
-        if (Main.panelManager.getAdjacentPanel(this, Direction.LEFT) != null) {
-            noLeft = noBarriers;
-        }
-
-        if (Main.panelManager.getAdjacentPanel(this, Direction.RIGHT) != null) {
-            noRight = noBarriers;
-        }
 
         if (this.actor.height) {
             let panelTop = (this.bottomPosition ? this.monitor.y + this.monitor.height - this.actor.height : this.monitor.y);
             let panelBottom = (this.bottomPosition ? this.monitor.y + this.monitor.height : this.monitor.y + this.actor.height);
 
-            if (!noLeft) {
+            if (!noBarriers) {
+                this._rightPanelBarrier = global.create_pointer_barrier(
+                    this.monitor.x + this.monitor.width - 1, panelTop,
+                    this.monitor.x + this.monitor.width - 1, panelBottom,
+                    4 /* BarrierNegativeX */);
+
                 this._leftPanelBarrier = global.create_pointer_barrier(
                     this.monitor.x, panelTop,
                     this.monitor.x, panelBottom,
                     1 /* BarrierPositiveX */);
             } else {
-                this._leftPanelBarrier = 0;
-            }
-
-            if (!noRight) {
-                this._rightPanelBarrier = global.create_pointer_barrier(
-                    this.monitor.x + this.monitor.width - 1, panelTop,
-                    this.monitor.x + this.monitor.width - 1, panelBottom,
-                    4 /* BarrierNegativeX */);
-            } else {
                 this._rightPanelBarrier = 0;
+                this._leftPanelBarrier = 0;
             }
         } else {
             this._leftPanelBarrier = 0;
