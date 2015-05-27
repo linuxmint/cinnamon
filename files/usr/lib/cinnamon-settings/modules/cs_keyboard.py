@@ -80,6 +80,8 @@ KEYBINDINGS = [
     [_("Show desktop"), MUFFIN_KEYBINDINGS_SCHEMA, "show-desktop", "windows"],
     [_("Activate window menu"), MUFFIN_KEYBINDINGS_SCHEMA, "activate-window-menu", "windows"],
     [_("Toggle maximization state"), MUFFIN_KEYBINDINGS_SCHEMA, "toggle-maximized", "windows"],
+    [_("Toggle maximization state vertically"), MUFFIN_KEYBINDINGS_SCHEMA, "toggle-maximized-vertically", "windows"],
+    [_("Toggle maximization state horizontally"), MUFFIN_KEYBINDINGS_SCHEMA, "toggle-maximized-horizontally", "windows"],
     [_("Toggle fullscreen state"), MUFFIN_KEYBINDINGS_SCHEMA, "toggle-fullscreen", "windows"],
     [_("Toggle shaded state"), MUFFIN_KEYBINDINGS_SCHEMA, "toggle-shaded", "windows"],
     [_("Toggle always on top"), MUFFIN_KEYBINDINGS_SCHEMA, "toggle-above", "windows"],
