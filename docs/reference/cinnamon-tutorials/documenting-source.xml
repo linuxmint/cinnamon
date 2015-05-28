@@ -4,7 +4,7 @@
     The C part of Cinnamon can be documented using standard gtk-doc format, and there should be plenty of tutorials on that. The JavaScript part of Cinnamon can also be documented using something that resembles gtk-doc format.
   </para>
 
-  <para> Currently, we support documenting files (eg. <code>main.js</code>), objects (eg. <code>Applet.Applet</code>) and functions (including functions of files and functions of objects).  </para>
+  <para> Currently, we support documenting files (eg. <code>main.js</code>), objects (eg. <code>Applet.Applet</code>), functions (including functions of files and functions of objects) and enums.  </para>
 
   <para> The documentation appears as a comment <emphasis>right before</emphasis> the thing it describes. In the case of a file, it should appear at the very beginning of the file. If a object is declared using <code>prototype</code>, then it can appear right before either the function declaration or the prototype declaration, ie. before line 1 or line 5 in the example below.  </para>
   <informalexample>
@@ -50,11 +50,12 @@
     Avoid starting comments with this (use <code>/*</code> instead) even though the parser should be smart enough to not parse them, but if they look too like a piece of documentation, the parser might get confused.
   </para>
 
-  <para> The next line is the name of the thing being documented. Function, object and file documentation are distinguished using this line. They should look, respectively, like this: </para> <informalexample>
+  <para> The next line is the name of the thing being documented. Function, object, file and enum documentations are distinguished using this line. They should look, respectively, like this: </para> <informalexample>
     <programlisting>
       * function_name:
       * #ObjectName:
       * FILE:filename.js
+      * ENUM:EnumName
     </programlisting>
   </informalexample>
   <para>Note that we do not have to include the namespace of an object, ie. it is <code>#ObjectName</code>, not <code>#FileName.ObjectName.</code></para>
@@ -65,7 +66,7 @@
     Object.Name - short description
   </informalexample>
 
-  <para>Afterwards, all the properties of the thing should be listed. A "property" is a globally accessible variable in the case of a file, a genuine property in the case of an object, and a parameter for a function. The type of the property is optional, but leaving it out makes the documentation less helpful and also more ugly. If the description is too long to fit in one line, break it into two rows using a *single* line break. Single line breaks are always ignored when parsing. For example,</para>
+  <para>Afterwards, all the properties of the thing should be listed. A "property" is a globally accessible variable in the case of a file, a genuine property in the case of an object, a parameter for a function, or an elemenet of the enum for an enum. The type of the property is optional, but leaving it out makes the documentation less helpful and also more ugly (except for enums, where types should not appear). If the description is too long to fit in one line, break it into two rows using a *single* line break. Single line breaks are always ignored when parsing. For example,</para>
   <informalexample>
     <programlisting>
       * @prop (type): this is a very long description. Oh my gosh I am
