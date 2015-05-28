@@ -154,7 +154,7 @@
       </listitem>
       <listitem>
         <para>
-          Links to functions and properties of other objects with a <code>%percentage sign</code>. If you wish to link to functions of the same object, the following four are acceptable:
+          Links to functions, properties or enums of other objects with a <code>%percentage sign</code>. If you wish to link to functions of the same object, the following four are acceptable:
         </para>
         <itemizedlist>
           <listitem><code>this.func</code></listitem>
@@ -172,7 +172,7 @@
           <listitem><code>PopupBaseMenuItem._init()</code></listitem>
         </itemizedlist>
         <para>
-          If there are functions and properties that take the same name, the property will be linked to, unless the name ends with <code>()</code>, in which case it will always be a function.
+          If there are functions, properties and enums that take the same name, the property will be linked to, unless the name ends with <code>()</code>, in which case it will always be a function. If a function and an enum have the same name, the whole thing will explode into pieces and don't do that. It is a bad idea to have things with the same name anyway.
         </para>
       </listitem>
       <listitem>

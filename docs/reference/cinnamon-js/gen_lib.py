@@ -79,6 +79,7 @@ def markup(line, obj):
             return '<code>{name}</code>'.format(name = full)
 
         func_names = [x.name for x in object.functions]
+        enum_names = [x.name for x in object.enums]
         prop_names = [x.name for x in object.properties]
 
         if thing in prop_names and not full.endswith("()"):
@@ -86,7 +87,7 @@ def markup(line, obj):
                     prefix = object.prefix,
                     thing = thing,
                     full = full)
-        elif thing in func_names:
+        elif thing in func_names or (thing in enum_names and not full.endswith("()")):
             return '<link linkend="cinnamon-js-{prefix}-{thing}"><code>{full}</code></link>'.format(
                     prefix = object.prefix,
                     thing = thing,
