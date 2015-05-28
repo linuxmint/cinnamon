@@ -1,0 +1,210 @@
+<chapter id="xlet-settings-ref">
+  <title>Applet, desklet and extension settings reference</title>
+  <para>This is the reference for the settings API.</para>
+
+  <sect2>
+    <title>Widget types and required fields</title>
+    <sect3>
+      <title>checkbox</title>
+      <itemizedlist>
+        <listitem><code>type</code>: should be <code>checkbox</code></listitem>
+        <listitem><code>default</code>: <code>true</code> or <code>false</code> (no quotes)</listitem>
+        <listitem><code>description</code>: String describing the setting</listitem>
+      </itemizedlist>
+
+      <para>A simple checkbox that controls a <code>boolean</code> type value</para>
+
+    </sect3>
+    <sect3>
+      <title>entry</title>
+      <itemizedlist>
+        <listitem><code>type</code>: should be <code>entry</code></listitem>
+        <listitem><code>default</code>: default string value</listitem>
+        <listitem><code>description</code>: String describing the setting</listitem>
+      </itemizedlist>
+
+      <para>A text entry field that stores a <code>string</code></para>
+
+    </sect3>
+    <sect3>
+      <title>colorchooser</title>
+      <itemizedlist>
+        <listitem><code>type</code>: should be <code>colorchooser</code></listitem>
+        <listitem><code>default</code>: default color string - can be <code>"red"</code> or <code>"rgba(x,x,x,x)"</code>, etc...</listitem>
+        <listitem><code>description</code>: String describing the setting</listitem>
+      </itemizedlist>
+
+      <para>A Color button that lets you choose a RGBA color code as a <code>string</code></para>
+
+    </sect3>
+    <sect3>
+      <title>keybinding</title>
+      <itemizedlist>
+        <listitem><code>type</code>: should be <code>keybinding</code></listitem>
+        <listitem><code>default</code>: default keybinding string - i.e. <code>&lt;Control&gt;F8</code> or other string parseable by gtk_accelerator_parse.</listitem>
+        <listitem><code>description</code>: String describing the setting</listitem>
+      </itemizedlist>
+
+      <para>An input that allows you to select a keybinding for an action.</para>
+
+    </sect3>
+    <sect3>
+      <title>radiogroup</title>
+      <itemizedlist>
+        <listitem><code>type</code>: should be <code>radiogroup</code></listitem>
+        <listitem><code>default</code>: default value from the list of options, or it can be a custom value if <code>custom</code> is defined</listitem>
+        <listitem><code>description</code>: String describing the setting</listitem>
+        <listitem><code>options</code>: node of desc:val pair options, where desc is the displayed option name, val is the stored value</listitem>
+      </itemizedlist>
+
+      <para>A group of radio buttons whose description and values are defined by <code>options</code> in <code>description:value</code> pairs.  Values may be <code>string</code> or <code>number</code>.  also have a value of <code>custom</code>, and a text entry will be provided next to that option, to allow entering a custom value.</para>
+
+      <para>Options might be:</para>
+      <informalexample>
+        <programlisting>
+          "options" : {
+              "Option 1" : "this value",
+              "Option 2" : "that value",
+              "Option 3" : "other value"
+          }
+        </programlisting>
+      </informalexample>
+    </sect3>
+    <sect3>
+      <title>filechooser</title>
+      <itemizedlist>
+        <listitem><code>type</code>: should be <code>filechooser</code></listitem>
+        <listitem><code>description</code>: String describing the setting</listitem>
+        <listitem><code>default</code>: Default filename to use</listitem>
+        <listitem><code>select-dir</code>:  (optional) true or false, or leave off entirely. Forces directory selection.</listitem>
+      </itemizedlist>
+
+      <para>Opens a file picker dialog to allow you to choose a filename.  If <code>select-dir</code> is <code>true</code>, it will only allow directories to be selected.  Stores as a <code>string</code>.</para>
+
+    </sect3>
+    <sect3>
+      <title>iconfilechooser</title>
+      <itemizedlist>
+        <listitem><code>type</code>: should be <code>iconfilechooser</code></listitem>
+        <listitem><code>description</code>: String describing the setting</listitem>
+        <listitem><code>default</code>: default icon path or icon name to use</listitem>
+      </itemizedlist>
+
+      <para>Provides a preview button and text entry field.  You can open a file dialog to pick an image-type file, or enter a registered icon name in the text field.  Stores as a <code>string</code>.</para>
+
+    </sect3>
+    <sect3>
+      <title>combobox</title>
+      <itemizedlist>
+        <listitem><code>type</code>: should be <code>combobox</code></listitem>
+        <listitem><code>default</code>: default value to set</listitem>
+        <listitem><code>description</code>: String describing the setting</listitem>
+        <listitem><code>options</code>: node of desc:val pair options, where desc is the displayed option name, val is the stored value</listitem>
+      </itemizedlist>
+
+      <para>Provides a dropdown list from which you can select from <code>description:value</code> pairs defined by <code>options</code>.  The values can be <code>string</code>, <code>number</code>, or <code>boolean</code>.</para>
+    </sect3>
+    <sect3>
+      <title>spinbutton</title>
+      <itemizedlist>
+        <listitem><code>type</code>: should be <code>spinbutton</code></listitem>
+        <listitem><code>default</code>: default value to use - int or leading</listitem>
+        <listitem><code>min</code>: minimum value</listitem>
+        <listitem><code>max</code>: maximum value</listitem>
+        <listitem><code>units</code>: String describing what the number is a unit of (pixels, bytes, etc..)</listitem>
+        <listitem><code>step</code>: adjustment amount</listitem>
+        <listitem><code>description</code>: String describing the setting</listitem>
+      </itemizedlist>
+
+      <para>Provides a spin button and entry for changing setting a <code>number</code> value.  This can be integer or floating point format.  For floating point, all values must have leading 0's.</para>
+
+    </sect3>
+    <sect3>
+      <title>scale</title>
+      <itemizedlist>
+        <listitem><code>type</code>: should be <code>scale</code></listitem>
+        <listitem><code>default</code>: default value to use - int or leading</listitem>
+        <listitem><code>min</code>: minimum value</listitem>
+        <listitem><code>max</code>: maximum value</listitem>
+        <listitem><code>step</code>: adjustment amount</listitem>
+        <listitem><code>description</code>: String describing the setting</listitem>
+      </itemizedlist>
+
+      <para>Provides a scale widget to allow you to pick a <code>number</code> value between min and max, by step amount.  Integer or floating point numbers can be used.  For floating point, all values must have leading 0's.</para>
+
+    </sect3>
+    <sect3>
+      <title>generic</title>
+      <itemizedlist>
+        <listitem><code>type</code>: should be <code>generic</code></listitem>
+        <listitem><code>default</code>: default value</listitem>
+      </itemizedlist>
+
+      <para>A generic storage object for any type of value.  This is generally intended for internal settings that won't be adjusted by the user.  For example, a history, or most recent command.  There is no corresponding widget for it in Cinnamon Settings.</para>
+
+    </sect3>
+    <sect3>
+      <title>header</title>
+      <itemizedlist>
+        <listitem><code>type</code>: should be <code>header</code></listitem>
+        <listitem><code>description</code>: String to display as a bold header</listitem>
+      </itemizedlist>
+
+      <para>A <emphasis>non-setting</emphasis> widget, this provides a bold-faced label for assisting in organizing your settings</para>
+
+    </sect3>
+    <sect3>
+      <title>separator</title>
+      <itemizedlist>
+        <listitem><code>type</code>: should be <code>separator</code></listitem>
+      </itemizedlist>
+
+      <para>A <emphasis>non-setting</emphasis> widget, this draws a horizontal separator for assisting in organizing your settings</para>
+
+    </sect3>
+    <sect3>
+      <title>button</title>
+      <itemizedlist>
+        <listitem><code>type</code>: should be <code>button</code></listitem>
+        <listitem><code>description</code>: Label for the button</listitem>
+        <listitem><code>callback</code>: string of callback method name (no "this", just "myFunc")</listitem>
+      </itemizedlist>
+
+      <para>A <emphasis>non-setting</emphasis> widget, this provides a button, which, when clicked, activates the <code>callback</code> method in your applet. Note: the callback value should be a string of the method name only.  For instance, to call <code>this.myCallback()</code>, you would put <code>myCallback</code> for the callback value.</para>
+    </sect3>
+    <sect3>
+      <title>Additional Setting Options</title>
+      These fields can be added to any widget:
+
+      <itemizedlist>
+        <listitem><code>indent: true</code>: Indent the widget in the settings page to help with organizing your layout.</listitem>
+        <listitem><code>dependency: &lt;key&gt;</code>: where <code>key</code> is the name of a <code>checkbox</code> setting. If that checkbox setting is un-checked, this setting will be made insensitive (greyed out). The checkbox must occur <emphasis>before</emphasis> the setting that depends on it.</listitem>
+        <listitem><code>tooltip</code>: Adds a popup tooltip to the widget</listitem>
+      </itemizedlist>
+    </sect3>
+  </sect2>
+
+  <sect2>
+    <title>Signals</title>
+    <sect3>
+      <title><code>settings-changed</code></title>
+      Signal when the underlying config file has changed and the in-memory values have been updated.
+    </sect3>
+    <sect3>
+      <title><code>changed::&lt;key&gt;</code></title>
+
+      <para>Signals when <code>key</code> has changed in the configuration file.  Use this in conjunction with <code>getValue</code> if you want to handle your own updating in a more traditional way (like gsettings).</para>
+
+      <para>The callback function will be called with three paramenters: <code>settingProvider, oldval, newval</code>, which are, respectively, the settings object (which you usually don't need), the original value and the updated value.</para>
+    </sect3>
+  </sect2>
+
+  <sect2>
+    <title>Additional options in metadata.json</title>
+    You can add the following items to <code>metadata.json</code> to affect how the settings are presented to the user:
+    <itemizedlist>
+      <listitem><code>hide-configuration</code>: Hides the configure button in Cinnamon Settings. Set to <code>true</code> if you are using only <code>generic</code>-type settings that should be hidden from the user.  This is not a mandatory key.  Omitting it will allow the configuration button to hide or display depending on whether you are utilizing the settings API or not.</listitem>
+      <listitem><code>external-configuration-app</code>: Allows you to define an external settings app to use instead of the built-in settings GUI. This should be a <code>string</code> with the name of your executable settings app (path relative to the applet's install directory). Note, this key can be overridden by the <code>hide-configuration</code> key. This is not a mandatory key. Omitting it will allow the configuration button to hide or display depending on whether you are utilizing the settings API or not.</listitem>
+    </itemizedlist>
+  </sect2>
+</chapter>

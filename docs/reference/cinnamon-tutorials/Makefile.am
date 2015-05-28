@@ -76,6 +76,7 @@ content_files= \
 	using-documentation.xml \
 	write-applet.xml \
 	xlet-settings.xml \
+	xlet-settings-ref.xml \
 	xlet-versioning.xml \
         $(NULL)
 
@@ -89,6 +90,7 @@ expand_content_files= \
 	using-documentation.xml \
 	write-applet.xml \
 	xlet-settings.xml \
+	xlet-settings-ref.xml \
 	xlet-versioning.xml \
         $(NULL)
 
