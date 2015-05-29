@@ -1,3 +1,16 @@
+cinnamon (2.6.4) rafaela; urgency=medium
+
+  [ mtwebster ]
+  * cinnamon-desktop-editor: Don't panic when an existing .desktop file doesn't have an icon defined.
+
+  [ Stephen Collins ]
+  * Make sure notification applet always stays hidden when it's supposed to
+
+  [ Clement Lefebvre ]
+  * Network applet: Fixed default IPV6 device being considered as important as default IPV4 one
+
+ -- Clement Lefebvre <root@linuxmint.com>  Fri, 29 May 2015 10:21:05 +0200
+
 cinnamon (2.6.3) rafaela; urgency=medium
 
   [ Clement Lefebvre ]
