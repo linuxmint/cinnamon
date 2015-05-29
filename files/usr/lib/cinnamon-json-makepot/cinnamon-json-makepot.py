@@ -209,10 +209,9 @@ class Main:
                     data = json.load(fp)
                     fp.close()
 
-                    for key in data:
-                        if key in ("name", "description"):
-                            comment = "%s->metadata.json->%s" % (os.path.split(root)[1], key)
-                            self.save_entry(data[key], comment)
+                    self.current_parent_dir = os.path.split(root)[1]
+                    self.extract_metadata_strings(data)
+
 
     def extract_strings(self, data, parent=""):
         for key in data.keys():
@@ -230,6 +229,21 @@ class Main:
                 self.extract_strings(data[key], key)
             except AttributeError:
                 pass
+
+    def extract_metadata_strings(self, data):
+        for key in data:
+            if key in ("name", "description", "comments"):
+                comment = "%s->metadata.json->%s" % (self.current_parent_dir, key)
+                self.save_entry(data[key], comment)
+            elif key == "contributors":
+                comment = "%s->metadata.json->%s" % (self.current_parent_dir, key)
+
+                values = data[key]
+                if isinstance(values, basestring):
+                    values = values.split(",")
+
+                for value in values:
+                    self.save_entry(value.strip(), comment)
 
     def save_entry(self, msgid, comment):
         try:
