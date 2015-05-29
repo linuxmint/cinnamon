@@ -518,7 +518,7 @@ IconApplet.prototype = {
     },
 
     /**
-     * set_applet_icon:path:
+     * set_applet_icon_path:
      * @icon_path (string): path of the icon
      * 
      * Sets the icon of the applet to the image file at @icon_path
