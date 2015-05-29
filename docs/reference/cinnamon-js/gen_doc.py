@@ -68,6 +68,7 @@ RETURNS_REGEX = re.compile(r'^Returns\s*\(?(' + TYPE_REGEX + ')?\)?:(.*)')
 INHERITS_REGEX = re.compile(r'^Inherits:\s*(' + TYPE_REGEX + ')\s*$')
 PROPERTY_REGEX = re.compile(r'^@(\w+)\s*\(?(' + TYPE_REGEX + ')?\)?:(.*)')
 FILE_NAME_REGEX = re.compile(r'FILE:\s*(\w+\.js):?')
+ENUM_NAME_REGEX = re.compile(r'ENUM:\s*(\w+):?')
 FUNCTION_NAME_REGEX = re.compile(r'^(\w+):?\s*$')
 
 OBJECT_NAME_REGEX = re.compile(r'^#(\w+):?\s*$')
@@ -174,6 +175,7 @@ for _file in _files:
             if FILE_NAME_REGEX.match(line) and bracket_count == 0:
                 curr_item = curr_file
                 curr_obj = curr_file
+                objects[curr_file.name] = curr_file
                 state = STATE_PROPERTY
 
             elif OBJECT_NAME_REGEX.match(line) and bracket_count == 0:
@@ -190,6 +192,11 @@ for _file in _files:
                 curr_obj.add_function(curr_item)
                 state = STATE_PROPERTY
 
+            elif ENUM_NAME_REGEX.match(line) and bracket_count == 0:
+                curr_item = JSEnum(ENUM_NAME_REGEX.match(line).group(1))
+                objects[curr_file.name + '.' + curr_item.name] = curr_item
+                curr_file.add_enum(curr_item)
+                state = STATE_PROPERTY
             else:
                 state = STATE_COMMENT
 

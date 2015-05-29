@@ -79,6 +79,7 @@ def markup(line, obj):
             return '<code>{name}</code>'.format(name = full)
 
         func_names = [x.name for x in object.functions]
+        enum_names = [x.name for x in object.enums]
         prop_names = [x.name for x in object.properties]
 
         if thing in prop_names and not full.endswith("()"):
@@ -86,7 +87,7 @@ def markup(line, obj):
                     prefix = object.prefix,
                     thing = thing,
                     full = full)
-        elif thing in func_names:
+        elif thing in func_names or (thing in enum_names and not full.endswith("()")):
             return '<link linkend="cinnamon-js-{prefix}-{thing}"><code>{full}</code></link>'.format(
                     prefix = object.prefix,
                     thing = thing,
@@ -220,6 +221,7 @@ class JSFile(JSThing):
         self.short_description = JSProperty(None, '', '')
         self.properties = []
         self.objects = []
+        self.enums = []
         self.functions = []
         self.file = self
         self.object = self
@@ -240,6 +242,13 @@ class JSFile(JSThing):
         obj.name = self.name + "-" + obj.name
         obj.file = self
 
+    def add_enum(self, obj):
+        self.enums.append(obj)
+        obj.parent = self
+        obj.directory = self.directory
+        obj.prefix = self.prefix + "-" + obj.name
+        obj.file = self
+
 class JSObject(JSThing):
     def __init__ (self, name):
         self.name = name
@@ -252,6 +261,7 @@ class JSObject(JSThing):
         self.prefix = None
         self.functions = []
         self.properties = []
+        self.enums = []
         self.object = self
 
     def add_function(self, func):
@@ -261,6 +271,14 @@ class JSObject(JSThing):
 
     def set_inherit(self, inherit):
         self.inherit = inherit
+
+class JSEnum(JSThing):
+    def __init__ (self, name):
+        self.name = name
+        self.description = ''
+        self.short_description = JSProperty(None, '', '')
+        self.properties = []
+        self.object = self
 
 SGML_FORMAT = '''\
 <?xml version='1.0'?>
@@ -308,10 +326,12 @@ FILE_FORMAT = '''\
   </refnamediv>
   {func_header}
   {prop_header}
+  {enum_header}
   {hierarchy}
   {description}
   {functions}
   {properties}
+  {enums}
 </refentry>
 '''
 
@@ -356,6 +376,30 @@ PROPERTY_HEADER_FORMAT = '''
     </tgroup>
   </informaltable>
 </refsect1>
+'''
+
+ENUM_HEADER_FORMAT = '''
+<refsect1 id="cinnamon-js-{prefix}.other" role="other_proto">
+  <title role="other_proto.title">Types and Values</title>
+  <informaltable role="enum_members_table" pgwide="1" frame="none">
+    <tgroup cols="2">
+      <colspec colname="name" colwidth="150px"/>
+      <colspec colname="description"/>
+      <tbody>
+        {enum_headers}
+      </tbody>
+    </tgroup>
+  </informaltable>
+</refsect1>
+'''
+
+ENUM_HEADER_ITEM_FORMAT = '''
+<row>
+  <entry role="datatype_keyword">enum</entry>
+  <entry role="function_name">
+    <link linkend="cinnamon-js-{prefix}-{name}">{name}</link>
+  </entry>
+</row>
 '''
 
 PROPERTY_HEADER_ITEM_FORMAT = '''
@@ -459,6 +503,40 @@ PROPERTIES_ITEM_FORMAT = '''
 </refsect2>
 '''
 
+ENUMS_FORMAT = '''
+<refsect1 id="CinnamonGlobal.other_details" role="details">
+  <title role="details.title">Types and Values</title>
+  {enums}
+</refsect1>
+'''
+
+ENUMS_ITEM_FORMAT = '''
+<refsect2 id="cinnamon-js-{prefix}" role="enum">
+  <title>enum {name}</title>
+  <indexterm zone="{name}"><primary>{name}</primary></indexterm>
+  {description}
+  <refsect3 role="enum_members">
+    <title>Members</title>
+    <informaltable role="enum_members_table" pgwide="1" frame="none">
+      <tgroup cols="2">
+        <colspec colname="enum_members_name" colwidth="300px"/>
+        <colspec colname="enum_members_description"/>
+        <tbody>
+          {enum_items}
+        </tbody>
+      </tgroup>
+    </informaltable>
+  </refsect3>
+</refsect2>
+'''
+
+ENUMS_ITEM_ROW_FORMAT = '''
+<row role="constant">
+  <entry role="enum_member_name"><para id="{name}:CAPS">{name}</para></entry>
+  <entry role="enum_member_description">{description}</entry>
+</row>
+'''
+
 def write_sgml(files, version):
     sgml = open('cinnamon-js-docs.sgml', 'w')
 
@@ -494,10 +572,12 @@ def create_file(obj):
         short_description = markup(short_description, obj),
         func_header = get_function_header(obj),
         prop_header = get_properties_header(obj),
+        enum_header = get_enum_header(obj),
         hierarchy = get_hierarchy(obj),
         description = get_description(obj),
         functions = get_functions(obj),
-        properties = get_properties(obj)))
+        properties = get_properties(obj),
+        enums = get_enums(obj)))
 
     file_obj.close()
 
@@ -528,6 +608,19 @@ def get_properties_header(obj):
     return PROPERTY_HEADER_FORMAT.format(
         prefix = obj.prefix,
         property_headers = "\n".join(properties))
+
+def get_enum_header(obj):
+    if len(obj.enums) == 0:
+        return ""
+
+    enums = [ENUM_HEADER_ITEM_FORMAT.format(
+        prefix = obj.prefix,
+        name = enum.name) for enum in obj.enums]
+
+    return ENUM_HEADER_FORMAT.format(
+        prefix = obj.prefix,
+        enum_headers = "\n".join(enums))
+
 
 def get_hierarchy(obj):
     from gen_doc import objects
@@ -645,3 +738,23 @@ def get_properties(obj):
          prefix = obj.prefix,
          properties = "\n".join(properties))
 
+def get_enums(obj):
+    if len(obj.enums) == 0:
+        return ""
+
+    enums = []
+
+    for enum in obj.enums:
+        items = [ENUMS_ITEM_ROW_FORMAT.format(
+            name = item.name,
+            description = item.get_xml_description()) for item in enum.properties]
+
+        enums.append(ENUMS_ITEM_FORMAT.format(
+            prefix = enum.prefix,
+            name = enum.name,
+            description = enum.get_xml_description(),
+            enum_items = "\n".join(items)))
+
+    return ENUMS_FORMAT.format(
+            prefix = obj.prefix,
+            enums = "\n".join(enums))
