@@ -1919,7 +1919,6 @@ MyApplet.prototype = {
         let default_ip6 = null;
         for (let i = 0; i < this._activeConnections.length; i++) {
             let a = this._activeConnections[i];
-
             if (!a._inited) {
                 //a._notifyDefaultId = a.connect('notify::default', Lang.bind(this, this._updateIcon));
                 //a._notifyDefault6Id = a.connect('notify::default6', Lang.bind(this, this._updateIcon));
@@ -1949,26 +1948,30 @@ MyApplet.prototype = {
                 }
             }
 
+            if (a.state == NetworkManager.ActiveConnectionState.ACTIVATED) {
+                if (!default_ip4) {
+                    // We didn't find the default IPV4 device yet..
+                    if (!default_ip6) {
+                        // We didn't find the default IPV6 device either so consider this one.
+                        activated = a;
+                    }
+                    else {
+                        // We already found the default IPV6 device, so only use this one if it's the default IPV4 device
+                        if (a['default']) {
+                            activated = a;
+                        }
+                    }
+                }
+            }
+            if (a.state == NetworkManager.ActiveConnectionState.ACTIVATING) {
+                activating = a;
+            }
+
             if (a['default']) {
                 default_ip4 = a;
             }
             if (a.default6) {
                 default_ip6 = a;
-            }
-
-            if (a.state == NetworkManager.ActiveConnectionState.ACTIVATED) {
-                if (activated) {
-                    // We already found an activated device, consider this one activated if it's the default IPV4 or IPV6
-                    if (a['default'] || a.default6) {
-                        activated = a;
-                    }
-                }
-                else {
-                    activated = a;
-                }
-            }
-            if (a.state == NetworkManager.ActiveConnectionState.ACTIVATING) {
-                activating = a;
             }
 
             if (!a._primaryDevice) {
