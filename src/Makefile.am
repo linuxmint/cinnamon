@@ -195,7 +195,6 @@ cinnamon_recorder_non_gir_sources =  \
 	cinnamon-recorder-src.c	  \
 	cinnamon-recorder-src.h
 
-cinnamon_recorder_LDADD = libst-1.0.la
 
 if BUILD_RECORDER
 libcinnamon_la_SOURCES += $(cinnamon_recorder_sources) $(cinnamon_recorder_non_gir_sources)
