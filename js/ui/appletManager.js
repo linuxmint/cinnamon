@@ -298,7 +298,9 @@ function addAppletToPanels(extension, appletDefinition) {
 
         applet._panelLocation = appletDefinition.location;
         for (let i=0; i<appletsToMove.length; i++) {
+            let hidden = !appletsToMove[i].visible;
             appletDefinition.location.add(appletsToMove[i]);
+            if (hidden) appletsToMove[i].hide();
         }
         
         if(!extension._loadedDefinitions) {
