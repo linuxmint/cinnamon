@@ -218,4 +218,8 @@
       Alternatively, this can be launched by running the command <code>cinnamon-settings applets *uuid*</code> (with obvious modifications for desklets and extensions).
     </para>
   </sect2>
+  <sect2>
+    <title>More information</title>
+    <para>The available settings items and widgets can be found an the <xref linkend="xlet-settings-ref" />, alongside with some extra options. The settings objects themselves are <link linkend="cinnamon-js-ui-settings-AppletSettings"><code>Settings.AppletSettings</code></link>, <link linkend="cinnamon-js-ui-settings-DeskletSettings"><code>Settings.DeskletSettings</code></link> and <link linkend="cinnamon-js-ui-settings-ExtensionSettings"><code>Settings.ExtensionSettings</code></link>, which all inherit <link linkend="cinnamon-js-ui-settings-_provider"><code>Settings._provider</code></link>. Most useful functions will be found inside the <code>_provider</code> object.</para>
+  </sect2>
 </chapter>
