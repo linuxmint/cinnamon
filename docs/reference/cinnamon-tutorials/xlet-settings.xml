@@ -112,7 +112,7 @@
         }
 
         MyApplet.prototype = {
-        __proto__: Applet.TextIconApplet.prototype,
+            __proto__: Applet.TextIconApplet.prototype,
 
             _init: function(metadata, orientation, panel_height, instanceId) {
             ....
