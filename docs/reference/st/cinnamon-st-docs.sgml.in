@@ -8,9 +8,9 @@
   <bookinfo>
     <title>Cinnamon St Reference Manual</title>
     <releaseinfo>
-      for Cinnamon @VERSION@.
-      <!--The latest version of this documentation can be found on-line at
-      <ulink role="online-location" url="http://[SERVER]/st/index.html">http://[SERVER]/st/</ulink>.-->
+      This document is for Cinnamon @VERSION@.
+
+      The latest version of this documentation can be found online at <ulink role="online-location" url="http://developer.linuxmint.com/reference/git/st/">http://developer.linuxmint.com/reference/git/st/</ulink>.
     </releaseinfo>
   </bookinfo>
 

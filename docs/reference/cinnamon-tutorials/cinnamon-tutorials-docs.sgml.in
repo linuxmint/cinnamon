@@ -5,24 +5,26 @@
 <!ENTITY % local.common.attrib "xmlns:xi  CDATA  #FIXED 'http://www.w3.org/2003/XInclude'">
 ]>
 <book id='index'>
-    <bookinfo>
-        <title>Cinnamon Tutorials</title>
-        <releaseinfo>
-            for Cinnamon @VERSION@.
-        </releaseinfo>
-    </bookinfo>
-    <part id="documentation">
-        <title>Documentation</title>
-        <xi:include href="using-documentation.xml"/>
-        <xi:include href="documenting-source.xml"/>
-        <xi:include href="documenting-tutorial.xml"/>
-    </part>
-    <xi:include href="building.xml"/>
-    <part id="extension-system">
-        <title>Extension system</title>
-        <xi:include href="write-applet.xml"/>
-        <xi:include href="xlet-versioning.xml"/>
-        <xi:include href="xlet-settings.xml"/>
-        <xi:include href="xlet-settings-ref.xml"/>
-    </part>
+  <bookinfo>
+    <title>Cinnamon Tutorials</title>
+    <releaseinfo>
+      This document is for Cinnamon @VERSION@.
+
+      The latest version of this documentation can be found online at <ulink role="online-location" url="http://developer.linuxmint.com/reference/git/cinnamon-tutorials/">http://developer.linuxmint.com/reference/git/cinnamon-tutorials/</ulink>.
+    </releaseinfo>
+  </bookinfo>
+  <part id="documentation">
+    <title>Documentation</title>
+    <xi:include href="using-documentation.xml"/>
+    <xi:include href="documenting-source.xml"/>
+    <xi:include href="documenting-tutorial.xml"/>
+  </part>
+  <xi:include href="building.xml"/>
+  <part id="extension-system">
+    <title>Extension system</title>
+    <xi:include href="write-applet.xml"/>
+    <xi:include href="xlet-versioning.xml"/>
+    <xi:include href="xlet-settings.xml"/>
+    <xi:include href="xlet-settings-ref.xml"/>
+  </part>
 </book>
