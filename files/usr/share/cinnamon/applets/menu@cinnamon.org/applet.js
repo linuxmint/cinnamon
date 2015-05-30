@@ -1083,6 +1083,10 @@ MyApplet.prototype = {
     },
 
     onIconThemeChanged: function() {
+        this._refreshAll();
+    },
+
+    _refreshAll: function() {
         this._refreshApps();
         this._refreshFavs();
         this._refreshPlaces();
