@@ -8,7 +8,9 @@
   <bookinfo>
     <title>Cinnamon Reference Manual</title>
     <releaseinfo>
-      for Cinnamon @VERSION@.
+      This document is for Cinnamon @VERSION@.
+
+      The latest version of this documentation can be found online at <ulink role="online-location" url="http://developer.linuxmint.com/reference/git/cinnamon/">http://developer.linuxmint.com/reference/git/cinnamon/</ulink>.
     </releaseinfo>
   </bookinfo>
 
