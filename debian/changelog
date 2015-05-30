@@ -1,3 +1,10 @@
+cinnamon (2.6.5) rafaela; urgency=medium
+
+  [ Clement Lefebvre ]
+  * Added cinnamon-killer-daemon to restart nemo/CSD/cinnamon via keyboard shortcut
+
+ -- Clement Lefebvre <root@linuxmint.com>  Sat, 30 May 2015 13:22:51 +0200
+
 cinnamon (2.6.4) rafaela; urgency=medium
 
   [ mtwebster ]
