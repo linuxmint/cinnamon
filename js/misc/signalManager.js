@@ -136,7 +136,7 @@ SignalManager.prototype = {
         if (!this._storage.has(sigName))
             return false;
 
-        for (let signal of this._storage.get(sigName))
+        for (let [key, signal] of this._storage) 
             if ((!obj || signal[0] == obj) &&
                 (!callback || signal[2] == callback) &&
                 signal[0] &&
