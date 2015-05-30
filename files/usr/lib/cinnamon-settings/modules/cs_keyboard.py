@@ -152,6 +152,7 @@ KEYBINDINGS = [
     [_("Lock screen"), MEDIA_KEYS_SCHEMA, "screensaver", "system"],
     [_("Suspend"), MEDIA_KEYS_SCHEMA, "suspend", "system"],
     [_("Hibernate"), MEDIA_KEYS_SCHEMA, "hibernate", "system"],
+    [_("Restart Cinnamon"), MEDIA_KEYS_SCHEMA, "restart-cinnamon", "system"],
     # System - Screenshots
     [_("Take a screenshot of an area"), MEDIA_KEYS_SCHEMA, "area-screenshot", "sys-screen"],
     [_("Copy a screenshot of an area to clipboard"), MEDIA_KEYS_SCHEMA, "area-screenshot-clip", "sys-screen"],
