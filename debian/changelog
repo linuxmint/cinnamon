@@ -1,3 +1,10 @@
+cinnamon (2.6.6) rafaela; urgency=medium
+
+  * Revert "Menu/Panel Launchers applets: Don't listen to St directly, refresh when icon theme or active display scale is changed" (Fixes race condition causing gnome icon theme in menu/panel-launchers at login)
+  * BackgroundManager: After 60 seconds, apply gnome bg changes blindly (fixes case where Firefox->set as wallpaper saves a new picture using the same path as before)
+
+ -- Clement Lefebvre <root@linuxmint.com>  Sun, 31 May 2015 18:59:15 +0200
+
 cinnamon (2.6.5) rafaela; urgency=medium
 
   [ Clement Lefebvre ]
