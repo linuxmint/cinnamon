@@ -49,7 +49,7 @@ const DEFAULT_VALUES = {"panels-autohide": "false",
                         "panels-hide-delay": "0",
                         "panels-height": "25",
                         "panels-resizable": "false",
-                        "panels-scale-text-icons": "false"};
+                        "panels-scale-text-icons": "true"};
 
 const Direction = {
     LEFT  : 0,
