@@ -1067,6 +1067,12 @@ MyApplet.prototype = {
             this._pathCompleter.set_dirs_only(false);
             this.lastAcResults = new Array();
             this.settings.bindProperty(Settings.BindingDirection.IN, "search-filesystem", "searchFilesystem", null, null);
+
+            // We shouldn't need to call refreshAll() here... since we get a "icon-theme-changed" signal when CSD starts.
+            // The reason we do is in case the Cinnamon icon theme is the same as the one specificed in GTK itself (in .config)
+            // In that particular case we get no signal at all.
+            this._refreshAll();
+
             St.TextureCache.get_default().connect("icon-theme-changed", Lang.bind(this, this.onIconThemeChanged));
             this._recalc_height();
         }

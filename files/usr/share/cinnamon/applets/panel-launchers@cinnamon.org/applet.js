@@ -305,6 +305,11 @@ MyApplet.prototype = {
 
             this.do_gsettings_import();
 
+            // We shouldn't need to call reload() here... since we get a "icon-theme-changed" signal when CSD starts.
+            // The reason we do is in case the Cinnamon icon theme is the same as the one specificed in GTK itself (in .config)
+            // In that particular case we get no signal at all.
+            this.reload();
+
             St.TextureCache.get_default().connect("icon-theme-changed", Lang.bind(this, this.reload));
         }
         catch (e) {
