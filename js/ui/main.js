@@ -224,6 +224,12 @@ function _initUserSession() {
     });
 }
 
+function do_shutdown_sequence() {
+    panelManager.panels.forEach(function (panel) {
+        panel.actor.hide();
+    });
+}
+
 function _reparentActor(actor, newParent) {
     let parent = actor.get_parent();
     if (parent)
@@ -475,6 +481,8 @@ function start() {
         if (do_login_sound)
             soundManager.play_once_per_session('login');
     }
+
+    global.connect('shutdown', do_shutdown_sequence);
 
     global.log('Cinnamon took %d ms to start'.format(new Date().getTime() - cinnamonStartTime));
 }
