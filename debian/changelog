@@ -1,3 +1,16 @@
+cinnamon (2.6.7) rafaela; urgency=medium
+
+  [ Michael Webster ]
+  * Make cinnamon a proper registered client with cinnamon-session.  This lets us kill it on command.  Otherwise, it lasts longer than c-s-d does (which is also a registered client) and we get strange icon/theme issues during logout, once xsettings dies.
+
+  [ Clement Lefebvre ]
+  * Renamed Screen Locker settings -> Screensaver and regenerated module desktop files
+  * Updated desktop files
+  * Make sure to refresh menu/panel-launchers at least once (when the Cinnamon icon theme is the same as the GTK one we don't get any icon-theme-change from St)
+  * By default, allow Cinnamon to scale panel text and icons according to the panel heights
+
+ -- Clement Lefebvre <root@linuxmint.com>  Tue, 02 Jun 2015 12:39:58 +0200
+
 cinnamon (2.6.6) rafaela; urgency=medium
 
   * Revert "Menu/Panel Launchers applets: Don't listen to St directly, refresh when icon theme or active display scale is changed" (Fixes race condition causing gnome icon theme in menu/panel-launchers at login)
