@@ -1,0 +1,254 @@
+<chapter id="importer">
+  <title>The Importer</title>
+  <para>To access code of other JavaScript files, cjs has got the <code>imports</code> object.</para>
+
+  <para>
+    In cjs in combination of Cinnamon you can use following statements to import statements:
+
+    <informalexample>
+      <programlisting>
+        imports.*
+        imports.gi.*
+        imports.ui.*
+        imports.misc.*
+      </programlisting>
+    </informalexample>
+  </para>
+
+  <sect2>
+    <title><code>imports.*</code></title>
+
+    <para>This is the normal form of importing modules.</para>
+
+    <para>
+      You can think of this object like nested objects which properties are the JavaScript files or directories.
+      All functions, variables (var, let, const) in a JavaScript file can be accessed like this file is an object.
+    </para>
+
+    <para>
+      To clearify, an example:
+      <informalexample>
+        <programlisting>
+          //Direct access to file a.js
+          const A = imports.a;
+          //Directories must be also typed in, in order to get file c.js in directory b
+          const C = imports.b.c;
+
+          log(A.foo); //"Property foo"
+          log(A.bar()); //"Method bar"
+          log(C.baz); //"Property baz"
+
+        </programlisting>
+      </informalexample>
+      <code>a.js</code>
+      <informalexample>
+        <programlisting>
+          let foo = "Property foo";
+
+          function bar(){
+            return "Method bar";
+          }
+      </programlisting>
+      </informalexample>
+      <code>c.js</code> in a directory named b
+      <informalexample>
+        <programlisting>
+          let baz = "Property baz";
+        </programlisting>
+      </informalexample>
+    </para>
+
+    <para>
+      In every case, you can include cjs core modules.
+      Those provides you useful functions or (less often) bindings to C libraries.
+    </para>
+
+    <para>
+      Examples are:
+      <informalexample>
+        <programlisting>
+          const Cairo = imports.cairo; //Cairo graphics
+          const Lang = imports.lang; //useful JavaScript functions for extensing the language
+          const Gettext = imports.gettext; //Gettext translation
+          const TweenEquations = imports.tweener.equations; //Tween equations for animations
+        </programlisting>
+      </informalexample>
+    </para>
+
+    <para>As you can see, it is common to assign the import to a constant in UpperCamelCase which looks like the imported module.</para>
+
+    <para>To view the source of those cjs modules, you should visit <ulink role="online-location" url="https://github.com/linuxmint/cjs/tree/master/modules">the GitHub page</ulink>.</para>
+  </sect2>
+
+  <sect2>
+    <title><code>imports.gi.*</code></title>
+
+    <para>As Cinnamon uses C libraries like Clutter, Muffin and more, there is a little problem: How can be those libraries used in cjs?</para>
+
+    <para>
+      For this, there is <ulink role="online-location" url="https://wiki.gnome.org/Projects/GObjectIntrospection">GObject Introspection</ulink>.
+      For short, it allows you to use C libraries in cjs, Python and other languages.
+    </para>
+
+    <para>
+      C libraries are included like this:
+      <informalexample>
+        <programlisting>
+          const St = imports.gi.St; //Shell Toolkit, the normal way to display widgets on the Cinnamon screen
+          const Cinnamon = imports.gi.Cinnamon; //Cinnamon C libraries, e.g. AppSystem
+        </programlisting>
+      </informalexample>
+    </para>
+
+    <para>Note: Not like normal <code>imports.*</code>, <code>imports.gi.*</code> imports needs to have the first letter after <code>gi.</code> be in upper case.</para>
+  </sect2>
+
+  <sect2>
+    <title><code>imports.ui.*</code></title>
+
+    <para>Those imports under <code>imports.ui.*</code> are core Cinnamon modules.</para>
+
+    <para>
+      Some important modules:
+      <informalexample>
+        <programlisting>
+          const PopupMenu = imports.ui.popupMenu; //High-level classes for building menus for applets or context menus
+          const Applet = imports.ui.applet; //Base applet classes
+        </programlisting>
+      </informalexample>
+    </para>
+
+    <para>The source is in <code>/usr/share/cinnamon/js/ui/</code></para>
+  </sect2>
+
+  <sect2>
+    <title><code>imports.misc.*</code></title>
+
+    <para>Those imports under <code>imports.misc.*</code> are belonging to Cinnamon, but aren't tied to it that much like <code>imports.ui.*</code>.</para>
+
+    <para>
+      <informalexample>
+        <programlisting>
+          const Util = imports.misc.util; //useful functions
+          const Interfaces = imports.misc.interfaces; //DBus stuff
+        </programlisting>
+      </informalexample>
+    </para>
+
+    <para>The source is in <code>/usr/share/cinnamon/js/misc/</code></para>
+  </sect2>
+
+  <sect2>
+    <title>Importing xlet modules</title>
+
+    <para>
+      When you want to split a big xlet code into smaller files, you'll need to import them.
+      A simple way is using <code>AppletManager.applets[uuid]</code>:
+      <informalexample>
+        <programlisting>
+          const uuid = "xlet@uuid";
+          const dir = imports.ui.appletManager.applets[uuid]; //get the directory for the uuid
+
+          //do imports with dir.*
+        </programlisting>
+      </informalexample>
+
+      The disadvantage on this method is that the constant dir is only valid for this file.
+      You'll need a lot of copy&amp;paste in order to import thing from every module.
+    </para>
+  </sect2>
+
+  <sect2>
+    <title>The <code>imports.searchPath</code></title>
+
+    <para>
+      Now some advanced stuff: the <code>imports.searchPath</code>.
+      It is an array defaulting to <code>["resource:////gnome/gjs/modules", "/usr/share/cinnamon/js/"]</code>.
+      Those two values are neccesary to let you the access to the modules mentioned above.
+    </para>
+
+    <para>
+      If you modify it (pushing a directory string to it), cjs also looks there.
+      This is also very useful for big xlets which are split up in many modules.
+    </para>
+
+    <para>
+      <informalexample>
+        <programlisting>
+          const uuid = "xlet@uuid";
+          const path = imports.ui.appletManager.appletMeta[uuid].path; //get the path for the uuid
+
+          if(imports.searchath.indexOf(path) === -1)
+            imports.searchPath.push(path);
+
+          //do imports
+
+          imports.searchPath.splice(imports.searchath.indexOf(path), 1);
+        </programlisting>
+      </informalexample>
+
+      The advantage of this method is that you can use just <code>imports.*</code> for all of your files and not only for one file.
+    </para>
+
+    <para>
+      It is very recommed to check that only one instance of the searchPath exists (see the if clause before push) and to remove this one (splice method).
+      Otherwise, possible confusement of other parts of the Cinnamon enviroment can occurence.
+    </para>
+  </sect2>
+
+  <sect2>
+    <title><code>__init__.js</code></title>
+
+    <para>
+      When you import stuff by modifying the <code>imports.searchPath</code> you can also use <code>__init__.js</code>.
+      It is a normal JavaScript file, but every function or variable can be accessed directly via <code>import.*</code>.
+    </para>
+
+    <para>
+      Examples are often used functions, like a modified <code>_()</code> function for translating your xlet.
+    </para>
+
+    <para>
+      <code>__init__.js</code>
+      <informalexample>
+        <programlisting>
+          const Gettext = imports.gettext;
+
+          const uuid = "xlet@uuid";
+
+          Gettext.bindtextdomain(uuid, GLib.get_home_dir() + "/.local/share/locale");
+
+          function _(str){
+            return Gettext.dgettext(uuid, str);
+          }
+        </programlisting>
+      </informalexample>
+      In your other files:
+      <informalexample>
+        <programlisting>
+          const uuid = imports.uuid;
+          const _ = imports._;
+        </programlisting>
+      </informalexample>
+    </para>
+
+    <para>
+      This is just a little need extension to the <code>imports.searchPath</code> modification.
+      There is no harm renaming <code>__init__.js</code> to something other (like <code>util.js</code>) and using <code>imports.util.*</code>.
+    </para>
+  </sect2>
+
+  <sect2>
+    <title>Order of imprting</title>
+
+    <para>
+      The importer goes through the elements of <code>imports.searchPath</code>.
+      On each element, the following order is used to import stuff:
+      <itemizedlist>
+        <listitem>value in <code>__init__.js</code></listitem>
+        <listitem>a file</listitem>
+        <listitem>a directory</listitem>
+      </itemizedlist>
+    </para>
+  </sect2>
+</chapter>
