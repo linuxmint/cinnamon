@@ -70,6 +70,7 @@ function overrideGio() {
     Gio._real_set_enum     = Gio.Settings.prototype.set_enum;
     Gio._real_get_flags    = Gio.Settings.prototype.get_flags;
     Gio._real_set_flags    = Gio.Settings.prototype.set_flags;
+    Gio._real_connect      = Gio.Settings.prototype.connect;
 
     Gio.Settings.prototype._init        = function(params)   { check_schema_and_init(this, Gio._real_init, params); }
     Gio.Settings.prototype.get_value    = function(key)      { return check_key_and_get(this, Gio._real_get_value, key); }
@@ -90,6 +91,18 @@ function overrideGio() {
     Gio.Settings.prototype.set_enum     = function(key, val) { return check_key_and_set(this, Gio._real_set_enum, key, val); }
     Gio.Settings.prototype.get_flags    = function(key)      { return check_key_and_get(this, Gio._real_get_flags, key); }
     Gio.Settings.prototype.set_flags    = function(key, val) { return check_key_and_set(this, Gio._real_set_flags, key, val); }
+
+    // Stupid GLib doesn't listen to changed::key signals until you read a
+    // value.
+    Gio.Settings.prototype.connect      = function(signal, callback) {
+        Gio._real_connect.call(this, signal, callback);
+        if (signal == "changed") {
+            for (let sig of this.list_keys())
+                this.get_value(sig);
+        } else if (signal.startsWith("changed::")) {
+            this.get_value(signal.substring(9, signal.length));
+        }
+    };
 }
 
 function overrideGObject() {
