@@ -593,6 +593,10 @@ RecentButton.prototype = {
         this.addActor(this.label);
         this.icon.realize();
         this.label.realize();
+
+        this.menu = new PopupMenu.PopupSubMenu(this.actor);
+        this.menu.actor.set_style_class_name('menu-context-menu');
+        this.menu.connect('open-state-changed', Lang.bind(this, this._subMenuOpenStateChanged));
     },
 
     _onButtonReleaseEvent: function (actor, event) {
@@ -600,12 +604,96 @@ RecentButton.prototype = {
             this.file.launch();
             this.appsMenuButton.menu.close();
         }
+        if (event.get_button()==3){
+            if (!this.menu.isOpen)
+                this.appsMenuButton.closeContextMenus(this, true);
+            this.toggleMenu();
+        }
         return true;
     },
 
     activate: function(event) {
         this.file.launch();
         this.appsMenuButton.menu.close();
+    },
+
+    closeMenu: function() {
+        this.menu.close();
+    },
+
+    hasLocalPath: function(file) {
+        return file.is_native() || file.get_path() != null;
+    },
+
+    toggleMenu: function() {
+        if (!this.menu.isOpen){
+            let children = this.menu.box.get_children();
+            for (var i in children) {
+                this.menu.box.remove_actor(children[i]);
+            }
+            let menuItem;
+
+            menuItem = new PopupMenu.PopupMenuItem(_("Open with"), { reactive: false });
+            menuItem.actor.style = "font-weight: bold";
+            this.menu.addMenuItem(menuItem);
+
+            let file = Gio.File.new_for_uri(this.file.uri);
+
+            let default_info = Gio.AppInfo.get_default_for_type(this.file.mimeType, !this.hasLocalPath(file));
+
+            if (default_info) {
+                menuItem = new RecentContextMenuItem(this,
+                                                     default_info.get_display_name(),
+                                                     false,
+                                                     Lang.bind(this, function() {
+                                                         default_info.launch([file], null, null);
+                                                         this.toggleMenu();
+                                                         this.appsMenuButton.menu.close();
+                                                     }));
+                this.menu.addMenuItem(menuItem);
+            }
+
+            let infos = Gio.AppInfo.get_all_for_type(this.file.mimeType)
+
+            for (let i = 0; i < infos.length; i++) {
+                let info = infos[i];
+
+                file = Gio.File.new_for_uri(this.file.uri);
+
+                if (!this.hasLocalPath(file) && !info.supports_uris())
+                    continue;
+
+                if (info.equal(default_info))
+                    continue;
+
+                menuItem = new RecentContextMenuItem(this,
+                                                     info.get_display_name(),
+                                                     false,
+                                                     Lang.bind(this, function() {
+                                                         info.launch([file], null, null);
+                                                         this.toggleMenu();
+                                                         this.appsMenuButton.menu.close();
+                                                     }));
+                this.menu.addMenuItem(menuItem);
+            }
+
+            if (GLib.find_program_in_path ("nemo-open-with") != null) {
+                menuItem = new RecentContextMenuItem(this,
+                                                     _("Other application..."),
+                                                     false,
+                                                     Lang.bind(this, function() {
+                                                         Util.spawnCommandLine("nemo-open-with " + this.file.uri);
+                                                         this.toggleMenu();
+                                                         this.appsMenuButton.menu.close();
+                                                     }));
+                this.menu.addMenuItem(menuItem);
+            }
+        }
+        this.menu.toggle();
+    },
+    
+    _subMenuOpenStateChanged: function() {
+        if (this.menu.isOpen) this.appsMenuButton._scrollToButton(this.menu);
     }
 };
 
@@ -1710,6 +1798,7 @@ MyApplet.prototype = {
                             }));
                     this._recentButtons.push(button);
                     this.applicationsBox.add_actor(button.actor);
+                    this.applicationsBox.add_actor(button.menu.actor);
                 }
 
                 let button = new RecentClearButton(this);
@@ -2227,6 +2316,15 @@ MyApplet.prototype = {
                     this._applicationsButtons[app].toggleMenu();
                 else
                     this._applicationsButtons[app].closeMenu();
+            }
+        }
+
+        for (var recent in this._recentButtons){
+            if (recent != excluded && this._recentButtons[recent].menu.isOpen){
+                if (animate)
+                    this._recentButtons[recent].toggleMenu();
+                else
+                    this._recentButtons[recent].closeMenu();
             }
         }
     },
