@@ -179,8 +179,8 @@ OsdWindow.prototype = {
         let scaleFactor = St.ThemeContext.get_for_stage(global.stage).scale_factor;
         this._icon.icon_size = this._popupSize / (2 * scaleFactor);
         this.actor.set_size(this._popupSize, this._popupSize);
-        this.actor.translation_y = monitor.height - (this._popupSize + (50 * scaleFactor));
-        this.actor.translation_x = (monitor.width / 2) - (this._popupSize / 2);
+        this.actor.translation_y = (monitor.height + monitor.y) - (this._popupSize + (50 * scaleFactor));
+        this.actor.translation_x = ((monitor.width / 2) + monitor.x) - (this._popupSize / 2);
     },
 
     _onOsdSettingsChanged: function() {
