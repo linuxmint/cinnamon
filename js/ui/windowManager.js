@@ -656,17 +656,12 @@ WindowManager.prototype = {
         actor._windowType = actor.meta_window.get_window_type();
         actor._notifyWindowTypeSignalId = actor.meta_window.connect('notify::window-type', Lang.bind(this, function () {
             let type = actor.meta_window.get_window_type();
-            if (type == actor._windowType)
-                return;
-            if (type == Meta.WindowType.MODAL_DIALOG ||
-                actor._windowType == Meta.WindowType.MODAL_DIALOG) {
-                let parent = actor.get_meta_window().get_transient_for();
-                if (parent)
-                    this._checkDimming(parent);
-            }
-
             actor._windowType = type;
         }));
+
+        if (actor.meta_window.is_attached_dialog()) {
+            this._checkDimming(actor.get_meta_window().get_transient_for());
+        }
 
         if (actor.get_meta_window()._cinnamonwm_has_origin === true) {
             // Returns false if unable to find window origin
@@ -687,6 +682,12 @@ WindowManager.prototype = {
         actor.orig_opacity = actor.opacity;
 
         let window = actor.meta_window;
+
+        if (window.is_attached_dialog()) {
+            let parent = window.get_transient_for();
+            this._checkDimming(parent, window);
+        }
+
         if (actor._notifyWindowTypeSignalId) {
             window.disconnect(actor._notifyWindowTypeSignalId);
             actor._notifyWindowTypeSignalId = 0;
