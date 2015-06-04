@@ -752,7 +752,7 @@ WindowManager.prototype = {
                  * force it to show and then don't animate it, so it stays
                  * there while other windows move. */
                 window.show_all();
-                this._movingWindow == undefined;
+                this._movingWindow = undefined;
             } else if (window.get_workspace() == from) {
                 if (window.origX == undefined) {
                     window.origX = window.x;
