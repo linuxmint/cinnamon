@@ -114,7 +114,9 @@ AppMenuButton.prototype = {
         this._updateTileTypeId = this.metaWindow.connect('notify::tile-type',
                 Lang.bind(this, this.setDisplayTitle));
 
-        this._tooltip = new Tooltips.PanelItemTooltip(this, "", this._applet.orientation);
+        if (!this._applet.disableTooltips) {
+          this._tooltip = new Tooltips.PanelItemTooltip(this, "", this._applet.orientation);
+        }
 
         if (!this.alert) {
             this._menuManager = new PopupMenu.PopupMenuManager(this);
@@ -194,20 +196,22 @@ AppMenuButton.prototype = {
 
     _onDragBegin: function() {
         this._draggable._overrideY = this.actor.get_transformed_position()[1];
-        this._tooltip.hide();
-        this._tooltip.preventShow = true;
+        if (this._tooltip) {
+          this._tooltip.hide();
+          this._tooltip.preventShow = true;
+        }
     },
 
     _onDragEnd: function() {
         this.actor.show();
         this._applet.clearDragPlaceholder();
-        this._tooltip.preventShow = false;
+        if (this._tooltip) this._tooltip.preventShow = false;
     },
 
     _onDragCancelled: function() {
         this.actor.show();
         this._applet.clearDragPlaceholder();
-        this._tooltip.preventShow = false;
+        if (this._tooltip) this._tooltip.preventShow = false;
     },
 
     getDragActor: function() {
@@ -272,7 +276,7 @@ AppMenuButton.prototype = {
     destroy: function() {
         this.metaWindow.disconnect(this._updateCaptionId);
         this.metaWindow.disconnect(this._updateTileTypeId);
-        this._tooltip.destroy();
+        if (this._tooltip) this._tooltip.destroy();
         if (this.rightClickMenu) {
             this.rightClickMenu.destroy();
         }
@@ -315,7 +319,7 @@ AppMenuButton.prototype = {
     },
 
     _onButtonRelease: function(actor, event) {
-        this._tooltip.hide();
+        if (this._tooltip) this._tooltip.hide();
         if (this.alert) {
             if (event.get_button() == 1)
                 this._toggleWindow(false);
@@ -334,7 +338,7 @@ AppMenuButton.prototype = {
     },
 
     _onButtonPress: function(actor, event) {
-        this._tooltip.hide();
+        if (this._tooltip) this._tooltip.hide();
         if (!this.alert && event.get_button() == 3) {
             this.rightClickMenu.mouseEvent = event;
             this.rightClickMenu.toggle();
@@ -689,6 +693,10 @@ MyApplet.prototype = {
                 "buttons-use-entire-space",
                 "buttonsUseEntireSpace",
                 this._refreshItems, null);
+        this.settings.bindProperty(Settings.BindingDirection.IN,
+                "disable-tooltips",
+                "disableTooltips",
+                null, null);
 
         this.signals = new SignalManager.SignalManager(this);
 
