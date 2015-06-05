@@ -23,5 +23,10 @@
       "type": "checkbox",
       "default": false,
       "description": "Window buttons can have different sizes and use the entire space available"
+  },
+  "disable-tooltips": {
+      "type": "checkbox",
+      "default": false,
+      "description": "Don't show tooltips for window buttons (requires restart)"
   }
 }
