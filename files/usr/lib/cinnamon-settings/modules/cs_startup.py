@@ -380,8 +380,10 @@ class AutostartBox(Gtk.Box):
 
         self.list_box = Gtk.ListBox()
         self.list_box.set_selection_mode(Gtk.SelectionMode.SINGLE)
+        self.list_box.set_activate_on_single_click(False)
         self.list_box.set_sort_func(self.sort_apps, None)
         self.list_box.set_header_func(list_header_func, None)
+        self.list_box.connect("row-selected", self.on_row_selected)
         self.list_box.connect("row-activated", self.on_row_activated)
         self.box.add(self.list_box)
 
@@ -428,9 +430,12 @@ class AutostartBox(Gtk.Box):
         else:
             return 0
 
-    def on_row_activated(self, list_box, row):
+    def on_row_selected(self, list_box, row):
         self.edit_button.set_sensitive(True)
         self.remove_button.set_sensitive(True)
+
+    def on_row_activated(self, list_box, row):
+        self.on_edit_button_clicked(list_box)
 
     def on_remove_button_clicked(self, button):
         row = self.list_box.get_selected_row()
