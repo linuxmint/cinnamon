@@ -1326,24 +1326,33 @@ MyApplet.prototype = {
 
     _updateIconAndLabel: function(){
         try {
-            if (this.menuIconCustom &&
-               (this.menuIcon == "" ||
-               (GLib.path_is_absolute(this.menuIcon) && GLib.file_test(this.menuIcon, GLib.FileTest.EXISTS)))) {
-                if (this.menuIcon.search("-symbolic") != -1)
-                    this.set_applet_icon_symbolic_path(this.menuIcon);
-                else
-                    this.set_applet_icon_path(this.menuIcon);
-            } else if (this.menuIconCustom &&
-                       Gtk.IconTheme.get_default().has_icon(this.menuIcon)) {
-                if (this.menuIcon.search("-symbolic") != -1)
-                    this.set_applet_icon_symbolic_name(this.menuIcon);
-                else
-                    this.set_applet_icon_name(this.menuIcon);
+            if (this.menuIconCustom) {
+                if (this.menuIcon == "") {
+                    this.set_applet_icon_name("");
+                } else if (GLib.path_is_absolute(this.menuIcon) && GLib.file_test(this.menuIcon, GLib.FileTest.EXISTS)) {
+                    if (this.menuIcon.search("-symbolic") != -1)
+                        this.set_applet_icon_symbolic_path(this.menuIcon);
+                    else
+                        this.set_applet_icon_path(this.menuIcon);
+                } else if (Gtk.IconTheme.get_default().has_icon(this.menuIcon)) {
+                    if (this.menuIcon.search("-symbolic") != -1)
+                        this.set_applet_icon_symbolic_name(this.menuIcon);
+                    else
+                        this.set_applet_icon_name(this.menuIcon);
+                }
+            } else {
+                this._set_default_menu_icon();
             }
-            else this._set_default_menu_icon();
         } catch(e) {
            global.logWarning("Could not load icon file \""+this.menuIcon+"\" for menu button");
         }
+
+        if (this.menuIconCustom && this.menuIcon == "") {
+            this._applet_icon_box.hide();
+        } else {
+            this._applet_icon_box.show();
+        }
+
         if (this.menuLabel != "")
             this.set_applet_label(_(this.menuLabel));
         else
