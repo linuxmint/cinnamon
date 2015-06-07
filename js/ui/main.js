@@ -64,7 +64,7 @@
  * @lg_log_file (Gio.FileOutputStream): The stream used to log looking messages
  *                                      to ~/.cinnamon/glass.log
  * @can_log (boolean): Whether looking glass log to file can be used
- * @popup_rendering (boolean): Whether a popup is in the process of rendering
+ * @popup_rendering_actor (Clutter.Actor): The popup actor that is in the process of rendering
  * @xlet_startup_error (boolean): Whether there was at least one xlet that did
  * not manage to load
  *
@@ -172,7 +172,7 @@ let software_rendering = false;
 let lg_log_file;
 let can_log = false;
 
-let popup_rendering = false;
+let popup_rendering_actor = null;
 
 let xlet_startup_error = false;
 
@@ -1131,7 +1131,9 @@ function _stageEventHandler(actor, event) {
     if (modalCount == 0)
         return false;
     if (event.type() != Clutter.EventType.KEY_PRESS) {
-        return popup_rendering && event.type() == Clutter.EventType.BUTTON_RELEASE;
+        if(!popup_rendering_actor || event.type() != Clutter.EventType.BUTTON_RELEASE)
+            return false;
+        return (event.get_source() && popup_rendering_actor.contain(event.get_source()));
     }
 
     let symbol = event.get_key_symbol();
