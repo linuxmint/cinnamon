@@ -267,7 +267,7 @@ class Module:
                         self.show_battery_page = True
                     have_primary = True
                 else:
-                    widget = set_device_battery_additional(device)
+                    widget = self.set_device_battery_additional(device)
                     if widget:
                         primary_settings.add_row(widget)
             else:
