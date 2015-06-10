@@ -5,6 +5,7 @@ const Clutter = imports.gi.Clutter;
 const Applet = imports.ui.applet;
 const PopupMenu = imports.ui.popupMenu;
 const Main = imports.ui.main;
+const IndicatorManager = imports.ui.indicatorManager;
 const Mainloop = imports.mainloop;
 const SignalManager = imports.misc.signalManager;
 
@@ -26,16 +27,16 @@ IndicatorMenuFactory.prototype = {
         // Decide whether it's a submenu or not
         let shellItem = null;
         let item_type = factoryItem.getFactoryType();
-        if (item_type == FactoryClassTypes.RootMenuClass)
+        if (item_type == PopupMenu.FactoryClassTypes.RootMenuClass)
             shellItem = new Applet.AppletPopupMenu(launcher, orientation);
-        if (item_type == FactoryClassTypes.SubMenuMenuItemClass)
+        if (item_type == PopupMenu.FactoryClassTypes.SubMenuMenuItemClass)
             shellItem = new PopupMenu.PopupSubMenuMenuItem("FIXME");
-        else if (item_type == FactoryClassTypes.MenuSectionMenuItemClass)
+        else if (item_type == PopupMenu.FactoryClassTypes.MenuSectionMenuItemClass)
             shellItem = new PopupMenu.PopupMenuSection();
-        else if (item_type == FactoryClassTypes.SeparatorMenuItemClass)
+        else if (item_type == PopupMenu.FactoryClassTypes.SeparatorMenuItemClass)
             shellItem = new PopupMenu.PopupSeparatorMenuItem('');
-        else if (item_type == FactoryClassTypes.MenuItemClass)
-            shellItem = new IndicatorMenuItem("FIXME");
+        else if (item_type == PopupMenu.FactoryClassTypes.MenuItemClass)
+            shellItem = new PopupMenu.PopupIndicatorMenuItem("FIXME");
         return shellItem;
     }
 };
