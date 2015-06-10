@@ -89,46 +89,12 @@ const StatusNotifierWatcherIface =
         </interface> \
     </node>';
 
-/**
- * #NameWatchdog:
- * @short_description: This class will monitor the ork.kde.StatusNotifierWatcher.
- */
-function NameWatchdog() {
-    this._init();
-}
-
-NameWatchdog.prototype = {
-    _init: function() {   
-        this.isPresent = false; //will be set in the handlers which are guaranteed to be called at least once
-        this._watcherId = Gio.DBus.session.watch_name("org.kde.StatusNotifierWatcher",
-            0, Lang.bind(this, this._appearedHandler), Lang.bind(this, this._vanishedHandler));
-    },
-
-    destroy: function() {
-        Gio.DBus.session.unwatch_name(this._watcherId);
-    },
-    
-    _appearedHandler: function() {
-        global.log("bus name appeared");
-        this.isPresent = true;
-        this.emit('name-watchdog-appeared');
-    },
-    
-    _vanishedHandler: function() {
-        global.log("bus name vanished");
-        this.isPresent = false;
-        this.emit('name-watchdog-vanished');
-    }
-};
-Signals.addSignalMethods(NameWatchdog.prototype);
-
 /*
- * #IndicatorDispatcher:
+ * #IndicatorManager:
  * @short_description: Will get all newly added or changed indicators.
  *
- * The IndicatorDispatcher class will get all newly added or changed indicators
- * and delegate them to IndicatorStatusIcon or IndicatorMessageSource or discard them
- * depending on the settings and indicator state.
+ * The IndicatorManager class will get all newly added or changed indicators.
+ * They will be shared in Cinnamon Main, so will be accessible for all clients.
  */
 
 function IndicatorManager() {
