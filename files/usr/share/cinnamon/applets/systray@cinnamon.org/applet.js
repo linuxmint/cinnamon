@@ -5,7 +5,6 @@ const Clutter = imports.gi.Clutter;
 const Applet = imports.ui.applet;
 const PopupMenu = imports.ui.popupMenu;
 const Main = imports.ui.main;
-const IndicatorManager = imports.ui.indicatorManager;
 const Mainloop = imports.mainloop;
 const SignalManager = imports.misc.signalManager;
 
@@ -66,43 +65,59 @@ MyApplet.prototype = {
 
         this.manager_container.show();
 
+        this._shellIndicators = {};
+        this.menuFactory = new IndicatorMenuFactory();
         this.menuManager = new PopupMenu.PopupMenuManager(this);
+        this.signalAdded = 0;
+        this.signalRemoved = 0;
     },
 
     _addIndicatorSupport: function() {
-        this._shellIndicators = {};
-        this.menuFactory = new IndicatorMenuFactory();
-        this.indicatorManager = new IndicatorManager.IndicatorManager();
-        let currentIndicators = this.indicatorManager.getIndicatorIds();
-        for (let id in currentIndicators) {
-            let appIndicator = this.indicatorManager.getIndicatorById(id);
-            this._onIndicatorAdded(this.indicatorManager, appIndicator);
+        let currentIndicators = Main.indicatorManager.getIndicatorIds();
+        for (let pos in currentIndicators) {
+            let appIndicator = Main.indicatorManager.getIndicatorById(currentIndicators[pos]);
+            this._onIndicatorAdded(Main.indicatorManager, appIndicator);
         }
-        this.indicatorManager.connect('indicator-added', Lang.bind(this, this._onIndicatorAdded));
-        this.indicatorManager.connect('indicator-removed', Lang.bind(this, this._onIndicatorRemoved));
+        if (this.signalAdded == 0)
+            this.signalAdded = Main.indicatorManager.connect('indicator-added', Lang.bind(this, this._onIndicatorAdded));
+        if (this.signalRemoved == 0)
+            this.signalRemoved = Main.indicatorManager.connect('indicator-removed', Lang.bind(this, this._onIndicatorRemoved));
     },
 
     _removeIndicatorSupport: function() {
-       this.indicatorManager.destroy(); 
+        if (this.signalAdded) {
+            Main.indicatorManager.disconnect(this.signalAdded);
+            this.signalAdded = 0;
+        }
+        if (this.signalRemoved) {
+            Main.indicatorManager.disconnect(this.signalRemoved);
+            this.signalRemoved = 0;
+        }
+        this._shellIndicators.forEach(function(iconActor) {
+            iconActor.destroy();
+        });
+        this._shellIndicators = {};
     },
 
     _onIndicatorAdded: function(manager, appIndicator) {
-        let iconActor = appIndicator.getIconActor(this._getIndicatorSize(appIndicator));
-        iconActor._applet = this;
+        if (!(appIndicator.id in this._shellIndicators)) {
+            let iconActor = appIndicator.getIconActor(this._getIndicatorSize(appIndicator));
+            iconActor._applet = this;
 
-        this._shellIndicators[appIndicator.id] = iconActor;
+            this._shellIndicators[appIndicator.id] = iconActor;
 
-        this.actor.add_actor(iconActor.actor);
-        appIndicator.createMenuClientAsync(Lang.bind(this, function(client) {
-            if (client != null) {
-                let newMenu = client.getShellMenu();
-                if (!newMenu) {
-                    newMenu = this.menuFactory.buildShellMenu(client, iconActor, this._applet_context_menu._arrowSide);
-                    this.menuManager.addMenu(newMenu);
+            this.actor.add_actor(iconActor.actor);
+            appIndicator.createMenuClientAsync(Lang.bind(this, function(client) {
+                if (client != null) {
+                    let newMenu = client.getShellMenu();
+                    if (!newMenu) {
+                        newMenu = this.menuFactory.buildShellMenu(client, iconActor, this._applet_context_menu._arrowSide);
+                        this.menuManager.addMenu(newMenu);
+                    }
+                    iconActor.setMenu(newMenu);
                 }
-                iconActor.setMenu(newMenu);
-            }
-        }));
+            }));
+        }
     },
 
     _getIndicatorSize: function(appIndicator) {
@@ -140,7 +155,7 @@ MyApplet.prototype = {
     on_panel_height_changed: function() {
         Main.statusIconDispatcher.redisplay();
         for (let id in this._shellIndicators) {
-            let indicator = this.indicatorManager.getIndicatorById(id);
+            let indicator = Main.indicatorManager.getIndicatorById(id);
             if (indicator) {
                 let size = this._getIndicatorSize(indicator);
                 this._shellIndicators[id].setSize(size);

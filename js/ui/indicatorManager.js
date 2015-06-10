@@ -139,32 +139,8 @@ IndicatorManager.prototype = {
     
     _init: function() {
         this._indicators = {};
-        try {
-            this.statusNotifierWatcher = null;
-            this.nameWatchDog = new NameWatchdog();
-            this.nameWatchDog.connect('name-watchdog-vanished', 
-                                        Lang.bind(this, this._maybeEnableAfterNameAvailable));
-            // HACK: we want to leave the watchdog alive when disabling the extension,
-            // but if we are being reloaded, we destroy it since it could be considered
-            // a leak and spams our log, too.
-            if (typeof global['--appindicator-extension-on-reload'] == 'function')
-                global['--appindicator-extension-on-reload']();
-
-            global['--appindicator-extension-on-reload'] = function() {
-                global.log("Reload detected, destroying old watchdog");
-                this.nameWatchDog.destroy();
-            };
-            // this will only execute once when the extension is loaded
-            if (!global['--appindicator-loaded-count'])
-                global['--appindicator-loaded-count'] = 1;
-            else
-                global['--appindicator-loaded-count']++;
-
-            this._maybeEnableAfterNameAvailable();
-        }
-	catch(e) {
-            global.logError(e);
-        }
+        this.statusNotifierWatcher = new StatusNotifierWatcher();
+        this.statusNotifierWatcher.connect('indicator-dispatch', Lang.bind(this, this._onIndicatorDispatch));
     },
 
     // handlers = { "signal": handler }
@@ -185,7 +161,7 @@ IndicatorManager.prototype = {
 
     getIndicatorIds: function() {
         let list = [];
-        for (id in this._indicators) {
+        for (let id in this._indicators) {
             if (this._indicators[id].indicator.isReady)
                 list.push(id);
         }
@@ -196,14 +172,6 @@ IndicatorManager.prototype = {
         if ((id in this._indicators) && (this._indicators[id].indicator.isReady))
             return this._indicators[id].indicator;
         return null;
-    },
-
-    // by the time we get called whe might not be enabled
-    _maybeEnableAfterNameAvailable: function(actor, event) {
-        if (!this.nameWatchDog.isPresent && this.statusNotifierWatcher == null) {
-            this.statusNotifierWatcher = new StatusNotifierWatcher();
-            this.statusNotifierWatcher.connect('indicator-dispatch', Lang.bind(this, this._onIndicatorDispatch));
-        }
     },
 
     _onIndicatorDispatch: function(notifierWatcher, id) {
@@ -1177,8 +1145,10 @@ IconActor.prototype = {
         this._disconnectSignals(this._indicator, this._signalsIndicator);
         if (this._menuSignal > 0)
             this.actor.disconnect(this._menuSignal);
-        if (this._menu)
+        if (this._menu) {
             this._menu.close(false);
+            this._menu.destroy();
+        }
         this._menu = null;
 
         this._iconCache.destroy();
