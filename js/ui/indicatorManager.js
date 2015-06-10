@@ -882,11 +882,24 @@ IconActor.prototype = {
     },
 
     _onIconButtonPressEvent: function(actor, event) {
-        if (((this._draggable)&&(!this._draggable.inhibit)) || (!this._menu))
+        let draggableParent = this._getDragable();
+        if (((draggableParent)&&(!draggableParent.inhibit)) || (!this._menu))
             return false;
         if (event.get_button() == 1)
             this._menu.toggle();
         return false;
+    },
+
+    // FIXME: We can move this outsite the applet, or otherwise, the user of the api
+    // need to provide an actor._delegate Object for the dragable parent actor. 
+    _getDragable: function() {
+        let actorDragable = this.actor.get_parent();
+        while (actorDragable) {
+            if ((actorDragable._delegate)&&(actorDragable._delegate._draggable))
+                return actorDragable._delegate._draggable;
+            actorDragable = this.actor.get_parent();
+        }
+        return null;
     },
 
     _createIconByName: function(size, name, themePath) {
