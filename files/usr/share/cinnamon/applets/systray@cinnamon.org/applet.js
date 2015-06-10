@@ -3,11 +3,42 @@ const St = imports.gi.St;
 const Clutter = imports.gi.Clutter;
 
 const Applet = imports.ui.applet;
+const PopupMenu = imports.ui.popupMenu;
 const Main = imports.ui.main;
 const Mainloop = imports.mainloop;
 const SignalManager = imports.misc.signalManager;
 
 const ICON_SCALE_FACTOR = .8; // for custom panel heights, 20 (default icon size) / 25 (default panel height)
+
+// Override the factory and create an AppletPopupMenu instead of a PopupMenu
+function IndicatorMenuFactory() {
+   this._init.apply(this, arguments);
+}
+
+IndicatorMenuFactory.prototype = {
+    __proto__: PopupMenu.PopupMenuFactory.prototype,
+
+    _init: function() {
+        PopupMenu.PopupMenuFactory.prototype._init.call(this);
+    },
+
+    _createShellItem: function(factoryItem, launcher, orientation) {
+        // Decide whether it's a submenu or not
+        let shellItem = null;
+        let item_type = factoryItem.getFactoryType();
+        if (item_type == FactoryClassTypes.RootMenuClass)
+            shellItem = new Applet.AppletPopupMenu(launcher, orientation);
+        if (item_type == FactoryClassTypes.SubMenuMenuItemClass)
+            shellItem = new PopupMenu.PopupSubMenuMenuItem("FIXME");
+        else if (item_type == FactoryClassTypes.MenuSectionMenuItemClass)
+            shellItem = new PopupMenu.PopupMenuSection();
+        else if (item_type == FactoryClassTypes.SeparatorMenuItemClass)
+            shellItem = new PopupMenu.PopupSeparatorMenuItem('');
+        else if (item_type == FactoryClassTypes.MenuItemClass)
+            shellItem = new IndicatorMenuItem("FIXME");
+        return shellItem;
+    }
+};
 
 function MyApplet(orientation, panel_height, instance_id) {
     this._init(orientation, panel_height, instance_id);
@@ -33,6 +64,58 @@ MyApplet.prototype = {
         this.actor.add_actor (this.manager_container);
 
         this.manager_container.show();
+
+        this.menuManager = new PopupMenu.PopupMenuManager(this);
+    },
+
+    _addIndicatorSupport: function() {
+        this._shellIndicators = {};
+        this.menuFactory = new IndicatorMenuFactory();
+        this.indicatorManager = new IndicatorManager.IndicatorManager();
+        let currentIndicators = this.indicatorManager.getIndicatorIds();
+        for (let id in currentIndicators) {
+            let appIndicator = this.indicatorManager.getIndicatorById(id);
+            this._onIndicatorAdded(this.indicatorManager, appIndicator);
+        }
+        this.indicatorManager.connect('indicator-added', Lang.bind(this, this._onIndicatorAdded));
+        this.indicatorManager.connect('indicator-removed', Lang.bind(this, this._onIndicatorRemoved));
+    },
+
+    _removeIndicatorSupport: function() {
+       this.indicatorManager.destroy(); 
+    },
+
+    _onIndicatorAdded: function(manager, appIndicator) {
+        let iconActor = appIndicator.getIconActor(this._getIndicatorSize(appIndicator));
+        iconActor._applet = this;
+
+        this._shellIndicators[appIndicator.id] = iconActor;
+
+        this.actor.add_actor(iconActor.actor);
+        appIndicator.createMenuClientAsync(Lang.bind(this, function(client) {
+            if (client != null) {
+                let newMenu = client.getShellMenu();
+                if (!newMenu) {
+                    newMenu = this.menuFactory.buildShellMenu(client, iconActor, this._applet_context_menu._arrowSide);
+                    this.menuManager.addMenu(newMenu);
+                }
+                iconActor.setMenu(newMenu);
+            }
+        }));
+    },
+
+    _getIndicatorSize: function(appIndicator) {
+        if (this._scaleMode)
+            return this._panelHeight * ICON_SCALE_FACTOR;
+        return 16;
+    },
+
+    _onIndicatorRemoved: function(indicator) {
+        if (indicator.id in this._shellIndicators) {
+            let iconActor = this._shellIndicators[indicator.id];
+            delete this._shellIndicators[indicator.id];
+            iconActor.destroy();
+        }
     },
 
     on_applet_clicked: function(event) {
@@ -40,6 +123,7 @@ MyApplet.prototype = {
 
     on_applet_removed_from_panel: function () {
         this._signalManager.disconnectAllSignals();
+        this._removeIndicatorSupport();
     },
 
     on_applet_added_to_panel: function() {
@@ -49,10 +133,18 @@ MyApplet.prototype = {
         this._signalManager.connect(Main.statusIconDispatcher, 'status-icon-removed', this._onTrayIconRemoved);
         this._signalManager.connect(Main.statusIconDispatcher, 'before-redisplay', this._onBeforeRedisplay);
         this._signalManager.connect(Main.systrayManager, "changed", Main.statusIconDispatcher.redisplay, Main.statusIconDispatcher);
+        this._addIndicatorSupport();
     },
 
     on_panel_height_changed: function() {
         Main.statusIconDispatcher.redisplay();
+        for (let id in this._shellIndicators) {
+            let indicator = this.indicatorManager.getIndicatorById(id);
+            if (indicator) {
+                let size = this._getIndicatorSize(indicator);
+                this._shellIndicators[id].setSize(size);
+            }
+        }
     },
 
     _onBeforeRedisplay: function() {
