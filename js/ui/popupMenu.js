@@ -13,9 +13,11 @@ const Atk = imports.gi.Atk;
 const BoxPointer = imports.ui.boxpointer;
 const DND = imports.ui.dnd;
 const Main = imports.ui.main;
-const Params = imports.misc.params;
 const Tweener = imports.ui.tweener;
+const CheckBox = imports.ui.checkBox;
+const RadioButton = imports.ui.radioButton;
 
+const Params = imports.misc.params;
 const Util = imports.misc.util;
 
 const SLIDER_SCROLL_STEP = 0.05; /* Slider scrolling step in % */
@@ -759,66 +761,6 @@ PopupSliderMenuItem.prototype = {
     }
 };
 
-function RadioButton() {
-    this._init.apply(this, arguments);
-}
-
-RadioButton.prototype = {
-    _init: function(state) {
-        this.actor = new St.Button({ style_class: 'radiobutton',
-                                     button_mask: St.ButtonMask.ONE,
-                                     toggle_mode: true,
-                                     can_focus: true,
-                                     x_fill: true,
-                                     y_fill: true,
-                                     y_align: St.Align.MIDDLE });
-        //FIXME The current size is big.
-        this.actor.style = 'width: 12px;';
-        this._container = new St.Bin();
-        this.actor.set_child(this._container);
-        this.actor._delegate = this;
-        this.actor.checked = state;
-    },
-
-    setToggleState: function(state) {
-        this.actor.checked = state;
-    },
-
-    toggle: function() {
-        this.setToggleState(!this.actor.checked);
-    }
-};
-
-function CheckButton() {
-    this._init.apply(this, arguments);
-}
-
-CheckButton.prototype = {
-    _init: function(state) {
-        this.actor = new St.Button({ style_class: 'check-box',
-                                     button_mask: St.ButtonMask.ONE,
-                                     toggle_mode: true,
-                                     can_focus: true,
-                                     x_fill: true,
-                                     y_fill: true,
-                                     y_align: St.Align.MIDDLE });
-        //FIXME The current size is big.
-        this.actor.style = 'width: 12px;';
-        this._container = new St.Bin();
-        this.actor.set_child(this._container);
-        this.actor._delegate = this;
-        this.actor.checked = state;
-    },
-
-    setToggleState: function(state) {
-        this.actor.checked = state;
-    },
-
-    toggle: function() {
-        this.setToggleState(!this.actor.checked);
-    }
-};
-
 function Switch() {
     this._init.apply(this, arguments);
 }
@@ -1036,12 +978,12 @@ PopupIndicatorMenuItem.prototype = {
     setOrnament: function(ornamentType, state) {
         switch (ornamentType) {
         case OrnamentType.CHECK:
-            if ((this._ornament.child)&&(!(this._ornament.child._delegate instanceof CheckButton))) {
+            if ((this._ornament.child)&&(!(this._ornament.child._delegate instanceof CheckBox.CheckButton))) {
                 this._ornament.child.destroy();
                 this._ornament.child = null;
             }
             if (!this._ornament.child) {
-                let switchOrn = new CheckButton(state);
+                let switchOrn = new CheckBox.CheckButton(state);
                 this._ornament.child = switchOrn.actor;
             } else {
                 this._ornament.child._delegate.setToggleState(state);
@@ -1049,12 +991,12 @@ PopupIndicatorMenuItem.prototype = {
             this._icon = null;
             break;
         case OrnamentType.DOT:
-            if ((this._ornament.child)&&(!(this._ornament.child._delegate instanceof RadioButton))) {
+            if ((this._ornament.child)&&(!(this._ornament.child._delegate instanceof RadioButton.RadioBox))) {
                 this._ornament.child.destroy();
                 this._ornament.child = null;
             }
             if (!this._ornament.child) {
-                let radioOrn = new RadioButton(state);
+                let radioOrn = new RadioButton.RadioBox(state);
                 this._ornament.child = radioOrn.actor;
             } else {
                 this._ornament.child._delegate.setToggleState(state);

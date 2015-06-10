@@ -95,25 +95,57 @@ CheckBoxContainer.prototype = {
     }
 };
 
-function CheckBox(label, params) {
-   this._init(label, params);
+function CheckButton() {
+    this._init.apply(this, arguments);
+}
+
+CheckButton.prototype = {
+    _init: function(state, params) {
+        this._params = { style_class: 'check-box',
+                         button_mask: St.ButtonMask.ONE,
+                         toggle_mode: true,
+                         can_focus: true,
+                         x_fill: true,
+                         y_fill: true,
+                         y_align: St.Align.MIDDLE };
+
+        if (params != undefined) {
+            this._params = Params.parse(params, this._params);
+        }
+
+        this.actor = new St.Button(this._params);
+        this.actor._delegate = this;
+        this.actor.checked = state;
+        // FIXME: The current size is big and the container only is useful,
+        // because the current theme. Can be fixed the theme also?
+        this.actor.style = 'width: 12px;';
+        this._container = new St.Bin();
+        this.actor.set_child(this._container);
+    },
+
+    setToggleState: function(state) {
+        this.actor.checked = state;
+    },
+
+    toggle: function() {
+        this.setToggleState(!this.actor.checked);
+    },
+
+    destroy: function() {
+        this.actor.destroy();
+    }
+};
+
+function CheckBox() {
+    this._init.apply(this, arguments);
 }
 
 CheckBox.prototype = {
+    __proto__: CheckButton.prototype,
+
     _init: function(label, params) {
-         this._params = { style_class: 'check-box',
-                                     button_mask: St.ButtonMask.ONE,
-                                     toggle_mode: true,
-                                     can_focus: true,
-                                     x_fill: true,
-                                     y_fill: true,
-                                     y_align: St.Align.MIDDLE };
-
-         if (params != undefined) {
-            this._params = Params.parse(params, this._params);
-         }
-
-        this.actor = new St.Button(this._params);
+        CheckButton.prototype._init.call(this, false, params);
+        this._container.destroy();
         this._container = new CheckBoxContainer();
         this.actor.set_child(this._container.actor);
 
