@@ -1041,6 +1041,7 @@ PopupMenuAbstractItem.prototype = {
 
         this._internalSignalsHandlers = new Array();
         this._externalSignalsHandlers = new Array();
+        this._shellItemSignalsHandlers = null;
         this._shellMenuSignalsHandlers = null;
 
         this.shellItem = null;
@@ -1219,6 +1220,13 @@ PopupMenuAbstractItem.prototype = {
                 }*/
                 this._connectAndSaveId(this, handlers, this._internalSignalsHandlers);
 
+                this._shellItemSignalsHandlers = this._connectAndSaveId(this.shellItem, {
+                    'activate':  Lang.bind(this, this._onActivate),
+                    'destroy' :  Lang.bind(this, this._onShellItemDestroyed)
+                });
+                /*this._internalSignalsHandlers.connect(this.shellItem, 'activate', this._onActivate);
+                this._internalSignalsHandlers.connect(this.shellItem, 'destroy', this._onShellItemDestroyed);*/
+
                 if (this.shellItem.menu) {
                     /*this._shellMenuSignalsHandlers = new SignalManager.SignalManager(this);
                     this._shellMenuSignalsHandlers.connect(this.shellItem.menu, 'open-state-changed', this._onOpenStateChanged);
@@ -1231,14 +1239,8 @@ PopupMenuAbstractItem.prototype = {
                     //this._internalSignalsHandlers.connect(this.shellItem, 'open-state-changed', this._onOpenStateChanged);
                     this._connectAndSaveId(this.shellItem, {
                         'open-state-changed': Lang.bind(this, this._onOpenStateChanged),
-                    }, this._internalSignalsHandlers);
+                    }, this._shellItemSignalsHandlers);
                 }
-                this._internalSignalsHandlers = this._connectAndSaveId(this.shellItem, {
-                    'activate':  Lang.bind(this, this._onActivate),
-                    'destroy' :  Lang.bind(this, this._onShellItemDestroyed)
-                });
-                /*this._internalSignalsHandlers.connect(this.shellItem, 'activate', this._onActivate);
-                this._internalSignalsHandlers.connect(this.shellItem, 'destroy', this._onShellItemDestroyed);*/
             }
         }
     },
@@ -1472,6 +1474,10 @@ PopupMenuAbstractItem.prototype = {
             if (this._internalSignalsHandlers) {
                 this._disconnectSignals(this, this._internalSignalsHandlers);
                 this._internalSignalsHandlers = [];
+            }
+            if (this._shellItemSignalsHandlers) {
+                this._disconnectSignals(shellItem, this._shellItemSignalsHandlers);
+                this._shellItemSignalsHandlers = null;
             }
         } else if (this.shellItem) {
             global.logError("We are not conected with " + shellItem);
