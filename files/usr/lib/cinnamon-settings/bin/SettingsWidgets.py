@@ -506,7 +506,7 @@ class SettingsStack(Gtk.Stack):
         self.expand = True
 
 class SettingsRevealer(Gtk.Revealer):
-    def __init__(self, schema=None, key=None):
+    def __init__(self, schema=None, key=None, values=None):
         Gtk.Revealer.__init__(self)
 
         self.box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=15)
@@ -517,10 +517,21 @@ class SettingsRevealer(Gtk.Revealer):
 
         if schema:
             self.settings = Gio.Settings.new(schema)
-            self.settings.bind(key, self, "reveal-child", Gio.SettingsBindFlags.GET)
+            #the value of this key is the information whether to show or to hide the revealer
+            if values is None:
+                self.settings.bind(key, self, "reveal-child", Gio.SettingsBindFlags.GET)
+            #only at some values of this key the reveaer must be shown
+            else:
+                self.values = values
+                self.settings.connect("changed::" + key, self.on_settings_changed)
+                self.on_settings_changed(self.settings, key)
 
     def add(self, widget):
         self.box.pack_start(widget, False, True, 0)
+
+    #only used when checking values
+    def on_settings_changed(self, settings, key):
+        self.set_reveal_child(settings.get_value(key).unpack() in self.values)
 
 class SettingsPage(Gtk.Box):
     def __init__(self):
@@ -597,7 +608,7 @@ class SettingsBox(Gtk.Frame):
 
         self.need_separator = True
 
-    def add_reveal_row(self, widget, schema=None, key=None):
+    def add_reveal_row(self, widget, schema=None, key=None, values=None):
         vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
         if self.need_separator:
             vbox.add(Gtk.Separator(orientation=Gtk.Orientation.HORIZONTAL))
@@ -609,12 +620,14 @@ class SettingsBox(Gtk.Frame):
             list_box.connect("row-activated", widget.clicked)
         list_box.add(row)
         vbox.add(list_box)
-        revealer = SettingsRevealer(schema, key)
+        revealer = SettingsRevealer(schema, key, values)
         widget.revealer = revealer
         revealer.add(vbox)
         self.box.add(revealer)
 
         self.need_separator = True
+
+        return revealer
 
 class SettingsWidget(Gtk.Box):
     def __init__(self, dep_key=None):
