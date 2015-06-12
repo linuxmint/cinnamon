@@ -66,7 +66,7 @@
     Object.Name - short description
   </informalexample>
 
-  <para>Afterwards, all the properties of the thing should be listed. A "property" is a globally accessible variable in the case of a file, a genuine property in the case of an object, a parameter for a function, or an elemenet of the enum for an enum. The type of the property is optional, but leaving it out makes the documentation less helpful and also more ugly (except for enums, where types should not appear). If the description is too long to fit in one line, break it into two rows using a *single* line break. Single line breaks are always ignored when parsing. For example,</para>
+  <para>Afterwards, all the properties of the thing should be listed. A "property" is a globally accessible variable in the case of a file, a genuine property in the case of an object, a parameter for a function, or an element of the enum for an enum. The type of the property is optional, but leaving it out makes the documentation less helpful and also more ugly (except for enums, where types should not appear). If the description is too long to fit in one line, break it into two rows using a *single* line break. Single line breaks are always ignored when parsing. For example,</para>
   <informalexample>
     <programlisting>
       * @prop (type): this is a very long description. Oh my gosh I am
