@@ -436,8 +436,11 @@ Applet.prototype = {
 
         if (!this._meta["hide-configuration"] && GLib.file_test(this._meta["path"] + "/settings-schema.json", GLib.FileTest.EXISTS)) {     
             if (this.context_menu_item_configure == null) {            
-                this.context_menu_item_configure = new MenuItem(_("Configure..."), "system-run", Lang.bind(this, function() {
-                    Util.spawnCommandLine("cinnamon-settings applets " + this._uuid + " " + this.instance_id)
+                this.context_menu_item_configure = new PopupMenu.PopupIconMenuItem(_("Configure..."),
+                        "system-run",
+                        St.IconType.SYMBOLIC);
+                this.context_menu_item_configure.connect('activate', Lang.bind(this, function() {
+                    Util.spawnCommandLine("cinnamon-settings applets " + this._uuid + " " + this.instance_id);
                 }));
             }
             if (items.indexOf(this.context_menu_item_configure) == -1) {
