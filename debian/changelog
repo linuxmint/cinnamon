@@ -1,3 +1,35 @@
+cinnamon (2.6.8) rafaela; urgency=medium
+
+  [ glebihan ]
+  * Fix typo in doc
+
+  [ Dexter Chua ]
+  * windowManager.js: fix typo; fixes #4253
+  * panel.js: fix panel autohide glitch
+  * applet.js: don't use deprecated MenuItem
+
+  [ Clement Lefebvre ]
+  * Revert "Menu applet: Removed context menu on recent items (overkill and we're really struggling with performance at startup)"
+  * Power applet: Fixed panel icon not getting refreshed after falling back to brightness icon (after a suspend/resume for instance)
+  * Power Settings: Added missing "self" in front of function
+  * Background settings: Don't fail when locale isn't as expected (fixes "LC_ALL=C cinnamon-settings backgrounds")
+
+  [ zyisrad ]
+  * Display Volume OSD on primary monitor correctly
+
+  [ Michael Webster ]
+  * windowManager.js: Fix window dimming behavior for attached modal dialogs.
+  * menu applet: clean up panel icon section - having no icon is a valid option, and it wasn't working.
+  * cs_startup: Let double-clicking entry open the edit dialog.
+
+  [ David Gasquez ]
+  * Fix typo
+
+  [ leigh123linux ]
+  * remove empty tooltip
+
+ -- Clement Lefebvre <root@linuxmint.com>  Sun, 14 Jun 2015 13:18:44 +0200
+
 cinnamon (2.6.7) rafaela; urgency=medium
 
   [ Michael Webster ]
