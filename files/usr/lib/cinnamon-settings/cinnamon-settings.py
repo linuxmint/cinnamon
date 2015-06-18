@@ -120,7 +120,10 @@ class MainWindow:
             self.window.set_title(sidePage.name)
             sidePage.build()
             if sidePage.stack:
+                current_page = sidePage.stack.get_visible_child_name()
                 self.stack_switcher.set_stack(sidePage.stack)
+                l = sidePage.stack.get_children()
+                sidePage.stack.set_visible_child(l[0])
                 if sidePage.stack.get_visible():
                     self.stack_switcher.set_opacity(1)
                 else:
