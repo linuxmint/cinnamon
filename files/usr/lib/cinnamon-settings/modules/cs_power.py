@@ -61,7 +61,7 @@ def get_timestring(time_seconds):
             time_string = ("%d " % hours) + _("hour")
             return time_string
         else:
-            time_sting = ("%d " % hours) + _("hours")
+            time_string = ("%d " % hours) + _("hours")
             return time_string
 
     if hours == 1:
