@@ -12,7 +12,7 @@
       <allow_inactive>auth_admin</allow_inactive>
       <allow_active>auth_admin</allow_active>
     </defaults>
-    <annotate key="org.freedesktop.policykit.exec.path">/usr/lib/cinnamon-settings-users/cinnamon-settings-users.py</annotate>
+    <annotate key="org.freedesktop.policykit.exec.path">/usr/share/cinnamon/cinnamon-settings-users/cinnamon-settings-users.py</annotate>
     <annotate key="org.freedesktop.policykit.exec.allow_gui">true</annotate>
   </action>
 
