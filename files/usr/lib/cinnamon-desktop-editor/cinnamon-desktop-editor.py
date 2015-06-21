@@ -8,10 +8,10 @@ from gi.repository import GLib, Gtk, Gio, CMenu, GdkPixbuf
 from optparse import OptionParser
 import shutil
 
-sys.path.insert(0,'/usr/lib/cinnamon-menu-editor')
+sys.path.insert(0,'/usr/share/cinnamon/cinnamon-menu-editor')
 from cme import util
 
-sys.path.insert(0,'/usr/lib/cinnamon-settings')
+sys.path.insert(0,'/usr/share/cinnamon/cinnamon-settings')
 from bin import XletSettingsWidgets
 
 # i18n
@@ -263,7 +263,7 @@ class ItemEditor(object):
         self.dialog.destroy()
 
 class LauncherEditor(ItemEditor):
-    ui_file = '/usr/lib/cinnamon-desktop-editor/launcher-editor.ui'
+    ui_file = '/usr/share/cinnamon/cinnamon-desktop-editor/launcher-editor.ui'
 
     def build_ui(self):
         self.icon_picker = IconPicker(self.dialog,
@@ -313,7 +313,7 @@ class LauncherEditor(ItemEditor):
 
 
 class DirectoryEditor(ItemEditor):
-    ui_file = '/usr/lib/cinnamon-desktop-editor/directory-editor.ui'
+    ui_file = '/usr/share/cinnamon/cinnamon-desktop-editor/directory-editor.ui'
 
     def build_ui(self):
         self.icon_picker = IconPicker(self.dialog,
@@ -344,7 +344,7 @@ class DirectoryEditor(ItemEditor):
 
 
 class CinnamonLauncherEditor(ItemEditor):
-    ui_file = '/usr/lib/cinnamon-desktop-editor/launcher-editor.ui'
+    ui_file = '/usr/share/cinnamon/cinnamon-desktop-editor/launcher-editor.ui'
 
     def build_ui(self):
         self.icon_picker = IconPicker(self.dialog,
