@@ -123,7 +123,7 @@ class Spice_Harvester:
 
         self.window = window
         self.builder = Gtk.Builder()
-        self.builder.add_from_file("/usr/lib/cinnamon-settings/cinnamon-settings-spice-progress.ui")
+        self.builder.add_from_file("/usr/share/cinnamon/cinnamon-settings/cinnamon-settings-spice-progress.ui")
         self.progress_window = self.builder.get_object("progress_window")
         self.progress_window.set_transient_for(window)
         self.progress_window.set_destroy_with_parent(True)
@@ -479,9 +479,9 @@ class Spice_Harvester:
                            ui_thread_do(self.progresslabel.set_text, _("Installing %s...") % title)
                     elif "gschema.xml" in file.filename:
                         sentence = _("Please enter your password to install the required settings schema for %s") % (uuid)
-                        if os.path.exists("/usr/bin/gksu") and os.path.exists("/usr/lib/cinnamon-settings/bin/installSchema.py"):
+                        if os.path.exists("/usr/bin/gksu") and os.path.exists("/usr/share/cinnamon/cinnamon-settings/bin/installSchema.py"):
                             launcher = "gksu  --message \"<b>%s</b>\"" % sentence
-                            tool = "/usr/lib/cinnamon-settings/bin/installSchema.py %s" % (os.path.join(dirname, file.filename))
+                            tool = "/usr/share/cinnamon/cinnamon-settings/bin/installSchema.py %s" % (os.path.join(dirname, file.filename))
                             command = "%s %s" % (launcher, tool)
                             os.system(command)
                             schema_filename = file.filename
@@ -580,9 +580,9 @@ class Spice_Harvester:
             if not self.themes:
                 if schema_filename != "":
                     sentence = _("Please enter your password to remove the settings schema for %s") % (uuid)
-                    if os.path.exists("/usr/bin/gksu") and os.path.exists("/usr/lib/cinnamon-settings/bin/removeSchema.py"):
+                    if os.path.exists("/usr/bin/gksu") and os.path.exists("/usr/share/cinnamon/cinnamon-settings/bin/removeSchema.py"):
                         launcher = "gksu  --message \"<b>%s</b>\"" % sentence
-                        tool = "/usr/lib/cinnamon-settings/bin/removeSchema.py %s" % (schema_filename)
+                        tool = "/usr/share/cinnamon/cinnamon-settings/bin/removeSchema.py %s" % (schema_filename)
                         command = "%s %s" % (launcher, tool)
                         os.system(command)
                     else:

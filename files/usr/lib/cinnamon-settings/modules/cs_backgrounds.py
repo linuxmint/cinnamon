@@ -1,7 +1,7 @@
 #!/usr/bin/env python2
 
 import sys
-sys.path.append('/usr/lib/cinnamon-settings/bin')
+sys.path.append('/usr/share/cinnamon/cinnamon-settings/bin')
 from SettingsWidgets import *
 import os
 from gi.repository import Gio, Gtk, GObject, Gdk, Pango, GLib

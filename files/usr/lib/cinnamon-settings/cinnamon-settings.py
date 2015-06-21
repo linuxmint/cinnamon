@@ -4,8 +4,8 @@ import sys
 reload(sys)
 sys.setdefaultencoding('utf-8')
 
-sys.path.append('/usr/lib/cinnamon-settings/modules')
-sys.path.append('/usr/lib/cinnamon-settings/bin')
+sys.path.append('/usr/share/cinnamon/cinnamon-settings/modules')
+sys.path.append('/usr/share/cinnamon/cinnamon-settings/bin')
 import os
 import glob
 import gettext
@@ -23,7 +23,7 @@ from functools import cmp_to_key
 gettext.install("cinnamon", "/usr/share/locale")
 
 # Standard setting pages... this can be expanded to include applet dirs maybe?
-mod_files = glob.glob('/usr/lib/cinnamon-settings/modules/*.py')
+mod_files = glob.glob('/usr/share/cinnamon/cinnamon-settings/modules/*.py')
 mod_files.sort()
 if len(mod_files) is 0:
     print "No settings modules found!!"
@@ -181,7 +181,7 @@ class MainWindow:
     @print_timing
     def __init__(self):
         self.builder = Gtk.Builder()
-        self.builder.add_from_file("/usr/lib/cinnamon-settings/cinnamon-settings.ui")
+        self.builder.add_from_file("/usr/share/cinnamon/cinnamon-settings/cinnamon-settings.ui")
         self.window = self.builder.get_object("main_window")
         self.top_bar = self.builder.get_object("top_bar")
         self.side_view = {}
