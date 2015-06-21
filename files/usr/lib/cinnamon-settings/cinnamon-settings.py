@@ -29,7 +29,7 @@ if len(mod_files) is 0:
     print "No settings modules found!!"
     sys.exit(1)
 
-mod_files = [x.split('/')[5].split('.')[0] for x in mod_files]
+mod_files = [x.split('/')[6].split('.')[0] for x in mod_files]
 
 for mod_file in mod_files:
     if mod_file[0:3] != "cs_":
