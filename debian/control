@@ -46,8 +46,8 @@ Package: cinnamon
 Architecture: any
 Depends: cinnamon-common (= ${source:Version}),
          cinnamon-translations (>= ${cinnamon:Version}),
-         cjs (>= ${cinnamon:Version}),
-         libcjs0e (>= ${cinnamon:Version}),
+         cjs (>= 2.6.2),
+         libcjs0e (>= 2.6.2),
          cinnamon-desktop-data (>= 2.6.4),
          libcinnamon-desktop4 (>= 2.6.4),
          libcinnamon-menu-3-0 (>= ${cinnamon:Version}),
