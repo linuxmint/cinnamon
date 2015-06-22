@@ -1,3 +1,28 @@
+cinnamon (2.6.9) rafaela; urgency=medium
+
+  [ Dexter Chua ]
+  * signalManager.js: fix errors when disconnecting JS objects
+  * cs_themes.py: fix potential crash. Fixes #4325
+
+  [ Clement Lefebvre ]
+  * Power Settings: Fixed battery info duplicated on the page every time it is refreshed
+  * Power settings: Fixed typo in the code
+  * Keyboard applet: Show text when layout icon isn't found
+  * Bumped cjs dependency to 2.6.2 (required by signalManager)
+
+  [ Michael Webster ]
+  * photoframe desklet: Adjust an image's size only after it's been fully loaded, and we've received notification the size has changed (otherwise width and height are initially 0, and the aspect ratios of pictures aren't right.
+  * cinnamon-settings: Set the first child visible each time a stacked settings page is navigated to.
+
+  [ JosephMcc ]
+  * fix an issue where panels/desklets can't get focus when a window is fullscreened on the primary monitor
+  * Place modal dialogs like the About dialog on the monitor that currently has the mouse cursor instead of the monitor with the last focused window.
+
+  [ glebihan ]
+  * Added missing runtime dependency
+
+ -- Clement Lefebvre <root@linuxmint.com>  Mon, 22 Jun 2015 23:33:09 +0200
+
 cinnamon (2.6.8) rafaela; urgency=medium
 
   [ glebihan ]
