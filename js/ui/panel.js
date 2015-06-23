@@ -1455,8 +1455,8 @@ Panel.prototype = {
 
             if (!noBarriers) {
                 this._rightPanelBarrier = global.create_pointer_barrier(
-                    this.monitor.x + this.monitor.width - 1, panelTop,
-                    this.monitor.x + this.monitor.width - 1, panelBottom,
+                    this.monitor.x + this.monitor.width, panelTop,
+                    this.monitor.x + this.monitor.width, panelBottom,
                     4 /* BarrierNegativeX */);
 
                 this._leftPanelBarrier = global.create_pointer_barrier(
