@@ -1,3 +1,10 @@
+cinnamon (2.6.10) rafaela; urgency=medium
+
+  [ Gwendal Le Bihan ]
+  * Don't fail when a stack is empty (can happen with the power panel)
+
+ -- Clement Lefebvre <root@linuxmint.com>  Wed, 24 Jun 2015 16:35:46 +0200
+
 cinnamon (2.6.9) rafaela; urgency=medium
 
   [ Dexter Chua ]
