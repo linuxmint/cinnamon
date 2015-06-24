@@ -123,14 +123,17 @@ class MainWindow:
                 current_page = sidePage.stack.get_visible_child_name()
                 self.stack_switcher.set_stack(sidePage.stack)
                 l = sidePage.stack.get_children()
-                sidePage.stack.set_visible_child(l[0])
-                if sidePage.stack.get_visible():
-                    self.stack_switcher.set_opacity(1)
+                if len(l) > 0:
+                    sidePage.stack.set_visible_child(l[0])
+                    if sidePage.stack.get_visible():
+                        self.stack_switcher.set_opacity(1)
+                    else:
+                        self.stack_switcher.set_opacity(0)
+                    if hasattr(sidePage, "connect_proxy"):
+                        sidePage.connect_proxy("hide_stack", self._on_sidepage_hide_stack)
+                        sidePage.connect_proxy("show_stack", self._on_sidepage_show_stack)
                 else:
                     self.stack_switcher.set_opacity(0)
-                if hasattr(sidePage, "connect_proxy"):
-                    sidePage.connect_proxy("hide_stack", self._on_sidepage_hide_stack)
-                    sidePage.connect_proxy("show_stack", self._on_sidepage_show_stack)
             else:
                 self.stack_switcher.set_opacity(0)
             self.main_stack.set_visible_child_name("content_box_page")
