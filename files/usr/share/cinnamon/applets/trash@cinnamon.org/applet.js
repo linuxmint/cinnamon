@@ -6,6 +6,8 @@ const Lang = imports.lang;
 const Clutter = imports.gi.Clutter;
 const Applet = imports.ui.applet;
 const PopupMenu = imports.ui.popupMenu;
+const Mainloop = imports.mainloop;
+const Util = imports.misc.util;
 
 function MyApplet(orientation, panel_height, instance_id) {
     this._init(orientation, panel_height, instance_id);
@@ -25,6 +27,13 @@ MyApplet.prototype = {
             this.trash_directory =  Gio.file_new_for_uri(this.trash_path);
 
             this._initContextMenu();
+
+            this.trash_changed_timeout = 0;
+
+            this._onTrashChange();
+
+            this.monitor = this.trash_directory.monitor_directory(0, null, null);
+            this.monitor.connect('changed', Lang.bind(this, this._onTrashChange));
         }
         catch (e) {
             global.logError(e);
@@ -32,6 +41,12 @@ MyApplet.prototype = {
     },
 
     _initContextMenu: function () {
+        this.empty_item = new PopupMenu.PopupIconMenuItem(_("Empty Trash"),
+                Gtk.STOCK_REMOVE,
+                St.IconType.SYMBOLIC);
+        this.empty_item.connect('activate', Lang.bind(this, this._emptyTrash));
+        this._applet_context_menu.addMenuItem(this.empty_item);
+
         this.open_item = new PopupMenu.PopupIconMenuItem(_("Open Trash"),
                 Gtk.STOCK_OPEN,
                 St.IconType.SYMBOLIC);
@@ -47,12 +62,91 @@ MyApplet.prototype = {
         Gio.app_info_launch_default_for_uri(this.trash_directory.get_uri(), null);
     },
 
+    _onTrashChange: function() {
+      if (this.trash_changed_timeout > 0) {
+            Mainloop.timeout_remove(this.trash_changed_timeout);
+            this.trash_changed_timeout = 0;
+        }
+
+        this.trash_changed_timeout = Mainloop.timeout_add_seconds(1, Lang.bind(this, this._onTrashChangeTimeout));
+    },
+
+    _onTrashChangeTimeout: function() {
+        this.trash_changed_timeout = 0;
+        if (this.trash_directory.query_exists(null)) {
+            let children = this.trash_directory.enumerate_children('standard::*', Gio.FileQueryInfoFlags.NONE, null);
+            if (children.next_file(null, null) == null) {
+                this.set_applet_icon_symbolic_name("user-trash");
+            } else {
+                this.set_applet_icon_symbolic_name("user-trash-full");
+            }
+            children.close();
+        }
+    },
+
+    _emptyTrash: function() {
+      new ConfirmEmptyTrashDialog(Lang.bind(this, this._doEmptyTrash)).open();
+    },
+
+    _doEmptyTrash: function() {
+        Util.spawn(['gvfs-trash', '--empty']);
+    },
+
     on_orientation_changed: function (orientation) {
         this._initContextMenu();
     }
 };
 
-function main(metadata, orientation, panel_height, instance_id) {
+const MESSAGE = _("Are you sure you want to delete all items from the trash?") + "\n" + _("This operation cannot be undone.");
+
+function ConfirmEmptyTrashDialog(emptyMethod) {
+  this._init(emptyMethod);
+}
+
+ConfirmEmptyTrashDialog.prototype = {
+  __proto__: ModalDialog.ModalDialog.prototype,
+
+  _init: function(emptyMethod) {
+    ModalDialog.ModalDialog.prototype._init.call(this, { styleClass: null });
+
+    let mainContentBox = new St.BoxLayout({ style_class: 'polkit-dialog-main-layout',
+                                            vertical: false });
+    this.contentLayout.add(mainContentBox, { x_fill: true, y_fill: true });
+
+    let messageBox = new St.BoxLayout({ style_class: 'polkit-dialog-message-layout',
+                                        vertical: true });
+    mainContentBox.add(messageBox, { y_align: St.Align.START });
+
+    this._subjectLabel = new St.Label({ style_class: 'polkit-dialog-headline',
+                                        text: _("Empty Trash?") });
+
+    messageBox.add(this._subjectLabel, { y_fill:  false, y_align: St.Align.START });
+
+    this._descriptionLabel = new St.Label({ style_class: 'polkit-dialog-description',
+                                            text: MESSAGE });
+
+    messageBox.add(this._descriptionLabel, { y_fill:  true, y_align: St.Align.START });
+
+    this.setButtons([
+      {
+        label: _("Cancel"),
+        action: Lang.bind(this, function() {
+          this.close();
+        }),
+        key: Clutter.Escape
+      },
+      {
+        label: _("Empty"),
+        action: Lang.bind(this, function() {
+          this.close();
+          emptyMethod();
+        })
+      }
+    ]);
+  }
+};
+
+function main(metadata, orientation, panel_height, instance_id) {      
     let myApplet = new MyApplet(orientation, panel_height, instance_id);
-    return myApplet;
+    return myApplet;      
 }
