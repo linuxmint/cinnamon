@@ -26,10 +26,7 @@ MyApplet.prototype = {
             
             this._initContextMenu();
 
-            this._onTrashChange();
-            
             this.monitor = this.trash_directory.monitor_directory(0, null, null);
-            this.monitor.connect('changed', Lang.bind(this, this._onTrashChange));
         }
         catch (e) {
             global.logError(e);
@@ -58,18 +55,6 @@ MyApplet.prototype = {
         Gio.app_info_launch_default_for_uri(this.trash_directory.get_uri(), null);
     },
    
-    _onTrashChange: function() {
-      if (this.trash_directory.query_exists(null)) {
-          let children = this.trash_directory.enumerate_children('standard::*', Gio.FileQueryInfoFlags.NONE, null);          
-          if (children.next_file(null, null) == null) {
-              this.set_applet_icon_symbolic_name("user-trash");        
-          } else {
-              //this.set_applet_icon_name("user-trash-full");
-              this.set_applet_icon_symbolic_name("user-trash");        
-          }
-      }
-    },
-
     _emptyTrash: function() {
       new ConfirmEmptyTrashDialog(Lang.bind(this, this._doEmptyTrash)).open();
     },
