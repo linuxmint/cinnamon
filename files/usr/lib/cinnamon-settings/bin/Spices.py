@@ -387,12 +387,8 @@ class Spice_Harvester:
 
     def load_assets_thread(self, f, icon_path, url):
         valid = True
-        try:
-            urllib2.urlopen(url).getcode()
-        except:
-            valid = False
-        if valid:
-            self.download(f, icon_path, url)
+
+        self.download(f, icon_path, url)
 
         self.load_assets_done()
         thread.exit()
@@ -694,6 +690,7 @@ class Spice_Harvester:
         blockSize = 1024 * 8
         try:
             urlobj = urllib2.urlopen(url)
+            assert urlobj.getcode() == 200
         except Exception, detail:
             f.close()
             self.abort_download = ABORT_ERROR
