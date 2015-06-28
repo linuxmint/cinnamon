@@ -66,7 +66,7 @@ MyApplet.prototype = {
 
     _onTrashChange: function() {
       if (this.trash_changed_timeout > 0) {
-            Mainloop.timeout_remove(this.trash_changed_timeout);
+            Mainloop.source_remove(this.trash_changed_timeout);
             this.trash_changed_timeout = 0;
         }
 
