@@ -60,7 +60,7 @@ HotCornerManager.prototype = {
         this.corners[0].iconActor.set_position(p_x + 1, p_y + 1);
 
         // Top Right: 1
-        this.corners[1].actor.set_position(p_x + primaryMonitor.width - 1, p_y);
+        this.corners[1].actor.set_position(p_x + primaryMonitor.width - 2, p_y);
         this.corners[1].iconActor.set_position(p_x + primaryMonitor.width - 33, p_y + 1);
 
         // Bottom Left: 2
@@ -68,7 +68,7 @@ HotCornerManager.prototype = {
         this.corners[2].iconActor.set_position(b_x + 1, b_y - 33);
 
         // Bottom Right: 3
-        this.corners[3].actor.set_position(b_x + bottomMonitor.width - 1, b_y - 1);
+        this.corners[3].actor.set_position(b_x + bottomMonitor.width - 2, b_y - 1);
         this.corners[3].iconActor.set_position(b_x + bottomMonitor.width - 33, b_y - 33);
         return true;
     }
@@ -101,7 +101,7 @@ HotCorner.prototype = {
                                          reactive: true });
 
         this._corner = new Clutter.Rectangle({ name: 'hot-corner',
-                                               width: 1,
+                                               width: 2,
                                                height: 1,
                                                opacity: 0,
                                                reactive: true });
