@@ -9,6 +9,8 @@ const PopupMenu = imports.ui.popupMenu;
 const Mainloop = imports.mainloop;
 const Util = imports.misc.util;
 
+const MESSAGE = _("Are you sure you want to delete all items from the trash?") + "\n" + _("This operation cannot be undone.");
+
 function MyApplet(orientation, panel_height, instance_id) {
     this._init(orientation, panel_height, instance_id);
 }
@@ -42,13 +44,13 @@ MyApplet.prototype = {
 
     _initContextMenu: function () {
         this.empty_item = new PopupMenu.PopupIconMenuItem(_("Empty Trash"),
-                Gtk.STOCK_REMOVE,
+                "list-remove",
                 St.IconType.SYMBOLIC);
         this.empty_item.connect('activate', Lang.bind(this, this._emptyTrash));
         this._applet_context_menu.addMenuItem(this.empty_item);
 
         this.open_item = new PopupMenu.PopupIconMenuItem(_("Open Trash"),
-                Gtk.STOCK_OPEN,
+                "document-open",
                 St.IconType.SYMBOLIC);
         this.open_item.connect('activate', Lang.bind(this, this._openTrash));
         this._applet_context_menu.addMenuItem(this.open_item);
@@ -64,7 +66,7 @@ MyApplet.prototype = {
 
     _onTrashChange: function() {
       if (this.trash_changed_timeout > 0) {
-            Mainloop.timeout_remove(this.trash_changed_timeout);
+            Mainloop.source_remove(this.trash_changed_timeout);
             this.trash_changed_timeout = 0;
         }
 
@@ -85,7 +87,7 @@ MyApplet.prototype = {
     },
 
     _emptyTrash: function() {
-      new ConfirmEmptyTrashDialog(Lang.bind(this, this._doEmptyTrash)).open();
+        new ModalDialog.ConfirmDialog(MESSAGE, this._doEmptyTrash).open();
     },
 
     _doEmptyTrash: function() {
@@ -95,55 +97,6 @@ MyApplet.prototype = {
     on_orientation_changed: function (orientation) {
         this._initContextMenu();
     }
-};
-
-const MESSAGE = _("Are you sure you want to delete all items from the trash?") + "\n" + _("This operation cannot be undone.");
-
-function ConfirmEmptyTrashDialog(emptyMethod) {
-  this._init(emptyMethod);
-}
-
-ConfirmEmptyTrashDialog.prototype = {
-  __proto__: ModalDialog.ModalDialog.prototype,
-
-  _init: function(emptyMethod) {
-    ModalDialog.ModalDialog.prototype._init.call(this, { styleClass: null });
-
-    let mainContentBox = new St.BoxLayout({ style_class: 'polkit-dialog-main-layout',
-                                            vertical: false });
-    this.contentLayout.add(mainContentBox, { x_fill: true, y_fill: true });
-
-    let messageBox = new St.BoxLayout({ style_class: 'polkit-dialog-message-layout',
-                                        vertical: true });
-    mainContentBox.add(messageBox, { y_align: St.Align.START });
-
-    this._subjectLabel = new St.Label({ style_class: 'polkit-dialog-headline',
-                                        text: _("Empty Trash?") });
-
-    messageBox.add(this._subjectLabel, { y_fill:  false, y_align: St.Align.START });
-
-    this._descriptionLabel = new St.Label({ style_class: 'polkit-dialog-description',
-                                            text: MESSAGE });
-
-    messageBox.add(this._descriptionLabel, { y_fill:  true, y_align: St.Align.START });
-
-    this.setButtons([
-      {
-        label: _("Cancel"),
-        action: Lang.bind(this, function() {
-          this.close();
-        }),
-        key: Clutter.Escape
-      },
-      {
-        label: _("Empty"),
-        action: Lang.bind(this, function() {
-          this.close();
-          emptyMethod();
-        })
-      }
-    ]);
-  }
 };
 
 function main(metadata, orientation, panel_height, instance_id) {      
