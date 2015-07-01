@@ -1,3 +1,17 @@
+cinnamon (2.6.12) rafaela; urgency=medium
+
+  [ mtwebster ]
+  * photoframe desklet: remove long-unused 'quality' setting.
+  * Spices.py: remove redundant url request when refreshing thumbnails.
+
+  [ JosephMcc ]
+  * Fix the activation of right side hot corners being blocked by the pointer barrier
+  * Some improvements to the trash applet
+  * fix the trash applet crashing cinnamon due to a misnamed function
+  * cs_startup: Fix an issue where startup applications fails to start because a desktop file fails to load
+
+ -- Clement Lefebvre <root@linuxmint.com>  Wed, 01 Jul 2015 09:29:20 +0200
+
 cinnamon (2.6.11) rafaela; urgency=medium
 
   * Trash applet: Fixed icon not updating, Cinnamon freezes and memory leaks when trashing large numbers of files
