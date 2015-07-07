@@ -57,12 +57,6 @@ MyDesklet.prototype = {
                                      null);
 
             this.settings.bindProperty(Settings.BindingDirection.IN,
-                                     "quality",
-                                     "quality",
-                                     this.on_setting_changed,
-                                     null);
-
-            this.settings.bindProperty(Settings.BindingDirection.IN,
                                      "fade-delay",
                                      "fade_delay",
                                      this.on_setting_changed,
