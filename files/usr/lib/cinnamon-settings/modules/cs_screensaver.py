@@ -43,7 +43,7 @@ class Module:
 
     def __init__(self, content_box):
         keywords = _("screensaver, lock, password, away, message")
-        sidePage = SidePage(_("Screen Locker"), "cs-screensaver", keywords, content_box, module=self)
+        sidePage = SidePage(_("Screensaver"), "cs-screensaver", keywords, content_box, module=self)
         self.sidePage = sidePage
 
     def on_module_selected(self):

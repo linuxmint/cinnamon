@@ -305,38 +305,15 @@ MyApplet.prototype = {
 
             this.do_gsettings_import();
 
+            // We shouldn't need to call reload() here... since we get a "icon-theme-changed" signal when CSD starts.
+            // The reason we do is in case the Cinnamon icon theme is the same as the one specificed in GTK itself (in .config)
+            // In that particular case we get no signal at all.
             this.reload();
 
-            // refresh when the icon theme changes
-            this._desktopSettings = new Gio.Settings( {schema: "org.cinnamon.desktop.interface"} );
-            this._iconTheme = this._desktopSettings.get_string("icon-theme");
-            this._desktopSettings.connect("changed::icon-theme", Lang.bind(this, this._onIconThemeChanged));
-
-            // refresh when the active display scale changes
-            this._cinnamonSettings = new Gio.Settings( {schema: "org.cinnamon"} );
-            this._activeDisplayScale =  this._cinnamonSettings.get_int("active-display-scale");
-            this._cinnamonSettings.connect("changed::active-display-scale", Lang.bind(this, this._onActiveDisplayScaleChanged));
+            St.TextureCache.get_default().connect("icon-theme-changed", Lang.bind(this, this.reload));
         }
         catch (e) {
             global.logError(e);
-        }
-    },
-
-    _onIconThemeChanged: function() {
-        let iconTheme = this._desktopSettings.get_string("icon-theme");
-        if (iconTheme != this._iconTheme) {
-            this._iconTheme = iconTheme;
-            global.log("Panel Launchers applet: Icon theme changed!");
-            this.reload();
-        }
-    },
-
-    _onActiveDisplayScaleChanged: function() {
-        let activeDisplayScale = this._cinnamonSettings.get_int("active-display-scale");
-        if (activeDisplayScale != this._activeDisplayScale) {
-            this._activeDisplayScale = activeDisplayScale;
-            global.log("Panel Launchers applet: Active display scale changed!");
-            this.reload();
         }
     },
 

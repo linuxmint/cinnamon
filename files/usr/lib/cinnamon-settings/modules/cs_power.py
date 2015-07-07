@@ -61,7 +61,7 @@ def get_timestring(time_seconds):
             time_string = ("%d " % hours) + _("hour")
             return time_string
         else:
-            time_sting = ("%d " % hours) + _("hours")
+            time_string = ("%d " % hours) + _("hours")
             return time_string
 
     if hours == 1:
@@ -229,8 +229,10 @@ class Module:
             section.add_reveal_row(GSettingsComboBox(_("Dim screen after inactive for"), "org.cinnamon.settings-daemon.plugins.power", "idle-dim-time", IDLE_DELAY_OPTIONS, valtype="int", size_group=size_group), "org.cinnamon.settings-daemon.plugins.power", "idle-dim-battery")
 
     def build_battery_page(self, *args):
+
         #destroy all widgets in this page
-        self.battery_page.foreach(Gtk.Widget.destroy, None)
+        for widget in self.battery_page.get_children():
+            widget.destroy()
 
         secondary_settings = None
         primary_settings = None
@@ -267,7 +269,7 @@ class Module:
                         self.show_battery_page = True
                     have_primary = True
                 else:
-                    widget = set_device_battery_additional(device)
+                    widget = self.set_device_battery_additional(device)
                     if widget:
                         primary_settings.add_row(widget)
             else:

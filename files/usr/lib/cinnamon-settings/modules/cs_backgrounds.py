@@ -394,8 +394,11 @@ class Module:
                 self.icon_view.set_sensitive(True)
 
     def splitLocaleCode(self, localeCode):
-        loc = localeCode.partition("_")
-        loc = (loc[0], loc[2])
+        try:
+            loc = localeCode.partition("_")
+            loc = (loc[0], loc[2])
+        except:
+            loc = ("en", "US")
         return loc
 
     def getLocalWallpaperName(self, names, loc):

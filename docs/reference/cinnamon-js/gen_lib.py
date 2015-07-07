@@ -291,7 +291,9 @@ SGML_FORMAT = '''\
   <bookinfo>
     <title>Cinnamon Javascript Reference Manual</title>
     <releaseinfo>
-      for Cinnamon {version}.
+      This document is for Cinnamon {version}.
+
+      The latest version of this documentation can be found online at <ulink role="online-location" url="http://developer.linuxmint.com/reference/git/cinnamon-js/">http://developer.linuxmint.com/reference/git/cinnamon-js/</ulink>.
     </releaseinfo>
   </bookinfo>
   {chapters}

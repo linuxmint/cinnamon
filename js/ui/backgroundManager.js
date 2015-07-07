@@ -31,33 +31,43 @@ BackgroundManager.prototype = {
             this._int_values[i] =  this._gnomeSettings.get_int(this._int_keys[i]);
         }
 
+        this.startTime = new Date().getTime();
+
         this._gnomeSettings.connect('changed', Lang.bind(this, this._onGnomeSettingsChanged));
     },
 
     _onGnomeSettingsChanged: function() {
-        let somethingChanged = false;
-        for (var i in this._string_keys) {
-            let key = this._string_keys[i];
-            let value = this._string_values[i];
-            let newValue = this._gnomeSettings.get_string(key);
-            if (value != newValue) {
-                global.log("BackgroundManager: org.gnome.desktop.background %s changed (%s -> %s)!".format(key, value, newValue));
-                this._string_values[i] = newValue;
-                somethingChanged = true;
-            }
-        }
-        for (var i in this._int_keys) {
-            let key = this._int_keys[i];
-            let value = this._int_values[i];
-            let newValue = this._gnomeSettings.get_int(key);
-            if (value != newValue) {
-                global.log("BackgroundManager: org.gnome.desktop.background %s changed (%d -> %d)!".format(key, value, newValue));
-                this._int_values[i] = newValue;
-                somethingChanged = true;
-            }
-        }
-        if (somethingChanged == true) {
+        let elapsedTime = new Date().getTime() - this.startTime;
+        if (elapsedTime > 60000) {
+            global.log("BackgroundManager: org.gnome.desktop.background changed!");
             this._overwriteCinnamonSettings();
+        }
+        else {
+            let somethingChanged = false;
+            for (var i in this._string_keys) {
+                let key = this._string_keys[i];
+                let value = this._string_values[i];
+                let newValue = this._gnomeSettings.get_string(key);
+                if (value != newValue) {
+                    global.log("BackgroundManager: org.gnome.desktop.background %s changed (%s -> %s)!".format(key, value, newValue));
+                    this._string_values[i] = newValue;
+                    somethingChanged = true;
+                }
+            }
+            for (var i in this._int_keys) {
+                let key = this._int_keys[i];
+                let value = this._int_values[i];
+                let newValue = this._gnomeSettings.get_int(key);
+                if (value != newValue) {
+                    global.log("BackgroundManager: org.gnome.desktop.background %s changed (%d -> %d)!".format(key, value, newValue));
+                    this._int_values[i] = newValue;
+                    somethingChanged = true;
+                }
+            }
+
+            if (somethingChanged == true) {
+                this._overwriteCinnamonSettings();
+            }
         }
     },
 

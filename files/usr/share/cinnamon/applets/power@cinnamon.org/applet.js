@@ -374,9 +374,15 @@ MyApplet.prototype = {
                             }
                             if(icon && icon != this.panel_icon_name){
                                 this.panel_icon_name = icon;
-                                this.set_applet_icon_symbolic_name('battery-missing');
+                                this.set_applet_icon_symbolic_name('battery-full');
                                 let gicon = Gio.icon_new_for_string(icon);
                                 this._applet_icon.gicon = gicon;
+                            }
+                            else {
+                                if (this.panel_icon_name != 'battery-full') {
+                                    this.panel_icon_name = 'battery-full';
+                                    this.set_applet_icon_symbolic_name('battery-full');
+                                }
                             }
                             showed_panel_info = true;
                         }
@@ -395,11 +401,13 @@ MyApplet.prototype = {
                 if (this.brightness.actor.visible) {
                     // Show the brightness info
                     this.set_applet_tooltip(_("Brightness"));
+                    this.panel_icon_name = 'display-brightness';
                     this.set_applet_icon_symbolic_name('display-brightness');
                 }
                 else if (this.keyboard.actor.visible) {
                     // Show the brightness info
                     this.set_applet_tooltip(_("Keyboard backlight"));
+                    this.panel_icon_name = 'keyboard-brightness';
                     this.set_applet_icon_symbolic_name('keyboard-brightness');
                 }
                 else {

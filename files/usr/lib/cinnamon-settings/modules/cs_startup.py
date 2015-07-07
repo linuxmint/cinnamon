@@ -41,7 +41,7 @@ class Module:
             self.gather_apps()
 
             for app in AUTOSTART_APPS:
-                if app.shown and not app.no_display and not app.hidden:
+                if app.key_file_loaded and app.shown and not app.no_display and not app.hidden:
                     row = AutostartRow(app)
                     settings.add_row(row)
 
@@ -83,6 +83,7 @@ class AutostartApp():
         self.save_mask = SaveMask()
         self.key_file = GLib.KeyFile.new()
         self.path = app
+        self.key_file_loaded = False
 
         self.load()
 
@@ -90,7 +91,10 @@ class AutostartApp():
         try:
             self.key_file.load_from_file(self.app, GLib.KeyFileFlags.KEEP_COMMENTS and GLib.KeyFileFlags.KEEP_TRANSLATIONS)
         except GLib.GError:
+            print "Failed to load %s" % self.app
             return
+
+        self.key_file_loaded = True
 
         self.basename = os.path.basename(self.app)
         self.dir = os.path.dirname(self.app)
@@ -380,8 +384,10 @@ class AutostartBox(Gtk.Box):
 
         self.list_box = Gtk.ListBox()
         self.list_box.set_selection_mode(Gtk.SelectionMode.SINGLE)
+        self.list_box.set_activate_on_single_click(False)
         self.list_box.set_sort_func(self.sort_apps, None)
         self.list_box.set_header_func(list_header_func, None)
+        self.list_box.connect("row-selected", self.on_row_selected)
         self.list_box.connect("row-activated", self.on_row_activated)
         self.box.add(self.list_box)
 
@@ -428,9 +434,12 @@ class AutostartBox(Gtk.Box):
         else:
             return 0
 
-    def on_row_activated(self, list_box, row):
+    def on_row_selected(self, list_box, row):
         self.edit_button.set_sensitive(True)
         self.remove_button.set_sensitive(True)
+
+    def on_row_activated(self, list_box, row):
+        self.on_edit_button_clicked(list_box)
 
     def on_remove_button_clicked(self, button):
         row = self.list_box.get_selected_row()

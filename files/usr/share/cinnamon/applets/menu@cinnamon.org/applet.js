@@ -593,6 +593,10 @@ RecentButton.prototype = {
         this.addActor(this.label);
         this.icon.realize();
         this.label.realize();
+
+        this.menu = new PopupMenu.PopupSubMenu(this.actor);
+        this.menu.actor.set_style_class_name('menu-context-menu');
+        this.menu.connect('open-state-changed', Lang.bind(this, this._subMenuOpenStateChanged));
     },
 
     _onButtonReleaseEvent: function (actor, event) {
@@ -600,12 +604,96 @@ RecentButton.prototype = {
             this.file.launch();
             this.appsMenuButton.menu.close();
         }
+        if (event.get_button()==3){
+            if (!this.menu.isOpen)
+                this.appsMenuButton.closeContextMenus(this, true);
+            this.toggleMenu();
+        }
         return true;
     },
 
     activate: function(event) {
         this.file.launch();
         this.appsMenuButton.menu.close();
+    },
+
+    closeMenu: function() {
+        this.menu.close();
+    },
+
+    hasLocalPath: function(file) {
+        return file.is_native() || file.get_path() != null;
+    },
+
+    toggleMenu: function() {
+        if (!this.menu.isOpen){
+            let children = this.menu.box.get_children();
+            for (var i in children) {
+                this.menu.box.remove_actor(children[i]);
+            }
+            let menuItem;
+
+            menuItem = new PopupMenu.PopupMenuItem(_("Open with"), { reactive: false });
+            menuItem.actor.style = "font-weight: bold";
+            this.menu.addMenuItem(menuItem);
+
+            let file = Gio.File.new_for_uri(this.file.uri);
+
+            let default_info = Gio.AppInfo.get_default_for_type(this.file.mimeType, !this.hasLocalPath(file));
+
+            if (default_info) {
+                menuItem = new RecentContextMenuItem(this,
+                                                     default_info.get_display_name(),
+                                                     false,
+                                                     Lang.bind(this, function() {
+                                                         default_info.launch([file], null, null);
+                                                         this.toggleMenu();
+                                                         this.appsMenuButton.menu.close();
+                                                     }));
+                this.menu.addMenuItem(menuItem);
+            }
+
+            let infos = Gio.AppInfo.get_all_for_type(this.file.mimeType)
+
+            for (let i = 0; i < infos.length; i++) {
+                let info = infos[i];
+
+                file = Gio.File.new_for_uri(this.file.uri);
+
+                if (!this.hasLocalPath(file) && !info.supports_uris())
+                    continue;
+
+                if (info.equal(default_info))
+                    continue;
+
+                menuItem = new RecentContextMenuItem(this,
+                                                     info.get_display_name(),
+                                                     false,
+                                                     Lang.bind(this, function() {
+                                                         info.launch([file], null, null);
+                                                         this.toggleMenu();
+                                                         this.appsMenuButton.menu.close();
+                                                     }));
+                this.menu.addMenuItem(menuItem);
+            }
+
+            if (GLib.find_program_in_path ("nemo-open-with") != null) {
+                menuItem = new RecentContextMenuItem(this,
+                                                     _("Other application..."),
+                                                     false,
+                                                     Lang.bind(this, function() {
+                                                         Util.spawnCommandLine("nemo-open-with " + this.file.uri);
+                                                         this.toggleMenu();
+                                                         this.appsMenuButton.menu.close();
+                                                     }));
+                this.menu.addMenuItem(menuItem);
+            }
+        }
+        this.menu.toggle();
+    },
+    
+    _subMenuOpenStateChanged: function() {
+        if (this.menu.isOpen) this.appsMenuButton._scrollToButton(this.menu);
     }
 };
 
@@ -1067,19 +1155,14 @@ MyApplet.prototype = {
             this._pathCompleter.set_dirs_only(false);
             this.lastAcResults = new Array();
             this.settings.bindProperty(Settings.BindingDirection.IN, "search-filesystem", "searchFilesystem", null, null);
-            this._recalc_height();
 
+            // We shouldn't need to call refreshAll() here... since we get a "icon-theme-changed" signal when CSD starts.
+            // The reason we do is in case the Cinnamon icon theme is the same as the one specificed in GTK itself (in .config)
+            // In that particular case we get no signal at all.
             this._refreshAll();
 
-            // refresh when the icon theme changes
-            this._desktopSettings = new Gio.Settings( {schema: "org.cinnamon.desktop.interface"} );
-            this._iconTheme = this._desktopSettings.get_string("icon-theme");
-            this._desktopSettings.connect("changed::icon-theme", Lang.bind(this, this._onIconThemeChanged));
-
-            // refresh when the active display scale changes
-            this._cinnamonSettings = new Gio.Settings( {schema: "org.cinnamon"} );
-            this._activeDisplayScale =  this._cinnamonSettings.get_int("active-display-scale");
-            this._cinnamonSettings.connect("changed::active-display-scale", Lang.bind(this, this._onActiveDisplayScaleChanged));
+            St.TextureCache.get_default().connect("icon-theme-changed", Lang.bind(this, this.onIconThemeChanged));
+            this._recalc_height();
         }
         catch (e) {
             global.logError(e);
@@ -1093,22 +1176,8 @@ MyApplet.prototype = {
         }));
     },
 
-    _onIconThemeChanged: function() {
-        let iconTheme = this._desktopSettings.get_string("icon-theme");
-        if (iconTheme != this._iconTheme) {
-            this._iconTheme = iconTheme;
-            global.log("Menu applet: Icon theme changed!");
-            this._refreshAll();
-        }
-    },
-
-    _onActiveDisplayScaleChanged: function() {
-        let activeDisplayScale = this._cinnamonSettings.get_int("active-display-scale");
-        if (activeDisplayScale != this._activeDisplayScale) {
-            this._activeDisplayScale = activeDisplayScale;
-            global.log("Menu applet: Active display scale changed!");
-            this._refreshAll();
-        }
+    onIconThemeChanged: function() {
+        this._refreshAll();
     },
 
     _refreshAll: function() {
@@ -1257,24 +1326,33 @@ MyApplet.prototype = {
 
     _updateIconAndLabel: function(){
         try {
-            if (this.menuIconCustom &&
-               (this.menuIcon == "" ||
-               (GLib.path_is_absolute(this.menuIcon) && GLib.file_test(this.menuIcon, GLib.FileTest.EXISTS)))) {
-                if (this.menuIcon.search("-symbolic") != -1)
-                    this.set_applet_icon_symbolic_path(this.menuIcon);
-                else
-                    this.set_applet_icon_path(this.menuIcon);
-            } else if (this.menuIconCustom &&
-                       Gtk.IconTheme.get_default().has_icon(this.menuIcon)) {
-                if (this.menuIcon.search("-symbolic") != -1)
-                    this.set_applet_icon_symbolic_name(this.menuIcon);
-                else
-                    this.set_applet_icon_name(this.menuIcon);
+            if (this.menuIconCustom) {
+                if (this.menuIcon == "") {
+                    this.set_applet_icon_name("");
+                } else if (GLib.path_is_absolute(this.menuIcon) && GLib.file_test(this.menuIcon, GLib.FileTest.EXISTS)) {
+                    if (this.menuIcon.search("-symbolic") != -1)
+                        this.set_applet_icon_symbolic_path(this.menuIcon);
+                    else
+                        this.set_applet_icon_path(this.menuIcon);
+                } else if (Gtk.IconTheme.get_default().has_icon(this.menuIcon)) {
+                    if (this.menuIcon.search("-symbolic") != -1)
+                        this.set_applet_icon_symbolic_name(this.menuIcon);
+                    else
+                        this.set_applet_icon_name(this.menuIcon);
+                }
+            } else {
+                this._set_default_menu_icon();
             }
-            else this._set_default_menu_icon();
         } catch(e) {
            global.logWarning("Could not load icon file \""+this.menuIcon+"\" for menu button");
         }
+
+        if (this.menuIconCustom && this.menuIcon == "") {
+            this._applet_icon_box.hide();
+        } else {
+            this._applet_icon_box.show();
+        }
+
         if (this.menuLabel != "")
             this.set_applet_label(_(this.menuLabel));
         else
@@ -1729,6 +1807,7 @@ MyApplet.prototype = {
                             }));
                     this._recentButtons.push(button);
                     this.applicationsBox.add_actor(button.actor);
+                    this.applicationsBox.add_actor(button.menu.actor);
                 }
 
                 let button = new RecentClearButton(this);
@@ -2246,6 +2325,15 @@ MyApplet.prototype = {
                     this._applicationsButtons[app].toggleMenu();
                 else
                     this._applicationsButtons[app].closeMenu();
+            }
+        }
+
+        for (var recent in this._recentButtons){
+            if (recent != excluded && this._recentButtons[recent].menu.isOpen){
+                if (animate)
+                    this._recentButtons[recent].toggleMenu();
+                else
+                    this._recentButtons[recent].closeMenu();
             }
         }
     },

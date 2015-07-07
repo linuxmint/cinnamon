@@ -2,30 +2,155 @@
   <title>Writing tutorials</title>
   <para>It is also possible to write tutorials that are not part of the code. For example, this. They can be found in <code>docs/reference/cinnamon-tutorials/</code>, and are included into the cinnamon documentation via the <code>docs/reference/cinnamon-tutorials/cinnamon-tutorials-docs.sgml.in</code> file. These are plain docbook items, and existing docbook tutorials are suitable.</para>
 
-  <para>The following sections will guide you through the DocBook weirdness</para>
-
-  <sect2 id="documenting-code-tutorial-general">
-    <title>General tips</title>
-    <para>To show &gt; and &lt;, you have to escape the characters in the standard HTML way. To show inline code, use the <code>&lt;code&gt;</code> tag. To display multi-line code, use the <code>&lt;programlisting&gt;</code> tag. To enable line-numbering, you have to enclose <code>&lt;programlisting&gt;</code> inside an <code>&lt;informalexample&gt;</code> tag. Apparently only examples need line numbering.</para>
-
-    <para>If your tutorial doesn't compile properly, it is very likely that you missed a <code>&lt;/para&gt;</code> tag.</para>
-  </sect2>
+  <para>This is intended to be a quick guide on the DocBook syntax.</para>
 
   <sect2>
-    <title>Part, Chapter and Sections</title>
+    <title>Overall structure</title>
+    <para>DocBook is a markup language that vaguely resembles HTML, but the tag names are more verbose. A significant difference is that DocBook is more structured, where we have a top level <code>&lt;book&gt;</code>, containing different <code>&lt;parts&gt;</code> that have <code>&lt;chapter&gt;</code>s that in turn contain <code>&lt;section&gt;</code>s. The general structure of a regular DocBook item might look like</para>
+    <programlisting>
+&lt;book&gt;
+  &lt;part&gt;
+    &lt;chapter&gt;
+      &lt;section&gt;
+        &lt;section&gt;
+          ...
+        &lt;/section&gt;
+        &lt;section&gt;
+          ...
+        &lt;/section&gt;
+      &lt;/section&gt;
+      &lt;section&gt;
+        ...
+      &lt;/section&gt;
+    &lt;/chapter&gt;
+    &lt;chapter&gt;
+      ...
+    &lt;/chapter&gt;
+  &lt;/part&gt;
+  &lt;part&gt;
+    &lt;chapter&gt;
+      ...
+    &lt;/chapter&gt;
+  &lt;/part&gt;
+&lt;/book&gt;</programlisting>
+    <para>As shown above, sections can be nested. In the example, we have layer 1 sections and layer 2 sections. It is possible to skip section layers and, say, directly include a layer 2 section inside a chapter. This can be done via using the <code>&lt;sect2&gt;</code> instead of the <code>&lt;section&gt;</code> tag (you can specify up to the 5th layer). You can also skip parts or chapters. For example, you might have</para>
+    
+    <programlisting>
+&lt;book&gt;
+  &lt;part&gt;
+    &lt;sect2&gt;
+        ...
+    &lt;/sect2&gt;
+    &lt;chapter&gt;
+      ...
+    &lt;/chapter&gt;
+  &lt;/part&gt;
+&lt;/book&gt;</programlisting>
 
-    <para>A document is composed of parts; parts are composed of chapters; chapters are composed of sections; and sections are composed of, well, more sections. It is possible to skip some layers, eg. put sections into parts, or chapters directly into documents, and there are good reasons to do so.</para>
-
-    <para>All three types of things behave differently. Parts are numbered with roman numerals. For example, a part might be labeled</para>
+    <para>This is helpful because sections in layers behave differently. Parts are numbered with Roman numerals. For example, a part might be labeled</para>
     <informalexample>
       I. Code documentation
     </informalexample>
-    <para>Chapters and sections are not numbered. Sections can be nested. For example, you can put a section inside a section. The layering (obviously) matters. DocBook automatically counts and determines which layer each section belongs to, but it can also be done manually. A <code>&lt;sect1&gt;</code> tag refers to a layer 1 section, a <code>&lt;sect2&gt;</code> tag refers to a layer 2 section. By why would you want to do that, if DocBook can do it automatically?</para>
+    <para>On the other hand, chapters and sections are not numbered.</para>
 
-    <para>The answer is chunking and the table of contents. Chunking is the act of splitting different sections into different pages. Different parts and chapters are always chunked, and so are layer 1 sections. A section appears on the table of contents if and only if it is a part, a chapter, or a layer 1 section inside a chapter (but a layer 1 section directly inside a part is not displayed).</para>
+    <para>More importantly, using <code>&lt;sect2&gt;</code> directly will affect chunking and the table of contents. Chunking is the act of splitting different sections into different pages when presented to the user. Different parts and chapters are always chunked, and so are layer 1 sections. A section appears on the table of contents if and only if it is a part, a chapter, or a layer 1 section inside a chapter (but a layer 1 section directly inside a part is not displayed).</para>
 
     <para>So if you wish to use chapters but do not want the layer 1 sections to be chunked, you will want to directly place a layer 2 section inside the chapter. Similarly, if you don't want your subsections to appear in the table of contents, use a layer 2 section without a layer 1 section.</para>
 
-    <para>As of the time of writing this documentation, there is no method to change the gtk-doc chunking and toc rules, as confirmed by the gtk-doc maintainer.</para>
+    <sect3>
+      <title>Escaping characters</title>
+      <para>Similar to HTML, certain characters have to be escaped. For example, the &gt; symbol is typed as &amp;gt; and &lt; is &amp;lt;. Similarly, the ampersand &amp; has to be escaped as &amp;amp;.</para>
+    </sect3>
+    <sect3>
+      <title><code>xi:include</code></title>
+
+      <para>It is possible to include content from other xml files via xi:include. The precise syntax is</para>
+      <programlisting>
+&lt;xi:include href="building.xml"/&gt;</programlisting>
+      <para>The path is relative to the top-level document (ie. <code>$(DOC_MODULE)-docs.sgml</code>).</para>
+
+      <para>To use this feature, you need to declare the xi: namespace. This is done via using the following doctype declaration:</para>
+      <programlisting>
+&lt;!DOCTYPE book PUBLIC '-//OASIS//DTD DocBook XML V4.3//EN'
+'http://www.oasis-open.org/docbook/xml/4.3/docbookx.dtd'
+[
+&lt;!ENTITY % local.common.attrib "xmlns:xi  CDATA  #FIXED 'http://www.w3.org/2003/XInclude'"&gt;
+]&gt;</programlisting>
+    </sect3>
+  </sect2>
+  <sect2>
+    <title>Tags and attributes</title>
+    <sect3>
+      <title>The "title" tag</title>
+      <para>It is (and recommended) to give each part/chapter/section a title. This can be done via the <code>&lt;title&gt;</code> tag. For example, a section might look like</para>
+      <programlisting>
+&lt;section&gt;
+  &lt;title&gt;The title&lt;/title&gt;
+  ...
+&lt;/section&gt;</programlisting>
+      <para>You should give all part/chapter/sections a title. If you cannot think of any sensible title, you probably don't want a separate section.</para>
+    </sect3>
+
+    <sect3>
+      <title>The "para" tag</title>
+      <para>This is the tag you will use the most often. It denotes a paragraph, and is equivalent to the HTML <code>&lt;p&gt;</code> tag. For example,
+      </para>
+      <programlisting>
+&lt;section&gt;
+  &lt;title&gt;The title&lt;/title&gt;
+  &lt;para&gt;Lorem ipsum dolor sit amet&lt;/para&gt;
+&lt;/section&gt;</programlisting>
+    </sect3>
+
+    <sect3>
+      <title>The "code" tag</title>
+      <para>To display inline code, you will need the <code>&lt;code&gt;</code> tag. This is functionally the same as the HTML <code>&lt;code&gt;</code> tag. For example,</para>
+
+      <programlisting>
+  &lt;para&gt;Lorem &lt;code&gt;ipsum&lt;/code&gt; dolor sit amet.&lt;/para&gt;</programlisting>
+      <para>will be displayed as</para>
+      <informalexample>
+        Lorem <code>ipsum</code> dolor sit amet.
+      </informalexample>
+    </sect3>
+    <sect3>
+      <title>The "programlisting" tag</title>
+      <para>This is used to display multiple lines of code, such as the examples shown above. For example, the example above is</para>
+      <programlisting>
+    &lt;programlisting&gt;
+&amp;lt;section&amp;gt;
+  &amp;lt;title&amp;gt;The title&amp;lt;/title&amp;gt;
+  &amp;lt;para&amp;gt;Lorem &amp;lt;code&amp;gt;ipsum&amp;lt;/code&amp;gt; dolor sit amet.&amp;lt;/para&amp;gt;
+&amp;lt;/section&amp;gt;&lt;/programlisting&gt;</programlisting>
+
+      <para>There are a few things to take note of. Firstly, the &lt; and &gt; items are escaped. Secondly, the contents of the <code>&lt;programlisting&gt;</code> is flushed to the left, regardless of the current indentation of the xml. This is since all whitepsace is rendered verbatim. Thirdly, the end <code>&lt;/programlisting tag&gt;</code> is put on the same row as the last line, or else an extra row will appear in the output.</para>
+
+      <para>If you are intending to show code, you will want to do syntax highlighting. Doing so via the regular DocBook way is useless. Instead, you need some magic, namely enclosing your <code>&lt;programlisting&gt;</code> inside an <code>&lt;informalexample&gt;</code> tag, eg.</para>
+      <programlisting>
+    &lt;informalexample&gt;
+      &lt;programlisting&gt;
+        function foo () {
+            return bar
+        }
+      &lt;/programlisting&gt;
+    &lt;informalexample&gt;</programlisting>
+      <para>If you do so, then you are allowed to have a line break before the closing <code>&lt;programlisting&gt;</code> tag as well as indent all your code by a common indent to follow the indent of your xml code. gtk-doc will automatically fix all those problems for you (assuming you are using gtk-doc 1.22 or above).</para>
+
+      <para>Note that the language of syntax highlighting is specified on a per-project basis inside the Makefile (for gtk-doc 1.24 or above; it is hardcoded to be always C for gtk-doc 1.23 or below). The syntax highlight for this tutorial is for Javascript, so if you are writing about something that doesn't resemble Javascript even vaguely (eg. xml), don't use syntax highlighting.</para>
+    </sect3>
+    <sect3>
+      <title>The "itemizedlist" tag</title>
+      <para>This generates an itemized list, similar to the HTML <code>&lt;ul&gt;</code> tag. Individual items are put inside <code>&lt;listitem&gt;</code> tags, similar to the HTML <code>&lt;li&gt;</code>. An example usage is as follows:</para>
+      <programlisting>
+&lt;itemizedlist&gt;
+  &lt;listitem&gt;
+    A “&lt;code&gt;metadata.json&lt;/code&gt;” file which contains information about the applet, such as its name, description etc..
+  &lt;/listitem&gt;
+  &lt;listitem&gt;
+    An “&lt;code&gt;applet.js&lt;/code&gt;” file which contains its code.
+  &lt;/listitem&gt;
+&lt;/itemizedlist&gt;</programlisting>
+      <para>Lists can be nested, and markup can also be used. Sometimes you might want to enclose the contents of each line with a <code>&lt;para&gt;</code> tag.</para>
+    </sect3>
   </sect2>
 </chapter>

@@ -120,7 +120,7 @@
     </key>
 
     <key name="panels-scale-text-icons" type="as">
-      <default>['1:false']</default>
+      <default>['1:true']</default>
       <_summary>Scale panel applet text and icons</_summary>
       <_description>
         Whether the panel icons and text from applets is resized according to the custom panel height

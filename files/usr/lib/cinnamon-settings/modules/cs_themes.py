@@ -49,7 +49,7 @@ class Module:
 
             widget = self.make_group(_("Desktop"), self.cinnamon_chooser)
             center_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
-            button = Gtk.LinkButton("")
+            button = Gtk.LinkButton()
             button.set_label(_("Add/remove desktop themes..."))
             button.connect("activate-link", self.add_remove_cinnamon_themes)
             center_box.pack_end(button, False, False, 0)
@@ -175,8 +175,9 @@ class Module:
         elif path_suffix == "icons":
             current_theme = Gtk.IconTheme.get_default()
             folder = current_theme.lookup_icon("folder", button_picture_size, 0)
-            path = folder.get_filename()
-            chooser.set_picture_from_file(path)
+            if folder is not None:
+                path = folder.get_filename()
+                chooser.set_picture_from_file(path)
         else:
             try:
                 for path in ["/usr/share/%s/%s/%s/thumbnail.png" % (path_prefix, theme, path_suffix),
