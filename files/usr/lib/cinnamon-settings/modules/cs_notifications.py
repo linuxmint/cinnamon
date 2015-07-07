@@ -1,6 +1,8 @@
 #!/usr/bin/env python2
 
 from SettingsWidgets import *
+import gi
+gi.require_version('Notify', '0.7')
 from gi.repository import GObject, Notify
 
 content = """
