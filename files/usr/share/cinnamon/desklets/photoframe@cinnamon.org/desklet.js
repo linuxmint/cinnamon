@@ -57,12 +57,6 @@ MyDesklet.prototype = {
                                      null);
 
             this.settings.bindProperty(Settings.BindingDirection.IN,
-                                     "quality",
-                                     "quality",
-                                     this.on_setting_changed,
-                                     null);
-
-            this.settings.bindProperty(Settings.BindingDirection.IN,
                                      "fade-delay",
                                      "fade_delay",
                                      this.on_setting_changed,
@@ -173,6 +167,24 @@ MyDesklet.prototype = {
         this.update_id = Mainloop.timeout_add_seconds(this.delay, Lang.bind(this, this._update_loop));
     },
 
+    _size_pic: function(image) {
+        image.disconnect(image._notif_id);
+
+        let height, width;
+        let imageRatio = image.width/image.height;
+        let frameRatio = this.width/this.height;
+
+        if (imageRatio > frameRatio) {
+            width = this.width;
+            height = this.width / imageRatio;
+        } else {
+            height = this.height;
+            width = this.height * imageRatio;
+        }
+
+        image.set_size(width, height);
+    },
+
     _update: function(){       
         if (this.updateInProgress) {
             return;
@@ -198,20 +210,6 @@ MyDesklet.prototype = {
                 this.updateInProgress = false;
                 return;
             }
-
-            let height, width;
-            let imageRatio = image.width/image.height;
-            let frameRatio = this.width/this.height;
-
-            if (imageRatio > frameRatio) {
-                width = this.width;
-                height = this.width / imageRatio;
-            } else {
-                height = this.height;
-                width = this.height * imageRatio;
-            }
-
-            image.set_size(width, height);
 
             let old_pic = this.currentPicture;
             this.currentPicture = image;
@@ -262,6 +260,8 @@ MyDesklet.prototype = {
             let uri = file.get_uri();
 
             let image = St.TextureCache.get_default().load_uri_async(uri, this.width, this.height);
+
+            image._notif_id = image.connect("notify::size", Lang.bind(this, this._size_pic));
 
             return image;
         } catch (x) {

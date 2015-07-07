@@ -38,16 +38,6 @@
         "units" : "pixels",
         "step": 50
     },
-    "quality": {
-        "type": "combobox",
-        "description": "Image quality:",
-        "default": 2,
-        "options": {
-            "Low": 0,
-            "Medium": 1,
-            "High": 2
-        }
-    },
     "fade-delay": {
         "default": 0.3,
         "type": "spinbutton",

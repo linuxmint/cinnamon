@@ -47,7 +47,8 @@ MyApplet.prototype = {
             this.metadata = metadata;
             Main.systrayManager.registerRole("keyboard", metadata.uuid);
 
-            Gtk.IconTheme.get_default().append_search_path(metadata.path + "/flags");                              
+            this.icon_theme = Gtk.IconTheme.get_default();
+            this.icon_theme.append_search_path(metadata.path + "/flags");
             this.menuManager = new PopupMenu.PopupMenuManager(this);
             this.menu = new Applet.AppletPopupMenu(this, orientation);
             this.menuManager.addMenu(this.menu);                            
@@ -138,13 +139,14 @@ MyApplet.prototype = {
         for (let i = 0; i < groups.length; i++) {
             let icon_name = this._config.get_group_name(i);
             let actor;
-            if (this._showFlags)
+            if (this._showFlags && this.icon_theme.has_icon(icon_name))
                 actor = new St.Icon({ icon_name: icon_name, icon_type: St.IconType.FULLCOLOR, style_class: 'popup-menu-icon' });
             else
                 actor = new St.Label({ text: short_names[i] });
             let item = new LayoutMenuItem(this._config, i, actor, groups[i]);
             item._short_group_name = short_names[i];
             item._icon_name = icon_name;
+            item._long_name = groups[i];
             this._layoutItems.push(item);
             this.menu.addMenuItem(item, i);
 
@@ -168,13 +170,14 @@ MyApplet.prototype = {
 
         let selectedLabel = this._labelActors[selected];
 
-        if (this._showFlags) {
+        this.set_applet_tooltip(item._long_name)
+        if (this._showFlags && this.icon_theme.has_icon(item._icon_name)) {
             this.set_applet_icon_name(item._icon_name);
             this.set_applet_label("");
         } else {
             this.hide_applet_icon();
             this.set_applet_label(selectedLabel.text);
-        }       
+        }
 
         this._selectedLayout = item;
     },

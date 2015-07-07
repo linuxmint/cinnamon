@@ -1956,9 +1956,6 @@ Panel.prototype = {
 
                             this.actor.set_clip(0, y, this.monitor.width, height);
                         }),
-                        onComplete: Lang.bind(this, function() {
-                            this.actor.remove_clip();
-                        }),
                         onUpdateParams: [this.bottomPosition ? this.monitor.y + this.monitor.height : this.monitor.y - height, this.bottomPosition]
                         });
 
@@ -2009,7 +2006,6 @@ Panel.prototype = {
                 this.actor.set_clip(0, y, this.monitor.width, height);
             }),
             onComplete: Lang.bind(this, function() {
-                this.actor.remove_clip();
                 this._leftBox.hide();
                 this._centerBox.hide();
                 this._rightBox.hide();

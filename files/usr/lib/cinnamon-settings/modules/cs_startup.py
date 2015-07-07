@@ -41,7 +41,7 @@ class Module:
             self.gather_apps()
 
             for app in AUTOSTART_APPS:
-                if app.shown and not app.no_display and not app.hidden:
+                if app.key_file_loaded and app.shown and not app.no_display and not app.hidden:
                     row = AutostartRow(app)
                     settings.add_row(row)
 
@@ -83,6 +83,7 @@ class AutostartApp():
         self.save_mask = SaveMask()
         self.key_file = GLib.KeyFile.new()
         self.path = app
+        self.key_file_loaded = False
 
         self.load()
 
@@ -90,7 +91,10 @@ class AutostartApp():
         try:
             self.key_file.load_from_file(self.app, GLib.KeyFileFlags.KEEP_COMMENTS and GLib.KeyFileFlags.KEEP_TRANSLATIONS)
         except GLib.GError:
+            print "Failed to load %s" % self.app
             return
+
+        self.key_file_loaded = True
 
         self.basename = os.path.basename(self.app)
         self.dir = os.path.dirname(self.app)

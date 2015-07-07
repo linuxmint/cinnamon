@@ -116,6 +116,15 @@ SignalManager.prototype = {
         this._storage.get(sigName).push([obj, id, callback]);
     },
 
+    _signalIsConnected: function (signal) {
+        if (!signal[0])
+            return false;
+        else if ('_signalConnects' in signal[0]) // JS Object
+            return signal[0].signalHandlerIsConnected(signal[1]);
+        else // GObject
+            return GObject.signal_handler_is_connected(signal[0], signal[1]);
+    },
+
     /**
      * isConnected:
      * @sigName (string): the signal we care about
@@ -138,9 +147,8 @@ SignalManager.prototype = {
 
         for (let signal of this._storage.get(sigName))
             if ((!obj || signal[0] == obj) &&
-                (!callback || signal[2] == callback) &&
-                signal[0] &&
-                GObject.signal_handler_is_connected(signal[0], signal[1]))
+                    (!callback || signal[2] == callback) &&
+                    this._signalIsConnected(signal))
                 return true;
 
         return false;
@@ -169,9 +177,7 @@ SignalManager.prototype = {
         this._storage.get(sigName).forEach(Lang.bind(this, function (signal, i) {
             if ((!obj || signal[0] == obj) &&
                 (!callback || signal[2] == callback)) {
-                // Check if the item still exists and the signal is connected
-                if (signal[0] &&
-                    GObject.signal_handler_is_connected(signal[0], signal[1]))
+                if (this._signalIsConnected(signal))
                     signal[0].disconnect(signal[1]);
 
                 this._storage.get(sigName).splice(i, 1);
@@ -191,8 +197,7 @@ SignalManager.prototype = {
     disconnectAllSignals: function() {
         for (let signals of this._storage.values())
             for (let signal of signals)
-                if (signal[0] &&
-                    GObject.signal_handler_is_connected(signal[0], signal[1]))
+                if (this._signalIsConnected(signal))
                     signal[0].disconnect(signal[1]);
 
         this._storage.clear();
