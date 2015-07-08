@@ -207,7 +207,7 @@ MyApplet.prototype = {
         this.metadata = metadata;
 
         this.settings = new Settings.AppletSettings(this, metadata.uuid, instanceId);
-        this.settings.bindProperty(Settings.BindingDirection.IN, "showpercentage", "showpercentage", Lang.bind(this, this._devicesChanged), null);
+        this.settings.bindProperty(Settings.BindingDirection.IN, "labelinfo", "labelinfo", Lang.bind(this, this._devicesChanged), null);
 
         Main.systrayManager.registerRole("power", metadata.uuid);
         Main.systrayManager.registerRole("battery", metadata.uuid);
@@ -366,12 +366,29 @@ MyApplet.prototype = {
                         // Info for the primary battery (either the primary device, or any battery device if there is no primary device)
                         if (device_type == UPDeviceType.BATTERY && !showed_panel_info) {
                             this.set_applet_tooltip(status);
-                            if (this.showpercentage) {
-                                this.set_applet_label("%d%%".format(Math.round(percentage)));
+                            let labelText = "";
+                            if (this.labelinfo == "nothing") {
+                                ;
                             }
-                            else {
-                                this.set_applet_label("");
+                            else if (this.labelinfo == "time" && seconds != 0) {
+                                let time = Math.round(seconds / 60);
+                                let minutes = Math.floor(time % 60);
+                                let hours = Math.floor(time / 60);
+                                labelText = _("time of battery remaining", "%d:%02d").format(hours,minutes);
                             }
+                            else if (this.labelinfo == "percentage" ||
+                                    (this.labelinfo == "percentage_time" && seconds == 0)) {
+                                labelText = _("percent of battery remaining", "%d%%").format(Math.round(percentage));
+                            }
+                            else if (this.labelinfo == "percentage_time") {
+                                let time = Math.round(seconds / 60);
+                                let minutes = Math.floor(time % 60);
+                                let hours = Math.floor(time / 60);
+                                labelText = _("percent of battery remaining", "%d%%").format(Math.round(percentage)) + " (" +
+                                            _("time of battery remaining", "%d:%02d").format(hours,minutes) + ")";
+                            }
+                            this.set_applet_label(labelText);
+
                             if(icon && icon != this.panel_icon_name){
                                 this.panel_icon_name = icon;
                                 this.set_applet_icon_symbolic_name('battery-full');
