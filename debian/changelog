@@ -1,3 +1,10 @@
+cinnamon (2.6.13) rafaela; urgency=medium
+
+  * A11y applet: Show active keyboard modifiers when sticky keys are enabled
+  * Renamed mintInstall.desktop -> mintinstall.desktop
+
+ -- Clement Lefebvre <root@linuxmint.com>  Thu, 09 Jul 2015 14:16:19 +0200
+
 cinnamon (2.6.12) rafaela; urgency=medium
 
   [ mtwebster ]
