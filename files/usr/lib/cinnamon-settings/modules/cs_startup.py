@@ -529,7 +529,7 @@ class AutostartBox(Gtk.Box):
             try:
                 shutil.copyfile(desktop_file_dir, user_desktop_file)
             except IOError:
-                print "Failed to copy desktop file %s" % desktop_file
+                print "Failed to copy desktop file %s" % desktop_file_name
 
             app = AutostartApp(user_desktop_file, user_position=os.path.dirname(user_desktop_file))
 
