@@ -374,18 +374,18 @@ MyApplet.prototype = {
                                 let time = Math.round(seconds / 60);
                                 let minutes = Math.floor(time % 60);
                                 let hours = Math.floor(time / 60);
-                                labelText = _("time of battery remaining", "%d:%02d").format(hours,minutes);
+                                labelText = C_("time of battery remaining", "%d:%02d").format(hours,minutes);
                             }
                             else if (this.labelinfo == "percentage" ||
                                     (this.labelinfo == "percentage_time" && seconds == 0)) {
-                                labelText = _("percent of battery remaining", "%d%%").format(Math.round(percentage));
+                                labelText = C_("percent of battery remaining", "%d%%").format(Math.round(percentage));
                             }
                             else if (this.labelinfo == "percentage_time") {
                                 let time = Math.round(seconds / 60);
                                 let minutes = Math.floor(time % 60);
                                 let hours = Math.floor(time / 60);
-                                labelText = _("percent of battery remaining", "%d%%").format(Math.round(percentage)) + " (" +
-                                            _("time of battery remaining", "%d:%02d").format(hours,minutes) + ")";
+                                labelText = C_("percent of battery remaining", "%d%%").format(Math.round(percentage)) + " (" +
+                                            C_("time of battery remaining", "%d:%02d").format(hours,minutes) + ")";
                             }
                             this.set_applet_label(labelText);
 
