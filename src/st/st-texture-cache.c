@@ -1410,7 +1410,7 @@ create_faded_icon_cpu (StTextureCache *cache,
     return NULL;
 
   pixbuf = gtk_icon_info_load_icon (info, NULL);
-  gtk_icon_info_free (info);
+  g_object_unref (info);
 
 
   if (pixbuf == NULL)
