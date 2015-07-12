@@ -343,7 +343,6 @@ function start() {
                         let height = global.stage.height;
                         [alloc.min_size, alloc.natural_size] = [height, height];
                     });
-    St.set_ui_root(global.stage, uiGroup);
 
     global.reparentActor(global.background_actor, uiGroup);
     global.background_actor.hide();

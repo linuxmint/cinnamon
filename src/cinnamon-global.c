@@ -835,46 +835,6 @@ global_stage_after_paint (ClutterStage *stage,
 }
 
 static void
-constrain_tooltip (StTooltip             *tooltip,
-                   const ClutterGeometry *geometry,
-                   ClutterGeometry       *adjusted_geometry,
-                   gpointer               data)
-{
-  const ClutterGeometry *tip_area = st_tooltip_get_tip_area (tooltip);
-  CinnamonGlobal *global = cinnamon_global_get ();
-  MetaScreen *screen = cinnamon_global_get_screen (global);
-  int n_monitors = meta_screen_get_n_monitors (screen);
-  int i;
-
-  *adjusted_geometry = *geometry;
-
-  /* A point that determines what screen we'll constrain to */
-  int x = tip_area->x + tip_area->width / 2;
-  int y = tip_area->y + tip_area->height / 2;
-
-  for (i = 0; i < n_monitors; i++)
-    {
-      MetaRectangle rect;
-      meta_screen_get_monitor_geometry (screen, i, &rect);
-      if (x >= rect.x && x < rect.x + rect.width &&
-          y >= rect.y && y < rect.y + rect.height)
-        {
-          if (adjusted_geometry->x + adjusted_geometry->width > rect.x + rect.width)
-            adjusted_geometry->x = rect.x + rect.width - adjusted_geometry->width;
-          if (adjusted_geometry->x < rect.x)
-            adjusted_geometry->x = rect.x;
-
-          if (adjusted_geometry->y + adjusted_geometry->height > rect.y + rect.height)
-            adjusted_geometry->y = rect.y + rect.height - adjusted_geometry->height;
-          if (adjusted_geometry->y < rect.y)
-            adjusted_geometry->y = rect.y;
-
-          return;
-        }
-    }
-}
-
-static void
 cinnamon_fonts_init (ClutterStage *stage)
 {
   CoglPangoFontMap *fontmap;

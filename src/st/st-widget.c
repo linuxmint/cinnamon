@@ -40,7 +40,6 @@
 #include "st-private.h"
 #include "st-texture-cache.h"
 #include "st-theme-context.h"
-#include "st-tooltip.h"
 #include "st-theme-node-transition.h"
 
 #include "st-widget-accessible.h"
@@ -60,11 +59,8 @@ struct _StWidgetPrivate
   gchar        *inline_style;
 
   StThemeNodeTransition *transition_animation;
-  guint tooltip_timeout_id;
 
   gboolean      is_stylable : 1;
-  gboolean      has_tooltip : 1;
-  gboolean      show_tooltip : 1;
   gboolean      is_style_dirty : 1;
   gboolean      draw_bg_color : 1;
   gboolean      draw_border_internal : 1;
@@ -72,8 +68,6 @@ struct _StWidgetPrivate
   gboolean      hover : 1;
   gboolean      can_focus : 1;
   gboolean      important : 1;
-
-  StTooltip    *tooltip;
 
   StTextDirection   direction;
 
@@ -105,8 +99,6 @@ enum
   PROP_STYLE_CLASS,
   PROP_STYLE,
   PROP_STYLABLE,
-  PROP_HAS_TOOLTIP,
-  PROP_TOOLTIP_TEXT,
   PROP_TRACK_HOVER,
   PROP_HOVER,
   PROP_CAN_FOCUS,
@@ -140,10 +132,6 @@ static gboolean st_widget_real_navigate_focus (StWidget         *widget,
 
 static AtkObject * st_widget_get_accessible (ClutterActor *actor);
 
-static void st_widget_start_tooltip_timeout (StWidget *widget);
-static void st_widget_do_show_tooltip (StWidget *widget);
-static void st_widget_do_hide_tooltip (StWidget *widget);
-
 static void
 st_widget_set_property (GObject      *gobject,
                         guint         prop_id,
@@ -176,14 +164,6 @@ st_widget_set_property (GObject      *gobject,
           actor->priv->is_stylable = g_value_get_boolean (value);
           clutter_actor_queue_relayout ((ClutterActor *) gobject);
         }
-      break;
-
-    case PROP_HAS_TOOLTIP:
-      st_widget_set_has_tooltip (actor, g_value_get_boolean (value));
-      break;
-
-    case PROP_TOOLTIP_TEXT:
-      st_widget_set_tooltip_text (actor, g_value_get_string (value));
       break;
 
     case PROP_TRACK_HOVER:
@@ -252,14 +232,6 @@ st_widget_get_property (GObject    *gobject,
       g_value_set_boolean (value, priv->is_stylable);
       break;
 
-    case PROP_HAS_TOOLTIP:
-      g_value_set_boolean (value, priv->has_tooltip);
-      break;
-
-    case PROP_TOOLTIP_TEXT:
-      g_value_set_string (value, st_widget_get_tooltip_text (actor));
-      break;
-
     case PROP_TRACK_HOVER:
       g_value_set_boolean (value, priv->track_hover);
       break;
@@ -324,19 +296,6 @@ st_widget_dispose (GObject *gobject)
     }
 
   st_widget_remove_transition (actor);
-
-  if (priv->tooltip_timeout_id)
-    {
-      g_source_remove (priv->tooltip_timeout_id);
-      priv->tooltip_timeout_id = 0;
-    }
-
-  if (priv->tooltip)
-    {
-      clutter_actor_destroy (CLUTTER_ACTOR (priv->tooltip));
-      g_object_unref (priv->tooltip);
-      priv->tooltip = NULL;
-    }
 
   /* The real dispose of this accessible is done on
    * AtkGObjectAccessible weak ref callback
@@ -410,38 +369,6 @@ st_widget_get_preferred_height (ClutterActor *self,
 }
 
 static void
-st_widget_allocate (ClutterActor          *actor,
-                    const ClutterActorBox *box,
-                    ClutterAllocationFlags flags)
-{
-  StWidget *self = ST_WIDGET (actor);
-  StWidgetPrivate *priv = self->priv;
-  ClutterActorClass *klass;
-  ClutterGeometry area;
-  ClutterVertex in_v, out_v;
-
-  klass = CLUTTER_ACTOR_CLASS (st_widget_parent_class);
-  klass->allocate (actor, box, flags);
-
-  /* update tooltip position */
-  if (priv->tooltip)
-    {
-      in_v.x = in_v.y = in_v.z = 0;
-      clutter_actor_apply_transform_to_point (actor, &in_v, &out_v);
-      area.x = out_v.x;
-      area.y = out_v.y;
-
-      in_v.x = box->x2 - box->x1;
-      in_v.y = box->y2 - box->y1;
-      clutter_actor_apply_transform_to_point (actor, &in_v, &out_v);
-      area.width = out_v.x - area.x;
-      area.height = out_v.y - area.y;
-
-      st_tooltip_set_tip_area (priv->tooltip, &area);
-    }
-}
-
-static void
 st_widget_paint (ClutterActor *actor)
 {
   StWidget *self = ST_WIDGET (actor);
@@ -504,9 +431,6 @@ st_widget_map (ClutterActor *actor)
   CLUTTER_ACTOR_CLASS (st_widget_parent_class)->map (actor);
 
   st_widget_ensure_style (self);
-
-  if (self->priv->show_tooltip)
-    st_widget_do_show_tooltip (self);
 }
 
 static void
@@ -519,8 +443,6 @@ st_widget_unmap (ClutterActor *actor)
 
   if (priv->track_hover && priv->hover)
     st_widget_set_hover (self, FALSE);
-
-  st_widget_do_hide_tooltip (self);
 }
 
 static void notify_children_of_style_change (ClutterContainer *container);
@@ -755,19 +677,6 @@ st_widget_leave (ClutterActor         *actor,
     return FALSE;
 }
 
-static gboolean
-st_widget_motion (ClutterActor       *actor,
-                  ClutterMotionEvent *motion)
-{
-  StWidget *widget = ST_WIDGET (actor);
-  StWidgetPrivate *priv = widget->priv;
-
-  if (priv->has_tooltip)
-    st_widget_start_tooltip_timeout (widget);
-
-  return FALSE;
-}
-
 static void
 st_widget_key_focus_in (ClutterActor *actor)
 {
@@ -797,18 +706,6 @@ st_widget_key_press_event (ClutterActor    *actor,
     }
 
   return FALSE;
-}
-
-static void
-st_widget_hide (ClutterActor *actor)
-{
-  StWidget *widget = (StWidget *) actor;
-
-  /* hide the tooltip, if there is one */
-  if (widget->priv->tooltip)
-    clutter_actor_hide (CLUTTER_ACTOR (widget->priv->tooltip));
-
-  CLUTTER_ACTOR_CLASS (st_widget_parent_class)->hide (actor);
 }
 
 static gboolean
@@ -862,7 +759,6 @@ st_widget_class_init (StWidgetClass *klass)
 
   actor_class->get_preferred_width = st_widget_get_preferred_width;
   actor_class->get_preferred_height = st_widget_get_preferred_height;
-  actor_class->allocate = st_widget_allocate;
   actor_class->paint = st_widget_paint;
   actor_class->get_paint_volume = st_widget_get_paint_volume;
   actor_class->parent_set = st_widget_parent_set;
@@ -871,11 +767,9 @@ st_widget_class_init (StWidgetClass *klass)
 
   actor_class->enter_event = st_widget_enter;
   actor_class->leave_event = st_widget_leave;
-  actor_class->motion_event = st_widget_motion;
   actor_class->key_focus_in = st_widget_key_focus_in;
   actor_class->key_focus_out = st_widget_key_focus_out;
   actor_class->key_press_event = st_widget_key_press_event;
-  actor_class->hide = st_widget_hide;
 
   actor_class->get_accessible = st_widget_get_accessible;
 
@@ -950,35 +844,6 @@ st_widget_class_init (StWidgetClass *klass)
   g_object_class_install_property (gobject_class,
                                    PROP_STYLABLE,
                                    pspec);
-
-  /**
-   * StWidget:has-tooltip:
-   *
-   * Determines whether the widget has a tooltip. If set to %TRUE, causes the
-   * widget to monitor hover state (i.e. sets #ClutterActor:reactive and
-   * #StWidget:track-hover).
-   */
-  pspec = g_param_spec_boolean ("has-tooltip",
-                                "Has Tooltip",
-                                "Determines whether the widget has a tooltip",
-                                FALSE,
-                                ST_PARAM_READWRITE);
-  g_object_class_install_property (gobject_class,
-                                   PROP_HAS_TOOLTIP,
-                                   pspec);
-
-
-  /**
-   * StWidget:tooltip-text:
-   *
-   * text displayed on the tooltip
-   */
-  pspec = g_param_spec_string ("tooltip-text",
-                               "Tooltip Text",
-                               "Text displayed on the tooltip",
-                               "",
-                               ST_PARAM_READWRITE);
-  g_object_class_install_property (gobject_class, PROP_TOOLTIP_TEXT, pspec);
 
   /**
    * StWidget:track-hover:
@@ -1680,211 +1545,6 @@ st_widget_set_direction (StWidget *self, StTextDirection dir)
     st_widget_style_changed (self);
 }
 
-static void
-st_widget_ensure_tooltip_parented (StWidget *widget, ClutterStage *stage)
-{
-  StWidgetPrivate *priv;
-  ClutterContainer *ui_root;
-  ClutterActor *tooltip, *parent;
-
-  priv = widget->priv;
-
-  ui_root = st_get_ui_root (stage);
-
-  tooltip = CLUTTER_ACTOR (priv->tooltip);
-  parent = clutter_actor_get_parent (tooltip);
-
-  if (G_UNLIKELY (parent != CLUTTER_ACTOR (ui_root)))
-    {
-      if (parent)
-        clutter_container_remove_actor (CLUTTER_CONTAINER (parent), tooltip);
-
-      clutter_container_add_actor (ui_root, tooltip);
-    }
-}
-
-/**
- * st_widget_set_has_tooltip:
- * @widget: A #StWidget
- * @has_tooltip: %TRUE if the widget should display a tooltip
- *
- * Enables tooltip support on the #StWidget.
- *
- * Note that setting has-tooltip to %TRUE will cause
- * #ClutterActor:reactive and #StWidget:track-hover to be set %TRUE as
- * well, but you must clear these flags yourself (if appropriate) when
- * setting it %FALSE.
- */
-void
-st_widget_set_has_tooltip (StWidget *widget,
-                           gboolean  has_tooltip)
-{
-  StWidgetPrivate *priv;
-  ClutterActor *stage;
-
-  g_return_if_fail (ST_IS_WIDGET (widget));
-
-  priv = widget->priv;
-
-  priv->has_tooltip = has_tooltip;
-
-  if (has_tooltip)
-    {
-      clutter_actor_set_reactive ((ClutterActor*) widget, TRUE);
-      st_widget_set_track_hover (widget, TRUE);
-
-      if (!priv->tooltip)
-        {
-          priv->tooltip = g_object_new (ST_TYPE_TOOLTIP, NULL);
-          g_object_ref_sink (priv->tooltip);
-
-          stage = clutter_actor_get_stage (CLUTTER_ACTOR (widget));
-          if (stage != NULL)
-            st_widget_ensure_tooltip_parented (widget, CLUTTER_STAGE (stage));
-        }
-    }
-  else
-    {
-      if (priv->tooltip_timeout_id)
-        {
-          g_source_remove (priv->tooltip_timeout_id);
-          priv->tooltip_timeout_id = 0;
-        }
-
-      if (priv->tooltip)
-        {
-          clutter_actor_destroy (CLUTTER_ACTOR (priv->tooltip));
-          g_object_unref (priv->tooltip);
-          priv->tooltip = NULL;
-        }
-    }
-}
-
-/**
- * st_widget_get_has_tooltip:
- * @widget: A #StWidget
- *
- * Returns the current value of the has-tooltip property. See
- * st_tooltip_set_has_tooltip() for more information.
- *
- * Returns: current value of has-tooltip on @widget
- */
-gboolean
-st_widget_get_has_tooltip (StWidget *widget)
-{
-  g_return_val_if_fail (ST_IS_WIDGET (widget), FALSE);
-
-  return widget->priv->has_tooltip;
-}
-
-/**
- * st_widget_set_tooltip_text:
- * @widget: A #StWidget
- * @text: text to set as the tooltip
- *
- * Set the tooltip text of the widget. This will set StWidget::has-tooltip to
- * %TRUE. A value of %NULL will unset the tooltip and set has-tooltip to %FALSE.
- *
- */
-void
-st_widget_set_tooltip_text (StWidget    *widget,
-                            const gchar *text)
-{
-  StWidgetPrivate *priv;
-
-  g_return_if_fail (ST_IS_WIDGET (widget));
-
-  priv = widget->priv;
-
-  if (text == NULL)
-    st_widget_set_has_tooltip (widget, FALSE);
-  else
-    {
-      st_widget_set_has_tooltip (widget, TRUE);
-      st_tooltip_set_label (priv->tooltip, text);
-    }
-}
-
-/**
- * st_widget_get_tooltip_text:
- * @widget: A #StWidget
- *
- * Get the current tooltip string
- *
- * Returns: The current tooltip string, owned by the #StWidget
- */
-const gchar*
-st_widget_get_tooltip_text (StWidget *widget)
-{
-  StWidgetPrivate *priv;
-
-  g_return_val_if_fail (ST_IS_WIDGET (widget), NULL);
-  priv = widget->priv;
-
-  if (!priv->has_tooltip)
-    return NULL;
-
-  return st_tooltip_get_label (widget->priv->tooltip);
-}
-
-/**
- * st_widget_show_tooltip:
- * @widget: A #StWidget
- *
- * Force the tooltip for @widget to be shown
- *
- */
-void
-st_widget_show_tooltip (StWidget *widget)
-{
-  g_return_if_fail (ST_IS_WIDGET (widget));
-
-  widget->priv->show_tooltip = TRUE;
-  if (CLUTTER_ACTOR_IS_MAPPED (widget))
-    st_widget_do_show_tooltip (widget);
-}
-
-static void
-st_widget_do_show_tooltip (StWidget *widget)
-{
-  ClutterActor *stage, *tooltip;
-
-  stage = clutter_actor_get_stage (CLUTTER_ACTOR (widget));
-  g_return_if_fail (stage != NULL);
-
-  if (widget->priv->tooltip)
-    {
-      tooltip = CLUTTER_ACTOR (widget->priv->tooltip);
-      st_widget_ensure_tooltip_parented (widget, CLUTTER_STAGE (stage));
-      clutter_actor_raise (tooltip, NULL);
-      clutter_actor_show_all (tooltip);
-    }
-}
-
-/**
- * st_widget_hide_tooltip:
- * @widget: A #StWidget
- *
- * Hide the tooltip for @widget
- *
- */
-void
-st_widget_hide_tooltip (StWidget *widget)
-{
-  g_return_if_fail (ST_IS_WIDGET (widget));
-
-  widget->priv->show_tooltip = FALSE;
-  if (CLUTTER_ACTOR_IS_MAPPED (widget))
-    st_widget_do_hide_tooltip (widget);
-}
-
-static void
-st_widget_do_hide_tooltip (StWidget *widget)
-{
-  if (widget->priv->tooltip)
-    clutter_actor_hide (CLUTTER_ACTOR (widget->priv->tooltip));
-}
-
 /**
  * st_widget_set_track_hover:
  * @widget: A #StWidget
@@ -1928,7 +1588,7 @@ st_widget_set_track_hover (StWidget *widget,
  * @widget: A #StWidget
  *
  * Returns the current value of the track-hover property. See
- * st_tooltip_set_track_hover() for more information.
+ * st_widget_set_track_hover() for more information.
  *
  * Returns: current value of track-hover on @widget
  */
@@ -1940,38 +1600,13 @@ st_widget_get_track_hover (StWidget *widget)
   return widget->priv->track_hover;
 }
 
-static gboolean
-tooltip_timeout (gpointer data)
-{
-  st_widget_show_tooltip (data);
-
-  return FALSE;
-}
-
-static void
-st_widget_start_tooltip_timeout (StWidget *widget)
-{
-  StWidgetPrivate *priv = widget->priv;
-  GtkSettings *settings = gtk_settings_get_default ();
-  guint timeout;
-
-  if (priv->tooltip_timeout_id) {
-    g_source_remove (priv->tooltip_timeout_id);
-    priv->tooltip_timeout_id = 0;
-  }
-
-  g_object_get (settings, "gtk-tooltip-timeout", &timeout, NULL);
-  priv->tooltip_timeout_id = g_timeout_add (timeout, tooltip_timeout, widget);
-}
-
 /**
  * st_widget_set_hover:
  * @widget: A #StWidget
  * @hover: whether the pointer is hovering over the widget
  *
  * Sets @widget's hover property and adds or removes "hover" from its
- * pseudo class accordingly. If #StWidget:has-tooltip is %TRUE, this
- * will also show or hide the tooltip, as appropriate.
+ * pseudo class accordingly
  *
  * If you have set #StWidget:track-hover, you should not need to call
  * this directly. You can call st_widget_sync_hover() if the hover
@@ -1991,25 +1626,9 @@ st_widget_set_hover (StWidget *widget,
     {
       priv->hover = hover;
       if (priv->hover)
-        {
-          st_widget_add_style_pseudo_class (widget, "hover");
-          if (priv->has_tooltip)
-            st_widget_start_tooltip_timeout (widget);
-        }
+        st_widget_add_style_pseudo_class (widget, "hover");
       else
-        {
-          st_widget_remove_style_pseudo_class (widget, "hover");
-          if (priv->has_tooltip)
-            {
-              if (priv->tooltip_timeout_id)
-                {
-                  g_source_remove (priv->tooltip_timeout_id);
-                  priv->tooltip_timeout_id = 0;
-                }
-
-              st_widget_hide_tooltip (widget);
-            }
-        }
+        st_widget_remove_style_pseudo_class (widget, "hover");
       g_object_notify (G_OBJECT (widget), "hover");
     }
 }
@@ -2798,74 +2417,6 @@ on_can_focus_notify (GObject    *gobject,
 
   atk_object_notify_state_change (ATK_OBJECT (data),
                                   ATK_STATE_FOCUSABLE, can_focus);
-}
-
-static GQuark
-st_ui_root_quark (void)
-{
-  static GQuark value = 0;
-  if (G_UNLIKELY (value == 0))
-    value = g_quark_from_static_string ("st-ui-root");
-  return value;
-}
-
-static void
-st_ui_root_destroyed (ClutterActor *actor,
-                      ClutterStage *stage)
-{
-  st_set_ui_root (stage, NULL);
-  g_signal_handlers_disconnect_by_func (actor, st_ui_root_destroyed, stage);
-}
-
-/**
- * st_set_ui_root:
- * @stage: a #ClutterStage
- * @container: (allow-none): the new UI root
- *
- * Sets a #ClutterContainer to be the parent of all UI in the program.
- * This container is used when St needs to add new content outside the
- * widget hierarchy, for example, when it shows a tooltip over a widget.
- */
-void
-st_set_ui_root (ClutterStage     *stage,
-                ClutterContainer *container)
-{
-  ClutterContainer *previous;
-
-  g_return_if_fail (CLUTTER_IS_STAGE (stage));
-  g_return_if_fail (CLUTTER_IS_CONTAINER (container));
-
-  previous = st_get_ui_root (stage);
-  if (previous)
-    g_signal_handlers_disconnect_by_func (container, st_ui_root_destroyed, stage);
-
-  if (container)
-    {
-      g_signal_connect (container, "destroy", G_CALLBACK (st_ui_root_destroyed), stage);
-      g_object_set_qdata_full (G_OBJECT (stage), st_ui_root_quark (), g_object_ref (container), g_object_unref);
-    }
-}
-
-/**
- * st_get_ui_root:
- * @stage: a #ClutterStage
- *
- * Returns: (transfer none): the container which should be the parent of all user interface,
- *   which can be set with st_set_ui_root(). If not set, returns @stage
- */
-ClutterContainer *
-st_get_ui_root (ClutterStage *stage)
-{
-  ClutterContainer *root;
-
-  g_return_val_if_fail (CLUTTER_IS_STAGE (stage), NULL);
-
-  root = g_object_get_qdata (G_OBJECT (stage), st_ui_root_quark ());
-
-  if (root != NULL)
-    return root;
-  else
-    return CLUTTER_CONTAINER (stage);
 }
 
 static void
