@@ -205,6 +205,8 @@ PopupBaseMenuItem.prototype = {
             color.alpha / 255);
         cr.arc(width / 2, height / 2, width / 3, 0, 2 * Math.PI);
         cr.fill();
+        
+        cr.$dispose();
     },
 
     // This returns column widths in logical order (i.e. from the dot
@@ -454,6 +456,8 @@ PopupSeparatorMenuItem.prototype = {
         cr.setSource(pattern);
         cr.rectangle(margin, gradientOffset, gradientWidth, gradientHeight);
         cr.fill();
+
+        cr.$dispose();
     }
 };
 

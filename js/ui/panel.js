@@ -939,6 +939,8 @@ PanelCorner.prototype = {
         cr.appendPath(savedPath);
         cr.fill();
         cr.restore();
+
+        cr.$dispose();
     },
 
     _styleChanged: function() {

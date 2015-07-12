@@ -30,6 +30,8 @@ function _onVertSepRepaint (area)
     cr.setDash([1, 3], 1); // Hard-code for now
     cr.setLineWidth(stippleWidth);
     cr.stroke();
+
+    cr.$dispose();
 };
 
 function MyApplet(orientation, panel_height, instance_id) {
