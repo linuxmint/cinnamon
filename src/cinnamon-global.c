@@ -36,8 +36,6 @@
 static CinnamonGlobal *the_object = NULL;
 
 static void grab_notify (GtkWidget *widget, gboolean is_grab, gpointer user_data);
-static void cinnamon_global_on_gc (GjsContext   *context,
-                                CinnamonGlobal  *global);
 
 struct _CinnamonGlobal {
   GObject parent;
@@ -269,7 +267,6 @@ cinnamon_global_init (CinnamonGlobal *global)
   global->js_context = g_object_new (GJS_TYPE_CONTEXT,
                                      "search-path", search_path,
                                      NULL);
-  // g_signal_connect (global->js_context, "gc", G_CALLBACK (cinnamon_global_on_gc), global);
 
   g_strfreev (search_path);
 }
@@ -1337,13 +1334,6 @@ cinnamon_global_shutdown (void)
     meta_display_unmanage_screen (cinnamon_global_get_display (the_object),
                                   cinnamon_global_get_screen (the_object),
                                   cinnamon_global_get_current_time (the_object));
-}
-
-static void
-cinnamon_global_on_gc (GjsContext   *context,
-                    CinnamonGlobal  *global)
-{
-  global->last_gc_end_time = g_get_monotonic_time ();
 }
 
 /**
