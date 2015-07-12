@@ -321,6 +321,8 @@ BoxPointer.prototype = {
         Clutter.cairo_set_source_color(cr, borderColor);
         cr.setLineWidth(borderWidth);
         cr.stroke();
+
+        cr.$dispose();
     },
 
     setPosition: function(sourceActor, alignment) {
