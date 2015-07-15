@@ -1192,7 +1192,7 @@ StScrollBar StButton#vhandle:hover {
 	background-gradient-end: rgba(255,144,144,0.5);
 }
 /* ===================================================================
- * Sound Applet (status/volume.js)
+ * Sound Applet (sound@cinnamon.org)
  * ===================================================================*/
 .sound-button-container {
 	padding-right: 3px;
@@ -1205,46 +1205,15 @@ StScrollBar StButton#vhandle:hover {
 	border-radius: 4px;
 	padding: 5px;
 }
+.sound-button:small {
+	width: 16px;
+	height: 8px;
+}
+.sound-button:small StIcon {
+	icon-size: 1em;
+}
 .sound-button:hover, .sound-button:active {
 	border: 1px solid white;
-}
-.sound-button StIcon {
-	icon-size: 1.4em;
-}
-.sound-track-infos {	
-	padding-left: 5px;
-	padding-right: 5px;
-	padding-top: 5px;
-	padding-bottom: 5px;
-}
-.sound-track-info {
-	padding-top: 2px;
-	padding-bottom: 2px;
-}
-.sound-track-info StIcon {
-	icon-size: 1em;
-
-}
-.sound-track-info StLabel {
-	padding-left: 5px;
-	padding-right: 5px;
-}
-.sound-track-box {	
-	padding-left: 15px;
-	padding-right: 15px;	
-	max-width: 220px;
-}
-.sound-seek-box {
-   padding-left: 20px;
-}
-.sound-seek-box StLabel {
-   padding-top: 2px;
-}
-.sound-seek-box StIcon {
-   icon-size: 1em;
-}
-.sound-seek-slider {
-   width: 140px;   
 }
 .sound-playback-control {
 	padding-top: 5px;
