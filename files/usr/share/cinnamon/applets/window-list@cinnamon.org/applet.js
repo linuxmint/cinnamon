@@ -471,16 +471,17 @@ AppMenuButton.prototype = {
         if (!this._needsAttention)
             return;
 
-        if (counter == 4)
-            return;
-
         this.actor.add_style_class_name("window-list-item-demands-attention");
-        Mainloop.timeout_add(FLASH_INTERVAL, Lang.bind(this, function () {
-            this.actor.remove_style_class_name("window-list-item-demands-attention");
-        }));
-        Mainloop.timeout_add(FLASH_INTERVAL * 2, Lang.bind(this, function () {
-            this._flashButton(++counter);
-        }));
+        if (counter < 4) {
+            Mainloop.timeout_add(FLASH_INTERVAL, Lang.bind(this, function () {
+                if (this.actor.has_style_class_name("window-list-item-demands-attention")) {
+                    this.actor.remove_style_class_name("window-list-item-demands-attention");
+                }
+                Mainloop.timeout_add(FLASH_INTERVAL, Lang.bind(this, function () {
+                    this._flashButton(++counter);
+                }));
+            }));
+        }
     }
 };
 
