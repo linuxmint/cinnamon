@@ -82,7 +82,7 @@ MyApplet.prototype = {
             } else {
                 this.set_applet_icon_symbolic_name("user-trash-full");
             }
-            children.close();
+            children.close(null);
         }
     },
 
