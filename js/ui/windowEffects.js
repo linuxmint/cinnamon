@@ -294,9 +294,7 @@ Unminimize.prototype = {
     traditional: function(cinnamonwm, actor, time, transition){
         if(AppletManager.get_role_provider_exists(AppletManager.Roles.WINDOWLIST)){
             let windowApplet = AppletManager.get_role_provider(AppletManager.Roles.WINDOWLIST);
-            let actorOrigin = windowApplet.getOriginFromWindow ?
-                windowApplet.getOriginFromWindow(actor.get_meta_window()) :
-                false;
+            let actorOrigin = windowApplet.getOriginFromWindow(actor.get_meta_window());
 
             if(actorOrigin !== false){
                 actor.set_scale(0, 0);
@@ -310,10 +308,10 @@ Unminimize.prototype = {
 
                 this._moveWindow(cinnamonwm, actor, xDest, yDest, time, transition);
                 this._scaleWindow(cinnamonwm, actor, 1, 1, time, transition, true);
-                return true;
+                return;
             }
         }
-        return false;
+        throw "No origin found";
     }
 }
 
