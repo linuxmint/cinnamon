@@ -26,7 +26,7 @@ if __name__ == "__main__":
     if os.getuid() == 0:
         start = time.time()
         has_encrypted_home = False
-        for p in pwd.getpwall():
+        for p in [pwd.getpwnam(name) for name in os.listdir('/home')]:
             if p.pw_uid >= 1000 and p.pw_shell and p.pw_shell != '/bin/false' and p.pw_shell != '/usr/sbin/nologin':
                 if not os.path.exists("/home/.ecryptfs/%s" % p.pw_name):
                     subprocess.call(["su", p.pw_name, "-c", os.path.realpath(sys.argv[0])])
