@@ -35,6 +35,42 @@ const meta = {};
 // Maps uuid -> directory
 const dirs = {};
 
+// macro for creating extension types
+function _createExtensionType(name, folder, manager, overrides){
+    let type = {
+        name: name,
+        folder: folder,
+        requiredFunctions: ["main"],
+        requiredProperties: ["uuid", "name", "description"],
+        niceToHaveProperties: [],
+        roles: {},
+        callbacks: {
+            finishExtensionLoad: manager.finishExtensionLoad,
+            prepareExtensionUnload: manager.prepareExtensionUnload
+        }
+    };
+
+    for(let prop in overrides)
+        type[prop] = overrides[prop];
+
+    // Add signal methods
+    Signals.addSignalMethods(type);
+
+    let path = GLib.build_filenamev([global.userdatadir, folder]);
+    type.userDir = path;
+
+    // create user directories if they don't exist.
+    let dir = Gio.file_new_for_path(type.userDir)
+    try {
+        if(!dir.query_exists(null))
+            dir.make_directory_with_parents(null);
+    } catch(e){
+        global.logError(e);
+    }
+
+    return type;
+}
+
 /**
  * const Type:
  * @EXTENSION: Cinnamon extensions
@@ -54,79 +90,28 @@ const dirs = {};
  * Properties are nested, with lowerCamelCase properties (e.g. requiredFunctions) as sub-properties of CAPITAL one (EXTENSION). Thus they are refered to as, e.g., Type.EXTENSION.requiredFunctions
  */
 const Type = {
-    EXTENSION: {
-        name: 'Extension',
-        folder: 'extensions',
-        requiredFunctions: ['init', 'disable', 'enable'],
-        requiredProperties: ['uuid', 'name', 'description', 'cinnamon-version'],
-        niceToHaveProperties: ['url'],
-        roles: {},
-        callbacks: {
-            finishExtensionLoad: ExtensionSystem.finishExtensionLoad,
-            prepareExtensionUnload: ExtensionSystem.prepareExtensionUnload
-        }
-    },
-    APPLET: {
-        name: 'Applet',
-        folder: 'applets',
-        requiredFunctions: ['main'],
-        requiredProperties: ['uuid', 'name', 'description'],
-        niceToHaveProperties: [],
+    EXTENSION: _createExtensionType("Extension", "extensions", ExtensionSystem, {
+        requiredFunctions: ["init", "disable", "enable"],
+        requiredProperties: ["uuid", "name", "description", "cinnamon-version"],
+        niceToHaveProperties: ["url"],
+    }),
+    APPLET: _createExtensionType("Applet", "applets", AppletManager, {
         roles: {
             notifications: null,
             windowlist: null,
             panellauncher: null
-        },
-        callbacks: {
-            finishExtensionLoad: AppletManager.finishExtensionLoad,
-            prepareExtensionUnload: AppletManager.prepareExtensionUnload
         }
-    },
-    DESKLET: {
-        name: 'Desklet',
-        folder: 'desklets',
-        requiredFunctions: ['main'],
-        requiredProperties: ['uuid', 'name', 'description'],
-        niceToHaveProperties: [],
+    }),
+    DESKLET: _createExtensionType("Desklet", "desklets", DeskletManager, {
         roles: {
             notifications: null,
             windowlist: null
-        },
-        callbacks: {
-            finishExtensionLoad: DeskletManager.finishExtensionLoad,
-            prepareExtensionUnload: DeskletManager.prepareExtensionUnload
         }
-    },
-    SEARCH_PROVIDER: {
-        name: 'Search provider',
-        folder: 'search_providers',
-        requiredFunctions: ['perform_search', 'on_result_selected'],
-        requiredProperties: ['uuid', 'name', 'description'],
-        niceToHaveProperties: [],
-        roles: {},
-        callbacks: {
-            finishExtensionLoad: SearchProviderManager.finishExtensionLoad,
-            prepareExtensionUnload: SearchProviderManager.prepareExtensionUnload
-        }
-    }
+    }),
+    SEARCH_PROVIDER: _createExtensionType("Search provider", "search_providers", SearchProviderManager, {
+        requiredFunctions: ["perform_search", "on_result_selected"]
+    })
 };
-
-// Add signal methods to all types and create user directories if they don't exist.
-for(var key in Type) {
-    let type = Type[key];
-    Signals.addSignalMethods(type);
-
-    let path = GLib.build_filenamev([global.userdatadir, type.folder]);
-    type.userDir = path;
-
-    let dir = Gio.file_new_for_path(type.userDir)
-    try {
-        if (!dir.query_exists(null))
-            dir.make_directory_with_parents(null);
-    } catch (e) {
-        global.logError(e);
-    }
-}
 
 // Create a dummy metadata object when metadata parsing failed or was not done yet.
 function createMetaDummy(uuid, path, state, type) {
