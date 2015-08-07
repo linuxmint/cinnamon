@@ -39,8 +39,8 @@ const DESKLET_SNAP_INTERVAL_KEY = 'desklet-snap-interval';
  * Initialize desklet manager
  */
 function init(){
-    deskletMeta = Extension.meta;
-    desklets = Extension.importObjects;
+    desklets = Extension.Type.DESKLET.maps.importObjects;
+    deskletMeta = Extension.Type.DESKLET.maps.meta;
 
     deskletsLoaded = false
 
@@ -178,7 +178,7 @@ function _onEnabledDeskletsChanged(){
         // Unload all desklet extensions that do not exist in the definition anymore.
         for (let uuid in enabledDeskletDefinitions.uuidMap) {
             if(!newEnabledDeskletDefinitions.uuidMap[uuid]) {
-                Extension.unloadExtension(uuid);
+                Extension.unloadExtension(uuid, Extension.Type.DESKLET);
             }
         }
         // Add or move desklet instances of already loaded desklet extensions
@@ -187,7 +187,7 @@ function _onEnabledDeskletsChanged(){
             let oldDef = enabledDeskletDefinitions.idMap[desklet_id];
 
             if(!oldDef || !_deskletDefinitionsEqual(newDef, oldDef)) {
-                let extension = Extension.objects[newDef.uuid];
+                let extension = Extension.Type.DESKLET.maps.objects[newDef.uuid];
                 if(extension) {
                     _loadDesklet(extension, newDef);
                 }

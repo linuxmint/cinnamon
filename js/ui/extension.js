@@ -23,18 +23,6 @@ const State = {
     OUT_OF_DATE: 3
 };
 
-// Maps uuid -> importer object (extension directory tree)
-const importObjects = {};
-
-// Maps uuid -> Extension object
-const objects = {};
-
-// Maps uuid -> metadata object
-const meta = {};
-
-// Maps uuid -> directory
-const dirs = {};
-
 // macro for creating extension types
 function _createExtensionType(name, folder, manager, overrides){
     let type = {
@@ -47,6 +35,12 @@ function _createExtensionType(name, folder, manager, overrides){
         callbacks: {
             finishExtensionLoad: manager.finishExtensionLoad,
             prepareExtensionUnload: manager.prepareExtensionUnload
+        },
+        maps: {
+            importObjects: {},
+            objects: {},
+            meta: {},
+            dirs: {}
         }
     };
 
@@ -142,7 +136,7 @@ Extension.prototype = {
         if (this.meta.multiversion) {
             this.dir = findExtensionSubdirectory(this.dir);
             this.meta.path = this.dir.get_path();
-            dirs[this.uuid] = this.dir;
+            type.maps.dirs[this.uuid] = this.dir;
         }
 
         this.ensureFileExists(this.dir.get_child(this.lowerType + '.js'));
@@ -156,13 +150,13 @@ Extension.prototype = {
         this.loadIconDirectory(this.dir);
 
         try {
-            CinnamonJS.add_extension_importer('imports.ui.extension.importObjects', this.uuid, this.meta.path);
+            CinnamonJS.add_extension_importer('imports.ui.extension.Type.%s.maps.importObjects'.format(type.name.toUpperCase()), this.uuid, this.meta.path);
         } catch (e) {
             throw this.logError('Error importing extension ' + this.uuid + ' from path ' + this.meta.path, e);
         }
 
         try {
-            this.module = importObjects[this.uuid][this.lowerType]; // get [extension/applet/desklet].js
+            this.module = type.maps.importObjects[this.uuid][this.lowerType]; // get [extension/applet/desklet].js
         } catch (e) {
             throw this.logError('Error importing ' + this.lowerType + '.js from ' + this.uuid, e);
         }
@@ -174,7 +168,7 @@ Extension.prototype = {
             }
         }
 
-        objects[this.uuid] = this;
+        type.maps.objects[this.uuid] = this;
     },
 
     finalize : function() {
@@ -233,10 +227,10 @@ Extension.prototype = {
             this.meta.type = this.type;
             this.meta.error = '';
 
-            meta[this.uuid] = this.meta;
+            this.type.maps.meta[this.uuid] = this.meta;
         } catch (e) {
             this.meta = createMetaDummy(this.uuid, oldPath, State.ERROR, this.type);
-            meta[this.uuid] = this.meta;
+            this.type.maps.meta[this.uuid] = this.meta;
             throw this.logError('Failed to load/parse metadata.json', e);
         }
     },
@@ -438,19 +432,25 @@ function getMetaStateString(state) {
     return 'Unknown'; // Not translated, shouldn't appear
 }
 
+/**
+ * loadExtension:
+ *
+ * @uuid (string): uuid of xlet
+ * @type (Extension.Type): type of xlet
+ */
 function loadExtension(uuid, type) {
     let force = uuid.indexOf("!") == 0;
     uuid = uuid.replace(/^!/,'');
 
-    let extension = objects[uuid];
+    let extension = type.maps.objects[uuid];
     if(!extension) {
         try {
-            dirs[uuid] = findExtensionDirectory(uuid, type);
+            type.maps.dirs[uuid] = findExtensionDirectory(uuid, type);
 
-            if (dirs[uuid] == null)
+            if (type.maps.dirs[uuid] == null)
                 throw ("not-found");
 
-            extension = new Extension(dirs[uuid], type, force, uuid);
+            extension = new Extension(type.maps.dirs[uuid], type, force, uuid);
 
             if(!type.callbacks.finishExtensionLoad(extension))
                 throw (type.name + ' ' + uuid + ': Could not create applet object.');
@@ -465,26 +465,33 @@ function loadExtension(uuid, type) {
                just don't show up if their program isn't installed, but we don't
                remove them or anything) */
             if (e == "not-found") {
-                forgetExtension(uuid, true);
+                forgetExtension(uuid, type, true);
                 return null;
             }
             Main.cinnamonDBusService.EmitXletAddedComplete(false, uuid);
             Main.xlet_startup_error = true;
-            forgetExtension(uuid);
+            forgetExtension(uuid, type);
             if(e._alreadyLogged)
                 e = undefined;
             global.logError('Could not load ' + type.name.toLowerCase() + ' ' + uuid, e);
-            meta[uuid].state = State.ERROR;
-            if (!meta[uuid].name)
-                meta[uuid].name = uuid
+            type.maps.meta[uuid].state = State.ERROR;
+            if (!type.maps.meta[uuid].name)
+                type.maps.meta[uuid].name = uuid
             return null;
         }
     }
     return extension;
 }
 
-function unloadExtension(uuid) {
-    let extension = objects[uuid];
+/**
+ * unloadExtension:
+ *
+ * @uuid (string): uuid of xlet
+ * @type (Extension.Type): type of xlet
+ * @deleteConfig (bool): delete also config files, defaults to true
+ */
+function unloadExtension(uuid, type, deleteConfig = true) {
+    let extension = type.maps.objects[uuid];
     if (extension) {
         extension.unlockRole();
 
@@ -501,15 +508,15 @@ function unloadExtension(uuid) {
 
         extension.type.emit('extension-unloaded', extension.uuid);
 
-        forgetExtension(extension.uuid, true);
+        forgetExtension(extension.uuid, type, true);
     }
 }
 
-function forgetExtension(uuid, forgetMeta) {
-    delete importObjects[uuid];
-    delete objects[uuid];
+function forgetExtension(uuid, type, forgetMeta) {
+    delete type.maps.importObjects[uuid];
+    delete type.maps.objects[uuid];
     if(forgetMeta)
-        delete meta[uuid];
+        delete type.maps.meta[uuid];
 }
 
 function findExtensionDirectory(uuid, type) {
@@ -573,10 +580,10 @@ function findExtensionSubdirectory(dir) {
     }
 }
 
-function get_max_instances (uuid) {
-    if (uuid in meta) {
-        if ("max-instances" in meta[uuid]) {
-            let i = meta[uuid]["max-instances"];
+function get_max_instances (uuid, type) {
+    if (uuid in type.maps.meta) {
+        if ("max-instances" in type.maps.meta[uuid]) {
+            let i = type.maps.meta[uuid]["max-instances"];
             return parseInt(i);
         }
     }

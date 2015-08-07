@@ -30,9 +30,9 @@ function finishExtensionLoad(extension) {
 function onEnabledSearchProvidersChanged() {
     enabledSearchProviders = global.settings.get_strv(ENABLED_SEARCH_PROVIDERS_KEY);
 
-    for(let uuid in Extension.objects) {
-        if(Extension.objects[uuid].type == Extension.Type.SEARCH_PROVIDER && enabledSearchProviders.indexOf(uuid) == -1)
-            Extension.unloadExtension(uuid);
+    for(let uuid in Extension.Type.SEARCH_PROVIDER.maps.objects) {
+        if(enabledSearchProviders.indexOf(uuid) == -1)
+            Extension.unloadExtension(uuid, Extension.Type.SEARCH_PROVIDER);
     }
     
     for(let i=0; i<enabledSearchProviders.length; i++) {
@@ -41,9 +41,9 @@ function onEnabledSearchProvidersChanged() {
 }
 
 function init() {
-    extensions = imports.ui.extension.importObjects;
-    extensionMeta = imports.ui.extension.meta;
-    
+    extensions = Extension.Type.SEARCH_PROVIDER.maps.importObjects;
+    extensionMeta = Extension.Type.SEARCH_PROVIDER.maps.meta;
+
     global.settings.connect('changed::' + ENABLED_SEARCH_PROVIDERS_KEY, onEnabledSearchProvidersChanged);
     
     enabledSearchProviders = global.settings.get_strv(ENABLED_SEARCH_PROVIDERS_KEY);
