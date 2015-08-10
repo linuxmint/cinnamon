@@ -11,9 +11,6 @@ const Main = imports.ui.main;
 const Settings = imports.ui.settings;
 const GnomeSession = imports.misc.gnomeSession;
 
-const DimSettingsSchema = "org.cinnamon.settings-daemon.plugins.power";
-const DimSettingsAc = "idle-dim-ac";
-const DimSettingsBattery = "idle-dim-battery";
 const BrightnessBusName = "org.cinnamon.SettingsDaemon.Power.Screen";
 const KeyboardBusName = "org.cinnamon.SettingsDaemon.Power.Keyboard";
 
@@ -372,11 +369,13 @@ MyApplet.prototype = {
                             else {
                                 this.set_applet_label("");
                             }
-                            if(icon && icon != this.panel_icon_name){
-                                this.panel_icon_name = icon;
-                                this.set_applet_icon_symbolic_name('battery-full');
-                                let gicon = Gio.icon_new_for_string(icon);
-                                this._applet_icon.gicon = gicon;
+                            if(icon){
+                                if(this.panel_icon_name != icon){
+                                    this.panel_icon_name = icon;
+                                    this.set_applet_icon_symbolic_name('battery-full');
+                                    let gicon = Gio.icon_new_for_string(icon);
+                                    this._applet_icon.gicon = gicon;
+                                }
                             }
                             else {
                                 if (this.panel_icon_name != 'battery-full') {
