@@ -412,10 +412,13 @@ MyApplet.prototype = {
                 }
                 else {
                     // Disable the applet
+                    this.set_applet_label("");
+                    this._applet_icon.hide();
                     this.set_applet_enabled(false);
                 }
             }
             else {
+                this._applet_icon.show();
                 this.set_applet_enabled(true);
                 // If we have devices in the menu but none are shown in the panel, show a summary
                 if (!showed_panel_info) {
