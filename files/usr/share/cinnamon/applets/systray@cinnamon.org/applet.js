@@ -118,7 +118,7 @@ MyApplet.prototype = {
 
             // Don't try to scale buggy icons, give them predefined sizes
             // This, in the case of pidgin, fixes the icon being cropped in the systray
-            if (["pidgin", "thunderbird"].indexOf(role) != -1) {
+            if (["pidgin", "thunderbird", "shutter"].indexOf(role) != -1) {
                 if (disp_size < 22) {
                     size = 16;
                 }
@@ -132,16 +132,30 @@ MyApplet.prototype = {
                     size = 48;
                 }
             }
-
-            icon.set_size(size, size);
-
-            global.log("Resized " + role + " (" + icon.get_width() + "x" + icon.get_height() + "px)");
+            let timerId = 0;
+            let i = 0;
+            timerId = Mainloop.timeout_add(500, Lang.bind(this, function() { 
+                icon.set_size(size, size);
+                global.log("Resized " + role + " (" + icon.get_width() + "x" + icon.get_height() + "px)");
+                i++;
+                if (i == 2) {
+                    Mainloop.source_remove(timerId);
+                }
+            }));
         }
         else {
             // Force buggy icon size when not in scale mode
-            if (["pidgin", "thunderbird"].indexOf(role) != -1) {
-                icon.set_size(16, 16);
-                global.log("Resized " + role + " (" + icon.get_width() + "x" + icon.get_height() + "px)");
+            if (["pidgin", "thunderbird", "shutter"].indexOf(role) != -1) {
+                let timerId = 0;
+                let i = 0;
+                timerId = Mainloop.timeout_add(500, Lang.bind(this, function() { 
+                    icon.set_size(16, 16);
+                    global.log("Resized " + role + " (" + icon.get_width() + "x" + icon.get_height() + "px)");
+                    i++;
+                    if (i == 2) {
+                        Mainloop.source_remove(timerId);
+                    }
+                }));
             }
         }
     },
