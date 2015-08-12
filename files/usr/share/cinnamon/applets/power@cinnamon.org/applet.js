@@ -68,6 +68,31 @@ function deviceTypeToString(type) {
     }
 }
 
+function deviceToIcon(type, icon) {
+    switch (type) {
+        case UPDeviceType.MONITOR:
+            return ("video-display");
+        case UPDeviceType.MOUSE:
+            return ("input-mouse");
+        case UPDeviceType.KEYBOARD:
+            return ("input-keyboard");
+        case UPDeviceType.PHONE:
+        case UPDeviceType.MEDIA_PLAYER:
+            return ("phone-apple-iphone");
+        case UPDeviceType.TABLET:
+            return ("input-tablet");
+        case UPDeviceType.COMPUTER:
+            return ("computer");
+        default:
+            if (icon) {
+                return icon;
+            }
+            else {
+                return ("battery-full");
+            }
+    }
+}
+
 function DeviceItem() {
     this._init.apply(this, arguments);
 }
@@ -78,25 +103,33 @@ DeviceItem.prototype = {
     _init: function(device, status) {
         PopupMenu.PopupBaseMenuItem.prototype._init.call(this, { reactive: false });
 
-        let [device_id, device_type, icon, percentage, state, time, timepercentage] = device;
+        let [device_id, vendor, model, device_type, icon, percentage, state, time, timepercentage] = device;
 
         this._box = new St.BoxLayout({ style_class: 'popup-device-menu-item' });
         this._vbox = new St.BoxLayout({ style_class: 'popup-device-menu-item', vertical: true});
-        this.label = new St.Label({ text: deviceTypeToString(device_type) });
-        let statusLabel = new St.Label({ text: status, style_class: 'popup-inactive-menu-item' });
-        let percentLabel = new St.Label({ text: "%d%%".format(Math.round(percentage))});
 
-        this._icon = new St.Icon({ gicon: Gio.icon_new_for_string(icon),
-                                   icon_type: St.IconType.SYMBOLIC,
-                                   style_class: 'popup-menu-icon' });
+        let description = deviceTypeToString(device_type);
+        if (vendor != "" || model != "") {
+            description = "%s %s".format(vendor, model);
+        }
+
+        this.label = new St.Label({ text: "%s %d%%".format(description, Math.round(percentage)) });
+        let statusLabel = new St.Label({ text: "%s".format(status), style_class: 'popup-inactive-menu-item' });
+
+        let device_icon = deviceToIcon(device_type, icon);
+        if (device_icon == icon) {
+            this._icon = new St.Icon({ gicon: Gio.icon_new_for_string(icon), icon_type: St.IconType.SYMBOLIC, style_class: 'popup-menu-icon' });
+        }
+        else {
+            this._icon = new St.Icon({icon_name: device_icon, icon_type: St.IconType.SYMBOLIC, icon_size: 16});
+        }
 
         this._box.add_actor(this._icon);
         this._box.add_actor(this.label);
-        this._box.add_actor(percentLabel);
 
         this._vbox.add_actor(this._box);
         this._vbox.add_actor(statusLabel);
-        
+
         this.addActor(this._vbox);
 
     }
@@ -214,10 +247,9 @@ MyApplet.prototype = {
         this.menuManager.addMenu(this.menu);
 
         this._deviceItems = [ ];
+        this._devices = [ ];
         this._primaryDeviceId = null;
         this.panel_icon_name = ''; // remember the panel icon name (so we only set it when it actually changes)
-
-        this._otherDevicePosition = 0;
 
         this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
 
@@ -264,13 +296,12 @@ MyApplet.prototype = {
 
     _getDeviceStatus: function(device) {
         let status = ""
-        let [device_id, device_type, icon, percentage, state, seconds] = device;
+        let [device_id, vendor, model, device_type, icon, percentage, state, seconds] = device;
 
         let time = Math.round(seconds / 60);
-        
         let minutes = time % 60;
         let hours = Math.floor(time / 60);
-     
+
         if (state == UPDeviceState.CHARGING) {
             if (time > 60) {
                 if (minutes == 0) {
@@ -316,7 +347,37 @@ MyApplet.prototype = {
             this._devicesChanged();
     },
 
+    showDeviceInPanel: function(device) {
+        let [device_id, vendor, model, device_type, icon, percentage, state, seconds] = device;
+        let status = this._getDeviceStatus(device);
+        this.set_applet_tooltip(status);
+        if (this.showpercentage) {
+            this.set_applet_label("%d%%".format(Math.round(percentage)));
+            this._applet_label.set_margin_left(1.0);
+        }
+        else {
+            this.set_applet_label("");
+        }
+        if(icon){
+            if(this.panel_icon_name != icon){
+                this.panel_icon_name = icon;
+                this.set_applet_icon_symbolic_name('battery-full');
+                let gicon = Gio.icon_new_for_string(icon);
+                this._applet_icon.gicon = gicon;
+            }
+        }
+        else {
+            if (this.panel_icon_name != 'battery-full') {
+                this.panel_icon_name = 'battery-full';
+                this.set_applet_icon_symbolic_name('battery-full');
+            }
+        }
+    },
+
     _devicesChanged: function() {
+
+        this._devices = [];
+        this._primaryDevice = null;
 
         // Identify the primary battery device
         this._proxy.GetPrimaryDeviceRemote(Lang.bind(this, function(device, error) {
@@ -328,7 +389,7 @@ MyApplet.prototype = {
                     // Primary Device can be an array of primary devices rather than a single device, in that case, take the first one.
                     device = device[0];
                 }
-                let [device_id, device_type, icon, percentage, state, seconds] = device
+                let [device_id, vendor, model, device_type, icon, percentage, state, seconds] = device
                 this._primaryDeviceId = device_id;
             }
         }));
@@ -337,15 +398,13 @@ MyApplet.prototype = {
         this._proxy.GetDevicesRemote(Lang.bind(this, function(result, error) {
             this._deviceItems.forEach(function(i) { i.destroy(); });
             this._deviceItems = [];
-
-            let showed_panel_info = false;
             let devices_stats = [];
 
             if (!error) {
                 let devices = result[0];
                 let position = 0;
                 for (let i = 0; i < devices.length; i++) {
-                    let [device_id, device_type, icon, percentage, state, seconds] = devices[i];
+                    let [device_id, vendor, model, device_type, icon, percentage, state, seconds] = devices[i];
 
                     // Ignore AC_POWER devices
                     if (device_type == UPDeviceType.AC_POWER)
@@ -355,73 +414,43 @@ MyApplet.prototype = {
                     if (state == UPDeviceState.UNKNOWN)
                         continue;
 
-                    let status = this._getDeviceStatus(devices[i]);
                     let stats = "%s (%d%%)".format(deviceTypeToString(device_type), percentage);
                     devices_stats.push(stats);
+                    this._devices.push(devices[i]);
 
                     if (this._primaryDeviceId == null || this._primaryDeviceId == device_id) {
                         // Info for the primary battery (either the primary device, or any battery device if there is no primary device)
-                        if (device_type == UPDeviceType.BATTERY && !showed_panel_info) {
-                            this.set_applet_tooltip(status);
-                            if (this.showpercentage) {
-                                this.set_applet_label("%d%%".format(Math.round(percentage)));
-                            }
-                            else {
-                                this.set_applet_label("");
-                            }
-                            if(icon){
-                                if(this.panel_icon_name != icon){
-                                    this.panel_icon_name = icon;
-                                    this.set_applet_icon_symbolic_name('battery-full');
-                                    let gicon = Gio.icon_new_for_string(icon);
-                                    this._applet_icon.gicon = gicon;
-                                }
-                            }
-                            else {
-                                if (this.panel_icon_name != 'battery-full') {
-                                    this.panel_icon_name = 'battery-full';
-                                    this.set_applet_icon_symbolic_name('battery-full');
-                                }
-                            }
-                            showed_panel_info = true;
+                        if (device_type == UPDeviceType.BATTERY && this._primaryDevice == null) {
+                            this._primaryDevice = devices[i];
                         }
                     }
 
+                    let status = this._getDeviceStatus(devices[i]);
                     let item = new DeviceItem (devices[i], status);
-                    this._deviceItems.push(item);
-                    this.menu.addMenuItem(item, this._otherDevicePosition + position);
+                    this.menu.addMenuItem(item, position);
                     this.num_devices = this.num_devices + 1;
+                    this._deviceItems.push(item);
                     position++;
                 }
             }
+            else {
+                global.log(error);
+            }
 
-            // If there are no battery devices, show brightness info or disable the applet
-            if (this._deviceItems.length == 0) {
-                if (this.brightness.actor.visible) {
-                    // Show the brightness info
-                    this.set_applet_tooltip(_("Brightness"));
-                    this.panel_icon_name = 'display-brightness';
-                    this.set_applet_icon_symbolic_name('display-brightness');
-                }
-                else if (this.keyboard.actor.visible) {
-                    // Show the brightness info
-                    this.set_applet_tooltip(_("Keyboard backlight"));
-                    this.panel_icon_name = 'keyboard-brightness';
-                    this.set_applet_icon_symbolic_name('keyboard-brightness');
-                }
-                else {
-                    // Disable the applet
-                    this.set_applet_label("");
-                    this._applet_icon.hide();
-                    this.set_applet_enabled(false);
-                }
+            // The menu is built. Below, we update the information present in the panel (icon, tooltip and label)
+            this.set_applet_enabled(true);
+            let panel_device = null;
+            if (this._primaryDevice != null) {
+                this.showDeviceInPanel(this._primaryDevice);
             }
             else {
-                this._applet_icon.show();
-                this.set_applet_enabled(true);
-                // If we have devices in the menu but none are shown in the panel, show a summary
-                if (!showed_panel_info) {
+                if (this._devices.length == 1) {
+                    this.showDeviceInPanel(this._devices[0]);
+                }
+                else if (this._devices.length > 1) {
+                    // Show a summary
                     this.set_applet_tooltip(devices_stats.join(", "));
+                    this.set_applet_label("");
                     let icon = this._proxy.Icon;
                     if(icon) {
                         if (icon != this.panel_icon_name){
@@ -436,6 +465,25 @@ MyApplet.prototype = {
                             this.panel_icon_name = 'battery-full';
                             this.set_applet_icon_symbolic_name('battery-full');
                         }
+                    }
+                }
+                else {
+                    // If there are no battery devices, show brightness info or disable the applet
+                    if (this.brightness.actor.visible) {
+                        // Show the brightness info
+                        this.set_applet_tooltip(_("Brightness"));
+                        this.panel_icon_name = 'display-brightness';
+                        this.set_applet_icon_symbolic_name('display-brightness');
+                    }
+                    else if (this.keyboard.actor.visible) {
+                        // Show the brightness info
+                        this.set_applet_tooltip(_("Keyboard backlight"));
+                        this.panel_icon_name = 'keyboard-brightness';
+                        this.set_applet_icon_symbolic_name('keyboard-brightness');
+                    }
+                    else {
+                        // Disable the applet
+                        this.set_applet_enabled(false);
                     }
                 }
             }
