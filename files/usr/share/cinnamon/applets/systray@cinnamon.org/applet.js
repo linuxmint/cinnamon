@@ -76,8 +76,6 @@ MyApplet.prototype = {
             if (icon.get_parent())
                 icon.get_parent().remove_child(icon);
 
-            this.resize_icon(icon, role);
-
             /* dropbox, for some reason, refuses to provide a correct size icon in our new situation.
              * Tried even with stalonetray, same results - all systray icons I tested work fine but dropbox.  I'm
              * assuming for now it's their problem.  For us, just scale it up.
@@ -89,14 +87,9 @@ MyApplet.prototype = {
 
             this._insertStatusItem(icon, -1);
 
-            let timerId = 0;
-            let i = 0;
-            timerId = Mainloop.timeout_add(500, Lang.bind(this, function() {
+            let timerId = Mainloop.timeout_add(500, Lang.bind(this, function() {
                 this.resize_icon(icon, role);
-                i++;
-                if (i == 2) {
-                    Mainloop.source_remove(timerId);
-                }
+                Mainloop.source_remove(timerId);
             }));
 
         } catch (e) {
@@ -132,29 +125,24 @@ MyApplet.prototype = {
                     size = 48;
                 }
             }
-            let timerId = 0;
-            let i = 0;
-            timerId = Mainloop.timeout_add(500, Lang.bind(this, function() { 
+            let timerId = Mainloop.timeout_add(500, Lang.bind(this, function() { 
                 icon.set_size(size, size);
                 global.log("Resized " + role + " (" + icon.get_width() + "x" + icon.get_height() + "px)");
-                i++;
-                if (i == 2) {
-                    Mainloop.source_remove(timerId);
-                }
+                Mainloop.source_remove(timerId);
             }));
         }
         else {
-            // Force buggy icon size when not in scale mode
+            // Force 'buggy' icon size when not in scale mode
             if (["pidgin", "thunderbird", "shutter"].indexOf(role) != -1) {
-                let timerId = 0;
-                let i = 0;
-                timerId = Mainloop.timeout_add(500, Lang.bind(this, function() { 
-                    icon.set_size(16, 16);
+                let timerId = Mainloop.timeout_add(500, Lang.bind(this, function() { 
+                    icon.set_size(20, 20);
                     global.log("Resized " + role + " (" + icon.get_width() + "x" + icon.get_height() + "px)");
-                    i++;
-                    if (i == 2) {
-                        Mainloop.source_remove(timerId);
-                    }
+                    Mainloop.source_remove(timerId);
+                    timerId = Mainloop.timeout_add(500, Lang.bind(this, function() { 
+	                    icon.set_size(16, 16);
+	                    global.log("Resized " + role + " (" + icon.get_width() + "x" + icon.get_height() + "px)");
+	                    Mainloop.source_remove(timerId);    
+	                }));
                 }));
             }
         }
