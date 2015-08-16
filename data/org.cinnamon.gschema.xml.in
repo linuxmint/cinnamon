@@ -533,11 +533,18 @@
       <default>false</default>
       <_summary>Whether advanced mode is enabled in cinnamon-settings</_summary>
     </key>
+
     <key type="b" name="run-dialog-show-completions">
       <default>true</default>
       <_summary>Whether or not to show possible completions in the run dialog (Alt-F2)</_summary>
     </key>
-    
+
+    <key type="as" name="run-dialog-aliases">
+      <default>[]</default>
+      <_summary>Aliases for the Alt-F2 dialog</_summary>
+      <_description>Aliases for use in the Alt-F2 dialog. This is a list of strings of the form a:b, where an instance of "a" is to be replaced with "b". Replacement is only performed on the first word.</_description>
+    </key>
+
     <key type="s" name="show-media-keys-osd">
       <default>"medium"</default>
       <_summary>Whether the media keys osd is disabled or its relative display size</_summary>

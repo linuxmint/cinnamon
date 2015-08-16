@@ -30,9 +30,16 @@ const EXEC_KEY = 'exec';
 const EXEC_ARG_KEY = 'exec-arg';
 
 const SHOW_COMPLETIONS_KEY = 'run-dialog-show-completions';
+const ALIASES_KEY = 'run-dialog-aliases';
 
 const DIALOG_GROW_TIME = 0.1;
 const MAX_COMPLETIONS = 40;
+
+const DEVEL_COMMANDS = { 'lg': x => Main.createLookingGlass().open(),
+                         'r': x => global.reexec_self(),
+                         'restart': x => global.reexec_self(),
+                         'debugexit': x => Meta.quit(Meta.ExitCode.ERROR),
+                         'rt': x => Main.themeManager._changeTheme() };
 
 /**
  * completeCommand:
@@ -139,31 +146,6 @@ __proto__: ModalDialog.ModalDialog.prototype,
             this._enableInternalCommands = global.settings.get_boolean('development-tools');
         }));
         this._enableInternalCommands = global.settings.get_boolean('development-tools');
-
-        this._internalCommands = { 'lg':
-                                   Lang.bind(this, function() {
-                                       Main.createLookingGlass().open();
-                                   }),
-
-                                   'r': Lang.bind(this, function() {
-                                       global.reexec_self();
-                                   }),
-
-                                   // Developer brain backwards compatibility
-                                   'restart': Lang.bind(this, function() {
-                                       global.reexec_self();
-                                   }),
-
-                                   'debugexit': Lang.bind(this, function() {
-                                       Meta.quit(Meta.ExitCode.ERROR);
-                                   }),
-
-                                   // rt is short for "reload theme"
-                                   'rt': Lang.bind(this, function() {
-                                       Main.themeManager._changeTheme();
-                                   })
-                                 };
-
 
         let label = new St.Label({ style_class: 'run-dialog-label',
                                    text: _("Please enter a command:") });
@@ -354,52 +336,60 @@ __proto__: ModalDialog.ModalDialog.prototype,
     },
 
     _run : function(input, inTerminal) {
-        let command = input;
-
         this._history.addItem(input);
         this._commandError = false;
-        let f;
-        if (this._enableInternalCommands)
-            f = this._internalCommands[input];
-        else
-            f = null;
-        if (f) {
-            f();
-        } else if (input) {
-            try {
-                if (inTerminal) {
-                    let exec = this._terminalSettings.get_string(EXEC_KEY);
-                    let exec_arg = this._terminalSettings.get_string(EXEC_ARG_KEY);
-                    command = exec + ' ' + exec_arg + ' ' + input;
-                }
-                Util.trySpawnCommandLine(command);
-            } catch (e) {
-                // Mmmh, that failed - see if @input matches an existing file
-                let path = null;
-                if (input.charAt(0) == '/') {
-                    path = input;
-                } else {
-                    if (input.charAt(0) == '~')
-                        input = input.slice(1);
-                    path = GLib.get_home_dir() + '/' + input;
-                }
+        if (this._enableInternalCommands && input.trim() in DEVEL_COMMANDS) {
+            DEVEL_COMMANDS[input.trim()]();
+            return;
+        }
 
-                if (GLib.file_test(path, GLib.FileTest.EXISTS)) {
-                    let file = Gio.file_new_for_path(path);
-                    try {
-                        Gio.app_info_launch_default_for_uri(file.get_uri(),
-                                                            global.create_app_launch_context());
-                    } catch (e) {
-                        // The exception from gjs contains an error string like:
-                        //     Error invoking Gio.app_info_launch_default_for_uri: No application
-                        //     is registered as handling this file
-                        // We are only interested in the part after the first colon.
-                        let message = e.message.replace(/[^:]*: *(.+)/, '$1');
-                        this._showError(message);
-                    }
-                } else {
-                    this._showError(e.message);
+        // Aliases is a list of strings of the form a:b, where an instance of
+        // "a" is to be replaced with "b". Replacement is only performed on the
+        // first word
+        let aliases = global.settings.get_strv(ALIASES_KEY);
+        let split = input.split(" ");
+        for (let i = 0; i < aliases.length; i++) {
+            if (split[0] == aliases[i].split(":")[0]) {
+                split[0] = aliases[i].split(":")[1];
+                break;
+            }
+        }
+        let command = split.join(" ");
+
+        try {
+            if (inTerminal) {
+                let exec = this._terminalSettings.get_string(EXEC_KEY);
+                let exec_arg = this._terminalSettings.get_string(EXEC_ARG_KEY);
+                command = exec + ' ' + exec_arg + ' ' + input;
+            }
+            Util.trySpawnCommandLine(command);
+        } catch (e) {
+            // Mmmh, that failed - see if @input matches an existing file
+            let path = null;
+            input = input.trim();
+            if (input.charAt(0) == '/') {
+                path = input;
+            } else {
+                if (input.charAt(0) == '~')
+                    input = input.slice(1);
+                path = GLib.build_filenamev([GLib.get_home_dir(), input]);
+            }
+
+            if (GLib.file_test(path, GLib.FileTest.EXISTS)) {
+                let file = Gio.file_new_for_path(path);
+                try {
+                    Gio.app_info_launch_default_for_uri(file.get_uri(),
+                            global.create_app_launch_context());
+                } catch (e) {
+                    // The exception from gjs contains an error string like:
+                    //     Error invoking Gio.app_info_launch_default_for_uri: No application
+                    //     is registered as handling this file
+                    // We are only interested in the part after the first colon.
+                    let message = e.message.replace(/[^:]*: *(.+)/, '$1');
+                    this._showError(message);
                 }
+            } else {
+                this._showError(e.message);
             }
         }
     },
