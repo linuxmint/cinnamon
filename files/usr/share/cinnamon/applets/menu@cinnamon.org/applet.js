@@ -1540,7 +1540,8 @@ MyApplet.prototype = {
             if (this._previousSelectedActor._delegate instanceof ApplicationButton ||
                 this._previousSelectedActor._delegate instanceof RecentButton ||
                 this._previousSelectedActor._delegate instanceof SearchProviderResultButton ||
-                this._previousSelectedActor._delegate instanceof PlaceButton)
+                this._previousSelectedActor._delegate instanceof PlaceButton ||
+                this._previousSelectedActor._delegate instanceof RecentClearButton)
                 this._previousSelectedActor.style_class = "menu-application-button";
             else if (this._previousSelectedActor._delegate instanceof FavoritesButton ||
                      this._previousSelectedActor._delegate instanceof SystemButton)
@@ -1937,6 +1938,7 @@ MyApplet.prototype = {
                                                 this._select_category(dir, categoryButton);
                                             } else {
                                                 categoryButton.actor.style_class = "menu-category-button";
+                                                
                                             }
                                         }
                                 });
