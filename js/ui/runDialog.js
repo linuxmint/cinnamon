@@ -99,7 +99,7 @@ function completeCommand(text) {
     paths.forEach(function(path) {
         try {
             let file = Gio.File.new_for_path(path);
-            let fileEnum = file.enumerate_children('standard::name', Gio.FileQueryInfoFlags.NONE, null);
+            let fileEnum = file.enumerate_children('standard::name,standard::type', Gio.FileQueryInfoFlags.NONE, null);
             let info;
 
             while ((info = fileEnum.next_file(null))) {
