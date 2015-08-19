@@ -12,6 +12,7 @@ import subprocess
 import tempfile
 import commands
 import locale
+import time
 from xml.etree import ElementTree
 from PIL import Image
 

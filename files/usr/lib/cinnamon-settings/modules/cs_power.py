@@ -39,6 +39,8 @@ SLEEP_DELAY_OPTIONS = [
     (0, _("Never"))
 ]
 
+(UP_ID, UP_VENDOR, UP_MODEL, UP_TYPE, UP_ICON, UP_PERCENTAGE, UP_STATE, UP_SECONDS) = range(8)
+
 def get_timestring(time_seconds):
     minutes = int((time_seconds / 60.0) + 0.5)
 
@@ -104,7 +106,7 @@ class Module:
                 "org.cinnamon.SettingsDaemon.Power",
                 None)
 
-        device_types = [x[1] for x in self.csd_power_proxy.GetDevices()]
+        device_types = [x[UP_TYPE] for x in self.csd_power_proxy.GetDevices()]
 
         self.has_battery = UPowerGlib.DeviceKind.BATTERY in device_types or UPowerGlib.DeviceKind.UPS in device_types
         self.has_lid = self.up_client.get_lid_is_present()
@@ -248,20 +250,20 @@ class Module:
         # listed laptop battery as the primary device
 
         for device in devices:
-            if device[1] == UPowerGlib.DeviceKind.UPS and device[4] == UPowerGlib.DeviceState.DISCHARGING:
+            if device[UP_TYPE] == UPowerGlib.DeviceKind.UPS and device[UP_STATE] == UPowerGlib.DeviceState.DISCHARGING:
                 ups_as_primary = True
 
         for device in devices:
-            if device[1] == UPowerGlib.DeviceKind.LINE_POWER:
+            if device[UP_TYPE] == UPowerGlib.DeviceKind.LINE_POWER:
                 pass # Do nothing
-            elif device[1] == UPowerGlib.DeviceKind.UPS and ups_as_primary:
+            elif device[UP_TYPE] == UPowerGlib.DeviceKind.UPS and ups_as_primary:
                 if not primary_settings:
                     primary_settings = self.battery_page.add_section(_("Batteries"))
                     primary_settings.add_row(self.set_device_ups_primary(device))
                     self.show_battery_page = True
                 else:
                     primary_settings.add_row(self.set_device_ups_primary(device))
-            elif device[1] == UPowerGlib.DeviceKind.BATTERY and not ups_as_primary:
+            elif device[UP_TYPE] == UPowerGlib.DeviceKind.BATTERY and not ups_as_primary:
                 if not have_primary:
                     if not primary_settings:
                         primary_settings = self.battery_page.add_section(_("Batteries"))
@@ -286,9 +288,11 @@ class Module:
         self.battery_page.set_visible(visible)
 
     def set_device_ups_primary(self, device):
-        percentage = device[3]
-        state = device[4]
-        time = device[5]
+        percentage = device[UP_PERCENTAGE]
+        state = device[UP_STATE]
+        time = device[UP_SECONDS]
+        vendor = device[UP_VENDOR]
+        model = device[UP_MODEL]
         details = None
 
         if time > 0:
@@ -310,13 +314,19 @@ class Module:
             else:
                 details = UPowerGlib.Device.state_to_string(state)
 
-        widget = self.create_battery_row("battery", _("UPS"), percentage, details)
+        desc = _("UPS")
+        if (model != "" or vendor != ""):
+            desc = "%s %s" % (vendor, model)
+
+        widget = self.create_battery_row("battery", desc, percentage, details)
         return widget
 
     def set_device_battery_primary(self, device):
-        percentage = device[3]
-        state = device[4]
-        time = device[5]
+        percentage = device[UP_PERCENTAGE]
+        state = device[UP_STATE]
+        time = device[UP_SECONDS]
+        vendor = device[UP_VENDOR]
+        model = device[UP_MODEL]
         details = None
 
         if time > 0:
@@ -343,11 +353,15 @@ class Module:
             else:
                 details = UPowerGlib.Device.state_to_string(state)
 
-        widget = self.create_battery_row("battery", _("Battery"), percentage, details)
+        desc = _("Battery")
+        if (model != "" or vendor != ""):
+            desc = "%s %s" % (vendor, model)
+
+        widget = self.create_battery_row("battery", desc, percentage, details)
         return widget
 
     def set_device_battery_additional(self, device):
-        state = device[4]
+        state = device[UP_STATE]
         details = None
 
         if state == UPowerGlib.DeviceState.FULLY_CHARGED:
@@ -371,8 +385,10 @@ class Module:
             return None
 
     def add_battery_device_secondary(self, device):
-        kind = device[1]
-        percentage = device[3]
+        kind = device[UP_TYPE]
+        percentage = device[UP_PERCENTAGE]
+        vendor = device[UP_VENDOR]
+        model = device[UP_MODEL]
 
         if kind == UPowerGlib.DeviceKind.UPS:
             icon_name = "uninterruptible-power-supply"
@@ -401,6 +417,9 @@ class Module:
         else:
             icon_name = "battery"
             desc = (_("Battery"))
+
+        if (model != "" or vendor != ""):
+            desc = "%s %s" % (vendor, model)
 
         widget = self.create_battery_row(icon_name, desc, percentage)
         return widget

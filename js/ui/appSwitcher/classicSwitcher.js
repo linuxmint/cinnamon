@@ -1039,4 +1039,6 @@ function _drawArrow(area, side) {
 
     Clutter.cairo_set_source_color(cr, bodyColor);
     cr.fill();
+
+    cr.$dispose();
 }

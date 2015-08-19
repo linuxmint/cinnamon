@@ -6,7 +6,10 @@ import os
 import glob
 import shutil
 
-ENVIRON = os.environ['XDG_CURRENT_DESKTOP']
+try:
+    ENVIRON = os.environ['XDG_CURRENT_DESKTOP']
+except:
+    ENVIRON = ""
 D_GROUP = "Desktop Entry"
 DEFAULT_ICON = "system-run"
 AUTOSTART_APPS = []

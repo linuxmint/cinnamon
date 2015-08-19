@@ -684,6 +684,33 @@ TextIconApplet.prototype = {
     },
 
     /**
+     * set_applet_enabled:
+     * @enabled (boolean): whether this applet is enabled or not
+     * 
+     * Sets whether the applet is enabled or not. A disabled applet sets its
+     * padding to 0px and doesn't react to clicks
+     */
+    set_applet_enabled: function (enabled) {
+        if (enabled != this._applet_enabled) {
+            this._applet_enabled = enabled;
+            if (enabled) {
+                this.actor.set_style_class_name('applet-box');
+                if (this._applet_icon) {
+                    this._applet_icon.show();
+                }
+            }
+            else {
+                if (this._applet_icon) {
+                    this._applet_icon.hide();
+                }
+                this.set_applet_tooltip("");
+                this.set_applet_label("");
+                this.actor.set_style("padding:0px;");
+            }
+        }
+    },
+
+    /**
      * hide_applet_icon:
      * 
      * Hides the icon of the applet

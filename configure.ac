@@ -1,5 +1,5 @@
 AC_PREREQ(2.63)
-AC_INIT([cinnamon],[2.6.12],[https://github.com/linuxmint/Cinnamon/issues],[cinnamon])
+AC_INIT([cinnamon],[2.6.13],[https://github.com/linuxmint/Cinnamon/issues],[cinnamon])
 
 AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_SRCDIR([src/cinnamon-global.c])
@@ -223,9 +223,6 @@ else
    AC_DEFINE_UNQUOTED(CINNAMON_SYSTEM_CA_FILE, ["$with_ca_certificates"], [The system TLS CA list])
 fi
 AC_SUBST(CINNAMON_SYSTEM_CA_FILE,["$with_ca_certificates"])
-
-BROWSER_PLUGIN_DIR="${BROWSER_PLUGIN_DIR:-"\${libdir}/mozilla/plugins"}"
-AC_ARG_VAR([BROWSER_PLUGIN_DIR],[Where to install the plugin to])
 
 GTK_DOC_CHECK([1.15], [--flavour no-tmpl])
 AC_CONFIG_FILES([
