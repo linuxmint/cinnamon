@@ -179,6 +179,10 @@ TilePreview.prototype = {
             this.actor.remove_style_class_name('snap');
         else
             this.actor.add_style_class_name('snap');
+    },
+
+    destroy: function() {
+        this.actor.destroy();
     }
 };
 
@@ -385,6 +389,10 @@ HudPreview.prototype = {
             this.actor.remove_style_class_name('snap');
         else
             this.actor.add_style_class_name('snap');
+    },
+
+    destroy: function() {
+        this.actor.destroy();
     }
 }
 
@@ -809,6 +817,8 @@ WindowManager.prototype = {
         if (!this._tilePreview)
             return;
         this._tilePreview.hide();
+        this._tilePreview.destroy();
+        this._tilePreview = null;
     },
 
     _showHudPreview: function(cinnamonwm, currentProximityZone, workArea, snapQueued) {
@@ -823,6 +833,8 @@ WindowManager.prototype = {
         if (!this._hudPreview)
             return;
         this._hudPreview.hide();
+        this._hudPreview.destroy();
+        this._hudPreview = null;
     },
 
     showWorkspaceOSD : function() {
