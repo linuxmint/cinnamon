@@ -498,7 +498,7 @@ function loadExtension(uuid, type) {
     return extension;
 }
 
-function unloadExtension(uuid) {
+function unloadExtension(uuid, deleteConfig = true) {
     let extension = objects[uuid];
     if (extension) {
         extension.unlockRole();
@@ -507,7 +507,7 @@ function unloadExtension(uuid) {
         // but it will be removed on next reboot, and hopefully nothing
         // broke too much.
         try {
-            extension.type.callbacks.prepareExtensionUnload(extension);
+            extension.type.callbacks.prepareExtensionUnload(extension, deleteConfig);
         } catch(e) {
             global.logError('Error disabling ' + extension.lowerType + ' ' + extension.uuid, e);
         }
@@ -525,6 +525,22 @@ function forgetExtension(uuid, forgetMeta) {
     delete objects[uuid];
     if(forgetMeta)
         delete meta[uuid];
+}
+
+/**
+ * reloadExtension:
+ *
+ * @uuid (string): UUID of the xlet
+ *
+ * Reloads an xlet. Useful when the source has changed.
+ */
+function reloadExtension(uuid) {
+    let extension = objects[uuid];
+
+    if(extension)
+        unloadExtension(extension.uuid, false);
+
+    loadExtension(extension.uuid, extension.type);
 }
 
 function findExtensionDirectory(uuid, type) {

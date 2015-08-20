@@ -158,10 +158,10 @@ function finishExtensionLoad(extension) {
 }
 
 // Callback for extension.js
-function prepareExtensionUnload(extension) {
+function prepareExtensionUnload(extension, deleteConfig) {
     // Remove all desklet instances for this extension
     for(let desklet_id in extension._loadedDefinitions) {
-        _unloadDesklet(extension._loadedDefinitions[desklet_id]);
+        _unloadDesklet(extension._loadedDefinitions[desklet_id], deleteConfig);
     }
 }
 
@@ -171,7 +171,7 @@ function _onEnabledDeskletsChanged(){
         // Remove all desklet instances that do not exist in the definition anymore.
         for (let desklet_id in enabledDeskletDefinitions.idMap) {
             if(!newEnabledDeskletDefinitions.idMap[desklet_id]) {
-                _unloadDesklet(enabledDeskletDefinitions.idMap[desklet_id]);
+                _unloadDesklet(enabledDeskletDefinitions.idMap[desklet_id], true);
             }
         }
 
@@ -209,7 +209,7 @@ function _onEnabledDeskletsChanged(){
     }
 }
 
-function _unloadDesklet(deskletDefinition) {
+function _unloadDesklet(deskletDefinition, deleteConfig) {
     let desklet = deskletObj[deskletDefinition.desklet_id];
     if (desklet){
         try {
@@ -217,7 +217,9 @@ function _unloadDesklet(deskletDefinition) {
         } catch (e) {
             global.logError("Failed to destroy desket: " + deskletDefinition.uuid + "/" + deskletDefinition.desklet_id, e);
         }
-        _removeDeskletConfigFile(deskletDefinition.uuid, deskletDefinition.desklet_id);
+
+        if (deleteConfig)
+            _removeDeskletConfigFile(deskletDefinition.uuid, deskletDefinition.desklet_id);
 
         delete desklet._extension._loadedDefinitions[deskletDefinition.desklet_id];
         delete deskletObj[deskletDefinition.desklet_id];

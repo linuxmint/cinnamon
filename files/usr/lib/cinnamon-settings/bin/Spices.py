@@ -418,11 +418,14 @@ class Spice_Harvester:
         return basename.replace("jpg", "png").replace("JPG", "png").replace("PNG", "png")
 
     def install_all(self, install_list=[], onFinished=None):
-        need_restart = False
+        need_restart = []
         success = False
         for uuid, is_update, is_active in install_list:
             success = self.install(uuid, is_update, is_active)
-            need_restart = need_restart or (is_update and is_active and success)
+
+            if is_update and is_active and success:
+                need_restart.append(uuid)
+
         ui_thread_do(self.progress_window.hide)
         self.abort_download = False
 

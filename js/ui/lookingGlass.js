@@ -654,12 +654,7 @@ Melange.prototype = {
 
     // DBus function
     ReloadExtension: function(uuid) {
-        let extension = Extension.objects[uuid];
-        if (extension) {
-            let type = extension.type;
-            Extension.unloadExtension(uuid);
-            Extension.loadExtension(uuid, type);
-        }
+        Extension.reloadExtension(uuid);
     },
     
     emitLogUpdate: function() {
