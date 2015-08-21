@@ -7,7 +7,6 @@ const Gtk = imports.gi.Gtk;
 const Lang = imports.lang;
 const Signals = imports.signals;
 const St = imports.gi.St;
-const CinnamonJS = imports.gi.CinnamonJS;
 
 const AppletManager = imports.ui.appletManager;
 const Config = imports.misc.config;
@@ -149,11 +148,8 @@ Extension.prototype = {
         }
         this.loadIconDirectory(this.dir);
 
-        try {
-            CinnamonJS.add_extension_importer('imports.ui.extension.Type.%s.maps.importObjects'.format(type.name.toUpperCase()), this.uuid, this.meta.path);
-        } catch (e) {
-            throw this.logError('Error importing extension ' + this.uuid + ' from path ' + this.meta.path, e);
-        }
+        imports.addSubImporter(this.lowerType, this.meta.path);
+        type.maps.importObjects[this.uuid] = imports[this.lowerType];
 
         try {
             this.module = type.maps.importObjects[this.uuid][this.lowerType]; // get [extension/applet/desklet].js
