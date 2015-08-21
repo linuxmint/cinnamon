@@ -499,7 +499,7 @@ function unloadExtension(uuid, type, deleteConfig = true) {
         // but it will be removed on next reboot, and hopefully nothing
         // broke too much.
         try {
-            extension.type.callbacks.prepareExtensionUnload(extension);
+            extension.type.callbacks.prepareExtensionUnload(extension, deleteConfig);
         } catch(e) {
             global.logError('Error disabling ' + extension.lowerType + ' ' + extension.uuid, e);
         }
@@ -517,6 +517,23 @@ function forgetExtension(uuid, type, forgetMeta) {
     delete type.maps.objects[uuid];
     if(forgetMeta)
         delete type.maps.meta[uuid];
+}
+
+/**
+ * reloadExtension:
+ *
+ * @uuid (string): uuid of xlet
+ * @type (Extension.Type): type of xlet
+ *
+ * Reloads an xlet. Useful when the source has changed.
+ */
+function reloadExtension(uuid, type) {
+    let extension = type.maps.objects[uuid];
+
+    if(extension)
+        unloadExtension(uuid, type, false);
+
+    loadExtension(uuid, type);
 }
 
 function findExtensionDirectory(uuid, type) {

@@ -65,10 +65,10 @@ function finishExtensionLoad(extension) {
 }
 
 // Callback for extension.js
-function prepareExtensionUnload(extension) {
+function prepareExtensionUnload(extension, deleteConfig) {
     // Remove all applet instances for this extension
     for(let applet_id in extension._loadedDefinitions) {
-        removeAppletFromPanels(extension._loadedDefinitions[applet_id]);
+        removeAppletFromPanels(extension._loadedDefinitions[applet_id], deleteConfig);
     }
 }
 
@@ -205,7 +205,7 @@ function onEnabledAppletsChanged() {
     Main.statusIconDispatcher.redisplay();
 }
 
-function removeAppletFromPanels(appletDefinition) {
+function removeAppletFromPanels(appletDefinition, deleteConfig) {
     let applet = appletObj[appletDefinition.applet_id];
     if (applet) {
         try {
@@ -222,7 +222,8 @@ function removeAppletFromPanels(appletDefinition) {
         delete applet._extension._loadedDefinitions[appletDefinition.applet_id];
         delete appletObj[appletDefinition.applet_id];
 
-        _removeAppletConfigFile(appletDefinition.uuid, appletDefinition.applet_id);
+        if (deleteConfig)
+            _removeAppletConfigFile(appletDefinition.uuid, appletDefinition.applet_id);
 
         /* normal occurs during _onAppletRemovedFromPanel, but when a panel is removed,
          * appletObj hasn't had the instance removed yet, so let's run it one more time

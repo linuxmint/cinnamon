@@ -133,10 +133,10 @@ class LookingGlassProxy:
                 pass
         return (False, "")
 
-    def ReloadExtension(self, uuid):
+    def ReloadExtension(self, uuid, xletType):
         if self._proxy:
             try:
-                return self._proxy.ReloadExtension('(s)', uuid)
+                return self._proxy.ReloadExtension('(ss)', uuid, xletType)
             except:
                 pass
         return (False, "")

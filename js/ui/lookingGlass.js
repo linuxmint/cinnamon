@@ -375,6 +375,7 @@ const lgIFace =
             </method> \
             <method name="ReloadExtension"> \
                 <arg type="s" direction="in" name="uuid"/> \
+                <arg type="s" direction="in" name="type"/> \
             </method> \
             <signal name="LogUpdate"></signal> \
             <signal name="WindowListUpdate"></signal> \
@@ -656,13 +657,8 @@ Melange.prototype = {
     },
 
     // DBus function
-    ReloadExtension: function(uuid) {
-        let extension = Extension.objects[uuid];
-        if (extension) {
-            let type = extension.type;
-            Extension.unloadExtension(uuid);
-            Extension.loadExtension(uuid, type);
-        }
+    ReloadExtension: function(uuid, type) {
+        Extension.reloadExtension(uuid, Extension.Type[type]);
     },
     
     emitLogUpdate: function() {

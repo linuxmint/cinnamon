@@ -4,6 +4,7 @@ const Lang = imports.lang;
 const Gio = imports.gi.Gio;
 const GLib = imports.gi.GLib;
 const Config = imports.misc.config;
+const Extension = imports.ui.extension;
 const Flashspot = imports.ui.flashspot;
 const Main = imports.ui.main;
 const AppletManager = imports.ui.appletManager;
@@ -82,6 +83,10 @@ const CinnamonIface =
             <method name="GetRunningXletUUIDs"> \
                 <arg type="s" direction="in" /> \
                 <arg type="as" direction="out" /> \
+            </method> \
+            <method name="ReloadXlet"> \
+                <arg type="s" direction="in" name="uuid" /> \
+                <arg type="s" direction="in" name="type" /> \
             </method> \
             <property name="OverviewActive" type="b" access="readwrite" /> \
             <property name="ExpoActive" type="b" access="readwrite" /> \
@@ -288,6 +293,10 @@ Cinnamon.prototype = {
         }
 
         return res;
+    },
+
+    ReloadXlet: function(uuid, type) {
+        Extension.reloadExtension(uuid, Extension.Type[type]);
     },
 
     highlightApplet: function(uuid, instance_id) {
