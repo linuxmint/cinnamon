@@ -1032,6 +1032,12 @@ PopupMenuBase.prototype = {
             return;
 
         this._childMenus.push(menu);
+        /**
+         * SIGNAL:child-menu-added
+         * @menu (PopupMenu.PopupMenuBase): The menu added
+         *
+         * Emitted when an menu is added as a submenu.
+         */
         this.emit('child-menu-added', menu);
     },
 
@@ -1039,7 +1045,7 @@ PopupMenuBase.prototype = {
      * removeChildMenu:
      * @menu (PopupMenuBase): the menu of interest
      *
-     * Removes @menu from the current menu if it is a child
+     * Removes @menu from the current menu if it is a child.
      */
     removeChildMenu: function(menu) {
         let index = this._childMenus.indexOf(menu);
@@ -1049,11 +1055,32 @@ PopupMenuBase.prototype = {
 
         this._childMenus.splice(index, 1);
         this.emit('child-menu-removed', menu);
+        /**
+         * SIGNAL:child-menu-removed
+         * @menu (PopupMenu.PopupMenuBase): The menu removed
+         *
+         * Emitted when an submenu is removed.
+         */
     },
 
     _connectSubMenuSignals: function(object, menu) {
+        /**
+         * SIGNAL:activate
+         * @menuItem (PopupBaseMenuItem): the item activated
+         * @keepMenu (boolean): whether the menu should remain opened
+         *
+         * Emitted when an item of the menu is activated.
+         */
+
+        /**
+         * SIGNAL:active-changed
+         * @menuItem (PopupBaseMenuItem): the current active item (possibly null)
+         *
+         * Emitted when the active item of menu is changed.
+         */
+
         object._subMenuActivateId = menu.connect('activate', Lang.bind(this, function(submenu, submenuItem, keepMenu) {
-            this.emit('activate');
+            this.emit('activate', submenuItem, keepMenu);
             if (!keepMenu){
                 this.close(true);
             }
@@ -1323,7 +1350,11 @@ PopupMenuBase.prototype = {
     destroy: function() {
         this.removeAll();
         this.actor.destroy();
-
+        /**
+         * SIGNAL:destroy
+         *
+         * Emitted when the menu is destroyed.
+         */
         this.emit('destroy');
     }
 };
