@@ -72,7 +72,7 @@ Gio.Settings.__setitem__ = __setitem__
 class EditableEntry (Gtk.Stack):
 
     __gsignals__ = {
-        'changed': (GObject.SIGNAL_RUN_FIRST, None,
+        'changed': (GObject.SignalFlags.RUN_FIRST, None,
                       (str,))
     }
 
