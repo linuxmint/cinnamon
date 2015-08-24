@@ -120,7 +120,7 @@ class Module:
                 if folder:
                     path = folder.get_filename()
                     chooser.add_picture(path, callback, title=theme, id=theme)
-                GObject.timeout_add(5, self.increment_progress, (chooser,inc))
+                GLib.timeout_add(5, self.increment_progress, (chooser,inc))
         else:
             if path_suffix == "cinnamon":
                 chooser.add_picture("/usr/share/cinnamon/theme/thumbnail.png", callback, title="cinnamon", id="cinnamon")
@@ -136,8 +136,8 @@ class Module:
                             break
                 except:
                     chooser.add_picture("/usr/share/cinnamon/thumbnails/%s/unknown.png" % path_suffix, callback, title=theme_name, id=theme_name)
-                GObject.timeout_add(5, self.increment_progress, (chooser, inc))
-        GObject.timeout_add(500, self.hide_progress, chooser)
+                GLib.timeout_add(5, self.increment_progress, (chooser, inc))
+        GLib.timeout_add(500, self.hide_progress, chooser)
         # thread.exit()
 
     def increment_progress(self, payload):
