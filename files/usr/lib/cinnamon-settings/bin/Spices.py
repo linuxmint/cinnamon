@@ -49,7 +49,7 @@ ABORT_ERROR = 1
 ABORT_USER = 2
 
 def ui_thread_do(callback, *args):
-    GObject.idle_add (callback, *args, priority=GObject.PRIORITY_DEFAULT)
+    GLib.idle_add (callback, *args, priority=GLib.PRIORITY_DEFAULT)
 
 def removeEmptyFolders(path):
     if not os.path.isdir(path):
