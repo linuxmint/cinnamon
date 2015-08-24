@@ -350,7 +350,7 @@ class ScreensaverBox(Gtk.Box):
 
     def on_mapped(self, widget):
         self.on_row_activated(None, None)
-        GObject.idle_add(self.idle_scroll_to_selection)
+        GLib.idle_add(self.idle_scroll_to_selection)
 
     def idle_scroll_to_selection(self):
         row = self.list_box.get_selected_row()
