@@ -190,6 +190,13 @@ class JSThing():
         prop.file = self.file
         prop.object = self.object
 
+class JSSignal(JSThing):
+    def __init__ (self, name):
+        self.name = name
+        self.description = ''
+        self.short_description = JSProperty(None, '', '')
+        self.properties = []
+
 class JSFunction(JSThing):
     def __init__ (self, name):
         self.name = name
@@ -221,6 +228,7 @@ class JSFile(JSThing):
         self.short_description = JSProperty(None, '', '')
         self.properties = []
         self.objects = []
+        self.signals = []
         self.enums = []
         self.functions = []
         self.file = self
@@ -261,6 +269,7 @@ class JSObject(JSThing):
         self.prefix = None
         self.functions = []
         self.properties = []
+        self.signals = []
         self.enums = []
         self.object = self
 
@@ -268,6 +277,11 @@ class JSObject(JSThing):
         self.functions.append(func)
         func.file = self.file
         func.object = self
+
+    def add_signal(self, signal):
+        self.signals.append(signal)
+        signal.file = self
+        signal.object = self
 
     def set_inherit(self, inherit):
         self.inherit = inherit
@@ -328,11 +342,13 @@ FILE_FORMAT = '''\
   </refnamediv>
   {func_header}
   {prop_header}
+  {signal_header}
   {enum_header}
   {hierarchy}
   {description}
   {functions}
   {properties}
+  {signals}
   {enums}
 </refentry>
 '''
@@ -378,6 +394,31 @@ PROPERTY_HEADER_FORMAT = '''
     </tgroup>
   </informaltable>
 </refsect1>
+'''
+
+SIGNAL_HEADER_FORMAT = '''
+<refsect1 id="cinnamon-js-{prefix}.signals" role="signal_proto">
+  <title role="signal_proto.title">Signals</title>
+  <informaltable frame="none">
+    <tgroup cols="3">
+      <colspec colname="signals_return" colwidth="150px" />
+      <colspec colname="signals_name" colwidth="300px" />
+      <tbody>
+        {signal_headers}
+      </tbody>
+    </tgroup>
+  </informaltable>
+</refsect1>
+'''
+
+SIGNAL_HEADER_ITEM_FORMAT = '''
+<row>
+  <entry role="signal_type">
+  </entry>
+  <entry role="signal_name">
+    <link linkend="cinnamon-js-{prefix}-{name}-signal">{name}</link>
+  </entry>
+</row>
 '''
 
 ENUM_HEADER_FORMAT = '''
@@ -454,6 +495,24 @@ FUNCTION_ITEM_FORMAT = '''
 </refsect2>
 '''
 
+SIGNALS_FORMAT = '''
+<refsect1 id="cinnamon-js-{prefix}.signal-details" role="details">
+  <title role="details.title">Signal details</title>
+  {signals}
+</refsect1>
+'''
+
+SIGNAL_ITEM_FORMAT = '''
+<refsect2 id="cinnamon-js-{prefix}-{name}-signal" role="signal">
+  <title>The <literal>“{name}”</literal> signal</title>
+  <indexterm zone="cinnamon-js-{prefix}-{name}-signal"><primary>{prefix}::{name}</primary></indexterm>
+  <programlisting language="javascript">
+user_function ({inline_params});</programlisting>
+  {description}
+  {params}
+</refsect2>
+'''
+
 FUNC_PARAMETERS_FORMAT = '''
 <refsect3 role="parameters">
   <title>Parameters</title>
@@ -496,7 +555,7 @@ PROPERTIES_FORMAT = '''
 
 PROPERTIES_ITEM_FORMAT = '''
 <refsect2 id="cinnamon-js-{prefix}--{name}" role="property">
-  <title>The “{name}” property</title>
+  <title>The <literal>“{name}”</literal> property</title>
   <indexterm zone="cinnamon-js-{prefix}--{name}">
     <primary>cinnamon-js-{prefix}:{name}</primary>
   </indexterm>
@@ -573,11 +632,13 @@ def create_file(obj):
         name = obj.name.replace("-", "."),
         short_description = markup(short_description, obj),
         func_header = get_function_header(obj),
+        signal_header = get_signal_header(obj),
         prop_header = get_properties_header(obj),
         enum_header = get_enum_header(obj),
         hierarchy = get_hierarchy(obj),
         description = get_description(obj),
         functions = get_functions(obj),
+        signals = get_signals(obj),
         properties = get_properties(obj),
         enums = get_enums(obj)))
 
@@ -596,6 +657,18 @@ def get_function_header(obj):
     return FUNCTION_HEADER_FORMAT.format(
             prefix = obj.prefix,
             function_headers = "\n".join(functions))
+
+def get_signal_header(obj):
+    if len(obj.signals) == 0:
+        return ""
+
+    signals = [SIGNAL_HEADER_ITEM_FORMAT.format(
+               prefix = obj.prefix,
+               name = sig.name) for sig in obj.signals]
+
+    return SIGNAL_HEADER_FORMAT.format(
+            prefix = obj.prefix,
+            signal_headers = "\n".join(signals))
 
 def get_properties_header(obj):
     if len(obj.properties) == 0:
@@ -698,7 +771,7 @@ def get_functions(obj):
                 type_name = param.arg_type,
                 name = " " * (max_length - len(param.arg_type)) + param.name) for param in func.properties]
 
-            inline_params = (',\n' + ' ' * (len(func.name) + 2)).join(inline_params)
+            inline_params = (',\n' + ' ' * 15).join(inline_params)
 
             params = [FUNC_PARAMETERS_ITEM_FORMAT.format(
                 name = param.name,
@@ -723,6 +796,49 @@ def get_functions(obj):
     return FUNCTIONS_FORMAT.format(
             prefix = obj.prefix,
             functions = "\n".join(functions))
+
+def get_signals(obj):
+    if len(obj.signals) == 0:
+        return ""
+
+    signals = []
+
+    for sig in obj.signals:
+        inline_params = ""
+        params = ""
+        if len(sig.properties) > 0:
+            # Calculate how long the argument types are and make the arguments
+            # align
+            max_length = max(len(x.arg_type) for x in sig.properties) + 3
+            # If no parameter has argument types, don't show that silly
+            # whitespace
+            if max_length == 3:
+                max_length = 0
+
+            inline_params = [INLINE_PARAMETER_FORMAT.format(
+                type_link = get_type_link(param.arg_type, obj.file),
+                type_name = param.arg_type,
+                name = " " * (max_length - len(param.arg_type)) + param.name) for param in sig.properties]
+
+            inline_params = (',\n' + ' ' * (len(sig.name) + 2)).join(inline_params)
+
+            params = [FUNC_PARAMETERS_ITEM_FORMAT.format(
+                name = param.name,
+                description = param.get_xml_description()) for param in sig.properties]
+
+            params = FUNC_PARAMETERS_FORMAT.format(param_items = '\n'.join(params))
+
+        signals.append(SIGNAL_ITEM_FORMAT.format(
+            prefix = obj.prefix,
+            name = sig.name,
+            description = sig.get_xml_description(),
+            inline_params = inline_params,
+            params = params))
+
+    return SIGNALS_FORMAT.format(
+            prefix = obj.prefix,
+            signals = "\n".join(signals))
+
 
 def get_properties(obj):
     if len(obj.properties) == 0:
