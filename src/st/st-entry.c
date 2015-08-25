@@ -262,9 +262,6 @@ st_entry_style_changed (StWidget *self)
 
   theme_node = st_widget_get_theme_node (self);
  
-  st_theme_node_get_foreground_color (theme_node, &color);
-  clutter_text_set_color (CLUTTER_TEXT (priv->entry), &color);
-
   if (st_theme_node_lookup_length (theme_node, "caret-size", TRUE, &size))
     clutter_text_set_cursor_size (CLUTTER_TEXT (priv->entry), (int)(.5 + size));
 
@@ -277,10 +274,7 @@ st_entry_style_changed (StWidget *self)
   if (st_theme_node_lookup_color (theme_node, "selected-color", TRUE, &color))
     clutter_text_set_selected_text_color (CLUTTER_TEXT (priv->entry), &color);
 
-  font = st_theme_node_get_font (theme_node);
-  font_string = pango_font_description_to_string (font);
-  clutter_text_set_font_name (CLUTTER_TEXT (priv->entry), font_string);
-  g_free (font_string);
+  _st_set_text_from_style ((ClutterText *)priv->entry, theme_node);
 
   ST_WIDGET_CLASS (st_entry_parent_class)->style_changed (self);
 }
