@@ -62,15 +62,19 @@ function ControlButton() {
 }
 
 ControlButton.prototype = {
-    _init: function(icon, tooltip, callback) {
+    _init: function(icon, tooltip, callback, small = false) {
         this.actor = new St.Bin({style_class: 'sound-button-container'});
+
         this.button = new St.Button({ style_class: 'sound-button' });
         this.button.connect('clicked', callback);
+
+        if(small)
+            this.button.add_style_pseudo_class("small");
+
         this.icon = new St.Icon({
             icon_type: St.IconType.SYMBOLIC,
             icon_name: icon,
-            icon_size: 16,
-            style_class: 'sound-button-icon',
+            style_class: "popup-menu-icon"
         });
         this.button.set_child(this.icon);
         this.actor.add_actor(this.button);
@@ -95,26 +99,6 @@ ControlButton.prototype = {
         this.button.change_style_pseudo_class("disabled", !status);
         this.button.can_focus = status;
         this.button.reactive = status;
-    }
-}
-
-function ActionButton(){
-    this._init.apply(this, arguments);
-}
-
-ActionButton.prototype = {
-    _init: function(icon, tooltip, callback) {
-        this.actor = new St.Button;
-        this.actor.connect("clicked", callback);
-
-        this.icon = new St.Icon({
-            icon_type: St.IconType.SYMBOLIC,
-            icon_name: icon,
-            style_class: "popup-menu-icon",
-        });
-        this.actor.set_child(this.icon);
-
-        this.tooltip = new Tooltips.Tooltip(this.actor, tooltip);
     }
 }
 
@@ -206,7 +190,7 @@ VolumeSlider.prototype = {
         }
         this.setValue(value);
 
-        //send data to applet
+        // send data to applet
         this.emit("values-changed", iconName, percentage);
     },
 
@@ -331,13 +315,10 @@ Player.prototype = {
         this._trackCoverFile = this._trackCoverFileTmp = false;
         this._trackCover = new St.Bin({style_class: 'sound-track-cover', x_align: St.Align.MIDDLE});
         this._trackCover.set_child(new St.Icon({icon_name: "media-optical-cd-audio", icon_size: 220, icon_type: St.IconType.FULLCOLOR}));
-        //this._trackInfosTop = new St.Bin({style_class: 'sound-track-infos', x_align: St.Align.START});
         this.infosTop = new PopupMenu.PopupMenuSection;
-        //this._trackInfosBottom = new St.Bin({style_class: 'sound-track-infos', x_align: St.Align.START});
         this.infosBottom = new PopupMenu.PopupMenuSection;
         this._trackControls = new St.Bin({style_class: 'sound-playback-control', x_align: St.Align.MIDDLE});
 
-        //let mainBox = new St.BoxLayout({style_class: 'sound-track-box', vertical: true});
         let mainBox = new PopupMenu.PopupMenuSection;
         mainBox.addMenuItem(this.infosTop)
         mainBox.addActor(this._trackCover);
@@ -348,7 +329,6 @@ Player.prototype = {
         this._artist = new TrackInfo(_("Unknown Artist"), "system-users");
         this._album = new TrackInfo(_("Unknown Album"), "media-optical");
         this._title = new TrackInfo(_("Unknown Title"), "audio-x-generic");
-        //this._time = new PopupMenu.PopupIconMenuItem("0:00 / 0:00", "document-open-recent", St.IconType.SYMBOLIC);
 
 
         this.infosTop.addMenuItem(this._artist);
@@ -418,7 +398,7 @@ Player.prototype = {
         this.addMenuItem(this._positionSlider);
 
         if (this._mediaServer.CanRaise) {
-            let btn = new ActionButton("go-up", _("Open Player"), Lang.bind(this, function(){
+            let btn = new ControlButton("go-up", _("Open Player"), Lang.bind(this, function(){
                 if (this._name === "spotify") {
                     // Spotify isn't able to raise via Dbus once its main UI is closed
                     Util.spawn(['spotify']);
@@ -427,14 +407,14 @@ Player.prototype = {
                     this._mediaServer.RaiseRemote();
                 }
                 this._applet.menu.close();
-            }));
+            }), true);
             this.playerInfo.buttons.add_actor(btn.actor);
         }
 
         if (this._mediaServer.CanQuit) {
-            let btn = new ActionButton("window-close", _("Quit Player"), Lang.bind(this, function(){
+            let btn = new ControlButton("window-close", _("Quit Player"), Lang.bind(this, function(){
                 this._mediaServer.QuitRemote();
-            }));
+            }), true);
             this.playerInfo.buttons.add_actor(btn.actor);
         }
 
