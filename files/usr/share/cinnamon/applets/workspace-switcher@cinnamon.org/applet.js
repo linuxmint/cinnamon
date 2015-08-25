@@ -33,6 +33,14 @@ MyApplet.prototype = {
                     Main.expo.toggle();
             }));
             this._applet_context_menu.addMenuItem(expo);
+
+            let addWorkspace = new PopupMenu.PopupIconMenuItem (_("Add new workspace"),
+                    "list-add",
+                    St.IconType.SYMBOLIC);
+            addWorkspace.connect('activate', Lang.bind(this, function() {
+                Main._addWorkspace();
+            }));
+            this._applet_context_menu.addMenuItem(addWorkspace);
         }
         catch (e) {
             global.logError(e);
