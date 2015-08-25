@@ -1,6 +1,9 @@
 #!/usr/bin/env python2
 
 from SettingsWidgets import *
+import gi
+gi.require_version('CinnamonDesktop', '3.0')
+gi.require_version('UPowerGlib', '1.0')
 from gi.repository import CinnamonDesktop, Gdk, UPowerGlib
 
 POWER_BUTTON_OPTIONS = [

@@ -9,6 +9,8 @@ sys.path.append('/usr/lib/cinnamon-settings/bin')
 import os
 import glob
 import gettext
+import gi
+gi.require_version('Gtk', '3.0')
 from gi.repository import Gio, Gtk, GObject, GdkPixbuf, GLib, Pango, Gdk, cairo
 import SettingsWidgets
 import capi
