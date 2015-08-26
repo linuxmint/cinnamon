@@ -303,7 +303,10 @@ MyApplet.prototype = {
         let hours = Math.floor(time / 60);
 
         if (state == UPDeviceState.CHARGING) {
-            if (time > 60) {
+            if (time == 0) {
+                status = _("Charging");
+            }
+            else if (time > 60) {
                 if (minutes == 0) {
                     status = ngettext("Charging - %d hour until fully charged", "Charging - %d hours until fully charged", hours).format(hours);
                 } 

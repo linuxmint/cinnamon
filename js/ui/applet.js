@@ -702,10 +702,12 @@ TextIconApplet.prototype = {
             else {
                 if (this._applet_icon) {
                     this._applet_icon.hide();
+                    this._applet_icon.set_style("padding:0px;padding-left:0px;padding-right:0px;");
                 }
                 this.set_applet_tooltip("");
                 this.set_applet_label("");
-                this.actor.set_style("padding:0px;");
+                this.actor.set_style("padding:0px;padding-left:0px;padding-right:0px;");
+                global.log(this.actor.get_style());
             }
         }
     },
