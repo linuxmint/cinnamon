@@ -99,7 +99,6 @@ st_source_h =					\
 	st/st-theme.h				\
 	st/st-theme-context.h			\
 	st/st-theme-node.h			\
-	st/st-tooltip.h				\
 	st/st-types.h				\
 	st/st-widget.h				\
 	st/st-widget-accessible.h		\
@@ -161,7 +160,6 @@ st_source_c =					\
 	st/st-theme-node.c			\
 	st/st-theme-node-drawing.c		\
 	st/st-theme-node-transition.c		\
-	st/st-tooltip.c				\
 	st/st-widget.c				\
 	$(NULL)
 

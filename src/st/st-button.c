@@ -164,8 +164,6 @@ st_button_button_press (ClutterActor       *actor,
   StButton *button = ST_BUTTON (actor);
   StButtonMask mask = ST_BUTTON_MASK_FROM_BUTTON (event->button);
 
-  st_widget_hide_tooltip (ST_WIDGET (actor));
-
   if (button->priv->button_mask & mask)
     {
       if (button->priv->grabbed == 0)
@@ -209,8 +207,6 @@ st_button_key_press (ClutterActor    *actor,
                      ClutterKeyEvent *event)
 {
   StButton *button = ST_BUTTON (actor);
-
-  st_widget_hide_tooltip (ST_WIDGET (actor));
 
   if (button->priv->button_mask & ST_BUTTON_ONE)
     {
