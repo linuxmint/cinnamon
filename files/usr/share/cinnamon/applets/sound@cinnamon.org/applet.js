@@ -933,19 +933,19 @@ MyApplet.prototype = {
                     }
                 ));
 
-               // watch players
-               this._ownerChangedId = this._dbus.connectSignal('NameOwnerChanged', Lang.bind(this,
-                   function(proxy, sender, [name, old_owner, new_owner]) {
-                       if (name_regex.test(name)) {
-                           if (new_owner && !old_owner)
-                               this._addPlayer(name, new_owner);
-                           else if (old_owner && !new_owner && this._players[old_owner])
-                               this._removePlayer(name, old_owner);
-                           else
-                               this._changePlayerOwner(name, old_owner, new_owner);
-                       }
-                   }
-               ));
+                // watch players
+                this._ownerChangedId = this._dbus.connectSignal('NameOwnerChanged', Lang.bind(this,
+                    function(proxy, sender, [name, old_owner, new_owner]) {
+                        if (name_regex.test(name)) {
+                            if (new_owner && !old_owner)
+                                this._addPlayer(name, new_owner);
+                            else if (old_owner && !new_owner)
+                                this._removePlayer(name, old_owner);
+                            else
+                                this._changePlayerOwner(name, old_owner, new_owner);
+                        }
+                    }
+                ));
             }));
 
             this._control = new Gvc.MixerControl({ name: 'Cinnamon Volume Control' });
@@ -1190,7 +1190,7 @@ MyApplet.prototype = {
     },
 
     _removePlayer: function(busName, owner) {
-        if (this._players[owner]) {
+        if (this._players[owner] && this._players[owner]._busName == busName) {
             this._players[owner].destroy();
             delete this._players[owner];
 
