@@ -106,7 +106,6 @@ EXTRA_DIST += cinnamon-marshal.list
 cinnamon_public_headers_h =		\
 	cinnamon-app.h			\
 	cinnamon-app-system.h		\
-	cinnamon-arrow.h			\
 	cinnamon-doc-system.h		\
 	cinnamon-embedded-window.h		\
 	cinnamon-generic-container.h	\
@@ -138,7 +137,6 @@ libcinnamon_la_SOURCES =		\
 	cinnamon-plugin.c		\
 	cinnamon-app.c			\
 	cinnamon-app-system.c		\
-	cinnamon-arrow.c			\
 	cinnamon-doc-system.c		\
 	cinnamon-embedded-window.c		\
 	cinnamon-generic-container.c	\
