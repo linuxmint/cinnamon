@@ -94,7 +94,6 @@ main(int argc, char **argv)
     g_error ("option parsing failed: %s", error->message);
 
   setlocale (LC_ALL, "");
-  g_type_init ();
 
   _cinnamon_global_init (NULL);
   global = cinnamon_global_get ();

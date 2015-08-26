@@ -413,7 +413,6 @@ main (int argc, char **argv)
   GError *error = NULL;
   int ecode;
   g_setenv ("CLUTTER_DISABLE_XINPUT", "1", TRUE);
-  g_type_init ();
 
   bindtextdomain (GETTEXT_PACKAGE, LOCALEDIR);
   bind_textdomain_codeset (GETTEXT_PACKAGE, "UTF-8");
