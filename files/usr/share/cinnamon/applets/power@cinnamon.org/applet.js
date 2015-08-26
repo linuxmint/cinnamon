@@ -237,7 +237,7 @@ MyApplet.prototype = {
         this.metadata = metadata;
 
         this.settings = new Settings.AppletSettings(this, metadata.uuid, instanceId);
-        this.settings.bindProperty(Settings.BindingDirection.IN, "showpercentage", "showpercentage", Lang.bind(this, this._devicesChanged), null);
+        this.settings.bindProperty(Settings.BindingDirection.IN, "labelinfo", "labelinfo", Lang.bind(this, this._devicesChanged), null);
 
         Main.systrayManager.registerRole("power", metadata.uuid);
         Main.systrayManager.registerRole("battery", metadata.uuid);
@@ -351,13 +351,31 @@ MyApplet.prototype = {
         let [device_id, vendor, model, device_type, icon, percentage, state, seconds] = device;
         let status = this._getDeviceStatus(device);
         this.set_applet_tooltip(status);
-        if (this.showpercentage) {
-            this.set_applet_label("%d%%".format(Math.round(percentage)));
+        let labelText = "";
+        if (this.labelinfo == "nothing") {
+            ;
+        }
+        else if (this.labelinfo == "time" && seconds != 0) {
+            let time = Math.round(seconds / 60);
+            let minutes = time % 60;
+            let hours = Math.floor(time / 60);
+            labelText = C_("time of battery remaining", "%d:%02d").format(hours,minutes);
+        }
+        else if (this.labelinfo == "percentage" || (this.labelinfo == "percentage_time" && seconds == 0)) {
+            labelText = C_("percent of battery remaining", "%d%%").format(Math.round(percentage));
+        }
+        else if (this.labelinfo == "percentage_time") {
+            let time = Math.round(seconds / 60);
+            let minutes = Math.floor(time % 60);
+            let hours = Math.floor(time / 60);
+            labelText = C_("percent of battery remaining", "%d%%").format(Math.round(percentage)) + " (" +
+                C_("time of battery remaining", "%d:%02d").format(hours,minutes) + ")";
+        }
+        this.set_applet_label(labelText);
+        if (this.labelinfo != "nothing") {
             this._applet_label.set_margin_left(1.0);
         }
-        else {
-            this.set_applet_label("");
-        }
+
         if(icon){
             if(this.panel_icon_name != icon){
                 this.panel_icon_name = icon;

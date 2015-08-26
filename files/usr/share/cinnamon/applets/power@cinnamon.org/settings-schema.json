@@ -1,7 +1,13 @@
 {
-    "showpercentage": {
-        "type": "checkbox",
-        "description": "Show percentage",
-        "default": false
+    "labelinfo": {
+        "type": "radiogroup",
+        "description": "Display",
+        "default": "nothing",
+        "options" : {
+            "Show percentage": "percentage",
+            "Show time remaining": "time",
+            "Show percentage and time remaining": "percentage_time",
+            "Hide label": "nothing"
+        }
     }
 }
