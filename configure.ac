@@ -102,7 +102,7 @@ saved_CFLAGS=$CFLAGS
 saved_LIBS=$LIBS
 CFLAGS=$CINNAMON_CFLAGS
 LIBS=$CINNAMON_LIBS
-AC_CHECK_FUNCS(JS_NewGlobalObject XFixesCreatePointerBarrier)
+AC_CHECK_FUNCS(XFixesCreatePointerBarrier)
 CFLAGS=$saved_CFLAGS
 LIBS=$saved_LIBS
 
