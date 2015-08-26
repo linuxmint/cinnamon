@@ -642,6 +642,30 @@ cinnamon_global_set_cursor (CinnamonGlobal *global,
     case CINNAMON_CURSOR_POINTING_HAND:
       name = "hand";
       break;
+    case CINNAMON_CURSOR_RESIZE_BOTTOM:
+      name = "bottom_side";
+      break;
+    case CINNAMON_CURSOR_RESIZE_TOP:
+      name = "top_side";
+      break;
+    case CINNAMON_CURSOR_RESIZE_BOTTOM_RIGHT:
+      name = "bottom_right_corner";
+      break;
+    case CINNAMON_CURSOR_RESIZE_BOTTOM_LEFT:
+      name = "bottom_left_corner";
+      break;
+    case CINNAMON_CURSOR_RESIZE_TOP_RIGHT:
+      name = "top_right_corner";
+      break;
+    case CINNAMON_CURSOR_RESIZE_TOP_LEFT:
+      name = "top_left_corner";
+      break;
+    case CINNAMON_CURSOR_CROSSHAIR:
+      name = "crosshair";
+      break;
+    case CINNAMON_CURSOR_TEXT:
+      name = "xterm";
+      break;
     default:
       g_return_if_reached ();
     }
@@ -666,6 +690,30 @@ cinnamon_global_set_cursor (CinnamonGlobal *global,
           break;
         case CINNAMON_CURSOR_DND_UNSUPPORTED_TARGET:
           cursor_type = GDK_X_CURSOR;
+          break;
+        case CINNAMON_CURSOR_RESIZE_BOTTOM:
+          cursor_type = GDK_BOTTOM_SIDE;
+          break;
+        case CINNAMON_CURSOR_RESIZE_TOP:
+          cursor_type = GDK_TOP_SIDE;
+          break;
+        case CINNAMON_CURSOR_RESIZE_BOTTOM_RIGHT:
+          cursor_type = GDK_BOTTOM_RIGHT_CORNER;
+          break;
+        case CINNAMON_CURSOR_RESIZE_BOTTOM_LEFT:
+          cursor_type = GDK_BOTTOM_LEFT_CORNER;
+          break;
+        case CINNAMON_CURSOR_RESIZE_TOP_RIGHT:
+          cursor_type = GDK_TOP_RIGHT_CORNER;
+          break;
+        case CINNAMON_CURSOR_RESIZE_TOP_LEFT:
+          cursor_type = GDK_TOP_LEFT_CORNER;
+          break;
+        case CINNAMON_CURSOR_CROSSHAIR:
+          cursor_type = GDK_CROSSHAIR;
+          break;
+        case CINNAMON_CURSOR_TEXT:
+          cursor_type = GDK_XTERM;
           break;
         default:
           g_return_if_reached ();
