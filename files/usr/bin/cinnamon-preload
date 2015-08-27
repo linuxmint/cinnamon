@@ -26,12 +26,17 @@ if __name__ == "__main__":
     if os.getuid() == 0:
         start = time.time()
         has_encrypted_home = False
-        for p in pwd.getpwall():
-            if p.pw_uid >= 1000 and p.pw_shell and p.pw_shell != '/bin/false' and p.pw_shell != '/usr/sbin/nologin':
-                if not os.path.exists("/home/.ecryptfs/%s" % p.pw_name):
-                    subprocess.call(["su", p.pw_name, "-c", os.path.realpath(sys.argv[0])])
-                else:
-                    has_encrypted_home = True
+        for name in os.listdir('/home'):
+            try:
+                p = pwd.getpwnam(name)
+            except:
+                continue
+            else:
+                if p.pw_uid >= 1000 and p.pw_shell and p.pw_shell != '/bin/false' and p.pw_shell != '/usr/sbin/nologin':
+                    if not os.path.exists("/home/.ecryptfs/%s" % p.pw_name):
+                        subprocess.call(["su", p.pw_name, "-c", os.path.realpath(sys.argv[0])])
+                    else:
+                        has_encrypted_home = True
         if has_encrypted_home:
             syslog.syslog("Encrypted home directories detected, loading default themes")
             theme_list = []
