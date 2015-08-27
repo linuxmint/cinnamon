@@ -34,6 +34,8 @@ BACKGROUND_PICTURE_OPTIONS = [
     ("spanned", _("Spanned"))
 ]
 
+PICTURE_OPTIONS_NEEDS_COLOR = ("none", "scaled", "centered")
+
 BACKGROUND_ICONS_SIZE = 100
 
 BACKGROUND_COLLECTION_TYPE_DIRECTORY = "directory"
@@ -184,13 +186,16 @@ class Module:
             settings.add_row(widget)
 
             widget = GSettingsComboBox(_("Background gradient"), "org.cinnamon.desktop.background", "color-shading-type", BACKGROUND_COLOR_SHADING_TYPES, size_group=size_group)
-            settings.add_row(widget)
+            settings.add_reveal_row(widget, "org.cinnamon.desktop.background", "picture-options", PICTURE_OPTIONS_NEEDS_COLOR)
 
             widget = GSettingsColorChooser(_("Gradient start color"), "org.cinnamon.desktop.background", "primary-color", size_group=size_group)
-            settings.add_row(widget)
+            settings.add_reveal_row(widget, "org.cinnamon.desktop.background", "picture-options", PICTURE_OPTIONS_NEEDS_COLOR)
+
+            self._background_schema.connect("changed::picture-options", self.update_secondary_revealer)
+            self._background_schema.connect("changed::color-shading-type", self.update_secondary_revealer)
 
             widget = GSettingsColorChooser(_("Gradient end color"), "org.cinnamon.desktop.background", "secondary-color", size_group=size_group)
-            settings.add_row(widget)
+            self.secondary_color_revealer = settings.add_reveal_row(widget)
 
     def is_row_separator(self, model, iter, data):
         return model.get_value(iter, 0)
@@ -453,6 +458,17 @@ class Module:
             print "Could not parse %s!" % filename
             print detail
             return []
+
+    def update_secondary_revealer(self, settings, key):
+        show = False
+
+        if(settings.get_string("picture-options") in PICTURE_OPTIONS_NEEDS_COLOR):
+            #the picture is taking all the width
+            if(settings.get_string("color-shading-type") != "solid"):
+                #it is using a gradient, so need to show
+                show = True
+
+        self.secondary_color_revealer.set_reveal_child(show)
 
 class PixCache(object):
 
