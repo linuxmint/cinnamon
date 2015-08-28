@@ -340,7 +340,7 @@ ClassicSwitcher.prototype = {
             backdrop.opacity = 0;
             Tweener.addTween(backdrop,
                             { opacity: 255,
-                            time: PREVIEW_SWITCHER_FADEOUT_TIME,
+                            time: PREVIEW_SWITCHER_FADEOUT_TIME / 4,
                             transition: 'linear'
                             });
         }
