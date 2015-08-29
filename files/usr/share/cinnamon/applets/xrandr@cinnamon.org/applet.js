@@ -85,7 +85,7 @@ MyApplet.prototype = {
     },
 
     _addOutputItem: function(config, output) {
-        let item = new PopupMenu.PopupMenuItem(output.get_display_name());
+        let item = new PopupMenu.PopupMenuItem("%s (%s)".format(output.get_display_name(), output.get_name()));
         item.label.add_style_class_name('display-subtitle');
         item.actor.reactive = false;
         item.actor.can_focus = false;
