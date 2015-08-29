@@ -517,39 +517,6 @@ AppMenuButtonRightClickMenu.prototype = {
 
         this.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
 
-        // Move to workspace
-        if ((length = global.screen.n_workspaces) > 1) {
-            if (mw.is_on_all_workspaces()) {
-                item = new PopupMenu.PopupMenuItem(_("Only on this workspace"));
-                item.connect('activate', function() {
-                    mw.unstick();
-                });
-                this.addMenuItem(item);
-            } else {
-                item = new PopupMenu.PopupMenuItem(_("Visible on all workspaces"));
-                item.connect('activate', function() {
-                    mw.stick();
-                });
-                this.addMenuItem(item);
-
-                item = new PopupMenu.PopupSubMenuMenuItem(_("Move to another workspace ..."), true);
-                this.addMenuItem(item);
-
-                let curr_index = mw.get_workspace().index();
-                for (let i = 0; i < length; i++) {
-                    if (i == curr_index) continue;
-
-                    // Make the index a local variable to pass to function
-                    let j = i;
-                    item.menu.addAction(
-                            Main.workspace_names[i] ? Main.workspace_names[i] : Main._makeDefaultWorkspaceName(i),
-                            function() {
-                                mw.change_workspace(global.screen.get_workspace_by_index(j));
-                            });
-                }
-            }
-        }
-
         // Move to monitor
         if ((length = Main.layoutManager.monitors.length) == 2) {
             Main.layoutManager.monitors.forEach(function (monitor, index) {
@@ -570,6 +537,40 @@ AppMenuButtonRightClickMenu.prototype = {
                 });
                 this.addMenuItem(item);
             }, this);
+        }
+
+        // Move to workspace
+        if ((length = global.screen.n_workspaces) > 1) {
+            if (mw.is_on_all_workspaces()) {
+                item = new PopupMenu.PopupMenuItem(_("Only on this workspace"));
+                item.connect('activate', function() {
+                    mw.unstick();
+                });
+                this.addMenuItem(item);
+            } else {
+                item = new PopupMenu.PopupMenuItem(_("Visible on all workspaces"));
+                item.connect('activate', function() {
+                    mw.stick();
+                });
+                this.addMenuItem(item);
+
+                item = new PopupMenu.PopupSubMenuMenuItem(_("Move to another workspace"));
+                this.addMenuItem(item);
+
+                let curr_index = mw.get_workspace().index();
+                for (let i = 0; i < length; i++) {
+                    if (i == curr_index) continue;
+
+                    // Make the index a local variable to pass to function
+                    let j = i;
+                    item.menu.addAction(
+                            Main.workspace_names[i] ? Main.workspace_names[i] : Main._makeDefaultWorkspaceName(i),
+                            function() {
+                                mw.change_workspace(global.screen.get_workspace_by_index(j));
+                            });
+                }
+
+            }
         }
 
         this.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
