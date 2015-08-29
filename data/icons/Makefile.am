@@ -5,6 +5,12 @@ public_icons_themes = \
 	$(NULL)
 
 public_icons = \
+	hicolor_actions_scalable_pan-down-symbolic.svg \
+	hicolor_actions_scalable_pan-end-symbolic.svg \
+	hicolor_actions_scalable_pan-end-symbolic-rtl.svg \
+	hicolor_actions_scalable_pan-start-symbolic.svg \
+	hicolor_actions_scalable_pan-start-symbolic-rtl.svg \
+	hicolor_actions_scalable_pan-up-symbolic.svg \
 	hicolor_categories_16x16_cs-desklets.svg \
 	hicolor_categories_16x16_cs-backgrounds.svg \
 	hicolor_categories_scalable_cs-applets.svg \

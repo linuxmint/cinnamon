@@ -1232,11 +1232,11 @@ MyApplet.prototype = {
 
     _showFixedElements: function() {
         //we'll show the launch player item or the selector item + a player section
-        this._launchPlayerItem = new PopupMenu.PopupSubMenuMenuItem(_("Launch player..."), true);
+        this._launchPlayerItem = new PopupMenu.PopupSubMenuMenuItem(_("Launch player"));
         this.menu.addMenuItem(this._launchPlayerItem);
         this._updateLaunchPlayer();
 
-        this._playerSelector = new PopupMenu.PopupSubMenuMenuItem("", true);
+        this._playerSelector = new PopupMenu.PopupSubMenuMenuItem("");
         this._playerSelector.actor.remove_style_class_name("popup-submenu-menu-item");
         this._playerSelector.actor.hide();
         this.menu.addMenuItem(this._playerSelector);
@@ -1246,10 +1246,11 @@ MyApplet.prototype = {
         this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem);
         this._outputVolumeSection = new VolumeSlider(this, null, _("Volume"), null);
         this._outputVolumeSection.connect("values-changed", Lang.bind(this, this._outputValuesChanged));
-        this._outputApplicationsMenu = new PopupMenu.PopupSubMenuMenuItem(_("Applications..."), true);
-        this._selectOutputDeviceItem = new PopupMenu.PopupSubMenuMenuItem(_("Output device..."), true);
+        this._outputApplicationsMenu = new PopupMenu.PopupSubMenuMenuItem(_("Applications"));
+        this._selectOutputDeviceItem = new PopupMenu.PopupSubMenuMenuItem(_("Output device"));
 
         this.menu.addMenuItem(this._outputVolumeSection);
+        this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem);
         this.menu.addMenuItem(this._outputApplicationsMenu);
         this.menu.addMenuItem(this._selectOutputDeviceItem);
 
@@ -1258,7 +1259,7 @@ MyApplet.prototype = {
 
         this._inputSection = new PopupMenu.PopupMenuSection;
         this._inputVolumeSection = new VolumeSlider(this, null, _("Microphone"), null);
-        this._selectInputDeviceItem = new PopupMenu.PopupSubMenuMenuItem(_("Input device..."), true);
+        this._selectInputDeviceItem = new PopupMenu.PopupSubMenuMenuItem(_("Input device"));
 
         this._inputSection.addMenuItem(this._inputVolumeSection);
         this._inputSection.addMenuItem(this._selectInputDeviceItem);
