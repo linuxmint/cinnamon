@@ -44,8 +44,8 @@ SoundManager.prototype = {
         this.startup_delay = true;
         this.enabled = {};
         this.file = {};
-        this.settings = new Gio.Settings({ schema: 'org.cinnamon.sounds' });
-        this.desktop_settings = new Gio.Settings({ schema: 'org.cinnamon.desktop.sound' });
+        this.settings = new Gio.Settings({ schema_id: 'org.cinnamon.sounds' });
+        this.desktop_settings = new Gio.Settings({ schema_id: 'org.cinnamon.desktop.sound' });
         this._cacheSettings();                
         this._cacheDesktopSettings();   
         this.settings.connect("changed", Lang.bind(this, this._cacheSettings));

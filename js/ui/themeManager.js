@@ -17,7 +17,7 @@ function ThemeManager() {
 
 ThemeManager.prototype = {
     _init: function() {
-        this._settings = new Gio.Settings({ schema: SETTINGS_SCHEMA });
+        this._settings = new Gio.Settings({ schema_id: SETTINGS_SCHEMA });
         this._changedId = this._settings.connect('changed::'+SETTINGS_KEY, Lang.bind(this, this._changeTheme));
         this._changeTheme();
     },    

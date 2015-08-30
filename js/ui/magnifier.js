@@ -67,8 +67,8 @@ Magnifier.prototype = {
 
         this.enabled = false;
 
-        this._appSettings = new Gio.Settings({ schema: APPLICATIONS_SCHEMA });
-        this._settings = new Gio.Settings({ schema: MAGNIFIER_SCHEMA });
+        this._appSettings = new Gio.Settings({ schema_id: APPLICATIONS_SCHEMA });
+        this._settings = new Gio.Settings({ schema_id: MAGNIFIER_SCHEMA });
 
         // Create small clutter tree for the magnified mouse.
         let xfixesCursor = Cinnamon.XFixesCursor.get_for_stage(global.stage);
@@ -1488,10 +1488,10 @@ MagnifierInputHandler.prototype = {
         this._zoom_in_id = 0;
         this._zoom_out_id = 0;
 
-        this.a11y_settings = new Gio.Settings({ schema: APPLICATIONS_SCHEMA });
+        this.a11y_settings = new Gio.Settings({ schema_id: APPLICATIONS_SCHEMA });
         this.a11y_settings.connect("changed::" + SHOW_KEY, Lang.bind(this, this._refresh_state));
 
-        this.keybinding_settings = new Gio.Settings({ schema: KEYBINDING_SCHEMA });
+        this.keybinding_settings = new Gio.Settings({ schema_id: KEYBINDING_SCHEMA });
         this.keybinding_settings.connect("changed", Lang.bind(this, this._refresh_state));
 
         this._refresh_state();

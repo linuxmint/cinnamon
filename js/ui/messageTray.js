@@ -1445,7 +1445,7 @@ MessageTray.prototype = {
         Main.layoutManager.connect('monitors-changed', Lang.bind(this, this._setSizePosition));
 
 		// Settings
-        this.settings = new Gio.Settings({ schema: "org.cinnamon.desktop.notifications" })
+        this.settings = new Gio.Settings({ schema_id: "org.cinnamon.desktop.notifications" })
 		function setting(self, source, camelCase, dashed) {
 			function updater() { self[camelCase] = source.get_boolean(dashed); }
 			source.connect('changed::'+dashed, updater);

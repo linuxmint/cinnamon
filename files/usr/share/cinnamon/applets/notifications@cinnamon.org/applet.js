@@ -296,7 +296,7 @@ function stringify(count) {
 }
 
 function timeify(orig_time) {
-    let settings = new Gio.Settings({schema: 'org.cinnamon.desktop.interface'});
+    let settings = new Gio.Settings({schema_id: 'org.cinnamon.desktop.interface'});
     let use_24h = settings.get_boolean('clock-use-24h');
     let now = new Date();
     let diff = Math.floor((now.getTime() - orig_time.getTime()) / 1000); // get diff in seconds

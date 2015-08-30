@@ -93,7 +93,7 @@ MyApplet.prototype = {
             this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
             this.menu.addSettingsAction(_("Universal Access Settings"), 'universal-access');
 
-            this.a11y_settings = new Gio.Settings({ schema: A11Y_SCHEMA });
+            this.a11y_settings = new Gio.Settings({ schema_id: A11Y_SCHEMA });
 
             this._keyboardStateChangedId = Keymap.connect('state-changed', Lang.bind(this, this._handleStateChange));
             this.set_applet_label('');
@@ -166,7 +166,7 @@ MyApplet.prototype = {
     },
 
     _buildItem: function(string, schema, key) {
-        let settings = new Gio.Settings({ schema: schema });
+        let settings = new Gio.Settings({ schema_id: schema });
         let widget = this._buildItemExtended(string,
             settings.get_boolean(key),
             settings.is_writable(key),
@@ -180,7 +180,7 @@ MyApplet.prototype = {
     },
 
     _buildHCItem: function() {
-        let settings = new Gio.Settings({ schema: DESKTOP_INTERFACE_SCHEMA });
+        let settings = new Gio.Settings({ schema_id: DESKTOP_INTERFACE_SCHEMA });
         let gtkTheme = settings.get_string(KEY_GTK_THEME);
         let iconTheme = settings.get_string(KEY_ICON_THEME);
         let hasHC = (gtkTheme == HIGH_CONTRAST_THEME);
@@ -218,7 +218,7 @@ MyApplet.prototype = {
     },
 
     _buildFontItem: function() {
-        let settings = new Gio.Settings({ schema: DESKTOP_INTERFACE_SCHEMA });
+        let settings = new Gio.Settings({ schema_id: DESKTOP_INTERFACE_SCHEMA });
 
         let factor = settings.get_double(KEY_TEXT_SCALING_FACTOR);
         let initial_setting = (factor > 1.0);
