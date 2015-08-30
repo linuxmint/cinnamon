@@ -22,7 +22,7 @@ function check_schema_and_init(obj, method, params) {
     if (listSchemas.indexOf(params.schema) != -1) {
         method.call(obj, params);
     } else {
-        method.call(obj, { schema: "org.cinnamon.invalid-schema" });
+        method.call(obj, { schema_id: "org.cinnamon.invalid-schema" });
         log("GSettings schema not found: " + params.schema);
         throw new Error("GSettings schema not found: " + params.schema);
     }
