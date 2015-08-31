@@ -224,15 +224,9 @@ AppSwitcher.prototype = {
 
     _updateActiveMonitor: function() {
         this._activeMonitor = null;
-        if(!this._enforcePrimaryMonitor) {
-            try {
-                let x, y, mask;
-                [x, y, mask] = global.get_pointer();
-                this._activeMonitor = Main.layoutManager._chrome._findMonitorForRect(x, y, 0, 0);
-            } catch(e) {
-            }
-        }
-        if(!this._activeMonitor)
+        if (!this._enforcePrimaryMonitor)
+            this._activeMonitor = Main.layoutManager.currentMonitor;
+        if (!this._activeMonitor)
             this._activeMonitor = Main.layoutManager.primaryMonitor;
 
         return this._activeMonitor;

@@ -176,6 +176,11 @@ LayoutManager.prototype = {
         return this.monitors[this.focusIndex];
     },
 
+    get currentMonitor() {
+        let index = global.screen.get_current_monitor();
+        return Main.layoutManager.monitors[index];
+    },
+
     _prepareStartupAnimation: function() {
         // During the initial transition, add a simple actor to block all events,
         // so they don't get delivered to X11 windows that have been transformed.
