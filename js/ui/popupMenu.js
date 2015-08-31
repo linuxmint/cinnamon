@@ -1732,14 +1732,18 @@ PopupSubMenu.prototype = {
         if (animate) {
             let [minHeight, naturalHeight] = this.actor.get_preferred_height(-1);
             this.actor.height = 0;
-            this.actor._arrowRotation = this._arrow.rotation_angle_z;
+            if (this._arrow)
+                this.actor._arrowRotation = this._arrow.rotation_angle_z;
+            else
+                this.actor._arrowRotation = targetAngle;
             Tweener.addTween(this.actor,
                              { _arrowRotation: targetAngle,
                                height: naturalHeight,
                                time: 0.25,
                                onUpdateScope: this,
                                onUpdate: function() {
-                                   this._arrow.rotation_angle_z = this.actor._arrowRotation;
+                                   if (this._arrow)
+                                       this._arrow.rotation_angle_z = this.actor._arrowRotation;
                                },
                                onCompleteScope: this,
                                onComplete: function() {
@@ -1748,7 +1752,8 @@ PopupSubMenu.prototype = {
                                }
                              });
         } else {
-            this._arrow.rotation_angle_z = targetAngle;
+            if (this._arrow)
+                this._arrow.rotation_angle_z = targetAngle;
             this.emit('open-state-changed', true);
         }
     },
@@ -1772,7 +1777,8 @@ PopupSubMenu.prototype = {
             animate = false;
 
         if (animate) {
-            this.actor._arrowRotation = this._arrow.rotation_angle_z;
+            if (this._arrow)
+                this.actor._arrowRotation = this._arrow.rotation_angle_z;
             Tweener.addTween(this.actor,
                              { _arrowRotation: 0,
                                height: 0,
@@ -1786,11 +1792,13 @@ PopupSubMenu.prototype = {
                                },
                                onUpdateScope: this,
                                onUpdate: function() {
-                                   this._arrow.rotation_angle_z = this.actor._arrowRotation;
+                                   if (this._arrow)
+                                       this._arrow.rotation_angle_z = this.actor._arrowRotation;
                                }
                              });
             } else {
-                this._arrow.rotation_angle_z = 0;
+                if (this._arrow)
+                    this._arrow.rotation_angle_z = 0;
                 this.actor.hide();
 
                 this.isOpen = false;
