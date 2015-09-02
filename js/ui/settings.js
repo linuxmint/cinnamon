@@ -616,6 +616,45 @@ _provider.prototype = {
             } else {
                 key_not_found_error(key_name, this.uuid);
             }
+        },
+
+        /**
+         * getOptions:
+         * @key_name (String): the key name to fetch the options for
+         *
+         * Returns the current options for the key @key_name.
+         *
+         * Returns: The currently stored options of the key (undefined if the key does not support options)
+         */
+        getOptions: function (key_name) {
+            if (key_name in this.settings_obj.json) {
+                return this.settings_obj.get_data(key_name)["options"];
+            } else {
+                key_not_found_error(key_name, this.uuid);
+                return null;
+            }
+        },
+
+        /**
+         * setOptions:
+         * @key_name (string): the key name to set the options for
+         * @options: the new options to set
+         *
+         * If @key_name is a key type that supports options, sets the options of @key_name to @options.
+         */
+        setOptions: function (key_name, options) {
+            if (key_name in this.settings_obj.json) {
+                let oldval = this.settings_obj.get_data(key_name)["options"];
+                if (!oldval) {
+                    global.logWarning("Could not set options for '" + key_name + "' - the key does not support options");
+                    return;
+                }
+                if (oldval != options) {
+                    this.settings_obj.set_options(key_name, options);
+                }
+            } else {
+                key_not_found_error(key_name, this.uuid);
+            }
         }
 };
 Signals.addSignalMethods(_provider.prototype);
@@ -682,6 +721,11 @@ SettingObj.prototype = {
 
     set_value: function(key, val) {
         this.json[key]["value"] = val;
+        this.save();
+    },
+
+    set_options: function(key, val) {
+        this.json[key]["options"] = val;
         this.save();
     },
 
