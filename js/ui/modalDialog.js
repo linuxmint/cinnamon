@@ -7,6 +7,7 @@ const Atk = imports.gi.Atk;
 const Cinnamon = imports.gi.Cinnamon;
 const Signals = imports.signals;
 const Gio = imports.gi.Gio;
+const GLib = imports.gi.GLib;
 const Pango = imports.gi.Pango;
 
 const Params = imports.misc.params;
@@ -15,6 +16,8 @@ const Util = imports.misc.util;
 const Lightbox = imports.ui.lightbox;
 const Main = imports.ui.main;
 const Tweener = imports.ui.tweener;
+
+const Gettext = imports.gettext;
 
 const OPEN_AND_CLOSE_TIME = 0.1;
 const FADE_IN_BUTTONS_TIME = 0.33;
@@ -449,7 +452,11 @@ SpicesAboutDialog.prototype = {
      */
     _init: function(metadata, type) {
         ModalDialog.prototype._init.call(this);
-        
+
+        //prepare translation
+        this.uuid = metadata.uuid;
+        Gettext.bindtextdomain(metadata.uuid, GLib.get_home_dir() + "/.local/share/locale");
+
         let contentBox = new St.BoxLayout({vertical: true, style_class: "about-content" });
         this.contentLayout.add_actor(contentBox);
         
@@ -477,14 +484,14 @@ SpicesAboutDialog.prototype = {
         /*title*/
         let titleBox = new St.BoxLayout();
         topTextBox.add_actor(titleBox);
-        
-        let title = new St.Label({text: metadata.name, style_class: "about-title"});
+
+        let title = new St.Label({text: this._(metadata.name), style_class: "about-title"});
         titleBox.add_actor(title);
         
         if (metadata.version) {
             let versionBin = new St.Bin({x_align: St.Align.START, y_align: St.Align.END});
             titleBox.add_actor(versionBin);
-            let version = new St.Label({text: " v" + metadata.version, style_class: "about-version"});
+            let version = new St.Label({text: _(" v%s").format(metadata.version), style_class: "about-version"});
             versionBin.add_actor(version);
         }
         
@@ -493,60 +500,82 @@ SpicesAboutDialog.prototype = {
         topTextBox.add_actor(uuid);
         
         //description
-        let desc = new St.Label({text: metadata.description, style_class: "about-description"});
+        let desc = new St.Label({text: this._(metadata.description), style_class: "about-description"});
         let dText = desc.clutter_text;
         topTextBox.add_actor(desc);
-        
-        /*optional content*/
-        let scrollBox = new St.ScrollView({style_class: "about-scrollBox"});
-        contentBox.add(scrollBox, {expand: true});
-        let infoBox = new St.BoxLayout({vertical: true, style_class: "about-scrollBox-innerBox"});
-        scrollBox.add_actor(infoBox);
-        
-        //comments
-        if (metadata.comments) {
-            let comments = new St.Label({text: "Comments:\n\t" + metadata.comments});
-            let cText = comments.clutter_text;
-            cText.ellipsize = Pango.EllipsizeMode.NONE;
-            cText.line_wrap = true;
-            cText.set_line_wrap_mode(Pango.WrapMode.WORD_CHAR);
-            infoBox.add_actor(comments);
-        }
-        
-        //website
-        if (metadata.website) {
-            let wsBox = new St.BoxLayout({vertical: true});
-            infoBox.add_actor(wsBox);
-            
-            let wLabel = new St.Label({text: "Website:"});
-            wsBox.add_actor(wLabel);
-            
-            let wsButton = new St.Button({x_align: St.Align.START, style_class: "cinnamon-link", name: "about-website"});
-            wsBox.add_actor(wsButton);
-            let website = new St.Label({text: metadata.website});
-            let wtext = website.clutter_text;
-            wtext.ellipsize = Pango.EllipsizeMode.NONE;
-            wtext.line_wrap = true;
-            wtext.set_line_wrap_mode(Pango.WrapMode.WORD_CHAR);
-            wsButton.add_actor(website);
-            wsButton.connect("clicked", Lang.bind(this, this._launchSite, metadata.website));
-        }
-        
-        //contributors
-        if (metadata.contributors) {
-            let list = metadata.contributors.split(",").join("\n\t");
-            let contributors = new St.Label({text: "Contributors:\n\t" + list});
-            infoBox.add_actor(contributors);
+
+        // optional content
+        if(metadata.comments || metadata.website || metadata.contributors){
+            let scrollBox = new St.ScrollView({style_class: "about-scrollBox"});
+            contentBox.add(scrollBox, {expand: true});
+            let infoBox = new St.BoxLayout({vertical: true, style_class: "about-scrollBox-innerBox"});
+            scrollBox.add_actor(infoBox);
+
+            // comments
+            if (metadata.comments) {
+                let comments = new St.Label({text: _("Comments:") + "\n\t" + this._(metadata.comments)});
+                let cText = comments.clutter_text;
+                cText.ellipsize = Pango.EllipsizeMode.NONE;
+                cText.line_wrap = true;
+                cText.set_line_wrap_mode(Pango.WrapMode.WORD_CHAR);
+                infoBox.add_actor(comments);
+            }
+
+            // website
+            if (metadata.website) {
+                let wsBox = new St.BoxLayout({vertical: true});
+                infoBox.add_actor(wsBox);
+
+                let wLabel = new St.Label({text: _("Website:")});
+                wsBox.add_actor(wLabel);
+
+                let wsButton = new St.Button({x_align: St.Align.START, style_class: "cinnamon-link", name: "about-website"});
+                wsBox.add_actor(wsButton);
+                let website = new St.Label({text: metadata.website});
+                let wtext = website.clutter_text;
+                wtext.ellipsize = Pango.EllipsizeMode.NONE;
+                wtext.line_wrap = true;
+                wtext.set_line_wrap_mode(Pango.WrapMode.WORD_CHAR);
+                wsButton.add_actor(website);
+                wsButton.connect("clicked", Lang.bind(this, this._launchSite, metadata.website));
+            }
+
+            // contributors
+            if (metadata.contributors) {
+                let list = metadata.contributors;
+
+                // enforce that the list is an array
+                if(typeof list === "string")
+                    list = list.split(",");
+
+                // trim whitespaces, try to translate each item and glue all together
+                list = list.map(String.trim).map(this._, this).join("\n\t");
+
+                let contributors = new St.Label({text: _("Contributors:") + "\n\t" + list});
+                infoBox.add_actor(contributors);
+            }
         }
         
         //dialog close button
         this.setButtons([
-            {label: "Close", key: "", focus: true, action: Lang.bind(this, this._onOk)}
+            {label: _("Close"), key: "", focus: true, action: Lang.bind(this, this._onOk)}
         ]);
         
         this.open(global.get_current_time());
     },
-    
+
+    // translation
+    _: function(str) {
+        // look into the text domain first
+        let translated = Gettext.dgettext(this.uuid, str);
+
+        // if it looks translated, return the translation of the domain
+        if(translated !== str)
+            return translated;
+        // else, use the default cinnamon domain
+        return _(str);
+    },
+
     _onOk: function() {
         this.close(global.get_current_time());
     },
