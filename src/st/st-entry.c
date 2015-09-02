@@ -256,8 +256,6 @@ st_entry_style_changed (StWidget *self)
   StEntryPrivate *priv = ST_ENTRY_PRIV (self);
   StThemeNode *theme_node;
   ClutterColor color;
-  const PangoFontDescription *font;
-  gchar *font_string;
   gdouble size;
 
   theme_node = st_widget_get_theme_node (self);
