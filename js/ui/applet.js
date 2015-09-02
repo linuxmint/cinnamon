@@ -271,13 +271,7 @@ Applet.prototype = {
     set_applet_enabled: function (enabled) {
         if (enabled != this._applet_enabled) {
             this._applet_enabled = enabled;
-            if (enabled) {
-                this.actor.set_style_class_name('applet-box');
-            }
-            else {
-                this.set_applet_tooltip('');
-                this.actor.set_style("padding:0px;");
-            }
+            this.actor.visible = enabled;
         }
     },
 
@@ -693,21 +687,9 @@ TextIconApplet.prototype = {
     set_applet_enabled: function (enabled) {
         if (enabled != this._applet_enabled) {
             this._applet_enabled = enabled;
-            if (enabled) {
-                this.actor.set_style_class_name('applet-box');
-                if (this._applet_icon) {
-                    this._applet_icon.show();
-                }
-            }
-            else {
-                if (this._applet_icon) {
-                    this._applet_icon.hide();
-                    this._applet_icon.set_style("padding:0px;padding-left:0px;padding-right:0px;");
-                }
-                this.set_applet_tooltip("");
-                this.set_applet_label("");
-                this.actor.set_style("padding:0px;padding-left:0px;padding-right:0px;");
-                global.log(this.actor.get_style());
+            this.actor.visible = enabled;
+            if (this._applet_icon) {
+                this._applet_icon.visible = enabled;
             }
         }
     },
