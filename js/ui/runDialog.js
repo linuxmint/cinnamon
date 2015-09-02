@@ -143,8 +143,8 @@ __proto__: ModalDialog.ModalDialog.prototype,
     _init : function() {
         ModalDialog.ModalDialog.prototype._init.call(this, { styleClass: 'run-dialog' });
 
-        this._lockdownSettings = new Gio.Settings({ schema: LOCKDOWN_SCHEMA });
-        this._terminalSettings = new Gio.Settings({ schema: TERMINAL_SCHEMA });
+        this._lockdownSettings = new Gio.Settings({ schema_id: LOCKDOWN_SCHEMA });
+        this._terminalSettings = new Gio.Settings({ schema_id: TERMINAL_SCHEMA });
         global.settings.connect('changed::development-tools', Lang.bind(this, function () {
             this._enableInternalCommands = global.settings.get_boolean('development-tools');
         }));

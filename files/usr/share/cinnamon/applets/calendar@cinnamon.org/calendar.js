@@ -152,7 +152,7 @@ Calendar.prototype = {
         this.settings = settings;
 
         this.settings.connect("changed::show-week-numbers", Lang.bind(this, this._onSettingsChange));
-        this.desktop_settings = new Gio.Settings({ schema: DESKTOP_SCHEMA });
+        this.desktop_settings = new Gio.Settings({ schema_id: DESKTOP_SCHEMA });
         this.desktop_settings.connect("changed::" + FIRST_WEEKDAY_KEY, Lang.bind(this, this._onSettingsChange));
         this.show_week_numbers = this.settings.getValue("show-week-numbers");
 

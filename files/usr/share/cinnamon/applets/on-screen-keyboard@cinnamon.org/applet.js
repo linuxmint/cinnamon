@@ -24,7 +24,7 @@ MyApplet.prototype = {
 
     _init: function(metadata, orientation, panel_height, instanceId) {
         Applet.IconApplet.prototype._init.call(this, orientation, panel_height, instanceId);
-        this.settings = new Gio.Settings({ schema: 'org.cinnamon.desktop.a11y.applications' });
+        this.settings = new Gio.Settings({ schema_id: 'org.cinnamon.desktop.a11y.applications' });
         this.settings.connect('changed::screen-keyboard-enabled', Lang.bind(this, this.update_status));
         this.update_status();
     },

@@ -48,7 +48,7 @@ MyApplet.prototype = {
             this.menuManager.addMenu(this.menu);            
                                                                 
             this.RecentManager = new DocInfo.DocManager();
-            this.privacy_settings = new Gio.Settings( {schema: PRIVACY_SCHEMA} );
+            this.privacy_settings = new Gio.Settings( {schema_id: PRIVACY_SCHEMA} );
 
             this._display();
 

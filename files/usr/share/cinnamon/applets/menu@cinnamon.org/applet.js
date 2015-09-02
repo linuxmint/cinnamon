@@ -1141,7 +1141,7 @@ MyApplet.prototype = {
             this._appsWereRefreshed = false;
             this._canUninstallApps = GLib.file_test("/usr/bin/cinnamon-remove-application", GLib.FileTest.EXISTS);
             this.RecentManager = new DocInfo.DocManager();
-            this.privacy_settings = new Gio.Settings( {schema: PRIVACY_SCHEMA} );
+            this.privacy_settings = new Gio.Settings( {schema_id: PRIVACY_SCHEMA} );
             this._display();
             appsys.connect('installed-changed', Lang.bind(this, this._refreshAll));
             AppFavorites.getAppFavorites().connect('changed', Lang.bind(this, this._refreshFavs));
@@ -2042,7 +2042,7 @@ MyApplet.prototype = {
         button.activate = Lang.bind(this, function() {
             this.menu.close();
 
-            let screensaver_settings = new Gio.Settings({ schema: "org.cinnamon.desktop.screensaver" });
+            let screensaver_settings = new Gio.Settings({ schema_id: "org.cinnamon.desktop.screensaver" });
             let screensaver_dialog = Gio.file_new_for_path("/usr/bin/cinnamon-screensaver-command");    
             if (screensaver_dialog.query_exists(null)) {
                 if (screensaver_settings.get_boolean("ask-for-away-message")) {                                    
@@ -2218,7 +2218,7 @@ MyApplet.prototype = {
                                                 accessible_role: Atk.Role.LIST });
         this.applicationsScrollBox = new St.ScrollView({ x_fill: true, y_fill: false, y_align: St.Align.START, style_class: 'vfade menu-applications-scrollbox' });
 
-        this.a11y_settings = new Gio.Settings({ schema: "org.cinnamon.desktop.a11y.applications" });
+        this.a11y_settings = new Gio.Settings({ schema_id: "org.cinnamon.desktop.a11y.applications" });
         this.a11y_settings.connect("changed::screen-magnifier-enabled", Lang.bind(this, this._updateVFade));
         this._updateVFade();
 

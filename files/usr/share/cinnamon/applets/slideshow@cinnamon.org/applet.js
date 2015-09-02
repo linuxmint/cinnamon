@@ -18,7 +18,7 @@ MyApplet.prototype = {
     _init: function(metadata, orientation, panel_height, instanceId) {
         Applet.IconApplet.prototype._init.call(this, orientation, panel_height, instanceId);
 
-        this._slideshowSettings = new Gio.Settings({ schema: 'org.cinnamon.desktop.background.slideshow' });
+        this._slideshowSettings = new Gio.Settings({ schema_id: 'org.cinnamon.desktop.background.slideshow' });
 
         try {
             if (this._slideshowSettings.get_boolean("slideshow-enabled")) {

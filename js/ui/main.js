@@ -183,7 +183,7 @@ Gettext.textdomain('cinnamon');
 const _ = Gettext.gettext;
 
 function _initRecorder() {
-    let recorderSettings = new Gio.Settings({ schema: 'org.cinnamon.recorder' });
+    let recorderSettings = new Gio.Settings({ schema_id: 'org.cinnamon.recorder' });
 
     global.screen.connect('toggle-recording', function() {
         if (recorder == null) {
@@ -432,7 +432,7 @@ function start() {
         Scripting.runPerfScript(module, perfOutput);
     }
     
-    wmSettings = new Gio.Settings({schema: "org.cinnamon.desktop.wm.preferences"})
+    wmSettings = new Gio.Settings({schema_id: "org.cinnamon.desktop.wm.preferences"})
     workspace_names = wmSettings.get_strv("workspace-names");
 
     global.screen.connect('notify::n-workspaces', _nWorkspacesChanged);
@@ -459,7 +459,7 @@ function start() {
     if (xlet_startup_error)
         Mainloop.timeout_add_seconds(3, notifyXletStartupError);
 
-    let sound_settings = new Gio.Settings( {schema: "org.cinnamon.sounds"} );
+    let sound_settings = new Gio.Settings( {schema_id: "org.cinnamon.sounds"} );
     let do_login_sound = sound_settings.get_boolean("login-enabled");
 
     // We're mostly prepared for the startup animation

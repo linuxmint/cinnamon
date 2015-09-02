@@ -87,7 +87,7 @@ OsdWindow.prototype = {
     _init: function() {
         this._popupSize = 0;
 
-        this._osdSettings = new Gio.Settings({ schema: "org.cinnamon" });
+        this._osdSettings = new Gio.Settings({ schema_id: "org.cinnamon" });
         this._osdSettings.connect("changed::show-media-keys-osd", Lang.bind(this, this._onOsdSettingsChanged));
 
         this.actor = new St.BoxLayout({ style_class: 'osd-window',

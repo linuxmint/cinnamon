@@ -25,7 +25,7 @@ MyDesklet.prototype = {
 
     _init: function(metadata, desklet_id){
         Desklet.Desklet.prototype._init.call(this, metadata, desklet_id);
-        this._launcherSettings = new Gio.Settings({schema: 'org.cinnamon.desklets.launcher'});
+        this._launcherSettings = new Gio.Settings({schema_id: 'org.cinnamon.desklets.launcher'});
 
         this._onSettingsChanged();
         this._removing = false;

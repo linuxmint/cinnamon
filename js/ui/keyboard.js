@@ -180,9 +180,9 @@ Keyboard.prototype = {
         this._timestamp = global.display.get_current_time_roundtrip();
         Main.layoutManager.connect('monitors-changed', Lang.bind(this, this._redraw));
 
-        this._keyboardSettings = new Gio.Settings({ schema: KEYBOARD_SCHEMA });
+        this._keyboardSettings = new Gio.Settings({ schema_id: KEYBOARD_SCHEMA });
         this._keyboardSettings.connect('changed', Lang.bind(this, this._settingsChanged));
-        this._a11yApplicationsSettings = new Gio.Settings({ schema: A11Y_APPLICATIONS_SCHEMA });
+        this._a11yApplicationsSettings = new Gio.Settings({ schema_id: A11Y_APPLICATIONS_SCHEMA });
         this._a11yApplicationsSettings.connect('changed', Lang.bind(this, this._settingsChanged));
         this._settingsChanged();
     },

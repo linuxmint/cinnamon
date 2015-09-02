@@ -142,7 +142,7 @@ MyApplet.prototype = {
         this.set_applet_icon_symbolic_name('inhibit');
         this.set_applet_tooltip(_("Inhibit applet"))
 
-        this.notif_settings = new Gio.Settings({ schema: "org.cinnamon.desktop.notifications" })
+        this.notif_settings = new Gio.Settings({ schema_id: "org.cinnamon.desktop.notifications" })
         this.notificationsSwitch = new PopupMenu.PopupSwitchMenuItem(_("Notifications"), this.notif_settings.get_boolean("display-notifications"));
 
         this.notif_settings.connect('changed::display-notifications', Lang.bind(this, function() {

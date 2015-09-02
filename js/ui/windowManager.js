@@ -195,7 +195,7 @@ HudPreview.prototype = {
         this.actor = new St.Bin({ style_class: 'tile-hud', important: true });
         global.window_group.add_actor(this.actor);
 
-        this._tileHudSettings = new Gio.Settings({ schema: "org.cinnamon.muffin" });
+        this._tileHudSettings = new Gio.Settings({ schema_id: "org.cinnamon.muffin" });
         this._tileHudSettings.connect("changed::tile-hud-threshold", Lang.bind(this, this._onTileHudSettingsChanged));
 
         this._onTileHudSettingsChanged();
@@ -484,7 +484,7 @@ WindowManager.prototype = {
         global.screen.connect ("hide-snap-osd", Lang.bind (this, this._hideSnapOSD));
         global.screen.connect ("show-workspace-osd", Lang.bind (this, this.showWorkspaceOSD));
 
-        this.settings = new Gio.Settings({schema: "org.cinnamon.muffin"});
+        this.settings = new Gio.Settings({schema_id: "org.cinnamon.muffin"});
     },
 
     blockAnimations: function() {
