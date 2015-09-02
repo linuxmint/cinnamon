@@ -1010,8 +1010,8 @@ st_scroll_view_init (StScrollView *self)
                                 "vertical", TRUE,
                                 NULL);
 
-  clutter_actor_set_parent (priv->hscroll, CLUTTER_ACTOR (self));
-  clutter_actor_set_parent (priv->vscroll, CLUTTER_ACTOR (self));
+  clutter_actor_add_child (CLUTTER_ACTOR (self), priv->hscroll);
+  clutter_actor_add_child (CLUTTER_ACTOR (self), priv->vscroll);
 
   /* mouse scroll is enabled by default, so we also need to be reactive */
   priv->mouse_scroll = TRUE;
