@@ -75,8 +75,9 @@ const DEVEL_COMMANDS = { 'lg': x => Main.createLookingGlass().open(),
  * Returns (array): The tuple `[postfix, completions]`.
  */
 function completeCommand(text) {
-    // FIXME: need to avoid splitting at escaped quotes
-    let last = text.match(/[^ ]*$/)[0];
+    // Replace an escaped space "\ " with a random unicode character, find the
+    // last space, and then restore "\ " since we don't want to split at escaped strings
+    let last = text.replace(/\\ /g, '\uf001').match(/[^ ]*$/)[0].replace(/\uf001/g, '\\ ');
     if (last.length == 0)
         return ["",[]];
 
@@ -104,6 +105,8 @@ function completeCommand(text) {
 
             while ((info = fileEnum.next_file(null))) {
                 let name = last_path + info.get_name();
+                // Escape strings
+                name = name.replace(/ /g, "\\ ")
 
                 if (info.get_file_type() == Gio.FileType.DIRECTORY)
                     name += "/";

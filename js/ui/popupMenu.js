@@ -30,6 +30,36 @@ function _ensureStyle(actor) {
         actor.ensure_style();
 }
 
+/**
+ * @side Side to which the arrow points.
+ */
+function arrowIcon(side) {
+    let iconName;
+    switch (side) {
+        case St.Side.TOP:
+            iconName = 'pan-up';
+            break;
+        case St.Side.RIGHT:
+            iconName = 'pan-end';
+            break;
+        case St.Side.BOTTOM:
+            iconName = 'pan-down';
+            break;
+        case St.Side.LEFT:
+            iconName = 'pan-start';
+            break;
+    }
+
+    let arrow = new St.Icon({ style_class: 'popup-menu-arrow',
+                              icon_name: iconName,
+                              icon_type: St.IconType.SYMBOLIC,
+                              y_expand: true,
+                              y_align: Clutter.ActorAlign.CENTER,
+                              important: true });
+
+    return arrow;
+}
+
 function PopupBaseMenuItem(params) {
     this._init(params);
 }
@@ -1615,7 +1645,6 @@ PopupSubMenu.prototype = {
         PopupMenuBase.prototype._init.call(this, sourceActor);
 
         this._arrow = sourceArrow;
-        if (this._arrow) this._arrow.rotation_center_z_gravity = Clutter.Gravity.CENTER;
 
         this.actor = new St.ScrollView({ style_class: 'popup-sub-menu',
                                          hscrollbar_policy: Gtk.PolicyType.NEVER,
@@ -1698,23 +1727,23 @@ PopupSubMenu.prototype = {
         if (animate && needsScrollbar)
             animate = false;
 
-        let rotation_angle = 90;
-        if (this.actor.get_direction() == St.TextDirection.RTL) {
-            rotation_angle = 270;
-        }
+        let targetAngle = this.actor.text_direction == Clutter.TextDirection.RTL ? -90 : 90;
 
         if (animate) {
             let [minHeight, naturalHeight] = this.actor.get_preferred_height(-1);
             this.actor.height = 0;
-            if (this._arrow) this.actor._arrow_rotation = this._arrow.rotation_angle_z;
-            else this.actor._arrow_rotation = 0;
+            if (this._arrow)
+                this.actor._arrowRotation = this._arrow.rotation_angle_z;
+            else
+                this.actor._arrowRotation = targetAngle;
             Tweener.addTween(this.actor,
-                             { _arrow_rotation: rotation_angle,
+                             { _arrowRotation: targetAngle,
                                height: naturalHeight,
                                time: 0.25,
                                onUpdateScope: this,
                                onUpdate: function() {
-                                   if (this._arrow) this._arrow.rotation_angle_z = this.actor._arrow_rotation;
+                                   if (this._arrow)
+                                       this._arrow.rotation_angle_z = this.actor._arrowRotation;
                                },
                                onCompleteScope: this,
                                onComplete: function() {
@@ -1723,7 +1752,8 @@ PopupSubMenu.prototype = {
                                }
                              });
         } else {
-            if (this._arrow) this._arrow.rotation_angle_z = rotation_angle;
+            if (this._arrow)
+                this._arrow.rotation_angle_z = targetAngle;
             this.emit('open-state-changed', true);
         }
     },
@@ -1745,17 +1775,12 @@ PopupSubMenu.prototype = {
 
         if (animate && this._needsScrollbar())
             animate = false;
-            
-        let rotation_angle = 90;
-        if (this.actor.get_direction() == St.TextDirection.RTL) {
-            rotation_angle = 270;
-        }
 
         if (animate) {
-            if (this._arrow) this.actor._arrow_rotation = this._arrow.rotation_angle_z;
-            else this.actor._arrow_rotation = rotation_angle;
+            if (this._arrow)
+                this.actor._arrowRotation = this._arrow.rotation_angle_z;
             Tweener.addTween(this.actor,
-                             { _arrow_rotation: 0,
+                             { _arrowRotation: 0,
                                height: 0,
                                time: 0.25,
                                onCompleteScope: this,
@@ -1767,11 +1792,13 @@ PopupSubMenu.prototype = {
                                },
                                onUpdateScope: this,
                                onUpdate: function() {
-                                   if (this._arrow) this._arrow.rotation_angle_z = this.actor._arrow_rotation;
+                                   if (this._arrow)
+                                       this._arrow.rotation_angle_z = this.actor._arrowRotation;
                                }
                              });
             } else {
-                if (this._arrow) this._arrow.rotation_angle_z = 0;
+                if (this._arrow)
+                    this._arrow.rotation_angle_z = 0;
                 this.actor.hide();
 
                 this.isOpen = false;
@@ -1835,34 +1862,25 @@ function PopupSubMenuMenuItem() {
 PopupSubMenuMenuItem.prototype = {
     __proto__: PopupBaseMenuItem.prototype,
 
-    _init: function(text, hide_expander) {
+    _init: function(text) {
         PopupBaseMenuItem.prototype._init.call(this);
 
         this.actor.add_style_class_name('popup-submenu-menu-item');
 
-        let table = new St.Table({ homogeneous: false,
-                                      reactive: true });
-
-        if (!hide_expander) {
-            this._triangle = new St.Icon({ icon_name: "media-playback-start",
-                                icon_type: St.IconType.SYMBOLIC,
-                                style_class: 'popup-menu-icon' });
-
-            table.add(this._triangle,
-                    {row: 0, col: 0, col_span: 1, x_expand: false, x_align: St.Align.START});
-
-            this.label = new St.Label({ text: text });
-            this.label.set_margin_left(6.0);
-            table.add(this.label,
-                    {row: 0, col: 1, col_span: 1, x_align: St.Align.START});
-        }
-        else {
-            this.label = new St.Label({ text: text });
-            table.add(this.label,
-                    {row: 0, col: 0, col_span: 1, x_align: St.Align.START});
-        }
+        this.label = new St.Label({ text: text,
+                                    y_expand: true,
+                                    y_align: Clutter.ActorAlign.CENTER });
+        this.addActor(this.label);
         this.actor.label_actor = this.label;
-        this.addActor(table, { expand: true, span: 1, align: St.Align.START });
+
+        this._triangleBin = new St.Bin({ x_align: St.Align.END });
+        this.addActor(this._triangleBin, { expand: true,
+                                           span: -1,
+                                           align: St.Align.END });
+        
+        this._triangle = arrowIcon(St.Side.RIGHT);
+        this._triangle.pivot_point = new Clutter.Point({ x: 0.5, y: 0.6 });
+        this._triangleBin.child = this._triangle;
 
         this.menu = new PopupSubMenu(this.actor, this._triangle);
         this.menu.connect('open-state-changed', Lang.bind(this, this._subMenuOpenStateChanged));

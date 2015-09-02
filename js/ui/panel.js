@@ -973,7 +973,7 @@ SettingsLauncher.prototype = {
 
 function populateSettingsMenu(menu, panelId) {
 
-    menu.troubleshootItem = new PopupMenu.PopupSubMenuMenuItem(_("Troubleshoot ..."), true);
+    menu.troubleshootItem = new PopupMenu.PopupSubMenuMenuItem(_("Troubleshoot"));
     menu.troubleshootItem.menu.addAction(_("Restart Cinnamon"), function(event) {
         global.reexec_self();
     });
@@ -995,9 +995,7 @@ function populateSettingsMenu(menu, panelId) {
 
     menu.addMenuItem(menu.troubleshootItem);
 
-    menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
-
-    let panelSettingsSection = new PopupMenu.PopupSubMenuMenuItem(_("Modify panel ..."), true);
+    let panelSettingsSection = new PopupMenu.PopupSubMenuMenuItem(_("Modify panel"));
 
     let menuItem = new PopupMenu.PopupIconMenuItem(_("Remove panel"), "list-remove", St.IconType.SYMBOLIC);
     menuItem.activate = Lang.bind(menu, function() {
@@ -1048,8 +1046,9 @@ function populateSettingsMenu(menu, panelId) {
     });
     panelSettingsSection.menu.addMenuItem(menu.clearAppletItem);
 
-
     menu.addMenuItem(panelSettingsSection);
+
+    menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
 
     // Panel Edit mode
     let editMode = global.settings.get_boolean("panel-edit-mode");

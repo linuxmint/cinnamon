@@ -101,6 +101,9 @@ StScrollBar StButton#vhandle:hover {
 	font-size: 9.5pt;
 	min-width: 100px;
 }
+.popup-menu-arrow {
+    icon-size: 1.14em;
+}
 .popup-submenu-menu-item:open {
 	background-color: #4c4c4c;
 }
