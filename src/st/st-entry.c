@@ -960,7 +960,7 @@ st_entry_init (StEntry *entry)
 
   priv->spacing = 6.0f;
 
-  clutter_actor_set_parent (priv->entry, CLUTTER_ACTOR (entry));
+  clutter_actor_add_child (CLUTTER_ACTOR (entry), priv->entry);
   clutter_actor_set_reactive ((ClutterActor *) entry, TRUE);
 
   /* set cursor hidden until we receive focus */
@@ -1149,7 +1149,7 @@ _st_entry_set_icon (StEntry       *entry,
       *icon = g_object_ref (new_icon);
 
       clutter_actor_set_reactive (*icon, TRUE);
-      clutter_actor_set_parent (*icon, CLUTTER_ACTOR (entry));
+      clutter_actor_add_child (CLUTTER_ACTOR (entry), *icon);
       g_signal_connect (*icon, "button-release-event",
                         G_CALLBACK (_st_entry_icon_press_cb), entry);
     }

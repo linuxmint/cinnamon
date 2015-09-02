@@ -442,7 +442,7 @@ st_icon_finish_update (StIcon *icon)
     {
       priv->icon_texture = priv->pending_texture;
       priv->pending_texture = NULL;
-      clutter_actor_set_parent (priv->icon_texture, CLUTTER_ACTOR (icon));
+      clutter_actor_add_child (CLUTTER_ACTOR (icon), priv->icon_texture);
 
       /* Remove the temporary ref we added */
       g_object_unref (priv->icon_texture);
