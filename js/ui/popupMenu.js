@@ -1515,7 +1515,7 @@ PopupMenu.prototype = {
         if (this.isOpen)
             return;
 
-        Main.popup_rendering = true;
+        Main.popup_rendering_actor = this.actor;
 
         if (animate)
             this.animating = animate;
@@ -1555,7 +1555,7 @@ PopupMenu.prototype = {
         }
 
         this.paint_count = 0;
-        Main.popup_rendering = false;
+        Main.popup_rendering_actor = null;
     },
 
     /**
