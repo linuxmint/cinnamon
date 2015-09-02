@@ -34,7 +34,7 @@ BACKGROUND_PICTURE_OPTIONS = [
     ("spanned", _("Spanned"))
 ]
 
-PICTURE_OPTIONS_NEEDS_COLOR = ("none", "scaled", "centered")
+PICTURE_OPTIONS_NEEDS_COLOR = ("none", "scaled", "centered", "spanned")
 
 BACKGROUND_ICONS_SIZE = 100
 
