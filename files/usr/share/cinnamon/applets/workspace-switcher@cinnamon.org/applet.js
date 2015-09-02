@@ -181,6 +181,8 @@ StDrawingButton.prototype = {
                 }
             }
 
+            cr.$dispose();
+
         }catch(e)
         {
             global.logError(e);
