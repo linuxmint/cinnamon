@@ -1,15 +1,16 @@
+const Lang = imports.lang;
 const Mainloop = imports.mainloop;
 const St = imports.gi.St;
+
 const Applet = imports.ui.applet;
 const Main = imports.ui.main;
-const Lang = imports.lang;
+const SignalManager = imports.misc.signalManager;
 const Tweener = imports.ui.tweener;
 
 /**
  * #TooltipBase
  * @item (Clutter.Actor): The object owning the tooltip.
  * @visible (boolean): Whether the tooltip is currently visible
- * @destroyed (boolean): Whether the tooltip is destroyed or not
  * @preventShow (boolean): Whether to inhibit the display of the tooltip
  * @mousePosition (array): The coordinates of the event that triggered the
  * show.
@@ -21,7 +22,7 @@ const Tweener = imports.ui.tweener;
  * for listening to mouse events and determining when to show the tooltip. When
  * it thinks a tooltip should be shown, it calls `this.show()`. When it thinks
  * it should be hidden, it calls `this.hide()`. When the @item is destroyed, it
- * will call `this.destroy()`;
+ * will call `this._destroy()`;
  *
  * Any object wishing to implement a tooltip should inherit this class, and
  * then implement the three functions above. It should be noted that the sole
@@ -52,25 +53,25 @@ function TooltipBase(item) {
 
 TooltipBase.prototype = {
     _init: function(item) {
-        item.connect('enter-event', Lang.bind(this, this._onEnterEvent));
-        item.connect('leave-event', Lang.bind(this, this._onLeaveEvent));
-        item.connect('motion-event', Lang.bind(this, this._onMotionEvent));
-        item.connect('button-press-event', Lang.bind(this, this.hide));
-        item.connect('button-release-event', Lang.bind(this, this._onReleaseEvent));
-        item.connect('destroy', Lang.bind(this, this.destroy));
-        item.connect('destroy', Lang.bind(this, this._destroy));
-        item.connect('allocation-changed', Lang.bind(this, function() {
+        this.signals = new SignalManager.SignalManager(this);
+
+        this.signals.connect(item, 'enter-event', this._onEnterEvent);
+        this.signals.connect(item, 'motion-event', this._onMotionEvent);
+        this.signals.connect(item, 'leave-event', this._hide);
+        this.signals.connect(item, 'button-press-event', this._hide);
+        this.signals.connect(item, 'button-release-event', this._hide);
+        this.signals.connect(item, 'destroy', this.destroy);
+        this.signals.connect(item, 'allocation-changed', function() {
             // An allocation change could mean that the actor has moved,
             // so hide, but wait until after the allocation cycle.
             Mainloop.idle_add(Lang.bind(this, function() {
                 this.hide();
             }));
-        }));
+        });
 
         this._showTimer = null;
         this.visible = false;
         this.item = item;
-        this.destroyed = false;
         this.preventShow = false;
     },
 
@@ -92,36 +93,30 @@ TooltipBase.prototype = {
     _onTimerComplete: function(){
         this._showTimer = null;
 
-        if (!this.preventShow && !this.destroyed)
+        if (!this.preventShow)
             this.show();
     },
 
-    _onLeaveEvent: function(actor, event) {
+    _hide: function(actor, event) {
         if (this._showTimer) {
             Mainloop.source_remove(this._showTimer);
             this._showTimer = null;
         }
-        if (this.destroyed)
-            return;
         this.hide();
     },
 
-    _onReleaseEvent: function(actor, event) {
+    /**
+     * destroy:
+     *
+     * Destroys the tooltip.
+     */
+    destroy: function() {
         if (this._showTimer) {
             Mainloop.source_remove(this._showTimer);
             this._showTimer = null;
         }
-        if (this.destroyed)
-            return;
-        this.hide();
-    },
-
-    _destroy: function() {
-        if (this._showTimer) {
-            Mainloop.source_remove(this._showTimer);
-            this._showTimer = null;
-        }
-        this.destroyed = true;
+        this.signals.disconnectAllSignals();
+        this._destroy();
     }
 }
 
@@ -199,7 +194,7 @@ Tooltip.prototype = {
         this._tooltip.set_text(text);
     },
 
-    destroy: function() {
+    _destroy: function() {
         this._tooltip.destroy();
     }
 };

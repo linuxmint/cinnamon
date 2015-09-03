@@ -140,7 +140,7 @@ WindowPreview.prototype = {
         this.visible = false;
     },
 
-    destroy: function() {
+    _destroy: function() {
         if (this.actor) {
             this.actor.destroy();
         }
