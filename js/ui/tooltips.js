@@ -258,9 +258,9 @@ PanelItemTooltip.prototype = {
         let monitor = Main.layoutManager.findMonitorForActor(this.item);
         let tooltipTop;
         if (this.orientation == St.Side.BOTTOM) {
-            tooltipTop = monitor.y+monitor.height-tooltipHeight-this.item.get_allocation_box().y2+this.item.get_allocation_box().y1;
+            tooltipTop = this.item.get_transformed_position()[1] - tooltipHeight;
         } else {
-            tooltipTop = monitor.y+this.item.get_allocation_box().y2;
+            tooltipTop = this.item.get_transformed_position()[1] + this.item.get_transformed_size()[1];
         }
         let tooltipLeft = this.mousePosition[0]- Math.round(tooltipWidth/2);
         tooltipLeft = Math.max(tooltipLeft, monitor.x);

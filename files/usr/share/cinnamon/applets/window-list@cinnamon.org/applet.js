@@ -116,9 +116,9 @@ WindowPreview.prototype = {
         let monitor = Main.layoutManager.findMonitorForActor(this.item);
         let previewTop;
         if (this._applet.orientation == St.Side.BOTTOM) {
-            previewTop = monitor.y + monitor.height - previewHeight - this.item.get_allocation_box().y2 + this.item.get_allocation_box().y1 - 5;
+            previewTop = this.item.get_transformed_position()[1] - previewHeight - 5;
         } else {
-            previewTop = monitor.y + this.item.get_allocation_box().y2 + 5;
+            previewTop = this.item.get_transformed_position()[1] + this.item.get_transformed_size()[1] + 5;
         }
 
         let previewLeft = this.item.get_transformed_position()[0] + this.item.get_transformed_size()[0]/2 - previewWidth/2;
