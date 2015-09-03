@@ -27,6 +27,6 @@
   "window-preview": {
       "type": "checkbox",
       "default": false,
-      "description": "Show window thumbnail preview instead of tooltip on hover"
+      "description": "Show window thumbnails on hover"
   }
 }
