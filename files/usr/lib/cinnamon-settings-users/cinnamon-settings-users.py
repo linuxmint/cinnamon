@@ -156,7 +156,7 @@ class PasswordDialog(Gtk.Dialog):
         self.set_modal(True)
         self.set_skip_taskbar_hint(True)
         self.set_skip_pager_hint(True)
-        self.set_title("")
+        self.set_title(_("Change Password"))
 
         table = DimmedTable()          
         table.add_labels([_("New password"), None, _("Confirm password")])        
@@ -187,18 +187,18 @@ class PasswordDialog(Gtk.Dialog):
         self.show_password.connect('toggled', self._on_show_password_toggled)
         table.attach(self.show_password, 1, 3, 3, 4)
 
+        self.set_border_width(6)       
+        
+        box = self.get_content_area()
+        box.add(table)
+        self.show_all()
+        
         self.infobar = Gtk.InfoBar()
         self.infobar.set_message_type(Gtk.MessageType.ERROR)
         label = Gtk.Label(_("An error occured. Your password was not changed."))
         content = self.infobar.get_content_area()
         content.add(label)        
         table.attach(self.infobar, 0, 3, 4, 5)
-
-        self.set_border_width(6)       
-        
-        box = self.get_content_area()
-        box.add(table)
-        self.show_all()
 
         self.add_buttons(Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL, _("Change"), Gtk.ResponseType.OK, )
 
@@ -248,10 +248,45 @@ class PasswordDialog(Gtk.Dialog):
     def _on_show_password_toggled(self, widget):
         self.set_passwords_visibility()   
 
-    def _on_passwords_changed(self, widget):   
-        self.infobar.hide() 
+
+    # Based on setPasswordStrength() in Mozilla Seamonkey, which is tri-licensed under MPL 1.1, GPL 2.0, and LGPL 2.1.
+    # Forked from Ubiquity validation.py
+    def password_strength(self, password):
+        upper = lower = digit = symbol = 0
+        for char in password:
+            if char.isdigit():
+                digit += 1
+            elif char.islower():
+                lower += 1
+            elif char.isupper():
+                upper += 1
+            else:
+                symbol += 1
+        length = len(password)
+        if length > 5:
+            length = 5
+        if digit > 3:
+            digit = 3
+        if upper > 3:
+            upper = 3
+        if symbol > 3:
+            symbol = 3
+        strength = (
+            ((length * 0.1) - 0.2) +
+            (digit * 0.1) +
+            (symbol * 0.15) +
+            (upper * 0.1))
+        if strength > 1:
+            strength = 1
+        if strength < 0:
+            strength = 0
+        return strength
+        
+    def _on_passwords_changed(self, widget):
+        self.infobar.hide()
         new_password = self.new_password.get_text()
         confirm_password = self.confirm_password.get_text()
+        strength = self.password_strength(new_password)
         if new_password != confirm_password:
             self.confirm_password.set_icon_from_stock(Gtk.EntryIconPosition.SECONDARY, Gtk.STOCK_DIALOG_WARNING)
             self.confirm_password.set_icon_tooltip_text(Gtk.EntryIconPosition.SECONDARY, _("Passwords do not match"))
@@ -260,8 +295,17 @@ class PasswordDialog(Gtk.Dialog):
         if len(new_password) < 8:
             self.strengh_label.set_text(_("Too short"))
             self.strengh_indicator.set_fraction(0.0)
+        elif strength < 0.5:
+            self.strengh_label.set_text(_("Weak"))
+            self.strengh_indicator.set_fraction(0.2)
+        elif strength < 0.75:
+            self.strengh_label.set_text(_("Fair"))
+            self.strengh_indicator.set_fraction(0.4)
+        elif strength < 0.9:
+            self.strengh_label.set_text(_("Good"))
+            self.strengh_indicator.set_fraction(0.6)
         else:
-            self.strengh_label.set_text(_("OK"))
+            self.strengh_label.set_text(_("Strong"))
             self.strengh_indicator.set_fraction(1.0)
 
         self.check_passwords()
