@@ -1,6 +1,6 @@
 /* Window-list applet
  *
- * The applet code consists of three main object. AppMenuButton,
+ * The applet code consists of four main object. WindowPreview, AppMenuButton,
  * AppMenuButtonRightClickMenu and the main applet code.
  *
  * The main applet object listens to different events and updates the window
@@ -37,6 +37,11 @@
  * right-clicked, since this rarely happens and generating all at the beginning
  * would be a waste of time/memory. This also saves us from having to listen to
  * signals for changes in workspace/monitor etc.
+ *
+ * Finally, the WindowPreview object is a tooltip that shows a preview of the
+ * window. Users can opt to show a window preview (using this), or the title
+ * (using Tooltips.PanelItemTooltip) in the tooltip. The window preview is
+ * generated on the fly when needed instead of cached.
  */
 
 const Cinnamon = imports.gi.Cinnamon;
@@ -64,6 +69,88 @@ const DEFAULT_ICON_SIZE = 16; // too bad this can't be defined in theme (cinnamo
 const ICON_HEIGHT_FACTOR = .64;
 const MAX_TEXT_LENGTH = 1000;
 const FLASH_INTERVAL = 500;
+
+const WINDOW_PREVIEW_WIDTH = 200;
+const WINDOW_PREVIEW_HEIGHT = 150;
+
+function WindowPreview(item, metaWindow) {
+    this._init(item, metaWindow);
+}
+
+WindowPreview.prototype = {
+    __proto__: Tooltips.TooltipBase.prototype,
+
+    _init: function(item, metaWindow) {
+        Tooltips.TooltipBase.prototype._init.call(this, item.actor);
+        this._applet = item._applet;
+
+        this.actor = new St.Bin({style_class: "switcher-list", style: "margin: 0px; padding: 8px;"});
+        this.actor.show_on_set_parent = false;
+
+        this.actor.set_size(WINDOW_PREVIEW_WIDTH * 1.1, WINDOW_PREVIEW_HEIGHT * 1.1);
+        Main.uiGroup.add_actor(this.actor);
+
+        this.metaWindow = metaWindow;
+    },
+
+    show: function() {
+        if (!this.actor)
+            return
+
+        let muffinWindow = this.metaWindow.get_compositor_private();
+        let windowTexture = muffinWindow.get_texture();
+        let [width, height] = windowTexture.get_size();
+        let scale = Math.min(1.0, WINDOW_PREVIEW_WIDTH / width, WINDOW_PREVIEW_HEIGHT / height);
+        let thumbnail = new Clutter.Clone({
+            source: windowTexture,
+            width: width * scale,
+            height: height * scale
+        });
+
+        this.actor.set_child(thumbnail);
+
+        let allocation = this.actor.get_allocation_box();
+        let previewHeight = allocation.y2 - allocation.y1;
+        let previewWidth = allocation.x2 - allocation.x1;
+
+        let monitor = Main.layoutManager.findMonitorForActor(this.item);
+        let previewTop;
+        if (this._applet.orientation == St.Side.BOTTOM) {
+            previewTop = this.item.get_transformed_position()[1] - previewHeight - 5;
+        } else {
+            previewTop = this.item.get_transformed_position()[1] + this.item.get_transformed_size()[1] + 5;
+        }
+
+        let previewLeft = this.item.get_transformed_position()[0] + this.item.get_transformed_size()[0]/2 - previewWidth/2;
+        previewLeft = Math.round(previewLeft);
+        previewLeft = Math.max(previewLeft, monitor.x);
+        previewLeft = Math.min(previewLeft, monitor.x + monitor.width - previewWidth);
+
+        this.actor.set_position(previewLeft, previewTop);
+
+        this.actor.show();
+        this.visible = true;
+    },
+
+    hide: function() {
+        if (this.actor) {
+            this.actor.set_child(null);
+            this.actor.hide();
+        }
+        this.visible = false;
+    },
+
+    _destroy: function() {
+        if (this.actor) {
+            this.actor.destroy();
+        }
+        if (this._signal) {
+            this._item._applet.disconnect(this._signal);
+        }
+        this._signal = null;
+        this.actor = null;
+    }
+}
 
 function AppMenuButton(applet, metaWindow, alert) {
     this._init(applet, metaWindow, alert);
@@ -114,7 +201,7 @@ AppMenuButton.prototype = {
         this._updateTileTypeId = this.metaWindow.connect('notify::tile-type',
                 Lang.bind(this, this.setDisplayTitle));
 
-        this._tooltip = new Tooltips.PanelItemTooltip(this, "", this._applet.orientation);
+        this.onPreviewChanged();
 
         if (!this.alert) {
             this._menuManager = new PopupMenu.PopupMenuManager(this);
@@ -140,6 +227,18 @@ AppMenuButton.prototype = {
 
         if (this.alert)
             this.getAttention();
+    },
+
+    onPreviewChanged: function() {
+        if (this._tooltip)
+            this._tooltip.destroy();
+
+        if (this._applet.usePreview) {
+            this._tooltip = new WindowPreview(this, this.metaWindow, this._applet.orientation);
+        } else {
+            this._tooltip = new Tooltips.PanelItemTooltip(this, "", this._applet.orientation);
+            this.setDisplayTitle();
+        }
     },
 
     onPanelEditModeChanged: function() {
@@ -266,7 +365,8 @@ AppMenuButton.prototype = {
         }
 
         this._label.set_text(title);
-        if (this._tooltip) this._tooltip.set_text(title);
+        if (this._tooltip  && this._tooltip.set_text)
+            this._tooltip.set_text(title);
     },
 
     destroy: function() {
@@ -691,6 +791,10 @@ MyApplet.prototype = {
                 "buttons-use-entire-space",
                 "buttonsUseEntireSpace",
                 this._refreshItems, null);
+        this.settings.bindProperty(Settings.BindingDirection.IN,
+                "window-preview",
+                "usePreview",
+                this._onPreviewChanged, null);
 
         this.signals = new SignalManager.SignalManager(this);
 
@@ -728,6 +832,7 @@ MyApplet.prototype = {
     },
 
     on_orientation_changed: function(orientation) {
+        this.orientation = orientation;
         if (orientation == St.Side.TOP) {
             for (let child of this.actor.get_children()) {
                 child.set_style_class_name('window-list-item-box window-list-box-top');
@@ -779,6 +884,11 @@ MyApplet.prototype = {
     _onEnableScrollChanged: function() {
         for (let window of this._windows)
             window.onScrollModeChanged();
+    },
+
+    _onPreviewChanged: function() {
+        for (let window of this._windows)
+            window.onPreviewChanged();
     },
 
     _onWindowDemandsAttention : function(display, window) {
