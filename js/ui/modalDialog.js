@@ -255,16 +255,7 @@ ModalDialog.prototype = {
     },
 
     _fadeOpen: function() {
-        let monitor =  null;
-        try {
-            let x, y, mask;
-            [x, y, mask] = global.get_pointer();
-            monitor = Main.layoutManager._chrome._findMonitorForRect(x, y, 0, 0);
-        } catch(e) {
-        }
-
-        if (!monitor)
-            monitor = Main.layoutManager.primaryMonitor;
+        let monitor = Main.layoutManager.currentMonitor;
 
         this._backgroundBin.set_position(monitor.x, monitor.y);
         this._backgroundBin.set_size(monitor.width, monitor.height);
