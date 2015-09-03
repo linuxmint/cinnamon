@@ -771,7 +771,7 @@ def get_functions(obj):
                 type_name = param.arg_type,
                 name = " " * (max_length - len(param.arg_type)) + param.name) for param in func.properties]
 
-            inline_params = (',\n' + ' ' * 15).join(inline_params)
+            inline_params = (',\n' + ' ' * (len(func.name) + 2)).join(inline_params)
 
             params = [FUNC_PARAMETERS_ITEM_FORMAT.format(
                 name = param.name,
