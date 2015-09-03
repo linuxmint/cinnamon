@@ -802,9 +802,9 @@ WindowManager.prototype = {
             }
         }
 
-        Mainloop.timeout_add(WINDOW_ANIMATION_TIME * 1000, function() {
+        Tweener.addTween(this, {time: WINDOW_ANIMATION_TIME, onComplete: function() {
             cinnamonwm.completed_switch_workspace();
-        });
+        }});
     },
 
     _showTilePreview: function(cinnamonwm, window, tileRect, monitorIndex, snapQueued) {
