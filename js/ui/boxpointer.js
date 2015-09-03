@@ -1,9 +1,10 @@
 // -*- mode: js; js-indent-level: 4; indent-tabs-mode: nil -*-
 
+const Cinnamon = imports.gi.Cinnamon;
 const Clutter = imports.gi.Clutter;
 const Lang = imports.lang;
+const Meta = imports.gi.Meta;
 const St = imports.gi.St;
-const Cinnamon = imports.gi.Cinnamon;
 
 const Main = imports.ui.main;
 const Tweener = imports.ui.tweener;
