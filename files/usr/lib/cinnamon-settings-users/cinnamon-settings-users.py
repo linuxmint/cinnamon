@@ -263,14 +263,11 @@ class PasswordDialog(Gtk.Dialog):
             else:
                 symbol += 1
         length = len(password)
-        if length > 5:
-            length = 5
-        if digit > 3:
-            digit = 3
-        if upper > 3:
-            upper = 3
-        if symbol > 3:
-            symbol = 3
+        
+        length = min(length,4)
+        digit = min(digit,3)
+        upper = min(upper,3)
+        symbol = min(symbol,3)
         strength = (
             ((length * 0.1) - 0.2) +
             (digit * 0.1) +
