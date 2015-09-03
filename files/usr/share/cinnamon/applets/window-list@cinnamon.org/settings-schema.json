@@ -23,5 +23,10 @@
       "type": "checkbox",
       "default": false,
       "description": "Window buttons can have different sizes and use the entire space available"
+  },
+  "window-preview": {
+      "type": "checkbox",
+      "default": false,
+      "description": "Show window thumbnail preview instead of tooltip on hover"
   }
 }
