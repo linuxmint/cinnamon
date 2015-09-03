@@ -84,7 +84,7 @@ WindowPreview.prototype = {
         Tooltips.TooltipBase.prototype._init.call(this, item.actor);
         this._applet = item._applet;
 
-        this.actor = new St.Bin({style: "background-color: rgba(85, 85, 85, 0.9);"});
+        this.actor = new St.Bin({style_class: "switcher-list", style: "margin: 0px; padding: 8px;"});
         this.actor.show_on_set_parent = false;
 
         this.actor.set_size(WINDOW_PREVIEW_WIDTH * 1.1, WINDOW_PREVIEW_HEIGHT * 1.1);
