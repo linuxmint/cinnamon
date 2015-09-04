@@ -137,20 +137,21 @@ MyApplet.prototype = {
         this._layoutItems = [ ];
         this._labelActors = [ ];
         for (let i = 0; i < groups.length; i++) {
+            let short_name = short_names[i].toUpperCase();
             let icon_name = this._config.get_group_name(i);
             let actor;
             if (this._showFlags && this.icon_theme.has_icon(icon_name))
                 actor = new St.Icon({ icon_name: icon_name, icon_type: St.IconType.FULLCOLOR, style_class: 'popup-menu-icon' });
             else
-                actor = new St.Label({ text: short_names[i] });
+                actor = new St.Label({ text: short_name });
             let item = new LayoutMenuItem(this._config, i, actor, groups[i]);
-            item._short_group_name = short_names[i];
+            item._short_group_name = short_name;
             item._icon_name = icon_name;
             item._long_name = groups[i];
             this._layoutItems.push(item);
             this.menu.addMenuItem(item, i);
 
-            let shortLabel = new St.Label({ text: short_names[i] });
+            let shortLabel = new St.Label({ text: short_name });
             this._labelActors.push(shortLabel);
         }
 
