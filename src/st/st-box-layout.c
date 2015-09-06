@@ -1285,7 +1285,7 @@ st_box_layout_insert_actor (StBoxLayout  *self,
                             ClutterActor *actor,
                             int           pos)
 {
-  clutter_actor_add_child ((ClutterActor*) self, actor);
+  clutter_container_add_actor((ClutterContainer*) self, actor);
   st_container_move_child (ST_CONTAINER (self), actor, pos);
 }
 
@@ -1306,6 +1306,6 @@ st_box_layout_insert_before (StBoxLayout  *self,
 {
   g_return_if_fail (ST_IS_BOX_LAYOUT (self));
 
-  clutter_actor_add_child (CLUTTER_ACTOR (self), actor);
+  clutter_container_add_actor(CLUTTER_CONTAINER (self), actor);
   st_container_move_before (ST_CONTAINER (self), actor, sibling);
 }

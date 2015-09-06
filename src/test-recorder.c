@@ -45,7 +45,7 @@ int main (int argc, char **argv)
 		       "font-name", "Sans 40px",
 		       "color", &red,
 		       NULL);
-  clutter_actor_add_child (stage, text);
+  clutter_container_add_actor (CLUTTER_CONTAINER (stage), text);
   animation = clutter_actor_animate (text,
 				     CLUTTER_EASE_IN_OUT_QUAD,
 				     3000,
@@ -63,7 +63,7 @@ int main (int argc, char **argv)
 		       "y", 0,
 		       NULL);
   clutter_actor_set_anchor_point_from_gravity (text, CLUTTER_GRAVITY_NORTH_EAST);
-  clutter_actor_add_child (stage, text);
+  clutter_container_add_actor (CLUTTER_CONTAINER (stage), text);
   animation = clutter_actor_animate (text,
 				     CLUTTER_EASE_IN_OUT_QUAD,
 				     3000,
@@ -79,7 +79,7 @@ int main (int argc, char **argv)
 		       "y", 480,
 		       NULL);
   clutter_actor_set_anchor_point_from_gravity (text, CLUTTER_GRAVITY_SOUTH_WEST);
-  clutter_actor_add_child (stage, text);
+  clutter_container_add_actor (CLUTTER_CONTAINER (stage), text);
   animation = clutter_actor_animate (text,
 				     CLUTTER_EASE_IN_OUT_QUAD,
 				     3000,
