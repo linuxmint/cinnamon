@@ -199,7 +199,8 @@ libcinnamon_la_SOURCES += $(cinnamon_recorder_sources) $(cinnamon_recorder_non_g
 
 noinst_PROGRAMS += test-recorder
 
-test_recorder_CPPFLAGS = $(TEST_CINNAMON_RECORDER_CFLAGS)
+test_recorder_CPPFLAGS = $(TEST_CINNAMON_RECORDER_CFLAGS) \
+                       $(ST_CFLAGS)
 test_recorder_LDADD = $(TEST_CINNAMON_RECORDER_LIBS) \
                        libst-1.0.la
 
