@@ -158,8 +158,7 @@ MyApplet.prototype = {
                 let label_string = this.clock.get_clock().capitalize();
                 this.set_applet_label(label_string);
 
-                let first_colon = label_string.indexOf(":");
-                if(first_colon > 0 && label_string.length > first_colon - 1 && label_string.indexOf(":", first_colon + 1) > 0) {
+                if(this.datetime_settings.get_boolean("clock-show-seconds")) {
                     nextUpdate = 1;
                 }
             }
