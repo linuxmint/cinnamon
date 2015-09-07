@@ -93,6 +93,12 @@ MyApplet.prototype = {
             this.settings.bindProperty(Settings.BindingDirection.IN, "use-custom-format", "use_custom_format", this.on_settings_changed, null);
             this.settings.bindProperty(Settings.BindingDirection.IN, "custom-format", "custom_format", this.on_settings_changed, null);        
 
+            // Track changes to date&time settings
+            this.datetime_settings = new Gio.Settings({ schema_id: "org.cinnamon.desktop.interface" });
+            this.datetime_settings.connect('changed::clock-show-seconds', Lang.bind(this, this.on_settings_changed));
+            this.datetime_settings.connect('changed::clock-use-24h', Lang.bind(this, this.on_settings_changed));
+            this.datetime_settings.connect('changed::clock-show-date', Lang.bind(this, this.on_settings_changed));
+
             // https://bugzilla.gnome.org/show_bug.cgi?id=655129
             this._upClient = new UPowerGlib.Client();
             try {
