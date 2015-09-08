@@ -1132,7 +1132,7 @@ function _stageEventHandler(actor, event) {
     if (event.type() != Clutter.EventType.KEY_PRESS) {
         if(!popup_rendering_actor || event.type() != Clutter.EventType.BUTTON_RELEASE)
             return false;
-        return (event.get_source() && popup_rendering_actor.contain(event.get_source()));
+        return (event.get_source() && popup_rendering_actor.contains(event.get_source()));
     }
 
     let symbol = event.get_key_symbol();
