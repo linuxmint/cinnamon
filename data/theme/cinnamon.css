@@ -144,35 +144,47 @@ stage {
 /* ===================================================================
  * Buttons 
  * ===================================================================*/
-.notification-button,
-.notification-icon-button,
-.modal-dialog-button {
+ .button {
+    padding: 4px 7px;
     color: white;
     border: 1px solid #8b8b8b;
+    border-radius: 4px;
     background-gradient-direction: vertical;
     background-gradient-start: rgba(255, 255, 255, 0.2);
     background-gradient-end: rgba(255, 255, 255, 0);
-}
+ }
 
-.notification-button:hover,
-.notification-icon-button:hover,
-.modal-dialog-button:hover {
+ .button.flat {
+    border: 1px solid transparent;
+    background-gradient-start: rgba(255, 255, 255, 0);
+    background-gradient-end: rgba(255, 255, 255, 0);
+ }
+
+ .button:hover,
+ .button.flat:hover {
+    border: 1px solid #8b8b8b;
     background-gradient-start: rgba(255, 255, 255, 0.3);
     background-gradient-end: rgba(255, 255, 255, 0.1);
-}
+ }
 
-.notification-button:focus,
-.notification-icon-button:focus,
-.modal-dialog-button:focus {
-    border: 2px solid #8b8b8b;
-}
-
-.notification-button:active,
-.notification-icon-button:active,
-.modal-dialog-button:active {
+ .button:active,
+ .button.flat:active {
+    border: 1px solid #8b8b8b;
     background-gradient-start: rgba(255, 255, 255, 0);
     background-gradient-end: rgba(255, 255, 255, 0.2);
-}
+ }
+
+ .button:focus {
+    border: 2px solid #8b8b8b;
+ }
+
+ .button.text-button {
+    padding: 4px 32px;
+ }
+
+ .button.image-button {
+    padding: 8px;
+ }
 
 /* ===================================================================
  * Check and Radio
@@ -296,23 +308,6 @@ stage {
 
 .modal-dialog-button-box {
     spacing: 21px;
-}
-
-.modal-dialog-button {
-    border-radius: 18px;
-    font-size: 11pt;
-    color: white;
-    margin-left: 10px;
-    margin-right: 10px;
-    padding: 4px 32px 5px;
-}
-
-.modal-dialog-button:disabled {
-    color: rgb(60, 60, 60);
-}
-
-.modal-dialog-button:focus {
-    padding: 3px 31px 4px;
 }
 
 /* About dialog */
@@ -552,25 +547,7 @@ stage {
     spacing: 10px;
 }
 
-.notification-button {
-    border-radius: 5px;
-    padding: 4px 8px 5px;
-}
-
-.notification-button:focus {
-    padding: 3px 8px 4px;
-}
-
-.notification-icon-button {
-    border-radius: 5px;
-    padding: 5px;
-}
-
-.notification-icon-button:focus {
-    padding: 4px;
-}
-
-.notification-icon-button > StIcon {
+#notification-actions .button.image-button > StIcon {
     icon-size: 36px;
 }
 
@@ -1691,25 +1668,8 @@ StScrollBar StButton#vhandle:hover {
     padding-left: 3px;
 }
 
-.sound-button {
-    width: 22px;
-    height: 13px;
-    border: 1px solid #555;
-    border-radius: 4px;
-    padding: 5px;
-}
-
-.sound-button:small {
-    width: 16px;
-    height: 8px;
-}
-
-.sound-button:small StIcon {
-    icon-size: 1em;
-}
-
-.sound-button:hover, .sound-button:active {
-    border: 1px solid white;
+.sound-button-container .button.flat {
+    padding: 4px;
 }
 
 .sound-playback-control {

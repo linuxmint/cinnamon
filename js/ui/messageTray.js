@@ -782,13 +782,12 @@ Notification.prototype = {
             this._buttonBox = box;
         }
 
-        let button = new St.Button({ can_focus: true });
+        let button = new St.Button({ style_class: 'button', can_focus: true });
 
         if (this._useActionIcons && Gtk.IconTheme.get_default().has_icon(id)) {
-            button.add_style_class_name('notification-icon-button');
+            button.add_style_class_name('image-button');
             button.child = new St.Icon({ icon_name: id });
         } else {
-            button.add_style_class_name('notification-button');
             button.label = label;
         }
 

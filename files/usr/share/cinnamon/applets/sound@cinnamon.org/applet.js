@@ -62,19 +62,21 @@ function ControlButton() {
 }
 
 ControlButton.prototype = {
-    _init: function(icon, tooltip, callback, small = false) {
+    _init: function(icon, tooltip, callback, isSmall) {
         this.actor = new St.Bin({style_class: 'sound-button-container'});
 
-        this.button = new St.Button({ style_class: 'sound-button' });
-        this.button.connect('clicked', callback);
+        this.button = new St.Button({ style_class: 'button' });
+        this.button.add_style_class_name('image-button');
 
-        if(small)
-            this.button.add_style_pseudo_class("small");
+        if (isSmall)
+            this.button.add_style_class_name('flat');
+
+        this.button.connect('clicked', callback);
 
         this.icon = new St.Icon({
             icon_type: St.IconType.SYMBOLIC,
             icon_name: icon,
-            style_class: "popup-menu-icon"
+            style_class: 'popup-menu-icon'
         });
         this.button.set_child(this.icon);
         this.actor.add_actor(this.button);
