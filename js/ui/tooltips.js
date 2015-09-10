@@ -76,8 +76,10 @@ TooltipBase.prototype = {
     },
 
     _onMotionEvent: function(actor, event) {
-        if (this._showTimer)
+        if (this._showTimer) {
             Mainloop.source_remove(this._showTimer);
+            this._showTimer = null;
+        }
 
         if (!this.visible) {
             this._showTimer = Mainloop.timeout_add(300, Lang.bind(this, this._onTimerComplete));
@@ -95,6 +97,8 @@ TooltipBase.prototype = {
 
         if (!this.preventShow)
             this.show();
+
+        return false;
     },
 
     _hide: function(actor, event) {
