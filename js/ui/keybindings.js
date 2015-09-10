@@ -95,6 +95,8 @@ KeybindingManager.prototype = {
     },
 
     removeHotKey: function(name) {
+        if (this.bindings[name] == undefined)
+            return;
         global.display.remove_custom_keybinding(name);
         global.display.rebuild_keybindings();
         this.bindings[name] = undefined;

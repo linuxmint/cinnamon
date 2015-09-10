@@ -160,7 +160,6 @@ WindowPreview.prototype = {
         if (this.actor) {
             this.actor.destroy();
         }
-        this._signal = null;
         this.actor = null;
     }
 }
