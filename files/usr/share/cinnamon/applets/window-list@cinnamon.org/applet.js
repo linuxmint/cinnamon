@@ -93,6 +93,20 @@ WindowPreview.prototype = {
         this.metaWindow = metaWindow;
     },
 
+    _onEnterEvent: function(actor, event) {
+        if (this._applet._tooltipShowing)
+            this.show();
+        else
+            this._showTimer = Mainloop.timeout_add(300, Lang.bind(this, this._onTimerComplete));
+
+        this.mousePosition = event.get_coords();
+    },
+
+    _hide: function(actor, event) {
+        Tooltips.TooltipBase.prototype._hide.call(this, actor, event);
+        this._applet.erodeTooltip();
+    },
+
     show: function() {
         if (!this.actor)
             return
@@ -130,6 +144,8 @@ WindowPreview.prototype = {
 
         this.actor.show();
         this.visible = true;
+        this._applet.cancelErodeTooltip();
+        this._applet._tooltipShowing = true;
     },
 
     hide: function() {
@@ -143,9 +159,6 @@ WindowPreview.prototype = {
     _destroy: function() {
         if (this.actor) {
             this.actor.destroy();
-        }
-        if (this._signal) {
-            this._item._applet.disconnect(this._signal);
         }
         this._signal = null;
         this.actor = null;
@@ -763,6 +776,8 @@ MyApplet.prototype = {
 
         this.orientation = orientation;
         this.dragInProgress = false;
+        this._tooltipShowing = false;
+        this._tooltipErodeTimer = null;
         this._urgentSignal = null;
         this._windows = [];
         this._monitorWatchList = [];
@@ -1063,6 +1078,26 @@ MyApplet.prototype = {
             this._dragPlaceholder.actor.destroy();
             this._dragPlaceholder = undefined;
             this._dragPlaceholderPos = undefined;
+        }
+    },
+
+    erodeTooltip: function() {
+        if (this._tooltipErodeTimer) {
+            Mainloop.source_remove(this._tooltipErodeTimer);
+            this._tooltipErodeTimer = null;
+        }
+
+        this._tooltipErodeTimer = Mainloop.timeout_add(300, Lang.bind(this, function() {
+            this._tooltipShowing = false;
+            this._tooltipErodeTimer = null;
+            return false;
+        }));
+    },
+
+    cancelErodeTooltip: function() {
+        if (this._tooltipErodeTimer) {
+            Mainloop.source_remove(this._tooltipErodeTimer);
+            this._tooltipErodeTimer = null;
         }
     }
 };
