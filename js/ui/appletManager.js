@@ -436,14 +436,7 @@ function get_object_for_instance (appletId) {
 }
 
 function get_object_for_uuid (uuid, instanceId) {
-    for (let thisInstanceId in appletObj) {
-        if (appletObj[thisInstanceId]._uuid == uuid) {
-            if (instanceId == uuid || thisInstanceId == instanceId) {
-                return appletObj[thisInstanceId]
-            }
-        }
-    }
-    return null;
+    return appletObj.find(x => x._uuid == uuid || x.instance_id == instanceId);
 }
 
 
@@ -508,11 +501,9 @@ function updateAppletsOnPanel (panel) {
  * Unloads all applets on the panel
  */
 function unloadAppletsOnPanel (panel) {
-    for (let applet_id in enabledAppletDefinitions.idMap){
-        if(enabledAppletDefinitions.idMap[applet_id].panel == panel) {
-            removeAppletFromPanels(enabledAppletDefinitions.idMap[applet_id]);
-        }
-    }
+    enabledAppletDefinitions.idMap
+        .filter(x => x.panel == panel)
+        .forEach(removeAppletFromPanels);
 }
 
 function copyAppletConfiguration(panelId) {
@@ -530,31 +521,20 @@ function pasteAppletConfiguration(panelId) {
     let raw = global.settings.get_strv("enabled-applets");
 
     let skipped = false;
+
     let len = clipboard.length;
     let nextId = global.settings.get_int("next-applet-id");
-    for (let i = 0; i < len; i++) {
-        let max = Extension.get_max_instances(clipboard[i].uuid);
-        if (max == -1) {
-            raw.push("panel" + panelId + ":" + clipboard[i].location_label + ":" + clipboard[i].order + ":" + clipboard[i].uuid + ":" + nextId);
-            nextId ++;
-            continue;
-        }
-        let curr = enabledAppletDefinitions.uuidMap[clipboard[i].uuid];
-        let count = curr.length;
-        if (count >= max) { // If we have more applets that allowed, we see if we any of them are removed above
-            let i = count;
-            while (i--) { // Do a reverse loop because the value of count will change
-                if (curr[i].panelId == panelId) count --;
-            }
-        }
 
-        if (count < max) {
-            raw.push("panel" + panelId + ":" + clipboard[i].location_label + ":" + clipboard[i].order + ":" + clipboard[i].uuid + ":" + nextId);
+    clipboard.forEach(function(x) {
+        let uuid = x.uuid
+        let max = Extension.get_max_instances(uuid);
+        if (max == -1 || raw.filter(a => a.split(":")[2] == uuid).length < max) {
+            raw.push("panel" + panelId + ":" + x.location_label + ":" + x.order + ":" + uuid + ":" + nextId);
             nextId ++;
         } else {
             skipped = true;
         }
-    }
+    });
     global.settings.set_int("next-applet-id", nextId);
     global.settings.set_strv("enabled-applets", raw);
 
