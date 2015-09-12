@@ -1061,87 +1061,82 @@ MyApplet.prototype = {
         Applet.TextIconApplet.prototype._init.call(this, orientation, panel_height, instance_id);
         this.initial_load_done = false;
 
-        try {
-            this.set_applet_tooltip(_("Menu"));
-            this.menuManager = new PopupMenu.PopupMenuManager(this);
-            this.menu = new Applet.AppletPopupMenu(this, orientation);
-            this.menuManager.addMenu(this.menu);   
-                        
-            this.actor.connect('key-press-event', Lang.bind(this, this._onSourceKeyPress));
+        this.set_applet_tooltip(_("Menu"));
+        this.menuManager = new PopupMenu.PopupMenuManager(this);
+        this.menu = new Applet.AppletPopupMenu(this, orientation);
+        this.menuManager.addMenu(this.menu);
 
-            this.settings = new Settings.AppletSettings(this, "menu@cinnamon.org", instance_id);
+        this.actor.connect('key-press-event', Lang.bind(this, this._onSourceKeyPress));
 
-            this.settings.bindProperty(Settings.BindingDirection.IN, "show-places", "showPlaces", this._refreshBelowApps, null);
+        this.settings = new Settings.AppletSettings(this, "menu@cinnamon.org", instance_id);
 
-            this.settings.bindProperty(Settings.BindingDirection.IN, "activate-on-hover", "activateOnHover", this._updateActivateOnHover, null);
-            this._updateActivateOnHover();
+        this.settings.bindProperty(Settings.BindingDirection.IN, "show-places", "showPlaces", this._refreshBelowApps, null);
 
-            this.menu.actor.add_style_class_name('menu-background');
-            this.menu.connect('open-state-changed', Lang.bind(this, this._onOpenStateChanged));                                
+        this.settings.bindProperty(Settings.BindingDirection.IN, "activate-on-hover", "activateOnHover", this._updateActivateOnHover, null);
+        this._updateActivateOnHover();
 
-            this.settings.bindProperty(Settings.BindingDirection.IN, "menu-icon-custom", "menuIconCustom", this._updateIconAndLabel, null);
-            this.settings.bindProperty(Settings.BindingDirection.IN, "menu-icon", "menuIcon", this._updateIconAndLabel, null);
-            this.settings.bindProperty(Settings.BindingDirection.IN, "menu-label", "menuLabel", this._updateIconAndLabel, null);
-            this.settings.bindProperty(Settings.BindingDirection.IN, "overlay-key", "overlayKey", this._updateKeybinding, null);
+        this.menu.actor.add_style_class_name('menu-background');
+        this.menu.connect('open-state-changed', Lang.bind(this, this._onOpenStateChanged));
 
-            this._updateKeybinding();
+        this.settings.bindProperty(Settings.BindingDirection.IN, "menu-icon-custom", "menuIconCustom", this._updateIconAndLabel, null);
+        this.settings.bindProperty(Settings.BindingDirection.IN, "menu-icon", "menuIcon", this._updateIconAndLabel, null);
+        this.settings.bindProperty(Settings.BindingDirection.IN, "menu-label", "menuLabel", this._updateIconAndLabel, null);
+        this.settings.bindProperty(Settings.BindingDirection.IN, "overlay-key", "overlayKey", this._updateKeybinding, null);
 
-            Main.themeManager.connect("theme-set", Lang.bind(this, this._updateIconAndLabel));
-            this._updateIconAndLabel();
+        this._updateKeybinding();
 
-            this._searchInactiveIcon = new St.Icon({ style_class: 'menu-search-entry-icon',
-                                               icon_name: 'edit-find',
-                                               icon_type: St.IconType.SYMBOLIC });
-            this._searchActiveIcon = new St.Icon({ style_class: 'menu-search-entry-icon',
-                                             icon_name: 'edit-clear',
-                                             icon_type: St.IconType.SYMBOLIC });
-            this._searchIconClickedId = 0;
-            this._applicationsButtons = new Array();
-            this._applicationsButtonFromApp = new Object();
-            this._favoritesButtons = new Array();
-            this._placesButtons = new Array();
-            this._transientButtons = new Array();
-            this._recentButtons = new Array();
-            this._categoryButtons = new Array();
-            this._searchProviderButtons = new Array();
-            this._selectedItemIndex = null;
-            this._previousSelectedActor = null;
-            this._previousVisibleIndex = null;
-            this._previousTreeSelectedActor = null;
-            this._activeContainer = null;
-            this._activeActor = null;
-            this._applicationsBoxWidth = 0;
-            this.menuIsOpening = false;
-            this._knownApps = new Array(); // Used to keep track of apps that are already installed, so we can highlight newly installed ones
-            this._appsWereRefreshed = false;
-            this._canUninstallApps = GLib.file_test("/usr/bin/cinnamon-remove-application", GLib.FileTest.EXISTS);
-            this.RecentManager = new DocInfo.DocManager();
-            this.privacy_settings = new Gio.Settings( {schema_id: PRIVACY_SCHEMA} );
-            this._display();
-            appsys.connect('installed-changed', Lang.bind(this, this._refreshAll));
-            AppFavorites.getAppFavorites().connect('changed', Lang.bind(this, this._refreshFavs));
-            this.settings.bindProperty(Settings.BindingDirection.IN, "hover-delay", "hover_delay_ms", this._update_hover_delay, null);
-            this._update_hover_delay();
-            Main.placesManager.connect('places-updated', Lang.bind(this, this._refreshBelowApps));
-            this.RecentManager.connect('changed', Lang.bind(this, this._refreshRecent));
-            this.privacy_settings.connect("changed::" + REMEMBER_RECENT_KEY, Lang.bind(this, this._refreshRecent));
-            this._fileFolderAccessActive = false;
-            this._pathCompleter = new Gio.FilenameCompleter();
-            this._pathCompleter.set_dirs_only(false);
-            this.lastAcResults = new Array();
-            this.settings.bindProperty(Settings.BindingDirection.IN, "search-filesystem", "searchFilesystem", null, null);
+        Main.themeManager.connect("theme-set", Lang.bind(this, this._updateIconAndLabel));
+        this._updateIconAndLabel();
 
-            // We shouldn't need to call refreshAll() here... since we get a "icon-theme-changed" signal when CSD starts.
-            // The reason we do is in case the Cinnamon icon theme is the same as the one specificed in GTK itself (in .config)
-            // In that particular case we get no signal at all.
-            this._refreshAll();
+        this._searchInactiveIcon = new St.Icon({ style_class: 'menu-search-entry-icon',
+            icon_name: 'edit-find',
+            icon_type: St.IconType.SYMBOLIC });
+        this._searchActiveIcon = new St.Icon({ style_class: 'menu-search-entry-icon',
+            icon_name: 'edit-clear',
+            icon_type: St.IconType.SYMBOLIC });
+        this._searchIconClickedId = 0;
+        this._applicationsButtons = new Array();
+        this._applicationsButtonFromApp = new Object();
+        this._favoritesButtons = new Array();
+        this._placesButtons = new Array();
+        this._transientButtons = new Array();
+        this._recentButtons = new Array();
+        this._categoryButtons = new Array();
+        this._searchProviderButtons = new Array();
+        this._selectedItemIndex = null;
+        this._previousSelectedActor = null;
+        this._previousVisibleIndex = null;
+        this._previousTreeSelectedActor = null;
+        this._activeContainer = null;
+        this._activeActor = null;
+        this._applicationsBoxWidth = 0;
+        this.menuIsOpening = false;
+        this._knownApps = new Array(); // Used to keep track of apps that are already installed, so we can highlight newly installed ones
+        this._appsWereRefreshed = false;
+        this._canUninstallApps = GLib.file_test("/usr/bin/cinnamon-remove-application", GLib.FileTest.EXISTS);
+        this.RecentManager = new DocInfo.DocManager();
+        this.privacy_settings = new Gio.Settings( {schema_id: PRIVACY_SCHEMA} );
+        this._display();
+        appsys.connect('installed-changed', Lang.bind(this, this._refreshAll));
+        AppFavorites.getAppFavorites().connect('changed', Lang.bind(this, this._refreshFavs));
+        this.settings.bindProperty(Settings.BindingDirection.IN, "hover-delay", "hover_delay_ms", this._update_hover_delay, null);
+        this._update_hover_delay();
+        Main.placesManager.connect('places-updated', Lang.bind(this, this._refreshBelowApps));
+        this.RecentManager.connect('changed', Lang.bind(this, this._refreshRecent));
+        this.privacy_settings.connect("changed::" + REMEMBER_RECENT_KEY, Lang.bind(this, this._refreshRecent));
+        this._fileFolderAccessActive = false;
+        this._pathCompleter = new Gio.FilenameCompleter();
+        this._pathCompleter.set_dirs_only(false);
+        this.lastAcResults = new Array();
+        this.settings.bindProperty(Settings.BindingDirection.IN, "search-filesystem", "searchFilesystem", null, null);
 
-            St.TextureCache.get_default().connect("icon-theme-changed", Lang.bind(this, this.onIconThemeChanged));
-            this._recalc_height();
-        }
-        catch (e) {
-            global.logError(e);
-        }
+        // We shouldn't need to call refreshAll() here... since we get a "icon-theme-changed" signal when CSD starts.
+        // The reason we do is in case the Cinnamon icon theme is the same as the one specificed in GTK itself (in .config)
+        // In that particular case we get no signal at all.
+        this._refreshAll();
+
+        St.TextureCache.get_default().connect("icon-theme-changed", Lang.bind(this, this.onIconThemeChanged));
+        this._recalc_height();
     },
 
     _updateKeybinding: function() {
