@@ -117,16 +117,7 @@ function getAppletDefinition(definition) {
         let location;
         if (panel) {
             orientation = panel.bottomPosition ? St.Side.BOTTOM : St.Side.TOP;
-            switch (elements[1]){
-            case "center":
-                location = panel._centerBox;
-                break;
-            case "right":
-                location = panel._rightBox;
-                break;
-            default: // Let default position be left
-                location = panel._leftBox;
-            }
+            location = getLocation(panel, elements[1]);
         }
         
         return {
@@ -469,21 +460,8 @@ function loadAppletsOnPanel(panel) {
     for (let applet_id in enabledAppletDefinitions.idMap){
         definition = enabledAppletDefinitions.idMap[applet_id];
         if(definition.panelId == panel.panelId) {
-            let location;
-            // Update appletDefinition
-            switch (definition.location_label){
-            case "center":
-                location = panel._centerBox;
-                break;
-            case "right":
-                location = panel._rightBox;
-                break;
-            default: // Let default position be left
-                location = panel._leftBox;
-            }
-
             definition.panel = panel;
-            definition.location = location;
+            definition.location = getLocation(panel, definition.location_label);
             definition.orientation = orientation;
 
             let extension = Extension.objects[definition.uuid];
@@ -508,19 +486,7 @@ function updateAppletsOnPanel (panel) {
     for (let applet_id in enabledAppletDefinitions.idMap){
         definition = enabledAppletDefinitions.idMap[applet_id];
         if(definition.panel == panel) {
-            let location;
-            switch (definition.location_label[1]){
-            case "center":
-                location = panel._centerBox;
-                break;
-            case "right":
-                location = panel._rightBox;
-                break;
-            default: // Let default position be left
-                location = panel._leftBox;
-            }
-
-            definition.location = location;
+            definition.location = getLocation(panel, definition.location_label);
             definition.orientation = orientation;
 
             if (appletObj[applet_id]) {
@@ -643,3 +609,8 @@ function callAppletInstancesChanged(uuid) {
     }
 }
 
+function getLocation(panel, location) {
+    return {"center": panel._centerBox,
+            "right" : panel._rightBox,
+            "left"  : panel._leftBox}[location];
+}
