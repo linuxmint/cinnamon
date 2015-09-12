@@ -16,7 +16,7 @@ var appletMeta;
 // Maps uuid -> importer object (applet directory tree)
 var applets;
 // Maps applet_id -> applet objects
-const appletObj = {};
+const appletObj = [];
 var appletsLoaded = false;
 
 // An applet can assume a role
@@ -79,7 +79,7 @@ function getEnabledAppletDefinitions() {
         // maps uuid -> list of applet definitions
         uuidMap: {},
         // maps applet_id -> single applet definition
-        idMap: {}
+        idMap: []
     };
     
     // Upgrade settings if required
@@ -516,36 +516,18 @@ function unloadAppletsOnPanel (panel) {
 }
 
 function copyAppletConfiguration(panelId) {
-    let def = enabledAppletDefinitions.idMap;
-    clipboard = [];
-    for (let i in def) {
-        if (def[i].panelId == panelId) {
-            clipboard.push(def[i]);
-        }
-    }
+    clipboard = enabledAppletDefinitions.idMap.filter(x => x.panelId == panelId);
 }
 
 function clearAppletConfiguration(panelId) {
     let raw = global.settings.get_strv("enabled-applets");
-
-    // Remove existing applets on panel
-    let i = raw.length;
-    while(i--) { // Do a reverse loop to prevent skipping items after splicing
-        if (raw[i].split(":")[0].slice(5) == panelId)
-            raw.splice(i,1);
-    }
+    raw = raw.filter(x => x.split(":")[0].slice(5) != panelId);
     global.settings.set_strv("enabled-applets", raw);
 }
 
 function pasteAppletConfiguration(panelId) {
+    clearAppletConfiguration(panelId);
     let raw = global.settings.get_strv("enabled-applets");
-
-    // Remove existing applets on panel
-    let i = raw.length;
-    while(i--) { // Do a reverse loop to prevent skipping items after splicing
-        if (raw[i].split(":")[0].slice(5) == panelId)
-            raw.splice(i,1);
-    }
 
     let skipped = false;
     let len = clipboard.length;
@@ -583,20 +565,7 @@ function pasteAppletConfiguration(panelId) {
 }
 
 function getRunningInstancesForUuid(uuid) {
-    if(!enabledAppletDefinitions)
-        return null;
-
-    let result = [];
-
-    for (let applet_id in enabledAppletDefinitions.idMap) {
-        if (appletObj[applet_id]) {
-            if (uuid == appletObj[applet_id]._uuid) {
-                result.push(appletObj[applet_id]);
-            }
-        }
-    }
-
-    return result
+    return appletObj.filter(x => x._uuid == uuid);
 }
 
 function callAppletInstancesChanged(uuid) {
