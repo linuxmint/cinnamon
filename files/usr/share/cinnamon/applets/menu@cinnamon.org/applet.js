@@ -55,78 +55,53 @@ let appsys = Cinnamon.AppSystem.get_default();
  * want to use it.
  */ 
 
-function VisibleChildIterator(parent, container) {
-    this._init(parent, container);
+function VisibleChildIterator(container) {
+    this._init(container);
 }
 
 VisibleChildIterator.prototype = {
-    _init: function(parent, container) {
+    _init: function(container) {
         this.container = container;
-        this._parent = parent;
-        this._num_children = 0;
         this.reloadVisible();
     },
 
     reloadVisible: function() {
-        this.visible_children = new Array();
-        this.abs_index = new Array();
-        let children = this.container.get_children();
-        for (let i = 0; i < children.length; i++) {
-            let child = children[i];
-            if (child.visible) {
-                this.visible_children.push(child);
-                this.abs_index.push(i);
-            }
-        }
-        this._num_children = this.visible_children.length;
+        this.array = this.container.get_focus_chain()
+            .filter(x => !(x._delegate instanceof PopupMenu.PopupSeparatorMenuItem));
     },
 
-    getNextVisible: function(cur_child) {
-        if (this.visible_children.indexOf(cur_child) == this._num_children-1)
-            return this.visible_children[0];
-        else {
-            let res = this.visible_children[this.visible_children.indexOf(cur_child)+1]
-            if (res._delegate instanceof PopupMenu.PopupSeparatorMenuItem)
-                return this.getNextVisible(res);
-            else
-                return res;
-        }
+    getNextVisible: function(curChild) {
+        return this.getVisibleItem(this.array.indexOf(curChild) + 1);
     },
 
-    getPrevVisible: function(cur_child) {
-        if (this.visible_children.indexOf(cur_child) == 0)
-            return this.visible_children[this._num_children-1];
-        else {
-            let res = this.visible_children[this.visible_children.indexOf(cur_child)-1]
-            if (res._delegate instanceof PopupMenu.PopupSeparatorMenuItem)
-                return this.getPrevVisible(res);
-            else
-                return res;
-        }
+    getPrevVisible: function(curChild) {
+        return this.getVisibleItem(this.array.indexOf(curChild) - 1);
     },
 
     getFirstVisible: function() {
-        return this.visible_children[0];
+        return this.array[0];
     },
 
     getLastVisible: function() {
-        return this.visible_children[this._num_children-1];
+        return this.array[this.array.length - 1];
     },
 
-    getVisibleIndex: function(cur_child) {
-        return this.visible_children.indexOf(cur_child);
+    getVisibleIndex: function(curChild) {
+        return this.array.indexOf(curChild);
     },
 
     getVisibleItem: function(index) {
-        return this.visible_children[index];
+        let len = this.array.length;
+        index = ((index % len) + len) % len;
+        return this.array[index];
     },
 
     getNumVisibleChildren: function() {
-        return this._num_children;
+        return this.array.length;
     },
 
     getAbsoluteIndexOfChild: function(child) {
-        return this.abs_index[this.visible_children.indexOf(child)];
+        return this.container.get_children().indexOf(child);
     }
 };
 
@@ -1693,7 +1668,6 @@ MyApplet.prototype = {
                     let prevIdx = this.catBoxIter.getVisibleIndex(this._previousTreeSelectedActor);
                     let nextIdx = this.catBoxIter.getVisibleIndex(this.placesButton.actor);
                     let idxDiff = Math.abs(prevIdx - nextIdx);
-                    let numVisible = this.catBoxIter.getNumVisibleChildren();
                     if (idxDiff <= 1 || Math.min(prevIdx, nextIdx) < 0) {
                         this._previousTreeSelectedActor = this.placesButton.actor;
                     }
@@ -1779,7 +1753,6 @@ MyApplet.prototype = {
                 } else {
                     let prevIdx = this.catBoxIter.getVisibleIndex(this._previousTreeSelectedActor);
                     let nextIdx = this.catBoxIter.getVisibleIndex(this.recentButton.actor);
-                    let numVisible = this.catBoxIter.getNumVisibleChildren();
                     
                     if (Math.abs(prevIdx - nextIdx) <= 1) {
                         this._previousTreeSelectedActor = this.recentButton.actor;
@@ -2265,11 +2238,11 @@ MyApplet.prototype = {
         this.selectedAppDescription = new St.Label({ style_class: 'menu-selected-app-description', text: "" });
         this.selectedAppBox.add_actor(this.selectedAppDescription);
         section.actor.add_actor(this.selectedAppBox);
-        this.appBoxIter = new VisibleChildIterator(this, this.applicationsBox);
+        this.appBoxIter = new VisibleChildIterator(this.applicationsBox);
         this.applicationsBox._vis_iter = this.appBoxIter;
-        this.catBoxIter = new VisibleChildIterator(this, this.categoriesBox);
+        this.catBoxIter = new VisibleChildIterator(this.categoriesBox);
         this.categoriesBox._vis_iter = this.catBoxIter;
-        this.favBoxIter = new VisibleChildIterator(this, this.favoritesBox);
+        this.favBoxIter = new VisibleChildIterator(this.favoritesBox);
         this.favoritesBox._vis_iter = this.favBoxIter;
         Mainloop.idle_add(Lang.bind(this, function() {
             this._clearAllSelections(true);
