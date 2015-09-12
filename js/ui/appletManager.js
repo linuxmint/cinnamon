@@ -265,7 +265,7 @@ function addAppletToPanels(extension, appletDefinition) {
         let applet = createApplet(extension, appletDefinition);
         if(applet == null)
             return false;
-        
+
         // Now actually lock the applets role and set the provider
         extension.lockRole(applet);
 
@@ -278,31 +278,19 @@ function addAppletToPanels(extension, appletDefinition) {
             applet._panelLocation = null;
         }
 
-        // Add it to its new panel location
-        let children = appletDefinition.location.get_children();
-        let appletsToMove = [];
-        for (let i=0; i<children.length;i++) {
-            let child = children[i];
-            if ((typeof child._applet !== "undefined") && (child._applet instanceof Applet.Applet)) {
-                if (appletDefinition.order < child._applet._order) {
-                    appletsToMove.push(child);
-                }
-            }
-        }
+        let location = appletDefinition.location;
 
-        for (let i=0; i<appletsToMove.length; i++) {
-            appletDefinition.location.remove_actor(appletsToMove[i]);
-        }
+        let before = location.get_children()
+            .find(x => (x._applet instanceof Applet.Applet) &&
+                       (appletDefinition.order < x._applet._order));
 
-        appletDefinition.location.add(applet.actor);
+        if (before)
+            location.insert_before(applet.actor, before);
+        else
+            location.add_actor(applet.actor);
 
-        applet._panelLocation = appletDefinition.location;
-        for (let i=0; i<appletsToMove.length; i++) {
-            let hidden = !appletsToMove[i].visible;
-            appletDefinition.location.add(appletsToMove[i]);
-            if (hidden) appletsToMove[i].hide();
-        }
-        
+        applet._panelLocation = location;
+
         if(!extension._loadedDefinitions) {
             extension._loadedDefinitions = {};
         }
@@ -311,8 +299,7 @@ function addAppletToPanels(extension, appletDefinition) {
         applet.on_applet_added_to_panel_internal(appletsLoaded);
 
         return true;
-    }
-    catch(e) {
+    } catch(e) {
         extension.unlockRole();
         extension.logError('Failed to load applet: ' + appletDefinition.uuid + "/" + appletDefinition.applet_id, e);
         return false;
