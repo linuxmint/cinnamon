@@ -2201,16 +2201,10 @@ PopupMenuManager.prototype = {
         if (position == -1) // not a menu we manage
             return;
 
-        this._signals.disconnect('open-state-changed', menu);
-        this._signals.disconnect('child-menu-added', menu);
-        this._signals.disconnect('child-menu-removed', menu);
-        this._signals.disconnect('destroy', menu);
-        let source = menu.sourceActor;
+        this._signals.disconnect(null, menu);
 
-        if (source) {
-            this._signals.disconnect('enter-event', source);
-            this._signals.disconnect('key-focus-in', source);
-        }
+        if (menu.sourceActor)
+            this._signals.disconnect(menu.sourceActor);
 
         this._menus.splice(position, 1);
     },
@@ -2233,10 +2227,7 @@ PopupMenuManager.prototype = {
             return;
         }
 
-        this._signals.disconnect('captured-event');
-        this._signals.disconnect('enter-event');
-        this._signals.disconnect('leave-event');
-        this._signals.disconnect('notify::key-focus');
+        this._signals.disconnect(null, global.stage);
 
         this.grabbed = false;
         Main.popModal(this._owner.actor);
