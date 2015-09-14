@@ -344,7 +344,7 @@ ExpoWorkspaceThumbnail.prototype = {
 
         this.actor.connect('scroll-event', Lang.bind(this, this.onScrollEvent));
         
-        this.title = new St.Entry({ style_class: 'expo-workspaces-name-entry',                                     
+        this.title = new St.Entry({ style_class: 'entry',                                     
                                      track_hover: true,
                                      can_focus: true });                
         this.title._spacing = 0; 

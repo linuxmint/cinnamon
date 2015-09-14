@@ -411,13 +411,8 @@ stage {
         font-size: 10px;
 }
 
-.run-dialog-entry {
-    font-size: 10.5pt;
-    font-weight: bold;
+.run-dialog .entry {
     width: 23em;
-    color: white;
-    selection-background-color: white;
-    selected-color: black;
 }
 
 .run-dialog {
@@ -426,6 +421,41 @@ stage {
     padding-left: 21px;
     padding-bottom: 15px;
     padding-top: 15px;
+}
+
+/* ===================================================================
+ * Entries 
+ * ===================================================================*/
+
+.entry {
+    padding: 5px;
+    border-radius: 4px;
+    color: rgb(128, 128, 128);
+    border: 1px solid transparent;
+    background-gradient-start: rgba(5,5,6,0.1);
+    background-gradient-end: rgba(254,254,254,0.1);
+    background-gradient-direction: vertical;
+    selected-color: black;
+    caret-color: rgb(128, 128, 128);
+    caret-size: 1px;
+    box-shadow: inset 0px 2px 4px rgba(0,0,0,0.6);
+}
+
+.entry:hover,
+.entry:focus {
+    background-gradient-start: rgb(200,200,200);
+    background-gradient-end: white;
+    background-gradient-direction: vertical;
+}
+
+.entry:focus {
+    color: rgb(64, 64, 64);
+    font-weight: bold;
+}
+
+.entry StIcon {
+    icon-size: 1em;
+    color: #8d8f8a;
 }
 
 /* ===================================================================
@@ -713,6 +743,24 @@ stage {
     spacing: 14px;
 }
 
+.workspace-thumbnails .entry {
+    width: 250px;
+    height: 15px;
+    text-align: center;
+}
+
+.workspace-thumbnails .entry:focus {
+    font-weight: bold;
+    font-style: italic;
+}
+
+.workspace-thumbnails .entry#selected {
+    background-gradient-start: rgb(200,200,200);
+    background-gradient-end: white;
+    font-weight: bold;
+    color: rgb(0, 0, 0);
+}
+
 .workspace-add-button {
     background-image: url("add-workspace.png");
     height: 200px;
@@ -796,37 +844,6 @@ stage {
 .expo-workspace-thumbnail-frame#active {
     border: 2px, rgba(32,32,32,0.9);
     background-color: rgba(32,32,32,0.9);
-}
-
-.expo-workspaces-name-entry {
-    padding: 5px;
-    border-radius: 4px;
-    color: rgb(200, 200, 200);
-    border: 2px solid rgb(136,138,133);
-    background-gradient-start: rgb(128,128,128);
-    background-gradient-end: rgb(85,85,85);
-    background-gradient-direction: vertical;
-    selected-color: black;
-    caret-color: rgb(128, 128, 128);
-    caret-size: 1px;
-    width: 250px;
-    height: 15px;   
-    box-shadow: inset 0px 2px 4px rgba(0,0,0,0.6);
-    text-align: center; 
-}
-
-.expo-workspaces-name-entry#selected {
-    background-gradient-start: rgb(200,200,200);
-    background-gradient-end: white;
-    font-weight: bold;
-    color: rgb(0, 0, 0);
-}
-
-.expo-workspaces-name-entry:focus {
-    color: rgb(0, 0, 0);
-    font-weight: bold;
-    font-style: italic;
-    transition-duration: 300;
 }
 
 /* ===================================================================
@@ -1583,44 +1600,9 @@ StScrollBar StButton#vhandle:hover {
     padding-right: 30px;
 }
 
-#menu-search-entry {
-    padding: 5px;
-    border-radius: 4px;
-    color: rgb(128, 128, 128);
-    border: 2px solid rgba(245,245,245,0.2);
-    background-gradient-start: rgba(5,5,6,0.1);
-    background-gradient-end: rgba(254,254,254,0.1);
-    background-gradient-direction: vertical;
-    selected-color: black;
-    caret-color: rgb(128, 128, 128);
-    caret-size: 1px;
+.menu-search-box .entry {
     width: 250px;
     height: 15px;
-    transition-duration: 300;
-    box-shadow: inset 0px 2px 4px rgba(0,0,0,0.6);
-}
-
-#menu-search-entry:focus,
-#menu-search-entry:hover {
-    border: 2px solid rgb(136,138,133);
-    background-gradient-start: rgb(200,200,200);
-    background-gradient-end: white;
-    background-gradient-direction: vertical;
-}
-
-#menu-search-entry:hover {
-    transition-duration: 300;
-}
-
-#menu-search-entry:focus {
-    color: rgb(64, 64, 64);
-    font-weight: bold;
-    transition-duration: 0;
-}
-
-.menu-search-entry-icon {
-    icon-size: 1em;
-    color: #8d8f8a;
 }
 
 /* Context menu (at the moment only for favorites) */

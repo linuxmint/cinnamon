@@ -1114,12 +1114,10 @@ MyApplet.prototype = {
             Main.themeManager.connect("theme-set", Lang.bind(this, this._updateIconAndLabel));
             this._updateIconAndLabel();
 
-            this._searchInactiveIcon = new St.Icon({ style_class: 'menu-search-entry-icon',
-                                               icon_name: 'edit-find',
-                                               icon_type: St.IconType.SYMBOLIC });
-            this._searchActiveIcon = new St.Icon({ style_class: 'menu-search-entry-icon',
-                                             icon_name: 'edit-clear',
-                                             icon_type: St.IconType.SYMBOLIC });
+            this._searchInactiveIcon = new St.Icon({ icon_name: 'edit-find',
+                                                     icon_type: St.IconType.SYMBOLIC });
+            this._searchActiveIcon = new St.Icon({ icon_name: 'edit-clear',
+                                                   icon_type: St.IconType.SYMBOLIC });
             this._searchIconClickedId = 0;
             this._applicationsButtons = new Array();
             this._applicationsButtonFromApp = new Object();
@@ -2200,9 +2198,10 @@ MyApplet.prototype = {
         rightPane.add_actor(this.searchBox);
         
         this.searchEntry = new St.Entry({ name: 'menu-search-entry',
-                                     hint_text: _("Type to search..."),
-                                     track_hover: true,
-                                     can_focus: true });
+                                          hint_text: _("Type to search..."),
+                                          style_class: 'entry',
+                                          track_hover: true,
+                                          can_focus: true });
         this.searchEntry.set_secondary_icon(this._searchInactiveIcon);
         this.searchBox.add_actor(this.searchEntry);
         this.searchActive = false;
