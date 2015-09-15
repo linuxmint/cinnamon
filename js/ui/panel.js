@@ -801,16 +801,14 @@ function AnimatedIcon(name, size) {
 AnimatedIcon.prototype = {
     _init: function(name, size) {
         this.actor = new St.Bin({ visible: false });
-        this.actor.connect('destroy', Lang.bind(this, this._onDestroy));
-        this.actor.connect('notify::visible', Lang.bind(this, function() {
-            if (this.actor.visible) {
-                this._timeoutId = Mainloop.timeout_add(ANIMATED_ICON_UPDATE_TIMEOUT, Lang.bind(this, this._update));
-            } else {
-                if (this._timeoutId)
-                    Mainloop.source_remove(this._timeoutId);
-                this._timeoutId = 0;
-            }
-        }));
+        this.signals = SignalManager.SignalManager(this);
+        this.signals.connect(this.actor, "destroy", this.signals.finalize, this.signals);
+        this.signals.connect(this.actor, "notify::visible", function(){
+            if(this.actor.visible)
+                this.signals.addTimeout("animate-icon", ANIMATED_ICON_UPDATE_TIMEOUT, this._update);
+            else
+                this.signals.removeTimeout("animate-icon");
+        });
 
         this._timeoutId = 0;
         this._i = 0;
@@ -829,11 +827,6 @@ AnimatedIcon.prototype = {
                 this._animations.get_child_at_index(0).show();
         }
         return true;
-    },
-
-    _onDestroy: function() {
-        if (this._timeoutId)
-            Mainloop.source_remove(this._timeoutId);
     }
 };
 
@@ -1498,7 +1491,7 @@ Panel.prototype = {
 
         this.actor.destroy();
 
-        this._signalManager.disconnectAllSignals()
+        this._signalManager.finalize();
 
         this._menus = null;
         this.monitor = null;
@@ -1916,10 +1909,7 @@ Panel.prototype = {
      * panels-show-delay and panels-hide-delay.
      */
     _queueShowHidePanel: function() {
-        if (this._showHideTimer) {
-            Mainloop.source_remove(this._showHideTimer);
-            this._showHideTimer = 0;
-        }
+        this._signalManager.removeTimeout("show-hide");
 
         /* Use a timeout_add even if delay is 0 to avoid "flashing" of panel.
          * Otherwise, if, say hideDelay is 0 and showDelay is 1000, when you
@@ -1931,13 +1921,13 @@ Panel.prototype = {
          * by the coming enter-event, and the panel remains open. */
         if (this._shouldShow) {
             let showDelay = this._getProperty(PANEL_SHOW_DELAY_KEY, "i");
-            this._showHideTimer = Mainloop.timeout_add(showDelay, Lang.bind(this, this._showPanel))
+            this._signalManager.addTimeout("show-hide", showDelay, this._showPanel);
         } else {
             let hideDelay = this._getProperty(PANEL_HIDE_DELAY_KEY, "i");
-            this._showHideTimer = Mainloop.timeout_add(hideDelay, Lang.bind(this, this._hidePanel))
+            this._signalManager.addTimeout("show-hide", hideDelay, this._hidePanel);
         }
     },
-    
+
     _enterPanel: function() {
         this._mouseEntered = true;
         this._updatePanelVisibility();

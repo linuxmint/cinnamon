@@ -11,7 +11,7 @@ const Config = imports.misc.config;
 const Main = imports.ui.main;
 const MessageTray = imports.ui.messageTray;
 const Params = imports.misc.params;
-const Mainloop = imports.mainloop;
+const SignalManager = imports.misc.signalManager;
 
 let nextNotificationId = 1;
 
@@ -109,8 +109,9 @@ NotificationDaemon.prototype = {
 
         this._expireTimer = 0;
 
-        Main.statusIconDispatcher.connect('message-icon-added', Lang.bind(this, this._onTrayIconAdded));
-        Main.statusIconDispatcher.connect('message-icon-removed', Lang.bind(this, this._onTrayIconRemoved));
+        this.signals = new SignalManager.SignalManager(this);
+        this.signals.connect(Main.statusIconDispatcher, "message-icon-added", this._onTrayIconAdded);
+        this.signals.connect(Main.statusIconDispatcher, "message-icon-removed", this._onTrayIconRemoved);
 
 // Settings
         this.settings = new Gio.Settings({ schema_id: "org.cinnamon.desktop.notifications" });
@@ -239,28 +240,16 @@ NotificationDaemon.prototype = {
     },
 
     _startExpire: function() {
-         if (this.removeOld && this._expireNotifications.length && !this._expireTimer) {
-            this._expireTimer = Mainloop.timeout_add_seconds(Math.max((this._expireNotifications[0].expires-Date.now())/1000, 1), Lang.bind(this, this._expireNotification));
-        }
+        if(this.removeOld && this._expireNotifications.length)
+            this.signals.addTimeout("expire", Math.max((this._expireNotifications[0].expires - Date.now()) / 1000, 1), this._expireNotification);
     },
-    _stopExpire: function() {
-         if (this._expireTimer == 0) {
-            return;
-        }
-         Mainloop.source_remove(this._expireTimer);
-         this._expireTimer = 0;
-    },
-    _restartExpire: function() {
-         this._stopExpire();
-         this._startExpire();
-    },
+
     _expireNotification: function() {
          let ndata = this._expireNotifications[0];
          ndata.notification.destroy(MessageTray.NotificationDestroyedReason.EXPIRED);
-         this._expireTimer = 0;
          return false;
     },
- 
+
     // Sends a notification to the notification daemon. Returns the id allocated to the notification.
     NotifyAsync: function(params, invocation) {
         let [appName, replacesId, icon, summary, body, actions, hints, timeout] = params;
@@ -334,7 +323,7 @@ NotificationDaemon.prototype = {
                 }
             }
             if (i == 0) notifications.unshift(ndata);
-            this._restartExpire()
+            this._startExpire()
         }
 
         let sender = invocation.get_sender();
@@ -424,7 +413,7 @@ NotificationDaemon.prototype = {
                                 break;
                              }
                         }
-                        this._restartExpire();
+                        this._startExpire();
                     }
                     this._emitNotificationClosed(ndata.id, notificationClosedReason);
                 }));

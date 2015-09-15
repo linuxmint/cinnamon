@@ -14,6 +14,7 @@ const Gio = imports.gi.Gio;
 const Signals = imports.signals;
 const GnomeSession = imports.misc.gnomeSession;
 const ScreenSaver = imports.misc.screenSaver;
+const SignalManager = imports.misc.signalManager;
 const FileUtils = imports.misc.fileUtils;
 const Util = imports.misc.util;
 const Tweener = imports.ui.tweener;
@@ -1066,6 +1067,8 @@ MyApplet.prototype = {
         this.menu = new Applet.AppletPopupMenu(this, orientation);
         this.menuManager.addMenu(this.menu);
 
+        this.signals = new SignalManager.SignalManager(this);
+
         this.actor.connect('key-press-event', Lang.bind(this, this._onSourceKeyPress));
 
         this.settings = new Settings.AppletSettings(this, "menu@cinnamon.org", instance_id);
@@ -1575,11 +1578,7 @@ MyApplet.prototype = {
     },
 
     maybeUpdateVectorBox: function() {
-        if (this.vector_update_loop) {
-            Mainloop.source_remove(this.vector_update_loop);
-            this.vector_update_loop = 0;
-        }
-        this.vector_update_loop = Mainloop.timeout_add(35, Lang.bind(this, this.updateVectorBox));
+        this.signals.addTimeout("vector-update", 35, this.updateVectorBox);
     },
 
     updateVectorBox: function(actor) {
@@ -1599,7 +1598,7 @@ MyApplet.prototype = {
                 this.destroyVectorBox(actor);
             }
         }
-        this.vector_update_loop = 0;
+
         return false;
     },
 
@@ -2148,7 +2147,6 @@ MyApplet.prototype = {
         this._activeActor = null;
         this.vectorBox = null;
         this.actor_motion_id = 0;
-        this.vector_update_loop = null;
         this.current_motion_actor = null;
         let section = new PopupMenu.PopupMenuSection();
         this.menu.addMenuItem(section);

@@ -11,6 +11,7 @@ const Signals = imports.signals;
 const Main = imports.ui.main;
 const MagnifierDBus = imports.ui.magnifierDBus;
 const Params = imports.misc.params;
+const SignalManager = imports.misc.signalManager;
 
 // Keep enums in sync with GSettings schemas
 const MouseTrackingMode = {
@@ -62,6 +63,8 @@ function Magnifier() {
 
 Magnifier.prototype = {
     _init: function() {
+        this.signals = new SignalManager.SignalManager(this);
+
         // Magnifier is a manager of ZoomRegions.
         this._zoomRegions = [];
 
@@ -88,15 +91,14 @@ Magnifier.prototype = {
         let activeAtLaunch = this._settingsInit(aZoomRegion);
         aZoomRegion.scrollContentsTo(this.xMouse, this.yMouse);
 
-        xfixesCursor.connect('cursor-change', Lang.bind(this, this._updateMouseSprite));
+        this.signals.connect(xfixesCursor, "cursor-change", this._updateMouseSprite);
         this._xfixesCursor = xfixesCursor;
 
-        this._appSettings.connect('changed::' + SHOW_KEY,
-                                  Lang.bind(this, function() {
+        this.signals.connect(this._appSettings, "changed::" + SHOW_KEY, function(){
             this.enabled = this._appSettings.get_boolean(SHOW_KEY);
             let factor = parseFloat(this._settings.get_double(MAG_FACTOR_KEY).toFixed(2));
             this.setActive(this.enabled && factor > 1.0);
-        }));
+        });
 
         this.enabled = this._appSettings.get_boolean(SHOW_KEY);
 
@@ -106,8 +108,6 @@ Magnifier.prototype = {
         this.setActive(this.enabled && activeAtLaunch);
 
         magInputHandler = new MagnifierInputHandler(this);
-
-        this.update_mag_id = 0;
     },
 
     /**
@@ -152,8 +152,6 @@ Magnifier.prototype = {
 
     _write_back_mag_factor: function(factor) {
         this._settings.set_double(MAG_FACTOR_KEY, factor);
-        this.update_mag_id = 0;
-        return false;
     },
 
     /**
@@ -168,11 +166,7 @@ Magnifier.prototype = {
         let zr = this.getZoomRegions()[0];
         zr.setMagFactor(xMagFactor, yMagFactor);
 
-        if (this.update_mag_id > 0) {
-            Mainloop.source_remove (this.update_mag_id);
-            this.update_mag_id = 0;
-        }
-        this.update_mag_id = Mainloop.timeout_add(1000, Lang.bind(this, this._write_back_mag_factor, xMagFactor));
+        this.signals.addTimeout("update", 1000, Lang.bind(this, this._write_back_mag_factor, xMagFactor));
     },
 
     /**
@@ -193,11 +187,8 @@ Magnifier.prototype = {
      * Turn on mouse tracking, if not already doing so.
      */
     startTrackingMouse: function() {
-        if (!this._mouseTrackingId)
-            this._mouseTrackingId = Mainloop.timeout_add(
-                MOUSE_POLL_FREQUENCY,
-                Lang.bind(this, this.scrollToMousePos)
-            );
+        if(!this.signals.hasTimeout("mouse-tracking"))
+            this.signals.addTimeout("mouse-tracking", MOUSE_POLL_FREQUENCY, this.scrollToMousePos);
     },
 
     /**
@@ -205,10 +196,7 @@ Magnifier.prototype = {
      * Turn off mouse tracking, if not already doing so.
      */
     stopTrackingMouse: function() {
-        if (this._mouseTrackingId)
-            Mainloop.source_remove(this._mouseTrackingId);
-
-        this._mouseTrackingId = null;
+        this.signals.removeTimeout("mouse-tracking");
     },
 
     /**
@@ -216,7 +204,7 @@ Magnifier.prototype = {
      * Is the magnifier tracking the mouse currently?
      */
     isTrackingMouse: function() {
-        return !!this._mouseTrackingId;
+        return this.signals.hasTimeout("mouse-tracking");
     },
 
     /**
