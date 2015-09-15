@@ -21,7 +21,7 @@ const WINDOW_ANIMATION_TIME = 0.25;
 const TILE_HUD_ANIMATION_TIME = 0.15;
 const DIM_TIME = 0.500;
 const DIM_DESATURATION = 0.6;
-const DIM_BRIGHTNESS = -0.1;
+const DIM_BRIGHTNESS = -0.2;
 const UNDIM_TIME = 0.250;
 
 /* edge zones for tiling/snapping identification
