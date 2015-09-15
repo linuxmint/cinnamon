@@ -1,5 +1,7 @@
+const GLib = imports.gi.GLib;
 const GObject = imports.gi.GObject;
 const Lang = imports.lang;
+const Mainloop = imports.mainloop;
 
 /**
  * #SignalManager:
@@ -63,6 +65,14 @@ SignalManager.prototype = {
     _init: function(object) {
         this._object = object;
         this._storage = [];
+        this._timeouts = {};
+    },
+
+    _makeCallback: function(callback, bind){
+        if(bind)
+            return Lang.bind(bind, callback);
+
+        return Lang.bind(this._object, callback);
     },
 
     /**
@@ -102,12 +112,7 @@ SignalManager.prototype = {
         if (!force && this.isConnected(sigName, obj, callback))
             return
 
-        let id;
-
-        if (bind)
-            id = obj.connect(sigName, Lang.bind(bind, callback));
-        else
-            id = obj.connect(sigName, Lang.bind(this._object, callback));
+        let id = obj.connect(sigName, this._makeCallback(callback, bind));
 
         this._storage.push([sigName, obj, callback, id]);
     },
@@ -208,5 +213,110 @@ SignalManager.prototype = {
         this._storage.filter(this._signalIsConnected).forEach(x => x[1].disconnect(x[3]));
 
         this._storage = [];
+    },
+
+    /**
+     * addTimeout:
+     *
+     * @name (string): an identifier
+     * @interval (integer): the time between calls to the function, in milliseconds
+     * @callback (function): the callback function
+     * @bind (Object): (optional) the object to bind the function to. Leave
+     * empty for the owner of the #SignalManager (which has no side effects if
+     * you don't need to bind at all).
+     *
+     * This adds a timeout to the mainloop, which can be controlled with @name.
+     * If a timeout with @name already is active, it will be replaced.
+     * After @interval milliseconds passed, @callback will be called.
+     * If @callback return true, it will be called again after @interval.
+     *
+     * For example, what you would normally write as
+     * ```
+     * let barTimeoutId = Mainloop.timeout_add(100, Lang.bind(this, this._bar));
+     * ```
+     * would become
+     * ```
+     * this._signalManager.addTimeout("foo", 100, this._bar);
+     * ```
+     */
+    addTimeout: function(name, interval, callback, bind){
+        // allow only one timeout for a name
+        if(this._timeouts[name])
+            this.removeTimeout(callback);
+
+        let id = Mainloop.timeout_add(interval, this._makeCallback(callback, bind));
+
+        this._timeouts[name] = id;
+    },
+
+    /**
+     * hasTimeout:
+     *
+     * @name (string): an identifier
+     *
+     * Returns: (boolean) Whether this timeout exists
+     */
+    hasTimeout: function(name){
+        return !!this._timeouts[name];
+    },
+
+    /**
+     * removeTimeout:
+     *
+     * @name (string): an identifier
+     *
+     * Removes a timeout from the Mainloop, so it does not will be called again.
+     * This function will do nothing if the timeout expired, for example when the callback was called an does not return true.
+     *
+     * For example, what you would normally write as
+     * ```
+     * Mainloop.source_remove(barTimeoutId);
+     * this.barTimeoutId = null;
+     * ```
+     * would become
+     * ```
+     * this._signalManager.removeTimeout("foo");
+     * ```
+     */
+    removeTimeout: function(name){
+        let id = this._timeouts[name];
+
+        // timeout not found, do nothing
+        if(!id)
+            return;
+
+        // check if the source still exist
+        if(GLib.MainContext.default().find_source_by_id(id))
+           Mainloop.source_remove(id);
+
+        delete this._timeouts[name];
+    },
+
+    /**
+     * removeAllTimeouts:
+     *
+     * Removes *all timeouts* managed by the #SignalManager.
+     * This is useful in the @destroy function of objects.
+     */
+    removeAllTimeouts: function(){
+        for(let name in this._timeouts)
+            this.removeTimeout(name);
+    },
+
+    /**
+     * finalize:
+     *
+     * Disconnects *all signals* and removes *all timeouts* managed by the #SignalManager.
+     * This is useful in the @destroy function of objects.
+     *
+     * This is functionally equivalent to (and implemented as)
+     * ```
+     * this.disconnectAllSignals();
+     * this.removeAllTimeouts();
+     * ```
+     */
+    finalize: function(){
+        this.disconnectAllSignals();
+        this.removeAllTimeouts();
     }
 }
