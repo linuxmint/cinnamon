@@ -88,12 +88,26 @@ PanelAppLauncher.prototype = {
         this.appinfo = appinfo;
         this.launchersBox = launchersBox;
         this._applet = launchersBox;
-        this.actor = new St.Bin({ style_class: 'panel-launcher',
-                                  reactive: true,
-                                  can_focus: true,
-                                  x_fill: true,
-                                  y_fill: false,
-                                  track_hover: true });
+	if (orientation == St.Side.TOP || orientation == St.Side.BOTTOM)
+	{
+		this.actor = new St.Bin({ style_class: 'panel-launcher',
+		                          reactive: true,
+		                          can_focus: true,
+		                          x_fill: true,
+		                          y_fill: false,
+		                          track_hover: true });
+	}
+	else
+	{
+		this.actor = new St.Bin({ style_class: 'panel-launcher',
+		                          reactive: true,
+		                          can_focus: true,
+		                          x_fill: false,
+		                          y_fill: true,
+		                          track_hover: true });
+
+	}
+
         this.actor._delegate = this;
         this.actor.connect('button-release-event', Lang.bind(this, this._onButtonRelease));
         this.actor.connect('button-press-event', Lang.bind(this, this._onButtonPress));
@@ -135,6 +149,7 @@ PanelAppLauncher.prototype = {
         this._draggable.inhibit = !this.launchersBox.allowDragging || global.settings.get_boolean(PANEL_EDIT_MODE_KEY);
         this.launchersBox.connect("launcher-draggable-setting-changed", Lang.bind(this, this._updateInhibit));
         global.settings.connect('changed::' + PANEL_EDIT_MODE_KEY, Lang.bind(this, this._updateInhibit));
+
     },
 
     _onDragBegin: function() {
@@ -147,6 +162,7 @@ PanelAppLauncher.prototype = {
         this._dragging = false;
         this._tooltip.preventShow = false;
         this._applet._clearDragPlaceholder();
+	// FIXME - can we reload the entire applet at this point , currently moving from horizontal to vertical does not do this
     },
 
     _onDragCancelled: function() {
@@ -288,8 +304,21 @@ MyApplet.prototype = {
             this._dragPlaceholderPos = -1;
             this._animatingPlaceholdersCount = 0;
 
-            this.myactor = new St.BoxLayout({ name: 'panel-launchers-box',
+	    if (orientation == St.Side.TOP || orientation == St.Side.BOTTOM)
+	    {
+
+            	this.myactor = new St.BoxLayout({ name: 'panel-launchers-box',
                                               style_class: 'panel-launchers-box' });
+	    }
+	    else		// vertical panels
+	    {
+            	this.myactor = new St.BoxLayout({ name: 'panel-launchers-box',
+                                              style_class: 'panel-launchers-box',
+						vertical: true,
+						x_align: 2 });
+
+		this.myactor.set_style('margin-left: 0; padding-left: 0; padding-top: 5px');
+ 	    }
 
             this.settings = new Settings.AppletSettings(this, metadata.uuid, instance_id);
             this.settings.bindProperty(Settings.BindingDirection.BIDIRECTIONAL, "launcherList", "launcherList", this._onSettingsChanged, null);
@@ -305,38 +334,15 @@ MyApplet.prototype = {
 
             this.do_gsettings_import();
 
+            // We shouldn't need to call reload() here... since we get a "icon-theme-changed" signal when CSD starts.
+            // The reason we do is in case the Cinnamon icon theme is the same as the one specificed in GTK itself (in .config)
+            // In that particular case we get no signal at all.
             this.reload();
 
-            // refresh when the icon theme changes
-            this._desktopSettings = new Gio.Settings( {schema: "org.cinnamon.desktop.interface"} );
-            this._iconTheme = this._desktopSettings.get_string("icon-theme");
-            this._desktopSettings.connect("changed::icon-theme", Lang.bind(this, this._onIconThemeChanged));
-
-            // refresh when the active display scale changes
-            this._cinnamonSettings = new Gio.Settings( {schema: "org.cinnamon"} );
-            this._activeDisplayScale =  this._cinnamonSettings.get_int("active-display-scale");
-            this._cinnamonSettings.connect("changed::active-display-scale", Lang.bind(this, this._onActiveDisplayScaleChanged));
+            St.TextureCache.get_default().connect("icon-theme-changed", Lang.bind(this, this.reload));
         }
         catch (e) {
             global.logError(e);
-        }
-    },
-
-    _onIconThemeChanged: function() {
-        let iconTheme = this._desktopSettings.get_string("icon-theme");
-        if (iconTheme != this._iconTheme) {
-            this._iconTheme = iconTheme;
-            global.log("Panel Launchers applet: Icon theme changed!");
-            this.reload();
-        }
-    },
-
-    _onActiveDisplayScaleChanged: function() {
-        let activeDisplayScale = this._cinnamonSettings.get_int("active-display-scale");
-        if (activeDisplayScale != this._activeDisplayScale) {
-            this._activeDisplayScale = activeDisplayScale;
-            global.log("Panel Launchers applet: Active display scale changed!");
-            this.reload();
         }
     },
 
@@ -383,11 +389,10 @@ MyApplet.prototype = {
     },
 
     _move_launcher_in_proxy: function(launcher, new_index) {
-        let id = launcher.getId();
         let proxy_member;
 
         for (let i = 0; i < this._settings_proxy.length; i++) {
-            if (this._settings_proxy[i].file == id) {
+            if (this._settings_proxy[i].launcher == launcher) {
                 proxy_member = this._settings_proxy.splice(i, 1)[0];
                 break;
             }
@@ -420,22 +425,6 @@ MyApplet.prototype = {
         return [app, appinfo]
     },
 
-    loadApps: function() {
-        let desktopFiles = this.launcherList;
-        let apps = new Array();
-        this._settings_proxy = new Array();
-        for (let i = 0; i < desktopFiles.length; i++) {
-            let [app, appinfo] = this.loadSingleApp(desktopFiles[i]);
-            if (app || appinfo) {
-                apps.push([app, appinfo]);
-                this._settings_proxy.push( { file: desktopFiles[i], valid: true } );
-            } else {
-                this._settings_proxy.push( { file: desktopFiles[i], valid: false } );
-            }
-        }
-        return apps;
-    },
-
     on_panel_height_changed: function() {
         this.reload();
     },
@@ -443,14 +432,23 @@ MyApplet.prototype = {
     reload: function() {
         this.myactor.destroy_children();
         this._launchers = new Array();
+        this._settings_proxy = new Array();
 
-        let apps = this.loadApps();
-        for (let i = 0; i < apps.length; i++){
-            let app = apps[i];
-            let launcher = new PanelAppLauncher(this, app[0], app[1], this.orientation, this._panelHeight, this._scaleMode);
-            this.myactor.add(launcher.actor);
-            this._launchers.push(launcher);
+        for (let file of this.launcherList) {
+            let [app, appinfo] = this.loadSingleApp(file);
+
+            if (app || appinfo) {
+                let launcher = new PanelAppLauncher(this, app, appinfo,
+                        this.orientation, this._panelHeight, this._scaleMode);
+                this.myactor.add(launcher.actor);
+                this._launchers.push(launcher);
+
+                this._settings_proxy.push({ file: file, valid: true, launcher: launcher });
+            } else {
+                this._settings_proxy.push({ file: file, valid: false });
+            }
         }
+
     },
 
     removeLauncher: function(launcher, delete_file) {

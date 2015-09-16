@@ -116,7 +116,21 @@ function getAppletDefinition(definition) {
         // Panel might not exist. Still keep definition for future use.
         let location;
         if (panel) {
-            orientation = panel.bottomPosition ? St.Side.BOTTOM : St.Side.TOP;
+            switch (panel.panelPosition)
+            {
+                case 0:
+                        orientation = St.Side.TOP;
+                break;
+                case 1:
+                        orientation = St.Side.BOTTOM;
+                break;
+                case 2:
+                        orientation = St.Side.LEFT;
+                break;
+                case 3:
+                        orientation = St.Side.RIGHT;
+                break;
+            }
             switch (elements[1]){
             case "center":
                 location = panel._centerBox;
@@ -298,7 +312,9 @@ function addAppletToPanels(extension, appletDefinition) {
 
         applet._panelLocation = appletDefinition.location;
         for (let i=0; i<appletsToMove.length; i++) {
+            let hidden = !appletsToMove[i].visible;
             appletDefinition.location.add(appletsToMove[i]);
+            if (hidden) appletsToMove[i].hide();
         }
         
         if(!extension._loadedDefinitions) {
@@ -333,14 +349,30 @@ function createApplet(extension, appletDefinition) {
 
     let applet_id = appletDefinition.applet_id;
     let orientation = appletDefinition.orientation;
-    let panel_height =  appletDefinition.panel.actor.get_height();
+    let panel_height;
+
+    switch (appletDefinition.panel.panelPosition)   // treat the width of vertical panels like the height of horizontal ones
+    {
+        case 0:
+        case 1:
+                panel_height =  appletDefinition.panel.actor.get_height();
+        break;
+        case 2:
+        case 3:
+                panel_height =  appletDefinition.panel.actor.get_width();
+        break;
+    }
     
     if (appletObj[applet_id] != undefined) {
         global.log(applet_id + ' applet already loaded');
         if (appletObj[applet_id]._panelHeight != panel_height) {
+            appletObj[applet_id].setOrientation(orientation);
             appletObj[applet_id].setPanelHeight(panel_height);
         }
-        appletObj[applet_id].setOrientation(orientation);
+        else
+        {
+            appletObj[applet_id].setOrientation(orientation);
+        }
         return appletObj[applet_id];
     }
     
@@ -434,7 +466,18 @@ function updateAppletPanelHeights(force_recalc) {
     for (let applet_id in enabledAppletDefinitions.idMap) {
         if (appletObj[applet_id]) {
             let appletDefinition = enabledAppletDefinitions.idMap[applet_id];
-            let newheight = appletDefinition.panel.actor.get_height();
+            let newheight;
+            switch (appletDefinition.panel.panelPosition)   // treat the width of vertical panels like the height of horizontal ones
+            {
+                case 0:
+                case 1:
+                        newheight =  appletDefinition.panel.actor.get_height();
+                break;
+                case 2:
+                case 3:
+                        newheight =  appletDefinition.panel.actor.get_width();
+                break;
+            }
             if (appletObj[applet_id]._panelHeight != newheight || force_recalc) {
                 appletObj[applet_id].setPanelHeight(newheight);
             }
@@ -472,7 +515,24 @@ function get_object_for_uuid (uuid) {
  * Loads all applets on the panel if not loaded
  */
 function loadAppletsOnPanel(panel) {
-    let orientation = panel.bottomPosition ? St.Side.BOTTOM : St.Side.TOP;
+    let orientation;
+
+    switch (panel.panelPosition)
+    {
+        case 0:
+                orientation = St.Side.TOP;
+        break;
+        case 1:
+                orientation = St.Side.BOTTOM;
+        break;
+        case 2:
+                orientation = St.Side.LEFT;
+        break;
+        case 3:
+                orientation = St.Side.RIGHT;
+        break;
+    }
+
     let definition;
 
     for (let applet_id in enabledAppletDefinitions.idMap){
@@ -510,8 +570,28 @@ function loadAppletsOnPanel(panel) {
  * Updates the definition, orientation and height of applets on the panel
  */
 function updateAppletsOnPanel (panel) {
-    let height = panel.actor.get_height();
-    let orientation = panel.bottomPosition ? St.Side.BOTTOM : St.Side.TOP;
+    let height;
+    let orientation;
+    switch (panel.panelPosition)  // for vertical panels use the width instead of the height
+    {
+        case 0:
+                orientation = St.Side.TOP;
+                height = panel.actor.get_height();
+        break;
+        case 1:
+                orientation = St.Side.BOTTOM;
+                height = panel.actor.get_height();
+        break;
+        case 2:
+                orientation = St.Side.LEFT;
+                height = panel.actor.get_width();
+        break;
+        case 3:
+                orientation = St.Side.RIGHT;
+                height = panel.actor.get_width();
+        break;
+    }
+
     let definition;
 
     for (let applet_id in enabledAppletDefinitions.idMap){
@@ -534,8 +614,8 @@ function updateAppletsOnPanel (panel) {
 
             if (appletObj[applet_id]) {
                 try {
-                    appletObj[applet_id].setPanelHeight(height);
                     appletObj[applet_id].setOrientation(orientation);
+                    appletObj[applet_id].setPanelHeight(height);
                 } catch (e) {
                     global.logError("Error during setPanelHeight() and setOrientation() call on applet: " + definition.uuid + "/" + applet_id, e);
                 }

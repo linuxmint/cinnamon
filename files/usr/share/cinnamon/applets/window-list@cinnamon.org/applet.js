@@ -71,12 +71,27 @@ function AppMenuButton(applet, metaWindow, alert) {
 
 AppMenuButton.prototype = {
     _init: function(applet, metaWindow, alert) {
-        this.actor = new Cinnamon.GenericContainer({
-            name: 'appMenu',
-            style_class: 'window-list-item-box',
-            reactive: true,
-            can_focus: true,
-            track_hover: true });
+
+//	if (applet.orientation == St.Side.LEFT || applet.orientation == St.Side.RIGHT)
+//	{
+//		this.actor = new St.BoxLayout({
+//		    name: 'appMenu',
+//		    style_class: 'window-list-item-box',
+//		    reactive: true,
+//		    can_focus: true,
+//		    track_hover: true,
+//		    vertical: true });
+//	}
+//	else
+//	{
+	this.actor = new Cinnamon.GenericContainer({
+	    name: 'appMenu',
+	    style_class: 'window-list-item-box',
+	    reactive: true,
+	    can_focus: true,
+	    track_hover: true });
+
+        //this.actor.set_style('margin-bottom: 0px; padding-bottom: 0px;');
 
         this._applet = applet;
         this.metaWindow = metaWindow;
@@ -97,7 +112,7 @@ AppMenuButton.prototype = {
                 Lang.bind(this, this._getPreferredHeight));
         this.actor.connect('allocate', Lang.bind(this, this._allocate));
 
-        this._iconBox = new Cinnamon.Slicer({ name: 'appMenuIcon' });
+        this._iconBox = new Cinnamon.Slicer({ name: 'appMenuIcon'});
         this._iconBox.connect('style-changed',
                               Lang.bind(this, this._onIconBoxStyleChanged));
         this._iconBox.connect('notify::allocation',
@@ -194,7 +209,6 @@ AppMenuButton.prototype = {
 
     _onDragBegin: function() {
         this._draggable._overrideY = this.actor.get_transformed_position()[1];
-        this.actor.hide();
         this._tooltip.hide();
         this._tooltip.preventShow = true;
     },
@@ -716,10 +730,6 @@ MyApplet.prototype = {
 
     on_applet_removed_from_panel: function() {
         this.signals.disconnectAllSignals();
-        for (let ws of this.workspaces) {
-            ws[0].disconnect(ws[1]);
-            ws[0].disconnect(ws[2]);
-        }
     },
 
     on_applet_instances_changed: function() {
@@ -920,10 +930,11 @@ MyApplet.prototype = {
         if (!(source instanceof AppMenuButton))
             return DND.DragMotionResult.NO_DROP;
 
+        source.actor.hide();
         let children = this.actor.get_children();
 
         let pos = children.length;
-        while (--pos && x < children[pos].get_allocation_box().x1 + children[pos].width / 2);
+        while (--pos && x < children[pos].get_allocation_box().x1);
 
         this._dragPlaceholderPos = pos;
 

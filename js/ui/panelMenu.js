@@ -122,9 +122,19 @@ Button.prototype = {
             // menu is higher then the screen; it's useful if part of the menu is
             // scrollable so the minimum height is smaller than the natural height
             let monitor = Main.layoutManager.findMonitorForActor(this.launcher.actor);
+
+            if (Main.panel.panelPosition == 0 || Main.panel.panelPosition == 1) // horizontal panel
+            {
             this.menu.actor.style = ('max-height: ' +
                                      Math.round(monitor.height - Main.panel.actor.height) +
                                      'px;');
+            }
+            else
+            {
+            this.menu.actor.style = ('max-height: ' +
+                                     Math.round(monitor.height) +
+                                     'px;');
+            }
         }
         this.menu.toggle();
     },

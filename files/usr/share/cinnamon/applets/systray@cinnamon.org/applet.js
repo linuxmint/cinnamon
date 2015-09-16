@@ -8,6 +8,9 @@ const Mainloop = imports.mainloop;
 const SignalManager = imports.misc.signalManager;
 
 const ICON_SCALE_FACTOR = .8; // for custom panel heights, 20 (default icon size) / 25 (default panel height)
+const PANEL_FONT_DEFAULT_HEIGHT = 11.5; // px
+const PANEL_SYMBOLIC_ICON_DEFAULT_HEIGHT = 1.14 * PANEL_FONT_DEFAULT_HEIGHT; // ems conversion
+const DEFAULT_PANEL_HEIGHT = 25;
 
 function MyApplet(orientation, panel_height, instance_id) {
     this._init(orientation, panel_height, instance_id);
@@ -23,12 +26,25 @@ MyApplet.prototype = {
         this.actor.style="spacing: 5px;";
 
         this._signalManager = new SignalManager.SignalManager(this);
+	let manager;
+	let symb_scaleup = 0;
 
-        let manager = new Clutter.BoxLayout( { spacing: 2 * global.ui_scale,
-                                               homogeneous: true,
-                                               orientation: Clutter.Orientation.HORIZONTAL });
-
-        this.manager_container = new Clutter.Actor( { layout_manager: manager } );
+	if (orientation == St.Side.TOP || orientation == St.Side.BOTTOM)
+	{
+		manager = new Clutter.BoxLayout( { spacing: 2 * global.ui_scale,
+		                                       homogeneous: true,
+		                                       orientation: Clutter.Orientation.HORIZONTAL });
+        	this.manager_container = new Clutter.Actor( { layout_manager: manager } );
+	}
+	else
+	{
+		manager = new Clutter.BoxLayout( { spacing: 2 * global.ui_scale,
+		                                       homogeneous: true,
+		                                       orientation: Clutter.Orientation.VERTICAL });
+	        symb_scaleup 	= ((panel_height / DEFAULT_PANEL_HEIGHT) * PANEL_SYMBOLIC_ICON_DEFAULT_HEIGHT) / global.ui_scale;
+        	this.manager_container = new Clutter.Actor( { layout_manager: manager } );
+	        this.manager_container.set_margin_left(4.0*symb_scaleup/20);
+	}
 
         this.actor.add_actor (this.manager_container);
 
@@ -71,28 +87,12 @@ MyApplet.prototype = {
                 return;
             }
 
-            let buggyIcons = ["pidgin", "thunderbird"];            
-
             global.log("Adding systray: " + role + " (" + icon.get_width() + "x" + icon.get_height() + "px)");
 
             if (icon.get_parent())
                 icon.get_parent().remove_child(icon);
 
-            if (this._scaleMode) {
-                let disp_size = this._panelHeight * ICON_SCALE_FACTOR;
-                if (icon.get_height() != disp_size) {
-                    if (icon.get_width() == 1 || icon.get_height() == 1 || buggyIcons.indexOf(role) != -1) {
-                        if (icon.get_height() > disp_size) {                        
-                            icon.set_height(disp_size);
-                            global.log("   Changed the height of " + role + " (" + icon.get_width() + "x" + icon.get_height() + "px)");
-                        }
-                    }
-                    else {                    
-                        icon.set_size(disp_size, disp_size);
-                        global.log("   Resized " + role + " (" + icon.get_width() + "x" + icon.get_height() + "px)");
-                    }
-                }                
-            }
+            this.resize_icon(icon, role);
 
             /* dropbox, for some reason, refuses to provide a correct size icon in our new situation.
              * Tried even with stalonetray, same results - all systray icons I tested work fine but dropbox.  I'm
@@ -107,15 +107,8 @@ MyApplet.prototype = {
 
             let timerId = 0;
             let i = 0;
-            timerId = Mainloop.timeout_add(500, Lang.bind(this, function() {               
-                if (this._scaleMode) {
-                    let disp_size = this._panelHeight * ICON_SCALE_FACTOR;
-                    let size = disp_size;
-                    if (icon.width == disp_size){
-                        size = disp_size - 1;
-                    }
-                    icon.set_size(size, size);
-                }
+            timerId = Mainloop.timeout_add(500, Lang.bind(this, function() {
+                this.resize_icon(icon, role);
                 i++;
                 if (i == 2) {
                     Mainloop.source_remove(timerId);
@@ -124,6 +117,48 @@ MyApplet.prototype = {
 
         } catch (e) {
             global.logError(e);
+        }
+    },
+
+    resize_icon: function(icon, role) {
+        if (this._scaleMode) {
+            let disp_size = this._panelHeight * ICON_SCALE_FACTOR;
+            let size;
+            if (icon.get_height() != disp_size) {
+                size = disp_size;
+            }
+            else {
+                // Force a resize with a slightly different size
+                size = disp_size - 1;
+            }
+
+            // Don't try to scale buggy icons, give them predefined sizes
+            // This, in the case of pidgin, fixes the icon being cropped in the systray
+            if (["pidgin", "thunderbird"].indexOf(role) != -1) {
+                if (disp_size < 22) {
+                    size = 16;
+                }
+                else if (disp_size < 32) {
+                    size = 22;
+                }
+                else if (disp_size < 48) {
+                    size = 32;
+                }
+                else {
+                    size = 48;
+                }
+            }
+
+            icon.set_size(size, size);
+
+            global.log("Resized " + role + " (" + icon.get_width() + "x" + icon.get_height() + "px)");
+        }
+        else {
+            // Force buggy icon size when not in scale mode
+            if (["pidgin", "thunderbird"].indexOf(role) != -1) {
+                icon.set_size(16, 16);
+                global.log("Resized " + role + " (" + icon.get_width() + "x" + icon.get_height() + "px)");
+            }
         }
     },
 
