@@ -648,6 +648,12 @@ cinnamon_global_set_cursor (CinnamonGlobal *global,
     case CINNAMON_CURSOR_RESIZE_TOP:
       name = "top_side";
       break;
+    case CINNAMON_CURSOR_RESIZE_LEFT:
+      name = "left_side";
+      break;
+    case CINNAMON_CURSOR_RESIZE_RIGHT:
+      name = "right_side";
+      break;
     case CINNAMON_CURSOR_RESIZE_BOTTOM_RIGHT:
       name = "bottom_right_corner";
       break;
@@ -696,6 +702,12 @@ cinnamon_global_set_cursor (CinnamonGlobal *global,
           break;
         case CINNAMON_CURSOR_RESIZE_TOP:
           cursor_type = GDK_TOP_SIDE;
+          break;
+        case CINNAMON_CURSOR_RESIZE_LEFT:
+          cursor_type = GDK_LEFT_SIDE;
+          break;
+        case CINNAMON_CURSOR_RESIZE_RIGHT:
+          cursor_type = GDK_RIGHT_SIDE;
           break;
         case CINNAMON_CURSOR_RESIZE_BOTTOM_RIGHT:
           cursor_type = GDK_BOTTOM_RIGHT_CORNER;
