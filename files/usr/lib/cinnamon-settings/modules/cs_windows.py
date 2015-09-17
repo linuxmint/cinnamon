@@ -78,7 +78,7 @@ class Module:
             widget = GSettingsSwitch(_("Prevent focus stealing"), "org.cinnamon", "prevent-focus-stealing")
             settings.add_row(widget)
 
-            widget = GSettingsSwitch(_("Attach dialog windows to their parent window's titlebar"), "org.cinnamon.muffin", "attach-modal-dialogs")
+            widget = GSettingsSwitch(_("Attach dialog windows to the parent window"), "org.cinnamon.muffin", "attach-modal-dialogs")
             settings.add_row(widget)
 
             settings = page.add_section(_("Moving and Resizing Windows"))
