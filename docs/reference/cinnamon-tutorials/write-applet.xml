@@ -127,7 +127,7 @@
       </programlisting>
     </informalexample>
     <para>
-      The <code>main</code> function is the only thing Cinnamon understand. To load an applet, Cinnamon calls the <code>main</code> function in the applet's code, and expects to get an Applet object, which it will add to the panel. So here we instantiate an <code>MyApplet</code> object (whose details are defined above, and returns it.
+      The <code>main</code> function is the only thing Cinnamon understand. To load an applet, Cinnamon calls the <code>main</code> function in the applet's code, and expects to get an Applet object, which it will add to the panel. So here we instantiate an <code>MyApplet</code> object (whose details are defined above), and returns it.
     </para>
 
     <para>
@@ -231,7 +231,7 @@
     </para>
 
     <para>
-      However, contrary to popular belief, the applet API is not psychic. It has no idea what your applet wants to do (appart from displaying an icon). You hvae to first tell it what icon you want, in the line
+      However, contrary to popular belief, the applet API is not psychic. It has no idea what your applet wants to do (apart from displaying an icon). You have to first tell it what icon you want, in the line
     </para>
 
     <informalexample>
