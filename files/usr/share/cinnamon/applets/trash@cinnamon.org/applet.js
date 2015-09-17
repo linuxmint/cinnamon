@@ -92,10 +92,6 @@ MyApplet.prototype = {
 
     _doEmptyTrash: function() {
         Util.spawn(['gvfs-trash', '--empty']);
-    },
-
-    on_orientation_changed: function (orientation) {
-        this._initContextMenu();
     }
 };
 
