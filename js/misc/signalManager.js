@@ -1,3 +1,4 @@
+const Gio = imports.gi.Gio;
 const GLib = imports.gi.GLib;
 const GObject = imports.gi.GObject;
 const Lang = imports.lang;
@@ -110,11 +111,19 @@ SignalManager.prototype = {
      */
     connect: function(obj, sigName, callback, bind, force) {
         if (!force && this.isConnected(sigName, obj, callback))
-            return
+            return;
 
-        let id = obj.connect(sigName, this._makeCallback(callback, bind));
+        let id = this._connectSignal(obj, sigName, this._makeCallback(callback, bind));
 
         this._storage.push([sigName, obj, callback, id]);
+    },
+
+    _connectSignal: function(obj, sigName, callback){
+        // ensure the correct method name for connecting
+        if(obj instanceof Gio.DBusProxy)
+            return obj.connectSignal(sigName, callback);
+
+        return obj.connect(sigName, callback);
     },
 
     _signalIsConnected: function (signal) {
@@ -198,9 +207,17 @@ SignalManager.prototype = {
      */
     disconnect: function() {
         let results = this.getSignals(arguments);
-        results.filter(this._signalIsConnected).forEach(x => x[1].disconnect(x[3]));
+        results.filter(this._signalIsConnected).forEach(x => this._disconnectSignal(x[1], x[3]));
 
         this._storage = this._storage.filter(x => results.indexOf(x) != -1);
+    },
+
+    _disconnectSignal: function(obj, id){
+        // ensure the correct method name for disconnecting
+        if(obj instanceof Gio.DBusProxy)
+            obj.disconnectSignal(id);
+        else
+            obj.disconnect(id);
     },
 
     /**
@@ -210,7 +227,7 @@ SignalManager.prototype = {
      * in the @destroy function of objects.
      */
     disconnectAllSignals: function() {
-        this._storage.filter(this._signalIsConnected).forEach(x => x[1].disconnect(x[3]));
+        this._storage.filter(this._signalIsConnected).forEach(x => this._disconnectSignal(x[1], x[3]));
 
         this._storage = [];
     },
