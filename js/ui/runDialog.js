@@ -155,7 +155,7 @@ __proto__: ModalDialog.ModalDialog.prototype,
 
         this.contentLayout.add(label, { y_align: St.Align.START });
 
-        let entry = new St.Entry({ style_class: 'run-dialog-entry' });
+        let entry = new St.Entry({ style_class: 'entry' });
         CinnamonEntry.addContextMenu(entry);
 
         entry.label_actor = label;

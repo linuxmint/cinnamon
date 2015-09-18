@@ -180,10 +180,11 @@ ModalDialog.prototype = {
             let key = buttonInfo['key'];
             let wantsfocus = buttonInfo['focused'] === true;
             let nofocus = buttonInfo['focused'] === false;
-            buttonInfo.button = new St.Button({ style_class: 'modal-dialog-button',
+            buttonInfo.button = new St.Button({ style_class: 'button',
                                                 reactive:    true,
                                                 can_focus:   true,
                                                 label:       label });
+            buttonInfo.button.add_style_class_name('text-button');
 
             let x_alignment;
             if (buttons.length == 1)
