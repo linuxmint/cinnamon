@@ -35,6 +35,7 @@
 #define CACHE_PREFIX_COMPRESSED_CHECKSUM "compressed-checksum:"
 
 static int active_scale = 1;
+static gboolean watch_textures = FALSE;
 
 struct _StTextureCachePrivate
 {
@@ -175,6 +176,7 @@ st_texture_cache_init (StTextureCache *self)
 
   self->priv->settings = g_settings_new ("org.cinnamon");
 
+  watch_textures = g_settings_get_boolean (self->priv->settings, "enable-texture-monitors");
   g_signal_connect (self->priv->settings, "changed::active-display-scale",
                     G_CALLBACK (update_scale_factor), self);
 
@@ -1132,24 +1134,27 @@ static void
 ensure_monitor_for_uri (StTextureCache *cache,
                         const gchar    *uri)
 {
-  StTextureCachePrivate *priv = cache->priv;
-  GFile *file = g_file_new_for_uri (uri);
+  if (watch_textures)
+  {
+    StTextureCachePrivate *priv = cache->priv;
+    GFile *file = g_file_new_for_uri (uri);
 
-  /* No point in trying to monitor files that are part of a
-   * GResource, since it does not support file monitoring.
-   */
-  if (!g_file_has_uri_scheme (file, "resource")) {
-    if (g_hash_table_lookup (priv->file_monitors, uri) == NULL)
-    {
-      GFileMonitor *monitor = g_file_monitor_file (file, G_FILE_MONITOR_NONE,
-                                                   NULL, NULL);
-      g_signal_connect (monitor, "changed",
-                        G_CALLBACK (file_changed_cb), cache);
-      g_hash_table_insert (priv->file_monitors, g_strdup (uri), monitor);
+    /* No point in trying to monitor files that are part of a
+     * GResource, since it does not support file monitoring.
+     */
+    if (!g_file_has_uri_scheme (file, "resource")) {
+      if (g_hash_table_lookup (priv->file_monitors, uri) == NULL)
+      {
+        GFileMonitor *monitor = g_file_monitor_file (file, G_FILE_MONITOR_NONE,
+                                                     NULL, NULL);
+        g_signal_connect (monitor, "changed",
+                          G_CALLBACK (file_changed_cb), cache);
+        g_hash_table_insert (priv->file_monitors, g_strdup (uri), monitor);
+      }
     }
-  }
 
-  g_object_unref (file);
+    g_object_unref (file);
+  }
 }
 
 typedef struct {
