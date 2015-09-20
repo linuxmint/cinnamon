@@ -328,10 +328,12 @@ function get_object_for_instance (deskletId) {
     }
 }
 
-function get_object_for_uuid (uuid) {
-    for (let instanceid in deskletObj) {
-        if (deskletObj[instanceid]._uuid == uuid) {
-            return deskletObj[instanceid];
+function get_object_for_uuid (uuid, instanceId) {
+    for (let thisInstanceId in deskletObj) {
+        if (deskletObj[thisInstanceId]._uuid == uuid) {
+            if (instanceId == uuid || thisInstanceId == instanceId) {
+                return deskletObj[thisInstanceId]
+            }
         }
     }
     return null;

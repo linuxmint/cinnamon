@@ -457,10 +457,12 @@ function get_object_for_instance (appletId) {
     }
 }
 
-function get_object_for_uuid (uuid) {
-    for (let instanceid in appletObj) {
-        if (appletObj[instanceid]._uuid == uuid) {
-            return appletObj[instanceid]
+function get_object_for_uuid (uuid, instanceId) {
+    for (let thisInstanceId in appletObj) {
+        if (appletObj[thisInstanceId]._uuid == uuid) {
+            if (instanceId == uuid || thisInstanceId == instanceId) {
+                return appletObj[thisInstanceId]
+            }
         }
     }
     return null;

@@ -129,7 +129,7 @@ class XletSetting:
         else:
             self.multi_instance = False
         if os.path.exists(path) and os.path.isdir(path):
-            instances = os.listdir(path)
+            instances = sorted(os.listdir(path))
             if len(instances) != 0:
                 for instance in instances:
                     raw_data = open("%s/%s" % (path, instance)).read()
@@ -205,8 +205,14 @@ class XletSetting:
             view.show()
             self.nb.append_page(view, Gtk.Label.new(_("Instance %d") % (i + 1)))
             view.key = instance_key
+            
+            if target_instance == -1:
+                target_instance = instance_key
+                self.current_id = instance_key
+
             if view.key == target_instance:
                 target_page = i
+
             i += 1
 
         self.content.pack_start(self.nb, True, True, 2)
@@ -224,7 +230,7 @@ class XletSetting:
         session_bus = dbus.SessionBus()
         cinnamon_dbus = session_bus.get_object("org.Cinnamon", "/org/Cinnamon")
         highlight_applet = cinnamon_dbus.get_dbus_method('highlightApplet', 'org.Cinnamon')
-        highlight_applet(self.current_id, self.multi_instance)
+        highlight_applet(self.uuid, self.current_id)
 
     def on_back_to_list_button_clicked(self, widget):
         self.parent._close_configure(self)
