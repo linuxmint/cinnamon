@@ -694,8 +694,20 @@ NMDevice.prototype = {
     _getDescription: function() {
         let dev_product = this.device.get_product();
         let dev_vendor = this.device.get_vendor();
-        if (!dev_product || !dev_vendor)
-	    return '';
+        if (!dev_product || !dev_vendor) {
+            if (this.device.name) {
+                return this.device.name;
+            }
+            else {
+                switch (this.device.get_device_type()) {
+                    case NetworkManager.DeviceType.ETHERNET: return _("Ethernet");
+                    case NetworkManager.DeviceType.WIFI: return _("Wifi");
+                    case NetworkManager.DeviceType.MODEM: return _("Modem");
+                    case NetworkManager.DeviceType.BT: return _("Bluetooth");
+                    default: return "";
+                }
+            }
+        }
 
         let product = Util.fixupPCIDescription(dev_product);
         let vendor = Util.fixupPCIDescription(dev_vendor);
