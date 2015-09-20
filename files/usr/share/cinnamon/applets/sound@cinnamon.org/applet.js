@@ -1420,6 +1420,11 @@ MyApplet.prototype = {
             this._control["change_" + type](device);
         });
 
+        let bin = new St.Bin({ x_align: St.Align.END, style_class: 'menuitem-detail' });
+        let label = new St.Label({ text: device.origin });
+        bin.add_actor(label);
+        item.addActor(bin, { expand: false, span: 1, align: St.Align.END });
+
         let selectItem = this["_select" + type[0].toUpperCase() + type.slice(1) + "DeviceItem"];
         selectItem.menu.addMenuItem(item);
         //show the menu if we have more than two devices
