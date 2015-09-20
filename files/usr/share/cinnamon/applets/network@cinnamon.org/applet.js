@@ -210,8 +210,10 @@ NMWiredSectionTitleMenuItem.prototype = {
     updateForDevice: function(device) {
         if (device) {
             this._device = device;
-            this.setStatus(device.getStatusLabel());
+            this.setStatus(device.statusLabel);
             this.setToggleState(device.connected);
+            // if this device is not controllable, hide the switch
+            this._switch.actor.visible = device.controllable;
         } else
             this.setStatus('');
     },
@@ -268,10 +270,12 @@ NMWirelessSectionTitleMenuItem.prototype = {
         // - if the switch is off
         // - if the device is activated or disconnected
         if (device && this._softwareEnabled && this._hardwareEnabled) {
-            let text = device.getStatusLabel();
-            this.setStatus(text);
-        } else
+            this.setStatus(device.statusLabel);
+            this._switch.actor.visible = device.controllable;
+        } else {
             this.setStatus(null);
+            this._switch.actor.show();
+        }
     },
 
     activate: function(event) {
@@ -493,7 +497,7 @@ NMDevice.prototype = {
         // in the majority of cases (wired, wwan, vpn)
     },
 
-    getStatusLabel: function() {
+    get statusLabel(){
         switch(this.device.state) {
         case NetworkManager.DeviceState.DISCONNECTED:
         case NetworkManager.DeviceState.ACTIVATED:
@@ -541,6 +545,14 @@ NMDevice.prototype = {
             log('Device state invalid, is %d'.format(this.device.state));
             return 'invalid';
         }
+    },
+
+    get controllable(){
+        // controllable for every state except unavailable or unmanaged
+        if(this.device.state === NetworkManager.DeviceState.UNAVAILABLE || this.device.state === NetworkManager.DeviceState.UNMANAGED)
+            return false;
+
+        return true;
     },
 
     // protected
@@ -666,12 +678,15 @@ NMDevice.prototype = {
             this._firmwareChangedId = 0;
         }
 
-        this.statusItem.setStatus(this.getStatusLabel());
+        this.statusItem.setStatus(this.statusLabel);
         this.statusItem.setToggleState(this.connected);
+        // if this device is not controllable, hide the switch
+        this.statusItem._switch.actor.visible = this.controllable;
     },
 
     _substateChanged: function() {
-        this.statusItem.setStatus(this.getStatusLabel());
+        this.statusItem.setStatus(this.statusLabel);
+        this.statusItem._switch.actor.visible = this.controllable;
 
         this.emit('state-changed');
     },
@@ -820,7 +835,7 @@ NMDeviceModem.prototype = {
                 // prevent "network unavailable" statuses
                 this.statusItem.setStatus(null);
             } else
-                this.statusItem.setStatus(this.getStatusLabel());
+                this.statusItem.setStatus(this.statusLabel);
         }
 
         NMDevice.prototype.setEnabled.call(this, enabled);
@@ -968,9 +983,8 @@ NMDeviceVPN.prototype = {
             this._client.deactivate_connection(this._activeConnection);
     },
 
-    getStatusLabel: function() {
-        return null;
-    }
+    statusLabel: null,
+    controllable: true
 };
 
 function NMDeviceWireless() {
