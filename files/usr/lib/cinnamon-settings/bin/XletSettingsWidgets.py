@@ -1340,7 +1340,7 @@ class Button(Gtk.Button, BaseWidget):
         session_bus = dbus.SessionBus()
         cinnamon_dbus = session_bus.get_object("org.Cinnamon", "/org/Cinnamon")
         activate_cb = cinnamon_dbus.get_dbus_method('activateCallback', 'org.Cinnamon')
-        activate_cb(self.get_callback(), self.get_instance_id(), self.get_multi_instance())
+        activate_cb(self.get_callback(), self.uuid, self.get_instance_id())
 
     def update_dep_state(self, active):
         self.set_sensitive(active)
