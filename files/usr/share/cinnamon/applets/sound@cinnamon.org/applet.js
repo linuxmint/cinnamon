@@ -266,6 +266,7 @@ Player.prototype = {
         this.playerInfo = {
             icon: new St.Icon({icon_type: St.IconType.SYMBOLIC, style_class: "popup-menu-icon"}),
             label: new St.Label,
+            expander: new St.Bin({ x_align: St.Align.END }),
             buttons: new St.BoxLayout
         };
         this.showPosition = true;
@@ -1335,7 +1336,8 @@ MyApplet.prototype = {
 
                 item.addActor(info.icon, {span: 0});
                 item.addActor(info.label, {span: 0});
-                item.addActor(info.buttons, {align: St.Align.END});
+                item.addActor(info.expander, {expand: true, span: -1, align: St.Align.END });
+                info.expander.child = info.buttons;
             }
             this._playerSelector.actor.show();
         } else {
