@@ -120,7 +120,7 @@ VolumeSlider.prototype = {
 
         this.tooltip = new Tooltips.Tooltip(this.actor, this.tooltipText);
 
-        this.connect("value-changed", Lang.bind(this, this._onValueChanged));
+        this.connect('value-changed', Lang.bind(this, this._onValueChanged));
 
         this.app_icon = app_icon;
         if (this.app_icon == null) {
@@ -131,9 +131,9 @@ VolumeSlider.prototype = {
             this.icon = new St.Icon({icon_name: this.app_icon, icon_type: St.IconType.FULLCOLOR, icon_size: 16});
         }
 
-        this.removeActor(this._slider);
+        this.removeActor(this._slider.actor);
         this.addActor(this.icon, {span: 0});
-        this.addActor(this._slider, {span: -1, expand: true});
+        this.addActor(this._slider.actor, {span: -1, expand: true});
 
         this.connectWithStream(stream);
     },
@@ -161,9 +161,9 @@ VolumeSlider.prototype = {
     _onValueChanged: function(){
         if(!this.stream) return;
 
-        let volume = this._value * this.applet._volumeMax, muted;
+        let volume = this._slider._value * this.applet._volumeMax, muted;
 
-        if(this._value < .005){
+        if(this._slider._value < .005){
             volume = 0;
             muted = true;
         } else {
@@ -370,12 +370,13 @@ Player.prototype = {
         }
 
         this._positionSlider = new PopupMenu.PopupSliderMenuItem(0);
+
         this._currentTimeLabel = new St.Label({text: "0:00"});
         this._songLengthLabel = new St.Label({text: "0:00"});
 
-        this._positionSlider.removeActor(this._positionSlider._slider);
+        this._positionSlider.removeActor(this._positionSlider._slider.actor);
         this._positionSlider.addActor(this._currentTimeLabel, {span: 0});
-        this._positionSlider.addActor(this._positionSlider._slider, {span: 0});
+        this._positionSlider.addActor(this._positionSlider._slider.actor, {span: 0});
         this._positionSlider.addActor(this._songLengthLabel, {span: 0});
 
         this._seeking = false;
@@ -520,7 +521,7 @@ Player.prototype = {
 
     _setPosition: function(value) {
         if(value === "slider"){
-            let time = this._positionSlider._value * this._songLength;
+            let time = this._positionSlider._slider._value * this._songLength;
             this._wantedSeekValue = Math.round(time * 1000000);
             this._mediaServerPlayer.SetPositionRemote(this._trackObj, time * 1000000);
             this._updateTimeLabel(time);

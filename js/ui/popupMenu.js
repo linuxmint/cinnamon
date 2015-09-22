@@ -1,6 +1,5 @@
 // -*- mode: js; js-indent-level: 4; indent-tabs-mode: nil -*-
 
-const Cairo = imports.cairo;
 const Clutter = imports.gi.Clutter;
 const Gtk = imports.gi.Gtk;
 const Lang = imports.lang;
@@ -13,11 +12,11 @@ const BoxPointer = imports.ui.boxpointer;
 const DND = imports.ui.dnd;
 const Main = imports.ui.main;
 const Params = imports.misc.params;
+const Separator = imports.ui.separator;
+const Slider = imports.ui.slider;
 const Tweener = imports.ui.tweener;
 
 const Util = imports.misc.util;
-
-const SLIDER_SCROLL_STEP = 0.05; /* Slider scrolling step in % */
 
 function _ensureStyle(actor) {
     if (actor.get_children) {
@@ -463,31 +462,8 @@ PopupSeparatorMenuItem.prototype = {
     _init: function () {
         PopupBaseMenuItem.prototype._init.call(this, { reactive: false });
 
-        this._drawingArea = new St.DrawingArea({ style_class: 'popup-separator-menu-item' });
-        this.addActor(this._drawingArea, { span: -1, expand: true });
-        this._drawingArea.connect('repaint', Lang.bind(this, this._onRepaint));
-    },
-
-    _onRepaint: function(area) {
-        let cr = area.get_context();
-        let themeNode = area.get_theme_node();
-        let [width, height] = area.get_surface_size();
-        let margin = themeNode.get_length('-margin-horizontal');
-        let gradientHeight = themeNode.get_length('-gradient-height');
-        let startColor = themeNode.get_color('-gradient-start');
-        let endColor = themeNode.get_color('-gradient-end');
-
-        let gradientWidth = (width - margin * 2);
-        let gradientOffset = (height - gradientHeight) / 2;
-        let pattern = new Cairo.LinearGradient(margin, gradientOffset, width - margin, gradientOffset + gradientHeight);
-        pattern.addColorStopRGBA(0, startColor.red / 255, startColor.green / 255, startColor.blue / 255, startColor.alpha / 255);
-        pattern.addColorStopRGBA(0.5, endColor.red / 255, endColor.green / 255, endColor.blue / 255, endColor.alpha / 255);
-        pattern.addColorStopRGBA(1, startColor.red / 255, startColor.green / 255, startColor.blue / 255, startColor.alpha / 255);
-        cr.setSource(pattern);
-        cr.rectangle(margin, gradientOffset, gradientWidth, gradientHeight);
-        cr.fill();
-
-        cr.$dispose();
+        this._separator = new Separator.Separator();
+        this.addActor(this._separator.actor, { span: -1, expand: true });
     }
 };
 
@@ -602,172 +578,20 @@ PopupSliderMenuItem.prototype = {
     _init: function(value) {
         PopupBaseMenuItem.prototype._init.call(this, { activate: false });
 
-        this.actor.connect('key-press-event', Lang.bind(this, this._onKeyPressEvent));
+        this._slider = new Slider.Slider(value);
+        this._slider.connect('value-changed', Lang.bind(this, function(actor, value) {
+            this.emit('value-changed', value);
+        }));
 
-        if (isNaN(value))
-            // Avoid spreading NaNs around
-            throw TypeError('The slider value must be a number');
-        this._value = Math.max(Math.min(value, 1), 0);
-
-        this._slider = new St.DrawingArea({ style_class: 'popup-slider-menu-item', reactive: true });
-        this.addActor(this._slider, { span: -1, expand: true });
-        this._slider.connect('repaint', Lang.bind(this, this._sliderRepaint));
-        this.actor.connect('button-press-event', Lang.bind(this, this._startDragging));
-        this.actor.connect('scroll-event', Lang.bind(this, this._onScrollEvent));
-
-        this._releaseId = this._motionId = 0;
-        this._dragging = false;
+        this.addActor(this._slider.actor);
     },
 
     setValue: function(value) {
-        if (isNaN(value))
-            throw TypeError('The slider value must be a number');
-
-        this._value = Math.max(Math.min(value, 1), 0);
-        this._slider.queue_repaint();
-    },
-
-    _sliderRepaint: function(area) {
-        let cr = area.get_context();
-        let themeNode = area.get_theme_node();
-        let [width, height] = area.get_surface_size();
-
-        let handleRadius = themeNode.get_length('-slider-handle-radius');
-
-        let sliderWidth = width - 2 * handleRadius;
-        let sliderHeight = themeNode.get_length('-slider-height');
-
-        let sliderBorderWidth = themeNode.get_length('-slider-border-width');
-        let sliderBorderRadius = Math.min(width, sliderHeight) / 2;
-
-        let sliderBorderColor = themeNode.get_color('-slider-border-color');
-        let sliderColor = themeNode.get_color('-slider-background-color');
-
-        let sliderActiveBorderColor = themeNode.get_color('-slider-active-border-color');
-        let sliderActiveColor = themeNode.get_color('-slider-active-background-color');
-
-        const TAU = Math.PI * 2;
-
-        let handleX = handleRadius + (width - 2 * handleRadius) * this._value;
-
-        cr.arc(sliderBorderRadius + sliderBorderWidth, height / 2, sliderBorderRadius, TAU * 1/4, TAU * 3/4);
-        cr.lineTo(handleX, (height - sliderHeight) / 2);
-        cr.lineTo(handleX, (height + sliderHeight) / 2);
-        cr.lineTo(sliderBorderRadius + sliderBorderWidth, (height + sliderHeight) / 2);
-        Clutter.cairo_set_source_color(cr, sliderActiveColor);
-        cr.fillPreserve();
-        Clutter.cairo_set_source_color(cr, sliderActiveBorderColor);
-        cr.setLineWidth(sliderBorderWidth);
-        cr.stroke();
-
-        cr.arc(width - sliderBorderRadius - sliderBorderWidth, height / 2, sliderBorderRadius, TAU * 3/4, TAU * 1/4);
-        cr.lineTo(handleX, (height + sliderHeight) / 2);
-        cr.lineTo(handleX, (height - sliderHeight) / 2);
-        cr.lineTo(width - sliderBorderRadius - sliderBorderWidth, (height - sliderHeight) / 2);
-        Clutter.cairo_set_source_color(cr, sliderColor);
-        cr.fillPreserve();
-        Clutter.cairo_set_source_color(cr, sliderBorderColor);
-        cr.setLineWidth(sliderBorderWidth);
-        cr.stroke();
-
-        let handleY = height / 2;
-
-        let color = themeNode.get_foreground_color();
-        Clutter.cairo_set_source_color(cr, color);
-        cr.arc(handleX, handleY, handleRadius, 0, 2 * Math.PI);
-        cr.fill();
-
-        cr.$dispose();
-    },
-
-    _startDragging: function(actor, event) {
-        if (this._dragging) // don't allow two drags at the same time
-            return;
-
-        this.emit('drag-begin');
-        this._dragging = true;
-
-        // FIXME: we should only grab the specific device that originated
-        // the event, but for some weird reason events are still delivered
-        // outside the slider if using clutter_grab_pointer_for_device
-        Clutter.grab_pointer(this._slider);
-        this._releaseId = this._slider.connect('button-release-event', Lang.bind(this, this._endDragging));
-        this._motionId = this._slider.connect('motion-event', Lang.bind(this, this._motionEvent));
-        let absX, absY;
-        [absX, absY] = event.get_coords();
-        this._moveHandle(absX, absY);
-    },
-
-    _endDragging: function() {
-        if (this._dragging) {
-            this._slider.disconnect(this._releaseId);
-            this._slider.disconnect(this._motionId);
-
-            Clutter.ungrab_pointer();
-            this._dragging = false;
-
-            this.emit('drag-end');
-        }
-        return true;
-    },
-
-    _onScrollEvent: function (actor, event) {
-        let direction = event.get_scroll_direction();
-
-        if (direction == Clutter.ScrollDirection.DOWN) {
-            this._value = Math.max(0, this._value - SLIDER_SCROLL_STEP);
-        }
-        else if (direction == Clutter.ScrollDirection.UP) {
-            this._value = Math.min(1, this._value + SLIDER_SCROLL_STEP);
-        }
-
-        this._slider.queue_repaint();
-        this.emit('value-changed', this._value);
-    },
-
-    _motionEvent: function(actor, event) {
-        let absX, absY;
-        [absX, absY] = event.get_coords();
-        this._moveHandle(absX, absY);
-        return true;
-    },
-
-    _moveHandle: function(absX, absY) {
-        let relX, relY, sliderX, sliderY;
-        [sliderX, sliderY] = this._slider.get_transformed_position();
-        relX = absX - sliderX;
-        relY = absY - sliderY;
-
-        let width = this._slider.width;
-        let handleRadius = this._slider.get_theme_node().get_length('-slider-handle-radius');
-
-        let newvalue;
-        if (relX < handleRadius)
-            newvalue = 0;
-        else if (relX > width - handleRadius)
-            newvalue = 1;
-        else
-            newvalue = (relX - handleRadius) / (width - 2 * handleRadius);
-        this._value = newvalue;
-        this._slider.queue_repaint();
-        this.emit('value-changed', this._value);
+        this._slider.setValue(value);
     },
 
     get value() {
-        return this._value;
-    },
-
-    _onKeyPressEvent: function (actor, event) {
-        let key = event.get_key_symbol();
-        if (key == Clutter.KEY_Right || key == Clutter.KEY_Left) {
-            let delta = key == Clutter.KEY_Right ? 0.1 : -0.1;
-            this._value = Math.max(0, Math.min(this._value + delta, 1));
-            this._slider.queue_repaint();
-            this.emit('value-changed', this._value);
-            this.emit('drag-end');
-            return true;
-        }
-        return false;
+        return this._slider.value;
     }
 };
 

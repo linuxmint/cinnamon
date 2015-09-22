@@ -158,9 +158,9 @@ BrightnessSlider.prototype = {
         }));
 
         this.icon = new St.Icon({icon_name: icon, icon_type: St.IconType.SYMBOLIC, icon_size: 16});
-        this.removeActor(this._slider);
+        this.removeActor(this._slider.actor);
         this.addActor(this.icon, {span: 0});
-        this.addActor(this._slider, {span: -1, expand: true});
+        this.addActor(this._slider.actor, {span: -1, expand: true});
 
         this.label = label;
         this.toolTipText = label;
