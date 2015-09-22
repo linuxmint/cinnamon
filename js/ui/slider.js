@@ -8,19 +8,24 @@ const Signals = imports.signals;
 
 const SLIDER_SCROLL_STEP = 0.05; /* Slider scrolling step in % */
 
-function Slider(value) {
-    this._init(value);
+function Slider(value, style_class, flat) {
+    this._init(value, style_class, flat);
 }
 
 Slider.prototype = {
-    _init: function(value) {
+    _init: function(value, style_class, flat) {
         if (isNaN(value))
             // Avoid spreading NaNs around
             throw TypeError('The slider value must be a number');
         this._value = Math.max(Math.min(value, 1), 0);
 
-        this.actor = new St.DrawingArea({ style_class: 'slider',
-                                          reactive: true });
+        if (style_class == null) {
+            style_class = 'slider';
+        }
+
+        this.flat = flat; // Don't draw radius on flat sliders
+
+        this.actor = new St.DrawingArea({ style_class: style_class, reactive: true });
         this.actor.connect('repaint', Lang.bind(this, this._sliderRepaint));
         this.actor.connect('button-press-event', Lang.bind(this, this._startDragging));
         this.actor.connect('scroll-event', Lang.bind(this, this._onScrollEvent));
@@ -61,25 +66,45 @@ Slider.prototype = {
 
         let handleX = handleRadius + (width - 2 * handleRadius) * this._value;
 
-        cr.arc(sliderBorderRadius + sliderBorderWidth, height / 2, sliderBorderRadius, TAU * 1/4, TAU * 3/4);
-        cr.lineTo(handleX, (height - sliderHeight) / 2);
-        cr.lineTo(handleX, (height + sliderHeight) / 2);
-        cr.lineTo(sliderBorderRadius + sliderBorderWidth, (height + sliderHeight) / 2);
-        Clutter.cairo_set_source_color(cr, sliderActiveColor);
-        cr.fillPreserve();
-        Clutter.cairo_set_source_color(cr, sliderActiveBorderColor);
-        cr.setLineWidth(sliderBorderWidth);
-        cr.stroke();
+        if (this.flat) {
+            // Active part
+            cr.rectangle(0, 0, width, height);
+            Clutter.cairo_set_source_color(cr, sliderActiveColor);
+            cr.fill();
+            Clutter.cairo_set_source_color(cr, sliderActiveBorderColor);
+            cr.setLineWidth(sliderBorderWidth);
+            cr.stroke();
 
-        cr.arc(width - sliderBorderRadius - sliderBorderWidth, height / 2, sliderBorderRadius, TAU * 3/4, TAU * 1/4);
-        cr.lineTo(handleX, (height + sliderHeight) / 2);
-        cr.lineTo(handleX, (height - sliderHeight) / 2);
-        cr.lineTo(width - sliderBorderRadius - sliderBorderWidth, (height - sliderHeight) / 2);
-        Clutter.cairo_set_source_color(cr, sliderColor);
-        cr.fillPreserve();
-        Clutter.cairo_set_source_color(cr, sliderBorderColor);
-        cr.setLineWidth(sliderBorderWidth);
-        cr.stroke();
+            // Remaining part
+            let x = width * this._value;
+            cr.rectangle(x, 0, width-x, height);
+            Clutter.cairo_set_source_color(cr, sliderColor);
+            cr.fill();
+            Clutter.cairo_set_source_color(cr, sliderBorderColor);
+            cr.setLineWidth(sliderBorderWidth);
+            cr.stroke();
+        }
+        else {
+            cr.arc(sliderBorderRadius + sliderBorderWidth, height / 2, sliderBorderRadius, TAU * 1/4, TAU * 3/4);
+            cr.lineTo(handleX, (height - sliderHeight) / 2);
+            cr.lineTo(handleX, (height + sliderHeight) / 2);
+            cr.lineTo(sliderBorderRadius + sliderBorderWidth, (height + sliderHeight) / 2);
+            Clutter.cairo_set_source_color(cr, sliderActiveColor);
+            cr.fillPreserve();
+            Clutter.cairo_set_source_color(cr, sliderActiveBorderColor);
+            cr.setLineWidth(sliderBorderWidth);
+            cr.stroke();
+
+            cr.arc(width - sliderBorderRadius - sliderBorderWidth, height / 2, sliderBorderRadius, TAU * 3/4, TAU * 1/4);
+            cr.lineTo(handleX, (height + sliderHeight) / 2);
+            cr.lineTo(handleX, (height - sliderHeight) / 2);
+            cr.lineTo(width - sliderBorderRadius - sliderBorderWidth, (height - sliderHeight) / 2);
+            Clutter.cairo_set_source_color(cr, sliderColor);
+            cr.fillPreserve();
+            Clutter.cairo_set_source_color(cr, sliderBorderColor);
+            cr.setLineWidth(sliderBorderWidth);
+            cr.stroke();
+        }
 
         let handleY = height / 2;
 

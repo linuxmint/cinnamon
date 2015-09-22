@@ -14,6 +14,7 @@ const Pango = imports.gi.Pango;
 const Tooltips = imports.ui.tooltips;
 const Main = imports.ui.main;
 const Settings = imports.ui.settings;
+const Slider = imports.ui.slider;
 
 const MEDIA_PLAYER_2_PATH = "/org/mpris/MediaPlayer2";
 const MEDIA_PLAYER_2_NAME = "org.mpris.MediaPlayer2";
@@ -32,30 +33,6 @@ x = _("Stopped");
 const VOLUME_ADJUSTMENT_STEP = 0.05; /* Volume adjustment step in % */
 
 const ICON_SIZE = 28;
-
-function TrackInfo() {
-    this._init.apply(this, arguments);
-}
-
-TrackInfo.prototype = {
-    __proto__: PopupMenu.PopupIconMenuItem.prototype,
-
-    _init: function(label, icon){
-        PopupMenu.PopupIconMenuItem.prototype._init.call(this, label, icon, St.IconType.SYMBOLIC, {reactive: false});
-    },
-
-    setLabel: function(label){
-        this.label.text = label.toString();
-    },
-
-    getLabel: function() {
-        return this.label.text.toString();
-    },
-
-    getColumnWidths: function(){
-        return [0];
-    }
-};
 
 function ControlButton() {
     this._init.apply(this, arguments);
@@ -263,11 +240,6 @@ Player.prototype = {
 
     _init: function(applet, busname, owner) {
         PopupMenu.PopupMenuSection.prototype._init.call(this);
-        this.playerInfo = {
-            icon: new St.Icon({icon_type: St.IconType.SYMBOLIC, style_class: "popup-menu-icon"}),
-            label: new St.Label,
-            buttons: new St.BoxLayout
-        };
         this.showPosition = true;
         this._owner = owner;
         this._busName = busname;
@@ -312,30 +284,76 @@ Player.prototype = {
         if (!this._prop || !this._mediaServerPlayer || !this._mediaServer)
             return;
 
-        this._trackCoverFile = this._trackCoverFileTmp = false;
-        this._trackCover = new St.Bin({style_class: 'sound-track-cover', x_align: St.Align.MIDDLE});
-        this._trackCover.set_child(new St.Icon({icon_name: "media-optical-cd-audio", icon_size: 220, icon_type: St.IconType.FULLCOLOR}));
-        this.infosTop = new PopupMenu.PopupMenuSection;
-        this.infosBottom = new PopupMenu.PopupMenuSection;
-        this._trackControls = new St.Bin({style_class: 'sound-playback-control', x_align: St.Align.MIDDLE});
-
         let mainBox = new PopupMenu.PopupMenuSection;
-        mainBox.addMenuItem(this.infosTop)
-        mainBox.addActor(this._trackCover);
-        mainBox.addMenuItem(this.infosBottom);
-
         this.addMenuItem(mainBox);
 
-        this._artist = new TrackInfo(_("Unknown Artist"), "system-users");
-        this._album = new TrackInfo(_("Unknown Album"), "media-optical");
-        this._title = new TrackInfo(_("Unknown Title"), "audio-x-generic");
+        this.vertBox = new St.BoxLayout({ vertical: true });
+        mainBox.addActor(this.vertBox);
 
+        // Player info
+        let playerBox = new St.BoxLayout({style_class: "sound-player-box"});
+        this.playerIcon = new St.Icon({icon_type: St.IconType.SYMBOLIC, style_class: "popup-menu-icon"});
+        this.playerLabel = new St.Label({y_expand: true, y_align: Clutter.ActorAlign.CENTER});
+        playerBox.add_actor(this.playerIcon, { expand: true, x_fill: false, x_align: St.Align.START });
+        playerBox.add_actor(this.playerLabel, { expand: true, x_fill: false, x_align: St.Align.START });
 
-        this.infosTop.addMenuItem(this._artist);
-        this.infosTop.addMenuItem(this._title);
+        if (this._mediaServer.CanRaise) {
+            let btn = new ControlButton("go-up", _("Open Player"), Lang.bind(this, function(){
+                if (this._name === "spotify") {
+                    // Spotify isn't able to raise via Dbus once its main UI is closed
+                    Util.spawn(['spotify']);
+                }
+                else {
+                    this._mediaServer.RaiseRemote();
+                }
+                this._applet.menu.close();
+            }), true);
+            playerBox.add_actor(btn.actor, { expand: true, x_fill: false, x_align: St.Align.END });
+        }
+        if (this._mediaServer.CanQuit) {
+            let btn = new ControlButton("window-close", _("Quit Player"), Lang.bind(this, function(){
+                this._mediaServer.QuitRemote();
+            }), true);
+            playerBox.add_actor(btn.actor, { expand: true, x_fill: false, x_align: St.Align.END });
+        }
 
-        this.infosBottom.addMenuItem(this._album);
+        this.vertBox.add_actor(playerBox);
 
+        // Cover Box (art + track info)
+        this._trackCover = new St.Bin({style_class: 'sound-track-cover', x_align: St.Align.MIDDLE});
+        this._trackCoverFile = this._trackCoverFileTmp = false;
+        this.coverBox = new Clutter.Box();
+        let l = new Clutter.BinLayout({x_align: Clutter.BinAlignment.FILL, y_align: Clutter.BinAlignment.END});
+        this.coverBox.set_layout_manager(l);
+
+        // Cover art
+        this.cover = new St.Icon({icon_name: "media-optical-cd-audio", icon_size: 300 * global.ui_scale, icon_type: St.IconType.FULLCOLOR});
+        this.coverBox.add_actor(this.cover);
+
+        // Track info (artist + title)
+        this._artist = _("Unknown Artist");
+        this._album = _("Unknown Album");
+        this._title = _("Unknown Title");
+        this.trackInfo = new St.BoxLayout({style_class: 'sound-track-info', vertical: true});
+        let artistInfo = new St.BoxLayout();
+        let artistIcon = new St.Icon({ icon_type: St.IconType.SYMBOLIC, icon_name: "system-users", style_class: 'popup-menu-icon' });
+        this.artistLabel = new St.Label({text:this._artist});
+        artistInfo.add_actor(artistIcon);
+        artistInfo.add_actor(this.artistLabel);
+        let titleInfo = new St.BoxLayout();
+        let titleIcon = new St.Icon({ icon_type: St.IconType.SYMBOLIC, icon_name: "audio-x-generic", style_class: 'popup-menu-icon' });
+        this.titleLabel = new St.Label({text:this._title});
+        titleInfo.add_actor(titleIcon);
+        titleInfo.add_actor(this.titleLabel);
+        this.trackInfo.add_actor(artistInfo);
+        this.trackInfo.add_actor(titleInfo);
+        this.coverBox.add_actor(this.trackInfo);
+
+        this._trackCover.set_child(this.coverBox);
+        this.vertBox.add_actor(this._trackCover);
+
+        // Playback controls
+        let trackControls = new St.Bin({style_class: 'sound-playback-control', x_align: St.Align.MIDDLE});
         this._prevButton = new ControlButton("media-skip-backward", _("Previous"), Lang.bind(this, function(){
             this._mediaServerPlayer.PreviousRemote();
         }));
@@ -348,38 +366,29 @@ Player.prototype = {
         this._nextButton = new ControlButton("media-skip-forward", _("Next"), Lang.bind(this, function(){
             this._mediaServerPlayer.NextRemote();
         }));
-
+        this.trackInfo.add_actor(trackControls);
         this.controls = new St.BoxLayout();
         this.controls.add_actor(this._prevButton.getActor());
         this.controls.add_actor(this._playButton.getActor());
         this.controls.add_actor(this._stopButton.getActor());
         this.controls.add_actor(this._nextButton.getActor());
-        this._trackControls.set_child(this.controls);
-        this.addActor(this._trackControls);
-
+        trackControls.set_child(this.controls);
         if(this._mediaServerPlayer.LoopStatus){
             this._loopButton = new ControlButton("media-playlist-consecutive", _("Consecutive Playing"), Lang.bind(this, this._toggleLoopStatus));
             this._loopButton.actor.visible = this._applet.extendedPlayerControl;
             this.controls.add_actor(this._loopButton.getActor());
         }
-
         if(this._mediaServerPlayer.Shuffle !== undefined){
             this._shuffleButton = new ControlButton("media-playlist-shuffle", _("No Shuffle"), Lang.bind(this, this._toggleShuffle));
             this._shuffleButton.actor.visible = this._applet.extendedPlayerControl;
             this.controls.add_actor(this._shuffleButton.getActor());
         }
 
-        this._positionSlider = new PopupMenu.PopupSliderMenuItem(0);
+        // Position slider
+        this._positionSlider = new Slider.Slider(0, "sound-slider", true);
         this._currentTimeLabel = new St.Label({text: "0:00"});
         this._songLengthLabel = new St.Label({text: "0:00"});
-
-        this._positionSlider.removeActor(this._positionSlider._slider);
-        this._positionSlider.addActor(this._currentTimeLabel, {span: 0});
-        this._positionSlider.addActor(this._positionSlider._slider, {span: 0});
-        this._positionSlider.addActor(this._songLengthLabel, {span: 0});
-
         this._seeking = false;
-
         this._positionSlider.connect('drag-begin', Lang.bind(this, function(item) {
             this._seeking = true;
         }));
@@ -394,33 +403,13 @@ Player.prototype = {
             else
                 this._setPosition("slider");
         }));
+        this.vertBox.add_actor(this._positionSlider.actor);
 
-        this.addMenuItem(this._positionSlider);
-
-        if (this._mediaServer.CanRaise) {
-            let btn = new ControlButton("go-up", _("Open Player"), Lang.bind(this, function(){
-                if (this._name === "spotify") {
-                    // Spotify isn't able to raise via Dbus once its main UI is closed
-                    Util.spawn(['spotify']);
-                }
-                else {
-                    this._mediaServer.RaiseRemote();
-                }
-                this._applet.menu.close();
-            }), true);
-            this.playerInfo.buttons.add_actor(btn.actor);
-        }
-
-        if (this._mediaServer.CanQuit) {
-            let btn = new ControlButton("window-close", _("Quit Player"), Lang.bind(this, function(){
-                this._mediaServer.QuitRemote();
-            }), true);
-            this.playerInfo.buttons.add_actor(btn.actor);
-        }
+        
 
         this._applet._updatePlayerMenuItems();
 
-        /* this players don't support seek */
+        /* these players don't support seek */
         if (!this._getCanSeek() || this._mediaServerPlayer.Rate != 1) {
             this.showPosition = false;
             this._positionSlider.actor.hide();
@@ -481,7 +470,7 @@ Player.prototype = {
 
 
     _setName: function(status) {
-        this.playerInfo.label.text = this._getName() + " - " + _(status);
+        this.playerLabel.set_text(this._getName() + " - " + _(status));
     },
 
     _updateControls: function() {
@@ -509,13 +498,6 @@ Player.prototype = {
 
         if (this._songLength == 0 || position == false)
             this._canSeek = false
-
-        // Clem: The following code was commented out. When the next song started, it resulted in hiding the sound menu, making it hard for the user to repeatedly click on the next song button.
-        // There's probably a better fix and this was not tested with players which don't support seeking, but it fixes the regression created by the slider (apparently when the slider is hidden it closes the menu)
-        // if (this._playerStatus == "Playing" && this._canSeek && this.showPosition)
-        //     this._positionSlider.actor.show();
-        // else
-        //     this._positionSlider.actor.hide();
     },
 
     _setPosition: function(value) {
@@ -574,18 +556,18 @@ Player.prototype = {
             this._stopTimer();
         }
         if (metadata["xesam:artist"]) {
-            this._artist.label.text = metadata["xesam:artist"].deep_unpack().join(", ");
+            this._artist = metadata["xesam:artist"].deep_unpack().join(", ");
         }
         else
-            this._artist.setLabel(_("Unknown Artist"));
+            this._artist = _("Unknown Artist");
         if (metadata["xesam:album"])
-            this._album.label.text = metadata["xesam:album"].unpack();
+            this._album = metadata["xesam:album"].unpack();
         else
-            this._album.label.text = _("Unknown Album");
+            this._album = _("Unknown Album");
         if (metadata["xesam:title"])
-            this._title.label.text = metadata["xesam:title"].unpack();
+            this._title = metadata["xesam:title"].unpack();
         else
-            this._title.label.text = _("Unknown Title");
+            this._title = _("Unknown Title");
 
         if (metadata["mpris:trackid"]) {
             this._trackObj = metadata["mpris:trackid"].unpack();
@@ -637,19 +619,19 @@ Player.prototype = {
         this._playerStatus = status;
         if (status == "Playing") {
             this._playButton.setData("media-playback-pause", _("Pause"));
-            this.playerInfo.icon.icon_name = "media-playback-start";
+            this.playerIcon.set_icon_name("media-playback-start");
             this._applet.setAppletTextIcon(this, true);
             this._runTimer();
         }
         else if (status == "Paused") {
             this._playButton.setData("media-playback-start", _("Play"));
-            this.playerInfo.icon.icon_name = "media-playback-pause";
+            this.playerIcon.set_icon_name("media-playback-pause");
             this._applet.setAppletTextIcon(this, false);
             this._pauseTimer();
         }
         else if (status == "Stopped") {
             this._playButton.setData("media-playback-start", _("Play"));
-            this.playerInfo.icon.icon_name = "media-playback-stop";
+            this.playerIcon.set_icon_name("media-playback-stop");
             this._applet.setAppletTextIcon(this, false);
             this._stopTimer();
         } else {
@@ -800,20 +782,22 @@ Player.prototype = {
             time: 0.3,
             transition: 'easeOutCubic',
             onComplete: Lang.bind(this, function() {*/
+                this.artistLabel.set_text(this._artist);
+                this.titleLabel.set_text(this._title);
+                this.coverBox.remove_actor(this.cover);
                 if (! cover_path || ! GLib.file_test(cover_path, GLib.FileTest.EXISTS)) {
-                    this._trackCover.set_child(new St.Icon({icon_name: "media-optical-cd-audio", icon_size: 210, icon_type: St.IconType.FULLCOLOR}));
+                    this.cover = new St.Icon({style_class: 'sound-track-icon', icon_name: "media-optical-cd-audio", icon_size: 300 * global.ui_scale, icon_type: St.IconType.FULLCOLOR});
                     cover_path = null;
                 }
                 else {
-                    let l = new Clutter.BinLayout();
-                    let b = new Clutter.Box();
-                    let c = new Clutter.Texture({height: 210 * global.ui_scale, keep_aspect_ratio: true, filter_quality: 2, filename: cover_path});
-                    b.set_layout_manager(l);
-                    b.set_width(230 * global.ui_scale);
-                    b.add_actor(c);
-                    this._trackCover.set_child(b);
+                    this.cover = new Clutter.Texture({width: 300 * global.ui_scale, keep_aspect_ratio: true, filter_quality: 2, filename: cover_path});
                 }
+                this.coverBox.add_actor(this.cover);
+                this.coverBox.set_child_below_sibling(this.cover, this.trackInfo);
                 this._applet.setAppletTextIcon(this, cover_path);
+
+
+
                 /*Tweener.addTween(this._trackCover, { opacity: 255,
                     time: 0.3,
                     transition: 'easeInCubic'
@@ -1236,12 +1220,7 @@ MyApplet.prototype = {
         this.menu.addMenuItem(this._launchPlayerItem);
         this._updateLaunchPlayer();
 
-        this._playerSelector = new PopupMenu.PopupSubMenuMenuItem("");
-        this._playerSelector.actor.remove_style_class_name("popup-submenu-menu-item");
-        this._playerSelector.actor.hide();
-        this.menu.addMenuItem(this._playerSelector);
-
-        this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem);
+        // this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem);
         //between these two separators will be the player MenuSection (position 3)
         this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem);
         this._outputVolumeSection = new VolumeSlider(this, null, _("Volume"), null);
@@ -1300,48 +1279,22 @@ MyApplet.prototype = {
         if (this.playerControl && this._activePlayer) {
             this._launchPlayerItem.actor.hide();
 
-            let children = this._playerSelector.actor.get_children();
-            children.forEach(function(actor){
-                this._playerSelector.removeActor(actor);
-            }, this);
-
-            //we need to remove the actors before destroying
-            children = this._playerSelector.menu._getMenuItems();
-            children.forEach(function(item){
-                let actors = item.actor.get_children();
-                actors.forEach(function(actor){
-                    item.removeActor(actor);
-                }, this);
-                item.destroy();
-            });
-
             //go through the players list and create the player info (icon + label)
             for(let i in this._players) {
                 let info = this._players[i].playerInfo, item;
 
-                //set it as the actor to the player selector if it is the active one, else add it to the menu to be chosen
-                if(this._activePlayer == i)
-                    item = this._playerSelector;
-                else {
-                    item = new PopupMenu.PopupBaseMenuItem;
-                    item.activate = Lang.bind(this, function(event, keepMenu, player){
-                        //focus on the player selector itself, otherwise it'll close
-                        this._playerSelector.setActive(true);
-                        this._playerSelector.menu.close();
-                        this._changeActivePlayer(player);
-                    }, i);
-                    this._playerSelector.menu.addMenuItem(item);
-                }
-
-                item.addActor(info.icon, {span: 0});
-                item.addActor(info.label, {span: 0});
-                item.addActor(info.buttons, {align: St.Align.END});
+                item = new PopupMenu.PopupBaseMenuItem;
+                item.activate = Lang.bind(this, function(event, keepMenu, player){
+                    this._changeActivePlayer(player);
+                }, i);
             }
-            this._playerSelector.actor.show();
         } else {
-            if(this._launchPlayerItem.menu.numMenuItems)
+            if(this._launchPlayerItem.menu.numMenuItems) {
                 this._launchPlayerItem.actor.show();
-            this._playerSelector.actor.hide();
+            }
+            else {
+                this._launchPlayerItem.actor.hide();
+            }
         }
     },
 
@@ -1351,7 +1304,7 @@ MyApplet.prototype = {
 
         this._activePlayer = player;
         if(this.playerControl)
-            this.menu.addMenuItem(this._players[player], 3);
+            this.menu.addMenuItem(this._players[player], 1);
         this._updatePlayerMenuItems();
     },
 

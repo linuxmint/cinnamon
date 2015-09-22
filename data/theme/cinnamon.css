@@ -1222,26 +1222,63 @@ StScrollBar StButton#vhandle:hover {
 .sound-button {
 	width: 22px;
 	height: 13px;
-	border: 1px solid #555;
-	border-radius: 4px;
 	padding: 5px;
+	color: #aaa;
 }
 .sound-button:small {
 	width: 16px;
 	height: 8px;
+	padding: 1px;
 }
 .sound-button:small StIcon {
 	icon-size: 1em;
 }
 .sound-button:hover, .sound-button:active {
-	border: 1px solid white;
+	color: #fff;
 }
 .sound-playback-control {
-	padding-top: 5px;
-	padding-bottom: 10px;
+	padding-top: 0px;
+	padding-bottom: 5px;
 	padding-left: 10px;
 	padding-right: 10px;
 }
+
+.sound-track-info {
+	width: 300px;
+	height: 70px;
+	padding: 5px;
+	spacing: 0.5em;
+	background: rgba(0,0,0,0.8);
+	color: #FFF;
+}
+
+.sound-track-icon {
+	background: rgba(0,0,0,0.2);
+}
+
+.sound-track-info StBoxLayout {
+	spacing: 0.5em;
+	padding-top: 2px;
+}
+
+.sound-slider {
+    height: 0.5em;
+    -slider-height: 0.5em;
+    -slider-background-color: #3c3c3c;
+    -slider-border-color: rgba(0,0,0,0);
+    -slider-active-background-color: #a5a5a5;
+    -slider-active-border-color: rgba(0,0,0,0);
+    -slider-border-width: 0px;
+    -slider-handle-radius: 0px;
+}
+
+.sound-player-box {
+	spacing: 0.5em;
+	padding: 3px;
+	width: 300px;
+	padding-bottom: 5px;
+}
+
 /* ===================================================================
  * Workspace Switcher applet (workspaceSwitcher.js)
  * ===================================================================*/
