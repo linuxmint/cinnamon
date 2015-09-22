@@ -47,6 +47,24 @@ StScrollBar StButton#hhandle:hover,
 StScrollBar StButton#vhandle:hover {
 	background-color: rgba(204,204,204,0.5);
 }
+.separator {
+    -gradient-height: 2px;
+    -gradient-start: rgba(85,85,85,1);
+    -gradient-end: #555555;
+    -margin-horizontal: 1.5em;
+    height: 1em;
+}
+.slider {
+    height: 1em;
+    min-width: 15em;
+    -slider-height: 0.3em;
+    -slider-background-color: #666666;
+    -slider-border-color: #555555;
+    -slider-active-background-color: #CCCCCC;
+    -slider-active-border-color: #DDDDDD;
+    -slider-border-width: 1px;
+    -slider-handle-radius: 0.5em;
+}
 #Tooltip {
 	border: 1px solid rgba(212,185,67,1.0);
 	border-radius: 4px;
