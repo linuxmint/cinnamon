@@ -69,12 +69,12 @@ ControlButton.prototype = {
         this.button.connect('clicked', callback);
 
         if(small)
-            this.button.add_style_pseudo_class("small");
+            this.button.add_style_class_name('small');
 
         this.icon = new St.Icon({
             icon_type: St.IconType.SYMBOLIC,
             icon_name: icon,
-            style_class: "popup-menu-icon"
+            style_class: 'popup-menu-icon'
         });
         this.button.set_child(this.icon);
         this.actor.add_actor(this.button);

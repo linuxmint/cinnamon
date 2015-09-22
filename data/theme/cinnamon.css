@@ -1226,14 +1226,15 @@ StScrollBar StButton#vhandle:hover {
 	border-radius: 4px;
 	padding: 5px;
 }
-.sound-button:small {
+.sound-button.small {
 	width: 16px;
 	height: 8px;
 }
-.sound-button:small StIcon {
+.sound-button.small StIcon {
 	icon-size: 1em;
 }
-.sound-button:hover, .sound-button:active {
+.sound-button:hover,
+.sound-button:active {
 	border: 1px solid white;
 }
 .sound-playback-control {
