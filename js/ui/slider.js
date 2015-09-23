@@ -8,24 +8,20 @@ const Signals = imports.signals;
 
 const SLIDER_SCROLL_STEP = 0.05; /* Slider scrolling step in % */
 
-function Slider(value, style_class, flat) {
-    this._init(value, style_class, flat);
+function Slider(value, flat) {
+    this._init(value, flat);
 }
 
 Slider.prototype = {
-    _init: function(value, style_class, flat) {
+    _init: function(value, flat) {
         if (isNaN(value))
             // Avoid spreading NaNs around
             throw TypeError('The slider value must be a number');
         this._value = Math.max(Math.min(value, 1), 0);
 
-        if (style_class == null) {
-            style_class = 'slider';
-        }
-
         this.flat = flat; // Don't draw radius on flat sliders
 
-        this.actor = new St.DrawingArea({ style_class: style_class, reactive: true });
+        this.actor = new St.DrawingArea({ style_class: 'slider', reactive: true });
         this.actor.connect('repaint', Lang.bind(this, this._sliderRepaint));
         this.actor.connect('button-press-event', Lang.bind(this, this._startDragging));
         this.actor.connect('scroll-event', Lang.bind(this, this._onScrollEvent));

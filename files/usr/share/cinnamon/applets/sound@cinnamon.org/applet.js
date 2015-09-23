@@ -40,9 +40,9 @@ function ControlButton() {
 
 ControlButton.prototype = {
     _init: function(icon, tooltip, callback, small = false) {
-        this.actor = new St.Bin({style_class: 'sound-button-container'});
+        this.actor = new St.Bin();
 
-        this.button = new St.Button({ style_class: 'sound-button' });
+        this.button = new St.Button();
         this.button.connect('clicked', callback);
 
         if(small)
@@ -287,11 +287,11 @@ Player.prototype = {
         let mainBox = new PopupMenu.PopupMenuSection;
         this.addMenuItem(mainBox);
 
-        this.vertBox = new St.BoxLayout({ vertical: true });
-        mainBox.addActor(this.vertBox);
+        this.vertBox = new St.BoxLayout({ style_class: "sound-player", vertical: true });
+        mainBox.addActor(this.vertBox, { expand: false });
 
         // Player info
-        let playerBox = new St.BoxLayout({style_class: "sound-player-box"});
+        let playerBox = new St.BoxLayout();
         this.playerIcon = new St.Icon({icon_type: St.IconType.SYMBOLIC, style_class: "popup-menu-icon"});
         this.playerLabel = new St.Label({y_expand: true, y_align: Clutter.ActorAlign.CENTER});
         playerBox.add_actor(this.playerIcon, { expand: true, x_fill: false, x_align: St.Align.START });
@@ -317,10 +317,10 @@ Player.prototype = {
             playerBox.add_actor(btn.actor, { expand: true, x_fill: false, x_align: St.Align.END });
         }
 
-        this.vertBox.add_actor(playerBox);
+        this.vertBox.add_actor(playerBox, {expand: false, x_fill: false});
 
         // Cover Box (art + track info)
-        this._trackCover = new St.Bin({style_class: 'sound-track-cover', x_align: St.Align.MIDDLE});
+        this._trackCover = new St.Bin({x_align: St.Align.MIDDLE});
         this._trackCoverFile = this._trackCoverFileTmp = false;
         this.coverBox = new Clutter.Box();
         let l = new Clutter.BinLayout({x_align: Clutter.BinAlignment.FILL, y_align: Clutter.BinAlignment.END});
@@ -334,7 +334,7 @@ Player.prototype = {
         this._artist = _("Unknown Artist");
         this._album = _("Unknown Album");
         this._title = _("Unknown Title");
-        this.trackInfo = new St.BoxLayout({style_class: 'sound-track-info', vertical: true});
+        this.trackInfo = new St.BoxLayout({style_class: 'sound-player-overlay', vertical: true});
         let artistInfo = new St.BoxLayout();
         let artistIcon = new St.Icon({ icon_type: St.IconType.SYMBOLIC, icon_name: "system-users", style_class: 'popup-menu-icon' });
         this.artistLabel = new St.Label({text:this._artist});
@@ -353,7 +353,7 @@ Player.prototype = {
         this.vertBox.add_actor(this._trackCover);
 
         // Playback controls
-        let trackControls = new St.Bin({style_class: 'sound-playback-control', x_align: St.Align.MIDDLE});
+        let trackControls = new St.Bin({x_align: St.Align.MIDDLE});
         this._prevButton = new ControlButton("media-skip-backward", _("Previous"), Lang.bind(this, function(){
             this._mediaServerPlayer.PreviousRemote();
         }));
@@ -385,7 +385,7 @@ Player.prototype = {
         }
 
         // Position slider
-        this._positionSlider = new Slider.Slider(0, "sound-slider", true);
+        this._positionSlider = new Slider.Slider(0, true);
         this._currentTimeLabel = new St.Label({text: "0:00"});
         this._songLengthLabel = new St.Label({text: "0:00"});
         this._seeking = false;
@@ -404,8 +404,6 @@ Player.prototype = {
                 this._setPosition("slider");
         }));
         this.vertBox.add_actor(this._positionSlider.actor);
-
-        
 
         this._applet._updatePlayerMenuItems();
 
@@ -786,7 +784,7 @@ Player.prototype = {
                 this.titleLabel.set_text(this._title);
                 this.coverBox.remove_actor(this.cover);
                 if (! cover_path || ! GLib.file_test(cover_path, GLib.FileTest.EXISTS)) {
-                    this.cover = new St.Icon({style_class: 'sound-track-icon', icon_name: "media-optical-cd-audio", icon_size: 300 * global.ui_scale, icon_type: St.IconType.FULLCOLOR});
+                    this.cover = new St.Icon({style_class: 'sound-player-generic-coverart', icon_name: "media-optical-cd-audio", icon_size: 300 * global.ui_scale, icon_type: St.IconType.FULLCOLOR});
                     cover_path = null;
                 }
                 else {

@@ -1215,53 +1215,28 @@ StScrollBar StButton#vhandle:hover {
 /* ===================================================================
  * Sound Applet (sound@cinnamon.org)
  * ===================================================================*/
-.sound-button-container {
-	padding-right: 3px;
-	padding-left: 3px;
-}
-.sound-button {
+
+.sound-player StButton {
 	width: 22px;
 	height: 13px;
 	padding: 5px;
 	color: #aaa;
 }
-.sound-button:small {
+
+.sound-player StButton:small {
 	width: 16px;
 	height: 8px;
 	padding: 1px;
 }
-.sound-button:small StIcon {
+
+.sound-player StButton:small StIcon {
 	icon-size: 1em;
 }
-.sound-button:hover, .sound-button:active {
+.sound-player StButton:hover, .sound-player StButton:active {
 	color: #fff;
 }
-.sound-playback-control {
-	padding-top: 0px;
-	padding-bottom: 5px;
-	padding-left: 10px;
-	padding-right: 10px;
-}
 
-.sound-track-info {
-	width: 300px;
-	height: 70px;
-	padding: 5px;
-	spacing: 0.5em;
-	background: rgba(0,0,0,0.8);
-	color: #FFF;
-}
-
-.sound-track-icon {
-	background: rgba(0,0,0,0.2);
-}
-
-.sound-track-info StBoxLayout {
-	spacing: 0.5em;
-	padding-top: 2px;
-}
-
-.sound-slider {
+.sound-player .slider {
     height: 0.5em;
     -slider-height: 0.5em;
     -slider-background-color: #3c3c3c;
@@ -1272,11 +1247,29 @@ StScrollBar StButton#vhandle:hover {
     -slider-handle-radius: 0px;
 }
 
-.sound-player-box {
+.sound-player StBoxLayout {
 	spacing: 0.5em;
-	padding: 3px;
+}
+
+.sound-player>StBoxLayout {
+	padding: 5px;
+}
+
+.sound-player-overlay {
 	width: 300px;
-	padding-bottom: 5px;
+	height: 70px;
+	padding: 5px;
+	spacing: 0.5em;
+	background: rgba(0,0,0,0.8);
+	color: #FFF;
+}
+
+.sound-player-overlay StBoxLayout {
+	padding-top: 2px;
+}
+
+.sound-player-generic-coverart {
+	background: rgba(0,0,0,0.2);
 }
 
 /* ===================================================================
