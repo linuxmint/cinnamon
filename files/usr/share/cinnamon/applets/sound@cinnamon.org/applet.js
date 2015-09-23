@@ -1126,7 +1126,7 @@ MyApplet.prototype = {
     setAppletText: function(player) {
         let title_text = "";
         if (this.showtrack && player && player._playerStatus == 'Playing') {
-            title_text = player._title.getLabel() + ' - ' + player._artist.getLabel();
+            title_text = player._title + ' - ' + player._artist;
             if (this.truncatetext < title_text.length) {
                 title_text = title_text.substr(0, this.truncatetext) + "...";
             }
