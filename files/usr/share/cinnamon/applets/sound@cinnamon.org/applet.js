@@ -973,6 +973,8 @@ MyApplet.prototype = {
             this._selectOutputDeviceItem = new PopupMenu.PopupSubMenuMenuItem(_("Output device"));
             this._applet_context_menu.addMenuItem(this._outputApplicationsMenu);
             this._applet_context_menu.addMenuItem(this._selectOutputDeviceItem);
+            this._outputApplicationsMenu.actor.hide();
+            this._selectOutputDeviceItem.actor.hide();
 
             this._inputSection = new PopupMenu.PopupMenuSection;
             this._inputVolumeSection = new VolumeSlider(this, null, _("Microphone"), null);
