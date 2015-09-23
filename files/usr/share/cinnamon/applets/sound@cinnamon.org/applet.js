@@ -966,6 +966,26 @@ MyApplet.prototype = {
             this.mute_in_switch = new PopupMenu.PopupSwitchMenuItem(_("Mute input"), false);
             this._applet_context_menu.addMenuItem(this.mute_out_switch);
             this._applet_context_menu.addMenuItem(this.mute_in_switch);
+
+            this._applet_context_menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem);
+
+            this._outputApplicationsMenu = new PopupMenu.PopupSubMenuMenuItem(_("Applications"));
+            this._selectOutputDeviceItem = new PopupMenu.PopupSubMenuMenuItem(_("Output device"));
+            this._applet_context_menu.addMenuItem(this._outputApplicationsMenu);
+            this._applet_context_menu.addMenuItem(this._selectOutputDeviceItem);
+
+            this._inputSection = new PopupMenu.PopupMenuSection;
+            this._inputVolumeSection = new VolumeSlider(this, null, _("Microphone"), null);
+            this._selectInputDeviceItem = new PopupMenu.PopupSubMenuMenuItem(_("Input device"));
+            this._inputSection.addMenuItem(this._inputVolumeSection);
+            this._inputSection.addMenuItem(this._selectInputDeviceItem);
+            this._applet_context_menu.addMenuItem(this._inputSection);
+
+            this._selectInputDeviceItem.actor.hide();
+            this._inputSection.actor.hide();
+
+            this._applet_context_menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem);
+
             this.mute_out_switch.connect('toggled', Lang.bind(this, this._toggle_out_mute));
             this.mute_in_switch.connect('toggled', Lang.bind(this, this._toggle_in_mute));
 
@@ -1223,30 +1243,10 @@ MyApplet.prototype = {
         this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem);
         this._outputVolumeSection = new VolumeSlider(this, null, _("Volume"), null);
         this._outputVolumeSection.connect("values-changed", Lang.bind(this, this._outputValuesChanged));
-        this._outputApplicationsMenu = new PopupMenu.PopupSubMenuMenuItem(_("Applications"));
-        this._selectOutputDeviceItem = new PopupMenu.PopupSubMenuMenuItem(_("Output device"));
 
         this.menu.addMenuItem(this._outputVolumeSection);
         this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem);
-        this.menu.addMenuItem(this._outputApplicationsMenu);
-        this.menu.addMenuItem(this._selectOutputDeviceItem);
 
-        this._outputApplicationsMenu.actor.hide();
-        this._selectOutputDeviceItem.actor.hide();
-
-        this._inputSection = new PopupMenu.PopupMenuSection;
-        this._inputVolumeSection = new VolumeSlider(this, null, _("Microphone"), null);
-        this._selectInputDeviceItem = new PopupMenu.PopupSubMenuMenuItem(_("Input device"));
-
-        this._inputSection.addMenuItem(this._inputVolumeSection);
-        this._inputSection.addMenuItem(this._selectInputDeviceItem);
-        this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem);
-        this.menu.addMenuItem(this._inputSection);
-
-        this._selectInputDeviceItem.actor.hide();
-        this._inputSection.actor.hide();
-
-        this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem);
         this.menu.addSettingsAction(_("Sound Settings"), 'sound');
     },
 
