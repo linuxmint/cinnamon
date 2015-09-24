@@ -823,7 +823,7 @@ class Module:
         dialog = GroupDialog(_("Group Name"), "")
         response = dialog.run()
         if response == Gtk.ResponseType.OK:
-            os.system("groupadd %s" % dialog.entry.get_text().lower())
+            os.system("groupadd %s" % dialog.entry.get_text().lower().split(";"))
             self.load_groups()
         dialog.destroy()
 
@@ -834,7 +834,7 @@ class Module:
             dialog = GroupDialog(_("Group Name"), group)
             response = dialog.run()
             if response == Gtk.ResponseType.OK:
-                os.system("groupmod %s -n %s" % (group, dialog.entry.get_text().lower()))
+                os.system("groupmod %s -n %s" % (group.split(";"), dialog.entry.get_text().lower().split(";")))
                 self.load_groups()
             dialog.destroy()
 
