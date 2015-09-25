@@ -169,8 +169,14 @@ PanelAppLauncher.prototype = {
     },
 
     _getIconActor: function() {
-        if (this.isCustom()) return St.TextureCache.get_default().load_gicon(null, this.appinfo.get_icon(), this.icon_height);
-        else return this.app.create_icon_texture(this.icon_height);
+        if (this.isCustom()) {
+            let icon = this.appinfo.get_icon();
+            if (icon == null)
+                icon = new Gio.ThemedIcon({name: "gnome-panel-launcher"});
+            return St.TextureCache.get_default().load_gicon(null, icon, this.icon_height);
+        } else {
+            return this.app.create_icon_texture(this.icon_height);
+        }
     },
 
     _animateIcon: function(step){
