@@ -886,7 +886,7 @@ WindowManager.prototype = {
 
     _hideWorkspaceOSD : function() {
         for (let i = 0; i < this._workspace_osd_array.length; i++) {
-            osd = this._workspace_osd_array[i];
+            let osd = this._workspace_osd_array[i];
             if (osd != null) {
                 osd.hide();
                 Main.layoutManager.removeChrome(osd);
