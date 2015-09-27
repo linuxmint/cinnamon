@@ -287,7 +287,7 @@ Player.prototype = {
         let mainBox = new PopupMenu.PopupMenuSection;
         this.addMenuItem(mainBox);
 
-        this.vertBox = new St.BoxLayout({ style_class: "sound-player", vertical: true });
+        this.vertBox = new St.BoxLayout({ style_class: "sound-player", important: true, vertical: true });
         mainBox.addActor(this.vertBox, { expand: false });
 
         // Player info
@@ -334,7 +334,7 @@ Player.prototype = {
         this._artist = _("Unknown Artist");
         this._album = _("Unknown Album");
         this._title = _("Unknown Title");
-        this.trackInfo = new St.BoxLayout({style_class: 'sound-player-overlay', vertical: true});
+        this.trackInfo = new St.BoxLayout({style_class: 'sound-player-overlay', important: true, vertical: true});
         let artistInfo = new St.BoxLayout();
         let artistIcon = new St.Icon({ icon_type: St.IconType.SYMBOLIC, icon_name: "system-users", style_class: 'popup-menu-icon' });
         this.artistLabel = new St.Label({text:this._artist});
@@ -784,7 +784,7 @@ Player.prototype = {
                 this.titleLabel.set_text(this._title);
                 this.coverBox.remove_actor(this.cover);
                 if (! cover_path || ! GLib.file_test(cover_path, GLib.FileTest.EXISTS)) {
-                    this.cover = new St.Icon({style_class: 'sound-player-generic-coverart', icon_name: "media-optical-cd-audio", icon_size: 300 * global.ui_scale, icon_type: St.IconType.FULLCOLOR});
+                    this.cover = new St.Icon({style_class: 'sound-player-generic-coverart', important: true, icon_name: "media-optical-cd-audio", icon_size: 300 * global.ui_scale, icon_type: St.IconType.FULLCOLOR});
                     cover_path = null;
                 }
                 else {
