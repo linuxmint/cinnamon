@@ -558,14 +558,18 @@ Player.prototype = {
         }
         else
             this._artist = _("Unknown Artist");
+        this.artistLabel.set_text(this._artist);
+
         if (metadata["xesam:album"])
             this._album = metadata["xesam:album"].unpack();
         else
             this._album = _("Unknown Album");
+
         if (metadata["xesam:title"])
             this._title = metadata["xesam:title"].unpack();
         else
             this._title = _("Unknown Title");
+        this.titleLabel.set_text(this._title);
 
         if (metadata["mpris:trackid"]) {
             this._trackObj = metadata["mpris:trackid"].unpack();
@@ -780,8 +784,6 @@ Player.prototype = {
             time: 0.3,
             transition: 'easeOutCubic',
             onComplete: Lang.bind(this, function() {*/
-                this.artistLabel.set_text(this._artist);
-                this.titleLabel.set_text(this._title);
                 this.coverBox.remove_actor(this.cover);
                 if (! cover_path || ! GLib.file_test(cover_path, GLib.FileTest.EXISTS)) {
                     this.cover = new St.Icon({style_class: 'sound-player-generic-coverart', important: true, icon_name: "media-optical-cd-audio", icon_size: 300 * global.ui_scale, icon_type: St.IconType.FULLCOLOR});
