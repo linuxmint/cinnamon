@@ -78,8 +78,9 @@ StDrawingButton.prototype = {
         this.graphArea = new St.DrawingArea({reactive: true});
         this.workspace_size = new Meta.Rectangle();
         this.workspace.get_work_area_all_monitors(this.workspace_size);
-        this.graphArea.height = applet.panel_height -5;
-        this.graphArea.width = this.workspace_size.width / this.workspace_size.height * this.graphArea.height;
+        let height = applet.panel_height - 5;
+        this.graphArea.height = height;
+        this.graphArea.width = this.workspace_size.width / this.workspace_size.height * height;
         this.graphArea.connect('repaint', Lang.bind(this, this.onRepaint));
         this.actor = this.graphArea;
     },
