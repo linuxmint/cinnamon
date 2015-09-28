@@ -52,3 +52,7 @@ class Module:
 
             switch = GSettingsSwitch(_("Log LookingGlass output to ~/.cinnamon/glass.log (Requires Cinnamon restart)"), "org.cinnamon", "enable-looking-glass-logs")
             settings.add_row(switch)
+
+            switch = GSettingsSwitch(_("Enable texture monitors (Requires Cinnamon restart)"), "org.cinnamon", "enable-texture-monitors")
+            switch.set_tooltip_text(_("Select this option to force Cinnamon to watch all texture files (images) for changes, and to reload them when necessary. This is more useful for theme developers."))
+            settings.add_row(switch)

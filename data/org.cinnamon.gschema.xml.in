@@ -424,6 +424,14 @@
       </_description>
     </key>
 
+    <key name="enable-texture-monitors" type="b">
+      <default>false</default>
+      <_summary>Enable or disable watching textures for changes</_summary>
+      <_description>
+        Whether image files are monitored for changes in order to reload or not
+      </_description>
+    </key>
+
     <key name="workspace-expo-view-as-grid" type="b">
       <default>false</default>
       <summary>Display the Expo view as a grid</summary>
