@@ -1232,6 +1232,11 @@ StScrollBar StButton#vhandle:hover {
 .sound-player StButton:small StIcon {
 	icon-size: 1em;
 }
+
+.sound-player StButton StIcon {
+	icon-size: 1.5em;
+}
+
 .sound-player StButton:hover, .sound-player StButton:active {
 	color: #fff;
 }
@@ -1258,7 +1263,7 @@ StScrollBar StButton#vhandle:hover {
 .sound-player-overlay {
 	width: 300px;
 	height: 70px;
-	padding: 5px;
+	padding: 15px;
 	spacing: 0.5em;
 	background: rgba(0,0,0,0.8);
 	color: #FFF;

@@ -50,8 +50,7 @@ ControlButton.prototype = {
 
         this.icon = new St.Icon({
             icon_type: St.IconType.SYMBOLIC,
-            icon_name: icon,
-            style_class: "popup-menu-icon"
+            icon_name: icon
         });
         this.button.set_child(this.icon);
         this.actor.add_actor(this.button);
