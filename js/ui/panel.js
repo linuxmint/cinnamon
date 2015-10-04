@@ -1665,29 +1665,29 @@ Panel.prototype = {
         let totalMinWidth = leftMinWidth + centerMinWidth + rightMinWidth;
         let totalNaturalWidth = leftNaturalWidth + centerNaturalWidth + rightNaturalWidth;
 
-        let sideMinWidth = Math.max(leftMinWidth, rightMinWidth);
-        let sideNaturalWidth = Math.max(leftNaturalWidth, rightNaturalWidth);
-        let totalCenteredMinWidth = centerMinWidth + 2 * sideMinWidth;
-        let totalCenteredNaturalWidth = centerNaturalWidth + 2 * sideNaturalWidth;
+        let totalCenteredMinWidth = centerMinWidth + 2 * Math.max(leftMinWidth, rightMinWidth);
+        let totalCenteredNaturalWidth = centerNaturalWidth + 2 * Math.max(leftNaturalWidth, rightNaturalWidth);
 
         let leftWidth, rightWidth;
 
         if (centerBoxOccupied) {
-            if (totalCenteredNaturalWidth < allocWidth) {
-                /* We can give everything their natural width and center will
-                 * still be centered. */
-                leftWidth = (allocWidth - centerNaturalWidth) / 2;
-                rightWidth = leftWidth;
-            } else if (totalCenteredMinWidth < allocWidth) {
+	          if (totalCenteredMinWidth < allocWidth) {
                 /* Center can be centered as without shrinking things too much.
                  * First give everything the minWidth they want, and they
                  * distribute the remaining space proportional to how much the
-                 * regions want. */
+                 * regions want. Now includes gap removal.*/
                 let totalRemaining = allocWidth - totalCenteredMinWidth;
                 let totalWant = totalCenteredNaturalWidth - totalCenteredMinWidth;
 
-                leftWidth = sideMinWidth + (sideNaturalWidth - sideMinWidth) / totalWant * totalRemaining;
-                rightWidth = leftWidth;
+		            if(leftMinWidth > rightMinWidth) {
+                   leftWidth = (leftMinWidth + (leftNaturalWidth - leftMinWidth) / totalWant * totalRemaining);
+                	 rightWidth = leftWidth - (leftMinWidth - rightMinWidth-((allocWidth-totalNaturalWidth)/2));
+			             if(rightWidth<rightMinWidth)rightWidth = rightMinWidth;;
+		            } else {
+                	 rightWidth = (rightMinWidth + (rightNaturalWidth - rightMinWidth) / totalWant * totalRemaining);
+                	 leftWidth = rightWidth - (rightMinWidth - leftMinWidth-((allocWidth-totalNaturalWidth)/2));
+			             if(leftWidth<leftMinWidth)leftWidth = leftMinWidth;
+		            }
             } else if (totalMinWidth < allocWidth) {
                 /* There is enough space for minWidth if we don't care about
                  * centering. Make center things as center as possible */
