@@ -1,12 +1,10 @@
-Cinnamal is a Linux desktop which provides advanced innovative features and a power user experience.
+Cinnamon is a Linux desktop which provides advanced innovative features and a traditional user experience.
 
-The desktop layout is similar to Cinnamon with enhanced menu and without a desktop
-It is forked from Cinnamon.
-It will maintain full compatiblity with Cinnamon.
+The desktop layout is similar to Gnome 2. 
+The underlying technology is forked from Gnome Shell.
 The emphasis is put on making users feel at home and providing them with an easy to use and comfortable desktop experience.
 
 License
 =======
-Cinnamal is distributed under the terms of the GNU General Public License,
+Cinnamon is distributed under the terms of the GNU General Public License,
 version 2 or later. See the COPYING file for details.
-
