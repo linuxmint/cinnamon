@@ -1671,7 +1671,7 @@ Panel.prototype = {
             if (totalMinWidth < allocWidth) {
             	/* New centering code may need debugging.*/
                 let totalWant = totalNaturalWidth - totalMinWidth;
-		let centerW = (centerNaturalWidth * ((centerNaturalWidth- centerMinWidth) / totalWant));
+		let centerW = centerMinWidth + ((centerNaturalWidth - centerMinWidth) * ((centerNaturalWidth - centerMinWidth) / totalWant));
                	if(centerW < 25) centerW = 25;
 
 		leftWidth = ((allocWidth - centerW)/2);
