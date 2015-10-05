@@ -1280,11 +1280,12 @@ StScrollBar StButton#vhandle:hover {
 /* ===================================================================
  * Workspace Switcher applet (workspaceSwitcher.js)
  * ===================================================================*/
-#workspaceSwitcher {
-	spacing: 0px;
-	padding: 3px;
-	
+/* Controls the styling when using the "Simple buttons" option */
+.workspace-switcher {
+    padding-left: 3px;
+    padding-right: 3px;
 }
+
 .workspace-button {
 	width: 20px;
 	height: 10px;
@@ -1294,12 +1295,48 @@ StScrollBar StButton#vhandle:hover {
 	padding: 2px;
 	transition-duration: 300;
 }
+
 .workspace-button:outlined {
 	padding: 1px;
 	background: #cccccc;
 	color: #555555;
 	box-shadow: inset 0px 0px 8px 1px rgba(255,255,255, 0.7);
 }
+
+/* Controls the style when using the "Visual representation" option */
+.workspace-graph {
+    padding: 3px;
+    spacing: 3px;
+}
+
+.workspace-graph .workspace {
+    border: 1px solid #666;
+    background-gradient-direction: vertical;
+    background-gradient-start: #222;
+    background-gradient-end: #4d4d4d;
+}
+
+.workspace-graph .workspace:active {
+    border: 1px solid #ccc;
+    background-gradient-direction: vertical;
+    background-gradient-start: #111;
+    background-gradient-end: #3d3d3d;
+}
+
+.workspace-graph .workspace .windows {
+    -active-window-background: rgba(140, 140, 140, 1.0);
+    -active-window-border: rgba(0, 0, 0, 0.7);
+    -inactive-window-background: rgba(140, 140, 140, 1.0);
+    -inactive-window-border: rgba(0, 0, 0, 0.7);
+}
+
+.workspace-graph .workspace:active .windows {
+    -active-window-background: rgba(255, 255, 255, 1.0);
+    -active-window-border: rgba(0, 0, 0, 0.9);
+    -inactive-window-background: rgba(140, 140, 140, 1.0);
+    -inactive-window-border: rgba(0, 0, 0, 0.7);
+}
+
 /* ===================================================================
  * Panel Launchers Applet (panelLaunchers.js)
  * ===================================================================*/
