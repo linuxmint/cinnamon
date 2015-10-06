@@ -684,6 +684,7 @@ class AppDialog(Gtk.Dialog):
     def __init__(self, app=None):
         super(AppDialog, self).__init__()
         self.app = app
+        self.set_modal(True)
 
         self.add_button(_("Cancel"), Gtk.ResponseType.CANCEL)
 
