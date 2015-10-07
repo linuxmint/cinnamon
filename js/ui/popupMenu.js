@@ -13,7 +13,6 @@ const Atk = imports.gi.Atk;
 const BoxPointer = imports.ui.boxpointer;
 const DND = imports.ui.dnd;
 const Main = imports.ui.main;
-const Params = imports.misc.params;
 const SignalManager = imports.misc.signalManager;
 const Tweener = imports.ui.tweener;
 const CheckBox = imports.ui.checkBox;
