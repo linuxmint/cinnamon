@@ -2,5 +2,5 @@
 
 import os, sys
 
-os.execvp("/usr/lib/cinnamon-looking-glass/cinnamon-looking-glass.py", ("",) + tuple(sys.argv[1:]))
+os.execvp("/usr/share/cinnamon/cinnamon-looking-glass/cinnamon-looking-glass.py", ("",) + tuple(sys.argv[1:]))
 

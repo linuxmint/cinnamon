@@ -420,7 +420,7 @@ class Module:
     def __init__(self):
         try:
             self.builder = Gtk.Builder()
-            self.builder.add_from_file("/usr/lib/cinnamon-settings-users/cinnamon-settings-users.ui")
+            self.builder.add_from_file("/usr/share/cinnamon/cinnamon-settings-users/cinnamon-settings-users.ui")
             self.window = self.builder.get_object("main_window")
             self.window.connect("destroy", Gtk.main_quit)
 
