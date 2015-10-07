@@ -1669,14 +1669,23 @@ Panel.prototype = {
 
         if (centerBoxOccupied) {
             if (totalMinWidth < allocWidth) {
-            	/* New centering code may need debugging.*/
+            	/*Calculate the total natural space wanted by all boxes
+            	*beyond their minimal size. Addition of 1 is to avoid a 
+            	*divide by 0 error.*/
                 let totalWant = 1 + totalNaturalWidth - totalMinWidth;
-		let centerW = centerMinWidth + ((centerNaturalWidth - centerMinWidth) * ((centerNaturalWidth - centerMinWidth) / totalWant));
-
-		leftWidth = ((allocWidth - centerW)/2);
+                let centerWant = centerNaturalWidth - centerMinWidth;
+                /*Set center width to its minimal in addition to its
+                *fair natural width.*/
+		let centerWidth = centerMinWidth + (centerWant * (centerWant / totalWant));
+		/*Center the center box. Setting left space
+		*is equivalent to (total space)/2 + (total want)/3*/
+		leftWidth = ((allocWidth - centerWidth)/2);
+		/*Preserve the minimal left size*/
 		if(leftWidth<leftMinWidth)leftWidth = leftMinWidth;
-
-		rightWidth = allocWidth - leftWidth - centerW;
+		/*Give the remaining space to right. Setting right space
+		*is also equivalent to (total space)/2 + (total want)/3*/
+		rightWidth = allocWidth - leftWidth - centerWidth;
+		/*Preserve the minimal right size*/
 		if(rightWidth<rightMinWidth)rightWidth = rightMinWidth;
 
             } else {
