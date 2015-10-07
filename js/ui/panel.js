@@ -1679,7 +1679,7 @@ Panel.prototype = {
 		let centerWidth = centerMinWidth + (centerWant * (centerWant / totalWant));
 		/*Center the center box by giving helf the remaining space
 		*to the left box*/
-		leftWidth = ((allocWidth - centerWidth)/2);
+		leftWidth = (allocWidth - centerWidth)/2;
 		/*Preserve the minimal left size*/
 		if(leftWidth<leftMinWidth)leftWidth = leftMinWidth;
 		/*Give the remaining space to the right box.*/
