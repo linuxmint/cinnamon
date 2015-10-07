@@ -4,7 +4,9 @@
 # Uncomment this to turn on verbose mode.
 #export DH_VERBOSE=1
 
-export LDFLAGS+=-Wl,--as-needed
+export DEB_LDFLAGS_MAINT_APPEND=-Wl,--as-needed
+export DEB_BUILD_MAINT_OPTIONS = hardening=+all
+DEB_HOST_MULTIARCH ?= $(shell dpkg-architecture -qDEB_HOST_MULTIARCH)
 
 # To avoid running configure twice (because gnome-autogen.sh)
 export NOCONFIGURE=yes
@@ -35,10 +37,14 @@ override_dh_auto_configure:
 # Disable checks since they are not functional for the moment
 override_dh_auto_test:
 
-override_dh_install:
-	dh_install -X.la
-	test -e $(CURDIR)/debian/cinnamon-common/usr/share/cinnamon/theme || mkdir -p $(CURDIR)/debian/cinnamon-common/usr/share/cinnamon/theme
-	cp -r $(CURDIR)/debian/icon.svg $(CURDIR)/debian/cinnamon-common/usr/share/cinnamon/theme/menu.svg
+override_dh_install-indep:
+	dh_install --list-missing
+
+override_dh_install-arch:
+	dh_install -X.la --list-missing
+
+	sed -i 's!lib/cinnamon!lib/$(DEB_HOST_MULTIARCH)/cinnamon!' \
+	    debian/cinnamon/usr/lib/cinnamon/capi.py
 
 override_dh_strip:
 	dh_strip --dbg-package=cinnamon-dbg

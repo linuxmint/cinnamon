@@ -48,7 +48,7 @@ class XletSetting:
         self.type = _type
         self.current_id = None
         self.builder = Gtk.Builder()
-        self.builder.add_from_file("/usr/lib/cinnamon-settings/bin/xlet-settings.ui")
+        self.builder.add_from_file("/usr/share/cinnamon/cinnamon-settings/bin/xlet-settings.ui")
         self.content = self.builder.get_object("content")
         self.back_to_list_button = self.builder.get_object("back_to_list")
         self.highlight_button = self.builder.get_object("highlight_button")

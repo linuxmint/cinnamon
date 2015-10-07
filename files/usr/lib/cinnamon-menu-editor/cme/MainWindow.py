@@ -45,7 +45,7 @@ class MainWindow(object):
         Gtk.Window.set_default_icon_name('alacarte')
         self.tree = Gtk.Builder()
         self.tree.set_translation_domain(config.GETTEXT_PACKAGE)
-        self.tree.add_from_file('/usr/lib/cinnamon-menu-editor/cinnamon-menu-editor.ui')
+        self.tree.add_from_file('/usr/share/cinnamon/cinnamon-menu-editor/cinnamon-menu-editor.ui')
         self.tree.connect_signals(self)
         self.setupMenuTree()
         self.setupItemTree()

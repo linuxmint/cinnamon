@@ -19,14 +19,14 @@ class MainWindow:
         username =  pwd.getpwuid(user_id).pw_name
         real_name = pwd.getpwuid(user_id).pw_gecos
         home_dir = pwd.getpwuid(user_id).pw_dir
-        
+
         real_name = real_name.replace(",", "")
         if real_name == "":
-            real_name = username        
+            real_name = username
 
         self.builder = Gtk.Builder()
-        self.builder.add_from_file("/usr/lib/cinnamon-screensaver-lock-dialog/cinnamon-screensaver-lock-dialog.ui")
-        
+        self.builder.add_from_file("/usr/share/cinnamon/cinnamon-screensaver-lock-dialog/cinnamon-screensaver-lock-dialog.ui")
+
         self.window = self.builder.get_object("main_dialog")
         self.button_cancel = self.builder.get_object("button_cancel")
         self.button_ok = self.builder.get_object("button_ok")

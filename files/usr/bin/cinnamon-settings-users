@@ -2,5 +2,5 @@
 
 import os
 
-os.system("gksu /usr/lib/cinnamon-settings-users/cinnamon-settings-users.py")
+os.system("gksu /usr/share/cinnamon/cinnamon-settings-users/cinnamon-settings-users.py")
 

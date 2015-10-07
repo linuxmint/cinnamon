@@ -2,5 +2,5 @@
 
 import os, sys
 
-os.execvp("/usr/lib/cinnamon-json-makepot/cinnamon-json-makepot.py", ("",) + tuple(sys.argv[1:]))
+os.execvp("/usr/share/cinnamon/cinnamon-json-makepot/cinnamon-json-makepot.py", ("",) + tuple(sys.argv[1:]))
 
