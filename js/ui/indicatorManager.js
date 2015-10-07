@@ -143,8 +143,6 @@ IndicatorManager.prototype = {
     _onIndicatorDispatch: function(notifierWatcher, id) {
         if (this.statusNotifierWatcher != null) {
             let appIndicator = notifierWatcher.getItemById(id);
-            global.log("Adding indicator as status menu");
-
             let signalsIndicator = this._connectAndSaveId(appIndicator, {
                 'ready'        : Lang.bind(this, this._onIndicatorReady),
                 'destroy'      : Lang.bind(this, this._onIndicatorDestroy),
@@ -510,7 +508,6 @@ StatusNotifierWatcher.prototype = {
             global.logWarning("Attempting to re-register "+id+"; resetting instead");
             this._items[id].reset();
         } else {
-            global.log("registering "+id+" for the first time.");
             this._items[id] = new AppIndicator(busName, objPath);
             this._dbusImpl.emit_signal('ServiceRegistered', GLib.Variant.new('(s)', service));
             this._nameWatcher[id] = Gio.DBus.session.watch_name(busName, Gio.BusNameWatcherFlags.NONE, null,
@@ -518,7 +515,6 @@ StatusNotifierWatcher.prototype = {
             this.emit('indicator-dispatch', id);
             this._dbusImpl.emit_property_changed('RegisteredStatusNotifierItems',
                 GLib.Variant.new('as', this.RegisteredStatusNotifierItems));
-            global.log("done registering");
         }
         invocation.return_value(null);
     },
@@ -1201,12 +1197,11 @@ IconCache.prototype = {
         let time = new Date().getTime();
         for (let id in this._cache) {
             if (this._cache[id].inUse) {
-                global.log("IconCache: " + id + " is in use.");
                 continue;
             } else if (this._lifetime[id] < time) {
                 this._remove(id);
             } else {
-                global.log("IconCache: " + id + " survived this round.");
+                //global.log("IconCache: " + id + " survived this round.");
             }
         }
         if (!this._stopGc) Mainloop.timeout_add(GC_INTERVAL, Lang.bind(this, this._gc));

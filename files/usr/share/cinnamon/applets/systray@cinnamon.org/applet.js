@@ -101,6 +101,17 @@ MyApplet.prototype = {
 
     _onIndicatorAdded: function(manager, appIndicator) {
         if (!(appIndicator.id in this._shellIndicators)) {
+            let hiddenIcons = Main.systrayManager.getRoles();
+
+            if (hiddenIcons.indexOf(appIndicator.id) != -1 ) {
+                // We've got an applet for that
+                global.log("Hiding indicator: " + appIndicator.id);
+                return;
+            }
+            else {
+                global.log("Adding indicator: " + appIndicator.id);
+            }
+
             let iconActor = appIndicator.getIconActor(this._getIndicatorSize(appIndicator));
             iconActor._applet = this;
 
@@ -176,6 +187,7 @@ MyApplet.prototype = {
 
             if (hiddenIcons.indexOf(role) != -1 ) {
                 // We've got an applet for that
+                global.log("Hiding systray: " + role);
                 return;
             }
 

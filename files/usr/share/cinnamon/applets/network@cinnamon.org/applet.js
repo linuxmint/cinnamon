@@ -1653,6 +1653,7 @@ MyApplet.prototype = {
         try {
             this.metadata = metadata;
             Main.systrayManager.registerRole("network", metadata.uuid);
+            Main.systrayManager.registerRole("nm-applet", metadata.uuid);
 
             this.menuManager = new PopupMenu.PopupMenuManager(this);
             this.menu = new Applet.AppletPopupMenu(this, orientation);
@@ -2267,6 +2268,7 @@ MyApplet.prototype = {
 
     on_applet_removed_from_panel: function() {
         Main.systrayManager.unregisterRole("network", this.metadata.uuid);
+        Main.systrayManager.unregisterRole("nm-applet", this.metadata.uuid);
         if (this._periodicTimeoutId){
             Mainloop.source_remove(this._periodicTimeoutId);
         }
