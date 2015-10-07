@@ -183,8 +183,7 @@ st_widget_set_property (GObject      *gobject,
       break;
 
     case PROP_IMPORTANT:
-      actor->priv->important = g_value_get_boolean (value);
-      clutter_actor_queue_relayout ((ClutterActor *) gobject);
+      st_widget_set_important (actor, g_value_get_boolean (value));
       break;
 
     case PROP_ACCESSIBLE_ROLE:
@@ -902,7 +901,7 @@ st_widget_class_init (StWidgetClass *klass)
                                 "Important",
                                 "Whether the widget styling should be looked up in the fallback theme",
                                 FALSE,
-                                ST_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY);
+                                ST_PARAM_READWRITE | G_PARAM_CONSTRUCT);
   g_object_class_install_property (gobject_class,
                                    PROP_IMPORTANT,
                                    pspec);
@@ -1397,6 +1396,53 @@ st_widget_get_style (StWidget *actor)
   return actor->priv->inline_style;
 }
 
+/**
+ * st_widget_set_important:
+ * @actor: a #StWidget
+ * @important: whether the actor is to be considered important.
+ *
+ * When an actor is set to important, and the active theme does not
+ * account for it, a fallback lookup is made to the default cinnamon theme
+ * which (presumably) will always have support for all stock elements
+ * of the desktop.
+ *
+ * This property is inherited by the actor's children.
+ */
+
+void
+st_widget_set_important (StWidget *actor,
+                         gboolean  important)
+{
+  StWidgetPrivate *priv;
+
+  g_return_if_fail (ST_IS_WIDGET (actor));
+
+  priv = actor->priv;
+
+  if (important != priv->important)
+    {
+      priv->important = important;
+
+      st_widget_style_changed (actor);
+
+      g_object_notify (G_OBJECT (actor), "important");
+    }
+}
+
+/**
+ * st_widget_get_important:
+ * @actor: a #StWidget
+ *
+ * Returns if the @actor is flagged set as important
+ */
+gboolean
+st_widget_get_important (StWidget    *actor)
+{
+  g_return_val_if_fail (ST_IS_WIDGET (actor), FALSE);
+
+  return actor->priv->important;
+}
+
 static void
 st_widget_name_notify (StWidget   *widget,
                        GParamSpec *pspec,
@@ -1434,7 +1480,7 @@ st_widget_recompute_style (StWidget    *widget,
   int transition_duration;
   gboolean paint_equal;
 
-  if (new_theme_node == old_theme_node)
+  if (new_theme_node == old_theme_node && widget->priv->important)
     {
       widget->priv->is_style_dirty = FALSE;
       return;
