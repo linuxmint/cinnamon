@@ -6,10 +6,9 @@ const Lang = imports.lang;
  * @short_description: A convenience object for managing signals
  * @_object (Object): The object owning the SignalManager. All callbacks are
  * binded to %_object unless otherwise specified.
- * @_storage (Map): A map that stores all the connected signals. %_storage is
- * indexed by the name of the signal, and each item in %_storage is an array of
- * signals connected, and each signal is represented by an `[object, signalId,
- * callback]` triplet.
+ * @_storage (Array): An array that stores all the connected signals. Each
+ * signal is stored as an array in the form `[signalName, object, callback,
+ * signalId]`.
  *
  * The #SignalManager is a convenience object for managing signals. If you use
  * this to connect signals, you can later disconnect them by signal name or
@@ -63,7 +62,7 @@ SignalManager.prototype = {
      */
     _init: function(object) {
         this._object = object;
-        this._storage = new Map();
+        this._storage = [];
     },
 
     /**
@@ -100,9 +99,6 @@ SignalManager.prototype = {
      * functions).
      */
     connect: function(obj, sigName, callback, bind, force) {
-        if (!this._storage.has(sigName))
-            this._storage.set(sigName, []);
-
         if (!force && this.isConnected(sigName, obj, callback))
             return
 
@@ -113,16 +109,18 @@ SignalManager.prototype = {
         else
             id = obj.connect(sigName, Lang.bind(this._object, callback));
 
-        this._storage.get(sigName).push([obj, id, callback]);
+        this._storage.push([sigName, obj, callback, id]);
     },
 
     _signalIsConnected: function (signal) {
-        if (!signal[0])
+        if (!signal[1])
             return false;
-        else if ('_signalConnects' in signal[0]) // JS Object
-            return signal[0].signalHandlerIsConnected(signal[1]);
-        else // GObject
-            return GObject.signal_handler_is_connected(signal[0], signal[1]);
+        else if (signal[1] instanceof GObject.Object)// GObject
+            return GObject.signal_handler_is_connected(signal[1], signal[3]);
+        else if ('signalHandlerIsConnected' in signal[0]) // JS Object
+            return signal[1].signalHandlerIsConnected(signal[3]);
+        else
+            return false;
     },
 
     /**
@@ -139,19 +137,42 @@ SignalManager.prototype = {
      * usually want to supply @obj as well, since two different objects can
      * connect to the same signal with the same callback.
      *
+     * This is functionally equivalent to (and implemented as)
+     * ```
+     * this.getSignals(arguments).length > 0);
+     * ```
+     *
      * Returns: Whether the signal is connected
      */
-    isConnected: function(sigName, obj, callback) {
-        if (!this._storage.has(sigName))
-            return false;
+    isConnected: function() {
+        return (this.getSignals(arguments).length > 0);
+    },
 
-        for (let signal of this._storage.get(sigName))
-            if ((!obj || signal[0] == obj) &&
-                    (!callback || signal[2] == callback) &&
-                    this._signalIsConnected(signal))
-                return true;
+    /**
+     * getSignals:
+     * @sigName (string): the signal we care about
+     * @obj (Object): (optional) the object we care about, or leave empty if we
+     * don't care about which object it is
+     * @callback (function): (optional) the callback function we care about, or
+     * leave empty if we don't care about what callback is connected
+     *
+     * This returns the list of all signals that matches the description
+     * provided. Each signal is represented by an array in the form
+     * `[signalName, object, callback, signalId]`.
+     *
+     * Returns (Array): The list of signals
+     */
+    getSignals: function(sigName, obj, callback) {
+        let results = this._storage;
 
-        return false;
+        if (sigName)
+            results = results.filter(x => x[0] == sigName);
+        if (obj)
+            results = results.filter(x => x[1] == obj);
+        if (callback)
+            results = results.filter(x => x[2] == callback);
+
+        return results;
     },
 
     /**
@@ -170,22 +191,11 @@ SignalManager.prototype = {
      * no longer exists, or the signal is somehow already disconnected. So
      * checks need not be performed before calling this function.
      */
-    disconnect: function(sigName, obj, callback) {
-        if (!this._storage.has(sigName))
-            return;
+    disconnect: function() {
+        let results = this.getSignals(arguments);
+        results.filter(this._signalIsConnected).forEach(x => x[1].disconnect(x[3]));
 
-        this._storage.get(sigName).forEach(Lang.bind(this, function (signal, i) {
-            if ((!obj || signal[0] == obj) &&
-                (!callback || signal[2] == callback)) {
-                if (this._signalIsConnected(signal))
-                    signal[0].disconnect(signal[1]);
-
-                this._storage.get(sigName).splice(i, 1);
-            }
-        }));
-
-        if (this._storage.get(sigName).length == 0)
-            this._storage.delete(sigName);
+        this._storage = this._storage.filter(x => results.indexOf(x) != -1);
     },
 
     /**
@@ -195,11 +205,8 @@ SignalManager.prototype = {
      * in the @destroy function of objects.
      */
     disconnectAllSignals: function() {
-        for (let signals of this._storage.values())
-            for (let signal of signals)
-                if (this._signalIsConnected(signal))
-                    signal[0].disconnect(signal[1]);
+        this._storage.filter(this._signalIsConnected).forEach(x => x[1].disconnect(x[3]));
 
-        this._storage.clear();
+        this._storage = [];
     }
 }
