@@ -1677,13 +1677,12 @@ Panel.prototype = {
                 /*Set center width to its minimal in addition to its
                 *fair natural width.*/
 		let centerWidth = centerMinWidth + (centerWant * (centerWant / totalWant));
-		/*Center the center box. Setting left space
-		*is equivalent to (total space)/2 + (total want)/3*/
+		/*Center the center box by giving helf the remaining space
+		*to the left box*/
 		leftWidth = ((allocWidth - centerWidth)/2);
 		/*Preserve the minimal left size*/
 		if(leftWidth<leftMinWidth)leftWidth = leftMinWidth;
-		/*Give the remaining space to right. Setting right space
-		*is also equivalent to (total space)/2 + (total want)/3*/
+		/*Give the remaining space to the right box.*/
 		rightWidth = allocWidth - leftWidth - centerWidth;
 		/*Preserve the minimal right size*/
 		if(rightWidth<rightMinWidth)rightWidth = rightMinWidth;
