@@ -76,12 +76,12 @@ RadioButtonContainer.prototype = {
     }
 };
 
-function RadioButton(label) {
-   this._init(label);
+function RadioBox(state) {
+    this._init(state);
 }
 
-RadioButton.prototype = {
-    _init: function(label) {
+RadioBox.prototype = {
+    _init: function(state) {
         this.actor = new St.Button({ style_class: 'radiobutton',
                                      button_mask: St.ButtonMask.ONE,
                                      toggle_mode: true,
@@ -89,6 +89,39 @@ RadioButton.prototype = {
                                      x_fill: true,
                                      y_fill: true,
                                      y_align: St.Align.MIDDLE });
+
+        this.actor._delegate = this;
+        this.actor.checked = state;
+        // FIXME: The current size is big and the container only is useful,
+        // because the current theme. Can be fixed the theme also?
+        this.actor.style = 'width: 12px;';
+        this._container = new St.Bin();
+        this.actor.set_child(this._container);
+    },
+
+    setToggleState: function(state) {
+        this.actor.checked = state;
+    },
+
+    toggle: function() {
+        this.setToggleState(!this.actor.checked);
+    },
+
+    destroy: function() {
+        this.actor.destroy();
+    }
+};
+
+function RadioButton(label) {
+   this._init(label);
+}
+
+RadioButton.prototype = {
+    __proto__: RadioBox.prototype,
+
+    _init: function(label) {
+        RadioBox.prototype._init.call(this, false);
+        this._container.destroy();
         this._container = new RadioButtonContainer();
         this.actor.set_child(this._container.actor);
 

@@ -9,6 +9,7 @@
  * @lookingGlass (LookingGlass.Melange): The looking glass object
  * @wm (WindowManager.WindowManager): The window manager
  * @messageTray (MessageTray.MessageTray): The mesesage tray
+ * @indicatorManager (IndicatorManager.IndicatorManager): The indicator manager
  * @notificationDaemon (NotificationDaemon.NotificationDaemon): The notification daemon
  * @windowAttentionHandler (WindowAttentionHandler.WindowAttentionHandler): The window attention handler
  * @recorder (Cinnamon.Recorder): The recorder
@@ -94,6 +95,7 @@ const DeskletManager = imports.ui.deskletManager;
 const ExtensionSystem = imports.ui.extensionSystem;
 const Keyboard = imports.ui.keyboard;
 const MessageTray = imports.ui.messageTray;
+const IndicatorManager = imports.ui.indicatorManager;
 const OsdWindow = imports.ui.osdWindow;
 const Overview = imports.ui.overview;
 const Expo = imports.ui.expo;
@@ -138,6 +140,7 @@ let runDialog = null;
 let lookingGlass = null;
 let wm = null;
 let messageTray = null;
+let indicatorManager = null;
 let notificationDaemon = null;
 let windowAttentionHandler = null;
 let recorder = null;
@@ -394,6 +397,7 @@ function start() {
     
     wm = new WindowManager.WindowManager();
     messageTray = new MessageTray.MessageTray();
+    indicatorManager = new IndicatorManager.IndicatorManager();
     keyboard = new Keyboard.Keyboard();
     notificationDaemon = new NotificationDaemon.NotificationDaemon();
     windowAttentionHandler = new WindowAttentionHandler.WindowAttentionHandler();
