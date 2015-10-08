@@ -4,6 +4,9 @@
 # Uncomment this to turn on verbose mode.
 #export DH_VERBOSE=1
 
+# turn on Makefile verbose mode
+export V=1
+
 export DEB_LDFLAGS_MAINT_APPEND=-Wl,--as-needed
 export DEB_BUILD_MAINT_OPTIONS = hardening=+all
 DEB_HOST_MULTIARCH ?= $(shell dpkg-architecture -qDEB_HOST_MULTIARCH)
@@ -23,7 +26,7 @@ CINNAMON_VERSION := $(shell echo $(VERSION) | sed 's/\(.*.*\)\..*/\1.0/')
 DH_GENCONTROL_ARGS = -Vcinnamon:Version=$(CINNAMON_VERSION)
 
 %:
-	dh  $@ --with autoreconf,python2 $(DH_PARALLEL_OPTION)
+	dh  $@ --with autoreconf,python2,gir $(DH_PARALLEL_OPTION)
 
 
 override_dh_autoreconf:

@@ -1,4 +1,7 @@
 # It's the only way we have to let cinnamon find the private library it
 # links against through libcinnamon.so
 cinnamon: binary-or-shlib-defines-rpath usr/bin/cinnamon /usr/lib/gnome-bluetooth
-cinnamon: binary-or-shlib-defines-rpath ./usr/bin/cinnamon /usr/lib/gnome-bluetooth
+cinnamon: binary-or-shlib-defines-rpath usr/lib/cinnamon/libcinnamon.so /usr/lib/gnome-bluetooth
+
+# https://github.com/linuxmint/Cinnamon/pull/1750
+cinnamon: embedded-javascript-library usr/lib/cinnamon-settings/data/spices/jquery.js

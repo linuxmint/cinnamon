@@ -83,6 +83,7 @@ Depends: cinnamon-common (= ${source:Version}),
          gir1.2-notify-0.7,
          gksu,
          libglib2.0-bin,
+         ${python:Depends},
          python,
          python-dbus,
          python-gconf,
@@ -100,8 +101,10 @@ Depends: cinnamon-common (= ${source:Version}),
          gnome-panel | tint2
 Recommends: gnome-themes-standard, gnome-terminal, cinnamon-bluetooth
 Provides: notification-daemon, x-window-manager
-Description: Cinnamon desktop
- Cinnamon is a modern Linux desktop which provides advanced innovative features and a traditional user experience. It's easy to use, powerful and flexible.
+Description: Modern Linux desktop
+ Cinnamon is a modern Linux desktop which provides advanced innovative
+ features and a traditional user experience. It's easy to use, powerful
+ and flexible.
 
 Package: cinnamon-dbg
 Section: debug
@@ -111,7 +114,9 @@ Depends: cinnamon (= ${binary:Version}),
          ${misc:Depends},
          gnome-dbg
 Description: Debugging symbols for the Cinnamon desktop
- Cinnamon is a modern Linux desktop which provides advanced innovative features and a traditional user experience. It's easy to use, powerful and flexible.
+ Cinnamon is a modern Linux desktop which provides advanced innovative
+ features and a traditional user experience. It's easy to use, powerful
+ and flexible.
  .
  This package contains the debugging symbols.
 
@@ -121,7 +126,9 @@ Breaks: cinnamon (<< ${cinnamon:Version})
 Architecture: all
 Depends: ${misc:Depends}, python
 Description: Cinnamon desktop (Common data files)
- Cinnamon is a modern Linux desktop which provides advanced innovative features and a traditional user experience. It's easy to use, powerful and flexible.
+ Cinnamon is a modern Linux desktop which provides advanced innovative
+ features and a traditional user experience. It's easy to use, powerful
+ and flexible.
  .
  This package contains the architecture independent files needed by Cinnamon
 
@@ -130,6 +137,8 @@ Section: doc
 Architecture: all
 Depends: ${misc:Depends}, devhelp
 Description: Cinnamon documentation
- Cinnamon is a modern Linux desktop which provides advanced innovative features and a traditional user experience. It's easy to use, powerful and flexible.
+ Cinnamon is a modern Linux desktop which provides advanced innovative
+ features and a traditional user experience. It's easy to use, powerful
+ and flexible.
  .
  This package contains the code documentation for various Cinnamon components.
