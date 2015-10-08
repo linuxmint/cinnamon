@@ -371,6 +371,7 @@ st_theme_node_equal (StThemeNode *node_a, StThemeNode *node_b)
       node_a->context != node_b->context ||
       node_a->theme != node_b->theme ||
       node_a->element_type != node_b->element_type ||
+      node_a->important != node_b->important ||
       g_strcmp0 (node_a->element_id, node_b->element_id) ||
       g_strcmp0 (node_a->inline_style, node_b->inline_style))
     return FALSE;

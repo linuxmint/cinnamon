@@ -1480,7 +1480,7 @@ st_widget_recompute_style (StWidget    *widget,
   int transition_duration;
   gboolean paint_equal;
 
-  if (new_theme_node == old_theme_node && !widget->priv->important)
+  if (new_theme_node == old_theme_node)
     {
       widget->priv->is_style_dirty = FALSE;
       return;
