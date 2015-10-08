@@ -446,7 +446,6 @@ Notification.prototype = {
         this._imageBin = null;
         this._timestamp = new Date();
         this._inNotificationBin = false;
-        this.dateFormat = _("%l:%M %p");
 
         this.enter_id = 0;
         this.leave_id = 0;
@@ -588,7 +587,7 @@ Notification.prototype = {
         this.title = title;
         title = title ? _fixMarkup(title.replace(/\n/g, ' '), params.titleMarkup) : '';
         this._titleLabel.clutter_text.set_markup('<b>' + title + '</b>');
-        this._timeLabel.clutter_text.set_markup(this._timestamp.toLocaleTimeString(this.dateFormat));
+        this._timeLabel.clutter_text.set_markup(this._timestamp.toLocaleTimeString());
         this._timeLabel.hide();
         if (Pango.find_base_dir(title, -1) == Pango.Direction.RTL)
             this._titleDirection = St.TextDirection.RTL;
