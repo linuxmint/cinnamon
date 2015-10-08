@@ -14,11 +14,39 @@
 # along with this program.  If not, see http://www.gnu.org/licenses/
 
 from gi.repository import Gio, GObject
+import platform
+import os
+
+def get_multiarch_root():
+    plat = platform.machine()
+
+    try_path = "/usr/lib/%s/cinnamon-control-center-1/panels" % plat
+    if os.path.exists(try_path):
+        return try_path
+
+    try_path = "/usr/lib/%s-linux-gnu/cinnamon-control-center-1/panels" % plat
+    if os.path.exists(try_path):
+        return try_path
+
+    return None
 
 class CManager():
     def __init__(self):
         self.extension_point = Gio.io_extension_point_register ("cinnamon-control-center-1")
-        self.modules = Gio.io_modules_load_all_in_directory ("/usr/lib/cinnamon-control-center-1/panels")
+        self.modules = []
+
+        try:
+            multiarch_folder = get_multiarch_root()
+            self.modules = self.modules + Gio.io_modules_load_all_in_directory(multiarch_folder)
+        except Exception, e:
+            print "capi failed to load multiarch modules", e
+            pass
+
+        try:
+            self.modules = self.modules + Gio.io_modules_load_all_in_directory("/usr/lib/cinnamon-control-center-1/panels")
+        except Exception, e:
+            print "capi failed to load non-multiarch modules", e
+            pass
 
     def get_c_widget(self, mod_id):
         extension = self.extension_point.get_extension_by_name(mod_id)

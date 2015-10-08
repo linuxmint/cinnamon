@@ -4,7 +4,6 @@ import sys
 reload(sys)
 sys.setdefaultencoding('utf-8')
 
-sys.path.append('/usr/lib/cinnamon')
 sys.path.append('/usr/share/cinnamon/cinnamon-settings/modules')
 sys.path.append('/usr/share/cinnamon/cinnamon-settings/bin')
 import os
