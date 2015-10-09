@@ -4,6 +4,7 @@ const Gio = imports.gi.Gio;
 const Lang = imports.lang;
 const Util = imports.misc.util;
 const Meta = imports.gi.Meta;
+const GLib = imports.gi.GLib;
 
 const MK = imports.gi.CDesktopEnums.MediaKeyType;
 const CinnamonDesktop = imports.gi.CinnamonDesktop;
@@ -45,7 +46,8 @@ KeybindingManager.prototype = {
         this.kb_schema.connect("changed::custom-list", Lang.bind(this, this.on_customs_changed));
 
         this.media_key_settings = new Gio.Settings({ schema_id: MEDIA_KEYS_SCHEMA });
-        this.media_key_settings.connect("changed", Lang.bind(this, this.setup_media_keys));
+        this.media_key_settings.connect("changed", Lang.bind(this, this.delayed_setup_media_keys));
+        this.delay_setup_started = false;
         this.setup_media_keys();
     },
 
@@ -62,6 +64,9 @@ KeybindingManager.prototype = {
 
     addHotKeyArray: function(name, bindings, callback) {
         if (this.bindings[name]) {
+            if (this.bindings[name].toString() == bindings.toString()) {
+              return false;
+            }
             global.display.remove_custom_keybinding(name);
         }
 
@@ -124,6 +129,17 @@ KeybindingManager.prototype = {
             }
         }
     },
+
+    delayed_setup_media_keys: function() {
+        if (this.delay_setup_started == false) {
+            this.delay_setup_started = true;
+            GLib.idle_add(GLib.PRIORITY_LOW, Lang.bind(this, function() {
+                this.setup_media_keys();
+                this.delay_setup_started = false;
+            }));
+        }
+        return true;
+     },
 
     setup_media_keys: function() {
         for (let i = 0; i < MK.SEPARATOR; i++) {
