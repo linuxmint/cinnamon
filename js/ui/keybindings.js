@@ -46,8 +46,8 @@ KeybindingManager.prototype = {
         this.kb_schema.connect("changed::custom-list", Lang.bind(this, this.on_customs_changed));
 
         this.media_key_settings = new Gio.Settings({ schema_id: MEDIA_KEYS_SCHEMA });
-        this.media_key_settings.connect("changed", Lang.bind(this, this.delayed_setup_media_keys));
         this.delay_setup_started = false;
+        this.media_key_settings.connect("changed", Lang.bind(this, this.delayed_setup_media_keys));
         this.setup_media_keys();
     },
 
@@ -134,8 +134,8 @@ KeybindingManager.prototype = {
         if (this.delay_setup_started == false) {
             this.delay_setup_started = true;
             GLib.idle_add(GLib.PRIORITY_LOW, Lang.bind(this, function() {
-                this.setup_media_keys();
                 this.delay_setup_started = false;
+                this.setup_media_keys();
             }));
         }
         return true;
