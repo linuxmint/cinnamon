@@ -1376,8 +1376,9 @@ MyApplet.prototype = {
 
         let bin = new St.Bin({ x_align: St.Align.END, style_class: 'popup-inactive-menu-item' });
         let label = new St.Label({ text: device.origin });
+        label.set_style("padding-right: 1em;");
         bin.add_actor(label);
-        item.addActor(bin, { expand: false, span: 1, align: St.Align.END });
+        item.addActor(bin, { expand: true, span: -1, align: St.Align.END });
 
         let selectItem = this["_select" + type[0].toUpperCase() + type.slice(1) + "DeviceItem"];
         selectItem.menu.addMenuItem(item);
