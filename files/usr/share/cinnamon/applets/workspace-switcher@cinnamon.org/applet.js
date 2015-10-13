@@ -288,10 +288,12 @@ MyApplet.prototype = {
         for (let i = 0; i < global.screen.n_workspaces; ++i) {
             if (this.display_type == "visual") {
                 this.actor.set_style_class_name('workspace-graph');
+                this.actor.set_important(true);
                 this.buttons[i] = new WorkspaceGraph(i, this);
             }
             else {
                 this.actor.set_style_class_name('workspace-switcher');
+                this.actor.set_important(true);
                 this.buttons[i] = new SimpleButton(i, this);
             }
             this.actor.add_actor(this.buttons[i].actor);
