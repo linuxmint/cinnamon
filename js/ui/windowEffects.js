@@ -252,29 +252,24 @@ Minimize.prototype = {
     //use default _end method
     _end: Effect.prototype._end,
 
-    traditional: function(cinnamonwm, actor, time, transition){
-        if(AppletManager.get_role_provider_exists(AppletManager.Roles.WINDOWLIST)){
-            let windowApplet = AppletManager.get_role_provider(AppletManager.Roles.WINDOWLIST);
-            let actorOrigin = windowApplet.getOriginFromWindow ?
-                windowApplet.getOriginFromWindow(actor.get_meta_window()) :
-                false;
-
-            if(actorOrigin !== false){
-                actor.set_scale(1, 1);
-                let [xDest, yDest] = actorOrigin.get_transformed_position();
-                // Adjust horizontal destination or it'll appear to zoom
-                // down to our button's left (or right in RTL) edge.
-                // To center it, we'll add half its width.
-                // We use the allocation box because otherwise our
-                // pseudo-class ":focus" may be larger when not minimized.
-                xDest += actorOrigin.get_allocation_box().get_size()[0] / 2;
-                actor.get_meta_window()._cinnamonwm_has_origin = true;
-                this._moveWindow(cinnamonwm, actor, xDest, yDest, time, transition);
-                this._scaleWindow(cinnamonwm, actor, 0, 0, time, transition, true);
-                return; // done
-            }
+    traditional: function(cinnamonwm, actor, time, transition) {
+        let success;
+        let geom = new Meta.Rectangle();
+        success = actor.meta_window.get_icon_geometry(geom);
+        if (success) {
+            actor.set_scale(1, 1);
+            let xDest, yDest, xScale, yScale;
+            xDest = geom.x;
+            yDest = geom.y;
+            xScale = geom.width / actor.width;
+            yScale = geom.height / actor.height;
+            actor.get_meta_window()._cinnamonwm_has_origin = true;
+            this._moveWindow(cinnamonwm, actor, xDest, yDest, time, transition);
+            this._scaleWindow(cinnamonwm, actor, xScale, yScale, time, transition, true);
+            this._fadeWindow(cinnamonwm, actor, 0, time, transition);
+        } else {
+            this.scale(cinnamonwm, actor, time, transition); // fall-back effect
         }
-        this.scale(cinnamonwm, actor, time, transition); // fall-back effect
     }
 }
 
@@ -291,27 +286,23 @@ Unminimize.prototype = {
 
     _end: Map.prototype._end,
 
-    traditional: function(cinnamonwm, actor, time, transition){
-        if(AppletManager.get_role_provider_exists(AppletManager.Roles.WINDOWLIST)){
-            let windowApplet = AppletManager.get_role_provider(AppletManager.Roles.WINDOWLIST);
-            let actorOrigin = windowApplet.getOriginFromWindow(actor.get_meta_window());
-
-            if(actorOrigin !== false){
-                actor.set_scale(0, 0);
-                let [xDest, yDest] = actor.get_transformed_position();
-                let [xSrc, ySrc] = actorOrigin.get_transformed_position();
-                // Adjust horizontal destination or it'll appear to zoom
-                // down to our button's left (or right in RTL) edge.
-                // To center it, we'll add half its width.
-                xSrc += actorOrigin.get_allocation_box().get_size()[0] / 2;
-                actor.set_position(xSrc, ySrc);
-
-                this._moveWindow(cinnamonwm, actor, xDest, yDest, time, transition);
-                this._scaleWindow(cinnamonwm, actor, 1, 1, time, transition, true);
-                return;
-            }
+    traditional: function(cinnamonwm, actor, time, transition) {
+        let success;
+        let geom = new Meta.Rectangle();
+        success = actor.meta_window.get_icon_geometry(geom);
+        if (success) {
+            actor.set_scale(0.1, 0.1);
+            actor.opacity = 0;
+            let xSrc = geom.x;
+            let ySrc = geom.y;
+            let [xDest, yDest] = actor.get_transformed_position();
+            actor.set_position(xSrc, ySrc);
+            this._moveWindow(cinnamonwm, actor, xDest, yDest, time, transition);
+            this._scaleWindow(cinnamonwm, actor, 1, 1, time, transition, true);
+            this._fadeWindow(cinnamonwm, actor, actor.orig_opacity, time, transition);
+        } else {
+            throw "No origin found";
         }
-        throw "No origin found";
     }
 }
 

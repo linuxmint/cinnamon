@@ -28,7 +28,6 @@ var appletsLoaded = false;
 // the same role?
 const Roles = {
     NOTIFICATIONS: 'notifications',
-    WINDOWLIST: 'windowlist',
     PANEL_LAUNCHER: 'panellauncher'
 }
 
