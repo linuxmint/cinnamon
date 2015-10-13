@@ -57,18 +57,6 @@ respond_to_end_session (GDBusProxy *proxy)
 }
 
 static void
-on_session_over (GDBusProxy *proxy,
-                 gchar      *sender_name,
-                 gchar      *signal_name,
-                 GVariant   *parameters,
-                 gpointer    user_data)
-{
-        if (g_strcmp0 (signal_name, "SessionOver") == 0) {
-                stop_cinnamon ();
-        }
-}
-
-static void
 client_proxy_signal_cb (GDBusProxy *proxy,
                         gchar *sender_name,
                         gchar *signal_name,
@@ -177,9 +165,6 @@ queue_register_client (void)
         }
 
         /* Register the daemon with cinnamon-session */
-        g_signal_connect (G_OBJECT (proxy), "g-signal",
-                          G_CALLBACK (on_session_over), NULL);
-
         g_idle_add_full (G_PRIORITY_DEFAULT, do_register_client, proxy, NULL);
 }
 
