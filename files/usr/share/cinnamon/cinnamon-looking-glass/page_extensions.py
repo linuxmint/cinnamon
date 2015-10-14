@@ -43,7 +43,8 @@ class ModulePage(pageutils.BaseListView):
     def onReloadCode(self, menuItem):
         iter = self.store.get_iter(self.selectedPath)
         uuid = self.store.get_value(iter, 4)
-        lookingGlassProxy.ReloadExtension(uuid)
+        xletType = self.store.get_value(iter, 1)
+        lookingGlassProxy.ReloadExtension(uuid, xletType.upper())
 
     def onViewWebPage(self, menuItem):
         iter = self.store.get_iter(self.selectedPath)

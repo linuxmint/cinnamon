@@ -375,6 +375,7 @@ const lgIFace =
             </method> \
             <method name="ReloadExtension"> \
                 <arg type="s" direction="in" name="uuid"/> \
+                <arg type="s" direction="in" name="type"/> \
             </method> \
             <signal name="LogUpdate"></signal> \
             <signal name="WindowListUpdate"></signal> \
@@ -627,22 +628,25 @@ Melange.prototype = {
     GetExtensionList: function() {
         try {
             let extensionList = [];
-            for (let uuid in Extension.meta) {
-                let meta = Extension.meta[uuid];
-                // There can be cases where we create dummy extension metadata
-                // that's not really a proper extension. Don't bother with these.
-                if (meta.name) {
-                    extensionList.push({
-                        status: Extension.getMetaStateString(meta.state),
-                        name: meta.name,
-                        description: meta.description,
-                        uuid: uuid,
-                        folder: meta.path,
-                        url: meta.url ? meta.url : '',
-                        type: meta.type.name,
-                        error_message: meta.error ? meta.error : _("Loaded successfully"),
-                        error: meta.error ? "true" : "false" // Must use string due to dbus restrictions
-                    });
+            for (let type in Extension.Type) {
+                type = Extension.Type[type];
+                for(let uuid in type.maps.meta){
+                    let meta = type.maps.meta[uuid];
+                    // There can be cases where we create dummy extension metadata
+                    // that's not really a proper extension. Don't bother with these.
+                    if (meta.name) {
+                        extensionList.push({
+                            status: Extension.getMetaStateString(meta.state),
+                            name: meta.name,
+                            description: meta.description,
+                            uuid: uuid,
+                            folder: meta.path,
+                            url: meta.url ? meta.url : '',
+                            type: type.name,
+                            error_message: meta.error ? meta.error : _("Loaded successfully"),
+                            error: meta.error ? "true" : "false" // Must use string due to dbus restrictions
+                        });
+                    }
                 }
             }
             return [true, extensionList];
@@ -653,13 +657,8 @@ Melange.prototype = {
     },
 
     // DBus function
-    ReloadExtension: function(uuid) {
-        let extension = Extension.objects[uuid];
-        if (extension) {
-            let type = extension.type;
-            Extension.unloadExtension(uuid);
-            Extension.loadExtension(uuid, type);
-        }
+    ReloadExtension: function(uuid, type) {
+        Extension.reloadExtension(uuid, Extension.Type[type]);
     },
     
     emitLogUpdate: function() {

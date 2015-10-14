@@ -39,8 +39,8 @@ const DESKLET_SNAP_INTERVAL_KEY = 'desklet-snap-interval';
  * Initialize desklet manager
  */
 function init(){
-    deskletMeta = Extension.meta;
-    desklets = Extension.importObjects;
+    desklets = Extension.Type.DESKLET.maps.importObjects;
+    deskletMeta = Extension.Type.DESKLET.maps.meta;
 
     deskletsLoaded = false
 
@@ -158,10 +158,10 @@ function finishExtensionLoad(extension) {
 }
 
 // Callback for extension.js
-function prepareExtensionUnload(extension) {
+function prepareExtensionUnload(extension, deleteConfig) {
     // Remove all desklet instances for this extension
     for(let desklet_id in extension._loadedDefinitions) {
-        _unloadDesklet(extension._loadedDefinitions[desklet_id]);
+        _unloadDesklet(extension._loadedDefinitions[desklet_id], deleteConfig);
     }
 }
 
@@ -171,14 +171,14 @@ function _onEnabledDeskletsChanged(){
         // Remove all desklet instances that do not exist in the definition anymore.
         for (let desklet_id in enabledDeskletDefinitions.idMap) {
             if(!newEnabledDeskletDefinitions.idMap[desklet_id]) {
-                _unloadDesklet(enabledDeskletDefinitions.idMap[desklet_id]);
+                _unloadDesklet(enabledDeskletDefinitions.idMap[desklet_id], true);
             }
         }
 
         // Unload all desklet extensions that do not exist in the definition anymore.
         for (let uuid in enabledDeskletDefinitions.uuidMap) {
             if(!newEnabledDeskletDefinitions.uuidMap[uuid]) {
-                Extension.unloadExtension(uuid);
+                Extension.unloadExtension(uuid, Extension.Type.DESKLET);
             }
         }
         // Add or move desklet instances of already loaded desklet extensions
@@ -187,7 +187,7 @@ function _onEnabledDeskletsChanged(){
             let oldDef = enabledDeskletDefinitions.idMap[desklet_id];
 
             if(!oldDef || !_deskletDefinitionsEqual(newDef, oldDef)) {
-                let extension = Extension.objects[newDef.uuid];
+                let extension = Extension.Type.DESKLET.maps.objects[newDef.uuid];
                 if(extension) {
                     _loadDesklet(extension, newDef);
                 }
@@ -209,7 +209,7 @@ function _onEnabledDeskletsChanged(){
     }
 }
 
-function _unloadDesklet(deskletDefinition) {
+function _unloadDesklet(deskletDefinition, deleteConfig) {
     let desklet = deskletObj[deskletDefinition.desklet_id];
     if (desklet){
         try {
@@ -217,7 +217,9 @@ function _unloadDesklet(deskletDefinition) {
         } catch (e) {
             global.logError("Failed to destroy desket: " + deskletDefinition.uuid + "/" + deskletDefinition.desklet_id, e);
         }
-        _removeDeskletConfigFile(deskletDefinition.uuid, deskletDefinition.desklet_id);
+
+        if (deleteConfig)
+            _removeDeskletConfigFile(deskletDefinition.uuid, deskletDefinition.desklet_id);
 
         delete desklet._extension._loadedDefinitions[deskletDefinition.desklet_id];
         delete deskletObj[deskletDefinition.desklet_id];

@@ -235,7 +235,7 @@ _provider.prototype = {
             }
             this.instanceId = instanceId;
             this.valid = false;
-            this.applet_dir = Extension.dirs[this.uuid];
+            this.applet_dir = type.maps.dirs[this.uuid];
             if (!this.applet_dir) {
                 global.logError("Could not find installation directory for " + this.uuid);
                 return;
@@ -899,7 +899,7 @@ AppletSettings.prototype = {
     },
 
     _get_is_multi_instance_xlet: function(uuid) {
-        return Extension.get_max_instances(uuid) != 1;
+        return Extension.get_max_instances(uuid, this.ext_type) != 1;
     },
 };
 
@@ -927,7 +927,7 @@ DeskletSettings.prototype = {
     },
 
     _get_is_multi_instance_xlet: function(uuid) {
-        return Extension.get_max_instances(uuid) > 1;
+        return Extension.get_max_instances(uuid, this.ext_type) > 1;
     }
 };
 

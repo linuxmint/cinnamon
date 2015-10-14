@@ -143,56 +143,13 @@
 
     <para>
       When you want to split a big xlet code into smaller files, you'll need to import them.
-      A simple way is using <code>AppletManager.applets[uuid]</code>:
+      A simple way is using <code>imports.xlet</code>, wher <code>xlet</code> is your xlet type
+      (<code>applet</code>, <code>desklet</code>, <code>extension</code>, <code>search_provider</code>)
       <informalexample>
         <programlisting>
-          const uuid = "xlet@uuid";
-          const dir = imports.ui.appletManager.applets[uuid]; //get the directory for the uuid
-
-          //do imports with dir.*
+          imports.applet.foo // get foo.js in your applet directory
         </programlisting>
       </informalexample>
-
-      The disadvantage on this method is that the constant dir is only valid for this file.
-      You'll need a lot of copy&amp;paste in order to import thing from every module.
-    </para>
-  </sect2>
-
-  <sect2>
-    <title>The <code>imports.searchPath</code></title>
-
-    <para>
-      Now some advanced stuff: the <code>imports.searchPath</code>.
-      It is an array defaulting to <code>["resource:////gnome/gjs/modules", "/usr/share/cinnamon/js/"]</code>.
-      Those two values are neccesary to let you the access to the modules mentioned above.
-    </para>
-
-    <para>
-      If you modify it (pushing a directory string to it), cjs also looks there.
-      This is also very useful for big xlets which are split up in many modules.
-    </para>
-
-    <para>
-      <informalexample>
-        <programlisting>
-          const uuid = "xlet@uuid";
-          const path = imports.ui.appletManager.appletMeta[uuid].path; //get the path for the uuid
-
-          if(imports.searchath.indexOf(path) === -1)
-            imports.searchPath.push(path);
-
-          //do imports
-
-          imports.searchPath.splice(imports.searchath.indexOf(path), 1);
-        </programlisting>
-      </informalexample>
-
-      The advantage of this method is that you can use just <code>imports.*</code> for all of your files and not only for one file.
-    </para>
-
-    <para>
-      It is very recommed to check that only one instance of the searchPath exists (see the if clause before push) and to remove this one (splice method).
-      Otherwise, possible confusement of other parts of the Cinnamon enviroment can occurence.
     </para>
   </sect2>
 
@@ -200,7 +157,8 @@
     <title><code>__init__.js</code></title>
 
     <para>
-      When you import stuff by modifying the <code>imports.searchPath</code> you can also use <code>__init__.js</code>.
+      When writing xlets, it is common that you have some functions or constants that you need in many files.
+      For that, there is <code>__init__.js</code>.
       It is a normal JavaScript file, but every function or variable can be accessed directly via <code>import.*</code>.
     </para>
 
@@ -226,29 +184,18 @@
       In your other files:
       <informalexample>
         <programlisting>
-          const uuid = imports.uuid;
-          const _ = imports._;
+          const uuid = imports.xlet.uuid;
+          const _ = imports.xlet._;
         </programlisting>
       </informalexample>
     </para>
 
     <para>
-      This is just a little need extension to the <code>imports.searchPath</code> modification.
-      There is no harm renaming <code>__init__.js</code> to something other (like <code>util.js</code>) and using <code>imports.util.*</code>.
+      Remember: replace <code>xlet</code> in <code>imports.xlet</code> to your xlet type.
     </para>
-  </sect2>
-
-  <sect2>
-    <title>Order of imprting</title>
 
     <para>
-      The importer goes through the elements of <code>imports.searchPath</code>.
-      On each element, the following order is used to import stuff:
-      <itemizedlist>
-        <listitem>value in <code>__init__.js</code></listitem>
-        <listitem>a file</listitem>
-        <listitem>a directory</listitem>
-      </itemizedlist>
+      There is no harm renaming <code>__init__.js</code> to something other (like <code>util.js</code>) and using <code>imports.xlet.util.*</code>.
     </para>
   </sect2>
 </chapter>

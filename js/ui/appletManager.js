@@ -35,8 +35,8 @@ let enabledAppletDefinitions;
 let clipboard = [];
 
 function init() {
-    appletMeta = Extension.meta;
-    applets = Extension.importObjects;
+    applets = Extension.Type.APPLET.maps.importObjects;
+    appletMeta = Extension.Type.APPLET.maps.meta;
 
     appletsLoaded = false;
     
@@ -64,10 +64,10 @@ function finishExtensionLoad(extension) {
 }
 
 // Callback for extension.js
-function prepareExtensionUnload(extension) {
+function prepareExtensionUnload(extension, deleteConfig) {
     // Remove all applet instances for this extension
     for(let applet_id in extension._loadedDefinitions) {
-        removeAppletFromPanels(extension._loadedDefinitions[applet_id]);
+        removeAppletFromPanels(extension._loadedDefinitions[applet_id], deleteConfig);
     }
 }
 
@@ -174,7 +174,7 @@ function onEnabledAppletsChanged() {
         // Unload all applet extensions that do not exist in the definition anymore.
         for (let uuid in oldEnabledAppletDefinitions.uuidMap) {
             if(!enabledAppletDefinitions.uuidMap[uuid]) {
-                Extension.unloadExtension(uuid);
+                Extension.unloadExtension(uuid, Extension.Type.APPLET);
             }
         }
         
@@ -184,7 +184,7 @@ function onEnabledAppletsChanged() {
             let oldDef = oldEnabledAppletDefinitions.idMap[applet_id];
             
             if(!oldDef || !appletDefinitionsEqual(newDef, oldDef)) {
-                let extension = Extension.objects[newDef.uuid];
+                let extension = Extension.Type.APPLET.maps.objects[newDef.uuid];
                 if(extension) {
                     addAppletToPanels(extension, newDef);
                 }
@@ -204,7 +204,7 @@ function onEnabledAppletsChanged() {
     Main.statusIconDispatcher.redisplay();
 }
 
-function removeAppletFromPanels(appletDefinition) {
+function removeAppletFromPanels(appletDefinition, deleteConfig) {
     let applet = appletObj[appletDefinition.applet_id];
     if (applet) {
         try {
@@ -221,7 +221,8 @@ function removeAppletFromPanels(appletDefinition) {
         delete applet._extension._loadedDefinitions[appletDefinition.applet_id];
         delete appletObj[appletDefinition.applet_id];
 
-        _removeAppletConfigFile(appletDefinition.uuid, appletDefinition.applet_id);
+        if (deleteConfig)
+            _removeAppletConfigFile(appletDefinition.uuid, appletDefinition.applet_id);
 
         /* normal occurs during _onAppletRemovedFromPanel, but when a panel is removed,
          * appletObj hasn't had the instance removed yet, so let's run it one more time
@@ -456,7 +457,7 @@ function loadAppletsOnPanel(panel) {
             definition.location = getLocation(panel, definition.location_label);
             definition.orientation = orientation;
 
-            let extension = Extension.objects[definition.uuid];
+            let extension = Extension.Type.APPLET.maps.objects[definition.uuid];
             if(extension) {
                 addAppletToPanels(extension, definition);
             }
@@ -523,6 +524,21 @@ function pasteAppletConfiguration(panelId) {
 
     let len = clipboard.length;
     let nextId = global.settings.get_int("next-applet-id");
+    for (let i = 0; i < len; i++) {
+        let max = Extension.get_max_instances(clipboard[i].uuid, Extension.Type.APPLET);
+        if (max == -1) {
+            raw.push("panel" + panelId + ":" + clipboard[i].location_label + ":" + clipboard[i].order + ":" + clipboard[i].uuid + ":" + nextId);
+            nextId ++;
+            continue;
+        }
+        let curr = enabledAppletDefinitions.uuidMap[clipboard[i].uuid];
+        let count = curr.length;
+        if (count >= max) { // If we have more applets that allowed, we see if we any of them are removed above
+            let i = count;
+            while (i--) { // Do a reverse loop because the value of count will change
+                if (curr[i].panelId == panelId) count --;
+            }
+        }
 
     clipboard.forEach(function(x) {
         let uuid = x.uuid

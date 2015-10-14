@@ -896,8 +896,10 @@ class ExtensionSidePage (SidePage):
         self.install_button.set_sensitive(False)
         self.install_list = []
         self.load_extensions()
-        if need_restart:
-            self.show_info(_("Please restart Cinnamon for the changes to take effect"))
+
+        for uuid in need_restart:
+            self.connect_proxy("XletAddedComplete", self.xlet_added_callback)
+            self._proxy.ReloadXlet("(ss)", uuid, self.collection_type.upper())
 
     def on_spice_load(self, spicesData):
         # print "total spices loaded: %d" % len(spicesData)
