@@ -3,6 +3,5 @@
  "name": "Window list",
  "description": "Main Cinnamon window list",
  "icon": "gnome-panel-window-list",
- "role": "windowlist",
  "max-instances": -1
 }

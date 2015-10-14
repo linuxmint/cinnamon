@@ -200,7 +200,7 @@ AppMenuButton.prototype = {
         this._iconBox.connect('style-changed',
                               Lang.bind(this, this._onIconBoxStyleChanged));
         this._iconBox.connect('notify::allocation',
-                              Lang.bind(this, this._updateIconBoxClip));
+                              Lang.bind(this, this._updateIconBoxClipAndGeometry));
         this.actor.add_actor(this._iconBox);
         this._label = new St.Label();
         this.actor.add_actor(this._label);
@@ -466,10 +466,10 @@ AppMenuButton.prototype = {
     _onIconBoxStyleChanged: function() {
         let node = this._iconBox.get_theme_node();
         this._iconBottomClip = node.get_length('app-icon-bottom-clip');
-        this._updateIconBoxClip();
+        this._updateIconBoxClipAndGeometry();
     },
 
-    _updateIconBoxClip: function() {
+    _updateIconBoxClipAndGeometry: function() {
         let allocation = this._iconBox.allocation;
         if (this._iconBottomClip > 0)
             this._iconBox.set_clip(0, 0,
@@ -477,6 +477,12 @@ AppMenuButton.prototype = {
                    allocation.y2 - allocation.y1 - this._iconBottomClip);
         else
             this._iconBox.remove_clip();
+
+        let rect = new Meta.Rectangle();
+        [rect.x, rect.y] = this.actor.get_transformed_position();
+        [rect.width, rect.height] = this.actor.get_transformed_size();
+
+        this.metaWindow.set_icon_geometry(rect);
     },
 
     _getPreferredWidth: function(actor, forHeight, alloc) {
