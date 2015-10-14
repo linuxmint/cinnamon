@@ -539,6 +539,7 @@ function pasteAppletConfiguration(panelId) {
                 if (curr[i].panelId == panelId) count --;
             }
         }
+    }
 
     clipboard.forEach(function(x) {
         let uuid = x.uuid
