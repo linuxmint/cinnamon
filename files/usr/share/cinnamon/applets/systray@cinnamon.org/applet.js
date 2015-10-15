@@ -196,74 +196,55 @@ MyApplet.prototype = {
             if (icon.get_parent())
                 icon.get_parent().remove_child(icon);
 
-            this.resize_icon(icon, role);
-
-            /* dropbox, for some reason, refuses to provide a correct size icon in our new situation.
-             * Tried even with stalonetray, same results - all systray icons I tested work fine but dropbox.  I'm
-             * assuming for now it's their problem.  For us, just scale it up.
-             */
-            if (["dropbox"].indexOf(role) != -1) {
-                icon.set_scale_full(global.ui_scale, global.ui_scale, icon.get_width() / 2.0, icon.get_width() / 2.0);
-                global.log("   Full-scaled " + role + " (" + icon.get_width() + "x" + icon.get_height() + "px)");
+            if (["pidgin"].indexOf(role) != -1) {
+                // Delay pidgin insertion by 10 seconds
+                // Pidgin is very weird.. it starts with a small icon
+                // Then replaces that icon with a bigger one when the connection is established
+                // Pidgin can be fixed by inserting or resizing after a delay
+                // The delay is big because resizing/inserting too early
+                // makes pidgin invisible (in absence of disk cache).. even if we resize/insert again later
+                this._insertStatusItemLater(role, icon, -1, 10000);
             }
-
-            this._insertStatusItem(icon, -1);
-
-            let timerId = 0;
-            let i = 0;
-            timerId = Mainloop.timeout_add(500, Lang.bind(this, function() {
-                this.resize_icon(icon, role);
-                i++;
-                if (i == 2) {
-                    Mainloop.source_remove(timerId);
-                }
-            }));
+            else if (["shutter", "filezilla", "dropbox", "thunderbird", "unknown", "blueberry-tray.py", "mintupdate.py"].indexOf(role) != -1) {
+                // Delay insertion by 1 second
+                // This fixes an invisible icon in the absence of disk cache for : shutter
+                // filezilla, dropbox, thunderbird, blueberry, mintupdate are known to show up in the wrong size or position, this chould fix them as well
+                // Note: as of Oct 2015, the dropbox systray is calling itself "unknown"
+                this._insertStatusItemLater(role, icon, -1, 1000);
+            }
+            else {
+                // Delay all other apps by 1 second...
+                // For many of them, we don't need to do that,
+                // It's a small delay though and that fixes most buggy apps
+                // And we're far from having an exhaustive list of them..
+                this._insertStatusItemLater(role, icon, -1, 1000);
+            }
 
         } catch (e) {
             global.logError(e);
         }
     },
 
-    resize_icon: function(icon, role) {
-        if (this._scaleMode) {
-            let disp_size = this._panelHeight * ICON_SCALE_FACTOR;
-            let size;
-            if (icon.get_height() != disp_size) {
-                size = disp_size;
-            }
-            else {
-                // Force a resize with a slightly different size
-                size = disp_size - 1;
-            }
-
-            // Don't try to scale buggy icons, give them predefined sizes
-            // This, in the case of pidgin, fixes the icon being cropped in the systray
-            if (["pidgin", "thunderbird"].indexOf(role) != -1) {
-                if (disp_size < 22) {
-                    size = 16;
-                }
-                else if (disp_size < 32) {
-                    size = 22;
-                }
-                else if (disp_size < 48) {
-                    size = 32;
-                }
-                else {
-                    size = 48;
-                }
-            }
-
+    _resizeIconLater: function(role, icon, size, delay) {
+        // Resizes an icon after a delay (useful for buggy icons)
+        // Resizing pidgin to 22px with a delay of 10 sec is known to fix it on empty disk cache for instance
+        let timerId = Mainloop.timeout_add(delay, Lang.bind(this, function() {
+            icon.hide();
+            icon.show();
             icon.set_size(size, size);
+            icon.show();
+            global.log("Resized " + role + " after " + delay + " ms (" + icon.get_width() + "x" + icon.get_height() + "px)");
+            Mainloop.source_remove(timerId);
+        }));
+    },
 
-            global.log("Resized " + role + " (" + icon.get_width() + "x" + icon.get_height() + "px)");
-        }
-        else {
-            // Force buggy icon size when not in scale mode
-            if (["pidgin", "thunderbird"].indexOf(role) != -1) {
-                icon.set_size(16, 16);
-                global.log("Resized " + role + " (" + icon.get_width() + "x" + icon.get_height() + "px)");
-            }
-        }
+    _insertStatusItemLater: function(role, icon, position, delay) {
+        // Inserts an icon in the systray after a delay (useful for buggy icons)
+        // Delaying the insertion of pidgin by 10 seconds for instance is known to fix it on empty disk cache
+        let timerId = Mainloop.timeout_add(delay, Lang.bind(this, function() {
+            this._insertStatusItem(role, icon, position);
+            Mainloop.source_remove(timerId);
+        }));
     },
 
     _onTrayIconRemoved: function(o, icon) {
@@ -271,21 +252,47 @@ MyApplet.prototype = {
         icon.destroy();
     },
 
-    _insertStatusItem: function(actor, position) {
+    _insertStatusItem: function(role, icon, position) {
         let children = this.manager_container.get_children();
         let i;
         for (i = children.length - 1; i >= 0; i--) {
             let rolePosition = children[i]._rolePosition;
             if (position > rolePosition) {
-                this.manager_container.insert_child_at_index(actor, i + 1);
+                this.manager_container.insert_child_at_index(icon, i + 1);
                 break;
             }
         }
         if (i == -1) {
             // If we didn't find a position, we must be first
-            this.manager_container.insert_child_at_index(actor, 0);
+            this.manager_container.insert_child_at_index(icon, 0);
         }
-        actor._rolePosition = position;
+        icon._rolePosition = position;
+        if (this._scaleMode) {
+            let timerId = Mainloop.timeout_add(500, Lang.bind(this, function() {
+                let disp_size = this._panelHeight * ICON_SCALE_FACTOR;
+                if (["shutter", "filezilla"].indexOf(role) != -1) {
+                    global.log("Not resizing " + role + " as it's known to be buggy (" + icon.get_width() + "x" + icon.get_height() + "px)");
+                }
+                else {
+                    if (disp_size < 22) {
+                        size = 16;
+                    }
+                    else if (disp_size < 32) {
+                        size = 22;
+                    }
+                    else if (disp_size < 48) {
+                        size = 32;
+                    }
+                    else {
+                        size = 48;
+                    }
+                    icon.set_size(size, size);
+                    global.log("Resized " + role + " with normalized size (" + icon.get_width() + "x" + icon.get_height() + "px)");
+                    //Note: dropbox doesn't scale, even though we resize it...
+                }
+                Mainloop.source_remove(timerId);
+            }));
+        }
     },
 
 
