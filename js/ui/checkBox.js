@@ -9,6 +9,7 @@ const Lang = imports.lang;
 function CheckBoxContainer() {
    this._init();
 }
+
 CheckBoxContainer.prototype = {
     _init: function() {
         this.actor = new Cinnamon.GenericContainer({ y_align: St.Align.MIDDLE });
@@ -95,12 +96,12 @@ CheckBoxContainer.prototype = {
     }
 };
 
-function CheckButton() {
+function CheckBoxBase() {
     this._init.apply(this, arguments);
 }
 
-CheckButton.prototype = {
-    _init: function(state, params) {
+CheckBoxBase.prototype = {
+    _init: function(checkedState, params) {
         this._params = { style_class: 'check-box',
                          button_mask: St.ButtonMask.ONE,
                          toggle_mode: true,
@@ -115,16 +116,11 @@ CheckButton.prototype = {
 
         this.actor = new St.Button(this._params);
         this.actor._delegate = this;
-        this.actor.checked = state;
-        // FIXME: The current size is big and the container only is useful,
-        // because the current theme. Can be fixed the theme also?
-        this.actor.style = 'width: 12px;';
-        this._container = new St.Bin();
-        this.actor.set_child(this._container);
+        this.actor.checked = checkedState;
     },
 
-    setToggleState: function(state) {
-        this.actor.checked = state;
+    setToggleState: function(checkedState) {
+        this.actor.checked = checkedState;
     },
 
     toggle: function() {
@@ -136,16 +132,29 @@ CheckButton.prototype = {
     }
 };
 
+function CheckButton() {
+    this._init.apply(this, arguments);
+}
+
+CheckButton.prototype = {
+    __proto__: CheckBoxBase.prototype,
+
+    _init: function(checkedState, params) {
+        CheckBoxBase.prototype._init.call(this, checkedState, params);
+        this.checkmark = new St.Bin();
+        this.actor.set_child(this.checkmark);
+    },
+};
+
 function CheckBox() {
     this._init.apply(this, arguments);
 }
 
 CheckBox.prototype = {
-    __proto__: CheckButton.prototype,
+    __proto__: CheckBoxBase.prototype,
 
-    _init: function(label, params) {
-        CheckButton.prototype._init.call(this, false, params);
-        this._container.destroy();
+    _init: function(label, params, checkedState) {
+        CheckBoxBase.prototype._init.call(this, checkedState, params);
         this._container = new CheckBoxContainer();
         this.actor.set_child(this._container.actor);
 
