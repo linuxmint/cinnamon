@@ -87,10 +87,32 @@ WindowPreview.prototype = {
         this.actor = new St.Bin({style_class: "switcher-list", style: "margin: 0px; padding: 8px;"});
         this.actor.show_on_set_parent = false;
 
-        this.actor.set_size(WINDOW_PREVIEW_WIDTH * 1.1, WINDOW_PREVIEW_HEIGHT * 1.1);
+        this.actor.set_size(WINDOW_PREVIEW_WIDTH * 1.3, WINDOW_PREVIEW_HEIGHT * 1.3);
         Main.uiGroup.add_actor(this.actor);
 
         this.metaWindow = metaWindow;
+
+        let box = new St.BoxLayout({ vertical: true });
+        let hbox = new St.BoxLayout();
+
+        let iconBox = new St.Bin();
+        let tracker = Cinnamon.WindowTracker.get_default();
+        let app = tracker.get_window_app(this.metaWindow);
+        let icon = app ? app.create_icon_texture(16) : new St.Icon({ icon_name: 'application-default-icon', icon_type: St.IconType.FULLCOLOR, icon_size: 16 });
+        iconBox.set_child(icon);
+        hbox.add_actor(iconBox);
+
+        let label = new St.Label();
+        label.set_text(this.metaWindow.get_title());
+        label.style = "padding: 2px;";
+        hbox.add_actor(label);
+
+        box.add_actor(hbox);
+
+        this.thumbnailBin = new St.Bin();
+        box.add_actor(this.thumbnailBin);
+
+        this.actor.set_child(box);
     },
 
     _onEnterEvent: function(actor, event) {
@@ -115,13 +137,19 @@ WindowPreview.prototype = {
         let windowTexture = muffinWindow.get_texture();
         let [width, height] = windowTexture.get_size();
         let scale = Math.min(1.0, WINDOW_PREVIEW_WIDTH / width, WINDOW_PREVIEW_HEIGHT / height);
-        let thumbnail = new Clutter.Clone({
+
+        if (this.thumbnail) {
+            this.thumbnailBin.set_child(null);
+            this.thumbnail.destroy();
+        }
+
+        this.thumbnail = new Clutter.Clone({
             source: windowTexture,
             width: width * scale,
             height: height * scale
         });
 
-        this.actor.set_child(thumbnail);
+        this.thumbnailBin.set_child(this.thumbnail);
 
         let allocation = this.actor.get_allocation_box();
         let previewHeight = allocation.y2 - allocation.y1;
@@ -149,14 +177,19 @@ WindowPreview.prototype = {
     },
 
     hide: function() {
-        if (this.actor) {
-            this.actor.set_child(null);
-            this.actor.hide();
+        if (this.thumbnail) {
+            this.thumbnailBin.set_child(null);
+            this.thumbnail.destroy();
         }
+        this.actor.hide();
         this.visible = false;
     },
 
     _destroy: function() {
+        if (this.thumbnail) {
+            this.thumbnailBin.set_child(null);
+            this.thumbnail.destroy();
+        }
         if (this.actor) {
             this.actor.destroy();
         }
