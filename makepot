@@ -1,12 +1,12 @@
 #!/bin/bash
 
-intltool-extract --type=gettext/glade files/usr/lib/cinnamon-menu-editor/cinnamon-menu-editor.ui
+intltool-extract --type=gettext/glade files/usr/share/cinnamon/cinnamon-menu-editor/cinnamon-menu-editor.ui
 
-xgettext --language=C --keyword=_ --keyword=N_ --output=cinnamon.pot src/*.c src/*/*.c files/usr/lib/cinnamon-menu-editor/cinnamon-menu-editor.ui.h
+xgettext --language=C --keyword=_ --keyword=N_ --output=cinnamon.pot src/*.c src/*/*.c files/usr/share/cinnamon/cinnamon-menu-editor/cinnamon-menu-editor.ui.h
 xgettext --language=JavaScript --keyword=_ --keyword=N_ --output=cinnamon.pot --join-existing --from-code=UTF-8 js/*/*.js files/usr/share/cinnamon/*/*/*.js
-xgettext --language=Python --keyword=_ --output=cinnamon.pot --join-existing generate_additional_files.py files/usr/share/cinnamon/*/*/*.py files/usr/lib/*/*.py files/usr/lib/cinnamon-settings/*/*.py files/usr/bin/cinnamon-launcher files/usr/lib/cinnamon-menu-editor/cme/*.py
+xgettext --language=Python --keyword=_ --output=cinnamon.pot --join-existing generate_additional_files.py files/usr/share/cinnamon/*/*/*.py files/usr/share/cinnamon/cinnamon-settings/*/*.py files/usr/bin/cinnamon-launcher files/usr/share/cinnamon/cinnamon-menu-editor/cme/*.py
 cd files
-usr/lib/cinnamon-json-makepot/cinnamon-json-makepot.py ../cinnamon
+usr/share/cinnamon/cinnamon-json-makepot/cinnamon-json-makepot.py ../cinnamon
 cd ..
 
-rm -f files/usr/lib/cinnamon-menu-editor/cinnamon-menu-editor.ui.h
+rm -f files/usr/share/cinnamon/cinnamon-menu-editor/cinnamon-menu-editor.ui.h
