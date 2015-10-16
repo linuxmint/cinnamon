@@ -482,7 +482,7 @@ SpicesAboutDialog.prototype = {
         if (metadata.version) {
             let versionBin = new St.Bin({x_align: St.Align.START, y_align: St.Align.END});
             titleBox.add_actor(versionBin);
-            let version = new St.Label({text: _(" v%s").format(metadata.version), style_class: "about-version"});
+            let version = new St.Label({text: " v%s".format(metadata.version), style_class: "about-version"});
             versionBin.add_actor(version);
         }
         
