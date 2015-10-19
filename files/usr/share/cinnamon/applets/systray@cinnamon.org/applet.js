@@ -65,6 +65,7 @@ MyApplet.prototype = {
 
         this.manager_container.show();
 
+        this._statusItems = [];
         this._shellIndicators = {};
         this.menuFactory = new IndicatorMenuFactory();
         this.menuManager = new PopupMenu.PopupMenuManager(this);
@@ -175,6 +176,14 @@ MyApplet.prototype = {
     },
 
     _onBeforeRedisplay: function() {
+        // Mark all icons as obsolete
+        // There might still be pending delayed operations to insert/resize of them
+        // And that would crash Cinnamon
+        for (var i = 0; i < this._statusItems.length; i++) {
+            this._statusItems[i].obsolete = true;
+        }
+        this._statusItems = [];
+
         let children = this.manager_container.get_children();
         for (var i = 0; i < children.length; i++) {
             children[i].destroy();
@@ -195,6 +204,9 @@ MyApplet.prototype = {
 
             if (icon.get_parent())
                 icon.get_parent().remove_child(icon);
+
+            icon.obsolete = false;
+            this._statusItems.push(icon);
 
             if (["pidgin"].indexOf(role) != -1) {
                 // Delay pidgin insertion by 10 seconds
@@ -225,19 +237,6 @@ MyApplet.prototype = {
         }
     },
 
-    _resizeIconLater: function(role, icon, size, delay) {
-        // Resizes an icon after a delay (useful for buggy icons)
-        // Resizing pidgin to 22px with a delay of 10 sec is known to fix it on empty disk cache for instance
-        let timerId = Mainloop.timeout_add(delay, Lang.bind(this, function() {
-            icon.hide();
-            icon.show();
-            icon.set_size(size, size);
-            icon.show();
-            global.log("Resized " + role + " after " + delay + " ms (" + icon.get_width() + "x" + icon.get_height() + "px)");
-            Mainloop.source_remove(timerId);
-        }));
-    },
-
     _insertStatusItemLater: function(role, icon, position, delay) {
         // Inserts an icon in the systray after a delay (useful for buggy icons)
         // Delaying the insertion of pidgin by 10 seconds for instance is known to fix it on empty disk cache
@@ -248,11 +247,20 @@ MyApplet.prototype = {
     },
 
     _onTrayIconRemoved: function(o, icon) {
+        icon.obsolete = true;
+        for (var i = 0; i < this._statusItems.length; i++) {
+            if (this._statusItems[i] == icon) {
+                this._statusItems.splice(i, 1);
+            }
+        }
         this.manager_container.remove_child(icon);
         icon.destroy();
     },
 
     _insertStatusItem: function(role, icon, position) {
+        if (icon.obsolete == true) {
+            return;
+        }
         let children = this.manager_container.get_children();
         let i;
         for (i = children.length - 1; i >= 0; i--) {
@@ -269,30 +277,37 @@ MyApplet.prototype = {
         icon._rolePosition = position;
         if (this._scaleMode) {
             let timerId = Mainloop.timeout_add(500, Lang.bind(this, function() {
-                let size;
-                let disp_size = this._panelHeight * ICON_SCALE_FACTOR;
-                if (["shutter", "filezilla"].indexOf(role) != -1) {
-                    global.log("Not resizing " + role + " as it's known to be buggy (" + icon.get_width() + "x" + icon.get_height() + "px)");
-                }
-                else {
-                    if (disp_size < 22) {
-                        size = 16;
-                    }
-                    else if (disp_size < 32) {
-                        size = 22;
-                    }
-                    else if (disp_size < 48) {
-                        size = 32;
-                    }
-                    else {
-                        size = 48;
-                    }
-                    icon.set_size(size, size);
-                    global.log("Resized " + role + " with normalized size (" + icon.get_width() + "x" + icon.get_height() + "px)");
-                    //Note: dropbox doesn't scale, even though we resize it...
-                }
+                this._resizeStatusItem(role, icon);
                 Mainloop.source_remove(timerId);
             }));
+        }
+    },
+
+    _resizeStatusItem: function(role, icon) {
+        if (icon.obsolete == true) {
+            return;
+        }
+        let size;
+        let disp_size = this._panelHeight * ICON_SCALE_FACTOR;
+        if (["shutter", "filezilla"].indexOf(role) != -1) {
+            global.log("Not resizing " + role + " as it's known to be buggy (" + icon.get_width() + "x" + icon.get_height() + "px)");
+        }
+        else {
+            if (disp_size < 22) {
+                size = 16;
+            }
+            else if (disp_size < 32) {
+                size = 22;
+            }
+            else if (disp_size < 48) {
+                size = 32;
+            }
+            else {
+                size = 48;
+            }
+            icon.set_size(size, size);
+            global.log("Resized " + role + " with normalized size (" + icon.get_width() + "x" + icon.get_height() + "px)");
+            //Note: dropbox doesn't scale, even though we resize it...
         }
     },
 
