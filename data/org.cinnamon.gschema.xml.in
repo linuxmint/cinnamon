@@ -591,6 +591,14 @@
       <description>Current scale factor</description>
     </key>
 
+    <key name="enable-indicators" type="b">
+      <default>true</default>
+      <_summary>Enable support for indicators</_summary>
+      <_description>
+        Whether to support indicators
+      </_description>
+    </key>
+
   </schema>
  
   <schema id="org.cinnamon.theme" path="/org/cinnamon/theme/"

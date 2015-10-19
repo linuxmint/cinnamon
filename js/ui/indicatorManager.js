@@ -105,8 +105,10 @@ IndicatorManager.prototype = {
     
     _init: function() {
         this._indicators = {};
-        this.statusNotifierWatcher = new StatusNotifierWatcher();
-        this.statusNotifierWatcher.connect('indicator-dispatch', Lang.bind(this, this._onIndicatorDispatch));
+        if (global.settings.get_boolean("enable-indicators")) {
+            this.statusNotifierWatcher = new StatusNotifierWatcher();
+            this.statusNotifierWatcher.connect('indicator-dispatch', Lang.bind(this, this._onIndicatorDispatch));
+        }
     },
 
     // handlers = { "signal": handler }
@@ -333,7 +335,7 @@ AppIndicator.prototype = {
         let path = this._proxy.cachedProperties.Menu || "/MenuBar";
         this._validateMenu(this._busName, path, function(correctly, name, path) {
             if (correctly) {
-                global.log("creating menu on "+[name, path]);
+                // global.log("creating menu on "+[name, path]);
                 clb(new DBusMenu.DBusClient(name, path));
             } else {
                 clb(null);
@@ -505,7 +507,7 @@ StatusNotifierWatcher.prototype = {
 
         if (this._items[id]) {
             //delete the old one and add the new indicator
-            global.logWarning("Attempting to re-register "+id+"; resetting instead");
+            // global.logWarning("Attempting to re-register "+id+"; resetting instead");
             this._items[id].reset();
         } else {
             this._items[id] = new AppIndicator(busName, objPath);
@@ -1128,7 +1130,6 @@ IconActor.prototype = {
 
         this._iconCache.destroy();
         this.actor.destroy();
-        global.log("Destroying icon actor");
     }
 };
 
@@ -1157,7 +1158,7 @@ IconCache.prototype = {
     },
     
     add: function(id, o) {
-        global.log("IconCache: adding "+id);
+        // global.log("IconCache: adding "+id);
         if (!(o && id)) return null;
         if (id in this._cache && this._cache[id] !== o)
             this._remove(id);
@@ -1167,7 +1168,7 @@ IconCache.prototype = {
     },
     
     _remove: function(id) {
-        global.log('IconCache: removing '+id);
+        // global.log('IconCache: removing '+id);
         if ('destroy' in this._cache[id]) this._cache[id].destroy();
         delete this._cache[id];
         delete this._lifetime[id];
@@ -1186,7 +1187,7 @@ IconCache.prototype = {
     // returns an object from the cache, or null if it can't be found.
     get: function(id) {
         if (id in this._cache) {
-            global.log('IconCache: retrieving '+id);
+            // global.log('IconCache: retrieving '+id);
             this._lifetime[id] = new Date().getTime() + LIFETIME_TIMESPAN; //renew lifetime
             return this._cache[id];
         }

@@ -50,5 +50,8 @@ class Module:
             spin = GSettingsSpinButton(_("Timer delay"), "org.cinnamon.SessionManager", "quit-time-delay", _("seconds"), 0, 36000, 1, 60)
             settings.add_reveal_row(spin, "org.cinnamon.SessionManager", "quit-delay-toggle")
 
+            switch = GSettingsSwitch(_("Enable support for indicators (Requires Cinnamon restart)"), "org.cinnamon", "enable-indicators")
+            settings.add_row(switch)
+
             switch = GSettingsSwitch(_("Log LookingGlass output to ~/.cinnamon/glass.log (Requires Cinnamon restart)"), "org.cinnamon", "enable-looking-glass-logs")
             settings.add_row(switch)

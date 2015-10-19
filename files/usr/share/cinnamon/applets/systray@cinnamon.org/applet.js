@@ -106,7 +106,15 @@ MyApplet.prototype = {
 
             if (hiddenIcons.indexOf(appIndicator.id) != -1 ) {
                 // We've got an applet for that
-                global.log("Hiding indicator: " + appIndicator.id);
+                global.log("Hiding indicator (role already handled): " + appIndicator.id);
+                return;
+            }
+            else if (["quassel"].indexOf(appIndicator.id) != -1) {
+                // Blacklist some of the icons
+                // quassel: The proper icon in Quassel is "QuasselIRC", this is a fallback icon which Quassel launches when it fails to detect
+                // our indicator support (i.e. when Cinnamon is restarted for instance)
+                // The problem is.. Quassel doesn't kill that icon when it creates QuasselIRC again..
+                global.log("Hiding indicator (blacklisted): " + appIndicator.id);
                 return;
             }
             else {
@@ -140,6 +148,7 @@ MyApplet.prototype = {
 
     _onIndicatorRemoved: function(manager, appIndicator) {
         if (appIndicator.id in this._shellIndicators) {
+            global.log("Removing indicator: " + appIndicator.id);
             let iconActor = this._shellIndicators[appIndicator.id];
             delete this._shellIndicators[appIndicator.id];
             iconActor.destroy();
