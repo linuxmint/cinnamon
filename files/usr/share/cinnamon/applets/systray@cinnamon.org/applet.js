@@ -138,10 +138,10 @@ MyApplet.prototype = {
         return 16;
     },
 
-    _onIndicatorRemoved: function(indicator) {
-        if (indicator.id in this._shellIndicators) {
-            let iconActor = this._shellIndicators[indicator.id];
-            delete this._shellIndicators[indicator.id];
+    _onIndicatorRemoved: function(manager, appIndicator) {
+        if (appIndicator.id in this._shellIndicators) {
+            let iconActor = this._shellIndicators[appIndicator.id];
+            delete this._shellIndicators[appIndicator.id];
             iconActor.destroy();
         }
     },
