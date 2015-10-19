@@ -269,6 +269,7 @@ MyApplet.prototype = {
         icon._rolePosition = position;
         if (this._scaleMode) {
             let timerId = Mainloop.timeout_add(500, Lang.bind(this, function() {
+                let size;
                 let disp_size = this._panelHeight * ICON_SCALE_FACTOR;
                 if (["shutter", "filezilla"].indexOf(role) != -1) {
                     global.log("Not resizing " + role + " as it's known to be buggy (" + icon.get_width() + "x" + icon.get_height() + "px)");
