@@ -1592,22 +1592,16 @@ StScrollBar StButton#vhandle:hover {
     spacing: .2em;
 }
 
-.check-box StBin {
-    width: 24px;
-    height: 18px;
+.check-box StBin,
+.check-box:focus StBin {
+    width: 16px;
+    height: 16px;
     background-image: url("checkbox-off.svg");
 }
 
-.check-box:focus StBin {
-    background-image: url("checkbox-off-focused.svg");
-}
-
-.check-box:checked StBin {
-    background-image: url("checkbox.svg");
-}
-
+.check-box:checked StBin,
 .check-box:focus:checked StBin {
-    background-image: url("checkbox-focused.svg");
+    background-image: url("checkbox.svg");
 }
 
 .check-box StLabel {
@@ -1616,25 +1610,19 @@ StScrollBar StButton#vhandle:hover {
 
 .radiobutton CinnamonGenericContainer {
     spacing: .2em;
-    height: 26px;
+    height: 18px;
     padding-top: 2px;
 }
 
-.radiobutton StBin {
-    width: 22px;
-    height: 22px;
+.radiobutton StBin,
+.radiobutton:focus StBin {
+    width: 16px;
+    height: 16px;
     background-image: url("radiobutton-off.svg");
     border-radius: 15px;
 }
 
-.radiobutton:focus StBin {
-    background-image: url("radiobutton-off.svg");
-}
-
-.radiobutton:checked StBin {
-    background-image: url("radiobutton.svg");
-}
-
+.radiobutton:checked StBin,
 .radiobutton:focus:checked StBin {
     background-image: url("radiobutton.svg");
 }
