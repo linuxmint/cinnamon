@@ -436,7 +436,7 @@ function get_object_for_instance (appletId) {
 }
 
 function get_object_for_uuid (uuid, instanceId) {
-    return appletObj.find(x => x._uuid == uuid || x.instance_id == instanceId);
+    return appletObj.find(x => x && x._uuid == uuid || x.instance_id == instanceId);
 }
 
 
@@ -561,7 +561,7 @@ function pasteAppletConfiguration(panelId) {
 }
 
 function getRunningInstancesForUuid(uuid) {
-    return appletObj.filter(x => x._uuid == uuid);
+    return appletObj.filter(x => x && x._uuid == uuid);
 }
 
 function callAppletInstancesChanged(uuid) {
