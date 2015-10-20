@@ -24,8 +24,6 @@ dist_theme_DATA = \
     theme/calendar-arrow-left.svg  \
     theme/calendar-arrow-right.svg \
     theme/calendar-today.svg       \
-    theme/checkbox-focused.svg     \
-    theme/checkbox-off-focused.svg \
     theme/checkbox-off.svg         \
     theme/checkbox.svg             \
     theme/cinnamon.css             \
