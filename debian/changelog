@@ -1,3 +1,238 @@
+cinnamon (2.8.0) rosa; urgency=medium
+
+  [ Alexandre Rostovtsev ]
+  * build: require libmuffin-2.5.0 for show_tile_preview
+  * build: append ST_CFLAGS when building test-recorder
+
+  [ Asier Iturralde Sarasola ]
+  * Fix some typos in the Writing applets tutorial
+
+  [ Clement Lefebvre ]
+  * Power applet: Fix case when last battery is removed (applet continued to show up)
+  * Power settings/applet: Added vendor/model info, refactored code/logic as to which device to show in the applet, fixed 6px margin issue
+  * Power applet: Don't show time until fully charged when equal to 0 (i.e. when unknown)
+  * Multi-monitor support: When switching workspace, the workspace name OSD should appear on all relevant monitors
+  * Alt-tab: Improved preview mode (faster switching animations, less delay, less opacity in the background)
+  * Alt-tab: Speed up preview backdrop animation a little more
+  * Alt-tab: Classic switcher, don't animate thumbnail removal (it looks weird when switching to the next window..). Also, increase the delay to show thumbs to 300ms. Both 180ms and 300ms seem slow when trying to identify windows by their thumbs, but 180ms gets in the way and shows shadow-thumbs when pressing Alt at "normal" speed. It's all empirical/subjective really.. but this seems to improve things a bit.
+  * Display applet: Show output names (handy when the the display name is the same for 2 or more monitors)
+  * Workspace Switcher applet: Added visual representations and configuration to switch between visual and button modes
+  * Applets: Fixed enabling/disabling applets
+  * Window list applet: Simplified setting description
+  * Revert "Stop using deprecated functions"
+  * Network applet: If the device vendor/model are empty, return the device name or the device type
+  * Sound applet: Replaced 'menuitem-detail' style with popup-inactive-menu-item
+  * Sound applet: Group player_info/artwork/track_info/controls/position_seeker together, implement flat slider support in slider.js.
+  * Sound applet: Reduce the number of theme styles used
+  * Sound applet: Fixed recent regression when displaying track info in the panel
+  * Sound applet: Move input components, output devices and applications to context menu
+  * Sound applet: Hide applications/output-devices initially
+  * Sound applet: Make new styles important so the new elements look nice in all themes
+  * Sound applet: Fixed introduced regression (title/artist info only changed when cover changed)
+  * Sound applet: Themeable button sizes (bigger by default) and a little more padding in the track info
+  * User settings: Removed trailing spaces and fixed indentation
+  * User settings: Replace os.system() with subprocess.call()
+  * Indicators: Less debug info in Melange, and hide indicators which role is registered by applets
+  * Fixed redeclaration of const Params
+  * FHS fixes: move arch indip. files from /usr/lib to /usr/share
+  * Move capi.py to /usr/lib as contain one path arch dependent
+  * Sound applet: Force padding/alignment on device output origins
+  * Removed unused code
+  * Don't register Cinnamon with cinnamon-session
+  * Fixed Cinnamon caused by previous commits
+  * Fixed Cinnamon crash caused by previous commits
+  * Removed cinnamon-preload
+  * Added debian/cinnamon.maintscript to remove obsolete preload files in /etc
+  * Window list applet: Add window title and icon to window preview thumb
+  * Systray applet: Fixes for invisible/out-of-place icons
+  * Updated makepot
+  * Updated additional files
+  * Fixed ./generate_cs_module_desktop_files.py and updated cs module desktop files
+  * Fixed missing paths in makepot
+  * Don't translate "v%s"..
+  * Updated pot file
+  * Systray applet: Fixed Cinnamon crash when resizing the panel or toggling scale mode
+  * Systray applet: Fixed indicators not being removed properly
+  * A couple of improvements for indicators
+  * Window list applet: Enable thumbnail previews by default
+
+  [ Corbin ]
+  * Improve/Bugfixes password changer dialogs
+  * finishing touches
+
+  [ darealshinji ]
+  * Packaging: fix and override more Lintian warnings
+
+  [ Dexter Chua ]
+  * appletManager.js: use a more efficient method to add applet
+  * appletManager.js: avoid code duplication
+  * Menu Applet: Code Cleanup 1
+  * Menu Applet: Code Cleanup 2
+  * appletManager.js: Don't reinvent Applet.prototype.filter
+  * appletManager.js: more cleanup
+  * Panel Launchers: Code Cleanup
+  * popupmenu.js: Code Cleanup
+  * signalManager.js: Code Simplification
+  * Fix deprecation warnings
+  * [Alt-F2] Work well with whitespace in filenames
+  * cs_startup.py: don't crash when XDG_CURRENT_DESKTOP is not set
+  * [Alt-F2] Redo (broken) completion mechanism
+  * [Alt-F2] Allow user-defined aliases
+  * [Alt-F2] Fix completion for symlink to directory
+  * Allow documentation of signals
+  * Document signals in PopupMenu.PopupMenuBase
+  * Stop using deprecated functions
+  * Removed unused variables
+  * Stop using deprecated functions
+  * tooltip.js: split out TooltipBase class for easier reuse
+  * Window list applet: add window preview
+  * Add missing import
+  * tooltips: simplify position calculations
+  * [Docs] Fix regression in whitespace determination
+  * windowManger.js: use Tweener for timeout
+  * tooltip.js: yet again more cleanup
+  * window list: steal alt-tab style for preview
+
+  [ Dustin Falgout ]
+  * Display the name of Arch Derivatives When Applicable
+
+  [ Fabio Fantoni ]
+  * Install python script supporting files in /usr/share
+  * Fix cinnamon-settings python files path
+  * Fix cinnamon-settings-users policy path
+  * Fix cinnamon-settings-users path
+  * Fix cinnamon-desktop-editor path
+  * Fix cinnamon-menu-editor path
+  * Fix cinnamon-screensaver-lock-dialog path
+  * Fix cinnamon-json-makepot path
+  * Fix other FHS path
+  * Fix cinnamon-settings after FHS fixes
+  * Improve debian/rules
+  * Add capi search path
+
+  [ Filip Kowalczyk ]
+  * fixed sticky highlight on Clear List button in Recent Files when browsing with keys
+
+  [ Garry Filakhtov ]
+  * Removed dateFormat from toLocaleTimeString() call
+
+  [ James Lu ]
+  * cs_startup: fix crash on NameError when copying a desktop file fails
+
+  [ JosephMcc ]
+  * Deprecations: Remove use of deprecated g_type_init () and bump GObject requirement accordingly.
+  * Deprecations: Replace gtk_icon_info_free() with g_object_unref()
+  * Cleanup: instead of attempting to clean up deprecated functionality in cinnamon-arrow, just remove it since it seems to be unused.
+  * Cleanup: Fix an unused function warning in cinnamon-global.c
+  * Cleanup: Remove st-tooltip. It's the source of a lot of build warnings and we no longer use it.
+  * js: Explicitly dispose of all cairo contexts. A long read on why you want to do this here: https://bugzilla.gnome.org/show_bug.cgi?id=685513
+  * trash-applet: Fix an issue: JS ERROR: Error: Too few arguments to method Gio.close expected 1 got 0 in the trash applet
+  * effects: bring back our window unminimize effect
+  * workspace-switcher: Add an "Add new workspace" option to the context menu
+  * boxpointer: Pull in some upstream fixes that better handle the boxpointer "arrow" in some cases
+  * Set the X-Gnome-AutoRestart hint to false. Stumbled across this in an old gnome bug report. Fixes the issue with Cinnamon restarting twice with cinnamon --replace
+  * windowManager: Destroy the tile hud/preview when we are done with it. Currently after showing the preview you will get a noticeable slowdown when moving windows that pass off the monitor edges. This should help solve that.
+  * popupMenu: Add back the expander arrow on PopupSubMenuMenuItem but with a different layout. Also tweak the layout of a couple of our applet menus to look nicer with this change. The addition of the icons to Cinnamon itself is a workaround for Mint. Newer versions of the gnome icon theme have these as built in icons but not in the version supplied with Mint 17. They can be removed in the future.
+  * bg: add "spanned" to the list of bg types that need to show the background color options
+  * popupMenu: add back a couple checks for the existence of submenu expander arrow to prevent breaking the right click context menus in the menu applet
+  * use the new meta_screen_get_current_monitor() to place appswitchers and modal dialogs on the proper monitor in multiple monitor setups
+  * workspace-applet: properly dispose a cairo context
+  * cs_windows: Reword a setting to match https://github.com/linuxmint/muffin/pull/204
+  * windowManager: Make the window dimming effect with attached dialogs a bit stronger and more obvious
+  * windowManager: Properly declare a variable
+  * add new slider and separator objects
+  * workspace-switcher: Rework the visual style workspace switcher so it can be themed. Also fix some st_theme_node warnings and stop windows from being able to be drawn outside the workspace background
+  * cs_startup: set modal to true for both the "Choose application" and "Add custom command" dialogs so the behavior is the same for both when using attached dialogs
+  * rework the window list and effects so minimize effects work properly with multiple window lists on multiple monitors
+  * sound-applet: make the volume slider for individual applications fully expand
+  * workspace-swithcer: Use the set_important() function to make sure we get proper theming on the visual workspace switcher in themes that don't yet support it
+  * systray-applet: fix an undeclared variable warning
+  * theme: Re-style and size checkboxes and radio buttons in the default theme
+
+  [ leigh123linux ]
+  * cinnamon_recorder_LDADD' is defined but no program or library has 'cinnamon_recorder' as canonical name (possible typo)
+  * Remove relic from old mozjs-17
+  * fix gtk import version
+  * fix gtk import version
+  * fix gtk import version
+  * fix notify import version
+  * fix cinnamon-desktop and upowerglib import versions
+  * fix accountsservice import version
+  * remove unused browser plugin stuff
+  * cs_screensaver: fix Deprecation Warning
+  * SettingsWidgets: fix Deprecation Warning
+  * cs_themes: fix Deprecation Warning
+  * Spices: fix Deprecation Warning
+  * deprecated schema
+  * missed one
+
+  [ lestcape ]
+  * Be more selective when filter the mouse release events.
+  * Add support for indicators.
+  * Fix missing or improperly imports.
+  * Moved the indicator to the main cinnamon class. Removed the NameWatchDog Class. Added some checks, and the compatibility with this new behavior.
+  * Removed also the NameWatchDog declaration (was omitted in the previous commit).
+  * Inhibit the indicator icon, when has a draggable parent.
+  * As a pedro recommendation, this is an attempt to move the RadioButton and CheckBox classes to the corresponding place, and reuse it, in the same place.
+  * Fixed an error in the regretion from signalManager.
+
+  [ Marga Manterola ]
+  * Optimize rebuilding of media-keys hotkeys (fixes #4691)
+  * Reorder setting delay_setup_started variable to avoid possible races (improves #4692)
+
+  [ Matthew Petroff ]
+  * Restore time remaining option for power applet.
+  * Fix translation strings.
+
+  [ Michael Webster ]
+  * cs_backgrounds: add missing import
+  * window-list applet: restore 2.4 behavior where a window list item demanding attention remains highlighted after it's done flashing.
+  * panel-launcher: Use a generic icon when creating a new launcher, if the user didn't select a custom icon.
+  * st-widget: Expand the "important" property: add set/get methods, remove CONSTRUCT_ONLY flag, have a theme node recalculation triggered when the property changes.
+  * capi.py:  Move with rest of cinnamon-settings files to their new location, remove debian sed rule for multiarch fix, instead figure out the right location in the capi code.  Cinnamon-bluetooth is not MultiarchSpec compliant, so we still need to *also* load from /usr/lib/*.
+  * st-widget.c: Fix typo in st_widget_recompute_style
+  * st-theme-node: properly recalc the theme node when an StWidget's important property changes.
+  * main.js: Fix typo from 08474a03cd660bb176d5ebb361a01ff6d51162fc
+  * tooltips.js: Fix some occasional log warnings
+  * window list: don't delay showing a preview, if another preview was just showing.
+  * keybindings.js: don't tell muffin to remove a keybinding that we never set.  This quiets warnings during startup about magnifier hotkeys.
+
+  [ Phillip Berndt ]
+  * Calendar applet: Avoid unnecessary wakeups
+  * Calendar applet: Update each second if global time format is set to include seconds
+  * Calendar applet: Update if Date&Time configuration has changed
+  * Calendar applet: Simpler detection method for 8aa5264
+
+  [ pixunil ]
+  * Power applet: Fixed a logical bug, when the primary device does not change its icon string after an update, battery-full will be used Fixes #4329
+  * Sound applet: Use the style class .sound-button-container with the pseudo class :small for quit and raise buttons Theme: Apply the :small pseudo class, cleanup of unused sound applet classes
+  * Also translate xlet metadata in about dialogs
+  * cs-backgrounds: add revealer to gradient widgets when picture-options is set to a value where those have no effect
+  * Network applet: hide the switch if the switch has got no function   This is typically the case e.g. when a cable is unplugged
+  * trash applet: do not add items to context menu on orientation changed
+  * extension.js: Use a macro function to create the Extension.Type members
+  * extension.js: xlet uuids are unique for each xlet type, it is now possible to have more than one xlet of different types and the same uuid - Extension.unloadExtension, Extension.forgetExtension and Extension.get_max_instances needs to have a type argument after the uuid - Extension.importObjects, Extension.objects, Extension.meta, Extension.dirs are moved to Extension.Type[type].maps[mapType]
+  * Automatically reload xlets when updating them instead of showing an info dialog
+  * extension.js: Enable imports in a xlet via import.xlet (where xlet is the type of xlet; applet, desklet, extension or search_provider) cinnamon-js.cpp: Removed cinnamon_js_add_extension_importer
+  * appletManager: In arrow filter functions, check if the value exists (when iterating over appletObj) Fixed the bug when the button in applet settings has no effect
+
+  [ Rob Adams ]
+  * Show audio device name (origin) in sound applet
+  * Change calls to highlight, activate callbacks on xlets - Fixed initial instance not being selected on multi-instance xlets (error on highlight) - Passing uuid and instance_id to cinnamon via dbus - instance_id is the same as uuid when multi-instance not allowed - Corrected order of instance tabs in Gtk.Notebook to reflect order instances were added in
+
+  [ Stephen Collins ]
+  * Fix St.Entry not honoring some css text properties
+  * settings.js: allow for dynamic getting and setting of options for supported key types (eg comboboxes and radio groups)
+  * Make more cursor types available to Cinnamon
+  * Sound applet: make sure player controls are destroyed when multiple names are used
+  * Add two more cursor types to Cinnamon javascript
+  * Fix some problems with the checkbox api
+
+  [ The Aviator ]
+  * Only get local users from /home
+
+ -- Clement Lefebvre <root@linuxmint.com>  Tue, 20 Oct 2015 10:39:24 +0100
+
 cinnamon (2.6.13) rafaela; urgency=medium
 
   * A11y applet: Show active keyboard modifiers when sticky keys are enabled
