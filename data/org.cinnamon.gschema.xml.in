@@ -555,6 +555,7 @@
     </key>
 
     <child name="applets" schema="org.cinnamon.applets"/>
+    <child name="panel" schema="org.cinnamon.panel"/>
     <child name="theme" schema="org.cinnamon.theme"/>   
     <child name="recorder" schema="org.cinnamon.recorder"/>
     <child name="keyboard" schema="org.cinnamon.keyboard"/>
@@ -617,6 +618,17 @@
       <range min="0.0" max="1.0"/>
       <default>0.8</default>
       <summary>systray applet icon scaling factor</summary>
+    </key>
+  </schema>
+
+  <schema id="org.cinnamon.panel" path="/org/cinnamon/panel/"
+        gettext-domain="@GETTEXT_PACKAGE@">
+    <key name="locked" type="b">
+      <default>false</default>
+      <_summary>panel locked</_summary>
+      <_description>
+       by checking this key the panels lock i.e. you can not change panel layout or applet configurations through panel unless you uncheck this key again.
+      </_description>
     </key>
   </schema>
 

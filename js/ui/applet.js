@@ -22,6 +22,9 @@ const PANEL_SYMBOLIC_ICON_DEFAULT_HEIGHT = 1.14 * PANEL_FONT_DEFAULT_HEIGHT; // 
 const DEFAULT_PANEL_HEIGHT = 25;
 const FALLBACK_ICON_HEIGHT = 22;
 
+let panel_schema = new Gio.Settings({ schema: 'org.cinnamon.panel' });
+const PANEL_LOCKED = panel_schema.get_boolean('locked');
+
 /**
  * #MenuItem
  * @short_description: Deprecated. Use #PopupMenu.PopupIconMenuItem instead.
@@ -242,6 +245,8 @@ Applet.prototype = {
             if (event.get_button()==3){            
                 if (this._applet_context_menu._getMenuItems().length > 0) {
                     this._applet_context_menu.toggle();			
+                }else{
+                    this.on_applet_clicked(event);
                 }
             }
         }
@@ -398,6 +403,9 @@ Applet.prototype = {
     
     finalizeContextMenu: function () {
         // Add default context menus if we're in panel edit mode, ensure their removal if we're not       
+        if (PANEL_LOCKED){
+            return;
+        }
         let items = this._applet_context_menu._getMenuItems();
 
         if (this.context_menu_item_remove == null) {
