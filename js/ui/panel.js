@@ -15,7 +15,7 @@ const Meta = imports.gi.Meta;
 const Pango = imports.gi.Pango;
 const Cinnamon = imports.gi.Cinnamon;
 const St = imports.gi.St;
-
+const Gio = imports.gi.Gio;
 const Applet = imports.ui.applet;
 const AppletManager = imports.ui.appletManager;
 const DND = imports.ui.dnd;
@@ -55,6 +55,8 @@ const Direction = {
     LEFT  : 0,
     RIGHT : 1
 }
+let panel_schema = new Gio.Settings({ schema: 'org.cinnamon.panel' });
+const PANEL_LOCKED = panel_schema.get_boolean('locked');
 
 // To make sure the panel corners blend nicely with the panel,
 // we draw background and borders the same way, e.g. drawing
@@ -972,7 +974,9 @@ SettingsLauncher.prototype = {
 };
 
 function populateSettingsMenu(menu, panelId) {
-
+    if (PANEL_LOCKED){
+        return;
+    } 
     menu.troubleshootItem = new PopupMenu.PopupSubMenuMenuItem(_("Troubleshoot"));
     menu.troubleshootItem.menu.addAction(_("Restart Cinnamon"), function(event) {
         global.reexec_self();
