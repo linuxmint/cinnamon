@@ -1,14 +1,16 @@
 const Lang = imports.lang;
 const St = imports.gi.St;
 const Clutter = imports.gi.Clutter;
-
+const Gio = imports.gi.Gio;
 const Applet = imports.ui.applet;
 const PopupMenu = imports.ui.popupMenu;
 const Main = imports.ui.main;
 const Mainloop = imports.mainloop;
 const SignalManager = imports.misc.signalManager;
 
-const ICON_SCALE_FACTOR = .8; // for custom panel heights, 20 (default icon size) / 25 (default panel height)
+let Schema = new Gio.Settings({ schema: 'org.cinnamon.applets.systray' });
+const ICON_SCALE_FACTOR = Schema.get_double('icon-scaling-factor'); // for custom panel heights, 20 (default icon size) / 25 (default panel height)
+const ICON_SIZE = Schema.get_int('icon-size');
 
 // Override the factory and create an AppletPopupMenu instead of a PopupMenu
 function IndicatorMenuFactory() {
@@ -143,7 +145,7 @@ MyApplet.prototype = {
     _getIndicatorSize: function(appIndicator) {
         if (this._scaleMode)
             return this._panelHeight * ICON_SCALE_FACTOR;
-        return 16;
+        return ICON_SIZE;
     },
 
     _onIndicatorRemoved: function(manager, appIndicator) {
