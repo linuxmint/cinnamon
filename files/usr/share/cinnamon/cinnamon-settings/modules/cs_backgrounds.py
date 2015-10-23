@@ -10,7 +10,6 @@ import gettext
 import thread
 import subprocess
 import tempfile
-import commands
 import locale
 import time
 from xml.etree import ElementTree
@@ -43,6 +42,15 @@ BACKGROUND_COLLECTION_TYPE_XML = "xml"
 
 (STORE_IS_SEPARATOR, STORE_ICON, STORE_NAME, STORE_PATH, STORE_TYPE) = range(5)
 
+
+def get_mimetype(filename):
+    """ Returns the mimetype of the file (eg. "image/png", "text/plain")
+
+    Throws CalledProcessError if the file does not exist
+    """
+    return subprocess.check_output(["file", "-bi", filename]).split(";")[0]
+
+
 class Module:
     name = "backgrounds"
     category = "appear"
@@ -72,7 +80,7 @@ class Module:
             self.xdg_pictures_directory = os.path.expanduser("~/Pictures")
             xdg_config = os.path.expanduser("~/.config/user-dirs.dirs")
             if os.path.exists(xdg_config) and os.path.exists("/usr/bin/xdg-user-dir"):
-                path = commands.getoutput("xdg-user-dir PICTURES")
+                path = subprocess.check_output(["xdg-user-dir", "PICTURES"]).rstrip("\n")
                 if os.path.exists(path):
                     self.xdg_pictures_directory = path
 
@@ -388,7 +396,7 @@ class Module:
                     files.sort()
                     for i in files:
                         filename = os.path.join(path, i)
-                        if commands.getoutput("file -bi \"%s\"" % filename).startswith("image/"):
+                        if get_mimetype(filename).startswith("image/"):
                             picture_list.append({"filename": filename})
                 elif type == BACKGROUND_COLLECTION_TYPE_XML:
                     picture_list += self.parse_xml_backgrounds_list(path)
@@ -477,13 +485,14 @@ class PixCache(object):
 
     def get_pix(self, filename, size = None):
         try:
-            mimetype = subprocess.check_output(["file", "-bi", filename]).split(";")[0]
+            mimetype = get_mimetype(filename)
             if not mimetype.startswith("image/"):
                 print "Not trying to convert %s : not a recognized image file" % filename
                 return None
         except Exception, detail:
             print "Failed to detect mimetype for %s: %s" % (filename, detail)
             return None
+
         if not filename in self._data:
             self._data[filename] = {}
         if size in self._data[filename]:
