@@ -396,8 +396,11 @@ class Module:
                     files.sort()
                     for i in files:
                         filename = os.path.join(path, i)
-                        if get_mimetype(filename).startswith("image/"):
-                            picture_list.append({"filename": filename})
+                        try:
+                            if get_mimetype(filename).startswith("image/"):
+                                picture_list.append({"filename": filename})
+                        except Exception, detail:
+                            print "Failed to detect mimetype for {}: {}".format(filename, detail)
                 elif type == BACKGROUND_COLLECTION_TYPE_XML:
                     picture_list += self.parse_xml_backgrounds_list(path)
 
