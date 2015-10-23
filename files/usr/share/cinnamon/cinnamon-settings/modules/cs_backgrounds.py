@@ -67,15 +67,15 @@ class Module:
             self.sidePage.stack = SettingsStack()
             self.sidePage.add_widget(self.sidePage.stack)
 
-            self.shown_collection = None # Which collection is displayed in the UI
+            self.shown_collection = None  # Which collection is displayed in the UI
 
-            self._background_schema = Gio.Settings(schema = "org.cinnamon.desktop.background")
-            self._slideshow_schema = Gio.Settings(schema = "org.cinnamon.desktop.background.slideshow")
+            self._background_schema = Gio.Settings(schema="org.cinnamon.desktop.background")
+            self._slideshow_schema = Gio.Settings(schema="org.cinnamon.desktop.background.slideshow")
             self._slideshow_schema.connect("changed::slideshow-enabled", self.on_slideshow_enabled_changed)
             self.add_folder_dialog = Gtk.FileChooserDialog(title=_("Add Folder"),
                                                            action=Gtk.FileChooserAction.SELECT_FOLDER,
                                                            buttons=(Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL,
-                                                                   Gtk.STOCK_OPEN, Gtk.ResponseType.OK))
+                                                                    Gtk.STOCK_OPEN, Gtk.ResponseType.OK))
 
             self.xdg_pictures_directory = os.path.expanduser("~/Pictures")
             xdg_config = os.path.expanduser("~/.config/user-dirs.dirs")
@@ -139,10 +139,10 @@ class Module:
             right_vbox.set_border_width(2)
 
             self.collection_store = Gtk.ListStore(bool,    # is separator
-                                              str,     # Icon name
-                                              str,     # Display name
-                                              str,     # Path
-                                              str)     # Type of collection
+                                                  str,     # Icon name
+                                                  str,     # Display name
+                                                  str,     # Path
+                                                  str)     # Type of collection
             cell = Gtk.CellRendererText()
             cell.set_alignment(0, 0)
             pb_cell = Gtk.CellRendererPixbuf()
@@ -307,7 +307,7 @@ class Module:
         self.remove_folder_button.set_sensitive(True)
         if tree.get_selection() is not None:
             folder_paths, iter = tree.get_selection().get_selected()
-            if iter :
+            if iter:
                 collection_path = folder_paths[iter][STORE_PATH]
                 collection_type = folder_paths[iter][STORE_TYPE]
                 collection_source = self.format_source(collection_type, collection_path)
@@ -470,20 +470,21 @@ class Module:
     def update_secondary_revealer(self, settings, key):
         show = False
 
-        if(settings.get_string("picture-options") in PICTURE_OPTIONS_NEEDS_COLOR):
+        if settings.get_string("picture-options") in PICTURE_OPTIONS_NEEDS_COLOR:
             #the picture is taking all the width
-            if(settings.get_string("color-shading-type") != "solid"):
+            if settings.get_string("color-shading-type") != "solid":
                 #it is using a gradient, so need to show
                 show = True
 
         self.secondary_color_revealer.set_reveal_child(show)
+
 
 class PixCache(object):
 
     def __init__(self):
         self._data = {}
 
-    def get_pix(self, filename, size = None):
+    def get_pix(self, filename, size=None):
         try:
             mimetype = get_mimetype(filename)
             if not mimetype.startswith("image/"):
@@ -493,7 +494,7 @@ class PixCache(object):
             print "Failed to detect mimetype for %s: %s" % (filename, detail)
             return None
 
-        if not filename in self._data:
+        if filename not in self._data:
             self._data[filename] = {}
         if size in self._data[filename]:
             pix = self._data[filename][size]
@@ -531,7 +532,9 @@ class PixCache(object):
 
 PIX_CACHE = PixCache()
 
+
 class ThreadedIconView(Gtk.IconView):
+
     def __init__(self):
         Gtk.IconView.__init__(self)
         self.set_item_width(BACKGROUND_ICONS_SIZE * 1.1)
@@ -550,8 +553,8 @@ class ThreadedIconView(Gtk.IconView):
         text_renderer.set_alignment(.5, .5)
         area.pack_start(pixbuf_renderer, True, False, False)
         area.pack_start(text_renderer, True, False, False)
-        self.add_attribute (pixbuf_renderer, "pixbuf", 1)
-        self.add_attribute (text_renderer, "markup", 2)
+        self.add_attribute(pixbuf_renderer, "pixbuf", 1)
+        self.add_attribute(text_renderer, "markup", 2)
         text_renderer.set_property("alignment", Pango.Alignment.CENTER)
 
         self._loading_queue = []
@@ -567,7 +570,7 @@ class ThreadedIconView(Gtk.IconView):
         item_path = model.get_value(iter, 3)
         return item_path == self.current_path
 
-    def set_pictures_list(self, pictures_list, path = None):
+    def set_pictures_list(self, pictures_list, path=None):
         self.clear()
         self.current_path = path
         for i in pictures_list:
