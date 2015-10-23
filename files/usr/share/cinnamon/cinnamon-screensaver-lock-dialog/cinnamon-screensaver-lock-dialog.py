@@ -1,22 +1,23 @@
 #!/usr/bin/env python2
 
-import sys
 import os
+import subprocess
 import gettext
 from gi.repository import Gtk
 import pwd
-import socket
 
 # i18n
 gettext.install("cinnamon", "/usr/share/locale")
 
+
 class MainWindow:
-  
+
     ''' Create the UI '''
+
     def __init__(self):
 
         user_id = os.getuid()
-        username =  pwd.getpwuid(user_id).pw_name
+        username = pwd.getpwuid(user_id).pw_name
         real_name = pwd.getpwuid(user_id).pw_gecos
         home_dir = pwd.getpwuid(user_id).pw_dir
 
@@ -32,35 +33,35 @@ class MainWindow:
         self.button_ok = self.builder.get_object("button_ok")
         self.entry = self.builder.get_object("entry_away_message")
         self.image = self.builder.get_object("image_face")
-                    
+
         self.window.set_title(_("Screen Locker"))
         self.window.set_icon_name("cs-screensaver")
-                
+
         self.builder.get_object("label_description").set_markup("<i>%s</i>" % _("Please type an away message for the lock screen"))
         self.builder.get_object("label_away_message").set_markup("<b>%s: </b>" % real_name)
-        
+
         if os.path.exists("%s/.face" % home_dir):
             self.image.set_from_file("%s/.face" % home_dir)
         else:
             self.image.set_from_file("/usr/share/pixmaps/nobody.png")
-        
+
         self.window.connect("destroy", Gtk.main_quit)
         self.button_cancel.connect("clicked", Gtk.main_quit)
         self.button_ok.connect('clicked', self.lock_screen)
         self.entry.connect('activate', self.lock_screen)
-        
+
         self.builder.get_object("dialog-action_area1").set_focus_chain((self.button_ok, self.button_cancel))
-          
-        self.window.show()                    
-        
+
+        self.window.show()
+
     def lock_screen(self, data):
         message = self.entry.get_text()
         if (message != ""):
-            os.system("cinnamon-screensaver-command --lock --away-message \"%s\" &" % self.entry.get_text())
+            subprocess.call(["cinnamon-screensaver-command", "--lock", "--away-message", self.entry.get_text()])
         else:
-            os.system("cinnamon-screensaver-command --lock &")
+            subprocess.call(["cinnamon-screensaver-command", "--lock"])
         Gtk.main_quit()
-   
-if __name__ == "__main__":    
+
+if __name__ == "__main__":
     MainWindow()
     Gtk.main()
