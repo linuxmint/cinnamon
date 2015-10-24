@@ -333,7 +333,7 @@ MyApplet.prototype = {
     },
 
     sync_settings_proxy_to_settings: function() {
-        this.launcherList = this._settings_proxy[i].map(x => x.file);
+        this.launcherList = this._settings_proxy.map(x => x.file);
     },
 
     _remove_launcher_from_proxy: function(visible_index) {
