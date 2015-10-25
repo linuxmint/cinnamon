@@ -17,39 +17,30 @@ from gi.repository import Gio, GObject
 import platform
 import os
 
-def get_multiarch_root():
-    plat = platform.machine()
-
-    if plat == "i686":
-        plat = "i386"
-
-    try_path = "/usr/lib/%s/cinnamon-control-center-1/panels" % plat
-    if os.path.exists(try_path):
-        return try_path
-
-    try_path = "/usr/lib/%s-linux-gnu/cinnamon-control-center-1/panels" % plat
-    if os.path.exists(try_path):
-        return try_path
-
-    raise Exception("Could not find cinnamon-control-center module location")
-
 class CManager():
     def __init__(self):
         self.extension_point = Gio.io_extension_point_register ("cinnamon-control-center-1")
         self.modules = []
 
-        try:
-            multiarch_folder = get_multiarch_root()
-            self.modules = self.modules + Gio.io_modules_load_all_in_directory(multiarch_folder)
-        except Exception, e:
-            print "capi failed to load multiarch modules:", e
-            pass
+        architecture = platform.machine()
+        paths = ["/usr/lib"]
 
-        try:
-            self.modules = self.modules + Gio.io_modules_load_all_in_directory("/usr/lib/cinnamon-control-center-1/panels")
-        except Exception, e:
-            print "capi failed to load non-multiarch modules:", e
-            pass
+        # On x86 archs, iterate through multiple paths
+        # For instance, on a Mint i686 box, the path is actually /usr/lib/i386-linux-gnu
+        x86archs = ["i386", "i486", "i586", "i686"]
+        if architecture in x86archs:
+            for arch in x86archs:
+                paths += ["/usr/lib/%s" % arch, "/usr/lib/%s-linux-gnu" % arch]
+        else:
+            paths += ["/usr/lib/%s" % architecture, "/usr/lib/%s-linux-gnu" % architecture]
+
+        for path in paths:
+            path = os.path.join(path, "cinnamon-control-center-1/panels")
+            if os.path.exists(path):
+                try:
+                    self.modules = self.modules + Gio.io_modules_load_all_in_directory(path)
+                except Exception, e:
+                    print "capi failed to load multiarch modules from %s: " % path, e
 
     def get_c_widget(self, mod_id):
         extension = self.extension_point.get_extension_by_name(mod_id)
