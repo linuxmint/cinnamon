@@ -1,8 +1,8 @@
 #!/usr/bin/python2
 
-import commands, os
+import os, commands
 
-sourceFile = "usr/lib/cinnamon-settings/cinnamon-settings.py"
+sourceFile = "usr/share/cinnamon/cinnamon-settings/cinnamon-settings.py"
 
 menuName = commands.getoutput("cat " + sourceFile + " | grep menuName")
 menuName = menuName.replace("menuName", "")
@@ -43,7 +43,7 @@ for directory in os.listdir("/usr/share/locale"):
 	if os.path.isdir(os.path.join("/usr/share/locale", directory)):
 		try:
 			language = gettext.translation('cinnamon-settings', "/usr/share/locale", languages=[directory])
-			language.install()			
+			language.install()
 			desktopFile.writelines("Comment[%s]=%s\n" % (directory, _(menuComment)))
 		except:
 			pass
@@ -57,4 +57,3 @@ OnlyShowIn=X-Cinnamon;
 Categories=GNOME;GTK;Settings;DesktopSettings;
 StartupNotify=false
 """)
-
