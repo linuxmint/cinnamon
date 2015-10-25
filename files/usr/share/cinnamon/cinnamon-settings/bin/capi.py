@@ -20,6 +20,9 @@ import os
 def get_multiarch_root():
     plat = platform.machine()
 
+    if plat == "i686":
+        plat = "i386"
+
     try_path = "/usr/lib/%s/cinnamon-control-center-1/panels" % plat
     if os.path.exists(try_path):
         return try_path
