@@ -885,6 +885,10 @@ IconActor.prototype = {
             return false;
         if (event.get_button() == 1)
             this._menu.toggle();
+        if (event.get_button() == 3){
+            this._menu.toggle();
+            return true;
+        }
         return false;
     },
 
