@@ -4,10 +4,10 @@ from SettingsWidgets import *
 
 import platform
 import subprocess
+import shlex
 import os
 import re
 import threading
-import commands
 
 
 def killProcess(process):
@@ -87,7 +87,8 @@ def createSystemInfos():
         processorName = processorName + u" \u00D7 " + procInfos['cpu_cores']
 
     if os.path.exists("/etc/linuxmint/info"):
-        title = commands.getoutput("awk -F \"=\" '/GRUB_TITLE/ {print $2}' /etc/linuxmint/info")
+        args = shlex.split("awk -F \"=\" '/GRUB_TITLE/ {print $2}' /etc/linuxmint/info")
+        title = subprocess.check_output(args).rstrip("\n")
         infos.append((_("Operating System"), title))
     elif os.path.exists("/etc/arch-release"):
         contents = open("/etc/arch-release", 'r').readline().split()
