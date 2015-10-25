@@ -23,7 +23,6 @@ const DEFAULT_PANEL_HEIGHT = 25;
 const FALLBACK_ICON_HEIGHT = 22;
 
 let panel_schema = new Gio.Settings({ schema: 'org.cinnamon.panel' });
-const PANEL_LOCKED = panel_schema.get_boolean('locked');
 
 /**
  * #MenuItem
@@ -243,6 +242,7 @@ Applet.prototype = {
                 }
             }
             if (event.get_button()==3){            
+                this.finalizeContextMenu();
                 if (this._applet_context_menu._getMenuItems().length > 0) {
                     this._applet_context_menu.toggle();			
                 }else{
@@ -403,7 +403,11 @@ Applet.prototype = {
     
     finalizeContextMenu: function () {
         // Add default context menus if we're in panel edit mode, ensure their removal if we're not       
-        if (PANEL_LOCKED){
+        if (panel_schema.get_boolean('locked')){
+            if (this.context_menu_item_remove != null) {this.context_menu_item_remove.destroy(); this.context_menu_item_remove = null;}
+            if (this.context_menu_item_about != null) {this.context_menu_item_about.destroy(); this.context_menu_item_about = null;}
+            if (this.context_menu_item_configure != null) {this.context_menu_item_configure.destroy(); this.context_menu_item_configure = null;}
+            if (this.context_menu_separator != null) {this.context_menu_separator.destroy(); this.context_menu_separator = null;}
             return;
         }
         let items = this._applet_context_menu._getMenuItems();
