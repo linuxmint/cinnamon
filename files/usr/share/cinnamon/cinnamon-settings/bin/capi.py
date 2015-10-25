@@ -28,7 +28,7 @@ def get_multiarch_root():
     if os.path.exists(try_path):
         return try_path
 
-    return None
+    raise Exception("Could not find cinnamon-control-center module location")
 
 class CManager():
     def __init__(self):
@@ -39,13 +39,13 @@ class CManager():
             multiarch_folder = get_multiarch_root()
             self.modules = self.modules + Gio.io_modules_load_all_in_directory(multiarch_folder)
         except Exception, e:
-            print "capi failed to load multiarch modules", e
+            print "capi failed to load multiarch modules:", e
             pass
 
         try:
             self.modules = self.modules + Gio.io_modules_load_all_in_directory("/usr/lib/cinnamon-control-center-1/panels")
         except Exception, e:
-            print "capi failed to load non-multiarch modules", e
+            print "capi failed to load non-multiarch modules:", e
             pass
 
     def get_c_widget(self, mod_id):
