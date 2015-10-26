@@ -31,6 +31,8 @@ class CManager():
         if architecture in x86archs:
             for arch in x86archs:
                 paths += ["/usr/lib/%s" % arch, "/usr/lib/%s-linux-gnu" % arch]
+        elif architecture == "x86_64":
+            paths += ["/usr/lib/x86_64", "/usr/lib/x86_64-linux-gnu", "/usr/lib64"]
         else:
             paths += ["/usr/lib/%s" % architecture, "/usr/lib/%s-linux-gnu" % architecture]
 
