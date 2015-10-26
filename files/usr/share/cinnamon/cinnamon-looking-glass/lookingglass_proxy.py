@@ -1,3 +1,4 @@
+import dbus
 from gi.repository import Gio, Gtk, GObject, Gdk, Pango, GLib
 
 LG_DBUS_NAME = "org.Cinnamon.LookingGlass"
