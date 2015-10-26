@@ -1,3 +1,35 @@
+cinnamon (2.8.1) rosa; urgency=medium
+
+  [ Dexter Chua ]
+  * panel.js: factor out panel allocation code and prevent division-by-zero error
+
+  [ JosephMcc ]
+  * workspace-switcher: Properly resize the switcher when using custom panel sizes
+
+  [ Daniel Alley ]
+  * fixed code execution by replacing os.system() w/ subprocess.call(), pep8 formatting
+
+  [ pixunil ]
+  * Panel launchers applet: syncronize with settings with correct variable Caused issues when adding, moving or removing items
+
+  [ Michael Webster ]
+  * capi.py: Handle the failure to locate c-c-c modules more gracefully.
+  * capi.py: fix i386 platform detection.
+
+  [ Clement Lefebvre ]
+  * capi.py: Scan all relevant paths
+  * Removed unused files/generate_desktop_files file
+  * capi.py: Add support for /usr/lib64 (used in RPM distros)
+
+  [ Daniel Alley ]
+  * fixed command injection, replaced deprecate calls to "commands" module with their subprocess replacements
+  * pep8 formatting
+  * added exception handler just in case
+  * fix potential NameError
+  * pep8
+
+ -- Clement Lefebvre <root@linuxmint.com>  Mon, 26 Oct 2015 11:46:40 +0000
+
 cinnamon (2.8.0) rosa; urgency=medium
 
   [ Alexandre Rostovtsev ]
