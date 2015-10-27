@@ -410,7 +410,7 @@ st_container_dispose (GObject *object)
 
   if (priv->children)
     {
-      g_list_foreach (priv->children, (GFunc) clutter_actor_destroy, NULL);
+      clutter_actor_destroy_all_children (CLUTTER_ACTOR (object));
       g_list_free (priv->children);
 
       priv->children = NULL;
