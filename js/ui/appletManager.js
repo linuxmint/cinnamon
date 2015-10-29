@@ -436,7 +436,7 @@ function get_object_for_instance (appletId) {
 }
 
 function get_object_for_uuid (uuid, instanceId) {
-    return appletObj.find(x => x && x._uuid == uuid || x.instance_id == instanceId);
+    return appletObj.find(x => x && (x._uuid == uuid || x.instance_id == instanceId));
 }
 
 
