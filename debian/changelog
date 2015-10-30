@@ -1,3 +1,18 @@
+cinnamon (2.8.2) rosa; urgency=medium
+
+  [ Daniel Alley ]
+  * Replaced uses of the commands module with subprocess
+
+  [ Michael Webster ]
+  * st-container.c: Fix dispose method causing crashes.  priv->children was being updated during destruction of each child, causing invalid pointers when iterating thru priv->children.  Use clutter_actor_destroy_all_children to do just that, and we get no corruption.
+  * appletManager.js: fix get_object_for_uuid() when an empty index of appletObj is hit upon.
+
+  [ Clement Lefebvre ]
+  * Settings: Added link to mintlocale's input method
+  * Updated pot file
+
+ -- Clement Lefebvre <root@linuxmint.com>  Fri, 30 Oct 2015 12:03:31 +0000
+
 cinnamon (2.8.1) rosa; urgency=medium
 
   [ Dexter Chua ]
