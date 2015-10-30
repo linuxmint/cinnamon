@@ -33,6 +33,7 @@ public_icons = \
 	hicolor_categories_scalable_cs-firewall.svg \
 	hicolor_categories_scalable_cs-fonts.svg \
 	hicolor_categories_scalable_cs-general.svg \
+	hicolor_categories_scalable_cs-input-method.svg \
 	hicolor_categories_scalable_cs-keyboard.svg \
 	hicolor_categories_scalable_cs-language.svg \
 	hicolor_categories_scalable_cs-linuxmint.svg \
