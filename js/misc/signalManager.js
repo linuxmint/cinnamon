@@ -236,7 +236,7 @@ SignalManager.prototype = {
      * addTimeout:
      *
      * @name (string): an identifier
-     * @interval (integer): the time between calls to the function, in milliseconds
+     * @interval (integer|null): the time between calls to the function, in milliseconds or null for "idle"
      * @callback (function): the callback function
      * @bind (Object): (optional) the object to bind the function to. Leave
      * empty for the owner of the #SignalManager (which has no side effects if
@@ -261,7 +261,13 @@ SignalManager.prototype = {
         if(this._timeouts[name])
             this.removeTimeout(callback);
 
-        let id = Mainloop.timeout_add(interval, this._makeCallback(callback, bind));
+        let id;
+
+        // interval of null means "idle"
+        if(interval === null)
+            id = Mainloop.idle_add(this._makeCallback(callback, bind));
+        else
+            id = Mainloop.timeout_add(interval, this._makeCallback(callback, bind));
 
         this._timeouts[name] = id;
     },
