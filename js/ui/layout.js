@@ -690,7 +690,6 @@ Chrome.prototype = {
 
     updateRegions: function() {
         let primary = this._primaryMonitor;
-        if (!primary) return false;
 
         let rects = [], struts = [], i;
 
@@ -773,16 +772,35 @@ Chrome.prototype = {
             // as this really what muffin expects.
             switch (side) {
             case Meta.Side.TOP:
-                y1 = 0;
+                let hasMonitorsAbove = this._monitors.some(Lang.bind(this,
+                    function(mon) {
+                        return this._layoutManager._isAboveOrBelowPrimary(mon) &&
+                               mon.y < primary.y;
+                    }));
+                if (!hasMonitorsAbove)
+                    y1 = 0;
                 break;
             case Meta.Side.BOTTOM:
-                y2 = global.screen_height;
+                if (this.primaryIndex == this.bottomIndex)
+                    y2 = global.screen_height;
                 break;
             case Meta.Side.LEFT:
-                x1 = 0;
+                let hasMonitorsLeft = this._monitors.some(Lang.bind(this,
+                    function(mon) {
+                        return !this._layoutManager._isAboveOrBelowPrimary(mon) &&
+                               mon.x < primary.x;
+                    }));
+                if (!hasMonitorsLeft)
+                    x1 = 0;
                 break;
             case Meta.Side.RIGHT:
-                x2 = global.screen_width;
+                let hasMonitorsRight = this._monitors.some(Lang.bind(this,
+                    function(mon) {
+                        return !this._layoutManager._isAboveOrBelowPrimary(mon) &&
+                               mon.x > primary.x;
+                    }));
+                if (!hasMonitorsRight)
+                    x2 = global.screen_width;
                 break;
             }
 
