@@ -790,9 +790,11 @@ PlaceCategoryButton.prototype = {
         this.actor.set_style_class_name('menu-category-button');
         this.actor._delegate = this;
         this.label = new St.Label({ text: _("Places"), style_class: 'menu-category-button-label' });
+        if (CATEGORY_ICON_SIZE > 0){
         this.icon = new St.Icon({icon_name: "folder", icon_size: CATEGORY_ICON_SIZE, icon_type: St.IconType.FULLCOLOR});
         this.addActor(this.icon);
         this.icon.realize();
+        }
         this.addActor(this.label);
         this.label.realize();
     }
@@ -810,9 +812,11 @@ RecentCategoryButton.prototype = {
         this.actor.set_style_class_name('menu-category-button');
         this.actor._delegate = this;
         this.label = new St.Label({ text: _("Recent Files"), style_class: 'menu-category-button-label' });
+        if (CATEGORY_ICON_SIZE > 0){
         this.icon = new St.Icon({icon_name: "folder-recent", icon_size: CATEGORY_ICON_SIZE, icon_type: St.IconType.FULLCOLOR});
         this.addActor(this.icon);
         this.icon.realize()
+        }
         this.addActor(this.label);
         this.label.realize();
     }
