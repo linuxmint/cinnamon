@@ -24,6 +24,12 @@
     "description" : "Text",
     "tooltip" : "Enter custom text to show in the panel."
  },
+ "favbox-show" : {
+    "type" : "checkbox",
+    "default" : true,
+    "description" : "show the favorite apps box(left pane)",
+    "tooltip" : "Unchecking this hides the favorite apps box"
+ },
  "show-places" : {
     "type" : "checkbox",
     "default" : true,
