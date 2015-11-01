@@ -365,14 +365,11 @@ function createApplet(extension, appletDefinition) {
     
     if (appletObj[applet_id] != undefined) {
         global.log(applet_id + ' applet already loaded');
+        appletObj[applet_id].setOrientation(orientation);
         if (appletObj[applet_id]._panelHeight != panel_height) {
-            appletObj[applet_id].setOrientation(orientation);
             appletObj[applet_id].setPanelHeight(panel_height);
         }
-        else
-        {
-            appletObj[applet_id].setOrientation(orientation);
-        }
+
         return appletObj[applet_id];
     }
     
@@ -597,20 +594,6 @@ function updateAppletsOnPanel (panel) {
     for (let applet_id in enabledAppletDefinitions.idMap){
         definition = enabledAppletDefinitions.idMap[applet_id];
         if(definition.panel == panel) {
-            let location;
-            switch (definition.location_label[1]){
-            case "center":
-                location = panel._centerBox;
-                break;
-            case "right":
-                location = panel._rightBox;
-                break;
-            default: // Let default position be left
-                location = panel._leftBox;
-            }
-
-            definition.location = location;
-            definition.orientation = orientation;
 
             if (appletObj[applet_id]) {
                 try {

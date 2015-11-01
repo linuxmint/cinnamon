@@ -11,6 +11,7 @@ const ICON_SCALE_FACTOR = .8; // for custom panel heights, 20 (default icon size
 const PANEL_FONT_DEFAULT_HEIGHT = 11.5; // px
 const PANEL_SYMBOLIC_ICON_DEFAULT_HEIGHT = 1.14 * PANEL_FONT_DEFAULT_HEIGHT; // ems conversion
 const DEFAULT_PANEL_HEIGHT = 25;
+const PANEL_EDIT_MODE_KEY = 'panel-edit-mode';
 
 function MyApplet(orientation, panel_height, instance_id) {
     this._init(orientation, panel_height, instance_id);
@@ -28,8 +29,9 @@ MyApplet.prototype = {
         this._signalManager = new SignalManager.SignalManager(this);
 	let manager;
 	let symb_scaleup = 0;
+	this.orientation = orientation;
 
-	if (orientation == St.Side.TOP || orientation == St.Side.BOTTOM)
+	if (this.orientation == St.Side.TOP || this.orientation == St.Side.BOTTOM)
 	{
 		manager = new Clutter.BoxLayout( { spacing: 2 * global.ui_scale,
 		                                       homogeneous: true,
@@ -52,6 +54,18 @@ MyApplet.prototype = {
     },
 
     on_applet_clicked: function(event) {
+    },
+
+    on_orientation_changed: function() {
+global.log("systray - on_orientation_changed");
+	    if (this.orientation == St.Side.TOP || this.orientation == St.Side.BOTTOM)
+	    {
+		//this.manager_container.set_style('vertical: false');  complains not a function.  see if there is a set orientation function.
+	    }
+	    else		// vertical panels
+	    {
+		//this.manager_container.set_style('vertical: true');
+	    }
     },
 
     on_applet_removed_from_panel: function () {

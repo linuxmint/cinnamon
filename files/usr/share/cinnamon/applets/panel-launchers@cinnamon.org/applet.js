@@ -88,25 +88,13 @@ PanelAppLauncher.prototype = {
         this.appinfo = appinfo;
         this.launchersBox = launchersBox;
         this._applet = launchersBox;
-	if (orientation == St.Side.TOP || orientation == St.Side.BOTTOM)
-	{
-		this.actor = new St.Bin({ style_class: 'panel-launcher',
-		                          reactive: true,
-		                          can_focus: true,
-		                          x_fill: true,
-		                          y_fill: false,
-		                          track_hover: true });
-	}
-	else
-	{
-		this.actor = new St.Bin({ style_class: 'panel-launcher',
-		                          reactive: true,
-		                          can_focus: true,
-		                          x_fill: false,
-		                          y_fill: true,
-		                          track_hover: true });
 
-	}
+	this.actor = new St.Bin({ style_class: 'panel-launcher',
+	                          reactive: true,
+	                          can_focus: true,
+	                          x_fill: true,
+	                          y_fill: false,
+	                          track_hover: true });
 
         this.actor._delegate = this;
         this.actor.connect('button-release-event', Lang.bind(this, this._onButtonRelease));
@@ -304,7 +292,7 @@ MyApplet.prototype = {
             this._dragPlaceholderPos = -1;
             this._animatingPlaceholdersCount = 0;
 
-	    if (orientation == St.Side.TOP || orientation == St.Side.BOTTOM)
+	    if (this.orientation == St.Side.TOP || this.orientation == St.Side.BOTTOM)
 	    {
 
             	this.myactor = new St.BoxLayout({ name: 'panel-launchers-box',
@@ -345,6 +333,7 @@ MyApplet.prototype = {
             global.logError(e);
         }
     },
+
 
     _updateLauncherDrag: function() {
         this.emit("launcher-draggable-setting-changed");
@@ -427,6 +416,19 @@ MyApplet.prototype = {
 
     on_panel_height_changed: function() {
         this.reload();
+    },
+
+    on_orientation_changed: function() {
+
+	    if (this.orientation == St.Side.TOP || this.orientation == St.Side.BOTTOM)
+	    {
+		this.myactor.set_style('vertical: false');
+	    }
+	    else		// vertical panels
+	    {
+		this.myactor.set_style('vertical: true');
+	    }
+            this.reload();
     },
 
     reload: function() {
