@@ -130,29 +130,6 @@ cinnamon_window_tracker_class_init (CinnamonWindowTrackerClass *klass)
 }
 
 /**
- * get_appid_from_window:
- *
- * Turn the WM_CLASS property into our best guess at a .desktop file id.
- */
-static char *
-get_appid_from_window (MetaWindow  *window)
-{
-  const char *wmclass;
-  char *appid_guess;
-
-  wmclass = meta_window_get_wm_class (window);
-  if (!wmclass)
-    return NULL;
-  appid_guess = g_ascii_strdown (wmclass, -1);
-
-  /* This handles "Fedora Eclipse", probably others.
-   * Note g_strdelimit is modify-in-place. */
-  g_strdelimit (appid_guess, " ", '-');
-
-  return appid_guess;
-}
-
-/**
  * cinnamon_window_tracker_is_window_interesting:
  *
  * The CinnamonWindowTracker associates certain kinds of windows with
@@ -203,19 +180,6 @@ cinnamon_window_tracker_is_window_interesting (MetaWindow *window)
   return TRUE;
 }
 
-static gchar *
-strip_extension (const gchar *wm_class)
-{
-    char *result;
-    if (g_str_has_suffix (wm_class, ".py") ||
-        g_str_has_suffix (wm_class, ".sh")) {
-            result = g_strndup (wm_class, strlen (wm_class) - 3);
-    } else {
-        result = g_strdup (wm_class);
-    }
-    return result;
-}
-
 /**
  * get_app_from_window_wmclass:
  *
@@ -230,37 +194,69 @@ get_app_from_window_wmclass (MetaWindow  *window)
 {
   CinnamonApp *app;
   CinnamonAppSystem *appsys;
-  gchar *wmclass;
-  gchar *wmclass_with_desktop;
-  gchar *wmclass_stripped;
-
-  wmclass = wmclass_with_desktop = wmclass_stripped = NULL;
+  const char *wm_class;
+  const char *wm_instance;
 
   appsys = cinnamon_app_system_get_default ();
 
-  const char *window_wm_class;
-  window_wm_class = meta_window_get_wm_class (window);
-  if (window_wm_class) {
-    wmclass = g_ascii_strdown (window_wm_class, -1);
-    g_strdelimit (wmclass, " ", '-'); // This handles "Fedora Eclipse", probably others. Note g_strdelimit is modify-in-place.
-  }
-  
-  if (!wmclass)
-    return NULL;
+  /* Notes on the heuristics used here:
+     much of the complexity here comes from the desire to support
+     Chrome apps.
 
-  wmclass_stripped = strip_extension(wmclass);
+     From https://bugzilla.gnome.org/show_bug.cgi?id=673657#c13
 
-  wmclass_with_desktop = g_strjoin (NULL, wmclass_stripped, ".desktop", NULL);
-  
-  g_free (wmclass);
-  g_free (wmclass_stripped);
+     Currently chrome sets WM_CLASS as follows (the first string is the 'instance',
+     the second one is the 'class':
 
-  app = cinnamon_app_system_lookup_heuristic_basename (appsys, wmclass_with_desktop);
+     For the normal browser:
+     WM_CLASS(STRING) = "chromium", "Chromium"
+
+     For a bookmarked page (through 'Tools -> Create application shortcuts')
+     WM_CLASS(STRING) = "wiki.gnome.org__GnomeShell_ApplicationBased", "Chromium"
+
+     For an application from the chrome store (with a .desktop file created through
+     right click, "Create shortcuts" from Chrome's apps overview)
+     WM_CLASS(STRING) = "crx_blpcfgokakmgnkcojhhkbfbldkacnbeo", "Chromium"
+
+     The .desktop file has a matching StartupWMClass, but the name differs, e.g. for
+     the store app (youtube) there is
+
+     .local/share/applications/chrome-blpcfgokakmgnkcojhhkbfbldkacnbeo-Default.desktop
+
+     with
+
+     StartupWMClass=crx_blpcfgokakmgnkcojhhkbfbldkacnbeo
+
+     Note that chromium (but not google-chrome!) includes a StartupWMClass=chromium
+     in their .desktop file, so we must match the instance first.
+
+     Also note that in the good case (regular gtk+ app without hacks), instance and
+     class are the same except for case and there is no StartupWMClass at all.
+  */
+
+  /* first try a match from WM_CLASS (instance part) to StartupWMClass */
+  wm_instance = meta_window_get_wm_class_instance (window);
+  app = cinnamon_app_system_lookup_startup_wmclass (appsys, wm_instance);
   if (app != NULL)
-    g_object_ref (app);
-  g_free (wmclass_with_desktop);
+    return g_object_ref (app);
 
-  return app;
+  /* then try a match from WM_CLASS to StartupWMClass */
+  wm_class = meta_window_get_wm_class (window);
+  app = cinnamon_app_system_lookup_startup_wmclass (appsys, wm_class);
+  if (app != NULL)
+    return g_object_ref (app);
+
+  /* then try a match from WM_CLASS (instance part) to .desktop */
+  app = cinnamon_app_system_lookup_desktop_wmclass (appsys, wm_instance);
+  if (app != NULL)
+    return g_object_ref (app);
+
+  /* finally, try a match from WM_CLASS to .desktop */
+  app = cinnamon_app_system_lookup_desktop_wmclass (appsys, wm_class);
+  if (app != NULL)
+    return g_object_ref (app);
+
+  return NULL;
 }
 
 /**
