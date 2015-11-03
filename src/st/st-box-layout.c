@@ -757,7 +757,7 @@ st_box_layout_allocate (ClutterActor          *actor,
   if (reverse_order)
     {
       l = g_list_last (children);
-      i = g_list_length (children);
+      i = g_list_length (children) - 1;
     }
   else
     {
