@@ -742,14 +742,14 @@ global.log("in onPanelsEnabledChanged  panelproperties "+panelProperties);
 		jj = getPanelLocFromName(elements[2]);
 
 		let mon = parseInt(elements[1]);
-		if (((this.panels[ID].panelPosition == PanelLoc.top || this.panels[ID].panelPosition == PanelLoc.bottom)
+/*		if (((this.panels[ID].panelPosition == PanelLoc.top || this.panels[ID].panelPosition == PanelLoc.bottom)
 			&& (jj == PanelLoc.left || jj == PanelLoc.right))
 			|| 
 			((this.panels[ID].panelPosition == PanelLoc.left || this.panels[ID].panelPosition == PanelLoc.right)
 			&& (jj == PanelLoc.top || jj == PanelLoc.bottom)))
 		{
 			orientationchanged = true;
-		}
+		} */
 	global.log("on panels enabledchanged - (existing) panel moved.  id "+ID+" position "+jj+" mon "+mon);
 		newMeta[ID] = [mon, jj]; 		//Note: meta [i][0] is the monitor  meta [i][1] is the panel
 		this.panels[ID] = null;
@@ -792,6 +792,17 @@ global.log("newPanels[ID].panelPosition "+newPanels[ID].panelPosition);
         this.panels = newPanels;
         this.panelsMeta = newMeta;
 
+//
+// Adjust any vertical panel heights so as to fit snugly between horizontal panels
+// FIXME scope for optimisation here, doesn't need to adjust verticals if no horizontals added or removed
+// or any change from making space for panel dummys needs to be reflected
+//
+	for (let i in this.panels) {
+		if (this.panels[i])
+		    if (this.panels[i].panelPosition == PanelLoc.left || this.panels[i].panelPosition == PanelLoc.right)
+			this.panels[i]._moveResizePanel();
+	}
+global.log("onpanelsenabledchanged - just finished vertical panel adjustments");
         this._setMainPanel();
         this._checkCanAdd();
         this._updateAllPointerBarriers();
