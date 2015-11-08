@@ -497,6 +497,8 @@ global.log("addpanel settings is "+settings+ " key is "+key);
 	    case PanelLoc.right:
         	list.push(i + ":" + monitorIndex + ":" + "right");
 		break;
+	    default:
+		global.log("addPanel - unrecognised panel position "+panelPosition);
 	}
         global.settings.set_strv("panels-enabled", list);
 
@@ -532,6 +534,8 @@ global.log("addpanel settings is "+settings+ " key is "+key);
 					case PanelLoc.right:
 						list[i] = this.moveId + ":" + monitorIndex + ":" + "right";
 					break;
+					default:
+					global.log("movePanel - unrecognised panel position "+panelPosition);
 				}
 			break;
             }
@@ -675,6 +679,8 @@ global.log("addpanel settings is "+settings+ " key is "+key);
 					case PanelLoc.right:
 						global.log("Conflicting panel definitions: " + ID + ":" + monitorIndex + ":" + "right" );
 					break;
+					default:
+					global.log("loadPanel - unrecognised panel position "+panelPosition);
 				}
                 repeat = true;
                 break;
@@ -802,7 +808,7 @@ global.log("newPanels[ID].panelPosition "+newPanels[ID].panelPosition);
 		    if (this.panels[i].panelPosition == PanelLoc.left || this.panels[i].panelPosition == PanelLoc.right)
 			this.panels[i]._moveResizePanel();
 	}
-global.log("onpanelsenabledchanged - just finished vertical panel adjustments");
+
         this._setMainPanel();
         this._checkCanAdd();
         this._updateAllPointerBarriers();
@@ -979,6 +985,8 @@ global.log("paneldummy init");
         	this.actor.set_size( defaultheight,this.monitor.height - tpanelHeight - bpanelHeight); 
         	this.actor.set_position(this.monitor.x + this.monitor.width - defaultheight, this.monitor.y + tpanelHeight);
             break;
+	    default:
+	    global.log("paneDummy - unrecognised panel position "+panelPosition);
         }
 
         this.actor.connect('button-press-event', Lang.bind(this, this._onClicked));
@@ -1978,6 +1986,8 @@ Panel.prototype = {
 			this.actor.set_style_class_name('panel-top');  // could define css for right vertical, using same as for top for now
 			this._context_menu = new PanelContextMenu(this, St.Side.RIGHT, this.panelId); 
 			break;
+                default:
+		    global.log("addContextMenuToPanel - unrecognised panel position "+panelPosition);
 	}
 	this._menus.addMenu(this._context_menu);
 
@@ -2132,6 +2142,8 @@ Panel.prototype = {
 				panelTop = this.monitor.y + this.toppanelHeight;
 				panelBottom = this.monitor.y + this.monitor.height - this.bottompanelHeight;
 				break;
+			default:
+			    global.log("updatePanelBarriers - unrecognised panel position "+panelPosition);
 	    }
 
             if (!noBarriers) {   // barriers are required
@@ -2323,7 +2335,7 @@ Panel.prototype = {
 			panelHeight = 25 * global.ui_scale;
 		}
 	}
-	global.log("in moveResizepanel - panelHeight " + panelHeight + " panelPosition "+this.panelPosition);
+	// global.log("in moveResizepanel - panelHeight " + panelHeight + " panelPosition "+this.panelPosition);
 
 	this._setFont(panelHeight);
 
@@ -2338,11 +2350,9 @@ Panel.prototype = {
 		this.actor.set_height(panelHeight); 
 	} else {
 		if (Main.panelManager) {  			// the panelManager has initialized
-global.log("moveresizepanel, calling heightsUsed");
 			[tpanelHeight, bpanelHeight] = heightsUsedMonitor(this.monitorIndex, Main.panelManager.panels);
 			this.toppanelHeight = tpanelHeight;
 			this.bottompanelHeight = bpanelHeight;
-global.log("moveresizepanel: tpanelHeight "+this.toppanelHeight+" bpanelHeight "+this.bottompanelHeight);
 		}
 		/* if (tpanelHeight == 0 && bpanelHeight == 0)  	// will get zeros when calling within panelManager init 
 			if (this.toppanelHeight > 0 || this.bottompanelHeight > 0) // use the local copies we stashed when creating the panel
@@ -2376,7 +2386,27 @@ global.log("moveresizepanel: tpanelHeight "+this.toppanelHeight+" bpanelHeight "
 			this.actor.set_size(panelHeight, vertpanelHeight); 
 			this.actor.set_position(this.monitor.x + this.monitor.width - panelHeight, this.monitor.y + tpanelHeight);
 			break;
+		default:
+		    global.log("moveResizePanel - unrecognised panel position "+panelPosition);
 		}
+
+//
+// If we are adjusting the heights of horizontal panels then the vertical ones on this monitor 
+// may need to be changed at the same time. 
+//
+		if (this.panelPosition == PanelLoc.top || this.panelPosition == PanelLoc.bottom)
+		{
+			if (Main.panelManager) {  			// the panelManager has initialized
+				for (let i in Main.panelManager.panels) {
+					if (Main.panelManager.panels[i])
+					    if ((Main.panelManager.panels[i].panelPosition == PanelLoc.left 
+						|| Main.panelManager.panels[i].panelPosition == PanelLoc.right)
+						&& Main.panelManager.panels[i].monitorIndex == this.monitorIndex)
+						Main.panelManager.panels[i]._moveResizePanel();
+				}
+			}
+		}
+
 
 	// AppletManager might not be initialized yet
 	if (AppletManager.appletsLoaded)
@@ -2819,6 +2849,8 @@ global.log("moveresizepanel: tpanelHeight "+this.toppanelHeight+" bpanelHeight "
 			case PanelLoc.right: 
 				y = this.monitor.y + this.toppanelHeight;
 			break;
+			default:
+				global.log("updatePanelVisibility - unrecognised panel position "+this.panelPosition);
 			}
 
             let a = this.actor;
