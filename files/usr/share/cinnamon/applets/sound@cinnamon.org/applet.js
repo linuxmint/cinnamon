@@ -375,11 +375,15 @@ Player.prototype = {
             this._loopButton = new ControlButton("media-playlist-consecutive", _("Consecutive Playing"), Lang.bind(this, this._toggleLoopStatus));
             this._loopButton.actor.visible = this._applet.extendedPlayerControl;
             this.controls.add_actor(this._loopButton.getActor());
+
+            this._setLoopStatus(this._mediaServerPlayer.LoopStatus);
         }
         if(this._mediaServerPlayer.Shuffle !== undefined){
             this._shuffleButton = new ControlButton("media-playlist-shuffle", _("No Shuffle"), Lang.bind(this, this._toggleShuffle));
             this._shuffleButton.actor.visible = this._applet.extendedPlayerControl;
             this.controls.add_actor(this._shuffleButton.getActor());
+
+            this._setShuffle(this._mediaServerPlayer.Shuffle);
         }
 
         // Position slider
