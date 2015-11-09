@@ -689,9 +689,6 @@ Chrome.prototype = {
     },
 
     updateRegions: function() {
-        let primary = this._primaryMonitor;
-        if (!primary) return false;
-
         let rects = [], struts = [], i;
 
         if (this._updateRegionIdle) {
@@ -710,85 +707,62 @@ Chrome.prototype = {
             y = Math.round(y);
             w = Math.round(w);
             h = Math.round(h);
-            let rect = new Meta.Rectangle({ x: x, y: y, width: w, height: h});
+            if (actorData.affectsInputRegion) {
+                let rect = new Meta.Rectangle({ x: x, y: y, width: w, height: h});
 
-            if (actorData.affectsInputRegion &&
-                actorData.actor.get_paint_visibility() &&
-                !Main.uiGroup.get_skip_paint(actorData.actor))
-                rects.push(rect);
+                if (actorData.actor.get_paint_visibility() &&
+                    !Main.uiGroup.get_skip_paint(actorData.actor))
+                    rects.push(rect);
+            }
 
-            if (!actorData.affectsStruts)
-                continue;
+            if (actorData.affectsStruts) {
+                // Limit struts to the size of the screen
+                let x1 = Math.max(x, 0);
+                let x2 = Math.min(x + w, global.screen_width);
+                let y1 = Math.max(y, 0);
+                let y2 = Math.min(y + h, global.screen_height);
 
-            // Limit struts to the size of the screen
-            let x1 = Math.max(x, 0);
-            let x2 = Math.min(x + w, global.screen_width);
-            let y1 = Math.max(y, 0);
-            let y2 = Math.min(y + h, global.screen_height);
+                // Metacity wants to know what side of the monitor the
+                // strut is considered to be attached to. First, we find
+                // the monitor that contains the strut. If the actor is
+                // only touching one edge, or is touching the entire
+                // border of that monitor, then it's obvious which side
+                // to call it. If it's in a corner, we pick a side
+                // arbitrarily. If it doesn't touch any edges, or it
+                // spans the width/height across the middle of the
+                // screen, then we don't create a strut for it at all.
 
-            // NetWM struts are not really powerful enought to handle
-            // a multi-monitor scenario, they only describe what happens
-            // around the outer sides of the full display region. However
-            // it can describe a partial region along each side, so
-            // we can support having the struts only affect the
-            // primary monitor. This should be enough as we only have
-            // chrome affecting the struts on the primary monitor so
-            // far.
-            //
-            // Metacity wants to know what side of the screen the
-            // strut is considered to be attached to. If the actor is
-            // only touching one edge, or is touching the entire
-            // border of the primary monitor, then it's obvious which
-            // side to call it. If it's in a corner, we pick a side
-            // arbitrarily. If it doesn't touch any edges, or it spans
-            // the width/height across the middle of the screen, then
-            // we don't create a strut for it at all.
-            let side;
-            if (x1 <= primary.x && x2 >= primary.x + primary.width) {
-                if (y1 <= primary.y)
+                let monitor = this.findMonitorForActor(actorData.actor);
+                let side;
+                if (x1 <= monitor.x && x2 >= monitor.x + monitor.width) {
+                    if (y1 <= monitor.y)
+                        side = Meta.Side.TOP;
+                    else if (y2 >= monitor.y + monitor.height)
+                        side = Meta.Side.BOTTOM;
+                    else
+                        continue;
+                } else if (y1 <= monitor.y && y2 >= monitor.y + monitor.height) {
+                    if (x1 <= monitor.x)
+                        side = Meta.Side.LEFT;
+                    else if (x2 >= monitor.x + monitor.width)
+                        side = Meta.Side.RIGHT;
+                    else
+                        continue;
+                } else if (x1 <= monitor.x)
+                    side = Meta.Side.LEFT;
+                else if (y1 <= monitor.y)
                     side = Meta.Side.TOP;
-                else if (y2 >= primary.y + primary.height)
+                else if (x2 >= monitor.x + monitor.width)
+                    side = Meta.Side.RIGHT;
+                else if (y2 >= monitor.y + monitor.height)
                     side = Meta.Side.BOTTOM;
                 else
                     continue;
-            } else if (y1 <= primary.y && y2 >= primary.y + primary.height) {
-                if (x1 <= 0)
-                    side = Meta.Side.LEFT;
-                else if (x2 >= global.screen_width)
-                    side = Meta.Side.RIGHT;
-                else
-                    continue;
-            } else if (x1 <= 0)
-                side = Meta.Side.LEFT;
-            else if (y1 <= 0)
-                side = Meta.Side.TOP;
-            else if (x2 >= global.screen_width)
-                side = Meta.Side.RIGHT;
-            else if (y2 >= global.screen_height)
-                side = Meta.Side.BOTTOM;
-            else
-                continue;
 
-            // Ensure that the strut rects goes all the way to the screen edge,
-            // as this really what muffin expects.
-            switch (side) {
-            case Meta.Side.TOP:
-                y1 = 0;
-                break;
-            case Meta.Side.BOTTOM:
-                y2 = global.screen_height;
-                break;
-            case Meta.Side.LEFT:
-                x1 = 0;
-                break;
-            case Meta.Side.RIGHT:
-                x2 = global.screen_width;
-                break;
+                let strutRect = new Meta.Rectangle({ x: x1, y: y1, width: x2 - x1, height: y2 - y1});
+                let strut = new Meta.Strut({ rect: strutRect, side: side });
+                struts.push(strut);
             }
-
-            let strutRect = new Meta.Rectangle({ x: x1, y: y1, width: x2 - x1, height: y2 - y1});
-            let strut = new Meta.Strut({ rect: strutRect, side: side });
-            struts.push(strut);
         }
 
         let enable_stage = true;

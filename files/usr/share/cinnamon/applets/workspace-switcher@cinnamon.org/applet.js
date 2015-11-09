@@ -63,7 +63,7 @@ WorkspaceGraph.prototype = {
         this.workspace_size = new Meta.Rectangle();
         this.workspace.get_work_area_all_monitors(this.workspace_size);
         this.sizeRatio = this.workspace_size.width / this.workspace_size.height;
-        let height = applet.panel_height - 6;
+        let height = applet._panelHeight - 6;
         this.actor.set_size(this.sizeRatio * height, height);
         this.graphArea.set_size(this.sizeRatio * height, height);
         this.graphArea.connect('repaint', Lang.bind(this, this.onRepaint));
@@ -93,7 +93,7 @@ WorkspaceGraph.prototype = {
         try {
             let graphThemeNode = this.graphArea.get_theme_node();
             let workspaceThemeNode = this.panelApplet.actor.get_theme_node();
-            let height = this.panelApplet.panel_height - workspaceThemeNode.get_vertical_padding();
+            let height = this.panelApplet._panelHeight - workspaceThemeNode.get_vertical_padding();
             let borderWidth = workspaceThemeNode.get_border_width(St.Side.TOP) + workspaceThemeNode.get_border_width(St.Side.BOTTOM);
             this.graphArea.set_size(this.sizeRatio * height, height - borderWidth);
             let cr = area.get_context();
@@ -263,6 +263,10 @@ MyApplet.prototype = {
         for (let i = 0; i < this.buttons.length; ++i) {
             this.buttons[i].reactive = reactive;
         }
+    },
+
+    on_panel_height_changed: function() {
+        this._createButtons();
     },
 
     hook: function(actor, event){

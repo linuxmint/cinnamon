@@ -1,3 +1,50 @@
+cinnamon (2.8.2) rosa; urgency=medium
+
+  [ Daniel Alley ]
+  * Replaced uses of the commands module with subprocess
+
+  [ Michael Webster ]
+  * st-container.c: Fix dispose method causing crashes.  priv->children was being updated during destruction of each child, causing invalid pointers when iterating thru priv->children.  Use clutter_actor_destroy_all_children to do just that, and we get no corruption.
+  * appletManager.js: fix get_object_for_uuid() when an empty index of appletObj is hit upon.
+
+  [ Clement Lefebvre ]
+  * Settings: Added link to mintlocale's input method
+  * Updated pot file
+
+ -- Clement Lefebvre <root@linuxmint.com>  Fri, 30 Oct 2015 12:03:31 +0000
+
+cinnamon (2.8.1) rosa; urgency=medium
+
+  [ Dexter Chua ]
+  * panel.js: factor out panel allocation code and prevent division-by-zero error
+
+  [ JosephMcc ]
+  * workspace-switcher: Properly resize the switcher when using custom panel sizes
+
+  [ Daniel Alley ]
+  * fixed code execution by replacing os.system() w/ subprocess.call(), pep8 formatting
+
+  [ pixunil ]
+  * Panel launchers applet: syncronize with settings with correct variable Caused issues when adding, moving or removing items
+
+  [ Michael Webster ]
+  * capi.py: Handle the failure to locate c-c-c modules more gracefully.
+  * capi.py: fix i386 platform detection.
+
+  [ Clement Lefebvre ]
+  * capi.py: Scan all relevant paths
+  * Removed unused files/generate_desktop_files file
+  * capi.py: Add support for /usr/lib64 (used in RPM distros)
+
+  [ Daniel Alley ]
+  * fixed command injection, replaced deprecate calls to "commands" module with their subprocess replacements
+  * pep8 formatting
+  * added exception handler just in case
+  * fix potential NameError
+  * pep8
+
+ -- Clement Lefebvre <root@linuxmint.com>  Mon, 26 Oct 2015 11:46:40 +0000
+
 cinnamon (2.8.0) rosa; urgency=medium
 
   [ Alexandre Rostovtsev ]

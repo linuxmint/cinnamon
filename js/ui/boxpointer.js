@@ -132,9 +132,9 @@ BoxPointer.prototype = {
      * actor will be on top of the menu)
      */
     setArrowSide: function(side) {
-	// Need not trigger any other function. Menu position is
+        // Need not trigger any other function. Menu position is
         // recalculated every time it is shown
-	this._arrowSide = side;
+        this._arrowSide = side;
     },
 
     _adjustAllocationForArrow: function(isWidth, alloc) {
@@ -544,12 +544,12 @@ BoxPointer.prototype = {
                 return St.Side.TOP;
             break;
         case St.Side.LEFT:
-            if (sourceAllocation.y2 + boxWidth > monitor.x + monitor.width &&
+            if (sourceAllocation.x2 + boxWidth > monitor.x + monitor.width &&
                 boxWidth < sourceAllocation.x1 - monitor.x)
                 return St.Side.RIGHT;
             break;
         case St.Side.RIGHT:
-            if (sourceAllocation.y1 - boxWidth < monitor.x &&
+            if (sourceAllocation.x1 - boxWidth < monitor.x &&
                 boxWidth < monitor.x + monitor.width - sourceAllocation.x2)
                 return St.Side.LEFT;
             break;

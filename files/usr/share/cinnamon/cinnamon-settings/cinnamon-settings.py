@@ -78,6 +78,7 @@ STANDALONE_MODULES = [
     [_("Printers"),                      "system-config-printer",        "cs-printer",         "hardware",       _("printers, laser, inkjet")],
     [_("Firewall"),                      "gufw",                         "cs-firewall",        "admin",          _("firewall, block, filter, programs")],
     [_("Languages"),                     "mintlocale",                   "cs-language",        "prefs",          _("language, install, foreign")],
+    [_("Input Method"),                  "mintlocale im",                "cs-input-method",    "prefs",          _("language, install, foreign, input, method, chinese, korean, japanese, typing")],
     [_("Login Window"),                  "gksu /usr/sbin/mdmsetup",      "cs-login",           "admin",          _("login, mdm, gdm, manager, user, password, startup, switch")],
     [_("Driver Manager"),                "mintdrivers",                  "cs-drivers",         "admin",          _("video, driver, wifi, card, hardware, proprietary, nvidia, radeon, nouveau, fglrx")],
     [_("Software Sources"),              "mintsources",                  "cs-sources",         "admin",          _("ppa, repository, package, source, download")],

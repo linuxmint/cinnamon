@@ -882,18 +882,18 @@ class CellRendererKeybinding(Gtk.CellRendererText):
             editable.set_text(_("Pick an accelerator"))
 
             self.event_id = self.treeview.connect( "key-release-event", self.on_key_release )
+            self.focus_id = editable.connect( "focus-out-event", self.on_focus_out )
             self.teaching = True
         else:
-            if self.event_id:
-                self.treeview.disconnect(self.event_id)
             self.ungrab()
             self.set_label()
             self.teaching = False
 
-    def on_key_release(self, widget, event):
-        widget.disconnect(self.event_id)
+    def on_focus_out(self, widget, event):
         self.ungrab()
-        self.event_id = None
+
+    def on_key_release(self, widget, event):
+        self.ungrab()
         if ((int(event.state) & 0xff & ~IGNORED_MOD_MASK) == 0) and event.keyval == Gdk.KEY_Escape:
             self.set_label(self.cur_val)
             self.teaching = False
@@ -922,3 +922,9 @@ class CellRendererKeybinding(Gtk.CellRendererText):
 
     def ungrab(self):
         self.keyboard.ungrab(Gdk.CURRENT_TIME)
+        if self.event_id:
+            self.treeview.disconnect(self.event_id)
+            self.event_id = None
+        if self.focus_id:
+            self.treeview.disconnect(self.focus_id)
+            self.focus_id = None

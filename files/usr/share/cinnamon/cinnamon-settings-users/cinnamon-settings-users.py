@@ -1,6 +1,6 @@
 #!/usr/bin/env python2
 
-import sys, os, commands
+import sys, os
 import pwd, grp
 from gi.repository import Gtk, GObject, Gio, GdkPixbuf, AccountsService
 import gettext
@@ -756,7 +756,8 @@ class Module:
             self.groups_label.set_text(", ".join(groups))
             self.builder.get_object("box_users").show()
 
-            connections = int(commands.getoutput("w -hs %s | wc -l" % user.get_user_name()))
+            # Count the number of connections for the currently logged-in user
+            connections = int(subprocess.check_output(["w", "-hs", user.get_user_name()]).count("\n"))
             if connections > 0:
                 self.builder.get_object("button_delete_user").set_sensitive(False)
                 self.builder.get_object("button_delete_user").set_tooltip_text(_("This user is currently logged in"))
