@@ -45,6 +45,7 @@ struct _CinnamonAppSystemPrivate {
 
   GHashTable *running_apps;
   GHashTable *id_to_app;
+  GHashTable *startup_wm_class_to_app;
 
   GSList *known_vendor_prefixes;
 
@@ -54,6 +55,10 @@ struct _CinnamonAppSystemPrivate {
 
 static void cinnamon_app_system_finalize (GObject *object);
 static void on_apps_tree_changed_cb (GMenuTree *tree, gpointer user_data);
+gchar *strip_extension (gchar *wm_class);
+gboolean case_insensitive_search (const char *key,
+                                  const char *value,
+                                  gpointer user_data);
 
 G_DEFINE_TYPE(CinnamonAppSystem, cinnamon_app_system, G_TYPE_OBJECT);
 
@@ -118,6 +123,10 @@ cinnamon_app_system_init (CinnamonAppSystem *self)
                                            NULL,
                                            (GDestroyNotify)g_object_unref);
 
+  priv->startup_wm_class_to_app = g_hash_table_new_full (g_str_hash, g_str_equal,
+                                                         NULL,
+                                                         (GDestroyNotify)g_object_unref);
+
 /* According to desktop spec, since our menu file is called 'cinnamon-applications', our
  * merged menu folders need to be called 'cinnamon-applications-merged'.  We'll setup the folder
  * 'applications-merged' if it doesn't exist yet, and a symlink pointing to it in the
@@ -146,6 +155,7 @@ cinnamon_app_system_finalize (GObject *object)
   g_hash_table_destroy (priv->running_apps);
   g_hash_table_destroy (priv->id_to_app);
   g_hash_table_destroy (priv->setting_id_to_app);
+  g_hash_table_destroy (priv->startup_wm_class_to_app);
   g_slist_foreach (priv->known_vendor_prefixes, (GFunc)g_free, NULL);
   g_slist_free (priv->known_vendor_prefixes);
   priv->known_vendor_prefixes = NULL;
@@ -351,6 +361,9 @@ on_apps_tree_changed_cb (GMenuTree *tree,
       GMenuTreeEntry *old_entry;
       char *prefix;
       CinnamonApp *app;
+
+      GDesktopAppInfo *info;
+      const char *startup_wm_class;
       
       prefix = get_prefix_for_entry (entry);
       
@@ -386,6 +399,26 @@ on_apps_tree_changed_cb (GMenuTree *tree,
        * string is pointed to.
        */
       g_hash_table_replace (self->priv->id_to_app, (char*)id, app);
+      // if (!gmenu_tree_entry_get_is_nodisplay_recurse (entry))
+      //    g_hash_table_replace (self->priv->visible_id_to_app, (char*)id, app);
+
+      if (old_entry)
+        {
+          GDesktopAppInfo *old_info;
+          const gchar *old_startup_wm_class;
+
+          old_info = gmenu_tree_entry_get_app_info (old_entry);
+          old_startup_wm_class = g_desktop_app_info_get_startup_wm_class (old_info);
+
+          if (old_startup_wm_class)
+            g_hash_table_remove (self->priv->startup_wm_class_to_app, old_startup_wm_class);
+        }
+
+      info = gmenu_tree_entry_get_app_info (entry);
+      startup_wm_class = g_desktop_app_info_get_startup_wm_class (info);
+      if (startup_wm_class)
+        g_hash_table_replace (self->priv->startup_wm_class_to_app,
+                              (char*)startup_wm_class, g_object_ref (app));
 
       if (old_entry)
         gmenu_tree_item_unref (old_entry);
@@ -629,6 +662,80 @@ cinnamon_app_system_lookup_heuristic_basename (CinnamonAppSystem *system,
     }
 
   return NULL;
+}
+
+gchar *
+strip_extension (gchar *wm_class)
+{
+    char *result;
+    if (g_str_has_suffix (wm_class, ".py") ||
+        g_str_has_suffix (wm_class, ".sh")) {
+            result = g_strndup (wm_class, strlen (wm_class) - 3);
+    } else {
+        result = g_strdup (wm_class);
+    }
+    return result;
+}
+
+/**
+ * cinnamon_app_system_lookup_desktop_wmclass:
+ * @system: a #CinnamonAppSystem
+ * @wmclass: (allow-none): A WM_CLASS value
+ *
+ * Find a valid application whose .desktop file, without the extension
+ * and properly canonicalized, matches @wmclass.
+ *
+ * Returns: (transfer none): A #CinnamonApp for @wmclass
+ */
+CinnamonApp *
+cinnamon_app_system_lookup_desktop_wmclass (CinnamonAppSystem *system,
+                                            const char        *wmclass)
+{
+  char *canonicalized;
+  char *desktop_file;
+  char *stripped_name;
+  CinnamonApp *app;
+
+  if (wmclass == NULL)
+    return NULL;
+
+  canonicalized = g_ascii_strdown (wmclass, -1);
+
+  stripped_name = strip_extension(canonicalized);
+
+  /* This handles "Fedora Eclipse", probably others.
+   * Note g_strdelimit is modify-in-place. */
+  g_strdelimit (stripped_name, " ", '-');
+
+  desktop_file = g_strconcat (stripped_name, ".desktop", NULL);
+
+  app = cinnamon_app_system_lookup_heuristic_basename (system, desktop_file);
+
+  g_free (canonicalized);
+  g_free (stripped_name);
+  g_free (desktop_file);
+
+  return app;
+}
+
+/**
+ * cinnamon_app_system_lookup_startup_wmclass:
+ * @system: a #CinnamonAppSystem
+ * @wmclass: (allow-none): A WM_CLASS value
+ *
+ * Find a valid application whose .desktop file contains a
+ * StartupWMClass entry matching @wmclass.
+ *
+ * Returns: (transfer none): A #CinnamonApp for @wmclass
+ */
+CinnamonApp *
+cinnamon_app_system_lookup_startup_wmclass (CinnamonAppSystem *system,
+                                            const char     *wmclass)
+{
+  if (wmclass == NULL)
+    return NULL;
+
+  return g_hash_table_lookup (system->priv->startup_wm_class_to_app, wmclass);
 }
 
 /**

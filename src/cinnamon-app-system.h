@@ -56,6 +56,11 @@ CinnamonApp       *cinnamon_app_system_lookup_app_for_path          (CinnamonApp
 CinnamonApp       *cinnamon_app_system_lookup_heuristic_basename    (CinnamonAppSystem  *system,
                                                                const char      *id);
 
+CinnamonApp       *cinnamon_app_system_lookup_startup_wmclass       (CinnamonAppSystem *system,
+                                                                     const char     *wmclass);
+CinnamonApp       *cinnamon_app_system_lookup_desktop_wmclass       (CinnamonAppSystem *system,
+                                                                     const char     *wmclass);
+
 
 GSList         *cinnamon_app_system_get_all                   (CinnamonAppSystem  *system);
 
