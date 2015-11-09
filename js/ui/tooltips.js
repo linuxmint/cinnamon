@@ -88,8 +88,10 @@ TooltipBase.prototype = {
     },
 
     _onEnterEvent: function(actor, event) {
-        this._showTimer = Mainloop.timeout_add(300, Lang.bind(this, this._onTimerComplete));
-        this.mousePosition = event.get_coords();
+        if (!this._showTimer) {
+            this._showTimer = Mainloop.timeout_add(300, Lang.bind(this, this._onTimerComplete));
+            this.mousePosition = event.get_coords();
+        }
     },
 
     _onTimerComplete: function(){
