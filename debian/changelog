@@ -1,3 +1,23 @@
+cinnamon (2.8.3) rosa; urgency=medium
+
+  [ JosephMcc ]
+  * layout.js: Rework our strut handling code to better handle multi-monitor situations
+  * effects: Set the default settings to actually match the default "Cinnamon" style so these get used on new installs
+  * desklet/boxpoiner: Don't try to correct the arrow side for the desklet menu inside desklet.js. The boxpointer handles this on it's own.
+  * CinnamonWindowTracker: Pull some upstream fixes so google chrome apps will use the proper icons in the window list
+
+  [ Lars Mueller ]
+  * Fix allocation error when STBoxLayout is align_end
+
+  [ Clement Lefebvre ]
+  * Sound applet: Fixed huge icons/artwork in HiDPI
+  * Keyboard settings: Release grab when focus is lost
+
+  [ cave ]
+  * attentionhandler suppress autofocus
+
+ -- Clement Lefebvre <root@linuxmint.com>  Mon, 09 Nov 2015 11:33:49 +0000
+
 cinnamon (2.8.2) rosa; urgency=medium
 
   [ Daniel Alley ]
