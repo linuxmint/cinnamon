@@ -839,7 +839,7 @@ _setting.prototype = {
             this._monitor_applet_var(false);
             this.obj[this.applet_var] = new_val;
             if (this.user_data) {
-                this.cb(user_data);
+                this.cb(this.user_data);
             } else {
                 this.cb();
             }
