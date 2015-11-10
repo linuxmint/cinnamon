@@ -121,7 +121,12 @@ MyApplet.prototype = {
                 global.log("Adding indicator: " + appIndicator.id);
             }
 
-            let iconActor = appIndicator.getIconActor(this._getIndicatorSize(appIndicator));
+            let size = 16;
+            if (this._scaleMode)
+                size = this._getIconSize();
+
+            let iconActor = appIndicator.getIconActor(size);
+
             iconActor._applet = this;
 
             this._shellIndicators[appIndicator.id] = iconActor;
@@ -140,10 +145,22 @@ MyApplet.prototype = {
         }
     },
 
-    _getIndicatorSize: function(appIndicator) {
-        if (this._scaleMode)
-            return this._panelHeight * ICON_SCALE_FACTOR;
-        return 16;
+    _getIconSize: function() {
+        let size;
+        let disp_size = this._panelHeight * ICON_SCALE_FACTOR;
+        if (disp_size < 22) {
+            size = 16;
+        }
+        else if (disp_size < 32) {
+            size = 22;
+        }
+        else if (disp_size < 48) {
+            size = 32;
+        }
+        else {
+            size = 48;
+        }
+        return size;
     },
 
     _onIndicatorRemoved: function(manager, appIndicator) {
@@ -174,11 +191,17 @@ MyApplet.prototype = {
     },
 
     on_panel_height_changed: function() {
-        Main.statusIconDispatcher.redisplay();
+        for (let i = 0; i < this._statusItems.length; i++) {
+            if (this._scaleMode) {
+                this._resizeStatusItem(this._statusItems[i].role, this._statusItems[i]);
+            }
+        }
         for (let id in this._shellIndicators) {
             let indicator = Main.indicatorManager.getIndicatorById(id);
             if (indicator) {
-                let size = this._getIndicatorSize(indicator);
+                let size = 16;
+                if (this._scaleMode)
+                    size = this._getIconSize();
                 this._shellIndicators[id].setSize(size);
             }
         }
@@ -215,6 +238,7 @@ MyApplet.prototype = {
                 icon.get_parent().remove_child(icon);
 
             icon.obsolete = false;
+            icon.role = role;
             this._statusItems.push(icon);
 
             if (["pidgin"].indexOf(role) != -1) {
@@ -296,24 +320,11 @@ MyApplet.prototype = {
         if (icon.obsolete == true) {
             return;
         }
-        let size;
-        let disp_size = this._panelHeight * ICON_SCALE_FACTOR;
         if (["shutter", "filezilla"].indexOf(role) != -1) {
             global.log("Not resizing " + role + " as it's known to be buggy (" + icon.get_width() + "x" + icon.get_height() + "px)");
         }
         else {
-            if (disp_size < 22) {
-                size = 16;
-            }
-            else if (disp_size < 32) {
-                size = 22;
-            }
-            else if (disp_size < 48) {
-                size = 32;
-            }
-            else {
-                size = 48;
-            }
+            let size = this._getIconSize();
             icon.set_size(size, size);
             global.log("Resized " + role + " with normalized size (" + icon.get_width() + "x" + icon.get_height() + "px)");
             //Note: dropbox doesn't scale, even though we resize it...
