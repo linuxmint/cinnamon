@@ -125,7 +125,6 @@ MyApplet.prototype = {
                 // We've got an applet for that
                 appIndicator.setInBlacklist(true);
                 global.log("Hiding indicator (role already handled): " + appIndicator.id);
-                return;
             }
             else if (["quassel"].indexOf(appIndicator.id) != -1) {
                 // Blacklist some of the icons

@@ -329,7 +329,7 @@ AppIndicator.prototype = {
     getIconActor: function(size) {
         let icon = new IconActor(this, size);
         icon.actor.visible = !this._isInBlacklist;
-        return new IconActor(this, size);
+        return icon;
     },
 
     //async because we may need to check the presence of a menubar object as well as the creation is async.
