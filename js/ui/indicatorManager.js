@@ -321,12 +321,14 @@ AppIndicator.prototype = {
         return this._isInBlacklist;
     },
 
-    setInBlacklist: function() {
-        this._isInBlacklist = true;
+    setInBlacklist: function(blackList) {
+        this._isInBlacklist = blackList;
         this.emit('blacklist');
     },
 
     getIconActor: function(size) {
+        let icon = new IconActor(this, size);
+        icon.actor.visible = !this._isInBlacklist;
         return new IconActor(this, size);
     },
 

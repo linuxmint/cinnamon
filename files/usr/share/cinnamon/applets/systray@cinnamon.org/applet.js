@@ -69,8 +69,9 @@ MyApplet.prototype = {
         this._shellIndicators = {};
         this.menuFactory = new IndicatorMenuFactory();
         this.menuManager = new PopupMenu.PopupMenuManager(this);
-        this.signalAdded = 0;
-        this.signalRemoved = 0;
+        this._signalAdded = 0;
+        this._signalRemoved = 0;
+        this._signalChanged = 0;
     },
 
     _addIndicatorSupport: function() {
@@ -79,25 +80,41 @@ MyApplet.prototype = {
             let appIndicator = Main.indicatorManager.getIndicatorById(currentIndicators[pos]);
             this._onIndicatorAdded(Main.indicatorManager, appIndicator);
         }
-        if (this.signalAdded == 0)
-            this.signalAdded = Main.indicatorManager.connect('indicator-added', Lang.bind(this, this._onIndicatorAdded));
-        if (this.signalRemoved == 0)
-            this.signalRemoved = Main.indicatorManager.connect('indicator-removed', Lang.bind(this, this._onIndicatorRemoved));
+        if (this._signalAdded == 0)
+            this._signalAdded = Main.indicatorManager.connect('indicator-added', Lang.bind(this, this._onIndicatorAdded));
+        if (this._signalRemoved == 0)
+            this._signalRemoved = Main.indicatorManager.connect('indicator-removed', Lang.bind(this, this._onIndicatorRemoved));
+        if (this._signalChanged == 0)
+            this._signalChanged = Main.systrayManager.connect('changed', Lang.bind(this, this._onSystrayManagerChanged));
     },
 
     _removeIndicatorSupport: function() {
-        if (this.signalAdded) {
-            Main.indicatorManager.disconnect(this.signalAdded);
-            this.signalAdded = 0;
+        if (this._signalAdded) {
+            Main.indicatorManager.disconnect(this._signalAdded);
+            this._signalAdded = 0;
         }
-        if (this.signalRemoved) {
+        if (this._signalRemoved) {
             Main.indicatorManager.disconnect(this.signalRemoved);
-            this.signalRemoved = 0;
+            this._signalRemoved = 0;
+        }
+        if (this._signalChanged) {
+            Main.systrayManager.disconnect(this.signalChanged);
+            this._signalChanged = 0;
         }
         this._shellIndicators.forEach(function(iconActor) {
             iconActor.destroy();
         });
         this._shellIndicators = {};
+    },
+
+    _onSystrayManagerChanged: function(manager, appIndicator) {
+        let hiddenIcons = Main.systrayManager.getRoles();
+        for (let id in this._shellIndicators) {
+            let appIndicator = Main.indicatorManager.getIndicatorById(id);
+            if (appIndicator) {
+                appIndicator.setInBlacklist(hiddenIcons.indexOf(appIndicator.id) != -1);
+            }
+        }
     },
 
     _onIndicatorAdded: function(manager, appIndicator) {
@@ -106,6 +123,7 @@ MyApplet.prototype = {
 
             if (hiddenIcons.indexOf(appIndicator.id) != -1 ) {
                 // We've got an applet for that
+                appIndicator.setInBlacklist(true);
                 global.log("Hiding indicator (role already handled): " + appIndicator.id);
                 return;
             }
