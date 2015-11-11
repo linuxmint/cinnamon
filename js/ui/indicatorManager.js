@@ -104,11 +104,15 @@ function IndicatorManager() {
 IndicatorManager.prototype = {
     
     _init: function() {
-        this._indicators = {};
-        if (global.settings.get_boolean("enable-indicators")) {
-            this.statusNotifierWatcher = new StatusNotifierWatcher();
-            this.statusNotifierWatcher.connect('indicator-dispatch', Lang.bind(this, this._onIndicatorDispatch));
-        }
+        this._indicatorsSignals = null;
+        this._enable = false;
+        this.statusNotifierWatcher = null;
+        this.setEnabled(global.settings.get_boolean("enable-indicators"));
+        global.settings.connect('changed::enable-indicators', Lang.bind(this, this._changedEnableIndicators));
+    },
+
+    _changedEnableIndicators: function() {
+        this.setEnabled(global.settings.get_boolean("enable-indicators"));
     },
 
     // handlers = { "signal": handler }
@@ -130,15 +134,14 @@ IndicatorManager.prototype = {
     getIndicatorIds: function() {
         let list = [];
         for (let id in this._indicators) {
-            if (this._indicators[id].indicator.isReady)
-                list.push(id);
+            list.push(id);
         }
         return list;
     },
 
     getIndicatorById: function(id) {
-        if ((id in this._indicators) && (this._indicators[id].indicator.isReady))
-            return this._indicators[id].indicator;
+        if (id in this._indicators)
+            return this._indicators[id];
         return null;
     },
 
@@ -162,10 +165,8 @@ IndicatorManager.prototype = {
             signalManager.connect(appIndicator, 'reset', this._onIndicatorChanged);
             signalManager.connect(appIndicator, 'overlay-icon', this._onIndicatorChanged);
             signalManager.connect(appIndicator, 'icon', this._onIndicatorChanged);*/
-            this._indicators[id] = {
-                indicator: appIndicator,
-                signals: signalsIndicator
-            };
+            this._indicatorsSignals[id] = signalsIndicator;
+
             if (appIndicator.isReady) {
                 this._onIndicatorReady(appIndicator);
             }
@@ -173,20 +174,18 @@ IndicatorManager.prototype = {
     },
 
     _onIndicatorReady: function(appIndicator) {
-        let id = appIndicator.getNotifierId();
-        if ((id != appIndicator.id) && !(appIndicator.id in this._indicators)) {
-            this._indicators[appIndicator.id] = this._indicators[id];
-            delete this._indicators[id];
-        }
+        this._indicators[appIndicator.id] = appIndicator;
         this.emit('indicator-added', appIndicator);
     },
 
     _onIndicatorDestroy: function(appIndicator) {
+        let notId = appIndicator.getNotifierId();
+        if (notId in this._indicatorsSignals) {
+            this._disconnectSignals(appIndicator, this._indicatorsSignals[notId]);
+            delete this._indicators[notId];
+        }
         if (appIndicator.id in this._indicators) {
-            let properties = this._indicators[appIndicator.id];
-            this._disconnectSignals(appIndicator, properties.signals);
             delete this._indicators[appIndicator.id];
-            //properties.signals.disconnectAllSignals();
             this.emit('indicator-removed', appIndicator);
         }
     },
@@ -195,9 +194,32 @@ IndicatorManager.prototype = {
         this.emit('indicator-changed', appIndicator);
     },
     
+    setEnabled: function(enable) {
+        if(this._enable != enable) {
+            this._enable = enable;
+            if(this._enable) {
+                this._indicators = {};
+                this._indicatorsSignals = {};
+                this._enable = true;
+                if (global.settings.get_boolean("enable-indicators")) {
+                    this.statusNotifierWatcher = new StatusNotifierWatcher();
+                    this.statusNotifierWatcher.connect('indicator-dispatch', Lang.bind(this, this._onIndicatorDispatch));
+                }
+            } else {
+                if (this.statusNotifierWatcher)
+                    this.statusNotifierWatcher.destroy();
+                this._indicators = {};
+                this._indicatorsSignals = null;
+                this.statusNotifierWatcher = null;
+            }
+        }
+    },
+
     destroy: function() {
         if (this.statusNotifierWatcher)
             this.statusNotifierWatcher.destroy();
+        this._indicatorsSignals = null;
+        this._indicators = null;
         this.statusNotifierWatcher = null;
     }
 };
@@ -219,77 +241,103 @@ AppIndicator.prototype = {
     _init: function(busName, object) {
         this._busName = busName;
         this._object = object;
-
-        this._proxy = new XmlLessDBusProxy({
-            connection: Gio.DBus.session,
-            name: busName,
-            path: object,
-            interface: 'org.kde.StatusNotifierItem',
-            propertyWhitelist: [ //keep sorted alphabetically, please
-                'AttentionIconName',
-                'AttentionIconPixmap',
-                'Category',
-                'IconName',
-                'IconPixmap',
-                'IconThemePath',
-                'Id',
-                'Menu',
-                'OverlayIconName',
-                'OverlayIconPixmap',
-                'Status',
-                'Title',
-                'ToolTip',
-                'XAyatanaLabel'
-            ],
-            onReady: Lang.bind(this, function() {
-                this.isReady = true;
-                this.emit('ready');
-            })
-        });
-
-        this._proxy.connect('-property-changed', Lang.bind(this, this._onPropertyChanged));
-        this._proxy.connect('-signal', Lang.bind(this, this._translateNewSignals));
-
+        this._proxy = null;
         this._isInBlacklist = false;
+        this._initialize();
+    },
+
+    _initialize: function() {
+        if ((!this._proxy) && (!this._isInBlacklist)) {
+            this._proxy = new XmlLessDBusProxy({
+                connection: Gio.DBus.session,
+                name: this._busName,
+                path: this._object,
+                interface: 'org.kde.StatusNotifierItem',
+                propertyWhitelist: [ //keep sorted alphabetically, please
+                    'AttentionIconName',
+                    'AttentionIconPixmap',
+                    'Category',
+                    'IconName',
+                    'IconPixmap',
+                    'IconThemePath',
+                    'Id',
+                    'Menu',
+                    'OverlayIconName',
+                    'OverlayIconPixmap',
+                    'Status',
+                    'Title',
+                    'ToolTip',
+                    'XAyatanaLabel'
+                ],
+                onReady: Lang.bind(this, function() {
+                    this.isReady = true;
+                    this.emit('ready');
+                    Main.notify("ready");
+                })
+            });
+            this._proxy.connect('-property-changed', Lang.bind(this, this._onPropertyChanged));
+            this._proxy.connect('-signal', Lang.bind(this, this._translateNewSignals));
+        }
+    },
+
+    _finalize: function() {
+        if(this._proxy) {
+            this._proxy.destroy();
+            this._proxy = null;
+            this.isReady = false;
+            this.emit('finalized');
+        }
     },
 
     // The Author of the spec didn't like the PropertiesChanged signal, so he invented his own
     _translateNewSignals: function(proxy, signal, params) {
-        if (signal.substr(0, 3) == 'New') {
-            let prop = signal.substr(3);
+        if(this._proxy) {
+            if (signal.substr(0, 3) == 'New') {
+                let prop = signal.substr(3);
 
-            if (this._proxy.propertyWhitelist.indexOf(prop) > -1)
-                this._proxy.invalidateProperty(prop);
+                if (this._proxy.propertyWhitelist.indexOf(prop) > -1)
+                    this._proxy.invalidateProperty(prop);
 
-            if (this._proxy.propertyWhitelist.indexOf(prop + 'Pixmap') > -1)
-                this._proxy.invalidateProperty(prop + 'Pixmap');
+                if (this._proxy.propertyWhitelist.indexOf(prop + 'Pixmap') > -1)
+                    this._proxy.invalidateProperty(prop + 'Pixmap');
 
-            if (this._proxy.propertyWhitelist.indexOf(prop + 'Name') > -1)
-                this._proxy.invalidateProperty(prop + 'Name');
-        } else if (signal == 'XAyatanaNewLabel') {
-            // and the ayatana guys made sure to invent yet another way of composing these signals...
-            this._proxy.invalidateProperty('XAyatanaLabel');
+                if (this._proxy.propertyWhitelist.indexOf(prop + 'Name') > -1)
+                    this._proxy.invalidateProperty(prop + 'Name');
+            } else if (signal == 'XAyatanaNewLabel') {
+                // and the ayatana guys made sure to invent yet another way of composing these signals...
+                this._proxy.invalidateProperty('XAyatanaLabel');
+            }
         }
     },
 
     //public property getters
     get title() {
+        if(!this._proxy)
+            return null
         return this._proxy.cachedProperties.Title;
     },
 
     get id() {
+        if(!this._proxy)
+            return null;
         return this._proxy.cachedProperties.Id;
     },
 
     get status() {
+        if(!this._proxy)
+            return null;
         return this._proxy.cachedProperties.Status;
     },
 
     get label() {
+        if(!this._proxy)
+            return null;
         return this._proxy.cachedProperties.XAyatanaLabel;
     },
 
     get attentionIcon() {
+        if(!this._proxy)
+            return null;
         return [
             this._proxy.cachedProperties.AttentionIconName,
             this._proxy.cachedProperties.AttentionIconPixmap,
@@ -298,6 +346,8 @@ AppIndicator.prototype = {
     },
 
     get icon() {
+        if(!this._proxy)
+            return null;
         return [
             this._proxy.cachedProperties.IconName,
             this._proxy.cachedProperties.IconPixmap,
@@ -306,6 +356,8 @@ AppIndicator.prototype = {
     },
 
     get overlayIcon() {
+        if(!this._proxy)
+            return null;
         return [
             this._proxy.cachedProperties.OverlayIconName,
             this._proxy.cachedProperties.OverlayIconPixmap,
@@ -322,8 +374,15 @@ AppIndicator.prototype = {
     },
 
     setInBlacklist: function(blackList) {
-        this._isInBlacklist = blackList;
-        this.emit('blacklist');
+        if(this._isInBlacklist != blackList) {
+            this._isInBlacklist = blackList;
+            if (!this._isInBlacklist) {
+                Main.notify("init")
+                this._initialize();
+            }
+            else if (this._isInBlacklist)
+                this._finalize();
+        }
     },
 
     getIconActor: function(size) {
@@ -334,15 +393,17 @@ AppIndicator.prototype = {
 
     //async because we may need to check the presence of a menubar object as well as the creation is async.
     createMenuClientAsync: function(clb) {
-        let path = this._proxy.cachedProperties.Menu || "/MenuBar";
-        this._validateMenu(this._busName, path, function(correctly, name, path) {
-            if (correctly) {
-                // global.log("creating menu on "+[name, path]);
-                clb(new DBusMenu.DBusClient(name, path));
-            } else {
-                clb(null);
-            }
-        });
+        if(this._proxy) {
+            let path = this._proxy.cachedProperties.Menu || "/MenuBar";
+            this._validateMenu(this._busName, path, function(correctly, name, path) {
+                if (correctly) {
+                    // global.log("creating menu on "+[name, path]);
+                    clb(new DBusMenu.DBusClient(name, path));
+                } else {
+                    clb(null);
+                }
+            });
+        }
     },
 
     _validateMenu: function(bus, path, callback) {
@@ -397,16 +458,20 @@ AppIndicator.prototype = {
 
     // triggers a reload of all properties
     reset: function(triggerReady) {
-        this._proxy.invalidateAllProperties(Lang.bind(this, function() {
-            this.emit('reset');
-        }));
+        if(this._proxy) {
+            this._proxy.invalidateAllProperties(Lang.bind(this, function() {
+                this.emit('reset');
+            }));
+        }
     },
 
     destroy: function() {
+        if(this._proxy) {
+            this._proxy.destroy();
+            this._proxy = null;
+            this.isReady = false;
+        }
         this.emit('destroy');
-
-        this.disconnectAll();
-        this._proxy.destroy();
     },
 
     open: function() {
@@ -415,28 +480,33 @@ AppIndicator.prototype = {
         // possible on cinnamon. Luckily for Gnome Shell, the Activate method usually works fine.
         // parameters are "an hint to the item where to show eventual windows" [sic]
         // ... and don't seem to have any effect.
-        this._proxy.call({
-            name: 'Activate',
-            paramTypes: 'ii',
-            paramValues: [0, 0]
-            // we don't care about the result
-        });
+        if(this._proxy) {
+            this._proxy.call({
+                name: 'Activate',
+                paramTypes: 'ii',
+                paramValues: [0, 0]
+                // we don't care about the result
+            });
+        }
     },
 
     scroll: function(dx, dy) {
-        if (dx != 0)
-            this._proxy.call({
-                name: 'Scroll',
-                paramTypes: 'is',
-                paramValues: [ Math.floor(dx), 'horizontal' ]
-            });
-
-        if (dy != 0)
-            this._proxy.call({
-                name: 'Scroll',
-                paramTypes: 'is',
-                paramValues: [ Math.floor(dy), 'vertical' ]
-            });
+        if(this._proxy) {
+            if (dx != 0) {
+                this._proxy.call({
+                    name: 'Scroll',
+                    paramTypes: 'is',
+                    paramValues: [ Math.floor(dx), 'horizontal' ]
+                });
+            }
+            if (dy != 0) {
+                this._proxy.call({
+                    name: 'Scroll',
+                    paramTypes: 'is',
+                    paramValues: [ Math.floor(dy), 'vertical' ]
+                });
+            }
+        }
     }
 };
 Signals.addSignalMethods(AppIndicator.prototype);
@@ -538,7 +608,8 @@ StatusNotifierWatcher.prototype = {
         Gio.DBus.session.unwatch_name(this._nameWatcher[id]);
         delete this._nameWatcher[id];
         this._dbusImpl.emit_signal('ServiceUnregistered', GLib.Variant.new('(s)', id));
-        this._dbusImpl.emit_property_changed('RegisteredStatusNotifierItems', GLib.Variant.new('as', this.RegisteredStatusNotifierItems));
+        this._dbusImpl.emit_property_changed('RegisteredStatusNotifierItems',
+                         GLib.Variant.new('as', this.RegisteredStatusNotifierItems));
     },
 
     RegisterNotificationHost: function(service) {
@@ -553,7 +624,8 @@ StatusNotifierWatcher.prototype = {
     ProtocolVersion: function() {
         // "The version of the protocol the StatusNotifierWatcher instance implements." [sic]
         // in what syntax?
-        return "%s/%s (KDE; compatible; mostly) Cinnamon/%s".format("systray-indicator@cinnamon.org", "0.1", CinnamonConfig.PACKAGE_VERSION);
+        let message = "%s/%s (KDE; compatible; mostly) Cinnamon/%s";
+        return message.format("systray-indicator@cinnamon.org", "0.1", CinnamonConfig.PACKAGE_VERSION);
     },
 
     get RegisteredStatusNotifierItems() {
@@ -611,20 +683,24 @@ XmlLessDBusProxy.prototype = {
         this.cachedProperties = {};
 
         this.invalidateAllProperties(params.onReady);
-        this._signalId = this.connection.signal_subscribe(this.name,
-                                                          this.interface,
-                                                          null,
-                                                          this.path,
-                                                          null,
-                                                          Gio.DBusSignalFlags.NONE,
-                                                          this._onSignal.bind(this));
-        this._propChangedId = this.connection.signal_subscribe(this.name,
-                                                               'org.freedesktop.DBus.Properties',
-                                                               'PropertiesChanged',
-                                                               this.path,
-                                                               null,
-                                                               Gio.DBusSignalFlags.NONE,
-                                                               this._onPropertyChanged.bind(this))
+        this._signalId = this.connection.signal_subscribe(
+            this.name,
+            this.interface,
+            null,
+            this.path,
+            null,
+            Gio.DBusSignalFlags.NONE,
+            this._onSignal.bind(this)
+        );
+        this._propChangedId = this.connection.signal_subscribe(
+            this.name,
+            'org.freedesktop.DBus.Properties',
+            'PropertiesChanged',
+            this.path,
+            null,
+            Gio.DBusSignalFlags.NONE,
+            this._onPropertyChanged.bind(this)
+        );
     },
 
     setProperty: function(propertyName, valueVariant) {
@@ -636,16 +712,18 @@ XmlLessDBusProxy.prototype = {
     // This is useful if the interface notifies the consumer of changed properties
     // in unorthodox ways or if you changed the whitelist
     invalidateProperty: function(propertyName, callback) {
-        this.connection.call(this.name,
-                             this.path,
-                             'org.freedesktop.DBus.Properties',
-                             'Get',
-                             GLib.Variant.new('(ss)', [ this.interface, propertyName ]),
-                             GLib.VariantType.new('(v)'),
-                             Gio.DBusCallFlags.NONE,
-                             -1,
-                             null,
-                             Lang.bind(this, this._getPropertyCallback, propertyName, callback));
+        this.connection.call(
+            this.name,
+            this.path,
+            'org.freedesktop.DBus.Properties',
+            'Get',
+            GLib.Variant.new('(ss)', [ this.interface, propertyName ]),
+            GLib.VariantType.new('(v)'),
+            Gio.DBusCallFlags.NONE,
+            -1,
+            null,
+            Lang.bind(this, this._getPropertyCallback, propertyName, callback)
+        );
     },
 
     _getPropertyCallback: function(conn, result, propertyName, callback) {
@@ -732,33 +810,32 @@ XmlLessDBusProxy.prototype = {
                 global.logWarning("XmlLessDBusProxy::call: DBus error: "+error);
             };
 
-        this.connection.call(this.name,
-                             this.path,
-                             this.interface,
-                             params.name,
-                             params.params,
-                             GLib.VariantType.new('(' + params.returnTypes + ')'),
-                             Gio.DBusCallFlags.NONE,
-                             -1,
-                             null,
-                             function(conn, result) {
-                                 try {
-                                     let returnVariant = conn.call_finish(result)
-                                     params.onSuccess(returnVariant.deep_unpack())
-                                 } catch (e) {
-                                     params.onError(e)
-                                 }
-                             });
+        this.connection.call(
+            this.name,
+            this.path,
+            this.interface,
+            params.name,
+            params.params,
+            GLib.VariantType.new('(' + params.returnTypes + ')'),
+            Gio.DBusCallFlags.NONE,
+            -1,
+            null,
+            function(conn, result) {
+                try {
+                    let returnVariant = conn.call_finish(result);
+                    params.onSuccess(returnVariant.deep_unpack());
+                } catch (e) {
+                    params.onError(e);
+                }
+            }
+        );
 
     },
 
     destroy: function() {
-        this.emit('-destroy');
-
-        this.disconnectAll();
-
         this.connection.signal_unsubscribe(this._signalId);
         this.connection.signal_unsubscribe(this._propChangedId);
+        this.emit('-destroy');
     }
 };
 Signals.addSignalMethods(XmlLessDBusProxy.prototype);
@@ -798,14 +875,14 @@ IconActor.prototype = {
         //this._signalManager.connect(this._indicator, 'overlay-icon', this._updateOverlayIcon);
         //this._signalManager.connect(this._indicator, 'ready', this._invalidateIcon);
         //this._signalManager.connect(this._indicator, 'status', this._updatedStatus);
-        //this._signalManager.connect(this._indicator, 'blacklist', this._updatedBlacklist);
-        //this._signalManager.connect(this._indicator, 'blacklist', this.destroy);
+        //this._signalManager.connect(this._indicator, 'finalized', this.destroy);
+        //this._signalManager.connect(this._indicator, 'destroy', this.destroy);
         this._signalsIndicator = this._connectAndSaveId(this._indicator, {
             'icon'        : Lang.bind(this, this._updateIcon),
             'overlay-icon': Lang.bind(this, this._updateOverlayIcon),
             'ready'       : Lang.bind(this, this._invalidateIcon),
             'status'      : Lang.bind(this, this._updatedStatus),
-            'blacklist'   : Lang.bind(this, this._updatedBlacklist),
+            'finalized'   : Lang.bind(this, this.destroy),
             'destroy'     : Lang.bind(this, this.destroy),
         });
 
@@ -845,11 +922,6 @@ IconActor.prototype = {
             this._iconSize = size;
             this._invalidateIcon();
         }
-    },
-
-    _updatedBlacklist: function() {
-        if (this._indicator.isInBlacklist())
-            this.actor.visible = false;
     },
 
     _updatedStatus: function() {      

@@ -94,26 +94,26 @@ MyApplet.prototype = {
             this._signalAdded = 0;
         }
         if (this._signalRemoved) {
-            Main.indicatorManager.disconnect(this.signalRemoved);
+            Main.indicatorManager.disconnect(this._signalRemoved);
             this._signalRemoved = 0;
         }
         if (this._signalChanged) {
-            Main.systrayManager.disconnect(this.signalChanged);
+            Main.systrayManager.disconnect(this._signalChanged);
             this._signalChanged = 0;
         }
-        this._shellIndicators.forEach(function(iconActor) {
+        /*this._shellIndicators.forEach(function(iconActor) {
             iconActor.destroy();
-        });
-        this._shellIndicators = {};
+        });*/
+        //this._shellIndicators = {};
     },
 
-    _onSystrayManagerChanged: function(manager, appIndicator) {
+    _onSystrayManagerChanged: function(manager) {
         let hiddenIcons = Main.systrayManager.getRoles();
-        for (let id in this._shellIndicators) {
+        let currentIndicators = Main.indicatorManager.getIndicatorIds();
+        for (let pos in currentIndicators) {
+            let id = currentIndicators[pos];
             let appIndicator = Main.indicatorManager.getIndicatorById(id);
-            if (appIndicator) {
-                appIndicator.setInBlacklist(hiddenIcons.indexOf(appIndicator.id) != -1);
-            }
+            appIndicator.setInBlacklist(hiddenIcons.indexOf(id) != -1);
         }
     },
 
@@ -125,6 +125,7 @@ MyApplet.prototype = {
                 // We've got an applet for that
                 appIndicator.setInBlacklist(true);
                 global.log("Hiding indicator (role already handled): " + appIndicator.id);
+                //return;
             }
             else if (["quassel"].indexOf(appIndicator.id) != -1) {
                 // Blacklist some of the icons
@@ -143,10 +144,10 @@ MyApplet.prototype = {
                 size = this._getIconSize();
 
             let iconActor = appIndicator.getIconActor(size);
-
             iconActor._applet = this;
 
             this._shellIndicators[appIndicator.id] = iconActor;
+            this._signalManager.connect(iconActor.actor, 'destroy', this._onIndicatorIconDestroy);
 
             this.actor.add_actor(iconActor.actor);
             appIndicator.createMenuClientAsync(Lang.bind(this, function(client) {
@@ -159,6 +160,15 @@ MyApplet.prototype = {
                     iconActor.setMenu(newMenu);
                 }
             }));
+        }
+    },
+
+    _onIndicatorIconDestroy: function(actor) {
+        for (let id in this._shellIndicators) {
+            if(this._shellIndicators[id].actor == actor) {
+                delete this._shellIndicators[id];
+                break;
+            }
         }
     },
 
@@ -193,8 +203,9 @@ MyApplet.prototype = {
     },
 
     on_applet_removed_from_panel: function () {
-        this._signalManager.disconnectAllSignals();
+        Main.notify("removeddddd");
         this._removeIndicatorSupport();
+        this._signalManager.disconnectAllSignals();
     },
 
     on_applet_added_to_panel: function() {
@@ -208,11 +219,7 @@ MyApplet.prototype = {
     },
 
     on_panel_height_changed: function() {
-        for (let i = 0; i < this._statusItems.length; i++) {
-            if (this._scaleMode) {
-                this._resizeStatusItem(this._statusItems[i].role, this._statusItems[i]);
-            }
-        }
+        Main.statusIconDispatcher.redisplay();
         for (let id in this._shellIndicators) {
             let indicator = Main.indicatorManager.getIndicatorById(id);
             if (indicator) {
@@ -255,7 +262,6 @@ MyApplet.prototype = {
                 icon.get_parent().remove_child(icon);
 
             icon.obsolete = false;
-            icon.role = role;
             this._statusItems.push(icon);
 
             if (["pidgin"].indexOf(role) != -1) {
@@ -337,6 +343,8 @@ MyApplet.prototype = {
         if (icon.obsolete == true) {
             return;
         }
+        let size;
+        let disp_size = this._panelHeight * ICON_SCALE_FACTOR;
         if (["shutter", "filezilla"].indexOf(role) != -1) {
             global.log("Not resizing " + role + " as it's known to be buggy (" + icon.get_width() + "x" + icon.get_height() + "px)");
         }
