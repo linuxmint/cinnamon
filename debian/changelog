@@ -1,3 +1,20 @@
+cinnamon (2.8.4) rosa; urgency=medium
+
+  [ Lars Mueller ]
+  * Fix a timer issue in TooltipBase In rare cases, two enter events occurred without a leave event in between, leaving an orphaned _showTimer behind
+  * Same fix for the overriden _onEnterEvent in the window list applet as in TooltipBase
+
+  [ pixunil ]
+  * Sound applet: Fetch the status of Loop and Shuffle at the beginning, not just on update
+
+  [ Björn Richter ]
+  * Fix: user_data is not passed to callback
+
+  [ Michael Webster ]
+  * js/ui/keybindings.js: Remove idle function for media keys.  This is implemented in muffin now, for *all* muffin-managed keybindings.
+
+ -- Clement Lefebvre <root@linuxmint.com>  Wed, 11 Nov 2015 19:00:34 +0000
+
 cinnamon (2.8.3) rosa; urgency=medium
 
   [ JosephMcc ]
