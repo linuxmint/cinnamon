@@ -101,6 +101,9 @@ MyApplet.prototype = {
             Main.systrayManager.disconnect(this._signalChanged);
             this._signalChanged = 0;
         }
+        for (let id in this._shellIndicators) {
+            this._shellIndicators[id].destroy();
+        }
     },
 
     _onSystrayManagerChanged: function(manager) {
