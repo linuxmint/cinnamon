@@ -101,10 +101,6 @@ MyApplet.prototype = {
             Main.systrayManager.disconnect(this._signalChanged);
             this._signalChanged = 0;
         }
-        /*this._shellIndicators.forEach(function(iconActor) {
-            iconActor.destroy();
-        });*/
-        //this._shellIndicators = {};
     },
 
     _onSystrayManagerChanged: function(manager) {
@@ -125,7 +121,6 @@ MyApplet.prototype = {
                 // We've got an applet for that
                 appIndicator.setInBlacklist(true);
                 global.log("Hiding indicator (role already handled): " + appIndicator.id);
-                //return;
             }
             else if (["quassel"].indexOf(appIndicator.id) != -1) {
                 // Blacklist some of the icons
@@ -203,7 +198,6 @@ MyApplet.prototype = {
     },
 
     on_applet_removed_from_panel: function () {
-        Main.notify("removeddddd");
         this._removeIndicatorSupport();
         this._signalManager.disconnectAllSignals();
     },
@@ -219,7 +213,11 @@ MyApplet.prototype = {
     },
 
     on_panel_height_changed: function() {
-        Main.statusIconDispatcher.redisplay();
+        for (let i = 0; i < this._statusItems.length; i++) {
+            if (this._scaleMode) {
+                this._resizeStatusItem(this._statusItems[i].role, this._statusItems[i]);
+            }
+        }
         for (let id in this._shellIndicators) {
             let indicator = Main.indicatorManager.getIndicatorById(id);
             if (indicator) {
@@ -262,6 +260,7 @@ MyApplet.prototype = {
                 icon.get_parent().remove_child(icon);
 
             icon.obsolete = false;
+            icon.role = role;
             this._statusItems.push(icon);
 
             if (["pidgin"].indexOf(role) != -1) {
@@ -343,8 +342,6 @@ MyApplet.prototype = {
         if (icon.obsolete == true) {
             return;
         }
-        let size;
-        let disp_size = this._panelHeight * ICON_SCALE_FACTOR;
         if (["shutter", "filezilla"].indexOf(role) != -1) {
             global.log("Not resizing " + role + " as it's known to be buggy (" + icon.get_width() + "x" + icon.get_height() + "px)");
         }

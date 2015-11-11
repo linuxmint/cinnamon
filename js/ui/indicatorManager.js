@@ -272,7 +272,6 @@ AppIndicator.prototype = {
                 onReady: Lang.bind(this, function() {
                     this.isReady = true;
                     this.emit('ready');
-                    Main.notify("ready");
                 })
             });
             this._proxy.connect('-property-changed', Lang.bind(this, this._onPropertyChanged));
@@ -377,7 +376,6 @@ AppIndicator.prototype = {
         if(this._isInBlacklist != blackList) {
             this._isInBlacklist = blackList;
             if (!this._isInBlacklist) {
-                Main.notify("init")
                 this._initialize();
             }
             else if (this._isInBlacklist)
