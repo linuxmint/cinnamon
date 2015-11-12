@@ -115,7 +115,7 @@ WorkspaceGraph.prototype = {
             windows = windows.filter( Main.isInteresting );
             windows = windows.filter(
                 function(w) {
-                    return !w.is_skip_taskbar() && !w.minimized && !(w.maximized_horizontally && w.maximized_vertically);
+                    return !w.is_skip_taskbar() && !w.minimized;
                 });
             windows.sort(this.sortWindowsByUserTime);
 
