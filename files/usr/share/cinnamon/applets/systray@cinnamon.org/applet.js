@@ -71,72 +71,47 @@ MyApplet.prototype = {
         this.menuManager = new PopupMenu.PopupMenuManager(this);
         this._signalAdded = 0;
         this._signalRemoved = 0;
-        this._signalChanged = 0;
     },
 
     _addIndicatorSupport: function() {
-        let currentIndicators = Main.indicatorManager.getIndicatorIds();
+        let manager = Main.indicatorManager;
+
+        // Blacklist some of the icons
+        // quassel: The proper icon in Quassel is "QuasselIRC",
+        // this is a fallback icon which Quassel launches when it fails to detect
+        // our indicator support (i.e. when Cinnamon is restarted for instance)
+        // The problem is.. Quassel doesn't kill that icon when it creates QuasselIRC again..
+        manager.insertInBlackList("quassel");
+
+        let currentIndicators = manager.getIndicatorIds();
         for (let pos in currentIndicators) {
-            let appIndicator = Main.indicatorManager.getIndicatorById(currentIndicators[pos]);
-            this._onIndicatorAdded(Main.indicatorManager, appIndicator);
+            if(!manager.isInBlackList(currentIndicators[pos])) {
+                let appIndicator = manager.getIndicatorById(currentIndicators[pos]);
+                this._onIndicatorAdded(manager, appIndicator);
+            }
         }
         if (this._signalAdded == 0)
-            this._signalAdded = Main.indicatorManager.connect('indicator-added', Lang.bind(this, this._onIndicatorAdded));
+            this._signalAdded = manager.connect('indicator-added', Lang.bind(this, this._onIndicatorAdded));
         if (this._signalRemoved == 0)
-            this._signalRemoved = Main.indicatorManager.connect('indicator-removed', Lang.bind(this, this._onIndicatorRemoved));
-        if (this._signalChanged == 0)
-            this._signalChanged = Main.systrayManager.connect('changed', Lang.bind(this, this._onSystrayManagerChanged));
+            this._signalRemoved = manager.connect('indicator-removed', Lang.bind(this, this._onIndicatorRemoved));
     },
 
     _removeIndicatorSupport: function() {
-        if (this._signalAdded) {
+        if (this._signalAdded != 0) {
             Main.indicatorManager.disconnect(this._signalAdded);
             this._signalAdded = 0;
         }
-        if (this._signalRemoved) {
+        if (this._signalRemoved != 0) {
             Main.indicatorManager.disconnect(this._signalRemoved);
             this._signalRemoved = 0;
-        }
-        if (this._signalChanged) {
-            Main.systrayManager.disconnect(this._signalChanged);
-            this._signalChanged = 0;
         }
         for (let id in this._shellIndicators) {
             this._shellIndicators[id].destroy();
         }
     },
 
-    _onSystrayManagerChanged: function(manager) {
-        let hiddenIcons = Main.systrayManager.getRoles();
-        let currentIndicators = Main.indicatorManager.getIndicatorIds();
-        for (let pos in currentIndicators) {
-            let id = currentIndicators[pos];
-            let appIndicator = Main.indicatorManager.getIndicatorById(id);
-            appIndicator.setInBlacklist(hiddenIcons.indexOf(id) != -1);
-        }
-    },
-
     _onIndicatorAdded: function(manager, appIndicator) {
         if (!(appIndicator.id in this._shellIndicators)) {
-            let hiddenIcons = Main.systrayManager.getRoles();
-
-            if (hiddenIcons.indexOf(appIndicator.id) != -1 ) {
-                // We've got an applet for that
-                appIndicator.setInBlacklist(true);
-                global.log("Hiding indicator (role already handled): " + appIndicator.id);
-            }
-            else if (["quassel"].indexOf(appIndicator.id) != -1) {
-                // Blacklist some of the icons
-                // quassel: The proper icon in Quassel is "QuasselIRC", this is a fallback icon which Quassel launches when it fails to detect
-                // our indicator support (i.e. when Cinnamon is restarted for instance)
-                // The problem is.. Quassel doesn't kill that icon when it creates QuasselIRC again..
-                global.log("Hiding indicator (blacklisted): " + appIndicator.id);
-                return;
-            }
-            else {
-                global.log("Adding indicator: " + appIndicator.id);
-            }
-
             let size = 16;
             if (this._scaleMode)
                 size = this._getIconSize();
@@ -190,7 +165,6 @@ MyApplet.prototype = {
 
     _onIndicatorRemoved: function(manager, appIndicator) {
         if (appIndicator.id in this._shellIndicators) {
-            global.log("Removing indicator: " + appIndicator.id);
             let iconActor = this._shellIndicators[appIndicator.id];
             delete this._shellIndicators[appIndicator.id];
             iconActor.destroy();

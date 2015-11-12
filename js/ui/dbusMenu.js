@@ -37,7 +37,7 @@ const MandatedTypes = {
     'toggle-state'      : GLib.VariantType.new("i"),
     'action'            : GLib.VariantType.new("s"),
     'accel'             : GLib.VariantType.new("s"),
-    'shortcut' : GLib.VariantType.new("aas")
+    'shortcut'          : GLib.VariantType.new("aas")
 };
 
 const DefaultValues = {

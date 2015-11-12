@@ -104,15 +104,27 @@ function IndicatorManager() {
 IndicatorManager.prototype = {
     
     _init: function() {
-        this._indicatorsSignals = null;
         this._enable = false;
+        this._signalStatus = 0;
+        this._signalSystray = 0;
+        this._indicatorsSignals = null;
         this.statusNotifierWatcher = null;
+        this._indicators = {};
+        this._blackList = [];
         this.setEnabled(global.settings.get_boolean("enable-indicators"));
-        global.settings.connect('changed::enable-indicators', Lang.bind(this, this._changedEnableIndicators));
+        this._signalSettings = global.settings.connect('changed::enable-indicators',
+                               Lang.bind(this, this._changedEnableIndicators));
     },
 
     _changedEnableIndicators: function() {
         this.setEnabled(global.settings.get_boolean("enable-indicators"));
+    },
+
+    _onSystrayManagerChanged: function(manager) {
+        let rolesHandled = manager.getRoles();
+        for (let id in this._indicators) {
+            this._conditionalEnable(id, rolesHandled);
+        }
     },
 
     // handlers = { "signal": handler }
@@ -129,20 +141,6 @@ IndicatorManager.prototype = {
             for (let pos in signalsHandlers)
                 obj.disconnect(signalsHandlers[pos]);
         }
-    },
-
-    getIndicatorIds: function() {
-        let list = [];
-        for (let id in this._indicators) {
-            list.push(id);
-        }
-        return list;
-    },
-
-    getIndicatorById: function(id) {
-        if (id in this._indicators)
-            return this._indicators[id];
-        return null;
     },
 
     _onIndicatorDispatch: function(notifierWatcher, id) {
@@ -166,7 +164,6 @@ IndicatorManager.prototype = {
             signalManager.connect(appIndicator, 'overlay-icon', this._onIndicatorChanged);
             signalManager.connect(appIndicator, 'icon', this._onIndicatorChanged);*/
             this._indicatorsSignals[id] = signalsIndicator;
-
             if (appIndicator.isReady) {
                 this._onIndicatorReady(appIndicator);
             }
@@ -175,7 +172,11 @@ IndicatorManager.prototype = {
 
     _onIndicatorReady: function(appIndicator) {
         this._indicators[appIndicator.id] = appIndicator;
-        this.emit('indicator-added', appIndicator);
+        let rolesHandled = Main.systrayManager.getRoles();
+        if(this._conditionalEnable(appIndicator.id, rolesHandled, this._blackList)) {
+            global.log("Adding indicator: " + appIndicator.id);
+            this.emit('indicator-added', appIndicator);
+        }
     },
 
     _onIndicatorDestroy: function(appIndicator) {
@@ -186,6 +187,7 @@ IndicatorManager.prototype = {
         }
         if (appIndicator.id in this._indicators) {
             delete this._indicators[appIndicator.id];
+            global.log("Removing indicator: " + appIndicator.id);
             this.emit('indicator-removed', appIndicator);
         }
     },
@@ -193,22 +195,91 @@ IndicatorManager.prototype = {
     _onIndicatorChanged: function(appIndicator, signal) {
         this.emit('indicator-changed', appIndicator);
     },
+
+    _conditionalEnable: function(id, rolesHandled, blackList) {
+        if (blackList && (blackList.indexOf(id) != -1)) {
+            this._enableIndicatorId(id, false);
+            global.log("Hiding indicator (blacklisted): " + id);
+            return false;
+        } else if (rolesHandled && (rolesHandled.indexOf(id) != -1)) {
+            this._enableIndicatorId(id, false);
+            global.log("Hiding indicator (role already handled): " + id);
+            return false;
+        }
+        this._enableIndicatorId(id, true);
+        return true;
+    },
+
+    _enableIndicatorId: function(id, enable) {
+        let appIndicator = this.getIndicatorById(id);
+        if(appIndicator) {
+            appIndicator.setEnabled(enable);
+        }
+    },
+
+    isInBlackList: function(id) {
+        let hiddenIcons = Main.systrayManager.getRoles();
+        if (hiddenIcons.indexOf(id) != -1 )
+            return true;
+        if (this._blackList.indexOf(id) != -1 )
+            return true;
+        return false;
+    },
+
+    insertInBlackList: function(id) {
+        if(!(id in this._blackList)) {
+            this._blackList.push(id);
+            this._enableIndicatorId(id, false);
+        }
+    },
+
+    removeFromBlackList: function(id) {
+        let pos = this._blackList.indexOf(id);
+        if(pos != -1) {
+            this._blackList.splice(pos, 1);
+            this._disableIndicatorId(id, true);
+        }
+    },
     
+    getIndicatorIds: function() {
+        let list = [];
+        for (let id in this._indicators) {
+            list.push(id);
+        }
+        return list;
+    },
+
+    getIndicatorById: function(id) {
+        if (id in this._indicators)
+            return this._indicators[id];
+        return null;
+    },
+
     setEnabled: function(enable) {
         if(this._enable != enable) {
             this._enable = enable;
+            this._indicators = {};
             if(this._enable) {
-                this._indicators = {};
                 this._indicatorsSignals = {};
-                this._enable = true;
-                if (global.settings.get_boolean("enable-indicators")) {
-                    this.statusNotifierWatcher = new StatusNotifierWatcher();
-                    this.statusNotifierWatcher.connect('indicator-dispatch', Lang.bind(this, this._onIndicatorDispatch));
+                this.statusNotifierWatcher = new StatusNotifierWatcher();
+                if (this._signalStatus == 0) {
+                    this._signalStatus = this.statusNotifierWatcher.connect('indicator-dispatch',
+                                         Lang.bind(this, this._onIndicatorDispatch));
+                }
+                if (this._signalSystray == 0) {
+                    this._signalSystray = Main.systrayManager.connect('changed',
+                                          Lang.bind(this, this._onSystrayManagerChanged));
                 }
             } else {
-                if (this.statusNotifierWatcher)
-                    this.statusNotifierWatcher.destroy();
-                this._indicators = {};
+                if (this._signalStatus != 0) {
+                    this.statusNotifierWatcher.disconnect(this._signalStatus);
+                    this._signalStatus = 0;
+                }
+                if (this._signalSystray != 0) {
+                    Main.systrayManager.disconnect(this._signalSystray);
+                    this._signalSystray = 0;
+                }
+                this.statusNotifierWatcher.destroy();
                 this._indicatorsSignals = null;
                 this.statusNotifierWatcher = null;
             }
@@ -216,11 +287,12 @@ IndicatorManager.prototype = {
     },
 
     destroy: function() {
-        if (this.statusNotifierWatcher)
-            this.statusNotifierWatcher.destroy();
-        this._indicatorsSignals = null;
-        this._indicators = null;
-        this.statusNotifierWatcher = null;
+        this.setEnabled(false);
+        if (this._signalSettings != 0) {
+            global.settings.disconnect(this._signalSettings);
+            this._signalSettings = 0;
+        }
+        this.emit('indicator-destroy');
     }
 };
 Signals.addSignalMethods(IndicatorManager.prototype);
@@ -242,12 +314,12 @@ AppIndicator.prototype = {
         this._busName = busName;
         this._object = object;
         this._proxy = null;
-        this._isInBlacklist = false;
+        this._isEnabled = true;
         this._initialize();
     },
 
     _initialize: function() {
-        if ((!this._proxy) && (!this._isInBlacklist)) {
+        if ((!this._proxy) && (this._isEnabled)) {
             this._proxy = new XmlLessDBusProxy({
                 connection: Gio.DBus.session,
                 name: this._busName,
@@ -368,25 +440,24 @@ AppIndicator.prototype = {
         return this._busName + this._object;
     },
 
-    isInBlacklist: function() {
-        return this._isInBlacklist;
+    isEnabled: function() {
+        return this._isEnabled;
     },
 
-    setInBlacklist: function(blackList) {
-        if(this._isInBlacklist != blackList) {
-            this._isInBlacklist = blackList;
-            if (!this._isInBlacklist) {
+    setEnabled: function(enable) {
+        if(this._isEnabled != enable) {
+            this._isEnabled = enable;
+            if (this._isEnabled)
                 this._initialize();
-            }
-            else if (this._isInBlacklist)
+            else
                 this._finalize();
         }
     },
 
     getIconActor: function(size) {
-        let icon = new IconActor(this, size);
-        icon.actor.visible = !this._isInBlacklist;
-        return icon;
+        if(this._isEnabled)
+            return new IconActor(this, size);
+        return null;
     },
 
     //async because we may need to check the presence of a menubar object as well as the creation is async.
@@ -957,6 +1028,9 @@ IconActor.prototype = {
             return false;
         if (event.get_button() == 1)
             this._menu.toggle();
+
+        //this._indicator.open();
+
         return false;
     },
 
