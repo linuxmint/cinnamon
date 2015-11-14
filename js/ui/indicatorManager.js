@@ -1068,13 +1068,16 @@ IndicatorActor.prototype = {
         if (draggableParent && (!draggableParent.inhibit))
             return false;
 
-        if ((event.get_button() == 1) && behavior && this._menu) {
+        if (behavior) {
+            if ((event.get_button() == 3) && this._menu) {
+                this._menu.toggle();
+                return true;
+            } else if (event.get_button() == 1) {
+                this._menu.close();
+                this._indicator.open();
+            }
+        } else if ((event.get_button() == 1) && this._menu) {
             this._menu.toggle();
-        } else if (event.get_button() == 1) {
-            this._indicator.open();
-        } else if (this._menu) {
-            this._menu.toggle();
-            return true;
         }
         return false;
     },
@@ -1151,7 +1154,7 @@ IndicatorActor.prototype = {
         }
 
         if (gicon)
-            return new St.Icon({ gicon: gicon, icon_size: realSize });
+            return new St.Icon({ style_class: 'applet-icon', gicon: gicon, icon_size: realSize });
         else
             return null;
     },
@@ -1192,6 +1195,7 @@ IndicatorActor.prototype = {
                                 rowstride);
 
                 return new Clutter.Actor({
+                    style_class: 'applet-icon',
                     width: Math.min(width, iconSize),
                     height: Math.min(height, iconSize),
                     content: image
