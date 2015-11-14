@@ -116,25 +116,36 @@ MyApplet.prototype = {
             if (this._scaleMode)
                 size = this._getIconSize();
 
-            let iconActor = appIndicator.getIconActor(size);
-            iconActor._applet = this;
+            let indicatorActor = appIndicator.getIndicatorActor(size);
+            indicatorActor._applet = this;
 
-            this._shellIndicators[appIndicator.id] = iconActor;
-            this._signalManager.connect(iconActor.actor, 'destroy', this._onIndicatorIconDestroy);
+            this._shellIndicators[appIndicator.id] = indicatorActor;
+            this._signalManager.connect(indicatorActor.actor, 'destroy', this._onIndicatorIconDestroy);
+            this._signalManager.connect(indicatorActor.actor, 'enter-event', this._onEnterEvent);
+            this._signalManager.connect(indicatorActor.actor, 'leave-event', this._onLeaveEvent);
 
-            this.actor.add_actor(iconActor.actor);
+            this.actor.add_actor(indicatorActor.actor);
             appIndicator.createMenuClientAsync(Lang.bind(this, function(client) {
                 if (client != null) {
                     let newMenu = client.getShellMenu();
                     if (!newMenu) {
-                        newMenu = this.menuFactory.buildShellMenu(client, iconActor, this._applet_context_menu._arrowSide);
+                        newMenu = this.menuFactory.buildShellMenu(client, indicatorActor, this._applet_context_menu._arrowSide);
                         this.menuManager.addMenu(newMenu);
                     }
-                    iconActor.setMenu(newMenu);
+                    indicatorActor.setMenu(newMenu);
                 }
             }));
         }
     },
+
+    _onEnterEvent: function(actor, event) {
+       this.set_applet_tooltip(actor._delegate.getToolTip());
+    },
+
+    _onLeaveEvent: function(actor, event) {
+        this.set_applet_tooltip("");
+    },
+
 
     _onIndicatorIconDestroy: function(actor) {
         for (let id in this._shellIndicators) {
@@ -165,9 +176,9 @@ MyApplet.prototype = {
 
     _onIndicatorRemoved: function(manager, appIndicator) {
         if (appIndicator.id in this._shellIndicators) {
-            let iconActor = this._shellIndicators[appIndicator.id];
+            let indicatorActor = this._shellIndicators[appIndicator.id];
             delete this._shellIndicators[appIndicator.id];
-            iconActor.destroy();
+            indicatorActor.destroy();
         }
     },
 

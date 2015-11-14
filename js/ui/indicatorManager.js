@@ -339,7 +339,9 @@ AppIndicator.prototype = {
                     'Status',
                     'Title',
                     'ToolTip',
-                    'XAyatanaLabel'
+                    'XAyatanaLabel',
+                    'XAyatanaLabelGuide',
+                    'XAyatanaOrderingIndex',
                 ],
                 onReady: Lang.bind(this, function() {
                     this.isReady = true;
@@ -374,9 +376,13 @@ AppIndicator.prototype = {
 
                 if (this._proxy.propertyWhitelist.indexOf(prop + 'Name') > -1)
                     this._proxy.invalidateProperty(prop + 'Name');
-            } else if (signal == 'XAyatanaNewLabel') {
-                // and the ayatana guys made sure to invent yet another way of composing these signals...
+            // and the ayatana guys made sure to invent yet another way of composing these signals...
+            } else if (signal == 'XAyatanaNewLabel') { 
                 this._proxy.invalidateProperty('XAyatanaLabel');
+            } else if (signal == 'XAyatanaNewLabelGuide') {
+                this._proxy.invalidateProperty('XAyatanaNewLabelGuide');
+            } else if (signal == 'XAyatanaOrderingIndex') {
+                this._proxy.invalidateProperty('XAyatanaNewOrderingIndex');
             }
         }
     },
@@ -404,6 +410,24 @@ AppIndicator.prototype = {
         if(!this._proxy)
             return null;
         return this._proxy.cachedProperties.XAyatanaLabel;
+    },
+
+    get labelGuide() {
+        if(!this._proxy)
+            return null;
+        return this._proxy.cachedProperties.XAyatanaLabelGuide;
+    },
+
+    get toolTip() {
+        if(!this._proxy)
+            return null;
+        return this._proxy.cachedProperties.ToolTip;
+    },
+
+    get orderingIndex() {
+        if(!this._proxy)
+            return null;
+        return this._proxy.cachedProperties.XAyatanaOrderingIndex;
     },
 
     get attentionIcon() {
@@ -454,9 +478,9 @@ AppIndicator.prototype = {
         }
     },
 
-    getIconActor: function(size) {
+    getIndicatorActor: function(size) {
         if(this._isEnabled)
-            return new IconActor(this, size);
+            return new IndicatorActor(this, size);
         return null;
     },
 
@@ -910,14 +934,14 @@ XmlLessDBusProxy.prototype = {
 Signals.addSignalMethods(XmlLessDBusProxy.prototype);
 
 /**
- * #IconActor:
+ * #IndicatorActor:
  * @short_description: This is a container for the indicator icon with some advaced features.
  */
-function IconActor() {
+function IndicatorActor() {
     this._init.apply(this, arguments);
 }
 
-IconActor.prototype = {
+IndicatorActor.prototype = {
 
     _init: function(indicator, size) {
         this.actor = new St.BoxLayout({ style_class: 'applet-box', reactive: true, track_hover: true });
@@ -931,11 +955,13 @@ IconActor.prototype = {
 
         this._mainIcon    = new St.Bin();
         this._overlayIcon = new St.Bin({ 'x-align': St.Align.END, 'y-align': St.Align.END });
+        this._label = new St.Label({'y-align': St.Align.END });
 
         this.actor.add_actor(this._mainIcon);
         this.actor.add_actor(this._overlayIcon);
+        this.actor.add_actor(this._label);
 
-
+        this._updatedLabel();
 
         this._signalManager = new SignalManager.SignalManager(this);
         this._signalManager.connect(this.actor, 'scroll-event', this._handleScrollEvent);
@@ -951,6 +977,7 @@ IconActor.prototype = {
             'overlay-icon': Lang.bind(this, this._updateOverlayIcon),
             'ready'       : Lang.bind(this, this._invalidateIcon),
             'status'      : Lang.bind(this, this._updatedStatus),
+            'label'       : Lang.bind(this, this._updatedLabel),
             'finalized'   : Lang.bind(this, this.destroy),
             'destroy'     : Lang.bind(this, this.destroy),
         });
@@ -993,7 +1020,20 @@ IconActor.prototype = {
         }
     },
 
-    _updatedStatus: function() {      
+    getToolTip: function() {
+        if(this._indicator.toolTip)
+            return this._indicator.toolTip;
+        return this._indicator.title;
+    },
+
+    _updatedLabel: function() {
+        if(this._indicator.label != undefined)
+            this._label.set_text(this._indicator.label);
+        else
+            this._label.set_text("");
+    },
+
+    _updatedStatus: function() {
         if (this._indicator.status == SNIStatus.PASSIVE)
             this.actor.visible = false;
         else if ((this._indicator.status == SNIStatus.ACTIVE || this._indicator.status == SNIStatus.NEEDS_ATTENTION)
@@ -1023,14 +1063,19 @@ IconActor.prototype = {
     },
 
     _onIconButtonPressEvent: function(actor, event) {
+        let behavior = global.settings.get_boolean("right-click-indicators");
         let draggableParent = this._getDragable();
-        if (((draggableParent)&&(!draggableParent.inhibit)) || (!this._menu))
+        if (draggableParent && (!draggableParent.inhibit))
             return false;
-        if (event.get_button() == 1)
+
+        if ((event.get_button() == 1) && behavior && this._menu) {
             this._menu.toggle();
-
-        //this._indicator.open();
-
+        } else if (event.get_button() == 1) {
+            this._indicator.open();
+        } else if (this._menu) {
+            this._menu.toggle();
+            return true;
+        }
         return false;
     },
 
