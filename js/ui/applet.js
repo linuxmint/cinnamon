@@ -605,20 +605,19 @@ IconApplet.prototype = {
 			        			-1);
 		    this._applet_icon.set_style_class_name('system-status-icon');
 	    }
+	    // 
+	    // As we want icons to be centrally aligned for vertical panels, remove any padding
+	    //
+            this.actor.set_style("padding:0px;padding-left:0px;padding-right:0px;");
+
 	    if (icon_type == St.IconType.SYMBOLIC) {
-		;
-		//this._applet_icon.set_margin_left(4.0*symb_scaleup/20);
 	        this._applet_icon.set_margin_top(4.0*symb_scaleup/20);
 	        this._applet_icon.set_margin_bottom(4.0*symb_scaleup/20);
-	        //this._applet_icon.set_margin_right(4.0*symb_scaleup/20);
 	    }
 	    else   // full colour
 	    {
-		;
 	        this._applet_icon.set_margin_top(4.0*symb_scaleup/20);
 	        this._applet_icon.set_margin_bottom(2.0*symb_scaleup/20);
-		//this._applet_icon.set_margin_left(0);
-	        //this._applet_icon.set_margin_right(2.0*symb_scaleup/20); 
 
 	    } 
 // FIXME does this need some rounding etc ?
