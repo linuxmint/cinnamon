@@ -57,7 +57,7 @@ MyApplet.prototype = {
     },
 
     on_orientation_changed: function() {
-global.log("systray - on_orientation_changed");
+/* global.log("systray - on_orientation_changed");
 	    if (this.orientation == St.Side.TOP || this.orientation == St.Side.BOTTOM)
 	    {
 		//this.manager_container.set_style('vertical: false');  complains not a function.  see if there is a set orientation function.
@@ -65,7 +65,7 @@ global.log("systray - on_orientation_changed");
 	    else		// vertical panels
 	    {
 		//this.manager_container.set_style('vertical: true');
-	    }
+	    } */
     },
 
     on_applet_removed_from_panel: function () {
