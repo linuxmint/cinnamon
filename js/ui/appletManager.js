@@ -131,16 +131,7 @@ function getAppletDefinition(definition) {
                         orientation = St.Side.RIGHT;
                 break;
             }
-            switch (elements[1]){
-            case "center":
-                location = panel._centerBox;
-                break;
-            case "right":
-                location = panel._rightBox;
-                break;
-            default: // Let default position be left
-                location = panel._leftBox;
-            }
+            location = getLocation(panel, elements[1]);
         }
         
         return {
@@ -535,21 +526,8 @@ function loadAppletsOnPanel(panel) {
     for (let applet_id in enabledAppletDefinitions.idMap){
         definition = enabledAppletDefinitions.idMap[applet_id];
         if(definition.panelId == panel.panelId) {
-            let location;
-            // Update appletDefinition
-            switch (definition.location_label){
-            case "center":
-                location = panel._centerBox;
-                break;
-            case "right":
-                location = panel._rightBox;
-                break;
-            default: // Let default position be left
-                location = panel._leftBox;
-            }
-
             definition.panel = panel;
-            definition.location = location;
+            definition.location = getLocation(panel, definition.location_label);
             definition.orientation = orientation;
 
             let extension = Extension.objects[definition.uuid];
@@ -594,6 +572,8 @@ function updateAppletsOnPanel (panel) {
     for (let applet_id in enabledAppletDefinitions.idMap){
         definition = enabledAppletDefinitions.idMap[applet_id];
         if(definition.panel == panel) {
+            definition.location = getLocation(panel, definition.location_label);
+            definition.orientation = orientation;
 
             if (appletObj[applet_id]) {
                 try {
@@ -619,6 +599,12 @@ function unloadAppletsOnPanel (panel) {
             removeAppletFromPanels(enabledAppletDefinitions.idMap[applet_id]);
         }
     }
+}
+
+function getLocation(panel, location) {
+    return {"center": panel._centerBox,
+            "right" : panel._rightBox,
+            "left"  : panel._leftBox}[location];
 }
 
 function copyAppletConfiguration(panelId) {
