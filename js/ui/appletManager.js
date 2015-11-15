@@ -116,21 +116,7 @@ function getAppletDefinition(definition) {
         // Panel might not exist. Still keep definition for future use.
         let location;
         if (panel) {
-            switch (panel.panelPosition)
-            {
-                case 0:
-                        orientation = St.Side.TOP;
-                break;
-                case 1:
-                        orientation = St.Side.BOTTOM;
-                break;
-                case 2:
-                        orientation = St.Side.LEFT;
-                break;
-                case 3:
-                        orientation = St.Side.RIGHT;
-                break;
-            }
+            orientation = setOrientationForPanel(panel.panelPosition);
             location = getLocation(panel, elements[1]);
         }
         
@@ -149,6 +135,43 @@ function getAppletDefinition(definition) {
 
     global.logError("Bad applet definition: " + definition);
     return null;
+}
+
+function setOrientationForPanel(panelPos) {
+    let orientation;
+    switch (panelPos)
+    {
+        case 0:
+                orientation = St.Side.TOP;
+        break;
+        case 1:
+                orientation = St.Side.BOTTOM;
+        break;
+        case 2:
+                orientation = St.Side.LEFT;
+        break;
+        case 3:
+                orientation = St.Side.RIGHT;
+        break;
+    }
+
+    return orientation;
+}
+
+function setHeightForPanel(panelObj, panelPos) {
+    let height;
+    switch (panelPos)  // for vertical panels use the width instead of the height
+    {
+        case 0:
+        case 1:
+                height = panelObj.actor.get_height();
+        break;
+        case 2:
+        case 3:
+                height = panelObj.actor.get_width();
+        break;
+    }
+    return height;
 }
 
 function checkForUpgrade(newEnabledApplets) {
@@ -342,17 +365,7 @@ function createApplet(extension, appletDefinition) {
     let orientation = appletDefinition.orientation;
     let panel_height;
 
-    switch (appletDefinition.panel.panelPosition)   // treat the width of vertical panels like the height of horizontal ones
-    {
-        case 0:
-        case 1:
-                panel_height =  appletDefinition.panel.actor.get_height();
-        break;
-        case 2:
-        case 3:
-                panel_height =  appletDefinition.panel.actor.get_width();
-        break;
-    }
+    panel_height = setHeightForPanel(appletDefinition.panel, appletDefinition.panel.panelPosition)
     
     if (appletObj[applet_id] != undefined) {
         global.log(applet_id + ' applet already loaded');
@@ -455,17 +468,8 @@ function updateAppletPanelHeights(force_recalc) {
         if (appletObj[applet_id]) {
             let appletDefinition = enabledAppletDefinitions.idMap[applet_id];
             let newheight;
-            switch (appletDefinition.panel.panelPosition)   // treat the width of vertical panels like the height of horizontal ones
-            {
-                case 0:
-                case 1:
-                        newheight =  appletDefinition.panel.actor.get_height();
-                break;
-                case 2:
-                case 3:
-                        newheight =  appletDefinition.panel.actor.get_width();
-                break;
-            }
+            newheight = setHeightForPanel(appletDefinition.panel, appletDefinition.panel.panelPosition);
+
             if (appletObj[applet_id]._panelHeight != newheight || force_recalc) {
                 appletObj[applet_id].setPanelHeight(newheight);
             }
@@ -505,21 +509,7 @@ function get_object_for_uuid (uuid) {
 function loadAppletsOnPanel(panel) {
     let orientation;
 
-    switch (panel.panelPosition)
-    {
-        case 0:
-                orientation = St.Side.TOP;
-        break;
-        case 1:
-                orientation = St.Side.BOTTOM;
-        break;
-        case 2:
-                orientation = St.Side.LEFT;
-        break;
-        case 3:
-                orientation = St.Side.RIGHT;
-        break;
-    }
+    orientation = setOrientationForPanel(panel.panelPosition);
 
     let definition;
 
@@ -547,25 +537,9 @@ function loadAppletsOnPanel(panel) {
 function updateAppletsOnPanel (panel) {
     let height;
     let orientation;
-    switch (panel.panelPosition)  // for vertical panels use the width instead of the height
-    {
-        case 0:
-                orientation = St.Side.TOP;
-                height = panel.actor.get_height();
-        break;
-        case 1:
-                orientation = St.Side.BOTTOM;
-                height = panel.actor.get_height();
-        break;
-        case 2:
-                orientation = St.Side.LEFT;
-                height = panel.actor.get_width();
-        break;
-        case 3:
-                orientation = St.Side.RIGHT;
-                height = panel.actor.get_width();
-        break;
-    }
+
+    orientation = setOrientationForPanel(panel.panelPosition);
+    height = setHeightForPanel(panel, panel.panelPosition);
 
     let definition;
 
