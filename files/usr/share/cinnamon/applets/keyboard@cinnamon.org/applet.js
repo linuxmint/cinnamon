@@ -139,7 +139,7 @@ MyApplet.prototype = {
         for (let i = 0; i < groups.length; i++) {
             let icon_name = this._config.get_group_name(i);
             let actor;
-            if (this._showFlags && this.icon_theme.has_icon(icon_name))
+            if (this._showFlags && this.icon_theme.lookup_icon(icon_name, 20, 0))
                 actor = new St.Icon({ icon_name: icon_name, icon_type: St.IconType.FULLCOLOR, style_class: 'popup-menu-icon' });
             else
                 actor = new St.Label({ text: short_names[i] });
@@ -171,7 +171,7 @@ MyApplet.prototype = {
         let selectedLabel = this._labelActors[selected];
 
         this.set_applet_tooltip(item._long_name)
-        if (this._showFlags && this.icon_theme.has_icon(item._icon_name)) {
+        if (this._showFlags && this.icon_theme.lookup_icon(item._icon_name, 20, 0)) {
             this.set_applet_icon_name(item._icon_name);
             this.set_applet_label("");
         } else {
