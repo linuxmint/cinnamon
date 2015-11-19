@@ -311,6 +311,7 @@ Player.prototype = {
         if (this._mediaServer.CanQuit) {
             let btn = new ControlButton("window-close", _("Quit Player"), Lang.bind(this, function(){
                 this._mediaServer.QuitRemote();
+                this._applet.menu.close();
             }), true);
             playerBox.add_actor(btn.actor, { expand: true, x_fill: false, x_align: St.Align.END });
         }
