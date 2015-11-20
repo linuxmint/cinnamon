@@ -117,7 +117,7 @@ SignalManager.prototype = {
             return false;
         else if (signal[1] instanceof GObject.Object)// GObject
             return GObject.signal_handler_is_connected(signal[1], signal[3]);
-        else if ('signalHandlerIsConnected' in signal[0]) // JS Object
+        else if ('signalHandlerIsConnected' in signal[1]) // JS Object
             return signal[1].signalHandlerIsConnected(signal[3]);
         else
             return false;
