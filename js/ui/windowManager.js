@@ -672,6 +672,7 @@ WindowManager.prototype = {
         }
 
         if (actor.get_meta_window()._cinnamonwm_has_origin === true) {
+            Main.soundManager.play('minimize');
             try {
                 this._startWindowEffect(cinnamonwm, "unminimize", actor, null, "minimize")
                 return;
