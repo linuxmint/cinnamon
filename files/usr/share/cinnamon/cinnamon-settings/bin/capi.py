@@ -37,12 +37,13 @@ class CManager():
             paths += ["/usr/lib/%s" % architecture, "/usr/lib/%s-linux-gnu" % architecture]
 
         for path in paths:
-            path = os.path.join(path, "cinnamon-control-center-1/panels")
-            if os.path.exists(path):
-                try:
-                    self.modules = self.modules + Gio.io_modules_load_all_in_directory(path)
-                except Exception, e:
-                    print "capi failed to load multiarch modules from %s: " % path, e
+            if not os.path.islink(path):
+                path = os.path.join(path, "cinnamon-control-center-1/panels")
+                if os.path.exists(path):
+                    try:
+                        self.modules = self.modules + Gio.io_modules_load_all_in_directory(path)
+                    except Exception, e:
+                        print "capi failed to load multiarch modules from %s: " % path, e
 
     def get_c_widget(self, mod_id):
         extension = self.extension_point.get_extension_by_name(mod_id)
