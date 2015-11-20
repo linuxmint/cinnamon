@@ -1,3 +1,27 @@
+cinnamon (2.8.5) rosa; urgency=medium
+
+  [ Michael Webster ]
+  * workspace-switcher applet: update relevant workspace graph when a window is added or removed from a workspace.
+  * workspace-switcher applet: Don't ignore maximized windows in the graph
+
+  [ Michal ]
+  * #4767: Handle situations when /usr/lib64 is a symlink to /usr/lib and vice versa on some distributions causing modules are being loaded multiple times
+  * #4357: Replace has_icon method with lookup_icon one to fix missing flags icons in keyboard applet
+
+  [ Dexter Chua ]
+  * signalManager.js: fix typo (fixes #4818)
+
+  [ JosephMcc ]
+  * effects: Currently when setting the minimize animation to "traditional" no sound effect is used when restoring the window. Change this so the minimize sound is played in this case.
+
+  [ Clement Lefebvre ]
+  * Sound applet: Close menu when closing media player.
+
+  [ Lars Mueller ]
+  * Fix menu applet's graphical oddity during search This is fixing #4845
+
+ -- Clement Lefebvre <root@linuxmint.com>  Fri, 20 Nov 2015 17:13:52 +0000
+
 cinnamon (2.8.4) rosa; urgency=medium
 
   [ Lars Mueller ]
