@@ -758,7 +758,7 @@ PopupSliderMenuItem.prototype = {
     },
 
     _moveHandle: function(absX, absY) {
-        let relX, relY, sliderX, sliderY;
+        let relX, sliderX, sliderY;
 
         let themeNode = this._slider.get_theme_node();
         let handleRadius = themeNode.get_length('-slider-handle-radius');
