@@ -368,7 +368,7 @@ cinnamon_util_get_icon_for_uri (const char *text_uri)
   g_object_unref (file);
 
   if (!info)
-    return g_themed_icon_new ("gtk-file");
+    return g_themed_icon_new ("text-x-preview");
 
   retval = g_file_info_get_icon (info);
   if (retval)
@@ -378,7 +378,7 @@ cinnamon_util_get_icon_for_uri (const char *text_uri)
   if (retval)
     return retval;
 
-  return g_themed_icon_new ("gtk-file");
+  return g_themed_icon_new ("text-x-preview");
 }
 
 static void
