@@ -72,8 +72,6 @@
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
                     <property name="receives_default">True</property>
-                    <property name="hexpand">True</property>
-                    <property name="vexpand">True</property>
                     <child>
                       <object class="GtkImage" id="icon-image">
                         <property name="visible">True</property>
@@ -136,6 +134,7 @@
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
                     <property name="has_focus">True</property>
+                    <property name="hexpand">True</property>
                     <property name="invisible_char">●</property>
                   </object>
                   <packing>
@@ -149,6 +148,7 @@
                   <object class="GtkEntry" id="comment-entry">
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
+                    <property name="hexpand">True</property>
                     <property name="invisible_char">●</property>
                   </object>
                   <packing>
