@@ -1638,7 +1638,7 @@ PopupMenuBase.prototype = {
     },
 
     /**
-     * addCommandLineAction:
+     * addCommandlineAction:
      * @title (string): the text to display on the item
      * @cmd (string): the command to call
      *
