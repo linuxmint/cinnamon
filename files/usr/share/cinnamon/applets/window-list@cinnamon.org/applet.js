@@ -87,7 +87,9 @@ WindowPreview.prototype = {
         this.actor = new St.Bin({style_class: "switcher-list", style: "margin: 0px; padding: 8px;"});
         this.actor.show_on_set_parent = false;
 
-        this.actor.set_size(WINDOW_PREVIEW_WIDTH * 1.3, WINDOW_PREVIEW_HEIGHT * 1.3);
+        this.scaleFactor = St.ThemeContext.get_for_stage(global.stage).scale_factor;
+
+        this.actor.set_size(WINDOW_PREVIEW_WIDTH * 1.3 * this.scaleFactor, WINDOW_PREVIEW_HEIGHT * 1.3 * this.scaleFactor);
         Main.uiGroup.add_actor(this.actor);
 
         this.metaWindow = metaWindow;
@@ -145,8 +147,8 @@ WindowPreview.prototype = {
 
         this.thumbnail = new Clutter.Clone({
             source: windowTexture,
-            width: width * scale,
-            height: height * scale
+            width: width * scale * this.scaleFactor,
+            height: height * scale * this.scaleFactor
         });
 
         this.thumbnailBin.set_child(this.thumbnail);
