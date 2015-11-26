@@ -1,3 +1,14 @@
+cinnamon (2.8.6) rosa; urgency=medium
+
+  [ JosephMcc ]
+  * launcher-editor: Implement the idea in https://github.com/linuxmint/Cinnamon/issues/4849 makes more sense for than the current behavior. Do the same for directory-editor.ui
+  * window-list: Properly scale the window previews for hidpi
+
+  [ Dexter Chua ]
+  * popupmenu.js: Fix documentation
+
+ -- Clement Lefebvre <root@linuxmint.com>  Thu, 26 Nov 2015 20:35:01 +0000
+
 cinnamon (2.8.5) rosa; urgency=medium
 
   [ Michael Webster ]
