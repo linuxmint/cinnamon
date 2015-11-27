@@ -19,6 +19,7 @@ class Module:
 
             self.sidePage.stack = SettingsStack()
             self.sidePage.add_widget(self.sidePage.stack)
+            scale_factor = Gtk.Button.new_with_label("").get_scale_factor()
 
             # Mouse
 
@@ -40,8 +41,11 @@ class Module:
 
             settings = page.add_section(_("Pointer size and speed"))
 
-            widget = GSettingsRange(_("Size"), "org.cinnamon.desktop.interface", "cursor-size", _("Smaller"), _("Larger"), 5, 50)
-            widget.add_mark(24.0, Gtk.PositionType.TOP, None)
+            if (scale_factor == 1):
+                widget = GSettingsRange(_("Size"), "org.cinnamon.desktop.interface", "cursor-size", _("Smaller"), _("Larger"), 5, 50)
+                widget.add_mark(24.0, Gtk.PositionType.TOP, None)
+            else:
+                widget = GSettingsRange(_("Size"), "org.cinnamon.desktop.interface", "cursor-size", _("Smaller"), _("Larger"), 5, 24)
             settings.add_row(widget)
 
             slider = GSettingsRange(_("Acceleration"), "org.cinnamon.settings-daemon.peripherals.mouse", "motion-acceleration", _("Slow"), _("Fast"), 1, 10)
