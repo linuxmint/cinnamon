@@ -853,7 +853,9 @@ class CellRendererKeybinding(Gtk.CellRendererText):
         self.connect("editing-started", self.editing_started)
         self.cur_val = None
         self.path = None
-        self.event_id = None
+        self.release_event_id = 0
+        self.press_event_id = 0
+        self.focus_id = 0
         self.teaching = False
         self.treeview = treeview
 
@@ -880,9 +882,11 @@ class CellRendererKeybinding(Gtk.CellRendererText):
                                None, Gdk.CURRENT_TIME)
 
             editable.set_text(_("Pick an accelerator"))
+            self.accel_editable = editable
 
-            self.event_id = self.treeview.connect( "key-release-event", self.on_key_release )
-            self.focus_id = editable.connect( "focus-out-event", self.on_focus_out )
+            self.release_event_id = self.accel_editable.connect( "key-release-event", self.on_key_release )
+            self.press_event_id = self.accel_editable.connect( "key-press-event", self.on_key_press )
+            self.focus_id = self.accel_editable.connect( "focus-out-event", self.on_focus_out )
             self.teaching = True
         else:
             self.ungrab()
@@ -891,6 +895,12 @@ class CellRendererKeybinding(Gtk.CellRendererText):
 
     def on_focus_out(self, widget, event):
         self.ungrab()
+
+    def on_key_press(self, widget, event):
+        if self.teaching:
+            return True
+
+        return False
 
     def on_key_release(self, widget, event):
         self.ungrab()
@@ -922,9 +932,12 @@ class CellRendererKeybinding(Gtk.CellRendererText):
 
     def ungrab(self):
         self.keyboard.ungrab(Gdk.CURRENT_TIME)
-        if self.event_id:
-            self.treeview.disconnect(self.event_id)
-            self.event_id = None
-        if self.focus_id:
-            self.treeview.disconnect(self.focus_id)
-            self.focus_id = None
+        if self.release_event_id > 0:
+            self.accel_editable.disconnect(self.release_event_id)
+            self.release_event_id = 0
+        if self.press_event_id > 0:
+            self.accel_editable.disconnect(self.press_event_id)
+            self.press_event_id = 0
+        if self.focus_id > 0:
+            self.accel_editable.disconnect(self.focus_id)
+            self.focus_id = 0
