@@ -1476,6 +1476,7 @@ Crosshairs.prototype = {
 };
 
 const INCR = 0.1;
+const MAX_ZOOM = 15.0; /* from range of org.cinnamon.desktop.a11y.magnifier mag-factor key */
 
 function MagnifierInputHandler(magnifier) {
     this._init(magnifier);
@@ -1539,9 +1540,9 @@ MagnifierInputHandler.prototype = {
 
     _zoom_in: function(display, screen, event, kb, action) {
         if (this.zoom_active) {
-            this.current_zoom *= (1.0 + INCR);
+            this.current_zoom = Math.min(this.current_zoom * (1.0 + INCR), MAX_ZOOM);
         } else {
-            this.current_zoom *= (1.0 + INCR);
+            this.current_zoom *= Math.min(this.current_zoom * (1.0 + INCR), MAX_ZOOM);
             this.magnifier.setActive(true)
             this.zoom_active = true;
         }
