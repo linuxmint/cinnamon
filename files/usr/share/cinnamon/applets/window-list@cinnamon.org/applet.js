@@ -132,7 +132,7 @@ WindowPreview.prototype = {
     },
 
     show: function() {
-        if (!this.actor)
+        if (!this.actor || this._applet._menuOpen)
             return
 
         let muffinWindow = this.metaWindow.get_compositor_private();
@@ -793,6 +793,11 @@ AppMenuButtonRightClickMenu.prototype = {
     },
 
     _onToggled: function(actor, isOpening){
+        if (this.isOpen)
+            this._launcher._applet._menuOpen = true;
+        else
+            this._launcher._applet._menuOpen = false;
+        
         if (!isOpening) {
             return;
         }
@@ -818,6 +823,7 @@ MyApplet.prototype = {
         this.dragInProgress = false;
         this._tooltipShowing = false;
         this._tooltipErodeTimer = null;
+        this._menuOpen = false;
         this._urgentSignal = null;
         this._windows = [];
         this._monitorWatchList = [];
