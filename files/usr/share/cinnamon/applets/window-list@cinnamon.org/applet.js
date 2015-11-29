@@ -104,10 +104,10 @@ WindowPreview.prototype = {
         iconBox.set_child(icon);
         hbox.add_actor(iconBox);
 
-        let label = new St.Label();
-        label.set_text(this.metaWindow.get_title());
-        label.style = "padding: 2px;";
-        hbox.add_actor(label);
+        this.label = new St.Label();
+        this.label.set_text(this.metaWindow.get_title());
+        this.label.style = "padding: 2px;";
+        hbox.add_actor(this.label);
 
         box.add_actor(hbox);
 
@@ -185,6 +185,10 @@ WindowPreview.prototype = {
         }
         this.actor.hide();
         this.visible = false;
+    },
+
+    set_text: function(text) {
+        this.label.set_text(text);
     },
 
     _destroy: function() {
@@ -797,7 +801,7 @@ AppMenuButtonRightClickMenu.prototype = {
             this._launcher._applet._menuOpen = true;
         else
             this._launcher._applet._menuOpen = false;
-        
+
         if (!isOpening) {
             return;
         }
