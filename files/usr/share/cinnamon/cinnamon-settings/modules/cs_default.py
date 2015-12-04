@@ -24,18 +24,33 @@ DEF_LABEL = 1
 DEF_HEADING = 2
 
 preferred_app_defs = [
-    # for web, we need to support text/html,
-    # application/xhtml+xml and x-scheme-handler/https,
-    # hence the "*" pattern
-    ( "x-scheme-handler/http",   "x-scheme-handler/http",      _("_Web") ),
-    ( "x-scheme-handler/mailto", "x-scheme-handler/mailto",    _("_Mail") ),
-    ( "text/plain",              "text",                       _("_Text") ),
-
     # 1st mimetype is to let us find apps
     # 2nd mimetype is to set default handler for (so we handle all of that type, not just a specific format)
+    ( "x-scheme-handler/http",   "x-scheme-handler/http",      _("_Web") ),
+    ( "x-scheme-handler/mailto", "x-scheme-handler/mailto",    _("_Mail") ),
+    ( "application/msword",      "application/msword",       _("Documents") ),
+    ( "text/plain",              "text/plain",               _("Plain Text") ),
     ( "audio/x-vorbis+ogg",      "audio",                    _("M_usic") ),
     ( "video/x-ogm+ogg",         "video",                    _("_Video") ),
-    ( "image/jpeg",              "image",                    _("_Photos") )
+    ( "image/jpeg",              "image",                    _("_Photos") ),
+    ( "text/x-python",           "text/x-python",          _("Source Code") ),
+]
+
+source_code_defs = [
+    'text/x-chdr', 'text/x-csrc', 'text/x-c++hdr', 'text/x-c++src', 'text/x-java',
+    'text/x-dsrc', 'text/x-pascal', 'text/x-perl', 'text/x-python', 'application/x-php',
+    'application/x-httpd-php3', 'application/x-httpd-php4', 'application/x-httpd-php5',
+    'application/xml', 'text/html', 'text/css', 'text/x-sql', 'text/x-diff', 'application/x-ruby',
+    'application/x-shellscript', 'application/javascript', 'text/x-makefile', 'text/css',
+    'text/turtle', 'text/x-fortran', 'text/yaml', 'application/x-m4', 'text/x-vb', 'text/x-csharp'
+]
+
+rich_document_defs = [
+    'application/msword', 'application/vnd.oasis.opendocument.text',
+    'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    'application/vnd.oasis.opendocument.text-template', 'application/rtf',
+    'application/vnd.stardivision.writer', 'application/vnd.wordperfect',
+    'application/vnd.ms-works', 'application/x-abiword',
 ]
 
 removable_media_defs = [
@@ -108,19 +123,32 @@ class DefaultAppChooserButton(Gtk.AppChooserButton):
         self.content_type = content_type
         self.generic_content_type = gen_content_type
         self.set_show_default_item(True)
+        self.set_show_dialog_item(True)
         self.connect("changed", self.onChanged)
 
     def onChanged(self, button):
         info = button.get_app_info()
         if info:
             types = info.get_supported_types()
+            #Documents
+            if self.generic_content_type == "application/msword":
+                for t in rich_document_defs:
+                    if info.set_as_default_for_type (t) == False:
+                         print "Failed to set '%s' as the default application for '%s'" % (info.get_name(), t)
+            #Source Code
+            if self.generic_content_type == "text/x-python":
+                for t in source_code_defs:
+                    if info.set_as_default_for_type (t) == False:
+                         print "Failed to set '%s' as the default application for '%s'" % (info.get_name(), t)
+            #Web
+            if self.content_type == "x-scheme-handler/http":
+                if info.set_as_default_for_type ("x-scheme-handler/https") == False:
+                    print "Failed to set '%s' as the default application for '%s'" % (info.get_name(), "x-scheme-handler/https")
+            #All other types
             for t in types:
                 if self.generic_content_type in t:
                     if not info.set_as_default_for_type(t):
                         print "Failed to set '%s' as the default application for '%s'" % (info.get_name(), self.generic_content_type)
-            if self.content_type == "x-scheme-handler/http":
-                if info.set_as_default_for_type ("x-scheme-handler/https") == False:
-                    print "Failed to set '%s' as the default application for '%s'" % (info.get_name(), "x-scheme-handler/https")
 
 class DefaultTerminalButton(Gtk.AppChooserButton): #TODO: See if we can get this to change the x-terminal-emulator default to allow it to be a more global change rather then just cinnamon/nemo
     def __init__(self):
@@ -374,7 +402,9 @@ class Module:
                 size_group.add_widget(button)
                 widget.pack_start(label, False, False, 0)
                 widget.pack_end(button, False, False, 0)
-                settings.add_row(widget)
+                #Hide button if there are no apps
+                if not button.get_active():
+                    settings.add_row(widget)
 
             widget = SettingsWidget()
             button = DefaultTerminalButton()
