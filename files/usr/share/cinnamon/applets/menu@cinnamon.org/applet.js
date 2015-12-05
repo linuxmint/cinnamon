@@ -2188,6 +2188,9 @@ MyApplet.prototype = {
 
         this.a11y_settings = new Gio.Settings({ schema_id: "org.cinnamon.desktop.a11y.applications" });
         this.a11y_settings.connect("changed::screen-magnifier-enabled", Lang.bind(this, this._updateVFade));
+        this.a11y_mag_settings = new Gio.Settings({ schema_id: "org.cinnamon.desktop.a11y.magnifier" });
+        this.a11y_mag_settings.connect("changed::mag-factor", Lang.bind(this, this._updateVFade));
+
         this._updateVFade();
 
         this.settings.bindProperty(Settings.BindingDirection.IN, "enable-autoscroll", "autoscroll_enabled", this._update_autoscroll, null);
@@ -2245,7 +2248,8 @@ MyApplet.prototype = {
     },
 
     _updateVFade: function() {
-        let mag_on = this.a11y_settings.get_boolean("screen-magnifier-enabled");
+        let mag_on = this.a11y_settings.get_boolean("screen-magnifier-enabled") &&
+                     this.a11y_mag_settings.get_double("mag-factor") > 1.0;
         if (mag_on) {
             this.applicationsScrollBox.style_class = "menu-applications-scrollbox";
         } else {
