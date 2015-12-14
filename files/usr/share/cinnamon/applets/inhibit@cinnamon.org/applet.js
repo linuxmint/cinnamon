@@ -6,7 +6,8 @@ const Tooltips = imports.ui.tooltips;
 const PopupMenu = imports.ui.popupMenu;
 const GnomeSession = imports.misc.gnomeSession;
 
-const INHIBIT_IDLE_FLAG = 8; /* idle inhibit only */
+const INHIBIT_IDLE_FLAG = 8;
+const INHIBIT_SLEEP_FLAG = 4;
 
 function InhibitSwitch(applet) {
     this._init(applet);
@@ -68,25 +69,25 @@ InhibitSwitch.prototype = {
     },
 
     updateStatus: function(o) {
-        this.sessionProxy.IsInhibitedRemote(INHIBIT_IDLE_FLAG, Lang.bind(this, function(is_inhibited) {
-            if (is_inhibited[0]) {
-                this._applet.set_applet_icon_symbolic_name('inhibit-active');
-                this._applet.set_applet_tooltip(_("Power management: inhibited"));
-            }
-            else {
-                this._applet.set_applet_icon_symbolic_name('inhibit');
-                this._applet.set_applet_tooltip(_("Power management: active"));
-            }
+        let current_state = this.sessionProxy.InhibitedActions;
 
-            if (is_inhibited[0] && !this.sessionCookie) {
-                this.tooltip.set_text(_("Power management is already inhibited by another program"));
-                this._applet.set_applet_tooltip(_("Power management: inhibited by another program"));
-                this._statusIcon.show();
-            } else {
-                this.tooltip.set_text("");
-                this._statusIcon.hide();
-            }
-        }));
+        if (current_state & INHIBIT_IDLE_FLAG ||
+            current_state & INHIBIT_SLEEP_FLAG) {
+            this._applet.set_applet_icon_symbolic_name('inhibit-active');
+            this._applet.set_applet_tooltip(_("Power management: inhibited"));
+        } else {
+            this._applet.set_applet_icon_symbolic_name('inhibit');
+            this._applet.set_applet_tooltip(_("Power management: active"));
+        }
+
+        if (current_state >= INHIBIT_SLEEP_FLAG && !this.sessionCookie) {
+            this.tooltip.set_text(_("Power management is already inhibited by another program"));
+            this._applet.set_applet_tooltip(_("Power management: inhibited by another program"));
+            this._statusIcon.show();
+        } else {
+            this.tooltip.set_text("");
+            this._statusIcon.hide();
+        }
     },
 
     toggled: function(active) {
