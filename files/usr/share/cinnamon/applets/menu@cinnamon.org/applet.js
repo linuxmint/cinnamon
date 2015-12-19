@@ -2021,7 +2021,7 @@ MyApplet.prototype = {
                 }
             }
             else {                
-                this._screenSaverProxy.LockRemote();
+                this._screenSaverProxy.LockRemote("");
             }                        
         });
         
