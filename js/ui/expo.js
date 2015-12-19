@@ -7,6 +7,7 @@ const Lang = imports.lang;
 const St = imports.gi.St;
 const Cinnamon = imports.gi.Cinnamon;
 
+const Background = imports.ui.background;
 const DND = imports.ui.dnd;
 const Main = imports.ui.main;
 const Tweener = imports.ui.tweener;
@@ -14,6 +15,10 @@ const ExpoThumbnail = imports.ui.expoThumbnail;
 
 // Time for initial animation going into Overview mode
 const ANIMATION_TIME = 0.3;
+// Must be less than ANIMATION_TIME, since we switch to
+// or from the overview completely after ANIMATION_TIME,
+// and don't want the shading animation to get cut off
+const SHADE_ANIMATION_TIME = .20;
 
 function Expo() {
     this._init.apply(this, arguments);
@@ -25,14 +30,15 @@ Expo.prototype = {
     },
 
     beforeShow: function() {
-        // The main BackgroundActor is inside global.window_group which is
+        // The main Background actors are inside Main.uiGroup which are
         // hidden when displaying the overview, so we create a new
         // one. Instances of this class share a single CoglTexture behind the
         // scenes which allows us to show the background with different
         // rendering options without duplicating the texture data.
-        this._background = Meta.BackgroundActor.new_for_screen(global.screen);
-        this._background.hide();
-        global.overlay_group.add_actor(this._background);
+        this._backgroundGroup = new Meta.BackgroundGroup();
+        global.overlay_group.add_child(this._backgroundGroup);
+        this._backgroundGroup.hide();
+        this._bgManagers = [];
 
         this._spacing = 0;
 
@@ -171,6 +177,54 @@ Expo.prototype = {
     init: function() {
     },
 
+    _updateBackgrounds: function() {
+        for (let i = 0; i < this._bgManagers.length; i++)
+            this._bgManagers[i].destroy();
+
+        this._bgManagers = [];
+
+        for (let i = 0; i < Main.layoutManager.monitors.length; i++) {
+            let bgManager = new Background.BackgroundManager({ container: this._backgroundGroup,
+                                                               monitorIndex: i,
+                                                               vignette: true });
+            this._bgManagers.push(bgManager);
+        }
+    },
+
+    _unshadeBackgrounds: function() {
+        let backgrounds = this._backgroundGroup.get_children();
+        for (let i = 0; i < backgrounds.length; i++) {
+            Tweener.addTween(backgrounds[i],
+                             { brightness: 1.0,
+                               vignette_sharpness: 0.0,
+                               time: SHADE_ANIMATION_TIME,
+                               transition: 'easeOutQuad'
+                             });
+        }
+    },
+
+    _shadeBackgrounds: function() {
+        let backgrounds = this._backgroundGroup.get_children();
+        for (let i = 0; i < backgrounds.length; i++) {
+
+            if (backgrounds[i].monitor == Main.layoutManager.primaryIndex) {
+                Tweener.addTween(backgrounds[i],
+                                 { brightness: 0.1,
+                                   vignette_sharpness: 0.1,
+                                   time: SHADE_ANIMATION_TIME,
+                                   transition: 'easeOutQuad'
+                                 });
+            } else {
+                Tweener.addTween(backgrounds[i],
+                                 { brightness: 0.8,
+                                   vignette_sharpness: 0.7,
+                                   time: SHADE_ANIMATION_TIME,
+                                   transition: 'easeOutQuad'
+                                 });
+            }
+        }
+    },
+
     _relayout: function () {
         if (!this._expo) {
             // This function can be called as a response to the monitors-changed event,
@@ -223,6 +277,8 @@ Expo.prototype = {
         this._windowCloseArea.set_position((primary.width - this._windowCloseArea.width) / 2 , primary.height);
         this._windowCloseArea.set_size(this._windowCloseArea.width, this._windowCloseArea.height);
         this._windowCloseArea.raise_top();
+
+        this._updateBackgrounds();
     },
 
     _showCloseArea : function() {
@@ -277,8 +333,9 @@ Expo.prototype = {
         // Disable unredirection while in the overview
         Meta.disable_unredirect_for_screen(global.screen);
         global.window_group.hide();
+        Main.layoutManager._backgroundGroup.hide();
         this._group.show();
-        this._background.show();
+        this._backgroundGroup.show();
         this._addWorkspaceButton.show();
         this._expo.show();
 
@@ -323,11 +380,7 @@ Expo.prototype = {
         this._gradient.show();
         Main.panelManager.disablePanels();
 
-        this._background.dim_factor = 1;
-        Tweener.addTween(this._background,
-                            { dim_factor: 0.4,
-                              transition: 'easeOutQuad',
-                              time: ANIMATION_TIME});
+        this._shadeBackgrounds();
 
         this._coverPane.raise_top();
         this._coverPane.show();
@@ -447,13 +500,14 @@ Expo.prototype = {
         Meta.enable_unredirect_for_screen(global.screen);
 
         global.window_group.show();
+        Main.layoutManager._backgroundGroup.show();
 
         this._expo.hide();
         this._expo = null;
         this._addWorkspaceButton.hide();
         this._windowCloseArea.hide();
 
-        this._background.hide();
+        this._backgroundGroup.hide();
         this._gradient.hide();
 
         this.visible = false;
@@ -470,8 +524,6 @@ Expo.prototype = {
         this._syncInputMode();
         global.overlay_group.remove_actor(this._group);
         this._group.destroy();
-        global.overlay_group.remove_actor(this._background);
-        this._background.destroy();
 
         Main.layoutManager._chrome.updateRegions();
     }

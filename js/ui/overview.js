@@ -13,6 +13,7 @@ const Main = imports.ui.main;
 const MessageTray = imports.ui.messageTray;
 const Tweener = imports.ui.tweener;
 const WorkspacesView = imports.ui.workspacesView;
+const Background = imports.ui.background;
 
 // Time for initial animation going into Overview mode
 const ANIMATION_TIME = 0.25;
@@ -246,21 +247,11 @@ Overview.prototype = {
         if (this.visible || this.animationInProgress)
             return;
 
-        // The main BackgroundActor is inside global.window_group which is
-        // hidden when displaying the overview, so we create a new
-        // one. Instances of this class share a single CoglTexture behind the
-        // scenes which allows us to show the background with different
-        // rendering options without duplicating the texture data.
         this._background = new Clutter.Group();
         this._background.hide();
         global.overlay_group.add_actor(this._background);
 
-        this._desktopBackground = Meta.BackgroundActor.new_for_screen(global.screen);
-        this._background.add_actor(this._desktopBackground);
-
-        this._backgroundShade = new St.Bin({style_class: 'workspace-overview-background-shade'});
-        this._background.add_actor(this._backgroundShade);
-        this._backgroundShade.set_size(global.screen_width, global.screen_height);
+        this._createBackgrounds();
 
         this.visible = true;
         this.animationInProgress = true;
@@ -305,6 +296,17 @@ Overview.prototype = {
         this._coverPane.raise_top();
         this._coverPane.show();
         this.emit('showing');
+    },
+
+    _createBackgrounds: function() {
+        this._bgManagers = [];
+
+        for (let i = 0; i < Main.layoutManager.monitors.length; i++) {
+            let bgManager = new Background.BackgroundManager({ container: this._background,
+                                                               monitorIndex: i,
+                                                               vignette: true });
+            this._bgManagers.push(bgManager);
+        }
     },
 
     // showTemporarily:
@@ -435,6 +437,11 @@ Overview.prototype = {
         this._coverPane.destroy();
         global.overlay_group.remove_actor(this._background);
         this._background.destroy();
+
+        for (let i = 0; i < this._bgManagers.length; i++)
+            this._bgManagers[i].destroy();
+
+        this._bgManagers = [];
 
         // Re-enable unredirection
         Meta.enable_unredirect_for_screen(global.screen);

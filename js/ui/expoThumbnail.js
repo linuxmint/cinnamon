@@ -7,6 +7,7 @@ const Meta = imports.gi.Meta;
 const Cinnamon = imports.gi.Cinnamon;
 const Signals = imports.signals;
 const St = imports.gi.St;
+const Background = imports.ui.background;
 const DND = imports.ui.dnd;
 const Main = imports.ui.main;
 const Tweener = imports.ui.tweener;
@@ -373,8 +374,7 @@ ExpoWorkspaceThumbnail.prototype = {
         this.background = new Clutter.Group();
         this.contents.add_actor(this.background);
 
-        let desktopBackground = Meta.BackgroundActor.new_for_screen(global.screen);
-        this.background.add_actor(desktopBackground);
+        this._createBackgrounds();
 
         let backgroundShade = new St.Bin({style_class: 'workspace-overview-background-shade'});
         this.background.add_actor(backgroundShade);
@@ -434,6 +434,17 @@ ExpoWorkspaceThumbnail.prototype = {
         this.restack();
         this._slidePosition = 0; // Fully slid in
         this.setOverviewMode(forceOverviewMode);
+    },
+
+    _createBackgrounds: function() {
+        this._bgManagers = [];
+
+        for (let i = 0; i < Main.layoutManager.monitors.length; i++) {
+            let bgManager = new Background.BackgroundManager({ container: this.background,
+                                                               monitorIndex: i,
+                                                               vignette: false });
+            this._bgManagers.push(bgManager);
+        }
     },
 
     setOverviewMode: function(turnOn) {
@@ -650,6 +661,11 @@ ExpoWorkspaceThumbnail.prototype = {
             this.windows[i].destroy();
         }
         this.windows = null;
+
+        for (let i = 0; i < this._bgManagers.length; i++)
+            this._bgManagers[i].destroy();
+
+        this._bgManagers = [];
     },
 
     // Tests if @win belongs to this workspace and monitor
@@ -704,10 +720,7 @@ ExpoWorkspaceThumbnail.prototype = {
         }));
         this.contents.add_actor(clone.actor);
 
-        if (this.windows.length == 0)
-            clone.setStackAbove(this.background);
-        else
-            clone.setStackAbove(this.windows[this.windows.length - 1].actor);
+        clone.setStackAbove(this.background);
 
         this.windows.push(clone);
 

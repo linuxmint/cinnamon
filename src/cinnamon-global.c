@@ -95,7 +95,6 @@ enum {
   PROP_BOTTOM_WINDOW_GROUP,
   PROP_WINDOW_GROUP,
   PROP_TOP_WINDOW_GROUP,
-  PROP_BACKGROUND_ACTOR,
   PROP_WINDOW_MANAGER,
   PROP_SETTINGS,
   PROP_DATADIR,
@@ -192,9 +191,6 @@ cinnamon_global_get_property(GObject         *object,
       break;
     case PROP_TOP_WINDOW_GROUP:
       g_value_set_object (value, meta_get_top_window_group_for_screen (global->meta_screen));
-      break;
-    case PROP_BACKGROUND_ACTOR:
-      g_value_set_object (value, meta_get_background_actor_for_screen (global->meta_screen));
       break;
     case PROP_WINDOW_MANAGER:
       g_value_set_object (value, global->wm);
@@ -434,13 +430,6 @@ cinnamon_global_class_init (CinnamonGlobalClass *klass)
                                    g_param_spec_object ("top-window-group",
                                                         "Top Window Group",
                                                         "Actor holding popup menus and other actors which must appear on top of the panels",
-                                                        CLUTTER_TYPE_ACTOR,
-                                                        G_PARAM_READABLE));
-  g_object_class_install_property (gobject_class,
-                                   PROP_BACKGROUND_ACTOR,
-                                   g_param_spec_object ("background-actor",
-                                                        "Background Actor",
-                                                        "Actor drawing root window background",
                                                         CLUTTER_TYPE_ACTOR,
                                                         G_PARAM_READABLE));
   g_object_class_install_property (gobject_class,
@@ -875,20 +864,22 @@ global_stage_notify_height (GObject    *gobject,
   g_object_notify (G_OBJECT (global), "screen-height");
 }
 
-static void
-global_stage_before_paint (ClutterStage *stage,
-                           CinnamonGlobal  *global)
+static gboolean
+global_stage_before_paint (gpointer data)
 {
   cinnamon_perf_log_event (cinnamon_perf_log_get_default (),
                         "clutter.stagePaintStart");
+
+  return TRUE;
 }
 
-static void
-global_stage_after_paint (ClutterStage *stage,
-                          CinnamonGlobal  *global)
+static gboolean
+global_stage_after_paint (gpointer data)
 {
   cinnamon_perf_log_event (cinnamon_perf_log_get_default (),
                         "clutter.stagePaintDone");
+
+  return TRUE;
 }
 
 static void
@@ -1062,10 +1053,13 @@ _cinnamon_global_set_plugin (CinnamonGlobal *global,
   g_signal_connect (global->stage, "notify::height",
                     G_CALLBACK (global_stage_notify_height), global);
 
-  g_signal_connect (global->stage, "paint",
-                    G_CALLBACK (global_stage_before_paint), global);
-  g_signal_connect_after (global->stage, "paint",
-                          G_CALLBACK (global_stage_after_paint), global);
+ clutter_threads_add_repaint_func_full (CLUTTER_REPAINT_FLAGS_PRE_PAINT,
+                                        global_stage_before_paint,
+                                        NULL, NULL);
+
+  clutter_threads_add_repaint_func_full (CLUTTER_REPAINT_FLAGS_POST_PAINT,
+                                         global_stage_after_paint,
+                                         NULL, NULL);
 
   cinnamon_perf_log_define_event (cinnamon_perf_log_get_default(),
                                "clutter.stagePaintStart",
