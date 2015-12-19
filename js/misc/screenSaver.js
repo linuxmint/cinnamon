@@ -5,11 +5,13 @@ const Gio = imports.gi.Gio;
 
 const ScreenSaverIface = 
     '<node> \
-        <interface name="org.gnome.ScreenSaver"> \
+        <interface name="org.cinnamon.ScreenSaver"> \
         <method name="GetActive"> \
             <arg type="b" direction="out" /> \
         </method> \
-        <method name="Lock" /> \
+        <method name="Lock"> \
+            <arg type="s" direction="in" /> \
+        </method> \
         <method name="SetActive"> \
             <arg type="b" direction="in" /> \
         </method> \
@@ -25,8 +27,8 @@ function ScreenSaverProxy() {
     var self = new Gio.DBusProxy({ g_connection: Gio.DBus.session,
                                    g_interface_name: ScreenSaverInfo.name,
                                    g_interface_info: ScreenSaverInfo,
-                                   g_name: 'org.gnome.ScreenSaver',
-                                   g_object_path: '/org/gnome/ScreenSaver',
+                                   g_name: 'org.cinnamon.ScreenSaver',
+                                   g_object_path: '/org/cinnamon/ScreenSaver',
                                    g_flags: (Gio.DBusProxyFlags.DO_NOT_AUTO_START |
                                              Gio.DBusProxyFlags.DO_NOT_LOAD_PROPERTIES) });
     self.init(null);
