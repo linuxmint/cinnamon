@@ -519,7 +519,7 @@ Chrome.prototype = {
             if (!actorData.isToplevel)
                 continue;
 
-            if (this._screenSaverActive == true) {
+            if (this._screenSaverActive) {
                 visible = false;
             }
             else if (this._inOverview)
@@ -554,7 +554,7 @@ Chrome.prototype = {
     },
 
     _onScreenSaverActiveChanged: function(proxy, connection, screenSaverActive) {
-        this._screenSaverActive = screenSaverActive;
+        this._screenSaverActive = screenSaverActive[0];
         this._updateVisibility();
         this._queueUpdateRegions();
     },
