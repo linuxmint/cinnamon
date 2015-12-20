@@ -2,7 +2,6 @@
 
 const Gio = imports.gi.Gio;
 const Lang = imports.lang;
-const Mainloop = imports.mainloop;
 
 function BackgroundManager() {
     this._init();

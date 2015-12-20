@@ -1,5 +1,4 @@
 const Applet = imports.ui.applet;
-const Mainloop = imports.mainloop;
 const Gio = imports.gi.Gio;
 const Interfaces = imports.misc.interfaces;
 const Util = imports.misc.util;
@@ -14,6 +13,7 @@ const Pango = imports.gi.Pango;
 const Tooltips = imports.ui.tooltips;
 const Main = imports.ui.main;
 const Settings = imports.ui.settings;
+const SignalManager = imports.misc.signalManager;
 const Slider = imports.ui.slider;
 
 const MEDIA_PLAYER_2_PATH = "/org/mpris/MediaPlayer2";
@@ -282,6 +282,8 @@ Player.prototype = {
         if (!this._prop || !this._mediaServerPlayer || !this._mediaServer)
             return;
 
+        this.signals = new SignalManager.SignalManager(this);
+
         let mainBox = new PopupMenu.PopupMenuSection;
         this.addMenuItem(mainBox);
 
@@ -416,8 +418,6 @@ Player.prototype = {
             this._positionSlider.actor.hide();
         }
 
-        this._timeoutId = 0;
-
         this._setStatus(this._mediaServerPlayer.PlaybackStatus);
         this._trackId = {};
         this._setMetadata(this._mediaServerPlayer.Metadata);
@@ -426,7 +426,7 @@ Player.prototype = {
         this._wantedSeekValue = 0;
         this._updatePositionSlider();
 
-        this._mediaServerPlayerId = this._mediaServerPlayer.connectSignal('Seeked', Lang.bind(this, function(id, sender, value) {
+        this.signals.connect(this._mediaServerPlayer, "Seeked", function(id, sender, value){
             if (value > 0) {
                 this._setPosition(value);
             }
@@ -442,9 +442,9 @@ Player.prototype = {
                 this._setPosition(value);
 
             this._wantedSeekValue = 0;
-        }));
+        });
 
-        this._propChangedId = this._prop.connectSignal('PropertiesChanged', Lang.bind(this, function(proxy, sender, [iface, props]) {
+        this.signals.connect(this._prop, "PropertiesChanged", function(proxy, sender, [iface, props]){
                 if (props.PlaybackStatus)
                     this._setStatus(props.PlaybackStatus.unpack());
                 if (props.Metadata)
@@ -455,7 +455,7 @@ Player.prototype = {
                     this._setLoopStatus(props.LoopStatus.unpack());
                 if (props.Shuffle)
                     this._setShuffle(props.Shuffle.unpack());
-        }));
+        });
 
         //get the desktop entry and pass it to the applet
         this._prop.GetRemote(MEDIA_PLAYER_2_NAME, "DesktopEntry", Lang.bind(this, function(value){
@@ -717,24 +717,18 @@ Player.prototype = {
 
     _runTimer: function() {
         if (this._canSeek) {
-            if (this._timeoutId != 0) {
-                Mainloop.source_remove(this._timeoutId);
-                this._timeoutId = 0;
-            }
+            this.signals.removeTimeout("timer");
 
             if (this._playerStatus == 'Playing') {
                 this._getPosition();
                 this._timerTicker = 0;
-                this._timeoutId = Mainloop.timeout_add(1000, Lang.bind(this, this._runTimerCallback));
+                this.signals.addTimeout("timer", 1000, this._runTimerCallback);
             }
         }
     },
 
     _pauseTimer: function() {
-        if (this._timeoutId != 0) {
-            Mainloop.source_remove(this._timeoutId);
-            this._timeoutId = 0;
-        }
+        this.signals.removeTimeout("timer");
         this._updateTimer();
     },
 
@@ -815,14 +809,7 @@ Player.prototype = {
     },
 
     destroy: function() {
-        if (this._timeoutId != 0) {
-            Mainloop.source_remove(this._timeoutId);
-            this._timeoutId = 0;
-        }
-        if (this._mediaServerPlayer)
-            this._mediaServerPlayer.disconnectSignal(this._mediaServerPlayerId);
-        if (this._prop)
-            this._prop.disconnectSignal(this._propChangedId);
+        this.signals.finalize();
 
         PopupMenu.PopupMenuSection.prototype.destroy.call(this);
     }
@@ -896,6 +883,8 @@ MyApplet.prototype = {
 
             this.set_applet_icon_symbolic_name('audio-x-generic');
 
+            this.signals = new SignalManager.SignalManager(this);
+
             this._players = {};
             this._activePlayer = null;
 
@@ -921,7 +910,7 @@ MyApplet.prototype = {
                 ));
 
                 // watch players
-                this._ownerChangedId = this._dbus.connectSignal('NameOwnerChanged', Lang.bind(this,
+                this.signals.connect(this._dbus.connectSignal, "NameOwnerChanged",
                     function(proxy, sender, [name, old_owner, new_owner]) {
                         if (name_regex.test(name)) {
                             if (new_owner && !old_owner)
@@ -931,8 +920,7 @@ MyApplet.prototype = {
                             else
                                 this._changePlayerOwner(name, old_owner, new_owner);
                         }
-                    }
-                ));
+                    });
             }));
 
             this._control = new Gvc.MixerControl({ name: 'Cinnamon Volume Control' });
@@ -1022,11 +1010,8 @@ MyApplet.prototype = {
     on_applet_removed_from_panel : function() {
         if (this.hideSystray)
             this.unregisterSystrayIcons();
-        if (this._iconTimeoutId) {
-            Mainloop.source_remove(this._iconTimeoutId);
-        }
 
-        this._dbus.disconnectSignal(this._ownerChangedId);
+        this.signals.finalize();
 
         for(let i in this._players)
             this._players[i].destroy();
@@ -1091,10 +1076,7 @@ MyApplet.prototype = {
     },
 
     setIcon: function(icon, source) {
-        if(this._iconTimeoutId){
-            Mainloop.source_remove(this._iconTimeoutId);
-            this._iconTimeoutId = null;
-        }
+        this.signals.removeTimeout("icon");
 
         //save the icon
         if(source){
@@ -1108,11 +1090,11 @@ MyApplet.prototype = {
             if(source === "output"){
                 //if we have an active player, but are changing the volume, show the output icon and after three seconds change back to the player icon
                 this.set_applet_icon_symbolic_name(this._outputIcon);
-                this._iconTimeoutId = Mainloop.timeout_add(3000, Lang.bind(this, function(){
+                this.signals.addTimeout("icon", 3000, function(){
                     this._iconTimeoutId = null;
 
                     this.setIcon();
-                }));
+                });
             } else {
                 //if we have an active player and want to change the icon, change it immediately
                 if(this._playerIcon[1])
