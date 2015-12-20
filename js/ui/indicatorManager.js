@@ -1064,7 +1064,7 @@ IndicatorActor.prototype = {
     },
 
     _onIconButtonPressEvent: function(actor, event) {
-        let behavior = true;//global.settings.get_boolean("right-click-indicators");
+        let behavior = global.settings.get_boolean("right-click-indicators");
         let draggableParent = this._getDragable();
         if (draggableParent && (!draggableParent.inhibit))
             return false;
