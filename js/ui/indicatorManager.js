@@ -1021,8 +1021,10 @@ IndicatorActor.prototype = {
     },
 
     getToolTip: function() {
-        if(this._indicator.toolTip)
-            return this._indicator.toolTip;
+        // FIXME: The Tooltips are an object and is render in html format. To show the real tooltips
+        // (this._indicator.toolTip), we will need a good html parser.
+        // In the tooltips implementation, maybe imports.gi.WebKit and use Webkit.WebView and then loadData.
+        // So instead we will used the title as a tooltip.
         return this._indicator.title;
     },
 
@@ -1036,8 +1038,7 @@ IndicatorActor.prototype = {
     _updatedStatus: function() {
         if (this._indicator.status == SNIStatus.PASSIVE)
             this.actor.visible = false;
-        else if ((this._indicator.status == SNIStatus.ACTIVE || this._indicator.status == SNIStatus.NEEDS_ATTENTION)
-                 && !this._indicator.isInBlacklist())
+        else if (this._indicator.status == SNIStatus.ACTIVE || this._indicator.status == SNIStatus.NEEDS_ATTENTION)
             this.actor.visible = true;
         if ((this._menu)&&(!this.actor.visible))
             this._menu.close(false);
@@ -1063,7 +1064,7 @@ IndicatorActor.prototype = {
     },
 
     _onIconButtonPressEvent: function(actor, event) {
-        let behavior = global.settings.get_boolean("right-click-indicators");
+        let behavior = true;//global.settings.get_boolean("right-click-indicators");
         let draggableParent = this._getDragable();
         if (draggableParent && (!draggableParent.inhibit))
             return false;
@@ -1193,8 +1194,7 @@ IndicatorActor.prototype = {
                                 width,
                                 height,
                                 rowstride);
-
-                return new Clutter.Actor({
+                return new St.Icon({
                     style_class: 'applet-icon',
                     width: Math.min(width, iconSize),
                     height: Math.min(height, iconSize),
