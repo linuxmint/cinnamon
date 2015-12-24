@@ -297,7 +297,6 @@ MyApplet.prototype = {
     _getDeviceStatus: function(device) {
         let status = ""
         let [device_id, vendor, model, device_type, icon, percentage, state, seconds] = device;
-		  let indent = "      ";
 
         let time = Math.round(seconds / 60);
         let minutes = time % 60;
@@ -305,41 +304,41 @@ MyApplet.prototype = {
 
         if (state == UPDeviceState.CHARGING) {
             if (time == 0) {
-                status = _(indent + "Charging");
+                status = _("Charging");
             }
             else if (time > 60) {
                 if (minutes == 0) {
-                    status = ngettext(indent + "Charging - %d hour until fully charged", indent + "Charging - %d hours until fully charged", hours).format(hours);
+                    status = ngettext("Charging - %d hour until fully charged", "Charging - %d hours until fully charged", hours).format(hours);
                 } 
                 else {
                     /* TRANSLATORS: this is a time string, as in "%d hours %d minutes remaining" */
-                    let template = _(indent + "Charging - %d %s %d %s until fully charged");
+                    let template = _("Charging - %d %s %d %s until fully charged");
                     status = template.format (hours, ngettext("hour", "hours", hours), minutes, ngettext("minute", "minutes", minutes));
                 }
             } 
             else {
-                status = ngettext(indent + "Charging - %d minute until fully charged", indent + "Charging - %d minutes until fully charged", minutes).format(minutes);
+                status = ngettext("Charging - %d minute until fully charged", "Charging - %d minutes until fully charged", minutes).format(minutes);
             }
         }
         else if (state == UPDeviceState.FULLY_CHARGED) {
-            status = _(indent + "Fully charged");
+            status = _("Fully charged");
         }
         else {
             if (time == 0) {
-                status = _(indent + "Using battery power");
+                status = _("Using battery power");
             }
             else if (time > 60) {
                 if (minutes == 0) {
-                    status = ngettext(indent + "Using battery power - %d hour remaining", indent + "Using battery power - %d hours remaining", hours).format(hours);
+                    status = ngettext("Using battery power - %d hour remaining", "Using battery power - %d hours remaining", hours).format(hours);
                 } 
                 else {
                     /* TRANSLATORS: this is a time string, as in "%d hours %d minutes remaining" */
-                    let template = _(indent + "Using battery power - %d %s %d %s remaining");
+                    let template = _("Using battery power - %d %s %d %s remaining");
                     status = template.format (hours, ngettext("hour", "hours", hours), minutes, ngettext("minute", "minutes", minutes));
                 }
             } 
             else {
-                status = ngettext(indent + "Using battery power - %d minute remaining", indent + "Using battery power - %d minutes remaining", minutes).format(minutes);
+                status = ngettext("Using battery power - %d minute remaining", "Using battery power - %d minutes remaining", minutes).format(minutes);
             }
         }
 
