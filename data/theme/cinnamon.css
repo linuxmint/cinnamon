@@ -202,6 +202,7 @@ StScrollBar StButton#vhandle:hover {
 .popup-inactive-menu-item {
 	font-weight: normal;
 	color: #999;
+	padding-left: 20px;
 }
 .popup-subtitle-menu-item {
 	font-weight: bold;
