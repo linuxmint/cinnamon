@@ -6,10 +6,7 @@
  * The main applet object listens to different events and updates the window
  * list accordingly. Since addition/removal of windows is emitted by the
  * workspace, we have to listen to the changes to the number of workspaces and
- * update our signals accordingly as well. It also listens to the change in
- * window state (eg tile/maximize) since the window titles are displayed
- * differently in the AppMenuButton for each different state, eg minimized
- * windows are shown as [Title].
+ * update our signals accordingly as well.
  *
  * For each window the main applet object wants to show, an AppMenuButton is
  * created. This is created for every window in the monitors it is responsible
@@ -401,15 +398,6 @@ AppMenuButton.prototype = {
         title = title.replace(/\s/g, " ");
         if (title.length > MAX_TEXT_LENGTH)
             title = title.substr(0, MAX_TEXT_LENGTH);
-
-        if (this.metaWindow.minimized) {
-            title = "["+ title +"]";
-        } else if (this.metaWindow.tile_type == Meta.WindowTileType.TILED) {
-            title = "|"+ title;
-        }
-        else if (this.metaWindow.tile_type == Meta.WindowTileType.SNAPPED) {
-            title = "||"+ title;
-        }
 
         this._label.set_text(title);
         if (this._tooltip  && this._tooltip.set_text)
