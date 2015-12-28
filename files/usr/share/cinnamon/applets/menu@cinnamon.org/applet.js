@@ -55,78 +55,53 @@ let appsys = Cinnamon.AppSystem.get_default();
  * want to use it.
  */ 
 
-function VisibleChildIterator(parent, container) {
-    this._init(parent, container);
+function VisibleChildIterator(container) {
+    this._init(container);
 }
 
 VisibleChildIterator.prototype = {
-    _init: function(parent, container) {
+    _init: function(container) {
         this.container = container;
-        this._parent = parent;
-        this._num_children = 0;
         this.reloadVisible();
     },
 
     reloadVisible: function() {
-        this.visible_children = new Array();
-        this.abs_index = new Array();
-        let children = this.container.get_children();
-        for (let i = 0; i < children.length; i++) {
-            let child = children[i];
-            if (child.visible) {
-                this.visible_children.push(child);
-                this.abs_index.push(i);
-            }
-        }
-        this._num_children = this.visible_children.length;
+        this.array = this.container.get_focus_chain()
+            .filter(x => !(x._delegate instanceof PopupMenu.PopupSeparatorMenuItem));
     },
 
-    getNextVisible: function(cur_child) {
-        if (this.visible_children.indexOf(cur_child) == this._num_children-1)
-            return this.visible_children[0];
-        else {
-            let res = this.visible_children[this.visible_children.indexOf(cur_child)+1]
-            if (res._delegate instanceof PopupMenu.PopupSeparatorMenuItem)
-                return this.getNextVisible(res);
-            else
-                return res;
-        }
+    getNextVisible: function(curChild) {
+        return this.getVisibleItem(this.array.indexOf(curChild) + 1);
     },
 
-    getPrevVisible: function(cur_child) {
-        if (this.visible_children.indexOf(cur_child) == 0)
-            return this.visible_children[this._num_children-1];
-        else {
-            let res = this.visible_children[this.visible_children.indexOf(cur_child)-1]
-            if (res._delegate instanceof PopupMenu.PopupSeparatorMenuItem)
-                return this.getPrevVisible(res);
-            else
-                return res;
-        }
+    getPrevVisible: function(curChild) {
+        return this.getVisibleItem(this.array.indexOf(curChild) - 1);
     },
 
     getFirstVisible: function() {
-        return this.visible_children[0];
+        return this.array[0];
     },
 
     getLastVisible: function() {
-        return this.visible_children[this._num_children-1];
+        return this.array[this.array.length - 1];
     },
 
-    getVisibleIndex: function(cur_child) {
-        return this.visible_children.indexOf(cur_child);
+    getVisibleIndex: function(curChild) {
+        return this.array.indexOf(curChild);
     },
 
     getVisibleItem: function(index) {
-        return this.visible_children[index];
+        let len = this.array.length;
+        index = ((index % len) + len) % len;
+        return this.array[index];
     },
 
     getNumVisibleChildren: function() {
-        return this._num_children;
+        return this.array.length;
     },
 
     getAbsoluteIndexOfChild: function(child) {
-        return this.abs_index[this.visible_children.indexOf(child)];
+        return this.container.get_children().indexOf(child);
     }
 };
 
@@ -1086,87 +1061,82 @@ MyApplet.prototype = {
         Applet.TextIconApplet.prototype._init.call(this, orientation, panel_height, instance_id);
         this.initial_load_done = false;
 
-        try {
-            this.set_applet_tooltip(_("Menu"));
-            this.menuManager = new PopupMenu.PopupMenuManager(this);
-            this.menu = new Applet.AppletPopupMenu(this, orientation);
-            this.menuManager.addMenu(this.menu);   
-                        
-            this.actor.connect('key-press-event', Lang.bind(this, this._onSourceKeyPress));
+        this.set_applet_tooltip(_("Menu"));
+        this.menuManager = new PopupMenu.PopupMenuManager(this);
+        this.menu = new Applet.AppletPopupMenu(this, orientation);
+        this.menuManager.addMenu(this.menu);
 
-            this.settings = new Settings.AppletSettings(this, "menu@cinnamon.org", instance_id);
+        this.actor.connect('key-press-event', Lang.bind(this, this._onSourceKeyPress));
 
-            this.settings.bindProperty(Settings.BindingDirection.IN, "show-places", "showPlaces", this._refreshBelowApps, null);
+        this.settings = new Settings.AppletSettings(this, "menu@cinnamon.org", instance_id);
 
-            this.settings.bindProperty(Settings.BindingDirection.IN, "activate-on-hover", "activateOnHover", this._updateActivateOnHover, null);
-            this._updateActivateOnHover();
+        this.settings.bindProperty(Settings.BindingDirection.IN, "show-places", "showPlaces", this._refreshBelowApps, null);
 
-            this.menu.actor.add_style_class_name('menu-background');
-            this.menu.connect('open-state-changed', Lang.bind(this, this._onOpenStateChanged));                                
+        this.settings.bindProperty(Settings.BindingDirection.IN, "activate-on-hover", "activateOnHover", this._updateActivateOnHover, null);
+        this._updateActivateOnHover();
 
-            this.settings.bindProperty(Settings.BindingDirection.IN, "menu-icon-custom", "menuIconCustom", this._updateIconAndLabel, null);
-            this.settings.bindProperty(Settings.BindingDirection.IN, "menu-icon", "menuIcon", this._updateIconAndLabel, null);
-            this.settings.bindProperty(Settings.BindingDirection.IN, "menu-label", "menuLabel", this._updateIconAndLabel, null);
-            this.settings.bindProperty(Settings.BindingDirection.IN, "overlay-key", "overlayKey", this._updateKeybinding, null);
+        this.menu.actor.add_style_class_name('menu-background');
+        this.menu.connect('open-state-changed', Lang.bind(this, this._onOpenStateChanged));
 
-            this._updateKeybinding();
+        this.settings.bindProperty(Settings.BindingDirection.IN, "menu-icon-custom", "menuIconCustom", this._updateIconAndLabel, null);
+        this.settings.bindProperty(Settings.BindingDirection.IN, "menu-icon", "menuIcon", this._updateIconAndLabel, null);
+        this.settings.bindProperty(Settings.BindingDirection.IN, "menu-label", "menuLabel", this._updateIconAndLabel, null);
+        this.settings.bindProperty(Settings.BindingDirection.IN, "overlay-key", "overlayKey", this._updateKeybinding, null);
 
-            Main.themeManager.connect("theme-set", Lang.bind(this, this._updateIconAndLabel));
-            this._updateIconAndLabel();
+        this._updateKeybinding();
 
-            this._searchInactiveIcon = new St.Icon({ style_class: 'menu-search-entry-icon',
-                                               icon_name: 'edit-find',
-                                               icon_type: St.IconType.SYMBOLIC });
-            this._searchActiveIcon = new St.Icon({ style_class: 'menu-search-entry-icon',
-                                             icon_name: 'edit-clear',
-                                             icon_type: St.IconType.SYMBOLIC });
-            this._searchIconClickedId = 0;
-            this._applicationsButtons = new Array();
-            this._applicationsButtonFromApp = new Object();
-            this._favoritesButtons = new Array();
-            this._placesButtons = new Array();
-            this._transientButtons = new Array();
-            this._recentButtons = new Array();
-            this._categoryButtons = new Array();
-            this._searchProviderButtons = new Array();
-            this._selectedItemIndex = null;
-            this._previousSelectedActor = null;
-            this._previousVisibleIndex = null;
-            this._previousTreeSelectedActor = null;
-            this._activeContainer = null;
-            this._activeActor = null;
-            this._applicationsBoxWidth = 0;
-            this.menuIsOpening = false;
-            this._knownApps = new Array(); // Used to keep track of apps that are already installed, so we can highlight newly installed ones
-            this._appsWereRefreshed = false;
-            this._canUninstallApps = GLib.file_test("/usr/bin/cinnamon-remove-application", GLib.FileTest.EXISTS);
-            this.RecentManager = new DocInfo.DocManager();
-            this.privacy_settings = new Gio.Settings( {schema: PRIVACY_SCHEMA} );
-            this._display();
-            appsys.connect('installed-changed', Lang.bind(this, this._refreshAll));
-            AppFavorites.getAppFavorites().connect('changed', Lang.bind(this, this._refreshFavs));
-            this.settings.bindProperty(Settings.BindingDirection.IN, "hover-delay", "hover_delay_ms", this._update_hover_delay, null);
-            this._update_hover_delay();
-            Main.placesManager.connect('places-updated', Lang.bind(this, this._refreshBelowApps));
-            this.RecentManager.connect('changed', Lang.bind(this, this._refreshRecent));
-            this.privacy_settings.connect("changed::" + REMEMBER_RECENT_KEY, Lang.bind(this, this._refreshRecent));
-            this._fileFolderAccessActive = false;
-            this._pathCompleter = new Gio.FilenameCompleter();
-            this._pathCompleter.set_dirs_only(false);
-            this.lastAcResults = new Array();
-            this.settings.bindProperty(Settings.BindingDirection.IN, "search-filesystem", "searchFilesystem", null, null);
+        Main.themeManager.connect("theme-set", Lang.bind(this, this._updateIconAndLabel));
+        this._updateIconAndLabel();
 
-            // We shouldn't need to call refreshAll() here... since we get a "icon-theme-changed" signal when CSD starts.
-            // The reason we do is in case the Cinnamon icon theme is the same as the one specificed in GTK itself (in .config)
-            // In that particular case we get no signal at all.
-            this._refreshAll();
+        this._searchInactiveIcon = new St.Icon({ style_class: 'menu-search-entry-icon',
+            icon_name: 'edit-find',
+            icon_type: St.IconType.SYMBOLIC });
+        this._searchActiveIcon = new St.Icon({ style_class: 'menu-search-entry-icon',
+            icon_name: 'edit-clear',
+            icon_type: St.IconType.SYMBOLIC });
+        this._searchIconClickedId = 0;
+        this._applicationsButtons = new Array();
+        this._applicationsButtonFromApp = new Object();
+        this._favoritesButtons = new Array();
+        this._placesButtons = new Array();
+        this._transientButtons = new Array();
+        this._recentButtons = new Array();
+        this._categoryButtons = new Array();
+        this._searchProviderButtons = new Array();
+        this._selectedItemIndex = null;
+        this._previousSelectedActor = null;
+        this._previousVisibleIndex = null;
+        this._previousTreeSelectedActor = null;
+        this._activeContainer = null;
+        this._activeActor = null;
+        this._applicationsBoxWidth = 0;
+        this.menuIsOpening = false;
+        this._knownApps = new Array(); // Used to keep track of apps that are already installed, so we can highlight newly installed ones
+        this._appsWereRefreshed = false;
+        this._canUninstallApps = GLib.file_test("/usr/bin/cinnamon-remove-application", GLib.FileTest.EXISTS);
+        this.RecentManager = new DocInfo.DocManager();
+        this.privacy_settings = new Gio.Settings( {schema_id: PRIVACY_SCHEMA} );
+        this._display();
+        appsys.connect('installed-changed', Lang.bind(this, this._refreshAll));
+        AppFavorites.getAppFavorites().connect('changed', Lang.bind(this, this._refreshFavs));
+        this.settings.bindProperty(Settings.BindingDirection.IN, "hover-delay", "hover_delay_ms", this._update_hover_delay, null);
+        this._update_hover_delay();
+        Main.placesManager.connect('places-updated', Lang.bind(this, this._refreshBelowApps));
+        this.RecentManager.connect('changed', Lang.bind(this, this._refreshRecent));
+        this.privacy_settings.connect("changed::" + REMEMBER_RECENT_KEY, Lang.bind(this, this._refreshRecent));
+        this._fileFolderAccessActive = false;
+        this._pathCompleter = new Gio.FilenameCompleter();
+        this._pathCompleter.set_dirs_only(false);
+        this.lastAcResults = new Array();
+        this.settings.bindProperty(Settings.BindingDirection.IN, "search-filesystem", "searchFilesystem", null, null);
 
-            St.TextureCache.get_default().connect("icon-theme-changed", Lang.bind(this, this.onIconThemeChanged));
-            this._recalc_height();
-        }
-        catch (e) {
-            global.logError(e);
-        }
+        // We shouldn't need to call refreshAll() here... since we get a "icon-theme-changed" signal when CSD starts.
+        // The reason we do is in case the Cinnamon icon theme is the same as the one specificed in GTK itself (in .config)
+        // In that particular case we get no signal at all.
+        this._refreshAll();
+
+        St.TextureCache.get_default().connect("icon-theme-changed", Lang.bind(this, this.onIconThemeChanged));
+        this._recalc_height();
     },
 
     _updateKeybinding: function() {
@@ -1511,7 +1481,7 @@ MyApplet.prototype = {
                 this._previousSelectedActor = null;
             }
             if (this._previousTreeSelectedActor && this._activeContainer !== this.categoriesBox &&
-                    parent !== this._activeContainer && button !== this._previousTreeSelectedActor) {
+                    parent !== this._activeContainer && button !== this._previousTreeSelectedActor && !this.searchActive) {
                 this._previousTreeSelectedActor.style_class = "menu-category-button";
             }
             if (parent != this._activeContainer) {
@@ -1540,7 +1510,8 @@ MyApplet.prototype = {
             if (this._previousSelectedActor._delegate instanceof ApplicationButton ||
                 this._previousSelectedActor._delegate instanceof RecentButton ||
                 this._previousSelectedActor._delegate instanceof SearchProviderResultButton ||
-                this._previousSelectedActor._delegate instanceof PlaceButton)
+                this._previousSelectedActor._delegate instanceof PlaceButton ||
+                this._previousSelectedActor._delegate instanceof RecentClearButton)
                 this._previousSelectedActor.style_class = "menu-application-button";
             else if (this._previousSelectedActor._delegate instanceof FavoritesButton ||
                      this._previousSelectedActor._delegate instanceof SystemButton)
@@ -1692,7 +1663,6 @@ MyApplet.prototype = {
                     let prevIdx = this.catBoxIter.getVisibleIndex(this._previousTreeSelectedActor);
                     let nextIdx = this.catBoxIter.getVisibleIndex(this.placesButton.actor);
                     let idxDiff = Math.abs(prevIdx - nextIdx);
-                    let numVisible = this.catBoxIter.getNumVisibleChildren();
                     if (idxDiff <= 1 || Math.min(prevIdx, nextIdx) < 0) {
                         this._previousTreeSelectedActor = this.placesButton.actor;
                     }
@@ -1778,7 +1748,6 @@ MyApplet.prototype = {
                 } else {
                     let prevIdx = this.catBoxIter.getVisibleIndex(this._previousTreeSelectedActor);
                     let nextIdx = this.catBoxIter.getVisibleIndex(this.recentButton.actor);
-                    let numVisible = this.catBoxIter.getNumVisibleChildren();
                     
                     if (Math.abs(prevIdx - nextIdx) <= 1) {
                         this._previousTreeSelectedActor = this.recentButton.actor;
@@ -1937,6 +1906,7 @@ MyApplet.prototype = {
                                                 this._select_category(dir, categoryButton);
                                             } else {
                                                 categoryButton.actor.style_class = "menu-category-button";
+                                                
                                             }
                                         }
                                 });
@@ -2040,7 +2010,7 @@ MyApplet.prototype = {
         button.activate = Lang.bind(this, function() {
             this.menu.close();
 
-            let screensaver_settings = new Gio.Settings({ schema: "org.cinnamon.desktop.screensaver" });
+            let screensaver_settings = new Gio.Settings({ schema_id: "org.cinnamon.desktop.screensaver" });
             let screensaver_dialog = Gio.file_new_for_path("/usr/bin/cinnamon-screensaver-command");    
             if (screensaver_dialog.query_exists(null)) {
                 if (screensaver_settings.get_boolean("ask-for-away-message")) {                                    
@@ -2051,7 +2021,7 @@ MyApplet.prototype = {
                 }
             }
             else {                
-                this._screenSaverProxy.LockRemote();
+                this._screenSaverProxy.LockRemote("");
             }                        
         });
         
@@ -2216,8 +2186,11 @@ MyApplet.prototype = {
                                                 accessible_role: Atk.Role.LIST });
         this.applicationsScrollBox = new St.ScrollView({ x_fill: true, y_fill: false, y_align: St.Align.START, style_class: 'vfade menu-applications-scrollbox' });
 
-        this.a11y_settings = new Gio.Settings({ schema: "org.cinnamon.desktop.a11y.applications" });
+        this.a11y_settings = new Gio.Settings({ schema_id: "org.cinnamon.desktop.a11y.applications" });
         this.a11y_settings.connect("changed::screen-magnifier-enabled", Lang.bind(this, this._updateVFade));
+        this.a11y_mag_settings = new Gio.Settings({ schema_id: "org.cinnamon.desktop.a11y.magnifier" });
+        this.a11y_mag_settings.connect("changed::mag-factor", Lang.bind(this, this._updateVFade));
+
         this._updateVFade();
 
         this.settings.bindProperty(Settings.BindingDirection.IN, "enable-autoscroll", "autoscroll_enabled", this._update_autoscroll, null);
@@ -2263,11 +2236,11 @@ MyApplet.prototype = {
         this.selectedAppDescription = new St.Label({ style_class: 'menu-selected-app-description', text: "" });
         this.selectedAppBox.add_actor(this.selectedAppDescription);
         section.actor.add_actor(this.selectedAppBox);
-        this.appBoxIter = new VisibleChildIterator(this, this.applicationsBox);
+        this.appBoxIter = new VisibleChildIterator(this.applicationsBox);
         this.applicationsBox._vis_iter = this.appBoxIter;
-        this.catBoxIter = new VisibleChildIterator(this, this.categoriesBox);
+        this.catBoxIter = new VisibleChildIterator(this.categoriesBox);
         this.categoriesBox._vis_iter = this.catBoxIter;
-        this.favBoxIter = new VisibleChildIterator(this, this.favoritesBox);
+        this.favBoxIter = new VisibleChildIterator(this.favoritesBox);
         this.favoritesBox._vis_iter = this.favBoxIter;
         Mainloop.idle_add(Lang.bind(this, function() {
             this._clearAllSelections(true);
@@ -2275,7 +2248,8 @@ MyApplet.prototype = {
     },
 
     _updateVFade: function() {
-        let mag_on = this.a11y_settings.get_boolean("screen-magnifier-enabled");
+        let mag_on = this.a11y_settings.get_boolean("screen-magnifier-enabled") &&
+                     this.a11y_mag_settings.get_double("mag-factor") > 1.0;
         if (mag_on) {
             this.applicationsScrollBox.style_class = "menu-applications-scrollbox";
         } else {

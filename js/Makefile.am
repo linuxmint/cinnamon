@@ -33,6 +33,8 @@ nobase_dist_js_DATA = \
 	ui/boxpointer.js	\
 	ui/checkBox.js		\
 	ui/radioButton.js	\
+	ui/dbusMenu.js		\
+	ui/indicatorManager.js	\
 	ui/desklet.js		\
 	ui/deskletManager.js	\
 	ui/dnd.js		\
@@ -66,6 +68,8 @@ nobase_dist_js_DATA = \
 	ui/popupMenu.js		\
 	ui/runDialog.js		\
 	ui/scripting.js		\
+	ui/separator.js 	\
+	ui/slider.js 		\
 	ui/soundManager.js  \
 	ui/search.js		\
 	ui/settings.js		\

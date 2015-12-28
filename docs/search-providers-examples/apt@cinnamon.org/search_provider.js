@@ -3,7 +3,7 @@ const Cinnamon = imports.gi.Cinnamon;
 const SearchProviderManager = imports.ui.searchProviderManager;
 const Lang = imports.lang;
 
-var default_icon_app = Cinnamon.AppSystem.get_default().lookup_app("mintInstall.desktop");
+var default_icon_app = Cinnamon.AppSystem.get_default().lookup_app("mintinstall.desktop");
 var current_pattern;
 
 function dbus_push_results(results, pattern)

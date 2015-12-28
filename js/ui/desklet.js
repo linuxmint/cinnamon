@@ -24,13 +24,13 @@ const DESKLET_DESTROY_TIME = 0.5;
 
 /**
  * #Desklet
+ * @short_description: Base desklet class to be inherited
  * @metadata (dictionary): Metadata of desklet
  * @actor (St.BoxLayout): Actor of desklet
  * @content (St.Bin): The actor containing the content of the actor
  * @instance_id (int): Instance id of the desklet
  *
- * #Desklet is a base class in which other desklets
- * can inherit
+ * #Desklet is a base class in which other desklets can inherit
  */
 function Desklet(metadata, desklet_id){
     this._init(metadata, desklet_id);
@@ -184,27 +184,6 @@ Desklet.prototype = {
     _onButtonReleaseEvent: function(actor, event) {
         if (event.get_button() == 3) {
             this._menu.toggle();
-            // Check if menu gets out of monitor. Move menu to left side if so
-
-            // Find x-position of right edge of monitor
-            let rightEdge;
-            for (let i = 0; i < Main.layoutManager.monitors.length; i++) {
-                let monitor = Main.layoutManager.monitors[i];
-
-                if (monitor.x <= this.actor.x && monitor.y <= this.actor.y &&
-                    monitor.x + monitor.width > this.actor.x &&
-                    monitor.y + monitor.height > this.actor.y) {
-                    rightEdge = monitor.x + monitor.width;
-                    break;
-                }
-            }
-
-            if (this.actor.x + this.actor.width + this._menu.actor.width > rightEdge) {
-                this._menu.setArrowSide(St.Side.RIGHT);
-            } else {
-                this._menu.setArrowSide(St.Side.LEFT);
-            }
-
         } else {
             if (this._menu.isOpen) {
                 this._menu.toggle();

@@ -22,14 +22,14 @@ import sys
 from gi.repository import GLib
 
 try:
-    sys.path.append('files/usr/lib/cinnamon-settings/modules')
-    sys.path.append('files/usr/lib/cinnamon-settings/bin')
-    mod_files = glob.glob('files/usr/lib/cinnamon-settings/modules/*.py')
+    sys.path.append('files/usr/share/cinnamon/cinnamon-settings/modules')
+    sys.path.append('files/usr/share/cinnamon/cinnamon-settings/bin')
+    mod_files = glob.glob('files/usr/share/cinnamon/cinnamon-settings/modules/*.py')
     mod_files.sort()
     if len(mod_files) is 0:
         raise Exception("No settings modules found!!")
     for i in range(len(mod_files)):
-        mod_files[i] = mod_files[i].split('/')[5]
+        mod_files[i] = mod_files[i].split('/')[-1]
         mod_files[i] = mod_files[i].split('.')[0]
         if mod_files[i][0:3] != "cs_":
             raise Exception("Settings modules must have a prefix of 'cs_' !!")

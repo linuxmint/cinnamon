@@ -113,7 +113,7 @@ NotificationDaemon.prototype = {
         Main.statusIconDispatcher.connect('message-icon-removed', Lang.bind(this, this._onTrayIconRemoved));
 
 // Settings
-        this.settings = new Gio.Settings({ schema: "org.cinnamon.desktop.notifications" });
+        this.settings = new Gio.Settings({ schema_id: "org.cinnamon.desktop.notifications" });
         function setting(self, source, type, camelCase, dashed) {
             function updater() { self[camelCase] = source["get_"+type](dashed); }
             source.connect('changed::'+dashed, updater);
@@ -644,11 +644,27 @@ Source.prototype = {
         return true;
     },
 
+    _getApp: function() {
+        let app;
+
+        app = Cinnamon.WindowTracker.get_default().get_app_from_pid(this.pid);
+        if (app != null)
+            return app;
+
+        if (this.trayIcon) {
+            app = Cinnamon.AppSystem.get_default().lookup_wmclass(this.trayIcon.wmclass);
+            if (app != null)
+                return app;
+        }
+
+        return null;
+    },
+
     _setApp: function() {
         if (this.app)
             return;
 
-        this.app = Cinnamon.WindowTracker.get_default().get_app_from_pid(this.pid);
+        this.app = this._getApp();
         if (!this.app)
             return;
 

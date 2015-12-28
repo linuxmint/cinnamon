@@ -21,7 +21,7 @@ const WINDOW_ANIMATION_TIME = 0.25;
 const TILE_HUD_ANIMATION_TIME = 0.15;
 const DIM_TIME = 0.500;
 const DIM_DESATURATION = 0.6;
-const DIM_BRIGHTNESS = -0.1;
+const DIM_BRIGHTNESS = -0.2;
 const UNDIM_TIME = 0.250;
 
 /* edge zones for tiling/snapping identification
@@ -179,6 +179,10 @@ TilePreview.prototype = {
             this.actor.remove_style_class_name('snap');
         else
             this.actor.add_style_class_name('snap');
+    },
+
+    destroy: function() {
+        this.actor.destroy();
     }
 };
 
@@ -191,7 +195,7 @@ HudPreview.prototype = {
         this.actor = new St.Bin({ style_class: 'tile-hud', important: true });
         global.window_group.add_actor(this.actor);
 
-        this._tileHudSettings = new Gio.Settings({ schema: "org.cinnamon.muffin" });
+        this._tileHudSettings = new Gio.Settings({ schema_id: "org.cinnamon.muffin" });
         this._tileHudSettings.connect("changed::tile-hud-threshold", Lang.bind(this, this._onTileHudSettingsChanged));
 
         this._onTileHudSettingsChanged();
@@ -385,6 +389,10 @@ HudPreview.prototype = {
             this.actor.remove_style_class_name('snap');
         else
             this.actor.add_style_class_name('snap');
+    },
+
+    destroy: function() {
+        this.actor.destroy();
     }
 }
 
@@ -414,7 +422,7 @@ WindowManager.prototype = {
         };
 
         this._snapOsd = null;
-        this._workspace_osd = null;
+        this._workspace_osd_array = [];
 
         this._tilePreview = null;
         this._hudPreview = null;
@@ -476,7 +484,7 @@ WindowManager.prototype = {
         global.screen.connect ("hide-snap-osd", Lang.bind (this, this._hideSnapOSD));
         global.screen.connect ("show-workspace-osd", Lang.bind (this, this.showWorkspaceOSD));
 
-        this.settings = new Gio.Settings({schema: "org.cinnamon.muffin"});
+        this.settings = new Gio.Settings({schema_id: "org.cinnamon.muffin"});
     },
 
     blockAnimations: function() {
@@ -656,22 +664,21 @@ WindowManager.prototype = {
         actor._windowType = actor.meta_window.get_window_type();
         actor._notifyWindowTypeSignalId = actor.meta_window.connect('notify::window-type', Lang.bind(this, function () {
             let type = actor.meta_window.get_window_type();
-            if (type == actor._windowType)
-                return;
-            if (type == Meta.WindowType.MODAL_DIALOG ||
-                actor._windowType == Meta.WindowType.MODAL_DIALOG) {
-                let parent = actor.get_meta_window().get_transient_for();
-                if (parent)
-                    this._checkDimming(parent);
-            }
-
             actor._windowType = type;
         }));
 
+        if (actor.meta_window.is_attached_dialog()) {
+            this._checkDimming(actor.get_meta_window().get_transient_for());
+        }
+
         if (actor.get_meta_window()._cinnamonwm_has_origin === true) {
-            // Returns false if unable to find window origin
-            if (this._startWindowEffect(cinnamonwm, "unminimize", actor, null, "minimize"))
+            Main.soundManager.play('minimize');
+            try {
+                this._startWindowEffect(cinnamonwm, "unminimize", actor, null, "minimize")
                 return;
+            } catch(e) {
+                //catch "no origin found"
+            }
         } else if (actor.meta_window.get_window_type() == Meta.WindowType.NORMAL) {
             Main.soundManager.play('map');
         }
@@ -687,6 +694,12 @@ WindowManager.prototype = {
         actor.orig_opacity = actor.opacity;
 
         let window = actor.meta_window;
+
+        if (window.is_attached_dialog()) {
+            let parent = window.get_transient_for();
+            this._checkDimming(parent, window);
+        }
+
         if (actor._notifyWindowTypeSignalId) {
             window.disconnect(actor._notifyWindowTypeSignalId);
             actor._notifyWindowTypeSignalId = 0;
@@ -752,7 +765,7 @@ WindowManager.prototype = {
                  * force it to show and then don't animate it, so it stays
                  * there while other windows move. */
                 window.show_all();
-                this._movingWindow == undefined;
+                this._movingWindow = undefined;
             } else if (window.get_workspace() == from) {
                 if (window.origX == undefined) {
                     window.origX = window.x;
@@ -790,9 +803,9 @@ WindowManager.prototype = {
             }
         }
 
-        Mainloop.timeout_add(WINDOW_ANIMATION_TIME * 1000, function() {
+        Tweener.addTween(this, {time: WINDOW_ANIMATION_TIME, onComplete: function() {
             cinnamonwm.completed_switch_workspace();
-        });
+        }});
     },
 
     _showTilePreview: function(cinnamonwm, window, tileRect, monitorIndex, snapQueued) {
@@ -805,6 +818,8 @@ WindowManager.prototype = {
         if (!this._tilePreview)
             return;
         this._tilePreview.hide();
+        this._tilePreview.destroy();
+        this._tilePreview = null;
     },
 
     _showHudPreview: function(cinnamonwm, currentProximityZone, workArea, snapQueued) {
@@ -819,51 +834,67 @@ WindowManager.prototype = {
         if (!this._hudPreview)
             return;
         this._hudPreview.hide();
+        this._hudPreview.destroy();
+        this._hudPreview = null;
     },
 
     showWorkspaceOSD : function() {
         this._hideSnapOSD();
         this._hideWorkspaceOSD();
         if (global.settings.get_boolean("workspace-osd-visible")) {
-            let current_workspace_index = global.screen.get_active_workspace_index();
-            let monitor = Main.layoutManager.primaryMonitor;
-            if (this._workspace_osd == null)
-                this._workspace_osd = new St.Label({style_class:'workspace-osd', important: true});
-            this._workspace_osd.set_text(Main.getWorkspaceName(current_workspace_index));
-            this._workspace_osd.set_opacity = 0;
-            Main.layoutManager.addChrome(this._workspace_osd, { visibleInFullscreen: false, affectsInputRegion: false });
-            let workspace_osd_x = global.settings.get_int("workspace-osd-x");
-            let workspace_osd_y = global.settings.get_int("workspace-osd-y");
-            /*
-             * This aligns the osd edges to the minimum/maximum values from gsettings,
-             * if those are selected to be used. For values in between minimum/maximum,
-             * it shifts the osd by half of the percentage used of the overall space available
-             * for display (100% - (left and right 'padding')).
-             * The horizontal minimum/maximum values are 5% and 95%, resulting in 90% available for positioning
-             * If the user choses 50% as osd position, these calculations result the osd being centered onscreen
-             */
-            let [minX, maxX, minY, maxY] = [5, 95, 5, 95];
-            let delta = (workspace_osd_x - minX) / (maxX - minX);
-            let x = Math.round((monitor.width * workspace_osd_x / 100) - (this._workspace_osd.width * delta));
-            delta = (workspace_osd_y - minY) / (maxY - minY);
-            let y = Math.round((monitor.height * workspace_osd_y / 100) - (this._workspace_osd.height * delta));
-            this._workspace_osd.set_position(x, y);
+            let osd_x = global.settings.get_int("workspace-osd-x");
+            let osd_y = global.settings.get_int("workspace-osd-y");
             let duration = global.settings.get_int("workspace-osd-duration") / 1000;
-            Tweener.addTween(this._workspace_osd, {   opacity: 255,
-                                                         time: duration,
-                                                   transition: 'linear',
-                                                   onComplete: this._hideWorkspaceOSD,
-                                              onCompleteScope: this });
+            let current_workspace_index = global.screen.get_active_workspace_index();
+            if (this.settings.get_boolean("workspaces-only-on-primary")) {
+                this._showWorkspaceOSDOnMonitor(Main.layoutManager.primaryMonitor, osd_x, osd_y, duration, current_workspace_index);
+            }
+            else {
+                for (let i = 0; i < Main.layoutManager.monitors.length; i++) {
+                    let monitor = Main.layoutManager.monitors[i];
+                    this._showWorkspaceOSDOnMonitor(monitor, osd_x, osd_y, duration, current_workspace_index);
+                }
+            }
         }
     },
 
+    _showWorkspaceOSDOnMonitor : function(monitor, osd_x, osd_y, duration, current_workspace_index) {
+        let osd = new St.Label({style_class:'workspace-osd', important: true});
+        this._workspace_osd_array.push(osd);
+        osd.set_text(Main.getWorkspaceName(current_workspace_index));
+        osd.set_opacity = 0;
+        Main.layoutManager.addChrome(osd, { visibleInFullscreen: false, affectsInputRegion: false });
+        /*
+         * This aligns the osd edges to the minimum/maximum values from gsettings,
+         * if those are selected to be used. For values in between minimum/maximum,
+         * it shifts the osd by half of the percentage used of the overall space available
+         * for display (100% - (left and right 'padding')).
+         * The horizontal minimum/maximum values are 5% and 95%, resulting in 90% available for positioning
+         * If the user choses 50% as osd position, these calculations result the osd being centered onscreen
+         */
+        let [minX, maxX, minY, maxY] = [5, 95, 5, 95];
+        let delta = (osd_x - minX) / (maxX - minX);
+        let x = monitor.x + Math.round((monitor.width * osd_x / 100) - (osd.width * delta));
+        delta = (osd_y - minY) / (maxY - minY);
+        let y = monitor.y + Math.round((monitor.height * osd_y / 100) - (osd.height * delta));
+        osd.set_position(x, y);
+        Tweener.addTween(osd, { opacity: 255,
+                                time: duration,
+                                transition: 'linear',
+                                onComplete: this._hideWorkspaceOSD,
+                                onCompleteScope: this });
+    },
+
     _hideWorkspaceOSD : function() {
-        if (this._workspace_osd != null) {
-            this._workspace_osd.hide();
-            Main.layoutManager.removeChrome(this._workspace_osd);
-            this._workspace_osd.destroy();
-            this._workspace_osd = null;
+        for (let i = 0; i < this._workspace_osd_array.length; i++) {
+            let osd = this._workspace_osd_array[i];
+            if (osd != null) {
+                osd.hide();
+                Main.layoutManager.removeChrome(osd);
+                osd.destroy();
+            }
         }
+        this._workspace_osd_array = []
     },
 
     _showSnapOSD : function(metaScreen, monitorIndex) {

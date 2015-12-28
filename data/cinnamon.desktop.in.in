@@ -13,4 +13,4 @@ NoDisplay=true
 X-GNOME-Autostart-Phase=WindowManager
 X-GNOME-Provides=panel;windowmanager;
 X-GNOME-Autostart-Notify=true
-X-GNOME-AutoRestart=true
+X-GNOME-AutoRestart=false

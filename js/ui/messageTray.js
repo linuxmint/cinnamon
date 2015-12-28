@@ -446,7 +446,6 @@ Notification.prototype = {
         this._imageBin = null;
         this._timestamp = new Date();
         this._inNotificationBin = false;
-        this.dateFormat = _("%l:%M %p");
 
         this.enter_id = 0;
         this.leave_id = 0;
@@ -588,7 +587,7 @@ Notification.prototype = {
         this.title = title;
         title = title ? _fixMarkup(title.replace(/\n/g, ' '), params.titleMarkup) : '';
         this._titleLabel.clutter_text.set_markup('<b>' + title + '</b>');
-        this._timeLabel.clutter_text.set_markup(this._timestamp.toLocaleTimeString(this.dateFormat));
+        this._timeLabel.clutter_text.set_markup(this._timestamp.toLocaleTimeString());
         this._timeLabel.hide();
         if (Pango.find_base_dir(title, -1) == Pango.Direction.RTL)
             this._titleDirection = St.TextDirection.RTL;
@@ -1445,7 +1444,7 @@ MessageTray.prototype = {
         Main.layoutManager.connect('monitors-changed', Lang.bind(this, this._setSizePosition));
 
 		// Settings
-        this.settings = new Gio.Settings({ schema: "org.cinnamon.desktop.notifications" })
+        this.settings = new Gio.Settings({ schema_id: "org.cinnamon.desktop.notifications" })
 		function setting(self, source, camelCase, dashed) {
 			function updater() { self[camelCase] = source.get_boolean(dashed); }
 			source.connect('changed::'+dashed, updater);

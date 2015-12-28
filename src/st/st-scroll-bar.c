@@ -1141,8 +1141,8 @@ st_scroll_bar_init (StScrollBar *self)
   self->priv->bw_stepper = (ClutterActor *) st_button_new ();
   clutter_actor_set_name (CLUTTER_ACTOR (self->priv->bw_stepper),
                           "backward-stepper");
-  clutter_actor_set_parent (CLUTTER_ACTOR (self->priv->bw_stepper),
-                            CLUTTER_ACTOR (self));
+  clutter_actor_add_child (CLUTTER_ACTOR (self),
+                           CLUTTER_ACTOR (self->priv->bw_stepper));
   g_signal_connect (self->priv->bw_stepper, "button-press-event",
                     G_CALLBACK (stepper_button_press_event_cb), self);
   g_signal_connect (self->priv->bw_stepper, "button-release-event",
@@ -1151,8 +1151,8 @@ st_scroll_bar_init (StScrollBar *self)
   self->priv->fw_stepper = (ClutterActor *) st_button_new ();
   clutter_actor_set_name (CLUTTER_ACTOR (self->priv->fw_stepper),
                           "forward-stepper");
-  clutter_actor_set_parent (CLUTTER_ACTOR (self->priv->fw_stepper),
-                            CLUTTER_ACTOR (self));
+  clutter_actor_add_child (CLUTTER_ACTOR (self),
+                           CLUTTER_ACTOR (self->priv->fw_stepper));
   g_signal_connect (self->priv->fw_stepper, "button-press-event",
                     G_CALLBACK (stepper_button_press_event_cb), self);
   g_signal_connect (self->priv->fw_stepper, "button-release-event",
@@ -1161,8 +1161,8 @@ st_scroll_bar_init (StScrollBar *self)
   self->priv->trough = (ClutterActor *) st_bin_new ();
   clutter_actor_set_reactive ((ClutterActor *) self->priv->trough, TRUE);
   clutter_actor_set_name (CLUTTER_ACTOR (self->priv->trough), "trough");
-  clutter_actor_set_parent (CLUTTER_ACTOR (self->priv->trough),
-                            CLUTTER_ACTOR (self));
+  clutter_actor_add_child (CLUTTER_ACTOR (self),
+                           CLUTTER_ACTOR (self->priv->trough));
   g_signal_connect (self->priv->trough, "button-press-event",
                     G_CALLBACK (trough_button_press_event_cb), self);
   g_signal_connect (self->priv->trough, "button-release-event",
@@ -1172,8 +1172,8 @@ st_scroll_bar_init (StScrollBar *self)
 
   self->priv->handle = (ClutterActor *) st_button_new ();
   clutter_actor_set_name (CLUTTER_ACTOR (self->priv->handle), "hhandle");
-  clutter_actor_set_parent (CLUTTER_ACTOR (self->priv->handle),
-                            self->priv->trough);
+  clutter_actor_add_child (self->priv->trough,
+                           CLUTTER_ACTOR (self->priv->handle));
   g_signal_connect (self->priv->handle, "button-press-event",
                     G_CALLBACK (handle_button_press_event_cb), self);
 

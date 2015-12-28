@@ -472,7 +472,7 @@ st_bin_set_child (StBin        *bin,
   if (child)
     {
       priv->child = child;
-      clutter_actor_set_parent (child, CLUTTER_ACTOR (bin));
+      clutter_actor_add_child (CLUTTER_ACTOR (bin), child);
 
       g_signal_emit_by_name (bin, "actor-added", priv->child);
     }

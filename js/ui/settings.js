@@ -1,3 +1,10 @@
+/**
+ * FILE:settings.js
+ * @short_description: File providing settings objects for xlets.
+ *
+ * This file provides the settings API for applets, desklets and extensions.
+ */
+
 const Gio = imports.gi.Gio;
 const GLib = imports.gi.GLib;
 const Lang = imports.lang;
@@ -9,10 +16,24 @@ const Mainloop = imports.mainloop;
 
 const SETTING_SCHEMA_FILE = "settings-schema.json";
 
+/**
+ * ENUM:BindingDirection
+ * @IN: Set the property at binding time, and automatically update the property
+ * and execute the callback when the setting file changes.  This is probably
+ * the most common mode.
+ *
+ * @OUT: Set the property at binding time, and automatically update the setting
+ * file when the property changes.  The callback can be omitted when using this
+ * mode, as it will not be used.
+ *
+ * @BIDIRECTIONAL: Combines the effects of `IN` and `OUT`.
+ *
+ * The direction of binding settings
+ */
 const BindingDirection = {
-    IN : 1,  // Applet property is updated automatically from settings.json
-    OUT : 2,  // Setting value is kept updated by applet property changes
-    BIDIRECTIONAL : 3 // Applet property updated automatically from settings.json, and vise-versa
+    IN : 1,
+    OUT : 2,
+    BIDIRECTIONAL : 3
 };
 
 var BOOLEAN_TYPES = {
@@ -182,6 +203,12 @@ function _provider(xlet, uuid, instanceId, type, string) {
     this._init(xlet, uuid, instanceId, type, string);
 }
 
+/**
+ * #_provider:
+ * @short_description: Xlet settings object
+ *
+ * This is the settings object produced in the settings API.
+ */
 _provider.prototype = {
         _init: function (xlet, uuid, instanceId, type, string) {
             if (type && string) {
@@ -208,7 +235,7 @@ _provider.prototype = {
             }
             this.instanceId = instanceId;
             this.valid = false;
-            this.applet_dir = Extension.dirs[this.uuid];
+            this.applet_dir = type.maps.dirs[this.uuid];
             if (!this.applet_dir) {
                 global.logError("Could not find installation directory for " + this.uuid);
                 return;
@@ -471,31 +498,36 @@ _provider.prototype = {
             return this.settings_file.get_path();
         },
 
-/* _settings_file_changed:  For convenience only, if you want to handle updating your applet props yourself,
- * connect to this signal on your AppletSettings object to get notified when the json file changes, then
- * you can call AppletSettings.getValue(key) to update your props
- */
+        /* _settings_file_changed:  For convenience only, if you want to handle
+         * updating your applet props yourself, connect to this signal on your
+         * AppletSettings object to get notified when the json file changes,
+         * then you can call AppletSettings.getValue(key) to update your props
+         */
 
         _setting_file_changed_notify: function() {
             this.emit("settings-changed");
         },
 
-/* individual key notification, sends old and new value with signal */
+        /* individual key notification, sends old and new value with signal */
 
         _value_changed_notify: function(key, oldval, newval) {
             this.emit("changed::" + key, key, oldval, newval);
         },
 
-/* Public api:  bind an applet property/variable to a setting
- *
- *        sync_type:  BindingDirection.OUT, .IN, or .BIDIRECTIONAL (see declaration at top of file)
- *         key_name:  The id of the setting
- *       applet_var:  The applet's property that is used to hold the setting, passed as a string
- *                    (i.e. your applet's this.value passes as simply "value")
- *  applet_callback:  The applet method to call when the setting has changed and the new value set (or null)
- *        user_data:  Any extra data/object you wish to pass to the callback (or null)
- */
-
+        /**
+         * bindProperty:
+         * @sync_type (Settings.BindingDirection): the direction of the binding
+         * @key_name (string): the id of the setting
+         * @applet_var (string): the applet's property that is used to hold the
+         * setting (eg. `this.value` passes as `"value`")
+         * @applet_callback (function): (optional) the applet method to call
+         * when the setting has changed and the new values set
+         * @user_data: (optional) any extra data/object you wish to pass to the callback
+         *
+         * Bind an applet proprety/varaible to a setting
+         *
+         * Returns (boolean): Whether the bind was successful
+         */
         bindProperty: function (sync_type, key_name, applet_var, applet_callback, user_data) {
             if (!this.valid) {
                 settings_not_initialized_error(this.uuid);
@@ -518,6 +550,14 @@ _provider.prototype = {
             }
         },
 
+        /**
+         * unbindProperty:
+         * @key_name (string): the id of the setting
+         *
+         * Reverses the effect of %bindProperty.
+         *
+         * Returns (boolean): Whether the unbind was successful.
+         */
         unbindProperty: function (key_name) {
             if (this.metaBindings[key_name]) {
                 this.metaBindings[key_name].finalize();
@@ -528,6 +568,11 @@ _provider.prototype = {
             return false;
         },
 
+        /**
+         * finalize:
+         *
+         * Destroys the setting object.
+         */
         finalize: function () {
             this.settings_obj.finalize();
             for (let setting in this.metaBindings) {
@@ -538,6 +583,14 @@ _provider.prototype = {
             Main.settingsManager.unregister(this.uuid, this.instanceId);
         },
 
+        /**
+         * getValue:
+         * @key_name (String): the key name to fetch the value for
+         *
+         * Returns the currently stored value of the key `key_name`
+         *
+         * Returns: The currently stored value of the key
+         */
         getValue: function (key_name) {
             if (key_name in this.settings_obj.json) {
                 return this.settings_obj.get_data(key_name)["value"];
@@ -547,11 +600,57 @@ _provider.prototype = {
             }
         },
 
+        /**
+         * setValue:
+         * @key_name (string): the key name  to set the value for
+         * @value: the new value
+         *
+         * Sets the value of @key_name to @value.
+         */
         setValue: function (key_name, value) {
             if (key_name in this.settings_obj.json) {
                 let oldval = this.settings_obj.get_data(key_name)["value"];
                 if (oldval != value) {
                     this.settings_obj.set_value(key_name, value);
+                }
+            } else {
+                key_not_found_error(key_name, this.uuid);
+            }
+        },
+
+        /**
+         * getOptions:
+         * @key_name (String): the key name to fetch the options for
+         *
+         * Returns the current options for the key @key_name.
+         *
+         * Returns: The currently stored options of the key (undefined if the key does not support options)
+         */
+        getOptions: function (key_name) {
+            if (key_name in this.settings_obj.json) {
+                return this.settings_obj.get_data(key_name)["options"];
+            } else {
+                key_not_found_error(key_name, this.uuid);
+                return null;
+            }
+        },
+
+        /**
+         * setOptions:
+         * @key_name (string): the key name to set the options for
+         * @options: the new options to set
+         *
+         * If @key_name is a key type that supports options, sets the options of @key_name to @options.
+         */
+        setOptions: function (key_name, options) {
+            if (key_name in this.settings_obj.json) {
+                let oldval = this.settings_obj.get_data(key_name)["options"];
+                if (!oldval) {
+                    global.logWarning("Could not set options for '" + key_name + "' - the key does not support options");
+                    return;
+                }
+                if (oldval != options) {
+                    this.settings_obj.set_options(key_name, options);
                 }
             } else {
                 key_not_found_error(key_name, this.uuid);
@@ -622,6 +721,11 @@ SettingObj.prototype = {
 
     set_value: function(key, val) {
         this.json[key]["value"] = val;
+        this.save();
+    },
+
+    set_options: function(key, val) {
+        this.json[key]["options"] = val;
         this.save();
     },
 
@@ -735,7 +839,7 @@ _setting.prototype = {
             this._monitor_applet_var(false);
             this.obj[this.applet_var] = new_val;
             if (this.user_data) {
-                this.cb(user_data);
+                this.cb(this.user_data);
             } else {
                 this.cb();
             }
@@ -771,6 +875,12 @@ _setting.prototype = {
 };
 
 
+/**
+ * #AppletSettings:
+ * @short_description: Settings object for applets.
+ *
+ * Inherits: Settings._provider
+ */
 function AppletSettings(xlet, uuid, instanceId) {
     this._init(xlet, uuid, instanceId);
 }
@@ -778,16 +888,27 @@ function AppletSettings(xlet, uuid, instanceId) {
 AppletSettings.prototype = {
     __proto__: _provider.prototype,
 
+    /**
+     * _init:
+     * @xlet (Object): the object variables are binded to (usually `this`)
+     * @uuid (string): uuid of the applet
+     * @instanceId (int): instance id of the applet
+     */
     _init: function (xlet, uuid, instanceId) {
         _provider.prototype._init.call(this, xlet, uuid, instanceId, Extension.Type.APPLET, "Applet");
     },
 
     _get_is_multi_instance_xlet: function(uuid) {
-        return Extension.get_max_instances(uuid) != 1;
+        return Extension.get_max_instances(uuid, this.ext_type) != 1;
     },
 };
 
-
+/**
+ * #DeskletSettings:
+ * @short_description: Settings object for desklets.
+ *
+ * Inherits: Settings._provider
+ */
 function DeskletSettings(xlet, uuid, instanceId) {
     this._init(xlet, uuid, instanceId);
 }
@@ -795,16 +916,27 @@ function DeskletSettings(xlet, uuid, instanceId) {
 DeskletSettings.prototype = {
     __proto__: _provider.prototype,
 
+    /**
+     * _init:
+     * @xlet (Object): the object variables are binded to (usually `this`)
+     * @uuid (string): uuid of the desklet
+     * @instanceId (int): instance id of the desklet
+     */
     _init: function (xlet, uuid, instanceId) {
         _provider.prototype._init.call(this, xlet, uuid, instanceId, Extension.Type.DESKLET, "Desklet");
     },
 
     _get_is_multi_instance_xlet: function(uuid) {
-        return Extension.get_max_instances(uuid) > 1;
+        return Extension.get_max_instances(uuid, this.ext_type) > 1;
     }
 };
 
-
+/**
+ * #ExtensionSettings:
+ * @short_description: Settings object for extensions.
+ *
+ * Inherits: Settings._provider
+ */
 function ExtensionSettings(xlet, uuid) {
     this._init(xlet, uuid);
 }
@@ -812,6 +944,11 @@ function ExtensionSettings(xlet, uuid) {
 ExtensionSettings.prototype = {
     __proto__: _provider.prototype,
 
+    /**
+     * _init:
+     * @xlet (Object): the object variables are binded to (usually `this`)
+     * @uuid (string): uuid of the extension
+     */
     _init: function (xlet, uuid) {
         _provider.prototype._init.call(this, xlet, uuid, null, Extension.Type.EXTENSION, "Extension");
     },

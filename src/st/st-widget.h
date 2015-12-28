@@ -116,19 +116,14 @@ gboolean              st_widget_has_style_class_name      (StWidget        *acto
 void                  st_widget_set_style                 (StWidget        *actor,
                                                            const gchar     *style);
 const gchar *         st_widget_get_style                 (StWidget        *actor);
+
+void                  st_widget_set_important             (StWidget *actor,
+                                                           gboolean  important);
+gboolean              st_widget_get_important             (StWidget        *actor);
+
 void                  st_widget_set_theme                 (StWidget        *actor,
                                                            StTheme         *theme);
 StTheme *             st_widget_get_theme                 (StWidget        *actor);
-
-void                  st_widget_set_has_tooltip           (StWidget        *widget,
-                                                           gboolean         has_tooltip);
-gboolean              st_widget_get_has_tooltip           (StWidget        *widget);
-void                  st_widget_set_tooltip_text          (StWidget        *widget,
-                                                           const gchar     *text);
-const gchar*          st_widget_get_tooltip_text          (StWidget        *widget);
-
-void                  st_widget_show_tooltip              (StWidget        *widget);
-void                  st_widget_hide_tooltip              (StWidget        *widget);
 
 void                  st_widget_set_track_hover           (StWidget        *widget,
                                                            gboolean         track_hover);
@@ -168,10 +163,6 @@ StThemeNode *         st_widget_peek_theme_node           (StWidget        *widg
 char  *st_describe_actor       (ClutterActor *actor);
 void   st_set_slow_down_factor (gfloat factor);
 gfloat st_get_slow_down_factor (void);
-
-void              st_set_ui_root (ClutterStage     *stage,
-                                  ClutterContainer *container);
-ClutterContainer *st_get_ui_root (ClutterStage     *stage);
 
 /* accessibility methods */
 void                  st_widget_set_accessible_role       (StWidget *widget,

@@ -18,7 +18,7 @@ var ExtensionState;
 
 // Deprecated, kept for compatibility reasons
 function disableExtension(uuid) {
-    Extension.unloadExtension(uuid);
+    Extension.unloadExtension(uuid, Extension.Type.EXTENSION);
 }
 
 // Deprecated, kept for compatibility reasons
@@ -62,9 +62,9 @@ function finishExtensionLoad(extension) {
 function onEnabledExtensionsChanged() {
     enabledExtensions = global.settings.get_strv(ENABLED_EXTENSIONS_KEY);
 
-    for(let uuid in Extension.objects) {
-        if(Extension.objects[uuid].type == Extension.Type.EXTENSION && enabledExtensions.indexOf(uuid) == -1)
-            Extension.unloadExtension(uuid);
+    for(let uuid in Extension.Type.EXTENSION.maps.objects) {
+        if(enabledExtensions.indexOf(uuid) == -1)
+            Extension.unloadExtension(uuid, Extension.Type.EXTENSION);
     }
     
     for(let i=0; i<enabledExtensions.length; i++) {
@@ -73,8 +73,8 @@ function onEnabledExtensionsChanged() {
 }
 
 function init() {
-    extensions = imports.ui.extension.importObjects;
-    extensionMeta = imports.ui.extension.meta;
+    extensions = Extension.Type.EXTENSION.maps.importObjects;
+    extensionMeta = Extension.Type.EXTENSION.maps.meta;
     ExtensionState = Extension.State;
     
     global.settings.connect('changed::' + ENABLED_EXTENSIONS_KEY, onEnabledExtensionsChanged);

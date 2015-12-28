@@ -13,6 +13,92 @@
 
 import re
 
+def get_type_link(typ, file):
+    from gen_doc import objects
+
+    if typ == '':
+        return "void"
+    else:
+        if typ in objects:
+            return "cinnamon-js-" + objects[typ].prefix
+        elif file.name + "." + typ in objects:
+            return "cinnamon-js-" + objects[file.name + "." + typ].prefix
+        elif typ.endswith("s") and typ[:-1] in objects:
+            return "cinnamon-js-" + objects[typ[:-1]].prefix
+        elif typ.endswith("s") and file.name + "." + typ[:-1] in objects:
+            return "cinnamon-js-" + objects[file.name + "." + typ[:-1]].prefix
+        elif typ.startswith("Gio"):
+            return typ.replace("Gio.", "G")
+        elif typ.startswith("GLib"):
+            return typ.replace("GLib.", "G")
+        else:
+            return typ.replace('.', '')
+
+def markup(line, obj):
+    line = re.sub('@(\w*)', '<code>\g<1></code>', line)
+    line = re.sub('`([^`]*)`', '<code>\g<1></code>', line)
+    line = re.sub('\*\*([^*]*)\*\*', '<emphasis role="strong">\g<1></emphasis>', line)
+    line = re.sub('\*([^*]*)\*', '<emphasis>\g<1></emphasis>', line)
+
+    def format_type_link(match):
+        res = match.group(1)
+        return '<link linkend="{link}"><code>{name}</code></link>'.format(
+                link = get_type_link(res, obj.file),
+                name = res)
+
+    line = re.sub('#(([\w]*\.)?[\w]+)', format_type_link, line)
+
+    def format_ext_link(match):
+        if match.group(1):
+            full = match.group(1) + match.group(3)
+        else:
+            full = match.group(3)
+
+        if match.group(4):
+            full += match.group(4)
+
+        owner = match.group(1)
+        if owner:
+            owner = owner[:-1] # remove trailing .
+        else:
+            owner = "this"
+
+        thing = match.group(3)
+
+        from gen_doc import objects
+
+        object = None
+        if owner == "this":
+            object = obj.object
+        if owner in objects:
+            object = objects[owner]
+        elif obj.file.name + "." + owner in objects:
+            object = objects[obj.file.name + "." +  owner]
+
+        if object is None:
+            return '<code>{name}</code>'.format(name = full)
+
+        func_names = [x.name for x in object.functions]
+        enum_names = [x.name for x in object.enums]
+        prop_names = [x.name for x in object.properties]
+
+        if thing in prop_names and not full.endswith("()"):
+            return '<link linkend="cinnamon-js-{prefix}--{thing}"><code>{full}</code></link>'.format(
+                    prefix = object.prefix,
+                    thing = thing,
+                    full = full)
+        elif thing in func_names or (thing in enum_names and not full.endswith("()")):
+            return '<link linkend="cinnamon-js-{prefix}-{thing}"><code>{full}</code></link>'.format(
+                    prefix = object.prefix,
+                    thing = thing,
+                    full = full)
+        else:
+            return '<code>{name}</code>'.format(name = full)
+
+    line = re.sub('%(([\w]+\.)?[\w]+\.)?([\w]+)(\(\))?', format_ext_link, line)
+
+    return line
+
 class JSThing():
     def append_description(self, desc):
         self.description += desc.replace('<', '&lt;').replace('>', '&gt;')
@@ -85,11 +171,7 @@ class JSThing():
                 list_buffer = []
                 in_list = False
 
-            line = re.sub('@(\w*)', '<code>\g<1></code>', line)
-            line = re.sub('`([^`]*)`', '<code>\g<1></code>', line)
-            line = re.sub('\*\*([^*]*)\*\*', '<emphasis role="strong">\g<1></emphasis>', line)
-            line = re.sub('\*([^*]*)\*', '<emphasis>\g<1></emphasis>', line)
-
+            line = markup(line, self)
             description += '<para>{0}</para>'.format(line)
 
         if in_list:
@@ -102,23 +184,31 @@ class JSThing():
 
     def add_property(self, prop):
         if prop.name == "short_description":
-            self.short_description = prop.description
+            self.short_description = prop
         else:
             self.properties.append(prop)
+        prop.file = self.file
+        prop.object = self.object
+
+class JSSignal(JSThing):
+    def __init__ (self, name):
+        self.name = name
+        self.description = ''
+        self.short_description = JSProperty(None, '', '')
+        self.properties = []
 
 class JSFunction(JSThing):
     def __init__ (self, name):
         self.name = name
         self.description = ''
-        self.short_description = ''
+        self.short_description = JSProperty(None, '', '')
         self.properties = []
         self.return_value = JSProperty(None, '', '')
 
-    def add_function(self, func):
-        self.functions.append(func)
-
     def set_return(self, retval):
         self.return_value = retval
+        retval.file = self.file
+        retval.obj = self.object
 
 class JSProperty(JSThing):
     def __init__ (self, name, arg_type, desc):
@@ -126,21 +216,6 @@ class JSProperty(JSThing):
         self.arg_type = arg_type if arg_type else ''
         self.description = ''
         self.append_description(desc + "\n")
-
-    def get_type_link(self):
-        from gen_doc import objects
-
-        if self.arg_type == '':
-            return "void"
-        else:
-            if self.arg_type in objects:
-                return "cinnamon-js-" + objects[self.arg_type].prefix
-            elif self.arg_type.startswith("Gio"):
-                return self.arg_type.replace("Gio.", "G")
-            elif self.arg_type.startswith("GLib"):
-                return self.arg_type.replace("GLib.", "G")
-            else:
-                return self.arg_type.replace('.', '')
 
 class JSFile(JSThing):
     def __init__ (self, directory, name):
@@ -150,16 +225,22 @@ class JSFile(JSThing):
         self.imports = "imports.{0}.{1}".format(directory, name)
         self.prefix = directory + "-" + name
         self.description = ''
-        self.short_description = ''
+        self.short_description = JSProperty(None, '', '')
         self.properties = []
         self.objects = []
+        self.signals = []
+        self.enums = []
         self.functions = []
+        self.file = self
+        self.object = self
 
     def is_interesting(self):
         return len(self.functions) + len(self.properties) + len(self.description) > 0
 
     def add_function(self, func):
         self.functions.append(func)
+        func.file = self
+        func.object = self
 
     def add_object(self, obj):
         self.objects.append(obj)
@@ -167,6 +248,14 @@ class JSFile(JSThing):
         obj.directory = self.directory
         obj.prefix = self.prefix + "-" + obj.name
         obj.name = self.name + "-" + obj.name
+        obj.file = self
+
+    def add_enum(self, obj):
+        self.enums.append(obj)
+        obj.parent = self
+        obj.directory = self.directory
+        obj.prefix = self.prefix + "-" + obj.name
+        obj.file = self
 
 class JSObject(JSThing):
     def __init__ (self, name):
@@ -174,18 +263,36 @@ class JSObject(JSThing):
         self.orig_name = name
         self.inherit = ''
         self.description = ''
-        self.short_description = ''
+        self.short_description = JSProperty(None, '', '')
         self.parent = None
         self.directory = None
         self.prefix = None
         self.functions = []
         self.properties = []
+        self.signals = []
+        self.enums = []
+        self.object = self
 
     def add_function(self, func):
         self.functions.append(func)
+        func.file = self.file
+        func.object = self
+
+    def add_signal(self, signal):
+        self.signals.append(signal)
+        signal.file = self
+        signal.object = self
 
     def set_inherit(self, inherit):
         self.inherit = inherit
+
+class JSEnum(JSThing):
+    def __init__ (self, name):
+        self.name = name
+        self.description = ''
+        self.short_description = JSProperty(None, '', '')
+        self.properties = []
+        self.object = self
 
 SGML_FORMAT = '''\
 <?xml version='1.0'?>
@@ -198,14 +305,12 @@ SGML_FORMAT = '''\
   <bookinfo>
     <title>Cinnamon Javascript Reference Manual</title>
     <releaseinfo>
-      for Cinnamon {version}.
+      This document is for Cinnamon {version}.
+
+      The latest version of this documentation can be found online at <ulink role="online-location" url="http://developer.linuxmint.com/reference/git/cinnamon-js/">http://developer.linuxmint.com/reference/git/cinnamon-js/</ulink>.
     </releaseinfo>
   </bookinfo>
-  {tutorials}
-  <part id="cinnamon-js-reference">
-    <title>Cinnamon Javascript Reference</title>
-    {chapters}
-  </part>
+  {chapters}
 </book>'''
 
 SGML_CHAPTER_FORMAT = '''
@@ -237,10 +342,14 @@ FILE_FORMAT = '''\
   </refnamediv>
   {func_header}
   {prop_header}
+  {signal_header}
+  {enum_header}
   {hierarchy}
   {description}
   {functions}
   {properties}
+  {signals}
+  {enums}
 </refentry>
 '''
 
@@ -285,6 +394,55 @@ PROPERTY_HEADER_FORMAT = '''
     </tgroup>
   </informaltable>
 </refsect1>
+'''
+
+SIGNAL_HEADER_FORMAT = '''
+<refsect1 id="cinnamon-js-{prefix}.signals" role="signal_proto">
+  <title role="signal_proto.title">Signals</title>
+  <informaltable frame="none">
+    <tgroup cols="3">
+      <colspec colname="signals_return" colwidth="150px" />
+      <colspec colname="signals_name" colwidth="300px" />
+      <tbody>
+        {signal_headers}
+      </tbody>
+    </tgroup>
+  </informaltable>
+</refsect1>
+'''
+
+SIGNAL_HEADER_ITEM_FORMAT = '''
+<row>
+  <entry role="signal_type">
+  </entry>
+  <entry role="signal_name">
+    <link linkend="cinnamon-js-{prefix}-{name}-signal">{name}</link>
+  </entry>
+</row>
+'''
+
+ENUM_HEADER_FORMAT = '''
+<refsect1 id="cinnamon-js-{prefix}.other" role="other_proto">
+  <title role="other_proto.title">Types and Values</title>
+  <informaltable role="enum_members_table" pgwide="1" frame="none">
+    <tgroup cols="2">
+      <colspec colname="name" colwidth="150px"/>
+      <colspec colname="description"/>
+      <tbody>
+        {enum_headers}
+      </tbody>
+    </tgroup>
+  </informaltable>
+</refsect1>
+'''
+
+ENUM_HEADER_ITEM_FORMAT = '''
+<row>
+  <entry role="datatype_keyword">enum</entry>
+  <entry role="function_name">
+    <link linkend="cinnamon-js-{prefix}-{name}">{name}</link>
+  </entry>
+</row>
 '''
 
 PROPERTY_HEADER_ITEM_FORMAT = '''
@@ -337,6 +495,24 @@ FUNCTION_ITEM_FORMAT = '''
 </refsect2>
 '''
 
+SIGNALS_FORMAT = '''
+<refsect1 id="cinnamon-js-{prefix}.signal-details" role="details">
+  <title role="details.title">Signal details</title>
+  {signals}
+</refsect1>
+'''
+
+SIGNAL_ITEM_FORMAT = '''
+<refsect2 id="cinnamon-js-{prefix}-{name}-signal" role="signal">
+  <title>The <literal>“{name}”</literal> signal</title>
+  <indexterm zone="cinnamon-js-{prefix}-{name}-signal"><primary>{prefix}::{name}</primary></indexterm>
+  <programlisting language="javascript">
+user_function ({inline_params});</programlisting>
+  {description}
+  {params}
+</refsect2>
+'''
+
 FUNC_PARAMETERS_FORMAT = '''
 <refsect3 role="parameters">
   <title>Parameters</title>
@@ -379,7 +555,7 @@ PROPERTIES_FORMAT = '''
 
 PROPERTIES_ITEM_FORMAT = '''
 <refsect2 id="cinnamon-js-{prefix}--{name}" role="property">
-  <title>The “{name}” property</title>
+  <title>The <literal>“{name}”</literal> property</title>
   <indexterm zone="cinnamon-js-{prefix}--{name}">
     <primary>cinnamon-js-{prefix}:{name}</primary>
   </indexterm>
@@ -388,9 +564,42 @@ PROPERTIES_ITEM_FORMAT = '''
 </refsect2>
 '''
 
+ENUMS_FORMAT = '''
+<refsect1 id="CinnamonGlobal.other_details" role="details">
+  <title role="details.title">Types and Values</title>
+  {enums}
+</refsect1>
+'''
+
+ENUMS_ITEM_FORMAT = '''
+<refsect2 id="cinnamon-js-{prefix}" role="enum">
+  <title>enum {name}</title>
+  <indexterm zone="{name}"><primary>{name}</primary></indexterm>
+  {description}
+  <refsect3 role="enum_members">
+    <title>Members</title>
+    <informaltable role="enum_members_table" pgwide="1" frame="none">
+      <tgroup cols="2">
+        <colspec colname="enum_members_name" colwidth="300px"/>
+        <colspec colname="enum_members_description"/>
+        <tbody>
+          {enum_items}
+        </tbody>
+      </tgroup>
+    </informaltable>
+  </refsect3>
+</refsect2>
+'''
+
+ENUMS_ITEM_ROW_FORMAT = '''
+<row role="constant">
+  <entry role="enum_member_name"><para id="{name}:CAPS">{name}</para></entry>
+  <entry role="enum_member_description">{description}</entry>
+</row>
+'''
+
 def write_sgml(files, version):
     sgml = open('cinnamon-js-docs.sgml', 'w')
-    tutorials = open('tutorials.xml', 'r')
 
     chapters = []
 
@@ -413,21 +622,25 @@ def write_sgml(files, version):
 
     sgml.write(SGML_FORMAT.format(
         version = version,
-        tutorials = tutorials.read(),
         chapters = "\n".join(chapters)))
 
 def create_file(obj):
     file_obj = open('{0}/{1}.xml'.format(obj.directory, obj.name), 'w')
+    short_description = obj.short_description.description.replace("\n", " ").strip()
     file_obj.write(FILE_FORMAT.format(
         prefix = obj.prefix,
         name = obj.name.replace("-", "."),
-        short_description = obj.short_description,
+        short_description = markup(short_description, obj),
         func_header = get_function_header(obj),
+        signal_header = get_signal_header(obj),
         prop_header = get_properties_header(obj),
+        enum_header = get_enum_header(obj),
         hierarchy = get_hierarchy(obj),
         description = get_description(obj),
         functions = get_functions(obj),
-        properties = get_properties(obj)))
+        signals = get_signals(obj),
+        properties = get_properties(obj),
+        enums = get_enums(obj)))
 
     file_obj.close()
 
@@ -436,7 +649,7 @@ def get_function_header(obj):
         return ""
 
     functions = [FUNCTION_HEADER_ITEM_FORMAT.format(
-                return_link = func.return_value.get_type_link(),
+                return_link = get_type_link(func.return_value.arg_type, obj.file),
                 return_name = func.return_value.arg_type,
                 prefix = obj.prefix,
                 name = func.name) for func in obj.functions]
@@ -445,12 +658,24 @@ def get_function_header(obj):
             prefix = obj.prefix,
             function_headers = "\n".join(functions))
 
-def get_properties_header( obj):
+def get_signal_header(obj):
+    if len(obj.signals) == 0:
+        return ""
+
+    signals = [SIGNAL_HEADER_ITEM_FORMAT.format(
+               prefix = obj.prefix,
+               name = sig.name) for sig in obj.signals]
+
+    return SIGNAL_HEADER_FORMAT.format(
+            prefix = obj.prefix,
+            signal_headers = "\n".join(signals))
+
+def get_properties_header(obj):
     if len(obj.properties) == 0:
         return ""
 
     properties = [PROPERTY_HEADER_ITEM_FORMAT.format(
-        type_link = prop.get_type_link(),
+        type_link = get_type_link(prop.arg_type, obj.file),
         type_name = prop.arg_type,
         prefix = obj.prefix,
         name = prop.name) for prop in obj.properties]
@@ -458,6 +683,19 @@ def get_properties_header( obj):
     return PROPERTY_HEADER_FORMAT.format(
         prefix = obj.prefix,
         property_headers = "\n".join(properties))
+
+def get_enum_header(obj):
+    if len(obj.enums) == 0:
+        return ""
+
+    enums = [ENUM_HEADER_ITEM_FORMAT.format(
+        prefix = obj.prefix,
+        name = enum.name) for enum in obj.enums]
+
+    return ENUM_HEADER_FORMAT.format(
+        prefix = obj.prefix,
+        enum_headers = "\n".join(enums))
+
 
 def get_hierarchy(obj):
     from gen_doc import objects
@@ -529,7 +767,7 @@ def get_functions(obj):
                 max_length = 0
 
             inline_params = [INLINE_PARAMETER_FORMAT.format(
-                type_link = param.get_type_link(),
+                type_link = get_type_link(param.arg_type, obj.file),
                 type_name = param.arg_type,
                 name = " " * (max_length - len(param.arg_type)) + param.name) for param in func.properties]
 
@@ -548,7 +786,7 @@ def get_functions(obj):
         functions.append(FUNCTION_ITEM_FORMAT.format(
             prefix = obj.prefix,
             name = func.name,
-            return_link = func.return_value.get_type_link(),
+            return_link = get_type_link(func.return_value.arg_type, obj.file),
             return_type = func.return_value.arg_type,
             description = func.get_xml_description(),
             inline_params = inline_params,
@@ -559,6 +797,49 @@ def get_functions(obj):
             prefix = obj.prefix,
             functions = "\n".join(functions))
 
+def get_signals(obj):
+    if len(obj.signals) == 0:
+        return ""
+
+    signals = []
+
+    for sig in obj.signals:
+        inline_params = ""
+        params = ""
+        if len(sig.properties) > 0:
+            # Calculate how long the argument types are and make the arguments
+            # align
+            max_length = max(len(x.arg_type) for x in sig.properties) + 3
+            # If no parameter has argument types, don't show that silly
+            # whitespace
+            if max_length == 3:
+                max_length = 0
+
+            inline_params = [INLINE_PARAMETER_FORMAT.format(
+                type_link = get_type_link(param.arg_type, obj.file),
+                type_name = param.arg_type,
+                name = " " * (max_length - len(param.arg_type)) + param.name) for param in sig.properties]
+
+            inline_params = (',\n' + ' ' * (len(sig.name) + 2)).join(inline_params)
+
+            params = [FUNC_PARAMETERS_ITEM_FORMAT.format(
+                name = param.name,
+                description = param.get_xml_description()) for param in sig.properties]
+
+            params = FUNC_PARAMETERS_FORMAT.format(param_items = '\n'.join(params))
+
+        signals.append(SIGNAL_ITEM_FORMAT.format(
+            prefix = obj.prefix,
+            name = sig.name,
+            description = sig.get_xml_description(),
+            inline_params = inline_params,
+            params = params))
+
+    return SIGNALS_FORMAT.format(
+            prefix = obj.prefix,
+            signals = "\n".join(signals))
+
+
 def get_properties(obj):
     if len(obj.properties) == 0:
         return ""
@@ -567,7 +848,7 @@ def get_properties(obj):
         prefix = obj.prefix,
         name = prop.name,
         disp_name = ('“' + prop.name + '”').ljust(25),
-        type_link = prop.get_type_link(),
+        type_link = get_type_link(prop.arg_type, obj.file),
         type_name = prop.arg_type,
         description = prop.get_xml_description()) for prop in obj.properties]
 
@@ -575,3 +856,23 @@ def get_properties(obj):
          prefix = obj.prefix,
          properties = "\n".join(properties))
 
+def get_enums(obj):
+    if len(obj.enums) == 0:
+        return ""
+
+    enums = []
+
+    for enum in obj.enums:
+        items = [ENUMS_ITEM_ROW_FORMAT.format(
+            name = item.name,
+            description = item.get_xml_description()) for item in enum.properties]
+
+        enums.append(ENUMS_ITEM_FORMAT.format(
+            prefix = enum.prefix,
+            name = enum.name,
+            description = enum.get_xml_description(),
+            enum_items = "\n".join(items)))
+
+    return ENUMS_FORMAT.format(
+            prefix = obj.prefix,
+            enums = "\n".join(enums))

@@ -12,7 +12,7 @@ const Settings = imports.ui.settings;
 
 const MSECS_IN_DAY = 24 * 60 * 60 * 1000;
 const WEEKDATE_HEADER_WIDTH_DIGITS = 3;
-const SHOW_WEEKDATE_KEY = 'show-weekdate';
+const SHOW_WEEKDATE_KEY = 'show-week-numbers';
 const FIRST_WEEKDAY_KEY = 'first-day-of-week';
 const DESKTOP_SCHEMA = 'org.cinnamon.desktop.interface';
 
@@ -152,13 +152,14 @@ Calendar.prototype = {
         this.settings = settings;
 
         this.settings.connect("changed::show-week-numbers", Lang.bind(this, this._onSettingsChange));
-        this.desktop_settings = new Gio.Settings({ schema: DESKTOP_SCHEMA });
+        this.desktop_settings = new Gio.Settings({ schema_id: DESKTOP_SCHEMA });
         this.desktop_settings.connect("changed::" + FIRST_WEEKDAY_KEY, Lang.bind(this, this._onSettingsChange));
         this.show_week_numbers = this.settings.getValue("show-week-numbers");
 
         // Find the ordering for month/year in the calendar heading
 
-        switch (Gettext_gtk30.gettext('calendar:MY')) {
+        let var_name = 'calendar:MY';
+        switch (Gettext_gtk30.gettext(var_name)) {
         case 'calendar:MY':
             this._headerMonthFirst = true;
             break;

@@ -2,5 +2,5 @@
 
 import os, sys
 
-os.execvp("/usr/lib/cinnamon-desktop-editor/cinnamon-desktop-editor.py", ("",) + tuple(sys.argv[1:]))
+os.execvp("/usr/share/cinnamon/cinnamon-desktop-editor/cinnamon-desktop-editor.py", ("",) + tuple(sys.argv[1:]))
 

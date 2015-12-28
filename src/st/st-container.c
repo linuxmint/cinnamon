@@ -241,7 +241,7 @@ st_container_add (ClutterContainer *container,
   g_object_ref (actor);
 
   priv->children = g_list_append (priv->children, actor);
-  clutter_actor_set_parent (actor, CLUTTER_ACTOR (container));
+  clutter_actor_add_child (CLUTTER_ACTOR (container), actor);
 
   /* queue a relayout, to get the correct positioning inside
    * the ::actor-added signal handlers
@@ -410,7 +410,7 @@ st_container_dispose (GObject *object)
 
   if (priv->children)
     {
-      g_list_foreach (priv->children, (GFunc) clutter_actor_destroy, NULL);
+      clutter_actor_destroy_all_children (CLUTTER_ACTOR (object));
       g_list_free (priv->children);
 
       priv->children = NULL;

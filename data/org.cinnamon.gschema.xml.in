@@ -120,7 +120,7 @@
     </key>
 
     <key name="panels-scale-text-icons" type="as">
-      <default>['1:false']</default>
+      <default>['1:true']</default>
       <_summary>Scale panel applet text and icons</_summary>
       <_description>
         Whether the panel icons and text from applets is resized according to the custom panel height
@@ -163,20 +163,21 @@
       <default>"cinnamon"</default>
       <_summary>The style of desktop effects</_summary>
       <_description>
-        An overall style used for desktop effects
+        An overall style used for desktop effects.
+        This key should not be edited directly.
       </_description>
     </key>
 
     <key type="s" name="desktop-effects-close-effect">
-      <default>"none"</default>
+      <default>"traditional"</default>
       <_summary>Effect used when closing windows</_summary>
       <_description>
-       An effect: scale, fade, none
+       An effect: scale, fade, traditional, none
       </_description>
     </key>
     
      <key name="desktop-effects-close-transition" type="s">
-      <default>"easeInBack"</default>
+      <default>"easeOutQuad"</default>
       <_summary>Transition used when closing windows</_summary>
       <_description>
        A Tweener transition
@@ -184,7 +185,7 @@
     </key>
     
     <key type="i" name="desktop-effects-close-time">
-      <default>250</default>
+      <default>175</default>
       <_summary>Duration of the effect (in milliseconds)</_summary>
       <_description>
        Duration of the effect (in milliseconds)    
@@ -192,15 +193,15 @@
     </key>
     
     <key type="s" name="desktop-effects-map-effect">
-      <default>"scale"</default>
+      <default>"traditional"</default>
       <_summary>Effect used when mapping windows</_summary>
       <_description>
-       An effect: scale, fade, none
+       An effect: scale, fade, traditional, none
       </_description>
     </key>
     
      <key name="desktop-effects-map-transition" type="s">
-      <default>"easeOutSine"</default>
+      <default>"easeOutQuad"</default>
       <_summary>Transition used when mapping windows</_summary>
       <_description>
        A Tweener transition
@@ -208,7 +209,7 @@
     </key>
     
     <key type="i" name="desktop-effects-map-time">
-      <default>250</default>
+      <default>175</default>
       <_summary>Duration of the effect (in milliseconds)</_summary>
       <_description>
        Duration of the effect (in milliseconds)    
@@ -217,15 +218,15 @@
     
     
     <key type="s" name="desktop-effects-minimize-effect">
-      <default>"scale"</default>
+      <default>"traditional"</default>
       <_summary>Effect used when minimizing windows</_summary>
       <_description>
-       An effect: traditional, scale, fade, none
+       An effect: traditional, scale, fade, traditional, none
       </_description>
     </key>
     
      <key name="desktop-effects-minimize-transition" type="s">
-      <default>"easeInSine"</default>
+      <default>"easeInQuad"</default>
       <_summary>Transition used when minimizing windows</_summary>
       <_description>
        A Tweener transition
@@ -233,7 +234,7 @@
     </key>
     
     <key type="i" name="desktop-effects-minimize-time">
-      <default>150</default>
+      <default>200</default>
       <_summary>Duration of the effect (in milliseconds)</_summary>
       <_description>
        Duration of the effect (in milliseconds)    
@@ -249,7 +250,7 @@
     </key>
     
      <key name="desktop-effects-maximize-transition" type="s">
-      <default>"easeInBack"</default>
+      <default>"easeInExpo"</default>
       <_summary>Transition used when maximizing windows</_summary>
       <_description>
        A Tweener transition
@@ -257,7 +258,7 @@
     </key>
     
     <key type="i" name="desktop-effects-maximize-time">
-      <default>400</default>
+      <default>100</default>
       <_summary>Duration of the effect (in milliseconds)</_summary>
       <_description>
        Duration of the effect (in milliseconds)    
@@ -273,7 +274,7 @@
     </key>
     
      <key name="desktop-effects-unmaximize-transition" type="s">
-      <default>"easeOutBounce"</default>
+      <default>"easeNone"</default>
       <_summary>Transition used when unmaximizing windows</_summary>
       <_description>
        A Tweener transition
@@ -281,7 +282,7 @@
     </key>
     
     <key type="i" name="desktop-effects-unmaximize-time">
-      <default>400</default>
+      <default>100</default>
       <_summary>Duration of the effect (in milliseconds)</_summary>
       <_description>
        Duration of the effect (in milliseconds)    
@@ -297,7 +298,7 @@
     </key>
     
      <key name="desktop-effects-tile-transition" type="s">
-      <default>"easeInBack"</default>
+      <default>"easeInQuad"</default>
       <_summary>Transition used when maximizing windows</_summary>
       <_description>
        A Tweener transition
@@ -305,7 +306,7 @@
     </key>
     
     <key type="i" name="desktop-effects-tile-time">
-      <default>400</default>
+      <default>100</default>
       <_summary>Duration of the effect (in milliseconds)</_summary>
       <_description>
        Duration of the effect (in milliseconds)    
@@ -366,7 +367,7 @@
     </key>
 
     <key name="favorite-apps" type="as">
-      <default>[ 'firefox.desktop', 'mintInstall.desktop', 'cinnamon-settings.desktop', 'hexchat.desktop', 'gnome-terminal.desktop', 'nemo.desktop' ]</default>
+      <default>[ 'firefox.desktop', 'mintinstall.desktop', 'cinnamon-settings.desktop', 'hexchat.desktop', 'gnome-terminal.desktop', 'nemo.desktop' ]</default>
       <_summary>List of desktop file IDs for favorite applications</_summary>
       <_description>
         The applications corresponding to these identifiers
@@ -533,11 +534,18 @@
       <default>false</default>
       <_summary>Whether advanced mode is enabled in cinnamon-settings</_summary>
     </key>
+
     <key type="b" name="run-dialog-show-completions">
       <default>true</default>
       <_summary>Whether or not to show possible completions in the run dialog (Alt-F2)</_summary>
     </key>
-    
+
+    <key type="as" name="run-dialog-aliases">
+      <default>[]</default>
+      <_summary>Aliases for the Alt-F2 dialog</_summary>
+      <_description>Aliases for use in the Alt-F2 dialog. This is a list of strings of the form a:b, where an instance of "a" is to be replaced with "b". Replacement is only performed on the first word.</_description>
+    </key>
+
     <key type="s" name="show-media-keys-osd">
       <default>"medium"</default>
       <_summary>Whether the media keys osd is disabled or its relative display size</_summary>
@@ -582,6 +590,14 @@
       <default>1</default>
       <summary>Utility read-only setting used by st library</summary>
       <description>Current scale factor</description>
+    </key>
+
+    <key name="enable-indicators" type="b">
+      <default>true</default>
+      <_summary>Enable support for indicators</_summary>
+      <_description>
+        Whether to support indicators
+      </_description>
     </key>
 
   </schema>

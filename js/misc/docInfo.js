@@ -6,7 +6,6 @@ const Cinnamon = imports.gi.Cinnamon;
 const Lang = imports.lang;
 const Signals = imports.signals;
 const Search = imports.ui.search;
-const Desktop = imports.gi.CinnamonDesktop;
 const Gio = imports.gi.Gio;
 const GLib = imports.gi.GLib;
 const Main = imports.ui.main;
@@ -14,14 +13,13 @@ const Main = imports.ui.main;
 const THUMBNAIL_ICON_MARGIN = 2;
 const MAX_RECENT_FILES = 20;
 
-function DocInfo(recentInfo, factory) {
-    this._init(recentInfo, factory);
+function DocInfo(recentInfo) {
+    this._init(recentInfo);
 }
 
 DocInfo.prototype = {
-    _init : function(recentInfo, factory) {
+    _init : function(recentInfo) {
         this.recentInfo = recentInfo;
-        this.factory = factory;
         // We actually used get_modified() instead of get_visited()
         // here, as GtkRecentInfo doesn't updated get_visited()
         // correctly. See http://bugzilla.gnome.org/show_bug.cgi?id=567094
@@ -132,7 +130,6 @@ function DocManager() {
 DocManager.prototype = {
     _init: function() {
         this._docSystem = Cinnamon.DocSystem.get_default();
-        this._thumbnail_factory = new Desktop.DesktopThumbnailFactory();
         this._infosByTimestamp = [];
         this._infosByUri = {};
         this._load();
@@ -145,7 +142,7 @@ DocManager.prototype = {
         this._infosByUri = {};
         for (let i = 0; i < docs.length && i < MAX_RECENT_FILES; i++) {
             let recentInfo = docs[i];
-            let docInfo = new DocInfo(recentInfo, this._thumbnail_factory);
+            let docInfo = new DocInfo(recentInfo);
             this._infosByTimestamp.push(docInfo);
             this._infosByUri[docInfo.uri] = docInfo;
         }

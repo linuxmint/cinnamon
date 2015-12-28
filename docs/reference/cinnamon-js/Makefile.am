@@ -1,5 +1,5 @@
 ## Process this file with automake to produce Makefile.in
-$(DOC_MAIN_SGML_FILE): $(top_srcdir)/js/*/* gen_lib.py gen_doc.py tutorials.xml tutorials/*
+$(DOC_MAIN_SGML_FILE): $(top_srcdir)/js/*/* gen_lib.py gen_doc.py
 	./gen_doc.py $(top_srcdir) $(PACKAGE_VERSION)
 
 # we want $(DOC_MAIN_SGML_FILE) to be built before sgml-build
@@ -49,7 +49,7 @@ MKHTML_OPTIONS=
 
 # Extra options to supply to gtkdoc-fixref. Not normally needed.
 # e.g. FIXXREF_OPTIONS=--extra-dir=../gdk-pixbuf/html --extra-dir=../gdk/html
-FIXXREF_OPTIONS=
+FIXXREF_OPTIONS=--src-lang=js
 
 # Used for dependencies. The docs will be rebuilt if any of these change.
 # e.g. HFILE_GLOB=$(top_srcdir)/gtk/*.h

@@ -16,7 +16,7 @@ var appletMeta;
 // Maps uuid -> importer object (applet directory tree)
 var applets;
 // Maps applet_id -> applet objects
-const appletObj = {};
+const appletObj = [];
 var appletsLoaded = false;
 
 // An applet can assume a role
@@ -28,7 +28,6 @@ var appletsLoaded = false;
 // the same role?
 const Roles = {
     NOTIFICATIONS: 'notifications',
-    WINDOWLIST: 'windowlist',
     PANEL_LAUNCHER: 'panellauncher'
 }
 
@@ -36,8 +35,8 @@ let enabledAppletDefinitions;
 let clipboard = [];
 
 function init() {
-    appletMeta = Extension.meta;
-    applets = Extension.importObjects;
+    applets = Extension.Type.APPLET.maps.importObjects;
+    appletMeta = Extension.Type.APPLET.maps.meta;
 
     appletsLoaded = false;
     
@@ -65,10 +64,10 @@ function finishExtensionLoad(extension) {
 }
 
 // Callback for extension.js
-function prepareExtensionUnload(extension) {
+function prepareExtensionUnload(extension, deleteConfig) {
     // Remove all applet instances for this extension
     for(let applet_id in extension._loadedDefinitions) {
-        removeAppletFromPanels(extension._loadedDefinitions[applet_id]);
+        removeAppletFromPanels(extension._loadedDefinitions[applet_id], deleteConfig);
     }
 }
 
@@ -79,7 +78,7 @@ function getEnabledAppletDefinitions() {
         // maps uuid -> list of applet definitions
         uuidMap: {},
         // maps applet_id -> single applet definition
-        idMap: {}
+        idMap: []
     };
     
     // Upgrade settings if required
@@ -212,7 +211,7 @@ function onEnabledAppletsChanged() {
         // Unload all applet extensions that do not exist in the definition anymore.
         for (let uuid in oldEnabledAppletDefinitions.uuidMap) {
             if(!enabledAppletDefinitions.uuidMap[uuid]) {
-                Extension.unloadExtension(uuid);
+                Extension.unloadExtension(uuid, Extension.Type.APPLET);
             }
         }
         
@@ -222,7 +221,7 @@ function onEnabledAppletsChanged() {
             let oldDef = oldEnabledAppletDefinitions.idMap[applet_id];
             
             if(!oldDef || !appletDefinitionsEqual(newDef, oldDef)) {
-                let extension = Extension.objects[newDef.uuid];
+                let extension = Extension.Type.APPLET.maps.objects[newDef.uuid];
                 if(extension) {
                     addAppletToPanels(extension, newDef);
                 }
@@ -242,7 +241,7 @@ function onEnabledAppletsChanged() {
     Main.statusIconDispatcher.redisplay();
 }
 
-function removeAppletFromPanels(appletDefinition) {
+function removeAppletFromPanels(appletDefinition, deleteConfig) {
     let applet = appletObj[appletDefinition.applet_id];
     if (applet) {
         try {
@@ -259,7 +258,8 @@ function removeAppletFromPanels(appletDefinition) {
         delete applet._extension._loadedDefinitions[appletDefinition.applet_id];
         delete appletObj[appletDefinition.applet_id];
 
-        _removeAppletConfigFile(appletDefinition.uuid, appletDefinition.applet_id);
+        if (deleteConfig)
+            _removeAppletConfigFile(appletDefinition.uuid, appletDefinition.applet_id);
 
         /* normal occurs during _onAppletRemovedFromPanel, but when a panel is removed,
          * appletObj hasn't had the instance removed yet, so let's run it one more time
@@ -293,7 +293,7 @@ function addAppletToPanels(extension, appletDefinition) {
         let applet = createApplet(extension, appletDefinition);
         if(applet == null)
             return false;
-        
+
         // Now actually lock the applets role and set the provider
         extension.lockRole(applet);
 
@@ -306,31 +306,19 @@ function addAppletToPanels(extension, appletDefinition) {
             applet._panelLocation = null;
         }
 
-        // Add it to its new panel location
-        let children = appletDefinition.location.get_children();
-        let appletsToMove = [];
-        for (let i=0; i<children.length;i++) {
-            let child = children[i];
-            if ((typeof child._applet !== "undefined") && (child._applet instanceof Applet.Applet)) {
-                if (appletDefinition.order < child._applet._order) {
-                    appletsToMove.push(child);
-                }
-            }
-        }
+        let location = appletDefinition.location;
 
-        for (let i=0; i<appletsToMove.length; i++) {
-            appletDefinition.location.remove_actor(appletsToMove[i]);
-        }
+        let before = location.get_children()
+            .find(x => (x._applet instanceof Applet.Applet) &&
+                       (appletDefinition.order < x._applet._order));
 
-        appletDefinition.location.add(applet.actor);
+        if (before)
+            location.insert_before(applet.actor, before);
+        else
+            location.add_actor(applet.actor);
 
-        applet._panelLocation = appletDefinition.location;
-        for (let i=0; i<appletsToMove.length; i++) {
-            let hidden = !appletsToMove[i].visible;
-            appletDefinition.location.add(appletsToMove[i]);
-            if (hidden) appletsToMove[i].hide();
-        }
-        
+        applet._panelLocation = location;
+
         if(!extension._loadedDefinitions) {
             extension._loadedDefinitions = {};
         }
@@ -339,8 +327,7 @@ function addAppletToPanels(extension, appletDefinition) {
         applet.on_applet_added_to_panel_internal(appletsLoaded);
 
         return true;
-    }
-    catch(e) {
+    } catch(e) {
         extension.unlockRole();
         extension.logError('Failed to load applet: ' + appletDefinition.uuid + "/" + appletDefinition.applet_id, e);
         return false;
@@ -490,13 +477,8 @@ function get_object_for_instance (appletId) {
     }
 }
 
-function get_object_for_uuid (uuid) {
-    for (let instanceid in appletObj) {
-        if (appletObj[instanceid]._uuid == uuid) {
-            return appletObj[instanceid]
-        }
-    }
-    return null;
+function get_object_for_uuid (uuid, instanceId) {
+    return appletObj.find(x => x && (x._uuid == uuid || x.instance_id == instanceId));
 }
 
 
@@ -520,7 +502,7 @@ function loadAppletsOnPanel(panel) {
             definition.location = getLocation(panel, definition.location_label);
             definition.orientation = orientation;
 
-            let extension = Extension.objects[definition.uuid];
+            let extension = Extension.Type.APPLET.maps.objects[definition.uuid];
             if(extension) {
                 addAppletToPanels(extension, definition);
             }
@@ -568,11 +550,9 @@ function updateAppletsOnPanel (panel) {
  * Unloads all applets on the panel
  */
 function unloadAppletsOnPanel (panel) {
-    for (let applet_id in enabledAppletDefinitions.idMap){
-        if(enabledAppletDefinitions.idMap[applet_id].panel == panel) {
-            removeAppletFromPanels(enabledAppletDefinitions.idMap[applet_id]);
-        }
-    }
+    enabledAppletDefinitions.idMap
+        .filter(x => x.panel == panel)
+        .forEach(removeAppletFromPanels);
 }
 
 function getLocation(panel, location) {
@@ -582,42 +562,25 @@ function getLocation(panel, location) {
 }
 
 function copyAppletConfiguration(panelId) {
-    let def = enabledAppletDefinitions.idMap;
-    clipboard = [];
-    for (let i in def) {
-        if (def[i].panelId == panelId) {
-            clipboard.push(def[i]);
-        }
-    }
+    clipboard = enabledAppletDefinitions.idMap.filter(x => x.panelId == panelId);
 }
 
 function clearAppletConfiguration(panelId) {
     let raw = global.settings.get_strv("enabled-applets");
-
-    // Remove existing applets on panel
-    let i = raw.length;
-    while(i--) { // Do a reverse loop to prevent skipping items after splicing
-        if (raw[i].split(":")[0].slice(5) == panelId)
-            raw.splice(i,1);
-    }
+    raw = raw.filter(x => x.split(":")[0].slice(5) != panelId);
     global.settings.set_strv("enabled-applets", raw);
 }
 
 function pasteAppletConfiguration(panelId) {
+    clearAppletConfiguration(panelId);
     let raw = global.settings.get_strv("enabled-applets");
 
-    // Remove existing applets on panel
-    let i = raw.length;
-    while(i--) { // Do a reverse loop to prevent skipping items after splicing
-        if (raw[i].split(":")[0].slice(5) == panelId)
-            raw.splice(i,1);
-    }
-
     let skipped = false;
+
     let len = clipboard.length;
     let nextId = global.settings.get_int("next-applet-id");
     for (let i = 0; i < len; i++) {
-        let max = Extension.get_max_instances(clipboard[i].uuid);
+        let max = Extension.get_max_instances(clipboard[i].uuid, Extension.Type.APPLET);
         if (max == -1) {
             raw.push("panel" + panelId + ":" + clipboard[i].location_label + ":" + clipboard[i].order + ":" + clipboard[i].uuid + ":" + nextId);
             nextId ++;
@@ -631,14 +594,18 @@ function pasteAppletConfiguration(panelId) {
                 if (curr[i].panelId == panelId) count --;
             }
         }
+    }
 
-        if (count < max) {
-            raw.push("panel" + panelId + ":" + clipboard[i].location_label + ":" + clipboard[i].order + ":" + clipboard[i].uuid + ":" + nextId);
+    clipboard.forEach(function(x) {
+        let uuid = x.uuid
+        let max = Extension.get_max_instances(uuid);
+        if (max == -1 || raw.filter(a => a.split(":")[2] == uuid).length < max) {
+            raw.push("panel" + panelId + ":" + x.location_label + ":" + x.order + ":" + uuid + ":" + nextId);
             nextId ++;
         } else {
             skipped = true;
         }
-    }
+    });
     global.settings.set_int("next-applet-id", nextId);
     global.settings.set_strv("enabled-applets", raw);
 
@@ -649,20 +616,7 @@ function pasteAppletConfiguration(panelId) {
 }
 
 function getRunningInstancesForUuid(uuid) {
-    if(!enabledAppletDefinitions)
-        return null;
-
-    let result = [];
-
-    for (let applet_id in enabledAppletDefinitions.idMap) {
-        if (appletObj[applet_id]) {
-            if (uuid == appletObj[applet_id]._uuid) {
-                result.push(appletObj[applet_id]);
-            }
-        }
-    }
-
-    return result
+    return appletObj.filter(x => x && x._uuid == uuid);
 }
 
 function callAppletInstancesChanged(uuid) {
@@ -675,3 +629,8 @@ function callAppletInstancesChanged(uuid) {
     }
 }
 
+function getLocation(panel, location) {
+    return {"center": panel._centerBox,
+            "right" : panel._rightBox,
+            "left"  : panel._leftBox}[location];
+}

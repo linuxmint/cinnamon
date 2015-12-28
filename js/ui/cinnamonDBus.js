@@ -4,6 +4,7 @@ const Lang = imports.lang;
 const Gio = imports.gi.Gio;
 const GLib = imports.gi.GLib;
 const Config = imports.misc.config;
+const Extension = imports.ui.extension;
 const Flashspot = imports.ui.flashspot;
 const Main = imports.ui.main;
 const AppletManager = imports.ui.appletManager;
@@ -51,7 +52,7 @@ const CinnamonIface =
             </method> \
             <method name="highlightApplet"> \
                 <arg type="s" direction="in" /> \
-                <arg type="b" direction="in" /> \
+                <arg type="s" direction="in" /> \
             </method> \
             <method name="highlightPanel"> \
                 <arg type="i" direction="in" /> \
@@ -64,7 +65,7 @@ const CinnamonIface =
             <method name="activateCallback"> \
                 <arg type="s" direction="in" /> \
                 <arg type="s" direction="in" /> \
-                <arg type="b" direction="in" /> \
+                <arg type="s" direction="in" /> \
             </method> \
             <method name="updateSetting"> \
                 <arg type="s" direction="in" /> \
@@ -82,6 +83,10 @@ const CinnamonIface =
             <method name="GetRunningXletUUIDs"> \
                 <arg type="s" direction="in" /> \
                 <arg type="as" direction="out" /> \
+            </method> \
+            <method name="ReloadXlet"> \
+                <arg type="s" direction="in" name="uuid" /> \
+                <arg type="s" direction="in" name="type" /> \
             </method> \
             <property name="OverviewActive" type="b" access="readwrite" /> \
             <property name="ExpoActive" type="b" access="readwrite" /> \
@@ -250,17 +255,15 @@ Cinnamon.prototype = {
             Main.expo.hide();
     },
 
-    _getXletObject: function(id, id_is_instance) {
-        let obj = null;
-        if (id_is_instance) {
-            obj = AppletManager.get_object_for_instance(id)
-            if (!obj)
-                obj = DeskletManager.get_object_for_instance(id)
-        } else {
-            obj = AppletManager.get_object_for_uuid(id)
-            if (!obj)
-                obj = DeskletManager.get_object_for_uuid(id)
+    _getXletObject: function(uuid, instance_id) {
+        var obj = null;
+        
+        obj = AppletManager.get_object_for_uuid(uuid, instance_id);
+        
+        if (!obj) {
+            obj = DeskletManager.get_object_for_uuid(uuid, instance_id);
         }
+
         return obj
     },
 
@@ -292,8 +295,12 @@ Cinnamon.prototype = {
         return res;
     },
 
-    highlightApplet: function(id, id_is_instance) {
-        let obj = this._getXletObject(id, id_is_instance);
+    ReloadXlet: function(uuid, type) {
+        Extension.reloadExtension(uuid, Extension.Type[type]);
+    },
+
+    highlightApplet: function(uuid, instance_id) {
+        let obj = this._getXletObject(uuid, instance_id);
         if (!obj)
             return;
         let actor = obj.actor;
@@ -318,8 +325,8 @@ Cinnamon.prototype = {
         Main.panelManager._destroyDummyPanels();
     },
 
-    activateCallback: function(callback, id, id_is_instance) {
-        let obj = this._getXletObject(id, id_is_instance);
+    activateCallback: function(callback, uuid, instance_id) {
+        let obj = this._getXletObject(uuid, instance_id);
         let cb = Lang.bind(obj, obj[callback]);
         cb();
     },

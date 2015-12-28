@@ -9,6 +9,7 @@
  * @lookingGlass (LookingGlass.Melange): The looking glass object
  * @wm (WindowManager.WindowManager): The window manager
  * @messageTray (MessageTray.MessageTray): The mesesage tray
+ * @indicatorManager (IndicatorManager.IndicatorManager): The indicator manager
  * @notificationDaemon (NotificationDaemon.NotificationDaemon): The notification daemon
  * @windowAttentionHandler (WindowAttentionHandler.WindowAttentionHandler): The window attention handler
  * @recorder (Cinnamon.Recorder): The recorder
@@ -64,7 +65,7 @@
  * @lg_log_file (Gio.FileOutputStream): The stream used to log looking messages
  *                                      to ~/.cinnamon/glass.log
  * @can_log (boolean): Whether looking glass log to file can be used
- * @popup_rendering (boolean): Whether a popup is in the process of rendering
+ * @popup_rendering_actor (Clutter.Actor): The popup actor that is in the process of rendering
  * @xlet_startup_error (boolean): Whether there was at least one xlet that did
  * not manage to load
  *
@@ -94,6 +95,7 @@ const DeskletManager = imports.ui.deskletManager;
 const ExtensionSystem = imports.ui.extensionSystem;
 const Keyboard = imports.ui.keyboard;
 const MessageTray = imports.ui.messageTray;
+const IndicatorManager = imports.ui.indicatorManager;
 const OsdWindow = imports.ui.osdWindow;
 const Overview = imports.ui.overview;
 const Expo = imports.ui.expo;
@@ -138,6 +140,7 @@ let runDialog = null;
 let lookingGlass = null;
 let wm = null;
 let messageTray = null;
+let indicatorManager = null;
 let notificationDaemon = null;
 let windowAttentionHandler = null;
 let recorder = null;
@@ -172,7 +175,7 @@ let software_rendering = false;
 let lg_log_file;
 let can_log = false;
 
-let popup_rendering = false;
+let popup_rendering_actor = null;
 
 let xlet_startup_error = false;
 
@@ -183,7 +186,7 @@ Gettext.textdomain('cinnamon');
 const _ = Gettext.gettext;
 
 function _initRecorder() {
-    let recorderSettings = new Gio.Settings({ schema: 'org.cinnamon.recorder' });
+    let recorderSettings = new Gio.Settings({ schema_id: 'org.cinnamon.recorder' });
 
     global.screen.connect('toggle-recording', function() {
         if (recorder == null) {
@@ -221,6 +224,12 @@ function _initUserSession() {
 
     Meta.keybindings_set_custom_handler('panel-run-dialog', function() {
        getRunDialog().open();
+    });
+}
+
+function do_shutdown_sequence() {
+    panelManager.panels.forEach(function (panel) {
+        panel.actor.hide();
     });
 }
 
@@ -337,7 +346,6 @@ function start() {
                         let height = global.stage.height;
                         [alloc.min_size, alloc.natural_size] = [height, height];
                     });
-    St.set_ui_root(global.stage, uiGroup);
 
     global.reparentActor(global.background_actor, uiGroup);
     global.background_actor.hide();
@@ -389,6 +397,7 @@ function start() {
     
     wm = new WindowManager.WindowManager();
     messageTray = new MessageTray.MessageTray();
+    indicatorManager = new IndicatorManager.IndicatorManager();
     keyboard = new Keyboard.Keyboard();
     notificationDaemon = new NotificationDaemon.NotificationDaemon();
     windowAttentionHandler = new WindowAttentionHandler.WindowAttentionHandler();
@@ -427,7 +436,7 @@ function start() {
         Scripting.runPerfScript(module, perfOutput);
     }
     
-    wmSettings = new Gio.Settings({schema: "org.cinnamon.desktop.wm.preferences"})
+    wmSettings = new Gio.Settings({schema_id: "org.cinnamon.desktop.wm.preferences"})
     workspace_names = wmSettings.get_strv("workspace-names");
 
     global.screen.connect('notify::n-workspaces', _nWorkspacesChanged);
@@ -454,7 +463,7 @@ function start() {
     if (xlet_startup_error)
         Mainloop.timeout_add_seconds(3, notifyXletStartupError);
 
-    let sound_settings = new Gio.Settings( {schema: "org.cinnamon.sounds"} );
+    let sound_settings = new Gio.Settings( {schema_id: "org.cinnamon.sounds"} );
     let do_login_sound = sound_settings.get_boolean("login-enabled");
 
     // We're mostly prepared for the startup animation
@@ -475,6 +484,8 @@ function start() {
         if (do_login_sound)
             soundManager.play_once_per_session('login');
     }
+
+    global.connect('shutdown', do_shutdown_sequence);
 
     global.log('Cinnamon took %d ms to start'.format(new Date().getTime() - cinnamonStartTime));
 }
@@ -1123,7 +1134,9 @@ function _stageEventHandler(actor, event) {
     if (modalCount == 0)
         return false;
     if (event.type() != Clutter.EventType.KEY_PRESS) {
-        return popup_rendering && event.type() == Clutter.EventType.BUTTON_RELEASE;
+        if(!popup_rendering_actor || event.type() != Clutter.EventType.BUTTON_RELEASE)
+            return false;
+        return (event.get_source() && popup_rendering_actor.contains(event.get_source()));
     }
 
     let symbol = event.get_key_symbol();
@@ -1196,6 +1209,8 @@ function _findModal(actor) {
  * pushModal:
  * @actor (Clutter.Actor): actor which will be given keyboard focus
  * @timestamp (int): optional timestamp
+ * @options (Meta.ModalOptions): (optional) flags to indicate that the pointer
+ * is alrady grabbed
  *
  * Ensure we are in a mode where all keyboard and mouse input goes to
  * the stage, and focus @actor. Multiple calls to this function act in
@@ -1210,9 +1225,6 @@ function _findModal(actor) {
  * initiated event.  If not provided then the value of
  * global.get_current_time() is assumed.
  * 
- * @options: optional Meta.ModalOptions flags to indicate that the
- *           pointer is alrady grabbed
- *
  * Returns (boolean): true iff we successfully acquired a grab or already had one
  */
 function pushModal(actor, timestamp, options) {

@@ -67,7 +67,17 @@ typedef enum {
   CINNAMON_CURSOR_DND_UNSUPPORTED_TARGET,
   CINNAMON_CURSOR_DND_MOVE,
   CINNAMON_CURSOR_DND_COPY,
-  CINNAMON_CURSOR_POINTING_HAND
+  CINNAMON_CURSOR_POINTING_HAND,
+  CINNAMON_CURSOR_RESIZE_BOTTOM,
+  CINNAMON_CURSOR_RESIZE_TOP,
+  CINNAMON_CURSOR_RESIZE_LEFT,
+  CINNAMON_CURSOR_RESIZE_RIGHT,
+  CINNAMON_CURSOR_RESIZE_BOTTOM_RIGHT,
+  CINNAMON_CURSOR_RESIZE_BOTTOM_LEFT,
+  CINNAMON_CURSOR_RESIZE_TOP_RIGHT,
+  CINNAMON_CURSOR_RESIZE_TOP_LEFT,
+  CINNAMON_CURSOR_CROSSHAIR,
+  CINNAMON_CURSOR_TEXT
 } CinnamonCursor;
 
 void    cinnamon_global_set_cursor              (CinnamonGlobal         *global,
@@ -119,6 +129,7 @@ void     cinnamon_global_notify_error              (CinnamonGlobal  *global,
 
 void     cinnamon_global_init_xdnd                 (CinnamonGlobal  *global);
 
+void     cinnamon_global_shutdown                  (void);
 void     cinnamon_global_reexec_self               (CinnamonGlobal  *global);
 
 void     cinnamon_global_segfault                  (CinnamonGlobal  *global);

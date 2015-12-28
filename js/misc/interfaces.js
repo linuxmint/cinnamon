@@ -95,10 +95,10 @@ xml['org.cinnamon.SettingsDaemon.Power'] =
             <property name='Icon' type='s' access='read'/> \
             <property name='Tooltip' type='s' access='read'/> \
             <method name='GetPrimaryDevice'> \
-                <arg name='device' type='(susdut)' direction='out' /> \
+                <arg name='device' type='(sssusdut)' direction='out' /> \
             </method> \
             <method name='GetDevices'> \
-                <arg name='devices' type='a(susdut)' direction='out' /> \
+                <arg name='devices' type='a(sssusdut)' direction='out' /> \
             </method> \
         </interface> \
     </node>",

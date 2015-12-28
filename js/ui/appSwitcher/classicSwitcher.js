@@ -24,11 +24,11 @@ const POPUP_FADE_OUT_TIME = 0.1; // seconds
 const APP_ICON_HOVER_TIMEOUT = 200; // milliseconds
 
 const THUMBNAIL_DEFAULT_SIZE = 256;
-const THUMBNAIL_POPUP_TIME = 180; // milliseconds
+const THUMBNAIL_POPUP_TIME = 300; // milliseconds
 const THUMBNAIL_FADE_TIME = 0.1; // seconds
 
-const PREVIEW_DELAY_TIMEOUT = 180; // milliseconds
-var PREVIEW_SWITCHER_FADEOUT_TIME = 0.5; // seconds
+const PREVIEW_DELAY_TIMEOUT = 0; // milliseconds
+var PREVIEW_SWITCHER_FADEOUT_TIME = 0.2; // seconds
 
 const iconSizes = [96, 64, 48, 32, 22];
 
@@ -218,8 +218,8 @@ ClassicSwitcher.prototype = {
     _setCurrentWindow: function(window) {
         this._appList.highlight(this._currentIndex, false);
         this._doWindowPreview();
-        
         this._destroyThumbnails();
+        
         if (this._thumbnailTimeoutId != 0) {
             Mainloop.source_remove(this._thumbnailTimeoutId);
             this._thumbnailTimeoutId = 0;
@@ -228,6 +228,7 @@ ClassicSwitcher.prototype = {
         if (this._showArrows) {
             this._thumbnailTimeoutId = Mainloop.timeout_add(
                 THUMBNAIL_POPUP_TIME, Lang.bind(this, function() {
+
                     if (!this._thumbnails)
                         this._createThumbnails();
                     this._thumbnails.highlight(0, false);
@@ -340,7 +341,7 @@ ClassicSwitcher.prototype = {
             backdrop.opacity = 0;
             Tweener.addTween(backdrop,
                             { opacity: 255,
-                            time: PREVIEW_SWITCHER_FADEOUT_TIME,
+                            time: PREVIEW_SWITCHER_FADEOUT_TIME / 4,
                             transition: 'linear'
                             });
         }
@@ -352,16 +353,10 @@ ClassicSwitcher.prototype = {
         }
         let thumbnailsActor = this._thumbnails.actor;
         this._thumbnails = null;
-        Tweener.addTween(thumbnailsActor,
-            { opacity: 0,
-                time: THUMBNAIL_FADE_TIME,
-                transition: 'easeOutQuad',
-                onComplete: Lang.bind(this, function() {
-                    this.actor.remove_actor(thumbnailsActor);
-                    thumbnailsActor.destroy();
-                    this.thumbnailsVisible = false;
-                })
-            });
+        this.actor.remove_actor(thumbnailsActor);
+        thumbnailsActor.destroy();
+        this.thumbnailsVisible = false;
+        
     },
 
     _createThumbnails : function() {
@@ -1039,4 +1034,6 @@ function _drawArrow(area, side) {
 
     Clutter.cairo_set_source_color(cr, bodyColor);
     cr.fill();
+
+    cr.$dispose();
 }

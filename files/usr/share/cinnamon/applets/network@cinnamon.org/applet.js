@@ -210,8 +210,10 @@ NMWiredSectionTitleMenuItem.prototype = {
     updateForDevice: function(device) {
         if (device) {
             this._device = device;
-            this.setStatus(device.getStatusLabel());
+            this.setStatus(device.statusLabel);
             this.setToggleState(device.connected);
+            // if this device is not controllable, hide the switch
+            this._switch.actor.visible = device.controllable;
         } else
             this.setStatus('');
     },
@@ -268,10 +270,12 @@ NMWirelessSectionTitleMenuItem.prototype = {
         // - if the switch is off
         // - if the device is activated or disconnected
         if (device && this._softwareEnabled && this._hardwareEnabled) {
-            let text = device.getStatusLabel();
-            this.setStatus(text);
-        } else
+            this.setStatus(device.statusLabel);
+            this._switch.actor.visible = device.controllable;
+        } else {
             this.setStatus(null);
+            this._switch.actor.show();
+        }
     },
 
     activate: function(event) {
@@ -493,7 +497,7 @@ NMDevice.prototype = {
         // in the majority of cases (wired, wwan, vpn)
     },
 
-    getStatusLabel: function() {
+    get statusLabel(){
         switch(this.device.state) {
         case NetworkManager.DeviceState.DISCONNECTED:
         case NetworkManager.DeviceState.ACTIVATED:
@@ -541,6 +545,14 @@ NMDevice.prototype = {
             log('Device state invalid, is %d'.format(this.device.state));
             return 'invalid';
         }
+    },
+
+    get controllable(){
+        // controllable for every state except unavailable or unmanaged
+        if(this.device.state === NetworkManager.DeviceState.UNAVAILABLE || this.device.state === NetworkManager.DeviceState.UNMANAGED)
+            return false;
+
+        return true;
     },
 
     // protected
@@ -592,7 +604,7 @@ NMDevice.prototype = {
 
                 if (j + activeOffset >= NUM_VISIBLE_NETWORKS) {
                     if (!this._overflowItem) {
-                        this._overflowItem = new PopupMenu.PopupSubMenuMenuItem(_("More..."), true);
+                        this._overflowItem = new PopupMenu.PopupSubMenuMenuItem(_("More"));
                         this.section.addMenuItem(this._overflowItem);
                     }
                     this._overflowItem.menu.addMenuItem(obj.item);
@@ -666,12 +678,15 @@ NMDevice.prototype = {
             this._firmwareChangedId = 0;
         }
 
-        this.statusItem.setStatus(this.getStatusLabel());
+        this.statusItem.setStatus(this.statusLabel);
         this.statusItem.setToggleState(this.connected);
+        // if this device is not controllable, hide the switch
+        this.statusItem._switch.actor.visible = this.controllable;
     },
 
     _substateChanged: function() {
-        this.statusItem.setStatus(this.getStatusLabel());
+        this.statusItem.setStatus(this.statusLabel);
+        this.statusItem._switch.actor.visible = this.controllable;
 
         this.emit('state-changed');
     },
@@ -679,8 +694,20 @@ NMDevice.prototype = {
     _getDescription: function() {
         let dev_product = this.device.get_product();
         let dev_vendor = this.device.get_vendor();
-        if (!dev_product || !dev_vendor)
-	    return '';
+        if (!dev_product || !dev_vendor) {
+            if (this.device.name) {
+                return this.device.name;
+            }
+            else {
+                switch (this.device.get_device_type()) {
+                    case NetworkManager.DeviceType.ETHERNET: return _("Ethernet");
+                    case NetworkManager.DeviceType.WIFI: return _("Wifi");
+                    case NetworkManager.DeviceType.MODEM: return _("Modem");
+                    case NetworkManager.DeviceType.BT: return _("Bluetooth");
+                    default: return "";
+                }
+            }
+        }
 
         let product = Util.fixupPCIDescription(dev_product);
         let vendor = Util.fixupPCIDescription(dev_vendor);
@@ -820,7 +847,7 @@ NMDeviceModem.prototype = {
                 // prevent "network unavailable" statuses
                 this.statusItem.setStatus(null);
             } else
-                this.statusItem.setStatus(this.getStatusLabel());
+                this.statusItem.setStatus(this.statusLabel);
         }
 
         NMDevice.prototype.setEnabled.call(this, enabled);
@@ -968,9 +995,8 @@ NMDeviceVPN.prototype = {
             this._client.deactivate_connection(this._activeConnection);
     },
 
-    getStatusLabel: function() {
-        return null;
-    }
+    statusLabel: null,
+    controllable: true
 };
 
 function NMDeviceWireless() {
@@ -1567,7 +1593,7 @@ NMDeviceWireless.prototype = {
             this.section.addMenuItem(apObj.item, position);
         } else {
             if (!this._overflowItem) {
-                this._overflowItem = new PopupMenu.PopupSubMenuMenuItem(_("More..."), true);
+                this._overflowItem = new PopupMenu.PopupSubMenuMenuItem(_("More"));
                 this.section.addMenuItem(this._overflowItem);
             }
             this._overflowItem.menu.addMenuItem(apObj.item, position - NUM_VISIBLE_NETWORKS);
@@ -1627,6 +1653,7 @@ MyApplet.prototype = {
         try {
             this.metadata = metadata;
             Main.systrayManager.registerRole("network", metadata.uuid);
+            Main.systrayManager.registerRole("nm-applet", metadata.uuid);
 
             this.menuManager = new PopupMenu.PopupMenuManager(this);
             this.menu = new Applet.AppletPopupMenu(this, orientation);
@@ -1919,7 +1946,6 @@ MyApplet.prototype = {
         let default_ip6 = null;
         for (let i = 0; i < this._activeConnections.length; i++) {
             let a = this._activeConnections[i];
-
             if (!a._inited) {
                 //a._notifyDefaultId = a.connect('notify::default', Lang.bind(this, this._updateIcon));
                 //a._notifyDefault6Id = a.connect('notify::default6', Lang.bind(this, this._updateIcon));
@@ -1949,15 +1975,31 @@ MyApplet.prototype = {
                 }
             }
 
-            if (a['default'])
-                default_ip4 = a;
-            if (a.default6)
-                default_ip6 = a;
-
-            if (!activated && a.state == NetworkManager.ActiveConnectionState.ACTIVATED)
-                activated = a;
-            if (a.state == NetworkManager.ActiveConnectionState.ACTIVATING)
+            if (a.state == NetworkManager.ActiveConnectionState.ACTIVATED) {
+                if (!default_ip4) {
+                    // We didn't find the default IPV4 device yet..
+                    if (!default_ip6) {
+                        // We didn't find the default IPV6 device either so consider this one.
+                        activated = a;
+                    }
+                    else {
+                        // We already found the default IPV6 device, so only use this one if it's the default IPV4 device
+                        if (a['default']) {
+                            activated = a;
+                        }
+                    }
+                }
+            }
+            if (a.state == NetworkManager.ActiveConnectionState.ACTIVATING) {
                 activating = a;
+            }
+
+            if (a['default']) {
+                default_ip4 = a;
+            }
+            if (a.default6) {
+                default_ip6 = a;
+            }
 
             if (!a._primaryDevice) {
                 if (a._type != NetworkManager.SETTING_VPN_SETTING_NAME) {
@@ -2226,6 +2268,7 @@ MyApplet.prototype = {
 
     on_applet_removed_from_panel: function() {
         Main.systrayManager.unregisterRole("network", this.metadata.uuid);
+        Main.systrayManager.unregisterRole("nm-applet", this.metadata.uuid);
         if (this._periodicTimeoutId){
             Mainloop.source_remove(this._periodicTimeoutId);
         }

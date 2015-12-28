@@ -5,6 +5,7 @@ const Main = imports.ui.main;
 const Mainloop = imports.mainloop;
 const Tweener = imports.ui.tweener;
 const Gio = imports.gi.Gio;
+const Meta = imports.gi.Meta;
 
 const LEVEL_ANIMATION_TIME = 0.1;
 const FADE_TIME = 0.1;
@@ -86,7 +87,7 @@ OsdWindow.prototype = {
     _init: function() {
         this._popupSize = 0;
 
-        this._osdSettings = new Gio.Settings({ schema: "org.cinnamon" });
+        this._osdSettings = new Gio.Settings({ schema_id: "org.cinnamon" });
         this._osdSettings.connect("changed::show-media-keys-osd", Lang.bind(this, this._onOsdSettingsChanged));
 
         this.actor = new St.BoxLayout({ style_class: 'osd-window',
@@ -105,7 +106,7 @@ OsdWindow.prototype = {
         Main.layoutManager.connect('monitors-changed', Lang.bind(this, this._monitorsChanged));
         this._onOsdSettingsChanged();
 
-        Main.layoutManager.addChrome(this.actor, { affectsInputRegion: false });
+        Main.uiGroup.add_child(this.actor);
     },
 
     setIcon: function(icon) {
@@ -133,10 +134,11 @@ OsdWindow.prototype = {
             return;
 
         if (!this.actor.visible) {
+            Meta.disable_unredirect_for_screen(global.screen);
             this._level.setLevelBarHeight(this._sizeMultiplier);
             this.actor.show();
-            this.actor.raise_top();
             this.actor.opacity = 0;
+            this.actor.raise_top();
 
             Tweener.addTween(this.actor,
                              { opacity: 255,
@@ -155,7 +157,11 @@ OsdWindow.prototype = {
                          { opacity: 0,
                            time: FADE_TIME,
                            transition: 'easeOutQuad',
-                           onComplete: Lang.bind(this, this._reset) });
+                           onComplete: Lang.bind(this, function() {
+                               this._reset();
+                               Meta.enable_unredirect_for_screen(global.screen);
+                           })
+                         });
     },
 
     _reset: function() {
@@ -173,8 +179,8 @@ OsdWindow.prototype = {
         let scaleFactor = St.ThemeContext.get_for_stage(global.stage).scale_factor;
         this._icon.icon_size = this._popupSize / (2 * scaleFactor);
         this.actor.set_size(this._popupSize, this._popupSize);
-        this.actor.translation_y = monitor.height - (this._popupSize + (50 * scaleFactor));
-        this.actor.translation_x = (monitor.width / 2) - (this._popupSize / 2);
+        this.actor.translation_y = (monitor.height + monitor.y) - (this._popupSize + (50 * scaleFactor));
+        this.actor.translation_x = ((monitor.width / 2) + monitor.x) - (this._popupSize / 2);
     },
 
     _onOsdSettingsChanged: function() {

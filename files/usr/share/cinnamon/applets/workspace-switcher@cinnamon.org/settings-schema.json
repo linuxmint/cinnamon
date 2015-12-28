@@ -1,0 +1,11 @@
+{
+    "display_type": {
+        "type": "radiogroup",
+        "description": "Type of display",
+        "default": "visual",
+        "options" : {
+            "A visual representation of the workspaces": "visual",
+            "Simple buttons": "buttons"
+        }
+    }
+}

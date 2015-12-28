@@ -1,5 +1,5 @@
 AC_PREREQ(2.63)
-AC_INIT([cinnamon],[2.5.0],[https://github.com/linuxmint/Cinnamon/issues],[cinnamon])
+AC_INIT([cinnamon],[2.8.6],[https://github.com/linuxmint/Cinnamon/issues],[cinnamon])
 
 AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_SRCDIR([src/cinnamon-global.c])
@@ -64,9 +64,9 @@ AM_CONDITIONAL(BUILD_RECORDER, $build_recorder)
 CLUTTER_MIN_VERSION=1.10.0
 GOBJECT_INTROSPECTION_MIN_VERSION=0.9.2
 GJS_MIN_VERSION=2.3.1
-MUFFIN_MIN_VERSION=2.4.0
+MUFFIN_MIN_VERSION=2.5.0
 GTK_MIN_VERSION=3.9.12
-GIO_MIN_VERSION=2.29.10
+GIO_MIN_VERSION=2.35.0
 POLKIT_MIN_VERSION=0.100
 STARTUP_NOTIFICATION_MIN_VERSION=0.11
 
@@ -102,7 +102,7 @@ saved_CFLAGS=$CFLAGS
 saved_LIBS=$LIBS
 CFLAGS=$CINNAMON_CFLAGS
 LIBS=$CINNAMON_LIBS
-AC_CHECK_FUNCS(JS_NewGlobalObject XFixesCreatePointerBarrier)
+AC_CHECK_FUNCS(XFixesCreatePointerBarrier)
 CFLAGS=$saved_CFLAGS
 LIBS=$saved_LIBS
 
@@ -224,9 +224,6 @@ else
 fi
 AC_SUBST(CINNAMON_SYSTEM_CA_FILE,["$with_ca_certificates"])
 
-BROWSER_PLUGIN_DIR="${BROWSER_PLUGIN_DIR:-"\${libdir}/mozilla/plugins"}"
-AC_ARG_VAR([BROWSER_PLUGIN_DIR],[Where to install the plugin to])
-
 GTK_DOC_CHECK([1.15], [--flavour no-tmpl])
 AC_CONFIG_FILES([
   Makefile
@@ -237,6 +234,8 @@ AC_CONFIG_FILES([
   docs/reference/cinnamon/Makefile
   docs/reference/cinnamon/cinnamon-docs.sgml
   docs/reference/cinnamon-js/Makefile
+  docs/reference/cinnamon-tutorials/Makefile
+  docs/reference/cinnamon-tutorials/cinnamon-tutorials-docs.sgml
   docs/reference/st/Makefile
   docs/reference/st/cinnamon-st-docs.sgml
   js/Makefile

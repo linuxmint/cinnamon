@@ -1,9 +1,10 @@
 // -*- mode: js; js-indent-level: 4; indent-tabs-mode: nil -*-
 
+const Cinnamon = imports.gi.Cinnamon;
 const Clutter = imports.gi.Clutter;
 const Lang = imports.lang;
+const Meta = imports.gi.Meta;
 const St = imports.gi.St;
-const Cinnamon = imports.gi.Cinnamon;
 
 const Main = imports.ui.main;
 const Tweener = imports.ui.tweener;
@@ -27,6 +28,7 @@ function BoxPointer(side, binProperties) {
 BoxPointer.prototype = {
     _init: function(arrowSide, binProperties) {
         this._arrowSide = arrowSide;
+        this._userArrowSide = arrowSide;
         this._arrowOrigin = 0;
         this.actor = new St.Bin({ x_fill: true,
                                   y_fill: true });
@@ -130,9 +132,9 @@ BoxPointer.prototype = {
      * actor will be on top of the menu)
      */
     setArrowSide: function(side) {
-	// Need not trigger any other function. Menu position is
+        // Need not trigger any other function. Menu position is
         // recalculated every time it is shown
-	this._arrowSide = side;
+        this._arrowSide = side;
     },
 
     _adjustAllocationForArrow: function(isWidth, alloc) {
@@ -196,11 +198,13 @@ BoxPointer.prototype = {
         }
         this.bin.allocate(childBox, flags);
 
-        if (this._sourceActor && this._sourceActor.mapped)
-            this._reposition(this._sourceActor, this._arrowAlignment);
+        if (this._sourceActor && this._sourceActor.mapped) {
+            this._reposition();
+            this._updateFlip();
+        }
     },
 
-    _drawBorder: function(area) {
+     _drawBorder: function(area) {
         let themeNode = this.actor.get_theme_node();
 
         let borderWidth = themeNode.get_length('-arrow-border-width');
@@ -211,7 +215,6 @@ BoxPointer.prototype = {
         let halfBorder = borderWidth / 2;
         let halfBase = Math.floor(base/2);
 
-        let borderColor = themeNode.get_color('-arrow-border-color');
         let backgroundColor = themeNode.get_color('-arrow-background-color');
 
         let [width, height] = area.get_surface_size();
@@ -222,7 +225,6 @@ BoxPointer.prototype = {
             boxWidth -= rise;
         }
         let cr = area.get_context();
-        Clutter.cairo_set_source_color(cr, borderColor);
 
         // Translate so that box goes from 0,0 to boxWidth,boxHeight,
         // with the arrow poking out of that
@@ -235,14 +237,51 @@ BoxPointer.prototype = {
         let [x1, y1] = [halfBorder, halfBorder];
         let [x2, y2] = [boxWidth - halfBorder, boxHeight - halfBorder];
 
+        let skipTopLeft = false;
+        let skipTopRight = false;
+        let skipBottomLeft = false;
+        let skipBottomRight = false;
+
+        switch (this._arrowSide) {
+        case St.Side.TOP:
+            if (this._arrowOrigin == x1)
+                skipTopLeft = true;
+            else if (this._arrowOrigin == x2)
+                skipTopRight = true;
+            break;
+
+        case St.Side.RIGHT:
+            if (this._arrowOrigin == y1)
+                skipTopRight = true;
+            else if (this._arrowOrigin == y2)
+                skipBottomRight = true;
+            break;
+
+        case St.Side.BOTTOM:
+            if (this._arrowOrigin == x1)
+                skipBottomLeft = true;
+            else if (this._arrowOrigin == x2)
+                skipBottomRight = true;
+            break;
+
+        case St.Side.LEFT:
+            if (this._arrowOrigin == y1)
+                skipTopLeft = true;
+            else if (this._arrowOrigin == y2)
+                skipBottomLeft = true;
+            break;
+        }
+
         cr.moveTo(x1 + borderRadius, y1);
         if (this._arrowSide == St.Side.TOP) {
-            if (this._arrowOrigin < (x1 + (borderRadius + halfBase))) {
-                cr.lineTo(this._arrowOrigin, y1 - rise);
-                cr.lineTo(Math.max(x1 + borderRadius, this._arrowOrigin) + halfBase, y1);
-            } else if (this._arrowOrigin > (x2 - (borderRadius + halfBase))) {
-                cr.lineTo(Math.min(x2 - borderRadius, this._arrowOrigin) - halfBase, y1);
-                cr.lineTo(this._arrowOrigin, y1 - rise);
+            if (skipTopLeft) {
+                cr.moveTo(x1, y2 - borderRadius);
+                cr.lineTo(x1, y1 - rise);
+                cr.lineTo(x1 + halfBase, y1);
+            } else if (skipTopRight) {
+                cr.lineTo(x2 - halfBase, y1);
+                cr.lineTo(x2, y1 - rise);
+                cr.lineTo(x2, y1 + borderRadius);
             } else {
                 cr.lineTo(this._arrowOrigin - halfBase, y1);
                 cr.lineTo(this._arrowOrigin, y1 - rise);
@@ -250,19 +289,20 @@ BoxPointer.prototype = {
             }
         }
 
-        cr.lineTo(x2 - borderRadius, y1);
-
-        // top-right corner
-        cr.arc(x2 - borderRadius, y1 + borderRadius, borderRadius,
-               3*Math.PI/2, Math.PI*2);
+        if (!skipTopRight) {
+            cr.lineTo(x2 - borderRadius, y1);
+            cr.arc(x2 - borderRadius, y1 + borderRadius, borderRadius,
+                   3*Math.PI/2, Math.PI*2);
+        }
 
         if (this._arrowSide == St.Side.RIGHT) {
-            if (this._arrowOrigin < (y1 + (borderRadius + halfBase))) {
-                cr.lineTo(x2 + rise, this._arrowOrigin);
-                cr.lineTo(x2, Math.max(y1 + borderRadius, this._arrowOrigin) + halfBase);
-            } else if (this._arrowOrigin > (y2 - (borderRadius + halfBase))) {
-                cr.lineTo(x2, Math.min(y2 - borderRadius, this._arrowOrigin) - halfBase);
-                cr.lineTo(x2 + rise, this._arrowOrigin);
+            if (skipTopRight) {
+                cr.lineTo(x2 + rise, y1);
+                cr.lineTo(x2 + rise, y1 + halfBase);
+            } else if (skipBottomRight) {
+                cr.lineTo(x2, y2 - halfBase);
+                cr.lineTo(x2 + rise, y2);
+                cr.lineTo(x2 - borderRadius, y2);
             } else {
                 cr.lineTo(x2, this._arrowOrigin - halfBase);
                 cr.lineTo(x2 + rise, this._arrowOrigin);
@@ -270,19 +310,20 @@ BoxPointer.prototype = {
             }
         }
 
-        cr.lineTo(x2, y2 - borderRadius);
-
-        // bottom-right corner
-        cr.arc(x2 - borderRadius, y2 - borderRadius, borderRadius,
-               0, Math.PI/2);
+        if (!skipBottomRight) {
+            cr.lineTo(x2, y2 - borderRadius);
+            cr.arc(x2 - borderRadius, y2 - borderRadius, borderRadius,
+                   0, Math.PI/2);
+        }
 
         if (this._arrowSide == St.Side.BOTTOM) {
-            if (this._arrowOrigin < (x1 + (borderRadius + halfBase))) {
-                cr.lineTo(Math.max(x1 + borderRadius, this._arrowOrigin) + halfBase, y2);
-                cr.lineTo(this._arrowOrigin, y2 + rise);
-            } else if (this._arrowOrigin > (x2 - (borderRadius + halfBase))) {
-                cr.lineTo(this._arrowOrigin, y2 + rise);
-                cr.lineTo(Math.min(x2 - borderRadius, this._arrowOrigin) - halfBase, y2);
+            if (skipBottomLeft) {
+                cr.lineTo(x1 + halfBase, y2);
+                cr.lineTo(x1, y2 + rise);
+                cr.lineTo(x1, y2 - borderRadius);
+            } else if (skipBottomRight) {
+                cr.lineTo(x2, y2 + rise);
+                cr.lineTo(x2 - halfBase, y2);
             } else {
                 cr.lineTo(this._arrowOrigin + halfBase, y2);
                 cr.lineTo(this._arrowOrigin, y2 + rise);
@@ -290,19 +331,20 @@ BoxPointer.prototype = {
             }
         }
 
-        cr.lineTo(x1 + borderRadius, y2);
-
-        // bottom-left corner
-        cr.arc(x1 + borderRadius, y2 - borderRadius, borderRadius,
-               Math.PI/2, Math.PI);
+        if (!skipBottomLeft) {
+            cr.lineTo(x1 + borderRadius, y2);
+            cr.arc(x1 + borderRadius, y2 - borderRadius, borderRadius,
+                   Math.PI/2, Math.PI);
+        }
 
         if (this._arrowSide == St.Side.LEFT) {
-            if (this._arrowOrigin < (y1 + (borderRadius + halfBase))) {
-                cr.lineTo(x1, Math.max(y1 + borderRadius, this._arrowOrigin) + halfBase);
-                cr.lineTo(x1 - rise, this._arrowOrigin);
-            } else if (this._arrowOrigin > (y2 - (borderRadius + halfBase))) {
-                cr.lineTo(x1 - rise, this._arrowOrigin);
-                cr.lineTo(x1, Math.min(y2 - borderRadius, this._arrowOrigin) - halfBase);
+            if (skipTopLeft) {
+                cr.lineTo(x1, y1 + halfBase);
+                cr.lineTo(x1 - rise, y1);
+                cr.lineTo(x1 + borderRadius, y1);
+            } else if (skipBottomLeft) {
+                cr.lineTo(x1 - rise, y2)
+                cr.lineTo(x1 - rise, y2 - halfBase);
             } else {
                 cr.lineTo(x1, this._arrowOrigin + halfBase);
                 cr.lineTo(x1 - rise, this._arrowOrigin);
@@ -310,17 +352,23 @@ BoxPointer.prototype = {
             }
         }
 
-        cr.lineTo(x1, y1 + borderRadius);
-
-        // top-left corner
-        cr.arc(x1 + borderRadius, y1 + borderRadius, borderRadius,
-               Math.PI, 3*Math.PI/2);
+        if (!skipTopLeft) {
+            cr.lineTo(x1, y1 + borderRadius);
+            cr.arc(x1 + borderRadius, y1 + borderRadius, borderRadius,
+                   Math.PI, 3*Math.PI/2);
+        }
 
         Clutter.cairo_set_source_color(cr, backgroundColor);
         cr.fillPreserve();
-        Clutter.cairo_set_source_color(cr, borderColor);
-        cr.setLineWidth(borderWidth);
-        cr.stroke();
+
+        if (borderWidth > 0) {
+            let borderColor = themeNode.get_color('-arrow-border-color');
+            Clutter.cairo_set_source_color(cr, borderColor);
+            cr.setLineWidth(borderWidth);
+            cr.stroke();
+        }
+
+        cr.$dispose();
     },
 
     setPosition: function(sourceActor, alignment) {
@@ -331,7 +379,8 @@ BoxPointer.prototype = {
         this._sourceActor = sourceActor;
         this._arrowAlignment = alignment;
 
-        this._reposition(sourceActor, alignment);
+        this._reposition();
+        this._updateFlip();
     },
 
     setSourceAlignment: function(alignment) {
@@ -340,14 +389,13 @@ BoxPointer.prototype = {
         if (!this._sourceActor)
             return;
 
-        // We need to show it now to force an allocation,
-        // so that we can query the correct size.
-        this.actor.show();
-
-        this._reposition(this._sourceActor, this._arrowAlignment);
+        this.setPosition(this._sourceActor, this._arrowAlignment);
     },
 
-    _reposition: function(sourceActor, alignment) {
+    _reposition: function() {
+        let sourceActor = this._sourceActor;
+        let alignment = this._arrowAlignment;
+
         // Position correctly relative to the sourceActor
         let sourceNode = sourceActor.get_theme_node();
         let sourceContentBox = sourceNode.get_content_box(sourceActor.get_allocation_box());
@@ -365,10 +413,9 @@ BoxPointer.prototype = {
         let arrowBase = themeNode.get_length('-arrow-base');
         let borderRadius = themeNode.get_length('-arrow-border-radius');
         let margin = (4 * borderRadius + borderWidth + arrowBase);
-        let halfMargin = margin / 2;
 
-        let themeNode = this.actor.get_theme_node();
         let gap = themeNode.get_length('-boxpointer-gap');
+        let padding = themeNode.get_length('-arrow-rise');
 
         let resX, resY;
 
@@ -387,28 +434,65 @@ BoxPointer.prototype = {
             break;
         }
 
-        // Now align and position the pointing axis, making sure
-        // it fits on screen
+        // Now align and position the pointing axis, making sure it fits on
+        // screen. If the arrowOrigin is so close to the edge that the arrow
+        // will not be isosceles, we try to compensate as follows:
+        //   - We skip the rounded corner and settle for a right angled arrow
+        //     as shown below. See _drawBorder for further details.
+        //     |\_____
+        //     |
+        //     |
+        //   - If the arrow was going to be acute angled, we move the position
+        //     of the box to maintain the arrow's accuracy.
+
+        let arrowOrigin;
+        let halfBase = Math.floor(arrowBase/2);
+        let halfBorder = borderWidth / 2;
+        let halfMargin = margin / 2;
+        let [x1, y1] = [halfBorder, halfBorder];
+        let [x2, y2] = [natWidth - halfBorder, natHeight - halfBorder];
+
         switch (this._arrowSide) {
         case St.Side.TOP:
         case St.Side.BOTTOM:
             resX = sourceCenterX - (halfMargin + (natWidth - margin) * alignment);
 
-            resX = Math.max(resX, monitor.x + 10);
-            resX = Math.min(resX, monitor.x + monitor.width - (10 + natWidth));
-            this.setArrowOrigin(sourceCenterX - resX);
+            resX = Math.max(resX, monitor.x + padding);
+            resX = Math.min(resX, monitor.x + monitor.width - (padding + natWidth));
+
+            arrowOrigin = sourceCenterX - resX;
+            if (arrowOrigin <= (x1 + (borderRadius + halfBase))) {
+                if (arrowOrigin > x1)
+                    resX += (arrowOrigin - x1);
+                arrowOrigin = x1;
+            } else if (arrowOrigin >= (x2 - (borderRadius + halfBase))) {
+                if (arrowOrigin < x2)
+                    resX -= (x2 - arrowOrigin);
+                arrowOrigin = x2;
+            }
             break;
 
         case St.Side.LEFT:
         case St.Side.RIGHT:
             resY = sourceCenterY - (halfMargin + (natHeight - margin) * alignment);
 
-            resY = Math.max(resY, monitor.y + 10);
-            resY = Math.min(resY, monitor.y + monitor.height - (10 + natHeight));
+            resY = Math.max(resY, monitor.y + padding);
+            resY = Math.min(resY, monitor.y + monitor.height - (padding + natHeight));
 
-            this.setArrowOrigin(sourceCenterY - resY);
+            arrowOrigin = sourceCenterY - resY;
+            if (arrowOrigin <= (y1 + (borderRadius + halfBase))) {
+                if (arrowOrigin > y1)
+                    resY += (arrowOrigin - y1);
+                arrowOrigin = y1;
+            } else if (arrowOrigin >= (y2 - (borderRadius + halfBase))) {
+                if (arrowOrigin < y2)
+                    resX -= (y2 - arrowOrigin);
+                arrowOrigin = y2;
+            }
             break;
         }
+
+        this.setArrowOrigin(arrowOrigin);
 
         let parent = this.actor.get_parent();
         let success, x, y;
@@ -441,6 +525,49 @@ BoxPointer.prototype = {
         // x == y == 0.
         this.actor.set_anchor_point(-(this._xPosition + this._xOffset),
                                     -(this._yPosition + this._yOffset));
+    },
+
+     _calculateArrowSide: function(arrowSide) {
+        let sourceAllocation = Cinnamon.util_get_transformed_allocation(this._sourceActor);
+        let [minWidth, minHeight, boxWidth, boxHeight] = this._container.get_preferred_size();
+        let monitor = Main.layoutManager.findMonitorForActor(this.actor);
+
+        switch (arrowSide) {
+        case St.Side.TOP:
+            if (sourceAllocation.y2 + boxHeight > monitor.y + monitor.height &&
+                boxHeight < sourceAllocation.y1 - monitor.y)
+                return St.Side.BOTTOM;
+            break;
+        case St.Side.BOTTOM:
+            if (sourceAllocation.y1 - boxHeight < monitor.y &&
+                boxHeight < monitor.y + monitor.height - sourceAllocation.y2)
+                return St.Side.TOP;
+            break;
+        case St.Side.LEFT:
+            if (sourceAllocation.x2 + boxWidth > monitor.x + monitor.width &&
+                boxWidth < sourceAllocation.x1 - monitor.x)
+                return St.Side.RIGHT;
+            break;
+        case St.Side.RIGHT:
+            if (sourceAllocation.x1 - boxWidth < monitor.x &&
+                boxWidth < monitor.x + monitor.width - sourceAllocation.x2)
+                return St.Side.LEFT;
+            break;
+        }
+
+        return arrowSide;
+    },
+
+    _updateFlip: function() {
+        let arrowSide = this._calculateArrowSide(this._userArrowSide);
+        if (this._arrowSide != arrowSide) {
+            this._arrowSide = arrowSide;
+            this._reposition();
+            Meta.later_add(Meta.LaterType.BEFORE_REDRAW, Lang.bind(this, function() {
+                this._container.queue_relayout();
+                return false;
+            }));
+        }
     },
 
     set xOffset(offset) {

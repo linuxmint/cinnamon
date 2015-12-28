@@ -4,6 +4,7 @@ const Lang = imports.lang;
 const Applet = imports.ui.applet;
 const GConf = imports.gi.GConf;
 const Main = imports.ui.main;
+const Gdk = imports.gi.Gdk;
 
 const A11Y_SCHEMA = 'org.cinnamon.desktop.a11y.keyboard';
 const KEY_STICKY_KEYS_ENABLED = 'stickykeys-enable';
@@ -30,15 +31,17 @@ const KEY_TEXT_SCALING_FACTOR = 'text-scaling-factor';
 
 const HIGH_CONTRAST_THEME = 'HighContrast';
 
+const Keymap = Gdk.Keymap.get_default();
+
 function MyApplet(metadata, orientation, panel_height, applet_id) {
     this._init(metadata, orientation, panel_height, applet_id);
 }
 
 MyApplet.prototype = {
-    __proto__: Applet.IconApplet.prototype,
+    __proto__: Applet.TextIconApplet.prototype,
 
     _init: function(metadata, orientation, panel_height, instance_id) {
-        Applet.IconApplet.prototype._init.call(this, orientation, panel_height, instance_id);
+        Applet.TextIconApplet.prototype._init.call(this, orientation, panel_height, instance_id);
         
         try {
             this.metadata = metadata;
@@ -89,17 +92,56 @@ MyApplet.prototype = {
 
             this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
             this.menu.addSettingsAction(_("Universal Access Settings"), 'universal-access');
+
+            this.a11y_settings = new Gio.Settings({ schema_id: A11Y_SCHEMA });
+
+            this._keyboardStateChangedId = Keymap.connect('state-changed', Lang.bind(this, this._handleStateChange));
+            this.set_applet_label('');
+
         }
         catch (e) {
             global.logError(e);
         }
     },
-    
-    on_applet_clicked: function(event) {
-        this.menu.toggle();        
+
+    _handleStateChange: function(actor, event) {
+        if (this.a11y_settings.get_boolean(KEY_STICKY_KEYS_ENABLED)) {
+            let state = Keymap.get_modifier_state();
+            let modifiers = [];
+            if (state & Gdk.ModifierType.LOCK_MASK)
+                modifiers.push('Lock');
+            if (state & Gdk.ModifierType.CONTROL_MASK)
+                modifiers.push('Ctrl');
+            if (state & Gdk.ModifierType.MOD4_MASK)
+                modifiers.push('Super');
+            if (state & Gdk.ModifierType.SUPER_MASK)
+                modifiers.push('Super');
+            if (state & Gdk.ModifierType.META_MASK)
+                modifiers.push('Meta');
+            if (state & Gdk.ModifierType.ALT_MASK)
+                modifiers.push('Alt');
+            if (state & Gdk.ModifierType.MOD5_MASK)
+                modifiers.push('Alt Gr');
+            if (state & Gdk.ModifierType.SHIFT_MASK)
+                modifiers.push('Shift');
+            if (state & Gdk.ModifierType.MOD1_MASK)
+                modifiers.push('Alt');
+            if (state & Gdk.ModifierType.MOD2_MASK)
+                modifiers.push('Mod2');
+            if (state & Gdk.ModifierType.MOD3_MASK)
+                modifiers.push('Mod3');
+            this.set_applet_label(modifiers.join('+'));
+        }
+        else {
+            this.set_applet_label('');
+        }
     },
-    
-     _buildItemExtended: function(string, initial_value, writable, on_set) {
+
+    on_applet_clicked: function(event) {
+        this.menu.toggle();
+    },
+
+    _buildItemExtended: function(string, initial_value, writable, on_set) {
         let widget = new PopupMenu.PopupSwitchMenuItem(string, initial_value);
         if (!writable)
             widget.actor.reactive = false;
@@ -124,7 +166,7 @@ MyApplet.prototype = {
     },
 
     _buildItem: function(string, schema, key) {
-        let settings = new Gio.Settings({ schema: schema });
+        let settings = new Gio.Settings({ schema_id: schema });
         let widget = this._buildItemExtended(string,
             settings.get_boolean(key),
             settings.is_writable(key),
@@ -138,7 +180,7 @@ MyApplet.prototype = {
     },
 
     _buildHCItem: function() {
-        let settings = new Gio.Settings({ schema: DESKTOP_INTERFACE_SCHEMA });
+        let settings = new Gio.Settings({ schema_id: DESKTOP_INTERFACE_SCHEMA });
         let gtkTheme = settings.get_string(KEY_GTK_THEME);
         let iconTheme = settings.get_string(KEY_ICON_THEME);
         let hasHC = (gtkTheme == HIGH_CONTRAST_THEME);
@@ -176,7 +218,7 @@ MyApplet.prototype = {
     },
 
     _buildFontItem: function() {
-        let settings = new Gio.Settings({ schema: DESKTOP_INTERFACE_SCHEMA });
+        let settings = new Gio.Settings({ schema_id: DESKTOP_INTERFACE_SCHEMA });
 
         let factor = settings.get_double(KEY_TEXT_SCALING_FACTOR);
         let initial_setting = (factor > 1.0);

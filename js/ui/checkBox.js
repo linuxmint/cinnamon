@@ -9,6 +9,7 @@ const Lang = imports.lang;
 function CheckBoxContainer() {
    this._init();
 }
+
 CheckBoxContainer.prototype = {
     _init: function() {
         this.actor = new Cinnamon.GenericContainer({ y_align: St.Align.MIDDLE });
@@ -95,25 +96,65 @@ CheckBoxContainer.prototype = {
     }
 };
 
-function CheckBox(label, params) {
-   this._init(label, params);
+function CheckBoxBase() {
+    this._init.apply(this, arguments);
+}
+
+CheckBoxBase.prototype = {
+    _init: function(checkedState, params) {
+        this._params = { style_class: 'check-box',
+                         button_mask: St.ButtonMask.ONE,
+                         toggle_mode: true,
+                         can_focus: true,
+                         x_fill: true,
+                         y_fill: true,
+                         y_align: St.Align.MIDDLE };
+
+        if (params != undefined) {
+            this._params = Params.parse(params, this._params);
+        }
+
+        this.actor = new St.Button(this._params);
+        this.actor._delegate = this;
+        this.actor.checked = checkedState;
+    },
+
+    setToggleState: function(checkedState) {
+        this.actor.checked = checkedState;
+    },
+
+    toggle: function() {
+        this.setToggleState(!this.actor.checked);
+    },
+
+    destroy: function() {
+        this.actor.destroy();
+    }
+};
+
+function CheckButton() {
+    this._init.apply(this, arguments);
+}
+
+CheckButton.prototype = {
+    __proto__: CheckBoxBase.prototype,
+
+    _init: function(checkedState, params) {
+        CheckBoxBase.prototype._init.call(this, checkedState, params);
+        this.checkmark = new St.Bin();
+        this.actor.set_child(this.checkmark);
+    },
+};
+
+function CheckBox() {
+    this._init.apply(this, arguments);
 }
 
 CheckBox.prototype = {
-    _init: function(label, params) {
-         this._params = { style_class: 'check-box',
-                                     button_mask: St.ButtonMask.ONE,
-                                     toggle_mode: true,
-                                     can_focus: true,
-                                     x_fill: true,
-                                     y_fill: true,
-                                     y_align: St.Align.MIDDLE };
+    __proto__: CheckBoxBase.prototype,
 
-         if (params != undefined) {
-            this._params = Params.parse(params, this._params);
-         }
-
-        this.actor = new St.Button(this._params);
+    _init: function(label, params, checkedState) {
+        CheckBoxBase.prototype._init.call(this, checkedState, params);
         this._container = new CheckBoxContainer();
         this.actor.set_child(this._container.actor);
 

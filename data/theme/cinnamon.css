@@ -47,6 +47,24 @@ StScrollBar StButton#hhandle:hover,
 StScrollBar StButton#vhandle:hover {
 	background-color: rgba(204,204,204,0.5);
 }
+.separator {
+    -gradient-height: 2px;
+    -gradient-start: rgba(85,85,85,1);
+    -gradient-end: #555555;
+    -margin-horizontal: 1.5em;
+    height: 1em;
+}
+.slider {
+    height: 1em;
+    min-width: 15em;
+    -slider-height: 0.3em;
+    -slider-background-color: #666666;
+    -slider-border-color: #555555;
+    -slider-active-background-color: #CCCCCC;
+    -slider-active-border-color: #DDDDDD;
+    -slider-border-width: 1px;
+    -slider-handle-radius: 0.5em;
+}
 #Tooltip {
 	border: 1px solid rgba(212,185,67,1.0);
 	border-radius: 4px;
@@ -100,6 +118,9 @@ StScrollBar StButton#vhandle:hover {
 	color: #ffffff;
 	font-size: 9.5pt;
 	min-width: 100px;
+}
+.popup-menu-arrow {
+    icon-size: 1.14em;
 }
 .popup-submenu-menu-item:open {
 	background-color: #4c4c4c;
@@ -744,7 +765,7 @@ StScrollBar StButton#vhandle:hover {
 	color: white;
 }
 .switcher-preview-backdrop {
-   background-color: rgba(25,25,25,0.95);
+   background-color: rgba(25,25,25,0.65);
 }
 
 /* ===================================================================
@@ -914,7 +935,7 @@ StScrollBar StButton#vhandle:hover {
  * ===================================================================*/
 
 #keyboard {
-	background: rgba(0,0,0,0.8);
+	background-color: #555555;
 }
 .keyboard-layout {
 	spacing: 10px;
@@ -1192,74 +1213,79 @@ StScrollBar StButton#vhandle:hover {
 	background-gradient-end: rgba(255,144,144,0.5);
 }
 /* ===================================================================
- * Sound Applet (status/volume.js)
+ * Sound Applet (sound@cinnamon.org)
  * ===================================================================*/
-.sound-button-container {
-	padding-right: 3px;
-	padding-left: 3px;
-}
-.sound-button {
+
+.sound-player StButton {
 	width: 22px;
 	height: 13px;
-	border: 1px solid #555;
-	border-radius: 4px;
+	padding: 5px;
+	color: #aaa;
+}
+
+.sound-player StButton:small {
+	width: 16px;
+	height: 8px;
+	padding: 1px;
+}
+
+.sound-player StButton:small StIcon {
+	icon-size: 1em;
+}
+
+.sound-player StButton StIcon {
+	icon-size: 1.5em;
+}
+
+.sound-player StButton:hover, .sound-player StButton:active {
+	color: #fff;
+}
+
+.sound-player .slider {
+    height: 0.5em;
+    -slider-height: 0.5em;
+    -slider-background-color: #3c3c3c;
+    -slider-border-color: rgba(0,0,0,0);
+    -slider-active-background-color: #a5a5a5;
+    -slider-active-border-color: rgba(0,0,0,0);
+    -slider-border-width: 0px;
+    -slider-handle-radius: 0px;
+}
+
+.sound-player StBoxLayout {
+	spacing: 0.5em;
+}
+
+.sound-player>StBoxLayout {
 	padding: 5px;
 }
-.sound-button:hover, .sound-button:active {
-	border: 1px solid white;
-}
-.sound-button StIcon {
-	icon-size: 1.4em;
-}
-.sound-track-infos {	
-	padding-left: 5px;
-	padding-right: 5px;
-	padding-top: 5px;
-	padding-bottom: 5px;
-}
-.sound-track-info {
-	padding-top: 2px;
-	padding-bottom: 2px;
-}
-.sound-track-info StIcon {
-	icon-size: 1em;
 
+.sound-player-overlay {
+	width: 300px;
+	height: 70px;
+	padding: 15px;
+	spacing: 0.5em;
+	background: rgba(0,0,0,0.8);
+	color: #FFF;
 }
-.sound-track-info StLabel {
-	padding-left: 5px;
-	padding-right: 5px;
+
+.sound-player-overlay StBoxLayout {
+	padding-top: 2px;
 }
-.sound-track-box {	
-	padding-left: 15px;
-	padding-right: 15px;	
-	max-width: 220px;
+
+.sound-player-generic-coverart {
+	background: rgba(0,0,0,0.2);
 }
-.sound-seek-box {
-   padding-left: 20px;
-}
-.sound-seek-box StLabel {
-   padding-top: 2px;
-}
-.sound-seek-box StIcon {
-   icon-size: 1em;
-}
-.sound-seek-slider {
-   width: 140px;   
-}
-.sound-playback-control {
-	padding-top: 5px;
-	padding-bottom: 10px;
-	padding-left: 10px;
-	padding-right: 10px;
-}
+
 /* ===================================================================
  * Workspace Switcher applet (workspaceSwitcher.js)
  * ===================================================================*/
-#workspaceSwitcher {
-	spacing: 0px;
-	padding: 3px;
-	
+/* Controls the styling when using the "Simple buttons" option */
+.workspace-switcher {
+    padding-left: 3px;
+    padding-right: 3px;
 }
+
 .workspace-button {
 	width: 20px;
 	height: 10px;
@@ -1269,12 +1295,48 @@ StScrollBar StButton#vhandle:hover {
 	padding: 2px;
 	transition-duration: 300;
 }
+
 .workspace-button:outlined {
 	padding: 1px;
 	background: #cccccc;
 	color: #555555;
 	box-shadow: inset 0px 0px 8px 1px rgba(255,255,255, 0.7);
 }
+
+/* Controls the style when using the "Visual representation" option */
+.workspace-graph {
+    padding: 3px;
+    spacing: 3px;
+}
+
+.workspace-graph .workspace {
+    border: 1px solid #666;
+    background-gradient-direction: vertical;
+    background-gradient-start: #222;
+    background-gradient-end: #4d4d4d;
+}
+
+.workspace-graph .workspace:active {
+    border: 1px solid #ccc;
+    background-gradient-direction: vertical;
+    background-gradient-start: #111;
+    background-gradient-end: #3d3d3d;
+}
+
+.workspace-graph .workspace .windows {
+    -active-window-background: rgba(140, 140, 140, 1.0);
+    -active-window-border: rgba(0, 0, 0, 0.7);
+    -inactive-window-background: rgba(140, 140, 140, 1.0);
+    -inactive-window-border: rgba(0, 0, 0, 0.7);
+}
+
+.workspace-graph .workspace:active .windows {
+    -active-window-background: rgba(255, 255, 255, 1.0);
+    -active-window-border: rgba(0, 0, 0, 0.9);
+    -inactive-window-background: rgba(140, 140, 140, 1.0);
+    -inactive-window-border: rgba(0, 0, 0, 0.7);
+}
+
 /* ===================================================================
  * Panel Launchers Applet (panelLaunchers.js)
  * ===================================================================*/
@@ -1530,22 +1592,16 @@ StScrollBar StButton#vhandle:hover {
     spacing: .2em;
 }
 
-.check-box StBin {
-    width: 24px;
-    height: 18px;
+.check-box StBin,
+.check-box:focus StBin {
+    width: 16px;
+    height: 16px;
     background-image: url("checkbox-off.svg");
 }
 
-.check-box:focus StBin {
-    background-image: url("checkbox-off-focused.svg");
-}
-
-.check-box:checked StBin {
-    background-image: url("checkbox.svg");
-}
-
+.check-box:checked StBin,
 .check-box:focus:checked StBin {
-    background-image: url("checkbox-focused.svg");
+    background-image: url("checkbox.svg");
 }
 
 .check-box StLabel {
@@ -1554,25 +1610,19 @@ StScrollBar StButton#vhandle:hover {
 
 .radiobutton CinnamonGenericContainer {
     spacing: .2em;
-    height: 26px;
+    height: 18px;
     padding-top: 2px;
 }
 
-.radiobutton StBin {
-    width: 22px;
-    height: 22px;
+.radiobutton StBin,
+.radiobutton:focus StBin {
+    width: 16px;
+    height: 16px;
     background-image: url("radiobutton-off.svg");
     border-radius: 15px;
 }
 
-.radiobutton:focus StBin {
-    background-image: url("radiobutton-off.svg");
-}
-
-.radiobutton:checked StBin {
-    background-image: url("radiobutton.svg");
-}
-
+.radiobutton:checked StBin,
 .radiobutton:focus:checked StBin {
     background-image: url("radiobutton.svg");
 }

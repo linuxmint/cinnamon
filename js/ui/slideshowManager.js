@@ -23,7 +23,7 @@ SlideshowManager.prototype = {
 
     _init: function() {
         this.proxy = null;
-        this._slideshowSettings = new Gio.Settings({ schema: "org.cinnamon.desktop.background.slideshow" });
+        this._slideshowSettings = new Gio.Settings({ schema_id: "org.cinnamon.desktop.background.slideshow" });
         this._slideshowSettings.connect("changed::slideshow-enabled", Lang.bind(this, this._onSlideshowEnabledChanged));
 
         if (this._slideshowSettings.get_boolean("slideshow-enabled")) {

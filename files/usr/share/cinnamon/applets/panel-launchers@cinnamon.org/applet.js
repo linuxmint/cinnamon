@@ -40,37 +40,26 @@ PanelAppLauncherMenu.prototype = {
 
         Applet.AppletPopupMenu.prototype._init.call(this, launcher, orientation);
 
-        this.launchItem = new PopupMenu.PopupMenuItem(_("Launch"));
-        this.addMenuItem(this.launchItem);
-        this.launchItem.connect('activate', Lang.bind(this, this._onLaunchActivate));
-
-        this.addItem = new PopupMenu.PopupMenuItem(_("Add"));
-        this.addMenuItem(this.addItem);
-        this.addItem.connect('activate', Lang.bind(this, this._onAddActivate));
-
-        this.editItem = new PopupMenu.PopupMenuItem(_("Edit"));
-        this.addMenuItem(this.editItem);
-        this.editItem.connect('activate', Lang.bind(this, this._onEditActivate));
-
-        this.removeItem = new PopupMenu.PopupMenuItem(_("Remove"));
-        this.addMenuItem(this.removeItem);
-        this.removeItem.connect('activate', Lang.bind(this, this._onRemoveActivate));
+        this.addAction(_("Launch"), Lang.bind(this, this._onLaunchActivate));
+        this.addAction(_("Add"), Lang.bind(this, this._onAddActivate));
+        this.addAction(_("Edit"), Lang.bind(this, this._onEditActivate));
+        this.addAction(_("Remove"), Lang.bind(this, this._onRemoveActivate));
     },
 
-    _onLaunchActivate: function(actor, event) {
+    _onLaunchActivate: function(event) {
         this._launcher.launch();
     },
 
-    _onRemoveActivate: function(actor, event) {
+    _onRemoveActivate: function(event) {
         this._launcher.launchersBox.removeLauncher(this._launcher, this._launcher.isCustom());
         this._launcher.actor.destroy();
     },
 
-    _onAddActivate: function(actor, event) {
+    _onAddActivate: function(event) {
         this._launcher.launchersBox.showAddLauncherDialog(event.get_time());
     },
 
-    _onEditActivate: function(actor, event) {
+    _onEditActivate: function(event) {
         this._launcher.launchersBox.showAddLauncherDialog(event.get_time(), this._launcher);
     }
 }
@@ -122,9 +111,7 @@ PanelAppLauncher.prototype = {
         this._menu = new PanelAppLauncherMenu(this, orientation);
         this._menuManager.addMenu(this._menu);
 
-        let tooltipText;
-        if (this.isCustom()) tooltipText = appinfo.get_name();
-        else tooltipText = app.get_name();
+        let tooltipText = this.isCustom() ? appinfo.get_name() : app.get_name();
         this._tooltip = new Tooltips.PanelItemTooltip(this, tooltipText, orientation);
 
         this._dragging = false;
@@ -173,8 +160,14 @@ PanelAppLauncher.prototype = {
     },
 
     _getIconActor: function() {
-        if (this.isCustom()) return St.TextureCache.get_default().load_gicon(null, this.appinfo.get_icon(), this.icon_height);
-        else return this.app.create_icon_texture(this.icon_height);
+        if (this.isCustom()) {
+            let icon = this.appinfo.get_icon();
+            if (icon == null)
+                icon = new Gio.ThemedIcon({name: "gnome-panel-launcher"});
+            return St.TextureCache.get_default().load_gicon(null, icon, this.icon_height);
+        } else {
+            return this.app.create_icon_texture(this.icon_height);
+        }
     },
 
     _animateIcon: function(step){
@@ -250,8 +243,7 @@ PanelAppLauncher.prototype = {
     },
 
     getAppInfo: function() {
-        if (this.isCustom()) return this.appinfo;
-        else return this.app.get_app_info();
+        return (this.isCustom() ? this.appinfo : this.app.get_app_info());
     },
 
     getCommand: function() {
@@ -286,54 +278,55 @@ MyApplet.prototype = {
     _init: function(metadata, orientation, panel_height, instance_id) {
         Applet.Applet.prototype._init.call(this, orientation, panel_height, instance_id);
         this.actor.set_track_hover(false);
-        try {
-            this.orientation = orientation;
-            this._dragPlaceholder = null;
-            this._dragPlaceholderPos = -1;
-            this._animatingPlaceholdersCount = 0;
 
-	    if (this.orientation == St.Side.TOP || this.orientation == St.Side.BOTTOM)
-	    {
+        this.orientation = orientation;
+        this._dragPlaceholder = null;
+        this._dragPlaceholderPos = -1;
+        this._animatingPlaceholdersCount = 0;
 
-            	this.myactor = new St.BoxLayout({ name: 'panel-launchers-box',
-                                              style_class: 'panel-launchers-box' });
-	    }
-	    else		// vertical panels
-	    {
-            	this.myactor = new St.BoxLayout({ name: 'panel-launchers-box',
+	if (this.orientation == St.Side.TOP || this.orientation == St.Side.BOTTOM)
+	{
+
+           this.myactor = new St.BoxLayout({ name: 'panel-launchers-box',
+                                             style_class: 'panel-launchers-box' });
+	}
+	else		// vertical panels
+	{
+            this.myactor = new St.BoxLayout({ name: 'panel-launchers-box',
                                               style_class: 'panel-launchers-box',
 						vertical: true,
 						x_align: 2 });
 
-		this.myactor.set_style('margin-left: 0; padding-left: 0; padding-top: 5px');
- 	    }
+	    this.myactor.set_style('margin-left: 0; padding-left: 0; padding-top: 5px');
+ 	}
 
-            this.settings = new Settings.AppletSettings(this, metadata.uuid, instance_id);
-            this.settings.bindProperty(Settings.BindingDirection.BIDIRECTIONAL, "launcherList", "launcherList", this._onSettingsChanged, null);
-            this.settings.bindProperty(Settings.BindingDirection.IN, "allow-dragging", "allowDragging", this._updateLauncherDrag, null);
+        this.settings = new Settings.AppletSettings(this, metadata.uuid, instance_id);
+        this.settings.bindProperty(Settings.BindingDirection.BIDIRECTIONAL,
+                                   "launcherList",
+                                   "launcherList",
+                                   this._onSettingsChanged, null);
+        this.settings.bindProperty(Settings.BindingDirection.IN,
+                                   "allow-dragging",
+                                   "allowDragging",
+                                   this._updateLauncherDrag, null);
 
-            this.uuid = metadata.uuid;
-            this._settings_proxy = new Array();
-            this._launchers = new Array();
+        this.uuid = metadata.uuid;
+        this._settings_proxy = new Array();
+        this._launchers = new Array();
 
-            this.actor.add(this.myactor);
-            this.actor.reactive = global.settings.get_boolean(PANEL_EDIT_MODE_KEY);
-            global.settings.connect('changed::' + PANEL_EDIT_MODE_KEY, Lang.bind(this, this._onPanelEditModeChanged));
+        this.actor.add(this.myactor);
+        this.actor.reactive = global.settings.get_boolean(PANEL_EDIT_MODE_KEY);
+        global.settings.connect('changed::' + PANEL_EDIT_MODE_KEY, Lang.bind(this, this._onPanelEditModeChanged));
 
-            this.do_gsettings_import();
+        this.do_gsettings_import();
 
-            // We shouldn't need to call reload() here... since we get a "icon-theme-changed" signal when CSD starts.
-            // The reason we do is in case the Cinnamon icon theme is the same as the one specificed in GTK itself (in .config)
-            // In that particular case we get no signal at all.
-            this.reload();
+        // We shouldn't need to call reload() here... since we get a "icon-theme-changed" signal when CSD starts.
+        // The reason we do is in case the Cinnamon icon theme is the same as the one specificed in GTK itself (in .config)
+        // In that particular case we get no signal at all.
+        this.reload();
 
-            St.TextureCache.get_default().connect("icon-theme-changed", Lang.bind(this, this.reload));
-        }
-        catch (e) {
-            global.logError(e);
-        }
+        St.TextureCache.get_default().connect("icon-theme-changed", Lang.bind(this, this.reload));
     },
-
 
     _updateLauncherDrag: function() {
         this.emit("launcher-draggable-setting-changed");
@@ -357,11 +350,7 @@ MyApplet.prototype = {
     },
 
     sync_settings_proxy_to_settings: function() {
-        let as = new Array();
-        for (let i = 0; i < this._settings_proxy.length; i++) {
-            as.push(this._settings_proxy[i].file);
-        }
-        this.launcherList = as;
+        this.launcherList = this._settings_proxy.map(x => x.file);
     },
 
     _remove_launcher_from_proxy: function(visible_index) {

@@ -566,7 +566,7 @@ WindowOverlay.prototype = {
     updatePositions: function(cloneX, cloneY, cloneWidth, cloneHeight, maxWidth) {
         let button = this.closeButton;
 
-        let settings = new Gio.Settings({ schema: BUTTON_LAYOUT_SCHEMA });
+        let settings = new Gio.Settings({ schema_id: BUTTON_LAYOUT_SCHEMA });
         let layout = settings.get_string(BUTTON_LAYOUT_KEY);
         let rtl = St.Widget.get_default_direction() == St.TextDirection.RTL;
 

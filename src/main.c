@@ -262,7 +262,7 @@ main (int argc, char **argv)
   GError *error = NULL;
   int ecode;
   g_setenv ("CLUTTER_DISABLE_XINPUT", "1", TRUE);
-  g_type_init ();
+  g_setenv ("CLUTTER_BACKEND", "x11", TRUE);
 
   bindtextdomain (GETTEXT_PACKAGE, LOCALEDIR);
   bind_textdomain_codeset (GETTEXT_PACKAGE, "UTF-8");
@@ -289,6 +289,7 @@ main (int argc, char **argv)
   g_unsetenv ("NO_GAIL");
   g_unsetenv ("NO_AT_BRIDGE");
   g_unsetenv ("CLUTTER_DISABLE_XINPUT");
+  g_unsetenv ("CLUTTER_BACKEND");
 
   /* FIXME: Add gjs API to set this stuff and don't depend on the
    * environment.  These propagate to child processes.
@@ -332,12 +333,4 @@ main (int argc, char **argv)
     }
 
   return ecode;
-}
-
-void _cinnamon_link_to_cinnamon_js (void);
-
-void
-_cinnamon_link_to_cinnamon_js (void)
-{
-  cinnamon_js_add_extension_importer (NULL, NULL, NULL, NULL);
 }

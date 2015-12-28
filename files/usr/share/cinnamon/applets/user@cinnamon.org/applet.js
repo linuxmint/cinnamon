@@ -66,7 +66,7 @@ MyApplet.prototype = {
 
             this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
 
-            item = new PopupMenu.PopupIconMenuItem(_("System Settings"), "preferences-system", St.IconType.SYMBOLIC);
+            let item = new PopupMenu.PopupIconMenuItem(_("System Settings"), "preferences-system", St.IconType.SYMBOLIC);
             item.connect('activate', Lang.bind(this, function() {
                 Util.spawnCommandLine("cinnamon-settings");
             }));
@@ -76,7 +76,7 @@ MyApplet.prototype = {
 
             item = new PopupMenu.PopupIconMenuItem(_("Lock Screen"), "lock-screen", St.IconType.SYMBOLIC);
             item.connect('activate', Lang.bind(this, function() {
-                let screensaver_settings = new Gio.Settings({ schema: "org.cinnamon.desktop.screensaver" });
+                let screensaver_settings = new Gio.Settings({ schema_id: "org.cinnamon.desktop.screensaver" });
                 let screensaver_dialog = Gio.file_new_for_path("/usr/bin/cinnamon-screensaver-command");
                 if (screensaver_dialog.query_exists(null)) {
                     if (screensaver_settings.get_boolean("ask-for-away-message")) {

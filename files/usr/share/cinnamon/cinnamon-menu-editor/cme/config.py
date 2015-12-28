@@ -1,0 +1,8 @@
+prefix="/usr"
+datadir="/usr/share"
+localedir=datadir+"/locale"
+libdir="/usr/share/cinnamon"
+libexecdir="/usr/share/cinnamon/cinnamon-menu-editor"
+PACKAGE="cinnamon-menu-editor"
+VERSION="1.6.1"
+GETTEXT_PACKAGE="cinnamon"

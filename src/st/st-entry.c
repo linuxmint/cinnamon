@@ -256,15 +256,10 @@ st_entry_style_changed (StWidget *self)
   StEntryPrivate *priv = ST_ENTRY_PRIV (self);
   StThemeNode *theme_node;
   ClutterColor color;
-  const PangoFontDescription *font;
-  gchar *font_string;
   gdouble size;
 
   theme_node = st_widget_get_theme_node (self);
  
-  st_theme_node_get_foreground_color (theme_node, &color);
-  clutter_text_set_color (CLUTTER_TEXT (priv->entry), &color);
-
   if (st_theme_node_lookup_length (theme_node, "caret-size", TRUE, &size))
     clutter_text_set_cursor_size (CLUTTER_TEXT (priv->entry), (int)(.5 + size));
 
@@ -277,10 +272,7 @@ st_entry_style_changed (StWidget *self)
   if (st_theme_node_lookup_color (theme_node, "selected-color", TRUE, &color))
     clutter_text_set_selected_text_color (CLUTTER_TEXT (priv->entry), &color);
 
-  font = st_theme_node_get_font (theme_node);
-  font_string = pango_font_description_to_string (font);
-  clutter_text_set_font_name (CLUTTER_TEXT (priv->entry), font_string);
-  g_free (font_string);
+  _st_set_text_from_style ((ClutterText *)priv->entry, theme_node);
 
   ST_WIDGET_CLASS (st_entry_parent_class)->style_changed (self);
 }
@@ -966,7 +958,7 @@ st_entry_init (StEntry *entry)
 
   priv->spacing = 6.0f;
 
-  clutter_actor_set_parent (priv->entry, CLUTTER_ACTOR (entry));
+  clutter_actor_add_child (CLUTTER_ACTOR (entry), priv->entry);
   clutter_actor_set_reactive ((ClutterActor *) entry, TRUE);
 
   /* set cursor hidden until we receive focus */
@@ -1155,7 +1147,7 @@ _st_entry_set_icon (StEntry       *entry,
       *icon = g_object_ref (new_icon);
 
       clutter_actor_set_reactive (*icon, TRUE);
-      clutter_actor_set_parent (*icon, CLUTTER_ACTOR (entry));
+      clutter_actor_add_child (CLUTTER_ACTOR (entry), *icon);
       g_signal_connect (*icon, "button-release-event",
                         G_CALLBACK (_st_entry_icon_press_cb), entry);
     }
