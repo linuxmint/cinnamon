@@ -76,7 +76,8 @@ MyApplet.prototype = {
 		                                       orientation: Clutter.Orientation.VERTICAL });
 	        symb_scaleup 	= ((panel_height / DEFAULT_PANEL_HEIGHT) * PANEL_SYMBOLIC_ICON_DEFAULT_HEIGHT) / global.ui_scale;
         	this.manager_container = new Clutter.Actor( { layout_manager: manager } );
-	        this.manager_container.set_margin_left(4.0*symb_scaleup/20);
+	        //this.manager_container.set_margin_left(4.0*symb_scaleup/20);
+	        // this.manager_container.set_x_align(St.Align.MIDDLE);  needs to be set by the actors inside the container
 	}
 
         this.actor.add_actor (this.manager_container);
@@ -112,10 +113,14 @@ MyApplet.prototype = {
             Main.indicatorManager.disconnect(this.signalRemoved);
             this.signalRemoved = 0;
         }
-        this._shellIndicators.forEach(function(iconActor) {
+
+	for (let i in this._shellIndicators)
+	{
+            let iconActor = this._shellIndicators[i];
+            delete this._shellIndicators[i];
             iconActor.destroy();
-        });
-        this._shellIndicators = {};
+	}
+
     },
 
     _onIndicatorAdded: function(manager, appIndicator) {
@@ -177,15 +182,17 @@ MyApplet.prototype = {
     },
 
     on_orientation_changed: function() {
-/* global.log("systray - on_orientation_changed");
+
 	    if (this.orientation == St.Side.TOP || this.orientation == St.Side.BOTTOM)
 	    {
-		//this.manager_container.set_style('vertical: false');  complains not a function.  see if there is a set orientation function.
+        //this.manager_container.style="orientation: Clutter.Orientation.HORIZONTAL";
+		//this.manager_container.set_orientation(Clutter.Orientation.HORIZONTAL);  
 	    }
 	    else		// vertical panels
 	    {
-		//this.manager_container.set_style('vertical: true');
-	    } */
+        //this.manager_container.style="orientation: Clutter.Orientation.VERTICAL";
+		// this.manager_container.set_orientation(Clutter.Orientation.VERTICAL);
+	    } 
     },
 
     on_applet_removed_from_panel: function () {
@@ -195,6 +202,11 @@ MyApplet.prototype = {
 
     on_applet_added_to_panel: function() {
         Main.statusIconDispatcher.start(this.actor.get_parent().get_parent());
+
+	if (this.actor.get_parent().orientation == Clutter.Orientation.VERTICAL)
+	{
+	        this.actor.set_x_align(St.Align.MIDDLE);  
+	}
 
         this._signalManager.connect(Main.statusIconDispatcher, 'status-icon-added', this._onTrayIconAdded);
         this._signalManager.connect(Main.statusIconDispatcher, 'status-icon-removed', this._onTrayIconRemoved);
