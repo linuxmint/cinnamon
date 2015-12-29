@@ -555,12 +555,6 @@ function unloadAppletsOnPanel (panel) {
         .forEach(removeAppletFromPanels);
 }
 
-function getLocation(panel, location) {
-    return {"center": panel._centerBox,
-            "right" : panel._rightBox,
-            "left"  : panel._leftBox}[location];
-}
-
 function copyAppletConfiguration(panelId) {
     clipboard = enabledAppletDefinitions.idMap.filter(x => x.panelId == panelId);
 }
