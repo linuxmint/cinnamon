@@ -1366,7 +1366,7 @@ PanelCorner.prototype = {
 
 	//
 	// FIXME  this section below is completely opaque to me.  Needs some comments to explain what is going on
-	// i.e. what the overall intent of doing this button logic is
+	// i.e. what the overall intent of doing this button logic is.  Is this dead code from some earlier change ?
 	//
 	if (button) {
 	    if (this._button && this._buttonStyleChangedSignalId) {
@@ -1401,7 +1401,7 @@ PanelCorner.prototype = {
 //
 // This is all about painting corners just outside the panels so as to create a seamless visual impression for full screen windows 
 // with curved corners that butt up against a panel. 
-// So ... top left corner wants to be at the bottom left of the top panel. top right wants to be in the correspondingplace on the right 
+// So ... top left corner wants to be at the bottom left of the top panel. top right wants to be in the corresponding place on the right 
 // Bottom left corner wants to be at the top left of the bottom panel.  bottom right in the corresponding place on the right.
 // No panel, no corner necessary.
 // If there are vertical panels as well then we want to shift these in by the panel width so if there are vertical panels but no horizontal 
@@ -1931,14 +1931,17 @@ Panel.prototype = {
 		// which all gives some quirky results.
 		//
 		// Using x_align:2 on the boxes shrinks them down to a tiny vertical strip if empty, which is not workable in panel edit mode.
-		// This can be catered for dynamically by setting and unsetting it as needed. Using x_align:2 also causes problems with 
-		// an empty panel, seeming to stop the dndhandler working, so it's currently not used as I have not yet found a workaround.
+		// This can be catered for dynamically by setting and unsetting it as needed. I have also started using x_expand, at the time 
+		// of writing I have not tested to see if this helps or not. Using x_align:2 also causes problems with a new, empty panel - seeming 
+		// to stop the dndhandler working. I have not yet found a workaround to this, other than to use the 'add applets to the panel' menu entry
 		//
 		// So .. the approach taken is to
 		// 1) keep the natural size of left and right (i.e. top and bottom) boxes, this means that the icons will cluster together
 		//    at top and bottom of the panel respectively
 		// 2) have a central box that can take all the space in between
 		// 3) turn on central y-alignment for the central box
+		// 4) turn on central x-alignment and expand, and just accept that there is an empty panel case that I have not solved yet.
+		//    (y-expand does not help, also note that the edit mode colouring does not happen)
 		//
 		// The appearance of this looks sensible to my eyes - all the icons in the boxes have sensible positioning
 		// (css permitting) but some workarounds for the side effects of the central alignment are needed
@@ -1953,15 +1956,15 @@ Panel.prototype = {
 	{
 	    if (this.panelPosition == PanelLoc.left)    // left panel
 	    {
-		    this._leftBox = new St.BoxLayout({ name: 'panelLeft', vertical: true});  
-		    this._centerBox = new St.BoxLayout({ name: 'panelCenter', vertical: true, y_align: 2});  
-		    this._rightBox = new St.BoxLayout({ name: 'panelLeft', vertical: true});
+		    this._leftBox = new St.BoxLayout({ name: 'panelLeft', vertical: true, x_align: 2, x_expand: true});  
+		    this._centerBox = new St.BoxLayout({ name: 'panelCenter', vertical: true, y_align: 2, x_align: 2, x_expand: true, });  
+		    this._rightBox = new St.BoxLayout({ name: 'panelLeft', vertical: true, x_align: 2, x_expand: true});
 	    }
 	    else
 	    {
-		    this._leftBox = new St.BoxLayout({ name: 'panelRight', vertical: true});  
-		    this._centerBox = new St.BoxLayout({ name: 'panelCenter', vertical: true, y_align: 2});  
-		    this._rightBox = new St.BoxLayout({ name: 'panelRight', vertical: true});
+		    this._leftBox = new St.BoxLayout({ name: 'panelRight', vertical: true, x_align: 2, x_expand: true});  
+		    this._centerBox = new St.BoxLayout({ name: 'panelCenter', vertical: true, y_align: 2, x_align: 2, x_expand: true});  
+		    this._rightBox = new St.BoxLayout({ name: 'panelRight', vertical: true, x_align: 2, x_expand: true});
 	    }
 
 	    this.actor.add_actor(this._leftBox);
@@ -2608,6 +2611,7 @@ Panel.prototype = {
 			centerNaturalWidth = Math.max(centerNaturalWidth, 40);
 			//
 			// similarly if the left and right boxes come up small or empty give them a minimum width
+			// why 40 ?  25 just seems to come up a little on the small side for vertical panels
 			//
 			leftMinWidth = Math.max(leftMinWidth, 40);
 			leftNaturalWidth = Math.max(leftNaturalWidth, 40);
@@ -2651,7 +2655,7 @@ Panel.prototype = {
 		}
 	    } else if (totalCenteredMinWidth < allocWidth) {
 	        /* Center can be centered as without shrinking things too much.
-	         * First give everything the minWidth they want, and they
+	         * First give everything the minWidth they want, and then
 	         * distribute the remaining space proportional to how much the
 	         * regions want. */
 	        let totalRemaining = allocWidth - totalCenteredMinWidth;
