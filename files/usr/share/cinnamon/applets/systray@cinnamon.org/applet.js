@@ -67,7 +67,6 @@ MyApplet.prototype = {
 		manager = new Clutter.BoxLayout( { spacing: 2 * global.ui_scale,
 		                                       homogeneous: true,
 		                                       orientation: Clutter.Orientation.HORIZONTAL });
-        	this.manager_container = new Clutter.Actor( { layout_manager: manager } );
 	}
 	else
 	{
@@ -75,13 +74,11 @@ MyApplet.prototype = {
 		                                       homogeneous: true,
 		                                       orientation: Clutter.Orientation.VERTICAL });
 	        symb_scaleup 	= ((panel_height / DEFAULT_PANEL_HEIGHT) * PANEL_SYMBOLIC_ICON_DEFAULT_HEIGHT) / global.ui_scale;
-        	this.manager_container = new Clutter.Actor( { layout_manager: manager } );
 	        //this.manager_container.set_margin_left(4.0*symb_scaleup/20);
-	        // this.manager_container.set_x_align(St.Align.MIDDLE);  needs to be set by the actors inside the container
+	        // this.manager_container.set_x_align(St.Align.MIDDLE);  needs to be set by the actors inside the container ?
 	}
-
+        this.manager_container = new Clutter.Actor( { layout_manager: manager } );
         this.actor.add_actor (this.manager_container);
-
         this.manager_container.show();
 
         this._statusItems = [];
@@ -114,16 +111,15 @@ MyApplet.prototype = {
             this.signalRemoved = 0;
         }
 
-	for (let i in this._shellIndicators)
-	{
-            let iconActor = this._shellIndicators[i];
-            delete this._shellIndicators[i];
+        this._shellIndicators.forEach(function(iconActor) {
             iconActor.destroy();
-	}
+        });
+        this._shellIndicators = {};
 
     },
 
     _onIndicatorAdded: function(manager, appIndicator) {
+
         if (!(appIndicator.id in this._shellIndicators)) {
             let hiddenIcons = Main.systrayManager.getRoles();
 
@@ -185,13 +181,11 @@ MyApplet.prototype = {
 
 	    if (this.orientation == St.Side.TOP || this.orientation == St.Side.BOTTOM)
 	    {
-        //this.manager_container.style="orientation: Clutter.Orientation.HORIZONTAL";
-		//this.manager_container.set_orientation(Clutter.Orientation.HORIZONTAL);  
+		;  
 	    }
 	    else		// vertical panels
 	    {
-        //this.manager_container.style="orientation: Clutter.Orientation.VERTICAL";
-		// this.manager_container.set_orientation(Clutter.Orientation.VERTICAL);
+		;
 	    } 
     },
 
@@ -202,11 +196,6 @@ MyApplet.prototype = {
 
     on_applet_added_to_panel: function() {
         Main.statusIconDispatcher.start(this.actor.get_parent().get_parent());
-
-	if (this.actor.get_parent().orientation == Clutter.Orientation.VERTICAL)
-	{
-	        this.actor.set_x_align(St.Align.MIDDLE);  
-	}
 
         this._signalManager.connect(Main.statusIconDispatcher, 'status-icon-added', this._onTrayIconAdded);
         this._signalManager.connect(Main.statusIconDispatcher, 'status-icon-removed', this._onTrayIconRemoved);
@@ -326,6 +315,7 @@ MyApplet.prototype = {
             this.manager_container.insert_child_at_index(icon, 0);
         }
         icon._rolePosition = position;
+
         if (this._scaleMode) {
             let timerId = Mainloop.timeout_add(500, Lang.bind(this, function() {
                 this._resizeStatusItem(role, icon);
