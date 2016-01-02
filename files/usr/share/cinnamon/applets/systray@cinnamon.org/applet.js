@@ -55,13 +55,15 @@ MyApplet.prototype = {
 
         this._signalManager = new SignalManager.SignalManager(this);
 
+        // For a review: The homogeneous property apparently have not effect for status icons,
+        // as they are building for an icon (width=height). The indicators can have a label,
+        // and some of them are not really homogeneous images.
         let manager = new Clutter.BoxLayout( { spacing: 2 * global.ui_scale,
-                                               homogeneous: true,
-                                               orientation: Clutter.Orientation.HORIZONTAL });
+                                               //homogeneous: true, 
+                                               orientation: Clutter.Orientation.HORIZONTAL } );
 
         this.manager_container = new Clutter.Actor( { layout_manager: manager } );
-
-        this.actor.add_actor (this.manager_container);
+        this.actor.add_actor(this.manager_container);
 
         this.manager_container.show();
 
@@ -124,7 +126,7 @@ MyApplet.prototype = {
             this._signalManager.connect(indicatorActor.actor, 'enter-event', this._onEnterEvent);
             this._signalManager.connect(indicatorActor.actor, 'leave-event', this._onLeaveEvent);
 
-            this.actor.add_actor(indicatorActor.actor);
+            this.manager_container.add_actor(indicatorActor.actor);
             appIndicator.createMenuClientAsync(Lang.bind(this, function(client) {
                 if (client != null) {
                     let newMenu = client.getShellMenu();
@@ -226,7 +228,11 @@ MyApplet.prototype = {
         }
         this._statusItems = [];
 
-        let children = this.manager_container.get_children();
+        let children = this.manager_container.get_children().filter(function(child) {
+            // We are only interested in the status icons and apparently we can not ask for 
+            // child instanceof CinnamonTrayIcon.
+            return (child.toString().indexOf("CinnamonTrayIcon") != -1);
+        });
         for (var i = 0; i < children.length; i++) {
             children[i].destroy();
         }
@@ -304,7 +310,11 @@ MyApplet.prototype = {
         if (icon.obsolete == true) {
             return;
         }
-        let children = this.manager_container.get_children();
+        let children = this.manager_container.get_children().filter(function(child) {
+            // We are only interested in the status icons and apparently we can not ask for 
+            // child instanceof CinnamonTrayIcon.
+            return (child.toString().indexOf("CinnamonTrayIcon") != -1);
+        });
         let i;
         for (i = children.length - 1; i >= 0; i--) {
             let rolePosition = children[i]._rolePosition;

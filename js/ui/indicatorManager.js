@@ -944,8 +944,17 @@ function IndicatorActor() {
 IndicatorActor.prototype = {
 
     _init: function(indicator, size) {
-        this.actor = new St.BoxLayout({ style_class: 'applet-box', reactive: true, track_hover: true });
+        this.actor = new St.BoxLayout({
+            style_class: 'applet-box',
+            reactive: true,
+            track_hover: true,
+            // The systray use a layout manager, we need to fill the space of the actor
+            // or otherwise the menu will be displayed inside the panel.
+            x_expand: true,
+            y_expand: true
+        });
         this.actor._delegate = this;
+
         this._menu = null;
         this.menuSignal = 0;
 
@@ -962,6 +971,7 @@ IndicatorActor.prototype = {
         this.actor.add_actor(this._label);
 
         this._updatedLabel();
+        this._updatedStatus();
 
         this._signalManager = new SignalManager.SignalManager(this);
         this._signalManager.connect(this.actor, 'scroll-event', this._handleScrollEvent);
@@ -1020,11 +1030,11 @@ IndicatorActor.prototype = {
         }
     },
 
+    // FIXME: The Tooltips are an object and is render in html format. To show the real tooltips
+    // (this._indicator.toolTip), we will need a good html parser.
+    // In the tooltips implementation, maybe imports.gi.WebKit and use Webkit.WebView and then loadData.
+    // So instead we will used the title as a tooltip.
     getToolTip: function() {
-        // FIXME: The Tooltips are an object and is render in html format. To show the real tooltips
-        // (this._indicator.toolTip), we will need a good html parser.
-        // In the tooltips implementation, maybe imports.gi.WebKit and use Webkit.WebView and then loadData.
-        // So instead we will used the title as a tooltip.
         return this._indicator.title;
     },
 
@@ -1035,6 +1045,8 @@ IndicatorActor.prototype = {
             this._label.set_text("");
     },
 
+    // FIXME: When an indicator is in passive state, the recommended behavior is hide his actor,
+    // but this involve for example, never display the update notifier on ubuntu.
     _updatedStatus: function() {
         if (this._indicator.status == SNIStatus.PASSIVE)
             this.actor.visible = false;
@@ -1046,6 +1058,9 @@ IndicatorActor.prototype = {
 
     // Will look the icon up in the cache, if it's found
     // it will return it. Otherwise, it will create it and cache it.
+    // We also check the creation time of the icon, if there are a new time
+    // for an icon with the same id, we remove the old icon from the cache and
+    // then we set the new icon as our current one.
     // The .inUse flag will be set to true. So when you don't need
     // the returned icon anymore, make sure to check the .inUse property
     // and set it to false if needed so that it can be picked up by the garbage
@@ -1053,13 +1068,23 @@ IndicatorActor.prototype = {
     _cacheOrCreateIconByName: function(iconSize, iconName, themePath) {
         let id = iconName + '@' + iconSize + (themePath ? '##' + themePath : '');
 
-        let icon = this._iconCache.get(id) || this._createIconByName(iconSize, iconName, themePath);
-
-        if (icon) {
-            icon.inUse = true;
-            this._iconCache.add(id, icon);
+        let icon = null;
+        let [path, realSize] = this._getIconInfo(iconSize, iconName, themePath);
+        if(path) {
+            let time = this._getIconTvTime(path);
+            let oldIcon = this._iconCache.get(id);
+            if(!oldIcon || (oldIcon.time < time)) {
+               this._iconCache.remove(id);
+               icon = this._createIconByName(path, realSize);
+               icon.time = time;
+               this._iconCache.add(id, icon);
+            } else if(oldIcon) {
+               icon = oldIcon;
+            }
+            if (icon) {
+                icon.inUse = true;
+            }
         }
-
         return icon;
     },
 
@@ -1090,16 +1115,26 @@ IndicatorActor.prototype = {
         while (actorDragable) {
             if ((actorDragable._delegate)&&(actorDragable._delegate._draggable))
                 return actorDragable._delegate._draggable;
-            actorDragable = this.actor.get_parent();
+            actorDragable = actorDragable.get_parent();
         }
         return null;
     },
 
-    _createIconByName: function(size, name, themePath) {
+    _getIconTvTime: function(path) {
+        try {
+            let file = Gio.file_new_for_path(path);
+            let fileInfo = file.query_info(Gio.FILE_ATTRIBUTE_TIME_MODIFIED, Gio.FileQueryInfoFlags.NONE, null);
+            if (fileInfo) {
+                return fileInfo.get_attribute_uint64(Gio.FILE_ATTRIBUTE_TIME_MODIFIED);
+            }
+        } catch (e) {}
+        return -1;
+    },
+
+    _getIconInfo: function(size, name, themePath) {
         // realSize will contain the actual icon size in contrast to the requested icon size
         let realSize = size;
-        let gicon = null;
-
+        let path = null;
         if (name && name[0] == "/") {
             //HACK: icon is a path name. This is not specified by the api but at least inidcator-sensors uses it.
             let [ format, width, height ] = GdkPixbuf.Pixbuf.get_file_info(name);
@@ -1110,10 +1145,9 @@ IndicatorActor.prototype = {
                 // scaled icons look ugly.
                 if (Math.max(width, height) < size)
                     realSize = Math.max(width, height);
-
-                gicon = Gio.icon_new_for_string(name);
+                path = name;
             }
-        } else if (name) {
+        } else if(name) {
             // we manually look up the icon instead of letting st.icon do it for us
             // this allows us to sneak in an indicator provided search path and to avoid ugly upscaled icons
 
@@ -1124,40 +1158,75 @@ IndicatorActor.prototype = {
             let iconInfo = null;
 
             // we try to avoid messing with the default icon theme, so we'll create a new one if needed
+            let icon_theme = null;
             if (themePath) {
-                var icon_theme = new Gtk.IconTheme();
+                icon_theme = new Gtk.IconTheme();
                 Gtk.IconTheme.get_default().get_search_path().forEach(function(path) {
                     icon_theme.append_search_path(path);
                 });
                 icon_theme.append_search_path(themePath);
                 icon_theme.set_screen(imports.gi.Gdk.Screen.get_default());
             } else {
-                var icon_theme = Gtk.IconTheme.get_default();
+                icon_theme = Gtk.IconTheme.get_default();
             }
-
-            // try to look up the icon in the icon theme
-            iconInfo = icon_theme.lookup_icon(name, size,
-                                               Gtk.IconLookupFlags.GENERIC_FALLBACK);
-
-            // no icon? that's bad!
-            if (iconInfo === null) {
-                global.logError("unable to lookup icon for "+name);
-            } else { // we have an icon
-                // the icon size may not match the requested size, especially with custom themes
-                if (iconInfo.get_base_size() < size) {
-                    // stretched icons look very ugly, we avoid that and just show the smaller icon
-                    realSize = iconInfo.get_base_size();
+            if (icon_theme) {
+                // try to look up the icon in the icon theme
+                iconInfo = icon_theme.lookup_icon(name, size,
+                                                  Gtk.IconLookupFlags.GENERIC_FALLBACK);
+                // no icon? that's bad!
+                if (iconInfo === null) {
+                    global.logError("unable to lookup icon for "+name);
+                } else { // we have an icon
+                    // the icon size may not match the requested size, especially with custom themes
+                    if (iconInfo.get_base_size() < size) {
+                        // stretched icons look very ugly, we avoid that and just show the smaller icon
+                        realSize = iconInfo.get_base_size();
+                     }
+                    // get the icon path
+                    path = iconInfo.get_filename();
                 }
-
-                // create a gicon for the icon
-                gicon = Gio.icon_new_for_string(iconInfo.get_filename());
             }
         }
+        return [path, realSize];
+    },
 
-        if (gicon)
-            return new St.Icon({ style_class: 'applet-icon', gicon: gicon, icon_size: realSize });
-        else
-            return null;
+    _createIconByName: function(path, realSize) {
+        /*try {
+           let [ format, width, height ] = GdkPixbuf.Pixbuf.get_file_info(path);
+           let texture = St.TextureCache.get_default();
+           let file = Gio.file_new_for_path(path);
+           let realHeight = Math.min(height, realSize);
+           let realWidth = (realHeight*width/height);
+           return texture.load_uri_sync(St.TextureCachePolicy.NONE, file.get_uri(), realWidth, realHeight);
+        } catch(e) {
+           Main.notify(e.message);
+        }*/
+        try {
+            let pixbuf = GdkPixbuf.Pixbuf.new_from_file(path);
+            let pixelFormat = pixbuf.get_has_alpha() ? Cogl.PixelFormat.RGBA_8888 : Cogl.PixelFormat.RGB_888;
+            let width = pixbuf.get_width();
+            let height = pixbuf.get_height();
+            let realHeight = Math.min(height, realSize);
+            let realWidth = (realHeight*width/height);
+            let contentImage = new Clutter.Image();
+            contentImage.set_bytes(
+                pixbuf.get_pixels(),
+                pixelFormat,
+                width,
+                height,
+                pixbuf.get_rowstride()
+            );
+            return new St.Icon({ 
+                style_class: 'applet-icon',//FIXME: This aparently have not effect.
+                content: contentImage,
+                width: realWidth,
+                height: realHeight
+            });
+        } catch (e) {
+            // the image data was probably bogus. We don't really know why, but it _does_ happen.
+            // we could log it here, but that doesn't really help in tracking it down.
+        }
+        return null;
     },
 
     _createIconFromPixmap: function(iconSize, iconPixmapArray) {
@@ -1165,9 +1234,7 @@ IndicatorActor.prototype = {
         // we use the one that is smaller or equal the iconSize
 
         // maybe it's empty? that's bad.
-        if (!iconPixmapArray || iconPixmapArray.length < 1)
-            return null;
-
+        if (iconPixmapArray || iconPixmapArray.length > 0) {
             let sortedIconPixmapArray = iconPixmapArray.sort(function(pixmapA, pixmapB) {
                 // we sort biggest to smallest
                 let areaA = pixmapA[0] * pixmapA[1];
@@ -1194,17 +1261,20 @@ IndicatorActor.prototype = {
                                 width,
                                 height,
                                 rowstride);
+                let realHeight = Math.min(height, iconSize);
+                let realWidth = (realHeight*width)/height;
                 return new St.Icon({
-                    style_class: 'applet-icon',
-                    width: Math.min(width, iconSize),
-                    height: Math.min(height, iconSize),
+                    style_class: 'applet-icon',//FIXME: This aparently have not effect.
+                    width: realWidth,
+                    height: realHeight,
                     content: image
                 });
             } catch (e) {
                 // the image data was probably bogus. We don't really know why, but it _does_ happen.
                 // we could log it here, but that doesn't really help in tracking it down.
-                return null;
             }
+        }
+        return null;
     },
 
     // updates the base icon
@@ -1356,27 +1426,25 @@ IconCache.prototype = {
         // global.log("IconCache: adding "+id);
         if (!(o && id)) return null;
         if (id in this._cache && this._cache[id] !== o)
-            this._remove(id);
+            this.remove(id);
         this._cache[id] = o;
         this._lifetime[id] = new Date().getTime() + LIFETIME_TIMESPAN;
         return o;
     },
     
-    _remove: function(id) {
-        // global.log('IconCache: removing '+id);
-        if ('destroy' in this._cache[id]) this._cache[id].destroy();
-        delete this._cache[id];
-        delete this._lifetime[id];
-    },
-    
-    forceDestroy: function(id) {
-        this._remove(id);
+    remove: function(id) {
+        if(id in this._cache) {
+            // global.log('IconCache: removing '+id);
+            if ('destroy' in this._cache[id]) this._cache[id].destroy();
+            delete this._cache[id];
+            delete this._lifetime[id];
+        }
     },
 
     // removes everything from the cache
     clear: function() {
         for (let id in this._cache)
-            this._remove(id);
+            this.remove(id);
     },
     
     // returns an object from the cache, or null if it can't be found.
@@ -1395,7 +1463,7 @@ IconCache.prototype = {
             if (this._cache[id].inUse) {
                 continue;
             } else if (this._lifetime[id] < time) {
-                this._remove(id);
+                this.remove(id);
             } else {
                 //global.log("IconCache: " + id + " survived this round.");
             }
