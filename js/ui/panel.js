@@ -1957,7 +1957,7 @@ Panel.prototype = {
 	    if (this.panelPosition == PanelLoc.left)    // left panel
 	    {
 		    this._leftBox = new St.BoxLayout({ name: 'panelLeft', vertical: true, x_align: 2, x_expand: true});  
-		    this._centerBox = new St.BoxLayout({ name: 'panelCenter', vertical: true, y_align: 2, x_align: 2, x_expand: true, });  
+		    this._centerBox = new St.BoxLayout({ name: 'panelCenter', vertical: true, y_align: 2, x_align: 2, x_expand: true });  
 		    this._rightBox = new St.BoxLayout({ name: 'panelLeft', vertical: true, x_align: 2, x_expand: true});
 	    }
 	    else
@@ -3114,7 +3114,7 @@ Panel.prototype = {
 		                onUpdateParams: [jj, this.panelPosition]
 		                }); 
 		// boxes - fade in as panel slides
-		params = { opacity: 255,
+		let params = { opacity: 255,
 			    time: animationTime+0.2,
 			    transition: 'easeOutQuad'
 			    };
@@ -3192,7 +3192,7 @@ Panel.prototype = {
 		                onUpdateParams: [jj, this.panelPosition]
 		                }); 
 		// boxes - fade in as panel slides
-		params = { opacity: 255,
+		let params = { opacity: 255,
 			    time: animationTime+0.2,
 			    transition: 'easeOutQuad'
 			    };
@@ -3277,7 +3277,7 @@ Panel.prototype = {
 		    onUpdateParams: [y, this.panelPosition]
 		});
 	
-		params = { opacity: 0,
+		let params = { opacity: 0,
 			    time: Math.max(0, animationTime - 0.1),
 			    transition: 'easeOutQuad'
 			    };
@@ -3343,7 +3343,7 @@ Panel.prototype = {
 		    onUpdateParams: [x, this.panelPosition]
 		});
 
-		params = { opacity: 0,
+		let params = { opacity: 0,
 			    time: Math.max(0, animationTime - 0.1),
 			    transition: 'easeOutQuad'
 			    };
