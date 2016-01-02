@@ -958,13 +958,12 @@ IndicatorActor.prototype = {
         this._menu = null;
         this.menuSignal = 0;
 
-        this._indicator     = indicator;
-        this._iconSize      = size;
-        this._iconCache     = new IconCache();
-
+        this._indicator   = indicator;
+        this._iconSize    = size;
+        this._iconCache   = new IconCache();
         this._mainIcon    = new St.Bin();
         this._overlayIcon = new St.Bin({ 'x-align': St.Align.END, 'y-align': St.Align.END });
-        this._label = new St.Label({'y-align': St.Align.END });
+        this._label       = new St.Label({'y-align': St.Align.END });
 
         this.actor.add_actor(this._mainIcon);
         this.actor.add_actor(this._overlayIcon);
@@ -1074,12 +1073,12 @@ IndicatorActor.prototype = {
             let time = this._getIconTvTime(path);
             let oldIcon = this._iconCache.get(id);
             if(!oldIcon || (oldIcon.time < time)) {
-               this._iconCache.remove(id);
-               icon = this._createIconByName(path, realSize);
-               icon.time = time;
-               this._iconCache.add(id, icon);
+                this._iconCache.remove(id);
+                icon = this._createIconByName(path, realSize);
+                icon.time = time;
+                this._iconCache.add(id, icon);
             } else if(oldIcon) {
-               icon = oldIcon;
+                icon = oldIcon;
             }
             if (icon) {
                 icon.inUse = true;
@@ -1234,19 +1233,19 @@ IndicatorActor.prototype = {
         // we use the one that is smaller or equal the iconSize
 
         // maybe it's empty? that's bad.
-        if (iconPixmapArray || iconPixmapArray.length > 0) {
+        if (iconPixmapArray && iconPixmapArray.length > 0) {
             let sortedIconPixmapArray = iconPixmapArray.sort(function(pixmapA, pixmapB) {
                 // we sort biggest to smallest
                 let areaA = pixmapA[0] * pixmapA[1];
                 let areaB = pixmapB[0] * pixmapB[1];
 
                 return areaB - areaA;
-            })
+            });
 
             let qualifiedIconPixmapArray = sortedIconPixmapArray.filter(function(pixmap) {
                 // we disqualify any pixmap that is bigger than our requested size
                 return pixmap[0] <= iconSize && pixmap[1] <= iconSize;
-            })
+            });
 
             // if no one got qualified, we use the smallest one available
             let iconPixmap = qualifiedIconPixmapArray.length > 0 ? qualifiedIconPixmapArray[0] : sortedIconPixmapArray.pop();
@@ -1256,11 +1255,13 @@ IndicatorActor.prototype = {
 
             try {
                 let image = new Clutter.Image();
-                image.set_bytes(bytes,
-                                Cogl.PixelFormat.ABGR_8888,
-                                width,
-                                height,
-                                rowstride);
+                image.set_bytes(
+                    bytes,
+                    Cogl.PixelFormat.ABGR_8888,
+                    width,
+                    height,
+                    rowstride
+                );
                 let realHeight = Math.min(height, iconSize);
                 let realWidth = (realHeight*width)/height;
                 return new St.Icon({
