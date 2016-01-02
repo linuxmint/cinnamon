@@ -1349,7 +1349,7 @@ PanelCorner.prototype = {
 	        side = St.Side.RIGHT;
 	    else if (this._side == St.Side.RIGHT)
 	        side = St.Side.LEFT;
-	    else if (this._side == St.Side.TOP)		// FIXME not at all sure about this, purpose of what this area of code is for is not clear
+	    else if (this._side == St.Side.TOP)		// FIXME logic changes guessed, not at all sure about this, purpose of what this area of code is for is not clear
 		side = St.Side.BOTTOM;
 	    else
 		side = St.Side.TOP;
@@ -1943,8 +1943,10 @@ Panel.prototype = {
 		// 4) turn on central x-alignment and expand, and just accept that there is an empty panel case that I have not solved yet.
 		//    (y-expand does not help, also note that the edit mode colouring does not happen)
 		//
-		// The appearance of this looks sensible to my eyes - all the icons in the boxes have sensible positioning
-		// (css permitting) but some workarounds for the side effects of the central alignment are needed
+		// The appearance of this looks sensible to my eyes - the icons in the boxes have sensible positioning
+		// (css permitting). The central box will however not be central, but its position will depend on the relative numbers of 
+		// icons in the top and bottom boxes.
+		// Some workarounds for the side effects of the central alignment are needed.  
 		//
 		// a) allow the right click to work off the actor as well as its parent, this caters for the way that the central alignment
 		//    seems to shrink the box down around its contents so as to expose the underlying panel.
@@ -1952,7 +1954,8 @@ Panel.prototype = {
 		//    case where the central box has no contents.  
 		//
 		// 
-		// Other approaches may of course be possible ... 
+		// Other approaches may of course be possible ... and it is worth rechecking things that used to give problems as I tested on 2.6
+		// and there was an allocation/align error corrected in 2.8
 	{
 	    if (this.panelPosition == PanelLoc.left)    // left panel
 	    {
