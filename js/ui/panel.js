@@ -113,144 +113,6 @@ function _unpremultiply(color) {
                                blue: blue, alpha: color.alpha });
 };
 
-/**
- * calculateAllocation:
- * @leftMin (real): minimum width of left box
- * @leftNatural (real): natural width of left box
- * @centerMin (real): minimum width of center box
- * @centerNatural (real): natural width of center box
- * @rightMin (real): minimum width of right box
- * @rightNatural (real): natural width of right box
- * @alloc (real): total available width to allocate
- * @centerOccupied (boolean): whether the center box is occupied.
- *
- * Given the minimum and natural width requested by each box, this function
- * calculates how much width should actually allocated to each box. The
- * function returns two variables [@left, @right], which is the expected width
- * of each side.
- *
- * The expected outcome of the code is as follows:
- *
- * Assuming that the centerBox is filled, the primary objective is to center
- * the centerBox whenever possible. This will be done all the time unless doing
- * so requires some box's width to go under its minimum width.
- *
- * If we are centering the centerBox, there are two possible scenarios.
- * Firstly, if the centerBox can be perfectly centered while everything takes
- * their natural size, then everything will be allocated at least their natural
- * size such that the centerBox is centered, leftBox is left aligned, rightBox
- * is right aligned.
- *
- * Otherwise, we first allocate the minWidth to every box, and then distribute
- * the remaining space proportional to how much more space each box wants.
- * This is done in a way that ensures the leftWidth and rightWidth are equal.
- *
- * If it is not possible to center the centerBox, but there is enough space to
- * just allocate the boxes, the centerBox will be made as centered as possible
- * without making things go under their minWidth. This is achieved by making
- * the shorter box go to their min width, and distributing the remaining space
- * among the two other boxes.
- *
- * Finally, if there isn't even enough space to just put the things, the width
- * allocated is just proportional to the minimum width.
- *
- * In the cases where the centerBox is not occupied, a similar mechanism is
- * employed. If there is enough space for everything to get their natural
- * width, this will happen. Otherwise, we first allocate the minimum width and
- * then distribute the remaining space proportional to how much more space each
- * box wants. In the scenario where the isn't enough space to just allocate the
- * minimum width, we just allocate proportional to the minimum width.
- *
- * Returns (array): The left and right widths to be allocated.
- */
-function calculateAllocation(leftMin, leftNatural, centerMin, centerNatural, rightMin, rightNatural, alloc, centerOccupied) {
-    let totalMin = leftMin + centerMin + rightMin;
-    let totalNatural = leftNatural + centerNatural + rightNatural;
-
-    let sideMin = Math.max(leftMin, rightMin);
-    let sideNatural = Math.max(leftNatural, rightNatural);
-    let totalCentMin = centerMin + 2 * sideMin;
-    let totalCentNatural = centerNatural + 2 * sideNatural;
-
-    let left, right;
-
-    if (centerOccupied) {
-        if (totalCentNatural < alloc) {
-            /* We can give everything their natural width and center will
-             * still be centered. */
-            left = (alloc - centerNatural) / 2;
-            right = left;
-        } else if (totalCentMin < alloc) {
-            /* Center can be centered as without shrinking things too much.
-             * First give everything the min they want, and they
-             * distribute the remaining space proportional to how much the
-             * regions want. */
-            let totalRemaining = alloc - totalCentMin;
-            let totalWant = totalCentNatural - totalCentMin;
-
-            // totalWant != 0 or else totalCentNatural == totalCentMin
-            left = sideMin + (sideNatural - sideMin) / totalWant * totalRemaining;
-            right = left;
-        } else if (totalMin < alloc) {
-            /* There is enough space for min if we don't care about
-             * centering. Make center things as center as possible */
-            if (leftMin > rightMin) {
-                left = leftMin;
-
-                if (leftMin + centerNatural + rightNatural < alloc) {
-                    right = alloc - leftMin - centerNatural;
-                } else {
-                    let totalRemaining = alloc - totalMin;
-                    let totalWant = centerNatural + rightNatural - (centerMin + rightMin);
-
-                    right = rightMin;
-                    if (totalWant > 0)
-                        right += (rightNatural - rightMin) / totalWant * totalRemaining;
-                }
-            } else {
-                right = rightMin;
-
-                if (rightMin + centerNatural + leftNatural < alloc) {
-                    left = alloc - rightMin - centerNatural;
-                } else {
-                    let totalRemaining = alloc - totalMin;
-                    let totalWant = centerNatural + leftNatural - (centerMin + leftMin);
-
-                    left = leftMin;
-                    if (totalWant > 0)
-                        left += (leftNatural - rightMin) / totalWant * totalRemaining;
-                }
-            }
-        } else {
-            /* Scale everything down according to their min. */
-            left = leftMin / totalMin * alloc;
-            right = rightMin / totalMin * alloc;
-        }
-    } else {
-        if (totalNatural < alloc) {
-            /* Everything's fine. Allocate as usual. */
-            left = leftNatural;
-            right = rightNatural;
-        } else if (totalMin < alloc) {
-            /* There is enough space for min but not for natural.
-             * Allocate the min and then divide the remaining space
-             * according to how much more they want. */
-            let totalRemaining = alloc - totalMin;
-            let totalWant = totalNatural - totalMin;
-
-            // totalWant != 0 or else totalMin == totalNatural
-            left = leftMin + (leftNatural - leftMin) / totalWant * totalRemaining;
-            right = rightMin + (rightNatural - rightMin) / totalWant * totalRemaining;
-        } else {
-            /* Scale everything down according to their min. */
-
-            // totalMin != 0 or else totalMin < alloc
-            left = leftMin / totalMin * alloc;
-            right = rightMin / totalMin * alloc;
-        }
-    }
-    return [Math.round(left), Math.round(right)];
-}
 
 /**
  * checkPanelUpgrade:
@@ -533,8 +395,6 @@ PanelManager.prototype = {
 	}
 
 },
-
-
 
    /**
      * disablePanels:
@@ -1959,15 +1819,35 @@ Panel.prototype = {
 	{
 	    if (this.panelPosition == PanelLoc.left)    // left panel
 	    {
-		    this._leftBox = new St.BoxLayout({ name: 'panelLeft', vertical: true, x_align: 2, x_expand: true});  
-		    this._centerBox = new St.BoxLayout({ name: 'panelCenter', vertical: true, y_align: 2, x_align: 2, x_expand: true });  
-		    this._rightBox = new St.BoxLayout({ name: 'panelLeft', vertical: true, x_align: 2, x_expand: true});
+		    this._leftBox   = new St.BoxLayout({ name: 'panelLeft', 
+                                                         vertical: true, 
+                                                         x_align: Clutter.ActorAlign.CENTER, 
+                                                         x_expand: true});  
+		    this._centerBox = new St.BoxLayout({ name: 'panelCenter', 
+                                                         vertical: true, 
+                                                         y_align: Clutter.ActorAlign.CENTER, 
+							 x_align: Clutter.ActorAlign.CENTER, 
+                                                         x_expand: true });  
+		    this._rightBox  = new St.BoxLayout({ name: 'panelLeft', 
+                                                         vertical: true, 
+                                                         x_align: Clutter.ActorAlign.CENTER, 
+                                                         x_expand: true});
 	    }
 	    else
 	    {
-		    this._leftBox = new St.BoxLayout({ name: 'panelRight', vertical: true, x_align: 2, x_expand: true});  
-		    this._centerBox = new St.BoxLayout({ name: 'panelCenter', vertical: true, y_align: 2, x_align: 2, x_expand: true});  
-		    this._rightBox = new St.BoxLayout({ name: 'panelRight', vertical: true, x_align: 2, x_expand: true});
+		    this._leftBox   = new St.BoxLayout({ name: 'panelRight', 
+                                                         vertical: true, 
+                                                         x_align: Clutter.ActorAlign.CENTER, 
+                                                         x_expand: true});  
+		    this._centerBox = new St.BoxLayout({ name: 'panelCenter', 
+                                                         vertical: true, 
+                                                         y_align: Clutter.ActorAlign.CENTER, 
+							 x_align: Clutter.ActorAlign.CENTER, 
+                                                         x_expand: true});  
+		    this._rightBox  = new St.BoxLayout({ name: 'panelRight', 
+                                                         vertical: true, 
+                                                         x_align: Clutter.ActorAlign.CENTER, 
+                                                         x_expand: true});
 	    }
 
 	    this.actor.add_actor(this._leftBox);
@@ -2575,31 +2455,75 @@ Panel.prototype = {
 	alloc.natural_size = -1;
     },
 
-    /**
-     * _calcBoxSizes:
-     *
-     * Function to calculate the boundaries of the three boxes in a panel
-     */
+/**
+ * _calcBoxSizes:
+ * @allocWidth (real): allocated total width
+ * @allocHeight (real): allocated total height
+ * @vertical (boolean): if on vertical panel
+ *
+ * Given the minimum and natural width requested by each box, this function
+ * calculates how much width should actually allocated to each box. The
+ * function returns two variables [@leftBoundary, @rightBoundary]
+ *
+ * The expected outcome of the code is as follows:
+ *
+ * Horizontal panels:
+ * Assuming that the centerBox is filled, the primary objective is to center
+ * the centerBox whenever possible. This will be done all the time unless doing
+ * so requires some box's width to go under its minimum width.
+ *
+ * If we are centering the centerBox, there are two possible scenarios.
+ * Firstly, if the centerBox can be perfectly centered while everything takes
+ * their natural size, then everything will be allocated at least their natural
+ * size such that the centerBox is centered, leftBox is left aligned, rightBox
+ * is right aligned.
+ *
+ * Otherwise, we first allocate the minWidth to every box, and then distribute
+ * the remaining space proportional to how much more space each box wants.
+ * This is done in a way that ensures the leftWidth and rightWidth are equal.
+ *
+ * If it is not possible to center the centerBox, but there is enough space to
+ * just allocate the boxes, the centerBox will be made as centered as possible
+ * without making things go under their minWidth. This is achieved by making
+ * the shorter box go to their min width, and distributing the remaining space
+ * among the two other boxes.
+ *
+ * Finally, if there isn't even enough space to just put the things, the width
+ * allocated is just proportional to the minimum width.
+ *
+ * In the cases where the centerBox is not occupied, a similar mechanism is
+ * employed. If there is enough space for everything to get their natural
+ * width, this will happen. Otherwise, we first allocate the minimum width and
+ * then distribute the remaining space proportional to how much more space each
+ * box wants. In the scenario where the isn't enough space to just allocate the
+ * minimum width, we just allocate proportional to the minimum width.
+ *
+ * vertical panels
+ * Currently uses simpler logic where left and right panels get their natural 
+ * width where possible
+ *
+ * Returns (array): The left and right widths to be allocated.
+ */
     _calcBoxSizes: function(allocWidth, allocHeight, vertical) {
 	let leftBoundary,rightBoundary = 0;
-	let leftMinWidth = 0;
-	let leftNaturalWidth = 0;
-	let rightMinWidth = 0;
-	let rightNaturalWidth = 0;
-	let centerMinWidth = 0;
+	let leftMinWidth       = 0;
+	let leftNaturalWidth   = 0;
+	let rightMinWidth      = 0;
+	let rightNaturalWidth  = 0;
+	let centerMinWidth     = 0;
 	let centerNaturalWidth = 0;
 
 	if (vertical)
 	{
-		[leftMinWidth, leftNaturalWidth] = this._leftBox.get_preferred_height(-1);
+		[leftMinWidth, leftNaturalWidth]     = this._leftBox.get_preferred_height(-1);
 		[centerMinWidth, centerNaturalWidth] = this._centerBox.get_preferred_height(-1);
-		[rightMinWidth, rightNaturalWidth] = this._rightBox.get_preferred_height(-1);
+		[rightMinWidth, rightNaturalWidth]   = this._rightBox.get_preferred_height(-1);
 	}
 	else
 	{
-		[leftMinWidth, leftNaturalWidth] = this._leftBox.get_preferred_width(-1);
+		[leftMinWidth, leftNaturalWidth]     = this._leftBox.get_preferred_width(-1);
 		[centerMinWidth, centerNaturalWidth] = this._centerBox.get_preferred_width(-1);
-		[rightMinWidth, rightNaturalWidth] = this._rightBox.get_preferred_width(-1);
+		[rightMinWidth, rightNaturalWidth]   = this._rightBox.get_preferred_width(-1);
 	}
 
 	let centerBoxOccupied = this._centerBox.get_children().length > 0;
@@ -2609,16 +2533,16 @@ Panel.prototype = {
 		/* If panel edit mode, pretend central box is occupied and give it at
 		 * least width 40 so that things can be dropped into it */
 		if (this._panelEditMode) {
-			centerBoxOccupied = true;
-			centerMinWidth = Math.max(centerMinWidth, 40);
+			centerBoxOccupied  = true;
+			centerMinWidth     = Math.max(centerMinWidth, 40);
 			centerNaturalWidth = Math.max(centerNaturalWidth, 40);
 			//
 			// similarly if the left and right boxes come up small or empty give them a minimum width
 			// why 40 ?  25 just seems to come up a little on the small side for vertical panels
 			//
-			leftMinWidth = Math.max(leftMinWidth, 40);
-			leftNaturalWidth = Math.max(leftNaturalWidth, 40);
-			rightMinWidth = Math.max(rightMinWidth, 40);
+			leftMinWidth      = Math.max(leftMinWidth, 40);
+			leftNaturalWidth  = Math.max(leftNaturalWidth, 40);
+			rightMinWidth     = Math.max(rightMinWidth, 40);
 			rightNaturalWidth = Math.max(rightNaturalWidth, 40);
 		}
 
@@ -2627,18 +2551,18 @@ Panel.prototype = {
 	/* If panel edit mode, pretend central box is occupied and give it at
 	 * least width 25 so that things can be dropped into it */
 		if (this._panelEditMode) {
-		    centerBoxOccupied = true;
-		    centerMinWidth = Math.max(centerMinWidth, 25);
+		    centerBoxOccupied  = true;
+		    centerMinWidth     = Math.max(centerMinWidth, 25);
 		    centerNaturalWidth = Math.max(centerNaturalWidth, 25);
 		}
 	}
 
-	let totalMinWidth = leftMinWidth + centerMinWidth + rightMinWidth;
-	let totalNaturalWidth = leftNaturalWidth + centerNaturalWidth + rightNaturalWidth;
+	let totalMinWidth             = leftMinWidth + centerMinWidth + rightMinWidth;
+	let totalNaturalWidth         = leftNaturalWidth + centerNaturalWidth + rightNaturalWidth;
 
-	let sideMinWidth = Math.max(leftMinWidth, rightMinWidth);
-	let sideNaturalWidth = Math.max(leftNaturalWidth, rightNaturalWidth);
-	let totalCenteredMinWidth = centerMinWidth + 2 * sideMinWidth;
+	let sideMinWidth              = Math.max(leftMinWidth, rightMinWidth);
+	let sideNaturalWidth          = Math.max(leftNaturalWidth, rightNaturalWidth);
+	let totalCenteredMinWidth     = centerMinWidth + 2 * sideMinWidth;
 	let totalCenteredNaturalWidth = centerNaturalWidth + 2 * sideNaturalWidth;
 
 	let leftWidth, rightWidth;
@@ -2647,13 +2571,13 @@ Panel.prototype = {
 	    if (totalCenteredNaturalWidth < allocWidth) {
 		if (vertical)	// see comment in the routine called to create a new panel
 		{
-			leftWidth = leftNaturalWidth;
+			leftWidth  = leftNaturalWidth;
 			rightWidth = rightNaturalWidth;
 		}
 		else
 		{
 		        /* center the central box and butt the left and right up to it. */
-		        leftWidth = (allocWidth - centerNaturalWidth) / 2;
+		        leftWidth  = (allocWidth - centerNaturalWidth) / 2;
 		        rightWidth = leftWidth;
 		}
 	    } else if (totalCenteredMinWidth < allocWidth) {
@@ -2662,7 +2586,7 @@ Panel.prototype = {
 	         * distribute the remaining space proportional to how much the
 	         * regions want. */
 	        let totalRemaining = allocWidth - totalCenteredMinWidth;
-	        let totalWant = totalCenteredNaturalWidth - totalCenteredMinWidth;
+	        let totalWant      = totalCenteredNaturalWidth - totalCenteredMinWidth;
 
 	        leftWidth = sideMinWidth + (sideNaturalWidth - sideMinWidth) / totalWant * totalRemaining;
 	        rightWidth = leftWidth;
@@ -2676,9 +2600,11 @@ Panel.prototype = {
 	                rightWidth = allocWidth - leftMinWidth - centerNaturalWidth;
 	            } else {
 	                let totalRemaining = allocWidth - totalMinWidth;
-	                let totalWant = centerNaturalWidth + rightNaturalWidth - (centerMinWidth + rightMinWidth);
+	                let totalWant      = centerNaturalWidth + rightNaturalWidth - (centerMinWidth + rightMinWidth);
 
-	                rightWidth = rightMinWidth + (rightNaturalWidth - rightMinWidth) / totalWant * totalRemaining;
+			rightWidth = rightMinWidth;
+			if (totalWant > 0)
+	                rightWidth += (rightNaturalWidth - rightMinWidth) / totalWant * totalRemaining;
 	            }
 	        } else {
 	            rightWidth = rightMinWidth;
@@ -2687,14 +2613,16 @@ Panel.prototype = {
 	                leftWidth = allocWidth - rightMinWidth - centerNaturalWidth;
 	            } else {
 	                let totalRemaining = allocWidth - totalMinWidth;
-	                let totalWant = centerNaturalWidth + leftNaturalWidth - (centerMinWidth + leftMinWidth);
+	                let totalWant      = centerNaturalWidth + leftNaturalWidth - (centerMinWidth + leftMinWidth);
 
-	                leftWidth = leftMinWidth + (leftNaturalWidth - leftMinWidth) / totalWant * totalRemaining;
+			leftWidth = leftMinWidth;
+			if (totalWant > 0)
+	                    leftWidth += (leftNaturalWidth - leftMinWidth) / totalWant * totalRemaining;
 	            }
 	        }
 	    } else {
 	        /* Scale everything down according to their minWidth. */
-	        leftWidth = leftMinWidth / totalMinWidth * allocWidth;
+	        leftWidth  = leftMinWidth / totalMinWidth * allocWidth;
 	        rightWidth = rightMinWidth / totalMinWidth * allocWidth;
 	    }
 	} else {  // center box not occupied
@@ -2702,35 +2630,35 @@ Panel.prototype = {
 	        /* Everything's fine. Allocate as usual. */
 		if (vertical)
 		{
-	        	leftWidth = Math.max(leftNaturalWidth, leftMinWidth);
+	        	leftWidth  = Math.max(leftNaturalWidth, leftMinWidth);
 	        	rightWidth = Math.max(rightNaturalWidth, rightMinWidth);
 		}
 		else
 		{
-		        leftWidth = leftNaturalWidth;
+		        leftWidth  = leftNaturalWidth;
 		        rightWidth = rightNaturalWidth;
 		}
-	    } else if (totalMinWidth < allocWidth && !centerBoxOccupied) {
+	    } else if (totalMinWidth < allocWidth) {
 	        /* There is enough space for minWidth but not for naturalWidth.
 	         * Allocate the minWidth and then divide the remaining space
 	         * according to how much more they want. */
 	        let totalRemaining = allocWidth - totalMinWidth;
-	        let totalWant = totalNaturalWidth - totalMinWidth;
+	        let totalWant      = totalNaturalWidth - totalMinWidth;
 
-	        leftWidth = leftMinWidth + ((leftNaturalWidth - leftMinWidth) / totalWant) * totalRemaining;
+	        leftWidth  = leftMinWidth + ((leftNaturalWidth - leftMinWidth) / totalWant) * totalRemaining;
 	        rightWidth = rightMinWidth + ((rightNaturalWidth - rightMinWidth) / totalWant) * totalRemaining;
 	    } else {
 	        /* Scale everything down according to their minWidth. */
-	        leftWidth = leftMinWidth / totalMinWidth * allocWidth;
+	        leftWidth  = leftMinWidth / totalMinWidth * allocWidth;
 	        rightWidth = rightMinWidth / totalMinWidth * allocWidth;
 	    }
 	}
 
-	let leftBoundary = Math.round(leftWidth);
+	let leftBoundary  = Math.round(leftWidth);
 	let rightBoundary = Math.round(allocWidth - rightWidth);
 
 	if (this.actor.get_direction() == St.TextDirection.RTL) {
-	    leftBoundary = allocWidth - leftWidth;
+	    leftBoundary  = allocWidth - leftWidth;
 	    rightBoundary = rightWidth;
 	}
 

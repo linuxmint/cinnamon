@@ -485,7 +485,10 @@ IconApplet.prototype = {
 
 	this._applet_icon_box = new St.Bin();
 
-        this.actor.add(this._applet_icon_box, {x_align: St.Align.MIDDLE, y_align: St.Align.MIDDLE, y_fill: false, x_fill: false });
+        this.actor.add(this._applet_icon_box, {x_align: St.Align.MIDDLE, 
+                                               y_align: St.Align.MIDDLE, 
+                                               y_fill: false, 
+                                               x_fill: false });
     },
 
     /**
@@ -604,17 +607,20 @@ IconApplet.prototype = {
 	    //
             this.actor.set_style("padding:0px;padding-left:0px;padding-right:0px;");
 
-	    if (icon_type == St.IconType.SYMBOLIC) {
-	        this._applet_icon.set_margin_top(4.0*symb_scaleup/20);
-	        this._applet_icon.set_margin_bottom(4.0*symb_scaleup/20);
+	    /* if (icon_type == St.IconType.SYMBOLIC) {
+	        this._applet_icon.set_margin_top(2.0*symb_scaleup/20);
+	        this._applet_icon.set_margin_bottom(2.0*symb_scaleup/20);
+                this._applet_icon.set_margin_left(2.0*symb_scaleup/20);
+                this._applet_icon.set_margin_right(2.0*symb_scaleup/20);
 	    }
 	    else   // full colour
 	    {
-	        this._applet_icon.set_margin_top(4.0*symb_scaleup/20);
+	        this._applet_icon.set_margin_top(2.0*symb_scaleup/20);
 	        this._applet_icon.set_margin_bottom(2.0*symb_scaleup/20);
+                this._applet_icon.set_margin_left(2.0*symb_scaleup/20);
+                this._applet_icon.set_margin_right(2.0*symb_scaleup/20);
 
-	    } 
-// FIXME does this need some rounding etc ?
+	    } */
 
 	    let ph = this._panelHeight;
 	    
@@ -674,9 +680,12 @@ TextApplet.prototype = {
      */
     _init: function(orientation, panel_height, instance_id) {
         Applet.prototype._init.call(this, orientation, panel_height, instance_id);
-        this._applet_label = new St.Label({ reactive: true, track_hover: true, style_class: 'applet-label'});
+        this._applet_label = new St.Label({ reactive: true, 
+                                            track_hover: true, 
+                                            style_class: 'applet-label'});
         this._applet_label.clutter_text.ellipsize = Pango.EllipsizeMode.NONE;
-        this.actor.add(this._applet_label, { y_align: St.Align.MIDDLE, y_fill: false });
+        this.actor.add(this._applet_label, { y_align: St.Align.MIDDLE, 
+                                             y_fill: false });
         this.actor.set_label_actor(this._applet_label);
 
 	//
@@ -725,9 +734,12 @@ TextIconApplet.prototype = {
      */
     _init: function(orientation, panel_height, instance_id) {
         IconApplet.prototype._init.call(this, orientation, panel_height, instance_id);
-        this._applet_label = new St.Label({ reactive: true, track_hover: true, style_class: 'applet-label'});
+        this._applet_label = new St.Label({ reactive: true, 
+                                            track_hover: true, 
+                                            style_class: 'applet-label'});
         this._applet_label.clutter_text.ellipsize = Pango.EllipsizeMode.NONE;
-        this.actor.add(this._applet_label, { y_align: St.Align.MIDDLE, y_fill: false });
+        this.actor.add(this._applet_label, { y_align: St.Align.MIDDLE, 
+                                             y_fill: false });
         this.actor.set_label_actor(this._applet_label);
     },
 

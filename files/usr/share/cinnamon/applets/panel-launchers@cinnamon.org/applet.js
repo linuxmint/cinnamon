@@ -295,9 +295,9 @@ MyApplet.prototype = {
             this.myactor = new St.BoxLayout({ name: 'panel-launchers-box',
                                               style_class: 'panel-launchers-box',
 						vertical: true,
-						x_align: 2 });
+						x_align: Clutter.ActorAlign.CENTER });
+            this.myactor.set_style("padding:0px;padding-left:0px;padding-right:0px; margin-left:0px;margin-right:0px");
 
-	    this.myactor.set_style('margin-left: 0; padding-left: 0; padding-top: 5px');
  	}
 
         this.settings = new Settings.AppletSettings(this, metadata.uuid, instance_id);
@@ -418,6 +418,7 @@ MyApplet.prototype = {
 		this.myactor.set_style('vertical: true');
 	    }
             this.reload();
+	// FIXME - can we reload the entire applet at this point , currently moving from horizontal to vertical does not do this
     },
 
     reload: function() {
