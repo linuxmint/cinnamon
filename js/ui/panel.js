@@ -936,7 +936,7 @@ PanelDummy.prototype = {
         this.panelPosition = panelPosition;
         this.callback = callback;
         this.monitor = global.screen.get_monitor_geometry(monitorIndex);
-		let defaultheight = 25 * global.ui_scale;
+	let defaultheight = 25 * global.ui_scale;
         
         this.actor = new Cinnamon.GenericContainer({style_class: "panel-dummy", reactive: true, track_hover: true, important: true});
         Main.layoutManager.addChrome(this.actor, { addToWindowgroup: false });
@@ -1821,32 +1821,32 @@ Panel.prototype = {
 	    {
 		    this._leftBox   = new St.BoxLayout({ name: 'panelLeft', 
                                                          vertical: true, 
-                                                         x_align: Clutter.ActorAlign.CENTER, 
+                                                         x_align: St.Align.MIDDLE, 
                                                          x_expand: true});  
 		    this._centerBox = new St.BoxLayout({ name: 'panelCenter', 
                                                          vertical: true, 
-                                                         y_align: Clutter.ActorAlign.CENTER, 
-							 x_align: Clutter.ActorAlign.CENTER, 
+                                                         y_align: St.Align.MIDDLE, 
+							 x_align: St.Align.MIDDLE, 
                                                          x_expand: true });  
 		    this._rightBox  = new St.BoxLayout({ name: 'panelLeft', 
                                                          vertical: true, 
-                                                         x_align: Clutter.ActorAlign.CENTER, 
+                                                         x_align: St.Align.MIDDLE, 
                                                          x_expand: true});
 	    }
 	    else
 	    {
 		    this._leftBox   = new St.BoxLayout({ name: 'panelRight', 
                                                          vertical: true, 
-                                                         x_align: Clutter.ActorAlign.CENTER, 
+                                                         x_align: St.Align.MIDDLE, 
                                                          x_expand: true});  
 		    this._centerBox = new St.BoxLayout({ name: 'panelCenter', 
                                                          vertical: true, 
-                                                         y_align: Clutter.ActorAlign.CENTER, 
-							 x_align: Clutter.ActorAlign.CENTER, 
+                                                         y_align: St.Align.MIDDLE, 
+							 x_align: St.Align.MIDDLE, 
                                                          x_expand: true});  
 		    this._rightBox  = new St.BoxLayout({ name: 'panelRight', 
                                                          vertical: true, 
-                                                         x_align: Clutter.ActorAlign.CENTER, 
+                                                         x_align: St.Align.MIDDLE, 
                                                          x_expand: true});
 	    }
 
