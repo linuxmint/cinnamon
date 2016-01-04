@@ -141,7 +141,21 @@ Applet.prototype = {
      * @instance_id (int): instance id of the applet
      */
     _init: function(orientation, panel_height, instance_id) {
-        this.actor = new St.BoxLayout({ style_class: 'applet-box', reactive: true, track_hover: true });
+	if (orientation == St.Side.LEFT || orientation == St.Side.RIGHT)
+	{
+        	this.actor = new St.BoxLayout({ style_class: 'applet-box', 
+                                                reactive: true, 
+                                                track_hover: true, 
+						y_align: St.Align.MIDDLE, 
+						x_align: St.Align.END,
+						x_expand: true,
+						y_expand: true  });
+		this.actor.set_style("padding:0px;padding-left:0px;padding-right:0px;");
+	}
+	else
+	{
+        	this.actor = new St.BoxLayout({ style_class: 'applet-box', reactive: true, track_hover: true });
+	}
     
         this._applet_tooltip = new Tooltips.PanelItemTooltip(this, "", orientation);                                        
         this.actor.connect('button-press-event', Lang.bind(this, this._onButtonPressEvent));  
@@ -487,8 +501,8 @@ IconApplet.prototype = {
 
         this.actor.add(this._applet_icon_box, {x_align: St.Align.MIDDLE, 
                                                y_align: St.Align.MIDDLE, 
-                                               y_fill: false, 
-                                               x_fill: false });
+                                               y_fill: true, 
+                                               x_fill: true });
     },
 
     /**

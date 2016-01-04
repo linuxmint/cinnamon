@@ -73,7 +73,7 @@ MyApplet.prototype = {
 		manager = new Clutter.BoxLayout( { spacing: 2 * global.ui_scale,
 		                                       homogeneous: true,
 		                                       orientation: Clutter.Orientation.VERTICAL });
-	        symb_scaleup 	= ((panel_height / DEFAULT_PANEL_HEIGHT) * PANEL_SYMBOLIC_ICON_DEFAULT_HEIGHT) / global.ui_scale;
+	        //symb_scaleup 	= ((panel_height / DEFAULT_PANEL_HEIGHT) * PANEL_SYMBOLIC_ICON_DEFAULT_HEIGHT) / global.ui_scale;
 	        //this.manager_container.set_margin_left(4.0*symb_scaleup/20);
 	        // this.manager_container.set_x_align(St.Align.MIDDLE);  needs to be set by the actors inside the container ?
 	}
