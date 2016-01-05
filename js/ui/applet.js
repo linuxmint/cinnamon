@@ -621,20 +621,12 @@ IconApplet.prototype = {
 	    //
             this.actor.set_style("padding:0px;padding-left:0px;padding-right:0px;");
 
-	    /* if (icon_type == St.IconType.SYMBOLIC) {
-	        this._applet_icon.set_margin_top(2.0*symb_scaleup/20);
-	        this._applet_icon.set_margin_bottom(2.0*symb_scaleup/20);
-                this._applet_icon.set_margin_left(2.0*symb_scaleup/20);
-                this._applet_icon.set_margin_right(2.0*symb_scaleup/20);
-	    }
-	    else   // full colour
+  	    let h = this._applet_icon.get_margin_top();
+	    if (h < 2)
 	    {
-	        this._applet_icon.set_margin_top(2.0*symb_scaleup/20);
-	        this._applet_icon.set_margin_bottom(2.0*symb_scaleup/20);
-                this._applet_icon.set_margin_left(2.0*symb_scaleup/20);
-                this._applet_icon.set_margin_right(2.0*symb_scaleup/20);
+	        this._applet_icon.set_margin_top(2.0);   // ensure there is some minimal vertical space between icons
+	    }
 
-	    } */
 
 	    let ph = this._panelHeight;
 	    
