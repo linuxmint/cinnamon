@@ -117,6 +117,7 @@ const Util = imports.misc.util;
 const Keybindings = imports.ui.keybindings;
 const Settings = imports.ui.settings;
 const Systray = imports.ui.systray;
+const Accessibility = imports.ui.accessibility;
 
 const DEFAULT_BACKGROUND_COLOR = new Clutter.Color();
 DEFAULT_BACKGROUND_COLOR.from_pixel(0x2266bbff);
@@ -139,6 +140,7 @@ let expo = null;
 let runDialog = null;
 let lookingGlass = null;
 let wm = null;
+let a11yHandler = null;
 let messageTray = null;
 let indicatorManager = null;
 let notificationDaemon = null;
@@ -455,6 +457,8 @@ function start() {
     SearchProviderManager.init();
 
     createLookingGlass();
+
+    a11yHandler = new Accessibility.A11yHandler();
 
     if (software_rendering && !GLib.getenv('CINNAMON_2D')) {
         notifyCinnamon2d();

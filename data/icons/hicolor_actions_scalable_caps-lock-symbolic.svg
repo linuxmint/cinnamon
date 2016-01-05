@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   id="svg7384"
+   height="16"
+   width="16"
+   version="1.1"
+   inkscape:version="0.91 r"
+   sodipodi:docname="hicolor_actions_scalable_caps-lock-symbolic.svg">
+  <defs
+     id="defs7667" />
+  <sodipodi:namedview
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1"
+     objecttolerance="10"
+     gridtolerance="10"
+     guidetolerance="10"
+     inkscape:pageopacity="0"
+     inkscape:pageshadow="2"
+     inkscape:window-width="3200"
+     inkscape:window-height="1647"
+     id="namedview7665"
+     showgrid="false"
+     inkscape:zoom="59"
+     inkscape:cx="9.0124501"
+     inkscape:cy="8.3522331"
+     inkscape:window-x="0"
+     inkscape:window-y="50"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="svg7384" />
+  <metadata
+     id="metadata90">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title>Gnome Symbolic Icon Theme</dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <title
+     id="title9167">Gnome Symbolic Icon Theme</title>
+  <path
+     style="color:#bebebe;fill:#bebebe"
+     d="M 7 1 C 5.3553 1 4 2.3553 4 4 L 4 5.78125 L 3 5.78125 L 3 5.7792969 C 2.446 5.7792969 2 6.3597452 2 7.0800781 L 2 7.7714844 L 2 14.880859 L 14 14.880859 L 14 7.7714844 L 14 7.0820312 C 14 6.3616982 13.554 5.78125 13 5.78125 L 12 5.78125 L 12 4 C 12 2.3553 10.6447 1 9 1 L 7 1 z M 7 3 L 9 3 C 9.5713 3 10 3.4287 10 4 L 10 5.78125 L 6 5.78125 L 6 4 C 6 3.4287 6.4287 3 7 3 z M 7.4882812 6.6425781 L 8.6074219 6.6425781 L 11.384766 13.931641 L 10.359375 13.931641 L 9.6953125 12.0625 L 6.4101562 12.0625 L 5.7460938 13.931641 L 4.7050781 13.931641 L 7.4882812 6.6425781 z M 8.0449219 7.6132812 L 6.7070312 11.242188 L 9.3886719 11.242188 L 8.0449219 7.6132812 z "
+     id="rect4063" />
+  <path
+     inkscape:connector-curvature="0"
+     d="m 18.434103,6.2601619 1.375,0 1.125,1.0938 1.09,-1.09 1.41,0 0,1.4688 -1.0938,1.0625 1.09,1.06 0,1.4100001 -1.44,0 -1.06,-1.06 -1.06,1.06 -1.44,0 0,-1.4062001 1.0625,-1.0625 -1.06,-1.06 0,-1.47 z"
+     style="color:#bebebe;fill:#bebebe"
+     id="path3761-2-3-5-4-8-9-8-9-9-0" />
+</svg>

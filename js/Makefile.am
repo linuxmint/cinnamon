@@ -20,6 +20,7 @@ nobase_dist_js_DATA = \
 	misc/util.js		\
 	misc/windowUtils.js		\
 	perf/core.js		\
+    ui/accessibility.js \
 	ui/appSwitcher/appSwitcher.js	\
 	ui/appSwitcher/appSwitcher3D.js	\
 	ui/appSwitcher/classicSwitcher.js	\
