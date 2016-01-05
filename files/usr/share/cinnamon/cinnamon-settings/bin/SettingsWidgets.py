@@ -1,10 +1,11 @@
 #!/usr/bin/env python2
 
-from gi.repository import Gio, Gtk, GObject, Gdk, GLib, GdkPixbuf
+from gi.repository import Gio, Gtk, GObject, Gdk, GLib, GdkPixbuf, CDesktopEnums, CinnamonDesktop
 import math
 import os
 import subprocess
 import traceback
+import dbus
 
 settings_objects = {}
 
@@ -553,6 +554,7 @@ class SettingsPage(Gtk.Box):
         section = SettingsBox(title)
         revealer = SettingsRevealer(schema, key)
         revealer.add(section)
+        section._revealer = revealer
         self.pack_start(revealer, False, False, 0)
 
         return section
@@ -986,3 +988,181 @@ class GSettingsColorChooser(SettingsWidget):
 
         if size_group:
             self.add_to_size_group(size_group)
+
+class GSettingsSoundFileChooser(SettingsWidget):
+    def __init__(self, label, schema, key, dep_key=None, size_group=None):
+        super(GSettingsSoundFileChooser, self).__init__(dep_key=dep_key)
+
+        self.label = Gtk.Label(label)
+
+        self.content_widget = Gtk.ButtonBox(Gtk.Orientation.HORIZONTAL)
+
+        c = self.content_widget.get_style_context()
+        c.add_class(Gtk.STYLE_CLASS_LINKED)
+
+        self.key = key
+        self.settings = self.get_settings(schema)
+
+        self.pack_start(self.label, False, False, 0)
+        self.pack_end(self.content_widget, False, False, 0)
+
+        self.file_picker = Gtk.Button()
+        self.file_picker.connect("clicked", self.on_picker_clicked)
+        self.update_button_label(self.settings.get_string(self.key))
+
+        self.content_widget.add(self.file_picker)
+
+        self.play_button = Gtk.Button()
+        self.play_button.set_image(Gtk.Image.new_from_stock("gtk-media-play", Gtk.IconSize.BUTTON))
+        self.play_button.connect("clicked", self.on_play_clicked)
+        self.content_widget.add(self.play_button)
+
+        self._proxy = None
+
+        try:
+            Gio.DBusProxy.new_for_bus(Gio.BusType.SESSION, Gio.DBusProxyFlags.NONE, None,
+                                      'org.cinnamon.SettingsDaemon',
+                                      '/org/cinnamon/SettingsDaemon/Sound',
+                                      'org.cinnamon.SettingsDaemon.Sound',
+                                      None, self._on_proxy_ready, None)
+        except dbus.exceptions.DBusException as e:
+            print(e)
+            self._proxy = None
+            self.play_button.set_sensitive(False)
+
+        if size_group:
+            self.add_to_size_group(size_group)
+
+    def _on_proxy_ready (self, object, result, data=None):
+        self._proxy = Gio.DBusProxy.new_for_bus_finish(result)
+
+    def on_play_clicked(self, widget):
+        self._proxy.PlaySoundFile("(us)", 0, self.settings.get_string(self.key))
+
+    def on_picker_clicked(self, widget):
+        dialog = Gtk.FileChooserDialog(title=self.label.get_text(),
+                                       action=Gtk.FileChooserAction.OPEN,
+                                       buttons=(_("_Cancel"), Gtk.ResponseType.CANCEL,
+                                                _("_Open"), Gtk.ResponseType.ACCEPT))
+
+        dialog.set_filename(self.settings.get_string(self.key))
+
+        sound_filter = Gtk.FileFilter()
+        sound_filter.add_mime_type("audio")
+        dialog.add_filter(sound_filter)
+
+        if (dialog.run() == Gtk.ResponseType.ACCEPT):
+            name = dialog.get_filename()
+            self.settings.set_string(self.key, name)
+            self.update_button_label(name)
+
+        dialog.destroy()
+
+    def update_button_label(self, absolute_path):
+        f = Gio.File.new_for_path(absolute_path)
+
+        self.file_picker.set_label(f.get_basename())
+
+
+class DependencyCheckInstallButton(Gtk.Box):
+    def __init__(self, checking_text, install_button_text, packages, final_widget=None, satisfied_cb=None):
+        super(DependencyCheckInstallButton, self).__init__(orientation=Gtk.Orientation.HORIZONTAL)
+
+        self.packages = packages
+        self.satisfied_cb = satisfied_cb
+
+        self.checking_text = checking_text
+        self.install_button_text = install_button_text
+
+        self.stack = Gtk.Stack()
+        self.pack_start(self.stack, False, False, 0)
+
+        self.progress_bar = Gtk.ProgressBar()
+        self.stack.add_named(self.progress_bar, "progress")
+
+        self.progress_bar.set_show_text(True)
+        self.progress_bar.set_text(self.checking_text)
+
+        self.install_button = Gtk.Button(install_button_text)
+        self.install_button.connect("clicked", self.on_install_clicked)
+        self.stack.add_named(self.install_button, "install")
+
+        if final_widget:
+            self.stack.add_named(final_widget, "final")
+        else:
+            self.stack.add_named(Gtk.Alignment(), "final")
+
+        self.stack.set_visible_child_name("progress")
+
+        self.progress_source_id = 0
+
+        GObject.idle_add(self.check)
+
+    def check(self):
+        self.start_pulse()
+        CinnamonDesktop.installer_check_for_packages(self.packages, self.on_check_complete)
+        return False
+
+    def on_install_clicked(self, widget):
+        self.progress_bar.set_text(_("Installing"))
+        self.stack.set_visible_child_name("progress")
+        self.start_pulse()
+        CinnamonDesktop.installer_install_packages(self.packages, self.on_install_complete)
+
+    def pulse_progress(self):
+        self.progress_bar.pulse()
+        return True
+
+    def start_pulse(self):
+        self.cancel_pulse()
+        self.progress_source_id = GObject.timeout_add(200, self.pulse_progress)
+
+    def cancel_pulse(self):
+        if (self.progress_source_id > 0):
+            GObject.source_remove(self.progress_source_id)
+            self.progress_source_id = 0
+
+    def on_check_complete(self, result, data=None):
+        self.cancel_pulse()
+        if result:
+            self.stack.set_visible_child_name("final")
+            if self.satisfied_cb:
+                self.satisfied_cb()
+        else:
+            self.stack.set_visible_child_name("install")
+
+    def on_install_complete(self, result, data=None):
+        self.progress_bar.set_text(self.checking_text)
+        CinnamonDesktop.installer_check_for_packages(self.packages, self.on_check_complete)
+
+class GSettingsDependencySwitch(SettingsWidget):
+    def __init__(self, label, schema=None, key=None, dep_key=None, packages=None):
+        super(GSettingsDependencySwitch, self).__init__(dep_key=dep_key)
+
+        self.packages = packages
+
+        self.content_widget = Gtk.Alignment()
+        self.label = Gtk.Label(label)
+        self.pack_start(self.label, False, False, 0)
+        self.pack_end(self.content_widget, False, False, 0)
+
+        self.switch = Gtk.Switch()
+        self.switch.set_halign(Gtk.Align.END)
+        self.switch.set_valign(Gtk.Align.CENTER)
+
+        pkg_string = ""
+        for pkg in packages:
+            if pkg_string != "":
+                pkg_string += ", "
+            pkg_string += pkg
+
+        self.dep_button = DependencyCheckInstallButton(_("Checking dependencies"),
+                                                       _("Install: %s") % (pkg_string),
+                                                       packages,
+                                                       self.switch)
+        self.content_widget.add(self.dep_button)
+
+        if schema:
+            self.settings = self.get_settings(schema)
+            self.settings.bind(key, self.switch, "active", Gio.SettingsBindFlags.DEFAULT)
+
