@@ -56,8 +56,6 @@ struct _StScrollBarPrivate
   gfloat        x_origin;
   gfloat        y_origin;
 
-  ClutterActor *bw_stepper;
-  ClutterActor *fw_stepper;
   ClutterActor *trough;
   ClutterActor *handle;
 
@@ -68,9 +66,6 @@ struct _StScrollBarPrivate
   enum { NONE, UP, DOWN }  paging_direction;
   guint             paging_source_id;
   guint             paging_event_no;
-
-  gboolean          stepper_forward;
-  guint             stepper_source_id;
 
   ClutterAnimation *paging_animation;
 
@@ -145,23 +140,11 @@ st_scroll_bar_set_property (GObject      *gobject,
     case PROP_VERTICAL:
       bar->priv->vertical = g_value_get_boolean (value);
       if (bar->priv->vertical)
-        {
-          clutter_actor_set_name (CLUTTER_ACTOR (bar->priv->bw_stepper),
-                                  "up-stepper");
-          clutter_actor_set_name (CLUTTER_ACTOR (bar->priv->fw_stepper),
-                                  "down-stepper");
-          clutter_actor_set_name (CLUTTER_ACTOR (bar->priv->handle),
-                                  "vhandle");
-        }
+        clutter_actor_set_name (CLUTTER_ACTOR (bar->priv->handle),
+                                "vhandle");
       else
-        {
-          clutter_actor_set_name (CLUTTER_ACTOR (bar->priv->fw_stepper),
-                                  "forward-stepper");
-          clutter_actor_set_name (CLUTTER_ACTOR (bar->priv->bw_stepper),
-                                  "backward-stepper");
-          clutter_actor_set_name (CLUTTER_ACTOR (bar->priv->handle),
-                                  "hhandle");
-        }
+        clutter_actor_set_name (CLUTTER_ACTOR (bar->priv->handle),
+                                "hhandle");
       clutter_actor_queue_relayout ((ClutterActor*) gobject);
       break;
 
@@ -182,28 +165,13 @@ st_scroll_bar_dispose (GObject *gobject)
 
   if (priv->handle)
     {
-      g_signal_handlers_disconnect_by_func (priv->handle,
-                                            G_CALLBACK (handle_button_press_event_cb),
-                                            bar);
-      clutter_actor_unparent (priv->handle);
+      clutter_actor_destroy (priv->handle);
       priv->handle = NULL;
-    }
-
-  if (priv->bw_stepper)
-    {
-      clutter_actor_unparent (priv->bw_stepper);
-      priv->bw_stepper = NULL;
-    }
-
-  if (priv->fw_stepper)
-    {
-      clutter_actor_unparent (priv->fw_stepper);
-      priv->fw_stepper = NULL;
     }
 
   if (priv->trough)
     {
-      clutter_actor_unparent (priv->trough);
+      clutter_actor_destroy (priv->trough);
       priv->trough = NULL;
     }
 
@@ -216,10 +184,6 @@ st_scroll_bar_paint (ClutterActor *actor)
   StScrollBarPrivate *priv = ST_SCROLL_BAR (actor)->priv;
 
   CLUTTER_ACTOR_CLASS (st_scroll_bar_parent_class)->paint (actor);
-
-  clutter_actor_paint (priv->bw_stepper);
-
-  clutter_actor_paint (priv->fw_stepper);
 
   clutter_actor_paint (priv->trough);
 
@@ -235,8 +199,6 @@ st_scroll_bar_pick (ClutterActor       *actor,
 
   CLUTTER_ACTOR_CLASS (st_scroll_bar_parent_class)->pick (actor, pick_color);
 
-  clutter_actor_paint (priv->bw_stepper);
-  clutter_actor_paint (priv->fw_stepper);
   clutter_actor_paint (priv->trough);
 
   if (priv->handle && priv->adjustment)
@@ -258,89 +220,33 @@ scroll_bar_allocate_children (StScrollBar           *bar,
 {
   StScrollBarPrivate *priv = bar->priv;
   StThemeNode *theme_node = st_widget_get_theme_node (ST_WIDGET (bar));
-  ClutterActorBox content_box, bw_box, fw_box, trough_box;
-  gfloat bw_stepper_size, fw_stepper_size, min_size, natural_size;
+  ClutterActorBox content_box, trough_box;
 
   st_theme_node_get_content_box (theme_node, box, &content_box);
 
   if (priv->vertical)
     {
-      gfloat width = content_box.x2 - content_box.x1;
-
-      clutter_actor_get_preferred_height (priv->bw_stepper, width,
-                                          &min_size, &natural_size);
-      bw_stepper_size = MAX (min_size, natural_size);
-
-      /* Backward stepper */
-      bw_box.x1 = content_box.x1;
-      bw_box.y1 = content_box.y1;
-      bw_box.x2 = content_box.x2;
-      bw_box.y2 = bw_box.y1 + bw_stepper_size;
-      clutter_actor_allocate (priv->bw_stepper, &bw_box, flags);
-
-
-      clutter_actor_get_preferred_height (priv->fw_stepper, width,
-                                          &min_size, &natural_size);
-      fw_stepper_size = MAX (min_size, natural_size);
-
-      /* Forward stepper */
-      fw_box.x1 = content_box.x1;
-      fw_box.y1 = content_box.y2 - fw_stepper_size;
-      fw_box.x2 = content_box.x2;
-      fw_box.y2 = content_box.y2;
-      clutter_actor_allocate (priv->fw_stepper, &fw_box, flags);
-
-      /* Trough */
       trough_box.x1 = content_box.x1;
-      trough_box.y1 = content_box.y1 + bw_stepper_size;
+      trough_box.y1 = content_box.y1;
       trough_box.x2 = content_box.x2;
-      trough_box.y2 = content_box.y2 - fw_stepper_size;
+      trough_box.y2 = content_box.y2;
       clutter_actor_allocate (priv->trough, &trough_box, flags);
 
     }
   else
     {
-      gfloat height = content_box.y2 - content_box.y1;
-
-      clutter_actor_get_preferred_width (priv->bw_stepper, height,
-                                         &min_size, &natural_size);
-      bw_stepper_size = MAX (min_size, natural_size);
-
-      /* Backward stepper */
-      bw_box.x1 = content_box.x1;
-      bw_box.y1 = content_box.y1;
-      bw_box.x2 = bw_box.x1 + bw_stepper_size;
-      bw_box.y2 = content_box.y2;
-      clutter_actor_allocate (priv->bw_stepper, &bw_box, flags);
-
-
-      clutter_actor_get_preferred_width (priv->fw_stepper, height,
-                                         &min_size, &natural_size);
-      fw_stepper_size = MAX (min_size, natural_size);
-
-      /* Forward stepper */
-      fw_box.x1 = content_box.x2 - fw_stepper_size;
-      fw_box.y1 = content_box.y1;
-      fw_box.x2 = content_box.x2;
-      fw_box.y2 = content_box.y2;
-      clutter_actor_allocate (priv->fw_stepper, &fw_box, flags);
-
-      /* Trough */
-      trough_box.x1 = content_box.x1 + bw_stepper_size;
+      trough_box.x1 = content_box.x1;
       trough_box.y1 = content_box.y1;
-      trough_box.x2 = content_box.x2 - fw_stepper_size;
+      trough_box.x2 = content_box.x2;
       trough_box.y2 = content_box.y2;
       clutter_actor_allocate (priv->trough, &trough_box, flags);
     }
 
-
   if (priv->adjustment)
     {
-      float handle_size, position, avail_size, stepper_size;
+      float handle_size, position, avail_size;
       gdouble value, lower, upper, page_size, increment, min_size, max_size;
       ClutterActorBox handle_box = { 0, };
-
-      stepper_size = bw_stepper_size + fw_stepper_size;
 
       st_adjustment_get_values (priv->adjustment,
                                 &value,
@@ -368,23 +274,23 @@ scroll_bar_allocate_children (StScrollBar           *bar,
 
       if (priv->vertical)
         {
-          avail_size = content_box.y2 - content_box.y1 - stepper_size;
+          avail_size = content_box.y2 - content_box.y1;
           handle_size = increment * avail_size;
           handle_size = CLAMP (handle_size, min_size, max_size);
 
           handle_box.x1 = content_box.x1;
-          handle_box.y1 = bw_box.y2 + position * (avail_size - handle_size);
+          handle_box.y1 = content_box.y1 + position * (avail_size - handle_size);
 
           handle_box.x2 = content_box.x2;
           handle_box.y2 = handle_box.y1 + handle_size;
         }
       else
         {
-          avail_size = content_box.x2 - content_box.x1 - stepper_size;
+          avail_size = content_box.x2 - content_box.x1;
           handle_size = increment * avail_size;
           handle_size = CLAMP (handle_size, min_size, max_size);
 
-          handle_box.x1 = bw_box.x2 + position * (avail_size - handle_size);
+          handle_box.x1 = content_box.x1 + position * (avail_size - handle_size);
           handle_box.y1 = content_box.y1;
 
           handle_box.x2 = handle_box.x1 + handle_size;
@@ -412,51 +318,32 @@ st_scroll_bar_get_preferred_width (ClutterActor *self,
   StScrollBar *bar = ST_SCROLL_BAR (self);
   StScrollBarPrivate *priv = bar->priv;
   StThemeNode *theme_node = st_widget_get_theme_node (ST_WIDGET (self));
+  gfloat trough_min_width, trough_natural_width;
+  gfloat handle_min_width, handle_natural_width;
 
   st_theme_node_adjust_for_height (theme_node, &for_height);
 
-  if (min_width_p)
-    *min_width_p = 0;
+  _st_actor_get_preferred_width (priv->trough, for_height, TRUE,
+                                 &trough_min_width, &trough_natural_width);
 
-  if (natural_width_p)
-    *natural_width_p = 0;
+  _st_actor_get_preferred_width (priv->handle, for_height, TRUE,
+                                 &handle_min_width, &handle_natural_width);
+
   if (priv->vertical)
     {
-      gfloat tmin_width_p, tnatural_width_p;
+      if (min_width_p)
+        *min_width_p = MAX (trough_min_width, handle_min_width);
 
-      #define ADJUST_WIDTH_IF_LARGER(actor) \
-        _st_actor_get_preferred_width (actor, for_height, TRUE, \
-                                       &tmin_width_p, &tnatural_width_p); \
-        if (min_width_p && tmin_width_p > *min_width_p) \
-          *min_width_p = tmin_width_p; \
-        if (natural_width_p && tnatural_width_p > *natural_width_p) \
-          *natural_width_p = tnatural_width_p;
-
-      ADJUST_WIDTH_IF_LARGER (priv->bw_stepper);
-      ADJUST_WIDTH_IF_LARGER (priv->fw_stepper);
-      ADJUST_WIDTH_IF_LARGER (priv->trough);
-      ADJUST_WIDTH_IF_LARGER (priv->handle);
-
-      #undef ADJUST_WIDTH_IF_LARGER
+      if (natural_width_p)
+        *natural_width_p = MAX (trough_natural_width, handle_natural_width);
     }
   else
     {
-      gfloat tmin_width_p, tnatural_width_p;
+      if (min_width_p)
+        *min_width_p = trough_min_width + handle_min_width;
 
-      #define ADD_TO_WIDTH(actor) \
-        _st_actor_get_preferred_width (actor, for_height, TRUE, \
-                                       &tmin_width_p, &tnatural_width_p); \
-        if (min_width_p) \
-          *min_width_p += tmin_width_p; \
-        if (natural_width_p ) \
-          *natural_width_p += tnatural_width_p;
-
-      ADD_TO_WIDTH (priv->bw_stepper);
-      ADD_TO_WIDTH (priv->fw_stepper);
-      ADD_TO_WIDTH (priv->trough);
-      ADD_TO_WIDTH (priv->handle);
-
-      #undef ADD_TO_WIDTH
+      if (natural_width_p)
+        *natural_width_p = trough_natural_width + handle_natural_width;
     }
 
   st_theme_node_adjust_preferred_width (theme_node, min_width_p, natural_width_p);
@@ -471,51 +358,32 @@ st_scroll_bar_get_preferred_height (ClutterActor *self,
   StScrollBar *bar = ST_SCROLL_BAR (self);
   StScrollBarPrivate *priv = bar->priv;
   StThemeNode *theme_node = st_widget_get_theme_node (ST_WIDGET (self));
+  gfloat trough_min_height, trough_natural_height;
+  gfloat handle_min_height, handle_natural_height;
 
   st_theme_node_adjust_for_width (theme_node, &for_width);
 
-  if (min_height_p)
-    *min_height_p = 0;
+  _st_actor_get_preferred_height (priv->trough, for_width, TRUE,
+                                  &trough_min_height, &trough_natural_height);
 
-  if (natural_height_p)
-    *natural_height_p = 0;
+  _st_actor_get_preferred_height (priv->handle, for_width, TRUE,
+                                  &handle_min_height, &handle_natural_height);
+
   if (priv->vertical)
     {
-      gfloat tmin_height_p, tnatural_height_p;
+      if (min_height_p)
+        *min_height_p = trough_min_height + handle_min_height;
 
-      #define ADD_TO_HEIGHT(actor) \
-        _st_actor_get_preferred_height (actor, for_width, FALSE, \
-                                        &tmin_height_p, &tnatural_height_p); \
-        if (min_height_p) \
-          *min_height_p += tmin_height_p; \
-        if (natural_height_p) \
-          *natural_height_p += tnatural_height_p;
-
-      ADD_TO_HEIGHT (priv->bw_stepper);
-      ADD_TO_HEIGHT (priv->fw_stepper);
-      ADD_TO_HEIGHT (priv->trough);
-      ADD_TO_HEIGHT (priv->handle);
-
-      #undef ADD_TO_HEIGHT
+      if (natural_height_p)
+        *natural_height_p = trough_natural_height + handle_natural_height;
     }
   else
     {
-      gfloat tmin_height_p, tnatural_height_p;
+      if (min_height_p)
+        *min_height_p = MAX (trough_min_height, handle_min_height);
 
-      #define ADJUST_HEIGHT_IF_LARGER(actor) \
-        _st_actor_get_preferred_height (actor, for_width, FALSE, \
-                                        &tmin_height_p, &tnatural_height_p); \
-        if (min_height_p && tmin_height_p > *min_height_p) \
-          *min_height_p = tmin_height_p; \
-        if (natural_height_p && tnatural_height_p > *natural_height_p) \
-          *natural_height_p = tnatural_height_p;
-
-      ADJUST_HEIGHT_IF_LARGER (priv->bw_stepper);
-      ADJUST_HEIGHT_IF_LARGER (priv->fw_stepper);
-      ADJUST_HEIGHT_IF_LARGER (priv->trough);
-      ADJUST_HEIGHT_IF_LARGER (priv->handle);
-
-      #undef ADJUST_HEIGHT_IF_LARGER
+      if (natural_height_p)
+        *natural_height_p = MAX (trough_natural_height, handle_natural_height);
     }
 
   st_theme_node_adjust_preferred_height (theme_node, min_height_p, natural_height_p);
@@ -562,8 +430,6 @@ st_scroll_bar_style_changed (StWidget *widget)
 {
   StScrollBarPrivate *priv = ST_SCROLL_BAR (widget)->priv;
 
-  st_widget_style_changed (ST_WIDGET (priv->bw_stepper));
-  st_widget_style_changed (ST_WIDGET (priv->fw_stepper));
   st_widget_style_changed (ST_WIDGET (priv->trough));
   st_widget_style_changed (ST_WIDGET (priv->handle));
 
@@ -1012,120 +878,12 @@ trough_leave_event_cb (ClutterActor *actor,
 }
 
 static void
-stepper_animation_completed_cb (ClutterAnimation *a,
-                                gpointer          data)
-{
-  g_object_unref (a);
-}
-
-static void
-stepper_move_on (StScrollBarPrivate *priv,
-                 gint                mode)
-{
-  ClutterAnimation *a;
-  ClutterTimeline *t;
-  GValue v = { 0, };
-  double value, inc;
-
-  a = g_object_new (CLUTTER_TYPE_ANIMATION,
-                    "object", priv->adjustment,
-                    "duration", (guint)(PAGING_SUBSEQUENT_REPEAT_TIMEOUT * st_slow_down_factor),
-                    "mode", mode,
-                    NULL);
-
-  g_signal_connect (a, "completed", G_CALLBACK (stepper_animation_completed_cb),
-                    NULL);
-
-  g_object_get (priv->adjustment,
-                "step-increment", &inc,
-                "value", &value,
-                NULL);
-
-  if (priv->stepper_forward)
-    value = value + inc;
-  else
-    value = value - inc;
-
-  g_value_init (&v, G_TYPE_DOUBLE);
-  g_value_set_double (&v, value);
-  clutter_animation_bind (a, "value", &v);
-
-  t = clutter_animation_get_timeline (a);
-  clutter_timeline_start (t);
-}
-
-static gboolean
-stepper_button_subsequent_timeout (StScrollBarPrivate *priv)
-{
-  stepper_move_on (priv, CLUTTER_LINEAR);
-
-  return TRUE;
-}
-
-static gboolean
-stepper_button_repeat_timeout (StScrollBarPrivate *priv)
-{
-  priv->stepper_source_id = 0;
-
-  stepper_move_on (priv, CLUTTER_EASE_IN_CUBIC);
-
-  priv->stepper_source_id = g_timeout_add (PAGING_SUBSEQUENT_REPEAT_TIMEOUT,
-                                           (GSourceFunc)
-                                           stepper_button_subsequent_timeout,
-                                           priv);
-  return FALSE;
-}
-
-static gboolean
-stepper_button_press_event_cb (ClutterActor       *actor,
-                               ClutterButtonEvent *event,
-                               StScrollBar        *bar)
-{
-  StScrollBarPrivate *priv = bar->priv;
-
-  if (event->button != 1)
-    return FALSE;
-
-  if (bar->priv->adjustment == NULL)
-    return FALSE;
-
-  bar->priv->stepper_forward = (actor == priv->fw_stepper);
-
-  stepper_move_on (priv, CLUTTER_EASE_OUT_CUBIC);
-
-  priv->stepper_source_id = g_timeout_add (PAGING_INITIAL_REPEAT_TIMEOUT,
-                                           (GSourceFunc)
-                                           stepper_button_repeat_timeout,
-                                           priv);
-
-  return TRUE;
-}
-
-static gboolean
-stepper_button_release_cb (ClutterActor       *actor,
-                           ClutterButtonEvent *event,
-                           StScrollBar        *self)
-{
-  if (event->button != 1)
-    return FALSE;
-
-  if (self->priv->stepper_source_id) {
-    g_source_remove (self->priv->stepper_source_id);
-    self->priv->stepper_source_id = 0;
-  }
-
-  return FALSE;
-}
-
-static void
 st_scroll_bar_notify_reactive (StScrollBar *self)
 {
   StScrollBarPrivate *priv = self->priv;
 
   gboolean reactive = CLUTTER_ACTOR_IS_REACTIVE (self);
 
-  clutter_actor_set_reactive (CLUTTER_ACTOR (priv->bw_stepper), reactive);
-  clutter_actor_set_reactive (CLUTTER_ACTOR (priv->fw_stepper), reactive);
   clutter_actor_set_reactive (CLUTTER_ACTOR (priv->trough), reactive);
   clutter_actor_set_reactive (CLUTTER_ACTOR (priv->handle), reactive);
 }
@@ -1134,26 +892,6 @@ static void
 st_scroll_bar_init (StScrollBar *self)
 {
   self->priv = ST_SCROLL_BAR_GET_PRIVATE (self);
-
-  self->priv->bw_stepper = (ClutterActor *) st_button_new ();
-  clutter_actor_set_name (CLUTTER_ACTOR (self->priv->bw_stepper),
-                          "backward-stepper");
-  clutter_actor_add_child (CLUTTER_ACTOR (self),
-                           CLUTTER_ACTOR (self->priv->bw_stepper));
-  g_signal_connect (self->priv->bw_stepper, "button-press-event",
-                    G_CALLBACK (stepper_button_press_event_cb), self);
-  g_signal_connect (self->priv->bw_stepper, "button-release-event",
-                    G_CALLBACK (stepper_button_release_cb), self);
-
-  self->priv->fw_stepper = (ClutterActor *) st_button_new ();
-  clutter_actor_set_name (CLUTTER_ACTOR (self->priv->fw_stepper),
-                          "forward-stepper");
-  clutter_actor_add_child (CLUTTER_ACTOR (self),
-                           CLUTTER_ACTOR (self->priv->fw_stepper));
-  g_signal_connect (self->priv->fw_stepper, "button-press-event",
-                    G_CALLBACK (stepper_button_press_event_cb), self);
-  g_signal_connect (self->priv->fw_stepper, "button-release-event",
-                    G_CALLBACK (stepper_button_release_cb), self);
 
   self->priv->trough = (ClutterActor *) st_bin_new ();
   clutter_actor_set_reactive ((ClutterActor *) self->priv->trough, TRUE);
@@ -1169,7 +907,7 @@ st_scroll_bar_init (StScrollBar *self)
 
   self->priv->handle = (ClutterActor *) st_button_new ();
   clutter_actor_set_name (CLUTTER_ACTOR (self->priv->handle), "hhandle");
-  clutter_actor_add_child (self->priv->trough,
+  clutter_actor_add_child (CLUTTER_ACTOR (self),
                            CLUTTER_ACTOR (self->priv->handle));
   g_signal_connect (self->priv->handle, "button-press-event",
                     G_CALLBACK (handle_button_press_event_cb), self);
