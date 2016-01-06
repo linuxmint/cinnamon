@@ -391,13 +391,11 @@ st_entry_allocate (ClutterActor          *actor,
 {
   StEntryPrivate *priv = ST_ENTRY_PRIV (actor);
   StThemeNode *theme_node = st_widget_get_theme_node (ST_WIDGET (actor));
-  ClutterActorClass *parent_class;
   ClutterActorBox content_box, child_box, icon_box;
   gfloat icon_w, icon_h;
   gfloat entry_h, min_h, pref_h, avail_h;
 
-  parent_class = CLUTTER_ACTOR_CLASS (st_entry_parent_class);
-  parent_class->allocate (actor, box, flags);
+  clutter_actor_set_allocation (actor, box, flags);
 
   st_theme_node_get_content_box (theme_node, box, &content_box);
 

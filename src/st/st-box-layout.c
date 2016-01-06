@@ -641,8 +641,7 @@ st_box_layout_allocate (ClutterActor          *actor,
 
   gboolean reverse_order = (!priv->is_align_end != !priv->is_pack_start);
 
-  CLUTTER_ACTOR_CLASS (st_box_layout_parent_class)->allocate (actor, box,
-                                                              flags);
+  clutter_actor_set_allocation (actor, box, flags);
 
   children = st_container_get_children_list (ST_CONTAINER (actor));
   if (children == NULL)

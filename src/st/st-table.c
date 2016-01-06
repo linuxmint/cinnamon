@@ -717,7 +717,7 @@ st_table_allocate (ClutterActor          *self,
   StThemeNode *theme_node = st_widget_get_theme_node (ST_WIDGET (self));
   ClutterActorBox content_box;
 
-  CLUTTER_ACTOR_CLASS (st_table_parent_class)->allocate (self, box, flags);
+  clutter_actor_set_allocation (self, box, flags);
 
   if (priv->n_cols < 1 || priv->n_rows < 1)
     {

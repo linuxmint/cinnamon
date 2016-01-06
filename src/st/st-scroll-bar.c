@@ -369,8 +369,7 @@ st_scroll_bar_allocate (ClutterActor          *actor,
 {
   StScrollBar *bar = ST_SCROLL_BAR (actor);
 
-  /* Chain up */
-  CLUTTER_ACTOR_CLASS (st_scroll_bar_parent_class)->allocate (actor, box, flags);
+  clutter_actor_set_allocation (actor, box, flags);
 
   scroll_bar_allocate_children (bar, box, flags);
 }

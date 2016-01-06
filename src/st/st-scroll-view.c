@@ -627,24 +627,13 @@ st_scroll_view_allocate (ClutterActor          *actor,
                          ClutterAllocationFlags flags)
 {
   ClutterActorBox content_box, child_box;
-  ClutterActorClass *parent_parent_class;
   gfloat avail_width, avail_height, sb_width, sb_height;
   gboolean hscrollbar_visible, vscrollbar_visible;
 
   StScrollViewPrivate *priv = ST_SCROLL_VIEW (actor)->priv;
   StThemeNode *theme_node = st_widget_get_theme_node (ST_WIDGET (actor));
 
-  /* Chain up to the parent's parent class
-   *
-   * We do this because we do not want StBin to allocate the child, as we
-   * give it a different allocation later, depending on whether the scrollbars
-   * are visible
-   */
-  parent_parent_class
-    = g_type_class_peek_parent (st_scroll_view_parent_class);
-
-  CLUTTER_ACTOR_CLASS (parent_parent_class)->
-  allocate (actor, box, flags);
+  clutter_actor_set_allocation (actor, box, flags);
 
   st_theme_node_get_content_box (theme_node, box, &content_box);
 

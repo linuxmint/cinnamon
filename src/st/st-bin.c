@@ -111,8 +111,7 @@ st_bin_allocate (ClutterActor          *self,
 {
   StBinPrivate *priv = ST_BIN (self)->priv;
 
-  CLUTTER_ACTOR_CLASS (st_bin_parent_class)->allocate (self, box,
-                                                       flags);
+  clutter_actor_set_allocation (self, box, flags);
 
   if (priv->child)
     {

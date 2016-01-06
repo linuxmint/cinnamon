@@ -357,6 +357,32 @@ st_widget_get_preferred_height (ClutterActor *self,
   st_theme_node_adjust_preferred_height (theme_node, min_height_p, natural_height_p);
 }
 
+static void
+st_widget_allocate (ClutterActor          *actor,
+                    const ClutterActorBox *box,
+                    ClutterAllocationFlags flags)
+{
+  StThemeNode *theme_node = st_widget_get_theme_node (ST_WIDGET (actor));
+  ClutterActorBox content_box;
+
+  /* Note that we can't just chain up to clutter_actor_real_allocate --
+   * Clutter does some dirty tricks for backwards compatibility.
+   * Clutter also passes the actor's allocation directly to the layout
+   * manager, meaning that we can't modify it for children only.
+   */
+
+  clutter_actor_set_allocation (actor, box, flags);
+
+  st_theme_node_get_content_box (theme_node, box, &content_box);
+
+  /* If we've chained up to here, we want to allocate the children using the
+   * currently installed layout manager */
+  clutter_layout_manager_allocate (clutter_actor_get_layout_manager (actor),
+                                   CLUTTER_CONTAINER (actor),
+                                   &content_box,
+                                   flags);
+}
+
 /**
  * st_widget_paint_background:
  * @widget: The #StWidget
@@ -763,6 +789,7 @@ st_widget_class_init (StWidgetClass *klass)
 
   actor_class->get_preferred_width = st_widget_get_preferred_width;
   actor_class->get_preferred_height = st_widget_get_preferred_height;
+  actor_class->allocate = st_widget_allocate;
   actor_class->paint = st_widget_paint;
   actor_class->get_paint_volume = st_widget_get_paint_volume;
   actor_class->parent_set = st_widget_parent_set;

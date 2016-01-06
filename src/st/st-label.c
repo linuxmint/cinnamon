@@ -174,13 +174,11 @@ st_label_allocate (ClutterActor          *actor,
 {
   StLabelPrivate *priv = ST_LABEL (actor)->priv;
   StThemeNode *theme_node = st_widget_get_theme_node (ST_WIDGET (actor));
-  ClutterActorClass *parent_class;
   ClutterActorBox content_box;
 
-  st_theme_node_get_content_box (theme_node, box, &content_box);
+  clutter_actor_set_allocation (actor, box, flags);
 
-  parent_class = CLUTTER_ACTOR_CLASS (st_label_parent_class);
-  parent_class->allocate (actor, box, flags);
+  st_theme_node_get_content_box (theme_node, box, &content_box);
 
   clutter_actor_allocate (priv->label, &content_box, flags);
 }

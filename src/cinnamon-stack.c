@@ -29,7 +29,7 @@ cinnamon_stack_allocate (ClutterActor           *self,
   ClutterActorBox content_box;
   GList *children, *iter;
 
-  CLUTTER_ACTOR_CLASS (cinnamon_stack_parent_class)->allocate (self, box, flags);
+  clutter_actor_set_allocation (self, box, flags);
 
   st_theme_node_get_content_box (theme_node, box, &content_box);
 

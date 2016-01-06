@@ -66,7 +66,7 @@ cinnamon_generic_container_allocate (ClutterActor           *self,
   StThemeNode *theme_node;
   ClutterActorBox content_box;
 
-  CLUTTER_ACTOR_CLASS (cinnamon_generic_container_parent_class)->allocate (self, box, flags);
+  clutter_actor_set_allocation (self, box, flags);
 
   theme_node = st_widget_get_theme_node (ST_WIDGET (self));
   st_theme_node_get_content_box (theme_node, box, &content_box);
