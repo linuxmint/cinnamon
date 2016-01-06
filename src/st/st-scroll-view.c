@@ -424,9 +424,9 @@ st_scroll_view_paint (ClutterActor *actor)
   CLUTTER_ACTOR_CLASS (st_scroll_view_parent_class)->paint (actor);
 
   /* paint our custom children */
-  if (priv->hscrollbar_visible && CLUTTER_ACTOR_IS_VISIBLE (priv->hscroll))
+  if (priv->hscrollbar_visible)
     clutter_actor_paint (priv->hscroll);
-  if (priv->vscrollbar_visible && CLUTTER_ACTOR_IS_VISIBLE (priv->vscroll))
+  if (priv->vscrollbar_visible)
     clutter_actor_paint (priv->vscroll);
 }
 
@@ -440,9 +440,9 @@ st_scroll_view_pick (ClutterActor       *actor,
   CLUTTER_ACTOR_CLASS (st_scroll_view_parent_class)->pick (actor, color);
 
   /* paint our custom children */
-  if (priv->hscrollbar_visible && CLUTTER_ACTOR_IS_VISIBLE (priv->hscroll))
+  if (priv->hscrollbar_visible)
     clutter_actor_paint (priv->hscroll);
-  if (priv->vscrollbar_visible && CLUTTER_ACTOR_IS_VISIBLE (priv->vscroll))
+  if (priv->vscrollbar_visible)
     clutter_actor_paint (priv->vscroll);
 }
 
