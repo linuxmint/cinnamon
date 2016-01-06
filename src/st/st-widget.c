@@ -369,41 +369,57 @@ st_widget_get_preferred_height (ClutterActor *self,
   st_theme_node_adjust_preferred_height (theme_node, min_height_p, natural_height_p);
 }
 
-static void
-st_widget_paint (ClutterActor *actor)
+/**
+ * st_widget_paint_background:
+ * @widget: The #StWidget
+ *
+ * Paint the background of the widget. This is meant to be called by
+ * subclasses of StWiget that need to paint the background without
+ * painting children.
+ */
+void
+st_widget_paint_background (StWidget *widget)
 {
-  StWidget *self = ST_WIDGET (actor);
   StThemeNode *theme_node;
   ClutterActorBox allocation;
   guint8 opacity;
 
-  theme_node = st_widget_get_theme_node (self);
+  theme_node = st_widget_get_theme_node (widget);
 
-  clutter_actor_get_allocation_box (actor, &allocation);
+  clutter_actor_get_allocation_box (CLUTTER_ACTOR (widget), &allocation);
 
-  opacity = clutter_actor_get_paint_opacity (actor);
+  opacity = clutter_actor_get_paint_opacity (CLUTTER_ACTOR (widget));
 
-  if (self->priv->transition_animation)
-    st_theme_node_transition_paint (self->priv->transition_animation,
+  if (widget->priv->transition_animation)
+    st_theme_node_transition_paint (widget->priv->transition_animation,
                                     &allocation,
                                     opacity);
   else
     st_theme_node_paint (theme_node, &allocation, opacity);
 
-  ClutterEffect *effect = clutter_actor_get_effect (actor, "background-effect");
+  // ClutterEffect *effect = clutter_actor_get_effect (actor, "background-effect");
 
-  if (effect == NULL)
-    {
-      effect = st_background_effect_new ();
-      clutter_actor_add_effect_with_name (actor, "background-effect", effect);
-    }
+  // if (effect == NULL)
+  //   {
+  //     effect = st_background_effect_new ();
+  //     clutter_actor_add_effect_with_name (actor, "background-effect", effect);
+  //   }
 
-  const char *bumpmap_path = st_theme_node_get_background_bumpmap(theme_node);
+  // const char *bumpmap_path = st_theme_node_get_background_bumpmap(theme_node);
 
-  g_object_set (effect,
-                "bumpmap",
-                bumpmap_path,
-                NULL);
+  // g_object_set (effect,
+  //               "bumpmap",
+  //               bumpmap_path,
+  //               NULL);
+}
+
+ static void
+st_widget_paint (ClutterActor *actor)
+{
+  st_widget_paint_background (ST_WIDGET (actor));
+
+  /* Chain up so we paint children. */
+  CLUTTER_ACTOR_CLASS (st_widget_parent_class)->paint (actor);
 }
 
 static void

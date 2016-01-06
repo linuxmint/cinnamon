@@ -265,8 +265,7 @@ st_icon_paint (ClutterActor *actor)
 {
   StIconPrivate *priv = ST_ICON (actor)->priv;
 
-  /* Chain up to paint background */
-  CLUTTER_ACTOR_CLASS (st_icon_parent_class)->paint (actor);
+  st_widget_paint_background (ST_WIDGET (actor));
 
   if (priv->icon_texture)
     {

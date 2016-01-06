@@ -932,7 +932,7 @@ st_box_layout_paint (ClutterActor *actor)
       cogl_translate ((int)x, (int)y, 0);
     }
 
-  CLUTTER_ACTOR_CLASS (st_box_layout_parent_class)->paint (actor);
+  st_widget_paint_background (ST_WIDGET (actor));
 
   if (x != 0 || y != 0)
     {

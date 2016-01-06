@@ -105,32 +105,6 @@ clutter_container_iface_init (ClutterContainerIface *iface)
 }
 
 static void
-st_bin_paint (ClutterActor *self)
-{
-  StBinPrivate *priv = ST_BIN (self)->priv;
-
-  /* allow StWidget to paint the background */
-  CLUTTER_ACTOR_CLASS (st_bin_parent_class)->paint (self);
-
-  /* the pain our child */
-  if (priv->child)
-    clutter_actor_paint (priv->child);
-}
-
-static void
-st_bin_pick (ClutterActor       *self,
-             const ClutterColor *pick_color)
-{
-  StBinPrivate *priv = ST_BIN (self)->priv;
-
-  /* get the default pick implementation */
-  CLUTTER_ACTOR_CLASS (st_bin_parent_class)->pick (self, pick_color);
-
-  if (priv->child)
-    clutter_actor_paint (priv->child);
-}
-
-static void
 st_bin_allocate (ClutterActor          *self,
                  const ClutterActorBox *box,
                  ClutterAllocationFlags flags)
@@ -340,8 +314,6 @@ st_bin_class_init (StBinClass *klass)
   actor_class->get_preferred_width = st_bin_get_preferred_width;
   actor_class->get_preferred_height = st_bin_get_preferred_height;
   actor_class->allocate = st_bin_allocate;
-  actor_class->paint = st_bin_paint;
-  actor_class->pick = st_bin_pick;
 
   widget_class->navigate_focus = st_bin_navigate_focus;
 

@@ -209,12 +209,10 @@ static void
 st_label_paint (ClutterActor *actor)
 {
   StLabelPrivate *priv = ST_LABEL (actor)->priv;
-  ClutterActorClass *parent_class;
   StThemeNode *theme_node = st_widget_get_theme_node (ST_WIDGET (actor));
   StShadow *shadow_spec = st_theme_node_get_text_shadow (theme_node);
 
-  parent_class = CLUTTER_ACTOR_CLASS (st_label_parent_class);
-  parent_class->paint (actor);
+  st_widget_paint_background (ST_WIDGET (actor));
 
   if (shadow_spec)
     {

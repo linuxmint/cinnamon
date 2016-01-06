@@ -717,41 +717,6 @@ clutter_text_cursor_changed (ClutterText *text, ClutterActor *actor)
 }
 
 static void
-st_entry_paint (ClutterActor *actor)
-{
-  StEntryPrivate *priv = ST_ENTRY_PRIV (actor);
-  ClutterActorClass *parent_class;
-
-  parent_class = CLUTTER_ACTOR_CLASS (st_entry_parent_class);
-  parent_class->paint (actor);
-
-  clutter_actor_paint (priv->entry);
-
-  if (priv->primary_icon)
-    clutter_actor_paint (priv->primary_icon);
-
-  if (priv->secondary_icon)
-    clutter_actor_paint (priv->secondary_icon);
-}
-
-static void
-st_entry_pick (ClutterActor       *actor,
-               const ClutterColor *c)
-{
-  StEntryPrivate *priv = ST_ENTRY_PRIV (actor);
-
-  CLUTTER_ACTOR_CLASS (st_entry_parent_class)->pick (actor, c);
-
-  clutter_actor_paint (priv->entry);
-
-  if (priv->primary_icon)
-    clutter_actor_paint (priv->primary_icon);
-
-  if (priv->secondary_icon)
-    clutter_actor_paint (priv->secondary_icon);
-}
-
-static void
 st_entry_clipboard_callback (StClipboard *clipboard,
                              const gchar *text,
                              gpointer     data)
@@ -867,8 +832,6 @@ st_entry_class_init (StEntryClass *klass)
   actor_class->get_preferred_width = st_entry_get_preferred_width;
   actor_class->get_preferred_height = st_entry_get_preferred_height;
   actor_class->allocate = st_entry_allocate;
-  actor_class->paint = st_entry_paint;
-  actor_class->pick = st_entry_pick;
 
   actor_class->key_press_event = st_entry_key_press_event;
   actor_class->key_focus_in = st_entry_key_focus_in;

@@ -53,28 +53,6 @@
 G_DEFINE_TYPE (StGroup, st_group, ST_TYPE_CONTAINER);
 
 static void
-st_group_paint (ClutterActor *actor)
-{
-  CLUTTER_ACTOR_CLASS (st_group_parent_class)->paint (actor);
-
-  clutter_container_foreach (CLUTTER_CONTAINER (actor),
-                             CLUTTER_CALLBACK (clutter_actor_paint),
-                             NULL);
-}
-
-static void
-st_group_pick (ClutterActor       *actor,
-               const ClutterColor *pick)
-{
-  /* Chain up so we get a bounding box painted (if we are reactive) */
-  CLUTTER_ACTOR_CLASS (st_group_parent_class)->pick (actor, pick);
-
-  clutter_container_foreach (CLUTTER_CONTAINER (actor),
-                             CLUTTER_CALLBACK (clutter_actor_paint),
-                             NULL);
-}
-
-static void
 st_group_get_preferred_width (ClutterActor *actor,
                               gfloat        for_height,
                               gfloat       *min_width_p,
@@ -240,8 +218,6 @@ st_group_class_init (StGroupClass *klass)
   actor_class->get_preferred_width = st_group_get_preferred_width;
   actor_class->get_preferred_height = st_group_get_preferred_height;
   actor_class->allocate = st_group_allocate;
-  actor_class->paint = st_group_paint;
-  actor_class->pick = st_group_pick;
   actor_class->show_all = st_group_show_all;
   actor_class->hide_all = st_group_hide_all;
 }

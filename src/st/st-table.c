@@ -918,40 +918,6 @@ st_table_get_preferred_height (ClutterActor *self,
 }
 
 static void
-st_table_paint (ClutterActor *self)
-{
-  GList *list, *children;
-
-  /* make sure the background gets painted first */
-  CLUTTER_ACTOR_CLASS (st_table_parent_class)->paint (self);
-
-  children = st_container_get_children_list (ST_CONTAINER (self));
-  for (list = children; list; list = list->next)
-    {
-      ClutterActor *child = CLUTTER_ACTOR (list->data);
-      if (CLUTTER_ACTOR_IS_VISIBLE (child))
-        clutter_actor_paint (child);
-    }
-}
-
-static void
-st_table_pick (ClutterActor       *self,
-               const ClutterColor *color)
-{
-  GList *list, *children;
-
-  /* Chain up so we get a bounding box painted (if we are reactive) */
-  CLUTTER_ACTOR_CLASS (st_table_parent_class)->pick (self, color);
-
-  children = st_container_get_children_list (ST_CONTAINER (self));
-  for (list = children; list; list = list->next)
-    {
-      if (CLUTTER_ACTOR_IS_VISIBLE (list->data))
-        clutter_actor_paint (CLUTTER_ACTOR (list->data));
-    }
-}
-
-static void
 st_table_show_all (ClutterActor *table)
 {
   GList *l, *children;
@@ -1011,8 +977,6 @@ st_table_class_init (StTableClass *klass)
   gobject_class->get_property = st_table_get_property;
   gobject_class->finalize = st_table_finalize;
 
-  actor_class->paint = st_table_paint;
-  actor_class->pick = st_table_pick;
   actor_class->allocate = st_table_allocate;
   actor_class->get_preferred_width = st_table_get_preferred_width;
   actor_class->get_preferred_height = st_table_get_preferred_height;

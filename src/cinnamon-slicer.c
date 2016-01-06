@@ -134,8 +134,7 @@ cinnamon_slicer_paint_child (CinnamonSlicer *self)
 static void
 cinnamon_slicer_paint (ClutterActor *self)
 {
-  /* StWidget paints CSS elements */
-  CLUTTER_ACTOR_CLASS (g_type_class_peek (st_widget_get_type ()))->paint (self);
+  st_widget_paint_background (ST_WIDGET (self));
 
   cinnamon_slicer_paint_child (CINNAMON_SLICER (self));
 }

@@ -179,33 +179,6 @@ st_scroll_bar_dispose (GObject *gobject)
 }
 
 static void
-st_scroll_bar_paint (ClutterActor *actor)
-{
-  StScrollBarPrivate *priv = ST_SCROLL_BAR (actor)->priv;
-
-  CLUTTER_ACTOR_CLASS (st_scroll_bar_parent_class)->paint (actor);
-
-  clutter_actor_paint (priv->trough);
-
-  if (priv->handle && CLUTTER_ACTOR_IS_VISIBLE (priv->handle))
-    clutter_actor_paint (priv->handle);
-}
-
-static void
-st_scroll_bar_pick (ClutterActor       *actor,
-                    const ClutterColor *pick_color)
-{
-  StScrollBarPrivate *priv = ST_SCROLL_BAR (actor)->priv;
-
-  CLUTTER_ACTOR_CLASS (st_scroll_bar_parent_class)->pick (actor, pick_color);
-
-  clutter_actor_paint (priv->trough);
-
-  if (priv->handle && priv->adjustment)
-    clutter_actor_paint (priv->handle);
-}
-
-static void
 st_scroll_bar_unmap (ClutterActor *actor)
 {
   CLUTTER_ACTOR_CLASS (st_scroll_bar_parent_class)->unmap (actor);
@@ -527,8 +500,6 @@ st_scroll_bar_class_init (StScrollBarClass *klass)
   actor_class->get_preferred_width  = st_scroll_bar_get_preferred_width;
   actor_class->get_preferred_height = st_scroll_bar_get_preferred_height;
   actor_class->allocate       = st_scroll_bar_allocate;
-  actor_class->paint          = st_scroll_bar_paint;
-  actor_class->pick           = st_scroll_bar_pick;
   actor_class->scroll_event   = st_scroll_bar_scroll_event;
   actor_class->unmap          = st_scroll_bar_unmap;
 

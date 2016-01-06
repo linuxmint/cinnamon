@@ -420,10 +420,10 @@ st_scroll_view_paint (ClutterActor *actor)
 {
   StScrollViewPrivate *priv = ST_SCROLL_VIEW (actor)->priv;
 
-  /* StBin will paint the child */
-  CLUTTER_ACTOR_CLASS (st_scroll_view_parent_class)->paint (actor);
+  st_widget_paint_background (ST_WIDGET (actor));
 
-  /* paint our custom children */
+  if (priv->child)
+    clutter_actor_paint (priv->child);
   if (priv->hscrollbar_visible)
     clutter_actor_paint (priv->hscroll);
   if (priv->vscrollbar_visible)
@@ -439,7 +439,8 @@ st_scroll_view_pick (ClutterActor       *actor,
   /* Chain up so we get a bounding box pained (if we are reactive) */
   CLUTTER_ACTOR_CLASS (st_scroll_view_parent_class)->pick (actor, color);
 
-  /* paint our custom children */
+  if (priv->child)
+    clutter_actor_paint (priv->child);
   if (priv->hscrollbar_visible)
     clutter_actor_paint (priv->hscroll);
   if (priv->vscrollbar_visible)
