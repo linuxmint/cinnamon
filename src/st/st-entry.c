@@ -1135,7 +1135,7 @@ _st_entry_set_icon (StEntry       *entry,
       g_signal_handlers_disconnect_by_func (*icon,
                                             _st_entry_icon_press_cb,
                                             entry);
-      clutter_actor_unparent (*icon);
+      clutter_actor_remove_child (CLUTTER_ACTOR (entry), *icon);
       *icon = NULL;
     }
 

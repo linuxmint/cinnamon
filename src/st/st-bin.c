@@ -456,25 +456,14 @@ st_bin_set_child (StBin        *bin,
     return;
 
   if (priv->child)
-    {
-      ClutterActor *old_child = priv->child;
+    clutter_actor_remove_child (CLUTTER_ACTOR (bin), priv->child);
 
-      g_object_ref (old_child);
-
-      priv->child = NULL;
-      clutter_actor_unparent (old_child);
-
-      g_signal_emit_by_name (bin, "actor-removed", old_child);
-
-      g_object_unref (old_child);
-    }
+  priv->child = NULL;
 
   if (child)
     {
       priv->child = child;
       clutter_actor_add_child (CLUTTER_ACTOR (bin), child);
-
-      g_signal_emit_by_name (bin, "actor-added", priv->child);
     }
 
   clutter_actor_queue_relayout (CLUTTER_ACTOR (bin));

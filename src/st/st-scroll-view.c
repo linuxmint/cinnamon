@@ -1079,7 +1079,7 @@ st_scroll_view_remove (ClutterContainer *container,
       else
         g_assert ("Unknown child removed from StScrollView");
 
-      clutter_actor_unparent (actor);
+      clutter_actor_remove_child (CLUTTER_ACTOR (container), actor);
     }
 }
 
