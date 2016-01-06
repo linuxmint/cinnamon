@@ -291,7 +291,7 @@ function start() {
 
     Gio.DesktopAppInfo.set_desktop_env('X-Cinnamon');
 
-    cinnamonDBusService = new CinnamonDBus.Cinnamon();
+    cinnamonDBusService = new CinnamonDBus.CinnamonDBus();
 
     // Ensure CinnamonWindowTracker and CinnamonAppUsage are initialized; this will
     // also initialize CinnamonAppSystem first.  CinnamonAppSystem
