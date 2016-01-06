@@ -59,7 +59,6 @@
  */
 
 #include "st-scroll-view.h"
-#include "st-marshal.h"
 #include "st-scroll-bar.h"
 #include "st-scrollable.h"
 #include "st-scroll-view-fade.h"

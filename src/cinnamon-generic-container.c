@@ -163,13 +163,13 @@ cinnamon_generic_container_pick (ClutterActor        *actor,
 }
 
 static GList *
-cinnamon_generic_container_get_focus_chain (StContainer *container)
+cinnamon_generic_container_get_focus_chain (StWidget *widget)
 {
-  CinnamonGenericContainer *self = CINNAMON_GENERIC_CONTAINER (container);
+  CinnamonGenericContainer *self = CINNAMON_GENERIC_CONTAINER (widget);
   GList *children, *focus_chain;
 
   focus_chain = NULL;
-  for (children = st_container_get_children_list (container); children; children = children->next)
+  for (children = st_container_get_children_list (ST_CONTAINER (widget)); children; children = children->next)
     {
       ClutterActor *child = children->data;
 
@@ -252,7 +252,7 @@ cinnamon_generic_container_class_init (CinnamonGenericContainerClass *klass)
 {
   GObjectClass *gobject_class = G_OBJECT_CLASS (klass);
   ClutterActorClass *actor_class = CLUTTER_ACTOR_CLASS (klass);
-  StContainerClass *container_class = ST_CONTAINER_CLASS (klass);
+  StWidgetClass *widget_class = ST_WIDGET_CLASS (klass);
 
   gobject_class->finalize = cinnamon_generic_container_finalize;
 
@@ -262,7 +262,7 @@ cinnamon_generic_container_class_init (CinnamonGenericContainerClass *klass)
   actor_class->paint = cinnamon_generic_container_paint;
   actor_class->pick = cinnamon_generic_container_pick;
 
-  container_class->get_focus_chain = cinnamon_generic_container_get_focus_chain;
+  widget_class->get_focus_chain = cinnamon_generic_container_get_focus_chain;
 
   /**
    * CinnamonGenericContainer::get-preferred-width:

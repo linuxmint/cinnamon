@@ -86,6 +86,8 @@ struct _StWidgetClass
                                     ClutterActor     *from,
                                     GtkDirectionType  direction);
   GType    (* get_accessible_type) (void);
+
+  GList *  (* get_focus_chain)     (StWidget         *widget);
 };
 
 GType st_widget_get_type (void) G_GNUC_CONST;
@@ -158,6 +160,8 @@ void                  st_widget_set_label_actor           (StWidget        *widg
 void                  st_widget_style_changed             (StWidget        *widget);
 StThemeNode *         st_widget_get_theme_node            (StWidget        *widget);
 StThemeNode *         st_widget_peek_theme_node           (StWidget        *widget);
+
+GList *               st_widget_get_focus_chain           (StWidget        *widget);
 
 /* debug methods */
 char  *st_describe_actor       (ClutterActor *actor);

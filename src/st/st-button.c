@@ -41,7 +41,6 @@
 #include "st-button.h"
 
 #include "st-enum-types.h"
-#include "st-marshal.h"
 #include "st-texture-cache.h"
 #include "st-private.h"
 
@@ -440,8 +439,7 @@ st_button_class_init (StButtonClass *klass)
                   G_TYPE_FROM_CLASS (klass),
                   G_SIGNAL_RUN_LAST,
                   G_STRUCT_OFFSET (StButtonClass, clicked),
-                  NULL, NULL,
-                  _st_marshal_VOID__INT,
+                  NULL, NULL, NULL,
                   G_TYPE_NONE, 1,
                   G_TYPE_INT);
 }

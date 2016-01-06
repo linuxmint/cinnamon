@@ -41,7 +41,6 @@
 #include <clutter/clutter.h>
 
 #include "st-enum-types.h"
-#include "st-marshal.h"
 #include "st-private.h"
 #include "st-table-child.h"
 #include "st-table-private.h"

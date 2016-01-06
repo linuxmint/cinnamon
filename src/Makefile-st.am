@@ -13,39 +13,16 @@ st_cflags =					\
 
 st_built_sources =				\
 	st-enum-types.h				\
-	st-enum-types.c				\
-	st-marshal.h				\
-	st-marshal.c
+	st-enum-types.c
 
 BUILT_SOURCES += $(st_built_sources)
 
 EXTRA_DIST +=					\
 	st/test-theme.css			\
-	st/st-marshal.list			\
 	st/st-enum-types.h.in			\
 	st/st-enum-types.c.in
 
-CLEANFILES += stamp-st-marshal.h stamp-st-enum-types.h
-
-st-marshal.h: stamp-st-marshal.h
-	@true
-stamp-st-marshal.h: Makefile st/st-marshal.list
-	$(AM_V_GEN) $(GLIB_GENMARSHAL)					\
-		--prefix=_st_marshal					\
-		--header						\
-	$(srcdir)/st/st-marshal.list > $@.tmp &&			\
-	(cmp -s $@.tmp st-marshal.h || cp -f $@.tmp st-marshal.h) &&	\
-	rm -f $@.tmp &&							\
-	echo timestamp > $(@F)
-
-st-marshal.c: Makefile st/st-marshal.list
-	$(AM_V_GEN) (echo "#include \"st-marshal.h\"" ;	\
-	 $(GLIB_GENMARSHAL)				\
-		--prefix=_st_marshal			\
-		--body					\
-	 $(srcdir)/st/st-marshal.list ) > $@.tmp &&	\
-	cp -f $@.tmp st-marshal.c &&			\
-	rm -f $@.tmp
+CLEANFILES += stamp-st-enum-types.h
 
 st-enum-types.h: stamp-st-enum-types.h Makefile
 	@true
@@ -86,7 +63,6 @@ st_source_h =					\
 	st/st-icon-colors.h			\
 	st/st-im-text.h				\
 	st/st-label.h				\
-	st/st-overflow-box.h			\
 	st/st-polygon.h             \
 	st/st-private.h				\
 	st/st-scrollable.h			\
@@ -145,7 +121,6 @@ st_source_c =					\
 	st/st-icon-colors.c			\
 	st/st-im-text.c				\
 	st/st-label.c				\
-	st/st-overflow-box.c			\
 	st/st-polygon.c             \
 	st/st-private.c				\
 	st/st-scrollable.c			\

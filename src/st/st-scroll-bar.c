@@ -37,7 +37,6 @@
 
 #include "st-scroll-bar.h"
 #include "st-bin.h"
-#include "st-marshal.h"
 #include "st-enum-types.h"
 #include "st-private.h"
 #include "st-button.h"
@@ -690,8 +689,7 @@ st_scroll_bar_class_init (StScrollBarClass *klass)
                   G_TYPE_FROM_CLASS (klass),
                   G_SIGNAL_RUN_LAST,
                   G_STRUCT_OFFSET (StScrollBarClass, scroll_start),
-                  NULL, NULL,
-                  g_cclosure_marshal_VOID__VOID,
+                  NULL, NULL, NULL,
                   G_TYPE_NONE, 0);
 
   signals[SCROLL_STOP] =
@@ -699,8 +697,7 @@ st_scroll_bar_class_init (StScrollBarClass *klass)
                   G_TYPE_FROM_CLASS (klass),
                   G_SIGNAL_RUN_LAST,
                   G_STRUCT_OFFSET (StScrollBarClass, scroll_stop),
-                  NULL, NULL,
-                  g_cclosure_marshal_VOID__VOID,
+                  NULL, NULL, NULL,
                   G_TYPE_NONE, 0);
 }
 

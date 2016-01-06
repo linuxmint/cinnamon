@@ -47,15 +47,11 @@ struct _StContainer {
 
 struct _StContainerClass {
   StWidgetClass parent_class;
-
-  GList * (*get_focus_chain) (StContainer *container);
 };
 
 GType   st_container_get_type             (void) G_GNUC_CONST;
 
 void    st_container_destroy_children     (StContainer *container);
-
-GList * st_container_get_focus_chain      (StContainer *container);
 
 /* Only to be used by subclasses of StContainer */
 void    st_container_move_child           (StContainer  *container,
