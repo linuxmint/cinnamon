@@ -76,6 +76,12 @@ struct _StWidgetPrivate
 
   ClutterActor *label_actor;
   gchar *accessible_name;
+
+  /* Even though Clutter has first_child/last_child properties,
+   * we need to keep track of the old first/last children so
+   * that we can remove the pseudo classes on them. */
+  StWidget *prev_last_child;
+  StWidget *prev_first_child;
 };
 
 /**
@@ -300,6 +306,9 @@ st_widget_dispose (GObject *gobject)
       g_object_unref (priv->label_actor);
       priv->label_actor = NULL;
     }
+
+  g_clear_object (&priv->prev_first_child);
+  g_clear_object (&priv->prev_last_child);
 
   G_OBJECT_CLASS (st_widget_parent_class)->dispose (gobject);
 }
@@ -1443,6 +1452,56 @@ st_widget_name_notify (StWidget   *widget,
 }
 
 static void
+st_widget_first_child_notify (StWidget   *widget,
+                              GParamSpec *pspec,
+                              gpointer    data)
+{
+  ClutterActor *first_child;
+
+  if (widget->priv->prev_first_child != NULL)
+    {
+      st_widget_remove_style_pseudo_class (widget->priv->prev_first_child, "first-child");
+      g_clear_object (&widget->priv->prev_first_child);
+    }
+
+  first_child = clutter_actor_get_first_child (CLUTTER_ACTOR (widget));
+
+  if (first_child == NULL)
+    return;
+
+  if (ST_IS_WIDGET (first_child))
+    {
+      st_widget_add_style_pseudo_class (ST_WIDGET (first_child), "first-child");
+      widget->priv->prev_first_child = g_object_ref (ST_WIDGET (first_child));
+    }
+}
+
+static void
+st_widget_last_child_notify (StWidget   *widget,
+                             GParamSpec *pspec,
+                             gpointer    data)
+{
+  ClutterActor *last_child;
+
+  if (widget->priv->prev_last_child != NULL)
+    {
+      st_widget_remove_style_pseudo_class (widget->priv->prev_last_child, "last-child");
+      g_clear_object (&widget->priv->prev_last_child);
+    }
+
+  last_child = clutter_actor_get_last_child (CLUTTER_ACTOR (widget));
+
+  if (last_child == NULL)
+    return;
+
+  if (ST_IS_WIDGET (last_child))
+    {
+      st_widget_add_style_pseudo_class (ST_WIDGET (last_child), "last-child");
+      widget->priv->prev_last_child = g_object_ref (ST_WIDGET (last_child));
+    }
+}
+
+static void
 st_widget_init (StWidget *actor)
 {
   StWidgetPrivate *priv;
@@ -1454,6 +1513,9 @@ st_widget_init (StWidget *actor)
 
   /* connect style changed */
   g_signal_connect (actor, "notify::name", G_CALLBACK (st_widget_name_notify), NULL);
+
+  g_signal_connect (actor, "notify::first-child", G_CALLBACK (st_widget_first_child_notify), NULL);
+  g_signal_connect (actor, "notify::last-child", G_CALLBACK (st_widget_last_child_notify), NULL);
 }
 
 static void
