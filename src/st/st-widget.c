@@ -335,17 +335,9 @@ st_widget_get_preferred_width (ClutterActor *self,
 {
   StThemeNode *theme_node = st_widget_get_theme_node (ST_WIDGET (self));
 
-  /* Most subclasses will override this and not chain down. However,
-   * if they do not, then we need to override ClutterActor's default
-   * behavior (request 0x0) to take CSS-specified minimums into
-   * account (which st_theme_node_adjust_preferred_width() will do.)
-   */
+  st_theme_node_adjust_for_width (theme_node, &for_height);
 
-  if (min_width_p)
-    *min_width_p = 0;
-
-  if (natural_width_p)
-    *natural_width_p = 0;
+  CLUTTER_ACTOR_CLASS (st_widget_parent_class)->get_preferred_width (self, for_height, min_width_p, natural_width_p);
 
   st_theme_node_adjust_preferred_width (theme_node, min_width_p, natural_width_p);
 }
@@ -358,13 +350,9 @@ st_widget_get_preferred_height (ClutterActor *self,
 {
   StThemeNode *theme_node = st_widget_get_theme_node (ST_WIDGET (self));
 
-  /* See st_widget_get_preferred_width() */
+  st_theme_node_adjust_for_width (theme_node, &for_width);
 
-  if (min_height_p)
-    *min_height_p = 0;
-
-  if (natural_height_p)
-    *natural_height_p = 0;
+  CLUTTER_ACTOR_CLASS (st_widget_parent_class)->get_preferred_height (self, for_width, min_height_p, natural_height_p);
 
   st_theme_node_adjust_preferred_height (theme_node, min_height_p, natural_height_p);
 }
