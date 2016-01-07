@@ -42,7 +42,6 @@ typedef struct _StContainerPrivate StContainerPrivate;
 
 struct _StContainer {
   StWidget parent;
-  StContainerPrivate *priv;
 };
 
 struct _StContainerClass {
