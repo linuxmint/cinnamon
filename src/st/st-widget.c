@@ -2934,3 +2934,19 @@ st_widget_get_focus_chain (StWidget *widget)
 {
   return ST_WIDGET_GET_CLASS (widget)->get_focus_chain (widget);
 }
+
+/******************************************************************************/
+/*************************** COMPATIBILITY METHODS ****************************/
+/******************************************************************************/
+
+/**
+ * st_widget_destroy_children:
+ * @widget: An #StWidget
+ *
+ * Destroys all child actors from @widget.
+ */
+void
+st_widget_destroy_children (StWidget *widget)
+{
+  clutter_actor_destroy_all_children (CLUTTER_ACTOR (widget));
+}

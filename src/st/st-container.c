@@ -29,17 +29,6 @@
 #include "st-container.h"
 
 G_DEFINE_ABSTRACT_TYPE (StContainer, st_container, ST_TYPE_WIDGET);
-/**
- * st_container_destroy_children:
- * @container: An #StContainer
- *
- * Destroys all child actors from @container.
- */
-void
-st_container_destroy_children (StContainer *container)
-{
-  clutter_actor_destroy_all_children (CLUTTER_ACTOR (container));
-}
 
 void
 st_container_move_child (StContainer  *container,
