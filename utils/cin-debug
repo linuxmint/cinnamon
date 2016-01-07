@@ -1,0 +1,42 @@
+#!/usr/bin/env python2
+
+import sys
+import subprocess
+import datetime
+import os
+
+home = os.path.expanduser("~")
+
+if len(sys.argv) != 2:
+    print """
+    Run as:
+
+        cin-debug <process-name> &
+
+    """
+    quit()
+
+pname = sys.argv[1]
+pid = subprocess.check_output(["pidof", pname])
+logfile = "%s/%s-%s.log" % (home, pname, datetime.datetime.now().strftime("%Y-%m-%d-%l:%M:%S"))
+
+
+gdb_script = \
+"""
+set logging file %s
+set logging on
+set pagination off
+attach %s
+
+define hook-stop
+    thread apply all bt
+    quit
+end
+
+continue
+""" % (logfile, pid)
+
+os.system("echo '%s' | sudo gdb" % gdb_script)
+
+quit()
+
