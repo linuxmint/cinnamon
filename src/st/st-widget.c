@@ -770,7 +770,19 @@ st_widget_get_paint_volume (ClutterActor *self, ClutterPaintVolume *volume)
 static GList *
 st_widget_real_get_focus_chain (StWidget *widget)
 {
-  return clutter_actor_get_children (CLUTTER_ACTOR (widget));
+  GList *children;
+  GList *focus_chain = NULL;
+
+  for (children = clutter_actor_get_children (CLUTTER_ACTOR (widget));
+       children;
+       children = children->next)
+    {
+      ClutterActor *child = children->data;
+
+      if (CLUTTER_ACTOR_IS_VISIBLE (child))
+        focus_chain = g_list_prepend (focus_chain, child);
+    }
+  return g_list_reverse (focus_chain);
 }
 
 static void
