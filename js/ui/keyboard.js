@@ -175,6 +175,7 @@ Keyboard.prototype = {
         this._impl.export(Gio.DBus.session, '/org/gnome/Caribou/Keyboard');
 
         this.actor = null;
+        this.monitorIndex = 0;
         this._focusInExtendedKeys = false;
 
         this._timestamp = global.display.get_current_time_roundtrip();
@@ -351,9 +352,25 @@ Keyboard.prototype = {
         if (!this._enableKeyboard)
             return;
 
-        let monitor = Main.layoutManager.bottomMonitor;
-        let maxHeight = monitor.height / 3;
-        this.actor.width = monitor.width;
+        let focus = Main.layoutManager.focusMonitor;
+        let index = Main.layoutManager.focusIndex;
+
+        let panel = null;
+
+        if (Main.panelManager)
+            panel = Main.panelManager.getPanel(index, true);
+
+        if (panel)
+            this._panelPadding = panel.actor.height;
+        else
+            this._panelPadding = 0;
+
+        Main.layoutManager.keyboardBox.set_size(focus.width, -1);
+        this.actor.width = focus.width;
+
+        let maxHeight = focus.height / 3;
+
+        this.monitorIndex = index;
 
         let layout = this._current_page;
         let verticalSpacing = layout.get_theme_node().get_length('spacing');
@@ -368,7 +385,10 @@ Keyboard.prototype = {
         let keyHeight = Math.floor((maxHeight - allVerticalSpacing - 2 * padding) / this._numOfVertKeys);
 
         let keySize = Math.min(keyWidth, keyHeight);
-        this.actor.height = keySize * this._numOfVertKeys + allVerticalSpacing + 2 * padding;
+        this.actor.height = (keySize * this._numOfVertKeys) + allVerticalSpacing + (2 * padding) + this._panelPadding;
+
+        Main.layoutManager.keyboardBox.set_position(focus.x,
+                                                    focus.y + focus.height - this.actor.height);
 
         let rows = this._current_page.get_children();
         for (let i = 0; i < rows.length; ++i) {
@@ -417,13 +437,29 @@ Keyboard.prototype = {
         this._current_page.show();
     },
 
+    toggle: function() {
+        if (!this._a11yApplicationsSettings.get_boolean(SHOW_KEYBOARD)) {
+            /* This will show the keyboard also, so we don't need to do a separate call */
+            this._a11yApplicationsSettings.set_boolean (SHOW_KEYBOARD, true);
+        } else {
+            if (Main.layoutManager.keyboardBox.visible)
+                this.hide();
+            else
+                this.show();
+        }
+    },
+
     show: function () {
-        this._redraw();
+        let needs_redraw = this.monitorIndex != Main.layoutManager.focusIndex;
+
+        if (!Main.layoutManager._keyboardVisible || needs_redraw)
+            this._redraw();
+
         Main.layoutManager.showKeyboard();
     },
 
     hide: function () {
-        Main.layoutManager.hideKeyboard();
+        Main.layoutManager.queueHideKeyboard();
     },
 
     _moveTemporarily: function () {
@@ -438,6 +474,12 @@ Keyboard.prototype = {
     _setLocation: function (x, y) {
         if (y >= 2 * this.actor.height)
             this._moveTemporarily();
+    },
+
+    shouldTakeEvent: function(event) {
+        let actor = event.get_source();
+        return Main.layoutManager.keyboardBox.contains(actor) ||
+               actor._extended_keys || actor.extended_key;
     },
 
     // D-Bus methods

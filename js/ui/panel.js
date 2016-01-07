@@ -359,12 +359,12 @@ PanelManager.prototype = {
      * setPanelsOpacity:
      * @opacity (int): opacity of panels
      *
-     * Sets the opacity of all hideable panels to @opacity
+     * Sets the opacity of all panels to @opacity
      */
     setPanelsOpacity: function(opacity) {
         for (let i in this.panels) {
-            if (this.panels[i] && this.panels[i].isHideable())
-                this.panels[i].opacity = opacity;
+            if (this.panels[i])
+                this.panels[i].actor.opacity = opacity;
         }
     },
 
@@ -1523,7 +1523,7 @@ Panel.prototype = {
      * Returns: whether the panel can be hidden (auto-hide or intellihide)
      */
     isHideable: function() {
-        return this._autohideSettings != "true";
+        return this._autohideSettings != "false";
     },
     
     /**
@@ -1885,6 +1885,11 @@ Panel.prototype = {
             if (this._mouseEntered || !global.display.focus_window ||
                 global.display.focus_window.get_window_type() == Meta.WindowType.DESKTOP) {
                 this._shouldShow = true;
+                break;
+            }
+
+            if (global.display.focus_window.get_monitor() != this.monitorIndex) {
+                this._shouldShow = false;
                 break;
             }
 
