@@ -1007,8 +1007,25 @@ st_box_layout_get_paint_volume (ClutterActor       *actor,
 {
   StBoxLayout *self = ST_BOX_LAYOUT (actor);
   gdouble x, y;
+  StBoxLayoutPrivate *priv = self->priv;
+  StThemeNode *theme_node = st_widget_get_theme_node (ST_WIDGET (actor));
+  ClutterActorBox allocation_box;
+  ClutterActorBox content_box;
+  ClutterVertex origin;
 
-  if (!CLUTTER_ACTOR_CLASS (st_box_layout_parent_class)->get_paint_volume (actor, volume))
+  /* When have an adjustment we are clipped to the content box, so base
+   * our paint volume on that. */
+  if (priv->hadjustment || priv->vadjustment)
+    {
+      clutter_actor_get_allocation_box (actor, &allocation_box);
+      st_theme_node_get_content_box (theme_node, &allocation_box, &content_box);
+      origin.x = content_box.x1 - allocation_box.x1;
+      origin.y = content_box.y1 - allocation_box.y2;
+      origin.z = 0.f;
+      clutter_paint_volume_set_width (volume, content_box.x2 - content_box.x1);
+      clutter_paint_volume_set_height (volume, content_box.y2 - content_box.y1);
+    }
+  else if (!CLUTTER_ACTOR_CLASS (st_box_layout_parent_class)->get_paint_volume (actor, volume))
     return FALSE;
 
   /* When scrolled, st_box_layout_apply_transform() includes the scroll offset
@@ -1019,8 +1036,6 @@ st_box_layout_get_paint_volume (ClutterActor       *actor,
   get_border_paint_offsets (self, &x, &y);
   if (x != 0 || y != 0)
     {
-      ClutterVertex origin;
-
       clutter_paint_volume_get_origin (volume, &origin);
       origin.x += x;
       origin.y += y;

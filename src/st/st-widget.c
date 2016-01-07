@@ -764,6 +764,26 @@ st_widget_get_paint_volume (ClutterActor *self, ClutterPaintVolume *volume)
   clutter_paint_volume_set_width (volume, paint_box.x2 - paint_box.x1);
   clutter_paint_volume_set_height (volume, paint_box.y2 - paint_box.y1);
 
+  if (!clutter_actor_get_clip_to_allocation (self))
+    {
+      ClutterActor *child;
+      /* Based on ClutterGroup/ClutterBox; include the children's
+       * paint volumes, since they may paint outside our allocation.
+       */
+      for (child = clutter_actor_get_first_child (self);
+           child != NULL;
+           child = clutter_actor_get_next_sibling (child))
+        {
+          const ClutterPaintVolume *child_volume;
+
+          child_volume = clutter_actor_get_transformed_paint_volume (child, self);
+          if (!child_volume)
+            return FALSE;
+
+          clutter_paint_volume_union (volume, child_volume);
+        }
+    }
+
   return TRUE;
 }
 
