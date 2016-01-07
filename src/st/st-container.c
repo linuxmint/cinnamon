@@ -30,21 +30,6 @@
 
 G_DEFINE_ABSTRACT_TYPE (StContainer, st_container, ST_TYPE_WIDGET);
 
-/**
- * st_container_get_children_list:
- * @container: An #StContainer
- *
- * Get the internal list of @container's child actors. This function
- * should only be used by subclasses of StContainer
- *
- * Returns: (element-type Clutter.Actor) (transfer none): list of @container's child actors
- */
-GList *
-st_container_get_children_list (StContainer *container)
-{
-  return clutter_actor_get_children (CLUTTER_ACTOR (container));
-}
-
 static gboolean
 st_container_get_paint_volume (ClutterActor *actor,
                                ClutterPaintVolume *volume)

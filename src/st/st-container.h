@@ -50,9 +50,6 @@ struct _StContainerClass {
 
 GType   st_container_get_type             (void) G_GNUC_CONST;
 
-/* Only to be used by subclasses of StContainer */
-GList * st_container_get_children_list    (StContainer *container);
-
 G_END_DECLS
 
 #endif /* __ST_CONTAINER_H__ */

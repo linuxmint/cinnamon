@@ -125,15 +125,14 @@ static void
 cinnamon_generic_container_paint (ClutterActor  *actor)
 {
   CinnamonGenericContainer *self = (CinnamonGenericContainer*) actor;
-  GList *iter, *children;
+  ClutterActor *child;
 
   st_widget_paint_background (ST_WIDGET (actor));
 
-  children = st_container_get_children_list (ST_CONTAINER (actor));
-  for (iter = children; iter; iter = iter->next)
+  for (child = clutter_actor_get_first_child (actor);
+       child != NULL;
+       child = clutter_actor_get_next_sibling (child))
     {
-      ClutterActor *child = iter->data;
-
       if (g_hash_table_lookup (self->priv->skip_paint, child))
         continue;
 
@@ -146,15 +145,14 @@ cinnamon_generic_container_pick (ClutterActor        *actor,
                               const ClutterColor  *color)
 {
   CinnamonGenericContainer *self = (CinnamonGenericContainer*) actor;
-  GList *iter, *children;
+  ClutterActor *child;
 
   CLUTTER_ACTOR_CLASS (cinnamon_generic_container_parent_class)->pick (actor, color);
 
-  children = st_container_get_children_list (ST_CONTAINER (actor));
-  for (iter = children; iter; iter = iter->next)
+  for (child = clutter_actor_get_first_child (actor);
+       child != NULL;
+       child = clutter_actor_get_next_sibling (child))
     {
-      ClutterActor *child = iter->data;
-
       if (g_hash_table_lookup (self->priv->skip_paint, child))
         continue;
 
@@ -166,13 +164,14 @@ static GList *
 cinnamon_generic_container_get_focus_chain (StWidget *widget)
 {
   CinnamonGenericContainer *self = CINNAMON_GENERIC_CONTAINER (widget);
-  GList *children, *focus_chain;
+  ClutterActor *child;
+  GList *focus_chain;
 
   focus_chain = NULL;
-  for (children = st_container_get_children_list (ST_CONTAINER (widget)); children; children = children->next)
+  for (child = clutter_actor_get_first_child (CLUTTER_ACTOR (self));
+       child != NULL;
+       child = clutter_actor_get_next_sibling (child))
     {
-      ClutterActor *child = children->data;
-
       if (CLUTTER_ACTOR_IS_VISIBLE (child) &&
           !cinnamon_generic_container_get_skip_paint (self, child))
         focus_chain = g_list_prepend (focus_chain, child);

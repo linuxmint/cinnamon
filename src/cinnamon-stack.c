@@ -27,18 +27,18 @@ cinnamon_stack_allocate (ClutterActor           *self,
 {
   StThemeNode *theme_node = st_widget_get_theme_node (ST_WIDGET (self));
   ClutterActorBox content_box;
-  GList *children, *iter;
+  ClutterActor *child;
 
   clutter_actor_set_allocation (self, box, flags);
 
   st_theme_node_get_content_box (theme_node, box, &content_box);
 
-  children = st_container_get_children_list (ST_CONTAINER (self));
-  for (iter = children; iter; iter = iter->next)
+  for (child = clutter_actor_get_first_child (self);
+       child != NULL;
+       child = clutter_actor_get_next_sibling (child))
     {
-      ClutterActor *actor = CLUTTER_ACTOR (iter->data);
       ClutterActorBox child_box = content_box;
-      clutter_actor_allocate (actor, &child_box, flags);
+      clutter_actor_allocate (child, &child_box, flags);
     }
 }
 
@@ -48,20 +48,17 @@ cinnamon_stack_get_preferred_height (ClutterActor *actor,
                                   gfloat *min_height_p,
                                   gfloat *natural_height_p)
 {
-  CinnamonStack *stack = CINNAMON_STACK (actor);
   StThemeNode *theme_node = st_widget_get_theme_node (ST_WIDGET (actor));
   gboolean first = TRUE;
   float min = 0, natural = 0;
-  GList *children;
-  GList *iter;
+  ClutterActor *child;
 
   st_theme_node_adjust_for_width (theme_node, &for_width);
 
-  children = st_container_get_children_list (ST_CONTAINER (stack));
-
-  for (iter = children; iter; iter = iter->next)
+  for (child = clutter_actor_get_first_child (actor);
+       child != NULL;
+       child = clutter_actor_get_next_sibling (child))
     {
-      ClutterActor *child = iter->data;
       float child_min, child_natural;
 
       clutter_actor_get_preferred_height (child,
@@ -100,20 +97,15 @@ cinnamon_stack_get_preferred_width (ClutterActor *actor,
                                  gfloat *min_width_p,
                                  gfloat *natural_width_p)
 {
-  CinnamonStack *stack = CINNAMON_STACK (actor);
   StThemeNode *theme_node = st_widget_get_theme_node (ST_WIDGET (actor));
   gboolean first = TRUE;
   float min = 0, natural = 0;
-  GList *iter;
-  GList *children;
+  ClutterActor *child;
 
-  st_theme_node_adjust_for_height (theme_node, &for_height);
-
-  children = st_container_get_children_list (ST_CONTAINER (stack));
-
-  for (iter = children; iter; iter = iter->next)
+  for (child = clutter_actor_get_first_child (actor);
+       child != NULL;
+       child = clutter_actor_get_next_sibling (child))
     {
-      ClutterActor *child = iter->data;
       float child_min, child_natural;
 
       clutter_actor_get_preferred_width (child,
@@ -152,7 +144,6 @@ cinnamon_stack_navigate_focus (StWidget         *widget,
                             GtkDirectionType  direction)
 {
   ClutterActor *top_actor;
-  GList *children;
 
   /* If the stack is itself focusable, then focus into or out of
    * it, as appropriate.
@@ -166,12 +157,7 @@ cinnamon_stack_navigate_focus (StWidget         *widget,
       return TRUE;
     }
 
-  /* Otherwise, navigate into its top-most child only */
-  children = st_container_get_children_list (ST_CONTAINER (widget));
-  if (!children)
-    return FALSE;
-
-  top_actor = g_list_last (children)->data;
+  top_actor = clutter_actor_get_last_child (CLUTTER_ACTOR (widget));
   if (ST_IS_WIDGET (top_actor))
     return st_widget_navigate_focus (ST_WIDGET (top_actor), from, direction, FALSE);
   else

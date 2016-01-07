@@ -61,7 +61,7 @@ st_group_get_preferred_width (ClutterActor *actor,
   StThemeNode *node = st_widget_get_theme_node (ST_WIDGET (actor));
   gdouble min_width, natural_width;
   gint css_width, css_min_width, css_max_width;
-  GList *l, *children;
+  ClutterActor *child;
 
   css_width = st_theme_node_get_width (node);
   css_min_width = st_theme_node_get_min_width (node);
@@ -73,11 +73,10 @@ st_group_get_preferred_width (ClutterActor *actor,
   min_width = 0;
   natural_width = 0;
 
-  children = st_container_get_children_list (ST_CONTAINER (actor));
-
-  for (l = children; l != NULL; l = l->next)
+  for (child = clutter_actor_get_first_child (actor);
+       child != NULL;
+       child = clutter_actor_get_next_sibling (child))
     {
-      ClutterActor *child = l->data;
       gfloat child_x, child_min, child_nat;
 
       child_x = clutter_actor_get_x (child);
@@ -122,7 +121,7 @@ st_group_get_preferred_height (ClutterActor *actor,
   StThemeNode *node = st_widget_get_theme_node (ST_WIDGET (actor));
   gdouble min_height, natural_height;
   gint css_height, css_min_height, css_max_height;
-  GList *l, *children;
+  ClutterActor *child;
 
   css_height = st_theme_node_get_height (node);
   css_min_height = st_theme_node_get_min_height (node);
@@ -134,11 +133,10 @@ st_group_get_preferred_height (ClutterActor *actor,
   min_height = 0;
   natural_height = 0;
 
-  children = st_container_get_children_list (ST_CONTAINER (actor));
-
-  for (l = children; l != NULL; l = l->next)
+  for (child = clutter_actor_get_first_child (actor);
+       child != NULL;
+       child = clutter_actor_get_next_sibling (child))
     {
-      ClutterActor *child = l->data;
       gfloat child_y, child_min, child_nat;
 
       child_y = clutter_actor_get_y (child);
@@ -179,16 +177,14 @@ st_group_allocate (ClutterActor           *actor,
                    const ClutterActorBox  *box,
                    ClutterAllocationFlags  flags)
 {
-  GList *l, *children;
+  ClutterActor *child;
 
   CLUTTER_ACTOR_CLASS (st_group_parent_class)->allocate (actor, box, flags);
 
-  children = st_container_get_children_list (ST_CONTAINER (actor));
-  for (l = children; l != NULL; l = l->next)
-    {
-      ClutterActor *child = l->data;
-      clutter_actor_allocate_preferred_size (child, flags);
-    }
+  for (child = clutter_actor_get_first_child (actor);
+       child != NULL;
+       child = clutter_actor_get_next_sibling (child))
+    clutter_actor_allocate_preferred_size (child, flags);
 }
 
 static void
