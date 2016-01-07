@@ -30,24 +30,6 @@
 
 G_DEFINE_ABSTRACT_TYPE (StContainer, st_container, ST_TYPE_WIDGET);
 
-void
-st_container_move_child (StContainer  *container,
-                         ClutterActor *actor,
-                         int           pos)
-{
-  clutter_actor_set_child_at_index (CLUTTER_ACTOR (container),
-                                    actor, pos);
-}
-
-void
-st_container_move_before (StContainer  *container,
-                          ClutterActor *actor,
-                          ClutterActor *sibling)
-{
-  clutter_actor_set_child_below_sibling (CLUTTER_ACTOR (container),
-                                         actor, sibling);
-}
-
 /**
  * st_container_get_children_list:
  * @container: An #StContainer

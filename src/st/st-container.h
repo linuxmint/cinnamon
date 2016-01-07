@@ -51,12 +51,6 @@ struct _StContainerClass {
 GType   st_container_get_type             (void) G_GNUC_CONST;
 
 /* Only to be used by subclasses of StContainer */
-void    st_container_move_child           (StContainer  *container,
-                                           ClutterActor *actor,
-                                           int           pos);
-void    st_container_move_before          (StContainer  *container,
-                                           ClutterActor *actor,
-                                           ClutterActor *sibling);
 GList * st_container_get_children_list    (StContainer *container);
 
 G_END_DECLS
