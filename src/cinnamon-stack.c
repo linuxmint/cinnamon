@@ -18,12 +18,12 @@
 
 G_DEFINE_TYPE (CinnamonStack,
                cinnamon_stack,
-               ST_TYPE_CONTAINER);
+               ST_TYPE_WIDGET);
 
 static void
 cinnamon_stack_allocate (ClutterActor           *self,
-                      const ClutterActorBox  *box,
-                      ClutterAllocationFlags  flags)
+                         const ClutterActorBox  *box,
+                         ClutterAllocationFlags  flags)
 {
   StThemeNode *theme_node = st_widget_get_theme_node (ST_WIDGET (self));
   ClutterActorBox content_box;
@@ -44,9 +44,9 @@ cinnamon_stack_allocate (ClutterActor           *self,
 
 static void
 cinnamon_stack_get_preferred_height (ClutterActor *actor,
-                                  gfloat for_width,
-                                  gfloat *min_height_p,
-                                  gfloat *natural_height_p)
+                                     gfloat for_width,
+                                     gfloat *min_height_p,
+                                     gfloat *natural_height_p)
 {
   StThemeNode *theme_node = st_widget_get_theme_node (ST_WIDGET (actor));
   gboolean first = TRUE;

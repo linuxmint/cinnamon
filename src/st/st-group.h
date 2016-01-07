@@ -25,7 +25,7 @@
 #define __ST_GROUP_H__
 
 #include <st/st-types.h>
-#include <st/st-container.h>
+#include <st/st-widget.h>
 
 G_BEGIN_DECLS
 
@@ -48,7 +48,7 @@ typedef struct _StGroupClass            StGroupClass;
 struct _StGroup
 {
   /*< private >*/
-  StContainer parent_instance;
+  StWidget parent_instance;
 };
 
 /**
@@ -59,7 +59,7 @@ struct _StGroup
 struct _StGroupClass
 {
   /*< private >*/
-  StContainerClass parent_class;
+  StWidgetClass parent_class;
 };
 
 GType         st_group_get_type        (void) G_GNUC_CONST;

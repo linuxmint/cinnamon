@@ -59,7 +59,7 @@
 static void st_box_container_iface_init (ClutterContainerIface *iface);
 static void st_box_scrollable_interface_init (StScrollableInterface *iface);
 
-G_DEFINE_TYPE_WITH_CODE (StBoxLayout, st_box_layout, ST_TYPE_CONTAINER,
+G_DEFINE_TYPE_WITH_CODE (StBoxLayout, st_box_layout, ST_TYPE_WIDGET,
                          G_IMPLEMENT_INTERFACE (CLUTTER_TYPE_CONTAINER,
                                                 st_box_container_iface_init)
                          G_IMPLEMENT_INTERFACE (ST_TYPE_SCROLLABLE,

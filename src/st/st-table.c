@@ -85,7 +85,7 @@ struct _StTablePrivate
 
 static void st_table_container_iface_init (ClutterContainerIface *iface);
 
-G_DEFINE_TYPE_WITH_CODE (StTable, st_table, ST_TYPE_CONTAINER,
+G_DEFINE_TYPE_WITH_CODE (StTable, st_table, ST_TYPE_WIDGET,
                          G_IMPLEMENT_INTERFACE (CLUTTER_TYPE_CONTAINER,
                                                 st_table_container_iface_init));
 

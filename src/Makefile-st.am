@@ -54,7 +54,6 @@ st_source_h =					\
 	st/st-button.h				\
 	st/st-clipboard.h			\
     st/st-cogl-wrapper.h      \
-	st/st-container.h			\
 	st/st-drawing-area.h			\
 	st/st-entry.h				\
 	st/st-focus-manager.h			\
@@ -112,7 +111,6 @@ st_source_c =					\
 	st/st-button.c				\
 	st/st-clipboard.c			\
     st/st-cogl-wrapper.c      \
-	st/st-container.c			\
 	st/st-drawing-area.c			\
 	st/st-entry.c				\
 	st/st-focus-manager.c			\
