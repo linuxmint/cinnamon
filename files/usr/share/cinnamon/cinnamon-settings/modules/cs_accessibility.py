@@ -14,7 +14,7 @@ KEY_WM_THEME             = "theme"
 
 class Module:
     name = "universal-access"
-    comment = _("Miscellaneous Cinnamon preferences")
+    comment = _("Configure accessibility features")
     category = "prefs"
 
     def __init__(self, content_box):
