@@ -947,9 +947,10 @@ class GSettingsComboBox(SettingsWidget):
         self.pack_end(self.content_widget, False, False, 0)
         self.content_widget.show_all()
 
+        self.on_my_setting_changed()
+
         self.content_widget.connect('changed', self.on_my_value_changed)
         self.settings.connect("changed::" + self.key, self.on_my_setting_changed)
-        self.on_my_setting_changed()
 
         if size_group:
             self.add_to_size_group(size_group)
