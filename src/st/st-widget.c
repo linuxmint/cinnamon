@@ -2982,3 +2982,21 @@ st_widget_destroy_children (StWidget *widget)
 {
   clutter_actor_destroy_all_children (CLUTTER_ACTOR (widget));
 }
+
+void
+st_widget_move_child (StWidget     *widget,
+                      ClutterActor *actor,
+                      int           pos)
+{
+  clutter_actor_set_child_at_index (CLUTTER_ACTOR (widget),
+                                    actor, pos);
+}
+
+void
+st_widget_move_before (StWidget     *widget,
+                       ClutterActor *actor,
+                       ClutterActor *sibling)
+{
+  clutter_actor_set_child_below_sibling (CLUTTER_ACTOR (widget),
+                                         actor, sibling);
+}
