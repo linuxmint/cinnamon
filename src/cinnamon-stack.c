@@ -102,6 +102,8 @@ cinnamon_stack_get_preferred_width (ClutterActor *actor,
   float min = 0, natural = 0;
   ClutterActor *child;
 
+  st_theme_node_adjust_for_height (theme_node, &for_height);
+
   for (child = clutter_actor_get_first_child (actor);
        child != NULL;
        child = clutter_actor_get_next_sibling (child))

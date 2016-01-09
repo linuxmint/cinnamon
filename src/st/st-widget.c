@@ -322,6 +322,7 @@ st_widget_finalize (GObject *gobject)
   g_free (priv->pseudo_class);
   g_object_unref (priv->local_state_set);
   g_free (priv->accessible_name);
+  g_free (priv->inline_style);
 
   G_OBJECT_CLASS (st_widget_parent_class)->finalize (gobject);
 }
@@ -790,18 +791,17 @@ st_widget_get_paint_volume (ClutterActor *self, ClutterPaintVolume *volume)
 static GList *
 st_widget_real_get_focus_chain (StWidget *widget)
 {
-  GList *children;
+  ClutterActor *child;
   GList *focus_chain = NULL;
 
-  for (children = clutter_actor_get_children (CLUTTER_ACTOR (widget));
-       children;
-       children = children->next)
+  for (child = clutter_actor_get_first_child (CLUTTER_ACTOR (widget));
+       child != NULL;
+       child = clutter_actor_get_next_sibling (child))
     {
-      ClutterActor *child = children->data;
-
       if (CLUTTER_ACTOR_IS_VISIBLE (child))
         focus_chain = g_list_prepend (focus_chain, child);
     }
+
   return g_list_reverse (focus_chain);
 }
 

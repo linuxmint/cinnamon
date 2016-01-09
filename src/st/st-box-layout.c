@@ -739,7 +739,7 @@ st_box_layout_allocate (ClutterActor          *actor,
   if (reverse_order)
     {
       child = clutter_actor_get_last_child (actor);
-      i = clutter_actor_get_n_children (actor);
+      i = clutter_actor_get_n_children (actor) - 1;
     }
   else
     {
