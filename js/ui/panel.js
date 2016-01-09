@@ -1301,8 +1301,8 @@ PanelZoneDNDHandler.prototype = {
             this._dragPlaceholder = new DND.GenericDragPlaceholderItem();
             this._dragPlaceholder.child.set_width (20);
             this._dragPlaceholder.child.set_height (10);
-            this._panelZone.insert_actor(this._dragPlaceholder.actor,
-                                        this._dragPlaceholderPos);
+            this._panelZone.insert_child_at_index(this._dragPlaceholder.actor,
+                                                  this._dragPlaceholderPos);
             if (fadeIn)
                 this._dragPlaceholder.animateIn();
         }

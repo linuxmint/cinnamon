@@ -66,10 +66,10 @@ ModalDialog.prototype = {
         this._hasModal = false;
         this._cinnamonReactive = params.cinnamonReactive;
 
-        this._group = new St.Group({ visible: false,
-                                     x: 0,
-                                     y: 0,
-                                     accessible_role: Atk.Role.DIALOG });
+        this._group = new St.Widget({ visible: false,
+                                      x: 0,
+                                      y: 0,
+                                      accessible_role: Atk.Role.DIALOG });
         Main.uiGroup.add_actor(this._group);
 
         let constraint = new Clutter.BindConstraint({ source: global.stage,
@@ -169,7 +169,7 @@ ModalDialog.prototype = {
     setButtons: function(buttons) {
         let hadChildren = this._buttonLayout.get_children() > 0;
 
-        this._buttonLayout.destroy_children();
+        this._buttonLayout.destroy_all_children();
         this._actionKeys = {};
         let focusSetExplicitly = false;
 

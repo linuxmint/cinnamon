@@ -212,7 +212,7 @@ Calendar.prototype = {
 
     _buildHeader: function() {
         let offsetCols = this.show_week_numbers ? 1 : 0;
-        this.actor.destroy_children();
+        this.actor.destroy_all_children();
 
         // Top line of the calendar '<| September |> <| 2009 |>'
         this._topBoxMonth = new St.BoxLayout();

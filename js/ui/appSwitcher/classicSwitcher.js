@@ -427,7 +427,7 @@ AppIcon.prototype = {
 
     set_size: function(size) {
         if (this.showThumbnail){
-            this.icon = new St.Group();
+            this.icon = new St.Widget();
             let clones = WindowUtils.createWindowClone(this.window, size, size, true, true);
             for (let i in clones) {
                 let clone = clones[i];
@@ -976,7 +976,7 @@ ThumbnailList.prototype = {
 
         for (let i = 0; i < this._thumbnailBins.length; i++) {
             let metaWindow = this._windows[i];
-            let container = new St.Group();
+            let container = new St.Widget();
             let clones = WindowUtils.createWindowClone(metaWindow, availHeight, availHeight, true, true);
             for (let j = 0; j < clones.length; j++) {
               let clone = clones[j];

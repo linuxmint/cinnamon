@@ -99,7 +99,7 @@ ExpoWindowClone.prototype = {
         this.inDrag = false;
         this.dragCancelled = false;
 
-        this.icon = new St.Group();
+        this.icon = new St.Widget();
         this.actor.add_actor(this.icon);
         this.icon.hide();
 
@@ -134,7 +134,7 @@ ExpoWindowClone.prototype = {
 
     refreshClone: function(withTransients) {
         if (this.clone) {this.clone.destroy();}
-        this.clone = new St.Group({reactive: false});
+        this.clone = new St.Widget({ reactive: false });
         this.actor.add_actor(this.clone);
         let [pwidth, pheight] = [this.realWindow.width, this.realWindow.height];
         let clones = WindowUtils.createWindowClone(this.metaWindow, 0, 0, withTransients);
@@ -298,11 +298,11 @@ ExpoWorkspaceThumbnail.prototype = {
     _init : function(metaWorkspace, box) {
         this.box = box;
         this.metaWorkspace = metaWorkspace;
-        this.frame = new St.Group({ clip_to_allocation: true,
-                                    style_class: 'expo-workspace-thumbnail-frame' });
-        this.actor = new St.Group({ reactive: true,
-                                    clip_to_allocation: true,
-                                    style_class: 'workspace-thumbnail' });
+        this.frame = new St.Widget({ clip_to_allocation: true,
+                                     style_class: 'expo-workspace-thumbnail-frame' });
+        this.actor = new St.Widget({ reactive: true,
+                                     clip_to_allocation: true,
+                                     style_class: 'workspace-thumbnail' });
         this.actor._delegate = this;
         this.actor.set_size(global.screen_width, global.screen_height);
 

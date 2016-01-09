@@ -36,8 +36,8 @@ Expo.prototype = {
 
         this._spacing = 0;
 
-        this._group = new St.Group({ name: 'expo',
-                                     reactive: true });
+        this._group = new St.Widget({ name: 'expo',
+                                      reactive: true });
         this._group._delegate = this;
         this._group.connect('style-changed',
             Lang.bind(this, function() {
