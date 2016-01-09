@@ -2976,6 +2976,8 @@ st_widget_get_focus_chain (StWidget *widget)
  * @widget: An #StWidget
  *
  * Destroys all child actors from @widget.
+ *
+ * Deprecated:3.0: Use clutter_actor_destroy_all_children instead
  */
 void
 st_widget_destroy_children (StWidget *widget)
@@ -2983,6 +2985,16 @@ st_widget_destroy_children (StWidget *widget)
   clutter_actor_destroy_all_children (CLUTTER_ACTOR (widget));
 }
 
+/* st_widget_move_child:
+ * @widget: An #StWidget
+ * @actor: A #ClutterActor
+ * @pos: An #int
+ * 
+ *
+ * A simple compatibility wrapper around clutter_actor_set_child_at_index.
+ *
+ * Deprecated:3.0: Use clutter_actor_set_child_at_index() instead
+ */
 void
 st_widget_move_child (StWidget     *widget,
                       ClutterActor *actor,
@@ -2992,6 +3004,14 @@ st_widget_move_child (StWidget     *widget,
                                     actor, pos);
 }
 
+/* st_widget_move_before:
+ * @widget: An #StWidget
+ * @actor: A #ClutterActor
+ *
+ * A simple compatibility wrapper around clutter_actor_set_child_below_sibling.
+ *
+ * Deprecated:3.0: Use clutter_actor_set_child_below_sibling() instead
+ */
 void
 st_widget_move_before (StWidget     *widget,
                        ClutterActor *actor,

@@ -68,6 +68,8 @@ st_group_init (StGroup *self)
  * Create a new  #StGroup.
  *
  * Return value: the newly created #StGroup actor
+ *
+ * Deprecated:3.0: Use st_widget_new() instead.
  */
 StWidget *
 st_group_new (void)
