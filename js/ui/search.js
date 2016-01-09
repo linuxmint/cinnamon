@@ -56,7 +56,7 @@ SearchResultDisplay.prototype = {
      * Remove all results from this display and reset the selection index.
      */
     clear: function() {
-        this.actor.get_children().forEach(function (actor) { actor.destroy(); });
+        this.actor.destroy_all_children();
         this.selectionIndex = -1;
     },
 

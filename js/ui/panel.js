@@ -1792,7 +1792,7 @@ Panel.prototype = {
         let [centerMinWidth, centerNaturalWidth] = this._centerBox.get_preferred_width(-1);
         let [rightMinWidth, rightNaturalWidth] = this._rightBox.get_preferred_width(-1);
 
-        let centerBoxOccupied = this._centerBox.get_children().length > 0;
+        let centerBoxOccupied = this._centerBox.get_n_children() > 0;
 
         /* If panel edit mode, pretend central box is occupied and give it at
          * least width 25 so that things can be dropped into it */

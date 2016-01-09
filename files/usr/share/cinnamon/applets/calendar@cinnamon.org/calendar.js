@@ -276,7 +276,7 @@ Calendar.prototype = {
         }
 
         // All the children after this are days, and get removed when we update the calendar
-        this._firstDayIndex = this.actor.get_children().length;
+        this._firstDayIndex = this.actor.get_n_children();
     },
 
     _onStyleChange: function(actor, event) {

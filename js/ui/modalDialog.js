@@ -167,7 +167,7 @@ ModalDialog.prototype = {
      * ```
      */
     setButtons: function(buttons) {
-        let hadChildren = this._buttonLayout.get_children() > 0;
+        let hadChildren = this._buttonLayout.get_n_children() > 0;
 
         this._buttonLayout.destroy_all_children();
         this._actionKeys = {};
