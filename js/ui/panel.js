@@ -1823,11 +1823,7 @@ Panel.prototype = {
                                                          vertical: true, 
                                                          x_align: St.Align.END, 
                                                          x_expand: true});  
-		    this._centerBox = new St.BoxLayout({ name: 'panelCenter', 
-                                                         vertical: true, 
-                                                         y_align: St.Align.END, 
-							 x_align: St.Align.END, 
-                                                         x_expand: true});  
+
 		    this._rightBox  = new St.BoxLayout({ name: 'panelLeft', 
                                                          vertical: true, 
                                                          x_align: St.Align.END, 
@@ -1839,16 +1835,18 @@ Panel.prototype = {
                                                          vertical: true, 
                                                          x_align: St.Align.END, 
                                                          x_expand: true});  
-		    this._centerBox = new St.BoxLayout({ name: 'panelCenter', 
-                                                         vertical: true, 
-                                                         y_align: St.Align.END, 
-							 x_align: St.Align.END, 
-                                                         x_expand: true});  
+
 		    this._rightBox  = new St.BoxLayout({ name: 'panelRight', 
                                                          vertical: true, 
                                                          x_align: St.Align.END, 
                                                          x_expand: true});
 	    }
+
+	    this._centerBox = new St.BoxLayout({ name: 'panelCenter', 
+                                                 vertical: true, 
+                                                 y_align: St.Align.END, 
+						 x_align: St.Align.END, 
+                                                 x_expand: true});  
 
 	    this.actor.add_actor(this._leftBox);
 	    this.actor.add_actor(this._centerBox);
@@ -2732,7 +2730,6 @@ Panel.prototype = {
 		let allocHeight = box.x2 - box.x1;
 
 		[leftBoundary, rightBoundary] = this._calcBoxSizes(allocWidth, allocHeight, true); 
-global.log("vertical panels - width "+allocWidth+" height "+allocHeight+" left "+leftBoundary+" right "+rightBoundary);
 	
 		let childBox = new Clutter.ActorBox();
 
