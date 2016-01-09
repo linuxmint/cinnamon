@@ -550,9 +550,9 @@ class SettingsPage(Gtk.Box):
 
         return section
 
-    def add_reveal_section(self, title, schema=None, key=None):
+    def add_reveal_section(self, title, schema=None, key=None, values=None):
         section = SettingsBox(title)
-        revealer = SettingsRevealer(schema, key)
+        revealer = SettingsRevealer(schema, key, values)
         revealer.add(section)
         section._revealer = revealer
         self.pack_start(revealer, False, False, 0)
