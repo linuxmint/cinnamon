@@ -3,6 +3,15 @@
 from SettingsWidgets import *
 from gi.repository import Gio
 
+DESKTOP_SCHEMA = "org.nemo.desktop"
+LAYOUT_KEY = "desktop-layout"
+ORPHANS_KEY = "show-orphaned-desktop-icons"
+
+DESKTOPS_ON_PRIMARY = "true::false"
+DESKTOPS_ON_ALL = "true::true"
+DESKTOPS_ON_NON_PRIMARY = "false::true"
+DESKTOPS_ON_NONE = "false::false"
+
 class Module:
     name = "desktop"
     category = "prefs"
@@ -23,30 +32,44 @@ class Module:
             return
 
         print "Loading Desktop module"
-        schema = "org.nemo.desktop"
-        nemo_desktop_schema = Gio.Settings.new(schema)
-        nemo_desktop_keys = nemo_desktop_schema.list_keys()
 
         page = SettingsPage()
         self.sidePage.add_widget(page)
 
-        show_desktop_icons_key = "show-desktop-icons"
-        if show_desktop_icons_key in nemo_desktop_keys:
-            switch = GSettingsSwitch("", schema, show_desktop_icons_key)
-            switch.fill_row()
-            switch.label.set_markup("<b>%s</b>" % _("Show desktop icons"))
-            page.add(switch)
+        desktop_layout_options = [[DESKTOPS_ON_NONE,         _("No desktop icons")],
+                                  [DESKTOPS_ON_PRIMARY,      _("Show desktop icons on primary monitor only")],
+                                  [DESKTOPS_ON_NON_PRIMARY,  _("Show desktop icons on non-primary monitor(s) only")],
+                                  [DESKTOPS_ON_ALL,          _("Show desktop icons on all monitors")]]
 
-            settings = page.add_reveal_section(_("Desktop Icons"), schema, show_desktop_icons_key)
+        widget = GSettingsComboBox("", DESKTOP_SCHEMA, LAYOUT_KEY, desktop_layout_options)
 
-            options = [
-                ("computer-icon-visible", _("Computer")),
-                ("home-icon-visible", _("Home")),
-                ("trash-icon-visible", _("Trash")),
-                ("volumes-visible", _("Mounted volumes")),
-                ("network-icon-visible", _("Network"))
-            ]
+        widget.fill_row()
+        widget.label.set_markup("<b>%s</b>" % _("Desktop layout"))
+        page.add(widget)
 
-            for key, label in options:
-                if key in nemo_desktop_keys:
-                    settings.add_row(GSettingsSwitch(label, schema, key))
+        settings = page.add_reveal_section(_("Desktop Icons"),
+                                           DESKTOP_SCHEMA,
+                                           LAYOUT_KEY,
+                                           [DESKTOPS_ON_PRIMARY, DESKTOPS_ON_NON_PRIMARY, DESKTOPS_ON_ALL])
+
+        options = [
+            ("computer-icon-visible", _("Computer")),
+            ("home-icon-visible", _("Home")),
+            ("trash-icon-visible", _("Trash")),
+            ("volumes-visible", _("Mounted volumes")),
+            ("network-icon-visible", _("Network"))
+        ]
+
+        for key, label in options:
+            settings.add_row(GSettingsSwitch(label, DESKTOP_SCHEMA, key))
+
+        settings = page.add_reveal_section(_("Options"),
+                                           DESKTOP_SCHEMA,
+                                           LAYOUT_KEY,
+                                           [DESKTOPS_ON_PRIMARY, DESKTOPS_ON_NON_PRIMARY, DESKTOPS_ON_ALL])
+
+        switch = GSettingsSwitch(_("Allow icons from missing monitors to be displayed on the existing ones"),
+                                 DESKTOP_SCHEMA,
+                                 ORPHANS_KEY)
+
+        settings.add_row(switch)

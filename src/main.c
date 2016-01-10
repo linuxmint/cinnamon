@@ -173,6 +173,8 @@ malloc_statistics_callback (CinnamonPerfLog *perf_log,
 static void
 cinnamon_a11y_init (void)
 {
+  cally_accessibility_init ();
+
   if (clutter_get_accessibility_enabled () == FALSE)
     {
       g_warning ("Accessibility: clutter has no accessibility enabled"

@@ -3204,6 +3204,9 @@ PopupMenuManager.prototype = {
         if (!this.grabbed)
             return false;
 
+        if (Main.keyboard.shouldTakeEvent(event))
+            return Clutter.EVENT_PROPAGATE;
+
         if (this._owner.menuEventFilter &&
             this._owner.menuEventFilter(event))
             return true;

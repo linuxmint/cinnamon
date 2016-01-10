@@ -29,6 +29,13 @@ const ScreenPosition = {
     RIGHT_HALF: 5
 };
 
+const LensShape = {
+    NONE: 0,
+    SQUARE : 1,
+    HORIZONTAL : 2,
+    VERTICAL : 3
+}
+
 const MOUSE_POLL_FREQUENCY = 50;
 const CROSSHAIRS_CLIP_SIZE = [100, 100];
 
@@ -40,6 +47,7 @@ const MAGNIFIER_SCHEMA          = 'org.cinnamon.desktop.a11y.magnifier';
 const SCREEN_POSITION_KEY       = 'screen-position';
 const MAG_FACTOR_KEY            = 'mag-factor';
 const LENS_MODE_KEY             = 'lens-mode';
+const LENS_SHAPE_KEY            = 'lens-shape';
 const CLAMP_MODE_KEY            = 'scroll-at-edges';
 const MOUSE_TRACKING_KEY        = 'mouse-tracking';
 const SHOW_CROSS_HAIRS_KEY      = 'show-cross-hairs';
@@ -489,6 +497,16 @@ Magnifier.prototype = {
         this._mouseSprite.set_anchor_point(xHot, yHot);
     },
 
+    _updateZoomRegion: function(zoomRegion) {
+        if (zoomRegion._lensMode) {
+            let pref = this._settings.get_enum(LENS_SHAPE_KEY);
+            zoomRegion.setLensShape(pref);
+        } else {
+            let pref = this._settings.get_enum(SCREEN_POSITION_KEY);
+            zoomRegion.setScreenPosition(pref);
+        }
+    },
+
     _settingsInit: function(zoomRegion) {
         let ret = 1.0;
         if (zoomRegion) {
@@ -498,12 +516,10 @@ Magnifier.prototype = {
             if (aPref > 1.0)
                 zoomRegion.setMagFactor(aPref, aPref);
 
-            aPref = this._settings.get_enum(SCREEN_POSITION_KEY);
-            if (aPref)
-                zoomRegion.setScreenPosition(aPref);
-
             zoomRegion.setLensMode(this._settings.get_boolean(LENS_MODE_KEY));
             zoomRegion.setClampScrollingAtEdges(!this._settings.get_boolean(CLAMP_MODE_KEY));
+
+            this._updateZoomRegion(zoomRegion)
 
             aPref = this._settings.get_enum(MOUSE_TRACKING_KEY);
             if (aPref)
@@ -516,6 +532,8 @@ Magnifier.prototype = {
 
         this._settings.connect('changed::' + SCREEN_POSITION_KEY,
                                Lang.bind(this, this._updateScreenPosition));
+        this._settings.connect('changed::' + LENS_SHAPE_KEY,
+                               Lang.bind(this, this._updateLensShape));
         this._settings.connect('changed::' + MAG_FACTOR_KEY,
                                Lang.bind(this, this._updateMagFactor));
         this._settings.connect('changed::' + LENS_MODE_KEY,
@@ -568,6 +586,15 @@ Magnifier.prototype = {
         }
     },
 
+    _updateLensShape: function() {
+        // Applies only to the first zoom region.
+        if (this._zoomRegions.length) {
+            let shape = this._settings.get_enum(LENS_SHAPE_KEY);
+            this._zoomRegions[0].setLensShape(shape);
+            this._updateLensMode();
+        }
+    },
+
     _updateMagFactor: function() {
         // Applies only to the first zoom region.
         if (this._zoomRegions.length) {
@@ -617,7 +644,7 @@ ZoomRegion.prototype = {
         this._clampScrollingAtEdges = false;
         this._lensMode = false;
         this._screenPosition = ScreenPosition.FULL_SCREEN;
-
+        this._lensShape = LensShape.NONE;
         this._magView = null;
         this._uiGroupClone = null;
         this._mouseSourceActor = mouseSourceActor;
@@ -760,8 +787,10 @@ ZoomRegion.prototype = {
      */
     setLensMode: function(lensMode) {
         this._lensMode = lensMode;
-        if (!this._lensMode)
-            this.setScreenPosition (this._screenPosition);
+        if (this._lensMode)
+            this.setLensShape(this._lensShape);
+        else
+            this.setScreenPosition(this._screenPosition);
     },
 
     /**
@@ -783,6 +812,48 @@ ZoomRegion.prototype = {
         this._clampScrollingAtEdges = clamp;
         if (clamp)
             this._changeROI();
+    },
+
+    /**
+     * setSquareLens:
+     * Magnifier view occupies a square on the screen.
+     */
+    setSquareLens: function() {
+        let viewPort = {};
+        viewPort.x = 0;
+        viewPort.y = 0;
+        viewPort.height = global.screen_height / 2;
+        viewPort.width = global.screen_height / 2; /* Keep it square */
+        this._setViewPort(viewPort);
+        this._lensShape = LensShape.SQUARE;
+    },
+
+    /**
+     * setHorizontalLens:
+     * Magnifier view occupies the top half of the screen.
+     */
+    setHorizontalLens: function() {
+        let viewPort = {};
+        viewPort.x = 0;
+        viewPort.y = 0;
+        viewPort.width = global.screen_width;
+        viewPort.height = global.screen_height/2;
+        this._setViewPort(viewPort);
+        this._lensShape = LensShape.HORIZONTAL;
+    },
+
+    /**
+     * setVerticalLens:
+     * Magnifier view occupies the left half of the screen.
+     */
+    setVerticalLens: function() {
+        let viewPort = {};
+        viewPort.x = 0;
+        viewPort.y = 0;
+        viewPort.width = global.screen_width/2;
+        viewPort.height = global.screen_height;
+        this._setViewPort(viewPort);
+        this._lensShape = LensShape.VERTICAL;
     },
 
     /**
@@ -861,12 +932,12 @@ ZoomRegion.prototype = {
      * setScreenPosition:
      * Positions the zoom region to one of the enumerated positions on the
      * screen.
-     * @position:   one of Magnifier.FULL_SCREEN, Magnifier.TOP_HALF,
-     *              Magnifier.BOTTOM_HALF,Magnifier.LEFT_HALF, or
-     *              Magnifier.RIGHT_HALF.
+     * @position:   one of ScreenPosition.FULL_SCREEN, ScreenPosition.TOP_HALF,
+     *              ScreenPosition.BOTTOM_HALF,ScreenPosition.LEFT_HALF, or
+     *              ScreenPosition.RIGHT_HALF.
      */
-    setScreenPosition: function(inPosition) {
-        switch (inPosition) {
+    setScreenPosition: function(position) {
+        switch (position) {
             case ScreenPosition.FULL_SCREEN:
                 this.setFullScreenMode();
                 break;
@@ -886,6 +957,25 @@ ZoomRegion.prototype = {
     },
 
     /**
+     * setLensShape:
+     * Sets the shape of the zoom lens
+     * @shape:      LensShape.SQUARE, LensShape.HORIZONTAL, LensShape.VERTICAL.
+     */
+    setLensShape: function(shape) {
+        switch (shape) {
+            case LensShape.SQUARE:
+                this.setSquareLens();
+                break;
+            case LensShape.HORIZONTAL:
+                this.setHorizontalLens();
+                break;
+            case LensShape.VERTICAL:
+                this.setVerticalLens();
+                break;
+        }
+    },
+
+    /**
      * getScreenPosition:
      * Tell the outside world what the current mode is -- magnifiying the
      * top half, bottom half, etc.
@@ -893,6 +983,16 @@ ZoomRegion.prototype = {
      */
     getScreenPosition: function() {
         return this._screenPosition;
+    },
+
+    /**
+     * getLensShape:
+     * Get the shape of the zoom lens
+     *
+     * @return:  the current shape.
+     */
+    getLensShape: function() {
+        return this._lensShape;
     },
 
     /**

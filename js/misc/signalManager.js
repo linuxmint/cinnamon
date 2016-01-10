@@ -145,7 +145,7 @@ SignalManager.prototype = {
      * Returns: Whether the signal is connected
      */
     isConnected: function() {
-        return (this.getSignals(arguments).length > 0);
+        return (this.getSignals.apply(this, arguments).length > 0);
     },
 
     /**
@@ -192,10 +192,10 @@ SignalManager.prototype = {
      * checks need not be performed before calling this function.
      */
     disconnect: function() {
-        let results = this.getSignals(arguments);
+        let results = this.getSignals.apply(this, arguments);
         results.filter(this._signalIsConnected).forEach(x => x[1].disconnect(x[3]));
 
-        this._storage = this._storage.filter(x => results.indexOf(x) != -1);
+        this._storage = this._storage.filter(x => results.indexOf(x) == -1);
     },
 
     /**

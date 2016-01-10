@@ -22,13 +22,17 @@ Flashspot.prototype = {
       });
       this.actor.style_class = 'flashspot';
       this.actor.set_position(area.x, area.y);
+      if (area.time)
+        this.animation_time = area.time;
+      else
+        this.animation_time = FLASHSPOT_ANIMATION_TIME;
    },
 
    fire: function() {
       this.actor.opacity = 0;
       Tweener.addTween(this.actor,
                       { opacity: 255,
-                        time: FLASHSPOT_ANIMATION_TIME,
+                        time: this.animation_time,
                         transition: 'linear',
                         onComplete: Lang.bind(this, this._onFireShowComplete)
                       });
@@ -38,7 +42,7 @@ Flashspot.prototype = {
    _onFireShowComplete: function() {
       Tweener.addTween(this.actor,
                       { opacity: 0,
-                        time: FLASHSPOT_ANIMATION_TIME,
+                        time: this.animation_time,
                         transition: 'linear',
                         onComplete: Lang.bind(this, function() {
                             this.destroy();

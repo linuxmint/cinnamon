@@ -67,9 +67,9 @@ MyApplet.prototype = {
             let textZoom = this._buildFontItem();
             this.menu.addMenuItem(textZoom);
 
-    //        let screenReader = this._buildItem(_("Screen Reader"), APPLICATIONS_SCHEMA,
-    //                                                               'screen-reader-enabled');
-    //        this.menu.addMenuItem(screenReader);
+            let screenReader = this._buildItem(_("Screen Reader"), APPLICATIONS_SCHEMA,
+                                                                  'screen-reader-enabled');
+            this.menu.addMenuItem(screenReader);
 
             let screenKeyboard = this._buildItem(_("Screen Keyboard"), APPLICATIONS_SCHEMA,
                                                                        'screen-keyboard-enabled');

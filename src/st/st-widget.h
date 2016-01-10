@@ -175,6 +175,10 @@ void                  st_widget_remove_accessible_state   (StWidget *widget,
 void                  st_widget_set_accessible_name       (StWidget *widget,
                                                            const gchar *name);
 const gchar *         st_widget_get_accessible_name       (StWidget *widget);
+
+void                  st_widget_set_accessible           (StWidget    *widget,
+                                                          AtkObject   *accessible);
+
 G_END_DECLS
 
 #endif /* __ST_WIDGET_H__ */

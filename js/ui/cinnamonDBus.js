@@ -12,6 +12,7 @@ const DeskletManager = imports.ui.deskletManager;
 const ExtensionSystem = imports.ui.extensionSystem;
 const SearchProviderManager = imports.ui.searchProviderManager;
 const Util = imports.misc.util;
+const Cinnamon = imports.gi.Cinnamon;
 
 const CinnamonIface =
     '<node> \
@@ -99,14 +100,15 @@ const CinnamonIface =
                 <arg type="i" direction="in" name="process_id" /> \
                 <arg type="s" direction="in" name="result" /> \
             </method> \
+            <method name="ToggleKeyboard"/> \
         </interface> \
     </node>';
 
-function Cinnamon() {
+function CinnamonDBus() {
     this._init();
 }
 
-Cinnamon.prototype = {
+CinnamonDBus.prototype = {
     _init: function() {
         this._dbusImpl = Gio.DBusExportedObject.wrapJSObject(CinnamonIface, this);
         this._dbusImpl.export(Gio.DBus.session, '/org/Cinnamon');
@@ -377,6 +379,10 @@ Cinnamon.prototype = {
         {
             Util.subprocess_callbacks[process_id](result);
         }
+    },
+
+    ToggleKeyboard: function() {
+        Main.keyboard.toggle();
     },
 
     CinnamonVersion: Config.PACKAGE_VERSION
