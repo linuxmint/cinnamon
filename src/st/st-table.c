@@ -104,7 +104,7 @@ st_table_actor_removed (ClutterContainer *container,
   ClutterActor *child;
 
   /* Calculate and update the number of rows / columns */
-  for (child = clutter_actor_get_first_child (actor);
+  for (child = clutter_actor_get_first_child (CLUTTER_ACTOR (container));
        child != NULL;
        child = clutter_actor_get_next_sibling (child))
     {
