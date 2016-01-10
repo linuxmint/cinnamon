@@ -82,6 +82,13 @@ struct _StWidgetClass
   void     (* popup_menu)          (StWidget         *self);
 
   /* vfuncs */
+
+  /**
+   * StWidgetClass::navigate_focus
+   * @self: the "top level" container
+   * @from: (allow-none): the actor that the focus is coming from
+   * @direction: the direction focus is moving in
+   */
   gboolean (* navigate_focus)      (StWidget         *self,
                                     ClutterActor     *from,
                                     GtkDirectionType  direction);
