@@ -1631,6 +1631,7 @@ PanelZoneDNDHandler.prototype = {
             this._dragPlaceholder.child.set_height (10);
             this._panelZone.insert_actor(this._dragPlaceholder.actor,
                                         this._dragPlaceholderPos);
+
             if (fadeIn)
                 this._dragPlaceholder.animateIn();
         }
@@ -1639,6 +1640,7 @@ PanelZoneDNDHandler.prototype = {
     },
 
     acceptDrop: function(source, actor, x, y, time) { 
+
         if (!(source instanceof Applet.Applet)) return false;
 
         let children = this._panelZone.get_children();
@@ -1658,6 +1660,7 @@ PanelZoneDNDHandler.prototype = {
         this._clearDragPlaceholder();
         actor.destroy();
         AppletManager.saveAppletsPositions();
+
         return true;
     },
 
@@ -1785,23 +1788,23 @@ Panel.prototype = {
 		// 
 		// Adding y_align: 2 (centre) on the central box kills the right click menu on the central box, but this can be	
 		// worked around quite happily by adding a test on the actor to the pre-existing test on the parent of the actor 
-		// in the button handling logic.  It also kills drag and drop if the centre box is empty, the workaround is to 
+		// in the button handling logic.  It also kills drag and drop if any box is empty, the workaround is to 
 		// explicitly set the height.  It would appear that this central alignment setting shrinks the box size down to (nearly) nil
 		// if there is nothing in it, and the effective size is shrink-wrapped around its contents if there is something in it
 		// which all gives some quirky results.
 		//
 		// Using x_align:2 on the boxes shrinks them down to a tiny vertical strip if empty, which is not workable in panel edit mode.
-		// This can be catered for dynamically by setting and unsetting it as needed. I have also started using x_expand, at the time 
-		// of writing I have not tested to see if this helps or not. Using x_align:2 also causes problems with a new, empty panel - seeming 
-		// to stop the dndhandler working. I have not yet found a workaround to this, other than to use the 'add applets to the panel' menu entry
+		// This can be catered for dynamically by setting and unsetting it as needed. x-expand does not appear to make a difference. 
+                // Using x_align:2 also causes problems with a new, empty panel - seeming to stop the dndhandler working. 
+                // I have not yet found a workaround to this, other than to use the 'add applets to the panel' menu entry
 		//
 		// So .. the approach taken is to
 		// 1) keep the natural size of left and right (i.e. top and bottom) boxes, this means that the icons will cluster together
 		//    at top and bottom of the panel respectively
 		// 2) have a central box that can take all the space in between
 		// 3) turn on central y-alignment for the central box
-		// 4) turn on central x-alignment and expand, and just accept that there is an empty panel case that I have not solved yet.
-		//    (y-expand does not help, also note that the edit mode colouring does not happen)
+		// 4) turn on central x-alignment, and just accept that there is an empty panel case that I have not solved yet.
+		//    (-expand does not help, also note that the edit mode colouring does not happen)
 		//
 		// The appearance of this looks sensible to my eyes - the icons in the boxes have sensible positioning
 		// (css permitting). The central box will however not be central, but its position will depend on the relative numbers of 
@@ -1814,39 +1817,34 @@ Panel.prototype = {
 		//    case where the central box has no contents.  
 		//
 		// 
-		// Other approaches may of course be possible ... and it is worth rechecking things that used to give problems as I tested on 2.6
-		// and there was an allocation/align error corrected in 2.8
+		// Other approaches may of course be possible ... and it is worth rechecking things that used to give problems as I mainly 
+                // tested on 2.6 and there was an allocation/align error corrected in 2.8
 	{
 	    if (this.panelPosition == PanelLoc.left)    // left panel
 	    {
 		    this._leftBox   = new St.BoxLayout({ name: 'panelLeft', 
                                                          vertical: true, 
-                                                         x_align: St.Align.END, 
-                                                         x_expand: true});  
+                                                         x_align: St.Align.END});  
 
 		    this._rightBox  = new St.BoxLayout({ name: 'panelLeft', 
                                                          vertical: true, 
-                                                         x_align: St.Align.END, 
-                                                         x_expand: true});
+                                                         x_align: St.Align.END});
 	    }
 	    else
 	    {
 		    this._leftBox   = new St.BoxLayout({ name: 'panelRight', 
                                                          vertical: true, 
-                                                         x_align: St.Align.END, 
-                                                         x_expand: true});  
+                                                         x_align: St.Align.END});  
 
 		    this._rightBox  = new St.BoxLayout({ name: 'panelRight', 
                                                          vertical: true, 
-                                                         x_align: St.Align.END, 
-                                                         x_expand: true});
+                                                         x_align: St.Align.END});
 	    }
 
 	    this._centerBox = new St.BoxLayout({ name: 'panelCenter', 
                                                  vertical: true, 
                                                  y_align: St.Align.END, 
-						 x_align: St.Align.END, 
-                                                 x_expand: true});  
+						 x_align: St.Align.END});  
 
 	    this.actor.add_actor(this._leftBox);
 	    this.actor.add_actor(this._centerBox);
@@ -1897,6 +1895,7 @@ Panel.prototype = {
 		// 
 		//this._leftBox.set_style("padding-top:"+5*global.ui_scale+"px;padding-bottom:"+3*global.ui_scale+"px");
 		//this._rightBox.set_style("padding-top:"+5*global.ui_scale+"px;padding-bottom:"+3*global.ui_scale+"px");
+		this._centerBox.set_style("padding-top:"+3*global.ui_scale+"px;padding-bottom:"+3*global.ui_scale+"px");
 
 	} // end vertical panel section
 
@@ -2085,26 +2084,29 @@ Panel.prototype = {
     },
 
     handleDragOver: function(source, actor, x, y, time) {
+//
+// For empty panels. If over left,right,center box then do not get here.
+//
         this._enterPanel();
         if (this._dragShowId > 0)
             Mainloop.source_remove(this._dragShowId);
 
         let leaveIfOut = Lang.bind(this, function() {
             this._dragShowId = 0;
-
             let [x, y, whatever] = global.get_pointer();
             this.actor.sync_hover();
 
 	    if (this.actor.x < x && x < this.actor.x + this.actor.width &&
 	        this.actor.y < y && y < this.actor.y + this.actor.height) { 
+
 	        return true;
 	    } else {
 	        this._leavePanel();
 	        return false;
 	    }
         });  // end of bind
-
         this._dragShowId = Mainloop.timeout_add(500, leaveIfOut);
+
         return DND.DragMotionResult.NO_DROP;
     },
 
@@ -2532,16 +2534,16 @@ Panel.prototype = {
 		 * least width 40 so that things can be dropped into it */
 		if (this._panelEditMode) {
 			centerBoxOccupied  = true;
-			centerMinWidth     = Math.max(centerMinWidth, 40);
-			centerNaturalWidth = Math.max(centerNaturalWidth, 40);
+			centerMinWidth     = Math.max(centerMinWidth, 35);
+			centerNaturalWidth = Math.max(centerNaturalWidth, 35);
 			//
-			// similarly if the left and right boxes come up small or empty give them a minimum width
-			// why 40 ?  25 just seems to come up a little on the small side for vertical panels
+			// similarly if the left and right boxes come up small or empty give them a minimum width.
+			// 25 (horizontal min size) comes up a little small, so use a larger value of 35
 			//
-			leftMinWidth      = Math.max(leftMinWidth, 40);
-			leftNaturalWidth  = Math.max(leftNaturalWidth, 40);
-			rightMinWidth     = Math.max(rightMinWidth, 40);
-			rightNaturalWidth = Math.max(rightNaturalWidth, 40);
+			leftMinWidth      = Math.max(leftMinWidth, 35);
+			leftNaturalWidth  = Math.max(leftNaturalWidth, 35);
+			rightMinWidth     = Math.max(rightMinWidth, 35);
+			rightNaturalWidth = Math.max(rightNaturalWidth, 35);
 		}
 
 	}
@@ -2567,6 +2569,7 @@ Panel.prototype = {
 
 	if (centerBoxOccupied) {
 	    if (totalCenteredNaturalWidth < allocWidth) {
+
 		if (vertical)	// see comment in the routine called to create a new panel
 		{
 			leftWidth  = leftNaturalWidth;
@@ -2699,7 +2702,6 @@ Panel.prototype = {
 //
 //  Note that this logic divides the panel into left right and center, with no gaps. 
 //
-//
 //  Corner height/width logic is common to all panel types
 //
 	let cornerMinWidth = 0;
@@ -2745,18 +2747,26 @@ Panel.prototype = {
 		this._rightBox.allocate(childBox, flags); // rightbox 
 
 		//
-		// As using centre y-align seems to result in zero size if the box is empty, force
+		// As using central y-align or x-align seems to result in zero size if the box is empty, force
 		// to a defined size when in panel edit mode
 		//
 		if (this._panelEditMode)
 		{
 			this._centerBox.set_height(rightBoundary - leftBoundary);
 			this._centerBox.set_width(allocHeight);
+			this._leftBox.set_height(leftBoundary);
+			this._leftBox.set_width(allocHeight);
+			this._rightBox.set_height(allocWidth - rightBoundary);
+			this._rightBox.set_width(allocHeight);
 		}
 		else
 		{
 			this._centerBox.set_height(-1);
-			this._centerBox.set_width(-1);    
+			this._centerBox.set_width(-1); 
+			this._leftBox.set_height(-1);
+			this._leftBox.set_width(-1);  
+			this._rightBox.set_height(-1);
+			this._rightBox.set_width(-1);     
 		}
 //
 // Corners are in response to a bit of optional css and are about painting corners just outside the panels so as to create a seamless 
