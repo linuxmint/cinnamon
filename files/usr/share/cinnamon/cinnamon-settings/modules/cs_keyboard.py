@@ -2,6 +2,7 @@
 
 from SettingsWidgets import *
 from gi.repository import Gio, Gtk, GObject, Gdk
+from KeybindingWidgets import CellRendererKeybinding
 import cgi
 import gettext
 
@@ -16,25 +17,6 @@ CUSTOM_KEYS_SCHEMA = "org.cinnamon.desktop.keybindings.custom-keybinding"
 MUFFIN_KEYBINDINGS_SCHEMA = "org.cinnamon.desktop.keybindings.wm"
 MEDIA_KEYS_SCHEMA = "org.cinnamon.desktop.keybindings.media-keys"
 CINNAMON_SCHEMA = "org.cinnamon.desktop.keybindings"
-
-FORBIDDEN_KEYVALS = [
-    Gdk.KEY_Home,
-    Gdk.KEY_Left,
-    Gdk.KEY_Up,
-    Gdk.KEY_Right,
-    Gdk.KEY_Down,
-    Gdk.KEY_Page_Up,
-    Gdk.KEY_Page_Down,
-    Gdk.KEY_End,
-    Gdk.KEY_Tab,
-    Gdk.KEY_KP_Enter,
-    Gdk.KEY_Return,
-    Gdk.KEY_space,
-    Gdk.KEY_Mode_switch
-]
-
-# Ignore capslock and numlock when in teach mode
-IGNORED_MOD_MASK = (int(Gdk.ModifierType.MOD2_MASK) | int(Gdk.ModifierType.LOCK_MASK))
 
 CATEGORIES = [
 
@@ -329,8 +311,7 @@ class Module:
             self.kb_store = Gtk.ListStore( str,   # Keybinding name
                                            object)# The keybinding object
 
-            self.entry_store = Gtk.ListStore( str, # Keybinding entry
-                                              object) # Keybinding object
+            self.entry_store = Gtk.ListStore(str) # Accel string
 
             cell = Gtk.CellRendererText()
             cell.set_alignment(0,0)
@@ -360,7 +341,7 @@ class Module:
             entry_cell.connect('accel-cleared', self.onEntryCleared, self.entry_store)
             entry_cell.set_property('editable', True)
 
-            entry_column = Gtk.TreeViewColumn(_("Keyboard bindings"), entry_cell, text=0)
+            entry_column = Gtk.TreeViewColumn(_("Keyboard bindings"), entry_cell, accel_string=0)
             entry_column.set_alignment(.5)
             self.entry_tree.append_column(entry_column)
 
@@ -464,43 +445,14 @@ class Module:
                 keybinding = keybindings[iter][1]
                 for entry in keybinding.entries:
                     if entry is not "_invalid_":
-                        self.entry_store.append((clean_kb(entry), entry))
+                        self.entry_store.append((entry,))
                 self.remove_custom_button.set_property('sensitive', isinstance(keybinding, CustomKeyBinding))
 
-    def onEntryChanged(self, cell, path, keyval, mask, keycode, entry_store):
-        accel_string = Gtk.accelerator_name(keyval, mask)
-        accel_string = accel_string.replace("<Mod2>", "")
+    def onEntryChanged(self, cell, path, accel_string, accel_label, entry_store):
         iter = entry_store.get_iter(path)
         keybindings, kb_iter = self.kb_tree.get_selection().get_selected()
         if kb_iter:
             current_keybinding = keybindings[kb_iter][1]
-        # Check for bad keys or modifiers
-        if (mask == 0 or mask == Gdk.ModifierType.SHIFT_MASK) and keycode != 0:
-            if ((keyval >= Gdk.KEY_a and keyval <= Gdk.KEY_z)
-            or (keyval >= Gdk.KEY_A and keyval <= Gdk.KEY_Z)
-            or (keyval >= Gdk.KEY_0 and keyval <= Gdk.KEY_9)
-            or (keyval >= Gdk.KEY_kana_fullstop and keyval <= Gdk.KEY_semivoicedsound)
-            or (keyval >= Gdk.KEY_Arabic_comma and keyval <= Gdk.KEY_Arabic_sukun)
-            or (keyval >= Gdk.KEY_Serbian_dje and keyval <= Gdk.KEY_Cyrillic_HARDSIGN)
-            or (keyval >= Gdk.KEY_Greek_ALPHAaccent and keyval <= Gdk.KEY_Greek_omega)
-            or (keyval >= Gdk.KEY_hebrew_doublelowline and keyval <= Gdk.KEY_hebrew_taf)
-            or (keyval >= Gdk.KEY_Thai_kokai and keyval <= Gdk.KEY_Thai_lekkao)
-            or (keyval >= Gdk.KEY_Hangul and keyval <= Gdk.KEY_Hangul_Special)
-            or (keyval >= Gdk.KEY_Hangul_Kiyeog and keyval <= Gdk.KEY_Hangul_J_YeorinHieuh)
-            or keyval in FORBIDDEN_KEYVALS):
-                dialog = Gtk.MessageDialog(None,
-                                    Gtk.DialogFlags.DESTROY_WITH_PARENT,
-                                    Gtk.MessageType.ERROR,
-                                    Gtk.ButtonsType.OK,
-                                    None)
-                dialog.set_default_size(400, 200)
-                msg = _("\nThis key combination, \'<b>%s</b>\' cannot be used because it would become impossible to type using this key.\n\n")
-                msg += _("Please try again with a modifier key such as Control, Alt or Super (Windows key) at the same time.\n")
-                dialog.set_markup(msg % clean_kb(accel_string))
-                dialog.show_all()
-                response = dialog.run()
-                dialog.destroy()
-                return
 
         # Check for duplicates
         for category in self.main_store:
@@ -522,7 +474,7 @@ class Module:
                         msg = _("This key combination, <b>%(combination)s</b> is currently in use by <b>%(old)s</b>.  ")
                         msg += _("If you continue, the combination will be reassigned to <b>%(new)s</b>.\n\n")
                         msg += _("Do you want to continue with this operation?")
-                        dialog.set_markup(msg % {'combination':clean_kb(accel_string), 'old':cgi.escape(keybinding.label), 'new':cgi.escape(current_keybinding.label)})
+                        dialog.set_markup(msg % {'combination':accel_label, 'old':cgi.escape(keybinding.label), 'new':cgi.escape(current_keybinding.label)})
                         dialog.show_all()
                         response = dialog.run()
                         dialog.destroy()
@@ -781,17 +733,6 @@ class CustomKeyBinding():
         custom_list = parent.get_strv("custom-list")
         parent.set_strv("custom-list", custom_list)
 
-# Utility to convert key modifier codes to something more friendly
-def clean_kb(keybinding):
-    if keybinding is "":
-        return cgi.escape(_("unassigned"))
-    keybinding = keybinding.replace("<Super>", _("Super-"))
-    keybinding = keybinding.replace("<Primary>", _("Ctrl-"))
-    keybinding = keybinding.replace("<Shift>", _("Shift-"))
-    keybinding = keybinding.replace("<Alt>", _("Alt-"))
-    keybinding = keybinding.replace("<Control>", _("Ctrl-"))
-    return cgi.escape(keybinding)
-
 class AddCustomDialog(Gtk.Dialog):
     def __init__(self, edit_mode):
         if edit_mode:
@@ -831,113 +772,3 @@ class AddCustomDialog(Gtk.Dialog):
     def onEntriesChanged(self, widget):
         ok_enabled = self.name_entry.get_text().strip() is not "" and self.command_entry.get_text().strip() is not ""
         self.set_response_sensitive(Gtk.ResponseType.OK, ok_enabled)
-
-SPECIAL_MODS = (["Super_L",    "<Super>"],
-                ["Super_R",    "<Super>"],
-                ["Alt_L",      "<Alt>"],
-                ["Alt_R",      "<Alt>"],
-                ["Control_L",  "<Primary>"],
-                ["Control_R",  "<Primary>"],
-                ["Shift_L",    "<Shift>"],
-                ["Shift_R",    "<Shift>"])
-
-class CellRendererKeybinding(Gtk.CellRendererText):
-    __gsignals__ = {
-        'accel-edited': (GObject.SignalFlags.RUN_LAST, None, (str, int, Gdk.ModifierType, int)),
-        'accel-cleared': (GObject.SignalFlags.RUN_LAST, None, (str,))
-    }
-
-    def __init__(self, treeview):
-        super(CellRendererKeybinding, self).__init__()
-
-        self.connect("editing-started", self.editing_started)
-        self.cur_val = None
-        self.path = None
-        self.release_event_id = 0
-        self.press_event_id = 0
-        self.focus_id = 0
-        self.teaching = False
-        self.treeview = treeview
-
-    def set_label(self, text = None):
-        if not text:
-            text = _("unassigned")
-        self.set_property("text", text)
-
-    def get_label(self):
-        return self.get_property("text")
-
-    def editing_started(self, renderer, editable, path):
-        if not self.teaching:
-            self.cur_val = self.get_label()
-            self.path = path
-            device = Gtk.get_current_event_device()
-            if device.get_source() == Gdk.InputSource.KEYBOARD:
-                self.keyboard = device
-            else:
-                self.keyboard = device.get_associated_device()
-
-            self.keyboard.grab(self.treeview.get_window(), Gdk.GrabOwnership.WINDOW, False,
-                               Gdk.EventMask.KEY_PRESS_MASK | Gdk.EventMask.KEY_RELEASE_MASK,
-                               None, Gdk.CURRENT_TIME)
-
-            editable.set_text(_("Pick an accelerator"))
-            self.accel_editable = editable
-
-            self.release_event_id = self.accel_editable.connect( "key-release-event", self.on_key_release )
-            self.press_event_id = self.accel_editable.connect( "key-press-event", self.on_key_press )
-            self.focus_id = self.accel_editable.connect( "focus-out-event", self.on_focus_out )
-            self.teaching = True
-        else:
-            self.ungrab()
-            self.set_label()
-            self.teaching = False
-
-    def on_focus_out(self, widget, event):
-        self.ungrab()
-
-    def on_key_press(self, widget, event):
-        if self.teaching:
-            return True
-
-        return False
-
-    def on_key_release(self, widget, event):
-        self.ungrab()
-        if ((int(event.state) & 0xff & ~IGNORED_MOD_MASK) == 0) and event.keyval == Gdk.KEY_Escape:
-            self.set_label(self.cur_val)
-            self.teaching = False
-            return True
-        if ((int(event.state) & 0xff & ~IGNORED_MOD_MASK) == 0) and event.keyval == Gdk.KEY_BackSpace:
-            self.teaching = False
-            self.set_label()
-            self.emit("accel-cleared", self.path)
-            return True
-        accel_string = Gtk.accelerator_name(event.keyval, event.state)
-        accel_string = self.sanitize(accel_string)
-        self.cur_val = accel_string
-        self.set_label(accel_string)
-        self.teaching = False
-        key, codes, mods = Gtk.accelerator_parse_with_keycode(accel_string)
-        self.emit("accel-edited", self.path, key, mods, codes[0])
-        return True
-
-    def sanitize(self, string):
-        accel_string = string.replace("<Mod2>", "")
-        accel_string = accel_string.replace("<Mod4>", "")
-        for single, mod in SPECIAL_MODS:
-            if single in accel_string and mod in accel_string:
-                accel_string = accel_string.replace(mod, "")
-        return accel_string
-
-    def ungrab(self):
-        self.keyboard.ungrab(Gdk.CURRENT_TIME)
-        if self.release_event_id > 0:
-            self.accel_editable.disconnect(self.release_event_id)
-            self.release_event_id = 0
-        if self.press_event_id > 0:
-            self.accel_editable.disconnect(self.press_event_id)
-            self.press_event_id = 0
-        if self.focus_id > 0:
-            self.accel_editable.disconnect(self.focus_id)
-            self.focus_id = 0
