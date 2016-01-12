@@ -146,11 +146,11 @@ Applet.prototype = {
         	this.actor = new St.BoxLayout({ style_class: 'applet-box', 
                                                 reactive: true, 
                                                 track_hover: true, 
-						y_align: St.Align.MIDDLE, 
-						x_align: St.Align.END,
+						y_align: Clutter.ActorAlign.CENTER, 
+						x_align: Clutter.ActorAlign.CENTER,
 						x_expand: true,
 						y_expand: true  });
-		this.actor.set_style("padding:0px;padding-left:0px;padding-right:0px;");
+		this.actor.set_style("padding:0px;margin:0px");
 	}
 	else
 	{
@@ -499,8 +499,8 @@ IconApplet.prototype = {
 
 	this._applet_icon_box = new St.Bin();
 
-        this.actor.add(this._applet_icon_box, {x_align: St.Align.MIDDLE, 
-                                               y_align: St.Align.MIDDLE, 
+        this.actor.add(this._applet_icon_box, {x_align: Clutter.ActorAlign.CENTER, 
+                                               y_align: Clutter.ActorAlign.CENTER, 
                                                y_fill: true, 
                                                x_fill: true });
     },

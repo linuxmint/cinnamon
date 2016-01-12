@@ -23,6 +23,13 @@ const Util = imports.misc.util;
 
 const SLIDER_SCROLL_STEP = 0.05; /* Slider scrolling step in % */
 
+const PanelLoc = {
+	top : 0,
+	bottom : 1,
+	left : 2,
+	right : 3
+};
+
 const OrnamentType = {
     NONE: 0,
     CHECK: 1,
@@ -2188,7 +2195,7 @@ PopupMenu.prototype = {
         let panels = Main.panelManager.getPanelsInMonitor(Main.layoutManager.monitors.indexOf(monitor));
 
         for (let panel of panels)
-            if (panel.panelPosition == 0 || panel.panelPosition == 1)  // horizontal panels only, does not seem appropriate for vertical panels
+            if (panel.panelPosition == PanelLoc.top || panel.panelPosition == PanelLoc.bottom)  // horizontal panels only
             {
                 maxHeight -= panel.actor.height;
             }

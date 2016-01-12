@@ -10,6 +10,12 @@ const St = imports.gi.St;
 const Main = imports.ui.main;
 const Params = imports.misc.params;
 const PopupMenu = imports.ui.popupMenu;
+const PanelLoc = {
+	top : 0,
+	bottom : 1,
+	left : 2,
+	right : 3
+};
 
 function ButtonBox(params) {
     this._init.apply(this, arguments);
@@ -123,7 +129,7 @@ Button.prototype = {
             // scrollable so the minimum height is smaller than the natural height
             let monitor = Main.layoutManager.findMonitorForActor(this.launcher.actor);
 
-            if (Main.panel.panelPosition == 0 || Main.panel.panelPosition == 1) // horizontal panel
+            if (Main.panel.panelPosition == PanelLoc.top || Main.panel.panelPosition == PanelLoc.top) // horizontal panel
             {
             this.menu.actor.style = ('max-height: ' +
                                      Math.round(monitor.height - Main.panel.actor.height) +

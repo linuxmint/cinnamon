@@ -1824,27 +1824,27 @@ Panel.prototype = {
 	    {
 		    this._leftBox   = new St.BoxLayout({ name: 'panelLeft', 
                                                          vertical: true, 
-                                                         x_align: St.Align.END});  
+                                                         x_align: Clutter.ActorAlign.CENTER});  
 
 		    this._rightBox  = new St.BoxLayout({ name: 'panelLeft', 
                                                          vertical: true, 
-                                                         x_align: St.Align.END});
+                                                         x_align: Clutter.ActorAlign.CENTER});
 	    }
 	    else
 	    {
 		    this._leftBox   = new St.BoxLayout({ name: 'panelRight', 
                                                          vertical: true, 
-                                                         x_align: St.Align.END});  
+                                                         x_align: Clutter.ActorAlign.CENTER});  
 
 		    this._rightBox  = new St.BoxLayout({ name: 'panelRight', 
                                                          vertical: true, 
-                                                         x_align: St.Align.END});
+                                                         x_align: Clutter.ActorAlign.CENTER});
 	    }
 
 	    this._centerBox = new St.BoxLayout({ name: 'panelCenter', 
                                                  vertical: true, 
-                                                 y_align: St.Align.END, 
-						 x_align: St.Align.END});  
+                                                 y_align: Clutter.ActorAlign.CENTER, 
+						 x_align: Clutter.ActorAlign.CENTER});  
 
 	    this.actor.add_actor(this._leftBox);
 	    this.actor.add_actor(this._centerBox);

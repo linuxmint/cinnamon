@@ -295,9 +295,9 @@ MyApplet.prototype = {
             this.myactor = new St.BoxLayout({ name: 'panel-launchers-box',
                                               style_class: 'panel-launchers-box',
 						vertical: true,
-						x_align: St.Align.END,
+						x_align: Clutter.ActorAlign.CENTER,
 						x_expand: true });
-            this.myactor.set_style("padding:0px;padding-left:0px;padding-right:0px; margin-left:0px;margin-right:0px");
+            this.myactor.set_style("padding-left:0px;padding-right:0px; margin-left:0px;margin-right:0px");
 
  	}
 
