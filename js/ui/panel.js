@@ -1822,29 +1822,34 @@ Panel.prototype = {
 	{
 	    if (this.panelPosition == PanelLoc.left)    // left panel
 	    {
-		    this._leftBox   = new St.BoxLayout({ name: 'panelLeft', 
-                                                         vertical: true, 
-                                                         x_align: Clutter.ActorAlign.CENTER});  
-
-		    this._rightBox  = new St.BoxLayout({ name: 'panelLeft', 
-                                                         vertical: true, 
-                                                         x_align: Clutter.ActorAlign.CENTER});
+		    this._leftBox   = new St.BoxLayout({ name: 'panelLeft.vertical', 
+                                                 vertical: true, 
+                                                 x_align: Clutter.ActorAlign.CENTER,
+                                                 important: true});
+  
+            this._rightBox  = new St.BoxLayout({ name: 'panelLeft.vertical', 
+                                                 vertical: true, 
+                                                 x_align: Clutter.ActorAlign.CENTER,
+                                                 important: true});
 	    }
 	    else
 	    {
-		    this._leftBox   = new St.BoxLayout({ name: 'panelRight', 
-                                                         vertical: true, 
-                                                         x_align: Clutter.ActorAlign.CENTER});  
+            this._leftBox   = new St.BoxLayout({ name: 'panelRight.vertical', 
+                                                 vertical: true, 
+                                                 x_align: Clutter.ActorAlign.CENTER,
+                                                 important: true});   
 
-		    this._rightBox  = new St.BoxLayout({ name: 'panelRight', 
-                                                         vertical: true, 
-                                                         x_align: Clutter.ActorAlign.CENTER});
+            this._rightBox  = new St.BoxLayout({ name: 'panelRight.vertical', 
+                                                 vertical: true, 
+                                                 x_align: Clutter.ActorAlign.CENTER,
+                                                 important: true});
 	    }
 
-	    this._centerBox = new St.BoxLayout({ name: 'panelCenter', 
-                                                 vertical: true, 
-                                                 y_align: Clutter.ActorAlign.CENTER, 
-						 x_align: Clutter.ActorAlign.CENTER});  
+        this._centerBox = new St.BoxLayout({ name: 'panelCenter.vertical', 
+                                             vertical: true, 
+                                             y_align: Clutter.ActorAlign.CENTER, 
+                                             x_align: Clutter.ActorAlign.CENTER,
+                                             important: true});   
 
 	    this.actor.add_actor(this._leftBox);
 	    this.actor.add_actor(this._centerBox);

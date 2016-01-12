@@ -283,6 +283,43 @@ StScrollBar StButton#vhandle:hover {
 	padding-right: 0px;
 	spacing: 0px;
 }
+#panelLeft.vertical {
+	spacing: 0px;
+}
+#panelCenter.vertical {
+	spacing: 0px;
+}
+#panelLeft.vertical:dnd {
+	background-gradient-direction: vertical;
+	background-gradient-start: rgba(255,0,0,0.05);
+	background-gradient-end: rgba(255,0,0,0.2);
+}
+#panelCenter.vertical:dnd {
+	background-gradient-direction: vertical;
+	background-gradient-start: rgba(0,255,0,0.05);
+	background-gradient-end: rgba(0,255,0,0.2);
+}
+#panelRight.vertical:dnd {
+	background-gradient-direction: vertical;
+	background-gradient-start: rgba(0,0,255,0.05);
+	background-gradient-end: rgba(0,0,255,0.2);
+}
+#panelLeft.vertical:ltr {
+	padding-top: 4px;
+	padding-bottom: 4px;
+}
+#panelLeft.vertical:rtl {
+	padding-top: 4px;
+	padding-bottom: 4px;
+}
+#panelRight.vertical:ltr { 
+	padding-top: 4px;
+	padding-bottom: 4px;
+}
+#panelRight.vertical:rtl {
+	padding-top: 4px;
+	padding-bottom: 4px;
+}
 .panel-top {
 }
 .panel-bottom {
