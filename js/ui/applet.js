@@ -141,21 +141,24 @@ Applet.prototype = {
      * @instance_id (int): instance id of the applet
      */
     _init: function(orientation, panel_height, instance_id) {
-	if (orientation == St.Side.LEFT || orientation == St.Side.RIGHT)
-	{
-        	this.actor = new St.BoxLayout({ style_class: 'applet-box', 
-                                                reactive: true, 
-                                                track_hover: true, 
-						y_align: Clutter.ActorAlign.CENTER, 
-						x_align: Clutter.ActorAlign.CENTER,
-						x_expand: true,
-						y_expand: true  });
-		this.actor.set_style("padding:0px;margin:0px");
-	}
-	else
-	{
-        	this.actor = new St.BoxLayout({ style_class: 'applet-box', reactive: true, track_hover: true });
-	}
+
+        if (orientation == St.Side.LEFT || orientation == St.Side.RIGHT)
+        {
+            this.actor = new St.BoxLayout({ style_class: 'applet-box-vertical', 
+                                            reactive: true, 
+                                            track_hover: true, 
+                                            y_align: Clutter.ActorAlign.CENTER, 
+                                            x_align: Clutter.ActorAlign.CENTER,
+                                            x_expand: true,
+                                            y_expand: true,
+                                            important: true});
+       }
+        else
+        {
+            this.actor = new St.BoxLayout({ style_class: 'applet-box',
+                                            reactive: true, 
+                                            track_hover: true });
+        }
     
         this._applet_tooltip = new Tooltips.PanelItemTooltip(this, "", orientation);                                        
         this.actor.connect('button-press-event', Lang.bind(this, this._onButtonPressEvent));  
@@ -588,70 +591,36 @@ IconApplet.prototype = {
 
     _setStyle: function() {
 
-	let symb_scaleup 	= ((this._panelHeight / DEFAULT_PANEL_HEIGHT) * PANEL_SYMBOLIC_ICON_DEFAULT_HEIGHT) / global.ui_scale;
-	let fullcolor_scaleup 	= this._panelHeight * COLOR_ICON_HEIGHT_FACTOR / global.ui_scale;
-	let icon_type 		= this._applet_icon.get_icon_type();
+        let symb_scaleup 	= ((this._panelHeight / DEFAULT_PANEL_HEIGHT) * PANEL_SYMBOLIC_ICON_DEFAULT_HEIGHT) / global.ui_scale;
+        let fullcolor_scaleup 	= this._panelHeight * COLOR_ICON_HEIGHT_FACTOR / global.ui_scale;
+        let icon_type 		= this._applet_icon.get_icon_type();
 
-	if (this._orientation == St.Side.LEFT || this._orientation == St.Side.RIGHT)
-	{
-	    //
-	    // Icons may need some adjustment to look right on vertical panels
-	    // 
-	    switch (icon_type) {
-		case St.IconType.FULLCOLOR:
-		    this._applet_icon.set_icon_size(this._scaleMode ?
-			       			fullcolor_scaleup *1 :
-			       			DEFAULT_ICON_HEIGHT);
-		    this._applet_icon.set_style_class_name('applet-icon');
-		    break;
-		case St.IconType.SYMBOLIC:
-		    this._applet_icon.set_icon_size(this._scaleMode ?
-			        			symb_scaleup*1.1 :
-			        			-1);
-		    this._applet_icon.set_style_class_name('system-status-icon');
-		    break;
-		default:
-		    this._applet_icon.set_icon_size(this._scaleMode ?
-			        			symb_scaleup :
-			        			-1);
-		    this._applet_icon.set_style_class_name('system-status-icon');
-	    }
-	    // 
-	    // As we want icons to be centrally aligned for vertical panels, remove any padding
-	    //
-            this.actor.set_style("padding:0px;padding-left:0px;padding-right:0px;");
+        switch (icon_type) {
+            case St.IconType.FULLCOLOR:
+            this._applet_icon.set_icon_size(this._scaleMode ?
+                                            fullcolor_scaleup *1 :
+                                            DEFAULT_ICON_HEIGHT);
+            this._applet_icon.set_style_class_name('applet-icon');
+            break;
+            case St.IconType.SYMBOLIC:
+            this._applet_icon.set_icon_size(this._scaleMode ?
+                                            symb_scaleup*1.1 :
+                                            -1);
+            this._applet_icon.set_style_class_name('system-status-icon');
+            break;
+            default:
+            this._applet_icon.set_icon_size(this._scaleMode ?
+                                            symb_scaleup :
+                                            -1);
+                                            this._applet_icon.set_style_class_name('system-status-icon');
+        }
+//        if (this._orientation == St.Side.LEFT || this._orientation == St.Side.RIGHT)
+//        {
+//            let ph = this._panelHeight;   
+//            this.actor.set_clip(0, 0, ph, ph);  // ensure no visible bleeding of the allocation box 
+                                                // beyond the panel to the right,  e.g. on hover
+//        }
 
-  	    let h = this._applet_icon.get_margin_top();
-	    if (h < 2)
-	    {
-	        this._applet_icon.set_margin_top(2.0);   // ensure there is some minimal vertical space between icons
-	    }
-
-
-	    let ph = this._panelHeight;
-	    
-	    this.actor.set_clip(0, 0, ph, ph);  // ensure no visible bleeding of the allocation box 
-					     // beyond the panel to the right,  e.g. on hover
-	}
-	else
-	{
-	//
-	//  Normal horizontal panels
-	//
-		switch (icon_type) {
-		    case St.IconType.FULLCOLOR:
-			this._applet_icon.set_icon_size(this._scaleMode ?
-			        			fullcolor_scaleup :
-			        			FALLBACK_ICON_HEIGHT);
-			this._applet_icon.set_style_class_name('applet-icon');
-			break;
-		    case St.IconType.SYMBOLIC:
-			this._applet_icon.set_icon_size(this._scaleMode ?
-			        			symb_scaleup :
-			        			-1);
-			this._applet_icon.set_style_class_name('system-status-icon');
-		}
-	}
 
     },
 

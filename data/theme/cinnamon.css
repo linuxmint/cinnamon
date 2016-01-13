@@ -283,42 +283,31 @@ StScrollBar StButton#vhandle:hover {
 	padding-right: 0px;
 	spacing: 0px;
 }
-#panelLeft.vertical {
+#panelLeft-vertical {
+	padding-top: 2px;
+	padding-bottom: 2px;
+}
+#panelRight-vertical {
+	padding-top: 2px;
+	padding-bottom: 2px;
+}
+#panelCenter-vertical {
 	spacing: 0px;
 }
-#panelCenter.vertical {
-	spacing: 0px;
-}
-#panelLeft.vertical:dnd {
+#panelLeft-vertical:dnd {
 	background-gradient-direction: vertical;
 	background-gradient-start: rgba(255,0,0,0.05);
 	background-gradient-end: rgba(255,0,0,0.2);
 }
-#panelCenter.vertical:dnd {
+#panelCenter-vertical:dnd {
 	background-gradient-direction: vertical;
 	background-gradient-start: rgba(0,255,0,0.05);
 	background-gradient-end: rgba(0,255,0,0.2);
 }
-#panelRight.vertical:dnd {
+#panelRight-vertical:dnd {
 	background-gradient-direction: vertical;
 	background-gradient-start: rgba(0,0,255,0.05);
 	background-gradient-end: rgba(0,0,255,0.2);
-}
-#panelLeft.vertical:ltr {
-	padding-top: 4px;
-	padding-bottom: 4px;
-}
-#panelLeft.vertical:rtl {
-	padding-top: 4px;
-	padding-bottom: 4px;
-}
-#panelRight.vertical:ltr { 
-	padding-top: 4px;
-	padding-bottom: 4px;
-}
-#panelRight.vertical:rtl {
-	padding-top: 4px;
-	padding-bottom: 4px;
 }
 .panel-top {
 }
@@ -1380,6 +1369,12 @@ StScrollBar StButton#vhandle:hover {
 #panel-launchers-box {
 	padding-left: 7px;
 }
+#panel-launchers-box-vertical {
+	padding-top: 2px;
+	padding-bottom: 2px;
+	padding-left:0px;
+	padding-right: 0px;
+}
 .panel-launcher {
 	margin: 1px;
 	padding: 1px;
@@ -1464,11 +1459,27 @@ StScrollBar StButton#vhandle:hover {
 .applet-box:hover {
 	color: #fff;
 }
+.applet-box-vertical {
+	padding-left: 0px;
+	padding-right: 0px;
+	padding-top: 3px;
+	padding-bottom: 3px;
+	color: #ccc;
+	text-shadow: black 0px 0px 2px;
+	transition-duration: 300;
+}
+.applet-box-vertical:hover {
+	color: #fff;
+}
 .applet-label {	
 	font-weight: bold;
 	color: #ccc;		
 }
 .applet-box:hover > .applet-label {
+	color: #fff;
+	text-shadow: white 0px 0px 5px;
+}
+.applet-box-vertical:hover > .applet-label {
 	color: #fff;
 	text-shadow: white 0px 0px 5px;
 }
@@ -1480,7 +1491,10 @@ StScrollBar StButton#vhandle:hover {
 	color: #fff;
 	icon-shadow: white 0px 0px 3px;
 }
-
+.applet-box-vertical:hover .applet-icon {
+	color: #fff;
+	icon-shadow: white 0px 0px 3px;
+}
 /* ===================================================================
  * Desklets (desklet.js) 
  * ===================================================================*/

@@ -287,18 +287,15 @@ MyApplet.prototype = {
 	if (this.orientation == St.Side.TOP || this.orientation == St.Side.BOTTOM)
 	{
 
-           this.myactor = new St.BoxLayout({ name: 'panel-launchers-box',
-                                             style_class: 'panel-launchers-box' });
+           this.myactor = new St.BoxLayout({ name: 'panel-launchers-box' });
 	}
 	else		// vertical panels
 	{
-            this.myactor = new St.BoxLayout({ name: 'panel-launchers-box',
-                                              style_class: 'panel-launchers-box',
+            this.myactor = new St.BoxLayout({ name: 'panel-launchers-box-vertical',
 						vertical: true,
 						x_align: Clutter.ActorAlign.CENTER,
-						x_expand: true });
-            this.myactor.set_style("padding-left:0px;padding-right:0px; margin-left:0px;margin-right:0px");
-
+						x_expand: true,
+						important: true });
  	}
 
         this.settings = new Settings.AppletSettings(this, metadata.uuid, instance_id);

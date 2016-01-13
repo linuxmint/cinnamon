@@ -1822,30 +1822,30 @@ Panel.prototype = {
 	{
 	    if (this.panelPosition == PanelLoc.left)    // left panel
 	    {
-		    this._leftBox   = new St.BoxLayout({ name: 'panelLeft.vertical', 
+		    this._leftBox   = new St.BoxLayout({ name: 'panelLeft-vertical', 
                                                  vertical: true, 
                                                  x_align: Clutter.ActorAlign.CENTER,
                                                  important: true});
   
-            this._rightBox  = new St.BoxLayout({ name: 'panelLeft.vertical', 
+            this._rightBox  = new St.BoxLayout({ name: 'panelLeft-vertical', 
                                                  vertical: true, 
                                                  x_align: Clutter.ActorAlign.CENTER,
                                                  important: true});
 	    }
 	    else
 	    {
-            this._leftBox   = new St.BoxLayout({ name: 'panelRight.vertical', 
+            this._leftBox   = new St.BoxLayout({ name: 'panelRight-vertical', 
                                                  vertical: true, 
                                                  x_align: Clutter.ActorAlign.CENTER,
                                                  important: true});   
 
-            this._rightBox  = new St.BoxLayout({ name: 'panelRight.vertical', 
+            this._rightBox  = new St.BoxLayout({ name: 'panelRight-vertical', 
                                                  vertical: true, 
                                                  x_align: Clutter.ActorAlign.CENTER,
                                                  important: true});
 	    }
 
-        this._centerBox = new St.BoxLayout({ name: 'panelCenter.vertical', 
+        this._centerBox = new St.BoxLayout({ name: 'panelCenter-vertical', 
                                              vertical: true, 
                                              y_align: Clutter.ActorAlign.CENTER, 
                                              x_align: Clutter.ActorAlign.CENTER,
