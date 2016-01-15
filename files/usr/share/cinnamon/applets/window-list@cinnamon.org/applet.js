@@ -104,10 +104,10 @@ WindowPreview.prototype = {
         iconBox.set_child(icon);
         hbox.add_actor(iconBox);
 
-        let label = new St.Label();
-        label.set_text(this.metaWindow.get_title());
-        label.style = "padding: 2px;";
-        hbox.add_actor(label);
+        this.label = new St.Label();
+        this.label.set_text(this.metaWindow.get_title());
+        this.label.style = "padding: 2px;";
+        hbox.add_actor(this.label);
 
         box.add_actor(hbox);
 
@@ -132,7 +132,7 @@ WindowPreview.prototype = {
     },
 
     show: function() {
-        if (!this.actor)
+        if (!this.actor || this._applet._menuOpen)
             return
 
         let muffinWindow = this.metaWindow.get_compositor_private();
@@ -185,6 +185,10 @@ WindowPreview.prototype = {
         }
         this.actor.hide();
         this.visible = false;
+    },
+
+    set_text: function(text) {
+        this.label.set_text(text);
     },
 
     _destroy: function() {
@@ -793,6 +797,11 @@ AppMenuButtonRightClickMenu.prototype = {
     },
 
     _onToggled: function(actor, isOpening){
+        if (this.isOpen)
+            this._launcher._applet._menuOpen = true;
+        else
+            this._launcher._applet._menuOpen = false;
+
         if (!isOpening) {
             return;
         }
@@ -818,6 +827,7 @@ MyApplet.prototype = {
         this.dragInProgress = false;
         this._tooltipShowing = false;
         this._tooltipErodeTimer = null;
+        this._menuOpen = false;
         this._urgentSignal = null;
         this._windows = [];
         this._monitorWatchList = [];
