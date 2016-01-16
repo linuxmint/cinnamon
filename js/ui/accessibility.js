@@ -133,17 +133,13 @@ A11yHandler.prototype = {
         switch (key) {
             case CAPS:
                 icon = Gio.Icon.new_for_string(state ? "caps-lock-symbolic" : "caps-lock-off-symbolic")
-                Main.osdWindow.setIcon(icon);
-                Main.osdWindow.setLevel(undefined);
-                Main.osdWindow.show();
                 break;
             case NUM:
                 icon = Gio.Icon.new_for_string(state ? "num-lock-symbolic" : "num-lock-off-symbolic")
-                Main.osdWindow.setIcon(icon);
-                Main.osdWindow.setLevel(undefined);
-                Main.osdWindow.show();
                 break;
         }
+
+        Main.osdWindowManager.show(-1, icon, undefined);        
     },
 
     play_state_sound: function(key, state) {

@@ -134,7 +134,7 @@ let backgroundManager = null;
 let slideshowManager = null;
 let placesManager = null;
 let panelManager = null;
-let osdWindow = null;
+let osdWindowManager = null;
 let overview = null;
 let expo = null;
 let runDialog = null;
@@ -388,7 +388,7 @@ function start() {
         layoutManager.primaryMonitor.y + layoutManager.primaryMonitor.height/2);
 
     xdndHandler = new XdndHandler.XdndHandler();
-    osdWindow = new OsdWindow.OsdWindow();
+    osdWindowManager = new OsdWindow.OsdWindowManager();
     // This overview object is just a stub for non-user sessions
     overview = new Overview.Overview();
     expo = new Expo.Expo();
