@@ -137,7 +137,6 @@ PanelAppLauncher.prototype = {
         this._dragging = false;
         this._tooltip.preventShow = false;
         this._applet._clearDragPlaceholder();
-	// FIXME - can we reload the entire applet at this point , currently moving from horizontal to vertical does not do this
     },
 
     _onDragCancelled: function() {
@@ -309,6 +308,7 @@ MyApplet.prototype = {
                                    this._updateLauncherDrag, null);
 
         this.uuid = metadata.uuid;
+
         this._settings_proxy = new Array();
         this._launchers = new Array();
 
@@ -405,18 +405,22 @@ MyApplet.prototype = {
         this.reload();
     },
 
-    on_orientation_changed: function() {
+    on_orientation_changed: function(neworientation) { 
 
-	    if (this.orientation == St.Side.TOP || this.orientation == St.Side.BOTTOM)
-	    {
-		this.myactor.set_style('vertical: false');
-	    }
-	    else		// vertical panels
-	    {
-		this.myactor.set_style('vertical: true');
-	    }
-            this.reload();
-	// FIXME - can we reload the entire applet at this point , currently moving from horizontal to vertical does not do this
+	if (neworientation == St.Side.TOP || neworientation == St.Side.BOTTOM)
+	{
+            this.myactor.set_style_class_name('panel-launchers-box');
+            this.myactor.set_vertical(false);
+	}
+	else		// vertical panels
+	{
+            this.myactor.set_style_class_name('panel-launchers-box-vertical');
+            this.myactor.set_vertical(true);
+	    this.myactor.set_x_align(Clutter.ActorAlign.CENTER);
+            this.myactor.set_style("padding:0px;margin:0px");
+	    this.myactor.set_important(true);
+ 	}
+        this.reload();
     },
 
     reload: function() {

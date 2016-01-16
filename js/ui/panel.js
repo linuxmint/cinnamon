@@ -759,13 +759,10 @@ PanelManager.prototype = {
 		if (newMeta[ID][0] != this.panelsMeta[ID][0] || newMeta[ID][1] != this.panelsMeta[ID][1]) // if panel position or monitor have changed
 		{
 			newPanels[ID].updatePosition(newMeta[ID][0], newMeta[ID][1]);
-			/*if (orientationchanged == true)
-			{
-			    AppletManager.unloadAppletsOnPanel(newPanels[ID]);
-			    AppletManager.loadAppletsOnPanel(newPanels[ID]);
-			}
-			else */
-			    AppletManager.updateAppletsOnPanel(newPanels[ID]);
+
+			AppletManager.updateAppletsOnPanel(newPanels[ID]); // Note that this will not cope with vertical/horizontal panel
+									   // changes fully - panel launchers, systray etc. need reorienting 
+                                                                           // within the applet using their on_orientation_changed function  
 		}
 	    } else { 					// new panel
 		let jj = getPanelLocFromName(elements[2]);
@@ -1657,6 +1654,7 @@ PanelZoneDNDHandler.prototype = {
         }
         source.actor._applet._newOrder = insertAppletPos;
         source.actor._applet._newPanelLocation = this._panelZone;
+
         this._clearDragPlaceholder();
         actor.destroy();
         AppletManager.saveAppletsPositions();
@@ -1893,14 +1891,6 @@ Panel.prototype = {
 					this._rightCorner = new PanelCorner(this._rightBox, St.Side.BOTTOM, CornerType.bottomright);
 		    	}
 	    }
-		//
-		// the contents of the boxes at the top and bottom of the screen come up a bit 'shrink-wrapped' so this adds a little padding
-		// will want removing if separate css for vertical panels is set up. Removed because of side-effects - zero content left/right boxes show
-		// with a minimal size, looks dumb 
-		// 
-		//this._leftBox.set_style("padding-top:"+5*global.ui_scale+"px;padding-bottom:"+3*global.ui_scale+"px");
-		//this._rightBox.set_style("padding-top:"+5*global.ui_scale+"px;padding-bottom:"+3*global.ui_scale+"px");
-		this._centerBox.set_style("padding-top:"+3*global.ui_scale+"px;padding-bottom:"+3*global.ui_scale+"px");
 
 	} // end vertical panel section
 
