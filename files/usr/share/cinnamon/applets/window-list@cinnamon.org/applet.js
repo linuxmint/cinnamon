@@ -865,11 +865,12 @@ MyApplet.prototype = {
 
         let tracker = Cinnamon.WindowTracker.get_default();
         this.signals.connect(tracker, "notify::focus-app", this._onFocus);
-        this.signals.connect(global.screen, 'window-entered-monitor', this._onWindowAdded);
-        this.signals.connect(global.screen, 'window-left-monitor', this._onWindowRemoved);
-        this.signals.connect(global.screen, 'notify::n-workspaces', this._onNWorkspacesChanged);
+        this.signals.connect(global.screen, 'window-added', this._onWindowAdded);
+        this.signals.connect(global.screen, 'window-removed', this._onWindowRemoved);
+        this.signals.connect(global.screen, 'window-monitor-changed', this._onWindowMonitorChanged);
+        this.signals.connect(global.screen, 'window-workspace-changed', this._onWindowWorkspaceChanged);
         this.signals.connect(global.screen, 'monitors-changed', this._updateWatchedMonitors);
-        this.signals.connect(global.window_manager, 'switch-workspace',this._refreshItems);
+        this.signals.connect(global.window_manager, 'switch-workspace', this._refreshAllItems);
 
         this.signals.connect(global.window_manager, 'minimize', this._onWindowStateChange);
         this.signals.connect(global.window_manager, 'maximize', this._onWindowStateChange);
@@ -880,7 +881,6 @@ MyApplet.prototype = {
         global.settings.bind("panel-edit-mode", this.actor, "reactive", Gio.SettingsBindFlags.DEFAULT);
 
         this.on_orientation_changed(orientation);
-        this._onNWorkspacesChanged();
         this._updateAttentionGrabber();
     },
 
@@ -893,7 +893,7 @@ MyApplet.prototype = {
     },
 
     on_panel_height_changed: function() {
-        this._refreshItems();
+        this._refreshAllItems();
     },
 
     on_orientation_changed: function(orientation) {
@@ -913,27 +913,27 @@ MyApplet.prototype = {
         }
     },
 
-    /* These are callbacks to two different signals that pass different number
-     * of arguments. However, the last argument is always metaWindow, which is
-     * the only thing we want. */
-    _onWindowAdded: function() {
-        if (this._shouldAdd(arguments[arguments.length - 1]))
-            this._addWindow(arguments[arguments.length - 1]);
+    _onWindowAdded: function(screen, metaWindow, monitor) {
+        if (this._shouldAdd(metaWindow))
+            this._addWindow(metaWindow);
     },
 
-    _onWindowRemoved: function() {
-        this._removeWindow(arguments[arguments.length - 1]);
+    _onWindowRemoved: function(screen, metaWindow) {
+        this._removeWindow(metaWindow);
     },
 
-    _onNWorkspacesChanged: function() {
-        this.signals.disconnect("window-added");
-        this.signals.disconnect("window-removed");
+    _onWindowMonitorChanged: function(screen, metaWindow, monitor) {
+        if (this._shouldAdd(metaWindow))
+            this._addWindow(metaWindow);
+        else
+            this._removeWindow(metaWindow);
+    },
 
-        for (let i = 0; i < global.screen.n_workspaces; i++) {
-            let ws = global.screen.get_workspace_by_index(i);
-            this.signals.connect(ws, "window-added", this._onWindowAdded);
-            this.signals.connect(ws, "window-removed", this._onWindowRemoved);
-        }
+    _onWindowWorkspaceChanged: function(screen, metaWindow, metaWorkspace) {
+        let window = this._windows.find(win => (win.metaWindow == metaWindow));
+
+        if (window)
+            this._refreshItem(window);
     },
 
     _updateAttentionGrabber: function() {
@@ -978,18 +978,22 @@ MyApplet.prototype = {
             window.onFocus();
     },
 
-    _refreshItems: function() {
-        for (let window of this._windows) {
-            window.actor.visible =
-                (window.metaWindow.get_workspace() == global.screen.get_active_workspace()) ||
-                window.metaWindow.is_on_all_workspaces();
+    _refreshItem: function(window) {
+        window.actor.visible =
+            (window.metaWindow.get_workspace() == global.screen.get_active_workspace()) ||
+            window.metaWindow.is_on_all_workspaces();
 
-            /* The above calculates the visibility if it were the normal
-             * AppMenuButton. If this is actually a temporary AppMenuButton for
-             * urgent windows on other workspaces, it is shown iff the normal
-             * one isn't shown! */
-            if (window.alert)
-                window.actor.visible = !window.actor.visible;
+        /* The above calculates the visibility if it were the normal
+         * AppMenuButton. If this is actually a temporary AppMenuButton for
+         * urgent windows on other workspaces, it is shown iff the normal
+         * one isn't shown! */
+        if (window.alert)
+            window.actor.visible = !window.actor.visible;
+    },
+
+    _refreshAllItems: function() {
+        for (let window of this._windows) {
+            this._refreshItem(window);
         }
         this._onFocus();
     },
