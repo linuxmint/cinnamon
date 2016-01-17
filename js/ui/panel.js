@@ -1968,11 +1968,13 @@ Panel.prototype = {
 			this._context_menu = new PanelContextMenu(this, St.Side.BOTTOM, this.panelId);
 			break;
 		case PanelLoc.left:
-			this.actor.set_style_class_name('panel-top');  // could define css for left vertical, using same as for top for now
+			this.actor.set_style_class_name('panel-left');
+                        this.actor.set_important(true);
 			this._context_menu = new PanelContextMenu(this, St.Side.LEFT, this.panelId);  
 			break;
 		case PanelLoc.right:
-			this.actor.set_style_class_name('panel-top');  // could define css for right vertical, using same as for top for now
+			this.actor.set_style_class_name('panel-right');
+                        this.actor.set_important(true);
 			this._context_menu = new PanelContextMenu(this, St.Side.RIGHT, this.panelId); 
 			break;
                 default:

@@ -59,7 +59,7 @@ MyApplet.prototype = {
 
         this._signalManager = new SignalManager.SignalManager(this);
 	let manager;
-	let symb_scaleup = 0;
+	//let symb_scaleup = 0;
 	this.orientation = orientation;
 
 	if (this.orientation == St.Side.TOP || this.orientation == St.Side.BOTTOM)
@@ -77,6 +77,7 @@ MyApplet.prototype = {
 	        //this.manager_container.set_margin_left(4.0*symb_scaleup/20);
 	        // this.manager_container.set_x_align(St.Align.MIDDLE);  needs to be set by the actors inside the container ?
 	}
+        this.manager = manager;
         this.manager_container = new Clutter.Actor( { layout_manager: manager } );
         this.actor.add_actor (this.manager_container);
         this.manager_container.show();
@@ -177,16 +178,16 @@ MyApplet.prototype = {
     on_applet_clicked: function(event) {
     },
 
-    on_orientation_changed: function() {
+    on_orientation_changed: function(neworientation) { 
 
-	    if (this.orientation == St.Side.TOP || this.orientation == St.Side.BOTTOM)
-	    {
-		;  
-	    }
-	    else		// vertical panels
-	    {
-		;
-	    } 
+	if (neworientation == St.Side.TOP || neworientation == St.Side.BOTTOM)
+	{
+            this.manager.set_vertical(false);
+	}
+	else		// vertical panels
+	{
+            this.manager.set_vertical(true);
+ 	}
     },
 
     on_applet_removed_from_panel: function () {

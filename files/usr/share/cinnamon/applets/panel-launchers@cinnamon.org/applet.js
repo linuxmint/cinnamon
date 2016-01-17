@@ -417,7 +417,6 @@ MyApplet.prototype = {
             this.myactor.set_style_class_name('panel-launchers-box-vertical');
             this.myactor.set_vertical(true);
 	    this.myactor.set_x_align(Clutter.ActorAlign.CENTER);
-            this.myactor.set_style("padding:0px;margin:0px");
 	    this.myactor.set_important(true);
  	}
         this.reload();

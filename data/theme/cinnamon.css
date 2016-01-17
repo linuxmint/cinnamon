@@ -313,6 +313,10 @@ StScrollBar StButton#vhandle:hover {
 }
 .panel-bottom {
 }
+.panel-left {
+}
+.panel-right {
+}
 .panel-status-button {
 	border: 0px solid #8b8b8b;
 	-natural-hpadding: 3px;
