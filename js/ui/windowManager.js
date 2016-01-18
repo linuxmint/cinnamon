@@ -960,11 +960,14 @@ WindowManager.prototype = {
         this._shiftWindowToWorkspace(window, Meta.MotionDirection.RIGHT);
     },
 
-    moveToWorkspace: function(workspace) {
+    moveToWorkspace: function(workspace, direction_hint) {
         let active = global.screen.get_active_workspace();
         if (workspace != active) {
             Main.soundManager.play('switch');
-            workspace.activate(global.get_current_time());
+            if (direction_hint)
+                workspace.activate_with_direction_hint(direction_hint, global.get_current_time());
+            else
+                workspace.activate(global.get_current_time());
             this.showWorkspaceOSD();
         }
     },
@@ -993,7 +996,7 @@ WindowManager.prototype = {
         let active = global.screen.get_active_workspace();
         let neighbor = active.get_neighbor(Meta.MotionDirection.LEFT)
         if (active != neighbor) {
-            this.moveToWorkspace(neighbor);
+            this.moveToWorkspace(neighbor, Meta.MotionDirection.LEFT);
         }
     },
 
@@ -1001,7 +1004,7 @@ WindowManager.prototype = {
         let active = global.screen.get_active_workspace();
         let neighbor = active.get_neighbor(Meta.MotionDirection.RIGHT)
         if (active != neighbor) {
-            this.moveToWorkspace(neighbor);
+            this.moveToWorkspace(neighbor, Meta.MotionDirection.RIGHT);
         }
     },
 
