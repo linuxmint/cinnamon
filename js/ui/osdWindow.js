@@ -254,7 +254,7 @@ OsdWindowManager.prototype = {
         if (monitorIndex != -1) {
             for (let i = 0; i < this._osdWindows.length; i++) {
                 if (i == monitorIndex)
-                    this._showOsdWindow(i, icon, label);
+                    this._showOsdWindow(i, icon, level);
                 else
                     this._osdWindows[i].cancel();
             }
