@@ -5,6 +5,7 @@ const Main = imports.ui.main;
 const Mainloop = imports.mainloop;
 const Tweener = imports.ui.tweener;
 const Gio = imports.gi.Gio;
+const Gdk = imports.gi.Gdk;
 const Meta = imports.gi.Meta;
 
 const LEVEL_ANIMATION_TIME = 0.1;
@@ -12,6 +13,21 @@ const FADE_TIME = 0.1;
 const HIDE_TIMEOUT = 1500;
 
 const OSD_SIZE = 110;
+
+function convertGdkIndex(monitorIndex) {
+    let screen = Gdk.Screen.get_default();
+    let rect = screen.get_monitor_geometry(monitorIndex);
+    let cx = rect.x + rect.width / 2;
+    let cy = rect.y + rect.height / 2;
+    for (let i = 0; i < Main.layoutManager.monitors.length; i++) {
+        let monitor = Main.layoutManager.monitors[i];
+        if (cx >= monitor.x && cx < monitor.x + monitor.width &&
+            cy >= monitor.y && cy < monitor.y + monitor.height)
+            monitorIndex = i;
+    }
+
+    return monitorIndex;
+};
 
 function LevelBar() {
     this._init();
@@ -250,11 +266,13 @@ OsdWindowManager.prototype = {
         this._osdWindows[monitorIndex].show();
     },
 
-    show: function(monitorIndex, icon, level) {
+    show: function(monitorIndex, icon, level, convertIndex) {
         if (monitorIndex != -1) {
+            if (convertIndex)
+                monitorIndex = convertGdkIndex(monitorIndex);
             for (let i = 0; i < this._osdWindows.length; i++) {
                 if (i == monitorIndex)
-                    this._showOsdWindow(i, icon, label);
+                    this._showOsdWindow(i, icon, level);
                 else
                     this._osdWindows[i].cancel();
             }
