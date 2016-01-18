@@ -960,6 +960,15 @@ WindowManager.prototype = {
         this._shiftWindowToWorkspace(window, Meta.MotionDirection.RIGHT);
     },
 
+    moveToWorkspace: function(workspace) {
+        let active = global.screen.get_active_workspace();
+        if (workspace != active) {
+            Main.soundManager.play('switch');
+            workspace.activate(global.get_current_time());
+            this.showWorkspaceOSD();
+        }
+    },
+
     _showWorkspaceSwitcher : function(display, screen, window, binding) {
         if (binding.get_name() == 'switch-to-workspace-up') {
             Main.expo.toggle();
@@ -973,36 +982,26 @@ WindowManager.prototype = {
         if (screen.n_workspaces == 1)
             return;
 
-        let current_workspace_index = global.screen.get_active_workspace_index();
         if (binding.get_name() == 'switch-to-workspace-left') {
            this.actionMoveWorkspaceLeft();
-           if (current_workspace_index !== global.screen.get_active_workspace_index()) {
-                this.showWorkspaceOSD();
-           }
-        }
-        else if (binding.get_name() == 'switch-to-workspace-right') {
+        } else if (binding.get_name() == 'switch-to-workspace-right') {
            this.actionMoveWorkspaceRight();
-           if (current_workspace_index !== global.screen.get_active_workspace_index()) {
-                this.showWorkspaceOSD();
-           }
         }
     },
 
     actionMoveWorkspaceLeft: function() {
-        var active = global.screen.get_active_workspace();
-        var neighbour = active.get_neighbor(Meta.MotionDirection.LEFT)
-        if (active != neighbour) {
-            Main.soundManager.play('switch');
-            neighbour.activate(global.get_current_time());
+        let active = global.screen.get_active_workspace();
+        let neighbor = active.get_neighbor(Meta.MotionDirection.LEFT)
+        if (active != neighbor) {
+            this.moveToWorkspace(neighbor);
         }
     },
 
     actionMoveWorkspaceRight: function() {
-        var active = global.screen.get_active_workspace();
-        var neighbour = active.get_neighbor(Meta.MotionDirection.RIGHT)
-        if (active != neighbour) {
-            Main.soundManager.play('switch');
-            neighbour.activate(global.get_current_time());
+        let active = global.screen.get_active_workspace();
+        let neighbor = active.get_neighbor(Meta.MotionDirection.RIGHT)
+        if (active != neighbor) {
+            this.moveToWorkspace(neighbor);
         }
     },
 
