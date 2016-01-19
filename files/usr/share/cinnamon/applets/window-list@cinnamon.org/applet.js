@@ -105,7 +105,6 @@ WindowPreview.prototype = {
         hbox.add_actor(iconBox);
 
         this.label = new St.Label();
-        this.label.set_text(this.metaWindow.get_title());
         this.label.style = "padding: 2px;";
         hbox.add_actor(this.label);
 
@@ -284,12 +283,12 @@ AppMenuButton.prototype = {
         if (this._tooltip)
             this._tooltip.destroy();
 
-        if (this._applet.usePreview) {
+        if (this._applet.usePreview)
             this._tooltip = new WindowPreview(this, this.metaWindow, this._applet.orientation);
-        } else {
+        else
             this._tooltip = new Tooltips.PanelItemTooltip(this, "", this._applet.orientation);
-            this.setDisplayTitle();
-        }
+        
+        this.setDisplayTitle();
     },
 
     onPanelEditModeChanged: function() {
