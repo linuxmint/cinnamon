@@ -36,7 +36,7 @@ const BindingDirection = {
     BIDIRECTIONAL : 3
 };
 
-var BOOLEAN_TYPES = {
+var SETTINGS_TYPES = {
     "checkbox" : {
         "required-fields": [
             "type",
@@ -44,15 +44,6 @@ var BOOLEAN_TYPES = {
             "description"
         ]
     },
-    "generic" : {
-        "required-fields": [
-            "type",
-            "default"
-        ]
-    }
-};
-
-var STRING_TYPES = {
     "entry" : {
         "required-fields": [
             "type",
@@ -118,15 +109,6 @@ var STRING_TYPES = {
             "description"
         ]
     },
-    "generic" : {
-        "required-fields": [
-            "type",
-            "default"
-        ]
-    }
-};
-
-var NUMBER_TYPES = {
     "spinbutton" : {
         "required-fields": [
             "type",
@@ -146,14 +128,6 @@ var NUMBER_TYPES = {
             "max",
             "step",
             "description"
-        ]
-    },
-    "combobox" : {
-        "required-fields": [
-            "type",
-            "default",
-            "description",
-            "options"
         ]
     },
     "radiogroup" : {
@@ -333,38 +307,16 @@ _provider.prototype = {
         },
 
         _check_for_min_props: function (node) {
-            if (node["type"] in BOOLEAN_TYPES) {
-                for (let req_field in BOOLEAN_TYPES[node["type"]]["required-fields"]) {
-                    if (BOOLEAN_TYPES[node["type"]]["required-fields"][req_field] in node) {
-                        continue;
-                    } else {
-                        return false;
-                    }
-                }
-                return true;
-            } else if (node["type"] in STRING_TYPES) {
-                for (let req_field in STRING_TYPES[node["type"]]["required-fields"]) {
-                    if (STRING_TYPES[node["type"]]["required-fields"][req_field] in node) {
-                        continue;
-                    } else {
-                        return false;
-                    }
-                }
-                return true;
-            } else if (node["type"] in NUMBER_TYPES) {
-                for (let req_field in NUMBER_TYPES[node["type"]]["required-fields"]) {
-                    if (NUMBER_TYPES[node["type"]]["required-fields"][req_field] in node) {
-                        continue;
-                    } else {
+            if (node["type"] in SETTINGS_TYPES) {
+                for (let req_field in SETTINGS_TYPES[node["type"]]["required-fields"]) {
+                    if (!(SETTINGS_TYPES[node["type"]]["required-fields"][req_field] in node)) {
                         return false;
                     }
                 }
                 return true;
             } else if (node["type"] in NON_SETTING_TYPES) {
                 for (let req_field in NON_SETTING_TYPES[node["type"]]["required-fields"]) {
-                    if (NON_SETTING_TYPES[node["type"]]["required-fields"][req_field] in node) {
-                        continue;
-                    } else {
+                    if (!(NON_SETTING_TYPES[node["type"]]["required-fields"][req_field] in node)) {
                         return false;
                     }
                 }
@@ -537,7 +489,7 @@ _provider.prototype = {
             if (!applet_callback)
                 applet_callback = function() {};
             if (type) {
-                if (type in BOOLEAN_TYPES || type in STRING_TYPES || type in NUMBER_TYPES) {
+                if (type in SETTINGS_TYPES) {
                     this.metaBindings[key_name] = new _setting(sync_type, this.xlet, key_name, this.settings_obj, applet_var, Lang.bind (this.xlet, applet_callback), user_data);
                     return true;
                 } else {
