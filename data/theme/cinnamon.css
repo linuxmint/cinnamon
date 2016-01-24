@@ -1211,6 +1211,13 @@ StScrollBar StButton#vhandle:hover {
 	padding-left: 10px;
 	padding-top: 1px;
 }
+.window-list-box-vertical {
+	spacing: 3px;
+	padding-left: 0px;
+        padding-right: 0px;
+	padding-top: 10px;
+        padding-bottom: 10px;
+}
 .window-list-item-label {
 	font-weight: bold;
 	width: 15em;
