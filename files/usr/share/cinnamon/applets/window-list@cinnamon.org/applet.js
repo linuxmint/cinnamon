@@ -626,7 +626,7 @@ AppMenuButton.prototype = {
             childBox.x2 = Math.max(childBox.x1, allocWidth - xPadding);
         } else {
             childBox.x2 = Math.max(childBox.x1 - xPadding, 0);
-            childdBox.x1 = Math.min(childBox.x2, xPadding);
+            childBox.x1 = Math.min(childBox.x2, xPadding);
         }
 
         this._label.allocate(childBox, flags);
