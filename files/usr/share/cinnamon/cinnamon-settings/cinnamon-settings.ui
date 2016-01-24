@@ -43,8 +43,8 @@
                             <property name="invisible_char">●</property>
                             <property name="width_chars">25</property>
                             <property name="caps_lock_warning">False</property>
-                            <property name="primary_icon_stock">gtk-find</property>
-                            <property name="secondary_icon_stock">gtk-clear</property>
+                            <property name="primary_icon_name">edit-find-symbolic</property>
+                            <property name="secondary_icon_name">edit-clear-symbolic</property>
                             <property name="placeholder_text">Search...</property>
                           </object>
                           <packing>

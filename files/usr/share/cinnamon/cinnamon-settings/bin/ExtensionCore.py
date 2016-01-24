@@ -96,7 +96,7 @@ class ExtensionSidePage (SidePage):
         extensions_vbox = Gtk.VBox()
 
         self.search_entry = Gtk.Entry()
-        self.search_entry.set_icon_from_icon_name(Gtk.EntryIconPosition.PRIMARY, 'edit-find')
+        self.search_entry.set_icon_from_icon_name(Gtk.EntryIconPosition.PRIMARY, 'edit-find-symbolic')
         self.search_entry.set_placeholder_text(_("Search"))
         self.search_entry.connect('changed', self.on_entry_refilter)
 
