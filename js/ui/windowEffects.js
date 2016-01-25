@@ -146,6 +146,25 @@ Map.prototype = {
                 this._fadeWindow(cinnamonwm, actor, actor.orig_opacity, time, transition);
                 this._scaleWindow(cinnamonwm, actor, 1, 1, time, transition);
                 break;
+            case Meta.WindowType.MENU:
+            case Meta.WindowType.DROPDOWN_MENU:
+            case Meta.WindowType.POPUP_MENU:
+                let [width, height] = actor.get_allocation_box().get_size();
+                let [destX, destY] = actor.get_transformed_position();
+                let [pointerX, pointerY] = global.get_pointer();
+                let top = destY + (height * 0.5);
+
+                if (pointerY < top)
+                    actor.set_pivot_point(0, 0);
+                else
+                    actor.set_pivot_point(0, 1);
+
+                actor.scale_x = 1;
+                actor.scale_y = 0.9;
+                actor.opacity = 0;
+                this._scaleWindow(cinnamonwm, actor, 1, 1, time, transition, true);
+                this._fadeWindow(cinnamonwm, actor, actor.orig_opacity, time, transition);
+                break;
             case Meta.WindowType.MODAL_DIALOG:
             case Meta.WindowType.DIALOG:
                 actor.set_pivot_point(0, 0);
