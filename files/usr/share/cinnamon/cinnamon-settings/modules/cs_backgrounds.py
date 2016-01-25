@@ -205,6 +205,8 @@ class Module:
             widget = GSettingsColorChooser(_("Gradient end color"), "org.cinnamon.desktop.background", "secondary-color", size_group=size_group)
             self.secondary_color_revealer = settings.add_reveal_row(widget)
 
+            self.update_secondary_revealer(self._background_schema, None)
+
     def is_row_separator(self, model, iter, data):
         return model.get_value(iter, 0)
 
