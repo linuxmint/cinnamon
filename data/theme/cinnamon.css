@@ -1380,7 +1380,7 @@ StScrollBar StButton#vhandle:hover {
 #panel-launchers-box {
 	padding-left: 7px;
 }
-#panel-launchers-box-vertical {
+#panel-launchers-box.vertical {
 	padding-top: 2px;
 	padding-bottom: 2px;
 	padding-left:0px;

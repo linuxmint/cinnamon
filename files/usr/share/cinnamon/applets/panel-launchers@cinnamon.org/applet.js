@@ -283,19 +283,15 @@ MyApplet.prototype = {
         this._dragPlaceholderPos = -1;
         this._animatingPlaceholdersCount = 0;
 
-	if (this.orientation == St.Side.TOP || this.orientation == St.Side.BOTTOM)
-	{
+        this.myactor = new St.BoxLayout({ name: 'panel-launchers-box' });
 
-           this.myactor = new St.BoxLayout({ name: 'panel-launchers-box' });
-	}
-	else		// vertical panels
+	if (this.orientation == St.Side.LEFT || this.orientation == St.Side.RIGHT)
 	{
-            this.myactor = new St.BoxLayout({ name: 'panel-launchers-box-vertical',
-						vertical: true,
-						x_align: Clutter.ActorAlign.CENTER,
-						x_expand: true,
-						important: true });
- 	}
+            this.myactor.add_style_class_name('vertical');
+            this.myactor.set_x_align(Clutter.ActorAlign.CENTER);
+            this.myactor.set_vertical(true);
+            this.myactor.set_important(true);
+	}
 
         this.settings = new Settings.AppletSettings(this, metadata.uuid, instance_id);
         this.settings.bindProperty(Settings.BindingDirection.BIDIRECTIONAL,
@@ -407,14 +403,15 @@ MyApplet.prototype = {
 
     on_orientation_changed: function(neworientation) { 
 
+        this.orientation = neworientation;
 	if (neworientation == St.Side.TOP || neworientation == St.Side.BOTTOM)
 	{
-            this.myactor.set_style_class_name('panel-launchers-box');
+            this.myactor.remove_style_class_name('vertical');
             this.myactor.set_vertical(false);
 	}
 	else		// vertical panels
 	{
-            this.myactor.set_style_class_name('panel-launchers-box-vertical');
+            this.myactor.add_style_class_name('vertical');
             this.myactor.set_vertical(true);
 	    this.myactor.set_x_align(Clutter.ActorAlign.CENTER);
 	    this.myactor.set_important(true);
