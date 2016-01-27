@@ -325,7 +325,8 @@ PanelManager.prototype = {
         //
         // Draw corners where necessary.  NB no corners necessary where there is no panel for a full screen window to butt up against.
         //
-        for (let i=0; i < monitorCount; i++) {
+            log("monitor count " + monitorCount);
+            for (let i = 0; i <= monitorCount; i++) {
         //
         // logic for loading up panels in the right order and drawing corners relies on doing it ordered by monitor
         //
@@ -632,6 +633,10 @@ PanelManager.prototype = {
      * Returns (Panel.Panel): Panel created
      */
     _loadPanel: function(ID, monitorIndex, panelPosition, drawcorner, panelList, metaList) {
+        log("panel " + ID);
+        log("monitor" + monitorIndex);
+        log("position" + panelPosition);
+
         if (!panelList) panelList = this.panels;
         if (!metaList) metaList = this.panelsMeta;
 
