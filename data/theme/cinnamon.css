@@ -1469,17 +1469,13 @@ StScrollBar StButton#vhandle:hover {
 .applet-box:hover {
 	color: #fff;
 }
-.applet-box-vertical {
+.applet-box.vertical {
 	padding-left: 0px;
 	padding-right: 0px;
 	padding-top: 3px;
 	padding-bottom: 3px;
-	color: #ccc;
-	text-shadow: black 0px 0px 2px;
-	transition-duration: 300;
 }
-.applet-box-vertical:hover {
-	color: #fff;
+.applet-box.vertical:hover {
 }
 .applet-label {	
 	font-weight: bold;
@@ -1489,9 +1485,7 @@ StScrollBar StButton#vhandle:hover {
 	color: #fff;
 	text-shadow: white 0px 0px 5px;
 }
-.applet-box-vertical:hover > .applet-label {
-	color: #fff;
-	text-shadow: white 0px 0px 5px;
+.applet-box.vertical:hover > .applet-label {
 }
 .applet-icon {
 	color: #ccc;
@@ -1501,9 +1495,7 @@ StScrollBar StButton#vhandle:hover {
 	color: #fff;
 	icon-shadow: white 0px 0px 3px;
 }
-.applet-box-vertical:hover .applet-icon {
-	color: #fff;
-	icon-shadow: white 0px 0px 3px;
+.applet-box.vertical:hover .applet-icon {
 }
 /* ===================================================================
  * Desklets (desklet.js) 

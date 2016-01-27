@@ -142,22 +142,16 @@ Applet.prototype = {
      */
     _init: function(orientation, panel_height, instance_id) {
 
+        this.actor = new St.BoxLayout({ style_class: 'applet-box',
+                                        reactive: true,
+                                        track_hover: true });
+
         if (orientation == St.Side.LEFT || orientation == St.Side.RIGHT)
         {
-            this.actor = new St.BoxLayout({ style_class: 'applet-box-vertical', 
-                                            reactive: true, 
-                                            track_hover: true, 
-                                            y_align: Clutter.ActorAlign.CENTER, 
-                                            x_align: Clutter.ActorAlign.CENTER,
-                                            x_expand: true,
-                                            y_expand: true,
-                                            important: true});
-       }
-        else
-        {
-            this.actor = new St.BoxLayout({ style_class: 'applet-box',
-                                            reactive: true, 
-                                            track_hover: true });
+            this.actor.add_style_class_name('vertical');
+            this.actor.set_important(true);
+            this.actor.set_y_align(Clutter.ActorAlign.CENTER);
+            this.actor.set_x_align(Clutter.ActorAlign.CENTER);
         }
     
         this._applet_tooltip = new Tooltips.PanelItemTooltip(this, "", orientation);                                        
