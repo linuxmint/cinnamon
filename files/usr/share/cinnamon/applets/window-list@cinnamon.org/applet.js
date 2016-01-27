@@ -871,7 +871,7 @@ MyApplet.prototype = {
 	{
             manager = new Clutter.BoxLayout( { spacing: 2 * global.ui_scale,
 		                               orientation: Clutter.Orientation.VERTICAL});
-            this.actor.set_style_class_name("window-list-box-vertical");
+            this.actor.add_style_class_name("vertical");
 	}
 
         this.manager = manager;
@@ -957,12 +957,13 @@ MyApplet.prototype = {
 	{
             this.manager.set_vertical(false);
             this._reTitleItems();  //titles stripped out in vertical panels, so restore titles
-            this.actor.set_style_class_name("window-list-box");
+            this.actor.remove_style_class_name("vertical");
 	}
 	else		// vertical panels
 	{
             this.manager.set_vertical(true);
-            this.actor.set_style_class_name("window-list-box-vertical");
+            this.actor.add_style_class_name("vertical");
+            this.actor.set_important(true);
         }
 
         //
