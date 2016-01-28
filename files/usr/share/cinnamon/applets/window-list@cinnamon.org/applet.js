@@ -405,6 +405,9 @@ AppMenuButton.prototype = {
         if (title.length > MAX_TEXT_LENGTH)
             title = title.substr(0, MAX_TEXT_LENGTH);
 
+        if (this._tooltip  && this._tooltip.set_text)
+            this._tooltip.set_text(title);
+
         if (this.metaWindow.minimized) {
             title = "["+ title +"]";
         } else if (this.metaWindow.tile_type == Meta.WindowTileType.TILED) {
@@ -415,8 +418,6 @@ AppMenuButton.prototype = {
         }
 
         this._label.set_text(title);
-        if (this._tooltip  && this._tooltip.set_text)
-            this._tooltip.set_text(title);
     },
 
     destroy: function() {
