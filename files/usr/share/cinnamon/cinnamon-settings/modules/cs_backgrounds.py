@@ -656,7 +656,7 @@ class ThreadedIconView(Gtk.IconView):
                     dimensions = "%dx%d" % (pix[1], pix[2])
 
                     self._loaded_data_lock.acquire()
-                    self._loaded_data.append((to_load, pix[0], "<b>%s</b>\n<sub>%s<span foreground='#555555'>%s</span></sub>" % (label, artist, dimensions), path))
+                    self._loaded_data.append((to_load, pix[0], "<b>%s</b>\n<sub>%s%s</sub>" % (label, artist, dimensions), path))
                     self._loaded_data_lock.release()
 
         self._loading_lock.acquire()
