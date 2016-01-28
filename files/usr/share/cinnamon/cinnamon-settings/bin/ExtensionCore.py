@@ -911,7 +911,7 @@ class ExtensionSidePage (SidePage):
             iter = self.gm_model.insert_before(None, None)
             self.gm_model.set_value(iter, 0, uuid)
             if not self.themes:
-                self.gm_model.set_value(iter, 1, '<b>%s</b>\n<b><span foreground="#333333" size="x-small">%s</span></b>' % (extensionName, uuid))
+                self.gm_model.set_value(iter, 1, '<b>%s</b>\n<b><span size="x-small">%s</span></b>' % (extensionName, uuid))
             else:
                 self.gm_model.set_value(iter, 1, '<b>%s</b>' % (extensionName))
             self.gm_model.set_value(iter, 2, 0)
@@ -1300,8 +1300,8 @@ Please contact the developer.""")
                     self.model.set_value(iter, 0, extension_uuid)
                     self.model.set_value(iter, 1, '''\
 <b>%s</b>
-<b><span foreground="#333333" size="xx-small">%s</span></b>
-<i><span foreground="#555555" size="x-small">%s</span></i>''' % (extension_name, extension_uuid, extension_description))
+<b><span size="xx-small">%s</span></b>
+<i><span size="x-small">%s</span></i>''' % (extension_name, extension_uuid, extension_description))
 
                     self.model.set_value(iter, 2, found)
                     self.model.set_value(iter, 3, extension_max_instances)
