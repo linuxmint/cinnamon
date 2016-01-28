@@ -27,6 +27,18 @@
 
     </sect3>
     <sect3>
+      <title>textview</title>
+      <itemizedlist>
+        <listitem><code>type</code>: should be <code>textview</code></listitem>
+        <listitem><code>default</code>: default string value</listitem>
+        <listitem><code>description</code>: String describing the setting</listitem>
+        <listitem><code>height</code>:  (optional) Number indicating the height of the textview in pixels or leave off for default height (200 px)</listitem>
+      </itemizedlist>
+
+      <para>A text entry field that stores a <code>string</code>. Unlike the entry type, this type is multi-line</para>
+
+    </sect3>
+    <sect3>
       <title>colorchooser</title>
       <itemizedlist>
         <listitem><code>type</code>: should be <code>colorchooser</code></listitem>
@@ -105,6 +117,16 @@
       <para>Provides a dropdown list from which you can select from <code>description:value</code> pairs defined by <code>options</code>.  The values can be <code>string</code>, <code>number</code>, or <code>boolean</code>.</para>
     </sect3>
     <sect3>
+      <title>tween</title>
+      <itemizedlist>
+        <listitem><code>type</code>: should be <code>tween</code></listitem>
+        <listitem><code>default</code>: default tween value</listitem>
+        <listitem><code>description</code>: String describing the setting</listitem>
+      </itemizedlist>
+
+      <para>Provides a dropdown list from which you can select a tween type. A tween value is a <code>string</code> of the form <code>ease&lt;direction&gt;&lt;shape&gt;</code> where direction can be <code>In</code>, <code>Out</code>, <code>InOut</code>, or <code>OutIn</code> and shape can be <code>Quad</code>, <code>Cubic</code>, <code>Quart</code>, <code>Quint</code>, <code>Sine</code>, <code>Expo</code>, <code>Circ</code>, <code>Elastic</code>, <code>Back</code>, or <code>Bounce</code>. For example, to specify a direction of <code>In</code> and a shape of <code>Quad</code>, the resultant string would be <code>easeInQuad</code>. To specify no tween, use the special tween value <code>easeNone</code>.</para>
+    </sect3>
+    <sect3>
       <title>spinbutton</title>
       <itemizedlist>
         <listitem><code>type</code>: should be <code>spinbutton</code></listitem>
@@ -152,6 +174,15 @@
 
       <para>A <emphasis>non-setting</emphasis> widget, this provides a bold-faced label for assisting in organizing your settings</para>
 
+    </sect3>
+    <sect3>
+      <title>label</title>
+      <itemizedlist>
+        <listitem><code>type</code>: should be <code>label</code></listitem>
+        <listitem><code>description</code>: String to display as a label</listitem>
+      </itemizedlist>
+
+      <para>A <emphasis>non-setting</emphasis> widget, this provides a label for making a note or describing something. Unlike a header which is bold-faced to stand out, a label is formatted just like the description of most of the other setting types.</para>
     </sect3>
     <sect3>
       <title>separator</title>
