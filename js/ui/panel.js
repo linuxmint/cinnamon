@@ -749,8 +749,8 @@ PanelManager.prototype = {
                     newPanels[ID].updatePosition(newMeta[ID][0], newMeta[ID][1]);
 
                     AppletManager.updateAppletsOnPanel(newPanels[ID]); // Note that this will not cope with vertical/horizontal panel
-                                               // changes fully - panel launchers, systray etc. need reorienting 
-                                                                                   // within the applet using their on_orientation_changed function  
+                                                                       // changes fully - panel launchers, systray etc. need reorienting 
+                                                                       // within the applet using their on_orientation_changed function  
                 }
             } else {                    // new panel
                 let jj = getPanelLocFromName(elements[2]);
@@ -1784,32 +1784,39 @@ Panel.prototype = {
             // Other approaches may of course be possible ... and it is worth rechecking things that used to give problems as I mainly 
                     // tested on 2.6 and there was an allocation/align error corrected in 2.8
             if (this.panelPosition == PanelLoc.left) {   // left panel
-                this._leftBox   = new St.BoxLayout({ name: 'panelLeft-vertical', 
-                                                     vertical: true, 
-                                                     x_align: Clutter.ActorAlign.CENTER,
-                                                     important: true});
-      
-                this._rightBox  = new St.BoxLayout({ name: 'panelLeft-vertical', 
-                                                     vertical: true, 
-                                                     x_align: Clutter.ActorAlign.CENTER,
-                                                     important: true});
-            } else {
-                this._leftBox   = new St.BoxLayout({ name: 'panelRight-vertical', 
-                                                     vertical: true, 
-                                                     x_align: Clutter.ActorAlign.CENTER,
-                                                     important: true});   
+                this._leftBox   = new St.BoxLayout({ name: 'panelLeft'});
+                this._leftBox.add_style_class_name('vertical');
+                this._leftBox.set_vertical(true);
+                this._leftBox.set_important(true);
+                this._leftBox.set_x_align(Clutter.ActorAlign.CENTER);
 
-                this._rightBox  = new St.BoxLayout({ name: 'panelRight-vertical', 
-                                                     vertical: true, 
-                                                     x_align: Clutter.ActorAlign.CENTER,
-                                                     important: true});
+                this._rightBox   = new St.BoxLayout({ name: 'panelLeft'});
+                this._rightBox.add_style_class_name('vertical');
+                this._rightBox.set_vertical(true);
+                this._rightBox.set_important(true);
+                this._rightBox.set_x_align(Clutter.ActorAlign.CENTER);
+
+            } else {
+                this._leftBox   = new St.BoxLayout({ name: 'panelRight'});
+                this._leftBox.add_style_class_name('vertical');
+                this._leftBox.set_vertical(true);
+                this._leftBox.set_important(true);
+                this._leftBox.set_x_align(Clutter.ActorAlign.CENTER);
+
+                this._rightBox   = new St.BoxLayout({ name: 'panelRight'});
+                this._rightBox.add_style_class_name('vertical');
+                this._rightBox.set_vertical(true);
+                this._rightBox.set_important(true);
+                this._rightBox.set_x_align(Clutter.ActorAlign.CENTER);
+
             }
 
-            this._centerBox = new St.BoxLayout({ name: 'panelCenter-vertical', 
-                                                 vertical: true, 
-                                                 y_align: Clutter.ActorAlign.CENTER, 
-                                                 x_align: Clutter.ActorAlign.CENTER,
-                                                 important: true});   
+            this._centerBox   = new St.BoxLayout({ name: 'panelCenter'});
+            this._centerBox.add_style_class_name('vertical');
+            this._centerBox.set_vertical(true);
+            this._centerBox.set_important(true);
+            this._centerBox.set_x_align(Clutter.ActorAlign.CENTER);
+            this._centerBox.set_y_align(Clutter.ActorAlign.CENTER);
 
             this.actor.add_actor(this._leftBox);
             this.actor.add_actor(this._centerBox);
