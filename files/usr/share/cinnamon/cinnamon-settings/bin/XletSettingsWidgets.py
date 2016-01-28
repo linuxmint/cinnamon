@@ -14,6 +14,7 @@ try:
     import tweenEquations
     import math
     from gi.repository import Gio, Gtk, GObject, Gdk, GdkPixbuf
+    from KeybindingWidgets import ButtonKeybinding
 except Exception, detail:
     print detail
     sys.exit(1)
@@ -1163,19 +1164,6 @@ class TweenMenuItem(Gtk.MenuItem):
         self.arr.queue_draw()
         self.timer = GObject.timeout_add(15, self.frame)
 
-
-SPECIAL_MODS = (["Super_L",    "<Super>"],
-                ["Super_R",    "<Super>"],
-                ["Alt_L",      "<Alt>"],
-                ["Alt_R",      "<Alt>"],
-                ["Control_L",  "<Primary>"],
-                ["Control_R",  "<Primary>"],
-                ["Shift_L",    "<Shift>"],
-                ["Shift_R",    "<Shift>"])
-
-# Ignore capslock and numlock when in teach mode
-IGNORED_MOD_MASK = (int(Gdk.ModifierType.MOD2_MASK) | int(Gdk.ModifierType.LOCK_MASK))
-
 class Keybinding(Gtk.HBox, BaseWidget):
     def __init__(self, key, settings_obj, uuid):
         BaseWidget.__init__(self, key, settings_obj, uuid)
@@ -1189,95 +1177,42 @@ class Keybinding(Gtk.HBox, BaseWidget):
         self.buttons = []
         self.teach_button = None
 
-        self.button_box = Gtk.ButtonBox.new(Gtk.Orientation.HORIZONTAL)
-        self.button_box.set_layout(Gtk.ButtonBoxStyle.SPREAD)
-        self.button_box.set_hexpand(False)
-        self.button_box.set_halign(Gtk.Align.START)
+        self.accel_frame = Gtk.Frame(shadow_type=Gtk.ShadowType.IN)
+        box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
+        self.accel_frame.add(box)
 
-        c = self.button_box.get_style_context()
-        c.add_class(Gtk.STYLE_CLASS_LINKED)
-        self.pack_start(self.button_box, True, True, 4)
+        self.pack_end(self.accel_frame, False, False, 2)
 
-        for _ in range(2):
-            self.construct_button()
+        array = self.string_to_array(self.value)
 
-        self.set_button_text()
+        x = 0
+        for x in range(2):
+            kb = ButtonKeybinding(accel_string=array[x])
+            kb.set_size_request(200, -1)
+            kb.set_hexpand(True)
+            kb.connect("accel-edited", self.on_kb_changed)
+            kb.connect("accel-cleared", self.on_kb_changed)
+            box.pack_start(kb, True, True, 0)
+            self.buttons.append(kb)
+            if x == 0:
+                box.add(Gtk.Separator(orientation=Gtk.Orientation.VERTICAL))
+
         self.show_all()
         self.event_id = None
         self.teaching = False
 
-    def construct_button(self):
-        button = Gtk.Button(self.value)
-        button.set_tooltip_text(_("Click to set a new accelerator key.") +
-                                _("  Press Escape or click again to cancel the operation." +
-                                  "  Press Backspace to clear the existing keybinding."))
-        button.connect("clicked", self.clicked)
-        button.set_size_request(200, -1)
-        button.set_hexpand(True)
-        self.button_box.add(button)
+    def on_kb_changed(self, widget, accel_string=None, accel_label=None):
+        new_array = []
+        x = 0
 
-        self.buttons.append(button)
+        for x in range(2):
+            string = self.buttons[x].accel_string
+            if string is not None:
+                new_array.append(string)
 
-    def clicked(self, widget):
-        self.teach_button = widget
-        if not self.teaching:
-            device = Gtk.get_current_event_device()
-            if device.get_source() == Gdk.InputSource.KEYBOARD:
-                self.keyboard = device
-            else:
-                self.keyboard = device.get_associated_device()
+        val_string = self.array_to_string(new_array)
 
-            self.keyboard.grab(self.get_window(), Gdk.GrabOwnership.WINDOW, False,
-                               Gdk.EventMask.KEY_PRESS_MASK | Gdk.EventMask.KEY_RELEASE_MASK,
-                               None, Gdk.CURRENT_TIME)
-
-            widget.set_label(_("Pick an accelerator"))
-            self.event_id = self.connect( "key-release-event", self.on_key_release )
-            self.teaching = True
-        else:
-            if self.event_id:
-                self.disconnect(self.event_id)
-            self.ungrab()
-            self.set_button_text()
-            self.teaching = False
-            self.teach_button = None
-
-    def on_key_release(self, widget, event):
-        self.disconnect(self.event_id)
-        self.ungrab()
-        self.event_id = None
-        if ((int(event.state) & 0xff & ~IGNORED_MOD_MASK) == 0) and event.keyval == Gdk.KEY_Escape:
-            self.set_button_text()
-            self.teaching = False
-            self.teach_button = None
-            return True
-        if ((int(event.state) & 0xff & ~IGNORED_MOD_MASK) == 0) and event.keyval == Gdk.KEY_BackSpace:
-            self.teaching = False
-            self.value = self.place_value("")
-            self.set_val(self.value)
-            self.set_button_text()
-            self.teach_button = None
-            return True
-        accel_string = Gtk.accelerator_name(event.keyval, event.state)
-        accel_string = self.sanitize(accel_string)
-        self.value = self.place_value(accel_string)
-        self.set_val(self.value)
-        self.set_button_text()
-        self.teaching = False
-        self.teach_button = None
-        return True
-
-    def place_value(self, string):
-        i = self.buttons.index(self.teach_button)
-
-        array = self.string_to_array(self.value)
-        array[i] = string
-
-        compacted_array = []
-        for string in array:
-            if string != "":
-                compacted_array.append(string)
-        return self.array_to_string(compacted_array)
+        self.set_val(val_string)
 
     def array_to_string(self, array):
         string = ""
@@ -1300,27 +1235,6 @@ class Keybinding(Gtk.HBox, BaseWidget):
             array.append("")
 
         return array
-
-    def sanitize(self, string):
-        accel_string = string.replace("<Mod2>", "")
-        accel_string = accel_string.replace("<Mod4>", "")
-        for single, mod in SPECIAL_MODS:
-            if single in accel_string and mod in accel_string:
-                accel_string = accel_string.replace(mod, "")
-        return accel_string
-
-    def set_button_text(self):
-        value_array = self.string_to_array(self.value)
-        i = 0
-        while i < 2:
-            if value_array[i] == "":
-                self.buttons[i].set_label(_("<not set>"))
-            else:
-                self.buttons[i].set_label(value_array[i])
-            i += 1
-
-    def ungrab(self):
-        self.keyboard.ungrab(Gdk.CURRENT_TIME)
 
     def on_settings_file_changed(self):
         self.value = self.get_val()

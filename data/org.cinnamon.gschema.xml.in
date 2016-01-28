@@ -159,6 +159,14 @@
       </_description>
     </key>
 
+    <key name="desktop-effects-on-menus" type="b">
+      <default>false</default>
+      <_summary>Enable desktop effects on Gtk menus</_summary>
+      <_description>
+        Whether to enable desktop effects on Gtk menus.
+      </_description>
+    </key>
+
     <key type="s" name="desktop-effects-style">
       <default>"cinnamon"</default>
       <_summary>The style of desktop effects</_summary>

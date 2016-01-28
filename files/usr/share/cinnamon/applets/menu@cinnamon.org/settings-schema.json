@@ -24,6 +24,12 @@
     "description" : "Text",
     "tooltip" : "Enter custom text to show in the panel."
  },
+ "show-category-icons" : {
+    "type" : "checkbox",
+    "default" : true,
+    "description" : "Show category icons",
+    "tooltip" : "Choose whether or not to show icons on categories."
+ },
  "show-places" : {
     "type" : "checkbox",
     "default" : true,

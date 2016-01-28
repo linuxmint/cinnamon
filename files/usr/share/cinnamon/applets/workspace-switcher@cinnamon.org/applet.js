@@ -35,7 +35,7 @@ WorkspaceButton.prototype = {
 
     onClicked: function(actor, event) {
         if (event.get_button() == 1) {
-            this.workspace.activate(global.get_current_time());
+            Main.wm.moveToWorkspace(this.workspace);
         }
     },
 
