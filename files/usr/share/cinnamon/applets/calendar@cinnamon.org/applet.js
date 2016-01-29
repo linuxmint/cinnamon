@@ -225,7 +225,7 @@ MyApplet.prototype = {
         this._orientation = orientation;
         this._initContextMenu();
     }
-    
+
 };
 
 function main(metadata, orientation, panel_height, instance_id) {  
