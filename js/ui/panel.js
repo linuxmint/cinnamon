@@ -1120,6 +1120,14 @@ TextShadower.prototype = {
 // positioned so as to fill in the tiny gap at the corners of full screen windows, and if themed right they
 // will be invisble to the user, other than the window will appear to go right up to the corner when full screen
 //
+    /**
+     * PanelCorner:
+     * @box: the box in a panel the corner is associated with
+     * @side: the side of the box a text or icon/text applet starts from (RTL or LTR driven)
+     * @cornertype:  top left, bottom right etc.
+     *
+     * Sets up a panel corner
+     */
 function PanelCorner(box, side, cornertype) {
     this._init(box, side, cornertype);
 }
@@ -1189,24 +1197,17 @@ PanelCorner.prototype = {
                 side = St.Side.RIGHT;
             else if (this._side == St.Side.RIGHT)
                 side = St.Side.LEFT;
-            else if (this._side == St.Side.TOP)     // FIXME logic changes guessed, not at all sure about this, purpose of what this area of code is for is not clear
-                side = St.Side.BOTTOM;
-            else
-                side = St.Side.TOP;
-        }
+        } // ?? why is there no similar logic for the LTR case ?
 
         if (side == St.Side.LEFT)
             button = this._findLeftmostButton(this._box);
         else if (side == St.Side.RIGHT)
             button = this._findRightmostButton(this._box);
-        else if (side == St.Side.TOP)
-            button = this._findLeftmostButton(this._box);
-        else if (side == St.Side.BOTTOM)
-            button = this._findRightmostButton(this._box);
 
         //
-        // FIXME  this section below is completely opaque to me.  Needs some comments to explain what is going on
-        // i.e. what the overall intent of doing this button logic is.  Is this dead code from some earlier change ?
+        // This section below is puzzling to me.  Appears to be linking the pseudo class of the corner
+        // to the pseudo class of the closest applet.  Why ?  won't fire for vertical panels anyway
+        // as these will have side set to TOP or BOTTOM
         //
         if (button) {
             if (this._button && this._buttonStyleChangedSignalId) {
@@ -1717,12 +1718,12 @@ Panel.prototype = {
 
             if (this.drawcorner[0]) { // left corner
                 if (this.panelPosition == PanelLoc.top) {
-                    if (this.actor.get_direction() == St.TextDirection.RTL)    // right to left text direction
+                    if (this.actor.get_direction() == St.TextDirection.RTL)    // right to left text direction e.g. arabic
                         this._leftCorner = new PanelCorner(this._rightBox, St.Side.LEFT, CornerType.topleft);
                     else                            // left to right text direction
                         this._leftCorner = new PanelCorner(this._leftBox, St.Side.LEFT, CornerType.topleft);
                 } else { // bottom panel
-                    if (this.actor.get_direction() == St.TextDirection.RTL)   // right to left text direction
+                    if (this.actor.get_direction() == St.TextDirection.RTL)   // right to left text direction e.g. arabic
                         this._leftCorner = new PanelCorner(this._rightBox, St.Side.LEFT, CornerType.bottomleft);
                     else                            // left to right text direction
                         this._leftCorner = new PanelCorner(this._leftBox, St.Side.LEFT, CornerType.bottomleft);
@@ -1730,12 +1731,12 @@ Panel.prototype = {
             }
             if (this.drawcorner[1]) { // right corner
                 if (this.panelPosition == PanelLoc.top) {
-                    if (this.actor.get_direction() == St.TextDirection.RTL)    // right to left text direction
+                    if (this.actor.get_direction() == St.TextDirection.RTL)    // right to left text direction e.g. arabic
                         this._rightCorner = new PanelCorner(this._leftBox, St.Side.RIGHT,CornerType.topright);
                     else                            // left to right text direction
                         this._rightCorner = new PanelCorner(this._rightBox, St.Side.RIGHT,CornerType.topright);
                 } else { // bottom
-                    if (this.actor.get_direction() == St.TextDirection.RTL)   // right to left text direction
+                    if (this.actor.get_direction() == St.TextDirection.RTL)   // right to left text direction e.g. arabic
                         this._rightCorner = new PanelCorner(this._leftBox, St.Side.RIGHT,CornerType.bottomright);
                     else                            // left to right text direction
                         this._rightCorner = new PanelCorner(this._rightBox, St.Side.RIGHT,CornerType.bottomright);
