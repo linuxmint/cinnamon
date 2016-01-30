@@ -791,7 +791,7 @@ Notification.prototype = {
             button.label = label;
         }
 
-        if (this._buttonBox.get_children().length > 0)
+        if (this._buttonBox.get_n_children() > 0)
             this._buttonFocusManager.remove_group(this._buttonBox);
 
         this._buttonBox.add(button);
@@ -1310,7 +1310,7 @@ SummaryItem.prototype = {
     },
 
     prepareNotificationStackForShowing: function() {
-        if (this.notificationStack.get_children().length > 0)
+        if (this.notificationStack.get_n_children() > 0)
             return;
 
         for (let i = 0; i < this.source.notifications.length; i++) {
@@ -1319,7 +1319,6 @@ SummaryItem.prototype = {
     },
 
     doneShowingNotificationStack: function() {
-        let notificationActors = this.notificationStack.get_children();
         for (let i = 0; i < this._stackedNotifications.length; i++) {
             let stackedNotification = this._stackedNotifications[i];
             let notification = stackedNotification.notification;
@@ -1346,7 +1345,7 @@ SummaryItem.prototype = {
         stackedNotification.notificationDoneDisplayingId = notification.connect('done-displaying', Lang.bind(this, this._notificationDoneDisplaying));
         stackedNotification.notificationDestroyedId = notification.connect('destroy', Lang.bind(this, this._notificationDestroyed));
         this._stackedNotifications.push(stackedNotification);
-        if (this.notificationStack.get_children().length > 0)
+        if (this.notificationStack.get_n_children() > 0)
             notification.setIconVisible(false);
         this.notificationStack.add(notification.actor);
         notification.expand(false);
@@ -1385,8 +1384,8 @@ SummaryItem.prototype = {
             }
         }
 
-        if (this.notificationStack.get_children().length > 0)
-            this.notificationStack.get_children()[0]._delegate.setIconVisible(true);
+        if (this.notificationStack.get_n_children() > 0)
+            this.notificationStack.get_child_at_index(0)._delegate.setIconVisible(true);
     }
 };
 Signals.addSignalMethods(SummaryItem.prototype);

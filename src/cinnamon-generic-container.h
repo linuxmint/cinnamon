@@ -29,14 +29,14 @@ typedef struct _CinnamonGenericContainerPrivate CinnamonGenericContainerPrivate;
 
 struct _CinnamonGenericContainer
 {
-    StContainer parent;
+    StWidget parent;
 
     CinnamonGenericContainerPrivate *priv;
 };
 
 struct _CinnamonGenericContainerClass
 {
-    StContainerClass parent_class;
+    StWidgetClass parent_class;
 };
 
 GType    cinnamon_generic_container_get_type         (void) G_GNUC_CONST;

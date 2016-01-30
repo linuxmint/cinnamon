@@ -59,7 +59,6 @@
  */
 
 #include "st-scroll-view.h"
-#include "st-marshal.h"
 #include "st-scroll-bar.h"
 #include "st-scrollable.h"
 #include "st-scroll-view-fade.h"
@@ -421,13 +420,13 @@ st_scroll_view_paint (ClutterActor *actor)
 {
   StScrollViewPrivate *priv = ST_SCROLL_VIEW (actor)->priv;
 
-  /* StBin will paint the child */
-  CLUTTER_ACTOR_CLASS (st_scroll_view_parent_class)->paint (actor);
+  st_widget_paint_background (ST_WIDGET (actor));
 
-  /* paint our custom children */
-  if (priv->hscrollbar_visible && CLUTTER_ACTOR_IS_VISIBLE (priv->hscroll))
+  if (priv->child)
+    clutter_actor_paint (priv->child);
+  if (priv->hscrollbar_visible)
     clutter_actor_paint (priv->hscroll);
-  if (priv->vscrollbar_visible && CLUTTER_ACTOR_IS_VISIBLE (priv->vscroll))
+  if (priv->vscrollbar_visible)
     clutter_actor_paint (priv->vscroll);
 }
 
@@ -440,10 +439,11 @@ st_scroll_view_pick (ClutterActor       *actor,
   /* Chain up so we get a bounding box pained (if we are reactive) */
   CLUTTER_ACTOR_CLASS (st_scroll_view_parent_class)->pick (actor, color);
 
-  /* paint our custom children */
-  if (priv->hscrollbar_visible && CLUTTER_ACTOR_IS_VISIBLE (priv->hscroll))
+  if (priv->child)
+    clutter_actor_paint (priv->child);
+  if (priv->hscrollbar_visible)
     clutter_actor_paint (priv->hscroll);
-  if (priv->vscrollbar_visible && CLUTTER_ACTOR_IS_VISIBLE (priv->vscroll))
+  if (priv->vscrollbar_visible)
     clutter_actor_paint (priv->vscroll);
 }
 
@@ -627,24 +627,13 @@ st_scroll_view_allocate (ClutterActor          *actor,
                          ClutterAllocationFlags flags)
 {
   ClutterActorBox content_box, child_box;
-  ClutterActorClass *parent_parent_class;
   gfloat avail_width, avail_height, sb_width, sb_height;
   gboolean hscrollbar_visible, vscrollbar_visible;
 
   StScrollViewPrivate *priv = ST_SCROLL_VIEW (actor)->priv;
   StThemeNode *theme_node = st_widget_get_theme_node (ST_WIDGET (actor));
 
-  /* Chain up to the parent's parent class
-   *
-   * We do this because we do not want StBin to allocate the child, as we
-   * give it a different allocation later, depending on whether the scrollbars
-   * are visible
-   */
-  parent_parent_class
-    = g_type_class_peek_parent (st_scroll_view_parent_class);
-
-  CLUTTER_ACTOR_CLASS (parent_parent_class)->
-  allocate (actor, box, flags);
+  clutter_actor_set_allocation (actor, box, flags);
 
   st_theme_node_get_content_box (theme_node, box, &content_box);
 
@@ -1080,7 +1069,7 @@ st_scroll_view_remove (ClutterContainer *container,
       else
         g_assert ("Unknown child removed from StScrollView");
 
-      clutter_actor_unparent (actor);
+      clutter_actor_remove_child (CLUTTER_ACTOR (container), actor);
     }
 }
 

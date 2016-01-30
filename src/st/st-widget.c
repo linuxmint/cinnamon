@@ -36,7 +36,6 @@
 
 #include "st-background-effect.h"
 #include "st-label.h"
-#include "st-marshal.h"
 #include "st-private.h"
 #include "st-texture-cache.h"
 #include "st-theme-context.h"
@@ -77,6 +76,12 @@ struct _StWidgetPrivate
 
   ClutterActor *label_actor;
   gchar *accessible_name;
+
+  /* Even though Clutter has first_child/last_child properties,
+   * we need to keep track of the old first/last children so
+   * that we can remove the pseudo classes on them. */
+  StWidget *prev_last_child;
+  StWidget *prev_first_child;
 };
 
 /**
@@ -302,6 +307,9 @@ st_widget_dispose (GObject *gobject)
       priv->label_actor = NULL;
     }
 
+  g_clear_object (&priv->prev_first_child);
+  g_clear_object (&priv->prev_last_child);
+
   G_OBJECT_CLASS (st_widget_parent_class)->dispose (gobject);
 }
 
@@ -314,6 +322,7 @@ st_widget_finalize (GObject *gobject)
   g_free (priv->pseudo_class);
   g_object_unref (priv->local_state_set);
   g_free (priv->accessible_name);
+  g_free (priv->inline_style);
 
   G_OBJECT_CLASS (st_widget_parent_class)->finalize (gobject);
 }
@@ -327,17 +336,9 @@ st_widget_get_preferred_width (ClutterActor *self,
 {
   StThemeNode *theme_node = st_widget_get_theme_node (ST_WIDGET (self));
 
-  /* Most subclasses will override this and not chain down. However,
-   * if they do not, then we need to override ClutterActor's default
-   * behavior (request 0x0) to take CSS-specified minimums into
-   * account (which st_theme_node_adjust_preferred_width() will do.)
-   */
+  st_theme_node_adjust_for_width (theme_node, &for_height);
 
-  if (min_width_p)
-    *min_width_p = 0;
-
-  if (natural_width_p)
-    *natural_width_p = 0;
+  CLUTTER_ACTOR_CLASS (st_widget_parent_class)->get_preferred_width (self, for_height, min_width_p, natural_width_p);
 
   st_theme_node_adjust_preferred_width (theme_node, min_width_p, natural_width_p);
 }
@@ -350,52 +351,90 @@ st_widget_get_preferred_height (ClutterActor *self,
 {
   StThemeNode *theme_node = st_widget_get_theme_node (ST_WIDGET (self));
 
-  /* See st_widget_get_preferred_width() */
+  st_theme_node_adjust_for_width (theme_node, &for_width);
 
-  if (min_height_p)
-    *min_height_p = 0;
-
-  if (natural_height_p)
-    *natural_height_p = 0;
+  CLUTTER_ACTOR_CLASS (st_widget_parent_class)->get_preferred_height (self, for_width, min_height_p, natural_height_p);
 
   st_theme_node_adjust_preferred_height (theme_node, min_height_p, natural_height_p);
 }
 
 static void
-st_widget_paint (ClutterActor *actor)
+st_widget_allocate (ClutterActor          *actor,
+                    const ClutterActorBox *box,
+                    ClutterAllocationFlags flags)
 {
-  StWidget *self = ST_WIDGET (actor);
+  StThemeNode *theme_node = st_widget_get_theme_node (ST_WIDGET (actor));
+  ClutterActorBox content_box;
+
+  /* Note that we can't just chain up to clutter_actor_real_allocate --
+   * Clutter does some dirty tricks for backwards compatibility.
+   * Clutter also passes the actor's allocation directly to the layout
+   * manager, meaning that we can't modify it for children only.
+   */
+
+  clutter_actor_set_allocation (actor, box, flags);
+
+  st_theme_node_get_content_box (theme_node, box, &content_box);
+
+  /* If we've chained up to here, we want to allocate the children using the
+   * currently installed layout manager */
+  clutter_layout_manager_allocate (clutter_actor_get_layout_manager (actor),
+                                   CLUTTER_CONTAINER (actor),
+                                   &content_box,
+                                   flags);
+}
+
+/**
+ * st_widget_paint_background:
+ * @widget: The #StWidget
+ *
+ * Paint the background of the widget. This is meant to be called by
+ * subclasses of StWiget that need to paint the background without
+ * painting children.
+ */
+void
+st_widget_paint_background (StWidget *widget)
+{
   StThemeNode *theme_node;
   ClutterActorBox allocation;
   guint8 opacity;
 
-  theme_node = st_widget_get_theme_node (self);
+  theme_node = st_widget_get_theme_node (widget);
 
-  clutter_actor_get_allocation_box (actor, &allocation);
+  clutter_actor_get_allocation_box (CLUTTER_ACTOR (widget), &allocation);
 
-  opacity = clutter_actor_get_paint_opacity (actor);
+  opacity = clutter_actor_get_paint_opacity (CLUTTER_ACTOR (widget));
 
-  if (self->priv->transition_animation)
-    st_theme_node_transition_paint (self->priv->transition_animation,
+  if (widget->priv->transition_animation)
+    st_theme_node_transition_paint (widget->priv->transition_animation,
                                     &allocation,
                                     opacity);
   else
     st_theme_node_paint (theme_node, &allocation, opacity);
 
-  ClutterEffect *effect = clutter_actor_get_effect (actor, "background-effect");
+  // ClutterEffect *effect = clutter_actor_get_effect (actor, "background-effect");
 
-  if (effect == NULL)
-    {
-      effect = st_background_effect_new ();
-      clutter_actor_add_effect_with_name (actor, "background-effect", effect);
-    }
+  // if (effect == NULL)
+  //   {
+  //     effect = st_background_effect_new ();
+  //     clutter_actor_add_effect_with_name (actor, "background-effect", effect);
+  //   }
 
-  const char *bumpmap_path = st_theme_node_get_background_bumpmap(theme_node);
+  // const char *bumpmap_path = st_theme_node_get_background_bumpmap(theme_node);
 
-  g_object_set (effect,
-                "bumpmap",
-                bumpmap_path,
-                NULL);
+  // g_object_set (effect,
+  //               "bumpmap",
+  //               bumpmap_path,
+  //               NULL);
+}
+
+ static void
+st_widget_paint (ClutterActor *actor)
+{
+  st_widget_paint_background (ST_WIDGET (actor));
+
+  /* Chain up so we paint children. */
+  CLUTTER_ACTOR_CLASS (st_widget_parent_class)->paint (actor);
 }
 
 static void
@@ -438,25 +477,20 @@ st_widget_unmap (ClutterActor *actor)
     st_widget_set_hover (self, FALSE);
 }
 
-static void notify_children_of_style_change (ClutterContainer *container);
-
 static void
-notify_children_of_style_change_foreach (ClutterActor *actor,
-                                         gpointer      user_data)
+notify_children_of_style_change (ClutterActor *self)
 {
-  if (ST_IS_WIDGET (actor))
-    st_widget_style_changed (ST_WIDGET (actor));
-  else if (CLUTTER_IS_CONTAINER (actor))
-    notify_children_of_style_change ((ClutterContainer *)actor);
-}
+  ClutterActorIter iter;
+  ClutterActor *actor;
 
-static void
-notify_children_of_style_change (ClutterContainer *container)
-{
-  /* notify our children that their parent stylable has changed */
-  clutter_container_foreach (container,
-                             notify_children_of_style_change_foreach,
-                             NULL);
+  clutter_actor_iter_init (&iter, self);
+  while (clutter_actor_iter_next (&iter, &actor))
+    {
+      if (ST_IS_WIDGET (actor))
+        st_widget_style_changed (ST_WIDGET (actor));
+      else
+        notify_children_of_style_change (actor);
+    }
 }
 
 static void
@@ -470,8 +504,7 @@ st_widget_real_style_changed (StWidget *self)
 
   clutter_actor_queue_redraw ((ClutterActor *) self);
 
-  if (CLUTTER_IS_CONTAINER (self))
-    notify_children_of_style_change ((ClutterContainer *)self);
+  notify_children_of_style_change ((ClutterActor *) self);
 }
 
 void
@@ -498,7 +531,7 @@ static void
 on_theme_context_changed (StThemeContext *context,
                           ClutterStage      *stage)
 {
-  notify_children_of_style_change (CLUTTER_CONTAINER (stage));
+  notify_children_of_style_change (CLUTTER_ACTOR (stage));
 }
 
 static StThemeNode *
@@ -732,9 +765,45 @@ st_widget_get_paint_volume (ClutterActor *self, ClutterPaintVolume *volume)
   clutter_paint_volume_set_width (volume, paint_box.x2 - paint_box.x1);
   clutter_paint_volume_set_height (volume, paint_box.y2 - paint_box.y1);
 
+  if (!clutter_actor_get_clip_to_allocation (self))
+    {
+      ClutterActor *child;
+      /* Based on ClutterGroup/ClutterBox; include the children's
+       * paint volumes, since they may paint outside our allocation.
+       */
+      for (child = clutter_actor_get_first_child (self);
+           child != NULL;
+           child = clutter_actor_get_next_sibling (child))
+        {
+          const ClutterPaintVolume *child_volume;
+
+          child_volume = clutter_actor_get_transformed_paint_volume (child, self);
+          if (!child_volume)
+            return FALSE;
+
+          clutter_paint_volume_union (volume, child_volume);
+        }
+    }
+
   return TRUE;
 }
 
+static GList *
+st_widget_real_get_focus_chain (StWidget *widget)
+{
+  ClutterActor *child;
+  GList *focus_chain = NULL;
+
+  for (child = clutter_actor_get_first_child (CLUTTER_ACTOR (widget));
+       child != NULL;
+       child = clutter_actor_get_next_sibling (child))
+    {
+      if (CLUTTER_ACTOR_IS_VISIBLE (child))
+        focus_chain = g_list_prepend (focus_chain, child);
+    }
+
+  return g_list_reverse (focus_chain);
+}
 
 static void
 st_widget_class_init (StWidgetClass *klass)
@@ -752,6 +821,7 @@ st_widget_class_init (StWidgetClass *klass)
 
   actor_class->get_preferred_width = st_widget_get_preferred_width;
   actor_class->get_preferred_height = st_widget_get_preferred_height;
+  actor_class->allocate = st_widget_allocate;
   actor_class->paint = st_widget_paint;
   actor_class->get_paint_volume = st_widget_get_paint_volume;
   actor_class->parent_set = st_widget_parent_set;
@@ -769,6 +839,7 @@ st_widget_class_init (StWidgetClass *klass)
   klass->style_changed = st_widget_real_style_changed;
   klass->navigate_focus = st_widget_real_navigate_focus;
   klass->get_accessible_type = st_widget_accessible_get_type;
+  klass->get_focus_chain = st_widget_real_get_focus_chain;
 
   /**
    * StWidget:pseudo-class:
@@ -952,8 +1023,7 @@ st_widget_class_init (StWidgetClass *klass)
                   G_TYPE_FROM_CLASS (klass),
                   G_SIGNAL_RUN_LAST,
                   G_STRUCT_OFFSET (StWidgetClass, style_changed),
-                  NULL, NULL,
-                  _st_marshal_VOID__VOID,
+                  NULL, NULL, NULL,
                   G_TYPE_NONE, 0);
 
   /**
@@ -968,8 +1038,7 @@ st_widget_class_init (StWidgetClass *klass)
                   G_TYPE_FROM_CLASS (klass),
                   G_SIGNAL_RUN_LAST,
                   G_STRUCT_OFFSET (StWidgetClass, popup_menu),
-                  NULL, NULL,
-                  _st_marshal_VOID__VOID,
+                  NULL, NULL, NULL,
                   G_TYPE_NONE, 0);
 }
 
@@ -1446,6 +1515,56 @@ st_widget_name_notify (StWidget   *widget,
 }
 
 static void
+st_widget_first_child_notify (StWidget   *widget,
+                              GParamSpec *pspec,
+                              gpointer    data)
+{
+  ClutterActor *first_child;
+
+  if (widget->priv->prev_first_child != NULL)
+    {
+      st_widget_remove_style_pseudo_class (widget->priv->prev_first_child, "first-child");
+      g_clear_object (&widget->priv->prev_first_child);
+    }
+
+  first_child = clutter_actor_get_first_child (CLUTTER_ACTOR (widget));
+
+  if (first_child == NULL)
+    return;
+
+  if (ST_IS_WIDGET (first_child))
+    {
+      st_widget_add_style_pseudo_class (ST_WIDGET (first_child), "first-child");
+      widget->priv->prev_first_child = g_object_ref (ST_WIDGET (first_child));
+    }
+}
+
+static void
+st_widget_last_child_notify (StWidget   *widget,
+                             GParamSpec *pspec,
+                             gpointer    data)
+{
+  ClutterActor *last_child;
+
+  if (widget->priv->prev_last_child != NULL)
+    {
+      st_widget_remove_style_pseudo_class (widget->priv->prev_last_child, "last-child");
+      g_clear_object (&widget->priv->prev_last_child);
+    }
+
+  last_child = clutter_actor_get_last_child (CLUTTER_ACTOR (widget));
+
+  if (last_child == NULL)
+    return;
+
+  if (ST_IS_WIDGET (last_child))
+    {
+      st_widget_add_style_pseudo_class (ST_WIDGET (last_child), "last-child");
+      widget->priv->prev_last_child = g_object_ref (ST_WIDGET (last_child));
+    }
+}
+
+static void
 st_widget_init (StWidget *actor)
 {
   StWidgetPrivate *priv;
@@ -1457,6 +1576,9 @@ st_widget_init (StWidget *actor)
 
   /* connect style changed */
   g_signal_connect (actor, "notify::name", G_CALLBACK (st_widget_name_notify), NULL);
+
+  g_signal_connect (actor, "notify::first-child", G_CALLBACK (st_widget_first_child_notify), NULL);
+  g_signal_connect (actor, "notify::last-child", G_CALLBACK (st_widget_last_child_notify), NULL);
 }
 
 static void
@@ -1760,17 +1882,273 @@ st_widget_get_can_focus (StWidget *widget)
   return widget->priv->can_focus;
 }
 
+/* filter @children to contain only only actors that overlap @rbox
+ * when moving in @direction. (Assuming no transformations.)
+ */
+static GList *
+filter_by_position (GList            *children,
+                    ClutterActorBox  *rbox,
+                    GtkDirectionType  direction)
+{
+  ClutterActorBox cbox;
+  GList *l, *ret;
+  ClutterActor *child;
+
+  for (l = children, ret = NULL; l; l = l->next)
+    {
+      child = l->data;
+      clutter_actor_get_allocation_box (child, &cbox);
+
+      /* Filter out children if they are in the wrong direction from
+       * @rbox, or if they don't overlap it. To account for floating-
+       * point imprecision, an actor is "down" (etc.) from an another
+       * actor even if it overlaps it by up to 0.1 pixels.
+       */
+      switch (direction)
+        {
+        case GTK_DIR_UP:
+          if (cbox.y2 > rbox->y1 + 0.1)
+            continue;
+          if (cbox.x1 >= rbox->x2 || cbox.x2 <= rbox->x1)
+            continue;
+          break;
+
+        case GTK_DIR_DOWN:
+          if (cbox.y1 < rbox->y2 - 0.1)
+            continue;
+          if (cbox.x1 >= rbox->x2 || cbox.x2 <= rbox->x1)
+            continue;
+          break;
+
+        case GTK_DIR_LEFT:
+          if (cbox.x2 > rbox->x1 + 0.1)
+            continue;
+          if (cbox.y1 >= rbox->y2 || cbox.y2 <= rbox->y1)
+            continue;
+          break;
+
+        case GTK_DIR_RIGHT:
+          if (cbox.x1 < rbox->x2 - 0.1)
+            continue;
+          if (cbox.y1 >= rbox->y2 || cbox.y2 <= rbox->y1)
+            continue;
+          break;
+
+        default:
+          g_return_val_if_reached (NULL);
+        }
+
+      ret = g_list_prepend (ret, child);
+    }
+
+  g_list_free (children);
+  return ret;
+}
+
+
+typedef struct {
+  GtkDirectionType direction;
+  ClutterActorBox box;
+} StWidgetChildSortData;
+
+static int
+sort_by_position (gconstpointer  a,
+                  gconstpointer  b,
+                  gpointer       user_data)
+{
+  ClutterActor *actor_a = (ClutterActor *)a;
+  ClutterActor *actor_b = (ClutterActor *)b;
+  StWidgetChildSortData *sort_data = user_data;
+  GtkDirectionType direction = sort_data->direction;
+  ClutterActorBox abox, bbox;
+  int ax, ay, bx, by;
+  int cmp, fmid;
+
+  /* Determine the relationship, relative to motion in @direction, of
+   * the center points of the two actors. Eg, for %GTK_DIR_UP, we
+   * return a negative number if @actor_a's center is below @actor_b's
+   * center, and postive if vice versa, which will result in an
+   * overall list sorted bottom-to-top.
+   */
+
+  clutter_actor_get_allocation_box (actor_a, &abox);
+  ax = (int)(abox.x1 + abox.x2) / 2;
+  ay = (int)(abox.y1 + abox.y2) / 2;
+  clutter_actor_get_allocation_box (actor_b, &bbox);
+  bx = (int)(bbox.x1 + bbox.x2) / 2;
+  by = (int)(bbox.y1 + bbox.y2) / 2;
+
+  switch (direction)
+    {
+    case GTK_DIR_UP:
+      cmp = by - ay;
+      break;
+    case GTK_DIR_DOWN:
+      cmp = ay - by;
+      break;
+    case GTK_DIR_LEFT:
+      cmp = bx - ax;
+      break;
+    case GTK_DIR_RIGHT:
+      cmp = ax - bx;
+      break;
+    default:
+      g_return_val_if_reached (0);
+    }
+
+  if (cmp)
+    return cmp;
+
+  /* If two actors have the same center on the axis being sorted,
+   * prefer the one that is closer to the center of the current focus
+   * actor on the other axis. Eg, for %GTK_DIR_UP, prefer whichever
+   * of @actor_a and @actor_b has a horizontal center closest to the
+   * current focus actor's horizontal center.
+   *
+   * (This matches GTK's behavior.)
+   */
+  switch (direction)
+    {
+    case GTK_DIR_UP:
+    case GTK_DIR_DOWN:
+      fmid = (int)(sort_data->box.x1 + sort_data->box.x2) / 2;
+      return abs (ax - fmid) - abs (bx - fmid);
+    case GTK_DIR_LEFT:
+    case GTK_DIR_RIGHT:
+      fmid = (int)(sort_data->box.y1 + sort_data->box.y2) / 2;
+      return abs (ay - fmid) - abs (by - fmid);
+    default:
+      g_return_val_if_reached (0);
+    }
+}
+
 static gboolean
 st_widget_real_navigate_focus (StWidget         *widget,
                                ClutterActor     *from,
                                GtkDirectionType  direction)
 {
-  if (widget->priv->can_focus &&
-      CLUTTER_ACTOR (widget) != from)
+  ClutterActor *widget_actor, *focus_child;
+  GList *children, *l;
+
+  widget_actor = CLUTTER_ACTOR (widget);
+  if (from == widget_actor)
+    return FALSE;
+
+  /* Figure out if @from is a descendant of @widget, and if so,
+   * set @focus_child to the immediate child of @widget that
+   * contains (or *is*) @from.
+   */
+  focus_child = from;
+  while (focus_child && clutter_actor_get_parent (focus_child) != widget_actor)
+    focus_child = clutter_actor_get_parent (focus_child);
+
+  if (widget->priv->can_focus)
     {
-      clutter_actor_grab_key_focus (CLUTTER_ACTOR (widget));
-      return TRUE;
+      if (!focus_child)
+        {
+          /* Accept focus from outside */
+          clutter_actor_grab_key_focus (widget_actor);
+          return TRUE;
+        }
+      else
+        {
+          /* Yield focus from within: since @widget itself is
+           * focusable we don't allow the focus to be navigated
+           * within @widget.
+           */
+          return FALSE;
+        }
     }
+
+  /* See if we can navigate within @focus_child */
+  if (focus_child && ST_IS_WIDGET (focus_child))
+    {
+      if (st_widget_navigate_focus (ST_WIDGET (focus_child), from, direction, FALSE))
+        return TRUE;
+    }
+
+  /* At this point we know that we want to navigate focus to one of
+   * @widget's immediate children; the next one after @focus_child,
+   * or the first one if @focus_child is %NULL. (With "next" and
+   * "first" being determined by @direction.)
+   */
+
+  children = st_widget_get_focus_chain (widget);
+  if (direction == GTK_DIR_TAB_FORWARD ||
+      direction == GTK_DIR_TAB_BACKWARD)
+    {
+      if (direction == GTK_DIR_TAB_BACKWARD)
+        children = g_list_reverse (children);
+
+      if (focus_child)
+        {
+          /* Remove focus_child and any earlier children */
+          while (children && children->data != focus_child)
+            children = g_list_delete_link (children, children);
+          if (children)
+            children = g_list_delete_link (children, children);
+        }
+    }
+  else /* direction is an arrow key, not tab */
+    {
+      StWidgetChildSortData sort_data;
+
+      /* Compute the allocation box of the previous focused actor, in
+       * @widget's coordinate space. If there was no previous focus,
+       * use the coordinates of the appropriate edge of @widget.
+       *
+       * Note that all of this code assumes the actors are not
+       * transformed (or at most, they are all scaled by the same
+       * amount). If @widget or any of its children is rotated, or
+       * any child is inconsistently scaled, then the focus chain will
+       * probably be unpredictable.
+       */
+      if (focus_child)
+        {
+          clutter_actor_get_allocation_box (focus_child, &sort_data.box);
+        }
+      else
+        {
+          clutter_actor_get_allocation_box (CLUTTER_ACTOR (widget), &sort_data.box);
+          switch (direction)
+            {
+            case GTK_DIR_UP:
+              sort_data.box.y1 = sort_data.box.y2;
+              break;
+            case GTK_DIR_DOWN:
+              sort_data.box.y2 = sort_data.box.y1;
+              break;
+            case GTK_DIR_LEFT:
+              sort_data.box.x1 = sort_data.box.x2;
+              break;
+            case GTK_DIR_RIGHT:
+              sort_data.box.x2 = sort_data.box.x1;
+              break;
+            default:
+              g_warn_if_reached ();
+            }
+        }
+      sort_data.direction = direction;
+
+      if (focus_child)
+        children = filter_by_position (children, &sort_data.box, direction);
+      if (children)
+        children = g_list_sort_with_data (children, sort_by_position, &sort_data);
+    }
+
+  /* Now try each child in turn */
+  for (l = children; l; l = l->next)
+    {
+      if (ST_IS_WIDGET (l->data))
+        {
+          if (st_widget_navigate_focus (l->data, from, direction, FALSE))
+            {
+              g_list_free (children);
+              return TRUE;
+            }
+        }
+    }
+  g_list_free (children);
   return FALSE;
 }
 
@@ -2570,4 +2948,75 @@ check_labels (StWidgetAccessible *widget_accessible,
                                    ATK_RELATION_LABEL_FOR,
                                    ATK_OBJECT (widget_accessible));
     }
+}
+
+/**
+ * st_widget_get_focus_chain:
+ * @widget: An #StWidget
+ *
+ * Gets a list of the focusable children of @widget, in "Tab"
+ * order. By default, this returns all visible
+ * (as in CLUTTER_ACTOR_IS_VISIBLE()) children of @widget.
+ *
+ * Returns: (element-type Clutter.Actor) (transfer container):
+ *   @widget's focusable children
+ */
+GList *
+st_widget_get_focus_chain (StWidget *widget)
+{
+  return ST_WIDGET_GET_CLASS (widget)->get_focus_chain (widget);
+}
+
+/******************************************************************************/
+/*************************** COMPATIBILITY METHODS ****************************/
+/******************************************************************************/
+
+/**
+ * st_widget_destroy_children:
+ * @widget: An #StWidget
+ *
+ * Destroys all child actors from @widget.
+ *
+ * Deprecated:3.0: Use clutter_actor_destroy_all_children instead
+ */
+void
+st_widget_destroy_children (StWidget *widget)
+{
+  clutter_actor_destroy_all_children (CLUTTER_ACTOR (widget));
+}
+
+/* st_widget_move_child:
+ * @widget: An #StWidget
+ * @actor: A #ClutterActor
+ * @pos: An #int
+ * 
+ *
+ * A simple compatibility wrapper around clutter_actor_set_child_at_index.
+ *
+ * Deprecated:3.0: Use clutter_actor_set_child_at_index() instead
+ */
+void
+st_widget_move_child (StWidget     *widget,
+                      ClutterActor *actor,
+                      int           pos)
+{
+  clutter_actor_set_child_at_index (CLUTTER_ACTOR (widget),
+                                    actor, pos);
+}
+
+/* st_widget_move_before:
+ * @widget: An #StWidget
+ * @actor: A #ClutterActor
+ *
+ * A simple compatibility wrapper around clutter_actor_set_child_below_sibling.
+ *
+ * Deprecated:3.0: Use clutter_actor_set_child_below_sibling() instead
+ */
+void
+st_widget_move_before (StWidget     *widget,
+                       ClutterActor *actor,
+                       ClutterActor *sibling)
+{
+  clutter_actor_set_child_below_sibling (CLUTTER_ACTOR (widget),
+                                         actor, sibling);
 }

@@ -363,20 +363,20 @@ CinnamonProcessesDialog.prototype = {
 
         this._applicationList.connect('actor-added',
                                       Lang.bind(this, function() {
-                                          if (this._applicationList.get_children().length == 1)
+                                          if (this._applicationList.get_n_children() == 1)
                                               scrollView.show();
                                       }));
 
         this._applicationList.connect('actor-removed',
                                       Lang.bind(this, function() {
-                                          if (this._applicationList.get_children().length == 0)
+                                          if (this._applicationList.get_n_children() == 0)
                                               scrollView.hide();
                                       }));
     },
 
     _setAppsForPids: function(pids) {
         // remove all the items
-        this._applicationList.destroy_children();
+        this._applicationList.destroy_all_children();
 
         pids.forEach(Lang.bind(this, function(pid) {
             let tracker = Cinnamon.WindowTracker.get_default();

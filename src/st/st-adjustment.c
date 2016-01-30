@@ -34,7 +34,6 @@
 #include <clutter/clutter.h>
 
 #include "st-adjustment.h"
-#include "st-marshal.h"
 #include "st-private.h"
 
 G_DEFINE_TYPE (StAdjustment, st_adjustment, G_TYPE_OBJECT)
@@ -267,8 +266,7 @@ st_adjustment_class_init (StAdjustmentClass *klass)
                   G_TYPE_FROM_CLASS (klass),
                   G_SIGNAL_RUN_LAST,
                   G_STRUCT_OFFSET (StAdjustmentClass, changed),
-                  NULL, NULL,
-                  _st_marshal_VOID__VOID,
+                  NULL, NULL, NULL,
                   G_TYPE_NONE, 0);
 }
 

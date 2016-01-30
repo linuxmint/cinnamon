@@ -1168,7 +1168,7 @@ MyApplet.prototype = {
          * default, so move it to the start if needed */
         if (alert) {
             if (metaWindow.get_workspace().index() < global.screen.get_active_workspace_index())
-                this.manager_container.move_child(appButton.actor, 0);
+                this.manager_container.set_child_at_index(appButton.actor, 0);
         } else {
             if (metaWindow.get_workspace() != global.screen.get_active_workspace())
                 appButton.actor.hide();
@@ -1209,11 +1209,12 @@ MyApplet.prototype = {
             this._dragPlaceholder = new DND.GenericDragPlaceholderItem();
             this._dragPlaceholder.child.set_width (source.actor.width);
             this._dragPlaceholder.child.set_height (source.actor.height);
-            this.manager_container.insert_actor(this._dragPlaceholder.actor,
-                    this._dragPlaceholderPos);
+
+            this.manager_container.insert_child_at_index(this._dragPlaceholder.actor,
+                                                         this._dragPlaceholderPos);
         } else {
-            this.manager_container.move_child(this._dragPlaceholder.actor,
-                    this._dragPlaceholderPos);
+            this.manager_container.set_child_at_index(this._dragPlaceholder.actor,
+                                                         this._dragPlaceholderPos);
         }
 
         return DND.DragMotionResult.MOVE_DROP;
@@ -1223,7 +1224,7 @@ MyApplet.prototype = {
         if (!(source instanceof AppMenuButton)) return false;
         if (this._dragPlaceholderPos == undefined) return false;
 
-        this.manager_container.move_child(source.actor, this._dragPlaceholderPos);
+        this.manager_container.set_child_at_index(source.actor, this._dragPlaceholderPos);
 
         return true;
     },

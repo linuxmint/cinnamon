@@ -25,7 +25,7 @@
 #define __ST_TABLE_H__
 
 #include <st/st-types.h>
-#include <st/st-container.h>
+#include <st/st-widget.h>
 
 G_BEGIN_DECLS
 
@@ -68,14 +68,14 @@ typedef struct _StTableClass         StTableClass;
 struct _StTable
 {
   /*< private >*/
-  StContainer parent_instance;
+  StWidget parent_instance;
 
   StTablePrivate *priv;
 };
 
 struct _StTableClass
 {
-  StContainerClass parent_class;
+  StWidgetClass parent_class;
 };
 
 GType st_table_get_type (void) G_GNUC_CONST;

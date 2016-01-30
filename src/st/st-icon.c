@@ -234,7 +234,7 @@ st_icon_allocate (ClutterActor           *actor,
   StIconPrivate *priv = ST_ICON (actor)->priv;
   StThemeNode *theme_node = st_widget_get_theme_node (ST_WIDGET (actor));
 
-  CLUTTER_ACTOR_CLASS (st_icon_parent_class)->allocate (actor, box, flags);
+  clutter_actor_set_allocation (actor, box, flags);
 
   if (priv->icon_texture)
     {
@@ -265,8 +265,7 @@ st_icon_paint (ClutterActor *actor)
 {
   StIconPrivate *priv = ST_ICON (actor)->priv;
 
-  /* Chain up to paint background */
-  CLUTTER_ACTOR_CLASS (st_icon_parent_class)->paint (actor);
+  st_widget_paint_background (ST_WIDGET (actor));
 
   if (priv->icon_texture)
     {

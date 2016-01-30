@@ -81,9 +81,7 @@ cinnamon_slicer_allocate (ClutterActor           *self,
 {
   ClutterActor *child;
 
-  /* Chain up directly to ClutterActor to set actor->allocation.  We explicitly skip our parent class
-   * StBin here because we want to override the allocate function. */
-  CLUTTER_ACTOR_CLASS (g_type_class_peek (clutter_actor_get_type ()))->allocate (self, box, flags);
+  clutter_actor_set_allocation (self, box, flags);
 
   child = st_bin_get_child (ST_BIN (self));
   if (child)
@@ -134,8 +132,7 @@ cinnamon_slicer_paint_child (CinnamonSlicer *self)
 static void
 cinnamon_slicer_paint (ClutterActor *self)
 {
-  /* StWidget paints CSS elements */
-  CLUTTER_ACTOR_CLASS (g_type_class_peek (st_widget_get_type ()))->paint (self);
+  st_widget_paint_background (ST_WIDGET (self));
 
   cinnamon_slicer_paint_child (CINNAMON_SLICER (self));
 }

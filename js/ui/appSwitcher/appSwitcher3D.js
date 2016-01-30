@@ -45,9 +45,9 @@ AppSwitcher3D.prototype = {
         global.overlay_group.add_actor(this._background);
 
         // create a container for all our widgets
-        this.actor = new St.Group({ visible: true, reactive: true, });
+        this.actor = new St.Widget({ visible: true, reactive: true, });
         this.actor.hide();
-        this.previewActor = new St.Group({ visible: true, reactive: true, });
+        this.previewActor = new St.Widget({ visible: true, reactive: true, });
         this.actor.add_actor(this.previewActor);
         
         Main.uiGroup.add_actor(this.actor);

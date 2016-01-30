@@ -1023,8 +1023,8 @@ FavoritesBox.prototype = {
             this._dragPlaceholder = new DND.GenericDragPlaceholderItem();
             this._dragPlaceholder.child.set_width (source.actor.height);
             this._dragPlaceholder.child.set_height (source.actor.height);
-            this.actor.insert_actor(this._dragPlaceholder.actor,
-                                   this._dragPlaceholderPos);
+            this.actor.insert_child_at_index(this._dragPlaceholder.actor,
+                                             this._dragPlaceholderPos);
             if (fadeIn)
                 this._dragPlaceholder.animateIn();
         }
