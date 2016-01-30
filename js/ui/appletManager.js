@@ -276,7 +276,7 @@ function addAppletToPanels(extension, appletDefinition) {
                        (appletDefinition.order < x._applet._order));
 
         if (before)
-            location.insert_before(applet.actor, before);
+            location.insert_child_below(applet.actor, before);
         else
             location.add_actor(applet.actor);
 

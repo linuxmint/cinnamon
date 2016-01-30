@@ -82,10 +82,19 @@ struct _StWidgetClass
   void     (* popup_menu)          (StWidget         *self);
 
   /* vfuncs */
+
+  /**
+   * StWidgetClass::navigate_focus
+   * @self: the "top level" container
+   * @from: (allow-none): the actor that the focus is coming from
+   * @direction: the direction focus is moving in
+   */
   gboolean (* navigate_focus)      (StWidget         *self,
                                     ClutterActor     *from,
                                     GtkDirectionType  direction);
   GType    (* get_accessible_type) (void);
+
+  GList *  (* get_focus_chain)     (StWidget         *widget);
 };
 
 GType st_widget_get_type (void) G_GNUC_CONST;
@@ -159,10 +168,22 @@ void                  st_widget_style_changed             (StWidget        *widg
 StThemeNode *         st_widget_get_theme_node            (StWidget        *widget);
 StThemeNode *         st_widget_peek_theme_node           (StWidget        *widget);
 
+GList *               st_widget_get_focus_chain           (StWidget        *widget);
+void                  st_widget_paint_background          (StWidget        *widget);
+
 /* debug methods */
 char  *st_describe_actor       (ClutterActor *actor);
 void   st_set_slow_down_factor (gfloat factor);
 gfloat st_get_slow_down_factor (void);
+
+/* Compatibility methods */
+void  st_widget_destroy_children (StWidget     *widget);
+void  st_widget_move_child       (StWidget     *widget,
+                                  ClutterActor *actor,
+                                  int           pos);
+void st_widget_move_before       (StWidget     *widget,
+                                  ClutterActor *actor,
+                                  ClutterActor *sibling);
 
 /* accessibility methods */
 void                  st_widget_set_accessible_role       (StWidget *widget,

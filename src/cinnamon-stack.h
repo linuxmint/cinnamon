@@ -19,14 +19,14 @@ typedef struct _CinnamonStackPrivate CinnamonStackPrivate;
 
 struct _CinnamonStack
 {
-    StContainer parent;
+    StWidget parent;
 
     CinnamonStackPrivate *priv;
 };
 
 struct _CinnamonStackClass
 {
-    StContainerClass parent_class;
+    StWidgetClass parent_class;
 };
 
 GType cinnamon_stack_get_type (void) G_GNUC_CONST;

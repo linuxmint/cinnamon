@@ -376,7 +376,7 @@ Keyboard.prototype = {
         let verticalSpacing = layout.get_theme_node().get_length('spacing');
         let padding = layout.get_theme_node().get_length('padding');
 
-        let box = layout.get_children()[0].get_children()[0];
+        let box = layout.get_child_at_index(0).get_child_at_index(0);
         let horizontalSpacing = box.get_theme_node().get_length('spacing');
         let allHorizontalSpacing = (this._numOfHorizKeys - 1) * horizontalSpacing;
         let keyWidth = Math.floor((this.actor.width - allHorizontalSpacing - 2 * padding) / this._numOfHorizKeys);
