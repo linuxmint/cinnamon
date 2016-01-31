@@ -1782,43 +1782,16 @@ Panel.prototype = {
             // b) set the height of the central box explicitly when in panel edit mode, and unset it otherwise, to allow for the
             //    case where the central box has no contents.  
             //
-            // 
-            // Other approaches may of course be possible ... and it is worth rechecking things that used to give problems
 
             if (this.panelPosition == PanelLoc.left) {   // left panel
-                this._leftBox   = new St.BoxLayout({ name: 'panelLeft'});
-                this._leftBox.add_style_class_name('vertical');
-                this._leftBox.set_vertical(true);
-                this._leftBox.set_important(true);
-                this._leftBox.set_x_align(Clutter.ActorAlign.CENTER);
-
+                this._leftBox    = new St.BoxLayout({ name: 'panelLeft'});
                 this._rightBox   = new St.BoxLayout({ name: 'panelLeft'});
-                this._rightBox.add_style_class_name('vertical');
-                this._rightBox.set_vertical(true);
-                this._rightBox.set_important(true);
-                this._rightBox.set_x_align(Clutter.ActorAlign.CENTER);
-
             } else {
-                this._leftBox   = new St.BoxLayout({ name: 'panelRight'});
-                this._leftBox.add_style_class_name('vertical');
-                this._leftBox.set_vertical(true);
-                this._leftBox.set_important(true);
-                this._leftBox.set_x_align(Clutter.ActorAlign.CENTER);
-
+                this._leftBox    = new St.BoxLayout({ name: 'panelRight'});
                 this._rightBox   = new St.BoxLayout({ name: 'panelRight'});
-                this._rightBox.add_style_class_name('vertical');
-                this._rightBox.set_vertical(true);
-                this._rightBox.set_important(true);
-                this._rightBox.set_x_align(Clutter.ActorAlign.CENTER);
-
             }
-
-            this._centerBox   = new St.BoxLayout({ name: 'panelCenter'});
-            this._centerBox.add_style_class_name('vertical');
-            this._centerBox.set_vertical(true);
-            this._centerBox.set_important(true);
-            this._centerBox.set_x_align(Clutter.ActorAlign.CENTER);
-            this._centerBox.set_y_align(Clutter.ActorAlign.CENTER);
+            this._centerBox      = new St.BoxLayout({ name: 'panelCenter'});
+            this._set_vertical_panel_style();
 
             this.actor.add_actor(this._leftBox);
             this.actor.add_actor(this._centerBox);
@@ -2372,23 +2345,29 @@ Panel.prototype = {
 	}
 	else		// vertical panels
 	{
-            this._rightBox.add_style_class_name('vertical');
-            this._rightBox.set_vertical(true);
-            this._rightBox.set_important(true);
-            this._rightBox.set_x_align(Clutter.ActorAlign.CENTER);
-
-            this._leftBox.add_style_class_name('vertical');
-            this._leftBox.set_vertical(true);
-            this._leftBox.set_important(true);
-            this._leftBox.set_x_align(Clutter.ActorAlign.CENTER);
-
-            this._centerBox.add_style_class_name('vertical');
-            this._centerBox.set_vertical(true);
-            this._centerBox.set_important(true);
-            this._centerBox.set_x_align(Clutter.ActorAlign.CENTER);
-            this._centerBox.set_y_align(Clutter.ActorAlign.CENTER);
-            }
+            this._set_vertical_panel_style();
+        }
     },
+
+    _set_vertical_panel_style: function() {
+
+        this._rightBox.add_style_class_name('vertical');
+        this._rightBox.set_important(true);
+        this._rightBox.set_vertical(true);
+        this._rightBox.set_x_align(Clutter.ActorAlign.CENTER);
+
+        this._leftBox.add_style_class_name('vertical');
+        this._leftBox.set_important(true);
+        this._leftBox.set_vertical(true);
+        this._leftBox.set_x_align(Clutter.ActorAlign.CENTER);
+
+        this._centerBox.add_style_class_name('vertical');
+        this._centerBox.set_important(true);
+        this._centerBox.set_vertical(true);
+        this._centerBox.set_x_align(Clutter.ActorAlign.CENTER);
+        this._centerBox.set_y_align(Clutter.ActorAlign.CENTER);
+    },
+
 
     _setFont: function(panelHeight) {
         this.scaleMode = this._getProperty(PANEL_RESIZABLE_KEY, "b") && this._getProperty(PANEL_SCALE_TEXT_ICONS_KEY, "b");
