@@ -194,8 +194,11 @@ function heightsUsedMonitor (monitorIndex, listofpanels) {
 
 /**
 * getPanelLocFromName:
+* @pname (char): panel type
 *
 * get the panel numeric type from its name in settings
+*
+* returns - panel type (integer)
 */
 function getPanelLocFromName (pname) {
     let jj = PanelLoc.bottom;  // ensure something credible always returned even if supplied invalid data
@@ -325,7 +328,7 @@ PanelManager.prototype = {
         //
         // Draw corners where necessary.  NB no corners necessary where there is no panel for a full screen window to butt up against.
         //
-            //log("monitor count " + monitorCount);
+        //log("monitor count " + monitorCount);
         for (let i = 0; i <= monitorCount; i++) {
         //
         // logic for loading up panels in the right order and drawing corners relies on doing it ordered by monitor
@@ -623,10 +626,10 @@ PanelManager.prototype = {
      * @ID (integer): panel id
      * @monitorIndex (integer): index of monitor of panel
      * @panelPosition (integer): where the panel should be
-     * @toppheight (integer): for vertical panels - how much space is already used by the horizontal panel above
-     * @botpheight (integer): for vertical panels - how much space is already used by the horizontal panel below
+     * @drawcorner (array): whether to draw corners for [left, right]
      * @panelList (array): (optional) the list in which the new panel should be appended to (not necessarily this.panels, c.f. _onPanelsEnabledChanged) Default: this.panels
-     * @metaList(array): (optional) the list in which the new panel metadata should be appended to (not necessarily this.panelsMeta, c.f. _onPanelsEnabledChanged) Default: this.panelsMeta
+     * @metaList(array): (optional) the list in which the new panel metadata should be appended to (not necessarily this.panelsMeta, c.f. _onPanelsEnabledChanged) 
+     *                   Default: this.panelsMeta
      *
      * Loads a panel with the given properties and appends it to @panelList. @panelList is usually this.panels but is a different array when used by _onPanelsEnabledChanged.
      *
@@ -728,18 +731,9 @@ PanelManager.prototype = {
             if (this.panels[ID]) {                  // If (existing) panel is moved
                 newPanels[ID] = this.panels[ID];    // Move panel object to newPanels
                 let jj = 0;
-                let orientationchanged = false;
                 jj = getPanelLocFromName(elements[2]);
 
                 let mon = parseInt(elements[1]);
-        /*      if (((this.panels[ID].panelPosition == PanelLoc.top || this.panels[ID].panelPosition == PanelLoc.bottom)
-                    && (jj == PanelLoc.left || jj == PanelLoc.right))
-                    || 
-                    ((this.panels[ID].panelPosition == PanelLoc.left || this.panels[ID].panelPosition == PanelLoc.right)
-                    && (jj == PanelLoc.top || jj == PanelLoc.bottom)))
-                {
-                    orientationchanged = true;
-                } */
 
                 newMeta[ID] = [mon, jj];        //Note: meta [i][0] is the monitor  meta [i][1] is the panel
                 this.panels[ID] = null;
@@ -1111,15 +1105,6 @@ TextShadower.prototype = {
         }
     }
 };
-//
-// The panel corners are there for a non-obvious reason.  They are used as the positioning points for small
-// drawing areas that use some optional css to draw small filled arcs (in the repaint function).  This allows
-// windows with rounded corners to be blended into the panels in some distros, gnome shell in particular.
-// In mint tiling and full screen removes any rounded window corners anyway, so this optional css is not there in
-// the main mint themes, and the corner/cairo functionality is unused in this case. Where the corners are used they will be
-// positioned so as to fill in the tiny gap at the corners of full screen windows, and if themed right they
-// will be invisble to the user, other than the window will appear to go right up to the corner when full screen
-//
     /**
      * PanelCorner:
      * @box: the box in a panel the corner is associated with
@@ -1127,6 +1112,14 @@ TextShadower.prototype = {
      * @cornertype:  top left, bottom right etc.
      *
      * Sets up a panel corner
+     *
+     * The panel corners are there for a non-obvious reason.  They are used as the positioning points for small
+     * drawing areas that use some optional css to draw small filled arcs (in the repaint function).  This allows
+     * windows with rounded corners to be blended into the panels in some distros, gnome shell in particular.
+     * In mint tiling and full screen removes any rounded window corners anyway, so this optional css is not there in
+     * the main mint themes, and the corner/cairo functionality is unused in this case. Where the corners are used they will be
+     * positioned so as to fill in the tiny gap at the corners of full screen windows, and if themed right they
+     * will be invisble to the user, other than the window will appear to go right up to the corner when full screen
      */
 function PanelCorner(box, side, cornertype) {
     this._init(box, side, cornertype);
@@ -1655,6 +1648,10 @@ PanelZoneDNDHandler.prototype = {
  *
  * @panelId (int): the id of the panel
  * @monitorIndex (int): the index of the monitor containing the panel
+ * @toppanelHeight (int): the height already taken on the screen by a top panel
+ * @bottompanelHeight (int): the height already taken on the screen by a bottom panel
+ * @drawcorner (array): [left, right] whether to draw corners alongside the panel
+ *
  * @monitor (Meta.Rectangle): the geometry (bounding box) of the monitor
  * @panelPosition (integer): where the panel is on the screen 
  * @actor (Cinnamon.GenericContainer): the actor of the panel
@@ -1764,15 +1761,15 @@ Panel.prototype = {
             // Using x_align:2 also causes problems with a new, empty panel - seeming to stop the dndhandler working. 
             // I have not yet found a workaround to this, other than to use the 'add applets to the panel' menu entry
             //
-            // So .. the approach taken is to
+            // The approach taken is to
             // 1) keep the natural size of left and right (i.e. top and bottom) boxes, this means that the icons will cluster together
             //    at top and bottom of the panel respectively
             // 2) have a central box that can take all the space in between
             // 3) turn on central y-alignment for the central box
-            // 4) turn on central x-alignment, and just accept that there is an empty panel case that I have not solved yet.
+            // 4) turn on central x-alignment, and just accept that there is an empty panel case that is not solved yet.
             //    (-expand does not help, also note that the edit mode colouring does not happen)
             //
-            // The appearance of this looks sensible to my eyes - the icons in the boxes have sensible positioning
+            // The appearance of this looks reasonable - the icons in the boxes have sensible positioning
             // (css permitting). The central box will however not be central, but its position will depend on the relative numbers of 
             // icons in the top and bottom boxes.
             // Some workarounds for the side effects of the central alignment are needed.  
@@ -2016,7 +2013,7 @@ Panel.prototype = {
 
     handleDragOver: function(source, actor, x, y, time) {
 //
-// For empty panels. If over left,right,center box then do not get here.
+// For empty panels. If over left,right,center box then will not get here.
 //
         this._enterPanel();
         if (this._dragShowId > 0)
@@ -2048,7 +2045,6 @@ Panel.prototype = {
             global.destroy_pointer_barrier(this._rightPanelBarrier);
 
         let noBarriers = global.settings.get_boolean("no-adjacent-panel-barriers");
-
         if (this.actor.height) {
         let panelTop = 0;
         let panelBottom = 0;
@@ -2323,11 +2319,11 @@ Panel.prototype = {
         return true;
     },
 
+
+    _on_orientation_changed: function() {
     //
     // cater for the style/alignment changes needed when panels change orientation
     //
-    _on_orientation_changed: function() {
-
 	if (this.panelPosition == PanelLoc.top || this.panelPosition == PanelLoc.bottom)
 	{
             this._rightBox.remove_style_class_name('vertical');
@@ -2463,10 +2459,6 @@ Panel.prototype = {
      * then distribute the remaining space proportional to how much more space each
      * box wants. In the scenario where the isn't enough space to just allocate the
      * minimum width, we just allocate proportional to the minimum width.
-     *
-     * vertical panels
-     * Currently uses simpler logic where left and right panels get their natural 
-     * width where possible
      *
      * Returns (array): The left and right widths to be allocated.
      */
