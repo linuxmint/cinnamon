@@ -74,7 +74,6 @@ CLEANFILES += cinnamon $(bin_SCRIPTS)
 
 include Makefile-st.am
 include Makefile-tray.am
-include Makefile-gvc.am
 include Makefile-hotplug-sniffer.am
 
 cinnamon_cflags =				\
@@ -282,7 +281,6 @@ libcinnamon_la_LIBADD =		\
 	$(BLUETOOTH_LIBS)	\
 	libst-1.0.la       	\
 	libtray.la		\
-	libgvc.la		\
 	$(NULL)
 
 libcinnamon_la_CPPFLAGS = $(cinnamon_cflags)
