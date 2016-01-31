@@ -775,7 +775,7 @@ PanelManager.prototype = {
 
 //
 // Adjust any vertical panel heights so as to fit snugly between horizontal panels
-// FIXME scope for optimisation here, doesn't need to adjust verticals if no horizontals added or removed
+// FIXME scope for minor optimisation here, doesn't need to adjust verticals if no horizontals added or removed
 // or any change from making space for panel dummys needs to be reflected
 //
         for (let i in this.panels) {
@@ -1761,8 +1761,8 @@ Panel.prototype = {
             //
             // Using x_align:2 on the boxes shrinks them down to a tiny vertical strip if empty, which is not workable in panel edit mode.
             // This can be catered for dynamically by setting and unsetting it as needed. x-expand does not appear to make a difference. 
-                    // Using x_align:2 also causes problems with a new, empty panel - seeming to stop the dndhandler working. 
-                    // I have not yet found a workaround to this, other than to use the 'add applets to the panel' menu entry
+            // Using x_align:2 also causes problems with a new, empty panel - seeming to stop the dndhandler working. 
+            // I have not yet found a workaround to this, other than to use the 'add applets to the panel' menu entry
             //
             // So .. the approach taken is to
             // 1) keep the natural size of left and right (i.e. top and bottom) boxes, this means that the icons will cluster together
@@ -1783,8 +1783,8 @@ Panel.prototype = {
             //    case where the central box has no contents.  
             //
             // 
-            // Other approaches may of course be possible ... and it is worth rechecking things that used to give problems as I mainly 
-                    // tested on 2.6 and there was an allocation/align error corrected in 2.8
+            // Other approaches may of course be possible ... and it is worth rechecking things that used to give problems
+
             if (this.panelPosition == PanelLoc.left) {   // left panel
                 this._leftBox   = new St.BoxLayout({ name: 'panelLeft'});
                 this._leftBox.add_style_class_name('vertical');
@@ -2323,7 +2323,7 @@ Panel.prototype = {
                 this.actor.set_position(this.monitor.x + this.monitor.width - panelHeight, this.monitor.y + tpanelHeight);
                 break;
             default:
-                global.log("moveResizePanel - unrecognised panel position "+panelPosition);
+                global.log("moveResizePanel - unrecognised panel position "+this.panelPosition);
         }
 
         //
@@ -2346,6 +2346,44 @@ Panel.prototype = {
         // AppletManager might not be initialized yet
         if (AppletManager.appletsLoaded)
             AppletManager.updateAppletPanelHeights(); 
+
+        //
+        // cater for moves of panels from horizontal to side
+        // FIXME ideally need to limit this to panel moves only
+        //
+	if (this.panelPosition == PanelLoc.top || this.panelPosition == PanelLoc.bottom)
+	{
+            this._rightBox.remove_style_class_name('vertical');
+            this._rightBox.set_vertical(false);
+            this._rightBox.set_x_align(Clutter.ActorAlign.END);
+
+            this._leftBox.remove_style_class_name('vertical');
+            this._leftBox.set_vertical(false);
+            this._leftBox.set_x_align(Clutter.ActorAlign.START);
+
+            this._centerBox.remove_style_class_name('vertical');
+            this._centerBox.set_vertical(false);
+            this._centerBox.set_x_align(Clutter.ActorAlign.CENTER);
+            this._centerBox.set_y_align(Clutter.ActorAlign.CENTER);
+	}
+	else		// vertical panels
+	{
+            this._rightBox.add_style_class_name('vertical');
+            this._rightBox.set_vertical(true);
+            this._rightBox.set_important(true);
+            this._rightBox.set_x_align(Clutter.ActorAlign.CENTER);
+
+            this._leftBox.add_style_class_name('vertical');
+            this._leftBox.set_vertical(true);
+            this._leftBox.set_important(true);
+            this._leftBox.set_x_align(Clutter.ActorAlign.CENTER);
+
+            this._centerBox.add_style_class_name('vertical');
+            this._centerBox.set_vertical(true);
+            this._centerBox.set_important(true);
+            this._centerBox.set_x_align(Clutter.ActorAlign.CENTER);
+            this._centerBox.set_y_align(Clutter.ActorAlign.CENTER);
+            }
 
         return true;
     },
