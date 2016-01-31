@@ -1915,6 +1915,7 @@ Panel.prototype = {
         this._destroycorners();
 
         this._moveResizePanel();
+        this._on_orientation_changed();
 
         this.addContextMenuToPanel(panelPosition);
     },
@@ -2342,15 +2343,18 @@ Panel.prototype = {
             }
         }
 
-
         // AppletManager might not be initialized yet
         if (AppletManager.appletsLoaded)
             AppletManager.updateAppletPanelHeights(); 
 
-        //
-        // cater for moves of panels from horizontal to side
-        // FIXME ideally need to limit this to panel moves only
-        //
+        return true;
+    },
+
+    //
+    // cater for the style/alignment changes needed when panels change orientation
+    //
+    _on_orientation_changed: function() {
+
 	if (this.panelPosition == PanelLoc.top || this.panelPosition == PanelLoc.bottom)
 	{
             this._rightBox.remove_style_class_name('vertical');
@@ -2384,8 +2388,6 @@ Panel.prototype = {
             this._centerBox.set_x_align(Clutter.ActorAlign.CENTER);
             this._centerBox.set_y_align(Clutter.ActorAlign.CENTER);
             }
-
-        return true;
     },
 
     _setFont: function(panelHeight) {
