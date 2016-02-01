@@ -818,19 +818,7 @@ cinnamon_app_compare (CinnamonApp *app,
   return 0;
 }
 
-CinnamonApp *
-_cinnamon_app_new_for_window (MetaWindow      *window)
-{
-  CinnamonApp *app;
 
-  app = g_object_new (CINNAMON_TYPE_APP, NULL);
-
-  app->window_id_string = g_strdup_printf ("window:%d", meta_window_get_stable_sequence (window));
-
-  _cinnamon_app_add_window (app, window);
-
-  return app;
-}
 
 CinnamonApp *
 _cinnamon_app_new (GMenuTreeEntry *info)
@@ -1109,35 +1097,7 @@ cinnamon_app_launch (CinnamonApp     *app,
 
   if (app->entry == NULL)
     {
-      MetaWindow *window = window_backed_app_get_window (app);
-      /* We can't pass URIs into a window; shouldn't hit this
-       * code path.  If we do, fix the caller to disallow it.
-       */
-      g_return_val_if_fail (uris == NULL, TRUE);
-
-      meta_window_activate (window, timestamp);
-      return TRUE;
-    }
-
-  global = cinnamon_global_get ();
-  screen = cinnamon_global_get_screen (global);
-  gdisplay = gdk_screen_get_display (cinnamon_global_get_gdk_screen (global));
-
-  if (timestamp == 0)
-    timestamp = cinnamon_global_get_current_time (global);
-
-  if (workspace < 0)
-    workspace = meta_screen_get_active_workspace_index (screen);
-
-  context = gdk_display_get_app_launch_context (gdisplay);
-  gdk_app_launch_context_set_timestamp (context, timestamp);
-  gdk_app_launch_context_set_desktop (context, workspace);
-
-  gapp = gmenu_tree_entry_get_app_info (app->entry);
-  ret = g_desktop_app_info_launch_uris_as_manager (gapp, uris,
-                                                   G_APP_LAUNCH_CONTEXT (context),
-                                                   G_SPAWN_SEARCH_PATH | G_SPAWN_DO_NOT_REAP_CHILD | G_SPAWN_STDOUT_TO_DEV_NULL  | G_SPAWN_STDERR_TO_DEV_NULL,
-                                                   NULL, NULL,
+                             NULL, NULL,
                                                    _gather_pid_callback, app,
                                                    error);
   g_object_unref (context);
