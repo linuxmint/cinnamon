@@ -2691,23 +2691,25 @@ Panel.prototype = {
 
             //
             // As using central y-align or x-align seems to result in zero size if the box is empty, force
-            // to a defined size when in panel edit mode
+            // to a defined size in edit mode, and set the width to the max so that coloured boxes do not shrink down
+            // around the applets they contain.
             //
+//global.log("panel allocate: alloc height "+allocHeight+" width "+allocWidth+" leftboundary "+leftBoundary+" rightboundary "+rightBoundary);
+
+            this._centerBox.set_width(allocHeight);
+            this._leftBox.set_width(allocHeight);
+            this._rightBox.set_width(allocHeight);
+
             if (this._panelEditMode) {
                 this._centerBox.set_height(rightBoundary - leftBoundary);
-                this._centerBox.set_width(allocHeight);
                 this._leftBox.set_height(leftBoundary);
-                this._leftBox.set_width(allocHeight);
                 this._rightBox.set_height(allocWidth - rightBoundary);
-                this._rightBox.set_width(allocHeight);
+
             } else {
                 this._centerBox.set_height(-1);
-                this._centerBox.set_width(-1); 
                 this._leftBox.set_height(-1);
-                this._leftBox.set_width(-1);  
                 this._rightBox.set_height(-1);
-                this._rightBox.set_width(-1);     
-            }
+           }
             //
             // Corners are in response to a bit of optional css and are about painting corners just outside the panels so as to create a seamless 
             // visual impression for windows with curved corners 
