@@ -152,7 +152,7 @@
     </key>
     
     <key name="desktop-effects-on-dialogs" type="b">
-      <default>false</default>
+      <default>true</default>
       <_summary>Enable desktop effects on dialog boxes</_summary>
       <_description>
         Whether to enable desktop effects on dialog boxes.
@@ -160,7 +160,7 @@
     </key>
 
     <key name="desktop-effects-on-menus" type="b">
-      <default>false</default>
+      <default>true</default>
       <_summary>Enable desktop effects on Gtk menus</_summary>
       <_description>
         Whether to enable desktop effects on Gtk menus.
@@ -177,10 +177,11 @@
     </key>
 
     <key type="s" name="desktop-effects-close-effect">
-      <default>"traditional"</default>
+      <default>"fadeScale"</default>
       <_summary>Effect used when closing windows</_summary>
       <_description>
-       An effect: scale, fade, traditional, none
+       An effect: scale, fade, blend, move, flyUp, flyDown, 
+       fadeScale, collapse, rollup, none
       </_description>
     </key>
     
@@ -199,12 +200,38 @@
        Duration of the effect (in milliseconds)    
       </_description>
     </key>
+
+    <key type="s" name="desktop-effects-closedialog-effect">
+      <default>"collapse"</default>
+      <_summary>Effect used when closing dialogs</_summary>
+      <_description>
+       An effect: scale, fade, blend, move, flyUp, flyDown, 
+       fadeScale, collapse, rollup, none
+      </_description>
+    </key>
+    
+     <key name="desktop-effects-closedialog-transition" type="s">
+      <default>"easeInQuad"</default>
+      <_summary>Transition used when closing dialogs</_summary>
+      <_description>
+       A Tweener transition
+      </_description>
+    </key>
+    
+    <key type="i" name="desktop-effects-closedialog-time">
+      <default>175</default>
+      <_summary>Duration of the effect (in milliseconds)</_summary>
+      <_description>
+       Duration of the effect (in milliseconds)    
+      </_description>
+    </key>
     
     <key type="s" name="desktop-effects-map-effect">
-      <default>"traditional"</default>
+      <default>"fadeScale"</default>
       <_summary>Effect used when mapping windows</_summary>
       <_description>
-       An effect: scale, fade, traditional, none
+       An effect: scale, fade, blend, move, flyUp, flyDown,
+       fadeScale, expand, rolldown, none
       </_description>
     </key>
     
@@ -223,13 +250,62 @@
        Duration of the effect (in milliseconds)    
       </_description>
     </key>
+
+    <key type="s" name="desktop-effects-mapdialog-effect">
+      <default>"expand"</default>
+      <_summary>Effect used when mapping dialog windows</_summary>
+      <_description>
+       An effect: scale, fade, blend, move, flyUp, flyDown,
+       fadeScale, expand, rolldown, none
+      </_description>
+    </key>
     
+    <key name="desktop-effects-mapdialog-transition" type="s">
+      <default>"easeOutQuad"</default>
+      <_summary>Transition used when mapping dialog windows</_summary>
+      <_description>
+       A Tweener transition
+      </_description>
+    </key>
+    
+    <key type="i" name="desktop-effects-mapdialog-time">
+      <default>175</default>
+      <_summary>Duration of the effect (in milliseconds)</_summary>
+      <_description>
+       Duration of the effect (in milliseconds)    
+      </_description>
+    </key>
+
+    <key type="s" name="desktop-effects-mapmenu-effect">
+      <default>"rolldown"</default>
+      <_summary>Effect used when mapping menus</_summary>
+      <_description>
+       An effect: rolldown, none
+      </_description>
+    </key>
+    
+    <key name="desktop-effects-mapmenu-transition" type="s">
+      <default>"easeNone"</default>
+      <_summary>Transition used when mapping menus</_summary>
+      <_description>
+       A Tweener transition
+      </_description>
+    </key>
+    
+    <key type="i" name="desktop-effects-mapmenu-time">
+      <default>125</default>
+      <_summary>Duration of the effect (in milliseconds)</_summary>
+      <_description>
+       Duration of the effect (in milliseconds)    
+      </_description>
+    </key>
     
     <key type="s" name="desktop-effects-minimize-effect">
       <default>"traditional"</default>
       <_summary>Effect used when minimizing windows</_summary>
       <_description>
-       An effect: traditional, scale, fade, traditional, none
+       An effect: scale, fade, blend, move, flyUp, flyDown, 
+       fadeScale, traditional, collapse, rollup, none
       </_description>
     </key>
     
@@ -248,12 +324,36 @@
        Duration of the effect (in milliseconds)    
       </_description>
     </key>
+
+    <key type="s" name="desktop-effects-unminimize-effect">
+      <default>"traditional"</default>
+      <_summary>Effect used when minimizing windows</_summary>
+      <_description>
+       An effect: traditional, scale, fade, fadeScale, none
+      </_description>
+    </key>
+    
+     <key name="desktop-effects-unminimize-transition" type="s">
+      <default>"easeOutQuad"</default>
+      <_summary>Transition used when minimizing windows</_summary>
+      <_description>
+       A Tweener transition
+      </_description>
+    </key>
+    
+    <key type="i" name="desktop-effects-unminimize-time">
+      <default>200</default>
+      <_summary>Duration of the effect (in milliseconds)</_summary>
+      <_description>
+       Duration of the effect (in milliseconds)    
+      </_description>
+    </key>
     
     <key type="s" name="desktop-effects-maximize-effect">
       <default>"none"</default>
       <_summary>Effect used when maximizing windows</_summary>
       <_description>
-       An effect: none
+       An effect: scale, none
       </_description>
     </key>
     
@@ -277,7 +377,7 @@
       <default>"none"</default>
       <_summary>Effect used when unmaximizing windows</_summary>
       <_description>
-       An effect: none
+       An effect: scale, none
       </_description>
     </key>
     
@@ -301,7 +401,7 @@
       <default>"none"</default>
       <_summary>Effect used when maximizing windows</_summary>
       <_description>
-       An effect: none
+       An effect: scale, none
       </_description>
     </key>
     

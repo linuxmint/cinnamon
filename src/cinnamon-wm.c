@@ -20,6 +20,7 @@ struct _CinnamonWM {
 enum
 {
   MINIMIZE,
+  UNMINIMIZE,
   MAXIMIZE,
   UNMAXIMIZE,
   TILE,
@@ -60,6 +61,15 @@ cinnamon_wm_class_init (CinnamonWMClass *klass)
 
   cinnamon_wm_signals[MINIMIZE] =
     g_signal_new ("minimize",
+                  G_TYPE_FROM_CLASS (klass),
+                  G_SIGNAL_RUN_LAST,
+                  0,
+                  NULL, NULL,
+                  g_cclosure_marshal_VOID__OBJECT,
+                  G_TYPE_NONE, 1,
+                  META_TYPE_WINDOW_ACTOR);
+  cinnamon_wm_signals[UNMINIMIZE] =
+    g_signal_new ("unminimize",
                   G_TYPE_FROM_CLASS (klass),
                   G_SIGNAL_RUN_LAST,
                   0,
@@ -114,70 +124,70 @@ cinnamon_wm_class_init (CinnamonWMClass *klass)
                   META_TYPE_WINDOW_ACTOR);
   cinnamon_wm_signals[SWITCH_WORKSPACE] =
     g_signal_new ("switch-workspace",
-		  G_TYPE_FROM_CLASS (klass),
-		  G_SIGNAL_RUN_LAST,
-		  0,
-		  NULL, NULL,
-		  _cinnamon_marshal_VOID__INT_INT_INT,
-		  G_TYPE_NONE, 3,
+                  G_TYPE_FROM_CLASS (klass),
+                  G_SIGNAL_RUN_LAST,
+                  0,
+                  NULL, NULL,
+                  _cinnamon_marshal_VOID__INT_INT_INT,
+                  G_TYPE_NONE, 3,
                   G_TYPE_INT, G_TYPE_INT, G_TYPE_INT);
   cinnamon_wm_signals[SWITCH_WORKSPACE_COMPLETE] =
     g_signal_new ("switch-workspace-complete",
-		  G_TYPE_FROM_CLASS (klass),
-		  G_SIGNAL_RUN_LAST,
-		  0,
-		  NULL, NULL, NULL,
-		  G_TYPE_NONE, 0);
+                  G_TYPE_FROM_CLASS (klass),
+                  G_SIGNAL_RUN_LAST,
+                  0,
+                  NULL, NULL, NULL,
+                  G_TYPE_NONE, 0);
   cinnamon_wm_signals[KILL_WINDOW_EFFECTS] =
     g_signal_new ("kill-window-effects",
-		  G_TYPE_FROM_CLASS (klass),
-		  G_SIGNAL_RUN_LAST,
-		  0,
-		  NULL, NULL,
-		  g_cclosure_marshal_VOID__OBJECT,
-		  G_TYPE_NONE, 1,
-		  META_TYPE_WINDOW_ACTOR);
-    cinnamon_wm_signals[SHOW_TILE_PREVIEW] =
-        g_signal_new ("show-tile-preview",
-                     G_TYPE_FROM_CLASS (klass),
-                     G_SIGNAL_RUN_LAST,
-                     0, NULL, NULL, NULL,
-                     G_TYPE_NONE, 4,
-                     META_TYPE_WINDOW,
-                     META_TYPE_RECTANGLE,
-                     G_TYPE_INT,
-                     G_TYPE_UINT);
-    cinnamon_wm_signals[HIDE_TILE_PREVIEW] =
-        g_signal_new ("hide-tile-preview",
-                     G_TYPE_FROM_CLASS (klass),
-                     G_SIGNAL_RUN_LAST,
-                     0,
-                     NULL, NULL, NULL,
-                     G_TYPE_NONE, 0);
-    cinnamon_wm_signals[SHOW_HUD_PREVIEW] =
-        g_signal_new ("show-hud-preview",
-                     G_TYPE_FROM_CLASS (klass),
-                     G_SIGNAL_RUN_LAST,
-                     0,
-                     NULL, NULL, NULL,
-                     G_TYPE_NONE, 3,
-                     G_TYPE_UINT,
-                     META_TYPE_RECTANGLE,
-                     G_TYPE_UINT);
-    cinnamon_wm_signals[HIDE_HUD_PREVIEW] =
-        g_signal_new ("hide-hud-preview",
-                     G_TYPE_FROM_CLASS (klass),
-                     G_SIGNAL_RUN_LAST,
-                     0,
-                     NULL, NULL, NULL,
-                     G_TYPE_NONE, 0);
+                  G_TYPE_FROM_CLASS (klass),
+                  G_SIGNAL_RUN_LAST,
+                  0,
+                  NULL, NULL,
+                  g_cclosure_marshal_VOID__OBJECT,
+                  G_TYPE_NONE, 1,
+                  META_TYPE_WINDOW_ACTOR);
+  cinnamon_wm_signals[SHOW_TILE_PREVIEW] =
+    g_signal_new ("show-tile-preview",
+                  G_TYPE_FROM_CLASS (klass),
+                  G_SIGNAL_RUN_LAST,
+                  0, NULL, NULL, NULL,
+                  G_TYPE_NONE, 4,
+                  META_TYPE_WINDOW,
+                  META_TYPE_RECTANGLE,
+                  G_TYPE_INT,
+                  G_TYPE_UINT);
+  cinnamon_wm_signals[HIDE_TILE_PREVIEW] =
+    g_signal_new ("hide-tile-preview",
+                  G_TYPE_FROM_CLASS (klass),
+                  G_SIGNAL_RUN_LAST,
+                  0,
+                  NULL, NULL, NULL,
+                  G_TYPE_NONE, 0);
+  cinnamon_wm_signals[SHOW_HUD_PREVIEW] =
+    g_signal_new ("show-hud-preview",
+                  G_TYPE_FROM_CLASS (klass),
+                  G_SIGNAL_RUN_LAST,
+                  0,
+                  NULL, NULL, NULL,
+                  G_TYPE_NONE, 3,
+                  G_TYPE_UINT,
+                  META_TYPE_RECTANGLE,
+                  G_TYPE_UINT);
+  cinnamon_wm_signals[HIDE_HUD_PREVIEW] =
+    g_signal_new ("hide-hud-preview",
+                  G_TYPE_FROM_CLASS (klass),
+                  G_SIGNAL_RUN_LAST,
+                  0,
+                  NULL, NULL, NULL,
+                  G_TYPE_NONE, 0);
 }
 
 void
 _cinnamon_wm_switch_workspace (CinnamonWM      *wm,
-                            gint          from,
-                            gint          to,
-                            MetaMotionDirection direction)
+                               gint          from,
+                               gint          to,
+                               MetaMotionDirection direction)
 {
   g_signal_emit (wm, cinnamon_wm_signals[SWITCH_WORKSPACE], 0,
                  from, to, direction);
@@ -206,9 +216,23 @@ cinnamon_wm_completed_switch_workspace (CinnamonWM *wm)
  **/
 void
 cinnamon_wm_completed_minimize (CinnamonWM         *wm,
-                             MetaWindowActor *actor)
+                                MetaWindowActor *actor)
 {
   meta_plugin_minimize_completed (wm->plugin, actor);
+}
+
+/**
+ * cinnamon_wm_completed_unminimize:
+ * @wm: the CinnamonWM
+ * @actor: the MetaWindowActor actor
+ *
+ * The plugin must call this when it has completed a window unminimize effect.
+ **/
+void
+cinnamon_wm_completed_unminimize (CinnamonWM         *wm,
+                                  MetaWindowActor *actor)
+{
+  meta_plugin_unminimize_completed (wm->plugin, actor);
 }
 
 /**
@@ -220,7 +244,7 @@ cinnamon_wm_completed_minimize (CinnamonWM         *wm,
  **/
 void
 cinnamon_wm_completed_maximize (CinnamonWM         *wm,
-                             MetaWindowActor *actor)
+                                MetaWindowActor *actor)
 {
   meta_plugin_maximize_completed (wm->plugin, actor);
 }
@@ -249,7 +273,7 @@ cinnamon_wm_completed_tile  (CinnamonWM         *wm,
  **/
 void
 cinnamon_wm_completed_unmaximize (CinnamonWM         *wm,
-                               MetaWindowActor *actor)
+                                  MetaWindowActor *actor)
 {
   meta_plugin_unmaximize_completed (wm->plugin, actor);
 }
@@ -263,7 +287,7 @@ cinnamon_wm_completed_unmaximize (CinnamonWM         *wm,
  **/
 void
 cinnamon_wm_completed_map (CinnamonWM         *wm,
-                        MetaWindowActor *actor)
+                           MetaWindowActor *actor)
 {
   meta_plugin_map_completed (wm->plugin, actor);
 }
@@ -277,14 +301,14 @@ cinnamon_wm_completed_map (CinnamonWM         *wm,
  **/
 void
 cinnamon_wm_completed_destroy (CinnamonWM         *wm,
-                            MetaWindowActor *actor)
+                               MetaWindowActor *actor)
 {
   meta_plugin_destroy_completed (wm->plugin, actor);
 }
 
 void
 _cinnamon_wm_kill_window_effects (CinnamonWM         *wm,
-                               MetaWindowActor *actor)
+                                  MetaWindowActor *actor)
 {
   g_signal_emit (wm, cinnamon_wm_signals[KILL_WINDOW_EFFECTS], 0, actor);
 }
@@ -324,29 +348,36 @@ _cinnamon_wm_hide_hud_preview (CinnamonWM *wm)
 
 void
 _cinnamon_wm_minimize (CinnamonWM         *wm,
-                    MetaWindowActor *actor)
+                       MetaWindowActor    *actor)
 {
   g_signal_emit (wm, cinnamon_wm_signals[MINIMIZE], 0, actor);
 }
 
 void
+_cinnamon_wm_unminimize (CinnamonWM         *wm,
+                         MetaWindowActor    *actor)
+{
+  g_signal_emit (wm, cinnamon_wm_signals[UNMINIMIZE], 0, actor);
+}
+
+void
 _cinnamon_wm_maximize (CinnamonWM         *wm,
-                    MetaWindowActor *actor,
-                    int              target_x,
-                    int              target_y,
-                    int              target_width,
-                    int              target_height)
+                       MetaWindowActor    *actor,
+                       int                 target_x,
+                       int                 target_y,
+                       int                 target_width,
+                       int                 target_height)
 {
   g_signal_emit (wm, cinnamon_wm_signals[MAXIMIZE], 0, actor, target_x, target_y, target_width, target_height);
 }
 
 void
 _cinnamon_wm_unmaximize (CinnamonWM         *wm,
-                      MetaWindowActor *actor,
-                      int              target_x,
-                      int              target_y,
-                      int              target_width,
-                      int              target_height)
+                         MetaWindowActor    *actor,
+                         int                 target_x,
+                         int                 target_y,
+                         int                 target_width,
+                         int                 target_height)
 {
   g_signal_emit (wm, cinnamon_wm_signals[UNMAXIMIZE], 0, actor, target_x, target_y, target_width, target_height);
 }
@@ -364,14 +395,14 @@ _cinnamon_wm_tile (CinnamonWM         *wm,
 
 void
 _cinnamon_wm_map (CinnamonWM         *wm,
-               MetaWindowActor *actor)
+                  MetaWindowActor    *actor)
 {
   g_signal_emit (wm, cinnamon_wm_signals[MAP], 0, actor);
 }
 
 void
 _cinnamon_wm_destroy (CinnamonWM         *wm,
-                   MetaWindowActor *actor)
+                      MetaWindowActor    *actor)
 {
   g_signal_emit (wm, cinnamon_wm_signals[DESTROY], 0, actor);
 }

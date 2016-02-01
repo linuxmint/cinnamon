@@ -405,6 +405,7 @@ WindowManager.prototype = {
         this._cinnamonwm =  global.window_manager;
 
         this._minimizing = [];
+        this._unminimizing = [];
         this._maximizing = [];
         this._unmaximizing = [];
         this._tiling = [];
@@ -435,6 +436,7 @@ WindowManager.prototype = {
         this._cinnamonwm.connect('kill-window-effects', Lang.bind(this, this._killWindowEffects));
         this._cinnamonwm.connect('switch-workspace', Lang.bind(this, this._switchWorkspace));
         this._cinnamonwm.connect('minimize', Lang.bind(this, this._minimizeWindow));
+        this._cinnamonwm.connect('unminimize', Lang.bind(this, this._unminimizeWindow));
         this._cinnamonwm.connect('maximize', Lang.bind(this, this._maximizeWindow));
         this._cinnamonwm.connect('unmaximize', Lang.bind(this, this._unmaximizeWindow));
         this._cinnamonwm.connect('tile', Lang.bind(this, this._tileWindow));
@@ -526,8 +528,28 @@ WindowManager.prototype = {
             return;
         }
 
-        let key = "desktop-effects-" + (overwriteKey || effect.name);
-        let type = global.settings.get_string(key + "-effect");
+        let key;
+        let type;
+
+        switch (actor._windowType) {
+            case Meta.WindowType.MODAL_DIALOG:
+            case Meta.WindowType.DIALOG:
+                key = "desktop-effects-" + (overwriteKey || effect.name) + "dialog";
+                type = global.settings.get_string(key + "-effect"); 
+                break;
+            case Meta.WindowType.MENU:
+            case Meta.WindowType.DROPDOWN_MENU:
+            case Meta.WindowType.POPUP_MENU:
+                if (effect.name == "map") {
+                    key = "desktop-effects-" + (overwriteKey || effect.name) + "menu";
+                    type = global.settings.get_string(key + "-effect"); 
+                    break;
+                }
+            default:
+                key = "desktop-effects-" + (overwriteKey || effect.name);
+                type = global.settings.get_string(key + "-effect"); 
+                break;
+        }
 
         //make sure to end a running effect
         if(actor.current_effect_name){
@@ -568,11 +590,21 @@ WindowManager.prototype = {
     },
 
     _minimizeWindow : function(cinnamonwm, actor) {
-        Main.soundManager.play('minimize');
+        if (global.settings.get_string("desktop-effects-minimize-effect") == "traditional")
+            Main.soundManager.play('minimize');
+        else
+            Main.soundManager.play('map');
 
-        // reset all cached values in case "traditional" is no longer in effect
-        actor.get_meta_window()._cinnamonwm_has_origin = false;
         this._startWindowEffect(cinnamonwm, "minimize", actor);
+    },
+
+    _unminimizeWindow : function(cinnamonwm, actor) {
+        if (global.settings.get_string("desktop-effects-unminimize-effect") == "traditional")
+            Main.soundManager.play('minimize');
+        else
+            Main.soundManager.play('map');
+
+        this._startWindowEffect(cinnamonwm, "unminimize", actor);
     },
 
     _tileWindow : function (cinnamonwm, actor, targetX, targetY, targetWidth, targetHeight) {
@@ -676,17 +708,9 @@ WindowManager.prototype = {
             this._checkDimming(actor.get_meta_window().get_transient_for());
         }
 
-        if (actor.get_meta_window()._cinnamonwm_has_origin === true) {
-            Main.soundManager.play('minimize');
-            try {
-                this._startWindowEffect(cinnamonwm, "unminimize", actor, null, "minimize")
-                return;
-            } catch(e) {
-                //catch "no origin found"
-            }
-        } else if (actor.meta_window.get_window_type() == Meta.WindowType.NORMAL) {
+        if (actor.meta_window.get_window_type() == Meta.WindowType.NORMAL)
             Main.soundManager.play('map');
-        }
+
         this._startWindowEffect(cinnamonwm, "map", actor);
     },
 

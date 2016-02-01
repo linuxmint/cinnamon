@@ -4,30 +4,30 @@ from SettingsWidgets import *
 import windowEffects
 import tweenEquations
 
-EFFECT_SETS = {
-    "cinnamon": ("traditional", "traditional", "traditional", "none",  "none",  "none"),
-    "scale":    ("scale",       "scale",       "scale",       "scale", "scale", "scale"),
-    "fade":     ("fade",        "fade",        "fade",        "scale", "scale", "scale"),
-    "blend":    ("blend",       "blend",       "blend",       "scale", "scale", "scale"),
-    "move":     ("move",        "move",        "move",        "scale", "scale", "scale"),
-    "flyUp":    ("flyUp",       "flyDown",     "flyDown",     "scale", "scale", "scale"),
-    "flyDown":  ("flyDown",     "flyUp",       "flyUp",       "scale", "scale", "scale"),
-    "default":  ("scale",       "scale",       "none",        "none",  "none",  "none")
+EFFECT_SETS = { #Map                #Close              #Minimize           #Unminimize     #Maximize       #Unmaximize         #Tile           #Mapdialog          #Closedialog     #Mapmenu
+    "cinnamon": ("fadeScale",       "fadeScale",        "traditional",      "traditional",  "none",         "none",             "none",         "expand",           "collapse",      "rolldown"  ),
+    "scale":    ("scale",           "scale",            "scale",            "scale",        "scale",        "scale",            "scale",        "scale",            "scale",         "rolldown"  ),
+    "fade":     ("fade",            "fade",             "fade",             "fade",         "scale",        "scale",            "scale",        "fade",             "fade",          "fade"      ),
+    "blend":    ("blend",           "blend",            "blend",            "fade",         "scale",        "scale",            "scale",        "blend",            "blend",         "rolldown"  ),
+    "move":     ("move",            "move",             "move",             "fade",         "scale",        "scale",            "scale",        "move",             "move",          "rolldown"  ),
+    "flyUp":    ("flyUp",           "flyDown",          "flyDown",          "fade",         "scale",        "scale",            "scale",        "flyUp",            "flyDown",       "rolldown"  ),
+    "flyDown":  ("flyDown",         "flyUp",            "flyUp",            "fade",         "scale",        "scale",            "scale",        "flyDown",          "flyUp",         "rolldown"  ),
+    "default":  ("scale",           "scale",            "none",             "none",         "none",         "none",             "none",         "scale",            "scale",         "none"      )
 }
 
 TRANSITIONS_SETS = {
-    "cinnamon": ("easeOutQuad",    "easeOutQuad",   "easeInQuad",  "easeInExpo", "easeNone",       "easeInQuad"),
-    "normal":   ("easeOutSine",    "easeInBack",    "easeInSine",  "easeInBack", "easeOutBounce",  "easeInBack"),
-    "extra":    ("easeOutElastic", "easeOutBounce", "easeOutExpo", "easeInExpo", "easeOutElastic", "easeInExpo"),
-    "fade":     ("easeOutQuart",   "easeInQuart",   "easeInQuart", "easeInBack", "easeOutBounce",  "easeInBack")
+    "cinnamon": ("easeOutQuad",     "easeInQuad",       "easeInQuad",       "easeOutQuad",  "easeInExpo",   "easeNone",         "easeInQuad",   "easeOutQuad",      "easeInQuad",    "easeNone"  ),
+    "normal":   ("easeOutSine",     "easeInBack",       "easeInSine",       "easeOutSine",  "easeInBack",   "easeOutBounce",    "easeInBack",   "easeOutSine",      "easeInBack",    "easeNone"  ),
+    "extra":    ("easeOutElastic",  "easeOutBounce",    "easeOutExpo",      "easeInExpo",   "easeInExpo",   "easeOutElastic",   "easeInExpo",   "easeOutElastic",   "easeOutBounce", "easeNone"  ),
+    "fade":     ("easeOutQuart",    "easeInQuart",      "easeInQuart",      "easeOutQuart", "easeInBack",   "easeOutBounce",    "easeInBack",   "easeOutQuart",     "easeInQuart",   "easeNone"  )
 }
 
 TIME_SETS = {
-    "cinnamon": (175, 175, 200, 100, 100, 100),
-    "slow":     (400, 400, 400, 100, 100, 100),
-    "normal":   (250, 250, 250, 100, 100, 100),
-    "fast":     (100, 100, 100, 100, 100, 100),
-    "default":  (250, 250, 150, 400, 400, 400)
+    "cinnamon": (175,               175,                200,                200,            100,            100,                100,            175,                175,             125         ),
+    "slow":     (400,               400,                400,                400,            100,            100,                100,            400,                400,             225         ),
+    "normal":   (250,               250,                250,                250,            100,            100,                100,            250,                250,             175         ),
+    "fast":     (100,               100,                100,                100,            100,            100,                100,            100,                100,             125         ),
+    "default":  (250,               250,                150,                150,            400,            400,                400,            250,                250,             125         )
 }
 
 COMBINATIONS = {
@@ -56,7 +56,65 @@ OPTIONS = (
    #for previous versions
     ("default",    _("Default"))
 )
-TYPES = ("map", "close", "minimize", "maximize", "unmaximize", "tile")
+
+OPEN_EFFECTS = [
+    ["none",        _("None")],
+    ["scale",       _("Scale")],
+    ["fade",        _("Fade")],
+    ["blend",       _("Blend")],
+    ["move",        _("Move")],
+    ["flyUp",       _("Fly up")],
+    ["flyDown",     _("Fly down")],
+    ["fadeScale",   _("Fade Scale")],
+    ["expand",      _("Expand")],
+    ["rolldown",    _("Rolldown")]
+]
+
+CLOSE_EFFECTS = [
+    ["none",        _("None")],
+    ["scale",       _("Scale")],
+    ["fade",        _("Fade")],
+    ["blend",       _("Blend")],
+    ["move",        _("Move")],
+    ["flyUp",       _("Fly up")],
+    ["flyDown",     _("Fly down")],
+    ["fadeScale",   _("Fade Scale")],
+    ["collapse",    _("Collapse")],
+    ["rollup",      _("Rollup")]
+]
+
+MINIMIZE_EFFECTS = [
+    ["none",        _("None")],
+    ["scale",       _("Scale")],
+    ["fade",        _("Fade")],
+    ["blend",       _("Blend")],
+    ["move",        _("Move")],
+    ["flyUp",       _("Fly up")],
+    ["flyDown",     _("Fly down")],
+    ["fadeScale",   _("Fade Scale")],
+    ["traditional", _("Traditional")],
+    ["collapse",    _("Collapse")],
+    ["rollup",      _("Rollup")]
+]
+
+UNMINIMIZE_EFFECTS = [
+    ["none",        _("None")],
+    ["scale",       _("Scale")],
+    ["fade",        _("Fade")],
+    ["fadeScale",   _("Fade Scale")],
+    ["traditional", _("Traditional")]
+]
+
+MENU_EFFECTS = [
+    ["none",     _("None")],
+    ["rolldown", _("Rolldown")]
+]
+
+MAXIMIZE_EFFECTS = [
+    ["none",  _("None")],
+    ["scale", _("Scale")]
+]
+TYPES = ("map", "close", "minimize", "unminimize", "maximize", "unmaximize", "tile", "mapdialog", "closedialog", "mapmenu")
 SCHEMA = "org.cinnamon"
 DEP_PATH = "org.cinnamon/desktop-effects"
 KEY_TEMPLATE = "desktop-effects-%s-%s"
@@ -129,45 +187,51 @@ class Module:
             self.revealer.set_transition_type(Gtk.RevealerTransitionType.SLIDE_DOWN)
             self.revealer.set_transition_duration(150)
             page.add(self.revealer)
-            settings = SettingsBox(_("Effect"))
-            self.revealer.add(settings)
+
+            box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
+            box.set_spacing(15)
+            self.revealer.add(box)
 
             self.size_group = Gtk.SizeGroup.new(Gtk.SizeGroupMode.HORIZONTAL)
 
-            # MAPPING WINDOWS
-            effects = [
-                ["none",    _("None")],
-                ["scale",   _("Scale")],
-                ["fade",    _("Fade")],
-                ["blend",   _("Blend")],
-                ["move",    _("Move")],
-                ["flyUp",   _("Fly up")],
-                ["flyDown", _("Fly down")],
-                ["traditional", _("Traditional")]
-            ]
+            settings = SettingsBox(_("Windows"))
+            # self.revealer.add(settings)
+            box.add(settings)
 
-            widget = self.make_effect_group(_("Mapping windows"), "map", effects)
+            widget = self.make_effect_group(_("Opening windows"), "map", OPEN_EFFECTS)
             settings.add_row(widget)
 
-            # CLOSING WINDOWS
-            widget = self.make_effect_group(_("Closing windows"), "close", effects)
+            widget = self.make_effect_group(_("Closing windows"), "close", CLOSE_EFFECTS)
             settings.add_row(widget)
 
-            # MINIMIZING WINDOWS
-            widget = self.make_effect_group(_("Minimizing windows"), "minimize", effects)
+            widget = self.make_effect_group(_("Minimizing windows"), "minimize", MINIMIZE_EFFECTS)
             settings.add_row(widget)
 
-            # MAXIMIZING WINDOWS
-            effects = [["none", _("None")], ["scale", _("Scale")]]
-            widget = self.make_effect_group(_("Maximizing windows"), "maximize", effects)
+            widget = self.make_effect_group(_("Unminimizing windows"), "unminimize", UNMINIMIZE_EFFECTS)
             settings.add_row(widget)
 
-            # UNMAXIMIZING WINDOWS
-            widget = self.make_effect_group(_("Unmaximizing windows"), "unmaximize", effects)
+            widget = self.make_effect_group(_("Maximizing windows"), "maximize", MAXIMIZE_EFFECTS)
             settings.add_row(widget)
 
-            # TILING WINDOWS
-            widget = self.make_effect_group(_("Tiling and snapping windows"), "tile", effects)
+            widget = self.make_effect_group(_("Unmaximize windows"), "unmaximize", MAXIMIZE_EFFECTS)
+            settings.add_row(widget)
+
+            widget = self.make_effect_group(_("Tile and snap windows"), "tile", MAXIMIZE_EFFECTS)
+            settings.add_row(widget)
+
+            settings = SettingsBox(_("Dialogs"))
+            box.add(settings)
+
+            widget = self.make_effect_group(_("Opening dialogs"), "mapdialog", OPEN_EFFECTS)
+            settings.add_row(widget)
+
+            widget = self.make_effect_group(_("Closing dialogs"), "closedialog", CLOSE_EFFECTS)
+            settings.add_row(widget)
+
+            settings = SettingsBox(_("Menus"))
+            box.add(settings)
+
+            widget = self.make_effect_group(_("Opening menus"), "mapmenu", MENU_EFFECTS)
             settings.add_row(widget)
 
             self.update_effects(self.custom_switch, None)
@@ -175,7 +239,7 @@ class Module:
     def make_effect_group(self, group_label, key, effects):
         tmin, tmax, tstep, tdefault = (0, 2000, 50, 200)
 
-        row =SettingsWidget()
+        row = SettingsWidget()
         row.set_spacing(5)
 
         label = Gtk.Label()
@@ -240,6 +304,9 @@ class Module:
 
         if not active and schema.get_boolean("desktop-effects-on-dialogs"):
             schema.set_boolean("desktop-effects-on-dialogs", False)
+
+        if not active and schema.get_boolean("desktop-effects-on-menus"):
+            schema.set_boolean("desktop-effects-on-menus", False)
 
         self.update_effects(self.custom_switch, None)
 

@@ -136,47 +136,48 @@ Map.prototype = {
         this._moveWindow(cinnamonwm, actor, xDest, yDest, time, transition);
     },
 
-    traditional: function(cinnamonwm, actor, time, transition) {
-        switch (actor._windowType) {
-            case Meta.WindowType.NORMAL:
-                actor.set_pivot_point(0, 0);
-                actor.scale_x = 0.01;
-                actor.scale_y = 0.05;
-                actor.opacity = 0;
-                this._fadeWindow(cinnamonwm, actor, actor.orig_opacity, time, transition);
-                this._scaleWindow(cinnamonwm, actor, 1, 1, time, transition);
-                break;
-            case Meta.WindowType.MENU:
-            case Meta.WindowType.DROPDOWN_MENU:
-            case Meta.WindowType.POPUP_MENU:
-                let [width, height] = actor.get_allocation_box().get_size();
-                let [destX, destY] = actor.get_transformed_position();
-                let [pointerX, pointerY] = global.get_pointer();
-                let top = destY + (height * 0.5);
+    fadeScale: function(cinnamonwm, actor, time, transition) {
+        actor.set_pivot_point(0, 0);
+        actor.scale_x = 0.01;
+        actor.scale_y = 0.05;
+        actor.opacity = 0;
+        this._fadeWindow(cinnamonwm, actor, actor.orig_opacity, time, transition);
+        this._scaleWindow(cinnamonwm, actor, 1, 1, time, transition);
+    },
 
-                if (pointerY < top)
-                    actor.set_pivot_point(0, 0);
-                else
-                    actor.set_pivot_point(0, 1);
+    expand: function(cinnamonwm, actor, time, transition) {
+        actor.set_pivot_point(0, 0);
+        actor.scale_x = 1;
+        actor.scale_y = 0;
+        actor.opacity = 0;
+        this._fadeWindow(cinnamonwm, actor, actor.orig_opacity, time, transition);
+        this._scaleWindow(cinnamonwm, actor, 1, 1, time, transition);
+    },
 
-                actor.scale_x = 1;
-                actor.scale_y = 0.9;
-                actor.opacity = 0;
-                this._scaleWindow(cinnamonwm, actor, 1, 1, time, transition, true);
-                this._fadeWindow(cinnamonwm, actor, actor.orig_opacity, time, transition);
-                break;
-            case Meta.WindowType.MODAL_DIALOG:
-            case Meta.WindowType.DIALOG:
+    rolldown: function(cinnamonwm, actor, time, transition) {
+        if (actor._windowType == Meta.WindowType.MENU ||
+            actor._windowType == Meta.WindowType.DROPDOWN_MENU ||
+            actor._windowType == Meta.WindowType.POPUP_MENU) {
+            let [width, height] = actor.get_allocation_box().get_size();
+            let [destX, destY] = actor.get_transformed_position();
+            let [pointerX, pointerY] = global.get_pointer();
+            let top = destY + (height * 0.5);
+
+            actor.scale_y = 0.9;
+
+            if (pointerY < top)
                 actor.set_pivot_point(0, 0);
-                actor.scale_x = 1;
-                actor.scale_y = 0;
-                actor.opacity = 0;
-                this._fadeWindow(cinnamonwm, actor, actor.orig_opacity, time, transition);
-                this._scaleWindow(cinnamonwm, actor, 1, 1, time, transition);
-                break;
-            default:
-                this._fadeWindow(cinnamonwm, actor, actor.orig_opacity, time, transition);
+            else
+                actor.set_pivot_point(0, 1);
+        } else {
+            actor.set_pivot_point(0, 0);
+            actor.scale_y = 0.1;
         }
+
+        actor.scale_x = 1;
+        actor.opacity = 0;
+        this._scaleWindow(cinnamonwm, actor, 1, 1, time, transition, true);
+        this._fadeWindow(cinnamonwm, actor, actor.orig_opacity, time, transition);
     }
 }
 
@@ -239,22 +240,22 @@ Close.prototype = {
         this._moveWindow(cinnamonwm, actor, xDest, yDest, time, transition);
     },
 
-    traditional: function(cinnamonwm, actor, time, transition) {
-        switch (actor._windowType) {
-            case Meta.WindowType.NORMAL:
-                actor.set_pivot_point(0, 0);
-                this._scaleWindow(cinnamonwm, actor, 0.8, 0.8, time, transition);
-                this._fadeWindow(cinnamonwm, actor, 0, time, transition);
-                break;
-            case Meta.WindowType.MODAL_DIALOG:
-            case Meta.WindowType.DIALOG:
-                actor.set_pivot_point(0, 0);
-                this._fadeWindow(cinnamonwm, actor, 0.5, time, transition);
-                this._scaleWindow(cinnamonwm, actor, 1.0, 0, time, transition);
-                break;
-            default:
-                this.scale(cinnamonwm, actor, time, transition);
-        }
+    fadeScale: function(cinnamonwm, actor, time, transition) {
+        actor.set_pivot_point(0, 0);
+        this._scaleWindow(cinnamonwm, actor, 0.8, 0.8, time, transition);
+        this._fadeWindow(cinnamonwm, actor, 0, time, transition);
+    },
+
+    collapse: function(cinnamonwm, actor, time, transition) {
+        actor.set_pivot_point(0, 0);
+        this._fadeWindow(cinnamonwm, actor, 0.5, time, transition);
+        this._scaleWindow(cinnamonwm, actor, 1.0, 0, time, transition);
+    },
+
+    rollup: function(cinnamonwm, actor, time, transition) {
+        actor.set_pivot_point(0, 0);
+        this._scaleWindow(cinnamonwm, actor, 1.0, 0, time, transition, true);
+        this._fadeWindow(cinnamonwm, actor, 0.0, time, transition);
     }
 }
 
@@ -297,13 +298,31 @@ function Unminimize(){
 }
 
 Unminimize.prototype = {
-    //unminimizing is a "map" effect but should use "minimize" setting values
     __proto__: Effect.prototype,
     name: "unminimize",
-    arrayName: "_mapping",
-    wmCompleteName: "completed_map",
+    arrayName: "_unminimizing",
+    wmCompleteName: "completed_unminimize",
 
-    _end: Map.prototype._end,
+    _end: Effect.prototype._end,
+
+    scale: function(cinnamonwm, actor, time, transition){
+        actor.set_scale(0, 0);
+        this._scaleWindow(cinnamonwm, actor, 1, 1, time, transition);
+    },
+
+    fade: function(cinnamonwm, actor, time, transition){
+        actor.opacity = 0;
+        this._fadeWindow(cinnamonwm, actor, actor.orig_opacity, time, transition);
+    },
+
+    fadeScale: function(cinnamonwm, actor, time, transition) {
+        actor.set_pivot_point(0, 0);
+        actor.scale_x = 0.01;
+        actor.scale_y = 0.05;
+        actor.opacity = 0;
+        this._fadeWindow(cinnamonwm, actor, actor.orig_opacity, time, transition);
+        this._scaleWindow(cinnamonwm, actor, 1, 1, time, transition);
+    },
 
     traditional: function(cinnamonwm, actor, time, transition) {
         let success;
@@ -321,6 +340,7 @@ Unminimize.prototype = {
             this._fadeWindow(cinnamonwm, actor, actor.orig_opacity, time, transition);
         } else {
             throw "No origin found";
+            this._fadeWindow(cinnamonwm, actor, actor.orig_opacity, time, transition);
         }
     }
 }
