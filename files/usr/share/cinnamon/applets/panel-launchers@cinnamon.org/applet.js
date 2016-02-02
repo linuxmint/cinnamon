@@ -287,10 +287,7 @@ MyApplet.prototype = {
 
 	if (this.orientation == St.Side.LEFT || this.orientation == St.Side.RIGHT)
 	{
-            this.myactor.add_style_class_name('vertical');
-            this.myactor.set_x_align(Clutter.ActorAlign.CENTER);
-            this.myactor.set_vertical(true);
-            this.myactor.set_important(true);
+            this._set_vertical_style();
 	}
 
         this.settings = new Settings.AppletSettings(this, metadata.uuid, instance_id);
@@ -404,19 +401,31 @@ MyApplet.prototype = {
     on_orientation_changed: function(neworientation) { 
 
         this.orientation = neworientation;
-	if (neworientation == St.Side.TOP || neworientation == St.Side.BOTTOM)
+	if (this.orientation == St.Side.TOP || this.orientation == St.Side.BOTTOM)
 	{
             this.myactor.remove_style_class_name('vertical');
             this.myactor.set_vertical(false);
+            this.actor.remove_style_class_name('vertical');
 	}
 	else		// vertical panels
 	{
-            this.myactor.add_style_class_name('vertical');
-            this.myactor.set_vertical(true);
-	    this.myactor.set_x_align(Clutter.ActorAlign.CENTER);
-	    this.myactor.set_important(true);
+            this._set_vertical_style();
+
  	}
         this.reload();
+    },
+
+//
+// NB if the styling does not set right initially, it may well be because there is padding
+// in the theme and panel-launchers-box has # rather than .
+//
+    _set_vertical_style: function() {;
+        this.myactor.set_important(true);
+        this.myactor.set_x_align(Clutter.ActorAlign.CENTER);
+        this.myactor.add_style_class_name('vertical');
+        this.myactor.set_vertical(true);
+        this.actor.set_important(true);
+        this.actor.add_style_class_name('vertical');
     },
 
     reload: function() {
