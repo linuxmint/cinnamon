@@ -493,7 +493,9 @@ AppMenuButton.prototype = {
     },
 
     _toggleWindow: function(fromDrag){
-        if (!this._hasFocus()) {
+        if (this.metaWindow.minimized) {
+            this.metaWindow.unminimize(global.get_current_time());
+        } else if (!this._hasFocus()) {
             Main.activateWindow(this.metaWindow, global.get_current_time());
             this.actor.add_style_pseudo_class('focus');
         } else if (!fromDrag) {
@@ -766,7 +768,7 @@ AppMenuButtonRightClickMenu.prototype = {
         if (mw.minimized) {
             item = new PopupMenu.PopupMenuItem(_("Restore"));
             item.connect('activate', function() {
-                Main.activateWindow(mw, global.get_current_time());
+                mw.unminimize(global.get_current_time());
             });
         } else {
             item = new PopupMenu.PopupMenuItem(_("Minimize"));
@@ -780,11 +782,21 @@ AppMenuButtonRightClickMenu.prototype = {
             item = new PopupMenu.PopupMenuItem(_("Unmaximize"));
             item.connect('activate', function() {
                 mw.unmaximize(Meta.MaximizeFlags.HORIZONTAL | Meta.MaximizeFlags.VERTICAL);
+                if (mw.minimized) {
+                    Mainloop.timeout_add(500, Lang.bind(this, function () {
+                        mw.unminimize(global.get_current_time());
+                    }));
+                }
             });
         } else {
             item = new PopupMenu.PopupMenuItem(_("Maximize"));
             item.connect('activate', function() {
                 mw.maximize(Meta.MaximizeFlags.HORIZONTAL | Meta.MaximizeFlags.VERTICAL);
+                if (mw.minimized) {
+                    Mainloop.timeout_add(500, Lang.bind(this, function () {
+                        mw.unminimize(global.get_current_time());
+                    }));
+                }
             });
         }
         this.addMenuItem(item);

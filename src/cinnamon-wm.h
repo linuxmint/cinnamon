@@ -25,20 +25,22 @@ struct _CinnamonWMClass
 
 GType    cinnamon_wm_get_type                    (void) G_GNUC_CONST;
 
-CinnamonWM *cinnamon_wm_new                        (MetaPlugin      *plugin);
+CinnamonWM *cinnamon_wm_new                      (MetaPlugin      *plugin);
 
 void     cinnamon_wm_completed_minimize         (CinnamonWM         *wm,
-                                              MetaWindowActor *actor);
+                                                 MetaWindowActor    *actor);
+void     cinnamon_wm_completed_unminimize       (CinnamonWM         *wm,
+                                                 MetaWindowActor    *actor);
 void     cinnamon_wm_completed_maximize         (CinnamonWM         *wm,
-                                              MetaWindowActor *actor);
+                                                 MetaWindowActor    *actor);
 void     cinnamon_wm_completed_tile             (CinnamonWM         *wm,
-                                              MetaWindowActor *actor);
+                                                 MetaWindowActor    *actor);
 void     cinnamon_wm_completed_unmaximize       (CinnamonWM         *wm,
-                                              MetaWindowActor *actor);
+                                                 MetaWindowActor    *actor);
 void     cinnamon_wm_completed_map              (CinnamonWM         *wm,
-                                              MetaWindowActor *actor);
+                                                 MetaWindowActor    *actor);
 void     cinnamon_wm_completed_destroy          (CinnamonWM         *wm,
-                                              MetaWindowActor *actor);
+                                                 MetaWindowActor    *actor);
 void     cinnamon_wm_completed_switch_workspace (CinnamonWM         *wm);
 
 G_END_DECLS

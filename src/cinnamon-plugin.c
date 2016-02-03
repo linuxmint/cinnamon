@@ -48,34 +48,36 @@ static void gnome_cinnamon_plugin_finalize    (GObject *object);
 
 static void gnome_cinnamon_plugin_start            (MetaPlugin          *plugin);
 static void gnome_cinnamon_plugin_minimize         (MetaPlugin          *plugin,
-                                                 MetaWindowActor     *actor);
+                                                    MetaWindowActor     *actor);
+static void gnome_cinnamon_plugin_unminimize       (MetaPlugin          *plugin,
+                                                    MetaWindowActor     *actor);
 static void gnome_cinnamon_plugin_maximize         (MetaPlugin          *plugin,
-                                                 MetaWindowActor     *actor,
-                                                 gint                 x,
-                                                 gint                 y,
-                                                 gint                 width,
-                                                 gint                 height);
+                                                    MetaWindowActor     *actor,
+                                                    gint                 x,
+                                                    gint                 y,
+                                                    gint                 width,
+                                                    gint                 height);
 static void gnome_cinnamon_plugin_unmaximize       (MetaPlugin          *plugin,
-                                                 MetaWindowActor     *actor,
-                                                 gint                 x,
-                                                 gint                 y,
-                                                 gint                 width,
-                                                 gint                 height);
+                                                    MetaWindowActor     *actor,
+                                                    gint                 x,
+                                                    gint                 y,
+                                                    gint                 width,
+                                                    gint                 height);
 static void gnome_cinnamon_plugin_tile             (MetaPlugin          *plugin,
-                                                 MetaWindowActor     *actor,
-                                                 gint                 x,
-                                                 gint                 y,
-                                                 gint                 width,
-                                                 gint                 height);
+                                                    MetaWindowActor     *actor,
+                                                    gint                 x,
+                                                    gint                 y,
+                                                    gint                 width,
+                                                    gint                 height);
 static void gnome_cinnamon_plugin_map              (MetaPlugin          *plugin,
-                                                 MetaWindowActor     *actor);
+                                                    MetaWindowActor     *actor);
 static void gnome_cinnamon_plugin_destroy          (MetaPlugin          *plugin,
-                                                 MetaWindowActor     *actor);
+                                                    MetaWindowActor     *actor);
 
 static void gnome_cinnamon_plugin_switch_workspace (MetaPlugin          *plugin,
-                                                 gint                 from,
-                                                 gint                 to,
-                                                 MetaMotionDirection  direction);
+                                                    gint                 from,
+                                                    gint                 to,
+                                                    MetaMotionDirection  direction);
 
 static void gnome_cinnamon_plugin_show_tile_preview (MetaPlugin     *plugin,
                                                      MetaWindow     *window,
@@ -92,10 +94,10 @@ static void gnome_cinnamon_plugin_show_hud_preview (MetaPlugin      *plugin,
 static void gnome_cinnamon_plugin_hide_hud_preview (MetaPlugin *plugin);
 
 static void gnome_cinnamon_plugin_kill_window_effects   (MetaPlugin      *plugin,
-                                                      MetaWindowActor *actor);
+                                                         MetaWindowActor *actor);
 
 static gboolean              gnome_cinnamon_plugin_xevent_filter (MetaPlugin *plugin,
-                                                               XEvent     *event);
+                                                                  XEvent     *event);
 static const MetaPluginInfo *gnome_cinnamon_plugin_plugin_info   (MetaPlugin *plugin);
 
 
@@ -145,6 +147,7 @@ gnome_cinnamon_plugin_class_init (CinnamonPluginClass *klass)
   plugin_class->start            = gnome_cinnamon_plugin_start;
   plugin_class->map              = gnome_cinnamon_plugin_map;
   plugin_class->minimize         = gnome_cinnamon_plugin_minimize;
+  plugin_class->unminimize       = gnome_cinnamon_plugin_unminimize;
   plugin_class->maximize         = gnome_cinnamon_plugin_maximize;
   plugin_class->tile             = gnome_cinnamon_plugin_tile;
   plugin_class->unmaximize       = gnome_cinnamon_plugin_unmaximize;
@@ -268,23 +271,31 @@ get_cinnamon_wm (void)
 
 static void
 gnome_cinnamon_plugin_minimize (MetaPlugin         *plugin,
-			     MetaWindowActor    *actor)
+                                MetaWindowActor    *actor)
 {
   _cinnamon_wm_minimize (get_cinnamon_wm (),
-                      actor);
+                         actor);
 
 }
 
 static void
+gnome_cinnamon_plugin_unminimize (MetaPlugin      *plugin,
+                                  MetaWindowActor *actor)
+{
+  _cinnamon_wm_unminimize (get_cinnamon_wm (),
+                           actor);
+}
+
+static void
 gnome_cinnamon_plugin_maximize (MetaPlugin         *plugin,
-                             MetaWindowActor    *actor,
-                             gint                x,
-                             gint                y,
-                             gint                width,
-                             gint                height)
+                                MetaWindowActor    *actor,
+                                gint                x,
+                                gint                y,
+                                gint                width,
+                                gint                height)
 {
   _cinnamon_wm_maximize (get_cinnamon_wm (),
-                      actor, x, y, width, height);
+                         actor, x, y, width, height);
 }
 
 static void
@@ -301,44 +312,44 @@ gnome_cinnamon_plugin_tile  (MetaPlugin         *plugin,
 
 static void
 gnome_cinnamon_plugin_unmaximize (MetaPlugin         *plugin,
-                               MetaWindowActor    *actor,
-                               gint                x,
-                               gint                y,
-                               gint                width,
-                               gint                height)
+                                  MetaWindowActor    *actor,
+                                  gint                x,
+                                  gint                y,
+                                  gint                width,
+                                  gint                height)
 {
   _cinnamon_wm_unmaximize (get_cinnamon_wm (),
-                        actor, x, y, width, height);
+                           actor, x, y, width, height);
 }
 
 static void
 gnome_cinnamon_plugin_map (MetaPlugin         *plugin,
-                        MetaWindowActor    *actor)
+                           MetaWindowActor    *actor)
 {
   _cinnamon_wm_map (get_cinnamon_wm (),
-                 actor);
+                    actor);
 }
 
 static void
 gnome_cinnamon_plugin_destroy (MetaPlugin         *plugin,
-                            MetaWindowActor    *actor)
+                               MetaWindowActor    *actor)
 {
   _cinnamon_wm_destroy (get_cinnamon_wm (),
-                     actor);
+                        actor);
 }
 
 static void
 gnome_cinnamon_plugin_switch_workspace (MetaPlugin         *plugin,
-                                     gint                from,
-                                     gint                to,
-                                     MetaMotionDirection direction)
+                                        gint                from,
+                                        gint                to,
+                                        MetaMotionDirection direction)
 {
   _cinnamon_wm_switch_workspace (get_cinnamon_wm(), from, to, direction);
 }
 
 static void
 gnome_cinnamon_plugin_kill_window_effects (MetaPlugin         *plugin,
-                                        MetaWindowActor    *actor)
+                                           MetaWindowActor    *actor)
 {
   _cinnamon_wm_kill_window_effects (get_cinnamon_wm(), actor);
 }
@@ -378,7 +389,7 @@ gnome_cinnamon_plugin_hide_hud_preview (MetaPlugin *plugin)
 
 static gboolean
 gnome_cinnamon_plugin_xevent_filter (MetaPlugin *plugin,
-                                  XEvent     *xev)
+                                     XEvent     *xev)
 {
   MetaScreen *screen = meta_plugin_get_screen (plugin);
   ClutterStage *stage = CLUTTER_STAGE (meta_get_stage_for_screen (screen));
@@ -396,8 +407,8 @@ gnome_cinnamon_plugin_xevent_filter (MetaPlugin *plugin,
        * by ignoring such events */
       if (swap_complete_event->ust != 0)
         cinnamon_perf_log_event_x (cinnamon_perf_log_get_default (),
-                                "glx.swapComplete",
-                                swap_complete_event->ust);
+                                   "glx.swapComplete",
+                                   swap_complete_event->ust);
     }
 #endif
 

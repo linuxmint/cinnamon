@@ -5,7 +5,7 @@ class Previews(object):
     def scale(self, ctx, window, x, y, c):
         steps = 3
         for i in range(steps):
-            window(ctx, x, y, (steps - i) * 1. / steps, (i + 1.) / steps)
+            window(ctx, x, y, (steps - i) * 1. / steps, (i + 1.) / steps, (i + 1.) / steps)
 
     def fade(self, ctx, window, x, y, c):
         window(ctx, x, y, .5)
@@ -13,7 +13,12 @@ class Previews(object):
     def blend(self, ctx, window, x, y, c):
         steps = 3
         for i in range(steps):
-            window(ctx, x, y, (steps - i) * 1. / steps, 1 + i / (steps - 1.) / 2)
+            window(ctx, x, y, (steps - i) * 1. / steps, 1 + i / (steps - 1.) / 2, 1 + i / (steps - 1.) / 2)
+
+    def fadeScale(self, ctx, window, x, y, c):
+        steps = 3
+        for i in range(steps):
+            window(ctx, x, y, (steps - i) * 1. / steps, (i + 1.) / steps, (i + 1.) / steps)
 
     def traditional(self, ctx, window, x, y, c):
         gradient = cairo.LinearGradient(x, y * 2, x, y)
@@ -56,17 +61,17 @@ class Previews(object):
 
 class Map(object):
     def scale(self, ctx, window, x, y, value):
-        window(ctx, x, y, scale=value)
+        window(ctx, x, y, scale_x=value, scale_y=value)
 
     def fade(self, ctx, window, x, y, value):
         window(ctx, x, y, value)
 
     def blend(self, ctx, window, x, y, value):
         scale = 1.5 - value / 2
-        window(ctx, x, y, value, scale)
+        window(ctx, x, y, value, scale, scale)
 
     def move(self, ctx, window, x, y, value):
-        window(ctx, x * value, y * value, scale=value)
+        window(ctx, x * value, y * value, scale_x=value, scale_y=value)
 
     def flyUp(self, ctx, window, x, y, value):
         y *= 2.5 - value * 1.5
@@ -76,24 +81,31 @@ class Map(object):
         y *= -.5 + value * 1.5
         window(ctx, x, y)
 
-    def traditional(self, ctx, window, x, y, value):
-        window(ctx, x, y, value, value)
+    def fadeScale(self, ctx, window, x, y, value):
+        window(ctx, x, y, value, value, value)
+
+    def expand(self, ctx, window, x, y, value):
+        window(ctx, x, y, value, scale_y=value);
+
+    def rolldown(self, ctx, window, x, y, value):
+        y *= 0.5 + value / 2
+        window(ctx, x, y, value, scale_y=value)
 
 class Close(object):
     def scale(self, ctx, window, x, y, value):
         scale = 1 - value
-        window(ctx, x, y, scale=scale)
+        window(ctx, x, y, scale_x=scale, scale_y=scale)
 
     def fade(self, ctx, window, x, y, value):
         window(ctx, x, y, 1 - value)
 
     def blend(self, ctx, window, x, y, value):
         scale = 1 + value / 2
-        window(ctx, x, y, 1 - value, scale)
+        window(ctx, x, y, 1 - value, scale, scale)
 
     def move(self, ctx, window, x, y, value):
         value = 1 - value
-        window(ctx, x * value, y * value, scale=value)
+        window(ctx, x * value, y * value, scale_x=value, scale_y=value)
 
     def flyUp(self, ctx, window, x, y, value):
         y *= 1 - value * 1.5
@@ -103,33 +115,60 @@ class Close(object):
         y *= 1 + value * 1.5
         window(ctx, x, y)
 
-    def traditional(self, ctx, window, x, y, value):
+    def fadeScale(self, ctx, window, x, y, value):
         scale = 1 - value / 5
-        window(ctx, x, y, 1 - value, scale)
+        window(ctx, x, y, 1 - value, scale, scale)
+
+    def collapse(self, ctx, window, x, y, value):
+        scale = 1 - value / 5
+        window(ctx, x, y, 1 - value, scale_y=scale)
+
+    def rollup(self, ctx, window, x, y, value):
+        y *= 1 - value * 0.5
+        window(ctx, x, y, 1 - value, scale_y=1 - value)
 
 class Minimize(Close):
     def traditional(self, ctx, window, x, y, value):
         y *= 1 + value
         scale = 1 - value
-        window(ctx, x, y, scale=scale)
+        window(ctx, x, y, scale_x=scale, scale_y=scale)
+
+class Unminimize(object):
+    def scale(self, ctx, window, x, y, value):
+        window(ctx, x, y, scale_x=value, scale_y=value)
+
+    def fade(self, ctx, window, x, y, value):
+        window(ctx, x, y, value)
+
+    def fadeScale(self, ctx, window, x, y, value):
+        window(ctx, x, y, value, value, value)
+
+    def traditional(self, ctx, window, x, y, value):
+        y *= 2 - value
+        scale = 1 - value
+        window(ctx, x, y, scale_x=value, scale_y=value)
 
 class Maximize(object):
     def scale(self, ctx, window, x, y, value):
         scale = 1 + value
-        window(ctx, x, y, scale=scale)
+        window(ctx, x, y, scale_x=scale, scale_y=scale)
 
 class Unmaximize(object):
     def scale(self, ctx, window, x, y, value):
         scale = 2 - value
-        window(ctx, x, y, scale=scale)
+        window(ctx, x, y, scale_x=scale, scale_y=scale)
 
 ANIMATIONS = {
     "map": Map(),
     "close": Close(),
     "minimize": Minimize(),
+    "unminimize": Unminimize(),
     "maximize": Maximize(),
     "unmaximize": Unmaximize(),
-    "tile": Maximize()
+    "tile": Maximize(),
+    "mapdialog": Map(),
+    "closedialog": Close(),
+    "mapmenu": Map()
 }
 
 PREVIEWS = Previews()
@@ -200,8 +239,8 @@ class Effect(Gtk.DrawingArea):
             return self.style.get_background_color(Gtk.StateFlags.SELECTED)
         return self.style.get_color(Gtk.StateFlags.NORMAL)
 
-    def window(self, ctx, x, y, alpha = 1, scale = 1):
-        if scale <= 0:
+    def window(self, ctx, x, y, alpha = 1, scale_x = 1, scale_y = 1):
+        if scale_x <= 0 or scale_y <= 0:
             return
         alpha = min(max(alpha, 0), 1)
 
@@ -209,7 +248,7 @@ class Effect(Gtk.DrawingArea):
         ctx.set_source_rgba(c.red, c.green, c.blue, alpha)
         ctx.save()
         ctx.translate(x, y)
-        ctx.scale(scale, scale)
+        ctx.scale(scale_x, scale_y)
 
         ctx.rectangle(-self.width / 4., -self.height / 4., self.width / 2., self.height / 2.)
         ctx.fill()
