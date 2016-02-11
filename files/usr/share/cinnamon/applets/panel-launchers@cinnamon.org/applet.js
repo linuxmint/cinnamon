@@ -40,10 +40,24 @@ PanelAppLauncherMenu.prototype = {
 
         Applet.AppletPopupMenu.prototype._init.call(this, launcher, orientation);
 
-        this.addAction(_("Launch"), Lang.bind(this, this._onLaunchActivate));
-        this.addAction(_("Add"), Lang.bind(this, this._onAddActivate));
-        this.addAction(_("Edit"), Lang.bind(this, this._onEditActivate));
-        this.addAction(_("Remove"), Lang.bind(this, this._onRemoveActivate));
+		let appinfo = this._launcher.getAppInfo();
+		let targetMenu = this;
+		
+		this._actions = appinfo.list_actions();
+		if (this._actions.length > 0) {
+        	for (i = 0; i < this._actions.length; i++) {
+        		let actionName = this._actions[i];
+        		this.addAction(appinfo.get_action_name(actionName), Lang.bind(this, this._launchAction, actionName));
+        	}
+        	let subMenu = new PopupMenu.PopupSubMenuMenuItem(_("More")+"...");
+        	targetMenu = subMenu.menu;
+        	this.addMenuItem(subMenu);
+		}
+		
+	    targetMenu.addAction(_("Launch"), Lang.bind(this, this._onLaunchActivate));
+	    targetMenu.addAction(_("Add"), Lang.bind(this, this._onAddActivate));
+	    targetMenu.addAction(_("Edit"), Lang.bind(this, this._onEditActivate));
+	    targetMenu.addAction(_("Remove"), Lang.bind(this, this._onRemoveActivate));
     },
 
     _onLaunchActivate: function(event) {
@@ -61,6 +75,10 @@ PanelAppLauncherMenu.prototype = {
 
     _onEditActivate: function(event) {
         this._launcher.launchersBox.showAddLauncherDialog(event.get_time(), this._launcher);
+    },
+    
+    _launchAction: function(event, name) {
+    	this._launcher.launchAction(name);
     }
 }
 
@@ -196,6 +214,14 @@ PanelAppLauncher.prototype = {
         this._animateIcon(0);
         if (this.isCustom()) this.appinfo.launch([], null);
         else this.app.open_new_window(-1);
+    },
+    
+    launchAction: function(name) {
+        let allocation = this._iconBox.get_allocation_box();
+        this._iconBox.width = allocation.x2 - allocation.x1;
+        this._iconBox.height = allocation.y2 - allocation.y1;
+        this._animateIcon(0);
+		this.getAppInfo().launch_action(name, null);
     },
 
     getId: function() {
