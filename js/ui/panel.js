@@ -266,12 +266,9 @@ PanelManager.prototype = {
      */
     _fullPanelLoad : function () {
 
-        let toppheight = 0; // For vertical panels - the space already used by a horizontal panel at the top
-        let botpheight = 0; // For vertical panels - the space already used by a horizontal panel at the bottom
         let monitor = 0;
-        let stash = [];
+        let stash = [];     // panel id, monitor, panel type
 
-        let drawcorner = [false,false];  // left, right for horizontals  top, bottom for verticals  
         let monitorCount = -1;
         let panels_used = []; // [monitor] [top, bottom, left, right].  Used to keep track of which panel types are in use,
                               // as we need knowledge of the combinations in order to instruct the correct panel to create a corner
@@ -317,9 +314,6 @@ PanelManager.prototype = {
             panels_used[monitor][jj] =  true;
 
             stash[i] = [parseInt(elements[0]),monitor,jj]; // load what we are going to use to call loadPanel into an array
-                                                           // panel id, monitor, panel type, top height already used, bottom height already used. 
-                                                           // last two will be zero - we will calculate these heights once all the panels on a monitor
-                                                           // are shown
         }
 
         //
@@ -327,14 +321,20 @@ PanelManager.prototype = {
         // The natural order to load panels so that the shadow on the panels falls correctly on other panels is bottom, sides, top
         //
         // Draw corners where necessary.  NB no corners necessary where there is no panel for a full screen window to butt up against.
+        // logic for loading up panels in the right order and drawing corners relies on ordering by monitor
+        // Corners will go on the left and right panels if there are any, else on the top and bottom
+        // corner drawing parameters passed are left, right for horizontals, top, bottom for verticals.
+        //
+        // FIXME panel corners are optional and not used in many themes.  Ideally a check on the existence of the panel-corner
+        // css could be made here, and used to bypass corner creation entirely for the loaded theme
         //
         //log("monitor count " + monitorCount);
+        //
         for (let i = 0; i <= monitorCount; i++) {
-        //
-        // logic for loading up panels in the right order and drawing corners relies on doing it ordered by monitor
-        //
+
             for (let j in stash) {
-                if (stash[j][2] == 1 && stash[j][1] == i) { // bottom
+                let drawcorner = [false,false];
+                if (stash[j][2] == PanelLoc.bottom && stash[j][1] == i) {
                     drawcorner[0] = (panels_used[i][2])? false : true;
                     drawcorner[1] = (panels_used[i][3])? false : true;
                     this._loadPanel(stash[j][0], stash[j][1], stash[j][2], drawcorner);
@@ -342,16 +342,17 @@ PanelManager.prototype = {
             }
             let pleft;
             for (let j in stash) {
-                if (stash[j][2] == 2 && stash[j][1] == i) // left
+                if (stash[j][2] == PanelLoc.left && stash[j][1] == i)
                     pleft = this._loadPanel(stash[j][0], stash[j][1], stash[j][2], [true,true]);
             }
             let pright;
             for (let j in stash) {
-                if (stash[j][2] == 3 && stash[j][1] == i) // right
+                if (stash[j][2] == PanelLoc.right && stash[j][1] == i)
                     pright = this._loadPanel(stash[j][0], stash[j][1], stash[j][2], [true,true]);
             }
             for (let j in stash) {
-                if (stash[j][2] == 0 && stash[j][1] == i) { // top
+                let drawcorner = [false,false];
+                if (stash[j][2] == PanelLoc.top && stash[j][1] == i) {
                     drawcorner[0] = (panels_used[i][2])? false : true;
                     drawcorner[1] = (panels_used[i][3])? false : true;
                     this._loadPanel(stash[j][0], stash[j][1], stash[j][2], drawcorner);
@@ -362,6 +363,8 @@ PanelManager.prototype = {
             // have found the heights available for vertical panels between horizontal panels, so calculate them now. 
             //
             if (pleft || pright) {
+                let toppheight;
+                let botpheight;
                 [toppheight,botpheight] = heightsUsedMonitor(i, this.panels);
                 if (pleft) {
                     pleft.toppanelHeight = toppheight; 
@@ -374,8 +377,8 @@ PanelManager.prototype = {
             }
         }
         //
-        // At this point all the panels are shown, so at this time it is feasible to work
-        // through them and adjust any vertical panel heights so as to fit snugly between horizontal panels
+        // At this point all the panels are shown, so work through them and adjust
+        // vertical panel heights so as to fit snugly between horizontal panels
         //
         for (let i in this.panels) {
             if (this.panels[i])
@@ -712,6 +715,12 @@ PanelManager.prototype = {
         });
     },
 
+    /**
+     * _onPanelsEnabledChanged:
+     *
+     * This will be called whenever the panels-enabled settings key is changed
+     * i.e. when panels are added, moved or removed.
+     */
     _onPanelsEnabledChanged: function() {
         let newPanels = new Array(this.panels.length);
         let newMeta = new Array(this.panels.length);
@@ -742,16 +751,16 @@ PanelManager.prototype = {
                     || newMeta[ID][1] != this.panelsMeta[ID][1]) {// if panel position or monitor have changed
                     newPanels[ID].updatePosition(newMeta[ID][0], newMeta[ID][1]);
 
-                    AppletManager.updateAppletsOnPanel(newPanels[ID]); // Note that this will not cope with vertical/horizontal panel
-                                                                       // changes fully - panel launchers, systray etc. need reorienting 
-                                                                       // within the applet using their on_orientation_changed function  
+                    AppletManager.updateAppletsOnPanel(newPanels[ID]); // Asymmetrical applets such as panel launchers, systray etc. 
+                                                                       // need reorienting within the applet using their 
+                                                                       // on_orientation_changed function
                 }
             } else {                    // new panel
                 let jj = getPanelLocFromName(elements[2]);
                 let mon = parseInt(elements[1]);
 
 //
-// FIXME put logic to determine if a corner is needed here
+// FIXME put logic to determine if a corner is needed here.  Is that right ?  should corners not be reworked if panel moved ?
 //
                 let panel = this._loadPanel(ID, mon, jj, drawcorner, newPanels, newMeta); 
                 if (panel)
@@ -770,7 +779,7 @@ PanelManager.prototype = {
 //
 // Adjust any vertical panel heights so as to fit snugly between horizontal panels
 // FIXME scope for minor optimisation here, doesn't need to adjust verticals if no horizontals added or removed
-// or any change from making space for panel dummys needs to be reflected
+// or if any change from making space for panel dummys needs to be reflected
 //
         for (let i in this.panels) {
             if (this.panels[i])
@@ -1675,12 +1684,12 @@ Panel.prototype = {
     _init : function(id, monitorIndex, panelPosition, toppanelHeight, bottompanelHeight, drawcorner) {
 
         this.panelId = id;
+        this.drawcorner = drawcorner;
         this.monitorIndex = monitorIndex;
         this.monitor = global.screen.get_monitor_geometry(monitorIndex);
         this.panelPosition = panelPosition;
         this.toppanelHeight = toppanelHeight;
         this.bottompanelHeight = bottompanelHeight;
-        this.drawcorner = drawcorner;
         let panelHeight = 0;
         let horizontal_panel = (this.panelPosition == PanelLoc.top || this.panelPosition == PanelLoc.bottom) ? true : false;
 
@@ -1712,33 +1721,6 @@ Panel.prototype = {
             this._rightBox = new St.BoxLayout({ name: 'panelRight', align_end: true});  
             this.actor.add_actor(this._rightBox);
             this._rightBoxDNDHandler = new PanelZoneDNDHandler(this._rightBox);
-
-            if (this.drawcorner[0]) { // left corner
-                if (this.panelPosition == PanelLoc.top) {
-                    if (this.actor.get_direction() == St.TextDirection.RTL)    // right to left text direction e.g. arabic
-                        this._leftCorner = new PanelCorner(this._rightBox, St.Side.LEFT, CornerType.topleft);
-                    else                            // left to right text direction
-                        this._leftCorner = new PanelCorner(this._leftBox, St.Side.LEFT, CornerType.topleft);
-                } else { // bottom panel
-                    if (this.actor.get_direction() == St.TextDirection.RTL)   // right to left text direction e.g. arabic
-                        this._leftCorner = new PanelCorner(this._rightBox, St.Side.LEFT, CornerType.bottomleft);
-                    else                            // left to right text direction
-                        this._leftCorner = new PanelCorner(this._leftBox, St.Side.LEFT, CornerType.bottomleft);
-                }
-            }
-            if (this.drawcorner[1]) { // right corner
-                if (this.panelPosition == PanelLoc.top) {
-                    if (this.actor.get_direction() == St.TextDirection.RTL)    // right to left text direction e.g. arabic
-                        this._rightCorner = new PanelCorner(this._leftBox, St.Side.RIGHT,CornerType.topright);
-                    else                            // left to right text direction
-                        this._rightCorner = new PanelCorner(this._rightBox, St.Side.RIGHT,CornerType.topright);
-                } else { // bottom
-                    if (this.actor.get_direction() == St.TextDirection.RTL)   // right to left text direction e.g. arabic
-                        this._rightCorner = new PanelCorner(this._leftBox, St.Side.RIGHT,CornerType.bottomright);
-                    else                            // left to right text direction
-                        this._rightCorner = new PanelCorner(this._rightBox, St.Side.RIGHT,CornerType.bottomright);
-                }
-            }
 
         } else {
             // vertical panels.  'leftBox' is at the top, 'rightBox' at the bottom.
@@ -1798,43 +1780,11 @@ Panel.prototype = {
             this._centerBoxDNDHandler = new PanelZoneDNDHandler(this._centerBox);
             this._rightBoxDNDHandler  = new PanelZoneDNDHandler(this._rightBox);
 
-            if (this.panelPosition == PanelLoc.left) {   // left panel
-                if (this.drawcorner[0]) {
-                    if (this.actor.get_direction() == St.TextDirection.RTL)    // right to left text direction
-                        this._leftCorner = new PanelCorner(this._rightBox, St.Side.TOP, CornerType.topleft); 
-                    else 
-                        this._leftCorner = new PanelCorner(this._leftBox, St.Side.TOP, CornerType.topleft);
-                }
-                if (this.drawcorner[1])
-                {
-                    if (this.actor.get_direction() == St.TextDirection.RTL)    // right to left text direction 
-                        this._rightCorner = new PanelCorner(this._leftBox, St.Side.BOTTOM, CornerType.bottomleft);
-                    else 
-                        this._rightCorner = new PanelCorner(this._rightBox, St.Side.BOTTOM, CornerType.bottomleft); 
-                }
-            } else { // right panel
-                if (this.drawcorner[0]) {
-                    if (this.actor.get_direction() == St.TextDirection.RTL)   // right to left text direction
-                        this._leftCorner = new PanelCorner(this._rightBox, St.Side.TOP, CornerType.topright); 
-                    else
-                        this._leftCorner = new PanelCorner(this._leftBox, St.Side.TOP, CornerType.topright);
-                }
-                if (this.drawcorner[1]) {
-                    if (this.actor.get_direction() == St.TextDirection.RTL)    // right to left text direction; 
-                        this._rightCorner = new PanelCorner(this._leftBox, St.Side.BOTTOM, CornerType.bottomright); 
-                    else 
-                        this._rightCorner = new PanelCorner(this._rightBox, St.Side.BOTTOM, CornerType.bottomright);
-                }
-            }
-        } // end vertical panel section
-
-        if (this._leftCorner)
-            this.actor.add_actor(this._leftCorner.actor);
-        if (this._rightCorner)
-            this.actor.add_actor(this._rightCorner.actor);
+        }
+        this.drawCorners(drawcorner);
 
         this.addContextMenuToPanel(this.panelPosition);
-    
+
         this._leftPanelBarrier = 0;
         this._rightPanelBarrier = 0;
         Main.layoutManager.addChrome(this.actor, { addToWindowgroup: false });
@@ -1856,6 +1806,76 @@ Panel.prototype = {
         this._signalManager.connect(global.settings, "changed::panel-edit-mode", this._onPanelEditModeChanged);
         this._signalManager.connect(global.settings, "changed::no-adjacent-panel-barriers", this._updatePanelBarriers);
 
+    },
+
+    drawCorners: function(drawcorner)
+    {
+
+        if (this.panelPosition == PanelLoc.top || this.panelPosition == PanelLoc.bottom) {  // horizontal panels
+
+            if (drawcorner[0]) { // left corner
+                if (this.panelPosition == PanelLoc.top) {
+                    if (this.actor.get_direction() == St.TextDirection.RTL)    // right to left text direction e.g. arabic
+                        this._leftCorner = new PanelCorner(this._rightBox, St.Side.LEFT, CornerType.topleft);
+                    else                            // left to right text direction
+                        this._leftCorner = new PanelCorner(this._leftBox, St.Side.LEFT, CornerType.topleft);
+                } else { // bottom panel
+                    if (this.actor.get_direction() == St.TextDirection.RTL)   // right to left text direction e.g. arabic
+                        this._leftCorner = new PanelCorner(this._rightBox, St.Side.LEFT, CornerType.bottomleft);
+                    else                            // left to right text direction
+                        this._leftCorner = new PanelCorner(this._leftBox, St.Side.LEFT, CornerType.bottomleft);
+                }
+            }
+            if (drawcorner[1]) { // right corner
+                if (this.panelPosition == PanelLoc.top) {
+                    if (this.actor.get_direction() == St.TextDirection.RTL)    // right to left text direction e.g. arabic
+                        this._rightCorner = new PanelCorner(this._leftBox, St.Side.RIGHT,CornerType.topright);
+                    else                            // left to right text direction
+                        this._rightCorner = new PanelCorner(this._rightBox, St.Side.RIGHT,CornerType.topright);
+                } else { // bottom
+                    if (this.actor.get_direction() == St.TextDirection.RTL)   // right to left text direction e.g. arabic
+                        this._rightCorner = new PanelCorner(this._leftBox, St.Side.RIGHT,CornerType.bottomright);
+                    else                            // left to right text direction
+                        this._rightCorner = new PanelCorner(this._rightBox, St.Side.RIGHT,CornerType.bottomright);
+                }
+            }
+
+        } else {  // vertical panels
+
+            if (this.panelPosition == PanelLoc.left) {   // left panel
+                if (drawcorner[0]) {
+                    if (this.actor.get_direction() == St.TextDirection.RTL)    // right to left text direction
+                        this._leftCorner = new PanelCorner(this._rightBox, St.Side.TOP, CornerType.topleft); 
+                    else 
+                        this._leftCorner = new PanelCorner(this._leftBox, St.Side.TOP, CornerType.topleft);
+                }
+                if (drawcorner[1])
+                {
+                    if (this.actor.get_direction() == St.TextDirection.RTL)    // right to left text direction 
+                        this._rightCorner = new PanelCorner(this._leftBox, St.Side.BOTTOM, CornerType.bottomleft);
+                    else 
+                        this._rightCorner = new PanelCorner(this._rightBox, St.Side.BOTTOM, CornerType.bottomleft); 
+                }
+            } else { // right panel
+                if (drawcorner[0]) {
+                    if (this.actor.get_direction() == St.TextDirection.RTL)   // right to left text direction
+                        this._leftCorner = new PanelCorner(this._rightBox, St.Side.TOP, CornerType.topright); 
+                    else
+                        this._leftCorner = new PanelCorner(this._leftBox, St.Side.TOP, CornerType.topright);
+                }
+                if (drawcorner[1]) {
+                    if (this.actor.get_direction() == St.TextDirection.RTL)    // right to left text direction; 
+                        this._rightCorner = new PanelCorner(this._leftBox, St.Side.BOTTOM, CornerType.bottomright); 
+                    else 
+                        this._rightCorner = new PanelCorner(this._rightBox, St.Side.BOTTOM, CornerType.bottomright);
+                }
+            }
+        }
+
+        if (this._leftCorner)
+            this.actor.add_actor(this._leftCorner.actor);
+        if (this._rightCorner)
+            this.actor.add_actor(this._rightCorner.actor);
     },
 
     _destroycorners: function()
@@ -2790,6 +2810,8 @@ Panel.prototype = {
      * Checks whether the panel should show based on the autohide settings and
      * position of mouse/active window. It then calls the _queueShowHidePanel
      * function to show or hide the panel as necessary.
+     *
+     * FIXME if the panels autohide then they should effectively not be there for the purposes of drawing corners, when hidden.
      */
     _updatePanelVisibility: function() {
         // false = autohide, true = always show, intel = Intelligent
