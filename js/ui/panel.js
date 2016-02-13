@@ -755,9 +755,6 @@ PanelManager.prototype = {
                 let jj = getPanelLocFromName(elements[2]);
                 let mon = parseInt(elements[1]);
 
-//
-// FIXME put logic to determine if a corner is needed here.  Is that right ?  should corners not be reworked if panel moved ?
-//
                 let panel = this._loadPanel(ID, mon, jj, drawcorner, newPanels, newMeta); 
                 if (panel)
                      AppletManager.loadAppletsOnPanel(panel);
@@ -779,9 +776,20 @@ PanelManager.prototype = {
         for (let i in this.panels) {
             if (this.panels[i])
                 if (this.panels[i].panelPosition == PanelLoc.left || this.panels[i].panelPosition == PanelLoc.right)
-                this.panels[i]._moveResizePanel();
+                    this.panels[i]._moveResizePanel();
         }
-
+//
+// Draw any corners that are necessary.  Note that updatePosition will have stripped off corners
+// from moved panels, and the new panel is created without corners.  However unchanged panels may have corners
+// that might not be right now.  Easiest thing is to strip every existing corner off and re-add
+//
+        for (let i in this.panels) {
+            if (this.panels[i])
+                this.panels[i]._destroycorners();
+        }
+//
+// FIXME re add corners
+//
         this._setMainPanel();
         this._checkCanAdd();
         this._updateAllPointerBarriers();
@@ -794,7 +802,7 @@ PanelManager.prototype = {
         for (let i in this.panelsMeta) {
             if (this.panelsMeta[i] && !this.panels[i]) { // If there is a meta but not a panel, i.e. panel could not create due to non-existent monitor, try again.
 //
-// FIXME put logic to see if corners need to be drawn in here
+// FIXME put logic to see if corners need to be drawn in here ?
 //
                 let panel = this._loadPanel(i, this.panelsMeta[i][0], this.panelsMeta[i][1], drawcorner); 
                 if (panel)
@@ -1872,6 +1880,7 @@ Panel.prototype = {
         this._leftCorner.actor.destroy();
     if (this._rightCorner)
         this._rightCorner.actor.destroy();
+    this.drawcorner = [false,false];
     },
 
     /**
