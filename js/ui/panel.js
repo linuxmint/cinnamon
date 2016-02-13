@@ -385,7 +385,6 @@ PanelManager.prototype = {
                 if (this.panels[i].panelPosition == PanelLoc.left || this.panels[i].panelPosition == PanelLoc.right)
                     this.panels[i]._moveResizePanel();
         }
-
     },
 
    /**
@@ -559,7 +558,6 @@ PanelManager.prototype = {
             Main.keybindingManager.removeHotKey('close-add-panel');
     },
 
-
     /**
      * getPanelsInMonitor:
      * @monitorIndex (integer): index of monitor
@@ -576,7 +574,6 @@ PanelManager.prototype = {
         }
         return returnValue;
     },
-
 
     /**
      * getPanels:
@@ -708,7 +705,6 @@ PanelManager.prototype = {
         }
     },
 
-
     _updateAllPointerBarriers: function() {
         this.panels.forEach(function(panel) {
             panel._updatePanelBarriers();
@@ -744,18 +740,18 @@ PanelManager.prototype = {
 
                 let mon = parseInt(elements[1]);
 
-                newMeta[ID] = [mon, jj];        //Note: meta [i][0] is the monitor  meta [i][1] is the panel
+                newMeta[ID] = [mon, jj];            //Note: meta [i][0] is the monitor  meta [i][1] is the panel
                 this.panels[ID] = null;
 
                 if (newMeta[ID][0] != this.panelsMeta[ID][0]
-                    || newMeta[ID][1] != this.panelsMeta[ID][1]) {// if panel position or monitor have changed
+                    || newMeta[ID][1] != this.panelsMeta[ID][1]) {     // if panel position or monitor have changed
                     newPanels[ID].updatePosition(newMeta[ID][0], newMeta[ID][1]);
 
                     AppletManager.updateAppletsOnPanel(newPanels[ID]); // Asymmetrical applets such as panel launchers, systray etc. 
                                                                        // need reorienting within the applet using their 
                                                                        // on_orientation_changed function
                 }
-            } else {                    // new panel
+            } else {                                                   // new panel
                 let jj = getPanelLocFromName(elements[2]);
                 let mon = parseInt(elements[1]);
 
@@ -765,7 +761,7 @@ PanelManager.prototype = {
                 let panel = this._loadPanel(ID, mon, jj, drawcorner, newPanels, newMeta); 
                 if (panel)
                      AppletManager.loadAppletsOnPanel(panel);
-            } // end new panel
+            }
         }
 
         // Destroy removed panels
@@ -775,7 +771,6 @@ PanelManager.prototype = {
 
         this.panels = newPanels;
         this.panelsMeta = newMeta;
-
 //
 // Adjust any vertical panel heights so as to fit snugly between horizontal panels
 // FIXME scope for minor optimisation here, doesn't need to adjust verticals if no horizontals added or removed
@@ -856,7 +851,6 @@ PanelManager.prototype = {
         this._moveOsd.show();
     },
 
-
     /**
      * _showDummyPanels:
      * @callback (): callback
@@ -926,7 +920,6 @@ PanelDummy.prototype = {
         
         this.actor = new Cinnamon.GenericContainer({style_class: "panel-dummy", reactive: true, track_hover: true, important: true});
         Main.layoutManager.addChrome(this.actor, { addToWindowgroup: false });
-
         //
         // layouts set to be full width horizontal panels, and vertical panels set to use as much available space as is left 
         //
@@ -1502,8 +1495,6 @@ function populateSettingsMenu(menu, panelId) {
     });
 }
 
-
-
 function PanelContextMenu(launcher, orientation, panelId) {
     this._init(launcher, orientation, panelId);
 }
@@ -1690,7 +1681,6 @@ Panel.prototype = {
         this.panelPosition = panelPosition;
         this.toppanelHeight = toppanelHeight;
         this.bottompanelHeight = bottompanelHeight;
-        let panelHeight = 0;
         let horizontal_panel = (this.panelPosition == PanelLoc.top || this.panelPosition == PanelLoc.bottom) ? true : false;
 
         this._hidden = false;
@@ -1805,7 +1795,6 @@ Panel.prototype = {
         this._signalManager.connect(global.settings, "changed::" + PANEL_SCALE_TEXT_ICONS_KEY, this._onScaleTextIconsChanged);
         this._signalManager.connect(global.settings, "changed::panel-edit-mode", this._onPanelEditModeChanged);
         this._signalManager.connect(global.settings, "changed::no-adjacent-panel-barriers", this._updatePanelBarriers);
-
     },
 
     drawCorners: function(drawcorner)
@@ -1839,7 +1828,6 @@ Panel.prototype = {
                         this._rightCorner = new PanelCorner(this._rightBox, St.Side.RIGHT,CornerType.bottomright);
                 }
             }
-
         } else {  // vertical panels
 
             if (this.panelPosition == PanelLoc.left) {   // left panel
@@ -2236,7 +2224,6 @@ Panel.prototype = {
         }
 
         this._updatePanelVisibility();
-
         Main.layoutManager._chrome.modifyActorParams(this.actor, { affectsStruts: this._autohideSettings == "false" });
     },
 
@@ -2384,7 +2371,6 @@ Panel.prototype = {
         this._centerBox.set_y_align(Clutter.ActorAlign.CENTER);
     },
 
-
     _setFont: function(panelHeight) {
         this.scaleMode = this._getProperty(PANEL_RESIZABLE_KEY, "b") && this._getProperty(PANEL_SCALE_TEXT_ICONS_KEY, "b");
 
@@ -2399,7 +2385,6 @@ Panel.prototype = {
             this.actor.set_style('font-size: ' + this._themeFontSize ? this._themeFontSize + 'px;' : '8.5pt;');
         }
     },
-
 
     _onScaleTextIconsChanged: function() {
         let panelHeight = this._getProperty(PANEL_HEIGHT_KEY, "i");
@@ -2651,7 +2636,6 @@ Panel.prototype = {
         return;
     },
 
-
     _setHorizChildbox: function(childbox, x1, x2, x1_rtl, x2_rtl) {
         if (this.actor.get_direction() == St.TextDirection.RTL) {
             childbox.x1 = x1_rtl;
@@ -2662,7 +2646,6 @@ Panel.prototype = {
         }
         return;
     },
-
 
     _allocate: function(actor, box, flags) {
         //
