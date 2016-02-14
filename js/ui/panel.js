@@ -725,6 +725,7 @@ PanelManager.prototype = {
         let panelProperties = global.settings.get_strv("panels-enabled");
 
         for (let i = 0; i < panelProperties.length; i ++) {
+
             let elements = panelProperties[i].split(":");
             if (elements.length != 3) {
                 global.log("Invalid panel definition: " + panelProperties[i]);
@@ -735,16 +736,14 @@ PanelManager.prototype = {
 
             if (this.panels[ID]) {                  // If (existing) panel is moved
                 newPanels[ID] = this.panels[ID];    // Move panel object to newPanels
-                let jj = 0;
-                jj = getPanelLocFromName(elements[2]);
 
-                let mon = parseInt(elements[1]);
-
-                newMeta[ID] = [mon, jj];            //Note: meta [i][0] is the monitor  meta [i][1] is the panel
+                newMeta[ID] = [parseInt(elements[1]), getPanelLocFromName(elements[2])]; //Note: meta [i][0] is the monitor  meta [i][1] is the panel
                 this.panels[ID] = null;
 
-                if (newMeta[ID][0] != this.panelsMeta[ID][0]
-                    || newMeta[ID][1] != this.panelsMeta[ID][1]) {     // if panel position or monitor have changed
+                if (newMeta[ID][0] != this.panelsMeta[ID][0]           // monitor changed
+                    ||
+                    newMeta[ID][1] != this.panelsMeta[ID][1]) {        // or panel position changed
+
                     newPanels[ID].updatePosition(newMeta[ID][0], newMeta[ID][1]);
 
                     AppletManager.updateAppletsOnPanel(newPanels[ID]); // Asymmetrical applets such as panel launchers, systray etc. 
@@ -755,7 +754,12 @@ PanelManager.prototype = {
                 let jj = getPanelLocFromName(elements[2]);
                 let mon = parseInt(elements[1]);
 
-                let panel = this._loadPanel(ID, mon, jj, drawcorner, newPanels, newMeta); 
+                let panel = this._loadPanel(ID,
+                                            parseInt(elements[1]),
+                                            getPanelLocFromName(elements[2]),
+                                            drawcorner,
+                                            newPanels,
+                                            newMeta);
                 if (panel)
                      AppletManager.loadAppletsOnPanel(panel);
             }
@@ -781,18 +785,106 @@ PanelManager.prototype = {
 //
 // Draw any corners that are necessary.  Note that updatePosition will have stripped off corners
 // from moved panels, and the new panel is created without corners.  However unchanged panels may have corners
-// that might not be right now.  Easiest thing is to strip every existing corner off and re-add
+// that might not be wanted now.  Easiest thing is to strip every existing corner off and re-add
 //
         for (let i in this.panels) {
             if (this.panels[i])
                 this.panels[i]._destroycorners();
         }
 //
-// FIXME re add corners
+// re add corners
 //
+        this._fullCornerLoad(panelProperties);
+
         this._setMainPanel();
         this._checkCanAdd();
         this._updateAllPointerBarriers();
+    },
+
+
+    _fullCornerLoad: function(panelProperties) {
+
+        let monitor = 0;
+        let monitorCount = -1;
+        let panels_used = []; // [monitor] [top, bottom, left, right].  Used to keep track of which panel types are in use,
+                              // as we need knowledge of the combinations in order to instruct the correct panel to create a corner
+        let stash = [];       // panel id, monitor, panel type
+
+        //
+        // First pass through just to count the monitors, as there is no ordering to rely on
+        //
+        for (let i in panelProperties) {
+            let elements = panelProperties[i].split(":");
+            if (elements.length != 3) {
+                global.log("Invalid panel definition: " + panelProperties[i]);
+                continue;
+            }
+
+            monitor = parseInt(elements[1]);
+            if (monitor > monitorCount)
+                monitorCount = monitor;
+        }
+        //
+        // initialise the array that records which panels are used (so combinations can be used to select corners)
+        //
+        for (let i = 0; i <= monitorCount; i++) {
+            panels_used.push([]);
+            panels_used[i][0] = false;
+            panels_used[i][1] = false;
+            panels_used[i][2] = false;
+            panels_used[i][3] = false;
+        }
+        //
+        // set up the list of panels
+        //
+        for (let i in panelProperties) {
+            let elements = panelProperties[i].split(":");
+            if (elements.length != 3) {
+                global.log("Invalid panel definition: " + panelProperties[i]);
+                continue;
+            }
+            let monitor = parseInt(elements[1]);
+            let jj = getPanelLocFromName(elements[2]);
+            panels_used[monitor][jj] =  true;
+
+            stash[i] = [parseInt(elements[0]),monitor,jj];
+        }
+
+        // draw corners on each monitor in turn.  Note that the panel.drawcorner
+        // variable needs to be set so the allocation code runs as desired
+
+        for (let i = 0; i <= monitorCount; i++) {
+            for (let j in stash) {
+                let drawcorner = [false,false];
+                if (stash[j][2] == PanelLoc.bottom && stash[j][1] == i) {
+                    drawcorner[0] = (panels_used[i][2])? false : true;
+                    drawcorner[1] = (panels_used[i][3])? false : true;
+                    this.panels[stash[j][0]].drawcorner = drawcorner;
+                    this.panels[stash[j][0]].drawCorners(drawcorner);
+                }
+            }
+            for (let j in stash) {
+                if (stash[j][2] == PanelLoc.left && stash[j][1] == i) {
+                    this.panels[stash[j][0]].drawcorner = [true,true];
+                    this.panels[stash[j][0]].drawCorners([true,true]);
+                }
+            }
+            for (let j in stash) {
+                if (stash[j][2] == PanelLoc.right && stash[j][1] == i) {
+                    this.panels[stash[j][0]].drawcorner = [true,true];
+                    this.panels[stash[j][0]].drawCorners([true,true]);
+                }
+            }
+            for (let j in stash) {
+                let drawcorner = [false,false];
+                if (stash[j][2] == PanelLoc.top && stash[j][1] == i) {
+                    drawcorner[0] = (panels_used[i][2])? false : true;
+                    drawcorner[1] = (panels_used[i][3])? false : true;
+                    this.panels[stash[j][0]].drawcorner = drawcorner;
+                    this.panels[stash[j][0]].drawCorners(drawcorner);
+                }
+            }
+        }
     },
 
     _onMonitorsChanged: function() {
@@ -1143,6 +1235,7 @@ PanelCorner.prototype = {
         this._box.connect('style-changed', Lang.bind(this, this._boxStyleChanged));
 
         this.actor = new St.DrawingArea({ style_class: 'panel-corner' });
+
         this.actor.connect('style-changed', Lang.bind(this, this._styleChanged));
         this.actor.connect('repaint', Lang.bind(this, this._repaint));
     },
@@ -1809,7 +1902,6 @@ Panel.prototype = {
     {
 
         if (this.panelPosition == PanelLoc.top || this.panelPosition == PanelLoc.bottom) {  // horizontal panels
-
             if (drawcorner[0]) { // left corner
                 if (this.panelPosition == PanelLoc.top) {
                     if (this.actor.get_direction() == St.TextDirection.RTL)    // right to left text direction e.g. arabic
@@ -1837,7 +1929,6 @@ Panel.prototype = {
                 }
             }
         } else {  // vertical panels
-
             if (this.panelPosition == PanelLoc.left) {   // left panel
                 if (drawcorner[0]) {
                     if (this.actor.get_direction() == St.TextDirection.RTL)    // right to left text direction
