@@ -244,11 +244,11 @@ PanelManager.prototype = {
 
         this.addPanelMode = false;
 
-        this._panelsEnabledId = global.settings.connect("changed::panels-enabled", Lang.bind(this, this._onPanelsEnabledChanged));
-        this._panelEditModeId = global.settings.connect("changed::panel-edit-mode", Lang.bind(this, this._onPanelEditModeChanged));
+        this._panelsEnabledId   = global.settings.connect("changed::panels-enabled", Lang.bind(this, this._onPanelsEnabledChanged));
+        this._panelEditModeId   = global.settings.connect("changed::panel-edit-mode", Lang.bind(this, this._onPanelEditModeChanged));
         this._monitorsChangedId = global.screen.connect("monitors-changed", Lang.bind(this, this._onMonitorsChanged));
 
-        this._addOsd = new ModalDialog.InfoOSD(_("Select position of new panel. Esc to cancel."));
+        this._addOsd  = new ModalDialog.InfoOSD(_("Select position of new panel. Esc to cancel."));
         this._moveOsd = new ModalDialog.InfoOSD(_("Select new position of panel. Esc to cancel."));
         this._addOsd.hide();
         this._moveOsd.hide();
@@ -772,28 +772,28 @@ PanelManager.prototype = {
 
         this.panels = newPanels;
         this.panelsMeta = newMeta;
-//
-// Adjust any vertical panel heights so as to fit snugly between horizontal panels
-// FIXME scope for minor optimisation here, doesn't need to adjust verticals if no horizontals added or removed
-// or if any change from making space for panel dummys needs to be reflected
-//
+        //
+        // Adjust any vertical panel heights so as to fit snugly between horizontal panels
+        // Scope for minor optimisation here, doesn't need to adjust verticals if no horizontals added or removed
+        // or if any change from making space for panel dummys needs to be reflected
+        //
         for (let i in this.panels) {
             if (this.panels[i])
                 if (this.panels[i].panelPosition == PanelLoc.left || this.panels[i].panelPosition == PanelLoc.right)
                     this.panels[i]._moveResizePanel();
         }
-//
-// Draw any corners that are necessary.  Note that updatePosition will have stripped off corners
-// from moved panels, and the new panel is created without corners.  However unchanged panels may have corners
-// that might not be wanted now.  Easiest thing is to strip every existing corner off and re-add
-//
+        //
+        // Draw any corners that are necessary.  Note that updatePosition will have stripped off corners
+        // from moved panels, and the new panel is created without corners.  However unchanged panels may have corners
+        // that might not be wanted now.  Easiest thing is to strip every existing corner off and re-add
+        //
         for (let i in this.panels) {
             if (this.panels[i])
                 this.panels[i]._destroycorners();
         }
-//
-// re add corners
-//
+        //
+        // re add corners
+        //
         this._fullCornerLoad(panelProperties);
 
         this._setMainPanel();
@@ -801,7 +801,12 @@ PanelManager.prototype = {
         this._updateAllPointerBarriers();
     },
 
-
+    /**
+     * _fullCornerLoad :
+     * @panelProperties : panels-enabled settings string
+     *
+     * Load all corners
+     */
     _fullCornerLoad: function(panelProperties) {
 
         let monitor = 0;
@@ -893,9 +898,7 @@ PanelManager.prototype = {
 
         for (let i in this.panelsMeta) {
             if (this.panelsMeta[i] && !this.panels[i]) { // If there is a meta but not a panel, i.e. panel could not create due to non-existent monitor, try again.
-//
-// FIXME put logic to see if corners need to be drawn in here ?
-//
+
                 let panel = this._loadPanel(i, this.panelsMeta[i][0], this.panelsMeta[i][1], drawcorner); 
                 if (panel)
                     AppletManager.loadAppletsOnPanel(panel);
@@ -911,6 +914,16 @@ PanelManager.prototype = {
             this._destroyDummyPanels();
             this._showDummyPanels(this.dummyCallback);
         }
+        //
+        // clear corners, then re add them
+        //
+
+        for (let i in this.panels) {
+            if (this.panels[i])
+                this.panels[i]._destroycorners();
+        }
+        let panelProperties = global.settings.get_strv("panels-enabled");
+        this._fullCornerLoad(panelProperties);
 
         this._setMainPanel();
         this._checkCanAdd();
