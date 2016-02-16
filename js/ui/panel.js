@@ -325,8 +325,8 @@ PanelManager.prototype = {
         // Corners will go on the left and right panels if there are any, else on the top and bottom
         // corner drawing parameters passed are left, right for horizontals, top, bottom for verticals.
         //
-        // FIXME panel corners are optional and not used in many themes.  Ideally a check on the existence of the panel-corner
-        // css could be made here, and used to bypass corner creation entirely for the loaded theme
+        // panel corners are optional and not used in many themes. However there is no measurable gain in trying to suppress them
+        // if the theme does not have them
         //
         //log("monitor count " + monitorCount);
         //
@@ -2340,23 +2340,8 @@ Panel.prototype = {
         Main.layoutManager._chrome.modifyActorParams(this.actor, { affectsStruts: this._autohideSettings == "false" });
     },
 
-
-    /**
-     * _moveResizePanel:
-     *
-     * Function to update the panel position and size according to settings
-     * values.
-     */
-    _moveResizePanel: function() {
-
-        if (this._destroyed)
-            return false;
-
-        this.monitor = global.screen.get_monitor_geometry(this.monitorIndex);
-        let horizontal_panel = ((this.panelPosition == PanelLoc.top || this.panelPosition == PanelLoc.bottom) ? true : false);
-
+    _getScaledPanelHeight: function() {
         let panelHeight = 0;
-        let vertpanelHeight = 0;
 
         let panelResizable = this._getProperty(PANEL_RESIZABLE_KEY, "b");
         if (panelResizable) {
@@ -2368,7 +2353,24 @@ Panel.prototype = {
                 panelHeight = 25 * global.ui_scale;
             }
         }
+        return panelHeight;
+    },
 
+    /**
+     * _moveResizePanel:
+     *
+     * Function to update the panel position and size according to settings
+     * values.  Note that this is also called when the style changes.
+     */
+    _moveResizePanel: function() {
+
+        if (this._destroyed)
+            return false;
+
+        this.monitor = global.screen.get_monitor_geometry(this.monitorIndex);
+        let horizontal_panel = ((this.panelPosition == PanelLoc.top || this.panelPosition == PanelLoc.bottom) ? true : false);
+
+        let panelHeight = this._getScaledPanelHeight();
         this._setFont(panelHeight);
 
         let tpanelHeight = 0;
@@ -2420,7 +2422,7 @@ Panel.prototype = {
         // If we are adjusting the heights of horizontal panels then the vertical ones on this monitor 
         // may need to be changed at the same time. 
         //
-        if (this.panelPosition == PanelLoc.top || this.panelPosition == PanelLoc.bottom) {
+        if (horizontal_panel) {
             if (Main.panelManager) {            // the panelManager has initialized
                 for (let i in Main.panelManager.panels) {
                     if (Main.panelManager.panels[i])
