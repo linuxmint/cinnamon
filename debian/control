@@ -45,7 +45,7 @@ Homepage: http://cinnamon.linuxmint.com
 Package: cinnamon
 Architecture: any
 Depends: cinnamon-common (= ${source:Version}),
-         cinnamon-translations (>= ${cinnamon:Version}),
+         cinnamon-l10n (>= ${cinnamon:Version}),
          cjs (>= 2.8.0),
          libcjs0e (>= 2.8.0),
          cinnamon-desktop-data (>= 2.8.0),
