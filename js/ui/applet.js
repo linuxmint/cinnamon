@@ -369,6 +369,7 @@ Applet.prototype = {
      * This function should only be called by appletManager
      */
     setOrientation: function (orientation) {
+
         this.on_orientation_changed(orientation);
         this.emit("orientation-changed", orientation);
         this.finalizeContextMenu();
@@ -412,6 +413,7 @@ Applet.prototype = {
     },
     
     finalizeContextMenu: function () {
+
         // Add default context menus if we're in panel edit mode, ensure their removal if we're not       
         let items = this._applet_context_menu._getMenuItems();
 
@@ -435,15 +437,11 @@ Applet.prototype = {
             this.context_menu_separator = new PopupMenu.PopupSeparatorMenuItem();
         }
 
-        if (this._applet_context_menu._getMenuItems().length > 0) {
-            this._applet_context_menu.addMenuItem(this.context_menu_separator);
-        }
-
         if (items.indexOf(this.context_menu_item_about) == -1) {
             this._applet_context_menu.addMenuItem(this.context_menu_item_about);
         }
 
-        if (!this._meta["hide-configuration"] && GLib.file_test(this._meta["path"] + "/settings-schema.json", GLib.FileTest.EXISTS)) {     
+        if (!this._meta["hide-configuration"] && GLib.file_test(this._meta["path"] + "/settings-schema.json", GLib.FileTest.EXISTS)) {
             if (this.context_menu_item_configure == null) {            
                 this.context_menu_item_configure = new PopupMenu.PopupIconMenuItem(_("Configure..."),
                         "system-run",
