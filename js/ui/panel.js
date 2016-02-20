@@ -1818,15 +1818,15 @@ Panel.prototype = {
         this._menus = new PopupMenu.PopupMenuManager(this);
 
         if (horizontal_panel) {  // horizontal panels
-            this._leftBox = new St.BoxLayout({ name: 'panelLeft' });
+            this._leftBox = new St.BoxLayout({ name: 'panelLeft', x_expand: true, y_expand: true });
             this.actor.add_actor(this._leftBox);
             this._leftBoxDNDHandler = new PanelZoneDNDHandler(this._leftBox);
 
-            this._centerBox = new St.BoxLayout({ name: 'panelCenter' });
+            this._centerBox = new St.BoxLayout({ name: 'panelCenter', x_expand: true, y_expand: true });
             this.actor.add_actor(this._centerBox);
             this._centerBoxDNDHandler = new PanelZoneDNDHandler(this._centerBox);
 
-            this._rightBox = new St.BoxLayout({ name: 'panelRight', align_end: true});  
+            this._rightBox = new St.BoxLayout({ name: 'panelRight', align_end: true, x_expand: true, y_expand: true});  
             this.actor.add_actor(this._rightBox);
             this._rightBoxDNDHandler = new PanelZoneDNDHandler(this._rightBox);
 
@@ -1871,13 +1871,13 @@ Panel.prototype = {
             //
 
             if (this.panelPosition == PanelLoc.left) {   // left panel
-                this._leftBox    = new St.BoxLayout({ name: 'panelLeft'});
-                this._rightBox   = new St.BoxLayout({ name: 'panelLeft'});
+                this._leftBox    = new St.BoxLayout({ name: 'panelLeft', x_expand: true, y_expand: true});
+                this._rightBox   = new St.BoxLayout({ name: 'panelLeft', x_expand: true, y_expand: true});
             } else {
-                this._leftBox    = new St.BoxLayout({ name: 'panelRight'});
-                this._rightBox   = new St.BoxLayout({ name: 'panelRight'});
+                this._leftBox    = new St.BoxLayout({ name: 'panelRight', x_expand: true, y_expand: true});
+                this._rightBox   = new St.BoxLayout({ name: 'panelRight', x_expand: true, y_expand: true});
             }
-            this._centerBox      = new St.BoxLayout({ name: 'panelCenter'});
+            this._centerBox      = new St.BoxLayout({ name: 'panelCenter', x_expand: true, y_expand: true});
             this._set_vertical_panel_style();
 
             this.actor.add_actor(this._leftBox);
