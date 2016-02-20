@@ -59,23 +59,18 @@ MyApplet.prototype = {
 
         this._signalManager = new SignalManager.SignalManager(this);
 	let manager;
-	//let symb_scaleup = 0;
+
 	this.orientation = orientation;
 
 	if (this.orientation == St.Side.TOP || this.orientation == St.Side.BOTTOM)
 	{
 		manager = new Clutter.BoxLayout( { spacing: 2 * global.ui_scale,
-		                                       homogeneous: true,
-		                                       orientation: Clutter.Orientation.HORIZONTAL });
+		                                   orientation: Clutter.Orientation.HORIZONTAL });
 	}
 	else
 	{
 		manager = new Clutter.BoxLayout( { spacing: 2 * global.ui_scale,
-		                                       homogeneous: true,
-		                                       orientation: Clutter.Orientation.VERTICAL });
-	        //symb_scaleup 	= ((panel_height / DEFAULT_PANEL_HEIGHT) * PANEL_SYMBOLIC_ICON_DEFAULT_HEIGHT) / global.ui_scale;
-	        //this.manager_container.set_margin_left(4.0*symb_scaleup/20);
-	        // this.manager_container.set_x_align(St.Align.MIDDLE);  needs to be set by the actors inside the container ?
+		                                   orientation: Clutter.Orientation.VERTICAL });
 	}
         this.manager = manager;
         this.manager_container = new Clutter.Actor( { layout_manager: manager } );
@@ -146,7 +141,7 @@ MyApplet.prototype = {
 
             this._shellIndicators[appIndicator.id] = iconActor;
 
-            this.actor.add_actor(iconActor.actor);
+            this.manager_container.add_actor(iconActor.actor);
             appIndicator.createMenuClientAsync(Lang.bind(this, function(client) {
                 if (client != null) {
                     let newMenu = client.getShellMenu();
@@ -164,6 +159,24 @@ MyApplet.prototype = {
         if (this._scaleMode)
             return this._panelHeight * ICON_SCALE_FACTOR;
         return 16;
+    },
+
+    _getIconSize: function() {
+        let size;
+        let disp_size = this._panelHeight * ICON_SCALE_FACTOR;
+        if (disp_size < 22) {
+            size = 16;
+        }
+        else if (disp_size < 32) {
+            size = 22;
+        }
+        else if (disp_size < 48) {
+            size = 32;
+        }
+        else {
+            size = 48;
+        }
+        return size;
     },
 
     _onIndicatorRemoved: function(manager, appIndicator) {
@@ -225,7 +238,11 @@ MyApplet.prototype = {
         }
         this._statusItems = [];
 
-        let children = this.manager_container.get_children();
+        let children = this.manager_container.get_children().filter(function(child) {
+            // We are only interested in the status icons and apparently we can not ask for 
+            // child instanceof CinnamonTrayIcon.
+            return (child.toString().indexOf("CinnamonTrayIcon") != -1);
+        });
         for (var i = 0; i < children.length; i++) {
             children[i].destroy();
         }
@@ -302,7 +319,11 @@ MyApplet.prototype = {
         if (icon.obsolete == true) {
             return;
         }
-        let children = this.manager_container.get_children();
+        let children = this.manager_container.get_children().filter(function(child) {
+            // We are only interested in the status icons and apparently we can not ask for 
+            // child instanceof CinnamonTrayIcon.
+            return (child.toString().indexOf("CinnamonTrayIcon") != -1);
+        });
         let i;
         for (i = children.length - 1; i >= 0; i--) {
             let rolePosition = children[i]._rolePosition;
@@ -329,24 +350,12 @@ MyApplet.prototype = {
         if (icon.obsolete == true) {
             return;
         }
-        let size;
-        let disp_size = this._panelHeight * ICON_SCALE_FACTOR;
+
         if (["shutter", "filezilla"].indexOf(role) != -1) {
             global.log("Not resizing " + role + " as it's known to be buggy (" + icon.get_width() + "x" + icon.get_height() + "px)");
         }
         else {
-            if (disp_size < 22) {
-                size = 16;
-            }
-            else if (disp_size < 32) {
-                size = 22;
-            }
-            else if (disp_size < 48) {
-                size = 32;
-            }
-            else {
-                size = 48;
-            }
+            let size = this._getIconSize();
             icon.set_size(size, size);
             global.log("Resized " + role + " with normalized size (" + icon.get_width() + "x" + icon.get_height() + "px)");
             //Note: dropbox doesn't scale, even though we resize it...
