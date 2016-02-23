@@ -675,9 +675,12 @@ Chrome.prototype = {
 
             if (metaWindow.get_layer() == Meta.StackLayer.FULLSCREEN || metaWindow.is_fullscreen()) {
                 let [index, monitor] = this._findMonitorForWindow(window);
-                if (monitor)
+                if (monitor) {
                     monitor.inFullscreen = true;
+                    continue;
+                }
             }
+
             if (metaWindow.is_override_redirect()) {
                 // Check whether the window is screen sized
                 let isScreenSized =
@@ -686,8 +689,10 @@ Chrome.prototype = {
                      window.height == global.screen_height);
 
                 if (isScreenSized) {
-                    for (let i = 0; i < this._monitors.length; i++)
+                    for (let i = 0; i < this._monitors.length; i++) {
                         this._monitors[i].inFullscreen = true;
+                        continue;
+                    }
                 }
 
                 // Or whether it is monitor sized
@@ -696,10 +701,11 @@ Chrome.prototype = {
                     window.x <= monitor.x &&
                     window.x + window.width >= monitor.x + monitor.width &&
                     window.y <= monitor.y &&
-                    window.y + window.height >= monitor.y + monitor.height)
+                    window.y + window.height >= monitor.y + monitor.height) {
                     monitor.inFullscreen = true;
-            } else
-                break;
+                    continue;
+                }
+            }
         }
     },
 

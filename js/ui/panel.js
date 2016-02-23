@@ -1873,7 +1873,7 @@ Panel.prototype = {
      * function to show or hide the panel as necessary.
      */
     _updatePanelVisibility: function() {
-        // false = autohide, true = always show, intel = Intelligent
+        // false = always show, true = autohide, intel = Intelligent
         switch (this._autohideSettings) {
         case "false":
             this._shouldShow = true;
