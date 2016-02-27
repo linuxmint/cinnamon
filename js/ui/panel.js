@@ -738,7 +738,7 @@ PanelManager.prototype = {
                 newPanels[ID] = this.panels[ID];    // Move panel object to newPanels
 
                 newMeta[ID] = [parseInt(elements[1]), getPanelLocFromName(elements[2])]; //Note: meta [i][0] is the monitor  meta [i][1] is the panelposition
-                this.panels[ID] = null;
+                this.panels[ID] = null;             // avoids triggering the destroy logic that follows
 
                 if (newMeta[ID][0] != this.panelsMeta[ID][0]           // monitor changed
                     ||
@@ -2009,12 +2009,18 @@ Panel.prototype = {
         //
         this._destroycorners();
 
-        this._on_orientation_changed();
-        this._moveResizePanel();
+        this._set_orientation();
 
         this.addContextMenuToPanel(panelPosition);
+        this._moveResizePanel();
     },
 
+    /**
+     * addContextMenuToPanel:
+     * @panelPosition, integer
+     *
+     *  Adds a context menu to the panel and also sets the panel style class
+     */
     addContextMenuToPanel:  function(panelPosition) {
         switch (panelPosition)
         {
@@ -2397,7 +2403,7 @@ Panel.prototype = {
             vertpanelHeight = this.monitor.height - this.toppanelHeight - this.bottompanelHeight;
             this.actor.set_height(vertpanelHeight);
         }
-        this._processPanelAutoHide();  // FIXME try to determine why we are doing this before setting the size, add elucidating comment
+        this._processPanelAutoHide();
 
         //
         // layouts set to be full width horizontal panels, and vertical panels set to use as much available space as is left 
@@ -2446,26 +2452,15 @@ Panel.prototype = {
     },
 
 
-    _on_orientation_changed: function() {
+    _set_orientation: function() {
     //
-    // cater for the style/alignment changes needed when panels change orientation
+    // cater for the style/alignment for different panel orientations
     //
 	if (this.panelPosition == PanelLoc.top || this.panelPosition == PanelLoc.bottom)
 	{
-            this._rightBox.remove_style_class_name('vertical');
-            this._rightBox.set_vertical(false);
-            this._rightBox.set_x_align(Clutter.ActorAlign.END);
-
-            this._leftBox.remove_style_class_name('vertical');
-            this._leftBox.set_vertical(false);
-            this._leftBox.set_x_align(Clutter.ActorAlign.START);
-
-            this._centerBox.remove_style_class_name('vertical');
-            this._centerBox.set_vertical(false);
-            this._centerBox.set_x_align(Clutter.ActorAlign.CENTER);
-            this._centerBox.set_y_align(Clutter.ActorAlign.CENTER);
+            this._set_horizontal_panel_style();
 	}
-	else		// vertical panels
+	else
 	{
             this._set_vertical_panel_style();
         }
@@ -2477,6 +2472,7 @@ Panel.prototype = {
         this._rightBox.set_important(true);
         this._rightBox.set_vertical(true);
         this._rightBox.set_x_align(Clutter.ActorAlign.CENTER);
+        this._rightBox.set_align_end(false);
 
         this._leftBox.add_style_class_name('vertical');
         this._leftBox.set_important(true);
@@ -2488,6 +2484,23 @@ Panel.prototype = {
         this._centerBox.set_vertical(true);
         this._centerBox.set_x_align(Clutter.ActorAlign.CENTER);
         this._centerBox.set_y_align(Clutter.ActorAlign.CENTER);
+    },
+
+    _set_horizontal_panel_style: function() {
+
+            this._rightBox.remove_style_class_name('vertical');
+            this._rightBox.set_vertical(false);
+            this._rightBox.set_x_align(Clutter.ActorAlign.END);
+            this._rightBox.set_align_end(true);
+
+            this._leftBox.remove_style_class_name('vertical');
+            this._leftBox.set_vertical(false);
+            this._leftBox.set_x_align(Clutter.ActorAlign.START);
+
+            this._centerBox.remove_style_class_name('vertical');
+            this._centerBox.set_vertical(false);
+            this._centerBox.set_x_align(Clutter.ActorAlign.CENTER);
+            this._centerBox.set_y_align(Clutter.ActorAlign.CENTER);
     },
 
     _setFont: function(panelHeight) {
@@ -2518,7 +2531,7 @@ Panel.prototype = {
         alloc.min_size = -1;
         if (this.panelPosition == PanelLoc.left || this.panelPosition == PanelLoc.right) {
             //
-            // FIXME  pre-existing logic, but why exactly are we using the height of the primary monitor?  What if we are on a different monitor ?
+            // FIXME  pre-existing logic, but why exactly are we using the primary monitor?  What if we are on a different monitor ?
             // ditto for width below.  May all be fine, but could at least do with a clarifying comment.
             //
             alloc.natural_size = Main.layoutManager.primaryMonitor.height; 
@@ -2787,29 +2800,24 @@ Panel.prototype = {
             [cornerMinHeight, cornerHeight] = this._rightCorner.actor.get_preferred_height(-1);
         }
 
-        if (this.panelPosition == PanelLoc.left || this.panelPosition == PanelLoc.right) {
-            //
-            //  Vertical panels.
-            //  Effectively rotated from the horizontal panel, so will feed the different physical measures in at the start
-            //  and apply them in reverse at the end for the vertical panels, and in the logic in between will treat as 'width'
-            //  FIXME  since the calculations got moved out to calcBoxSizes this could be changed back to aid readability
-            //
-            let allocWidth  = box.y2 - box.y1;
-            let allocHeight = box.x2 - box.x1;
+        let allocHeight  = box.y2 - box.y1;
+        let allocWidth   = box.x2 - box.x1;
 
-            [leftBoundary, rightBoundary] = this._calcBoxSizes(allocWidth, allocHeight, true); 
+        if (this.panelPosition == PanelLoc.left || this.panelPosition == PanelLoc.right) {
+
+            [leftBoundary, rightBoundary] = this._calcBoxSizes(allocHeight, allocWidth, true); 
         
             let childBox = new Clutter.ActorBox();
 
             childBox.x1 = 0;
-            childBox.x2 = allocHeight;
-            this._setVertChildbox (childBox,0,leftBoundary,leftBoundary,allocWidth);
+            childBox.x2 = allocWidth;
+            this._setVertChildbox (childBox,0,leftBoundary,leftBoundary,allocHeight);
             this._leftBox.allocate(childBox, flags); //leftbox
 
             this._setVertChildbox (childBox,leftBoundary,rightBoundary,rightBoundary,leftBoundary);
             this._centerBox.allocate(childBox, flags);  //centerbox2
 
-            this._setVertChildbox (childBox,rightBoundary,allocWidth,0,rightBoundary);
+            this._setVertChildbox (childBox,rightBoundary,allocHeight,0,rightBoundary);
             this._rightBox.allocate(childBox, flags); // rightbox 
 
             //
@@ -2819,14 +2827,14 @@ Panel.prototype = {
             //
 //log("panel "+this.panelPosition+" allocate: alloc height "+allocHeight+" width "+allocWidth+" leftboundary "+leftBoundary+" rightboundary "+rightBoundary);
 
-            this._centerBox.set_width(allocHeight);
-            this._leftBox.set_width(allocHeight);
-            this._rightBox.set_width(allocHeight);
+            this._centerBox.set_width(allocWidth);
+            this._leftBox.set_width(allocWidth);
+            this._rightBox.set_width(allocWidth);
 
             if (this._panelEditMode) {
                 this._centerBox.set_height(rightBoundary - leftBoundary);
                 this._leftBox.set_height(leftBoundary);
-                this._rightBox.set_height(allocWidth - rightBoundary);
+                this._rightBox.set_height(allocHeight - rightBoundary);
             } else {
                 this._centerBox.set_height(-1);
                 this._leftBox.set_height(-1);
@@ -2864,8 +2872,6 @@ Panel.prototype = {
                 }
             }
         } else {           // horizontal panel
-            let allocWidth  = box.x2 - box.x1;
-            let allocHeight = box.y2 - box.y1;
 
             [leftBoundary, rightBoundary] = this._calcBoxSizes(allocWidth, allocHeight, false); 
 
@@ -2913,7 +2919,6 @@ Panel.prototype = {
      * position of mouse/active window. It then calls the _queueShowHidePanel
      * function to show or hide the panel as necessary.
      *
-     * FIXME if the panels autohide then they should effectively not be there for the purposes of drawing corners, when hidden.
      */
     _updatePanelVisibility: function() {
         // false = autohide, true = always show, intel = Intelligent
