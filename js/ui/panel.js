@@ -732,30 +732,55 @@ PanelManager.prototype = {
                 continue;
             }
 
-            let ID = parseInt(elements[0]);         // each panel is stored as ID:monitor:panelposition
+            let ID   = parseInt(elements[0]);       // each panel is stored as ID:monitor:panelposition
+            let mon  = parseInt(elements[1]);
+            let ploc = getPanelLocFromName(elements[2]);
 
             if (this.panels[ID]) {                  // If (existing) panel is moved
-                newPanels[ID] = this.panels[ID];    // Move panel object to newPanels
 
-                newMeta[ID] = [parseInt(elements[1]), getPanelLocFromName(elements[2])]; //Note: meta [i][0] is the monitor  meta [i][1] is the panelposition
-                this.panels[ID] = null;             // avoids triggering the destroy logic that follows
+                newMeta[ID] = [mon, ploc];          //Note: meta [i][0] is the monitor  meta [i][1] is the panelposition
+                let was_vert  = (this.panelsMeta[ID][1] == PanelLoc.left || this.panelsMeta[ID][1] == PanelLoc.right);
+                let is_horiz  = (newMeta[ID][1] == PanelLoc.bottom || newMeta[ID][1] == PanelLoc.top);
 
-                if (newMeta[ID][0] != this.panelsMeta[ID][0]           // monitor changed
-                    ||
-                    newMeta[ID][1] != this.panelsMeta[ID][1]) {        // or panel position changed
+                if ((was_vert && is_horiz)) { // if moved orientation from vertical to horizontal then reload
+                                              // FIXME Why ?  because for this specific type of move the allocation logic is not getting called
+                                              // resulting in misaligned boxes until the next cinnamon restart.  If you can find the solution to 
+                                              // this then this can be cut back to just the updatePosition calls etc, in the section below.
+                                              // Note that horizontal to vertical panel moves seem to work just fine and do not need this workaround.
+                                              // Note also that the calls to loadpanel here may trigger warnings in the log files that the applet is already loaded
 
-                    newPanels[ID].updatePosition(newMeta[ID][0], newMeta[ID][1]);
-                    AppletManager.updateAppletsOnPanel(newPanels[ID]); // Asymmetrical applets such as panel launchers, systray etc. 
-                                                                       // need reorienting within the applet using their 
-                                                                       // on_orientation_changed function
+                    let panel = this._loadPanel(ID,
+                                                mon,
+                                                ploc,
+                                                drawcorner,
+                                                newPanels,
+                                                newMeta);
+                    if (panel)
+                        AppletManager.loadAppletsOnPanel(panel);
                 }
-            } else {                                                   // new panel
-                let jj = getPanelLocFromName(elements[2]);
-                let mon = parseInt(elements[1]);
+                else {
+                    if (newMeta[ID][0] != this.panelsMeta[ID][0]           // monitor changed
+                        ||
+                        newMeta[ID][1] != this.panelsMeta[ID][1]) {        // or panel position changed
+
+                        newPanels[ID] = this.panels[ID];                   // Move panel object to newPanels
+                        this.panels[ID] = null;                            // avoids triggering the destroy logic that follows
+
+                        newPanels[ID].updatePosition(newMeta[ID][0], newMeta[ID][1]);
+                        AppletManager.updateAppletsOnPanel(newPanels[ID]); // Asymmetrical applets such as panel launchers, systray etc. 
+                                                                           // need reorienting within the applet using their
+                                                                           // on_orientation_changed function
+                    }
+                    else {                                                 // not a monitor or panel position change
+                        newPanels[ID] = this.panels[ID];                   // Move panel object to newPanels
+                        this.panels[ID] = null;                            // avoids triggering the destroy logic that follows
+                    }
+                }
+            } else {                                                       // new panel
 
                 let panel = this._loadPanel(ID,
-                                            parseInt(elements[1]),
-                                            getPanelLocFromName(elements[2]),
+                                            mon,
+                                            ploc,
                                             drawcorner,
                                             newPanels,
                                             newMeta);
@@ -1818,15 +1843,15 @@ Panel.prototype = {
         this._menus = new PopupMenu.PopupMenuManager(this);
 
         if (horizontal_panel) {  // horizontal panels
-            this._leftBox = new St.BoxLayout({ name: 'panelLeft', x_expand: true, y_expand: true });
+            this._leftBox = new St.BoxLayout({ name: 'panelLeft'});
             this.actor.add_actor(this._leftBox);
             this._leftBoxDNDHandler = new PanelZoneDNDHandler(this._leftBox);
 
-            this._centerBox = new St.BoxLayout({ name: 'panelCenter', x_expand: true, y_expand: true });
+            this._centerBox = new St.BoxLayout({ name: 'panelCenter' });
             this.actor.add_actor(this._centerBox);
             this._centerBoxDNDHandler = new PanelZoneDNDHandler(this._centerBox);
 
-            this._rightBox = new St.BoxLayout({ name: 'panelRight', align_end: true, x_expand: true, y_expand: true});  
+            this._rightBox = new St.BoxLayout({ name: 'panelRight', align_end: true});
             this.actor.add_actor(this._rightBox);
             this._rightBoxDNDHandler = new PanelZoneDNDHandler(this._rightBox);
 
@@ -1871,13 +1896,13 @@ Panel.prototype = {
             //
 
             if (this.panelPosition == PanelLoc.left) {   // left panel
-                this._leftBox    = new St.BoxLayout({ name: 'panelLeft', x_expand: true, y_expand: true});
-                this._rightBox   = new St.BoxLayout({ name: 'panelLeft', x_expand: true, y_expand: true});
+                this._leftBox    = new St.BoxLayout({ name: 'panelLeft'});
+                this._rightBox   = new St.BoxLayout({ name: 'panelLeft'});
             } else {
-                this._leftBox    = new St.BoxLayout({ name: 'panelRight', x_expand: true, y_expand: true});
-                this._rightBox   = new St.BoxLayout({ name: 'panelRight', x_expand: true, y_expand: true});
+                this._leftBox    = new St.BoxLayout({ name: 'panelRight'});
+                this._rightBox   = new St.BoxLayout({ name: 'panelRight'});
             }
-            this._centerBox      = new St.BoxLayout({ name: 'panelCenter', x_expand: true, y_expand: true});
+            this._centerBox      = new St.BoxLayout({ name: 'panelCenter'});
             this._set_vertical_panel_style();
 
             this.actor.add_actor(this._leftBox);
