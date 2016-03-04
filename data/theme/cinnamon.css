@@ -131,10 +131,10 @@ StScrollBar StButton#vhandle:hover {
 	background-gradient-direction: vertical;
 }
 .popup-sub-menu .popup-menu-item:ltr {
-	padding-right: 0em;
+	padding-right: 1.75em;
 }
 .popup-sub-menu .popup-menu-item:rtl {
-	padding-left: 0em;
+	padding-left: 1.75em;
 }
 .popup-sub-menu StScrollBar {
 	padding: 4px;

@@ -224,7 +224,6 @@ StreamMenuSection.prototype = {
         }
 
         let slider = new VolumeSlider(applet, stream, name, iconName);
-        slider._slider.set_style("padding-right: 1.75em;");
         this.addMenuItem(slider);
     }
 }
@@ -1380,7 +1379,6 @@ MyApplet.prototype = {
 
         let bin = new St.Bin({ x_align: St.Align.END, style_class: 'popup-inactive-menu-item' });
         let label = new St.Label({ text: device.origin });
-        label.set_style("padding-right: 1.75em;");
         bin.add_actor(label);
         item.addActor(bin, { expand: true, span: -1, align: St.Align.END });
 
