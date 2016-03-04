@@ -130,14 +130,6 @@ var SETTINGS_TYPES = {
             "description"
         ]
     },
-    "radiogroup" : {
-        "required-fields": [
-            "type",
-            "default",
-            "description",
-            "options"
-        ]
-    },
     "generic" : {
         "required-fields": [
             "type",
