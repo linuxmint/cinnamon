@@ -489,6 +489,11 @@ function start() {
             soundManager.play_once_per_session('login');
     }
 
+    // Disable panel edit mode when Cinnamon starts
+    if (global.settings.get_boolean("panel-edit-mode")) {
+        global.settings.set_boolean("panel-edit-mode", false);
+    }
+
     global.connect('shutdown', do_shutdown_sequence);
 
     global.log('Cinnamon took %d ms to start'.format(new Date().getTime() - cinnamonStartTime));
