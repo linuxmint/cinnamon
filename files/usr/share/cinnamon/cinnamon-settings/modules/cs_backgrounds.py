@@ -673,6 +673,8 @@ class ThreadedIconView(Gtk.IconView):
                     if backgroundNode.tag == "static":
                         for staticNode in backgroundNode:
                             if staticNode.tag == "file":
+                                if staticNode[-1].tag == "size":
+                                    return staticNode[-1].text
                                 return staticNode.text
             print "Could not find filename in %s" % filename
             return None
