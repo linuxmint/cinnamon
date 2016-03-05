@@ -979,6 +979,10 @@ class GSettingsColorChooser(SettingsWidget):
         self.settings = self.get_settings(schema)
         self.key = key
 
+        color_string = self.settings.get_string(self.key)
+        if not color_string.startswith('rgb'):
+            self.settings.reset(self.key)
+        
         color = Gdk.RGBA()
         color.parse(self.settings.get_string(self.key))
 
