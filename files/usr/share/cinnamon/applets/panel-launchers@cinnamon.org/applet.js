@@ -414,6 +414,13 @@ MyApplet.prototype = {
  	}
         this.reload();
     },
+//
+//override getDisplayLayout to declare that this applet is suitable for both horizontal and
+// vertical orientations
+//
+    getDisplayLayout: function() {
+        return Applet.DisplayLayout.BOTH;
+    },
 
 //
 // NB if the styling does not set right initially, it may well be because there is padding

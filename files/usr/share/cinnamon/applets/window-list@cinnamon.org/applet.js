@@ -960,6 +960,13 @@ MyApplet.prototype = {
     on_panel_height_changed: function() {
         this._refreshAllItems();
     },
+//
+//override getDisplayLayout to declare that this applet is suitable for both horizontal and
+// vertical orientations
+//
+    getDisplayLayout: function() {
+        return Applet.DisplayLayout.BOTH;
+    },
 
     on_orientation_changed: function(orientation) {
 

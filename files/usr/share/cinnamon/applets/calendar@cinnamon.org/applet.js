@@ -220,7 +220,14 @@ MyApplet.prototype = {
             }
         }));
     },
-    
+//
+//override getDisplayLayout to declare that this applet is suitable for both horizontal and
+// vertical orientations
+//
+    getDisplayLayout: function() {
+        return Applet.DisplayLayout.BOTH;
+    },
+
     on_orientation_changed: function (orientation) {
         this._orientation = orientation;
         this._initContextMenu();

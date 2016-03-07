@@ -191,6 +191,14 @@ MyApplet.prototype = {
     on_applet_clicked: function(event) {
     },
 
+//
+//override getDisplayLayout to declare that this applet is suitable for both horizontal and
+// vertical orientations
+//
+    getDisplayLayout: function() {
+        return Applet.DisplayLayout.BOTH;
+    },
+
     on_orientation_changed: function(neworientation) { 
 
 	if (neworientation == St.Side.TOP || neworientation == St.Side.BOTTOM)

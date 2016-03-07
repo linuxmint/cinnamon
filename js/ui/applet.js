@@ -23,6 +23,12 @@ const DEFAULT_PANEL_HEIGHT = 25;
 const DEFAULT_ICON_HEIGHT = 22;
 const FALLBACK_ICON_HEIGHT = 22;
 
+const DisplayLayout = {  // the panel layout that an applet is suitable for
+    VERTICAL: 'vertical',
+    HORIZONTAL: 'horizontal',
+    BOTH: 'both'
+}
+
 /**
  * #MenuItem
  * @short_description: Deprecated. Use #PopupMenu.PopupIconMenuItem instead.
@@ -374,7 +380,16 @@ Applet.prototype = {
         this.emit("orientation-changed", orientation);
         this.finalizeContextMenu();
     },
-    
+
+    /**
+     * #getDisplayLayout
+     * @short_description: returns the default type of panel that an applet is suitable for.
+     *                     intended to be overridden in individual applets
+     */
+    getDisplayLayout: function() {
+        return DisplayLayout.HORIZONTAL;
+    },
+
     /**
      * on_orientation_changed:
      * @orientation (St.Side): new orientation of the applet

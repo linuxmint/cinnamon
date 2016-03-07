@@ -1754,6 +1754,33 @@ PanelZoneDNDHandler.prototype = {
 
         if (!(source instanceof Applet.Applet)) return false;
 
+//
+//  We want to ensure that applets placed in a panel can be shown correctly
+//  If the applet is of type Icon Applet then should be fine
+//  otherwise we look to see if it has declared itself suitable
+//  TextIconApplets are also OK as we suppress their label.
+//
+        if (source instanceof Applet.IconApplet || source instanceof Applet.TextIconApplet) {
+            ;
+        }
+        else {
+            let displaylayout = source.getDisplayLayout();
+            let panelstyle = this._panelZone.get_parent().get_style_class_name();
+
+            if ((panelstyle.contains("panel-left") || panelstyle.contains("panel-right"))
+                &&
+                displaylayout == Applet.DisplayLayout.HORIZONTAL) {
+                    global.log("applet not suitable for panel");
+                    return false;
+            }
+            else if ((panelstyle.contains("panel-top") || panelstyle.contains("panel-bottom"))
+                &&
+                displaylayout == Applet.DisplayLayout.VERTICAL) {
+                    global.log("applet not suitable for panel");
+                    return false;
+            }
+        }
+
         let children = this._panelZone.get_children();
         let curAppletPos = 0;
         let insertAppletPos;
