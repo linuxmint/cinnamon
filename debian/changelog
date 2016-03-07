@@ -1,3 +1,27 @@
+cinnamon (2.8.7) rosa; urgency=medium
+
+  [ Michael Webster ]
+  * cs_keyboard.py: Fix event handlers for teaching keybindings - the cursor-down and -up keys were being incorrectly used to navigate the tree view during teach mode, and it was breaking focus (and cancelling the teach.)
+  * magnifier: limit max zoom to a reasonable value
+  * menu applet: Fix vfade in the program list - it was only showing when desktop zoom was turned entirely off.  We've reworked zoom since then, so that the .applications key only determines whether we listen to key and mouse bindings or not - actual zoom activation occurs only when the magnification factor becomes > 1.0.
+  * screensaver: Fix proxy to listen to the correct service, fix layout changes when the screensaver starts/stops.
+  * layout.js: get an actual boolean from the screensaver proxy.
+  * signalManager.js: pass argument array correctly, and don't wipe out this._storage when filtering out disconnected items.
+  * cinnamonDBus: rename Cinnamon to CinnamonDBus, and import Cinnamon so screenshot calls work.
+
+  [ JosephMcc ]
+  * window-list: Prevent the window list thumbnails from showing when the applets context menu is open
+  * window-list: Properly update the label in the window preview. Fixes https://github.com/linuxmint/Cinnamon/issues/4879
+  * cs_backgrounds: For an update of some of the reveal children on initial page load to fix some settings not showing properly
+
+  [ Rob Adams ]
+  * Fix D-Bus methods for screen capture
+
+  [ itzexor ]
+  * util.js: do not modify error message
+
+ -- Clement Lefebvre <root@linuxmint.com>  Mon, 07 Mar 2016 17:21:41 +0000
+
 cinnamon (2.8.6) rosa; urgency=medium
 
   [ JosephMcc ]
