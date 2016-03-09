@@ -199,7 +199,7 @@ class CellRendererKeybinding(Gtk.CellRendererText):
         # want Alt+Print), so we avoid translation from Alt+Print to SysRq
 
         if event.keyval == Gdk.KEY_Sys_Req and \
-           ((accel_mods & Gdk.MOD1_MASK) != 0):
+           ((accel_mods & Gdk.ModifierType.MOD1_MASK) != 0):
             keyval = Gdk.KEY_Print
             consumed_modifiers = 0
         else:
@@ -232,7 +232,7 @@ class CellRendererKeybinding(Gtk.CellRendererText):
         accel_mods &= ~consumed_modifiers
 
         if accel_key != keyval:
-            accel_mods |= Gdk.SHIFT_MASK
+            accel_mods |= Gdk.ModifierType.SHIFT_MASK
 
         if accel_mods == 0:
             if accel_key == Gdk.KEY_Escape:
