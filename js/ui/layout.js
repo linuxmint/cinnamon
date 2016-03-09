@@ -221,7 +221,6 @@ LayoutManager.prototype = {
         this._coverPane.destroy();
         this._coverPane = null;
 
-        this.keyboardBox.show();
         global.window_group.remove_clip();
         this._chrome.thawUpdateRegions();
     },
