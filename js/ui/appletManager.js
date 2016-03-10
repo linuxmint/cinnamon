@@ -326,6 +326,8 @@ function addAppletToPanels(extension, appletDefinition) {
 
         applet.on_applet_added_to_panel_internal(appletsLoaded);
 
+        removeAppletFromInappropriatePanel (extension, applet, appletDefinition);
+
         return true;
     } catch(e) {
         extension.unlockRole();
@@ -333,6 +335,44 @@ function addAppletToPanels(extension, appletDefinition) {
         return false;
     }
 }
+
+function removeAppletFromInappropriatePanel (extension, applet, appletDefinition) {
+//
+//  We want to ensure that applets placed in a panel can be shown correctly
+//  - particularly because wide applets will not fit in a vertical panel unless
+//  they have logic to manage this explicitly
+//  If the applet is of type Icon Applet then should be fine otherwise
+//  we look to see if it has declared itself suitable via a getDisplayLayout call
+//  TextIconApplets are also OK as we suppress their label in a vertical panel.
+//
+//  If the applet turns out to be unsuitable then remove it.  The applet will show with a red
+//  indicator in the applet list
+//
+        if (applet instanceof Applet.IconApplet || applet instanceof Applet.TextIconApplet) {
+            ;
+        }
+        else {
+            let displaylayout = applet.getDisplayLayout();
+
+            if ((appletDefinition.orientation == St.Side.LEFT || appletDefinition.orientation == St.Side.RIGHT)
+                &&
+                displaylayout == Applet.DisplayLayout.HORIZONTAL) {
+                    global.logError("applet "+appletDefinition.uuid+" not suitable for panel orientation "+appletDefinition.orientation);
+                    removeAppletFromPanels(extension._loadedDefinitions[appletDefinition.applet_id]);
+                    //return false;  creates a scary looking message panel saying look at logs and contact developer. seems like overkill for this
+
+            }
+            else if ((appletDefinition.orientation == St.Side.TOP || appletDefinition.orientation == St.Side.BOTTOM)
+                &&
+                displaylayout == Applet.DisplayLayout.VERTICAL) {
+                    global.logError("applet "+appletDefinition.uuid+" not suitable for panel orientation "+appletDefinition.orientation);
+                    removeAppletFromPanels(extension._loadedDefinitions[appletDefinition.applet_id]);
+                    //return false; creates a scary looking message panel saying look at logs and contact developer. seems like overkill for this
+            }
+        }
+}
+
+
 
 function get_role_provider(role) {
     if (Extension.Type.APPLET.roles[role]) {
