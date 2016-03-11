@@ -578,6 +578,7 @@ function updateAppletsOnPanel (panel) {
                 } catch (e) {
                     global.logError("Error during setPanelHeight() and setOrientation() call on applet: " + definition.uuid + "/" + applet_id, e);
                 }
+                removeAppletFromInappropriatePanel (Extension.Type.APPLET.maps.objects[definition.uuid], appletObj[applet_id], definition);
             }
         }
     }
