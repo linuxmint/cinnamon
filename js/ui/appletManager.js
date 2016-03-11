@@ -343,12 +343,11 @@ function removeAppletFromInappropriatePanel (extension, applet, appletDefinition
 //  they have logic to manage this explicitly
 //  If the applet is of type Icon Applet then should be fine otherwise
 //  we look to see if it has declared itself suitable via a getDisplayLayout call
-//  TextIconApplets are also OK as we suppress their label in a vertical panel.
 //
 //  If the applet turns out to be unsuitable then remove it.  The applet will show with a red
 //  indicator in the applet list
 //
-        if (applet instanceof Applet.IconApplet || applet instanceof Applet.TextIconApplet) {
+        if (applet instanceof Applet.IconApplet) {
             ;
         }
         else {

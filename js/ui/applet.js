@@ -659,6 +659,9 @@ TextApplet.prototype = {
      * @orientation (St.Side): orientation of the applet; Orientation of panel containing the actor
      * @panelHeight (int): height of the panel containing the applet
      * @instance_id (int): instance id of the applet
+     *
+     * Note that suitability for display in a vertical panel is handled by having applets declare
+     * they work OK, handled elsewhere
      */
     _init: function(orientation, panel_height, instance_id) {
         Applet.prototype._init.call(this, orientation, panel_height, instance_id);
@@ -669,13 +672,6 @@ TextApplet.prototype = {
         this.actor.add(this._applet_label, { y_align: St.Align.MIDDLE, 
                                              y_fill: false });
         this.actor.set_label_actor(this._applet_label);
-
-	//
-	//  NB take no action for left or right panels, we assume that the user knows if the text
-	//  will fit in the panel or not, and if it doesn't,  well it's their choice.  Also if we
-	//  suppress the text then they will not see that the applet is there, which will make it
-	//  hard for them to recover the situation by dragging the applet to a horizontal panel
-	//
     },
 
     /**
@@ -700,6 +696,8 @@ TextApplet.prototype = {
  * Applet that displays an icon and a text. The icon is on the left of the text
  * 
  * Inherits: Applet.IconApplet
+ * Note that suitability for display in a vertical panel is handled by having applets declare
+ * they work OK, handled elsewhere
  */
 function TextIconApplet(orientation, panel_height, instance_id) {
     this._init(orientation, panel_height, instance_id);
@@ -733,19 +731,13 @@ TextIconApplet.prototype = {
      */
     set_applet_label: function (text) {
 
-	if (this._orientation == St.Side.TOP || this._orientation == St.Side.BOTTOM)
-	{
-	//
-	//  Only show text on top or bottom panels, there may not be room on left or right which looks ugly
-	//
-		this._applet_label.set_text(text);
-		if ((text && text != "") && this._applet_icon_box.child) {
-		    this._applet_label.set_margin_left(6.0);
-		}
-		else {
-		    this._applet_label.set_margin_left(0);
-		}
-	}
+        this._applet_label.set_text(text);
+        if ((text && text != "") && this._applet_icon_box.child) {
+            this._applet_label.set_margin_left(6.0);
+        }
+        else {
+            this._applet_label.set_margin_left(0);
+        }
     },
 
     /**

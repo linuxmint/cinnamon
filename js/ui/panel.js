@@ -1758,9 +1758,8 @@ PanelZoneDNDHandler.prototype = {
 //  We want to ensure that applets placed in a panel can be shown correctly
 //  If the applet is of type Icon Applet then should be fine
 //  otherwise we look to see if it has declared itself suitable
-//  TextIconApplets are also OK as we suppress their label.
 //
-        if (source instanceof Applet.IconApplet || source instanceof Applet.TextIconApplet) {
+        if (source instanceof Applet.IconApplet) {
             ;
         }
         else {
