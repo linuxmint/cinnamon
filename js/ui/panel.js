@@ -890,20 +890,26 @@ PanelManager.prototype = {
                 if (stash[j][2] == PanelLoc.bottom && stash[j][1] == i) {
                     drawcorner[0] = (panels_used[i][2])? false : true;
                     drawcorner[1] = (panels_used[i][3])? false : true;
-                    this.panels[stash[j][0]].drawcorner = drawcorner;
-                    this.panels[stash[j][0]].drawCorners(drawcorner);
+                    if (this.panels[stash[j][0]]) {  // panel will not have loaded if previous monitor disconnected etc.
+                        this.panels[stash[j][0]].drawcorner = drawcorner;
+                        this.panels[stash[j][0]].drawCorners(drawcorner);
+                    }
                 }
             }
             for (let j in stash) {
                 if (stash[j][2] == PanelLoc.left && stash[j][1] == i) {
-                    this.panels[stash[j][0]].drawcorner = [true,true];
-                    this.panels[stash[j][0]].drawCorners([true,true]);
+                    if (this.panels[stash[j][0]]) {
+                        this.panels[stash[j][0]].drawcorner = [true,true];
+                        this.panels[stash[j][0]].drawCorners([true,true]);
+                    }
                 }
             }
             for (let j in stash) {
                 if (stash[j][2] == PanelLoc.right && stash[j][1] == i) {
-                    this.panels[stash[j][0]].drawcorner = [true,true];
-                    this.panels[stash[j][0]].drawCorners([true,true]);
+                    if (this.panels[stash[j][0]]) {
+                        this.panels[stash[j][0]].drawcorner = [true,true];
+                        this.panels[stash[j][0]].drawCorners([true,true]);
+                    }
                 }
             }
             for (let j in stash) {
@@ -911,8 +917,10 @@ PanelManager.prototype = {
                 if (stash[j][2] == PanelLoc.top && stash[j][1] == i) {
                     drawcorner[0] = (panels_used[i][2])? false : true;
                     drawcorner[1] = (panels_used[i][3])? false : true;
-                    this.panels[stash[j][0]].drawcorner = drawcorner;
-                    this.panels[stash[j][0]].drawCorners(drawcorner);
+                    if (this.panels[stash[j][0]]) {
+                        this.panels[stash[j][0]].drawcorner = drawcorner;
+                        this.panels[stash[j][0]].drawCorners(drawcorner);
+                    }
                 }
             }
         }
@@ -2228,26 +2236,26 @@ Panel.prototype = {
 
         let noBarriers = global.settings.get_boolean("no-adjacent-panel-barriers");
         if (this.actor.height) {
-        let panelTop = 0;
-        let panelBottom = 0;
-        switch (this.panelPosition)
-        {
-            case PanelLoc.top:
-                panelTop = this.monitor.y;
-                panelBottom = this.monitor.y + this.actor.height;
-                break;
-            case PanelLoc.bottom:
-                panelTop = this.monitor.y + this.monitor.height - this.actor.height;
-                panelBottom = this.monitor.y + this.monitor.height;
-                break;
-            case PanelLoc.left:
-            case PanelLoc.right:
-                panelTop = this.monitor.y + this.toppanelHeight;
-                panelBottom = this.monitor.y + this.monitor.height - this.bottompanelHeight;
-                break;
-            default:
-                global.log("updatePanelBarriers - unrecognised panel position "+panelPosition);
-        }
+            let panelTop = 0;
+            let panelBottom = 0;
+            switch (this.panelPosition)
+            {
+                case PanelLoc.top:
+                    panelTop = this.monitor.y;
+                    panelBottom = this.monitor.y + this.actor.height;
+                    break;
+                case PanelLoc.bottom:
+                    panelTop = this.monitor.y + this.monitor.height - this.actor.height;
+                    panelBottom = this.monitor.y + this.monitor.height;
+                    break;
+                case PanelLoc.left:
+                case PanelLoc.right:
+                    panelTop = this.monitor.y + this.toppanelHeight;
+                    panelBottom = this.monitor.y + this.monitor.height - this.bottompanelHeight;
+                    break;
+                default:
+                    global.log("updatePanelBarriers - unrecognised panel position "+panelPosition);
+            }
 
             if (!noBarriers) {   // barriers are required
                 this._rightPanelBarrier = global.create_pointer_barrier(
