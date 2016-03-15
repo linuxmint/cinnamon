@@ -578,12 +578,12 @@ AppMenuButton.prototype = {
 
         if (this._applet.orientation == St.Side.TOP || this._applet.orientation == St.Side.BOTTOM )
 
-            alloc.natural_size = pheight - 5; // putting a container around the actor for layout management reasons 
+            alloc.natural_size = pheight - 2; // putting a container around the actor for layout management reasons 
                                               // affects the allocation,causing the visible border to pull in close around the contents
                                               // which is not the desired (pre-existing) behaviour on top and bottom panels, 
                                               // so need to push the visible border back towards the panel edge.
                                               // Using the actor size will cause recursion errors as clutter tries
-                                              // to make everything fit, so am using the panel height minus a wodge
+                                              // to make everything fit, so am using the panel height minus a minimal wodge
                                               // I have had no joy using the ways I would have expected to work - fill and expand
                                               // but perhaps I have just not got the right combo of parameters on the right actor
         else
@@ -981,6 +981,7 @@ MyApplet.prototype = {
 	{
             this.manager.set_vertical(true);
             this.actor.add_style_class_name("vertical");
+            this.actor.set_x_align(Clutter.ActorAlign.CENTER);
             this.actor.set_important(true);
         }
 
@@ -1003,13 +1004,15 @@ MyApplet.prototype = {
         } else if (orientation == St.Side.LEFT) {
             for (let child of this.manager_container.get_children()) {
                 child.set_style_class_name('window-list-item-box window-list-box-left');
-                child.set_style('margin-left 0px; padding-left: 0px; padding-right: 0px; margin-right: 0px;'); 
+                child.set_style('margin-left 0px; padding-left: 0px; padding-right: 0px; margin-right: 0px;');
+                child.set_x_align(Clutter.ActorAlign.CENTER);
             }
             this.actor.set_style('margin-left: 0px; padding-left: 0px; padding-right: 0px; margin-right: 0px;');
         } else if (orientation == St.Side.RIGHT) {
             for (let child of this.manager_container.get_children()) {
                 child.set_style_class_name('window-list-item-box window-list-box-right');
-                child.set_style('margin-right: 0px; padding-right: 0px; padding-right: 0px; margin-right: 0px;');
+                child.set_style('margin-left: 0px; padding-left: 0px; padding-right: 0px; margin-right: 0px;');
+                child.set_x_align(Clutter.ActorAlign.CENTER);
             }
             this.actor.set_style('margin-right: 0px; padding-right: 0px; padding-left: 0px; margin-left: 0px;');
         }
