@@ -248,65 +248,65 @@ StScrollBar StButton#vhandle:hover {
 .panel-dummy:entered {
     background-color: rgba(255, 35, 35, 0.4);
 }
-#panelLeft {
+.panelLeft {
 	spacing: 4px;
 }
-#panelCenter {
+.panelCenter {
 	spacing: 4px;
 }
-#panelRight {
+.panelRight {
 	spacing: 4px;
 }
-#panelLeft:dnd {
+.panelLeft:dnd {
 	background-gradient-direction: vertical;
 	background-gradient-start: rgba(255,0,0,0.05);
 	background-gradient-end: rgba(255,0,0,0.2);
 }
-#panelCenter:dnd {
+.panelCenter:dnd {
 	background-gradient-direction: vertical;
 	background-gradient-start: rgba(0,255,0,0.05);
 	background-gradient-end: rgba(0,255,0,0.2);
 }
-#panelRight:dnd {
+.panelRight:dnd {
 	background-gradient-direction: vertical;
 	background-gradient-start: rgba(0,0,255,0.05);
 	background-gradient-end: rgba(0,0,255,0.2);
 }
-#panelLeft:ltr {
+.panelLeft:ltr {
 	padding-right: 4px;
 }
-#panelLeft:rtl {
+.panelLeft:rtl {
 	padding-left: 4px;
 }
-#panelRight:ltr { 
+.panelRight:ltr {
 	padding-left: 0px;
 	spacing: 0px;
 }
-#panelRight:rtl {
+.panelRight:rtl {
 	padding-right: 0px;
 	spacing: 0px;
 }
-#panelLeft.vertical {
+.panelLeft.vertical {
         padding-left: 0px;
         padding-right: 0px;
 	padding-top: 2px;
 	padding-bottom: 2px;
 }
-#panelRight.vertical {
+.panelRight.vertical {
         padding-left: 0px;
         padding-right: 0px;
 	padding-top: 2px;
 	padding-bottom: 2px;
 }
-#panelCenter.vertical {
+.panelCenter.vertical {
         padding-left: 0px;
         padding-right: 0px;
 }
-#panelLeft.vertical:dnd {
+.panelLeft.vertical:dnd {
 }
-#panelCenter.vertical:dnd {
+.panelCenter.vertical:dnd {
 }
-#panelRight.vertical:dnd {
+.panelRight.vertical:dnd {
 }
 .panel-top {
 }
