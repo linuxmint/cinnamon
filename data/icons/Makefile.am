@@ -70,6 +70,15 @@ public_icons = \
 	hicolor_emblems_scalable_cs-xlet-running.svg \
 	hicolor_emblems_scalable_cs-xlet-system.svg \
 	hicolor_emblems_scalable_cs-xlet-update.svg \
+	hicolor_devices_scalable_audio-speaker-left.svg \
+	hicolor_devices_scalable_audio-speaker-center.svg \
+	hicolor_devices_scalable_audio-speaker-right.svg \
+	hicolor_devices_scalable_audio-speaker-left-back.svg \
+	hicolor_devices_scalable_audio-speaker-center-back.svg \
+	hicolor_devices_scalable_audio-speaker-right-back.svg \
+	hicolor_devices_scalable_audio-speaker-left-side.svg \
+	hicolor_devices_scalable_audio-speaker-right-side.svg \
+	hicolor_devices_scalable_audio-subwoofer.svg \
 	$(NULL)
 
 EXTRA_DIST = \

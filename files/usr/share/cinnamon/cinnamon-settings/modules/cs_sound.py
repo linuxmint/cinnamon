@@ -36,6 +36,57 @@ SOUND_TEST_MAP = [
     [_("Side Right"),    "side-right",    "audio-speaker-right-side",   1,   2,      11]
 ]
 
+def list_header_func(row, before, user_data):
+    if before and not row.get_header():
+        row.set_header(Gtk.Separator(orientation=Gtk.Orientation.HORIZONTAL))
+
+class SoundBox(Gtk.Box):
+    def __init__(self, title):
+        Gtk.Box.__init__(self)
+        self.set_orientation(Gtk.Orientation.VERTICAL)
+        frame = Gtk.Frame()
+        frame.set_shadow_type(Gtk.ShadowType.IN)
+        frame_style = frame.get_style_context()
+        frame_style.add_class("view")
+        self.pack_start(frame, True, True, 0)
+
+        main_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
+        frame.add(main_box)
+
+        toolbar = Gtk.Toolbar.new()
+        Gtk.StyleContext.add_class(Gtk.Widget.get_style_context(toolbar), "cs-header")
+        label = Gtk.Label()
+        label.set_markup("<b>%s</b>" % title)
+        title_holder = Gtk.ToolItem()
+        title_holder.add(label)
+        toolbar.add(title_holder)
+        main_box.add(toolbar)
+
+        toolbar_separator = Gtk.Separator(orientation=Gtk.Orientation.HORIZONTAL)
+        main_box.add(toolbar_separator)
+        separator_context = toolbar_separator.get_style_context()
+        frame_color = frame_style.get_border_color(Gtk.StateFlags.NORMAL).to_string()
+        css_provider = Gtk.CssProvider()
+        css_provider.load_from_data(".separator { -GtkWidget-wide-separators: 0; \
+                                                   color: %s;                    \
+                                                }" % frame_color)
+        separator_context.add_provider(css_provider, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
+
+        scw = Gtk.ScrolledWindow()
+        scw.expand = True
+        scw.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC)
+        scw.set_shadow_type(Gtk.ShadowType.NONE)
+        main_box.pack_start(scw, True, True, 0)
+        self.box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
+        scw.add(self.box)
+
+        self.list_box = Gtk.ListBox()
+        self.list_box.set_header_func(list_header_func, None)
+        self.box.add(self.list_box)
+
+    def add_row(self, row):
+        self.list_box.add(row)
+
 class Slider(SettingsWidget):
     def __init__(self, title, minLabel, maxLabel, minValue, maxValue, step=None, page=None, value=0, gicon=None, iconName=None):
         super(Slider, self).__init__()
@@ -226,8 +277,11 @@ class ProfileSelector(SettingsWidget):
         self.combo.set_id_column(0)
         
         self.pack_start(Gtk.Label(_("Output profile")), False, False, 0)
+        button = Gtk.Button.new_with_label(_("Test sound"))
+        self.pack_end(button, False, False, 0)
         self.pack_end(self.combo, False, False, 0)
-        
+
+        button.connect("clicked", self.testSpeakers)
         self.combo.connect("changed", self.onProfileSelect)
     
     def setDevice(self, device):
@@ -246,6 +300,9 @@ class ProfileSelector(SettingsWidget):
         if newProfile != self.profile and newProfile != None:
             self.profile = newProfile
             self.controller.change_profile_on_selected_device(self.device, newProfile)
+
+    def testSpeakers(self, a):
+        SoundTest(a.get_toplevel(), self.controller.get_default_sink())
 
 class Effect(SettingsWidget):
     def __init__(self, info, sizeGroup):
@@ -302,8 +359,9 @@ class Effect(SettingsWidget):
         play(0, self.fileChooser.get_filename())
 
 class SoundTest(Gtk.Dialog):
-    def __init__(self, stream):
-        super(SoundTest, self).__init__()
+    def __init__(self, parent, stream):
+        Gtk.Dialog.__init__(self, _("Test Sound"), parent)
+        
         self.stream = stream
         self.positions = []
         
@@ -312,11 +370,14 @@ class SoundTest(Gtk.Dialog):
         grid.set_row_spacing(75)
         grid.set_column_homogeneous(True)
         grid.set_row_homogeneous(True)
+        sizeGroup = Gtk.SizeGroup(Gtk.SizeGroupMode.BOTH)
         
         index = 0
         for position in SOUND_TEST_MAP:
             container = Gtk.Box()
             button = Gtk.Button()
+            sizeGroup.add_widget(button)
+            button.set_relief(Gtk.ReliefStyle.NONE)
             box = Gtk.Box.new(Gtk.Orientation.VERTICAL, 0)
             button.add(box)
             
@@ -333,15 +394,15 @@ class SoundTest(Gtk.Dialog):
             index = index + 1
             self.positions.append(info)
         
-        self.get_content_area().add(grid)
+        content_area = self.get_content_area()
+        content_area.set_border_width(12)
+        content_area.add(grid)
         self.show_all()
         self.setPositionHideState()
     
     def test(self, b, info):
         position = SOUND_TEST_MAP[info["index"]]
-        baseIconName = position[2]
-        # info["icon"].props.icon_name = baseIconName+"-testing"
-        
+
         if position[1] == "lfe":
             sound = "audio-test-signal"
         else:
@@ -392,6 +453,7 @@ class Module:
             self.buildLayout()
         
         self.checkAppState()
+        self.checkInputState()
     
     def buildLayout(self):
         self.sidePage.stack = SettingsStack()
@@ -407,19 +469,13 @@ class Module:
         
         devSettings = page.add_section(_("Device settings"))
         
-        self.outVolume = VolumeBar(self.controller.get_vol_max_norm(), self.controller.get_vol_max_amplified())
-        devSettings.add_row(self.outVolume)
-        
         # output profiles
         self.profile = ProfileSelector(self.controller)
         devSettings.add_row(self.profile)
-        
-        sbox = SettingsWidget()
-        button = Gtk.Button.new_with_label(_("Test sound"))
-        sbox.pack_start(button, True, True, 0)
-        devSettings.add_row(sbox)
-        button.connect("clicked", self.testSpeakers)
-        
+
+        self.outVolume = VolumeBar(self.controller.get_vol_max_norm(), self.controller.get_vol_max_amplified())
+        devSettings.add_row(self.outVolume)
+
         # balance
         self.balance = BalanceBar("balance")
         devSettings.add_row(self.balance)
@@ -431,24 +487,44 @@ class Module:
         ## Input page
         page = SettingsPage()
         self.sidePage.stack.add_titled(page, "input", _("Input"))
-        
+
+        self.inputStack = Gtk.Stack()
+        page.pack_start(self.inputStack, True, True, 0)
+
+        inputBox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=15)
         self.inputSelector = self.buildDeviceSelect("output", self.inputDeviceList)
-        deviceSection = page.add_section("Device")
+        deviceSection = SettingsBox("Device")
+        inputBox.pack_start(deviceSection, False, False, 0)
         deviceSection.add_row(self.inputSelector)
         
-        devSettings = page.add_section(_("Device settings"))
+        devSettings = SettingsBox(_("Device settings"))
+        inputBox.pack_start(devSettings, False, False, 0)
         
         self.inVolume = VolumeBar(self.controller.get_vol_max_norm(), self.controller.get_vol_max_amplified())
         devSettings.add_row(self.inVolume)
         
         self.inLevel = VolumeLevelBar()
         devSettings.add_row(self.inLevel)
-        
+        self.inputStack.add_named(inputBox, "inputBox")
+
+        noInputsMessage = Gtk.Box()
+        box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=12)
+        image = Gtk.Image.new_from_icon_name("action-unavailable-symbolic", Gtk.IconSize.DIALOG)
+        image.set_pixel_size(96)
+        box.pack_start(image, False, False, 0)
+        box.set_valign(Gtk.Align.CENTER)
+        label = Gtk.Label(_("No inputs sources are currently available."))
+        box.pack_start(label, False, False, 0)
+        noInputsMessage.pack_start(box, True, True, 0)
+        self.inputStack.add_named(noInputsMessage, "noInputsMessage")
+        self.inputStack.show_all()
+
         ## Effects page
         page = SettingsPage()
         self.sidePage.stack.add_titled(page, "effects", _("Sound Effects"))
         
-        effectsSection = page.add_section(_("Effects"))
+        effectsSection = SoundBox(_("Effects"))
+        page.pack_start(effectsSection, True, True, 0)
         self.effectsVolume = VolumeBar(self.controller.get_vol_max_norm(), self.controller.get_vol_max_norm())
         effectsSection.add_row(self.effectsVolume)
         sizeGroup = Gtk.SizeGroup.new(Gtk.SizeGroupMode.HORIZONTAL)
@@ -458,17 +534,26 @@ class Module:
         ## Applications page
         page = SettingsPage()
         self.sidePage.stack.add_titled(page, "applications", _("Applications"))
-        
-        self.applicationsBox = Gtk.ListBox()
-        self.applicationsBox.set_selection_mode(Gtk.SelectionMode.NONE)
-        self.noAppsMessage = SettingsWidget()
+
+        self.appStack = Gtk.Stack()
+        page.pack_start(self.appStack, True, True, 0)
+
+        box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
+        self.appSettings = SoundBox(_("Applications"))
+        box.pack_start(self.appSettings, True, True, 0)
+        self.appStack.add_named(box, "appSettings")
+
+        noAppsMessage = Gtk.Box()
+        box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=12)
+        image = Gtk.Image.new_from_icon_name("action-unavailable-symbolic", Gtk.IconSize.DIALOG)
+        image.set_pixel_size(96)
+        box.pack_start(image, False, False, 0)
+        box.set_valign(Gtk.Align.CENTER)
         label = Gtk.Label(_("No application is currently playing or recording audio."))
-        self.noAppsMessage.pack_start(label, False, False, 0)
-        self.applicationsBox.add(self.noAppsMessage)
-        self.noAppsMessage.get_parent().set_no_show_all(True)
-        
-        page.pack_start(self.applicationsBox, False, False, 0)
-    
+        box.pack_start(label, False, False, 0)
+        noAppsMessage.pack_start(box, True, True, 0)
+        self.appStack.add_named(noAppsMessage, "noAppsMessage")
+
     def inializeController(self):
         self.controller = Cvc.MixerControl(name = "cinnamon")
         self.controller.connect("state-changed", self.setChannelMap)
@@ -513,13 +598,24 @@ class Module:
         icon = iconTheme.lookup_by_gicon(gicon, 32, 0).load_icon()
         
         getattr(self, type+"DeviceList").append([device.get_description() + "\n" +  device.get_origin(), "", False, id, icon])
+
+        if type == "input":
+            self.checkInputState()
     
     def deviceRemoved(self, c, id, type):
         store = getattr(self, type+"DeviceList")
         for row in store:
             if row[3] == id:
                 store.remove(row.iter)
+                if type == "input":
+                    self.checkInputState()
                 return
+
+    def checkInputState(self):
+        if len(self.inputDeviceList) == 0:
+            self.inputStack.set_visible_child_name("noInputsMessage")
+        else:
+            self.inputStack.set_visible_child_name("inputBox")
     
     def activeOutputUpdate(self, c, id):
         self.outputId = id
@@ -571,10 +667,11 @@ class Module:
         stream = self.controller.lookup_stream_id(id)
         
         if stream in self.controller.get_sink_inputs():
-            # fixme: we need separators
             self.appList[id] = VolumeBar(self.controller.get_vol_max_norm(), self.controller.get_vol_max_norm(), stream.props.name, stream.get_gicon())
             self.appList[id].setStream(stream)
-            self.applicationsBox.add(self.appList[id])
+            self.appSettings.add_row(self.appList[id])
+            self.appSettings.list_box.invalidate_headers()
+            self.appSettings.show_all()
         elif stream == self.controller.get_event_sink_input():
             self.effectsVolume.setStream(stream)
         
@@ -582,17 +679,13 @@ class Module:
     
     def streamRemoved(self, c, id):
         if id in self.appList:
-            self.applicationsBox.remove(self.appList[id].get_parent())
+            self.appList[id].get_parent().destroy()
+            self.appSettings.list_box.invalidate_headers()
             del self.appList[id]
             self.checkAppState()
-    
-    def testSpeakers(self, a):
-        SoundTest(self.controller.get_default_sink())
-    
+
     def checkAppState(self):
         if len(self.appList) == 0:
-            self.noAppsMessage.get_parent().show()
-            self.noAppsMessage.get_parent().set_no_show_all(False)
+            self.appStack.set_visible_child_name("noAppsMessage")
         else:
-            self.noAppsMessage.get_parent().hide()
-            self.noAppsMessage.get_parent().set_no_show_all(True)
+            self.appStack.set_visible_child_name("appSettings")
