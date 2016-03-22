@@ -88,10 +88,13 @@ class SoundBox(Gtk.Box):
         self.list_box.add(row)
 
 class Slider(SettingsWidget):
-    def __init__(self, title, minLabel, maxLabel, minValue, maxValue, step=None, page=None, value=0, gicon=None, iconName=None):
+    def __init__(self, title, minLabel, maxLabel, minValue, maxValue, sizeGroup, step=None, page=None, value=0, gicon=None, iconName=None):
         super(Slider, self).__init__()
         self.set_orientation(Gtk.Orientation.VERTICAL)
         self.set_spacing(0)
+        
+        if sizeGroup == None:
+            sizeGroup = Gtk.SizeGroup.new(Gtk.SizeGroupMode.HORIZONTAL)
         
         if step == None:
             step = (maxValue - minValue) / 100
@@ -119,32 +122,34 @@ class Slider(SettingsWidget):
         min_label= Gtk.Label()
         max_label = Gtk.Label()
         min_label.set_alignment(1.0, 0.75)
-        max_label.set_alignment(1.0, 0.75)
+        max_label.set_alignment(0.0, 0.75)
         min_label.set_margin_right(6)
         max_label.set_margin_left(6)
         min_label.set_markup("<i><small>%s</small></i>" % minLabel)
         max_label.set_markup("<i><small>%s</small></i>" % maxLabel)
+        sizeGroup.add_widget(min_label)
+        sizeGroup.add_widget(max_label)
         
         sliderBox.pack_start(min_label, False, False, 0)
         sliderBox.pack_start(self.slider, True, True, 0)
         sliderBox.pack_start(max_label, False, False, 0)
         
         self.pack_start(labelBox, False, False, 0)
-        self.pack_start(sliderBox, False, False, 6)
+        self.pack_start(sliderBox, False, False, 5)
         self.show_all()
     
     def setMark(self, val):
         self.slider.add_mark(val, Gtk.PositionType.TOP, "")
 
 class VolumeBar(Slider):
-    def __init__(self, normVolume, maxVolume, title=_("Volume"), gicon=None):
+    def __init__(self, normVolume, maxVolume, title=_("Volume"), gicon=None, sizeGroup=None):
         self.normVolume = normVolume
         self.maxVolume = maxVolume
         self.maxPercent = 100*maxVolume/normVolume
         self.volume = 0
         self.baseTitle = title
         
-        super(VolumeBar, self).__init__(title, _("Softer"), _("Louder"), 0, self.maxPercent, 1, 5, 0, gicon)
+        super(VolumeBar, self).__init__(title, _("Softer"), _("Louder"), 0, self.maxPercent, sizeGroup, 1, 5, 0, gicon)
         self.slider.set_sensitive(False)
         
         if maxVolume > normVolume:
@@ -185,7 +190,7 @@ class VolumeBar(Slider):
         self.label.set_label(self.baseTitle + ": " + str(self.volume) + "%")
 
 class BalanceBar(Slider):
-    def __init__(self, type, minVal = -1, norm = 1):
+    def __init__(self, type, minVal = -1, norm = 1, sizeGroup=None):
         self.type = type
         self.norm = norm
         self.value = 0
@@ -203,7 +208,7 @@ class BalanceBar(Slider):
             minLabel = _("Soft")
             maxLabel = _("Loud")
         
-        super(BalanceBar, self).__init__(title, minLabel, maxLabel, minVal, 1, (1-minVal)/20.)
+        super(BalanceBar, self).__init__(title, minLabel, maxLabel, minVal, 1, sizeGroup, (1-minVal)/20.)
         
         self.setMark(0)
         self.slider.props.has_origin = False
@@ -235,16 +240,30 @@ class BalanceBar(Slider):
         getattr(self.channelMap, "set_"+self.type)(value)
 
 class VolumeLevelBar(SettingsWidget):
-    def __init__(self):
+    def __init__(self, sizeGroup):
         super(VolumeLevelBar, self).__init__()
+        self.set_orientation(Gtk.Orientation.VERTICAL)
+        self.set_spacing(5)
+        
         self.lastPeak = 0
         self.monitorId = None
         self.stream = None
         
         self.pack_start(Gtk.Label(_("Input level")), False, False, 0)
         
+        levelBox = Gtk.Box()
         self.levelBar = Gtk.LevelBar()
-        self.pack_end(self.levelBar, True, True, 0)
+        
+        leftPadding = Gtk.Box()
+        sizeGroup.add_widget(leftPadding)
+        rightPadding = Gtk.Box()
+        sizeGroup.add_widget(rightPadding)
+        
+        levelBox.pack_start(leftPadding, False, False, 0)
+        levelBox.pack_start(self.levelBar, True, True, 0)
+        levelBox.pack_start(rightPadding, False, False, 0)
+        
+        self.pack_start(levelBox, False, False, 5)
         
         self.levelBar.set_min_value(0)
     
@@ -473,15 +492,18 @@ class Module:
         self.profile = ProfileSelector(self.controller)
         devSettings.add_row(self.profile)
 
-        self.outVolume = VolumeBar(self.controller.get_vol_max_norm(), self.controller.get_vol_max_amplified())
+        sizeGroup = Gtk.SizeGroup.new(Gtk.SizeGroupMode.HORIZONTAL)
+
+        # ouput volume
+        self.outVolume = VolumeBar(self.controller.get_vol_max_norm(), self.controller.get_vol_max_amplified(), sizeGroup=sizeGroup)
         devSettings.add_row(self.outVolume)
 
         # balance
-        self.balance = BalanceBar("balance")
+        self.balance = BalanceBar("balance", sizeGroup=sizeGroup)
         devSettings.add_row(self.balance)
-        self.fade = BalanceBar("fade")
+        self.fade = BalanceBar("fade", sizeGroup=sizeGroup)
         devSettings.add_row(self.fade)
-        self.woofer = BalanceBar("lfe", 0, self.controller.get_vol_max_norm())
+        self.woofer = BalanceBar("lfe", 0, self.controller.get_vol_max_norm(), sizeGroup=sizeGroup)
         devSettings.add_row(self.woofer)
         
         ## Input page
@@ -500,10 +522,14 @@ class Module:
         devSettings = SettingsBox(_("Device settings"))
         inputBox.pack_start(devSettings, False, False, 0)
         
-        self.inVolume = VolumeBar(self.controller.get_vol_max_norm(), self.controller.get_vol_max_amplified())
+        sizeGroup = Gtk.SizeGroup.new(Gtk.SizeGroupMode.HORIZONTAL)
+        
+        # input volume
+        self.inVolume = VolumeBar(self.controller.get_vol_max_norm(), self.controller.get_vol_max_amplified(), sizeGroup=sizeGroup)
         devSettings.add_row(self.inVolume)
         
-        self.inLevel = VolumeLevelBar()
+        # input level
+        self.inLevel = VolumeLevelBar(sizeGroup)
         devSettings.add_row(self.inLevel)
         self.inputStack.add_named(inputBox, "inputBox")
 
@@ -523,10 +549,12 @@ class Module:
         page = SettingsPage()
         self.sidePage.stack.add_titled(page, "effects", _("Sound Effects"))
         
+        effectsVolumeSection = page.add_section(_("Effects Volume"))
+        self.effectsVolume = VolumeBar(self.controller.get_vol_max_norm(), self.controller.get_vol_max_norm())
+        effectsVolumeSection.add_row(self.effectsVolume)
+        
         effectsSection = SoundBox(_("Effects"))
         page.pack_start(effectsSection, True, True, 0)
-        self.effectsVolume = VolumeBar(self.controller.get_vol_max_norm(), self.controller.get_vol_max_norm())
-        effectsSection.add_row(self.effectsVolume)
         sizeGroup = Gtk.SizeGroup.new(Gtk.SizeGroupMode.HORIZONTAL)
         for effect in EFFECT_LIST:
             effectsSection.add_row(Effect(effect, sizeGroup))
@@ -571,6 +599,7 @@ class Module:
     
     def buildDeviceSelect(self, type, model):
         select = Gtk.IconView.new_with_model(model)
+        select.set_margin(0)
         select.set_pixbuf_column(4)
         select.set_text_column(0)
         
