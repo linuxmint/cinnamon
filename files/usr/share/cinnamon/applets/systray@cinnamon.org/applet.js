@@ -157,7 +157,7 @@ MyApplet.prototype = {
 
     _getIndicatorSize: function(appIndicator) {
         if (this._scaleMode)
-            return this._panelHeight * ICON_SCALE_FACTOR;
+            return this._panelHeight * ICON_SCALE_FACTOR / global.ui_scale;
         return 16;
     },
 
