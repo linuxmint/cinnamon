@@ -2578,7 +2578,7 @@ Panel.prototype = {
     },
 
     _onScaleTextIconsChanged: function() {
-        let panelHeight = this._getProperty(PANEL_HEIGHT_KEY, "i");
+        let panelHeight = this._getScaledPanelHeight();
         this._setFont(panelHeight);
         AppletManager.updateAppletPanelHeights(true);
     },
