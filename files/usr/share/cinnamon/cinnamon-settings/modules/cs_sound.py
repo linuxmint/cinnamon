@@ -91,7 +91,8 @@ class Slider(SettingsWidget):
     def __init__(self, title, minLabel, maxLabel, minValue, maxValue, sizeGroup, step=None, page=None, value=0, gicon=None, iconName=None):
         super(Slider, self).__init__()
         self.set_orientation(Gtk.Orientation.VERTICAL)
-        self.set_spacing(0)
+        self.set_spacing(5)
+        self.set_margin_bottom(5)
         
         if sizeGroup == None:
             sizeGroup = Gtk.SizeGroup.new(Gtk.SizeGroupMode.HORIZONTAL)
@@ -101,6 +102,13 @@ class Slider(SettingsWidget):
         if page == None:
             page = (maxValue - minValue) / 10
         self.adjustment = Gtk.Adjustment.new(value, minValue, maxValue, step, page, 0)
+        
+        topBox = Gtk.Box()
+        self.leftBox = Gtk.Box()
+        self.rightBox = Gtk.Box()
+        topGroup = Gtk.SizeGroup.new(Gtk.SizeGroupMode.HORIZONTAL)
+        topGroup.add_widget(self.leftBox)
+        topGroup.add_widget(self.rightBox)
         
         # add label and icon (if specified)
         labelBox = Gtk.Box(spacing=5)
@@ -113,6 +121,10 @@ class Slider(SettingsWidget):
         self.label = Gtk.Label(title)
         labelBox.pack_start(self.label, False, False, 0)
         labelBox.set_halign(Gtk.Align.CENTER)
+        
+        topBox.pack_start(self.leftBox, False, False, 0)
+        topBox.pack_start(labelBox, True, True, 0)
+        topBox.pack_start(self.rightBox, False, False, 0)
         
         # add scale
         sliderBox = Gtk.Box()
@@ -134,15 +146,15 @@ class Slider(SettingsWidget):
         sliderBox.pack_start(self.slider, True, True, 0)
         sliderBox.pack_start(max_label, False, False, 0)
         
-        self.pack_start(labelBox, False, False, 0)
-        self.pack_start(sliderBox, False, False, 5)
+        self.pack_start(topBox, False, False, 0)
+        self.pack_start(sliderBox, False, False, 0)
         self.show_all()
     
     def setMark(self, val):
         self.slider.add_mark(val, Gtk.PositionType.TOP, "")
 
 class VolumeBar(Slider):
-    def __init__(self, normVolume, maxVolume, title=_("Volume"), gicon=None, sizeGroup=None):
+    def __init__(self, normVolume, maxVolume, title=_("Volume: "), gicon=None, sizeGroup=None):
         self.normVolume = normVolume
         self.maxVolume = maxVolume
         self.maxPercent = 100*maxVolume/normVolume
@@ -150,7 +162,19 @@ class VolumeBar(Slider):
         self.baseTitle = title
         
         super(VolumeBar, self).__init__(title, _("Softer"), _("Louder"), 0, self.maxPercent, sizeGroup, 1, 5, 0, gicon)
+        self.set_spacing(0)
+        self.set_border_width(2)
+        self.set_margin_left(23)
+        self.set_margin_right(23)
         self.slider.set_sensitive(False)
+        
+        self.muteImage = Gtk.Image.new_from_icon_name("audio-volume-muted-symbolic", 1)
+        self.muteSwitch = Gtk.Button()
+        self.muteSwitch.set_image(self.muteImage)
+        self.muteSwitch.set_relief(Gtk.ReliefStyle.NONE)
+        self.leftBox.pack_start(self.muteSwitch, False, False, 0)
+        
+        self.muteSwitch.connect("clicked", self.toggleMute)
         
         if maxVolume > normVolume:
             self.setMark(100)
@@ -168,13 +192,17 @@ class VolumeBar(Slider):
         self.slider.set_sensitive(True)
     
     def setVolume(self, a, b):
-        newVolume = int(round(self.stream.props.volume / self.normVolume * 100))
-        if self.volume == newVolume:
-            return
+        self.isMuted = self.stream.get_is_muted()
+        if self.isMuted:
+            newVolume = 0
+        else:
+            newVolume = int(round(self.stream.props.volume / self.normVolume * 100))
+            if self.volume == newVolume:
+                return
         
         self.volume = newVolume
         self.adjustment.set_value(newVolume)
-        self.updateLabel()
+        self.updateStatus()
     
     def onVolumeChanged(self, adjustment):
         newVolume = int(round(self.adjustment.get_value()))
@@ -182,12 +210,23 @@ class VolumeBar(Slider):
             return
         
         self.volume = newVolume
-        self.stream.props.volume = newVolume * self.normVolume / 100
+        self.stream.set_volume(newVolume * self.normVolume / 100)
         self.stream.push_volume()
-        self.updateLabel()
+        self.updateStatus()
     
-    def updateLabel(self):
-        self.label.set_label(self.baseTitle + ": " + str(self.volume) + "%")
+    def toggleMute(self, a):
+        self.isMuted = not self.isMuted
+        self.stream.change_is_muted(self.isMuted)
+    
+    def updateStatus(self):
+        if self.isMuted:
+            self.muteImage.set_from_icon_name("audio-volume-muted-symbolic", 1)
+            self.label.set_label(self.baseTitle + _("Muted"))
+            self.muteSwitch.set_tooltip_text(_("Click to unmute"))
+        else:
+            self.muteImage.set_from_icon_name("audio-volume-high-symbolic", 1)
+            self.label.set_label(self.baseTitle + str(self.volume) + "%")
+            self.muteSwitch.set_tooltip_text(_("Click to mute"))
 
 class BalanceBar(Slider):
     def __init__(self, type, minVal = -1, norm = 1, sizeGroup=None):
