@@ -313,13 +313,13 @@ MyApplet.prototype = {
     },
 
     on_orientation_changed: function(neworientation) {
+        this.orientation = neworientation;
 
-        if (neworientation == St.Side.TOP || neworientation == St.Side.BOTTOM)
+        if (this.orientation == St.Side.TOP || this.orientation == St.Side.BOTTOM)
             this.manager.set_vertical(false);
         else
             this.manager.set_vertical(true);
 
-        this.orientation = neworientation;
         this._createButtons();
     },
 

@@ -12,7 +12,6 @@ MyApplet.prototype = {
     _init: function(orientation, panel_height, instance_id) {
         Applet.Applet.prototype._init.call(this, orientation, panel_height, instance_id);
         this.actor.style_class = 'applet-separator'; 
-        this.panelheight = panel_height;
 
         this.on_orientation_changed(orientation);
     },
@@ -22,6 +21,10 @@ MyApplet.prototype = {
 //
     getDisplayLayout: function() {
         return Applet.DisplayLayout.BOTH;
+    },
+
+    on_panel_height_changed: function() {
+        this.on_orientation_changed(this.orientation);
     },
 
     on_orientation_changed: function(neworientation) {
@@ -45,7 +48,7 @@ MyApplet.prototype = {
             this.actor.add(this._line, { y_align: Clutter.ActorAlign.CENTER, x_align: Clutter.ActorAlign.CENTER});
 
             this._line.set_height(2);
-            this._line.set_width(this.panelheight-8);
+            this._line.set_width((this._panelHeight-8));
         }
     },
 }; 
