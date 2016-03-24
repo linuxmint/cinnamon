@@ -358,15 +358,16 @@ function removeAppletFromInappropriatePanel (extension, applet, appletDefinition
                 displaylayout == Applet.DisplayLayout.HORIZONTAL) {
                     global.logError("applet "+appletDefinition.uuid+" not suitable for panel orientation "+appletDefinition.orientation);
                     removeAppletFromPanels(extension._loadedDefinitions[appletDefinition.applet_id]);
-                    //return false;  creates a scary looking message panel saying look at logs and contact developer. seems like overkill for this
-
+                    let dialog = new ModalDialog.NotifyDialog(_("This applet is not suitable for vertical panels") + "\n\n");
+                    dialog.open();
             }
             else if ((appletDefinition.orientation == St.Side.TOP || appletDefinition.orientation == St.Side.BOTTOM)
                 &&
                 displaylayout == Applet.DisplayLayout.VERTICAL) {
                     global.logError("applet "+appletDefinition.uuid+" not suitable for panel orientation "+appletDefinition.orientation);
                     removeAppletFromPanels(extension._loadedDefinitions[appletDefinition.applet_id]);
-                    //return false; creates a scary looking message panel saying look at logs and contact developer. seems like overkill for this
+                    let dialog = new ModalDialog.NotifyDialog(_("This applet is not suitable for horizontal panels") + "\n\n");
+                    dialog.open();
             }
         }
 }
