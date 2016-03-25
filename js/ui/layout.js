@@ -9,7 +9,6 @@ const Signals = imports.signals;
 const St = imports.gi.St;
 const Main = imports.ui.main;
 const Params = imports.misc.params;
-const ScreenSaver = imports.misc.screenSaver;
 const Tweener = imports.ui.tweener;
 const EdgeFlip = imports.ui.edgeFlip;
 const HotCorner = imports.ui.hotCorner;
@@ -378,15 +377,6 @@ Chrome.prototype = {
         global.screen.connect('notify::n-workspaces',
                               Lang.bind(this, this._queueUpdateRegions));
 
-        this._screenSaverActive = false;
-        this._screenSaverProxy = new ScreenSaver.ScreenSaverProxy();
-        this._screenSaverProxy.connectSignal('ActiveChanged', Lang.bind(this, this._onScreenSaverActiveChanged));
-        this._screenSaverProxy.GetActiveRemote(Lang.bind(this,
-            function(result, err) {
-                if (!err)
-                    this._onScreenSaverActiveChanged(this._screenSaverProxy, null, result);
-            }));
-
         this._relayout();
     },
 
@@ -518,10 +508,6 @@ Chrome.prototype = {
             let actorData = this._trackedActors[i], visible;
             if (!actorData.isToplevel)
                 continue;
-
-            if (this._screenSaverActive) {
-                visible = false;
-            }
             else if (this._inOverview)
                 visible = true;
             else if (!actorData.visibleInFullscreen &&
@@ -549,12 +535,6 @@ Chrome.prototype = {
         this._monitors = this._layoutManager.monitors;
         this._primaryMonitor = this._layoutManager.primaryMonitor;
         this._updateFullscreen();
-        this._updateVisibility();
-        this._queueUpdateRegions();
-    },
-
-    _onScreenSaverActiveChanged: function(proxy, connection, screenSaverActive) {
-        this._screenSaverActive = screenSaverActive[0];
         this._updateVisibility();
         this._queueUpdateRegions();
     },
