@@ -159,8 +159,14 @@ class VolumeBar(Slider):
         self.maxVolume = maxVolume
         self.maxPercent = 100*maxVolume/normVolume
         self.volume = 0
+        self.isMuted = False
         self.baseTitle = title
-        
+
+        self.stream = None
+
+        self.mutedHandlerId = 0
+        self.volumeHandlerId = 0
+
         super(VolumeBar, self).__init__(title, _("Softer"), _("Louder"), 0, self.maxPercent, sizeGroup, 1, 5, 0, gicon)
         self.set_spacing(0)
         self.set_border_width(2)
@@ -169,56 +175,90 @@ class VolumeBar(Slider):
         self.slider.set_sensitive(False)
         
         self.muteImage = Gtk.Image.new_from_icon_name("audio-volume-muted-symbolic", 1)
-        self.muteSwitch = Gtk.Button()
+        self.muteSwitch = Gtk.ToggleButton()
         self.muteSwitch.set_image(self.muteImage)
         self.muteSwitch.set_relief(Gtk.ReliefStyle.NONE)
+        self.muteSwitch.set_active(False)
+        self.muteSwitch.set_sensitive(False)
+
         self.leftBox.pack_start(self.muteSwitch, False, False, 0)
-        
-        self.muteSwitch.connect("clicked", self.toggleMute)
-        
+
         if maxVolume > normVolume:
             self.setMark(100)
-        
-        self.adjustment.connect("value-changed", self.onVolumeChanged)
-    
-    def setStream(self, stream):
-        # fixme: check if stream is already set and disconnect signals if so
-        self.stream = stream
-        
-        self.stream.connect("notify::is-muted", self.setVolume)
-        self.stream.connect("notify::volume", self.setVolume)
+
+        self.muteSwitchHandlerId = self.muteSwitch.connect("clicked", self.toggleMute)
+        self.adjustmentHandlerId = self.adjustment.connect("value-changed", self.onVolumeChanged)
+
+    def connectStream(self):
+        self.mutedHandlerId = self.stream.connect("notify::is-muted", self.setVolume)
+        self.volumeHandlerId = self.stream.connect("notify::volume", self.setVolume)
         self.setVolume(None, None)
-        
+
+    def disconnectStream(self):
+        if self.mutedHandlerId > 0:
+            self.stream.disconnect(self.mutedHandlerId)
+            self.mutedHandlerId = 0
+
+        if self.volumeHandlerId > 0:
+            self.stream.disconnect(self.volumeHandlerId)
+            self.volumeHandlerId = 0
+
+    def setStream(self, stream):
+        if self.stream and stream != self.stream:
+            self.disconnectStream()
+
+        self.stream = stream
+
+        self.connectStream()
+
         self.slider.set_sensitive(True)
-    
+        self.muteSwitch.set_sensitive(True)
+
     def setVolume(self, a, b):
-        self.isMuted = self.stream.get_is_muted()
-        if self.isMuted:
+        if self.stream.get_is_muted():
             newVolume = 0
+            self.isMuted = True
         else:
             newVolume = int(round(self.stream.props.volume / self.normVolume * 100))
-            if self.volume == newVolume:
-                return
-        
+            self.isMuted = False
+
         self.volume = newVolume
+
+        self.adjustment.handler_block(self.adjustmentHandlerId)
         self.adjustment.set_value(newVolume)
+        self.adjustment.handler_unblock(self.adjustmentHandlerId)
+
         self.updateStatus()
-    
+
     def onVolumeChanged(self, adjustment):
         newVolume = int(round(self.adjustment.get_value()))
-        if self.volume == newVolume:
-            return
-        
+
+        muted = newVolume == 0
+
         self.volume = newVolume
+
+        self.stream.handler_block(self.volumeHandlerId)
         self.stream.set_volume(newVolume * self.normVolume / 100)
         self.stream.push_volume()
+        self.stream.handler_unblock(self.volumeHandlerId)
+
+        if self.stream.get_is_muted() != muted:
+            self.setMuted(muted)
+
         self.updateStatus()
-    
-    def toggleMute(self, a):
-        self.isMuted = not self.isMuted
-        self.stream.change_is_muted(self.isMuted)
-    
+
+    def setMuted(self, muted):
+        self.isMuted = muted
+        self.stream.change_is_muted(muted)
+
+    def toggleMute(self, a=None):
+        self.setMuted(not self.isMuted)
+
     def updateStatus(self):
+        self.muteSwitch.handler_block(self.muteSwitchHandlerId)
+        self.muteSwitch.set_active(self.isMuted)
+        self.muteSwitch.handler_unblock(self.muteSwitchHandlerId)
+
         if self.isMuted:
             self.muteImage.set_from_icon_name("audio-volume-muted-symbolic", 1)
             self.label.set_label(self.baseTitle + _("Muted"))
