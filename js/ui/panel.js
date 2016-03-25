@@ -2902,19 +2902,24 @@ Panel.prototype = {
 
             //
             // As using central y-align or x-align seems to result in zero size if the box is empty, force
-            // to a defined size in edit mode, and set the width to the max so that coloured boxes do not shrink down
-            // around the applets they contain.
+            // to a defined size in edit mode if this happens, and set the width to the max so that coloured boxes 
+            // do not shrink down around the applets they contain.
             //
-//log("panel "+this.panelPosition+" allocate: alloc height "+allocHeight+" width "+allocWidth+" leftboundary "+leftBoundary+" rightboundary "+rightBoundary);
 
             this._centerBox.set_width(allocWidth);
             this._leftBox.set_width(allocWidth);
             this._rightBox.set_width(allocWidth);
 
             if (this._panelEditMode) {
-                this._centerBox.set_height(rightBoundary - leftBoundary);
-                this._leftBox.set_height(leftBoundary);
-                this._rightBox.set_height(allocHeight - rightBoundary);
+                if (this._centerBox.get_height() == 0) {
+                   this._centerBox.set_height(rightBoundary - leftBoundary);
+                }
+                if (this._leftBox.get_height() == 0) {
+                   this._leftBox.set_height(leftBoundary);
+                }
+                if (this._rightBox.get_height() == 0) {
+                   this._rightBox.set_height(allocHeight - rightBoundary);
+                }
             } else {
                 this._centerBox.set_height(-1);
                 this._leftBox.set_height(-1);
