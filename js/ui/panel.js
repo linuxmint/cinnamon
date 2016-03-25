@@ -1713,11 +1713,21 @@ PanelZoneDNDHandler.prototype = {
         let children = this._panelZone.get_children();
         let appletPos = children.indexOf(source.actor);
 
+        let panelstyle = this._panelZone.get_parent().get_style_class_name();
+        vertical_panel = (panelstyle.contains("panel-left") || panelstyle.contains("panel-right")) ? true : false;       
+
         let pos = 0;
 
-        for (var i in children){
-            //if (children[i] == this._dragPlaceholder.actor) continue;
-            if (x > children[i].get_allocation_box().x1 + children[i].width / 2) pos = i;
+        if (vertical_panel) {
+            for (var i in children){
+                //if (children[i] == this._dragPlaceholder.actor) continue;
+                if (y > children[i].get_allocation_box().y1 + children[i].height / 2) pos = i;
+            }
+        } else {
+            for (var i in children){
+                //if (children[i] == this._dragPlaceholder.actor) continue;
+                if (x > children[i].get_allocation_box().x1 + children[i].width / 2) pos = i;
+            }
         }
 
         if (pos != this._dragPlaceholderPos) {
@@ -1745,8 +1755,13 @@ PanelZoneDNDHandler.prototype = {
             }
 
             this._dragPlaceholder = new DND.GenericDragPlaceholderItem();
-            this._dragPlaceholder.child.set_width (20);
-            this._dragPlaceholder.child.set_height (10);
+            if (vertical_panel) {
+                this._dragPlaceholder.child.set_width (10);
+                this._dragPlaceholder.child.set_height (20);
+            } else {
+                this._dragPlaceholder.child.set_width (20);
+                this._dragPlaceholder.child.set_height (10);
+            }
 
             this._panelZone.insert_child_at_index(this._dragPlaceholder.actor,
                                                   this._dragPlaceholderPos);
@@ -2408,7 +2423,13 @@ Panel.prototype = {
         this._updatePanelVisibility();
         Main.layoutManager._chrome.modifyActorParams(this.actor, { affectsStruts: this._autohideSettings == "false" });
     },
-
+    /**
+     * _getScaledPanelHeight:
+     *
+     * Function to calculate the desired panel height
+     *
+     * returns : panelheight
+     */
     _getScaledPanelHeight: function() {
         let panelHeight = 0;
 
@@ -2422,7 +2443,7 @@ Panel.prototype = {
                 panelHeight = 25 * global.ui_scale;
             }
         }
-// global.log("scaled panel height: panel position "+this.panelPosition+" scaled height "+panelHeight);
+
         return panelHeight;
     },
 
@@ -2584,33 +2605,33 @@ Panel.prototype = {
     },
 
     _getPreferredWidth: function(actor, forHeight, alloc) {
-        //
-        // This is width for the horizontal panel and height for the vertical panel
-        //
+
         alloc.min_size = -1;
+
+        if (this.panelPosition == PanelLoc.left || this.panelPosition == PanelLoc.right) {
+            alloc.natural_size = this._getScaledPanelHeight(); // or can -1 for the CSS to do it
+        } else {
+            alloc.natural_size = Main.layoutManager.primaryMonitor.width;
+        }
+    },
+
+    _getPreferredHeight: function(actor, forWidth, alloc) {
+
         if (this.panelPosition == PanelLoc.left || this.panelPosition == PanelLoc.right) {
             //
             // FIXME  pre-existing logic, but why exactly are we using the primary monitor?  What if we are on a different monitor ?
-            // ditto for width below.  May all be fine, but could at least do with a clarifying comment.
+            // May all be fine, but could at least do with a clarifying comment.
             //
-            alloc.natural_size = Main.layoutManager.primaryMonitor.height; 
+            alloc.natural_size = Main.layoutManager.primaryMonitor.height;
             //
             // Assuming that at this point it is OK to use the top and bottom panel heights previously
             // saved against the panel, rather than looping through all panels to calculate from scratch
             //
             alloc.natural_size = alloc.natural_size - this.toppanelHeight - this.bottompanelHeight;
         } else {
-            alloc.natural_size = Main.layoutManager.primaryMonitor.width;   
+            alloc.min_size = -1;
+            alloc.natural_size = this._getScaledPanelHeight(); // or can -1 for the CSS to do it
         }
-    },
-
-    _getPreferredHeight: function(actor, forWidth, alloc) {
-        //
-        // This is height for the horizontal panel and width for the vertical panel
-        //
-        // We don't need to implement this; it's forced by the CSS
-        alloc.min_size = -1;
-        alloc.natural_size = -1;
     },
 
     /**
