@@ -1714,7 +1714,7 @@ PanelZoneDNDHandler.prototype = {
         let appletPos = children.indexOf(source.actor);
 
         let panelstyle = this._panelZone.get_parent().get_style_class_name();
-        vertical_panel = (panelstyle.contains("panel-left") || panelstyle.contains("panel-right")) ? true : false;       
+        let vertical_panel = (panelstyle.contains("panel-left") || panelstyle.contains("panel-right")) ? true : false;       
 
         let pos = 0;
 
@@ -1916,32 +1916,34 @@ Panel.prototype = {
             // Adding y_align: 2 (centre) on the central box kills the right click menu on the central box, but this can be 
             // worked around quite happily by adding a test on the actor to the pre-existing test on the parent of the actor 
             // in the button handling logic.  It also kills drag and drop if any box is empty, the workaround is to 
-            // explicitly set the height.  It would appear that this central alignment setting shrinks the box size down to (nearly) nil
+            // explicitly set the height.  It would appear that this central alignment setting shrinks the box size down to nil
             // if there is nothing in it, and the effective size is shrink-wrapped around its contents if there is something in it
-            // which all gives some quirky results.
+            // which all gives some quirky results. Setting y_expand seems to align the contents to the top in this case, rather weird.
             //
             // Using x_align:2 on the boxes shrinks them down to a tiny vertical strip if empty, which is not workable in panel edit mode.
-            // This can be catered for dynamically by setting and unsetting it as needed. x-expand does not appear to make a difference. 
-            // Using x_align:2 also causes problems with a new, empty panel - seeming to stop the dndhandler working. 
-            // I have not yet found a workaround to this, other than to use the 'add applets to the panel' menu entry
+            // This can be catered for dynamically by setting and unsetting it as needed, but in practice it is easier just to set the width
+            // to what is wanted. x-expand does not appear to make a difference. 
+            // Using x_align:2 also causes problems with a new, empty panel - seeming to stop the dndhandler working. There is a two part
+            // workaround to this - in allocate to set heights if found to be zero, and the same in the set edit mode code.
             //
             // The approach taken is to
             // 1) keep the natural size of left and right (i.e. top and bottom) boxes, this means that the icons will cluster together
             //    at top and bottom of the panel respectively
             // 2) have a central box that can take all the space in between
             // 3) turn on central y-alignment for the central box
-            // 4) turn on central x-alignment, and just accept that there is an empty panel case that is not solved yet.
-            //    (-expand does not help, also note that the edit mode colouring does not happen)
+            // 4) there empty panel case is worked around with a kludge when setting edit mode to set box sizes explicitly if empty.
+            //    - there is a similar work around in the allocate logic, but allocate may not get called without this kludge 
             //
             // The appearance of this looks reasonable - the icons in the boxes have sensible positioning
-            // (css permitting). The central box will however not be central, but its position will depend on the relative numbers of 
+            // (css permitting). The central box  position will depend on the relative numbers of 
             // icons in the top and bottom boxes.
+            //
             // Some workarounds for the side effects of the central alignment are needed.  
             //
             // a) allow the right click to work off the actor as well as its parent, this caters for the way that the central alignment
             //    seems to shrink the box down around its contents so as to expose the underlying panel.
-            // b) set the height of the central box explicitly when in panel edit mode, and unset it otherwise, to allow for the
-            //    case where the central box has no contents.  
+            // b) set the height of the central box explicitly if found to be zero when in panel edit mode, and unset it otherwise.
+            // c) set the sizes of zero height boxes explicitly when switching to edit mode to force an allocation to happen
             //
 
             if (this.panelPosition == PanelLoc.left) {   // left panel
@@ -2299,6 +2301,26 @@ Panel.prototype = {
         this._leftBox.change_style_pseudo_class('dnd', this._panelEditMode);
         this._centerBox.change_style_pseudo_class('dnd', this._panelEditMode);
         this._rightBox.change_style_pseudo_class('dnd', this._panelEditMode);
+//
+// FIXME This next section is a dreadful kludge, so if you can find underlying problem please remove this
+// For a new vertical panel 'allocate' may not get called when trying to drag an applet in
+// This gives the boxes a minimum size to force an allocation
+//
+
+        if (this._panelEditMode == true && (this.panelPosition == PanelLoc.left || this.panelPosition == PanelLoc.right)) {
+            if (this._leftBox.get_height() == 0) {
+                this._leftBox.set_height(40);
+                this._leftBox.set_width(this._getScaledPanelHeight());
+            }
+            if (this._centerBox.get_height() == 0) {
+                this._centerBox.set_height(40);
+                this._centerBox.set_width(this._getScaledPanelHeight());
+            }
+            if (this._rightBox.get_height() == 0) {
+                this._rightBox.set_height(40);
+                this._rightBox.set_width(this._getScaledPanelHeight());
+            }
+        }
 
         if (old_mode != this._panelEditMode) {
             this._processPanelAutoHide();
@@ -2564,6 +2586,8 @@ Panel.prototype = {
         this._centerBox.set_vertical(true);
         this._centerBox.set_x_align(Clutter.ActorAlign.CENTER);
         this._centerBox.set_y_align(Clutter.ActorAlign.CENTER);
+//        this._centerBox.set_y_expand(true);  don't set this - the combination of center align and expand moves vertical box contents to the top
+//        this._centerBox.set_pack_start(false);  even with this set
     },
 
     _set_horizontal_panel_style: function() {
