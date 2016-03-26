@@ -1886,6 +1886,7 @@ Panel.prototype = {
         this.scaleMode = false;
 
         this.actor = new Cinnamon.GenericContainer({ name: 'panel', reactive: true });
+        this.setPanelStyleClass(panelPosition);
 
         this.actor._delegate = this;
 
@@ -2095,27 +2096,21 @@ Panel.prototype = {
      * addContextMenuToPanel:
      * @panelPosition, integer
      *
-     *  Adds a context menu to the panel and also sets the panel style class
+     *  Adds a context menu to the panel
      */
     addContextMenuToPanel:  function(panelPosition) {
         switch (panelPosition)
         {
             case PanelLoc.top:
-                this.actor.set_style_class_name('panel-top');
                 this._context_menu = new PanelContextMenu(this, St.Side.TOP, this.panelId);
                 break;
             case PanelLoc.bottom:
-                this.actor.set_style_class_name('panel-bottom');
                 this._context_menu = new PanelContextMenu(this, St.Side.BOTTOM, this.panelId);
                 break;
             case PanelLoc.left:
-                this.actor.set_style_class_name('panel-left');
-                this.actor.set_important(true);
                 this._context_menu = new PanelContextMenu(this, St.Side.LEFT, this.panelId);  
                 break;
             case PanelLoc.right:
-                this.actor.set_style_class_name('panel-right');
-                this.actor.set_important(true);
                 this._context_menu = new PanelContextMenu(this, St.Side.RIGHT, this.panelId); 
                 break;
             default:
@@ -2134,9 +2129,37 @@ Panel.prototype = {
                         this._shiftActor(); 
             }));
         }
-
         return;
     },  
+
+     /**
+     * setPanelStyleClass:
+     * @panelPosition, integer
+     *
+     *  Sets the panel style class
+     */
+    setPanelStyleClass:  function(panelPosition) {
+        switch (panelPosition)
+        {
+            case PanelLoc.top:
+                this.actor.set_style_class_name('panel-top');
+                break;
+            case PanelLoc.bottom:
+                this.actor.set_style_class_name('panel-bottom');
+                break;
+            case PanelLoc.left:
+                this.actor.set_style_class_name('panel-left');
+                this.actor.set_important(true);
+                break;
+            case PanelLoc.right:
+                this.actor.set_style_class_name('panel-right');
+                this.actor.set_important(true);
+                break;
+            default:
+                global.log("setPanelStyleClass - unrecognised panel position "+panelPosition);
+        }
+        return;
+    },
 
     /**
      * destroy:
