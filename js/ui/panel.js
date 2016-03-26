@@ -1970,8 +1970,8 @@ Panel.prototype = {
 
         this.addContextMenuToPanel(this.panelPosition);
 
-        this._leftPanelBarrier = 0;
-        this._rightPanelBarrier = 0;
+        this._clearPanelBarriers();
+
         Main.layoutManager.addChrome(this.actor, { addToWindowgroup: false });
         this._moveResizePanel();
         this._onPanelEditModeChanged();
@@ -2267,54 +2267,84 @@ Panel.prototype = {
 
         return DND.DragMotionResult.NO_DROP;
     },
-
+    /**
+     * _updatePanelBarriers:
+     *
+     * Determines co-ordinate pairs that should have pointer barriers set up between them
+     */
     _updatePanelBarriers: function() {
         if (this._leftPanelBarrier)
             global.destroy_pointer_barrier(this._leftPanelBarrier);
         if (this._rightPanelBarrier)
             global.destroy_pointer_barrier(this._rightPanelBarrier);
+        if (this._topPanelBarrier)
+            global.destroy_pointer_barrier(this._topPanelBarrier);
+        if (this._bottomPanelBarrier)
+            global.destroy_pointer_barrier(this._bottomPanelBarrier);
 
         let noBarriers = global.settings.get_boolean("no-adjacent-panel-barriers");
         if (this.actor.height) {
             let panelTop = 0;
             let panelBottom = 0;
+            let panelLeft = 0;
+            let panelRight = 0;
             switch (this.panelPosition)
             {
                 case PanelLoc.top:
-                    panelTop = this.monitor.y;
+                    panelTop    = this.monitor.y;
                     panelBottom = this.monitor.y + this.actor.height;
                     break;
                 case PanelLoc.bottom:
-                    panelTop = this.monitor.y + this.monitor.height - this.actor.height;
+                    panelTop    = this.monitor.y + this.monitor.height - this.actor.height;
                     panelBottom = this.monitor.y + this.monitor.height;
                     break;
                 case PanelLoc.left:
+                    panelLeft  = this.monitor.x;
+                    panelRight = this.monitor.x + this.actor.width;
+                    break;
                 case PanelLoc.right:
-                    panelTop = this.monitor.y + this.toppanelHeight;
-                    panelBottom = this.monitor.y + this.monitor.height - this.bottompanelHeight;
+                    panelLeft  = this.monitor.x + this.monitor.width - this.actor.width;
+                    panelRight = this.monitor.x + this.monitor.width -1;
                     break;
                 default:
                     global.log("updatePanelBarriers - unrecognised panel position "+panelPosition);
             }
 
             if (!noBarriers) {   // barriers are required
-                this._rightPanelBarrier = global.create_pointer_barrier(
-                    this.monitor.x + this.monitor.width - 1, panelTop,
-                    this.monitor.x + this.monitor.width - 1, panelBottom,
-                    4 /* BarrierNegativeX */);
+                if (this.panelPosition == PanelLoc.top || this.panelPosition == PanelLoc.bottom) {
+                    this._rightPanelBarrier = global.create_pointer_barrier(
+                                              this.monitor.x + this.monitor.width - 1, panelTop,
+                                              this.monitor.x + this.monitor.width - 1, panelBottom,
+                                              4 /* BarrierNegativeX 1 << 2*/);
 
-                this._leftPanelBarrier = global.create_pointer_barrier(
-                    this.monitor.x, panelTop,
-                    this.monitor.x, panelBottom,
-                    1 /* BarrierPositiveX */);
+                    this._leftPanelBarrier = global.create_pointer_barrier(
+                                             this.monitor.x, panelTop,
+                                             this.monitor.x, panelBottom,
+                                             1 /* BarrierPositiveX   1 << 0 */);
+                } else {
+                     this._topPanelBarrier = global.create_pointer_barrier(
+                                             panelLeft,  this.monitor.y + this.toppanelHeight,
+                                             panelRight, this.monitor.y + this.toppanelHeight,
+                                             8 /* BarrierNegativeY 1 << 3 */);
+
+                    this._bottomPanelBarrier = global.create_pointer_barrier(
+                                               panelLeft,  this.monitor.y + this.monitor.height - this.bottompanelHeight - 1,
+                                               panelRight, this.monitor.y + this.monitor.height - this.bottompanelHeight - 1,
+                                               2 /* BarrierPositiveY 1 << 1 */);
+                }
             } else {        // barriers are not required.
-                this._rightPanelBarrier = 0;
-                this._leftPanelBarrier = 0;
+                this._clearPanelBarriers();
             }
         } else {
+            this._clearPanelBarriers();
+        }
+    },
+
+    _clearPanelBarriers: function() {
             this._leftPanelBarrier = 0;
             this._rightPanelBarrier = 0;
-        }
+            this._topPanelBarrier = 0;
+            this._bottomPanelBarrier = 0;
     },
 
     _onPanelEditModeChanged: function() {
@@ -2334,7 +2364,7 @@ Panel.prototype = {
             if (this._leftBox.get_height() == 0) {
                 this._leftBox.set_height(40);
                 this._leftBox.set_width(this._getScaledPanelHeight());
-            }
+           }
             if (this._centerBox.get_height() == 0) {
                 this._centerBox.set_height(40);
                 this._centerBox.set_width(this._getScaledPanelHeight());
