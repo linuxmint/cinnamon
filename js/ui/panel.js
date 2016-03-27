@@ -3090,9 +3090,7 @@ Panel.prototype = {
                 }
             }
         }
-
-//        this._updatePanelBarriers();  do we really need this here, seems very conservative
-
+        this._updatePanelBarriers();
     },
 
     /**
