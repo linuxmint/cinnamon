@@ -1880,11 +1880,13 @@ Panel.prototype = {
         this._themeFontSize = null;
         this._destroyed = false;
         this._signalManager = new SignalManager.SignalManager(this);
+        this.margin_top = 0;        // used by vertical panels to permit a dock-like presentation
+        this.margin_bottom = 0;     // ditto
 
         this.scaleMode = false;
 
         this.actor = new Cinnamon.GenericContainer({ name: 'panel', reactive: true });
-        this.setPanelStyleClass(panelPosition);
+        this.setPanelStyleClass(this.panelPosition);
 
         this.actor._delegate = this;
 
@@ -1962,8 +1964,8 @@ Panel.prototype = {
             this._leftBoxDNDHandler   = new PanelZoneDNDHandler(this._leftBox);
             this._centerBoxDNDHandler = new PanelZoneDNDHandler(this._centerBox);
             this._rightBoxDNDHandler  = new PanelZoneDNDHandler(this._rightBox);
-
         }
+
         this.drawCorners(drawcorner);
 
         this.addContextMenuToPanel(this.panelPosition);
@@ -2087,6 +2089,7 @@ Panel.prototype = {
         this._set_orientation();
 
         this.addContextMenuToPanel(panelPosition);
+        this.setPanelStyleClass(panelPosition);
         this._moveResizePanel();
     },
 
@@ -2147,11 +2150,9 @@ Panel.prototype = {
                 break;
             case PanelLoc.left:
                 this.actor.set_style_class_name('panel-left');
-                this.actor.set_important(true);
                 break;
             case PanelLoc.right:
                 this.actor.set_style_class_name('panel-right');
-                this.actor.set_important(true);
                 break;
             default:
                 global.log("setPanelStyleClass - unrecognised panel position "+panelPosition);
@@ -2577,8 +2578,16 @@ Panel.prototype = {
                 this.toppanelHeight = tpanelHeight;
                 this.bottompanelHeight = bpanelHeight;
             }
+            try {
+                let themeNode      = this.actor.get_theme_node();
+                this.margin_top    = themeNode.get_length('margin-top');
+                this.margin_bottom = themeNode.get_length('margin-bottom');
+            } catch (e) {
+                global.log(e);
+            }
         
-            vertpanelHeight = this.monitor.height - this.toppanelHeight - this.bottompanelHeight;
+            vertpanelHeight = this.monitor.height - this.toppanelHeight - this.bottompanelHeight
+                              - global.ui_scale*this.margin_top - global.ui_scale*this.margin_bottom;
             this.actor.set_height(vertpanelHeight);
         }
         this._processPanelAutoHide();
@@ -2596,11 +2605,12 @@ Panel.prototype = {
                 break;
             case PanelLoc.left:
                 this.actor.set_size(panelHeight, vertpanelHeight); 
-                this.actor.set_position(this.monitor.x, this.monitor.y + tpanelHeight);
+                this.actor.set_position(this.monitor.x, this.monitor.y + tpanelHeight + global.ui_scale*this.margin_top);
                 break;
             case PanelLoc.right:
                 this.actor.set_size(panelHeight, vertpanelHeight); 
-                this.actor.set_position(this.monitor.x + this.monitor.width - panelHeight, this.monitor.y + tpanelHeight);
+                this.actor.set_position(this.monitor.x + this.monitor.width - panelHeight,
+                                        this.monitor.y + tpanelHeight + global.ui_scale*this.margin_top);
                 break;
             default:
                 global.log("moveResizePanel - unrecognised panel position "+this.panelPosition);
@@ -2726,7 +2736,7 @@ Panel.prototype = {
             // Assuming that at this point it is OK to use the top and bottom panel heights previously
             // saved against the panel, rather than looping through all panels to calculate from scratch
             //
-            alloc.natural_size = alloc.natural_size - this.toppanelHeight - this.bottompanelHeight;
+            alloc.natural_size = alloc.natural_size - this.toppanelHeight - this.bottompanelHeight - this.margin_top - this.margin_bottom;
         } else {
             alloc.min_size = -1;
             alloc.natural_size = this._getScaledPanelHeight(); // or can -1 for the CSS to do it
