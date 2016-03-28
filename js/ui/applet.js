@@ -605,13 +605,13 @@ IconApplet.prototype = {
         switch (icon_type) {
             case St.IconType.FULLCOLOR:
             this._applet_icon.set_icon_size(this._scaleMode ?
-                                            fullcolor_scaleup *1 :
+                                            fullcolor_scaleup :
                                             DEFAULT_ICON_HEIGHT);
             this._applet_icon.set_style_class_name('applet-icon');
             break;
             case St.IconType.SYMBOLIC:
             this._applet_icon.set_icon_size(this._scaleMode ?
-                                            symb_scaleup*1.1 :
+                                            symb_scaleup :
                                             -1);
             this._applet_icon.set_style_class_name('system-status-icon');
             break;
@@ -625,7 +625,7 @@ IconApplet.prototype = {
 //        {
 //            let ph = this._panelHeight;   
 //            this.actor.set_clip(0, 0, ph, ph);  // ensure no visible bleeding of the allocation box 
-                                                // beyond the panel to the right,  e.g. on hover
+                                                  // beyond the panel,  e.g. on hover
 //        }
 
 
