@@ -1,3 +1,10 @@
+cinnamon (2.8.8) rosa; urgency=medium
+
+  [ Michael Webster ]
+  * layout.js: Remove code for interaction with the screensaver.  It was always broken until 2.8.7, where I 'fixed' it, and has caused some reported regression where the panels will be hidden after returning from the screensaver.
+
+ -- Clement Lefebvre <root@linuxmint.com>  Tue, 29 Mar 2016 17:23:21 +0400
+
 cinnamon (2.8.7) rosa; urgency=medium
 
   [ Michael Webster ]
