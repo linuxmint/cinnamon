@@ -2718,7 +2718,8 @@ Panel.prototype = {
         alloc.min_size = -1;
 
         if (this.panelPosition == PanelLoc.left || this.panelPosition == PanelLoc.right) {
-            alloc.natural_size = this._getScaledPanelHeight(); // or can -1 for the CSS to do it
+//            alloc.natural_size = this._getScaledPanelHeight(); // or can -1 for the CSS to do it
+            alloc.natural_size = -1;
         } else {
             alloc.natural_size = Main.layoutManager.primaryMonitor.width;
         }
@@ -2739,7 +2740,8 @@ Panel.prototype = {
             alloc.natural_size = alloc.natural_size - this.toppanelHeight - this.bottompanelHeight - this.margin_top - this.margin_bottom;
         } else {
             alloc.min_size = -1;
-            alloc.natural_size = this._getScaledPanelHeight(); // or can -1 for the CSS to do it
+//            alloc.natural_size = this._getScaledPanelHeight(); // or can -1 for the CSS to do it
+            alloc.natural_size = -1;
         }
     },
 
