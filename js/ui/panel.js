@@ -706,10 +706,14 @@ PanelManager.prototype = {
     },
 
     _updateAllPointerBarriers: function() {
+        for (let i in this.panels)
+            if (this.panels[i]) {
+                this.panels[i]._updatePanelBarriers();
+            }
 
-        this.panels.forEach(function(panel) {
-            panel._updatePanelBarriers();
-        });
+//        this.panels.forEach(function(panel) {
+//            panel._updatePanelBarriers();
+//        });
     },
 
     /**
@@ -761,7 +765,7 @@ PanelManager.prototype = {
                 }
                 else {
                     newPanels[ID] = this.panels[ID];                       // Move panel object to newPanels
-                    this.panels[ID] = null;                                // avoids triggering the destroy logic that follows
+                    this.panels[ID] = null;                                // avoids triggering the destroy logic that follows FIXME why not delete it ?
 
                     if (newMeta[ID][0] != this.panelsMeta[ID][0]           // monitor changed
                         ||
@@ -799,25 +803,19 @@ PanelManager.prototype = {
         //
         // Adjust any vertical panel heights so as to fit snugly between horizontal panels
         // Scope for minor optimisation here, doesn't need to adjust verticals if no horizontals added or removed
-        // or if any change from making space for panel dummys needs to be reflected
-        //
-        for (let i in this.panels) {
-            if (this.panels[i])
-                if (this.panels[i].panelPosition == PanelLoc.left || this.panels[i].panelPosition == PanelLoc.right)
-                    this.panels[i]._moveResizePanel();
-        }
+        // or if any change from making space for panel dummys needs to be reflected.
         //
         // Draw any corners that are necessary.  Note that updatePosition will have stripped off corners
         // from moved panels, and the new panel is created without corners.  However unchanged panels may have corners
         // that might not be wanted now.  Easiest thing is to strip every existing corner off and re-add
         //
         for (let i in this.panels) {
-            if (this.panels[i])
+            if (this.panels[i]) {
+                if (this.panels[i].panelPosition == PanelLoc.left || this.panels[i].panelPosition == PanelLoc.right)
+                    this.panels[i]._moveResizePanel();
                 this.panels[i]._destroycorners();
+            }
         }
-        //
-        // re add corners
-        //
         this._fullCornerLoad(panelProperties);
 
         this._setMainPanel();
@@ -2294,65 +2292,72 @@ Panel.prototype = {
 //log("actor size "+this.actor.width+","+this.actor.height);
 
 //log("monitor size "+this.monitor.width+","+this.monitor.height+" actor position "+xpos+","+ypos);
-            switch (this.panelPosition)
-            {
-                case PanelLoc.top:
-                    panelTop    = this.monitor.y;
-                    panelBottom = this.monitor.y + this.actor.height;
-                    break;
-                case PanelLoc.bottom:
-                    panelTop    = this.monitor.y + this.monitor.height - Math.floor(this.actor.height);
-                    panelBottom = this.monitor.y + this.monitor.height;
-                    break;
-                case PanelLoc.left:
-                    panelLeft  = this.monitor.x;
-                    panelRight = this.monitor.x + Math.floor(this.actor.width);
-                    break;
-                case PanelLoc.right:
-                    panelLeft  = this.monitor.x + this.monitor.width - Math.floor(this.actor.width);
-                    panelRight = this.monitor.x + this.monitor.width;
-                    break;
-                default:
-                    global.log("updatePanelBarriers - unrecognised panel position "+panelPosition);
-            }
 
             if (!noBarriers) {   // barriers are required
                 if (this.panelPosition == PanelLoc.top || this.panelPosition == PanelLoc.bottom) {
+                    switch (this.panelPosition)
+                    {
+		        case PanelLoc.top:
+		            panelTop    = this.monitor.y;
+		            panelBottom = this.monitor.y + this.actor.height;
+		            break;
+		        case PanelLoc.bottom:
+		            panelTop    = this.monitor.y + this.monitor.height - Math.floor(this.actor.height);
+		            panelBottom = this.monitor.y + this.monitor.height;
+		            break;
+		    }
                     let x_coord = this.monitor.x + this.monitor.width - 1;
+                    if (panelTop != panelBottom && x_coord >= 0)
+                    {
 //log("barrier1  "+x_coord+","+panelTop+ " "+x_coord+ ","+panelBottom);
-                    // permit moving in negative x direction for a right hand barrier
-// *** suspect
-//                    this._rightPanelBarrier = global.create_pointer_barrier(
-//                                              x_coord, panelTop,
-//                                              x_coord, panelBottom,
-//                                              4 /* BarrierNegativeX (value 1 << 2) */);
+                        // permit moving in negative x direction for a right hand barrier
 
-                    // permit moving in positive x direction for a left hand barrier
-                    x_coord = this.monitor.x;
+                        this._rightPanelBarrier = global.create_pointer_barrier(
+                                                  x_coord, panelTop,
+                                                  x_coord, panelBottom,
+                                                  4 /* BarrierNegativeX (value 1 << 2) */);
+
+                        // permit moving in positive x direction for a left hand barrier
+                        x_coord = this.monitor.x;
 //log("barrier2  "+x_coord+","+panelTop+ " "+x_coord+ ","+panelBottom);
-// also suspect
-//                    this._leftPanelBarrier = global.create_pointer_barrier(
-//                                             x_coord, panelTop,
-//                                             x_coord, panelBottom,
- //                                            1 /* BarrierPositiveX   (value  1 << 0) */);
+
+                        this._leftPanelBarrier = global.create_pointer_barrier(
+                                                 x_coord, panelTop,
+                                                 x_coord, panelBottom,
+                                                 1 /* BarrierPositiveX   (value  1 << 0) */);
+                    }
                 } else {
+		    switch (this.panelPosition)
+		    {
+		        case PanelLoc.left:
+		            panelLeft  = this.monitor.x;
+		            panelRight = this.monitor.x + Math.floor(this.actor.width);
+		            break;
+		        case PanelLoc.right:
+		            panelLeft  = this.monitor.x + this.monitor.width - Math.floor(this.actor.width);
+		            panelRight = this.monitor.x + this.monitor.width;
+		            break;
+		        default:
+		            global.log("updatePanelBarriers - unrecognised panel position "+panelPosition);
+		    }
+                    if (panelRight != panelLeft) {
 //log("barrier3 position "+this.panelPosition+" "+panelLeft+ ","+this.monitor.y + " "+panelRight+","+this.monitor.y );
                     // permit moving in positive y direction for a top barrier
-                    let y_coord = this.monitor.y+Math.floor(this.toppanelHeight);
+                        let y_coord = this.monitor.y+Math.floor(this.toppanelHeight);
 //log("barrier3 position "+this.panelPosition+" "+panelLeft+ ","+y_coord + " "+panelRight+","+y_coord );
-                    this._topPanelBarrier = global.create_pointer_barrier(
-                                            panelLeft,  y_coord ,
-                                            panelRight, y_coord ,
-                                            2 /* BarrierPositiveY (value  1 << 1) */);
+                        this._topPanelBarrier = global.create_pointer_barrier(
+                                                panelLeft,  y_coord ,
+                                                panelRight, y_coord ,
+                                                2 /* BarrierPositiveY (value  1 << 1) */);
 //log("3a  height "+this.monitor.height);
-                    y_coord = this.monitor.y+this.monitor.height-Math.floor(this.bottompanelHeight)-1;
+                        y_coord = this.monitor.y+this.monitor.height-Math.floor(this.bottompanelHeight)-1;
 //log("barrier4  "+panelLeft+ ","+y_coord + " "+panelRight+","+y_coord);
                     // permit moving in negative y direction for a bottom barrier
-                    this._bottomPanelBarrier = global.create_pointer_barrier(
-                                               panelLeft,  y_coord,
-                                               panelRight, y_coord,
-                                               8 /* BarrierNegativeY (value 1 << 3) */);
-//log("barrier 5");
+                        this._bottomPanelBarrier = global.create_pointer_barrier(
+                                                   panelLeft,  y_coord,
+                                                   panelRight, y_coord,
+                                                   8 /* BarrierNegativeY (value 1 << 3) */);
+                    }
                 }
             } else {        // barriers are not required.
                 this._clearPanelBarriers();
