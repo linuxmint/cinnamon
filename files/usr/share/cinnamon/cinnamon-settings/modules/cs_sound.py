@@ -775,7 +775,7 @@ class Module:
         stream = self.controller.lookup_stream_id(id)
         
         if stream in self.controller.get_sink_inputs():
-            self.appList[id] = VolumeBar(self.controller.get_vol_max_norm(), self.controller.get_vol_max_norm(), stream.props.name, stream.get_gicon())
+            self.appList[id] = VolumeBar(self.controller.get_vol_max_norm(), self.controller.get_vol_max_norm(), stream.props.name + ": ", stream.get_gicon())
             self.appList[id].setStream(stream)
             self.appSettings.add_row(self.appList[id])
             self.appSettings.list_box.invalidate_headers()
