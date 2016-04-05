@@ -537,7 +537,7 @@ Magnifier.prototype = {
         this._settings.connect('changed::' + MAG_FACTOR_KEY,
                                Lang.bind(this, this._updateMagFactor));
         this._settings.connect('changed::' + LENS_MODE_KEY,
-                               Lang.bind(this, this._updateLensMode));
+                               Lang.bind(this, this._updateLensShape));
         this._settings.connect('changed::' + CLAMP_MODE_KEY,
                                Lang.bind(this, this._updateClampMode));
         this._settings.connect('changed::' + MOUSE_TRACKING_KEY,
