@@ -2,7 +2,7 @@
 
 from gi.repository import Gio
 
-from SettingsWidgets import *
+from GSettingsWidgets import *
 
 DESKTOP_SCHEMA = "org.nemo.desktop"
 LAYOUT_KEY = "desktop-layout"

@@ -32,6 +32,7 @@
     (the original equations are Robert Penner's work as mentioned on the disclaimer)
 """
 
+from __future__ import division
 import math
 
 def easeNone(t, b, c, d):

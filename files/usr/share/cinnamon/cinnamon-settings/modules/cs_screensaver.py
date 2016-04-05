@@ -8,7 +8,7 @@ import gi
 gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk, Gdk, GLib, Pango
 
-from SettingsWidgets import *
+from GSettingsWidgets import *
 
 LOCK_DELAY_OPTIONS = [
     (0, _("Immediately")),

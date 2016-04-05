@@ -1,6 +1,6 @@
 #!/usr/bin/env python2
 
-from SettingsWidgets import *
+from GSettingsWidgets import *
 from gi.repository import *
 
 PREF_MEDIA_AUTORUN_NEVER = "autorun-never"
@@ -526,14 +526,11 @@ class Module:
                 widget.pack_end(button, False, False, 0)
                 settings.add_row(widget)
 
-            widget = SettingsWidget()
-            more = Gtk.Button.new_with_mnemonic(_("_Other Media..."))
-            more.connect("clicked", self.onMoreClicked)
-            widget.pack_start(more, True, True, 0)
-            settings.add_row(widget)
+            button = Button(_("_Other Media..."), self.onMoreClicked)
+            settings.add_row(button)
 
-    def onMoreClicked(self, button):
-        self.other_type_dialog.doShow(button.get_toplevel())
+    def onMoreClicked(self, widget):
+        self.other_type_dialog.doShow(widget.get_toplevel())
 
 class InvertedSwitch(SettingsWidget):
     def __init__(self, label, schema, key):

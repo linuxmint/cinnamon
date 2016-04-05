@@ -2,7 +2,7 @@
 
 from gi.repository.Gtk import SizeGroup, SizeGroupMode
 
-from SettingsWidgets import *
+from GSettingsWidgets import *
 from CinnamonGtkSettings import GtkSettingsSwitch
 from ExtensionCore import ExtensionSidePage
 
