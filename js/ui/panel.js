@@ -926,17 +926,28 @@ PanelManager.prototype = {
     _onMonitorsChanged: function() {
         let monitorCount = global.screen.get_n_monitors();
         let drawcorner = [false,false];
+//log("*** onmonitorschanged  #monitors "+monitorCount);
 
         for (let i in this.panelsMeta) {
-            if (this.panelsMeta[i] && !this.panels[i]) { // If there is a meta but not a panel, i.e. panel could not create due to non-existent monitor, try again.
 
-                let panel = this._loadPanel(i, this.panelsMeta[i][0], this.panelsMeta[i][1], drawcorner); 
-                if (panel)
-                    AppletManager.loadAppletsOnPanel(panel);
-            } else if (this.panelsMeta[i][0] >= monitorCount) { // Monitor of the panel went missing
-                this.panels[i].destroy();
-                delete this.panels[i];
+            if (this.panelsMeta[i] && !this.panels[i]) { // If there is a meta but not a panel, i.e. panel could not create due to non-existent monitor, try again
+//log("omc 1a");                                                           // - the monitor may just have been reconnected
+                if (this.panelMeta[i][0] < monitorCount)  // just check that the monitor is there
+                {
+//log("omc - 1 adding a panel on a monitor that was not there ");
+                    let panel = this._loadPanel(i, this.panelsMeta[i][0], this.panelsMeta[i][1], drawcorner);
+                    if (panel)
+                        AppletManager.loadAppletsOnPanel(panel);
+                }
+            } else if (this.panelsMeta[i][0] >= monitorCount) { // Monitor of the panel went missing.  Meta is [monitor,panel] array
+//log("omc - 2 monitor missing");
+                if (this.panels[i]) {
+                    this.panels[i].destroy();
+                    delete this.panels[i];
+                }
+
             } else { // Nothing happens. Re-allocate panel
+//log("omc - 3 resizing panel");
                 this.panels[i]._moveResizePanel();
             }
         }
@@ -945,11 +956,8 @@ PanelManager.prototype = {
             this._destroyDummyPanels();
             this._showDummyPanels(this.dummyCallback);
         }
-        //
-        // clear corners, then re add them
-        //
 
-        for (let i in this.panels) {
+        for (let i in this.panels) {          // clear corners, then re add them
             if (this.panels[i])
                 this.panels[i]._destroycorners();
         }
@@ -1555,6 +1563,7 @@ function populateSettingsMenu(menu, panelId) {
 
     menu.troubleshootItem = new PopupMenu.PopupSubMenuMenuItem(_("Troubleshoot"));
     menu.troubleshootItem.menu.addAction(_("Restart Cinnamon"), function(event) {
+//        Util.spawnCommandLine("export GDK_SYNCHRONIZE=1");
         global.reexec_self();
     });
 
@@ -2166,6 +2175,8 @@ Panel.prototype = {
      */
     destroy: function() {
         if (this._destroyed) return;
+        this._destroyed = true;    // set this early so that any routines triggered during
+                                   // the destroy process can test it
 
         AppletManager.unloadAppletsOnPanel(this);
         this._context_menu.close();
@@ -2183,7 +2194,6 @@ Panel.prototype = {
         this._menus = null;
         this.monitor = null;
 
-        this._destroyed = true;
         return;
     },
 
@@ -2280,6 +2290,8 @@ Panel.prototype = {
         if (this._bottomPanelBarrier)
             global.destroy_pointer_barrier(this._bottomPanelBarrier);
 
+        if (this._destroyed)  // ensure we do not try to set barriers if panel is being destroyed
+            return;
 
 //        let workspace_index = global.screen.get_active_workspace_index();
 //        let workspace = global.screen.get_workspace_by_index(this.index);
@@ -2299,7 +2311,7 @@ Panel.prototype = {
             let panelLeft = 0;
             let panelRight = 0;
             if (!noBarriers) {   // barriers are required
-//global.log("updatePanelBarriers - panel position "+this.panelPosition+" monitor "+this.monitorIndex);
+//log("updatePanelBarriers - panel position "+this.panelPosition+" monitor "+this.monitorIndex);
                 if (this.panelPosition == PanelLoc.top || this.panelPosition == PanelLoc.bottom) {
                     switch (this.panelPosition)
                     {
@@ -2309,7 +2321,7 @@ Panel.prototype = {
 		            break;
 		        case PanelLoc.bottom:
 		            panelTop    = this.monitor.y + this.monitor.height - Math.floor(this.actor.height);
-		            panelBottom = this.monitor.y + this.monitor.height;
+		            panelBottom = this.monitor.y + this.monitor.height -1;
 		            break;
 		    }
                     let x_coord = this.monitor.x + this.monitor.width - 1;
@@ -2317,22 +2329,22 @@ Panel.prototype = {
                     {
                         if (screen_width > this.monitor.x + this.monitor.width) {    // if there is a monitor to the right
 
-//global.log("barrier position  "+this.panelPosition+" "+x_coord+","+panelTop+ " "+x_coord+ ","+panelBottom+" direction 4 "+"screen width "+global.screen_width+" height "+global.screen_height);
+//log("barrier position  "+this.panelPosition+" "+x_coord+","+panelTop+ " "+x_coord+ ","+panelBottom+" direction 4 "+"screen width "+global.screen_width+" height "+global.screen_height);
                             this._rightPanelBarrier = global.create_pointer_barrier( // permit moving in negative x direction for a right hand barrier
                                                   x_coord, panelTop,
                                                   x_coord, panelBottom,
                                                   4 /* BarrierNegativeX (value 1 << 2) */);
-//global.log("after call");
+//log("after call");
                         }
 
                         x_coord = this.monitor.x;
                         if (this.monitor.x > 0) {                                    // if there is a monitor to the left
-//global.log("barrier position "+this.panelPosition+" "+x_coord+","+panelTop+ " "+x_coord+ ","+panelBottom+" direction 1"+"screen width "+global.screen_width+" height "+global.screen_height);
+//log("barrier position "+this.panelPosition+" "+x_coord+","+panelTop+ " "+x_coord+ ","+panelBottom+" direction 1"+"screen width "+global.screen_width+" height "+global.screen_height);
                             this._leftPanelBarrier = global.create_pointer_barrier(  // permit moving in positive x direction for a left hand barrier
                                                  x_coord, panelTop,
                                                  x_coord, panelBottom,
                                                  1 /* BarrierPositiveX   (value  1 << 0) */);
-//global.log("after call");
+//log("after call");
                         }
                     }
                 } else {
@@ -2344,31 +2356,32 @@ Panel.prototype = {
 		            break;
 		        case PanelLoc.right:
 		            panelLeft  = this.monitor.x + this.monitor.width - Math.floor(this.actor.width);
-		            panelRight = this.monitor.x + this.monitor.width;
+		            panelRight = this.monitor.x + this.monitor.width-1;
 		            break;
 		        default:
 		            global.log("updatePanelBarriers - unrecognised panel position "+panelPosition);
 		    }
                     if (panelRight != panelLeft) {
-//global.log("vertical   monitor y "+this.monitor.y + " monitorheight "+this.monitor.height);
-                        let y_coord = this.monitor.y+Math.floor(this.toppanelHeight);
-                        if (this.monitor.y > 0) {                                  // if there is a monitor above
-//global.log("barrier position "+this.panelPosition+" "+panelLeft+ ","+y_coord + " "+panelRight+","+y_coord+" direction 2 "+"screen width "+global.screen_width+" height "+global.screen_height);
+//log("vertical   monitor y "+this.monitor.y + " monitorheight "+this.monitor.height);
+                        let y_coord = this.monitor.y + Math.max(Math.floor(this.toppanelHeight), this.margin_top);
+                        if (y_coord > 0) {                                  // if there is a monitor above or top of panel offset into monitor
+//log("barrier position "+this.panelPosition+" "+panelLeft+ ","+y_coord + " "+panelRight+","+y_coord+" direction 2 "+"screen width "+global.screen_width+" height "+global.screen_height);
                             this._topPanelBarrier = global.create_pointer_barrier( // permit moving in positive y direction for a top barrier
                                                 panelLeft,  y_coord ,
                                                 panelRight, y_coord ,
                                                 2 /* BarrierPositiveY (value  1 << 1) */);
-//global.log("after call");
+//log("after call");
                         }
-                        y_coord = this.monitor.y+this.monitor.height-Math.floor(this.bottompanelHeight)-1;
+                        y_coord = this.monitor.y + this.monitor.height - Math.max(Math.floor(this.bottompanelHeight), this.margin_bottom) -1;
 
-                        if (screen_height > this.monitor.y + this.monitor.height) {   // if there is a monitor below
-//global.log("barrier position "+this.panelPosition+" "+panelLeft+ ","+y_coord + " "+panelRight+","+y_coord+" direction 8 "+"screen width "+global.screen_width+" height "+global.screen_height );
+                        if (screen_height > this.monitor.y + this.monitor.height         // if there is a monitor below
+                            || this.bottompanelHeight > 0 || this.margin_bottom > 0) {   // or the bottom of the panel is offset into the monitor
+//log("barrier position "+this.panelPosition+" "+panelLeft+ ","+y_coord + " "+panelRight+","+y_coord+" direction 8 "+"screen width "+global.screen_width+" height "+global.screen_height );
                             this._bottomPanelBarrier = global.create_pointer_barrier( // permit moving in negative y direction for a bottom barrier
                                                    panelLeft,  y_coord,
                                                    panelRight, y_coord,
                                                    8 /* BarrierNegativeY (value 1 << 3) */);
-//global.log("after call");
+//log("after call");
                         }
                     }
                 }
@@ -3123,7 +3136,10 @@ Panel.prototype = {
                 }
             }
         }
-        this._updatePanelBarriers();
+        this._updatePanelBarriers();   // FIXME - we really should not be calling this here, however at the moment it does seem to be needed, as if
+                                       // turned off then barriers do not always get set.
+                                       // Why not call this here ? - because allocate gets called very frequently for minor applet movements, and this
+                                       // then triggers lots of barrier removals and recreations of the same barrier
     },
 
     /**
