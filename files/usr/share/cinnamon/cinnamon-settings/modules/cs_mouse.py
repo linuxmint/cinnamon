@@ -95,7 +95,7 @@ class Module:
             settings = SettingsBox(_("Scrolling"))
             revealer.add(settings)
 
-            switch = GSettingsSwitch(_("Natural scrolling"), "org.cinnamon.settings-daemon.peripherals.touchpad", "natural-scroll")
+            switch = GSettingsSwitch(_("Reverse scrolling direction"), "org.cinnamon.settings-daemon.peripherals.touchpad", "natural-scroll")
             settings.add_row(switch)
 
             switch = GSettingsSwitch(_("Vertical edge scrolling"), "org.cinnamon.settings-daemon.peripherals.touchpad", "vertical-edge-scrolling")
