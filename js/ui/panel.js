@@ -254,6 +254,7 @@ PanelManager.prototype = {
         this._moveOsd.hide();
 
         this._checkCanAdd();
+        this._updateAllPointerBarriers();
     },
 
     /**
@@ -636,9 +637,6 @@ PanelManager.prototype = {
      * Returns (Panel.Panel): Panel created
      */
     _loadPanel: function(ID, monitorIndex, panelPosition, drawcorner, panelList, metaList) {
-        //log("panel " + ID);
-        //log("monitor" + monitorIndex);
-        //log("position" + panelPosition);
 
         if (!panelList) panelList = this.panels;
         if (!metaList) metaList = this.panelsMeta;
@@ -706,14 +704,11 @@ PanelManager.prototype = {
     },
 
     _updateAllPointerBarriers: function() {
-        for (let i in this.panels)
+        for (let i in this.panels) {
             if (this.panels[i]) {
                 this.panels[i]._updatePanelBarriers();
             }
-
-//        this.panels.forEach(function(panel) {
-//            panel._updatePanelBarriers();
-//        });
+        }
     },
 
     /**
@@ -765,7 +760,7 @@ PanelManager.prototype = {
                 }
                 else {
                     newPanels[ID] = this.panels[ID];                       // Move panel object to newPanels
-                    this.panels[ID] = null;                                // avoids triggering the destroy logic that follows FIXME why not delete it ?
+                    this.panels[ID] = null;                                // avoids triggering the destroy logic that follows
                     delete this.panels[ID];
 
                     if (newMeta[ID][0] != this.panelsMeta[ID][0]           // monitor changed
@@ -926,28 +921,23 @@ PanelManager.prototype = {
     _onMonitorsChanged: function() {
         let monitorCount = global.screen.get_n_monitors();
         let drawcorner = [false,false];
-//log("*** onmonitorschanged  #monitors "+monitorCount);
 
         for (let i in this.panelsMeta) {
-
             if (this.panelsMeta[i] && !this.panels[i]) { // If there is a meta but not a panel, i.e. panel could not create due to non-existent monitor, try again
-//log("omc 1a");                                                           // - the monitor may just have been reconnected
-                if (this.panelMeta[i][0] < monitorCount)  // just check that the monitor is there
+                                                         // - the monitor may just have been reconnected
+                if (this.panelsMeta[i][0] < monitorCount)  // just check that the monitor is there
                 {
-//log("omc - 1 adding a panel on a monitor that was not there ");
                     let panel = this._loadPanel(i, this.panelsMeta[i][0], this.panelsMeta[i][1], drawcorner);
                     if (panel)
                         AppletManager.loadAppletsOnPanel(panel);
                 }
             } else if (this.panelsMeta[i][0] >= monitorCount) { // Monitor of the panel went missing.  Meta is [monitor,panel] array
-//log("omc - 2 monitor missing");
                 if (this.panels[i]) {
                     this.panels[i].destroy();
                     delete this.panels[i];
                 }
 
             } else { // Nothing happens. Re-allocate panel
-//log("omc - 3 resizing panel");
                 this.panels[i]._moveResizePanel();
             }
         }
@@ -966,6 +956,7 @@ PanelManager.prototype = {
 
         this._setMainPanel();
         this._checkCanAdd();
+        this._updateAllPointerBarriers();
     },
 
     _onPanelEditModeChanged: function() {
@@ -1563,7 +1554,6 @@ function populateSettingsMenu(menu, panelId) {
 
     menu.troubleshootItem = new PopupMenu.PopupSubMenuMenuItem(_("Troubleshoot"));
     menu.troubleshootItem.menu.addAction(_("Restart Cinnamon"), function(event) {
-//        Util.spawnCommandLine("export GDK_SYNCHRONIZE=1");
         global.reexec_self();
     });
 
@@ -1888,8 +1878,14 @@ Panel.prototype = {
         this._themeFontSize = null;
         this._destroyed = false;
         this._signalManager = new SignalManager.SignalManager(this);
-        this.margin_top = 0;        // used by vertical panels to permit a dock-like presentation
+        this.margin_top = 0;        // used by vertical panels
         this.margin_bottom = 0;     // ditto
+        this.margin_left = 0;
+        this.margin_right = 0;
+        this._leftPanelBarrier = 0;
+        this._rightPanelBarrier = 0;
+        this._topPanelBarrier = 0;
+        this._bottomPanelBarrier = 0;
 
         this.scaleMode = false;
 
@@ -1977,8 +1973,6 @@ Panel.prototype = {
         this.drawCorners(drawcorner);
 
         this.addContextMenuToPanel(this.panelPosition);
-
-        this._clearPanelBarriers();
 
         Main.layoutManager.addChrome(this.actor, { addToWindowgroup: false });
         this._moveResizePanel();
@@ -2281,24 +2275,13 @@ Panel.prototype = {
      * https://cgit.freedesktop.org/cgit/?url=xorg/proto/fixesproto/plain/fixesproto.txt
      */
     _updatePanelBarriers: function() {
-        if (this._leftPanelBarrier)
-            global.destroy_pointer_barrier(this._leftPanelBarrier);
-        if (this._rightPanelBarrier)
-            global.destroy_pointer_barrier(this._rightPanelBarrier);
-        if (this._topPanelBarrier)
-            global.destroy_pointer_barrier(this._topPanelBarrier);
-        if (this._bottomPanelBarrier)
-            global.destroy_pointer_barrier(this._bottomPanelBarrier);
+
+        this._clearPanelBarriers();
 
         if (this._destroyed)  // ensure we do not try to set barriers if panel is being destroyed
             return;
-
-//        let workspace_index = global.screen.get_active_workspace_index();
-//        let workspace = global.screen.get_workspace_by_index(this.index);
-//        let workspace_size = new Meta.Rectangle();
-//        workspace.get_work_area_all_monitors(this.workspace_size);
-//        global.log("workspace width "+workspace_size.width+" height "+workspace_size.height);
-
+        if (this.monitorIndex < 0 || this.monitorIndex >= global.screen.get_n_monitors())  // skip panels that never got created
+            return;
 
         let screen_width  = global.screen_width;
         let screen_height = global.screen_height;
@@ -2306,12 +2289,13 @@ Panel.prototype = {
         let noBarriers = global.settings.get_boolean("no-adjacent-panel-barriers");
 
         if (this.actor.height && this.actor.width) {
+
             let panelTop = 0;
             let panelBottom = 0;
             let panelLeft = 0;
             let panelRight = 0;
+
             if (!noBarriers) {   // barriers are required
-//log("updatePanelBarriers - panel position "+this.panelPosition+" monitor "+this.monitorIndex);
                 if (this.panelPosition == PanelLoc.top || this.panelPosition == PanelLoc.bottom) {
                     switch (this.panelPosition)
                     {
@@ -2324,27 +2308,22 @@ Panel.prototype = {
 		            panelBottom = this.monitor.y + this.monitor.height -1;
 		            break;
 		    }
-                    let x_coord = this.monitor.x + this.monitor.width - 1;
+                    let x_coord = this.monitor.x + this.monitor.width - 1 - this.margin_right;
                     if (panelTop != panelBottom && x_coord >= 0)
                     {
-                        if (screen_width > this.monitor.x + this.monitor.width) {    // if there is a monitor to the right
-
-//log("barrier position  "+this.panelPosition+" "+x_coord+","+panelTop+ " "+x_coord+ ","+panelBottom+" direction 4 "+"screen width "+global.screen_width+" height "+global.screen_height);
+                        if (screen_width > this.monitor.x + this.monitor.width - this.margin_right) {    // if there is a monitor to the right or panel offset into monitor
                             this._rightPanelBarrier = global.create_pointer_barrier( // permit moving in negative x direction for a right hand barrier
                                                   x_coord, panelTop,
                                                   x_coord, panelBottom,
                                                   4 /* BarrierNegativeX (value 1 << 2) */);
-//log("after call");
                         }
 
-                        x_coord = this.monitor.x;
-                        if (this.monitor.x > 0) {                                    // if there is a monitor to the left
-//log("barrier position "+this.panelPosition+" "+x_coord+","+panelTop+ " "+x_coord+ ","+panelBottom+" direction 1"+"screen width "+global.screen_width+" height "+global.screen_height);
+                        x_coord = this.monitor.x + this.margin_left;
+                        if (x_coord > 0) {                                    // if there is a monitor to the left or panel offset into monitor
                             this._leftPanelBarrier = global.create_pointer_barrier(  // permit moving in positive x direction for a left hand barrier
                                                  x_coord, panelTop,
                                                  x_coord, panelBottom,
                                                  1 /* BarrierPositiveX   (value  1 << 0) */);
-//log("after call");
                         }
                     }
                 } else {
@@ -2362,42 +2341,46 @@ Panel.prototype = {
 		            global.log("updatePanelBarriers - unrecognised panel position "+panelPosition);
 		    }
                     if (panelRight != panelLeft) {
-//log("vertical   monitor y "+this.monitor.y + " monitorheight "+this.monitor.height);
-                        let y_coord = this.monitor.y + Math.max(Math.floor(this.toppanelHeight), this.margin_top);
+                        let y_coord = this.monitor.y + Math.floor(this.toppanelHeight) + this.margin_top;
                         if (y_coord > 0) {                                  // if there is a monitor above or top of panel offset into monitor
-//log("barrier position "+this.panelPosition+" "+panelLeft+ ","+y_coord + " "+panelRight+","+y_coord+" direction 2 "+"screen width "+global.screen_width+" height "+global.screen_height);
                             this._topPanelBarrier = global.create_pointer_barrier( // permit moving in positive y direction for a top barrier
                                                 panelLeft,  y_coord ,
                                                 panelRight, y_coord ,
                                                 2 /* BarrierPositiveY (value  1 << 1) */);
-//log("after call");
                         }
-                        y_coord = this.monitor.y + this.monitor.height - Math.max(Math.floor(this.bottompanelHeight), this.margin_bottom) -1;
+                        y_coord = this.monitor.y + this.monitor.height - Math.floor(this.bottompanelHeight)- this.margin_bottom -1;
 
                         if (screen_height > this.monitor.y + this.monitor.height         // if there is a monitor below
                             || this.bottompanelHeight > 0 || this.margin_bottom > 0) {   // or the bottom of the panel is offset into the monitor
-//log("barrier position "+this.panelPosition+" "+panelLeft+ ","+y_coord + " "+panelRight+","+y_coord+" direction 8 "+"screen width "+global.screen_width+" height "+global.screen_height );
                             this._bottomPanelBarrier = global.create_pointer_barrier( // permit moving in negative y direction for a bottom barrier
                                                    panelLeft,  y_coord,
                                                    panelRight, y_coord,
                                                    8 /* BarrierNegativeY (value 1 << 3) */);
-//log("after call");
                         }
                     }
                 }
-            } else {        // barriers are not required.
+            } else {        // barriers are not required
                 this._clearPanelBarriers();
             }
-        } else {
+        } else {            // actor without width or height
             this._clearPanelBarriers();
         }
     },
 
     _clearPanelBarriers: function() {
-            this._leftPanelBarrier = 0;
-            this._rightPanelBarrier = 0;
-            this._topPanelBarrier = 0;
-            this._bottomPanelBarrier = 0;
+        if (this._leftPanelBarrier)
+            global.destroy_pointer_barrier(this._leftPanelBarrier);
+        if (this._rightPanelBarrier)
+            global.destroy_pointer_barrier(this._rightPanelBarrier);
+        if (this._topPanelBarrier)
+            global.destroy_pointer_barrier(this._topPanelBarrier);
+        if (this._bottomPanelBarrier)
+            global.destroy_pointer_barrier(this._bottomPanelBarrier);
+
+        this._leftPanelBarrier = 0;
+        this._rightPanelBarrier = 0;
+        this._topPanelBarrier = 0;
+        this._bottomPanelBarrier = 0;
     },
 
     _onPanelEditModeChanged: function() {
@@ -2598,6 +2581,16 @@ Panel.prototype = {
         let tpanelHeight = 0;
         let bpanelHeight = 0;
         let vertpanelHeight = 0;
+
+        try {
+            let themeNode      = this.actor.get_theme_node();
+            this.margin_top    = themeNode.get_length('margin-top');
+            this.margin_bottom = themeNode.get_length('margin-bottom');
+            this.margin_left   = themeNode.get_length('margin-left');
+            this.margin_right  = themeNode.get_length('margin-right');
+        } catch (e) {
+            global.log(e);
+        }
         //
         // set the height of the panel. To find the height available for the vertical panels we need to find out how
         // much has been used for the horizontal panels on this monitor.
@@ -2612,13 +2605,6 @@ Panel.prototype = {
                 this.toppanelHeight = tpanelHeight;
                 this.bottompanelHeight = bpanelHeight;
             }
-            try {
-                let themeNode      = this.actor.get_theme_node();
-                this.margin_top    = themeNode.get_length('margin-top');
-                this.margin_bottom = themeNode.get_length('margin-bottom');
-            } catch (e) {
-                global.log(e);
-            }
         
             vertpanelHeight = this.monitor.height - this.toppanelHeight - this.bottompanelHeight
                               - global.ui_scale*this.margin_top - global.ui_scale*this.margin_bottom;
@@ -2628,21 +2614,31 @@ Panel.prototype = {
         //
         // layouts set to be full width horizontal panels, and vertical panels set to use as much available space as is left 
         //
+        // NB If you want to use margin to inset the panels within a monitor, then you can't just set it here
+        // else full screen windows will then go right to the edge with the panels floating over
+        //
         switch (this.panelPosition) {
             case PanelLoc.top:
-                this.actor.set_size(this.monitor.width, panelHeight);
-                this.actor.set_position(this.monitor.x,  this.monitor.y);
+                this.actor.set_size(this.monitor.width - global.ui_scale*(this.margin_left+this.margin_right),
+                                    panelHeight);
+                this.actor.set_position(this.monitor.x + global.ui_scale*this.margin_left,
+                                        this.monitor.y);
                 break;
             case PanelLoc.bottom:
-                this.actor.set_size(this.monitor.width, panelHeight);
-                this.actor.set_position(this.monitor.x, this.monitor.y + this.monitor.height - panelHeight);
+                this.actor.set_size(this.monitor.width - global.ui_scale*(this.margin_left+this.margin_right),
+                                    panelHeight);
+                this.actor.set_position(this.monitor.x + global.ui_scale*this.margin_left,
+                                        this.monitor.y + this.monitor.height - panelHeight);
                 break;
             case PanelLoc.left:
-                this.actor.set_size(panelHeight, vertpanelHeight); 
-                this.actor.set_position(this.monitor.x, this.monitor.y + tpanelHeight + global.ui_scale*this.margin_top);
+                this.actor.set_size(panelHeight,
+                                    vertpanelHeight);
+                this.actor.set_position(this.monitor.x,
+                                        this.monitor.y + tpanelHeight + global.ui_scale*this.margin_top);
                 break;
             case PanelLoc.right:
-                this.actor.set_size(panelHeight, vertpanelHeight); 
+                this.actor.set_size(panelHeight,
+                                    vertpanelHeight);
                 this.actor.set_position(this.monitor.x + this.monitor.width - panelHeight,
                                         this.monitor.y + tpanelHeight + global.ui_scale*this.margin_top);
                 break;
@@ -3136,10 +3132,6 @@ Panel.prototype = {
                 }
             }
         }
-        this._updatePanelBarriers();   // FIXME - we really should not be calling this here, however at the moment it does seem to be needed, as if
-                                       // turned off then barriers do not always get set.
-                                       // Why not call this here ? - because allocate gets called very frequently for minor applet movements, and this
-                                       // then triggers lots of barrier removals and recreations of the same barrier
     },
 
     /**
