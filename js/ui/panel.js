@@ -2578,11 +2578,13 @@ Panel.prototype = {
         let panelHeight = this._getScaledPanelHeight();
         this._setFont(panelHeight);
 
-        let tpanelHeight = 0;
-        let bpanelHeight = 0;
         let vertpanelHeight = 0;
 
         try {
+            this.margin_top    = 0;
+            this.margin_bottom = 0;
+            this.margin_left   = 0;
+            this.margin_right  = 0;
             let themeNode      = this.actor.get_theme_node();
             this.margin_top    = themeNode.get_length('margin-top');
             this.margin_bottom = themeNode.get_length('margin-bottom');
@@ -2595,19 +2597,16 @@ Panel.prototype = {
         // set the height of the panel. To find the height available for the vertical panels we need to find out how
         // much has been used for the horizontal panels on this monitor.
         //
+        this.toppanelHeight = 0;
+        this.bottompanelHeight = 0;
         if (horizontal_panel) {
             this.actor.set_height(panelHeight); 
         } else {
-            this.toppanelHeight = 0;
-            this.bottompanelHeight = 0;
-            if (Main.panelManager) {            // the panelManager has initialized
-                [tpanelHeight, bpanelHeight] = heightsUsedMonitor(this.monitorIndex, Main.panelManager.panels);
-                this.toppanelHeight = tpanelHeight;
-                this.bottompanelHeight = bpanelHeight;
-            }
+            if (Main.panelManager)            // the panelManager has initialized
+                [this.toppanelHeight, this.bottompanelHeight] = heightsUsedMonitor(this.monitorIndex, Main.panelManager.panels);
         
             vertpanelHeight = this.monitor.height - this.toppanelHeight - this.bottompanelHeight
-                              - global.ui_scale*this.margin_top - global.ui_scale*this.margin_bottom;
+                              - global.ui_scale*(this.margin_top + this.margin_bottom);
             this.actor.set_height(vertpanelHeight);
         }
         this._processPanelAutoHide();
@@ -2619,32 +2618,33 @@ Panel.prototype = {
         //
         switch (this.panelPosition) {
             case PanelLoc.top:
-                this.actor.set_size(this.monitor.width - global.ui_scale*(this.margin_left+this.margin_right),
-                                    panelHeight);
+                this.actor.set_size    (this.monitor.width - global.ui_scale*(this.margin_left+this.margin_right),
+                                        panelHeight);
                 this.actor.set_position(this.monitor.x + global.ui_scale*this.margin_left,
                                         this.monitor.y);
                 break;
             case PanelLoc.bottom:
-                this.actor.set_size(this.monitor.width - global.ui_scale*(this.margin_left+this.margin_right),
-                                    panelHeight);
+                this.actor.set_size    (this.monitor.width - global.ui_scale*(this.margin_left+this.margin_right),
+                                        panelHeight);
                 this.actor.set_position(this.monitor.x + global.ui_scale*this.margin_left,
                                         this.monitor.y + this.monitor.height - panelHeight);
                 break;
             case PanelLoc.left:
-                this.actor.set_size(panelHeight,
-                                    vertpanelHeight);
+                this.actor.set_size    (panelHeight,
+                                        vertpanelHeight);
                 this.actor.set_position(this.monitor.x,
-                                        this.monitor.y + tpanelHeight + global.ui_scale*this.margin_top);
+                                        this.monitor.y + this.toppanelHeight + global.ui_scale*this.margin_top);
                 break;
             case PanelLoc.right:
-                this.actor.set_size(panelHeight,
-                                    vertpanelHeight);
+                this.actor.set_size    (panelHeight,
+                                        vertpanelHeight);
                 this.actor.set_position(this.monitor.x + this.monitor.width - panelHeight,
-                                        this.monitor.y + tpanelHeight + global.ui_scale*this.margin_top);
+                                        this.monitor.y + this.toppanelHeight + global.ui_scale*this.margin_top);
                 break;
             default:
                 global.log("moveResizePanel - unrecognised panel position "+this.panelPosition);
         }
+        this._updatePanelBarriers();   // only needed here for when this routine is called when the style changes
 
         //
         // If we are adjusting the heights of horizontal panels then the vertical ones on this monitor 
@@ -2667,7 +2667,6 @@ Panel.prototype = {
 
         return true;
     },
-
 
     _set_orientation: function() {
     //
@@ -2748,7 +2747,6 @@ Panel.prototype = {
         alloc.min_size = -1;
 
         if (this.panelPosition == PanelLoc.left || this.panelPosition == PanelLoc.right) {
-//            alloc.natural_size = this._getScaledPanelHeight(); // or can -1 for the CSS to do it
             alloc.natural_size = -1;
         } else {
             alloc.natural_size = Main.layoutManager.primaryMonitor.width;
@@ -2770,7 +2768,6 @@ Panel.prototype = {
             alloc.natural_size = alloc.natural_size - this.toppanelHeight - this.bottompanelHeight - this.margin_top - this.margin_bottom;
         } else {
             alloc.min_size = -1;
-//            alloc.natural_size = this._getScaledPanelHeight(); // or can -1 for the CSS to do it
             alloc.natural_size = -1;
         }
     },
