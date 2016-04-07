@@ -734,40 +734,20 @@ PanelManager.prototype = {
             if (this.panels[ID]) {                  // If (existing) panel is moved
 
                 newMeta[ID] = [mon, ploc];          //Note: meta [i][0] is the monitor  meta [i][1] is the panelposition
-                let was_vert  = (this.panelsMeta[ID][1] == PanelLoc.left || this.panelsMeta[ID][1] == PanelLoc.right);
-                let is_horiz  = (newMeta[ID][1] == PanelLoc.bottom || newMeta[ID][1] == PanelLoc.top);
 
-                if ((was_vert && is_horiz)) { // if moved orientation from vertical to horizontal then reload
-                                              // FIXME Why ?  because for this specific type of move the allocation logic is not getting called
-                                              // resulting in misaligned boxes until the next cinnamon restart.  If you can find the solution to 
-                                              // this then this can be cut back to just the updatePosition calls etc, in the section below.
-                                              // Note that horizontal to vertical panel moves seem to work just fine and do not need this workaround.
-                                              // Note also that the calls to loadpanel here may trigger warnings in the log files that the applet is already loaded
+                newPanels[ID] = this.panels[ID];                       // Move panel object to newPanels
+                this.panels[ID] = null;                                // avoids triggering the destroy logic that follows
+                delete this.panels[ID];
 
-                    let panel = this._loadPanel(ID,
-                                                mon,
-                                                ploc,
-                                                drawcorner,
-                                                newPanels,
-                                                newMeta);
-                    if (panel)
-                        AppletManager.loadAppletsOnPanel(panel);
-                }
-                else {
-                    newPanels[ID] = this.panels[ID];                       // Move panel object to newPanels
-                    this.panels[ID] = null;                                // avoids triggering the destroy logic that follows
-                    delete this.panels[ID];
+                if (newMeta[ID][0] != this.panelsMeta[ID][0]           // monitor changed
+                    ||
+                    newMeta[ID][1] != this.panelsMeta[ID][1]) {        // or panel position changed
 
-                    if (newMeta[ID][0] != this.panelsMeta[ID][0]           // monitor changed
-                        ||
-                        newMeta[ID][1] != this.panelsMeta[ID][1]) {        // or panel position changed
+                    newPanels[ID].updatePosition(newMeta[ID][0], newMeta[ID][1]);
 
-                        newPanels[ID].updatePosition(newMeta[ID][0], newMeta[ID][1]);
-
-                        AppletManager.updateAppletsOnPanel(newPanels[ID]); // Asymmetrical applets such as panel launchers, systray etc. 
-                                                                           // need reorienting within the applet using their
-                                                                           // on_orientation_changed function
-                    }
+                    AppletManager.updateAppletsOnPanel(newPanels[ID]); // Asymmetrical applets such as panel launchers, systray etc. 
+                                                                       // need reorienting within the applet using their
+                                                                         // on_orientation_changed function
                 }
             } else {                                                       // new panel
 
@@ -2662,7 +2642,7 @@ Panel.prototype = {
         this._rightBox.add_style_class_name('vertical');
         this._rightBox.set_important(true);
         this._rightBox.set_vertical(true);
-        this._rightBox.set_x_align(Clutter.ActorAlign.FILL);
+        this._rightBox.set_x_align(Clutter.ActorAlign.FILL+Clutter.ActorAlign.CENTER);
         this._rightBox.set_y_align(Clutter.ActorAlign.END);
         this._rightBox.set_x_expand(true);
         this._rightBox.set_y_expand(true);
@@ -2671,7 +2651,7 @@ Panel.prototype = {
         this._leftBox.add_style_class_name('vertical');
         this._leftBox.set_important(true);
         this._leftBox.set_vertical(true);
-        this._leftBox.set_x_align(Clutter.ActorAlign.FILL);
+        this._leftBox.set_x_align(Clutter.ActorAlign.FILL+Clutter.ActorAlign.CENTER);
         this._leftBox.set_y_align(Clutter.ActorAlign.START);
         this._leftBox.set_x_expand(true);
         this._leftBox.set_y_expand(true);
@@ -2679,7 +2659,7 @@ Panel.prototype = {
         this._centerBox.add_style_class_name('vertical');
         this._centerBox.set_important(true);
         this._centerBox.set_vertical(true);
-        this._centerBox.set_x_align(Clutter.ActorAlign.FILL);
+        this._centerBox.set_x_align(Clutter.ActorAlign.FILL+Clutter.ActorAlign.CENTER);
         this._centerBox.set_y_align(Clutter.ActorAlign.CENTER+Clutter.ActorAlign.FILL);
         this._centerBox.set_x_expand(true);
         this._centerBox.set_y_expand(true);
@@ -2687,19 +2667,21 @@ Panel.prototype = {
 
     _set_horizontal_panel_style: function() {
 
-            this._rightBox.remove_style_class_name('vertical');
-            this._rightBox.set_vertical(false);
-            this._rightBox.set_x_align(Clutter.ActorAlign.END);
-            this._rightBox.set_align_end(true);
+        this._rightBox.remove_style_class_name('vertical');
+        this._rightBox.set_vertical(false);
+        this._rightBox.set_x_align(Clutter.ActorAlign.END);
+        this._rightBox.set_y_align(Clutter.ActorAlign.CENTER);
+        this._rightBox.set_align_end(true);
 
-            this._leftBox.remove_style_class_name('vertical');
-            this._leftBox.set_vertical(false);
-            this._leftBox.set_x_align(Clutter.ActorAlign.START);
+        this._leftBox.remove_style_class_name('vertical');
+        this._leftBox.set_vertical(false);
+        this._leftBox.set_x_align(Clutter.ActorAlign.START);
+        this._leftBox.set_y_align(Clutter.ActorAlign.CENTER);
 
-            this._centerBox.remove_style_class_name('vertical');
-            this._centerBox.set_vertical(false);
-            this._centerBox.set_x_align(Clutter.ActorAlign.CENTER);
-            this._centerBox.set_y_align(Clutter.ActorAlign.CENTER);
+        this._centerBox.remove_style_class_name('vertical');
+        this._centerBox.set_vertical(false);
+        this._centerBox.set_x_align(Clutter.ActorAlign.CENTER);
+        this._centerBox.set_y_align(Clutter.ActorAlign.CENTER);
     },
 
     _setFont: function(panelHeight) {
@@ -2999,6 +2981,15 @@ Panel.prototype = {
 
             // As using central y-align or x-align seems to result in zero size if the box is empty, force
             // to a defined size in edit mode if this happens
+            // Force the width to max to stop the boxes shrinking in from the edge.  This needs resetting if the
+            // panel orientation is moved to horizontal.  The logic in the horizontal case is analogous
+
+            this._centerBox.set_width(allocWidth);
+            this._leftBox.set_width(allocWidth);
+            this._rightBox.set_width(allocWidth);
+            this._centerBox.set_height(-1);
+            this._leftBox.set_height(-1);
+            this._rightBox.set_height(-1);
 
             if (this._panelEditMode) {
                 if (this._centerBox.get_height() == 0) {
@@ -3058,6 +3049,13 @@ Panel.prototype = {
 
             this._setHorizChildbox (childBox,rightBoundary,allocWidth,0,rightBoundary);
             this._rightBox.allocate(childBox, flags);
+
+            this._centerBox.set_width(-1);
+            this._leftBox.set_width(-1);
+            this._rightBox.set_width(-1);
+            this._centerBox.set_height(allocHeight);
+            this._leftBox.set_height(allocHeight);
+            this._rightBox.set_height(allocHeight);
 
             if (this.panelPosition == PanelLoc.top) { // top panel
                 if (this.drawcorner[0]) {
