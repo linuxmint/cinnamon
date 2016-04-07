@@ -10,7 +10,6 @@ const Signals = imports.signals;
 const St = imports.gi.St;
 const Main = imports.ui.main;
 const Params = imports.misc.params;
-const ScreenSaver = imports.misc.screenSaver;
 const Tweener = imports.ui.tweener;
 const EdgeFlip = imports.ui.edgeFlip;
 const HotCorner = imports.ui.hotCorner;
@@ -221,7 +220,6 @@ LayoutManager.prototype = {
         this._coverPane.destroy();
         this._coverPane = null;
 
-        this.keyboardBox.show();
         global.window_group.remove_clip();
         this._chrome.thawUpdateRegions();
     },
@@ -402,15 +400,6 @@ Chrome.prototype = {
         global.screen.connect('notify::n-workspaces',
                               Lang.bind(this, this._queueUpdateRegions));
 
-        this._screenSaverActive = false;
-        this._screenSaverProxy = new ScreenSaver.ScreenSaverProxy();
-        this._screenSaverProxy.connectSignal('ActiveChanged', Lang.bind(this, this._onScreenSaverActiveChanged));
-        this._screenSaverProxy.GetActiveRemote(Lang.bind(this,
-            function(result, err) {
-                if (!err)
-                    this._onScreenSaverActiveChanged(this._screenSaverProxy, null, result);
-            }));
-
         this._relayout();
     },
 
@@ -542,10 +531,6 @@ Chrome.prototype = {
             let actorData = this._trackedActors[i], visible;
             if (!actorData.isToplevel)
                 continue;
-
-            if (this._screenSaverActive) {
-                visible = false;
-            }
             else if (this._inOverview)
                 visible = true;
             else if (!actorData.visibleInFullscreen &&
@@ -573,12 +558,6 @@ Chrome.prototype = {
         this._monitors = this._layoutManager.monitors;
         this._primaryMonitor = this._layoutManager.primaryMonitor;
         this._updateFullscreen();
-        this._updateVisibility();
-        this._queueUpdateRegions();
-    },
-
-    _onScreenSaverActiveChanged: function(proxy, connection, screenSaverActive) {
-        this._screenSaverActive = screenSaverActive[0];
         this._updateVisibility();
         this._queueUpdateRegions();
     },
@@ -675,9 +654,12 @@ Chrome.prototype = {
 
             if (metaWindow.get_layer() == Meta.StackLayer.FULLSCREEN || metaWindow.is_fullscreen()) {
                 let [index, monitor] = this._findMonitorForWindow(window);
-                if (monitor)
+                if (monitor) {
                     monitor.inFullscreen = true;
+                    continue;
+                }
             }
+
             if (metaWindow.is_override_redirect()) {
                 // Check whether the window is screen sized
                 let isScreenSized =
@@ -686,8 +668,10 @@ Chrome.prototype = {
                      window.height == global.screen_height);
 
                 if (isScreenSized) {
-                    for (let i = 0; i < this._monitors.length; i++)
+                    for (let i = 0; i < this._monitors.length; i++) {
                         this._monitors[i].inFullscreen = true;
+                        continue;
+                    }
                 }
 
                 // Or whether it is monitor sized
@@ -696,10 +680,11 @@ Chrome.prototype = {
                     window.x <= monitor.x &&
                     window.x + window.width >= monitor.x + monitor.width &&
                     window.y <= monitor.y &&
-                    window.y + window.height >= monitor.y + monitor.height)
+                    window.y + window.height >= monitor.y + monitor.height) {
                     monitor.inFullscreen = true;
-            } else
-                break;
+                    continue;
+                }
+            }
         }
     },
 

@@ -59,7 +59,7 @@ EXTRA_HFILES=
 # e.g. IGNORE_HFILES=gtkdebug.h gtkintl.h private_code
 IGNORE_HFILES=					\
 	calendar-server				\
-	gvc					\
+	libcvc					\
 	hotplug-sniffer				\
 	st					\
 	tray					\

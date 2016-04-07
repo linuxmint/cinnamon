@@ -601,7 +601,7 @@
     </key>
 
     <key name="enable-indicators" type="b">
-      <default>true</default>
+      <default>false</default>
       <_summary>Enable support for indicators</_summary>
       <_description>
         Whether to support indicators

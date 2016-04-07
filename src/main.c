@@ -314,7 +314,7 @@ main (int argc, char **argv)
 #endif
 
   /* Disable debug spew from various libraries */
-  g_log_set_handler ("Gvc", G_LOG_LEVEL_DEBUG,
+  g_log_set_handler ("Cvc", G_LOG_LEVEL_DEBUG,
                      muted_log_handler, NULL);
   g_log_set_handler ("AccountsService", G_LOG_LEVEL_DEBUG,
                      muted_log_handler, NULL);
