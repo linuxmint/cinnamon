@@ -115,6 +115,25 @@ MyDesklet.prototype = {
         }
     },
 
+    _scan_dir: function(dir) {
+        let dir_file = Gio.file_new_for_path(dir);
+        let fileEnum = dir_file.enumerate_children('standard::type,standard::name', Gio.FileQueryInfoFlags.NONE, null);
+
+        let info;
+        while ((info = fileEnum.next_file(null)) != null) {
+            let fileType = info.get_file_type();
+            let fileName = dir + "/" + info.get_name();
+            if (fileType != Gio.FileType.DIRECTORY) {
+                this._images.push(fileName);
+            } else {
+                this._scan_dir(fileName);
+            }
+        }
+
+        fileEnum.close(null);
+    },
+
+
     setup_display: function() {
         this._photoFrame = new St.Bin({style_class: 'photoframe-box', x_align: St.Align.START});
 
@@ -124,7 +143,7 @@ MyDesklet.prototype = {
         this._images = [];
         this._photoFrame.set_child(this._bin);
         this.setContent(this._photoFrame);
- 
+
         if (this.effect == "black-and-white") {
             let effect = new Clutter.DesaturateEffect();
             this._bin.add_effect(effect);
@@ -143,17 +162,8 @@ MyDesklet.prototype = {
         }
 
         if (this.dir_file.query_exists(null)) {
-            let fileEnum = this.dir_file.enumerate_children('standard::type,standard::name', Gio.FileQueryInfoFlags.NONE, null);
-            let info;
-            while ((info = fileEnum.next_file(null)) != null) {
-                let fileType = info.get_file_type();
-                if (fileType != Gio.FileType.DIRECTORY) {
-                    this._images.push(this.dir + "/" + info.get_name());
-                }
-            }
+            this._scan_dir(this.dir);
 
-            fileEnum.close(null);
-            
             this.updateInProgress = false;
             this.currentPicture = null;
 
