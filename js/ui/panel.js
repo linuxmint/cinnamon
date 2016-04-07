@@ -114,7 +114,6 @@ function _unpremultiply(color) {
                                blue: blue, alpha: color.alpha });
 };
 
-
 /**
  * checkPanelUpgrade:
  *
@@ -191,7 +190,6 @@ function heightsUsedMonitor (monitorIndex, listofpanels) {
     return [toppanelHeight, bottompanelHeight];
 };
 
-
 /**
 * getPanelLocFromName:
 * @pname (char): panel type
@@ -218,7 +216,6 @@ function getPanelLocFromName (pname) {
     }
     return(jj);
 };
-
 
 /**
  * #PanelManager
@@ -328,9 +325,7 @@ PanelManager.prototype = {
         //
         // panel corners are optional and not used in many themes. However there is no measurable gain in trying to suppress them
         // if the theme does not have them
-        //
-        //log("monitor count " + monitorCount);
-        //
+
         for (let i = 0; i <= monitorCount; i++) {
 
             for (let j in stash) {
@@ -1406,9 +1401,8 @@ PanelCorner.prototype = {
             let innerBorderColor = node.get_color('-panel-corner-inner-border-color');
             let outerBorderColor = node.get_color('-panel-corner-outer-border-color');
 
-            //
             // Save suitable offset directions for later use
-            //
+
             xOffsetDirection = (this._cornertype == CornerType.topleft || this._cornertype == CornerType.bottomleft)
                         ? -1 :  1;
 
@@ -1418,9 +1412,9 @@ PanelCorner.prototype = {
             let cr = this.actor.get_context();
             cr.setOperator(Cairo.Operator.SOURCE);
             cr.save();
-            //
+
             // Draw arc, lines and fill to create a concave triangle
-            //
+
             if (this._cornertype == CornerType.topleft) {
                 cr.moveTo(0, 0);
                 cr.arc( cornerRadius,
@@ -1471,17 +1465,16 @@ PanelCorner.prototype = {
             over = _over(innerBorderColor, backgroundColor);             //colour inner over background
             Clutter.cairo_set_source_color(cr, over);
 
-            //
             // Draw basic shape with vertex shifted diagonally outwards by the border width
-            //
+
             let offset = outerBorderWidth;
             cr.translate(xOffsetDirection * offset, yOffsetDirection * offset);  // move by x,y
             cr.appendPath(savedPath);
             cr.fill();
-            //
+
             // Draw a small rectangle over the end of the arc on the inwards side
             // why ?  pre-existing code, reason for creating this squared off end to the shape is not clear.
-            //
+
             if (this._cornertype == CornerType.topleft)
                 cr.rectangle(cornerRadius - offset, 
                              0, 
@@ -1506,18 +1499,17 @@ PanelCorner.prototype = {
             offset = innerBorderWidth;
             Clutter.cairo_set_source_color(cr, backgroundColor);  // colour background
 
-            //
             // Draw basic shape with vertex shifted diagonally outwards by the border width, in background colour
-            //
+
             cr.translate(xOffsetDirection * offset, yOffsetDirection * offset); 
             cr.appendPath(savedPath);
             cr.fill(); 
             cr.restore();
 
             cr.$dispose();
-            //
+
             // Trim things down to a neat and tidy box
-            //
+
             this.actor.set_clip(0,0,cornerRadius,cornerRadius);
         }
     },
@@ -1925,9 +1917,6 @@ Panel.prototype = {
             // if there is nothing in it, and the effective size is shrink-wrapped around its contents if there is something in it
             // which all gives some quirky results. Setting y_expand seems to align the contents to the top in this case, rather weird.
             //
-            // Using x_align:2 on the boxes shrinks them down to a tiny vertical strip if empty, which is not workable in panel edit mode.
-            // This can be catered for dynamically by setting and unsetting it as needed, but in practice it is easier just to set the width
-            // to what is wanted. x-expand does not appear to make a difference. 
             // Using x_align:2 also causes problems with a new, empty panel - seeming to stop the dndhandler working. There is a two part
             // workaround to this - in allocate to set heights if found to be zero, and the same in the set edit mode code.
             //
@@ -2390,27 +2379,17 @@ Panel.prototype = {
         this._leftBox.change_style_pseudo_class('dnd', this._panelEditMode);
         this._centerBox.change_style_pseudo_class('dnd', this._panelEditMode);
         this._rightBox.change_style_pseudo_class('dnd', this._panelEditMode);
-//
-// FIXME This next section is a dreadful kludge, so if you can solve the underlying problem please remove this
-// For a new vertical panel 'allocate' may not get called when trying to drag an applet in.  This causes drop
-// not to be available, meaning the panel can't be populated via this method.
+
+// This next section is a kludge, so if you can solve the underlying problem please remove this
+// For a new vertical panel 'allocate' may not get called when trying to drag an applet in, especially with central alignment.  
+// This causes drop not to be available, meaning the panel can't be populated via this method.
 // This section gives the boxes a minimum size to force an allocation which solves one problem
-// The most likely potential solution is to move the alignment to FILL away from CENTER, 
-// but the required mix of alignment, expand etc. for the actors appears very touchy.
-//
+
 
         if (this._panelEditMode == true && (this.panelPosition == PanelLoc.left || this.panelPosition == PanelLoc.right)) {
-            if (this._leftBox.get_height() == 0) {
-                this._leftBox.set_height(40);
-                this._leftBox.set_width(this._getScaledPanelHeight());
-           }
             if (this._centerBox.get_height() == 0) {
                 this._centerBox.set_height(40);
                 this._centerBox.set_width(this._getScaledPanelHeight());
-            }
-            if (this._rightBox.get_height() == 0) {
-                this._rightBox.set_height(40);
-                this._rightBox.set_width(this._getScaledPanelHeight());
             }
         }
 
@@ -2673,13 +2652,9 @@ Panel.prototype = {
     // cater for the style/alignment for different panel orientations
     //
 	if (this.panelPosition == PanelLoc.top || this.panelPosition == PanelLoc.bottom)
-	{
             this._set_horizontal_panel_style();
-	}
 	else
-	{
             this._set_vertical_panel_style();
-        }
     },
 
     _set_vertical_panel_style: function() {
@@ -2687,21 +2662,27 @@ Panel.prototype = {
         this._rightBox.add_style_class_name('vertical');
         this._rightBox.set_important(true);
         this._rightBox.set_vertical(true);
-        this._rightBox.set_x_align(Clutter.ActorAlign.CENTER);
+        this._rightBox.set_x_align(Clutter.ActorAlign.FILL);
+        this._rightBox.set_y_align(Clutter.ActorAlign.END);
+        this._rightBox.set_x_expand(true);
+        this._rightBox.set_y_expand(true);
         this._rightBox.set_align_end(false);
 
         this._leftBox.add_style_class_name('vertical');
         this._leftBox.set_important(true);
         this._leftBox.set_vertical(true);
-        this._leftBox.set_x_align(Clutter.ActorAlign.CENTER);
+        this._leftBox.set_x_align(Clutter.ActorAlign.FILL);
+        this._leftBox.set_y_align(Clutter.ActorAlign.START);
+        this._leftBox.set_x_expand(true);
+        this._leftBox.set_y_expand(true);
 
         this._centerBox.add_style_class_name('vertical');
         this._centerBox.set_important(true);
         this._centerBox.set_vertical(true);
-        this._centerBox.set_x_align(Clutter.ActorAlign.CENTER);
-        this._centerBox.set_y_align(Clutter.ActorAlign.CENTER);
-//        this._centerBox.set_y_expand(true);  don't set this - the combination of center align and expand moves vertical box contents to the top
-//        this._centerBox.set_pack_start(false);  even with this set
+        this._centerBox.set_x_align(Clutter.ActorAlign.FILL);
+        this._centerBox.set_y_align(Clutter.ActorAlign.CENTER+Clutter.ActorAlign.FILL);
+        this._centerBox.set_x_expand(true);
+        this._centerBox.set_y_expand(true);
     },
 
     _set_horizontal_panel_style: function() {
@@ -2839,30 +2820,12 @@ Panel.prototype = {
 
         let centerBoxOccupied = this._centerBox.get_n_children() > 0;
 
-        if (vertical) { // vertical panel
-            /* If panel edit mode, pretend central box is occupied and give it at
-             * least width 40 so that things can be dropped into it */
-            if (this._panelEditMode) {
-                centerBoxOccupied  = true;
-                centerMinWidth     = Math.max(centerMinWidth, 35);
-                centerNaturalWidth = Math.max(centerNaturalWidth, 35);
-                //
-                // similarly if the left and right boxes come up small or empty give them a minimum width.
-                // 25 (horizontal min size) comes up a little small, so use a larger value of 35
-                //
-                leftMinWidth      = Math.max(leftMinWidth, 35);
-                leftNaturalWidth  = Math.max(leftNaturalWidth, 35);
-                rightMinWidth     = Math.max(rightMinWidth, 35);
-                rightNaturalWidth = Math.max(rightNaturalWidth, 35);
-            }
-        } else { // horizontal panel
             /* If panel edit mode, pretend central box is occupied and give it at
              * least width 25 so that things can be dropped into it */
-            if (this._panelEditMode) {
-                centerBoxOccupied  = true;
-                centerMinWidth     = Math.max(centerMinWidth, 25);
-                centerNaturalWidth = Math.max(centerNaturalWidth, 25);
-            }
+        if (this._panelEditMode) {
+            centerBoxOccupied  = true;
+            centerMinWidth     = Math.max(centerMinWidth, 25);
+            centerNaturalWidth = Math.max(centerNaturalWidth, 25);
         }
 
         let totalMinWidth             = leftMinWidth + centerMinWidth + rightMinWidth;
@@ -2997,8 +2960,6 @@ Panel.prototype = {
         return;
     },
 
-
-
     _allocate: function(actor, box, flags) {
 
         let cornerMinWidth = 0;
@@ -3036,32 +2997,21 @@ Panel.prototype = {
             this._setVertChildbox (childBox,rightBoundary,allocHeight,0,rightBoundary);
             this._rightBox.allocate(childBox, flags); // rightbox 
 
-            //
             // As using central y-align or x-align seems to result in zero size if the box is empty, force
-            // to a defined size in edit mode if this happens, and set the width to the max so that coloured boxes 
-            // do not shrink down around the applets they contain.
-            //
-
-            this._centerBox.set_width(allocWidth);
-            this._leftBox.set_width(allocWidth);
-            this._rightBox.set_width(allocWidth);
+            // to a defined size in edit mode if this happens
 
             if (this._panelEditMode) {
                 if (this._centerBox.get_height() == 0) {
                    this._centerBox.set_height(rightBoundary - leftBoundary);
                 }
-                if (this._leftBox.get_height() == 0) {
+                if (this._leftBox.get_height() == 0) {     // without this ...
                    this._leftBox.set_height(leftBoundary);
                 }
-                if (this._rightBox.get_height() == 0) {
+                if (this._rightBox.get_height() == 0) {    // .. and this, the centre box will generally snap to the top in edit mode
                    this._rightBox.set_height(allocHeight - rightBoundary);
                 }
-            } else {
-                this._centerBox.set_height(-1);
-                this._leftBox.set_height(-1);
-                this._rightBox.set_height(-1);
             }
-            //
+
             // Corners are in response to a bit of optional css and are about painting corners just outside the panels so as to create a seamless 
             // visual impression for windows with curved corners 
             // So ... top left corner wants to be at the bottom left of the top panel. top right wants to be in the correspondingplace on the right 
@@ -3069,7 +3019,7 @@ Panel.prototype = {
             // No panel, no corner necessary.
             // If there are vertical panels as well then we want to shift these in by the panel width
             // If there are vertical panels but no horizontal then the corners are top right and left to right of left panel, and same to left of right panel
-            //
+
             if (this.panelPosition == PanelLoc.left) { // left panel
                 if (this.drawcorner[0]) {
                     this._setCornerChildbox(childBox, box.x2, box.x2+cornerWidth, box.y1, box.y1+cornerWidth);
@@ -3138,9 +3088,10 @@ Panel.prototype = {
      * position of mouse/active window. It then calls the _queueShowHidePanel
      * function to show or hide the panel as necessary.
      *
+     * false = autohide, true = always show, intel = Intelligent
      */
     _updatePanelVisibility: function() {
-        // false = autohide, true = always show, intel = Intelligent
+
         switch (this._autohideSettings) {
             case "false":
                 this._shouldShow = true;
