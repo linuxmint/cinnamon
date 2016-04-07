@@ -213,6 +213,7 @@ MyDesklet.prototype = {
 
             let old_pic = this.currentPicture;
             this.currentPicture = image;
+            this.currentPicture.path = image_path;
 
             if (this.fade_delay > 0) {
                 Tweener.addTween(this._bin,
@@ -245,9 +246,9 @@ MyDesklet.prototype = {
             if (event.get_button() == 1) {
                 this._update();
             }
-            else if (event.get_button() == 2) {     
-                Util.spawnCommandLine("xdg-open " + this.currentPicture);                
-            }            
+            else if (event.get_button() == 2) {
+                Util.spawn(["xdg-open", this.currentPicture.path]);
+            }
         }
         catch (e) {
             global.logError(e);
