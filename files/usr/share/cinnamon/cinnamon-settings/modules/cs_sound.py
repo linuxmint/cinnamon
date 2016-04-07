@@ -699,11 +699,17 @@ class Module:
     
     def deviceAdded(self, c, id, type):
         device = getattr(self.controller, "lookup_"+type+"_id")(id)
-        icon = "audio-card"
         
-        iconTheme = Gtk.IconTheme.get_default()
+        iconTheme = Gtk.IconTheme.get_default()        
         gicon = device.get_gicon()
-        icon = iconTheme.lookup_by_gicon(gicon, 32, 0).load_icon()
+        lookup = iconTheme.lookup_by_gicon(gicon, 32, 0)
+        if lookup is not None:
+            icon = lookup.load_icon()
+        else:
+            if ("bluetooth" in device.get_icon_name()):
+                icon = iconTheme.load_icon("bluetooth", 32, 0)
+            else:
+                icon = iconTheme.load_icon("audio-card", 32, 0)
         
         getattr(self, type+"DeviceList").append([device.get_description() + "\n" +  device.get_origin(), "", False, id, icon])
 
