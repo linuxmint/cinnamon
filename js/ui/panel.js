@@ -235,6 +235,10 @@ PanelManager.prototype = {
         this.panelsMeta = [];   // Properties of panels in format [<monitor index>, <panelPosition>]
         this.canAdd = true;     // Whether there is space for more panels to be added
 
+        let editMode = global.settings.get_boolean("panel-edit-mode");
+        if (editMode == true)
+            global.settings.set_boolean("panel-edit-mode", false);  // don't start up in edit mode, can loop with empty vertical panels
+
         this._fullPanelLoad();
 
         this._setMainPanel();
@@ -2368,15 +2372,12 @@ Panel.prototype = {
         if (this._panelEditMode == true && (this.panelPosition == PanelLoc.left || this.panelPosition == PanelLoc.right)) {
             if (this._centerBox.get_height() == 0) {
                 this._centerBox.set_height(40);
-                this._centerBox.set_width(this._getScaledPanelHeight());
             }
             if (this._leftBox.get_height() == 0) {
                 this._leftBox.set_height(40);
-                this._leftBox.set_width(this._getScaledPanelHeight());
             }
             if (this._rightBox.get_height() == 0) {
                 this._rightBox.set_height(40);
-                this._rightBox.set_width(this._getScaledPanelHeight());
             }
         }
 
