@@ -3072,6 +3072,13 @@ Panel.prototype = {
             this._leftBox.set_height(allocHeight);
             this._rightBox.set_height(allocHeight);
 
+
+            if (this._panelEditMode) {
+                if (this._centerBox.get_width() == 0) { // a fallback
+                   this._centerBox.set_width(40);
+                }
+            }
+
             if (this.panelPosition == PanelLoc.top) { // top panel
                 if (this.drawcorner[0]) {
                     this._setCornerChildbox(childBox, 0, cornerWidth, allocHeight,allocHeight + cornerHeight );
