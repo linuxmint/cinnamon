@@ -2360,16 +2360,23 @@ Panel.prototype = {
         this._centerBox.change_style_pseudo_class('dnd', this._panelEditMode);
         this._rightBox.change_style_pseudo_class('dnd', this._panelEditMode);
 
-// This next section is a kludge, so if you can solve the underlying problem please remove this
+// This next section is a bit of a kludge
 // For a new vertical panel 'allocate' may not get called when trying to drag an applet in, especially with central alignment.  
 // This causes drop not to be available, meaning the panel can't be populated via this method.
-// This section gives the boxes a minimum size to force an allocation which solves one problem
-
+// This section gives the boxes a minimum size to force an allocation
 
         if (this._panelEditMode == true && (this.panelPosition == PanelLoc.left || this.panelPosition == PanelLoc.right)) {
             if (this._centerBox.get_height() == 0) {
                 this._centerBox.set_height(40);
                 this._centerBox.set_width(this._getScaledPanelHeight());
+            }
+            if (this._leftBox.get_height() == 0) {
+                this._leftBox.set_height(40);
+                this._leftBox.set_width(this._getScaledPanelHeight());
+            }
+            if (this._rightBox.get_height() == 0) {
+                this._rightBox.set_height(40);
+                this._rightBox.set_width(this._getScaledPanelHeight());
             }
         }
 
@@ -2808,6 +2815,13 @@ Panel.prototype = {
             centerBoxOccupied  = true;
             centerMinWidth     = Math.max(centerMinWidth, 25);
             centerNaturalWidth = Math.max(centerNaturalWidth, 25);
+
+            if (vertical) {  // a workaround if boxes in a vertical panel are emptied
+                leftMinWidth     = Math.max(leftMinWidth, 25);
+                leftNaturalWidth = Math.max(leftNaturalWidth, 25);
+                rightMinWidth     = Math.max(rightMinWidth, 25);
+                rightNaturalWidth = Math.max(rightNaturalWidth, 25);
+            }
         }
 
         let totalMinWidth             = leftMinWidth + centerMinWidth + rightMinWidth;
@@ -2998,7 +3012,7 @@ Panel.prototype = {
                 if (this._leftBox.get_height() == 0) {     // without this ...
                    this._leftBox.set_height(leftBoundary);
                 }
-                if (this._rightBox.get_height() == 0) {    // .. and this, the centre box will generally snap to the top in edit mode
+                if (this._rightBox.get_height() == 0) {    // .. and this, the centre box contents will generally snap to the top in edit mode
                    this._rightBox.set_height(allocHeight - rightBoundary);
                 }
             }
