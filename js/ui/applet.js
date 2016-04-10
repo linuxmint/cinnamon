@@ -152,13 +152,7 @@ Applet.prototype = {
                                         reactive: true,
                                         track_hover: true });
 
-        if (orientation == St.Side.LEFT || orientation == St.Side.RIGHT)
-        {
-            this.actor.add_style_class_name('vertical');
-            this.actor.set_important(true);
-            this.actor.set_y_align(Clutter.ActorAlign.CENTER);
-            this.actor.set_x_align(Clutter.ActorAlign.CENTER);
-        }
+        this.setOrientation_internal(orientation);
     
         this._applet_tooltip = new Tooltips.PanelItemTooltip(this, "", orientation);                                        
         this.actor.connect('button-press-event', Lang.bind(this, this._onButtonPressEvent));  
@@ -367,6 +361,27 @@ Applet.prototype = {
     },
 
     /**
+     * setOrientation_internal:
+     * @orientation (St.Side): the orientation
+     *
+     * Sets the orientation of the applet.
+     *
+     */
+    setOrientation_internal: function (orientation) {
+
+        if (orientation == St.Side.LEFT || orientation == St.Side.RIGHT)
+        {
+            this.actor.add_style_class_name('vertical');
+            this.actor.set_important(true);
+            this.actor.set_y_align(Clutter.ActorAlign.CENTER);
+            this.actor.set_x_align(Clutter.ActorAlign.CENTER);
+        }
+        else {
+            this.actor.remove_style_class_name('vertical');
+        }
+    },
+
+    /**
      * setOrientation:
      * @orientation (St.Side): the orientation
      * 
@@ -376,6 +391,7 @@ Applet.prototype = {
      */
     setOrientation: function (orientation) {
 
+        this.setOrientation_internal(orientation);
         this.on_orientation_changed(orientation);
         this.emit("orientation-changed", orientation);
         this.finalizeContextMenu();
