@@ -115,7 +115,6 @@ class Module:
         self.has_lid = self.up_client.get_lid_is_present()
 
         self.sidePage.stack = SettingsStack()
-        self.sidePage.add_widget(self.sidePage.stack)
 
         # Power
 
@@ -191,9 +190,11 @@ class Module:
 
         if primary_output is None:
             if self.show_battery_page:
+                self.sidePage.add_widget(self.sidePage.stack)
                 self.sidePage.stack.add_titled(power_page, "power", _("Power"))
                 self.sidePage.stack.add_titled(self.battery_page, "batteries", _("Batteries"))
             else:
+
                 self.sidePage.add_widget(power_page)
             return
 
@@ -210,11 +211,13 @@ class Module:
             brightness = proxy.GetPercentage()
         except:
             if self.show_battery_page:
+                self.sidePage.add_widget(self.sidePage.stack)
                 self.sidePage.stack.add_titled(power_page, "power", _("Power"))
                 self.sidePage.stack.add_titled(self.battery_page, "batteries", _("Batteries"))
             else:
                 self.sidePage.add_widget(power_page)
         else:
+            self.sidePage.add_widget(self.sidePage.stack)
             self.sidePage.stack.add_titled(power_page, "power", _("Power"))
             if self.show_battery_page:
                 self.sidePage.stack.add_titled(self.battery_page, "batteries", _("Batteries"))
