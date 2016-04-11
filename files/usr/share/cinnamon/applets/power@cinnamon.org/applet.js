@@ -100,7 +100,7 @@ function DeviceItem() {
 DeviceItem.prototype = {
     __proto__: PopupMenu.PopupBaseMenuItem.prototype,
 
-    _init: function(device, status) {
+    _init: function(device, status, aliases) {
         PopupMenu.PopupBaseMenuItem.prototype._init.call(this, { reactive: false });
 
         let [device_id, vendor, model, device_type, icon, percentage, state, time, timepercentage] = device;
@@ -111,6 +111,20 @@ DeviceItem.prototype = {
         let description = deviceTypeToString(device_type);
         if (vendor != "" || model != "") {
             description = "%s %s".format(vendor, model);
+        }
+
+        for ( let i = 0; i < aliases.length; ++i ) {
+            alias = aliases[i];
+            try{
+                let parts = alias.split(':=');
+                if (parts[0] == device_id) {
+                    description = parts[1];
+                }
+            }
+            catch(e) {
+                // ignore malformed aliases
+            }
+            global.logError(alias);
         }
 
         this.label = new St.Label({ text: "%s %d%%".format(description, Math.round(percentage)) });
@@ -246,6 +260,9 @@ MyApplet.prototype = {
         this.menu = new Applet.AppletPopupMenu(this, orientation);
         this.menuManager.addMenu(this.menu);
 
+        this.aliases = global.settings.get_strv("device-aliases");
+        global.settings.connect('changed::device-aliases', Lang.bind(this, this._on_device_aliases_changed));
+
         this._deviceItems = [ ];
         this._devices = [ ];
         this._primaryDeviceId = null;
@@ -269,6 +286,11 @@ MyApplet.prototype = {
             this._proxy.connect("g-properties-changed", Lang.bind(this, this._devicesChanged));
             this._devicesChanged();
         }));
+    },
+
+    _on_device_aliases_changed: function() {
+        this.aliases = global.settings.get_strv("device-aliases");
+        this._devicesChanged();
     },
 
     _onButtonPressEvent: function(actor, event){
@@ -447,7 +469,7 @@ MyApplet.prototype = {
                     }
 
                     let status = this._getDeviceStatus(devices[i]);
-                    let item = new DeviceItem (devices[i], status);
+                    let item = new DeviceItem (devices[i], status, this.aliases);
                     this.menu.addMenuItem(item, position);
                     this.num_devices = this.num_devices + 1;
                     this._deviceItems.push(item);

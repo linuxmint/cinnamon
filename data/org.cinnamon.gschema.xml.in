@@ -329,6 +329,13 @@
       </_description>
     </key>
 
+    <key name="device-aliases" type="as">
+      <default>[]</default>
+      <_summary>Aliases given to battery powered fardware devices</_summary>
+      <_description>
+      </_description>
+    </key>
+
     <key name="desktop-layout" type="s">
       <default>""</default>
       <_summary>(Deprecated) Layout style</_summary>

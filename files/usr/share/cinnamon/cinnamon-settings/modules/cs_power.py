@@ -109,6 +109,8 @@ class Module:
                 "org.cinnamon.SettingsDaemon.Power",
                 None)
 
+        self.settings = Gio.Settings.new("org.cinnamon")
+
         device_types = [x[UP_TYPE] for x in self.csd_power_proxy.GetDevices()]
 
         self.has_battery = UPowerGlib.DeviceKind.BATTERY in device_types or UPowerGlib.DeviceKind.UPS in device_types
@@ -238,6 +240,15 @@ class Module:
 
     def build_battery_page(self, *args):
 
+        self.aliases = {}
+        device_aliases = self.settings.get_strv("device-aliases")
+        for alias in device_aliases:
+            try:
+                (device_id, device_nickname) = alias.split(":=")
+                self.aliases[device_id] = device_nickname
+            except:
+                pass # ignore malformed aliases
+
         #destroy all widgets in this page
         for widget in self.battery_page.get_children():
             widget.destroy()
@@ -294,6 +305,7 @@ class Module:
         self.battery_page.set_visible(visible)
 
     def set_device_ups_primary(self, device):
+        device_id = device[UP_ID]
         percentage = device[UP_PERCENTAGE]
         state = device[UP_STATE]
         time = device[UP_SECONDS]
@@ -324,10 +336,11 @@ class Module:
         if (model != "" or vendor != ""):
             desc = "%s %s" % (vendor, model)
 
-        widget = self.create_battery_row("battery", desc, percentage, details)
+        widget = self.create_battery_row(device_id, "battery", desc, percentage, details)
         return widget
 
     def set_device_battery_primary(self, device):
+        device_id = device[UP_ID]
         percentage = device[UP_PERCENTAGE]
         state = device[UP_STATE]
         time = device[UP_SECONDS]
@@ -363,7 +376,7 @@ class Module:
         if (model != "" or vendor != ""):
             desc = "%s %s" % (vendor, model)
 
-        widget = self.create_battery_row("battery", desc, percentage, details)
+        widget = self.create_battery_row(device_id, "battery", desc, percentage, details)
         return widget
 
     def set_device_battery_additional(self, device):
@@ -391,6 +404,7 @@ class Module:
             return None
 
     def add_battery_device_secondary(self, device):
+        device_id = device[UP_ID]
         kind = device[UP_TYPE]
         percentage = device[UP_PERCENTAGE]
         vendor = device[UP_VENDOR]
@@ -427,10 +441,14 @@ class Module:
         if (model != "" or vendor != ""):
             desc = "%s %s" % (vendor, model)
 
-        widget = self.create_battery_row(icon_name, desc, percentage)
+        widget = self.create_battery_row(device_id, icon_name, desc, percentage)
         return widget
 
-    def create_battery_row(self, icon_name, desc, percentage, details=None):
+    def create_battery_row(self, device_id, icon_name, desc, percentage, details=None):
+
+        if device_id in self.aliases:
+            desc = self.aliases[device_id]
+
         widget = SettingsWidget()
 
         vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
@@ -438,10 +456,11 @@ class Module:
         label_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=15)
 
         image = Gtk.Image.new_from_icon_name(icon_name, Gtk.IconSize.DND)
-        label = Gtk.Label()
-        label.set_markup(desc)
+        entry = Gtk.Entry()
+        entry.set_text(desc)
+        entry.connect('focus-out-event', self.on_alias_changed, device_id)
         label_box.pack_start(image, False, False, 0)
-        label_box.pack_start(label, False, False, 0)
+        label_box.pack_start(entry, False, False, 0)
         self.battery_label_size_group.add_widget(label_box)
         hbox.pack_start(label_box, False, False, 0)
         label = Gtk.Label()
@@ -470,6 +489,14 @@ class Module:
         widget.pack_start(vbox, True, True, 0)
 
         return widget
+
+    def on_alias_changed(self, entry, event, device_id):
+        self.aliases[device_id] = entry.get_text()
+        aliases = []
+        for alias in self.aliases:
+            aliases.append("%s:=%s" % (alias, self.aliases[alias]))
+        self.settings.set_strv("device-aliases", aliases)
+
 
 def get_available_options(up_client):
     can_suspend = False
