@@ -1866,7 +1866,7 @@ Panel.prototype = {
         this.scaleMode = false;
 
         this.actor = new Cinnamon.GenericContainer({ name: 'panel', reactive: true });
-        this.setPanelStyleClass(this.panelPosition);
+        this.addPanelStyleClass(this.panelPosition);
 
         this.actor._delegate = this;
 
@@ -1897,9 +1897,7 @@ Panel.prototype = {
             // Adding y_align: 2 (centre) on the central box kills the right click menu on the central box, but this can be 
             // worked around quite happily by adding a test on the actor to the pre-existing test on the parent of the actor 
             // in the button handling logic.  It also kills drag and drop if any box is empty, the workaround is to 
-            // explicitly set the height.  It would appear that this central alignment setting shrinks the box size down to nil
-            // if there is nothing in it, and the effective size is shrink-wrapped around its contents if there is something in it
-            // which all gives some quirky results. Setting y_expand seems to align the contents to the top in this case, rather weird.
+            // explicitly set the height.  Setting y_expand seems to align the contents to the top in this case, rather weird.
             //
             // Using x_align:2 also causes problems with a new, empty panel - seeming to stop the dndhandler working. There is a two part
             // workaround to this - in allocate to set heights if found to be zero, and the same in the set edit mode code.
@@ -2064,7 +2062,7 @@ Panel.prototype = {
         this._set_orientation();
 
         this.addContextMenuToPanel(panelPosition);
-        this.setPanelStyleClass(panelPosition);
+        this.addPanelStyleClass(panelPosition);
         this._moveResizePanel();
     },
 
@@ -2109,28 +2107,40 @@ Panel.prototype = {
     },  
 
      /**
-     * setPanelStyleClass:
+     * addPanelStyleClass:
      * @panelPosition, integer
      *
-     *  Sets the panel style class
+     *  Adds the panel style class.  NB the original #panel style class is kept
      */
-    setPanelStyleClass:  function(panelPosition) {
+    addPanelStyleClass:  function(panelPosition) {
         switch (panelPosition)
         {
             case PanelLoc.top:
-                this.actor.set_style_class_name('panel-top');
+                this.actor.remove_style_class_name('panel-bottom');
+                this.actor.remove_style_class_name('panel-left');
+                this.actor.remove_style_class_name('panel-right');
+                this.actor.add_style_class_name('panel-top');
                 break;
             case PanelLoc.bottom:
-                this.actor.set_style_class_name('panel-bottom');
+                this.actor.remove_style_class_name('panel-top');
+                this.actor.remove_style_class_name('panel-left');
+                this.actor.remove_style_class_name('panel-right');
+                this.actor.add_style_class_name('panel-bottom');
                 break;
             case PanelLoc.left:
-                this.actor.set_style_class_name('panel-left');
+                this.actor.remove_style_class_name('panel-bottom');
+                this.actor.remove_style_class_name('panel-top');
+                this.actor.remove_style_class_name('panel-right');
+                this.actor.add_style_class_name('panel-left');
                 break;
             case PanelLoc.right:
-                this.actor.set_style_class_name('panel-right');
+                this.actor.remove_style_class_name('panel-bottom');
+                this.actor.remove_style_class_name('panel-left');
+                this.actor.remove_style_class_name('panel-top');
+                this.actor.add_style_class_name('panel-right');
                 break;
             default:
-                global.log("setPanelStyleClass - unrecognised panel position "+panelPosition);
+                global.log("addPanelStyleClass - unrecognised panel position "+panelPosition);
         }
         return;
     },
@@ -2652,8 +2662,6 @@ Panel.prototype = {
         this._rightBox.set_vertical(true);
         this._rightBox.set_x_align(Clutter.ActorAlign.FILL+Clutter.ActorAlign.CENTER);
         this._rightBox.set_y_align(Clutter.ActorAlign.END);
-        this._rightBox.set_x_expand(true);
-        this._rightBox.set_y_expand(true);
         this._rightBox.set_align_end(false);
 
         this._leftBox.add_style_class_name('vertical');
@@ -2661,16 +2669,12 @@ Panel.prototype = {
         this._leftBox.set_vertical(true);
         this._leftBox.set_x_align(Clutter.ActorAlign.FILL+Clutter.ActorAlign.CENTER);
         this._leftBox.set_y_align(Clutter.ActorAlign.START);
-        this._leftBox.set_x_expand(true);
-        this._leftBox.set_y_expand(true);
 
         this._centerBox.add_style_class_name('vertical');
         this._centerBox.set_important(true);
         this._centerBox.set_vertical(true);
         this._centerBox.set_x_align(Clutter.ActorAlign.FILL+Clutter.ActorAlign.CENTER);
         this._centerBox.set_y_align(Clutter.ActorAlign.CENTER+Clutter.ActorAlign.FILL);
-        this._centerBox.set_x_expand(true);
-        this._centerBox.set_y_expand(true);
     },
 
     _set_horizontal_panel_style: function() {
@@ -2716,30 +2720,21 @@ Panel.prototype = {
     _getPreferredWidth: function(actor, forHeight, alloc) {
 
         alloc.min_size = -1;
+        alloc.natural_size = -1;
 
-        if (this.panelPosition == PanelLoc.left || this.panelPosition == PanelLoc.right) {
-            alloc.natural_size = -1;
-        } else {
+        if (this.panelPosition == PanelLoc.top || this.panelPosition == PanelLoc.bottom) {
             alloc.natural_size = Main.layoutManager.primaryMonitor.width;
         }
     },
 
     _getPreferredHeight: function(actor, forWidth, alloc) {
 
+        alloc.min_size = -1;
+        alloc.natural_size = -1;
+
         if (this.panelPosition == PanelLoc.left || this.panelPosition == PanelLoc.right) {
-            //
-            // FIXME  pre-existing logic, but why exactly are we using the primary monitor?  What if we are on a different monitor ?
-            // May all be fine, but could at least do with a clarifying comment.
-            //
             alloc.natural_size = Main.layoutManager.primaryMonitor.height;
-            //
-            // Assuming that at this point it is OK to use the top and bottom panel heights previously
-            // saved against the panel, rather than looping through all panels to calculate from scratch
-            //
             alloc.natural_size = alloc.natural_size - this.toppanelHeight - this.bottompanelHeight - this.margin_top - this.margin_bottom;
-        } else {
-            alloc.min_size = -1;
-            alloc.natural_size = -1;
         }
     },
 

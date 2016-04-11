@@ -373,11 +373,13 @@ Applet.prototype = {
         {
             this.actor.add_style_class_name('vertical');
             this.actor.set_important(true);
-            this.actor.set_y_align(Clutter.ActorAlign.CENTER);
-            this.actor.set_x_align(Clutter.ActorAlign.CENTER);
+            this.actor.set_y_align(Clutter.ActorAlign.FILL+Clutter.ActorAlign.CENTER);
+            this.actor.set_x_align(Clutter.ActorAlign.FILL+Clutter.ActorAlign.CENTER);
         }
         else {
             this.actor.remove_style_class_name('vertical');
+            this.actor.set_y_align(Clutter.ActorAlign.CENTER);
+            this.actor.set_x_align(Clutter.ActorAlign.CENTER);
         }
     },
 
@@ -526,9 +528,7 @@ IconApplet.prototype = {
 	this._applet_icon_box = new St.Bin();
 
         this.actor.add(this._applet_icon_box, {x_align: Clutter.ActorAlign.CENTER, 
-                                               y_align: Clutter.ActorAlign.CENTER, 
-                                               y_fill: true, 
-                                               x_fill: true });
+                                               y_align: Clutter.ActorAlign.CENTER});
     },
 
     /**
