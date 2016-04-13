@@ -87,6 +87,7 @@ class AutostartApp():
         self.key_file = GLib.KeyFile.new()
         self.path = app
         self.key_file_loaded = False
+        self.basename = None
 
         self.load()
 
