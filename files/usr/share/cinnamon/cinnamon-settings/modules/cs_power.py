@@ -464,7 +464,8 @@ class Module:
         self.battery_label_size_group.add_widget(label_box)
         hbox.pack_start(label_box, False, False, 0)
         label = Gtk.Label()
-        label.set_markup("%d%%" % int(percentage))
+        label.set_markup("%d%%" % int(percentage))        
+        label.set_size_request(30, -1)
         hbox.pack_start(label, False, False, 15)
 
         level_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
