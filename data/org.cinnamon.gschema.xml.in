@@ -570,6 +570,7 @@
       </_description>
     </key>
 
+    <child name="panel" schema="org.cinnamon.panel"/>
     <child name="theme" schema="org.cinnamon.theme"/>   
     <child name="recorder" schema="org.cinnamon.recorder"/>
     <child name="keyboard" schema="org.cinnamon.keyboard"/>
@@ -616,7 +617,18 @@
     </key>
 
   </schema>
- 
+
+  <schema id="org.cinnamon.panel" path="/org/cinnamon/panel/"
+        gettext-domain="@GETTEXT_PACKAGE@">
+    <key name="locked" type="b">
+      <default>false</default>
+      <_summary>panel locked</_summary>
+      <_description>
+       by checking this key the panels lock i.e. you can not change panel layout or applet configurations through panel unless you uncheck this key again.
+      </_description>
+    </key>
+  </schema>
+
   <schema id="org.cinnamon.theme" path="/org/cinnamon/theme/"
         gettext-domain="@GETTEXT_PACKAGE@">
     <key name="name" type="s">
