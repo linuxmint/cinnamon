@@ -2678,6 +2678,13 @@ Panel.prototype = {
 
     _set_vertical_panel_style: function() {
 
+        if (this.panelPosition == PanelLoc.left) {
+            this._leftBox.set_style_class_name('panelLeft');
+            this._rightBox.set_style_class_name('panelLeft');
+        } else {
+            this._leftBox.set_style_class_name('panelRight');
+            this._rightBox.set_style_class_name('panelRight');
+        }
         this._rightBox.add_style_class_name('vertical');
         this._rightBox.set_important(true);
         this._rightBox.set_vertical(true);
@@ -2715,6 +2722,9 @@ Panel.prototype = {
         this._centerBox.set_vertical(false);
         this._centerBox.set_x_align(Clutter.ActorAlign.CENTER);
         this._centerBox.set_y_align(Clutter.ActorAlign.CENTER);
+
+        this._leftBox.set_style_class_name('panelLeft');
+        this._rightBox.set_style_class_name('panelRight');
     },
 
     _setFont: function(panelHeight) {
