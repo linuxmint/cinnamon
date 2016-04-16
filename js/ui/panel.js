@@ -2404,6 +2404,8 @@ Panel.prototype = {
         if (event.get_button() == 3) {  // right click
             try {
                 let [x, y] = event.get_coords();
+                let xe = x;
+                let ye = y;
                 let target = global.stage.get_actor_at_pos(Clutter.PickMode.ALL, x, y);
 
                 // NB test on parent fails with centre aligned vertical box, but works for the test against the actor
@@ -2412,63 +2414,80 @@ Panel.prototype = {
                     this._context_menu.toggle();
                     if (!this._context_menu.isOpen)
                         return;
-                    //
+
                     // This next section moves the context menu to the most appropriate position
-                    //
+                    // If the natural position for the context menu is off the panel or is cutting
+                    // into the space taken up by another panel then it is moved inwards.
+
                     let monitor = Main.layoutManager.findMonitorForActor(this._context_menu._boxPointer.actor);
+
+                    let topmargin=0;     // where we have mixed horizontal and vertical panels we want to avoid
+                    let bottommargin=0;  // the popup menu overlapping any panel
+                    let leftmargin=0;
+                    let rightmargin=0;
+
+                    let panels = Main.panelManager.getPanelsInMonitor(this.monitorIndex);
+
+                    for (let panel of panels) {
+                        if (panel.panelPosition == PanelLoc.top)
+                            topmargin += panel.actor.height;
+                        if (panel.panelPosition == PanelLoc.bottom)
+                            bottommargin += panel.actor.height;
+                        if (panel.panelPosition == PanelLoc.left)
+                            leftmargin += panel.actor.width;
+                        if (panel.panelPosition == PanelLoc.right)
+                            rightmargin += panel.actor.width;
+                    }
+
                     if (this.panelPosition == PanelLoc.top || this.panelPosition == PanelLoc.bottom) { // top or bottom panels
                         x -= this._context_menu._boxPointer._arrowOrigin;
 
                         let mywidth = this._context_menu._boxPointer.actor.get_allocation_box().x2
-                                 -this._context_menu._boxPointer.actor.get_allocation_box().x1;
+                                     -this._context_menu._boxPointer.actor.get_allocation_box().x1;
 
-                        if (x + mywidth - monitor.x > monitor.width) {
-                            x  = monitor.width + monitor.x - mywidth;
+                        if (x + mywidth - monitor.x > monitor.width - rightmargin) { // off right
+                            x  = monitor.width + monitor.x - mywidth - rightmargin;
+                            this._context_menu._boxPointer.setArrowOrigin(xe - x);
                         }
-                        if (x < monitor.x) {
-                            x = monitor.x;
+                        if (x < monitor.x + leftmargin) { // off left
+                            x = monitor.x + leftmargin;
+                            this._context_menu._boxPointer.setArrowOrigin(xe - leftmargin);
                         }
                         this._context_menu._boxPointer._xpos = Math.round(x);
                         this._context_menu._boxPointer._xPosition = this._context_menu._boxPointer._xpos;
-                    } else if (this.panelPosition == PanelLoc.left) { // left panel 
-                        x = monitor.x + this.actor.width;   // right hand side of the left hand panel
+
+                    } else {  // left or right panels
+                        if (this.panelPosition == PanelLoc.left) {
+                            x = monitor.x + this.actor.width;   // right hand edge of the left hand panel
+                        }
+                        else {
+                            let mywidth = this._context_menu._boxPointer.actor.get_allocation_box().x2
+                                     -this._context_menu._boxPointer.actor.get_allocation_box().x1;
+
+                            x = monitor.x + monitor.width - this.actor.width - mywidth; //  left hand edge of the right hand panel
+                        }
                         this._context_menu._boxPointer._xpos = Math.round(x);
                         this._context_menu._boxPointer._xPosition = this._context_menu._boxPointer._xpos;
 
                         y -= this._context_menu._boxPointer._arrowOrigin;
 
                         let myheight = this._context_menu._boxPointer.actor.get_allocation_box().y2
-                                  -this._context_menu._boxPointer.actor.get_allocation_box().y1;
-                        if (y + myheight - monitor.y > monitor.height)
-                            y  = monitor.height + monitor.y - myheight;
-                        if (y < monitor.y)
-                            y = monitor.y;
+                                     - this._context_menu._boxPointer.actor.get_allocation_box().y1;
+
+                        if (y + myheight - monitor.y > monitor.height - bottommargin) { // off bottom
+                            y  = monitor.height + monitor.y - bottommargin - myheight;
+                            this._context_menu._boxPointer.setArrowOrigin(ye - y);
+                        }
+                        if (y < monitor.y + topmargin) { // off top
+                            y = monitor.y + topmargin;
+                            this._context_menu._boxPointer.setArrowOrigin(ye - topmargin);
+                        }
 
                         this._context_menu._boxPointer._ypos = Math.round(y);
                         this._context_menu._boxPointer._yPosition = this._context_menu._boxPointer._ypos;
+
                     }
-                    else {   // right panel
-                        let mywidth = this._context_menu._boxPointer.actor.get_allocation_box().x2
-                                 -this._context_menu._boxPointer.actor.get_allocation_box().x1;
-
-                        x = monitor.x + monitor.width - this.actor.width - mywidth; //  left hand edge of the right hand panel
-                        
-                        this._context_menu._boxPointer._xpos = Math.round(x);
-                        this._context_menu._boxPointer._xPosition = this._context_menu._boxPointer._xpos;
-
-                        y -= this._context_menu._boxPointer._arrowOrigin;
-
-                        let myheight = this._context_menu._boxPointer.actor.get_allocation_box().y2
-                                  -this._context_menu._boxPointer.actor.get_allocation_box().y1;
-                        if (y + myheight - monitor.y > monitor.height)
-                            y  = monitor.height + monitor.y - myheight;
-                        if (y < monitor.y)
-                            y = monitor.y;
-
-                        this._context_menu._boxPointer._ypos = Math.round(y);
-                        this._context_menu._boxPointer._yPosition = this._context_menu._boxPointer._ypos;
-                    }
-                    this._context_menu._boxPointer._shiftActor();   
+                    this._context_menu._boxPointer._shiftActor();
                 }
             } catch(e) {
                 global.log(e);
