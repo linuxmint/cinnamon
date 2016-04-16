@@ -2435,6 +2435,8 @@ Panel.prototype = {
                         this._context_menu._boxPointer._xpos = Math.round(x);
                         this._context_menu._boxPointer._xPosition = this._context_menu._boxPointer._xpos;
 
+                        y -= this._context_menu._boxPointer._arrowOrigin;
+
                         let myheight = this._context_menu._boxPointer.actor.get_allocation_box().y2
                                   -this._context_menu._boxPointer.actor.get_allocation_box().y1;
                         if (y + myheight - monitor.y > monitor.height)
