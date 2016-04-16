@@ -55,6 +55,7 @@ TooltipBase.prototype = {
     _init: function(item) {
         this.signals = new SignalManager.SignalManager(this);
 
+        this.signals.connect(global.stage, 'notify::key-focus', this._hide);
         this.signals.connect(item, 'enter-event', this._onEnterEvent);
         this.signals.connect(item, 'motion-event', this._onMotionEvent);
         this.signals.connect(item, 'leave-event', this._hide);
