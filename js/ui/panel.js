@@ -2686,23 +2686,27 @@ Panel.prototype = {
             this._rightBox.set_style_class_name('panelRight');
         }
         this._rightBox.add_style_class_name('vertical');
+        this._rightBox.set_align_end(false);
         this._rightBox.set_important(true);
         this._rightBox.set_vertical(true);
-        this._rightBox.set_x_align(Clutter.ActorAlign.FILL+Clutter.ActorAlign.CENTER);
+        this._rightBox.set_x_align(Clutter.ActorAlign.FILL);
+        this._rightBox.set_x_expand(true);
         this._rightBox.set_y_align(Clutter.ActorAlign.END);
-        this._rightBox.set_align_end(false);
 
         this._leftBox.add_style_class_name('vertical');
         this._leftBox.set_important(true);
         this._leftBox.set_vertical(true);
-        this._leftBox.set_x_align(Clutter.ActorAlign.FILL+Clutter.ActorAlign.CENTER);
+        this._leftBox.set_x_align(Clutter.ActorAlign.FILL);
+        this._leftBox.set_x_expand(true);
         this._leftBox.set_y_align(Clutter.ActorAlign.START);
 
         this._centerBox.add_style_class_name('vertical');
         this._centerBox.set_important(true);
         this._centerBox.set_vertical(true);
-        this._centerBox.set_x_align(Clutter.ActorAlign.FILL+Clutter.ActorAlign.CENTER);
-        this._centerBox.set_y_align(Clutter.ActorAlign.CENTER+Clutter.ActorAlign.FILL);
+        this._centerBox.set_x_align(Clutter.ActorAlign.FILL);
+        this._centerBox.set_y_align(Clutter.ActorAlign.CENTER); // if set to fill it snaps upwards
+        this._centerBox.set_x_expand(true)
+        this._centerBox.set_y_expand(true)
     },
 
     _set_horizontal_panel_style: function() {

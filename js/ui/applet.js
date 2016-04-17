@@ -364,7 +364,7 @@ Applet.prototype = {
      * setOrientation_internal:
      * @orientation (St.Side): the orientation
      *
-     * Sets the orientation of the applet.
+     * Sets the orientation of the St.BoxLayout.
      *
      */
     setOrientation_internal: function (orientation) {
@@ -373,13 +373,17 @@ Applet.prototype = {
         {
             this.actor.add_style_class_name('vertical');
             this.actor.set_important(true);
-            this.actor.set_y_align(Clutter.ActorAlign.FILL+Clutter.ActorAlign.CENTER);
-            this.actor.set_x_align(Clutter.ActorAlign.FILL+Clutter.ActorAlign.CENTER);
+            this.actor.set_y_align(Clutter.ActorAlign.FILL);
+            this.actor.set_y_expand(true);
+            this.actor.set_x_align(Clutter.ActorAlign.CENTER);
+            this.actor.set_x_expand(true);
         }
         else {
             this.actor.remove_style_class_name('vertical');
-            this.actor.set_y_align(Clutter.ActorAlign.CENTER);
+            this.actor.set_y_align(Clutter.ActorAlign.FILL);
+            this.actor.set_y_expand(true);
             this.actor.set_x_align(Clutter.ActorAlign.CENTER);
+            this.actor.set_x_expand(false);
         }
     },
 
@@ -525,10 +529,19 @@ IconApplet.prototype = {
     _init: function(orientation, panel_height, instance_id) {
         Applet.prototype._init.call(this, orientation, panel_height, instance_id);
 
-	this._applet_icon_box = new St.Bin();
+	this._applet_icon_box = new St.Bin(); // https://developer.gnome.org/st/stable/StBin.htm
 
-        this.actor.add(this._applet_icon_box, {x_align: Clutter.ActorAlign.CENTER, 
-                                               y_align: Clutter.ActorAlign.CENTER});
+        if (orientation == St.Side.LEFT || orientation == St.Side.RIGHT)
+        {
+            this.actor.add(this._applet_icon_box,
+                           { x_align: St.Align.MIDDLE, x_fill: true,
+                             y_align: St.Align.MIDDLE, y_fill: false });
+        }
+        else {
+            this.actor.add(this._applet_icon_box,
+                          { y_align: St.Align.MIDDLE, y_fill: true,
+                            x_align: St.Align.MIDDLE, x_fill: false });
+        }
     },
 
     /**
