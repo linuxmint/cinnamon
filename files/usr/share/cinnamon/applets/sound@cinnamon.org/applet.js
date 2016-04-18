@@ -579,12 +579,13 @@ Player.prototype = {
 
         let change = false;
         if (metadata["mpris:artUrl"]) {
-            if (this._trackCoverFile != metadata["mpris:artUrl"].unpack()) {
-                this._trackCoverFile = metadata["mpris:artUrl"].unpack();
-
-                if ( this._name === "spotify" )
-                    this._trackCoverFile = this._trackCoverFile.replace("/thumb/", "/300/");
-
+            let artUrl = metadata["mpris:artUrl"].unpack();
+            if ( this._name === "spotify" ) {
+                artUrl = artUrl.replace("/thumb/", "/300/"); // Spotify 0.9.x
+                artUrl = artUrl.replace("/image/", "/300/"); // Spotify 0.27.x
+            }
+            if (this._trackCoverFile != artUrl) {
+                this._trackCoverFile = artUrl;
                 change = true;
             }
         }
