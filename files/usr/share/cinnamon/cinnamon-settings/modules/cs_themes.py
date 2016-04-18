@@ -4,6 +4,8 @@ from ExtensionCore import ExtensionSidePage
 from gi.repository.Gtk import SizeGroup, SizeGroupMode
 from SettingsWidgets import *
 
+import glob
+
 ICON_SIZE = 48
 
 class Module:
@@ -253,12 +255,22 @@ class Module:
     def _load_gtk_themes(self):
         """ Only shows themes that have variations for gtk+-3 and gtk+-2 """
         dirs = ("/usr/share/themes", os.path.join(os.path.expanduser("~"), ".themes"))
-        valid = walk_directories(dirs, lambda d: os.path.exists(os.path.join(d, "gtk-2.0")) and os.path.exists(os.path.join(d, "gtk-3.0")), return_directories=True)
+        valid = walk_directories(dirs, self.filter_func_gtk_dir, return_directories=True)
         valid.sort(lambda a,b: cmp(a[0].lower(), b[0].lower()))
         res = []
         for i in valid:
             res.append((i[0], i[1]))
         return res
+
+    def filter_func_gtk_dir(self, directory):
+        # returns whether a directory is a valid GTK theme
+        if os.path.exists(os.path.join(directory, "gtk-2.0")):
+            if os.path.exists(os.path.join(directory, "gtk-3.0")):
+                return True
+            else:
+                for subdir in glob.glob("%s/gtk-3.*" % directory):
+                    return True
+        return False
 
     def _load_icon_themes(self):
         dirs = ("/usr/share/icons", os.path.join(os.path.expanduser("~"), ".icons"))
