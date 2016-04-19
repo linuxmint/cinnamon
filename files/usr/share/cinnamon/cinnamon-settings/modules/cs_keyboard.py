@@ -250,6 +250,7 @@ class Module:
             headingbox.pack_end(Gtk.Label.new(_("To edit a keyboard binding, click it and press the new keys, or press backspace to clear it.")), False, False, 1)
 
             paned = Gtk.Paned(orientation = Gtk.Orientation.HORIZONTAL)
+            Gtk.StyleContext.add_class(Gtk.Widget.get_style_context(paned), "wide")
 
             left_vbox = Gtk.Box.new(Gtk.Orientation.VERTICAL, 2)
             right_vbox = Gtk.Box.new(Gtk.Orientation.VERTICAL, 2)
@@ -302,9 +303,6 @@ class Module:
             right_vbox.pack_end(buttonbox, False, False, 2)
 
             mainbox.pack_start(paned, True, True, 2)
-
-            left_vbox.set_border_width(2)
-            right_vbox.set_border_width(2)
 
             self.cat_store = Gtk.TreeStore(str,     # Icon name or None
                                            str,     # The category name
