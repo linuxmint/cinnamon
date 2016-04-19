@@ -18,6 +18,17 @@ const DeskletManager = imports.ui.deskletManager;
 const STARTUP_ANIMATION_TIME = 0.5;
 const KEYBOARD_ANIMATION_TIME = 0.15;
 
+function isPopupMetaWindow(actor) {
+    switch(actor.meta_window.get_window_type()) {
+    case Meta.WindowType.DROPDOWN_MENU:
+    case Meta.WindowType.POPUP_MENU:
+    case Meta.WindowType.COMBO:
+        return true;
+    default:
+        return false;
+    }
+}
+
 function LayoutManager() {
     this._init.apply(this, arguments);
 }
@@ -33,6 +44,8 @@ LayoutManager.prototype = {
         this.edgeLeft = null;
         this.hideIdleId = 0;
         this._chrome = new Chrome(this);
+
+        this._isPopupWindowVisible = false;
 
         this.enabledEdgeFlip = global.settings.get_boolean("enable-edge-flip");
         this.edgeFlipDelay = global.settings.get_int("edge-flip-delay");
@@ -702,6 +715,10 @@ Chrome.prototype = {
                 break;
             }
         }
+
+        if (!changed && (this._isPopupWindowVisible != global.top_window_group.get_children().some(isPopupMetaWindow)))
+            changed = true;
+
         if (changed) {
             this._updateVisibility();
             this._queueUpdateRegions();
@@ -716,9 +733,12 @@ Chrome.prototype = {
             this._updateRegionIdle = 0;
         }
 
+        let isPopupMenuVisible = global.top_window_group.get_children().some(isPopupMetaWindow);
+        let wantsInputRegion = !isPopupMenuVisible;
+
         for (let i = 0; i < this._trackedActors.length; i++) {
             let actorData = this._trackedActors[i];
-            if (!actorData.affectsInputRegion && !actorData.affectsStruts)
+            if (!(actorData.affectsInputRegion && wantsInputRegion) && !actorData.affectsStruts)
                 continue;
 
             let [x, y] = actorData.actor.get_transformed_position();
@@ -727,7 +747,7 @@ Chrome.prototype = {
             y = Math.round(y);
             w = Math.round(w);
             h = Math.round(h);
-            if (actorData.affectsInputRegion) {
+            if (actorData.affectsInputRegion && wantsInputRegion) {
                 let rect = new Meta.Rectangle({ x: x, y: y, width: w, height: h});
 
                 if (actorData.actor.get_paint_visibility() &&
@@ -785,18 +805,8 @@ Chrome.prototype = {
             }
         }
 
-        let enable_stage = true;
-        let top_windows = global.top_window_group.get_children();
-        for (var i in top_windows){
-            if (top_windows[i]._windowType != Meta.WindowType.TOOLTIP){
-                enable_stage = false;
-                break;
-            }
-        }
-        if (enable_stage)
-            global.set_stage_input_region(rects);
-        else
-            global.set_stage_input_region([]);
+        global.set_stage_input_region(rects);
+        this._isPopupWindowVisible = isPopupMenuVisible;
 
         let screen = global.screen;
         for (let w = 0; w < screen.n_workspaces; w++) {
