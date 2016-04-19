@@ -493,6 +493,9 @@ SpicesAboutDialog.prototype = {
         //description
         let desc = new St.Label({text: this._(metadata.description), style_class: "about-description"});
         let dText = desc.clutter_text;
+        dText.ellipsize = Pango.EllipsizeMode.NONE;
+        dText.line_wrap = true;
+        dText.set_line_wrap_mode(Pango.WrapMode.WORD_CHAR);
         topTextBox.add_actor(desc);
 
         // optional content
