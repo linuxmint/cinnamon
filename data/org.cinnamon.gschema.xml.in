@@ -152,7 +152,7 @@
     </key>
     
     <key name="desktop-effects-on-dialogs" type="b">
-      <default>false</default>
+      <default>true</default>
       <_summary>Enable desktop effects on dialog boxes</_summary>
       <_description>
         Whether to enable desktop effects on dialog boxes.
@@ -160,7 +160,7 @@
     </key>
 
     <key name="desktop-effects-on-menus" type="b">
-      <default>false</default>
+      <default>true</default>
       <_summary>Enable desktop effects on Gtk menus</_summary>
       <_description>
         Whether to enable desktop effects on Gtk menus.
