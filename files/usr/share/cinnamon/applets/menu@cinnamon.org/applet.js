@@ -1106,6 +1106,7 @@ MyApplet.prototype = {
         this.settings.bindProperty(Settings.BindingDirection.IN, "overlay-key", "overlayKey", this._updateKeybinding, null);
         this.settings.bindProperty(Settings.BindingDirection.IN, "show-category-icons", "showCategoryIcons", this._refreshAll, null);
         this.settings.bindProperty(Settings.BindingDirection.IN, "show-application-icons", "showApplicationIcons", this._refreshAll, null);
+        this.settings.bindProperty(Settings.BindingDirection.IN, "favbox-show", "favBoxShow", this._favboxtoggle, null);
 
         this._updateKeybinding();
 
@@ -1318,6 +1319,14 @@ MyApplet.prototype = {
         this.set_applet_icon_path("");
     },
 
+    _favboxtoggle: function() {
+        if (!this.favBoxShow) {
+            this.leftPane.remove_actor(this.leftBox);
+        }else{
+            this.leftPane.add_actor(this.leftBox, { y_align: St.Align.END, y_fill: false });
+        }
+    },
+
     _updateIconAndLabel: function(){
         try {
             if (this.menuIconCustom) {
@@ -1384,7 +1393,7 @@ MyApplet.prototype = {
             item_actor = this.appBoxIter.getFirstVisible();
             index = this.appBoxIter.getAbsoluteIndexOfChild(item_actor);
             this._scrollToButton(item_actor._delegate);
-        } else if (this._activeContainer === null && symbol == Clutter.KEY_Left) {
+        } else if (this._activeContainer === null && symbol == Clutter.KEY_Left && this.favBoxShow ) {
             this._activeContainer = this.favoritesBox;
             item_actor = this.favBoxIter.getFirstVisible();
             index = this.favBoxIter.getAbsoluteIndexOfChild(item_actor);
@@ -1434,7 +1443,7 @@ MyApplet.prototype = {
             item_actor = (this._previousTreeSelectedActor != null) ? this._previousTreeSelectedActor : this.catBoxIter.getFirstVisible();
             index = this.catBoxIter.getAbsoluteIndexOfChild(item_actor);
             this._previousTreeSelectedActor = item_actor;
-        } else if (symbol == Clutter.KEY_Left && this._activeContainer === this.categoriesBox && !this.searchActive) {
+        } else if (symbol == Clutter.KEY_Left && this._activeContainer === this.categoriesBox && !this.searchActive && this.favBoxShow ) {
             this._previousSelectedActor = this.categoriesBox.get_child_at_index(index);
             item_actor = this.favBoxIter.getFirstVisible();
             index = this.favBoxIter.getAbsoluteIndexOfChild(item_actor);
@@ -2177,14 +2186,15 @@ MyApplet.prototype = {
         let section = new PopupMenu.PopupMenuSection();
         this.menu.addMenuItem(section);
         
-        let leftPane = new St.BoxLayout({ vertical: true });
+        this.leftPane = new St.BoxLayout({ vertical: true });
                   
         this.leftBox = new St.BoxLayout({ style_class: 'menu-favorites-box', vertical: true });        
         
         this._session = new GnomeSession.SessionManager();
         this._screenSaverProxy = new ScreenSaver.ScreenSaverProxy();            
                                        
-        leftPane.add_actor(this.leftBox, { y_align: St.Align.END, y_fill: false });        
+        if (this.favBoxShow)
+        this.leftPane.add_actor(this.leftBox, { y_align: St.Align.END, y_fill: false });        
         
         let rightPane = new St.BoxLayout({ vertical: true });
         
@@ -2244,7 +2254,7 @@ MyApplet.prototype = {
         this.mainBox = new St.BoxLayout({ style_class: 'menu-applications-outer-box', vertical:false });       
         this.mainBox.add_style_class_name('menu-applications-box'); //this is to support old themes
                 
-        this.mainBox.add_actor(leftPane, { span: 1 });
+        this.mainBox.add_actor(this.leftPane, { span: 1 });
         this.mainBox.add_actor(rightPane, { span: 1 });
         
         section.actor.add_actor(this.mainBox);
