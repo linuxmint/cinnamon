@@ -85,6 +85,7 @@ STANDALONE_MODULES = [
 ]
 
 def print_timing(func):
+    # decorate functions with @print_timing to output how long they take to run.
     def wrapper(*arg):
         t1 = time.time()
         res = func(*arg)
@@ -179,7 +180,6 @@ class MainWindow:
                 self.side_view[key].unselect_all()
 
     ''' Create the UI '''
-    @print_timing
     def __init__(self):
         self.builder = Gtk.Builder()
         self.builder.add_from_file("/usr/share/cinnamon/cinnamon-settings/cinnamon-settings.ui")
