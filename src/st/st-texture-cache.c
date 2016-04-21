@@ -1132,29 +1132,24 @@ static void
 ensure_monitor_for_uri (StTextureCache *cache,
                         const gchar    *uri)
 {
-  /* Don't monitor changes at all.
-   * We're keeping this function for now, even if it doesn't do anything
-   * In case special cases come up in the future, where monitors are needed for particular uris.
+  StTextureCachePrivate *priv = cache->priv;
+  GFile *file = g_file_new_for_uri (uri);
+
+  /* No point in trying to monitor files that are part of a
+   * GResource, since it does not support file monitoring.
    */
+  if (!g_file_has_uri_scheme (file, "resource")) {
+    if (g_hash_table_lookup (priv->file_monitors, uri) == NULL)
+    {
+      GFileMonitor *monitor = g_file_monitor_file (file, G_FILE_MONITOR_NONE,
+                                                   NULL, NULL);
+      g_signal_connect (monitor, "changed",
+                        G_CALLBACK (file_changed_cb), cache);
+      g_hash_table_insert (priv->file_monitors, g_strdup (uri), monitor);
+    }
+  }
 
-  // StTextureCachePrivate *priv = cache->priv;
-  // GFile *file = g_file_new_for_uri (uri);
-
-  // /* No point in trying to monitor files that are part of a
-  //  * GResource, since it does not support file monitoring.
-  //  */
-  // if (!g_file_has_uri_scheme (file, "resource")) {
-  //   if (g_hash_table_lookup (priv->file_monitors, uri) == NULL)
-  //   {
-  //     GFileMonitor *monitor = g_file_monitor_file (file, G_FILE_MONITOR_NONE,
-  //                                                  NULL, NULL);
-  //     g_signal_connect (monitor, "changed",
-  //                       G_CALLBACK (file_changed_cb), cache);
-  //     g_hash_table_insert (priv->file_monitors, g_strdup (uri), monitor);
-  //   }
-  // }
-
-  // g_object_unref (file);
+  g_object_unref (file);
 }
 
 typedef struct {
