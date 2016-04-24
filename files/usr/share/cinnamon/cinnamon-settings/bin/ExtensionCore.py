@@ -1192,8 +1192,11 @@ Please contact the developer.""")
                 msg = _("This will restore the default set of enabled applets. Are you sure you want to do this?")
             elif self.collection_type == "desklet":
                 msg = _("This will restore the default set of enabled desklets. Are you sure you want to do this?")
+            elif self.collection_type == "extension":
+                msg = _("This will disable all active extensions. Are you sure you want to do this?")
             if self.show_prompt(msg):
-                os.system(('gsettings reset org.cinnamon next-%s-id') % (self.collection_type))
+                if self.collection_type != "extension":
+                    os.system(('gsettings reset org.cinnamon next-%s-id') % (self.collection_type))
                 os.system(('gsettings reset org.cinnamon enabled-%ss') % (self.collection_type))
         else:
             os.system("gsettings reset org.cinnamon.theme name")
