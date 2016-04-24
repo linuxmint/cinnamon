@@ -198,7 +198,7 @@ class Module:
         box = Gtk.VBox()
         window.add(box)
         window.set_title(_("Desktop themes"))
-        window.set_default_size(640, 480)
+        window.set_default_size(720, 480)
         window.set_border_width(6)
         window.set_position(Gtk.WindowPosition.CENTER)
         page = ExtensionSidePage(self.name, self.icon, self.keywords, box, "theme", None)

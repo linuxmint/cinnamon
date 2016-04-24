@@ -375,9 +375,8 @@ class ExtensionSidePage (SidePage):
 
 
         right = Gtk.CellRendererText()
-        right.set_property('xalign', 1.0)
+        right.set_property('xalign', 0.5)
         gm_column4 = Gtk.TreeViewColumn("Score", right, markup=4)
-        gm_column4.set_alignment(1.0)
         gm_column4.set_expand(True)
 
         self.gm_treeview.append_column(gm_column1)
