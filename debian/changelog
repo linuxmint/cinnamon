@@ -1,3 +1,100 @@
+cinnamon (3.0.0) sarah; urgency=medium
+
+  [ A-Shahbazi ]
+  * add option to show/hide favbox in menu applet
+
+  [ Corbin ]
+  * Added new default application buttons
+
+  [ trolleyyy ]
+  * show panel-launchers actions
+  * tab indents into space indents, more item without dots
+
+  [ Stephen Collins ]
+  * Move sound settings to python as a native module
+
+  [ JosephMcc ]
+  * Add a custom page to display when no input devices are available or applications are currently playing. Add a custom settings box for the sound effects page to prevent getting a very tall window when opening the settings. Make a few tweaks to the test sound dialog and add the relevant icons.
+
+  [ Stephen Collins ]
+  * Some visual tweaks to the sound settings:
+  * Sound settings: add mute to all volume controls
+
+  [ Michael Webster ]
+  * cs_sound.py: Few fixes to the volume slider/mute button:
+  * layout.js: Remove code for interaction with the screensaver.  It was always broken until 2.8.7, where I 'fixed' it, and has caused some reported regression where the panels will be hidden after returning from the screensaver.
+
+  [ itzexor ]
+  * cs_sound.py: add padding to the end of stream names in applications page
+
+  [ s3rj1k ]
+  * Viber stealing focus fix
+
+  [ Michael Webster ]
+  * magnifier.js: update the lens size as well as shape when we turn on lens mode.
+  * Generate new desktop files for sound and accessibility
+
+  [ Clement Lefebvre ]
+  * Touchpad settings: Rename "natural scrolling" to "reverse scrolling direction"
+
+  [ Martín Ferrari ]
+  * Fix middle click action in the photo frame
+
+  [ Maximiliano Curia ]
+  * photoframe: recurse subdirectories
+
+  [ Clement Lefebvre ]
+  * Sound settings: Fixed device not showing when its icon isn't found (fixes bluetooth devices not showing up)
+  * Power settings: Don't add the Gtk.Stack if it's empty (Fixes https://github.com/linuxmint/Cinnamon/issues/5194)
+  * Power settings/applet: Let the user rename battery powered devices
+  * Power settings: Fix power bars not being aligned
+  * Startup settings: Fix https://github.com/linuxmint/Cinnamon/issues/5199
+
+  [ Michael Webster ]
+  * tooltips.js: hide if the stage's key focus changes - prevents tooltips from becoming stuck if you use the keyboard to switch focus (hit the menu key while a window list preview is showing.)
+
+  [ JosephMcc ]
+  * cs_keyboard: Add a "wide" style class to the pane separator in the shortcuts page and remove some unneeded padding so this looks a little nicer in most newer themes
+  * effects: Enable effects on dialogs and menus by default
+
+  [ Clement Lefebvre ]
+  * Sound applet: Correctly identify changed artwork from Spotify (and add support for new URLs in version 0.27.x)
+  * Theme settings: Don't filter themes missing gtk-3.0 if they provide gtk-3.*
+
+  [ brownsr ]
+  * show multi line descriptions in applet about:  Fix #5193
+
+  [ Clement Lefebvre ]
+  * Sound applet: Use wget to download remote artwork covers
+
+  [ JosephMcc ]
+  * layout: Tweak the handling of menus in the top_window_group to match muffin changes
+
+  [ Clement Lefebvre ]
+  * Cinnamon Settings: Fixed gi.require_version warnings
+  * Cinnamon Settings: Remove a couple of old debug output
+  * Cinnamon Settings: Retire cinnamon-bluetooth (replaced with Blueberry)
+
+  [ Michael Webster ]
+  * Revert "St-texture-cache: Don't monitor file changes (should increase performance, might cause regressions in cases where the St texture needs to be refreshed following a file change)"
+
+  [ JosephMcc ]
+  * panel-launcher: Fix an undeclared variable warning
+
+  [ Daniel Alley ]
+  * Fixed cinnamon slideshow error (Issue #4280)
+
+  [ JosephMcc ]
+  * Adjust to Muffin API changes for handling fullscreen windows
+  * Extensions: Fix the "Disable all extensions" not working
+
+  [ Clement Lefebvre ]
+  * Updated generated files
+  * Updated pot file
+  * Packaging: Bumped internal dependencies
+
+ -- Clement Lefebvre <root@linuxmint.com>  Sun, 24 Apr 2016 14:02:02 +0100
+
 cinnamon (2.8.7) rosa; urgency=medium
 
   [ Michael Webster ]
