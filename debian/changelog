@@ -1,3 +1,13 @@
+cinnamon (3.0.1) sarah; urgency=medium
+
+  [ JosephMcc ]
+  * extensions: Fix the alignment of the rating number in the "Get more" pages so it won't get covered by overlay scrollbars
+
+  [ leigh123linux ]
+  * bump muffin version because of API changes
+
+ -- Clement Lefebvre <root@linuxmint.com>  Mon, 25 Apr 2016 10:10:43 +0100
+
 cinnamon (3.0.0) sarah; urgency=medium
 
   [ A-Shahbazi ]

@@ -1,5 +1,5 @@
 AC_PREREQ(2.63)
-AC_INIT([cinnamon],[3.0.0],[https://github.com/linuxmint/Cinnamon/issues],[cinnamon])
+AC_INIT([cinnamon],[3.0.1],[https://github.com/linuxmint/Cinnamon/issues],[cinnamon])
 
 AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_SRCDIR([src/cinnamon-global.c])
