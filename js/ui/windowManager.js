@@ -509,12 +509,12 @@ WindowManager.prototype = {
             return global.settings.get_boolean("desktop-effects");
         }
         if (type == Meta.WindowType.DIALOG || type == Meta.WindowType.MODAL_DIALOG) {
-            return global.settings.get_boolean("desktop-effects-on-dialogs");
+            return global.settings.get_boolean("desktop-effects") && global.settings.get_boolean("desktop-effects-on-dialogs");
         }
         if (type == Meta.WindowType.MENU ||
             type == Meta.WindowType.DROPDOWN_MENU ||
             type == Meta.WindowType.POPUP_MENU) {
-            return global.settings.get_boolean("desktop-effects-on-menus");
+            return global.settings.get_boolean("desktop-effects") && global.settings.get_boolean("desktop-effects-on-menus");
         }
         return false;
     },
