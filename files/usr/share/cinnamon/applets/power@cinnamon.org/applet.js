@@ -114,7 +114,7 @@ DeviceItem.prototype = {
         }
 
         for ( let i = 0; i < aliases.length; ++i ) {
-            alias = aliases[i];
+            let alias = aliases[i];
             try{
                 let parts = alias.split(':=');
                 if (parts[0] == device_id) {
