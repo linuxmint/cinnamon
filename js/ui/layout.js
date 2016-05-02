@@ -18,6 +18,35 @@ const DeskletManager = imports.ui.deskletManager;
 const STARTUP_ANIMATION_TIME = 0.5;
 const KEYBOARD_ANIMATION_TIME = 0.15;
 
+function isPopupMetaWindow(actor) {
+    switch(actor.meta_window.get_window_type()) {
+    case Meta.WindowType.DROPDOWN_MENU:
+    case Meta.WindowType.POPUP_MENU:
+    case Meta.WindowType.COMBO:
+        return true;
+    default:
+        return false;
+    }
+}
+
+function Monitor(index, geometry) {
+    this._init(index, geometry);
+}
+
+Monitor.prototype = {
+    _init: function(index, geometry) {
+        this.index = index;
+        this.x = geometry.x;
+        this.y = geometry.y;
+        this.width = geometry.width;
+        this.height = geometry.height;
+    },
+
+    get inFullscreen() {
+        return global.screen.get_monitor_in_fullscreen(this.index);
+    }
+};
+
 function LayoutManager() {
     this._init.apply(this, arguments);
 }
@@ -33,6 +62,8 @@ LayoutManager.prototype = {
         this.edgeLeft = null;
         this.hideIdleId = 0;
         this._chrome = new Chrome(this);
+
+        this._isPopupWindowVisible = false;
 
         this.enabledEdgeFlip = global.settings.get_boolean("enable-edge-flip");
         this.edgeFlipDelay = global.settings.get_int("edge-flip-delay");
@@ -55,6 +86,8 @@ LayoutManager.prototype = {
         global.screen.connect('restacked', Lang.bind(this, this._windowsRestacked));
         global.screen.connect('monitors-changed',
                               Lang.bind(this, this._monitorsChanged));
+        global.screen.connect('in-fullscreen-changed',
+                              Lang.bind(this, this._updateFullscreen));
         global.window_manager.connect('switch-workspace',
                                       Lang.bind(this, this._windowsRestacked));
     },
@@ -70,6 +103,10 @@ LayoutManager.prototype = {
 
     _windowsRestacked: function() {
         this._chrome.updateRegions();
+    },
+
+    _updateFullscreen: function() {
+        this._chrome._updateFullscreen();
     },
 
     // This is called by Main after everything else is constructed;
@@ -106,7 +143,7 @@ LayoutManager.prototype = {
         this.monitors = [];
         let nMonitors = screen.get_n_monitors();
         for (let i = 0; i < nMonitors; i++)
-            this.monitors.push(screen.get_monitor_geometry(i));
+            this.monitors.push(new Monitor(i, screen.get_monitor_geometry(i)));
 
         if (nMonitors == 1) {
             this.primaryIndex = this.bottomIndex = 0;
@@ -626,82 +663,16 @@ Chrome.prototype = {
     },
 
     _updateFullscreen: function() {
-        let windows = Main.getWindowActorsForWorkspace(global.screen.get_active_workspace_index());
-
-        // Reset all monitors to not fullscreen
-        for (let i = 0; i < this._monitors.length; i++)
-            this._monitors[i].inFullscreen = false;
-
-        // Ordinary chrome should be visible unless there is a window
-        // with layer FULLSCREEN, or a window with layer
-        // OVERRIDE_REDIRECT that covers the whole screen.
-        // ('override_redirect' is not actually a layer above all
-        // other windows, but this seems to be how muffin treats it
-        // currently...) If we wanted to be extra clever, we could
-        // figure out when an OVERRIDE_REDIRECT window was trying to
-        // partially overlap us, and then adjust the input region and
-        // our clip region accordingly...
-
-        // @windows is sorted bottom to top.
-
-        for (let i = windows.length - 1; i > -1; i--) {
-            let window = windows[i];
-            let metaWindow = window.get_meta_window();
-
-            // Skip minimized windows
-            if (!window.showing_on_its_workspace())
-                continue;
-
-            if (metaWindow.get_layer() == Meta.StackLayer.FULLSCREEN || metaWindow.is_fullscreen()) {
-                let [index, monitor] = this._findMonitorForWindow(window);
-                if (monitor) {
-                    monitor.inFullscreen = true;
-                    continue;
-                }
-            }
-
-            if (metaWindow.is_override_redirect()) {
-                // Check whether the window is screen sized
-                let isScreenSized =
-                    (window.x == 0 && window.y == 0 &&
-                     window.width == global.screen_width &&
-                     window.height == global.screen_height);
-
-                if (isScreenSized) {
-                    for (let i = 0; i < this._monitors.length; i++) {
-                        this._monitors[i].inFullscreen = true;
-                        continue;
-                    }
-                }
-
-                // Or whether it is monitor sized
-                let [index, monitor] = this._findMonitorForWindow(window);
-                if (monitor &&
-                    window.x <= monitor.x &&
-                    window.x + window.width >= monitor.x + monitor.width &&
-                    window.y <= monitor.y &&
-                    window.y + window.height >= monitor.y + monitor.height) {
-                    monitor.inFullscreen = true;
-                    continue;
-                }
-            }
-        }
+        this._updateVisibility();
+        this._queueUpdateRegions();
     },
 
     _windowsRestacked: function() {
-        let wasInFullscreen = [];
-        for (let i = 0; i < this._monitors.length; i++)
-            wasInFullscreen[i] = this._monitors[i].inFullscreen;
-
-        this._updateFullscreen();
-
         let changed = false;
-        for (let i = 0; i < wasInFullscreen.length; i++) {
-            if (wasInFullscreen[i] != this._monitors[i].inFullscreen) {
-                changed = true;
-                break;
-            }
-        }
+
+        if (this._isPopupWindowVisible != global.top_window_group.get_children().some(isPopupMetaWindow))
+            changed = true;
+
         if (changed) {
             this._updateVisibility();
             this._queueUpdateRegions();
@@ -716,9 +687,12 @@ Chrome.prototype = {
             this._updateRegionIdle = 0;
         }
 
+        let isPopupMenuVisible = global.top_window_group.get_children().some(isPopupMetaWindow);
+        let wantsInputRegion = !isPopupMenuVisible;
+
         for (let i = 0; i < this._trackedActors.length; i++) {
             let actorData = this._trackedActors[i];
-            if (!actorData.affectsInputRegion && !actorData.affectsStruts)
+            if (!(actorData.affectsInputRegion && wantsInputRegion) && !actorData.affectsStruts)
                 continue;
 
             let [x, y] = actorData.actor.get_transformed_position();
@@ -727,7 +701,7 @@ Chrome.prototype = {
             y = Math.round(y);
             w = Math.round(w);
             h = Math.round(h);
-            if (actorData.affectsInputRegion) {
+            if (actorData.affectsInputRegion && wantsInputRegion) {
                 let rect = new Meta.Rectangle({ x: x, y: y, width: w, height: h});
 
                 if (actorData.actor.get_paint_visibility() &&
@@ -785,18 +759,8 @@ Chrome.prototype = {
             }
         }
 
-        let enable_stage = true;
-        let top_windows = global.top_window_group.get_children();
-        for (var i in top_windows){
-            if (top_windows[i]._windowType != Meta.WindowType.TOOLTIP){
-                enable_stage = false;
-                break;
-            }
-        }
-        if (enable_stage)
-            global.set_stage_input_region(rects);
-        else
-            global.set_stage_input_region([]);
+        global.set_stage_input_region(rects);
+        this._isPopupWindowVisible = isPopupMenuVisible;
 
         let screen = global.screen;
         for (let w = 0; w < screen.n_workspaces; w++) {

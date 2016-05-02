@@ -14,6 +14,7 @@ import locale
 import time
 from xml.etree import ElementTree
 from PIL import Image
+import hashlib
 
 gettext.install("cinnamon", "/usr/share/locale")
 
@@ -505,29 +506,36 @@ class PixCache(object):
             pix = self._data[filename][size]
         else:
             try:
-                if mimetype == "image/svg+xml":
-                    tmp_pix = GdkPixbuf.Pixbuf.new_from_file(filename)
-                    tmp_fp, tmp_filename = tempfile.mkstemp()
-                    os.close(tmp_fp)
-                    tmp_pix.savev(tmp_filename, "png", [], [])
-                    img = Image.open(tmp_filename)
-                    os.unlink(tmp_filename)
+                h = hashlib.sha1(('%f%s' % (os.path.getmtime(filename), filename)).encode()).hexdigest()
+                tmp_cache_path = GLib.get_user_cache_dir() + '/cs_backgrounds/'
+                if not os.path.exists(tmp_cache_path):
+                    os.mkdir(tmp_cache_path)
+                cache_filename = tmp_cache_path + h
+                if os.path.exists(cache_filename):
+                    img = Image.open(cache_filename)
+                    i = Image.open(filename)
+                    (width, height) = i.size
+                    i.close()
                 else:
-                    img = Image.open(filename)
-                (width, height) = img.size
-                if img.mode != 'RGB':
-                    img = img.convert('RGB')
-                if size:
-                    img.thumbnail((size, size), Image.ANTIALIAS)
-                img = imtools.round_image(img, {}, False, None, 3, 255)
-                img = imtools.drop_shadow(img, 4, 4, background_color=(255, 255, 255, 0), shadow_color=0x444444, border=8, shadow_blur=3, force_background_color=False, cache=None)
-                # Convert Image -> Pixbuf (save to file, GTK3 is not reliable for that)
-                f = tempfile.NamedTemporaryFile(delete=False)
-                temp_filename = f.name
-                f.close()
-                img.save(temp_filename, "png")
-                pix = [GdkPixbuf.Pixbuf.new_from_file(temp_filename), width, height]
-                os.unlink(temp_filename)
+                    if mimetype == "image/svg+xml":
+                        tmp_pix = GdkPixbuf.Pixbuf.new_from_file(filename)
+                        tmp_fp, tmp_filename = tempfile.mkstemp()
+                        os.close(tmp_fp)
+                        tmp_pix.savev(tmp_filename, "png", [], [])
+                        img = Image.open(tmp_filename)
+                        os.unlink(tmp_filename)
+                    else:
+                        img = Image.open(filename)
+                    (width, height) = img.size
+                    if img.mode != 'RGB':
+                        img = img.convert('RGB')
+                    if size:
+                        img.thumbnail((size, size), Image.ANTIALIAS)
+                    img = imtools.round_image(img, {}, False, None, 3, 255)
+                    img = imtools.drop_shadow(img, 4, 4, background_color=(255, 255, 255, 0), shadow_color=0x444444, border=8, shadow_blur=3, force_background_color=False, cache=None)
+                    # Convert Image -> Pixbuf (save to file, GTK3 is not reliable for that)
+                    img.save(cache_filename, "png")
+                pix = [GdkPixbuf.Pixbuf.new_from_file(cache_filename), width, height]
             except Exception, detail:
                 print "Failed to convert %s: %s" % (filename, detail)
                 pix = None

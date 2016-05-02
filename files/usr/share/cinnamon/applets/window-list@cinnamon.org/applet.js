@@ -196,8 +196,9 @@ WindowPreview.prototype = {
             this.thumbnailBin.set_child(null);
             this.thumbnail.destroy();
         }
-        if (this.actor)
+        if (this.actor) {
             this.actor.hide();
+        }
         this.visible = false;
     },
 

@@ -375,9 +375,8 @@ class ExtensionSidePage (SidePage):
 
 
         right = Gtk.CellRendererText()
-        right.set_property('xalign', 1.0)
+        right.set_property('xalign', 0.5)
         gm_column4 = Gtk.TreeViewColumn("Score", right, markup=4)
-        gm_column4.set_alignment(1.0)
         gm_column4.set_expand(True)
 
         self.gm_treeview.append_column(gm_column1)
@@ -1192,8 +1191,11 @@ Please contact the developer.""")
                 msg = _("This will restore the default set of enabled applets. Are you sure you want to do this?")
             elif self.collection_type == "desklet":
                 msg = _("This will restore the default set of enabled desklets. Are you sure you want to do this?")
+            elif self.collection_type == "extension":
+                msg = _("This will disable all active extensions. Are you sure you want to do this?")
             if self.show_prompt(msg):
-                os.system(('gsettings reset org.cinnamon next-%s-id') % (self.collection_type))
+                if self.collection_type != "extension":
+                    os.system(('gsettings reset org.cinnamon next-%s-id') % (self.collection_type))
                 os.system(('gsettings reset org.cinnamon enabled-%ss') % (self.collection_type))
         else:
             os.system("gsettings reset org.cinnamon.theme name")

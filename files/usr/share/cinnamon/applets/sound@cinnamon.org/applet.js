@@ -579,12 +579,13 @@ Player.prototype = {
 
         let change = false;
         if (metadata["mpris:artUrl"]) {
-            if (this._trackCoverFile != metadata["mpris:artUrl"].unpack()) {
-                this._trackCoverFile = metadata["mpris:artUrl"].unpack();
-
-                if ( this._name === "spotify" )
-                    this._trackCoverFile = this._trackCoverFile.replace("/thumb/", "/300/");
-
+            let artUrl = metadata["mpris:artUrl"].unpack();
+            if ( this._name === "spotify" ) {
+                artUrl = artUrl.replace("/thumb/", "/300/"); // Spotify 0.9.x
+                artUrl = artUrl.replace("/image/", "/300/"); // Spotify 0.27.x
+            }
+            if (this._trackCoverFile != artUrl) {
+                this._trackCoverFile = artUrl;
                 change = true;
             }
         }
@@ -602,7 +603,7 @@ Player.prototype = {
                     this._hideCover();
                     let cover = Gio.file_new_for_uri(decodeURIComponent(this._trackCoverFile));
                     this._trackCoverFileTmp = Gio.file_new_tmp('XXXXXX.mediaplayer-cover')[0];
-                    cover.read_async(null, null, Lang.bind(this, this._onReadCover));
+                    Util.spawn_async(['wget', this._trackCoverFile, '-O', this._trackCoverFileTmp.get_path()], Lang.bind(this, this._onDownloadedCover));
                 }
                 else {
                     cover_path = decodeURIComponent(this._trackCoverFile);
@@ -762,14 +763,7 @@ Player.prototype = {
         return numHours + numMins.toString() + ":" + numSecs.toString();
     },
 
-    _onReadCover: function(cover, result) {
-        let inStream = cover.read_finish(result);
-        let outStream = this._trackCoverFileTmp.replace(null, false, Gio.FileCreateFlags.REPLACE_DESTINATION, null, null);
-        outStream.splice_async(inStream, Gio.OutputStreamSpliceFlags.CLOSE_TARGET, 0, null, Lang.bind(this, this._onSavedCover));
-    },
-
-    _onSavedCover: function(outStream, result) {
-        outStream.splice_finish(result, null);
+    _onDownloadedCover: function() {
         let cover_path = this._trackCoverFileTmp.get_path();
         this._showCover(cover_path);
     },

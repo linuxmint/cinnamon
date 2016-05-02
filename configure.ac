@@ -1,5 +1,5 @@
 AC_PREREQ(2.63)
-AC_INIT([cinnamon],[2.8.7],[https://github.com/linuxmint/Cinnamon/issues],[cinnamon])
+AC_INIT([cinnamon],[3.0.1],[https://github.com/linuxmint/Cinnamon/issues],[cinnamon])
 
 AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_SRCDIR([src/cinnamon-global.c])
@@ -64,7 +64,7 @@ AM_CONDITIONAL(BUILD_RECORDER, $build_recorder)
 CLUTTER_MIN_VERSION=1.10.0
 GOBJECT_INTROSPECTION_MIN_VERSION=0.9.2
 GJS_MIN_VERSION=2.3.1
-MUFFIN_MIN_VERSION=2.5.0
+MUFFIN_MIN_VERSION=3.0.0
 GTK_MIN_VERSION=3.9.12
 GIO_MIN_VERSION=2.35.0
 POLKIT_MIN_VERSION=0.100

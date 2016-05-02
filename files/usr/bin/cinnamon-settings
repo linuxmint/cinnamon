@@ -5,10 +5,8 @@ import os, sys
 if len(sys.argv) > 1:
 	module = sys.argv[1]
 	if os.path.exists("/usr/share/cinnamon/cinnamon-settings/modules/cs_%s.py" % module):
-		print "Python module"
 		os.execvp("/usr/share/cinnamon/cinnamon-settings/cinnamon-settings.py", ("",) + tuple(sys.argv[1:]))
 	elif os.path.exists("/usr/bin/cinnamon-control-center"):
-		print "Unknown module %s, using cinnamon-control-center" % module
 		os.execvp("/usr/share/cinnamon/cinnamon-settings/cinnamon-settings.py", ("",) + tuple(sys.argv[1:]))
 	elif os.path.exists("/usr/bin/gnome-control-center"):
 		print "Unknown module %s, calling gnome-control-center" % module

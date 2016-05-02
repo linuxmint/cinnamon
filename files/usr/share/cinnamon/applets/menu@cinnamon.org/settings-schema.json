@@ -17,7 +17,7 @@
     "tooltip" : "Select an icon to show in the panel.",
     "dependency" : "menu-icon-custom",
     "indent" : "true"
- }, 
+ },
  "menu-label" : {
     "type" : "entry",
     "default" : "Menu",
@@ -35,6 +35,12 @@
     "default" : true,
     "description" : "Show application icons",
     "tooltip" : "Choose whether or not to show icons on applications."
+ },
+ "favbox-show" : {
+    "type" : "checkbox",
+    "default" : true,
+    "description" : "Show favorites and quit options",
+    "tooltip" : "Choose whether or not to show the left pane of the menu."
  },
  "show-places" : {
     "type" : "checkbox",

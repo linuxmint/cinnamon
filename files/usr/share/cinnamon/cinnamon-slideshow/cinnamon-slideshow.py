@@ -55,9 +55,9 @@ class CinnamonSlideshow(dbus.service.Object):
             self.update_id = 0
 
         self.loop_counter = self.slideshow_settings.get_int("delay")
-        self.start_mainloop()        
+        self.start_mainloop()
 
-    def setup_slideshow(self):        
+    def setup_slideshow(self):
         self.load_settings()
         self.connect_signals()
         self.gather_images()
@@ -98,15 +98,16 @@ class CinnamonSlideshow(dbus.service.Object):
             folder_at_path = Gio.file_new_for_path(self.collection_path)
 
             if folder_at_path.query_exists(None):
-                folder_at_path.enumerate_children_async("standard::type,standard::content-type",
+                folder_at_path.enumerate_children_async("standard::name,standard::type,standard::content-type",
                                                         Gio.FileQueryInfoFlags.NONE,
                                                         GLib.PRIORITY_LOW,
                                                         None,
                                                         self.gather_images_cb,
                                                         None)
+
         elif self.collection_type == BACKGROUND_COLLECTION_TYPE_XML:
             pictures = self.parse_xml_backgrounds_list(self.collection_path)
-            for picture in pictures:                
+            for picture in pictures:
                 filename = picture["filename"]
                 self.add_image_to_playlist(filename)
 
@@ -148,7 +149,7 @@ class CinnamonSlideshow(dbus.service.Object):
         self.disconnect_folder_monitor()
         self.image_playlist = []
         self.used_image_playlist = []
-        self.images_ready = False        
+        self.images_ready = False
         self.collection = self.slideshow_settings.get_string("image-source")
         self.collection_path = ""
         self.collection_type = None
@@ -253,7 +254,7 @@ class CinnamonSlideshow(dbus.service.Object):
         loc = localeCode.partition("_")
         loc = (loc[0], loc[2])
         return loc
-    
+
     def getLocalWallpaperName(self, names, loc):
         result = ""
         mainLocFound = False
@@ -288,14 +289,14 @@ class CinnamonSlideshow(dbus.service.Object):
                         for prop in wallpaperNode:
                             if type(prop.tag) == str:
                                 if prop.tag != "name":
-                                    wallpaperData[prop.tag] = prop.text                                
+                                    wallpaperData[prop.tag] = prop.text
                                 else:
                                     propAttr = prop.attrib
                                     wpName = prop.text
                                     locName = self.splitLocaleCode(propAttr.get(locAttrName)) if propAttr.has_key(locAttrName) else ("", "")
                                     names.append((locName, wpName))
                         wallpaperData["name"] = self.getLocalWallpaperName(names, loc)
-                        
+
                         if "filename" in wallpaperData and wallpaperData["filename"] != "" and os.path.exists(wallpaperData["filename"]) and os.access(wallpaperData["filename"], os.R_OK):
                             if wallpaperData["name"] == "":
                                 wallpaperData["name"] = os.path.basename(wallpaperData["filename"])
