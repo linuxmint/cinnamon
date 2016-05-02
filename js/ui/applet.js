@@ -375,7 +375,7 @@ Applet.prototype = {
             this.actor.set_important(true);
             this.actor.set_y_align(Clutter.ActorAlign.FILL);
             this.actor.set_y_expand(true);
-            this.actor.set_x_align(Clutter.ActorAlign.CENTER);
+            this.actor.set_x_align(Clutter.ActorAlign.CENTER);  // making this FILL also aligns to start
             this.actor.set_x_expand(true);
         }
         else {
@@ -531,17 +531,9 @@ IconApplet.prototype = {
 
 	this._applet_icon_box = new St.Bin(); // https://developer.gnome.org/st/stable/StBin.htm
 
-        if (orientation == St.Side.LEFT || orientation == St.Side.RIGHT)
-        {
-            this.actor.add(this._applet_icon_box,
-                           { x_align: St.Align.MIDDLE, x_fill: true,
-                             y_align: St.Align.MIDDLE, y_fill: false });
-        }
-        else {
-            this.actor.add(this._applet_icon_box,
-                          { y_align: St.Align.MIDDLE, y_fill: true,
-                            x_align: St.Align.MIDDLE, x_fill: false });
-        }
+        this._applet_icon_box.set_fill(true,true);
+        this._applet_icon_box.set_alignment(St.Align.MIDDLE,St.Align.MIDDLE);
+        this.actor.add(this._applet_icon_box);
     },
 
     /**
