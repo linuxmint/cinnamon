@@ -1316,7 +1316,10 @@ Please contact the developer.""")
                         if theme.has_icon(extension_icon):
                             img = theme.load_icon(extension_icon, size, 0)
                     elif os.path.exists("%s/icon.png" % extension_dir):
-                        img = GdkPixbuf.Pixbuf.new_from_file_at_size("%s/icon.png" % extension_dir, size, size)
+                        try:
+                            img = GdkPixbuf.Pixbuf.new_from_file_at_size("%s/icon.png" % extension_dir, size, size)
+                        except:
+                            img = None
 
                     if img is None:
                         theme = Gtk.IconTheme.get_default()
