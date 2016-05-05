@@ -481,7 +481,7 @@ class SoundTest(Gtk.Dialog):
             box = Gtk.Box.new(Gtk.Orientation.VERTICAL, 0)
             button.add(box)
             
-            icon = Gtk.Image.new_from_icon_name(position[2], 6)
+            icon = Gtk.Image.new_from_icon_name(position[2], Gtk.IconSize.DIALOG)
             box.pack_start(icon, False, False, 0)
             box.pack_start(Gtk.Label(position[0]), False, False, 0)
             
@@ -497,9 +497,17 @@ class SoundTest(Gtk.Dialog):
         content_area = self.get_content_area()
         content_area.set_border_width(12)
         content_area.add(grid)
+
+        button = Gtk.Button.new_from_stock("gtk-close")
+        button.connect("clicked", self._destroy)
+        content_area.add(button)
+
         self.show_all()
         self.setPositionHideState()
-    
+
+    def _destroy(self, widget):
+        self.destroy()
+
     def test(self, b, info):
         position = SOUND_TEST_MAP[info["index"]]
 
