@@ -1068,11 +1068,57 @@ class GSettingsSoundFileChooser(SettingsWidget):
         self.file_picker.set_label(f.get_basename())
 
 
+class BinFileMonitor(GObject.GObject):
+    __gsignals__ = {
+        'changed': (GObject.SignalFlags.RUN_LAST, None, ()),
+    }
+    def __init__(self):
+        super(BinFileMonitor, self).__init__()
+
+        self.changed_id = 0
+
+        env = GLib.getenv("PATH")
+
+        if env == None:
+            env = "/bin:/usr/bin:."
+
+        self.paths = env.split(":")
+
+        self.monitors = []
+
+        for path in self.paths:
+            file = Gio.File.new_for_path(path)
+            mon = file.monitor_directory(Gio.FileMonitorFlags.WATCH_MOVES, None)
+            mon.connect("changed", self.queue_emit_changed)
+            self.monitors.append(mon)
+
+    def _emit_changed(self):
+        self.emit("changed")
+        self.changed_id = 0
+        return False
+
+    def queue_emit_changed(self, file, other, event_type, data=None):
+        if self.changed_id > 0:
+            GObject.source_remove(self.changed_id)
+            self.changed_id = 0
+
+        self.changed_id = GObject.idle_add(self._emit_changed)
+
+file_monitor = None
+
+def get_file_monitor():
+    global file_monitor
+
+    if file_monitor == None:
+        file_monitor = BinFileMonitor()
+
+    return file_monitor
+
 class DependencyCheckInstallButton(Gtk.Box):
-    def __init__(self, checking_text, install_button_text, packages, final_widget=None, satisfied_cb=None):
+    def __init__(self, checking_text, install_button_text, binfiles, final_widget=None, satisfied_cb=None):
         super(DependencyCheckInstallButton, self).__init__(orientation=Gtk.Orientation.HORIZONTAL)
 
-        self.packages = packages
+        self.binfiles = binfiles
         self.satisfied_cb = satisfied_cb
 
         self.checking_text = checking_text
@@ -1087,9 +1133,12 @@ class DependencyCheckInstallButton(Gtk.Box):
         self.progress_bar.set_show_text(True)
         self.progress_bar.set_text(self.checking_text)
 
-        self.install_button = Gtk.Button(install_button_text)
-        self.install_button.connect("clicked", self.on_install_clicked)
-        self.stack.add_named(self.install_button, "install")
+        self.install_warning = Gtk.Label(install_button_text)
+        frame = Gtk.Frame()
+        frame.add(self.install_warning)
+        frame.set_shadow_type(Gtk.ShadowType.OUT)
+        frame.show_all()
+        self.stack.add_named(frame, "install")
 
         if final_widget:
             self.stack.add_named(final_widget, "final")
@@ -1097,21 +1146,28 @@ class DependencyCheckInstallButton(Gtk.Box):
             self.stack.add_named(Gtk.Alignment(), "final")
 
         self.stack.set_visible_child_name("progress")
-
         self.progress_source_id = 0
+
+        self.file_listener = get_file_monitor()
+        self.file_listener_id = self.file_listener.connect("changed", self.on_file_listener_ping)
+
+        self.connect("destroy", self.on_destroy)
 
         GObject.idle_add(self.check)
 
     def check(self):
         self.start_pulse()
-        CinnamonDesktop.installer_check_for_packages(self.packages, self.on_check_complete)
-        return False
 
-    def on_install_clicked(self, widget):
-        self.progress_bar.set_text(_("Installing"))
-        self.stack.set_visible_child_name("progress")
-        self.start_pulse()
-        CinnamonDesktop.installer_install_packages(self.packages, self.on_install_complete)
+        success = True
+
+        for program in self.binfiles:
+            if not GLib.find_program_in_path(program):
+                success = False
+                break
+
+        GObject.idle_add(self.on_check_complete, success)
+
+        return False
 
     def pulse_progress(self):
         self.progress_bar.pulse()
@@ -1135,14 +1191,20 @@ class DependencyCheckInstallButton(Gtk.Box):
         else:
             self.stack.set_visible_child_name("install")
 
-    def on_install_complete(self, result, data=None):
+    def on_file_listener_ping(self, monitor, data=None):
+        self.stack.set_visible_child_name("progress")
         self.progress_bar.set_text(self.checking_text)
-        CinnamonDesktop.installer_check_for_packages(self.packages, self.on_check_complete)
+        self.check()
+
+    def on_destroy(self, widget):
+        self.file_listener.disconnect(self.file_listener_id)
+        self.file_listener_id = 0
 
 class GSettingsDependencySwitch(SettingsWidget):
-    def __init__(self, label, schema=None, key=None, dep_key=None, packages=None):
+    def __init__(self, label, schema=None, key=None, dep_key=None, binfiles=None, packages=None):
         super(GSettingsDependencySwitch, self).__init__(dep_key=dep_key)
 
+        self.binfiles = binfiles
         self.packages = packages
 
         self.content_widget = Gtk.Alignment()
@@ -1161,8 +1223,8 @@ class GSettingsDependencySwitch(SettingsWidget):
             pkg_string += pkg
 
         self.dep_button = DependencyCheckInstallButton(_("Checking dependencies"),
-                                                       _("Install: %s") % (pkg_string),
-                                                       packages,
+                                                       _("Please install: %s") % (pkg_string),
+                                                       binfiles,
                                                        self.switch)
         self.content_widget.add(self.dep_button)
 

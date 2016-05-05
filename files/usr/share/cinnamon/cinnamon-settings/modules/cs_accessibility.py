@@ -62,6 +62,7 @@ class Module:
                                      "org.cinnamon.desktop.a11y.applications",
                                      "screen-reader-enabled",
                                      None,
+                                     ["orca"],
                                      ["gnome-orca"])
             settings.add_row(switch)
 
@@ -341,9 +342,9 @@ class Module:
             install_widget = SettingsWidget()
 
             self.dep_button = DependencyCheckInstallButton(_("Checking dependencies"),
-                                                           _("Install: %s") % ("mousetweaks"),
+                                                           _("Please install: %s") % ("mousetweaks"),
                                                            ["mousetweaks"],
-                                                           None,
+                                                           Gtk.Alignment(),
                                                            self.on_dep_satisfied)
 
             install_widget.pack_start(self.dep_button, True, False, 0)
