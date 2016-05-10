@@ -512,10 +512,7 @@ class PixCache(object):
                     os.mkdir(tmp_cache_path)
                 cache_filename = tmp_cache_path + h
                 if os.path.exists(cache_filename):
-                    img = Image.open(cache_filename)
-                    i = Image.open(filename)
-                    (width, height) = i.size
-                    i.close()
+                    (width, height) = Image.open(filename).size
                 else:
                     if mimetype == "image/svg+xml":
                         tmp_pix = GdkPixbuf.Pixbuf.new_from_file(filename)
