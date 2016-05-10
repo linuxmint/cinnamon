@@ -895,7 +895,7 @@ IconActor.prototype = {
         while (actorDragable) {
             if ((actorDragable._delegate)&&(actorDragable._delegate._draggable))
                 return actorDragable._delegate._draggable;
-            actorDragable = this.actor.get_parent();
+            actorDragable = actorDragable.get_parent();
         }
         return null;
     },
