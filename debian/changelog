@@ -1,3 +1,42 @@
+cinnamon (3.0.2) sarah; urgency=medium
+
+  [ ion201 ]
+  * Cache generated thumbnails
+
+  [ Lars Mueller ]
+  * Fix desktop effects on dialogs and menus This prevents desktop effects on dialogs and menus from being used if desktop-effects is turned off. It's like already like this in the effects settings dialog.
+
+  [ Clement Lefebvre ]
+  * Power applet: Fixed declaration of alias variable
+  * Window list: Fixed call on null object
+
+  [ Stephen Collins ]
+  * Fix handling of device icon where gicon is None (partially fixes #5248)
+
+  [ JosephMcc ]
+  * cinnamon-settings: Don't set the stack switcher to use the main settings stack on creation This is causing visual glitches in a lot of gtk themes when changing from the main icon view to a page that displays the stack switcher
+
+  [ Stephen Collins ]
+  * Fix highlighting not working correctly for multiple instances of an applet
+
+  [ Michael Webster ]
+  * ExtensionCore.py: Don't break when an xlet provides a bad icon file.
+
+  [ Jason Jackson ]
+  * Added null conditional to return empty array when get_devices returns null
+
+  [ brownsr ]
+  * correct potential infinite loop
+
+  [ Michael Webster ]
+  * accessibility settings: don't use packagekit for now when looking for assistance programs that are installed.  Just look for their binaries, and notify if not installed.  Watch the bin folders in case the user installs the dependency and doesn't restart cinnamon settings.
+  * cs_sound.py: Add a close button to the speaker test dialog.
+
+  [ ion201 ]
+  * Fix image close crash
+
+ -- Clement Lefebvre <root@linuxmint.com>  Tue, 10 May 2016 16:38:11 +0100
+
 cinnamon (3.0.1) sarah; urgency=medium
 
   [ JosephMcc ]
