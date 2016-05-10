@@ -203,9 +203,6 @@ class MainWindow:
         button_image.props.icon_size = Gtk.IconSize.MENU
 
         self.stack_switcher = self.builder.get_object("stack_switcher")
-        # Set stack to random thing and make opacity 0 so that the heading bar
-        # does not resize when switching between pages
-        self.stack_switcher.set_stack(self.main_stack)
 
         m, n = self.button_back.get_preferred_width()
         self.stack_switcher.set_margin_right(n)
