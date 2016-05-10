@@ -2005,7 +2005,7 @@ MyApplet.prototype = {
                 if (a._type != NetworkManager.SETTING_VPN_SETTING_NAME) {
                     // find a good device to be considered primary
                     a._primaryDevice = null;
-                    let devices = a.get_devices();
+                    let devices = a.get_devices() || [ ];
                     for (let j = 0; j < devices.length; j++) {
                         let d = devices[j];
                         if (d._delegate) {
