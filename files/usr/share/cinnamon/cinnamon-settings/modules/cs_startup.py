@@ -628,12 +628,12 @@ class AutostartRow(Gtk.ListBoxRow):
         self.desc_box.props.hexpand = True
         self.desc_box.props.halign = Gtk.Align.START
         self.name_label = Gtk.Label()
-        name_markup = GLib.markup_escape_text(self.app_name)
+        name_markup = GLib.markup_escape_text(self.app.name)
         self.name_label.set_markup("<b>{}</b>".format(name_markup))
         self.name_label.props.xalign = 0.0
         self.desc_box.add(self.name_label)
         self.comment_label = Gtk.Label()
-        comment_markup = GLib.markup_escape_text(self.app_comment)
+        comment_markup = GLib.markup_escape_text(self.app.comment)
         self.comment_label.set_markup("<small>{}</small>".format(comment_markup))
         self.comment_label.props.xalign = 0.0
         self.comment_label.set_ellipsize(Pango.EllipsizeMode.END)
