@@ -362,7 +362,8 @@ class AutostartBox(Gtk.Box):
         toolbar = Gtk.Toolbar.new()
         Gtk.StyleContext.add_class(Gtk.Widget.get_style_context(toolbar), "cs-header")
         label = Gtk.Label()
-        label.set_markup("<b>%s</b>" % title)
+        markup = GLib.markup_escape_text(title)
+        label.set_markup("<b>{}</b>".format(markup))
         title_holder = Gtk.ToolItem()
         title_holder.add(label)
         toolbar.add(title_holder)
@@ -627,11 +628,13 @@ class AutostartRow(Gtk.ListBoxRow):
         self.desc_box.props.hexpand = True
         self.desc_box.props.halign = Gtk.Align.START
         self.name_label = Gtk.Label()
-        self.name_label.set_markup("<b>%s</b>" % self.app.name)
+        name_markup = GLib.markup_escape_text(self.app_name)
+        self.name_label.set_markup("<b>{}</b>".format(name_markup))
         self.name_label.props.xalign = 0.0
         self.desc_box.add(self.name_label)
         self.comment_label = Gtk.Label()
-        self.comment_label.set_markup("<small>%s</small>" % self.app.comment)
+        comment_markup = GLib.markup_escape_text(self.app_comment)
+        self.comment_label.set_markup("<small>{}</small>".format(comment_markup))
         self.comment_label.props.xalign = 0.0
         self.comment_label.set_ellipsize(Pango.EllipsizeMode.END)
         self.comment_label.set_max_width_chars(40)
@@ -645,7 +648,8 @@ class AutostartRow(Gtk.ListBoxRow):
         label = Gtk.Label(_("Delay"))
         self.delay_box.pack_start(label, False, False, 0)
         self.delay_time_label = Gtk.Label()
-        self.delay_time_label.set_markup("%s" % self.app.delay)
+        delay_time_markup = GLib.markup_escape_text(self.app.delay)
+        self.delay_time_label.set_markup(delay_time_markup)
         self.delay_time_label.get_style_context().add_class("dim-label")
         self.delay_box.pack_start(self.delay_time_label, False, False, 0)
         grid.attach_next_to(self.delay_box, self.desc_box, Gtk.PositionType.RIGHT, 1, 1)
@@ -663,9 +667,13 @@ class AutostartRow(Gtk.ListBoxRow):
         self.add(widget)
 
     def update(self):
-        self.name_label.set_markup("<b>%s</b>" % self.app.name)
-        self.comment_label.set_markup("<small>%s</small>" % self.app.comment)
-        self.delay_time_label.set_markup("%s" % self.app.delay)
+        name_markup = GLib.markup_escape_text(self.app.name)
+        comment_markup = GLib.markup_escape_text(self.app.comment)
+        delay_time_markup = GLib.markup_escape_text(self.app.delay)
+
+        self.name_label.set_markup("<b>{}</b>".format(name_markup))
+        self.comment_label.set_markup("<small>{}</small>".format(comment_markup))
+        self.delay_time_label.set_markup(delay_time_markup)
 
     def on_switch_activated(self, switch, gparam):
         active = switch.get_active()
