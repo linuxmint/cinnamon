@@ -1088,7 +1088,7 @@ class BinFileMonitor(GObject.GObject):
 
         for path in self.paths:
             file = Gio.File.new_for_path(path)
-            mon = file.monitor_directory(Gio.FileMonitorFlags.WATCH_MOVES, None)
+            mon = file.monitor_directory(Gio.FileMonitorFlags.SEND_MOVED, None)
             mon.connect("changed", self.queue_emit_changed)
             self.monitors.append(mon)
 
