@@ -43,6 +43,7 @@ ClutterActor *cinnamon_app_create_icon_texture (CinnamonApp *app, int size);
 ClutterActor *cinnamon_app_get_faded_icon (CinnamonApp *app, int size);
 const char *cinnamon_app_get_name (CinnamonApp *app);
 const char *cinnamon_app_get_description (CinnamonApp *app);
+const char *cinnamon_app_get_keywords (CinnamonApp *app);
 gboolean cinnamon_app_is_window_backed (CinnamonApp *app);
 
 void cinnamon_app_activate_window (CinnamonApp *app, MetaWindow *window, guint32 timestamp);

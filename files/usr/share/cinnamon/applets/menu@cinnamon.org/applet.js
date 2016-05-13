@@ -2546,8 +2546,11 @@ MyApplet.prototype = {
             res = new Array();
             for (var i in this._applicationsButtons) {
                 let app = this._applicationsButtons[i].app;
-                if (app.get_name().toLowerCase().indexOf(pattern)!=-1 || (app.get_description() && app.get_description().toLowerCase().indexOf(pattern)!=-1) ||
-                        (app.get_id() && app.get_id().slice(0, -8).toLowerCase().indexOf(pattern)!=-1)) res.push(app.get_name());
+                if (app.get_name().toLowerCase().indexOf(pattern)!=-1 ||
+                    (app.get_keywords() && app.get_keywords().toLowerCase().indexOf(pattern)!=-1) ||
+                    (app.get_description() && app.get_description().toLowerCase().indexOf(pattern)!=-1) ||
+                    (app.get_id() && app.get_id().slice(0, -8).toLowerCase().indexOf(pattern)!=-1))
+                         res.push(app.get_name());
             }
         } else res = applist;
         return res;
