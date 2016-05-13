@@ -210,7 +210,6 @@ Comment[vi]=Quản lý thiết đặt bàn phím và phím tắt
 Comment[zh_CN]=键盘和快捷键设置
 Comment[zh_HK]=管理鍵盤設定與快速鍵
 Comment[zh_TW]=管理鍵盤設定與快捷鍵組合
-# Translators: keywords for Keyboard module
 Keywords=keyboard;shortcut;hotkey;
 Keywords[am]=የፊደል ገበታ : አቋራጭ : ትኩስ ቁልፍ;
 Keywords[ar]=لوحة مفاتيح، اختصار ، مفتاح اختصار;

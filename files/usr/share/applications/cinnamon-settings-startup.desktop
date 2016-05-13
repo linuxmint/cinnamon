@@ -158,7 +158,6 @@ Comment[vi]=Quản lý ứng dụng khởi chạy của bạn
 Comment[zh_CN]=管理启动程序
 Comment[zh_HK]=管理你的始動應用程式
 Comment[zh_TW]=管理您的系統啟動應用程式
-# Translators: keywords for Startup Applications module
 Keywords=startup;programs;boot;init;session;
 Keywords[ar]=بداية تشغيل، برامج، إقلاع، تهيئة، دورة;
 Keywords[ast]=aniciu;programes;arranque;init;sesión;

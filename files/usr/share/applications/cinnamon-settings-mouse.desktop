@@ -175,7 +175,6 @@ Comment[vi]=Điều khiển thiết đặt chuột và bàn chạm
 Comment[zh_CN]=鼠标/触摸板设置
 Comment[zh_HK]=控制滑鼠和觸控板設定
 Comment[zh_TW]=管理滑鼠與觸控板設定
-# Translators: keywords for Mouse and Touchpad module
 Keywords=mouse;touchpad;synaptic;double-click;
 Keywords[am]=አይጥ ተችፓድ ሲናፕቲክ ሁለት ጊዜ-መጫኛ;
 Keywords[ar]=فأرة ، لوحة اللمس ، المتشابك، نقر مزدوج;

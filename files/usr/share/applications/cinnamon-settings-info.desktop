@@ -180,7 +180,6 @@ Comment[vi]=Hiển thị thông tin hệ thống
 Comment[zh_CN]=显示系统信息
 Comment[zh_HK]=顯示系統資訊
 Comment[zh_TW]=顯示系統資訊
-# Translators: keywords for System Info module
 Keywords=system;information;details;graphic;sound;kernel;version;
 Keywords[am]=ስርአት : መረጃ : ዝርዝር : ንድፍ : ድምፅ : kernel;እትም;
 Keywords[ar]=النظام، معلومات، تفاصيل، عرض، صوت، النواة، الإصدار;

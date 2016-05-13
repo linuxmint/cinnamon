@@ -161,7 +161,6 @@ Comment[vi]=Thiết đặt riêng tư Cinnamon
 Comment[zh_CN]=Cinnamon隐私设置
 Comment[zh_HK]=Cinnamon 私隱設定
 Comment[zh_TW]=Cinnamon 隱私設定
-# Translators: keywords for Privacy module
 Keywords=privacy;recent;gtk;private;
 Keywords[ar]=الخصوصية، الأخيرة، Gtk، خاص;
 Keywords[ast]=privacidá;apocayá;apocagüéi;gtk;priváu;

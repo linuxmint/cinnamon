@@ -177,7 +177,6 @@ Comment[vi]=Quản lý tuỳ thích vùng làm việc
 Comment[zh_CN]=工作区设置
 Comment[zh_HK]=管理工作區喜好設定
 Comment[zh_TW]=管理工作區偏好設定
-# Translators: keywords for Workspaces module
 Keywords=workspace;osd;expo;monitor;
 Keywords[ar]=مساحة عمل ، ، معرض ، شاشة، اعلام على الشاشة;
 Keywords[be]=рабочая вобласць;osd;экспазіцыя;манітор;

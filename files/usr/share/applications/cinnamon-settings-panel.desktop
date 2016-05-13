@@ -161,7 +161,6 @@ Comment[vi]=Quản lý thiết đặt bảng Cinnamon
 Comment[zh_CN]=管理Cinnamon面板设置
 Comment[zh_HK]=管理 Cinnamon 面板設定
 Comment[zh_TW]=管理 Cinnamon 面板設定
-# Translators: keywords for Panel module
 Keywords=panel;height;bottom;top;autohide;size;layout;
 Keywords[ar]=الشريط، والطول، أسفل، أعلى، إخفاء تلقائي والحجم والتصميم;
 Keywords[bg]=панел;височина;долу;горе;скриване;подредба;

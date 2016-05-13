@@ -149,7 +149,6 @@ Comment[vi]=Quản lý tuỳ thích lát cửa sổ
 Comment[zh_CN]=管理窗口平铺样式
 Comment[zh_HK]=管理視窗平舖喜好設定
 Comment[zh_TW]=管理視窗平舖偏好設定
-# Translators: keywords for Window Tiling module
 Keywords=window;tile;flip;tiling;snap;snapping;
 Keywords[am]=መስኮት፡ መደርደሪያ ፡ መገልበጫ፡ መደርደሪያዎች፡ መቁረጫ፡ መቁረጫዎች;
 Keywords[be]=акно;пазіцыя;прыцягненне;прымацаванне;абароненая пазіцыя;абароненае прымацаванне;

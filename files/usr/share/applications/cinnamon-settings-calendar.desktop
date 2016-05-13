@@ -188,7 +188,6 @@ Comment[vi]=Quản lý thiết đặt ngày tháng
 Comment[zh_CN]=管理时间/日期设置
 Comment[zh_HK]=管理日期與時間設定
 Comment[zh_TW]=管理日期與時間設定
-# Translators: keywords for Date & Time module
 Keywords=time;date;calendar;format;network;sync;
 Keywords[am]=ሰአት : ቀን : ቀን መቁጠሪያ : አቀራረብ : ኔትዎርክ : ማስማሚያ;
 Keywords[ar]=الوقت، التاريخ، نمط، شبكة، مزامنة;

@@ -179,7 +179,6 @@ Comment[vi]=Quản lý thiết đặt năng lượng
 Comment[zh_CN]=电源管理
 Comment[zh_HK]=管理電源設定
 Comment[zh_TW]=管理電源設定
-# Translators: keywords for Power Management module
 Keywords=power;suspend;hibernate;laptop;desktop;brightness;screensaver;
 Keywords[am]=ሐይል፡ ማገጃ፡ ማስተኛ፡ ላፕቶፕ፡ ዴስክቶፕ፡ ብሩህንርት፡ መመልከቻውን ማዳኛ;
 Keywords[ar]=طاقة، إسبات، إسبات دائم، محمول، سطح مكتب، إضاءة، شاشة توقف;

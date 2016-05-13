@@ -168,7 +168,6 @@ Comment[vi]=Quản lý thiết đặt góc nóng
 Comment[zh_CN]=热角设置
 Comment[zh_HK]=管理 hotcorner 設定
 Comment[zh_TW]=管理熱角設定
-# Translators: keywords for Hot Corners module
 Keywords=hotcorner;overview;scale;expo;
 Keywords[ar]=أركان ساخنة، رؤية عامة، تحجيم، معرض;
 Keywords[be]=гарачы кут;агляд;маштабаванне;экспазіцыя;

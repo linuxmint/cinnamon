@@ -164,7 +164,6 @@ Comment[vi]=QUản lý thiết đặt khoá màn hình
 Comment[zh_CN]=管理锁屏设置
 Comment[zh_HK]=管理螢幕鎖定設定
 Comment[zh_TW]=管理螢幕鎖定設定
-# Translators: keywords for Screensaver module
 Keywords=screensaver;lock;password;away;message;
 Keywords[am]=መመልከቻውን ማዳኛ፡ መቆለፊያ፡ የነግቢያ ቃል፡ የለሁም፡ መልእክት;
 Keywords[ar]=شاشة التوقف، والقفل، كلمة السر، بعيدا، رسالة;

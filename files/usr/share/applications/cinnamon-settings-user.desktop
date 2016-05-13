@@ -176,7 +176,6 @@ Comment[vi]=Thay đổi tuỳ thích và mật khẩu người dùng của bạn
 Comment[zh_CN]=修改用户设置和密码
 Comment[zh_HK]=變更你的使用者喜好設定與密碼
 Comment[zh_TW]=變更您的使用者偏好設定與密碼
-# Translators: keywords for Account details module
 Keywords=user;account;information;details;
 Keywords[am]=የ ተጠቃሚ፡ መግለጫ፡ ዝርዝር፡ መረጃዎች;
 Keywords[ar]=مستخدم، حساب، معلومات، تفاصيل;

@@ -124,7 +124,6 @@ Name[zh_CN]=辅助功能
 Name[zh_HK]=無障礙存取
 Name[zh_TW]=無障礙
 Comment=Configure accessibility features
-# Translators: keywords for Accessibility module
 Keywords=magnifier;talk;access;zoom;keys;contrast;
 Keywords[am]=ማጉያ : መነጋገሪያ : ፍቃድ : ማሳያ : ቁልፎች : ማነፃፅሪያ;
 Keywords[ar]=عدسة، تكلم، ولوج، تكبير، مفاتيح، تباين;

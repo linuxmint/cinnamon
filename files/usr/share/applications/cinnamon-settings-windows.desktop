@@ -177,7 +177,6 @@ Comment[vi]=Quản lý tuỳ thích cửa sổ
 Comment[zh_CN]=管理窗口样式
 Comment[zh_HK]=管理視窗喜好設定
 Comment[zh_TW]=管理視窗偏好設定
-# Translators: keywords for Windows module
 Keywords=windows;titlebar;edge;switcher;window list;attention;focus;
 Keywords[ar]=نوافذ، شريط العنوان، حافة، مبّدل، قائمة النوافذ، انتباه، تركيز;
 Keywords[be]=вокны;загаловак;край;пераключацель;спіс вокнаў;увага;фокус;

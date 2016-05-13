@@ -192,7 +192,6 @@ Comment[vi]=Tùy thích thông báo
 Comment[zh_CN]=通知设置
 Comment[zh_HK]=通知喜好設定
 Comment[zh_TW]=通知偏好設定
-# Translators: keywords for Notifications module
 Keywords=notifications;
 Keywords[am]=ማስታወቂያዎች;
 Keywords[ar]=التنبيهات;

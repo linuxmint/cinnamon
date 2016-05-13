@@ -184,7 +184,6 @@ Comment[vi]=Cấu hình kiểu chữ hệ thống
 Comment[zh_CN]=配置系统字体
 Comment[zh_HK]=設定系統字型組態
 Comment[zh_TW]=設定系統字型組態
-# Translators: keywords for Fonts module
 Keywords=font;size;small;large;
 Keywords[am]=ፊደል መጠን ትንሽ ትልቅ;
 Keywords[ar]=الخط، الحجم، صغير، عريض;
