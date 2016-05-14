@@ -1563,6 +1563,10 @@ Please contact the developer.""")
 
         json_path = os.path.join(directory, "metadata.json")
 
+        # This may be a versioned extension, check the parent folder
+        if not os.path.exists(json_path):
+            json_path = os.path.join(directory, "..", "metadata.json")
+
         file = open(json_path, 'r')
         raw_meta = file.read()
         file.close()
