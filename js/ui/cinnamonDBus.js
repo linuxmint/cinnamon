@@ -329,7 +329,7 @@ CinnamonDBus.prototype = {
     },
 
     updateSetting: function(uuid, instance_id, key, payload) {
-        Main.settingsManager.uuids[uuid][instance_id].remote_set(key, payload);
+        Main.settingsManager.uuids[uuid][instance_id].remoteUpdate(key, payload);
     },
 
     switchWorkspaceLeft: function() {
