@@ -2382,7 +2382,7 @@ MyApplet.prototype = {
             }
         } else if (apps) {
             for (let i = 0; i < this._applicationsButtons.length; i++) {
-                    if (apps.indexOf(this._applicationsButtons[i].name) != -1) {
+                    if (apps.indexOf(this._applicationsButtons[i].app.get_id()) != -1) {
                             this._applicationsButtons[i].actor.show();
                     } else {
                             this._applicationsButtons[i].actor.hide();
@@ -2550,7 +2550,7 @@ MyApplet.prototype = {
                     (app.get_keywords() && app.get_keywords().toLowerCase().indexOf(pattern)!=-1) ||
                     (app.get_description() && app.get_description().toLowerCase().indexOf(pattern)!=-1) ||
                     (app.get_id() && app.get_id().slice(0, -8).toLowerCase().indexOf(pattern)!=-1))
-                         res.push(app.get_name());
+                         res.push(app.get_id());
             }
         } else res = applist;
         return res;
