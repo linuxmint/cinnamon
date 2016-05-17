@@ -109,6 +109,10 @@ class Module:
             widget = GSettingsSwitch(_("Session startup animation"), "org.cinnamon", "startup-animation")
             settings.add_row(widget)
 
+            widget = GSettingsSwitch(_("Overlay scroll bars (logout required)"), "org.cinnamon.desktop.interface", "gtk-overlay-scrollbars")
+            settings.add_row(widget)
+
+
             self.schema.connect("changed::desktop-effects", self.on_desktop_effects_enabled_changed)
 
             # Customize
