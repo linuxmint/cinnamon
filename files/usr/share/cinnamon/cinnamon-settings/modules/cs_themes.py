@@ -3,6 +3,7 @@
 from ExtensionCore import ExtensionSidePage
 from gi.repository.Gtk import SizeGroup, SizeGroupMode
 from SettingsWidgets import *
+from CinnamonGtkSettings import GtkSettingsSwitch
 
 import glob
 
@@ -22,6 +23,10 @@ class Module:
     def on_module_selected(self):
         if not self.loaded:
             print "Loading Themes module"
+
+            self.sidePage.stack = SettingsStack()
+            self.sidePage.add_widget(self.sidePage.stack)
+
             self.settings = Gio.Settings.new("org.cinnamon.desktop.interface")
             self.wm_settings = Gio.Settings.new("org.cinnamon.desktop.wm.preferences")
             self.cinnamon_settings = Gio.Settings.new("org.cinnamon.theme")
@@ -33,7 +38,7 @@ class Module:
             self.cinnamon_chooser = self.create_button_chooser(self.cinnamon_settings, 'name', 'themes', 'cinnamon', button_picture_size=60, menu_pictures_size=60, num_cols=4)
 
             page = SettingsPage()
-            self.sidePage.add_widget(page)
+            self.sidePage.stack.add_titled(page, "themes", _("Themes"))
 
             settings = page.add_section(_("Themes"))
 
@@ -58,12 +63,22 @@ class Module:
             widget.pack_start(center_box, False, False, 0)
             settings.add_row(widget)
 
-            settings = page.add_section(_("Options"))
+            page = SettingsPage()
+            self.sidePage.stack.add_titled(page, "options", _("Settings"))
+
+            settings = page.add_section(_("Miscellaneous options"))
 
             widget = GSettingsSwitch(_("Show icons in menus"), "org.cinnamon.settings-daemon.plugins.xsettings", "menus-have-icons")
             settings.add_row(widget)
 
             widget = GSettingsSwitch(_("Show icons on buttons"), "org.cinnamon.settings-daemon.plugins.xsettings", "buttons-have-icons")
+            settings.add_row(widget)
+
+            dark_text = _("Use a dark theme variant when available in certain applications")
+            dark_italic = _("(Applications must be restarted for this change to take effect)")
+
+            widget = GtkSettingsSwitch("%s\n<i><small>%s</small></i>" % (dark_text, dark_italic),
+                                       "gtk-application-prefer-dark-theme")
             settings.add_row(widget)
 
             self.builder = self.sidePage.builder
