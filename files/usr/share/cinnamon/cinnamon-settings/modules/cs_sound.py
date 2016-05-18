@@ -83,6 +83,7 @@ class SoundBox(Gtk.Box):
         scw.add(self.box)
 
         self.list_box = Gtk.ListBox()
+        self.list_box.set_selection_mode(Gtk.SelectionMode.NONE)
         self.list_box.set_header_func(list_header_func, None)
         self.box.add(self.list_box)
 
