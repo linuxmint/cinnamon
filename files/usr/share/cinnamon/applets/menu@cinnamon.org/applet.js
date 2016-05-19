@@ -860,7 +860,7 @@ FavoritesButton.prototype = {
         let icon = app.create_icon_texture(icon_size);
 
         this.addActor(icon);
-        icon.realize()
+        icon.realize();
 
         this._draggable = DND.makeDraggable(this.actor);
         this._draggable.connect('drag-end', Lang.bind(this, this._onDragEnd));
