@@ -21,7 +21,8 @@ const MEDIA_PLAYER_2_NAME = "org.mpris.MediaPlayer2";
 const MEDIA_PLAYER_2_PLAYER_NAME = "org.mpris.MediaPlayer2.Player";
 
 /* global values */
-let players_without_seek_support = ['spotify', 'totem', 'gnome-mplayer', 'pithos'];
+let players_without_seek_support = ['spotify', 'totem', 'gnome-mplayer', 'pithos',
+	'smplayer'];
 let players_with_seek_support = [
     'clementine', 'banshee', 'rhythmbox', 'rhythmbox3', 'pragha', 'quodlibet',
     'amarok', 'xnoise', 'gmusicbrowser', 'vlc', 'qmmp', 'deadbeef', 'audacious'];
@@ -556,10 +557,22 @@ Player.prototype = {
             this._stopTimer();
         }
         if (metadata["xesam:artist"]) {
-            this._artist = metadata["xesam:artist"].deep_unpack().join(", ");
+            switch (metadata["xesam:artist"].get_type_string()) {
+                case 's':
+                    // smplayer sends a string
+                    this._artist = metadata["xesam:artist"].unpack();
+                    break;
+                case 'as':
+                    // others send an array of strings
+                    this._artist = metadata["xesam:artist"].deep_unpack().join(", ");
+                    break;
+                default:
+                    this._artist = _("Unknown Artist");
+            }
         }
         else
             this._artist = _("Unknown Artist");
+
         this.artistLabel.set_text(this._artist);
 
         if (metadata["xesam:album"])
