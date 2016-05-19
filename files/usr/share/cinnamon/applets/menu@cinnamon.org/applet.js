@@ -868,7 +868,7 @@ FavoritesButton.prototype = {
     },
 
     _onDragEnd: function() {
-        this.actor.get_parent()._delegate._clearDragPlaceholder()
+        this.actor.get_parent()._delegate._clearDragPlaceholder();
     },
 
     get_app_id: function() {
