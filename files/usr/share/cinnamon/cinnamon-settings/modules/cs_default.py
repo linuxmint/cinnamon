@@ -40,7 +40,7 @@ source_code_defs = [
     'text/x-chdr', 'text/x-csrc', 'text/x-c++hdr', 'text/x-c++src', 'text/x-java',
     'text/x-dsrc', 'text/x-pascal', 'text/x-perl', 'text/x-python', 'application/x-php',
     'application/x-httpd-php3', 'application/x-httpd-php4', 'application/x-httpd-php5',
-    'application/xml', 'text/html', 'text/css', 'text/x-sql', 'text/x-diff', 'application/x-ruby',
+    'application/xml', 'text/css', 'text/x-sql', 'text/x-diff', 'application/x-ruby',
     'application/x-shellscript', 'application/javascript', 'text/x-makefile', 'text/css',
     'text/turtle', 'text/x-fortran', 'text/yaml', 'application/x-m4', 'text/x-vb', 'text/x-csharp'
 ]
@@ -469,4 +469,3 @@ class InvertedSwitch(SettingsWidget):
 
         self.settings.set_boolean(self.key, not active)
         self.revealer.set_reveal_child(active)
-
