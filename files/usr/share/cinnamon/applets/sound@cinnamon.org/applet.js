@@ -326,7 +326,7 @@ Player.prototype = {
         this.coverBox.set_layout_manager(l);
 
         // Cover art
-        this.cover = new St.Icon({icon_name: "media-optical-cd-audio", icon_size: 300, icon_type: St.IconType.FULLCOLOR});
+        this.cover = new St.Icon({icon_name: "media-optical-cd", icon_size: 300, icon_type: St.IconType.FULLCOLOR});
         this.coverBox.add_actor(this.cover);
 
         // Track info (artist + title)
@@ -795,7 +795,7 @@ Player.prototype = {
             onComplete: Lang.bind(this, function() {*/
                 this.coverBox.remove_actor(this.cover);
                 if (! cover_path || ! GLib.file_test(cover_path, GLib.FileTest.EXISTS)) {
-                    this.cover = new St.Icon({style_class: 'sound-player-generic-coverart', important: true, icon_name: "media-optical-cd-audio", icon_size: 300, icon_type: St.IconType.FULLCOLOR});
+                    this.cover = new St.Icon({style_class: 'sound-player-generic-coverart', important: true, icon_name: "media-optical-cd", icon_size: 300, icon_type: St.IconType.FULLCOLOR});
                     cover_path = null;
                 }
                 else {
