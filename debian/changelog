@@ -1,3 +1,42 @@
+cinnamon (3.0.3) sarah; urgency=medium
+
+  [ Dustin Falgout ]
+  * Ensure label text is properly escaped before applying it with set_markup() Fixes #5287
+  * fix typo
+
+  [ Michael Webster ]
+  * SettingsWidgets.py: use a more compatible GFileMonitorFlags - WATCH_MOVES is not available in Mint 17/glib 2.40
+  * cinnamon-settings: include module keywords in desktop files
+  * cinnamon-app: provide access to desktop file keywords.  Use them in the menu applet search.
+  * generated desktop files: re-run, to remove unnecessary comment
+  * extensions: Check extensions for unsafe calls (synchronous, etc.. things that can potentially freeze Cinnamon) and make the user aware of them in cinnamon settings.
+  * ExtensionCore.py: scan_extension_thread - if the metadata.json file is not found, this must be a versioned xlet, check the parent folder for it instead.
+  * cs_power.py: Expose setting to allow lid-closed action even when external monitors are attached.
+  * messageTray.js: Don't let notifications with buttons fade on mouse-over.
+
+  [ itzexor ]
+  * menu applet: use app id instead of app name for searches prevents duplicate search results for apps with the same desktop entry name when searching with a more specific term
+  * sound applet: smplayer: fix artist metadata display and disable seek While seeking does work, after the first time you seek the amount seeked is incorrect. It appears to seek the amount between the beginning of the seek bar and where you released the click instead.
+
+  [ Michael Webster ]
+  * cs_themes: Add setting for dark theme variant preference.  This is only settable from ~/.config/gtk-3.0/settings.ini, so add the ability to modify that as well.
+  * cs_effects.py: Expose gtk-overlay-scrollbar setting.
+
+  [ JosephMcc ]
+  * cs_sound: Set selection mode to none on the SoundBox() object
+
+  [ NikoKrause ]
+  * Missing semicolon
+  * Missing semicolon
+
+  [ Clement Lefebvre ]
+  * Settings: Don't include text/html in the source code mimetypes
+
+  [ Michael Webster ]
+  * st-texture-cache.c: use g_themed_icon_new instead of g_themed_icon_new_with_default_fallbacks.
+
+ -- Clement Lefebvre <root@linuxmint.com>  Fri, 20 May 2016 12:04:29 +0100
+
 cinnamon (3.0.2) sarah; urgency=medium
 
   [ ion201 ]
