@@ -1142,7 +1142,7 @@ MyApplet.prototype = {
         this.RecentManager = new DocInfo.DocManager();
         this.privacy_settings = new Gio.Settings( {schema_id: PRIVACY_SCHEMA} );
         this._display();
-        appsys.connect('installed-changed', Lang.bind(this, this._refreshAll));
+        appsys.connect('installed-changed', Lang.bind(this, this.onAppSysChanged));
         AppFavorites.getAppFavorites().connect('changed', Lang.bind(this, this._refreshFavs));
         this.settings.bindProperty(Settings.BindingDirection.IN, "hover-delay", "hover_delay_ms", this._update_hover_delay, null);
         this._update_hover_delay();
@@ -1154,6 +1154,7 @@ MyApplet.prototype = {
         this._pathCompleter.set_dirs_only(false);
         this.lastAcResults = new Array();
         this.settings.bindProperty(Settings.BindingDirection.IN, "search-filesystem", "searchFilesystem", null, null);
+        this.refreshing = false; // used as a flag to know if we're currently refreshing (so we don't do it more than once concurrently)
 
         // We shouldn't need to call refreshAll() here... since we get a "icon-theme-changed" signal when CSD starts.
         // The reason we do is in case the Cinnamon icon theme is the same as the one specificed in GTK itself (in .config)
@@ -1172,14 +1173,30 @@ MyApplet.prototype = {
     },
 
     onIconThemeChanged: function() {
-        this._refreshAll();
+        if (this.refreshing == false) {
+            this.refreshing = true;
+            Mainloop.timeout_add_seconds(1, Lang.bind(this, this._refreshAll));
+        }
+    },
+
+    onAppSysChanged: function() {
+        if (this.refreshing == false) {
+            this.refreshing = true;
+            Mainloop.timeout_add_seconds(1, Lang.bind(this, this._refreshAll));
+        }
     },
 
     _refreshAll: function() {
-        this._refreshApps();
-        this._refreshFavs();
-        this._refreshPlaces();
-        this._refreshRecent();
+        try {
+            this._refreshApps();
+            this._refreshFavs();
+            this._refreshPlaces();
+            this._refreshRecent();
+        }
+        catch (exception) {
+            global.log(exception);
+        }
+        this.refreshing = false;
     },
 
     _refreshBelowApps: function() {
