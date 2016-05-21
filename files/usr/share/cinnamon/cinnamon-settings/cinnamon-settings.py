@@ -20,6 +20,7 @@ import locale
 import urllib2
 import proxygsettings
 from functools import cmp_to_key
+import unicodedata
 
 # i18n
 gettext.install("cinnamon", "/usr/share/locale")
@@ -345,11 +346,22 @@ class MainWindow:
         if position == Gtk.EntryIconPosition.SECONDARY:
             self.search_entry.set_text("")
 
+    def strip_accents(self, text):
+        try:
+            text = unicode(text, 'utf-8')
+        except NameError:
+            # unicode is default in Python 3
+            pass
+        text = unicodedata.normalize('NFD', text)
+        text = text.encode('ascii', 'ignore')
+        text = text.decode("utf-8")
+        return str(text)
+
     def filter_visible_function(self, model, iter, user_data = None):
         sidePage = model.get_value(iter, 2)
-        text = self.search_entry.get_text().lower()
-        if sidePage.name.lower().find(text) > -1 or \
-           sidePage.keywords.lower().find(text) > -1:
+        text = self.strip_accents(self.search_entry.get_text().lower())
+        if self.strip_accents(sidePage.name.lower()).find(text) > -1 or \
+           self.strip_accents(sidePage.keywords.lower()).find(text) > -1:
             return True
         else:
             return False

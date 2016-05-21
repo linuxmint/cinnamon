@@ -2546,10 +2546,10 @@ MyApplet.prototype = {
             res = new Array();
             for (var i in this._applicationsButtons) {
                 let app = this._applicationsButtons[i].app;
-                if (app.get_name().toLowerCase().indexOf(pattern)!=-1 ||
-                    (app.get_keywords() && app.get_keywords().toLowerCase().indexOf(pattern)!=-1) ||
-                    (app.get_description() && app.get_description().toLowerCase().indexOf(pattern)!=-1) ||
-                    (app.get_id() && app.get_id().slice(0, -8).toLowerCase().indexOf(pattern)!=-1))
+                if (Util.latinise(app.get_name().toLowerCase()).indexOf(pattern)!=-1 ||
+                    (app.get_keywords() && Util.latinise(app.get_keywords().toLowerCase()).indexOf(pattern)!=-1) ||
+                    (app.get_description() && Util.latinise(app.get_description().toLowerCase()).indexOf(pattern)!=-1) ||
+                    (app.get_id() && Util.latinise(app.get_id().slice(0, -8).toLowerCase()).indexOf(pattern)!=-1))
                          res.push(app.get_id());
             }
         } else res = applist;
@@ -2559,6 +2559,7 @@ MyApplet.prototype = {
     _doSearch: function(){
         this._searchTimeoutId = 0;
         let pattern = this.searchEntryText.get_text().replace(/^\s+/g, '').replace(/\s+$/g, '').toLowerCase();
+        pattern = Util.latinise(pattern);
         if (pattern==this._previousSearchPattern) return false;
         this._previousSearchPattern = pattern;
         this._activeContainer = null;
