@@ -92,6 +92,20 @@ var SETTINGS_TYPES = {
             "default"
         ]
     },
+    "soundfilechooser" : {
+        "required-fields": [
+            "type",
+            "description",
+            "default"
+        ]
+    },
+    "fontchooser" : {
+        "required-fields": [
+            "type",
+            "description",
+            "default"
+        ]
+    },
     "combobox" : {
         "required-fields": [
             "type",
@@ -101,6 +115,13 @@ var SETTINGS_TYPES = {
         ]
     },
     "tween" : {
+        "required-fields": [
+            "type",
+            "default",
+            "description"
+        ]
+    },
+    "effect" : {
         "required-fields": [
             "type",
             "default",

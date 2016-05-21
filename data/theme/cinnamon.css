@@ -1427,6 +1427,9 @@ StScrollBar StButton#vhandle:hover {
 .applet-box:hover {
 	color: #fff;
 }
+.applet-box:highlight {
+    background-color: #aa5555;
+}
 .applet-label {	
 	font-weight: bold;
 	color: #ccc;		
@@ -1449,6 +1452,10 @@ StScrollBar StButton#vhandle:hover {
  * ===================================================================*/
 .desklet {        
     color: #fff;    
+}
+
+.desklet:highlight, .desklet:highlight-with-borders, .desklet:highlight-with-borders-and-header {
+    background-color: #aa5555;
 }
 
 .desklet-with-borders {

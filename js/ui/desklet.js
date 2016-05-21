@@ -222,9 +222,7 @@ Desklet.prototype = {
         
         if (!this._meta["hide-configuration"] && GLib.file_test(this._meta["path"] + "/settings-schema.json", GLib.FileTest.EXISTS)) {            
             this.context_menu_item_configure = new PopupMenu.PopupMenuItem(_("Configure..."));
-            this.context_menu_item_configure.connect("activate", Lang.bind(this, function() {
-                Util.spawnCommandLine("cinnamon-settings desklets " + this._uuid + " " + this.instance_id)
-            }));
+            this.context_menu_item_configure.connect("activate", Lang.bind(this, this.configureDesklet));
             this._menu.addMenuItem(this.context_menu_item_configure);
         }
         
@@ -233,8 +231,22 @@ Desklet.prototype = {
         this._menu.addMenuItem(this.context_menu_item_remove);            
     },
 
+    /**
+     * highlight:
+     * @highlight (boolean): whether to turn on or off
+     *
+     * Turns on/off the highlight of the desklet
+     */
+    highlight: function(highlight) {
+        this.content.change_style_pseudo_class("highlight", highlight);
+    },
+
     openAbout: function() {
         new ModalDialog.SpicesAboutDialog(this._meta, "desklets");
+    },
+
+    configureDesklet: function() {
+        Util.spawnCommandLine("xlet-settings desklet " + this._uuid + " " + this.instance_id);
     }
 };
 Signals.addSignalMethods(Desklet.prototype);
