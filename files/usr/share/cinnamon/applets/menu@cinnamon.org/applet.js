@@ -381,6 +381,7 @@ ApplicationButton.prototype = {
         this.label.set_style(MAX_BUTTON_WIDTH);
         this.addActor(this.label);
         this._draggable = DND.makeDraggable(this.actor);
+        this._draggable.connect('drag-end', Lang.bind(this, this._onDragEnd));
         this.isDraggableApp = true;
         this.actor.label_actor = this.label;
         if (showIcon) {
@@ -408,6 +409,10 @@ ApplicationButton.prototype = {
     // we show as the item is being dragged.
     getDragActorSource: function() {
         return this.actor;
+    },
+
+    _onDragEnd: function() {
+        this.appsMenuButton.favoritesBox._delegate._clearDragPlaceholder();
     }
 };
 
