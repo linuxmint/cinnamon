@@ -1,3 +1,25 @@
+cinnamon (3.0.4) sarah; urgency=medium
+
+  [ Clement Lefebvre ]
+  * Updated pot file
+
+  [ Michael Webster ]
+  * cs_effects: Only show overlay scrollbar toggle when using gtk3 >= 3.16.
+  * sound applet: Use an icon that actually exists for blank coverart.
+
+  [ JosephMcc ]
+  * sound-applet: Fix an icon name
+
+  [ Clement Lefebvre ]
+  * Ignore accents/stokes when searching the menu or cinnamon-settings
+  * Menu applet: Removed trailing spaces
+  * Menu applet: Don't refresh twice at the same time.
+
+  [ Lars Mueller ]
+  * [Menu applet] Fix not cleared drag placeholder in favorites box This fixes the uncleared drag placeholder in the favorites box, if an application was dragged over, but not dropped on the favorites box This is for #5322
+
+ -- Clement Lefebvre <root@linuxmint.com>  Mon, 23 May 2016 12:51:41 +0100
+
 cinnamon (3.0.3) sarah; urgency=medium
 
   [ Dustin Falgout ]
