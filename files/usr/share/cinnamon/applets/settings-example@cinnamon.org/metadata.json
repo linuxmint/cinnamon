@@ -2,5 +2,6 @@
  "uuid": "settings-example@cinnamon.org",
  "name": "Settings API Demo",
  "description": "A sample applet for demonstrating the capabilities and usage of the applet and desklet settings API",
- "icon": "preferences-desktop"
+ "icon": "preferences-desktop",
+ "max-instances": -1
 }

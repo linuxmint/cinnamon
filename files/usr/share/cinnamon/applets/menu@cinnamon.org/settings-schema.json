@@ -1,11 +1,45 @@
 {
+    "layout" : {
+        "type" : "layout",
+        "pages" : ["panel", "menu"],
+        "panel" : {
+            "type" : "page",
+            "title" : "Panel",
+            "sections" : ["panel-appear", "panel-behave"]
+        },
+        "menu" : {
+            "type" : "page",
+            "title" : "Menu",
+            "sections" : ["menu-layout", "menu-behave"]
+        },
+        "panel-appear" : {
+            "type" : "section",
+            "title" : "Appearance",
+            "keys" : ["menu-icon-custom", "menu-icon", "menu-label"]
+        },
+        "panel-behave" : {
+            "type" : "section",
+            "title" : "Behavior",
+            "keys" : ["overlay-key", "activate-on-hover", "hover-delay"]
+        },
+        "menu-layout" : {
+            "type" : "section",
+            "title" : "Layout and content",
+            "keys" : ["show-category-icons", "show-application-icons", "favbox-show", "show-places", "menu-editor-button"]
+        },
+        "menu-behave" : {
+            "type" : "section",
+            "title" : "Behavior",
+            "keys" : ["enable-autoscroll", "search-filesystem"]
+        }
+    },
  "overlay-key" : {
     "type" : "keybinding",
     "description" : "Keyboard shortcut to open and close the menu",
     "default" : "Super_L::Super_R"
  },
  "menu-icon-custom" : {
-    "type" : "checkbox",
+    "type" : "switch",
     "default" : false,
     "description" : "Use a custom icon",
     "tooltip" : "Unchecking this allows the theme to set the icon"
@@ -25,43 +59,43 @@
     "tooltip" : "Enter custom text to show in the panel."
  },
  "show-category-icons" : {
-    "type" : "checkbox",
+    "type" : "switch",
     "default" : true,
     "description" : "Show category icons",
     "tooltip" : "Choose whether or not to show icons on categories."
  },
  "show-application-icons" : {
-    "type" : "checkbox",
+    "type" : "switch",
     "default" : true,
     "description" : "Show application icons",
     "tooltip" : "Choose whether or not to show icons on applications."
  },
  "favbox-show" : {
-    "type" : "checkbox",
+    "type" : "switch",
     "default" : true,
     "description" : "Show favorites and quit options",
     "tooltip" : "Choose whether or not to show the left pane of the menu."
  },
  "show-places" : {
-    "type" : "checkbox",
+    "type" : "switch",
     "default" : true,
     "description": "Show bookmarks and places",
     "tooltip": "Choose whether or not to show bookmarks and places in the menu."
  },
 "enable-autoscroll" : {
-    "type" : "checkbox",
+    "type" : "switch",
     "default" : true,
     "description": "Enable autoscrolling in application list",
     "tooltip": "Choose whether or not to enable smooth autoscrolling in the application list."
  },
 "search-filesystem" : {
-    "type" : "checkbox",
+    "type" : "switch",
     "default" : false,
     "description": "Enable filesystem path entry in search box",
     "tooltip": "Allows path entry in the menu search box."
  },
 "activate-on-hover" : {
-    "type" : "checkbox",
+    "type" : "switch",
     "default" : false,
     "description": "Open the menu when I move my mouse over it",
     "tooltip": "Enable opening the menu when the mouse enters the applet"
@@ -73,7 +107,7 @@
     "max" : 1000,
     "step" : 50,
     "units" : "milliseconds",
-    "description" : "Menu hover delay:",
+    "description" : "Menu hover delay",
     "tooltip" : "Delay between switching categories"
  },
   "menu-editor-button" : {
