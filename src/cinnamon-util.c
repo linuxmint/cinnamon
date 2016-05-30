@@ -363,16 +363,32 @@ cinnamon_util_get_icon_for_uri (const char *text_uri)
       file = root;
     }
 
-  info = g_file_query_info (file, "standard::icon", G_FILE_QUERY_INFO_NONE,
+  info = g_file_query_info (file, "standard::icon,metadata::custom-icon", G_FILE_QUERY_INFO_NONE,
                             NULL, NULL);
   g_object_unref (file);
 
   if (!info)
     return g_themed_icon_new ("gtk-file");
 
-  retval = g_file_info_get_icon (info);
-  if (retval)
-    g_object_ref (retval);
+  const char *custom_icon = g_file_info_get_attribute_string (info, "metadata::custom-icon");
+
+  if (custom_icon)
+    {
+      GFile *icon_file = g_file_new_for_uri (custom_icon);
+
+      retval = g_file_icon_new (icon_file);
+
+      g_object_unref (icon_file);
+    }
+
+  if (!retval)
+    {
+      retval = g_file_info_get_icon (info);
+
+      if (retval)
+        g_object_ref (retval);
+    }
+
   g_object_unref (info);
 
   if (retval)
