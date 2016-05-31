@@ -1,3 +1,16 @@
+cinnamon (3.0.5) sarah; urgency=medium
+
+  [ JosephMcc ]
+  * cinnamon-settings: Remove hard-coded theming for the main cinnamon-settings icon view
+
+  [ Clement Lefebvre ]
+  * Background settings: Apply EXIF rotations to thumbnails
+
+  [ Michael Webster ]
+  * cinnamon-util.c: cinnamon_util_get_icon_for_uri.c - use a custom icon if one is set in metadata (via file manager).
+
+ -- Clement Lefebvre <root@linuxmint.com>  Tue, 31 May 2016 09:54:44 +0100
+
 cinnamon (3.0.4) sarah; urgency=medium
 
   [ Clement Lefebvre ]
