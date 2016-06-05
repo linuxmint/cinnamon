@@ -251,7 +251,6 @@ MyApplet.prototype = {
         this.metadata = metadata;
 
         this.settings = new Settings.AppletSettings(this, metadata.uuid, instanceId);
-        this.settings.bindProperty(Settings.BindingDirection.IN, "labelinfo", "labelinfo", Lang.bind(this, this._devicesChanged), null);
 
         Main.systrayManager.registerRole("power", metadata.uuid);
         Main.systrayManager.registerRole("battery", metadata.uuid);
@@ -261,7 +260,6 @@ MyApplet.prototype = {
         this.menuManager.addMenu(this.menu);
 
         this.aliases = global.settings.get_strv("device-aliases");
-        global.settings.connect('changed::device-aliases', Lang.bind(this, this._on_device_aliases_changed));
 
         this._deviceItems = [ ];
         this._devices = [ ];
@@ -281,9 +279,15 @@ MyApplet.prototype = {
 
         this.actor.connect("scroll-event", Lang.bind(this, this._onScrollEvent));
 
+        this._proxy = null;
+
         Interfaces.getDBusProxyAsync("org.cinnamon.SettingsDaemon.Power", Lang.bind(this, function(proxy, error) {
             this._proxy = proxy;
+
             this._proxy.connect("g-properties-changed", Lang.bind(this, this._devicesChanged));
+            global.settings.connect('changed::device-aliases', Lang.bind(this, this._on_device_aliases_changed));
+            this.settings.bindProperty(Settings.BindingDirection.IN, "labelinfo", "labelinfo", Lang.bind(this, this._devicesChanged), null);
+
             this._devicesChanged();
         }));
     },
@@ -421,6 +425,9 @@ MyApplet.prototype = {
 
         this._devices = [];
         this._primaryDevice = null;
+
+        if (!this._proxy)
+            return;
 
         // Identify the primary battery device
         this._proxy.GetPrimaryDeviceRemote(Lang.bind(this, function(device, error) {
