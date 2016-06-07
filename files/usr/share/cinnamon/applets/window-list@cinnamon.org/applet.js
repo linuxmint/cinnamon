@@ -93,6 +93,8 @@ WindowPreview.prototype = {
         Main.uiGroup.add_actor(this.actor);
 
         this.metaWindow = metaWindow;
+        this.muffinWindow = null;
+        this._sizeChangedId = null;
 
         let box = new St.BoxLayout({ vertical: true });
         let hbox = new St.BoxLayout();
@@ -134,8 +136,8 @@ WindowPreview.prototype = {
         if (!this.actor || this._applet._menuOpen)
             return
 
-        let muffinWindow = this.metaWindow.get_compositor_private();
-        let windowTexture = muffinWindow.get_texture();
+        this.muffinWindow = this.metaWindow.get_compositor_private();
+        let windowTexture = this.muffinWindow.get_texture();
         let [width, height] = windowTexture.get_size();
         let scale = Math.min(1.0, WINDOW_PREVIEW_WIDTH / width, WINDOW_PREVIEW_HEIGHT / height);
 
@@ -149,6 +151,14 @@ WindowPreview.prototype = {
             width: width * scale * this.scaleFactor,
             height: height * scale * this.scaleFactor
         });
+
+        this._setSize = function() {
+            [width, height] = windowTexture.get_size();
+            scale = Math.min(1.0, WINDOW_PREVIEW_WIDTH / width, WINDOW_PREVIEW_HEIGHT / height);
+            this.thumbnail.set_size(width * scale * this.scaleFactor, height * scale * this.scaleFactor);
+        };
+        this._sizeChangedId = this.muffinWindow.connect('size-changed',
+            Lang.bind(this, this._setSize));
 
         this.thumbnailBin.set_child(this.thumbnail);
 
@@ -178,6 +188,10 @@ WindowPreview.prototype = {
     },
 
     hide: function() {
+        if (this._sizeChangedId != null) {
+            this.muffinWindow.disconnect(this._sizeChangedId);
+            this._sizeChangedId = null;
+        }
         if (this.thumbnail) {
             this.thumbnailBin.set_child(null);
             this.thumbnail.destroy();
@@ -193,6 +207,10 @@ WindowPreview.prototype = {
     },
 
     _destroy: function() {
+        if (this._sizeChangedId != null) {
+            this.muffinWindow.disconnect(this._sizeChangedId);
+            this.sizeChangedId = null;
+        }
         if (this.thumbnail) {
             this.thumbnailBin.set_child(null);
             this.thumbnail.destroy();
