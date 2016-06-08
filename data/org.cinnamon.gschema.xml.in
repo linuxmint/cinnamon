@@ -615,6 +615,11 @@
       </_description>
     </key>
 
+    <key type="as" name="demands-attention-ignored-wm-classes">
+      <default>["skype", "viber", "quassel", "retroshare", "psi-plus", "kadu"]</default>
+      <_summary>WM class names to skip processing for in windowAttentionHandler.js</_summary>
+    </key>
+
   </schema>
  
   <schema id="org.cinnamon.theme" path="/org/cinnamon/theme/"
