@@ -616,7 +616,7 @@
     </key>
 
     <key type="as" name="demands-attention-ignored-wm-classes">
-      <default>["skype", "viber", "quassel", "retroshare", "psi-plus", "kadu"]</default>
+      <default>["skype", "viber", "quassel", "retroshare", "psi-plus", "kadu", "pidgin"]</default>
       <_summary>WM class names to skip processing for in windowAttentionHandler.js</_summary>
     </key>
 
