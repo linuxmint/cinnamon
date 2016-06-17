@@ -53,7 +53,8 @@ struct _CinnamonRecorder {
   int pointer_x;
   int pointer_y;
   
-  guint height_adjust; // Y adjustment from bottom panel, if any
+  guint vertical_adjust; // Y adjustment from bottom panel, if any
+  guint horizontal_adjust; // X adjustment to position on right edge of primary monitor
   
   gboolean have_xfixes;
   int xfixes_event_base;
@@ -269,19 +270,15 @@ cinnamon_recorder_init (CinnamonRecorder *recorder)
 
   cinnamon_recorder_src_register ();
   
-  // Get bottom panel height from settings so we don't overlap it
-  // with our recording indicators.
-  //  GVariant *variant = NULL;
-  //  GSettings *desktop_settings;
-  
-  //  desktop_settings = g_settings_new (SCHEMA_CINNAMON);
-  //  variant = g_settings_get_value (desktop_settings, PANEL_HEIGHT_KEY);
-  //  g_variant_get (variant, "i", &recorder->height_adjust);
-  
-  //  g_variant_unref (variant);
-  //  g_object_unref (desktop_settings);
-  
-  
+  GdkRectangle work_rect, geo_rect;
+  GdkScreen *screen = gdk_screen_get_default ();
+  gint primary = gdk_screen_get_primary_monitor (screen);
+  gdk_screen_get_monitor_workarea (screen, primary, &work_rect);
+  gdk_screen_get_monitor_geometry (screen, primary, &geo_rect);
+
+  recorder->vertical_adjust = (geo_rect.y + geo_rect.height) - (work_rect.y + work_rect.height);
+  recorder->horizontal_adjust = work_rect.x + work_rect.width;
+
   recorder->recording_icon = create_recording_icon ();
   recorder->memory_target = get_memory_target();
 
@@ -497,14 +494,14 @@ recorder_draw_buffer_meter (CinnamonRecorder *recorder)
   fill_level = MIN (60, (recorder->memory_used * 60) / recorder->memory_target);
 
   /* A hollow rectangle filled from the left to fill_level */
-  cogl_rectangle (recorder->stage_width - 64, recorder->stage_height - recorder->height_adjust - 10,
-                  recorder->stage_width - 2,  recorder->stage_height - recorder->height_adjust - 9);
-  cogl_rectangle (recorder->stage_width - 64, recorder->stage_height - recorder->height_adjust - 9,
-                  recorder->stage_width - (63 - fill_level), recorder->stage_height - recorder->height_adjust - 3);
-  cogl_rectangle (recorder->stage_width - 3,  recorder->stage_height - recorder->height_adjust - 9,
-                  recorder->stage_width - 2,  recorder->stage_height - recorder->height_adjust - 3);
-  cogl_rectangle (recorder->stage_width - 64, recorder->stage_height - recorder->height_adjust - 3,
-                  recorder->stage_width - 2,  recorder->stage_height - recorder->height_adjust - 2);
+  cogl_rectangle (recorder->horizontal_adjust - 64, recorder->stage_height - recorder->vertical_adjust - 10,
+                  recorder->horizontal_adjust - 2,  recorder->stage_height - recorder->vertical_adjust - 9);
+  cogl_rectangle (recorder->horizontal_adjust - 64, recorder->stage_height - recorder->vertical_adjust - 9,
+                  recorder->horizontal_adjust - (63 - fill_level), recorder->stage_height - recorder->vertical_adjust - 3);
+  cogl_rectangle (recorder->horizontal_adjust - 3,  recorder->stage_height - recorder->vertical_adjust - 9,
+                  recorder->horizontal_adjust - 2,  recorder->stage_height - recorder->vertical_adjust - 3);
+  cogl_rectangle (recorder->horizontal_adjust - 64, recorder->stage_height - recorder->vertical_adjust - 3,
+                  recorder->horizontal_adjust - 2,  recorder->stage_height - recorder->vertical_adjust - 2);
 }
 
 /* We want to time-stamp each frame based on the actual time it was
@@ -571,8 +568,8 @@ recorder_on_stage_paint (ClutterActor  *actor,
         recorder_record_frame (recorder);
 
       cogl_set_source_texture (recorder->recording_icon);
-      cogl_rectangle (recorder->stage_width - 32, recorder->stage_height - recorder->height_adjust - 42,
-                      recorder->stage_width,      recorder->stage_height - recorder->height_adjust - 10);
+      cogl_rectangle (recorder->horizontal_adjust - 32, recorder->stage_height - recorder->vertical_adjust - 42,
+                      recorder->horizontal_adjust,      recorder->stage_height - recorder->vertical_adjust - 10);
     }
 
   if (recorder->state == RECORDER_STATE_RECORDING || recorder->memory_used != 0)
