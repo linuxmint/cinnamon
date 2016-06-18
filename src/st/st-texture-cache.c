@@ -1384,7 +1384,7 @@ create_faded_icon_cpu (StTextureCache *cache,
 
   info = NULL;
 
-  icon = g_themed_icon_new_with_default_fallbacks (name);
+  icon = g_themed_icon_new (name);
   if (icon != NULL)
     {
       info = gtk_icon_theme_lookup_by_gicon_for_scale (gtk_icon_theme_get_default (),
@@ -1520,7 +1520,7 @@ st_texture_cache_load_icon_name (StTextureCache    *cache,
       return CLUTTER_ACTOR (texture);
       break;
     case ST_ICON_FULLCOLOR:
-      themed = g_themed_icon_new_with_default_fallbacks (name);
+      themed = g_themed_icon_new (name);
       texture = load_gicon_with_colors (cache, themed, size, cache->priv->scale, NULL);
       g_object_unref (themed);
       if (texture == NULL)
@@ -1533,7 +1533,7 @@ st_texture_cache_load_icon_name (StTextureCache    *cache,
       return CLUTTER_ACTOR (texture);
       break;
     case ST_ICON_FADED:
-      themed = g_themed_icon_new_with_default_fallbacks (name);
+      themed = g_themed_icon_new (name);
       cache_key = g_strdup_printf ("faded-icon:%s,size=%d,scale=%f", name, size, cache->priv->scale);
       data.name = g_strdup (name);
       data.size = size;
