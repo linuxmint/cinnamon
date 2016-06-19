@@ -536,7 +536,7 @@ def restore_gnome():
 
         # See gnome-session/gsm-util.c:gsm_util_find_desktop_file_for_app_name()
         # The one difference is that we don't search the autostart directories,
-        # and just search normal application search path. (Gio doesnt' know
+        # and just search normal application search path. (Gio doesn't know
         # how to search the autostart dirs, so we'd have to do that ourselves.)
         appinfo = None
         try:

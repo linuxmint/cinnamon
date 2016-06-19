@@ -281,7 +281,7 @@ Applet.prototype = {
      * 
      * This function is called when the applet is clicked.
      * 
-     * This is meant to be overriden in individual applets.
+     * This is meant to be overridden in individual applets.
      */
     on_applet_clicked: function(event) {
         // Implemented by Applets        

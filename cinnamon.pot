@@ -1604,7 +1604,7 @@ msgstr ""
 
 #: files/usr/share/cinnamon/cinnamon-settings-users/cinnamon-settings-users.py:199
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_user.py:284
-msgid "An error occured. Your password was not changed."
+msgid "An error occurred. Your password was not changed."
 msgstr ""
 
 #: files/usr/share/cinnamon/cinnamon-settings-users/cinnamon-settings-users.py:204

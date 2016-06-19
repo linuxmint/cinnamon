@@ -138,7 +138,7 @@ MyApplet.prototype = {
         this._notificationbin.add(notification.actor)
         notification.actor._parent_container = this._notificationbin;
         notification.actor.add_style_class_name('notification-applet-padding');
-        // Register for desctruction.
+        // Register for destruction.
         notification.connect('clicked', Lang.bind(this, this._item_clicked, false));
         notification.connect('destroy', Lang.bind(this, this._item_clicked, true));
         notification._timeLabel.show();

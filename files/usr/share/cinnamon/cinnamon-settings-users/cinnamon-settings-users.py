@@ -196,7 +196,7 @@ class PasswordDialog(Gtk.Dialog):
 
         self.infobar = Gtk.InfoBar()
         self.infobar.set_message_type(Gtk.MessageType.ERROR)
-        label = Gtk.Label(_("An error occured. Your password was not changed."))
+        label = Gtk.Label(_("An error occurred. Your password was not changed."))
         content = self.infobar.get_content_area()
         content.add(label)
         table.attach(self.infobar, 0, 3, 4, 5)

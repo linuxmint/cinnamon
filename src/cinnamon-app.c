@@ -424,7 +424,7 @@ cinnamon_app_get_keywords (CinnamonApp *app)
  * cinnamon_app_is_window_backed:
  *
  * A window backed application is one which represents just an open
- * window, i.e. there's no .desktop file assocation, so we don't know
+ * window, i.e. there's no .desktop file association, so we don't know
  * how to launch it again.
  */
 gboolean
@@ -1010,7 +1010,7 @@ _cinnamon_app_remove_window (CinnamonApp   *app,
  * cinnamon_app_get_pids:
  * @app: a #CinnamonApp
  *
- * Returns: (transfer container) (element-type int): An unordered list of process identifers associated with this application.
+ * Returns: (transfer container) (element-type int): An unordered list of process identifiers associated with this application.
  */
 GSList *
 cinnamon_app_get_pids (CinnamonApp *app)

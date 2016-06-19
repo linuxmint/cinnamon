@@ -373,7 +373,7 @@ PlacesManager.prototype = {
                             Gio.app_info_launch_default_for_uri(bookmark, _makeLaunchContext(params));
                         });
             } else {
-                // Asume the bookmark is an unmounted network location
+                // Assume the bookmark is an unmounted network location
                 // try to mount and open by the default file manager 
                 let icon = Gio.ThemedIcon.new('network-workgroup');          
                 item = new PlaceInfo('bookmark:' + bookmark, label,
