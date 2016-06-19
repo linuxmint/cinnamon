@@ -1650,12 +1650,12 @@ cinnamon_recorder_set_pipeline (CinnamonRecorder *recorder,
  * recording failed to start.
  *
  * An extra reference count is added to the recorder if recording
- * is succesfully started; the recording object will not be freed
+ * is successfully started; the recording object will not be freed
  * until recording is stopped even if the creator no longer holds
  * a reference. Recording is automatically stopped if the stage
  * is destroyed.
  *
- * Return value: %TRUE if recording was succesfully started
+ * Return value: %TRUE if recording was successfully started
  */
 gboolean
 cinnamon_recorder_record (CinnamonRecorder *recorder)
