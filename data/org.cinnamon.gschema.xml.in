@@ -642,6 +642,13 @@
         The type of keyboard to use.
       </_description>
     </key>
+    <key name="activation-mode" type="s">
+      <default>'on-demand'</default>
+      <_summary>How the keyboard becomes activated</_summary>
+      <_description>
+        Can be:  on-demand: display the keyboard only at user demand, either when the applet is clicked, or a keyboard shortcut is used.  accessible: display the keyboard any time an input field becomes the desktop keyboard focus.
+      </_description>
+    </key>
   </schema>
     
   <schema id="org.cinnamon.recorder" path="/org/cinnamon/recorder/"

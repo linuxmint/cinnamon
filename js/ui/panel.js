@@ -369,6 +369,30 @@ PanelManager.prototype = {
     },
 
     /**
+     * lowerActorBelowPanels:
+     * @actor (ClutterActor): actor to stack below the panels
+     *
+     * Lowers actor to just under the panel actors
+     */
+    lowerActorBelowPanels: function(actor, group) {
+        for (let i in this.panels) {
+            Main.uiGroup.set_child_below_sibling(actor, this.panels[i].actor);
+            break;
+        }
+
+        let prev = actor.get_previous_sibling();
+
+        while (true) {
+            if (prev && prev._delegate && prev._delegate instanceof Panel) {
+                Main.uiGroup.set_child_below_sibling(actor, prev);
+                prev = actor.get_previous_sibling();
+                continue;
+            } else
+                break;
+        }
+    },
+
+    /**
      * removePanel:
      * @panelId (int): Panel id of the panel to be removed
      *
