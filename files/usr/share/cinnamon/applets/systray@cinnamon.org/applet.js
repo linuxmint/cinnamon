@@ -9,6 +9,7 @@ const Mainloop = imports.mainloop;
 const SignalManager = imports.misc.signalManager;
 
 const ICON_SCALE_FACTOR = .8; // for custom panel heights, 20 (default icon size) / 25 (default panel height)
+const DEFAULT_ICON_SIZE = 20;
 
 // Override the factory and create an AppletPopupMenu instead of a PopupMenu
 function IndicatorMenuFactory() {
@@ -289,6 +290,10 @@ MyApplet.prototype = {
                 this._resizeStatusItem(role, icon);
                 Mainloop.source_remove(timerId);
             }));
+        } else {
+            icon.set_pivot_point(0.5, 0.5);
+            icon.set_scale((DEFAULT_ICON_SIZE * global.ui_scale) / icon.width,
+                           (DEFAULT_ICON_SIZE * global.ui_scale) / icon.height);
         }
     },
 
