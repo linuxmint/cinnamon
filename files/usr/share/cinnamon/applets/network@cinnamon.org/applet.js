@@ -282,20 +282,20 @@ NMWirelessSectionTitleMenuItem.prototype = {
         PopupMenu.PopupSwitchMenuItem.prototype.activate.call(this, event);
 		log(this._setEnabledFunc);
         this._client[this._setEnabledFunc](this._switch.state);
-                        
+
         if (!this._device) {
             log('Section title activated when there is more than one device, should be non reactive');
             return;
         }
-        
+
         let newState = this._switch.state;
-       
+
         if (newState)
             this._device.activate();
         else
             this._device.deactivate();
-            
-        this.emit('enabled-changed', this._switch.state);        
+
+        this.emit('enabled-changed', this._switch.state);
     },
 
     _propertyChanged: function() {
@@ -391,7 +391,7 @@ NMDevice.prototype = {
         this.section.destroy();
     },
 
-    deactivate: function() {	
+    deactivate: function() {
         this.device.disconnect(function() {});
     },
 
@@ -1649,7 +1649,7 @@ MyApplet.prototype = {
 
     _init: function(metadata, orientation, panel_height, instance_id) {
         Applet.IconApplet.prototype._init.call(this, orientation, panel_height, instance_id);
-        
+
         try {
             this.metadata = metadata;
             Main.systrayManager.registerRole("network", metadata.uuid);
@@ -1657,8 +1657,8 @@ MyApplet.prototype = {
 
             this.menuManager = new PopupMenu.PopupMenuManager(this);
             this.menu = new Applet.AppletPopupMenu(this, orientation);
-            this.menuManager.addMenu(this.menu);            
-            
+            this.menuManager.addMenu(this.menu);
+
             this._currentIconName = undefined;
             this._setIcon('network-offline');
 
@@ -1769,26 +1769,26 @@ MyApplet.prototype = {
                     this._settings.connect('new-connection', Lang.bind(this, this._newConnection));
                 }
             }));
-            
+
             this._periodicUpdateIcon();
-            
+
         }
         catch (e) {
             global.logError(e);
         }
     },
-    
+
     _setIcon: function(name) {
         if (this._currentIconName !== name) {
             this.set_applet_icon_symbolic_name(name);
             this._currentIconName = name;
         }
     },
-    
+
     on_applet_clicked: function(event) {
-        this.menu.toggle();        
+        this.menu.toggle();
     },
-    
+
     _ensureSource: function() {
         if (!this._source) {
             this._source = new NMMessageTraySource();
@@ -2176,8 +2176,8 @@ MyApplet.prototype = {
             let hasMobileIcon = false;
 
             if (!mc) {
-                this._setIcon('network-offline');         
-                this.set_applet_tooltip(_("No connection"));   
+                this._setIcon('network-offline');
+                this.set_applet_tooltip(_("No connection"));
             } else if (mc.state == NetworkManager.ActiveConnectionState.ACTIVATING) {
                 this._updateFrequencySeconds = FAST_PERIODIC_UPDATE_FREQUENCY_SECONDS;
                 switch (mc._section) {
@@ -2218,8 +2218,8 @@ MyApplet.prototype = {
                             }
                             this._setIcon('network-wireless-connected');
                             this.set_applet_tooltip(_("Connected to the wireless network"));
-                        } else {                          
-                            this._setIcon('network-wireless-signal-' + signalToIcon(ap.strength));                            
+                        } else {
+                            this._setIcon('network-wireless-signal-' + signalToIcon(ap.strength));
                             this.set_applet_tooltip(_("Wireless connection") + ": " + ap.get_ssid() + " ("+ ap.strength +"%)");
                             hasApIcon = true;
                         }
@@ -2260,13 +2260,13 @@ MyApplet.prototype = {
                     this.set_applet_tooltip(_("Connected to the network"));
                     break;
                 }
-            }            
+            }
         }
         catch (e) {
             global.logError(e);
-        }                        
+        }
     },
-    
+
     _periodicUpdateIcon: function() {
         this._updateIcon();
         this._updateFrequencySeconds = Math.max(2, this._updateFrequencySeconds);
@@ -2283,7 +2283,7 @@ MyApplet.prototype = {
 
 };
 
-function main(metadata, orientation, panel_height, instance_id) {  
+function main(metadata, orientation, panel_height, instance_id) {
     let myApplet = new MyApplet(metadata, orientation, panel_height, instance_id);
-    return myApplet;      
+    return myApplet;
 }
