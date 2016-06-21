@@ -1514,13 +1514,22 @@ NMDeviceWireless.prototype = {
         let icon, title;
         if (this._activeConnection._connection) {
             let connection = this._activeConnection._connection;
+            if (!this._activeNetwork) {
+                if (this.device.active_access_point) {
+                    let networkPos = this._findNetwork(this.device.active_access_point);
+                    if (networkPos == -1) // the connected access point is invisible
+                        this._activeNetwork = null;
+                    else
+                        this._activeNetwork = this._networks[networkPos];
+                } else {
+                    this._activeNetwork = null;
+                }
+            }
+
             if (this._activeNetwork)
-                this._activeConnectionItem = new NMNetworkMenuItem(this._activeNetwork.accessPoints, undefined,
-                                                                   { reactive: false });
+                this._activeConnectionItem = new NMNetworkMenuItem(this._activeNetwork.accessPoints, undefined, { reactive: false });
             else
-                this._activeConnectionItem = new PopupMenu.PopupImageMenuItem(connection._name,
-                                                                              'network-wireless-connected',
-                                                                              { reactive: false });
+                this._activeConnectionItem = new PopupMenu.PopupImageMenuItem(connection._name, 'network-wireless-connected', { reactive: false });
         } else {
             // We cannot read the connection (due to ACL, or API incompatibility), but we still show signal if we have it
             let menuItem;
@@ -1867,7 +1876,6 @@ MyApplet.prototype = {
             // already seen, not adding again
             return;
         }
-        log(device.get_device_type());
         let wrapperClass = this._dtypes[device.get_device_type()];
         if (wrapperClass) {
             let wrapper = new wrapperClass(this._client, device, this._connections);
