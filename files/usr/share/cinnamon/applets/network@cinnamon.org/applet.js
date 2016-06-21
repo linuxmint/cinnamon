@@ -1976,6 +1976,12 @@ MyApplet.prototype = {
                 }
             }
 
+            if (!a._section){
+                // Do not take connections which section is undefined into account
+                // For instance, in Mint 18, when the "vpn" is "activated", we sometimes see a "tun" act as the default ipv4 connection.
+                continue;
+            }
+
             if (a.state == NetworkManager.ActiveConnectionState.ACTIVATED) {
                 if (!default_ip4) {
                     // We didn't find the default IPV4 device yet..
