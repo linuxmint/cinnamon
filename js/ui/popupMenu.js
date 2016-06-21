@@ -3037,7 +3037,7 @@ PopupMenuManager.prototype = {
         this._signals.disconnect(null, menu);
 
         if (menu.sourceActor)
-            this._signals.disconnect(menu.sourceActor);
+            this._signals.disconnect(null, menu.sourceActor);
 
         this._menus.splice(position, 1);
     },
