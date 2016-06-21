@@ -97,7 +97,7 @@ na_tray_child_style_set (GtkWidget *widget,
    */
 }
 
-#define SIZE_BASELINE 24
+#define SIZE_BASELINE 20
 
 static void
 na_tray_child_get_preferred_height (GtkWidget      *widget,
