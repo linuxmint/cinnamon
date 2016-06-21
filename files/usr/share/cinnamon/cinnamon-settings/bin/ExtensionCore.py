@@ -370,6 +370,13 @@ class ExtensionSidePage (SidePage):
             gm_cr.set_property('wrap-mode', Pango.WrapMode.WORD_CHAR)
             gm_cr.set_property('wrap-width', 200)
 
+        context = self.gm_treeview.get_style_context()
+        if Gtk.get_minor_version() >= 12:
+            self.link_color = context.get_color(Gtk.StateFlags.LINK) # Gtk.StateFlags.LINK was introduced in GTK 3.12.
+        else:
+            self.link_color = context.get_color(Gtk.StateFlags.NORMAL)
+        self.link_color = "#{0:02x}{1:02x}{2:02x}".format(int(self.link_color.red  * 255), int(self.link_color.green * 255), int(self.link_color.blue * 255))
+
         cr = Gtk.CellRendererText()
         actionColumn = Gtk.TreeViewColumn("Action", cr)
         actionColumn.set_cell_data_func(cr, self._gm_action_data_func)
@@ -815,7 +822,7 @@ restarting Cinnamon."""
             return True
 
     def _gm_action_data_func(self, column, cell, model, iter, data=None):
-        cell.set_property('markup',"<span color='#0000FF'>%s</span>" % _("More info"))
+        cell.set_property('markup',"<span color='%s' underline='single'>%s</span>" % (self.link_color, _("More info")))
 
     def _gm_status_data_func(self, column, cell, model, iter, data=None):
         uuid = model.get_value(iter, 0)
