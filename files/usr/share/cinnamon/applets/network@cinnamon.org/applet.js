@@ -1867,6 +1867,7 @@ MyApplet.prototype = {
             // already seen, not adding again
             return;
         }
+        log(device.get_device_type());
         let wrapperClass = this._dtypes[device.get_device_type()];
         if (wrapperClass) {
             let wrapper = new wrapperClass(this._client, device, this._connections);
@@ -2074,7 +2075,7 @@ MyApplet.prototype = {
     _connectionRemoved: function(connection) {
         let pos = this._connections.indexOf(connection);
         if (pos != -1)
-            this._connections.splice(connection);
+            this._connections.splice(pos);
 
         let section = connection._section;
 
