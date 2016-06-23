@@ -1,3 +1,49 @@
+cinnamon (3.0.6) sarah; urgency=medium
+
+  [ JosephMcc ]
+  * Add a generic "bluetooth" icon
+
+  [ Michael Webster ]
+  * power applet: Don't connect to any signals that call _devicesChanged until we have the power proxy (since the callbacks assume we do have it).
+  * windowAttentionHandler.js: make the ignored app check case- insensitive.  While we're here make it a gsettings array for convenience.
+  * org.cinnamon.gschema.in - add pidgin to ignored wm classes.
+
+  [ Clement Lefebvre ]
+  * Touchpad settings: Invert motion-threshold setting widget
+
+  [ Michael Webster ]
+  * appletManager.js: Fix copy/pasting applet panel applet layouts. Extension.get_max_instances() needed an extra argument, and then we were doing work twice - finished removing obsolete code.
+  * cinnamon-recorder: fix crash when starting recorder...
+  * cinnamon-recorder.c: restore avoidance of the panel when drawing the recording indicators.  This was removed during some panel work a while back and never restored.  Always draw them on the primary monitor now (the only monitor with reliable, simple-to-get workarea information).
+
+  [ leigh123linux ]
+  * fix spelling mistakes
+
+  [ Michael Webster ]
+  * onscreen keyboard: Add option to change activation behavior - accessible mode has the keyboard appear whenever focus demands it (ordinary accessibility behavior).  On-demand mode will have the keyboard only appear when the user requests it via an applet click or keyboard shortcut.
+
+  [ Clement Lefebvre ]
+  * Themes settings: Fixed loading icon themes when a theme isn't readable
+
+  [ Michael Webster ]
+  * popupMenu.js: use the signalManager.disconnect correctly - the source actor (the panel actor for the applet) has to be the second argument, the object to disconnect from.  Was causing flickering in the menu applet after repositioning it.
+
+  [ Clement Lefebvre ]
+  * Makepot
+  * Settings: Don't hardcode "more info" link color in spices modules
+  * [desrt] network: properly remove connections from list
+  * Network applet: Fixed icon not showing VPN status
+  * Network applet: Delete trailing spaces
+  * Network applet: Fixed applet showing "Auto" wireless connection when turning wifi OFF and then back ON.
+
+  [ Michael Webster ]
+  * tray icons: Bump icon request to 24, then scale back to 20 in the applet.  This is needed due to changes to GtkIconSize values in Gtk3. GtkStatusIcon iterates thru the built-in icon sizes to pick an appropriate icon to use, and as of 3.18 there are no sizes between 16 and 24px.
+
+  [ Clement Lefebvre ]
+  * Preferred application settings: Set mimetypes more exhaustively
+
+ -- Clement Lefebvre <root@linuxmint.com>  Thu, 23 Jun 2016 13:39:10 +0100
+
 cinnamon (3.0.5) sarah; urgency=medium
 
   [ JosephMcc ]
