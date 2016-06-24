@@ -530,13 +530,21 @@ AppMenuButton.prototype = {
         let [minSize, naturalSize] = this._iconBox.get_preferred_width(forHeight);
         // minimum size just enough for icon if we ever get that many apps going
         alloc.min_size = naturalSize + 2 * 3 * global.ui_scale;
-
+        
+        //Get the window to know the proper size of the buttons
+        let muffinWindow = this.metaWindow.get_compositor_private();
+        let windowTexture = muffinWindow.get_texture();
+        let [width, height] = windowTexture.get_size();
+        
+        //I found 9 to be a good constant, but if another number looks better, please change it.
+        let buttonWidth = width / 9;
+        
         if (this._applet.buttonsUseEntireSpace) {
             let [lminSize, lnaturalSize] = this._label.get_preferred_width(forHeight);
-            alloc.natural_size = Math.max(150 * global.ui_scale,
+            alloc.natural_size = Math.max(buttonWidth * global.ui_scale,
                     lnaturalSize + naturalSize + 3 * 3 * global.ui_scale);
         } else {
-            alloc.natural_size = 150 * global.ui_scale;
+            alloc.natural_size = buttonWidth * global.ui_scale;
         }
     },
 
