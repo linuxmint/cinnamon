@@ -289,8 +289,19 @@ class Module:
 
     def _load_icon_themes(self):
         dirs = ("/usr/share/icons", os.path.join(os.path.expanduser("~"), ".icons"))
-        valid = walk_directories(dirs, lambda d: os.path.isdir(d) and os.path.exists(os.path.join(d, "index.theme")) and \
-                                 next((True for l in list(open(os.path.join(d, "index.theme"))) if l.startswith("Directories=")), False))
+        walked = walk_directories(dirs, lambda d: os.path.isdir(d), return_directories=True)
+        valid = []
+        for directory in walked:
+            path = os.path.join(directory[1], directory[0], "index.theme")
+            if os.path.exists(path):
+                try:
+                    for line in list(open(path)):
+                        if line.startswith("Directories="):
+                            valid.append(directory[0])
+                            break
+                except Exception as e:
+                    print (e)
+
         valid.sort(lambda a,b: cmp(a.lower(), b.lower()))
         res = []
         for i in valid:

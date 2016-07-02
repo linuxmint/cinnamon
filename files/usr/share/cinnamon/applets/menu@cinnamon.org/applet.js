@@ -43,7 +43,7 @@ let appsys = Cinnamon.AppSystem.get_default();
 
 /* VisibleChildIterator takes a container (boxlayout, etc.)
  * and creates an array of its visible children and their index
- * positions.  We can then work thru that list without
+ * positions.  We can then work through that list without
  * mucking about with positions and math, just give a
  * child, and it'll give you the next or previous, or first or
  * last child in the list.
@@ -2591,7 +2591,7 @@ MyApplet.prototype = {
         this._previousSelectedActor = null;
 
        // _listApplications returns all the applications when the search
-       // string is zero length. This will happend if you type a space
+       // string is zero length. This will happened if you type a space
        // in the search entry.
         if (pattern.length == 0) {
             return false;

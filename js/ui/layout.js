@@ -273,7 +273,8 @@ LayoutManager.prototype = {
             this.keyboardBox.show();
         }
 
-        this.keyboardBox.raise_top();
+        // this.keyboardBox.raise_top();
+        Main.panelManager.lowerActorBelowPanels(this.keyboardBox);
 
         Tweener.addTween(this.keyboardBox,
                          { opacity: 255,

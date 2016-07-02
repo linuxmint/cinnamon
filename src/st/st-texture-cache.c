@@ -1734,7 +1734,7 @@ out:
  * setting.
  *
  * Return value: (transfer none): A new #ClutterActor with the image file loaded if it was
- *               generated succesfully, %NULL otherwise
+ *               generated successfully, %NULL otherwise
  */
 ClutterActor *
 st_texture_cache_load_uri_sync (StTextureCache *cache,

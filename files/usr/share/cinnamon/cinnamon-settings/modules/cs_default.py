@@ -36,16 +36,92 @@ preferred_app_defs = [
     ( "text/x-python",           "text/x-python",          _("Source Code") ),
 ]
 
-source_code_defs = [
+mimetypes = {}
+mimetypes["audio"]=[
+  "audio/3gpp",
+  "audio/aac",
+  "audio/ac3",
+  "audio/flac",
+  "audio/m4a",
+  "audio/midi",
+  "audio/mp3",
+  "audio/mp4",
+  "audio/mp4a-latm",
+  "audio/mpeg",
+  "audio/mpeg3",
+  "audio/mpg",
+  "audio/ogg",
+  "audio/vorbis",
+  "audio/wav",
+  "audio/wave",
+  "audio/webm",
+  "audio/x-aac",
+  "audio/x-aiff",
+  "audio/x-flac",
+  "audio/x-mp3",
+  "audio/x-mpeg",
+  "audio/x-mpeg-3",
+  "audio/x-mpg",
+  "audio/x-ms-asf",
+  "audio/x-ms-wma",
+  "audio/x-ogg",
+  "audio/x-oggflac",
+  "audio/x-vorbis",
+  "audio/x-vorbis+ogg",
+  "audio/x-wav",
+  "audio/x-wavpack"
+]
+
+mimetypes["video"]=[
+  "video/3gp",
+  "video/3gpp",
+  "video/divx",
+  "video/flv",
+  "video/mp4",
+  "video/mp4v-es",
+  "video/mpeg",
+  "video/msvideo",
+  "video/ogg",
+  "video/quicktime",
+  "video/vivo",
+  "video/vnd.divx",
+  "video/vnd.rn-realvideo",
+  "video/webm",
+  "video/x-anim",
+  "video/x-avi",
+  "video/x-flc",
+  "video/x-fli",
+  "video/x-flic",
+  "video/x-flv",
+  "video/x-m4v",
+  "video/x-matroska",
+  "video/x-mng",
+  "video/x-mpeg",
+  "video/x-mpeg2",
+  "video/x-ms-afs",
+  "video/x-ms-asf",
+  "video/x-ms-asx",
+  "video/x-ms-wm",
+  "video/x-ms-wmv",
+  "video/x-ms-wvx",
+  "video/x-ms-wvxvideo",
+  "video/x-msvideo",
+  "video/x-nsv",
+  "video/x-ogm+ogg",
+  "video/x-theora",
+  "video/x-theora+ogg"
+]
+
+mimetypes["text/x-python"] = [
     'text/x-chdr', 'text/x-csrc', 'text/x-c++hdr', 'text/x-c++src', 'text/x-java',
     'text/x-dsrc', 'text/x-pascal', 'text/x-perl', 'text/x-python', 'application/x-php',
     'application/x-httpd-php3', 'application/x-httpd-php4', 'application/x-httpd-php5',
-    'application/xml', 'text/css', 'text/x-sql', 'text/x-diff', 'application/x-ruby',
+    'application/xml', 'text/x-sql', 'text/x-diff', 'application/x-ruby',
     'application/x-shellscript', 'application/javascript', 'text/x-makefile', 'text/css',
     'text/turtle', 'text/x-fortran', 'text/yaml', 'application/x-m4', 'text/x-vb', 'text/x-csharp'
 ]
 
-rich_document_defs = [
+mimetypes["application/msword"] = [
     'application/msword', 'application/vnd.oasis.opendocument.text',
     'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
     'application/vnd.oasis.opendocument.text-template', 'application/rtf',
@@ -128,27 +204,38 @@ class DefaultAppChooserButton(Gtk.AppChooserButton):
 
     def onChanged(self, button):
         info = button.get_app_info()
+        print "%s: " % info.get_name()
         if info:
-            types = info.get_supported_types()
-            #Documents
-            if self.generic_content_type == "application/msword":
-                for t in rich_document_defs:
-                    if info.set_as_default_for_type (t) == False:
-                         print "Failed to set '%s' as the default application for '%s'" % (info.get_name(), t)
-            #Source Code
-            if self.generic_content_type == "text/x-python":
-                for t in source_code_defs:
-                    if info.set_as_default_for_type (t) == False:
-                         print "Failed to set '%s' as the default application for '%s'" % (info.get_name(), t)
+            supported_mimetypes = info.get_supported_types()
+            hardcoded_mimetypes = None
+            if self.generic_content_type in mimetypes.keys():
+                hardcoded_mimetypes = mimetypes[self.generic_content_type]
+
+            set_mimes = []
+
+            # Assign mimes which the app officially supports
+            if supported_mimetypes is not None:
+                for t in sorted(supported_mimetypes):
+                    if t.startswith(self.generic_content_type):
+                        if info.set_as_default_for_type (t):
+                            print "  Set as default for supported %s" % t
+                            set_mimes.append(t)
+                        else:
+                            print "  Failed to set as default application for '%s'" % t
+
+            # Also assign mimes hardcoded in the mimetypes hashtable
+            if hardcoded_mimetypes is not None:
+                for t in sorted(hardcoded_mimetypes):
+                    if t not in set_mimes:
+                        if info.set_as_default_for_type (t):
+                            print "  Set as default for hardcoded %s" % t
+                        else:
+                            print "  Failed to set as default application for '%s'" % t
+
             #Web
             if self.content_type == "x-scheme-handler/http":
                 if info.set_as_default_for_type ("x-scheme-handler/https") == False:
-                    print "Failed to set '%s' as the default application for '%s'" % (info.get_name(), "x-scheme-handler/https")
-            #All other types
-            for t in types:
-                if self.generic_content_type in t:
-                    if not info.set_as_default_for_type(t):
-                        print "Failed to set '%s' as the default application for '%s'" % (info.get_name(), self.generic_content_type)
+                    print "  Failed to set '%s' as the default application for '%s'" % (info.get_name(), "x-scheme-handler/https")
 
 class DefaultTerminalButton(Gtk.AppChooserButton): #TODO: See if we can get this to change the x-terminal-emulator default to allow it to be a more global change rather then just cinnamon/nemo
     def __init__(self):

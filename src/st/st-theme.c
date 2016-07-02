@@ -957,7 +957,7 @@ add_matched_properties (StTheme      *a_this,
                * thread-safety anyways.)
                *
                * Once we've sorted the properties, the specificity no longer
-               * matters and it can be safely overriden.
+               * matters and it can be safely overridden.
                */
               cr_simple_sel_compute_specificity (cur_sel->simple_sel);
 

@@ -9,6 +9,7 @@ const Mainloop = imports.mainloop;
 const SignalManager = imports.misc.signalManager;
 
 const ICON_SCALE_FACTOR = .8; // for custom panel heights, 20 (default icon size) / 25 (default panel height)
+const DEFAULT_ICON_SIZE = 20;
 
 // Override the factory and create an AppletPopupMenu instead of a PopupMenu
 function IndicatorMenuFactory() {
@@ -229,7 +230,7 @@ MyApplet.prototype = {
             else if (["shutter", "filezilla", "dropbox", "thunderbird", "unknown", "blueberry-tray.py", "mintupdate.py"].indexOf(role) != -1) {
                 // Delay insertion by 1 second
                 // This fixes an invisible icon in the absence of disk cache for : shutter
-                // filezilla, dropbox, thunderbird, blueberry, mintupdate are known to show up in the wrong size or position, this chould fix them as well
+                // filezilla, dropbox, thunderbird, blueberry, mintupdate are known to show up in the wrong size or position, this should fix them as well
                 // Note: as of Oct 2015, the dropbox systray is calling itself "unknown"
                 this._insertStatusItemLater(role, icon, -1, 1000);
             }
@@ -289,6 +290,10 @@ MyApplet.prototype = {
                 this._resizeStatusItem(role, icon);
                 Mainloop.source_remove(timerId);
             }));
+        } else {
+            icon.set_pivot_point(0.5, 0.5);
+            icon.set_scale((DEFAULT_ICON_SIZE * global.ui_scale) / icon.width,
+                           (DEFAULT_ICON_SIZE * global.ui_scale) / icon.height);
         }
     },
 

@@ -391,11 +391,11 @@ ModalDialog.prototype = {
      * can be dismissed by a close call.
      *
      * The main point of this method is to give some indication to the user
-     * that the dialog reponse has been acknowledged but will take a few
+     * that the dialog response has been acknowledged but will take a few
      * moments before being processed.
      *
      * e.g., if a user clicked "Log Out" then the dialog should go away
-     * imediately, but the lightbox should remain until the logout is
+     * immediately, but the lightbox should remain until the logout is
      * complete.
      */
     _fadeOutDialog: function(timestamp) {
