@@ -69,7 +69,8 @@ public_icons = \
 	hicolor_emblems_scalable_cs-xlet-installed.svg \
 	hicolor_emblems_scalable_cs-xlet-running.svg \
 	hicolor_emblems_scalable_cs-xlet-system.svg \
-	hicolor_emblems_scalable_cs-xlet-update.svg \
+    hicolor_emblems_scalable_cs-xlet-update.svg \
+	hicolor_emblems_scalable_cs-xlet-danger.svg \
 	hicolor_devices_scalable_audio-speaker-left.svg \
 	hicolor_devices_scalable_audio-speaker-center.svg \
 	hicolor_devices_scalable_audio-speaker-right.svg \
@@ -79,6 +80,7 @@ public_icons = \
 	hicolor_devices_scalable_audio-speaker-left-side.svg \
 	hicolor_devices_scalable_audio-speaker-right-side.svg \
 	hicolor_devices_scalable_audio-subwoofer.svg \
+	hicolor_devices_scalable_bluetooth.svg \
 	$(NULL)
 
 EXTRA_DIST = \

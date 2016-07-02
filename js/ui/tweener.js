@@ -414,7 +414,7 @@ function registerSpecialPropertySplitter(name, splitFunction, parameters) {
  * Tweener to a Clutter.TimeLine. Now, Clutter.Timeline itself isn't a
  * whole lot more sophisticated than a simple timeout at a fixed frame
  * rate, but at least it knows how to drop frames. (See
- * HippoAnimationManager for a more sophisticated view of continous
+ * HippoAnimationManager for a more sophisticated view of continuous
  * time updates; even better is to pay attention to the vertical
  * vblank and sync to that when possible.)
  */

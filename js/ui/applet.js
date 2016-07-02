@@ -296,7 +296,7 @@ Applet.prototype = {
      * 
      * This function is called when the applet is clicked.
      * 
-     * This is meant to be overriden in individual applets.
+     * This is meant to be overridden in individual applets.
      */
     on_applet_clicked: function(event) {
         // Implemented by Applets        
@@ -455,7 +455,7 @@ Applet.prototype = {
         let items = this._applet_context_menu._getMenuItems();
 
         if (this.context_menu_item_remove == null) {
-            this.context_menu_item_remove = new PopupMenu.PopupIconMenuItem(_("Remove this applet"),
+            this.context_menu_item_remove = new PopupMenu.PopupIconMenuItem(_("Remove '%s'").format(this._meta.name),
                     "edit-delete",
                    St.IconType.SYMBOLIC);
             this.context_menu_item_remove.connect('activate', Lang.bind(this, function() {

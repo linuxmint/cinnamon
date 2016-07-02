@@ -1132,7 +1132,7 @@ _cinnamon_global_get_gjs_context (CinnamonGlobal *global)
  * overview mode or the "looking glass" debug overlay, that block
  * application and normal key shortcuts.
  *
- * Returns value: %TRUE if we succesfully entered the mode. %FALSE if we couldn't
+ * Returns value: %TRUE if we successfully entered the mode. %FALSE if we couldn't
  *  enter the mode. Failure may occur because an application has the pointer
  *  or keyboard grabbed, because Muffin is in a mode itself like moving a
  *  window or alt-Tab window selection, or because cinnamon_global_begin_modal()

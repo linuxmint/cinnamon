@@ -1389,7 +1389,7 @@ PopupMenuAbstractItem.prototype = {
     addChild: function(pos, child_id) {
         let factoryItem = this.getItemById(child_id);
         if (factoryItem) {
-            // If our item is previusly asigned, so destroy first the shell item.
+            // If our item is previusly assigned, so destroy first the shell item.
             factoryItem.destroyShellItem();
             factoryItem.setParent(this);
             this._childrenIds.splice(pos, 0, child_id);
@@ -1522,9 +1522,9 @@ PopupMenuAbstractItem.prototype = {
                 this._shellItemSignalsHandlers = null;
             }
         } else if (this.shellItem) {
-            global.logError("We are not conected with " + shellItem);
+            global.logError("We are not connected with " + shellItem);
         } else {
-            global.logWarning("We are not conected with any shellItem");
+            global.logWarning("We are not connected with any shellItem");
         }
     },
 
@@ -3047,7 +3047,7 @@ PopupMenuManager.prototype = {
         this._signals.disconnect(null, menu);
 
         if (menu.sourceActor)
-            this._signals.disconnect(menu.sourceActor);
+            this._signals.disconnect(null, menu.sourceActor);
 
         this._menus.splice(position, 1);
     },

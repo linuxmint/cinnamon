@@ -6,7 +6,7 @@
 
     <para>The second part of the Javascript reference, which describes the Javascript part of Cinnamon. This is named the "Cinnamon Javascript Reference Manual". This is a technical reference for the individual functions and objects available in Cinnamon. Note that this documentation is aimed at both applet/extension developers and Cinnamon developers themselves. So depending on who you are, some of the information might be entirely irrelevant.</para>
 
-    <para>The second part of the documentation is for the C part of Cinnamon, which is simply refered to as the "Cinnamon Reference Manual".</para>
+    <para>The second part of the documentation is for the C part of Cinnamon, which is simply referred to as the "Cinnamon Reference Manual".</para>
 
     <para>The last part is the documentation for Shell toolkit, or St. This is the graphical toolkit used to draw widgets on the screen (similar to Gtk).</para>
 
@@ -17,7 +17,7 @@
 
   <sect2>
     <title>Accessing the documentation</title>
-    <para>There are two ways of accessing this documentation, one of which is what you are currently using. The first method is accessing it online, which will be availble at <ulink url="http://linuxmint.github.io">http://linuxmint.github.io</ulink>.</para>
+    <para>There are two ways of accessing this documentation, one of which is what you are currently using. The first method is accessing it online, which will be available at <ulink url="http://linuxmint.github.io">http://linuxmint.github.io</ulink>.</para>
 
     <para>The second method is to access it locally. Install the program <code>devhelp</code> and the <code>cinnamon-doc</code> package (might be named differently in different distros or included in the <code>cinnamon</code> package itself). Then run the program <code>devhelp</code> to access all documentations you have installed in your system (not limited to Cinnamon).</para>
   </sect2>
@@ -69,7 +69,7 @@
 
       <para>Note that the C documentation always tells you that the first argument to the function is the object itself. For example, <code>st_bin_get_child</code> takes in an <code>StBin</code> as the argument. We do not need to supply this.</para>
 
-      <para>Note also that not all functions are available for use in Javascript. If some functions are considered to be too C-like to be used in other languages, it will not be availble. There is generally no simple way to figure out whether the functions are available, but usually they are. If they are not, Cinnamon will complain loudly that the function doesn't exist. So the best way to know is to try it.</para>
+      <para>Note also that not all functions are available for use in Javascript. If some functions are considered to be too C-like to be used in other languages, it will not be available. There is generally no simple way to figure out whether the functions are available, but usually they are. If they are not, Cinnamon will complain loudly that the function doesn't exist. So the best way to know is to try it.</para>
 
       <para>Again, <code>Gio</code> and <code>GLib</code> functions use the <code>g_</code> prefix, eg <code>g_settings_set_int</code> instead of <code>gio_settings_get_int</code>.</para>
     </sect3>

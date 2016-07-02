@@ -48,7 +48,7 @@
  *     and really doesn't make a lot of sense without A)
  *
  * Another problem that will show up with usage in Cinnamon's overview
- * is that the user may have trouble seeing and interacting with ancilliary
+ * is that the user may have trouble seeing and interacting with ancillary
  * windows shown by the IM.
  */
 

@@ -162,6 +162,9 @@ class Module:
 
         section.add_row(GSettingsComboBox(_("When the power button is pressed"), CSD_SCHEMA, "button-power", button_power_options, size_group=size_group))
 
+        if self.has_lid:
+            section.add_row(GSettingsSwitch(_("Perform lid-closed action even with external monitors attached"), CSD_SCHEMA, "lid-close-suspend-with-external-monitor"))
+
         if self.has_battery and UPowerGlib.MAJOR_VERSION == 0 and UPowerGlib.MINOR_VERSION < 99:
             section.add_row(GSettingsComboBox(_("When the battery is critically low"), CSD_SCHEMA, "critical-battery-action", critical_options, size_group=size_group))
 
@@ -232,11 +235,11 @@ class Module:
             section = page.add_section(_("Screen brightness"))
             section.add_row(BrightnessSlider(section, proxy))
 
-            section.add_row(GSettingsSwitch(_("On battery, dim screen when inactive"), "org.cinnamon.settings-daemon.plugins.power", "idle-dim-battery"))
+            section.add_row(GSettingsSwitch(_("On battery, dim screen when inactive"), CSD_SCHEMA, "idle-dim-battery"))
 
-            section.add_reveal_row(GSettingsComboBox(_("Brightness level when inactive"), "org.cinnamon.settings-daemon.plugins.power", "idle-brightness", IDLE_BRIGHTNESS_OPTIONS, valtype="int", size_group=size_group), "org.cinnamon.settings-daemon.plugins.power", "idle-dim-battery")
+            section.add_reveal_row(GSettingsComboBox(_("Brightness level when inactive"), CSD_SCHEMA, "idle-brightness", IDLE_BRIGHTNESS_OPTIONS, valtype="int", size_group=size_group), CSD_SCHEMA, "idle-dim-battery")
 
-            section.add_reveal_row(GSettingsComboBox(_("Dim screen after inactive for"), "org.cinnamon.settings-daemon.plugins.power", "idle-dim-time", IDLE_DELAY_OPTIONS, valtype="int", size_group=size_group), "org.cinnamon.settings-daemon.plugins.power", "idle-dim-battery")
+            section.add_reveal_row(GSettingsComboBox(_("Dim screen after inactive for"), CSD_SCHEMA, "idle-dim-time", IDLE_DELAY_OPTIONS, valtype="int", size_group=size_group), CSD_SCHEMA, "idle-dim-battery")
 
     def build_battery_page(self, *args):
 

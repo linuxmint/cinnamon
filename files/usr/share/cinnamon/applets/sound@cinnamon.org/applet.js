@@ -21,7 +21,8 @@ const MEDIA_PLAYER_2_NAME = "org.mpris.MediaPlayer2";
 const MEDIA_PLAYER_2_PLAYER_NAME = "org.mpris.MediaPlayer2.Player";
 
 /* global values */
-let players_without_seek_support = ['spotify', 'totem', 'gnome-mplayer', 'pithos'];
+let players_without_seek_support = ['spotify', 'totem', 'gnome-mplayer', 'pithos',
+	'smplayer'];
 let players_with_seek_support = [
     'clementine', 'banshee', 'rhythmbox', 'rhythmbox3', 'pragha', 'quodlibet',
     'amarok', 'xnoise', 'gmusicbrowser', 'vlc', 'qmmp', 'deadbeef', 'audacious'];
@@ -325,7 +326,7 @@ Player.prototype = {
         this.coverBox.set_layout_manager(l);
 
         // Cover art
-        this.cover = new St.Icon({icon_name: "media-optical-cd-audio", icon_size: 300, icon_type: St.IconType.FULLCOLOR});
+        this.cover = new St.Icon({icon_name: "media-optical", icon_size: 300, icon_type: St.IconType.FULLCOLOR});
         this.coverBox.add_actor(this.cover);
 
         // Track info (artist + title)
@@ -556,10 +557,22 @@ Player.prototype = {
             this._stopTimer();
         }
         if (metadata["xesam:artist"]) {
-            this._artist = metadata["xesam:artist"].deep_unpack().join(", ");
+            switch (metadata["xesam:artist"].get_type_string()) {
+                case 's':
+                    // smplayer sends a string
+                    this._artist = metadata["xesam:artist"].unpack();
+                    break;
+                case 'as':
+                    // others send an array of strings
+                    this._artist = metadata["xesam:artist"].deep_unpack().join(", ");
+                    break;
+                default:
+                    this._artist = _("Unknown Artist");
+            }
         }
         else
             this._artist = _("Unknown Artist");
+
         this.artistLabel.set_text(this._artist);
 
         if (metadata["xesam:album"])
@@ -782,7 +795,7 @@ Player.prototype = {
             onComplete: Lang.bind(this, function() {*/
                 this.coverBox.remove_actor(this.cover);
                 if (! cover_path || ! GLib.file_test(cover_path, GLib.FileTest.EXISTS)) {
-                    this.cover = new St.Icon({style_class: 'sound-player-generic-coverart', important: true, icon_name: "media-optical-cd-audio", icon_size: 300, icon_type: St.IconType.FULLCOLOR});
+                    this.cover = new St.Icon({style_class: 'sound-player-generic-coverart', important: true, icon_name: "media-optical", icon_size: 300, icon_type: St.IconType.FULLCOLOR});
                     cover_path = null;
                 }
                 else {

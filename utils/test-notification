@@ -1,0 +1,23 @@
+#!/usr/bin/env python2
+
+from gi.repository import Notify
+import time
+
+def on_click(notification, action):
+    pass
+
+Notify.init("test-notification")
+
+notification = Notify.Notification.new("Test - no buttons", "This is a test of a notification", "gtk-dialog-info")
+
+notification.show()
+
+time.sleep(6)
+
+notification = Notify.Notification.new("Test - with buttons", "This is a test of a notification with buttons.  It shouldn't fade", "gtk-dialog-info")
+
+notification.add_action("Foo", "Okay!", on_click, None)
+
+notification.show()
+
+quit()

@@ -210,7 +210,7 @@
     </para>
 
     <para>
-      Here we see what I've refered to as the "applet API" all the time. A few barebone applet objects are defined in <code>applet.js</code>, and we inherit one of them. Here we choose to inherit <link linkend="cinnamon-js-ui-Applet-IconApplet"><code>Applet.IconApplet</code></link>, which is an applet that displays an icon.
+      Here we see what I've referred to as the "applet API" all the time. A few barebone applet objects are defined in <code>applet.js</code>, and we inherit one of them. Here we choose to inherit <link linkend="cinnamon-js-ui-Applet-IconApplet"><code>Applet.IconApplet</code></link>, which is an applet that displays an icon.
     </para>
 
 

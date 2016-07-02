@@ -48,6 +48,9 @@ for i in range(len(modules)):
         else:
             category = "Settings;"
 
+        formatted_keywords = mod.sidePage.keywords.replace(",", ";")
+        formatted_keywords = formatted_keywords.replace(", ", ";")
+
         prefix = """[Desktop Entry]
 Icon=%(icon)s
 Exec=cinnamon-settings %(module)s
@@ -56,7 +59,7 @@ OnlyShowIn=X-Cinnamon;
 Categories=Settings;
 """ % {'module': mod.name, 'category': category, 'icon': mod.sidePage.icon}
 
-        additionalfiles.generate(DOMAIN, PATH, "files/usr/share/applications/cinnamon-settings-%s.desktop" % mod.name, prefix, mod.sidePage.name, mod.comment, "")
+        additionalfiles.generate(DOMAIN, PATH, "files/usr/share/applications/cinnamon-settings-%s.desktop" % mod.name, prefix, mod.sidePage.name, mod.comment, "", None, mod.sidePage.keywords)
         
     except:
         print "Failed to load module %s" % modules[i]

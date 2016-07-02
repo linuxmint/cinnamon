@@ -518,7 +518,8 @@ function get_object_for_instance (appletId) {
 }
 
 function get_object_for_uuid (uuid, instanceId) {
-    return appletObj.find(x => x && (x._uuid == uuid || x.instance_id == instanceId));
+    return appletObj.find(x => x && x._uuid == uuid &&
+                               (x.instance_id == instanceId || instanceId == uuid));
 }
 
 
@@ -608,32 +609,22 @@ function clearAppletConfiguration(panelId) {
 
 function pasteAppletConfiguration(panelId) {
     clearAppletConfiguration(panelId);
+
+    let skipped = false;
+
     let raw = global.settings.get_strv("enabled-applets");
-
-    let skipped = false;;
-
-    let len = clipboard.length;
-
     let nextId = global.settings.get_int("next-applet-id");
-    for (let i = 0; i < len; i++) {
-        let max = Extension.get_max_instances(clipboard[i].uuid, Extension.Type.APPLET);
-        if (max == -1) {
-            raw.push("panel" + panelId + ":" + clipboard[i].location_label + ":" + clipboard[i].order + ":" + clipboard[i].uuid + ":" + nextId);
-            nextId++;
+
+    clipboard.forEach(function(x) {
+        let uuid = x.uuid
+        let max = Extension.get_max_instances(uuid, Extension.Type.APPLET);
+        if (max == -1 || raw.filter(a => a.split(":")[2] == uuid).length < max) {
+            raw.push("panel" + panelId + ":" + x.location_label + ":" + x.order + ":" + uuid + ":" + nextId);
+            nextId ++;
         } else {
-            let curr = enabledAppletDefinitions.uuidMap[clipboard[i].uuid];
-            if (curr) {
-                let count = curr.length;
-                if (count < max) {
-                    raw.push("panel" + panelId + ":" + clipboard[i].location_label + ":" + clipboard[i].order + ":" + clipboard[i].uuid + ":" + nextId);
-                    nextId++;
-                }
-                else {
-                    skipped = true;
-                }
-            }
+            skipped = true;
         }
-    }
+    });
 
     global.settings.set_int("next-applet-id", nextId);
     global.settings.set_strv("enabled-applets", raw);

@@ -13,9 +13,6 @@ struct _CinnamonRecorderSrc
 
   GMutex *mutex;
 
-  GstClock *clock;
-  GstClockTime last_frame_time;
-
   GstCaps *caps;
   GAsyncQueue *queue;
   gboolean closed;
@@ -44,9 +41,7 @@ cinnamon_recorder_src_init (CinnamonRecorderSrc      *src)
 {
   gst_base_src_set_format (GST_BASE_SRC (src), GST_FORMAT_TIME);
   gst_base_src_set_live (GST_BASE_SRC (src), TRUE);
-
-  src->clock = gst_system_clock_obtain ();
-  src->last_frame_time = 0;
+  gst_base_src_set_do_timestamp (GST_BASE_SRC (src), TRUE);
 
   src->queue = g_async_queue_new ();
   src->mutex = g_mutex_new ();
@@ -80,6 +75,19 @@ cinnamon_recorder_src_update_memory_used (CinnamonRecorderSrc *src,
   g_mutex_unlock (src->mutex);
 }
 
+/* _negotiate() is called when we have to decide on a format. We
+ * use the configured format */
+static gboolean
+cinnamon_recorder_src_negotiate (GstBaseSrc * base_src)
+{
+  CinnamonRecorderSrc *src = CINNAMON_RECORDER_SRC (base_src);
+  gboolean result;
+
+  result = gst_base_src_set_caps (base_src, src->caps);
+
+  return result;
+}
+
 /* The create() virtual function is responsible for returning the next buffer.
  * We just pop buffers off of the queue and block if necessary.
  */
@@ -94,8 +102,6 @@ cinnamon_recorder_src_create (GstPushSrc  *push_src,
     return GST_FLOW_EOS;
 
   buffer = g_async_queue_pop (src->queue);
-  if (src->last_frame_time == 0)
-    src->last_frame_time = gst_clock_get_time (GST_CLOCK (src->clock));
 
   if (buffer == RECORDER_QUEUE_END)
     {
@@ -108,10 +114,6 @@ cinnamon_recorder_src_create (GstPushSrc  *push_src,
 					 - (int)(gst_buffer_get_size(buffer) / 1024));
 
   *buffer_out = buffer;
-
-  GST_BUFFER_DURATION(*buffer_out) = GST_CLOCK_DIFF (src->last_frame_time, gst_clock_get_time (GST_CLOCK (src->clock)));
-
-  src->last_frame_time = gst_clock_get_time (GST_CLOCK (src->clock));
 
   return GST_FLOW_OK;
 }
@@ -154,8 +156,6 @@ cinnamon_recorder_src_finalize (GObject *object)
   g_async_queue_unref (src->queue);
 
   g_mutex_free (src->mutex);
-
-  gst_object_unref (src->clock);
 
   G_OBJECT_CLASS (cinnamon_recorder_src_parent_class)->finalize (object);
 }
@@ -208,6 +208,7 @@ cinnamon_recorder_src_class_init (CinnamonRecorderSrcClass *klass)
 {
   GObjectClass *object_class = G_OBJECT_CLASS (klass);
   GstElementClass *element_class = GST_ELEMENT_CLASS (klass);
+  GstBaseSrcClass *base_src_class = GST_BASE_SRC_CLASS (klass);
   GstPushSrcClass *push_src_class = GST_PUSH_SRC_CLASS (klass);
 
   static GstStaticPadTemplate src_template =
@@ -219,6 +220,8 @@ cinnamon_recorder_src_class_init (CinnamonRecorderSrcClass *klass)
   object_class->finalize = cinnamon_recorder_src_finalize;
   object_class->set_property = cinnamon_recorder_src_set_property;
   object_class->get_property = cinnamon_recorder_src_get_property;
+
+  base_src_class->negotiate = cinnamon_recorder_src_negotiate;
 
   push_src_class->create = cinnamon_recorder_src_create;
 
@@ -261,7 +264,6 @@ cinnamon_recorder_src_add_buffer (CinnamonRecorderSrc *src,
   g_return_if_fail (CINNAMON_IS_RECORDER_SRC (src));
   g_return_if_fail (src->caps != NULL);
 
-  gst_base_src_set_caps (GST_BASE_SRC (src), src->caps);
   cinnamon_recorder_src_update_memory_used (src,
 					 (int)(gst_buffer_get_size(buffer) / 1024));
 

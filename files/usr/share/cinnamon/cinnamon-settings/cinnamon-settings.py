@@ -20,6 +20,7 @@ import locale
 import urllib2
 import proxygsettings
 from functools import cmp_to_key
+import unicodedata
 
 # i18n
 gettext.install("cinnamon", "/usr/share/locale")
@@ -193,6 +194,9 @@ class MainWindow:
         self.header_stack.set_transition_duration(150)
         self.side_view_container = self.builder.get_object("category_box")
         self.side_view_sw = self.builder.get_object("side_view_sw")
+        context = self.side_view_sw.get_style_context()
+        context.add_class("cs-category-view")
+        context.add_class("view")
         self.side_view_sw.show_all()
         self.content_box = self.builder.get_object("content_box")
         self.content_box_sw = self.builder.get_object("content_box_sw")
@@ -203,9 +207,6 @@ class MainWindow:
         button_image.props.icon_size = Gtk.IconSize.MENU
 
         self.stack_switcher = self.builder.get_object("stack_switcher")
-        # Set stack to random thing and make opacity 0 so that the heading bar
-        # does not resize when switching between pages
-        self.stack_switcher.set_stack(self.main_stack)
 
         m, n = self.button_back.get_preferred_width()
         self.stack_switcher.set_margin_right(n)
@@ -348,11 +349,22 @@ class MainWindow:
         if position == Gtk.EntryIconPosition.SECONDARY:
             self.search_entry.set_text("")
 
+    def strip_accents(self, text):
+        try:
+            text = unicode(text, 'utf-8')
+        except NameError:
+            # unicode is default in Python 3
+            pass
+        text = unicodedata.normalize('NFD', text)
+        text = text.encode('ascii', 'ignore')
+        text = text.decode("utf-8")
+        return str(text)
+
     def filter_visible_function(self, model, iter, user_data = None):
         sidePage = model.get_value(iter, 2)
-        text = self.search_entry.get_text().lower()
-        if sidePage.name.lower().find(text) > -1 or \
-           sidePage.keywords.lower().find(text) > -1:
+        text = self.strip_accents(self.search_entry.get_text().lower())
+        if self.strip_accents(sidePage.name.lower()).find(text) > -1 or \
+           self.strip_accents(sidePage.keywords.lower()).find(text) > -1:
             return True
         else:
             return False
@@ -430,15 +442,6 @@ class MainWindow:
 
         area.add_attribute(text_renderer, "text", 0)
 
-        css_provider = Gtk.CssProvider()
-        css_provider.load_from_data("GtkIconView {                             \
-                                         background-color: transparent;        \
-                                     }                                         \
-                                     GtkIconView.view.cell:selected {          \
-                                         background-color: @selected_bg_color; \
-                                     }")
-        c = widget.get_style_context()
-        c.add_provider(css_provider, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
         self.side_view[category["id"]] = widget
         self.side_view_container.pack_start(self.side_view[category["id"]], False, False, 0)
         self.first_category_done = True

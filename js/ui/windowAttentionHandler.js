@@ -25,14 +25,11 @@ WindowAttentionHandler.prototype = {
         // We are just ignoring the hint on skip_taskbar windows for now.
         // (Which is the same behaviour as with metacity + panel)
 
+        let wmclass = window.get_wm_class();
+        let ignored_classes = global.settings.get_strv("demands-attention-ignored-wm-classes");
+
         if (!window || window.has_focus() || window.is_skip_taskbar() ||
-            (window.get_wm_class() && (window.get_wm_class().indexOf("Skype") > -1 ||
-                                       window.get_wm_class().indexOf("Viber") > -1 ||
-                                       window.get_wm_class().indexOf("Quassel") > -1 ||
-                                       window.get_wm_class().indexOf("Pidgin") > -1 ||
-                                       window.get_wm_class().indexOf("RetroShare") > -1 ||
-                                       window.get_wm_class().indexOf("Psi-plus") > -1 ||                                       
-                                       window.get_wm_class().indexOf("Kadu") > -1)))
+            (wmclass && (ignored_classes.indexOf(wmclass.toLowerCase()) != -1)))
             return;
 
         try {

@@ -327,7 +327,7 @@ NotificationDaemon.prototype = {
         if (expires != 0) {
             // Find place in the notification queue.
             let notifications = this._expireNotifications, i;
-            for (i = notifications.length; i > 0; --i) {    // Backwards seach, likely to be faster.
+            for (i = notifications.length; i > 0; --i) {    // Backwards search, likely to be faster.
                 if (expires > notifications[i-1].expires) {
                     notifications.splice(i, 0, ndata);
                     break;

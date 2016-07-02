@@ -83,6 +83,7 @@ class SoundBox(Gtk.Box):
         scw.add(self.box)
 
         self.list_box = Gtk.ListBox()
+        self.list_box.set_selection_mode(Gtk.SelectionMode.NONE)
         self.list_box.set_header_func(list_header_func, None)
         self.box.add(self.list_box)
 
@@ -481,7 +482,7 @@ class SoundTest(Gtk.Dialog):
             box = Gtk.Box.new(Gtk.Orientation.VERTICAL, 0)
             button.add(box)
             
-            icon = Gtk.Image.new_from_icon_name(position[2], 6)
+            icon = Gtk.Image.new_from_icon_name(position[2], Gtk.IconSize.DIALOG)
             box.pack_start(icon, False, False, 0)
             box.pack_start(Gtk.Label(position[0]), False, False, 0)
             
@@ -497,9 +498,17 @@ class SoundTest(Gtk.Dialog):
         content_area = self.get_content_area()
         content_area.set_border_width(12)
         content_area.add(grid)
+
+        button = Gtk.Button.new_from_stock("gtk-close")
+        button.connect("clicked", self._destroy)
+        content_area.add(button)
+
         self.show_all()
         self.setPositionHideState()
-    
+
+    def _destroy(self, widget):
+        self.destroy()
+
     def test(self, b, info):
         position = SOUND_TEST_MAP[info["index"]]
 
@@ -704,10 +713,12 @@ class Module:
         
         iconTheme = Gtk.IconTheme.get_default()        
         gicon = device.get_gicon()
-        lookup = iconTheme.lookup_by_gicon(gicon, 32, 0)
-        if lookup is not None:
-            icon = lookup.load_icon()
-        else:
+        icon = None
+        if gicon is not None:
+            lookup = iconTheme.lookup_by_gicon(gicon, 32, 0)
+            if lookup is not None:
+                icon = lookup.load_icon()
+        if icon is not None:
             if ("bluetooth" in device.get_icon_name()):
                 icon = iconTheme.load_icon("bluetooth", 32, 0)
             else:

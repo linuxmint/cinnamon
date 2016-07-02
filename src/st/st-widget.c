@@ -1967,7 +1967,7 @@ sort_by_position (gconstpointer  a,
   /* Determine the relationship, relative to motion in @direction, of
    * the center points of the two actors. Eg, for %GTK_DIR_UP, we
    * return a negative number if @actor_a's center is below @actor_b's
-   * center, and postive if vice versa, which will result in an
+   * center, and positive if vice versa, which will result in an
    * overall list sorted bottom-to-top.
    */
 

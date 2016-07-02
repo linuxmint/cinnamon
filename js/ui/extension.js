@@ -80,7 +80,7 @@ function _createExtensionType(name, folder, manager, overrides){
  * @callbacks: Callbacks used to do some manual actions on load / unload
  * 
  * Extension types with some attributes helping to load these extension types.
- * Properties are nested, with lowerCamelCase properties (e.g. requiredFunctions) as sub-properties of CAPITAL one (EXTENSION). Thus they are refered to as, e.g., Type.EXTENSION.requiredFunctions
+ * Properties are nested, with lowerCamelCase properties (e.g. requiredFunctions) as sub-properties of CAPITAL one (EXTENSION). Thus they are referred to as, e.g., Type.EXTENSION.requiredFunctions
  */
 const Type = {
     EXTENSION: _createExtensionType("Extension", "extensions", ExtensionSystem, {

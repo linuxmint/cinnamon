@@ -62,6 +62,7 @@ class Module:
                                      "org.cinnamon.desktop.a11y.applications",
                                      "screen-reader-enabled",
                                      None,
+                                     ["orca"],
                                      ["gnome-orca"])
             settings.add_row(switch)
 
@@ -146,6 +147,12 @@ class Module:
                                      ["scan",      _("Scanning")]]
 
             widget = GSettingsComboBox(_("Keyboard layout"), "org.cinnamon.keyboard", "keyboard-type", keyboard_type_options)
+            settings.add_reveal_row(widget, "org.cinnamon.desktop.a11y.applications", "screen-keyboard-enabled")
+
+            activation_mode_options = [["accessible", _("Show the keyboard any time something expects input")],
+                                       ["on-demand",  _("Show keyboard only when the user activates it")]];
+
+            widget = GSettingsComboBox(_("Activation mode"), "org.cinnamon.keyboard", "activation-mode", activation_mode_options)
             settings.add_reveal_row(widget, "org.cinnamon.desktop.a11y.applications", "screen-keyboard-enabled")
 
 # Keyboard indicators
@@ -341,9 +348,9 @@ class Module:
             install_widget = SettingsWidget()
 
             self.dep_button = DependencyCheckInstallButton(_("Checking dependencies"),
-                                                           _("Install: %s") % ("mousetweaks"),
+                                                           _("Please install: %s") % ("mousetweaks"),
                                                            ["mousetweaks"],
-                                                           None,
+                                                           Gtk.Alignment(),
                                                            self.on_dep_satisfied)
 
             install_widget.pack_start(self.dep_button, True, False, 0)
