@@ -849,7 +849,7 @@ def paste(destination, source, box=(0, 0), mask=None, force=False):
 
         - If ``True`` it will overwrite the alpha channel of the destination
           with the alpha channel of the source image. So in that case the
-          pixels of the destination layer will be abandonned and replaced
+          pixels of the destination layer will be abandoned and replaced
           by exactly the same pictures of the destination image. This is mostly
           what you need if you paste on a transparant canvas.
         - If ``False`` this will use a mask when the image has an alpha

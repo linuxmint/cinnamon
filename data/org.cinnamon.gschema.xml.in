@@ -615,6 +615,11 @@
       </_description>
     </key>
 
+    <key type="as" name="demands-attention-ignored-wm-classes">
+      <default>["skype", "viber", "quassel", "retroshare", "psi-plus", "kadu", "pidgin"]</default>
+      <_summary>WM class names to skip processing for in windowAttentionHandler.js</_summary>
+    </key>
+
   </schema>
  
   <schema id="org.cinnamon.theme" path="/org/cinnamon/theme/"
@@ -635,6 +640,13 @@
       <_summary>Which keyboard to use</_summary>
       <_description>
         The type of keyboard to use.
+      </_description>
+    </key>
+    <key name="activation-mode" type="s">
+      <default>'on-demand'</default>
+      <_summary>How the keyboard becomes activated</_summary>
+      <_description>
+        Can be:  on-demand: display the keyboard only at user demand, either when the applet is clicked, or a keyboard shortcut is used.  accessible: display the keyboard any time an input field becomes the desktop keyboard focus.
       </_description>
     </key>
   </schema>

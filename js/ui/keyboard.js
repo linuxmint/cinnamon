@@ -14,6 +14,7 @@ const MessageTray = imports.ui.messageTray;
 
 const KEYBOARD_SCHEMA = 'org.cinnamon.keyboard';
 const KEYBOARD_TYPE = 'keyboard-type';
+const ACTIVATION_MODE = 'activation-mode';
 
 const A11Y_APPLICATIONS_SCHEMA = 'org.cinnamon.desktop.a11y.applications';
 const SHOW_KEYBOARD = 'screen-keyboard-enabled';
@@ -208,8 +209,11 @@ Keyboard.prototype = {
 
     _settingsChanged: function (settings, key) {
         this._enableKeyboard = this._a11yApplicationsSettings.get_boolean(SHOW_KEYBOARD);
+        this.accessibleMode = this._keyboardSettings.get_string(ACTIVATION_MODE) == "accessible";
+
         if (!this._enableKeyboard && !this._keyboard)
             return;
+
         if (this._enableKeyboard && this._keyboard &&
             this._keyboard.keyboard_type == this._keyboardSettings.get_string(KEYBOARD_TYPE))
             return;
@@ -484,7 +488,7 @@ Keyboard.prototype = {
 
     // D-Bus methods
     Show: function(timestamp) {
-        if (!this._enableKeyboard)
+        if (!this._enableKeyboard || !this.accessibleMode)
             return;
 
         if (this._compareTimestamp(timestamp, this._timestamp) < 0)
@@ -496,7 +500,7 @@ Keyboard.prototype = {
     },
 
     Hide: function(timestamp) {
-        if (!this._enableKeyboard)
+        if (!this._enableKeyboard || !this.accessibleMode)
             return;
 
         if (this._compareTimestamp(timestamp, this._timestamp) < 0)
@@ -508,17 +512,13 @@ Keyboard.prototype = {
     },
 
     SetCursorLocation: function(x, y, w, h) {
-        if (!this._enableKeyboard)
+        if (!this._enableKeyboard || !this.accessibleMode)
             return;
-
-//        this._setLocation(x, y);
     },
 
     SetEntryLocation: function(x, y, w, h) {
-        if (!this._enableKeyboard)
+        if (!this._enableKeyboard || !this.accessibleMode)
             return;
-
-//        this._setLocation(x, y);
     },
 
     get Name() {

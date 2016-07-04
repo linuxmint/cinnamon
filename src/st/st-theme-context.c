@@ -337,7 +337,7 @@ st_theme_context_get_theme (StThemeContext *context)
  *
  * Sets the default font for the theme context. This is the font that
  * is inherited by the root node of the tree of theme nodes. If the
- * font is not overriden, then this font will be used. If the font is
+ * font is not overridden, then this font will be used. If the font is
  * partially modified (for example, with 'font-size: 110%', then that
  * modification is based on this font.
  */

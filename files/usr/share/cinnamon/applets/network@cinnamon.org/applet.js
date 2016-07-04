@@ -282,20 +282,20 @@ NMWirelessSectionTitleMenuItem.prototype = {
         PopupMenu.PopupSwitchMenuItem.prototype.activate.call(this, event);
 		log(this._setEnabledFunc);
         this._client[this._setEnabledFunc](this._switch.state);
-                        
+
         if (!this._device) {
             log('Section title activated when there is more than one device, should be non reactive');
             return;
         }
-        
+
         let newState = this._switch.state;
-       
+
         if (newState)
             this._device.activate();
         else
             this._device.deactivate();
-            
-        this.emit('enabled-changed', this._switch.state);        
+
+        this.emit('enabled-changed', this._switch.state);
     },
 
     _propertyChanged: function() {
@@ -391,7 +391,7 @@ NMDevice.prototype = {
         this.section.destroy();
     },
 
-    deactivate: function() {	
+    deactivate: function() {
         this.device.disconnect(function() {});
     },
 
@@ -1514,13 +1514,22 @@ NMDeviceWireless.prototype = {
         let icon, title;
         if (this._activeConnection._connection) {
             let connection = this._activeConnection._connection;
+            if (!this._activeNetwork) {
+                if (this.device.active_access_point) {
+                    let networkPos = this._findNetwork(this.device.active_access_point);
+                    if (networkPos == -1) // the connected access point is invisible
+                        this._activeNetwork = null;
+                    else
+                        this._activeNetwork = this._networks[networkPos];
+                } else {
+                    this._activeNetwork = null;
+                }
+            }
+
             if (this._activeNetwork)
-                this._activeConnectionItem = new NMNetworkMenuItem(this._activeNetwork.accessPoints, undefined,
-                                                                   { reactive: false });
+                this._activeConnectionItem = new NMNetworkMenuItem(this._activeNetwork.accessPoints, undefined, { reactive: false });
             else
-                this._activeConnectionItem = new PopupMenu.PopupImageMenuItem(connection._name,
-                                                                              'network-wireless-connected',
-                                                                              { reactive: false });
+                this._activeConnectionItem = new PopupMenu.PopupImageMenuItem(connection._name, 'network-wireless-connected', { reactive: false });
         } else {
             // We cannot read the connection (due to ACL, or API incompatibility), but we still show signal if we have it
             let menuItem;
@@ -1649,7 +1658,7 @@ MyApplet.prototype = {
 
     _init: function(metadata, orientation, panel_height, instance_id) {
         Applet.IconApplet.prototype._init.call(this, orientation, panel_height, instance_id);
-        
+
         try {
             this.metadata = metadata;
             Main.systrayManager.registerRole("network", metadata.uuid);
@@ -1657,8 +1666,8 @@ MyApplet.prototype = {
 
             this.menuManager = new PopupMenu.PopupMenuManager(this);
             this.menu = new Applet.AppletPopupMenu(this, orientation);
-            this.menuManager.addMenu(this.menu);            
-            
+            this.menuManager.addMenu(this.menu);
+
             this._currentIconName = undefined;
             this._setIcon('network-offline');
 
@@ -1769,26 +1778,26 @@ MyApplet.prototype = {
                     this._settings.connect('new-connection', Lang.bind(this, this._newConnection));
                 }
             }));
-            
+
             this._periodicUpdateIcon();
-            
+
         }
         catch (e) {
             global.logError(e);
         }
     },
-    
+
     _setIcon: function(name) {
         if (this._currentIconName !== name) {
             this.set_applet_icon_symbolic_name(name);
             this._currentIconName = name;
         }
     },
-    
+
     on_applet_clicked: function(event) {
-        this.menu.toggle();        
+        this.menu.toggle();
     },
-    
+
     _ensureSource: function() {
         if (!this._source) {
             this._source = new NMMessageTraySource();
@@ -1975,6 +1984,12 @@ MyApplet.prototype = {
                 }
             }
 
+            if (!a._section){
+                // Do not take connections which section is undefined into account
+                // For instance, in Mint 18, when the "vpn" is "activated", we sometimes see a "tun" act as the default ipv4 connection.
+                continue;
+            }
+
             if (a.state == NetworkManager.ActiveConnectionState.ACTIVATED) {
                 if (!default_ip4) {
                     // We didn't find the default IPV4 device yet..
@@ -2074,7 +2089,7 @@ MyApplet.prototype = {
     _connectionRemoved: function(connection) {
         let pos = this._connections.indexOf(connection);
         if (pos != -1)
-            this._connections.splice(connection);
+            this._connections.splice(pos);
 
         let section = connection._section;
 
@@ -2169,8 +2184,8 @@ MyApplet.prototype = {
             let hasMobileIcon = false;
 
             if (!mc) {
-                this._setIcon('network-offline');         
-                this.set_applet_tooltip(_("No connection"));   
+                this._setIcon('network-offline');
+                this.set_applet_tooltip(_("No connection"));
             } else if (mc.state == NetworkManager.ActiveConnectionState.ACTIVATING) {
                 this._updateFrequencySeconds = FAST_PERIODIC_UPDATE_FREQUENCY_SECONDS;
                 switch (mc._section) {
@@ -2211,8 +2226,8 @@ MyApplet.prototype = {
                             }
                             this._setIcon('network-wireless-connected');
                             this.set_applet_tooltip(_("Connected to the wireless network"));
-                        } else {                          
-                            this._setIcon('network-wireless-signal-' + signalToIcon(ap.strength));                            
+                        } else {
+                            this._setIcon('network-wireless-signal-' + signalToIcon(ap.strength));
                             this.set_applet_tooltip(_("Wireless connection") + ": " + ap.get_ssid() + " ("+ ap.strength +"%)");
                             hasApIcon = true;
                         }
@@ -2253,13 +2268,13 @@ MyApplet.prototype = {
                     this.set_applet_tooltip(_("Connected to the network"));
                     break;
                 }
-            }            
+            }
         }
         catch (e) {
             global.logError(e);
-        }                        
+        }
     },
-    
+
     _periodicUpdateIcon: function() {
         this._updateIcon();
         this._updateFrequencySeconds = Math.max(2, this._updateFrequencySeconds);
@@ -2276,7 +2291,7 @@ MyApplet.prototype = {
 
 };
 
-function main(metadata, orientation, panel_height, instance_id) {  
+function main(metadata, orientation, panel_height, instance_id) {
     let myApplet = new MyApplet(metadata, orientation, panel_height, instance_id);
-    return myApplet;      
+    return myApplet;
 }

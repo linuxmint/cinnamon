@@ -130,7 +130,7 @@ MyApplet.prototype = {
 
         output.set_rotation(current);
 
-        if (retval.lenght == 0) {
+        if (retval.length == 0) {
             // what, no rotation?
             // what's current then?
             retval = current;
