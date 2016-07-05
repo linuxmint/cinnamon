@@ -1,6 +1,14 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python3
 
-import gi, sys
+""" Preview a Cinnamon gtk theme in a small window
+
+Usage:  cinnamon-preview-gtk-theme theme-name
+"""
+
+import sys
+
+import gi
+gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk
 
 if __name__ == '__main__':
@@ -8,12 +16,12 @@ if __name__ == '__main__':
     signal.signal(signal.SIGINT, signal.SIG_DFL)
 
     if len(sys.argv) != 2:
-        print "Usage: cinnamon-preview-gtk-theme theme-name"
+        print("Usage: cinnamon-preview-gtk-theme theme-name")
         exit(1)
     else:
-        theme_name = sys.argv[1]        
+        theme_name = sys.argv[1]
         settings = Gtk.Settings.get_default()
-        settings.set_string_property ("gtk-theme-name", theme_name, "gtkrc:0");
+        settings.set_string_property("gtk-theme-name", theme_name, "gtkrc:0")
 
         window = Gtk.Window()
 
@@ -28,16 +36,12 @@ if __name__ == '__main__':
         hbox.pack_start(check, False, False, 2)
         hbox.pack_start(radio, False, False, 2)
 
-        vbox.pack_start(hbox, False, False, 2)    
+        vbox.pack_start(hbox, False, False, 2)
 
         window.add(vbox)
-        
         window.set_default_size(320, 200)
-
         window.set_decorated(False)
         window.show_all()
 
-
         window.connect("destroy", Gtk.main_quit)
         Gtk.main()
-

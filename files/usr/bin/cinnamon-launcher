@@ -1,15 +1,21 @@
-#! /usr/bin/python2
-# -*- coding=utf-8 -*-
+#!/usr/bin/env python3
+#
+""" Launches or restarts cinnamon
+"""
 
 FALLBACK_COMMAND = "metacity"
 FALLBACK_ARGS = ("--replace",)
 
-import os, sys, gettext
+import os
+import sys
+import gettext
+
 import gi
 gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk
 
 gettext.install("cinnamon", "/usr/share/locale")
+
 
 def confirm_restart():
     d = Gtk.MessageDialog(parent=None, flags=0, message_type=Gtk.MessageType.WARNING, buttons=Gtk.ButtonsType.YES_NO)
