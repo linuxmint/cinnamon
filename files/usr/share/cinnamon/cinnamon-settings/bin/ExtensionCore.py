@@ -192,18 +192,25 @@ class ExtensionSidePage (SidePage):
 
         if self.collection_type == "applet":
             self.instanceButton = Gtk.Button.new_with_label(_("Add to panel"))
+            self.removeButton = Gtk.Button.new_with_label(_("Remove from panel"))
         elif self.collection_type == "desklet":
             self.instanceButton = Gtk.Button.new_with_label(_("Add to desktop"))
+            self.removeButton = Gtk.Button.new_with_label(_("Remove from desktop"))
         elif self.collection_type == "extension":
             self.instanceButton = Gtk.Button.new_with_label(_("Add to Cinnamon"))
+            self.removeButton = Gtk.Button.new_with_label(_("Remove from Cinnamon"))
         elif self.collection_type == "theme":
             self.instanceButton = Gtk.Button.new_with_label(_("Apply theme"))
+            self.removeButton = Gtk.Button.new_with_label("") #Should not be visible for theme
         else:
             self.instanceButton = Gtk.Button.new_with_label(_("Add"))
+            self.removeButton = Gtk.Button.new_with_label(_("Remove"))
 
         self.instanceButton.connect("clicked", lambda x: self._add_another_instance())
+        self.instanceButton.set_sensitive(False)
 
-        self.instanceButton.set_sensitive(False);
+        self.removeButton.connect("clicked", lambda x: self._remove_all_instances())
+        self.removeButton.set_sensitive(False)
 
         self.configureButton = Gtk.Button.new_with_label(_("Configure"))
         self.configureButton.connect("clicked", self._configure_extension)
@@ -271,12 +278,16 @@ class ExtensionSidePage (SidePage):
 
         img = Gtk.Image.new_from_stock("gtk-add", Gtk.IconSize.BUTTON)
         self.instanceButton.set_image(img)
+        img = Gtk.Image.new_from_stock("gtk-remove", Gtk.IconSize.BUTTON)
+        self.removeButton.set_image(img)
         img = Gtk.Image.new_from_stock("gtk-properties", Gtk.IconSize.BUTTON)
         self.configureButton.set_image(img)
         img = Gtk.Image.new_from_stock("gtk-properties", Gtk.IconSize.BUTTON)
         self.extConfigureButton.set_image(img)
 
         buttonbox.pack_start(self.instanceButton, False, False, 0)
+        if self.collection_type != "theme":
+            buttonbox.pack_start(self.removeButton, False, False, 0)
         buttonbox.pack_start(self.configureButton, False, False, 0)
         buttonbox.pack_start(self.extConfigureButton, False, False, 0)
 
@@ -1141,6 +1152,16 @@ Please contact the developer.""")
         if treeiter:
             self._add_another_instance_iter(treeiter)
 
+    def _remove_all_instances(self):
+        model, treeiter = self.treeview.get_selection().get_selected()
+
+        if treeiter:
+            uuid = model.get_value(treeiter, 0)
+            checked = model.get_value(treeiter, 2)
+            name = model.get_value(treeiter, 5)
+
+            self.disable_extension(uuid, name, checked)
+
     def select_updated_extensions(self):
         if len(self.update_list) > 1:
             msg = _("This operation will update the selected items.\n\nDo you want to continue?")
@@ -1184,6 +1205,8 @@ Please contact the developer.""")
             enabled = checked != -1 and (max_instances == -1 or ((max_instances > 0) and (max_instances > checked)))
 
             self.instanceButton.set_sensitive(enabled);
+
+            self.removeButton.set_sensitive(checked > 0)
 
             self.configureButton.set_visible(self.should_show_config_button(model, treeiter))
             self.configureButton.set_sensitive(checked > 0)
