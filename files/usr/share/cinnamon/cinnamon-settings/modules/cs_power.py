@@ -98,7 +98,7 @@ class Module:
             return
         print "Loading Power module"
 
-        self.up_client = UPowerGlib.Client()
+        self.up_client = UPowerGlib.Client.new()
 
         self.csd_power_proxy = Gio.DBusProxy.new_sync(
                 Gio.bus_get_sync(Gio.BusType.SESSION, None),
