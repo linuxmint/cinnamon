@@ -1,5 +1,8 @@
-from gi.repository import Gtk, GObject
 import cairo
+import gi
+gi.require_version("Gtk", "3.0")
+from gi.repository import Gtk, GObject
+
 
 class Previews(object):
     def scale(self, ctx, window, x, y, c):

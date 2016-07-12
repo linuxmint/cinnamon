@@ -1,10 +1,7 @@
 #!/usr/bin/env python2
 
 import sys
-sys.path.append('/usr/share/cinnamon/cinnamon-settings/bin')
-from SettingsWidgets import *
 import os
-from gi.repository import Gio, Gtk, GObject, Gdk, Pango, GLib
 import imtools
 import gettext
 import thread
@@ -12,9 +9,16 @@ import subprocess
 import tempfile
 import locale
 import time
-from xml.etree import ElementTree
-from PIL import Image
 import hashlib
+from xml.etree import ElementTree
+
+from PIL import Image
+import gi
+gi.require_version("Gtk", "3.0")
+from gi.repository import Gio, Gtk, GObject, Gdk, Pango, GLib
+
+sys.path.append('/usr/share/cinnamon/cinnamon-settings/bin')
+from SettingsWidgets import *
 
 gettext.install("cinnamon", "/usr/share/locale")
 

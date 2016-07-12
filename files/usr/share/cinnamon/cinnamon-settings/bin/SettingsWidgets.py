@@ -1,14 +1,16 @@
 #!/usr/bin/env python2
 
-import gi
-gi.require_version('CDesktopEnums', '3.0')
-gi.require_version('CinnamonDesktop', '3.0')
-from gi.repository import Gio, Gtk, GObject, Gdk, GLib, GdkPixbuf, CDesktopEnums, CinnamonDesktop
 import math
 import os
 import subprocess
 import traceback
+
 import dbus
+import gi
+gi.require_version('Gtk', '3.0')
+gi.require_version('CDesktopEnums', '3.0')
+gi.require_version('CinnamonDesktop', '3.0')
+from gi.repository import Gio, Gtk, GObject, Gdk, GLib, GdkPixbuf, CDesktopEnums, CinnamonDesktop
 
 settings_objects = {}
 

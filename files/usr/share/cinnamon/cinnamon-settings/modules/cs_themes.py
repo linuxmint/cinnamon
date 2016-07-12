@@ -1,13 +1,15 @@
 #!/usr/bin/env python2
 
-from ExtensionCore import ExtensionSidePage
 from gi.repository.Gtk import SizeGroup, SizeGroupMode
+
 from SettingsWidgets import *
 from CinnamonGtkSettings import GtkSettingsSwitch
+from ExtensionCore import ExtensionSidePage
 
 import glob
 
 ICON_SIZE = 48
+
 
 class Module:
     comment = _("Manage themes to change how your desktop looks")

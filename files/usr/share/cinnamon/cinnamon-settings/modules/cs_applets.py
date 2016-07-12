@@ -1,6 +1,9 @@
 #!/usr/bin/env python2
+
 import sys
+
 from ExtensionCore import ExtensionSidePage
+
 
 class Module:
     name = "applets"

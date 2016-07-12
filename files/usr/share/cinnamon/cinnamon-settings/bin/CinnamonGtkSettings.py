@@ -1,9 +1,12 @@
 #!/usr/bin/env python2
 
 import os.path
-from  SettingsWidgets import SettingsWidget
 
+import gi
+gi.require_version("Gtk", "3.0")
 from gi.repository import GLib, Gtk
+
+from  SettingsWidgets import SettingsWidget
 
 SETTINGS_GROUP_NAME = "Settings"
 

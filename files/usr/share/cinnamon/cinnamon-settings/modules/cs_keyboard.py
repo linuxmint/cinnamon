@@ -1,10 +1,14 @@
 #!/usr/bin/env python2
 
-from SettingsWidgets import *
-from gi.repository import Gio, Gtk, GObject, Gdk
-from KeybindingWidgets import CellRendererKeybinding
 import cgi
 import gettext
+
+import gi
+gi.require_version("Gtk", "3.0")
+from gi.repository import Gio, Gtk, GObject, Gdk
+
+from KeybindingWidgets import CellRendererKeybinding
+from SettingsWidgets import *
 
 gettext.install("cinnamon", "/usr/share/locale")
 

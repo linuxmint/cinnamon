@@ -1,7 +1,7 @@
 #!/usr/bin/env python2
 
 from SettingsWidgets import *
-from gi.repository import Gtk
+
 
 class Module:
     name = "calendar"

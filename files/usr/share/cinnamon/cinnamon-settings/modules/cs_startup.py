@@ -1,10 +1,14 @@
 #!/usr/bin/env python2
 
-from SettingsWidgets import *
-from gi.repository import Gio, Gtk, GObject, Gdk, GdkPixbuf, GLib, Pango
 import os
 import glob
 import shutil
+
+import gi
+gi.require_version('Gtk', '3.0')
+from gi.repository import Gio, Gtk, GObject, Gdk, GdkPixbuf, GLib, Pango
+
+from SettingsWidgets import *
 
 try:
     ENVIRON = os.environ['XDG_CURRENT_DESKTOP']
@@ -62,7 +66,7 @@ class Module:
         user_files = glob.glob(os.path.join(GLib.get_user_config_dir(), "autostart", "*.desktop"))
         for app in user_files:
             AUTOSTART_APPS.append(AutostartApp(app, user_position=os.path.dirname(app)))
-        
+
         for d in GLib.get_system_config_dirs():
             system_files.extend(glob.glob(os.path.join(d, "autostart", "*.desktop")))
 
@@ -280,7 +284,7 @@ class AutostartApp():
             self.enabled = False
             self.save_mask.add_item("enabled")
             self.queue_save()
-        
+
     def update_description(self):
         if self.name == "":
             self.name = _("No name")
@@ -300,7 +304,7 @@ class AutostartApp():
             self.get_boolean(key_file, "X-GNOME-Autostart-enabled", True) != self.enabled or
             self.get_shown(key_file) != self.shown):
             return False
-        
+
         if self.get_boolean(key_file, GLib.KEY_FILE_DESKTOP_KEY_NO_DISPLAY, False) != self.no_display:
             return False
 
@@ -493,7 +497,7 @@ class AutostartBox(Gtk.Box):
                 return
 
             app = AutostartApp(filename, user_position=os.path.dirname(filename))
-            
+
             app.basename = os.path.basename(app.app)
             app.dir = os.path.basename(app.app)
             app.hidden = False
@@ -619,10 +623,10 @@ class AutostartRow(Gtk.ListBoxRow):
                     pixbuf = icon_theme.load_icon(self.app.icon, 24, Gtk.IconLookupFlags.FORCE_SIZE)
                     img = Gtk.Image.new_from_pixbuf(pixbuf)
             except:
-                img = Gtk.Image.new_from_gicon(Gio.ThemedIcon.new(DEFAULT_ICON), Gtk.IconSize.LARGE_TOOLBAR) 
+                img = Gtk.Image.new_from_gicon(Gio.ThemedIcon.new(DEFAULT_ICON), Gtk.IconSize.LARGE_TOOLBAR)
         else:
             img = Gtk.Image.new_from_gicon(Gio.ThemedIcon.new(DEFAULT_ICON), Gtk.IconSize.LARGE_TOOLBAR)
-        grid.attach(img, 0, 0, 1, 1)    
+        grid.attach(img, 0, 0, 1, 1)
 
         self.desc_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
         self.desc_box.props.hexpand = True
