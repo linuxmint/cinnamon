@@ -182,8 +182,8 @@ KEYBINDINGS = [
     [_("Shuffle"), MEDIA_KEYS_SCHEMA, "audio-random", "media"],
     # Sound and Media Quiet
     [_("Volume mute (Quiet)"), MEDIA_KEYS_SCHEMA, "mute-quiet", "media-quiet"],    # Not sure this is even necessary
-    [_("Volume down (Quiet)"), MEDIA_KEYS_SCHEMA, "volume-down", "media-quiet"],
-    [_("Volume up (Quiet)"), MEDIA_KEYS_SCHEMA, "volume-up", "media-quiet"],
+    [_("Volume down (Quiet)"), MEDIA_KEYS_SCHEMA, "volume-down-quiet", "media-quiet"],
+    [_("Volume up (Quiet)"), MEDIA_KEYS_SCHEMA, "volume-up-quiet", "media-quiet"],
     # Universal Access
     [_("Zoom in"), CINNAMON_SCHEMA, "magnifier-zoom-in", "accessibility"],
     [_("Zoom out"), CINNAMON_SCHEMA, "magnifier-zoom-out", "accessibility"],
