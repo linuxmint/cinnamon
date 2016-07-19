@@ -452,7 +452,7 @@ MyApplet.prototype = {
 // NB if the styling does not set right initially, it may well be because there is padding
 // in the theme and panel-launchers-box has # rather than .
 //
-    _set_vertical_style: function() {;
+    _set_vertical_style: function() {
         this.myactor.set_important(true);
         this.myactor.set_x_align(Clutter.ActorAlign.CENTER);
         this.myactor.add_style_class_name('vertical');
