@@ -146,15 +146,15 @@ WindowPreview.prototype = {
 
         this.thumbnail = new Clutter.Clone({
             source: windowTexture,
-            width:  width * scale * this.scaleFactor,
+            width: width * scale * this.scaleFactor,
             height: height * scale * this.scaleFactor
         });
 
         this.thumbnailBin.set_child(this.thumbnail);
 
-        let allocation    = this.actor.get_allocation_box();
+        let allocation = this.actor.get_allocation_box();
         let previewHeight = allocation.y2 - allocation.y1;
-        let previewWidth  = allocation.x2 - allocation.x1;
+        let previewWidth = allocation.x2 - allocation.x1;
 
         let monitor = Main.layoutManager.findMonitorForActor(this.item);
         let previewTop;
@@ -237,13 +237,13 @@ AppMenuButton.prototype = {
         this.alert = alert;
 
         if (this._applet.orientation == St.Side.TOP)
-            this.actor.add_style_class_name('window-list-item-box-top');
+            this.actor.add_style_class_name('top');
         else if (this._applet.orientation == St.Side.BOTTOM)
-            this.actor.add_style_class_name('window-list-item-box-bottom');
+            this.actor.add_style_class_name('bottom');
         else if (this._applet.orientation == St.Side.LEFT)
-            this.actor.add_style_class_name('window-list-item-box-left');
+            this.actor.add_style_class_name('left');
         else if (this._applet.orientation == St.Side.RIGHT)
-            this.actor.add_style_class_name('window-list-item-box-right');
+            this.actor.add_style_class_name('right');
 
         this.actor._delegate = this;
         this.actor.connect('button-release-event', Lang.bind(this, this._onButtonRelease));
@@ -993,26 +993,26 @@ MyApplet.prototype = {
         //
         if (orientation == St.Side.TOP) {
             for (let child of this.manager_container.get_children()) {
-                child.set_style_class_name('window-list-item-box window-list-item-box-top');
+                child.set_style_class_name('window-list-item-box top');
                 child.set_style('margin-top: 0px; padding-top: 0px;');
             }
             this.actor.set_style('margin-top: 0px; padding-top: 0px;');
         } else if (orientation == St.Side.BOTTOM) {
             for (let child of this.manager_container.get_children()) {
-                child.set_style_class_name('window-list-item-box window-list-item-box-bottom');
+                child.set_style_class_name('window-list-item-box bottom');
                 child.set_style('margin-bottom: 0px; padding-bottom: 0px;');
             }
             this.actor.set_style('margin-bottom: 0px; padding-bottom: 0px;');
         } else if (orientation == St.Side.LEFT) {
             for (let child of this.manager_container.get_children()) {
-                child.set_style_class_name('window-list-item-box window-list-item-box-left');
+                child.set_style_class_name('window-list-item-box left');
                 child.set_style('margin-left 0px; padding-left: 0px; padding-right: 0px; margin-right: 0px;');
                 child.set_x_align(Clutter.ActorAlign.CENTER);
             }
             this.actor.set_style('margin-left: 0px; padding-left: 0px; padding-right: 0px; margin-right: 0px;');
         } else if (orientation == St.Side.RIGHT) {
             for (let child of this.manager_container.get_children()) {
-                child.set_style_class_name('window-list-item-box window-list-item-box-right');
+                child.set_style_class_name('window-list-item-box right');
                 child.set_style('margin-left: 0px; padding-left: 0px; padding-right: 0px; margin-right: 0px;');
                 child.set_x_align(Clutter.ActorAlign.CENTER);
             }
