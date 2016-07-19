@@ -993,26 +993,26 @@ MyApplet.prototype = {
         //
         if (orientation == St.Side.TOP) {
             for (let child of this.manager_container.get_children()) {
-                child.set_style_class_name('window-list-item-box window-list-box-top');
+                child.set_style_class_name('window-list-item-box window-list-item-box-top');
                 child.set_style('margin-top: 0px; padding-top: 0px;');
             }
             this.actor.set_style('margin-top: 0px; padding-top: 0px;');
         } else if (orientation == St.Side.BOTTOM) {
             for (let child of this.manager_container.get_children()) {
-                child.set_style_class_name('window-list-item-box window-list-box-bottom');
+                child.set_style_class_name('window-list-item-box window-list-item-box-bottom');
                 child.set_style('margin-bottom: 0px; padding-bottom: 0px;');
             }
             this.actor.set_style('margin-bottom: 0px; padding-bottom: 0px;');
         } else if (orientation == St.Side.LEFT) {
             for (let child of this.manager_container.get_children()) {
-                child.set_style_class_name('window-list-item-box window-list-box-left');
+                child.set_style_class_name('window-list-item-box window-list-item-box-left');
                 child.set_style('margin-left 0px; padding-left: 0px; padding-right: 0px; margin-right: 0px;');
                 child.set_x_align(Clutter.ActorAlign.CENTER);
             }
             this.actor.set_style('margin-left: 0px; padding-left: 0px; padding-right: 0px; margin-right: 0px;');
         } else if (orientation == St.Side.RIGHT) {
             for (let child of this.manager_container.get_children()) {
-                child.set_style_class_name('window-list-item-box window-list-box-right');
+                child.set_style_class_name('window-list-item-box window-list-item-box-right');
                 child.set_style('margin-left: 0px; padding-left: 0px; padding-right: 0px; margin-right: 0px;');
                 child.set_x_align(Clutter.ActorAlign.CENTER);
             }
