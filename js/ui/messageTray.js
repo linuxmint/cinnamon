@@ -1693,6 +1693,7 @@ MessageTray.prototype = {
 
         let margin = this._notification._table.get_theme_node().get_length('margin-from-right-edge-of-screen');                
         this._notificationBin.x = monitor.x + monitor.width - this._notification._table.width - margin;
+        Main.soundManager.play('notification');
         this._notificationBin.show();
 
         this._updateShowingNotification();

@@ -22,6 +22,7 @@ EFFECT_LIST = [
     {"label": _("Tiling and snapping windows"), "schema": CINNAMON_SOUNDS,         "file": "tile-file",         "enabled": "tile-enabled"},
     {"label": _("Inserting a device"),          "schema": CINNAMON_SOUNDS,         "file": "plug-file",         "enabled": "plug-enabled"},
     {"label": _("Removing a device"),           "schema": CINNAMON_SOUNDS,         "file": "unplug-file",       "enabled": "unplug-enabled"},
+    {"label": _("Showing notifications"),       "schema": CINNAMON_SOUNDS,         "file": "notification-file", "enabled": "notification-enabled"},
     {"label": _("Changing the sound volume"),   "schema": CINNAMON_DESKTOP_SOUNDS, "file": "volume-sound-file", "enabled": "volume-sound-enabled"}
 ]
 
