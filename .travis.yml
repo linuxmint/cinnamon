@@ -6,6 +6,12 @@ compiler:
 #  - clang
   - gcc
 
+# Add dependencies
+addons:
+  apt:
+    packages:
+      - intltool
+
 # Configure step
 before_script:
   - ./autogen.sh
