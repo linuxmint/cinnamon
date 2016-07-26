@@ -18,14 +18,14 @@ services:
 # Add build-deps for cinnamon and friends
 before_install:
   - docker pull ubuntu:xenial
-  - docker run -d -p 127.0.0.1:80:4567 ubuntu:xenial /bin/sh -c "sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 451BBBF2"
+  - docker run -d -p 127.0.0.1:80:4567 ubuntu:xenial /bin/sh -c "apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 451BBBF2"
   - docker ps -a
   #- sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 451BBBF2
   #- curl http://packages.linuxmint.com/dists/debian/Release.gpg | sudo apt-key add -
-  - docker run ubuntu:xenial /bin/sh -c "echo 'deb http://packages.linuxmint.com sarah main upstream import backport' | sudo tee -a /etc/apt/sources.list"
-  - docker run ubuntu:xenial /bin/sh -c "echo 'deb-src http://packages.linuxmint.com sarah main upstream import backport' | sudo tee -a /etc/apt/sources.list"
-  - docker run ubuntu:xenial /bin/sh -c "sudo apt-get update -qq"
-  - docker run ubuntu:xenial /bin/sh -c "sudo apt-get build-dep cinnamon"
+  - docker run ubuntu:xenial /bin/sh -c "echo 'deb http://packages.linuxmint.com sarah main upstream import backport' | tee -a /etc/apt/sources.list"
+  - docker run ubuntu:xenial /bin/sh -c "echo 'deb-src http://packages.linuxmint.com sarah main upstream import backport' | tee -a /etc/apt/sources.list"
+  - docker run ubuntu:xenial /bin/sh -c "apt-get update -qq"
+  - docker run ubuntu:xenial /bin/sh -c "apt-get build-dep cinnamon"
   - docker run ubuntu:xenial /bin/sh -c "./autogen.sh"
   - docker run ubuntu:xenial /bin/sh -c "make"
 
