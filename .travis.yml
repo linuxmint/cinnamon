@@ -1,0 +1,19 @@
+# Specify that we're C++
+language: cpp
+
+# Compiler selection
+compiler:
+#  - clang
+  - gcc
+
+# Build steps
+  - ./autogen.sh
+  - make
+
+#addons:
+#  coverity_scan:
+
+#build_command_prepend: ./autogen.sh
+
+#build_command: make
+
