@@ -18,6 +18,7 @@ before_install:
   - sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 451BBBF2
   #- curl http://packages.linuxmint.com/dists/debian/Release.gpg | sudo apt-key add -
   - echo "deb http://packages.linuxmint.com sarah main upstream import backport" | sudo tee -a /etc/apt/sources.list
+  - echo "deb-src http://packages.linuxmint.com sarah main upstream import backport" | sudo tee -a /etc/apt/sources.list
   - sudo apt-get update -qq
   - sudo apt-get build-dep cinnamon
 
