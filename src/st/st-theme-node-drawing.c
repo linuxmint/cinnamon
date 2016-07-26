@@ -1795,7 +1795,7 @@ st_theme_node_paint_sliced_border_image (StThemeNode           *node,
   g_assert (border_image != NULL);
 
   st_border_image_get_borders (border_image,
-                               &border_left, &border_right, &border_top, &border_bottom);
+                               &border_top, &border_right, &border_bottom, &border_left);
 
   img_width = cogl_texture_get_width (node->border_slices_texture);
   img_height = cogl_texture_get_height (node->border_slices_texture);
