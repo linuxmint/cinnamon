@@ -22,8 +22,8 @@ before_install:
   - docker ps -a
   #- sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 451BBBF2
   #- curl http://packages.linuxmint.com/dists/debian/Release.gpg | sudo apt-key add -
-  - docker run ubuntu:xenial /bin/sh -c "echo \"deb http://packages.linuxmint.com sarah main upstream import backport\" | tee -a /etc/apt/sources.list"
-  - docker run ubuntu:xenial /bin/sh -c "echo \"deb-src http://packages.linuxmint.com sarah main upstream import backport\" | tee -a /etc/apt/sources.list"
+  - docker run ubuntu:xenial /bin/sh -c "echo \"deb http://packages.linuxmint.com sarah main upstream import backport\" >> /etc/apt/sources.list"
+  - docker run ubuntu:xenial /bin/sh -c "echo \"deb-src http://packages.linuxmint.com sarah main upstream import backport\" >> /etc/apt/sources.list"
   - docker run ubuntu:xenial /bin/sh -c "cat /etc/apt/sources.list"
   - docker run ubuntu:xenial /bin/sh -c "apt-get update -q"
   - docker run ubuntu:xenial /bin/sh -c "apt-get build-dep cinnamon"
