@@ -168,6 +168,7 @@ st_scroll_view_get_property (GObject    *object,
       break;
     case PROP_AUTO_SCROLL:
       g_value_set_boolean (value, priv->auto_scroll);
+      break;
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
     }
@@ -364,6 +365,7 @@ st_scroll_view_set_property (GObject      *object,
     case PROP_AUTO_SCROLL:
       st_scroll_view_set_auto_scrolling (self,
                                          g_value_get_boolean (value));
+      break;
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
     }
