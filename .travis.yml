@@ -1,5 +1,6 @@
 # Specify that we're C++
 language: cpp
+sudo: required
 
 # Compiler selection
 compiler:
@@ -11,6 +12,13 @@ addons:
   apt:
     packages:
       - intltool
+
+# Add build-deps for cinnamon and friends
+before_install:
+  - curl http://packages.linuxmint.com/dists/debian/Release.gpg | sudo apt-key add -
+  - echo "deb http://packages.linuxmint.com/linuxmint sarah main upstream import backport" | sudo tee -a /etc/apt/sources.list
+  - sudo apt-get update -qq
+  - sudo apt-get build-dep cinnamon
 
 # Configure step
 before_script:
