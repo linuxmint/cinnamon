@@ -902,6 +902,22 @@
       <description>
         Which sound to play when a device is unplugged.
       </description>
+    </key>
+
+    <key name="notification-enabled" type="b">
+      <default>false</default>
+      <summary>Whether to play a sound when showing notifications</summary>
+      <description>
+        Whether to play a sound when showing notifications.
+      </description>
+    </key> 
+   
+    <key name="notification-file" type="s">
+      <default>""</default>
+      <summary>Which sound to play when showing notifications</summary>
+      <description>
+        Which sound to play when showing notifications.
+      </description>
     </key>    
 
   </schema>
