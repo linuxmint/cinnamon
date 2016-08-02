@@ -37,7 +37,7 @@ function dbus_push_results(results, pattern)
                         break;
                     
                     default:
-                        results[i].label = decodeURIComponent(results[i]["url"]);
+                        results[i].label = (decodeURIComponent(results[i]["url"])).split("/").pop();
                         break;
                 }
                 final_results.push(results[i]);
