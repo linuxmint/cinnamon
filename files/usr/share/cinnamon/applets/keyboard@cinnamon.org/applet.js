@@ -131,26 +131,30 @@ MyApplet.prototype = {
         for (let i = 0; i < this._labelActors.length; i++)
             this._labelActors[i].destroy();
 
-        let short_names = this._adjustGroupNames(this._config.get_short_group_names());
+        // Short_names are the raw short language codes
+        let short_names = this._config.get_short_group_names();
+        // Short_labels are short_names with additional subscripts, if needed
+        let short_labels = this._adjustGroupNames(this._config.get_short_group_names());
 
         this._selectedLayout = null;
         this._layoutItems = [ ];
         this._labelActors = [ ];
         for (let i = 0; i < groups.length; i++) {
-            let icon_name = this._config.get_group_name(i);
+            let icon_name = short_names[i];
             let actor;
             if (this._showFlags && this.icon_theme.lookup_icon(icon_name, 20, 0))
                 actor = new St.Icon({ icon_name: icon_name, icon_type: St.IconType.FULLCOLOR, style_class: 'popup-menu-icon' });
             else
-                actor = new St.Label({ text: short_names[i] });
+                actor = new St.Label({ text: short_labels[i] });
+            
             let item = new LayoutMenuItem(this._config, i, actor, groups[i]);
-            item._short_group_name = short_names[i];
+            item._short_group_name = short_labels[i];
             item._icon_name = icon_name;
             item._long_name = groups[i];
             this._layoutItems.push(item);
             this.menu.addMenuItem(item, i);
 
-            let shortLabel = new St.Label({ text: short_names[i] });
+            let shortLabel = new St.Label({ text: short_labels[i] });
             this._labelActors.push(shortLabel);
         }
 
