@@ -1,7 +1,10 @@
 #!/usr/bin/env python2
 
-from SettingsWidgets import *
+import gi
+gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk, CDesktopEnums
+
+from SettingsWidgets import *
 
 DPI_FACTOR_LARGE         = 1.25
 DPI_FACTOR_NORMAL        = 1.0
@@ -11,6 +14,7 @@ KEY_TEXT_SCALING_FACTOR  = "text-scaling-factor"
 KEY_GTK_THEME            = "gtk-theme"
 KEY_ICON_THEME           = "icon-theme"
 KEY_WM_THEME             = "theme"
+
 
 class Module:
     name = "universal-access"

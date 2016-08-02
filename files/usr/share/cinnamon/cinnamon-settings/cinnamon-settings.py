@@ -4,23 +4,25 @@ import sys
 reload(sys)
 sys.setdefaultencoding('utf-8')
 
-sys.path.append('/usr/share/cinnamon/cinnamon-settings/modules')
-sys.path.append('/usr/share/cinnamon/cinnamon-settings/bin')
 import os
 import glob
 import gettext
-import gi
-gi.require_version('Gtk', '3.0')
-from gi.repository import Gio, Gtk, GObject, GdkPixbuf, GLib, Pango, Gdk, cairo
-import SettingsWidgets
-import capi
 import time
 import traceback
 import locale
 import urllib2
-import proxygsettings
 from functools import cmp_to_key
 import unicodedata
+
+import gi
+gi.require_version('Gtk', '3.0')
+from gi.repository import Gio, Gtk, Pango, Gdk
+
+sys.path.append('/usr/share/cinnamon/cinnamon-settings/modules')
+sys.path.append('/usr/share/cinnamon/cinnamon-settings/bin')
+import capi
+import proxygsettings
+import SettingsWidgets
 
 # i18n
 gettext.install("cinnamon", "/usr/share/locale")
@@ -108,10 +110,10 @@ class MainWindow:
             filtered_path = side_view.get_model().convert_path_to_child_path(selected_items[0])
             if filtered_path is not None:
                 self.go_to_sidepage(cat, filtered_path)
-    
+
     def _on_sidepage_hide_stack(self):
         self.stack_switcher.set_opacity(0)
-        
+
     def _on_sidepage_show_stack(self):
         self.stack_switcher.set_opacity(1)
 

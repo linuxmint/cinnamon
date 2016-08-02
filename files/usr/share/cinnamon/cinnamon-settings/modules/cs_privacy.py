@@ -6,6 +6,7 @@ PRIVACY_SCHEMA = "org.cinnamon.desktop.privacy"
 GTK_RECENT_ENABLE_KEY = "remember-recent-files"
 GTK_RECENT_MAX_AGE = "recent-files-max-age"
 
+
 class Module:
     name = "privacy"
     comment = _("Cinnamon privacy settings")

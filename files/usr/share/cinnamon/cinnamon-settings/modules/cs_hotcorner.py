@@ -2,13 +2,15 @@
 import cairo
 import math
 
-from SettingsWidgets import *
 from gi.repository import Gio
+
+from SettingsWidgets import *
 
 _270_DEG = 270.0 * (math.pi/180.0)
 _180_DEG = 180.0 * (math.pi/180.0)
 _90_DEG = 90.0 * (math.pi/180.0)
 _0_DEG = 0.0 * (math.pi/180.0)
+
 
 class Module:
     comment = _("Manage hotcorner settings")

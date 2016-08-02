@@ -1,7 +1,8 @@
 #!/usr/bin/env python2
 
-from SettingsWidgets import *
 from gi.repository import Gio
+
+from SettingsWidgets import *
 
 DESKTOP_SCHEMA = "org.nemo.desktop"
 LAYOUT_KEY = "desktop-layout"
@@ -11,6 +12,7 @@ DESKTOPS_ON_PRIMARY = "true::false"
 DESKTOPS_ON_ALL = "true::true"
 DESKTOPS_ON_NON_PRIMARY = "false::true"
 DESKTOPS_ON_NONE = "false::false"
+
 
 class Module:
     name = "desktop"
@@ -22,6 +24,7 @@ class Module:
         sidePage = SidePage(_("Desktop"), "cs-desktop", keywords, content_box,
                             module=self)
         self.sidePage = sidePage
+
     def _loadCheck(self):
         if "org.nemo" in Gio.Settings.list_schemas():
             return True

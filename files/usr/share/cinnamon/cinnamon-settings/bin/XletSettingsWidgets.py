@@ -13,6 +13,8 @@ try:
     import XletSettings
     import tweenEquations
     import math
+    import gi
+    gi.require_version("Gtk", "3.0")
     from gi.repository import Gio, Gtk, GObject, Gdk, GdkPixbuf
     from KeybindingWidgets import ButtonKeybinding
 except Exception, detail:

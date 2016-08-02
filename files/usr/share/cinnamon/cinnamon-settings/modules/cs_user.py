@@ -1,9 +1,5 @@
 #!/usr/bin/env python2
 
-from SettingsWidgets import *
-import gi
-gi.require_version('AccountsService', '1.0')
-from gi.repository import AccountsService, GLib
 try:
     import PAM
 except:
@@ -12,9 +8,16 @@ import pexpect
 import time
 from random import randint
 import shutil
-import PIL
 import os
 import subprocess
+
+import PIL
+import gi
+gi.require_version('AccountsService', '1.0')
+from gi.repository import AccountsService, GLib
+
+from SettingsWidgets import *
+
 
 class Module:
     name = "user"

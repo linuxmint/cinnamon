@@ -1,7 +1,10 @@
 #!/usr/bin/env python2
 
-from SettingsWidgets import *
+import gi
+gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk
+
+from SettingsWidgets import *
 
 
 class Module:

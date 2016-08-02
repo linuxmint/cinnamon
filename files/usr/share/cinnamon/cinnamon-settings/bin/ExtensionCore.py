@@ -1,18 +1,22 @@
 #!/usr/bin/env python2
 
-from SettingsWidgets import SidePage, SettingsStack
-import XletSettings
-from Spices import Spice_Harvester
 import sys
 import thread
 import os
 import re
 import json
-from gi.repository import Gio, Gtk, GObject, Gdk, GdkPixbuf, Pango, GLib
-import dbus
 import cgi
 import subprocess
 import gettext
+
+import dbus
+import gi
+gi.require_version("Gtk", "3.0")
+from gi.repository import Gio, Gtk, GObject, Gdk, GdkPixbuf, Pango, GLib
+
+import XletSettings
+from SettingsWidgets import SidePage, SettingsStack
+from Spices import Spice_Harvester
 
 home = os.path.expanduser("~")
 

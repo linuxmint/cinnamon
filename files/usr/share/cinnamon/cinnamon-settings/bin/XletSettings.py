@@ -11,6 +11,8 @@ try:
     import XletSettingsWidgets
     import dbus
     from SettingsWidgets import SectionBg
+    import gi
+    gi.require_version("Gtk", "3.0")
     from gi.repository import Gio, Gtk, GObject, GdkPixbuf
 except Exception, detail:
     print detail
@@ -205,7 +207,7 @@ class XletSetting:
             view.show()
             self.nb.append_page(view, Gtk.Label.new(_("Instance %d") % (i + 1)))
             view.key = instance_key
-            
+
             if target_instance == -1:
                 target_instance = instance_key
                 self.current_id = instance_key

@@ -1,7 +1,11 @@
 #!/usr/bin/env python2
 
+import gi
+gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk, Gdk, GLib
+
 from SettingsWidgets import *
+
 
 class Module:
     comment = _("Control mouse and touchpad settings")

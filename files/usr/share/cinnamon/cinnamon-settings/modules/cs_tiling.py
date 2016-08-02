@@ -1,7 +1,7 @@
 #!/usr/bin/env python2
 
 from SettingsWidgets import *
-from gi.repository import Gio, Gtk, GObject, Gdk
+
 
 class Module:
     name = "tiling"

@@ -4,14 +4,18 @@ import sys
 import os
 import gettext
 import glob
-from gi.repository import GLib, Gtk, Gio, CMenu, GdkPixbuf
 from optparse import OptionParser
 import shutil
 
-sys.path.insert(0,'/usr/share/cinnamon/cinnamon-menu-editor')
+import gi
+gi.require_version("Gtk", "3.0")
+gi.require_version("CMenu", "3.0")
+from gi.repository import GLib, Gtk, Gio, CMenu, GdkPixbuf
+
+sys.path.insert(0, '/usr/share/cinnamon/cinnamon-menu-editor')
 from cme import util
 
-sys.path.insert(0,'/usr/share/cinnamon/cinnamon-settings')
+sys.path.insert(0, '/usr/share/cinnamon/cinnamon-settings')
 from bin import XletSettingsWidgets
 
 # i18n
@@ -24,8 +28,10 @@ PANEL_LAUNCHER_PATH = os.path.join(home, ".cinnamon", "panel-launchers")
 
 EXTENSIONS = (".png", ".xpm", ".svg")
 
+
 def escape_space(string):
     return string.replace(" ", "\ ")
+
 
 def try_icon_name(filename):
     # Detect if the user picked an icon, and make
@@ -52,6 +58,7 @@ def try_icon_name(filename):
 
     return parts[3]
 
+
 def get_icon_string(image):
     filename = image._file
     if filename is not None:
@@ -59,11 +66,13 @@ def get_icon_string(image):
 
     return image._icon_name
 
+
 def strip_extensions(icon):
     if icon.endswith(EXTENSIONS):
         return icon[:-4]
     else:
         return icon
+
 
 def set_icon_string(image, icon):
     if GLib.path_is_absolute(icon):
@@ -73,7 +82,8 @@ def set_icon_string(image, icon):
             image.set_from_pixbuf(pixbuf)
     else:
         image._icon_name = strip_extensions(icon)
-        image.set_from_icon_name (strip_extensions (icon), Gtk.IconSize.BUTTON)
+        image.set_from_icon_name(strip_extensions(icon), Gtk.IconSize.BUTTON)
+
 
 def ask(msg):
     dialog = Gtk.MessageDialog(None,
@@ -90,6 +100,7 @@ def ask(msg):
 
 
 DESKTOP_GROUP = GLib.KEY_FILE_DESKTOP_GROUP
+
 
 class IconPicker(object):
     def __init__(self, dialog, button, image):
@@ -115,9 +126,9 @@ class IconPicker(object):
                 icon_info_fn = icon_info.get_filename() if icon_info != None else None
                 if icon_info_fn:
                     chooser.set_filename(icon_info_fn)
-        filter = Gtk.FileFilter();
-        filter.add_pixbuf_formats ();
-        chooser.set_filter(filter);
+        filter = Gtk.FileFilter()
+        filter.add_pixbuf_formats ()
+        chooser.set_filter(filter)
 
         preview = Gtk.Image()
         chooser.set_preview_widget(preview)
@@ -139,10 +150,11 @@ class IconPicker(object):
                 preview.set_from_pixbuf(pixbuf)
                 chooser.set_preview_widget_active(True)
 
+
 class ItemEditor(object):
     ui_file = None
 
-    def __init__(self, item_path = None, callback = None, destdir = None):
+    def __init__(self, item_path=None, callback=None, destdir=None):
         self.builder = Gtk.Builder()
         self.builder.add_from_file(self.ui_file)
         self.callback = callback
@@ -261,6 +273,7 @@ class ItemEditor(object):
         else:
             self.callback(False, self.item_path)
         self.dialog.destroy()
+
 
 class LauncherEditor(ItemEditor):
     ui_file = '/usr/share/cinnamon/cinnamon-desktop-editor/launcher-editor.ui'
@@ -404,6 +417,7 @@ class CinnamonLauncherEditor(ItemEditor):
             self.builder.get_object('exec-entry').set_text(escape_space(chooser.get_filename()))
         chooser.destroy()
 
+
 class Main:
     def __init__(self):
         parser = OptionParser()
@@ -420,8 +434,8 @@ class Main:
         if options.mode == "nemo-launcher" and not options.destination_directory:
             parser.error("nemo-launcher mode must be accompanied by the -d argument")
         if options.mode == "cinnamon-launcher" and len(args) < 3:
-            parser.error("cinnamon-launcher mode must have the following syntax:\n\
-                         cinnamon-desktop-editor -mcinnamon-launcher [-ffoo.desktop] <uuid> <instance-id> <json-path>")
+            parser.error("cinnamon-launcher mode must have the following syntax:\n"
+                         "cinnamon-desktop-editor -mcinnamon-launcher [-ffoo.desktop] <uuid> <instance-id> <json-path>")
 
         self.tree = CMenu.Tree.new("cinnamon-applications.menu", CMenu.TreeFlags.INCLUDE_NODISPLAY)
         if not self.tree.load_sync():

@@ -1,10 +1,11 @@
 #!/usr/bin/env python2
 
-from SettingsWidgets import *
 import gi
 gi.require_version('CinnamonDesktop', '3.0')
 gi.require_version('UPowerGlib', '1.0')
 from gi.repository import CinnamonDesktop, Gdk, UPowerGlib
+
+from SettingsWidgets import *
 
 POWER_BUTTON_OPTIONS = [
     ("blank", _("Lock the screen")),
@@ -467,7 +468,7 @@ class Module:
         self.battery_label_size_group.add_widget(label_box)
         hbox.pack_start(label_box, False, False, 0)
         label = Gtk.Label()
-        label.set_markup("%d%%" % int(percentage))        
+        label.set_markup("%d%%" % int(percentage))
         label.set_size_request(30, -1)
         hbox.pack_start(label, False, False, 15)
 

@@ -1,9 +1,10 @@
 #!/usr/bin/env python2
 
-from SettingsWidgets import *
 import gi
 gi.require_version('Notify', '0.7')
 from gi.repository import GObject, Notify
+
+from SettingsWidgets import *
 
 content = """
 Lorem ipsum dolor sit amet, consectetur adipiscing elit. \
@@ -26,6 +27,7 @@ MEDIA_KEYS_OSD_SIZES = [
     ("medium", _("Medium")),
     ("large", _("Large"))
 ]
+
 
 class Module:
     name = "notifications"

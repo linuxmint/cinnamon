@@ -1,10 +1,14 @@
 #!/usr/bin/env python2
 
-from SettingsWidgets import *
-from gi.repository import Gtk, Gdk, GLib, Pango
 import os, json, subprocess, re
 from xml.etree import ElementTree
 import gettext
+
+import gi
+gi.require_version('Gtk', '3.0')
+from gi.repository import Gtk, Gdk, GLib, Pango
+
+from SettingsWidgets import *
 
 LOCK_DELAY_OPTIONS = [
     (0, _("Immediately")),
@@ -31,6 +35,7 @@ LOCK_INACTIVE_OPTIONS = [
 ]
 
 XSCREENSAVER_PATH = "/usr/share/xscreensaver/config/"
+
 
 def list_header_func(row, before, user_data):
     if before and not row.get_header():
@@ -241,7 +246,7 @@ class ScreensaverBox(Gtk.Box):
             xscreensavers = []
             try:
                 gettext.install("xscreensaver", "/usr/share/locale")
-                    
+
                 for item in sorted(os.listdir(XSCREENSAVER_PATH)):
                     if not item.endswith(".xml"):
                         continue

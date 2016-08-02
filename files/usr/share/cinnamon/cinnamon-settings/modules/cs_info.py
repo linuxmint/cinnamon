@@ -1,6 +1,5 @@
 #!/usr/bin/env python2
 
-from SettingsWidgets import *
 
 import platform
 import subprocess
@@ -9,9 +8,12 @@ import os
 import re
 import threading
 
+from SettingsWidgets import *
+
 
 def killProcess(process):
     process.kill()
+
 
 def getProcessOut(command):
     timeout = 2.0  # Timeout for any subprocess before aborting it
@@ -28,6 +30,7 @@ def getProcessOut(command):
             lines.append(line)
     timer.cancel()
     return lines
+
 
 def getGraphicsInfos():
     cards = {}
@@ -49,6 +52,7 @@ def getGraphicsInfos():
     os.environ["PATH"] = envpath
     return cards
 
+
 def getDiskSize():
     disksize = 0
     moreThanOnce = 0
@@ -61,6 +65,7 @@ def getDiskSize():
         return disksize, True
     else:
         return disksize, False
+
 
 def getProcInfos():
     infos = [
@@ -76,6 +81,7 @@ def getProcInfos():
                     result[key] = line.split(':', 1)[1].strip()
                     break
     return result
+
 
 def createSystemInfos():
     procInfos = getProcInfos()
@@ -120,6 +126,7 @@ def createSystemInfos():
         infos.append((_("Graphics Card"), cards[card]))
 
     return infos
+
 
 class Module:
     name = "info"
