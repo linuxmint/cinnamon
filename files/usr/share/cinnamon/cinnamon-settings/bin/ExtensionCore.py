@@ -134,6 +134,9 @@ class ExtensionSidePage (SidePage):
             column3.set_max_width(300)
             cr.set_property('wrap-mode', Pango.WrapMode.WORD_CHAR)
             cr.set_property('wrap-width', 200)
+        if self.collection_type == 'applet':
+            cr.set_property('wrap-mode', Pango.WrapMode.WORD_CHAR)
+            cr.set_property('wrap-width', 450)
 
         cr = Gtk.CellRendererPixbuf()
         cr.set_property("stock-size", Gtk.IconSize.DND)
