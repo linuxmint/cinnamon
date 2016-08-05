@@ -30,6 +30,7 @@ nobase_dist_js_DATA = \
 	ui/appletManager.js	\
 	ui/searchProviderManager.js	\
 	ui/appFavorites.js	\
+	ui/background.js 	\
 	ui/backgroundManager.js    \
 	ui/boxpointer.js	\
 	ui/checkBox.js		\

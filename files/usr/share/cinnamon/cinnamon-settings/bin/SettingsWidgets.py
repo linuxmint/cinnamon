@@ -978,22 +978,29 @@ class GSettingsColorChooser(SettingsWidget):
     def __init__(self, label, schema, key, dep_key=None, size_group=None):
         super(GSettingsColorChooser, self).__init__(dep_key=dep_key)
 
+        self.settings = self.get_settings(schema)
+        self.key = key
+
+        color_string = self.settings.get_string(self.key)
+        if not color_string.startswith('rgb'):
+            self.settings.reset(self.key)
+        
+        color = Gdk.RGBA()
+        color.parse(self.settings.get_string(self.key))
+
         self.label = Gtk.Label(label)
-        self.content_widget = Gtk.ColorButton()
+        self.content_widget = Gtk.ColorButton.new_with_rgba(color)
         self.pack_start(self.label, False, False, 0)
         self.pack_end(self.content_widget, False, False, 0)
 
-        self.settings = self.get_settings(schema)
-        self.settings.bind_with_mapping(
-                key,
-                self.content_widget,
-                "color",
-                Gio.SettingsBindFlags.DEFAULT,
-                Gdk.color_parse,
-                Gdk.Color.to_string)
+        self.content_widget.connect('color-set', self.on_color_changed)
 
         if size_group:
             self.add_to_size_group(size_group)
+
+    def on_color_changed(self, widget):
+        color = widget.get_rgba()
+        self.settings.set_string(self.key, color.to_string())
 
 class GSettingsSoundFileChooser(SettingsWidget):
     def __init__(self, label, schema, key, dep_key=None, size_group=None):
@@ -1233,4 +1240,3 @@ class GSettingsDependencySwitch(SettingsWidget):
         if schema:
             self.settings = self.get_settings(schema)
             self.settings.bind(key, self.switch, "active", Gio.SettingsBindFlags.DEFAULT)
-

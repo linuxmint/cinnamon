@@ -119,8 +119,7 @@ const Settings = imports.ui.settings;
 const Systray = imports.ui.systray;
 const Accessibility = imports.ui.accessibility;
 
-const DEFAULT_BACKGROUND_COLOR = new Clutter.Color();
-DEFAULT_BACKGROUND_COLOR.from_pixel(0x2266bbff);
+const DEFAULT_BACKGROUND_COLOR = Clutter.Color.from_pixel(0x000000ff);
 
 const LAYOUT_TRADITIONAL = "traditional";
 const LAYOUT_FLIPPED = "flipped";
@@ -162,6 +161,7 @@ let _startDate;
 let _defaultCssStylesheet = null;
 let _cssStylesheet = null;
 let dynamicWorkspaces = null;
+let runStartupAnimation = null;
 let tracker = null;
 let settingsManager = null;
 let systrayManager = null;
@@ -313,7 +313,7 @@ function start() {
     // the color is used as the default contents for the Muffin root background
     // actor so set it anyways.
     global.stage.color = DEFAULT_BACKGROUND_COLOR;
-    global.stage.no_clear_hint = true;
+    global.stage.no_clear_hint = false;
     
     Gtk.IconTheme.get_default().append_search_path("/usr/share/cinnamon/icons/");
     _defaultCssStylesheet = global.datadir + '/theme/cinnamon.css';    
@@ -349,21 +349,12 @@ function start() {
                         [alloc.min_size, alloc.natural_size] = [height, height];
                     });
 
-    global.reparentActor(global.background_actor, uiGroup);
-    global.background_actor.hide();
     global.reparentActor(global.bottom_window_group, uiGroup);
     uiGroup.add_actor(deskletContainer.actor);
     global.reparentActor(global.window_group, uiGroup);
     global.reparentActor(global.overlay_group, uiGroup);
 
-    let stage_bg = new Clutter.Actor();
-    let constraint = new Clutter.BindConstraint({ source: global.stage, coordinate: Clutter.BindCoordinate.ALL, offset: 0 })
-    stage_bg.add_constraint(constraint);
-    stage_bg.set_background_color(new Clutter.Color({red: 0, green: 0, blue: 0, alpha: 255}));
-    stage_bg.set_size(global.screen_width, global.screen_height);
-    global.stage.add_actor(stage_bg);
-
-    stage_bg.add_actor(uiGroup);
+    global.stage.add_actor(uiGroup);
 
     global.reparentActor(global.top_window_group, global.stage);
 
@@ -375,13 +366,9 @@ function start() {
 
     let startupAnimationEnabled = global.settings.get_boolean("startup-animation");
 
-    let do_animation = startupAnimationEnabled &&
-                       !GLib.getenv('CINNAMON_SOFTWARE_RENDERING') &&
-                       !GLib.getenv('CINNAMON_2D');
-
-    if (do_animation) {
-        layoutManager._prepareStartupAnimation();
-    }
+    runStartupAnimation = startupAnimationEnabled &&
+                          !GLib.getenv('CINNAMON_SOFTWARE_RENDERING') &&
+                          !GLib.getenv('CINNAMON_2D');
 
     let pointerTracker = new PointerTracker.PointerTracker();
     pointerTracker.setPosition(layoutManager.primaryMonitor.x + layoutManager.primaryMonitor.width/2,
@@ -466,28 +453,6 @@ function start() {
 
     if (xlet_startup_error)
         Mainloop.timeout_add_seconds(3, notifyXletStartupError);
-
-    let sound_settings = new Gio.Settings( {schema_id: "org.cinnamon.sounds"} );
-    let do_login_sound = sound_settings.get_boolean("login-enabled");
-
-    // We're mostly prepared for the startup animation
-    // now, but since a lot is going on asynchronously
-    // during startup, let's defer the startup animation
-    // until the event loop is uncontended and idle.
-    // This helps to prevent us from running the animation
-    // when the system is bogged down
-    if (do_animation) {
-        let id = GLib.idle_add(GLib.PRIORITY_LOW, Lang.bind(this, function() {
-            if (do_login_sound)
-                soundManager.play_once_per_session('login');
-            layoutManager._startupAnimation();
-            return GLib.SOURCE_REMOVE;
-        }));
-    } else {
-        global.background_actor.show();
-        if (do_login_sound)
-            soundManager.play_once_per_session('login');
-    }
 
     // Disable panel edit mode when Cinnamon starts
     if (global.settings.get_boolean("panel-edit-mode")) {

@@ -38,6 +38,7 @@ dist_theme_DATA = \
     theme/radiobutton.svg          \
     theme/scroll-hhandle.svg       \
     theme/scroll-vhandle.svg       \
+    theme/startup-background.png   \
     theme/thumbnail-generic.png    \
     theme/thumbnail.png            \
     theme/toggle-off-intl.svg      \
