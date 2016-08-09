@@ -606,7 +606,7 @@ class Module:
         page.pack_start(self.inputStack, True, True, 0)
 
         inputBox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=15)
-        self.inputSelector = self.buildDeviceSelect("output", self.inputDeviceList)
+        self.inputSelector = self.buildDeviceSelect("input", self.inputDeviceList)
         deviceSection = SettingsBox("Device")
         inputBox.pack_start(deviceSection, False, False, 0)
         deviceSection.add_row(self.inputSelector)
