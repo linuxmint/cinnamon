@@ -16,7 +16,7 @@ import gi
 gi.require_version('AccountsService', '1.0')
 from gi.repository import AccountsService, GLib
 
-from SettingsWidgets import *
+from GSettingsWidgets import *
 
 
 class Module:

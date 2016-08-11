@@ -4,7 +4,7 @@ import math
 
 from gi.repository import Gio
 
-from SettingsWidgets import *
+from GSettingsWidgets import *
 
 _270_DEG = 270.0 * (math.pi/180.0)
 _180_DEG = 180.0 * (math.pi/180.0)

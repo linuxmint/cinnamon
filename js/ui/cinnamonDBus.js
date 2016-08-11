@@ -51,9 +51,10 @@ const CinnamonIface =
                 <arg type="i" direction="in" name="width"/> \
                 <arg type="i" direction="in" name="height"/> \
             </method> \
-            <method name="highlightApplet"> \
+            <method name="highlightXlet"> \
                 <arg type="s" direction="in" /> \
                 <arg type="s" direction="in" /> \
+                <arg type="b" direction="in" /> \
             </method> \
             <method name="highlightPanel"> \
                 <arg type="i" direction="in" /> \
@@ -296,17 +297,9 @@ CinnamonDBus.prototype = {
         Extension.reloadExtension(uuid, Extension.Type[type]);
     },
 
-    highlightApplet: function(uuid, instance_id) {
+    highlightXlet: function(uuid, instance_id, highlight) {
         let obj = this._getXletObject(uuid, instance_id);
-        if (!obj)
-            return;
-        let actor = obj.actor;
-
-        if (actor) {
-            let [x, y] = actor.get_transformed_position();
-            let [w, h] = actor.get_transformed_size();
-            this.FlashArea(x, y, w, h)
-        }
+        if (obj.highlight) obj.highlight(highlight);
     },
 
     highlightPanel: function(id, highlight) {
@@ -329,7 +322,7 @@ CinnamonDBus.prototype = {
     },
 
     updateSetting: function(uuid, instance_id, key, payload) {
-        Main.settingsManager.uuids[uuid][instance_id].remote_set(key, payload);
+        Main.settingsManager.uuids[uuid][instance_id].remoteUpdate(key, payload);
     },
 
     switchWorkspaceLeft: function() {

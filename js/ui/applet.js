@@ -433,9 +433,7 @@ Applet.prototype = {
                 this.context_menu_item_configure = new PopupMenu.PopupIconMenuItem(_("Configure..."),
                         "system-run",
                         St.IconType.SYMBOLIC);
-                this.context_menu_item_configure.connect('activate', Lang.bind(this, function() {
-                    Util.spawnCommandLine("cinnamon-settings applets " + this._uuid + " " + this.instance_id);
-                }));
+                this.context_menu_item_configure.connect('activate', Lang.bind(this, this.configureApplet));
             }
             if (items.indexOf(this.context_menu_item_configure) == -1) {
                 this._applet_context_menu.addMenuItem(this.context_menu_item_configure);
@@ -447,9 +445,23 @@ Applet.prototype = {
         }
     },
 
+    /**
+     * highlight:
+     * @highlight (boolean): whether to turn on or off
+     *
+     * Turns on/off the highlight of the applet
+     */
+    highlight: function(highlight) {
+        this.actor.change_style_pseudo_class("highlight", highlight);
+    },
+
     openAbout: function() {
         new ModalDialog.SpicesAboutDialog(this._meta, "applets");
     },
+
+    configureApplet: function() {
+        Util.spawnCommandLine("xlet-settings applet " + this._uuid + " " + this.instance_id);
+    }
 };
 Signals.addSignalMethods(Applet.prototype);
 

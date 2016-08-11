@@ -1,31 +1,31 @@
 {
   "enable-alerts" : {
-      "type" : "checkbox",
+      "type" : "switch",
       "default" : true,
       "description" : "Show an alert in the window list when a window from another workspace requires attention"
   },
   "enable-scrolling" : {
-      "type" : "checkbox",
+      "type" : "switch",
       "default" : false,
       "description" : "Enable mouse-wheel scrolling in the window list"
   },
   "reverse-scrolling" : {
-      "type" : "checkbox",
+      "type" : "switch",
       "default" : false,
       "description" : "Reverse the direction of mouse-wheel scrolling in the window list"
   },
   "middle-click-close": {
-      "type": "checkbox",
+      "type": "switch",
       "default": true,
       "description": "Middle click to close window"
   },
   "buttons-use-entire-space": {
-      "type": "checkbox",
+      "type": "switch",
       "default": false,
       "description": "Window buttons can have different sizes and use the entire space available"
   },
   "window-preview": {
-      "type": "checkbox",
+      "type": "switch",
       "default": true,
       "description": "Show window thumbnails on hover"
   }

@@ -5,8 +5,7 @@ gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk
 
 from ExtensionCore import ExtensionSidePage
-from SettingsWidgets import *
-
+from GSettingsWidgets import *
 
 class Module:
     comment = _("Manage your Cinnamon desklets")

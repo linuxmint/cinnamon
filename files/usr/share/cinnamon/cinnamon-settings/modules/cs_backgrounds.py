@@ -18,7 +18,7 @@ gi.require_version("Gtk", "3.0")
 from gi.repository import Gio, Gtk, GObject, Gdk, Pango, GLib
 
 sys.path.append('/usr/share/cinnamon/cinnamon-settings/bin')
-from SettingsWidgets import *
+from GSettingsWidgets import *
 
 gettext.install("cinnamon", "/usr/share/locale")
 

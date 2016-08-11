@@ -3,8 +3,7 @@
 import gi
 gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk, CDesktopEnums
-
-from SettingsWidgets import *
+from GSettingsWidgets import *
 
 DPI_FACTOR_LARGE         = 1.25
 DPI_FACTOR_NORMAL        = 1.0
@@ -46,7 +45,7 @@ class Module:
 
             settings = page.add_section(_("Visual Aids"))
 
-            switch = GSettingsSwitch(_("High contrast"))
+            switch = Switch(_("High contrast"))
             self.iface_settings.bind_with_mapping(KEY_GTK_THEME,
                                                   switch.content_widget, "active",
                                                   Gio.SettingsBindFlags.DEFAULT,
@@ -54,7 +53,7 @@ class Module:
                                                   self.hi_con_set_mapping)
             settings.add_row(switch)
 
-            switch = GSettingsSwitch(_("Large text"))
+            switch = Switch(_("Large text"))
             self.iface_settings.bind_with_mapping(KEY_TEXT_SCALING_FACTOR,
                                                   switch.content_widget, "active",
                                                   Gio.SettingsBindFlags.DEFAULT,

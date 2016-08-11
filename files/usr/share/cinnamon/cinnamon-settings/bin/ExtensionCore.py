@@ -14,7 +14,6 @@ import gi
 gi.require_version("Gtk", "3.0")
 from gi.repository import Gio, Gtk, GObject, Gdk, GdkPixbuf, Pango, GLib
 
-import XletSettings
 from SettingsWidgets import SidePage, SettingsStack
 from Spices import Spice_Harvester
 
@@ -52,6 +51,29 @@ def find_extension_subdir(directory):
         return directory
     else:
         return os.path.join(directory, ".".join(largest))
+
+translations = {}
+
+def translate(uuid, string):
+    #check for a translation for this xlet
+    if uuid not in translations:
+        try:
+            translations[uuid] = gettext.translation(uuid, home + "/.local/share/locale").ugettext
+        except IOError:
+            try:
+                translations[uuid] = gettext.translation(uuid, "/usr/share/locale").ugettext
+            except IOError:
+                translations[uuid] = None
+
+    #do not translate whitespaces
+    if not string.strip():
+        return string
+
+    if translations[uuid]:
+        result = translations[uuid](string)
+        if result != string:
+            return result
+    return _(string)
 
 class SurfaceWrapper:
     def __init__(self, surface):
@@ -1234,11 +1256,7 @@ Please contact the developer.""")
         model, treeiter = self.treeview.get_selection().get_selected()
         if treeiter:
             uuid = model.get_value(treeiter, 0)
-            settingContainer = XletSettings.XletSetting(uuid, self, self.collection_type)
-            self.content_box.pack_start(settingContainer.content, True, True, 2)
-            self.stack.hide()
-            settingContainer.show()
-            self._on_signal(None, None, "hide_stack", ())
+            subprocess.Popen(["xlet-settings", self.collection_type, uuid])
 
     def _external_configure_launch(self, widget = None):
         model, treeiter = self.treeview.get_selection().get_selected()
@@ -1314,8 +1332,8 @@ Please contact the developer.""")
                     setting_type = 0
                     data = json.loads(json_data)
                     extension_uuid = data["uuid"]
-                    extension_name = XletSettings.translate(data["uuid"], data["name"])
-                    extension_description = XletSettings.translate(data["uuid"], data["description"])
+                    extension_name = translate(data["uuid"], data["name"])
+                    extension_description = translate(data["uuid"], data["description"])
                     try: extension_max_instances = int(data["max-instances"])
                     except KeyError: extension_max_instances = 1
                     except ValueError:

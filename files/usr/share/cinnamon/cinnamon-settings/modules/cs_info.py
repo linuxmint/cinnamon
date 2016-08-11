@@ -1,6 +1,5 @@
 #!/usr/bin/env python2
 
-
 import platform
 import subprocess
 import shlex
@@ -8,7 +7,7 @@ import os
 import re
 import threading
 
-from SettingsWidgets import *
+from GSettingsWidgets import *
 
 
 def killProcess(process):
