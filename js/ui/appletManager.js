@@ -341,13 +341,13 @@ function removeAppletFromInappropriatePanel (extension, applet, appletDefinition
 //  We want to ensure that applets placed in a panel can be shown correctly
 //  - particularly because wide applets will not fit in a vertical panel unless
 //  they have logic to manage this explicitly
-//  If the applet is of type Icon Applet then should be fine otherwise
+//  If the applet is of type Icon Applet (and not a text icon applet) then should be fine otherwise
 //  we look to see if it has declared itself suitable via a getDisplayLayout call
 //
 //  If the applet turns out to be unsuitable then remove it.  The applet will show with a red
 //  indicator in the applet list
 //
-        if (applet instanceof Applet.IconApplet) {
+        if (applet instanceof Applet.IconApplet && !(applet instanceof Applet.TextIconApplet)) {
             ;
         }
         else {

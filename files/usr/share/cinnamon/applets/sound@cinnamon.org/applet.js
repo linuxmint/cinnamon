@@ -1480,6 +1480,13 @@ MyApplet.prototype = {
 
     unregisterSystrayIcons: function() {
         Main.systrayManager.unregisterId(this.metadata.uuid);
+    },
+//
+//override getDisplayLayout to declare that this applet is suitable for both horizontal and
+// vertical orientations
+//
+    getDisplayLayout: function() {
+        return Applet.DisplayLayout.BOTH;
     }
 };
 

@@ -1251,6 +1251,14 @@ MyApplet.prototype = {
         this._updateIconAndLabel();
     },
 
+//
+//override getDisplayLayout to declare that this applet is suitable for both horizontal and
+// vertical orientations
+//
+    getDisplayLayout: function() {
+        return Applet.DisplayLayout.BOTH;
+    },
+
     on_applet_added_to_panel: function () {
         this.initial_load_done = true;
     },
