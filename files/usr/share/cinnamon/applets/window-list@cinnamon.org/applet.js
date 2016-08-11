@@ -70,6 +70,8 @@ const ICON_HEIGHT_FACTOR = .64;
 const MAX_TEXT_LENGTH = 1000;
 const FLASH_INTERVAL = 500;
 
+const ICONBOX_WIDTH = 250;
+
 const WINDOW_PREVIEW_WIDTH = 200;
 const WINDOW_PREVIEW_HEIGHT = 150;
 
@@ -551,10 +553,10 @@ AppMenuButton.prototype = {
 
         if (this._applet.buttonsUseEntireSpace) {
             let [lminSize, lnaturalSize] = this._label.get_preferred_width(forHeight);
-            alloc.natural_size = Math.max(150 * global.ui_scale,
+            alloc.natural_size = Math.max(ICONBOX_WIDTH * global.ui_scale,
                     lnaturalSize + naturalSize + 3 * 3 * global.ui_scale);
         } else {
-            alloc.natural_size = 150 * global.ui_scale;
+            alloc.natural_size = ICONBOX_WIDTH * global.ui_scale;
         }
     },
 
