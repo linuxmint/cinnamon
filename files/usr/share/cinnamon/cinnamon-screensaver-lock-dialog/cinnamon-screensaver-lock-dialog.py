@@ -3,8 +3,11 @@
 import os
 import subprocess
 import gettext
-from gi.repository import Gtk
 import pwd
+
+import gi
+gi.require_version("Gtk", "3.0")
+from gi.repository import Gtk
 
 # i18n
 gettext.install("cinnamon", "/usr/share/locale")

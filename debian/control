@@ -113,7 +113,13 @@ Priority: extra
 Architecture: any
 Depends: cinnamon (= ${binary:Version}),
          ${misc:Depends},
-         gnome-dbg
+         gnome-dbg,
+         nemo-dbg,
+         muffin-dbg,
+         libcvc-dbg,
+         libcinnamon-desktop-dbg,
+         libcinnamon-menu-3-0-dbg,
+         cinnamon-control-center-dbg
 Description: Debugging symbols for the Cinnamon desktop
  Cinnamon is a modern Linux desktop which provides advanced innovative
  features and a traditional user experience. It's easy to use, powerful

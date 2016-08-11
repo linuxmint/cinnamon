@@ -41,7 +41,6 @@ PanelAppLauncherMenu.prototype = {
         Applet.AppletPopupMenu.prototype._init.call(this, launcher, orientation);
 
         let appinfo = this._launcher.getAppInfo();
-        let targetMenu = this;
         
         this._actions = appinfo.list_actions();
         if (this._actions.length > 0) {
@@ -49,15 +48,20 @@ PanelAppLauncherMenu.prototype = {
                 let actionName = this._actions[i];
                 this.addAction(appinfo.get_action_name(actionName), Lang.bind(this, this._launchAction, actionName));
             }
-            let subMenu = new PopupMenu.PopupSubMenuMenuItem(_("More"));
-            targetMenu = subMenu.menu;
-            this.addMenuItem(subMenu);
+
+            this.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
         }
         
-        targetMenu.addAction(_("Launch"), Lang.bind(this, this._onLaunchActivate));
-        targetMenu.addAction(_("Add"), Lang.bind(this, this._onAddActivate));
-        targetMenu.addAction(_("Edit"), Lang.bind(this, this._onEditActivate));
-        targetMenu.addAction(_("Remove"), Lang.bind(this, this._onRemoveActivate));
+        this.addAction(_("Launch"), Lang.bind(this, this._onLaunchActivate));
+        this.addAction(_("Add"), Lang.bind(this, this._onAddActivate));
+        this.addAction(_("Edit"), Lang.bind(this, this._onEditActivate));
+        this.addAction(_("Remove"), Lang.bind(this, this._onRemoveActivate));
+
+        this.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
+
+        item = new PopupMenu.PopupIconMenuItem(_("Configure the panel launcher"), "system-run", St.IconType.SYMBOLIC);
+        item.connect('activate', Lang.bind(this._launcher._applet, this._launcher._applet.configureApplet));
+        this.addMenuItem(item);
     },
 
     _onLaunchActivate: function(event) {

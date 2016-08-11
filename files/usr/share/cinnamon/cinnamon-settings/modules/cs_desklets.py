@@ -1,8 +1,11 @@
 #!/usr/bin/env python2
 
-from ExtensionCore import ExtensionSidePage
+import gi
+gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk
-from SettingsWidgets import *
+
+from ExtensionCore import ExtensionSidePage
+from GSettingsWidgets import *
 
 class Module:
     comment = _("Manage your Cinnamon desklets")
@@ -20,6 +23,7 @@ class Module:
 
     def _setParentRef(self, window):
         self.sidePage.window = window
+
 
 class DeskletsViewSidePage (ExtensionSidePage):
     def __init__(self, name, icon, keywords, content_box, collection_type, module):

@@ -1,10 +1,15 @@
 #!/usr/bin/env python2
 
-from SettingsWidgets import *
 from gi.repository import Gio, Gtk, GObject, Gdk
-from KeybindingWidgets import CellRendererKeybinding
 import cgi
 import gettext
+
+import gi
+gi.require_version("Gtk", "3.0")
+from gi.repository import Gio, Gtk, GObject, Gdk
+
+from KeybindingWidgets import CellRendererKeybinding
+from GSettingsWidgets import *
 
 gettext.install("cinnamon", "/usr/share/locale")
 
@@ -182,8 +187,8 @@ KEYBINDINGS = [
     [_("Shuffle"), MEDIA_KEYS_SCHEMA, "audio-random", "media"],
     # Sound and Media Quiet
     [_("Volume mute (Quiet)"), MEDIA_KEYS_SCHEMA, "mute-quiet", "media-quiet"],    # Not sure this is even necessary
-    [_("Volume down (Quiet)"), MEDIA_KEYS_SCHEMA, "volume-down", "media-quiet"],
-    [_("Volume up (Quiet)"), MEDIA_KEYS_SCHEMA, "volume-up", "media-quiet"],
+    [_("Volume down (Quiet)"), MEDIA_KEYS_SCHEMA, "volume-down-quiet", "media-quiet"],
+    [_("Volume up (Quiet)"), MEDIA_KEYS_SCHEMA, "volume-up-quiet", "media-quiet"],
     # Universal Access
     [_("Zoom in"), CINNAMON_SCHEMA, "magnifier-zoom-in", "accessibility"],
     [_("Zoom out"), CINNAMON_SCHEMA, "magnifier-zoom-out", "accessibility"],

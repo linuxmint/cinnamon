@@ -1,12 +1,12 @@
 {
  "show-week-numbers" : {
-    "type" : "checkbox",
+    "type" : "switch",
     "default" : false,
     "description": "Show week numbers in calendar",
     "tooltip": "Check this to show week numbers in the calendar."
  }, 
  "use-custom-format" : {
-    "type" : "checkbox",
+    "type" : "switch",
     "default" : false,
     "description": "Use a custom date format",
     "tooltip": "Check this to define a custom format for the date in the calendar applet."
@@ -14,7 +14,7 @@
  "custom-format" : {
     "type" : "entry",
     "default" : "%A %B %e, %H:%M",
-    "description" : "Date format:",
+    "description" : "Date format",
     "indent": true,
     "dependency" : "use-custom-format",
     "tooltip" : "Set your custom format here."
