@@ -455,8 +455,8 @@ Applet.prototype = {
         let items = this._applet_context_menu._getMenuItems();
 
         if (this.context_menu_item_remove == null) {
-            this.context_menu_item_remove = new PopupMenu.PopupIconMenuItem(_("Remove '%s'").format(this._meta.name),
-                    "edit-delete",
+            this.context_menu_item_remove = new PopupMenu.PopupIconMenuItem(_("Remove '%s'").format(_(this._meta.name)),
+                   "edit-delete",
                    St.IconType.SYMBOLIC);
             this.context_menu_item_remove.connect('activate', Lang.bind(this, function() {
                 AppletManager._removeAppletFromPanel(this._uuid, this.instance_id);
