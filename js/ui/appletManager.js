@@ -167,7 +167,8 @@ function onEnabledAppletsChanged() {
         // Remove all applet instances that do not exist in the definition anymore.
         for (let applet_id in oldEnabledAppletDefinitions.idMap) {
             if(!enabledAppletDefinitions.idMap[applet_id]) {
-                removeAppletFromPanels(oldEnabledAppletDefinitions.idMap[applet_id]);
+                let removeConfig = Extension.get_max_instances(oldEnabledAppletDefinitions.idMap[applet_id].uuid, Extension.Type.APPLET) != 1
+                removeAppletFromPanels(oldEnabledAppletDefinitions.idMap[applet_id], removeConfig);
             }
         }
         
