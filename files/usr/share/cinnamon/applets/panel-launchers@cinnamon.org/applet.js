@@ -59,7 +59,7 @@ PanelAppLauncherMenu.prototype = {
 
         this.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
 
-        item = new PopupMenu.PopupIconMenuItem(_("Configure the panel launcher"), "system-run", St.IconType.SYMBOLIC);
+        let item = new PopupMenu.PopupIconMenuItem(_("Configure the panel launcher"), "system-run", St.IconType.SYMBOLIC);
         item.connect('activate', Lang.bind(this._launcher._applet, this._launcher._applet.configureApplet));
         this.addMenuItem(item);
     },
