@@ -1,4 +1,5 @@
 const Applet = imports.ui.applet;
+const St = imports.gi.St;
 const Settings = imports.ui.settings;
 
 function MyApplet(metadata, orientation, panelHeight, instance_id) {
@@ -14,15 +15,31 @@ MyApplet.prototype = {
         this.settings = new Settings.AppletSettings(this, "spacer@cinnamon.org", this.instance_id);
 
         this.settings.bindProperty(Settings.BindingDirection.IN,  // Setting type
-                                 "width",             // The setting key
-                                 "width",             // The property to manage (this.width)
-                                 this.width_changed,  // Callback when value changes
-                                 null);               // Optional callback data
-        this.width_changed();
+                                     "width",             // The setting key
+                                     "width",             // The property to manage (this.width)
+                                     this.width_changed,  // Callback when value changes
+                                     null);               // Optional callback data
+
+        this.panelheight = panelHeight;
+
+        this.on_orientation_changed(orientation);
         },
 
+    on_orientation_changed: function(neworientation) {
+
+        this.orientation = neworientation;
+        this.width_changed();
+    },
+
     width_changed: function() {
-        this.actor.width = this.width;
+
+	if (this.orientation == St.Side.TOP || this.orientation == St.Side.BOTTOM) {
+            this.actor.width = this.width;
+	}
+	else {		// vertical panel
+            this.actor.width = this.panelheight - 4;
+            this.actor.height = this.width;
+        }
     },
 
     on_applet_removed_from_panel: function() {

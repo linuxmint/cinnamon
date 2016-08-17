@@ -115,7 +115,7 @@ function getAppletDefinition(definition) {
         // Panel might not exist. Still keep definition for future use.
         let location;
         if (panel) {
-            orientation = panel.bottomPosition ? St.Side.BOTTOM : St.Side.TOP;
+            orientation = setOrientationForPanel(panel.panelPosition);
             location = getLocation(panel, elements[1]);
         }
         
@@ -134,6 +134,43 @@ function getAppletDefinition(definition) {
 
     global.logError("Bad applet definition: " + definition);
     return null;
+}
+
+function setOrientationForPanel(panelPos) {
+    let orientation;
+    switch (panelPos)
+    {
+        case 0:
+                orientation = St.Side.TOP;
+        break;
+        case 1:
+                orientation = St.Side.BOTTOM;
+        break;
+        case 2:
+                orientation = St.Side.LEFT;
+        break;
+        case 3:
+                orientation = St.Side.RIGHT;
+        break;
+    }
+
+    return orientation;
+}
+
+function setHeightForPanel(panelObj, panelPos) {
+    let height;
+    switch (panelPos)  // for vertical panels use the width instead of the height
+    {
+        case 0:
+        case 1:
+                height = panelObj.actor.get_height();
+        break;
+        case 2:
+        case 3:
+                height = panelObj.actor.get_width();
+        break;
+    }
+    return height;
 }
 
 function checkForUpgrade(newEnabledApplets) {
@@ -289,6 +326,8 @@ function addAppletToPanels(extension, appletDefinition) {
 
         applet.on_applet_added_to_panel_internal(appletsLoaded);
 
+        removeAppletFromInappropriatePanel (extension, applet, appletDefinition);
+
         return true;
     } catch(e) {
         extension.unlockRole();
@@ -296,6 +335,44 @@ function addAppletToPanels(extension, appletDefinition) {
         return false;
     }
 }
+
+function removeAppletFromInappropriatePanel (extension, applet, appletDefinition) {
+//
+//  We want to ensure that applets placed in a panel can be shown correctly
+//  - particularly because wide applets will not fit in a vertical panel unless
+//  they have logic to manage this explicitly
+//  If the applet is of type Icon Applet (and not a text icon applet) then should be fine otherwise
+//  we look to see if it has declared itself suitable via a getDisplayLayout call
+//
+//  If the applet turns out to be unsuitable then remove it.  The applet will show with a red
+//  indicator in the applet list
+//
+        if (applet instanceof Applet.IconApplet && !(applet instanceof Applet.TextIconApplet)) {
+            ;
+        }
+        else {
+            let displaylayout = applet.getDisplayLayout();
+
+            if ((appletDefinition.orientation == St.Side.LEFT || appletDefinition.orientation == St.Side.RIGHT)
+                &&
+                displaylayout == Applet.DisplayLayout.HORIZONTAL) {
+                    global.logError("applet "+appletDefinition.uuid+" not suitable for panel orientation "+appletDefinition.orientation);
+                    removeAppletFromPanels(extension._loadedDefinitions[appletDefinition.applet_id]);
+                    let dialog = new ModalDialog.NotifyDialog(_("This applet is not suitable for vertical panels") + "\n\n");
+                    dialog.open();
+            }
+            else if ((appletDefinition.orientation == St.Side.TOP || appletDefinition.orientation == St.Side.BOTTOM)
+                &&
+                displaylayout == Applet.DisplayLayout.VERTICAL) {
+                    global.logError("applet "+appletDefinition.uuid+" not suitable for panel orientation "+appletDefinition.orientation);
+                    removeAppletFromPanels(extension._loadedDefinitions[appletDefinition.applet_id]);
+                    let dialog = new ModalDialog.NotifyDialog(_("This applet is not suitable for horizontal panels") + "\n\n");
+                    dialog.open();
+            }
+        }
+}
+
+
 
 function get_role_provider(role) {
     if (Extension.Type.APPLET.roles[role]) {
@@ -313,14 +390,17 @@ function createApplet(extension, appletDefinition) {
 
     let applet_id = appletDefinition.applet_id;
     let orientation = appletDefinition.orientation;
-    let panel_height =  appletDefinition.panel.actor.get_height();
+    let panel_height;
+
+    panel_height = setHeightForPanel(appletDefinition.panel, appletDefinition.panel.panelPosition)
     
     if (appletObj[applet_id] != undefined) {
         global.log(applet_id + ' applet already loaded');
+        appletObj[applet_id].setOrientation(orientation);
         if (appletObj[applet_id]._panelHeight != panel_height) {
             appletObj[applet_id].setPanelHeight(panel_height);
         }
-        appletObj[applet_id].setOrientation(orientation);
+
         return appletObj[applet_id];
     }
     
@@ -414,7 +494,9 @@ function updateAppletPanelHeights(force_recalc) {
     for (let applet_id in enabledAppletDefinitions.idMap) {
         if (appletObj[applet_id]) {
             let appletDefinition = enabledAppletDefinitions.idMap[applet_id];
-            let newheight = appletDefinition.panel.actor.get_height();
+            let newheight;
+            newheight = setHeightForPanel(appletDefinition.panel, appletDefinition.panel.panelPosition);
+
             if (appletObj[applet_id]._panelHeight != newheight || force_recalc) {
                 appletObj[applet_id].setPanelHeight(newheight);
             }
@@ -448,7 +530,10 @@ function get_object_for_uuid (uuid, instanceId) {
  * Loads all applets on the panel if not loaded
  */
 function loadAppletsOnPanel(panel) {
-    let orientation = panel.bottomPosition ? St.Side.BOTTOM : St.Side.TOP;
+    let orientation;
+
+    orientation = setOrientationForPanel(panel.panelPosition);
+
     let definition;
 
     for (let applet_id in enabledAppletDefinitions.idMap){
@@ -473,8 +558,12 @@ function loadAppletsOnPanel(panel) {
  * Updates the definition, orientation and height of applets on the panel
  */
 function updateAppletsOnPanel (panel) {
-    let height = panel.actor.get_height();
-    let orientation = panel.bottomPosition ? St.Side.BOTTOM : St.Side.TOP;
+    let height;
+    let orientation;
+
+    orientation = setOrientationForPanel(panel.panelPosition);
+    height = setHeightForPanel(panel, panel.panelPosition);
+
     let definition;
 
     for (let applet_id in enabledAppletDefinitions.idMap){
@@ -485,11 +574,12 @@ function updateAppletsOnPanel (panel) {
 
             if (appletObj[applet_id]) {
                 try {
-                    appletObj[applet_id].setPanelHeight(height);
                     appletObj[applet_id].setOrientation(orientation);
+                    appletObj[applet_id].setPanelHeight(height);
                 } catch (e) {
                     global.logError("Error during setPanelHeight() and setOrientation() call on applet: " + definition.uuid + "/" + applet_id, e);
                 }
+                removeAppletFromInappropriatePanel (Extension.Type.APPLET.maps.objects[definition.uuid], appletObj[applet_id], definition);
             }
         }
     }
@@ -540,7 +630,7 @@ function pasteAppletConfiguration(panelId) {
     global.settings.set_strv("enabled-applets", raw);
 
     if (skipped) {
-        let dialog = new ModalDialog.NotifyDialog(_("Certain applets do not allow multiple instances and were not copied") + "\n\n");
+        let dialog = new ModalDialog.NotifyDialog(_("Certain applets do not allow multiple instances or were at their max number of instances so were not copied") + "\n\n");
         dialog.open();
     }
 }

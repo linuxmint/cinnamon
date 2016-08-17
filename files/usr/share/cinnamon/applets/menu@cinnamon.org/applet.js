@@ -1092,6 +1092,7 @@ MyApplet.prototype = {
         this.menuManager = new PopupMenu.PopupMenuManager(this);
         this.menu = new Applet.AppletPopupMenu(this, orientation);
         this.menuManager.addMenu(this.menu);
+        this.orientation = orientation;
 
         this.actor.connect('key-press-event', Lang.bind(this, this._onSourceKeyPress));
 
@@ -1236,6 +1237,7 @@ MyApplet.prototype = {
     },
 
     on_orientation_changed: function (orientation) {
+        this.orientation = orientation;
         this.menu.destroy();
         this.menu = new Applet.AppletPopupMenu(this, orientation);
         this.menuManager.addMenu(this.menu);
@@ -1246,6 +1248,15 @@ MyApplet.prototype = {
 
         if (this.initial_load_done)
             this._refreshAll();
+        this._updateIconAndLabel();
+    },
+
+//
+//override getDisplayLayout to declare that this applet is suitable for both horizontal and
+// vertical orientations
+//
+    getDisplayLayout: function() {
+        return Applet.DisplayLayout.BOTH;
     },
 
     on_applet_added_to_panel: function () {
@@ -1378,10 +1389,16 @@ MyApplet.prototype = {
             this._applet_icon_box.show();
         }
 
-        if (this.menuLabel != "")
-            this.set_applet_label(_(this.menuLabel));
-        else
+	    if (this.orientation == St.Side.LEFT || this.orientation == St.Side.RIGHT)  // no menu label if in a vertical panel
+	    {
             this.set_applet_label("");
+	    }
+        else {
+            if (this.menuLabel != "")
+                this.set_applet_label(_(this.menuLabel));
+            else
+                this.set_applet_label("");
+        }
     },
 
     _onMenuKeyPress: function(actor, event) {

@@ -248,44 +248,73 @@ StScrollBar StButton#vhandle:hover {
 .panel-dummy:entered {
     background-color: rgba(255, 35, 35, 0.4);
 }
-#panelLeft {
+.panelLeft {
 	spacing: 4px;
 }
-#panelCenter {
+.panelCenter {
 	spacing: 4px;
 }
-#panelLeft:dnd {
+.panelRight {
+	spacing: 4px;
+}
+.panelLeft:dnd {
 	background-gradient-direction: vertical;
 	background-gradient-start: rgba(255,0,0,0.05);
 	background-gradient-end: rgba(255,0,0,0.2);
 }
-#panelCenter:dnd {
+.panelCenter:dnd {
 	background-gradient-direction: vertical;
 	background-gradient-start: rgba(0,255,0,0.05);
 	background-gradient-end: rgba(0,255,0,0.2);
 }
-#panelRight:dnd {
+.panelRight:dnd {
 	background-gradient-direction: vertical;
 	background-gradient-start: rgba(0,0,255,0.05);
 	background-gradient-end: rgba(0,0,255,0.2);
 }
-#panelLeft:ltr {
+.panelLeft:ltr {
 	padding-right: 4px;
 }
-#panelLeft:rtl {
+.panelLeft:rtl {
 	padding-left: 4px;
 }
-#panelRight:ltr { 
+.panelRight:ltr {
 	padding-left: 0px;
 	spacing: 0px;
 }
-#panelRight:rtl {
+.panelRight:rtl {
 	padding-right: 0px;
 	spacing: 0px;
+}
+.panelLeft.vertical {
+        padding-left: 0px;
+        padding-right: 0px;
+	padding-top: 2px;
+	padding-bottom: 2px;
+}
+.panelRight.vertical {
+        padding-left: 0px;
+        padding-right: 0px;
+	padding-top: 2px;
+	padding-bottom: 2px;
+}
+.panelCenter.vertical {
+        padding-left: 0px;
+        padding-right: 0px;
+}
+.panelLeft.vertical:dnd {
+}
+.panelCenter.vertical:dnd {
+}
+.panelRight.vertical:dnd {
 }
 .panel-top {
 }
 .panel-bottom {
+}
+.panel-left {
+}
+.panel-right {
 }
 .panel-status-button {
 	border: 0px solid #8b8b8b;
@@ -1179,7 +1208,13 @@ StScrollBar StButton#vhandle:hover {
 .window-list-box {
 	spacing: 3px;
 	padding-left: 10px;
-	padding-top: 1px;
+	padding-top: 0px;
+}
+.window-list-box.vertical {
+	padding-left: 0px;
+        padding-right: 0px;
+	padding-top: 10px;
+        padding-bottom: 10px;
 }
 .window-list-item-label {
 	font-weight: bold;
@@ -1343,6 +1378,12 @@ StScrollBar StButton#vhandle:hover {
 #panel-launchers-box {
 	padding-left: 7px;
 }
+#panel-launchers-box.vertical {
+	padding-top: 2px;
+	padding-bottom: 2px;
+	padding-left:0px;
+	padding-right: 0px;
+}
 .panel-launcher {
 	margin: 1px;
 	padding: 1px;
@@ -1416,7 +1457,10 @@ StScrollBar StButton#vhandle:hover {
 	width: 2px;
 	background: rgba(255,255,255,.5);
 }
-
+.applet-separator-line-vertical {
+	border: 0px solid rgba(255,255,255,0.5);
+		border-bottom-width: 2px;
+}
 .applet-box {
 	padding-left: 3px;
 	padding-right: 3px;
@@ -1426,6 +1470,14 @@ StScrollBar StButton#vhandle:hover {
 }
 .applet-box:hover {
 	color: #fff;
+}
+.applet-box.vertical {
+	padding-left: 0px;
+	padding-right: 0px;
+	padding-top: 3px;
+	padding-bottom: 3px;
+}
+.applet-box.vertical:hover {
 }
 .applet-box:highlight {
     background-color: #aa5555;
@@ -1438,6 +1490,8 @@ StScrollBar StButton#vhandle:hover {
 	color: #fff;
 	text-shadow: white 0px 0px 5px;
 }
+.applet-box.vertical:hover > .applet-label {
+}
 .applet-icon {
 	color: #ccc;
 	icon-size: 22px;
@@ -1446,7 +1500,8 @@ StScrollBar StButton#vhandle:hover {
 	color: #fff;
 	icon-shadow: white 0px 0px 3px;
 }
-
+.applet-box.vertical:hover .applet-icon {
+}
 /* ===================================================================
  * Desklets (desklet.js) 
  * ===================================================================*/

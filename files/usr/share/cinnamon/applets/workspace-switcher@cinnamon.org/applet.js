@@ -63,13 +63,20 @@ WorkspaceGraph.prototype = {
                                   style_class: 'workspace',
                                   y_fill: true,
                                   important: true });
+
         this.graphArea = new St.DrawingArea({ style_class: 'windows', important: true });
         this.actor.child = this.graphArea;
         this.panelApplet = applet;
         this.workspace_size = new Meta.Rectangle();
         this.workspace.get_work_area_all_monitors(this.workspace_size);
         this.sizeRatio = this.workspace_size.width / this.workspace_size.height;
-        let height = applet._panelHeight - 6;
+        let height = applet._panelHeight - 6;;
+
+	if (applet.orientation == St.Side.LEFT || applet.orientation == St.Side.RIGHT)
+	{
+            height = height / this.sizeRatio;
+	}
+
         this.actor.set_size(this.sizeRatio * height, height);
         this.graphArea.set_size(this.sizeRatio * height, height);
         this.graphArea.connect('repaint', Lang.bind(this, this.onRepaint));
@@ -79,12 +86,12 @@ WorkspaceGraph.prototype = {
     },
 
     scale: function (windows_rect, workspace_rect, area_width, area_height) {
-        let scaled_rect = new Meta.Rectangle();
-        let x_ratio = area_width / workspace_rect.width;
-        let y_ratio = area_height / workspace_rect.height;
-        scaled_rect.x = windows_rect.x * x_ratio;
-        scaled_rect.y =windows_rect.y * y_ratio;
-        scaled_rect.width = windows_rect.width * x_ratio;
+        let scaled_rect    = new Meta.Rectangle();
+        let x_ratio        = area_width / workspace_rect.width;
+        let y_ratio        = area_height / workspace_rect.height;
+        scaled_rect.x      = windows_rect.x * x_ratio;
+        scaled_rect.y      = windows_rect.y * y_ratio;
+        scaled_rect.width  = windows_rect.width * x_ratio;
         scaled_rect.height = windows_rect.height * y_ratio;
         return scaled_rect;
     },
@@ -97,10 +104,11 @@ WorkspaceGraph.prototype = {
 
     onRepaint: function(area) {
         try {
-            let graphThemeNode = this.graphArea.get_theme_node();
+            let graphThemeNode     = this.graphArea.get_theme_node();
             let workspaceThemeNode = this.panelApplet.actor.get_theme_node();
-            let height = this.panelApplet._panelHeight - workspaceThemeNode.get_vertical_padding();
-            let borderWidth = workspaceThemeNode.get_border_width(St.Side.TOP) + workspaceThemeNode.get_border_width(St.Side.BOTTOM);
+            let height             = this.panelApplet._panelHeight - workspaceThemeNode.get_vertical_padding();
+            let borderWidth        = workspaceThemeNode.get_border_width(St.Side.TOP) + workspaceThemeNode.get_border_width(St.Side.BOTTOM);
+
             this.graphArea.set_size(this.sizeRatio * height, height - borderWidth);
             let cr = area.get_context();
             let [area_width, area_height] = area.get_surface_size();
@@ -123,7 +131,7 @@ WorkspaceGraph.prototype = {
                 let windowBackgroundColor;
                 let windowBorderColor;
                 for (let i = 0; i < windows.length; ++i) {
-                    let metaWindow = windows[i];
+                    let metaWindow  = windows[i];
                     let scaled_rect = this.scale(metaWindow.get_outer_rect(), this.workspace_size, area_width, area_height);
 
                     cr.setLineWidth(1);
@@ -151,7 +159,6 @@ WorkspaceGraph.prototype = {
             }
 
             cr.$dispose();
-
         }
         catch(e)
         {
@@ -172,15 +179,25 @@ SimpleButton.prototype = {
     __proto__: WorkspaceButton.prototype,
     _init : function(index, applet) {
         WorkspaceButton.prototype._init.call(this, index, applet);
-        this.actor = new St.Button({ name: 'workspaceButton', style_class: 'workspace-button', reactive: true });
+
+        this.actor = new St.Button({ name: 'workspaceButton',
+                                     style_class: 'workspace-button',
+                                     reactive: true });
+
         if ( index == global.screen.get_active_workspace_index() ) {
             this.actor.add_style_pseudo_class('outlined');
         }
+
+        if (applet._scaleMode) {
+            if (applet.orientation == St.Side.TOP || applet.orientation == St.Side.BOTTOM) {
+                this.actor.set_height(applet._panelHeight);
+            } else {
+                this.actor.set_height(0.6*applet._panelHeight);  // factors are completely empirical
+                this.actor.set_width(0.9*applet._panelHeight);
+            }
+        }
         let label = new St.Label({ text: (index + 1).toString() });
         this.actor.set_child(label);
-        if (applet._scaleMode) {
-            this.actor.set_height(applet._panelHeight);
-        }
     },
 
     update: function() {
@@ -203,6 +220,22 @@ MyApplet.prototype = {
             this.panel_height = panel_height;
             this.signals = new SignalManager.SignalManager(this);
             this.buttons = [];
+
+            let manager;
+            if (this.orientation == St.Side.TOP || this.orientation == St.Side.BOTTOM) {
+                manager = new Clutter.BoxLayout( { spacing: 2 * global.ui_scale,
+		                                   homogeneous: true,
+		                                   orientation: Clutter.Orientation.HORIZONTAL });
+            }
+	    else {
+                manager = new Clutter.BoxLayout( { spacing: 2 * global.ui_scale,
+		                                   homogeneous: true,
+		                                   orientation: Clutter.Orientation.VERTICAL });
+            }
+            this.manager = manager;
+            this.manager_container = new Clutter.Actor( { layout_manager: manager } );
+            this.actor.add_actor (this.manager_container);
+            this.manager_container.show();
 
             this.settings = new Settings.AppletSettings(this, metadata.uuid, instance_id);
             this.settings.bindProperty(Settings.BindingDirection.IN, "display_type", "display_type", Lang.bind(this, this._createButtons), null);
@@ -271,6 +304,25 @@ MyApplet.prototype = {
         }
     },
 
+//
+//override getDisplayLayout to declare that this applet is suitable for both horizontal and
+// vertical orientations
+//
+    getDisplayLayout: function() {
+        return Applet.DisplayLayout.BOTH;
+    },
+
+    on_orientation_changed: function(neworientation) {
+        this.orientation = neworientation;
+
+        if (this.orientation == St.Side.TOP || this.orientation == St.Side.BOTTOM)
+            this.manager.set_vertical(false);
+        else
+            this.manager.set_vertical(true);
+
+        this._createButtons();
+    },
+
     on_panel_height_changed: function() {
         this._createButtons();
     },
@@ -294,19 +346,21 @@ MyApplet.prototype = {
             this.buttons[i].destroy();
         }
 
+        if (this.display_type == "visual")
+            this.actor.set_style_class_name('workspace-graph');
+        else
+            this.actor.set_style_class_name('workspace-switcher');
+
+        this.actor.set_important(true);
+
         this.buttons = [];
         for (let i = 0; i < global.screen.n_workspaces; ++i) {
-            if (this.display_type == "visual") {
-                this.actor.set_style_class_name('workspace-graph');
-                this.actor.set_important(true);
+            if (this.display_type == "visual")
                 this.buttons[i] = new WorkspaceGraph(i, this);
-            }
-            else {
-                this.actor.set_style_class_name('workspace-switcher');
-                this.actor.set_important(true);
+            else
                 this.buttons[i] = new SimpleButton(i, this);
-            }
-            this.actor.add_actor(this.buttons[i].actor);
+
+            this.manager_container.add_actor(this.buttons[i].actor);
             this.buttons[i].show();
         }
 

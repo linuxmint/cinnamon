@@ -772,7 +772,13 @@ function IconActor() {
 IconActor.prototype = {
 
     _init: function(indicator, size) {
-        this.actor = new St.BoxLayout({ style_class: 'applet-box', reactive: true, track_hover: true });
+        this.actor = new St.BoxLayout({ style_class: 'applet-box',
+                                        reactive: true,
+            // The systray uses a layout manager, we need to fill the space of the actor
+            // or otherwise the menu will be displayed inside the panel.
+                                        x_expand: true,
+                                        y_expand: true,
+                                        track_hover: true });
         this.actor._delegate = this;
         this._menu = null;
         this.menuSignal = 0;
@@ -786,8 +792,6 @@ IconActor.prototype = {
 
         this.actor.add_actor(this._mainIcon);
         this.actor.add_actor(this._overlayIcon);
-
-
 
         this._signalManager = new SignalManager.SignalManager(this);
         this._signalManager.connect(this.actor, 'scroll-event', this._handleScrollEvent);

@@ -242,6 +242,14 @@ MyApplet.prototype = {
         this._display();
     },
 
+//
+//override getDisplayLayout to declare that this applet is suitable for both horizontal and
+// vertical orientations
+//
+    getDisplayLayout: function() {
+        return Applet.DisplayLayout.BOTH;
+    },
+
     on_applet_clicked: function(event) {
         this._update_timestamp();
         this.menu.toggle();
