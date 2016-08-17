@@ -243,13 +243,13 @@ class Module:
             widget = GSettingsComboBox(_("Background gradient"), "org.cinnamon.desktop.background", "color-shading-type", BACKGROUND_COLOR_SHADING_TYPES, size_group=size_group)
             settings.add_reveal_row(widget, "org.cinnamon.desktop.background", "picture-options", PICTURE_OPTIONS_NEEDS_COLOR)
 
-            widget = GSettingsColorChooser(_("Gradient start color"), "org.cinnamon.desktop.background", "primary-color", size_group=size_group)
+            widget = GSettingsColorChooser(_("Gradient start color"), "org.cinnamon.desktop.background", "primary-color", legacy_string=True, size_group=size_group)
             settings.add_reveal_row(widget, "org.cinnamon.desktop.background", "picture-options", PICTURE_OPTIONS_NEEDS_COLOR)
 
             self._background_schema.connect("changed::picture-options", self.update_secondary_revealer)
             self._background_schema.connect("changed::color-shading-type", self.update_secondary_revealer)
 
-            widget = GSettingsColorChooser(_("Gradient end color"), "org.cinnamon.desktop.background", "secondary-color", size_group=size_group)
+            widget = GSettingsColorChooser(_("Gradient end color"), "org.cinnamon.desktop.background", "secondary-color", legacy_string=True, size_group=size_group)
             self.secondary_color_revealer = settings.add_reveal_row(widget)
 
             self.update_secondary_revealer(self._background_schema, None)
