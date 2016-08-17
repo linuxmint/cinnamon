@@ -925,15 +925,19 @@ class ComboBox(SettingsWidget):
 class ColorChooser(SettingsWidget):
     bind_dir = None
 
-    def __init__(self, label, size_group=None, dep_key=None, tooltip=""):
+    def __init__(self, label, legacy_string=False, size_group=None, dep_key=None, tooltip=""):
         super(ColorChooser, self).__init__(dep_key=dep_key)
+        # note: Gdk.Color is deprecated in favor of Gdk.RGBA, but as the hex format is still used
+        # in some places (most notably the desktop background handling in cinnamon-desktop) we
+        # still support it for now by adding the legacy_string argument
+        self.legacy_string = legacy_string
 
         self.label = Gtk.Label(label)
         self.content_widget = Gtk.ColorButton()
         self.pack_start(self.label, False, False, 0)
         self.pack_end(self.content_widget, False, False, 0)
 
-        self.content_widget.connect('color-activated', self.on_my_value_changed)
+        self.content_widget.connect('color-set', self.on_my_value_changed)
 
         self.set_tooltip_text(tooltip)
 
@@ -941,11 +945,17 @@ class ColorChooser(SettingsWidget):
             self.add_to_size_group(size_group)
 
     def on_setting_changed(self, *args):
-        color = self.get_value()
-        self.content_widget.get_rgba().parse(color)
+        color_string = self.get_value()
+        rgba = Gdk.RGBA()
+        rgba.parse(color_string)
+        self.content_widget.set_rgba(rgba)
 
     def on_my_value_changed(self, widget):
-        self.set_value(self.content_widget.get_rgba().to_string())
+        if self.legacy_string:
+            color_string = self.content_widget.get_color().to_string()
+        else:
+            color_string = self.content_widget.get_rgba().to_string()
+        self.set_value(color_string)
 
 class FileChooser(SettingsWidget):
     bind_dir = None
