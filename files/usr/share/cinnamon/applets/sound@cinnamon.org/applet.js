@@ -1203,7 +1203,7 @@ MyApplet.prototype = {
 
             // Add the player to the list of active players in GUI
             let item = new PopupMenu.PopupMenuItem(player._getName());
-            item.activate = Lang.bind(this, function() { this._switchPlayer(owner); });
+            item.activate = Lang.bind(this, function() { this._switchPlayer(player._owner); });
             this._chooseActivePlayerItem.menu.addMenuItem(item);
 
             this._players[owner] = player;
@@ -1216,22 +1216,33 @@ MyApplet.prototype = {
     },
 
     _switchPlayer: function(owner) {
-        this._changeActivePlayer(owner);
-        this._updatePlayerMenuItems();
-        this.setAppletTextIcon();
+        if(this._players[owner]) {
+            // The player exists, switch to it
+            this._changeActivePlayer(owner);
+            this._updatePlayerMenuItems();
+            this.setAppletTextIcon();
+        } else {
+            // The player doesn't seem to exist. Remove it from the players list
+            this._removePlayerItem(owner);
+            this._updatePlayerMenuItems();
+        }
+    },
+
+    _removePlayerItem: function(owner) {
+        // Remove the player from the player switching list
+        for(let i = 0, l = this._playerItems.length; i < l; ++i) {
+            let playerItem = this._playerItems[i];
+            if(playerItem.player._owner === owner) {
+                playerItem.item.destroy();
+                this._playerItems.splice(i, 1);
+                break;
+            }
+        }
     },
 
     _removePlayer: function(busName, owner) {
         if (this._players[owner] && this._players[owner]._busName == busName) {
-            // Remove the player from the player switching list
-            for(let i = 0, l = this._playerItems.length; i < l; ++i) {
-                let playerItem = this._playerItems[i];
-                if(playerItem.player._owner === owner) {
-                    playerItem.item.destroy();
-                    this._playerItems.splice(i, 1);
-                    break;
-                }
-            }
+            this._removePlayerItem(owner);
 
             this._players[owner].destroy();
             delete this._players[owner];
