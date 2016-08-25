@@ -10,7 +10,7 @@
         "page2": {
             "type": "page",
             "title": "Choosers",
-            "sections": ["section3", "section4"]
+            "sections": ["section3", "section4", "section6"]
         },
         "page3": {
             "type": "page",
@@ -25,7 +25,7 @@
         "section3": {
             "type": "section",
             "title": "File choosers",
-            "keys": ["file-select", "directory-select", "sound-select", "font-select"]
+            "keys": ["file-select", "directory-select", "sound-select"]
         },
         "section2": {
             "type": "section",
@@ -41,6 +41,11 @@
             "type": "section",
             "title": "Command settings",
             "keys": ["signal-test", "keybinding-test", "demo-button", "long-text"]
+        },
+        "section6": {
+            "type": "section",
+            "title": "Other choosers",
+            "keys": ["font-select", "date-select"]
         }
     },
     "icon-name": {
@@ -156,5 +161,14 @@
         "default" : "",
         "tooltip" : "This setting type is useful for multi-line lists, and text that is too long to fit in an entry widget.\nYou can manually set the height of the text view with the 'height' property. This one is set to 150. Defaulty is 200.",
         "height" : 150
+    },
+    "date-select" : {
+        "type" : "datechooser",
+        "description" : "Choose a Date",
+        "default" : {
+            "d" : 1,
+            "m" : 1,
+            "y" : 2000
+        }
     }
 }
