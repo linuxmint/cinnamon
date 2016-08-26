@@ -992,24 +992,30 @@ class SoundFileChooser(SettingsWidget):
         super(SoundFileChooser, self).__init__(dep_key=dep_key)
 
         self.label = Gtk.Label(label)
-
-        self.content_widget = Gtk.ButtonBox(Gtk.Orientation.HORIZONTAL)
+        self.content_widget = Gtk.Box()
 
         c = self.content_widget.get_style_context()
         c.add_class(Gtk.STYLE_CLASS_LINKED)
 
+        self.file_picker_button = Gtk.Button()
+        self.file_picker_button.connect("clicked", self.on_picker_clicked)
+
+        button_content = Gtk.Box(spacing=5)
+        self.file_picker_button.add(button_content)
+
+        self.button_label = Gtk.Label()
+        button_content.pack_start(Gtk.Image(icon_name="sound"), False, False, 0)
+        button_content.pack_start(self.button_label, False, False, 0)
+
+        self.content_widget.pack_start(self.file_picker_button, True, True, 0)
+
         self.pack_start(self.label, False, False, 0)
         self.pack_end(self.content_widget, False, False, 0)
-
-        self.file_picker = Gtk.Button()
-        self.file_picker.connect("clicked", self.on_picker_clicked)
-
-        self.content_widget.add(self.file_picker)
 
         self.play_button = Gtk.Button()
         self.play_button.set_image(Gtk.Image.new_from_stock("gtk-media-play", Gtk.IconSize.BUTTON))
         self.play_button.connect("clicked", self.on_play_clicked)
-        self.content_widget.add(self.play_button)
+        self.content_widget.pack_start(self.play_button, False, False, 0)
 
         self._proxy = None
 
@@ -1038,6 +1044,7 @@ class SoundFileChooser(SettingsWidget):
     def on_picker_clicked(self, widget):
         dialog = Gtk.FileChooserDialog(title=self.label.get_text(),
                                        action=Gtk.FileChooserAction.OPEN,
+                                       transient_for=self.get_toplevel(),
                                        buttons=(_("_Cancel"), Gtk.ResponseType.CANCEL,
                                                 _("_Open"), Gtk.ResponseType.ACCEPT))
 
@@ -1059,7 +1066,7 @@ class SoundFileChooser(SettingsWidget):
     def update_button_label(self, absolute_path):
         f = Gio.File.new_for_path(absolute_path)
 
-        self.file_picker.set_label(f.get_basename())
+        self.button_label.set_label(f.get_basename())
 
     def on_setting_changed(self, *args):
         self.update_button_label(self.get_value())
