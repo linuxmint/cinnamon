@@ -418,7 +418,7 @@ XletSettingsBase.prototype = {
 
         let changed = false;
         for (let key in this.settingsData) {
-            if (!this.settingsData[key].value) continue;
+            if (this.settingsData[key].value === undefined) continue;
 
             let oldValue = oldSettings[key].value;
             let value = this.settingsData[key].value;
