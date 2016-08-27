@@ -234,7 +234,7 @@ MyApplet.prototype = {
             this.manager_container.show();
 
             this.settings = new Settings.AppletSettings(this, metadata.uuid, instance_id);
-            this.settings.bindProperty(Settings.BindingDirection.IN, "display_type", "display_type", Lang.bind(this, this._createButtons), null);
+            this.settings.bind("display_type", "display_type", this._createButtons);
 
             this.actor.connect('scroll-event', this.hook.bind(this));
 

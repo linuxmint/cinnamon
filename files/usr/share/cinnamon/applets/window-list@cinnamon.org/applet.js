@@ -949,32 +949,12 @@ MyApplet.prototype = {
 
         this.settings = new Settings.AppletSettings(this, "window-list@cinnamon.org", this.instance_id);
 
-        this.settings.bindProperty(Settings.BindingDirection.IN,
-                "enable-alerts",
-                "enableAlerts",
-                this._updateAttentionGrabber,
-                null);
-        this.settings.bindProperty(Settings.BindingDirection.IN,
-                "enable-scrolling",
-                "scrollable",
-                this._onEnableScrollChanged,
-                null);
-        this.settings.bindProperty(Settings.BindingDirection.IN,
-                "reverse-scrolling",
-                "reverseScroll",
-                null, null);
-        this.settings.bindProperty(Settings.BindingDirection.IN,
-                "middle-click-close",
-                "middleClickClose",
-                null, null);
-        this.settings.bindProperty(Settings.BindingDirection.IN,
-                "buttons-use-entire-space",
-                "buttonsUseEntireSpace",
-                this._refreshItems, null);
-        this.settings.bindProperty(Settings.BindingDirection.IN,
-                "window-preview",
-                "usePreview",
-                this._onPreviewChanged, null);
+        this.settings.bind("enable-alerts", "enableAlerts", this._updateAttentionGrabber);
+        this.settings.bind("enable-scrolling", "scrollable", this._onEnableScrollChanged);
+        this.settings.bind("reverse-scrolling", "reverseScroll");
+        this.settings.bind("middle-click-close", "middleClickClose");
+        this.settings.bind("buttons-use-entire-space", "buttonsUseEntireSpace", this._refreshItems);
+        this.settings.bind("window-preview", "usePreview", this._onPreviewChanged);
 
         this.signals = new SignalManager.SignalManager(this);
 

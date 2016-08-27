@@ -23,14 +23,10 @@ MyDesklet.prototype = {
         this.clock = new CinnamonDesktop.WallClock();
 
         this.settings = new Settings.DeskletSettings(this, this.metadata["uuid"], desklet_id);
-
-        this.settings.bindProperty(Settings.BindingDirection.IN, "date-format", "format", function() {}, null);
-
-        this.settings.bindProperty(Settings.BindingDirection.IN, "font-size", "size", this._onSettingsChanged, null);
-        
-        this.settings.bindProperty(Settings.BindingDirection.IN, "text-color", "color", this._onSettingsChanged, null);
-        
-        this.settings.bindProperty(Settings.BindingDirection.IN, "use-custom-format", "use_custom_format", this._onSettingsChanged, null);
+        this.settings.bind("date-format", "format");
+        this.settings.bind("font-size", "size", this._onSettingsChanged);
+        this.settings.bind("text-color", "color", this._onSettingsChanged);
+        this.settings.bind("use-custom-format", "use_custom_format", this._onSettingsChanged);
         
         this._menu.addSettingsAction(_("Date and Time Settings"), "calendar")
 

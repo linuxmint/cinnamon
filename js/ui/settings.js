@@ -27,6 +27,9 @@ const Mainloop = imports.mainloop;
  * @BIDIRECTIONAL: Combines the effects of `IN` and `OUT`.
  *
  * The direction of binding settings
+ *
+ * Deprecated since 3.2: Binding direction is no longer meaningful. Please do not
+ * use in new code.
  */
 const BindingDirection = {
     IN : 1,
@@ -214,6 +217,10 @@ function options_not_supported_error(key_name, uuid, type) {
     global.logError("Invalid request for key '" + key_name + "' of applet/desklet uuid '" + uuid + "': type '" + type + "' doesn't support options");
 }
 
+function binding_not_found_error(key_name, uuid) {
+    global.logError("could not unbind " + key_name + " for " + uuid + ": the binding does not exist");
+}
+
 function has_required_fields(props, key) {
     let type = props.type;
     let typeDef;
@@ -262,19 +269,22 @@ XletSettingsBase.prototype = {
     },
 
     /**
-     * bindProperty:
-     * @direction (Settings.BindingDirection): the direction of the binding
+     * bindWithObject:
+     * @bindObject (object): (optional) the object to which the setting will be bound
+     * or null to use the bindObject passed to %_init
      * @key (string): the id of the setting
      * @applet_prop (string): the variable name that is used to hold the
      * setting (eg. `this.value` passes as `"value`")
      * @callback (function): (optional) the function to call when the setting changes
      * @user_data: (optional) any extra data/object you wish to pass to the callback
      *
-     * Bind a setting to a property on the object @bindObject passed to %_init
+     * Like bind this allows you to bind a setting to a property on an object. But unlike
+     * %bind, this function allows you to specify the bindObject to which the property will
+     * be bound.
      *
      * Returns (boolean): Whether the bind was successful
      */
-    bindProperty: function(direction, key, applet_prop, callback, user_data) {
+    bindWithObject: function(bindObject, key, applet_prop, callback, user_data) {
         if (!this.isReady) {
             settings_not_initialized_error(this.uuid);
             return false;
@@ -288,8 +298,8 @@ XletSettingsBase.prototype = {
             return false;
         }
 
-        let info = {direction: direction, propertyName: applet_prop, data: user_data};
-        if (callback && direction != BindingDirection.OUT) info.callback = Lang.bind(this.bindObject, callback, user_data);
+        let info = {propertyName: applet_prop, data: user_data, bindObject: bindObject};
+        if (callback) info.callback = Lang.bind(bindObject, callback, user_data);
 
         let propDef = {
             get: Lang.bind(this, this._getValue, key),
@@ -297,9 +307,10 @@ XletSettingsBase.prototype = {
             enumerable: true,
             configurable: true
         }
-        Object.defineProperty(this.bindObject, applet_prop, propDef);
+        Object.defineProperty(bindObject, applet_prop, propDef);
 
-        this.bindings[key] = info;
+        if ( !this.bindings[key] ) this.bindings[key] = [];
+        this.bindings[key].push(info);
 
         // add a save function for objects or arrays
         if (typeof(this.settingsData[key].value) === "object" && !this.settingsData[key].value.save) {
@@ -310,20 +321,124 @@ XletSettingsBase.prototype = {
     },
 
     /**
+     * bind:
+     * @key (string): the id of the setting
+     * @applet_prop (string): the variable name that is used to hold the
+     * setting (eg. `this.value` passes as `"value`")
+     * @callback (function): (optional) the function to call when the setting changes
+     * @user_data: (optional) any extra data/object you wish to pass to the callback
+     *
+     * Bind a setting to a property on the @bindObject passed to %_init.
+     *
+     * Returns (boolean): Whether the bind was successful
+     */
+    bind: function(key, applet_prop, callback, user_data) {
+        return this.bindWithObject(this.bindObject, key, applet_prop, callback, user_data)
+    },
+
+    /**
+     * bindProperty:
+     * @direction (Settings.BindingDirection): the direction of the binding
+     * @key (string): the id of the setting
+     * @applet_prop (string): the variable name that is used to hold the
+     * setting (eg. `this.value` passes as `"value`")
+     * @callback (function): (optional) the function to call when the setting changes
+     * @user_data: (optional) any extra data/object you wish to pass to the callback
+     *
+     * Bind a setting to a property on the object @bindObject passed to %_init. This
+     * function is deprecaed and is now only a wrapper around %bind for backward
+     * compatibility. Please use %bind instead.
+     *
+     * Returns (boolean): Whether the bind was successful
+     */
+    bindProperty: function(direction, key, applet_prop, callback, user_data) {
+        return this.bind(key, applet_prop, callback, user_data);
+    },
+
+    /**
+     * unbindWithObject:
+     * @bindObject (object): (optional) the object from which the setting will be unbound
+     * @key (string): the previously bound key to remove
+     *
+     * Removes the binding on an object. If you have bound @key to multiple objects, this will
+     * only remove the one bound to @bindObject. If you wish to remove all bindings, or you used
+     * %bind or %bindProperty to bind the setting, it is recommended that you use %unbindPropery
+     * instead.
+     *
+     * Returns (boolean): Whether the unbind was successful.
+     */
+    unbindWithObject: function(bindObject, key) {
+        if ((key in this.bindings)) {
+            for (let i in this.bindings[key]) {
+                let info = this.bindings[key][i];
+                if (info.bindObject != bindObject) continue;
+                delete bindObject[info.propertyName];
+                this.bindings[key].splice(i, 1);
+                return true;
+            }
+        }
+
+        binding_not_found_error(key, this.uuid);
+        return false;
+    },
+
+    /**
+     * unbind:
+     * @key (string): the previously bound key to remove
+     *
+     * Removes the binding on an object that was bound using the %bind function. If you have bound
+     * @key to multiple objects using %bindWithObject, you should use %unbindWithObject or %unbindAll
+     * instead.
+     *
+     * Returns (boolean): Whether the unbind was successful.
+     */
+    unbind: function(key) {
+        if ((key in this.bindings)) {
+            for (let i in this.bindings[key]) {
+                let info = this.bindings[key][i];
+                if (info.bindObject != this.bindObject) continue;
+                delete this.bindObject[info.propertyName];
+                this.bindings[key].splice(i, 1);
+                return true;
+            }
+        }
+
+        binding_not_found_error(key, this.uuid);
+        return false;
+    },
+
+    /**
      * unbindProperty:
      * @key (string): the previously bound key to remove
      *
-     * Removes the binding of a key that was bound using %bindProperty.
+     * Removes the binding of a key that was bound using %bind, or %bindProperty. This
+     * function is deprecaed and is now only a wrapper around %unbind for backward
+     * compatibility. Please use %unbind instead.
      *
      * Returns (boolean): Whether the unbind was successful.
      */
     unbindProperty: function (key) {
+        this.unbind(key);
+    },
+
+    /**
+     * unbindAll:
+     * @key (string): the previously bound key to remove
+     *
+     * Removes all bindings of a key that were bound using %bind, %bindWithObject, or %bindProperty.
+     *
+     * Returns (boolean): Whether the unbind was successful.
+     */
+    unbindAll: function (key) {
         if (!(key in this.bindings)) {
-            global.logError("could not unbind " + key + " for " + this.uuid + ": the key binding did not exist");
+            binding_not_found_error(key, this.uuid);
             return false;
         }
 
-        delete this.bindObject[this.bindings[key].propertyName];
+        for (let info of this.bindings[key]) {
+            let bindObject = (info.bindObject) ? info.bindObject : this.bindObject;
+            delete bindObject[info.propertyName];
+        }
         delete this.bindings[key];
         return true;
     },
@@ -429,13 +544,15 @@ XletSettingsBase.prototype = {
             this.settingsData[key].value = value;
 
             changed = true;
-            let info = this.bindings[key];
-            if (info && info.direction != BindingDirection.OUT && info.callback) {
-                // if the property had a save function, it is gone now and we need to re-add it
-                if (info.isObject && !this.settingsData[key].value.save) {
-                    this.settingsData[key].value.save = Lang.bind(this, this._saveToFile);
+            if (key in this.bindings) {
+                for (let info of this.bindings[key]) {
+                    // if the property had a save function, it is gone now and we need to re-add it
+                    if (info.isObject && !this.settingsData[key].value.save) {
+                        this.settingsData[key].value.save = Lang.bind(this, this._saveToFile);
+                    }
+
+                    if (info.callback) info.callback(value);
                 }
-                info.callback(value);
             }
 
             /**
@@ -609,7 +726,7 @@ XletSettingsBase.prototype = {
     finalize: function() {
         Main.settingsManager.unregister(this.uuid, this.instanceId);
         for (let key in this.bindings) {
-            this.unbindProperty(key);
+            this.unbindAll(key);
         }
         this.disconnectAll();
     }

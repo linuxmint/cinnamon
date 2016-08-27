@@ -89,8 +89,8 @@ MyApplet.prototype = {
             // Track changes to clock settings
             this._dateFormatFull = _("%A %B %e, %Y");
 
-            this.settings.bindProperty(Settings.BindingDirection.IN, "use-custom-format", "use_custom_format", this.on_settings_changed, null);
-            this.settings.bindProperty(Settings.BindingDirection.IN, "custom-format", "custom_format", this.on_settings_changed, null);        
+            this.settings.bind("use-custom-format", "use_custom_format", this.on_settings_changed);
+            this.settings.bind("custom-format", "custom_format", this.on_settings_changed);
 
             // Track changes to date&time settings
             this.datetime_settings = new Gio.Settings({ schema_id: "org.cinnamon.desktop.interface" });

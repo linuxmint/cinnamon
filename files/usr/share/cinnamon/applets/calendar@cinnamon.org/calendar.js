@@ -151,10 +151,9 @@ Calendar.prototype = {
         this._digitWidth = NaN;
         this.settings = settings;
 
-        this.settings.connect("changed::show-week-numbers", Lang.bind(this, this._onSettingsChange));
+        this.settings.bindWithObject(this, "show-week-numbers", "show_week_numbers", this._onSettingsChange);
         this.desktop_settings = new Gio.Settings({ schema_id: DESKTOP_SCHEMA });
         this.desktop_settings.connect("changed::" + FIRST_WEEKDAY_KEY, Lang.bind(this, this._onSettingsChange));
-        this.show_week_numbers = this.settings.getValue("show-week-numbers");
 
         // Find the ordering for month/year in the calendar heading
 
@@ -186,14 +185,7 @@ Calendar.prototype = {
     },
 
     _onSettingsChange: function(object, key, old_val, new_val) {
-        switch (key) {
-	    case SHOW_WEEKDATE_KEY:
-		this.show_week_numbers = new_val;
-		break;
-	    case FIRST_WEEKDAY_KEY:
-		this._weekStart = Cinnamon.util_get_week_start();
-		break;
-	}
+        if (key == FIRST_WEEKDAY_KEY) this._weekStart = Cinnamon.util_get_week_start();
         this._buildHeader();
         this._update(false);
     },

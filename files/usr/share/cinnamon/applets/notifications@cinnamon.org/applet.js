@@ -24,8 +24,8 @@ MyApplet.prototype = {
 
         // Settings
         this.settings = new Settings.AppletSettings(this, metadata.uuid, instanceId);
-        this.settings.bindProperty(Settings.BindingDirection.IN, "ignoreTransientNotifications", "ignoreTransientNotifications", null, null);
-        this.settings.bindProperty(Settings.BindingDirection.IN, "showEmptyTray", "showEmptyTray", this._show_hide_tray, null);
+        this.settings.bind("ignoreTransientNotifications", "ignoreTransientNotifications");
+        this.settings.bind("showEmptyTray", "showEmptyTray", this._show_hide_tray);
 
         // Layout
         this._orientation = orientation;
