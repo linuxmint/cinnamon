@@ -329,16 +329,8 @@ MyApplet.prototype = {
 
     hook: function(actor, event){
         var direction = event.get_scroll_direction();
-        if (direction == 0) this.switch_workspace(-1);
-        if (direction == 1) this.switch_workspace(1);
-    },
-
-    switch_workspace: function(incremental){
-        var index = global.screen.get_active_workspace_index();
-        index += incremental;
-        if(global.screen.get_workspace_by_index(index) != null) {
-            global.screen.get_workspace_by_index(index).activate(global.get_current_time());
-        }
+        if (direction == 0) Main.wm.actionMoveWorkspaceLeft();
+        if (direction == 1) Main.wm.actionMoveWorkspaceRight();
     },
 
     _createButtons: function() {
