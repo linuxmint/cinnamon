@@ -542,11 +542,10 @@ MyApplet.prototype = {
     },
 
     showAddLauncherDialog: function(timestamp, launcher){
-        let args = this.uuid + " " + this.instance_id + " " + this.settings.get_file_path();
         if (launcher) {
-            Util.spawnCommandLine("cinnamon-desktop-editor -mcinnamon-launcher -f" + launcher.getId() + " " + args);
+            Util.spawnCommandLine("cinnamon-desktop-editor -mcinnamon-launcher -f" + launcher.getId() + " " + this.settings.file.get_path());
         } else {
-            Util.spawnCommandLine("cinnamon-desktop-editor -mcinnamon-launcher " + args);
+            Util.spawnCommandLine("cinnamon-desktop-editor -mcinnamon-launcher " + this.settings.file.get_path());
         }
     },
 
