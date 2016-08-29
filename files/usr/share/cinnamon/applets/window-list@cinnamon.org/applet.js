@@ -779,15 +779,18 @@ AppMenuButtonRightClickMenu.prototype = {
 
                 let curr_index = mw.get_workspace().index();
                 for (let i = 0; i < length; i++) {
-                    if (i == curr_index) continue;
-
                     // Make the index a local variable to pass to function
                     let j = i;
-                    item.menu.addAction(
-                            Main.workspace_names[i] ? Main.workspace_names[i] : Main._makeDefaultWorkspaceName(i),
-                            function() {
-                                mw.change_workspace(global.screen.get_workspace_by_index(j));
-                            });
+                    let name = Main.workspace_names[i] ? Main.workspace_names[i] : Main._makeDefaultWorkspaceName(i);
+                    let ws = new PopupMenu.PopupMenuItem(name);
+
+                    if (i == curr_index)
+                        ws.setSensitive(false);
+
+                    ws.connect('activate', function() {
+                       mw.change_workspace(global.screen.get_workspace_by_index(j)); 
+                    });
+                    item.menu.addMenuItem(ws);
                 }
 
             }
