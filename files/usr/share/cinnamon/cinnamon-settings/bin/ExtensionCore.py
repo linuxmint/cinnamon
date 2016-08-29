@@ -986,10 +986,7 @@ restarting Cinnamon."""
             extensionName = extensionData['name'].replace('&', '&amp;')
             iter = self.gm_model.insert_before(None, None)
             self.gm_model.set_value(iter, 0, uuid)
-            if not self.themes:
-                self.gm_model.set_value(iter, 1, '<b>%s</b>\n<b><span size="x-small">%s</span></b>' % (extensionName, uuid))
-            else:
-                self.gm_model.set_value(iter, 1, '<b>%s</b>' % (extensionName))
+            self.gm_model.set_value(iter, 1, '<b>%s</b>' % (extensionName))
             self.gm_model.set_value(iter, 2, 0)
 
             if not self.themes:
@@ -1400,8 +1397,7 @@ Please contact the developer.""")
                     self.model.set_value(iter, 0, extension_uuid)
                     self.model.set_value(iter, 1, '''\
 <b>%s</b>
-<b><span size="xx-small">%s</span></b>
-<i><span size="x-small">%s</span></i>''' % (extension_name, extension_uuid, extension_description))
+<i><span size="small">%s</span></i>''' % (extension_name, extension_description))
 
                     self.model.set_value(iter, 2, found)
                     self.model.set_value(iter, 3, extension_max_instances)
