@@ -484,9 +484,6 @@ class ExtensionSidePage (SidePage):
 
         self.spices = Spice_Harvester(self.collection_type, self.window)
 
-        # if not self.spices.get_webkit_enabled():
-        #     getmore_label.set_sensitive(False)
-        #     reload_button.set_sensitive(False)
         extra_page = self.getAdditionalPage()
         if extra_page:
             self.stack.add_titled(extra_page, "extra", extra_page.label)
@@ -957,7 +954,6 @@ restarting Cinnamon."""
         self.gm_modelfilter.refilter()
 
     def load_spices(self, force=False):
-        # if self.spices.get_webkit_enabled():
         self.update_list = {}
 
         thread.start_new_thread(self.spices.load, (self.on_spice_load, force))
