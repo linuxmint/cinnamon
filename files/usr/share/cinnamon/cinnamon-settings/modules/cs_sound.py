@@ -694,6 +694,7 @@ class Module:
         select.set_margin(0)
         select.set_pixbuf_column(4)
         select.set_text_column(0)
+        select.set_column_spacing(0)
 
         select.connect("selection-changed", self.setActiveDevice, type)
 
