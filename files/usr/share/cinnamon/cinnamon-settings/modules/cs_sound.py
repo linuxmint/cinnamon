@@ -302,7 +302,7 @@ class BalanceBar(Slider):
     def setChannelMap(self, channelMap):
         self.channelMap = channelMap
         self.channelMap.connect("volume-changed", self.getLevel)
-        self.slider.set_sensitive(getattr(self.channelMap, "can_"+self.type)())
+        self.set_sensitive(getattr(self.channelMap, "can_"+self.type)())
         self.getLevel()
 
     def getLevel(self, a=None, b=None):
