@@ -46,11 +46,11 @@ class PanelSettingsPage(SettingsPage):
         section.add_row(widget)
         self.widgets.append(widget)
 
-        widget = PanelSwitch(_("Allow Cinnamon to scale panel text and icons according to the panel heights"), "org.cinnamon", "panels-scale-text-icons", self.panel_id, "org.cinnamon/panels-resizable")
+        widget = PanelSwitch(_("Allow Cinnamon to scale panel text and icons according to the panel thickness"), "org.cinnamon", "panels-scale-text-icons", self.panel_id, "org.cinnamon/panels-resizable")
         section.add_reveal_row(widget)
         self.widgets.append(widget)
 
-        widget = PanelRange(_("Panel height:"), "org.cinnamon", "panels-height", self.panel_id, _("Smaller"), _("Larger"), mini=20, maxi=50, dep_key="org.cinnamon/panels-resizable")
+        widget = PanelRange(_("Panel thickness:"), "org.cinnamon", "panels-height", self.panel_id, _("Smaller"), _("Larger"), mini=20, maxi=50, dep_key="org.cinnamon/panels-resizable")
         widget.add_mark(25.0, Gtk.PositionType.TOP, None)
         section.add_reveal_row(widget)
         self.widgets.append(widget)
