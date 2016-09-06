@@ -231,7 +231,7 @@ class Module:
             widget = GSettingsSwitch(_("Play backgrounds as a slideshow"), "org.cinnamon.desktop.background.slideshow", "slideshow-enabled")
             settings.add_row(widget)
 
-            widget = GSettingsSpinButton(_("Delay"), "org.cinnamon.desktop.background.slideshow", "delay", _("minutes"), 1, 120)
+            widget = GSettingsSpinButton(_("Delay"), "org.cinnamon.desktop.background.slideshow", "delay", _("minutes"), 1, 1440)
             settings.add_reveal_row(widget, "org.cinnamon.desktop.background.slideshow", "slideshow-enabled")
 
             widget = GSettingsSwitch(_("Play images in random order"), "org.cinnamon.desktop.background.slideshow", "random-order")
