@@ -1389,12 +1389,15 @@ StScrollBar StButton#vhandle:hover {
 	padding: 1px;
 	transition-duration: 300;
 }
+#panel-launchers-box.vertical .panel-launcher {
+	border-bottom-width: 1px;
+}
 .panel-launcher:hover {
 	background-gradient-direction: vertical;
 	background-gradient-start: rgba(255,255,255,0.0);
 	background-gradient-end: rgba(255,255,255,0.2);
 	border: 0px solid rgba(255,255,255,0.5);
-		border-bottom-width: 1px;
+	border-bottom-width: 1px;
 }
 .panel-launcher-add-dialog-content-box {
 	padding: 6px;
