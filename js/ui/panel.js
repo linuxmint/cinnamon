@@ -2568,14 +2568,20 @@ Panel.prototype = {
      */
     _getScaledPanelHeight: function() {
         let panelHeight = 0;
-
         let panelResizable = this._getProperty(PANEL_RESIZABLE_KEY, "b");
+        let isHorizontal = ((this.panelPosition == PanelLoc.top || this.panelPosition == PanelLoc.bottom) ? true : false);
+
         if (panelResizable) {
-            panelHeight = this._getProperty(PANEL_HEIGHT_KEY, "i") * global.ui_scale;  // if manually scaled
+            panelHeight = this._getProperty(PANEL_HEIGHT_KEY, "i") * global.ui_scale;
         } else {
             let themeNode = this.actor.get_theme_node();
-            panelHeight = themeNode.get_height();       // use theme value for height, note that this scales up with the ui_scale
-            if (!panelHeight || panelHeight == 0) {     // no theme value, fall back to default
+
+            if (isHorizontal)
+                panelHeight = themeNode.get_height();
+            else
+                panelHeight = themeNode.get_width();
+
+            if (!panelHeight || panelHeight <= 0) {
                 panelHeight = 25 * global.ui_scale;
             }
         }
