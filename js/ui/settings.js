@@ -161,6 +161,13 @@ var SETTINGS_TYPES = {
             "type",
             "default"
         ]
+    },
+    "datechooser" : {
+        "required-fields": [
+            "type",
+            "default",
+            "description"
+        ]
     }
 };
 

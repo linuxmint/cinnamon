@@ -19,7 +19,7 @@ settings_objects = {}
 
 CAN_BACKEND = ["Switch", "SpinButton", "Entry", "TextView", "FontButton", "Range", "ComboBox",
                "ColorChooser", "FileChooser", "SoundFileChooser", "IconChooser", "TweenChooser",
-               "EffectChooser", "Keybinding"]
+               "EffectChooser", "DateChooser", "Keybinding"]
 
 class EditableEntry (Gtk.Stack):
 
@@ -249,6 +249,64 @@ class PictureChooserButton(BaseChooserButton):
     def add_menuitem(self, menuitem):
         self.row = self.row + 1
         self.menu.attach(menuitem, 0, self.num_cols, self.row, self.row+1)
+
+class DateChooserButton(Gtk.Button):
+    __gsignals__ = {
+        'date-changed': (GObject.SignalFlags.RUN_FIRST, None, (int,int,int))
+    }
+
+    def __init__(self):
+        super(DateChooserButton, self).__init__()
+
+        self.year, self.month, self.day = GLib.DateTime.new_now_local().get_ymd()
+
+        self.connect("clicked", self.on_button_clicked)
+
+    def on_button_clicked(self, *args):
+        self.dialog = Gtk.Dialog(transient_for=self.get_toplevel(),
+                                 title=_("Select a date"),
+                                 flags=Gtk.DialogFlags.MODAL,
+                                 buttons=(Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL,
+                                          Gtk.STOCK_OK, Gtk.ResponseType.OK))
+
+        content = self.dialog.get_content_area()
+
+        calendar = Gtk.Calendar()
+        content.pack_start(calendar, True, True, 0)
+        calendar.select_month(self.month-1, self.year)
+        calendar.select_day(self.day)
+
+        def select_today(*args):
+            date = GLib.DateTime.new_now_local().get_ymd()
+            calendar.select_month(date[1]-1, date[0])
+            calendar.select_day(date[2])
+
+        today = Gtk.Button(label=_("Today"))
+        today.connect("clicked", select_today)
+        content.pack_start(today, False, False, 0)
+
+        content.show_all()
+
+        response = self.dialog.run()
+
+        if response == Gtk.ResponseType.OK:
+            date = calendar.get_date()
+            self.set_date(date[0], date[1]+1, date[2]) #calendar uses 0 based month
+            self.emit("date-changed", self.year, self.month, self.day)
+
+        self.dialog.destroy()
+
+    def get_date(self):
+        return self.year, self.month, self.day
+
+    def set_date(self, year, month, day):
+        self.year = year
+        self.month = month
+        self.day = day
+
+        date = GLib.DateTime.new_local(year, month, day, 1, 1, 1)
+        date_string = date.format(_("%B %e, %Y"))
+        self.set_label(date_string)
 
 class SidePage:
     def __init__(self, name, icon, keywords, content_box = None, size = None, is_c_mod = False, is_standalone = False, exec_name = None, module=None):
@@ -1179,6 +1237,34 @@ class EffectChooser(SettingsWidget):
 
         if size_group:
             self.add_to_size_group(size_group)
+
+class DateChooser(SettingsWidget):
+    bind_dir = None
+
+    def __init__(self, label, size_group=None, dep_key=None, tooltip=""):
+        super(DateChooser, self).__init__(dep_key=dep_key)
+
+        self.label = Gtk.Label.new(label)
+
+        self.content_widget = DateChooserButton()
+
+        self.pack_start(self.label, False, False, 0)
+        self.pack_end(self.content_widget, False, False, 0)
+
+        self.set_tooltip_text(tooltip)
+
+        self.content_widget.connect("date-changed", self.on_date_changed)
+
+        if size_group:
+            self.add_to_size_group(size_group)
+
+    def on_date_changed(self, *args):
+        date = self.content_widget.get_date()
+        self.set_value({"y": date[0], "m": date[1], "d": date[2]})
+
+    def on_setting_changed(self, *args):
+        date = self.get_value()
+        self.content_widget.set_date(date["y"], date["m"], date["d"])
 
 class Keybinding(SettingsWidget):
     bind_dir = None

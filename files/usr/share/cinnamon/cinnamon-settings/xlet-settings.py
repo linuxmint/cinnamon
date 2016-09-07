@@ -34,6 +34,7 @@ XLET_SETTINGS_WIDGETS = {
     "iconfilechooser"   :   "JSONSettingsIconChooser",
     "tween"             :   "JSONSettingsTweenChooser",
     "effect"            :   "JSONSettingsEffectChooser",
+    "datechooser"       :   "JSONSettingsDateChooser",
     "keybinding"        :   "JSONSettingsKeybinding"
 }
 
