@@ -379,7 +379,7 @@ XletSettingsBase.prototype = {
             return null;
         }
 
-        if (!(options in this.settingsData[key])) {
+        if (!("options" in this.settingsData[key])) {
             options_not_supported_error(key, this.uuid, this.settingsData[key].type);
             return null;
         }
@@ -401,7 +401,7 @@ XletSettingsBase.prototype = {
             return;
         }
 
-        if (!(options in this.settingsData[key])) {
+        if (!("options" in this.settingsData[key])) {
             options_not_supported_error(key, this.uuid, this.settingsData[key].type);
             return;
         }
