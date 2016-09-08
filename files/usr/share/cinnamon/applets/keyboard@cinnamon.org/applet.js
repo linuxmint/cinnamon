@@ -60,11 +60,7 @@ MyApplet.prototype = {
 
             this.settings = new Settings.AppletSettings(this, metadata["uuid"], this.instance_id);
 
-            this.settings.bindProperty(Settings.BindingDirection.BIDIRECTIONAL,
-                                       "use-flags",
-                                       "_showFlags",
-                                       this._syncConfig,
-                                       null);
+            this.settings.bind("use-flags", "_showFlags", this._syncConfig);
 
             this._config = Gkbd.Configuration.get();
             this._config.connect('changed', Lang.bind(this, this._syncConfig));
