@@ -955,6 +955,7 @@ MyApplet.prototype = {
         this.signals.connect(global.screen, 'window-removed', this._onWindowRemoved);
         this.signals.connect(global.screen, 'window-monitor-changed', this._onWindowMonitorChanged);
         this.signals.connect(global.screen, 'window-workspace-changed', this._onWindowWorkspaceChanged);
+        this.signals.connect(global.screen, 'window-skip-taskbar-changed', this._onWindowSkipTaskbarChanged);
         this.signals.connect(global.screen, 'monitors-changed', this._updateWatchedMonitors);
         this.signals.connect(global.window_manager, 'switch-workspace', this._refreshAllItems);
 
@@ -1060,6 +1061,17 @@ MyApplet.prototype = {
 
         if (window)
             this._refreshItem(window);
+    },
+
+    _onWindowSkipTaskbarChanged: function(screen, metaWindow) {
+        let window = this._windows.find(win => (win.metaWindow == metaWindow));
+
+        if (window && !Main.isInteresting(metaWindow)) {
+            this._removeWindow(metaWindow);
+            return;
+        }
+
+        this._onWindowAdded(screen, metaWindow, 0);
     },
 
     _updateAttentionGrabber: function() {
