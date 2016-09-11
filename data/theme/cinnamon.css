@@ -238,6 +238,7 @@ StScrollBar StButton#vhandle:hover {
 	font-size: 8.5pt;
 	font-weight: normal;
 	height: 25px;
+	width: 35px;
 }
 #panel:highlight {
     background-color: #aa5555;
