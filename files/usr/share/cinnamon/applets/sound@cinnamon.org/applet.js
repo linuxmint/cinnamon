@@ -1086,13 +1086,21 @@ MyApplet.prototype = {
     },
 
     _onButtonPressEvent: function (actor, event) {
+	let buttonId = event.get_button();
+
         //mute or play / pause players on middle click
-        if(event.get_button() === 2){
+        if(buttonId === 2) {
             if(this.middleClickAction === "mute")
                 this._toggle_out_mute();
             else if(this.middleClickAction === "player")
                 this._players[this._activePlayer]._mediaServerPlayer.PlayPauseRemote();
         }
+	// previous and next track on mouse buttons 4 and 5 (8 and 9 by X11 numbering)
+	else if(buttonId === 8)
+            this._players[this._activePlayer]._mediaServerPlayer.PreviousRemote();
+	else if(buttonId === 9)
+            this._players[this._activePlayer]._mediaServerPlayer.NextRemote();
+
         return Applet.Applet.prototype._onButtonPressEvent.call(this, actor, event);
     },
 
