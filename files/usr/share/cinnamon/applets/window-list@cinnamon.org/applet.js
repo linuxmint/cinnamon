@@ -64,9 +64,10 @@ const Tooltips = imports.ui.tooltips;
 const Tweener = imports.ui.tweener;
 const Util = imports.misc.util;
 
-const DEFAULT_ICON_SIZE = 16; // too bad this can't be defined in theme (cinnamon-app.create_icon_texture returns a clutter actor, not a themable object -
-                              // probably something that could be addressed
+const HORIZONTAL_ICON_SIZE = 16; // too bad this can't be defined in theme (cinnamon-app.create_icon_texture returns a clutter actor, not a themable object -
+                                 // probably something that could be addressed
 const ICON_HEIGHT_FACTOR = .64;
+const VERTICAL_ICON_HEIGHT_FACTOR = .75;
 const MAX_TEXT_LENGTH = 1000;
 const FLASH_INTERVAL = 500;
 
@@ -253,6 +254,7 @@ AppMenuButton.prototype = {
         this._applet = applet;
         this.metaWindow = metaWindow;
         this.alert = alert;
+        this.labelVisible = false;
 
         if (this._applet.orientation == St.Side.TOP)
             this.actor.add_style_class_name('top');
@@ -279,8 +281,11 @@ AppMenuButton.prototype = {
         this._iconBox.connect('notify::allocation',
                               Lang.bind(this, this._updateIconBoxClipAndGeometry));
         this.actor.add_actor(this._iconBox);
+
         this._label = new St.Label();
         this.actor.add_actor(this._label);
+
+        this.updateLabelVisible();
 
         this._iconBottomClip = 0;
         this._visible = true;
@@ -454,13 +459,7 @@ AppMenuButton.prototype = {
         else if (this.metaWindow.tile_type == Meta.WindowTileType.SNAPPED) {
             title = "||"+ title;
         }
-        if (this._applet.orientation == St.Side.TOP || this._applet.orientation == St.Side.BOTTOM) {
-            this._label.set_text(title);
-        }
-        else {
-            this._label.set_text(""); // no space to show title on vertical panels
-        }
-
+        
         this._label.set_text(title);
     },
 
@@ -583,20 +582,24 @@ AppMenuButton.prototype = {
             } else {
                 alloc.natural_size = 150 * global.ui_scale;
             }
-        }
-        else {    // on vertical panels just use the minimum size
-            alloc.natural_size = alloc.min_size;
+        } else {
+            let pWidth = this._applet._panelHeight;
+            alloc.natural_size = pWidth - 2;
         }
     },
 
     _getPreferredHeight: function(actor, forWidth, alloc) {
-        let [minSize1, naturalSize1] = this._iconBox.get_preferred_height(forWidth); 
-        let [minSize2, naturalSize2] = this._label.get_preferred_height(forWidth);
-        let pheight  = this._applet._panelHeight;
+        let [minSize1, naturalSize1] = this._iconBox.get_preferred_height(forWidth);
 
-        alloc.min_size = Math.max(minSize1, minSize2);
+        if (this.labelVisible) { 
+            let [minSize2, naturalSize2] = this._label.get_preferred_height(forWidth);
+            alloc.min_size = Math.max(minSize1, minSize2);
+        } else {
+            alloc.min_size = minSize1;
+        }
 
-        if (this._applet.orientation == St.Side.TOP || this._applet.orientation == St.Side.BOTTOM )
+        if (this._applet.orientation == St.Side.TOP || this._applet.orientation == St.Side.BOTTOM ) {
+            let pheight  = this._applet._panelHeight;
 
             alloc.natural_size = pheight - 2; // putting a container around the actor for layout management reasons 
                                               // affects the allocation,causing the visible border to pull in close around the contents
@@ -606,8 +609,9 @@ AppMenuButton.prototype = {
                                               // to make everything fit, so am using the panel height minus a minimal wodge
                                               // I have had no joy using the ways I would have expected to work - fill and expand
                                               // but perhaps I have just not got the right combo of parameters on the right actor
-        else
-            alloc.natural_size = Math.max(naturalSize1, naturalSize2);
+        } else {
+            alloc.natural_size = naturalSize1;
+        }
     },
 
     _allocate: function(actor, box, flags) {
@@ -624,47 +628,70 @@ AppMenuButton.prototype = {
 
         childBox.y1 = yPadding;
         childBox.y2 = childBox.y1 + Math.min(naturalHeight, allocHeight);
-        if (direction == Clutter.TextDirection.LTR) {
-            if (allocWidth < naturalWidth + xPadding * 2)
-                childBox.x1 = Math.max(0, (allocWidth - naturalWidth) / 2)
-            else
-                childBox.x1 = Math.min(allocWidth, xPadding);
-            childBox.x2 = Math.min(childBox.x1 + naturalWidth, allocWidth);
+
+        if (this.labelVisible) {
+            if (direction == Clutter.TextDirection.LTR) {
+                if (allocWidth < naturalWidth + xPadding * 2)
+                    childBox.x1 = Math.max(0, (allocWidth - naturalWidth) / 2);
+                else
+                    childBox.x1 = Math.min(allocWidth, xPadding);
+                childBox.x2 = Math.min(childBox.x1 + naturalWidth, allocWidth);
+            } else {
+                if (allocWidth < naturalWidth + xPadding * 2)
+                    childBox.x1 = Math.max(0, (allocWidth - naturalWidth) / 2);
+                else
+                    childBox.x1 = allocWidth - naturalWidth - xPadding;
+                childBox.x2 = Math.min(childBox.x1 + naturalWidth, allocWidth);
+            }
         } else {
-            if (allocWidth < naturalWidth + xPadding * 2)
-                childBox.x1 = Math.max(0, (allocWidth - naturalWidth)/2);
+            if (allocWidth < naturalWidth)
+                childBox.x1 = Math.max(0, (allocWidth - naturalWidth) / 2);
             else
-                childBox.x1 = allocWidth - naturalWidth - xPadding;
+                childBox.x1 = (allocWidth - naturalWidth) / 2;
             childBox.x2 = Math.min(childBox.x1 + naturalWidth, allocWidth);
         }
 
         this._iconBox.allocate(childBox, flags);
 
-        [minWidth, minHeight, naturalWidth, naturalHeight] = this._label.get_preferred_size();
+        if (this.labelVisible) {
+            [minWidth, minHeight, naturalWidth, naturalHeight] = this._label.get_preferred_size();
 
-        yPadding = Math.floor(Math.max(0, allocHeight - naturalHeight) / 2);
-        childBox.y1 = yPadding;
-        childBox.y2 = childBox.y1 + Math.min(naturalHeight, allocHeight);
-        if (direction == Clutter.TextDirection.LTR) {
-            // Reuse the values from the previous allocation
-            childBox.x1 = Math.min(childBox.x2 + xPadding, Math.max(0, allocWidth - xPadding));
-            childBox.x2 = Math.max(childBox.x1, allocWidth - xPadding);
-        } else {
-            childBox.x2 = Math.max(childBox.x1 - xPadding, 0);
-            childBox.x1 = Math.min(childBox.x2, xPadding);
+            yPadding = Math.floor(Math.max(0, allocHeight - naturalHeight) / 2);
+            childBox.y1 = yPadding;
+            childBox.y2 = childBox.y1 + Math.min(naturalHeight, allocHeight);
+            if (direction == Clutter.TextDirection.LTR) {
+                // Reuse the values from the previous allocation
+                childBox.x1 = Math.min(childBox.x2 + xPadding, Math.max(0, allocWidth - xPadding));
+                childBox.x2 = Math.max(childBox.x1, allocWidth - xPadding);
+            } else {
+                childBox.x2 = Math.max(childBox.x1 - xPadding, 0);
+                childBox.x1 = Math.min(childBox.x2, xPadding);
+            }
+
+            this._label.allocate(childBox, flags);
         }
+    },
 
-        this._label.allocate(childBox, flags);
+    updateLabelVisible: function() {
+        if (this._applet.orientation == St.Side.TOP || this._applet.orientation == St.Side.BOTTOM) {
+            this._label.show();
+            this.labelVisible = true;
+        } else {
+            this._label.hide();
+            this.labelVisible = false;
+        }
     },
 
     setIcon: function() {
         let tracker = Cinnamon.WindowTracker.get_default();
         let app = tracker.get_window_app(this.metaWindow);
 
-        if (this._applet._scaleMode)
+        if (this._applet._scaleMode && this.labelVisible)
             this.iconSize = Math.round(this._applet._panelHeight * ICON_HEIGHT_FACTOR / global.ui_scale);
+        else if (!this.labelVisible)
+            this.iconSize = Math.round(this._applet._panelHeight * VERTICAL_ICON_HEIGHT_FACTOR / global.ui_scale);
         else
-            this.iconSize = DEFAULT_ICON_SIZE;
+            this.iconSize = HORIZONTAL_ICON_SIZE;
 
         let icon = app ?
             app.create_icon_texture(this.iconSize) :
@@ -889,26 +916,22 @@ MyApplet.prototype = {
         this.actor.set_track_hover(false);
         this.actor.set_style_class_name("window-list-box");
         this.orientation = orientation;
-//
-// A layout manager is used to cater for vertical panels as well as horizontal
-//
+        //
+        // A layout manager is used to cater for vertical panels as well as horizontal
+        //
         let manager;
-	if (this.orientation == St.Side.TOP || this.orientation == St.Side.BOTTOM)
-	{
+        if (this.orientation == St.Side.TOP || this.orientation == St.Side.BOTTOM) {
             manager = new Clutter.BoxLayout( { spacing: 2 * global.ui_scale,
-		                               orientation: Clutter.Orientation.HORIZONTAL});
-	}
-	else
-	{
+                                               orientation: Clutter.Orientation.HORIZONTAL });
+        } else {
             manager = new Clutter.BoxLayout( { spacing: 2 * global.ui_scale,
-		                               orientation: Clutter.Orientation.VERTICAL});
+                                               orientation: Clutter.Orientation.VERTICAL });
             this.actor.add_style_class_name("vertical");
-	}
+        }
 
         this.manager = manager;
         this.manager_container = new Clutter.Actor( { layout_manager: manager } );
         this.actor.add_actor (this.manager_container);
-        //this.manager_container.show();
 
         this.dragInProgress = false;
         this._tooltipShowing = false;
@@ -982,25 +1005,25 @@ MyApplet.prototype = {
     on_panel_height_changed: function() {
         this._refreshAllItems();
     },
-//
-//override getDisplayLayout to declare that this applet is suitable for both horizontal and
-// vertical orientations
-//
+    //
+    // override getDisplayLayout to declare that this applet is suitable for both horizontal and
+    // vertical orientations
+    //
     getDisplayLayout: function() {
         return Applet.DisplayLayout.BOTH;
     },
 
     on_orientation_changed: function(orientation) {
-
         this.orientation = orientation;
-	if (orientation == St.Side.TOP || orientation == St.Side.BOTTOM)
-	{
+
+        for (let window of this._windows)
+            window.updateLabelVisible();
+
+        if (orientation == St.Side.TOP || orientation == St.Side.BOTTOM) {
             this.manager.set_vertical(false);
-            this._reTitleItems();  //titles stripped out in vertical panels, so restore titles
+            this._reTitleItems();
             this.actor.remove_style_class_name("vertical");
-	}
-	else		// vertical panels
-	{
+        } else {
             this.manager.set_vertical(true);
             this.actor.add_style_class_name("vertical");
             this.actor.set_x_align(Clutter.ActorAlign.CENTER);
