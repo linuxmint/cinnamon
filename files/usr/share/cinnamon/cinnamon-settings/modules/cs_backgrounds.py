@@ -11,6 +11,8 @@ import locale
 import time
 import hashlib
 import mimetypes
+import pickle
+from io import BytesIO
 from xml.etree import ElementTree
 
 from PIL import Image
@@ -539,36 +541,65 @@ class PixCache(object):
                 tmp_cache_path = GLib.get_user_cache_dir() + '/cs_backgrounds/'
                 if not os.path.exists(tmp_cache_path):
                     os.mkdir(tmp_cache_path)
-                cache_filename = tmp_cache_path + h
+                cache_filename = tmp_cache_path + h + "v2"
+
                 if os.path.exists(cache_filename):
-                    (width, height) = Image.open(filename).size
+                    # load from disk cache
+                    try:
+                        with open(cache_filename, "r") as cache_file:
+                            pix = pickle.load(cache_file)
+                        tmp_img = Image.open(BytesIO(pix[0]))
+                        pix[0] = self._image_to_pixbuf(tmp_img)
+                    except Exception, detail:
+                        print "Failed to load cache file: %s: %s" % (cache_filename, detail)
+                        pix = None
+
                 else:
                     if mimetype == "image/svg+xml":
+                        # rasterize svg with Gdk-Pixbuf and convert to PIL Image
                         tmp_pix = GdkPixbuf.Pixbuf.new_from_file(filename)
-                        tmp_fp, tmp_filename = tempfile.mkstemp()
-                        os.close(tmp_fp)
-                        tmp_pix.savev(tmp_filename, "png", [], [])
-                        img = Image.open(tmp_filename)
-                        os.unlink(tmp_filename)
+                        mode = "RGBA" if tmp_pix.props.has_alpha else "RGB"
+                        img = Image.frombytes(mode, (tmp_pix.props.width, tmp_pix.props.height),
+                                              tmp_pix.read_pixel_bytes().get_data(), "raw",
+                                              mode, tmp_pix.props.rowstride)
                     else:
                         img = Image.open(filename)
                         img = apply_orientation(img)
+
+                    # generate thumbnail
                     (width, height) = img.size
                     if img.mode != 'RGB':
                         img = img.convert('RGB')
                     if size:
                         img.thumbnail((size, size), Image.ANTIALIAS)
                     img = imtools.round_image(img, {}, False, None, 3, 255)
-                    img = imtools.drop_shadow(img, 4, 4, background_color=(255, 255, 255, 0), shadow_color=0x444444, border=8, shadow_blur=3, force_background_color=False, cache=None)
-                    # Convert Image -> Pixbuf (save to file, GTK3 is not reliable for that)
-                    img.save(cache_filename, "png")
-                pix = [GdkPixbuf.Pixbuf.new_from_file(cache_filename), width, height]
+                    img = imtools.drop_shadow(img, 4, 4, background_color=(255, 255, 255, 0),
+                                              shadow_color=0x444444, border=8, shadow_blur=3,
+                                              force_background_color=False, cache=None)
+
+                    # save to disk cache
+                    try:
+                        png_bytes = BytesIO()
+                        img.save(png_bytes, "png")
+                        with open(cache_filename, "w") as cache_file:
+                            pickle.dump([png_bytes.getvalue(), width, height], cache_file, 2)
+                    except Exception, detail:
+                        print "Failed to save cache file: %s: %s" % (cache_filename, detail)
+
+                    pix = [self._image_to_pixbuf(img), width, height]
             except Exception, detail:
                 print "Failed to convert %s: %s" % (filename, detail)
                 pix = None
             if pix:
                 self._data[filename][size] = pix
         return pix
+
+    # Convert RGBA PIL Image to Pixbuf
+    def _image_to_pixbuf(self, img):
+        return GdkPixbuf.Pixbuf.new_from_bytes(GLib.Bytes.new(img.tobytes()),
+                                               GdkPixbuf.Colorspace.RGB,
+                                               True, 8, img.width, img.height,
+                                               img.width * 4)
 
 PIX_CACHE = PixCache()
 
