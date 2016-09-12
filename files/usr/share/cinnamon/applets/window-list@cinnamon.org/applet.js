@@ -275,7 +275,7 @@ AppMenuButton.prototype = {
                 Lang.bind(this, this._getPreferredHeight));
         this.actor.connect('allocate', Lang.bind(this, this._allocate));
 
-        this._iconBox = new Cinnamon.Slicer({ name: 'appMenuIcon'});
+        this._iconBox = new Cinnamon.Slicer({ name: 'appMenuIcon' });
         this._iconBox.connect('style-changed',
                               Lang.bind(this, this._onIconBoxStyleChanged));
         this._iconBox.connect('notify::allocation',
@@ -916,16 +916,15 @@ MyApplet.prototype = {
         this.actor.set_track_hover(false);
         this.actor.set_style_class_name("window-list-box");
         this.orientation = orientation;
+        this.appletEnabled = false;
         //
         // A layout manager is used to cater for vertical panels as well as horizontal
         //
         let manager;
         if (this.orientation == St.Side.TOP || this.orientation == St.Side.BOTTOM) {
-            manager = new Clutter.BoxLayout( { spacing: 2 * global.ui_scale,
-                                               orientation: Clutter.Orientation.HORIZONTAL });
+            manager = new Clutter.BoxLayout( { orientation: Clutter.Orientation.HORIZONTAL });
         } else {
-            manager = new Clutter.BoxLayout( { spacing: 2 * global.ui_scale,
-                                               orientation: Clutter.Orientation.VERTICAL });
+            manager = new Clutter.BoxLayout( { orientation: Clutter.Orientation.VERTICAL });
             this.actor.add_style_class_name("vertical");
         }
 
@@ -988,10 +987,17 @@ MyApplet.prototype = {
         this.signals.connect(global.window_manager, 'map', this._onWindowStateChange);
         this.signals.connect(global.window_manager, 'tile', this._onWindowStateChange);
 
+        this.actor.connect('style-changed', Lang.bind(this, this._updateSpacing));
+
         global.settings.bind("panel-edit-mode", this.actor, "reactive", Gio.SettingsBindFlags.DEFAULT);
 
         this.on_orientation_changed(orientation);
         this._updateAttentionGrabber();
+    },
+
+    on_applet_added_to_panel: function(userEnabled) {
+        this._updateSpacing();
+        this.appletEnabled = true;
     },
 
     on_applet_removed_from_panel: function() {
@@ -1061,6 +1067,16 @@ MyApplet.prototype = {
             }
             this.actor.set_style('margin-right: 0px; padding-right: 0px; padding-left: 0px; margin-left: 0px;');
         }
+
+        if (this.appletEnabled) {
+            this._updateSpacing();
+        }
+    },
+
+    _updateSpacing: function() {
+        let themeNode = this.actor.get_theme_node();
+        let spacing = themeNode.get_length('spacing');
+        this.manager.set_spacing(spacing * global.ui_scale);
     },
 
     _onWindowAdded: function(screen, metaWindow, monitor) {
