@@ -10,6 +10,7 @@ import tempfile
 import locale
 import time
 import hashlib
+import mimetypes
 from xml.etree import ElementTree
 
 from PIL import Image
@@ -46,15 +47,6 @@ BACKGROUND_COLLECTION_TYPE_DIRECTORY = "directory"
 BACKGROUND_COLLECTION_TYPE_XML = "xml"
 
 (STORE_IS_SEPARATOR, STORE_ICON, STORE_NAME, STORE_PATH, STORE_TYPE) = range(5)
-
-
-def get_mimetype(filename):
-    """ Returns the mimetype of the file (eg. "image/png", "text/plain")
-
-    Throws CalledProcessError if the file does not exist
-    """
-    return subprocess.check_output(["file", "-bi", filename]).split(";")[0]
-
 
 # EXIF utility functions (source: http://stackoverflow.com/questions/4228530/pil-thumbnail-is-rotating-my-image)
 def flip_horizontal(im): return im.transpose(Image.FLIP_LEFT_RIGHT)
@@ -445,11 +437,7 @@ class Module:
                     files.sort()
                     for i in files:
                         filename = os.path.join(path, i)
-                        try:
-                            if get_mimetype(filename).startswith("image/"):
-                                picture_list.append({"filename": filename})
-                        except Exception, detail:
-                            print "Failed to detect mimetype for {}: {}".format(filename, detail)
+                        picture_list.append({"filename": filename})
                 elif type == BACKGROUND_COLLECTION_TYPE_XML:
                     picture_list += self.parse_xml_backgrounds_list(path)
 
@@ -537,13 +525,8 @@ class PixCache(object):
         self._data = {}
 
     def get_pix(self, filename, size=None):
-        try:
-            mimetype = get_mimetype(filename)
-            if not mimetype.startswith("image/"):
-                print "Not trying to convert %s : not a recognized image file" % filename
-                return None
-        except Exception, detail:
-            print "Failed to detect mimetype for %s: %s" % (filename, detail)
+        mimetype = mimetypes.guess_type(filename)[0]
+        if mimetype is None or not mimetype.startswith("image/"):
             return None
 
         if filename not in self._data:
