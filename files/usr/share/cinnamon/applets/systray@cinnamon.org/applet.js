@@ -157,7 +157,6 @@ MyApplet.prototype = {
         }
     },
 
-<<<<<<< HEAD
     _onEnterEvent: function(actor, event) {
        this.set_applet_tooltip(actor._delegate.getToolTip());
     },
