@@ -1,9 +1,10 @@
 #!/usr/bin/env python2
 
-from SettingsWidgets import *
 import gi
 gi.require_version('Notify', '0.7')
 from gi.repository import GObject, Notify
+
+from GSettingsWidgets import *
 
 content = """
 Lorem ipsum dolor sit amet, consectetur adipiscing elit. \
@@ -26,6 +27,7 @@ MEDIA_KEYS_OSD_SIZES = [
     ("medium", _("Medium")),
     ("large", _("Large"))
 ]
+
 
 class Module:
     name = "notifications"
@@ -69,11 +71,8 @@ class Module:
         spin.revealer.settings.connect("changed::display-notifications", on_settings_changed)
         on_settings_changed()
 
-        widget = SettingsWidget()
-        button = Gtk.Button(label = _("Display a test notification"))
-        button.connect("clicked", self.send_test)
-        widget.pack_start(button, True, True, 0)
-        settings.add_row(widget)
+        button = Button(_("Display a test notification"), self.send_test)
+        settings.add_row(button)
 
         settings = page.add_section(_("Media keys OSD"))
 

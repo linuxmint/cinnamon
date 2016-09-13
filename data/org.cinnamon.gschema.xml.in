@@ -152,10 +152,18 @@
     </key>
     
     <key name="desktop-effects-on-dialogs" type="b">
-      <default>false</default>
+      <default>true</default>
       <_summary>Enable desktop effects on dialog boxes</_summary>
       <_description>
         Whether to enable desktop effects on dialog boxes.
+      </_description>
+    </key>
+
+    <key name="desktop-effects-on-menus" type="b">
+      <default>true</default>
+      <_summary>Enable desktop effects on Gtk menus</_summary>
+      <_description>
+        Whether to enable desktop effects on Gtk menus.
       </_description>
     </key>
 
@@ -318,6 +326,13 @@
       <_summary>Whether the startup animation is enabled</_summary>
       <_description>
        Whether the startup animation is enabled   
+      </_description>
+    </key>
+
+    <key name="device-aliases" type="as">
+      <default>[]</default>
+      <_summary>Aliases given to battery powered fardware devices</_summary>
+      <_description>
       </_description>
     </key>
 
@@ -593,11 +608,16 @@
     </key>
 
     <key name="enable-indicators" type="b">
-      <default>true</default>
+      <default>false</default>
       <_summary>Enable support for indicators</_summary>
       <_description>
         Whether to support indicators
       </_description>
+    </key>
+
+    <key type="as" name="demands-attention-ignored-wm-classes">
+      <default>["skype", "viber", "quassel", "retroshare", "psi-plus", "kadu", "pidgin"]</default>
+      <_summary>WM class names to skip processing for in windowAttentionHandler.js</_summary>
     </key>
 
     <key name="right-click-indicators" type="b">
@@ -628,6 +648,13 @@
       <_summary>Which keyboard to use</_summary>
       <_description>
         The type of keyboard to use.
+      </_description>
+    </key>
+    <key name="activation-mode" type="s">
+      <default>'on-demand'</default>
+      <_summary>How the keyboard becomes activated</_summary>
+      <_description>
+        Can be:  on-demand: display the keyboard only at user demand, either when the applet is clicked, or a keyboard shortcut is used.  accessible: display the keyboard any time an input field becomes the desktop keyboard focus.
       </_description>
     </key>
   </schema>
@@ -882,6 +909,22 @@
       <summary>Which sound to play when a device is plugged</summary>
       <description>
         Which sound to play when a device is unplugged.
+      </description>
+    </key>
+
+    <key name="notification-enabled" type="b">
+      <default>false</default>
+      <summary>Whether to play a sound when showing notifications</summary>
+      <description>
+        Whether to play a sound when showing notifications.
+      </description>
+    </key> 
+   
+    <key name="notification-file" type="s">
+      <default>""</default>
+      <summary>Which sound to play when showing notifications</summary>
+      <description>
+        Which sound to play when showing notifications.
       </description>
     </key>    
 

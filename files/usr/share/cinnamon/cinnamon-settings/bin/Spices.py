@@ -2,15 +2,6 @@ try:
     from SettingsWidgets import rec_mkdir
     import gettext
     from gi.repository import Gio, Gtk, GObject, Gdk, GdkPixbuf, GLib
-    # WebKit requires gir1.2-javascriptcoregtk-3.0 and gir1.2-webkit-3.0
-    # try:
-    #     from gi.repository import WebKit
-    #     HAS_WEBKIT=True
-    # except:
-    #     HAS_WEBKIT=False
-    #     print "WebKit not found on this system. These packages are needed for adding spices:"
-    #     print "  gir1.2-javascriptcoregtk-3.0"
-    #     print "  gir1.2-webkit-3.0"
     import locale
     import tempfile
     import os
@@ -159,29 +150,6 @@ class Spice_Harvester:
         self.spiceDetail.set_size_request(640, 440)
         content_area = self.spiceDetail.get_content_area()
 
-        # if self.get_webkit_enabled():
-        #     self.browser = WebKit.WebView()
-
-        #     self.browser.connect('button-press-event', lambda w, e: e.button == 3)
-        #     self.browser.connect('title-changed', self.browser_title_changed)
-        #     self.browser.connect('console-message' , self.browser_console_message)
-
-        #     settings = WebKit.WebSettings()
-        #     settings.set_property('enable-xss-auditor', False)
-        #     settings.set_property('enable-file-access-from-file-uris', True)
-        #     settings.set_property('enable-accelerated-compositing', True)
-        #     self.browser.set_settings(settings)
-
-        #     scrolled_window = Gtk.ScrolledWindow()
-        #     scrolled_window.set_shadow_type(Gtk.ShadowType.NONE)
-        #     scrolled_window.set_border_width(0)
-        #     scrolled_window.add(self.browser)
-        #     content_area.pack_start(scrolled_window, True, True, 0)
-        #     scrolled_window.show()
-
-    def get_webkit_enabled(self):
-        return HAS_WEBKIT
-
     def close_select_detail(self):
         self.spiceDetail.hide()
         if callable(self.on_detail_select):
@@ -211,9 +179,9 @@ class Spice_Harvester:
 
         appletData = self.index_cache[uuid]
 
-        # Browsing the info within the app would be great (ala mintinstall) but until it is fully ready
+        # Browsing the info within the app would be great (ala mintinstall)
         # and it gives a better experience (layout, comments, reviewing) than
-        # browsing online we will open the link with an external browser
+        # browsing online
         os.system("xdg-open '%s/%ss/view/%s'" % (URL_SPICES_HOME, self.collection_type, appletData['spices-id']))
         return
 

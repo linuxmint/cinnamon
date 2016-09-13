@@ -1,6 +1,6 @@
 {
  "use-flags": {
-    "type": "checkbox",
+    "type": "switch",
     "default" : true,
     "description" : "Use flags to display keyboard layouts"
  }

@@ -1,6 +1,10 @@
 {
+    "section1": {
+        "type": "section",
+        "description" : "Panel"
+    },
     "showtrack": {
-        "type": "checkbox",
+        "type": "switch",
         "default": false,
         "description": "Show song information on the panel"
     },
@@ -25,25 +29,26 @@
         "description": "Action on middle click"
     },
     "showalbum": {
-        "type": "checkbox",
+        "type": "switch",
         "default": false,
         "description": "Show album art as icon"
     },
     "hideSystray" : {
-        "type" : "checkbox",
+        "type" : "switch",
         "description" : "Hide system tray icons for compatible players",
         "default": true
     },
-    "separator": {
-        "type": "separator"
+    "section2": {
+        "type": "section",
+        "description" : "Menu"
     },
     "playerControl": {
-        "type": "checkbox",
+        "type": "switch",
         "default": true,
         "description": "Control Players"
     },
     "extendedPlayerControl": {
-        "type": "checkbox",
+        "type": "switch",
         "default": false,
         "description": "Show Loop and Shuffle controls",
         "dependency": "playerControl",

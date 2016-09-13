@@ -117,6 +117,7 @@ const Util = imports.misc.util;
 const Keybindings = imports.ui.keybindings;
 const Settings = imports.ui.settings;
 const Systray = imports.ui.systray;
+const Accessibility = imports.ui.accessibility;
 
 const DEFAULT_BACKGROUND_COLOR = new Clutter.Color();
 DEFAULT_BACKGROUND_COLOR.from_pixel(0x2266bbff);
@@ -133,12 +134,13 @@ let backgroundManager = null;
 let slideshowManager = null;
 let placesManager = null;
 let panelManager = null;
-let osdWindow = null;
+let osdWindowManager = null;
 let overview = null;
 let expo = null;
 let runDialog = null;
 let lookingGlass = null;
 let wm = null;
+let a11yHandler = null;
 let messageTray = null;
 let indicatorManager = null;
 let notificationDaemon = null;
@@ -292,7 +294,7 @@ function start() {
 
     Gio.DesktopAppInfo.set_desktop_env('X-Cinnamon');
 
-    cinnamonDBusService = new CinnamonDBus.Cinnamon();
+    cinnamonDBusService = new CinnamonDBus.CinnamonDBus();
 
     // Ensure CinnamonWindowTracker and CinnamonAppUsage are initialized; this will
     // also initialize CinnamonAppSystem first.  CinnamonAppSystem
@@ -387,7 +389,7 @@ function start() {
         layoutManager.primaryMonitor.y + layoutManager.primaryMonitor.height/2);
 
     xdndHandler = new XdndHandler.XdndHandler();
-    osdWindow = new OsdWindow.OsdWindow();
+    osdWindowManager = new OsdWindow.OsdWindowManager();
     // This overview object is just a stub for non-user sessions
     overview = new Overview.Overview();
     expo = new Expo.Expo();
@@ -456,6 +458,8 @@ function start() {
 
     createLookingGlass();
 
+    a11yHandler = new Accessibility.A11yHandler();
+
     if (software_rendering && !GLib.getenv('CINNAMON_2D')) {
         notifyCinnamon2d();
     }
@@ -483,6 +487,11 @@ function start() {
         global.background_actor.show();
         if (do_login_sound)
             soundManager.play_once_per_session('login');
+    }
+
+    // Disable panel edit mode when Cinnamon starts
+    if (global.settings.get_boolean("panel-edit-mode")) {
+        global.settings.set_boolean("panel-edit-mode", false);
     }
 
     global.connect('shutdown', do_shutdown_sequence);

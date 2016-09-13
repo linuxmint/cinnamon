@@ -25,7 +25,7 @@ static void cinnamon_generic_container_iface_init (ClutterContainerIface *iface)
 
 G_DEFINE_TYPE_WITH_CODE(CinnamonGenericContainer,
                         cinnamon_generic_container,
-                        ST_TYPE_CONTAINER,
+                        ST_TYPE_WIDGET,
                         G_IMPLEMENT_INTERFACE (CLUTTER_TYPE_CONTAINER,
                                                cinnamon_generic_container_iface_init));
 
@@ -66,7 +66,7 @@ cinnamon_generic_container_allocate (ClutterActor           *self,
   StThemeNode *theme_node;
   ClutterActorBox content_box;
 
-  CLUTTER_ACTOR_CLASS (cinnamon_generic_container_parent_class)->allocate (self, box, flags);
+  clutter_actor_set_allocation (self, box, flags);
 
   theme_node = st_widget_get_theme_node (ST_WIDGET (self));
   st_theme_node_get_content_box (theme_node, box, &content_box);
@@ -125,15 +125,14 @@ static void
 cinnamon_generic_container_paint (ClutterActor  *actor)
 {
   CinnamonGenericContainer *self = (CinnamonGenericContainer*) actor;
-  GList *iter, *children;
+  ClutterActor *child;
 
-  CLUTTER_ACTOR_CLASS (cinnamon_generic_container_parent_class)->paint (actor);
+  st_widget_paint_background (ST_WIDGET (actor));
 
-  children = st_container_get_children_list (ST_CONTAINER (actor));
-  for (iter = children; iter; iter = iter->next)
+  for (child = clutter_actor_get_first_child (actor);
+       child != NULL;
+       child = clutter_actor_get_next_sibling (child))
     {
-      ClutterActor *child = iter->data;
-
       if (g_hash_table_lookup (self->priv->skip_paint, child))
         continue;
 
@@ -146,15 +145,14 @@ cinnamon_generic_container_pick (ClutterActor        *actor,
                               const ClutterColor  *color)
 {
   CinnamonGenericContainer *self = (CinnamonGenericContainer*) actor;
-  GList *iter, *children;
+  ClutterActor *child;
 
   CLUTTER_ACTOR_CLASS (cinnamon_generic_container_parent_class)->pick (actor, color);
 
-  children = st_container_get_children_list (ST_CONTAINER (actor));
-  for (iter = children; iter; iter = iter->next)
+  for (child = clutter_actor_get_first_child (actor);
+       child != NULL;
+       child = clutter_actor_get_next_sibling (child))
     {
-      ClutterActor *child = iter->data;
-
       if (g_hash_table_lookup (self->priv->skip_paint, child))
         continue;
 
@@ -163,16 +161,17 @@ cinnamon_generic_container_pick (ClutterActor        *actor,
 }
 
 static GList *
-cinnamon_generic_container_get_focus_chain (StContainer *container)
+cinnamon_generic_container_get_focus_chain (StWidget *widget)
 {
-  CinnamonGenericContainer *self = CINNAMON_GENERIC_CONTAINER (container);
-  GList *children, *focus_chain;
+  CinnamonGenericContainer *self = CINNAMON_GENERIC_CONTAINER (widget);
+  ClutterActor *child;
+  GList *focus_chain;
 
   focus_chain = NULL;
-  for (children = st_container_get_children_list (container); children; children = children->next)
+  for (child = clutter_actor_get_first_child (CLUTTER_ACTOR (self));
+       child != NULL;
+       child = clutter_actor_get_next_sibling (child))
     {
-      ClutterActor *child = children->data;
-
       if (CLUTTER_ACTOR_IS_VISIBLE (child) &&
           !cinnamon_generic_container_get_skip_paint (self, child))
         focus_chain = g_list_prepend (focus_chain, child);
@@ -252,7 +251,7 @@ cinnamon_generic_container_class_init (CinnamonGenericContainerClass *klass)
 {
   GObjectClass *gobject_class = G_OBJECT_CLASS (klass);
   ClutterActorClass *actor_class = CLUTTER_ACTOR_CLASS (klass);
-  StContainerClass *container_class = ST_CONTAINER_CLASS (klass);
+  StWidgetClass *widget_class = ST_WIDGET_CLASS (klass);
 
   gobject_class->finalize = cinnamon_generic_container_finalize;
 
@@ -262,7 +261,7 @@ cinnamon_generic_container_class_init (CinnamonGenericContainerClass *klass)
   actor_class->paint = cinnamon_generic_container_paint;
   actor_class->pick = cinnamon_generic_container_pick;
 
-  container_class->get_focus_chain = cinnamon_generic_container_get_focus_chain;
+  widget_class->get_focus_chain = cinnamon_generic_container_get_focus_chain;
 
   /**
    * CinnamonGenericContainer::get-preferred-width:

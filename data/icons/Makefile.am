@@ -11,6 +11,10 @@ public_icons = \
 	hicolor_actions_scalable_pan-start-symbolic.svg \
 	hicolor_actions_scalable_pan-start-symbolic-rtl.svg \
 	hicolor_actions_scalable_pan-up-symbolic.svg \
+    hicolor_actions_scalable_caps-lock-symbolic.svg \
+    hicolor_actions_scalable_caps-lock-off-symbolic.svg \
+    hicolor_actions_scalable_num-lock-symbolic.svg \
+    hicolor_actions_scalable_num-lock-off-symbolic.svg \
 	hicolor_categories_16x16_cs-desklets.svg \
 	hicolor_categories_16x16_cs-backgrounds.svg \
 	hicolor_categories_scalable_cs-applets.svg \
@@ -65,7 +69,18 @@ public_icons = \
 	hicolor_emblems_scalable_cs-xlet-installed.svg \
 	hicolor_emblems_scalable_cs-xlet-running.svg \
 	hicolor_emblems_scalable_cs-xlet-system.svg \
-	hicolor_emblems_scalable_cs-xlet-update.svg \
+    hicolor_emblems_scalable_cs-xlet-update.svg \
+	hicolor_emblems_scalable_cs-xlet-danger.svg \
+	hicolor_devices_scalable_audio-speaker-left.svg \
+	hicolor_devices_scalable_audio-speaker-center.svg \
+	hicolor_devices_scalable_audio-speaker-right.svg \
+	hicolor_devices_scalable_audio-speaker-left-back.svg \
+	hicolor_devices_scalable_audio-speaker-center-back.svg \
+	hicolor_devices_scalable_audio-speaker-right-back.svg \
+	hicolor_devices_scalable_audio-speaker-left-side.svg \
+	hicolor_devices_scalable_audio-speaker-right-side.svg \
+	hicolor_devices_scalable_audio-subwoofer.svg \
+	hicolor_devices_scalable_bluetooth.svg \
 	$(NULL)
 
 EXTRA_DIST = \

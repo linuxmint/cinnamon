@@ -2,6 +2,7 @@
 
 from ExtensionCore import ExtensionSidePage
 
+
 class Module:
     name = "extensions"
     category = "prefs"
@@ -20,6 +21,7 @@ class Module:
     def _setParentRef(self, window):
         self.sidePage.window = window
 
+
 class ExtensionViewSidePage (ExtensionSidePage):
     def __init__(self, name, icon, keywords, content_box, collection_type, module):
         self.RemoveString = ""
@@ -27,4 +29,3 @@ class ExtensionViewSidePage (ExtensionSidePage):
 
     def toSettingString(self, uuid, instanceId):
         return uuid
-

@@ -100,7 +100,7 @@ function DeviceItem() {
 DeviceItem.prototype = {
     __proto__: PopupMenu.PopupBaseMenuItem.prototype,
 
-    _init: function(device, status) {
+    _init: function(device, status, aliases) {
         PopupMenu.PopupBaseMenuItem.prototype._init.call(this, { reactive: false });
 
         let [device_id, vendor, model, device_type, icon, percentage, state, time, timepercentage] = device;
@@ -111,6 +111,20 @@ DeviceItem.prototype = {
         let description = deviceTypeToString(device_type);
         if (vendor != "" || model != "") {
             description = "%s %s".format(vendor, model);
+        }
+
+        for ( let i = 0; i < aliases.length; ++i ) {
+            let alias = aliases[i];
+            try{
+                let parts = alias.split(':=');
+                if (parts[0] == device_id) {
+                    description = parts[1];
+                }
+            }
+            catch(e) {
+                // ignore malformed aliases
+            }
+            global.logError(alias);
         }
 
         this.label = new St.Label({ text: "%s %d%%".format(description, Math.round(percentage)) });
@@ -237,7 +251,6 @@ MyApplet.prototype = {
         this.metadata = metadata;
 
         this.settings = new Settings.AppletSettings(this, metadata.uuid, instanceId);
-        this.settings.bindProperty(Settings.BindingDirection.IN, "labelinfo", "labelinfo", Lang.bind(this, this._devicesChanged), null);
 
         Main.systrayManager.registerRole("power", metadata.uuid);
         Main.systrayManager.registerRole("battery", metadata.uuid);
@@ -245,6 +258,8 @@ MyApplet.prototype = {
         this.menuManager = new PopupMenu.PopupMenuManager(this);
         this.menu = new Applet.AppletPopupMenu(this, orientation);
         this.menuManager.addMenu(this.menu);
+
+        this.aliases = global.settings.get_strv("device-aliases");
 
         this._deviceItems = [ ];
         this._devices = [ ];
@@ -264,11 +279,22 @@ MyApplet.prototype = {
 
         this.actor.connect("scroll-event", Lang.bind(this, this._onScrollEvent));
 
+        this._proxy = null;
+
         Interfaces.getDBusProxyAsync("org.cinnamon.SettingsDaemon.Power", Lang.bind(this, function(proxy, error) {
             this._proxy = proxy;
+
             this._proxy.connect("g-properties-changed", Lang.bind(this, this._devicesChanged));
+            global.settings.connect('changed::device-aliases', Lang.bind(this, this._on_device_aliases_changed));
+            this.settings.bindProperty(Settings.BindingDirection.IN, "labelinfo", "labelinfo", Lang.bind(this, this._devicesChanged), null);
+
             this._devicesChanged();
         }));
+    },
+
+    _on_device_aliases_changed: function() {
+        this.aliases = global.settings.get_strv("device-aliases");
+        this._devicesChanged();
     },
 
     _onButtonPressEvent: function(actor, event){
@@ -400,6 +426,9 @@ MyApplet.prototype = {
         this._devices = [];
         this._primaryDevice = null;
 
+        if (!this._proxy)
+            return;
+
         // Identify the primary battery device
         this._proxy.GetPrimaryDeviceRemote(Lang.bind(this, function(device, error) {
             if (error) {
@@ -447,7 +476,7 @@ MyApplet.prototype = {
                     }
 
                     let status = this._getDeviceStatus(devices[i]);
-                    let item = new DeviceItem (devices[i], status);
+                    let item = new DeviceItem (devices[i], status, this.aliases);
                     this.menu.addMenuItem(item, position);
                     this.num_devices = this.num_devices + 1;
                     this._deviceItems.push(item);
@@ -514,6 +543,13 @@ MyApplet.prototype = {
 
     on_applet_removed_from_panel: function() {
         Main.systrayManager.unregisterId(this.metadata.uuid);
+    },
+//
+//override getDisplayLayout to declare that this applet is suitable for both horizontal and
+// vertical orientations
+//
+    getDisplayLayout: function() {
+        return Applet.DisplayLayout.BOTH;
     }
 };
 

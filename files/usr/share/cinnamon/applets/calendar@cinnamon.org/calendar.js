@@ -212,7 +212,7 @@ Calendar.prototype = {
 
     _buildHeader: function() {
         let offsetCols = this.show_week_numbers ? 1 : 0;
-        this.actor.destroy_children();
+        this.actor.destroy_all_children();
 
         // Top line of the calendar '<| September |> <| 2009 |>'
         this._topBoxMonth = new St.BoxLayout();
@@ -276,7 +276,7 @@ Calendar.prototype = {
         }
 
         // All the children after this are days, and get removed when we update the calendar
-        this._firstDayIndex = this.actor.get_children().length;
+        this._firstDayIndex = this.actor.get_n_children();
     },
 
     _onStyleChange: function(actor, event) {

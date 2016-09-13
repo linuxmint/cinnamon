@@ -1,7 +1,10 @@
 #!/usr/bin/env python2
 
-from SettingsWidgets import *
+import gi
+gi.require_version('Gtk', '3.0')
 from gi.repository import Gio, Gtk, GObject, Gdk
+
+from GSettingsWidgets import *
 
 
 class Module:
@@ -95,6 +98,10 @@ class Module:
             settings.add_row(widget)
 
             widget = GSettingsSpinButton(_("Window drag/resize threshold"), "org.cinnamon.muffin", "resize-threshold", _("Pixels"), 1, 100, size_group=size_group)
+            settings.add_row(widget)
+
+            widget = GSettingsSwitch(_("Edge resistance with other windows"), "org.cinnamon.muffin", "edge-resistance-window")
+            widget.set_tooltip_text(_("Make window borders stick when moved or resized near other windows."))
             settings.add_row(widget)
 
             # Alt Tab

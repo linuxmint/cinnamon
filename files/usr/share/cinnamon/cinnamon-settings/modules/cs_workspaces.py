@@ -1,6 +1,7 @@
 #!/usr/bin/env python2
 
-from SettingsWidgets import *
+from GSettingsWidgets import *
+
 
 class Module:
     name = "workspaces"
@@ -25,7 +26,6 @@ class Module:
             # OSD
 
             page = SettingsPage()
-
 
             switch = GSettingsSwitch("", "org.cinnamon", "workspace-osd-visible")
             switch.label.set_markup("<b>%s</b>" % _("Enable workspace OSD"))

@@ -29,8 +29,8 @@ Overview.prototype = {
     _init : function() {
         this._spacing = 0;
 
-        this._group = new St.Group({ name: 'overview',
-                                     reactive: true });
+        this._group = new St.Widget({ name: 'overview',
+                                      reactive: true });
         this._group._delegate = this;
         this._group.connect('style-changed',
             Lang.bind(this, function() {

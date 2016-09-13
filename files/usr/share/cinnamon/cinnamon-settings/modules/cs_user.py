@@ -1,9 +1,5 @@
 #!/usr/bin/env python2
 
-from SettingsWidgets import *
-import gi
-gi.require_version('AccountsService', '1.0')
-from gi.repository import AccountsService, GLib
 try:
     import PAM
 except:
@@ -12,8 +8,16 @@ import pexpect
 import time
 from random import randint
 import shutil
-import PIL
 import os
+import subprocess
+
+import PIL
+import gi
+gi.require_version('AccountsService', '1.0')
+from gi.repository import AccountsService, GLib
+
+from GSettingsWidgets import *
+
 
 class Module:
     name = "user"
@@ -91,22 +95,14 @@ class Module:
 
             self.face_button.add_separator()
 
-            webcam_detected = False
-            try:
-                import cv
-                capture = cv.CaptureFromCAM(-1)
-                for i in range(10):
-                    img = cv.QueryFrame(capture)
-                    if img != None:
-                        webcam_detected = True
-            except Exception, detail:
-                print detail
+            # Video devices assumed to be webcams
+            import glob
+            webcam_detected = len(glob.glob("/dev/video*")) > 0
 
-            if (webcam_detected):
+            if webcam_detected:
                 self.face_button.add_menuitem(self.face_photo_menuitem)
-                self.face_button.add_menuitem(self.face_browse_menuitem)
-            else:
-                self.face_button.add_menuitem(self.face_browse_menuitem)
+
+            self.face_button.add_menuitem(self.face_browse_menuitem)
 
     def update_preview_cb (self, dialog, preview):
         filename = dialog.get_preview_filename()
@@ -121,37 +117,43 @@ class Module:
                 pass
 
     def _on_face_photo_menuitem_activated(self, menuitem):
-        try:
-            import cv
-            capture = cv.CaptureFromCAM(-1)
-            for i in range(10):
-                img = cv.QueryFrame(capture)
-                if img is not None:
-                    path = "/tmp/cinnamon-webcam.png"
-                    cv.SaveImage(path, img)
-                    image = PIL.Image.open(path)
-                    width, height = image.size
-                    if width > height:
-                        new_width = height
-                        new_height = height
-                    elif height > width:
-                        new_width = width
-                        new_height = width
-                    else:
-                        new_width = width
-                        new_height = height
-                    left = (width - new_width)/2
-                    top = (height - new_height)/2
-                    right = (width + new_width)/2
-                    bottom = (height + new_height)/2
-                    image = image.crop((left, top, right, bottom))
-                    image.thumbnail((96, 96), PIL.Image.ANTIALIAS)
-                    face_path = os.path.join(self.accountService.get_home_dir(), ".face")
-                    image.save(face_path, "png")
-                    self.accountService.set_icon_file(face_path)
-                    self.face_button.set_picture_from_file(face_path)
-        except Exception, detail:
-            print detail
+
+        # streamer takes -t photos, uses /dev/video0
+        if 0 != subprocess.call(["streamer", "-j90", "-t8", "-s800x600", "-o", "/tmp/temp-account-pic00.jpeg"]):
+            print "Error: Webcam not available"
+            return
+
+        # Use the 8th frame (the webcam takes a few frames to "lighten up")
+        path = "/tmp/temp-account-pic07.jpeg"
+
+        # Crop the image to thumbnail size
+        image = PIL.Image.open(path)
+        width, height = image.size
+
+        if width > height:
+            new_width = height
+            new_height = height
+        elif height > width:
+            new_width = width
+            new_height = width
+        else:
+            new_width = width
+            new_height = height
+
+        left = (width - new_width) / 2
+        top = (height - new_height) / 2
+        right = (width + new_width) / 2
+        bottom = (height + new_height) / 2
+
+        image = image.crop((left, top, right, bottom))
+        image.thumbnail((96, 96), PIL.Image.ANTIALIAS)
+
+        face_path = os.path.join(self.accountService.get_home_dir(), ".face")
+
+        image.save(face_path, "png")
+        self.accountService.set_icon_file(face_path)
+        self.face_button.set_picture_from_file(face_path)
+
 
     def _on_face_browse_menuitem_activated(self, menuitem):
         dialog = Gtk.FileChooserDialog(None, None, Gtk.FileChooserAction.OPEN, (Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL, Gtk.STOCK_OPEN, Gtk.ResponseType.OK))
@@ -282,7 +284,7 @@ class PasswordDialog(Gtk.Dialog):
 
         self.infobar = Gtk.InfoBar()
         self.infobar.set_message_type(Gtk.MessageType.ERROR)
-        label = Gtk.Label.new(_("An error occured. Your password was not changed."))
+        label = Gtk.Label.new(_("An error occurred. Your password was not changed."))
         content = self.infobar.get_content_area()
         content.add(label)
         table.attach(self.infobar, 0, 3, 5, 6)
@@ -375,7 +377,7 @@ class PasswordDialog(Gtk.Dialog):
             else:
                 symbol += 1
         length = len(password)
-        
+
         length = min(length,4)
         digit = min(digit,3)
         upper = min(upper,3)

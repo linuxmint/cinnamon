@@ -1,10 +1,14 @@
 #!/usr/bin/env python2
 
-from SettingsWidgets import *
-from gi.repository import Gio, Gtk, GObject, Gdk, GdkPixbuf, GLib, Pango
 import os
 import glob
 import shutil
+
+import gi
+gi.require_version('Gtk', '3.0')
+from gi.repository import Gio, Gtk, GObject, Gdk, GdkPixbuf, GLib, Pango
+
+from GSettingsWidgets import *
 
 try:
     ENVIRON = os.environ['XDG_CURRENT_DESKTOP']
@@ -62,7 +66,7 @@ class Module:
         user_files = glob.glob(os.path.join(GLib.get_user_config_dir(), "autostart", "*.desktop"))
         for app in user_files:
             AUTOSTART_APPS.append(AutostartApp(app, user_position=os.path.dirname(app)))
-        
+
         for d in GLib.get_system_config_dirs():
             system_files.extend(glob.glob(os.path.join(d, "autostart", "*.desktop")))
 
@@ -87,6 +91,7 @@ class AutostartApp():
         self.key_file = GLib.KeyFile.new()
         self.path = app
         self.key_file_loaded = False
+        self.basename = None
 
         self.load()
 
@@ -279,7 +284,7 @@ class AutostartApp():
             self.enabled = False
             self.save_mask.add_item("enabled")
             self.queue_save()
-        
+
     def update_description(self):
         if self.name == "":
             self.name = _("No name")
@@ -299,7 +304,7 @@ class AutostartApp():
             self.get_boolean(key_file, "X-GNOME-Autostart-enabled", True) != self.enabled or
             self.get_shown(key_file) != self.shown):
             return False
-        
+
         if self.get_boolean(key_file, GLib.KEY_FILE_DESKTOP_KEY_NO_DISPLAY, False) != self.no_display:
             return False
 
@@ -361,7 +366,8 @@ class AutostartBox(Gtk.Box):
         toolbar = Gtk.Toolbar.new()
         Gtk.StyleContext.add_class(Gtk.Widget.get_style_context(toolbar), "cs-header")
         label = Gtk.Label()
-        label.set_markup("<b>%s</b>" % title)
+        markup = GLib.markup_escape_text(title)
+        label.set_markup("<b>{}</b>".format(markup))
         title_holder = Gtk.ToolItem()
         title_holder.add(label)
         toolbar.add(title_holder)
@@ -491,7 +497,7 @@ class AutostartBox(Gtk.Box):
                 return
 
             app = AutostartApp(filename, user_position=os.path.dirname(filename))
-            
+
             app.basename = os.path.basename(app.app)
             app.dir = os.path.basename(app.app)
             app.hidden = False
@@ -617,20 +623,22 @@ class AutostartRow(Gtk.ListBoxRow):
                     pixbuf = icon_theme.load_icon(self.app.icon, 24, Gtk.IconLookupFlags.FORCE_SIZE)
                     img = Gtk.Image.new_from_pixbuf(pixbuf)
             except:
-                img = Gtk.Image.new_from_gicon(Gio.ThemedIcon.new(DEFAULT_ICON), Gtk.IconSize.LARGE_TOOLBAR) 
+                img = Gtk.Image.new_from_gicon(Gio.ThemedIcon.new(DEFAULT_ICON), Gtk.IconSize.LARGE_TOOLBAR)
         else:
             img = Gtk.Image.new_from_gicon(Gio.ThemedIcon.new(DEFAULT_ICON), Gtk.IconSize.LARGE_TOOLBAR)
-        grid.attach(img, 0, 0, 1, 1)    
+        grid.attach(img, 0, 0, 1, 1)
 
         self.desc_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
         self.desc_box.props.hexpand = True
         self.desc_box.props.halign = Gtk.Align.START
         self.name_label = Gtk.Label()
-        self.name_label.set_markup("<b>%s</b>" % self.app.name)
+        name_markup = GLib.markup_escape_text(self.app.name)
+        self.name_label.set_markup("<b>{}</b>".format(name_markup))
         self.name_label.props.xalign = 0.0
         self.desc_box.add(self.name_label)
         self.comment_label = Gtk.Label()
-        self.comment_label.set_markup("<small>%s</small>" % self.app.comment)
+        comment_markup = GLib.markup_escape_text(self.app.comment)
+        self.comment_label.set_markup("<small>{}</small>".format(comment_markup))
         self.comment_label.props.xalign = 0.0
         self.comment_label.set_ellipsize(Pango.EllipsizeMode.END)
         self.comment_label.set_max_width_chars(40)
@@ -644,7 +652,8 @@ class AutostartRow(Gtk.ListBoxRow):
         label = Gtk.Label(_("Delay"))
         self.delay_box.pack_start(label, False, False, 0)
         self.delay_time_label = Gtk.Label()
-        self.delay_time_label.set_markup("%s" % self.app.delay)
+        delay_time_markup = GLib.markup_escape_text(self.app.delay)
+        self.delay_time_label.set_markup(delay_time_markup)
         self.delay_time_label.get_style_context().add_class("dim-label")
         self.delay_box.pack_start(self.delay_time_label, False, False, 0)
         grid.attach_next_to(self.delay_box, self.desc_box, Gtk.PositionType.RIGHT, 1, 1)
@@ -662,9 +671,13 @@ class AutostartRow(Gtk.ListBoxRow):
         self.add(widget)
 
     def update(self):
-        self.name_label.set_markup("<b>%s</b>" % self.app.name)
-        self.comment_label.set_markup("<small>%s</small>" % self.app.comment)
-        self.delay_time_label.set_markup("%s" % self.app.delay)
+        name_markup = GLib.markup_escape_text(self.app.name)
+        comment_markup = GLib.markup_escape_text(self.app.comment)
+        delay_time_markup = GLib.markup_escape_text(self.app.delay)
+
+        self.name_label.set_markup("<b>{}</b>".format(name_markup))
+        self.comment_label.set_markup("<small>{}</small>".format(comment_markup))
+        self.delay_time_label.set_markup(delay_time_markup)
 
     def on_switch_activated(self, switch, gparam):
         active = switch.get_active()
@@ -711,41 +724,50 @@ class AppDialog(Gtk.Dialog):
         label.props.xalign = 0.0
         grid.attach(label, 0, 0, 1, 1)
         self.name_entry = Gtk.Entry()
+        self.name_entry.props.hexpand = True
         if self.app:
             self.name_entry.set_text(self.app.name)
         self.name_entry.connect("activate", self.on_entry_activated)
-        grid.attach(self.name_entry, 1, 0, 3, 1)
+        grid.attach(self.name_entry, 1, 0, 2, 1)
 
         label = Gtk.Label(_("Command"))
         label.props.xalign = 0.0
         grid.attach(label, 0, 1, 1, 1)
+        box = Gtk.Box(Gtk.Orientation.HORIZONTAL)
+        grid.attach(box, 1, 1, 2, 1)
         self.command_entry = Gtk.Entry()
+        self.command_entry.props.hexpand = True
+        self.command_entry.set_margin_right(12)
         if self.app:
             self.command_entry.set_text(self.app.command)
         self.command_entry.connect("activate", self.on_entry_activated)
-        grid.attach(self.command_entry, 1, 1, 2, 1)
+        box.pack_start(self.command_entry, True, True, 0)
 
         browse_button = Gtk.Button.new_with_label(_("Browse..."))
+        browse_button.props.hexpand = False
         browse_button.connect("clicked", self.on_browse_button_clicked)
-        grid.attach(browse_button, 3, 1, 1, 1)
+        box.pack_end(browse_button, False, False, 0)
 
         label = Gtk.Label(_("Comment"))
         label.props.xalign = 0.0
         grid.attach(label, 0, 2, 1, 1)
         self.comment_entry = Gtk.Entry()
+        self.comment_entry.props.hexpand = True
         if self.app:
             self.comment_entry.set_text(self.app.comment)
         self.comment_entry.connect("activate", self.on_entry_activated)
-        grid.attach(self.comment_entry, 1, 2, 3, 1)
+        grid.attach(self.comment_entry, 1, 2, 2, 1)
 
         label = Gtk.Label(_("Startup delay"))
         label.props.xalign = 0.0
         grid.attach(label, 0, 3, 1, 1)
+        box = Gtk.Box(Gtk.Orientation.HORIZONTAL)
+        grid.attach(box, 1, 3, 1, 1)
         self.spin = Gtk.SpinButton.new_with_range(0, 100, 1)
         if self.app:
             self.spin.set_value(int(self.app.delay))
         self.spin.connect("activate", self.on_entry_activated)
-        grid.attach(self.spin, 1, 3, 1, 1)
+        box.pack_start(self.spin, False, False, 0)
 
     def run_dialog(self):
         retval = {"done": False}

@@ -12,6 +12,7 @@ const DeskletManager = imports.ui.deskletManager;
 const ExtensionSystem = imports.ui.extensionSystem;
 const SearchProviderManager = imports.ui.searchProviderManager;
 const Util = imports.misc.util;
+const Cinnamon = imports.gi.Cinnamon;
 
 const CinnamonIface =
     '<node> \
@@ -50,9 +51,10 @@ const CinnamonIface =
                 <arg type="i" direction="in" name="width"/> \
                 <arg type="i" direction="in" name="height"/> \
             </method> \
-            <method name="highlightApplet"> \
+            <method name="highlightXlet"> \
                 <arg type="s" direction="in" /> \
                 <arg type="s" direction="in" /> \
+                <arg type="b" direction="in" /> \
             </method> \
             <method name="highlightPanel"> \
                 <arg type="i" direction="in" /> \
@@ -99,14 +101,15 @@ const CinnamonIface =
                 <arg type="i" direction="in" name="process_id" /> \
                 <arg type="s" direction="in" name="result" /> \
             </method> \
+            <method name="ToggleKeyboard"/> \
         </interface> \
     </node>';
 
-function Cinnamon() {
+function CinnamonDBus() {
     this._init();
 }
 
-Cinnamon.prototype = {
+CinnamonDBus.prototype = {
     _init: function() {
         this._dbusImpl = Gio.DBusExportedObject.wrapJSObject(CinnamonIface, this);
         this._dbusImpl.export(Gio.DBus.session, '/org/Cinnamon');
@@ -142,14 +145,11 @@ Cinnamon.prototype = {
         return [success, returnValue];
     },
 
-    _onScreenshotComplete: function(obj, result, area, flash, invocation) {
+    _onScreenshotComplete: function(obj, result, area, flash) {
         if (flash) {
             let flashspot = new Flashspot.Flashspot(area);
             flashspot.fire();
         }
-
-        let retval = GLib.Variant.new('(b)', [result]);
-        invocation.return_value(retval);
     },
 
     /**
@@ -167,12 +167,10 @@ Cinnamon.prototype = {
      * indicating whether the operation was successful or not.
      *
      */
-    ScreenshotAreaAsync : function (params, invocation) {
-        let [include_cursor, x, y, width, height, flash, filename, callback] = params;
+    ScreenshotArea: function (include_cursor, x, y, width, height, flash, filename) {
         let screenshot = new Cinnamon.Screenshot();
-        screenshot.screenshot_area (include_cursor, x, y, width, height, filename,
-                                Lang.bind(this, this._onScreenshotComplete,
-                                          flash, invocation));
+        screenshot.screenshot_area (include_cursor, x, y, width, 200, filename,
+                                Lang.bind(this, this._onScreenshotComplete, flash));
     },
 
     /**
@@ -187,8 +185,7 @@ Cinnamon.prototype = {
      * indicating whether the operation was successful or not.
      *
      */
-    ScreenshotWindowAsync : function (params, invocation) {
-        let [include_frame, include_cursor, flash, filename] = params;
+    ScreenshotWindow: function (include_frame, include_cursor, flash, filename) {
         let screenshot = new Cinnamon.Screenshot();
         screenshot.screenshot_window (include_frame, include_cursor, filename,
                                       Lang.bind(this, this._onScreenshotComplete,
@@ -206,8 +203,7 @@ Cinnamon.prototype = {
      * indicating whether the operation was successful or not.
      *
      */
-    ScreenshotAsync : function (params, invocation) {
-        let [include_cursor, flash, filename] = params;
+    Screenshot: function (include_cursor, flash, filename) {
         let screenshot = new Cinnamon.Screenshot();
         screenshot.screenshot(include_cursor, filename,
                           Lang.bind(this, this._onScreenshotComplete,
@@ -218,14 +214,16 @@ Cinnamon.prototype = {
         for (let param in params)
             params[param] = params[param].deep_unpack();
 
+        let monitorIndex = -1;
+        if (params['monitor'] >= 0) {
+            monitorIndex = params['monitor'];
+        }
+
         let icon = null;
         if (params['icon'])
             icon = Gio.Icon.new_for_string(params['icon']);
 
-        Main.osdWindow.setIcon(icon);
-        Main.osdWindow.setLevel(params['level']);
-        if (params)
-            Main.osdWindow.show();
+        Main.osdWindowManager.show(monitorIndex, icon, params['level'], true);
     },
 
     FlashArea: function(x, y, width, height) {
@@ -299,17 +297,9 @@ Cinnamon.prototype = {
         Extension.reloadExtension(uuid, Extension.Type[type]);
     },
 
-    highlightApplet: function(uuid, instance_id) {
+    highlightXlet: function(uuid, instance_id, highlight) {
         let obj = this._getXletObject(uuid, instance_id);
-        if (!obj)
-            return;
-        let actor = obj.actor;
-
-        if (actor) {
-            let [x, y] = actor.get_transformed_position();
-            let [w, h] = actor.get_transformed_size();
-            this.FlashArea(x, y, w, h)
-        }
+        if (obj.highlight) obj.highlight(highlight);
     },
 
     highlightPanel: function(id, highlight) {
@@ -332,7 +322,7 @@ Cinnamon.prototype = {
     },
 
     updateSetting: function(uuid, instance_id, key, payload) {
-        Main.settingsManager.uuids[uuid][instance_id].remote_set(key, payload);
+        Main.settingsManager.uuids[uuid][instance_id].remoteUpdate(key, payload);
     },
 
     switchWorkspaceLeft: function() {
@@ -377,6 +367,10 @@ Cinnamon.prototype = {
         {
             Util.subprocess_callbacks[process_id](result);
         }
+    },
+
+    ToggleKeyboard: function() {
+        Main.keyboard.toggle();
     },
 
     CinnamonVersion: Config.PACKAGE_VERSION

@@ -953,6 +953,7 @@ IndicatorActor.prototype = {
             x_expand: true,
             y_expand: true
         });
+
         this.actor._delegate = this;
 
         this._menu = null;

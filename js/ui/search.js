@@ -56,7 +56,7 @@ SearchResultDisplay.prototype = {
      * Remove all results from this display and reset the selection index.
      */
     clear: function() {
-        this.actor.get_children().forEach(function (actor) { actor.destroy(); });
+        this.actor.destroy_all_children();
         this.selectionIndex = -1;
     },
 
@@ -413,7 +413,7 @@ SearchSystem.prototype = {
                     let providerResults = provider.getSubsearchResultSet(previousResults, terms);
                     results.push([provider, providerResults]);
                 } catch (error) {
-                    global.logError('A ' + error.name + ' has occured in ' + provider.title, error);
+                    global.logError('A ' + error.name + ' has occurred in ' + provider.title, error);
                 }
             }
         } else {
@@ -424,7 +424,7 @@ SearchSystem.prototype = {
                     let providerResults = provider.getInitialResultSet(terms);
                     results.push([provider, providerResults]);
                 } catch (error) {
-                    global.logError('A ' + error.name + ' has occured in ' + provider.title, error);
+                    global.logError('A ' + error.name + ' has occurred in ' + provider.title, error);
                 }
             }
         }

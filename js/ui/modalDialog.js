@@ -66,10 +66,10 @@ ModalDialog.prototype = {
         this._hasModal = false;
         this._cinnamonReactive = params.cinnamonReactive;
 
-        this._group = new St.Group({ visible: false,
-                                     x: 0,
-                                     y: 0,
-                                     accessible_role: Atk.Role.DIALOG });
+        this._group = new St.Widget({ visible: false,
+                                      x: 0,
+                                      y: 0,
+                                      accessible_role: Atk.Role.DIALOG });
         Main.uiGroup.add_actor(this._group);
 
         let constraint = new Clutter.BindConstraint({ source: global.stage,
@@ -167,9 +167,9 @@ ModalDialog.prototype = {
      * ```
      */
     setButtons: function(buttons) {
-        let hadChildren = this._buttonLayout.get_children() > 0;
+        let hadChildren = this._buttonLayout.get_n_children() > 0;
 
-        this._buttonLayout.destroy_children();
+        this._buttonLayout.destroy_all_children();
         this._actionKeys = {};
         let focusSetExplicitly = false;
 
@@ -391,11 +391,11 @@ ModalDialog.prototype = {
      * can be dismissed by a close call.
      *
      * The main point of this method is to give some indication to the user
-     * that the dialog reponse has been acknowledged but will take a few
+     * that the dialog response has been acknowledged but will take a few
      * moments before being processed.
      *
      * e.g., if a user clicked "Log Out" then the dialog should go away
-     * imediately, but the lightbox should remain until the logout is
+     * immediately, but the lightbox should remain until the logout is
      * complete.
      */
     _fadeOutDialog: function(timestamp) {
@@ -493,6 +493,9 @@ SpicesAboutDialog.prototype = {
         //description
         let desc = new St.Label({text: this._(metadata.description), style_class: "about-description"});
         let dText = desc.clutter_text;
+        dText.ellipsize = Pango.EllipsizeMode.NONE;
+        dText.line_wrap = true;
+        dText.set_line_wrap_mode(Pango.WrapMode.WORD_CHAR);
         topTextBox.add_actor(desc);
 
         // optional content

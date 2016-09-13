@@ -440,6 +440,7 @@ Notification.prototype = {
         this._bannerBodyText = null;
         this._bannerBodyMarkup = false;
         this._titleFitsInBannerMode = true;
+        this._inhibitTransparency = false;
         this._titleDirection = St.TextDirection.NONE;
         this._spacing = 0;
 
@@ -460,24 +461,8 @@ Notification.prototype = {
         this.actor._parent_container = null;
         this.actor.connect('clicked', Lang.bind(this, this._onClicked));
         this.actor.connect('destroy', Lang.bind(this, this._onDestroy));
-		// Transparency on mouse over?
-		if (Main.messageTray.fadeOnMouseover) {
-			// Register to every notification as we intend to support multiple notifications on screen.
-			this.enter_id = this.actor.connect('enter-event', Lang.bind(this, function() {
-				Tweener.addTween(this.actor, {
-					opacity: ((Main.messageTray.fadeOpacity / 100) * 255).clamp(0, 255),
-					time: ANIMATION_TIME,
-					transition: 'easeOutQuad'
-				});
-			}));
-			this.leave_id = this.actor.connect('leave-event', Lang.bind(this, function() {
-				Tweener.addTween(this.actor, {
-					opacity: (this._table.get_theme_node().get_length('opacity') / global.ui_scale) || 255,
-					time: ANIMATION_TIME,
-					transition: 'easeOutQuad'
-				});
-			}));
-		}
+
+        this.updateFadeOnMouseover();
 
         this._table = new St.Table({ name: 'notification',
                                      reactive: true });
@@ -621,6 +606,36 @@ Notification.prototype = {
         if (params.body)
             this.addBody(params.body, params.bodyMarkup);
         this._updated();
+    },
+
+    updateFadeOnMouseover: function() {
+        // Transparency on mouse over?
+        if (Main.messageTray.fadeOnMouseover && !this._inhibitTransparency) {
+            // Register to every notification as we intend to support multiple notifications on screen.
+            this.enter_id = this.actor.connect('enter-event', Lang.bind(this, function() {
+                Tweener.addTween(this.actor, {
+                    opacity: ((Main.messageTray.fadeOpacity / 100) * 255).clamp(0, 255),
+                    time: ANIMATION_TIME,
+                    transition: 'easeOutQuad'
+                });
+            }));
+            this.leave_id = this.actor.connect('leave-event', Lang.bind(this, function() {
+                Tweener.addTween(this.actor, {
+                    opacity: (this._table.get_theme_node().get_length('opacity') / global.ui_scale) || 255,
+                    time: ANIMATION_TIME,
+                    transition: 'easeOutQuad'
+                });
+            }));
+        } else {
+            if (this.enter_id > 0) {
+                this.actor.disconnect(this.enter_id);
+                this.enter_id = 0;
+            }
+            if (this.leave_id > 0) {
+                this.actor.disconnect(this.leave_id);
+                this.leave_id = 0;
+            }
+        }
     },
 
     setIconVisible: function(visible) {
@@ -791,12 +806,16 @@ Notification.prototype = {
             button.label = label;
         }
 
-        if (this._buttonBox.get_children().length > 0)
+        if (this._buttonBox.get_n_children() > 0)
             this._buttonFocusManager.remove_group(this._buttonBox);
 
         this._buttonBox.add(button);
         this._buttonFocusManager.add_group(this._buttonBox);
         button.connect('clicked', Lang.bind(this, this._onActionInvoked, id));
+
+        this._inhibitTransparency = true;
+
+        this.updateFadeOnMouseover();
 
         this._updated();
     },
@@ -1310,7 +1329,7 @@ SummaryItem.prototype = {
     },
 
     prepareNotificationStackForShowing: function() {
-        if (this.notificationStack.get_children().length > 0)
+        if (this.notificationStack.get_n_children() > 0)
             return;
 
         for (let i = 0; i < this.source.notifications.length; i++) {
@@ -1319,7 +1338,6 @@ SummaryItem.prototype = {
     },
 
     doneShowingNotificationStack: function() {
-        let notificationActors = this.notificationStack.get_children();
         for (let i = 0; i < this._stackedNotifications.length; i++) {
             let stackedNotification = this._stackedNotifications[i];
             let notification = stackedNotification.notification;
@@ -1346,7 +1364,7 @@ SummaryItem.prototype = {
         stackedNotification.notificationDoneDisplayingId = notification.connect('done-displaying', Lang.bind(this, this._notificationDoneDisplaying));
         stackedNotification.notificationDestroyedId = notification.connect('destroy', Lang.bind(this, this._notificationDestroyed));
         this._stackedNotifications.push(stackedNotification);
-        if (this.notificationStack.get_children().length > 0)
+        if (this.notificationStack.get_n_children() > 0)
             notification.setIconVisible(false);
         this.notificationStack.add(notification.actor);
         notification.expand(false);
@@ -1385,8 +1403,8 @@ SummaryItem.prototype = {
             }
         }
 
-        if (this.notificationStack.get_children().length > 0)
-            this.notificationStack.get_children()[0]._delegate.setIconVisible(true);
+        if (this.notificationStack.get_n_children() > 0)
+            this.notificationStack.get_child_at_index(0)._delegate.setIconVisible(true);
     }
 };
 Signals.addSignalMethods(SummaryItem.prototype);
@@ -1667,7 +1685,7 @@ MessageTray.prototype = {
         this._notificationBin.opacity = 0;        
 
         let monitor = Main.layoutManager.primaryMonitor;
-        let panel = Main.panelManager.getPanel(0, false); // We only want the top panel in monitor 0
+        let panel = Main.panelManager.getPanel(0, 0); // We only want the top panel in monitor 0
         let height = 5;
         if (panel)
             height += panel.actor.get_height();
@@ -1675,6 +1693,7 @@ MessageTray.prototype = {
 
         let margin = this._notification._table.get_theme_node().get_length('margin-from-right-edge-of-screen');                
         this._notificationBin.x = monitor.x + monitor.width - this._notification._table.width - margin;
+        Main.soundManager.play('notification');
         this._notificationBin.show();
 
         this._updateShowingNotification();
@@ -1718,7 +1737,7 @@ MessageTray.prototype = {
                             onCompleteScope: this
                           };
         let monitor = Main.layoutManager.primaryMonitor;
-        let panel = Main.panelManager.getPanel(0, false); // We only want the top panel in monitor 0
+        let panel = Main.panelManager.getPanel(0, 0); // We only want the top panel in monitor 0
         let height = 5;
         if (panel)
             height += panel.actor.get_height();
@@ -1823,7 +1842,7 @@ MessageTray.prototype = {
         // just make sure it's not covering the top panel if there is one.
         
         let monitor = Main.layoutManager.primaryMonitor;
-        let panel = Main.panelManager.getPanel(0, false); // We only want the top panel in monitor 0
+        let panel = Main.panelManager.getPanel(0, 0); // We only want the top panel in monitor 0
         let height = 5;
         if (panel)
             height += panel.actor.get_height();

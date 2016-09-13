@@ -1,6 +1,6 @@
 #!/usr/bin/env python2
 
-from SettingsWidgets import *
+from GSettingsWidgets import *
 from gi.repository import *
 
 PREF_MEDIA_AUTORUN_NEVER = "autorun-never"
@@ -24,18 +24,109 @@ DEF_LABEL = 1
 DEF_HEADING = 2
 
 preferred_app_defs = [
-    # for web, we need to support text/html,
-    # application/xhtml+xml and x-scheme-handler/https,
-    # hence the "*" pattern
-    ( "x-scheme-handler/http",   "x-scheme-handler/http",      _("_Web") ),
-    ( "x-scheme-handler/mailto", "x-scheme-handler/mailto",    _("_Mail") ),
-    ( "text/plain",              "text",                       _("_Text") ),
-
     # 1st mimetype is to let us find apps
     # 2nd mimetype is to set default handler for (so we handle all of that type, not just a specific format)
+    ( "x-scheme-handler/http",   "x-scheme-handler/http",      _("_Web") ),
+    ( "x-scheme-handler/mailto", "x-scheme-handler/mailto",    _("_Mail") ),
+    ( "application/msword",      "application/msword",       _("Documents") ),
+    ( "text/plain",              "text/plain",               _("Plain Text") ),
     ( "audio/x-vorbis+ogg",      "audio",                    _("M_usic") ),
     ( "video/x-ogm+ogg",         "video",                    _("_Video") ),
-    ( "image/jpeg",              "image",                    _("_Photos") )
+    ( "image/jpeg",              "image",                    _("_Photos") ),
+    ( "text/x-python",           "text/x-python",          _("Source Code") ),
+]
+
+mimetypes = {}
+mimetypes["audio"]=[
+  "audio/3gpp",
+  "audio/aac",
+  "audio/ac3",
+  "audio/flac",
+  "audio/m4a",
+  "audio/midi",
+  "audio/mp3",
+  "audio/mp4",
+  "audio/mp4a-latm",
+  "audio/mpeg",
+  "audio/mpeg3",
+  "audio/mpg",
+  "audio/ogg",
+  "audio/vorbis",
+  "audio/wav",
+  "audio/wave",
+  "audio/webm",
+  "audio/x-aac",
+  "audio/x-aiff",
+  "audio/x-flac",
+  "audio/x-mp3",
+  "audio/x-mpeg",
+  "audio/x-mpeg-3",
+  "audio/x-mpg",
+  "audio/x-ms-asf",
+  "audio/x-ms-wma",
+  "audio/x-ogg",
+  "audio/x-oggflac",
+  "audio/x-vorbis",
+  "audio/x-vorbis+ogg",
+  "audio/x-wav",
+  "audio/x-wavpack"
+]
+
+mimetypes["video"]=[
+  "video/3gp",
+  "video/3gpp",
+  "video/divx",
+  "video/flv",
+  "video/mp4",
+  "video/mp4v-es",
+  "video/mpeg",
+  "video/msvideo",
+  "video/ogg",
+  "video/quicktime",
+  "video/vivo",
+  "video/vnd.divx",
+  "video/vnd.rn-realvideo",
+  "video/webm",
+  "video/x-anim",
+  "video/x-avi",
+  "video/x-flc",
+  "video/x-fli",
+  "video/x-flic",
+  "video/x-flv",
+  "video/x-m4v",
+  "video/x-matroska",
+  "video/x-mng",
+  "video/x-mpeg",
+  "video/x-mpeg2",
+  "video/x-ms-afs",
+  "video/x-ms-asf",
+  "video/x-ms-asx",
+  "video/x-ms-wm",
+  "video/x-ms-wmv",
+  "video/x-ms-wvx",
+  "video/x-ms-wvxvideo",
+  "video/x-msvideo",
+  "video/x-nsv",
+  "video/x-ogm+ogg",
+  "video/x-theora",
+  "video/x-theora+ogg"
+]
+
+mimetypes["text/x-python"] = [
+    'text/x-chdr', 'text/x-csrc', 'text/x-c++hdr', 'text/x-c++src', 'text/x-java',
+    'text/x-dsrc', 'text/x-pascal', 'text/x-perl', 'text/x-python', 'application/x-php',
+    'application/x-httpd-php3', 'application/x-httpd-php4', 'application/x-httpd-php5',
+    'application/xml', 'text/x-sql', 'text/x-diff', 'application/x-ruby',
+    'application/x-shellscript', 'application/javascript', 'text/x-makefile', 'text/css',
+    'text/turtle', 'text/x-fortran', 'text/yaml', 'application/x-m4', 'text/x-vb', 'text/x-csharp'
+]
+
+mimetypes["application/msword"] = [
+    'application/msword', 'application/vnd.oasis.opendocument.text',
+    'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    'application/vnd.oasis.opendocument.text-template', 'application/rtf',
+    'application/vnd.stardivision.writer', 'application/vnd.wordperfect',
+    'application/vnd.ms-works', 'application/x-abiword',
 ]
 
 removable_media_defs = [
@@ -108,19 +199,43 @@ class DefaultAppChooserButton(Gtk.AppChooserButton):
         self.content_type = content_type
         self.generic_content_type = gen_content_type
         self.set_show_default_item(True)
+        self.set_show_dialog_item(True)
         self.connect("changed", self.onChanged)
 
     def onChanged(self, button):
         info = button.get_app_info()
+        print "%s: " % info.get_name()
         if info:
-            types = info.get_supported_types()
-            for t in types:
-                if self.generic_content_type in t:
-                    if not info.set_as_default_for_type(t):
-                        print "Failed to set '%s' as the default application for '%s'" % (info.get_name(), self.generic_content_type)
+            supported_mimetypes = info.get_supported_types()
+            hardcoded_mimetypes = None
+            if self.generic_content_type in mimetypes.keys():
+                hardcoded_mimetypes = mimetypes[self.generic_content_type]
+
+            set_mimes = []
+
+            # Assign mimes which the app officially supports
+            if supported_mimetypes is not None:
+                for t in sorted(supported_mimetypes):
+                    if t.startswith(self.generic_content_type):
+                        if info.set_as_default_for_type (t):
+                            print "  Set as default for supported %s" % t
+                            set_mimes.append(t)
+                        else:
+                            print "  Failed to set as default application for '%s'" % t
+
+            # Also assign mimes hardcoded in the mimetypes hashtable
+            if hardcoded_mimetypes is not None:
+                for t in sorted(hardcoded_mimetypes):
+                    if t not in set_mimes:
+                        if info.set_as_default_for_type (t):
+                            print "  Set as default for hardcoded %s" % t
+                        else:
+                            print "  Failed to set as default application for '%s'" % t
+
+            #Web
             if self.content_type == "x-scheme-handler/http":
                 if info.set_as_default_for_type ("x-scheme-handler/https") == False:
-                    print "Failed to set '%s' as the default application for '%s'" % (info.get_name(), "x-scheme-handler/https")
+                    print "  Failed to set '%s' as the default application for '%s'" % (info.get_name(), "x-scheme-handler/https")
 
 class DefaultTerminalButton(Gtk.AppChooserButton): #TODO: See if we can get this to change the x-terminal-emulator default to allow it to be a more global change rather then just cinnamon/nemo
     def __init__(self):
@@ -374,7 +489,9 @@ class Module:
                 size_group.add_widget(button)
                 widget.pack_start(label, False, False, 0)
                 widget.pack_end(button, False, False, 0)
-                settings.add_row(widget)
+                #Hide button if there are no apps
+                if not button.get_active():
+                    settings.add_row(widget)
 
             widget = SettingsWidget()
             button = DefaultTerminalButton()
@@ -409,14 +526,11 @@ class Module:
                 widget.pack_end(button, False, False, 0)
                 settings.add_row(widget)
 
-            widget = SettingsWidget()
-            more = Gtk.Button.new_with_mnemonic(_("_Other Media..."))
-            more.connect("clicked", self.onMoreClicked)
-            widget.pack_start(more, True, True, 0)
-            settings.add_row(widget)
+            button = Button(_("_Other Media..."), self.onMoreClicked)
+            settings.add_row(button)
 
-    def onMoreClicked(self, button):
-        self.other_type_dialog.doShow(button.get_toplevel())
+    def onMoreClicked(self, widget):
+        self.other_type_dialog.doShow(widget.get_toplevel())
 
 class InvertedSwitch(SettingsWidget):
     def __init__(self, label, schema, key):
@@ -439,4 +553,3 @@ class InvertedSwitch(SettingsWidget):
 
         self.settings.set_boolean(self.key, not active)
         self.revealer.set_reveal_child(active)
-

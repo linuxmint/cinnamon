@@ -23,6 +23,13 @@ const Util = imports.misc.util;
 
 const SLIDER_SCROLL_STEP = 0.05; /* Slider scrolling step in % */
 
+const PanelLoc = {
+	top : 0,
+	bottom : 1,
+	left : 2,
+	right : 3
+};
+
 const OrnamentType = {
     NONE: 0,
     CHECK: 1,
@@ -1382,7 +1389,7 @@ PopupMenuAbstractItem.prototype = {
     addChild: function(pos, child_id) {
         let factoryItem = this.getItemById(child_id);
         if (factoryItem) {
-            // If our item is previusly asigned, so destroy first the shell item.
+            // If our item is previusly assigned, so destroy first the shell item.
             factoryItem.destroyShellItem();
             factoryItem.setParent(this);
             this._childrenIds.splice(pos, 0, child_id);
@@ -1515,9 +1522,9 @@ PopupMenuAbstractItem.prototype = {
                 this._shellItemSignalsHandlers = null;
             }
         } else if (this.shellItem) {
-            global.logError("We are not conected with " + shellItem);
+            global.logError("We are not connected with " + shellItem);
         } else {
-            global.logWarning("We are not conected with any shellItem");
+            global.logWarning("We are not connected with any shellItem");
         }
     },
 
@@ -1638,7 +1645,7 @@ PopupMenuBase.prototype = {
     },
 
     /**
-     * addCommandLineAction:
+     * addCommandlineAction:
      * @title (string): the text to display on the item
      * @cmd (string): the command to call
      *
@@ -1830,7 +1837,7 @@ PopupMenuBase.prototype = {
             let items = this._getMenuItems();
             if (position < items.length) {
                 before_item = items[position].actor;
-                this.box.insert_before(menuItem.actor, before_item);
+                this.box.insert_child_below(menuItem.actor, before_item);
             } else
                 this.box.add(menuItem.actor);
         }
@@ -1846,7 +1853,7 @@ PopupMenuBase.prototype = {
             if (before_item == null)
                 this.box.add(menuItem.menu.actor);
             else
-                this.box.insert_before(menuItem.menu.actor, before_item);
+                this.box.insert_child_below(menuItem.menu.actor, before_item);
             this._connectSubMenuSignals(menuItem, menuItem.menu);
             this._connectItemSignals(menuItem);
             menuItem._closingId = this.connect('open-state-changed', function(self, open) {
@@ -2188,7 +2195,10 @@ PopupMenu.prototype = {
         let panels = Main.panelManager.getPanelsInMonitor(Main.layoutManager.monitors.indexOf(monitor));
 
         for (let panel of panels)
-            maxHeight -= panel.actor.height;
+            if (panel.panelPosition == PanelLoc.top || panel.panelPosition == PanelLoc.bottom)  // horizontal panels only
+            {
+                maxHeight -= panel.actor.height;
+            }
 
         this.actor.style = 'max-height: ' + maxHeight / global.ui_scale + 'px; ' +
             'max-width: ' + (monitor.width - 20)/ global.ui_scale + 'px;';
@@ -3037,7 +3047,7 @@ PopupMenuManager.prototype = {
         this._signals.disconnect(null, menu);
 
         if (menu.sourceActor)
-            this._signals.disconnect(menu.sourceActor);
+            this._signals.disconnect(null, menu.sourceActor);
 
         this._menus.splice(position, 1);
     },
@@ -3200,6 +3210,9 @@ PopupMenuManager.prototype = {
     _onEventCapture: function(actor, event) {
         if (!this.grabbed)
             return false;
+
+        if (Main.keyboard.shouldTakeEvent(event))
+            return Clutter.EVENT_PROPAGATE;
 
         if (this._owner.menuEventFilter &&
             this._owner.menuEventFilter(event))

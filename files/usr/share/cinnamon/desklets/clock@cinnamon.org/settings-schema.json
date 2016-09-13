@@ -4,18 +4,18 @@
         "default": 50,
         "min": 10,
         "max": 200,
-    	"units": " ",
-        "description" : "Font size:",
+        "units": "px",
+        "description" : "Font size",
         "step": 1
     },
     "text-color" : {
 	    "type": "colorchooser",
 	    "default" : "rgb(255,255,255)",
-	    "description" : "Text color:",
+	    "description" : "Text color",
 	    "tooltip" : "Click the button to select a new text color"
     },
     "use-custom-format" : {
-        "type" : "checkbox",
+        "type" : "switch",
         "default" : false,
         "description": "Use a custom date format",
         "tooltip": "Check this to define a custom format for the time in the clock desklet."
@@ -24,7 +24,7 @@
         "type": "entry",
         "dependency" : "use-custom-format",
         "default": "%l:%M %p",
-        "description": "Date format:",
+        "description": "Date format",
         "indent": true,
         "tooltip" : "Set your custom format here."
     }

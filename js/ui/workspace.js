@@ -175,7 +175,7 @@ WindowClone.prototype = {
 
     refreshClone: function(withTransients) {
         if (this.clone) {this.clone.destroy();}
-        this.clone = new St.Group({reactive: false});
+        this.clone = new St.Widget({ reactive: false });
         this.actor.add_actor(this.clone);
         let [pwidth, pheight] = [this.realWindow.width, this.realWindow.height];
         let clones = WindowUtils.createWindowClone(this.metaWindow, 0, 0, withTransients);

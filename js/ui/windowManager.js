@@ -509,7 +509,12 @@ WindowManager.prototype = {
             return global.settings.get_boolean("desktop-effects");
         }
         if (type == Meta.WindowType.DIALOG || type == Meta.WindowType.MODAL_DIALOG) {
-            return global.settings.get_boolean("desktop-effects-on-dialogs");
+            return global.settings.get_boolean("desktop-effects") && global.settings.get_boolean("desktop-effects-on-dialogs");
+        }
+        if (type == Meta.WindowType.MENU ||
+            type == Meta.WindowType.DROPDOWN_MENU ||
+            type == Meta.WindowType.POPUP_MENU) {
+            return global.settings.get_boolean("desktop-effects") && global.settings.get_boolean("desktop-effects-on-menus");
         }
         return false;
     },
@@ -672,6 +677,7 @@ WindowManager.prototype = {
         }
 
         if (actor.get_meta_window()._cinnamonwm_has_origin === true) {
+            Main.soundManager.play('minimize');
             try {
                 this._startWindowEffect(cinnamonwm, "unminimize", actor, null, "minimize")
                 return;
@@ -959,6 +965,18 @@ WindowManager.prototype = {
         this._shiftWindowToWorkspace(window, Meta.MotionDirection.RIGHT);
     },
 
+    moveToWorkspace: function(workspace, direction_hint) {
+        let active = global.screen.get_active_workspace();
+        if (workspace != active) {
+            Main.soundManager.play('switch');
+            if (direction_hint)
+                workspace.activate_with_direction_hint(direction_hint, global.get_current_time());
+            else
+                workspace.activate(global.get_current_time());
+            this.showWorkspaceOSD();
+        }
+    },
+
     _showWorkspaceSwitcher : function(display, screen, window, binding) {
         if (binding.get_name() == 'switch-to-workspace-up') {
             Main.expo.toggle();
@@ -972,36 +990,26 @@ WindowManager.prototype = {
         if (screen.n_workspaces == 1)
             return;
 
-        let current_workspace_index = global.screen.get_active_workspace_index();
         if (binding.get_name() == 'switch-to-workspace-left') {
            this.actionMoveWorkspaceLeft();
-           if (current_workspace_index !== global.screen.get_active_workspace_index()) {
-                this.showWorkspaceOSD();
-           }
-        }
-        else if (binding.get_name() == 'switch-to-workspace-right') {
+        } else if (binding.get_name() == 'switch-to-workspace-right') {
            this.actionMoveWorkspaceRight();
-           if (current_workspace_index !== global.screen.get_active_workspace_index()) {
-                this.showWorkspaceOSD();
-           }
         }
     },
 
     actionMoveWorkspaceLeft: function() {
-        var active = global.screen.get_active_workspace();
-        var neighbour = active.get_neighbor(Meta.MotionDirection.LEFT)
-        if (active != neighbour) {
-            Main.soundManager.play('switch');
-            neighbour.activate(global.get_current_time());
+        let active = global.screen.get_active_workspace();
+        let neighbor = active.get_neighbor(Meta.MotionDirection.LEFT)
+        if (active != neighbor) {
+            this.moveToWorkspace(neighbor, Meta.MotionDirection.LEFT);
         }
     },
 
     actionMoveWorkspaceRight: function() {
-        var active = global.screen.get_active_workspace();
-        var neighbour = active.get_neighbor(Meta.MotionDirection.RIGHT)
-        if (active != neighbour) {
-            Main.soundManager.play('switch');
-            neighbour.activate(global.get_current_time());
+        let active = global.screen.get_active_workspace();
+        let neighbor = active.get_neighbor(Meta.MotionDirection.RIGHT)
+        if (active != neighbor) {
+            this.moveToWorkspace(neighbor, Meta.MotionDirection.RIGHT);
         }
     },
 

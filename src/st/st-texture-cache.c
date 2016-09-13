@@ -1132,29 +1132,24 @@ static void
 ensure_monitor_for_uri (StTextureCache *cache,
                         const gchar    *uri)
 {
-  /* Don't monitor changes at all.
-   * We're keeping this function for now, even if it doesn't do anything
-   * In case special cases come up in the future, where monitors are needed for particular uris.
+  StTextureCachePrivate *priv = cache->priv;
+  GFile *file = g_file_new_for_uri (uri);
+
+  /* No point in trying to monitor files that are part of a
+   * GResource, since it does not support file monitoring.
    */
+  if (!g_file_has_uri_scheme (file, "resource")) {
+    if (g_hash_table_lookup (priv->file_monitors, uri) == NULL)
+    {
+      GFileMonitor *monitor = g_file_monitor_file (file, G_FILE_MONITOR_NONE,
+                                                   NULL, NULL);
+      g_signal_connect (monitor, "changed",
+                        G_CALLBACK (file_changed_cb), cache);
+      g_hash_table_insert (priv->file_monitors, g_strdup (uri), monitor);
+    }
+  }
 
-  // StTextureCachePrivate *priv = cache->priv;
-  // GFile *file = g_file_new_for_uri (uri);
-
-  // /* No point in trying to monitor files that are part of a
-  //  * GResource, since it does not support file monitoring.
-  //  */
-  // if (!g_file_has_uri_scheme (file, "resource")) {
-  //   if (g_hash_table_lookup (priv->file_monitors, uri) == NULL)
-  //   {
-  //     GFileMonitor *monitor = g_file_monitor_file (file, G_FILE_MONITOR_NONE,
-  //                                                  NULL, NULL);
-  //     g_signal_connect (monitor, "changed",
-  //                       G_CALLBACK (file_changed_cb), cache);
-  //     g_hash_table_insert (priv->file_monitors, g_strdup (uri), monitor);
-  //   }
-  // }
-
-  // g_object_unref (file);
+  g_object_unref (file);
 }
 
 typedef struct {
@@ -1389,7 +1384,7 @@ create_faded_icon_cpu (StTextureCache *cache,
 
   info = NULL;
 
-  icon = g_themed_icon_new_with_default_fallbacks (name);
+  icon = g_themed_icon_new (name);
   if (icon != NULL)
     {
       info = gtk_icon_theme_lookup_by_gicon_for_scale (gtk_icon_theme_get_default (),
@@ -1525,7 +1520,7 @@ st_texture_cache_load_icon_name (StTextureCache    *cache,
       return CLUTTER_ACTOR (texture);
       break;
     case ST_ICON_FULLCOLOR:
-      themed = g_themed_icon_new_with_default_fallbacks (name);
+      themed = g_themed_icon_new (name);
       texture = load_gicon_with_colors (cache, themed, size, cache->priv->scale, NULL);
       g_object_unref (themed);
       if (texture == NULL)
@@ -1538,7 +1533,7 @@ st_texture_cache_load_icon_name (StTextureCache    *cache,
       return CLUTTER_ACTOR (texture);
       break;
     case ST_ICON_FADED:
-      themed = g_themed_icon_new_with_default_fallbacks (name);
+      themed = g_themed_icon_new (name);
       cache_key = g_strdup_printf ("faded-icon:%s,size=%d,scale=%f", name, size, cache->priv->scale);
       data.name = g_strdup (name);
       data.size = size;
@@ -1739,7 +1734,7 @@ out:
  * setting.
  *
  * Return value: (transfer none): A new #ClutterActor with the image file loaded if it was
- *               generated succesfully, %NULL otherwise
+ *               generated successfully, %NULL otherwise
  */
 ClutterActor *
 st_texture_cache_load_uri_sync (StTextureCache *cache,

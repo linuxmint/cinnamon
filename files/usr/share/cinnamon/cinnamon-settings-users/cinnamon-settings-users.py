@@ -1,15 +1,21 @@
 #!/usr/bin/env python2
 
-import sys, os
-import pwd, grp
-from gi.repository import Gtk, GObject, Gio, GdkPixbuf, AccountsService
+import os
+import sys
+import pwd
+import grp
 import gettext
 import shutil
-import PIL
-from PIL import Image
-from random import randint
 import re
 import subprocess
+from random import randint
+
+import PIL
+from PIL import Image
+import gi
+gi.require_version("Gtk", "3.0")
+gi.require_version("AccountsService", "1.0")
+from gi.repository import Gtk, GObject, Gio, GdkPixbuf, AccountsService
 
 gettext.install("cinnamon", "/usr/share/locale")
 
@@ -196,7 +202,7 @@ class PasswordDialog(Gtk.Dialog):
 
         self.infobar = Gtk.InfoBar()
         self.infobar.set_message_type(Gtk.MessageType.ERROR)
-        label = Gtk.Label(_("An error occured. Your password was not changed."))
+        label = Gtk.Label(_("An error occurred. Your password was not changed."))
         content = self.infobar.get_content_area()
         content.add(label)
         table.attach(self.infobar, 0, 3, 4, 5)

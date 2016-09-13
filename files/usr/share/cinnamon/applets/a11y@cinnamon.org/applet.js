@@ -67,9 +67,9 @@ MyApplet.prototype = {
             let textZoom = this._buildFontItem();
             this.menu.addMenuItem(textZoom);
 
-    //        let screenReader = this._buildItem(_("Screen Reader"), APPLICATIONS_SCHEMA,
-    //                                                               'screen-reader-enabled');
-    //        this.menu.addMenuItem(screenReader);
+            let screenReader = this._buildItem(_("Screen Reader"), APPLICATIONS_SCHEMA,
+                                                                  'screen-reader-enabled');
+            this.menu.addMenuItem(screenReader);
 
             let screenKeyboard = this._buildItem(_("Screen Keyboard"), APPLICATIONS_SCHEMA,
                                                                        'screen-keyboard-enabled');
@@ -242,6 +242,13 @@ MyApplet.prototype = {
 
     on_applet_removed_from_panel: function() {
         Main.systrayManager.unregisterRole("a11y", this.metadata.uuid);
+    },
+//
+//override getDisplayLayout to declare that this applet is suitable for both horizontal and
+// vertical orientations
+//
+    getDisplayLayout: function() {
+        return Applet.DisplayLayout.BOTH;
     }
 };
 

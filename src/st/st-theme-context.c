@@ -127,8 +127,7 @@ st_theme_context_class_init (StThemeContextClass *klass)
                   G_TYPE_FROM_CLASS (klass),
                   G_SIGNAL_RUN_LAST,
                   0, /* no default handler slot */
-                  NULL, NULL,
-                  g_cclosure_marshal_VOID__VOID,
+                  NULL, NULL, NULL,
                   G_TYPE_NONE, 0);
 }
 
@@ -338,7 +337,7 @@ st_theme_context_get_theme (StThemeContext *context)
  *
  * Sets the default font for the theme context. This is the font that
  * is inherited by the root node of the tree of theme nodes. If the
- * font is not overriden, then this font will be used. If the font is
+ * font is not overridden, then this font will be used. If the font is
  * partially modified (for example, with 'font-size: 110%', then that
  * modification is based on this font.
  */

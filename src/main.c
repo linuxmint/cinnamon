@@ -173,6 +173,8 @@ malloc_statistics_callback (CinnamonPerfLog *perf_log,
 static void
 cinnamon_a11y_init (void)
 {
+  cally_accessibility_init ();
+
   if (clutter_get_accessibility_enabled () == FALSE)
     {
       g_warning ("Accessibility: clutter has no accessibility enabled"
@@ -262,6 +264,7 @@ main (int argc, char **argv)
   GError *error = NULL;
   int ecode;
   g_setenv ("CLUTTER_DISABLE_XINPUT", "1", TRUE);
+  g_setenv ("CLUTTER_BACKEND", "x11", TRUE);
 
   bindtextdomain (GETTEXT_PACKAGE, LOCALEDIR);
   bind_textdomain_codeset (GETTEXT_PACKAGE, "UTF-8");
@@ -288,6 +291,7 @@ main (int argc, char **argv)
   g_unsetenv ("NO_GAIL");
   g_unsetenv ("NO_AT_BRIDGE");
   g_unsetenv ("CLUTTER_DISABLE_XINPUT");
+  g_unsetenv ("CLUTTER_BACKEND");
 
   /* FIXME: Add gjs API to set this stuff and don't depend on the
    * environment.  These propagate to child processes.
@@ -310,7 +314,7 @@ main (int argc, char **argv)
 #endif
 
   /* Disable debug spew from various libraries */
-  g_log_set_handler ("Gvc", G_LOG_LEVEL_DEBUG,
+  g_log_set_handler ("Cvc", G_LOG_LEVEL_DEBUG,
                      muted_log_handler, NULL);
   g_log_set_handler ("AccountsService", G_LOG_LEVEL_DEBUG,
                      muted_log_handler, NULL);

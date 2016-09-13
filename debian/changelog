@@ -1,3 +1,352 @@
+cinnamon (3.0.7) sarah; urgency=medium
+
+  [ Jonathan Washington ]
+  * fixes https://github.com/linuxmint/Cinnamon/issues/5410 (Power settings segfault)
+
+ -- Clement Lefebvre <root@linuxmint.com>  Thu, 14 Jul 2016 22:51:08 +0200
+
+cinnamon (3.0.6) sarah; urgency=medium
+
+  [ JosephMcc ]
+  * Add a generic "bluetooth" icon
+
+  [ Michael Webster ]
+  * power applet: Don't connect to any signals that call _devicesChanged until we have the power proxy (since the callbacks assume we do have it).
+  * windowAttentionHandler.js: make the ignored app check case- insensitive.  While we're here make it a gsettings array for convenience.
+  * org.cinnamon.gschema.in - add pidgin to ignored wm classes.
+
+  [ Clement Lefebvre ]
+  * Touchpad settings: Invert motion-threshold setting widget
+
+  [ Michael Webster ]
+  * appletManager.js: Fix copy/pasting applet panel applet layouts. Extension.get_max_instances() needed an extra argument, and then we were doing work twice - finished removing obsolete code.
+  * cinnamon-recorder: fix crash when starting recorder...
+  * cinnamon-recorder.c: restore avoidance of the panel when drawing the recording indicators.  This was removed during some panel work a while back and never restored.  Always draw them on the primary monitor now (the only monitor with reliable, simple-to-get workarea information).
+
+  [ leigh123linux ]
+  * fix spelling mistakes
+
+  [ Michael Webster ]
+  * onscreen keyboard: Add option to change activation behavior - accessible mode has the keyboard appear whenever focus demands it (ordinary accessibility behavior).  On-demand mode will have the keyboard only appear when the user requests it via an applet click or keyboard shortcut.
+
+  [ Clement Lefebvre ]
+  * Themes settings: Fixed loading icon themes when a theme isn't readable
+
+  [ Michael Webster ]
+  * popupMenu.js: use the signalManager.disconnect correctly - the source actor (the panel actor for the applet) has to be the second argument, the object to disconnect from.  Was causing flickering in the menu applet after repositioning it.
+
+  [ Clement Lefebvre ]
+  * Makepot
+  * Settings: Don't hardcode "more info" link color in spices modules
+  * [desrt] network: properly remove connections from list
+  * Network applet: Fixed icon not showing VPN status
+  * Network applet: Delete trailing spaces
+  * Network applet: Fixed applet showing "Auto" wireless connection when turning wifi OFF and then back ON.
+
+  [ Michael Webster ]
+  * tray icons: Bump icon request to 24, then scale back to 20 in the applet.  This is needed due to changes to GtkIconSize values in Gtk3. GtkStatusIcon iterates thru the built-in icon sizes to pick an appropriate icon to use, and as of 3.18 there are no sizes between 16 and 24px.
+
+  [ Clement Lefebvre ]
+  * Preferred application settings: Set mimetypes more exhaustively
+
+ -- Clement Lefebvre <root@linuxmint.com>  Thu, 23 Jun 2016 13:39:10 +0100
+
+cinnamon (3.0.5) sarah; urgency=medium
+
+  [ JosephMcc ]
+  * cinnamon-settings: Remove hard-coded theming for the main cinnamon-settings icon view
+
+  [ Clement Lefebvre ]
+  * Background settings: Apply EXIF rotations to thumbnails
+
+  [ Michael Webster ]
+  * cinnamon-util.c: cinnamon_util_get_icon_for_uri.c - use a custom icon if one is set in metadata (via file manager).
+
+ -- Clement Lefebvre <root@linuxmint.com>  Tue, 31 May 2016 09:54:44 +0100
+
+cinnamon (3.0.4) sarah; urgency=medium
+
+  [ Clement Lefebvre ]
+  * Updated pot file
+
+  [ Michael Webster ]
+  * cs_effects: Only show overlay scrollbar toggle when using gtk3 >= 3.16.
+  * sound applet: Use an icon that actually exists for blank coverart.
+
+  [ JosephMcc ]
+  * sound-applet: Fix an icon name
+
+  [ Clement Lefebvre ]
+  * Ignore accents/stokes when searching the menu or cinnamon-settings
+  * Menu applet: Removed trailing spaces
+  * Menu applet: Don't refresh twice at the same time.
+
+  [ Lars Mueller ]
+  * [Menu applet] Fix not cleared drag placeholder in favorites box This fixes the uncleared drag placeholder in the favorites box, if an application was dragged over, but not dropped on the favorites box This is for #5322
+
+ -- Clement Lefebvre <root@linuxmint.com>  Mon, 23 May 2016 12:51:41 +0100
+
+cinnamon (3.0.3) sarah; urgency=medium
+
+  [ Dustin Falgout ]
+  * Ensure label text is properly escaped before applying it with set_markup() Fixes #5287
+  * fix typo
+
+  [ Michael Webster ]
+  * SettingsWidgets.py: use a more compatible GFileMonitorFlags - WATCH_MOVES is not available in Mint 17/glib 2.40
+  * cinnamon-settings: include module keywords in desktop files
+  * cinnamon-app: provide access to desktop file keywords.  Use them in the menu applet search.
+  * generated desktop files: re-run, to remove unnecessary comment
+  * extensions: Check extensions for unsafe calls (synchronous, etc.. things that can potentially freeze Cinnamon) and make the user aware of them in cinnamon settings.
+  * ExtensionCore.py: scan_extension_thread - if the metadata.json file is not found, this must be a versioned xlet, check the parent folder for it instead.
+  * cs_power.py: Expose setting to allow lid-closed action even when external monitors are attached.
+  * messageTray.js: Don't let notifications with buttons fade on mouse-over.
+
+  [ itzexor ]
+  * menu applet: use app id instead of app name for searches prevents duplicate search results for apps with the same desktop entry name when searching with a more specific term
+  * sound applet: smplayer: fix artist metadata display and disable seek While seeking does work, after the first time you seek the amount seeked is incorrect. It appears to seek the amount between the beginning of the seek bar and where you released the click instead.
+
+  [ Michael Webster ]
+  * cs_themes: Add setting for dark theme variant preference.  This is only settable from ~/.config/gtk-3.0/settings.ini, so add the ability to modify that as well.
+  * cs_effects.py: Expose gtk-overlay-scrollbar setting.
+
+  [ JosephMcc ]
+  * cs_sound: Set selection mode to none on the SoundBox() object
+
+  [ NikoKrause ]
+  * Missing semicolon
+  * Missing semicolon
+
+  [ Clement Lefebvre ]
+  * Settings: Don't include text/html in the source code mimetypes
+
+  [ Michael Webster ]
+  * st-texture-cache.c: use g_themed_icon_new instead of g_themed_icon_new_with_default_fallbacks.
+
+ -- Clement Lefebvre <root@linuxmint.com>  Fri, 20 May 2016 12:04:29 +0100
+
+cinnamon (3.0.2) sarah; urgency=medium
+
+  [ ion201 ]
+  * Cache generated thumbnails
+
+  [ Lars Mueller ]
+  * Fix desktop effects on dialogs and menus This prevents desktop effects on dialogs and menus from being used if desktop-effects is turned off. It's like already like this in the effects settings dialog.
+
+  [ Clement Lefebvre ]
+  * Power applet: Fixed declaration of alias variable
+  * Window list: Fixed call on null object
+
+  [ Stephen Collins ]
+  * Fix handling of device icon where gicon is None (partially fixes #5248)
+
+  [ JosephMcc ]
+  * cinnamon-settings: Don't set the stack switcher to use the main settings stack on creation This is causing visual glitches in a lot of gtk themes when changing from the main icon view to a page that displays the stack switcher
+
+  [ Stephen Collins ]
+  * Fix highlighting not working correctly for multiple instances of an applet
+
+  [ Michael Webster ]
+  * ExtensionCore.py: Don't break when an xlet provides a bad icon file.
+
+  [ Jason Jackson ]
+  * Added null conditional to return empty array when get_devices returns null
+
+  [ brownsr ]
+  * correct potential infinite loop
+
+  [ Michael Webster ]
+  * accessibility settings: don't use packagekit for now when looking for assistance programs that are installed.  Just look for their binaries, and notify if not installed.  Watch the bin folders in case the user installs the dependency and doesn't restart cinnamon settings.
+  * cs_sound.py: Add a close button to the speaker test dialog.
+
+  [ ion201 ]
+  * Fix image close crash
+
+ -- Clement Lefebvre <root@linuxmint.com>  Tue, 10 May 2016 16:38:11 +0100
+
+cinnamon (3.0.1) sarah; urgency=medium
+
+  [ JosephMcc ]
+  * extensions: Fix the alignment of the rating number in the "Get more" pages so it won't get covered by overlay scrollbars
+
+  [ leigh123linux ]
+  * bump muffin version because of API changes
+
+ -- Clement Lefebvre <root@linuxmint.com>  Mon, 25 Apr 2016 10:10:43 +0100
+
+cinnamon (3.0.0) sarah; urgency=medium
+
+  [ A-Shahbazi ]
+  * add option to show/hide favbox in menu applet
+
+  [ Corbin ]
+  * Added new default application buttons
+
+  [ trolleyyy ]
+  * show panel-launchers actions
+  * tab indents into space indents, more item without dots
+
+  [ Stephen Collins ]
+  * Move sound settings to python as a native module
+
+  [ JosephMcc ]
+  * Add a custom page to display when no input devices are available or applications are currently playing. Add a custom settings box for the sound effects page to prevent getting a very tall window when opening the settings. Make a few tweaks to the test sound dialog and add the relevant icons.
+
+  [ Stephen Collins ]
+  * Some visual tweaks to the sound settings:
+  * Sound settings: add mute to all volume controls
+
+  [ Michael Webster ]
+  * cs_sound.py: Few fixes to the volume slider/mute button:
+  * layout.js: Remove code for interaction with the screensaver.  It was always broken until 2.8.7, where I 'fixed' it, and has caused some reported regression where the panels will be hidden after returning from the screensaver.
+
+  [ itzexor ]
+  * cs_sound.py: add padding to the end of stream names in applications page
+
+  [ s3rj1k ]
+  * Viber stealing focus fix
+
+  [ Michael Webster ]
+  * magnifier.js: update the lens size as well as shape when we turn on lens mode.
+  * Generate new desktop files for sound and accessibility
+
+  [ Clement Lefebvre ]
+  * Touchpad settings: Rename "natural scrolling" to "reverse scrolling direction"
+
+  [ Martín Ferrari ]
+  * Fix middle click action in the photo frame
+
+  [ Maximiliano Curia ]
+  * photoframe: recurse subdirectories
+
+  [ Clement Lefebvre ]
+  * Sound settings: Fixed device not showing when its icon isn't found (fixes bluetooth devices not showing up)
+  * Power settings: Don't add the Gtk.Stack if it's empty (Fixes https://github.com/linuxmint/Cinnamon/issues/5194)
+  * Power settings/applet: Let the user rename battery powered devices
+  * Power settings: Fix power bars not being aligned
+  * Startup settings: Fix https://github.com/linuxmint/Cinnamon/issues/5199
+
+  [ Michael Webster ]
+  * tooltips.js: hide if the stage's key focus changes - prevents tooltips from becoming stuck if you use the keyboard to switch focus (hit the menu key while a window list preview is showing.)
+
+  [ JosephMcc ]
+  * cs_keyboard: Add a "wide" style class to the pane separator in the shortcuts page and remove some unneeded padding so this looks a little nicer in most newer themes
+  * effects: Enable effects on dialogs and menus by default
+
+  [ Clement Lefebvre ]
+  * Sound applet: Correctly identify changed artwork from Spotify (and add support for new URLs in version 0.27.x)
+  * Theme settings: Don't filter themes missing gtk-3.0 if they provide gtk-3.*
+
+  [ brownsr ]
+  * show multi line descriptions in applet about:  Fix #5193
+
+  [ Clement Lefebvre ]
+  * Sound applet: Use wget to download remote artwork covers
+
+  [ JosephMcc ]
+  * layout: Tweak the handling of menus in the top_window_group to match muffin changes
+
+  [ Clement Lefebvre ]
+  * Cinnamon Settings: Fixed gi.require_version warnings
+  * Cinnamon Settings: Remove a couple of old debug output
+  * Cinnamon Settings: Retire cinnamon-bluetooth (replaced with Blueberry)
+
+  [ Michael Webster ]
+  * Revert "St-texture-cache: Don't monitor file changes (should increase performance, might cause regressions in cases where the St texture needs to be refreshed following a file change)"
+
+  [ JosephMcc ]
+  * panel-launcher: Fix an undeclared variable warning
+
+  [ Daniel Alley ]
+  * Fixed cinnamon slideshow error (Issue #4280)
+
+  [ JosephMcc ]
+  * Adjust to Muffin API changes for handling fullscreen windows
+  * Extensions: Fix the "Disable all extensions" not working
+
+  [ Clement Lefebvre ]
+  * Updated generated files
+  * Updated pot file
+  * Packaging: Bumped internal dependencies
+
+ -- Clement Lefebvre <root@linuxmint.com>  Sun, 24 Apr 2016 14:02:02 +0100
+
+cinnamon (2.8.7) rosa; urgency=medium
+
+  [ Michael Webster ]
+  * cs_keyboard.py: Fix event handlers for teaching keybindings - the cursor-down and -up keys were being incorrectly used to navigate the tree view during teach mode, and it was breaking focus (and cancelling the teach.)
+  * magnifier: limit max zoom to a reasonable value
+  * menu applet: Fix vfade in the program list - it was only showing when desktop zoom was turned entirely off.  We've reworked zoom since then, so that the .applications key only determines whether we listen to key and mouse bindings or not - actual zoom activation occurs only when the magnification factor becomes > 1.0.
+  * screensaver: Fix proxy to listen to the correct service, fix layout changes when the screensaver starts/stops.
+  * layout.js: get an actual boolean from the screensaver proxy.
+  * signalManager.js: pass argument array correctly, and don't wipe out this._storage when filtering out disconnected items.
+  * cinnamonDBus: rename Cinnamon to CinnamonDBus, and import Cinnamon so screenshot calls work.
+
+  [ JosephMcc ]
+  * window-list: Prevent the window list thumbnails from showing when the applets context menu is open
+  * window-list: Properly update the label in the window preview. Fixes https://github.com/linuxmint/Cinnamon/issues/4879
+  * cs_backgrounds: For an update of some of the reveal children on initial page load to fix some settings not showing properly
+
+  [ Rob Adams ]
+  * Fix D-Bus methods for screen capture
+
+  [ itzexor ]
+  * util.js: do not modify error message
+
+ -- Clement Lefebvre <root@linuxmint.com>  Mon, 07 Mar 2016 17:21:41 +0000
+
+cinnamon (2.8.6) rosa; urgency=medium
+
+  [ JosephMcc ]
+  * launcher-editor: Implement the idea in https://github.com/linuxmint/Cinnamon/issues/4849 makes more sense for than the current behavior. Do the same for directory-editor.ui
+  * window-list: Properly scale the window previews for hidpi
+
+  [ Dexter Chua ]
+  * popupmenu.js: Fix documentation
+
+ -- Clement Lefebvre <root@linuxmint.com>  Thu, 26 Nov 2015 20:35:01 +0000
+
+cinnamon (2.8.5) rosa; urgency=medium
+
+  [ Michael Webster ]
+  * workspace-switcher applet: update relevant workspace graph when a window is added or removed from a workspace.
+  * workspace-switcher applet: Don't ignore maximized windows in the graph
+
+  [ Michal ]
+  * #4767: Handle situations when /usr/lib64 is a symlink to /usr/lib and vice versa on some distributions causing modules are being loaded multiple times
+  * #4357: Replace has_icon method with lookup_icon one to fix missing flags icons in keyboard applet
+
+  [ Dexter Chua ]
+  * signalManager.js: fix typo (fixes #4818)
+
+  [ JosephMcc ]
+  * effects: Currently when setting the minimize animation to "traditional" no sound effect is used when restoring the window. Change this so the minimize sound is played in this case.
+
+  [ Clement Lefebvre ]
+  * Sound applet: Close menu when closing media player.
+
+  [ Lars Mueller ]
+  * Fix menu applet's graphical oddity during search This is fixing #4845
+
+ -- Clement Lefebvre <root@linuxmint.com>  Fri, 20 Nov 2015 17:13:52 +0000
+
+cinnamon (2.8.4) rosa; urgency=medium
+
+  [ Lars Mueller ]
+  * Fix a timer issue in TooltipBase In rare cases, two enter events occurred without a leave event in between, leaving an orphaned _showTimer behind
+  * Same fix for the overriden _onEnterEvent in the window list applet as in TooltipBase
+
+  [ pixunil ]
+  * Sound applet: Fetch the status of Loop and Shuffle at the beginning, not just on update
+
+  [ Björn Richter ]
+  * Fix: user_data is not passed to callback
+
+  [ Michael Webster ]
+  * js/ui/keybindings.js: Remove idle function for media keys.  This is implemented in muffin now, for *all* muffin-managed keybindings.
+
+ -- Clement Lefebvre <root@linuxmint.com>  Wed, 11 Nov 2015 19:00:34 +0000
+
 cinnamon (2.8.3) rosa; urgency=medium
 
   [ JosephMcc ]

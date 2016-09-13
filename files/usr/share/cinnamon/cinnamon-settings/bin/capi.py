@@ -13,9 +13,11 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see http://www.gnu.org/licenses/
 
-from gi.repository import Gio, GObject
 import platform
 import os
+
+from gi.repository import Gio, GObject
+
 
 class CManager():
     def __init__(self):
@@ -37,12 +39,13 @@ class CManager():
             paths += ["/usr/lib/%s" % architecture, "/usr/lib/%s-linux-gnu" % architecture]
 
         for path in paths:
-            path = os.path.join(path, "cinnamon-control-center-1/panels")
-            if os.path.exists(path):
-                try:
-                    self.modules = self.modules + Gio.io_modules_load_all_in_directory(path)
-                except Exception, e:
-                    print "capi failed to load multiarch modules from %s: " % path, e
+            if not os.path.islink(path):
+                path = os.path.join(path, "cinnamon-control-center-1/panels")
+                if os.path.exists(path):
+                    try:
+                        self.modules = self.modules + Gio.io_modules_load_all_in_directory(path)
+                    except Exception, e:
+                        print "capi failed to load multiarch modules from %s: " % path, e
 
     def get_c_widget(self, mod_id):
         extension = self.extension_point.get_extension_by_name(mod_id)

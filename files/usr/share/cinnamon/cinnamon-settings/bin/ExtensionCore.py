@@ -1,18 +1,21 @@
 #!/usr/bin/env python2
 
-from SettingsWidgets import SidePage, SettingsStack
-import XletSettings
-from Spices import Spice_Harvester
 import sys
 import thread
 import os
 import re
 import json
-from gi.repository import Gio, Gtk, GObject, Gdk, GdkPixbuf, Pango, GLib
-import dbus
 import cgi
 import subprocess
 import gettext
+
+import dbus
+import gi
+gi.require_version("Gtk", "3.0")
+from gi.repository import Gio, Gtk, GObject, Gdk, GdkPixbuf, Pango, GLib
+
+from SettingsWidgets import SidePage, SettingsStack
+from Spices import Spice_Harvester
 
 home = os.path.expanduser("~")
 
@@ -49,6 +52,29 @@ def find_extension_subdir(directory):
     else:
         return os.path.join(directory, ".".join(largest))
 
+translations = {}
+
+def translate(uuid, string):
+    #check for a translation for this xlet
+    if uuid not in translations:
+        try:
+            translations[uuid] = gettext.translation(uuid, home + "/.local/share/locale").ugettext
+        except IOError:
+            try:
+                translations[uuid] = gettext.translation(uuid, "/usr/share/locale").ugettext
+            except IOError:
+                translations[uuid] = None
+
+    #do not translate whitespaces
+    if not string.strip():
+        return string
+
+    if translations[uuid]:
+        result = translations[uuid](string)
+        if result != string:
+            return result
+    return _(string)
+
 class SurfaceWrapper:
     def __init__(self, surface):
         self.surface = surface
@@ -65,6 +91,7 @@ class ExtensionSidePage (SidePage):
         self.collection_type = collection_type
         self.themes = collection_type == "theme"
         self.icons = []
+        self.background_work_queue = None
         self.run_once = False
 
     def load(self, window=None):
@@ -96,7 +123,7 @@ class ExtensionSidePage (SidePage):
         extensions_vbox = Gtk.VBox()
 
         self.search_entry = Gtk.Entry()
-        self.search_entry.set_icon_from_icon_name(Gtk.EntryIconPosition.PRIMARY, 'edit-find')
+        self.search_entry.set_icon_from_icon_name(Gtk.EntryIconPosition.PRIMARY, 'edit-find-symbolic')
         self.search_entry.set_placeholder_text(_("Search"))
         self.search_entry.connect('changed', self.on_entry_refilter)
 
@@ -129,6 +156,9 @@ class ExtensionSidePage (SidePage):
             column3.set_max_width(300)
             cr.set_property('wrap-mode', Pango.WrapMode.WORD_CHAR)
             cr.set_property('wrap-width', 200)
+        if self.collection_type == 'applet':
+            cr.set_property('wrap-mode', Pango.WrapMode.WORD_CHAR)
+            cr.set_property('wrap-width', 450)
 
         cr = Gtk.CellRendererPixbuf()
         cr.set_property("stock-size", Gtk.IconSize.DND)
@@ -141,14 +171,21 @@ class ExtensionSidePage (SidePage):
         isActiveColumn.set_expand(True)
         isActiveColumn.set_cell_data_func(cr, self._is_active_data_func)
 
+        cr = Gtk.CellRendererPixbuf()
+        cr.set_property("stock-size", Gtk.IconSize.DND)
+        dangerousColumn = Gtk.TreeViewColumn("Dangerous", cr)
+        dangerousColumn.set_expand(True)
+        dangerousColumn.set_cell_data_func(cr, self._is_dangerous_data_func)
+
         self.treeview.append_column(column2)
         self.treeview.append_column(column3)
         self.treeview.append_column(actionColumn)
+        self.treeview.append_column(dangerousColumn)
         self.treeview.append_column(isActiveColumn)
         self.treeview.set_headers_visible(False)
 
-        self.model = Gtk.TreeStore(str, str, int, int, object, str, int, bool, str, long, str, str, str, int, bool)
-        #                          uuid, desc, enabled, max-instances, icon, name, read-only, hide-config-button, ext-setting-app, edit-date, read-only icon, active icon, schema file name (for uninstall), settings type, version_supported
+        self.model = Gtk.TreeStore(str, str, int, int, object, str, int, bool, str, long, str, str, str, int, bool, bool)
+        #                          uuid, desc, enabled, max-instances, icon, name, read-only, hide-config-button, ext-setting-app, edit-date, read-only icon, active icon, schema file name (for uninstall), settings type, version_supported, dangerous
 
         self.modelfilter = self.model.filter_new()
         self.showFilter = SHOW_ALL
@@ -184,18 +221,25 @@ class ExtensionSidePage (SidePage):
 
         if self.collection_type == "applet":
             self.instanceButton = Gtk.Button.new_with_label(_("Add to panel"))
+            self.removeButton = Gtk.Button.new_with_label(_("Remove from panel"))
         elif self.collection_type == "desklet":
             self.instanceButton = Gtk.Button.new_with_label(_("Add to desktop"))
+            self.removeButton = Gtk.Button.new_with_label(_("Remove from desktop"))
         elif self.collection_type == "extension":
             self.instanceButton = Gtk.Button.new_with_label(_("Add to Cinnamon"))
+            self.removeButton = Gtk.Button.new_with_label(_("Remove from Cinnamon"))
         elif self.collection_type == "theme":
             self.instanceButton = Gtk.Button.new_with_label(_("Apply theme"))
+            self.removeButton = Gtk.Button.new_with_label("") #Should not be visible for theme
         else:
             self.instanceButton = Gtk.Button.new_with_label(_("Add"))
+            self.removeButton = Gtk.Button.new_with_label(_("Remove"))
 
         self.instanceButton.connect("clicked", lambda x: self._add_another_instance())
+        self.instanceButton.set_sensitive(False)
 
-        self.instanceButton.set_sensitive(False);
+        self.removeButton.connect("clicked", lambda x: self._remove_all_instances())
+        self.removeButton.set_sensitive(False)
 
         self.configureButton = Gtk.Button.new_with_label(_("Configure"))
         self.configureButton.connect("clicked", self._configure_extension)
@@ -263,12 +307,16 @@ class ExtensionSidePage (SidePage):
 
         img = Gtk.Image.new_from_stock("gtk-add", Gtk.IconSize.BUTTON)
         self.instanceButton.set_image(img)
+        img = Gtk.Image.new_from_stock("gtk-remove", Gtk.IconSize.BUTTON)
+        self.removeButton.set_image(img)
         img = Gtk.Image.new_from_stock("gtk-properties", Gtk.IconSize.BUTTON)
         self.configureButton.set_image(img)
         img = Gtk.Image.new_from_stock("gtk-properties", Gtk.IconSize.BUTTON)
         self.extConfigureButton.set_image(img)
 
         buttonbox.pack_start(self.instanceButton, False, False, 0)
+        if self.collection_type != "theme":
+            buttonbox.pack_start(self.removeButton, False, False, 0)
         buttonbox.pack_start(self.configureButton, False, False, 0)
         buttonbox.pack_start(self.extConfigureButton, False, False, 0)
 
@@ -362,6 +410,13 @@ class ExtensionSidePage (SidePage):
             gm_cr.set_property('wrap-mode', Pango.WrapMode.WORD_CHAR)
             gm_cr.set_property('wrap-width', 200)
 
+        context = self.gm_treeview.get_style_context()
+        if Gtk.get_minor_version() >= 12:
+            self.link_color = context.get_color(Gtk.StateFlags.LINK) # Gtk.StateFlags.LINK was introduced in GTK 3.12.
+        else:
+            self.link_color = context.get_color(Gtk.StateFlags.NORMAL)
+        self.link_color = "#{0:02x}{1:02x}{2:02x}".format(int(self.link_color.red  * 255), int(self.link_color.green * 255), int(self.link_color.blue * 255))
+
         cr = Gtk.CellRendererText()
         actionColumn = Gtk.TreeViewColumn("Action", cr)
         actionColumn.set_cell_data_func(cr, self._gm_action_data_func)
@@ -375,9 +430,8 @@ class ExtensionSidePage (SidePage):
 
 
         right = Gtk.CellRendererText()
-        right.set_property('xalign', 1.0)
+        right.set_property('xalign', 0.5)
         gm_column4 = Gtk.TreeViewColumn("Score", right, markup=4)
-        gm_column4.set_alignment(1.0)
         gm_column4.set_expand(True)
 
         self.gm_treeview.append_column(gm_column1)
@@ -430,9 +484,6 @@ class ExtensionSidePage (SidePage):
 
         self.spices = Spice_Harvester(self.collection_type, self.window)
 
-        # if not self.spices.get_webkit_enabled():
-        #     getmore_label.set_sensitive(False)
-        #     reload_button.set_sensitive(False)
         extra_page = self.getAdditionalPage()
         if extra_page:
             self.stack.add_titled(extra_page, "extra", extra_page.label)
@@ -525,6 +576,18 @@ class ExtensionSidePage (SidePage):
                     markup += _("Problem loading - please check Looking Glass or your system's error log");
                     tooltip.set_markup(markup)
                     return True
+            elif column.get_property('title') == "Dangerous" and iter != None:
+                if self.modelfilter.get_value(iter, 15):   # Dangerous?
+                    text = _(
+"""This extension utilizes system calls that could potentially cause
+your desktop to slow down or freeze in some hardware configurations.
+If you experience anything like this, try disabling this extension and
+restarting Cinnamon."""
+                            )
+                    tooltip.set_text(text)
+                    return True
+                else:
+                    return False
         return False
 
     def gm_on_treeview_query_tooltip(self, treeview, x, y, keyboard_mode, tooltip):
@@ -659,6 +722,16 @@ class ExtensionSidePage (SidePage):
             icon = ""
         cell.set_property('icon-name', icon)
 
+    def _is_dangerous_data_func(self, column, cell, model, iter, data=None):
+        dangerous = model.get_value(iter, 15)
+
+        if dangerous:
+            icon = "cs-xlet-danger"
+        else:
+            icon = ""
+
+        cell.set_property("icon-name", icon)
+
     def comboshow_changed(self, widget):
         tree_iter = widget.get_active_iter()
         if tree_iter != None:
@@ -786,7 +859,7 @@ class ExtensionSidePage (SidePage):
             return True
 
     def _gm_action_data_func(self, column, cell, model, iter, data=None):
-        cell.set_property('markup',"<span color='#0000FF'>%s</span>" % _("More info"))
+        cell.set_property('markup',"<span color='%s' underline='single'>%s</span>" % (self.link_color, _("More info")))
 
     def _gm_status_data_func(self, column, cell, model, iter, data=None):
         uuid = model.get_value(iter, 0)
@@ -881,7 +954,6 @@ class ExtensionSidePage (SidePage):
         self.gm_modelfilter.refilter()
 
     def load_spices(self, force=False):
-        # if self.spices.get_webkit_enabled():
         self.update_list = {}
 
         thread.start_new_thread(self.spices.load, (self.on_spice_load, force))
@@ -910,10 +982,7 @@ class ExtensionSidePage (SidePage):
             extensionName = extensionData['name'].replace('&', '&amp;')
             iter = self.gm_model.insert_before(None, None)
             self.gm_model.set_value(iter, 0, uuid)
-            if not self.themes:
-                self.gm_model.set_value(iter, 1, '<b>%s</b>\n<b><span foreground="#333333" size="x-small">%s</span></b>' % (extensionName, uuid))
-            else:
-                self.gm_model.set_value(iter, 1, '<b>%s</b>' % (extensionName))
+            self.gm_model.set_value(iter, 1, '<b>%s</b>' % (extensionName))
             self.gm_model.set_value(iter, 2, 0)
 
             if not self.themes:
@@ -1105,6 +1174,16 @@ Please contact the developer.""")
         if treeiter:
             self._add_another_instance_iter(treeiter)
 
+    def _remove_all_instances(self):
+        model, treeiter = self.treeview.get_selection().get_selected()
+
+        if treeiter:
+            uuid = model.get_value(treeiter, 0)
+            checked = model.get_value(treeiter, 2)
+            name = model.get_value(treeiter, 5)
+
+            self.disable_extension(uuid, name, checked)
+
     def select_updated_extensions(self):
         if len(self.update_list) > 1:
             msg = _("This operation will update the selected items.\n\nDo you want to continue?")
@@ -1149,6 +1228,8 @@ Please contact the developer.""")
 
             self.instanceButton.set_sensitive(enabled);
 
+            self.removeButton.set_sensitive(checked > 0)
+
             self.configureButton.set_visible(self.should_show_config_button(model, treeiter))
             self.configureButton.set_sensitive(checked > 0)
             self.extConfigureButton.set_visible(self.should_show_ext_config_button(model, treeiter))
@@ -1168,11 +1249,7 @@ Please contact the developer.""")
         model, treeiter = self.treeview.get_selection().get_selected()
         if treeiter:
             uuid = model.get_value(treeiter, 0)
-            settingContainer = XletSettings.XletSetting(uuid, self, self.collection_type)
-            self.content_box.pack_start(settingContainer.content, True, True, 2)
-            self.stack.hide()
-            settingContainer.show()
-            self._on_signal(None, None, "hide_stack", ())
+            subprocess.Popen(["xlet-settings", self.collection_type, uuid])
 
     def _external_configure_launch(self, widget = None):
         model, treeiter = self.treeview.get_selection().get_selected()
@@ -1192,8 +1269,11 @@ Please contact the developer.""")
                 msg = _("This will restore the default set of enabled applets. Are you sure you want to do this?")
             elif self.collection_type == "desklet":
                 msg = _("This will restore the default set of enabled desklets. Are you sure you want to do this?")
+            elif self.collection_type == "extension":
+                msg = _("This will disable all active extensions. Are you sure you want to do this?")
             if self.show_prompt(msg):
-                os.system(('gsettings reset org.cinnamon next-%s-id') % (self.collection_type))
+                if self.collection_type != "extension":
+                    os.system(('gsettings reset org.cinnamon next-%s-id') % (self.collection_type))
                 os.system(('gsettings reset org.cinnamon enabled-%ss') % (self.collection_type))
         else:
             os.system("gsettings reset org.cinnamon.theme name")
@@ -1228,6 +1308,8 @@ Please contact the developer.""")
             if not (os.path.exists(directory) and os.path.isdir(directory)):
                 return
 
+            writeable = os.access(directory, os.W_OK)
+
             extensions = os.listdir(directory)
             extensions.sort()
             for extension in extensions:
@@ -1243,8 +1325,8 @@ Please contact the developer.""")
                     setting_type = 0
                     data = json.loads(json_data)
                     extension_uuid = data["uuid"]
-                    extension_name = XletSettings.translate(data["uuid"], data["name"])
-                    extension_description = XletSettings.translate(data["uuid"], data["description"])
+                    extension_name = translate(data["uuid"], data["name"])
+                    extension_description = translate(data["uuid"], data["description"])
                     try: extension_max_instances = int(data["max-instances"])
                     except KeyError: extension_max_instances = 1
                     except ValueError:
@@ -1278,6 +1360,17 @@ Please contact the developer.""")
                     except KeyError: schema_filename = ""
                     except ValueError: schema_filename = ""
 
+                    if writeable:
+                        try: dangerous = data["dangerous"]
+                        except KeyError:
+                            self.scan_extension_for_danger(extension_dir)
+                            dangerous = False
+                        except ValueError:
+                            self.scan_extension_for_danger(extension_dir)
+                            dangerous = False
+                    else:
+                        dangerous = False
+
                     version_supported = False
                     try:
                         version_supported = curr_ver in data["cinnamon-version"] or curr_ver.rsplit(".", 1)[0] in data["cinnamon-version"]
@@ -1300,8 +1393,7 @@ Please contact the developer.""")
                     self.model.set_value(iter, 0, extension_uuid)
                     self.model.set_value(iter, 1, '''\
 <b>%s</b>
-<b><span foreground="#333333" size="xx-small">%s</span></b>
-<i><span foreground="#555555" size="x-small">%s</span></i>''' % (extension_name, extension_uuid, extension_description))
+<i><span size="small">%s</span></i>''' % (extension_name, extension_description))
 
                     self.model.set_value(iter, 2, found)
                     self.model.set_value(iter, 3, extension_max_instances)
@@ -1314,7 +1406,10 @@ Please contact the developer.""")
                         if theme.has_icon(extension_icon):
                             img = theme.load_icon(extension_icon, size, 0)
                     elif os.path.exists("%s/icon.png" % extension_dir):
-                        img = GdkPixbuf.Pixbuf.new_from_file_at_size("%s/icon.png" % extension_dir, size, size)
+                        try:
+                            img = GdkPixbuf.Pixbuf.new_from_file_at_size("%s/icon.png" % extension_dir, size, size)
+                        except:
+                            img = None
 
                     if img is None:
                         theme = Gtk.IconTheme.get_default()
@@ -1327,12 +1422,12 @@ Please contact the developer.""")
                     self.model.set_value(iter, 4, wrapper)
 
                     self.model.set_value(iter, 5, extension_name)
-                    self.model.set_value(iter, 6, os.access(directory, os.W_OK))
+                    self.model.set_value(iter, 6, writeable)
                     self.model.set_value(iter, 7, hide_config_button)
                     self.model.set_value(iter, 8, ext_config_app)
                     self.model.set_value(iter, 9, long(last_edited))
 
-                    if (os.access(directory, os.W_OK)):
+                    if (writeable):
                         icon = ""
                     else:
                         icon = "cs-xlet-system"
@@ -1348,6 +1443,7 @@ Please contact the developer.""")
                     self.model.set_value(iter, 12, schema_filename)
                     self.model.set_value(iter, 13, setting_type)
                     self.model.set_value(iter, 14, version_supported)
+                    self.model.set_value(iter, 15, dangerous)
 
                 except Exception, detail:
                     print "Failed to load extension %s: %s" % (extension, detail)
@@ -1474,3 +1570,136 @@ Please contact the developer.""")
         xerror_path = "%s/.xsession-errors" % (home)
         if os.path.exists(xerror_path):
             subprocess.Popen(["xdg-open", xerror_path])
+
+################################## Xlet scanning for dangerous elements
+
+    def scan_extension_for_danger(self, directory):
+        if not self.background_work_queue:
+            self.background_work_queue = BGWorkQueue()
+            self.background_work_queue.connect("finished", self.on_bg_work_complete)
+
+        self.background_work_queue.push(self.scan_extension_thread, directory)
+
+    def on_bg_work_complete(self, queue):
+        self.load_extensions()
+
+    def scan_extension_thread(self, directory):
+        dangerous = False
+
+        def scan_item(item):
+            if item.endswith(".js"):
+                f = open(item)
+                contents = f.read()
+                for unsafe_item in UNSAFE_ITEMS:
+                    if unsafe_item in contents:
+                        raise Exception("unsafe")
+                f.close()
+
+        def scan_dir(subdir):
+            for item in os.listdir(subdir):
+                item_path = os.path.join(subdir, item)
+                if os.path.isdir(item_path):
+                    scan_dir(item_path)
+                else:
+                    scan_item(item_path)
+
+        try:
+            scan_dir(directory)
+        except:
+            dangerous = True
+
+        json_path = os.path.join(directory, "metadata.json")
+
+        # This may be a versioned extension, check the parent folder
+        if not os.path.exists(json_path):
+            json_path = os.path.join(directory, "..", "metadata.json")
+
+        file = open(json_path, 'r')
+        raw_meta = file.read()
+        file.close()
+        md = json.loads(raw_meta)
+        md["dangerous"] = dangerous
+
+        raw_meta = json.dumps(md, indent=4)
+        file = open(json_path, 'w+')
+        file.write(raw_meta)
+        file.close()
+
+UNSAFE_ITEMS = ["spawn_sync", "spawn_command_line_sync", "GTop", "get_file_contents_utf8_sync"]
+
+class BGWorkQueue(GObject.GObject):
+    __gsignals__ = {
+        'finished': (GObject.SignalFlags.RUN_LAST, None, ()),
+    }
+
+    MAX_THREADS=5
+
+    def __init__(self):
+        super(BGWorkQueue, self).__init__()
+        self.jobs = []
+        self.thread_ids = []
+        self.lock = thread.allocate_lock()
+        self.idle_id = 0
+        self.start_id = 0
+
+    def push(self, func, data):
+        if self.start_id > 0:
+            GObject.source_remove(self.start_id)
+            self.start_id = 0
+
+        self.jobs.insert(0, (func, data))
+
+        self.start_id = GObject.idle_add(self.check_start_job)
+
+    def check_start_job(self):
+        self.start_id = 0
+        if len(self.jobs) > 0:
+            if len(self.thread_ids) == self.MAX_THREADS:
+                return
+
+            job = self.jobs.pop()
+            handle = thread.start_new_thread(self.thread_function_wrapper, job)
+            self.thread_ids.append(handle)
+
+            self.check_start_job()
+
+        return False
+
+    def thread_function_wrapper(self, func, data):
+        func(data)
+
+        self.on_thread_complete()
+        thread.exit()
+
+    def on_thread_complete(self):
+        tid = thread.get_ident()
+
+        self.lock.acquire()
+        self.prune_thread(tid)
+
+        if len(self.thread_ids) == 0:
+            self.send_idle_complete()
+
+        self.lock.release()
+
+    def prune_thread(self, tid):
+        try:
+            self.thread_ids.remove(tid)
+        except:
+            pass
+
+        self.check_start_job()
+
+    def _idle_complete_cb(self):
+        self.idle_id = 0
+
+        self.emit("finished")
+
+        return False
+
+    def send_idle_complete(self):
+        if self.idle_id > 0:
+            GObject.source_remove(self.idle_id)
+            self.idle_id = 0
+
+        self.idle_id = GObject.idle_add(self._idle_complete_cb)

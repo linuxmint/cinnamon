@@ -113,25 +113,10 @@ function spawnCommandLine(command_line) {
  */
 function trySpawn(argv)
 {
-    try {
-        let [success, pid]  = GLib.spawn_async(null, argv, null,
-                         GLib.SpawnFlags.SEARCH_PATH | GLib.SpawnFlags.STDOUT_TO_DEV_NULL  | GLib.SpawnFlags.STDERR_TO_DEV_NULL,
-                         null, null);
-        return pid;
-    } catch (err) {
-        if (err.code == GLib.SpawnError.G_SPAWN_ERROR_NOENT) {
-            err.message = _("Command not found");
-        } else {
-            // The exception from gjs contains an error string like:
-            //   Error invoking GLib.spawn_command_line_async: Failed to
-            //   execute child process "foo" (No such file or directory)
-            // We are only interested in the part in the parentheses. (And
-            // we can't pattern match the text, since it gets localized.)
-            err.message = err.message.replace(/.*\((.+)\)/, '$1');
-        }
-
-        throw err;
-    }
+    let [success, pid]  = GLib.spawn_async(null, argv, null,
+                     GLib.SpawnFlags.SEARCH_PATH | GLib.SpawnFlags.STDOUT_TO_DEV_NULL  | GLib.SpawnFlags.STDERR_TO_DEV_NULL,
+                     null, null);
+    return pid;
 }
 
 /**
@@ -144,15 +129,8 @@ function trySpawn(argv)
 function trySpawnCommandLine(command_line) {
     let pid;
 
-    try {
-        let [success, argv] = GLib.shell_parse_argv(command_line);
-        pid = trySpawn(argv); 
-    } catch (err) {
-        // Replace "Error invoking GLib.shell_parse_argv: " with
-        // something nicer
-        err.message = err.message.replace(/[^:]*: /, _("Could not parse command:") + "\n");
-        throw err;
-    }
+    let [success, argv] = GLib.shell_parse_argv(command_line);
+    pid = trySpawn(argv);
 
     return pid;
 }

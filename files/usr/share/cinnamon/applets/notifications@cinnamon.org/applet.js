@@ -138,7 +138,7 @@ MyApplet.prototype = {
         this._notificationbin.add(notification.actor)
         notification.actor._parent_container = this._notificationbin;
         notification.actor.add_style_class_name('notification-applet-padding');
-        // Register for desctruction.
+        // Register for destruction.
         notification.connect('clicked', Lang.bind(this, this._item_clicked, false));
         notification.connect('destroy', Lang.bind(this, this._item_clicked, true));
         notification._timeLabel.show();
@@ -240,6 +240,14 @@ MyApplet.prototype = {
         this.menu = new Applet.AppletPopupMenu(this, orientation);
         this.menuManager.addMenu(this.menu);
         this._display();
+    },
+
+//
+//override getDisplayLayout to declare that this applet is suitable for both horizontal and
+// vertical orientations
+//
+    getDisplayLayout: function() {
+        return Applet.DisplayLayout.BOTH;
     },
 
     on_applet_clicked: function(event) {

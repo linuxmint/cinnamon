@@ -1,13 +1,22 @@
 #!/usr/bin/env python2
+#
 import sys
+
 import dbus
+import gi
+gi.require_version('Gtk', '3.0')
 from gi.repository import GLib, Gtk, Gdk
-from SettingsWidgets import *
+
+from GSettingsWidgets import *
+
 
 class Monitor:
     def __init__(self):
         self.top = -1
         self.bottom = -1
+	self.right = -1
+	self.left = -1
+
 
 class PanelSettingsPage(SettingsPage):
     def __init__(self, panel_id):
@@ -50,6 +59,7 @@ class PanelSettingsPage(SettingsPage):
         self.panel_id = panel_id
         for widget in self.widgets:
             widget.set_panel_id(self.panel_id)
+
 
 class Module:
     name = "panel"
@@ -216,12 +226,16 @@ class Module:
             if monitor_id < n_mons:
                 if "top" in position:
                     self.monitor_layout[monitor_id].top = panel_id
-                else:
+                elif "bottom" in position:
                     self.monitor_layout[monitor_id].bottom = panel_id
+		elif "left" in position:
+                    self.monitor_layout[monitor_id].left = panel_id
+		else:
+                    self.monitor_layout[monitor_id].right = panel_id
 
         # Index the panels for the next/previous buttons
         for i in range(0, n_mons):
-            for j in (self.monitor_layout[i].top, self.monitor_layout[i].bottom):
+            for j in (self.monitor_layout[i].top, self.monitor_layout[i].bottom, self.monitor_layout[i].left, self.monitor_layout[i].right):
                 if j != -1:
                     self.panels.append(j)
 
@@ -229,7 +243,7 @@ class Module:
 
         show_add = False
         for i in range(0, n_mons):
-            if self.monitor_layout[i].top == -1 or self.monitor_layout[i].bottom == -1:
+            if self.monitor_layout[i].top == -1 or self.monitor_layout[i].bottom == -1 or self.monitor_layout[i].left == -1 or self.monitor_layout[i].right == -1:
                 show_add = True
                 break
             i += 1
@@ -406,7 +420,7 @@ class PanelSpinButton(PanelWidget):
 
         self.content_widget.set_range(mini, maxi)
         self.content_widget.set_increments(step, page)
-        
+
         self.settings.connect("changed::" + self.key, self.on_my_setting_changed)
         self.content_widget.connect('value-changed', self.on_my_value_changed)
 
@@ -442,7 +456,7 @@ class PanelRange(PanelWidget):
         super(PanelRange, self).__init__(dep_key, panel_id)
         self.set_orientation(Gtk.Orientation.VERTICAL)
         self.set_spacing(0)
-        
+
         self.key = key
         self.settings = Gio.Settings.new(schema)
         self.panel_id = str(panel_id)

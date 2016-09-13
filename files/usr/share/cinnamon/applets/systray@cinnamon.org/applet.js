@@ -10,6 +10,8 @@ const SignalManager = imports.misc.signalManager;
 
 const ICON_SCALE_FACTOR = .8; // for custom panel heights, 20 (default icon size) / 25 (default panel height)
 
+const DEFAULT_ICON_SIZE = 20;
+
 // Override the factory and create an AppletPopupMenu instead of a PopupMenu
 function IndicatorMenuFactory() {
    this._init.apply(this, arguments);
@@ -55,15 +57,23 @@ MyApplet.prototype = {
 
         this._signalManager = new SignalManager.SignalManager(this);
 
-        // For a review: The homogeneous property apparently have not effect for status icons,
-        // as they are building for an icon (width=height). The indicators can have a label,
-        // and some of them are not really homogeneous images.
-        let manager = new Clutter.BoxLayout( { spacing: 2 * global.ui_scale,
-                                               //homogeneous: true, 
-                                               orientation: Clutter.Orientation.HORIZONTAL } );
+	let manager;
 
+	this.orientation = orientation;
+
+	if (this.orientation == St.Side.TOP || this.orientation == St.Side.BOTTOM)
+	{
+		manager = new Clutter.BoxLayout( { spacing: 2 * global.ui_scale,
+		                                   orientation: Clutter.Orientation.HORIZONTAL });
+	}
+	else
+	{
+		manager = new Clutter.BoxLayout( { spacing: 2 * global.ui_scale,
+		                                   orientation: Clutter.Orientation.VERTICAL });
+	}
+        this.manager = manager;
         this.manager_container = new Clutter.Actor( { layout_manager: manager } );
-        this.actor.add_actor(this.manager_container);
+        this.actor.add_actor (this.manager_container);
 
         this.manager_container.show();
 
@@ -110,9 +120,15 @@ MyApplet.prototype = {
         for (let id in this._shellIndicators) {
             this._shellIndicators[id].destroy();
         }
+
+        this._shellIndicators.forEach(function(iconActor) {
+            iconActor.destroy();
+        });
+        this._shellIndicators = {};
     },
 
     _onIndicatorAdded: function(manager, appIndicator) {
+
         if (!(appIndicator.id in this._shellIndicators)) {
             let size = 16;
             if (this._scaleMode)
@@ -127,6 +143,7 @@ MyApplet.prototype = {
             this._signalManager.connect(indicatorActor.actor, 'leave-event', this._onLeaveEvent);
 
             this.manager_container.add_actor(indicatorActor.actor);
+
             appIndicator.createMenuClientAsync(Lang.bind(this, function(client) {
                 if (client != null) {
                     let newMenu = client.getShellMenu();
@@ -140,6 +157,7 @@ MyApplet.prototype = {
         }
     },
 
+<<<<<<< HEAD
     _onEnterEvent: function(actor, event) {
        this.set_applet_tooltip(actor._delegate.getToolTip());
     },
@@ -160,7 +178,7 @@ MyApplet.prototype = {
 
     _getIconSize: function() {
         let size;
-        let disp_size = this._panelHeight * ICON_SCALE_FACTOR;
+        let disp_size = this._panelHeight * ICON_SCALE_FACTOR / global.ui_scale;
         if (disp_size < 22) {
             size = 16;
         }
@@ -185,6 +203,26 @@ MyApplet.prototype = {
     },
 
     on_applet_clicked: function(event) {
+    },
+
+//
+//override getDisplayLayout to declare that this applet is suitable for both horizontal and
+// vertical orientations
+//
+    getDisplayLayout: function() {
+        return Applet.DisplayLayout.BOTH;
+    },
+
+    on_orientation_changed: function(neworientation) { 
+
+	if (neworientation == St.Side.TOP || neworientation == St.Side.BOTTOM)
+	{
+            this.manager.set_vertical(false);
+	}
+	else		// vertical panels
+	{
+            this.manager.set_vertical(true);
+ 	}
     },
 
     on_applet_removed_from_panel: function () {
@@ -269,7 +307,7 @@ MyApplet.prototype = {
             else if (["shutter", "filezilla", "dropbox", "thunderbird", "unknown", "blueberry-tray.py", "mintupdate.py"].indexOf(role) != -1) {
                 // Delay insertion by 1 second
                 // This fixes an invisible icon in the absence of disk cache for : shutter
-                // filezilla, dropbox, thunderbird, blueberry, mintupdate are known to show up in the wrong size or position, this chould fix them as well
+                // filezilla, dropbox, thunderbird, blueberry, mintupdate are known to show up in the wrong size or position, this should fix them as well
                 // Note: as of Oct 2015, the dropbox systray is calling itself "unknown"
                 this._insertStatusItemLater(role, icon, -1, 1000);
             }
@@ -328,11 +366,16 @@ MyApplet.prototype = {
             this.manager_container.insert_child_at_index(icon, 0);
         }
         icon._rolePosition = position;
+
         if (this._scaleMode) {
             let timerId = Mainloop.timeout_add(500, Lang.bind(this, function() {
                 this._resizeStatusItem(role, icon);
                 Mainloop.source_remove(timerId);
             }));
+        } else {
+            icon.set_pivot_point(0.5, 0.5);
+            icon.set_scale((DEFAULT_ICON_SIZE * global.ui_scale) / icon.width,
+                           (DEFAULT_ICON_SIZE * global.ui_scale) / icon.height);
         }
     },
 
@@ -340,6 +383,7 @@ MyApplet.prototype = {
         if (icon.obsolete == true) {
             return;
         }
+
         if (["shutter", "filezilla"].indexOf(role) != -1) {
             global.log("Not resizing " + role + " as it's known to be buggy (" + icon.get_width() + "x" + icon.get_height() + "px)");
         }
@@ -350,7 +394,6 @@ MyApplet.prototype = {
             //Note: dropbox doesn't scale, even though we resize it...
         }
     },
-
 
 };
 

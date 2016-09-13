@@ -45,6 +45,8 @@ st_cogl_texture_new_from_data_wrapper                (int  width,
 
     if (hardware_supports_npot_sizes ())
       {
+        CoglError *error = NULL;
+
         texture = COGL_TEXTURE (cogl_texture_2d_new_from_data (cogl_context, width, height,
                                                                format,
 #if COGL_VERSION < COGL_VERSION_ENCODE (1, 18, 0)
@@ -52,7 +54,13 @@ st_cogl_texture_new_from_data_wrapper                (int  width,
 #endif
                                                                rowstride,
                                                                data,
-                                                               NULL));
+                                                               &error));
+
+        if (error)
+          {
+            g_debug ("(st) cogl_texture_2d_new_from_data failed: %s\n", error->message);
+            cogl_error_free (error);
+          }
       }
     else
       {
@@ -82,6 +90,7 @@ st_cogl_texture_new_from_file_wrapper         (const char *filename,
                                           CoglPixelFormat  internal_format)
 {
     CoglTexture *texture = NULL;
+    CoglError *error = NULL;
 
     if (hardware_supports_npot_sizes ())
       {
@@ -90,14 +99,20 @@ st_cogl_texture_new_from_file_wrapper         (const char *filename,
 #if COGL_VERSION < COGL_VERSION_ENCODE (1, 18, 0)
                                                                COGL_PIXEL_FORMAT_ANY,
 #endif
-                                                               NULL));
+                                                               &error));
       }
     else
       {
         texture = cogl_texture_new_from_file (filename,
                                               flags,
                                               internal_format,
-                                              NULL);
+                                              &error);
+      }
+
+    if (error)
+      {
+        g_debug ("cogl_texture_(2d)_new_from_file failed: %s\n", error->message);
+        cogl_error_free (error);
       }
 
     return texture;
