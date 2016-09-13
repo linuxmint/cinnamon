@@ -1,7 +1,7 @@
 #!/usr/bin/env python2
 
 from GSettingsWidgets import *
-from EffectsWidgets import TweenChooserButton, EffectChooserButton
+from ChooserButtonWidgets import TweenChooserButton, EffectChooserButton
 
 EFFECT_SETS = {
     "cinnamon": ("traditional", "traditional", "traditional", "none",  "none",  "none"),

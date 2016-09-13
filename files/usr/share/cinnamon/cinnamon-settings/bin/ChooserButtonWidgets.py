@@ -1,5 +1,5 @@
 from __future__ import division
-from gi.repository import Gtk, GObject
+from gi.repository import Gtk, GObject, GLib
 import cairo
 import tweenEquations
 import math
@@ -23,6 +23,222 @@ PREVIEW_HEIGHT = 48
 PREVIEW_WIDTH = 96
 ANIMATION_DURATION = 800
 ANIMATION_FRAME_RATE = 20
+
+class BaseChooserButton(Gtk.Button):
+    def __init__ (self, has_button_label=False):
+        super(BaseChooserButton, self).__init__()
+        self.menu = Gtk.Menu()
+        self.button_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=2)
+        self.button_image = Gtk.Image()
+        self.button_box.add(self.button_image)
+        if has_button_label:
+            self.button_label = Gtk.Label()
+            self.button_box.add(self.button_label)
+        self.add(self.button_box)
+        self.connect("button-release-event", self._on_button_clicked)
+
+    def popup_menu_below_button (self, *args):
+        # the introspection for GtkMenuPositionFunc seems to change with each Gtk version,
+        # this is a workaround to make sure we get the menu and the widget
+        menu = args[0]
+        widget = args[-1]
+        window = widget.get_window()
+        screen = window.get_screen()
+        monitor = screen.get_monitor_at_window(window)
+
+        warea = screen.get_monitor_workarea(monitor)
+        wrect = widget.get_allocation()
+        mrect = menu.get_allocation()
+
+        unused_var, window_x, window_y = window.get_origin()
+
+        # Position left edge of the menu with the right edge of the button
+        x = window_x + wrect.x + wrect.width
+        # Center the menu vertically with respect to the monitor
+        y = warea.y + (warea.height / 2) - (mrect.height / 2)
+
+        # Now, check if we're still touching the button - we want the right edge
+        # of the button always 100% touching the menu
+
+        if y > (window_y + wrect.y):
+            y = y - (y - (window_y + wrect.y))
+        elif (y + mrect.height) < (window_y + wrect.y + wrect.height):
+            y = y + ((window_y + wrect.y + wrect.height) - (y + mrect.height))
+
+        push_in = True # push_in is True so all menu is always inside screen
+        return (x, y, push_in)
+
+    def _on_button_clicked(self, widget, event):
+        if event.button == 1:
+            self.menu.show_all()
+            self.menu.popup(None, None, self.popup_menu_below_button, self, event.button, event.time)
+
+class PictureChooserButton(BaseChooserButton):
+    def __init__ (self, num_cols=4, button_picture_size=None, menu_pictures_size=None, has_button_label=False):
+        super(PictureChooserButton, self).__init__(has_button_label)
+        self.num_cols = num_cols
+        self.button_picture_size = button_picture_size
+        self.menu_pictures_size = menu_pictures_size
+        self.row = 0
+        self.col = 0
+        self.progress = 0.0
+
+        context = self.get_style_context()
+        context.add_class("gtkstyle-fallback")
+
+        self.connect_after("draw", self.on_draw)
+
+    def on_draw(self, widget, cr, data=None):
+        if self.progress == 0:
+            return False
+        box = widget.get_allocation()
+
+        context = widget.get_style_context()
+        c = context.get_background_color(Gtk.StateFlags.SELECTED)
+
+        max_length = box.width * .6
+        start = (box.width - max_length) / 2
+        y = box.height - 5
+
+        cr.save()
+
+        cr.set_source_rgba(c.red, c.green, c.blue, c.alpha)
+        cr.set_line_width(3)
+        cr.set_line_cap(1)
+        cr.move_to(start, y)
+        cr.line_to(start + (self.progress * max_length), y)
+        cr.stroke()
+
+        cr.restore()
+        return False
+
+    def increment_loading_progress(self, inc):
+        progress = self.progress + inc
+        self.progress = min(1.0, progress)
+        self.queue_draw()
+
+    def reset_loading_progress(self):
+        self.progress = 0.0
+        self.queue_draw()
+
+    def set_picture_from_file (self, path):
+        if os.path.exists(path):
+            if self.button_picture_size is None:
+                pixbuf = GdkPixbuf.Pixbuf.new_from_file(path)
+            else:
+                pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_scale(path, -1, self.button_picture_size, True)
+            self.button_image.set_from_pixbuf(pixbuf)
+
+    def set_button_label(self, label):
+        self.button_label.set_markup(label)
+
+    def _on_picture_selected(self, menuitem, path, callback, id=None):
+        if id is not None:
+            result = callback(path, id)
+        else:
+            result = callback(path)
+
+        if result:
+            self.set_picture_from_file(path)
+
+    def clear_menu(self):
+        menu = self.menu
+        self.menu = Gtk.Menu()
+        self.row = 0
+        self.col = 0
+        menu.destroy()
+
+    def add_picture(self, path, callback, title=None, id=None):
+        if os.path.exists(path):
+            if self.menu_pictures_size is None:
+                pixbuf = GdkPixbuf.Pixbuf.new_from_file(path)
+            else:
+                pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_scale(path, -1, self.menu_pictures_size, True)
+            image = Gtk.Image.new_from_pixbuf (pixbuf)
+            menuitem = Gtk.MenuItem()
+            if title is not None:
+                vbox = Gtk.VBox()
+                vbox.pack_start(image, False, False, 2)
+                label = Gtk.Label()
+                label.set_text(title)
+                vbox.pack_start(label, False, False, 2)
+                menuitem.add(vbox)
+            else:
+                menuitem.add(image)
+            if id is not None:
+                menuitem.connect('activate', self._on_picture_selected, path, callback, id)
+            else:
+                menuitem.connect('activate', self._on_picture_selected, path, callback)
+            self.menu.attach(menuitem, self.col, self.col+1, self.row, self.row+1)
+            self.col = (self.col+1) % self.num_cols
+            if (self.col == 0):
+                self.row = self.row + 1
+
+    def add_separator(self):
+        self.row = self.row + 1
+        self.menu.attach(Gtk.SeparatorMenuItem(), 0, self.num_cols, self.row, self.row+1)
+
+    def add_menuitem(self, menuitem):
+        self.row = self.row + 1
+        self.menu.attach(menuitem, 0, self.num_cols, self.row, self.row+1)
+
+class DateChooserButton(Gtk.Button):
+    __gsignals__ = {
+        'date-changed': (GObject.SignalFlags.RUN_FIRST, None, (int,int,int))
+    }
+
+    def __init__(self):
+        super(DateChooserButton, self).__init__()
+
+        self.year, self.month, self.day = GLib.DateTime.new_now_local().get_ymd()
+
+        self.connect("clicked", self.on_button_clicked)
+
+    def on_button_clicked(self, *args):
+        self.dialog = Gtk.Dialog(transient_for=self.get_toplevel(),
+                                 title=_("Select a date"),
+                                 flags=Gtk.DialogFlags.MODAL,
+                                 buttons=(Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL,
+                                          Gtk.STOCK_OK, Gtk.ResponseType.OK))
+
+        content = self.dialog.get_content_area()
+
+        calendar = Gtk.Calendar()
+        content.pack_start(calendar, True, True, 0)
+        calendar.select_month(self.month-1, self.year)
+        calendar.select_day(self.day)
+
+        def select_today(*args):
+            date = GLib.DateTime.new_now_local().get_ymd()
+            calendar.select_month(date[1]-1, date[0])
+            calendar.select_day(date[2])
+
+        today = Gtk.Button(label=_("Today"))
+        today.connect("clicked", select_today)
+        content.pack_start(today, False, False, 0)
+
+        content.show_all()
+
+        response = self.dialog.run()
+
+        if response == Gtk.ResponseType.OK:
+            date = calendar.get_date()
+            self.set_date(date[0], date[1]+1, date[2]) #calendar uses 0 based month
+            self.emit("date-changed", self.year, self.month, self.day)
+
+        self.dialog.destroy()
+
+    def get_date(self):
+        return self.year, self.month, self.day
+
+    def set_date(self, year, month, day):
+        self.year = year
+        self.month = month
+        self.day = day
+
+        date = GLib.DateTime.new_local(year, month, day, 1, 1, 1)
+        date_string = date.format(_("%B %e, %Y"))
+        self.set_label(date_string)
 
 def draw_window(context, x, y, color, alpha = 1, scale = 1):
     if scale <= 0:
@@ -137,7 +353,7 @@ class flyDown(object):
         draw_window(context, x, y, color)
 
 # a button to select tweens
-class TweenChooserButton(Gtk.Button):
+class TweenChooserButton(BaseChooserButton):
     __gproperties__ = {
         "tween": (str,
                   "tween value",
@@ -150,9 +366,6 @@ class TweenChooserButton(Gtk.Button):
         super(TweenChooserButton, self).__init__()
 
         self.tween = ""
-
-        self.menu = Gtk.Menu()
-        self.connect("button-release-event", self.on_button_clicked)
 
         self.set_size_request(128, -1)
 
@@ -173,43 +386,6 @@ class TweenChooserButton(Gtk.Button):
 
     def change_value(self, widget):
         self.props.tween = widget.tween_type
-
-    #Imports from PictureChooserButton
-    def popup_menu_below_button (self, *args):
-        # the introspection for GtkMenuPositionFunc seems to change with each Gtk version,
-        # this is a workaround to make sure we get the menu and the widget
-        menu = args[0]
-        widget = args[-1]
-        window = widget.get_window()
-        screen = window.get_screen()
-        monitor = screen.get_monitor_at_window(window)
-
-        warea = screen.get_monitor_workarea(monitor)
-        wrect = widget.get_allocation()
-        mrect = menu.get_allocation()
-
-        unused_var, window_x, window_y = window.get_origin()
-
-        # Position left edge of the menu with the right edge of the button
-        x = window_x + wrect.x + wrect.width
-        # Center the menu vertically with respect to the monitor
-        y = warea.y + (warea.height / 2) - (mrect.height / 2)
-
-        # Now, check if we're still touching the button - we want the right edge
-        # of the button always 100% touching the menu
-
-        if y > (window_y + wrect.y):
-            y = y - (y - (window_y + wrect.y))
-        elif (y + mrect.height) < (window_y + wrect.y + wrect.height):
-            y = y + ((window_y + wrect.y + wrect.height) - (y + mrect.height))
-
-        push_in = True # push_in is True so all menu is always inside screen
-        return (x, y, push_in)
-
-    def on_button_clicked(self, widget, event):
-        if event.button == 1:
-            self.menu.show_all()
-            self.menu.popup(None, None, self.popup_menu_below_button, self, event.button, event.time)
 
     def do_get_property(self, prop):
         if prop.name == 'tween':
@@ -317,7 +493,7 @@ class TweenMenuItem(Gtk.MenuItem):
         return True
 
 # a button to select effect types
-class EffectChooserButton(Gtk.Button):
+class EffectChooserButton(BaseChooserButton):
     __gproperties__ = {
         "effect": (str,
                   "effect value",
@@ -331,9 +507,6 @@ class EffectChooserButton(Gtk.Button):
 
         self.effect = ""
         self.effect_styles = ["none", "scale"] if effect_styles == None else effect_styles
-
-        self.menu = Gtk.Menu()
-        self.connect("button-release-event", self.on_button_clicked)
 
         self.set_size_request(128, -1)
 
@@ -357,43 +530,6 @@ class EffectChooserButton(Gtk.Button):
 
     def change_value(self, widget):
         self.props.effect = widget.effect_type
-
-    #Imports from PictureChooserButton
-    def popup_menu_below_button (self, *args):
-        # the introspection for GtkMenuPositionFunc seems to change with each Gtk version,
-        # this is a workaround to make sure we get the menu and the widget
-        menu = args[0]
-        widget = args[-1]
-        window = widget.get_window()
-        screen = window.get_screen()
-        monitor = screen.get_monitor_at_window(window)
-
-        warea = screen.get_monitor_workarea(monitor)
-        wrect = widget.get_allocation()
-        mrect = menu.get_allocation()
-
-        unused_var, window_x, window_y = window.get_origin()
-
-        # Position left edge of the menu with the right edge of the button
-        x = window_x + wrect.x + wrect.width
-        # Center the menu vertically with respect to the monitor
-        y = warea.y + (warea.height / 2) - (mrect.height / 2)
-
-        # Now, check if we're still touching the button - we want the right edge
-        # of the button always 100% touching the menu
-
-        if y > (window_y + wrect.y):
-            y = y - (y - (window_y + wrect.y))
-        elif (y + mrect.height) < (window_y + wrect.y + wrect.height):
-            y = y + ((window_y + wrect.y + wrect.height) - (y + mrect.height))
-
-        push_in = True # push_in is True so all menu is always inside screen
-        return (x, y, push_in)
-
-    def on_button_clicked(self, widget, event):
-        if event.button == 1:
-            self.menu.show_all()
-            self.menu.popup(None, None, self.popup_menu_below_button, self, event.button, event.time)
 
     def do_get_property(self, prop):
         if prop.name == 'effect':
