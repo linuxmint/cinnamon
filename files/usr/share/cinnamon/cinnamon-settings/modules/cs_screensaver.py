@@ -82,7 +82,7 @@ class Module:
         widget.set_tooltip_text(_("Enable this option to require a password when the computer wakes up from suspend"))
         settings.add_row(widget)
 
-        widget = GSettingsSwitch(_("Lock the computer when the screen turns off"), schema, "lock-enabled")
+        widget = GSettingsSwitch(_("Lock the computer when the screen saver starts or screen turns off"), schema, "lock-enabled")
         widget.set_tooltip_text(_("Enable this option to require a password when the screen turns itself off, or when the screensaver activates after a period of inactivity"))
         settings.add_row(widget)
 
@@ -90,8 +90,8 @@ class Module:
         widget.set_tooltip_text(_("This option defines the amount of time to wait before locking the screen, after showing the screensaver or after turning off the screen"))
         settings.add_reveal_row(widget, schema, "lock-enabled")
 
-        widget = GSettingsComboBox(_("Lock the computer when inactive"), "org.cinnamon.desktop.session", "idle-delay", LOCK_INACTIVE_OPTIONS, valtype="uint", size_group=size_group)
-        widget.set_tooltip_text(_("This option defines the amount of time to wait before locking the screen, when the computer is not being used"))
+        widget = GSettingsComboBox(_("Start screen saver when computer is inactive"), "org.cinnamon.desktop.session", "idle-delay", LOCK_INACTIVE_OPTIONS, valtype="uint", size_group=size_group)
+        widget.set_tooltip_text(_("This option defines the amount of time to wait before screen saver starts, when the computer is not being used"))
         settings.add_row(widget)
 
         settings = page.add_section(_("Away message"))
