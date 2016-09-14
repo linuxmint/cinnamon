@@ -182,20 +182,20 @@ class ItemEditor(object):
 
     def sync_widgets(self, name_valid, exec_valid):
         if name_valid:
-            self.builder.get_object('name-entry').set_icon_from_icon_name(Gtk.EntryIconPosition.SECONDARY, 'ok')
+            self.builder.get_object('name-entry').set_icon_from_icon_name(Gtk.EntryIconPosition.SECONDARY, 'gtk-ok')
             self.builder.get_object('name-entry').set_icon_tooltip_text(Gtk.EntryIconPosition.SECONDARY,
                                                                         _("Valid name"))
         else:
-            self.builder.get_object('name-entry').set_icon_from_icon_name(Gtk.EntryIconPosition.SECONDARY, 'stop')
+            self.builder.get_object('name-entry').set_icon_from_icon_name(Gtk.EntryIconPosition.SECONDARY, 'process-stop')
             self.builder.get_object('name-entry').set_icon_tooltip_text(Gtk.EntryIconPosition.SECONDARY,
                                                                         _("The name cannot be empty."))
 
         if exec_valid:
-            self.builder.get_object('exec-entry').set_icon_from_icon_name(Gtk.EntryIconPosition.SECONDARY, 'ok')
+            self.builder.get_object('exec-entry').set_icon_from_icon_name(Gtk.EntryIconPosition.SECONDARY, 'gtk-ok')
             self.builder.get_object('exec-entry').set_icon_tooltip_text(Gtk.EntryIconPosition.SECONDARY,
                                                                         _("Valid executable"))
         else:
-            self.builder.get_object('exec-entry').set_icon_from_icon_name(Gtk.EntryIconPosition.SECONDARY, 'stop')
+            self.builder.get_object('exec-entry').set_icon_from_icon_name(Gtk.EntryIconPosition.SECONDARY, 'process-stop')
             self.builder.get_object('exec-entry').set_icon_tooltip_text(Gtk.EntryIconPosition.SECONDARY,
                                                                         _("The executable is not valid. It cannot be empty and spaces in the path must be escaped with backslash (\\)."))
 
@@ -528,6 +528,6 @@ class Main:
         Gtk.main_quit()
 
 if __name__ == "__main__":
-    Gtk.Window.set_default_icon_name('gnome-panel-launcher')
+    Gtk.Window.set_default_icon_name('cinnamon-panel-launcher')
     Main()
     Gtk.main()

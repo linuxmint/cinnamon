@@ -169,7 +169,7 @@ class PasswordDialog(Gtk.Dialog):
         table.add_labels([_("New password"), None, _("Confirm password")])
 
         self.new_password = Gtk.Entry()
-        self.new_password.set_icon_from_icon_name(Gtk.EntryIconPosition.SECONDARY, "reload")
+        self.new_password.set_icon_from_icon_name(Gtk.EntryIconPosition.SECONDARY, "view-refresh")
         self.new_password.set_icon_tooltip_text(Gtk.EntryIconPosition.SECONDARY, _("Generate a password"))
         self.new_password.connect("icon-release", self._on_new_password_icon_released)
         self.new_password.connect("changed", self._on_passwords_changed)
