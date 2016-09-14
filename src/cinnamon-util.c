@@ -751,14 +751,11 @@ get_file_contents_utf8_task_finished (GObject      *source,
       {
         g_printerr ("cinnamon_get_file_contents_utf8 failed: %s\n", error->message);
         g_clear_error (&error);
-        return;
       }
 
-    if (data->callback)
-        (* data->callback) (contents, data->user_data);
+    (* data->callback) (contents, data->user_data);
 
     g_clear_pointer (&contents, g_free);
-
     g_slice_free (CinnamonFileContentsCallbackData, data);
 }
 
