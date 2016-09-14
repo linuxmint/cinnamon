@@ -2179,6 +2179,7 @@ Panel.prototype = {
         this._destroyed = true;    // set this early so that any routines triggered during
                                    // the destroy process can test it
 
+        this._clearPanelBarriers();
         AppletManager.unloadAppletsOnPanel(this);
         this._context_menu.close();
         this._context_menu.destroy();
