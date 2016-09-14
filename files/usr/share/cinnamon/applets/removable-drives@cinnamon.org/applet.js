@@ -1,6 +1,7 @@
 const Lang = imports.lang;
 const St = imports.gi.St;
-const Cinnamon = imports.gi.Cinnamon;
+const GLib = imports.gi.GLib;
+const Gio = imports.gi.Gio;
 const Applet = imports.ui.applet;
 const Main = imports.ui.main;
 const PopupMenu = imports.ui.popupMenu;
@@ -63,9 +64,9 @@ MyApplet.prototype = {
 
             this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
             this.menu.addAction(_("Open file manager"), function(event) {
-                let appSystem = Cinnamon.AppSystem.get_default();
-                let app = appSystem.lookup_app('nemo.desktop');
-                app.activate_full(-1, event.get_time());
+                let homeFile = Gio.file_new_for_path(GLib.get_home_dir());
+                let homeUri = homeFile.get_uri();
+                Gio.app_info_launch_default_for_uri(homeUri, null);
             });     
             
             Main.placesManager.connect('mounts-updated', Lang.bind(this, this._update));
