@@ -527,6 +527,8 @@ class PixCache(object):
         self._data = {}
 
     def get_pix(self, filename, size=None):
+        if filename is None:
+            return None
         mimetype = mimetypes.guess_type(filename)[0]
         if mimetype is None or not mimetype.startswith("image/"):
             return None
