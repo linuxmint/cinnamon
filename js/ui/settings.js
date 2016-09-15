@@ -419,17 +419,14 @@ XletSettingsBase.prototype = {
         }
     },
 
-    _checkSettings: function() {
-        let oldSettings = this.settingsData;
-        this.settingsData = this._loadFromFile();
-
+    _settingChangedRemotely: function(key, value) {
         let changed = false;
-        for (let key in this.settingsData) {
-            if (this.settingsData[key].value === undefined) continue;
+        if (key in this.settingsData) {
+            if (this.settingsData[key].value === undefined) return;
+            if (this.settingsData[key].value == value) return;
 
-            let oldValue = oldSettings[key].value;
-            let value = this.settingsData[key].value;
-            if (value == oldValue) continue;
+            let oldValue = this.settingsData[key].value;
+            this.settingsData[key].value = value;
 
             changed = true;
             let info = this.bindings[key];
@@ -511,9 +508,7 @@ XletSettingsBase.prototype = {
             needsSave = true;
         }
 
-        this.monitor = this.file.monitor_file(Gio.FileMonitorFlags.NONE, null);
         if (needsSave) this._saveToFile();
-        else this.monitorId = this.monitor.connect("changed", Lang.bind(this, this._checkSettings));
 
         return true;
     },
@@ -591,19 +586,20 @@ XletSettingsBase.prototype = {
     },
 
     _saveToFile: function() {
-        if (this.monitorId) this.monitor.disconnect(this.monitorId);
         let rawData = JSON.stringify(this.settingsData, null, 4);
         let raw = this.file.replace(null, false, Gio.FileCreateFlags.NONE, null);
         let out_file = Gio.BufferedOutputStream.new_sized(raw, 4096);
         Cinnamon.write_string_to_stream(out_file, rawData);
         out_file.close(null);
-        this.monitorId = this.monitor.connect("changed", Lang.bind(this, this._checkSettings));
     },
 
-    // called by cinnamonDBus.js to when the setting is changed remotely. This is to expedite the
-    // update due to settings changes, as the file monitor has a significant delay.
+    // called by cinnamonDBus.js to when the setting is changed remotely.
     remoteUpdate: function(key, payload) {
-        this._checkSettings();
+        let uuid, iid, key, json_str = payload;
+
+        let val = JSON.parse(json_str);
+
+        this._settingChangedRemotely(key, val);
     },
 
     /**
@@ -617,7 +613,6 @@ XletSettingsBase.prototype = {
         for (let key in this.bindings) {
             this.unbindProperty(key);
         }
-        if (this.monitorId) this.monitor.disconnect(this.monitorId);
         this.disconnectAll();
     }
 }

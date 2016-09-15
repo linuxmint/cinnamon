@@ -109,7 +109,9 @@ class JSONSettingsHandler(object):
                     callback(key, new_value)
 
     def get_settings(self):
-        raw_data = open(self.filepath).read()
+        file = open(self.filepath)
+        raw_data = file.read()
+        file.close()
         try:
             settings = json.loads(raw_data, encoding=None, object_pairs_hook=collections.OrderedDict)
         except:
@@ -123,6 +125,7 @@ class JSONSettingsHandler(object):
         raw_data = json.dumps(self.settings, indent=4)
         new_file = open(self.filepath, 'w+')
         new_file.write(raw_data)
+        new_file.close()
         self.resume_monitor()
 
     def pause_monitor(self):
@@ -158,7 +161,9 @@ class JSONSettingsHandler(object):
                 callback(key, self.settings[key]["value"])
 
     def load_from_file(self, filepath):
-        raw_data = open(filepath).read()
+        file = open(filepath)
+        raw_data = file.read()
+        file.close()
         try:
             settings = json.loads(raw_data, encoding=None, object_pairs_hook=collections.OrderedDict)
         except:
@@ -180,6 +185,7 @@ class JSONSettingsHandler(object):
         raw_data = json.dumps(self.settings, indent=4)
         new_file = open(filepath, 'w+')
         new_file.write(raw_data)
+        new_file.close()
 
 class JSONSettingsBackend(object):
     def attach(self):
