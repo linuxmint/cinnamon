@@ -570,8 +570,11 @@ class PixCache(object):
 
                     # generate thumbnail
                     (width, height) = img.size
-                    if img.mode != 'RGB':
-                        img = img.convert('RGB')
+                    if img.mode != "RGB":
+                        if img.mode == "RGBA":
+                            bg_img = Image.new("RGBA", img.size, (255,255,255,255))
+                            img = Image.alpha_composite(bg_img, img)
+                        img = img.convert("RGB")
                     if size:
                         img.thumbnail((size, size), Image.ANTIALIAS)
                     img = imtools.round_image(img, {}, False, None, 3, 255)
