@@ -151,7 +151,7 @@ FileResultButton.prototype =
         {
             this.icon = new St.Icon(
             {
-                icon_name: (type == "files" ? "gtk-file" : "folder"),
+                icon_name: (type == "files" ? "text-x-preview" : "folder"),
                 icon_size: 16,
                 icon_type: St.IconType.FULLCOLOR
             });

@@ -286,9 +286,9 @@ class CustomAppChooserButton(Gtk.AppChooserButton):
         if info:
             self.append_separator()
 
-        icon = Gio.ThemedIcon.new("gtk-dialog-question")
+        icon = Gio.ThemedIcon.new("dialog-question")
         self.append_custom_item(CUSTOM_ITEM_ASK, _("Ask what to do"), icon)
-        icon = Gio.ThemedIcon.new("gtk-directory")
+        icon = Gio.ThemedIcon.new("folder")
         self.append_custom_item(CUSTOM_ITEM_OPEN_FOLDER, _("Open folder"), icon)
         icon = Gio.ThemedIcon.new("gtk-cancel")
         self.append_custom_item(CUSTOM_ITEM_DO_NOTHING, _("Do nothing"), icon)
