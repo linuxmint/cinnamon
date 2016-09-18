@@ -236,10 +236,9 @@ MyApplet.prototype = {
     },
 
     set_orientation: function() {
-	    if (this._orientation == St.Side.LEFT || this.orientation == St.Side.RIGHT) {
+        if (this._orientation == St.Side.LEFT || this.orientation == St.Side.RIGHT) {
             this.actor.set_vertical(true);
-        }
-        else {
+        } else {
             this.actor.set_vertical(false);
         }
     },
