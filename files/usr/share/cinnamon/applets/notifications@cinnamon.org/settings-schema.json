@@ -1,12 +1,12 @@
 {
     "ignoreTransientNotifications": {
-        "type": "checkbox",
+        "type": "switch",
         "default": true,
         "description": "Ignore transient notifications",
         "tooltip" : "Check this to ignore transient notifications."
     },
     "showEmptyTray" : {
-        "type" : "checkbox",
+        "type" : "switch",
         "default" : false,
         "description" : "Show empty tray",
         "tooltip" : "Check this to show the tray even when there are no new notifications."

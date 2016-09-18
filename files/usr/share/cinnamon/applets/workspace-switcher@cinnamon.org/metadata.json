@@ -2,6 +2,5 @@
  "uuid": "workspace-switcher@cinnamon.org",
  "name": "Workspace switcher",
  "description": "Select the workspace from the panel",
- "icon": "gnome-panel-workspace-switcher",
  "max-instances": -1
 }

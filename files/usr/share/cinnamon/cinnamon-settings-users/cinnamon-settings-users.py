@@ -1,15 +1,21 @@
 #!/usr/bin/env python2
 
-import sys, os
-import pwd, grp
-from gi.repository import Gtk, GObject, Gio, GdkPixbuf, AccountsService
+import os
+import sys
+import pwd
+import grp
 import gettext
 import shutil
-import PIL
-from PIL import Image
-from random import randint
 import re
 import subprocess
+from random import randint
+
+import PIL
+from PIL import Image
+import gi
+gi.require_version("Gtk", "3.0")
+gi.require_version("AccountsService", "1.0")
+from gi.repository import Gtk, GObject, Gio, GdkPixbuf, AccountsService
 
 gettext.install("cinnamon", "/usr/share/locale")
 
@@ -163,7 +169,7 @@ class PasswordDialog(Gtk.Dialog):
         table.add_labels([_("New password"), None, _("Confirm password")])
 
         self.new_password = Gtk.Entry()
-        self.new_password.set_icon_from_icon_name(Gtk.EntryIconPosition.SECONDARY, "reload")
+        self.new_password.set_icon_from_icon_name(Gtk.EntryIconPosition.SECONDARY, "view-refresh")
         self.new_password.set_icon_tooltip_text(Gtk.EntryIconPosition.SECONDARY, _("Generate a password"))
         self.new_password.connect("icon-release", self._on_new_password_icon_released)
         self.new_password.connect("changed", self._on_passwords_changed)

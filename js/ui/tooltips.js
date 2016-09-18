@@ -257,18 +257,41 @@ PanelItemTooltip.prototype = {
         let tooltipHeight = this._tooltip.get_allocation_box().y2-this._tooltip.get_allocation_box().y1;
         let tooltipWidth = this._tooltip.get_allocation_box().x2-this._tooltip.get_allocation_box().x1;
 
-        let monitor = Main.layoutManager.findMonitorForActor(this.item);
-        let tooltipTop;
+        let monitor = Main.layoutManager.findMonitorForActor(this._panelItem.actor);
+        let tooltipTop = 0;
+	let tooltipLeft = 0;
+
         if (this.orientation == St.Side.BOTTOM) {
             tooltipTop = this.item.get_transformed_position()[1] - tooltipHeight;
-        } else {
-            tooltipTop = this.item.get_transformed_position()[1] + this.item.get_transformed_size()[1];
+            tooltipLeft = this.mousePosition[0]- Math.round(tooltipWidth/2);
+            tooltipLeft = Math.max(tooltipLeft, monitor.x);
+            tooltipLeft = Math.min(tooltipLeft, monitor.x + monitor.width - tooltipWidth);
         }
-        let tooltipLeft = this.mousePosition[0]- Math.round(tooltipWidth/2);
-        tooltipLeft = Math.max(tooltipLeft, monitor.x);
-        tooltipLeft = Math.min(tooltipLeft, monitor.x + monitor.width - tooltipWidth);
+        else if (this.orientation == St.Side.TOP) {
+            tooltipTop = this.item.get_transformed_position()[1] + this.item.get_transformed_size()[1];
+            tooltipLeft = this.mousePosition[0]- Math.round(tooltipWidth/2);
+            tooltipLeft = Math.max(tooltipLeft, monitor.x);
+            tooltipLeft = Math.min(tooltipLeft, monitor.x + monitor.width - tooltipWidth);
+        }
+	else if (this.orientation == St.Side.LEFT)
+	{
+                let [x, y] = this._panelItem.actor.get_transformed_position();
 
-        this._tooltip.set_position(tooltipLeft, tooltipTop);
+		tooltipTop = y 
+			+ Math.round((this._panelItem.actor.get_allocation_box().y2 - this._panelItem.actor.get_allocation_box().y1)/2)
+			- Math.round(tooltipHeight/2);
+		tooltipLeft = x + this._panelItem.actor.get_allocation_box().x2 - this._panelItem.actor.get_allocation_box().x1;
+	}
+	else				// Right side
+	{
+                let [x, y] = this._panelItem.actor.get_transformed_position();
+
+		tooltipTop = y  
+			+ Math.round((this._panelItem.actor.get_allocation_box().y2 - this._panelItem.actor.get_allocation_box().y1)/2)
+			- Math.round(tooltipHeight/2);
+		tooltipLeft = x - tooltipWidth;
+	}
+  	this._tooltip.set_position(tooltipLeft, tooltipTop);
 
         this._tooltip.show();
         this.visible = true;

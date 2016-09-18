@@ -1685,7 +1685,7 @@ MessageTray.prototype = {
         this._notificationBin.opacity = 0;        
 
         let monitor = Main.layoutManager.primaryMonitor;
-        let panel = Main.panelManager.getPanel(0, false); // We only want the top panel in monitor 0
+        let panel = Main.panelManager.getPanel(0, 0); // We only want the top panel in monitor 0
         let height = 5;
         if (panel)
             height += panel.actor.get_height();
@@ -1693,6 +1693,7 @@ MessageTray.prototype = {
 
         let margin = this._notification._table.get_theme_node().get_length('margin-from-right-edge-of-screen');                
         this._notificationBin.x = monitor.x + monitor.width - this._notification._table.width - margin;
+        Main.soundManager.play('notification');
         this._notificationBin.show();
 
         this._updateShowingNotification();
@@ -1736,7 +1737,7 @@ MessageTray.prototype = {
                             onCompleteScope: this
                           };
         let monitor = Main.layoutManager.primaryMonitor;
-        let panel = Main.panelManager.getPanel(0, false); // We only want the top panel in monitor 0
+        let panel = Main.panelManager.getPanel(0, 0); // We only want the top panel in monitor 0
         let height = 5;
         if (panel)
             height += panel.actor.get_height();
@@ -1841,7 +1842,7 @@ MessageTray.prototype = {
         // just make sure it's not covering the top panel if there is one.
         
         let monitor = Main.layoutManager.primaryMonitor;
-        let panel = Main.panelManager.getPanel(0, false); // We only want the top panel in monitor 0
+        let panel = Main.panelManager.getPanel(0, 0); // We only want the top panel in monitor 0
         let height = 5;
         if (panel)
             height += panel.actor.get_height();

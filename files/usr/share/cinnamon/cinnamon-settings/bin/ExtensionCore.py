@@ -1,18 +1,21 @@
 #!/usr/bin/env python2
 
-from SettingsWidgets import SidePage, SettingsStack
-import XletSettings
-from Spices import Spice_Harvester
 import sys
 import thread
 import os
 import re
 import json
-from gi.repository import Gio, Gtk, GObject, Gdk, GdkPixbuf, Pango, GLib
-import dbus
 import cgi
 import subprocess
 import gettext
+
+import dbus
+import gi
+gi.require_version("Gtk", "3.0")
+from gi.repository import Gio, Gtk, GObject, Gdk, GdkPixbuf, Pango, GLib
+
+from SettingsWidgets import SidePage, SettingsStack
+from Spices import Spice_Harvester
 
 home = os.path.expanduser("~")
 
@@ -48,6 +51,29 @@ def find_extension_subdir(directory):
         return directory
     else:
         return os.path.join(directory, ".".join(largest))
+
+translations = {}
+
+def translate(uuid, string):
+    #check for a translation for this xlet
+    if uuid not in translations:
+        try:
+            translations[uuid] = gettext.translation(uuid, home + "/.local/share/locale").ugettext
+        except IOError:
+            try:
+                translations[uuid] = gettext.translation(uuid, "/usr/share/locale").ugettext
+            except IOError:
+                translations[uuid] = None
+
+    #do not translate whitespaces
+    if not string.strip():
+        return string
+
+    if translations[uuid]:
+        result = translations[uuid](string)
+        if result != string:
+            return result
+    return _(string)
 
 class SurfaceWrapper:
     def __init__(self, surface):
@@ -130,6 +156,9 @@ class ExtensionSidePage (SidePage):
             column3.set_max_width(300)
             cr.set_property('wrap-mode', Pango.WrapMode.WORD_CHAR)
             cr.set_property('wrap-width', 200)
+        if self.collection_type == 'applet':
+            cr.set_property('wrap-mode', Pango.WrapMode.WORD_CHAR)
+            cr.set_property('wrap-width', 450)
 
         cr = Gtk.CellRendererPixbuf()
         cr.set_property("stock-size", Gtk.IconSize.DND)
@@ -192,18 +221,25 @@ class ExtensionSidePage (SidePage):
 
         if self.collection_type == "applet":
             self.instanceButton = Gtk.Button.new_with_label(_("Add to panel"))
+            self.removeButton = Gtk.Button.new_with_label(_("Remove from panel"))
         elif self.collection_type == "desklet":
             self.instanceButton = Gtk.Button.new_with_label(_("Add to desktop"))
+            self.removeButton = Gtk.Button.new_with_label(_("Remove from desktop"))
         elif self.collection_type == "extension":
             self.instanceButton = Gtk.Button.new_with_label(_("Add to Cinnamon"))
+            self.removeButton = Gtk.Button.new_with_label(_("Remove from Cinnamon"))
         elif self.collection_type == "theme":
             self.instanceButton = Gtk.Button.new_with_label(_("Apply theme"))
+            self.removeButton = Gtk.Button.new_with_label("") #Should not be visible for theme
         else:
             self.instanceButton = Gtk.Button.new_with_label(_("Add"))
+            self.removeButton = Gtk.Button.new_with_label(_("Remove"))
 
         self.instanceButton.connect("clicked", lambda x: self._add_another_instance())
+        self.instanceButton.set_sensitive(False)
 
-        self.instanceButton.set_sensitive(False);
+        self.removeButton.connect("clicked", lambda x: self._remove_all_instances())
+        self.removeButton.set_sensitive(False)
 
         self.configureButton = Gtk.Button.new_with_label(_("Configure"))
         self.configureButton.connect("clicked", self._configure_extension)
@@ -271,12 +307,16 @@ class ExtensionSidePage (SidePage):
 
         img = Gtk.Image.new_from_stock("gtk-add", Gtk.IconSize.BUTTON)
         self.instanceButton.set_image(img)
+        img = Gtk.Image.new_from_stock("gtk-remove", Gtk.IconSize.BUTTON)
+        self.removeButton.set_image(img)
         img = Gtk.Image.new_from_stock("gtk-properties", Gtk.IconSize.BUTTON)
         self.configureButton.set_image(img)
         img = Gtk.Image.new_from_stock("gtk-properties", Gtk.IconSize.BUTTON)
         self.extConfigureButton.set_image(img)
 
         buttonbox.pack_start(self.instanceButton, False, False, 0)
+        if self.collection_type != "theme":
+            buttonbox.pack_start(self.removeButton, False, False, 0)
         buttonbox.pack_start(self.configureButton, False, False, 0)
         buttonbox.pack_start(self.extConfigureButton, False, False, 0)
 
@@ -444,9 +484,6 @@ class ExtensionSidePage (SidePage):
 
         self.spices = Spice_Harvester(self.collection_type, self.window)
 
-        # if not self.spices.get_webkit_enabled():
-        #     getmore_label.set_sensitive(False)
-        #     reload_button.set_sensitive(False)
         extra_page = self.getAdditionalPage()
         if extra_page:
             self.stack.add_titled(extra_page, "extra", extra_page.label)
@@ -917,7 +954,6 @@ restarting Cinnamon."""
         self.gm_modelfilter.refilter()
 
     def load_spices(self, force=False):
-        # if self.spices.get_webkit_enabled():
         self.update_list = {}
 
         thread.start_new_thread(self.spices.load, (self.on_spice_load, force))
@@ -946,10 +982,7 @@ restarting Cinnamon."""
             extensionName = extensionData['name'].replace('&', '&amp;')
             iter = self.gm_model.insert_before(None, None)
             self.gm_model.set_value(iter, 0, uuid)
-            if not self.themes:
-                self.gm_model.set_value(iter, 1, '<b>%s</b>\n<b><span size="x-small">%s</span></b>' % (extensionName, uuid))
-            else:
-                self.gm_model.set_value(iter, 1, '<b>%s</b>' % (extensionName))
+            self.gm_model.set_value(iter, 1, '<b>%s</b>' % (extensionName))
             self.gm_model.set_value(iter, 2, 0)
 
             if not self.themes:
@@ -1141,6 +1174,16 @@ Please contact the developer.""")
         if treeiter:
             self._add_another_instance_iter(treeiter)
 
+    def _remove_all_instances(self):
+        model, treeiter = self.treeview.get_selection().get_selected()
+
+        if treeiter:
+            uuid = model.get_value(treeiter, 0)
+            checked = model.get_value(treeiter, 2)
+            name = model.get_value(treeiter, 5)
+
+            self.disable_extension(uuid, name, checked)
+
     def select_updated_extensions(self):
         if len(self.update_list) > 1:
             msg = _("This operation will update the selected items.\n\nDo you want to continue?")
@@ -1185,6 +1228,8 @@ Please contact the developer.""")
 
             self.instanceButton.set_sensitive(enabled);
 
+            self.removeButton.set_sensitive(checked > 0)
+
             self.configureButton.set_visible(self.should_show_config_button(model, treeiter))
             self.configureButton.set_sensitive(checked > 0)
             self.extConfigureButton.set_visible(self.should_show_ext_config_button(model, treeiter))
@@ -1204,11 +1249,7 @@ Please contact the developer.""")
         model, treeiter = self.treeview.get_selection().get_selected()
         if treeiter:
             uuid = model.get_value(treeiter, 0)
-            settingContainer = XletSettings.XletSetting(uuid, self, self.collection_type)
-            self.content_box.pack_start(settingContainer.content, True, True, 2)
-            self.stack.hide()
-            settingContainer.show()
-            self._on_signal(None, None, "hide_stack", ())
+            subprocess.Popen(["xlet-settings", self.collection_type, uuid])
 
     def _external_configure_launch(self, widget = None):
         model, treeiter = self.treeview.get_selection().get_selected()
@@ -1284,8 +1325,8 @@ Please contact the developer.""")
                     setting_type = 0
                     data = json.loads(json_data)
                     extension_uuid = data["uuid"]
-                    extension_name = XletSettings.translate(data["uuid"], data["name"])
-                    extension_description = XletSettings.translate(data["uuid"], data["description"])
+                    extension_name = translate(data["uuid"], data["name"])
+                    extension_description = translate(data["uuid"], data["description"])
                     try: extension_max_instances = int(data["max-instances"])
                     except KeyError: extension_max_instances = 1
                     except ValueError:
@@ -1352,8 +1393,7 @@ Please contact the developer.""")
                     self.model.set_value(iter, 0, extension_uuid)
                     self.model.set_value(iter, 1, '''\
 <b>%s</b>
-<b><span size="xx-small">%s</span></b>
-<i><span size="x-small">%s</span></i>''' % (extension_name, extension_uuid, extension_description))
+<i><span size="small">%s</span></i>''' % (extension_name, extension_description))
 
                     self.model.set_value(iter, 2, found)
                     self.model.set_value(iter, 3, extension_max_instances)

@@ -1,11 +1,11 @@
 {
  "use-letters": {
-    "type": "checkbox",
+    "type": "switch",
     "default" : false,
     "description" : "Use letters to display keyboard layouts"
  },
  "use-uppercase": {
-    "type": "checkbox",
+    "type": "switch",
     "default" : false,
     "description" : "Use upper-case letters to display keyboard layouts",
     "dependency" : "use-letters",

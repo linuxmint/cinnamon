@@ -39,6 +39,22 @@ gboolean cinnamon_write_string_to_stream          (GOutputStream    *stream,
 char    *cinnamon_get_file_contents_utf8_sync     (const char       *path,
                                                 GError          **error);
 
+/**
+ * CinnamonFileContentsCallback:
+ * @utf8_contents: The contents of the file
+ * @user_data: (closure): Data passed to cinnamon_get_file_contents_utf8()
+ *
+ * Callback type for cinnamon_get_file_contents_utf8()
+ *
+ * Since: 3.1
+ */
+typedef void (* CinnamonFileContentsCallback) (const gchar *utf8_contents,
+                                               gpointer     user_data);
+
+void     cinnamon_get_file_contents_utf8         (const char                   *path,
+                                                  CinnamonFileContentsCallback  callback,
+                                                  gpointer                      user_data);
+
 void     cinnamon_breakpoint                      (void);
 
 gboolean cinnamon_parse_search_provider           (const char       *data,

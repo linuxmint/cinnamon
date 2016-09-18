@@ -1,6 +1,7 @@
 #!/usr/bin/env python2
 
-from SettingsWidgets import *
+from GSettingsWidgets import *
+
 
 class Module:
     name = "general"
@@ -31,7 +32,8 @@ class Module:
             schema = Gio.SettingsSchemaSource.get_default().lookup("org.gnome.desktop.interface", False)
             if schema is not None:
                 gnome_settings = Gio.Settings("org.gnome.desktop.interface")
-                def on_changed (widget):
+
+                def on_changed(widget):
                     tree_iter = widget.get_active_iter()
                     if tree_iter is not None:
                         gnome_settings["scaling-factor"] = combo.model[tree_iter][0]

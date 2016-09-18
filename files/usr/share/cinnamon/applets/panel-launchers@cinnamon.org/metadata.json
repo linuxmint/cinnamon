@@ -2,7 +2,7 @@
  "uuid": "panel-launchers@cinnamon.org",
  "name": "Panel launchers",
  "description": "Launch applications from the panel",
- "icon": "gnome-panel-launcher",
+ "icon": "cinnamon-panel-launcher",
  "role": "panellauncher",
  "max-instances": -1
 }

@@ -4,6 +4,7 @@ Priority: optional
 Maintainer: Linux Mint <root@linuxmint.com>
 Build-Depends: debhelper (>= 9),
                dh-autoreconf,
+               autoconf-archive,
                python-dev,
                gnome-pkg-tools (>= 0.11),
                intltool,
@@ -77,7 +78,6 @@ Depends: cinnamon-common (= ${source:Version}),
          gir1.2-upowerglib-1.0,
          gir1.2-gtkclutter-1.0,
          gir1.2-javascriptcoregtk-3.0,
-         gir1.2-webkit-3.0,
          gir1.2-cmenu-3.0 (>= ${cinnamon:Version}),
          gir1.2-nmgtk-1.0,
          gir1.2-notify-0.7,
@@ -113,7 +113,13 @@ Priority: extra
 Architecture: any
 Depends: cinnamon (= ${binary:Version}),
          ${misc:Depends},
-         gnome-dbg
+         gnome-dbg,
+         nemo-dbg,
+         muffin-dbg,
+         libcvc-dbg,
+         libcinnamon-desktop-dbg,
+         libcinnamon-menu-3-0-dbg,
+         cinnamon-control-center-dbg
 Description: Debugging symbols for the Cinnamon desktop
  Cinnamon is a modern Linux desktop which provides advanced innovative
  features and a traditional user experience. It's easy to use, powerful

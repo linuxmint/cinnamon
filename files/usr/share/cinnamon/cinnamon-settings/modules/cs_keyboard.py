@@ -1,10 +1,15 @@
 #!/usr/bin/env python2
 
-from SettingsWidgets import *
 from gi.repository import Gio, Gtk, GObject, Gdk
-from KeybindingWidgets import CellRendererKeybinding
 import cgi
 import gettext
+
+import gi
+gi.require_version("Gtk", "3.0")
+from gi.repository import Gio, Gtk, GObject, Gdk
+
+from KeybindingWidgets import CellRendererKeybinding
+from GSettingsWidgets import *
 
 gettext.install("cinnamon", "/usr/share/locale")
 
@@ -30,7 +35,7 @@ CATEGORIES = [
         [_("Tiling and Snapping"),  "win-tiling",       "windows",      None],
         [_("Inter-workspace"),      "win-workspaces",   "windows",      None],
         [_("Inter-monitor"),        "win-monitors",     "windows",      None],
-    [_("Workspaces"),       "workspaces",       None,       "display"],
+    [_("Workspaces"),       "workspaces",       None,       "video-display"],
         [_("Direct Navigation"),    "ws-navi",          "workspaces",   None],
     [_("System"),           "system",           None,       "preferences-system"],
         [_("Hardware"),             "sys-hw",           "system",       None],
@@ -38,8 +43,8 @@ CATEGORIES = [
     [_("Launchers"),        "launchers",        None,       "applications-utilities"],
     [_("Sound and Media"),  "media",            None,       "applications-multimedia"],
         [_("Quiet Keys"),           "media-quiet",      "media",        None],
-    [_("Universal Access"), "accessibility",    None,       "access"],
-    [_("Custom Shortcuts"), "custom",           None,       "gnome-panel-launcher"]
+    [_("Universal Access"), "accessibility",    None,       "preferences-desktop-accessibility"],
+    [_("Custom Shortcuts"), "custom",           None,       "cinnamon-panel-launcher"]
 ]
 
 KEYBINDINGS = [
@@ -182,8 +187,8 @@ KEYBINDINGS = [
     [_("Shuffle"), MEDIA_KEYS_SCHEMA, "audio-random", "media"],
     # Sound and Media Quiet
     [_("Volume mute (Quiet)"), MEDIA_KEYS_SCHEMA, "mute-quiet", "media-quiet"],    # Not sure this is even necessary
-    [_("Volume down (Quiet)"), MEDIA_KEYS_SCHEMA, "volume-down", "media-quiet"],
-    [_("Volume up (Quiet)"), MEDIA_KEYS_SCHEMA, "volume-up", "media-quiet"],
+    [_("Volume down (Quiet)"), MEDIA_KEYS_SCHEMA, "volume-down-quiet", "media-quiet"],
+    [_("Volume up (Quiet)"), MEDIA_KEYS_SCHEMA, "volume-up-quiet", "media-quiet"],
     # Universal Access
     [_("Zoom in"), CINNAMON_SCHEMA, "magnifier-zoom-in", "accessibility"],
     [_("Zoom out"), CINNAMON_SCHEMA, "magnifier-zoom-out", "accessibility"],

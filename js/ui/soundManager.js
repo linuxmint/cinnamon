@@ -39,7 +39,7 @@ function SoundManager() {
 SoundManager.prototype = {
 
     _init : function() {
-        this.keys = ["switch", "close", "map", "minimize", "maximize", "unmaximize", "tile", "login", "plug", "unplug"];
+        this.keys = ["switch", "close", "map", "minimize", "maximize", "unmaximize", "tile", "login", "plug", "unplug", "notification"];
         this.desktop_keys = ["volume"];
         this.startup_delay = true;
         this.enabled = {};

@@ -2,7 +2,7 @@ service_in_files += hotplug-sniffer/org.Cinnamon.HotplugSniffer.service.in
 
 pkglibexec_PROGRAMS += cinnamon-hotplug-sniffer
 
-cinnamon_hotplug_sniffer_SOURCES =								\
+cinnamon_hotplug_sniffer_SOURCES =			\
 	hotplug-sniffer/hotplug-mimetypes.h \
 	hotplug-sniffer/cinnamon-mime-sniffer.h \
 	hotplug-sniffer/cinnamon-mime-sniffer.c \
@@ -12,7 +12,8 @@ cinnamon_hotplug_sniffer_SOURCES =								\
 cinnamon_hotplug_sniffer_CFLAGS =		\
 	-I$(top_srcdir)/src			\
 	-DG_DISABLE_DEPRECATED			\
-	$(CINNAMON_HOTPLUG_SNIFFER_CFLAGS)		\
+	$(WARN_CFLAGS)				\
+	$(CINNAMON_HOTPLUG_SNIFFER_CFLAGS)	\
 	$(NULL)
 
 cinnamon_hotplug_sniffer_LDADD =		\

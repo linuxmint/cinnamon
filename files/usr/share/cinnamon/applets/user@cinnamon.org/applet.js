@@ -187,6 +187,13 @@ MyApplet.prototype = {
     on_applet_removed_from_panel: function() {
         this.settings.finalize();
     },
+//
+//override getDisplayLayout to declare that this applet is suitable for both horizontal and
+// vertical orientations
+//
+    getDisplayLayout: function() {
+        return Applet.DisplayLayout.BOTH;
+    },
 };
 
 function main(metadata, orientation, panel_height, instance_id) {  

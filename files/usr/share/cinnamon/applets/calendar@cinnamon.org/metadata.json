@@ -2,6 +2,6 @@
  "uuid": "calendar@cinnamon.org",
  "name": "Calendar",
  "description": "The Cinnamon calendar applet",
- "icon": "stock_calendar",
+ "icon": "x-office-calendar",
  "max-instances": -1
 }

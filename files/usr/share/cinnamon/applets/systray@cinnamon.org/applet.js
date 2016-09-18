@@ -9,6 +9,7 @@ const Mainloop = imports.mainloop;
 const SignalManager = imports.misc.signalManager;
 
 const ICON_SCALE_FACTOR = .8; // for custom panel heights, 20 (default icon size) / 25 (default panel height)
+
 const DEFAULT_ICON_SIZE = 20;
 
 // Override the factory and create an AppletPopupMenu instead of a PopupMenu
@@ -55,15 +56,23 @@ MyApplet.prototype = {
         this.actor.style="spacing: 5px;";
 
         this._signalManager = new SignalManager.SignalManager(this);
+	let manager;
 
-        let manager = new Clutter.BoxLayout( { spacing: 2 * global.ui_scale,
-                                               homogeneous: true,
-                                               orientation: Clutter.Orientation.HORIZONTAL });
+	this.orientation = orientation;
 
+	if (this.orientation == St.Side.TOP || this.orientation == St.Side.BOTTOM)
+	{
+		manager = new Clutter.BoxLayout( { spacing: 2 * global.ui_scale,
+		                                   orientation: Clutter.Orientation.HORIZONTAL });
+	}
+	else
+	{
+		manager = new Clutter.BoxLayout( { spacing: 2 * global.ui_scale,
+		                                   orientation: Clutter.Orientation.VERTICAL });
+	}
+        this.manager = manager;
         this.manager_container = new Clutter.Actor( { layout_manager: manager } );
-
         this.actor.add_actor (this.manager_container);
-
         this.manager_container.show();
 
         this._statusItems = [];
@@ -95,13 +104,16 @@ MyApplet.prototype = {
             Main.indicatorManager.disconnect(this.signalRemoved);
             this.signalRemoved = 0;
         }
+
         this._shellIndicators.forEach(function(iconActor) {
             iconActor.destroy();
         });
         this._shellIndicators = {};
+
     },
 
     _onIndicatorAdded: function(manager, appIndicator) {
+
         if (!(appIndicator.id in this._shellIndicators)) {
             let hiddenIcons = Main.systrayManager.getRoles();
 
@@ -127,7 +139,7 @@ MyApplet.prototype = {
 
             this._shellIndicators[appIndicator.id] = iconActor;
 
-            this.actor.add_actor(iconActor.actor);
+            this.manager_container.add_actor(iconActor.actor);
             appIndicator.createMenuClientAsync(Lang.bind(this, function(client) {
                 if (client != null) {
                     let newMenu = client.getShellMenu();
@@ -143,8 +155,26 @@ MyApplet.prototype = {
 
     _getIndicatorSize: function(appIndicator) {
         if (this._scaleMode)
-            return this._panelHeight * ICON_SCALE_FACTOR;
+            return this._panelHeight * ICON_SCALE_FACTOR / global.ui_scale;
         return 16;
+    },
+
+    _getIconSize: function() {
+        let size;
+        let disp_size = this._panelHeight * ICON_SCALE_FACTOR;
+        if (disp_size < 22) {
+            size = 16;
+        }
+        else if (disp_size < 32) {
+            size = 22;
+        }
+        else if (disp_size < 48) {
+            size = 32;
+        }
+        else {
+            size = 48;
+        }
+        return size;
     },
 
     _onIndicatorRemoved: function(manager, appIndicator) {
@@ -157,6 +187,26 @@ MyApplet.prototype = {
     },
 
     on_applet_clicked: function(event) {
+    },
+
+//
+//override getDisplayLayout to declare that this applet is suitable for both horizontal and
+// vertical orientations
+//
+    getDisplayLayout: function() {
+        return Applet.DisplayLayout.BOTH;
+    },
+
+    on_orientation_changed: function(neworientation) { 
+
+	if (neworientation == St.Side.TOP || neworientation == St.Side.BOTTOM)
+	{
+            this.manager.set_vertical(false);
+	}
+	else		// vertical panels
+	{
+            this.manager.set_vertical(true);
+ 	}
     },
 
     on_applet_removed_from_panel: function () {
@@ -194,7 +244,11 @@ MyApplet.prototype = {
         }
         this._statusItems = [];
 
-        let children = this.manager_container.get_children();
+        let children = this.manager_container.get_children().filter(function(child) {
+            // We are only interested in the status icons and apparently we can not ask for 
+            // child instanceof CinnamonTrayIcon.
+            return (child.toString().indexOf("CinnamonTrayIcon") != -1);
+        });
         for (var i = 0; i < children.length; i++) {
             children[i].destroy();
         }
@@ -271,7 +325,11 @@ MyApplet.prototype = {
         if (icon.obsolete == true) {
             return;
         }
-        let children = this.manager_container.get_children();
+        let children = this.manager_container.get_children().filter(function(child) {
+            // We are only interested in the status icons and apparently we can not ask for 
+            // child instanceof CinnamonTrayIcon.
+            return (child.toString().indexOf("CinnamonTrayIcon") != -1);
+        });
         let i;
         for (i = children.length - 1; i >= 0; i--) {
             let rolePosition = children[i]._rolePosition;
@@ -285,6 +343,7 @@ MyApplet.prototype = {
             this.manager_container.insert_child_at_index(icon, 0);
         }
         icon._rolePosition = position;
+
         if (this._scaleMode) {
             let timerId = Mainloop.timeout_add(500, Lang.bind(this, function() {
                 this._resizeStatusItem(role, icon);
@@ -301,24 +360,12 @@ MyApplet.prototype = {
         if (icon.obsolete == true) {
             return;
         }
-        let size;
-        let disp_size = this._panelHeight * ICON_SCALE_FACTOR;
+
         if (["shutter", "filezilla"].indexOf(role) != -1) {
             global.log("Not resizing " + role + " as it's known to be buggy (" + icon.get_width() + "x" + icon.get_height() + "px)");
         }
         else {
-            if (disp_size < 22) {
-                size = 16;
-            }
-            else if (disp_size < 32) {
-                size = 22;
-            }
-            else if (disp_size < 48) {
-                size = 32;
-            }
-            else {
-                size = 48;
-            }
+            let size = this._getIconSize();
             icon.set_size(size, size);
             global.log("Resized " + role + " with normalized size (" + icon.get_width() + "x" + icon.get_height() + "px)");
             //Note: dropbox doesn't scale, even though we resize it...

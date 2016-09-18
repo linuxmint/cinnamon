@@ -1,9 +1,5 @@
 #!/usr/bin/env python2
 
-from SettingsWidgets import *
-import gi
-gi.require_version('AccountsService', '1.0')
-from gi.repository import AccountsService, GLib
 try:
     import PAM
 except:
@@ -12,9 +8,16 @@ import pexpect
 import time
 from random import randint
 import shutil
-import PIL
 import os
 import subprocess
+
+import PIL
+import gi
+gi.require_version('AccountsService', '1.0')
+from gi.repository import AccountsService, GLib
+
+from GSettingsWidgets import *
+
 
 class Module:
     name = "user"
@@ -248,7 +251,7 @@ class PasswordDialog(Gtk.Dialog):
         table.attach(self.current_password, 1, 3, 0, 1)
 
         self.new_password = Gtk.Entry()
-        self.new_password.set_icon_from_icon_name(Gtk.EntryIconPosition.SECONDARY, "reload")
+        self.new_password.set_icon_from_icon_name(Gtk.EntryIconPosition.SECONDARY, "view-refresh")
         self.new_password.set_icon_tooltip_text(Gtk.EntryIconPosition.SECONDARY, _("Generate a password"))
         self.new_password.connect("icon-release", self._on_new_password_icon_released)
         self.new_password.connect("changed", self._on_passwords_changed)

@@ -1,6 +1,6 @@
 {
     "labelinfo": {
-        "type": "radiogroup",
+        "type": "combobox",
         "description": "Display",
         "default": "nothing",
         "options" : {

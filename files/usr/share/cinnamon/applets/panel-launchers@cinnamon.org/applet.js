@@ -41,7 +41,6 @@ PanelAppLauncherMenu.prototype = {
         Applet.AppletPopupMenu.prototype._init.call(this, launcher, orientation);
 
         let appinfo = this._launcher.getAppInfo();
-        let targetMenu = this;
         
         this._actions = appinfo.list_actions();
         if (this._actions.length > 0) {
@@ -49,15 +48,20 @@ PanelAppLauncherMenu.prototype = {
                 let actionName = this._actions[i];
                 this.addAction(appinfo.get_action_name(actionName), Lang.bind(this, this._launchAction, actionName));
             }
-            let subMenu = new PopupMenu.PopupSubMenuMenuItem(_("More"));
-            targetMenu = subMenu.menu;
-            this.addMenuItem(subMenu);
+
+            this.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
         }
         
-        targetMenu.addAction(_("Launch"), Lang.bind(this, this._onLaunchActivate));
-        targetMenu.addAction(_("Add"), Lang.bind(this, this._onAddActivate));
-        targetMenu.addAction(_("Edit"), Lang.bind(this, this._onEditActivate));
-        targetMenu.addAction(_("Remove"), Lang.bind(this, this._onRemoveActivate));
+        this.addAction(_("Launch"), Lang.bind(this, this._onLaunchActivate));
+        this.addAction(_("Add"), Lang.bind(this, this._onAddActivate));
+        this.addAction(_("Edit"), Lang.bind(this, this._onEditActivate));
+        this.addAction(_("Remove"), Lang.bind(this, this._onRemoveActivate));
+
+        this.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
+
+        let item = new PopupMenu.PopupIconMenuItem(_("Configure the panel launcher"), "system-run", St.IconType.SYMBOLIC);
+        item.connect('activate', Lang.bind(this._launcher._applet, this._launcher._applet.configureApplet));
+        this.addMenuItem(item);
     },
 
     _onLaunchActivate: function(event) {
@@ -95,12 +99,14 @@ PanelAppLauncher.prototype = {
         this.appinfo = appinfo;
         this.launchersBox = launchersBox;
         this._applet = launchersBox;
-        this.actor = new St.Bin({ style_class: 'panel-launcher',
-                                  reactive: true,
-                                  can_focus: true,
-                                  x_fill: true,
-                                  y_fill: false,
-                                  track_hover: true });
+
+	this.actor = new St.Bin({ style_class: 'panel-launcher',
+	                          reactive: true,
+	                          can_focus: true,
+	                          x_fill: true,
+	                          y_fill: false,
+	                          track_hover: true });
+
         this.actor._delegate = this;
         this.actor.connect('button-release-event', Lang.bind(this, this._onButtonRelease));
         this.actor.connect('button-press-event', Lang.bind(this, this._onButtonPress));
@@ -140,6 +146,7 @@ PanelAppLauncher.prototype = {
         this._draggable.inhibit = !this.launchersBox.allowDragging || global.settings.get_boolean(PANEL_EDIT_MODE_KEY);
         this.launchersBox.connect("launcher-draggable-setting-changed", Lang.bind(this, this._updateInhibit));
         global.settings.connect('changed::' + PANEL_EDIT_MODE_KEY, Lang.bind(this, this._updateInhibit));
+
     },
 
     _onDragBegin: function() {
@@ -306,8 +313,12 @@ MyApplet.prototype = {
         this._dragPlaceholderPos = -1;
         this._animatingPlaceholdersCount = 0;
 
-        this.myactor = new St.BoxLayout({ name: 'panel-launchers-box',
-            style_class: 'panel-launchers-box' });
+        this.myactor = new St.BoxLayout({ name: 'panel-launchers-box' });
+
+	if (this.orientation == St.Side.LEFT || this.orientation == St.Side.RIGHT)
+	{
+            this._set_vertical_style();
+	}
 
         this.settings = new Settings.AppletSettings(this, metadata.uuid, instance_id);
         this.settings.bindProperty(Settings.BindingDirection.BIDIRECTIONAL,
@@ -320,6 +331,7 @@ MyApplet.prototype = {
                                    this._updateLauncherDrag, null);
 
         this.uuid = metadata.uuid;
+
         this._settings_proxy = new Array();
         this._launchers = new Array();
 
@@ -416,6 +428,43 @@ MyApplet.prototype = {
         this.reload();
     },
 
+    on_orientation_changed: function(neworientation) { 
+
+        this.orientation = neworientation;
+	if (this.orientation == St.Side.TOP || this.orientation == St.Side.BOTTOM)
+	{
+            this.myactor.remove_style_class_name('vertical');
+            this.myactor.set_vertical(false);
+            this.actor.remove_style_class_name('vertical');
+	}
+	else		// vertical panels
+	{
+            this._set_vertical_style();
+
+ 	}
+        this.reload();
+    },
+//
+//override getDisplayLayout to declare that this applet is suitable for both horizontal and
+// vertical orientations
+//
+    getDisplayLayout: function() {
+        return Applet.DisplayLayout.BOTH;
+    },
+
+//
+// NB if the styling does not set right initially, it may well be because there is padding
+// in the theme and panel-launchers-box has # rather than .
+//
+    _set_vertical_style: function() {
+        this.myactor.set_important(true);
+        this.myactor.set_x_align(Clutter.ActorAlign.CENTER);
+        this.myactor.add_style_class_name('vertical');
+        this.myactor.set_vertical(true);
+        this.actor.set_important(true);
+        this.actor.add_style_class_name('vertical');
+    },
+
     reload: function() {
         this.myactor.destroy_all_children();
         this._launchers = new Array();
@@ -493,11 +542,10 @@ MyApplet.prototype = {
     },
 
     showAddLauncherDialog: function(timestamp, launcher){
-        let args = this.uuid + " " + this.instance_id + " " + this.settings.get_file_path();
         if (launcher) {
-            Util.spawnCommandLine("cinnamon-desktop-editor -mcinnamon-launcher -f" + launcher.getId() + " " + args);
+            Util.spawnCommandLine("cinnamon-desktop-editor -mcinnamon-launcher -f" + launcher.getId() + " " + this.settings.file.get_path());
         } else {
-            Util.spawnCommandLine("cinnamon-desktop-editor -mcinnamon-launcher " + args);
+            Util.spawnCommandLine("cinnamon-desktop-editor -mcinnamon-launcher " + this.settings.file.get_path());
         }
     },
 

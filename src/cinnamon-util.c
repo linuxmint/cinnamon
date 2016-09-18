@@ -368,7 +368,7 @@ cinnamon_util_get_icon_for_uri (const char *text_uri)
   g_object_unref (file);
 
   if (!info)
-    return g_themed_icon_new ("gtk-file");
+    return g_themed_icon_new ("text-x-preview");
 
   const char *custom_icon = g_file_info_get_attribute_string (info, "metadata::custom-icon");
 
@@ -394,7 +394,7 @@ cinnamon_util_get_icon_for_uri (const char *text_uri)
   if (retval)
     return retval;
 
-  return g_themed_icon_new ("gtk-file");
+  return g_themed_icon_new ("text-x-preview");
 }
 
 static void
@@ -683,6 +683,8 @@ cinnamon_write_string_to_stream (GOutputStream *stream,
  * invalid content.
  *
  * Returns: (transfer full): File contents
+ *
+ * Deprecated: 3.1
  */
 char *
 cinnamon_get_file_contents_utf8_sync (const char *path,
@@ -703,6 +705,99 @@ cinnamon_get_file_contents_utf8_sync (const char *path,
       return NULL;
     }
   return contents;
+}
+
+typedef struct
+{
+    CinnamonFileContentsCallback callback;
+    gpointer user_data;
+} CinnamonFileContentsCallbackData;
+
+static void
+get_file_contents_utf8_thread (GTask        *task,
+                               gpointer      source_object,
+                               gpointer      task_data,
+                               GCancellable *cancellable)
+{
+    gchar *contents = NULL;
+    GError *error = NULL;
+
+    const gchar *path = (const gchar *) task_data;
+
+    contents = cinnamon_get_file_contents_utf8_sync (path, &error);
+
+    if (error)
+      {
+        g_task_return_error (task, error);
+        return;
+      }
+
+    g_task_return_pointer (task, contents, g_free);
+}
+
+static void
+get_file_contents_utf8_task_finished (GObject      *source,
+                                      GAsyncResult *result,
+                                      gpointer      user_data)
+{
+    CinnamonFileContentsCallbackData *data = (CinnamonFileContentsCallbackData *) user_data;
+
+    GError *error = NULL;
+    gchar *contents = NULL;
+
+    contents = g_task_propagate_pointer (G_TASK (result), &error);
+
+    if (error)
+      {
+        g_printerr ("cinnamon_get_file_contents_utf8 failed: %s\n", error->message);
+        g_clear_error (&error);
+      }
+
+    (* data->callback) (contents, data->user_data);
+
+    g_clear_pointer (&contents, g_free);
+    g_slice_free (CinnamonFileContentsCallbackData, data);
+}
+
+/**
+ * cinnamon_get_file_contents_utf8:
+ * @path: UTF-8 encoded filename path
+ * @callback: (scope async): The callback to call when finished
+ * @user_data: (closure): data to pass with the callback
+ *
+ * Asynchronously load the contents of a file as a NUL terminated
+ * string, validating it as UTF-8.  Embedded NUL characters count as
+ * invalid content.
+ **/
+void
+cinnamon_get_file_contents_utf8         (const char                   *path,
+                                         CinnamonFileContentsCallback  callback,
+                                         gpointer                      user_data)
+{
+  if (path == NULL || callback == NULL)
+    {
+      g_warning ("cinnamon_get_file_contents_utf8: path and callback cannot be null");
+      return;
+    }
+
+  CinnamonFileContentsCallbackData *data = g_slice_new (CinnamonFileContentsCallbackData);
+
+  data->callback = callback;
+  data->user_data = user_data;
+
+  gchar *async_path = g_strdup (path);
+
+  GTask *task;
+
+  task = g_task_new (NULL,
+                     NULL,
+                     get_file_contents_utf8_task_finished,
+                     data);
+
+  g_task_set_task_data (task, async_path, (GDestroyNotify) g_free);
+  g_task_run_in_thread (task, get_file_contents_utf8_thread);
+
+  g_object_unref (task);
 }
 
 /**

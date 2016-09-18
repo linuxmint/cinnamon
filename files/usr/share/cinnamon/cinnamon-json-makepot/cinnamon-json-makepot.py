@@ -4,8 +4,10 @@ import sys
 import os
 import json
 import subprocess
-from gi.repository import GLib
 from optparse import OptionParser
+
+from gi.repository import GLib
+
 try:
     import polib
 except:

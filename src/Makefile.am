@@ -77,6 +77,7 @@ include Makefile-tray.am
 include Makefile-hotplug-sniffer.am
 
 cinnamon_cflags =				\
+	$(WARN_CFLAGS)				\
 	$(CINNAMON_CFLAGS)			\
 	-I$(srcdir)/tray			\
     -DCLUTTER_ENABLE_EXPERIMENTAL_API   \
@@ -175,10 +176,12 @@ libcinnamon_js_la_LIBADD =       \
     $(CINNAMON_JS_LIBS)      \
     $(NULL)
 
-libcinnamon_js_la_LDFLAGS =      \
+libcinnamon_js_la_LDFLAGS =	\
+    $(WARN_LDFLAGS)		\
     -avoid-version
 
-libcinnamon_js_la_CPPFLAGS =     \
+libcinnamon_js_la_CPPFLAGS =    \
+    $(WARN_CFLAGS)		\
     $(CINNAMON_JS_CFLAGS)
 
 ########################################
@@ -198,8 +201,9 @@ libcinnamon_la_SOURCES += $(cinnamon_recorder_sources) $(cinnamon_recorder_non_g
 
 noinst_PROGRAMS += test-recorder
 
-test_recorder_CPPFLAGS = $(TEST_CINNAMON_RECORDER_CFLAGS) \
-                       $(ST_CFLAGS)
+test_recorder_CPPFLAGS = $(WARN_CFLAGS)		\
+	$(TEST_CINNAMON_RECORDER_CFLAGS)	\
+	$(ST_CFLAGS)
 test_recorder_LDADD = $(TEST_CINNAMON_RECORDER_LIBS) \
                        libst-1.0.la
 
@@ -214,7 +218,7 @@ endif BUILD_RECORDER
 pkglibexec_PROGRAMS += cinnamon-perf-helper
 
 cinnamon_perf_helper_SOURCES = cinnamon-perf-helper.c
-cinnamon_perf_helper_CPPFLAGS = $(CINNAMON_PERF_HELPER_CFLAGS)
+cinnamon_perf_helper_CPPFLAGS = $(WARN_CFLAGS) $(CINNAMON_PERF_HELPER_CFLAGS)
 cinnamon_perf_helper_LDADD = $(CINNAMON_PERF_HELPER_LIBS)
 
 ########################################
@@ -223,7 +227,7 @@ noinst_PROGRAMS += run-js-test
 
 run_js_test_CPPFLAGS = $(cinnamon_cflags)
 run_js_test_LDADD = libcinnamon.la $(CINNAMON_JS_LIBS) $(libcinnamon_la_LIBADD)
-run_js_test_LDFLAGS = -export-dynamic
+run_js_test_LDFLAGS = $(WARN_LDFLAGS) -export-dynamic
 
 run_js_test_SOURCES =			\
 	run-js-test.c
@@ -274,7 +278,7 @@ cinnamon-enum-types.c: $(srcdir)/cinnamon-enum-types.c.in stamp-cinnamon-enum-ty
 	rm -f $(@F).tmp
 EXTRA_DIST += cinnamon-enum-types.c.in
 
-libcinnamon_la_LDFLAGS = -avoid-version
+libcinnamon_la_LDFLAGS = $(WARN_LDFLAGS) -avoid-version
 libcinnamon_la_LIBADD =		\
 	-lm			\
 	$(CINNAMON_LIBS)	\
@@ -290,7 +294,7 @@ Cinnamon_0_1_gir_INCLUDES = Clutter-1.0 ClutterX11-1.0 Meta-Muffin.0 Soup-2.4 CM
 Cinnamon_0_1_gir_CFLAGS = $(libcinnamon_la_CPPFLAGS) -I $(srcdir)
 Cinnamon_0_1_gir_LIBS = libcinnamon.la
 Cinnamon_0_1_gir_FILES = $(libcinnamon_la_gir_sources)
-Cinnamon_0_1_gir_SCANNERFLAGS = --include-uninstalled=$(builddir)/St-1.0.gir \
+Cinnamon_0_1_gir_SCANNERFLAGS = $(WARN_SCANNERFLAGS) --include-uninstalled=$(builddir)/St-1.0.gir \
 	--add-include-path=$(MUFFIN_GIR_DIR) $(if $(BLUETOOTH_DIR),-L $(BLUETOOTH_DIR),)
 INTROSPECTION_GIRS += Cinnamon-0.1.gir
 CLEANFILES += Cinnamon-0.1.gir
