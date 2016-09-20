@@ -412,14 +412,20 @@ BoxPointer.prototype = {
         let panels = Main.panelManager.getPanelsInMonitor(Main.layoutManager.monitors.indexOf(monitor));
 
         for (let panel of panels) {
-            if (panel.panelPosition == PanelLoc.top)
-                this._topmargin += panel.actor.height;
-            if (panel.panelPosition == PanelLoc.bottom)
-                this._bottommargin += panel.actor.height;
-            if (panel.panelPosition == PanelLoc.left)
-                this._leftmargin += panel.actor.width;
-            if (panel.panelPosition == PanelLoc.right)
-                this._rightmargin += panel.actor.width;
+            switch (panel.panelPosition) {
+                case PanelLoc.top:
+                    this._topmargin += panel.actor.height;
+                    break;
+                case PanelLoc.bottom:
+                    this._bottommargin += panel.actor.height;
+                    break;
+                case PanelLoc.left:
+                    this._leftmargin += panel.actor.width;
+                    break;
+                case PanelLoc.right:
+                    this._rightmargin += panel.actor.width;
+                    break;
+            }
         }
     },
 
