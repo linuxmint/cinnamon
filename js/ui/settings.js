@@ -595,9 +595,7 @@ XletSettingsBase.prototype = {
 
     // called by cinnamonDBus.js to when the setting is changed remotely.
     remoteUpdate: function(key, payload) {
-        let uuid, iid, key, json_str = payload;
-
-        let val = JSON.parse(json_str);
+        let val = JSON.parse(payload);
 
         this._settingChangedRemotely(key, val);
     },
