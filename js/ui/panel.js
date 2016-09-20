@@ -1931,12 +1931,10 @@ Panel.prototype = {
             //    at top and bottom of the panel respectively
             // 2) have a central box that can take all the space in between
             // 3) turn on central y-alignment for the central box
-            // 4) there empty panel case is worked around with a kludge when setting edit mode to set box sizes explicitly if empty.
+            // 4) the empty panel case is worked around with a kludge when setting edit mode to set box sizes explicitly if empty.
             //    - there is a similar work around in the allocate logic, but allocate may not get called without this kludge 
             //
-            // The appearance of this looks reasonable - the icons in the boxes have sensible positioning
-            // (css permitting). The central box  position will depend on the relative numbers of 
-            // icons in the top and bottom boxes.
+            // The appearance of this looks reasonable - the icons in the boxes have sensible positioning (css permitting).
             //
             // Some workarounds for the side effects of the central alignment are needed.  
             //
@@ -2454,14 +2452,20 @@ Panel.prototype = {
                     let panels = Main.panelManager.getPanelsInMonitor(this.monitorIndex);
 
                     for (let panel of panels) {
-                        if (panel.panelPosition == PanelLoc.top)
-                            topmargin += panel.actor.height;
-                        if (panel.panelPosition == PanelLoc.bottom)
-                            bottommargin += panel.actor.height;
-                        if (panel.panelPosition == PanelLoc.left)
-                            leftmargin += panel.actor.width;
-                        if (panel.panelPosition == PanelLoc.right)
-                            rightmargin += panel.actor.width;
+                        switch (panel.panelPosition) {
+                            case PanelLoc.top:
+                                this._topmargin += panel.actor.height;
+                                break;
+                            case PanelLoc.bottom:
+                                this._bottommargin += panel.actor.height;
+                                break;
+                            case PanelLoc.left:
+                                this._leftmargin += panel.actor.width;
+                                break;
+                            case PanelLoc.right:
+                                this._rightmargin += panel.actor.width;
+                                break;
+                        }
                     }
 
                     if (this.panelPosition == PanelLoc.top || this.panelPosition == PanelLoc.bottom) { // top or bottom panels
@@ -2898,14 +2902,9 @@ Panel.prototype = {
 
         if (centerBoxOccupied) {
             if (totalCenteredNaturalWidth < allocWidth) {
-                if (vertical) {  // see comment in the routine called to create a new panel
-                    leftWidth  = leftNaturalWidth;
-                    rightWidth = rightNaturalWidth;
-                } else {
-                    /* center the central box and butt the left and right up to it. */
-                    leftWidth  = (allocWidth - centerNaturalWidth) / 2;
-                    rightWidth = leftWidth;
-                }
+                /* center the central box and butt the left and right up to it. */
+                leftWidth  = (allocWidth - centerNaturalWidth) / 2;
+                rightWidth = leftWidth;
             } else if (totalCenteredMinWidth < allocWidth) {
                 /* Center can be centered as without shrinking things too much.
                  * First give everything the minWidth they want, and then
@@ -2958,8 +2957,8 @@ Panel.prototype = {
                     leftWidth  = Math.max(leftNaturalWidth, leftMinWidth);
                     rightWidth = Math.max(rightNaturalWidth, rightMinWidth);
                 } else {
-                        leftWidth  = leftNaturalWidth;
-                        rightWidth = rightNaturalWidth;
+                    leftWidth  = leftNaturalWidth;
+                    rightWidth = rightNaturalWidth;
                 }
             } else if (totalMinWidth < allocWidth) {
                 /* There is enough space for minWidth but not for naturalWidth.
