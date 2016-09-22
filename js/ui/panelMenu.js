@@ -129,7 +129,7 @@ Button.prototype = {
             // scrollable so the minimum height is smaller than the natural height
             let monitor = Main.layoutManager.findMonitorForActor(this.launcher.actor);
 
-            if (Main.panel.panelPosition == PanelLoc.top || Main.panel.panelPosition == PanelLoc.top) // horizontal panel
+            if (Main.panel.panelPosition == PanelLoc.top || Main.panel.panelPosition == PanelLoc.bottom) // horizontal panel
             {
             this.menu.actor.style = ('max-height: ' +
                                      Math.round(monitor.height - Main.panel.actor.height) +
