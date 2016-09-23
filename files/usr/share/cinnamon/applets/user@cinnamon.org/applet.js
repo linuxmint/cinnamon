@@ -144,7 +144,7 @@ MyApplet.prototype = {
             this._userLoadedId = this._user.connect('notify::is_loaded', Lang.bind(this, this._onUserChanged));
             this._userChangedId = this._user.connect('changed', Lang.bind(this, this._onUserChanged));
             this._onUserChanged();
-
+            this.on_orientation_changed(orientation);
         }
         catch (e) {
             global.logError(e);
@@ -186,6 +186,13 @@ MyApplet.prototype = {
     
     on_applet_removed_from_panel: function() {
         this.settings.finalize();
+    },
+
+    on_orientation_changed: function(orientation) {
+        if (orientation == St.Side.LEFT || orientation == St.Side.RIGHT)
+            this.hide_applet_label(true);
+        else
+            this.hide_applet_label(false);
     },
 //
 //override getDisplayLayout to declare that this applet is suitable for both horizontal and
