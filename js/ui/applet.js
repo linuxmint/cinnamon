@@ -152,7 +152,7 @@ Applet.prototype = {
                                         reactive: true,
                                         track_hover: true });
 
-        this.setOrientation_internal(orientation);
+        this.setOrientationInternal(orientation);
     
         this._applet_tooltip = new Tooltips.PanelItemTooltip(this, "", orientation);                                        
         this.actor.connect('button-press-event', Lang.bind(this, this._onButtonPressEvent));  
@@ -170,7 +170,7 @@ Applet.prototype = {
         this._panelLocation = null; 	// Backlink to the panel location our applet is in, set by Cinnamon.
         this._newPanelLocation = null; 	//  Used when moving an applet
         this._applet_enabled = true; 	// Whether the applet is enabled or not (if not it hides in the panel as if it wasn't there)
-	this._orientation = orientation;  // orientation of the panel the applet is on  St.Side.TOP BOTTOM LEFT RIGHT
+        this._orientation = orientation;  // orientation of the panel the applet is on  St.Side.TOP BOTTOM LEFT RIGHT
 
         this._panelHeight = panel_height ? panel_height : 25;
         this.instance_id = instance_id; // Needed by appletSettings
@@ -361,29 +361,22 @@ Applet.prototype = {
     },
 
     /**
-     * setOrientation_internal:
+     * setOrientationInternal:
      * @orientation (St.Side): the orientation
      *
      * Sets the orientation of the St.BoxLayout.
      *
      */
-    setOrientation_internal: function (orientation) {
+    setOrientationInternal: function (orientation) {
 
-        if (orientation == St.Side.LEFT || orientation == St.Side.RIGHT)
-        {
+        if (orientation == St.Side.LEFT || orientation == St.Side.RIGHT) {
             this.actor.add_style_class_name('vertical');
             this.actor.set_important(true);
-            this.actor.set_y_align(Clutter.ActorAlign.FILL);
-            this.actor.set_y_expand(true);
-            this.actor.set_x_align(Clutter.ActorAlign.CENTER);  // making this FILL also aligns to start
+            this.actor.set_vertical(true);
             this.actor.set_x_expand(true);
-        }
-        else {
+        } else {
             this.actor.remove_style_class_name('vertical');
-            this.actor.set_y_align(Clutter.ActorAlign.FILL);
-            this.actor.set_y_expand(true);
-            this.actor.set_x_align(Clutter.ActorAlign.CENTER);
-            this.actor.set_x_expand(false);
+            this.actor.set_vertical(false);
         }
     },
 
@@ -397,7 +390,7 @@ Applet.prototype = {
      */
     setOrientation: function (orientation) {
 
-        this.setOrientation_internal(orientation);
+        this.setOrientationInternal(orientation);
         this.on_orientation_changed(orientation);
         this.emit("orientation-changed", orientation);
         this.finalizeContextMenu();
@@ -654,14 +647,6 @@ IconApplet.prototype = {
                                             -1);
                                             this._applet_icon.set_style_class_name('system-status-icon');
         }
-//        if (this._orientation == St.Side.LEFT || this._orientation == St.Side.RIGHT)
-//        {
-//            let ph = this._panelHeight;   
-//            this.actor.set_clip(0, 0, ph, ph);  // ensure no visible bleeding of the allocation box 
-                                                  // beyond the panel,  e.g. on hover
-//        }
-
-
     },
 
     on_panel_height_changed: function() {
@@ -788,6 +773,21 @@ TextIconApplet.prototype = {
                 this._applet_icon.visible = enabled;
             }
         }
+    },
+
+    /**
+     * hide_applet_label:
+     * @hide (boolean): whether the applet label is hidden or not
+     *
+     * Sets whether the applets label is hidden or not. A convenience
+     * function to hide applet labels when an applet is placed in a vertical
+     * panel
+     */
+    hide_applet_label: function (hide) {
+        if (hide)
+            this._applet_label.hide();
+        else
+            this._applet_label.show();
     },
 
     /**
