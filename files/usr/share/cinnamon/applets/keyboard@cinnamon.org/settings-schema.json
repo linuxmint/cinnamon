@@ -7,7 +7,7 @@
  "use-uppercase": {
     "type": "switch",
     "default" : false,
-    "description" : "Use upper-case letters to display keyboard layouts",
+    "description" : "Use uppercase letters to display keyboard layouts",
     "dependency" : "use-letters",
     "indent" : true
  }
