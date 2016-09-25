@@ -624,9 +624,9 @@ IconApplet.prototype = {
 
     _setStyle: function() {
 
-        let symb_scaleup 	= ((this._panelHeight / DEFAULT_PANEL_HEIGHT) * PANEL_SYMBOLIC_ICON_DEFAULT_HEIGHT) / global.ui_scale;
-        let fullcolor_scaleup 	= this._panelHeight * COLOR_ICON_HEIGHT_FACTOR / global.ui_scale;
-        let icon_type 		= this._applet_icon.get_icon_type();
+        let symb_scaleup = ((this._panelHeight / DEFAULT_PANEL_HEIGHT) * PANEL_SYMBOLIC_ICON_DEFAULT_HEIGHT) / global.ui_scale;
+        let fullcolor_scaleup = this._panelHeight * COLOR_ICON_HEIGHT_FACTOR / global.ui_scale;
+        let icon_type = this._applet_icon.get_icon_type();
 
         switch (icon_type) {
             case St.IconType.FULLCOLOR:
@@ -689,7 +689,6 @@ TextApplet.prototype = {
         this._applet_label.clutter_text.ellipsize = Pango.EllipsizeMode.NONE;
 
         this._layoutBin = new St.Bin();
-        this.actor.add(this._layoutBin);
         this._layoutBin.set_child(this._applet_label);
 
         this.actor.add(this._layoutBin, { y_align: St.Align.MIDDLE, 
@@ -741,8 +740,12 @@ TextIconApplet.prototype = {
                                             track_hover: true, 
                                             style_class: 'applet-label'});
         this._applet_label.clutter_text.ellipsize = Pango.EllipsizeMode.NONE;
-        this.actor.add(this._applet_label, { y_align: St.Align.MIDDLE, 
-                                             y_fill: false });
+
+        this._layoutBin = new St.Bin();
+        this._layoutBin.set_child(this._applet_label);
+
+        this.actor.add(this._layoutBin, { y_align: St.Align.MIDDLE, 
+                                          y_fill: false });
         this.actor.set_label_actor(this._applet_label);
     },
 
@@ -755,7 +758,8 @@ TextIconApplet.prototype = {
     set_applet_label: function (text) {
 
         this._applet_label.set_text(text);
-        if ((text && text != "") && this._applet_icon_box.child) {
+        if ((text && text != "") && this._applet_icon_box.child &&
+            (this._orientation == St.Side.TOP || this._orientation == St.Side.BOTTOM)) {
             this._applet_label.set_margin_left(6.0);
         }
         else {
@@ -789,10 +793,13 @@ TextIconApplet.prototype = {
      * panel
      */
     hide_applet_label: function (hide) {
-        if (hide)
+        if (hide) {
             this._applet_label.hide();
-        else
+            this._layoutBin.hide();
+        } else {
             this._applet_label.show();
+            this._layoutBin.show();
+        }
     },
 
     /**
