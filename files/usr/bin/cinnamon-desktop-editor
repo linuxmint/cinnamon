@@ -1,6 +1,10 @@
-#!/usr/bin/python2
+#!/usr/bin/env python3
+""" Launch the cinnamon desktop editor utility
 
-import os, sys
+See cinnamon/cinnamon-desktop-editor/cinnamon-desktop-editor.py for usage info
+"""
+
+import os
+import sys
 
 os.execvp("/usr/share/cinnamon/cinnamon-desktop-editor/cinnamon-desktop-editor.py", ("",) + tuple(sys.argv[1:]))
-

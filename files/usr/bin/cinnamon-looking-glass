@@ -1,6 +1,11 @@
-#!/usr/bin/python2
+#!/usr/bin/env python3
 
-import os, sys
+""" Launch the cinnamon looking glass utility
+
+Usage:  cinnamon-looking-glass {daemon|inspect}
+"""
+
+import os
+import sys
 
 os.execvp("/usr/share/cinnamon/cinnamon-looking-glass/cinnamon-looking-glass.py", ("",) + tuple(sys.argv[1:]))
-
