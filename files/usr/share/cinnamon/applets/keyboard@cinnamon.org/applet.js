@@ -61,8 +61,13 @@ MyApplet.prototype = {
             this.settings = new Settings.AppletSettings(this, metadata["uuid"], this.instance_id);
 
             this.settings.bindProperty(Settings.BindingDirection.BIDIRECTIONAL,
-                                       "use-flags",
-                                       "_showFlags",
+                                       "use-letters",
+                                       "_showLetters",
+                                       this._syncConfig,
+                                       null);
+            this.settings.bindProperty(Settings.BindingDirection.BIDIRECTIONAL,
+                                       "use-uppercase",
+                                       "_useUpperCase",
                                        this._syncConfig,
                                        null);
 
@@ -124,11 +129,14 @@ MyApplet.prototype = {
         for (let i = 0; i < groups.length; i++) {
             let icon_name = this._config.get_group_name(i);
             let actor;
-            if (this._showFlags && this.icon_theme.lookup_icon(icon_name, 20, 0))
+            if (!this._showLetters && this.icon_theme.lookup_icon(icon_name, 20, 0))
                 actor = new St.Icon({ icon_name: icon_name, icon_type: St.IconType.FULLCOLOR, style_class: 'popup-menu-icon' });
-            else
-                actor = new St.Label({ text: icon_name });
-            
+            else {
+                if(this._useUpperCase)
+                    actor = new St.Label({ text: icon_name.toUpperCase() });
+                else
+                    actor = new St.Label({ text: icon_name });
+            }
             let item = new LayoutMenuItem(this._config, i, actor, groups[i]);
             item._icon_name = icon_name;
             item._long_name = groups[i];
@@ -156,12 +164,15 @@ MyApplet.prototype = {
         let selectedLabel = this._labelActors[selected];
 
         this.set_applet_tooltip(item._long_name)
-        if (this._showFlags && this.icon_theme.lookup_icon(item._icon_name, 20, 0)) {
+        if (!this._showLetters && this.icon_theme.lookup_icon(item._icon_name, 20, 0)) {
             this.set_applet_icon_name(item._icon_name);
             this.set_applet_label("");
         } else {
             this.hide_applet_icon();
-            this.set_applet_label(selectedLabel.text);
+            if(this._useUpperCase)
+                this.set_applet_label(selectedLabel.text.toUpperCase());
+            else
+                this.set_applet_label(selectedLabel.text);
         }
 
         this._selectedLayout = item;
