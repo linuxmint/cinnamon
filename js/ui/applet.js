@@ -756,7 +756,6 @@ TextIconApplet.prototype = {
      * Sets the text of the actor to @text
      */
     set_applet_label: function (text) {
-
         this._applet_label.set_text(text);
         if ((text && text != "") && this._applet_icon_box.child &&
             (this._orientation == St.Side.TOP || this._orientation == St.Side.BOTTOM)) {
@@ -800,6 +799,8 @@ TextIconApplet.prototype = {
             this._applet_label.show();
             this._layoutBin.show();
         }
+
+        this.set_applet_label(this._applet_label.get_text());
     },
 
     /**
