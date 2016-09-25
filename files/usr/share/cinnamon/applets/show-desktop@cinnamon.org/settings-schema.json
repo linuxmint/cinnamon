@@ -1,21 +1,21 @@
 {
  "head" : {
     "type" : "header",
-    "description" : "Peek settings"
+    "description" : "Settings"
  },
  "peek-at-desktop" : {
     "type" : "switch",
-    "default" : false,
-    "description": "Use Peek at desktop",
-    "tooltip": "Use Peek to preview the desktop when you move your mouse to the show desktop applet"
+    "default" : true,
+    "description": "Peek at the desktop on hover",
+    "tooltip": "Peek at the desktop when hovering the applet"
  },
   "peek-blur" : {
     "type" : "switch",
     "default" : false,
     "dependency" : "peek-at-desktop",
     "indent" : true,
-    "description" : "Blur effect for Peek",
-    "tooltip" : "Windows will be blurred when Peek shows desktop"
+    "description" : "Blur effect",
+    "tooltip" : "Blur windows when peeking at the desktop"
  },
  "peek-delay" : {
     "type": "spinbutton",
@@ -26,7 +26,7 @@
     "units" : "milliseconds",
     "dependency" : "peek-at-desktop",
     "indent" : true,
-    "description": "Peek hover delay: ",
+    "description": "Hover delay",
     "tooltip": "Delay before Peek shows desktop"
  },
  "peek-opacity": {
@@ -37,7 +37,7 @@
     "step" : 10,
     "dependency" : "peek-at-desktop",
     "indent" : true,
-    "description" : "Opacity of Peek: ",
-    "tooltip" : "Change the degree of opacity for Peek"
+    "description" : "Window opacity",
+    "tooltip" : "Change the opacity of windows when peeking at the desktop"
  }
 }
