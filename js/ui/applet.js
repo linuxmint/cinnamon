@@ -534,7 +534,7 @@ IconApplet.prototype = {
     _init: function(orientation, panel_height, instance_id) {
         Applet.prototype._init.call(this, orientation, panel_height, instance_id);
 
-	this._applet_icon_box = new St.Bin(); // https://developer.gnome.org/st/stable/StBin.htm
+        this._applet_icon_box = new St.Bin(); // https://developer.gnome.org/st/stable/StBin.htm
 
         this._applet_icon_box.set_fill(true,true);
         this._applet_icon_box.set_alignment(St.Align.MIDDLE,St.Align.MIDDLE);
@@ -630,22 +630,22 @@ IconApplet.prototype = {
 
         switch (icon_type) {
             case St.IconType.FULLCOLOR:
-            this._applet_icon.set_icon_size(this._scaleMode ?
-                                            fullcolor_scaleup :
-                                            DEFAULT_ICON_HEIGHT);
-            this._applet_icon.set_style_class_name('applet-icon');
+                this._applet_icon.set_icon_size(this._scaleMode ?
+                                                fullcolor_scaleup :
+                                                DEFAULT_ICON_HEIGHT);
+                this._applet_icon.set_style_class_name('applet-icon');
             break;
             case St.IconType.SYMBOLIC:
-            this._applet_icon.set_icon_size(this._scaleMode ?
-                                            symb_scaleup :
-                                            -1);
-            this._applet_icon.set_style_class_name('system-status-icon');
+                this._applet_icon.set_icon_size(this._scaleMode ?
+                                                symb_scaleup :
+                                                -1);
+                this._applet_icon.set_style_class_name('system-status-icon');
             break;
             default:
-            this._applet_icon.set_icon_size(this._scaleMode ?
-                                            symb_scaleup :
-                                            -1);
-                                            this._applet_icon.set_style_class_name('system-status-icon');
+                this._applet_icon.set_icon_size(this._scaleMode ?
+                                                symb_scaleup :
+                                                -1);
+                                                this._applet_icon.set_style_class_name('system-status-icon');
         }
     },
 
@@ -687,8 +687,13 @@ TextApplet.prototype = {
                                             track_hover: true, 
                                             style_class: 'applet-label'});
         this._applet_label.clutter_text.ellipsize = Pango.EllipsizeMode.NONE;
-        this.actor.add(this._applet_label, { y_align: St.Align.MIDDLE, 
-                                             y_fill: false });
+
+        this._layoutBin = new St.Bin();
+        this.actor.add(this._layoutBin);
+        this._layoutBin.set_child(this._applet_label);
+
+        this.actor.add(this._layoutBin, { y_align: St.Align.MIDDLE, 
+                                          y_fill: false });
         this.actor.set_label_actor(this._applet_label);
     },
 
