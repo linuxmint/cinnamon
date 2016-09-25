@@ -17,10 +17,10 @@ if len(sys.argv) > 1:
     elif os.path.exists("/usr/bin/cinnamon-control-center"):
         os.execvp("/usr/share/cinnamon/cinnamon-settings/cinnamon-settings.py", ("",) + tuple(sys.argv[1:]))
     elif os.path.exists("/usr/bin/gnome-control-center"):
-        print "Unknown module %s, calling gnome-control-center" % module
+        print ("Unknown module %s, calling gnome-control-center" % module)
         os.execvp("gnome-control-center", ("",) + tuple(sys.argv[1:]))
     else:
-        print "Unknown module %s" % module
+        print ("Unknown module %s" % module)
         os.execvp("/usr/share/cinnamon/cinnamon-settings/cinnamon-settings.py", ("",) + tuple(sys.argv[1:]))
 else:
     os.execvp("/usr/share/cinnamon/cinnamon-settings/cinnamon-settings.py", ("",) + tuple(sys.argv[1:]))
