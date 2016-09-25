@@ -2303,17 +2303,16 @@ Panel.prototype = {
 
             if (!noBarriers) {   // barriers are required
                 if (this.panelPosition == PanelLoc.top || this.panelPosition == PanelLoc.bottom) {
-                    switch (this.panelPosition)
-                    {
-		        case PanelLoc.top:
-		            panelTop    = this.monitor.y;
-		            panelBottom = this.monitor.y + this.actor.height;
-		            break;
-		        case PanelLoc.bottom:
-		            panelTop    = this.monitor.y + this.monitor.height - Math.floor(this.actor.height);
-		            panelBottom = this.monitor.y + this.monitor.height -1;
-		            break;
-		    }
+                    switch (this.panelPosition) {
+                        case PanelLoc.top:
+                            panelTop    = this.monitor.y;
+                            panelBottom = this.monitor.y + this.actor.height;
+                            break;
+                        case PanelLoc.bottom:
+                            panelTop    = this.monitor.y + this.monitor.height - Math.floor(this.actor.height);
+                            panelBottom = this.monitor.y + this.monitor.height -1;
+                            break;
+                    }
                     let x_coord = this.monitor.x + this.monitor.width - 1 - this.margin_right;
                     if (panelTop != panelBottom && x_coord >= 0)
                     {
@@ -2333,19 +2332,18 @@ Panel.prototype = {
                         }
                     }
                 } else {
-		    switch (this.panelPosition)
-		    {
-		        case PanelLoc.left:
-		            panelLeft  = this.monitor.x;
-		            panelRight = this.monitor.x + Math.floor(this.actor.width);
-		            break;
-		        case PanelLoc.right:
-		            panelLeft  = this.monitor.x + this.monitor.width - Math.floor(this.actor.width);
-		            panelRight = this.monitor.x + this.monitor.width-1;
-		            break;
-		        default:
-		            global.log("updatePanelBarriers - unrecognised panel position "+panelPosition);
-		    }
+                    switch (this.panelPosition) {
+                        case PanelLoc.left:
+                            panelLeft  = this.monitor.x;
+                            panelRight = this.monitor.x + Math.floor(this.actor.width);
+                            break;
+                        case PanelLoc.right:
+                            panelLeft  = this.monitor.x + this.monitor.width - Math.floor(this.actor.width);
+                            panelRight = this.monitor.x + this.monitor.width-1;
+                            break;
+                        default:
+                            global.log("updatePanelBarriers - unrecognised panel position "+this.panelPosition);
+                    }
                     if (panelRight != panelLeft) {
                         let y_coord = this.monitor.y + Math.floor(this.toppanelHeight) + this.margin_top;
                         if (y_coord > 0) {                                  // if there is a monitor above or top of panel offset into monitor
@@ -2705,10 +2703,10 @@ Panel.prototype = {
     //
     // cater for the style/alignment for different panel orientations
     //
-	if (this.panelPosition == PanelLoc.top || this.panelPosition == PanelLoc.bottom)
-            this._set_horizontal_panel_style();
-	else
-            this._set_vertical_panel_style();
+    if (this.panelPosition == PanelLoc.top || this.panelPosition == PanelLoc.bottom)
+        this._set_horizontal_panel_style();
+    else
+        this._set_vertical_panel_style();
     },
 
     _set_vertical_panel_style: function() {
