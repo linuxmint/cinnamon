@@ -249,6 +249,7 @@ MyApplet.prototype = {
         Applet.TextIconApplet.prototype._init.call(this, orientation, panel_height, instanceId);
 
         this.metadata = metadata;
+        this.orientation = orientation;
 
         this.settings = new Settings.AppletSettings(this, metadata.uuid, instanceId);
 
@@ -290,6 +291,8 @@ MyApplet.prototype = {
 
             this._devicesChanged();
         }));
+
+        this.update_label_visible();
     },
 
     _on_device_aliases_changed: function() {
@@ -544,10 +547,19 @@ MyApplet.prototype = {
     on_applet_removed_from_panel: function() {
         Main.systrayManager.unregisterId(this.metadata.uuid);
     },
-//
-//override getDisplayLayout to declare that this applet is suitable for both horizontal and
-// vertical orientations
-//
+
+    update_label_visible: function() {
+        if (this.orientation == St.Side.LEFT || this.orientation == St.Side.RIGHT)
+            this.hide_applet_label(true);
+        else
+            this.hide_applet_label(false);
+    },
+
+    on_orientation_changed: function(orientation) {
+        this.orientation = orientation;
+        this.update_label_visible();
+    },
+
     getDisplayLayout: function() {
         return Applet.DisplayLayout.BOTH;
     }
