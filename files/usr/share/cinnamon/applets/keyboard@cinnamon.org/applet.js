@@ -106,6 +106,28 @@ MyApplet.prototype = {
         return Applet.DisplayLayout.BOTH;
     },
 
+   _adjustGroupNames: function(names) {
+        // Disambiguate duplicate names with a subscript
+        // This is O(N^2) to avoid sorting names
+        // but N <= 4 so who cares?
+
+        for (let i = 0; i < names.length; i++) {
+            let name = names[i];
+            let cnt = 0;
+            for (let j = i + 1; j < names.length; j++) {
+                if (names[j] == name) {
+                    cnt++;
+                    // U+2081 SUBSCRIPT ONE
+                    names[j] = name + String.fromCharCode(0x2081 + cnt);
+                }
+            }
+            if (cnt != 0)
+                names[i] = name + '\u2081';
+        }
+
+        return names;
+    },
+
     _syncConfig: function() {
         let groups = this._config.get_group_names();
 
@@ -122,28 +144,34 @@ MyApplet.prototype = {
         for (let i = 0; i < this._labelActors.length; i++)
             this._labelActors[i].destroy();
 
+        // Short_names are the raw short language codes
+        let short_names = this._config.get_short_group_names();
+        // Short_labels are short_names with additional subscripts, if needed
+        let short_labels = this._adjustGroupNames(this._config.get_short_group_names());
+
         this._selectedLayout = null;
         this._layoutItems = [ ];
         this._labelActors = [ ];
 
         for (let i = 0; i < groups.length; i++) {
-            let icon_name = this._config.get_group_name(i);
+            let icon_name = short_names[i];
             let actor;
-            if (!this._showLetters && this.icon_theme.lookup_icon(icon_name, 20, 0))
+            if (!this._showLetters && this.icon_theme.lookup_icon(icon_name, 20, 0)) {
                 actor = new St.Icon({ icon_name: icon_name, icon_type: St.IconType.FULLCOLOR, style_class: 'popup-menu-icon' });
-            else {
+            } else {
                 if(this._useUpperCase)
-                    actor = new St.Label({ text: icon_name.toUpperCase() });
+                    actor = new St.Label({ text: short_labels[i].toUpperCase() });
                 else
-                    actor = new St.Label({ text: icon_name });
+                    actor = new St.Label({ text: short_labels[i] });
             }
+
             let item = new LayoutMenuItem(this._config, i, actor, groups[i]);
             item._icon_name = icon_name;
             item._long_name = groups[i];
             this._layoutItems.push(item);
             this.menu.addMenuItem(item, i);
 
-            let shortLabel = new St.Label({ text: icon_name.substring(0, 2) });
+            let shortLabel = new St.Label({ text: short_labels[i] });
             this._labelActors.push(shortLabel);
         }
 
