@@ -12,6 +12,9 @@ MyApplet.prototype = {
     _init: function(metadata, orientation, panelHeight, instance_id) {
         Applet.IconApplet.prototype._init.call(this, orientation, panelHeight, instance_id);
 
+        this.bin = new St.Bin();
+        this.actor.add(this.bin);
+
         this.settings = new Settings.AppletSettings(this, "spacer@cinnamon.org", this.instance_id);
 
         this.settings.bindProperty(Settings.BindingDirection.IN,  // Setting type
@@ -20,26 +23,29 @@ MyApplet.prototype = {
                                      this.width_changed,  // Callback when value changes
                                      null);               // Optional callback data
 
-        this.panelheight = panelHeight;
+        this.orientation = orientation;
 
-        this.on_orientation_changed(orientation);
-        },
-
-    on_orientation_changed: function(neworientation) {
-
-        this.orientation = neworientation;
         this.width_changed();
     },
 
-    width_changed: function() {
+    on_orientation_changed: function(neworientation) {
+        this.orientation = neworientation;
 
-	if (this.orientation == St.Side.TOP || this.orientation == St.Side.BOTTOM) {
-            this.actor.width = this.width;
-	}
-	else {		// vertical panel
-            this.actor.width = this.panelheight - 4;
-            this.actor.height = this.width;
+        if (this.bin) {
+            this.bin.destroy();
+
+            this.bin = new St.Bin;
+            this.actor.add(this.bin);
+
+            this.width_changed();
         }
+    },
+
+    width_changed: function() {
+        if (this.orientation == St.Side.TOP || this.orientation == St.Side.BOTTOM)
+            this.bin.width = this.width;
+        else
+            this.bin.height = this.width;
     },
 
     on_applet_removed_from_panel: function() {
