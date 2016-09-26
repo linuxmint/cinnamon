@@ -1008,6 +1008,7 @@ MyApplet.prototype = {
             this._volumeControlShown = false;
 
             this._showFixedElements();
+            this.updateLabelVisible();
 
             let appsys = Cinnamon.AppSystem.get_default();
             appsys.connect("installed-changed", Lang.bind(this, this._updateLaunchPlayer));
