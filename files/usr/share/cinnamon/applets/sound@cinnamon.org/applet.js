@@ -22,7 +22,7 @@ const MEDIA_PLAYER_2_PLAYER_NAME = "org.mpris.MediaPlayer2.Player";
 
 /* global values */
 let players_without_seek_support = ['spotify', 'totem', 'gnome-mplayer', 'pithos',
-	'smplayer'];
+    'smplayer'];
 let players_with_seek_support = [
     'clementine', 'banshee', 'rhythmbox', 'rhythmbox3', 'pragha', 'quodlibet',
     'amarok', 'xnoise', 'gmusicbrowser', 'vlc', 'qmmp', 'deadbeef', 'audacious'];
@@ -873,6 +873,7 @@ MyApplet.prototype = {
 
         try {
             this.metadata = metadata;
+            this.orientation = orientation;
             this.settings = new Settings.AppletSettings(this, metadata.uuid, instanceId);
             this.settings.bindProperty(Settings.BindingDirection.IN, "showtrack", "showtrack", this.on_settings_changed, null);
             this.settings.bindProperty(Settings.BindingDirection.IN, "middleClickAction", "middleClickAction");
@@ -1086,57 +1087,57 @@ MyApplet.prototype = {
     },
 
     _onButtonPressEvent: function (actor, event) {
-	let buttonId = event.get_button();
+        let buttonId = event.get_button();
 
         //mute or play / pause players on middle click
-        if(buttonId === 2) {
-            if(this.middleClickAction === "mute")
+        if (buttonId === 2) {
+            if (this.middleClickAction === "mute")
                 this._toggle_out_mute();
-            else if(this.middleClickAction === "player")
+            else if (this.middleClickAction === "player")
                 this._players[this._activePlayer]._mediaServerPlayer.PlayPauseRemote();
-        }
-	// previous and next track on mouse buttons 4 and 5 (8 and 9 by X11 numbering)
-	else if(buttonId === 8)
+        } else if (buttonId === 8) { // previous and next track on mouse buttons 4 and 5 (8 and 9 by X11 numbering)
             this._players[this._activePlayer]._mediaServerPlayer.PreviousRemote();
-	else if(buttonId === 9)
+        } else if (buttonId === 9) {
             this._players[this._activePlayer]._mediaServerPlayer.NextRemote();
+        }
 
         return Applet.Applet.prototype._onButtonPressEvent.call(this, actor, event);
     },
 
     setIcon: function(icon, source) {
-        if(this._iconTimeoutId){
+        if (this._iconTimeoutId) {
             Mainloop.source_remove(this._iconTimeoutId);
             this._iconTimeoutId = null;
         }
 
         //save the icon
-        if(source){
-            if(source === "output")
+        if (source) {
+            if (source === "output")
                 this._outputIcon = icon;
             else
                 this._playerIcon = [icon, source === "player-path"];
         }
 
-        if(this.playerControl && this._activePlayer && this._playerIcon[0]){
-            if(source === "output"){
+        if (this.playerControl && this._activePlayer && this._playerIcon[0]) {
+            if (source === "output") {
                 //if we have an active player, but are changing the volume, show the output icon and after three seconds change back to the player icon
                 this.set_applet_icon_symbolic_name(this._outputIcon);
-                this._iconTimeoutId = Mainloop.timeout_add(3000, Lang.bind(this, function(){
+                this._iconTimeoutId = Mainloop.timeout_add(3000, Lang.bind(this, function() {
                     this._iconTimeoutId = null;
 
                     this.setIcon();
                 }));
             } else {
                 //if we have an active player and want to change the icon, change it immediately
-                if(this._playerIcon[1])
+                if (this._playerIcon[1])
                     this.set_applet_icon_path(this._playerIcon[0]);
                 else
                     this.set_applet_icon_symbolic_name(this._playerIcon[0]);
             }
-        } else
+        } else {
             //if we have no active player show the output icon
             this.set_applet_icon_symbolic_name(this._outputIcon);
+        }
     },
 
     setAppletIcon: function(player, path) {
@@ -1164,6 +1165,13 @@ MyApplet.prototype = {
         }
     },
 
+    updateLabelVisible: function() {
+        if (this.orientation == St.Side.LEFT || this.orientation == St.Side.RIGHT)
+            this.hide_applet_label(true);
+        else
+            this.hide_applet_label(false);
+    },
+
     setAppletText: function(player) {
         let title_text = "";
         if (this.showtrack && player && player._playerStatus == 'Playing') {
@@ -1173,6 +1181,7 @@ MyApplet.prototype = {
             }
         }
         this.set_applet_label(title_text);
+        this.updateLabelVisible();
     },
 
     setAppletTextIcon: function(player, icon) {
@@ -1217,7 +1226,7 @@ MyApplet.prototype = {
             this._players[owner].destroy();
             delete this._players[owner];
 
-            if(this._activePlayer == owner){
+            if (this._activePlayer == owner) {
                 //set _activePlayer to null if we have none now, or to the first value in the players list
                 this._activePlayer = null;
                 for (let i in this._players) {
@@ -1243,8 +1252,8 @@ MyApplet.prototype = {
     //will be called by an instance of #Player
     passDesktopEntry: function(entry){
         //do we know already this player?
-        for(let i = 0, l = this._knownPlayers.length; i < l; ++i){
-            if(this._knownPlayers[i] === entry)
+        for (let i = 0, l = this._knownPlayers.length; i < l; ++i) {
+            if (this._knownPlayers[i] === entry)
                 return
         }
         //No, save it to _knownPlayers and update player list
@@ -1284,14 +1293,15 @@ MyApplet.prototype = {
 
         this._launchPlayerItem.menu.removeAll();
 
-        if (availablePlayers.length > 0){
-            for (var p = 0; p < availablePlayers.length; p++){
+        if (availablePlayers.length > 0) {
+            for (var p = 0; p < availablePlayers.length; p++) {
                 let playerApp = availablePlayers[p];
                 let menuItem = new MediaPlayerLauncher(playerApp, this._launchPlayerItem.menu);
                 this._launchPlayerItem.menu.addMenuItem(menuItem);
             }
-        } else
+        } else {
             this._launchPlayerItem.actor.hide();
+        }
     },
 
     _updatePlayerMenuItems: function() {
@@ -1299,7 +1309,7 @@ MyApplet.prototype = {
             this._launchPlayerItem.actor.hide();
 
             //go through the players list and create the player info (icon + label)
-            for(let i in this._players) {
+            for (let i in this._players) {
                 let info = this._players[i].playerInfo, item;
 
                 item = new PopupMenu.PopupBaseMenuItem;
@@ -1308,10 +1318,9 @@ MyApplet.prototype = {
                 }, i);
             }
         } else {
-            if(this._launchPlayerItem.menu.numMenuItems) {
+            if (this._launchPlayerItem.menu.numMenuItems) {
                 this._launchPlayerItem.actor.show();
-            }
-            else {
+            } else {
                 this._launchPlayerItem.actor.hide();
             }
         }
@@ -1322,7 +1331,7 @@ MyApplet.prototype = {
             this.menu.box.remove_actor(this._players[this._activePlayer].actor);
 
         this._activePlayer = player;
-        if(this.playerControl)
+        if (this.playerControl)
             this.menu.addMenuItem(this._players[player], 1);
         this._updatePlayerMenuItems();
     },
@@ -1332,9 +1341,9 @@ MyApplet.prototype = {
     },
 
     _mutedChanged: function(object, param_spec, property) {
-        if (property == "_output"){
+        if (property == "_output") {
             this.mute_out_switch.setToggleState(this._output.is_muted);
-        } else if (property == "_input"){
+        } else if (property == "_input") {
             this.mute_in_switch.setToggleState(this._input.is_muted);
         }
     },
@@ -1407,10 +1416,10 @@ MyApplet.prototype = {
     },
 
     _onDeviceRemoved: function(control, id, type){
-        for(let i = 0, l = this._devices.length; i < l; ++i){
-            if(this._devices[i].type === type && this._devices[i].id === id){
+        for (let i = 0, l = this._devices.length; i < l; ++i){
+            if (this._devices[i].type === type && this._devices[i].id === id) {
                 let device = this._devices[i];
-                if(device.item)
+                if (device.item)
                     device.item.destroy();
 
                 //hide submenu if showing them is unnecessary
@@ -1427,8 +1436,8 @@ MyApplet.prototype = {
     _onDeviceUpdate: function(control, id, type){
         this["_read" + type[0].toUpperCase() + type.slice(1)]();
 
-        for(let i = 0, l = this._devices.length; i < l; ++i){
-            if(this._devices[i].type === type)
+        for (let i = 0, l = this._devices.length; i < l; ++i) {
+            if (this._devices[i].type === type)
                 this._devices[i].item.setShowDot(id === this._devices[i].id);
         }
     },
@@ -1437,37 +1446,37 @@ MyApplet.prototype = {
         let stream = this._control.lookup_stream_id(id);
         let appId = stream.application_id;
 
-        if(stream.is_virtual || appId === "org.freedesktop.libcanberra"){
+        if (stream.is_virtual || appId === "org.freedesktop.libcanberra") {
             //sort out unwanted streams
             return;
         }
 
-        if(stream instanceof Cvc.MixerSinkInput){
+        if (stream instanceof Cvc.MixerSinkInput) {
             //for sink inputs, add a menuitem to the application submenu
             let item = new StreamMenuSection(this, stream);
             this._outputApplicationsMenu.menu.addMenuItem(item);
             this._outputApplicationsMenu.actor.show();
             this._streams.push({id: id, type: "SinkInput", item: item});
-        } else if(stream instanceof Cvc.MixerSourceOutput){
+        } else if (stream instanceof Cvc.MixerSourceOutput) {
             //for source outputs, only show the input section
             this._streams.push({id: id, type: "SourceOutput"});
-            if(this._recordingAppsNum++ === 0)
+            if (this._recordingAppsNum++ === 0)
                 this._inputSection.actor.show();
         }
     },
 
     _onStreamRemoved: function(control, id){
-        for(let i = 0, l = this._streams.length; i < l; ++i){
+        for (let i = 0, l = this._streams.length; i < l; ++i) {
             if(this._streams[i].id === id){
                 let stream = this._streams[i];
                 if(stream.item)
                     stream.item.destroy();
 
                 //hide submenus or sections if showing them is unnecessary
-                if(stream.type === "SinkInput"){
-                    if(this._outputApplicationsMenu.menu.numMenuItems === 0)
+                if (stream.type === "SinkInput") {
+                    if (this._outputApplicationsMenu.menu.numMenuItems === 0)
                         this._outputApplicationsMenu.actor.hide();
-                } else if(stream.type === "SourceOutput"){
+                } else if (stream.type === "SourceOutput") {
                     if(--this._recordingAppsNum === 0)
                         this._inputSection.actor.hide();
                 }
@@ -1489,10 +1498,12 @@ MyApplet.prototype = {
     unregisterSystrayIcons: function() {
         Main.systrayManager.unregisterId(this.metadata.uuid);
     },
-//
-//override getDisplayLayout to declare that this applet is suitable for both horizontal and
-// vertical orientations
-//
+
+    on_orientation_changed: function(orientation) {
+        this.orientation = orientation;
+        this.updateLabelVisible();
+    },
+
     getDisplayLayout: function() {
         return Applet.DisplayLayout.BOTH;
     }
