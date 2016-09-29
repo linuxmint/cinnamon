@@ -2,221 +2,168 @@
   <title>Applet, desklet and extension settings</title>
   <sect2>
     <title>Introduction</title>
-
-    <para>This document is intended to serve as a guide and reference to the new Cinnamon applet, desklet, and extension settings API, new for Cinnamon 1.8.  The goal of this API was to provide for an easy to implement and use storage system for settings.</para>
-
-    <para>We will start with a broad overview of the system, and then work our way into the details.</para>
+    <para>
+      Once you have written an applet, desklet or extension you will often find that you want to offer some configuration options to your users. Fortunately, Cinnamon provides an easy-to use API to do just that. In this tutorial, we will go over the ins and outs of the settings API.
+    </para>
   </sect2>
   <sect2>
     <title>Overview</title>
     <para>
-      In a nutshell, your applet will provide a JSON file that defines various setting types and their details, including a key identifier, description, default value, minimum and maximums (in the case of numeric types) and other options pertinent to each type of setting.
-    </para>
-    <para>
-      When your applet is added to the panel, you instantiate a settings provider, which looks for this file, parses it, applies default values, and saves an "instance" copy to work with.
-    </para>
-    <para>
-      Once that setting provider is initialized, your applet can then bind properties to the various setting keys from that file, and use them to set up how your applet will look, feel, and operate. There are a few types of bindings available, depending on how you want your applet to control or be controlled by these settings.
-    </para>
-    <para>
-      That is the "live", applet side of the picture.
-    </para>
-    <para>
-      The other side of this, is that same JSON file you created for your applet is also used by Cinnamon Settings (or System Settings as it will be known in 1.8,) to automatically generate a configuration panel to adjust all these settings. There are a number of formatting options, as well as the capability for some settings to be "dependent" on another setting - allowing you to deactivate or "grey out" settings that cannot be used in certain situations. Changes made to this panel are saved immediately, and can be handled by the applet via callbacks that you defined in your applet.
+      Part of the API for applet settings is an automatically generated settings window for user configuration. This means that you will not have to worry about building the application, the settings widgets, or the back-end that notifies your applet when something changes. Because of this, there are really only two things that you will have to worry about: defining the settings, and using them in your applet.
     </para>
   </sect2>
   <sect2>
     <title>The settings-schema.json file</title>
     <para>
-      Here’s a basic example of a <code>settings-schema.json</code> file, that can
-      define settings for your applet:
+      The first thing you will need to do is create a file named <code>settings-schema.json</code> in your applet directory. This file is where you will define all your settings. It is also the place where the API will go to figure out how to generate the settings window.
+    </para>
+    <para>
+      We will talk about some of the more advanced options we can use in this file later, but for now we will keep it simple. Let's suppose we want to define two settings which will allow the user to configure the width and height of our applet. In that case our <code>settings-schema.json</code> file might look something like this:
     </para>
     <informalexample>
       <programlisting>
-        {
-            "width": {
-                "type" : "scale",
-                "default" : 10,
-                "min" : 2,
-                "max" : 400,
-                "step" : 1,
-                "description" : "Amount of space in pixels"
-            }
-        }
-      </programlisting>
+{
+    "width": {
+        "type" : "scale",
+        "default" : 50,
+        "min" : 10,
+        "max" : 400,
+        "step" : 1,
+        "description" : "Width of the applet in pixels"
+    },
+    "height": {
+        "type" : "scale",
+        "default" : 50,
+        "min" : 10,
+        "max" : 400,
+        "step" : 1,
+        "description" : "Height of the applet in pixels"
+    }
+}</programlisting>
     </informalexample>
     <para>
-      The most important item here to start is the key: <code>"width"</code>. This is what your applet is going to specify when binding a property to the setting provider. Within the <code>width</code> node are the various details specific to that key, and differ depending on what type of setting you’ll be using.
+      The first thing you will need is the outer brackets <code>{}</code>. All of your settings will be placed inside these brackets. If you have more than one, they must be separated with commas, just like a javascript object.
     </para>
     <para>
-      In this case:
+      Each setting consists of a key, followed by a colon, and then the definition in it's own set of brackets. The purpose of the key is to identify which setting is being referenced. The key can be whatever you want, but it must be unique. So, for example, we could just as easily use "John" and "Fred" for our keys instead of "height" and "width", or "height1" and "height2", but we could not call them both "height".
+    </para>
+    <para>
+      Each definition contains it's own set of key/value pairs. The keys we include in each definition will vary depending on the type of setting we use, but there are a few that are always or almost always used:
     </para>
     <itemizedlist>
       <listitem>
-        <code>type</code>: defines what type of widget you want to use to adjust this value. In general the names of these types will be similar to what GTK uses, but always lowercase, and single word.
+        <code>type</code>: This defines what type of setting, widget, or layout element you are defining. This is always required.
       </listitem>
       <listitem>
-        <code>default</code>: defines what you want your default, or starting value to be for this setting. Since scale defines a numeric type, the default will be a numeral (no quotations). You can use floating point, but you must have a leading 0 for floating numbers less than 1 (i.e. 0.1).
+        <code>default</code>: Every key that stores a setting must specify a default value. Unless you are using a non-setting type, you must include this. It is your responsibility to make sure this value is supported by the setting type.
       </listitem>
       <listitem>
-        <code>min</code>: the lower limit for your setting.
-      </listitem>
-      <listitem>
-        <code>max</code>: the upper limit for your setting.
-      </listitem>
-      <listitem>
-        <code>step</code>: the step amount for this setting - how much the value changes for each <quote>click</quote> or notch of the widget.
-      </listitem>
-      <listitem>
-        <code>description</code>: The description you want by your setting in the configuration panel, to explain what the setting controls.
+        <code>description</code>: Any type that will show up in the settings window needs a description to specify the text that will appear. For settings, this will describe the purpose
       </listitem>
     </itemizedlist>
     <para>
-      The JSON file must be valid - it must pass any structure tests, not have extra commas, and so forth. There are a number of tools available online where you can paste the contents of your file in, and it will tell you if it it valid or not, and point out problem areas. One such site is <ulink url="http://jsonlint.com/">http://jsonlint.com/</ulink>.
-    </para>
-    <para>
-      So now we’ve got a <code>settings-schema.json</code> file. It goes in your applet directory, alongside the <code>metadata.json</code>, <code>applet.js</code>, and any other files you have.
+      For a complete list of all settings types and the keys they require, see the <xref linkend="xlet-settings-ref" /> page.
     </para>
   </sect2>
   <sect2>
-    <title>Preparing your applet:</title>
+    <title>Using the settings in your applet</title>
     <para>
-      The first thing you need to do is add Settings to your
-      <quote>imports</quote> at the top of your applet:
+      Now that you have your settings defined in settings-schema.json, you will need to set up your applet to use them. The first thing you will need to do is import the settings library. To do so, sipmly place the following line with the other imports at the beginning of your file:
     </para>
     <informalexample>
       <programlisting>
-        const Settings = imports.ui.settings;
-      </programlisting>
+const Settings = imports.ui.settings;</programlisting>
     </informalexample>
     <para>
-      You’ll also need to ensure that you’re passing along the
-      <code>instanceId</code> of the applet from the
-      <code>main()</code> function:
+      Now you will need to initialize the settings provider. It is recommended that you do this early in the <code>_init</code> function of your applet, since you can’t use any of the settings until the provider is initialized. We do this by using the AppletSettings class as follows:
     </para>
     <informalexample>
       <programlisting>
-        function main(metadata, orientation, panel_height, instanceId) {
-            let myApplet = new MyApplet(metadata, orientation, panel_height, instanceId);
-            return myApplet;
-        }
-      </programlisting>
+this.settings = new Settings.AppletSettings(bindObject, uuid, instanceId);</programlisting>
     </informalexample>
     <para>
-      and
-    </para>
-    <informalexample>
-      <programlisting>
-        function MyApplet(metadata, orientation, panel_height, instanceId) {
-            this._init(metadata, orientation, panel_height, instanceId);
-        }
-
-        MyApplet.prototype = {
-            __proto__: Applet.TextIconApplet.prototype,
-
-            _init: function(metadata, orientation, panel_height, instanceId) {
-                ....
-                ....
-                ....
-      </programlisting>
-    </informalexample>
-    <para>
-      Note: Desklets only need to pass <code>metadata</code> and <code>instanceId</code> through this chain, and extensions have no need of any of this.
-    </para>
-  </sect2>
-  <sect2>
-    <title>Initializing the settings provider</title>
-    <para>
-      Now, to actually initialize your settings provider, usually somewhere in the <code>_init</code> method of <code>MyApplet</code>, you’ll put something like this, which will use your applet’s own instance variables:
-    </para>
-    <informalexample>
-      <programlisting>
-        this.settings = new Settings.AppletSettings(this, "settings-example@cinnamon.org", instanceId);
-      </programlisting>
-    </informalexample>
-    <para>
-      If you prefer to have your preferences in a separate object, you can do like this, and the object will be populated with your settings variables:
-    </para>
-    <informalexample>
-      <programlisting>
-        this._preferences = {};
-        this.settings = new Settings.AppletSettings(this._preferences, "settings-example@cinnamon.org", instanceId);
-      </programlisting>
-    </informalexample>
-    <para>
-      In other words, the object reference you pass in can be any object. The UUID there can be just hardcoded, or can be drawn from the metadata (<code>metadata["uuid"]</code>), whichever you prefer. You can also leave off the instanceId if you haven’t defined your applet as multiple-instance capable.
-    </para>
-    <para>
-      Obviously, if instead of an applet, you have a desklet or an extension, you would use <code>new Settings.DeskletSettings</code> and <code>new Settings.ExtensionSettings</code> respectively.
-    </para>
-  </sect2>
-  <sect2>
-    <title>Binding your settings</title>
-    <para>
-      Since we only have one setting in our example, this will be very
-      simple:
-    </para>
-    <informalexample>
-      <programlisting>
-        this.settings.bindProperty(Settings.BindingDirection.IN,
-                                   "width",
-                                   "width",
-                                   this.on_settings_changed,
-                                   null);
-      </programlisting>
-    </informalexample>
-    <para>
-      To explain:
+      Now let's take a look at these arguments and what they do.
     </para>
     <itemizedlist>
       <listitem>
-        <code>.bindProperty</code>: tells the settings provider you want to bind one of your settings keys to an applet property.
+        <code>bindObject</code>: This is an object (usually the applet itself though it can be anything you want) to which the settings will be bound by default. We'll talk about the ins and outs of bindings later, but for now, suffice it to say that they allow you to access the value directly from the bind object without having to make a call to the settings provider.
       </listitem>
       <listitem>
-        <code>Settings.BindingDirection.IN</code>: This tells the setting provider that you want your applet property to be updated by changes in the configuration file. Other flags exist to provide the opposite direction, as well as bidirectional updating. More on those later.
+        <code>uuid</code>: This is your applet uuid. It can be obtained from the metadata, which is passed as the first argument in the <code>main</code> function of your applet, or you can hard-code it directly with a string. This is needed so that the settings provider can find the settings-schema.json file you created earlier.
       </listitem>
       <listitem>
-        <para>
-          <code>"width"</code>: This is the key value you defined in your settings-schema.json file that you want to match up with.
-        </para>
+        <code>instanceId</code>: This is the unique identifier that represents a particular instance of the applet. It is passed to the <code>main</code> function as the fourth argument. This is what the settings provider will use to differentiate the settings of one instance of the applet from another.
       </listitem>
       <listitem>
-        <para>
-          <code>"width"</code>: This is the name of the property you want to store the value in your applet. You’ll refer to it traditionally as <code>this.width</code> from here on out in the applet code.
-        </para>
-      </listitem>
-      <listitem>
-        <para>
-          <code>this.on_settings_changed</code>: This is the method you want called when the setting value changes. <emphasis>NOTE: The property (<code>this.width</code>) already contains the new value when this method is called. All you have to do is act on it.</emphasis>
-        </para>
-      </listitem>
-      <listitem>
-        <para>
-          <code>null</code>: this is optional - it can be left off entirely, or used to pass any extra object to the callback if desired.
-        </para>
+        Note: you will want to save a reference to your settings provider as we did above. This is what you will use to access and change your settings.
       </listitem>
     </itemizedlist>
     <para>
-      That’s basically it - your property, <code>this.width</code>, or <code>this._preferences.width</code>, is now managed by the setting provider, and will be automatically updated when the configuration changes, and your callback method automatically called so you can deal with the change.
+      Now that you've initialized the settings provider, you're ready to start accessing your settings so you can use them in your applet.
     </para>
   </sect2>
   <sect2>
-    <title>Editing your configuration:</title>
+    <title>Accessing your settings in your applet</title>
     <para>
-      Once you’ve activated your applet, you can then go in to Cinnamon Settings, Applets, and the option to Configure will be displayed when you select it.
+      There are three different ways you can interface with the settings provider to access and change your settings:
     </para>
-    <para>
-      For our sample, we’d see:
-    </para>
-    <imageobject>
-      <imagedata fileref="settings.png" />
-    </imageobject>
-    <para>
-      This has been automatically generated by our JSON file. If we adjust the scale, the JSON config file is rewritten, the settings provider for our applet notices, and reloads the new value into the applet’s <code>this.width</code> property, and <code>this.on_settings_changed()</code> is called.
-    </para>
-    <para>
-      Alternatively, this can be launched by running the command <code>cinnamon-settings applets *uuid*</code> (with obvious modifications for desklets and extensions).
-    </para>
+    <sect3>
+      <title>Getters and Setters</title>
+      <para>
+        The settings provider has methods for getting and setting values directly. In our example above, if we want to set the applet height when we first load the applet, we could do something like
+      </para>
+      <informalexample>
+        <programlisting>
+this.actor.set_height(this.settings.getValue("height"));</programlisting>
+      </informalexample>
+      <para>
+        This is useful for setting the initial state, but we probably want to update the height of our applet if the user changes the height in settings. In that case we would either have to poll the settings frequently to see if anything changed (very costly in resources), or else find another way to interface with the settings provider.
+      </para>
+    </sect3>
+    <sect3>
+      <title>Connecting to signals</title>
+      <para>
+        Fortunately, the next interface method allows us to react when the setting changes. The are two different types of signals that the provider emits. One is a generic <code>changed</code> signal that is emitted by any key that's changed. The other is only emitted when a particular setting is changed, and has a signal name of "changed::" followed by the key name.
+      </para>
+      <para>
+        Now lets suppose that we write a function to update the applet height, and we want to call it every time the user changes the height setting. We would include a line like
+      </para>
+      <informalexample>
+        <programlisting>
+this.settings.connect("changed::height", Lang.bind(this, this.setAppletHeight));</programlisting>
+      </informalexample>
+    </sect3>
+    <sect3>
+      <title>Binding your settings</title>
+      <para>
+        Often we want to be able to both access the setting and react to changes. Binding is our third method for interfacing with the settings, and provides us an easy way to do both at once. Because of it's versatility, this is generally the method you will use.
+      </para>
+      <para>
+        The settings provider offers several methods for binding a setting, but for this tutorial we will only use <code>bind</code> as it is sufficient for almost all situations. In our example it would look something like this:
+      </para>
+      <informalexample>
+        <programlisting>
+this.settings.bind("height", "appletHeight", this.setAppletHeight);</programlisting>
+      </informalexample>
+      <para>
+        Now lets take a close look at what's happening here.
+      </para>
+      <para>
+        The first argument is of course the name of the key in your settings-schema.json file.
+      </para>
+      <para>
+        The third argument is a callback function which, like before, is called whenever the value changes. You don't need to pass a callback, but you wont be able to react to changes if you don't.
+      </para>
+      <para>
+        However, it's the second argument that makes bindings so powerful. During the binding process, a new property is created on the <code>bindObject</code>. The bindObject is usually the one we passed to the provider when we initialized it, but there is now a bind function that will allow us to bind to something else if we want. The property can be used just like any variable, but it always reflects the current value of the settings, and if you assign a value to it, it will update the settings accordingly. This means that we can do things like this:
+      </para>
+      <informalexample>
+        <programlisting>
+this.settings.bind("height", "appletHeight", this.setAppletHeight);
+this.actor.set_height(this.height);
+this.height = 100;  //now our height is 100</programlisting>
+      </informalexample>
+    </sect3>
   </sect2>
   <sect2>
     <title>More information</title>
