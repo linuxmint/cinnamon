@@ -4,9 +4,9 @@
     <title>Overview</title>
     <para>The documentation of Cinnamon is separated into 4 different parts (5 if you count muffin). What you are currently reading is the tutorials, which includes the general top-level overviews and tutorials you will need for Cinnamon. This is named "Cinnamon Tutorials".</para>
 
-    <para>The second part of the Javascript reference, which describes the Javascript part of Cinnamon. This is named the "Cinnamon Javascript Reference Manual". This is a technical reference for the individual functions and objects available in Cinnamon. Note that this documentation is aimed at both applet/extension developers and Cinnamon developers themselves. So depending on who you are, some of the information might be entirely irrelevant.</para>
+    <para>The second part is the Javascript reference, which describes the Javascript part of Cinnamon. This is named the "Cinnamon Javascript Reference Manual". This is a technical reference for the individual functions and objects available in Cinnamon. Note that this documentation is aimed at both applet/extension developers and Cinnamon developers themselves. So depending on who you are, some of the information might be entirely irrelevant.</para>
 
-    <para>The second part of the documentation is for the C part of Cinnamon, which is simply referred to as the "Cinnamon Reference Manual".</para>
+    <para>The third part of the documentation is for the C part of Cinnamon, which is simply referred to as the "Cinnamon Reference Manual".</para>
 
     <para>The last part is the documentation for Shell toolkit, or St. This is the graphical toolkit used to draw widgets on the screen (similar to Gtk).</para>
 
@@ -47,15 +47,15 @@
     <title>C documentation</title>
     <para>The items described here are common to all C modules imported, not just those relating to Cinnamon.</para>
 
-    <para>Reading the documentation of C modules is tricky, since they are written for C, and we are in Javascript. In particular, C has no concept of objects, while Javascript does. Thus the naming convention of many things are different when used in Cinnamon, and the documentation is not directly applicable. The following sections will describe how to translate C into Javascript.</para>
+    <para>Reading the documentation of C modules is tricky, since they are written for C, and we are in Javascript. In particular, C has no concept of objects, while Javascript does. Thus the naming conventions of many things are different when used in Cinnamon, and the documentation is not directly applicable. The following sections will describe how to translate C into Javascript.</para>
 
-    <para>Note that most of these apply to Python and other non-C language.</para>
+    <para>Note that most of these apply to Python and other non-C languages.</para>
 
     <sect3>
       <title>Objects</title>
       <para>C has no concept of objects, but GObject allows C code to create things that look like objects. For example, <code>St.Bin</code> is something that looks like an object, and acts like an object in Javascript. If you want to look up the documentation of <code>St.Bin</code>, you search for <code>StBin</code> (without the ".") and the documentation will come up.</para>
 
-      <para>The removal of the "." is since, in Javascript, we first import the whole St, and then take the "<code>Bin</code>" object from St. This concept is non-existent in C. In C, it is simply StBin.</para>
+      <para>The "." is removed since, in Javascript, we first import the whole St, and then take the "<code>Bin</code>" object from St. This concept is non-existent in C. In C, it is simply StBin.</para>
 
       <para>A notable exception is with <code>Gio</code> and <code>GLib</code> objects, in which the <code>G</code> prefix is used in C for both while <code>Gio</code> and <code>GLib</code> is used in Javascript. For example, the C object is <code>GSettings</code> while the Javascript object is <code>Gio.Settings</code>.</para>
 
@@ -76,7 +76,7 @@
 
     <sect3>
       <title>Properties</title>
-      <para>GObjects have properties. These can generally accessed directly. For example, if <code>actor</code> is an <code>StBin</code> and you want to access the <code>x-fill</code> property, you can use <code>actor.x_fill</code>. Note that we translate <code>-</code> to <code>_</code>.</para>
+      <para>GObjects have properties. These can generally be accessed directly. For example, if <code>actor</code> is an <code>StBin</code> and you want to access the <code>x-fill</code> property, you can use <code>actor.x_fill</code>. Note that we translate <code>-</code> to <code>_</code>.</para>
 
       <para>Sometimes, for some absurd reason, the properties cannot be accessed directly. In this case, there is still hope. You can access the property via <code>actor.get_property("x-fill")</code> and <code>actor.set_property("x-fill", false)</code>.</para>
     </sect3>
