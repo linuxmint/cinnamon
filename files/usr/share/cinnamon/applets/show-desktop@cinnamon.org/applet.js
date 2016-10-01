@@ -28,6 +28,7 @@ MyApplet.prototype = {
         this.actor.connect('leave-event', Lang.bind(this, this._onLeaved));
         
         this.didpeek=false;
+        this._peek_timeout_id = 0;
         
         this.set_applet_icon_name("user-desktop");
         this.set_applet_tooltip(_("Show desktop"));
@@ -51,10 +52,12 @@ MyApplet.prototype = {
     _onEntered: function(event) {
         if (this.peek_at_desktop){  
         
-            if (this._peektimeoutid) 
-                Mainloop.source_remove(this._peektimeoutid);
-                
-            this._peektimeoutid = Mainloop.timeout_add(this.peek_delay, Lang.bind(this,function () { 
+            if (this._peek_timeout_id > 0) {
+                Mainloop.source_remove(this._peek_timeout_id);
+                this._peek_timeout_id = 0;
+            }
+
+            this._peek_timeout_id = Mainloop.timeout_add(this.peek_delay, Lang.bind(this,function () {
             
                 if(this.actor.hover && !this._applet_context_menu.isOpen && ! global.settings.get_boolean("panel-edit-mode")){
                     Tweener.addTween(global.window_group, {opacity: this.peek_opacity, time: 0.275, transition: "easeInSine" });
@@ -73,7 +76,9 @@ MyApplet.prototype = {
                 
                     this.didpeek=true;
                 }
-                
+
+                this._peek_timeout_id = 0;
+                return false;
             }));
             
         }
@@ -84,15 +89,19 @@ MyApplet.prototype = {
             this.show_all_windows(0.2);
             this.didpeek=false;
         }
-        if (this._peektimeoutid)
-            Mainloop.source_remove(this._peektimeoutid);
+        if (this._peek_timeout_id > 0) {
+            Mainloop.source_remove(this._peek_timeout_id);
+            this._peek_timeout_id = 0;
+        }
     },
     
     on_applet_clicked: function(event) {
         global.screen.toggle_desktop(global.get_current_time());
         this.show_all_windows(0);
-        if (this._peektimeoutid)
-            Mainloop.source_remove(this._peektimeoutid);
+        if (this._peek_timeout_id > 0) {
+            Mainloop.source_remove(this._peek_timeout_id);
+            this._peek_timeout_id = 0;
+        }
         this.didpeek=false;
     }
 };
