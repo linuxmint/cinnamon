@@ -16,7 +16,7 @@
   </para>
 
   <para>
-    Here extension versioning comes to the rescue. Since Cinnamon 2.6, it is possible to ship different versions of your extension for different versions of Cinnamon. Here "extension" will refer to all extensions, applets and desklets.
+    Here extension versioning comes to the rescue. As of Cinnamon 2.6, it is possible to ship different versions of your extension for different versions of Cinnamon. Here "extension" will refer to all extensions, applets and desklets.
   </para>
 
   <para> To enable extension versioning, extensions have to add the line</para>
@@ -34,10 +34,10 @@
   </para>
 
   <para>
-    If no suitable directory is found, then the contents in <code>extension@uuid/</code> will be loaded. Note that Cinnamon versions prior to 2.6 will not understand this directory magic, and will always try to load the contents in <code>extension@uuid/</code>. Hence it is suggested that extension maintainers put the version for 2.4 in <code>extension@uuid</code>, and create new directories if changes <emphasis>specific to newer cinnamon versions</emphasis> are made. Don't make a new directory whenever a Cinnamon version is out since it is just a waste of space (and maintenance effort).
+    If no suitable directory is found, then the contents in <code>extension@uuid/</code> will be loaded. Note that Cinnamon versions prior to 2.6 will not understand this directory magic, and will always try to load the contents in <code>extension@uuid/</code>. Hence it is suggested that extension maintainers put the version for 2.4 in <code>extension@uuid</code>, and create new directories if changes <emphasis>specific to newer Cinnamon versions</emphasis> are made. Don't make a new directory whenever a Cinnamon version is out since it is just a waste of space (and maintenance effort).
   </para>
 
   <para>
-   Note that this also allows you to support future versions of Cinnamon. For example, if you see a cool feature in the development branch of Cinnamon, you can modify your code and put it in the 2.6 folder (assuming the current version is 2.4). Then once the user upgrades their cinnamon version, the new code will be used instead. This also allows extensions to be smoothly upgraded between versions.
+   Note that this also allows you to support future versions of Cinnamon. For example, if you see a cool feature in the development branch of Cinnamon, you can modify your code and put it in the 2.6 folder (assuming the current version is 2.4). Then once the user upgrades their Cinnamon version, the new code will be used instead. This also allows extensions to be smoothly upgraded between versions.
  </para>
 </chapter>

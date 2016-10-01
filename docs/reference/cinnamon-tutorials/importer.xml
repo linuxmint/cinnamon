@@ -1,9 +1,9 @@
 <chapter id="importer">
   <title>The Importer</title>
-  <para>To access code of other JavaScript files, cjs has got the <code>imports</code> object.</para>
+  <para>To access code of other JavaScript files, cjs has the <code>imports</code> object.</para>
 
   <para>
-    In cjs in combination of Cinnamon you can use following statements to import statements:
+    In cjs in combination with Cinnamon you can use following statements to import statements:
 
     <informalexample>
       <programlisting>
@@ -26,7 +26,7 @@
     </para>
 
     <para>
-      To clearify, an example:
+      To clarify, an example:
       <informalexample>
         <programlisting>
           //Direct access to file a.js
@@ -60,7 +60,7 @@
 
     <para>
       In every case, you can include cjs core modules.
-      Those provides you useful functions or (less often) bindings to C libraries.
+      Those provide you useful functions or (less often) bindings to C libraries.
     </para>
 
     <para>
@@ -83,11 +83,11 @@
   <sect2>
     <title><code>imports.gi.*</code></title>
 
-    <para>As Cinnamon uses C libraries like Clutter, Muffin and more, there is a little problem: How can be those libraries used in cjs?</para>
+    <para>As Cinnamon uses C libraries like Clutter, Muffin and more, there is a little problem: How can those libraries be used in cjs?</para>
 
     <para>
       For this, there is <ulink role="online-location" url="https://wiki.gnome.org/Projects/GObjectIntrospection">GObject Introspection</ulink>.
-      For short, it allows you to use C libraries in cjs, Python and other languages.
+      In short, it allows you to use C libraries in cjs, Python and other languages.
     </para>
 
     <para>
@@ -124,7 +124,7 @@
   <sect2>
     <title><code>imports.misc.*</code></title>
 
-    <para>Those imports under <code>imports.misc.*</code> are belonging to Cinnamon, but aren't tied to it that much like <code>imports.ui.*</code>.</para>
+    <para>Those imports under <code>imports.misc.*</code> belong to Cinnamon, but aren't tied to it as much as <code>imports.ui.*</code>.</para>
 
     <para>
       <informalexample>
@@ -143,7 +143,7 @@
 
     <para>
       When you want to split a big xlet code into smaller files, you'll need to import them.
-      A simple way is using <code>imports.xlet</code>, wher <code>xlet</code> is your xlet type
+      A simple way is using <code>imports.xlet</code>, where <code>xlet</code> is your xlet type
       (<code>applet</code>, <code>desklet</code>, <code>extension</code>, <code>search_provider</code>)
       <informalexample>
         <programlisting>
@@ -195,7 +195,7 @@
     </para>
 
     <para>
-      There is no harm renaming <code>__init__.js</code> to something other (like <code>util.js</code>) and using <code>imports.xlet.util.*</code>.
+      There is no harm renaming <code>__init__.js</code> to something else (like <code>util.js</code>) and using <code>imports.xlet.util.*</code>.
     </para>
   </sect2>
 </chapter>
