@@ -620,6 +620,14 @@
       <_summary>WM class names to skip processing for in windowAttentionHandler.js</_summary>
     </key>
 
+    <key name="right-click-indicators" type="b">
+      <default>true</default>
+      <_summary>Use the right click for indicators</_summary>
+      <_description>
+        Decide the behavior for indicators
+      </_description>
+    </key>
+
   </schema>
  
   <schema id="org.cinnamon.theme" path="/org/cinnamon/theme/"
