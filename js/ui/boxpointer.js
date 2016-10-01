@@ -146,6 +146,7 @@ BoxPointer.prototype = {
         // Need not trigger any other function. Menu position is
         // recalculated every time it is shown
         this._arrowSide = side;
+        this._userArrowSide = side;
     },
 
     _adjustAllocationForArrow: function(isWidth, alloc) {
