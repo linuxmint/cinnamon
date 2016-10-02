@@ -15,10 +15,7 @@ MyApplet.prototype = {
 
         this.on_orientation_changed(orientation);
     },
-//
-// override getDisplayLayout to declare that this applet is suitable for both horizontal and
-// vertical orientations
-//
+
     getDisplayLayout: function() {
         return Applet.DisplayLayout.BOTH;
     },
@@ -31,15 +28,14 @@ MyApplet.prototype = {
 
         this.orientation = neworientation;
 
-	if (this.orientation == St.Side.TOP || this.orientation == St.Side.BOTTOM) {
+        if (this.orientation == St.Side.TOP || this.orientation == St.Side.BOTTOM) {
             if (this._line) {
                 this._line.destroy();
             }
 
             this._line = new St.BoxLayout({ style_class: 'applet-separator-line', reactive: false, track_hover: false});
             this.actor.add(this._line, { y_align: Clutter.ActorAlign.CENTER, x_align: Clutter.ActorAlign.CENTER, y_fill: true, y_expand: true});
-	}
-	else {		// vertical panel
+        } else {
             if (this._line) {
                 this._line.destroy();
             }
@@ -48,7 +44,7 @@ MyApplet.prototype = {
             this.actor.add(this._line, { y_align: Clutter.ActorAlign.CENTER, x_align: Clutter.ActorAlign.CENTER});
 
             this._line.set_height(2);
-            this._line.set_width((this._panelHeight-8));
+            this._line.set_width((this._panelHeight - 8));
         }
     },
 }; 

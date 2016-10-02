@@ -1181,6 +1181,8 @@ MyApplet.prototype = {
 
         St.TextureCache.get_default().connect("icon-theme-changed", Lang.bind(this, this.onIconThemeChanged));
         this._recalc_height();
+
+        this.update_label_visible();
     },
 
     _updateKeybinding: function() {
@@ -1271,8 +1273,18 @@ MyApplet.prototype = {
         this.applicationsScrollBox.style = "height: "+scrollBoxHeight / global.ui_scale +"px;";
     },
 
+    update_label_visible: function () {
+        if (this.orientation == St.Side.LEFT || this.orientation == St.Side.RIGHT)
+            this.hide_applet_label(true);
+        else
+            this.hide_applet_label(false);
+    },
+
     on_orientation_changed: function (orientation) {
         this.orientation = orientation;
+
+        this.update_label_visible();
+
         this.menu.destroy();
         this.menu = new Applet.AppletPopupMenu(this, orientation);
         this.menuManager.addMenu(this.menu);
@@ -1286,10 +1298,6 @@ MyApplet.prototype = {
         this._updateIconAndLabel();
     },
 
-//
-//override getDisplayLayout to declare that this applet is suitable for both horizontal and
-// vertical orientations
-//
     getDisplayLayout: function() {
         return Applet.DisplayLayout.BOTH;
     },

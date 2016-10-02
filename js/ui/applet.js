@@ -152,7 +152,7 @@ Applet.prototype = {
                                         reactive: true,
                                         track_hover: true });
 
-        this.setOrientation_internal(orientation);
+        this.setOrientationInternal(orientation);
     
         this._applet_tooltip = new Tooltips.PanelItemTooltip(this, "", orientation);                                        
         this.actor.connect('button-press-event', Lang.bind(this, this._onButtonPressEvent));  
@@ -161,26 +161,26 @@ Applet.prototype = {
         this._applet_context_menu = new AppletContextMenu(this, orientation);
         this._menuManager.addMenu(this._applet_context_menu);     
 
-        this.actor._applet = this; 	// Backlink to get the applet from its actor 
-					//(handy when we want to know stuff about a particular applet within the panel)
+        this.actor._applet = this;  // Backlink to get the applet from its actor 
+                                    // (handy when we want to know stuff about a particular applet within the panel)
         this.actor._delegate = this;
-        this._order = 0; 		// Defined in gsettings, this is the order of the applet within a panel location. 
-			 		// This value is set by Cinnamon when loading/listening_to gsettings.
-        this._newOrder = null; 		//  Used when moving an applet
-        this._panelLocation = null; 	// Backlink to the panel location our applet is in, set by Cinnamon.
-        this._newPanelLocation = null; 	//  Used when moving an applet
-        this._applet_enabled = true; 	// Whether the applet is enabled or not (if not it hides in the panel as if it wasn't there)
-	this._orientation = orientation;  // orientation of the panel the applet is on  St.Side.TOP BOTTOM LEFT RIGHT
+        this._order = 0;        // Defined in gsettings, this is the order of the applet within a panel location. 
+                                // This value is set by Cinnamon when loading/listening_to gsettings.
+        this._newOrder = null;      //  Used when moving an applet
+        this._panelLocation = null;     // Backlink to the panel location our applet is in, set by Cinnamon.
+        this._newPanelLocation = null;  //  Used when moving an applet
+        this._applet_enabled = true;    // Whether the applet is enabled or not (if not it hides in the panel as if it wasn't there)
+        this._orientation = orientation;  // orientation of the panel the applet is on  St.Side.TOP BOTTOM LEFT RIGHT
 
         this._panelHeight = panel_height ? panel_height : 25;
         this.instance_id = instance_id; // Needed by appletSettings
-        this._uuid = null; 		// Defined in gsettings, set by Cinnamon.
-        this._hook = null; 		// Defined in metadata.json, set by appletManager
-        this._meta = null; 		// set by appletManager
+        this._uuid = null;      // Defined in gsettings, set by Cinnamon.
+        this._hook = null;      // Defined in metadata.json, set by appletManager
+        this._meta = null;      // set by appletManager
         this._dragging = false;                
         this._draggable = DND.makeDraggable(this.actor);
         this._draggable.connect('drag-begin', Lang.bind(this, this._onDragBegin));
-    	this._draggable.connect('drag-cancelled', Lang.bind(this, this._onDragCancelled));
+        this._draggable.connect('drag-cancelled', Lang.bind(this, this._onDragCancelled));
         this._draggable.connect('drag-end', Lang.bind(this, this._onDragEnd));        
 
         try {
@@ -254,9 +254,9 @@ Applet.prototype = {
                     this.on_applet_clicked(event);
                 }
             }
-            if (event.get_button()==3){            
+            if (event.get_button() == 3) {            
                 if (this._applet_context_menu._getMenuItems().length > 0) {
-                    this._applet_context_menu.toggle();			
+                    this._applet_context_menu.toggle();         
                 }
             }
         }
@@ -361,29 +361,21 @@ Applet.prototype = {
     },
 
     /**
-     * setOrientation_internal:
+     * setOrientationInternal:
      * @orientation (St.Side): the orientation
      *
      * Sets the orientation of the St.BoxLayout.
      *
      */
-    setOrientation_internal: function (orientation) {
-
-        if (orientation == St.Side.LEFT || orientation == St.Side.RIGHT)
-        {
+    setOrientationInternal: function (orientation) {
+        if (orientation == St.Side.LEFT || orientation == St.Side.RIGHT) {
             this.actor.add_style_class_name('vertical');
             this.actor.set_important(true);
-            this.actor.set_y_align(Clutter.ActorAlign.FILL);
-            this.actor.set_y_expand(true);
-            this.actor.set_x_align(Clutter.ActorAlign.CENTER);  // making this FILL also aligns to start
+            this.actor.set_vertical(true);
             this.actor.set_x_expand(true);
-        }
-        else {
+        } else {
             this.actor.remove_style_class_name('vertical');
-            this.actor.set_y_align(Clutter.ActorAlign.FILL);
-            this.actor.set_y_expand(true);
-            this.actor.set_x_align(Clutter.ActorAlign.CENTER);
-            this.actor.set_x_expand(false);
+            this.actor.set_vertical(false);
         }
     },
 
@@ -396,8 +388,7 @@ Applet.prototype = {
      * This function should only be called by appletManager
      */
     setOrientation: function (orientation) {
-
-        this.setOrientation_internal(orientation);
+        this.setOrientationInternal(orientation);
         this.on_orientation_changed(orientation);
         this.emit("orientation-changed", orientation);
         this.finalizeContextMenu();
@@ -541,7 +532,7 @@ IconApplet.prototype = {
     _init: function(orientation, panel_height, instance_id) {
         Applet.prototype._init.call(this, orientation, panel_height, instance_id);
 
-	this._applet_icon_box = new St.Bin(); // https://developer.gnome.org/st/stable/StBin.htm
+        this._applet_icon_box = new St.Bin(); // https://developer.gnome.org/st/stable/StBin.htm
 
         this._applet_icon_box.set_fill(true,true);
         this._applet_icon_box.set_alignment(St.Align.MIDDLE,St.Align.MIDDLE);
@@ -631,37 +622,29 @@ IconApplet.prototype = {
 
     _setStyle: function() {
 
-        let symb_scaleup 	= ((this._panelHeight / DEFAULT_PANEL_HEIGHT) * PANEL_SYMBOLIC_ICON_DEFAULT_HEIGHT) / global.ui_scale;
-        let fullcolor_scaleup 	= this._panelHeight * COLOR_ICON_HEIGHT_FACTOR / global.ui_scale;
-        let icon_type 		= this._applet_icon.get_icon_type();
+        let symb_scaleup = ((this._panelHeight / DEFAULT_PANEL_HEIGHT) * PANEL_SYMBOLIC_ICON_DEFAULT_HEIGHT) / global.ui_scale;
+        let fullcolor_scaleup = this._panelHeight * COLOR_ICON_HEIGHT_FACTOR / global.ui_scale;
+        let icon_type = this._applet_icon.get_icon_type();
 
         switch (icon_type) {
             case St.IconType.FULLCOLOR:
-            this._applet_icon.set_icon_size(this._scaleMode ?
-                                            fullcolor_scaleup :
-                                            DEFAULT_ICON_HEIGHT);
-            this._applet_icon.set_style_class_name('applet-icon');
+                this._applet_icon.set_icon_size(this._scaleMode ?
+                                                fullcolor_scaleup :
+                                                DEFAULT_ICON_HEIGHT);
+                this._applet_icon.set_style_class_name('applet-icon');
             break;
             case St.IconType.SYMBOLIC:
-            this._applet_icon.set_icon_size(this._scaleMode ?
-                                            symb_scaleup :
-                                            -1);
-            this._applet_icon.set_style_class_name('system-status-icon');
+                this._applet_icon.set_icon_size(this._scaleMode ?
+                                                symb_scaleup :
+                                                -1);
+                this._applet_icon.set_style_class_name('system-status-icon');
             break;
             default:
-            this._applet_icon.set_icon_size(this._scaleMode ?
-                                            symb_scaleup :
-                                            -1);
-                                            this._applet_icon.set_style_class_name('system-status-icon');
+                this._applet_icon.set_icon_size(this._scaleMode ?
+                                                symb_scaleup :
+                                                -1);
+                                                this._applet_icon.set_style_class_name('system-status-icon');
         }
-//        if (this._orientation == St.Side.LEFT || this._orientation == St.Side.RIGHT)
-//        {
-//            let ph = this._panelHeight;   
-//            this.actor.set_clip(0, 0, ph, ph);  // ensure no visible bleeding of the allocation box 
-                                                  // beyond the panel,  e.g. on hover
-//        }
-
-
     },
 
     on_panel_height_changed: function() {
@@ -702,8 +685,12 @@ TextApplet.prototype = {
                                             track_hover: true, 
                                             style_class: 'applet-label'});
         this._applet_label.clutter_text.ellipsize = Pango.EllipsizeMode.NONE;
-        this.actor.add(this._applet_label, { y_align: St.Align.MIDDLE, 
-                                             y_fill: false });
+
+        this._layoutBin = new St.Bin();
+        this._layoutBin.set_child(this._applet_label);
+
+        this.actor.add(this._layoutBin, { y_align: St.Align.MIDDLE, 
+                                          y_fill: false });
         this.actor.set_label_actor(this._applet_label);
     },
 
@@ -751,9 +738,30 @@ TextIconApplet.prototype = {
                                             track_hover: true, 
                                             style_class: 'applet-label'});
         this._applet_label.clutter_text.ellipsize = Pango.EllipsizeMode.NONE;
-        this.actor.add(this._applet_label, { y_align: St.Align.MIDDLE, 
-                                             y_fill: false });
+
+        this._layoutBin = new St.Bin();
+        this._layoutBin.set_child(this._applet_label);
+
+        this.actor.add(this._layoutBin, { y_align: St.Align.MIDDLE, 
+                                          y_fill: false });
         this.actor.set_label_actor(this._applet_label);
+    },
+
+    /**
+     * update_label_margin:
+     *
+     * Sets a margin between the icon and the label when it contains a non
+     * empty string. The margin is always set to zero in a vertical panel
+     */
+    update_label_margin: function () {
+        let text = this._applet_label.get_text()
+
+        if ((text && text != "") && this._applet_icon_box.child &&
+            (this._orientation == St.Side.TOP || this._orientation == St.Side.BOTTOM)) {
+            this._applet_label.set_margin_left(6.0);
+        } else {
+            this._applet_label.set_margin_left(0);
+        }
     },
 
     /**
@@ -763,14 +771,8 @@ TextIconApplet.prototype = {
      * Sets the text of the actor to @text
      */
     set_applet_label: function (text) {
-
         this._applet_label.set_text(text);
-        if ((text && text != "") && this._applet_icon_box.child) {
-            this._applet_label.set_margin_left(6.0);
-        }
-        else {
-            this._applet_label.set_margin_left(0);
-        }
+        this.update_label_margin();
     },
 
     /**
@@ -788,6 +790,26 @@ TextIconApplet.prototype = {
                 this._applet_icon.visible = enabled;
             }
         }
+    },
+
+    /**
+     * hide_applet_label:
+     * @hide (boolean): whether the applet label is hidden or not
+     *
+     * Sets whether the applets label is hidden or not. A convenience
+     * function to hide applet labels when an applet is placed in a vertical
+     * panel
+     */
+    hide_applet_label: function (hide) {
+        if (hide) {
+            this._applet_label.hide();
+            this._layoutBin.hide();
+        } else {
+            this._applet_label.show();
+            this._layoutBin.show();
+        }
+
+        this.update_label_margin();
     },
 
     /**

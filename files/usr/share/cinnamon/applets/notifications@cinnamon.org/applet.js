@@ -29,7 +29,6 @@ MyApplet.prototype = {
 
         // Layout
         this._orientation = orientation;
-        this.set_orientation();
         this.menuManager = new PopupMenu.PopupMenuManager(this);
 
         // Lists
@@ -165,7 +164,7 @@ MyApplet.prototype = {
                 this.actor.show();
                 this.clear_action.actor.show();
                 this.set_applet_label(count.toString());
-                this._applet_label.show();
+                this.hide_applet_label(false);
                 // Find max urgency and derive list icon.
                 let max_urgency = -1;
                 for (let i = 0; i < count; i++) {
@@ -193,7 +192,7 @@ MyApplet.prototype = {
             } else {	// There are no notifications.
                 this._blinking = false;
                 this.set_applet_label('');
-                this._applet_label.hide();
+                this.hide_applet_label(true);
                 this.set_applet_icon_symbolic_name("empty-notif");
                 this.clear_action.actor.hide();
                 if (!this.showEmptyTray) {
@@ -235,17 +234,8 @@ MyApplet.prototype = {
         this.on_orientation_changed(this._orientation);
     },
 
-    set_orientation: function() {
-        if (this._orientation == St.Side.LEFT || this.orientation == St.Side.RIGHT) {
-            this.actor.set_vertical(true);
-        } else {
-            this.actor.set_vertical(false);
-        }
-    },
-
     on_orientation_changed: function (orientation) {
         this._orientation = orientation;
-        this.set_orientation();
 
         if (this.menu) {
             this.menu.destroy();
@@ -255,10 +245,6 @@ MyApplet.prototype = {
         this._display();
     },
 
-//
-//override getDisplayLayout to declare that this applet is suitable for both horizontal and
-// vertical orientations
-//
     getDisplayLayout: function() {
         return Applet.DisplayLayout.BOTH;
     },
