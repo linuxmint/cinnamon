@@ -1465,26 +1465,32 @@ MyApplet.prototype = {
         index = this._selectedItemIndex;
 
         if (this._activeContainer === null && symbol == Clutter.KEY_Up) {
-            this._activeContainer = this.applicationsBox;
-            item_actor = this.appBoxIter.getLastVisible();
-            index = this.appBoxIter.getAbsoluteIndexOfChild(item_actor);
-            this._scrollToButton(item_actor._delegate);
+            this._activeContainer = this.categoriesBox;
+            item_actor = this.catBoxIter.getLastVisible();
+            index = this.catBoxIter.getAbsoluteIndexOfChild(item_actor);
         } else if (this._activeContainer === null && symbol == Clutter.KEY_Down) {
+            this._activeContainer = this.categoriesBox;
+            item_actor = this.catBoxIter.getFirstVisible();
+            item_actor = this._activeContainer._vis_iter.getNextVisible(item_actor);
+            index = this.catBoxIter.getAbsoluteIndexOfChild(item_actor);
+        } else if (this._activeContainer === null && symbol == Clutter.KEY_Left && this.favBoxShow) {
+            this._activeContainer = this.favoritesBox;
+            item_actor = this.favBoxIter.getFirstVisible();
+            index = this.favBoxIter.getAbsoluteIndexOfChild(item_actor);
+        } else if (this._activeContainer === null && symbol == Clutter.KEY_Right) {
             this._activeContainer = this.applicationsBox;
             item_actor = this.appBoxIter.getFirstVisible();
             index = this.appBoxIter.getAbsoluteIndexOfChild(item_actor);
             this._scrollToButton(item_actor._delegate);
-        } else if (this._activeContainer === null && symbol == Clutter.KEY_Left && this.favBoxShow ) {
-            this._activeContainer = this.favoritesBox;
-            item_actor = this.favBoxIter.getFirstVisible();
-            index = this.favBoxIter.getAbsoluteIndexOfChild(item_actor);
         } else if (symbol == Clutter.KEY_Up) {
             if (this._activeContainer != this.categoriesBox) {
                 this._previousSelectedActor = this._activeContainer.get_child_at_index(index);
                 item_actor = this._activeContainer._vis_iter.getPrevVisible(this._previousSelectedActor);
-                this._previousVisibleIndex = this._activeContainer._vis_iter.getVisibleIndex(item_actor);
+                if (this._activeContainer === this.applicationsBox) {
+                    this._previousVisibleIndex = this._activeContainer._vis_iter.getVisibleIndex(item_actor);
+                    this._scrollToButton(item_actor._delegate);
+                }
                 index = this._activeContainer._vis_iter.getAbsoluteIndexOfChild(item_actor);
-                this._scrollToButton(item_actor._delegate);
             } else {
                 this._previousTreeSelectedActor = this.categoriesBox.get_child_at_index(index);
                 this._previousTreeSelectedActor._delegate.isHovered = false;
@@ -1495,10 +1501,11 @@ MyApplet.prototype = {
             if (this._activeContainer != this.categoriesBox) {
                 this._previousSelectedActor = this._activeContainer.get_child_at_index(index);
                 item_actor = this._activeContainer._vis_iter.getNextVisible(this._previousSelectedActor);
-
-                this._previousVisibleIndex = this._activeContainer._vis_iter.getVisibleIndex(item_actor);
+                if (this._activeContainer === this.applicationsBox) {
+                    this._previousVisibleIndex = this._activeContainer._vis_iter.getVisibleIndex(item_actor);
+                    this._scrollToButton(item_actor._delegate);
+                }
                 index = this._activeContainer._vis_iter.getAbsoluteIndexOfChild(item_actor);
-                this._scrollToButton(item_actor._delegate);
             } else {
                 this._previousTreeSelectedActor = this.categoriesBox.get_child_at_index(index);
                 this._previousTreeSelectedActor._delegate.isHovered = false;
