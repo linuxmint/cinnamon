@@ -107,20 +107,21 @@ MyApplet.prototype = {
     },
 
     _syncConfig: function() {
-        let groups = this._config.get_all_names();
-
-        if (groups.length > 1) {
-            this.actor.show();
-        } else {
-            this.menu.close();
-            this.actor.hide();
-        }
-
         for (let i = 0; i < this._layoutItems.length; i++)
             this._layoutItems[i].destroy();
 
         this._selectedLayout = null;
         this._layoutItems = [ ];
+
+        if (!this._config.get_enabled()) {
+            this.menu.close();
+            this.actor.hide();
+            return;
+        }
+
+        this.actor.show();
+
+        let groups = this._config.get_all_names();
 
         for (let i = 0; i < groups.length; i++) {
             let handled = false;
