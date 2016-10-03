@@ -3458,6 +3458,7 @@ Panel.prototype = {
      * @force.
      */
     _hidePanel: function(force) {
+        if (this._destroyed) return;
         this._showHideTimer = 0;
 
         if ((this._shouldShow && !force) || global.menuStackLength > 0) return;
