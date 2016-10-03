@@ -267,7 +267,7 @@ PopupBaseMenuItem.prototype = {
             color.alpha / 255);
         cr.arc(width / 2, height / 2, width / 3, 0, 2 * Math.PI);
         cr.fill();
-        
+
         cr.$dispose();
     },
 
@@ -428,7 +428,7 @@ PopupBaseMenuItem.prototype = {
                     childBox.x1 = x;
                     childBox.x2 = x + naturalWidth;
                 }
-                
+
                 //when somehow the actor is wider than the box, cut it off
                 if(childBox.x2 > box.x2)
                     childBox.x2 = box.x2;
@@ -448,7 +448,7 @@ PopupBaseMenuItem.prototype = {
                     childBox.x2 = x;
                     childBox.x1 = x - naturalWidth;
                 }
-                
+
                 //when somehow the actor is wider than the box, cut it off
                 if(childBox.x1 < box.x1)
                     childBox.x1 = box.x1;
@@ -1059,7 +1059,7 @@ PopupIndicatorMenuItem.prototype = {
 /**
  * #PopupMenuAbstractItem:
  * @short_description: A class to represent any abstract menu item.
- * 
+ *
  * This is an abstract class for create a binding between the PopupMenuItem class ,
  * and an abstract representation of a menu item. If you want to create a cinnamon
  * menu structure, you need to inherit from this class and implement the functions
@@ -1143,7 +1143,7 @@ PopupMenuAbstractItem.prototype = {
     },
 
     getLabel: function() {
-        return this._label; 
+        return this._label;
     },
 
     setLabel: function(label) {
@@ -1291,14 +1291,14 @@ PopupMenuAbstractItem.prototype = {
         if ((this.shellItem)&&(this.shellItem.label)) {
             let label = this.getLabel();
             // The separator item might not even have a hidden label
-            if (this.shellItem.label) 
+            if (this.shellItem.label)
                 this.shellItem.label.set_text(label);
         }
     },
 
     _updateOrnament: function() {
         // Separators and alike might not have gotten the setOrnament function
-        if ((this.shellItem)&&(this.shellItem.setOrnament)) { 
+        if ((this.shellItem)&&(this.shellItem.setOrnament)) {
             if (this.getToggleType() == "checkmark") {
                 this.shellItem.setOrnament(OrnamentType.CHECK, this.getToggleState());
             } else if (this.getToggleType() == "radio") {
@@ -1637,7 +1637,7 @@ PopupMenuBase.prototype = {
      *
      * Returns (PopupMenu.PopupMenuItem): the menu item created.
      */
-    addSettingsAction: function(title, module) {		
+    addSettingsAction: function(title, module) {
         let menuItem = this.addAction(title, function() {
                            Util.spawnCommandLine("cinnamon-settings " + module);
                        });
@@ -2013,14 +2013,21 @@ Signals.addSignalMethods(PopupMenuBase.prototype);
 /**
  * #PopupMenu
  * @short_description: An actual popup menu
- * @_boxPointer (Boxpointer.BoxPointer): The box pointer object that actually
- * draws the popup menu.
- * @actor (St.Bin): The actor of the popup menu, stolen from the %_boxPointer.
+ * @actor (St.Bin): The actor of the popup menu.
  * @animating (boolean): Whether the popup menu is currently performing the
  * open/close animation.
+ * @slidePosition (number): Position relative to the @sourceActor of the menu upon which the menu will be centered
+ * (if possible). If -1, the menu will be centered on the @sourceActor. See %shiftToPosition for more details.
  */
 function PopupMenu() {
-    this._init.apply(this, arguments);
+    // orientation used to be passed as the third argument, but now we only have 2 args so if we get 3, we assume
+    // that it's old code and only grab the ones we need
+    if (arguments.length > 2) {
+        this._init(arguments[0], arguments[2]);
+    }
+    else {
+        this._init.apply(this, arguments);
+    }
 }
 
 PopupMenu.prototype = {
@@ -2029,41 +2036,29 @@ PopupMenu.prototype = {
     /**
      * _init:
      * @sourceActor (St.Widget): the actor that owns the popup menu
-     * @arrowAlignment (real): the position of the popup menu arrow relative to
-     * the popup menu. If 0.0, the arrow will be at the left of the popup menu.
-     * If 1.0, the arrow will be at the right of the popup menu, and numbers in
-     * between will put the arrow somewhere between the left and the right (if
-     * the popup menu opens sideways, 0.0 and 1.0 correspond to top and bottom
-     * respectively). Providing a value outside the range [0, 1] will cause
-     * unexpected behaviour.
-     * @arrowSide (St.Side): the arrow side of the menu. See %setArrowSide() for details
+     * @orientation (St.Side): the side of the menu that will be attached to @sourceActor. See %setOrientation() for details
      */
-    _init: function(sourceActor, arrowAlignment, arrowSide) {
+    _init: function(sourceActor, orientation) {
         PopupMenuBase.prototype._init.call (this, sourceActor, 'popup-menu-content');
 
-        this._arrowAlignment = arrowAlignment;
-        this._arrowSide = arrowSide;
+        this.paint_id = 0;
+        this.paint_count = 0;
+        this.animating = false;
+        this._slidePosition = -1;
 
-        this._boxPointer = new BoxPointer.BoxPointer(arrowSide,
-                                                     { x_fill: true,
-                                                       y_fill: true,
-                                                       x_align: St.Align.START });
-        this.actor = this._boxPointer.actor;
+        this.actor = new St.Bin({ style_class: 'menu' });
         this.actor._delegate = this;
-        this.actor.style_class = 'popup-menu-boxpointer';
         this.actor.connect('key-press-event', Lang.bind(this, this._onKeyPressEvent));
+
+        this.setOrientation(orientation);
 
         this._boxWrapper = new Cinnamon.GenericContainer();
         this._boxWrapper.connect('get-preferred-width', Lang.bind(this, this._boxGetPreferredWidth));
         this._boxWrapper.connect('get-preferred-height', Lang.bind(this, this._boxGetPreferredHeight));
         this._boxWrapper.connect('allocate', Lang.bind(this, this._boxAllocate));
-        this._boxPointer.bin.set_child(this._boxWrapper);
+        this.actor.set_child(this._boxWrapper);
         this._boxWrapper.add_actor(this.box);
-        this.actor.add_style_class_name('popup-menu');
 
-        this.paint_id = 0;
-        this.paint_count = 0;
-        this.animating = false;
         global.focus_manager.add_group(this.actor);
         this.actor.reactive = true;
     },
@@ -2071,63 +2066,38 @@ PopupMenu.prototype = {
     /**
      * setArrowSide:
      * @side (St.Side): The new side of the menu
-     * 
-     * Sets the arrow side of the menu. Note that the side is the side
-     * of the source actor, not the menu, e.g. If St.Side.TOP is set, 
-     * then the menu will appear below the source actor (the source
-     * actor will be on top of the menu)
+     *
+     * Sets the orientation of the @sourceActor with respect to the menu. This function is deprecated and kept
+     * for compatibility with older code. Please use %setOrientation instead.
      */
     setArrowSide: function(side) {
-	this._arrowSide = side;
-	this._boxPointer.setArrowSide(side);
-    },
-
-    _boxGetPreferredWidth: function (actor, forHeight, alloc) {
-        let columnWidths = this.getColumnWidths();
-        this.setColumnWidths(columnWidths);
-
-        // Now they will request the right sizes
-        [alloc.min_size, alloc.natural_size] = this.box.get_preferred_width(forHeight);
-    },
-
-    _boxGetPreferredHeight: function (actor, forWidth, alloc) {
-        [alloc.min_size, alloc.natural_size] = this.box.get_preferred_height(forWidth);
-    },
-
-    _boxAllocate: function (actor, box, flags) {
-        this.box.allocate(box, flags);
-    },
-
-    _onKeyPressEvent: function(actor, event) {
-        if (event.get_key_symbol() == Clutter.Escape) {
-            this.close(true);
-            return true;
-        }
-
-        return false;
-    },
-
-    setArrowOrigin: function(origin) {
-        this._boxPointer.setArrowOrigin(origin);
+        this.setOrientation(side);
     },
 
     /**
+     * setOrientation:
+     * @orientation (St.Side): The new orientation of the menu
+     *
+     * Sets the orientation of the @sourceActor with respect to the menu. For example, if you use St.Side.TOP,
+     * the menu will try to place itself below the @sourcActor unless there is not enough room for it.
+     */
+    setOrientation: function(orientation) {
+        this._orientation = orientation;
+    },
+
+    /*
      * setSourceAlignment:
      * @alignment (real): the position of the arrow relative to the source
      * actor.
      *
-     * If set to 0.0, the arrow will appear at the left end of the source
-     * actor; 1.0 for right (0.0/1.0 for top/bottom for sideways arrows). The
-     * default value is 0.5, which means the arrow appears at the center of the
-     * source actor.
+     * Since the boxpointer was removed from the menu, this function now does nothing. Please do not use this
+     * function in new code.
      */
-    setSourceAlignment: function(alignment) {
-        this._boxPointer.setSourceAlignment(alignment);
-    },
+    setSourceAlignment: function(alignment) {},
 
     /**
      * open:
-     * @animate (boolean): whether the animate the open effect
+     * @animate (boolean): whether to animate the open effect or not
      *
      * Opens the popup menu
      */
@@ -2137,42 +2107,185 @@ PopupMenu.prototype = {
 
         Main.popup_rendering_actor = this.actor;
 
-        this.animating = animate;
-
         this.setMaxHeight();
 
         this.isOpen = true;
-        
         if (global.menuStackLength == undefined)
             global.menuStackLength = 0;
         global.menuStackLength += 1;
 
-        this._boxPointer.setPosition(this.sourceActor, this._arrowAlignment);
-
         this.paint_id = this.actor.connect("paint", Lang.bind(this, this.on_paint));
 
-        this._boxPointer.show(animate, Lang.bind(this, function () {
-            this.animating = false;
-        }));
-
         this.actor.raise_top();
+        if (animate && global.settings.get_boolean("desktop-effects-on-menus")) {
+            this.animating = true;
+
+            // the actor is going to be painted before we set the right position for animation so we set the opacity
+            // to 0 in order to prevent flashing in the wrong position
+            this.actor.opacity = 0;
+            this.actor.show();
+
+            // we need to give the actors a chance to allocate before animating so we get the correct values
+            Mainloop.idle_add(Lang.bind(this, function() {
+                let tweenParams = {
+                    transition: "easeOutQuad",
+                    time: .15,
+                    onUpdate: Lang.bind(this, function(dest) {
+                        let clipY = 0;
+                        let clipX = 0;
+                        switch (this._orientation) {
+                            case St.Side.TOP:
+                            case St.Side.BOTTOM:
+                                clipY = dest - this.actor.y;
+                                break;
+                            case St.Side.LEFT:
+                            case St.Side.RIGHT:
+                                clipX = dest - this.actor.x;
+                                break;
+                        }
+                        this.actor.set_clip(clipX, clipY, this.actor.width, this.actor.height);
+                    }),
+                    opacity: 255,
+                    onCompleteScope: this,
+                    onComplete: function() {
+                        this.animating = false;
+                        this.actor.remove_clip();
+                    }
+                }
+
+                let [xPos, yPos] = this._calculatePosition();
+
+                switch (this._orientation) {
+                    case St.Side.TOP:
+                    case St.Side.BOTTOM:
+                        this.actor["x"] = xPos;
+                        tweenParams["y"] = yPos;
+                        tweenParams["onUpdateParams"] = [yPos];
+                        if (this.sideFlipped)
+                            this.actor["y"] = yPos + this.actor.height;
+                        else
+                            this.actor["y"] = yPos - this.actor.height;
+                        break;
+                    case St.Side.LEFT:
+                    case St.Side.RIGHT:
+                        this.actor["y"] = yPos;
+                        tweenParams["x"] = xPos;
+                        tweenParams["onUpdateParams"] = [xPos];
+                        if (this.sideFlipped)
+                            this.actor["x"] = xPos + this.actor.width;
+                        else
+                            this.actor["x"] = xPos - this.actor.width;
+                        break;
+                }
+                this.actor.opacity = 0;
+                Tweener.addTween(this.actor, tweenParams);
+            }));
+        }
+        else {
+            this.animating = false;
+            this.actor.show();
+        }
 
         this.emit('open-state-changed', true);
     },
 
-    on_paint: function(actor) {
-        if (this.paint_count < 2 || this.animating) {
-            this.paint_count++;
+    /**
+     * close:
+     * @animate (boolean): whether to animate the close effect or not
+     *
+     * Closes the popup menu.
+     */
+    close: function(animate) {
+        if (!this.isOpen)
             return;
+
+        this.isOpen = false;
+        global.menuStackLength -= 1;
+
+        for (let i in Main.panelManager.panels) {
+            if (Main.panelManager.panels[i])
+                Main.panelManager.updatePanelsVisibility();
         }
 
-        if (this.paint_id > 0) {
-            this.actor.disconnect(this.paint_id);
-            this.paint_id = 0;
-        }
+        if (this._activeMenuItem)
+            this._activeMenuItem.setActive(false);
 
-        this.paint_count = 0;
-        Main.popup_rendering_actor = null;
+        if (animate && global.settings.get_boolean("desktop-effects-on-menus")) {
+            this.animating = true;
+            let tweenParams = {
+                transition: "easeInQuad",
+                time: .15,
+                onUpdate: Lang.bind(this, function(dest) {
+                        let clipY = 0;
+                        let clipX = 0;
+                        switch (this._orientation) {
+                            case St.Side.TOP:
+                            case St.Side.BOTTOM:
+                                clipY = dest - this.actor.y;
+                                break;
+                            case St.Side.LEFT:
+                            case St.Side.RIGHT:
+                                clipX = dest - this.actor.x;
+                                break;
+                        }
+                        this.actor.set_clip(clipX, clipY, this.actor.width, this.actor.height);
+                    }),
+                onCompleteScope: this,
+                opacity: 0,
+                onComplete: function() {
+                    this.animating = false;
+                    this.actor.hide();
+                    this.actor.remove_clip();
+                    this.actor.opacity = 255;
+                }
+            }
+
+            switch (this._orientation) {
+                case St.Side.TOP:
+                case St.Side.BOTTOM:
+                    let yPos = this.actor.y;
+                    tweenParams["onUpdateParams"] = [yPos];
+                    if (this.sideFlipped)
+                        tweenParams["y"] = this.actor.y + this.actor.height;
+                    else
+                        tweenParams["y"] = this.actor.y - this.actor.height;
+                    break;
+                case St.Side.LEFT:
+                case St.Side.RIGHT:
+                    let xPos = this.actor.x;
+                    tweenParams["onUpdateParams"] = [xPos];
+                    if (this.sideFlipped)
+                        tweenParams["x"] = this.actor.x + this.actor.width;
+                    else
+                        tweenParams["x"] = this.actor.x - this.actor.width;
+                    break;
+            }
+            Tweener.addTween(this.actor, tweenParams);
+        }
+        else {
+            this.animating = false;
+            this.actor.hide();
+        }
+        this.emit('open-state-changed', false);
+    },
+
+    /**
+     * shiftToPosition:
+     * @slidePosition (number): Position relative to the @sourceActor of the menu upon which the menu will be centered
+     * (if possible). If -1, the menu will be centered on the @sourceActor.
+     *
+     * This function specifies a new position at which to center the menu. The position is given in coordinates
+     * relative to the @sourceActor, and as such should always be positive. This is useful if, for example, you want
+     * the menu to open at the location of a mouse click rather than at the center of the actor. This function only
+     * moves the menu along one axis as determined by the orientation of the menu, so that the menu is always attached
+     * to the @sourceActor. For example, if the orientation is set to St.Side.TOP, this function will move the center
+     * along the x axis. If you have set the @slidePosition using this function and then wish to return to centering
+     * the menu on the center of the @sourceActor, you can do so by setting it to -1.
+     */
+    shiftToPosition: function(slidePosition) {
+        this._slidePosition = slidePosition;
+        let [xPos, yPos] = this._calculatePosition();
+        this.actor.set_position(xPos, yPos);
     },
 
     /**
@@ -2190,44 +2303,152 @@ PopupMenu.prototype = {
     setMaxHeight: function() {
         let monitor = Main.layoutManager.findMonitorForActor(this.sourceActor)
 
-        let maxHeight = monitor.height - this.actor.get_theme_node().get_length('-boxpointer-gap');
+        let maxHeight = monitor.height;
+        let maxWidth = monitor.width;
 
         let panels = Main.panelManager.getPanelsInMonitor(Main.layoutManager.monitors.indexOf(monitor));
 
-        for (let panel of panels)
-            if (panel.panelPosition == PanelLoc.top || panel.panelPosition == PanelLoc.bottom)  // horizontal panels only
-            {
+        for (let panel of panels) {
+            if (panel.panelPosition == PanelLoc.top || panel.panelPosition == PanelLoc.bottom) {
                 maxHeight -= panel.actor.height;
             }
-
-        this.actor.style = 'max-height: ' + maxHeight / global.ui_scale + 'px; ' +
-            'max-width: ' + (monitor.width - 20)/ global.ui_scale + 'px;';
-        // PopupMenus have 10px margins      ^
-    },
-
-    /**
-     * close:
-     * @animate (boolean): whether the animate the close effect
-     *
-     * Closes the popup menu.
-     */
-    close: function(animate) {
-        if (!this.isOpen)
-            return;
-            
-        this.isOpen = false;
-        global.menuStackLength -= 1;
-
-        for (let i in Main.panelManager.panels) {
-            if (Main.panelManager.panels[i])
-                Main.panelManager.updatePanelsVisibility();
+            else {
+                maxWidth -= panel.actor.width;
+            }
         }
 
-        if (this._activeMenuItem)
-            this._activeMenuItem.setActive(false);
+        let themeNode = this.actor.get_theme_node();
+        maxHeight -= (themeNode.get_border_width(St.Side.TOP) + themeNode.get_border_width(St.Side.BOTTOM));
+        maxWidth -= (themeNode.get_border_width(St.Side.LEFT) + themeNode.get_border_width(St.Side.RIGHT));
 
-        this._boxPointer.hide(animate);
-        this.emit('open-state-changed', false);
+        this.actor.style = 'max-height: ' + Math.floor(maxHeight / global.ui_scale) + 'px; ' +
+                           'max-width: ' + Math.floor(maxWidth / global.ui_scale) + 'px;';
+    },
+
+    _calculatePosition: function() {
+        if (!this.actor.visible) {
+            this.box.show();
+        }
+        let sourceBox = Cinnamon.util_get_transformed_allocation(this.sourceActor);
+        let [minWidth, minHeight, natWidth, natHeight] = this.actor.get_preferred_size();
+        let monitor = Main.layoutManager.findMonitorForActor(this.sourceActor);
+        let x1 = monitor.x;
+        let x2 = x1 + monitor.width;
+        let y1 = monitor.y;
+        let y2 = y1 + monitor.height;
+
+        // remove panels from workable area to avoid overlapping them
+        let panels = Main.panelManager.getPanelsInMonitor(Main.layoutManager.monitors.indexOf(monitor));
+
+        for (let panel of panels) {
+            switch (panel.panelPosition) {
+                case PanelLoc.top:
+                    y1 += panel.actor.height;
+                    break;
+                case PanelLoc.bottom:
+                    y2 -= panel.actor.height;
+                    break;
+                case PanelLoc.left:
+                    x1 += panel.actor.width;
+                    break;
+                case PanelLoc.right:
+                    x2 -= panel.actor.width;
+                    break;
+            }
+        }
+
+        let xPos, yPos;
+        switch (this._orientation) {
+            case St.Side.TOP:
+            case St.Side.BOTTOM:
+                // get center position of the actor and calculate the position needed to center the menu on the actor
+                let xCenter = (this._slidePosition == -1) ? sourceBox.x1 + (sourceBox.x2 - sourceBox.x1) / 2 : this._slidePosition;
+                xPos = xCenter - (natWidth / 2);
+
+                // we don't want to go off the screen so we adjust if needed
+                if (xPos < x1) xPos = x1;
+                else if (xPos + natWidth > x2) xPos = x2 - natWidth;
+
+                // now we calculate the x postion based on the orientation
+                if (this._orientation == St.Side.BOTTOM) {
+                    this.sideFlipped = true;
+                    yPos = sourceBox.y1 - natHeight;
+                    this.actor.set_style_class_name('menu bottom');
+                }
+                else {
+                    this.sideFlipped = false;
+                    yPos = sourceBox.y2;
+                    this.actor.set_style_class_name('menu top');
+                }
+                break;
+            case St.Side.LEFT:
+            case St.Side.RIGHT:
+                // align the top of the menu with the top of the source
+                yPos = (this._slidePosition == -1) ? sourceBox.y1 : this._slidePosition;
+
+                // we don't want to go off the screen so we adjust if needed
+                if (yPos < y1) yPos = y1;
+                else if (yPos + natHeight > y2) yPos = y2 - natHeight;
+
+                // now we calculate the x postion based on the orientation
+                // if the menu opens to the right, we also need to make sure we have room for it on that side
+                if (this._orientation == St.Side.RIGHT || x2 - sourceBox.x2 < natWidth) {
+                    this.sideFlipped = true;
+                    xPos = sourceBox.x1 - natWidth;
+                    this.actor.set_style_class_name('menu right');
+                }
+                else {
+                    this.sideFlipped = false;
+                    xPos = sourceBox.x2;
+                    this.actor.set_style_class_name('menu left');
+                }
+                break;
+        }
+        return [Math.round(xPos), Math.round(yPos)];
+    },
+
+    _boxGetPreferredWidth: function (actor, forHeight, alloc) {
+        let columnWidths = this.getColumnWidths();
+        this.setColumnWidths(columnWidths);
+
+        // Now they will request the right sizes
+        [alloc.min_size, alloc.natural_size] = this.box.get_preferred_width(forHeight);
+    },
+
+    _boxGetPreferredHeight: function (actor, forWidth, alloc) {
+        [alloc.min_size, alloc.natural_size] = this.box.get_preferred_height(forWidth);
+    },
+
+    _boxAllocate: function (actor, box, flags) {
+        this.box.allocate(box, flags);
+        if (!this.animating && this.sourceActor.get_stage() != null) {
+            let [xPos, yPos] = this._calculatePosition();
+            this.actor.set_position(xPos, yPos);
+        }
+    },
+
+    _onKeyPressEvent: function(actor, event) {
+        if (event.get_key_symbol() == Clutter.Escape) {
+            this.close(true);
+            return true;
+        }
+
+        return false;
+    },
+
+    on_paint: function(actor) {
+        if (this.paint_count < 2 || this.animating) {
+            this.paint_count++;
+            return;
+        }
+
+        if (this.paint_id > 0) {
+            this.actor.disconnect(this.paint_id);
+            this.paint_id = 0;
+        }
+
+        this.paint_count = 0;
+        Main.popup_rendering_actor = null;
     }
 };
 
@@ -2495,7 +2716,7 @@ PopupSubMenuMenuItem.prototype = {
         this.addActor(this._triangleBin, { expand: true,
                                            span: -1,
                                            align: St.Align.END });
-        
+
         this._triangle = arrowIcon(St.Side.RIGHT);
         this._triangle.pivot_point = new Clutter.Point({ x: 0.5, y: 0.6 });
         this._triangleBin.child = this._triangle;
@@ -2777,7 +2998,7 @@ PopupComboBoxMenuItem.prototype = {
  *
  * This class can build a cinnamon menu, using the instances of a heir of the
  * PopupMenuAbstractItem class. Please see the description of the PopupMenuAbstractItem
- * class to more details. To initialize the construction you need to provide the root 
+ * class to more details. To initialize the construction you need to provide the root
  * instance of your abstract menu items.
  */
 function PopupMenuFactory() {
@@ -2824,7 +3045,7 @@ PopupMenuFactory.prototype = {
 
         if (factoryMenu.shellItem)
             return factoryMenu.shellItem;
-      
+
         // The shell menu
         let shellItem = this._createShellItem(factoryMenu, launcher, orientation);
         this._attachToMenu(shellItem, factoryMenu);

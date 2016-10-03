@@ -127,18 +127,20 @@ PanelAppLauncher.prototype = {
         this._applet = launchersBox;
         this.orientation = orientation;
 
-        this.actor = new St.Bin({ style_class: 'panel-launcher',
+        this.actor = new St.Bin({ style_class: 'launcher',
+                                  important: true,
                                   reactive: true,
                                   can_focus: true,
                                   x_fill: true,
-                                  y_fill: false,
+                                  y_fill: true,
                                   track_hover: true });
 
         this.actor._delegate = this;
         this.actor.connect('button-release-event', Lang.bind(this, this._onButtonRelease));
         this.actor.connect('button-press-event', Lang.bind(this, this._onButtonPress));
 
-        this._iconBox = new St.Bin({ name: 'panel-launcher-icon' });
+        this._iconBox = new St.Bin({ style_class: 'icon-box',
+                                     important: true });
         this._iconBox.connect('style-changed',
                               Lang.bind(this, this._onIconBoxStyleChanged));
         this._iconBox.connect('notify::allocation',
@@ -218,7 +220,7 @@ PanelAppLauncher.prototype = {
     },
 
     _animateIcon: function(step){
-        if (step>=3) return;
+        if (step >= 3) return;
         Tweener.addTween(this.icon,
                          { width: this.icon_anim_height * global.ui_scale,
                            height: this.icon_anim_height * global.ui_scale,
@@ -341,11 +343,8 @@ MyApplet.prototype = {
         this._dragPlaceholderPos = -1;
         this._animatingPlaceholdersCount = 0;
 
-        this.myactor = new St.BoxLayout({ name: 'panel-launchers-box' });
-
-        if (this.orientation == St.Side.LEFT || this.orientation == St.Side.RIGHT) {
-            this._set_vertical_style();
-        }
+        this.myactor = new St.BoxLayout({ style_class: 'panel-launchers',
+                                          important: true });
 
         this.settings = new Settings.AppletSettings(this, metadata.uuid, instance_id);
         this.settings.bind("launcherList", "launcherList", this._onSettingsChanged);
@@ -362,10 +361,7 @@ MyApplet.prototype = {
 
         this.do_gsettings_import();
 
-        // We shouldn't need to call reload() here... since we get a "icon-theme-changed" signal when CSD starts.
-        // The reason we do is in case the Cinnamon icon theme is the same as the one specificed in GTK itself (in .config)
-        // In that particular case we get no signal at all.
-        this.reload();
+        this.on_orientation_changed(orientation);
 
         St.TextureCache.get_default().connect("icon-theme-changed", Lang.bind(this, this.reload));
     },
@@ -450,29 +446,19 @@ MyApplet.prototype = {
     },
 
     on_orientation_changed: function(neworientation) {
-
         this.orientation = neworientation;
         if (this.orientation == St.Side.TOP || this.orientation == St.Side.BOTTOM) {
             this.myactor.remove_style_class_name('vertical');
             this.myactor.set_vertical(false);
-            this.actor.remove_style_class_name('vertical');
+            this.myactor.set_x_expand(false);
+            this.myactor.set_y_expand(true);
         } else {
-            this._set_vertical_style();
+            this.myactor.add_style_class_name('vertical');
+            this.myactor.set_vertical(true);
+            this.myactor.set_x_expand(true);
+            this.myactor.set_y_expand(false);
         }
         this.reload();
-    },
-
-    //
-    // NB if the styling does not set right initially, it may well be because there is padding
-    // in the theme and panel-launchers-box has # rather than .
-    //
-    _set_vertical_style: function() {
-        this.myactor.set_important(true);
-        this.myactor.set_x_align(Clutter.ActorAlign.CENTER);
-        this.myactor.add_style_class_name('vertical');
-        this.myactor.set_vertical(true);
-        this.actor.set_important(true);
-        this.actor.add_style_class_name('vertical');
     },
 
     reload: function() {

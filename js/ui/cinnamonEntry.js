@@ -18,7 +18,7 @@ _EntryMenu.prototype = {
     _init: function(entry, params) {
         params = Params.parse (params, { isPassword: false });
 
-        PopupMenu.PopupMenu.prototype._init.call(this, entry, 0, St.Side.TOP);
+        PopupMenu.PopupMenu.prototype._init.call(this, entry, St.Side.TOP);
 
         this.actor.add_style_class_name('entry-context-menu');
 

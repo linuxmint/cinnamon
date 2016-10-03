@@ -62,7 +62,7 @@ AppletContextMenu.prototype = {
      * Constructor function
      */
     _init: function(launcher, orientation) {    
-        PopupMenu.PopupMenu.prototype._init.call(this, launcher.actor, 0.0, orientation, 0);
+        PopupMenu.PopupMenu.prototype._init.call(this, launcher.actor, orientation);
         Main.uiGroup.add_actor(this.actor);
         this.actor.hide();                    
         launcher.connect("orientation-changed", Lang.bind(this, function(a, orientation) {
@@ -94,7 +94,7 @@ AppletPopupMenu.prototype = {
      * Constructor function
      */
     _init: function(launcher, orientation) {
-        PopupMenu.PopupMenu.prototype._init.call(this, launcher.actor, 0.0, orientation, 0);
+        PopupMenu.PopupMenu.prototype._init.call(this, launcher.actor, orientation);
         Main.uiGroup.add_actor(this.actor);
         this.actor.hide();
         this.launcher = launcher;

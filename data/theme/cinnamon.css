@@ -106,6 +106,8 @@ StScrollBar StButton#vhandle:hover {
 /* ===================================================================
  * PopupMenu (popupMenu.js) 
  * ===================================================================*/
+ /* .popup-menu-boxpointer and .popup-menu are kept for compatibility
+    with cinnamon version under 3.2. Use .menu in version 3.2 and above */
 .popup-menu-boxpointer {
     -arrow-border-radius: 8px;
     -arrow-background-color: rgba(80,80,80,0.9);
@@ -115,6 +117,15 @@ StScrollBar StButton#vhandle:hover {
     -arrow-rise: 11px;
 }
 .popup-menu {
+    color: #ffffff;
+    font-size: 9.5pt;
+    min-width: 100px;
+}
+.menu {
+    border-radius: 8px;
+    background-color: rgba(80,80,80,0.9);
+    border-width: 2px;
+    border-color: #a5a5a5;
     color: #ffffff;
     font-size: 9.5pt;
     min-width: 100px;
@@ -237,7 +248,7 @@ StScrollBar StButton#vhandle:hover {
     background-color: #555555;
     font-size: 8.5pt;
     font-weight: normal;
-    height: 25px;
+    height: 26px;
     width: 32px;
 }
 #panel:highlight {
@@ -1380,42 +1391,57 @@ StScrollBar StButton#vhandle:hover {
 /* ===================================================================
  * Panel Launchers Applet (panelLaunchers.js)
  * ===================================================================*/
-#panel-launchers-box {
+.panel-launchers {
     padding-left: 7px;
+    spacing: 2px;
 }
-#panel-launchers-box.vertical {
+
+.panel-launchers.vertical {
     padding-top: 2px;
     padding-bottom: 2px;
-    padding-left:0px;
+    padding-left: 0px;
     padding-right: 0px;
+    spacing: 3px;
 }
-.panel-launcher {
-    margin: 1px;
-    padding: 1px;
+
+.launcher {
+    padding-left: 1px;
+    padding-right: 1px;
+    border-bottom-width: 1px;
     transition-duration: 300;
 }
-#panel-launchers-box.vertical .panel-launcher {
-    border-bottom-width: 1px;
+
+.launcher .icon-box {
+     padding-top: 2px;
 }
-.panel-launcher:hover {
+
+.panel-launchers.vertical .launcher .icon-box {
+    padding-top: 0;
+}
+
+.panel-launchers .launcher:hover {
     background-gradient-direction: vertical;
     background-gradient-start: rgba(255,255,255,0.0);
     background-gradient-end: rgba(255,255,255,0.2);
     border: 0px solid rgba(255,255,255,0.5);
     border-bottom-width: 1px;
 }
+
 .panel-launcher-add-dialog-content-box {
     padding: 6px;
     spacing: 20px;
 }
+
 .panel-launcher-add-dialog-content-box-left {
     padding: 6px;
     spacing: 20px;
 }
+
 .panel-launcher-add-dialog-content-box-right {
     padding: 6px;
     spacing: 10px;
 }
+
 .panel-launcher-add-dialog-entry {
     padding: 5px;
     border-radius: 4px;
@@ -1431,6 +1457,7 @@ StScrollBar StButton#vhandle:hover {
     transition-duration: 300;
     box-shadow: inset 0px 2px 4px rgba(0,0,0,0.6);
 }
+
 .panel-launcher-add-dialog-entry:focus,
 .panel-launcher-add-dialog-entry:hover {
     border: 2px solid rgb(136,138,133);
@@ -1438,14 +1465,17 @@ StScrollBar StButton#vhandle:hover {
     background-gradient-end: white;
     background-gradient-direction: vertical;
 }
+
 .panel-launcher-add-dialog-entry:hover {
     transition-duration: 300;
 }
+
 .panel-launcher-add-dialog-entry:focus {
     color: rgb(64, 64, 64);
     font-weight: bold;
     transition-duration: 0;
 }
+
 /* ===================================================================
  * Overview corner
  * ===================================================================*/
