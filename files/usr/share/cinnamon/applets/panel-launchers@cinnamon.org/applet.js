@@ -308,6 +308,8 @@ MyApplet.prototype = {
         Applet.Applet.prototype._init.call(this, orientation, panel_height, instance_id);
         this.actor.set_track_hover(false);
 
+        this.setAllowedLayout(Applet.AllowedLayout.BOTH);
+
         this.orientation = orientation;
         this._dragPlaceholder = null;
         this._dragPlaceholderPos = -1;
@@ -438,13 +440,6 @@ MyApplet.prototype = {
             this._set_vertical_style();
         }
         this.reload();
-    },
-//
-// override getDisplayLayout to declare that this applet is suitable for both horizontal and
-// vertical orientations
-//
-    getDisplayLayout: function() {
-        return Applet.DisplayLayout.BOTH;
     },
 
 //

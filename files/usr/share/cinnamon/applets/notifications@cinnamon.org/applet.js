@@ -22,6 +22,8 @@ MyApplet.prototype = {
     _init: function(metadata, orientation, panel_height, instanceId) {
         Applet.TextIconApplet.prototype._init.call(this, orientation, panel_height, instanceId);
 
+        this.setAllowedLayout(Applet.AllowedLayout.BOTH);
+
         // Settings
         this.settings = new Settings.AppletSettings(this, metadata.uuid, instanceId);
         this.settings.bindProperty(Settings.BindingDirection.IN, "ignoreTransientNotifications", "ignoreTransientNotifications", null, null);
@@ -243,10 +245,6 @@ MyApplet.prototype = {
         this.menu = new Applet.AppletPopupMenu(this, orientation);
         this.menuManager.addMenu(this.menu);
         this._display();
-    },
-
-    getDisplayLayout: function() {
-        return Applet.DisplayLayout.BOTH;
     },
 
     on_applet_clicked: function(event) {

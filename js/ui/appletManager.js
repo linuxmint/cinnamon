@@ -338,39 +338,33 @@ function addAppletToPanels(extension, appletDefinition) {
 }
 
 function removeAppletFromInappropriatePanel (extension, applet, appletDefinition) {
-//
-//  We want to ensure that applets placed in a panel can be shown correctly
-//  - particularly because wide applets will not fit in a vertical panel unless
-//  they have logic to manage this explicitly
-//  If the applet is of type Icon Applet (and not a text icon applet) then should be fine otherwise
-//  we look to see if it has declared itself suitable via a getDisplayLayout call
-//
-//  If the applet turns out to be unsuitable then remove it.  The applet will show with a red
-//  indicator in the applet list
-//
-        if (applet instanceof Applet.IconApplet && !(applet instanceof Applet.TextIconApplet)) {
-            ;
-        }
-        else {
-            let displaylayout = applet.getDisplayLayout();
+    //  We want to ensure that applets placed in a panel can be shown correctly
+    //  - particularly because wide applets will not fit in a vertical panel unless
+    //  they have logic to manage this explicitly
+    //  If the applet is of type Icon Applet (and not a text icon applet) then should be fine otherwise
+    //  we look to see if it has declared itself suitable via a getAllowedLayout call
+    //
+    //  If the applet turns out to be unsuitable then remove it.  The applet will show with a red
+    //  indicator in the applet list
+    if (applet instanceof Applet.IconApplet && !(applet instanceof Applet.TextIconApplet)) {
+        ;
+    } else {
+        let allowedLayout = applet.getAllowedLayout();
 
-            if ((appletDefinition.orientation == St.Side.LEFT || appletDefinition.orientation == St.Side.RIGHT)
-                &&
-                displaylayout == Applet.DisplayLayout.HORIZONTAL) {
-                    global.logError("applet "+appletDefinition.uuid+" not suitable for panel orientation "+appletDefinition.orientation);
-                    removeAppletFromPanels(extension._loadedDefinitions[appletDefinition.applet_id]);
-                    let dialog = new ModalDialog.NotifyDialog(_("This applet is not suitable for vertical panels") + "\n\n");
-                    dialog.open();
-            }
-            else if ((appletDefinition.orientation == St.Side.TOP || appletDefinition.orientation == St.Side.BOTTOM)
-                &&
-                displaylayout == Applet.DisplayLayout.VERTICAL) {
-                    global.logError("applet "+appletDefinition.uuid+" not suitable for panel orientation "+appletDefinition.orientation);
-                    removeAppletFromPanels(extension._loadedDefinitions[appletDefinition.applet_id]);
-                    let dialog = new ModalDialog.NotifyDialog(_("This applet is not suitable for horizontal panels") + "\n\n");
-                    dialog.open();
-            }
+        if ((appletDefinition.orientation == St.Side.LEFT || appletDefinition.orientation == St.Side.RIGHT) &&
+             allowedLayout == Applet.AllowedLayout.HORIZONTAL) {
+            global.logError("applet " + appletDefinition.uuid + " not suitable for panel orientation " + appletDefinition.orientation);
+            removeAppletFromPanels(extension._loadedDefinitions[appletDefinition.applet_id]);
+            let dialog = new ModalDialog.NotifyDialog(_("This applet is not suitable for vertical panels") + "\n\n");
+            dialog.open();
+        } else if ((appletDefinition.orientation == St.Side.TOP || appletDefinition.orientation == St.Side.BOTTOM) &&
+                    allowedLayout == Applet.AllowedLayout.VERTICAL) {
+                global.logError("applet " + appletDefinition.uuid + " not suitable for panel orientation " + appletDefinition.orientation);
+                removeAppletFromPanels(extension._loadedDefinitions[appletDefinition.applet_id]);
+                let dialog = new ModalDialog.NotifyDialog(_("This applet is not suitable for horizontal panels") + "\n\n");
+                dialog.open();
         }
+    }
 }
 
 

@@ -248,6 +248,8 @@ MyApplet.prototype = {
     _init: function(metadata, orientation, panel_height, instanceId) {
         Applet.TextIconApplet.prototype._init.call(this, orientation, panel_height, instanceId);
 
+        this.setAllowedLayout(Applet.AllowedLayout.BOTH);
+
         this.metadata = metadata;
         this.orientation = orientation;
 
@@ -558,10 +560,6 @@ MyApplet.prototype = {
     on_orientation_changed: function(orientation) {
         this.orientation = orientation;
         this.update_label_visible();
-    },
-
-    getDisplayLayout: function() {
-        return Applet.DisplayLayout.BOTH;
     }
 };
 

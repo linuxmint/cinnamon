@@ -24,6 +24,8 @@ MyApplet.prototype = {
 
     _init: function(orientation, panel_height, instance_id) {
         Applet.TextIconApplet.prototype._init.call(this, orientation, panel_height, instance_id);
+
+        this.setAllowedLayout(Applet.AllowedLayout.BOTH);
         
         try {
             this._session = new GnomeSession.SessionManager();
@@ -193,13 +195,6 @@ MyApplet.prototype = {
             this.hide_applet_label(true);
         else
             this.hide_applet_label(false);
-    },
-//
-//override getDisplayLayout to declare that this applet is suitable for both horizontal and
-// vertical orientations
-//
-    getDisplayLayout: function() {
-        return Applet.DisplayLayout.BOTH;
     },
 };
 

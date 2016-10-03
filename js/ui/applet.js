@@ -23,7 +23,7 @@ const DEFAULT_PANEL_HEIGHT = 25;
 const DEFAULT_ICON_HEIGHT = 22;
 const FALLBACK_ICON_HEIGHT = 22;
 
-const DisplayLayout = {  // the panel layout that an applet is suitable for
+const AllowedLayout = {  // the panel layout that an applet is suitable for
     VERTICAL: 'vertical',
     HORIZONTAL: 'horizontal',
     BOTH: 'both'
@@ -131,6 +131,9 @@ AppletPopupMenu.prototype = {
  * @_menuManager (PopupMenu.PopupMenuManager): The menu manager of the applet
  * @_applet_context_menu (Applet.AppletContextMenu): The context menu of the applet
  * @_applet_tooltip_text (string): Text of the tooltip
+ * @_allowedLayout (Applet.AllowedLayout): The allowed layout of the applet. This
+ * determines the type of panel an applet is allowed in. By default this is set
+ * to Applet.AllowedLayout.HORIZONTAL
  * 
  * Base applet class that other applets can inherit
  */
@@ -152,6 +155,7 @@ Applet.prototype = {
                                         reactive: true,
                                         track_hover: true });
 
+        this._allowedLayout = AllowedLayout.HORIZONTAL;
         this.setOrientationInternal(orientation);
     
         this._applet_tooltip = new Tooltips.PanelItemTooltip(this, "", orientation);                                        
@@ -395,12 +399,26 @@ Applet.prototype = {
     },
 
     /**
-     * #getDisplayLayout
-     * @short_description: returns the default type of panel that an applet is suitable for.
-     *                     intended to be overridden in individual applets
+     * setAllowedLayout:
+     * @layout (AllowedLayout): the allowed layout
+     *
+     * Sets the layout allowed by the applet. Possible values are
+     * AllowedLayout.HORIZONTAL, AllowedLayout.VERTICAL, and
+     * AllowedLayout.BOTH.
      */
-    getDisplayLayout: function() {
-        return DisplayLayout.HORIZONTAL;
+    setAllowedLayout: function (layout) {
+        this._allowedLayout = layout;
+    },
+
+    /**
+     * getAllowedLayout:
+     *
+     * Retrieves the type of layout an applet is allowed to have.
+     *
+     * Returns (Applet.AllowedLayout): The allowed layout of the applet
+     */
+    getAllowedLayout: function() {
+        return this._allowedLayout;
     },
 
     /**

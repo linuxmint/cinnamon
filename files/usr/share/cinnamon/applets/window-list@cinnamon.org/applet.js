@@ -920,6 +920,8 @@ MyApplet.prototype = {
     _init: function(orientation, panel_height, instance_id) {
         Applet.Applet.prototype._init.call(this, orientation, panel_height, instance_id);
 
+        this.setAllowedLayout(Applet.AllowedLayout.BOTH);
+
         this.actor.set_track_hover(false);
         this.actor.set_style_class_name("window-list-box");
         this.orientation = orientation;
@@ -1017,13 +1019,6 @@ MyApplet.prototype = {
 
     on_panel_height_changed: function() {
         this._refreshAllItems();
-    },
-    //
-    // override getDisplayLayout to declare that this applet is suitable for both horizontal and
-    // vertical orientations
-    //
-    getDisplayLayout: function() {
-        return Applet.DisplayLayout.BOTH;
     },
 
     on_orientation_changed: function(orientation) {

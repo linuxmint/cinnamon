@@ -44,6 +44,8 @@ MyApplet.prototype = {
 
     _init: function(metadata, orientation, panel_height, instance_id) {        
         Applet.TextIconApplet.prototype._init.call(this, orientation, panel_height, instance_id);
+
+        this.setAllowedLayout(Applet.AllowedLayout.BOTH);
         
         try {
             this.metadata = metadata;
@@ -97,13 +99,6 @@ MyApplet.prototype = {
     
     on_applet_clicked: function(event) {
         this.menu.toggle();        
-    },
-//
-//override getDisplayLayout to declare that this applet is suitable for both horizontal and
-// vertical orientations
-//
-    getDisplayLayout: function() {
-        return Applet.DisplayLayout.BOTH;
     },
 
     _syncConfig: function() {
