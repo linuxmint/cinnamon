@@ -820,6 +820,14 @@ PanelManager.prototype = {
         this._setMainPanel();
         this._checkCanAdd();
         this._updateAllPointerBarriers();
+
+        // If the user removed the last panel, pop up a dialog to ask if they want to open panel settings
+        if (panelProperties.length == 0) {
+            let lastPanelRemovedDialog = new ModalDialog.ConfirmDialog(
+                _("You don't have any panels added.\nDo you want to open panel settings?"),
+                Lang.bind(this, function() { Util.spawnCommandLine("cinnamon-settings panel"); }));
+            lastPanelRemovedDialog.open();
+        }
     },
 
     /**
