@@ -55,12 +55,27 @@ MyApplet.prototype = {
                           y_fill:  false,
                           x_align: St.Align.END,
                           y_align: St.Align.START });
+            let labelBox = new St.BoxLayout({ style_class: 'label-box', reactive: true, vertical: true });
+            userBox.add(labelBox,
+                        { x_fill:  true,
+                          y_fill:  false,
+                          x_align: St.Align.END,
+                          y_align: St.Align.MIDDLE });
+
             this.userLabel = new St.Label(({ style_class: 'user-label'}));
-            userBox.add(this.userLabel,
+            labelBox.add(this.userLabel,
                         { x_fill:  true,
                           y_fill:  false,
                           x_align: St.Align.END,
                           y_align: St.Align.MIDDLE });    
+
+            let hostLabel = new St.Label(({ style_class: 'host-label'}));
+            hostLabel.set_text(GLib.get_host_name());
+            labelBox.add(hostLabel,
+                        { x_fill:  true,
+                          y_fill:  false,
+                          x_align: St.Align.END,
+                          y_align: St.Align.MIDDLE });
 
             this.menu.addActor(userBox);
 
