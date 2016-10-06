@@ -115,6 +115,10 @@ StScrollBar StButton#vhandle:hover {
     -arrow-rise: 11px;
 }
 .popup-menu {
+    border-radius: 8px;
+    background-color: rgba(80,80,80,0.9);
+    border-width: 2px;
+    border-color: #a5a5a5;
     color: #ffffff;
     font-size: 9.5pt;
     min-width: 100px;
