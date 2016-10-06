@@ -593,9 +593,9 @@ function updateAppletsOnPanel (panel) {
  * Unloads all applets on the panel
  */
 function unloadAppletsOnPanel (panel) {
-    enabledAppletDefinitions.idMap
-        .filter(x => x.panel == panel)
-        .forEach(removeAppletFromPanels);
+    let panelApplets = enabledAppletDefinitions.idMap.filter(x => x.panel == panel);
+    for (let i in panelApplets)
+        removeAppletFromPanels(panelApplets[i], false);
 }
 
 function copyAppletConfiguration(panelId) {
