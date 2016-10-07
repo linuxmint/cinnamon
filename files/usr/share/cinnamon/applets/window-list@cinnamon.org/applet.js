@@ -244,12 +244,12 @@ function AppMenuButton(applet, metaWindow, alert) {
 AppMenuButton.prototype = {
     _init: function(applet, metaWindow, alert) {
 
-	this.actor = new Cinnamon.GenericContainer({
-	    name: 'appMenu',
-	    style_class: 'window-list-item-box',
-	    reactive: true,
-	    can_focus: true,
-	    track_hover: true });
+        this.actor = new Cinnamon.GenericContainer({
+            name: 'appMenu',
+            style_class: 'window-list-item-box',
+            reactive: true,
+            can_focus: true,
+            track_hover: true });
 
         this._applet = applet;
         this.metaWindow = metaWindow;
@@ -385,7 +385,14 @@ AppMenuButton.prototype = {
     },
 
     _onDragBegin: function() {
-        this._draggable._overrideY = this.actor.get_transformed_position()[1];
+        if (this._applet.orientation == St.Side.TOP || this._applet.orientation == St.Side.BOTTOM) {
+            this._draggable._overrideY = this.actor.get_transformed_position()[1];
+            this._draggable._overrideX = null;
+        } else {
+            this._draggable._overrideX = this.actor.get_transformed_position()[0];
+            this._draggable._overrideY = null;
+        }
+
         this._tooltip.hide();
         this._tooltip.preventShow = true;
     },
@@ -1283,7 +1290,11 @@ MyApplet.prototype = {
         let children = this.manager_container.get_children();
 
         let pos = children.length;
-        while (--pos && x < children[pos].get_allocation_box().x1);
+
+        if (this.manager_container.height > this.manager_container.width) // assume oriented vertically
+            while (--pos && y < children[pos].get_allocation_box().y1);
+        else
+            while (--pos && x < children[pos].get_allocation_box().x1);
 
         this._dragPlaceholderPos = pos;
 
