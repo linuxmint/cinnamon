@@ -1404,9 +1404,9 @@ MyApplet.prototype = {
 
     _favboxtoggle: function() {
         if (!this.favBoxShow) {
-            this.leftPane.remove_actor(this.leftBox);
+            this.leftPane.hide();
         }else{
-            this.leftPane.add_actor(this.leftBox, { y_align: St.Align.END, y_fill: false });
+            this.leftPane.show();
         }
     },
 
