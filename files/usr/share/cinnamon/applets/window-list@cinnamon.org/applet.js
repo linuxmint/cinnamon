@@ -833,7 +833,7 @@ AppMenuButtonRightClickMenu.prototype = {
         this.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
 
         // Close all/others
-        item = new PopupMenu.PopupMenuItem(_("Close all"));
+        item = new PopupMenu.PopupIconMenuItem(_("Close all"), "application-exit", St.IconType.SYMBOLIC);
         item.connect('activate', Lang.bind(this, function() {
             for (let window of this._windows)
                 if (window.actor.visible &&
@@ -842,7 +842,7 @@ AppMenuButtonRightClickMenu.prototype = {
         }));
         this.addMenuItem(item);
 
-        item = new PopupMenu.PopupMenuItem(_("Close others"));
+        item = new PopupMenu.PopupIconMenuItem(_("Close others"), "window-close", St.IconType.SYMBOLIC);
         item.connect('activate', Lang.bind(this, function() {
             for (let window of this._windows)
                 if (window.actor.visible &&
@@ -864,12 +864,12 @@ AppMenuButtonRightClickMenu.prototype = {
         }
 
         if (mw.minimized) {
-            item = new PopupMenu.PopupMenuItem(_("Restore"));
+            item = new PopupMenu.PopupIconMenuItem(_("Restore"), "view-sort-descending", St.IconType.SYMBOLIC);
             item.connect('activate', function() {
                 Main.activateWindow(mw, global.get_current_time());
             });
         } else {
-            item = new PopupMenu.PopupMenuItem(_("Minimize"));
+            item = new PopupMenu.PopupIconMenuItem(_("Minimize"), "view-sort-ascending", St.IconType.SYMBOLIC);
             item.connect('activate', function() {
                 mw.minimize(global.get_current_time());
             });
@@ -877,19 +877,19 @@ AppMenuButtonRightClickMenu.prototype = {
         this.addMenuItem(item);
 
         if (mw.get_maximized()) {
-            item = new PopupMenu.PopupMenuItem(_("Unmaximize"));
+            item = new PopupMenu.PopupIconMenuItem(_("Unmaximize"), "view-restore", St.IconType.SYMBOLIC);
             item.connect('activate', function() {
                 mw.unmaximize(Meta.MaximizeFlags.HORIZONTAL | Meta.MaximizeFlags.VERTICAL);
             });
         } else {
-            item = new PopupMenu.PopupMenuItem(_("Maximize"));
+            item = new PopupMenu.PopupIconMenuItem(_("Maximize"), "view-fullscreen", St.IconType.SYMBOLIC);
             item.connect('activate', function() {
                 mw.maximize(Meta.MaximizeFlags.HORIZONTAL | Meta.MaximizeFlags.VERTICAL);
             });
         }
         this.addMenuItem(item);
 
-        item = new PopupMenu.PopupMenuItem(_("Close"));
+        item = new PopupMenu.PopupIconMenuItem(_("Close"), "edit-delete", St.IconType.SYMBOLIC);
         item.connect('activate', function() {
             mw.delete(global.get_current_time());
         });
