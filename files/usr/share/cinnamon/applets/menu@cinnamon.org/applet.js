@@ -1590,6 +1590,8 @@ MyApplet.prototype = {
             }
             return false;
 
+        } else if (symbol == Clutter.Tab) {
+            return true;
         } else {
             return false;
         }
