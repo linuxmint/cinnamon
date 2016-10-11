@@ -1,5 +1,8 @@
 /* -*- mode: C; c-file-style: "gnu"; indent-tabs-mode: nil; -*- */
 
+#define COGL_ENABLE_EXPERIMENTAL_API
+#define CLUTTER_ENABLE_EXPERIMENTAL_API
+
 #include <X11/extensions/Xfixes.h>
 #include <clutter/x11/clutter-x11.h>
 #include <clutter/clutter.h>
@@ -10,7 +13,6 @@
 #include <meta/meta-shaped-texture.h>
 
 #include "cinnamon-global.h"
-#include "cinnamon-screen-grabber.h"
 #include "cinnamon-screenshot.h"
 
 struct _CinnamonScreenshotClass
@@ -90,21 +92,35 @@ do_grab_screenshot (_screenshot_data *screenshot_data,
                     int               width,
                     int               height)
 {
-  CinnamonScreenGrabber *grabber;
-  static const cairo_user_data_key_t key;
-  guchar *data;
+  CoglBitmap *bitmap;
+  ClutterBackend *backend;
+  CoglContext *context;
   int stride;
+  guchar *data;
 
-  grabber = cinnamon_screen_grabber_new ();
-  data = cinnamon_screen_grabber_grab (grabber, x, y, width, height);
-  g_object_unref (grabber);
+  backend = clutter_get_default_backend ();
+  context = clutter_backend_get_cogl_context (backend);
+
+  screenshot_data->image = cairo_image_surface_create (CAIRO_FORMAT_RGB24,
+                                                       width, height);
+
+
+  data = cairo_image_surface_get_data (screenshot_data->image);
+  stride = cairo_image_surface_get_stride (screenshot_data->image);
   
   stride = cairo_format_stride_for_width (CAIRO_FORMAT_RGB24, width);
 
-  screenshot_data->image = cairo_image_surface_create_for_data (data, CAIRO_FORMAT_RGB24,
-                                                               width, height,stride);
-  cairo_surface_set_user_data (screenshot_data->image, &key,
-                               data, (cairo_destroy_func_t)g_free);
+  bitmap = cogl_bitmap_new_for_data (context,
+                                     width,
+                                     height,
+                                     CLUTTER_CAIRO_FORMAT_ARGB32,
+                                     stride,
+                                     data);
+  cogl_framebuffer_read_pixels_into_bitmap (cogl_get_draw_framebuffer (),
+                                            x, y,
+                                            COGL_READ_PIXELS_COLOR_BUFFER,
+                                            bitmap);
+  cogl_object_unref (bitmap);
 }
 
 static void
