@@ -22,7 +22,7 @@ const Params = imports.misc.params;
 const Util = imports.misc.util;
 
 const SLIDER_SCROLL_STEP = 0.05; /* Slider scrolling step in % */
-const POPUP_ANIMATION_TIME = 0.5;
+const POPUP_ANIMATION_TIME = 0.15;
 
 const PanelLoc = {
 	top : 0,
