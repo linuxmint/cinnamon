@@ -2146,6 +2146,10 @@ PopupMenu.prototype = {
     _boxAllocate: function (actor, box, flags) {
         if (this.actor.mapped && this.sourceActor.mapped) {
             this._reposition();
+            if (this._origSide !== undefined) {
+                this._side = this._origSide;
+                this._origSide = undefined;
+            }
         }
         this.box.allocate(box, flags);
     },
@@ -2228,7 +2232,7 @@ PopupMenu.prototype = {
                 }
                 counter++;
             }
-        } while (counter < 4 && (availWidth < natWidth || availHeight < natHeight));
+        } while (counter < 6 && (availWidth < natWidth || availHeight < natHeight));
 
         let parent = this.actor.get_parent();
         let success, x, y;
@@ -2354,11 +2358,6 @@ PopupMenu.prototype = {
 
         this.isOpen = false;
         global.menuStackLength -= 1;
-
-        if (this._origSide !== undefined) {
-            this._side = this._origSide;
-            this._origSide = undefined;
-        }
 
         for (let i in Main.panelManager.panels) {
             if (Main.panelManager.panels[i])
