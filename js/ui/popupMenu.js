@@ -22,7 +22,7 @@ const Params = imports.misc.params;
 const Util = imports.misc.util;
 
 const SLIDER_SCROLL_STEP = 0.05; /* Slider scrolling step in % */
-const POPUP_ANIMATION_TIME = 0.15;
+const POPUP_ANIMATION_TIME = 0.5;
 
 const PanelLoc = {
 	top : 0,
@@ -2348,7 +2348,7 @@ PopupMenu.prototype = {
 
     /**
      * close:
-     * @animate (boolean): whether the animate the close effect
+     * @animate (boolean): whether to animate the close effect
      *
      * Closes the popup menu.
      */
