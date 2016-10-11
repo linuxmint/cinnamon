@@ -1704,11 +1704,9 @@ PanelContextMenu.prototype = {
             let monitor = Main.layoutManager.findMonitorForActor(this.sourceActor);
             let panels = Main.panelManager.getPanelsInMonitor(Main.layoutManager.monitors.indexOf(monitor));
             let panel = null;
-            let found = false;
             for (let i = 0; i < panels.length; i++) {
                 panel = panels[i];
                 if (panel.panelId == this.panelId) {
-                    panel = panels[i];
                     [, this._posCenterX, this._posCenterY] = panel.actor.transform_stage_point(x, y);
                     return;
                 }

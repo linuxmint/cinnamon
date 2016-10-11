@@ -2191,28 +2191,24 @@ PopupMenu.prototype = {
         do {
             switch (this._side) {
                 case St.Side.TOP:
-                    global.log("this._side: St.Side.TOP");
                     resX = this._posCenterX - (natWidth * this._alignment);
                     resY = srcAlloc.y1 - natHeight;
                     availHeight = Math.round(srcAlloc.y1 - (monitor.y + topPanel));
                     availWidth = Math.round(monitor.width - topPanel - rightPanel);
                     break;
                 case St.Side.BOTTOM:
-                    global.log("this._side: St.Side.BOTTOM");
                     resX = this._posCenterX - (natWidth * this._alignment);
                     resY = srcAlloc.y2;
                     availHeight = Math.round(monitor.y + monitor.height - bottomPanel - srcAlloc.y2);
                     availWidth = Math.round(monitor.width - leftPanel - rightPanel);
                     break;
                 case St.Side.LEFT:
-                    global.log("this._side: St.Side.LEFT");
                     resX = srcAlloc.x1 - natWidth;
                     resY = this._posCenterY - (natHeight * this._alignment);
                     availWidth = Math.round(srcAlloc.x1 - (monitor.x + leftPanel));
                     availHeight = Math.round(monitor.height - topPanel - bottomPanel);
                     break;
                 case St.Side.RIGHT:
-                    global.log("this._side: St.Side.RIGHT");
                     resX = srcAlloc.x2;
                     resY = this._posCenterY - (natHeight * this._alignment);
                     availWidth = Math.round(monitor.x + monitor.width - rightPanel - srcAlloc.x2);
