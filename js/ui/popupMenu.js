@@ -2299,43 +2299,45 @@ PopupMenu.prototype = {
         this.paint_id = this.actor.connect("paint", Lang.bind(this, this.on_paint));
         
         if (animate) {
-            this.actor.show();
-            let [xPos, yPos, side] = this._calculatePosition();
-            let width = this.actor.width;
-            let height = this.actor.height;
-            let [tmpX, tmpY] = [xPos, yPos];
-            switch(side) {
-                case St.Side.TOP:
-                    tmpY = yPos + height;
-                    break;
-                case St.Side.BOTTOM:
-                    tmpY = yPos - height;
-                    break;
-                case St.Side.LEFT:
-                    tmpX = xPos + width;
-                    break;
-                case St.Side.RIGHT:
-                    tmpX = xPos - width;
-                    break;
-            }
-            this.actor.set_position(tmpX, tmpY);
-            let params = {
-                x: xPos,
-                y: yPos,
-                onUpdateParams: [xPos, yPos],
-                transition: "easeOutQuad",
-                time: POPUP_ANIMATION_TIME,
-                onComplete: Lang.bind(this, function() {
-                    this.actor.remove_clip();
-                    this.animating = false;
-                }),
-                onUpdate: Lang.bind(this, function(destX, destY) {
-                    let clipX = destX - this.actor.x;
-                    let clipY = destY - this.actor.y;
-                    this.actor.set_clip(clipX, clipY, this.actor.width, this.actor.height);
-                })
-            };
-            Tweener.addTween(this.actor, params);
+            Mainloop.idle_add(Lang.bind(this, function() {
+                this.actor.show();
+                let [xPos, yPos, side] = this._calculatePosition();
+                let width = this.actor.width;
+                let height = this.actor.height;
+                let [tmpX, tmpY] = [xPos, yPos];
+                switch(side) {
+                    case St.Side.TOP:
+                        tmpY = yPos + height;
+                        break;
+                    case St.Side.BOTTOM:
+                        tmpY = yPos - height;
+                        break;
+                    case St.Side.LEFT:
+                        tmpX = xPos + width;
+                        break;
+                    case St.Side.RIGHT:
+                        tmpX = xPos - width;
+                        break;
+                }
+                this.actor.set_position(tmpX, tmpY);
+                let params = {
+                    x: xPos,
+                    y: yPos,
+                    onUpdateParams: [xPos, yPos],
+                    transition: "easeOutQuad",
+                    time: POPUP_ANIMATION_TIME,
+                    onComplete: Lang.bind(this, function() {
+                        this.actor.remove_clip();
+                        this.animating = false;
+                    }),
+                    onUpdate: Lang.bind(this, function(destX, destY) {
+                        let clipX = destX - this.actor.x;
+                        let clipY = destY - this.actor.y;
+                        this.actor.set_clip(clipX, clipY, this.actor.width, this.actor.height);
+                    })
+                };
+                Tweener.addTween(this.actor, params);
+            }));
         } else {
             this.actor.show();
         }
