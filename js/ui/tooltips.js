@@ -254,6 +254,10 @@ PanelItemTooltip.prototype = {
         if (this._tooltip.get_text() == "" || global.menuStackLength > 0)
             return;
 
+        let op = this._tooltip.get_opacity();
+        this._tooltip.set_opacity(0);
+        this._tooltip.show();
+
         let tooltipHeight = this._tooltip.get_allocation_box().y2-this._tooltip.get_allocation_box().y1;
         let tooltipWidth = this._tooltip.get_allocation_box().x2-this._tooltip.get_allocation_box().x1;
 
@@ -293,7 +297,7 @@ PanelItemTooltip.prototype = {
 	}
   	this._tooltip.set_position(tooltipLeft, tooltipTop);
 
-        this._tooltip.show();
+        this._tooltip.set_opacity(op);
         this.visible = true;
     },
 
