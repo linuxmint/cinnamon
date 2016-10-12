@@ -877,26 +877,26 @@ MyApplet.prototype = {
             this.metadata = metadata;
             this.orientation = orientation;
             this.settings = new Settings.AppletSettings(this, metadata.uuid, instanceId);
-            this.settings.bindProperty(Settings.BindingDirection.IN, "showtrack", "showtrack", this.on_settings_changed, null);
-            this.settings.bindProperty(Settings.BindingDirection.IN, "middleClickAction", "middleClickAction");
-            this.settings.bindProperty(Settings.BindingDirection.IN, "showalbum", "showalbum", this.on_settings_changed, null);
-            this.settings.bindProperty(Settings.BindingDirection.IN, "truncatetext", "truncatetext", this.on_settings_changed, null);
-            this.settings.bindProperty(Settings.BindingDirection.IN, "hideSystray", "hideSystray", function() {
+            this.settings.bind("showtrack", "showtrack", this.on_settings_changed);
+            this.settings.bind("middleClickAction", "middleClickAction");
+            this.settings.bind("showalbum", "showalbum", this.on_settings_changed);
+            this.settings.bind("truncatetext", "truncatetext", this.on_settings_changed);
+            this.settings.bind("hideSystray", "hideSystray", function() {
                 if (this.hideSystray) this.registerSystrayIcons();
                 else this.unregisterSystrayIcons();
             });
 
-            this.settings.bindProperty(Settings.BindingDirection.IN, "playerControl", "playerControl", this.on_settings_changed);
-            this.settings.bindProperty(Settings.BindingDirection.IN, "extendedPlayerControl", "extendedPlayerControl", function(){
+            this.settings.bind("playerControl", "playerControl", this.on_settings_changed);
+            this.settings.bind("extendedPlayerControl", "extendedPlayerControl", function(){
                 for(let i in this._players)
                     this._players[i].onSettingsChanged();
             });
-            this.settings.bindProperty(Settings.BindingDirection.IN, "positionLabelType", "positionLabelType", function(){
+            this.settings.bind("positionLabelType", "positionLabelType", function(){
                 for(let i in this._players)
                     this._players[i].onSettingsChanged();
             });
 
-            this.settings.bindProperty(Settings.BindingDirection.OUT, "_knownPlayers", "_knownPlayers");
+            this.settings.bind("_knownPlayers", "_knownPlayers");
             if (this.hideSystray) this.registerSystrayIcons();
 
             this.menuManager = new PopupMenu.PopupMenuManager(this);

@@ -20,10 +20,7 @@ MyApplet.prototype = {
 
             this.settings = new Settings.AppletSettings(this, metadata["uuid"], this.instance_id);
 
-            this.settings.bindProperty(Settings.BindingDirection.IN,
-                                       "activate-on-hover",
-                                       "_hover_activates",
-                                       function () {});
+            this.settings.bind("activate-on-hover", "_hover_activates");
 
             this.actor.connect('enter-event', Lang.bind(this, this._onEntered));
         }

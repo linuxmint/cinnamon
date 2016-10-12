@@ -44,7 +44,7 @@ MyApplet.prototype = {
 
             this._userIcon = new St.Bin({ style_class: 'user-icon'});
             
-            this.settings.bindProperty(Settings.BindingDirection.IN, "display-name", "disp_name", this._updateLabel, null);
+            this.settings.bind("display-name", "disp_name", this._updateLabel);
 
             userBox.connect('button-press-event', Lang.bind(this, function() {
                 this.menu.toggle();

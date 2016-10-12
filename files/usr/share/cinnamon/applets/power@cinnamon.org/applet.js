@@ -289,7 +289,7 @@ MyApplet.prototype = {
 
             this._proxy.connect("g-properties-changed", Lang.bind(this, this._devicesChanged));
             global.settings.connect('changed::device-aliases', Lang.bind(this, this._on_device_aliases_changed));
-            this.settings.bindProperty(Settings.BindingDirection.IN, "labelinfo", "labelinfo", Lang.bind(this, this._devicesChanged), null);
+            this.settings.bind("labelinfo", "labelinfo", this._devicesChanged);
 
             this._devicesChanged();
         }));

@@ -322,14 +322,8 @@ MyApplet.prototype = {
         }
 
         this.settings = new Settings.AppletSettings(this, metadata.uuid, instance_id);
-        this.settings.bindProperty(Settings.BindingDirection.BIDIRECTIONAL,
-                                   "launcherList",
-                                   "launcherList",
-                                   this._onSettingsChanged, null);
-        this.settings.bindProperty(Settings.BindingDirection.IN,
-                                   "allow-dragging",
-                                   "allowDragging",
-                                   this._updateLauncherDrag, null);
+        this.settings.bind("launcherList", "launcherList", this._onSettingsChanged);
+        this.settings.bind("allow-dragging", "allowDragging", this._updateLauncherDrag);
 
         this.uuid = metadata.uuid;
 

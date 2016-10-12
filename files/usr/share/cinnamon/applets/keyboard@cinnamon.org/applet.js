@@ -61,16 +61,8 @@ MyApplet.prototype = {
 
             this.settings = new Settings.AppletSettings(this, metadata["uuid"], this.instance_id);
 
-            this.settings.bindProperty(Settings.BindingDirection.BIDIRECTIONAL,
-                                       "use-letters",
-                                       "_showLetters",
-                                       this._syncConfig,
-                                       null);
-            this.settings.bindProperty(Settings.BindingDirection.BIDIRECTIONAL,
-                                       "use-uppercase",
-                                       "_useUpperCase",
-                                       this._syncConfig,
-                                       null);
+            this.settings.bindProperty("use-letters", "_showLetters", this._syncConfig);
+            this.settings.bindProperty("use-uppercase", "_useUpperCase", this._syncConfig);
 
             this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
             this.menu.addAction(_("Show Keyboard Layout"), Lang.bind(this, function() {
