@@ -22,7 +22,7 @@ const Params = imports.misc.params;
 const Util = imports.misc.util;
 
 const SLIDER_SCROLL_STEP = 0.05; /* Slider scrolling step in % */
-const POPUP_ANIMATION_TIME = 0.15;
+const POPUP_ANIMATION_TIME = 0.25;
 
 const PanelLoc = {
 	top : 0,
@@ -2154,10 +2154,7 @@ PopupMenu.prototype = {
         this.box.allocate(box, flags);
     },
     
-    _reposition: function() {
-        if (!this.actor.mapped && !this.sourceActor.mapped) {
-            return;
-        }
+    _calculatePosition: function() {
         let monitor = Main.layoutManager.findMonitorForActor(this.sourceActor);
         let [minWidth, minHeight, natWidth, natHeight] = this.actor.get_preferred_size();
         let themeNode = this.actor.get_theme_node();
@@ -2192,8 +2189,9 @@ PopupMenu.prototype = {
             }
         }
         let counter = 0;
+        let side = this._side;
         do {
-            switch (this._side) {
+            switch (side) {
                 case St.Side.TOP:
                     resX = this._posCenterX - (natWidth * this._alignment);
                     resY = srcAlloc.y1 - natHeight;
@@ -2219,16 +2217,15 @@ PopupMenu.prototype = {
                     availHeight = Math.round(monitor.height - topPanel - bottomPanel);
                     break;
             }
-
             if (availWidth < natWidth || availHeight < natHeight) {
                 if (this._origSide === undefined) {
-                    this._origSide = this._side;
+                    this._origSide = side;
                 }
                 if (counter % 2 == 0) {
-                    this._side = invertSide(this._side);
+                    side = invertSide(side);
                 } else {
-                    this._side++;
-                    this._side %= 4;
+                    side++;
+                    side %= 4;
                 }
                 counter++;
             }
@@ -2246,7 +2243,17 @@ PopupMenu.prototype = {
         x = Math.min(x, monitor.x + monitor.width - natWidth - rightPanel);
         y = Math.max(y, monitor.y + topPanel);
         y = Math.min(y, monitor.y + monitor.height - natHeight - bottomPanel);
-
+        
+        return [x, y, side];
+    },
+    
+    _reposition: function() {
+        if ((!this.actor.mapped && !this.sourceActor.mapped) || this.animating) {
+            return;
+        }
+        let [x, y, side] = this._calculatePosition();
+        this._side = side;
+        global.log("positioning menu");
         this.actor.set_position(x, y);
     },
     
@@ -2293,16 +2300,49 @@ PopupMenu.prototype = {
         this.paint_id = this.actor.connect("paint", Lang.bind(this, this.on_paint));
         
         if (animate) {
-            this.opacity = 0;
+            //this.actor.set_opacity(0);
             this.actor.show();
-            Tweener.addTween(this, { opacity: 255,
-                                     transition: "linear",
-                                     onComplete: Lang.bind(this, function() {
-                                         this.animating = false;
-                                     }),
-                                     time: POPUP_ANIMATION_TIME });
+            let [xPos, yPos, side] = this._calculatePosition();
+            let width = this.actor.width;
+            let height = this.actor.height;
+            global.log("width, height: " + width + ", " + height);
+            global.log("xPos, yPos: " + xPos + ", " + yPos);
+            let [tmpX, tmpY] = [xPos, yPos];
+            switch(side) {
+                case St.Side.TOP:
+                    tmpY = yPos + height;
+                    break;
+                case St.Side.BOTTOM:
+                    tmpY = yPos - height;
+                    break;
+                case St.Side.LEFT:
+                    tmpX = xPos + width;
+                    break;
+                case St.Side.RIGHT:
+                    tmpX = xPos - width;
+                    break;
+            }
+            global.log("positioning menu in show()");
+            this.actor.set_position(tmpX, tmpY);
+            let params = {
+                //opacity: 255,
+                x: xPos,
+                y: yPos,
+                onUpdateParams: [xPos, yPos],
+                transition: "easeOutQuad",
+                time: POPUP_ANIMATION_TIME,
+                onComplete: Lang.bind(this, function() {
+                    this.animating = false;
+                }),
+                onUpdate: Lang.bind(this, function(destX, destY) {
+                    let clipX = destX - this.actor.x;
+                    let clipY = destY - this.actor.y;
+                    this.actor.set_clip(clipX, clipY, this.actor.width, this.actor.height);
+                })
+            };
+            Tweener.addTween(this.actor, params);
         } else {
-            this.opacity = 255;
+            //this.actor.set_opacity(255);
             this.actor.show();
         }
 
@@ -2368,17 +2408,18 @@ PopupMenu.prototype = {
             this._activeMenuItem.setActive(false);
 
         if (animate) {
-            Tweener.addTween(this, { opacity: 0,
-                                     transition: 'linear',
-                                     time: POPUP_ANIMATION_TIME,
-                                     onComplete: Lang.bind(this, function () {
-                                         this.actor.hide();
-                                     })
-                                   });
+            Tweener.addTween(this.actor, { opacity: 0,
+                                           transition: "easeOutQuad",
+                                           time: POPUP_ANIMATION_TIME,
+                                           onComplete: Lang.bind(this, function () {
+                                               this.actor.hide();
+                                               this.actor.opacity = 255;
+                                           })
+                                         });
         } else {
             this.actor.hide();
         }
-        this.emit('open-state-changed', false);
+        this.emit("open-state-changed", false);
     }
 };
 
