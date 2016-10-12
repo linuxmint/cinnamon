@@ -2253,7 +2253,6 @@ PopupMenu.prototype = {
         }
         let [x, y, side] = this._calculatePosition();
         this._side = side;
-        global.log("positioning menu");
         this.actor.set_position(x, y);
     },
     
@@ -2300,13 +2299,10 @@ PopupMenu.prototype = {
         this.paint_id = this.actor.connect("paint", Lang.bind(this, this.on_paint));
         
         if (animate) {
-            //this.actor.set_opacity(0);
             this.actor.show();
             let [xPos, yPos, side] = this._calculatePosition();
             let width = this.actor.width;
             let height = this.actor.height;
-            global.log("width, height: " + width + ", " + height);
-            global.log("xPos, yPos: " + xPos + ", " + yPos);
             let [tmpX, tmpY] = [xPos, yPos];
             switch(side) {
                 case St.Side.TOP:
@@ -2322,16 +2318,15 @@ PopupMenu.prototype = {
                     tmpX = xPos - width;
                     break;
             }
-            global.log("positioning menu in show()");
             this.actor.set_position(tmpX, tmpY);
             let params = {
-                //opacity: 255,
                 x: xPos,
                 y: yPos,
                 onUpdateParams: [xPos, yPos],
                 transition: "easeOutQuad",
                 time: POPUP_ANIMATION_TIME,
                 onComplete: Lang.bind(this, function() {
+                    this.actor.remove_clip();
                     this.animating = false;
                 }),
                 onUpdate: Lang.bind(this, function(destX, destY) {
@@ -2342,7 +2337,6 @@ PopupMenu.prototype = {
             };
             Tweener.addTween(this.actor, params);
         } else {
-            //this.actor.set_opacity(255);
             this.actor.show();
         }
 
