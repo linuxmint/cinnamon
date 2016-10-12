@@ -1707,6 +1707,8 @@ PanelContextMenu.prototype = {
             for (let i = 0; i < panels.length; i++) {
                 panel = panels[i];
                 if (panel.panelId == this.panelId) {
+                    x += monitor.x;
+                    y += monitor.y;
                     [, this._posCenterX, this._posCenterY] = panel.actor.transform_stage_point(x, y);
                     return;
                 }
