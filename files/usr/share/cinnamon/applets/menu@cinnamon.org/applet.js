@@ -1640,7 +1640,8 @@ MyApplet.prototype = {
                 this._previousSelectedActor._delegate instanceof RecentButton ||
                 this._previousSelectedActor._delegate instanceof SearchProviderResultButton ||
                 this._previousSelectedActor._delegate instanceof PlaceButton ||
-                this._previousSelectedActor._delegate instanceof RecentClearButton)
+                this._previousSelectedActor._delegate instanceof RecentClearButton ||
+                this._previousSelectedActor._delegate instanceof TransientButton)
                 this._previousSelectedActor.style_class = "menu-application-button";
             else if (this._previousSelectedActor._delegate instanceof FavoritesButton ||
                      this._previousSelectedActor._delegate instanceof SystemButton)
