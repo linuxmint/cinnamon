@@ -1094,6 +1094,9 @@ MyApplet.prototype = {
 
     _init: function(orientation, panel_height, instance_id) {
         Applet.TextIconApplet.prototype._init.call(this, orientation, panel_height, instance_id);
+
+        this.setAllowedLayout(Applet.AllowedLayout.BOTH);
+
         this.initial_load_done = false;
 
         this.set_applet_tooltip(_("Menu"));
@@ -1296,10 +1299,6 @@ MyApplet.prototype = {
         if (this.initial_load_done)
             this._refreshAll();
         this._updateIconAndLabel();
-    },
-
-    getDisplayLayout: function() {
-        return Applet.DisplayLayout.BOTH;
     },
 
     on_applet_added_to_panel: function () {

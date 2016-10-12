@@ -42,6 +42,8 @@ MyApplet.prototype = {
 
     _init: function(orientation, panel_height, instance_id) {        
         Applet.TextApplet.prototype._init.call(this, orientation, panel_height, instance_id);
+
+        this.setAllowedLayout(Applet.AllowedLayout.BOTH);
         
         try {    
 
@@ -225,13 +227,6 @@ MyApplet.prototype = {
                 // signal will fire
             }
         }));
-    },
-//
-//override getDisplayLayout to declare that this applet is suitable for both horizontal and
-// vertical orientations
-//
-    getDisplayLayout: function() {
-        return Applet.DisplayLayout.BOTH;
     },
 
     on_orientation_changed: function (orientation) {

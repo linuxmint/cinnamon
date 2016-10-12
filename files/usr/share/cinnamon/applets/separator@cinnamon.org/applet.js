@@ -11,13 +11,11 @@ MyApplet.prototype = {
 
     _init: function(orientation, panel_height, instance_id) {
         Applet.Applet.prototype._init.call(this, orientation, panel_height, instance_id);
-        this.actor.style_class = 'applet-separator'; 
+        this.actor.style_class = 'applet-separator';
+
+        this.setAllowedLayout(Applet.AllowedLayout.BOTH);
 
         this.on_orientation_changed(orientation);
-    },
-
-    getDisplayLayout: function() {
-        return Applet.DisplayLayout.BOTH;
     },
 
     on_panel_height_changed: function() {

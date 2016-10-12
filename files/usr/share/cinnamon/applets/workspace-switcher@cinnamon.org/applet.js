@@ -212,6 +212,8 @@ MyApplet.prototype = {
     _init: function(metadata, orientation, panel_height, instance_id) {
         Applet.Applet.prototype._init.call(this, orientation, panel_height, instance_id);
 
+        this.setAllowedLayout(Applet.AllowedLayout.BOTH);
+
         try {
             this.orientation = orientation;
             this.panel_height = panel_height;
@@ -298,10 +300,6 @@ MyApplet.prototype = {
         for (let i = 0; i < this.buttons.length; ++i) {
             this.buttons[i].reactive = reactive;
         }
-    },
-
-    getDisplayLayout: function() {
-        return Applet.DisplayLayout.BOTH;
     },
 
     on_orientation_changed: function(neworientation) {

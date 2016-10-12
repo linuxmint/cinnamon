@@ -52,6 +52,8 @@ MyApplet.prototype = {
     _init: function(orientation, panel_height, instance_id) {
         Applet.Applet.prototype._init.call(this, orientation, panel_height, instance_id);
 
+        this.setAllowedLayout(Applet.AllowedLayout.BOTH);
+
         this.actor.remove_style_class_name("applet-box");
         this.actor.style="spacing: 5px;";
 
@@ -178,14 +180,6 @@ MyApplet.prototype = {
     },
 
     on_applet_clicked: function(event) {
-    },
-
-//
-//override getDisplayLayout to declare that this applet is suitable for both horizontal and
-// vertical orientations
-//
-    getDisplayLayout: function() {
-        return Applet.DisplayLayout.BOTH;
     },
 
     on_orientation_changed: function(neworientation) {
