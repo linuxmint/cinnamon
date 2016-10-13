@@ -219,7 +219,7 @@ MyApplet.prototype = {
 
     on_panel_height_changed: function() {
         Main.statusIconDispatcher.redisplay();
-        let size = 16;
+        let size = null;
         if (this._scaleMode)
             size = this._getIconSize();
         for (let id in this._shellIndicators) {
