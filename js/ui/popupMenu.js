@@ -2288,6 +2288,8 @@ PopupMenu.prototype = {
             return;
 
         Main.popup_rendering_actor = this.actor;
+        let animationSetting = global.settings.get_boolean("menu-animation");
+        animate = animate && animationSetting;
         this.animating = animate;
         this.setMaxSize();
         this.isOpen = true;
@@ -2297,7 +2299,7 @@ PopupMenu.prototype = {
         global.menuStackLength += 1;
 
         this.paint_id = this.actor.connect("paint", Lang.bind(this, this.on_paint));
-        
+
         if (animate) {
             Mainloop.idle_add(Lang.bind(this, function() {
                 this.actor.show();
@@ -2403,6 +2405,8 @@ PopupMenu.prototype = {
         if (this._activeMenuItem)
             this._activeMenuItem.setActive(false);
 
+        let animationSetting = global.settings.get_boolean("menu-animation");
+        animate = animate && animationSetting;
         if (animate) {
             Tweener.addTween(this.actor, { opacity: 0,
                                            transition: "easeOutQuad",

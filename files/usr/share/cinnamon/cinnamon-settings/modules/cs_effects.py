@@ -136,6 +136,9 @@ class Module:
             widget = GSettingsSwitch(_("Session startup animation"), "org.cinnamon", "startup-animation")
             settings.add_row(widget)
 
+            widget = GSettingsSwitch(_("Menu animation"), "org.cinnamon", "menu-animation")
+            settings.add_row(widget)
+
             if Gtk.get_major_version() == 3 and Gtk.get_minor_version() >= 16:
                 widget = GSettingsSwitch(_("Overlay scroll bars (logout required)"), "org.cinnamon.desktop.interface", "gtk-overlay-scrollbars")
                 settings.add_row(widget)
