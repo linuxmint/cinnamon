@@ -329,6 +329,14 @@
       </_description>
     </key>
 
+    <key type="b" name="menu-animation">
+      <default>true</default>
+      <_summary>Whether the menu animation is enabled</_summary>
+      <_description>
+       Whether the menu animation is enabled
+      </_description>
+    </key>
+
     <key name="device-aliases" type="as">
       <default>[]</default>
       <_summary>Aliases given to battery powered fardware devices</_summary>

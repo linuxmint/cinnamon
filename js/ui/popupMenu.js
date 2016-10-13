@@ -22,6 +22,7 @@ const Params = imports.misc.params;
 const Util = imports.misc.util;
 
 const SLIDER_SCROLL_STEP = 0.05; /* Slider scrolling step in % */
+const POPUP_ANIMATION_TIME = 0.25;
 
 const PanelLoc = {
 	top : 0,
@@ -90,6 +91,33 @@ function arrowIcon(side) {
                               important: true });
 
     return arrow;
+}
+
+function panelSizes(monitor) {
+    let top = 0, bottom = 0, left = 0, right = 0;
+    let panels = Main.panelManager.getPanelsInMonitor(Main.layoutManager.monitors.indexOf(monitor));
+    for (let i = 0; i < panels.langth; i++) {
+        let panel = panels[i];
+        switch (panel.panelPosition) {
+            case PanelLoc.top:
+                top = panel.actor.height;
+                break;
+            case PanelLoc.bottom:
+                bottom = panel.actor.height;
+                break;
+            case PanelLoc.left:
+                left = panel.actor.width;
+                break;
+            case PanelLoc.right:
+                right = panel.actor.width;
+                break;
+        }
+    }
+    return [top, bottom, left, right];
+}
+
+function invertSide(side) {
+    return (side + 2) % 4;
 }
 
 function PopupBaseMenuItem(params) {
@@ -2038,32 +2066,28 @@ PopupMenu.prototype = {
      * unexpected behaviour.
      * @arrowSide (St.Side): the arrow side of the menu. See %setArrowSide() for details
      */
-    _init: function(sourceActor, arrowAlignment, arrowSide) {
-        PopupMenuBase.prototype._init.call (this, sourceActor, 'popup-menu-content');
+    _init: function(sourceActor, alignment, side) {
+        PopupMenuBase.prototype._init.call (this, sourceActor, "popup-menu-content");
 
-        this._arrowAlignment = arrowAlignment;
-        this._arrowSide = arrowSide;
+        this._alignment = alignment;
+        this._side = invertSide(side);
 
-        this._boxPointer = new BoxPointer.BoxPointer(arrowSide,
-                                                     { x_fill: true,
-                                                       y_fill: true,
-                                                       x_align: St.Align.START });
-        this.actor = this._boxPointer.actor;
+        this.actor = new Cinnamon.GenericContainer();
         this.actor._delegate = this;
-        this.actor.style_class = 'popup-menu-boxpointer';
-        this.actor.connect('key-press-event', Lang.bind(this, this._onKeyPressEvent));
+        this.actor.style_class = "popup-menu";
+        this.actor.connect("key-press-event", Lang.bind(this, this._onKeyPressEvent));
 
-        this._boxWrapper = new Cinnamon.GenericContainer();
-        this._boxWrapper.connect('get-preferred-width', Lang.bind(this, this._boxGetPreferredWidth));
-        this._boxWrapper.connect('get-preferred-height', Lang.bind(this, this._boxGetPreferredHeight));
-        this._boxWrapper.connect('allocate', Lang.bind(this, this._boxAllocate));
-        this._boxPointer.bin.set_child(this._boxWrapper);
-        this._boxWrapper.add_actor(this.box);
-        this.actor.add_style_class_name('popup-menu');
+        this.actor.connect("get-preferred-width", Lang.bind(this, this._boxGetPreferredWidth));
+        this.actor.connect("get-preferred-height", Lang.bind(this, this._boxGetPreferredHeight));
+        this.actor.connect("allocate", Lang.bind(this, this._boxAllocate));
+        this.actor.add_actor(this.box);
 
         this.paint_id = 0;
         this.paint_count = 0;
         this.animating = false;
+
+        this._posCenterX = 0;
+        this._posCenterY = 0;
         global.focus_manager.add_group(this.actor);
         this.actor.reactive = true;
     },
@@ -2072,14 +2096,39 @@ PopupMenu.prototype = {
      * setArrowSide:
      * @side (St.Side): The new side of the menu
      * 
-     * Sets the arrow side of the menu. Note that the side is the side
+     * Sets the side of the menu. Note that the side is the side
      * of the source actor, not the menu, e.g. If St.Side.TOP is set, 
      * then the menu will appear below the source actor (the source
      * actor will be on top of the menu)
      */
     setArrowSide: function(side) {
-	this._arrowSide = side;
-	this._boxPointer.setArrowSide(side);
+        this.setSide(invertSide(side));
+    },
+    
+    /**
+     * setSide:
+     * @side (St.Side): The new side of the menu
+     * 
+     * Sets the side of the menu. Note that the side is the side
+     * of the menu, e.g. If St.Side.TOP is set, 
+     * then the menu will appear above the source actor
+     */
+    setSide: function(side) {
+        this._side = side;
+    },
+    
+    /**
+     * setAlignment:
+     * @alignment (integer): alignment relative to source actor
+     * 
+     * Sets the alignment of the menu relative to the source actor's center.
+     * Setting it to 0.0 will place the left edge of the menu centered on
+     * the source actor, 1.0 will place the right edge on the source actor's center.
+     * Left/right menus are placed accordingly.
+     */ 
+    setAlignment: function(alignment) {
+        this._alignment = alignment;
+        this.actor.queue_relayout();
     },
 
     _boxGetPreferredWidth: function (actor, forHeight, alloc) {
@@ -2095,7 +2144,128 @@ PopupMenu.prototype = {
     },
 
     _boxAllocate: function (actor, box, flags) {
+        if (this.actor.mapped && this.sourceActor.mapped) {
+            this._reposition();
+            if (this._origSide !== undefined) {
+                this._side = this._origSide;
+                this._origSide = undefined;
+            }
+        }
         this.box.allocate(box, flags);
+    },
+    
+    _calculatePosition: function() {
+        let monitor = Main.layoutManager.findMonitorForActor(this.sourceActor);
+        let [minWidth, minHeight, natWidth, natHeight] = this.actor.get_preferred_size();
+        let themeNode = this.actor.get_theme_node();
+        let srcAlloc = Cinnamon.util_get_transformed_allocation(this.sourceActor);
+        this._getPositioningCenter();
+
+        let resX = 0;
+        let resY = 0;
+        let availWidth = 0;
+        let availHeight = 0;
+        
+        let topPanel = 0;
+        let bottomPanel = 0;
+        let leftPanel = 0;
+        let rightPanel = 0;
+        let panels = Main.panelManager.getPanelsInMonitor(Main.layoutManager.monitors.indexOf(monitor));
+        for (let i = 0; i < panels.length; i++) {
+            let panel = panels[i];
+            switch (panel.panelPosition) {
+                case PanelLoc.top:
+                    topPanel = panel.actor.height;
+                    break;
+                case PanelLoc.bottom:
+                    bottomPanel = panel.actor.height;
+                    break;
+                case PanelLoc.left:
+                    leftPanel = panel.actor.width;
+                    break;
+                case PanelLoc.right:
+                    rightPanel = panel.actor.width;
+                    break;
+            }
+        }
+        let counter = 0;
+        let side = this._side;
+        do {
+            switch (side) {
+                case St.Side.TOP:
+                    resX = this._posCenterX - (natWidth * this._alignment);
+                    resY = srcAlloc.y1 - natHeight;
+                    availHeight = Math.round(srcAlloc.y1 - (monitor.y + topPanel));
+                    availWidth = Math.round(monitor.width - topPanel - rightPanel);
+                    break;
+                case St.Side.BOTTOM:
+                    resX = this._posCenterX - (natWidth * this._alignment);
+                    resY = srcAlloc.y2;
+                    availHeight = Math.round(monitor.y + monitor.height - bottomPanel - srcAlloc.y2);
+                    availWidth = Math.round(monitor.width - leftPanel - rightPanel);
+                    break;
+                case St.Side.LEFT:
+                    resX = srcAlloc.x1 - natWidth;
+                    resY = this._posCenterY - (natHeight * this._alignment);
+                    availWidth = Math.round(srcAlloc.x1 - (monitor.x + leftPanel));
+                    availHeight = Math.round(monitor.height - topPanel - bottomPanel);
+                    break;
+                case St.Side.RIGHT:
+                    resX = srcAlloc.x2;
+                    resY = this._posCenterY - (natHeight * this._alignment);
+                    availWidth = Math.round(monitor.x + monitor.width - rightPanel - srcAlloc.x2);
+                    availHeight = Math.round(monitor.height - topPanel - bottomPanel);
+                    break;
+            }
+            if (availWidth < natWidth || availHeight < natHeight) {
+                if (this._origSide === undefined) {
+                    this._origSide = side;
+                }
+                if (counter % 2 == 0) {
+                    side = invertSide(side);
+                } else {
+                    side++;
+                    side %= 4;
+                }
+                counter++;
+            }
+        } while (counter < 6 && (availWidth < natWidth || availHeight < natHeight));
+
+        let parent = this.actor.get_parent();
+        let success, x, y;
+        while (!success) {
+            [success, x, y] = parent.transform_stage_point(resX, resY);
+            parent = parent.get_parent();
+        }
+
+        // Adjust to stay in monitor and panel boundaries
+        x = Math.max(x, monitor.x + leftPanel);
+        x = Math.min(x, monitor.x + monitor.width - natWidth - rightPanel);
+        y = Math.max(y, monitor.y + topPanel);
+        y = Math.min(y, monitor.y + monitor.height - natHeight - bottomPanel);
+        
+        return [x, y, side];
+    },
+    
+    _reposition: function() {
+        if ((!this.actor.mapped && !this.sourceActor.mapped) || this.animating) {
+            return;
+        }
+        let [x, y, side] = this._calculatePosition();
+        this._side = side;
+        this.actor.set_position(x, y);
+    },
+    
+    /**
+     * Derivatives may override this to apply a different position.
+     * Default is the center point of the source actor
+     */
+    _getPositioningCenter: function() {
+        let srcAlloc = Cinnamon.util_get_transformed_allocation(this.sourceActor);
+        let x = srcAlloc.x1 + (srcAlloc.x2 - srcAlloc.x1) / 2;
+        let y = srcAlloc.y1 + (srcAlloc.y2 - srcAlloc.y1) / 2;
+        this._posCenterX = x;
+        this._posCenterY = y;
     },
 
     _onKeyPressEvent: function(actor, event) {
@@ -2105,24 +2275,6 @@ PopupMenu.prototype = {
         }
 
         return false;
-    },
-
-    setArrowOrigin: function(origin) {
-        this._boxPointer.setArrowOrigin(origin);
-    },
-
-    /**
-     * setSourceAlignment:
-     * @alignment (real): the position of the arrow relative to the source
-     * actor.
-     *
-     * If set to 0.0, the arrow will appear at the left end of the source
-     * actor; 1.0 for right (0.0/1.0 for top/bottom for sideways arrows). The
-     * default value is 0.5, which means the arrow appears at the center of the
-     * source actor.
-     */
-    setSourceAlignment: function(alignment) {
-        this._boxPointer.setSourceAlignment(alignment);
     },
 
     /**
@@ -2136,28 +2288,64 @@ PopupMenu.prototype = {
             return;
 
         Main.popup_rendering_actor = this.actor;
-
+        let animationSetting = global.settings.get_boolean("menu-animation");
+        animate = animate && animationSetting;
         this.animating = animate;
-
-        this.setMaxHeight();
-
+        this.setMaxSize();
         this.isOpen = true;
         
         if (global.menuStackLength == undefined)
             global.menuStackLength = 0;
         global.menuStackLength += 1;
 
-        this._boxPointer.setPosition(this.sourceActor, this._arrowAlignment);
-
         this.paint_id = this.actor.connect("paint", Lang.bind(this, this.on_paint));
 
-        this._boxPointer.show(animate, Lang.bind(this, function () {
-            this.animating = false;
-        }));
+        if (animate) {
+            Mainloop.idle_add(Lang.bind(this, function() {
+                this.actor.show();
+                let [xPos, yPos, side] = this._calculatePosition();
+                let width = this.actor.width;
+                let height = this.actor.height;
+                let [tmpX, tmpY] = [xPos, yPos];
+                switch(side) {
+                    case St.Side.TOP:
+                        tmpY = yPos + height;
+                        break;
+                    case St.Side.BOTTOM:
+                        tmpY = yPos - height;
+                        break;
+                    case St.Side.LEFT:
+                        tmpX = xPos + width;
+                        break;
+                    case St.Side.RIGHT:
+                        tmpX = xPos - width;
+                        break;
+                }
+                this.actor.set_position(tmpX, tmpY);
+                let params = {
+                    x: xPos,
+                    y: yPos,
+                    onUpdateParams: [xPos, yPos],
+                    transition: "easeOutQuad",
+                    time: POPUP_ANIMATION_TIME,
+                    onComplete: Lang.bind(this, function() {
+                        this.actor.remove_clip();
+                        this.animating = false;
+                    }),
+                    onUpdate: Lang.bind(this, function(destX, destY) {
+                        let clipX = destX - this.actor.x;
+                        let clipY = destY - this.actor.y;
+                        this.actor.set_clip(clipX, clipY, this.actor.width, this.actor.height);
+                    })
+                };
+                Tweener.addTween(this.actor, params);
+            }));
+        } else {
+            this.actor.show();
+        }
 
         this.actor.raise_top();
-
-        this.emit('open-state-changed', true);
+        this.emit("open-state-changed", true);
     },
 
     on_paint: function(actor) {
@@ -2187,34 +2375,25 @@ PopupMenu.prototype = {
      * of the menu is higher then the screen; it's useful if part of the menu
      * is scrollable so the minimum height is smaller than the natural height.
      */
-    setMaxHeight: function() {
+    setMaxSize: function() {
         let monitor = Main.layoutManager.findMonitorForActor(this.sourceActor)
-
-        let maxHeight = monitor.height - this.actor.get_theme_node().get_length('-boxpointer-gap');
-
-        let panels = Main.panelManager.getPanelsInMonitor(Main.layoutManager.monitors.indexOf(monitor));
-
-        for (let panel of panels)
-            if (panel.panelPosition == PanelLoc.top || panel.panelPosition == PanelLoc.bottom)  // horizontal panels only
-            {
-                maxHeight -= panel.actor.height;
-            }
-
-        this.actor.style = 'max-height: ' + maxHeight / global.ui_scale + 'px; ' +
-            'max-width: ' + (monitor.width - 20)/ global.ui_scale + 'px;';
-        // PopupMenus have 10px margins      ^
+        let [top, bottom, left, right] = panelSizes(monitor)
+        let maxHeight = monitor.height - top - bottom;
+        let maxWidth = monitor.width - left - right;
+        this.actor.style = "max-height: " + maxHeight / global.ui_scale + "px; " +
+                           "max-width: "  + maxWidth  / global.ui_scale + "px;";
     },
 
     /**
      * close:
-     * @animate (boolean): whether the animate the close effect
+     * @animate (boolean): whether to animate the close effect
      *
      * Closes the popup menu.
      */
     close: function(animate) {
         if (!this.isOpen)
             return;
-            
+
         this.isOpen = false;
         global.menuStackLength -= 1;
 
@@ -2226,8 +2405,21 @@ PopupMenu.prototype = {
         if (this._activeMenuItem)
             this._activeMenuItem.setActive(false);
 
-        this._boxPointer.hide(animate);
-        this.emit('open-state-changed', false);
+        let animationSetting = global.settings.get_boolean("menu-animation");
+        animate = animate && animationSetting;
+        if (animate) {
+            Tweener.addTween(this.actor, { opacity: 0,
+                                           transition: "easeOutQuad",
+                                           time: POPUP_ANIMATION_TIME,
+                                           onComplete: Lang.bind(this, function () {
+                                               this.actor.hide();
+                                               this.actor.opacity = 255;
+                                           })
+                                         });
+        } else {
+            this.actor.hide();
+        }
+        this.emit("open-state-changed", false);
     }
 };
 
