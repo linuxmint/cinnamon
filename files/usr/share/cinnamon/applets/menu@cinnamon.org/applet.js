@@ -2226,8 +2226,8 @@ MyApplet.prototype = {
         this._session = new GnomeSession.SessionManager();
         this._screenSaverProxy = new ScreenSaver.ScreenSaverProxy();
 
-        if (this.favBoxShow)
         this.leftPane.add_actor(this.leftBox, { y_align: St.Align.END, y_fill: false });
+        this._favboxtoggle();
 
         let rightPane = new St.BoxLayout({ vertical: true });
 
