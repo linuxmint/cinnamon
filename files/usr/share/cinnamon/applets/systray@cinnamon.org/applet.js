@@ -78,20 +78,31 @@ MyApplet.prototype = {
         this._shellIndicators = {};
         this.menuFactory = new IndicatorMenuFactory();
         this.menuManager = new PopupMenu.PopupMenuManager(this);
-        this.signalAdded = 0;
-        this.signalRemoved = 0;
+        this._signalAdded = 0;
+        this._signalRemoved = 0;
     },
 
     _addIndicatorSupport: function() {
-        let currentIndicators = Main.indicatorManager.getIndicatorIds();
+        let manager = Main.indicatorManager;
+
+        // Blacklist some of the icons
+        // quassel: The proper icon in Quassel is "QuasselIRC",
+        // this is a fallback icon which Quassel launches when it fails to detect
+        // our indicator support (i.e. when Cinnamon is restarted for instance)
+        // The problem is.. Quassel doesn't kill that icon when it creates QuasselIRC again..
+        manager.insertInBlackList("quassel");
+
+        let currentIndicators = manager.getIndicatorIds();
         for (let pos in currentIndicators) {
-            let appIndicator = Main.indicatorManager.getIndicatorById(currentIndicators[pos]);
-            this._onIndicatorAdded(Main.indicatorManager, appIndicator);
+            if (!manager.isInBlackList(currentIndicators[pos])) {
+                let appIndicator = manager.getIndicatorById(currentIndicators[pos]);
+                this._onIndicatorAdded(manager, appIndicator);
+            }
         }
-        if (this.signalAdded == 0)
-            this.signalAdded = Main.indicatorManager.connect('indicator-added', Lang.bind(this, this._onIndicatorAdded));
-        if (this.signalRemoved == 0)
-            this.signalRemoved = Main.indicatorManager.connect('indicator-removed', Lang.bind(this, this._onIndicatorRemoved));
+        if (this._signalAdded == 0)
+            this._signalAdded = manager.connect('indicator-added', Lang.bind(this, this._onIndicatorAdded));
+        if (this._signalRemoved == 0)
+            this._signalRemoved = manager.connect('indicator-removed', Lang.bind(this, this._onIndicatorRemoved));
     },
 
     _removeIndicatorSupport: function() {
@@ -113,46 +124,48 @@ MyApplet.prototype = {
 
     _onIndicatorAdded: function(manager, appIndicator) {
         if (!(appIndicator.id in this._shellIndicators)) {
-            let hiddenIcons = Main.systrayManager.getRoles();
+            let size = null;
+            if (this._scaleMode)
+                size = this._getIconSize();
 
-            if (hiddenIcons.indexOf(appIndicator.id) != -1 ) {
-                // We've got an applet for that
-                global.log("Hiding indicator (role already handled): " + appIndicator.id);
-                return;
-            } else if (["quassel"].indexOf(appIndicator.id) != -1) {
-                // Blacklist some of the icons
-                // quassel: The proper icon in Quassel is "QuasselIRC", this is a fallback icon which Quassel launches when it fails to detect
-                // our indicator support (i.e. when Cinnamon is restarted for instance)
-                // The problem is.. Quassel doesn't kill that icon when it creates QuasselIRC again..
-                global.log("Hiding indicator (blacklisted): " + appIndicator.id);
-                return;
-            } else {
-                global.log("Adding indicator: " + appIndicator.id);
-            }
+            let indicatorActor = appIndicator.getIconActor(size);
+            indicatorActor._applet = this;
 
-            let iconActor = appIndicator.getIconActor(this._getIndicatorSize(appIndicator));
-            iconActor._applet = this;
+            this._shellIndicators[appIndicator.id] = indicatorActor;
+            this._signalManager.connect(indicatorActor.actor, 'destroy', this._onIndicatorIconDestroy);
+            this._signalManager.connect(indicatorActor.actor, 'enter-event', this._onEnterEvent);
+            this._signalManager.connect(indicatorActor.actor, 'leave-event', this._onLeaveEvent);
 
-            this._shellIndicators[appIndicator.id] = iconActor;
+            this.manager_container.add_actor(indicatorActor.actor);
 
-            this.manager_container.add_actor(iconActor.actor);
             appIndicator.createMenuClientAsync(Lang.bind(this, function(client) {
                 if (client != null) {
                     let newMenu = client.getShellMenu();
                     if (!newMenu) {
-                        newMenu = this.menuFactory.buildShellMenu(client, iconActor, this._applet_context_menu._arrowSide);
+                        newMenu = this.menuFactory.buildShellMenu(client, indicatorActor, this._applet_context_menu._arrowSide);
                         this.menuManager.addMenu(newMenu);
                     }
-                    iconActor.setMenu(newMenu);
+                    indicatorActor.setMenu(newMenu);
                 }
             }));
         }
     },
 
-    _getIndicatorSize: function(appIndicator) {
-        if (this._scaleMode)
-            return this._panelHeight * ICON_SCALE_FACTOR / global.ui_scale;
-        return 16;
+    _onEnterEvent: function(actor, event) {
+       this.set_applet_tooltip(actor._delegate.getToolTip());
+    },
+
+    _onLeaveEvent: function(actor, event) {
+        this.set_applet_tooltip("");
+    },
+
+    _onIndicatorIconDestroy: function(actor) {
+        for (let id in this._shellIndicators) {
+            if (this._shellIndicators[id].actor == actor) {
+                delete this._shellIndicators[id];
+                break;
+            }
+        }
     },
 
     _getIconSize: function() {
@@ -172,10 +185,9 @@ MyApplet.prototype = {
 
     _onIndicatorRemoved: function(manager, appIndicator) {
         if (appIndicator.id in this._shellIndicators) {
-            global.log("Removing indicator: " + appIndicator.id);
-            let iconActor = this._shellIndicators[appIndicator.id];
+            let indicatorActor = this._shellIndicators[appIndicator.id];
             delete this._shellIndicators[appIndicator.id];
-            iconActor.destroy();
+            indicatorActor.destroy();
         }
     },
 
@@ -207,10 +219,12 @@ MyApplet.prototype = {
 
     on_panel_height_changed: function() {
         Main.statusIconDispatcher.redisplay();
+        let size = 16;
+        if (this._scaleMode)
+            size = this._getIconSize();
         for (let id in this._shellIndicators) {
             let indicator = Main.indicatorManager.getIndicatorById(id);
             if (indicator) {
-                let size = this._getIndicatorSize(indicator);
                 this._shellIndicators[id].setSize(size);
             }
         }
