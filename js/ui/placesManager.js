@@ -29,6 +29,7 @@ function PlaceInfo(id, name, iconFactory, launch) {
 PlaceInfo.prototype = {
     _init: function(id, name, iconFactory, launch) {
         this.id = id;
+        this.idDecoded = decodeURIComponent(this.id);
         this.name = name;
         this._lowerName = name.toLowerCase();
         this.iconFactory = iconFactory;
@@ -84,6 +85,7 @@ PlaceDeviceInfo.prototype = {
         this.name = mount.get_name();
         this._lowerName = this.name.toLowerCase();
         this.id = 'mount:' + mount.get_root().get_uri();
+        this.idDecoded = decodeURIComponent(this.id);
     },
 
     iconFactory: function(size) {
