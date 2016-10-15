@@ -2,7 +2,6 @@ const PopupMenu = imports.ui.popupMenu;
 const Gio = imports.gi.Gio;
 const Lang = imports.lang;
 const Applet = imports.ui.applet;
-const GConf = imports.gi.GConf;
 const Main = imports.ui.main;
 const Gdk = imports.gi.Gdk;
 
@@ -20,9 +19,6 @@ const DPI_HIGH_REASONABLE_VALUE = 500;
 const DPI_FACTOR_LARGE   = 1.25;
 const DPI_FACTOR_LARGER  = 1.5;
 const DPI_FACTOR_LARGEST = 2.0;
-
-const KEY_META_DIR       = '/apps/metacity/general';
-const KEY_VISUAL_BELL = KEY_META_DIR + '/visual_bell';
 
 const DESKTOP_INTERFACE_SCHEMA = 'org.cinnamon.desktop.interface';
 const KEY_GTK_THEME      = 'gtk-theme';
@@ -54,9 +50,6 @@ MyApplet.prototype = {
             this.menu = new Applet.AppletPopupMenu(this, orientation);
             this.menuManager.addMenu(this.menu);            
                                 
-            let client = GConf.Client.get_default();
-            client.add_dir(KEY_META_DIR, GConf.ClientPreloadType.PRELOAD_ONELEVEL, null);
-
             let highContrast = this._buildHCItem();
             this.menu.addMenuItem(highContrast);
 
@@ -74,9 +67,6 @@ MyApplet.prototype = {
             let screenKeyboard = this._buildItem(_("Screen Keyboard"), APPLICATIONS_SCHEMA,
                                                                        'screen-keyboard-enabled');
             this.menu.addMenuItem(screenKeyboard);
-
-            let visualBell = this._buildItemGConf(_("Visual Alerts"), client, KEY_VISUAL_BELL);
-            this.menu.addMenuItem(visualBell);
 
             let stickyKeys = this._buildItem(_("Sticky Keys"), A11Y_SCHEMA, KEY_STICKY_KEYS_ENABLED);
             this.menu.addMenuItem(stickyKeys);
@@ -148,19 +138,6 @@ MyApplet.prototype = {
         else
             widget.connect('toggled', function(item) {
                 on_set(item.state);
-            });
-        return widget;
-    },
-
-    _buildItemGConf: function(string, client, key) {
-        function on_get() {
-            return client.get_bool(key);
-        }
-        let widget = this._buildItemExtended(string,
-            client.get_bool(key),
-            client.key_is_writable(key),
-            function(enabled) {
-                client.set_bool(key, enabled);
             });
         return widget;
     },
