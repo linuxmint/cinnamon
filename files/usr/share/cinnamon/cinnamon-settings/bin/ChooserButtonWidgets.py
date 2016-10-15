@@ -1,7 +1,8 @@
 from __future__ import division
-from gi.repository import Gtk, GObject, GLib
+from gi.repository import Gtk, GObject, GLib, GdkPixbuf
 import cairo
 import tweenEquations
+import os
 import math
 import gettext
 gettext.install("cinnamon", "/usr/share/locale")
