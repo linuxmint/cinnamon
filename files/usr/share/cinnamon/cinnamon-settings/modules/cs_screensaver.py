@@ -11,27 +11,27 @@ from gi.repository import Gtk, Gdk, GLib, Pango
 from GSettingsWidgets import *
 
 LOCK_DELAY_OPTIONS = [
-    (0, _("Immediately")),
-    (15, _("After 15 seconds")),
-    (30, _("After 30 seconds")),
-    (60, _("After 1 minute")),
-    (120, _("After 2 minutes")),
-    (180, _("After 3 minutes")),
-    (300, _("After 5 minutes")),
-    (600, _("After 10 minutes")),
-    (1800, _("After 30 minutes")),
-    (3600, _("After 1 hour"))
+    (0, _("Lock immediately")),
+    (15, _("15 seconds")),
+    (30, _("30 seconds")),
+    (60, _("1 minute")),
+    (120, _("2 minutes")),
+    (180, _("3 minutes")),
+    (300, _("5 minutes")),
+    (600, _("10 minutes")),
+    (1800, _("30 minutes")),
+    (3600, _("1 hour"))
 ]
 
 LOCK_INACTIVE_OPTIONS = [
     (0,    _("Never")),
-    (60,   _("After 1 minute")),
-    (300,  _("After 5 minutes")),
-    (600,  _("After 10 minutes")),
-    (900,  _("After 15 minutes")),
-    (1800, _("After 30 minutes")),
-    (2700, _("After 45 minutes")),
-    (3600, _("After 1 hour"))
+    (60,   _("1 minute")),
+    (300,  _("5 minutes")),
+    (600,  _("10 minutes")),
+    (900,  _("15 minutes")),
+    (1800, _("30 minutes")),
+    (2700, _("45 minutes")),
+    (3600, _("1 hour"))
 ]
 
 XSCREENSAVER_PATH = "/usr/share/xscreensaver/config/"
@@ -88,30 +88,17 @@ class Module:
         widget.set_tooltip_text(_("Enable this option to require a password when the computer wakes up from suspend"))
         settings.add_row(widget)
 
-        widget = GSettingsSwitch(_("Lock the computer after inactivity"), schema, "lock-enabled")
+        widget = GSettingsSwitch(_("Lock the computer after the screensaver starts"), schema, "lock-enabled")
         widget.set_tooltip_text(_("Enable this option to require a password when the screen turns itself off, or when the screensaver activates after a period of inactivity"))
         settings.add_row(widget)
 
-        widget = GSettingsComboBox(_("Delay before locking the screen"), schema, "lock-delay", LOCK_DELAY_OPTIONS, valtype="uint", size_group=size_group)
+        widget = GSettingsComboBox(_("Delay before locking"), schema, "lock-delay", LOCK_DELAY_OPTIONS, valtype="uint", size_group=size_group)
         widget.set_tooltip_text(_("This option defines the amount of time to wait before locking the screen, after showing the screensaver or after turning off the screen"))
         settings.add_reveal_row(widget, schema, "lock-enabled")
 
-        settings = page.add_section(_("Away message"))
-
-        widget = GSettingsEntry(_("Show this message when the screen is locked"), schema, "default-message")
-        widget.set_child_packing(widget.content_widget, True, True, 0, Gtk.PackType.START)
-        widget.set_tooltip_text(_("This is the default message displayed on your lock screen"))
-        settings.add_row(widget)
-
-        settings.add_row(GSettingsFontButton(_("Font"), "org.cinnamon.desktop.screensaver", "font-message"))
-
-        widget = GSettingsSwitch(_("Ask for a custom message when locking the screen from the menu"), schema, "ask-for-away-message")
-        widget.set_tooltip_text(_("This option allows you to type a message each time you lock the screen from the menu"))
-        settings.add_row(widget)
-
-        # Date
+        # Customize
         page = SettingsPage()
-        self.sidePage.stack.add_titled(page, "date", _("Date"))
+        self.sidePage.stack.add_titled(page, "customize", _("Customize"))
 
         settings = page.add_section(_("Date and Time"))
 
@@ -130,6 +117,19 @@ class Module:
         settings.add_row(widget)
 
         widget = GSettingsFontButton(_("Date Font"), "org.cinnamon.desktop.screensaver", "font-date", size_group=size_group)
+        settings.add_row(widget)
+
+        settings = page.add_section(_("Away message"))
+
+        widget = GSettingsEntry(_("Show this message when the screen is locked"), schema, "default-message")
+        widget.set_child_packing(widget.content_widget, True, True, 0, Gtk.PackType.START)
+        widget.set_tooltip_text(_("This is the default message displayed on your lock screen"))
+        settings.add_row(widget)
+
+        settings.add_row(GSettingsFontButton(_("Font"), "org.cinnamon.desktop.screensaver", "font-message"))
+
+        widget = GSettingsSwitch(_("Ask for a custom message when locking the screen from the menu"), schema, "ask-for-away-message")
+        widget.set_tooltip_text(_("This option allows you to type a message each time you lock the screen from the menu"))
         settings.add_row(widget)
 
 class ScreensaverBox(Gtk.Box):
