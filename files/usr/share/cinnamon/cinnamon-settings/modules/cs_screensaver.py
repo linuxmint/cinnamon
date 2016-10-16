@@ -74,25 +74,27 @@ class Module:
         page = SettingsPage()
         self.sidePage.stack.add_titled(page, "settings", _("Settings"))
 
-        settings = page.add_section(_("Lock settings"))
+        settings = page.add_section(_("Screensaver settings"))
 
         size_group = Gtk.SizeGroup.new(Gtk.SizeGroupMode.HORIZONTAL)
+
+        widget = GSettingsComboBox(_("Delay before starting the screensaver"), "org.cinnamon.desktop.session", "idle-delay", LOCK_INACTIVE_OPTIONS, valtype="uint", size_group=size_group)
+        widget.set_tooltip_text(_("This option defines the amount of time to wait before starting the screensaver, when the computer is not being used"))
+        settings.add_row(widget)
+
+        settings = page.add_section(_("Lock settings"))
 
         widget = GSettingsSwitch(_("Lock the computer when put to sleep"), "org.cinnamon.settings-daemon.plugins.power", "lock-on-suspend")
         widget.set_tooltip_text(_("Enable this option to require a password when the computer wakes up from suspend"))
         settings.add_row(widget)
 
-        widget = GSettingsSwitch(_("Lock the computer when the screen turns off"), schema, "lock-enabled")
+        widget = GSettingsSwitch(_("Lock the computer after inactivity"), schema, "lock-enabled")
         widget.set_tooltip_text(_("Enable this option to require a password when the screen turns itself off, or when the screensaver activates after a period of inactivity"))
         settings.add_row(widget)
 
         widget = GSettingsComboBox(_("Delay before locking the screen"), schema, "lock-delay", LOCK_DELAY_OPTIONS, valtype="uint", size_group=size_group)
         widget.set_tooltip_text(_("This option defines the amount of time to wait before locking the screen, after showing the screensaver or after turning off the screen"))
         settings.add_reveal_row(widget, schema, "lock-enabled")
-
-        widget = GSettingsComboBox(_("Lock the computer when inactive"), "org.cinnamon.desktop.session", "idle-delay", LOCK_INACTIVE_OPTIONS, valtype="uint", size_group=size_group)
-        widget.set_tooltip_text(_("This option defines the amount of time to wait before locking the screen, when the computer is not being used"))
-        settings.add_row(widget)
 
         settings = page.add_section(_("Away message"))
 
