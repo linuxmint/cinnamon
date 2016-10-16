@@ -61,8 +61,8 @@ MyApplet.prototype = {
 
             this.settings = new Settings.AppletSettings(this, metadata["uuid"], this.instance_id);
 
-            this.settings.bindProperty("use-letters", "_showLetters", this._syncConfig);
-            this.settings.bindProperty("use-uppercase", "_useUpperCase", this._syncConfig);
+            this.settings.bind("use-letters", "_showLetters", this._syncConfig);
+            this.settings.bind("use-uppercase", "_useUpperCase", this._syncConfig);
 
             this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
             this.menu.addAction(_("Show Keyboard Layout"), Lang.bind(this, function() {
@@ -124,7 +124,9 @@ MyApplet.prototype = {
             }
 
             if (!handled) {
-                actor = new St.Label({ text: this._config.get_short_name_for_group(i) })
+                let name = this._config.get_short_name_for_group(i);
+                name = this._useUpperCase ? name.toUpperCase() : name.toLowerCase();
+                actor = new St.Label({ text: name })
             }
 
             let item = new LayoutMenuItem(this._config, i, actor, groups[i]);
@@ -163,7 +165,9 @@ MyApplet.prototype = {
         }
 
         if (!handled) {
-            this.set_applet_label(this._config.get_short_name())
+            let name = this._config.get_short_name();
+            name = this._useUpperCase ? name.toUpperCase() : name.toLowerCase();
+            this.set_applet_label(name)
             this.hide_applet_icon()
         }
     },
