@@ -26,51 +26,19 @@ MyApplet.prototype = {
 
         /* Now we'll proceed with setting up individual setting bindings. */
 
-        this.settings.bindProperty(Settings.BindingDirection.IN,   // The binding direction - IN means we only listen for changes from this applet
-                                 "icon-name",                               // The setting key, from the setting schema file
-                                 "icon_name",                               // The property to bind the setting to - in this case it will initialize this.icon_name to the setting value
-                                 this.on_settings_changed,                  // The method to call when this.icon_name has changed, so you can update your applet
-                                 null);                                     // Any extra information you want to pass to the callback (optional - pass null or just leave out this last argument)
-        this.settings.bindProperty(Settings.BindingDirection.IN,
-                                 "color",
-                                 "bg_color",
-                                 this.on_settings_changed,
-                                 null);
-        this.settings.bindProperty(Settings.BindingDirection.IN,
-                                 "spinner-number",
-                                 "spinner_number",
-                                 this.on_settings_changed,
-                                 null);
-        this.settings.bindProperty(Settings.BindingDirection.IN,
-                                 "combo-selection",
-                                 "combo_choice",
-                                 this.on_settings_changed,
-                                 null);
-        this.settings.bindProperty(Settings.BindingDirection.BIDIRECTIONAL, // BIDIRECTIONAL means the applet will listen
-                                 "scale-demo",                                  // for changes to the stored setting, AND the
-                                 "scale_val",                                   // settings daemon will listen for changes made
-                                 this.on_settings_changed,                      // to this.scale_val by the APPLET
-                                 null);
-        this.settings.bindProperty(Settings.BindingDirection.IN,
-                                  "use-custom-label",
-                                  "use_custom",
-                                  this.on_settings_changed,
-                                  null);
-        this.settings.bindProperty(Settings.BindingDirection.IN,
-                                 "custom-label",
-                                 "custom_label",
-                                 this.on_settings_changed,
-                                 null);
-        this.settings.bindProperty(Settings.BindingDirection.IN,
-                                 "tween-function",
-                                 "tween_function",
-                                 this.on_settings_changed,
-                                 null);
-        this.settings.bindProperty(Settings.BindingDirection.IN,
-                                 "keybinding-test",
-                                 "keybinding",
-                                 this.on_keybinding_changed,
-                                 null);
+        this.settings.bind("icon-name",                // The setting key, from the setting schema file
+                           "icon_name",                // The property to bind the setting to - in this case it will initialize this.icon_name to the setting value
+                           this.on_settings_changed,   // The method to call when this.icon_name has changed, so you can update your applet
+                           null);                      // Any extra information you want to pass to the callback (optional - pass null or just leave out this last argument)
+
+        this.settings.bind("scale-demo", "scale_val", this.on_settings_changed);
+        this.settings.bind("color", "bg_color", this.on_settings_changed);
+        this.settings.bind("spinner-number", "spinner_number", this.on_settings_changed);
+        this.settings.bind("combo-selection", "combo_choice", this.on_settings_changed);
+        this.settings.bind("use-custom-label",  "use_custom", this.on_settings_changed);
+        this.settings.bind("custom-label", "custom_label", this.on_settings_changed);
+        this.settings.bind("tween-function", "tween_function", this.on_settings_changed);
+        this.settings.bind("keybinding-test", "keybinding", this.on_keybinding_changed);
 
         this.settings.connect("changed::signal-test", Lang.bind(this, this.on_signal_test_fired));
 

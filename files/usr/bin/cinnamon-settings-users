@@ -1,6 +1,8 @@
-#!/usr/bin/python2
+#!/usr/bin/env python3
+
+""" Launch the cinnamon users and groups editor utility
+"""
 
 import os
 
 os.system("gksu /usr/share/cinnamon/cinnamon-settings-users/cinnamon-settings-users.py")
-

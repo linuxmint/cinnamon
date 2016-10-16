@@ -69,6 +69,9 @@ class JSONSettingsHandler(object):
     def has_property(self, key, prop):
         return prop in self.settings.keys()
 
+    def has_key(self, key):
+        return key in self.settings
+
     def object_value_changed(self, obj, value, key):
         for info in self.bindings[key]:
             if obj == info["obj"]:
@@ -106,7 +109,9 @@ class JSONSettingsHandler(object):
                     callback(key, new_value)
 
     def get_settings(self):
-        raw_data = open(self.filepath).read()
+        file = open(self.filepath)
+        raw_data = file.read()
+        file.close()
         try:
             settings = json.loads(raw_data, encoding=None, object_pairs_hook=collections.OrderedDict)
         except:
@@ -120,6 +125,7 @@ class JSONSettingsHandler(object):
         raw_data = json.dumps(self.settings, indent=4)
         new_file = open(self.filepath, 'w+')
         new_file.write(raw_data)
+        new_file.close()
         self.resume_monitor()
 
     def pause_monitor(self):
@@ -155,7 +161,9 @@ class JSONSettingsHandler(object):
                 callback(key, self.settings[key]["value"])
 
     def load_from_file(self, filepath):
-        raw_data = open(filepath).read()
+        file = open(filepath)
+        raw_data = file.read()
+        file.close()
         try:
             settings = json.loads(raw_data, encoding=None, object_pairs_hook=collections.OrderedDict)
         except:
@@ -177,6 +185,7 @@ class JSONSettingsHandler(object):
         raw_data = json.dumps(self.settings, indent=4)
         new_file = open(filepath, 'w+')
         new_file.write(raw_data)
+        new_file.close()
 
 class JSONSettingsBackend(object):
     def attach(self):
@@ -223,7 +232,10 @@ def json_settings_factory(subclass):
             self.attach()
 
         def set_dep_key(self, dep_key):
-            self.settings.bind(dep_key, self, "sensitive", Gio.SettingsBindFlags.GET)
+            if self.settings.has_key(dep_key):
+                self.settings.bind(dep_key, self, "sensitive", Gio.SettingsBindFlags.GET)
+            else:
+                print("Ignoring dependency on key '%s': no such key in the schema" % dep_key)
 
     return NewClass
 

@@ -59,7 +59,7 @@ PanelAppLauncherMenu.prototype = {
 
         this.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
 
-        item = new PopupMenu.PopupIconMenuItem(_("Configure the panel launcher"), "system-run", St.IconType.SYMBOLIC);
+        let item = new PopupMenu.PopupIconMenuItem(_("Configure the panel launcher"), "system-run", St.IconType.SYMBOLIC);
         item.connect('activate', Lang.bind(this._launcher._applet, this._launcher._applet.configureApplet));
         this.addMenuItem(item);
     },
@@ -99,12 +99,15 @@ PanelAppLauncher.prototype = {
         this.appinfo = appinfo;
         this.launchersBox = launchersBox;
         this._applet = launchersBox;
+        this.orientation = orientation;
+
         this.actor = new St.Bin({ style_class: 'panel-launcher',
                                   reactive: true,
                                   can_focus: true,
                                   x_fill: true,
                                   y_fill: false,
                                   track_hover: true });
+
         this.actor._delegate = this;
         this.actor.connect('button-release-event', Lang.bind(this, this._onButtonRelease));
         this.actor.connect('button-press-event', Lang.bind(this, this._onButtonPress));
@@ -282,7 +285,7 @@ PanelAppLauncher.prototype = {
 
     getIcon: function() {
         let icon = this.getAppInfo().get_icon();
-        if (icon){
+        if (icon) {
             if (icon instanceof Gio.FileIcon) {
                 return icon.get_file().get_path();
             }
@@ -305,25 +308,25 @@ MyApplet.prototype = {
         Applet.Applet.prototype._init.call(this, orientation, panel_height, instance_id);
         this.actor.set_track_hover(false);
 
+        this.setAllowedLayout(Applet.AllowedLayout.BOTH);
+
         this.orientation = orientation;
         this._dragPlaceholder = null;
         this._dragPlaceholderPos = -1;
         this._animatingPlaceholdersCount = 0;
 
-        this.myactor = new St.BoxLayout({ name: 'panel-launchers-box',
-            style_class: 'panel-launchers-box' });
+        this.myactor = new St.BoxLayout({ name: 'panel-launchers-box' });
+
+        if (this.orientation == St.Side.LEFT || this.orientation == St.Side.RIGHT) {
+            this._set_vertical_style();
+        }
 
         this.settings = new Settings.AppletSettings(this, metadata.uuid, instance_id);
-        this.settings.bindProperty(Settings.BindingDirection.BIDIRECTIONAL,
-                                   "launcherList",
-                                   "launcherList",
-                                   this._onSettingsChanged, null);
-        this.settings.bindProperty(Settings.BindingDirection.IN,
-                                   "allow-dragging",
-                                   "allowDragging",
-                                   this._updateLauncherDrag, null);
+        this.settings.bind("launcherList", "launcherList", this._onSettingsChanged);
+        this.settings.bind("allow-dragging", "allowDragging", this._updateLauncherDrag);
 
         this.uuid = metadata.uuid;
+
         this._settings_proxy = new Array();
         this._launchers = new Array();
 
@@ -420,6 +423,32 @@ MyApplet.prototype = {
         this.reload();
     },
 
+    on_orientation_changed: function(neworientation) { 
+
+        this.orientation = neworientation;
+        if (this.orientation == St.Side.TOP || this.orientation == St.Side.BOTTOM) {
+            this.myactor.remove_style_class_name('vertical');
+            this.myactor.set_vertical(false);
+            this.actor.remove_style_class_name('vertical');
+        } else {
+            this._set_vertical_style();
+        }
+        this.reload();
+    },
+
+//
+// NB if the styling does not set right initially, it may well be because there is padding
+// in the theme and panel-launchers-box has # rather than .
+//
+    _set_vertical_style: function() {
+        this.myactor.set_important(true);
+        this.myactor.set_x_align(Clutter.ActorAlign.CENTER);
+        this.myactor.add_style_class_name('vertical');
+        this.myactor.set_vertical(true);
+        this.actor.set_important(true);
+        this.actor.add_style_class_name('vertical');
+    },
+
     reload: function() {
         this.myactor.destroy_all_children();
         this._launchers = new Array();
@@ -493,15 +522,15 @@ MyApplet.prototype = {
             this._launchers.splice(origpos, 1);
             this._move_launcher_in_proxy(launcher, pos);
             this.sync_settings_proxy_to_settings();
+            this.reload(); // overkill really, but a way of getting the scaled size right
         }
     },
 
     showAddLauncherDialog: function(timestamp, launcher){
-        let args = this.uuid + " " + this.instance_id + " " + this.settings.get_file_path();
         if (launcher) {
-            Util.spawnCommandLine("cinnamon-desktop-editor -mcinnamon-launcher -f" + launcher.getId() + " " + args);
+            Util.spawnCommandLine("cinnamon-desktop-editor -mcinnamon-launcher -f" + launcher.getId() + " " + this.settings.file.get_path());
         } else {
-            Util.spawnCommandLine("cinnamon-desktop-editor -mcinnamon-launcher " + args);
+            Util.spawnCommandLine("cinnamon-desktop-editor -mcinnamon-launcher " + this.settings.file.get_path());
         }
     },
 
@@ -517,16 +546,33 @@ MyApplet.prototype = {
         if (!(source.isDraggableApp || (source instanceof DND.LauncherDraggable))) return DND.DragMotionResult.NO_DROP;
         let children = this.myactor.get_children();
         let numChildren = children.length;
-        let boxWidth = this.myactor.width;
+        let boxWidth;
+        let vertical = false;
 
-        if (this._dragPlaceholder) {
-            boxWidth -= this._dragPlaceholder.actor.width;
-            numChildren--;
+        if (this.myactor.height > this.myactor.width) {  // assume oriented vertically
+            vertical = true;
+            boxWidth = this.myactor.height;
+
+            if (this._dragPlaceholder) {
+                boxWidth -= this._dragPlaceholder.actor.height;
+                numChildren--;
+            }
+        } else {
+            boxWidth = this.myactor.width;
+
+            if (this._dragPlaceholder) {
+                boxWidth -= this._dragPlaceholder.actor.width;
+                numChildren--;
+            }
         }
 
         let launcherPos = this._launchers.indexOf(source);
+        let pos;
 
-        let pos = Math.round(x * numChildren / boxWidth);
+        if (vertical)
+            pos = Math.round(y * numChildren / boxWidth);
+        else
+            pos = Math.round(x * numChildren / boxWidth);
 
         if (pos != this._dragPlaceholderPos && pos <= numChildren) {
             if (this._animatingPlaceholdersCount > 0) {
@@ -544,9 +590,9 @@ MyApplet.prototype = {
                     this._dragPlaceholder.animateOutAndDestroy();
                     this._animatingPlaceholdersCount++;
                     this._dragPlaceholder.actor.connect('destroy',
-							Lang.bind(this, function() {
-							    this._animatingPlaceholdersCount--;
-							}));
+                        Lang.bind(this, function() {
+                        this._animatingPlaceholdersCount--;
+                        }));
                 }
                 this._dragPlaceholder = null;
 

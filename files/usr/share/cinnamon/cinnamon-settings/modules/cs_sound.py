@@ -302,7 +302,7 @@ class BalanceBar(Slider):
     def setChannelMap(self, channelMap):
         self.channelMap = channelMap
         self.channelMap.connect("volume-changed", self.getLevel)
-        self.slider.set_sensitive(getattr(self.channelMap, "can_"+self.type)())
+        self.set_sensitive(getattr(self.channelMap, "can_"+self.type)())
         self.getLevel()
 
     def getLevel(self, a=None, b=None):
@@ -407,59 +407,20 @@ class ProfileSelector(SettingsWidget):
     def testSpeakers(self, a):
         SoundTest(a.get_toplevel(), self.controller.get_default_sink())
 
-class Effect(SettingsWidget):
+class Effect(GSettingsSoundFileChooser):
     def __init__(self, info, sizeGroup):
-        super(Effect, self).__init__()
+        super(Effect, self).__init__(info["label"], info["schema"], info["file"])
 
-        self.settings = Gio.Settings.new(info["schema"])
-        self.fileKey = info["file"]
-        self.enabledKey = info["enabled"]
+        self.enabled_key = info["enabled"]
 
-        label = Gtk.Label(info["label"])
+        self.enabled_switch = Gtk.Switch()
+        self.pack_end(self.enabled_switch, False, False, 0)
+        self.reorder_child(self.enabled_switch, 1)
 
-        self.fileChooser = Gtk.FileChooserButton()
-        sizeGroup.add_widget(self.fileChooser)
+        sizeGroup.add_widget(self.content_widget)
 
-        playButton = Gtk.Button.new_from_icon_name("media-playback-start", 1)
-
-        self.switch = Gtk.Switch()
-
-        self.updateFile()
-        self.updateEnabled()
-
-        # self.switch.connect("notify::active", self.updateEnabledKey)
-        self.fileChooser.connect("file-set", self.updateFileKey)
-        playButton.connect("clicked", self.playSound)
-
-        self.pack_start(label, False, False, 0)
-        self.pack_end(self.switch, False, False, 0)
-        self.pack_end(playButton, False, False, 0)
-        self.pack_end(self.fileChooser, False, False, 0)
-
-        self.settings.connect("changed::"+self.fileKey, self.updateFile)
-        self.settings.connect("changed::"+self.enabledKey, self.updateEnabled)
-        self.settings.bind(self.enabledKey, self.switch, "active", Gio.SettingsBindFlags.DEFAULT)
-
-    def updateFileKey(self, a):
-        self.settings.set_string(self.fileKey, self.fileChooser.get_filename())
-
-    def updateFile(self, a=None, b=None):
-        self.fileChooser.set_filename(self.settings.get_string(self.fileKey))
-
-    def updateEnabledKey(self, a, enabled):
-        print enabled
-        self.settings.set_boolean(self.enabledKey, self)
-
-    def updateEnabled(self, a=None, b=None):
-        enabled = self.settings.get_boolean(self.enabledKey)
-        # self.switch.set_state(enabled)
-        self.fileChooser.set_sensitive(enabled)
-
-    def playSound(self, a):
-        session_bus = dbus.SessionBus()
-        sound_dbus = session_bus.get_object("org.cinnamon.SettingsDaemon", "/org/cinnamon/SettingsDaemon/Sound")
-        play = sound_dbus.get_dbus_method('PlaySoundFile', 'org.cinnamon.SettingsDaemon.Sound')
-        play(0, self.fileChooser.get_filename())
+        self.settings.bind(self.enabled_key, self.enabled_switch, "active", Gio.SettingsBindFlags.DEFAULT)
+        self.settings.bind(self.enabled_key, self.content_widget, "sensitive", Gio.SettingsBindFlags.DEFAULT)
 
 class SoundTest(Gtk.Dialog):
     def __init__(self, parent, stream):
@@ -694,6 +655,7 @@ class Module:
         select.set_margin(0)
         select.set_pixbuf_column(4)
         select.set_text_column(0)
+        select.set_column_spacing(0)
 
         select.connect("selection-changed", self.setActiveDevice, type)
 

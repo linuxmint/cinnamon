@@ -2,7 +2,7 @@
  "uuid": "clock@cinnamon.org",
  "name": "Clock desklet",
  "description": "A desklet that displays the time",
- "icon": "stock_calendar",
+ "icon": "x-office-calendar",
  "prevent-decorations": false,
  "max-instances": "100"
 }

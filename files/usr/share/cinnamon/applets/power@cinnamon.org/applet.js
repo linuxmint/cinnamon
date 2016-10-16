@@ -248,7 +248,10 @@ MyApplet.prototype = {
     _init: function(metadata, orientation, panel_height, instanceId) {
         Applet.TextIconApplet.prototype._init.call(this, orientation, panel_height, instanceId);
 
+        this.setAllowedLayout(Applet.AllowedLayout.BOTH);
+
         this.metadata = metadata;
+        this.orientation = orientation;
 
         this.settings = new Settings.AppletSettings(this, metadata.uuid, instanceId);
 
@@ -286,10 +289,12 @@ MyApplet.prototype = {
 
             this._proxy.connect("g-properties-changed", Lang.bind(this, this._devicesChanged));
             global.settings.connect('changed::device-aliases', Lang.bind(this, this._on_device_aliases_changed));
-            this.settings.bindProperty(Settings.BindingDirection.IN, "labelinfo", "labelinfo", Lang.bind(this, this._devicesChanged), null);
+            this.settings.bind("labelinfo", "labelinfo", this._devicesChanged);
 
             this._devicesChanged();
         }));
+
+        this.update_label_visible();
     },
 
     _on_device_aliases_changed: function() {
@@ -543,6 +548,18 @@ MyApplet.prototype = {
 
     on_applet_removed_from_panel: function() {
         Main.systrayManager.unregisterId(this.metadata.uuid);
+    },
+
+    update_label_visible: function() {
+        if (this.orientation == St.Side.LEFT || this.orientation == St.Side.RIGHT)
+            this.hide_applet_label(true);
+        else
+            this.hide_applet_label(false);
+    },
+
+    on_orientation_changed: function(orientation) {
+        this.orientation = orientation;
+        this.update_label_visible();
     }
 };
 

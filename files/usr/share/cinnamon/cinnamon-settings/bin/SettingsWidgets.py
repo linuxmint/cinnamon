@@ -12,14 +12,14 @@ gi.require_version('CDesktopEnums', '3.0')
 gi.require_version('CinnamonDesktop', '3.0')
 from gi.repository import Gio, Gtk, GObject, Gdk, GLib, GdkPixbuf, CDesktopEnums, CinnamonDesktop
 
-import EffectsWidgets
+from ChooserButtonWidgets import *
 from KeybindingWidgets import ButtonKeybinding
 
 settings_objects = {}
 
 CAN_BACKEND = ["Switch", "SpinButton", "Entry", "TextView", "FontButton", "Range", "ComboBox",
                "ColorChooser", "FileChooser", "SoundFileChooser", "IconChooser", "TweenChooser",
-               "EffectChooser", "Keybinding"]
+               "EffectChooser", "DateChooser", "Keybinding"]
 
 class EditableEntry (Gtk.Stack):
 
@@ -91,164 +91,6 @@ class EditableEntry (Gtk.Stack):
 
     def get_text(self):
         return self.entry.get_text()
-
-class BaseChooserButton(Gtk.Button):
-    def __init__ (self, has_button_label=False):
-        super(BaseChooserButton, self).__init__()
-        self.menu = Gtk.Menu()
-        self.button_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=2)
-        self.button_image = Gtk.Image()
-        self.button_box.add(self.button_image)
-        if has_button_label:
-            self.button_label = Gtk.Label()
-            self.button_box.add(self.button_label)
-        self.add(self.button_box)
-        self.connect("button-release-event", self._on_button_clicked)
-
-    def popup_menu_below_button (self, *args):
-        # the introspection for GtkMenuPositionFunc seems to change with each Gtk version,
-        # this is a workaround to make sure we get the menu and the widget
-        menu = args[0]
-        widget = args[-1]
-        window = widget.get_window()
-        screen = window.get_screen()
-        monitor = screen.get_monitor_at_window(window)
-
-        warea = screen.get_monitor_workarea(monitor)
-        wrect = widget.get_allocation()
-        mrect = menu.get_allocation()
-
-        unused_var, window_x, window_y = window.get_origin()
-
-        # Position left edge of the menu with the right edge of the button
-        x = window_x + wrect.x + wrect.width
-        # Center the menu vertically with respect to the monitor
-        y = warea.y + (warea.height / 2) - (mrect.height / 2)
-
-        # Now, check if we're still touching the button - we want the right edge
-        # of the button always 100% touching the menu
-
-        if y > (window_y + wrect.y):
-            y = y - (y - (window_y + wrect.y))
-        elif (y + mrect.height) < (window_y + wrect.y + wrect.height):
-            y = y + ((window_y + wrect.y + wrect.height) - (y + mrect.height))
-
-        push_in = True # push_in is True so all menu is always inside screen
-        return (x, y, push_in)
-
-    def _on_button_clicked(self, widget, event):
-        if event.button == 1:
-            self.menu.show_all()
-            self.menu.popup(None, None, self.popup_menu_below_button, self, event.button, event.time)
-
-class PictureChooserButton(BaseChooserButton):
-    def __init__ (self, num_cols=4, button_picture_size=None, menu_pictures_size=None, has_button_label=False):
-        super(PictureChooserButton, self).__init__(has_button_label)
-        self.num_cols = num_cols
-        self.button_picture_size = button_picture_size
-        self.menu_pictures_size = menu_pictures_size
-        self.row = 0
-        self.col = 0
-        self.progress = 0.0
-
-        context = self.get_style_context()
-        context.add_class("gtkstyle-fallback")
-
-        self.connect_after("draw", self.on_draw)
-
-    def on_draw(self, widget, cr, data=None):
-        if self.progress == 0:
-            return False
-        box = widget.get_allocation()
-
-        context = widget.get_style_context()
-        c = context.get_background_color(Gtk.StateFlags.SELECTED)
-
-        max_length = box.width * .6
-        start = (box.width - max_length) / 2
-        y = box.height - 5
-
-        cr.save()
-
-        cr.set_source_rgba(c.red, c.green, c.blue, c.alpha)
-        cr.set_line_width(3)
-        cr.set_line_cap(1)
-        cr.move_to(start, y)
-        cr.line_to(start + (self.progress * max_length), y)
-        cr.stroke()
-
-        cr.restore()
-        return False
-
-    def increment_loading_progress(self, inc):
-        progress = self.progress + inc
-        self.progress = min(1.0, progress)
-        self.queue_draw()
-
-    def reset_loading_progress(self):
-        self.progress = 0.0
-        self.queue_draw()
-
-    def set_picture_from_file (self, path):
-        if os.path.exists(path):
-            if self.button_picture_size is None:
-                pixbuf = GdkPixbuf.Pixbuf.new_from_file(path)
-            else:
-                pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_scale(path, -1, self.button_picture_size, True)
-            self.button_image.set_from_pixbuf(pixbuf)
-
-    def set_button_label(self, label):
-        self.button_label.set_markup(label)
-
-    def _on_picture_selected(self, menuitem, path, callback, id=None):
-        if id is not None:
-            result = callback(path, id)
-        else:
-            result = callback(path)
-
-        if result:
-            self.set_picture_from_file(path)
-
-    def clear_menu(self):
-        menu = self.menu
-        self.menu = Gtk.Menu()
-        self.row = 0
-        self.col = 0
-        menu.destroy()
-
-    def add_picture(self, path, callback, title=None, id=None):
-        if os.path.exists(path):
-            if self.menu_pictures_size is None:
-                pixbuf = GdkPixbuf.Pixbuf.new_from_file(path)
-            else:
-                pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_scale(path, -1, self.menu_pictures_size, True)
-            image = Gtk.Image.new_from_pixbuf (pixbuf)
-            menuitem = Gtk.MenuItem()
-            if title is not None:
-                vbox = Gtk.VBox()
-                vbox.pack_start(image, False, False, 2)
-                label = Gtk.Label()
-                label.set_text(title)
-                vbox.pack_start(label, False, False, 2)
-                menuitem.add(vbox)
-            else:
-                menuitem.add(image)
-            if id is not None:
-                menuitem.connect('activate', self._on_picture_selected, path, callback, id)
-            else:
-                menuitem.connect('activate', self._on_picture_selected, path, callback)
-            self.menu.attach(menuitem, self.col, self.col+1, self.row, self.row+1)
-            self.col = (self.col+1) % self.num_cols
-            if (self.col == 0):
-                self.row = self.row + 1
-
-    def add_separator(self):
-        self.row = self.row + 1
-        self.menu.attach(Gtk.SeparatorMenuItem(), 0, self.num_cols, self.row, self.row+1)
-
-    def add_menuitem(self, menuitem):
-        self.row = self.row + 1
-        self.menu.attach(menuitem, 0, self.num_cols, self.row, self.row+1)
 
 class SidePage:
     def __init__(self, name, icon, keywords, content_box = None, size = None, is_c_mod = False, is_standalone = False, exec_name = None, module=None):
@@ -925,15 +767,19 @@ class ComboBox(SettingsWidget):
 class ColorChooser(SettingsWidget):
     bind_dir = None
 
-    def __init__(self, label, size_group=None, dep_key=None, tooltip=""):
+    def __init__(self, label, legacy_string=False, size_group=None, dep_key=None, tooltip=""):
         super(ColorChooser, self).__init__(dep_key=dep_key)
+        # note: Gdk.Color is deprecated in favor of Gdk.RGBA, but as the hex format is still used
+        # in some places (most notably the desktop background handling in cinnamon-desktop) we
+        # still support it for now by adding the legacy_string argument
+        self.legacy_string = legacy_string
 
         self.label = Gtk.Label(label)
         self.content_widget = Gtk.ColorButton()
         self.pack_start(self.label, False, False, 0)
         self.pack_end(self.content_widget, False, False, 0)
 
-        self.content_widget.connect('color-activated', self.on_my_value_changed)
+        self.content_widget.connect('color-set', self.on_my_value_changed)
 
         self.set_tooltip_text(tooltip)
 
@@ -941,11 +787,17 @@ class ColorChooser(SettingsWidget):
             self.add_to_size_group(size_group)
 
     def on_setting_changed(self, *args):
-        color = self.get_value()
-        self.content_widget.get_rgba().parse(color)
+        color_string = self.get_value()
+        rgba = Gdk.RGBA()
+        rgba.parse(color_string)
+        self.content_widget.set_rgba(rgba)
 
     def on_my_value_changed(self, widget):
-        self.set_value(self.content_widget.get_rgba().to_string())
+        if self.legacy_string:
+            color_string = self.content_widget.get_color().to_string()
+        else:
+            color_string = self.content_widget.get_rgba().to_string()
+        self.set_value(color_string)
 
 class FileChooser(SettingsWidget):
     bind_dir = None
@@ -982,24 +834,30 @@ class SoundFileChooser(SettingsWidget):
         super(SoundFileChooser, self).__init__(dep_key=dep_key)
 
         self.label = Gtk.Label(label)
-
-        self.content_widget = Gtk.ButtonBox(Gtk.Orientation.HORIZONTAL)
+        self.content_widget = Gtk.Box()
 
         c = self.content_widget.get_style_context()
         c.add_class(Gtk.STYLE_CLASS_LINKED)
 
+        self.file_picker_button = Gtk.Button()
+        self.file_picker_button.connect("clicked", self.on_picker_clicked)
+
+        button_content = Gtk.Box(spacing=5)
+        self.file_picker_button.add(button_content)
+
+        self.button_label = Gtk.Label()
+        button_content.pack_start(Gtk.Image(icon_name="sound"), False, False, 0)
+        button_content.pack_start(self.button_label, False, False, 0)
+
+        self.content_widget.pack_start(self.file_picker_button, True, True, 0)
+
         self.pack_start(self.label, False, False, 0)
         self.pack_end(self.content_widget, False, False, 0)
-
-        self.file_picker = Gtk.Button()
-        self.file_picker.connect("clicked", self.on_picker_clicked)
-
-        self.content_widget.add(self.file_picker)
 
         self.play_button = Gtk.Button()
         self.play_button.set_image(Gtk.Image.new_from_stock("gtk-media-play", Gtk.IconSize.BUTTON))
         self.play_button.connect("clicked", self.on_play_clicked)
-        self.content_widget.add(self.play_button)
+        self.content_widget.pack_start(self.play_button, False, False, 0)
 
         self._proxy = None
 
@@ -1028,6 +886,7 @@ class SoundFileChooser(SettingsWidget):
     def on_picker_clicked(self, widget):
         dialog = Gtk.FileChooserDialog(title=self.label.get_text(),
                                        action=Gtk.FileChooserAction.OPEN,
+                                       transient_for=self.get_toplevel(),
                                        buttons=(_("_Cancel"), Gtk.ResponseType.CANCEL,
                                                 _("_Open"), Gtk.ResponseType.ACCEPT))
 
@@ -1049,7 +908,7 @@ class SoundFileChooser(SettingsWidget):
     def update_button_label(self, absolute_path):
         f = Gio.File.new_for_path(absolute_path)
 
-        self.file_picker.set_label(f.get_basename())
+        self.button_label.set_label(f.get_basename())
 
     def on_setting_changed(self, *args):
         self.update_button_label(self.get_value())
@@ -1141,7 +1000,7 @@ class TweenChooser(SettingsWidget):
 
         self.label = Gtk.Label.new(label)
 
-        self.content_widget = EffectsWidgets.TweenChooserButton()
+        self.content_widget = TweenChooserButton()
 
         self.pack_start(self.label, False, False, 0)
         self.pack_end(self.content_widget, False, False, 0)
@@ -1160,7 +1019,7 @@ class EffectChooser(SettingsWidget):
 
         self.label = Gtk.Label.new(label)
 
-        self.content_widget = EffectsWidgets.EffectChooserButton(possible)
+        self.content_widget = EffectChooserButton(possible)
 
         self.pack_start(self.label, False, False, 0)
         self.pack_end(self.content_widget, False, False, 0)
@@ -1169,6 +1028,34 @@ class EffectChooser(SettingsWidget):
 
         if size_group:
             self.add_to_size_group(size_group)
+
+class DateChooser(SettingsWidget):
+    bind_dir = None
+
+    def __init__(self, label, size_group=None, dep_key=None, tooltip=""):
+        super(DateChooser, self).__init__(dep_key=dep_key)
+
+        self.label = Gtk.Label.new(label)
+
+        self.content_widget = DateChooserButton()
+
+        self.pack_start(self.label, False, False, 0)
+        self.pack_end(self.content_widget, False, False, 0)
+
+        self.set_tooltip_text(tooltip)
+
+        self.content_widget.connect("date-changed", self.on_date_changed)
+
+        if size_group:
+            self.add_to_size_group(size_group)
+
+    def on_date_changed(self, *args):
+        date = self.content_widget.get_date()
+        self.set_value({"y": date[0], "m": date[1], "d": date[2]})
+
+    def on_setting_changed(self, *args):
+        date = self.get_value()
+        self.content_widget.set_date(date["y"], date["m"], date["d"])
 
 class Keybinding(SettingsWidget):
     bind_dir = None

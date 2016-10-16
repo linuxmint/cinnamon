@@ -1,16 +1,21 @@
-#!/usr/bin/python2
-# -*- coding: utf-8 -*-
+#!/usr/bin/env python3
+
+""" Creates a keybinding that allows cinnamon to be restarted by pressing Ctrl + Alt + Esc,
+and runs in the background to detect that keybinding
+"""
+
+import os
+import syslog
 
 import gi
 gi.require_version('Keybinder', '3.0')
 gi.require_version('Gtk', '3.0')
 from gi.repository import Keybinder
 from gi.repository import Gtk, Gio
-import os
-import syslog
 
 SETTINGS_SCHEMA = 'org.cinnamon.desktop.keybindings.media-keys'
 SETTINGS_KEY = 'restart-cinnamon'
+
 
 class KillerDaemon:
 
@@ -27,7 +32,7 @@ class KillerDaemon:
             if self.bindings is not None:
                 for binding in self.bindings:
                     Keybinder.unbind(binding)
-        except Exception, detail:
+        except Exception as detail:
             syslog.syslog(detail)
 
         # Get the new ones
@@ -39,13 +44,13 @@ class KillerDaemon:
                 for binding in self.bindings:
                     if Keybinder.bind(binding, self.restart_cinnamon, None):
                         syslog.syslog("Bound Cinnamon restart to %s." % binding)
-        except Exception, detail:
+        except Exception as detail:
             syslog.syslog(detail)
 
     def restart_cinnamon(self, keystring, data):
-        os.system("nemo -n &") # restart nemo if it's not running already
-        os.system("cinnamon-settings-daemon &") # restart CSD if it's not running already
-        os.system("cinnamon --replace &") # restart Cinnamon whether it's running or not (can be handy in case of a DE freeze)
+        os.system("nemo -n &")  # restart nemo if it's not running already
+        os.system("cinnamon-settings-daemon &")  # restart CSD if it's not running already
+        os.system("cinnamon --replace &")  # restart Cinnamon whether it's running or not (can be handy in case of a DE freeze)
 
 if __name__ == '__main__':
     daemon = KillerDaemon()

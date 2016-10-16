@@ -25,48 +25,13 @@ MyDesklet.prototype = {
 
         try {
             this.settings = new Settings.DeskletSettings(this, this.metadata["uuid"], this.instance_id);
-
-            this.settings.bindProperty(Settings.BindingDirection.IN,
-                                     "directory",
-                                     "dir",
-                                     this.on_setting_changed,
-                                     null);
-
-            this.settings.bindProperty(Settings.BindingDirection.IN,
-                                      "shuffle",
-                                      "shuffle",
-                                      this.on_setting_changed,
-                                      null);
-
-            this.settings.bindProperty(Settings.BindingDirection.IN,
-                                     "delay",
-                                     "delay",
-                                     this.on_setting_changed,
-                                     null);
-
-            this.settings.bindProperty(Settings.BindingDirection.IN,
-                                     "height",
-                                     "height",
-                                     this.on_setting_changed,
-                                     null);
-
-            this.settings.bindProperty(Settings.BindingDirection.IN,
-                                     "width",
-                                     "width",
-                                     this.on_setting_changed,
-                                     null);
-
-            this.settings.bindProperty(Settings.BindingDirection.IN,
-                                     "fade-delay",
-                                     "fade_delay",
-                                     this.on_setting_changed,
-                                     null);
-
-            this.settings.bindProperty(Settings.BindingDirection.IN,
-                                     "effect",
-                                     "effect",
-                                     this.on_setting_changed,
-                                     null);
+            this.settings.bind("directory", "dir", this.on_setting_changed);
+            this.settings.bind("shuffle",  "shuffle", this.on_setting_changed);
+            this.settings.bind("delay", "delay", this.on_setting_changed);
+            this.settings.bind("height", "height", this.on_setting_changed);
+            this.settings.bind("width", "width", this.on_setting_changed);
+            this.settings.bind("fade-delay", "fade_delay", this.on_setting_changed);
+            this.settings.bind("effect", "effect", this.on_setting_changed);
         } catch (e) {
             global.logError(e);
         }

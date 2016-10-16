@@ -1,6 +1,5 @@
 {
  "uuid": "systray@cinnamon.org",
  "name": "System Tray",
- "description": "An applet which hosts all the system tray icons",
- "icon": "indicator-applet"
+ "description": "An applet which hosts all the system tray icons"
 }

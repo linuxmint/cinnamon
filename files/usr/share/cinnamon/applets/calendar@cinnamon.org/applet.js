@@ -42,6 +42,8 @@ MyApplet.prototype = {
 
     _init: function(orientation, panel_height, instance_id) {        
         Applet.TextApplet.prototype._init.call(this, orientation, panel_height, instance_id);
+
+        this.setAllowedLayout(Applet.AllowedLayout.BOTH);
         
         try {    
 
@@ -51,7 +53,7 @@ MyApplet.prototype = {
 
             this.menuManager = new PopupMenu.PopupMenuManager(this);
             
-            this._orientation = orientation;
+            this.orientation = orientation;
             
             this._initContextMenu();
                                      
@@ -89,8 +91,8 @@ MyApplet.prototype = {
             // Track changes to clock settings
             this._dateFormatFull = _("%A %B %e, %Y");
 
-            this.settings.bindProperty(Settings.BindingDirection.IN, "use-custom-format", "use_custom_format", this.on_settings_changed, null);
-            this.settings.bindProperty(Settings.BindingDirection.IN, "custom-format", "custom_format", this.on_settings_changed, null);        
+            this.settings.bind("use-custom-format", "use_custom_format", this.on_settings_changed);
+            this.settings.bind("custom-format", "custom_format", this.on_settings_changed);
 
             // Track changes to date&time settings
             this.datetime_settings = new Gio.Settings({ schema_id: "org.cinnamon.desktop.interface" });
@@ -139,10 +141,16 @@ MyApplet.prototype = {
     _updateClockAndDate: function() {
         let now = new Date();        
         let nextUpdate = 60 - now.getSeconds() + 1;
-        
+        let in_vertical_panel = (this.orientation == St.Side.LEFT || this.orientation == St.Side.RIGHT);
+        let label_string;
+
         // Applet label
-        if (this.use_custom_format) {
-            let label_string = now.toLocaleFormat(this.custom_format);
+        if (this.use_custom_format || in_vertical_panel) {
+            if (in_vertical_panel)
+                label_string = now.toLocaleFormat("%H%n%M"); // this is all that will fit in a vertical panel with a typical default font
+            else
+                label_string = now.toLocaleFormat(this.custom_format);
+
             if (!label_string) {
                 global.logError("Calendar applet: bad time format string - check your string.");
                 label_string = "~CLOCK FORMAT ERROR~ " + now.toLocaleFormat("%l:%M %p");
@@ -189,7 +197,7 @@ MyApplet.prototype = {
         if (this._calendarArea) this._calendarArea.unparent();
         if (this.menu) this.menuManager.removeMenu(this.menu);
         
-        this.menu = new Applet.AppletPopupMenu(this, this._orientation);
+        this.menu = new Applet.AppletPopupMenu(this, this.orientation);
         this.menuManager.addMenu(this.menu);
         
         if (this._calendarArea){
@@ -220,12 +228,13 @@ MyApplet.prototype = {
             }
         }));
     },
-    
+
     on_orientation_changed: function (orientation) {
-        this._orientation = orientation;
+        this.orientation = orientation;
         this._initContextMenu();
+        this.on_settings_changed();
     }
-    
+
 };
 
 function main(metadata, orientation, panel_height, instance_id) {  

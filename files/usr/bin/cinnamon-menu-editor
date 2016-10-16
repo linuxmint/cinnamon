@@ -1,20 +1,26 @@
-#! /usr/bin/python2 -OOt
+#!/usr/bin/env python2
+
+""" Launch the Cinnamon menu editor utility
+
+Usage:  cinnamon-menu-editor
+"""
 
 import sys
-sys.path.insert(0,'/usr/share/cinnamon/cinnamon-menu-editor')
+
+sys.path.insert(0, '/usr/share/cinnamon/cinnamon-menu-editor')
 from cme import MainWindow
 
+
 def main():
-	try:
-		from MenuEditor import config
-		datadir = config.pkgdatadir
-		version = config.VERSION
-	except:
-		datadir = '.'
-		version = '0.9'
-	app = MainWindow.MainWindow(datadir, version)
-	app.run()
+    try:
+        from MenuEditor import config
+        datadir = config.pkgdatadir
+        version = config.VERSION
+    except:
+        datadir = '.'
+        version = '0.9'
+    app = MainWindow.MainWindow(datadir, version)
+    app.run()
 
 if __name__ == '__main__':
-	main()
-
+    main()

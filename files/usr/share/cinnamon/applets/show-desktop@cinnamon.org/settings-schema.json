@@ -1,0 +1,43 @@
+{
+ "head" : {
+    "type" : "header",
+    "description" : "Settings"
+ },
+ "peek-at-desktop" : {
+    "type" : "switch",
+    "default" : true,
+    "description": "Peek at the desktop on hover",
+    "tooltip": "Peek at the desktop when hovering the applet"
+ },
+  "peek-blur" : {
+    "type" : "switch",
+    "default" : false,
+    "dependency" : "peek-at-desktop",
+    "indent" : true,
+    "description" : "Blur effect",
+    "tooltip" : "Blur windows when peeking at the desktop"
+ },
+ "peek-delay" : {
+    "type": "spinbutton",
+    "default" : 400,
+    "min" : 0,
+    "max" : 1000,
+    "step" : 50,
+    "units" : "milliseconds",
+    "dependency" : "peek-at-desktop",
+    "indent" : true,
+    "description": "Hover delay",
+    "tooltip": "Delay before Peek shows desktop"
+ },
+ "peek-opacity": {
+    "type": "scale",
+    "default" : 10,
+    "min" : 0,
+    "max" : 255,
+    "step" : 10,
+    "dependency" : "peek-at-desktop",
+    "indent" : true,
+    "description" : "Window opacity",
+    "tooltip" : "Change the opacity of windows when peeking at the desktop"
+ }
+}

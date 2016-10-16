@@ -16,7 +16,7 @@ sys.path.insert(0, '/usr/share/cinnamon/cinnamon-menu-editor')
 from cme import util
 
 sys.path.insert(0, '/usr/share/cinnamon/cinnamon-settings')
-from bin import XletSettingsWidgets
+from bin import JsonSettingsWidgets
 
 # i18n
 gettext.install("cinnamon", "/usr/share/locale")
@@ -182,20 +182,20 @@ class ItemEditor(object):
 
     def sync_widgets(self, name_valid, exec_valid):
         if name_valid:
-            self.builder.get_object('name-entry').set_icon_from_icon_name(Gtk.EntryIconPosition.SECONDARY, 'ok')
+            self.builder.get_object('name-entry').set_icon_from_icon_name(Gtk.EntryIconPosition.SECONDARY, 'gtk-ok')
             self.builder.get_object('name-entry').set_icon_tooltip_text(Gtk.EntryIconPosition.SECONDARY,
                                                                         _("Valid name"))
         else:
-            self.builder.get_object('name-entry').set_icon_from_icon_name(Gtk.EntryIconPosition.SECONDARY, 'stop')
+            self.builder.get_object('name-entry').set_icon_from_icon_name(Gtk.EntryIconPosition.SECONDARY, 'process-stop')
             self.builder.get_object('name-entry').set_icon_tooltip_text(Gtk.EntryIconPosition.SECONDARY,
                                                                         _("The name cannot be empty."))
 
         if exec_valid:
-            self.builder.get_object('exec-entry').set_icon_from_icon_name(Gtk.EntryIconPosition.SECONDARY, 'ok')
+            self.builder.get_object('exec-entry').set_icon_from_icon_name(Gtk.EntryIconPosition.SECONDARY, 'gtk-ok')
             self.builder.get_object('exec-entry').set_icon_tooltip_text(Gtk.EntryIconPosition.SECONDARY,
                                                                         _("Valid executable"))
         else:
-            self.builder.get_object('exec-entry').set_icon_from_icon_name(Gtk.EntryIconPosition.SECONDARY, 'stop')
+            self.builder.get_object('exec-entry').set_icon_from_icon_name(Gtk.EntryIconPosition.SECONDARY, 'process-stop')
             self.builder.get_object('exec-entry').set_icon_tooltip_text(Gtk.EntryIconPosition.SECONDARY,
                                                                         _("The executable is not valid. It cannot be empty and spaces in the path must be escaped with backslash (\\)."))
 
@@ -433,9 +433,9 @@ class Main:
             parser.error("directory and launcher modes must be accompanied by the -o argument")
         if options.mode == "nemo-launcher" and not options.destination_directory:
             parser.error("nemo-launcher mode must be accompanied by the -d argument")
-        if options.mode == "cinnamon-launcher" and len(args) < 3:
+        if options.mode == "cinnamon-launcher" and len(args) < 1:
             parser.error("cinnamon-launcher mode must have the following syntax:\n"
-                         "cinnamon-desktop-editor -mcinnamon-launcher [-ffoo.desktop] <uuid> <instance-id> <json-path>")
+                         "cinnamon-desktop-editor -mcinnamon-launcher [-ffoo.desktop] <json-path>")
 
         self.tree = CMenu.Tree.new("cinnamon-applications.menu", CMenu.TreeFlags.INCLUDE_NODISPLAY)
         if not self.tree.load_sync():
@@ -447,9 +447,7 @@ class Main:
         self.dest_dir = options.destination_directory
 
         if options.mode == "cinnamon-launcher":
-            self.uuid = args[0]
-            self.iid = args[1]
-            self.json_path = args[2]
+            self.json_path = args[0]
 
         if self.desktop_file is not None:
             self.get_desktop_path()
@@ -477,9 +475,9 @@ class Main:
 
     def panel_launcher_cb(self, success, dest_path):
         if success:
-            factory = XletSettingsWidgets.Factory(self.json_path, self.iid, False, self.uuid)
+            settings = JSonSettingsWidgets.JSonSettingsHandler(self.json_path)
 
-            launchers = factory.settings.get_value("launcherList")
+            launchers = settings.get_value("launcherList")
             if self.desktop_file is None:
                 launchers.append(os.path.split(dest_path)[1])
             else:
@@ -487,7 +485,7 @@ class Main:
                 if i >= 0:
                     del launchers[i]
                     launchers.insert(i, os.path.split(dest_path)[1])
-            factory.settings.set_value("launcherList", launchers)
+            settings.set_value("launcherList", launchers)
             if self.desktop_file is None:
                 self.ask_menu_launcher(dest_path)
         self.end()
@@ -530,6 +528,6 @@ class Main:
         Gtk.main_quit()
 
 if __name__ == "__main__":
-    Gtk.Window.set_default_icon_name('gnome-panel-launcher')
+    Gtk.Window.set_default_icon_name('cinnamon-panel-launcher')
     Main()
     Gtk.main()

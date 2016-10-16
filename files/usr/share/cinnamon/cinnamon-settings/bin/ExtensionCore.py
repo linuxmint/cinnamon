@@ -484,9 +484,6 @@ class ExtensionSidePage (SidePage):
 
         self.spices = Spice_Harvester(self.collection_type, self.window)
 
-        # if not self.spices.get_webkit_enabled():
-        #     getmore_label.set_sensitive(False)
-        #     reload_button.set_sensitive(False)
         extra_page = self.getAdditionalPage()
         if extra_page:
             self.stack.add_titled(extra_page, "extra", extra_page.label)
@@ -957,7 +954,6 @@ restarting Cinnamon."""
         self.gm_modelfilter.refilter()
 
     def load_spices(self, force=False):
-        # if self.spices.get_webkit_enabled():
         self.update_list = {}
 
         thread.start_new_thread(self.spices.load, (self.on_spice_load, force))
@@ -986,10 +982,7 @@ restarting Cinnamon."""
             extensionName = extensionData['name'].replace('&', '&amp;')
             iter = self.gm_model.insert_before(None, None)
             self.gm_model.set_value(iter, 0, uuid)
-            if not self.themes:
-                self.gm_model.set_value(iter, 1, '<b>%s</b>\n<b><span size="x-small">%s</span></b>' % (extensionName, uuid))
-            else:
-                self.gm_model.set_value(iter, 1, '<b>%s</b>' % (extensionName))
+            self.gm_model.set_value(iter, 1, '<b>%s</b>' % (extensionName))
             self.gm_model.set_value(iter, 2, 0)
 
             if not self.themes:
@@ -1400,8 +1393,7 @@ Please contact the developer.""")
                     self.model.set_value(iter, 0, extension_uuid)
                     self.model.set_value(iter, 1, '''\
 <b>%s</b>
-<b><span size="xx-small">%s</span></b>
-<i><span size="x-small">%s</span></i>''' % (extension_name, extension_uuid, extension_description))
+<i><span size="small">%s</span></i>''' % (extension_name, extension_description))
 
                     self.model.set_value(iter, 2, found)
                     self.model.set_value(iter, 3, extension_max_instances)

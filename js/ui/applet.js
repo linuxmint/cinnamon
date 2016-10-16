@@ -20,7 +20,14 @@ const COLOR_ICON_HEIGHT_FACTOR = .875;  // Panel height factor for normal color 
 const PANEL_FONT_DEFAULT_HEIGHT = 11.5; // px
 const PANEL_SYMBOLIC_ICON_DEFAULT_HEIGHT = 1.14 * PANEL_FONT_DEFAULT_HEIGHT; // ems conversion
 const DEFAULT_PANEL_HEIGHT = 25;
+const DEFAULT_ICON_HEIGHT = 22;
 const FALLBACK_ICON_HEIGHT = 22;
+
+const AllowedLayout = {  // the panel layout that an applet is suitable for
+    VERTICAL: 'vertical',
+    HORIZONTAL: 'horizontal',
+    BOTH: 'both'
+}
 
 /**
  * #MenuItem
@@ -124,6 +131,9 @@ AppletPopupMenu.prototype = {
  * @_menuManager (PopupMenu.PopupMenuManager): The menu manager of the applet
  * @_applet_context_menu (Applet.AppletContextMenu): The context menu of the applet
  * @_applet_tooltip_text (string): Text of the tooltip
+ * @_allowedLayout (Applet.AllowedLayout): The allowed layout of the applet. This
+ * determines the type of panel an applet is allowed in. By default this is set
+ * to Applet.AllowedLayout.HORIZONTAL
  * 
  * Base applet class that other applets can inherit
  */
@@ -140,7 +150,14 @@ Applet.prototype = {
      * @instance_id (int): instance id of the applet
      */
     _init: function(orientation, panel_height, instance_id) {
-        this.actor = new St.BoxLayout({ style_class: 'applet-box', reactive: true, track_hover: true });        
+
+        this.actor = new St.BoxLayout({ style_class: 'applet-box',
+                                        reactive: true,
+                                        track_hover: true });
+
+        this._allowedLayout = AllowedLayout.HORIZONTAL;
+        this.setOrientationInternal(orientation);
+    
         this._applet_tooltip = new Tooltips.PanelItemTooltip(this, "", orientation);                                        
         this.actor.connect('button-press-event', Lang.bind(this, this._onButtonPressEvent));  
 
@@ -148,23 +165,26 @@ Applet.prototype = {
         this._applet_context_menu = new AppletContextMenu(this, orientation);
         this._menuManager.addMenu(this._applet_context_menu);     
 
-        this.actor._applet = this; // Backlink to get the applet from its actor (handy when we want to know stuff about a particular applet within the panel)
+        this.actor._applet = this;  // Backlink to get the applet from its actor 
+                                    // (handy when we want to know stuff about a particular applet within the panel)
         this.actor._delegate = this;
-        this._order = 0; // Defined in gsettings, this is the order of the applet within a panel location. This value is set by Cinnamon when loading/listening_to gsettings.
-        this._newOrder = null; //  Used when moving an applet
-        this._panelLocation = null; // Backlink to the panel location our applet is in, set by Cinnamon.
-        this._newPanelLocation = null; //  Used when moving an applet
-        this._applet_enabled = true; // Whether the applet is enabled or not (if not it hides in the panel as if it wasn't there)
+        this._order = 0;        // Defined in gsettings, this is the order of the applet within a panel location. 
+                                // This value is set by Cinnamon when loading/listening_to gsettings.
+        this._newOrder = null;      //  Used when moving an applet
+        this._panelLocation = null;     // Backlink to the panel location our applet is in, set by Cinnamon.
+        this._newPanelLocation = null;  //  Used when moving an applet
+        this._applet_enabled = true;    // Whether the applet is enabled or not (if not it hides in the panel as if it wasn't there)
+        this._orientation = orientation;  // orientation of the panel the applet is on  St.Side.TOP BOTTOM LEFT RIGHT
 
         this._panelHeight = panel_height ? panel_height : 25;
         this.instance_id = instance_id; // Needed by appletSettings
-        this._uuid = null; // Defined in gsettings, set by Cinnamon.
-        this._hook = null; // Defined in metadata.json, set by appletManager
-        this._meta = null; // set by appletManager
+        this._uuid = null;      // Defined in gsettings, set by Cinnamon.
+        this._hook = null;      // Defined in metadata.json, set by appletManager
+        this._meta = null;      // set by appletManager
         this._dragging = false;                
         this._draggable = DND.makeDraggable(this.actor);
         this._draggable.connect('drag-begin', Lang.bind(this, this._onDragBegin));
-    	this._draggable.connect('drag-cancelled', Lang.bind(this, this._onDragCancelled));
+        this._draggable.connect('drag-cancelled', Lang.bind(this, this._onDragCancelled));
         this._draggable.connect('drag-end', Lang.bind(this, this._onDragEnd));        
 
         try {
@@ -198,7 +218,6 @@ Applet.prototype = {
     },
 
     _onDragBegin: function() {
-
         this._dragging = true;
         this._applet_tooltip.hide();
         this._applet_tooltip.preventShow = true;                
@@ -239,9 +258,9 @@ Applet.prototype = {
                     this.on_applet_clicked(event);
                 }
             }
-            if (event.get_button()==3){            
+            if (event.get_button() == 3) {            
                 if (this._applet_context_menu._getMenuItems().length > 0) {
-                    this._applet_context_menu.toggle();			
+                    this._applet_context_menu.toggle();         
                 }
             }
         }
@@ -346,6 +365,25 @@ Applet.prototype = {
     },
 
     /**
+     * setOrientationInternal:
+     * @orientation (St.Side): the orientation
+     *
+     * Sets the orientation of the St.BoxLayout.
+     *
+     */
+    setOrientationInternal: function (orientation) {
+        if (orientation == St.Side.LEFT || orientation == St.Side.RIGHT) {
+            this.actor.add_style_class_name('vertical');
+            this.actor.set_important(true);
+            this.actor.set_vertical(true);
+            this.actor.set_x_expand(true);
+        } else {
+            this.actor.remove_style_class_name('vertical');
+            this.actor.set_vertical(false);
+        }
+    },
+
+    /**
      * setOrientation:
      * @orientation (St.Side): the orientation
      * 
@@ -354,11 +392,35 @@ Applet.prototype = {
      * This function should only be called by appletManager
      */
     setOrientation: function (orientation) {
+        this.setOrientationInternal(orientation);
         this.on_orientation_changed(orientation);
         this.emit("orientation-changed", orientation);
         this.finalizeContextMenu();
     },
-    
+
+    /**
+     * setAllowedLayout:
+     * @layout (AllowedLayout): the allowed layout
+     *
+     * Sets the layout allowed by the applet. Possible values are
+     * AllowedLayout.HORIZONTAL, AllowedLayout.VERTICAL, and
+     * AllowedLayout.BOTH.
+     */
+    setAllowedLayout: function (layout) {
+        this._allowedLayout = layout;
+    },
+
+    /**
+     * getAllowedLayout:
+     *
+     * Retrieves the type of layout an applet is allowed to have.
+     *
+     * Returns (Applet.AllowedLayout): The allowed layout of the applet
+     */
+    getAllowedLayout: function() {
+        return this._allowedLayout;
+    },
+
     /**
      * on_orientation_changed:
      * @orientation (St.Side): new orientation of the applet
@@ -397,12 +459,13 @@ Applet.prototype = {
     },
     
     finalizeContextMenu: function () {
+
         // Add default context menus if we're in panel edit mode, ensure their removal if we're not       
         let items = this._applet_context_menu._getMenuItems();
 
         if (this.context_menu_item_remove == null) {
             this.context_menu_item_remove = new PopupMenu.PopupIconMenuItem(_("Remove '%s'").format(_(this._meta.name)),
-                    "edit-delete",
+                   "edit-delete",
                    St.IconType.SYMBOLIC);
             this.context_menu_item_remove.connect('activate', Lang.bind(this, function() {
                 AppletManager._removeAppletFromPanel(this._uuid, this.instance_id);
@@ -420,15 +483,11 @@ Applet.prototype = {
             this.context_menu_separator = new PopupMenu.PopupSeparatorMenuItem();
         }
 
-        if (this._applet_context_menu._getMenuItems().length > 0) {
-            this._applet_context_menu.addMenuItem(this.context_menu_separator);
-        }
-
         if (items.indexOf(this.context_menu_item_about) == -1) {
             this._applet_context_menu.addMenuItem(this.context_menu_item_about);
         }
 
-        if (!this._meta["hide-configuration"] && GLib.file_test(this._meta["path"] + "/settings-schema.json", GLib.FileTest.EXISTS)) {     
+        if (!this._meta["hide-configuration"] && GLib.file_test(this._meta["path"] + "/settings-schema.json", GLib.FileTest.EXISTS)) {
             if (this.context_menu_item_configure == null) {            
                 this.context_menu_item_configure = new PopupMenu.PopupIconMenuItem(_("Configure..."),
                         "system-run",
@@ -490,8 +549,12 @@ IconApplet.prototype = {
      */
     _init: function(orientation, panel_height, instance_id) {
         Applet.prototype._init.call(this, orientation, panel_height, instance_id);
-        this._applet_icon_box = new St.Bin();
-        this.actor.add(this._applet_icon_box, {a_align: St.Align.MIDDLE, y_fill: false });
+
+        this._applet_icon_box = new St.Bin(); // https://developer.gnome.org/st/stable/StBin.htm
+
+        this._applet_icon_box.set_fill(true,true);
+        this._applet_icon_box.set_alignment(St.Align.MIDDLE,St.Align.MIDDLE);
+        this.actor.add(this._applet_icon_box);
     },
 
     /**
@@ -570,24 +633,35 @@ IconApplet.prototype = {
 
     _ensureIcon: function() {
         if (!this._applet_icon)
-            this._applet_icon = new St.Icon({ reactive: true, track_hover: true, style_class: 'applet-icon' });
+            this._applet_icon = new St.Icon({ reactive: true, track_hover: true, style_class: 'applet-icon'});
 
         this._applet_icon_box.set_child(this._applet_icon);
     },
 
     _setStyle: function() {
-        switch (this._applet_icon.get_icon_type()) {
+
+        let symb_scaleup = ((this._panelHeight / DEFAULT_PANEL_HEIGHT) * PANEL_SYMBOLIC_ICON_DEFAULT_HEIGHT) / global.ui_scale;
+        let fullcolor_scaleup = this._panelHeight * COLOR_ICON_HEIGHT_FACTOR / global.ui_scale;
+        let icon_type = this._applet_icon.get_icon_type();
+
+        switch (icon_type) {
             case St.IconType.FULLCOLOR:
                 this._applet_icon.set_icon_size(this._scaleMode ?
-                        this._panelHeight * COLOR_ICON_HEIGHT_FACTOR / global.ui_scale :
-                        FALLBACK_ICON_HEIGHT);
+                                                fullcolor_scaleup :
+                                                DEFAULT_ICON_HEIGHT);
                 this._applet_icon.set_style_class_name('applet-icon');
-                break;
+            break;
             case St.IconType.SYMBOLIC:
                 this._applet_icon.set_icon_size(this._scaleMode ?
-                        (this._panelHeight / DEFAULT_PANEL_HEIGHT) * PANEL_SYMBOLIC_ICON_DEFAULT_HEIGHT / global.ui_scale :
-                        -1);
+                                                symb_scaleup :
+                                                -1);
                 this._applet_icon.set_style_class_name('system-status-icon');
+            break;
+            default:
+                this._applet_icon.set_icon_size(this._scaleMode ?
+                                                symb_scaleup :
+                                                -1);
+                                                this._applet_icon.set_style_class_name('system-status-icon');
         }
     },
 
@@ -619,12 +693,22 @@ TextApplet.prototype = {
      * @orientation (St.Side): orientation of the applet; Orientation of panel containing the actor
      * @panelHeight (int): height of the panel containing the applet
      * @instance_id (int): instance id of the applet
+     *
+     * Note that suitability for display in a vertical panel is handled by having applets declare
+     * they work OK, handled elsewhere
      */
     _init: function(orientation, panel_height, instance_id) {
         Applet.prototype._init.call(this, orientation, panel_height, instance_id);
-        this._applet_label = new St.Label({ reactive: true, track_hover: true, style_class: 'applet-label'});
+        this._applet_label = new St.Label({ reactive: true, 
+                                            track_hover: true, 
+                                            style_class: 'applet-label'});
         this._applet_label.clutter_text.ellipsize = Pango.EllipsizeMode.NONE;
-        this.actor.add(this._applet_label, { y_align: St.Align.MIDDLE, y_fill: false });
+
+        this._layoutBin = new St.Bin();
+        this._layoutBin.set_child(this._applet_label);
+
+        this.actor.add(this._layoutBin, { y_align: St.Align.MIDDLE, 
+                                          y_fill: false });
         this.actor.set_label_actor(this._applet_label);
     },
 
@@ -638,8 +722,7 @@ TextApplet.prototype = {
         this._applet_label.set_text(text);
     },
     
-    on_applet_added_to_panel: function() {       
-                        
+    on_applet_added_to_panel: function() {                     
     }
 };
 
@@ -651,6 +734,8 @@ TextApplet.prototype = {
  * Applet that displays an icon and a text. The icon is on the left of the text
  * 
  * Inherits: Applet.IconApplet
+ * Note that suitability for display in a vertical panel is handled by having applets declare
+ * they work OK, handled elsewhere
  */
 function TextIconApplet(orientation, panel_height, instance_id) {
     this._init(orientation, panel_height, instance_id);
@@ -667,10 +752,34 @@ TextIconApplet.prototype = {
      */
     _init: function(orientation, panel_height, instance_id) {
         IconApplet.prototype._init.call(this, orientation, panel_height, instance_id);
-        this._applet_label = new St.Label({ reactive: true, track_hover: true, style_class: 'applet-label'});
+        this._applet_label = new St.Label({ reactive: true, 
+                                            track_hover: true, 
+                                            style_class: 'applet-label'});
         this._applet_label.clutter_text.ellipsize = Pango.EllipsizeMode.NONE;
-        this.actor.add(this._applet_label, { y_align: St.Align.MIDDLE, y_fill: false });
+
+        this._layoutBin = new St.Bin();
+        this._layoutBin.set_child(this._applet_label);
+
+        this.actor.add(this._layoutBin, { y_align: St.Align.MIDDLE, 
+                                          y_fill: false });
         this.actor.set_label_actor(this._applet_label);
+    },
+
+    /**
+     * update_label_margin:
+     *
+     * Sets a margin between the icon and the label when it contains a non
+     * empty string. The margin is always set to zero in a vertical panel
+     */
+    update_label_margin: function () {
+        let text = this._applet_label.get_text()
+
+        if ((text && text != "") && this._applet_icon_box.child &&
+            (this._orientation == St.Side.TOP || this._orientation == St.Side.BOTTOM)) {
+            this._applet_label.set_margin_left(6.0);
+        } else {
+            this._applet_label.set_margin_left(0);
+        }
     },
 
     /**
@@ -681,12 +790,7 @@ TextIconApplet.prototype = {
      */
     set_applet_label: function (text) {
         this._applet_label.set_text(text);
-        if ((text && text != "") && this._applet_icon_box.child) {
-            this._applet_label.set_margin_left(6.0);
-        }
-        else {
-            this._applet_label.set_margin_left(0);
-        }
+        this.update_label_margin();
     },
 
     /**
@@ -704,6 +808,26 @@ TextIconApplet.prototype = {
                 this._applet_icon.visible = enabled;
             }
         }
+    },
+
+    /**
+     * hide_applet_label:
+     * @hide (boolean): whether the applet label is hidden or not
+     *
+     * Sets whether the applets label is hidden or not. A convenience
+     * function to hide applet labels when an applet is placed in a vertical
+     * panel
+     */
+    hide_applet_label: function (hide) {
+        if (hide) {
+            this._applet_label.hide();
+            this._layoutBin.hide();
+        } else {
+            this._applet_label.show();
+            this._layoutBin.show();
+        }
+
+        this.update_label_margin();
     },
 
     /**

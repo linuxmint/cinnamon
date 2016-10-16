@@ -27,6 +27,9 @@ const Mainloop = imports.mainloop;
  * @BIDIRECTIONAL: Combines the effects of `IN` and `OUT`.
  *
  * The direction of binding settings
+ *
+ * Deprecated since 3.2: Binding direction is no longer meaningful. Please do not
+ * use in new code.
  */
 const BindingDirection = {
     IN : 1,
@@ -161,6 +164,13 @@ var SETTINGS_TYPES = {
             "type",
             "default"
         ]
+    },
+    "datechooser" : {
+        "required-fields": [
+            "type",
+            "default",
+            "description"
+        ]
     }
 };
 
@@ -205,6 +215,10 @@ function invalid_setting_type_error (key_name, uuid, type) {
 
 function options_not_supported_error(key_name, uuid, type) {
     global.logError("Invalid request for key '" + key_name + "' of applet/desklet uuid '" + uuid + "': type '" + type + "' doesn't support options");
+}
+
+function binding_not_found_error(key_name, uuid) {
+    global.logError("could not unbind " + key_name + " for " + uuid + ": the binding does not exist");
 }
 
 function has_required_fields(props, key) {
@@ -255,19 +269,22 @@ XletSettingsBase.prototype = {
     },
 
     /**
-     * bindProperty:
-     * @direction (Settings.BindingDirection): the direction of the binding
+     * bindWithObject:
+     * @bindObject (object): (optional) the object to which the setting will be bound
+     * or null to use the bindObject passed to %_init
      * @key (string): the id of the setting
      * @applet_prop (string): the variable name that is used to hold the
      * setting (eg. `this.value` passes as `"value`")
      * @callback (function): (optional) the function to call when the setting changes
      * @user_data: (optional) any extra data/object you wish to pass to the callback
      *
-     * Bind a setting to a property on the object @bindObject passed to %_init
+     * Like bind this allows you to bind a setting to a property on an object. But unlike
+     * %bind, this function allows you to specify the bindObject to which the property will
+     * be bound.
      *
      * Returns (boolean): Whether the bind was successful
      */
-    bindProperty: function(direction, key, applet_prop, callback, user_data) {
+    bindWithObject: function(bindObject, key, applet_prop, callback, user_data) {
         if (!this.isReady) {
             settings_not_initialized_error(this.uuid);
             return false;
@@ -281,8 +298,8 @@ XletSettingsBase.prototype = {
             return false;
         }
 
-        let info = {direction: direction, propertyName: applet_prop, data: user_data};
-        if (callback && direction != BindingDirection.OUT) info.callback = Lang.bind(this.bindObject, callback, user_data);
+        let info = {propertyName: applet_prop, data: user_data, bindObject: bindObject};
+        if (callback) info.callback = Lang.bind(bindObject, callback, user_data);
 
         let propDef = {
             get: Lang.bind(this, this._getValue, key),
@@ -290,9 +307,10 @@ XletSettingsBase.prototype = {
             enumerable: true,
             configurable: true
         }
-        Object.defineProperty(this.bindObject, applet_prop, propDef);
+        Object.defineProperty(bindObject, applet_prop, propDef);
 
-        this.bindings[key] = info;
+        if ( !this.bindings[key] ) this.bindings[key] = [];
+        this.bindings[key].push(info);
 
         // add a save function for objects or arrays
         if (typeof(this.settingsData[key].value) === "object" && !this.settingsData[key].value.save) {
@@ -303,20 +321,124 @@ XletSettingsBase.prototype = {
     },
 
     /**
+     * bind:
+     * @key (string): the id of the setting
+     * @applet_prop (string): the variable name that is used to hold the
+     * setting (eg. `this.value` passes as `"value`")
+     * @callback (function): (optional) the function to call when the setting changes
+     * @user_data: (optional) any extra data/object you wish to pass to the callback
+     *
+     * Bind a setting to a property on the @bindObject passed to %_init.
+     *
+     * Returns (boolean): Whether the bind was successful
+     */
+    bind: function(key, applet_prop, callback, user_data) {
+        return this.bindWithObject(this.bindObject, key, applet_prop, callback, user_data)
+    },
+
+    /**
+     * bindProperty:
+     * @direction (Settings.BindingDirection): the direction of the binding
+     * @key (string): the id of the setting
+     * @applet_prop (string): the variable name that is used to hold the
+     * setting (eg. `this.value` passes as `"value`")
+     * @callback (function): (optional) the function to call when the setting changes
+     * @user_data: (optional) any extra data/object you wish to pass to the callback
+     *
+     * Bind a setting to a property on the object @bindObject passed to %_init. This
+     * function is deprecaed and is now only a wrapper around %bind for backward
+     * compatibility. Please use %bind instead.
+     *
+     * Returns (boolean): Whether the bind was successful
+     */
+    bindProperty: function(direction, key, applet_prop, callback, user_data) {
+        return this.bind(key, applet_prop, callback, user_data);
+    },
+
+    /**
+     * unbindWithObject:
+     * @bindObject (object): (optional) the object from which the setting will be unbound
+     * @key (string): the previously bound key to remove
+     *
+     * Removes the binding on an object. If you have bound @key to multiple objects, this will
+     * only remove the one bound to @bindObject. If you wish to remove all bindings, or you used
+     * %bind or %bindProperty to bind the setting, it is recommended that you use %unbindPropery
+     * instead.
+     *
+     * Returns (boolean): Whether the unbind was successful.
+     */
+    unbindWithObject: function(bindObject, key) {
+        if ((key in this.bindings)) {
+            for (let i in this.bindings[key]) {
+                let info = this.bindings[key][i];
+                if (info.bindObject != bindObject) continue;
+                delete bindObject[info.propertyName];
+                this.bindings[key].splice(i, 1);
+                return true;
+            }
+        }
+
+        binding_not_found_error(key, this.uuid);
+        return false;
+    },
+
+    /**
+     * unbind:
+     * @key (string): the previously bound key to remove
+     *
+     * Removes the binding on an object that was bound using the %bind function. If you have bound
+     * @key to multiple objects using %bindWithObject, you should use %unbindWithObject or %unbindAll
+     * instead.
+     *
+     * Returns (boolean): Whether the unbind was successful.
+     */
+    unbind: function(key) {
+        if ((key in this.bindings)) {
+            for (let i in this.bindings[key]) {
+                let info = this.bindings[key][i];
+                if (info.bindObject != this.bindObject) continue;
+                delete this.bindObject[info.propertyName];
+                this.bindings[key].splice(i, 1);
+                return true;
+            }
+        }
+
+        binding_not_found_error(key, this.uuid);
+        return false;
+    },
+
+    /**
      * unbindProperty:
      * @key (string): the previously bound key to remove
      *
-     * Removes the binding of a key that was bound using %bindProperty.
+     * Removes the binding of a key that was bound using %bind, or %bindProperty. This
+     * function is deprecaed and is now only a wrapper around %unbind for backward
+     * compatibility. Please use %unbind instead.
      *
      * Returns (boolean): Whether the unbind was successful.
      */
     unbindProperty: function (key) {
+        this.unbind(key);
+    },
+
+    /**
+     * unbindAll:
+     * @key (string): the previously bound key to remove
+     *
+     * Removes all bindings of a key that were bound using %bind, %bindWithObject, or %bindProperty.
+     *
+     * Returns (boolean): Whether the unbind was successful.
+     */
+    unbindAll: function (key) {
         if (!(key in this.bindings)) {
-            global.logError("could not unbind " + key + " for " + this.uuid + ": the key binding did not exist");
+            binding_not_found_error(key, this.uuid);
             return false;
         }
 
-        delete this.bindObject[this.bindings[key].propertyName];
+        for (let info of this.bindings[key]) {
+            let bindObject = (info.bindObject) ? info.bindObject : this.bindObject;
+            delete bindObject[info.propertyName];
+        }
         delete this.bindings[key];
         return true;
     },
@@ -379,7 +501,7 @@ XletSettingsBase.prototype = {
             return null;
         }
 
-        if (!(options in this.settingsData[key])) {
+        if (!("options" in this.settingsData[key])) {
             options_not_supported_error(key, this.uuid, this.settingsData[key].type);
             return null;
         }
@@ -401,7 +523,7 @@ XletSettingsBase.prototype = {
             return;
         }
 
-        if (!(options in this.settingsData[key])) {
+        if (!("options" in this.settingsData[key])) {
             options_not_supported_error(key, this.uuid, this.settingsData[key].type);
             return;
         }
@@ -412,26 +534,25 @@ XletSettingsBase.prototype = {
         }
     },
 
-    _checkSettings: function() {
-        let oldSettings = this.settingsData;
-        this.settingsData = this._loadFromFile();
-
+    _settingChangedRemotely: function(key, value) {
         let changed = false;
-        for (let key in this.settingsData) {
-            if (!this.settingsData[key].value) continue;
+        if (key in this.settingsData) {
+            if (this.settingsData[key].value === undefined) return;
+            if (this.settingsData[key].value == value) return;
 
-            let oldValue = oldSettings[key].value;
-            let value = this.settingsData[key].value;
-            if (value == oldValue) continue;
+            let oldValue = this.settingsData[key].value;
+            this.settingsData[key].value = value;
 
             changed = true;
-            let info = this.bindings[key];
-            if (info && info.direction != BindingDirection.OUT && info.callback) {
-                // if the property had a save function, it is gone now and we need to re-add it
-                if (info.isObject && !this.settingsData[key].value.save) {
-                    this.settingsData[key].value.save = Lang.bind(this, this._saveToFile);
+            if (key in this.bindings) {
+                for (let info of this.bindings[key]) {
+                    // if the property had a save function, it is gone now and we need to re-add it
+                    if (info.isObject && !this.settingsData[key].value.save) {
+                        this.settingsData[key].value.save = Lang.bind(this, this._saveToFile);
+                    }
+
+                    if (info.callback) info.callback(value);
                 }
-                info.callback(value);
             }
 
             /**
@@ -504,9 +625,7 @@ XletSettingsBase.prototype = {
             needsSave = true;
         }
 
-        this.monitor = this.file.monitor_file(Gio.FileMonitorFlags.NONE, null);
         if (needsSave) this._saveToFile();
-        else this.monitorId = this.monitor.connect("changed", Lang.bind(this, this._checkSettings));
 
         return true;
     },
@@ -540,10 +659,10 @@ XletSettingsBase.prototype = {
 
             // If the setting already exists, we want to use the old value. If not we use the default.
             let oldValue = null;
-            if (this.settingsData[key] && this.settingsData[key].value != undefined)
+            if (this.settingsData[key] && this.settingsData[key].value !== undefined)
                 oldValue = this.settingsData[key].value;
-            if (key in this.settingsData && this._checkSanity(oldValue, newSettings[key])) newSettings[key].value = oldValue;
-            else newSettings[key].value = newSettings[key].default;
+                if (key in this.settingsData && this._checkSanity(oldValue, newSettings[key])) newSettings[key].value = oldValue;
+            if (!newSettings[key].value) newSettings[key].value = newSettings[key].default;
         }
 
         newSettings.__md5__ = checksum;
@@ -584,19 +703,18 @@ XletSettingsBase.prototype = {
     },
 
     _saveToFile: function() {
-        if (this.monitorId) this.monitor.disconnect(this.monitorId);
         let rawData = JSON.stringify(this.settingsData, null, 4);
         let raw = this.file.replace(null, false, Gio.FileCreateFlags.NONE, null);
         let out_file = Gio.BufferedOutputStream.new_sized(raw, 4096);
         Cinnamon.write_string_to_stream(out_file, rawData);
         out_file.close(null);
-        this.monitorId = this.monitor.connect("changed", Lang.bind(this, this._checkSettings));
     },
 
-    // called by cinnamonDBus.js to when the setting is changed remotely. This is to expedite the
-    // update due to settings changes, as the file monitor has a significant delay.
+    // called by cinnamonDBus.js to when the setting is changed remotely.
     remoteUpdate: function(key, payload) {
-        this._checkSettings();
+        let val = JSON.parse(payload);
+
+        this._settingChangedRemotely(key, val);
     },
 
     /**
@@ -608,9 +726,8 @@ XletSettingsBase.prototype = {
     finalize: function() {
         Main.settingsManager.unregister(this.uuid, this.instanceId);
         for (let key in this.bindings) {
-            this.unbindProperty(key);
+            this.unbindAll(key);
         }
-        if (this.monitorId) this.monitor.disconnect(this.monitorId);
         this.disconnectAll();
     }
 }

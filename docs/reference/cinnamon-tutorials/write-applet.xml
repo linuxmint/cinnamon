@@ -34,7 +34,7 @@
       </listitem>
     </itemizedlist>
     <para>
-      Applets go in <code>~/.local/share/cinnamon/applets</code> (or in <code>/usr/share/cinnamon/applets</code> if you want them installed system-wide). So let’s go there and let’s create the files and folders necessary to any Cinnamon applet.
+      Applets go in <code>~/.local/share/cinnamon/applets</code> (or in <code>/usr/share/cinnamon/applets</code> if you want them installed system-wide). So let’s go there and let’s create the files and folders necessary for any Cinnamon applet.
     </para>
 
     <screen>
@@ -106,7 +106,7 @@
             },
 
             on_applet_clicked: function() {
-                Util.spawn('xkill');
+                Util.spawn(['xkill']);
             }
         };
 
@@ -116,7 +116,7 @@
       </programlisting>
     </informalexample>
     <para>
-      Now we'll go through the code one by one, starting from the bottom.
+      Now we'll go through the code line by line, starting from the bottom.
     </para>
 
     <informalexample>
@@ -127,11 +127,11 @@
       </programlisting>
     </informalexample>
     <para>
-      The <code>main</code> function is the only thing Cinnamon understand. To load an applet, Cinnamon calls the <code>main</code> function in the applet's code, and expects to get an Applet object, which it will add to the panel. So here we instantiate an <code>MyApplet</code> object (whose details are defined above), and returns it.
+      The <code>main</code> function is the only thing Cinnamon understands. To load an applet, Cinnamon calls the <code>main</code> function in the applet's code, and expects to get an Applet object, which it will add to the panel. So here we instantiate a <code>MyApplet</code> object (whose details are defined above), and return it.
     </para>
 
     <para>
-      You will notice that there are a lot of parameters floating around. <code>metadata</code> contains, basically the information inside <code>metadata.json</code> plus some more. This is not very helpful in general, but can sometimes provide some useful information.
+      You will notice that there are a lot of parameters floating around. <code>metadata</code> contains, basically, the information inside <code>metadata.json</code> plus some more. This is not very helpful in general, but can sometimes provide some useful information.
     </para>
 
     <para>
@@ -147,7 +147,7 @@
     </para>
 
     <para>
-      If that sounds like a lot of things to take care of, you should be relieved that the applet API handles all that for you! All you have to do is to pass it to the applet API. Here we are passing these information to the constructor, and the constructor will later pass it to the applet API.
+      If that sounds like a lot of things to take care of, you should be relieved that the applet API handles all that for you! All you have to do is to pass it to the applet API. Here we are passing this information to the constructor, and the constructor will later pass it to the applet API.
     </para>
 
     <para>
@@ -180,7 +180,7 @@
     </para>
 
     <para>
-      Also note that we pass all those <code>orientation</code> etc. information down the chain until it ultimately reaches the applet API.
+      Also note that we pass all the <code>orientation</code> etc. information down the chain until it ultimately reaches the applet API.
     </para>
 
     <para>
@@ -199,7 +199,7 @@
             },
 
             on_applet_clicked: function() {
-                Util.spawn('xkill');
+                Util.spawn(['xkill']);
             }
         };
       </programlisting>
@@ -227,7 +227,7 @@
     </para>
 
     <para>
-      Next, in our <code>_init</code> function, we call the <link linkend="cinnamon-js-ui-Applet-IconApplet-_init"><code>_init</code></link> function of <code>Applet.IconApplet</code>. Here we pass on all those information about <code>orientation</code> etc to this <code>_init</code> function, and this function will help us sort out all the mess required to make the applet display properly.
+      Next, in our <code>_init</code> function, we call the <link linkend="cinnamon-js-ui-Applet-IconApplet-_init"><code>_init</code></link> function of <code>Applet.IconApplet</code>. Here we pass on all the information about <code>orientation</code> etc. to this <code>_init</code> function, and this function will help us sort out all the mess required to make the applet display properly.
     </para>
 
     <para>
@@ -264,7 +264,7 @@
     <informalexample>
       <programlisting>
         on_applet_clicked: function() {
-            Util.spawn('xkill');
+            Util.spawn(['xkill']);
         }
       </programlisting>
     </informalexample>

@@ -4,5 +4,5 @@
  "description": "A desklet that launches a program",
  "prevent-decorations": false,
  "max-instances": "100",
- "icon": "gnome-panel-launcher"
+ "icon": "cinnamon-panel-launcher"
 }

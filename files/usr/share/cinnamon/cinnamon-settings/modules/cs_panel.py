@@ -14,15 +14,18 @@ class Monitor:
     def __init__(self):
         self.top = -1
         self.bottom = -1
+	self.right = -1
+	self.left = -1
 
 
 class PanelSettingsPage(SettingsPage):
-    def __init__(self, panel_id):
+    def __init__(self, panel_id, settings):
         super(PanelSettingsPage, self).__init__()
         self.set_margin_top(0)
         self.set_margin_bottom(0)
         self.widgets = []
         self.panel_id = panel_id
+        self.settings = settings
 
         section = SettingsBox(_("Settings"))
         self.add(section)
@@ -40,23 +43,39 @@ class PanelSettingsPage(SettingsPage):
         section.add_reveal_row(widget)
         self.widgets.append(widget)
 
-        widget = PanelSwitch(_("Use customized panel size (otherwise it's defined by the theme)"), "org.cinnamon", "panels-resizable", self.panel_id)
+        widget = PanelSwitch(_("Use customized panel size (otherwise it's defined by the theme)"), "", "org.cinnamon", "panels-resizable", self.panel_id)
         section.add_row(widget)
         self.widgets.append(widget)
+        widget.update_visible_string(None)
 
-        widget = PanelSwitch(_("Allow Cinnamon to scale panel text and icons according to the panel heights"), "org.cinnamon", "panels-scale-text-icons", self.panel_id, "org.cinnamon/panels-resizable")
-        section.add_reveal_row(widget)
-        self.widgets.append(widget)
+        string1 = _("Allow Cinnamon to scale panel text and icons according to the panel height")
+        string2 = _("Allow Cinnamon to scale panel text and icons according to the panel width")
+        self.size_switch = PanelSwitch(string1, string2, "org.cinnamon", "panels-scale-text-icons", self.panel_id, "org.cinnamon/panels-resizable")
+        section.add_reveal_row(self.size_switch)
+        self.widgets.append(self.size_switch)
 
-        widget = PanelRange(_("Panel height:"), "org.cinnamon", "panels-height", self.panel_id, _("Smaller"), _("Larger"), mini=20, maxi=50, dep_key="org.cinnamon/panels-resizable")
-        widget.add_mark(25.0, Gtk.PositionType.TOP, None)
-        section.add_reveal_row(widget)
-        self.widgets.append(widget)
+        string1 = _("Panel height:")
+        string2 = _("Panel width:")
+        self.size_range = PanelRange(string1, string2, "org.cinnamon", "panels-height", self.panel_id, _("Smaller"), _("Larger"), mini=20, maxi=50, dep_key="org.cinnamon/panels-resizable")
+        self.size_range.add_mark(25.0, Gtk.PositionType.TOP, None)
+        section.add_reveal_row(self.size_range)
+        self.widgets.append(self.size_range)
+
+        self.get_panel_position()
 
     def set_panel_id(self, panel_id):
         self.panel_id = panel_id
+        self.get_panel_position()
         for widget in self.widgets:
             widget.set_panel_id(self.panel_id)
+
+    def get_panel_position(self):
+        panels = len(self.settings.get_strv("panels-enabled"))
+        for i in range(panels):
+            if int(self.settings.get_strv("panels-enabled")[i].split(":")[0]) == self.panel_id:
+                position = self.settings.get_strv("panels-enabled")[i].split(":")[2]
+                self.size_switch.update_visible_string(position)
+                self.size_range.update_visible_string(position)
 
 
 class Module:
@@ -72,7 +91,7 @@ class Module:
         if not self.loaded:
             print "Loading Panel module"
 
-            self.settings = Gio.Settings.new("org.cinnamon");
+            self.settings = Gio.Settings.new("org.cinnamon")
 
             try:
                 if len(sys.argv) > 2 and sys.argv[1] == "panel":
@@ -107,7 +126,7 @@ class Module:
             self.config_stack.set_transition_duration(150)
             self.revealer.add(self.config_stack)
 
-            self.pages = [PanelSettingsPage(self.panel_id) for i in range(2)]
+            self.pages = [PanelSettingsPage(self.panel_id, self.settings) for i in range(2)]
             self.config_stack.add_named(self.pages[0], "0")
             self.config_stack.add_named(self.pages[1], "1")
 
@@ -224,12 +243,16 @@ class Module:
             if monitor_id < n_mons:
                 if "top" in position:
                     self.monitor_layout[monitor_id].top = panel_id
-                else:
+                elif "bottom" in position:
                     self.monitor_layout[monitor_id].bottom = panel_id
+                elif "left" in position:
+                    self.monitor_layout[monitor_id].left = panel_id
+                else:
+                    self.monitor_layout[monitor_id].right = panel_id
 
         # Index the panels for the next/previous buttons
         for i in range(0, n_mons):
-            for j in (self.monitor_layout[i].top, self.monitor_layout[i].bottom):
+            for j in (self.monitor_layout[i].top, self.monitor_layout[i].bottom, self.monitor_layout[i].left, self.monitor_layout[i].right):
                 if j != -1:
                     self.panels.append(j)
 
@@ -237,7 +260,7 @@ class Module:
 
         show_add = False
         for i in range(0, n_mons):
-            if self.monitor_layout[i].top == -1 or self.monitor_layout[i].bottom == -1:
+            if self.monitor_layout[i].top == -1 or self.monitor_layout[i].bottom == -1 or self.monitor_layout[i].left == -1 or self.monitor_layout[i].right == -1:
                 show_add = True
                 break
             i += 1
@@ -368,14 +391,18 @@ class PanelWidget(SettingsWidget):
         settings.set_strv(key, values)
 
 class PanelSwitch(PanelWidget):
-    def __init__(self, label, schema, key, panel_id, dep_key=None):
+    def __init__(self, label1, label2, schema, key, panel_id, dep_key=None):
         super(PanelSwitch, self).__init__(dep_key, panel_id)
         self.key = key
 
         self.content_widget = Gtk.Switch()
-        self.label = Gtk.Label(label)
+        self.label1 = Gtk.Label(label1)
+        self.label1.set_no_show_all(True)
+        self.label2 = Gtk.Label(label2)
+        self.label2.set_no_show_all(True)
 
-        self.pack_start(self.label, False, False, 0)
+        self.pack_start(self.label1, False, False, 0)
+        self.pack_start(self.label2, False, False, 0)
         self.pack_end(self.content_widget, False, False, 0)
 
         self.settings = Gio.Settings.new(schema)
@@ -391,6 +418,17 @@ class PanelSwitch(PanelWidget):
 
     def on_my_value_changed(self, *args):
         self.set_boolean(self.settings, self.key, self.content_widget.get_active())
+
+    def update_visible_string (self, position):
+        if position:
+            if position == "top" or position == "bottom":
+                self.label1.show()
+                self.label2.hide()
+            else:
+                self.label1.hide()
+                self.label2.show()
+        else:
+            self.label1.show()
 
 class PanelSpinButton(PanelWidget):
     def __init__(self, label, schema, key, panel_id, units="", mini=None, maxi=None, step=1, page=None, dep_key=None):
@@ -445,7 +483,7 @@ class PanelSpinButton(PanelWidget):
         return False
 
 class PanelRange(PanelWidget):
-    def __init__(self, label, schema, key, panel_id, min_label, max_label, mini=None, maxi=None, step=None, dep_key=None):
+    def __init__(self, label1, label2, schema, key, panel_id, min_label, max_label, mini=None, maxi=None, step=None, dep_key=None):
         # We do not implement invert and log here since it is not needed
         super(PanelRange, self).__init__(dep_key, panel_id)
         self.set_orientation(Gtk.Orientation.VERTICAL)
@@ -458,8 +496,13 @@ class PanelRange(PanelWidget):
 
         hbox = Gtk.Box()
 
-        self.label = Gtk.Label.new(label)
-        self.label.set_halign(Gtk.Align.CENTER)
+        self.label1 = Gtk.Label.new(label1)
+        self.label1.set_halign(Gtk.Align.CENTER)
+        self.label1.set_no_show_all(True)
+
+        self.label2 = Gtk.Label.new(label2)
+        self.label2.set_halign(Gtk.Align.CENTER)
+        self.label2.set_no_show_all(True)
 
         self.min_label= Gtk.Label()
         self.max_label = Gtk.Label()
@@ -480,7 +523,8 @@ class PanelRange(PanelWidget):
         hbox.pack_start(self.content_widget, True, True, 0)
         hbox.pack_start(self.max_label, False, False, 0)
 
-        self.pack_start(self.label, False, False, 0)
+        self.pack_start(self.label1, False, False, 0)
+        self.pack_start(self.label2, False, False, 0)
         self.pack_start(hbox, True, True, 6)
 
         self.content_widget.connect("scroll-event", self.on_scroll_event)
@@ -516,6 +560,17 @@ class PanelRange(PanelWidget):
 
     def add_mark(self, value, position, markup):
         self.content_widget.add_mark(value, position, markup)
+
+    def update_visible_string (self, position):
+        if position:
+            if position == "top" or position == "bottom":
+                self.label1.show()
+                self.label2.hide()
+            else:
+                self.label1.hide()
+                self.label2.show()
+        else:
+            self.label1.show()
 
 class PanelComboBox(PanelWidget):
     def __init__(self, label, schema, key, panel_id, options, dep_key=None):

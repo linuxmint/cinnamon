@@ -6,6 +6,8 @@ AC_CONFIG_SRCDIR([src/cinnamon-global.c])
 AC_CONFIG_MACRO_DIR([m4])
 AC_CONFIG_AUX_DIR([config])
 
+AX_IS_RELEASE([always])
+
 AC_SUBST([PACKAGE_NAME], ["$PACKAGE_NAME"])
 AC_SUBST([PACKAGE_VERSION], ["$PACKAGE_VERSION"])
 
@@ -26,9 +28,6 @@ LT_INIT([disable-static])
 
 # i18n
 IT_PROG_INTLTOOL([0.40])
-
-AM_GNU_GETTEXT([external])
-AM_GNU_GETTEXT_VERSION([0.17])
 
 GETTEXT_PACKAGE=cinnamon
 AC_SUBST(GETTEXT_PACKAGE)
@@ -65,7 +64,7 @@ CLUTTER_MIN_VERSION=1.10.0
 GOBJECT_INTROSPECTION_MIN_VERSION=0.9.2
 GJS_MIN_VERSION=2.3.1
 MUFFIN_MIN_VERSION=3.0.0
-GTK_MIN_VERSION=3.9.12
+GTK_MIN_VERSION=3.12.0
 GIO_MIN_VERSION=2.35.0
 POLKIT_MIN_VERSION=0.100
 STARTUP_NOTIFICATION_MIN_VERSION=0.11
@@ -92,6 +91,7 @@ PKG_CHECK_MODULES(CINNAMON_HOTPLUG_SNIFFER, gio-2.0 gdk-pixbuf-2.0)
 
 GJS_VERSION=`$PKG_CONFIG --modversion cjs-internals-1.0`
 AC_DEFINE_UNQUOTED([GJS_VERSION], ["$GJS_VERSION"], [The version of GJS we're linking to])
+dnl '
 AC_SUBST([GJS_VERSION], ["$GJS_VERSION"])
 
 GOBJECT_INTROSPECTION_CHECK([$GOBJECT_INTROSPECTION_MIN_VERSION])
@@ -161,32 +161,7 @@ AC_SUBST(GIRDIR)
 TYPELIBDIR="$($PKG_CONFIG --variable=typelibdir gobject-introspection-1.0)"
 AC_SUBST(TYPELIBDIR)
 
-# Stay command-line compatible with the gnome-common configure option. Here
-# minimum/yes/maximum are the same, however.
-AC_ARG_ENABLE(compile_warnings,
-  AS_HELP_STRING([--enable-compile-warnings=@<:@no/minimum/yes/maximum/error@:>@],[Turn on compiler warnings]),,
-  enable_compile_warnings=yes)
-
-changequote(,)dnl
-if test "$enable_compile_warnings" != no ; then
-  if test "x$GCC" = "xyes"; then
-    case " $CFLAGS " in
-    *[\ \	]-Wall[\ \	]*) ;;
-    *) CFLAGS="$CFLAGS -Wall" ;;
-    esac
-    case " $CFLAGS " in
-    *[\ \	]-Wmissing-prototypes[\ \	]*) ;;
-    *) CFLAGS="$CFLAGS -Wmissing-prototypes" ;;
-    esac
-    if test "$enable_compile_warnings" = error ; then
-      case " $CFLAGS " in
-      *[\ \	]-Werror[\ \	]*) ;;
-      *) CFLAGS="$CFLAGS -Werror" ;;
-      esac
-    fi
-  fi
-fi
-changequote([,])dnl
+AX_COMPILER_FLAGS([WARN_CFLAGS],[WARN_LDFLAGS])
 
 AC_ARG_ENABLE(jhbuild-wrapper-script,
   AS_HELP_STRING([--jhbuild-wrapper-script=yes],[Make "cinnamon" script work for jhbuild]),,enable_jhbuild_wrapper_script=no)

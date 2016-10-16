@@ -81,9 +81,10 @@ G_DEFINE_TYPE_WITH_CODE (StScrollView, st_scroll_view, ST_TYPE_BIN,
 
 #define AUTO_SCROLL_TOTAL_REGION 100
 
-#define AUTO_SCROLL_OVERLAP 10 /* autoscroll region extends this far into the scroll view
-                                * remaining portion of region is above or below the view
-                                */
+/* autoscroll region extends this far into the scroll view
+ * remaining portion of region is above or below the view
+ */
+#define AUTO_SCROLL_OVERLAP 10
 
 /* gdouble - from 0 to TOTAL_REGION / this number to get scroll delta */
 #define AUTO_SCROLL_SPEED_DIVISOR 4.0

@@ -24,6 +24,8 @@ MyApplet.prototype = {
 
     _init: function(orientation, panel_height, instance_id) {
         Applet.TextIconApplet.prototype._init.call(this, orientation, panel_height, instance_id);
+
+        this.setAllowedLayout(Applet.AllowedLayout.BOTH);
         
         try {
             this._session = new GnomeSession.SessionManager();
@@ -42,7 +44,7 @@ MyApplet.prototype = {
 
             this._userIcon = new St.Bin({ style_class: 'user-icon'});
             
-            this.settings.bindProperty(Settings.BindingDirection.IN, "display-name", "disp_name", this._updateLabel, null);
+            this.settings.bind("display-name", "disp_name", this._updateLabel);
 
             userBox.connect('button-press-event', Lang.bind(this, function() {
                 this.menu.toggle();
@@ -144,7 +146,7 @@ MyApplet.prototype = {
             this._userLoadedId = this._user.connect('notify::is_loaded', Lang.bind(this, this._onUserChanged));
             this._userChangedId = this._user.connect('changed', Lang.bind(this, this._onUserChanged));
             this._onUserChanged();
-
+            this.on_orientation_changed(orientation);
         }
         catch (e) {
             global.logError(e);
@@ -186,6 +188,13 @@ MyApplet.prototype = {
     
     on_applet_removed_from_panel: function() {
         this.settings.finalize();
+    },
+
+    on_orientation_changed: function(orientation) {
+        if (orientation == St.Side.LEFT || orientation == St.Side.RIGHT)
+            this.hide_applet_label(true);
+        else
+            this.hide_applet_label(false);
     },
 };
 
