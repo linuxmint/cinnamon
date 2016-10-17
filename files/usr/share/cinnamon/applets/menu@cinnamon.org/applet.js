@@ -756,10 +756,14 @@ RecentClearButton.prototype = {
 
     _onButtonReleaseEvent: function (actor, event) {
         if (event.get_button()==1){
-            this.appsMenuButton.menu.close();
-            let GtkRecent = new Gtk.RecentManager();
-            GtkRecent.purge_items();
+            this.activate(event);
         }
+    },
+
+    activate: function(event) {
+        this.appsMenuButton.menu.close();
+        let GtkRecent = new Gtk.RecentManager();
+        GtkRecent.purge_items();
     }
 };
 
