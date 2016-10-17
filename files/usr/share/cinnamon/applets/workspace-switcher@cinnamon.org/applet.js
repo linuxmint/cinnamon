@@ -328,9 +328,19 @@ MyApplet.prototype = {
             this.buttons[i].destroy();
         }
 
-        let isVertical = (this.orientation == St.Side.LEFT || this.orientation == St.Side.RIGHT);
+        let suppress_graph = false; // suppress the graph and replace by buttons if size ratio
+                                    // would be unworkable in a vertical panel
+        if (this.orientation == St.Side.LEFT || this.orientation == St.Side.RIGHT) {
+          let workspace_size = new Meta.Rectangle();
+          global.screen.get_workspace_by_index(0).get_work_area_all_monitors(workspace_size);
+          let sizeRatio = workspace_size.width / workspace_size.height;
+          if (sizeRatio >= 2.35) {  // completely empirical, other than the widest
+                                    // ratio single screen I know is 21*9 = 2.33
+              suppress_graph = true;
+          }
+        }
 
-        if (this.display_type == "visual" && !isVertical)
+        if (this.display_type == "visual" && !suppress_graph)
             this.actor.set_style_class_name('workspace-graph');
         else
             this.actor.set_style_class_name('workspace-switcher');
@@ -339,7 +349,7 @@ MyApplet.prototype = {
 
         this.buttons = [];
         for (let i = 0; i < global.screen.n_workspaces; ++i) {
-            if (this.display_type == "visual" && !isVertical)
+            if (this.display_type == "visual" && !suppress_graph)
                 this.buttons[i] = new WorkspaceGraph(i, this);
             else
                 this.buttons[i] = new SimpleButton(i, this);
@@ -349,7 +359,7 @@ MyApplet.prototype = {
         }
 
         this.signals.disconnectAllSignals();
-        if (this.display_type == "visual" && !isVertical) {
+        if (this.display_type == "visual" && !suppress_graph) {
             // In visual mode, keep track of window events to represent them
             this.signals.connect(global.display, "notify::focus-window", this._onFocusChanged);
             this._onFocusChanged();
