@@ -1096,7 +1096,7 @@ _cinnamon_global_set_plugin (CinnamonGlobal *global,
  * @global: A #CinnamonGlobal
  * @meminfo: (out caller-allocates): Output location for memory information
  *
- * Return value: (transfer none): a generic pointer to the GjsContext
+ * Get Cinnamon memory usage information.
  */
 void
 cinnamon_global_get_memory_info (CinnamonGlobal *global, CinnamonJSMemoryInfo *meminfo)
