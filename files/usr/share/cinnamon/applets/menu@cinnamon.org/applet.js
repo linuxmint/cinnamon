@@ -1593,6 +1593,9 @@ MyApplet.prototype = {
             return false;
         }
 
+        this.selectedAppTitle.set_text("");
+        this.selectedAppDescription.set_text("");
+
         this._selectedItemIndex = index;
         if (!item_actor || item_actor === this.searchEntry) {
             return false;
@@ -2544,6 +2547,10 @@ MyApplet.prototype = {
                 this._previousSearchPattern = "";
                 this._setCategoriesButtonActive(true);
                 this._select_category(null, this._allAppsCategoryButton);
+                this._allAppsCategoryButton.actor.style_class = "menu-category-button-selected";
+                this._activeContainer = null;
+                this.selectedAppTitle.set_text("");
+                this.selectedAppDescription.set_text("");
             }
             return;
         }
@@ -2638,6 +2645,9 @@ MyApplet.prototype = {
             if (item_actor && item_actor != this.searchEntry) {
                 item_actor._delegate.emit('enter-event');
             }
+        } else {
+            this.selectedAppTitle.set_text("");
+            this.selectedAppDescription.set_text("");
         }
 
         SearchProviderManager.launch_all(pattern, Lang.bind(this, function(provider, results){
