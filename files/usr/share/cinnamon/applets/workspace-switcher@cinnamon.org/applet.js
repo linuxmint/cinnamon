@@ -191,6 +191,7 @@ SimpleButton.prototype = {
             } else {
                 this.actor.set_height(0.6 * applet._panelHeight);  // factors are completely empirical
                 this.actor.set_width(0.9 * applet._panelHeight);
+                this.actor.add_style_class_name('vertical');
             }
         }
         let label = new St.Label({ text: (index + 1).toString() });
