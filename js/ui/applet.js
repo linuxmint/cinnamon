@@ -155,6 +155,7 @@ Applet.prototype = {
                                         reactive: true,
                                         track_hover: true });
 
+        this._panelHeight = panel_height ? panel_height : 25;
         this._allowedLayout = AllowedLayout.HORIZONTAL;
         this.setOrientationInternal(orientation);
     
@@ -176,7 +177,6 @@ Applet.prototype = {
         this._applet_enabled = true;    // Whether the applet is enabled or not (if not it hides in the panel as if it wasn't there)
         this._orientation = orientation;  // orientation of the panel the applet is on  St.Side.TOP BOTTOM LEFT RIGHT
 
-        this._panelHeight = panel_height ? panel_height : 25;
         this.instance_id = instance_id; // Needed by appletSettings
         this._uuid = null;      // Defined in gsettings, set by Cinnamon.
         this._hook = null;      // Defined in metadata.json, set by appletManager
@@ -377,9 +377,13 @@ Applet.prototype = {
             this.actor.set_important(true);
             this.actor.set_vertical(true);
             this.actor.set_x_expand(true);
+
+// ensure no portion of the applet beyond the panel, e.g. on hover. 5000 is just an arbitrary large number
+            this.actor.set_clip(0, 0, this._panelHeight, 5000);
         } else {
             this.actor.remove_style_class_name('vertical');
             this.actor.set_vertical(false);
+            this.actor.remove_clip(); // if the actor is moved to a horizontal panel subsequently
         }
     },
 
