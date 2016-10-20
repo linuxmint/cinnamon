@@ -976,8 +976,8 @@ MyApplet.prototype = {
 
             this.actor.connect('scroll-event', Lang.bind(this, this._onScrollEvent));
 
-            this.mute_out_switch = new PopupMenu.PopupSwitchMenuItem(_("Mute output"), false);
-            this.mute_in_switch = new PopupMenu.PopupSwitchMenuItem(_("Mute input"), false);
+            this.mute_out_switch = new PopupMenu.PopupSwitchIconMenuItem(_("Mute output"), false, "audio-volume-muted", St.IconType.SYMBOLIC);
+            this.mute_in_switch = new PopupMenu.PopupSwitchIconMenuItem(_("Mute input"), false, "microphone-sensitivity-none", St.IconType.SYMBOLIC);
             this._applet_context_menu.addMenuItem(this.mute_out_switch);
             this._applet_context_menu.addMenuItem(this.mute_in_switch);
 
@@ -992,6 +992,7 @@ MyApplet.prototype = {
 
             this._inputSection = new PopupMenu.PopupMenuSection;
             this._inputVolumeSection = new VolumeSlider(this, null, _("Microphone"), null);
+            this._inputVolumeSection.connect("values-changed", Lang.bind(this, this._inputValuesChanged));
             this._selectInputDeviceItem = new PopupMenu.PopupSubMenuMenuItem(_("Input device"));
             this._inputSection.addMenuItem(this._inputVolumeSection);
             this._inputSection.addMenuItem(this._selectInputDeviceItem);
@@ -1353,7 +1354,12 @@ MyApplet.prototype = {
 
     _outputValuesChanged: function(actor, iconName, percentage) {
         this.setIcon(iconName, "output");
+        this.mute_out_switch.setIconSymbolicName(iconName);
         this.set_applet_tooltip(_("Volume") + ": " + percentage);
+    },
+
+    _inputValuesChanged: function(actor, iconName) {
+        this.mute_in_switch.setIconSymbolicName(iconName);
     },
 
     _onControlStateChanged: function() {

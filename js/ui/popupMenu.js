@@ -883,6 +883,95 @@ PopupSwitchMenuItem.prototype = {
     }
 };
 
+function PopupSwitchIconMenuItem() {
+    this._init.apply(this, arguments);
+}
+
+PopupSwitchIconMenuItem.prototype = {
+    __proto__: PopupBaseMenuItem.prototype,
+
+    /**
+     * _init:
+     * @text (string): text to display in the label
+     * @active: boolean to set switch on or off
+     * @iconName (string): name of the icon used
+     * @iconType (St.IconType): the type of icon (usually #St.IconType.SYMBOLIC
+     * or #St.IconType.FULLCOLOR)
+     * @params (JSON): parameters to pass to %PopupMenu.PopupBaseMenuItem._init
+     */
+    _init: function(text, active, iconName, iconType, params) {
+        PopupBaseMenuItem.prototype._init.call(this, params);
+
+        this.label = new St.Label({ text: text });
+        this._statusLabel = new St.Label({ text: '', style_class: 'popup-inactive-menu-item' });
+
+        this._icon = new St.Icon({ style_class: 'popup-menu-icon',
+            icon_name: iconName,
+            icon_type: iconType});
+
+        this._switch = new Switch(active);
+
+        this.addActor(this._icon, {span: 0});
+        this.addActor(this.label);
+        this.addActor(this._statusLabel);
+
+        this._statusBin = new St.Bin({ x_align: St.Align.END });
+        this.addActor(this._statusBin, { expand: true, span: -1, align: St.Align.END });
+        this._statusBin.child = this._switch.actor;
+    },
+
+    /**
+     * setIconSymbolicName:
+     * @iconName (string): name of the icon
+     *
+     * Changes the icon to a symbolic icon with name @iconName.
+     */
+    setIconSymbolicName: function (iconName) {
+        this._icon.set_icon_name(iconName);
+        this._icon.set_icon_type(St.IconType.SYMBOLIC);
+    },
+
+    /**
+     * setIconName:
+     * @iconName (string): name of the icon
+     *
+     * Changes the icon to a full color icon with name @iconName.
+     */
+    setIconName: function (iconName) {
+        this._icon.set_icon_name(iconName);
+        this._icon.set_icon_type(St.IconType.FULLCOLOR);
+    },
+
+    setStatus: function(text) {
+        if (text != null) {
+            this._statusLabel.set_text(text);
+        } else {
+            this._statusLabel.set_text('');
+        }
+    },
+
+    activate: function(event) {
+        if (this._switch.actor.mapped) {
+            this.toggle();
+        }
+
+        PopupBaseMenuItem.prototype.activate.call(this, event, true);
+    },
+
+    toggle: function() {
+        this._switch.toggle();
+        this.emit('toggled', this._switch.state);
+    },
+
+    get state() {
+        return this._switch.state;
+    },
+
+    setToggleState: function(state) {
+        this._switch.setToggleState(state);
+    }
+};
+
 /**
  * #PopupIconMenuItem:
  * @short_description: A menu item with an icon and a text.
