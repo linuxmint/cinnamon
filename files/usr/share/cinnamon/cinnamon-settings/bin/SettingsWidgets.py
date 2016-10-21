@@ -733,7 +733,6 @@ class ComboBox(SettingsWidget):
         self.pack_end(self.content_widget, False, False, 0)
 
         self.set_options(options)
-        self.content_widget.connect('changed', self.on_my_value_changed)
 
         self.set_tooltip_text(tooltip)
 
@@ -752,6 +751,9 @@ class ComboBox(SettingsWidget):
             self.content_widget.set_active_iter(self.option_map[self.value])
         except:
             self.content_widget.set_active_iter(None)
+
+    def connect_widget_handlers(self, *args):
+        self.content_widget.connect('changed', self.on_my_value_changed)
 
     def set_options(self, options):
         # assume all keys are the same type (mixing types is going to cause an error somewhere)
@@ -779,8 +781,6 @@ class ColorChooser(SettingsWidget):
         self.pack_start(self.label, False, False, 0)
         self.pack_end(self.content_widget, False, False, 0)
 
-        self.content_widget.connect('color-set', self.on_my_value_changed)
-
         self.set_tooltip_text(tooltip)
 
         if size_group:
@@ -791,6 +791,9 @@ class ColorChooser(SettingsWidget):
         rgba = Gdk.RGBA()
         rgba.parse(color_string)
         self.content_widget.set_rgba(rgba)
+
+    def connect_widget_handlers(self, *args):
+        self.content_widget.connect('color-set', self.on_my_value_changed)
 
     def on_my_value_changed(self, widget):
         if self.legacy_string:
@@ -814,8 +817,6 @@ class FileChooser(SettingsWidget):
         self.pack_start(self.label, False, False, 0)
         self.pack_end(self.content_widget, False, False, 0)
 
-        self.content_widget.connect("file-set", self.on_file_selected)
-
         self.set_tooltip_text(tooltip)
 
         if size_group:
@@ -826,6 +827,9 @@ class FileChooser(SettingsWidget):
 
     def on_setting_changed(self, *args):
         self.content_widget.set_uri(self.get_value())
+
+    def connect_widget_handlers(self, *args):
+        self.content_widget.connect("file-set", self.on_file_selected)
 
 class SoundFileChooser(SettingsWidget):
     bind_dir = None
@@ -912,6 +916,9 @@ class SoundFileChooser(SettingsWidget):
 
     def on_setting_changed(self, *args):
         self.update_button_label(self.get_value())
+
+    def connect_widget_handlers(self, *args):
+        pass
 
 class IconChooser(SettingsWidget):
     bind_prop = "text"
@@ -1044,8 +1051,6 @@ class DateChooser(SettingsWidget):
 
         self.set_tooltip_text(tooltip)
 
-        self.content_widget.connect("date-changed", self.on_date_changed)
-
         if size_group:
             self.add_to_size_group(size_group)
 
@@ -1056,6 +1061,9 @@ class DateChooser(SettingsWidget):
     def on_setting_changed(self, *args):
         date = self.get_value()
         self.content_widget.set_date(date["y"], date["m"], date["d"])
+
+    def connect_widget_handlers(self, *args):
+        self.content_widget.connect("date-changed", self.on_date_changed)
 
 class Keybinding(SettingsWidget):
     bind_dir = None
@@ -1110,6 +1118,9 @@ class Keybinding(SettingsWidget):
 
         for x in range(min(len(bindings), self.num_bind)):
             self.buttons[x].set_accel_string(bindings[x])
+
+    def connect_widget_handlers(self, *args):
+        pass
 
 class Button(SettingsWidget):
     def __init__(self, label, callback=None):
