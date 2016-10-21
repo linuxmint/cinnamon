@@ -1625,6 +1625,26 @@ PopupMenuBase.prototype = {
 
         return menuItem;
     },
+    /**
+     * addIconAction:
+     * @title (string): the text to display on the item
+     * @icon (string): the symbolic icon to display
+     * @callback (function): the function to call when clicked
+     *
+     * Adds a #PopupIconMenuItem with label @title to the menu. When the item is
+     * clicked, @callback will be called.
+     *
+     * Returns (PopupMenu.PopupIconMenuItem): the menu item created.
+     */
+    addIconAction: function(title, icon, callback) {
+        let menuItem = new PopupIconMenuItem(title, icon, St.IconType.SYMBOLIC);
+        this.addMenuItem(menuItem);
+        menuItem.connect('activate', Lang.bind(this, function (menuItem, event) {
+            callback(event);
+        }));
+
+        return menuItem;
+    },
 
     /**
      * addSettingsAction:
