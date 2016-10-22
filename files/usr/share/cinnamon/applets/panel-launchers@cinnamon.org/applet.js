@@ -52,10 +52,10 @@ PanelAppLauncherMenu.prototype = {
             this.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
         }
         
-        this.addAction(_("Launch"), Lang.bind(this, this._onLaunchActivate));
-        this.addAction(_("Add"), Lang.bind(this, this._onAddActivate));
-        this.addAction(_("Edit"), Lang.bind(this, this._onEditActivate));
-        this.addAction(_("Remove"), Lang.bind(this, this._onRemoveActivate));
+        this.addIconAction(_("Launch"), "media-playback-start", Lang.bind(this, this._onLaunchActivate));
+        this.addIconAction(_("Add"), "list-add", Lang.bind(this, this._onAddActivate));
+        this.addIconAction(_("Edit"), "document-properties", Lang.bind(this, this._onEditActivate));
+        this.addIconAction(_("Remove"), "edit-delete", Lang.bind(this, this._onRemoveActivate));
 
         this.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
 
