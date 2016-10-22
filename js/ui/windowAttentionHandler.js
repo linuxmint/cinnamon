@@ -25,15 +25,23 @@ WindowAttentionHandler.prototype = {
         // We are just ignoring the hint on skip_taskbar windows for now.
         // (Which is the same behaviour as with metacity + panel)
 
-        let wmclass = window.get_wm_class();
-        let ignored_classes = global.settings.get_strv("demands-attention-ignored-wm-classes");
-
-        if (!window || window.has_focus() || window.is_skip_taskbar() ||
-            (wmclass && (ignored_classes.indexOf(wmclass.toLowerCase()) != -1)))
+        if (!window || window.has_focus() || window.is_skip_taskbar()) {
             return;
+        }
+
+        let wmclass = window.get_wm_class();
+
+        if (wmclass) {
+            let ignored_classes = global.settings.get_strv("demands-attention-ignored-wm-classes");
+
+            for (let i = 0; i < ignored_classes.length; i++) {
+                if (wmclass.toLowerCase().contains(ignored_classes[i].toLowerCase())) {
+                    return;
+                }
+            }
+        }
 
         try {
-
             if (this._tracker.is_window_interesting(window)) {
                 if (global.settings.get_boolean("bring-windows-to-current-workspace")) {
                     window.change_workspace(global.screen.get_active_workspace());
