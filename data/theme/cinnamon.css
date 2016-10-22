@@ -288,16 +288,10 @@ StScrollBar StButton#vhandle:hover {
     spacing: 0px;
 }
 .panelLeft.vertical {
-    padding-left: 0px;
-    padding-right: 0px;
-    padding-top: 2px;
-    padding-bottom: 2px;
+    padding: 0px;
 }
 .panelRight.vertical {
-    padding-left: 0px;
-    padding-right: 0px;
-    padding-top: 2px;
-    padding-bottom: 2px;
+    padding: 0px;
 }
 .panelCenter.vertical {
     padding-left: 0px;
