@@ -785,7 +785,7 @@ PopupSliderMenuItem.prototype = {
         this.emit('value-changed', this._value);
     },
 
-    getvalue() {
+    get value() {
         return this._value;
     },
 
