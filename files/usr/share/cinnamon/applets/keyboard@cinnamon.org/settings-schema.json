@@ -1,15 +1,19 @@
 {
- "use-letters": {
-    "type": "switch",
-    "default" : false,
-    "description" : "Use letters to display keyboard layouts"
- },
- "use-uppercase": {
-    "type": "switch",
-    "default" : false,
-    "description" : "Use uppercase letters to display keyboard layouts",
-    "dependency" : "use-letters",
-    "indent" : true
- }
+    "section1": {
+        "type": "section",
+        "description": "Display"
+    },
+    "use-letters": {
+        "type": "switch",
+        "default" : false,
+        "description" : "Use letters to display keyboard layouts"
+    },
+    "use-uppercase": {
+        "type": "switch",
+        "default" : false,
+        "description" : "Use uppercase letters to display keyboard layouts",
+        "dependency" : "use-letters",
+        "indent" : true
+    }
 }
 
