@@ -1,4 +1,5 @@
 const Applet = imports.ui.applet;
+const AppletManager = imports.ui.appletManager;
 
 const Clutter = imports.gi.Clutter;
 const St = imports.gi.St;
@@ -41,7 +42,7 @@ PanelAppLauncherMenu.prototype = {
         Applet.AppletPopupMenu.prototype._init.call(this, launcher, orientation);
 
         let appinfo = this._launcher.getAppInfo();
-        
+
         this._actions = appinfo.list_actions();
         if (this._actions.length > 0) {
             for (let i = 0; i < this._actions.length; i++) {
@@ -51,17 +52,42 @@ PanelAppLauncherMenu.prototype = {
 
             this.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
         }
-        
-        this.addAction(_("Launch"), Lang.bind(this, this._onLaunchActivate));
-        this.addAction(_("Add"), Lang.bind(this, this._onAddActivate));
-        this.addAction(_("Edit"), Lang.bind(this, this._onEditActivate));
-        this.addAction(_("Remove"), Lang.bind(this, this._onRemoveActivate));
 
-        this.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
+        let subMenu = new PopupMenu.PopupSubMenuMenuItem(_("Options"));
+        this.addMenuItem(subMenu);
 
-        let item = new PopupMenu.PopupIconMenuItem(_("Configure the panel launcher"), "system-run", St.IconType.SYMBOLIC);
+        let item = new PopupMenu.PopupIconMenuItem(_("Launch"), "media-playback-start", St.IconType.SYMBOLIC);
+        item.connect('activate', Lang.bind(this, this._onLaunchActivate));
+        subMenu.menu.addMenuItem(item);
+
+        item = new PopupMenu.PopupIconMenuItem(_("Add"), "list-add", St.IconType.SYMBOLIC);
+        item.connect('activate', Lang.bind(this, this._onAddActivate));
+        subMenu.menu.addMenuItem(item);
+
+        item = new PopupMenu.PopupIconMenuItem(_("Edit"), "document-properties", St.IconType.SYMBOLIC);
+        item.connect('activate', Lang.bind(this, this._onEditActivate));
+        subMenu.menu.addMenuItem(item);
+
+        item = new PopupMenu.PopupIconMenuItem(_("Remove"), "window-close", St.IconType.SYMBOLIC);
+        item.connect('activate', Lang.bind(this, this._onRemoveActivate));
+        subMenu.menu.addMenuItem(item);
+
+        subMenu = new PopupMenu.PopupSubMenuMenuItem(_("Preferences"));
+        this.addMenuItem(subMenu);
+
+        item = new PopupMenu.PopupIconMenuItem(_("About..."), "dialog-question", St.IconType.SYMBOLIC);
+        item.connect('activate', Lang.bind(this._launcher._applet, this._launcher._applet.openAbout));
+        subMenu.menu.addMenuItem(item);
+
+        item = new PopupMenu.PopupIconMenuItem(_("Configure..."), "system-run", St.IconType.SYMBOLIC);
         item.connect('activate', Lang.bind(this._launcher._applet, this._launcher._applet.configureApplet));
-        this.addMenuItem(item);
+        subMenu.menu.addMenuItem(item);
+
+        item = new PopupMenu.PopupIconMenuItem(_("Remove 'Panel launchers'"), "edit-delete", St.IconType.SYMBOLIC);
+        item.connect('activate', Lang.bind(this, function() {
+            AppletManager._removeAppletFromPanel(this._launcher._applet._uuid, this._launcher._applet.instance_id);
+        }));
+        subMenu.menu.addMenuItem(item);
     },
 
     _onLaunchActivate: function(event) {
@@ -80,7 +106,7 @@ PanelAppLauncherMenu.prototype = {
     _onEditActivate: function(event) {
         this._launcher.launchersBox.showAddLauncherDialog(event.get_time(), this._launcher);
     },
-    
+
     _launchAction: function(event, name) {
         this._launcher.launchAction(name);
     }
@@ -222,7 +248,7 @@ PanelAppLauncher.prototype = {
         if (this.isCustom()) this.appinfo.launch([], null);
         else this.app.open_new_window(-1);
     },
-    
+
     launchAction: function(name) {
         let allocation = this._iconBox.get_allocation_box();
         this._iconBox.width = allocation.x2 - allocation.x1;
@@ -423,7 +449,7 @@ MyApplet.prototype = {
         this.reload();
     },
 
-    on_orientation_changed: function(neworientation) { 
+    on_orientation_changed: function(neworientation) {
 
         this.orientation = neworientation;
         if (this.orientation == St.Side.TOP || this.orientation == St.Side.BOTTOM) {
@@ -436,10 +462,10 @@ MyApplet.prototype = {
         this.reload();
     },
 
-//
-// NB if the styling does not set right initially, it may well be because there is padding
-// in the theme and panel-launchers-box has # rather than .
-//
+    //
+    // NB if the styling does not set right initially, it may well be because there is padding
+    // in the theme and panel-launchers-box has # rather than .
+    //
     _set_vertical_style: function() {
         this.myactor.set_important(true);
         this.myactor.set_x_align(Clutter.ActorAlign.CENTER);
