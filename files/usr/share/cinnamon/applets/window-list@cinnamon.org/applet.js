@@ -893,7 +893,7 @@ AppMenuButtonRightClickMenu.prototype = {
 
         this.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
 
-        subMenu = new PopupMenu.PopupSubMenuMenuItem(_("Preferences"));
+        let subMenu = new PopupMenu.PopupSubMenuMenuItem(_("Preferences"));
         this.addMenuItem(subMenu);
 
         item = new PopupMenu.PopupIconMenuItem(_("About..."), "dialog-question", St.IconType.SYMBOLIC);
