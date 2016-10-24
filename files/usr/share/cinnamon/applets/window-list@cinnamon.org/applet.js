@@ -54,6 +54,7 @@ const Meta = imports.gi.Meta;
 const St = imports.gi.St;
 
 const Applet = imports.ui.applet;
+const AppletManager = imports.ui.appletManager;
 const DND = imports.ui.dnd;
 const Main = imports.ui.main;
 const Panel = imports.ui.panel;
@@ -331,7 +332,7 @@ AppMenuButton.prototype = {
             this._tooltip = new WindowPreview(this, this.metaWindow, this._applet.orientation);
         else
             this._tooltip = new Tooltips.PanelItemTooltip(this, "", this._applet.orientation);
-        
+
         this.setDisplayTitle();
     },
 
@@ -466,7 +467,7 @@ AppMenuButton.prototype = {
         else if (this.metaWindow.tile_type == Meta.WindowTileType.SNAPPED) {
             title = "||"+ title;
         }
-        
+
         this._label.set_text(title);
     },
 
@@ -598,7 +599,7 @@ AppMenuButton.prototype = {
     _getPreferredHeight: function(actor, forWidth, alloc) {
         let [minSize1, naturalSize1] = this._iconBox.get_preferred_height(forWidth);
 
-        if (this.labelVisible) { 
+        if (this.labelVisible) {
             let [minSize2, naturalSize2] = this._label.get_preferred_height(forWidth);
             alloc.min_size = Math.max(minSize1, minSize2);
         } else {
@@ -607,15 +608,15 @@ AppMenuButton.prototype = {
 
         if (this._applet.orientation == St.Side.TOP || this._applet.orientation == St.Side.BOTTOM ) {
             let pheight  = this._applet._panelHeight;
-
-            alloc.natural_size = pheight - 2; // putting a container around the actor for layout management reasons 
-                                              // affects the allocation,causing the visible border to pull in close around the contents
-                                              // which is not the desired (pre-existing) behaviour on top and bottom panels, 
-                                              // so need to push the visible border back towards the panel edge.
-                                              // Using the actor size will cause recursion errors as clutter tries
-                                              // to make everything fit, so am using the panel height minus a minimal wodge
-                                              // I have had no joy using the ways I would have expected to work - fill and expand
-                                              // but perhaps I have just not got the right combo of parameters on the right actor
+            /* putting a container around the actor for layout management reasons
+               affects the allocation,causing the visible border to pull in close around the contents
+               which is not the desired (pre-existing) behaviour on top and bottom panels,
+               so need to push the visible border back towards the panel edge.
+               Using the actor size will cause recursion errors as clutter tries
+               to make everything fit, so am using the panel height minus a minimal wodge
+               I have had no joy using the ways I would have expected to work - fill and expand
+               but perhaps I have just not got the right combo of parameters on the right actor */
+            alloc.natural_size = pheight - 2;
         } else {
             alloc.natural_size = naturalSize1;
         }
@@ -759,17 +760,12 @@ AppMenuButtonRightClickMenu.prototype = {
         this.metaWindow = metaWindow;
     },
 
-    _populateMenu: function(){
+    _populateMenu: function() {
         this.box.pack_start = this.orientation == St.Side.TOP;
 
         let mw = this.metaWindow;
         let item;
         let length;
-        item = new PopupMenu.PopupIconMenuItem(_("Configure the window list"), "system-run", St.IconType.SYMBOLIC);
-        item.connect('activate', Lang.bind(this._launcher._applet, this._launcher._applet.configureApplet));
-        this.addMenuItem(item);
-
-        this.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
 
         // Move to monitor
         if ((length = Main.layoutManager.monitors.length) == 2) {
@@ -822,7 +818,7 @@ AppMenuButtonRightClickMenu.prototype = {
                         ws.setSensitive(false);
 
                     ws.connect('activate', function() {
-                       mw.change_workspace(global.screen.get_workspace_by_index(j)); 
+                       mw.change_workspace(global.screen.get_workspace_by_index(j));
                     });
                     item.menu.addMenuItem(ws);
                 }
@@ -894,6 +890,25 @@ AppMenuButtonRightClickMenu.prototype = {
             mw.delete(global.get_current_time());
         });
         this.addMenuItem(item);
+
+        this.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
+
+        subMenu = new PopupMenu.PopupSubMenuMenuItem(_("Preferences"));
+        this.addMenuItem(subMenu);
+
+        item = new PopupMenu.PopupIconMenuItem(_("About..."), "dialog-question", St.IconType.SYMBOLIC);
+        item.connect('activate', Lang.bind(this._launcher._applet, this._launcher._applet.openAbout));
+        subMenu.menu.addMenuItem(item);
+
+        item = new PopupMenu.PopupIconMenuItem(_("Configure..."), "system-run", St.IconType.SYMBOLIC);
+        item.connect('activate', Lang.bind(this._launcher._applet, this._launcher._applet.configureApplet));
+        subMenu.menu.addMenuItem(item);
+
+        item = new PopupMenu.PopupIconMenuItem(_("Remove 'Window list'"), "edit-delete", St.IconType.SYMBOLIC);
+        item.connect('activate', Lang.bind(this, function() {
+            AppletManager._removeAppletFromPanel(this._launcher._applet._uuid, this._launcher._applet.instance_id);
+        }));
+        subMenu.menu.addMenuItem(item);
     },
 
     _onToggled: function(actor, isOpening){
