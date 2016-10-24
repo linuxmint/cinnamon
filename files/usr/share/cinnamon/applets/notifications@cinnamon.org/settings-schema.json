@@ -1,9 +1,17 @@
 {
+    "section1": {
+        "type": "section",
+        "description": "Behavior"
+    },
     "ignoreTransientNotifications": {
         "type": "switch",
         "default": true,
         "description": "Ignore transient notifications",
         "tooltip" : "Check this to ignore transient notifications."
+    },
+    "section2": {
+        "type": "section",
+        "description": "Display"
     },
     "showEmptyTray" : {
         "type" : "switch",
