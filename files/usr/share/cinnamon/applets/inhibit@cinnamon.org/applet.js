@@ -83,10 +83,10 @@ InhibitSwitch.prototype = {
         if (current_state >= INHIBIT_SLEEP_FLAG && !this.sessionCookie) {
             this.tooltip.set_text(_("Power management is already inhibited by another program"));
             this._applet.set_applet_tooltip(_("Power management: inhibited by another program"));
-            this._statusIcon.show();
+            this._statusIcon.set_opacity(255);
         } else {
             this.tooltip.set_text("");
-            this._statusIcon.hide();
+            this._statusIcon.set_opacity(0);
         }
     },
 
