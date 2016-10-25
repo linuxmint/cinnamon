@@ -62,7 +62,7 @@ Desklet.prototype = {
         this._updateDecoration();
         global.settings.connect('changed::desklet-decorations', Lang.bind(this, this._updateDecoration));
 
-        this._menu = new PopupMenu.PopupMenu(this.actor, 0.0, St.Side.LEFT, 0);
+        this._menu = new PopupMenu.PopupMenu(this.actor, St.Side.LEFT);
         this._menuManager = new PopupMenu.PopupMenuManager(this);
         this._menuManager.addMenu(this._menu);
         Main.uiGroup.add_actor(this._menu.actor);

@@ -123,7 +123,7 @@ class Module:
             widget = GSettingsSwitch(_("Effects on dialog boxes"), "org.cinnamon", "desktop-effects-on-dialogs")
             settings.add_reveal_row(widget, "org.cinnamon", "desktop-effects")
 
-            widget = GSettingsSwitch(_("Effects on Gtk menus"), "org.cinnamon", "desktop-effects-on-menus")
+            widget = GSettingsSwitch(_("Effects on menus"), "org.cinnamon", "desktop-effects-on-menus")
             settings.add_reveal_row(widget, "org.cinnamon", "desktop-effects")
 
             self.chooser = GSettingsComboBox(_("Effects style"), "org.cinnamon", "desktop-effects-style", OPTIONS)
