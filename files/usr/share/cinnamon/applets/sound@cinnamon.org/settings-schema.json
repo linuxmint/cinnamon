@@ -1,45 +1,6 @@
 {
     "section1": {
         "type": "section",
-        "description" : "Panel"
-    },
-    "showtrack": {
-        "type": "switch",
-        "default": false,
-        "description": "Show song information on the panel"
-    },
-    "truncatetext": {
-        "type": "spinbutton",
-        "default": 30,
-        "min": 5,
-        "max": 512,
-        "units": "characters",
-        "step": 1,
-        "description": "Limit song information to",
-        "dependency": "showtrack",
-        "indent": true
-    },
-    "middleClickAction": {
-        "type": "combobox",
-        "default": "mute",
-        "options": {
-            "Toggle Mute": "mute",
-            "Toggle Play / Pause": "player"
-        },
-        "description": "Action on middle click"
-    },
-    "showalbum": {
-        "type": "switch",
-        "default": false,
-        "description": "Show album art as icon"
-    },
-    "hideSystray" : {
-        "type" : "switch",
-        "description" : "Hide system tray icons for compatible players",
-        "default": true
-    },
-    "section2": {
-        "type": "section",
         "description" : "Menu"
     },
     "playerControl": {
@@ -68,5 +29,46 @@
     "_knownPlayers": {
         "type": "generic",
         "default": ["banshee", "vlc"]
+    },
+    "section2": {
+        "type": "section",
+        "description" : "Panel"
+    },
+    "showtrack": {
+        "type": "switch",
+        "default": false,
+        "description": "Show song information on the panel",
+        "dependency": "playerControl"
+    },
+    "truncatetext": {
+        "type": "spinbutton",
+        "default": 30,
+        "min": 5,
+        "max": 512,
+        "units": "characters",
+        "step": 1,
+        "description": "Limit song information to",
+        "dependency": "showtrack",
+        "indent": true
+    },
+    "middleClickAction": {
+        "type": "combobox",
+        "default": "mute",
+        "options": {
+            "Toggle Mute": "mute",
+            "Toggle Play / Pause": "player"
+        },
+        "description": "Action on middle click"
+    },
+    "showalbum": {
+        "type": "switch",
+        "default": false,
+        "description": "Show album art as icon",
+        "dependency": "playerControl"
+    },
+    "hideSystray" : {
+        "type" : "switch",
+        "description" : "Hide system tray icons for compatible players",
+        "default": true
     }
 }
