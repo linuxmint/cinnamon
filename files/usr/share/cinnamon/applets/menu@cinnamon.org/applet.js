@@ -1370,7 +1370,7 @@ MyApplet.prototype = {
             this._previousSelectedActor = null;
             this.closeContextMenus(null, false);
 
-            this._clearAllSelections(false);
+            this._clearAllSelections(true);
             this.destroyVectorBox();
         }
     },
