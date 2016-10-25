@@ -2,7 +2,7 @@
 import cairo
 import math
 
-from gi.repository import Gio
+from gi.repository import Gio, GLib
 
 from GSettingsWidgets import *
 
@@ -82,11 +82,16 @@ class Module:
             else:
                 isEnabled = False
 
-            corner.setValues(function, visible, enabled)
+            try:
+                delay = prop[3]
+            except:
+                delay = "0"
+
+            corner.setValues(function, visible, enabled, delay)
             self.cornerDisplay.setCornerEnabled(corner.index, isEnabled)
         self.cornerDisplay.queue_draw()
 
-    def onConfigChanged(self, index, function, visible, enabled):
+    def onConfigChanged(self, index, function, visible, enabled, delay):
         self.cornerDisplay.queue_draw()
 
         props = self.properties[index]
@@ -102,6 +107,11 @@ class Module:
             props[2] = 'true'
         else:
             props[2] = 'false'
+
+        try:
+            props[3] = str(delay)
+        except:
+            props.append("0")
 
         self.write_settings()
 
@@ -207,6 +217,7 @@ class HotCornerConfiguration():
     def __init__(self, index, updateCallback):
         self.updateCallback = updateCallback
         self.index = index
+        self.timer = None
         self.functionStore = Gtk.ListStore(str, str)
         self.functionStore.append(['expo', _("Show all workspaces")]) #Expo
         self.functionStore.append(['scale', _("Show all windows")]) #Scale
@@ -228,21 +239,34 @@ class HotCornerConfiguration():
         self.iconCheckbox.set_label(_("Icon visible"))
         self.hoverCheckbox = Gtk.CheckButton()
         self.hoverCheckbox.set_label(_("Hover enabled"))
+        self.hoverDelayBox = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
+        self.hoverDelayLabel = Gtk.Label.new(_("Hover delay"))
+        self.hoverDelaySpinner = Gtk.SpinButton.new_with_range(0, 1000, 50)
+        self.hoverDelayUnitsLabel = Gtk.Label.new(_("ms"))
 
         self.box.pack_start(self.functionCombo, True, True, 0)
         self.box.pack_start(self.customEntry, True, True, 0)
         self.box.pack_start(self.iconCheckbox, True, True, 0)
         self.box.pack_start(self.hoverCheckbox, True, True, 0)
+        self.hoverDelayBox.pack_start(self.hoverDelayLabel, False, False, 5)
+        self.hoverDelayBox.pack_end(self.hoverDelayUnitsLabel, False, False, 5)
+        self.hoverDelayBox.pack_end(self.hoverDelaySpinner, False, False, 5)
+        self.box.pack_start(self.hoverDelayBox, True, True, 0)
 
         self.functionCombo.connect('changed', self.on_widget_changed)
         self.customEntry.connect('changed', self.on_widget_changed)
         self.iconCheckbox.connect('toggled', self.on_widget_changed)
         self.hoverCheckbox.connect('toggled', self.on_widget_changed)
+        self.hoverDelaySpinner.connect('value-changed', self.on_widget_changed)
 
         self.functionCombo.show()
         self.iconCheckbox.show()
         self.hoverCheckbox.show()
         self.customEntry.show()
+        self.hoverDelayLabel.show()
+        self.hoverDelaySpinner.show()
+        self.hoverDelayUnitsLabel.show()
+        self.hoverDelayBox.show()
         self.box.show()
 
         alignment = Gtk.Alignment()
@@ -255,7 +279,7 @@ class HotCornerConfiguration():
 
         return alignment
 
-    def setValues(self, function, visible, enabled):
+    def setValues(self, function, visible, enabled, delay):
         hideCustomEntry = True
 
         if function == "expo":
@@ -280,20 +304,31 @@ class HotCornerConfiguration():
         if self.hoverCheckbox.get_active() != enabled:
             self.hoverCheckbox.set_active(enabled)
 
+        self.hoverDelayBox.set_sensitive(enabled)
+        self.hoverDelaySpinner.set_value(int(delay))
+
     def on_widget_changed(self, widget):
-        iter = self.functionCombo.get_active_iter()
-        if iter != None:
-            function = self.functionStore.get_value(iter, 0)
-            visible = self.iconCheckbox.get_active()
-            enabled = self.hoverCheckbox.get_active()
+        def apply(self):
+            iter = self.functionCombo.get_active_iter()
+            if iter != None:
+                function = self.functionStore.get_value(iter, 0)
+                visible = self.iconCheckbox.get_active()
+                enabled = self.hoverCheckbox.get_active()
+                delay = str(int(self.hoverDelaySpinner.get_value()))
 
-            if function != 'custom':
-                self.customEntry.hide()
-            else:
-                self.customEntry.show()
-                function = self.customEntry.get_text()
+                if function != 'custom':
+                    self.customEntry.hide()
+                else:
+                    self.customEntry.show()
+                    function = self.customEntry.get_text()
 
-            self.updateCallback(self.index, function, visible, enabled)
+                self.updateCallback(self.index, function, visible, enabled, delay)
+
+            self.timer = None
+
+        if self.timer:
+            GLib.source_remove(self.timer)
+        self.timer = GLib.timeout_add(250, apply, self)
 
 
 
