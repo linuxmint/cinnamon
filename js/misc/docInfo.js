@@ -27,6 +27,7 @@ DocInfo.prototype = {
         this.name = recentInfo.get_display_name();
         this._lowerName = this.name.toLowerCase();
         this.uri = recentInfo.get_uri();
+        this.uriDecoded = decodeURIComponent(this.uri);
         this.mimeType = recentInfo.get_mime_type();
         //this.mtime = this._fetch_mtime(); // Expensive
     },
