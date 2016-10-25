@@ -11,6 +11,9 @@ const Tweener = imports.ui.tweener;
 const Mainloop = imports.mainloop;
 const HOT_CORNER_ACTIVATION_TIMEOUT = 0.5;
 const OVERVIEW_CORNERS_KEY = 'overview-corner';
+const Tooltips = imports.ui.tooltips;
+const Gettext = imports.gettext;
+const _ = Gettext.gettext;
 
 // Map texts to boolean value
 const TF = [];
@@ -157,6 +160,8 @@ HotCorner.prototype = {
         this.iconActor = new St.Button({name: 'overview-corner', reactive: true, track_hover: true});
         this.iconActor.connect('button-release-event', Lang.bind(this, this.runAction));
 
+        this.iconActor.tooltip = new Tooltips.Tooltip(this.iconActor);
+
         this.iconActor.set_size(32, 32);
     },
 
@@ -211,8 +216,23 @@ HotCorner.prototype = {
         if (this.hover) this.actor.show();
         else this.actor.hide();
 
-        if (this.icon) this.iconActor.show();
-        else this.iconActor.hide();
+        if (this.icon) {
+            this.iconActor.show();
+            this.iconActor.tooltip.set_text(this.getIconTooltip());
+        } else this.iconActor.hide();
+    },
+
+    getIconTooltip: function() {
+        switch (this.action) {
+            case 'expo':
+                return _("Show all workspaces");
+            case 'scale':
+                return _("Show all windows");
+            case 'desktop':
+                return _("Show the desktop");
+            default:
+                return _("Run a command") + ": %s".format(this.action);
+        }
     },
 
     rippleAnimation: function() {
