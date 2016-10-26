@@ -35,6 +35,15 @@ const VOLUME_ADJUSTMENT_STEP = 0.05; /* Volume adjustment step in % */
 
 const ICON_SIZE = 28;
 
+function _getDigitWidth(actor){
+    let context = actor.get_pango_context();
+    let themeNode = actor.get_theme_node();
+    let font = themeNode.get_font();
+    let metrics = context.get_metrics(font, context.get_language());
+    let width = metrics.get_approximate_digit_width();
+    return width;
+}
+
 function ControlButton() {
     this._init.apply(this, arguments);
 }
@@ -112,6 +121,11 @@ VolumeSlider.prototype = {
         this.addActor(this.icon, {span: 0});
         this.addActor(this._slider, {span: -1, expand: true});
 
+        this.label = new St.Label({ text: "" });
+        let digitWidth = _getDigitWidth(this.actor) / Pango.SCALE;
+        this.label.set_width(digitWidth * 5);
+        this.label.clutter_text.set_ellipsize(Pango.EllipsizeMode.NONE);
+
         this.connectWithStream(stream);
     },
 
@@ -167,6 +181,8 @@ VolumeSlider.prototype = {
         }
         this.setValue(value);
 
+        this.label.set_text(percentage);
+
         // send data to applet
         this.emit("values-changed", iconName, percentage);
     },
@@ -183,6 +199,16 @@ VolumeSlider.prototype = {
             icon = "high";
 
         return this.isMic? "microphone-sensitivity-" + icon : "audio-volume-" + icon;
+    },
+
+    _togglePercentageDisplay: function(showPercentage) {
+        if (!showPercentage)
+            this.removeActor(this.label);
+        else {
+            this.removeActor(this._slider);
+            this.addActor(this.label, {span: 0});
+            this.addActor(this._slider, {span: -1, expand: true});
+        }
     }
 }
 
@@ -895,6 +921,7 @@ MyApplet.prototype = {
                 for(let i in this._players)
                     this._players[i].onSettingsChanged();
             });
+            this.settings.bind("showSliderPercentage", "showSliderPercentage", this._showPercentageChanged);
 
             this.settings.bind("_knownPlayers", "_knownPlayers");
             if (this.hideSystray) this.registerSystrayIcons();
@@ -1318,6 +1345,7 @@ MyApplet.prototype = {
         this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem);
         this._outputVolumeSection = new VolumeSlider(this, null, _("Volume"), null);
         this._outputVolumeSection.connect("values-changed", Lang.bind(this, this._outputValuesChanged));
+        this._showPercentageChanged();
 
         this.menu.addMenuItem(this._outputVolumeSection);
         this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem);
@@ -1404,6 +1432,10 @@ MyApplet.prototype = {
     _inputValuesChanged: function(actor, iconName) {
         this.mute_in_switch.setIconSymbolicName(iconName);
     },
+
+     _showPercentageChanged: function() {
+         this._outputVolumeSection._togglePercentageDisplay(this.showSliderPercentage);
+     },
 
     _onControlStateChanged: function() {
         if (this._control.get_state() == Cvc.MixerControlState.READY) {
