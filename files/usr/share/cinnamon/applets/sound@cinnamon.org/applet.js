@@ -1341,7 +1341,6 @@ MyApplet.prototype = {
         this.menu.addMenuItem(this._launchPlayerItem);
         this._updateLaunchPlayer();
 
-
         //between these two separators will be the player MenuSection (position 3)
         this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem);
         this._outputVolumeSection = new VolumeSlider(this, null, _("Volume"), null);
