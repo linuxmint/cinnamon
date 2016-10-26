@@ -2135,7 +2135,8 @@ PopupMenu.prototype = {
         this.animating = false;
         this._slidePosition = -1;
 
-        this.actor = new St.Bin({ style_class: 'menu' });
+        this.actor = new St.Bin({ style_class: 'menu',
+                                  important: true });
         this.actor._delegate = this;
         this.actor.connect('key-press-event', Lang.bind(this, this._onKeyPressEvent));
 
