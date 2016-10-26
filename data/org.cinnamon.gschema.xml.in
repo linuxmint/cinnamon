@@ -359,7 +359,7 @@
     </key>
 
     <key name="overview-corner" type="as">
-      <default>['expo:false:false', 'scale:false:false', 'scale:false:false', 'desktop:false:false']</default>
+      <default>['expo:false:false:0', 'scale:false:false:0', 'scale:false:false:0', 'desktop:false:false:0']</default>
       <_summary>Properties of overview corners</_summary>
       <_description>Properties of overview corners, in the form functionality:hover:icon. The order in which properties are displayed is top left, top right, bottom left, bottom right.</_description>
     </key>

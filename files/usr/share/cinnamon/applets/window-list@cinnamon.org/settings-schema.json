@@ -1,4 +1,8 @@
 {
+  "section1": {
+    "type": "section",
+    "description": "Behavior"
+  },
   "enable-alerts" : {
       "type" : "switch",
       "default" : true,
@@ -18,6 +22,10 @@
       "type": "switch",
       "default": true,
       "description": "Middle click to close window"
+  },
+  "section2": {
+    "type": "section",
+    "description": "Display"
   },
   "buttons-use-entire-space": {
       "type": "switch",

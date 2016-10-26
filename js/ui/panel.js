@@ -1658,7 +1658,7 @@ PanelContextMenu.prototype = {
     __proto__: PopupMenu.PopupMenu.prototype,
 
     _init: function(launcher, orientation, panelId) {
-        PopupMenu.PopupMenu.prototype._init.call(this, launcher.actor, 0.0, orientation, 0);
+        PopupMenu.PopupMenu.prototype._init.call(this, launcher.actor, orientation);
         Main.uiGroup.add_actor(this.actor);
         this.actor.hide();
         this.panelId = panelId;
@@ -2118,17 +2118,6 @@ Panel.prototype = {
         }
         this._menus.addMenu(this._context_menu);
 
-        if (this.panelPosition == PanelLoc.top || this.panelPosition == PanelLoc.bottom) { // horizontal panels
-            this._context_menu._boxPointer._container.connect('allocate', Lang.bind(this._context_menu._boxPointer, function(actor, box, flags){
-                        this._xPosition = this._xpos;
-                        this._shiftActor(); 
-            }));
-        } else {                           // vertical panels
-            this._context_menu._boxPointer._container.connect('allocate', Lang.bind(this._context_menu._boxPointer, function(actor, box, flags){
-                        this._yPosition = this._ypos;
-                        this._shiftActor(); 
-            }));
-        }
         return;
     },  
 
@@ -2440,85 +2429,16 @@ Panel.prototype = {
                     if (!this._context_menu.isOpen)
                         return;
 
-                    // This next section moves the context menu to the most appropriate position
-                    // If the natural position for the context menu is off the panel or is cutting
-                    // into the space taken up by another panel then it is moved inwards.
-
-                    let monitor = Main.layoutManager.findMonitorForActor(this._context_menu._boxPointer.actor);
-
-                    let topmargin=0;     // where we have mixed horizontal and vertical panels we want to avoid
-                    let bottommargin=0;  // the popup menu overlapping any panel
-                    let leftmargin=0;
-                    let rightmargin=0;
-
-                    let panels = Main.panelManager.getPanelsInMonitor(this.monitorIndex);
-
-                    for (let panel of panels) {
-                        switch (panel.panelPosition) {
-                            case PanelLoc.top:
-                                this._topmargin += panel.actor.height;
-                                break;
-                            case PanelLoc.bottom:
-                                this._bottommargin += panel.actor.height;
-                                break;
-                            case PanelLoc.left:
-                                this._leftmargin += panel.actor.width;
-                                break;
-                            case PanelLoc.right:
-                                this._rightmargin += panel.actor.width;
-                                break;
-                        }
+                    switch (this.panelPosition) {
+                        case PanelLoc.top:
+                        case PanelLoc.bottom:
+                            this._context_menu.shiftToPosition(x);
+                            break;
+                        case PanelLoc.left:
+                        case PanelLoc.right:
+                            this._context_menu.shiftToPosition(y);
+                            break;
                     }
-
-                    if (this.panelPosition == PanelLoc.top || this.panelPosition == PanelLoc.bottom) { // top or bottom panels
-                        x -= this._context_menu._boxPointer._arrowOrigin;
-
-                        let mywidth = this._context_menu._boxPointer.actor.get_allocation_box().x2
-                                     -this._context_menu._boxPointer.actor.get_allocation_box().x1;
-
-                        if (x + mywidth - monitor.x > monitor.width - rightmargin) { // off right
-                            x  = monitor.width + monitor.x - mywidth - rightmargin;
-                            this._context_menu._boxPointer.setArrowOrigin(xe - x);
-                        }
-                        if (x < monitor.x + leftmargin) { // off left
-                            x = monitor.x + leftmargin;
-                            this._context_menu._boxPointer.setArrowOrigin(xe - leftmargin);
-                        }
-                        this._context_menu._boxPointer._xpos = Math.round(x);
-                        this._context_menu._boxPointer._xPosition = this._context_menu._boxPointer._xpos;
-
-                    } else {  // left or right panels
-                        if (this.panelPosition == PanelLoc.left) {
-                            x = monitor.x + this.actor.width;   // right hand edge of the left hand panel
-                        }
-                        else {
-                            let mywidth = this._context_menu._boxPointer.actor.get_allocation_box().x2
-                                     -this._context_menu._boxPointer.actor.get_allocation_box().x1;
-
-                            x = monitor.x + monitor.width - this.actor.width - mywidth; //  left hand edge of the right hand panel
-                        }
-                        this._context_menu._boxPointer._xpos = Math.round(x);
-                        this._context_menu._boxPointer._xPosition = this._context_menu._boxPointer._xpos;
-
-                        y -= this._context_menu._boxPointer._arrowOrigin;
-
-                        let myheight = this._context_menu._boxPointer.actor.get_allocation_box().y2
-                                     - this._context_menu._boxPointer.actor.get_allocation_box().y1;
-
-                        if (y + myheight - monitor.y > monitor.height - bottommargin) { // off bottom
-                            y  = monitor.height + monitor.y - bottommargin - myheight;
-                            this._context_menu._boxPointer.setArrowOrigin(ye - y);
-                        }
-                        if (y < monitor.y + topmargin) { // off top
-                            y = monitor.y + topmargin;
-                            this._context_menu._boxPointer.setArrowOrigin(ye - topmargin);
-                        }
-
-                        this._context_menu._boxPointer._ypos = Math.round(y);
-                        this._context_menu._boxPointer._yPosition = this._context_menu._boxPointer._ypos;
-
-                    }
-                    this._context_menu._boxPointer._shiftActor();
                 }
             } catch(e) {
                 global.log(e);

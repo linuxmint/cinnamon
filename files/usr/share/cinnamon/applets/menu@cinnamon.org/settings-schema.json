@@ -109,7 +109,7 @@
     "units" : "milliseconds",
     "dependency" : "activate-on-hover",
     "description" : "Menu hover delay",
-    "tooltip" : "Delay between switching categories"
+    "tooltip" : "Delay before the menu opens when hovered"
  },
   "menu-editor-button" : {
     "type" : "button",

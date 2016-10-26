@@ -1,3 +1,4 @@
+const St = imports.gi.St;
 const PopupMenu = imports.ui.popupMenu;
 const Gio = imports.gi.Gio;
 const Lang = imports.lang;
@@ -38,6 +39,8 @@ MyApplet.prototype = {
 
     _init: function(metadata, orientation, panel_height, instance_id) {
         Applet.TextIconApplet.prototype._init.call(this, orientation, panel_height, instance_id);
+
+        this.setAllowedLayout(Applet.AllowedLayout.BOTH);
         
         try {
             this.metadata = metadata;
@@ -45,6 +48,7 @@ MyApplet.prototype = {
             
             this.set_applet_icon_symbolic_name("preferences-desktop-accessibility");
             this.set_applet_tooltip(_("Accessibility"));
+            this.orientation = orientation;
             
             this.menuManager = new PopupMenu.PopupMenuManager(this);
             this.menu = new Applet.AppletPopupMenu(this, orientation);
@@ -86,7 +90,7 @@ MyApplet.prototype = {
             this.a11y_settings = new Gio.Settings({ schema_id: A11Y_SCHEMA });
 
             this._keyboardStateChangedId = Keymap.connect('state-changed', Lang.bind(this, this._handleStateChange));
-            this.set_applet_label('');
+            this.hide_applet_label(true);
 
         }
         catch (e) {
@@ -120,15 +124,44 @@ MyApplet.prototype = {
                 modifiers.push('Mod2');
             if (state & Gdk.ModifierType.MOD3_MASK)
                 modifiers.push('Mod3');
-            this.set_applet_label(modifiers.join('+'));
-        }
-        else {
-            this.set_applet_label('');
+            let keystring = modifiers.join('+');
+//
+// horizontal panels - show the sticky keys in the label, vertical - in a tooltip, and hide any label
+//
+            if (this.orientation == St.Side.LEFT || this.orientation == St.Side.RIGHT) {
+                this.hide_applet_label(true);
+                if (keystring) {
+                    this.set_applet_tooltip(keystring);
+                    this._applet_tooltip.show();
+                } else {
+                    this.reset_tooltip();
+                }
+            } else {
+                this.set_applet_label(keystring);
+                this.hide_applet_label(false);
+                this.reset_tooltip();
+            }
+        } else {
+            this.hide_applet_label (this.orientation == St.Side.LEFT || this.orientation == St.Side.RIGHT);
+            this.reset_tooltip();
         }
     },
 
     on_applet_clicked: function(event) {
         this.menu.toggle();
+    },
+
+    on_orientation_changed: function(neworientation) {
+
+        this.orientation = neworientation;
+
+        this.hide_applet_label (this.orientation == St.Side.LEFT || this.orientation == St.Side.RIGHT);
+        this.reset_tooltip();
+    },
+
+    reset_tooltip: function () {
+        this.set_applet_tooltip(_("Accessibility"));
+        this._applet_tooltip.hide();
     },
 
     _buildItemExtended: function(string, initial_value, writable, on_set) {

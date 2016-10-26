@@ -266,6 +266,7 @@ class CSGSettingsBackend(object):
         else:
             self.settings.connect("changed::"+self.key, self.on_setting_changed)
             self.on_setting_changed()
+            self.connect_widget_handlers()
 
     def set_value(self, value):
         self.settings[self.key] = value
@@ -279,6 +280,13 @@ class CSGSettingsBackend(object):
             return [range[1][0], range[1][1]]
         else:
             return None
+
+    def on_setting_changed(self, *args):
+        raise NotImplementedError("SettingsWidget class must implement on_setting_changed().")
+
+    def connect_widget_handlers(self, *args):
+        if self.bind_dir == None:
+            raise NotImplementedError("SettingsWidget classes with no .bind_dir must implement connect_widget_handlers().")
 
 def g_settings_factory(subclass):
     class NewClass(globals()[subclass], CSGSettingsBackend):

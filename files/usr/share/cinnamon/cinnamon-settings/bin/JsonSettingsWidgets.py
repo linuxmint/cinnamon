@@ -202,6 +202,7 @@ class JSONSettingsBackend(object):
         else:
             self.settings.listen(self.key, self.on_setting_changed)
             self.on_setting_changed()
+            self.connect_widget_handlers()
 
     def set_value(self, value):
         self.settings.set_value(self.key, value)
@@ -213,6 +214,13 @@ class JSONSettingsBackend(object):
         min = self.settings.get_property(self.key, "min")
         max = self.settings.get_property(self.key, "max")
         return [min, max]
+
+    def on_setting_changed(self, *args):
+        raise NotImplementedError("SettingsWidget class must implement on_setting_changed().")
+
+    def connect_widget_handlers(self, *args):
+        if self.bind_dir == None:
+            raise NotImplementedError("SettingsWidget classes with no .bind_dir must implement connect_widget_handlers().")
 
 def json_settings_factory(subclass):
     class NewClass(globals()[subclass], JSONSettingsBackend):

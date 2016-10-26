@@ -11,23 +11,26 @@ const Tweener = imports.ui.tweener;
 const Mainloop = imports.mainloop;
 const HOT_CORNER_ACTIVATION_TIMEOUT = 0.5;
 const OVERVIEW_CORNERS_KEY = 'overview-corner';
+const Tooltips = imports.ui.tooltips;
 
 // Map texts to boolean value
 const TF = [];
 TF['true'] = true;
 TF['false'] = false;
 
-function HotCornerManager(){
+function HotCornerManager() {
     this._init();
 }
 
 HotCornerManager.prototype = {
     _init: function() {
         this.corners = [];
-        for (let i = 0; i < 4; i++){ // In order: top left; top right; bottom left; bottom right;
+        for (let i = 0; i < 4; i++) { // In order: top left; top right; bottom left; bottom right;
             this.corners.push(new HotCorner());
             Main.layoutManager.addChrome(this.corners[i].actor);
-            Main.layoutManager.addChrome(this.corners[i].iconActor, {visibleInFullscreen: false});
+            Main.layoutManager.addChrome(this.corners[i].iconActor, {
+                visibleInFullscreen: false
+            });
         }
         this.parseGSettings();
         global.settings.connect('changed::' + OVERVIEW_CORNERS_KEY, Lang.bind(this, this.parseGSettings));
@@ -42,7 +45,7 @@ HotCornerManager.prototype = {
             return false;
         }
 
-        for (let i = 0; i < 4; i ++) {
+        for (let i = 0; i < 4; i++) {
             let elements = options[i].split(':');
             this.corners[i].setProperties(elements);
         }
@@ -72,7 +75,7 @@ HotCornerManager.prototype = {
         this.corners[3].iconActor.set_position(b_x + bottomMonitor.width - 33, b_y - 33);
         return true;
     }
-}
+};
 
 // HotCorner:
 //
@@ -83,7 +86,7 @@ function HotCorner() {
 }
 
 HotCorner.prototype = {
-    _init : function() {
+    _init: function() {
         // We use this flag to mark the case where the user has entered the
         // hot corner and has not left both the hot corner and a surrounding
         // guard area (the "environs"). This avoids triggering the hot corner
@@ -93,18 +96,24 @@ HotCorner.prototype = {
         this.action = null; // The action to activate when hot corner is triggered
         this.hover = false; // Whether the hot corners responds to hover
         this.icon = false; // Whether the overview corner icon is shown
+        this.hover_delay = 0; // Hover delay activation
+        this.hover_delay_id = 0; // Hover delay timer ID
 
         // Construct the hot corner 'ripples'
-        this.actor = new Clutter.Group({ name: 'hot-corner-environs',
-                                         width: 3,
-                                         height: 3,
-                                         reactive: true });
+        this.actor = new Clutter.Group({
+            name: 'hot-corner-environs',
+            width: 3,
+            height: 3,
+            reactive: true
+        });
 
-        this._corner = new Clutter.Rectangle({ name: 'hot-corner',
-                                               width: 2,
-                                               height: 1,
-                                               opacity: 0,
-                                               reactive: true });
+        this._corner = new Clutter.Rectangle({
+            name: 'hot-corner',
+            width: 2,
+            height: 1,
+            opacity: 0,
+            reactive: true
+        });
         this._corner._delegate = this;
 
         this.actor.add_actor(this._corner);
@@ -119,31 +128,40 @@ HotCorner.prototype = {
         this._activationTime = 0;
 
         this.actor.connect('leave-event',
-                           Lang.bind(this, this._onEnvironsLeft));
+            Lang.bind(this, this._onEnvironsLeft));
 
         // Clicking on the hot corner environs should result in the
         // same behavior as clicking on the hot corner.
         this.actor.connect('button-release-event',
-                           Lang.bind(this, this._onCornerClicked));
+            Lang.bind(this, this._onCornerClicked));
 
         // In addition to being triggered by the mouse enter event,
         // the hot corner can be triggered by clicking on it. This is
         // useful if the user wants to undo the effect of triggering
         // the hot corner once in the hot corner.
         this._corner.connect('enter-event',
-                             Lang.bind(this, this._onCornerEntered));
+            Lang.bind(this, this._onCornerEntered));
         this._corner.connect('button-release-event',
-                             Lang.bind(this, this._onCornerClicked));
+            Lang.bind(this, this._onCornerClicked));
         this._corner.connect('leave-event',
-                             Lang.bind(this, this._onCornerLeft));
+            Lang.bind(this, this._onCornerLeft));
 
         this.tile_delay = false;
         global.window_manager.connect('tile', Lang.bind(this, this._tilePerformed));
 
         // Cache the three ripples instead of dynamically creating and destroying them.
-        this._ripple1 = new St.BoxLayout({ style_class: 'ripple-box', opacity: 0 });
-        this._ripple2 = new St.BoxLayout({ style_class: 'ripple-box', opacity: 0 });
-        this._ripple3 = new St.BoxLayout({ style_class: 'ripple-box', opacity: 0 });
+        this._ripple1 = new St.BoxLayout({
+            style_class: 'ripple-box',
+            opacity: 0
+        });
+        this._ripple2 = new St.BoxLayout({
+            style_class: 'ripple-box',
+            opacity: 0
+        });
+        this._ripple3 = new St.BoxLayout({
+            style_class: 'ripple-box',
+            opacity: 0
+        });
 
         Main.uiGroup.add_actor(this._ripple1);
         Main.uiGroup.add_actor(this._ripple2);
@@ -154,7 +172,14 @@ HotCorner.prototype = {
         this._ripple3.hide();
 
         // Construct the overview corner icon
-        this.iconActor = new St.Button({name: 'overview-corner', reactive: true, track_hover: true});
+        this.iconActor = new St.Button({
+            name: 'overview-corner',
+            reactive: true,
+            track_hover: true
+        });
+
+        this.iconActor.tooltip = new Tooltips.Tooltip(this.iconActor);
+
         this.iconActor.connect('button-release-event', Lang.bind(this, this.runAction));
 
         this.iconActor.set_size(32, 32);
@@ -164,17 +189,17 @@ HotCorner.prototype = {
         this.actor.destroy();
     },
 
-    _tile_delay_cb : function() {
+    _tile_delay_cb: function() {
         this.tile_delay = false;
         return false;
     },
 
-    _tilePerformed : function(cinnamonwm, actor, targetX, targetY, targetWidth, targetHeight) {
+    _tilePerformed: function(cinnamonwm, actor, targetX, targetY, targetWidth, targetHeight) {
         this.tile_delay = true;
         Mainloop.timeout_add(250, Lang.bind(this, this._tile_delay_cb));
     },
 
-    _animRipple : function(ripple, delay, time, startScale, startOpacity, finalScale) {
+    _animRipple: function(ripple, delay, time, startScale, startOpacity, finalScale) {
         // We draw a ripple by using a source image and animating it scaling
         // outwards and fading away. We want the ripples to move linearly
         // or it looks unrealistic, but if the opacity of the ripple goes
@@ -193,26 +218,51 @@ HotCorner.prototype = {
         ripple.x = x;
         ripple.y = y;
 
-        Tweener.addTween(ripple, { _opacity: 0,
-                                   scale_x: finalScale,
-                                   scale_y: finalScale,
-                                   delay: delay,
-                                   time: time,
-                                   transition: 'linear',
-                                   onUpdate: function() { ripple.opacity = 255 * Math.sqrt(ripple._opacity); },
-                                   onComplete: function() { ripple.visible = false; } });
+        Tweener.addTween(ripple, {
+            _opacity: 0,
+            scale_x: finalScale,
+            scale_y: finalScale,
+            delay: delay,
+            time: time,
+            transition: 'linear',
+            onUpdate: function() {
+                ripple.opacity = 255 * Math.sqrt(ripple._opacity);
+            },
+            onComplete: function() {
+                ripple.visible = false;
+            }
+        });
     },
 
-    setProperties: function(properties){
+    setProperties: function(properties) {
         this.action = properties[0];
         this.hover = TF[properties[1]];
         this.icon = TF[properties[2]];
+        this.hover_delay = properties[3] ? Number(properties[3]) : 0;
 
-        if (this.hover) this.actor.show();
-        else this.actor.hide();
+        if (this.hover)
+            this.actor.show();
+        else
+            this.actor.hide();
 
-        if (this.icon) this.iconActor.show();
-        else this.iconActor.hide();
+        if (this.icon) {
+            this.iconActor.show();
+            this.iconActor.tooltip.set_text(this.getIconTooltip());
+        } else
+            this.iconActor.hide();
+    },
+
+    getIconTooltip: function() {
+        switch (this.action) {
+            case 'expo':
+                return _("Show all workspaces");
+            case 'scale':
+                return _("Show all windows");
+            case 'desktop':
+                return _("Show the desktop");
+            default:
+                return _("Run a command") + ": %s".format(this.action);
+        }
     },
 
     rippleAnimation: function() {
@@ -225,64 +275,82 @@ HotCorner.prototype = {
         this._ripple3.show();
 
         //                              delay  time  scale opacity => scale
-        this._animRipple(this._ripple1, 0.0,   0.83,  0.25,  1.0,     1.5);
-        this._animRipple(this._ripple2, 0.05,  1.0,   0.0,   0.7,     1.25);
-        this._animRipple(this._ripple3, 0.35,  1.0,   0.0,   0.3,     1);
+        this._animRipple(this._ripple1, 0.0, 0.83, 0.25, 1.0, 1.5);
+        this._animRipple(this._ripple2, 0.05, 1.0, 0.0, 0.7, 1.25);
+        this._animRipple(this._ripple3, 0.35, 1.0, 0.0, 0.3, 1);
     },
 
-    runAction: function(){
+    runAction: function() {
         this._activationTime = Date.now() / 1000;
 
-        switch (this.action){
-        case 'expo':
-            if (!Main.expo.animationInProgress)
-                Main.expo.toggle();
-            break;
-        case 'scale':
-            if (!Main.overview.animationInProgress)
-                Main.overview.toggle();
-            break;
-        case 'desktop':
-            global.screen.toggle_desktop(global.get_current_time());
-            break;
-        default:
-            Util.spawnCommandLine(this.action);
+        switch (this.action) {
+            case 'expo':
+                if (!Main.expo.animationInProgress)
+                    Main.expo.toggle();
+                break;
+            case 'scale':
+                if (!Main.overview.animationInProgress)
+                    Main.overview.toggle();
+                break;
+            case 'desktop':
+                global.screen.toggle_desktop(global.get_current_time());
+                break;
+            default:
+                Util.spawnCommandLine(this.action);
         }
     },
 
-    _onCornerEntered : function() {
-        if (!this._entered && !this.tile_delay) {
-            this._entered = true;
-            let run = false;
-            if (!(Main.expo.visible || Main.overview.visible)){
-                run = true;
-            }
-            if ((Main.expo.visible && this.action=='expo') || (Main.overview.visible && this.action=='scale')){
-                run = true;
-            }
-            if (run){
-                this.rippleAnimation();
-                this.runAction();
-            }
+    _onCornerEntered: function() {
+        if (this.hover_delay_id > 0) {
+            Mainloop.source_remove(this.hover_delay_id);
+            this.hover_delay_id = 0;
         }
+
+        this.hover_delay_id = Mainloop.timeout_add(this.hover_delay, Lang.bind(this, function() {
+            if (!this._entered && !this.tile_delay) {
+                this._entered = true;
+                let run = false;
+                if (!(Main.expo.visible || Main.overview.visible)) {
+                    run = true;
+                }
+                if ((Main.expo.visible && this.action == 'expo') ||
+                    (Main.overview.visible && this.action == 'scale')) {
+                    run = true;
+                }
+                if (run) {
+                    this.rippleAnimation();
+                    this.runAction();
+                }
+            }
+        }));
         return false;
     },
 
-    _onCornerClicked : function() {
+    _onCornerClicked: function() {
+        if (this.hover_delay_id > 0) {
+            Mainloop.source_remove(this.hover_delay_id);
+            this.hover_delay_id = 0;
+        }
+
         if (this.shouldToggleOverviewOnClick())
             this.rippleAnimation();
-            this.runAction();
+        this.runAction();
         return true;
     },
 
-    _onCornerLeft : function(actor, event) {
+    _onCornerLeft: function(actor, event) {
+        if (this.hover_delay_id > 0) {
+            Mainloop.source_remove(this.hover_delay_id);
+            this.hover_delay_id = 0;
+        }
+
         if (event.get_related() != this.actor)
             this._entered = false;
         // Consume event, otherwise this will confuse onEnvironsLeft
         return true;
     },
 
-    _onEnvironsLeft : function(actor, event) {
+    _onEnvironsLeft: function(actor, event) {
         if (event.get_related() != this._corner)
             this._entered = false;
         return false;

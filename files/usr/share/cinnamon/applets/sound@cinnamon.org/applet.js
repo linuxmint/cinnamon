@@ -933,6 +933,7 @@ MyApplet.prototype = {
             this.set_applet_icon_symbolic_name('audio-x-generic');
 
             this._players = {};
+            this._playerItems = [];
             this._activePlayer = null;
 
             Interfaces.getDBusAsync(Lang.bind(this, function (proxy, error) {
@@ -1003,8 +1004,8 @@ MyApplet.prototype = {
 
             this.actor.connect('scroll-event', Lang.bind(this, this._onScrollEvent));
 
-            this.mute_out_switch = new PopupMenu.PopupSwitchMenuItem(_("Mute output"), false);
-            this.mute_in_switch = new PopupMenu.PopupSwitchMenuItem(_("Mute input"), false);
+            this.mute_out_switch = new PopupMenu.PopupSwitchIconMenuItem(_("Mute output"), false, "audio-volume-muted", St.IconType.SYMBOLIC);
+            this.mute_in_switch = new PopupMenu.PopupSwitchIconMenuItem(_("Mute input"), false, "microphone-sensitivity-none", St.IconType.SYMBOLIC);
             this._applet_context_menu.addMenuItem(this.mute_out_switch);
             this._applet_context_menu.addMenuItem(this.mute_in_switch);
 
@@ -1019,6 +1020,7 @@ MyApplet.prototype = {
 
             this._inputSection = new PopupMenu.PopupMenuSection;
             this._inputVolumeSection = new VolumeSlider(this, null, _("Microphone"), null);
+            this._inputVolumeSection.connect("values-changed", Lang.bind(this, this._inputValuesChanged));
             this._selectInputDeviceItem = new PopupMenu.PopupSubMenuMenuItem(_("Input device"));
             this._inputSection.addMenuItem(this._inputVolumeSection);
             this._inputSection.addMenuItem(this._selectInputDeviceItem);
@@ -1244,15 +1246,51 @@ MyApplet.prototype = {
             else
                 return;
         } else if (owner) {
-            this._players[owner] = new Player(this, busName, owner);
+            let player = new Player(this, busName, owner);
+
+            // Add the player to the list of active players in GUI
+            let item = new PopupMenu.PopupMenuItem(player._getName());
+            item.activate = Lang.bind(this, function() { this._switchPlayer(player._owner); });
+            this._chooseActivePlayerItem.menu.addMenuItem(item);
+
+            this._players[owner] = player;
+            this._playerItems.push({ player: player, item: item });
+
             this._changeActivePlayer(owner);
             this._updatePlayerMenuItems();
             this.setAppletTextIcon();
         }
     },
 
+    _switchPlayer: function(owner) {
+        if(this._players[owner]) {
+            // The player exists, switch to it
+            this._changeActivePlayer(owner);
+            this._updatePlayerMenuItems();
+            this.setAppletTextIcon();
+        } else {
+            // The player doesn't seem to exist. Remove it from the players list
+            this._removePlayerItem(owner);
+            this._updatePlayerMenuItems();
+        }
+    },
+
+    _removePlayerItem: function(owner) {
+        // Remove the player from the player switching list
+        for(let i = 0, l = this._playerItems.length; i < l; ++i) {
+            let playerItem = this._playerItems[i];
+            if(playerItem.player._owner === owner) {
+                playerItem.item.destroy();
+                this._playerItems.splice(i, 1);
+                break;
+            }
+        }
+    },
+
     _removePlayer: function(busName, owner) {
         if (this._players[owner] && this._players[owner]._busName == busName) {
+            this._removePlayerItem(owner);
+
             this._players[owner].destroy();
             delete this._players[owner];
 
@@ -1293,12 +1331,17 @@ MyApplet.prototype = {
     },
 
     _showFixedElements: function() {
-        //we'll show the launch player item or the selector item + a player section
+        // The list to use when switching between active players
+        this._chooseActivePlayerItem = new PopupMenu.PopupSubMenuMenuItem(_("Choose player controls"));
+        this._chooseActivePlayerItem.actor.hide();
+        this.menu.addMenuItem(this._chooseActivePlayerItem);
+
+        // The launch player list
         this._launchPlayerItem = new PopupMenu.PopupSubMenuMenuItem(_("Launch player"));
         this.menu.addMenuItem(this._launchPlayerItem);
         this._updateLaunchPlayer();
 
-        // this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem);
+
         //between these two separators will be the player MenuSection (position 3)
         this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem);
         this._outputVolumeSection = new VolumeSlider(this, null, _("Volume"), null);
@@ -1338,15 +1381,17 @@ MyApplet.prototype = {
     _updatePlayerMenuItems: function() {
         if (this.playerControl && this._activePlayer) {
             this._launchPlayerItem.actor.hide();
+            this._chooseActivePlayerItem.actor.show();
 
-            //go through the players list and create the player info (icon + label)
-            for (let i in this._players) {
-                let info = this._players[i].playerInfo, item;
+            // Show a dot on the active player in the switching menu
+            for (let i = 0, l = this._playerItems.length; i < l; ++i) {
+                let playerItem = this._playerItems[i];
+                playerItem.item.setShowDot(playerItem.player._owner === this._activePlayer);
+            }
 
-                item = new PopupMenu.PopupBaseMenuItem;
-                item.activate = Lang.bind(this, function(event, keepMenu, player){
-                    this._changeActivePlayer(player);
-                }, i);
+            // Hide the switching menu if we only have at most one active player
+            if(this._chooseActivePlayerItem.menu.numMenuItems <= 1) {
+                this._chooseActivePlayerItem.actor.hide();
             }
         } else {
             if (this._launchPlayerItem.menu.numMenuItems) {
@@ -1381,7 +1426,12 @@ MyApplet.prototype = {
 
     _outputValuesChanged: function(actor, iconName, percentage) {
         this.setIcon(iconName, "output");
+        this.mute_out_switch.setIconSymbolicName(iconName);
         this.set_applet_tooltip(_("Volume") + ": " + percentage);
+    },
+
+    _inputValuesChanged: function(actor, iconName) {
+        this.mute_in_switch.setIconSymbolicName(iconName);
     },
 
      _showPercentageChanged: function() {

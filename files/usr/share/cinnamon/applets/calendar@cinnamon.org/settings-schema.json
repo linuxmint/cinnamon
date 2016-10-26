@@ -1,30 +1,34 @@
 {
- "show-week-numbers" : {
-    "type" : "switch",
-    "default" : false,
-    "description": "Show week numbers in calendar",
-    "tooltip": "Check this to show week numbers in the calendar."
- }, 
- "use-custom-format" : {
-    "type" : "switch",
-    "default" : false,
-    "description": "Use a custom date format",
-    "tooltip": "Check this to define a custom format for the date in the calendar applet."
- },
- "custom-format" : {
-    "type" : "entry",
-    "default" : "%A %B %e, %H:%M",
-    "description" : "Date format",
-    "indent": true,
-    "dependency" : "use-custom-format",
-    "tooltip" : "Set your custom format here."
- },
- "format-button" : {
-    "type" : "button",
-    "description" : "Show information on date format syntax",
-    "indent": true,
-    "dependency" : "use-custom-format",
-    "callback" : "on_custom_format_button_pressed",
-    "tooltip" : "Click this button to know more about the syntax for date formats."
- }
+    "section1": {
+        "type": "section",
+        "description": "Display"
+    },
+    "show-week-numbers" : {
+        "type" : "switch",
+        "default" : false,
+        "description": "Show week numbers in calendar",
+        "tooltip": "Check this to show week numbers in the calendar."
+    },
+    "use-custom-format" : {
+        "type" : "switch",
+        "default" : false,
+        "description": "Use a custom date format",
+        "tooltip": "Check this to define a custom format for the date in the calendar applet."
+    },
+    "custom-format" : {
+        "type" : "entry",
+        "default" : "%A %B %e, %H:%M",
+        "description" : "Date format",
+        "indent": true,
+        "dependency" : "use-custom-format",
+        "tooltip" : "Set your custom format here."
+    },
+    "format-button" : {
+        "type" : "button",
+        "description" : "Show information on date format syntax",
+        "indent": true,
+        "dependency" : "use-custom-format",
+        "callback" : "on_custom_format_button_pressed",
+        "tooltip" : "Click this button to know more about the syntax for date formats."
+    }
 }
