@@ -81,7 +81,8 @@ StScrollBar StButton#vhandle:hover {
  * Shared button properties 
  * ===================================================================*/
 .notification-button, .notification-icon-button,
-.modal-dialog-button {
+.modal-dialog-button, 
+.sound-player-overlay StButton {
     color: white;
     border: 1px solid #8b8b8b;
     background-gradient-direction: vertical;
@@ -89,17 +90,20 @@ StScrollBar StButton#vhandle:hover {
     background-gradient-end: rgba(255, 255, 255, 0);
 }
 .notification-button:hover,
-.notification-icon-button:hover, .modal-dialog-button:hover {
+.notification-icon-button:hover, .modal-dialog-button:hover,
+.sound-player-overlay StButton:hover {
     background-gradient-start: rgba(255, 255, 255, 0.3);
     background-gradient-end: rgba(255, 255, 255, 0.1);
 }
 .notification-button:focus,
 .notification-icon-button:focus,
-.modal-dialog-button:focus {
+.modal-dialog-button:focus,
+.sound-player-overlay StButton:focus {
     border: 2px solid #8b8b8b;
 }
 .notification-button:active, .notification-icon-button:active,
-.modal-dialog-button:active, .modal-dialog-button:pressed {
+.modal-dialog-button:active, .modal-dialog-button:pressed,
+.sound-player-overlay StButton:active {
     background-gradient-start: rgba(255, 255, 255, 0);
     background-gradient-end: rgba(255, 255, 255, 0.2);
 }
@@ -1307,11 +1311,20 @@ StScrollBar StButton#vhandle:hover {
 
 .sound-player-overlay {
     width: 300px;
-    height: 70px;
-    padding: 15px;
+    padding: 12px 16px;
     spacing: 0.5em;
-    background: rgba(0,0,0,0.8);
-    color: #FFF;
+    background-color: rgba(80,80,80,0.9);
+    color: #ffffff;
+    border-top: 2px solid #a5a5a5;
+}
+
+.sound-player-overlay StButton {
+    border-radius: 5px;
+    padding: 8px;
+}
+
+.sound-player-overlay StButton > StIcon {
+    icon-size: 16px;
 }
 
 .sound-player-overlay StBoxLayout {
