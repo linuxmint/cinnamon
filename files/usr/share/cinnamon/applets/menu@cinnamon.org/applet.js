@@ -1203,7 +1203,7 @@ MyApplet.prototype = {
     _updateKeybinding: function() {
         Main.keybindingManager.addHotKey("overlay-key", this.overlayKey, Lang.bind(this, function() {
             if (!Main.overview.visible && !Main.expo.visible)
-                this.menu.toggle_with_options(false);
+                this.menu.toggle_with_options(true);
         }));
     },
 
@@ -1241,7 +1241,7 @@ MyApplet.prototype = {
 
     openMenu: function() {
         if (!this._applet_context_menu.isOpen) {
-            this.menu.open(false);
+            this.menu.open(true);
         }
     },
 
@@ -1322,7 +1322,7 @@ MyApplet.prototype = {
     },
 
     on_applet_clicked: function(event) {
-        this.menu.toggle_with_options(false);
+        this.menu.toggle_with_options(true);
     },
 
     _onSourceKeyPress: function(actor, event) {
