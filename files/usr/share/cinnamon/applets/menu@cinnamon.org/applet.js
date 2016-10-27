@@ -1140,6 +1140,7 @@ MyApplet.prototype = {
         this.settings.bind("show-category-icons", "showCategoryIcons", this._refreshAll);
         this.settings.bind("show-application-icons", "showApplicationIcons", this._refreshAll);
         this.settings.bind("favbox-show", "favBoxShow", this._favboxtoggle);
+        this.settings.bind("enable-animation", "enableAnimation", null);
 
         this._updateKeybinding();
 
@@ -1203,7 +1204,7 @@ MyApplet.prototype = {
     _updateKeybinding: function() {
         Main.keybindingManager.addHotKey("overlay-key", this.overlayKey, Lang.bind(this, function() {
             if (!Main.overview.visible && !Main.expo.visible)
-                this.menu.toggle_with_options(false);
+                this.menu.toggle_with_options(this.enableAnimation);
         }));
     },
 
@@ -1241,7 +1242,7 @@ MyApplet.prototype = {
 
     openMenu: function() {
         if (!this._applet_context_menu.isOpen) {
-            this.menu.open(false);
+            this.menu.open(this.enableAnimation);
         }
     },
 
@@ -1322,7 +1323,7 @@ MyApplet.prototype = {
     },
 
     on_applet_clicked: function(event) {
-        this.menu.toggle_with_options(false);
+        this.menu.toggle_with_options(this.enableAnimation);
     },
 
     _onSourceKeyPress: function(actor, event) {
@@ -1416,7 +1417,7 @@ MyApplet.prototype = {
     _favboxtoggle: function() {
         if (!this.favBoxShow) {
             this.leftPane.hide();
-        }else{
+        } else {
             this.leftPane.show();
         }
     },

@@ -20,7 +20,7 @@
         "panel-behave" : {
             "type" : "section",
             "title" : "Behavior",
-            "keys" : ["overlay-key", "activate-on-hover", "hover-delay"]
+            "keys" : ["overlay-key", "activate-on-hover", "hover-delay", "enable-animation"]
         },
         "menu-layout" : {
             "type" : "section",
@@ -110,6 +110,12 @@
     "dependency" : "activate-on-hover",
     "description" : "Menu hover delay",
     "tooltip" : "Delay before the menu opens when hovered"
+ },
+ "enable-animation" : {
+    "type": "switch",
+    "default": false,
+    "description": "Use menu animations",
+    "tooltip": "Allow the menu to animate on open and close"
  },
   "menu-editor-button" : {
     "type" : "button",
