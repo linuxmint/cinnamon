@@ -128,7 +128,7 @@ MyApplet.prototype = {
             if (this._scaleMode)
                 size = this._getIconSize();
 
-            let indicatorActor = appIndicator.getIconActor(size);
+            let indicatorActor = appIndicator.getActor(size);
             indicatorActor._applet = this;
 
             this._shellIndicators[appIndicator.id] = indicatorActor;
@@ -142,7 +142,7 @@ MyApplet.prototype = {
                 if (client != null) {
                     let newMenu = client.getShellMenu();
                     if (!newMenu) {
-                        newMenu = this.menuFactory.buildShellMenu(client, indicatorActor, this._applet_context_menu._arrowSide);
+                        newMenu = this.menuFactory.buildShellMenu(client, indicatorActor, this.orientation);
                         this.menuManager.addMenu(newMenu);
                     }
                     indicatorActor.setMenu(newMenu);

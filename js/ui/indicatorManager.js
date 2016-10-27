@@ -478,7 +478,7 @@ AppIndicator.prototype = {
         }
     },
 
-    getIconActor: function(size) {
+    getActor: function(size) {
         return new IndicatorActor(this, size);
     },
 
