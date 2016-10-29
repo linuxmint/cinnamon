@@ -444,9 +444,18 @@ Applet.prototype = {
             this._panelHeight = panel_height;
         }
         this._scaleMode = AppletManager.enabledAppletDefinitions.idMap[this.instance_id].panel.scaleMode;
-        this.on_panel_height_changed();
+        this.on_panel_height_changed_internal();
     },
     
+    /**
+     * on_panel_height_changed_internal:
+     *
+     * This function is called when the panel containing the applet changes height
+     */
+    on_panel_height_changed_internal: function() {
+        this.on_panel_height_changed();
+    },
+
     /**
      * on_panel_height_changed:
      * 
@@ -665,10 +674,10 @@ IconApplet.prototype = {
         }
     },
 
-    on_panel_height_changed: function() {
-        this._scaleMode = AppletManager.enabledAppletDefinitions.idMap[this.instance_id].panel.scaleMode;
+    on_panel_height_changed_internal: function() {
         if (this._applet_icon)
             this._setStyle();
+        this.on_panel_height_changed();
     }
 };
 
