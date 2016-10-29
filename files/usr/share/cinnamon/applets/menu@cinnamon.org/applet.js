@@ -1317,6 +1317,10 @@ MyApplet.prototype = {
         this.initial_load_done = true;
     },
 
+    on_applet_removed_from_panel: function () {
+        Main.keybindingManager.removeHotKey("overlay-key")
+    },
+
     _launch_editor: function() {
         Util.spawnCommandLine("cinnamon-menu-editor");
     },
