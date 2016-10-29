@@ -591,8 +591,7 @@ AppMenuButton.prototype = {
                 alloc.natural_size = 150 * global.ui_scale;
             }
         } else {
-            let pWidth = this._applet._panelHeight;
-            alloc.natural_size = pWidth - 2;
+            alloc.natural_size = this._applet._panelHeight;
         }
     },
 
@@ -607,16 +606,13 @@ AppMenuButton.prototype = {
         }
 
         if (this._applet.orientation == St.Side.TOP || this._applet.orientation == St.Side.BOTTOM ) {
-            let pheight  = this._applet._panelHeight;
-            /* putting a container around the actor for layout management reasons
-               affects the allocation,causing the visible border to pull in close around the contents
-               which is not the desired (pre-existing) behaviour on top and bottom panels,
-               so need to push the visible border back towards the panel edge.
-               Using the actor size will cause recursion errors as clutter tries
-               to make everything fit, so am using the panel height minus a minimal wodge
-               I have had no joy using the ways I would have expected to work - fill and expand
-               but perhaps I have just not got the right combo of parameters on the right actor */
-            alloc.natural_size = pheight - 2;
+            /* putting a container around the actor for layout management reasons affects the allocation,
+               causing the visible border to pull in close around the contents which is not the desired
+               (pre-existing) behaviour, so need to push the visible border back towards the panel edge.
+               Assigning the natural size to the full panel height used to cause recursion errors but seems fine now.
+               If this happens to avoid this you can subtract 1 or 2 pixels, but this will give an unreactive
+               strip at the edge of the screen */
+            alloc.natural_size = this._applet._panelHeight;
         } else {
             alloc.natural_size = naturalSize1;
         }
@@ -1033,10 +1029,9 @@ MyApplet.prototype = {
             this.actor.set_important(true);
         }
 
-        //
-        // For horizontal panels any padding/margin is removed on one side
-        // so that the AppMenuButton boxes butt up against the edge of the screen
-        //
+        // Any padding/margin is removed on one side so that the AppMenuButton
+        // boxes butt up against the edge of the screen
+
         if (orientation == St.Side.TOP) {
             for (let child of this.manager_container.get_children()) {
                 child.set_style_class_name('window-list-item-box top');
