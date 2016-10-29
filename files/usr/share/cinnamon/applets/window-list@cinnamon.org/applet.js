@@ -169,25 +169,29 @@ WindowPreview.prototype = {
         let previewWidth = allocation.x2 - allocation.x1;
 
         let monitor = Main.layoutManager.findMonitorForActor(this.item);
-        let previewTop;
+        let previewTop, previewLeft;
 
-        if (this._applet.orientation == St.Side.BOTTOM) {
-            previewTop = this.item.get_transformed_position()[1] - previewHeight - 5;
-        } else if (this._applet.orientation == St.Side.TOP) {
-            previewTop = this.item.get_transformed_position()[1] + this.item.get_transformed_size()[1] + 5;
-        } else {
-            previewTop = this.item.get_transformed_position()[1];
+        // centre the applet on the window list item if window list is on the top or bottom panel
+
+        switch (this._applet.orientation) {
+            case St.Side.BOTTOM:
+                previewTop = this.item.get_transformed_position()[1] - previewHeight - 5;
+                previewLeft = this.item.get_transformed_position()[0] + this.item.get_transformed_size()[0]/2 - previewWidth/2
+                break;
+            case St.Side.TOP:
+                previewTop = this.item.get_transformed_position()[1] + this.item.get_transformed_size()[1] + 5;
+                previewLeft = this.item.get_transformed_position()[0] + this.item.get_transformed_size()[0]/2 - previewWidth/2
+                break;
+            case St.Side.LEFT:
+                previewTop = this.item.get_transformed_position()[1];
+                previewLeft = this.item.get_transformed_position()[0] + this.item.get_transformed_size()[0] + 5;
+                break;
+            case St.Side.RIGHT:
+                previewTop = this.item.get_transformed_position()[1];
+                previewLeft = this.item.get_transformed_position()[0] - previewWidth -5;
+                break;
         }
 
-        let previewLeft;
-        if (this._applet.orientation == St.Side.BOTTOM || this._applet.orientation == St.Side.TOP) { 
-            // centre the applet on the window list item if window list is on the top or bottom panel
-            previewLeft = this.item.get_transformed_position()[0] + this.item.get_transformed_size()[0]/2 - previewWidth/2;
-        } else if (this._applet.orientation == St.Side.LEFT) {
-            previewLeft = this.item.get_transformed_position()[0] + this.item.get_transformed_size()[0] + 5;
-        } else if (this._applet.orientation == St.Side.RIGHT) {
-            previewLeft = this.item.get_transformed_position()[0] - previewWidth -5;
-        }
         previewLeft = Math.round(previewLeft);
         previewLeft = Math.max(previewLeft, monitor.x);
         previewLeft = Math.min(previewLeft, monitor.x + monitor.width - previewWidth);
@@ -257,14 +261,20 @@ AppMenuButton.prototype = {
         this.alert = alert;
         this.labelVisible = false;
 
-        if (this._applet.orientation == St.Side.TOP)
-            this.actor.add_style_class_name('top');
-        else if (this._applet.orientation == St.Side.BOTTOM)
-            this.actor.add_style_class_name('bottom');
-        else if (this._applet.orientation == St.Side.LEFT)
-            this.actor.add_style_class_name('left');
-        else if (this._applet.orientation == St.Side.RIGHT)
-            this.actor.add_style_class_name('right');
+        switch (this._applet.orientation) {
+            case St.Side.TOP:
+                this.actor.add_style_class_name('top');
+                break;
+            case St.Side.BOTTOM:
+                this.actor.add_style_class_name('bottom');
+                break;
+            case St.Side.LEFT:
+                this.actor.add_style_class_name('left');
+                break;
+            case St.Side.RIGHT:
+                this.actor.add_style_class_name('right');
+                break;
+        }
 
         this.actor._delegate = this;
         this.actor.connect('button-release-event', Lang.bind(this, this._onButtonRelease));
@@ -1037,32 +1047,38 @@ MyApplet.prototype = {
         // For horizontal panels any padding/margin is removed on one side
         // so that the AppMenuButton boxes butt up against the edge of the screen
         //
-        if (orientation == St.Side.TOP) {
-            for (let child of this.manager_container.get_children()) {
-                child.set_style_class_name('window-list-item-box top');
-                child.set_style('margin-top: 0px; padding-top: 0px;');
-            }
-            this.actor.set_style('margin-top: 0px; padding-top: 0px;');
-        } else if (orientation == St.Side.BOTTOM) {
-            for (let child of this.manager_container.get_children()) {
-                child.set_style_class_name('window-list-item-box bottom');
-                child.set_style('margin-bottom: 0px; padding-bottom: 0px;');
-            }
-            this.actor.set_style('margin-bottom: 0px; padding-bottom: 0px;');
-        } else if (orientation == St.Side.LEFT) {
-            for (let child of this.manager_container.get_children()) {
-                child.set_style_class_name('window-list-item-box left');
-                child.set_style('margin-left 0px; padding-left: 0px; padding-right: 0px; margin-right: 0px;');
-                child.set_x_align(Clutter.ActorAlign.CENTER);
-            }
-            this.actor.set_style('margin-left: 0px; padding-left: 0px; padding-right: 0px; margin-right: 0px;');
-        } else if (orientation == St.Side.RIGHT) {
-            for (let child of this.manager_container.get_children()) {
-                child.set_style_class_name('window-list-item-box right');
-                child.set_style('margin-left: 0px; padding-left: 0px; padding-right: 0px; margin-right: 0px;');
-                child.set_x_align(Clutter.ActorAlign.CENTER);
-            }
-            this.actor.set_style('margin-right: 0px; padding-right: 0px; padding-left: 0px; margin-left: 0px;');
+
+        switch (orientation) {
+            case St.Side.TOP:
+                for (let child of this.manager_container.get_children()) {
+                    child.set_style_class_name('window-list-item-box top');
+                    child.set_style('margin-top: 0px; padding-top: 0px;');
+                }
+                this.actor.set_style('margin-top: 0px; padding-top: 0px;');
+                break;
+            case St.Side.BOTTOM:
+                for (let child of this.manager_container.get_children()) {
+                    child.set_style_class_name('window-list-item-box bottom');
+                    child.set_style('margin-bottom: 0px; padding-bottom: 0px;');
+                }
+                this.actor.set_style('margin-bottom: 0px; padding-bottom: 0px;');
+                break;
+            case St.Side.LEFT:
+                for (let child of this.manager_container.get_children()) {
+                    child.set_style_class_name('window-list-item-box left');
+                    child.set_style('margin-left 0px; padding-left: 0px; padding-right: 0px; margin-right: 0px;');
+                    child.set_x_align(Clutter.ActorAlign.CENTER);
+                }
+                this.actor.set_style('margin-left: 0px; padding-left: 0px; padding-right: 0px; margin-right: 0px;');
+                break;
+            case St.Side.RIGHT:
+                for (let child of this.manager_container.get_children()) {
+                    child.set_style_class_name('window-list-item-box right');
+                    child.set_style('margin-left: 0px; padding-left: 0px; padding-right: 0px; margin-right: 0px;');
+                    child.set_x_align(Clutter.ActorAlign.CENTER);
+                }
+                this.actor.set_style('margin-right: 0px; padding-right: 0px; padding-left: 0px; margin-left: 0px;');
+                break;
         }
 
         if (this.appletEnabled) {
