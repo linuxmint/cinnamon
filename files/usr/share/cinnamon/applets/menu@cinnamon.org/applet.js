@@ -2092,6 +2092,10 @@ MyApplet.prototype = {
                             if (fileIndex !== -1)
                                 selectedAppUri = selectedAppUri.substr(fileIndex + 7);
                             this.selectedAppDescription.set_text(selectedAppUri);
+
+                            let file = Gio.file_new_for_uri(button.file.uriDecoded);
+                            if (!file.query_exists(null))
+                                this.selectedAppTitle.set_text(_("This file is no longer available"));
                             }));
                     button.actor.connect('leave-event', Lang.bind(this, function() {
                             button.actor.style_class = "menu-application-button";
@@ -2099,9 +2103,12 @@ MyApplet.prototype = {
                             this.selectedAppTitle.set_text("");
                             this.selectedAppDescription.set_text("");
                             }));
-                    this._recentButtons.push(button);
-                    this.applicationsBox.add_actor(button.actor);
-                    this.applicationsBox.add_actor(button.menu.actor);
+                    let file = Gio.file_new_for_uri(button.file.uriDecoded);
+                    if (file.query_exists(null)) {
+                        this._recentButtons.push(button);
+                        this.applicationsBox.add_actor(button.actor);
+                        this.applicationsBox.add_actor(button.menu.actor);
+                    }
                 }
 
                 let button = new RecentClearButton(this);
