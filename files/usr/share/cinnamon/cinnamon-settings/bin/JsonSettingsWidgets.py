@@ -12,7 +12,8 @@ JSON_SETTINGS_PROPERTIES_MAP = {
     "height"        : "height",
     "tooltip"       : "tooltip",
     "possible"      : "possible",
-    "dependency"    : "dep_key"
+    "dependency"    : "dep_key",
+    "expand-width"  : "expand_width"
 }
 
 class JSONSettingsHandler(object):
@@ -21,7 +22,7 @@ class JSONSettingsHandler(object):
 
         self.resume_timeout = None
         self.notify_callback = notify_callback
-        
+
         self.filepath = filepath
         self.file_obj = Gio.File.new_for_path(self.filepath)
         self.file_monitor = self.file_obj.monitor_file(Gio.FileMonitorFlags.SEND_MOVED, None)
@@ -227,7 +228,7 @@ def json_settings_factory(subclass):
         def __init__(self, key, settings, properties):
             self.key = key
             self.settings = settings
-            
+
             kwargs = {}
             for prop in properties:
                 if prop in JSON_SETTINGS_PROPERTIES_MAP:
