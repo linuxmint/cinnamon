@@ -18,71 +18,101 @@ BackgroundManager.prototype = {
         this._gnomeSettings = new Gio.Settings({ schema_id: "org.gnome.desktop.background" });
         this._cinnamonSettings = new Gio.Settings({ schema_id: "org.cinnamon.desktop.background" });
 
-        this._string_keys = ["color-shading-type", "picture-options", "picture-uri", "primary-color", "secondary-color"];
-        this._string_values = [];
-        this._int_keys = ["picture-opacity"];
-        this._int_values = [];
+        this.color_shading_type = this._gnomeSettings.get_string("color-shading-type");
+        this._gnomeSettings.connect("changed::color-shading-type", Lang.bind(this, this._onColorShadingTypeChanged));
 
-        for (var i in this._string_keys) {
-            this._string_values[i] =  this._gnomeSettings.get_string(this._string_keys[i]);
-        }
+        this.picture_options = this._gnomeSettings.get_string("picture-options");
+        this._gnomeSettings.connect("changed::picture-options", Lang.bind(this, this._onPictureOptionsChanged));
 
-        for (var i in this._int_keys) {
-            this._int_values[i] =  this._gnomeSettings.get_int(this._int_keys[i]);
-        }
+        this.picture_uri = this._gnomeSettings.get_string("picture-uri");
+        this._gnomeSettings.connect("changed::picture-uri", Lang.bind(this, this._onPictureURIChanged));
 
-        this.startTime = new Date().getTime();
+        this.primary_color = this._gnomeSettings.get_string("primary-color");
+        this._gnomeSettings.connect("changed::primary-color", Lang.bind(this, this._onPrimaryColorChanged));
 
-        this._gnomeSettings.connect('changed', Lang.bind(this, this._onGnomeSettingsChanged));
+        this.secondary_color = this._gnomeSettings.get_string("secondary-color");
+        this._gnomeSettings.connect("changed::secondary-color", Lang.bind(this, this._onSecondaryColorChanged));
+
+        this.picture_opacity = this._gnomeSettings.get_int("picture-opacity");
+        this._gnomeSettings.connect("changed::picture-opacity", Lang.bind(this, this._onPictureOpacityChanged));
     },
 
-    _onGnomeSettingsChanged: function() {
-        let elapsedTime = new Date().getTime() - this.startTime;
-        if (elapsedTime > 60000) {
-            global.log("BackgroundManager: org.gnome.desktop.background changed!");
-            this._overwriteCinnamonSettings();
-        }
-        else {
-            let somethingChanged = false;
-            for (var i in this._string_keys) {
-                let key = this._string_keys[i];
-                let value = this._string_values[i];
-                let newValue = this._gnomeSettings.get_string(key);
-                if (value != newValue) {
-                    global.log("BackgroundManager: org.gnome.desktop.background %s changed (%s -> %s)!".format(key, value, newValue));
-                    this._string_values[i] = newValue;
-                    somethingChanged = true;
-                }
+    _onColorShadingTypeChanged: function(schema, key) {
+        let oldValue = this.color_shading_type
+        let newValue = this._gnomeSettings.get_string(key);
+        if (oldValue != newValue) {
+            let cinnamonValue = this._cinnamonSettings.get_string(key);
+            if (cinnamonValue != newValue) {
+                global.log("BackgroundManager: %s changed (%s --> %s)".format(key, oldValue, newValue));
+                this._cinnamonSettings.set_string(key, newValue);
             }
-            for (var i in this._int_keys) {
-                let key = this._int_keys[i];
-                let value = this._int_values[i];
-                let newValue = this._gnomeSettings.get_int(key);
-                if (value != newValue) {
-                    global.log("BackgroundManager: org.gnome.desktop.background %s changed (%d -> %d)!".format(key, value, newValue));
-                    this._int_values[i] = newValue;
-                    somethingChanged = true;
-                }
-            }
-
-            if (somethingChanged == true) {
-                this._overwriteCinnamonSettings();
-            }
+            this.color_shading_type = newValue;
         }
     },
 
-    _overwriteCinnamonSettings: function() {
-        for (var key of this._string_keys) {
-            let gnomeValue = this._gnomeSettings.get_string(key);
-            if (this._cinnamonSettings.get_string(key) != gnomeValue) {
-                this._cinnamonSettings.set_string(key, gnomeValue);
+    _onPictureOptionsChanged: function(schema, key) {
+        let oldValue = this.picture_options
+        let newValue = this._gnomeSettings.get_string(key);
+        if (oldValue != newValue) {
+            let cinnamonValue = this._cinnamonSettings.get_string(key);
+            if (cinnamonValue != newValue) {
+                global.log("BackgroundManager: %s changed (%s --> %s)".format(key, oldValue, newValue));
+                this._cinnamonSettings.set_string(key, newValue);
             }
+            this.picture_options = newValue;
         }
-        for (var key of this._int_keys) {
-            let gnomeValue = this._gnomeSettings.get_int(key);
-            if (this._cinnamonSettings.get_int(key) != gnomeValue) {
-                this._cinnamonSettings.set_int(key, gnomeValue);
+    },
+
+    _onPictureURIChanged: function(schema, key) {
+        let oldValue = this.picture_uri
+        let newValue = this._gnomeSettings.get_string(key);
+        if (oldValue != newValue) {
+            let cinnamonValue = this._cinnamonSettings.get_string(key);
+            if (cinnamonValue != newValue) {
+                global.log("BackgroundManager: %s changed (%s --> %s)".format(key, oldValue, newValue));
+                this._cinnamonSettings.set_string(key, newValue);
             }
+            this.picture_uri = newValue;
+        }
+    },
+
+    _onPrimaryColorChanged: function(schema, key) {
+        let oldValue = this.primary_color
+        let newValue = this._gnomeSettings.get_string(key);
+        if (oldValue != newValue) {
+            let cinnamonValue = this._cinnamonSettings.get_string(key);
+            if (cinnamonValue != newValue) {
+                global.log("BackgroundManager: %s changed (%s --> %s)".format(key, oldValue, newValue));
+                this._cinnamonSettings.set_string(key, newValue);
+            }
+            this.primary_color = newValue;
+        }
+    },
+
+    _onSecondaryColorChanged: function(schema, key) {
+        let oldValue = this.secondary_color
+        let newValue = this._gnomeSettings.get_string(key);
+        if (oldValue != newValue) {
+            let cinnamonValue = this._cinnamonSettings.get_string(key);
+            if (cinnamonValue != newValue) {
+                global.log("BackgroundManager: %s changed (%s --> %s)".format(key, oldValue, newValue));
+                this._cinnamonSettings.set_string(key, newValue);
+            }
+            this.secondary_color = newValue;
+        }
+    },
+
+    _onPictureOpacityChanged: function(schema, key) {
+        let oldValue = this.picture_opacity
+        let newValue = this._gnomeSettings.get_int(key);
+        if (oldValue != newValue) {
+            let cinnamonValue = this._cinnamonSettings.get_int(key);
+            if (cinnamonValue != newValue) {
+                global.log("BackgroundManager: %s changed (%s --> %s)".format(key, oldValue, newValue));
+                this._cinnamonSettings.set_int(key, newValue);
+            }
+            this.picture_opacity = newValue;
         }
     }
+
 };
