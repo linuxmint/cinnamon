@@ -167,10 +167,10 @@ CinnamonDBus.prototype = {
      * indicating whether the operation was successful or not.
      *
      */
-    ScreenshotArea: function (include_cursor, x, y, width, height, flash, filename) {
+    ScreenshotArea: function(include_cursor, x, y, width, height, flash, filename) {
         let screenshot = new Cinnamon.Screenshot();
-        screenshot.screenshot_area (include_cursor, x, y, width, 200, filename,
-                                Lang.bind(this, this._onScreenshotComplete, flash));
+        screenshot.screenshot_area(include_cursor, x, y, width, 200, filename,
+            Lang.bind(this, this._onScreenshotComplete, flash));
     },
 
     /**
@@ -185,11 +185,10 @@ CinnamonDBus.prototype = {
      * indicating whether the operation was successful or not.
      *
      */
-    ScreenshotWindow: function (include_frame, include_cursor, flash, filename) {
+    ScreenshotWindow: function(include_frame, include_cursor, flash, filename) {
         let screenshot = new Cinnamon.Screenshot();
-        screenshot.screenshot_window (include_frame, include_cursor, filename,
-                                      Lang.bind(this, this._onScreenshotComplete,
-                                                flash, invocation));
+        screenshot.screenshot_window(include_frame, include_cursor, filename,
+            Lang.bind(this, this._onScreenshotComplete, flash));
     },
 
     /**
@@ -203,11 +202,10 @@ CinnamonDBus.prototype = {
      * indicating whether the operation was successful or not.
      *
      */
-    Screenshot: function (include_cursor, flash, filename) {
+    Screenshot: function(include_cursor, flash, filename) {
         let screenshot = new Cinnamon.Screenshot();
         screenshot.screenshot(include_cursor, filename,
-                          Lang.bind(this, this._onScreenshotComplete,
-                                    flash, invocation));
+            Lang.bind(this, this._onScreenshotComplete, flash));
     },
 
     ShowOSD: function(params) {
@@ -227,7 +225,12 @@ CinnamonDBus.prototype = {
     },
 
     FlashArea: function(x, y, width, height) {
-        let flashspot = new Flashspot.Flashspot({ x : x, y : y, width: width, height: height});
+        let flashspot = new Flashspot.Flashspot({
+            x: x,
+            y: y,
+            width: width,
+            height: height
+        });
         flashspot.fire();
     },
 
@@ -255,18 +258,22 @@ CinnamonDBus.prototype = {
 
     _getXletObject: function(uuid, instance_id) {
         var obj = null;
-        
+
         obj = AppletManager.get_object_for_uuid(uuid, instance_id);
-        
+
         if (!obj) {
             obj = DeskletManager.get_object_for_uuid(uuid, instance_id);
         }
 
-        return obj
+        if (!obj) {
+            obj = ExtensionSystem.get_object_for_uuid(uuid);
+        }
+
+        return obj;
     },
 
     EmitXletAddedComplete: function(success, uuid, name) {
-        this._dbusImpl.emit_signal('XletAddedComplete', GLib.Variant.new('(bs)', [success,uuid]));
+        this._dbusImpl.emit_signal('XletAddedComplete', GLib.Variant.new('(bs)', [success, uuid]));
     },
 
     GetRunningXletUUIDs: function(type) {
@@ -360,11 +367,9 @@ CinnamonDBus.prototype = {
         if (!Main.expo.animationInProgress)
             Main.expo.toggle();
     },
-    
-    PushSubprocessResult: function(process_id, result)
-    {
-        if (Util.subprocess_callbacks[process_id])
-        {
+
+    PushSubprocessResult: function(process_id, result) {
+        if (Util.subprocess_callbacks[process_id]) {
             Util.subprocess_callbacks[process_id](result);
         }
     },
