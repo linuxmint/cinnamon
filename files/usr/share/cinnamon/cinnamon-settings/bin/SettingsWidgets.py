@@ -769,7 +769,7 @@ class ComboBox(SettingsWidget):
 class ColorChooser(SettingsWidget):
     bind_dir = None
 
-    def __init__(self, label, legacy_string=False, size_group=None, dep_key=None, tooltip=""):
+    def __init__(self, label, enable_alpha=False, legacy_string=False, size_group=None, dep_key=None, tooltip=""):
         super(ColorChooser, self).__init__(dep_key=dep_key)
         # note: Gdk.Color is deprecated in favor of Gdk.RGBA, but as the hex format is still used
         # in some places (most notably the desktop background handling in cinnamon-desktop) we
@@ -778,6 +778,7 @@ class ColorChooser(SettingsWidget):
 
         self.label = Gtk.Label(label)
         self.content_widget = Gtk.ColorButton()
+        self.content_widget.set_use_alpha(enable_alpha)
         self.pack_start(self.label, False, False, 0)
         self.pack_end(self.content_widget, False, False, 0)
 
