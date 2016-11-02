@@ -792,13 +792,13 @@ AppMenuButtonRightClickMenu.prototype = {
         // Move to workspace
         if ((length = global.screen.n_workspaces) > 1) {
             if (mw.is_on_all_workspaces()) {
-                item = new PopupMenu.PopupMenuItem(_("Only on this workspace"));
+                item = new PopupMenu.PopupIconMenuItem(_("Only on this workspace"), "insert-image", St.IconType.SYMBOLIC);
                 item.connect('activate', function() {
                     mw.unstick();
                 });
                 this.addMenuItem(item);
             } else {
-                item = new PopupMenu.PopupMenuItem(_("Visible on all workspaces"));
+                item = new PopupMenu.PopupIconMenuItem(_("Visible on all workspaces"), "view-paged", St.IconType.SYMBOLIC);
                 item.connect('activate', function() {
                     mw.stick();
                 });
