@@ -136,11 +136,11 @@ WorkspaceGraph.prototype = {
                     cr.setLineWidth(1);
                     if (metaWindow.has_focus()) {
                         windowBorderColor = graphThemeNode.get_color('-active-window-border');
-                        Clutter.cairo_set_source_color(cr, windowBorderColor); 
+                        Clutter.cairo_set_source_color(cr, windowBorderColor);
                     }
                     else {
                         windowBorderColor = graphThemeNode.get_color('-inactive-window-border');
-                        Clutter.cairo_set_source_color(cr, windowBorderColor); 
+                        Clutter.cairo_set_source_color(cr, windowBorderColor);
                     }
                     cr.rectangle(scaled_rect.x, scaled_rect.y, scaled_rect.width, scaled_rect.height);
                     cr.strokePreserve();
@@ -181,7 +181,7 @@ SimpleButton.prototype = {
                                      style_class: 'workspace-button',
                                      reactive: true });
 
-        if ( index == global.screen.get_active_workspace_index() ) {
+        if (index == global.screen.get_active_workspace_index()) {
             this.actor.add_style_pseudo_class('outlined');
         }
 
@@ -191,9 +191,12 @@ SimpleButton.prototype = {
             } else {
                 this.actor.set_height(0.6 * applet._panelHeight);  // factors are completely empirical
                 this.actor.set_width(0.9 * applet._panelHeight);
-                this.actor.add_style_class_name('vertical');
             }
         }
+
+        if (applet.orientation == St.Side.LEFT || applet.orientation == St.Side.RIGHT)
+            this.actor.add_style_class_name('vertical');
+
         let label = new St.Label({ text: (index + 1).toString() });
         this.actor.set_child(label);
     },
