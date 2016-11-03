@@ -761,8 +761,6 @@ AppMenuButtonRightClickMenu.prototype = {
     },
 
     _populateMenu: function() {
-        this.box.pack_start = this.orientation == St.Side.TOP;
-
         let mw = this.metaWindow;
         let item;
         let length;
