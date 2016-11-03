@@ -319,8 +319,9 @@ PanelManager.prototype = {
         }
 
         //
-        // Ensure that any borders and shadow fall naturally when mixing horizontal and vertical panels.
-        // The natural order to load panels so that the shadow on the panels falls correctly on other panels is bottom, sides, top
+        // When using mixed horizontal and vertical panels draw the vertical panels first.
+        // This is done so that when using a box shadow on the panel to create a border the border will be drawn over the
+        // top of the vertical panel.
         //
         // Draw corners where necessary.  NB no corners necessary where there is no panel for a full screen window to butt up against.
         // logic for loading up panels in the right order and drawing corners relies on ordering by monitor
@@ -331,15 +332,6 @@ PanelManager.prototype = {
         // if the theme does not have them
 
         for (let i = 0; i <= monitorCount; i++) {
-
-            for (let j in stash) {
-                let drawcorner = [false,false];
-                if (stash[j][2] == PanelLoc.bottom && stash[j][1] == i) {
-                    drawcorner[0] = (panels_used[i][2])? false : true;
-                    drawcorner[1] = (panels_used[i][3])? false : true;
-                    this._loadPanel(stash[j][0], stash[j][1], stash[j][2], drawcorner);
-                }
-            }
             let pleft;
             for (let j in stash) {
                 if (stash[j][2] == PanelLoc.left && stash[j][1] == i)
@@ -349,6 +341,14 @@ PanelManager.prototype = {
             for (let j in stash) {
                 if (stash[j][2] == PanelLoc.right && stash[j][1] == i)
                     pright = this._loadPanel(stash[j][0], stash[j][1], stash[j][2], [true,true]);
+            }
+            for (let j in stash) {
+                let drawcorner = [false,false];
+                if (stash[j][2] == PanelLoc.bottom && stash[j][1] == i) {
+                    drawcorner[0] = (panels_used[i][2])? false : true;
+                    drawcorner[1] = (panels_used[i][3])? false : true;
+                    this._loadPanel(stash[j][0], stash[j][1], stash[j][2], drawcorner);
+                }
             }
             for (let j in stash) {
                 let drawcorner = [false,false];
