@@ -90,20 +90,20 @@ PanelAppLauncherMenu.prototype = {
         subMenu.menu.addMenuItem(item);
     },
 
-    _onLaunchActivate: function(event) {
+    _onLaunchActivate: function(item, event) {
         this._launcher.launch();
     },
 
-    _onRemoveActivate: function(event) {
+    _onRemoveActivate: function(item, event) {
         this._launcher.launchersBox.removeLauncher(this._launcher, this._launcher.isCustom());
         this._launcher.actor.destroy();
     },
 
-    _onAddActivate: function(event) {
+    _onAddActivate: function(item, event) {
         this._launcher.launchersBox.showAddLauncherDialog(event.get_time());
     },
 
-    _onEditActivate: function(event) {
+    _onEditActivate: function(item, event) {
         this._launcher.launchersBox.showAddLauncherDialog(event.get_time(), this._launcher);
     },
 
