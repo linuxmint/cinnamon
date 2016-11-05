@@ -44,6 +44,7 @@
         <listitem><code>type</code>: should be <code>colorchooser</code></listitem>
         <listitem><code>default</code>: default color string - can be <code>"red"</code> or <code>"rgba(x,x,x,x)"</code>, etc...</listitem>
         <listitem><code>description</code>: String describing the setting</listitem>
+        <listitem><code>enable-alpha</code>:  (optional) true or false, or leave off entirely. Enables the <code>colorchooser</code> to select a color with alpha</listitem>
       </itemizedlist>
 
       <para>A Color button that lets you choose a RGBA color code as a <code>string</code></para>
