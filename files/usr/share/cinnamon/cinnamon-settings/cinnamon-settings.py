@@ -162,17 +162,18 @@ class MainWindow:
 
         # Resize vertically depending on the height requested by the module
         use_height = WIN_HEIGHT
+        total_height = n.height + self.bar_heights + WIN_H_PADDING
         if not sidePage.size:
             # No height requested, resize vertically if the module is taller than the window
-            if n.height > WIN_HEIGHT:
-                use_height = n.height + self.bar_heights + WIN_H_PADDING
+            if total_height > WIN_HEIGHT:
+                use_height = total_height
             #self.window.resize(use_width, n.height + self.bar_heights + WIN_H_PADDING)
         elif sidePage.size > 0:
             # Height hardcoded by the module
             use_height = sidePage.size + self.bar_heights + WIN_H_PADDING
         elif sidePage.size == -1:
             # Module requested the window to fit it (i.e. shrink the window if necessary)
-            use_height = n.height + self.bar_heights + WIN_H_PADDING
+            use_height = total_height
 
         self.window.resize(use_width, use_height)
 
