@@ -138,18 +138,22 @@ class Module:
 
         settings = page.add_section(_("General"))
 
-        widget = GSettingsSwitch(_("Use flags to indicate keyboard layout"), schema, "show-flags")
-        widget.set_tooltip_text(_("Show a flag to indicate the active keyboard layout. If disabled, a two-letter abbreviation is shown instead."))
+        widget = GSettingsSwitch(_("Allow keyboard shortcuts"), schema, "allow-keyboard-shortcuts")
+        widget.set_tooltip_text(_("Allow shortcuts like volume-control and media keys to be used on the lock screen"))
         settings.add_row(widget)
 
-        widget = GSettingsSwitch(_("Show keyboard layout in upper case letters"), schema, "upper-case-kbd-layout")
-        widget.set_tooltip_text(_("Always use upper case letters to indicate active keyboard layout"))
+        widget = GSettingsSwitch(_("Show media player controls"), schema, "allow-media-control")
+        widget.set_tooltip_text(_("Provide controls for compatible, active media players on the lock screen"))
         settings.add_row(widget)
 
         widget = GSettingsSwitch(_("Show album art"), schema, "show-album-art")
         widget.set_tooltip_text(_("Show album art on the unlock screen, if available, while media is playing"))
         settings.add_row(widget)
-		
+
+        widget = GSettingsSwitch(_("Show info panel"), schema, "show-info-panel")
+        widget.set_tooltip_text(_("Show missed notification count and battery status on the lock screen"))
+        settings.add_row(widget)
+
 class ScreensaverBox(Gtk.Box):
     def __init__(self, title):
         Gtk.Box.__init__(self)
