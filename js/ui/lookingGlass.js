@@ -458,16 +458,17 @@ Melange.prototype = {
 
         let result = eval(fullCmd);
         let resultObj = [];
-        for(let key in result) {
+        for (let key in result) {
             let type = typeof(result[key]);
-            let value = result[key].toString();
-            
+
             //fixme: move this shortvalue stuff to python lg
-            let shortValue = value;
-            if (value === undefined) {
+            let shortValue, value;
+            if (type === "undefined" || result[key] === null) {
                 value = "";
                 shortValue = "";
             } else {
+                value = result[key].toString();
+                shortValue = value;
                 let i = value.indexOf('\n');
                 let j = value.indexOf('\r');
                 if( j != -1 && (i == -1 || i > j))
