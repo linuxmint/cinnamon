@@ -552,14 +552,14 @@ class Entry(SettingsWidget):
     bind_prop = "text"
     bind_dir = Gio.SettingsBindFlags.DEFAULT
 
-    def __init__(self, label, size_group=None, dep_key=None, tooltip=""):
+    def __init__(self, label, expand_width=False, size_group=None, dep_key=None, tooltip=""):
         super(Entry, self).__init__(dep_key=dep_key)
 
         self.label = Gtk.Label.new(label)
         self.content_widget = Gtk.Entry()
 
         self.pack_start(self.label, False, False, 0)
-        self.pack_end(self.content_widget, False, False, 0)
+        self.pack_end(self.content_widget, expand_width, expand_width, 0)
 
         self.set_tooltip_text(tooltip)
 
@@ -924,7 +924,7 @@ class IconChooser(SettingsWidget):
     bind_prop = "text"
     bind_dir = Gio.SettingsBindFlags.DEFAULT
 
-    def __init__(self, label, size_group=None, dep_key=None, tooltip=""):
+    def __init__(self, label, expand_width=False, size_group=None, dep_key=None, tooltip=""):
         super(IconChooser, self).__init__(dep_key=dep_key)
 
         valid, self.width, self.height = Gtk.icon_size_lookup(Gtk.IconSize.BUTTON)
@@ -938,11 +938,11 @@ class IconChooser(SettingsWidget):
         self.preview = Gtk.Image.new()
         self.image_button.set_image(self.preview)
 
-        self.content_widget.pack_start(self.bind_object, False, False, 2)
+        self.content_widget.pack_start(self.bind_object, expand_width, expand_width, 2)
         self.content_widget.pack_start(self.image_button, False, False, 5)
 
         self.pack_start(self.label, False, False, 0)
-        self.pack_end(self.content_widget, False, False, 0)
+        self.pack_end(self.content_widget, expand_width, expand_width, 0)
 
         self.image_button.connect("clicked", self.on_button_pressed)
         self.handler = self.bind_object.connect("changed", self.set_icon)
