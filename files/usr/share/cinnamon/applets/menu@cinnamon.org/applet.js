@@ -1547,11 +1547,13 @@ MyApplet.prototype = {
                         case "up":
                             this._activeContainer = this.categoriesBox;
                             item_actor = this.catBoxIter.getLastVisible();
+                            this._scrollToButton(this.appBoxIter.getFirstVisible()._delegate);
                             break;
                         case "down":
                             this._activeContainer = this.categoriesBox;
                             item_actor = this.catBoxIter.getFirstVisible();
                             item_actor = this.catBoxIter.getNextVisible(item_actor);
+                            this._scrollToButton(this.appBoxIter.getFirstVisible()._delegate);
                             break;
                         case "right":
                             this._activeContainer = this.applicationsBox;
@@ -1571,10 +1573,12 @@ MyApplet.prototype = {
                         case "top":
                             this._activeContainer = this.categoriesBox;
                             item_actor = this.catBoxIter.getFirstVisible();
+                            this._scrollToButton(this.appBoxIter.getFirstVisible()._delegate);
                             break;
                         case "bottom":
                             this._activeContainer = this.categoriesBox;
                             item_actor = this.catBoxIter.getLastVisible();
+                            this._scrollToButton(this.appBoxIter.getFirstVisible()._delegate);
                             break;
                     }
                     break;
@@ -1584,12 +1588,13 @@ MyApplet.prototype = {
                             this._previousTreeSelectedActor = this.categoriesBox.get_child_at_index(index);
                             this._previousTreeSelectedActor._delegate.isHovered = false;
                             item_actor = this.catBoxIter.getPrevVisible(this._activeActor);
+                            this._scrollToButton(this.appBoxIter.getFirstVisible()._delegate);
                             break;
                         case "down":
                             this._previousTreeSelectedActor = this.categoriesBox.get_child_at_index(index);
                             this._previousTreeSelectedActor._delegate.isHovered = false;
                             item_actor = this.catBoxIter.getNextVisible(this._activeActor);
-                            //this._previousTreeSelectedActor._delegate.emit('leave-event');  // <-- Is this line needed?
+                            this._scrollToButton(this.appBoxIter.getFirstVisible()._delegate);
                             break;
                         case "right":
                             if ((this.categoriesBox.get_child_at_index(index))._delegate instanceof RecentCategoryButton &&
@@ -1619,11 +1624,13 @@ MyApplet.prototype = {
                             this._previousTreeSelectedActor = this.categoriesBox.get_child_at_index(index);
                             this._previousTreeSelectedActor._delegate.isHovered = false;
                             item_actor = this.catBoxIter.getFirstVisible();
+                            this._scrollToButton(this.appBoxIter.getFirstVisible()._delegate);
                             break;
                         case "bottom":
                             this._previousTreeSelectedActor = this.categoriesBox.get_child_at_index(index);
                             this._previousTreeSelectedActor._delegate.isHovered = false;
                             item_actor = this.catBoxIter.getLastVisible();
+                            this._scrollToButton(this.appBoxIter.getFirstVisible()._delegate);
                             break;
                     }
                     break;
@@ -1637,8 +1644,6 @@ MyApplet.prototype = {
                             break;
                         case "down":
                             this._previousSelectedActor = this.applicationsBox.get_child_at_index(index);
-                            //if (this._previousSelectedActor._delegate.menu.isOpen) {
-                                // How to get the contextMenu navigable with keys?
                             item_actor = this.appBoxIter.getNextVisible(this._previousSelectedActor);
                             this._previousVisibleIndex = this.appBoxIter.getVisibleIndex(item_actor);
                             this._scrollToButton(item_actor._delegate);
