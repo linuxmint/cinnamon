@@ -52,9 +52,9 @@ EmblemedIcon.prototype = {
 
         if (surf.getWidth() >= surf.getHeight()) {
             x_offset = 0;
-            y_offset = (surf.getWidth() - surf.getHeight()) / 2;
+            y_offset = ((h * (1 / factor)) - surf.getHeight()) / 2;
         } else {
-            x_offset = (surf.getHeight() - surf.getWidth()) / 2;
+            x_offset = ((w * (1 / factor)) - surf.getWidth()) / 2;
             y_offset = 0;
         }
 
