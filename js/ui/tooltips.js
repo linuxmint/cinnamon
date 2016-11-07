@@ -187,8 +187,8 @@ Tooltip.prototype = {
         let monitor = Main.layoutManager.findMonitorForActor(this.item);
 
         let cursorSize = this.desktop_settings.get_int(CURSOR_SIZE_KEY);
-        let tooltipTop = this.mousePosition[1]  + (cursorSize / 1.5);
-        var tooltipLeft = this.mousePosition[0] + (cursorSize / 2);
+        let tooltipTop = this.mousePosition[1]  + Math.round(cursorSize / 1.5);
+        var tooltipLeft = this.mousePosition[0] + Math.round(cursorSize / 2);
 
         tooltipLeft = Math.max(tooltipLeft, monitor.x);
         tooltipLeft = Math.min(tooltipLeft, monitor.x + monitor.width - tooltipWidth);
