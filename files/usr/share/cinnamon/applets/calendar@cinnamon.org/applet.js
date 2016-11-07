@@ -89,7 +89,7 @@ MyApplet.prototype = {
             }
 
             // Track changes to clock settings
-            this._dateFormatFull = _("%A %B %e, %Y");
+            this._dateFormatFull = _("%A %B %-e, %Y");
 
             this.settings.bind("use-custom-format", "use_custom_format", this.on_settings_changed);
             this.settings.bind("custom-format", "custom_format", this.on_settings_changed);
