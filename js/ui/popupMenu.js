@@ -2206,7 +2206,40 @@ PopupMenu.prototype = {
 
         this.paint_id = this.actor.connect("paint", Lang.bind(this, this.on_paint));
 
-        this.actor.raise_top();
+        /* If the sourceActor of our menu is located on a panel or from the panel itself, we want to position it just
+           below the panel actors. This prevents some cases where the menu will otherwise partially overlap the panel
+           and look strange visually */
+        let parentPanel = null;
+        if (this.sourceActor.get_name() == "panel") {
+            parentPanel = this.sourceActor;
+        } else {
+            let parent = this.sourceActor.get_parent();
+            while (parent) {
+                if (parent.get_name() == "panel") {
+                    parentPanel = parent;
+                    break;
+                }
+                parent = parent.get_parent();
+            }
+        }
+
+        if (parentPanel) {
+            let monitor = Main.layoutManager.findMonitorForActor(this.sourceActor)
+            let panels = Main.panelManager.getPanelsInMonitor(Main.layoutManager.monitors.indexOf(monitor));
+            let children = Main.uiGroup.get_children();
+            let panelIndex = children.indexOf(parentPanel);
+
+            for (let i = 0; i < panels.length; i++) {
+                let idx = children.indexOf(panels[i].actor);
+                if (idx < panelIndex)
+                    panelIndex = idx;
+            }
+
+            Main.uiGroup.set_child_below_sibling(this.actor, Main.uiGroup.get_child_at_index(panelIndex));
+        } else {
+            Main.uiGroup.set_child_above_sibling(this.actor, null);
+        }
+
         if (animate && global.settings.get_boolean("desktop-effects-on-menus")) {
             this.animating = true;
 
