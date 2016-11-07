@@ -104,8 +104,8 @@ class Module:
 
         size_group = Gtk.SizeGroup.new(Gtk.SizeGroupMode.HORIZONTAL)
 
-        widget = GSettingsSwitch(_("Always show clock"), schema, "show-clock")
-        widget.set_tooltip_text(_("Show the clock on the wallpaper instead of just the unlock screen"))
+        widget = GSettingsSwitch(_("Always show the clock"), schema, "show-clock")
+        widget.set_tooltip_text(_("Show the clock on the wallpaper instead of just on the unlock screen"))
         settings.add_row(widget)
 
         widget = GSettingsSwitch(_("Use a custom date and time format"), schema, "use-custom-format")
@@ -130,7 +130,7 @@ class Module:
         widget.set_tooltip_text(_("This is the default message displayed on your lock screen"))
         settings.add_row(widget)
 
-        settings.add_row(GSettingsFontButton(_("Away message font"), "org.cinnamon.desktop.screensaver", "font-message"))
+        settings.add_row(GSettingsFontButton(_("Font"), "org.cinnamon.desktop.screensaver", "font-message"))
 
         widget = GSettingsSwitch(_("Ask for a custom message when locking the screen from the menu"), schema, "ask-for-away-message")
         widget.set_tooltip_text(_("This option allows you to type a message each time you lock the screen from the menu"))
@@ -143,15 +143,15 @@ class Module:
         settings.add_row(widget)
 
         widget = GSettingsSwitch(_("Show media player controls"), schema, "allow-media-control")
-        widget.set_tooltip_text(_("Provide controls for compatible, active media players on the lock screen"))
+        widget.set_tooltip_text(_("For compatible players, show playback controls while media is playing"))
         settings.add_row(widget)
 
         widget = GSettingsSwitch(_("Show album art"), schema, "show-album-art")
-        widget.set_tooltip_text(_("Show album art on the unlock screen, if available, while media is playing"))
+        widget.set_tooltip_text(_("If available, show album art while media is playing"))
         settings.add_row(widget)
 
         widget = GSettingsSwitch(_("Show info panel"), schema, "show-info-panel")
-        widget.set_tooltip_text(_("Show missed notification count and battery status on the lock screen"))
+        widget.set_tooltip_text(_("Show the number of missed notifications and the battery status"))
         settings.add_row(widget)
 
 class ScreensaverBox(Gtk.Box):

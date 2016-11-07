@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-11-05 17:10+0000\n"
+"POT-Creation-Date: 2016-11-07 10:05+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -566,15 +566,15 @@ msgstr ""
 msgid "Notifications"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/keyboard@cinnamon.org/applet.js:68
+#: files/usr/share/cinnamon/applets/keyboard@cinnamon.org/applet.js:144
 msgid "Show Keyboard Layout"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/keyboard@cinnamon.org/applet.js:72
+#: files/usr/share/cinnamon/applets/keyboard@cinnamon.org/applet.js:148
 msgid "Show Character Table"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/keyboard@cinnamon.org/applet.js:76
+#: files/usr/share/cinnamon/applets/keyboard@cinnamon.org/applet.js:152
 msgid "Keyboard Settings"
 msgstr ""
 
@@ -1331,8 +1331,8 @@ msgstr ""
 #: files/usr/share/cinnamon/applets/user@cinnamon.org/applet.js:71
 #: generate_additional_files.py:24
 #: files/usr/share/cinnamon/cinnamon-settings/cinnamon-settings.py:46
-#: files/usr/share/cinnamon/cinnamon-settings/cinnamon-settings.py:308
-#: files/usr/share/cinnamon/cinnamon-settings/cinnamon-settings.py:577
+#: files/usr/share/cinnamon/cinnamon-settings/cinnamon-settings.py:309
+#: files/usr/share/cinnamon/cinnamon-settings/cinnamon-settings.py:578
 msgid "System Settings"
 msgstr ""
 
@@ -1423,7 +1423,6 @@ msgid "Upside-down"
 msgstr ""
 
 #. power@cinnamon.org->settings-schema.json->labelinfo->description
-#. keyboard@cinnamon.org->settings-schema.json->section1->description
 #. xrandr@cinnamon.org->metadata.json->name
 #. calendar@cinnamon.org->settings-schema.json->section1->description
 #. notifications@cinnamon.org->settings-schema.json->section2->description
@@ -1507,7 +1506,7 @@ msgid ""
 msgstr ""
 
 #: files/usr/share/cinnamon/cinnamon-screensaver-lock-dialog/cinnamon-screensaver-lock-dialog.py:40
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_screensaver.py:205
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_screensaver.py:227
 msgid "Screen Locker"
 msgstr ""
 
@@ -1623,7 +1622,7 @@ msgstr ""
 msgid "bluetooth, dongle, transfer, mobile"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/cinnamon-settings.py:207
+#: files/usr/share/cinnamon/cinnamon-settings/cinnamon-settings.py:208
 msgid "Back to all settings"
 msgstr ""
 
@@ -3371,6 +3370,7 @@ msgstr ""
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:31
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_mouse.py:31
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_mouse.py:82
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_screensaver.py:139
 msgid "General"
 msgstr ""
 
@@ -4892,52 +4892,94 @@ msgid "Date and Time"
 msgstr ""
 
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_screensaver.py:107
+msgid "Always show the clock"
+msgstr ""
+
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_screensaver.py:108
+msgid "Show the clock on the wallpaper instead of just on the unlock screen"
+msgstr ""
+
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_screensaver.py:111
 msgid "Use a custom date and time format"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_screensaver.py:110
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_screensaver.py:114
 msgid "Time Format"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_screensaver.py:113
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_screensaver.py:117
 msgid "Date Format: "
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_screensaver.py:116
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_screensaver.py:120
 msgid "Time Font"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_screensaver.py:119
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_screensaver.py:123
 msgid "Date Font"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_screensaver.py:122
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_screensaver.py:126
 msgid "Away message"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_screensaver.py:124
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_screensaver.py:128
 msgid "Show this message when the screen is locked"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_screensaver.py:126
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_screensaver.py:130
 msgid "This is the default message displayed on your lock screen"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_screensaver.py:129
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_screensaver.py:133
 msgid "Font"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_screensaver.py:131
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_screensaver.py:135
 msgid "Ask for a custom message when locking the screen from the menu"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_screensaver.py:132
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_screensaver.py:136
 msgid ""
 "This option allows you to type a message each time you lock the screen from "
 "the menu"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_screensaver.py:205
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_screensaver.py:141
+msgid "Allow keyboard shortcuts"
+msgstr ""
+
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_screensaver.py:142
+msgid ""
+"Allow shortcuts like volume-control and media keys to be used on the lock "
+"screen"
+msgstr ""
+
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_screensaver.py:145
+msgid "Show media player controls"
+msgstr ""
+
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_screensaver.py:146
+msgid "For compatible players, show playback controls while media is playing"
+msgstr ""
+
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_screensaver.py:149
+msgid "Show album art"
+msgstr ""
+
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_screensaver.py:150
+msgid "If available, show album art while media is playing"
+msgstr ""
+
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_screensaver.py:153
+msgid "Show info panel"
+msgstr ""
+
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_screensaver.py:154
+msgid "Show the number of missed notifications and the battery status"
+msgstr ""
+
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_screensaver.py:227
 msgid "The standard cinnamon lock screen"
 msgstr ""
 
@@ -5842,14 +5884,6 @@ msgstr ""
 
 #. trash@cinnamon.org->metadata.json->description
 msgid "Control the trash from the panel"
-msgstr ""
-
-#. keyboard@cinnamon.org->settings-schema.json->use-uppercase->description
-msgid "Use uppercase letters to display keyboard layouts"
-msgstr ""
-
-#. keyboard@cinnamon.org->settings-schema.json->use-letters->description
-msgid "Use letters to display keyboard layouts"
 msgstr ""
 
 #. xrandr@cinnamon.org->metadata.json->description
