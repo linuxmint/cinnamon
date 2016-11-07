@@ -203,7 +203,9 @@
         <listitem><code>callback</code>: string of callback method name (no "this", just "myFunc")</listitem>
       </itemizedlist>
 
-      <para>A <emphasis>non-setting</emphasis> widget, this provides a button, which, when clicked, activates the <code>callback</code> method in your applet. Note: the callback value should be a string of the method name only.  For instance, to call <code>this.myCallback()</code>, you would put <code>myCallback</code> for the callback value.</para>
+      <para>A <emphasis>non-setting</emphasis> widget, this provides a button, which, when clicked, activates the <code>callback</code> method in your applet/desklet. Note: the callback value should be a string of the method name only.  For instance, to call <code>this.myCallback()</code>, you would put <code>myCallback</code> for the callback value.</para>
+
+      <para>Special case: for a <code>button</code> element to work on an extension setting window, an object containing all needed callback functions needs to be created and then returned by the <code>enable()</code> function.</para>
     </sect3>
     <sect3>
       <title>Additional Setting Options</title>
