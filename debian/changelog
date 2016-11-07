@@ -1,3 +1,450 @@
+cinnamon (3.2.0) serena; urgency=medium
+
+  [ Margarita Manterola ]
+  * Re-order and re-word idle-delay and re-word lock-enabled
+
+  [ AlbertJP ]
+  * Resize a thumbnail when the window resizes
+
+  [ Henry Williams ]
+  * Add Remove button for Xlets
+
+  [ dralley ]
+  * Added gi.require_version() in many, many, many places
+
+  [ Michael Webster ]
+  * cs_keyboard.py: Fix keybindings for quiet volume up and down (they were showing the same keys as normal volume-up/down.)
+
+  [ JosephMcc ]
+  * Add the ability to play a sound effect when showing notifications
+
+  [ Corbin Auriti ]
+  * Clean up output filenames on the tracker search provider
+
+  [ Antti Nilakari ]
+  * Show flags based on short name of language in keyboard applet
+
+  [ Stephen Collins ]
+  * Settings: switch gsettings widgets to use new settings backend:
+  * Add json settings backend to settings widgets
+  * settings.js: rewrite to simplify code and aviod the use of object.watch() which can be costly on resources
+  * Revamp the xlet settings: - xlet settings now open in their own window/process - matches new style of cinnamon settings - now supports pages and sections in the settings file - instances are now automatically highlighted in the panel when the instance is selected in the settings window (uses a new 'highlight' pseudoclass) - uses the new JSON backend for easier maintenance and simplification of the code - added support for backendable widgets which were not previously available to the xlet settings api - updated for newer Gtk versions - added a new configure function to applets and desklets
+  * Udate some of the applets and desklet to use the new settings api
+
+  [ brownsr ]
+  * Give more informative message when starting to remove applet
+  * wrap applet description At the moment a long applet description will push the subsequent icons off the visible screen which is likely to confuse some.  Scaling up font or text scaling exacerbates this Some simple column wrapping avoids the issue
+
+  [ Michael Webster ]
+  * Add cinnamon-related debug packages to cinnamon-dbg package
+
+  [ Clement Lefebvre ]
+  * Localize the applet name in previous commit
+
+  [ Maximiliano Curia ]
+  * Migrate away from gnome-common deprecated vars and macros
+
+  [ IHaveThatPower ]
+  * Corrected "output" to "input"
+
+  [ collinss ]
+  * settings.js: fix some settings not updating due to unspecific conditional
+  * appletManager.js: (multi-instance) fix applet setting file not being removed with applet
+
+  [ Marcus Lundgren ]
+  * sound applet: Add a menu that allows the user to switch between active players
+
+  [ JosephMcc ]
+  * panel-launchers: Fix an undeclared variable warning
+
+  [ Giulio Girardi ]
+  * Menu applet: Show 'Run with nVidia GPU' in context menu
+
+  [ collinss ]
+  * Fix background settings color chooser not working
+
+  [ brownsr ]
+  * Vertical panels
+
+  [ JosephMcc ]
+  * build: Bump the required gtk version
+
+  [ Marcus Lundgren ]
+  * sound applet: Remove entry in players list if player doesn't exist when switching - Make sure to always use the correct player owner when performing a switch
+
+  [ Michael Webster ]
+  * workspace-switcher applet: Use the WindowManager functions to switch workspaces when using the mousewheel - this ensures that:
+
+  [ collinss ]
+  * JsonSettingsWidgets.py: Ignore dependency key that doesn't exist with a warning rather than failing with an error
+  * Settings widgets: add backendable date chooser widget
+  * Refactor sound chooser widgets to simplify and avoid unnecessary duplication of code
+  * Fix xlet settings not upgrading properly with new key
+  * Fix panel-launchers add/edit dialog not working
+
+  [ Michael Webster ]
+  * keyboard layout applet: Fix showing the correct flags.
+
+  [ JosephMcc ]
+  * window-list: Don't hide the current workspace in context menu
+  * ExtensionCore.py: Don't show the uuid to the user
+
+  [ itzexor ]
+  * cinnamon-settings: remove unused webkit code and dependency
+
+  [ Corbin ]
+  * Make the whole BalanceBar insensitive when the channel map is changed
+  * Fix some device icon spacing issues
+
+  [ Dan Dascalescu ]
+  * Explain where to look for components to file bugs properly
+
+  [ MajidSas ]
+  * change the maximum delay for backgrounds slideshow
+
+  [ collinss ]
+  * settings.js: fix error caused by missing quotations
+
+  [ dralley ]
+  * Convert cinnamon bin utils to Python 3
+
+  [ Michael Webster ]
+  * window-list applet: Listen to a new signal from muffin's MetaScreen which will notify when an item should be add or removed due to its skip_taskbar hint changing.
+
+  [ JosephMcc ]
+  * cs_panel: Fix some terminology
+  *  panels: Allow themes to set separate default width and height values for panels
+  * theme: Stop panel launchers from jumping around in vertical panels on hover
+  * theme: Use a larger width for vertical panels in the default theme
+
+  [ Michael Webster ]
+  * menu applet: Make the hover delay create a delay in opening the menu on hover, *not* changing categories.  There should never be a delay switching categories.
+
+  [ Pierre G. Bogossian ]
+  * sound applet: bind mouse buttons 4/5 to previous/next track NB: mouse buttons 4 and 5 (aka back/forward buttons) are numbered 8 and 9 by X
+
+  [ Michael Webster ]
+  * st-cogl-wrapper.c: Don't ignore cogl parameters.
+
+  [ itzexor ]
+  * cs_backgrounds.py: Use built in mimetypes module
+  * cs_backgrounds.py: Refactor disk caching
+
+  [ Clement Lefebvre ]
+  * Fixed build
+
+  [ JosephMcc ]
+  * window-list: Rework for vertical panels
+  * theme: Set a 32px size for vertical panels
+  * window-list: Allow themes to control spacing between items
+
+  [ brownsr ]
+  * vertical panels: put the notification count under the notification symbol This keeps things central in the panel and avoids problems with the panel width being able to accomodate icon+text label unless there is a silly number of notifications.
+
+  [ Marcus Lundgren ]
+  * sound applet: Removed unnecessary call to remove player.
+
+  [ Michael Webster ]
+  * cinnamon-util: Add cinnamon_get_file_contents_utf8 asynchronous function with callback.  Mark _sync version as deprecated.
+  * cinnamon-util.c: Don't leave a cinnamon_get_file_contents_utf8 caller hanging, always run the callback, even with a NULL result.
+
+  [ Balló György ]
+  * Follow the Icon Naming Specification
+
+  [ itzexor ]
+  * cs_backgrounds.py: Don't check mimetype if filename is None
+
+  [ Balló György ]
+  * removable-drives applet: don't hardcode Nemo
+
+  [ Lars Mueller ]
+  * Remove panel barriers on panel removal
+
+  [ itzexor ]
+  * cs_backgrounds.py: Apply white background to RGBA images
+
+  [ Michael Webster ]
+  * JsonSettingsWidgets.py: close file objects.  settings.js: remove file monitor, push all settings changes thru Cinnamon's dbus interface.
+
+  [ brownsr ]
+  * Indentation corrections to remove inadvertent tabs also corrected an erroneous variable reference in a log message
+
+  [ NikoKrause ]
+  * [show-desktop applet] new feature added: Peek at desktop
+  * [keyboard applet] added switch in settings to use uppercase letters in panel
+
+  [ brownsr ]
+  * minor change into a more natural case statement
+  * centre align the centre box in a vertical panel and also clean up an if sequence, a few related comments, and a misalignment
+
+  [ Michael Webster ]
+  * settings.js: don't try to use python in javascript.  Also, payload is just the raw value string, not an array or variant array.
+
+  [ itzexor ]
+  * panelMenu.js: fix incorrect logic
+
+  [ Clement Lefebvre ]
+  * Show-desktop applet: Enabled peek-at-desktop, rephrased settings
+  * Keyboard applet: Fixed typo
+  * Fixed typos in files/usr/bin/cinnamon-settings
+
+  [ JosephMcc ]
+  * applet.js: Properly layout applets in vertical panels
+  * user-applet: Properly hide the panel label in vertical panels
+  * applet.js: Fix visual alignment of Text applets in vertical panels
+  * notification-applet: Fix the layout in vertical panels
+  * menu-applet: Fix the layout of the menu applet in vertical panels
+  * power-applet: Fix layout in vertical panels
+  * workspace-switcher: Don't allow the visual style layout in vertical panels
+  * spacer-applet: Adapt layout for vertical panels
+
+  [ Michael Webster ]
+  * Revert "Revert "keyboard layout applet: Fix showing the correct flags.""
+
+  [ JosephMcc ]
+  * sound-applet: Adapt layout for vertical panels
+  * separator applet: Clean up some code styling
+  * a11y-applet: Don't allow the a11y applet in vertical panels
+  * sound-applet: Properly hide/show label on initial load
+  * applet.js: Clean up the code a bit
+
+  [ itzexor ]
+  * write-applet.xml: fix incorrect example code
+
+  [ brownsr ]
+  * correct applet context menu on panel orientation move Thanks @lestcape
+
+  [ Jess Wu ]
+  * Fix grammar mistakes in source files
+
+  [ NikoKrause ]
+  * [menu-applet] hiding favorites box leaves an empty box in the menu, this should fix this
+
+  [ itzexor ]
+  * show desktop applet: keep track of peek timeout id
+  * show desktop applet: various cleanups
+
+  [ brownsr ]
+  * Correct drag and drop bugs in panel launcher 1) an issue that looks to have been there before the vertical panels change where    drag and drop within the panel launcher would drop icons in unscaled rather    than at the same scale as the other icons 2) a vertical panels issue where the drag and drop code was assuming horizontal orientation    and so was calculating both the position in the list of icons and the new position in the    actor incorrectly 3) took the opportunity to correct a number of minor indentation issues
+  * correct window list internal drag and drop for vertical panels 1) The override on the allowable drag direction was not set to allow vertical dragging    also previous override needed clearing when orientation changed 2) Removed a few stray tabs etc. 3) Calculated the drop position correctly for vertical panels
+
+  [ NikoKrause ]
+  * [window-list applet] using icons on context menu
+
+  [ itzexor ]
+  * panel.js: add dialog to launch settings when the last panel is removed
+  * panel.js: don't try to hide the panel if it's destroyed
+
+  [ Michael Webster ]
+  * Keyboard layout applet: Update to use new XAppKbdLayoutController to supply appropriate icons and short names, and as a general wrapper around libgnomekbd for layout control.
+  * Remove flag folder for keyboard applet (provided by libxapp now)
+
+  [ JosephMcc ]
+  * systray: Clean up code formatting
+
+  [ Michael Webster ]
+  * keyboard layout applet: Use this._config.get_enabled() to check whether applet should be 'active'
+
+  [ NikoKrause ]
+  * [menu-applet] a more intuitive way of navigating through the menu with the keyboard
+
+  [ itzexor ]
+  * appletManager.js: fix removeAppletFromPanels
+
+  [ collinss ]
+  * Move all settings chooser button code to it's own file
+  * xlet settings: Replace old binding function in settings.js with two new ones and allow multiple bindings on the same key
+
+  [ JosephMcc ]
+  * applets: Change how applets set the type of panel they are allowed in
+
+  [ leigh123linux ]
+  * remove grabber
+
+  [ NikoKrause ]
+  * [menu-applet] fixed key-navigation of filesystem search path
+
+  [ Lars Mueller ]
+  * Fix tooltip position This fixes the tooltip position on the first show of a tooltip. Previously, the extents fetched from the actor were wrong, because the actor had never been allocated before.
+
+  [ JosephMcc ]
+  * cs_themes: Don't show duplicate themes
+
+  [ NikoKrause ]
+  * [menu-applet] create favBox, even if it's not shown at Cinnamon restart
+
+  [ itzexor ]
+  * st-scroll-view.c: move comment up and remove indentation For whatever reason, this comment hangs g-ir-scanner indefinitely with version 1.50 of gobject-introspection in Arch Linux, at least on my machine. Moving the comment onto its own line fixes this issue.
+
+  [ NikoKrause ]
+  * [menu-applet] clear recent list applet with ENTER-key
+  * [menu-applet] show AppDescription only on hovered buttons and hover allAppsCatButton when search pattern is deleted
+
+  [ Balló György ]
+  * Remove dependency on GConf
+
+  [ collinss ]
+  * ChooserButtonWidgets.py: add missing imports
+
+  [ Michael Webster ]
+  * cs_screensaver.py: rename date/time section to customize, rename combobox selections to be more grammatically correct
+
+  [ itzexor ]
+  * cinnamon-global.c: fix a gi warning
+
+  [ JosephMcc ]
+  * messageTray: Fix the placement of notifications
+
+  [ Michael Webster ]
+  * keyboard applet: restore upper-case option, fix regression from xlet settings revamp.
+
+  [ brownsr ]
+  * workspace switcher - change whether graph is shown or not At the moment the graph is suppressed in vertical panels because a long wide workspace resulting from multiple monitors results in an unworkable graph when scaled to fit the panel width. Change this to test on the workspace size ratio, as this will permit single monitor setups to have the workspace graph
+  * add vertical style class to workspace switcher No code is needed to remove it as buttons are rebuilt from scratch when panels are moved between orientations. Linked to a change to improve appearance of this applet in vertical panels in Mint-X themes
+
+  [ NikoKrause ]
+  * [menu-applet] decodeUriComponent in placesManager.js and docInfo.js
+
+  [ brownsr ]
+  * refactor if sequence to case statement, and sort alignment
+
+  [ NikoKrause ]
+  * added PopupSwitchIconMenuItem and used it in sound-applet
+
+  [ Michael Webster ]
+  * cinnamon-settings: On widgets that don't use bind functions, connect to the widget changed handlers only after setting their initial value.  This prevents on_settings_changed() from being triggered right away, as well as a subsequent trigger of the widget changed handler (for a second time.)
+
+  [ brownsr ]
+  * make accessibility applet suitable for vertical panels The issue is that sticky keys make use of the applet label to display and this is not compatible with a vertical panel. Resolve this by re-purposing the applet tooltip to show the sticky keys in a vertical panel The functionality in a horizontal panel is unchanged.  The tooltip also shows normally in all cases excepting when the relevant keys are actually pressed
+
+  [ JosephMcc ]
+  * inhibit-applet: Fix an oversized menu item
+
+  [ Clement Lefebvre ]
+  * Fixed typo in js/ui/popupMenu.js
+  * Revert "Fixed typo in js/ui/popupMenu.js"
+
+  [ Michael Webster ]
+  * windowAttentionHandler.js: fix logic for matching ignored wmclass names.
+
+  [ brownsr ]
+  * correct unreactive top/bottom strip in vertical panels fixes #5748.
+
+  [ Germán Franco ]
+  * Style sound applet overlay controls  * Added buttons styling same as other in the theme  * Change color to fit the theme
+
+  [ JosephMcc ]
+  * panel-launchers: Redesign the launcher context menu
+  * window-list: Add the standard applet context menu items
+  * window-list: Tweak the settings layout
+  * panel-launchers: Tweak the layout of the settings
+  * notifications-applet: Tweak the layout of the settings
+  * calendar-applet: Tweak the layout of the settings
+  * keyboard-applet: Tweak the layout of the settings
+  * expo-applet: Tweak the layout of the settings
+
+  [ Michael Webster ]
+  * menu applet: Fix hover delay tooltip
+
+  [ JosephMcc ]
+  * window-list: Fix an undeclared variable warning
+
+  [ collinss ]
+  * Remove the boxpointer from popup menus
+
+  [ NikoKrause ]
+  * [menu-applet] fixes https://github.com/linuxmint/Cinnamon/issues/5820
+  * [sound-applet] added dependencies in the settings-schema
+  * [menu-applet] rewritten keynavigation codeblock
+
+  [ Odyseus ]
+  * [Hot Corners] Added hover delay functionality. Added tooltips to hot corner icons. Corrected some minor indentation/white space inconsistencies. Closes linuxmint/Cinnamon#1050
+
+  [ Clement Lefebvre ]
+  * Enable vfade effect by default
+
+  [ NikoKrause ]
+  * [sound-applet] add option: show percentage next to volume slider
+
+  [ Lars Mueller ]
+  * Fix menu item order in window list This fixes a problem, when the menu orientation is not St.Side.TOP. the menu box layout was is reverse order.
+
+  [ JosephMcc ]
+  * popupMenu: Mark the new 'menu' style class as important
+
+  [ lestcape ]
+  * Improving slightly the appindicators.
+  * Allow the appindicator used the theme icon size if is not in scale mode.
+  * Remove the boxpointer features of the indicator API.
+
+  [ JosephMcc ]
+  * panel.js: Change the order which panels are drawn
+
+  [ itzexor ]
+  * cs_screensaver.py: expose new cinnamon screensaver settings
+  * cinnamon-settings.py: refactor maybe_resize slightly
+
+  [ brownsr ]
+  * ensure applets that override on_panel_height_changed  get to scale properly The logic in the common applet code has been changed so that the scaling is not overridden by the locally overridden function.  The local function thus becomes additional to the core function, rather than overriding it in its entirety. This also corrects errors associated with turning scale mode on and off. One more associated change to the window-list applet in a vertical panel will be needed but as there are changes queued up for that I think it's best done subsequently fixes #5700
+  * Ensure that the edge of the screen reacts to mouse clicks Previously the outside couple of pixels were unreactive.  This was set so as to avoid recursion errors but these seem no longer to be there, so this resets to the desired behaviour
+
+  [ itzexor ]
+  * lookingGlass.js: inspect: better handle undefined and null values
+  * menu applet: remove keybinding when applet is removed from panel
+  * menu applet: make menu hotkey binding per-instance
+
+  [ Odyseus ]
+  * [Menu applet] Added keyboard navigation for context menus.
+
+  [ Clement Lefebvre ]
+  * Simplify backgroundManager
+
+  [ Odyseus ]
+  * [Xlet settings] "entry" and "iconchooser" elements modifications.
+
+  [ JosephMcc ]
+  * workspace-swithcer: Fix the vertical style class
+
+  [ NikoKrause ]
+  * [menu-applet] hide recent files, which are no longer available
+
+  [ Odyseus ]
+  * [Xlet settings] Added support for "button" to extensions settings windows.
+  * [Tooltips] Fixed positioning of tooltips.
+
+  [ Clement Lefebvre ]
+  * sound: Add xplayer to the list of players without seek support
+
+  [ JosephMcc ]
+  * panel-launchers: Fix 'Add' and 'Edit' not working
+  * menu-applet: Add a setting for the new menu animations
+
+  [ Clement Lefebvre ]
+  * Update POT file
+  * Generate additional files
+
+  [ NikoKrause ]
+  * [menu-applet] keynav: make sure to scroll the appsBox to top if category is changed
+
+  [ Michael Webster ]
+  * keyboard applet: Rework to sync with changes to XApp.KbdLayoutController - the controller provides only icon names now.  Handle icon construction ourselves.
+  * cs_screensaver.py: Update to reflect new preferences, remove old ones that are now in keyboard->region panel.
+
+  [ JosephMcc ]
+  * popupMenu: Insert menus that open from the panel below the panels
+
+  [ Alex Peters ]
+  * avoid varying space between month and day
+
+  [ Clement Lefebvre ]
+  * screensaver setttings: Rephrase some of the msgids
+  * Xlet settings: Add support for alpha colors in ColorChooser
+  * Fix JS warning
+  * Tooltips: Round coordinates
+  * l10n: Update POT file
+
+ -- Clement Lefebvre <root@linuxmint.com>  Mon, 07 Nov 2016 16:12:22 +0000
+
 cinnamon (3.0.7) sarah; urgency=medium
 
   [ Jonathan Washington ]
