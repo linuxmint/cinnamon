@@ -104,10 +104,26 @@ function IndicatorManager() {
 IndicatorManager.prototype = {
     
     _init: function() {
+        this._enable = false;
+        this._signalStatus = 0;
+        this._signalSystray = 0;
+        this._indicatorsSignals = null;
+        this.statusNotifierWatcher = null;
         this._indicators = {};
-        if (global.settings.get_boolean("enable-indicators")) {
-            this.statusNotifierWatcher = new StatusNotifierWatcher();
-            this.statusNotifierWatcher.connect('indicator-dispatch', Lang.bind(this, this._onIndicatorDispatch));
+        this._blackList = [];
+        this.setEnabled(global.settings.get_boolean("enable-indicators"));
+        this._signalSettings = global.settings.connect('changed::enable-indicators',
+                               Lang.bind(this, this._changedEnableIndicators));
+    },
+
+    _changedEnableIndicators: function() {
+        this.setEnabled(global.settings.get_boolean("enable-indicators"));
+    },
+
+    _onSystrayManagerChanged: function(manager) {
+        let rolesHandled = manager.getRoles();
+        for (let id in this._indicators) {
+            this._conditionalEnable(id, rolesHandled);
         }
     },
 
@@ -125,21 +141,6 @@ IndicatorManager.prototype = {
             for (let pos in signalsHandlers)
                 obj.disconnect(signalsHandlers[pos]);
         }
-    },
-
-    getIndicatorIds: function() {
-        let list = [];
-        for (let id in this._indicators) {
-            if (this._indicators[id].indicator.isReady)
-                list.push(id);
-        }
-        return list;
-    },
-
-    getIndicatorById: function(id) {
-        if ((id in this._indicators) && (this._indicators[id].indicator.isReady))
-            return this._indicators[id].indicator;
-        return null;
     },
 
     _onIndicatorDispatch: function(notifierWatcher, id) {
@@ -162,10 +163,7 @@ IndicatorManager.prototype = {
             signalManager.connect(appIndicator, 'reset', this._onIndicatorChanged);
             signalManager.connect(appIndicator, 'overlay-icon', this._onIndicatorChanged);
             signalManager.connect(appIndicator, 'icon', this._onIndicatorChanged);*/
-            this._indicators[id] = {
-                indicator: appIndicator,
-                signals: signalsIndicator
-            };
+            this._indicatorsSignals[id] = signalsIndicator;
             if (appIndicator.isReady) {
                 this._onIndicatorReady(appIndicator);
             }
@@ -173,20 +171,23 @@ IndicatorManager.prototype = {
     },
 
     _onIndicatorReady: function(appIndicator) {
-        let id = appIndicator.getNotifierId();
-        if ((id != appIndicator.id) && !(appIndicator.id in this._indicators)) {
-            this._indicators[appIndicator.id] = this._indicators[id];
-            delete this._indicators[id];
+        this._indicators[appIndicator.id] = appIndicator;
+        let rolesHandled = Main.systrayManager.getRoles();
+        if (this._conditionalEnable(appIndicator.id, rolesHandled, this._blackList)) {
+            global.log("Adding indicator: " + appIndicator.id);
+            this.emit('indicator-added', appIndicator);
         }
-        this.emit('indicator-added', appIndicator);
     },
 
     _onIndicatorDestroy: function(appIndicator) {
+        let notId = appIndicator.getNotifierId();
+        if (notId in this._indicatorsSignals) {
+            this._disconnectSignals(appIndicator, this._indicatorsSignals[notId]);
+            delete this._indicators[notId];
+        }
         if (appIndicator.id in this._indicators) {
-            let properties = this._indicators[appIndicator.id];
-            this._disconnectSignals(appIndicator, properties.signals);
             delete this._indicators[appIndicator.id];
-            //properties.signals.disconnectAllSignals();
+            global.log("Removing indicator: " + appIndicator.id);
             this.emit('indicator-removed', appIndicator);
         }
     },
@@ -194,11 +195,104 @@ IndicatorManager.prototype = {
     _onIndicatorChanged: function(appIndicator, signal) {
         this.emit('indicator-changed', appIndicator);
     },
+
+    _conditionalEnable: function(id, rolesHandled, blackList) {
+        if (blackList && (blackList.indexOf(id) != -1)) {
+            this._enableIndicatorId(id, false);
+            global.log("Hiding indicator (blacklisted): " + id);
+            return false;
+        } else if (rolesHandled && (rolesHandled.indexOf(id) != -1)) {
+            this._enableIndicatorId(id, false);
+            global.log("Hiding indicator (role already handled): " + id);
+            return false;
+        }
+        this._enableIndicatorId(id, true);
+        return true;
+    },
+
+    _enableIndicatorId: function(id, enable) {
+        let appIndicator = this.getIndicatorById(id);
+        if (appIndicator) {
+            appIndicator.setEnabled(enable);
+        }
+    },
+
+    isInBlackList: function(id) {
+        let hiddenIcons = Main.systrayManager.getRoles();
+        if (hiddenIcons.indexOf(id) != -1 )
+            return true;
+        if (this._blackList.indexOf(id) != -1 )
+            return true;
+        return false;
+    },
+
+    insertInBlackList: function(id) {
+        if (!(id in this._blackList)) {
+            this._blackList.push(id);
+            this._enableIndicatorId(id, false);
+        }
+    },
+
+    removeFromBlackList: function(id) {
+        let pos = this._blackList.indexOf(id);
+        if (pos != -1) {
+            this._blackList.splice(pos, 1);
+            this._disableIndicatorId(id, true);
+        }
+    },
     
+    getIndicatorIds: function() {
+        let list = [];
+        for (let id in this._indicators) {
+            list.push(id);
+        }
+        return list;
+    },
+
+    getIndicatorById: function(id) {
+        if (id in this._indicators)
+            return this._indicators[id];
+        return null;
+    },
+
+    setEnabled: function(enable) {
+        if (this._enable != enable) {
+            this._enable = enable;
+            this._indicators = {};
+            if (this._enable) {
+                this._indicatorsSignals = {};
+                this.statusNotifierWatcher = new StatusNotifierWatcher();
+                if (this._signalStatus == 0) {
+                    this._signalStatus = this.statusNotifierWatcher.connect('indicator-dispatch',
+                                         Lang.bind(this, this._onIndicatorDispatch));
+                }
+                if (this._signalSystray == 0) {
+                    this._signalSystray = Main.systrayManager.connect('changed',
+                                          Lang.bind(this, this._onSystrayManagerChanged));
+                }
+            } else {
+                if (this._signalStatus != 0) {
+                    this.statusNotifierWatcher.disconnect(this._signalStatus);
+                    this._signalStatus = 0;
+                }
+                if (this._signalSystray != 0) {
+                    Main.systrayManager.disconnect(this._signalSystray);
+                    this._signalSystray = 0;
+                }
+                this.statusNotifierWatcher.destroy();
+                this._indicatorsSignals = null;
+                this.statusNotifierWatcher = null;
+            }
+        }
+    },
+
     destroy: function() {
-        if (this.statusNotifierWatcher)
-            this.statusNotifierWatcher.destroy();
-        this.statusNotifierWatcher = null;
+        this.setEnabled(false);
+        if (this._signalSettings != 0) {
+            global.settings.disconnect(this._signalSettings);
+            this._signalSettings = 0;
+        }
+        this.emit('indicator-destroy');
     }
 };
 Signals.addSignalMethods(IndicatorManager.prototype);
@@ -219,77 +313,126 @@ AppIndicator.prototype = {
     _init: function(busName, object) {
         this._busName = busName;
         this._object = object;
+        this._proxy = null;
+        this._isEnabled = true;
+        this._initialize();
+    },
 
-        this._proxy = new XmlLessDBusProxy({
-            connection: Gio.DBus.session,
-            name: busName,
-            path: object,
-            interface: 'org.kde.StatusNotifierItem',
-            propertyWhitelist: [ //keep sorted alphabetically, please
-                'AttentionIconName',
-                'AttentionIconPixmap',
-                'Category',
-                'IconName',
-                'IconPixmap',
-                'IconThemePath',
-                'Id',
-                'Menu',
-                'OverlayIconName',
-                'OverlayIconPixmap',
-                'Status',
-                'Title',
-                'ToolTip',
-                'XAyatanaLabel'
-            ],
-            onReady: Lang.bind(this, function() {
-                this.isReady = true;
-                this.emit('ready');
-            })
-        });
+    _initialize: function() {
+        if ((!this._proxy) && (this._isEnabled)) {
+            this._proxy = new XmlLessDBusProxy({
+                connection: Gio.DBus.session,
+                name: this._busName,
+                path: this._object,
+                interface: 'org.kde.StatusNotifierItem',
+                propertyWhitelist: [ //keep sorted alphabetically, please
+                    'AttentionIconName',
+                    'AttentionIconPixmap',
+                    'Category',
+                    'IconName',
+                    'IconPixmap',
+                    'IconThemePath',
+                    'Id',
+                    'Menu',
+                    'OverlayIconName',
+                    'OverlayIconPixmap',
+                    'Status',
+                    'Title',
+                    'ToolTip',
+                    'XAyatanaLabel',
+                    'XAyatanaLabelGuide',
+                    'XAyatanaOrderingIndex',
+                ],
+                onReady: Lang.bind(this, function() {
+                    this.isReady = true;
+                    this.emit('ready');
+                })
+            });
+            this._proxy.connect('-property-changed', Lang.bind(this, this._onPropertyChanged));
+            this._proxy.connect('-signal', Lang.bind(this, this._translateNewSignals));
+        }
+    },
 
-        this._proxy.connect('-property-changed', Lang.bind(this, this._onPropertyChanged));
-        this._proxy.connect('-signal', Lang.bind(this, this._translateNewSignals));
-
-        this._isInBlacklist = false;
+    _finalize: function() {
+        if (this._proxy) {
+            this._proxy.destroy();
+            this._proxy = null;
+            this.isReady = false;
+            this.emit('finalized');
+        }
     },
 
     // The Author of the spec didn't like the PropertiesChanged signal, so he invented his own
     _translateNewSignals: function(proxy, signal, params) {
-        if (signal.substr(0, 3) == 'New') {
-            let prop = signal.substr(3);
+        if (this._proxy) {
+            if (signal.substr(0, 3) == 'New') {
+                let prop = signal.substr(3);
 
-            if (this._proxy.propertyWhitelist.indexOf(prop) > -1)
-                this._proxy.invalidateProperty(prop);
+                if (this._proxy.propertyWhitelist.indexOf(prop) > -1)
+                    this._proxy.invalidateProperty(prop);
 
-            if (this._proxy.propertyWhitelist.indexOf(prop + 'Pixmap') > -1)
-                this._proxy.invalidateProperty(prop + 'Pixmap');
+                if (this._proxy.propertyWhitelist.indexOf(prop + 'Pixmap') > -1)
+                    this._proxy.invalidateProperty(prop + 'Pixmap');
 
-            if (this._proxy.propertyWhitelist.indexOf(prop + 'Name') > -1)
-                this._proxy.invalidateProperty(prop + 'Name');
-        } else if (signal == 'XAyatanaNewLabel') {
+                if (this._proxy.propertyWhitelist.indexOf(prop + 'Name') > -1)
+                    this._proxy.invalidateProperty(prop + 'Name');
             // and the ayatana guys made sure to invent yet another way of composing these signals...
-            this._proxy.invalidateProperty('XAyatanaLabel');
+            } else if (signal == 'XAyatanaNewLabel') { 
+                this._proxy.invalidateProperty('XAyatanaLabel');
+            } else if (signal == 'XAyatanaNewLabelGuide') {
+                this._proxy.invalidateProperty('XAyatanaNewLabelGuide');
+            } else if (signal == 'XAyatanaOrderingIndex') {
+                this._proxy.invalidateProperty('XAyatanaNewOrderingIndex');
+            }
         }
     },
 
     //public property getters
     get title() {
+        if (!this._proxy)
+            return null
         return this._proxy.cachedProperties.Title;
     },
 
     get id() {
+        if (!this._proxy)
+            return null;
         return this._proxy.cachedProperties.Id;
     },
 
     get status() {
+        if (!this._proxy)
+            return null;
         return this._proxy.cachedProperties.Status;
     },
 
     get label() {
+        if (!this._proxy)
+            return null;
         return this._proxy.cachedProperties.XAyatanaLabel;
     },
 
+    get labelGuide() {
+        if (!this._proxy)
+            return null;
+        return this._proxy.cachedProperties.XAyatanaLabelGuide;
+    },
+
+    get toolTip() {
+        if (!this._proxy)
+            return null;
+        return this._proxy.cachedProperties.ToolTip;
+    },
+
+    get orderingIndex() {
+        if (!this._proxy)
+            return null;
+        return this._proxy.cachedProperties.XAyatanaOrderingIndex;
+    },
+
     get attentionIcon() {
+        if (!this._proxy)
+            return null;
         return [
             this._proxy.cachedProperties.AttentionIconName,
             this._proxy.cachedProperties.AttentionIconPixmap,
@@ -298,6 +441,8 @@ AppIndicator.prototype = {
     },
 
     get icon() {
+        if (!this._proxy)
+            return null;
         return [
             this._proxy.cachedProperties.IconName,
             this._proxy.cachedProperties.IconPixmap,
@@ -306,6 +451,8 @@ AppIndicator.prototype = {
     },
 
     get overlayIcon() {
+        if (!this._proxy)
+            return null;
         return [
             this._proxy.cachedProperties.OverlayIconName,
             this._proxy.cachedProperties.OverlayIconPixmap,
@@ -317,30 +464,37 @@ AppIndicator.prototype = {
         return this._busName + this._object;
     },
 
-    isInBlacklist: function() {
-        return this._isInBlacklist;
+    isEnabled: function() {
+        return this._isEnabled;
     },
 
-    setInBlacklist: function() {
-        this._isInBlacklist = true;
-        this.emit('blacklist');
+    setEnabled: function(enable) {
+        if (this._isEnabled != enable) {
+            this._isEnabled = enable;
+            if (this._isEnabled)
+                this._initialize();
+            else
+                this._finalize();
+        }
     },
 
-    getIconActor: function(size) {
-        return new IconActor(this, size);
+    getActor: function(size) {
+        return new IndicatorActor(this, size);
     },
 
     //async because we may need to check the presence of a menubar object as well as the creation is async.
     createMenuClientAsync: function(clb) {
-        let path = this._proxy.cachedProperties.Menu || "/MenuBar";
-        this._validateMenu(this._busName, path, function(correctly, name, path) {
-            if (correctly) {
-                // global.log("creating menu on "+[name, path]);
-                clb(new DBusMenu.DBusClient(name, path));
-            } else {
-                clb(null);
-            }
-        });
+        if (this._proxy) {
+            let path = this._proxy.cachedProperties.Menu || "/MenuBar";
+            this._validateMenu(this._busName, path, function(correctly, name, path) {
+                if (correctly) {
+                    // global.log("creating menu on "+[name, path]);
+                    clb(new DBusMenu.DBusClient(name, path));
+                } else {
+                    clb(null);
+                }
+            });
+        }
     },
 
     _validateMenu: function(bus, path, callback) {
@@ -395,16 +549,20 @@ AppIndicator.prototype = {
 
     // triggers a reload of all properties
     reset: function(triggerReady) {
-        this._proxy.invalidateAllProperties(Lang.bind(this, function() {
-            this.emit('reset');
-        }));
+        if (this._proxy) {
+            this._proxy.invalidateAllProperties(Lang.bind(this, function() {
+                this.emit('reset');
+            }));
+        }
     },
 
     destroy: function() {
+        if (this._proxy) {
+            this._proxy.destroy();
+            this._proxy = null;
+            this.isReady = false;
+        }
         this.emit('destroy');
-
-        this.disconnectAll();
-        this._proxy.destroy();
     },
 
     open: function() {
@@ -413,28 +571,33 @@ AppIndicator.prototype = {
         // possible on cinnamon. Luckily for Gnome Shell, the Activate method usually works fine.
         // parameters are "an hint to the item where to show eventual windows" [sic]
         // ... and don't seem to have any effect.
-        this._proxy.call({
-            name: 'Activate',
-            paramTypes: 'ii',
-            paramValues: [0, 0]
-            // we don't care about the result
-        });
+        if (this._proxy) {
+            this._proxy.call({
+                name: 'Activate',
+                paramTypes: 'ii',
+                paramValues: [0, 0]
+                // we don't care about the result
+            });
+        }
     },
 
     scroll: function(dx, dy) {
-        if (dx != 0)
-            this._proxy.call({
-                name: 'Scroll',
-                paramTypes: 'is',
-                paramValues: [ Math.floor(dx), 'horizontal' ]
-            });
-
-        if (dy != 0)
-            this._proxy.call({
-                name: 'Scroll',
-                paramTypes: 'is',
-                paramValues: [ Math.floor(dy), 'vertical' ]
-            });
+        if (this._proxy) {
+            if (dx != 0) {
+                this._proxy.call({
+                    name: 'Scroll',
+                    paramTypes: 'is',
+                    paramValues: [ Math.floor(dx), 'horizontal' ]
+                });
+            }
+            if (dy != 0) {
+                this._proxy.call({
+                    name: 'Scroll',
+                    paramTypes: 'is',
+                    paramValues: [ Math.floor(dy), 'vertical' ]
+                });
+            }
+        }
     }
 };
 Signals.addSignalMethods(AppIndicator.prototype);
@@ -536,7 +699,8 @@ StatusNotifierWatcher.prototype = {
         Gio.DBus.session.unwatch_name(this._nameWatcher[id]);
         delete this._nameWatcher[id];
         this._dbusImpl.emit_signal('ServiceUnregistered', GLib.Variant.new('(s)', id));
-        this._dbusImpl.emit_property_changed('RegisteredStatusNotifierItems', GLib.Variant.new('as', this.RegisteredStatusNotifierItems));
+        this._dbusImpl.emit_property_changed('RegisteredStatusNotifierItems',
+                         GLib.Variant.new('as', this.RegisteredStatusNotifierItems));
     },
 
     RegisterNotificationHost: function(service) {
@@ -551,7 +715,8 @@ StatusNotifierWatcher.prototype = {
     ProtocolVersion: function() {
         // "The version of the protocol the StatusNotifierWatcher instance implements." [sic]
         // in what syntax?
-        return "%s/%s (KDE; compatible; mostly) Cinnamon/%s".format("systray-indicator@cinnamon.org", "0.1", CinnamonConfig.PACKAGE_VERSION);
+        let message = "%s/%s (KDE; compatible; mostly) Cinnamon/%s";
+        return message.format("systray-indicator@cinnamon.org", "0.1", CinnamonConfig.PACKAGE_VERSION);
     },
 
     get RegisteredStatusNotifierItems() {
@@ -609,20 +774,24 @@ XmlLessDBusProxy.prototype = {
         this.cachedProperties = {};
 
         this.invalidateAllProperties(params.onReady);
-        this._signalId = this.connection.signal_subscribe(this.name,
-                                                          this.interface,
-                                                          null,
-                                                          this.path,
-                                                          null,
-                                                          Gio.DBusSignalFlags.NONE,
-                                                          this._onSignal.bind(this));
-        this._propChangedId = this.connection.signal_subscribe(this.name,
-                                                               'org.freedesktop.DBus.Properties',
-                                                               'PropertiesChanged',
-                                                               this.path,
-                                                               null,
-                                                               Gio.DBusSignalFlags.NONE,
-                                                               this._onPropertyChanged.bind(this))
+        this._signalId = this.connection.signal_subscribe(
+            this.name,
+            this.interface,
+            null,
+            this.path,
+            null,
+            Gio.DBusSignalFlags.NONE,
+            this._onSignal.bind(this)
+        );
+        this._propChangedId = this.connection.signal_subscribe(
+            this.name,
+            'org.freedesktop.DBus.Properties',
+            'PropertiesChanged',
+            this.path,
+            null,
+            Gio.DBusSignalFlags.NONE,
+            this._onPropertyChanged.bind(this)
+        );
     },
 
     setProperty: function(propertyName, valueVariant) {
@@ -634,16 +803,18 @@ XmlLessDBusProxy.prototype = {
     // This is useful if the interface notifies the consumer of changed properties
     // in unorthodox ways or if you changed the whitelist
     invalidateProperty: function(propertyName, callback) {
-        this.connection.call(this.name,
-                             this.path,
-                             'org.freedesktop.DBus.Properties',
-                             'Get',
-                             GLib.Variant.new('(ss)', [ this.interface, propertyName ]),
-                             GLib.VariantType.new('(v)'),
-                             Gio.DBusCallFlags.NONE,
-                             -1,
-                             null,
-                             Lang.bind(this, this._getPropertyCallback, propertyName, callback));
+        this.connection.call(
+            this.name,
+            this.path,
+            'org.freedesktop.DBus.Properties',
+            'Get',
+            GLib.Variant.new('(ss)', [ this.interface, propertyName ]),
+            GLib.VariantType.new('(v)'),
+            Gio.DBusCallFlags.NONE,
+            -1,
+            null,
+            Lang.bind(this, this._getPropertyCallback, propertyName, callback)
+        );
     },
 
     _getPropertyCallback: function(conn, result, propertyName, callback) {
@@ -730,68 +901,79 @@ XmlLessDBusProxy.prototype = {
                 global.logWarning("XmlLessDBusProxy::call: DBus error: "+error);
             };
 
-        this.connection.call(this.name,
-                             this.path,
-                             this.interface,
-                             params.name,
-                             params.params,
-                             GLib.VariantType.new('(' + params.returnTypes + ')'),
-                             Gio.DBusCallFlags.NONE,
-                             -1,
-                             null,
-                             function(conn, result) {
-                                 try {
-                                     let returnVariant = conn.call_finish(result)
-                                     params.onSuccess(returnVariant.deep_unpack())
-                                 } catch (e) {
-                                     params.onError(e)
-                                 }
-                             });
+        this.connection.call(
+            this.name,
+            this.path,
+            this.interface,
+            params.name,
+            params.params,
+            GLib.VariantType.new('(' + params.returnTypes + ')'),
+            Gio.DBusCallFlags.NONE,
+            -1,
+            null,
+            function(conn, result) {
+                try {
+                    let returnVariant = conn.call_finish(result);
+                    params.onSuccess(returnVariant.deep_unpack());
+                } catch (e) {
+                    params.onError(e);
+                }
+            }
+        );
 
     },
 
     destroy: function() {
-        this.emit('-destroy');
-
-        this.disconnectAll();
-
         this.connection.signal_unsubscribe(this._signalId);
         this.connection.signal_unsubscribe(this._propChangedId);
+        this.emit('-destroy');
     }
 };
 Signals.addSignalMethods(XmlLessDBusProxy.prototype);
 
 /**
- * #IconActor:
+ * #IndicatorActor:
  * @short_description: This is a container for the indicator icon with some advaced features.
  */
-function IconActor() {
+function IndicatorActor() {
     this._init.apply(this, arguments);
 }
 
-IconActor.prototype = {
+IndicatorActor.prototype = {
 
     _init: function(indicator, size) {
-        this.actor = new St.BoxLayout({ style_class: 'applet-box',
-                                        reactive: true,
-            // The systray uses a layout manager, we need to fill the space of the actor
+        this.actor = new St.BoxLayout({
+            style_class: 'applet-box', //FIXME: Use instead the status actor style class.
+            reactive: true,
+            track_hover: true,
+            // The systray use a layout manager, we need to fill the space of the actor
             // or otherwise the menu will be displayed inside the panel.
-                                        x_expand: true,
-                                        y_expand: true,
-                                        track_hover: true });
+            x_expand: true,
+            y_expand: true
+        });
+
         this.actor._delegate = this;
-        this._menu = null;
-        this.menuSignal = 0;
 
-        this._indicator     = indicator;
-        this._iconSize      = size;
-        this._iconCache     = new IconCache();
+        this.menu = null;
+        this._menuSignal = 0;
+        // FIXME: This could be desided on settings:
+        this._showInPassiveMode = false;
+        // FIXME: This could be desided on settings (also 3 state left, right, both):
+        this.openMenuOnRightClick = false;
 
-        this._mainIcon    = new St.Bin();
+        this._indicator = indicator;
+        this._iconSize = size;
+        this._iconCache = new IconCache();
+        this._mainIcon = new St.Bin();
         this._overlayIcon = new St.Bin({ 'x-align': St.Align.END, 'y-align': St.Align.END });
+        this._label = new St.Label({'y-align': St.Align.END });//FIXME: We need an style class for the label.
 
         this.actor.add_actor(this._mainIcon);
         this.actor.add_actor(this._overlayIcon);
+        this.actor.add_actor(this._label);
+
+        this._updatedLabel();
+        this._updatedStatus();
 
         this._signalManager = new SignalManager.SignalManager(this);
         this._signalManager.connect(this.actor, 'scroll-event', this._handleScrollEvent);
@@ -800,14 +982,15 @@ IconActor.prototype = {
         //this._signalManager.connect(this._indicator, 'overlay-icon', this._updateOverlayIcon);
         //this._signalManager.connect(this._indicator, 'ready', this._invalidateIcon);
         //this._signalManager.connect(this._indicator, 'status', this._updatedStatus);
-        //this._signalManager.connect(this._indicator, 'blacklist', this._updatedBlacklist);
-        //this._signalManager.connect(this._indicator, 'blacklist', this.destroy);
+        //this._signalManager.connect(this._indicator, 'finalized', this.destroy);
+        //this._signalManager.connect(this._indicator, 'destroy', this.destroy);
         this._signalsIndicator = this._connectAndSaveId(this._indicator, {
             'icon'        : Lang.bind(this, this._updateIcon),
             'overlay-icon': Lang.bind(this, this._updateOverlayIcon),
             'ready'       : Lang.bind(this, this._invalidateIcon),
             'status'      : Lang.bind(this, this._updatedStatus),
-            'blacklist'   : Lang.bind(this, this._updatedBlacklist),
+            'label'       : Lang.bind(this, this._updatedLabel),
+            'finalized'   : Lang.bind(this, this.destroy),
             'destroy'     : Lang.bind(this, this.destroy),
         });
 
@@ -831,6 +1014,11 @@ IconActor.prototype = {
         }
     },
 
+    setShowInPassiveMode: function(show) {
+        this._showInPassiveMode = show;
+        this._updatedStatus();
+    },
+
     setMenu: function(menu) {
        if (this._menuSignal > 0) {
            this.actor.disconnect(this._menuSignal);
@@ -838,7 +1026,7 @@ IconActor.prototype = {
        }
        if (menu) {
            this._menuSignal = this.actor.connect('button-press-event', Lang.bind(this, this._onIconButtonPressEvent));
-           this._menu = menu;
+           this.menu = menu;
        }
     },
 
@@ -849,46 +1037,81 @@ IconActor.prototype = {
         }
     },
 
-    _updatedBlacklist: function() {
-        if (this._indicator.isInBlacklist())
-            this.actor.visible = false;
+    // FIXME: The Tooltips are an object and is render in html format. To show the real tooltips
+    // (this._indicator.toolTip), we will need a good html parser.
+    // In the tooltips implementation, maybe imports.gi.WebKit and use Webkit.WebView and then loadData.
+    // So instead we will used the title as a tooltip.
+    getToolTip: function() {
+        return this._indicator.title;
     },
 
-    _updatedStatus: function() {      
+    _updatedLabel: function() {
+        if (this._indicator.label != undefined)
+            this._label.set_text(this._indicator.label);
+        else
+            this._label.set_text("");
+    },
+
+    // FIXME: When an indicator is in passive state, the recommended behavior is hide his actor,
+    // but this involve for example, never display the update notifier on ubuntu.
+    _updatedStatus: function() {
         if (this._indicator.status == SNIStatus.PASSIVE)
-            this.actor.visible = false;
-        else if ((this._indicator.status == SNIStatus.ACTIVE || this._indicator.status == SNIStatus.NEEDS_ATTENTION)
-                 && !this._indicator.isInBlacklist())
+            this.actor.visible = this._showInPassiveMode;
+        else if (this._indicator.status == SNIStatus.ACTIVE || this._indicator.status == SNIStatus.NEEDS_ATTENTION)
             this.actor.visible = true;
-        if ((this._menu)&&(!this.actor.visible))
-            this._menu.close(false);
+        if ((this.menu)&&(!this.actor.visible))
+            this.menu.close(false);
     },
 
     // Will look the icon up in the cache, if it's found
     // it will return it. Otherwise, it will create it and cache it.
+    // We also check the creation time of the icon, if there are a new time
+    // for an icon with the same id, we remove the old icon from the cache and
+    // then we set the new icon as our current one.
     // The .inUse flag will be set to true. So when you don't need
     // the returned icon anymore, make sure to check the .inUse property
     // and set it to false if needed so that it can be picked up by the garbage
     // collector.
-    _cacheOrCreateIconByName: function(iconSize, iconName, themePath) {
-        let id = iconName + '@' + iconSize + (themePath ? '##' + themePath : '');
-
-        let icon = this._iconCache.get(id) || this._createIconByName(iconSize, iconName, themePath);
-
-        if (icon) {
-            icon.inUse = true;
-            this._iconCache.add(id, icon);
+    _cacheOrCreateIconByName: function(iconName, themePath, iconSize) {
+        let id = iconName + '@' + (themePath ? '##' + themePath : '');
+        if (iconSize)
+            id += iconSize;
+        let icon = null;
+        let [path, realSize] = this._getIconInfo(iconName, themePath, iconSize);
+        if (path) {
+            let time = this._getIconTvTime(path);
+            let oldIcon = this._iconCache.get(id);
+            if (!oldIcon || (oldIcon.time < time)) {
+                this._iconCache.remove(id);
+                icon = this._createIconByName(path, iconSize);
+                icon.time = time;
+                this._iconCache.add(id, icon);
+            } else if (oldIcon) {
+                icon = oldIcon;
+            }
+            if (icon) {
+                icon.inUse = true;
+            }
         }
-
         return icon;
     },
 
     _onIconButtonPressEvent: function(actor, event) {
         let draggableParent = this._getDragable();
-        if (((draggableParent)&&(!draggableParent.inhibit)) || (!this._menu))
+        if (draggableParent && (!draggableParent.inhibit))
             return false;
-        if (event.get_button() == 1)
-            this._menu.toggle();
+
+        if (this.openMenuOnRightClick) {
+            if ((event.get_button() == 3) && this.menu) {
+                this.menu.toggle();
+                return true;
+            } else if (event.get_button() == 1) {
+                this.menu.close();
+                this._indicator.open();
+            }
+        } else if ((event.get_button() == 1) && this.menu) {
+            this.menu.toggle();
+        }
         return false;
     },
 
@@ -904,11 +1127,24 @@ IconActor.prototype = {
         return null;
     },
 
-    _createIconByName: function(size, name, themePath) {
-        // realSize will contain the actual icon size in contrast to the requested icon size
-        let realSize = size;
-        let gicon = null;
+    _getIconTvTime: function(path) {
+        try {
+            let file = Gio.file_new_for_path(path);
+            let fileInfo = file.query_info(Gio.FILE_ATTRIBUTE_TIME_MODIFIED, Gio.FileQueryInfoFlags.NONE, null);
+            if (fileInfo) {
+                return fileInfo.get_attribute_uint64(Gio.FILE_ATTRIBUTE_TIME_MODIFIED);
+            }
+        } catch (e) {}
+        return -1;
+    },
 
+    _getIconInfo: function(name, themePath, size) {
+        // assume as a default size 16px if not set.
+        if (!size)
+           size = 16;
+        // realSize will contain the actual icon size in contrast to the requested icon size.
+        let realSize = size;
+        let path = null;
         if (name && name[0] == "/") {
             //HACK: icon is a path name. This is not specified by the api but at least inidcator-sensors uses it.
             let [ format, width, height ] = GdkPixbuf.Pixbuf.get_file_info(name);
@@ -919,8 +1155,7 @@ IconActor.prototype = {
                 // scaled icons look ugly.
                 if (Math.max(width, height) < size)
                     realSize = Math.max(width, height);
-
-                gicon = Gio.icon_new_for_string(name);
+                path = name;
             }
         } else if (name) {
             // we manually look up the icon instead of letting st.icon do it for us
@@ -933,87 +1168,97 @@ IconActor.prototype = {
             let iconInfo = null;
 
             // we try to avoid messing with the default icon theme, so we'll create a new one if needed
+            let icon_theme = null;
             if (themePath) {
-                var icon_theme = new Gtk.IconTheme();
+                icon_theme = new Gtk.IconTheme();
                 Gtk.IconTheme.get_default().get_search_path().forEach(function(path) {
                     icon_theme.append_search_path(path);
                 });
                 icon_theme.append_search_path(themePath);
                 icon_theme.set_screen(imports.gi.Gdk.Screen.get_default());
             } else {
-                var icon_theme = Gtk.IconTheme.get_default();
+                icon_theme = Gtk.IconTheme.get_default();
             }
-
-            // try to look up the icon in the icon theme
-            iconInfo = icon_theme.lookup_icon(name, size,
-                                               Gtk.IconLookupFlags.GENERIC_FALLBACK);
-
-            // no icon? that's bad!
-            if (iconInfo === null) {
-                global.logError("unable to lookup icon for "+name);
-            } else { // we have an icon
-                // the icon size may not match the requested size, especially with custom themes
-                if (iconInfo.get_base_size() < size) {
-                    // stretched icons look very ugly, we avoid that and just show the smaller icon
-                    realSize = iconInfo.get_base_size();
+            if (icon_theme) {
+                // try to look up the icon in the icon theme
+                iconInfo = icon_theme.lookup_icon(name, size,
+                                                  Gtk.IconLookupFlags.GENERIC_FALLBACK);
+                // no icon? that's bad!
+                if (iconInfo === null) {
+                    global.logError("unable to lookup icon for "+name);
+                } else { // we have an icon
+                    // the icon size may not match the requested size, especially with custom themes
+                    if (iconInfo.get_base_size() < size) {
+                        // stretched icons look very ugly, we avoid that and just show the smaller icon
+                        realSize = iconInfo.get_base_size();
+                     }
+                    // get the icon path
+                    path = iconInfo.get_filename();
                 }
-
-                // create a gicon for the icon
-                gicon = Gio.icon_new_for_string(iconInfo.get_filename());
             }
         }
-
-        if (gicon)
-            return new St.Icon({ gicon: gicon, icon_size: realSize });
-        else
-            return null;
+        return [path, realSize];
     },
 
-    _createIconFromPixmap: function(iconSize, iconPixmapArray) {
+    _createIconByName: function(path, realSize) {
+        try {
+            let pixbuf = GdkPixbuf.Pixbuf.new_from_file(path);
+            let icon = new St.Icon({ 
+                style_class: 'applet-icon',//FIXME: Use instead the status icon style class.
+                gicon: pixbuf,
+            });
+            if (realSize)
+                 icon.set_icon_size(realSize);
+            return icon;
+        } catch (e) {
+            // the image data was probably bogus. We don't really know why, but it _does_ happen.
+            // we could log it here, but that doesn't really help in tracking it down.
+        }
+        return null;
+    },
+
+    _createIconFromPixmap: function(iconPixmapArray, iconSize) {
         // the pixmap actually is an array of pixmaps with different sizes
         // we use the one that is smaller or equal the iconSize
 
         // maybe it's empty? that's bad.
-        if (!iconPixmapArray || iconPixmapArray.length < 1)
-            return null;
-
+        if (iconPixmapArray && iconPixmapArray.length > 0) {
             let sortedIconPixmapArray = iconPixmapArray.sort(function(pixmapA, pixmapB) {
                 // we sort biggest to smallest
                 let areaA = pixmapA[0] * pixmapA[1];
                 let areaB = pixmapB[0] * pixmapB[1];
 
                 return areaB - areaA;
-            })
-
-            let qualifiedIconPixmapArray = sortedIconPixmapArray.filter(function(pixmap) {
-                // we disqualify any pixmap that is bigger than our requested size
-                return pixmap[0] <= iconSize && pixmap[1] <= iconSize;
-            })
-
-            // if no one got qualified, we use the smallest one available
-            let iconPixmap = qualifiedIconPixmapArray.length > 0 ? qualifiedIconPixmapArray[0] : sortedIconPixmapArray.pop();
-
-            let [ width, height, bytes ] = iconPixmap;
-            let rowstride = width * 4; // hopefully this is correct
-
-            try {
-                let image = new Clutter.Image();
-                image.set_bytes(bytes,
-                                Cogl.PixelFormat.ABGR_8888,
-                                width,
-                                height,
-                                rowstride);
-
-                return new Clutter.Actor({
-                    width: Math.min(width, iconSize),
-                    height: Math.min(height, iconSize),
-                    content: image
+            });
+            let iconPixmap = sortedIconPixmapArray.pop();
+            if (iconSize) {
+                let qualifiedIconPixmapArray = sortedIconPixmapArray.filter(function(pixmap) {
+                    // we disqualify any pixmap that is bigger than our requested size
+                    return pixmap[0] <= iconSize && pixmap[1] <= iconSize;
                 });
+
+                // if no one got qualified, we use the smallest one available
+                if (qualifiedIconPixmapArray.length > 0)
+                    iconPixmap = qualifiedIconPixmapArray[0];
+            }
+            let [ width, height, bytes ] = iconPixmap;
+            try {
+                let stream = Gio.MemoryInputStream.new_from_bytes(bytes);
+                let pixbuf = GdkPixbuf.Pixbuf.new_from_stream(stream, null);
+
+                let icon = new St.Icon({
+                    style_class: 'applet-icon',//FIXME: Use instead the status icon style class.
+                    gicon: pixbuf,
+                });
+                if (iconSize)
+                    icon.set_icon_size(iconSize);
+                return icon;
             } catch (e) {
                 // the image data was probably bogus. We don't really know why, but it _does_ happen.
                 // we could log it here, but that doesn't really help in tracking it down.
-                return null;
             }
+        }
+        return null;
     },
 
     // updates the base icon
@@ -1038,20 +1283,20 @@ IconActor.prototype = {
             let [ name, pixmap, theme ] = this._indicator.attentionIcon;
 
             if (name && name.length)
-                newIcon = this._cacheOrCreateIconByName(this._iconSize, name, theme);
+                newIcon = this._cacheOrCreateIconByName(name, theme, this._iconSize);
 
             if (!newIcon && pixmap)
-                newIcon = this._createIconFromPixmap(this._iconSize, pixmap);
+                newIcon = this._createIconFromPixmap(pixmap, this._iconSize);
         }
 
         if (!newIcon) {
             let [ name, pixmap, theme ] = this._indicator.icon;
 
             if (name && name.length)
-                newIcon = this._cacheOrCreateIconByName(this._iconSize, name, theme);
+                newIcon = this._cacheOrCreateIconByName(name, theme, this._iconSize);
 
             if (!newIcon && pixmap)
-                newIcon = this._createIconFromPixmap(this._iconSize, pixmap);
+                newIcon = this._createIconFromPixmap(pixmap, this._iconSize);
         }
 
         this._mainIcon.set_child(newIcon);
@@ -1073,7 +1318,9 @@ IconActor.prototype = {
         // KDE hardcodes the overlay icon size to 10px (normal icon size 16px)
         // we approximate that ratio for other sizes, too.
         // our algorithms will always pick a smaller one instead of stretching it.
-        let iconSize = Math.floor(this._iconSize / 1.6);
+        let iconSize = 10;
+        if (this._iconSize)
+            iconSize = Math.floor(this._iconSize / 1.6);
 
         let newIcon = null;
 
@@ -1081,10 +1328,10 @@ IconActor.prototype = {
         let [ name, pixmap, theme ] = this._indicator.overlayIcon;
 
         if (name && name.length)
-            newIcon = this._cacheOrCreateIconByName(iconSize, name, theme);
+            newIcon = this._cacheOrCreateIconByName(name, theme, iconSize);
 
         if (!newIcon && pixmap)
-            newIcon = this._createIconFromPixmap(iconSize, pixmap);
+            newIcon = this._createIconFromPixmap(pixmap, iconSize);
 
         this._overlayIcon.set_child(newIcon);
     },
@@ -1126,11 +1373,11 @@ IconActor.prototype = {
         this._disconnectSignals(this._indicator, this._signalsIndicator);
         if (this._menuSignal > 0)
             this.actor.disconnect(this._menuSignal);
-        if (this._menu) {
-            this._menu.close(false);
-            this._menu.destroy();
+        if (this.menu) {
+            this.menu.close(false);
+            this.menu.destroy();
         }
-        this._menu = null;
+        this.menu = null;
 
         this._iconCache.destroy();
         this.actor.destroy();
@@ -1165,27 +1412,25 @@ IconCache.prototype = {
         // global.log("IconCache: adding "+id);
         if (!(o && id)) return null;
         if (id in this._cache && this._cache[id] !== o)
-            this._remove(id);
+            this.remove(id);
         this._cache[id] = o;
         this._lifetime[id] = new Date().getTime() + LIFETIME_TIMESPAN;
         return o;
     },
     
-    _remove: function(id) {
-        // global.log('IconCache: removing '+id);
-        if ('destroy' in this._cache[id]) this._cache[id].destroy();
-        delete this._cache[id];
-        delete this._lifetime[id];
-    },
-    
-    forceDestroy: function(id) {
-        this._remove(id);
+    remove: function(id) {
+        if (id in this._cache) {
+            // global.log('IconCache: removing '+id);
+            if ('destroy' in this._cache[id]) this._cache[id].destroy();
+            delete this._cache[id];
+            delete this._lifetime[id];
+        }
     },
 
     // removes everything from the cache
     clear: function() {
         for (let id in this._cache)
-            this._remove(id);
+            this.remove(id);
     },
     
     // returns an object from the cache, or null if it can't be found.
@@ -1204,7 +1449,7 @@ IconCache.prototype = {
             if (this._cache[id].inUse) {
                 continue;
             } else if (this._lifetime[id] < time) {
-                this._remove(id);
+                this.remove(id);
             } else {
                 //global.log("IconCache: " + id + " survived this round.");
             }
@@ -1218,3 +1463,4 @@ IconCache.prototype = {
         this.clear();
     }
 };
+

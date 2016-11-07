@@ -24,10 +24,10 @@ const Util = imports.misc.util;
 const SLIDER_SCROLL_STEP = 0.05; /* Slider scrolling step in % */
 
 const PanelLoc = {
-	top : 0,
-	bottom : 1,
-	left : 2,
-	right : 3
+    top : 0,
+    bottom : 1,
+    left : 2,
+    right : 3
 };
 
 const OrnamentType = {
@@ -3139,7 +3139,7 @@ PopupMenuFactory.prototype = {
         let shellItem = null;
         let item_type = factoryItem.getFactoryType();
         if (item_type == FactoryClassTypes.RootMenuClass)
-            shellItem = new PopupMenu(launcher.actor, 0.0, orientation, 0);
+            shellItem = new PopupMenu(launcher.actor, orientation);
         if (item_type == FactoryClassTypes.SubMenuMenuItemClass)
             shellItem = new PopupSubMenuMenuItem("FIXME");
         else if (item_type == FactoryClassTypes.MenuSectionMenuItemClass)

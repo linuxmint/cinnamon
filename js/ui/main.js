@@ -221,6 +221,7 @@ function _initUserSession() {
     global.screen.override_workspace_layout(Meta.ScreenCorner.TOPLEFT, false, 1, -1);
 
     systrayManager = new Systray.SystrayManager();
+    indicatorManager = new IndicatorManager.IndicatorManager();
     
     ExtensionSystem.init();
 
@@ -399,7 +400,6 @@ function start() {
     
     wm = new WindowManager.WindowManager();
     messageTray = new MessageTray.MessageTray();
-    indicatorManager = new IndicatorManager.IndicatorManager();
     keyboard = new Keyboard.Keyboard();
     notificationDaemon = new NotificationDaemon.NotificationDaemon();
     windowAttentionHandler = new WindowAttentionHandler.WindowAttentionHandler();
