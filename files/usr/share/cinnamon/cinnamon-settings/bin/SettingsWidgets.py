@@ -778,6 +778,7 @@ class ColorChooser(SettingsWidget):
 
         self.label = Gtk.Label(label)
         self.content_widget = Gtk.ColorButton()
+        self.content_widget.set_use_alpha(True)
         self.pack_start(self.label, False, False, 0)
         self.pack_end(self.content_widget, False, False, 0)
 
