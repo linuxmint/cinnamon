@@ -1202,7 +1202,7 @@ MyApplet.prototype = {
     },
 
     _updateKeybinding: function() {
-        Main.keybindingManager.addHotKey("overlay-key", this.overlayKey, Lang.bind(this, function() {
+        Main.keybindingManager.addHotKey("overlay-key-" + this.instance_id, this.overlayKey, Lang.bind(this, function() {
             if (!Main.overview.visible && !Main.expo.visible)
                 this.menu.toggle_with_options(this.enableAnimation);
         }));
@@ -1316,6 +1316,10 @@ MyApplet.prototype = {
 
     on_applet_added_to_panel: function () {
         this.initial_load_done = true;
+    },
+
+    on_applet_removed_from_panel: function () {
+        Main.keybindingManager.removeHotKey("overlay-key-" + this.instance_id)
     },
 
     _launch_editor: function() {
