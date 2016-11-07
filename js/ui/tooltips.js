@@ -6,7 +6,9 @@ const Applet = imports.ui.applet;
 const Main = imports.ui.main;
 const SignalManager = imports.misc.signalManager;
 const Tweener = imports.ui.tweener;
-
+const Gio = imports.gi.Gio;
+const DESKTOP_SCHEMA = 'org.cinnamon.desktop.interface';
+const CURSOR_SIZE_KEY = 'cursor-size';
 /**
  * #TooltipBase
  * @item (Clutter.Actor): The object owning the tooltip.
@@ -95,7 +97,7 @@ TooltipBase.prototype = {
         }
     },
 
-    _onTimerComplete: function(){
+    _onTimerComplete: function() {
         this._showTimer = null;
 
         if (!this.preventShow)
@@ -125,11 +127,11 @@ TooltipBase.prototype = {
         this.signals.disconnectAllSignals();
         this._destroy();
     }
-}
+};
 
 /**
  * #Tooltip:
- * 
+ *
  * This is a tooltip item that displays some text. The tooltip will be
  * displayed such that the top left corner of the label is at the mouse
  * position.
@@ -157,11 +159,17 @@ Tooltip.prototype = {
      */
     _init: function(item, initTitle) {
         TooltipBase.prototype._init.call(this, item);
-        this._tooltip = new St.Label({ name: 'Tooltip' });
+        this._tooltip = new St.Label({
+            name: 'Tooltip'
+        });
         this._tooltip.show_on_set_parent = false;
 
         if (initTitle) this._tooltip.set_text(initTitle);
         Main.uiGroup.add_actor(this._tooltip);
+
+        this.desktop_settings = new Gio.Settings({
+            schema_id: DESKTOP_SCHEMA
+        });
     },
 
     hide: function() {
@@ -174,12 +182,13 @@ Tooltip.prototype = {
         if (this._tooltip.get_text() == "")
             return;
 
-        let tooltipWidth = this._tooltip.get_allocation_box().x2-this._tooltip.get_allocation_box().x1;
+        let tooltipWidth = this._tooltip.get_allocation_box().x2 - this._tooltip.get_allocation_box().x1;
 
         let monitor = Main.layoutManager.findMonitorForActor(this.item);
 
-        let tooltipTop = this.mousePosition[1];
-        var tooltipLeft = this.mousePosition[0];
+        let cursorSize = this.desktop_settings.get_int(CURSOR_SIZE_KEY);
+        let tooltipTop = this.mousePosition[1]  + (cursorSize / 1.5);
+        var tooltipLeft = this.mousePosition[0] + (cursorSize / 2);
 
         tooltipLeft = Math.max(tooltipLeft, monitor.x);
         tooltipLeft = Math.min(tooltipLeft, monitor.x + monitor.width - tooltipWidth);
@@ -246,7 +255,8 @@ PanelItemTooltip.prototype = {
         if (this._panelItem instanceof Applet.Applet) {
             this._panelItem.connect("orientation-changed", Lang.bind(this, this._onOrientationChanged));
         } else if (this._panelItem._applet) {
-            this._panelItem._applet.connect("orientation-changed", Lang.bind(this, this._onOrientationChanged));
+            this._panelItem._applet.connect("orientation-changed",
+                Lang.bind(this, this._onOrientationChanged));
         }
     },
 
@@ -258,8 +268,8 @@ PanelItemTooltip.prototype = {
         this._tooltip.set_opacity(0);
         this._tooltip.show();
 
-        let tooltipHeight = this._tooltip.get_allocation_box().y2-this._tooltip.get_allocation_box().y1;
-        let tooltipWidth = this._tooltip.get_allocation_box().x2-this._tooltip.get_allocation_box().x1;
+        let tooltipHeight = this._tooltip.get_allocation_box().y2 - this._tooltip.get_allocation_box().y1;
+        let tooltipWidth = this._tooltip.get_allocation_box().x2 - this._tooltip.get_allocation_box().x1;
 
         let monitor = Main.layoutManager.findMonitorForActor(this._panelItem.actor);
         let tooltipTop = 0;
@@ -268,28 +278,27 @@ PanelItemTooltip.prototype = {
         switch (this.orientation) {
             case St.Side.BOTTOM:
                 tooltipTop = this.item.get_transformed_position()[1] - tooltipHeight;
-                tooltipLeft = this.mousePosition[0]- Math.round(tooltipWidth/2);
+                tooltipLeft = this.mousePosition[0] - Math.round(tooltipWidth / 2);
                 tooltipLeft = Math.max(tooltipLeft, monitor.x);
                 tooltipLeft = Math.min(tooltipLeft, monitor.x + monitor.width - tooltipWidth);
                 break;
             case St.Side.TOP:
                 tooltipTop = this.item.get_transformed_position()[1] + this.item.get_transformed_size()[1];
-                tooltipLeft = this.mousePosition[0]- Math.round(tooltipWidth/2);
+                tooltipLeft = this.mousePosition[0] - Math.round(tooltipWidth / 2);
                 tooltipLeft = Math.max(tooltipLeft, monitor.x);
                 tooltipLeft = Math.min(tooltipLeft, monitor.x + monitor.width - tooltipWidth);
                 break;
             case St.Side.LEFT:
                 [tooltipLeft, tooltipTop] = this._panelItem.actor.get_transformed_position();
-                tooltipTop = tooltipTop
-                + Math.round((this._panelItem.actor.get_allocation_box().y2 - this._panelItem.actor.get_allocation_box().y1)/2)
-                - Math.round(tooltipHeight/2);
-                tooltipLeft = tooltipLeft + this._panelItem.actor.get_allocation_box().x2 - this._panelItem.actor.get_allocation_box().x1;
+                tooltipTop = tooltipTop + Math.round((this._panelItem.actor.get_allocation_box().y2 -
+                    this._panelItem.actor.get_allocation_box().y1) / 2) - Math.round(tooltipHeight / 2);
+                tooltipLeft = tooltipLeft + this._panelItem.actor.get_allocation_box().x2 -
+                    this._panelItem.actor.get_allocation_box().x1;
                 break;
             case St.Side.RIGHT:
                 [tooltipLeft, tooltipTop] = this._panelItem.actor.get_transformed_position();
-                tooltipTop = tooltipTop
-                + Math.round((this._panelItem.actor.get_allocation_box().y2 - this._panelItem.actor.get_allocation_box().y1)/2)
-                - Math.round(tooltipHeight/2);
+                tooltipTop = tooltipTop + Math.round((this._panelItem.actor.get_allocation_box().y2 -
+                    this._panelItem.actor.get_allocation_box().y1) / 2) - Math.round(tooltipHeight / 2);
                 tooltipLeft = tooltipLeft - tooltipWidth;
                 break;
             default:
@@ -306,4 +315,3 @@ PanelItemTooltip.prototype = {
         this.orientation = orientation;
     }
 };
-
