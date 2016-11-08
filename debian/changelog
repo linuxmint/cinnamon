@@ -1,3 +1,26 @@
+cinnamon (3.2.1) serena; urgency=medium
+
+  [ kloun ]
+  * rm obsolute and unsupport NEWS file
+
+  [ Michael Webster ]
+  * keyboard applet: Fix positioning of the flag render within its actor.
+  * Fix some runtime warnings - in the sound applet, object construction is too soon to get the theme node, wait until 'style-changed' signal is sent by the main actor.  In the menu applet, remove return values of navigateContextMenu() - there is only one user of this function, and they don't check for a value.
+  * keyboard applet: Allow flag icon to properly scale its size to match the panel and preferences.  Monkey patch some St.Icon methods to the EmblemedIcon class so we can use the existing applet icon sizing calculations by pretending we're just another icon hanging around, getting things done.
+
+  [ NikoKrause ]
+  * [menu-applet] fix warnings caused by keynavigation
+
+  [ Clement Lefebvre ]
+  * Update ./test script
+  * Info settings: Add upload-system-info button
+  * l10n: Update POT file
+  * Info settings: Add tooltip to upload button
+  * Fix typo
+  * l10n: Update POT file
+
+ -- Clement Lefebvre <root@linuxmint.com>  Tue, 08 Nov 2016 14:26:20 +0000
+
 cinnamon (3.2.0) serena; urgency=medium
 
   [ Margarita Manterola ]
