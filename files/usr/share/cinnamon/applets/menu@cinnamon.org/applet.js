@@ -1493,7 +1493,7 @@ MyApplet.prototype = {
         if (symbol === Clutter.KEY_Menu || symbol === Clutter.Escape ||
             (ctrlKey && (symbol === Clutter.KEY_Return || symbol === Clutter.KP_Enter))) {
             actor.activateContextMenus();
-            return true;
+            return;
         }
 
         let goUp = symbol === Clutter.KEY_Up;
@@ -1511,11 +1511,11 @@ MyApplet.prototype = {
             case Clutter.KEY_Page_Up:
                 this._activeContextMenuItem = menuItems[0];
                 this._activeContextMenuItem.setActive(true);
-                return true;
+                return;
             case Clutter.KEY_Page_Down:
                 this._activeContextMenuItem = menuItems[menuItemsLength - 1];
                 this._activeContextMenuItem.setActive(true);
-                return true;
+                return;
         }
 
         if (!this._activeContextMenuItem) {
@@ -1525,12 +1525,12 @@ MyApplet.prototype = {
                 this._activeContextMenuItem = menuItems[goUp ? menuItemsLength - 1 : 0];
                 this._activeContextMenuItem.setActive(true);
             }
-            return true;
+            return;
         } else if (this._activeContextMenuItem &&
             (symbol === Clutter.KEY_Return || symbol === Clutter.KP_Enter)) {
             this._activeContextMenuItem.activate();
             this._activeContextMenuItem = null;
-            return true;
+            return;
         }
 
         let i = 0;

@@ -110,7 +110,7 @@ VolumeSlider.prototype = {
 
         this.app_icon = app_icon;
         if (this.app_icon == null) {
-            this.iconName = this.isMic? "microphone-sensitivity-none" : "audio-volume-muted";
+            this.iconName = this.isMic ? "microphone-sensitivity-none" : "audio-volume-muted";
             this.icon = new St.Icon({icon_name: this.iconName, icon_type: St.IconType.SYMBOLIC, icon_size: 16});
         }
         else {
@@ -122,11 +122,16 @@ VolumeSlider.prototype = {
         this.addActor(this._slider, {span: -1, expand: true});
 
         this.label = new St.Label({ text: "" });
-        let digitWidth = _getDigitWidth(this.actor) / Pango.SCALE;
-        this.label.set_width(digitWidth * 5);
         this.label.clutter_text.set_ellipsize(Pango.EllipsizeMode.NONE);
 
+        this.actor.connect('style-changed', Lang.bind(this, this.onStyleChanged));
+
         this.connectWithStream(stream);
+    },
+
+    onStyleChanged: function(actor, event) {
+        let digitWidth = _getDigitWidth(this.actor) / Pango.SCALE;
+        this.label.set_width(digitWidth * 5);
     },
 
     connectWithStream: function(stream){
