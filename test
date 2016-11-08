@@ -1,19 +1,17 @@
 #!/bin/bash
 
-rm -rf /usr/share/cinnamon/js-backup
-mv /usr/share/cinnamon/js /usr/share/cinnamon/js-backup
-cp -R js /usr/share/cinnamon/
+sudo rm -rf /usr/share/cinnamon/js-backup
+sudo mv /usr/share/cinnamon/js /usr/share/cinnamon/js-backup
+sudo cp -R js /usr/share/cinnamon/
 
-rm -rf /usr/share/cinnamon/theme-backup
-mv /usr/share/cinnamon/theme /usr/share/cinnamon/theme-backup
-cp -R data/theme /usr/share/cinnamon/
-
-cp data/org.cinnamon.gschema.xml /usr/share/glib-2.0/schemas/
-glib-compile-schemas /usr/share/glib-2.0/schemas/
+sudo rm -rf /usr/share/cinnamon/theme-backup
+sudo mv /usr/share/cinnamon/theme /usr/share/cinnamon/theme-backup
+sudo cp -R data/theme /usr/share/cinnamon/
 
 sudo rm -rf /usr/lib/cinnamon-settings
 sudo rm -rf /usr/lib/cinnamon-menu-editor
 sudo cp -R files/usr /
 sudo cp -R files/etc /
 
+sudo cp data/org.cinnamon.gschema.xml /usr/share/glib-2.0/schemas/
 sudo glib-compile-schemas /usr/share/glib-2.0/schemas/
