@@ -157,3 +157,11 @@ class Module:
                 labelValue = Gtk.Label.new(value)
                 widget.pack_end(labelValue, False, False, 0)
                 settings.add_row(widget)
+
+            if os.path.exists("/usr/bin/upload-system-info"):
+                button = Gtk.Button(_("Upload system information"))
+                button.connect("clicked", self.on_button_clicked)
+                page.pack_start(button, False, False, 0)
+
+    def on_button_clicked(self, button):
+        subprocess.Popen(["upload-system-info"])
