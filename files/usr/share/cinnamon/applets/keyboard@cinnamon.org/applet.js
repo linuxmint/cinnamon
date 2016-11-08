@@ -31,7 +31,7 @@ EmblemedIcon.prototype = {
     _style_changed: function(actor) {
         let icon_size = 0.5 + this.actor.get_theme_node().get_length("icon-size");
 
-        this.actor.width = this.actor.height = icon_size;
+        this.actor.natural_width = this.actor.natural_height = icon_size;
     },
 
     _repaint: function(actor) {
@@ -79,6 +79,22 @@ EmblemedIcon.prototype = {
                                                         this.id);
 
         cr.$dispose();
+    },
+
+    /* Monkey patch St.Icon functions used in js/ui/applet.js IconApplet so
+       we can use its _setStyle() function for figuring out how big we should
+       be
+     */
+    get_icon_type: function() {
+        return St.IconType.FULLCOLOR;
+    },
+
+    set_icon_size: function(size) {
+        this.actor.width = this.actor.height = size;
+    },
+
+    set_style_class_name: function(name) {
+        return;
     }
 }
 
@@ -241,7 +257,6 @@ MyApplet.prototype = {
 
         this.set_applet_tooltip(this._config.get_current_name());
 
-        let actor = null;
         let handled = false;
 
         if (this.show_flags) {
@@ -250,9 +265,11 @@ MyApplet.prototype = {
             let file = Gio.file_new_for_path("/usr/share/iso-flag-png/" + name + ".png");
 
             if (file.query_exists(null)) {
-                actor = new EmblemedIcon(file.get_path(), this._config.get_current_flag_id(), "applet-icon").actor;
+                this._applet_icon = new EmblemedIcon(file.get_path(), this._config.get_current_flag_id(), "applet-icon");
+                this._applet_icon_box.set_child(this._applet_icon.actor);
 
-                this._applet_icon_box.set_child(actor);
+                this._setStyle();
+
                 this.set_applet_label("");
 
                 handled = true;
