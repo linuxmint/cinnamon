@@ -159,7 +159,7 @@
         "type" : "textview",
         "description" : "You can type paragraphs and lists here",
         "default" : "",
-        "tooltip" : "This setting type is useful for multi-line lists, and text that is too long to fit in an entry widget.\nYou can manually set the height of the text view with the 'height' property. This one is set to 150. Defaulty is 200.",
+        "tooltip" : "This setting type is useful for multi-line lists, and text that is too long to fit in an entry widget.\nYou can manually set the height of the text view with the 'height' property. This one is set to 150. Default is 200.",
         "height" : 150
     },
     "date-select" : {
