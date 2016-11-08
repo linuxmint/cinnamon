@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-11-08 13:40+0000\n"
+"POT-Creation-Date: 2016-11-08 14:19+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -6026,7 +6026,7 @@ msgstr ""
 #. settings-example@cinnamon.org->settings-schema.json->long-text->tooltip
 msgid ""
 "This setting type is useful for multi-line lists, and text that is too long to fit in an entry widget.\n"
-"You can manually set the height of the text view with the 'height' property. This one is set to 150. Defaulty is 200."
+"You can manually set the height of the text view with the 'height' property. This one is set to 150. Default is 200."
 msgstr ""
 
 #. settings-example@cinnamon.org->settings-schema.json->color->description
