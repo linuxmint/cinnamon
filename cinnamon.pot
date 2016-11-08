@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-11-08 12:31+0000\n"
+"POT-Creation-Date: 2016-11-08 13:40+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -644,42 +644,42 @@ msgstr ""
 msgid "Menu"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2217
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2223
 msgid "This file is no longer available"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2246
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2252
 #: files/usr/share/cinnamon/applets/recent@cinnamon.org/applet.js:95
 msgid "No recent documents"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2426
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2432
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:141
 msgid "Lock screen"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2427
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2433
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_power.py:11
 msgid "Lock the screen"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2454
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2460
 msgid "Logout"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2455
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2461
 msgid "Leave the session"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2469
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2475
 msgid "Quit"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2470
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2476
 msgid "Shutdown the computer"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2594
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2600
 msgid "Type to search..."
 msgstr ""
 
@@ -3519,6 +3519,10 @@ msgstr ""
 
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_info.py:162
 msgid "Upload system information"
+msgstr ""
+
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_info.py:163
+msgid "This includes no personal information"
 msgstr ""
 
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:32

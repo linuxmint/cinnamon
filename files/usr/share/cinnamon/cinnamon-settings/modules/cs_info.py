@@ -160,6 +160,7 @@ class Module:
 
             if os.path.exists("/usr/bin/upload-system-info"):
                 button = Gtk.Button(_("Upload system information"))
+                button.set_tooltip_text(_("This includes no personal information"))
                 button.connect("clicked", self.on_button_clicked)
                 page.pack_start(button, False, False, 0)
 
