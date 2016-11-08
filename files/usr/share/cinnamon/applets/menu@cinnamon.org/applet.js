@@ -1833,6 +1833,8 @@ MyApplet.prototype = {
                 default:
                     break;
             }
+            if (!item_actor)
+                return false;
             index = item_actor.get_parent()._vis_iter.getAbsoluteIndexOfChild(item_actor);
         } else {
             if (this._activeContainer !== this.categoriesBox && (symbol === Clutter.KEY_Return || symbol === Clutter.KP_Enter)) {
@@ -1841,23 +1843,27 @@ MyApplet.prototype = {
                     item_actor._delegate.activate();
                 } else if (ctrlKey && this._activeContainer === this.applicationsBox) {
                     item_actor = this.applicationsBox.get_child_at_index(this._selectedItemIndex);
-                    item_actor._delegate.activateContextMenus();
+                    if (item_actor._delegate instanceof ApplicationButton || item_actor._delegate instanceof RecentButton)
+                        item_actor._delegate.activateContextMenus();
                 }
                 return true;
             } else if (this._activeContainer === this.applicationsBox && symbol === Clutter.KEY_Menu) {
                 item_actor = this.applicationsBox.get_child_at_index(this._selectedItemIndex);
-                item_actor._delegate.activateContextMenus();
+                if (item_actor._delegate instanceof ApplicationButton || item_actor._delegate instanceof RecentButton)
+                    item_actor._delegate.activateContextMenus();
                 return true;
             } else if (this._activeContainer === this.favoritesBox && symbol === Clutter.Delete) {
-                let favorites = AppFavorites.getAppFavorites().getFavorites();
-                let numFavorites = favorites.length;
-                item_actor = this.favoritesBox.get_child_at_index(this._selectedItemIndex);
-                AppFavorites.getAppFavorites().removeFavorite(item_actor._delegate.app.get_id());
-                item_actor._delegate.toggleMenu();
-                if (this._selectedItemIndex == (numFavorites-1))
-                    item_actor = this.favoritesBox.get_child_at_index(this._selectedItemIndex-1);
-                else
-                    item_actor = this.favoritesBox.get_child_at_index(this._selectedItemIndex);
+               item_actor = this.favoritesBox.get_child_at_index(this._selectedItemIndex);
+                if (item_actor._delegate instanceof FavoritesButton) {
+                    let favorites = AppFavorites.getAppFavorites().getFavorites();
+                    let numFavorites = favorites.length;
+                    AppFavorites.getAppFavorites().removeFavorite(item_actor._delegate.app.get_id());
+                    item_actor._delegate.toggleMenu();
+                    if (this._selectedItemIndex == (numFavorites-1))
+                        item_actor = this.favoritesBox.get_child_at_index(this._selectedItemIndex-1);
+                    else
+                        item_actor = this.favoritesBox.get_child_at_index(this._selectedItemIndex);
+                }
             } else if (this._activeContainer === this.favoritesBox &&
                         (symbol === Clutter.KEY_Down || symbol === Clutter.KEY_Up) && ctrlKey &&
                         (this.favoritesBox.get_child_at_index(index))._delegate instanceof FavoritesButton) {
