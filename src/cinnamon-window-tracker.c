@@ -260,6 +260,40 @@ get_app_from_window_wmclass (MetaWindow  *window)
 }
 
 /**
+ * get_app_from_gapplication_id:
+ * @monitor: a #CinnamonWindowTracker
+ * @window: a #MetaWindow
+ *
+ * Looks only at the given window, and attempts to determine
+ * an application based on _GTK_APPLICATION_ID.  If one can't be determined,
+ * return %NULL.
+ *
+ * Return value: (transfer full): A newly-referenced #CinnamonApp, or %NULL
+ */
+static CinnamonApp *
+get_app_from_gapplication_id (MetaWindow  *window)
+{
+  CinnamonApp *app;
+  CinnamonAppSystem *appsys;
+  const char *id;
+  char *desktop_file;
+
+  appsys = cinnamon_app_system_get_default ();
+
+  id = meta_window_get_gtk_application_id (window);
+  if (!id)
+    return NULL;
+
+  desktop_file = g_strconcat (id, ".desktop", NULL);
+  app = cinnamon_app_system_lookup_app (appsys, desktop_file);
+  if (app)
+    g_object_ref (app);
+
+  g_free (desktop_file);
+  return app;
+}
+
+/**
  * get_app_from_window_group:
  * @monitor: a #CinnamonWindowTracker
  * @window: a #MetaWindow
@@ -372,6 +406,13 @@ get_app_for_window (CinnamonWindowTracker    *tracker,
   if (meta_window_is_remote (window))
     return _cinnamon_app_new_for_window (window);
 
+  /* Check if the window has a GApplication ID attached; this is
+   * canonical if it does
+   */
+  result = get_app_from_gapplication_id (window);
+  if (result != NULL)
+    return result;
+
   /* Check if the app's WM_CLASS specifies an app; this is
    * canonical if it does.
    */
@@ -438,18 +479,33 @@ update_focus_app (CinnamonWindowTracker *self)
 }
 
 static void
+tracked_window_changed (CinnamonWindowTracker *self,
+                        MetaWindow         *window)
+{
+  /* It's simplest to just treat this as a remove + add. */
+  disassociate_window (self, window);
+  track_window (self, window);
+  /* also just recalculate the focused app, in case it was the focused
+     window that changed */
+  update_focus_app (self);
+}
+
+static void
 on_wm_class_changed (MetaWindow  *window,
                      GParamSpec  *pspec,
                      gpointer     user_data)
 {
   CinnamonWindowTracker *self = CINNAMON_WINDOW_TRACKER (user_data);
+  tracked_window_changed (self, window);
+}
 
-  /* It's simplest to just treat this as a remove + add. */
-  disassociate_window (self, window);
-  track_window (self, window);
-  /* also just recaulcuate the focused app, in case it was the focused
-     window that changed */
-  update_focus_app (self);
+static void
+on_gtk_application_id_changed (MetaWindow  *window,
+                               GParamSpec  *pspec,
+                               gpointer     user_data)
+{
+  CinnamonWindowTracker *self = CINNAMON_WINDOW_TRACKER (user_data);
+  tracked_window_changed (self, window);
 }
 
 static void
@@ -469,6 +525,7 @@ track_window (CinnamonWindowTracker *self,
   g_hash_table_insert (self->window_to_app, window, app);
 
   g_signal_connect (window, "notify::wm-class", G_CALLBACK (on_wm_class_changed), self);
+  g_signal_connect (window, "notify::gtk-application-id", G_CALLBACK (on_gtk_application_id_changed), self);
 
   _cinnamon_app_add_window (app, window);
 
@@ -503,6 +560,7 @@ disassociate_window (CinnamonWindowTracker   *self,
     {
       _cinnamon_app_remove_window (app, window);
       g_signal_handlers_disconnect_by_func (window, G_CALLBACK(on_wm_class_changed), self);
+      g_signal_handlers_disconnect_by_func (window, G_CALLBACK (on_gtk_application_id_changed), self);
     }
 
   g_signal_emit (self, signals[TRACKED_WINDOWS_CHANGED], 0);
