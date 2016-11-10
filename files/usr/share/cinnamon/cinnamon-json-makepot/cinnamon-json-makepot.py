@@ -217,7 +217,7 @@ class Main:
 
     def extract_strings(self, data, parent=""):
         for key in data.keys():
-            if key in ("description", "tooltip", "units"):
+            if key in ("description", "tooltip", "units", "title"):
                 comment = "%s->settings-schema.json->%s->%s" % (self.current_parent_dir, parent, key)
                 self.save_entry(data[key], comment)
             elif key in "options":
