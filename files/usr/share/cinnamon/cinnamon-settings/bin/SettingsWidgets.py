@@ -962,11 +962,11 @@ class IconChooser(SettingsWidget):
             self.preview.set_from_icon_name(val, Gtk.IconSize.BUTTON)
 
     def on_button_pressed(self, widget):
-        dialog = Gtk.FileChooserDialog(_("Choose an Icon"),
-                                           None,
-                                           Gtk.FileChooserAction.OPEN,
-                                           (Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL,
-                                            Gtk.STOCK_OPEN, Gtk.ResponseType.OK))
+        dialog = Gtk.FileChooserDialog(title=_("Choose an Icon"),
+                                       action=Gtk.FileChooserAction.OPEN,
+                                       transient_for=self.get_toplevel(),
+                                       buttons=(_("_Cancel"), Gtk.ResponseType.CANCEL,
+                                                _("_Open"), Gtk.ResponseType.OK))
 
         filter_text = Gtk.FileFilter()
         filter_text.set_name(_("Image files"))
@@ -982,22 +982,23 @@ class IconChooser(SettingsWidget):
         if response == Gtk.ResponseType.OK:
             filename = dialog.get_filename()
             self.bind_object.set_text(filename)
-            self.set_val(filename)
+            self.set_value(filename)
 
         dialog.destroy()
 
     def update_icon_preview_cb(self, dialog, preview):
         filename = dialog.get_preview_filename()
         dialog.set_preview_widget_active(False)
-        if os.path.isfile(filename):
-            pixbuf = GdkPixbuf.Pixbuf.new_from_file(filename)
-            if pixbuf is not None:
-                if pixbuf.get_width() > 128:
-                    pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(filename, 128, -1)
-                elif pixbuf.get_height() > 128:
-                    pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(filename, -1, 128)
-                preview.set_from_pixbuf(pixbuf)
-                dialog.set_preview_widget_active(True)
+        if filename is not None:
+            if os.path.isfile(filename):
+                pixbuf = GdkPixbuf.Pixbuf.new_from_file(filename)
+                if pixbuf is not None:
+                    if pixbuf.get_width() > 128:
+                        pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(filename, 128, -1)
+                    elif pixbuf.get_height() > 128:
+                        pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(filename, -1, 128)
+                    preview.set_from_pixbuf(pixbuf)
+                    dialog.set_preview_widget_active(True)
 
 class TweenChooser(SettingsWidget):
     bind_prop = "tween"
