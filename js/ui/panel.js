@@ -1672,7 +1672,7 @@ PanelContextMenu.prototype = {
         let menuItem = new SettingsLauncher(_("Themes"), "themes", "applications-graphics");
         this.addMenuItem(menuItem);
 
-        let menuSetting = new SettingsLauncher(_("All settings"), "", "preferences-system");
+        let menuSetting = new SettingsLauncher(_("System Settings"), "", "preferences-system");
         this.addMenuItem(menuSetting);
 
         populateSettingsMenu(this, panelId);
