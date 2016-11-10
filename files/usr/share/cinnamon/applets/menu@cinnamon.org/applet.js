@@ -29,7 +29,6 @@ const ICON_SIZE = 16;
 const MAX_FAV_ICON_SIZE = 32;
 const CATEGORY_ICON_SIZE = 22;
 const APPLICATION_ICON_SIZE = 22;
-const MAX_RECENT_FILES = 20;
 
 const INITIAL_BUTTON_LOAD = 30;
 const MAX_BUTTON_WIDTH = "max-width: 20em;";
@@ -2206,7 +2205,7 @@ MyApplet.prototype = {
             this._categoryButtons.push(this.recentButton);
 
             if (this.RecentManager._infosByTimestamp.length > 0) {
-                for (let id = 0; id < MAX_RECENT_FILES && id < this.RecentManager._infosByTimestamp.length; id++) {
+                for (let id = 0; id < this.RecentManager._infosByTimestamp.length; id++) {
                     let button = new RecentButton(this, this.RecentManager._infosByTimestamp[id], this.showApplicationIcons);
                     this._addEnterEvent(button, Lang.bind(this, function() {
                             this._clearPrevSelection(button.actor);
