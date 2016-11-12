@@ -15,17 +15,6 @@
         "dependency": "playerControl",
         "indent": true
     },
-    "positionLabelType": {
-        "type": "combobox",
-        "default": "length",
-        "description": "Position label",
-        "options": {
-            "Song length": "length",
-            "Countdown": "countdown"
-        },
-        "dependency": "playerControl",
-        "indent": true
-    },
     "showSliderPercentage": {
         "type": "switch",
         "default": false,
