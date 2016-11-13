@@ -1150,7 +1150,7 @@ MyApplet.prototype = {
         this.settings.bind("activate-on-hover", "activateOnHover", this._updateActivateOnHover);
         this._updateActivateOnHover();
 
-        this.menu.actor.add_style_class_name('menu-background');
+        this.menu.actor.connect('style-changed', Lang.bind(this, this._addCustomStyle));
         this.menu.connect('open-state-changed', Lang.bind(this, this._onOpenStateChanged));
 
         this.settings.bind("menu-icon-custom", "menuIconCustom", this._updateIconAndLabel);
@@ -1235,6 +1235,10 @@ MyApplet.prototype = {
             this.refreshing = true;
             Mainloop.timeout_add_seconds(1, Lang.bind(this, this._refreshAll));
         }
+    },
+
+    _addCustomStyle: function() {
+        this.menu.actor.add_style_class_name('menu-background');
     },
 
     onAppSysChanged: function() {
