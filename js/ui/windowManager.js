@@ -410,6 +410,7 @@ WindowManager.prototype = {
         this._tiling = [];
         this._mapping = [];
         this._destroying = [];
+        this._hide_titlebar_when_maximized = false;
 
         this.effects = {
             map: new WindowEffects.Map(this),
@@ -485,6 +486,17 @@ WindowManager.prototype = {
         global.screen.connect ("show-workspace-osd", Lang.bind (this, this.showWorkspaceOSD));
 
         this.settings = new Gio.Settings({schema_id: "org.cinnamon.muffin"});
+    },
+
+    hideTitlebarWhenMaximized: function(hide) {
+        if(this._hide_titlebar_when_maximized != hide) {
+            this._hide_titlebar_when_maximized = hide;
+            let windows = global.get_window_actors();
+            for (let i = 0; i < windows.length; i++) {
+                let window = windows[i];
+                window.meta_window.set_hide_titlebar_when_maximized(this._hide_titlebar_when_maximized);
+            }
+        }
     },
 
     blockAnimations: function() {
@@ -688,6 +700,7 @@ WindowManager.prototype = {
             Main.soundManager.play('map');
         }
         this._startWindowEffect(cinnamonwm, "map", actor);
+        actor.meta_window.set_hide_titlebar_when_maximized(this._hide_titlebar_when_maximized);
     },
 
     _destroyWindow : function(cinnamonwm, actor) {
