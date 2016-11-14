@@ -2610,7 +2610,7 @@ PopupSubMenu.prototype = {
 
         this._arrow = sourceArrow;
 
-        this.actor = new St.ScrollView({ style_class: 'popup-sub-menu',
+        this.actor = new St.ScrollView({ style_class: 'popup-submenu',
                                          hscrollbar_policy: Gtk.PolicyType.NEVER,
                                          vscrollbar_policy: Gtk.PolicyType.NEVER });
 
