@@ -95,6 +95,7 @@ PanelAppLauncherMenu.prototype = {
     },
 
     _onRemoveActivate: function(item, event) {
+        this.close();
         this._launcher.launchersBox.removeLauncher(this._launcher, this._launcher.isCustom());
         this._launcher.actor.destroy();
     },
