@@ -1624,8 +1624,8 @@ MyApplet.prototype = {
                     whichWay = "right";
                 if (this._activeContainer === this.applicationsBox)
                     whichWay = "none";
-                else if ((this.categoriesBox.get_child_at_index(index))._delegate instanceof RecentCategoryButton &&
-                            this.noRecentDocuments)
+                else if (this.activeContainer === this.categoriesBox && this.noRecentDocuments &&
+                         (this.categoriesBox.get_child_at_index(index))._delegate instanceof RecentCategoryButton)
                     whichWay = "none";
                 break;
             case Clutter.KEY_Left:
@@ -1715,6 +1715,8 @@ MyApplet.prototype = {
                                 if(this.favBoxShow) {
                                     this._previousSelectedActor = this.categoriesBox.get_child_at_index(index);
                                     item_actor = this.favBoxIter.getFirstVisible();
+                                } else {
+                                    item_actor = this.categoriesBox.get_child_at_index(index);
                                 }
                             }
                             else {
@@ -1728,9 +1730,14 @@ MyApplet.prototype = {
                                 this._previousSelectedActor = this.categoriesBox.get_child_at_index(index);
                                 item_actor = this.favBoxIter.getFirstVisible();
                             } else {
-                                item_actor = (this._previousVisibleIndex != null) ?
-                                                this.appBoxIter.getVisibleItem(this._previousVisibleIndex) :
-                                                this.appBoxIter.getFirstVisible();
+                                if ((this.categoriesBox.get_child_at_index(index))._delegate instanceof RecentCategoryButton &&
+                                    this.noRecentDocuments) {
+                                    item_actor = this.categoriesBox.get_child_at_index(index);
+                                } else {
+                                    item_actor = (this._previousVisibleIndex != null) ?
+                                                    this.appBoxIter.getVisibleItem(this._previousVisibleIndex) :
+                                                    this.appBoxIter.getFirstVisible();
+                                }
                             }
                             break;
                         case "top":
