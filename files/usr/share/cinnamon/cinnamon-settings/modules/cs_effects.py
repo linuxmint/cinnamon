@@ -256,7 +256,8 @@ class Module:
     def on_desktop_effects_enabled_changed(self, schema, key):
         active = schema.get_boolean(key)
 
-        if not active and schema.get_boolean("desktop-effects-on-dialogs"):
+        if not active:
             schema.set_boolean("desktop-effects-on-dialogs", False)
+            schema.set_boolean("desktop-effects-on-menus", False)
 
         self.update_effects(self.custom_switch, None)
