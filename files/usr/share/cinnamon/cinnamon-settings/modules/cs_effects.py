@@ -66,7 +66,7 @@ class GSettingsTweenChooserButton(TweenChooserButton, CSGSettingsBackend):
         self.bind_prop = "tween"
         self.bind_dir = Gio.SettingsBindFlags.DEFAULT
         self.bind_object = self
-        
+
         if schema not in settings_objects.keys():
             settings_objects[schema] = Gio.Settings.new(schema)
         self.settings = settings_objects[schema]
@@ -80,7 +80,7 @@ class GSettingsEffectChooserButton(EffectChooserButton, CSGSettingsBackend):
         self.bind_prop = "effect"
         self.bind_dir = Gio.SettingsBindFlags.DEFAULT
         self.bind_object = self
-        
+
         if schema not in settings_objects.keys():
             settings_objects[schema] = Gio.Settings.new(schema)
         self.settings = settings_objects[schema]
@@ -258,5 +258,8 @@ class Module:
 
         if not active and schema.get_boolean("desktop-effects-on-dialogs"):
             schema.set_boolean("desktop-effects-on-dialogs", False)
+
+        if not active and schema.get_boolean("desktop-effects-on-menus"):
+            schema.set_boolean("desktop-effects-on-menus", False)
 
         self.update_effects(self.custom_switch, None)
