@@ -15,11 +15,6 @@
         "dependency": "playerControl",
         "indent": true
     },
-    "showSliderPercentage": {
-        "type": "switch",
-        "default": false,
-        "description": "Show percentage value of the slider"
-    },
     "_knownPlayers": {
         "type": "generic",
         "default": ["banshee", "vlc"]
