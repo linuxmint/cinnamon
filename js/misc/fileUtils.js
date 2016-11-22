@@ -28,6 +28,14 @@ function deleteGFile(file) {
     return file['delete'](null);
 }
 
+function changeModeGFile(file, octal) {
+    if(file.query_exists(null)) {
+        let info = file.query_info("unix::mode", Gio.FileQueryInfoFlags.NONE, null);
+        info.set_attribute_uint32("unix::mode", parseInt(octal, 8));
+        file.set_attributes_from_info(info, Gio.FileQueryInfoFlags.NONE, null);
+    }
+}
+
 function recursivelyDeleteDir(dir) {
     let children = dir.enumerate_children('standard::name,standard::type',
                                           Gio.FileQueryInfoFlags.NONE, null);

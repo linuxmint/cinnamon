@@ -142,8 +142,7 @@ ApplicationContextMenuItem.prototype = {
                 let destFile = Gio.file_new_for_path(USER_DESKTOP_PATH+"/"+this._appButton.app.get_id());
                 try{
                     file.copy(destFile, 0, null, function(){});
-                    // Need to find a way to do that using the Gio library, but modifying the access::can-execute attribute on the file object seems unsupported
-                    Util.spawnCommandLine("chmod +x \""+USER_DESKTOP_PATH+"/"+this._appButton.app.get_id()+"\"");
+                    FileUtils.changeModeGFile(destFile, 755);
                 }catch(e){
                     global.log(e);
                 }
