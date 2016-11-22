@@ -185,13 +185,11 @@ SimpleButton.prototype = {
             this.actor.add_style_pseudo_class('outlined');
         }
 
-        if (applet._scaleMode) {
-            if (applet.orientation == St.Side.TOP || applet.orientation == St.Side.BOTTOM) {
-                this.actor.set_height(applet._panelHeight);
-            } else {
-                this.actor.set_height(0.6 * applet._panelHeight);  // factors are completely empirical
-                this.actor.set_width(0.9 * applet._panelHeight);
-            }
+        if (applet.orientation == St.Side.TOP || applet.orientation == St.Side.BOTTOM) {
+            this.actor.set_height(applet._panelHeight);
+        } else {
+            this.actor.set_height(0.6 * applet._panelHeight);  // factors are completely empirical
+            this.actor.set_width(0.9 * applet._panelHeight);
         }
 
         if (applet.orientation == St.Side.LEFT || applet.orientation == St.Side.RIGHT)
