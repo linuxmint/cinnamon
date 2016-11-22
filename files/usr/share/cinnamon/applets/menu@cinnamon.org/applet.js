@@ -1150,7 +1150,7 @@ MyApplet.prototype = {
         this.settings.bind("activate-on-hover", "activateOnHover", this._updateActivateOnHover);
         this._updateActivateOnHover();
 
-        this.menu.actor.add_style_class_name('menu-background');
+        this.menu.setCustomStyleClass('menu-background');
         this.menu.connect('open-state-changed', Lang.bind(this, this._onOpenStateChanged));
 
         this.settings.bind("menu-icon-custom", "menuIconCustom", this._updateIconAndLabel);

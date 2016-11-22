@@ -2175,7 +2175,22 @@ PopupMenu.prototype = {
         this._orientation = orientation;
     },
 
-    /*
+    /**
+     * setCustomStyleClass:
+     * @className (string): the custom class name to add
+     *
+     * Adds a custom class name to the menu which allows it to be styled separately from other menus.
+     */
+    setCustomStyleClass: function(className) {
+        this.customStyleClass = className;
+        if (this.actor.get_style_class_name()) {
+            this.actor.set_style_class_name(this.actor.get_style_class_name() + "" + className)
+        } else {
+            this.actor.set_style_class_name(className);
+        }
+    },
+
+    /**
      * setSourceAlignment:
      * @alignment (real): the position of the arrow relative to the source
      * actor.
@@ -2481,6 +2496,7 @@ PopupMenu.prototype = {
         }
 
         let xPos, yPos;
+        let styleClasses = ["menu"];
         switch (this._orientation) {
             case St.Side.TOP:
             case St.Side.BOTTOM:
@@ -2496,12 +2512,12 @@ PopupMenu.prototype = {
                 if (this._orientation == St.Side.BOTTOM) {
                     this.sideFlipped = true;
                     yPos = sourceBox.y1 - natHeight;
-                    this.actor.set_style_class_name('menu bottom');
+                    styleClasses.push("bottom");
                 }
                 else {
                     this.sideFlipped = false;
                     yPos = sourceBox.y2;
-                    this.actor.set_style_class_name('menu top');
+                    styleClasses.push("top");
                 }
                 break;
             case St.Side.LEFT:
@@ -2518,15 +2534,17 @@ PopupMenu.prototype = {
                 if (this._orientation == St.Side.RIGHT || x2 - sourceBox.x2 < natWidth) {
                     this.sideFlipped = true;
                     xPos = sourceBox.x1 - natWidth;
-                    this.actor.set_style_class_name('menu right');
+                    styleClasses.push("right");
                 }
                 else {
                     this.sideFlipped = false;
                     xPos = sourceBox.x2;
-                    this.actor.set_style_class_name('menu left');
+                    styleClasses.push("left");
                 }
                 break;
         }
+        if (this.customStyleClass) styleClasses.push(this.customStyleClass);
+        this.actor.set_style_class_name(styleClasses.join(" "));
         return [Math.round(xPos), Math.round(yPos)];
     },
 
