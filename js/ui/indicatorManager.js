@@ -1200,15 +1200,18 @@ IndicatorActor.prototype = {
         return [path, realSize];
     },
 
-    _createIconByName: function(path, realSize) {
+    _createIconByName: function(path, iconSize) {
         try {
             let pixbuf = GdkPixbuf.Pixbuf.new_from_file(path);
             let icon = new St.Icon({ 
                 style_class: 'applet-icon',//FIXME: Use instead the status icon style class.
                 gicon: pixbuf,
             });
-            if (realSize)
-                 icon.set_icon_size(realSize);
+            if (iconSize)
+                icon.set_icon_size(iconSize);
+            //Connect this always, because the user can enable/disable the panel scale mode
+            //when he want, otherwise we need to control the scale mode internally.
+            icon.connect('notify::mapped', Lang.bind(this, this._onIconMapped));
             return icon;
         } catch (e) {
             // the image data was probably bogus. We don't really know why, but it _does_ happen.
@@ -1252,6 +1255,9 @@ IndicatorActor.prototype = {
                 });
                 if (iconSize)
                     icon.set_icon_size(iconSize);
+                //Connect this always, because the user can enable/disable the panel scale mode
+                //when he want, otherwise we need to control the scale mode internally.
+                icon.connect('notify::mapped', Lang.bind(this, this._onIconMapped));
                 return icon;
             } catch (e) {
                 // the image data was probably bogus. We don't really know why, but it _does_ happen.
@@ -1259,6 +1265,15 @@ IndicatorActor.prototype = {
             }
         }
         return null;
+    },
+
+    _onIconMapped: function(actor, event) {
+        if (!this._iconSize) {
+            let themeNode = actor.get_theme_node();
+            let [found, size] = themeNode.lookup_length('icon-size', false);
+            if (!found)
+                actor.set_icon_size(16);
+        }
     },
 
     // updates the base icon
