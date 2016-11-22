@@ -504,6 +504,10 @@ Applet.prototype = {
             this.context_menu_separator = new PopupMenu.PopupSeparatorMenuItem();
         }
 
+        if (this._applet_context_menu._getMenuItems().length > 0) {
+            this._applet_context_menu.addMenuItem(this.context_menu_separator);
+        }
+
         if (items.indexOf(this.context_menu_item_about) == -1) {
             this._applet_context_menu.addMenuItem(this.context_menu_item_about);
         }
