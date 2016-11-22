@@ -601,10 +601,11 @@ class PixCache(object):
 
     # Convert RGBA PIL Image to Pixbuf
     def _image_to_pixbuf(self, img):
+        [w, h] = img.size
         return GdkPixbuf.Pixbuf.new_from_bytes(GLib.Bytes.new(img.tobytes()),
                                                GdkPixbuf.Colorspace.RGB,
-                                               True, 8, img.width, img.height,
-                                               img.width * 4)
+                                               True, 8, w, h,
+                                               w * 4)
 
 PIX_CACHE = PixCache()
 
