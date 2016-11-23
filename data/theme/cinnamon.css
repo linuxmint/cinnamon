@@ -1,6 +1,6 @@
 /* ###################################################################
  * Section common with Gnome Shell
- * ... contains a few cinnamon specific styles (rare occurrences) 
+ * ... contains a few cinnamon specific styles (rare occurrences)
  * ###################################################################*/
 stage {
     font-family: sans, sans-serif;
@@ -78,10 +78,10 @@ StScrollBar StButton#vhandle:hover {
     text-align: center;
 }
 /* ===================================================================
- * Shared button properties 
+ * Shared button properties
  * ===================================================================*/
 .notification-button, .notification-icon-button,
-.modal-dialog-button, 
+.modal-dialog-button,
 .sound-player-overlay StButton {
     color: white;
     border: 1px solid #8b8b8b;
@@ -108,7 +108,7 @@ StScrollBar StButton#vhandle:hover {
     background-gradient-end: rgba(255, 255, 255, 0.2);
 }
 /* ===================================================================
- * PopupMenu (popupMenu.js) 
+ * PopupMenu (popupMenu.js)
  * ===================================================================*/
  /* .popup-menu-boxpointer and .popup-menu are kept for compatibility
     with cinnamon version under 3.2. Use .menu in version 3.2 and above */
@@ -382,7 +382,7 @@ StScrollBar StButton#vhandle:hover {
 .panel-button:active,
 .panel-button:overview,
 .panel-button:focus {
-    
+
 }
 .panel-button:active > .system-status-icon,
 .panel-button:checked > .system-status-icon,
@@ -398,7 +398,7 @@ StScrollBar StButton#vhandle:hover {
     icon-size: 1.14em;
 }
 /* ===================================================================
- * Overview 
+ * Overview
  * ===================================================================*/
 #overview {
     spacing: 12px;
@@ -515,7 +515,7 @@ StScrollBar StButton#vhandle:hover {
 }
 
 /* ===================================================================
- * Looking Glass 
+ * Looking Glass
  * ===================================================================*/
 #LookingGlassDialog {
     background-color: rgba(85,85,85,0.85);
@@ -526,7 +526,7 @@ StScrollBar StButton#vhandle:hover {
     color: #CCCCCC;
 }
 /* ===================================================================
- * Date applet 
+ * Date applet
  * ===================================================================*/
 .calendar {
     padding: .4em 1.75em;
@@ -868,7 +868,7 @@ StScrollBar StButton#vhandle:hover {
     padding-top: 15px;
     spacing: 5px;
 }
-.run-dialog-completion-box { 
+.run-dialog-completion-box {
     padding-left: 15px;
     font-size: 10px;
 }
@@ -1019,7 +1019,7 @@ StScrollBar StButton#vhandle:hover {
     -boxpointer-gap: 5px;
 }
 /* ###################################################################
- * Cinnamon Specific Section 
+ * Cinnamon Specific Section
  * ###################################################################*/
 /* ===================================================================
  * Menu (menu.js)
@@ -1105,10 +1105,10 @@ StScrollBar StButton#vhandle:hover {
     /* This style is used in menu application buttons for applications which were newly installed */
     font-weight: bold;
 }
-.menu-application-button-label:ltr { 
+.menu-application-button-label:ltr {
     padding-left: 5px;
 }
-.menu-application-button-label:rtl { 
+.menu-application-button-label:rtl {
     padding-right: 5px;
 }
 .menu-category-button {
@@ -1246,14 +1246,14 @@ StScrollBar StButton#vhandle:hover {
 }
 .window-list-item-box:active,
 .window-list-item-box:checked,
-.window-list-item-box:focus { 
+.window-list-item-box:focus {
     background-gradient-direction: vertical;
     background-gradient-start: rgba(226,226,226,0.5);
     background-gradient-end: rgba(122,122,122,0.5);
     box-shadow: inset 0px 0px 1px 1px rgba(170,170,170,0.5);
     border-radius: 2px 2px 0px 0px;
 }
-.window-list-item-box:hover { 
+.window-list-item-box:hover {
     box-shadow: inset 0px 0px 1px 1px rgba(170,170,170,1.0);
     border-radius: 2px 2px 0px 0px;
 }
@@ -1339,9 +1339,16 @@ StScrollBar StButton#vhandle:hover {
  * Workspace Switcher applet (workspaceSwitcher.js)
  * ===================================================================*/
 /* Controls the styling when using the "Simple buttons" option */
-.workspace-switcher {
+.panel-top .workspace-switcher,
+.panel-bottom .workspace-switcher {
     padding-left: 3px;
     padding-right: 3px;
+}
+
+.panel-left .workspace-switcher
+.panel-right .workspace-switcher {
+    padding-top: 3px;
+    padding-bottom: 3px;
 }
 
 .workspace-button {
@@ -1350,12 +1357,11 @@ StScrollBar StButton#vhandle:hover {
     color: #cccccc;
     border: 1px;
     border-color: #a6a6a6;
-    padding: 2px;
+    padding-top: 2px;
     transition-duration: 300;
 }
 
 .workspace-button:outlined {
-    padding: 1px;
     background: #cccccc;
     color: #555555;
     box-shadow: inset 0px 0px 8px 1px rgba(255,255,255, 0.7);
@@ -1493,7 +1499,7 @@ StScrollBar StButton#vhandle:hover {
     background-image:   url("overview-hover.png");
 }
 /* ===================================================================
- * Applets (applet.js) 
+ * Applets (applet.js)
  * ===================================================================*/
 .applet-separator {
     padding: 5px 4px;
@@ -1527,9 +1533,9 @@ StScrollBar StButton#vhandle:hover {
 .applet-box:highlight {
     background-color: #aa5555;
 }
-.applet-label { 
+.applet-label {
     font-weight: bold;
-    color: #ccc;        
+    color: #ccc;
 }
 .applet-box:hover > .applet-label {
     color: #fff;
@@ -1548,10 +1554,10 @@ StScrollBar StButton#vhandle:hover {
 .applet-box.vertical:hover .applet-icon {
 }
 /* ===================================================================
- * Desklets (desklet.js) 
+ * Desklets (desklet.js)
  * ===================================================================*/
-.desklet {        
-    color: #fff;    
+.desklet {
+    color: #fff;
 }
 
 .desklet:highlight, .desklet:highlight-with-borders, .desklet:highlight-with-borders-and-header {
@@ -1577,7 +1583,7 @@ StScrollBar StButton#vhandle:hover {
     border-radius-bottomright: 12px;
 }
 
-.desklet-header { 
+.desklet-header {
     border-radius-topleft: 12px;
     border-radius-topright: 12px;
     font-size: 10.5pt;
@@ -1588,7 +1594,7 @@ StScrollBar StButton#vhandle:hover {
     padding: 6px;
 }
 
-.desklet-drag-placeholder { 
+.desklet-drag-placeholder {
     border: 2px solid #6daa00;
     background-color: rgba(109,170, 0, 0.3);
 }
@@ -1635,7 +1641,7 @@ StScrollBar StButton#vhandle:hover {
 
 
 /* ===================================================================
- * Clock Desklet (desklet.js) 
+ * Clock Desklet (desklet.js)
  * ===================================================================*/
 .clock-desklet-label {
 }
@@ -1648,7 +1654,7 @@ StScrollBar StButton#vhandle:hover {
     color: #ffffff;
     text-shadow: black 5px 5px 5px;
     font-weight: bold;
-    font-size: 48pt;    
+    font-size: 48pt;
 }
 
 .expo-workspaces-name-entry {
@@ -1663,9 +1669,9 @@ StScrollBar StButton#vhandle:hover {
     caret-color: rgb(128, 128, 128);
     caret-size: 1px;
     width: 250px;
-    height: 15px;   
+    height: 15px;
     box-shadow: inset 0px 2px 4px rgba(0,0,0,0.6);
-    text-align: center; 
+    text-align: center;
 }
 
 .expo-workspaces-name-entry#selected {
