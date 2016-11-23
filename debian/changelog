@@ -1,3 +1,61 @@
+cinnamon (3.2.2) serena; urgency=medium
+
+  [ Clement Lefebvre ]
+  * build: Make AX_ macros optional
+
+  [ Odyseus ]
+  * [Xlet settings] Fix for icon choosers stuck dialogs
+  * [cinnamon-json-makepot] Added support for "title" key
+
+  [ lestcape ]
+  * Ensure a default icon size of 16px if the icon-size is not set in the indicator icon theme class.
+
+  [ Germán Franco ]
+  * [workspace-switcher] Fix buttons' size Buttons didn't get proper height (or width in vertical mode) if the auto-scale font setting was not enabled.
+
+  [ NikoKrause ]
+  * [sound-applet] removed ancient code for timeLabel
+  * uniform names
+
+  [ Stephen Collins ]
+  * Restore ability to theme the menu applet menu separately from other menus
+
+  [ JosephMcc ]
+  * cs_effects: Disable menu animations when turning of window effects
+
+  [ Odyseus ]
+  * [applet.js] Re added ability to display a separator on applets context menus.
+  * [applet.js] Added a mechanism to highlight applets with open menus.
+
+  [ NikoKrause ]
+  * [menu-applet] fix keynav issues with TAB and right
+
+  [ lestcape ]
+  * Use the Gio library for establish the file permissions in replace of the spawnCommandLine usage.
+
+  [ itzexor ]
+  * panel-launchers: close the menu before destroying when removing launcher
+
+  [ Odyseus ]
+  * [Xlet settings] Added translation mechanism to xlets settings windows
+
+  [ itzexor ]
+  * cs_backgrounds.py: fix thumb generation on LMDE2
+
+  [ NikoKrause ]
+  * [sound-applet] remove show percentage label for slider option
+
+  [ JosephMcc ]
+  * theme: Fix theming of the workspace switcher
+
+  [ NikoKrause ]
+  * typo
+
+  [ Clement Lefebvre ]
+  * l10n: Update POT file
+
+ -- Clement Lefebvre <root@linuxmint.com>  Wed, 23 Nov 2016 13:02:10 +0000
+
 cinnamon (3.2.1) serena; urgency=medium
 
   [ kloun ]
