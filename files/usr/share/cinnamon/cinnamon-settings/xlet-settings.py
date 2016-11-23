@@ -52,10 +52,10 @@ def translate(uuid, string):
     #check for a translation for this xlet
     if uuid not in translations:
         try:
-            translations[uuid] = gettext.translation(uuid, home + "/.local/share/locale").ugettext
+            translations[uuid] = gettext.translation(uuid, home + "/.local/share/locale").gettext
         except IOError:
             try:
-                translations[uuid] = gettext.translation(uuid, "/usr/share/locale").ugettext
+                translations[uuid] = gettext.translation(uuid, "/usr/share/locale").gettext
             except IOError:
                 translations[uuid] = None
 
@@ -65,6 +65,12 @@ def translate(uuid, string):
 
     if translations[uuid]:
         result = translations[uuid](string)
+
+        try:
+            result = result.decode("utf-8")
+        except:
+            result = result
+
         if result != string:
             return result
     return _(string)
@@ -74,7 +80,7 @@ class MainWindow(object):
         self.type = xlet_type
         self.uuid = uuid
         self.selected_instance = None
-        
+
         self.load_xlet_data()
         self.build_window()
         self.load_instances()
@@ -180,7 +186,7 @@ class MainWindow(object):
             icon_path = os.path.join(self.xlet_dir, "icon.png")
             if os.path.exists(icon_path):
                 self.window.set_icon_from_file(icon_path)
-        self.window.set_title(self.xlet_meta["name"])
+        self.window.set_title(translate(self.uuid, self.xlet_meta["name"]))
 
         self.window.connect("destroy", self.quit)
         self.prev_button.connect("clicked", self.previous_instance)
@@ -207,17 +213,37 @@ class MainWindow(object):
 
             settings_map = settings.get_settings()
             first_key = next(iter(settings_map.values()))
-            # if a layout is not expicitly defined, generate the settings
-            # widgets based on the order they occur
-            if first_key["type"] == "layout":
-                self.build_with_layout(settings_map, info, instance_box, first_key)
-            else:
-                self.build_from_order(settings_map, info, instance_box, first_key)
 
-            if self.selected_instance is None:
-                self.selected_instance = info
-                if "stack" in info:
-                    self.stack_switcher.set_stack(info["stack"])
+            try:
+                for setting in settings_map.keys():
+                    if setting == "__md5__":
+                        continue
+                    for key in settings_map[setting].keys():
+                        if key in ("description", "tooltip", "units"):
+                            try:
+                                settings_map[setting][key] = translate(self.uuid, settings_map[setting][key])
+                            except:
+                                pass
+                        elif key in "options":
+                            new_opt_data = collections.OrderedDict()
+                            opt_data = settings_map[setting][key]
+                            for option in opt_data.keys():
+                                if opt_data[option] == "custom":
+                                    continue
+                                new_opt_data[translate(self.uuid, option)] = opt_data[option]
+                            settings_map[setting][key] = new_opt_data
+            finally:
+                # if a layout is not expicitly defined, generate the settings
+                # widgets based on the order they occur
+                if first_key["type"] == "layout":
+                    self.build_with_layout(settings_map, info, instance_box, first_key)
+                else:
+                    self.build_from_order(settings_map, info, instance_box, first_key)
+
+                if self.selected_instance is None:
+                    self.selected_instance = info
+                    if "stack" in info:
+                        self.stack_switcher.set_stack(info["stack"])
 
     def build_with_layout(self, settings_map, info, box, first_key):
         layout = first_key
@@ -230,10 +256,10 @@ class MainWindow(object):
         for page_key in layout["pages"]:
             page_def = layout[page_key]
             page = SettingsPage()
-            page_stack.add_titled(page, page_key, page_def["title"])
+            page_stack.add_titled(page, page_key, translate(self.uuid, page_def["title"]))
             for section_key in page_def["sections"]:
                 section_def = layout[section_key]
-                section = page.add_section(section_def["title"])
+                section = page.add_section(translate(self.uuid, section_def["title"]))
                 for key in section_def["keys"]:
                     item = settings_map[key]
                     settings_type = item["type"]
@@ -241,7 +267,7 @@ class MainWindow(object):
                         widget = XLETSettingsButton(item, self.uuid, info["id"])
                         section.add_row(widget)
                     elif settings_type == "label":
-                        widget = Text(item["description"])
+                        widget = Text(translate(self.uuid, item["description"]))
                         section.add_row(widget)
                     elif settings_type in XLET_SETTINGS_WIDGETS:
                         widget = globals()[XLET_SETTINGS_WIDGETS[settings_type]](key, info["settings"], item)
@@ -261,12 +287,12 @@ class MainWindow(object):
             if "type" in item.keys():
                 settings_type = item["type"]
                 if settings_type in ("header", "section"):
-                    section = page.add_section(item["description"])
+                    section = page.add_section(translate(self.uuid, item["description"]))
                 elif settings_type == "button":
                     widget = XLETSettingsButton(item, self.uuid, info["id"])
                     section.add_row(widget)
                 elif settings_type == "label":
-                    widget = Text(item["description"])
+                    widget = Text(translate(self.uuid, item["description"]))
                     section.add_row(widget)
                 elif settings_type in XLET_SETTINGS_WIDGETS:
                     widget = globals()[XLET_SETTINGS_WIDGETS[settings_type]](key, info["settings"], item)
@@ -274,7 +300,7 @@ class MainWindow(object):
 
     def notify_dbus(self, handler, key, value):
         proxy.updateSetting('(ssss)', self.uuid, handler.instance_id, key, json.dumps(value))
-        
+
     def set_instance(self, info):
         self.instance_stack.set_visible_child_name(info["id"])
         if "stack" in info:
@@ -351,7 +377,7 @@ class MainWindow(object):
     def quit(self, *args):
         if proxy:
             proxy.highlightXlet('(ssb)', self.uuid, self.selected_instance["id"], False)
-        
+
         self.window.destroy()
         Gtk.main_quit()
 
