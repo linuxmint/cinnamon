@@ -1623,7 +1623,7 @@ MyApplet.prototype = {
                     whichWay = "right";
                 if (this._activeContainer === this.applicationsBox)
                     whichWay = "none";
-                else if (this.activeContainer === this.categoriesBox && this.noRecentDocuments &&
+                else if (this._activeContainer === this.categoriesBox && this.noRecentDocuments &&
                          (this.categoriesBox.get_child_at_index(index))._delegate instanceof RecentCategoryButton)
                     whichWay = "none";
                 break;
