@@ -17,7 +17,7 @@
     },
     "_knownPlayers": {
         "type": "generic",
-        "default": ["banshee", "vlc"]
+        "default": ["banshee", "vlc", "rhythmbox"]
     },
     "section2": {
         "type": "section",
