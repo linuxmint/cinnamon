@@ -82,6 +82,7 @@ public_icons = \
 	hicolor_devices_scalable_audio-speaker-right-side.svg \
 	hicolor_devices_scalable_audio-subwoofer.svg \
 	hicolor_devices_scalable_bluetooth.svg \
+    hicolor_devices_scalable_cpu-symbolic.svg \
 	$(NULL)
 
 EXTRA_DIST = \
