@@ -105,19 +105,28 @@ VisibleChildIterator.prototype = {
     }
 };
 
-function ApplicationContextMenuItem(appButton, label, action) {
-    this._init(appButton, label, action);
+function ApplicationContextMenuItem(appButton, label, action, iconName) {
+    this._init(appButton, label, action, iconName);
 }
 
 ApplicationContextMenuItem.prototype = {
     __proto__: PopupMenu.PopupBaseMenuItem.prototype,
 
-    _init: function (appButton, label, action) {
+    _init: function (appButton, label, action, iconName) {
         PopupMenu.PopupBaseMenuItem.prototype._init.call(this, {focusOnHover: false});
 
         this._appButton = appButton;
         this._action = action;
         this.label = new St.Label({ text: label });
+
+        if (iconName != null) {
+            this.icon = new St.Icon({ icon_name: iconName, icon_size: 12, icon_type: St.IconType.SYMBOLIC });
+            if (this.icon) {
+                this.addActor(this.icon);
+                this.icon.realize();
+            }
+        }
+
         this.addActor(this.label);
     },
 
@@ -238,25 +247,25 @@ GenericApplicationButton.prototype = {
                 this.menu.box.remove_actor(children[i]);
             }
             let menuItem;
-            menuItem = new ApplicationContextMenuItem(this, _("Add to panel"), "add_to_panel");
+            menuItem = new ApplicationContextMenuItem(this, _("Add to panel"), "add_to_panel", "list-add");
             this.menu.addMenuItem(menuItem);
             if (USER_DESKTOP_PATH){
-                menuItem = new ApplicationContextMenuItem(this, _("Add to desktop"), "add_to_desktop");
+                menuItem = new ApplicationContextMenuItem(this, _("Add to desktop"), "add_to_desktop", "computer");
                 this.menu.addMenuItem(menuItem);
             }
             if (AppFavorites.getAppFavorites().isFavorite(this.app.get_id())){
-                menuItem = new ApplicationContextMenuItem(this, _("Remove from favorites"), "remove_from_favorites");
+                menuItem = new ApplicationContextMenuItem(this, _("Remove from favorites"), "remove_from_favorites", "starred");
                 this.menu.addMenuItem(menuItem);
             }else{
-                menuItem = new ApplicationContextMenuItem(this, _("Add to favorites"), "add_to_favorites");
+                menuItem = new ApplicationContextMenuItem(this, _("Add to favorites"), "add_to_favorites", "non-starred");
                 this.menu.addMenuItem(menuItem);
             }
             if (this.appsMenuButton._canUninstallApps) {
-                menuItem = new ApplicationContextMenuItem(this, _("Uninstall"), "uninstall");
+                menuItem = new ApplicationContextMenuItem(this, _("Uninstall"), "uninstall", "edit-delete");
                 this.menu.addMenuItem(menuItem);
             }
             if (this.appsMenuButton._isBumblebeeInstalled) {
-                menuItem = new ApplicationContextMenuItem(this, _("Run with nVidia GPU"), "run_with_nvidia_gpu");
+                menuItem = new ApplicationContextMenuItem(this, _("Run with NVIDIA GPU"), "run_with_nvidia_gpu", "cpu");
                 this.menu.addMenuItem(menuItem);
             }
         }
