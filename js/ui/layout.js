@@ -14,6 +14,8 @@ const Tweener = imports.ui.tweener;
 const EdgeFlip = imports.ui.edgeFlip;
 const HotCorner = imports.ui.hotCorner;
 const DeskletManager = imports.ui.deskletManager;
+const DND = imports.ui.dnd;
+const FileUtils = imports.misc.fileUtils;
 
 const STARTUP_ANIMATION_TIME = 0.5;
 const KEYBOARD_ANIMATION_TIME = 0.15;
@@ -45,6 +47,59 @@ Monitor.prototype = {
     get inFullscreen() {
         return global.screen.get_monitor_in_fullscreen(this.index);
     }
+};
+
+function NemoDesktopArea() {
+    this._init();
+}
+
+NemoDesktopArea.prototype = {
+    _init: function() {
+        this.actor = global.stage;
+        if(!this.actor.hasOwnProperty('_delegate'))
+           this.actor._delegate = this;
+    },
+
+    acceptDrop : function(source, actor, x, y, time) {
+        let app = source.app;
+        if(app == null || app.is_window_backed())
+            return false;  
+        let backgroundActor = global.stage.get_actor_at_pos(Clutter.PickMode.ALL, x, y);
+        if(backgroundActor != global.window_group)
+            return false;
+        let file = Gio.file_new_for_path(app.get_app_info().get_filename());
+        let destFile = Gio.file_new_for_path(FileUtils.getUserDesktopDir()+"/"+app.get_id());
+        try {
+            file.copy(destFile, 0, null, function(){});
+            FileUtils.changeModeGFile(destFile, 755);
+            this._setPosition(destFile, x, y);
+        } catch(e) {
+            global.log(e);
+            return false;
+        }
+        return true;
+    },
+
+    handleDragOver: function(source, actor, x, y, time) {
+        let app = source.app;
+        if(app == null || app.is_window_backed())
+            return DND.DragMotionResult.NO_DROP;  
+        let backgroundActor = global.stage.get_actor_at_pos(Clutter.PickMode.ALL, x, y);
+        if(backgroundActor != global.window_group)
+            return DND.DragMotionResult.NO_DROP;
+        return DND.DragMotionResult.COPY_DROP;
+    },
+
+    _setPosition: function(destFile, x, y) {
+        try {
+            x = Math.round(x);
+            y = Math.round(y) - 48;
+            destFile.set_attribute_string("metadata::nemo-icon-position", x+","+y, Gio.FileQueryInfoFlags.NONE, null);
+            destFile.replace_contents(destFile.load_contents(null)[1].toString(), null, false, 0, null);
+        } catch(e) {
+            global.log(e);
+        }
+    },
 };
 
 function LayoutManager() {
@@ -90,6 +145,7 @@ LayoutManager.prototype = {
                               Lang.bind(this, this._updateFullscreen));
         global.window_manager.connect('switch-workspace',
                                       Lang.bind(this, this._windowsRestacked));
+        this._desktop = new NemoDesktopArea();
     },
 
     _onEdgeFlipChanged: function(){
