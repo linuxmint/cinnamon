@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#!/usr/bin/python2
 
 from gi.repository import Gio, Gtk, GObject, Gdk
 import cgi

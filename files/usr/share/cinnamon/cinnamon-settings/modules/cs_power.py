@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#!/usr/bin/python2
 
 import gi
 gi.require_version('CinnamonDesktop', '3.0')

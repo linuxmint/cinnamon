@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/python2
 # coding: utf-8
 
 # This parser starts by parsing all the javascript code, and representing each
