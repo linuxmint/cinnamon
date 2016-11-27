@@ -1201,20 +1201,30 @@ load_sliced_image (GSimpleAsyncResult *result,
   GList *res = NULL;
   GdkPixbuf *pix;
   gint width, height, y, x;
+  GdkPixbufLoader *loader;
+  GError *error = NULL;
+  gchar *buffer = NULL;
+  gsize length;
 
   g_assert (!cancellable);
 
-  data = g_object_get_data (G_OBJECT (result), "load_sliced_image");
+  data = task_data;
   g_assert (data);
 
-  if (!(pix = gdk_pixbuf_new_from_file (data->path, NULL)))
-    return;
+  loader = gdk_pixbuf_loader_new ();
+  g_signal_connect (loader, "size-prepared", G_CALLBACK (on_loader_size_prepared), data);
 
-  if (!g_file_load_contents (data->gfile, NULL, &buffer, &length, NULL, NULL))
-    goto out;
+  if (!g_file_load_contents (data->gfile, NULL, &buffer, &length, NULL, &error))
+    {
+      g_warning ("Failed to open sliced image: %s", error->message);
+      goto out;
+    }
 
-  if (!gdk_pixbuf_loader_write (loader, (const guchar *) buffer, length, NULL))
-    goto out;
+  if (!gdk_pixbuf_loader_write (loader, (const guchar *) buffer, length, &error))
+    {
+      g_warning ("Failed to load image: %s", error->message);
+      goto out;
+    }
 
   if (!gdk_pixbuf_loader_close (loader, NULL))
     goto out;
@@ -1222,19 +1232,25 @@ load_sliced_image (GSimpleAsyncResult *result,
   pix = gdk_pixbuf_loader_get_pixbuf (loader);
   width = gdk_pixbuf_get_width (pix);
   height = gdk_pixbuf_get_height (pix);
-  for (y = 0; y < height; y += data->grid_height)
+  for (y = 0; y < height; y += data->grid_height * data->scale_factor)
     {
-      for (x = 0; x < width; x += data->grid_width)
+      for (x = 0; x < width; x += data->grid_width * data->scale_factor)
         {
-          GdkPixbuf *pixbuf = gdk_pixbuf_new_subpixbuf (pix, x, y, data->grid_width, data->grid_height);
+          GdkPixbuf *pixbuf = gdk_pixbuf_new_subpixbuf (pix, x, y,
+                                                        data->grid_width * data->scale_factor,
+                                                        data->grid_height * data->scale_factor);
           g_assert (pixbuf != NULL);
           res = g_list_append (res, pixbuf);
         }
     }
-  /* We don't need the original pixbuf anymore, though the subpixbufs
-     will hold a reference. */
-  g_object_unref (pix);
-  g_simple_async_result_set_op_res_gpointer (result, res, free_glist_unref_gobjects);
+
+ out:
+  /* We don't need the original pixbuf anymore, which is owned by the loader,
+   * though the subpixbufs will hold a reference. */
+  g_object_unref (loader);
+  g_free (buffer);
+  g_clear_pointer (&error, g_error_free);
+  g_task_return_pointer (result, res, free_glist_unref_gobjects);
 }
 
 /**

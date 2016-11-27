@@ -1075,38 +1075,38 @@ _st_theme_resolve_url (StTheme      *theme,
     char *scheme;
     GFile *stylesheet, *resource;
 
-	/* Handle file:// and resource:// URLs */
-	if ((scheme = g_uri_parse_scheme (url))) {
-		if ( 0 == g_strcmp0(scheme, "file") || 0 == g_strcmp0(scheme, "resource")) {
-			resource = g_file_new_for_uri (url);
+    /* Handle file:// and resource:// URLs */
+    if ((scheme = g_uri_parse_scheme (url))) {
+        if ( 0 == g_strcmp0(scheme, "file") || 0 == g_strcmp0(scheme, "resource")) {
+            resource = g_file_new_for_uri (url);
 
-		} else {
-			g_warning ("URL '%s' in theme stylesheet is not supported", url);
-			return NULL;
-		}
-		g_free (scheme);
-	}
+        } else {
+            g_warning ("URL '%s' in theme stylesheet is not supported", url);
+            return NULL;
+        }
+        g_free (scheme);
+    }
 
-	if (NULL == resource && url[0] == '/') {
-		/* We have an absolute path */
-		resource = g_file_new_for_path (url);
-	}
+    if (NULL == resource && url[0] == '/') {
+        /* We have an absolute path */
+        resource = g_file_new_for_path (url);
+    }
 
-	if (NULL == resource && NULL != base_stylesheet) {
-		/* Assume anything else is a relative URL, and "resolve" it */
-		GFile *base_file = NULL, *parent;
+    if (NULL == resource && NULL != base_stylesheet) {
+        /* Assume anything else is a relative URL, and "resolve" it */
+        GFile *base_file = NULL, *parent;
 
-		base_file = g_hash_table_lookup (theme->files_by_stylesheet, base_stylesheet);
+        base_file = g_hash_table_lookup (theme->files_by_stylesheet, base_stylesheet);
 
-		/* This is an internal function, if we get here with
-		   a bad @base_stylesheet we have a problem. */
-		g_assert (base_file);
+        /* This is an internal function, if we get here with
+           a bad @base_stylesheet we have a problem. */
+        g_assert (base_file);
 
-		parent = g_file_get_parent (base_file);
-		resource = g_file_resolve_relative_path (parent, url);
+        parent = g_file_get_parent (base_file);
+        resource = g_file_resolve_relative_path (parent, url);
 
-		g_object_unref (parent);
-	}
+        g_object_unref (parent);
+    }
 
-	return resource;
+    return resource;
 }
