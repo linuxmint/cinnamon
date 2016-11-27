@@ -2325,10 +2325,7 @@ PopupMenu.prototype = {
         this.isOpen = false;
         global.menuStackLength -= 1;
 
-        for (let i in Main.panelManager.panels) {
-            if (Main.panelManager.panels[i])
-                Main.panelManager.updatePanelsVisibility();
-        }
+        Main.panelManager.updatePanelsVisibility();
 
         if (this._activeMenuItem)
             this._activeMenuItem.setActive(false);
