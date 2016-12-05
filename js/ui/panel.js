@@ -2901,7 +2901,7 @@ Panel.prototype = {
         let leftBoundary  = Math.round(leftWidth);
         let rightBoundary = Math.round(allocWidth - rightWidth);
 
-        if (this.actor.get_direction() == St.TextDirection.RTL) {
+        if (!vertical && (this.actor.get_direction() == St.TextDirection.RTL)) {
             leftBoundary  = allocWidth - leftWidth;
             rightBoundary = rightWidth;
         }
@@ -2917,14 +2917,11 @@ Panel.prototype = {
         return;
     },
 
-    _setVertChildbox: function(childbox, y1, y2, y1_rtl, y2_rtl) {
-        if (this.actor.get_direction() == St.TextDirection.RTL) {
-            childbox.y1 = y1_rtl;
-            childbox.y2 = y2_rtl;
-        } else {
-            childbox.y1 = y1;
-            childbox.y2 = y2;
-        }
+    _setVertChildbox: function(childbox, y1, y2) {
+
+        childbox.y1 = y1;
+        childbox.y2 = y2;
+
         return;
     },
 
@@ -2967,13 +2964,13 @@ Panel.prototype = {
 
             childBox.x1 = 0;
             childBox.x2 = allocWidth;
-            this._setVertChildbox (childBox,0,leftBoundary,leftBoundary,allocHeight);
+            this._setVertChildbox (childBox,0,leftBoundary);
             this._leftBox.allocate(childBox, flags); //leftbox
 
-            this._setVertChildbox (childBox,leftBoundary,rightBoundary,rightBoundary,leftBoundary);
+            this._setVertChildbox (childBox,leftBoundary,rightBoundary);
             this._centerBox.allocate(childBox, flags);  //centerbox2
 
-            this._setVertChildbox (childBox,rightBoundary,allocHeight,0,rightBoundary);
+            this._setVertChildbox (childBox,rightBoundary,allocHeight);
             this._rightBox.allocate(childBox, flags); // rightbox 
 
             // As using central y-align or x-align seems to result in zero size if the box is empty, force
