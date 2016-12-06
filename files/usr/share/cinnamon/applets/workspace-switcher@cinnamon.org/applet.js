@@ -10,6 +10,8 @@ const Tooltips = imports.ui.tooltips;
 const Settings = imports.ui.settings;
 const ModalDialog = imports.ui.modalDialog;
 
+const MIN_SWITCH_INTERVAL_MS = 220;
+
 function WorkspaceButton(index, applet) {
     this._init(index, applet);
 }
@@ -221,6 +223,8 @@ MyApplet.prototype = {
             this.panel_height = panel_height;
             this.signals = new SignalManager.SignalManager(this);
             this.buttons = [];
+            this._last_switch = 0;
+            this._last_switch_direction = 0;
 
             let manager;
             if (this.orientation == St.Side.TOP || this.orientation == St.Side.BOTTOM) {
@@ -319,10 +323,24 @@ MyApplet.prototype = {
         this._createButtons();
     },
 
-    hook: function(actor, event){
-        var direction = event.get_scroll_direction();
-        if (direction == 0) Main.wm.actionMoveWorkspaceLeft();
-        if (direction == 1) Main.wm.actionMoveWorkspaceRight();
+    hook: function(actor, event) {
+        let now = (new Date()).getTime();
+        let direction = event.get_scroll_direction();
+
+        // Avoid fast scroll directions
+        if(direction != 0 && direction != 1) return;
+
+        // Do the switch only after a ellapsed time to avoid fast
+        // consecutive switches on sensible hardware, like touchpads
+        if ((now - this._last_switch) > MIN_SWITCH_INTERVAL_MS ||
+            direction !== this._last_switch_direction) {
+
+            if (direction == 0) Main.wm.actionMoveWorkspaceLeft();
+            else if (direction == 1) Main.wm.actionMoveWorkspaceRight();
+
+            this._last_switch = now;
+            this._last_switch_direction = direction;
+        }
     },
 
     _createButtons: function() {
