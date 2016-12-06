@@ -828,7 +828,7 @@ AppMenuButtonRightClickMenu.prototype = {
             for (let window of this._windows)
                 if (window.actor.visible &&
                    !window._needsAttention)
-                    window.metaWindow.delete(global.get_current_time);
+                    window.metaWindow.delete(global.get_current_time());
         }));
         this.addMenuItem(item);
 
@@ -838,7 +838,7 @@ AppMenuButtonRightClickMenu.prototype = {
                 if (window.actor.visible &&
                     window.metaWindow != this.metaWindow &&
                    !window._needsAttention)
-                    window.metaWindow.delete(global.get_current_time);
+                    window.metaWindow.delete(global.get_current_time());
         }));
         this.addMenuItem(item);
 
