@@ -116,6 +116,21 @@ function overrideMainloop() {
             Mainloop.__real_source_remove(id);
         }
     }
+
+    /* This should be added in cjs/mainloop.js instead probably... */
+
+    Mainloop.PRIORITY_HIGH = -100;  /* G_PRIORITY_HIGH */
+    Mainloop.PRIORITY_DEFAULT = 0;  /* G_PRIORITY_DEFAULT */
+    Mainloop.PRIORITY_HIGH_IDLE = 100;  /* etc.. */
+    Mainloop.PRIORITY_DEFAULT_IDLE = 200;
+    Mainloop.PRIORITY_LOW = 300;
+
+    Mainloop.idle_add_full = function(priority, handler) {
+        let s = GLib.idle_source_new();
+        GObject.source_set_closure(s, handler);
+        s.set_priority(priority);
+        return s.attach(null);
+    }
 }
 
 function overrideJS() {
