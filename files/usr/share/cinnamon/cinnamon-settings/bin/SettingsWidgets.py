@@ -911,9 +911,9 @@ class SoundFileChooser(SettingsWidget):
         dialog.destroy()
 
     def update_button_label(self, absolute_path):
-        f = Gio.File.new_for_path(absolute_path)
-
-        self.button_label.set_label(f.get_basename())
+        if absolute_path != "":
+            f = Gio.File.new_for_path(absolute_path)
+            self.button_label.set_label(f.get_basename())
 
     def on_setting_changed(self, *args):
         self.update_button_label(self.get_value())
