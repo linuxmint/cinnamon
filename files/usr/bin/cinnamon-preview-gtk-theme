@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/python3
 
 """ Preview a Cinnamon gtk theme in a small window
 

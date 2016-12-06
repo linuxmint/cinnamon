@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#!/usr/bin/python2
 
 # Todo:
 # - TextTag.invisible does not work nicely with scrollheight, find out why

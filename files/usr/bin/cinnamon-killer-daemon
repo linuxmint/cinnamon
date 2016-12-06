@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/python3
 
 """ Creates a keybinding that allows cinnamon to be restarted by pressing Ctrl + Alt + Esc,
 and runs in the background to detect that keybinding

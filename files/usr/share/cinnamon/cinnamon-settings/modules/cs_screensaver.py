@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#!/usr/bin/python2
 
 import os, json, subprocess, re
 from xml.etree import ElementTree
