@@ -860,7 +860,7 @@ class SoundFileChooser(SettingsWidget):
         self.pack_end(self.content_widget, False, False, 0)
 
         self.play_button = Gtk.Button()
-        self.play_button.set_image(Gtk.Image.new_from_stock("gtk-media-play", Gtk.IconSize.BUTTON))
+        self.play_button.set_image(Gtk.Image.new_from_icon_name("media-playback-start-symbolic", Gtk.IconSize.BUTTON))
         self.play_button.connect("clicked", self.on_play_clicked)
         self.content_widget.pack_start(self.play_button, False, False, 0)
 
