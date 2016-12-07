@@ -40,23 +40,23 @@ function MyApplet(orientation, panel_height, instance_id) {
 MyApplet.prototype = {
     __proto__: Applet.TextApplet.prototype,
 
-    _init: function(orientation, panel_height, instance_id) {        
+    _init: function(orientation, panel_height, instance_id) {
         Applet.TextApplet.prototype._init.call(this, orientation, panel_height, instance_id);
 
         this.setAllowedLayout(Applet.AllowedLayout.BOTH);
-        
-        try {    
+
+        try {
 
             this.clock = new CinnamonDesktop.WallClock();
 
             this.settings = new Settings.AppletSettings(this, "calendar@cinnamon.org", this.instance_id);
 
             this.menuManager = new PopupMenu.PopupMenuManager(this);
-            
+
             this.orientation = orientation;
-            
+
             this._initContextMenu();
-                                     
+
             this._calendarArea = new St.BoxLayout({name: 'calendarArea' });
             this.menu.addActor(this._calendarArea);
 
@@ -69,7 +69,7 @@ MyApplet.prototype = {
             this._date = new St.Label();
             this._date.style_class = 'datemenu-date-label';
             vbox.add(this._date);
-           
+
             this._eventList = null;
 
             // Calendar
@@ -111,18 +111,18 @@ MyApplet.prototype = {
             // Start the clock
             this.on_settings_changed();
             this._updateClockAndDatePeriodic();
-     
+
         }
         catch (e) {
             global.logError(e);
         }
     },
-    
+
     on_applet_clicked: function(event) {
         this.menu.toggle();
     },
 
-    on_settings_changed: function() {        
+    on_settings_changed: function() {
         if (this._periodicTimeoutId){
             Mainloop.source_remove(this._periodicTimeoutId);
         }
@@ -132,14 +132,14 @@ MyApplet.prototype = {
     on_custom_format_button_pressed: function() {
         Util.spawnCommandLine("xdg-open http://www.foragoodstrftime.com/");
     },
-    
+
     _onLaunchSettings: function() {
         this.menu.close();
         Util.spawnCommandLine("cinnamon-settings calendar");
     },
 
     _updateClockAndDate: function() {
-        let now = new Date();        
+        let now = new Date();
         let nextUpdate = 60 - now.getSeconds() + 1;
         let in_vertical_panel = (this.orientation == St.Side.LEFT || this.orientation == St.Side.RIGHT);
         let label_string;
@@ -151,7 +151,7 @@ MyApplet.prototype = {
                 global.logError("Calendar applet: bad time format string - check your string.");
                 label_string = "~CLOCK FORMAT ERROR~ " + now.toLocaleFormat("%l:%M %p");
             }
-            this.set_applet_label(label_string);   
+            this.set_applet_label(label_string);
             if(this.custom_format.search("%S") > 0 || this.custom_format.search("%c") > 0 || this.custom_format.search("%T") > 0 || this.custom_format.search("%X") > 0) {
                 nextUpdate = 1;
             }
@@ -186,7 +186,7 @@ MyApplet.prototype = {
         let nextUpdate = this._updateClockAndDate();
         this._periodicTimeoutId = Mainloop.timeout_add_seconds(nextUpdate, Lang.bind(this, this._updateClockAndDatePeriodic));
     },
-    
+
     on_applet_removed_from_panel: function() {
         if (this._periodicTimeoutId){
             Mainloop.source_remove(this._periodicTimeoutId);
@@ -196,15 +196,15 @@ MyApplet.prototype = {
     _initContextMenu: function () {
         if (this._calendarArea) this._calendarArea.unparent();
         if (this.menu) this.menuManager.removeMenu(this.menu);
-        
+
         this.menu = new Applet.AppletPopupMenu(this, this.orientation);
         this.menuManager.addMenu(this.menu);
-        
+
         if (this._calendarArea){
             this.menu.addActor(this._calendarArea);
             this._calendarArea.show_all();
         }
-        
+
         // Whenever the menu is opened, select today
         this.menu.connect('open-state-changed', Lang.bind(this, function(menu, isOpen) {
             if (isOpen) {
@@ -237,7 +237,7 @@ MyApplet.prototype = {
 
 };
 
-function main(metadata, orientation, panel_height, instance_id) {  
+function main(metadata, orientation, panel_height, instance_id) {
     let myApplet = new MyApplet(orientation, panel_height, instance_id);
-    return myApplet;      
+    return myApplet;
 }
