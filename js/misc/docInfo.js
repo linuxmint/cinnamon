@@ -11,7 +11,6 @@ const GLib = imports.gi.GLib;
 const Main = imports.ui.main;
 
 const THUMBNAIL_ICON_MARGIN = 2;
-const MAX_RECENT_FILES = 20;
 
 function DocInfo(recentInfo) {
     this._init(recentInfo);
@@ -141,7 +140,7 @@ DocManager.prototype = {
         let docs = this._docSystem.get_all();
         this._infosByTimestamp = [];
         this._infosByUri = {};
-        for (let i = 0; i < docs.length && i < MAX_RECENT_FILES; i++) {
+        for (let i = 0; i < docs.length; i++) {
             let recentInfo = docs[i];
             let docInfo = new DocInfo(recentInfo);
             this._infosByTimestamp.push(docInfo);
