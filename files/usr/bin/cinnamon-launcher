@@ -16,6 +16,17 @@ from gi.repository import Gtk
 
 gettext.install("cinnamon", "/usr/share/locale")
 
+panel_process_name = None
+panel_cmd = None
+if os.path.exists("/usr/bin/mate-panel"):
+    panel_process_name = "mate-panel"
+    panel_cmd = "mate-panel --replace &"
+elif os.path.exists("/usr/bin/gnome-panel"):
+    panel_process_name = "gnome-panel"
+    panel_cmd = "gnome-panel --replace &"
+elif os.path.exists("/usr/bin/tint2"):
+    panel_process_name = "tint2"
+    panel_cmd = "killall tint2; tint2 &"
 
 def confirm_restart():
     d = Gtk.MessageDialog(parent=None, flags=0, message_type=Gtk.MessageType.WARNING, buttons=Gtk.ButtonsType.YES_NO)
@@ -35,14 +46,14 @@ if __name__ == "__main__":
         exit_status = os.waitpid(cinnamon_pid, 0)[1]
         if exit_status != 0:
             if os.fork() == 0:
-                if os.path.exists("/usr/bin/mate-panel"):
-                    os.system("mate-panel --replace &")
-                elif os.path.exists("/usr/bin/gnome-panel"):
-                    os.system("gnome-panel --replace &")
-                elif os.path.exists("/usr/bin/tint2"):
-                    os.system("killall tint2")
-                    os.system("tint2 &")
+                # Start the fallback panel
+                if panel_cmd is not None:
+                    os.system(panel_cmd)
+                # Start the fallback window manager
                 os.execvp(FALLBACK_COMMAND, (FALLBACK_COMMAND,) + FALLBACK_ARGS)
             else:
                 if confirm_restart():
+                    # Kill the fallback panel
+                    os.system("killall %s" % panel_process_name)
+                    # Restart Cinnamon
                     os.execvp(sys.argv[0], (sys.argv[0], "--replace"))
