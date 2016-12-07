@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-11-23 13:01+0000\n"
+"POT-Creation-Date: 2016-12-07 15:37+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -135,7 +135,7 @@ msgid "Remove this desklet"
 msgstr ""
 
 #: js/ui/expoThumbnail.js:899
-#: files/usr/share/cinnamon/applets/workspace-switcher@cinnamon.org/applet.js:290
+#: files/usr/share/cinnamon/applets/workspace-switcher@cinnamon.org/applet.js:294
 #, javascript-format
 msgid ""
 "Are you sure you want to remove workspace \"%s\"?\n"
@@ -584,109 +584,109 @@ msgstr ""
 msgid "Keyboard Settings"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:160
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:168
 msgid "Please provide your password to uninstall this application"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:241
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:249
 #: files/usr/share/cinnamon/cinnamon-settings/bin/ExtensionCore.py:223
 #: files/usr/share/cinnamon/cinnamon-settings/bin/ExtensionCore.py:678
 msgid "Add to panel"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:244
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:252
 #: files/usr/share/cinnamon/cinnamon-settings/bin/ExtensionCore.py:226
 #: files/usr/share/cinnamon/cinnamon-settings/bin/ExtensionCore.py:680
 msgid "Add to desktop"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:248
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:256
 msgid "Remove from favorites"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:251
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:259
 msgid "Add to favorites"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:255
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:263
 #: files/usr/share/cinnamon/cinnamon-settings/bin/ExtensionCore.py:692
 msgid "Uninstall"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:259
-msgid "Run with nVidia GPU"
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:267
+msgid "Run with NVIDIA GPU"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:650
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:658
 msgid "Open with"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:696
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:704
 msgid "Other application..."
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:773
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:781
 #: files/usr/share/cinnamon/applets/recent@cinnamon.org/applet.js:91
 msgid "Clear list"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:821
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:829
 msgid "All Applications"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:849
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:857
 msgid "Places"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:873
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:881
 msgid "Recent Files"
 msgstr ""
 
 #. sound@cinnamon.org->settings-schema.json->section1->description
 #. menu@cinnamon.org->settings-schema.json->menu->title
 #. menu@cinnamon.org->metadata.json->name
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:1132
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:1140
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_windows.py:40
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_windows.py:185
 msgid "Menu"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2229
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2253
 msgid "This file is no longer available"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2258
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2282
 #: files/usr/share/cinnamon/applets/recent@cinnamon.org/applet.js:95
 msgid "No recent documents"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2438
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2478
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:141
 msgid "Lock screen"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2439
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2479
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_power.py:11
 msgid "Lock the screen"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2466
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2506
 msgid "Logout"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2467
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2507
 msgid "Leave the session"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2481
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2521
 msgid "Quit"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2482
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2522
 msgid "Shutdown the computer"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2606
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2646
 msgid "Type to search..."
 msgstr ""
 
@@ -1394,15 +1394,15 @@ msgstr ""
 msgid "No open windows"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/workspace-switcher@cinnamon.org/applet.js:251
+#: files/usr/share/cinnamon/applets/workspace-switcher@cinnamon.org/applet.js:255
 msgid "Manage workspaces (Expo)"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/workspace-switcher@cinnamon.org/applet.js:258
+#: files/usr/share/cinnamon/applets/workspace-switcher@cinnamon.org/applet.js:262
 msgid "Add a new workspace"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/workspace-switcher@cinnamon.org/applet.js:264
+#: files/usr/share/cinnamon/applets/workspace-switcher@cinnamon.org/applet.js:268
 msgid "Remove the current workspace"
 msgstr ""
 
@@ -1502,7 +1502,7 @@ msgstr ""
 msgid "Choose a command"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-desktop-editor/cinnamon-desktop-editor.py:499
+#: files/usr/share/cinnamon/cinnamon-desktop-editor/cinnamon-desktop-editor.py:498
 msgid ""
 "Would you like to add this launcher to the menu also?  It will be placed in "
 "the Other category initially."
@@ -1778,7 +1778,7 @@ msgid "Picture"
 msgstr ""
 
 #: files/usr/share/cinnamon/cinnamon-settings-users/cinnamon-settings-users.py:551
-#: files/usr/share/cinnamon/cinnamon-menu-editor/cme/MainWindow.py:152
+#: files/usr/share/cinnamon/cinnamon-menu-editor/cme/MainWindow.py:155
 #: files/usr/share/cinnamon/cinnamon-settings/bin/ExtensionCore.py:356
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_startup.py:723
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_user.py:68
@@ -1873,12 +1873,12 @@ msgstr ""
 msgid "Select a JSON file to import"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-menu-editor/cme/MainWindow.py:165
+#: files/usr/share/cinnamon/cinnamon-menu-editor/cme/MainWindow.py:168
 #: files/usr/share/cinnamon/cinnamon-settings/bin/ExtensionCore.py:287
 msgid "Show"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-menu-editor/cme/MainWindow.py:173
+#: files/usr/share/cinnamon/cinnamon-menu-editor/cme/MainWindow.py:176
 msgid "Item"
 msgstr ""
 
@@ -5691,11 +5691,11 @@ msgid ""
 "during a window drag"
 msgstr ""
 
-#: files/usr/bin/cinnamon-launcher:23
+#: files/usr/bin/cinnamon-launcher:24
 msgid "Cinnamon just crashed. You are currently running in Fallback Mode."
 msgstr ""
 
-#: files/usr/bin/cinnamon-launcher:23
+#: files/usr/bin/cinnamon-launcher:24
 msgid "Do you want to restart Cinnamon?"
 msgstr ""
 
