@@ -475,7 +475,7 @@ class Main:
 
     def panel_launcher_cb(self, success, dest_path):
         if success:
-            settings = JSonSettingsWidgets.JSonSettingsHandler(self.json_path)
+            settings = JsonSettingsWidgets.JSONSettingsHandler(self.json_path)
 
             launchers = settings.get_value("launcherList")
             if self.desktop_file is None:
