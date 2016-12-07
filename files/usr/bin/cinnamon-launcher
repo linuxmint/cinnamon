@@ -20,6 +20,7 @@ gettext.install("cinnamon", "/usr/share/locale")
 def confirm_restart():
     d = Gtk.MessageDialog(parent=None, flags=0, message_type=Gtk.MessageType.WARNING, buttons=Gtk.ButtonsType.YES_NO)
     d.set_keep_above(True)
+    d.set_position(Gtk.WindowPosition.CENTER_ALWAYS)
     d.set_markup("<span size='large'><b>%s</b></span>\n\n%s" % (_("Cinnamon just crashed. You are currently running in Fallback Mode."), _("Do you want to restart Cinnamon?")))
     d.show_all()
     resp = d.run()
