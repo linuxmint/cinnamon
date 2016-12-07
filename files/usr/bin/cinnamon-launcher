@@ -34,7 +34,9 @@ if __name__ == "__main__":
         exit_status = os.waitpid(cinnamon_pid, 0)[1]
         if exit_status != 0:
             if os.fork() == 0:
-                if os.path.exists("/usr/bin/gnome-panel"):
+                if os.path.exists("/usr/bin/mate-panel"):
+                    os.system("mate-panel --replace &")
+                elif os.path.exists("/usr/bin/gnome-panel"):
                     os.system("gnome-panel --replace &")
                 elif os.path.exists("/usr/bin/tint2"):
                     os.system("killall tint2")
