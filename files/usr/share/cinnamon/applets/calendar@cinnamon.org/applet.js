@@ -145,20 +145,20 @@ MyApplet.prototype = {
         let label_string;
 
         // Applet label
-        if (this.use_custom_format || in_vertical_panel) {
-            if (in_vertical_panel)
-                label_string = now.toLocaleFormat("%H%n%M"); // this is all that will fit in a vertical panel with a typical default font
-            else
-                label_string = now.toLocaleFormat(this.custom_format);
-
+        if (this.use_custom_format) {
+            label_string = now.toLocaleFormat(this.custom_format);
             if (!label_string) {
                 global.logError("Calendar applet: bad time format string - check your string.");
                 label_string = "~CLOCK FORMAT ERROR~ " + now.toLocaleFormat("%l:%M %p");
-            }          
+            }
             this.set_applet_label(label_string);   
             if(this.custom_format.search("%S") > 0 || this.custom_format.search("%c") > 0 || this.custom_format.search("%T") > 0 || this.custom_format.search("%X") > 0) {
                 nextUpdate = 1;
             }
+        }
+        else if (in_vertical_panel) {
+            label_string = now.toLocaleFormat("%H%n%M"); // this is all that will fit in a vertical panel with a typical default font
+            this.set_applet_label(label_string);
         }
         else {
             if (this.clock) { // We lose cinnamon-desktop temporarily during suspend
