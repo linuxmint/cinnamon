@@ -475,8 +475,7 @@ class Main:
 
     def panel_launcher_cb(self, success, dest_path):
         if success:
-            settings = JSonSettingsWidgets.JSonSettingsHandler(self.json_path)
-
+            settings = JsonSettingsWidgets.JSONSettingsHandler(self.json_path)
             launchers = settings.get_value("launcherList")
             if self.desktop_file is None:
                 launchers.append(os.path.split(dest_path)[1])
@@ -485,7 +484,7 @@ class Main:
                 if i >= 0:
                     del launchers[i]
                     launchers.insert(i, os.path.split(dest_path)[1])
-            settings.set_value("launcherList", launchers)
+            settings.save_settings()
             if self.desktop_file is None:
                 self.ask_menu_launcher(dest_path)
         self.end()
