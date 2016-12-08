@@ -51,6 +51,9 @@ class Module:
         sidePage = SidePage(_("Screensaver"), "cs-screensaver", keywords, content_box, module=self)
         self.sidePage = sidePage
 
+    def on_show_custom_format_info_button_clicked(self, button):
+        subprocess.Popen(['xdg-open', 'http://www.foragoodstrftime.com/'])
+
     def on_module_selected(self):
         if self.loaded:
             return
@@ -122,6 +125,10 @@ class Module:
 
         widget = GSettingsFontButton(_("Date Font"), "org.cinnamon.desktop.screensaver", "font-date", size_group=size_group)
         settings.add_row(widget)
+
+        button = Gtk.Button(_("Show information on date format syntax"))
+        button.connect("clicked", self.on_show_custom_format_info_button_clicked)
+        page.pack_start(button, False, False, 0)
 
         settings = page.add_section(_("Away message"))
 
