@@ -47,6 +47,7 @@ class Module:
             settings.add_row(switch)
 
             switch = GSettingsSwitch(_("Disable automatic screen rotation on tablet's"), "org.cinnamon.settings-daemon.peripherals.touchscreen", "orientation-lock")
+            switch.set_tooltip_text(_("Select this option to disable automatic screen rotation on hardware equipped with supported accelerometers."))
             settings.add_row(switch)
 
             switch = GSettingsSwitch(_("Enable timer when logging out or shutting down"), "org.cinnamon.SessionManager", "quit-delay-toggle")
