@@ -367,6 +367,9 @@ class ScreensaverBox(Gtk.Box):
                 self.socket.destroy()
                 self.socket = None
 
+            for child in self.socket_box:
+                child.destroy()
+
             px = GdkPixbuf.Pixbuf.new_from_file_at_size("/usr/share/cinnamon/thumbnails/wallclock.png", -1, 240)
             w = Gtk.Image.new_from_pixbuf(px)
             w.show()
