@@ -1,3 +1,86 @@
+cinnamon (3.2.3) serena; urgency=medium
+
+  [ Albert Pool ]
+  * Remove the 20 recent files limit
+
+  [ Odyseus ]
+  * Default theme: Added support for applets with :checked pseudo class.
+
+  [ Clement Lefebvre ]
+  * sound applet: Add rhythmbox to the list of known players
+
+  [ NikoKrause ]
+  * [menu-applet] symbolic icons for contextMenu of appsButtons
+
+  [ JosephMcc ]
+  * icons: Add an icon for the "Run with NVIDIA" option in the menu
+
+  [ Stephen Collins ]
+  * Tutorials: Update the xlet settings tutorial and reference pages to reflect changes to the api in Cinnamon 3.2
+
+  [ Germán Franco ]
+  * workspace-switcher: avoid fast consecutive moves
+
+  [ leigh123linux ]
+  * Fix gi import version warning
+  * Change shebang to use system python
+
+  [ lestcape ]
+  * Do not make inecessary iteration on popupmenu close function
+
+  [ JosephMcc ]
+  * SoundFileChooser: Fix showing incorrect names
+  * SoundFileChooser: Change play icon
+
+  [ NikoKrause ]
+  * [menu-applet] fix file-exists-query and indentation
+
+  [ Germán Franco ]
+  * Fix typo, missing parenthesis
+
+  [ brownsr ]
+  * remove rtl code in vertical panel will require testing by 3rd party
+
+  [ Michael Webster ]
+  * menu applet, overrides.js: fix some loss in effectiveness of our vectorbox caused by feacb693f529bd7db2.  Having these calls within a callback, even one with no delay, was enough to provide for a bit of 'fuzziness' when defining/picking against the vectorbox's triangle, and preventing accidental category selection.
+
+  [ Clement Lefebvre ]
+  * cinnamon-launcher: Add support for mate-panel
+  * cinnamon-launcher: Center fallback message dialog
+
+  [ leigh123linux ]
+  * add depends wget
+
+  [ Clement Lefebvre ]
+  * Calendar applet: Allow custom date formats in vertical panels
+  * Calendar applet: Remove trailing spaces
+  * Panel Launchers: Fix the ability to edit
+  * l10n: Update POT file
+  * Fallback mode: Kill the panel when restarting Cinnamon
+
+  [ leigh123linux ]
+  * Add setting to disable automatic screen rotation on tablet's
+  * add orientation lock keybinding
+  * add tooltip
+
+  [ Darshaka Pathirana ]
+  * screensaver settings: Add button with info on custom format
+
+  [ Michael Webster ]
+  * cs_screensaver.py: A few changes to improve reliability of the screensaver plugin previews.  Use Gio.Subprocess, it seems to be more reliable at cleaning up after itself.  And don't re-make the GtkSocket every time - connecting to socket's plug-removed and returning True prevents the socket from auto-destructing and also improves cleanup when changing row selection.
+
+  [ itzexor ]
+  * appletManager.js: fix max instance check when pasting applet config
+
+  [ Clement Lefebvre ]
+  * Info settings: Rephrase tooltip
+  * l10n: Update POT file
+  * Window list applet: Move preferences up in the context menu
+  * General settings: Rephrase automatic rotation option
+  * l10n: Update POT file
+
+ -- Clement Lefebvre <root@linuxmint.com>  Sat, 10 Dec 2016 12:15:31 +0000
+
 cinnamon (3.2.2) serena; urgency=medium
 
   [ Clement Lefebvre ]
