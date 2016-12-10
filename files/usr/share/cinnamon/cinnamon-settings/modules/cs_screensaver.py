@@ -121,15 +121,17 @@ class Module:
         widget = GSettingsEntry(_("Date Format: "), schema, "date-format", size_group=size_group)
         settings.add_reveal_row(widget, schema, "use-custom-format")
 
+        widget = SettingsWidget()
+        button = Gtk.Button(_("Show information on date format syntax"))
+        button.connect("clicked", self.on_show_custom_format_info_button_clicked)
+        widget.pack_start(button, True, True, 0)
+        settings.add_reveal_row(widget, schema, "use-custom-format")
+
         widget = GSettingsFontButton(_("Time Font"), "org.cinnamon.desktop.screensaver", "font-time", size_group=size_group)
         settings.add_row(widget)
 
         widget = GSettingsFontButton(_("Date Font"), "org.cinnamon.desktop.screensaver", "font-date", size_group=size_group)
         settings.add_row(widget)
-
-        button = Gtk.Button(_("Show information on date format syntax"))
-        button.connect("clicked", self.on_show_custom_format_info_button_clicked)
-        page.pack_start(button, False, False, 0)
 
         settings = page.add_section(_("Away message"))
 

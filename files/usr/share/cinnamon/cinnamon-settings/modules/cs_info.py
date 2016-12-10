@@ -159,10 +159,12 @@ class Module:
                 settings.add_row(widget)
 
             if os.path.exists("/usr/bin/upload-system-info"):
+                widget = SettingsWidget()
                 button = Gtk.Button(_("Upload system information"))
                 button.set_tooltip_text(_("No personal information included"))
                 button.connect("clicked", self.on_button_clicked)
-                page.pack_start(button, False, False, 0)
+                widget.pack_start(button, True, True, 0)
+                settings.add_row(widget)
 
     def on_button_clicked(self, button):
         subprocess.Popen(["upload-system-info"])
