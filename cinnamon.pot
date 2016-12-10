@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-12-07 15:37+0000\n"
+"POT-Creation-Date: 2016-12-10 11:15+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -1133,7 +1133,7 @@ msgstr ""
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_backgrounds.py:223
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_calendar.py:22
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_panel.py:30
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_screensaver.py:75
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_screensaver.py:76
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_themes.py:69
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_workspaces.py:72
 msgid "Settings"
@@ -1509,7 +1509,7 @@ msgid ""
 msgstr ""
 
 #: files/usr/share/cinnamon/cinnamon-screensaver-lock-dialog/cinnamon-screensaver-lock-dialog.py:40
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_screensaver.py:227
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_screensaver.py:229
 msgid "Screen Locker"
 msgstr ""
 
@@ -3222,7 +3222,7 @@ msgid "Overlay scroll bars (logout required)"
 msgstr ""
 
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_effects.py:148
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_screensaver.py:101
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_screensaver.py:102
 msgid "Customize"
 msgstr ""
 
@@ -3373,7 +3373,7 @@ msgstr ""
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:31
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_mouse.py:31
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_mouse.py:82
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_screensaver.py:139
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_screensaver.py:140
 msgid "General"
 msgstr ""
 
@@ -3521,7 +3521,7 @@ msgid "Upload system information"
 msgstr ""
 
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_info.py:163
-msgid "This includes no personal information"
+msgid "No personal information included"
 msgstr ""
 
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:32
@@ -4557,7 +4557,7 @@ msgid "75%"
 msgstr ""
 
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_power.py:28
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_screensaver.py:16
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_screensaver.py:17
 msgid "30 seconds"
 msgstr ""
 
@@ -4570,48 +4570,48 @@ msgid "90 seconds"
 msgstr ""
 
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_power.py:31
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_screensaver.py:18
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_screensaver.py:19
 msgid "2 minutes"
 msgstr ""
 
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_power.py:32
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_power.py:37
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_screensaver.py:20
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_screensaver.py:29
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_screensaver.py:21
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_screensaver.py:30
 msgid "5 minutes"
 msgstr ""
 
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_power.py:33
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_power.py:38
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_screensaver.py:21
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_screensaver.py:30
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_screensaver.py:22
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_screensaver.py:31
 msgid "10 minutes"
 msgstr ""
 
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_power.py:39
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_screensaver.py:31
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_screensaver.py:32
 msgid "15 minutes"
 msgstr ""
 
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_power.py:40
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_screensaver.py:22
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_screensaver.py:32
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_screensaver.py:23
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_screensaver.py:33
 msgid "30 minutes"
 msgstr ""
 
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_power.py:41
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_screensaver.py:33
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_screensaver.py:34
 msgid "45 minutes"
 msgstr ""
 
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_power.py:42
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_screensaver.py:23
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_screensaver.py:34
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_screensaver.py:24
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_screensaver.py:35
 msgid "1 hour"
 msgstr ""
 
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_power.py:43
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_screensaver.py:27
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_screensaver.py:28
 msgid "Never"
 msgstr ""
 
@@ -4817,181 +4817,181 @@ msgstr ""
 msgid "Number of days to remember old files"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_screensaver.py:14
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_screensaver.py:15
 msgid "Lock immediately"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_screensaver.py:15
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_screensaver.py:16
 msgid "15 seconds"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_screensaver.py:17
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_screensaver.py:28
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_screensaver.py:18
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_screensaver.py:29
 msgid "1 minute"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_screensaver.py:19
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_screensaver.py:20
 msgid "3 minutes"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_screensaver.py:47
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_screensaver.py:48
 msgid "Manage screen lock settings"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_screensaver.py:50
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_screensaver.py:51
 msgid "screensaver, lock, password, away, message"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_screensaver.py:51
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_screensaver.py:69
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_screensaver.py:52
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_screensaver.py:70
 msgid "Screensaver"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_screensaver.py:70
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_screensaver.py:71
 msgid "Select screensaver"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_screensaver.py:77
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_screensaver.py:78
 msgid "Screensaver settings"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_screensaver.py:81
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_screensaver.py:82
 msgid "Delay before starting the screensaver"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_screensaver.py:82
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_screensaver.py:83
 msgid ""
 "This option defines the amount of time to wait before starting the "
 "screensaver, when the computer is not being used"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_screensaver.py:85
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_screensaver.py:86
 msgid "Lock settings"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_screensaver.py:87
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_screensaver.py:88
 msgid "Lock the computer when put to sleep"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_screensaver.py:88
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_screensaver.py:89
 msgid ""
 "Enable this option to require a password when the computer wakes up from "
 "suspend"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_screensaver.py:91
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_screensaver.py:92
 msgid "Lock the computer after the screensaver starts"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_screensaver.py:92
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_screensaver.py:93
 msgid ""
 "Enable this option to require a password when the screen turns itself off, "
 "or when the screensaver activates after a period of inactivity"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_screensaver.py:95
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_screensaver.py:96
 msgid "Delay before locking"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_screensaver.py:96
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_screensaver.py:97
 msgid ""
 "This option defines the amount of time to wait before locking the screen, "
 "after showing the screensaver or after turning off the screen"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_screensaver.py:103
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_screensaver.py:104
 msgid "Date and Time"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_screensaver.py:107
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_screensaver.py:108
 msgid "Always show the clock"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_screensaver.py:108
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_screensaver.py:109
 msgid "Show the clock on the wallpaper instead of just on the unlock screen"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_screensaver.py:111
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_screensaver.py:112
 msgid "Use a custom date and time format"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_screensaver.py:114
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_screensaver.py:115
 msgid "Time Format"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_screensaver.py:117
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_screensaver.py:118
 msgid "Date Format: "
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_screensaver.py:120
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_screensaver.py:121
 msgid "Time Font"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_screensaver.py:123
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_screensaver.py:124
 msgid "Date Font"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_screensaver.py:126
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_screensaver.py:127
 msgid "Away message"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_screensaver.py:128
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_screensaver.py:129
 msgid "Show this message when the screen is locked"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_screensaver.py:130
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_screensaver.py:131
 msgid "This is the default message displayed on your lock screen"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_screensaver.py:133
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_screensaver.py:134
 msgid "Font"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_screensaver.py:135
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_screensaver.py:136
 msgid "Ask for a custom message when locking the screen from the menu"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_screensaver.py:136
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_screensaver.py:137
 msgid ""
 "This option allows you to type a message each time you lock the screen from "
 "the menu"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_screensaver.py:141
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_screensaver.py:142
 msgid "Allow keyboard shortcuts"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_screensaver.py:142
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_screensaver.py:143
 msgid ""
 "Allow shortcuts like volume-control and media keys to be used on the lock "
 "screen"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_screensaver.py:145
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_screensaver.py:146
 msgid "Show media player controls"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_screensaver.py:146
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_screensaver.py:147
 msgid "For compatible players, show playback controls while media is playing"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_screensaver.py:149
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_screensaver.py:150
 msgid "Show album art"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_screensaver.py:150
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_screensaver.py:151
 msgid "If available, show album art while media is playing"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_screensaver.py:153
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_screensaver.py:154
 msgid "Show info panel"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_screensaver.py:154
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_screensaver.py:155
 msgid "Show the number of missed notifications and the battery status"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_screensaver.py:227
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_screensaver.py:229
 msgid "The standard cinnamon lock screen"
 msgstr ""
 
@@ -5691,11 +5691,11 @@ msgid ""
 "during a window drag"
 msgstr ""
 
-#: files/usr/bin/cinnamon-launcher:24
+#: files/usr/bin/cinnamon-launcher:35
 msgid "Cinnamon just crashed. You are currently running in Fallback Mode."
 msgstr ""
 
-#: files/usr/bin/cinnamon-launcher:24
+#: files/usr/bin/cinnamon-launcher:35
 msgid "Do you want to restart Cinnamon?"
 msgstr ""
 
