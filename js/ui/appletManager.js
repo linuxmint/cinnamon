@@ -613,7 +613,7 @@ function pasteAppletConfiguration(panelId) {
     clipboard.forEach(function(x) {
         let uuid = x.uuid
         let max = Extension.get_max_instances(uuid, Extension.Type.APPLET);
-        if (max == -1 || raw.filter(a => a.split(":")[2] == uuid).length < max) {
+        if (max == -1 || raw.filter(a => a.split(":")[3] == uuid).length < max) {
             raw.push("panel" + panelId + ":" + x.location_label + ":" + x.order + ":" + uuid + ":" + nextId);
             nextId ++;
         } else {
