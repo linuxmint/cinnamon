@@ -258,7 +258,7 @@ XletSettingsBase.prototype = {
         this.bindObject = bindObject;
         this.uuid = uuid;
         if (this._get_is_multi_instance_xlet(this.uuid)) this.instanceId = instanceId;
-        else this.instanceId = this.uuid; 
+        else this.instanceId = this.uuid;
         this.bindings = {};
 
         if (!this._ensureSettingsFiles()) return;
@@ -534,14 +534,23 @@ XletSettingsBase.prototype = {
         }
     },
 
-    _settingChangedRemotely: function(key, value) {
-        let changed = false;
-        if (key in this.settingsData) {
-            if (this.settingsData[key].value === undefined) return;
-            if (this.settingsData[key].value == value) return;
+    _checkSettings: function() {
+        let oldSettings = this.settingsData;
+        try {
+            this.settingsData = this._loadFromFile();
+        } catch(e) {
+            // looks like we're getting a premature signal from the file monitor
+            // we should get another when the file is finished writing
+            return;
+        }
 
-            let oldValue = this.settingsData[key].value;
-            this.settingsData[key].value = value;
+        let changed = false;
+        for (let key in this.settingsData) {
+            if (this.settingsData[key].value === undefined) continue;
+
+            let oldValue = oldSettings[key].value;
+            let value = this.settingsData[key].value;
+            if (value == oldValue) continue;
 
             changed = true;
             if (key in this.bindings) {
@@ -625,7 +634,9 @@ XletSettingsBase.prototype = {
             needsSave = true;
         }
 
+        this.monitor = this.file.monitor_file(Gio.FileMonitorFlags.NONE, null);
         if (needsSave) this._saveToFile();
+        else this.monitorId = this.monitor.connect("changed", Lang.bind(this, this._checkSettings));
 
         return true;
     },
@@ -703,18 +714,19 @@ XletSettingsBase.prototype = {
     },
 
     _saveToFile: function() {
+        if (this.monitorId) this.monitor.disconnect(this.monitorId);
         let rawData = JSON.stringify(this.settingsData, null, 4);
         let raw = this.file.replace(null, false, Gio.FileCreateFlags.NONE, null);
         let out_file = Gio.BufferedOutputStream.new_sized(raw, 4096);
         Cinnamon.write_string_to_stream(out_file, rawData);
         out_file.close(null);
+        this.monitorId = this.monitor.connect("changed", Lang.bind(this, this._checkSettings));
     },
 
-    // called by cinnamonDBus.js to when the setting is changed remotely.
+    // called by cinnamonDBus.js to when the setting is changed remotely. This is to expedite the
+    // update due to settings changes, as the file monitor has a significant delay.
     remoteUpdate: function(key, payload) {
-        let val = JSON.parse(payload);
-
-        this._settingChangedRemotely(key, val);
+        this._checkSettings();
     },
 
     /**
@@ -728,6 +740,7 @@ XletSettingsBase.prototype = {
         for (let key in this.bindings) {
             this.unbindAll(key);
         }
+        if (this.monitorId) this.monitor.disconnect(this.monitorId);
         this.disconnectAll();
     }
 }
