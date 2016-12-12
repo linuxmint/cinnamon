@@ -20,7 +20,6 @@
 #include "cinnamon-window-tracker-private.h"
 #include "cinnamon-app-private.h"
 #include "cinnamon-global.h"
-#include "cinnamon-marshal.h"
 #include "st.h"
 
 /* This file includes modified code from
@@ -117,15 +116,13 @@ cinnamon_window_tracker_class_init (CinnamonWindowTrackerClass *klass)
                                    CINNAMON_TYPE_WINDOW_TRACKER,
                                    G_SIGNAL_RUN_LAST,
                                    0,
-                                   NULL, NULL,
-                                   g_cclosure_marshal_VOID__BOXED,
+                                   NULL, NULL, NULL,
                                    G_TYPE_NONE, 1, CINNAMON_TYPE_STARTUP_SEQUENCE);
   signals[TRACKED_WINDOWS_CHANGED] = g_signal_new ("tracked-windows-changed",
                                                    CINNAMON_TYPE_WINDOW_TRACKER,
                                                    G_SIGNAL_RUN_LAST,
                                                    0,
-                                                   NULL, NULL,
-                                                   g_cclosure_marshal_VOID__VOID,
+                                                   NULL, NULL, NULL,
                                                    G_TYPE_NONE, 0);
 }
 

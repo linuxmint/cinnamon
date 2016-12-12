@@ -95,13 +95,10 @@ privlibdir = $(pkglibdir)
 privlib_LTLIBRARIES = libcinnamon.la libcinnamon-js.la
 
 cinnamon_built_sources = \
-	cinnamon-marshal.h \
-	cinnamon-marshal.c \
 	cinnamon-enum-types.h \
 	cinnamon-enum-types.c
 
 BUILT_SOURCES += $(cinnamon_built_sources)
-EXTRA_DIST += cinnamon-marshal.list
 
 cinnamon_public_headers_h =		\
 	cinnamon-app.h			\
@@ -231,28 +228,6 @@ run_js_test_SOURCES =			\
 	run-js-test.c
 
 ########################################
-
-cinnamon-marshal.h: stamp-cinnamon-marshal.h
-	@true
-stamp-cinnamon-marshal.h: Makefile cinnamon-marshal.list
-	$(AM_V_GEN) $(GLIB_GENMARSHAL) \
-		--prefix=_cinnamon_marshal \
-		--header \
-	$(srcdir)/cinnamon-marshal.list > xgen-smh && \
-	(cmp -s xgen-smh cinnamon-marshal.h || cp -f xgen-smh cinnamon-marshal.h) && \
-	rm -f xgen-smh && \
-	echo timestamp > $(@F)
-CLEANFILES += stamp-cinnamon-marshal.h
-
-cinnamon-marshal.c: Makefile cinnamon-marshal.list
-	$(AM_V_GEN) (echo "#include \"cinnamon-marshal.h\"" ; \
-	 $(GLIB_GENMARSHAL) \
-		--prefix=_cinnamon_marshal \
-		--body \
-	 $(srcdir)/cinnamon-marshal.list ) > xgen-smc && \
-	cp -f xgen-smc cinnamon-marshal.c && \
-	rm -f xgen-smc
-
 
 cinnamon-enum-types.h: stamp-cinnamon-enum-types.h Makefile
 	@true

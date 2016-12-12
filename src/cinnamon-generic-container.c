@@ -284,8 +284,7 @@ cinnamon_generic_container_class_init (CinnamonGenericContainerClass *klass)
                   G_TYPE_FROM_CLASS (klass),
                   G_SIGNAL_RUN_LAST,
                   0,
-                  NULL, NULL,
-                  gi_cclosure_marshal_generic,
+                  NULL, NULL, NULL,
                   G_TYPE_NONE, 2, G_TYPE_FLOAT, CINNAMON_TYPE_GENERIC_CONTAINER_ALLOCATION);
 
   /**
@@ -309,8 +308,7 @@ cinnamon_generic_container_class_init (CinnamonGenericContainerClass *klass)
                   G_TYPE_FROM_CLASS (klass),
                   G_SIGNAL_RUN_LAST,
                   0,
-                  NULL, NULL,
-                  gi_cclosure_marshal_generic,
+                  NULL, NULL, NULL,
                   G_TYPE_NONE, 2, G_TYPE_FLOAT, CINNAMON_TYPE_GENERIC_CONTAINER_ALLOCATION);
 
   /**
@@ -330,8 +328,7 @@ cinnamon_generic_container_class_init (CinnamonGenericContainerClass *klass)
                   G_TYPE_FROM_CLASS (klass),
                   G_SIGNAL_RUN_LAST,
                   0,
-                  NULL, NULL,
-                  gi_cclosure_marshal_generic,
+                  NULL, NULL, NULL,
                   G_TYPE_NONE, 2, CLUTTER_TYPE_ACTOR_BOX, CLUTTER_TYPE_ALLOCATION_FLAGS);
 
   g_type_class_add_private (gobject_class, sizeof (CinnamonGenericContainerPrivate));

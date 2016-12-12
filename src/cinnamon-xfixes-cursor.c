@@ -305,8 +305,7 @@ cinnamon_xfixes_cursor_class_init (CinnamonXFixesCursorClass *klass)
                                        G_TYPE_FROM_CLASS (klass),
                                        G_SIGNAL_RUN_LAST,
                                        0,
-                                       NULL, NULL,
-                                       g_cclosure_marshal_VOID__VOID,
+                                       NULL, NULL, NULL,
                                        G_TYPE_NONE, 0);
 
   gobject_class->get_property = cinnamon_xfixes_cursor_get_property;
