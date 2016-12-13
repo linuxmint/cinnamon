@@ -597,9 +597,11 @@ RecentButton.prototype = {
 
     _init: function(appsMenuButton, file, showIcon) {
         PopupMenu.PopupBaseMenuItem.prototype._init.call(this, {hover: false});
-        this.file = file;
+        this.mimeType = file.mimeType;
+        this.uri = file.uri;
+        this.uriDecoded = file.uriDecoded;
         this.appsMenuButton = appsMenuButton;
-        this.button_name = this.file.name;
+        this.button_name = file.name;
         this.actor.set_style_class_name('menu-application-button');
         this.actor._delegate = this;
         this.label = new St.Label({ text: this.button_name, style_class: 'menu-application-button-label' });
@@ -630,7 +632,7 @@ RecentButton.prototype = {
     },
 
     activate: function(event) {
-        this.file.launch();
+        Gio.app_info_launch_default_for_uri(this.uri, global.create_app_launch_context());
         this.appsMenuButton.menu.close();
     },
 
@@ -660,9 +662,9 @@ RecentButton.prototype = {
             menuItem.actor.style = "font-weight: bold";
             this.menu.addMenuItem(menuItem);
 
-            let file = Gio.File.new_for_uri(this.file.uri);
+            let file = Gio.File.new_for_uri(this.uri);
 
-            let default_info = Gio.AppInfo.get_default_for_type(this.file.mimeType, !this.hasLocalPath(file));
+            let default_info = Gio.AppInfo.get_default_for_type(this.mimeType, !this.hasLocalPath(file));
 
             if (default_info) {
                 menuItem = new RecentContextMenuItem(this,
@@ -676,12 +678,12 @@ RecentButton.prototype = {
                 this.menu.addMenuItem(menuItem);
             }
 
-            let infos = Gio.AppInfo.get_all_for_type(this.file.mimeType)
+            let infos = Gio.AppInfo.get_all_for_type(this.mimeType)
 
             for (let i = 0; i < infos.length; i++) {
                 let info = infos[i];
 
-                file = Gio.File.new_for_uri(this.file.uri);
+                file = Gio.File.new_for_uri(this.uri);
 
                 if (!this.hasLocalPath(file) && !info.supports_uris())
                     continue;
@@ -705,7 +707,7 @@ RecentButton.prototype = {
                                                      _("Other application..."),
                                                      false,
                                                      Lang.bind(this, function() {
-                                                         Util.spawnCommandLine("nemo-open-with " + this.file.uri);
+                                                         Util.spawnCommandLine("nemo-open-with " + this.uri);
                                                          this.toggleMenu();
                                                          this.appsMenuButton.menu.close();
                                                      }));
@@ -2243,13 +2245,13 @@ MyApplet.prototype = {
                         this._clearPrevSelection(button.actor);
                         button.actor.style_class = "menu-application-button-selected";
                         this.selectedAppTitle.set_text("");
-                        let selectedAppUri = button.file.uriDecoded;
+                        let selectedAppUri = button.uriDecoded;
                         let fileIndex = selectedAppUri.indexOf("file:///");
                         if (fileIndex !== -1)
                             selectedAppUri = selectedAppUri.substr(fileIndex + 7);
                         this.selectedAppDescription.set_text(selectedAppUri);
 
-                        let file = Gio.file_new_for_uri(button.file.uri);
+                        let file = Gio.file_new_for_uri(button.uri);
                         if (!file.query_exists(null))
                             this.selectedAppTitle.set_text(_("This file is no longer available"));
                     }));
@@ -2259,7 +2261,7 @@ MyApplet.prototype = {
                         this.selectedAppTitle.set_text("");
                         this.selectedAppDescription.set_text("");
                     }));
-                    let file = Gio.file_new_for_uri(button.file.uri);
+                    let file = Gio.file_new_for_uri(button.uri);
                     if (file.query_exists(null)) {
                         this._recentButtons.push(button);
                         this.applicationsBox.add_actor(button.actor);

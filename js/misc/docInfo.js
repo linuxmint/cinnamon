@@ -19,7 +19,7 @@ function DocInfo(recentInfo) {
 
 DocInfo.prototype = {
     _init : function(recentInfo) {
-        this.recentInfo = recentInfo;
+        this.gicon = recentInfo.get_gicon();
         // We actually used get_modified() instead of get_visited()
         // here, as GtkRecentInfo doesn't updated get_visited()
         // correctly. See http://bugzilla.gnome.org/show_bug.cgi?id=567094
@@ -56,8 +56,7 @@ DocInfo.prototype = {
         //     return St.TextureCache.get_default().load_uri_async(thumb_uri, size, size);
         // }
         // else {
-            let gicon = this.recentInfo.get_gicon()
-            return St.TextureCache.get_default().load_gicon(null, gicon, size);
+            return St.TextureCache.get_default().load_gicon(null, this.gicon, size);
         // }
     },
 
