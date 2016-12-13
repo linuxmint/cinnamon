@@ -1,3 +1,11 @@
+cinnamon (3.2.6) serena; urgency=medium
+
+  * Revert "Remove the 20 recent files limit"
+  * Recent documents: Don't store objects we don't need
+  * Menu applet: Try/catch call to decodeURIComponent
+
+ -- Clement Lefebvre <root@linuxmint.com>  Tue, 13 Dec 2016 22:27:47 +0000
+
 cinnamon (3.2.5) serena; urgency=medium
 
   * l10n: Generate additional files
