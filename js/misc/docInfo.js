@@ -27,7 +27,13 @@ DocInfo.prototype = {
         this.name = recentInfo.get_display_name();
         this._lowerName = this.name.toLowerCase();
         this.uri = recentInfo.get_uri();
-        this.uriDecoded = decodeURIComponent(this.uri);
+        try {
+            this.uriDecoded = decodeURIComponent(this.uri);
+        }
+        catch (e) {
+            this.uriDecoded = this.uri;
+            global.logError("Error while decoding URI: " + this.uri);
+        }
         this.mimeType = recentInfo.get_mime_type();
         //this.mtime = this._fetch_mtime(); // Expensive
     },
