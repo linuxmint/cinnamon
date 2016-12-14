@@ -597,9 +597,11 @@ RecentButton.prototype = {
 
     _init: function(appsMenuButton, file, showIcon) {
         PopupMenu.PopupBaseMenuItem.prototype._init.call(this, {hover: false});
-        this.file = file;
+        this.mimeType = file.mimeType;
+        this.uri = file.uri;
+        this.uriDecoded = file.uriDecoded;
         this.appsMenuButton = appsMenuButton;
-        this.button_name = this.file.name;
+        this.button_name = file.name;
         this.actor.set_style_class_name('menu-application-button');
         this.actor._delegate = this;
         this.label = new St.Label({ text: this.button_name, style_class: 'menu-application-button-label' });
@@ -630,7 +632,7 @@ RecentButton.prototype = {
     },
 
     activate: function(event) {
-        this.file.launch();
+        Gio.app_info_launch_default_for_uri(this.uri, global.create_app_launch_context());
         this.appsMenuButton.menu.close();
     },
 
@@ -660,9 +662,9 @@ RecentButton.prototype = {
             menuItem.actor.style = "font-weight: bold";
             this.menu.addMenuItem(menuItem);
 
-            let file = Gio.File.new_for_uri(this.file.uri);
+            let file = Gio.File.new_for_uri(this.uri);
 
-            let default_info = Gio.AppInfo.get_default_for_type(this.file.mimeType, !this.hasLocalPath(file));
+            let default_info = Gio.AppInfo.get_default_for_type(this.mimeType, !this.hasLocalPath(file));
 
             if (default_info) {
                 menuItem = new RecentContextMenuItem(this,
@@ -676,12 +678,12 @@ RecentButton.prototype = {
                 this.menu.addMenuItem(menuItem);
             }
 
-            let infos = Gio.AppInfo.get_all_for_type(this.file.mimeType)
+            let infos = Gio.AppInfo.get_all_for_type(this.mimeType)
 
             for (let i = 0; i < infos.length; i++) {
                 let info = infos[i];
 
-                file = Gio.File.new_for_uri(this.file.uri);
+                file = Gio.File.new_for_uri(this.uri);
 
                 if (!this.hasLocalPath(file) && !info.supports_uris())
                     continue;
@@ -705,7 +707,7 @@ RecentButton.prototype = {
                                                      _("Other application..."),
                                                      false,
                                                      Lang.bind(this, function() {
-                                                         Util.spawnCommandLine("nemo-open-with " + this.file.uri);
+                                                         Util.spawnCommandLine("nemo-open-with " + this.uri);
                                                          this.toggleMenu();
                                                          this.appsMenuButton.menu.close();
                                                      }));
@@ -2121,10 +2123,18 @@ MyApplet.prototype = {
             this._addEnterEvent(this.placesButton, Lang.bind(this, function() {
                 if (!this.searchActive) {
                     this.placesButton.isHovered = true;
-                    this._clearPrevCatSelection(this.placesButton);
-                    this.placesButton.actor.style_class = "menu-category-button-selected";
-                    this.closeContextMenus(null, false);
-                    this._displayButtons(null, -1);
+
+                    Mainloop.idle_add_full(Mainloop.PRIORITY_DEFAULT, Lang.bind(this, function() {
+                        if (this.placesButton.isHovered) {
+                            this._clearPrevCatSelection(this.placesButton);
+                            this.placesButton.actor.style_class = "menu-category-button-selected";
+                            this.closeContextMenus(null, false);
+                            this._displayButtons(null, -1);
+                        } else {
+                            this.placesButton.actor.style_class = "menu-category-button";
+                        }
+                    }))
+
                     this.makeVectorBox(this.placesButton.actor);
                 }
             }));
@@ -2152,21 +2162,21 @@ MyApplet.prototype = {
                 let place = places[i];
                 let button = new PlaceButton(this, place, place.name, this.showApplicationIcons);
                 this._addEnterEvent(button, Lang.bind(this, function() {
-                        this._clearPrevSelection(button.actor);
-                        button.actor.style_class = "menu-application-button-selected";
-                        this.selectedAppTitle.set_text("");
-                        let selectedAppId = button.place.idDecoded;
-                        selectedAppId = selectedAppId.substr(selectedAppId.indexOf(':') + 1);
-                        let fileIndex = selectedAppId.indexOf('file:///');
-                        if (fileIndex !== -1)
-                            selectedAppId = selectedAppId.substr(fileIndex + 7);
-                        this.selectedAppDescription.set_text(selectedAppId);
-                        }));
+                    this._clearPrevSelection(button.actor);
+                    button.actor.style_class = "menu-application-button-selected";
+                    this.selectedAppTitle.set_text("");
+                    let selectedAppId = button.place.idDecoded;
+                    selectedAppId = selectedAppId.substr(selectedAppId.indexOf(':') + 1);
+                    let fileIndex = selectedAppId.indexOf('file:///');
+                    if (fileIndex !== -1)
+                        selectedAppId = selectedAppId.substr(fileIndex + 7);
+                    this.selectedAppDescription.set_text(selectedAppId);
+                }));
                 button.actor.connect('leave-event', Lang.bind(this, function() {
-                            this._previousSelectedActor = button.actor;
-                            this.selectedAppTitle.set_text("");
-                            this.selectedAppDescription.set_text("");
-                            }));
+                    this._previousSelectedActor = button.actor;
+                    this.selectedAppTitle.set_text("");
+                    this.selectedAppDescription.set_text("");
+                }));
                 this._placesButtons.push(button);
                 this.applicationsBox.add_actor(button.actor);
             }
@@ -2195,10 +2205,18 @@ MyApplet.prototype = {
             this._addEnterEvent(this.recentButton, Lang.bind(this, function() {
                 if (!this.searchActive) {
                     this.recentButton.isHovered = true;
-                    this._clearPrevCatSelection(this.recentButton.actor);
-                    this.recentButton.actor.style_class = "menu-category-button-selected";
-                    this.closeContextMenus(null, false);
-                    this._displayButtons(null, null, -1);
+
+                    Mainloop.idle_add_full(Mainloop.PRIORITY_DEFAULT, Lang.bind(this, function() {
+                        if (this.recentButton.isHovered) {
+                            this._clearPrevCatSelection(this.recentButton.actor);
+                            this.recentButton.actor.style_class = "menu-category-button-selected";
+                            this.closeContextMenus(null, false);
+                            this._displayButtons(null, null, -1);
+                        } else {
+                            this.recentButton.actor.style_class = "menu-category-button";
+                        }
+                    }))
+
                     this.makeVectorBox(this.recentButton.actor);
                 }
             }));
@@ -2224,26 +2242,26 @@ MyApplet.prototype = {
                 for (let id = 0; id < MAX_RECENT_FILES && id < this.RecentManager._infosByTimestamp.length; id++) {
                     let button = new RecentButton(this, this.RecentManager._infosByTimestamp[id], this.showApplicationIcons);
                     this._addEnterEvent(button, Lang.bind(this, function() {
-                            this._clearPrevSelection(button.actor);
-                            button.actor.style_class = "menu-application-button-selected";
-                            this.selectedAppTitle.set_text("");
-                            let selectedAppUri = button.file.uriDecoded;
-                            let fileIndex = selectedAppUri.indexOf("file:///");
-                            if (fileIndex !== -1)
-                                selectedAppUri = selectedAppUri.substr(fileIndex + 7);
-                            this.selectedAppDescription.set_text(selectedAppUri);
+                        this._clearPrevSelection(button.actor);
+                        button.actor.style_class = "menu-application-button-selected";
+                        this.selectedAppTitle.set_text("");
+                        let selectedAppUri = button.uriDecoded;
+                        let fileIndex = selectedAppUri.indexOf("file:///");
+                        if (fileIndex !== -1)
+                            selectedAppUri = selectedAppUri.substr(fileIndex + 7);
+                        this.selectedAppDescription.set_text(selectedAppUri);
 
-                            let file = Gio.file_new_for_uri(button.file.uriDecoded);
-                            if (!file.query_exists(null))
-                                this.selectedAppTitle.set_text(_("This file is no longer available"));
-                            }));
+                        let file = Gio.file_new_for_uri(button.uri);
+                        if (!file.query_exists(null))
+                            this.selectedAppTitle.set_text(_("This file is no longer available"));
+                    }));
                     button.actor.connect('leave-event', Lang.bind(this, function() {
-                            button.actor.style_class = "menu-application-button";
-                            this._previousSelectedActor = button.actor;
-                            this.selectedAppTitle.set_text("");
-                            this.selectedAppDescription.set_text("");
-                            }));
-                    let file = Gio.file_new_for_uri(button.file.uriDecoded);
+                        button.actor.style_class = "menu-application-button";
+                        this._previousSelectedActor = button.actor;
+                        this.selectedAppTitle.set_text("");
+                        this.selectedAppDescription.set_text("");
+                    }));
+                    let file = Gio.file_new_for_uri(button.uri);
                     if (file.query_exists(null)) {
                         this._recentButtons.push(button);
                         this.applicationsBox.add_actor(button.actor);
@@ -2253,13 +2271,13 @@ MyApplet.prototype = {
 
                 let button = new RecentClearButton(this);
                 this._addEnterEvent(button, Lang.bind(this, function() {
-                        this._clearPrevSelection(button.actor);
-                        button.actor.style_class = "menu-application-button-selected";
-                        }));
+                    this._clearPrevSelection(button.actor);
+                    button.actor.style_class = "menu-application-button-selected";
+                }));
                 button.actor.connect('leave-event', Lang.bind(this, function() {
-                        button.actor.style_class = "menu-application-button";
-                        this._previousSelectedActor = button.actor;
-                        }));
+                    button.actor.style_class = "menu-application-button";
+                    this._previousSelectedActor = button.actor;
+                }));
                 this._recentButtons.push(button);
                 this.applicationsBox.add_actor(button.actor);
                 this.noRecentDocuments = false;
@@ -2291,9 +2309,17 @@ MyApplet.prototype = {
         this._addEnterEvent(this._allAppsCategoryButton, Lang.bind(this, function() {
             if (!this.searchActive) {
                 this._allAppsCategoryButton.isHovered = true;
-                this._clearPrevCatSelection(this._allAppsCategoryButton.actor);
-                this._allAppsCategoryButton.actor.style_class = "menu-category-button-selected";
-                this._select_category(null, this._allAppsCategoryButton);
+
+                Mainloop.idle_add_full(Mainloop.PRIORITY_DEFAULT, Lang.bind(this, function() {
+                    if (this._allAppsCategoryButton.isHovered) {
+                        this._clearPrevCatSelection(this._allAppsCategoryButton.actor);
+                        this._allAppsCategoryButton.actor.style_class = "menu-category-button-selected";
+                        this._select_category(null, this._allAppsCategoryButton);
+                    } else {
+                        this._allAppsCategoryButton.actor.style_class = "menu-category-button";
+                    }
+                }));
+
                 this.makeVectorBox(this._allAppsCategoryButton.actor);
             }
          }));
@@ -2355,9 +2381,17 @@ MyApplet.prototype = {
                     this._addEnterEvent(categoryButton, Lang.bind(this, function() {
                         if (!this.searchActive) {
                             categoryButton.isHovered = true;
-                            this._clearPrevCatSelection(categoryButton.actor);
-                            categoryButton.actor.style_class = "menu-category-button-selected";
-                            this._select_category(dir, categoryButton);
+
+                            Mainloop.idle_add_full(Mainloop.PRIORITY_DEFAULT, Lang.bind(this, function() {
+                                if (categoryButton.isHovered) {
+                                    this._clearPrevCatSelection(categoryButton.actor);
+                                    categoryButton.actor.style_class = "menu-category-button-selected";
+                                    this._select_category(dir, categoryButton);
+                                } else {
+                                    categoryButton.actor.style_class = "menu-category-button";
+                                }
+                            }))
+
                             this.makeVectorBox(categoryButton.actor);
                         }
                     }));

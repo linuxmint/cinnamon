@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/python3
 """ Allows you to open a Gtk file dialog from and get the selected file in return
 
 Used by a couple of Cinnamon spices via Javascript

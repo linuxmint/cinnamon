@@ -101,8 +101,9 @@ Depends: cinnamon-common (= ${source:Version}),
          mesa-utils,
          gkbd-capplet,
          metacity,
-         gnome-panel | tint2,
-         xapps-common
+         mate-panel | gnome-panel | tint2,
+         xapps-common,
+         wget
 Recommends: gnome-themes-standard, gnome-terminal, cinnamon-bluetooth
 Provides: notification-daemon, x-window-manager
 Description: Modern Linux desktop

@@ -3,16 +3,46 @@
   <para>This is the reference for the settings API.</para>
 
   <sect2>
-    <title>Widget types and required fields</title>
+    <title>Basic settings types</title>
     <sect3>
-      <title>checkbox</title>
+      <title>switch</title>
       <itemizedlist>
-        <listitem><code>type</code>: should be <code>checkbox</code></listitem>
+        <listitem><code>type</code>: should be <code>switch</code></listitem>
         <listitem><code>default</code>: <code>true</code> or <code>false</code> (no quotes)</listitem>
         <listitem><code>description</code>: String describing the setting</listitem>
       </itemizedlist>
 
-      <para>A simple checkbox that controls a <code>boolean</code> type value</para>
+      <para>A simple switch that controls a <code>boolean</code> type value.</para>
+      <para>New in Cinnamon 3.2</para>
+
+    </sect3>
+    <sect3>
+      <title>spinbutton</title>
+      <itemizedlist>
+        <listitem><code>type</code>: should be <code>spinbutton</code></listitem>
+        <listitem><code>default</code>: default value to use - must be <code>number</code></listitem>
+        <listitem><code>min</code>: minimum value</listitem>
+        <listitem><code>max</code>: maximum value</listitem>
+        <listitem><code>units</code>: (optional) String describing the unit type (pixels, bytes, etc..)</listitem>
+        <listitem><code>step</code>: adjustment amount</listitem>
+        <listitem><code>description</code>: String describing the setting</listitem>
+      </itemizedlist>
+
+      <para>Provides a spin button and entry that control a <code>number</code> value. This can be integer or floating point format. For floating point, all values must have leading 0's.</para>
+
+    </sect3>
+    <sect3>
+      <title>scale</title>
+      <itemizedlist>
+        <listitem><code>type</code>: should be <code>scale</code></listitem>
+        <listitem><code>default</code>: default value to use - must be <code>number</code></listitem>
+        <listitem><code>min</code>: minimum value</listitem>
+        <listitem><code>max</code>: maximum value</listitem>
+        <listitem><code>step</code>: adjustment amount</listitem>
+        <listitem><code>description</code>: String describing the setting</listitem>
+      </itemizedlist>
+
+      <para>Provides a scale widget that allows you to pick a <code>number</code> value between min and max, by step amount.  Integer or floating point numbers can be used. For floating point, all values must have leading 0's.</para>
 
     </sect3>
     <sect3>
@@ -21,10 +51,10 @@
         <listitem><code>type</code>: should be <code>entry</code></listitem>
         <listitem><code>default</code>: default string value</listitem>
         <listitem><code>description</code>: String describing the setting</listitem>
-        <listitem><code>expand-width</code>:  (optional) true or false, or leave off entirely. Forces editable fields of <code>entry</code>'s elements to occupy the entire space available in a row</listitem>
+        <listitem><code>expand-width</code>: (optional) true or false, or leave off entirely. Forces editable fields of <code>entry</code>'s elements to occupy the entire space available in a row</listitem>
       </itemizedlist>
 
-      <para>A text entry field that stores a <code>string</code></para>
+      <para>A single-line text entry field that stores a <code>string</code>.</para>
 
     </sect3>
     <sect3>
@@ -33,10 +63,67 @@
         <listitem><code>type</code>: should be <code>textview</code></listitem>
         <listitem><code>default</code>: default string value</listitem>
         <listitem><code>description</code>: String describing the setting</listitem>
-        <listitem><code>height</code>:  (optional) Number indicating the height of the textview in pixels or leave off for default height (200 px)</listitem>
+        <listitem><code>height</code>: (optional) Number indicating the height of the textview in pixels or leave off for default height (200 px)</listitem>
       </itemizedlist>
 
-      <para>A text entry field that stores a <code>string</code>. Unlike the entry type, this type is multi-line</para>
+      <para>A multi-line text entry field that stores a <code>string</code>.</para>
+      <para>New in Cinnamon 2.0</para>
+
+    </sect3>
+  </sect2>
+
+  <sect2>
+    <title>File chooser widgets</title>
+    <sect3>
+      <title>filechooser</title>
+      <itemizedlist>
+        <listitem><code>type</code>: should be <code>filechooser</code></listitem>
+        <listitem><code>description</code>: String describing the setting</listitem>
+        <listitem><code>default</code>: Default filename to use</listitem>
+        <listitem><code>select-dir</code>: (optional) true or false, or leave off entirely. Forces directory selection.</listitem>
+        <listitem><code>expand-width</code>: (optional) true or false, or leave off entirely. Forces editable fields of <code>filechooser</code>'s elements to occupy the entire space available in a row</listitem>
+      </itemizedlist>
+
+      <para>Opens a file chooser dialog that allows you to choose a filename. If <code>select-dir</code> is <code>true</code>, it will only allow directories to be selected. Stores as a <code>string</code>.</para>
+
+    </sect3>
+    <sect3>
+      <title>iconfilechooser</title>
+      <itemizedlist>
+        <listitem><code>type</code>: should be <code>iconfilechooser</code></listitem>
+        <listitem><code>description</code>: String describing the setting</listitem>
+        <listitem><code>default</code>: default icon path or icon name to use</listitem>
+      </itemizedlist>
+
+      <para>Provides a preview button and text entry field. You can open a file dialog to pick an image-type file, or enter a registered icon name in the text field. Stores as a <code>string</code>.</para>
+
+    </sect3>
+    <sect3>
+      <title>soundfilechooser</title>
+      <itemizedlist>
+        <listitem><code>type</code>: should be <code>soundfilechooser</code></listitem>
+        <listitem><code>description</code>: String describing the setting</listitem>
+        <listitem><code>default</code>: default icon path or icon name to use</listitem>
+      </itemizedlist>
+
+      <para>Provides a button which shows the currently selected file name and opens a file dialog when clicked. A preview button is also provided to allow the user to test the selected sound. Stores as a <code>string</code>.</para>
+      <para>New in Cinnamon 3.2</para>
+
+    </sect3>
+  </sect2>
+
+  <sect2>
+    <title>Other chooser widgets</title>
+    <sect3>
+      <title>combobox</title>
+      <itemizedlist>
+        <listitem><code>type</code>: should be <code>combobox</code></listitem>
+        <listitem><code>default</code>: default value to set</listitem>
+        <listitem><code>description</code>: String describing the setting</listitem>
+        <listitem><code>options</code>: node of desc:val pair options, where desc is the displayed option name, val is the stored value</listitem>
+      </itemizedlist>
+
+      <para>Provides a dropdown list from which you can select from <code>description:value</code> pairs defined by <code>options</code>. The values can be <code>string</code>, <code>number</code>, or <code>boolean</code>.</para>
 
     </sect3>
     <sect3>
@@ -47,9 +134,125 @@
         <listitem><code>description</code>: String describing the setting</listitem>
       </itemizedlist>
 
-      <para>A Color button that lets you choose a RGBA color code as a <code>string</code></para>
+      <para>A Color button that lets you choose a color. Stores an RGBA color code as a <code>string</code></para>
 
     </sect3>
+    <sect3>
+      <title>fontchooser</title>
+      <itemizedlist>
+        <listitem><code>type</code>: should be <code>fontchooser</code></listitem>
+        <listitem><code>default</code>: default font string - should be the font name followed by the font size. (eg. "sans 12")</listitem>
+        <listitem><code>description</code>: String describing the setting</listitem>
+      </itemizedlist>
+
+      <para>A button that opens a dialog that lets you select a font. Stores a font string as a <code>string</code></para>
+      <para>New in Cinnamon 3.2</para>
+
+    </sect3>
+    <sect3>
+      <title>datechooser</title>
+      <itemizedlist>
+        <listitem><code>type</code>: should be <code>datechooser</code></listitem>
+        <listitem><code>default</code>: default date - should be of the form <code>{d: '1', m: '1', y: '2000'}</code></listitem>
+        <listitem><code>description</code>: String describing the setting</listitem>
+      </itemizedlist>
+
+      <para>A button that opens a dialog that lets you select a date. The date is stored as three key/value pairs representing the numerical value for the day('d'), month('m'), and year('y').</para>
+      <para>New in Cinnamon 3.2</para>
+
+    </sect3>
+    <sect3>
+      <title>tween</title>
+      <itemizedlist>
+        <listitem><code>type</code>: should be <code>tween</code></listitem>
+        <listitem><code>default</code>: default tween value</listitem>
+        <listitem><code>description</code>: String describing the setting</listitem>
+      </itemizedlist>
+
+      <para>Provides a dropdown list from which you can select a tween type. A tween value is a <code>string</code> of the form <code>ease&lt;direction&gt;&lt;shape&gt;</code> where direction can be <code>In</code>, <code>Out</code>, <code>InOut</code>, or <code>OutIn</code> and shape can be <code>Quad</code>, <code>Cubic</code>, <code>Quart</code>, <code>Quint</code>, <code>Sine</code>, <code>Expo</code>, <code>Circ</code>, <code>Elastic</code>, <code>Back</code>, or <code>Bounce</code>. For example, to specify a direction of <code>In</code> and a shape of <code>Quad</code>, the resultant string would be <code>easeInQuad</code>. To specify no tween, use the special tween value <code>easeNone</code>.</para>
+      <para>New in Cinnamon 2.6</para>
+
+    </sect3>
+    <sect3>
+      <title>effect</title>
+      <itemizedlist>
+        <listitem><code>type</code>: should be <code>effect</code></listitem>
+        <listitem><code>default</code>: default effect type</listitem>
+        <listitem><code>description</code>: String describing the setting</listitem>
+      </itemizedlist>
+
+      <para>Provides a dropdown list from which you can select an effect type. An effect type specifies what an animation looks like. Stores as a <code>string</code>.</para>
+      <para>New in Cinnamon 3.2</para>
+
+    </sect3>
+  </sect2>
+
+  <sect2>
+    <title>Layout types</title>
+    <sect3>
+      <title>section</title>
+      <itemizedlist>
+        <listitem><code>type</code>: should be <code>section</code></listitem>
+        <listitem><code>description</code>: String to display as the section title</listitem>
+      </itemizedlist>
+
+      <para>A <emphasis>non-setting</emphasis> widget, this specifies a new section for assisting in organizing your settings.</para>
+      <para>New in Cinnamon 3.2</para>
+
+    </sect3>
+    <sect3>
+      <title>layout</title>
+      <itemizedlist>
+        <listitem><code>type</code>: should be <code>layout</code></listitem>
+        <listitem><code>pages</code>: An array of strings representing page items</listitem>
+      </itemizedlist>
+
+      <para>A <emphasis>non-setting</emphasis> widget, this allows you to specify a particular layout for your settings rather than relying on the order they appear in your settings-schema.json file. This has the added advantage of using settings pages to further organize your settings into tabs. This is only recommended when you have a large number of settings that wont all fit without scrolling. To use the layout object, you must place it at the beginning of the settings-schema.json file as the first "setting". Any section items not placed within the layout object will be ignored.</para>
+      <para>To use the layout object, you must define any number of <code>page</code> and <code>section</code> types as key/value pairs in the layout item. Each page will include a <code>sections</code> key which is an array of <code>section</code> items. Each <code>section</code> item in turn will contain a property called keys which is an array of key. In addition, the layout object also must include the <code>pages</code> key which is an array that contains a list of the pages in your layout. The each item in <code>pages</code> and <code>sections</code> must correspond to a page or section key in the layout property and each item in <code>keys</code> must correspond to one of the settings keys in your settings-schema.json file. The pages, sections and keys will be displayed in the order in which their key names appear in their respective arrays and do not depend on their order in the layout object or your settings file.</para>
+      <para>Here is an example of what a layout object might look like:</para>
+      <informalexample>
+        <programlisting>
+"layout" : {
+  "pages" : ["page1", "page2"],
+  "page1" : {
+    "type" : "page",
+    "title" : "1st page",
+    "sections" : ["section1", "section2"]
+  },
+  "page2" : {
+    "type" : "page",
+    "title" : "2nd page",
+    "sections" : ["section3", "section4"]
+  },
+  "section1" : {
+    "type" : "section",
+    "title" : "1st section",
+    "sections" : ["setting1", "setting2"]
+  },
+  "section2" : {
+    "type" : "section",
+    "title" : "2nd section",
+    "sections" : ["setting3", "setting4"]
+  },
+  "section3" : {
+    "type" : "section",
+    "title" : "3rd section",
+    "sections" : ["setting5", "setting6"]
+  },
+  "section1" : {
+    "type" : "section",
+    "title" : "4th section",
+    "sections" : ["setting7", "setting8"]
+  }
+}</programlisting>
+      </informalexample>
+      <para>New in Cinnamon 3.2</para>
+
+    </sect3>
+  </sect2>
+
+  <sect2>
+    <title>Other settings types</title>
     <sect3>
       <title>keybinding</title>
       <itemizedlist>
@@ -62,119 +265,13 @@
 
     </sect3>
     <sect3>
-      <title>radiogroup</title>
-      <itemizedlist>
-        <listitem><code>type</code>: should be <code>radiogroup</code></listitem>
-        <listitem><code>default</code>: default value from the list of options, or it can be a custom value if <code>custom</code> is defined</listitem>
-        <listitem><code>description</code>: String describing the setting</listitem>
-        <listitem><code>options</code>: node of desc:val pair options, where desc is the displayed option name, val is the stored value</listitem>
-      </itemizedlist>
-
-      <para>A group of radio buttons whose description and values are defined by <code>options</code> in <code>description:value</code> pairs.  Values may be <code>string</code> or <code>number</code>.  also have a value of <code>custom</code>, and a text entry will be provided next to that option, to allow entering a custom value.</para>
-
-      <para>Options might be:</para>
-      <informalexample>
-        <programlisting>
-          "options" : {
-              "Option 1" : "this value",
-              "Option 2" : "that value",
-              "Option 3" : "other value"
-          }
-        </programlisting>
-      </informalexample>
-    </sect3>
-    <sect3>
-      <title>filechooser</title>
-      <itemizedlist>
-        <listitem><code>type</code>: should be <code>filechooser</code></listitem>
-        <listitem><code>description</code>: String describing the setting</listitem>
-        <listitem><code>default</code>: Default filename to use</listitem>
-        <listitem><code>select-dir</code>:  (optional) true or false, or leave off entirely. Forces directory selection.</listitem>
-        <listitem><code>expand-width</code>:  (optional) true or false, or leave off entirely. Forces editable fields of <code>filechooser</code>'s elements to occupy the entire space available in a row</listitem>
-      </itemizedlist>
-
-      <para>Opens a file picker dialog to allow you to choose a filename.  If <code>select-dir</code> is <code>true</code>, it will only allow directories to be selected.  Stores as a <code>string</code>.</para>
-
-    </sect3>
-    <sect3>
-      <title>iconfilechooser</title>
-      <itemizedlist>
-        <listitem><code>type</code>: should be <code>iconfilechooser</code></listitem>
-        <listitem><code>description</code>: String describing the setting</listitem>
-        <listitem><code>default</code>: default icon path or icon name to use</listitem>
-      </itemizedlist>
-
-      <para>Provides a preview button and text entry field.  You can open a file dialog to pick an image-type file, or enter a registered icon name in the text field.  Stores as a <code>string</code>.</para>
-
-    </sect3>
-    <sect3>
-      <title>combobox</title>
-      <itemizedlist>
-        <listitem><code>type</code>: should be <code>combobox</code></listitem>
-        <listitem><code>default</code>: default value to set</listitem>
-        <listitem><code>description</code>: String describing the setting</listitem>
-        <listitem><code>options</code>: node of desc:val pair options, where desc is the displayed option name, val is the stored value</listitem>
-      </itemizedlist>
-
-      <para>Provides a dropdown list from which you can select from <code>description:value</code> pairs defined by <code>options</code>.  The values can be <code>string</code>, <code>number</code>, or <code>boolean</code>.</para>
-    </sect3>
-    <sect3>
-      <title>tween</title>
-      <itemizedlist>
-        <listitem><code>type</code>: should be <code>tween</code></listitem>
-        <listitem><code>default</code>: default tween value</listitem>
-        <listitem><code>description</code>: String describing the setting</listitem>
-      </itemizedlist>
-
-      <para>Provides a dropdown list from which you can select a tween type. A tween value is a <code>string</code> of the form <code>ease&lt;direction&gt;&lt;shape&gt;</code> where direction can be <code>In</code>, <code>Out</code>, <code>InOut</code>, or <code>OutIn</code> and shape can be <code>Quad</code>, <code>Cubic</code>, <code>Quart</code>, <code>Quint</code>, <code>Sine</code>, <code>Expo</code>, <code>Circ</code>, <code>Elastic</code>, <code>Back</code>, or <code>Bounce</code>. For example, to specify a direction of <code>In</code> and a shape of <code>Quad</code>, the resultant string would be <code>easeInQuad</code>. To specify no tween, use the special tween value <code>easeNone</code>.</para>
-    </sect3>
-    <sect3>
-      <title>spinbutton</title>
-      <itemizedlist>
-        <listitem><code>type</code>: should be <code>spinbutton</code></listitem>
-        <listitem><code>default</code>: default value to use - int or leading</listitem>
-        <listitem><code>min</code>: minimum value</listitem>
-        <listitem><code>max</code>: maximum value</listitem>
-        <listitem><code>units</code>: String describing what the number is a unit of (pixels, bytes, etc..)</listitem>
-        <listitem><code>step</code>: adjustment amount</listitem>
-        <listitem><code>description</code>: String describing the setting</listitem>
-      </itemizedlist>
-
-      <para>Provides a spin button and entry for changing setting a <code>number</code> value.  This can be integer or floating point format.  For floating point, all values must have leading 0's.</para>
-
-    </sect3>
-    <sect3>
-      <title>scale</title>
-      <itemizedlist>
-        <listitem><code>type</code>: should be <code>scale</code></listitem>
-        <listitem><code>default</code>: default value to use - int or leading</listitem>
-        <listitem><code>min</code>: minimum value</listitem>
-        <listitem><code>max</code>: maximum value</listitem>
-        <listitem><code>step</code>: adjustment amount</listitem>
-        <listitem><code>description</code>: String describing the setting</listitem>
-      </itemizedlist>
-
-      <para>Provides a scale widget to allow you to pick a <code>number</code> value between min and max, by step amount.  Integer or floating point numbers can be used.  For floating point, all values must have leading 0's.</para>
-
-    </sect3>
-    <sect3>
       <title>generic</title>
       <itemizedlist>
         <listitem><code>type</code>: should be <code>generic</code></listitem>
         <listitem><code>default</code>: default value</listitem>
       </itemizedlist>
 
-      <para>A generic storage object for any type of value.  This is generally intended for internal settings that won't be adjusted by the user.  For example, a history, or most recent command.  There is no corresponding widget for it in Cinnamon Settings.</para>
-
-    </sect3>
-    <sect3>
-      <title>header</title>
-      <itemizedlist>
-        <listitem><code>type</code>: should be <code>header</code></listitem>
-        <listitem><code>description</code>: String to display as a bold header</listitem>
-      </itemizedlist>
-
-      <para>A <emphasis>non-setting</emphasis> widget, this provides a bold-faced label for assisting in organizing your settings</para>
+      <para>A generic storage object for any type of value. This is generally intended for internal settings that won't be adjusted by the user.  For example, a history, or most recent command. There is no corresponding widget for it in Cinnamon Settings.</para>
 
     </sect3>
     <sect3>
@@ -185,14 +282,7 @@
       </itemizedlist>
 
       <para>A <emphasis>non-setting</emphasis> widget, this provides a label for making a note or describing something. Unlike a header which is bold-faced to stand out, a label is formatted just like the description of most of the other setting types.</para>
-    </sect3>
-    <sect3>
-      <title>separator</title>
-      <itemizedlist>
-        <listitem><code>type</code>: should be <code>separator</code></listitem>
-      </itemizedlist>
-
-      <para>A <emphasis>non-setting</emphasis> widget, this draws a horizontal separator for assisting in organizing your settings</para>
+      <para>New in Cinnamon 2.6</para>
 
     </sect3>
     <sect3>
@@ -203,10 +293,66 @@
         <listitem><code>callback</code>: string of callback method name (no "this", just "myFunc")</listitem>
       </itemizedlist>
 
-      <para>A <emphasis>non-setting</emphasis> widget, this provides a button, which, when clicked, activates the <code>callback</code> method in your applet/desklet. Note: the callback value should be a string of the method name only.  For instance, to call <code>this.myCallback()</code>, you would put <code>myCallback</code> for the callback value.</para>
+      <para>A <emphasis>non-setting</emphasis> widget, this provides a button, which, when clicked, activates the <code>callback</code> method in your applet, desklet, or extension. The callback value should be a string of the method name only. For instance, to call <code>this.myCallback()</code>, you would put <code>myCallback</code> for the callback value.</para>
+      <para>Note: for an applet or desklet, the callback function must be a method of the applet or desklet object. For an extension, it can be a method of any object, but that object must be returned from the <code>enabled()</code> function of your extension in order for it to work.</para>
 
-      <para>Special case: for a <code>button</code> element to work on an extension setting window, an object containing all needed callback functions needs to be created and then returned by the <code>enable()</code> function.</para>
     </sect3>
+  </sect2>
+
+  <sect2>
+    <title>Deprecated settings types</title>
+
+    <para>Please do not use the following settings types in new code. They may be removed in future versions.</para>
+    <sect3>
+      <title>checkbox</title>
+      <itemizedlist>
+        <listitem><code>type</code>: should be <code>checkbox</code></listitem>
+        <listitem><code>default</code>: <code>true</code> or <code>false</code> (no quotes)</listitem>
+        <listitem><code>description</code>: String describing the setting</listitem>
+      </itemizedlist>
+
+      <para>Formerly generating a checkbox widget, this widget type now functions exactly like the <code>switch</code> settings type.</para>
+      <para>Deprecated since Cinnamon 3.2</para>
+
+    </sect3>
+    <sect3>
+      <title>radiogroup</title>
+      <itemizedlist>
+        <listitem><code>type</code>: should be <code>radiogroup</code></listitem>
+        <listitem><code>default</code>: default value from the list of options, or it can be a custom value if <code>custom</code> is defined</listitem>
+        <listitem><code>description</code>: String describing the setting</listitem>
+        <listitem><code>options</code>: node of desc:val pair options, where desc is the displayed option name, val is the stored value</listitem>
+      </itemizedlist>
+
+      <para>Formerly generating a series of radio buttons this widget now functions exactly like the <code>combobox</code> settings type.</para>
+      <para>Deprecated since Cinnamon 3.2</para>
+
+    </sect3>
+    <sect3>
+      <title>header</title>
+      <itemizedlist>
+        <listitem><code>type</code>: should be <code>header</code></listitem>
+        <listitem><code>description</code>: String to display as a bold header</listitem>
+      </itemizedlist>
+
+      <para>A <emphasis>non-setting</emphasis> widget, it formerly generated a bold-faced label for assisting in organizing your settings. It now functions exactly like the <code>section</code> type.</para>
+      <para>Deprecated since Cinnamon 3.2</para>
+
+    </sect3>
+    <sect3>
+      <title>separator</title>
+      <itemizedlist>
+        <listitem><code>type</code>: should be <code>separator</code></listitem>
+      </itemizedlist>
+
+      <para>A <emphasis>non-setting</emphasis> widget, it formerly drew a horizontal separator for assisting in organizing your settings. It currently is ignored. It is recommended that you use sections instead.</para>
+      <para>Deprecated since Cinnamon 3.2</para>
+
+    </sect3>
+  </sect2>
+
+  <sect2>
+    <title>Additional setting options</title>
     <sect3>
       <title>Additional Setting Options</title>
       These fields can be added to any widget:
@@ -228,7 +374,7 @@
     <sect3>
       <title><code>changed::&lt;key&gt;</code></title>
 
-      <para>Signals when <code>key</code> has changed in the configuration file.  Use this in conjunction with <code>getValue</code> if you want to handle your own updating in a more traditional way (like gsettings).</para>
+      <para>Signals when <code>key</code> has changed in the configuration file. Use this in conjunction with <code>getValue</code> if you want to handle your own updating in a more traditional way (like gsettings).</para>
 
       <para>The callback function will be called with three paramenters: <code>settingProvider, oldval, newval</code>, which are, respectively, the settings object (which you usually don't need), the original value and the updated value.</para>
     </sect3>
@@ -237,9 +383,25 @@
   <sect2>
     <title>Additional options in metadata.json</title>
     You can add the following items to <code>metadata.json</code> to affect how the settings are presented to the user:
+
     <itemizedlist>
       <listitem><code>hide-configuration</code>: Hides the configure button in Cinnamon Settings. Set to <code>true</code> if you are using only <code>generic</code>-type settings that should be hidden from the user.  This is not a mandatory key.  Omitting it will allow the configuration button to hide or display depending on whether you are utilizing the settings API or not.</listitem>
       <listitem><code>external-configuration-app</code>: Allows you to define an external settings app to use instead of the built-in settings GUI. This should be a <code>string</code> with the name of your executable settings app (path relative to the applet's install directory). Note, this key can be overridden by the <code>hide-configuration</code> key. This is not a mandatory key. Omitting it will allow the configuration button to hide or display depending on whether you are utilizing the settings API or not.</listitem>
     </itemizedlist>
+  </sect2>
+
+  <sect2>
+    <title>Accessing the settings window from command-line</title>
+
+    <para>
+      You can access the settings with the following command:
+    </para>
+    <informalexample>
+      <programlisting>
+xlet-settings &lt;type&gt; &lt;uuid&gt; &lt;instanceid&gt;</programlisting>
+    </informalexample>
+    <para>
+      Where <code>type</code> is <code>applet</code>, <code>desklet</code> or <code>extension</code> depending on what type it is. The <code>instanceid</code> is optional.
+    </para>
   </sect2>
 </chapter>

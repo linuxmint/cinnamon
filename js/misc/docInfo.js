@@ -19,7 +19,7 @@ function DocInfo(recentInfo) {
 
 DocInfo.prototype = {
     _init : function(recentInfo) {
-        this.recentInfo = recentInfo;
+        this.gicon = recentInfo.get_gicon();
         // We actually used get_modified() instead of get_visited()
         // here, as GtkRecentInfo doesn't updated get_visited()
         // correctly. See http://bugzilla.gnome.org/show_bug.cgi?id=567094
@@ -27,7 +27,13 @@ DocInfo.prototype = {
         this.name = recentInfo.get_display_name();
         this._lowerName = this.name.toLowerCase();
         this.uri = recentInfo.get_uri();
-        this.uriDecoded = decodeURIComponent(this.uri);
+        try {
+            this.uriDecoded = decodeURIComponent(this.uri);
+        }
+        catch (e) {
+            this.uriDecoded = this.uri;
+            global.logError("Error while decoding URI: " + this.uri);
+        }
         this.mimeType = recentInfo.get_mime_type();
         //this.mtime = this._fetch_mtime(); // Expensive
     },
@@ -56,8 +62,7 @@ DocInfo.prototype = {
         //     return St.TextureCache.get_default().load_uri_async(thumb_uri, size, size);
         // }
         // else {
-            let gicon = this.recentInfo.get_gicon()
-            return St.TextureCache.get_default().load_gicon(null, gicon, size);
+            return St.TextureCache.get_default().load_gicon(null, this.gicon, size);
         // }
     },
 

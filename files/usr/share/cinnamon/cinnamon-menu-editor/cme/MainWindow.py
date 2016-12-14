@@ -17,6 +17,9 @@
 #   License along with this library; if not, write to the Free Software
 #   Foundation, Inc., 51 Franklin Street, Suite 500, Boston, MA  02110-1335  USA
 
+import gi
+gi.require_version('Gtk', '3.0')
+gi.require_version('CMenu', '3.0')
 from gi.repository import Gtk, GObject, Gio, GdkPixbuf, Gdk, CMenu, GLib
 import cgi
 import os

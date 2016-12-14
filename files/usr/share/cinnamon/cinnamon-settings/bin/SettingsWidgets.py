@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#!/usr/bin/python2
 
 import math
 import os
@@ -860,7 +860,7 @@ class SoundFileChooser(SettingsWidget):
         self.pack_end(self.content_widget, False, False, 0)
 
         self.play_button = Gtk.Button()
-        self.play_button.set_image(Gtk.Image.new_from_stock("gtk-media-play", Gtk.IconSize.BUTTON))
+        self.play_button.set_image(Gtk.Image.new_from_icon_name("media-playback-start-symbolic", Gtk.IconSize.BUTTON))
         self.play_button.connect("clicked", self.on_play_clicked)
         self.content_widget.pack_start(self.play_button, False, False, 0)
 
@@ -911,9 +911,9 @@ class SoundFileChooser(SettingsWidget):
         dialog.destroy()
 
     def update_button_label(self, absolute_path):
-        f = Gio.File.new_for_path(absolute_path)
-
-        self.button_label.set_label(f.get_basename())
+        if absolute_path != "":
+            f = Gio.File.new_for_path(absolute_path)
+            self.button_label.set_label(f.get_basename())
 
     def on_setting_changed(self, *args):
         self.update_button_label(self.get_value())

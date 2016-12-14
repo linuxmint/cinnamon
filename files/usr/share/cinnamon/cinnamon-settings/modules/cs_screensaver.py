@@ -1,8 +1,9 @@
-#!/usr/bin/env python2
+#!/usr/bin/python2
 
 import os, json, subprocess, re
 from xml.etree import ElementTree
 import gettext
+import signal
 
 import gi
 gi.require_version('Gtk', '3.0')
@@ -50,6 +51,9 @@ class Module:
         keywords = _("screensaver, lock, password, away, message")
         sidePage = SidePage(_("Screensaver"), "cs-screensaver", keywords, content_box, module=self)
         self.sidePage = sidePage
+
+    def on_show_custom_format_info_button_clicked(self, button):
+        subprocess.Popen(['xdg-open', 'http://www.foragoodstrftime.com/'])
 
     def on_module_selected(self):
         if self.loaded:
@@ -115,6 +119,12 @@ class Module:
         settings.add_reveal_row(widget, schema, "use-custom-format")
 
         widget = GSettingsEntry(_("Date Format: "), schema, "date-format", size_group=size_group)
+        settings.add_reveal_row(widget, schema, "use-custom-format")
+
+        widget = SettingsWidget()
+        button = Gtk.Button(_("Show information on date format syntax"))
+        button.connect("clicked", self.on_show_custom_format_info_button_clicked)
+        widget.pack_start(button, True, True, 0)
         settings.add_reveal_row(widget, schema, "use-custom-format")
 
         widget = GSettingsFontButton(_("Time Font"), "org.cinnamon.desktop.screensaver", "font-time", size_group=size_group)
@@ -219,6 +229,7 @@ class ScreensaverBox(Gtk.Box):
         self.list_box.connect("row-activated", self.on_row_activated)
         scw.add(self.list_box)
 
+        self.socket = None
         self.gather_screensavers()
 
         self.socket_box.connect("map", self.on_mapped)
@@ -324,10 +335,19 @@ class ScreensaverBox(Gtk.Box):
         except:
             print "Unable to parse screensaver information at %s" % path
 
+    def kill_plug(self):
+        if not self.proc:
+            return
+
+        self.proc.send_signal(signal.SIGTERM)
+        self.proc = None
+
     def on_row_activated(self, list_box, row):
         row = self.list_box.get_selected_row()
         if not row:
             return
+
+        self.kill_plug()
 
         uuid = row.uuid
         path = row.path
@@ -345,37 +365,54 @@ class ScreensaverBox(Gtk.Box):
             self.settings.set_string('screensaver-name', uuid)
 
         if ss_type == 'default':
-            self.socket_box.foreach(lambda x, y: x.destroy(), None)
+            if self.socket:
+                self.socket.destroy()
+                self.socket = None
+
+            for child in self.socket_box:
+                child.destroy()
 
             px = GdkPixbuf.Pixbuf.new_from_file_at_size("/usr/share/cinnamon/thumbnails/wallclock.png", -1, 240)
             w = Gtk.Image.new_from_pixbuf(px)
             w.show()
             self.socket_box.pack_start(w, True, True, 0)
+            return
+
+        for child in self.socket_box:
+            if not isinstance(child, Gtk.Socket):
+                child.destroy()
 
         if ss_type == 'webkit':
             command = [self.webkit_executable, "--plugin", uuid]
         elif ss_type == 'xscreensaver':
             command = [self.xscreensaver_executable, "--hack", uuid]
         else:
-            command = os.path.join(path, "main")
+            command = [os.path.join(path, "main")]
 
+        GObject.idle_add(self.idle_spawn_plug, command)
+
+    def idle_spawn_plug(self, command):
         try:
-            self.proc = subprocess.Popen(command, stdout=subprocess.PIPE)
-        except:
-            return
+            self.proc = Gio.Subprocess.new(command, Gio.SubprocessFlags.STDOUT_PIPE | Gio.SubprocessFlags.STDERR_SILENCE)
+        except GLib.Error as e:
+            print e.message
 
-        line = self.proc.stdout.readline()
+        pipe = self.proc.get_stdout_pipe()
+        bytes_read = pipe.read_bytes(1024, None)
+        pipe.close(None)
 
-        while line:
-            match = re.match('^\s*WINDOW ID=(\d+)\s*$', line.decode())
+        output = bytes_read.get_data().decode()
+
+        if output:
+            match = re.match('^\s*WINDOW ID=(\d+)\s*$', output)
             if match:
-                self.socket_box.foreach(lambda x, y: x.destroy(), None)
-                socket = Gtk.Socket()
-                socket.show()
-                self.socket_box.pack_start(socket, True, True, 0)
-                socket.add_id(int(match.group(1)))
-                break
-            line = self.proc.stdout.readline()
+                if not self.socket:
+                    socket = Gtk.Socket()
+                    socket.show()
+                    socket.connect("plug-removed", lambda socket: True)
+                    self.socket_box.pack_start(socket, True, True, 0)
+                    self.socket = socket
+                self.socket.add_id(int(match.group(1)))
 
     def on_mapped(self, widget):
         self.on_row_activated(None, None)
