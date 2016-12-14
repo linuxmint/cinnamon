@@ -396,9 +396,9 @@ class PanelSwitch(PanelWidget):
         self.key = key
 
         self.content_widget = Gtk.Switch()
-        self.label1 = Gtk.Label(label1)
+        self.label1 = SettingsLabel(label1)
         self.label1.set_no_show_all(True)
-        self.label2 = Gtk.Label(label2)
+        self.label2 = SettingsLabel(label2)
         self.label2.set_no_show_all(True)
 
         self.pack_start(self.label1, False, False, 0)

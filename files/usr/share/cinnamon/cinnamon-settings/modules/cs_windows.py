@@ -143,11 +143,13 @@ class TitleBarButtonsOrderSelector(SettingsBox):
         left_box.set_border_width(5)
         left_box.set_margin_left(20)
         left_box.set_margin_right(20)
+        left_box.set_spacing(5)
 
         right_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
         right_box.set_border_width(5)
         right_box.set_margin_left(20)
         right_box.set_margin_right(20)
+        right_box.set_spacing(5)
 
         try:
             left_items, right_items = self.value.split(":")
@@ -163,16 +165,22 @@ class TitleBarButtonsOrderSelector(SettingsBox):
             right_items = []
 
         left_label = Gtk.Label.new(_("Left side title bar buttons"))
+        left_label.set_alignment(0.0, 0.5)
+        left_label.set_line_wrap(True)
         left_box.pack_start(left_label, False, False, 0)
         left_grid = Gtk.Grid()
         left_grid.set_column_spacing(4)
         left_box.pack_end(left_grid, False, False, 0)
+        left_grid.set_valign(Gtk.Align.CENTER)
 
         right_label = Gtk.Label.new(_("Right side title bar buttons"))
+        right_label.set_alignment(0.0, 0.5)
+        right_label.set_line_wrap(True)
         right_box.pack_start(right_label, False, False, 0)
         right_grid = Gtk.Grid()
         right_grid.set_column_spacing(4)
         right_box.pack_end(right_grid, False, False, 0)
+        right_grid.set_valign(Gtk.Align.CENTER)
 
         self.left_side_widgets = []
         self.right_side_widgets = []
@@ -216,9 +224,11 @@ class TitleBarButtonsOrderSelector(SettingsBox):
         for i in self.left_side_widgets:
             index = self.left_side_widgets.index(i)
             left_grid.attach(i, index, 0, 1, 1)
+            i.set_valign(Gtk.Align.CENTER)
         for i in self.right_side_widgets:
             index = self.right_side_widgets.index(i)
             right_grid.attach(i, index, 0, 1, 1)
+            i.set_valign(Gtk.Align.CENTER)
 
         self.add_row(left_box)
         self.add_row(right_box)

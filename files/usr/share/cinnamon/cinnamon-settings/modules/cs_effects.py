@@ -197,10 +197,11 @@ class Module:
     def make_effect_group(self, group_label, key, effects=None):
         tmin, tmax, tstep, tdefault = (0, 2000, 50, 200)
 
-        row =SettingsWidget()
+        row = SettingsWidget()
         row.set_spacing(5)
 
-        label = Gtk.Label()
+        label = SettingsLabel()
+        label.set_margin_right(5)
         label.set_markup(group_label)
         label.props.xalign = 0.0
         row.pack_start(label, False, False, 0)

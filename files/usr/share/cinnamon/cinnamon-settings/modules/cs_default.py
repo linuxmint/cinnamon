@@ -192,6 +192,8 @@ class MnemonicLabel(Gtk.Label):
         super(MnemonicLabel, self).__init__(label = "")
         self.set_text_with_mnemonic(text)
         self.set_mnemonic_widget(widget)
+        self.set_alignment(0.0, 0.5)
+        self.set_line_wrap(True)
 
 class DefaultAppChooserButton(Gtk.AppChooserButton):
     def __init__(self, content_type, gen_content_type):
@@ -275,6 +277,8 @@ class CustomAppChooserButton(Gtk.AppChooserButton):
         super(CustomAppChooserButton, self).__init__(content_type=content_type)
         self.media_settings = media_settings
         content_type = self.get_content_type()
+
+        self.set_valign(Gtk.Align.CENTER)
 
         #fetch preferences for this content type
         (pref_start_app, pref_ignore, pref_open_folder) = self.getPreferences()

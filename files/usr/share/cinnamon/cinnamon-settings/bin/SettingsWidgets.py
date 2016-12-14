@@ -467,6 +467,18 @@ class SettingsWidget(Gtk.Box):
             settings_objects[schema] = Gio.Settings.new(schema)
             return settings_objects[schema]
 
+class SettingsLabel(Gtk.Label):
+    def __init__(self, text=None):
+        Gtk.Label.__init__(self)
+        if text:
+            self.set_label(text)
+
+        self.set_alignment(0.0, 0.5)
+        self.set_line_wrap(True)
+
+    def set_label_text(self, text):
+        self.set_label(text)
+
 class IndentedHBox(Gtk.HBox):
     def __init__(self):
         super(IndentedHBox, self).__init__()
@@ -487,7 +499,7 @@ class Switch(SettingsWidget):
         super(Switch, self).__init__(dep_key=dep_key)
 
         self.content_widget = Gtk.Switch()
-        self.label = Gtk.Label(label)
+        self.label = SettingsLabel(label)
         self.pack_start(self.label, False, False, 0)
         self.pack_end(self.content_widget, False, False, 0)
 
@@ -507,7 +519,7 @@ class SpinButton(SettingsWidget):
 
         if units:
             label += " (%s)" % units
-        self.label = Gtk.Label.new(label)
+        self.label = SettingsLabel(label)
         self.content_widget = Gtk.SpinButton()
 
         self.pack_start(self.label, False, False, 0)
@@ -555,8 +567,9 @@ class Entry(SettingsWidget):
     def __init__(self, label, expand_width=False, size_group=None, dep_key=None, tooltip=""):
         super(Entry, self).__init__(dep_key=dep_key)
 
-        self.label = Gtk.Label.new(label)
+        self.label = SettingsLabel(label)
         self.content_widget = Gtk.Entry()
+        self.content_widget.set_valign(Gtk.Align.CENTER)
 
         self.pack_start(self.label, False, False, 0)
         self.pack_end(self.content_widget, expand_width, expand_width, 0)
@@ -601,9 +614,10 @@ class FontButton(SettingsWidget):
     def __init__(self, label, size_group=None, dep_key=None, tooltip=""):
         super(FontButton, self).__init__(dep_key=dep_key)
 
-        self.label = Gtk.Label.new(label)
+        self.label = SettingsLabel(label)
 
         self.content_widget = Gtk.FontButton()
+        self.content_widget.set_valign(Gtk.Align.CENTER)
 
         self.pack_start(self.label, False, False, 0)
         self.pack_end(self.content_widget, False, False, 0)
@@ -720,7 +734,7 @@ class ComboBox(SettingsWidget):
         self.valtype = valtype
         self.option_map = {}
 
-        self.label = Gtk.Label.new(label)
+        self.label = SettingsLabel(label)
 
         selected = None
 
@@ -731,6 +745,7 @@ class ComboBox(SettingsWidget):
 
         self.pack_start(self.label, False, False, 0)
         self.pack_end(self.content_widget, False, False, 0)
+        self.content_widget.set_valign(Gtk.Align.CENTER)
 
         self.set_options(options)
 
@@ -776,7 +791,7 @@ class ColorChooser(SettingsWidget):
         # still support it for now by adding the legacy_string argument
         self.legacy_string = legacy_string
 
-        self.label = Gtk.Label(label)
+        self.label = SettingsLabel(label)
         self.content_widget = Gtk.ColorButton()
         self.content_widget.set_use_alpha(True)
         self.pack_start(self.label, False, False, 0)
@@ -813,7 +828,7 @@ class FileChooser(SettingsWidget):
         else:
             action = Gtk.FileChooserAction.OPEN
 
-        self.label = Gtk.Label(label)
+        self.label = SettingsLabel(label)
         self.content_widget = Gtk.FileChooserButton(action=action)
         self.pack_start(self.label, False, False, 0)
         self.pack_end(self.content_widget, False, False, 0)
@@ -838,7 +853,7 @@ class SoundFileChooser(SettingsWidget):
     def __init__(self, label, size_group=None, dep_key=None, tooltip=""):
         super(SoundFileChooser, self).__init__(dep_key=dep_key)
 
-        self.label = Gtk.Label(label)
+        self.label = SettingsLabel(label)
         self.content_widget = Gtk.Box()
 
         c = self.content_widget.get_style_context()
@@ -930,7 +945,7 @@ class IconChooser(SettingsWidget):
 
         valid, self.width, self.height = Gtk.icon_size_lookup(Gtk.IconSize.BUTTON)
 
-        self.label = Gtk.Label.new(label)
+        self.label = SettingsLabel(label)
 
         self.content_widget = Gtk.Box()
         self.bind_object = Gtk.Entry()
@@ -1007,7 +1022,7 @@ class TweenChooser(SettingsWidget):
     def __init__(self, label, size_group=None, dep_key=None, tooltip=""):
         super(TweenChooser, self).__init__(dep_key=dep_key)
 
-        self.label = Gtk.Label.new(label)
+        self.label = SettingsLabel(label)
 
         self.content_widget = TweenChooserButton()
 
@@ -1026,7 +1041,7 @@ class EffectChooser(SettingsWidget):
     def __init__(self, label, possible=None, size_group=None, dep_key=None, tooltip=""):
         super(EffectChooser, self).__init__(dep_key=dep_key)
 
-        self.label = Gtk.Label.new(label)
+        self.label = SettingsLabel(label)
 
         self.content_widget = EffectChooserButton(possible)
 
@@ -1044,7 +1059,7 @@ class DateChooser(SettingsWidget):
     def __init__(self, label, size_group=None, dep_key=None, tooltip=""):
         super(DateChooser, self).__init__(dep_key=dep_key)
 
-        self.label = Gtk.Label.new(label)
+        self.label = SettingsLabel(label)
 
         self.content_widget = DateChooserButton()
 
@@ -1075,12 +1090,13 @@ class Keybinding(SettingsWidget):
 
         self.num_bind = num_bind
 
-        self.label = Gtk.Label(label)
+        self.label = SettingsLabel(label)
 
         self.buttons = []
         self.teach_button = None
 
         self.content_widget = Gtk.Frame(shadow_type=Gtk.ShadowType.IN)
+        self.content_widget.set_valign(Gtk.Align.CENTER)
         box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
         self.content_widget.add(box)
 
