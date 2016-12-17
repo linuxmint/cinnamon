@@ -182,7 +182,7 @@ function heightsUsedMonitor (monitorIndex, listofpanels) {
             if (listofpanels[i].monitorIndex == monitorIndex) {
                 if (listofpanels[i].panelPosition == PanelLoc.top)
                     toppanelHeight = listofpanels[i].actor.height;
-                if (listofpanels[i].panelPosition == PanelLoc.bottom)
+                else if (listofpanels[i].panelPosition == PanelLoc.bottom)
                     bottompanelHeight = listofpanels[i].actor.height;
             }
         }
@@ -1873,7 +1873,7 @@ Panel.prototype = {
         this.panelPosition = panelPosition;
         this.toppanelHeight = toppanelHeight;
         this.bottompanelHeight = bottompanelHeight;
-        let horizontal_panel = (this.panelPosition == PanelLoc.top || this.panelPosition == PanelLoc.bottom) ? true : false;
+        let horizontal_panel = this.panelPosition == PanelLoc.top || this.panelPosition == PanelLoc.bottom;
 
         this._hidden = false;
         this._disabled = false;
@@ -2415,7 +2415,7 @@ Panel.prototype = {
             if (this._context_menu.isOpen)
                 this._context_menu.toggle();
         }
-        if (event.get_button() == 3) {  // right click
+        else if (event.get_button() == 3) {  // right click
             try {
                 let [x, y] = event.get_coords();
                 let xe = x;
@@ -2496,7 +2496,7 @@ Panel.prototype = {
     _getScaledPanelHeight: function() {
         let panelHeight = 0;
         let panelResizable = this._getProperty(PANEL_RESIZABLE_KEY, "b");
-        let isHorizontal = ((this.panelPosition == PanelLoc.top || this.panelPosition == PanelLoc.bottom) ? true : false);
+        let isHorizontal = this.panelPosition == PanelLoc.top || this.panelPosition == PanelLoc.bottom;
 
         if (panelResizable) {
             panelHeight = this._getProperty(PANEL_HEIGHT_KEY, "i") * global.ui_scale;
@@ -2528,7 +2528,7 @@ Panel.prototype = {
             return false;
 
         this.monitor = global.screen.get_monitor_geometry(this.monitorIndex);
-        let horizontal_panel = ((this.panelPosition == PanelLoc.top || this.panelPosition == PanelLoc.bottom) ? true : false);
+        let horizontal_panel = this.panelPosition == PanelLoc.top || this.panelPosition == PanelLoc.bottom;
 
         let panelHeight = this._getScaledPanelHeight();
         this._setFont(panelHeight);
@@ -3016,7 +3016,7 @@ Panel.prototype = {
                     this._rightCorner.actor.allocate(childBox, flags); 
                 }
             }
-            if (this.panelPosition == PanelLoc.right) {          // right panel
+            else {          // right panel
                 if (this.drawcorner[0]) {
                     this._setCornerChildbox(childBox, box.x1-cornerWidth, box.x2, box.y1, box.y1+cornerWidth);
                     this._leftCorner.actor.allocate(childBox, flags); 
@@ -3222,9 +3222,7 @@ Panel.prototype = {
     _showPanel: function() {
         this._showHideTimer = 0;
 
-        if (this._disabled) return;
-
-        if (!this._hidden) return;
+        if (this._disabled || !this._hidden) return;
 
         // Force the panel to be on top (hack to correct issues when switching workspace)
         Main.layoutManager._windowsRestacked();

@@ -371,16 +371,16 @@ WindowClone.prototype = {
     },
 
     _onButtonRelease: function(actor, event) {
-        if ( event.get_button()==1 ) {
+        if (event.get_button() == 1) {
             this._selected = true;
             this.emit('activated', global.get_current_time());
             return true;
         }
-        if (event.get_button()==2){
+        else if (event.get_button() == 2) {
             this.emit('closed', global.get_current_time());
             return true;
         }
-        if (event.get_button()==3){
+        else if (event.get_button() == 3) {
             if (!this.menuCancelled) {
                 this.emit('context-menu-requested');
             }
@@ -651,8 +651,7 @@ WindowOverlay.prototype = {
         // hidden, e.g. during animations, we ignore these events,
         // as the close button will be shown as needed when the overlays
         // are shown again
-        if (this._hidden) return;
-        if (this._hovering) return;
+        if (this._hidden || this._hovering) return;
         
         this._hovering = true;
         this._showCloseButton();
