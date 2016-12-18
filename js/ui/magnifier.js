@@ -36,7 +36,7 @@ const LensShape = {
     VERTICAL : 3
 }
 
-const MOUSE_POLL_FREQUENCY = 50;
+const MOUSE_POLL_FREQUENCY = 15;
 const CROSSHAIRS_CLIP_SIZE = [100, 100];
 
 // Settings
