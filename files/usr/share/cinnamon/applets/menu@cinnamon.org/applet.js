@@ -29,7 +29,6 @@ const ICON_SIZE = 16;
 const MAX_FAV_ICON_SIZE = 32;
 const CATEGORY_ICON_SIZE = 22;
 const APPLICATION_ICON_SIZE = 22;
-const MAX_RECENT_FILES = 20;
 
 const INITIAL_BUTTON_LOAD = 30;
 const MAX_BUTTON_WIDTH = "max-width: 20em;";
@@ -593,7 +592,7 @@ function RecentButton(appsMenuButton, file, showIcon) {
 }
 
 RecentButton.prototype = {
-    __proto__: PopupMenu.PopupSubMenuMenuItem.prototype,
+    __proto__: PopupMenu.PopupBaseMenuItem.prototype,
 
     _init: function(appsMenuButton, file, showIcon) {
         PopupMenu.PopupBaseMenuItem.prototype._init.call(this, {hover: false});
@@ -615,10 +614,6 @@ RecentButton.prototype = {
         if (showIcon)
             this.icon.realize();
         this.label.realize();
-
-        this.menu = new PopupMenu.PopupSubMenu(this.actor);
-        this.menu.actor.set_style_class_name('menu-context-menu');
-        this.menu.connect('open-state-changed', Lang.bind(this, this._subMenuOpenStateChanged));
     },
 
     _onButtonReleaseEvent: function (actor, event) {
@@ -637,7 +632,9 @@ RecentButton.prototype = {
     },
 
     activateContextMenus: function(event) {
-        if (!this.menu.isOpen)
+        let menu = this.appsMenuButton.recentContextMenu;
+
+        if (menu != null && menu.isOpen)
             this.appsMenuButton.closeContextMenus(this, true);
         this.toggleMenu();
     },
@@ -651,16 +648,34 @@ RecentButton.prototype = {
     },
 
     toggleMenu: function() {
-        if (!this.menu.isOpen){
-            let children = this.menu.box.get_children();
-            for (var i in children) {
-                this.menu.box.remove_actor(children[i]);
+        if (this.appsMenuButton.recentContextMenu == null) {
+            let menu = new PopupMenu.PopupSubMenu(this.actor);
+            menu.actor.set_style_class_name('menu-context-menu');
+            menu.connect('open-state-changed', Lang.bind(this, this._subMenuOpenStateChanged));
+            this.appsMenuButton.recentContextMenu = menu;
+        }
+
+        let menu = this.appsMenuButton.recentContextMenu;
+
+        if (!menu.isOpen) {
+            let parent = menu.actor.get_parent();
+            if (parent != null) {
+                parent.remove_child(menu.actor);
             }
+
+            menu.sourceActor = this.actor;
+            this.actor.get_parent().insert_child_above(menu.actor, this.actor);
+
+            let children = menu.box.get_children();
+            for (var i in children) {
+                menu.box.remove_actor(children[i]);
+            }
+
             let menuItem;
 
             menuItem = new PopupMenu.PopupMenuItem(_("Open with"), { reactive: false });
             menuItem.actor.style = "font-weight: bold";
-            this.menu.addMenuItem(menuItem);
+            menu.addMenuItem(menuItem);
 
             let file = Gio.File.new_for_uri(this.uri);
 
@@ -675,7 +690,7 @@ RecentButton.prototype = {
                                                          this.toggleMenu();
                                                          this.appsMenuButton.menu.close();
                                                      }));
-                this.menu.addMenuItem(menuItem);
+                menu.addMenuItem(menuItem);
             }
 
             let infos = Gio.AppInfo.get_all_for_type(this.mimeType)
@@ -699,7 +714,7 @@ RecentButton.prototype = {
                                                          this.toggleMenu();
                                                          this.appsMenuButton.menu.close();
                                                      }));
-                this.menu.addMenuItem(menuItem);
+                menu.addMenuItem(menuItem);
             }
 
             if (GLib.find_program_in_path ("nemo-open-with") != null) {
@@ -711,16 +726,16 @@ RecentButton.prototype = {
                                                          this.toggleMenu();
                                                          this.appsMenuButton.menu.close();
                                                      }));
-                this.menu.addMenuItem(menuItem);
+                menu.addMenuItem(menuItem);
             }
         }
-        this.menu.toggle();
+        this.appsMenuButton.recentContextMenu.toggle();
     },
 
-    _subMenuOpenStateChanged: function() {
-        if (this.menu.isOpen) {
+    _subMenuOpenStateChanged: function(recentContextMenu) {
+        if (recentContextMenu.isOpen) {
             this.appsMenuButton._activeContextMenuParent = this;
-            this.appsMenuButton._scrollToButton(this.menu);
+            this.appsMenuButton._scrollToButton(recentContextMenu);
         } else {
             this.appsMenuButton._activeContextMenuItem = null;
             this.appsMenuButton._activeContextMenuParent = null;
@@ -728,8 +743,18 @@ RecentButton.prototype = {
     },
 
     get _contextIsOpen() {
-        return this.menu.isOpen;
-    }
+        return this.appsMenuButton.recentContextMenu != null && this.appsMenuButton.recentContextMenu.isOpen;
+    },
+
+    destroy: function() {
+        this.file = null;
+        this.appsMenuButton = null;
+        this.label.destroy();
+        if (this.icon)
+            this.icon.destroy();
+
+        PopupMenu.PopupBaseMenuItem.prototype.destroy.call(this);
+    },
 };
 
 function GenericButton(label, icon, reactive, callback) {
@@ -1222,6 +1247,9 @@ MyApplet.prototype = {
         this.settings.bind("search-filesystem", "searchFilesystem");
         this.refreshing = false; // used as a flag to know if we're currently refreshing (so we don't do it more than once concurrently)
 
+        this.recentContextMenu = null;
+        this.appsContextMenu = null;
+
         // We shouldn't need to call refreshAll() here... since we get a "icon-theme-changed" signal when CSD starts.
         // The reason we do is in case the Cinnamon icon theme is the same as the one specificed in GTK itself (in .config)
         // In that particular case we get no signal at all.
@@ -1337,7 +1365,7 @@ MyApplet.prototype = {
         this.menu = new Applet.AppletPopupMenu(this, orientation);
         this.menuManager.addMenu(this.menu);
 
-        this.menu.actor.add_style_class_name('menu-background');
+        this.menu.actor.setCustomStyleClass('menu-background');
         this.menu.connect('open-state-changed', Lang.bind(this, this._onOpenStateChanged));
         this._display();
 
@@ -2190,11 +2218,11 @@ MyApplet.prototype = {
 
     _refreshRecent : function() {
         for (let i = 0; i < this._recentButtons.length; i ++) {
-            this._recentButtons[i].actor.destroy();
+            this._recentButtons[i].destroy();
         }
         for (let i = 0; i < this._categoryButtons.length; i++) {
             if (this._categoryButtons[i] instanceof RecentCategoryButton) {
-                this._categoryButtons[i].actor.destroy();
+                this._categoryButtons[i].destroy();
             }
         }
         this._recentButtons = new Array();
@@ -2239,34 +2267,34 @@ MyApplet.prototype = {
             this._categoryButtons.push(this.recentButton);
 
             if (this.RecentManager._infosByTimestamp.length > 0) {
-                for (let id = 0; id < MAX_RECENT_FILES && id < this.RecentManager._infosByTimestamp.length; id++) {
-                    let button = new RecentButton(this, this.RecentManager._infosByTimestamp[id], this.showApplicationIcons);
-                    this._addEnterEvent(button, Lang.bind(this, function() {
-                        this._clearPrevSelection(button.actor);
-                        button.actor.style_class = "menu-application-button-selected";
-                        this.selectedAppTitle.set_text("");
-                        let selectedAppUri = button.uriDecoded;
-                        let fileIndex = selectedAppUri.indexOf("file:///");
-                        if (fileIndex !== -1)
-                            selectedAppUri = selectedAppUri.substr(fileIndex + 7);
-                        this.selectedAppDescription.set_text(selectedAppUri);
+                let id = 0;
 
-                        let file = Gio.file_new_for_uri(button.uri);
-                        if (!file.query_exists(null))
-                            this.selectedAppTitle.set_text(_("This file is no longer available"));
-                    }));
-                    button.actor.connect('leave-event', Lang.bind(this, function() {
-                        button.actor.style_class = "menu-application-button";
-                        this._previousSelectedActor = button.actor;
-                        this.selectedAppTitle.set_text("");
-                        this.selectedAppDescription.set_text("");
-                    }));
-                    let file = Gio.file_new_for_uri(button.uri);
+                while (id < this.RecentManager._infosByTimestamp.length) {
+                    let file = Gio.file_new_for_uri(this.RecentManager._infosByTimestamp[id].uri);
                     if (file.query_exists(null)) {
+                        let button = new RecentButton(this, this.RecentManager._infosByTimestamp[id], this.showApplicationIcons);
+                        this._addEnterEvent(button, Lang.bind(this, function() {
+                            this._clearPrevSelection(button.actor);
+                            button.actor.style_class = "menu-application-button-selected";
+                            this.selectedAppTitle.set_text("");
+                            let selectedAppUri = button.uriDecoded;
+                            let fileIndex = selectedAppUri.indexOf("file:///");
+                            if (fileIndex !== -1)
+                                selectedAppUri = selectedAppUri.substr(fileIndex + 7);
+                            this.selectedAppDescription.set_text(selectedAppUri);
+                        }));
+                        button.actor.connect('leave-event', Lang.bind(this, function() {
+                            button.actor.style_class = "menu-application-button";
+                            this._previousSelectedActor = button.actor;
+                            this.selectedAppTitle.set_text("");
+                            this.selectedAppDescription.set_text("");
+                        }));
+
                         this._recentButtons.push(button);
                         this.applicationsBox.add_actor(button.actor);
-                        this.applicationsBox.add_actor(button.menu.actor);
                     }
+
+                    id++;
                 }
 
                 let button = new RecentClearButton(this);
@@ -2780,12 +2808,12 @@ MyApplet.prototype = {
             }
         }
 
-        for (var recent in this._recentButtons){
-            if (recent != excluded && this._recentButtons[recent].menu.isOpen){
+        if (excluded != this._activeContextMenuItem) {
+            if (this.recentContextMenu && this.recentContextMenu.isOpen) {
                 if (animate)
-                    this._recentButtons[recent].toggleMenu();
+                    this.recentContextMenu.sourceActor._delegate.toggleMenu();
                 else
-                    this._recentButtons[recent].closeMenu();
+                    this.recentContextMenu.sourceActor._delegate.closeMenu();
             }
         }
     },
