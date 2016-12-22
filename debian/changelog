@@ -1,3 +1,16 @@
+cinnamon (3.2.7) serena; urgency=medium
+
+  [ JosephMcc ]
+  * cinnamon-settings: Do a better job of handling long labels
+
+  [ Niklas Kreer ]
+  * Update polling frequency to make the mouse tracking smoother
+
+  [ Clement Lefebvre ]
+  * Layout: Ignore NaN numbers when updating regions
+
+ -- Clement Lefebvre <root@linuxmint.com>  Thu, 22 Dec 2016 11:45:01 +0000
+
 cinnamon (3.2.6) serena; urgency=medium
 
   * Revert "Remove the 20 recent files limit"
