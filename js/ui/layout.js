@@ -698,6 +698,14 @@ Chrome.prototype = {
 
             let [x, y] = actorData.actor.get_transformed_position();
             let [w, h] = actorData.actor.get_transformed_size();
+
+            if (isNaN(x) || isNaN(y) || isNaN(w) || isNaN(h)) {
+                // If the actor isn't giving us a valid size/position, skip it
+                // It would make the loop fail with an exception and affect the
+                // other actors
+                continue;
+            }
+
             x = Math.round(x);
             y = Math.round(y);
             w = Math.round(w);
