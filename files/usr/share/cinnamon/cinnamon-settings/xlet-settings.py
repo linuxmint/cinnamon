@@ -176,6 +176,7 @@ class MainWindow(object):
         self.menu_button.set_popup(menu)
 
         scw = Gtk.ScrolledWindow()
+        scw.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC)
         main_box.pack_start(scw, True, True, 0)
         self.instance_stack = Gtk.Stack()
         scw.add(self.instance_stack)

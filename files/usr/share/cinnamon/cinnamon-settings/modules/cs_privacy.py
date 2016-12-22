@@ -37,7 +37,7 @@ class Module:
             settings.add_row(self.indefinite_switch)
 
             widget = SettingsWidget()
-            label = Gtk.Label(_("Number of days to remember old files"))
+            label = SettingsLabel(_("Number of days to remember old files"))
             widget.pack_start(label, False, False, 0)
             self.spinner = Gtk.SpinButton.new_with_range(1.0, 365.0, 1.0)
             self.spinner.set_digits(0)

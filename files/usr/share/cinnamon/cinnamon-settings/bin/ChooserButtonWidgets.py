@@ -28,6 +28,7 @@ ANIMATION_FRAME_RATE = 20
 class BaseChooserButton(Gtk.Button):
     def __init__ (self, has_button_label=False):
         super(BaseChooserButton, self).__init__()
+        self.set_valign(Gtk.Align.CENTER)
         self.menu = Gtk.Menu()
         self.button_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=2)
         self.button_image = Gtk.Image()
