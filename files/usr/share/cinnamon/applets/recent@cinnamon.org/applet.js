@@ -41,7 +41,7 @@ MyApplet.prototype = {
         
         try {        
             this.set_applet_icon_symbolic_name("document-open-recent");
-            this.set_applet_tooltip(_("Recent documents"));
+            this.set_applet_tooltip(_("Recent files"));
             
             this.menuManager = new PopupMenu.PopupMenuManager(this);
             this.menu = new Applet.AppletPopupMenu(this, orientation);
@@ -92,7 +92,7 @@ MyApplet.prototype = {
             this.menu.addMenuItem(menuItem);
             menuItem.connect('activate', Lang.bind(this, this._clearAll));
         } else {
-            this.menu.addMenuItem(new PopupMenu.PopupMenuItem(_("No recent documents")));
+            this.menu.addMenuItem(new PopupMenu.PopupMenuItem(_("No recent files")));
         }
     },
     
