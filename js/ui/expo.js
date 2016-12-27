@@ -13,7 +13,8 @@ const Tweener = imports.ui.tweener;
 const ExpoThumbnail = imports.ui.expoThumbnail;
 
 // Time for initial animation going into Overview mode
-const ANIMATION_TIME = 0.3;
+//TODO: Make user configurable
+const ANIMATION_TIME = 0.5;
 
 function Expo() {
     this._init.apply(this, arguments);
