@@ -1,0 +1,6 @@
+{
+ "uuid": "note@cinnamon.org",
+ "name": "Sticky Note",
+ "description": "A sticky note desklet",
+ "prevent-decorations": false
+}

@@ -1,0 +1,7 @@
+{
+    "text": {
+        "type": "entry",
+        "default": "",
+	"description": "Text displayed in desklet:"
+    }
+}
