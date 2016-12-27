@@ -11,6 +11,7 @@ const Gdk = imports.gi.Gdk;
 
 const Main = imports.ui.main;
 const MessageTray = imports.ui.messageTray;
+const ModalDialog = imports.ui.modalDialog;
 const Tweener = imports.ui.tweener;
 const WorkspacesView = imports.ui.workspacesView;
 
@@ -231,6 +232,16 @@ Overview.prototype = {
     show : function() {
         if (this._shown)
             return;
+        if (Main.getTabList().length == 0) {
+            let dialog = new ModalDialog.ModalDialog();
+            dialog.contentLayout.add(new St.Label({text: _("Workspace is empty, Scale will close.")}));
+            dialog.open();
+            let timestamp = global.get_current_time();
+            Mainloop.timeout_add(500, function() {
+                dialog.close(timestamp);
+            });
+            return;
+        }
         // Do this manually instead of using _syncInputMode, to handle failure
         if (!Main.pushModal(this._group))
             return;
