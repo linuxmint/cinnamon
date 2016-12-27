@@ -407,6 +407,9 @@ function createApplet(extension, appletDefinition) {
         return null;
     }
 
+    if (extension.meta['role']) {
+        Extension.Type.APPLET.roles[extension.meta['role']] = applet;
+    }
     appletObj[applet_id] = applet;
     applet._uuid = extension.uuid;
     applet._meta = extension.meta;
