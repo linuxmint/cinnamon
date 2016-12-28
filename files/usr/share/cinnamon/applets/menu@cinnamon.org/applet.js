@@ -2149,12 +2149,16 @@ MyApplet.prototype = {
             this._placesButtons[i].actor.destroy();
         }
 
+        this._placesButtons = [];
+
         for (let i = 0; i < this._categoryButtons.length; i++) {
             if (this._categoryButtons[i] instanceof PlaceCategoryButton) {
-                this._categoryButtons[i].actor.destroy();
+                this._categoryButtons[i].destroy();
+                this._categoryButtons.splice(i, 1);
+                this.placesButton = null;
+                break;
             }
         }
-        this._placesButtons = new Array();
 
         // Now generate Places category and places buttons and add to the list
         if (this.showPlaces) {
@@ -2264,9 +2268,23 @@ MyApplet.prototype = {
 
                     this.recentButton.isHovered = false;
                 }));
-                this.categoriesBox.add_actor(this.recentButton.actor);
+
                 this._categoryButtons.push(this.recentButton);
             }
+
+            /* Make sure the recent category is at the bottom (can happen when refreshing places
+             * or apps, since we don't destroy the recent category button each time we refresh recents,
+             * as it happens a lot) */
+
+            let parent = this.recentButton.actor.get_parent();
+
+            if (parent != null) {
+                parent.remove_child(this.recentButton.actor);
+            }
+
+            this.categoriesBox.add_actor(this.recentButton.actor);
+            this._categoryButtons.splice(this._categoryButtons.indexOf(this.recentButton), 1);
+            this._categoryButtons.push(this.recentButton);
 
             let new_recents = [];
 
@@ -2280,7 +2298,7 @@ MyApplet.prototype = {
                     new_button = this._recentButtons.find(button => ((button instanceof RecentButton) &&
                                                                      (button.uri) && (button.uri == uri)));
 
-                    if (new_button == null) {
+                    if (new_button == undefined) {
                         let button = new RecentButton(this, this.RecentManager._infosByTimestamp[id], this.showApplicationIcons);
                         this._addEnterEvent(button, Lang.bind(this, function() {
                             this._clearPrevSelection(button.actor);
@@ -2312,7 +2330,7 @@ MyApplet.prototype = {
 
                 recent_clear_button = this._recentButtons.find(button => (button instanceof RecentClearButton));
 
-                if (recent_clear_button == null) {
+                if (recent_clear_button == undefined) {
                     let button = new RecentClearButton(this);
                     this._addEnterEvent(button, Lang.bind(this, function() {
                         this._clearPrevSelection(button.actor);
@@ -2367,7 +2385,7 @@ MyApplet.prototype = {
             if (to_remove.length > 0) {
                 for (let i in to_remove) {
                     to_remove[i].destroy();
-                    this._recentButtons.splice(i, 1);
+                    this._recentButtons.splice(this._recentButtons.indexOf(to_remove[i]), 1);
                 }
             }
 
@@ -2408,6 +2426,8 @@ MyApplet.prototype = {
                 this._recentButtons[i].destroy();
             }
 
+            this._recentButtons = [];
+
             for (let i = 0; i < this._categoryButtons.length; i++) {
                 if (this._categoryButtons[i] instanceof RecentCategoryButton) {
                     this._categoryButtons[i].destroy();
@@ -2416,8 +2436,6 @@ MyApplet.prototype = {
                     break;
                 }
             }
-
-            this._recentButtons = [];
         }
 
         this._setCategoriesButtonActive(!this.searchActive);
@@ -2427,17 +2445,25 @@ MyApplet.prototype = {
     },
 
     _refreshApps : function() {
+        /* iterate in reverse, so multiple splices will not upset 
+         * the remaining elements */
+        for (let i = this._categoryButtons.length - 1; i > -1; i--) {
+            if (this._categoryButtons[i] instanceof CategoryButton) {
+                this._categoryButtons[i].destroy();
+                this._categoryButtons.splice(i, 1);
+            }
+        }
+
         this._applicationsButtons.forEach(Lang.bind(this, function(button) {
             button.destroy();
         }))
-        this.applicationsBox.destroy_all_children();
 
         this._applicationsButtons = new Array();
+        // this.applicationsBox.destroy_all_children();
+
         this._transientButtons = new Array();
         this._applicationsButtonFromApp = new Object();
         this._applicationsBoxWidth = 0;
-        //Remove all categories
-        this.categoriesBox.destroy_all_children();
 
         this._allAppsCategoryButton = new CategoryButton(null);
         this._addEnterEvent(this._allAppsCategoryButton, Lang.bind(this, function() {
@@ -2461,7 +2487,9 @@ MyApplet.prototype = {
             this._previousSelectedActor = this._allAppsCategoryButton.actor;
             this._allAppsCategoryButton.isHovered = false;
          }));
+
          this.categoriesBox.add_actor(this._allAppsCategoryButton.actor);
+         this._categoryButtons.push(this._allAppsCategoryButton);
 
         let trees = [appsys.get_tree()];
 
@@ -2541,6 +2569,8 @@ MyApplet.prototype = {
                         }
                         categoryButton.isHovered = false;
                   }));
+
+                  this._categoryButtons.push(categoryButton);
                   this.categoriesBox.add_actor(categoryButton.actor);
                 }
             }
