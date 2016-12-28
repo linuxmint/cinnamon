@@ -829,6 +829,18 @@ RecentClearButton.prototype = {
     }
 };
 
+function NoRecentDocsButton() {
+    this._init();
+}
+
+NoRecentDocsButton.prototype = {
+    __proto__: GenericButton.prototype,
+
+    _init: function () {
+        GenericButton.prototype._init.call(this, _("No recent documents"), null, false, null);
+    }
+};
+
 function CategoryButton(app, showIcon) {
     this._init(app, showIcon);
 }
@@ -1214,6 +1226,7 @@ MyApplet.prototype = {
         this._favoritesButtons = new Array();
         this._placesButtons = new Array();
         this._transientButtons = new Array();
+        this.recentButton = null;
         this._recentButtons = new Array();
         this._categoryButtons = new Array();
         this._searchProviderButtons = new Array();
@@ -1365,7 +1378,7 @@ MyApplet.prototype = {
         this.menu = new Applet.AppletPopupMenu(this, orientation);
         this.menuManager.addMenu(this.menu);
 
-        this.menu.actor.setCustomStyleClass('menu-background');
+        this.menu.setCustomStyleClass('menu-background');
         this.menu.connect('open-state-changed', Lang.bind(this, this._onOpenStateChanged));
         this._display();
 
@@ -2217,61 +2230,59 @@ MyApplet.prototype = {
     },
 
     _refreshRecent : function() {
-        for (let i = 0; i < this._recentButtons.length; i ++) {
-            this._recentButtons[i].destroy();
-        }
-        for (let i = 0; i < this._categoryButtons.length; i++) {
-            if (this._categoryButtons[i] instanceof RecentCategoryButton) {
-                this._categoryButtons[i].destroy();
-            }
-        }
-        this._recentButtons = new Array();
-
-        // Now generate recent category and recent files buttons and add to the list
         if (this.privacy_settings.get_boolean(REMEMBER_RECENT_KEY)) {
-            this.recentButton = new RecentCategoryButton(null, this.showCategoryIcons);
-            this._addEnterEvent(this.recentButton, Lang.bind(this, function() {
-                if (!this.searchActive) {
-                    this.recentButton.isHovered = true;
+            if (this.recentButton == null) {
+                this.recentButton = new RecentCategoryButton(null, this.showCategoryIcons);
+                this._addEnterEvent(this.recentButton, Lang.bind(this, function() {
+                    if (!this.searchActive) {
+                        this.recentButton.isHovered = true;
 
-                    Mainloop.idle_add_full(Mainloop.PRIORITY_DEFAULT, Lang.bind(this, function() {
-                        if (this.recentButton.isHovered) {
-                            this._clearPrevCatSelection(this.recentButton.actor);
-                            this.recentButton.actor.style_class = "menu-category-button-selected";
-                            this.closeContextMenus(null, false);
-                            this._displayButtons(null, null, -1);
-                        } else {
-                            this.recentButton.actor.style_class = "menu-category-button";
-                        }
-                    }))
+                        Mainloop.idle_add_full(Mainloop.PRIORITY_DEFAULT, Lang.bind(this, function() {
+                            if (this.recentButton.isHovered) {
+                                this._clearPrevCatSelection(this.recentButton.actor);
+                                this.recentButton.actor.style_class = "menu-category-button-selected";
+                                this.closeContextMenus(null, false);
+                                this._displayButtons(null, null, -1);
+                            } else {
+                                this.recentButton.actor.style_class = "menu-category-button";
+                            }
+                        }))
 
-                    this.makeVectorBox(this.recentButton.actor);
-                }
-            }));
-            this.recentButton.actor.connect('leave-event', Lang.bind(this, function () {
-
-                if (this._previousTreeSelectedActor === null) {
-                    this._previousTreeSelectedActor = this.recentButton.actor;
-                } else {
-                    let prevIdx = this.catBoxIter.getVisibleIndex(this._previousTreeSelectedActor);
-                    let nextIdx = this.catBoxIter.getVisibleIndex(this.recentButton.actor);
-
-                    if (Math.abs(prevIdx - nextIdx) <= 1) {
-                        this._previousTreeSelectedActor = this.recentButton.actor;
+                        this.makeVectorBox(this.recentButton.actor);
                     }
-                }
+                }));
+                this.recentButton.actor.connect('leave-event', Lang.bind(this, function () {
 
-                this.recentButton.isHovered = false;
-            }));
-            this.categoriesBox.add_actor(this.recentButton.actor);
-            this._categoryButtons.push(this.recentButton);
+                    if (this._previousTreeSelectedActor === null) {
+                        this._previousTreeSelectedActor = this.recentButton.actor;
+                    } else {
+                        let prevIdx = this.catBoxIter.getVisibleIndex(this._previousTreeSelectedActor);
+                        let nextIdx = this.catBoxIter.getVisibleIndex(this.recentButton.actor);
+
+                        if (Math.abs(prevIdx - nextIdx) <= 1) {
+                            this._previousTreeSelectedActor = this.recentButton.actor;
+                        }
+                    }
+
+                    this.recentButton.isHovered = false;
+                }));
+                this.categoriesBox.add_actor(this.recentButton.actor);
+                this._categoryButtons.push(this.recentButton);
+            }
+
+            let new_recents = [];
 
             if (this.RecentManager._infosByTimestamp.length > 0) {
                 let id = 0;
-
                 while (id < this.RecentManager._infosByTimestamp.length) {
-                    let file = Gio.file_new_for_uri(this.RecentManager._infosByTimestamp[id].uri);
-                    if (file.query_exists(null)) {
+                    let uri = this.RecentManager._infosByTimestamp[id].uri;
+
+                    let new_button = null;
+
+                    new_button = this._recentButtons.find(button => ((button instanceof RecentButton) &&
+                                                                     (button.uri) && (button.uri == uri)));
+
+                    if (new_button == null) {
                         let button = new RecentButton(this, this.RecentManager._infosByTimestamp[id], this.showApplicationIcons);
                         this._addEnterEvent(button, Lang.bind(this, function() {
                             this._clearPrevSelection(button.actor);
@@ -2283,6 +2294,7 @@ MyApplet.prototype = {
                                 selectedAppUri = selectedAppUri.substr(fileIndex + 7);
                             this.selectedAppDescription.set_text(selectedAppUri);
                         }));
+
                         button.actor.connect('leave-event', Lang.bind(this, function() {
                             button.actor.style_class = "menu-application-button";
                             this._previousSelectedActor = button.actor;
@@ -2290,32 +2302,124 @@ MyApplet.prototype = {
                             this.selectedAppDescription.set_text("");
                         }));
 
-                        this._recentButtons.push(button);
-                        this.applicationsBox.add_actor(button.actor);
+                        new_button = button
                     }
+
+                    new_recents.push(new_button);
 
                     id++;
                 }
 
-                let button = new RecentClearButton(this);
-                this._addEnterEvent(button, Lang.bind(this, function() {
-                    this._clearPrevSelection(button.actor);
-                    button.actor.style_class = "menu-application-button-selected";
-                }));
-                button.actor.connect('leave-event', Lang.bind(this, function() {
-                    button.actor.style_class = "menu-application-button";
-                    this._previousSelectedActor = button.actor;
-                }));
-                this._recentButtons.push(button);
-                this.applicationsBox.add_actor(button.actor);
+                let recent_clear_button = null;
+
+                recent_clear_button = this._recentButtons.find(button => (button instanceof RecentClearButton));
+
+                if (recent_clear_button == null) {
+                    let button = new RecentClearButton(this);
+                    this._addEnterEvent(button, Lang.bind(this, function() {
+                        this._clearPrevSelection(button.actor);
+                        button.actor.style_class = "menu-application-button-selected";
+                    }));
+                    button.actor.connect('leave-event', Lang.bind(this, function() {
+                        button.actor.style_class = "menu-application-button";
+                        this._previousSelectedActor = button.actor;
+                    }));
+
+                    recent_clear_button = button;
+                }
+
+                new_recents.push(recent_clear_button);
+
                 this.noRecentDocuments = false;
             } else {
-                let button = new GenericButton(_("No recent documents"), null, false, null);
-                this._recentButtons.push(button);
-                this.applicationsBox.add_actor(button.actor);
+                let new_button = null;
+
+                for (let existing_button in this._recentButtons) {
+                    let button = this._recentButtons[existing_button];
+
+                    if (button instanceof NoRecentDocsButton) {
+                        new_button = button;
+                        break;
+                    }
+                }
+
+                if (new_button == null) {
+                    new_button = new NoRecentDocsButton();
+                }
+
                 this.noRecentDocuments = true;
+                new_recents.push(new_button);
             }
 
+            let to_remove = [];
+
+            /* Remove no-longer-valid items */
+            for (let i = 0; i < this._recentButtons.length; i++) {
+                let button = this._recentButtons[i];
+
+                if (button instanceof NoRecentDocsButton && !this.noRecentDocuments) {
+                    to_remove.push(button);
+                } else if (button instanceof RecentButton) {
+                    if (new_recents.indexOf(button) == -1) {
+                        to_remove.push(button);
+                    }
+                }
+            }
+
+            if (to_remove.length > 0) {
+                for (let i in to_remove) {
+                    to_remove[i].destroy();
+                    this._recentButtons.splice(i, 1);
+                }
+            }
+
+            to_remove = [];
+
+            /* Now, add new actors, shuffle existing actors */
+
+            let placeholder = null;
+
+            /* Find the first occurrence of a RecentButton, if it exists */
+            let children = this.applicationsBox.get_children();
+            for (let i = children.length - 1; i > 0; i--) {
+                if ((children[i]._delegate instanceof RecentButton) ||
+                    (children[i]._delegate instanceof RecentClearButton) ||
+                    (i == children.length - 1)) {
+                    placeholder = children[i - 1];
+                    break;
+                }
+            }
+
+            children = null;
+
+            for (let i = 0; i < new_recents.length; i++) {
+                let actor = new_recents[i].actor;
+
+                let parent = actor.get_parent();
+                if (parent != null) {
+                    parent.remove_child(actor);
+                }
+
+                this.applicationsBox.insert_child_above(actor, placeholder);
+                placeholder = actor;
+            }
+
+            this._recentButtons = new_recents;
+        } else {
+            for (let i = 0; i < this._recentButtons.length; i ++) {
+                this._recentButtons[i].destroy();
+            }
+
+            for (let i = 0; i < this._categoryButtons.length; i++) {
+                if (this._categoryButtons[i] instanceof RecentCategoryButton) {
+                    this._categoryButtons[i].destroy();
+                    this._categoryButtons.splice(i, 1);
+                    this.recentButton = null;
+                    break;
+                }
+            }
+
+            this._recentButtons = [];
         }
 
         this._setCategoriesButtonActive(!this.searchActive);

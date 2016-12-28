@@ -146,11 +146,17 @@ DocManager.prototype = {
         let docs = this._docSystem.get_all();
         this._infosByTimestamp = [];
         this._infosByUri = {};
-        for (let i = 0; i < docs.length && i < MAX_RECENT_FILES; i++) {
+
+        let valid_count = 0;
+        let i = 0; 
+
+        while (i < docs.length && valid_count < MAX_RECENT_FILES) {
             let recentInfo = docs[i];
             let docInfo = new DocInfo(recentInfo);
             this._infosByTimestamp.push(docInfo);
             this._infosByUri[docInfo.uri] = docInfo;
+            valid_count++;
+            i++;
         }
     },
 
