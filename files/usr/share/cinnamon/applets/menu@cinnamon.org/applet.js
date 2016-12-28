@@ -2201,10 +2201,9 @@ MyApplet.prototype = {
             let bookmarks = this._listBookmarks();
             let devices = this._listDevices();
             let places = bookmarks.concat(devices);
-            for (let i = 0; i < places.length; i++) {
-                let place = places[i];
-                let button = new PlaceButton(this, place, place.name, this.showApplicationIcons);
-                this._addEnterEvent(button, Lang.bind(this, function() {
+
+            var handleEnterEvent = (button) => {
+                this._addEnterEvent(button, () => {
                     this._clearPrevSelection(button.actor);
                     button.actor.style_class = "menu-application-button-selected";
                     this.selectedAppTitle.set_text("");
@@ -2214,12 +2213,22 @@ MyApplet.prototype = {
                     if (fileIndex !== -1)
                         selectedAppId = selectedAppId.substr(fileIndex + 7);
                     this.selectedAppDescription.set_text(selectedAppId);
-                }));
-                button.actor.connect('leave-event', Lang.bind(this, function() {
+                });
+            };
+
+            var handleLeaveEvent = (button) => {
+                button.actor.connect('leave-event', () => {
                     this._previousSelectedActor = button.actor;
                     this.selectedAppTitle.set_text("");
                     this.selectedAppDescription.set_text("");
-                }));
+                });
+            };
+
+            for (let i = 0; i < places.length; i++) {
+                let place = places[i];
+                let button = new PlaceButton(this, place, place.name, this.showApplicationIcons);
+                handleEnterEvent(button);
+                handleLeaveEvent(button);
                 this._placesButtons.push(button);
                 this.applicationsBox.add_actor(button.actor);
             }
@@ -2289,34 +2298,44 @@ MyApplet.prototype = {
             let new_recents = [];
 
             if (this.RecentManager._infosByTimestamp.length > 0) {
+
+                var handleEnterEvent = (button) => {
+                    this._addEnterEvent(button, () => {
+                        this._clearPrevSelection(button.actor);
+                        button.actor.style_class = "menu-application-button-selected";
+                        this.selectedAppTitle.set_text("");
+                        let selectedAppUri = button.uriDecoded;
+                        let fileIndex = selectedAppUri.indexOf("file:///");
+                        if (fileIndex !== -1)
+                            selectedAppUri = selectedAppUri.substr(fileIndex + 7);
+                        this.selectedAppDescription.set_text(selectedAppUri);
+                    });
+                };
+
+                var handleLeaveEvent = (button) => {
+                    button.actor.connect('leave-event', () => {
+                        button.actor.style_class = "menu-application-button";
+                        this._previousSelectedActor = button.actor;
+                        this.selectedAppTitle.set_text("");
+                        this.selectedAppDescription.set_text("");
+                    });
+                }
+
+                var handleFindButton = button => ((button instanceof RecentButton) &&
+                                                                     (button.uri) && (button.uri == uri))
+
                 let id = 0;
                 while (id < this.RecentManager._infosByTimestamp.length) {
                     let uri = this.RecentManager._infosByTimestamp[id].uri;
 
                     let new_button = null;
 
-                    new_button = this._recentButtons.find(button => ((button instanceof RecentButton) &&
-                                                                     (button.uri) && (button.uri == uri)));
+                    new_button = this._recentButtons.find(handleFindButton);
 
                     if (new_button == undefined) {
                         let button = new RecentButton(this, this.RecentManager._infosByTimestamp[id], this.showApplicationIcons);
-                        this._addEnterEvent(button, Lang.bind(this, function() {
-                            this._clearPrevSelection(button.actor);
-                            button.actor.style_class = "menu-application-button-selected";
-                            this.selectedAppTitle.set_text("");
-                            let selectedAppUri = button.uriDecoded;
-                            let fileIndex = selectedAppUri.indexOf("file:///");
-                            if (fileIndex !== -1)
-                                selectedAppUri = selectedAppUri.substr(fileIndex + 7);
-                            this.selectedAppDescription.set_text(selectedAppUri);
-                        }));
-
-                        button.actor.connect('leave-event', Lang.bind(this, function() {
-                            button.actor.style_class = "menu-application-button";
-                            this._previousSelectedActor = button.actor;
-                            this.selectedAppTitle.set_text("");
-                            this.selectedAppDescription.set_text("");
-                        }));
+                        handleEnterEvent(button);
+                        handleLeaveEvent(button);
 
                         new_button = button
                     }
@@ -2508,31 +2527,68 @@ MyApplet.prototype = {
 
             let prefCats = ["administration", "preferences"];
 
-            dirs = dirs.sort(function(a, b) {
-                    let menuIdA = a.get_menu_id().toLowerCase();
-                    let menuIdB = b.get_menu_id().toLowerCase();
+            var sortDirs = function(a, b) {
+                let menuIdA = a.get_menu_id().toLowerCase();
+                let menuIdB = b.get_menu_id().toLowerCase();
 
-                    let prefIdA = prefCats.indexOf(menuIdA);
-                    let prefIdB = prefCats.indexOf(menuIdB);
+                let prefIdA = prefCats.indexOf(menuIdA);
+                let prefIdB = prefCats.indexOf(menuIdB);
 
-                    if (prefIdA < 0 && prefIdB >= 0) {
-                      return -1;
-                    }
-                    if (prefIdA >= 0 && prefIdB < 0) {
-                      return 1;
-                    }
+                if (prefIdA < 0 && prefIdB >= 0) {
+                  return -1;
+                }
+                if (prefIdA >= 0 && prefIdB < 0) {
+                  return 1;
+                }
 
-                    let nameA = a.get_name().toLowerCase();
-                    let nameB = b.get_name().toLowerCase();
+                let nameA = a.get_name().toLowerCase();
+                let nameB = b.get_name().toLowerCase();
 
-                    if (nameA > nameB) {
-                        return 1;
+                if (nameA > nameB) {
+                    return 1;
+                }
+                if (nameA < nameB) {
+                    return -1;
+                }
+                return 0;
+            };
+
+            dirs = dirs.sort(sortDirs);
+
+            var handleEnterEvent = (categoryButton, dir) => {
+                this._addEnterEvent(categoryButton, () => {
+                    if (!this.searchActive) {
+                        categoryButton.isHovered = true;
+
+                        Mainloop.idle_add_full(Mainloop.PRIORITY_DEFAULT, Lang.bind(this, function() {
+                            if (categoryButton.isHovered) {
+                                this._clearPrevCatSelection(categoryButton.actor);
+                                categoryButton.actor.style_class = "menu-category-button-selected";
+                                this._select_category(dir, categoryButton);
+                            } else {
+                                categoryButton.actor.style_class = "menu-category-button";
+                            }
+                        }))
+
+                        this.makeVectorBox(categoryButton.actor);
                     }
-                    if (nameA < nameB) {
-                        return -1;
-                    }
-                    return 0;
                 });
+            };
+
+            var handleLeaveEvent = (categoryButton, dir) => {
+                categoryButton.actor.connect('leave-event', () => {
+                    if (this._previousTreeSelectedActor === null) {
+                        this._previousTreeSelectedActor = categoryButton.actor;
+                    } else {
+                        let prevIdx = this.catBoxIter.getVisibleIndex(this._previousTreeSelectedActor);
+                        let nextIdx = this.catBoxIter.getVisibleIndex(categoryButton.actor);
+                        if (Math.abs(prevIdx - nextIdx) <= 1) {
+                            this._previousTreeSelectedActor = categoryButton.actor;
+                        }
+                    }
+                    categoryButton.isHovered = false;
+                });
+            };
 
             for (let i = 0; i < dirs.length; i++) {
                 let dir = dirs[i];
@@ -2540,35 +2596,8 @@ MyApplet.prototype = {
                     continue;
                 if (this._loadCategory(dir)) {
                     let categoryButton = new CategoryButton(dir, this.showCategoryIcons);
-                    this._addEnterEvent(categoryButton, Lang.bind(this, function() {
-                        if (!this.searchActive) {
-                            categoryButton.isHovered = true;
-
-                            Mainloop.idle_add_full(Mainloop.PRIORITY_DEFAULT, Lang.bind(this, function() {
-                                if (categoryButton.isHovered) {
-                                    this._clearPrevCatSelection(categoryButton.actor);
-                                    categoryButton.actor.style_class = "menu-category-button-selected";
-                                    this._select_category(dir, categoryButton);
-                                } else {
-                                    categoryButton.actor.style_class = "menu-category-button";
-                                }
-                            }))
-
-                            this.makeVectorBox(categoryButton.actor);
-                        }
-                    }));
-                  categoryButton.actor.connect('leave-event', Lang.bind(this, function () {
-                        if (this._previousTreeSelectedActor === null) {
-                            this._previousTreeSelectedActor = categoryButton.actor;
-                        } else {
-                            let prevIdx = this.catBoxIter.getVisibleIndex(this._previousTreeSelectedActor);
-                            let nextIdx = this.catBoxIter.getVisibleIndex(categoryButton.actor);
-                            if (Math.abs(prevIdx - nextIdx) <= 1) {
-                                this._previousTreeSelectedActor = categoryButton.actor;
-                            }
-                        }
-                        categoryButton.isHovered = false;
-                  }));
+                    handleEnterEvent(categoryButton, dir);
+                    handleLeaveEvent(categoryButton, dir);
 
                   this._categoryButtons.push(categoryButton);
                   this.categoriesBox.add_actor(categoryButton.actor);
