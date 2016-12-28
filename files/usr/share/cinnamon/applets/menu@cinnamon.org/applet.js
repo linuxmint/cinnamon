@@ -183,7 +183,7 @@ function GenericApplicationButton(appsMenuButton, app) {
 }
 
 GenericApplicationButton.prototype = {
-    __proto__: PopupMenu.PopupSubMenuMenuItem.prototype,
+    __proto__: PopupMenu.PopupBaseMenuItem.prototype,
 
     _init: function(appsMenuButton, app, withMenu) {
         this.app = app;
@@ -283,6 +283,20 @@ GenericApplicationButton.prototype = {
 
     get _contextIsOpen() {
         return this.menu.isOpen;
+    },
+
+    destroy: function() {
+        this.label.destroy();
+
+        if (this.icon) {
+            this.icon.destroy();
+        }
+
+        if (this.withMenu) {
+            this.menu.destroy();
+        }
+
+        PopupMenu.PopupBaseMenuItem.prototype.destroy.call(this);
     }
 }
 
@@ -757,11 +771,11 @@ RecentButton.prototype = {
     },
 };
 
-function GenericButton(label, icon, reactive, callback) {
+function NoRecentDocsButton(label, icon, reactive, callback) {
     this._init(label, icon, reactive, callback);
 }
 
-GenericButton.prototype = {
+NoRecentDocsButton.prototype = {
     __proto__: PopupMenu.PopupBaseMenuItem.prototype,
 
     _init: function(label, icon, reactive, callback) {
@@ -784,8 +798,6 @@ GenericButton.prototype = {
 
         this.actor.reactive = reactive;
         this.callback = callback;
-
-        this.menu = new PopupMenu.PopupSubMenu(this.actor);
     },
 
     _onButtonReleaseEvent: function (actor, event) {
@@ -812,8 +824,6 @@ RecentClearButton.prototype = {
         this.icon = new St.Icon({ icon_name: 'edit-clear', icon_type: St.IconType.SYMBOLIC, icon_size: APPLICATION_ICON_SIZE });
         this.addActor(this.icon);
         this.addActor(this.label);
-
-        this.menu = new PopupMenu.PopupSubMenu(this.actor);
     },
 
     _onButtonReleaseEvent: function (actor, event) {
@@ -826,18 +836,6 @@ RecentClearButton.prototype = {
         this.appsMenuButton.menu.close();
         let GtkRecent = new Gtk.RecentManager();
         GtkRecent.purge_items();
-    }
-};
-
-function NoRecentDocsButton() {
-    this._init();
-}
-
-NoRecentDocsButton.prototype = {
-    __proto__: GenericButton.prototype,
-
-    _init: function () {
-        GenericButton.prototype._init.call(this, _("No recent documents"), null, false, null);
     }
 };
 
@@ -2344,7 +2342,7 @@ MyApplet.prototype = {
                 }
 
                 if (new_button == null) {
-                    new_button = new NoRecentDocsButton();
+                    new_button = new NoRecentDocsButton(_("No recent documents"), null, false, null);
                 }
 
                 this.noRecentDocuments = true;
@@ -2429,7 +2427,11 @@ MyApplet.prototype = {
     },
 
     _refreshApps : function() {
+        this._applicationsButtons.forEach(Lang.bind(this, function(button) {
+            button.destroy();
+        }))
         this.applicationsBox.destroy_all_children();
+
         this._applicationsButtons = new Array();
         this._transientButtons = new Array();
         this._applicationsButtonFromApp = new Object();
