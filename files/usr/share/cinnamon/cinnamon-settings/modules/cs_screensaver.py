@@ -229,13 +229,10 @@ class ScreensaverBox(Gtk.Box):
         self.list_box.connect("row-activated", self.on_row_activated)
         scw.add(self.list_box)
 
-        self.socket = Gtk.Socket()
-        # Prevent the socket from self-destructing when its plug dies
-        self.socket.connect("plug-removed", lambda socket: True)
-        self.socket_box.pack_start(self.socket, True, True, 0)
-        self.socket_box.connect("map", self.on_mapped)
-
+        self.socket = None
         self.gather_screensavers()
+
+        self.socket_box.connect("map", self.on_mapped)
 
     def gather_screensavers(self):
         row = ScreensaverRow("", _("Screen Locker"), _("The standard cinnamon lock screen"), "", "default")
@@ -345,9 +342,6 @@ class ScreensaverBox(Gtk.Box):
         self.proc.send_signal(signal.SIGTERM)
         self.proc = None
 
-        for child in self.socket.get_children():
-            self.socket.remove(child)
-
     def on_row_activated(self, list_box, row):
         row = self.list_box.get_selected_row()
         if not row:
@@ -371,11 +365,22 @@ class ScreensaverBox(Gtk.Box):
             self.settings.set_string('screensaver-name', uuid)
 
         if ss_type == 'default':
+            if self.socket:
+                self.socket.destroy()
+                self.socket = None
+
+            for child in self.socket_box:
+                child.destroy()
+
             px = GdkPixbuf.Pixbuf.new_from_file_at_size("/usr/share/cinnamon/thumbnails/wallclock.png", -1, 240)
             w = Gtk.Image.new_from_pixbuf(px)
             w.show()
-            self.socket.add(w)
+            self.socket_box.pack_start(w, True, True, 0)
             return
+
+        for child in self.socket_box:
+            if not isinstance(child, Gtk.Socket):
+                child.destroy()
 
         if ss_type == 'webkit':
             command = [self.webkit_executable, "--plugin", uuid]
@@ -401,6 +406,12 @@ class ScreensaverBox(Gtk.Box):
         if output:
             match = re.match('^\s*WINDOW ID=(\d+)\s*$', output)
             if match:
+                if not self.socket:
+                    socket = Gtk.Socket()
+                    socket.show()
+                    socket.connect("plug-removed", lambda socket: True)
+                    self.socket_box.pack_start(socket, True, True, 0)
+                    self.socket = socket
                 self.socket.add_id(int(match.group(1)))
 
     def on_mapped(self, widget):
