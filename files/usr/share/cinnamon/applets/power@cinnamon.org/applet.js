@@ -424,6 +424,9 @@ MyApplet.prototype = {
                 this.set_applet_icon_symbolic_name('battery-full');
             }
         }
+        else {
+            this.set_applet_icon_symbolic_name('goa-panel');
+        }
     },
 
     _devicesChanged: function() {
