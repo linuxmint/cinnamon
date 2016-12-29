@@ -2321,16 +2321,17 @@ MyApplet.prototype = {
                     });
                 }
 
-                var handleFindButton = button => ((button instanceof RecentButton) &&
-                                                                     (button.uri) && (button.uri == uri))
+                var handleNewButton = (id) => {
+                    let uri = this.RecentManager._infosByTimestamp[id].uri;
+                    return this._recentButtons.find(button => ((button instanceof RecentButton) &&
+                                                                     (button.uri) && (button.uri == uri)));
+                };
 
                 let id = 0;
                 while (id < this.RecentManager._infosByTimestamp.length) {
-                    let uri = this.RecentManager._infosByTimestamp[id].uri;
-
                     let new_button = null;
 
-                    new_button = this._recentButtons.find(handleFindButton);
+                    new_button = handleNewButton(id);
 
                     if (new_button == undefined) {
                         let button = new RecentButton(this, this.RecentManager._infosByTimestamp[id], this.showApplicationIcons);
