@@ -339,16 +339,16 @@ MyApplet.prototype = {
             }
             else if (time > 60) {
                 if (minutes == 0) {
-                    status = ngettext("Charging - %d hour until fully charged", "Charging - %d hours until fully charged", hours).format(hours);
+                    status = ngettext("Charging - %d hour until full", "Charging - %d hours until full", hours).format(hours);
                 } 
                 else {
-                    /* TRANSLATORS: this is a time string, as in "%d hours %d minutes remaining" */
-                    let template = _("Charging - %d %s %d %s until fully charged");
-                    status = template.format (hours, ngettext("hour", "hours", hours), minutes, ngettext("minute", "minutes", minutes));
+                    let template = _("Charging - %d:%s until full");
+                    if (minutes < 10) minutes = '0' + minutes;
+                    status = template.format (hours, minutes)
                 }
             } 
             else {
-                status = ngettext("Charging - %d minute until fully charged", "Charging - %d minutes until fully charged", minutes).format(minutes);
+                status = ngettext("Charging - %d minute until full", "Charging - %d minutes until full", minutes).format(minutes);
             }
         }
         else if (state == UPDeviceState.FULLY_CHARGED) {
@@ -356,20 +356,21 @@ MyApplet.prototype = {
         }
         else {
             if (time == 0) {
-                status = _("Using battery power");
+                status = _("Discharging");
             }
             else if (time > 60) {
                 if (minutes == 0) {
-                    status = ngettext("Using battery power - %d hour remaining", "Using battery power - %d hours remaining", hours).format(hours);
+                    status = ngettext("Discharging - %d hour remaining", "Discharging - %d hours remaining", hours).format(hours);
                 } 
                 else {
                     /* TRANSLATORS: this is a time string, as in "%d hours %d minutes remaining" */
-                    let template = _("Using battery power - %d %s %d %s remaining");
-                    status = template.format (hours, ngettext("hour", "hours", hours), minutes, ngettext("minute", "minutes", minutes));
+                    let template = _("Discharging - %d:%s remaining");
+                    if (minutes < 10) minutes = '0' + minutes;
+                    status = template.format (hours, minutes);
                 }
             } 
             else {
-                status = ngettext("Using battery power - %d minute remaining", "Using battery power - %d minutes remaining", minutes).format(minutes);
+                status = ngettext("Discharging - %d minute remaining", "Discharging - %d minutes remaining", minutes).format(minutes);
             }
         }
 
