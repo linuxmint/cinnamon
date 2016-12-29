@@ -6,6 +6,5 @@ Icon=alacarte
 OnlyShowIn=X-Cinnamon;
 Terminal=false
 Type=Application
-NoDisplay=true
 Categories=GNOME;GTK;Settings;DesktopSettings;
 StartupNotify=false
