@@ -8,4 +8,4 @@ Usage:  cinnamon-looking-glass {daemon|inspect}
 import os
 import sys
 
-os.execvp("/usr/share/cinnamon/cinnamon-looking-glass/cinnamon-looking-glass.py", ("",) + tuple(sys.argv[1:]))
+os.execvp("/usr/share/cinnamon/cinnamon-looking-glass/cinnamon-looking-glass.py", (" ",) + tuple(sys.argv[1:]))

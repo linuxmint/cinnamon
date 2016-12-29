@@ -8,4 +8,4 @@ See cinnamon/cinnamon-json-makepot/cinnamon-json-makepot.py for usage info
 import os
 import sys
 
-os.execvp("/usr/share/cinnamon/cinnamon-json-makepot/cinnamon-json-makepot.py", ("",) + tuple(sys.argv[1:]))
+os.execvp("/usr/share/cinnamon/cinnamon-json-makepot/cinnamon-json-makepot.py", (" ",) + tuple(sys.argv[1:]))

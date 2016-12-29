@@ -11,16 +11,16 @@ import sys
 if len(sys.argv) > 1:
     module = sys.argv[1]
     if module in ("applets", "desklets", "extensions") and len(sys.argv) > 2 and sys.argv[2][0:5] != "panel":
-        os.execvp("/usr/share/cinnamon/cinnamon-settings/xlet-settings.py", ("", module[0:-1]) + tuple(sys.argv[2:]))
+        os.execvp("/usr/share/cinnamon/cinnamon-settings/xlet-settings.py", (" ", module[0:-1]) + tuple(sys.argv[2:]))
     if os.path.exists("/usr/share/cinnamon/cinnamon-settings/modules/cs_%s.py" % module):
-        os.execvp("/usr/share/cinnamon/cinnamon-settings/cinnamon-settings.py", ("",) + tuple(sys.argv[1:]))
+        os.execvp("/usr/share/cinnamon/cinnamon-settings/cinnamon-settings.py", (" ",) + tuple(sys.argv[1:]))
     elif os.path.exists("/usr/bin/cinnamon-control-center"):
-        os.execvp("/usr/share/cinnamon/cinnamon-settings/cinnamon-settings.py", ("",) + tuple(sys.argv[1:]))
+        os.execvp("/usr/share/cinnamon/cinnamon-settings/cinnamon-settings.py", (" ",) + tuple(sys.argv[1:]))
     elif os.path.exists("/usr/bin/gnome-control-center"):
         print ("Unknown module %s, calling gnome-control-center" % module)
-        os.execvp("gnome-control-center", ("",) + tuple(sys.argv[1:]))
+        os.execvp("gnome-control-center", (" ",) + tuple(sys.argv[1:]))
     else:
         print ("Unknown module %s" % module)
-        os.execvp("/usr/share/cinnamon/cinnamon-settings/cinnamon-settings.py", ("",) + tuple(sys.argv[1:]))
+        os.execvp("/usr/share/cinnamon/cinnamon-settings/cinnamon-settings.py", (" ",) + tuple(sys.argv[1:]))
 else:
-    os.execvp("/usr/share/cinnamon/cinnamon-settings/cinnamon-settings.py", ("",) + tuple(sys.argv[1:]))
+    os.execvp("/usr/share/cinnamon/cinnamon-settings/cinnamon-settings.py", (" ",) + tuple(sys.argv[1:]))

@@ -5,4 +5,4 @@
 
 import os
 
-os.execvp("/usr/share/cinnamon/cinnamon-slideshow/cinnamon-slideshow.py", ("",))
+os.execvp("/usr/share/cinnamon/cinnamon-slideshow/cinnamon-slideshow.py", (" ",))
