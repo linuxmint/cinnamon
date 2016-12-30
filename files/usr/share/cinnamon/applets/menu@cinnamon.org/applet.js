@@ -2202,7 +2202,7 @@ MyApplet.prototype = {
             let devices = this._listDevices();
             let places = bookmarks.concat(devices);
 
-            var handleEnterEvent = (button) => {
+            let handleEnterEvent = (button) => {
                 this._addEnterEvent(button, () => {
                     this._clearPrevSelection(button.actor);
                     button.actor.style_class = "menu-application-button-selected";
@@ -2216,7 +2216,7 @@ MyApplet.prototype = {
                 });
             };
 
-            var handleLeaveEvent = (button) => {
+            let handleLeaveEvent = (button) => {
                 button.actor.connect('leave-event', () => {
                     this._previousSelectedActor = button.actor;
                     this.selectedAppTitle.set_text("");
@@ -2299,7 +2299,7 @@ MyApplet.prototype = {
 
             if (this.RecentManager._infosByTimestamp.length > 0) {
 
-                var handleEnterEvent = (button) => {
+                let handleEnterEvent = (button) => {
                     this._addEnterEvent(button, () => {
                         this._clearPrevSelection(button.actor);
                         button.actor.style_class = "menu-application-button-selected";
@@ -2312,7 +2312,7 @@ MyApplet.prototype = {
                     });
                 };
 
-                var handleLeaveEvent = (button) => {
+                let handleLeaveEvent = (button) => {
                     button.actor.connect('leave-event', () => {
                         button.actor.style_class = "menu-application-button";
                         this._previousSelectedActor = button.actor;
@@ -2321,7 +2321,7 @@ MyApplet.prototype = {
                     });
                 }
 
-                var handleNewButton = (id) => {
+                let handleNewButton = (id) => {
                     let uri = this.RecentManager._infosByTimestamp[id].uri;
                     return this._recentButtons.find(button => ((button instanceof RecentButton) &&
                                                                      (button.uri) && (button.uri == uri)));
@@ -2528,7 +2528,7 @@ MyApplet.prototype = {
 
             let prefCats = ["administration", "preferences"];
 
-            var sortDirs = function(a, b) {
+            let sortDirs = function(a, b) {
                 let menuIdA = a.get_menu_id().toLowerCase();
                 let menuIdB = b.get_menu_id().toLowerCase();
 
@@ -2556,7 +2556,7 @@ MyApplet.prototype = {
 
             dirs = dirs.sort(sortDirs);
 
-            var handleEnterEvent = (categoryButton, dir) => {
+            let handleEnterEvent = (categoryButton, dir) => {
                 this._addEnterEvent(categoryButton, () => {
                     if (!this.searchActive) {
                         categoryButton.isHovered = true;
@@ -2576,7 +2576,7 @@ MyApplet.prototype = {
                 });
             };
 
-            var handleLeaveEvent = (categoryButton, dir) => {
+            let handleLeaveEvent = (categoryButton, dir) => {
                 categoryButton.actor.connect('leave-event', () => {
                     if (this._previousTreeSelectedActor === null) {
                         this._previousTreeSelectedActor = categoryButton.actor;
