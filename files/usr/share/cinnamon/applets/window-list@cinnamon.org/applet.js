@@ -124,7 +124,7 @@ WindowPreview.prototype = {
         if (this._applet._tooltipShowing)
             this.show();
         else if (!this._showTimer)
-            this._showTimer = Mainloop.timeout_add(300, Lang.bind(this, this._onTimerComplete));
+            this._showTimer = Mainloop.timeout_add(300, Lang.bind(this, this._onShowTimerComplete));
 
         this.mousePosition = event.get_coords();
     },

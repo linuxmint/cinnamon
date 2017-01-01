@@ -68,7 +68,7 @@ TooltipBase.prototype = {
             // An allocation change could mean that the actor has moved,
             // so hide, but wait until after the allocation cycle.
             Mainloop.idle_add(Lang.bind(this, function() {
-                this.hide();
+                this._hide();
             }));
         });
 
@@ -84,24 +84,49 @@ TooltipBase.prototype = {
             this._showTimer = null;
         }
 
+        if (this._hideTimer) {
+            Mainloop.source_remove(this._hideTimer);
+            this._hideTimer = null;
+        }
+
         if (!this.visible) {
-            this._showTimer = Mainloop.timeout_add(300, Lang.bind(this, this._onTimerComplete));
+            this._showTimer = Mainloop.timeout_add(300, Lang.bind(this, this._onShowTimerComplete));
             this.mousePosition = event.get_coords();
+        } else {
+            this._hideTimer = Mainloop.timeout_add(500, Lang.bind(this, this._onHideTimerComplete));
         }
     },
 
     _onEnterEvent: function(actor, event) {
         if (!this._showTimer) {
-            this._showTimer = Mainloop.timeout_add(300, Lang.bind(this, this._onTimerComplete));
+            this._showTimer = Mainloop.timeout_add(300, Lang.bind(this, this._onShowTimerComplete));
             this.mousePosition = event.get_coords();
         }
     },
 
-    _onTimerComplete: function() {
+    _onShowTimerComplete: function() {
         this._showTimer = null;
 
-        if (!this.preventShow)
+        if (!this.preventShow) {
             this.show();
+        }
+
+        return false;
+    },
+
+    _onHideTimerComplete: function() {
+        this._hideTimer = null;
+
+        let [abs_x, abs_y, mods] = global.get_pointer();
+        let box = this.item.get_allocation_box();
+
+        let [success, x, y] = this.item.get_parent().transform_stage_point(abs_x, abs_y);
+
+        if ((x < box.x1) || (x > box.x2) ||
+            (y < box.y1) || (y > box.y2)) {
+            log("__________________________________hide complete!");
+            this._hide();
+        }
 
         return false;
     },
@@ -111,6 +136,12 @@ TooltipBase.prototype = {
             Mainloop.source_remove(this._showTimer);
             this._showTimer = null;
         }
+
+        if (this._hideTimer) {
+            Mainloop.source_remove(this._hideTimer);
+            this._hideTimer = null;
+        }
+
         this.hide();
     },
 
@@ -124,6 +155,12 @@ TooltipBase.prototype = {
             Mainloop.source_remove(this._showTimer);
             this._showTimer = null;
         }
+
+        if (this._hideTimer) {
+            Mainloop.source_remove(this._hideTimer);
+            this._hideTimer = null;
+        }
+
         this.signals.disconnectAllSignals();
         this._destroy();
     }
