@@ -61,10 +61,29 @@ st_theme_node_class_init (StThemeNodeClass *klass)
 }
 
 static void
+maybe_free_properties (StThemeNode *node)
+{
+  if (node->properties)
+    {
+      g_free (node->properties);
+      node->properties = NULL;
+      node->n_properties = 0;
+    }
+
+  if (node->inline_properties)
+    {
+      /* This destroys the list, not just the head of the list */
+      cr_declaration_destroy (node->inline_properties);
+      node->inline_properties = NULL;
+    }
+}
+
+static void
 on_custom_stylesheets_changed (StTheme *theme,
                                gpointer data)
 {
   StThemeNode *node = data;
+  maybe_free_properties (node);
   node->properties_computed = FALSE;
 }
 
@@ -117,18 +136,7 @@ st_theme_node_finalize (GObject *object)
   g_strfreev (node->pseudo_classes);
   g_free (node->inline_style);
 
-  if (node->properties)
-    {
-      g_free (node->properties);
-      node->properties = NULL;
-      node->n_properties = 0;
-    }
-
-  if (node->inline_properties)
-    {
-      /* This destroys the list, not just the head of the list */
-      cr_declaration_destroy (node->inline_properties);
-    }
+  maybe_free_properties (node);
 
   if (node->font_desc)
     {
