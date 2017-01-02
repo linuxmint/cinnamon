@@ -59,7 +59,6 @@ MyApplet.prototype = {
             this.recentsScrollBox.add_actor(this.recentsBox);
             this.recentsScrollBox.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC);
             this.menu.actor.add_actor(this.recentsScrollBox);
-            this.menu.actor.height = 400 / global.ui_scale;
 
             this.RecentManager = new DocInfo.DocManager();
             this.privacy_settings = new Gio.Settings( {schema_id: PRIVACY_SCHEMA} );
@@ -67,12 +66,17 @@ MyApplet.prototype = {
             this._recentButtons = [];
             this._display();
 
-            this.RecentManager.connect('changed', Lang.bind(this, this._refreshRecents));
-            this.privacy_settings.connect("changed::" + REMEMBER_RECENT_KEY, Lang.bind(this, this._refreshRecents));
+            this.recent_id = this.RecentManager.connect('changed', Lang.bind(this, this._refreshRecents));
+            this.settings_id = this.privacy_settings.connect("changed::" + REMEMBER_RECENT_KEY, Lang.bind(this, this._refreshRecents));
         }
         catch (e) {
             global.logError(e);
         }
+    },
+
+    on_applet_removed_from_panel: function () {
+        this.RecentManager.disconnect(this.recent_id);
+        this.privacy_settings.disconnect(this.settings_id);
     },
 
     on_applet_clicked: function(event) {

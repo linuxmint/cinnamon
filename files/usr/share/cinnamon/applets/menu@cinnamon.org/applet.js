@@ -2416,7 +2416,12 @@ MyApplet.prototype = {
                     parent.remove_child(actor);
                 }
 
-                this.applicationsBox.insert_child_above(actor, placeholder);
+                if (placeholder != actor) {
+                    this.applicationsBox.insert_child_above(actor, placeholder);
+                } else {
+                    this.applicationsBox.add_child(actor);
+                }
+
                 placeholder = actor;
             }
 
