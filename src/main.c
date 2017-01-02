@@ -56,6 +56,7 @@ cinnamon_dbus_acquire_name (GDBusProxy *bus,
       exit (1);
     }
   g_variant_get (request_name_variant, "(u)", request_name_result);
+  g_variant_unref (request_name_variant);
 }
 
 static void
