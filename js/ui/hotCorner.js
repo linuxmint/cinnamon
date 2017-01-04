@@ -323,6 +323,7 @@ HotCorner.prototype = {
                 }
             }
         }));
+        this.hover_delay_id = 0;
         return false;
     },
 
