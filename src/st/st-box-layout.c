@@ -1013,6 +1013,10 @@ st_box_layout_get_paint_volume (ClutterActor       *actor,
   ClutterActorBox content_box;
   ClutterVertex origin;
 
+  /* Setting the paint volume does not make sense when we don't have any allocation */
+  if (!clutter_actor_has_allocation (actor))
+    return FALSE;
+
   /* When have an adjustment we are clipped to the content box, so base
    * our paint volume on that. */
   if (priv->hadjustment || priv->vadjustment)
