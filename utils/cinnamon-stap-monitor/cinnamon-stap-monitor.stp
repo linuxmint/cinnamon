@@ -1,0 +1,86 @@
+// glib-memtrace.stp: Every 5 seconds, dump the memory usage of a single process
+// Usage: stap -c gtk-demo ./glib-memtrace.stp
+
+// Note - you may need to increase these values
+global g_heap[800000]
+global g_slice_heap[400000]
+
+// Keep track of changes since last check
+global g_malloc_delta
+global g_slice_delta
+global gobject_delta
+
+// GLIB probes
+
+probe glib.mem_alloc {
+  if (target() == pid())
+    {
+      g_malloc_delta += n_bytes
+      g_heap[mem] = n_bytes
+    }
+}
+
+probe glib.mem_realloc {
+  if (target() == pid())
+    {
+      newbytes = n_bytes - g_heap[old_mem]
+      delete g_heap[old_mem]
+      g_malloc_delta += newbytes
+      g_heap[mem] = n_bytes
+    }
+}
+
+probe glib.mem_free {
+  if (target() == pid())
+    {
+      g_malloc_delta -= g_heap[mem]
+      delete g_heap[mem]
+    }
+}
+
+probe glib.slice_alloc {
+  if (target() == pid())
+    {
+      g_slice_delta += n_bytes
+      g_slice_heap[mem] = n_bytes
+    }
+}
+
+probe glib.slice_free {
+  if (target() == pid())
+    {
+      g_slice_delta -= n_bytes
+      delete g_slice_heap[mem]
+    }
+}
+
+// GObject probes
+
+probe gobject.object_new {
+  if (target() == pid())
+    {
+      gobject_delta[type]++
+    }
+}
+probe gobject.object_finalize {
+  if (target() == pid())
+    {
+      gobject_delta[type]--
+    }
+}
+
+probe begin {
+  printf ("// glib-memtrace2.stp; target=%d\n", target());
+}
+
+probe timer.sec(5) {
+  printf ("g_slice: %d\n", g_slice_delta);
+  g_slice_delta = 0;
+  printf ("g_malloc: %d\n", g_malloc_delta);
+  g_malloc_delta = 0;
+  
+  foreach (a in gobject_delta) {
+    printf ("GObject:::%s:::%d\n", a, gobject_delta[a])
+  }
+  delete gobject_delta;
+}

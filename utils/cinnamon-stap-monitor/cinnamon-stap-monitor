@@ -1,0 +1,14 @@
+#!/bin/sh
+
+if [ "$1" = "--help" ] || [ "$1" = "" ]; then
+    echo ""
+    echo "Usage: cinnamon-stap-monitor <command to attach to>"
+    echo ""
+    exit 1
+fi
+
+echo "Attaching monitor to '$1'..."
+echo
+stap -g --suppress-time-limits -DMAXMAPENTRIES=10000 -c "$1" ./cinnamon-stap-monitor.stp 2>&1 | ./cinnamon-stap-monitor.py
+
+exit 0
