@@ -1352,7 +1352,6 @@ NMDeviceWireless.prototype = {
         let res = this._findExistingNetwork(accessPoint);
 
         if (res == null) {
-            log('Removing an access point that was never added');
             return;
         }
 
