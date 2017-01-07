@@ -1,3 +1,20 @@
+cinnamon (3.2.8) serena; urgency=medium
+
+  [ Michael Webster ]
+  * menu applet: Only construct one context menu for recent files, and re-use it.
+  * cs_screensaver.py: Re-use the Gtk.Socket always - it can hold both Gtk.Plugs and normal Gtk.Widgets, just treat it like a normal bin/container.  This seems to assist on ref-cleanup and child reaping when switching screensavers. (observed on Arch, reported on Arch and Fedora)
+  * menu applet: Don't reconstruct recent files, just re-order, add, remove as required.
+  * menu applet: Fix a couple of minor leaks (actors created but never added to a container - being GInitiallyUnowned, they never get their floating ref sunk, and so can't be unreffed.  Fix a prototype mis-match, and just rename GenericButton to NoRecentDocsButton, since that's the only user of it.
+  * menu applet: Some fixes for previous commits, don't be so destructive when refreshing applications.
+  * Revert "cs_screensaver.py: Re-use the Gtk.Socket always - it can hold both Gtk.Plugs"
+  * Fix tuples for python 3.6
+  * tooltips.js: add a hide timer to check if a tooltip should hide itself, but for various reasons never got to act on a leave-event (due to vagaries in event reporting).
+  * recent applet: Rework to be non-destructive when updating the recent list (this brings a lot of the recent changes to the menu applet over to this one.)
+  * recents, applets: Couple warning cleanups
+  * network applet: Remove a useless log warning.  At some point more than a year ago we started getting these (possibly a change to network-manager), they have no value whatsoever, but fill up the log.
+
+ -- Clement Lefebvre <root@linuxmint.com>  Sat, 07 Jan 2017 11:19:30 +0000
+
 cinnamon (3.2.7) serena; urgency=medium
 
   [ JosephMcc ]
