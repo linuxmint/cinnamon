@@ -1352,8 +1352,7 @@ StScrollBar StButton#vhandle:hover {
 }
 
 .workspace-button {
-    width: 20px;
-    height: 10px;
+    width: 1em;
     color: #cccccc;
     border: 1px;
     border-color: #a6a6a6;
@@ -1362,6 +1361,20 @@ StScrollBar StButton#vhandle:hover {
 }
 
 .workspace-button:outlined {
+    background: #cccccc;
+    color: #555555;
+    box-shadow: inset 0px 0px 8px 1px rgba(255,255,255, 0.7);
+}
+.workspace-button.vertical {
+    height: 1em;
+    color: #cccccc;
+    border: 1px;
+    border-color: #a6a6a6;
+    padding-top: 0px;
+    padding-bottom: 2px;
+    transition-duration: 300;
+}
+.workspace-button.vertical:outlined {
     background: #cccccc;
     color: #555555;
     box-shadow: inset 0px 0px 8px 1px rgba(255,255,255, 0.7);
