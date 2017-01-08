@@ -139,6 +139,10 @@ gboolean st_theme_node_lookup_shadow (StThemeNode  *node,
                                       const char   *property_name,
                                       gboolean      inherit,
                                       StShadow    **shadow);
+gboolean st_theme_node_lookup_url    (StThemeNode  *node,
+                                      const char   *property_name,
+                                      gboolean      inherit,
+                                      GFile       **file);
 
 /* Easier-to-use variants of the above, for application-level use */
 void          st_theme_node_get_color  (StThemeNode  *node,
@@ -149,6 +153,8 @@ gdouble       st_theme_node_get_double (StThemeNode  *node,
 gdouble       st_theme_node_get_length (StThemeNode  *node,
                                         const char   *property_name);
 StShadow     *st_theme_node_get_shadow (StThemeNode  *node,
+                                        const char   *property_name);
+GFile        *st_theme_node_get_url    (StThemeNode  *node,
                                         const char   *property_name);
 
 /* Specific getters for particular properties: cached
@@ -162,7 +168,7 @@ void st_theme_node_get_background_gradient (StThemeNode   *node,
                                             ClutterColor   *start,
                                             ClutterColor   *end);
 
-const char *st_theme_node_get_background_image   (StThemeNode *node);
+GFile *st_theme_node_get_background_image   (StThemeNode *node);
 const char *st_theme_node_get_background_bumpmap (StThemeNode *node);
 
 int    st_theme_node_get_border_width  (StThemeNode  *node,

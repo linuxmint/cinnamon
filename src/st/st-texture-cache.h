@@ -70,7 +70,7 @@ StTextureCache* st_texture_cache_get_default (void);
 
 ClutterActor *
 st_texture_cache_load_sliced_image (StTextureCache *cache,
-                                    const gchar    *path,
+                                    GFile          *file,
                                     gint            grid_width,
                                     gint            grid_height,
                                     GFunc           load_callback,
@@ -91,22 +91,22 @@ ClutterActor *st_texture_cache_load_icon_name (StTextureCache    *cache,
                                  StIconType         icon_type,
                                  gint               size);
 
-ClutterActor *st_texture_cache_load_uri_async (StTextureCache    *cache,
-                                               const gchar       *uri,
-                                               int                available_width,
-                                               int                available_height);
+ClutterActor *st_texture_cache_load_file_async (StTextureCache    *cache,
+                                                GFile             *file,
+                                                int                available_width,
+                                                int                available_height);
 
 ClutterActor *st_texture_cache_load_uri_sync (StTextureCache       *cache,
                                               StTextureCachePolicy  policy,
-                                              const gchar          *uri,
-                                              int                   available_width,
+                                              const gchar          *uri,                                              int                available_width,
                                               int                   available_height,
                                               GError              **error);
 
-CoglTexture  *st_texture_cache_load_file_to_cogl_texture (StTextureCache *cache,
-                                                          const gchar    *file_path);
+CoglTexture     *st_texture_cache_load_file_to_cogl_texture (StTextureCache *cache,
+                                                             GFile          *file);
 
 cairo_surface_t *st_texture_cache_load_file_to_cairo_surface (StTextureCache *cache,
+                                                              GFile          *file);
                                                               const gchar    *file_path);
 
 ClutterActor *st_texture_cache_load_from_raw (StTextureCache    *cache,

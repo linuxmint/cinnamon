@@ -185,7 +185,7 @@ st_theme_class_init (StThemeClass *klass)
                                                G_SIGNAL_RUN_LAST,
                                                0, /* no default handler slot */
                                                NULL, NULL, NULL,
-                                               G_TYPE_NONE, 0);  
+                                               G_TYPE_NONE, 0);
 }
 
 static CRStyleSheet *
@@ -1063,67 +1063,50 @@ _st_theme_get_matched_properties_fallback (StTheme        *theme,
 }
 
 
-/* Resolve an url from an url() reference in a stylesheet into an absolute
- * local filename, if possible. The resolution here is distinctly lame and
+/* Resolve an url from an url() reference in a stylesheet into a GFile,
+ * if possible. The resolution here is distinctly lame and
  * will fail on many examples.
  */
-char *
+GFile *
 _st_theme_resolve_url (StTheme      *theme,
                        CRStyleSheet *base_stylesheet,
                        const char   *url)
 {
-  const char *base_filename = NULL;
-  char *dirname;
-  char *filename;
+    char *scheme;
+    GFile *stylesheet, *resource;
 
-  /* Handle absolute file:/ URLs */
-  if (g_str_has_prefix (url, "file:") ||
-      g_str_has_prefix (url, "File:") ||
-      g_str_has_prefix (url, "FILE:"))
-    {
-      GError *error = NULL;
-      char *filename;
+    /* Handle file:// and resource:// URLs */
+    if ((scheme = g_uri_parse_scheme (url))) {
+        if ( 0 == g_strcmp0(scheme, "file") || 0 == g_strcmp0(scheme, "resource")) {
+            resource = g_file_new_for_uri (url);
 
-      filename = g_filename_from_uri (url, NULL, &error);
-      if (filename == NULL)
-        {
-          g_warning ("%s", error->message);
-          g_error_free (error);
+        } else {
+            g_warning ("URL '%s' in theme stylesheet is not supported", url);
+            return NULL;
         }
-      else
-        {
-          g_free (filename);
-        }
-
-      return NULL;
+        g_free (scheme);
     }
 
-  /* Guard against http:/ URLs */
-
-  if (g_str_has_prefix (url, "http:") ||
-      g_str_has_prefix (url, "Http:") ||
-      g_str_has_prefix (url, "HTTP:"))
-    {
-      g_warning ("Http URL '%s' in theme stylesheet is not supported", url);
-      return NULL;
+    if (NULL == resource && url[0] == '/') {
+        /* We have an absolute path */
+        resource = g_file_new_for_path (url);
     }
 
-  /* Assume anything else is a relative URL, and "resolve" it
-   */
-  if (url[0] == '/')
-    return g_strdup (url);
+    if (NULL == resource && NULL != base_stylesheet) {
+        /* Assume anything else is a relative URL, and "resolve" it */
+        GFile *base_file = NULL, *parent;
 
-  base_filename = g_hash_table_lookup (theme->filenames_by_stylesheet, base_stylesheet);
+        base_file = g_hash_table_lookup (theme->files_by_stylesheet, base_stylesheet);
 
-  if (base_filename == NULL)
-    {
-      g_warning ("Can't get base to resolve url '%s'", url);
-      return NULL;
+        /* This is an internal function, if we get here with
+           a bad @base_stylesheet we have a problem. */
+        g_assert (base_file);
+
+        parent = g_file_get_parent (base_file);
+        resource = g_file_resolve_relative_path (parent, url);
+
+        g_object_unref (parent);
     }
 
-  dirname = g_path_get_dirname (base_filename);
-  filename = g_build_filename (dirname, url, NULL);
-  g_free (dirname);
-
-  return filename;
+    return resource;
 }
