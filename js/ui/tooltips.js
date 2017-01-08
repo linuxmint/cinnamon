@@ -124,7 +124,6 @@ TooltipBase.prototype = {
 
         if ((x < box.x1) || (x > box.x2) ||
             (y < box.y1) || (y > box.y2)) {
-            log("__________________________________hide complete!");
             this._hide();
         }
 
