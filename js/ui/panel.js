@@ -1923,9 +1923,9 @@ Panel.prototype = {
 
             if (this.panelPosition == PanelLoc.left) {   // left panel
                 this._leftBox    = new St.BoxLayout({ name: 'panelLeft', style_class: 'panelLeft'});
-                this._rightBox   = new St.BoxLayout({ name: 'panelLeft', style_class: 'panelLeft'});
+                this._rightBox   = new St.BoxLayout({ name: 'panelLeft', style_class: 'panelRight'});
             } else {
-                this._leftBox    = new St.BoxLayout({ name: 'panelRight', style_class: 'panelRight'});
+                this._leftBox    = new St.BoxLayout({ name: 'panelRight', style_class: 'panelLeft'});
                 this._rightBox   = new St.BoxLayout({ name: 'panelRight', style_class: 'panelRight'});
             }
             this._centerBox      = new St.BoxLayout({ name: 'panelCenter',  style_class: 'panelCenter'});
@@ -2595,9 +2595,9 @@ Panel.prototype = {
 
         if (this.panelPosition == PanelLoc.left) {
             this._leftBox.set_style_class_name('panelLeft');
-            this._rightBox.set_style_class_name('panelLeft');
+            this._rightBox.set_style_class_name('panelRight');
         } else {
-            this._leftBox.set_style_class_name('panelRight');
+            this._leftBox.set_style_class_name('panelLeft');
             this._rightBox.set_style_class_name('panelRight');
         }
         this._rightBox.add_style_class_name('vertical');
