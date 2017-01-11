@@ -37,6 +37,8 @@ const TIME_DELTA = 1500;
 
 const APPLETS_DROP_ANIMATION_TIME = 0.2;
 
+const EDIT_MODE_MIN_BOX_SIZE = 25;
+
 const PANEL_AUTOHIDE_KEY = "panels-autohide";
 const PANEL_SHOW_DELAY_KEY = "panels-show-delay";
 const PANEL_HIDE_DELAY_KEY = "panels-hide-delay";
@@ -1918,35 +1920,6 @@ Panel.prototype = {
             // nb align end property does not align to right side as for a box without 'vertical' set
             // - just orders applets from bottom rather than from top
             //
-            // About the relative alignment of the panel contents when vertical ...  
-            // using y_align: 3 (right) can cause allocation or json errors, so going without this on the 'rightBox' with a small 
-            // central box (as the horizontal panels have their settings) the bottom icons come up towards the centre which looks dumb
-            // 
-            // Adding y_align: 2 (centre) on the central box kills the right click menu on the central box, but this can be 
-            // worked around quite happily by adding a test on the actor to the pre-existing test on the parent of the actor 
-            // in the button handling logic.  It also kills drag and drop if any box is empty, the workaround is to 
-            // explicitly set the height.  Setting y_expand seems to align the contents to the top in this case, rather weird.
-            //
-            // Using x_align:2 also causes problems with a new, empty panel - seeming to stop the dndhandler working. There is a two part
-            // workaround to this - in allocate to set heights if found to be zero, and the same in the set edit mode code.
-            //
-            // The approach taken is to
-            // 1) keep the natural size of left and right (i.e. top and bottom) boxes, this means that the icons will cluster together
-            //    at top and bottom of the panel respectively
-            // 2) have a central box that can take all the space in between
-            // 3) turn on central y-alignment for the central box
-            // 4) the empty panel case is worked around with a kludge when setting edit mode to set box sizes explicitly if empty.
-            //    - there is a similar work around in the allocate logic, but allocate may not get called without this kludge 
-            //
-            // The appearance of this looks reasonable - the icons in the boxes have sensible positioning (css permitting).
-            //
-            // Some workarounds for the side effects of the central alignment are needed.  
-            //
-            // a) allow the right click to work off the actor as well as its parent, this caters for the way that the central alignment
-            //    seems to shrink the box down around its contents so as to expose the underlying panel.
-            // b) set the height of the central box explicitly if found to be zero when in panel edit mode, and unset it otherwise.
-            // c) set the sizes of zero height boxes explicitly when switching to edit mode to force an allocation to happen
-            //
 
             if (this.panelPosition == PanelLoc.left) {   // left panel
                 this._leftBox    = new St.BoxLayout({ name: 'panelLeft', style_class: 'panelLeft'});
@@ -2388,23 +2361,6 @@ Panel.prototype = {
         this._centerBox.change_style_pseudo_class('dnd', this._panelEditMode);
         this._rightBox.change_style_pseudo_class('dnd', this._panelEditMode);
 
-// This next section is a bit of a kludge
-// For a new vertical panel 'allocate' may not get called when trying to drag an applet in, especially with central alignment.  
-// This causes drop not to be available, meaning the panel can't be populated via this method.
-// This section gives the boxes a minimum size to force an allocation
-
-        if (this._panelEditMode == true && (this.panelPosition == PanelLoc.left || this.panelPosition == PanelLoc.right)) {
-            if (this._centerBox.get_height() == 0) {
-                this._centerBox.set_height(40);
-            }
-            if (this._leftBox.get_height() == 0) {
-                this._leftBox.set_height(40);
-            }
-            if (this._rightBox.get_height() == 0) {
-                this._rightBox.set_height(40);
-            }
-        }
-
         if (old_mode != this._panelEditMode) {
             this._processPanelAutoHide();
         }
@@ -2647,23 +2603,19 @@ Panel.prototype = {
         this._rightBox.set_important(true);
         this._rightBox.set_vertical(true);
         this._rightBox.set_x_align(Clutter.ActorAlign.FILL);
-        this._rightBox.set_x_expand(true);
         this._rightBox.set_y_align(Clutter.ActorAlign.END);
 
         this._leftBox.add_style_class_name('vertical');
         this._leftBox.set_important(true);
         this._leftBox.set_vertical(true);
         this._leftBox.set_x_align(Clutter.ActorAlign.FILL);
-        this._leftBox.set_x_expand(true);
         this._leftBox.set_y_align(Clutter.ActorAlign.START);
 
         this._centerBox.add_style_class_name('vertical');
         this._centerBox.set_important(true);
         this._centerBox.set_vertical(true);
         this._centerBox.set_x_align(Clutter.ActorAlign.FILL);
-        this._centerBox.set_y_align(Clutter.ActorAlign.CENTER); // if set to fill it snaps upwards
-        this._centerBox.set_x_expand(true)
-        this._centerBox.set_y_expand(true)
+        this._centerBox.set_y_align(Clutter.ActorAlign.FILL);
     },
 
     _set_horizontal_panel_style: function() {
@@ -2671,18 +2623,18 @@ Panel.prototype = {
         this._rightBox.remove_style_class_name('vertical');
         this._rightBox.set_vertical(false);
         this._rightBox.set_x_align(Clutter.ActorAlign.END);
-        this._rightBox.set_y_align(Clutter.ActorAlign.CENTER);
+        this._rightBox.set_y_align(Clutter.ActorAlign.FILL);
         this._rightBox.set_align_end(true);
 
         this._leftBox.remove_style_class_name('vertical');
         this._leftBox.set_vertical(false);
         this._leftBox.set_x_align(Clutter.ActorAlign.START);
-        this._leftBox.set_y_align(Clutter.ActorAlign.CENTER);
+        this._leftBox.set_y_align(Clutter.ActorAlign.FILL);
 
         this._centerBox.remove_style_class_name('vertical');
         this._centerBox.set_vertical(false);
-        this._centerBox.set_x_align(Clutter.ActorAlign.CENTER);
-        this._centerBox.set_y_align(Clutter.ActorAlign.CENTER);
+        this._centerBox.set_x_align(Clutter.ActorAlign.FILL);
+        this._centerBox.set_y_align(Clutter.ActorAlign.FILL);
 
         this._leftBox.set_style_class_name('panelLeft');
         this._rightBox.set_style_class_name('panelRight');
@@ -2773,6 +2725,11 @@ Panel.prototype = {
      * box wants. In the scenario where the isn't enough space to just allocate the
      * minimum width, we just allocate proportional to the minimum width.
      *
+     * FIXME: consider replacing all of this with clutter constraints.  Fundamentally
+     * we have three boxes constrained to be butted up against each other and to stretch
+     * over the whole panel.  If the centre box is populated then it needs to be centred.
+     * Any field has to be given a minimum size in edit mode to allow drag and drop.
+     *
      * Returns (array): The left and right widths to be allocated.
      */
     _calcBoxSizes: function(allocWidth, allocHeight, vertical) {
@@ -2801,15 +2758,8 @@ Panel.prototype = {
              * least width 25 so that things can be dropped into it */
         if (this._panelEditMode) {
             centerBoxOccupied  = true;
-            centerMinWidth     = Math.max(centerMinWidth, 25);
-            centerNaturalWidth = Math.max(centerNaturalWidth, 25);
-
-            if (vertical) {  // a workaround if boxes in a vertical panel are emptied
-                leftMinWidth     = Math.max(leftMinWidth, 25);
-                leftNaturalWidth = Math.max(leftNaturalWidth, 25);
-                rightMinWidth     = Math.max(rightMinWidth, 25);
-                rightNaturalWidth = Math.max(rightNaturalWidth, 25);
-            }
+            centerMinWidth     = Math.max(centerMinWidth, EDIT_MODE_MIN_BOX_SIZE);
+            centerNaturalWidth = Math.max(centerNaturalWidth, EDIT_MODE_MIN_BOX_SIZE);
         }
 
         let totalMinWidth             = leftMinWidth + centerMinWidth + rightMinWidth;
@@ -2875,13 +2825,8 @@ Panel.prototype = {
         } else {  // center box not occupied
             if (totalNaturalWidth < allocWidth) {
                 /* Everything's fine. Allocate as usual. */
-                if (vertical) {
-                    leftWidth  = Math.max(leftNaturalWidth, leftMinWidth);
-                    rightWidth = Math.max(rightNaturalWidth, rightMinWidth);
-                } else {
-                    leftWidth  = leftNaturalWidth;
-                    rightWidth = rightNaturalWidth;
-                }
+                leftWidth  = leftNaturalWidth;
+                rightWidth = rightNaturalWidth;
             } else if (totalMinWidth < allocWidth) {
                 /* There is enough space for minWidth but not for naturalWidth.
                  * Allocate the minWidth and then divide the remaining space
@@ -2943,16 +2888,6 @@ Panel.prototype = {
         let cornerMinHeight = 0;
         let cornerHeight = 0;
 
-        if (this.drawcorner[0]) {
-            [cornerMinWidth, cornerWidth]   = this._leftCorner.actor.get_preferred_width(-1);
-            [cornerMinHeight, cornerHeight] = this._leftCorner.actor.get_preferred_height(-1);
-        }
-
-        if (this.drawcorner[1]) {
-            [cornerMinWidth, cornerWidth]   = this._rightCorner.actor.get_preferred_width(-1);
-            [cornerMinHeight, cornerHeight] = this._rightCorner.actor.get_preferred_height(-1);
-        }
-
         let allocHeight  = box.y2 - box.y1;
         let allocWidth   = box.x2 - box.x1;
 
@@ -2960,41 +2895,43 @@ Panel.prototype = {
 
             [leftBoundary, rightBoundary] = this._calcBoxSizes(allocHeight, allocWidth, true); 
         
-            let childBox = new Clutter.ActorBox();
+            let childBox = new Clutter.ActorBox(); // FIXME: does this need destroying later ?
 
             childBox.x1 = 0;
             childBox.x2 = allocWidth;
             this._setVertChildbox (childBox,0,leftBoundary);
-            this._leftBox.allocate(childBox, flags); //leftbox
+            this._leftBox.allocate(childBox, flags);
 
             this._setVertChildbox (childBox,leftBoundary,rightBoundary);
-            this._centerBox.allocate(childBox, flags);  //centerbox2
+            this._centerBox.allocate(childBox, flags);
 
             this._setVertChildbox (childBox,rightBoundary,allocHeight);
-            this._rightBox.allocate(childBox, flags); // rightbox 
+            this._rightBox.allocate(childBox, flags);
 
-            // As using central y-align or x-align seems to result in zero size if the box is empty, force
-            // to a defined size in edit mode if this happens
-            // Force the width to max to stop the boxes shrinking in from the edge.  This needs resetting if the
-            // panel orientation is moved to horizontal.  The logic in the horizontal case is analogous
-
-            this._centerBox.set_width(allocWidth);
-            this._leftBox.set_width(allocWidth);
-            this._rightBox.set_width(allocWidth);
-            this._centerBox.set_height(-1);
-            this._leftBox.set_height(-1);
-            this._rightBox.set_height(-1);
-
-            if (this._panelEditMode) {
-                if (this._centerBox.get_height() == 0) {
-                   this._centerBox.set_height(rightBoundary - leftBoundary);
-                }
-                if (this._leftBox.get_height() == 0) {     // without this ...
-                   this._leftBox.set_height(leftBoundary);
-                }
-                if (this._rightBox.get_height() == 0) {    // .. and this, the centre box contents will generally snap to the top in edit mode
-                   this._rightBox.set_height(allocHeight - rightBoundary);
-                }
+            // done for visual consistency, see below
+            let leftBoxOccupied = this._leftBox.get_n_children() > 0;
+            if (leftBoxOccupied == false && this._panelEditMode) {
+                this._leftBox.set_height(EDIT_MODE_MIN_BOX_SIZE);
+            } else {
+                this._leftBox.set_height(-1);
+            }
+            //
+            // This next block needs some explanation.  I've been struggling to get the contents to
+            // a) align to the bottom of the screen
+            // b) show a minimum size if empty in edit mode, so something can be dropped in
+            // c) do so without triggering continual looping of the _allocate function
+            // (continual looping will result in menu animations failing because the system never reaches idle)
+            //
+            // this approach uses the END alignment (see set_vertical_panel_style) to stick the visible box
+            // to the bottom of the screen, while still showing either a minimum box in edit mode
+            // or a box just wrapped around the contents otherwise.
+            // The left box is fine, but to avoid it looking oddly different in edit mode, the same is done there.
+            //
+            let rightBoxOccupied = this._rightBox.get_n_children() > 0;
+            if (rightBoxOccupied == false && this._panelEditMode) {
+                this._rightBox.set_height(EDIT_MODE_MIN_BOX_SIZE);
+            } else {
+                this._rightBox.set_height(-1);
             }
 
             // Corners are in response to a bit of optional css and are about painting corners just outside the panels so as to create a seamless 
@@ -3003,7 +2940,18 @@ Panel.prototype = {
             // Bottom left corner wants to be at the top left of the bottom panel.  bottom right in the corresponding place on the right
             // No panel, no corner necessary.
             // If there are vertical panels as well then we want to shift these in by the panel width
-            // If there are vertical panels but no horizontal then the corners are top right and left to right of left panel, and same to left of right panel
+            // If there are vertical panels but no horizontal then the corners are top right and left to right of left panel,
+            // and same to left of right panel
+
+            if (this.drawcorner[0]) {
+                [cornerMinWidth, cornerWidth]   = this._leftCorner.actor.get_preferred_width(-1);
+                [cornerMinHeight, cornerHeight] = this._leftCorner.actor.get_preferred_height(-1);
+            }
+
+            if (this.drawcorner[1]) {
+                [cornerMinWidth, cornerWidth]   = this._rightCorner.actor.get_preferred_width(-1);
+                [cornerMinHeight, cornerHeight] = this._rightCorner.actor.get_preferred_height(-1);
+            }
 
             if (this.panelPosition == PanelLoc.left) { // left panel
                 if (this.drawcorner[0]) {
@@ -3039,23 +2987,19 @@ Panel.prototype = {
             this._leftBox.allocate(childBox, flags);
 
             this._setHorizChildbox (childBox,leftBoundary,rightBoundary,rightBoundary,leftBoundary);
-            this._centerBox.allocate(childBox, flags);  //centerbox
+            this._centerBox.allocate(childBox, flags);
 
             this._setHorizChildbox (childBox,rightBoundary,allocWidth,0,rightBoundary);
             this._rightBox.allocate(childBox, flags);
 
-            this._centerBox.set_width(-1);
-            this._leftBox.set_width(-1);
-            this._rightBox.set_width(-1);
-            this._centerBox.set_height(allocHeight);
-            this._leftBox.set_height(allocHeight);
-            this._rightBox.set_height(allocHeight);
+            if (this.drawcorner[0]) {
+                [cornerMinWidth, cornerWidth]   = this._leftCorner.actor.get_preferred_width(-1);
+                [cornerMinHeight, cornerHeight] = this._leftCorner.actor.get_preferred_height(-1);
+            }
 
-
-            if (this._panelEditMode) {
-                if (this._centerBox.get_width() == 0) { // a fallback
-                   this._centerBox.set_width(40);
-                }
+            if (this.drawcorner[1]) {
+                [cornerMinWidth, cornerWidth]   = this._rightCorner.actor.get_preferred_width(-1);
+                [cornerMinHeight, cornerHeight] = this._rightCorner.actor.get_preferred_height(-1);
             }
 
             if (this.panelPosition == PanelLoc.top) { // top panel
