@@ -2605,13 +2605,13 @@ Panel.prototype = {
         this._rightBox.set_important(true);
         this._rightBox.set_vertical(true);
         this._rightBox.set_x_align(Clutter.ActorAlign.FILL);
-        this._rightBox.set_y_align(Clutter.ActorAlign.END);
+        this._rightBox.set_y_align(Clutter.ActorAlign.FILL);
 
         this._leftBox.add_style_class_name('vertical');
         this._leftBox.set_important(true);
         this._leftBox.set_vertical(true);
         this._leftBox.set_x_align(Clutter.ActorAlign.FILL);
-        this._leftBox.set_y_align(Clutter.ActorAlign.START);
+        this._leftBox.set_y_align(Clutter.ActorAlign.FILL);
 
         this._centerBox.add_style_class_name('vertical');
         this._centerBox.set_important(true);
@@ -2872,43 +2872,18 @@ Panel.prototype = {
         if (this.panelPosition == PanelLoc.left || this.panelPosition == PanelLoc.right) {
 
             [leftBoundary, rightBoundary] = this._calcBoxSizes(allocHeight, allocWidth, true); 
-        
             let childBox = new Clutter.ActorBox();
 
             childBox.x1 = 0;
             childBox.x2 = allocWidth;
-            this._setVertChildbox (childBox,0,leftBoundary);
+            this._setVertChildbox (childBox,0, leftBoundary);
             this._leftBox.allocate(childBox, flags);
 
-            this._setVertChildbox (childBox,leftBoundary,rightBoundary);
+            this._setVertChildbox (childBox, leftBoundary, rightBoundary);
             this._centerBox.allocate(childBox, flags);
 
-            this._setVertChildbox (childBox,rightBoundary,allocHeight);
+            this._setVertChildbox (childBox, rightBoundary, allocHeight);
             this._rightBox.allocate(childBox, flags);
-
-            // done for visual consistency, see below
-            if (this._panelEditMode) {
-                this._leftBox.set_height(leftBoundary);
-            } else {
-                this._leftBox.set_height(-1);
-            }
-            
-            // This next block needs some explanation.  I've been struggling to get the contents to
-            // a) align to the bottom of the screen
-            // b) show a minimum size if empty in edit mode, so something can be dropped in
-            // c) do so without triggering continual looping of the _allocate function
-            // (continual looping will result in menu animations failing because the system never reaches idle)
-            //
-            // this approach uses the END alignment (see set_vertical_panel_style) to stick the visible box
-            // to the bottom of the screen, while still showing either a minimum box in edit mode
-            // or a box just wrapped around the contents otherwise.
-            // The left box is fine, but to avoid it looking oddly different in edit mode, the same is done there.
-            //
-            if (this._panelEditMode) {
-                this._rightBox.set_height(allocHeight - rightBoundary);
-            } else {
-                this._rightBox.set_height(-1);
-            }
 
             // Corners are in response to a bit of optional css and are about painting corners just outside the panels so as to create a seamless 
             // visual impression for windows with curved corners 
