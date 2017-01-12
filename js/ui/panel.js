@@ -1875,7 +1875,8 @@ Panel.prototype = {
         this.panelPosition = panelPosition;
         this.toppanelHeight = toppanelHeight;
         this.bottompanelHeight = bottompanelHeight;
-        let horizontal_panel = (this.panelPosition == PanelLoc.top || this.panelPosition == PanelLoc.bottom) ? true : false;
+
+        let vertical_panel = (this.panelPosition == PanelLoc.left || this.panelPosition == PanelLoc.right);
 
         this._hidden = false;
         this._disabled = false;
@@ -1902,43 +1903,21 @@ Panel.prototype = {
 
         this._menus = new PopupMenu.PopupMenuManager(this);
 
-        if (horizontal_panel) {  // horizontal panels
-            this._leftBox = new St.BoxLayout({ name: 'panelLeft', style_class: 'panelLeft'});
-            this.actor.add_actor(this._leftBox);
-            this._leftBoxDNDHandler = new PanelZoneDNDHandler(this._leftBox);
+        this._leftBox    = new St.BoxLayout({ name: 'panelLeft', style_class: 'panelLeft'});
+        this._rightBox   = new St.BoxLayout({ name: 'panelRight', style_class: 'panelRight', align_end: true});
+        this._centerBox  = new St.BoxLayout({ name: 'panelCenter',  style_class: 'panelCenter'});
 
-            this._centerBox = new St.BoxLayout({ name: 'panelCenter', style_class: 'panelCenter' });
-            this.actor.add_actor(this._centerBox);
-            this._centerBoxDNDHandler = new PanelZoneDNDHandler(this._centerBox);
-
-            this._rightBox = new St.BoxLayout({ name: 'panelRight',  style_class: 'panelRight', align_end: true});
-            this.actor.add_actor(this._rightBox);
-            this._rightBoxDNDHandler = new PanelZoneDNDHandler(this._rightBox);
-
-        } else {
-            // vertical panels.  'leftBox' is at the top, 'rightBox' at the bottom.
-            // nb align end property does not align to right side as for a box without 'vertical' set
-            // - just orders applets from bottom rather than from top
-            //
-
-            if (this.panelPosition == PanelLoc.left) {   // left panel
-                this._leftBox    = new St.BoxLayout({ name: 'panelLeft', style_class: 'panelLeft'});
-                this._rightBox   = new St.BoxLayout({ name: 'panelLeft', style_class: 'panelRight'});
-            } else {
-                this._leftBox    = new St.BoxLayout({ name: 'panelRight', style_class: 'panelLeft'});
-                this._rightBox   = new St.BoxLayout({ name: 'panelRight', style_class: 'panelRight'});
-            }
-            this._centerBox      = new St.BoxLayout({ name: 'panelCenter',  style_class: 'panelCenter'});
+        if (vertical_panel) {
             this._set_vertical_panel_style();
-
-            this.actor.add_actor(this._leftBox);
-            this.actor.add_actor(this._centerBox);
-            this.actor.add_actor(this._rightBox);
-
-            this._leftBoxDNDHandler   = new PanelZoneDNDHandler(this._leftBox);
-            this._centerBoxDNDHandler = new PanelZoneDNDHandler(this._centerBox);
-            this._rightBoxDNDHandler  = new PanelZoneDNDHandler(this._rightBox);
         }
+
+        this.actor.add_actor(this._leftBox);
+        this.actor.add_actor(this._centerBox);
+        this.actor.add_actor(this._rightBox);
+
+        this._leftBoxDNDHandler   = new PanelZoneDNDHandler(this._leftBox);
+        this._centerBoxDNDHandler = new PanelZoneDNDHandler(this._centerBox);
+        this._rightBoxDNDHandler  = new PanelZoneDNDHandler(this._rightBox);
 
         this.drawCorners(drawcorner);
 
@@ -2592,41 +2571,27 @@ Panel.prototype = {
     },
 
     _set_vertical_panel_style: function() {
-
-        if (this.panelPosition == PanelLoc.left) {
-            this._leftBox.set_style_class_name('panelLeft');
-            this._rightBox.set_style_class_name('panelRight');
-        } else {
-            this._leftBox.set_style_class_name('panelLeft');
-            this._rightBox.set_style_class_name('panelRight');
-        }
         this._rightBox.add_style_class_name('vertical');
-        this._rightBox.set_align_end(true);
-        this._rightBox.set_important(true);
         this._rightBox.set_vertical(true);
         this._rightBox.set_x_align(Clutter.ActorAlign.FILL);
         this._rightBox.set_y_align(Clutter.ActorAlign.FILL);
 
         this._leftBox.add_style_class_name('vertical');
-        this._leftBox.set_important(true);
         this._leftBox.set_vertical(true);
         this._leftBox.set_x_align(Clutter.ActorAlign.FILL);
         this._leftBox.set_y_align(Clutter.ActorAlign.FILL);
 
         this._centerBox.add_style_class_name('vertical');
-        this._centerBox.set_important(true);
         this._centerBox.set_vertical(true);
         this._centerBox.set_x_align(Clutter.ActorAlign.FILL);
         this._centerBox.set_y_align(Clutter.ActorAlign.FILL);
     },
 
     _set_horizontal_panel_style: function() {
-
         this._rightBox.remove_style_class_name('vertical');
         this._rightBox.set_vertical(false);
         this._rightBox.set_x_align(Clutter.ActorAlign.END);
         this._rightBox.set_y_align(Clutter.ActorAlign.FILL);
-        this._rightBox.set_align_end(true);
 
         this._leftBox.remove_style_class_name('vertical');
         this._leftBox.set_vertical(false);
@@ -2637,9 +2602,6 @@ Panel.prototype = {
         this._centerBox.set_vertical(false);
         this._centerBox.set_x_align(Clutter.ActorAlign.FILL);
         this._centerBox.set_y_align(Clutter.ActorAlign.FILL);
-
-        this._leftBox.set_style_class_name('panelLeft');
-        this._rightBox.set_style_class_name('panelRight');
     },
 
     _setFont: function(panelHeight) {
