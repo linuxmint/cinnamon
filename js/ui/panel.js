@@ -1903,9 +1903,9 @@ Panel.prototype = {
 
         this._menus = new PopupMenu.PopupMenuManager(this);
 
-        this._leftBox    = new St.BoxLayout({ name: 'panelLeft', style_class: 'panelLeft'});
-        this._rightBox   = new St.BoxLayout({ name: 'panelRight', style_class: 'panelRight', align_end: true});
-        this._centerBox  = new St.BoxLayout({ name: 'panelCenter',  style_class: 'panelCenter'});
+        this._leftBox    = new St.BoxLayout({ name: 'panelLeft', style_class: 'panelLeft', important: true });
+        this._rightBox   = new St.BoxLayout({ name: 'panelRight', style_class: 'panelRight', align_end: true, important: true });
+        this._centerBox  = new St.BoxLayout({ name: 'panelCenter',  style_class: 'panelCenter', important: true });
 
         if (vertical_panel) {
             this._set_vertical_panel_style();
