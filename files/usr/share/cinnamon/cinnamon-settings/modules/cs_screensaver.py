@@ -164,6 +164,10 @@ class Module:
         widget.set_tooltip_text(_("Show the number of missed notifications and the battery status"))
         settings.add_row(widget)
 
+        widget = GSettingsSwitch(_("Allow floating clock and album art widgets"), schema, "floating-widgets")
+        widget.set_tooltip_text(_("When the default screensaver is active, allow the clock and album art widgets to float around randomly"))
+        settings.add_row(widget)
+
 class ScreensaverBox(Gtk.Box):
     def __init__(self, title):
         Gtk.Box.__init__(self)
