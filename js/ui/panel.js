@@ -2716,9 +2716,12 @@ Panel.prototype = {
             [rightMinWidth, rightNaturalWidth]   = this._rightBox.get_preferred_width(-1);
         }
 
+        let centerBoxOccupied = this._centerBox.get_n_children() > 0;
+
         /* If panel edit mode, pretend central box is occupied and give it at
          * least width 25 so that things can be dropped into it */
         if (this._panelEditMode) {
+            centerBoxOccupied  = true;
             centerMinWidth     = Math.max(centerMinWidth, EDIT_MODE_MIN_BOX_SIZE);
             centerNaturalWidth = Math.max(centerNaturalWidth, EDIT_MODE_MIN_BOX_SIZE);
         }
@@ -2733,54 +2736,84 @@ Panel.prototype = {
 
         let leftWidth, rightWidth;
 
-        if (totalCenteredNaturalWidth < allocWidth) {
-            /* center the central box and butt the left and right up to it. */
-            leftWidth  = (allocWidth - centerNaturalWidth) / 2;
-            rightWidth = leftWidth;
-        } else if (totalCenteredMinWidth < allocWidth) {
-            /* Center can be centered as without shrinking things too much.
-             * First give everything the minWidth they want, and then
-             * distribute the remaining space proportional to how much the
-             * regions want. */
-            let totalRemaining = allocWidth - totalCenteredMinWidth;
-            let totalWant      = totalCenteredNaturalWidth - totalCenteredMinWidth;
 
-            leftWidth = sideMinWidth + (sideNaturalWidth - sideMinWidth) / totalWant * totalRemaining;
-            rightWidth = leftWidth;
-        } else if (totalMinWidth < allocWidth) {
-            /* There is enough space for minWidth if we don't care about
-             * centering. Make center things as center as possible */
-            if (leftMinWidth > rightMinWidth) {
-                leftWidth = leftMinWidth;
 
-                if (leftMinWidth + centerNaturalWidth + rightNaturalWidth < allocWidth) {
-                    rightWidth = allocWidth - leftMinWidth - centerNaturalWidth;
+
+
+        if (centerBoxOccupied) {
+            if (totalCenteredNaturalWidth < allocWidth) {
+                /* center the central box and butt the left and right up to it. */
+                leftWidth  = (allocWidth - centerNaturalWidth) / 2;
+                rightWidth = leftWidth;
+            } else if (totalCenteredMinWidth < allocWidth) {
+                /* Center can be centered as without shrinking things too much.
+                 * First give everything the minWidth they want, and then
+                 * distribute the remaining space proportional to how much the
+                 * regions want. */
+                let totalRemaining = allocWidth - totalCenteredMinWidth;
+                let totalWant      = totalCenteredNaturalWidth - totalCenteredMinWidth;
+
+                leftWidth = sideMinWidth + (sideNaturalWidth - sideMinWidth) / totalWant * totalRemaining;
+                rightWidth = leftWidth;
+            } else if (totalMinWidth < allocWidth) {
+                /* There is enough space for minWidth if we don't care about
+                 * centering. Make center things as center as possible */
+                if (leftMinWidth > rightMinWidth) {
+                    leftWidth = leftMinWidth;
+
+                    if (leftMinWidth + centerNaturalWidth + rightNaturalWidth < allocWidth) {
+                        rightWidth = allocWidth - leftMinWidth - centerNaturalWidth;
+                    } else {
+                        let totalRemaining = allocWidth - totalMinWidth;
+                        let totalWant      = centerNaturalWidth + rightNaturalWidth - (centerMinWidth + rightMinWidth);
+
+                        rightWidth = rightMinWidth;
+                        if (totalWant > 0)
+                            rightWidth += (rightNaturalWidth - rightMinWidth) / totalWant * totalRemaining;
+                    }
                 } else {
-                    let totalRemaining = allocWidth - totalMinWidth;
-                    let totalWant      = centerNaturalWidth + rightNaturalWidth - (centerMinWidth + rightMinWidth);
-
                     rightWidth = rightMinWidth;
-                    if (totalWant > 0)
-                        rightWidth += (rightNaturalWidth - rightMinWidth) / totalWant * totalRemaining;
+
+                    if (rightMinWidth + centerNaturalWidth + leftNaturalWidth < allocWidth) {
+                        leftWidth = allocWidth - rightMinWidth - centerNaturalWidth;
+                    } else {
+                        let totalRemaining = allocWidth - totalMinWidth;
+                        let totalWant      = centerNaturalWidth + leftNaturalWidth - (centerMinWidth + leftMinWidth);
+
+                        leftWidth = leftMinWidth;
+                        if (totalWant > 0)
+                            leftWidth += (leftNaturalWidth - leftMinWidth) / totalWant * totalRemaining;
+                    }
                 }
             } else {
-                rightWidth = rightMinWidth;
-
-                if (rightMinWidth + centerNaturalWidth + leftNaturalWidth < allocWidth) {
-                    leftWidth = allocWidth - rightMinWidth - centerNaturalWidth;
-                } else {
-                    let totalRemaining = allocWidth - totalMinWidth;
-                    let totalWant      = centerNaturalWidth + leftNaturalWidth - (centerMinWidth + leftMinWidth);
-
-                    leftWidth = leftMinWidth;
-                    if (totalWant > 0)
-                        leftWidth += (leftNaturalWidth - leftMinWidth) / totalWant * totalRemaining;
-                }
+                /* Scale everything down according to their minWidth. */
+                leftWidth  = leftMinWidth / totalMinWidth * allocWidth;
+                rightWidth = rightMinWidth / totalMinWidth * allocWidth;
             }
-        } else {
-            /* Scale everything down according to their minWidth. */
-            leftWidth  = leftMinWidth / totalMinWidth * allocWidth;
-            rightWidth = rightMinWidth / totalMinWidth * allocWidth;
+        } else {  // center box not occupied
+            if (totalNaturalWidth < allocWidth) {
+                /* Everything's fine. Allocate as usual. */
+                if (vertical) {
+                    leftWidth  = Math.max(leftNaturalWidth, leftMinWidth);
+                    rightWidth = Math.max(rightNaturalWidth, rightMinWidth);
+                } else {
+                    leftWidth  = leftNaturalWidth;
+                    rightWidth = rightNaturalWidth;
+                }
+            } else if (totalMinWidth < allocWidth) {
+                /* There is enough space for minWidth but not for naturalWidth.
+                 * Allocate the minWidth and then divide the remaining space
+                 * according to how much more they want. */
+                let totalRemaining = allocWidth - totalMinWidth;
+                let totalWant      = totalNaturalWidth - totalMinWidth;
+
+                leftWidth  = leftMinWidth + ((leftNaturalWidth - leftMinWidth) / totalWant) * totalRemaining;
+                rightWidth = rightMinWidth + ((rightNaturalWidth - rightMinWidth) / totalWant) * totalRemaining;
+            } else {
+                /* Scale everything down according to their minWidth. */
+                leftWidth  = leftMinWidth / totalMinWidth * allocWidth;
+                rightWidth = rightMinWidth / totalMinWidth * allocWidth;
+            }
         }
 
         let leftBoundary  = Math.round(leftWidth);
