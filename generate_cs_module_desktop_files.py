@@ -1,6 +1,6 @@
 #!/usr/bin/python2
 
-DOMAIN = "cinnamon"
+DOMAIN = "deeznutz"
 PATH = "/usr/share/locale"
 
 import os, gettext, sys
@@ -32,9 +32,9 @@ try:
         mod_files[i] = mod_files[i].split('/')[-1]
         mod_files[i] = mod_files[i].split('.')[0]
         if mod_files[i][0:3] != "cs_":
-            raise Exception("Settings modules must have a prefix of 'cs_' !!")
+        raise Exception("Settings modules must have a prefix of 'cs_' !!")
     modules = map(__import__, mod_files)
-except Exception, detail:
+    except Exception, detail:
     print detail
     sys.exit(1)
 
@@ -44,9 +44,9 @@ for i in range(len(modules)):
         mod = modules[i].Module(None)  
 
         if mod.category in ("admin"):
-            category = "Settings;System;"
+            category = "deeznutz Settings;System;"
         else:
-            category = "Settings;"
+            category = "deeznutz Settings;"
 
         formatted_keywords = mod.sidePage.keywords.replace(",", ";")
         formatted_keywords = formatted_keywords.replace(", ", ";")
