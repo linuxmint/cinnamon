@@ -1,17 +1,17 @@
 #!/bin/bash
 
-sudo rm -rf /usr/share/cinnamon/js-backup
-sudo mv /usr/share/cinnamon/js /usr/share/cinnamon/js-backup
-sudo cp -R js /usr/share/cinnamon/
+sudo rm -rf /usr/share/deeznutz/js-backup
+sudo mv /usr/share/deeznutz/js /usr/share/deeznutz/js-backup
+sudo cp -R js /usr/share/deeznutz/
 
-sudo rm -rf /usr/share/cinnamon/theme-backup
-sudo mv /usr/share/cinnamon/theme /usr/share/cinnamon/theme-backup
-sudo cp -R data/theme /usr/share/cinnamon/
+sudo rm -rf /usr/share/deeznutz/theme-backup
+sudo mv /usr/share/deeznutz/theme /usr/share/deeznutz/theme-backup
+sudo cp -R data/theme /usr/share/deeznutz/
 
-sudo rm -rf /usr/lib/cinnamon-settings
-sudo rm -rf /usr/lib/cinnamon-menu-editor
+sudo rm -rf /usr/lib/deeznutz-settings
+sudo rm -rf /usr/lib/deeznutz-menu-editor
 sudo cp -R files/usr /
 sudo cp -R files/etc /
 
-sudo cp data/org.cinnamon.gschema.xml /usr/share/glib-2.0/schemas/
+sudo cp data/org.deeznutz.gschema.xml /usr/share/glib-2.0/schemas/
 sudo glib-compile-schemas /usr/share/glib-2.0/schemas/

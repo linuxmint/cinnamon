@@ -1,6 +1,6 @@
 #!/usr/bin/python2
 
-DOMAIN = "cinnamon"
+DOMAIN = "deeznutz"
 PATH = "/usr/share/locale"
 
 import os, gettext, sys
@@ -11,13 +11,13 @@ os.environ['LANG'] = "en_US.UTF-8"
 gettext.install(DOMAIN, PATH)
 
 prefix = """[Desktop Entry]
-Exec=cinnamon-settings
+Exec=deeznutz-settings
 Icon=preferences-system
 Terminal=false
 Type=Application
 Categories=Settings;
 StartupNotify=false
-OnlyShowIn=X-Cinnamon;
+OnlyShowIn=X-deeznutz;
 Keywords=Preferences;Settings;
 """
 
@@ -30,7 +30,7 @@ Terminal=false
 Type=Application
 Categories=System;Settings;
 StartupNotify=false
-OnlyShowIn=X-Cinnamon;
+OnlyShowIn=X-deeznutz;
 Keywords=Preferences;Settings;
 """
 

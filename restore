@@ -1,4 +1,4 @@
 #!/bin/bash
 
-rm -rf /usr/share/cinnamon/js
-mv /usr/share/cinnamon/js-backup /usr/share/cinnamon/js
+rm -rf /usr/share/deeznutz/js
+mv /usr/share/deeznutz/js-backup /usr/share/deeznutz/js
