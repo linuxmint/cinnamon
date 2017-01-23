@@ -1,4 +1,4 @@
-Cinnamon is a Linux desktop which provides advanced innovative features and a traditional user experience.
+deeznutz is a Linux desktop which provides advanced innovative features and a traditional user experience.
 
 The desktop layout is similar to Gnome 2. 
 The underlying technology is forked from Gnome Shell.
@@ -7,7 +7,7 @@ The emphasis is put on making users feel at home and providing them with an easy
 
 Contributing
 ============
-Cinnamon is on GitHub at https://github.com/linuxmint/Cinnamon.
+deeznutz is on GitHub at https://github.com/linuxmint/Cinnamon.
 
 Note that some issue may not be with Cinnamon itself. For a list of related components,
 please see http://developer.linuxmint.com/projects.html and file in the appropriate repo.
@@ -15,6 +15,6 @@ please see http://developer.linuxmint.com/projects.html and file in the appropri
 
 License
 =======
-Cinnamon is distributed under the terms of the GNU General Public License,
+deeznutz is distributed under the terms of the GNU General Public License,
 version 2 or later. See the COPYING file for details.
 
