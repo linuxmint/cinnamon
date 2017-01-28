@@ -814,14 +814,12 @@ MediaPlayerLauncher.prototype = {
         this.addActor(this.label);
         this._icon = app.create_icon_texture(ICON_SIZE);
         this.addActor(this._icon, { expand: false });
+        this.connect("activate", Lang.bind(this, this._onActivate));
     },
 
-    activate: function (event) {
-        this._menu.actor.hide();
+    _onActivate: function(actor, event, keepMenu) {
         this._app.activate_full(-1, event.get_time());
-        return true;
     }
-
 };
 
 function MyApplet(metadata, orientation, panel_height, instanceId) {
