@@ -273,6 +273,7 @@ class MainWindow(object):
                     elif settings_type in XLET_SETTINGS_WIDGETS:
                         widget = globals()[XLET_SETTINGS_WIDGETS[settings_type]](key, info["settings"], item)
                         section.add_row(widget)
+                        widget.add_to_size_group(section.size_group)
 
     def build_from_order(self, settings_map, info, box, first_key):
         page = SettingsPage()
@@ -298,6 +299,7 @@ class MainWindow(object):
                 elif settings_type in XLET_SETTINGS_WIDGETS:
                     widget = globals()[XLET_SETTINGS_WIDGETS[settings_type]](key, info["settings"], item)
                     section.add_row(widget)
+                    widget.add_to_size_group(section.size_group)
 
     def notify_dbus(self, handler, key, value):
         proxy.updateSetting('(ssss)', self.uuid, handler.instance_id, key, json.dumps(value))

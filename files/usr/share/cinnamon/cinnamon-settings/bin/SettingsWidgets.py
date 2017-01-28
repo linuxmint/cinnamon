@@ -359,7 +359,7 @@ class SettingsBox(Gtk.Frame):
         frame_style = self.get_style_context()
         frame_style.add_class("view")
         self.size_group = Gtk.SizeGroup()
-        self.size_group.set_mode(Gtk.SizeGroupMode.VERTICAL)
+        self.size_group.set_mode(Gtk.SizeGroupMode.HORIZONTAL)
 
         self.box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
         self.add(self.box)
