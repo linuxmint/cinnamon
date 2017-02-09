@@ -51,6 +51,7 @@ cinnamon_dbus_acquire_name (GDBusProxy *bus,
                                                        &error)))
     {
       g_printerr ("failed to acquire %s: %s\n", name, error->message);
+      g_clear_error (&error);
       if (!fatal)
         return;
       exit (1);
