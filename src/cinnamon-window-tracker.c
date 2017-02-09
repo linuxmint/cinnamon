@@ -435,6 +435,7 @@ update_focus_app (CinnamonWindowTracker *self)
   new_focus_app = new_focus_win ? cinnamon_window_tracker_get_window_app (self, new_focus_win) : NULL;
 
   set_focus_app (self, new_focus_app);
+  g_clear_object (&new_focus_app);
 }
 
 static void
