@@ -28,6 +28,7 @@ PANEL_LAUNCHER_PATH = os.path.join(home, ".cinnamon", "panel-launchers")
 
 EXTENSIONS = (".png", ".xpm", ".svg")
 
+DEFAULT_ICON_NAME = "cinnamon-panel-launcher"
 
 def escape_space(string):
     return string.replace(" ", "\ ")
@@ -76,10 +77,14 @@ def strip_extensions(icon):
 
 def set_icon_string(image, icon):
     if GLib.path_is_absolute(icon):
-        image._file = icon
-        pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(icon, 64, 64)
-        if pixbuf is not None:
-            image.set_from_pixbuf(pixbuf)
+        if os.path.isfile(icon):
+            image._file = icon
+            pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(icon, 64, 64)
+            if pixbuf is not None:
+                image.set_from_pixbuf(pixbuf)
+        else:
+            image._icon_name = DEFAULT_ICON_NAME
+            image.set_from_icon_name(DEFAULT_ICON_NAME, Gtk.IconSize.BUTTON)
     else:
         image._icon_name = strip_extensions(icon)
         image.set_from_icon_name(strip_extensions(icon), Gtk.IconSize.BUTTON)
@@ -527,6 +532,6 @@ class Main:
         Gtk.main_quit()
 
 if __name__ == "__main__":
-    Gtk.Window.set_default_icon_name('cinnamon-panel-launcher')
+    Gtk.Window.set_default_icon_name(DEFAULT_ICON_NAME)
     Main()
     Gtk.main()
