@@ -182,6 +182,8 @@ double st_theme_node_get_padding       (StThemeNode  *node,
 
 double st_theme_node_get_horizontal_padding (StThemeNode *node);
 double st_theme_node_get_vertical_padding   (StThemeNode *node);
+double st_theme_node_get_margin       (StThemeNode  *node,
+                                       StSide        side);
 
 int    st_theme_node_get_width         (StThemeNode  *node);
 int    st_theme_node_get_height        (StThemeNode  *node);

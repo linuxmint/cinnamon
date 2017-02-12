@@ -34,6 +34,9 @@ static StThemeNode *group2;
 static StThemeNode *text3;
 static StThemeNode *text4;
 static StThemeNode *group3;
+static StThemeNode *group4;
+static StThemeNode *group5;
+static StThemeNode *group6;
 static StThemeNode *cairo_texture;
 static gboolean fail;
 
@@ -229,6 +232,19 @@ test_lengths (void)
   /* 1in == 72pt == 96px, at 96dpi */
   assert_length ("group1", "padding-left", 96.,
 		 st_theme_node_get_padding (group1, ST_SIDE_LEFT));
+
+  /* 12pt == 16px at 96dpi */
+  assert_length ("group1", "margin-top", 16.,
+		 st_theme_node_get_margin (group1, ST_SIDE_TOP));
+  /* 12px == 12px */
+  assert_length ("group1", "margin-right", 12.,
+		 st_theme_node_get_margin (group1, ST_SIDE_RIGHT));
+  /* 2em == 32px (with a 12pt font) */
+  assert_length ("group1", "margin-bottom", 32.,
+		 st_theme_node_get_margin (group1, ST_SIDE_BOTTOM));
+  /* 1in == 72pt == 96px, at 96dpi */
+  assert_length ("group1", "margin-left", 96.,
+		 st_theme_node_get_margin (group1, ST_SIDE_LEFT));
 }
 
 static void
@@ -276,6 +292,54 @@ test_padding (void)
 		 st_theme_node_get_padding (group2, ST_SIDE_BOTTOM));
   assert_length ("group2", "padding-left", 4.,
 		 st_theme_node_get_padding (group2, ST_SIDE_LEFT));
+}
+
+static void
+test_margin (void)
+{
+  test = "margin";
+  /* Test that a 4-sided margin property assigns the right margin to
+   * all sides */
+  assert_length ("group2", "margin-top", 1.,
+		 st_theme_node_get_margin (group2, ST_SIDE_TOP));
+  assert_length ("group2", "margin-right", 2.,
+		 st_theme_node_get_margin (group2, ST_SIDE_RIGHT));
+  assert_length ("group2", "margin-bottom", 3.,
+		 st_theme_node_get_margin (group2, ST_SIDE_BOTTOM));
+  assert_length ("group2", "margin-left", 4.,
+		 st_theme_node_get_margin (group2, ST_SIDE_LEFT));
+
+  /* Test that a 3-sided margin property assigns the right margin to
+   * all sides */
+  assert_length ("group4", "margin-top", 1.,
+     st_theme_node_get_margin (group4, ST_SIDE_TOP));
+  assert_length ("group4", "margin-right", 2.,
+     st_theme_node_get_margin (group4, ST_SIDE_RIGHT));
+  assert_length ("group4", "margin-bottom", 3.,
+     st_theme_node_get_margin (group4, ST_SIDE_BOTTOM));
+  assert_length ("group4", "margin-left", 2.,
+     st_theme_node_get_margin (group4, ST_SIDE_LEFT));
+
+  /* Test that a 2-sided margin property assigns the right margin to
+   * all sides */
+  assert_length ("group5", "margin-top", 1.,
+     st_theme_node_get_margin (group5, ST_SIDE_TOP));
+  assert_length ("group5", "margin-right", 2.,
+     st_theme_node_get_margin (group5, ST_SIDE_RIGHT));
+  assert_length ("group5", "margin-bottom", 1.,
+     st_theme_node_get_margin (group5, ST_SIDE_BOTTOM));
+  assert_length ("group5", "margin-left", 2.,
+     st_theme_node_get_margin (group5, ST_SIDE_LEFT));
+
+  /* Test that all sides have a margin of 0 when not specified */
+  assert_length ("group6", "margin-top", 0.,
+     st_theme_node_get_margin (group6, ST_SIDE_TOP));
+  assert_length ("group6", "margin-right", 0.,
+     st_theme_node_get_margin (group6, ST_SIDE_RIGHT));
+  assert_length ("group6", "margin-bottom", 0.,
+     st_theme_node_get_margin (group6, ST_SIDE_BOTTOM));
+  assert_length ("group6", "margin-left", 0.,
+     st_theme_node_get_margin (group6, ST_SIDE_LEFT));
 }
 
 static void
@@ -447,6 +511,12 @@ main (int argc, char **argv)
                               CLUTTER_TYPE_TEXT, "text2", NULL, NULL, NULL, FALSE);
   group2 = st_theme_node_new (context, root, NULL,
                               CLUTTER_TYPE_GROUP, "group2", NULL, NULL, NULL, FALSE);
+  group4 = st_theme_node_new (context, root, NULL,
+                              CLUTTER_TYPE_GROUP, "group4", NULL, NULL, NULL, FALSE);
+  group5 = st_theme_node_new (context, root, NULL,
+                              CLUTTER_TYPE_GROUP, "group5", NULL, NULL, NULL, FALSE);
+  group6 = st_theme_node_new (context, root, NULL,
+                              CLUTTER_TYPE_GROUP, "group6", NULL, NULL, NULL, FALSE);
   text3 = st_theme_node_new  (context, group2, NULL,
                               CLUTTER_TYPE_TEXT, "text3", NULL, NULL,
                               "color: #0000ff; padding-bottom: 12px;", FALSE);
@@ -463,11 +533,27 @@ main (int argc, char **argv)
   test_type_inheritance ();
   test_adjacent_selector ();
   test_padding ();
+  test_margin();
   test_border ();
   test_background ();
   test_font ();
   test_pseudo_class ();
   test_inline_style ();
+
+  g_object_unref (cairo_texture);
+  g_object_unref (group1);
+  g_object_unref (group2);
+  g_object_unref (group3);
+  g_object_unref (group4);
+  g_object_unref (group5);
+  g_object_unref (group6);
+  g_object_unref (text1);
+  g_object_unref (text2);
+  g_object_unref (text3);
+  g_object_unref (text4);
+  g_object_unref (theme);
+
+   clutter_actor_destroy (stage);
 
   return fail ? 1 : 0;
 }

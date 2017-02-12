@@ -24,6 +24,7 @@
 #include <gdk/gdk.h>
 
 #include "st-theme-node.h"
+#include <libcroco/libcroco.h>
 #include "st-types.h"
 
 G_BEGIN_DECLS
@@ -57,6 +58,7 @@ struct _StThemeNode {
   int border_radius[4];
   int outline_width;
   guint padding[4];
+  guint margin[4];
 
   int width;
   int height;
@@ -123,6 +125,8 @@ struct _StThemeNodeClass {
 
 void _st_theme_node_ensure_background (StThemeNode *node);
 void _st_theme_node_ensure_geometry (StThemeNode *node);
+void _st_theme_node_apply_margins (StThemeNode *node,
+                                   ClutterActor *actor);
 
 void _st_theme_node_init_drawing_state (StThemeNode *node);
 void _st_theme_node_free_drawing_state (StThemeNode *node);

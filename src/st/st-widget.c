@@ -40,6 +40,7 @@
 #include "st-texture-cache.h"
 #include "st-theme-context.h"
 #include "st-theme-node-transition.h"
+#include "st-theme-node-private.h"
 
 #include "st-widget-accessible.h"
 
@@ -1601,6 +1602,8 @@ st_widget_recompute_style (StWidget    *widget,
       widget->priv->is_style_dirty = FALSE;
       return;
     }
+
+  _st_theme_node_apply_margins (new_theme_node, CLUTTER_ACTOR (widget));
 
   if (!old_theme_node ||
       !st_theme_node_geometry_equal (old_theme_node, new_theme_node))
