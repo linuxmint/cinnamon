@@ -1,0 +1,4 @@
+To use Yubico U2F device, the user must install libu2f-host packages, but
+after doing so, the user still does not see the USB device displayed anywhere.
+In Windows 7 Pro, it appears under "Devices & Printers".
+Seems to me it should appear under "System_Settings/Hardware/Yubico" ???
