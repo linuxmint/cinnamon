@@ -579,7 +579,7 @@ class AutostartBox(Gtk.Box):
 
     def find_app_with_basename(self, basename):
         for app in AUTOSTART_APPS:
-            if basename == app.basename:
+            if hasattr(app, 'basename') and basename == app.basename:
                 return app
 
         return None
