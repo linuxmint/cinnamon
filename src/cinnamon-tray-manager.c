@@ -216,8 +216,8 @@ cinnamon_tray_manager_style_changed (StWidget *theme_widget,
   success.blue = icon_colors->success.blue * 0x101;
 
   na_tray_manager_set_colors (manager->priv->na_manager,
-                              &foreground, &warning,
-                              &error, &success);
+                              &foreground, &error,
+                              &warning, &success);
 }
 
 void

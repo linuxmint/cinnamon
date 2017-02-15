@@ -1,0 +1,47 @@
+# Specify that we're C++
+language: cpp
+sudo: required
+services:
+  - docker
+
+# Compiler selection
+#compiler:
+#  - clang
+#  - gcc
+
+# Add dependencies
+#addons:
+#  apt:
+#    packages:
+#      - intltool
+
+# Add build-deps for cinnamon and friends
+before_install:
+  - docker pull ubuntu:xenial
+  - docker run --name xenial -d -p 127.0.0.1:80:4567 ubuntu:xenial /bin/sh -c "apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 451BBBF2"
+  - docker ps -a
+  #- sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 451BBBF2
+  #- curl http://packages.linuxmint.com/dists/debian/Release.gpg | sudo apt-key add -
+  - docker exec xenial /bin/sh -c "echo \"deb http://packages.linuxmint.com sarah main upstream import backport\" >> /etc/apt/sources.list"
+  - docker exec xenial /bin/sh -c "echo \"deb-src http://packages.linuxmint.com sarah main upstream import backport\" >> /etc/apt/sources.list"
+  - docker exec xenial /bin/sh -c "cat /etc/apt/sources.list"
+  - docker exec xenial /bin/sh -c "apt-get update"
+  - docker exec xenial /bin/sh -c "apt-get build-dep cinnamon"
+  - docker exec xenial /bin/sh -c "./autogen.sh"
+  - docker exec xenial /bin/sh -c "make"
+
+# Configure step
+before_script:
+  - ./autogen.sh
+
+# Build step
+script:
+  - make
+
+#addons:
+#  coverity_scan:
+
+#build_command_prepend: ./autogen.sh
+
+#build_command: make
+
