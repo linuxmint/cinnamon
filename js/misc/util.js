@@ -135,6 +135,37 @@ function trySpawnCommandLine(command_line) {
     return pid;
 }
 
+/**
+ * spawnCommandLineAsync:
+ * @command_line: a command line
+ * @callback (function): called on success
+ * @errback (function): called on error
+ *
+ * Runs @command_line in the background. If the process exits without
+ * error, a callback will be called, or an error callback will be
+ * called if one is provided.
+ */
+function spawnCommandLineAsync(command_line, callback, errback) {
+    let pid;
+
+    let [success, argv] = GLib.shell_parse_argv(command_line);
+    pid = trySpawn(argv);
+
+    GLib.child_watch_add(GLib.PRIORITY_DEFAULT, pid, function(pid, status) {
+        GLib.spawn_close_pid(pid);
+
+        if (status !== 0) {
+            if (typeof errback === 'function') {
+                errback();
+            }
+        } else {
+            if (typeof callback === 'function') {
+                callback();
+            }
+        }
+    });
+}
+
 function _handleSpawnError(command, err) {
     let title = _("Execution of '%s' failed:").format(command);
     Main.notifyError(title, err.message);
