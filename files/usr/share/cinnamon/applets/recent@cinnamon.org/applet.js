@@ -41,24 +41,27 @@ function MyApplet(orientation, panel_height, instance_id) {
 MyApplet.prototype = {
     __proto__: Applet.IconApplet.prototype,
 
-    _init: function(orientation, panel_height, instance_id) {        
+    _init: function(orientation, panel_height, instance_id) {
         Applet.IconApplet.prototype._init.call(this, orientation, panel_height, instance_id);
-        
-        try {        
+
+        try {
             this.set_applet_icon_symbolic_name("document-open-recent");
             this.set_applet_tooltip(_("Recent documents"));
-            
+
             this.menuManager = new PopupMenu.PopupMenuManager(this);
             this.menu = new Applet.AppletPopupMenu(this, orientation);
             this.menuManager.addMenu(this.menu);
 
+            this.mainContainer = new St.BoxLayout({ vertical: true });
+            this.menu.addActor(this.mainContainer);
+
             this.recentsScrollBox = new St.ScrollView({ x_fill: true, y_fill: false, y_align: St.Align.START });
             this.recentsScrollBox.set_auto_scrolling(true);
+            this.mainContainer.add(this.recentsScrollBox);
 
             this.recentsBox = new St.BoxLayout({ vertical:true });
             this.recentsScrollBox.add_actor(this.recentsBox);
             this.recentsScrollBox.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC);
-            this.menu.actor.add_actor(this.recentsScrollBox);
 
             this.RecentManager = new DocInfo.DocManager();
             this.privacy_settings = new Gio.Settings( {schema_id: PRIVACY_SCHEMA} );
