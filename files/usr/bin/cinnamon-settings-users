@@ -4,5 +4,15 @@
 """
 
 import os
+import subprocess
 
-os.system("gksu /usr/share/cinnamon/cinnamon-settings-users/cinnamon-settings-users.py")
+def get_output_uni(*args):  # uni = Unicode 
+  return subprocess.check_output(*args, universal_newlines=True).rstrip()
+# We set "universal_newlines" in order to handle Unicode properly.  
+
+tool = "/usr/share/cinnamon/cinnamon-settings-users/cinnamon-settings-users.py"
+
+launcher = get_output_uni("/usr/lib/linuxmint/common/mint-which-launcher.py")
+command = "{0} {1}".format(launcher, tool)
+os.system(command)
+
