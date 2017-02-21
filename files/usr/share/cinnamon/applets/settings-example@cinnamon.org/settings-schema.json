@@ -1,7 +1,7 @@
 {
     "layout1": {
         "type": "layout",
-        "pages": ["page1", "page2", "page3"],
+        "pages": ["page1", "page2", "page3", "page4"],
         "page1": {
             "type": "page",
             "title": "Visible settings",
@@ -16,6 +16,11 @@
             "type": "page",
             "title": "Command settings",
             "sections": ["section5"]
+        },
+        "page4": {
+            "type": "page",
+            "title": "Editable list settings",
+            "sections": ["section7"]
         },
         "section1": {
             "type": "section",
@@ -46,6 +51,11 @@
             "type": "section",
             "title": "Other choosers",
             "keys": ["font-select", "date-select"]
+        },
+        "section7": {
+            "type": "section",
+            "title": "My list",
+            "keys": ["tree"]
         }
     },
     "icon-name": {
@@ -170,5 +180,19 @@
             "m" : 1,
             "y" : 2000
         }
+    },
+    "tree" : {
+        "type" : "list",
+        "description" : "Custom tree widget",
+        "columns" : [
+            {"id": "name", "title": "Name", "type": "string"},
+            {"id": "resident", "title": "Resident", "type": "boolean"},
+            {"id": "address", "title": "Address", "type": "string", "default": "none"},
+            {"id": "number", "title": "Id number", "type": "integer", "min": 0, "max": 100},
+            {"id": "icon", "title": "Icon", "type": "icon"},
+            {"id": "key", "title": "Shortcut key", "type": "keybinding"},
+            {"id": "file", "title": "File Path", "type": "file", "select-dir": false}
+        ],
+        "default" : []
     }
 }

@@ -35,7 +35,8 @@ XLET_SETTINGS_WIDGETS = {
     "tween"             :   "JSONSettingsTweenChooser",
     "effect"            :   "JSONSettingsEffectChooser",
     "datechooser"       :   "JSONSettingsDateChooser",
-    "keybinding"        :   "JSONSettingsKeybinding"
+    "keybinding"        :   "JSONSettingsKeybinding",
+    "list"              :   "JSONSettingsList"
 }
 
 class XLETSettingsButton(Button):
@@ -234,7 +235,7 @@ class MainWindow(object):
                                 new_opt_data[translate(self.uuid, option)] = opt_data[option]
                             settings_map[setting][key] = new_opt_data
             finally:
-                # if a layout is not expicitly defined, generate the settings
+                # if a layout is not explicitly defined, generate the settings
                 # widgets based on the order they occur
                 if first_key["type"] == "layout":
                     self.build_with_layout(settings_map, info, instance_box, first_key)

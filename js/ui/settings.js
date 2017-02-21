@@ -171,6 +171,13 @@ var SETTINGS_TYPES = {
             "default",
             "description"
         ]
+    },
+    "list" : {
+        "required-fields": [
+            "type",
+            "default",
+            "columns"
+        ]
     }
 };
 

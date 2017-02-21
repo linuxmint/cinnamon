@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   id="svg7384"
+   height="16"
+   width="16"
+   version="1.1"
+   inkscape:version="0.91 r13725"
+   sodipodi:docname="list-edit-symbolic.svg">
+  <defs
+     id="defs9" />
+  <sodipodi:namedview
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1"
+     objecttolerance="10"
+     gridtolerance="10"
+     guidetolerance="10"
+     inkscape:pageopacity="0"
+     inkscape:pageshadow="2"
+     inkscape:window-width="1888"
+     inkscape:window-height="999"
+     id="namedview7"
+     showgrid="true"
+     showguides="false"
+     inkscape:zoom="29.5"
+     inkscape:cx="1.791146"
+     inkscape:cy="12.696566"
+     inkscape:window-x="32"
+     inkscape:window-y="27"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="g4156"
+     inkscape:snap-global="true"
+     inkscape:snap-bbox="true"
+     inkscape:bbox-nodes="true"
+     inkscape:snap-object-midpoints="true"
+     inkscape:object-nodes="true">
+    <inkscape:grid
+       type="xygrid"
+       id="grid4142" />
+  </sodipodi:namedview>
+  <metadata
+     id="metadata90">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title>Gnome Symbolic Icon Theme</dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <title
+     id="title9167">Gnome Symbolic Icon Theme</title>
+  <g
+     id="layer12"
+     transform="translate(-40 -726)">
+    <g
+       id="g4141"
+       transform="matrix(1,0,0,1.49985,0.14644561,-367.46435)">
+      <g
+         id="g4146"
+         transform="translate(-0.15531039,-0.2500338)">
+        <g
+           id="g4151"
+           transform="matrix(0.70710678,-0.47145167,1.0605541,0.70710678,-765.05661,237.80289)">
+          <g
+             id="g4156"
+             transform="matrix(0.70710679,0.47145167,-1.0605541,0.70710678,793.33489,192.28516)">
+            <path
+               inkscape:connector-curvature="0"
+               d="m 41.16418,738.21673 9,-6.0006 c 1,0 2,0.66674 2,1.33347 l -9,6.0006 -2,0 z"
+               id="path2273-6-2"
+               sodipodi:nodetypes="cccccc"
+               style="fill:#bebebe;fill-opacity:1;fill-rule:evenodd;stroke:none" />
+            <path
+               inkscape:connector-curvature="0"
+               d="m 51.16418,731.5494 c 1,0 2,0.66674 2,1.33347 l 2,-1.33347 c 0,-0.66674 -0.75185,-1.33347 -2,-1.33347 z"
+               id="path4113-1-6-3"
+               sodipodi:nodetypes="ccccc"
+               style="display:inline;overflow:visible;visibility:visible;fill:#bebebe;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:1;marker:none;enable-background:new" />
+          </g>
+        </g>
+      </g>
+    </g>
+  </g>
+</svg>
