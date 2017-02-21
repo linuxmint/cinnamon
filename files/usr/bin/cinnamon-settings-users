@@ -17,7 +17,7 @@ if os.path.exists('/usr/bin/pkexec'):
 elif os.path.exists('/usr/bin/gksu'):
     launcher = 'gksu  --message "<b>{0}</b>"'.format(prompt)
 elif os.path.exists('/usr/bin/kdesudo'):
-    launcher = 'kdesudo -i {0} -d --comment "<b>{1}</b>"'.format( \
+    launcher = 'kdesudo -i {0} -d --comment "<b>{1}</b>"'.format(
                  icon, prompt)
 
 command = '{0} {1}'.format(launcher, tool)
