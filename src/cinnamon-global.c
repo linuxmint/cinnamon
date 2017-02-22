@@ -651,6 +651,12 @@ cinnamon_global_set_cursor (CinnamonGlobal *global,
     case CINNAMON_CURSOR_RESIZE_LEFT:
       name = "left_side";
       break;
+      
+      
+      
+      
+      
+      
     case CINNAMON_CURSOR_RESIZE_RIGHT:
       name = "right_side";
       break;
