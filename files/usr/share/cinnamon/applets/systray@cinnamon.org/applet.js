@@ -264,6 +264,8 @@ MyApplet.prototype = {
             if (icon.get_parent())
                 icon.get_parent().remove_child(icon);
 
+            this._resizeStatusItem(role, icon); /* resize the icon (dont know if this was missing) */
+
             icon.obsolete = false;
             this._statusItems.push(icon);
 
