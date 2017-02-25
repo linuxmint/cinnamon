@@ -39,6 +39,7 @@
         <listitem><code>min</code>: minimum value</listitem>
         <listitem><code>max</code>: maximum value</listitem>
         <listitem><code>step</code>: adjustment amount</listitem>
+        <listitem><code>show-value</code>: (optional) whether to show the current value on the slider - default: true</listitem>
         <listitem><code>description</code>: String describing the setting</listitem>
       </itemizedlist>
 

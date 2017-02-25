@@ -631,7 +631,7 @@ class Range(SettingsWidget):
     bind_prop = "value"
     bind_dir = Gio.SettingsBindFlags.GET | Gio.SettingsBindFlags.NO_SENSITIVITY
 
-    def __init__(self, label, min_label="", max_label="", mini=None, maxi=None, step=None, invert=False, log=False, dep_key=None, tooltip=""):
+    def __init__(self, label, min_label="", max_label="", mini=None, maxi=None, step=None, invert=False, log=False, show_value=True, dep_key=None, tooltip=""):
         super(Range, self).__init__(dep_key=dep_key)
 
         self.set_orientation(Gtk.Orientation.VERTICAL)
@@ -677,7 +677,7 @@ class Range(SettingsWidget):
 
         self.content_widget = Gtk.Scale.new_with_range(Gtk.Orientation.HORIZONTAL, mini, maxi, self.step)
         self.content_widget.set_inverted(invert)
-        self.content_widget.set_draw_value(False)
+        self.content_widget.set_draw_value(show_value)
         self.bind_object = self.content_widget.get_adjustment()
 
         if invert:

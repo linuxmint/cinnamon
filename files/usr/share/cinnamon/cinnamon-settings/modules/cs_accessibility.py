@@ -273,7 +273,7 @@ class Module:
                                     "org.cinnamon.desktop.a11y.keyboard",
                                     "slowkeys-delay",
                                     _("Short"), _("Long"),
-                                    0, 500, 10)
+                                    0, 500, 10, show_value=False)
 
             settings.add_reveal_row(slider, "org.cinnamon.desktop.a11y.keyboard", "slowkeys-enable")
 
@@ -299,7 +299,7 @@ class Module:
                                     "org.cinnamon.desktop.a11y.keyboard",
                                     "bouncekeys-delay",
                                     _("Short"), _("Long"),
-                                    0, 900, 10)
+                                    0, 900, 10, show_value=False)
 
             settings.add_reveal_row(slider, "org.cinnamon.desktop.a11y.keyboard", "bouncekeys-enable")
 
@@ -323,7 +323,7 @@ class Module:
                                     "org.cinnamon.desktop.a11y.keyboard",
                                     "mousekeys-init-delay",
                                     _("Shorter"), _("Longer"),
-                                    10, 2000, 10)
+                                    10, 2000, 10, show_value=False)
 
             settings.add_reveal_row(slider, "org.cinnamon.desktop.a11y.keyboard", "mousekeys-enable")
 
@@ -331,7 +331,7 @@ class Module:
                                     "org.cinnamon.desktop.a11y.keyboard",
                                     "mousekeys-accel-time",
                                     _("Shorter"), _("Longer"),
-                                    10, 2000, 10)
+                                    10, 2000, 10, show_value=False)
 
             settings.add_reveal_row(slider, "org.cinnamon.desktop.a11y.keyboard", "mousekeys-enable")
 
@@ -339,7 +339,7 @@ class Module:
                                     "org.cinnamon.desktop.a11y.keyboard",
                                     "mousekeys-max-speed",
                                     _("Slower"), _("Faster"),
-                                    1, 500, 1)
+                                    1, 500, 1, show_value=False)
 
             settings.add_reveal_row(slider, "org.cinnamon.desktop.a11y.keyboard", "mousekeys-enable")
 
@@ -378,7 +378,7 @@ class Module:
                                     "org.cinnamon.desktop.a11y.mouse",
                                     "secondary-click-time",
                                     _("Shorter"), _("Longer"),
-                                    0.5, 3.0, 0.1)
+                                    0.5, 3.0, 0.1, show_value=False)
 
             settings.add_reveal_row(slider, "org.cinnamon.desktop.a11y.mouse", "secondary-click-enabled")
 
@@ -398,7 +398,7 @@ class Module:
                                     "org.cinnamon.desktop.a11y.mouse",
                                     "dwell-time",
                                     _("Short"), _("Long"),
-                                    0.2, 3.0, 0.1)
+                                    0.2, 3.0, 0.1, show_value=False)
 
             settings.add_reveal_row(slider, "org.cinnamon.desktop.a11y.mouse", "dwell-click-enabled")
 
@@ -406,7 +406,7 @@ class Module:
                                     "org.cinnamon.desktop.a11y.mouse",
                                     "dwell-threshold",
                                     _("Small"), _("Large"),
-                                    1, 30, 1)
+                                    1, 30, 1, show_value=False)
 
             settings.add_reveal_row(slider, "org.cinnamon.desktop.a11y.mouse", "dwell-click-enabled")
 
