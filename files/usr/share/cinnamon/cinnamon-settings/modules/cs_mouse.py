@@ -51,7 +51,7 @@ class Module:
             slider = GSettingsRange(_("Acceleration"), "org.cinnamon.settings-daemon.peripherals.mouse", "motion-acceleration", _("Slow"), _("Fast"), 1, 10, show_value=False)
             settings.add_row(slider)
 
-            slider = GSettingsRange(_("Sensitivity"), "org.cinnamon.settings-daemon.peripherals.mouse", "motion-threshold", _("Low"), _("High"), 1, 10, invert=True, show_value=False)
+            slider = GSettingsRange(_("Sensitivity"), "org.cinnamon.settings-daemon.peripherals.mouse", "motion-threshold", _("Low"), _("High"), 1, 10, show_value=False, flipped=True)
             settings.add_row(slider)
 
             settings = page.add_section(_("Double-Click timeout"))
@@ -117,7 +117,7 @@ class Module:
             slider = GSettingsRange(_("Acceleration"), "org.cinnamon.settings-daemon.peripherals.touchpad", "motion-acceleration", _("Slow"), _("Fast"), 1, 10, show_value=False)
             settings.add_row(slider)
 
-            slider = GSettingsRange(_("Sensitivity"), "org.cinnamon.settings-daemon.peripherals.touchpad", "motion-threshold", _("Low"), _("High"), 1, 10, invert=True, show_value=False)
+            slider = GSettingsRange(_("Sensitivity"), "org.cinnamon.settings-daemon.peripherals.touchpad", "motion-threshold", _("Low"), _("High"), 1, 10, show_value=False, flipped=True)
             settings.add_row(slider)
 
             self.sidePage.stack.add_titled(page, "touchpad", _("Touchpad"))

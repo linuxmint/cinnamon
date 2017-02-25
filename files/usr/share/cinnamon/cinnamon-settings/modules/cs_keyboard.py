@@ -231,7 +231,7 @@ class Module:
             slider = GSettingsRange(_("Repeat delay:"), "org.cinnamon.settings-daemon.peripherals.keyboard", "delay", _("Short"), _("Long"), 100, 2000, show_value=False)
             settings.add_reveal_row(slider, "org.cinnamon.settings-daemon.peripherals.keyboard", "repeat")
 
-            slider = GSettingsRange(_("Repeat speed:"), "org.cinnamon.settings-daemon.peripherals.keyboard", "repeat-interval", _("Slow"), _("Fast"), 20, 2000, invert=True, log=True, show_value=False)
+            slider = GSettingsRange(_("Repeat speed:"), "org.cinnamon.settings-daemon.peripherals.keyboard", "repeat-interval", _("Slow"), _("Fast"), 20, 2000, log=True, show_value=False, flipped=True)
             settings.add_reveal_row(slider, "org.cinnamon.settings-daemon.peripherals.keyboard", "repeat")
 
             settings = page.add_section(_("Text cursor"))
@@ -239,7 +239,7 @@ class Module:
             switch = GSettingsSwitch(_("Text cursor blinks"), "org.cinnamon.desktop.interface", "cursor-blink")
             settings.add_row(switch)
 
-            slider = GSettingsRange(_("Blink speed:"), "org.cinnamon.desktop.interface", "cursor-blink-time", _("Slow"), _("Fast"), 100, 2500, invert=True, show_value=False)
+            slider = GSettingsRange(_("Blink speed:"), "org.cinnamon.desktop.interface", "cursor-blink-time", _("Slow"), _("Fast"), 100, 2500, show_value=False, flipped=True)
             settings.add_reveal_row(slider, "org.cinnamon.desktop.interface", "cursor-blink")
 
             # vbox.add(Gtk.Label.new(_("Test Box")))
