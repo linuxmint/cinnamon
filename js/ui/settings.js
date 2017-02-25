@@ -663,8 +663,6 @@ XletSettingsBase.prototype = {
         for (let key in newSettings) {
             let props = newSettings[key];
 
-            // if (!has_required_fields(props, key)) throw null;
-
             if (!("type" in props) || !(props.type in SETTINGS_TYPES)) continue;
             let type = SETTINGS_TYPES[props.type];
 
@@ -708,8 +706,19 @@ XletSettingsBase.prototype = {
     },
 
     _loadFromFile: function() {
-        let rawData = Cinnamon.get_file_contents_utf8_sync(this.file.get_path());
-        let json = JSON.parse(rawData);
+        try {
+            let rawData = Cinnamon.get_file_contents_utf8_sync(this.file.get_path());
+            let json = JSON.parse(rawData);
+        } catch(e) {
+            // Some users with a little bit of know-how may be able to fix the file if it's not too corrupted. Is it worth it to give an option to skip this step?
+            global.logError(e);
+            global.logError("Failed to parse file "+this.file.get_path()+". Attempting to rebuild the settings file for "+this.uuid+".");
+            if (this.settingsData) this._saveToFile();
+            else {
+                this._doInstall();
+                Main.notify("Unfortunately the settings file for "+this.uuid+" seems to be corrupted. Your settings have been reset to default.");
+            }
+        }
         return json;
     },
 
