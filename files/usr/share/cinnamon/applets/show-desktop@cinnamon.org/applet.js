@@ -5,6 +5,7 @@ const Mainloop = imports.mainloop;
 const Tweener = imports.ui.tweener;
 const Clutter = imports.gi.Clutter;
 const Lang = imports.lang;
+const SignalManager = imports.misc.signalManager;
 
 function MyApplet(orientation, panel_height, instance_id) {
     this._init(orientation, panel_height, instance_id);
@@ -17,20 +18,26 @@ MyApplet.prototype = {
         Applet.IconApplet.prototype._init.call(this, orientation, panel_height, instance_id);
 
         this.settings = new Settings.AppletSettings(this, "show-desktop@cinnamon.org", instance_id);
-        
+
         this.settings.bindProperty(Settings.BindingDirection.IN, "peek-at-desktop", "peek_at_desktop", null, null);
         this.settings.bindProperty(Settings.BindingDirection.IN, "peek-delay", "peek_delay", null, null);
         this.settings.bindProperty(Settings.BindingDirection.IN, "peek-opacity", "peek_opacity", null, null);
         this.settings.bindProperty(Settings.BindingDirection.IN, "peek-blur", "peek_blur", null, null);
 
+        this.signals = new SignalManager.SignalManager(this);
         this.actor.connect('enter-event', Lang.bind(this, this._on_enter));
         this.actor.connect('leave-event', Lang.bind(this, this._on_leave));
+        this.signals.connect(global.stage, 'notify::key-focus', this._on_leave);
 
         this._did_peek = false;
         this._peek_timeout_id = 0;
 
         this.set_applet_icon_name("user-desktop");
         this.set_applet_tooltip(_("Show desktop"));
+    },
+
+    on_applet_removed_from_panel: function() {
+        this.signals.disconnectAllSignals();
     },
 
     show_all_windows: function(time) {
@@ -40,7 +47,7 @@ MyApplet.prototype = {
             let compositor = windows[i];
             if(window.get_title() == "Desktop"){
                 Tweener.addTween(compositor, { opacity: 255, time: time, transition: "easeOutSine" });
-            }       
+            }
             if (this.peek_blur && compositor.eff) {
                 compositor.remove_effect(compositor.eff);
             }
