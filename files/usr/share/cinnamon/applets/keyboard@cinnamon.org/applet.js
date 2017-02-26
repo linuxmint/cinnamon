@@ -13,6 +13,8 @@ const Mainloop = imports.mainloop;
 const Gio = imports.gi.Gio;
 const Cairo = imports.cairo;
 
+const PANEL_EDIT_MODE_KEY = "panel-edit-mode";
+
 function EmblemedIcon() {
     this._init.apply(this, arguments);
 }
@@ -129,20 +131,20 @@ function MyApplet(metadata, orientation, panel_height, instance_id) {
 MyApplet.prototype = {
     __proto__: Applet.TextIconApplet.prototype,
 
-    _init: function(metadata, orientation, panel_height, instance_id) {        
+    _init: function(metadata, orientation, panel_height, instance_id) {
         Applet.TextIconApplet.prototype._init.call(this, orientation, panel_height, instance_id);
 
         this.setAllowedLayout(Applet.AllowedLayout.BOTH);
-        
+
         try {
             this.metadata = metadata;
             Main.systrayManager.registerRole("keyboard", metadata.uuid);
 
             this.menuManager = new PopupMenu.PopupMenuManager(this);
             this.menu = new Applet.AppletPopupMenu(this, orientation);
-            this.menuManager.addMenu(this.menu);                            
+            this.menuManager.addMenu(this.menu);
 
-            this.actor.add_style_class_name('panel-status-button');            
+            this.actor.add_style_class_name('panel-status-button');
 
             this._layoutItems = [ ];
 
@@ -155,12 +157,13 @@ MyApplet.prototype = {
             this.desktop_settings.connect("changed::keyboard-layout-show-flags", Lang.bind(this, this._syncConfig));
             this.desktop_settings.connect("changed::keyboard-layout-use-upper", Lang.bind(this, this._syncConfig));
             this.desktop_settings.connect("changed::keyboard-layout-prefer-variant-names", Lang.bind(this, this._syncConfig));
+            global.settings.connect('changed::' + PANEL_EDIT_MODE_KEY, Lang.bind(this, this._onPanelEditModeChanged));
 
             this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
             this.menu.addAction(_("Show Keyboard Layout"), Lang.bind(this, function() {
                 Main.overview.hide();
                 Util.spawn(['gkbd-keyboard-display', '-g', String(this._config.get_current_group() + 1)]);
-            }));                                
+            }));
             this.menu.addAction(_("Show Character Table"), Lang.bind(this, function() {
                 Main.overview.hide();
                 Util.spawn(['gucharmap']);
@@ -172,6 +175,18 @@ MyApplet.prototype = {
         }
     },
 
+    _onPanelEditModeChanged: function() {
+        if (global.settings.get_boolean(PANEL_EDIT_MODE_KEY)) {
+            if (!this.actor.visible) {
+                this.set_applet_icon_symbolic_name("input-keyboard");
+                this.actor.show();
+            }
+        }
+        else {
+            this._syncConfig();
+        }
+    },
+
     on_applet_added_to_panel: function() {
         this._config = new XApp.KbdLayoutController();
 
@@ -180,9 +195,9 @@ MyApplet.prototype = {
         this._config.connect('layout-changed', Lang.bind(this, this._syncGroup));
         this._config.connect('config-changed', Lang.bind(this, this._syncConfig));
     },
-    
+
     on_applet_clicked: function(event) {
-        this.menu.toggle();        
+        this.menu.toggle();
     },
 
     _syncConfig: function() {
@@ -297,7 +312,7 @@ MyApplet.prototype = {
     }
 };
 
-function main(metadata, orientation, panel_height, instance_id) {  
+function main(metadata, orientation, panel_height, instance_id) {
     let myApplet = new MyApplet(metadata, orientation, panel_height, instance_id);
-    return myApplet;      
+    return myApplet;
 }
