@@ -3010,9 +3010,11 @@ Panel.prototype = {
                     case PanelLoc.bottom:
                         y = this.monitor.y + this.monitor.height - this.actor.height;
                         break;
-                    case PanelLoc.left: 
-                    case PanelLoc.right: 
-                        y = this.monitor.y + this.toppanelHeight;
+                    case PanelLoc.left:
+                        x = this.monitor.x;
+                        break;
+                    case PanelLoc.right:
+                        x = this.monitor.x + this.monitor.width - this.actor.width;
                         break;
                     default:
                         global.log("updatePanelVisibility - unrecognised panel position "+this.panelPosition);
@@ -3022,9 +3024,14 @@ Panel.prototype = {
                 let b = global.display.focus_window.get_compositor_private();
                 /* Magic to check whether the panel position overlaps with the
                  * current focused window */
-                this._shouldShow =
-                    !(Math.max(a.x, b.x) < Math.min(a.x + a.width, b.x + b.width) &&
-                      Math.max(y, b.y) < Math.min(y + a.height, b.y + b.height));
+                if (this.panelPosition == PanelLoc.top || this.panelPosition == PanelLoc.bottom) {
+                    this._shouldShow = !(Math.max(a.x, b.x) < Math.min(a.x + a.width, b.x + b.width) &&
+                                         Math.max(y, b.y) < Math.min(y + a.height, b.y + b.height));
+                } else {
+                    this._shouldShow = !(Math.max(x, b.x) < Math.min(x + a.width, b.x + b.width) &&
+                                         Math.max(a.y, b.y) < Math.min(a.y + a.height, b.y + b.height));
+                }
+
         } // end of switch on autohidesettings
 
         if (this._panelEditMode)
