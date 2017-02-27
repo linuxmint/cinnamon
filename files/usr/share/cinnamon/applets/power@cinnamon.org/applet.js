@@ -14,6 +14,8 @@ const GnomeSession = imports.misc.gnomeSession;
 const BrightnessBusName = "org.cinnamon.SettingsDaemon.Power.Screen";
 const KeyboardBusName = "org.cinnamon.SettingsDaemon.Power.Keyboard";
 
+const PANEL_EDIT_MODE_KEY = "panel-edit-mode";
+
 const UPDeviceType = {
     UNKNOWN: 0,
     AC_POWER: 1,
@@ -284,6 +286,8 @@ MyApplet.prototype = {
 
         this._proxy = null;
 
+        global.settings.connect('changed::' + PANEL_EDIT_MODE_KEY, Lang.bind(this, this._onPanelEditModeChanged));
+
         Interfaces.getDBusProxyAsync("org.cinnamon.SettingsDaemon.Power", Lang.bind(this, function(proxy, error) {
             this._proxy = proxy;
 
@@ -295,6 +299,18 @@ MyApplet.prototype = {
         }));
 
         this.update_label_visible();
+    },
+
+    _onPanelEditModeChanged: function() {
+        if (global.settings.get_boolean(PANEL_EDIT_MODE_KEY)) {
+            if (!this.actor.visible) {
+                this.set_applet_icon_symbolic_name("battery-missing");
+                this.set_applet_enabled(true);
+            }
+        }
+        else {
+            this._devicesChanged();
+        }
     },
 
     _on_device_aliases_changed: function() {
@@ -340,13 +356,13 @@ MyApplet.prototype = {
             else if (time > 60) {
                 if (minutes == 0) {
                     status = ngettext("Charging - %d hour until fully charged", "Charging - %d hours until fully charged", hours).format(hours);
-                } 
+                }
                 else {
                     /* TRANSLATORS: this is a time string, as in "%d hours %d minutes remaining" */
                     let template = _("Charging - %d %s %d %s until fully charged");
                     status = template.format (hours, ngettext("hour", "hours", hours), minutes, ngettext("minute", "minutes", minutes));
                 }
-            } 
+            }
             else {
                 status = ngettext("Charging - %d minute until fully charged", "Charging - %d minutes until fully charged", minutes).format(minutes);
             }
@@ -361,13 +377,13 @@ MyApplet.prototype = {
             else if (time > 60) {
                 if (minutes == 0) {
                     status = ngettext("Using battery power - %d hour remaining", "Using battery power - %d hours remaining", hours).format(hours);
-                } 
+                }
                 else {
                     /* TRANSLATORS: this is a time string, as in "%d hours %d minutes remaining" */
                     let template = _("Using battery power - %d %s %d %s remaining");
                     status = template.format (hours, ngettext("hour", "hours", hours), minutes, ngettext("minute", "minutes", minutes));
                 }
-            } 
+            }
             else {
                 status = ngettext("Using battery power - %d minute remaining", "Using battery power - %d minutes remaining", minutes).format(minutes);
             }
