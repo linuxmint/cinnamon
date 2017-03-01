@@ -107,15 +107,22 @@ function spawnCommandLine(command_line) {
 /**
  * trySpawn:
  * @argv: an argv array
+ * @doNotReap: whether to set the DO_NOT_REAP_CHILD flag
  *
  * Runs @argv in the background. If launching @argv fails,
  * this will throw an error.
  */
-function trySpawn(argv)
+function trySpawn(argv, doNotReap)
 {
-    let [success, pid]  = GLib.spawn_async(null, argv, null,
-                     GLib.SpawnFlags.SEARCH_PATH | GLib.SpawnFlags.STDOUT_TO_DEV_NULL  | GLib.SpawnFlags.STDERR_TO_DEV_NULL,
-                     null, null);
+    let spawn_flags = GLib.SpawnFlags.SEARCH_PATH
+                      | GLib.SpawnFlags.STDOUT_TO_DEV_NULL
+                      | GLib.SpawnFlags.STDERR_TO_DEV_NULL;
+
+    if (doNotReap) {
+        spawn_flags |= GLib.SpawnFlags.DO_NOT_REAP_CHILD;
+    }
+
+    let [success, pid] = GLib.spawn_async(null, argv, null, spawn_flags, null, null);
     return pid;
 }
 
@@ -149,7 +156,7 @@ function spawnCommandLineAsync(command_line, callback, errback) {
     let pid;
 
     let [success, argv] = GLib.shell_parse_argv(command_line);
-    pid = trySpawn(argv);
+    pid = trySpawn(argv, true);
 
     GLib.child_watch_add(GLib.PRIORITY_DEFAULT, pid, function(pid, status) {
         GLib.spawn_close_pid(pid);
