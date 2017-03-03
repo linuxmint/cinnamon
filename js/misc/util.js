@@ -78,6 +78,14 @@ function spawn(argv) {
 
 let subprocess_id = 0;
 let subprocess_callbacks = {};
+/**
+ * spawn_async:
+ * @args: an array containing all arguments of the command to be run
+ * @callback: the callback to run when the command has completed
+ *
+ * Asynchronously Runs the command passed to @args. When the command is complete, the callback will
+ * be called with the contents of stdout from the command passed as the only argument.
+ */
 function spawn_async(args, callback) {
     subprocess_id++;
     subprocess_callbacks[subprocess_id] = callback;
