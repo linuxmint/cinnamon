@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE policyconfig PUBLIC 
+ "-//freedesktop//DTD PolicyKit Policy Configuration 1.0//EN" 
+ "http://www.freedesktop.org/standards/PolicyKit/1/policyconfig.dtd">
+<policyconfig>
+
+  <vendor>Cinnamon Desktop</vendor>
+  <vendor_url>https://github.com/linuxmint/Cinnamon</vendor_url>
+
+  <action id="org.cinnamon.remove-application">
+    <description>Uninstall an application</description>
+    <message>Please enter your password to uninstall this application</message>
+    <icon_name>stock_delete</icon_name>
+    <defaults>
+      <allow_any>no</allow_any>
+      <allow_inactive>no</allow_inactive>
+      <allow_active>auth_admin_keep</allow_active>
+    </defaults>
+    <annotate key="org.freedesktop.policykit.exec.path">/usr/bin/cinnamon-remove-application</annotate>
+    <annotate key="org.freedesktop.policykit.exec.allow_gui">true</annotate>
+  </action>
+
+</policyconfig>

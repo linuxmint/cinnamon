@@ -165,7 +165,7 @@ ApplicationContextMenuItem.prototype = {
                 this._appButton.toggleMenu();
                 break;
             case "uninstall":
-                Util.spawnCommandLine("gksu -m '" + _("Please provide your password to uninstall this application") + "' /usr/bin/cinnamon-remove-application '" + this._appButton.app.get_app_info().get_filename() + "'");
+                Util.spawnCommandLine("/usr/bin/cinnamon-pkexec-wrapper /usr/bin/cinnamon-remove-application '" + this._appButton.app.get_app_info().get_filename() + "'");
                 this._appButton.appsMenuButton.menu.close();
                 break;
             case "run_with_nvidia_gpu":
