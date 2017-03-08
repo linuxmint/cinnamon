@@ -58,21 +58,20 @@ MyApplet.prototype = {
         this.actor.style="spacing: 5px;";
 
         this._signalManager = new SignalManager.SignalManager(this);
-        let manager;
 
         this.orientation = orientation;
 
-        if (this.orientation == St.Side.TOP || this.orientation == St.Side.BOTTOM) {
-            manager = new Clutter.BoxLayout( { spacing: 2 * global.ui_scale,
-                                               orientation: Clutter.Orientation.HORIZONTAL });
-        } else {
-            manager = new Clutter.BoxLayout( { spacing: 2 * global.ui_scale,
-                                               orientation: Clutter.Orientation.VERTICAL });
-        }
-        this.manager = manager;
-        this.manager_container = new Clutter.Actor( { layout_manager: manager } );
+        this.drag_bin = new St.Bin({ style_class: "systray-dragarea", important: true });
+        this.actor.add_actor(this.drag_bin);
+
+        this.manager = new Clutter.BoxLayout( { spacing: 2 * global.ui_scale } );
+        this.manager_container = new Clutter.Actor( { layout_manager: this.manager } );
         this.actor.add_actor (this.manager_container);
         this.manager_container.show();
+
+        global.settings.connect('changed::panel-edit-mode', Lang.bind(this, this.on_panel_edit_mode_changed));
+        this.on_orientation_changed(orientation);
+        this.on_panel_edit_mode_changed();
 
         this._statusItems = [];
         this._shellIndicators = {};
@@ -195,10 +194,26 @@ MyApplet.prototype = {
     },
 
     on_orientation_changed: function(neworientation) {
+        this.orientation = neworientation;
         if (neworientation == St.Side.TOP || neworientation == St.Side.BOTTOM) {
-            this.manager.set_vertical(false);
+            this.drag_bin.set_height(-1);
+            this.drag_bin.set_width(50);
+            this.manager.set_orientation(Clutter.Orientation.HORIZONTAL);
         } else {
-            this.manager.set_vertical(true);
+            this.drag_bin.set_height(50);
+            this.drag_bin.set_width(-1);
+            this.manager.set_orientation(Clutter.Orientation.VERTICAL);
+        }
+    },
+
+    on_panel_edit_mode_changed: function() {
+        if (global.settings.get_boolean('panel-edit-mode')) {
+            this.drag_bin.show();
+            this.manager_container.hide();
+        }
+        else {
+            this.drag_bin.hide();
+            this.manager_container.show();
         }
     },
 
