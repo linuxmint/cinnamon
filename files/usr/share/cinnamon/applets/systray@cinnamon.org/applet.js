@@ -54,8 +54,9 @@ MyApplet.prototype = {
 
         this.setAllowedLayout(Applet.AllowedLayout.BOTH);
 
-        this.actor.remove_style_class_name("applet-box");
-        this.actor.style="spacing: 5px;";
+        this.actor.remove_style_class_name('applet-box');
+        this.actor.set_style_class_name('systray');
+        this.actor.set_important(true);  // ensure we get class details from the default theme if not present
 
         this._signalManager = new SignalManager.SignalManager(this);
         let manager;
