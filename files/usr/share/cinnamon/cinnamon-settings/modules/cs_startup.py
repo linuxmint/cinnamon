@@ -391,6 +391,9 @@ class AutostartBox(Gtk.Box):
         self.box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
         scw.add(self.box)
 
+        self.infobar_holder = Gtk.Frame(shadow_type=Gtk.ShadowType.NONE)
+        self.box.add(self.infobar_holder)
+
         self.list_box = Gtk.ListBox()
         self.list_box.set_selection_mode(Gtk.SelectionMode.SINGLE)
         self.list_box.set_activate_on_single_click(False)
@@ -429,6 +432,12 @@ class AutostartBox(Gtk.Box):
         self.remove_button.set_sensitive(False)
         box.add(self.remove_button)
 
+        self.run_button = Gtk.Button.new_with_label(_("Run now"))
+        self.run_button.connect("clicked", self.on_run_button_clicked)
+        button_group.add_widget(self.run_button)
+        self.run_button.set_sensitive(False)
+        box.add(self.run_button)
+
     def add_row(self, row):
         self.list_box.add(row)
 
@@ -446,9 +455,32 @@ class AutostartBox(Gtk.Box):
     def on_row_selected(self, list_box, row):
         self.edit_button.set_sensitive(True)
         self.remove_button.set_sensitive(True)
+        self.run_button.set_sensitive(True)
 
     def on_row_activated(self, list_box, row):
         self.on_edit_button_clicked(list_box)
+
+    def on_run_button_clicked(self, button):
+        if self.infobar_holder.get_child() != None:
+            self.infobar_holder.get_child().destroy()
+
+        row = self.list_box.get_selected_row()
+        app = row.app
+        try:
+            appinfo = Gio.AppInfo.create_from_commandline(app.command, None, Gio.AppInfoCreateFlags.SUPPORTS_STARTUP_NOTIFICATION)
+            appinfo.launch(None, None)
+        except GLib.Error as e:
+            warning = Gtk.InfoBar()
+            warning.set_message_type(Gtk.MessageType.ERROR)
+
+            label = Gtk.Label(_("Could not execute '%s'\n%s") % (app.command, e.message))
+            warning.get_content_area().add(label)
+
+            warning.add_button(Gtk.STOCK_OK, Gtk.ResponseType.OK)
+            warning.connect("response", lambda w, id: w.hide())
+
+            self.infobar_holder.add(warning)
+            self.infobar_holder.show_all()
 
     def on_remove_button_clicked(self, button):
         row = self.list_box.get_selected_row()
