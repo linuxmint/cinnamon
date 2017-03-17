@@ -540,6 +540,10 @@ AppMenuButton.prototype = {
         if (!this.alert && event.get_button() == 3) {
             this.rightClickMenu.mouseEvent = event;
             this.rightClickMenu.toggle();
+
+            if (this._hasFocus()) {
+                this.actor.add_style_pseudo_class('focus');
+            }
         }
     },
 
