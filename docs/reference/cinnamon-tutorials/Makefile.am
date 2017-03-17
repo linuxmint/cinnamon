@@ -78,6 +78,7 @@ content_files= \
 	xlet-settings.xml \
 	xlet-settings-ref.xml \
 	xlet-versioning.xml \
+	xlet-translating.xml \
         $(NULL)
 
 # SGML files where gtk-doc abbrevations (#GtkWidget) are expanded
@@ -92,6 +93,7 @@ expand_content_files= \
 	xlet-settings.xml \
 	xlet-settings-ref.xml \
 	xlet-versioning.xml \
+	xlet-translating.xml \
         $(NULL)
 
 # CFLAGS and LDFLAGS for compiling gtkdoc-scangobj with your library.

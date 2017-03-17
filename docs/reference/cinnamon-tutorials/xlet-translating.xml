@@ -1,0 +1,169 @@
+<?xml version='1.0'?>
+<!DOCTYPE book PUBLIC '-//OASIS//DTD DocBook XML V4.3//EN'
+'http://www.oasis-open.org/docbook/xml/4.3/docbookx.dtd'
+[
+<!ENTITY % local.common.attrib "xmlns:xi  CDATA  #FIXED 'http://www.w3.org/2003/XInclude'">
+]>
+
+<chapter id="xlet-translating">
+  <title>Translating applets</title>
+  <sect2>
+    <title>Prepare translation function</title>
+    <para>
+      Make sure the following two lines are imported in your <code>applet.js</code> file:
+    </para>
+    <informalexample>
+      <programlisting>
+        const GLib = imports.gi.GLib;
+        const Gettext = imports.gettext;
+      </programlisting>
+    </informalexample>
+    <para>
+      Add the following lines to your applet before <code>function MyApplet(...)</code>:
+    </para>
+    <informalexample>
+      <programlisting>
+        // l10n/translation support
+        const UUID = "yourApplet@You";
+        Gettext.bindtextdomain(UUID, GLib.get_home_dir() + "/.local/share/locale");
+
+        function _(str) {
+            return Gettext.dgettext(UUID, str);
+        }
+
+        function MyApplet(metadata, orientation, panelHeight, instance_id) {
+        ......
+      </programlisting>
+    </informalexample>
+    <para>
+      And don't forget to change the <code>const UUID</code> above to your applets UUID.
+    </para>
+  </sect2>
+  <sect2>
+    <title>Prepare translatable strings</title>
+    <para>
+      Every String in <code>applet.js</code> you want to be translated, needs to be put in brackets with underscore <code>_("")</code>, for example
+    </para>
+    <informalexample>
+      <programlisting>
+        _("This is a text, which needs to be translated")
+      </programlisting>
+    </informalexample>
+  </sect2>
+  <sect2>
+    <title>Create translation template for the first time</title>
+    <itemizedlist>
+      <listitem>
+        Create a directory called <code>po</code> in the directory of your applet, where the <code>metadata.json</code> file is saved.
+      </listitem>
+      <listitem>
+        Open a terminal in the directory where the <code>metadata.json</code> file is saved.
+      </listitem>
+      <listitem>
+        Type in the command <code>cinnamon-json-makepot --js po/yourApplet.pot</code>
+      </listitem>
+    </itemizedlist>
+    <para>
+    The command creates a translation template file <code>yourApplet.pot</code> in the <code>po</code> directory.
+    </para>
+  </sect2>
+  <sect2>
+    <title>Create a translation for the first time with the application Poedit</title>
+    <para>
+      Install the programm "Poedit": <code>sudo apt install poedit</code>
+    </para>
+    <itemizedlist>
+      <listitem>
+        Open Poedit and click on <code>Create new translation</code>.
+      </listitem>
+      <listitem>
+        Open the file <code>yourApplet.pot</code>.
+      </listitem>
+      <listitem>
+        Once the file is loaded, Poedit will ask you to choose a language for the translation.
+      </listitem>
+      <listitem>
+        At this point, the <code>.po</code> file can be saved and the name will automatically reflect the locale code.
+      </listitem>
+      <listitem>
+        Poedit usage is pretty much straight forward:
+        <itemizedlist>
+          <listitem>
+            There is the Source text box that contains the string to be translated (usually in English).
+          </listitem>
+          <listitem>
+            There is the Translation box that will contain the translated text.
+          </listitem>
+          <listitem>
+            If there is a <code>.mo</code> file saved, when you save your <code>.po</code> file, the <code>.mo</code> file should be deleted. You could also disable MO files creation from Poedit preferences (go to Edit > Preferences > General tab and uncheck the option called <code>Automatically compile MO file when saving</code>).
+          </listitem>
+        </itemizedlist>
+      </listitem>
+    </itemizedlist>
+  </sect2>
+  <sect2>
+    <title>Update an existing translation template</title>
+    <itemizedlist>
+      <listitem>
+        Open a terminal in the directory where the <code>metadata.json</code> file is saved.
+      </listitem>
+      <listitem>
+        Type in the command <code>cinnamon-json-makepot --js po/yourApplet.pot</code>
+      </listitem>
+    </itemizedlist>
+    <para>
+    The command overwrites yours translation template file <code>yourApplet.pot</code> in the <code>po</code> directory.
+    </para>
+  </sect2>
+  <sect2>
+    <title>Updating an existing translation file</title>
+    <itemizedlist>
+      <listitem>
+        Open the <code>.po</code> file with Poedit.
+      </listitem>
+      <listitem>
+        Go to the menu <code>Catalog</code> and choose the <code>Update from POT file...</code> menu item.
+      </listitem>
+      <listitem>
+        Select <code>yourApplet.pot</code> file from which your <code>.po</code> file was based on.
+      </listitem>
+      <listitem>
+        Translate the new untranslated strings and save the changes.
+      </listitem>
+    </itemizedlist>
+  </sect2>
+  <sect2>
+    <title>Testing your translations</title>
+    <para>
+      The translations will be installed automatically, when the applet is installed through <code>System Settings > Applets > Applet available (online)</code>.
+    </para>
+    <para>
+      If you have installed your applet manually and you want to test your translations:
+    </para>
+    <itemizedlist>
+      <listitem>
+        Open a terminal in the directory where the <code>metadata.json</code> file is saved.
+      </listitem>
+      <listitem>
+        Type in the command <code>cinnamon-json-makepot -i</code> to install the existing translations (i.e. the <code>.po</code> files)
+      </listitem>
+      <listitem>
+        Restart Cinnamon: <code>CTRL+ALT+ESC</code>
+      </listitem>
+    </itemizedlist>
+    <para>
+      If you want to remove your translations manually:
+    </para>
+    <itemizedlist>
+      <listitem>
+        Open a terminal in the directory where the <code>metadata.json</code> file is saved.
+      </listitem>
+      <listitem>
+        Type in the command <code>cinnamon-json-makepot -r</code> to remove the installed translations.
+      </listitem>
+      <listitem>
+        Restart Cinnamon: <code>CTRL+ALT+ESC</code>
+      </listitem>
+    </itemizedlist>
+  </sect2>
+</chapter>

@@ -28,6 +28,7 @@
     <title>Extension system</title>
     <xi:include href="write-applet.xml"/>
     <xi:include href="xlet-versioning.xml"/>
+    <xi:include href="xlet-translating.xml"/>
     <xi:include href="xlet-settings.xml"/>
     <xi:include href="xlet-settings-ref.xml"/>
   </part>
