@@ -1719,8 +1719,11 @@ PanelZoneDNDHandler.prototype = {
         let children = this._panelZone.get_children();
         let appletPos = children.indexOf(source.actor);
 
-        let panelstyle = this._panelZone.get_parent().get_style_class_name();
-        let vertical_panel = (panelstyle.contains("panel-left") || panelstyle.contains("panel-right")) ? true : false;       
+        let vertical_panel = this._panelZone.get_parent()._delegate.is_vertical;
+
+        if (!this._hasSupportedLayout(source)) {
+            return DND.DragMotionResult.NO_DROP;
+        }
 
         let pos = 0;
 
@@ -1786,21 +1789,8 @@ PanelZoneDNDHandler.prototype = {
         //  We want to ensure that applets placed in a panel can be shown correctly
         //  If the applet is of type Icon Applet then should be fine
         //  otherwise we look to see if it has declared itself suitable
-        if (source instanceof Applet.IconApplet) {
-            ;
-        }
-        else {
-            let allowedLayout = source.getAllowedLayout();
-            let panelstyle = this._panelZone.get_parent().get_style_class_name();
-
-            if ((panelstyle.contains("panel-left") || panelstyle.contains("panel-right")) &&
-                 allowedLayout == Applet.AllowedLayout.HORIZONTAL) {
-                    global.log("applet not suitable for panel");
-                    return false;
-            }
-            else if ((panelstyle.contains("panel-top") || panelstyle.contains("panel-bottom")) &&
-                      allowedLayout == Applet.AllowedLayout.VERTICAL) {
-                    global.log("applet not suitable for panel");
+        if (source instanceof Applet.TextIconApplet || !(source instanceof Applet.IconApplet)) {
+            if (!this._hasSupportedLayout(source)) {
                     return false;
             }
         }
@@ -1833,6 +1823,13 @@ PanelZoneDNDHandler.prototype = {
             this._dragPlaceholder = null;
             this._dragPlaceholderPos = -1;
         }
+    },
+
+    _hasSupportedLayout: function(applet) {
+        let layout = applet.getAllowedLayout();
+        if (layout == Applet.AllowedLayout.BOTH) return true;
+        if (layout == ((this._panelZone.get_parent()._delegate.is_vertical) ? Applet.AllowedLayout.VERTICAL : Applet.AllowedLayout.HORIZONTAL)) return true;
+        return false;
     }
 }
 
@@ -1876,7 +1873,7 @@ Panel.prototype = {
         this.toppanelHeight = toppanelHeight;
         this.bottompanelHeight = bottompanelHeight;
 
-        let vertical_panel = (this.panelPosition == PanelLoc.left || this.panelPosition == PanelLoc.right);
+        this.is_vertical = (this.panelPosition == PanelLoc.left || this.panelPosition == PanelLoc.right);
 
         this._hidden = false;
         this._disabled = false;
@@ -1907,7 +1904,7 @@ Panel.prototype = {
         this._rightBox   = new St.BoxLayout({ name: 'panelRight', style_class: 'panelRight', align_end: true, important: true });
         this._centerBox  = new St.BoxLayout({ name: 'panelCenter',  style_class: 'panelCenter', important: true });
 
-        if (vertical_panel) {
+        if (this.is_vertical) {
             this._set_vertical_panel_style();
         }
 
@@ -2561,13 +2558,17 @@ Panel.prototype = {
     },
 
     _set_orientation: function() {
-    //
-    // cater for the style/alignment for different panel orientations
-    //
-    if (this.panelPosition == PanelLoc.top || this.panelPosition == PanelLoc.bottom)
-        this._set_horizontal_panel_style();
-    else
-        this._set_vertical_panel_style();
+        //
+        // cater for the style/alignment for different panel orientations
+        //
+        if (this.panelPosition == PanelLoc.top || this.panelPosition == PanelLoc.bottom) {
+            this._set_horizontal_panel_style();
+            this.is_vertical = false;
+        }
+        else {
+            this._set_vertical_panel_style();
+            this.is_vertical = true;
+        }
     },
 
     _set_vertical_panel_style: function() {
