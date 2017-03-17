@@ -8,6 +8,7 @@ JSON_SETTINGS_PROPERTIES_MAP = {
     "max"           : "maxi",
     "step"          : "step",
     "units"         : "units",
+    "show-value"    : "show_value",
     "select-dir"    : "dir_select",
     "height"        : "height",
     "tooltip"       : "tooltip",

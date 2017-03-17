@@ -88,6 +88,7 @@
         "min" : 0.0,
         "max" : 1.0,
         "step" : 0.05,
+        "show-value" : false,
         "description" : "Here is a demonstration of bidirectional control",
         "tooltip" : "If you adjust this scale, it updates in the applet.  If you adjust the scale in the applet, it updates here"
     },
