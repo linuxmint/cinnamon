@@ -2753,7 +2753,7 @@ st_theme_node_get_border_image (StThemeNode *node)
           CRStyleSheet *base_stylesheet;
           int borders[4];
           int n_borders = 0;
-          int i;
+          int j;
 
           const char *url;
           int border_top;
@@ -2783,7 +2783,7 @@ st_theme_node_get_border_image (StThemeNode *node)
           /* Followed by 0 to 4 numbers or percentages. *Not lengths*. The interpretation
            * of a number is supposed to be pixels if the image is pixel based, otherwise CSS pixels.
            */
-          for (i = 0; i < 4; i++)
+          for (j = 0; j < 4; j++)
             {
               if (term == NULL)
                 break;
