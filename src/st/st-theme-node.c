@@ -863,7 +863,8 @@ get_length_from_term (StThemeNode *node,
 
   if (term->type != TERM_NUMBER)
     {
-      g_warning ("Ignoring length property that isn't a number");
+      g_warning ("Ignoring length property that isn't a number at line %d, col %d",
+                 term->location.line, term->location.column);
       return VALUE_NOT_FOUND;
     }
 
