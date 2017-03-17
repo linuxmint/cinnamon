@@ -1,4 +1,3 @@
-//System Shutdown and Restart Applet by Shelley
 const Cinnamon = imports.gi.Cinnamon;
 const Applet = imports.ui.applet;
 const Lang = imports.lang;
