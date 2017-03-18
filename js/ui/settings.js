@@ -590,21 +590,34 @@ XletSettingsBase.prototype = {
         let configDir = Gio.file_new_for_path(configPath);
         if (!configDir.query_exists(null)) configDir.make_directory_with_parents(null);
         this.file = configDir.get_child(this.instanceId + ".json");
+        this.monitor = this.file.monitor_file(Gio.FileMonitorFlags.NONE, null);
         let xletDir = this.ext_type.maps.dirs[this.uuid];
         let templateFile = xletDir.get_child("settings-schema.json");
-        let needsSave = false;
 
         // If the settings have already been installed previously we need to check if the schema
         // has changed and if so, do an upgrade
         if (this.file.query_exists(null)) {
-            this.settingsData = this._loadFromFile();
+            try {
+                this.settingsData = this._loadFromFile();
+            } catch(e) {
+                // Some users with a little bit of know-how may be able to fix the file if it's not too corrupted. Is it worth it to give an option to skip this step?
+                global.logError(e);
+                global.logError("Failed to parse file "+this.file.get_path()+". Attempting to rebuild the settings file for "+this.uuid+".");
+                Main.notify("Unfortunately the settings file for "+this.uuid+" seems to be corrupted. Your settings have been reset to default.");
+            }
+        }
+
+        // if this.settingsData is populated, all we need to do is check for a newer version of the schema and upgrade if we find one
+        // if not, it means either that an installation has not yet occurred, or something when wrong
+        // either way, we need to install
+        if (this.settingsData) {
             if (templateFile.query_exists(null)) {
                 let templateData = Cinnamon.get_file_contents_utf8_sync(templateFile.get_path());
                 let checksum = global.get_md5_for_string(templateData);
 
                 try {
                     if (checksum != this.settingsData.__md5__) this._doUpgrade(templateData, checksum);
-                    needsSave = true;
+                    this._saveToFile();
                 } catch(e) {
                     if (e) global.logError(e);
                     global.logWarning("upgrade failed for " + this.uuid + ": falling back to previous settings");
@@ -631,12 +644,10 @@ XletSettingsBase.prototype = {
                 return false;
             }
 
-            needsSave = true;
+            this._saveToFile();
         }
 
-        this.monitor = this.file.monitor_file(Gio.FileMonitorFlags.NONE, null);
-        if (needsSave) this._saveToFile();
-        else this.monitorId = this.monitor.connect("changed", Lang.bind(this, this._checkSettings));
+        if (!this.monitorId) this.monitorId = this.monitor.connect("changed", Lang.bind(this, this._checkSettings));
 
         return true;
     },
@@ -706,19 +717,9 @@ XletSettingsBase.prototype = {
     },
 
     _loadFromFile: function() {
-        try {
-            let rawData = Cinnamon.get_file_contents_utf8_sync(this.file.get_path());
-            let json = JSON.parse(rawData);
-        } catch(e) {
-            // Some users with a little bit of know-how may be able to fix the file if it's not too corrupted. Is it worth it to give an option to skip this step?
-            global.logError(e);
-            global.logError("Failed to parse file "+this.file.get_path()+". Attempting to rebuild the settings file for "+this.uuid+".");
-            if (this.settingsData) this._saveToFile();
-            else {
-                this._doInstall();
-                Main.notify("Unfortunately the settings file for "+this.uuid+" seems to be corrupted. Your settings have been reset to default.");
-            }
-        }
+        let rawData = Cinnamon.get_file_contents_utf8_sync(this.file.get_path());
+        let json = JSON.parse(rawData);
+
         return json;
     },
 
