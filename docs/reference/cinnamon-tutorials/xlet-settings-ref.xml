@@ -82,7 +82,6 @@
         <listitem><code>description</code>: String describing the setting</listitem>
         <listitem><code>default</code>: Default filename to use</listitem>
         <listitem><code>select-dir</code>: (optional) true or false, or leave off entirely. Forces directory selection.</listitem>
-        <listitem><code>expand-width</code>: (optional) true or false, or leave off entirely. Forces editable fields of <code>filechooser</code>'s elements to occupy the entire space available in a row</listitem>
       </itemizedlist>
 
       <para>Opens a file chooser dialog that allows you to choose a filename. If <code>select-dir</code> is <code>true</code>, it will only allow directories to be selected. Stores as a <code>string</code>.</para>
@@ -94,6 +93,7 @@
         <listitem><code>type</code>: should be <code>iconfilechooser</code></listitem>
         <listitem><code>description</code>: String describing the setting</listitem>
         <listitem><code>default</code>: default icon path or icon name to use</listitem>
+        <listitem><code>expand-width</code>: (optional) true or false, or leave off entirely. Forces editable fields of <code>iconfilechooser</code>'s elements to occupy the entire space available in a row</listitem>
       </itemizedlist>
 
       <para>Provides a preview button and text entry field. You can open a file dialog to pick an image-type file, or enter a registered icon name in the text field. Stores as a <code>string</code>.</para>
