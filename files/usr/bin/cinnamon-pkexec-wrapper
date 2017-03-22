@@ -1,0 +1,6 @@
+#!/bin/sh
+# This file exists so that programs (such as JavaScript) that, for security 
+# reasons, refuse to run setuid-root programs, can run "pkexec" (which is 
+# setuid-root).  
+
+pkexec "$@"
