@@ -100,6 +100,7 @@ const CinnamonIface =
             <method name="PushSubprocessResult"> \
                 <arg type="i" direction="in" name="process_id" /> \
                 <arg type="s" direction="in" name="result" /> \
+                <arg type="b" direction="in" name="success" /> \
             </method> \
             <method name="ToggleKeyboard"/> \
         </interface> \
@@ -368,9 +369,11 @@ CinnamonDBus.prototype = {
             Main.expo.toggle();
     },
 
-    PushSubprocessResult: function(process_id, result) {
+    PushSubprocessResult: function(process_id, result, success) {
         if (Util.subprocess_callbacks[process_id]) {
-            Util.subprocess_callbacks[process_id](result);
+            if (success)
+                Util.subprocess_callbacks[process_id](result);
+            delete Util.subprocess_callbacks[process_id];
         }
     },
 
