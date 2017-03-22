@@ -80,11 +80,12 @@ STANDALONE_MODULES = [
     [_("Languages"),                     "mintlocale",                   "cs-language",        "prefs",          _("language, install, foreign")],
     [_("Input Method"),                  "mintlocale im",                "cs-input-method",    "prefs",          _("language, install, foreign, input, method, chinese, korean, japanese, typing")],
     [_("Login Window"),                  "gksu /usr/sbin/mdmsetup",      "cs-login",           "admin",          _("login, mdm, gdm, manager, user, password, startup, switch")],
+    [_("Login Window"),                  "lightdm-settings",             "cs-login",           "admin",          _("login, lightdm, mdm, gdm, manager, user, password, startup, switch")],
     [_("Driver Manager"),                "mintdrivers",                  "cs-drivers",         "admin",          _("video, driver, wifi, card, hardware, proprietary, nvidia, radeon, nouveau, fglrx")],
     [_("Software Sources"),              "mintsources",                  "cs-sources",         "admin",          _("ppa, repository, package, source, download")],
     [_("Users and Groups"),              "cinnamon-settings-users",      "cs-user-accounts",   "admin",          _("user, users, account, accounts, group, groups, password")],
     [_("Bluetooth"),                     "blueberry",                    "cs-bluetooth",       "hardware",       _("bluetooth, dongle, transfer, mobile")],
-    [_("Manage Services and Units"),     "systemd-manager-pkexec",       "cs-sources",         "admin",          _("SystemD, units, services, systemctl, init")]
+    [_("Manage Services and Units"),     "systemd-manager-pkexec",       "cs-sources",         "admin",          _("systemd, units, services, systemctl, init")]
 ]
 
 def print_timing(func):
