@@ -1605,14 +1605,14 @@ StScrollBar StButton#vhandle:hover {
  * About Dialog (applet.js and desklet.js)
  * ===================================================================*/
 .about-content {
-    width: 550px;
-    height: 250px;
+    width: 300px;
+    height: 150px;
     spacing: 8px;
     padding-bottom: 16px;
 }
 
 .about-title {
-    font-size: 2em;
+    font-size: 1.5em;
     font-weight: bold;
 }
 
