@@ -65,10 +65,14 @@ function init() {
     let origToString = Object.prototype.toString;
     Object.prototype.toString = function() {
         let base = origToString.call(this);
-        if ('actor' in this && this.actor instanceof Clutter.Actor)
-            return base.replace(/\]$/, ' delegate for ' + this.actor.toString().substring(1));
-        else
+        try {
+            if ('actor' in this && this.actor instanceof Clutter.Actor)
+                return base.replace(/\]$/, ' delegate for ' + this.actor.toString().substring(1));
+            else
+                return base;
+        } catch(e) {
             return base;
+        }
     };
 
     // Work around https://bugzilla.mozilla.org/show_bug.cgi?id=508783
