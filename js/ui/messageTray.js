@@ -1813,11 +1813,11 @@ MessageTray.prototype = {
         this._notification.disconnect(this._notificationClickedId);
         this._notificationClickedId = 0;
         let notification = this._notification;
-        if (AppletManager.get_role_provider_exists(AppletManager.Roles.NOTIFICATIONS) && !this._notificationRemoved) {
-            this.emit('notify-applet-update', notification);
+        if (notification.isTransient) {
+            notification.destroy(NotificationDestroyedReason.EXPIRED);
         } else {
-            if (notification.isTransient)
-                notification.destroy(NotificationDestroyedReason.EXPIRED);  
+            if (AppletManager.get_role_provider_exists(AppletManager.Roles.NOTIFICATIONS) && !this._notificationRemoved)
+                        this.emit('notify-applet-update', notification);
         }
         this._notification = null;
         this._notificationRemoved = false;
