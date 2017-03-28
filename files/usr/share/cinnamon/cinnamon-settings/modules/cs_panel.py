@@ -434,7 +434,7 @@ class PanelSpinButton(PanelWidget):
     def __init__(self, label, schema, key, panel_id, units="", mini=None, maxi=None, step=1, page=None, dep_key=None):
         super(PanelSpinButton, self).__init__(dep_key, panel_id)
         self.key = key
-        self._changed_timer = None
+        self._valueIsChanging = False
 
         if units:
             label += " (%s)" % units
@@ -459,22 +459,13 @@ class PanelSpinButton(PanelWidget):
         self.on_my_setting_changed()
 
     def on_my_setting_changed(self, *args):
-        def apply(self):
+        if not self._valueIsChanging:
             self.content_widget.set_value(self.get_int(self.settings, self.key))
-            self._changed_timer = None
-
-        if self._changed_timer:
-            GLib.source_remove(self._changed_timer)
-        self._changed_timer = GLib.timeout_add(300, apply, self)
 
     def on_my_value_changed(self, widget):
-        def apply(self):
-            self.set_int(self.settings, self.key, self.content_widget.get_value())
-            self._changed_timer = None
-
-        if self._changed_timer:
-            GLib.source_remove(self._changed_timer)
-        self._changed_timer = GLib.timeout_add(300, apply, self)
+        self._valueIsChanging = True
+        self.set_int(self.settings, self.key, self.content_widget.get_value())
+        self._valueIsChanging = False
 
     def update_widget_value(self):
         return False
