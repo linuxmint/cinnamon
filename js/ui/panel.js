@@ -1882,8 +1882,8 @@ Panel.prototype = {
         this._themeFontSize = null;
         this._destroyed = false;
         this._signalManager = new SignalManager.SignalManager(this);
-        this.margin_top = 0;        // used by vertical panels
-        this.margin_bottom = 0;     // ditto
+        this.margin_top = 0;
+        this.margin_bottom = 0;
         this.margin_left = 0;
         this.margin_right = 0;
         this._leftPanelBarrier = 0;
@@ -2533,18 +2533,16 @@ Panel.prototype = {
         let panelHeight = this._getScaledPanelHeight();
         this._setFont(panelHeight);
 
-        let vertpanelHeight = 0;
-
         try {
             this.margin_top    = 0;
             this.margin_bottom = 0;
             this.margin_left   = 0;
             this.margin_right  = 0;
             let themeNode      = this.actor.get_theme_node();
-            this.margin_top    = themeNode.get_length('margin-top');
-            this.margin_bottom = themeNode.get_length('margin-bottom');
-            this.margin_left   = themeNode.get_length('margin-left');
-            this.margin_right  = themeNode.get_length('margin-right');
+            this.margin_top    = themeNode.get_margin(St.Side.TOP);
+            this.margin_bottom = themeNode.get_margin(St.Side.BOTTOM);
+            this.margin_left   = themeNode.get_margin(St.Side.LEFT);
+            this.margin_right  = themeNode.get_margin(St.Side.RIGHT);
         } catch (e) {
             global.log(e);
         }
@@ -2554,47 +2552,50 @@ Panel.prototype = {
         //
         this.toppanelHeight = 0;
         this.bottompanelHeight = 0;
-        if (horizontal_panel) {
-            this.actor.set_height(panelHeight); 
-        } else {
+        let vertpanelHeight = 0;
+
+        if (!horizontal_panel) {
             if (Main.panelManager)            // the panelManager has initialized
                 [this.toppanelHeight, this.bottompanelHeight] = heightsUsedMonitor(this.monitorIndex, Main.panelManager.panels);
         
             vertpanelHeight = this.monitor.height - this.toppanelHeight - this.bottompanelHeight
                               - global.ui_scale*(this.margin_top + this.margin_bottom);
-            this.actor.set_height(vertpanelHeight);
         }
         this._processPanelAutoHide();
         //
         // layouts set to be full width horizontal panels, and vertical panels set to use as much available space as is left 
         //
-        // NB If you want to use margin to inset the panels within a monitor, then you can't just set it here
-        // else full screen windows will then go right to the edge with the panels floating over
+        // FIXME: Should margin be used to inset the panels within a monitor, to create some sort of island panel,
+        //        then it would not work as intended
+        // - full screen windows will then go right to the edge with the panels floating over
+        // - other windows can be placed underneath
+        // - i.e. the internal edge of the panel will not work properly as a hard boundary to windows
+        // Similarly any margin on the internal panel edge will have no effect.
         //
         switch (this.panelPosition) {
             case PanelLoc.top:
                 this.actor.set_size    (this.monitor.width - global.ui_scale*(this.margin_left+this.margin_right),
                                         panelHeight);
-                this.actor.set_position(this.monitor.x + global.ui_scale*this.margin_left,
+                this.actor.set_position(this.monitor.x,
                                         this.monitor.y);
                 break;
             case PanelLoc.bottom:
                 this.actor.set_size    (this.monitor.width - global.ui_scale*(this.margin_left+this.margin_right),
                                         panelHeight);
-                this.actor.set_position(this.monitor.x + global.ui_scale*this.margin_left,
+                this.actor.set_position(this.monitor.x,
                                         this.monitor.y + this.monitor.height - panelHeight);
                 break;
             case PanelLoc.left:
                 this.actor.set_size    (panelHeight,
                                         vertpanelHeight);
                 this.actor.set_position(this.monitor.x,
-                                        this.monitor.y + this.toppanelHeight + global.ui_scale*this.margin_top);
+                                        this.monitor.y + this.toppanelHeight);
                 break;
             case PanelLoc.right:
                 this.actor.set_size    (panelHeight,
                                         vertpanelHeight);
                 this.actor.set_position(this.monitor.x + this.monitor.width - panelHeight,
-                                        this.monitor.y + this.toppanelHeight + global.ui_scale*this.margin_top);
+                                        this.monitor.y + this.toppanelHeight);
                 break;
             default:
                 global.log("moveResizePanel - unrecognised panel position "+this.panelPosition);
@@ -2714,9 +2715,9 @@ Panel.prototype = {
         alloc.min_size = -1;
         alloc.natural_size = -1;
 
-        if (this.panelPosition == PanelLoc.top || this.panelPosition == PanelLoc.bottom) {
+ /*       if (this.panelPosition == PanelLoc.top || this.panelPosition == PanelLoc.bottom) {
             alloc.natural_size = Main.layoutManager.primaryMonitor.width;
-        }
+        } */
     },
 
     _getPreferredHeight: function(actor, forWidth, alloc) {
@@ -2724,10 +2725,10 @@ Panel.prototype = {
         alloc.min_size = -1;
         alloc.natural_size = -1;
 
-        if (this.panelPosition == PanelLoc.left || this.panelPosition == PanelLoc.right) {
+/*        if (this.panelPosition == PanelLoc.left || this.panelPosition == PanelLoc.right) {
             alloc.natural_size = Main.layoutManager.primaryMonitor.height;
             alloc.natural_size = alloc.natural_size - this.toppanelHeight - this.bottompanelHeight - this.margin_top - this.margin_bottom;
-        }
+        } */
     },
 
     /**
