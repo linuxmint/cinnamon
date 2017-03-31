@@ -104,17 +104,11 @@ class Module:
                                   ["horizontal",      _("Horizontal strip")],
                                   ["vertical",        _("Vertical strip")]]
 
-            widget = GSettingsComboBox(_("Lens shape"), "org.cinnamon.desktop.a11y.magnifier", "lens-shape", lens_shape_options)
-            self.zoom_stack.add_named(widget, "shape")
-
             screen_pos_options = [["full-screen",     _("Full screen")],
                                   ["top-half",        _("Top half")],
                                   ["bottom-half",     _("Bottom half")],
                                   ["left-half",       _("Left half")],
                                   ["right-half",      _("Right half")]]
-
-            widget = GSettingsComboBox(_("Screen position"), "org.cinnamon.desktop.a11y.magnifier", "screen-position", screen_pos_options)
-            self.zoom_stack.add_named(widget, "screen")
 
             settings.add_reveal_row(self.zoom_stack, "org.cinnamon.desktop.a11y.applications", "screen-magnifier-enabled")
 
@@ -125,8 +119,12 @@ class Module:
                                                 None)
 
             if (self.mag_settings.get_boolean("lens-mode")):
+                widget = GSettingsComboBox(_("Lens shape"), "org.cinnamon.desktop.a11y.magnifier", "lens-shape", lens_shape_options)
+                self.zoom_stack.add_named(widget, "shape")
                 self.zoom_stack.set_visible_child_name("shape")
             else:
+                widget = GSettingsComboBox(_("Screen position"), "org.cinnamon.desktop.a11y.magnifier", "screen-position", screen_pos_options)
+                self.zoom_stack.add_named(widget, "screen")
                 self.zoom_stack.set_visible_child_name("screen")
 
 #### Keyboard
