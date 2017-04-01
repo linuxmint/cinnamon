@@ -1082,17 +1082,17 @@ _st_theme_resolve_url (StTheme      *theme,
       g_str_has_prefix (url, "FILE:"))
     {
       GError *error = NULL;
-      char *filename;
+      char *fname;
 
-      filename = g_filename_from_uri (url, NULL, &error);
-      if (filename == NULL)
+      fname = g_filename_from_uri (url, NULL, &error);
+      if (fname == NULL)
         {
           g_warning ("%s", error->message);
           g_error_free (error);
         }
       else
         {
-          g_free (filename);
+          g_free (fname);
         }
 
       return NULL;
