@@ -99,6 +99,10 @@ def createSystemInfos():
         contents = open("/etc/arch-release", 'r').readline().split()
         title = ' '.join(contents[:2]) or "Arch Linux"
         infos.append((_("Operating System"), title))
+    elif os.path.exists("/etc/manjaro-release"):
+        contents = open("/etc/manjaro-release", 'r').readline().split()
+        title = ' '.join(contents[:2]) or "Manjaro Linux"
+        infos.append((_("Operating System"), title))
     else:
         s = '%s (%s)' % (' '.join(platform.linux_distribution()), arch)
         # Normalize spacing in distribution name
