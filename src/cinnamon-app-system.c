@@ -211,18 +211,18 @@ get_prefix_for_entry (GMenuTreeEntry *entry)
       if (!g_strstr_len (id, -1, pname))
         {
           /* handle <LegacyDir prefix="..."> */
-          char *t;
+          char *t1;
           size_t name_len = strlen (name);
           size_t id_len = strlen (id);
           char *t_id = g_strdup (id);
 
           t_id[id_len - name_len] = '\0';
-          t = g_strdup(t_id);
+          t1 = g_strdup(t_id);
           g_free (prefix);
           g_free (t_id);
           g_free (name);
           name = g_strdup (id);
-          prefix = t;
+          prefix = t1;
 
           g_object_unref (file);
           file = parent;
