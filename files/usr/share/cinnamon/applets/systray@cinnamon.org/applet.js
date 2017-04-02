@@ -115,9 +115,10 @@ MyApplet.prototype = {
             this.signalRemoved = 0;
         }
 
-        this._shellIndicators.forEach(function(iconActor) {
-            iconActor.destroy();
-        });
+        for (let id in this._shellIndicators) {
+            this._shellIndicators[id].destroy();
+        }
+
         this._shellIndicators = {};
 
     },
