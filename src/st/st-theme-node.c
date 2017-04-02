@@ -984,7 +984,7 @@ get_length_from_term (StThemeNode *node,
           }
         else
           {
-            double resolution = clutter_backend_get_resolution (clutter_get_default_backend ());
+            resolution = clutter_backend_get_resolution (clutter_get_default_backend ());
             *length = num->val * multiplier * (resolution / 72.) * font_size;
           }
       }
