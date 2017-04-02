@@ -383,7 +383,7 @@ PlacesManager.prototype = {
                             return St.TextureCache.get_default().load_gicon(null, icon, size);
                         },
                         function(params) {
-                            let fileapp = Gio.app_info_get_default_for_uri_scheme('file');
+                            let fileapp = Gio.app_info_get_default_for_type('inode/directory', true);
                             if (fileapp) {    
                                 fileapp.launch_uris([bookmark], _makeLaunchContext(params));
                             }
