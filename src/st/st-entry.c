@@ -530,7 +530,7 @@ blink_cb (gpointer data)
 {
   StEntry *entry;
   StEntryPrivate *priv;
-  gint blink_timeout;
+  guint blink_timeout;
 
   entry = ST_ENTRY (data);
   priv = entry->priv;
