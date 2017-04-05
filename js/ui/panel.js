@@ -3135,6 +3135,19 @@ Panel.prototype = {
         let panelParams = { time: animationTime,
                             transition: 'easeOutQuad' };
 
+        // get panel shadow box for use in clipping later
+        let theme_node = this.actor.get_theme_node();
+        let shadow = theme_node.get_box_shadow();
+        let shadowBox;
+        if (shadow) {
+            shadowBox = new Clutter.ActorBox;
+            let actorBox = new Clutter.ActorBox;
+            shadow.get_box(actorBox, shadowBox);
+        } else {
+            // if we don't actually have a shadow, just create a dummy shadowBox
+            shadowBox = {x1: 0, y1: 0, x2: 0, y2: 0};
+        }
+
         // set up original and destination positions and add tween
         // destination position paramater
         if (isHorizontal) {
@@ -3162,29 +3175,31 @@ Panel.prototype = {
         }
 
         // setup onUpdate tween parameter to set the actor clip region during animation.
-        // we need to account for the exposed part of the panel when setting the clip size
-        // and offset.
-        panelParams['onUpdateParams'] = [origPos, this.panelPosition, isHorizontal];
+        // we need to account for the shadow box as well as the exposed part of the
+        // panel when setting the clip size and offset.
+        panelParams['onUpdateParams'] = [origPos, this.panelPosition, isHorizontal, shadowBox];
         panelParams['onUpdate'] =
-            Lang.bind(this, function(origPos, panelPosition, isHorizontal) {
+            Lang.bind(this, function(origPos, panelPosition, isHorizontal, shadowBox) {
                 // Force the layout manager to update the input region
                 Main.layoutManager._chrome.updateRegions()
                 if (isHorizontal) {
                     let exposedHeight = Math.abs(this.actor.y - origPos);
+                    let clipHeight = exposedHeight + shadowBox.y2;
                     let clipOffsetY;
                     if (panelPosition == PanelLoc.top)
                         clipOffsetY = this.actor.height - exposedHeight;
                     else
-                        clipOffsetY = 0;
-                    this.actor.set_clip(0, clipOffsetY, this.monitor.width, exposedHeight);
+                        clipOffsetY = 0 + shadowBox.y1;
+                    this.actor.set_clip(0, clipOffsetY, this.monitor.width, clipHeight);
                 } else {
                     let exposedWidth = Math.abs(this.actor.x - origPos);
+                    let clipWidth = exposedWidth + shadowBox.x2;
                     let clipOffsetX;
                     if (panelPosition == PanelLoc.left)
                         clipOffsetX = this.actor.width - exposedWidth;
                     else
-                        clipOffsetX = 0;
-                    this.actor.set_clip(clipOffsetX, 0, exposedWidth, this.monitor.height);
+                        clipOffsetX = 0 + shadowBox.x1;
+                    this.actor.set_clip(clipOffsetX, 0, clipWidth, this.monitor.height);
                 }
             });
 
