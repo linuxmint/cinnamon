@@ -11,8 +11,11 @@ DPI_FACTOR_NORMAL        = 1.0
 HIGH_CONTRAST_THEME      = "HighContrast"
 KEY_TEXT_SCALING_FACTOR  = "text-scaling-factor"
 KEY_GTK_THEME            = "gtk-theme"
+KEY_GTK_THEME_BACKUP     = "gtk-theme-backup"
 KEY_ICON_THEME           = "icon-theme"
+KEY_ICON_THEME_BACKUP    = "icon-theme-backup"
 KEY_WM_THEME             = "theme"
+KEY_WM_THEME_BACKUP      = "theme-backup"
 
 
 class Module:
@@ -434,12 +437,24 @@ class Module:
         if active:
             ret = HIGH_CONTRAST_THEME
 
+            theme = self.iface_settings.get_string(KEY_GTK_THEME)
+            self.iface_settings.set_string(KEY_GTK_THEME_BACKUP, theme)
+
+            theme = self.iface_settings.get_string(KEY_ICON_THEME)
+            self.iface_settings.set_string(KEY_ICON_THEME_BACKUP, theme)
             self.iface_settings.set_string(KEY_ICON_THEME, HIGH_CONTRAST_THEME)
+
+            theme = self.wm_settings.get_string(KEY_WM_THEME)
+            self.wm_settings.set_string(KEY_WM_THEME_BACKUP, theme)
             self.wm_settings.set_string(KEY_WM_THEME, HIGH_CONTRAST_THEME)
         else:
-            ret = self.iface_settings.get_default_value(KEY_GTK_THEME).get_string()
-            self.iface_settings.reset(KEY_ICON_THEME)
-            self.wm_settings.reset(KEY_WM_THEME)
+            ret = self.iface_settings.get_string(KEY_GTK_THEME_BACKUP)
+
+            theme = self.iface_settings.get_string(KEY_ICON_THEME_BACKUP)
+            self.iface_settings.set_string(KEY_ICON_THEME, theme)
+
+            theme = self.wm_settings.get_string(KEY_WM_THEME_BACKUP)
+            self.wm_settings.set_string(KEY_WM_THEME, theme)
 
         return ret
 
