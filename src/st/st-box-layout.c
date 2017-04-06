@@ -762,7 +762,6 @@ st_box_layout_allocate (ClutterActor          *actor,
       i = 0;
     }
     
-  gfloat init_padding = (avail_width/2) - (natural_width/2);
   while (child != NULL)
     {
       ClutterActorBox child_box;
