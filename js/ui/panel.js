@@ -1877,6 +1877,7 @@ Panel.prototype = {
 
         this._hidden = false;
         this._disabled = false;
+        this._highlighted = false;
         this._panelEditMode = false;
         this._autohideSettings = this._getProperty(PANEL_AUTOHIDE_KEY, "s");
         this._themeFontSize = null;
@@ -2146,6 +2147,8 @@ Panel.prototype = {
      * Turns on/off the highlight of the panel
      */
     highlight: function(highlight) {
+        if (this._highlighted == highlight) return;
+        this._highlighted = highlight;
         this.actor.change_style_pseudo_class('highlight', highlight);
     },
 
@@ -3035,7 +3038,8 @@ Panel.prototype = {
 
         } // end of switch on autohidesettings
 
-        if (this._panelEditMode)
+        // panel should always show if it is being edited or highlighted
+        if (this._panelEditMode || this._highlighted)
             this._shouldShow = true;
         this._queueShowHidePanel();
     },
