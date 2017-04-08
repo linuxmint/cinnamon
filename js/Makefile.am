@@ -64,7 +64,6 @@ nobase_dist_js_DATA = \
 	ui/overview.js		\
 	ui/overrides.js \
 	ui/panel.js		\
-	ui/panelMenu.js		\
 	ui/placesManager.js  \
 	ui/popupMenu.js		\
 	ui/runDialog.js		\
