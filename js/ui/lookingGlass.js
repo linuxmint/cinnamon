@@ -463,9 +463,12 @@ Melange.prototype = {
 
             //fixme: move this shortvalue stuff to python lg
             let shortValue, value;
-            if (type === "undefined" || result[key] === null) {
+            if (type === "undefined") {
                 value = "";
                 shortValue = "";
+            } else if (result[key] === null) {
+                value = "[null]";
+                shortValue = value;
             } else {
                 value = result[key].toString();
                 shortValue = value;

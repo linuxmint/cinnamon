@@ -25,7 +25,7 @@ class InspectView(BaseListView):
     def setInspectionData(self, path, data):
         self.store.clear()
         for item in data:
-            self.store.append([item["name"], item["type"], item["shortValue"], item["value"], path + "." + item["name"]])
+            self.store.append([item["name"], item["type"], item["shortValue"], item["value"], path + "['" + item["name"] + "']"])
 
 class ModulePage(WindowAndActionBars):
     def __init__(self, parent):
