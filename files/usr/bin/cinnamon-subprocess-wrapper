@@ -11,8 +11,14 @@ import dbus
 
 if __name__ == "__main__":
     process_id = int(sys.argv[1])
-    result = subprocess.check_output(sys.argv[2:])
+    try:
+        result = subprocess.check_output(sys.argv[2:])
+        success = True
+    except:
+        result = ""
+        success = False
+
     session_bus = dbus.SessionBus()
     dbus = session_bus.get_object("org.Cinnamon", "/org/Cinnamon")
     PushSubprocessResult = dbus.get_dbus_method('PushSubprocessResult', 'org.Cinnamon')
-    PushSubprocessResult(process_id, result)
+    PushSubprocessResult(process_id, result, success)
