@@ -491,7 +491,8 @@ Keyboard.prototype = {
     shouldTakeEvent: function(event) {
         let actor = event.get_source();
         return Main.layoutManager.keyboardBox.contains(actor) ||
-               actor._extended_keys || actor.extended_key;
+               actor.maybeGet("_extended_keys") ||
+               actor.maybeGet("extended_key");
     },
 
     // D-Bus methods

@@ -24,7 +24,6 @@
 #include "cinnamon-global.h"
 #include "cinnamon-global-private.h"
 #include "cinnamon-perf-log.h"
-#include "cinnamon-js.h"
 #include "st.h"
 
 extern GType gnome_cinnamon_plugin_get_type (void);

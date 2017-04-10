@@ -128,6 +128,7 @@ cinnamon_window_tracker_class_init (CinnamonWindowTrackerClass *klass)
 
 /**
  * cinnamon_window_tracker_is_window_interesting:
+ * @window: a #MetaWindow
  *
  * The CinnamonWindowTracker associates certain kinds of windows with
  * applications; however, others we don't want to
@@ -139,10 +140,10 @@ cinnamon_window_tracker_class_init (CinnamonWindowTrackerClass *klass)
  * exclude other window types like tooltip explicitly, though generally
  * most of these should be override-redirect.
  *
- * Returns: %TRUE iff a window is "interesting"
+ * Returns: %TRUE if a window is "interesting"
  */
 gboolean
-cinnamon_window_tracker_is_window_interesting (MetaWindow *window)
+cinnamon_window_tracker_is_window_interesting (CinnamonWindowTracker *tracker, MetaWindow *window)
 {
   if (meta_window_is_override_redirect (window)
       || meta_window_is_skip_taskbar (window))
@@ -515,7 +516,7 @@ track_window (CinnamonWindowTracker *self,
 {
   CinnamonApp *app;
 
-  if (!cinnamon_window_tracker_is_window_interesting (window))
+  if (!cinnamon_window_tracker_is_window_interesting (self, window))
     return;
 
   app = get_app_for_window (self, window);
@@ -557,7 +558,7 @@ disassociate_window (CinnamonWindowTracker   *self,
 
   g_hash_table_remove (self->window_to_app, window);
 
-  if (cinnamon_window_tracker_is_window_interesting (window))
+  if (cinnamon_window_tracker_is_window_interesting (self, window))
     {
       _cinnamon_app_remove_window (app, window);
       g_signal_handlers_disconnect_by_func (window, G_CALLBACK(on_wm_class_changed), self);

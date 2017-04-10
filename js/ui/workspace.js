@@ -933,7 +933,7 @@ WorkspaceMonitor.prototype = {
         let [x, y, width, height] = this._getSlotGeometry(slot);
 
         let rect = metaWindow.get_outer_rect();
-        let buttonOuterHeight, captionHeight;
+        let buttonOuterHeight, captionIconHeight;
         let buttonOuterWidth = 0;
 
         if (this._windows.length) {
@@ -1048,7 +1048,7 @@ WorkspaceMonitor.prototype = {
             return minimizedDiff || stackIndices[a.metaWindow.get_stable_sequence()] - stackIndices[b.metaWindow.get_stable_sequence()];
         });
 
-        let clones = clones.slice().reverse();
+        clones = clones.slice().reverse();
         let below = this._dropRect;
         for (let i = 0; i < clones.length; i++) {
             let clone = clones[i];

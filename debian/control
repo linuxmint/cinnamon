@@ -47,7 +47,7 @@ Architecture: any
 Depends: cinnamon-common (= ${source:Version}),
          cinnamon-l10n (>= ${cinnamon:Version}),
          cjs (>= 3.0.0),
-         libcjs0e (>= 3.0.0),
+         libcjs0f | libcjs0e (>= 3.0.0),
          cinnamon-desktop-data (>= 3.0.0),
          libcinnamon-desktop4 (>= 3.0.0),
          libcinnamon-menu-3-0 (>= ${cinnamon:Version}),
