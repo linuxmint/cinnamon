@@ -137,7 +137,7 @@ class CommandLine(Gtk.Entry):
         if event.keyval == Gdk.KEY_Down:
             self.historyNext()
             return True
-        if event.keyval == Gdk.KEY_Return:
+        if event.keyval == Gdk.KEY_Return or event.keyval == Gdk.KEY_KP_Enter:
             self.execute()
             return True
 
