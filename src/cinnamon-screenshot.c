@@ -1,8 +1,5 @@
 /* -*- mode: C; c-file-style: "gnu"; indent-tabs-mode: nil; -*- */
 
-#define COGL_ENABLE_EXPERIMENTAL_API
-#define CLUTTER_ENABLE_EXPERIMENTAL_API
-
 #include <X11/extensions/Xfixes.h>
 #include <clutter/x11/clutter-x11.h>
 #include <clutter/clutter.h>
