@@ -3121,148 +3121,101 @@ Panel.prototype = {
         this._showHideTimer = 0;
 
         if (this._disabled) return;
-
         if (!this._hidden) return;
 
         // Force the panel to be on top (hack to correct issues when switching workspace)
         Main.layoutManager._windowsRestacked();
 
+        // setup panel tween - slide in from edge of monitor
+        // if horizontal panel, animation on y. if vertical, animation on x.
+        let origPos;
+        let isHorizontal = this.panelPosition == PanelLoc.top
+                           || this.panelPosition == PanelLoc.bottom;
         let animationTime = AUTOHIDE_ANIMATION_TIME;
+        let panelParams = { time: animationTime,
+                            transition: 'easeOutQuad' };
 
-        if (this.panelPosition == PanelLoc.top || this.panelPosition == PanelLoc.bottom) { // horizontal panel, animation on y
-            let height = this.actor.get_height();
-            let y;
-            switch (this.panelPosition) {
-                case PanelLoc.top:
-                    y = this.monitor.y; // target end position when y = 0
-                    break;
-                case PanelLoc.bottom:
-                    y = this.monitor.y + this.monitor.height - height;
-                    break;
-            }
-
-            // boxes
-            this._leftBox.show();
-            this._centerBox.show();
-            this._rightBox.show();
-
-            let jj;
-            switch (this.panelPosition) {
-                case PanelLoc.top: jj = this.monitor.y - height; break;
-                case PanelLoc.bottom: jj = this.monitor.y + this.monitor.height; break; 
-            }
-            // panel
-            Tweener.addTween(this.actor,
-                            { y: y,
-                            time: animationTime,
-                            transition: 'easeOutQuad',
-                            onUpdate: Lang.bind(this, function(origY, panelPosition) {
-                                // Force the layout manager to update the input region
-                                Main.layoutManager._chrome.updateRegions()
-
-                                let height = Math.abs(this.actor.y - origY);
-                                let y;
-                                switch (panelPosition) {
-                                    case PanelLoc.top:
-                                        y = this.actor.height - height;
-                                        break;
-                                    case PanelLoc.bottom:
-                                        y = 0;
-                                        break;
-                                }
-
-                                this.actor.set_clip(0, y, this.monitor.width, height);
-                            }),
-                            onUpdateParams: [jj, this.panelPosition]
-                            }); 
-            // boxes - fade in as panel slides
-            let params = { opacity: 255,
-                           time: animationTime+0.2,
-                           transition: 'easeOutQuad' };
-
-            Tweener.addTween(this._leftBox, params);
-            Tweener.addTween(this._centerBox, params);
-            Tweener.addTween(this._rightBox, params);
-            // corners
-            //let params = { y: height - 1,
-            //                time: animationTime + 0.1,
-            //                transition: 'easeOutQuad'
-            //                };
-            if (this._leftCorner) {
-            //  this._leftCorner._repaint();
-                //Tweener.addTween(this._leftCorner.actor, params);
-            }
-            if (this._rightCorner) {
-            //  this._rightCorner._repaint();
-                //Tweener.addTween(this._rightCorner.actor, params);
-            }
-        } else {  // vertical panel, animation on x
-            let width = this.actor.get_width();
-            let x;
-            switch (this.panelPosition) {
-                case PanelLoc.left: 
-                    x = this.monitor.x; // target end position when x = 0
-                    break;
-                case PanelLoc.right: 
-                    x = this.monitor.width - width + this.monitor.x;
-                    break;
-            }
-            // corners
-            //let params = { x: width - 1,
-            //                time: animationTime + 0.1,
-            //                transition: 'easeOutQuad'
-            //                };
-
-            // boxes
-            this._leftBox.show();
-            this._centerBox.show();
-            this._rightBox.show();
-
-            let jj;
-            switch (this.panelPosition) {
-                case PanelLoc.left: jj = this.monitor.x - width;
-                case PanelLoc.right: jj = this.monitor.width + this.monitor.x;
-            }
-            // panel
-            Tweener.addTween(this.actor,
-                            { x: x,
-                            time: animationTime,
-                            transition: 'easeOutQuad',
-                            onUpdate: Lang.bind(this, function(origX, panelPosition) {
-                                // Force the layout manager to update the input region
-                                Main.layoutManager._chrome.updateRegions()
-
-                                let width = Math.abs(this.actor.x - origX);
-                                let x;
-                                switch (panelPosition) {
-                                    case PanelLoc.left: 
-                                        x = this.actor.width - width;
-                                        break;
-                                    case PanelLoc.right: 
-                                        x = 0;
-                                        break;
-                                }
-                                this.actor.set_clip(x, 0, width, this.monitor.height); 
-                            }),
-                            onUpdateParams: [jj, this.panelPosition]
-                            }); 
-            // boxes - fade in as panel slides
-            let params = { opacity: 255,
-                           time: animationTime + 0.2,
-                           transition: 'easeOutQuad' };
-
-            Tweener.addTween(this._leftBox, params);
-            Tweener.addTween(this._centerBox, params);
-            Tweener.addTween(this._rightBox, params);
-            if (this._leftCorner) {
-                //this._leftCorner._repaint();
-                //Tweener.addTween(this._leftCorner.actor, params);
-            }
-            if (this._rightCorner) {
-                //this._rightCorner._repaint();
-                //Tweener.addTween(this._rightCorner.actor, params);
-            }
+        // get panel shadow box for use in clipping later
+        let theme_node = this.actor.get_theme_node();
+        let shadow = theme_node.get_box_shadow();
+        let shadowBox;
+        if (shadow) {
+            shadowBox = new Clutter.ActorBox;
+            let actorBox = new Clutter.ActorBox;
+            shadow.get_box(actorBox, shadowBox);
+        } else {
+            // if we don't actually have a shadow, just create a dummy shadowBox
+            shadowBox = {x1: 0, y1: 0, x2: 0, y2: 0};
         }
+
+        // set up original and destination positions and add tween
+        // destination position paramater
+        if (isHorizontal) {
+            let height = this.actor.get_height();
+            let destY;
+            if (this.panelPosition == PanelLoc.top) {
+                destY = this.monitor.y;
+                origPos = this.monitor.y - height;
+            } else {
+                destY = this.monitor.y + this.monitor.height - height;
+                origPos = this.monitor.y + this.monitor.height;
+            }
+            panelParams['y'] = destY;
+        } else {
+            let width = this.actor.get_width();
+            let destX;
+            if (this.panelPosition == PanelLoc.left) {
+                destX = this.monitor.x;
+                origPos = this.monitor.x - width;
+            } else {
+                destX = this.monitor.width - width + this.monitor.x;
+                origPos = this.monitor.width + this.monitor.x;
+            }
+            panelParams['x'] = destX;
+        }
+
+        // setup onUpdate tween parameter to set the actor clip region during animation.
+        // we need to account for the shadow box as well as the exposed part of the
+        // panel when setting the clip size and offset.
+        panelParams['onUpdateParams'] = [origPos, this.panelPosition, isHorizontal, shadowBox];
+        panelParams['onUpdate'] =
+            Lang.bind(this, function(origPos, panelPosition, isHorizontal, shadowBox) {
+                // Force the layout manager to update the input region
+                Main.layoutManager._chrome.updateRegions()
+                if (isHorizontal) {
+                    let exposedHeight = Math.abs(this.actor.y - origPos);
+                    let clipHeight = exposedHeight + shadowBox.y2;
+                    let clipOffsetY;
+                    if (panelPosition == PanelLoc.top)
+                        clipOffsetY = this.actor.height - exposedHeight;
+                    else
+                        clipOffsetY = 0 + shadowBox.y1;
+                    this.actor.set_clip(0, clipOffsetY, this.monitor.width, clipHeight);
+                } else {
+                    let exposedWidth = Math.abs(this.actor.x - origPos);
+                    let clipWidth = exposedWidth + shadowBox.x2;
+                    let clipOffsetX;
+                    if (panelPosition == PanelLoc.left)
+                        clipOffsetX = this.actor.width - exposedWidth;
+                    else
+                        clipOffsetX = 0 + shadowBox.x1;
+                    this.actor.set_clip(clipOffsetX, 0, clipWidth, this.monitor.height);
+                }
+            });
+
+        // setup boxes tween - fade in as panel slides
+        let boxParams = { opacity: 255,
+                          time: animationTime+0.2,
+                          transition: 'easeOutQuad' };
+
+        // show boxes and add tweens
+        this._leftBox.show();
+        this._centerBox.show();
+        this._rightBox.show();
+        Tweener.addTween(this.actor, panelParams);
+        Tweener.addTween(this._leftBox, boxParams);
+        Tweener.addTween(this._centerBox, boxParams);
+        Tweener.addTween(this._rightBox, boxParams);
 
         this._hidden = false;
     },
@@ -3284,128 +3237,83 @@ Panel.prototype = {
 
         // Force the panel to be on top (hack to correct issues when switching workspace)
         Main.layoutManager._windowsRestacked();
+
+        // setup panel tween - slide out the monitor edge leaving one pixel
+        // if horizontal panel, animation on y. if vertical, animation on x.
+        let isHorizontal = this.panelPosition == PanelLoc.top
+                         || this.panelPosition == PanelLoc.bottom;
         let animationTime = AUTOHIDE_ANIMATION_TIME;
+        let panelParams = { time: animationTime,
+                            transition: 'easeOutQuad' };
 
-        if (this.panelPosition == PanelLoc.top || this.panelPosition == PanelLoc.bottom) { // horizontal panels, animation on y
+        // setup destination position and onUpdateParams for clipping later
+        // remember to always leave a vestigial 1px strip or the panel
+        // will become inaccessible
+        if (isHorizontal) {
             let height = this.actor.get_height();
-            let y;
-            switch (this.panelPosition) {
-                case PanelLoc.top:
-                    y = this.monitor.y - height + 1;  // final position, note the +1 to leave a vestigial panel that can be entered to 
-                    break;                // trigger showing the panel in autohide mode
-                case PanelLoc.bottom:
-                    y = this.monitor.y + this.monitor.height - 1;
-                    break;
-            }
-            // panel        
-            Tweener.addTween(this.actor, {
-                y: y,
-                time: animationTime,
-                transition: 'easeOutQuad',
-                onUpdate: Lang.bind(this, function(targetY, panelPosition) {
-                    // Force the layout manager to update the input region
-                    Main.layoutManager._chrome.updateRegions()
+            let destY;
+            if (this.panelPosition == PanelLoc.top)
+                destY = this.monitor.y - height + 1;
+            else
+                destY = this.monitor.y + this.monitor.height - 1;
+            panelParams['y'] = destY;
+            panelParams['onUpdateParams'] = [destY, this.panelPosition, isHorizontal];
+        } else {
+            let width = this.actor.get_width();
+            let destX;
+            if (this.panelPosition == PanelLoc.left)
+                destX = this.monitor.x - width + 1;
+            else
+                destX = this.monitor.x + this.monitor.width - 1;
+            panelParams['x'] = destX;
+            panelParams['onUpdateParams'] = [destX, this.panelPosition, isHorizontal];
+        }
 
-                    let height = Math.abs(this.actor.y - targetY) + 1;
-                    let y;
-                    switch (panelPosition) {
-                        case PanelLoc.top:
-                            y = this.actor.height - height;
-                            break;
-                        case PanelLoc.bottom:
-                            y = 0;
-                            break;
-                    }
-
-                    this.actor.set_clip(0, y, this.monitor.width, height);
-                }),
-                onComplete: Lang.bind(this, function() {
-                    this._leftBox.hide();
-                    this._centerBox.hide();
-                    this._rightBox.hide();
-                }),
-                onUpdateParams: [y, this.panelPosition]
+        // setup onUpdate tween parameter to update the actor clip region during animation
+        // we need to account for the the exposed part of the panel when setting the clip
+        // size and offset.
+        // note: ensure at least one exposed panel pixel strip remains after the clip
+        panelParams['onUpdate'] =
+            Lang.bind(this, function(destPos, panelPosition, isHorizontal) {
+                // Force the layout manager to update the input region
+                Main.layoutManager._chrome.updateRegions()
+                if (isHorizontal) {
+                    let exposedHeight = Math.abs(this.actor.y - destPos) + 1;
+                    let clipOffsetY;
+                    if (panelPosition == PanelLoc.top)
+                        clipOffsetY = this.actor.height - exposedHeight;
+                    else
+                        clipOffsetY = 0;
+                    this.actor.set_clip(0, clipOffsetY, this.monitor.width, exposedHeight);
+                } else {
+                    let exposedWidth = Math.abs(this.actor.x - destPos) + 1;
+                    let clipOffsetX;
+                    if (panelPosition == PanelLoc.left)
+                        clipOffsetX = this.actor.width - exposedWidth;
+                    else
+                        clipOffsetX = 0;
+                    this.actor.set_clip(clipOffsetX, 0, exposedWidth, this.monitor.height);
+                }
             });
         
-            let params = { opacity: 0,
-                           time: Math.max(0, animationTime - 0.1),
-                           transition: 'easeOutQuad' };
-
-            // corners
-            //let params = { y: 0,
-            //                time: animationTime,
-            //                transition: 'easeOutQuad'
-            //                };
-    /*      if (this._leftCorner)
-                Tweener.addTween(this._leftCorner.actor, params);
-            if (this._rightCorner)
-                Tweener.addTween(this._rightCorner.actor, params);
-            // boxes - fade out as panel slides */
-
-            Tweener.addTween(this._leftBox, params);
-            Tweener.addTween(this._centerBox, params);
-            Tweener.addTween(this._rightBox, params);
-
-        } else {  // vertical panels, animation on x
-            let width = this.actor.get_width();
-            let x;
-            switch (this.panelPosition) {
-                case PanelLoc.left:
-                    x = this.monitor.x - width + 1;    // final position of vestigial panel, a one pixel strip at the edge
-                    break;
-                case PanelLoc.right: 
-                    x = this.monitor.x + this.monitor.width - 1; 
-                    break;
-            }
-            
-            // panel
-            Tweener.addTween(this.actor, {
-                x: x,
-                time: animationTime,
-                transition: 'easeOutQuad',
-                onUpdate: Lang.bind(this, function(targetX, panelPosition) {
-                    // Force the layout manager to update the input region
-                    Main.layoutManager._chrome.updateRegions()
-
-                    let width = Math.abs(this.actor.x - targetX) + 1;  // note +1 to ensure one pixel remains at least after the clip
-                    let x;
-                    switch (panelPosition) {
-                        case PanelLoc.left:
-                            x = this.actor.width - width;
-                            break;
-                        case PanelLoc.right:
-                            x = 0;
-                         break;
-                    }
-
-                    this.actor.set_clip(x, 0, width, this.monitor.height);  //x offset of clip rectangle, y offset of clip rectangle, clip width, clip height
-                }),
-                onComplete: Lang.bind(this, function() {
-                    this._leftBox.hide();
-                    this._centerBox.hide();
-                    this._rightBox.hide();
-                }),
-                onUpdateParams: [x, this.panelPosition]
+        // hide boxes after panel slides out
+        panelParams['onComplete'] =
+            Lang.bind(this, function() {
+               this._leftBox.hide();
+               this._centerBox.hide();
+               this._rightBox.hide();
             });
 
-            let params = { opacity: 0,
-                           time: Math.max(0, animationTime - 0.1),
-                           transition: 'easeOutQuad' };
-            // corners
-            //let params = { x: 0,
-            //                time: animationTime,
-            //                transition: 'easeOutQuad'
-            //                };
-        /*  if (this._leftCorner)
-                Tweener.addTween(this._leftCorner.actor, params);
-            if (this._rightCorner)
-                Tweener.addTween(this._rightCorner.actor, params);
-            // boxes - fade out as panel slides */
+        // setup boxes tween - fade out as panel slides out
+        let boxParams = { opacity: 0,
+                          time: Math.max(0, animationTime - 0.1),
+                          transition: 'easeOutQuad' };
 
-            Tweener.addTween(this._leftBox, params);
-            Tweener.addTween(this._centerBox, params);
-            Tweener.addTween(this._rightBox, params);
-        }
+        // add all tweens
+        Tweener.addTween(this.actor, panelParams);
+        Tweener.addTween(this._leftBox, boxParams);
+        Tweener.addTween(this._centerBox, boxParams);
+        Tweener.addTween(this._rightBox, boxParams);
 
         this._hidden = true;
     },
