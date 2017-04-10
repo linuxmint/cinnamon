@@ -26,7 +26,6 @@
 
 #include "cinnamon-enum-types.h"
 #include "cinnamon-global-private.h"
-#include "cinnamon-marshal.h"
 #include "cinnamon-perf-log.h"
 #include "cinnamon-window-tracker.h"
 #include "cinnamon-wm.h"
@@ -301,8 +300,7 @@ cinnamon_global_class_init (CinnamonGlobalClass *klass)
                     G_TYPE_FROM_CLASS (klass),
                     G_SIGNAL_RUN_LAST,
                     0,
-                    NULL, NULL,
-                    _cinnamon_marshal_VOID__INT_INT,
+                    NULL, NULL, NULL,
                     G_TYPE_NONE, 2, G_TYPE_INT, G_TYPE_INT);
 
   /* Emitted from cinnamon-plugin.c during event handling */
@@ -311,8 +309,7 @@ cinnamon_global_class_init (CinnamonGlobalClass *klass)
                     G_TYPE_FROM_CLASS (klass),
                     G_SIGNAL_RUN_LAST,
                     0,
-                    NULL, NULL,
-                    g_cclosure_marshal_VOID__VOID,
+                    NULL, NULL, NULL,
                     G_TYPE_NONE, 0);
 
   /* Emitted from cinnamon-plugin.c during event handling */
@@ -321,8 +318,7 @@ cinnamon_global_class_init (CinnamonGlobalClass *klass)
                     G_TYPE_FROM_CLASS (klass),
                     G_SIGNAL_RUN_LAST,
                     0,
-                    NULL, NULL,
-                    g_cclosure_marshal_VOID__VOID,
+                    NULL, NULL, NULL,
                     G_TYPE_NONE, 0);
 
   cinnamon_global_signals[NOTIFY_ERROR] =
@@ -330,8 +326,7 @@ cinnamon_global_class_init (CinnamonGlobalClass *klass)
                     G_TYPE_FROM_CLASS (klass),
                     G_SIGNAL_RUN_LAST,
                     0,
-                    NULL, NULL,
-                    gi_cclosure_marshal_generic,
+                    NULL, NULL, NULL,
                     G_TYPE_NONE, 2,
                     G_TYPE_STRING,
                     G_TYPE_STRING);
@@ -341,8 +336,7 @@ cinnamon_global_class_init (CinnamonGlobalClass *klass)
                     G_TYPE_FROM_CLASS (klass),
                     G_SIGNAL_RUN_LAST,
                     0,
-                    NULL, NULL,
-                    g_cclosure_marshal_VOID__VOID,
+                    NULL, NULL, NULL,
                     G_TYPE_NONE, 0);
 
   cinnamon_global_signals[SHUTDOWN] =
@@ -350,8 +344,7 @@ cinnamon_global_class_init (CinnamonGlobalClass *klass)
                     G_TYPE_FROM_CLASS (klass),
                     G_SIGNAL_RUN_LAST,
                     0,
-                    NULL, NULL,
-                    g_cclosure_marshal_VOID__VOID,
+                    NULL, NULL, NULL,
                     G_TYPE_NONE, 0);
 
   g_object_class_install_property (gobject_class,

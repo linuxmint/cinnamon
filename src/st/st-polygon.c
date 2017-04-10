@@ -251,8 +251,7 @@ st_polygon_class_init (StPolygonClass *klass)
                   G_TYPE_FROM_CLASS (klass),
                   G_SIGNAL_RUN_LAST,
                   G_STRUCT_OFFSET (StPolygonClass, repaint),
-                  NULL, NULL,
-                  g_cclosure_marshal_VOID__OBJECT,
+                  NULL, NULL, NULL,
                   G_TYPE_NONE, 0);
 
   obj_props[PROP_ULC_X] =

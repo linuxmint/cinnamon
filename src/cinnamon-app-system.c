@@ -72,8 +72,7 @@ static void cinnamon_app_system_class_init(CinnamonAppSystemClass *klass)
                                              CINNAMON_TYPE_APP_SYSTEM,
                                              G_SIGNAL_RUN_LAST,
                                              0,
-                                             NULL, NULL,
-                                             g_cclosure_marshal_VOID__OBJECT,
+                                             NULL, NULL, NULL,
                                              G_TYPE_NONE, 1,
                                              CINNAMON_TYPE_APP);
   signals[INSTALLED_CHANGED] =
@@ -81,8 +80,7 @@ static void cinnamon_app_system_class_init(CinnamonAppSystemClass *klass)
 		  CINNAMON_TYPE_APP_SYSTEM,
 		  G_SIGNAL_RUN_LAST,
 		  G_STRUCT_OFFSET (CinnamonAppSystemClass, installed_changed),
-		  NULL, NULL,
-		  g_cclosure_marshal_VOID__VOID,
+		  NULL, NULL, NULL,
 		  G_TYPE_NONE, 0);
 
   g_type_class_add_private (gobject_class, sizeof (CinnamonAppSystemPrivate));

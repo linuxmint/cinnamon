@@ -8,7 +8,6 @@
 
 #include "cinnamon-wm-private.h"
 #include "cinnamon-global.h"
-#include "cinnamon-marshal.h"
 
 struct _CinnamonWM {
   GObject parent;
@@ -63,8 +62,7 @@ cinnamon_wm_class_init (CinnamonWMClass *klass)
                   G_TYPE_FROM_CLASS (klass),
                   G_SIGNAL_RUN_LAST,
                   0,
-                  NULL, NULL,
-                  g_cclosure_marshal_VOID__OBJECT,
+                  NULL, NULL, NULL,
                   G_TYPE_NONE, 1,
                   META_TYPE_WINDOW_ACTOR);
   cinnamon_wm_signals[MAXIMIZE] =
@@ -72,8 +70,7 @@ cinnamon_wm_class_init (CinnamonWMClass *klass)
                   G_TYPE_FROM_CLASS (klass),
                   G_SIGNAL_RUN_LAST,
                   0,
-                  NULL, NULL,
-                  _cinnamon_marshal_VOID__OBJECT_INT_INT_INT_INT,
+                  NULL, NULL, NULL,
                   G_TYPE_NONE, 5,
                   META_TYPE_WINDOW_ACTOR, G_TYPE_INT, G_TYPE_INT, G_TYPE_INT, G_TYPE_INT);
   cinnamon_wm_signals[UNMAXIMIZE] =
@@ -81,8 +78,7 @@ cinnamon_wm_class_init (CinnamonWMClass *klass)
                   G_TYPE_FROM_CLASS (klass),
                   G_SIGNAL_RUN_LAST,
                   0,
-                  NULL, NULL,
-                  _cinnamon_marshal_VOID__OBJECT_INT_INT_INT_INT,
+                  NULL, NULL, NULL,
                   G_TYPE_NONE, 5,
                   META_TYPE_WINDOW_ACTOR, G_TYPE_INT, G_TYPE_INT, G_TYPE_INT, G_TYPE_INT);
   cinnamon_wm_signals[TILE] =
@@ -90,8 +86,7 @@ cinnamon_wm_class_init (CinnamonWMClass *klass)
                   G_TYPE_FROM_CLASS (klass),
                   G_SIGNAL_RUN_LAST,
                   0,
-                  NULL, NULL,
-                  _cinnamon_marshal_VOID__OBJECT_INT_INT_INT_INT,
+                  NULL, NULL, NULL,
                   G_TYPE_NONE, 5,
                   META_TYPE_WINDOW_ACTOR, G_TYPE_INT, G_TYPE_INT, G_TYPE_INT, G_TYPE_INT);
   cinnamon_wm_signals[MAP] =
@@ -99,8 +94,7 @@ cinnamon_wm_class_init (CinnamonWMClass *klass)
                   G_TYPE_FROM_CLASS (klass),
                   G_SIGNAL_RUN_LAST,
                   0,
-                  NULL, NULL,
-                  g_cclosure_marshal_VOID__OBJECT,
+                  NULL, NULL, NULL,
                   G_TYPE_NONE, 1,
                   META_TYPE_WINDOW_ACTOR);
   cinnamon_wm_signals[DESTROY] =
@@ -108,8 +102,7 @@ cinnamon_wm_class_init (CinnamonWMClass *klass)
                   G_TYPE_FROM_CLASS (klass),
                   G_SIGNAL_RUN_LAST,
                   0,
-                  NULL, NULL,
-                  g_cclosure_marshal_VOID__OBJECT,
+                  NULL, NULL, NULL,
                   G_TYPE_NONE, 1,
                   META_TYPE_WINDOW_ACTOR);
   cinnamon_wm_signals[SWITCH_WORKSPACE] =
@@ -117,9 +110,8 @@ cinnamon_wm_class_init (CinnamonWMClass *klass)
 		  G_TYPE_FROM_CLASS (klass),
 		  G_SIGNAL_RUN_LAST,
 		  0,
-		  NULL, NULL,
-		  _cinnamon_marshal_VOID__INT_INT_INT,
-		  G_TYPE_NONE, 3,
+                  NULL, NULL, NULL,
+                  G_TYPE_NONE, 3,
                   G_TYPE_INT, G_TYPE_INT, G_TYPE_INT);
   cinnamon_wm_signals[SWITCH_WORKSPACE_COMPLETE] =
     g_signal_new ("switch-workspace-complete",
@@ -133,8 +125,7 @@ cinnamon_wm_class_init (CinnamonWMClass *klass)
 		  G_TYPE_FROM_CLASS (klass),
 		  G_SIGNAL_RUN_LAST,
 		  0,
-		  NULL, NULL,
-		  g_cclosure_marshal_VOID__OBJECT,
+		  NULL, NULL, NULL,
 		  G_TYPE_NONE, 1,
 		  META_TYPE_WINDOW_ACTOR);
     cinnamon_wm_signals[SHOW_TILE_PREVIEW] =
