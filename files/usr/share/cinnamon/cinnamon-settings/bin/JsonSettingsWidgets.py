@@ -1,9 +1,13 @@
 from gi.repository import Gio, GObject
 from SettingsWidgets import *
+from TreeListWidgets import List
 import collections
 import json
 
+CAN_BACKEND.append("List")
+
 JSON_SETTINGS_PROPERTIES_MAP = {
+    "description"   : "label",
     "min"           : "mini",
     "max"           : "maxi",
     "step"          : "step",
@@ -14,7 +18,8 @@ JSON_SETTINGS_PROPERTIES_MAP = {
     "tooltip"       : "tooltip",
     "possible"      : "possible",
     "dependency"    : "dep_key",
-    "expand-width"  : "expand_width"
+    "expand-width"  : "expand_width",
+    "columns"       : "columns"
 }
 
 class JSONSettingsHandler(object):
@@ -238,7 +243,7 @@ def json_settings_factory(subclass):
                     kwargs["options"] = []
                     for value, label in properties[prop].items():
                         kwargs["options"].append((label, value))
-            super(NewClass, self).__init__(properties["description"], **kwargs)
+            super(NewClass, self).__init__(**kwargs)
             self.attach()
 
         def set_dep_key(self, dep_key):

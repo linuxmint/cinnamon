@@ -13,6 +13,7 @@ public_icons = \
 	hicolor_actions_scalable_pan-up-symbolic.svg \
     hicolor_actions_scalable_caps-lock-symbolic.svg \
     hicolor_actions_scalable_caps-lock-off-symbolic.svg \
+    hicolor_actions_scalable_list-edit-symbolic.svg \
     hicolor_actions_scalable_num-lock-symbolic.svg \
     hicolor_actions_scalable_num-lock-off-symbolic.svg \
 	hicolor_apps_scalable_cinnamon-panel-launcher.svg \

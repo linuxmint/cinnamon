@@ -298,6 +298,38 @@
       <para>Note: for an applet or desklet, the callback function must be a method of the applet or desklet object. For an extension, it can be a method of any object, but that object must be returned from the <code>enabled()</code> function of your extension in order for it to work.</para>
 
     </sect3>
+    <sect3>
+      <title>list</title>
+      <itemizedlist>
+        <listitem><code>type</code>: should be <code>list</code></listitem>
+        <listitem><code>description</code>: (optional) String to describe the setting</listitem>
+        <listitem><code>columns</code>: Array of objects specifying the columns in the list widget</listitem>
+        <listitem><code>default</code>: default value</listitem>
+      </itemizedlist>
+
+      <para>
+        This widget provides a list which can be edited and reordered from the settings window. The columns in the list are specified by the <code>columns</code> propery. Each column object in the array must have the following properties:
+        <itemizedlist>
+          <listitem><code>id</code>: a unique string for identifying the column</listitem>
+          <listitem><code>title</code>: the title that will be displayed in the column header</listitem>
+          <listitem><code>type</code>: the data type for the column</listitem>
+        </itemizedlist>
+      </para>
+      <para>
+        Each column type determines the data type that is stored. In addition, it specifies the widget that is generated when the user clicks the add or edit buttons. These widgets act just like the corresponding widgets in this document, and all the same properties are available, with the exception of <code>description</code> and <code>type</code>. The following types are currently available:
+        <itemizedlist>
+          <listitem><code>string</code>: this type stores data as a string. An <code>entry</code> is generated in the add/edit dialog. The default value for new entries is an empty string unless specified with the <code>default</code> property.</listitem>
+          <listitem><code>file</code>: this type stores data as a string. A <code>filechooser</code> is generated in the add/edit dialog. The default value for new entries is an empty string unless specified with the <code>default</code> property.</listitem>
+          <listitem><code>integer</code>: this type stores data as an integer. A <code>spinbutton</code> is generated in the add/edit dialog. The default value for new entries is 0 unless specified with the <code>default</code> property.</listitem>
+          <listitem><code>float</code>: this type stores data as a floating point number. A <code>spinbutton</code> is generated in the add/edit dialog. The default value for new entries is 0.0 unless specified with the <code>default</code> property.</listitem>
+          <listitem><code>boolean</code>: this type stores data as a bool. A <code>switch</code> is generated in the add/edit dialog. The default value for new entries is false unless specified with the <code>default</code> property.</listitem>
+        </itemizedlist>
+      </para>
+      <para>The values are stored as an array of row objects. Each row object has a set of key:value pairs where the key is the <code>column id</code> of the column to which the value corresponds.</para>
+      <para>Note: For appearance, it is recommended that you do not use the description property of this setting, but rather place it in it's own <code>section</code>.</para>
+      <para>New in Cinnamon 3.4</para>
+
+    </sect3>
   </sect2>
 
   <sect2>
