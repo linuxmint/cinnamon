@@ -1824,3 +1824,9 @@ StScrollBar StButton#vhandle:hover {
     border-right-width: 0px;
     border-radius: 8px 0px 0px 0px;
 }
+/* ===================================================================
+ * Systray Applet
+ * ===================================================================*/
+.systray {
+    spacing: 5px;
+}
