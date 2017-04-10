@@ -126,7 +126,12 @@ class Main:
                 quit()
             print " "
             print "Running xgettext on JavaScript files..."
-            os.system("xgettext --language=C --keyword=_ --output=%s *.js" % (self.potname))
+
+            tmp = tempfile.NamedTemporaryFile(prefix="cinnamon-json-makepot-")
+            try:
+                os.system('find . -iname "*.js" > %s' % tmp.name)
+            finally:
+                os.system("xgettext --language=C --keyword=_ --output=%s --files-from=%s" % (self.potname, tmp.name))
 
         self.current_parent_dir = ""
 
