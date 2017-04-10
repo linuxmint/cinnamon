@@ -10,7 +10,7 @@ const Main = imports.ui.main;
 const Tweener = imports.ui.tweener;
 const Mainloop = imports.mainloop;
 const HOT_CORNER_ACTIVATION_TIMEOUT = 0.5;
-const OVERVIEW_CORNERS_KEY = 'overview-corner';
+const OVERVIEW_CORNERS_KEY = 'hotcorner-layout';
 const Tooltips = imports.ui.tooltips;
 
 // Map texts to boolean value
@@ -28,9 +28,6 @@ HotCornerManager.prototype = {
         for (let i = 0; i < 4; i++) { // In order: top left; top right; bottom left; bottom right;
             this.corners.push(new HotCorner());
             Main.layoutManager.addChrome(this.corners[i].actor);
-            Main.layoutManager.addChrome(this.corners[i].iconActor, {
-                visibleInFullscreen: false
-            });
         }
         this.parseGSettings();
         global.settings.connect('changed::' + OVERVIEW_CORNERS_KEY, Lang.bind(this, this.parseGSettings));
@@ -60,19 +57,16 @@ HotCornerManager.prototype = {
 
         // Top Left: 0
         this.corners[0].actor.set_position(p_x, p_y);
-        this.corners[0].iconActor.set_position(p_x + 1, p_y + 1);
 
         // Top Right: 1
         this.corners[1].actor.set_position(p_x + primaryMonitor.width - 2, p_y);
-        this.corners[1].iconActor.set_position(p_x + primaryMonitor.width - 33, p_y + 1);
 
         // Bottom Left: 2
         this.corners[2].actor.set_position(b_x, b_y - 1);
-        this.corners[2].iconActor.set_position(b_x + 1, b_y - 33);
 
         // Bottom Right: 3
         this.corners[3].actor.set_position(b_x + bottomMonitor.width - 2, b_y - 1);
-        this.corners[3].iconActor.set_position(b_x + bottomMonitor.width - 33, b_y - 33);
+
         return true;
     }
 };
@@ -95,7 +89,6 @@ HotCorner.prototype = {
 
         this.action = null; // The action to activate when hot corner is triggered
         this.hover = false; // Whether the hot corners responds to hover
-        this.icon = false; // Whether the overview corner icon is shown
         this.hover_delay = 0; // Hover delay activation
         this.hover_delay_id = 0; // Hover delay timer ID
 
@@ -170,19 +163,6 @@ HotCorner.prototype = {
         this._ripple1.hide();
         this._ripple2.hide();
         this._ripple3.hide();
-
-        // Construct the overview corner icon
-        this.iconActor = new St.Button({
-            name: 'overview-corner',
-            reactive: true,
-            track_hover: true
-        });
-
-        this.iconActor.tooltip = new Tooltips.Tooltip(this.iconActor);
-
-        this.iconActor.connect('button-release-event', Lang.bind(this, this.runAction));
-
-        this.iconActor.set_size(32, 32);
     },
 
     destroy: function() {
@@ -237,32 +217,12 @@ HotCorner.prototype = {
     setProperties: function(properties) {
         this.action = properties[0];
         this.hover = TF[properties[1]];
-        this.icon = TF[properties[2]];
-        this.hover_delay = properties[3] ? Number(properties[3]) : 0;
+        this.hover_delay = properties[2] ? Number(properties[2]) : 0;
 
         if (this.hover)
             this.actor.show();
         else
             this.actor.hide();
-
-        if (this.icon) {
-            this.iconActor.show();
-            this.iconActor.tooltip.set_text(this.getIconTooltip());
-        } else
-            this.iconActor.hide();
-    },
-
-    getIconTooltip: function() {
-        switch (this.action) {
-            case 'expo':
-                return _("Show all workspaces");
-            case 'scale':
-                return _("Show all windows");
-            case 'desktop':
-                return _("Show the desktop");
-            default:
-                return _("Run a command") + ": %s".format(this.action);
-        }
     },
 
     rippleAnimation: function() {

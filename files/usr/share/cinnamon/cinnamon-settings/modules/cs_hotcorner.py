@@ -31,8 +31,8 @@ class Module:
                 self.corners.append(HotCornerConfiguration(i, self.onConfigChanged))
 
             self.settings = Gio.Settings.new('org.cinnamon')
-            self.settings.connect('changed::overview-corner', self.on_settings_changed)
-            oc_list = self.settings.get_strv("overview-corner")
+            self.settings.connect('changed::hotcorner-layout', self.on_settings_changed)
+            oc_list = self.settings.get_strv("hotcorner-layout")
             self.properties = []
             for item in oc_list:
                 props = item.split(":")
@@ -56,10 +56,10 @@ class Module:
 
             self.sidePage.add_widget(table)
 
-            self.on_settings_changed(self.settings, "overview-corner")
+            self.on_settings_changed(self.settings, "hotcorner-layout")
 
     def on_settings_changed(self, settings, key):
-        oc_list = self.settings.get_strv("overview-corner")
+        oc_list = self.settings.get_strv("hotcorner-layout")
         del self.properties[:]
         for item in oc_list:
             props = item.split(":")
@@ -72,26 +72,23 @@ class Module:
             prop = self.properties[corner.index]
             function = prop[0]
             enabled = prop[1] == "true"
-            visible = prop[2] == "true"
             isEnabled = False
 
             if prop[1] == "true":
-                isEnabled = True
-            elif prop[2] == "true":
                 isEnabled = True
             else:
                 isEnabled = False
 
             try:
-                delay = prop[3]
+                delay = prop[2]
             except:
                 delay = "0"
 
-            corner.setValues(function, visible, enabled, delay)
+            corner.setValues(function, enabled, delay)
             self.cornerDisplay.setCornerEnabled(corner.index, isEnabled)
         self.cornerDisplay.queue_draw()
 
-    def onConfigChanged(self, index, function, visible, enabled, delay):
+    def onConfigChanged(self, index, function, enabled, delay):
         self.cornerDisplay.queue_draw()
 
         props = self.properties[index]
@@ -103,13 +100,8 @@ class Module:
         else:
             props[1] = 'false'
 
-        if visible:
-            props[2] = 'true'
-        else:
-            props[2] = 'false'
-
         try:
-            props[3] = str(delay)
+            props[2] = str(delay)
         except:
             props.append("0")
 
@@ -119,7 +111,7 @@ class Module:
         oc_list = []
         for prop in self.properties:
             oc_list.append(":".join(prop))
-        self.settings.set_strv("overview-corner", oc_list)
+        self.settings.set_strv("hotcorner-layout", oc_list)
 
 
 class HotCornerDisplay(Gtk.Label):
@@ -235,8 +227,6 @@ class HotCornerConfiguration():
 
         self.customEntry = Gtk.Entry()
         self.customEntry.set_no_show_all(True)
-        self.iconCheckbox = Gtk.CheckButton()
-        self.iconCheckbox.set_label(_("Icon visible"))
         self.hoverCheckbox = Gtk.CheckButton()
         self.hoverCheckbox.set_label(_("Hover enabled"))
         self.hoverDelayBox = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
@@ -246,7 +236,6 @@ class HotCornerConfiguration():
 
         self.box.pack_start(self.functionCombo, True, True, 0)
         self.box.pack_start(self.customEntry, True, True, 0)
-        self.box.pack_start(self.iconCheckbox, True, True, 0)
         self.box.pack_start(self.hoverCheckbox, True, True, 0)
         self.hoverDelayBox.pack_start(self.hoverDelayLabel, False, False, 5)
         self.hoverDelayBox.pack_end(self.hoverDelayUnitsLabel, False, False, 5)
@@ -255,12 +244,10 @@ class HotCornerConfiguration():
 
         self.functionCombo.connect('changed', self.on_widget_changed)
         self.customEntry.connect('changed', self.on_widget_changed)
-        self.iconCheckbox.connect('toggled', self.on_widget_changed)
         self.hoverCheckbox.connect('toggled', self.on_widget_changed)
         self.hoverDelaySpinner.connect('value-changed', self.on_widget_changed)
 
         self.functionCombo.show()
-        self.iconCheckbox.show()
         self.hoverCheckbox.show()
         self.customEntry.show()
         self.hoverDelayLabel.show()
@@ -279,7 +266,7 @@ class HotCornerConfiguration():
 
         return alignment
 
-    def setValues(self, function, visible, enabled, delay):
+    def setValues(self, function, enabled, delay):
         hideCustomEntry = True
 
         if function == "expo":
@@ -299,8 +286,6 @@ class HotCornerConfiguration():
         else:
             self.customEntry.show()
 
-        if self.iconCheckbox.get_active() != visible:
-            self.iconCheckbox.set_active(visible)
         if self.hoverCheckbox.get_active() != enabled:
             self.hoverCheckbox.set_active(enabled)
 
@@ -312,7 +297,6 @@ class HotCornerConfiguration():
             iter = self.functionCombo.get_active_iter()
             if iter != None:
                 function = self.functionStore.get_value(iter, 0)
-                visible = self.iconCheckbox.get_active()
                 enabled = self.hoverCheckbox.get_active()
                 delay = str(int(self.hoverDelaySpinner.get_value()))
 
@@ -322,7 +306,7 @@ class HotCornerConfiguration():
                     self.customEntry.show()
                     function = self.customEntry.get_text()
 
-                self.updateCallback(self.index, function, visible, enabled, delay)
+                self.updateCallback(self.index, function, enabled, delay)
 
             self.timer = None
 
