@@ -281,7 +281,7 @@ class MainWindow(object):
 
         # if the first key is not of type 'header' or type 'section' we need to make a new section
         if first_key["type"] not in ("header", "section"):
-            section = page.add_section("Settings for %s" % self.uuid)
+            section = page.add_section(_("Settings for %s") % self.uuid)
 
         for key, item in settings_map.items():
             if key == "__md5__":
