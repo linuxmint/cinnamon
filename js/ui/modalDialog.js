@@ -446,14 +446,13 @@ SpicesAboutDialog.prototype = {
 
         //prepare translation
         this.uuid = metadata.uuid;
-        Gettext.bindtextdomain(metadata.uuid, GLib.get_home_dir() + "/.local/share/locale");
 
         let contentBox = new St.BoxLayout({vertical: true, style_class: "about-content" });
         this.contentLayout.add_actor(contentBox);
-        
+
         let topBox = new St.BoxLayout();
         contentBox.add_actor(topBox);
-        
+
         //icon
         let icon;
         if (metadata.icon) {
@@ -468,17 +467,17 @@ SpicesAboutDialog.prototype = {
             }
         }
         topBox.add_actor(icon);
-        
+
         let topTextBox = new St.BoxLayout({vertical: true});
         topBox.add_actor(topTextBox);
-        
+
         /*title*/
         let titleBox = new St.BoxLayout();
         topTextBox.add_actor(titleBox);
 
         let title = new St.Label({text: this._(metadata.name), style_class: "about-title"});
         titleBox.add_actor(title);
-        
+
         //version
         if (!('last-edited' in metadata) && metadata.version) {
             let versionBin = new St.Bin({x_align: St.Align.START, y_align: St.Align.END});
@@ -486,7 +485,7 @@ SpicesAboutDialog.prototype = {
             let version = new St.Label({text: " v%s".format(metadata.version), style_class: "about-version"});
             versionBin.add_actor(version);
         }
-        
+
         //uuid
         let uuid = new St.Label({text: metadata.uuid, style_class: "about-uuid"});
         topTextBox.add_actor(uuid);
@@ -502,7 +501,7 @@ SpicesAboutDialog.prototype = {
             let lastEdited = new St.Label({text: dateUTC + "\n", style_class: "about-uuid"});
             topTextBox.add_actor(lastEdited);
         }
-        
+
         //description
         let desc = new St.Label({text: this._(metadata.description), style_class: "about-description"});
         let dText = desc.clutter_text;
@@ -562,7 +561,7 @@ SpicesAboutDialog.prototype = {
                 infoBox.add_actor(contributors);
             }
         }
-        
+
         //dialog buttons, if it's a spice, add a "More info" button
         let spicesID = this._getSpicesID(metadata.uuid, type);
         if (spicesID) {
@@ -576,7 +575,7 @@ SpicesAboutDialog.prototype = {
                 {label: _("Close"), key: "", focus: true, action: Lang.bind(this, this._onOk)}
             ]);
         }
-        
+
         this.open(global.get_current_time());
     },
 
@@ -618,7 +617,7 @@ SpicesAboutDialog.prototype = {
     _onOk: function() {
         this.close(global.get_current_time());
     },
-    
+
     _launchSite: function(a, b, site) {
         Util.spawnCommandLine("xdg-open " + site);
         this.close(global.get_current_time());
@@ -746,7 +745,7 @@ InfoOSD.prototype = {
      * show:
      * @monitorIndex (int): (optional) Monitor to display OSD on. Default is
      * primary monitor
-     * 
+     *
      * Shows the OSD at the center of monitor @monitorIndex. Shows at the
      * primary monitor if not specified.
      */
@@ -776,7 +775,7 @@ InfoOSD.prototype = {
 
     /**
      * destroy:
-     * 
+     *
      * Destroys the OSD
      */
     destroy: function() {

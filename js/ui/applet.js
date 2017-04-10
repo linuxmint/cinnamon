@@ -15,6 +15,7 @@ const Mainloop = imports.mainloop;
 const Flashspot = imports.ui.flashspot;
 const ModalDialog = imports.ui.modalDialog;
 const Signals = imports.signals;
+const Gettext = imports.gettext;
 
 const COLOR_ICON_HEIGHT_FACTOR = .875;  // Panel height factor for normal color icons
 const PANEL_FONT_DEFAULT_HEIGHT = 11.5; // px
@@ -485,7 +486,8 @@ Applet.prototype = {
         let items = this._applet_context_menu._getMenuItems();
 
         if (this.context_menu_item_remove == null) {
-            this.context_menu_item_remove = new PopupMenu.PopupIconMenuItem(_("Remove '%s'").format(_(this._meta.name)),
+            this.context_menu_item_remove = new PopupMenu.PopupIconMenuItem(_("Remove '%s'")
+                .format(this._(this._meta.name)),
                    "edit-delete",
                    St.IconType.SYMBOLIC);
             this.context_menu_item_remove.connect('activate', Lang.bind(this, function() {
@@ -527,6 +529,18 @@ Applet.prototype = {
         if (items.indexOf(this.context_menu_item_remove) == -1) {
             this._applet_context_menu.addMenuItem(this.context_menu_item_remove);
         }
+    },
+
+    // translation
+    _: function(str) {
+        // look into the text domain first
+        let translated = Gettext.dgettext(this._uuid, str);
+
+        // if it looks translated, return the translation of the domain
+        if (translated !== str)
+            return translated;
+        // else, use the default cinnamon domain
+        return _(str);
     },
 
     /**
