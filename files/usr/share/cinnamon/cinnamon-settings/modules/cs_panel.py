@@ -459,13 +459,8 @@ class PanelSpinButton(PanelWidget):
         self.on_my_setting_changed()
 
     def on_my_setting_changed(self, *args):
-        def apply(self):
+        if not self._changed_timer:
             self.content_widget.set_value(self.get_int(self.settings, self.key))
-            self._changed_timer = None
-
-        if self._changed_timer:
-            GLib.source_remove(self._changed_timer)
-        self._changed_timer = GLib.timeout_add(300, apply, self)
 
     def on_my_value_changed(self, widget):
         def apply(self):
