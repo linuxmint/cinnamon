@@ -1,0 +1,151 @@
+#!/usr/bin/python2
+
+import os
+
+class ScopeVars:
+    def __init__(self, depth):
+        self.variables = []
+        self.depth = depth
+
+    def exists(self, string):
+        return string in self.variables
+
+    def add(self, string):
+        self.variables.append(string)
+
+def check_file_for_dupe_lets(file):
+    found = False
+    line_num = 0
+    depth = 0
+    scope_vars = []
+
+    for line in file:
+        line_num += 1
+        for char in line:
+            if char == "{":
+                depth += 1
+                scope_vars.append(ScopeVars(depth))
+            elif char == "}":
+                for obj in scope_vars:
+                    if obj.depth == depth:
+                        scope_vars.remove(obj)
+                        del obj
+                depth -= 1
+
+        if " let " in line:
+            let_start = line.index(" let ")
+            index = let_start + 5
+            for i in line[index:]:
+                match_found = False
+                if i != " ":
+                    index += 1
+                    continue
+
+                let_var = line[let_start + 5 : index]
+                match_found = True
+
+                for obj in scope_vars:
+                    if obj.depth == depth:
+                        if obj.exists(let_var):
+                            print "Dupe let declaration: '%s' in '%s' at line %d" % (let_var, file.name, line_num)
+                            found = True
+                        else:
+                            obj.add(let_var)
+                        break
+                break
+    return found
+
+def check_file_for_missing_commas(file):
+    found = False
+    line_num = 0
+    char_num = 0
+    depth = 0
+    scope_vars = []
+    in_comment = False
+    in_proto = False
+    in_method = False
+    need_comma_or_final_closure = False
+
+    for line in file:
+        line_num += 1
+
+        line = line.strip("\n")
+
+        if line.strip().startswith("//"):
+            continue
+
+        char_num = 0
+
+        while char_num < len(line):
+            char = line[char_num]
+            if line[char_num:char_num + 2] == "/*":
+                in_comment = True
+            elif line[char_num:char_num + 2] == "*/":
+                in_comment = False
+
+            if in_comment:
+                char_num += 1
+                continue
+            elif char == "{":
+                depth += 1
+
+                if need_comma_or_final_closure:
+                    print "Missing comma after prototype method - '%s' at line %d" % (file.name, line_num)
+                    found = True
+                    need_comma_or_final_closure = False
+                if "prototype={" in line[:char_num + 1].replace(" ", ""):
+                    in_proto = True
+                elif depth > 1 and in_proto:
+                    in_method = True
+            elif char == "}":
+                depth -= 1
+                if depth == 0:
+                    if in_proto:
+                        in_proto = False
+                        if need_comma_or_final_closure:
+                            need_comma_or_final_closure = False
+                elif depth == 1 and in_proto and in_method:
+                    in_method = False
+                    need_comma_or_final_closure = True
+            elif char == ",":
+                if in_proto and need_comma_or_final_closure:
+                    need_comma_or_final_closure = False
+            elif need_comma_or_final_closure and (char not in (" ", "\n", "\t")):
+                print "Missing comma after prototype method - '%s' at line %d" % (file.name, line_num)
+                found = True
+                need_comma_or_final_closure = False
+
+            char_num += 1
+
+    return found
+
+##########################################
+
+print "Checking for duplicate 'let' declarations - mozjs38 crashes if one is encountered within the same scope..."
+found = False
+
+for root, dirs, files in os.walk("."):
+    for name in files:
+        if name.endswith(".js"):
+            with open(os.path.join(root, name), "r") as file:
+                if check_file_for_dupe_lets(file):
+                    found = True
+if not found:
+    print "... no problems found"
+
+print "\nChecking for missing comma separators between prototype methods - cinnamon crashes if one is missed..."
+found = False
+
+for root, dirs, files in os.walk("."):
+    for name in files:
+        if name.endswith(".js"):
+            with open(os.path.join(root, name), "r") as file:
+                if check_file_for_missing_commas(file):
+                    found = True
+
+if not found:
+    print "... no problems found"
+
+quit()
+
+
