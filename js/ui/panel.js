@@ -1890,6 +1890,7 @@ Panel.prototype = {
         this._rightPanelBarrier = 0;
         this._topPanelBarrier = 0;
         this._bottomPanelBarrier = 0;
+        this._shadowBox = null;
 
         this.scaleMode = false;
 
@@ -2451,6 +2452,77 @@ Panel.prototype = {
         return panelHeight;
     },
 
+   /**
+    * _setClipRegion:
+    * @hidden: whether the panel should be clipped for hide
+    * @offset: (optional): x or y position offset
+    *
+    * If @hidden is true the clip region is set to the one exposed strip of pixels
+    * adjacent to the monitor edge. Otherwise, the clip region is set to the panel
+    * size plus the shadow on the side of the panel opposite the monitor edge.
+    *
+    * @offset is only used during tweens. If provided, it is used to offset the
+    * current position in order to calculate the exposed size.
+    */
+    _setClipRegion: function(hidden, offset) {
+        let animating = typeof offset === "number";
+        let isHorizontal = this.panelPosition == PanelLoc.top
+                           || this.panelPosition == PanelLoc.bottom;
+
+        // determine exposed amount of panel
+        let exposedAmount;
+        if (isHorizontal) {
+            if (hidden)
+                exposedAmount = animating ? Math.abs(this.actor.y - offset) + 1
+                                          : 1;
+            else
+                exposedAmount = animating ? Math.abs(this.actor.y - offset)
+                                          : this.actor.height;
+        } else {
+            if (hidden)
+                exposedAmount = animating ? Math.abs(this.actor.x - offset) + 1
+                                          : 1;
+            else
+                exposedAmount = animating ? Math.abs(this.actor.x - offset)
+                                          : this.actor.width;
+        }
+
+        // determine offset & set clip
+        // top/left panels: must offset by the hidden amount
+        // bottom/right panels: if showing must offset by shadow size
+        // all panels: if showing increase exposedAmount by shadow size
+
+        // we use only the shadowbox x1 or y1 (offset) to determine shadow size
+        // as some themes use an offset shadow to draw only on one side whereas
+        // others have a shadow all around. using the offset should handle
+        // both cases.
+        if (isHorizontal) {
+            let clipOffsetY = 0;
+            if (this.panelPosition == PanelLoc.top) {
+                clipOffsetY = this.actor.height - exposedAmount;
+            } else {
+                if (!hidden)
+                    clipOffsetY = this._shadowBox.y1;
+            }
+            if (!hidden)
+                exposedAmount += Math.abs(this._shadowBox.y1);
+            this.actor.set_clip(0, clipOffsetY, this.actor.width, exposedAmount);
+        } else {
+            let clipOffsetX = 0;
+            if (this.panelPosition == PanelLoc.left) {
+                clipOffsetX = this.actor.width - exposedAmount;
+            } else {
+                if (!hidden)
+                    clipOffsetX = this._shadowBox.x1;
+            }
+            if (!hidden)
+                exposedAmount += Math.abs(this._shadowBox.x1);
+            this.actor.set_clip(clipOffsetX, 0, exposedAmount, this.actor.height);
+        }
+        // Force the layout manager to update the input region
+        Main.layoutManager._chrome.updateRegions()
+    },
+
     /**
      * _moveResizePanel:
      *
@@ -2468,12 +2540,28 @@ Panel.prototype = {
         let panelHeight = this._getScaledPanelHeight();
         this._setFont(panelHeight);
 
+        let themeNode = this.actor.get_theme_node();
+
+        // FIXME: inset shadows will probably break clipping.
+        // I haven't seen a theme with inset panel shadows, but if there
+        // are any then we need to just use the dummy shadow box in that case.
+        let shadow = themeNode.get_box_shadow();
+        let shadowBox;
+        if (shadow) {
+            shadowBox = new Clutter.ActorBox;
+            let actorBox = new Clutter.ActorBox;
+            shadow.get_box(actorBox, shadowBox);
+        } else {
+            // if we don't actually have a shadow, just create a dummy shadowBox
+            shadowBox = {x1: 0, y1: 0, x2: 0, y2: 0};
+        }
+        this._shadowBox = shadowBox;
+
         try {
             this.margin_top    = 0;
             this.margin_bottom = 0;
             this.margin_left   = 0;
             this.margin_right  = 0;
-            let themeNode      = this.actor.get_theme_node();
             this.margin_top    = themeNode.get_margin(St.Side.TOP);
             this.margin_bottom = themeNode.get_margin(St.Side.BOTTOM);
             this.margin_left   = themeNode.get_margin(St.Side.LEFT);
@@ -3136,19 +3224,6 @@ Panel.prototype = {
         let panelParams = { time: animationTime,
                             transition: 'easeOutQuad' };
 
-        // get panel shadow box for use in clipping later
-        let theme_node = this.actor.get_theme_node();
-        let shadow = theme_node.get_box_shadow();
-        let shadowBox;
-        if (shadow) {
-            shadowBox = new Clutter.ActorBox;
-            let actorBox = new Clutter.ActorBox;
-            shadow.get_box(actorBox, shadowBox);
-        } else {
-            // if we don't actually have a shadow, just create a dummy shadowBox
-            shadowBox = {x1: 0, y1: 0, x2: 0, y2: 0};
-        }
-
         // set up original and destination positions and add tween
         // destination parameter
         let origPos, destPos;
@@ -3175,33 +3250,9 @@ Panel.prototype = {
         }
 
         // setup onUpdate tween parameter to set the actor clip region during animation.
-        // we need to account for the shadow box as well as the exposed part of the
-        // panel when setting the clip size and offset.
-        panelParams['onUpdateParams'] = [origPos, this.panelPosition, isHorizontal, shadowBox];
+        panelParams['onUpdateParams'] = [origPos];
         panelParams['onUpdate'] =
-            Lang.bind(this, function(origPos, panelPosition, isHorizontal, shadowBox) {
-                // Force the layout manager to update the input region
-                Main.layoutManager._chrome.updateRegions()
-                if (isHorizontal) {
-                    let exposedHeight = Math.abs(this.actor.y - origPos);
-                    let clipHeight = exposedHeight + shadowBox.y2;
-                    let clipOffsetY;
-                    if (panelPosition == PanelLoc.top)
-                        clipOffsetY = this.actor.height - exposedHeight;
-                    else
-                        clipOffsetY = 0 + shadowBox.y1;
-                    this.actor.set_clip(0, clipOffsetY, this.monitor.width, clipHeight);
-                } else {
-                    let exposedWidth = Math.abs(this.actor.x - origPos);
-                    let clipWidth = exposedWidth + shadowBox.x2;
-                    let clipOffsetX;
-                    if (panelPosition == PanelLoc.left)
-                        clipOffsetX = this.actor.width - exposedWidth;
-                    else
-                        clipOffsetX = 0 + shadowBox.x1;
-                    this.actor.set_clip(clipOffsetX, 0, clipWidth, this.monitor.height);
-                }
-            });
+            Lang.bind(this, function(origPos) { this._setClipRegion(false, origPos); });
 
         // setup boxes tween - fade in as panel slides
         let boxParams = { opacity: 255,
@@ -3267,32 +3318,9 @@ Panel.prototype = {
         }
 
         // setup onUpdate tween parameter to update the actor clip region during animation
-        // we need to account for the the exposed part of the panel when setting the clip
-        // size and offset.
-        // note: ensure at least one exposed panel pixel strip remains after the clip
-        panelParams['onUpdateParams'] = [destPos, this.panelPosition, isHorizontal];
+        panelParams['onUpdateParams'] = [destPos];
         panelParams['onUpdate'] =
-            Lang.bind(this, function(destPos, panelPosition, isHorizontal) {
-                // Force the layout manager to update the input region
-                Main.layoutManager._chrome.updateRegions()
-                if (isHorizontal) {
-                    let exposedHeight = Math.abs(this.actor.y - destPos) + 1;
-                    let clipOffsetY;
-                    if (panelPosition == PanelLoc.top)
-                        clipOffsetY = this.actor.height - exposedHeight;
-                    else
-                        clipOffsetY = 0;
-                    this.actor.set_clip(0, clipOffsetY, this.monitor.width, exposedHeight);
-                } else {
-                    let exposedWidth = Math.abs(this.actor.x - destPos) + 1;
-                    let clipOffsetX;
-                    if (panelPosition == PanelLoc.left)
-                        clipOffsetX = this.actor.width - exposedWidth;
-                    else
-                        clipOffsetX = 0;
-                    this.actor.set_clip(clipOffsetX, 0, exposedWidth, this.monitor.height);
-                }
-            });
+            Lang.bind(this, function(destPos) { this._setClipRegion(true, destPos); });
         
         // hide boxes after panel slides out
         panelParams['onComplete'] =
