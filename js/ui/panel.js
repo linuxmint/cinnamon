@@ -3129,7 +3129,6 @@ Panel.prototype = {
 
         // setup panel tween - slide in from edge of monitor
         // if horizontal panel, animation on y. if vertical, animation on x.
-        let origPos;
         let isHorizontal = this.panelPosition == PanelLoc.top
                            || this.panelPosition == PanelLoc.bottom;
         let animationTime = AUTOHIDE_ANIMATION_TIME;
@@ -3150,29 +3149,28 @@ Panel.prototype = {
         }
 
         // set up original and destination positions and add tween
-        // destination position paramater
+        // destination parameter
+        let origPos, destPos;
         if (isHorizontal) {
             let height = this.actor.get_height();
-            let destY;
             if (this.panelPosition == PanelLoc.top) {
-                destY = this.monitor.y;
+                destPos = this.monitor.y;
                 origPos = this.monitor.y - height;
             } else {
-                destY = this.monitor.y + this.monitor.height - height;
+                destPos = this.monitor.y + this.monitor.height - height;
                 origPos = this.monitor.y + this.monitor.height;
             }
-            panelParams['y'] = destY;
+            panelParams['y'] = destPos;
         } else {
             let width = this.actor.get_width();
-            let destX;
             if (this.panelPosition == PanelLoc.left) {
-                destX = this.monitor.x;
+                destPos = this.monitor.x;
                 origPos = this.monitor.x - width;
             } else {
-                destX = this.monitor.width - width + this.monitor.x;
+                destPos = this.monitor.width - width + this.monitor.x;
                 origPos = this.monitor.width + this.monitor.x;
             }
-            panelParams['x'] = destX;
+            panelParams['x'] = destPos;
         }
 
         // setup onUpdate tween parameter to set the actor clip region during animation.
@@ -3247,33 +3245,31 @@ Panel.prototype = {
         let panelParams = { time: animationTime,
                             transition: 'easeOutQuad' };
 
-        // setup destination position and onUpdateParams for clipping later
+        // setup destination position and add tween destination parameter
         // remember to always leave a vestigial 1px strip or the panel
         // will become inaccessible
+        let destPos;
         if (isHorizontal) {
             let height = this.actor.get_height();
-            let destY;
             if (this.panelPosition == PanelLoc.top)
-                destY = this.monitor.y - height + 1;
+                destPos = this.monitor.y - height + 1;
             else
-                destY = this.monitor.y + this.monitor.height - 1;
-            panelParams['y'] = destY;
-            panelParams['onUpdateParams'] = [destY, this.panelPosition, isHorizontal];
+                destPos = this.monitor.y + this.monitor.height - 1;
+            panelParams['y'] = destPos;
         } else {
             let width = this.actor.get_width();
-            let destX;
             if (this.panelPosition == PanelLoc.left)
-                destX = this.monitor.x - width + 1;
+                destPos = this.monitor.x - width + 1;
             else
-                destX = this.monitor.x + this.monitor.width - 1;
-            panelParams['x'] = destX;
-            panelParams['onUpdateParams'] = [destX, this.panelPosition, isHorizontal];
+                destPos = this.monitor.x + this.monitor.width - 1;
+            panelParams['x'] = destPos;
         }
 
         // setup onUpdate tween parameter to update the actor clip region during animation
         // we need to account for the the exposed part of the panel when setting the clip
         // size and offset.
         // note: ensure at least one exposed panel pixel strip remains after the clip
+        panelParams['onUpdateParams'] = [destPos, this.panelPosition, isHorizontal];
         panelParams['onUpdate'] =
             Lang.bind(this, function(destPos, panelPosition, isHorizontal) {
                 // Force the layout manager to update the input region
