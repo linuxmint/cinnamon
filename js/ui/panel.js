@@ -2530,30 +2530,39 @@ Panel.prototype = {
     /**
      * _moveResizePanel:
      *
-     * Function to update the panel position and size according to settings
+     * Function to update the panel position, size, and clip region according to settings
      * values.  Note that this is also called when the style changes.
      */
     _moveResizePanel: function() {
-
         if (this._destroyed)
             return false;
 
-        this._positionChanged = false;
-        this._monitorsChanged = false;
-
+        //
+        // layouts set to be full width horizontal panels, and vertical panels set to use as much available space as is left
+        //
+        // NB If you want to use margin to inset the panels within a monitor, then you can't just set it here
+        // else full screen windows will then go right to the edge with the panels floating over
+        //
         this.monitor = global.screen.get_monitor_geometry(this.monitorIndex);
         let horizontal_panel = ((this.panelPosition == PanelLoc.top || this.panelPosition == PanelLoc.bottom) ? true : false);
 
+        // this stands for width on vertical panels, and height on horizontal panels
         let panelHeight = this._getScaledPanelHeight();
-        this._setFont(panelHeight);
 
+        // find heights used by horizontal panels to determine height available for vertical panels.
+        // we need to check Main.panelManager because this can be called before it has initialized.
+        this.toppanelHeight = 0;
+        this.bottompanelHeight = 0;
+        if (Main.panelManager && !horizontal_panel)
+            [this.toppanelHeight, this.bottompanelHeight] = heightsUsedMonitor(this.monitorIndex, Main.panelManager.panels);
+        // get shadow and margins
         let themeNode = this.actor.get_theme_node();
 
         // FIXME: inset shadows will probably break clipping.
         // I haven't seen a theme with inset panel shadows, but if there
         // are any then we need to just use the dummy shadow box in that case.
-        let shadow = themeNode.get_box_shadow();
         let shadowBox;
+        let shadow = themeNode.get_box_shadow();
         if (shadow) {
             shadowBox = new Clutter.ActorBox;
             let actorBox = new Clutter.ActorBox;
@@ -2562,95 +2571,120 @@ Panel.prototype = {
             // if we don't actually have a shadow, just create a dummy shadowBox
             shadowBox = {x1: 0, y1: 0, x2: 0, y2: 0};
         }
-        this._shadowBox = shadowBox;
 
+        let newMarginTop = 0;
+        let newMarginBottom = 0;
+        let newMarginLeft = 0;
+        let newMarginRight = 0;
         try {
-            this.margin_top    = 0;
-            this.margin_bottom = 0;
-            this.margin_left   = 0;
-            this.margin_right  = 0;
-            this.margin_top    = themeNode.get_margin(St.Side.TOP);
-            this.margin_bottom = themeNode.get_margin(St.Side.BOTTOM);
-            this.margin_left   = themeNode.get_margin(St.Side.LEFT);
-            this.margin_right  = themeNode.get_margin(St.Side.RIGHT);
+            newMarginTop    = themeNode.get_margin(St.Side.TOP);
+            newMarginBottom = themeNode.get_margin(St.Side.BOTTOM);
+            newMarginLeft   = themeNode.get_margin(St.Side.LEFT);
+            newMarginRight  = themeNode.get_margin(St.Side.RIGHT);
         } catch (e) {
             global.log(e);
         }
-        //
-        // set the height of the panel. To find the height available for the vertical panels we need to find out how
-        // much has been used for the horizontal panels on this monitor.
-        //
-        this.toppanelHeight = 0;
-        this.bottompanelHeight = 0;
-        let vertpanelHeight = 0;
 
-        if (!horizontal_panel) {
-            if (Main.panelManager)            // the panelManager has initialized
-                [this.toppanelHeight, this.bottompanelHeight] = heightsUsedMonitor(this.monitorIndex, Main.panelManager.panels);
-        
-            vertpanelHeight = this.monitor.height - this.toppanelHeight - this.bottompanelHeight
-                              - global.ui_scale*(this.margin_top + this.margin_bottom);
-        }
-        this._updatePanelVisibility();
-        //
-        // layouts set to be full width horizontal panels, and vertical panels set to use as much available space as is left 
-        //
-        // FIXME: Should margin be used to inset the panels within a monitor, to create some sort of island panel,
-        //        then it would not work as intended
-        // - full screen windows will then go right to the edge with the panels floating over
-        // - other windows can be placed underneath
-        // - i.e. the internal edge of the panel will not work properly as a hard boundary to windows
-        // Similarly any margin on the internal panel edge will have no effect.
-        //
-        switch (this.panelPosition) {
-            case PanelLoc.top:
-                this.actor.set_size    (this.monitor.width - global.ui_scale*(this.margin_left+this.margin_right),
-                                        panelHeight);
-                this.actor.set_position(this.monitor.x,
-                                        this.monitor.y);
-                break;
-            case PanelLoc.bottom:
-                this.actor.set_size    (this.monitor.width - global.ui_scale*(this.margin_left+this.margin_right),
-                                        panelHeight);
-                this.actor.set_position(this.monitor.x,
-                                        this.monitor.y + this.monitor.height - panelHeight);
-                break;
-            case PanelLoc.left:
-                this.actor.set_size    (panelHeight,
-                                        vertpanelHeight);
-                this.actor.set_position(this.monitor.x,
-                                        this.monitor.y + this.toppanelHeight);
-                break;
-            case PanelLoc.right:
-                this.actor.set_size    (panelHeight,
-                                        vertpanelHeight);
-                this.actor.set_position(this.monitor.x + this.monitor.width - panelHeight,
-                                        this.monitor.y + this.toppanelHeight);
-                break;
-            default:
-                global.log("moveResizePanel - unrecognised panel position "+this.panelPosition);
-        }
-        this._updatePanelBarriers();   // only needed here for when this routine is called when the style changes
+        let panelChanged = false;
 
-        //
-        // If we are adjusting the heights of horizontal panels then the vertical ones on this monitor 
-        // may need to be changed at the same time. 
-        //
+        let shadowChanged = !this._shadowBox
+                            || shadowBox.x1 != this._shadowBox.x1
+                            || shadowBox.x2 != this._shadowBox.x2
+                            || shadowBox.y1 != this._shadowBox.y1
+                            || shadowBox.y2 != this._shadowBox.y2;
+
+        // if the shadow changed, we need to update the clip
+        if (shadowChanged) {
+            panelChanged = true;
+            this._shadowBox = shadowBox;
+        }
+
+        // if the position changed, make sure the panel is showing
+        // so it's more apparent that the panel moved successfully
+        if (this._positionChanged) {
+            panelChanged = true;
+            this._positionChanged = false;
+            this._hidden = false;
+        }
+
+        // if the monitors changed, force update in case the position needs updating
+        if (this._monitorsChanged) {
+            panelChanged = true;
+            this._monitorsChanged = false;
+        }
+
+        // calculate new panel sizes
+        let newVertPanelHeight = this.monitor.height - this.toppanelHeight - this.bottompanelHeight
+                                 - global.ui_scale*(newMarginTop + newMarginBottom);
+        let newHorizPanelWidth = this.monitor.width - global.ui_scale*(newMarginLeft + newMarginRight);
+
+        // and determine if this panel's size changed
         if (horizontal_panel) {
-            if (Main.panelManager) {            // the panelManager has initialized
-                for (let i in Main.panelManager.panels) {
-                    if (Main.panelManager.panels[i])
-                        if ((Main.panelManager.panels[i].panelPosition == PanelLoc.left 
-                        || Main.panelManager.panels[i].panelPosition == PanelLoc.right)
-                        && Main.panelManager.panels[i].monitorIndex == this.monitorIndex)
-                        Main.panelManager.panels[i]._moveResizePanel();
+            if (this.actor.width != newHorizPanelWidth || this.actor.height != panelHeight)
+                panelChanged = true;
+        } else {
+            if (this.actor.width != panelHeight || this.actor.height != newVertPanelHeight)
+                panelChanged = true;
+        }
+
+        if (panelChanged) {
+            // remove any tweens that might be active for autohide
+            Tweener.removeTweens(this.actor);
+
+            this.margin_top = newMarginTop;
+            this.margin_bottom = newMarginBottom;
+            this.margin_left = newMarginLeft;
+            this.margin_right = newMarginRight;
+
+            this._setFont(panelHeight);
+
+            // update size and determine position depending on hidden state
+            let newX, newY;
+            if (horizontal_panel) {
+                newX = this.monitor.x;
+                if (this.panelPosition == PanelLoc.top) {
+                    newY = this._hidden ? this.monitor.y - panelHeight + 1
+                                        : this.monitor.y;
+                } else {
+                    newY = this._hidden ? this.monitor.y + this.monitor.height - 1
+                                        : this.monitor.y + this.monitor.height - panelHeight;
+                }
+                this.actor.set_size(newHorizPanelWidth, panelHeight);
+            } else {
+                newY = this.monitor.y + this.toppanelHeight;
+                if (this.panelPosition == PanelLoc.left) {
+                    newX = this._hidden ? this.monitor.x - panelHeight + 1
+                                        : this.monitor.x;
+                } else {
+                    newX = this._hidden ? this.monitor.x + this.monitor.width - 1
+                                        : this.monitor.x + this.monitor.width - panelHeight;
+                }
+                this.actor.set_size(panelHeight, newVertPanelHeight);
+            }
+
+            // update position and clip region
+            this.actor.set_position(newX, newY)
+            this._setClipRegion(this._hidden);
+
+            // only needed here for when this routine is called when the style changes
+            this._updatePanelBarriers();
+
+            this._updatePanelVisibility();
+
+            // If we are adjusting the heights of horizontal panels then the vertical ones on this monitor
+            // need to be changed at the same time.
+            if (Main.panelManager && horizontal_panel) {
+                let panels = Main.panelManager.getPanelsInMonitor(this.monitorIndex);
+                for (let p of panels) {
+                    if (p.panelPosition == PanelLoc.left || p.panelPosition == PanelLoc.right)
+                        p._moveResizePanel();
                 }
             }
-        }
-        // AppletManager might not be initialized yet
-        if (AppletManager.appletsLoaded)
-            AppletManager.updateAppletPanelHeights(); 
 
+            // AppletManager might not be initialized yet
+            if (AppletManager.appletsLoaded)
+                AppletManager.updateAppletPanelHeights();
+        }
         return true;
     },
 
