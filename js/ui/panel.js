@@ -1878,7 +1878,7 @@ Panel.prototype = {
         this._hidden = false;
         this._disabled = false;
         this._panelEditMode = false;
-        this._autohideSettings = this._getProperty(PANEL_AUTOHIDE_KEY, "s");
+        this._autohideSettings = null;
         this._themeFontSize = null;
         this._destroyed = false;
         this._signalManager = new SignalManager.SignalManager(this);
@@ -1923,6 +1923,7 @@ Panel.prototype = {
         Main.layoutManager.addChrome(this.actor, { addToWindowgroup: false });
         this._moveResizePanel();
         this._onPanelEditModeChanged();
+        this._processPanelAutoHide();
 
         this.actor.connect('button-press-event', Lang.bind(this, this._onButtonPressEvent));
         this.actor.connect('style-changed', Lang.bind(this, this._moveResizePanel));
@@ -2338,7 +2339,7 @@ Panel.prototype = {
         this._rightBox.change_style_pseudo_class('dnd', this._panelEditMode);
 
         if (old_mode != this._panelEditMode) {
-            this._processPanelAutoHide();
+            this._updatePanelVisibility();
         }
 
         this.actor.queue_relayout();
@@ -2495,7 +2496,7 @@ Panel.prototype = {
             vertpanelHeight = this.monitor.height - this.toppanelHeight - this.bottompanelHeight
                               - global.ui_scale*(this.margin_top + this.margin_bottom);
         }
-        this._processPanelAutoHide();
+        this._updatePanelVisibility();
         //
         // layouts set to be full width horizontal panels, and vertical panels set to use as much available space as is left 
         //
