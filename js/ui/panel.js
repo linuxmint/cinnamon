@@ -3000,9 +3000,9 @@ Panel.prototype = {
                     this._shouldShow = false;
                     break;
                 }
-                let y;
+                let x, y;
 
-                /* Calculate the y instead of getting the actor y since the
+                /* Calculate the x or y instead of getting it from the actor since the
                  * actor might be hidden*/
                 switch (this.panelPosition) {
                     case PanelLoc.top:
