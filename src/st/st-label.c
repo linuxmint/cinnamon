@@ -459,9 +459,6 @@ struct _StLabelAccessibleClass
   StWidgetAccessibleClass parent_class;
 };
 
-static void st_label_accessible_class_init (StLabelAccessibleClass *klass);
-static void st_label_accessible_init       (StLabelAccessible *label);
-
 /* AtkObject */
 static void          st_label_accessible_initialize (AtkObject *obj,
                                                      gpointer   data);
