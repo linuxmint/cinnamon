@@ -869,7 +869,8 @@ CategoryButton.prototype = {
         this.actor._delegate = this;
         this.label = new St.Label({ text: label, style_class: 'menu-category-button-label' });
         if (category && this.icon_name) {
-            this.icon = St.TextureCache.get_default().load_gicon(null, icon, CATEGORY_ICON_SIZE);
+            this.icon = new St.Icon({gicon: icon, icon_size: CATEGORY_ICON_SIZE, icon_type: St.IconType.FULLCOLOR});
+
             if (this.icon) {
                 this.addActor(this.icon);
                 this.icon.realize();
@@ -1265,8 +1266,6 @@ MyApplet.prototype = {
         // The reason we do is in case the Cinnamon icon theme is the same as the one specificed in GTK itself (in .config)
         // In that particular case we get no signal at all.
         this._refreshAll();
-
-        St.TextureCache.get_default().connect("icon-theme-changed", Lang.bind(this, this.onIconThemeChanged));
         this._recalc_height();
 
         this.update_label_visible();
@@ -1277,13 +1276,6 @@ MyApplet.prototype = {
             if (!Main.overview.visible && !Main.expo.visible)
                 this.menu.toggle_with_options(this.enableAnimation);
         }));
-    },
-
-    onIconThemeChanged: function() {
-        if (this.refreshing == false) {
-            this.refreshing = true;
-            Mainloop.timeout_add_seconds(1, Lang.bind(this, this._refreshAll));
-        }
     },
 
     onAppSysChanged: function() {

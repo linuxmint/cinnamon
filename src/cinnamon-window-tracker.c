@@ -928,8 +928,7 @@ cinnamon_startup_sequence_create_icon (CinnamonStartupSequence *sequence, guint 
     }
 
   themed = g_themed_icon_new (icon_name);
-  texture = st_texture_cache_load_gicon (st_texture_cache_get_default (),
-                                         NULL, themed, size);
+  texture = g_object_new (ST_TYPE_ICON, "gicon", themed, "icon-size", size, NULL);
   g_object_unref (G_OBJECT (themed));
   return texture;
 }

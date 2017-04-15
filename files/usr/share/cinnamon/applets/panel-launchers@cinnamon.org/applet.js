@@ -214,7 +214,7 @@ PanelAppLauncher.prototype = {
             let icon = this.appinfo.get_icon();
             if (icon == null)
                 icon = new Gio.ThemedIcon({name: "gnome-panel-launcher"});
-            return St.TextureCache.get_default().load_gicon(null, icon, this.icon_height);
+            return new St.Icon({gicon: icon, icon_size: this.icon_height, icon_type: St.IconType.FULLCOLOR});
         } else {
             return this.app.create_icon_texture(this.icon_height);
         }
@@ -363,8 +363,6 @@ MyApplet.prototype = {
         this.do_gsettings_import();
 
         this.on_orientation_changed(orientation);
-
-        St.TextureCache.get_default().connect("icon-theme-changed", Lang.bind(this, this.reload));
     },
 
     _updateLauncherDrag: function() {

@@ -186,12 +186,12 @@ cinnamon_app_create_icon_texture (CinnamonApp   *app,
 
   icon = g_app_info_get_icon (G_APP_INFO (gmenu_tree_entry_get_app_info (app->entry)));
   if (icon != NULL)
-    ret = st_texture_cache_load_gicon (st_texture_cache_get_default (), NULL, icon, size);
+    ret = g_object_new (ST_TYPE_ICON, "gicon", icon, "icon-size", size, NULL);
 
   if (ret == NULL)
     {
       icon = g_themed_icon_new ("application-x-executable");
-      ret = st_texture_cache_load_gicon (st_texture_cache_get_default (), NULL, icon, size);
+      ret = g_object_new (ST_TYPE_ICON, "gicon", icon, "icon-size", size, NULL);
       g_object_unref (icon);
     }
 
