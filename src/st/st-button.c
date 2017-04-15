@@ -722,9 +722,6 @@ struct _StButtonAccessibleClass
   StWidgetAccessibleClass parent_class;
 };
 
-static void st_button_accessible_class_init (StButtonAccessibleClass *klass);
-static void st_button_accessible_init       (StButtonAccessible *button);
-
 /* AtkObject */
 static void          st_button_accessible_initialize (AtkObject *obj,
                                                       gpointer   data);
