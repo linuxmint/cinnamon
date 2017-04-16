@@ -146,7 +146,7 @@ class Module:
         bottom = (height + new_height) / 2
 
         image = image.crop((left, top, right, bottom))
-        image.thumbnail((96, 96), PIL.Image.ANTIALIAS)
+        image.thumbnail((255, 255), PIL.Image.ANTIALIAS)
 
         face_path = os.path.join(self.accountService.get_home_dir(), ".face")
 
@@ -187,7 +187,7 @@ class Module:
             right = (width + new_width)/2
             bottom = (height + new_height)/2
             image = image.crop((left, top, right, bottom))
-            image.thumbnail((96, 96), PIL.Image.ANTIALIAS)
+            image.thumbnail((255, 255), PIL.Image.ANTIALIAS)
             face_path = os.path.join(self.accountService.get_home_dir(), ".face")
             image.save(face_path, "png")
             self.accountService.set_icon_file(face_path)
