@@ -394,6 +394,7 @@ function Melange() {
 Melange.prototype = {
     _init: function() {
         this.proxy = null;
+        this._it = null;
         this._open = false;
         this._settings = new Gio.Settings({schema_id: "org.cinnamon.desktop.keybindings"});
         this._settings.connect("changed::looking-glass-keybinding", Lang.bind(this, this._update_keybinding));
