@@ -38,7 +38,6 @@ GSettings     *cinnamon_global_get_settings              (CinnamonGlobal *global
 guint32        cinnamon_global_get_current_time          (CinnamonGlobal *global);
 pid_t          cinnamon_global_get_pid                   (CinnamonGlobal *global);
 gchar         *cinnamon_global_get_md5_for_string        (CinnamonGlobal *global, const gchar *string);
-gint64         cinnamon_global_get_last_gc_end_time      (CinnamonGlobal *global);
 void           cinnamon_global_dump_gjs_stack            (CinnamonGlobal *global);
 
 /* Input/event handling */
@@ -99,9 +98,6 @@ void    cinnamon_global_get_pointer             (CinnamonGlobal         *global,
 void    cinnamon_global_set_pointer             (CinnamonGlobal         *global,
                                               int                 x,
                                               int                 y);
-
-// void     cinnamon_global_get_memory_info      (CinnamonGlobal       *global,
-//                                                CinnamonJSMemoryInfo *meminfo);
 
 /* Run-at-leisure API */
 void cinnamon_global_begin_work     (CinnamonGlobal          *global);

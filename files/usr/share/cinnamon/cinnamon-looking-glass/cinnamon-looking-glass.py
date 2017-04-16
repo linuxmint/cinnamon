@@ -442,7 +442,7 @@ class CinnamonLog(dbus.service.Object):
         self.pages = {}
         self.createPage("Results", "results")
         self.createPage("Inspect", "inspect")
-        self.createPage("Memory", "memory")
+        # self.createPage("Memory", "memory") - TODO: re-implement get_memory_info from cjs
         self.createPage("Windows", "windows")
         self.createPage("Extensions", "extensions")
         self.createPage("Log", "log")

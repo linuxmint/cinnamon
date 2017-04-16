@@ -1083,20 +1083,6 @@ _cinnamon_global_set_plugin (CinnamonGlobal *global,
   update_scale_factor (gtk_settings_get_default (), NULL, global);
 }
 
-// /**
-//  * cinnamon_global_get_memory_info:
-//  * @global: A #CinnamonGlobal
-//  * @meminfo: (out caller-allocates): Output location for memory information
-//  *
-//  * Get Cinnamon memory usage information.
-//  */
-// void
-// cinnamon_global_get_memory_info (CinnamonGlobal *global, CinnamonJSMemoryInfo *meminfo)
-// {
-//   return;
-//   cinnamon_js_get_memory_info (global->js_context, global->last_gc_end_time, meminfo);
-// }
-
 /**
  * cinnamon_global_dump_gjs_stack:
  * @global: A #CinnamonGlobal
@@ -1377,18 +1363,6 @@ grab_notify (GtkWidget *widget, gboolean was_grabbed, gpointer user_data)
 
   /* Update for the new setting of gtk_grab_active */
   cinnamon_global_set_stage_input_mode (global, global->input_mode);
-}
-
-/**
- * cinnamon_global_get_last_gc_end_time:
- * @global: A #CinnamonGlobal
- *
- * Returns: The timestamp of the last js garbage collection.
- */
-gint64
-cinnamon_global_get_last_gc_end_time (CinnamonGlobal *global)
-{
-    return global->last_gc_end_time;
 }
 
 /**

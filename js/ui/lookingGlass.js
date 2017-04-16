@@ -515,31 +515,17 @@ Melange.prototype = {
 
         let resultObj;
 
-        /*  Set up for some reporting about memory impact and execution speed.
-            The performance impact of CinnamonJS.get_memory_info should be 
-            very small, whereas getting a timestamp might involve some 
-            memory allocation, so we grab the timestamp first.
-        */
-        // let ts = new Date().getTime();
-        // let memInfo = global.get_memory_info();
-        
+        let ts = new Date().getTime();
+
         try {
             resultObj = eval(fullCmd);
         } catch (e) {
             resultObj = '<exception ' + e + '>';
         }
-        // let memInfo2 = global.get_memory_info();
-        // let ts2 = new Date().getTime();
 
-        let tooltip = _("Memory information (Final / Diff):") + "\n";
-        // tooltip += '    uordblks: ' + (memInfo2.glibc_uordblks) + " / " + (memInfo2.glibc_uordblks - memInfo.glibc_uordblks) + "\n" + 
-        //            '    js_bytes: ' + (memInfo2.js_bytes) + " / " + (memInfo2.js_bytes - memInfo.js_bytes) + "\n" + 
-        //            '    gjs_boxed: ' + (memInfo2.gjs_boxed) + " / " + (memInfo2.gjs_boxed - memInfo.gjs_boxed) + "\n" + 
-        //            '    gjs_gobject: ' + (memInfo2.gjs_gobject) + " / " + (memInfo2.gjs_gobject - memInfo.gjs_gobject) + "\n" + 
-        //            '    gjs_function: ' + (memInfo2.gjs_function) + " / " + (memInfo2.gjs_function - memInfo.gjs_function) + "\n" + 
-        //            '    gjs_closure: ' + (memInfo2.gjs_closure) + " / " + (memInfo2.gjs_closure - memInfo.gjs_closure) + "\n";
+        let ts2 = new Date().getTime();
 
-        // tooltip += _("Execution time (ms): ") + (ts2 - ts);
+        let tooltip = _("Execution time (ms): ") + (ts2 - ts);
 
         this._pushResult(command, resultObj, tooltip);
 
@@ -571,19 +557,6 @@ Melange.prototype = {
 
     // DBus function
     GetMemoryInfo: function() {
-        // let memInfo = global.get_memory_info();
-        // let result = [
-        //     true,
-        //     memInfo.last_gc_seconds_ago,
-        //     {
-        //         'glibc_uordblks': (memInfo.glibc_uordblks),
-        //         'js_bytes': (memInfo.js_bytes),
-        //         'gjs_boxed': (memInfo.gjs_boxed),
-        //         'gjs_gobject': (memInfo.gjs_gobject),
-        //         'gjs_function': (memInfo.gjs_function),
-        //         'gjs_closure': (memInfo.gjs_closure)
-        //     }
-        // ]
         return null;
     },
 
