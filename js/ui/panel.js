@@ -233,6 +233,7 @@ function PanelManager() {
 
 PanelManager.prototype = {
     _init: function() {
+        this.dummyPanels = [];
         this.panels = [];
         this.panelsMeta = [];   // Properties of panels in format [<monitor index>, <panelPosition>]
         this.canAdd = true;     // Whether there is space for more panels to be added
