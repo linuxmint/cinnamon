@@ -951,6 +951,7 @@ PanelManager.prototype = {
                 }
 
             } else { // Nothing happens. Re-allocate panel
+                this.panels[i]._monitorsChanged = true;
                 this.panels[i]._moveResizePanel();
             }
         }
@@ -1881,6 +1882,8 @@ Panel.prototype = {
         this._autohideSettings = null;
         this._themeFontSize = null;
         this._destroyed = false;
+        this._positionChanged = false;
+        this._monitorsChanged = false;
         this._signalManager = new SignalManager.SignalManager(this);
         this.margin_top = 0;
         this.margin_bottom = 0;
@@ -2028,6 +2031,7 @@ Panel.prototype = {
     updatePosition: function(monitorIndex, panelPosition) {
         this.monitorIndex = monitorIndex
         this.panelPosition = panelPosition;
+        this._positionChanged = true;
 
         this.monitor = global.screen.get_monitor_geometry(monitorIndex);
         //
@@ -2533,6 +2537,9 @@ Panel.prototype = {
 
         if (this._destroyed)
             return false;
+
+        this._positionChanged = false;
+        this._monitorsChanged = false;
 
         this.monitor = global.screen.get_monitor_geometry(this.monitorIndex);
         let horizontal_panel = ((this.panelPosition == PanelLoc.top || this.panelPosition == PanelLoc.bottom) ? true : false);
