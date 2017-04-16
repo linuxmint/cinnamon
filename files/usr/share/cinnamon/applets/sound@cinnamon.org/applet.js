@@ -243,6 +243,7 @@ Player.prototype = {
         this._busName = busname;
         this._applet = applet;
         this._name = this._busName.split('.')[3];
+        this._songLength = 0;
 
         Interfaces.getDBusProxyWithOwnerAsync(MEDIA_PLAYER_2_NAME,
                                               this._busName,
