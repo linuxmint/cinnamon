@@ -14,18 +14,23 @@ class Monitor:
     def __init__(self):
         self.top = -1
         self.bottom = -1
-	self.right = -1
-	self.left = -1
+        self.right = -1
+        self.left = -1
 
 
 class PanelSettingsPage(SettingsPage):
-    def __init__(self, panel_id, settings):
+    def __init__(self, panel_id, settings, position):
         super(PanelSettingsPage, self).__init__()
         self.set_margin_top(0)
         self.set_margin_bottom(0)
         self.widgets = []
         self.panel_id = panel_id
         self.settings = settings
+
+        if position in ("top", "bottom"):
+            dimension_text = _("height")
+        else:
+            dimension_text = _("width")
 
         section = SettingsBox(_("Settings"))
         self.add(section)
@@ -43,40 +48,27 @@ class PanelSettingsPage(SettingsPage):
         section.add_reveal_row(widget)
         self.widgets.append(widget)
 
-        widget = PanelSwitch(_("Use customized panel size (otherwise it's defined by the theme)"), "", "org.cinnamon", "panels-resizable", self.panel_id)
+        widget = PanelSwitch(_("Use customized panel size (otherwise it's defined by the theme)"), None, "org.cinnamon", "panels-resizable", self.panel_id)
         section.add_row(widget)
         self.widgets.append(widget)
-        widget.update_visible_string(None)
+        widget.label1.show()
 
-        string1 = _("Allow Cinnamon to scale panel text and icons according to the panel height")
+        string1 = _("Allow Cinnamon to scale panel text and icons according to the panel %s" % dimension_text)
         string2 = _("Allow Cinnamon to scale panel text and icons according to the panel width")
         self.size_switch = PanelSwitch(string1, string2, "org.cinnamon", "panels-scale-text-icons", self.panel_id, "org.cinnamon/panels-resizable")
         section.add_reveal_row(self.size_switch)
         self.widgets.append(self.size_switch)
+        self.size_switch.label1.show()
 
-        string1 = _("Panel height:")
+        string1 = _("Panel %s:" % dimension_text)
         string2 = _("Panel width:")
         self.size_range = PanelRange(string1, string2, "org.cinnamon", "panels-height", self.panel_id, _("Smaller"), _("Larger"), mini=20, maxi=50, dep_key="org.cinnamon/panels-resizable")
         self.size_range.add_mark(25.0, Gtk.PositionType.TOP, None)
         section.add_reveal_row(self.size_range)
         self.widgets.append(self.size_range)
+        self.size_range.label1.show()
 
-        self.get_panel_position()
-
-    def set_panel_id(self, panel_id):
-        self.panel_id = panel_id
-        self.get_panel_position()
-        for widget in self.widgets:
-            widget.set_panel_id(self.panel_id)
-
-    def get_panel_position(self):
-        panels = len(self.settings.get_strv("panels-enabled"))
-        for i in range(panels):
-            if int(self.settings.get_strv("panels-enabled")[i].split(":")[0]) == self.panel_id:
-                position = self.settings.get_strv("panels-enabled")[i].split(":")[2]
-                self.size_switch.update_visible_string(position)
-                self.size_range.update_visible_string(position)
-
+        self.show_all()
 
 class Module:
     name = "panel"
@@ -95,13 +87,12 @@ class Module:
 
             try:
                 if len(sys.argv) > 2 and sys.argv[1] == "panel":
-                    self.panel_id = int(sys.argv[2])
+                    self.panel_id = sys.argv[2]
                 else:
-                    self.panel_id = int(self.settings.get_strv("panels-enabled")[0].split(":")[0])
+                    self.panel_id = self.settings.get_strv("panels-enabled")[0].split(":")[0]
             except:
-                self.panel_id = -1
+                self.panel_id = ""
 
-            self.monitor_layout = []
             self.panels = []
 
             self.previous_button = Gtk.Button(_("Previous panel"))
@@ -125,15 +116,6 @@ class Module:
             self.config_stack = Gtk.Stack()
             self.config_stack.set_transition_duration(150)
             self.revealer.add(self.config_stack)
-
-            self.pages = [PanelSettingsPage(self.panel_id, self.settings) for i in range(2)]
-            self.config_stack.add_named(self.pages[0], "0")
-            self.config_stack.add_named(self.pages[1], "1")
-
-            self.current_visible = self.pages[0]
-            self.pending_visible = self.pages[1]
-            self.config_stack.set_visible_child(self.current_visible)
-            self.current_visible.set_panel_id(self.panel_id)
 
             page = SettingsPage()
             self.sidePage.add_widget(page)
@@ -178,94 +160,117 @@ class Module:
             self.revealer.connect("destroy", self.restore_panels)
 
             self.add_panel_button.connect("clicked", self.on_add_panel)
-            self.add_panel_button.set_sensitive(True)
 
-            self.proxy.highlightPanel('(ib)', self.panel_id, True)
+            self.proxy.highlightPanel('(ib)', int(self.panel_id), True)
 
     def on_add_panel(self, widget):
-        self.proxy.addPanelQuery()
+        if self.proxy:
+            self.proxy.addPanelQuery()
 
     def on_previous_panel(self, widget):
         if self.panel_id and self.proxy:
-            self.proxy.highlightPanel('(ib)', self.panel_id, False)
+            self.proxy.highlightPanel('(ib)', int(self.panel_id), False)
 
-        current = self.panels.index(self.panel_id)
+        current = self.panels.index(self.current_panel)
 
         if current - 1 >= 0:
-            self.panel_id = self.panels[current - 1]
+            self.current_panel = self.panels[current - 1]
+            self.panel_id = self.current_panel.panel_id
         else:
-            self.panel_id = self.panels[len(self.panels) - 1]
+            self.current_panel = self.panels[len(self.panels) - 1]
+            self.panel_id = self.current_panel.panel_id
 
         self.config_stack.set_transition_type(Gtk.StackTransitionType.SLIDE_RIGHT)
 
         if self.proxy:
-            self.proxy.highlightPanel('(ib)', self.panel_id, True)
-        self.pending_visible.set_panel_id(self.panel_id)
+            self.proxy.highlightPanel('(ib)', int(self.panel_id), True)
 
-        self.pending_visible, self.current_visible = self.current_visible, self.pending_visible
-        self.config_stack.set_visible_child(self.current_visible)
+        self.config_stack.set_visible_child(self.current_panel)
 
     def on_next_panel(self, widget):
         if self.panel_id and self.proxy:
-            self.proxy.highlightPanel('(ib)', self.panel_id, False)
+            self.proxy.highlightPanel('(ib)', int(self.panel_id), False)
 
-        current = self.panels.index(self.panel_id)
+        current = self.panels.index(self.current_panel)
 
         if current + 1 < len(self.panels):
-            self.panel_id = self.panels[current + 1]
+            self.current_panel = self.panels[current + 1]
+            self.panel_id = self.current_panel.panel_id
         else:
-            self.panel_id = self.panels[0]
+            self.current_panel = self.panels[0]
+            self.panel_id = self.current_panel.panel_id
 
         self.config_stack.set_transition_type(Gtk.StackTransitionType.SLIDE_LEFT)
 
         if self.proxy:
-            self.proxy.highlightPanel('(ib)', self.panel_id, True)
-        self.pending_visible.set_panel_id(self.panel_id)
+            self.proxy.highlightPanel('(ib)', int(self.panel_id), True)
 
-        self.pending_visible, self.current_visible = self.current_visible, self.pending_visible
-        self.config_stack.set_visible_child(self.current_visible)
+        self.config_stack.set_visible_child(self.current_panel)
 
     def on_panel_list_changed(self, *args):
-        panels = self.settings.get_strv("panels-enabled")
+        if len(self.panels) > 0:
+            for panel in self.panels:
+                panel.destroy()
 
+        self.panels = []
+        monitor_layout = []
+
+        panels = self.settings.get_strv("panels-enabled")
         n_mons = Gdk.Screen.get_default().get_n_monitors()
 
-        self.monitor_layout = []
-        self.panels = []
-
         for i in range(n_mons):
-            self.monitor_layout.append(Monitor())
+            monitor_layout.append(Monitor())
 
+        current_found = False
         for panel in panels:
             panel_id, monitor_id, position = panel.split(":")
-            panel_id = int(panel_id)
             monitor_id = int(monitor_id)
+            panel_page = PanelSettingsPage(panel_id, self.settings, position)
+            self.config_stack.add_named(panel_page, panel_id)
+
+            # we may already have a current panel id from the command line or if
+            # if the panels-enabled key changed since everything was loaded
+            if panel_id == self.panel_id:
+                current_found = True
+                self.current_panel = panel_page
+                self.config_stack.set_visible_child(panel_page)
+
+            # we don't currently show panels on monitors that aren't attached
+            # if we decide to change this behavior, we should probably give some visual indication
+            # that the panel is on a detached monitor
             if monitor_id < n_mons:
                 if "top" in position:
-                    self.monitor_layout[monitor_id].top = panel_id
+                    monitor_layout[monitor_id].top = panel_page
                 elif "bottom" in position:
-                    self.monitor_layout[monitor_id].bottom = panel_id
+                    monitor_layout[monitor_id].bottom = panel_page
                 elif "left" in position:
-                    self.monitor_layout[monitor_id].left = panel_id
+                    monitor_layout[monitor_id].left = panel_page
                 else:
-                    self.monitor_layout[monitor_id].right = panel_id
+                    monitor_layout[monitor_id].right = panel_page
 
         # Index the panels for the next/previous buttons
-        for i in range(0, n_mons):
-            for j in (self.monitor_layout[i].top, self.monitor_layout[i].bottom, self.monitor_layout[i].left, self.monitor_layout[i].right):
-                if j != -1:
-                    self.panels.append(j)
+        for monitor in monitor_layout:
+            for panel_page in (monitor.top, monitor.bottom, monitor.left, monitor.right):
+                if panel_page != -1:
+                    self.panels.append(panel_page)
+
+        if not current_found:
+            self.current_panel = self.panels[0]
+            self.panel_id = self.current_panel.panel_id
+            self.config_stack.set_visible_child(self.current_panel)
 
         self.revealer.set_reveal_child(len(self.panels) != 0)
 
-        show_add = False
-        for i in range(0, n_mons):
-            if self.monitor_layout[i].top == -1 or self.monitor_layout[i].bottom == -1 or self.monitor_layout[i].left == -1 or self.monitor_layout[i].right == -1:
-                show_add = True
+        # If all panel positions are full, we want to disable the add button
+        can_add = False
+        for monitor in monitor_layout:
+            if -1 in (monitor.top, monitor.bottom, monitor.left, monitor.right):
+                can_add = True
                 break
-            i += 1
 
-        self.add_panel_button.set_sensitive(show_add)
+        self.add_panel_button.set_sensitive(can_add)
+
+        # Disable the panel switch buttons if there's only one panel
         self.next_button.set_sensitive(len(self.panels) > 1)
         self.previous_button.set_sensitive(len(self.panels) > 1)
 
@@ -277,23 +282,13 @@ class Module:
         if len(self.panels) == 0:
             return
 
-        if self.panel_id != self.panels[current_idx]:
-            if self.proxy:
-                self.proxy.highlightPanel('(ib)', self.panel_id, False)
-            self.panel_id = self.panels[current_idx]
-
-            self.pending_visible.set_panel_id(self.panel_id)
-
-            self.pending_visible, self.current_visible = self.current_visible, self.pending_visible
-            self.config_stack.set_visible_child(self.current_visible)
-
         if self.proxy:
-            self.proxy.highlightPanel('(ib)', self.panel_id, True)
+            self.proxy.highlightPanel('(ib)', int(self.panel_id), True)
 
     def restore_panels(self, widget):
         self.proxy.destroyDummyPanels()
         if self.panel_id:
-            self.proxy.highlightPanel('(ib)', self.panel_id, False)
+            self.proxy.highlightPanel('(ib)', int(self.panel_id), False)
 
 class PanelWidget(SettingsWidget):
     def __init__(self, dep_key, panel_id):
