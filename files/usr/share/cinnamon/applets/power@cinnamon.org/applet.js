@@ -426,8 +426,8 @@ MyApplet.prototype = {
             this._applet_label.set_margin_left(1.0);
         }
 
-        if(icon){
-            if(this.panel_icon_name != icon){
+        if (icon) {
+            if(this.panel_icon_name != icon) {
                 this.panel_icon_name = icon;
                 this.set_applet_icon_symbolic_name('battery-full');
                 let gicon = Gio.icon_new_for_string(icon);
@@ -439,6 +439,18 @@ MyApplet.prototype = {
                 this.panel_icon_name = 'battery-full';
                 this.set_applet_icon_symbolic_name('battery-full');
             }
+        }
+
+        if (device_type == UPDeviceType.BATTERY) {
+            if (percentage > 20) {
+                this._applet_icon.set_style_class_name('system-status-icon');
+            } else if (percentage > 5) {
+                this._applet_icon.set_style_class_name('system-status-icon warning');
+            } else {
+                this._applet_icon.set_style_class_name('system-status-icon error');
+            }
+        } else {
+            this._applet_icon.set_style_class_name ('system-status-icon');
         }
     },
 
@@ -558,7 +570,6 @@ MyApplet.prototype = {
                     }
                 }
             }
-
         }));
     },
 

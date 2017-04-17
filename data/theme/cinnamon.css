@@ -344,6 +344,14 @@ StScrollBar StButton#vhandle:hover {
     margin: 0px;
 }
 
+.system-status-icon.warning {
+    color: #e5e887;
+}
+
+.system-status-icon.error {
+    color: #fb5858;
+}
+
 .panel-corner {
     -panel-corner-radius: 0px;
     -panel-corner-background-color: black;
