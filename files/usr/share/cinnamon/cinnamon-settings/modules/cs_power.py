@@ -105,7 +105,7 @@ class Module:
                 Gio.bus_get_sync(Gio.BusType.SESSION, None),
                 Gio.DBusProxyFlags.NONE,
                 None,
-                "org.cinnamon.SettingsDaemon",
+                "org.cinnamon.SettingsDaemon.Power",
                 "/org/cinnamon/SettingsDaemon/Power",
                 "org.cinnamon.SettingsDaemon.Power",
                 None)
@@ -208,7 +208,7 @@ class Module:
                 Gio.bus_get_sync(Gio.BusType.SESSION, None),
                 Gio.DBusProxyFlags.NONE,
                 None,
-                "org.cinnamon.SettingsDaemon",
+                "org.cinnamon.SettingsDaemon.Power",
                 "/org/cinnamon/SettingsDaemon/Power",
                 "org.cinnamon.SettingsDaemon.Power.Screen",
                 None)

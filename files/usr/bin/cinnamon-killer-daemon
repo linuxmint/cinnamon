@@ -49,7 +49,6 @@ class KillerDaemon:
 
     def restart_cinnamon(self, keystring, data):
         os.system("nemo -n &")  # restart nemo if it's not running already
-        os.system("cinnamon-settings-daemon &")  # restart CSD if it's not running already
         os.system("cinnamon --replace &")  # restart Cinnamon whether it's running or not (can be handy in case of a DE freeze)
 
 if __name__ == '__main__':

@@ -55,7 +55,7 @@ SoundManager.prototype = {
         }));
 
         this.proxy = new proxy(Gio.DBus.session,
-                               'org.cinnamon.SettingsDaemon',
+                               'org.cinnamon.SettingsDaemon.Sound',
                                '/org/cinnamon/SettingsDaemon/Sound');
 
         /* patch public methods into global to keep backward compatibility */

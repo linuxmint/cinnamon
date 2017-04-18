@@ -8,9 +8,6 @@ const Meta = imports.gi.Meta;
 const MK = imports.gi.CDesktopEnums.MediaKeyType;
 const CinnamonDesktop = imports.gi.CinnamonDesktop;
 
-const CSD_DBUS_NAME = "org.cinnamon.SettingsDaemon";
-const CSD_DBUS_PATH = "/org/cinnamon/SettingsDaemon/KeybindingHandler";
-
 const CUSTOM_KEYS_PARENT_SCHEMA = "org.cinnamon.desktop.keybindings";
 const CUSTOM_KEYS_BASENAME = "/org/cinnamon/desktop/keybindings/custom-keybindings";
 const CUSTOM_KEYS_SCHEMA = "org.cinnamon.desktop.keybindings.custom-keybinding";
@@ -36,7 +33,7 @@ function KeybindingManager() {
 KeybindingManager.prototype = {
     _init: function() {
         this._proxy = new proxy(Gio.DBus.session,
-                                'org.cinnamon.SettingsDaemon',
+                                'org.cinnamon.SettingsDaemon.KeybindingHandler',
                                 '/org/cinnamon/SettingsDaemon/KeybindingHandler');
 
         this.bindings = [];
