@@ -62,7 +62,7 @@ KeybindingManager.prototype = {
 
     addHotKeyArray: function(name, bindings, callback) {
         if (this.bindings[name]) {
-            if (this.bindings[name].toString() == bindings.toString()) {
+            if (this.bindings[name].toString() === bindings.toString()) {
               return true;
             }
             global.display.remove_custom_keybinding(name);
