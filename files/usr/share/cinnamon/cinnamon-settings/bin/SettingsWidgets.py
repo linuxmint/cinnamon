@@ -300,8 +300,10 @@ class SettingsStack(Gtk.Stack):
         self.expand = True
 
 class SettingsRevealer(Gtk.Revealer):
-    def __init__(self, schema=None, key=None, values=None):
+    def __init__(self, schema=None, key=None, values=None, check_func=None):
         Gtk.Revealer.__init__(self)
+
+        self.check_func = check_func
 
         self.box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=15)
         Gtk.Revealer.add(self, self.box)
@@ -311,10 +313,9 @@ class SettingsRevealer(Gtk.Revealer):
 
         if schema:
             self.settings = Gio.Settings.new(schema)
-            #the value of this key is the information whether to show or to hide the revealer
-            if values is None:
+            # if there aren't values or a function provided to determine visibility we can do a simple bind
+            if values is None and check_func is None:
                 self.settings.bind(key, self, "reveal-child", Gio.SettingsBindFlags.GET)
-            #only at some values of this key the reveaer must be shown
             else:
                 self.values = values
                 self.settings.connect("changed::" + key, self.on_settings_changed)
@@ -325,7 +326,11 @@ class SettingsRevealer(Gtk.Revealer):
 
     #only used when checking values
     def on_settings_changed(self, settings, key):
-        self.set_reveal_child(settings.get_value(key).unpack() in self.values)
+        value = settings.get_value(key).unpack()
+        if self.check_func is None:
+            self.set_reveal_child(value in self.values)
+        else:
+            self.set_reveal_child(self.check_func(value, self.values))
 
 class SettingsPage(Gtk.Box):
     def __init__(self):
@@ -408,7 +413,7 @@ class SettingsBox(Gtk.Frame):
 
         self.need_separator = True
 
-    def add_reveal_row(self, widget, schema=None, key=None, values=None):
+    def add_reveal_row(self, widget, schema=None, key=None, values=None, check_func=None):
         vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
         if self.need_separator:
             vbox.add(Gtk.Separator(orientation=Gtk.Orientation.HORIZONTAL))
@@ -420,7 +425,7 @@ class SettingsBox(Gtk.Frame):
             list_box.connect("row-activated", widget.clicked)
         list_box.add(row)
         vbox.add(list_box)
-        revealer = SettingsRevealer(schema, key, values)
+        revealer = SettingsRevealer(schema, key, values, check_func)
         widget.revealer = revealer
         revealer.add(vbox)
         self.box.add(revealer)

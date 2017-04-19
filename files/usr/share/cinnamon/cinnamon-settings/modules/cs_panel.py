@@ -1,5 +1,5 @@
 #!/usr/bin/python2
-#
+
 import sys
 
 import dbus
@@ -23,7 +23,6 @@ class PanelSettingsPage(SettingsPage):
         super(PanelSettingsPage, self).__init__()
         self.set_margin_top(0)
         self.set_margin_bottom(0)
-        self.widgets = []
         self.panel_id = panel_id
         self.settings = settings
 
@@ -32,41 +31,34 @@ class PanelSettingsPage(SettingsPage):
         else:
             dimension_text = _("width")
 
+        def can_show(vlist, possible):
+            for item in vlist:
+                if item.split(":")[0] == panel_id:
+                    return item.split(":")[1] != "false"
+
         section = SettingsBox(_("Settings"))
         self.add(section)
 
         options = [["true", _("Auto hide panel")], ["false", _("Always show panel")], ["intel", _("Intelligently hide panel")]]
         widget = PanelComboBox(_("Auto-hide panel"), "org.cinnamon", "panels-autohide", self.panel_id, options)
         section.add_row(widget)
-        self.widgets.append(widget)
 
-        widget = PanelSpinButton(_("Show delay"), "org.cinnamon", "panels-show-delay", self.panel_id, _("milliseconds"), 0, 2000, 50, 200, "org.cinnamon/panels-autohide")
-        section.add_reveal_row(widget)
-        self.widgets.append(widget)
+        widget = PanelSpinButton(_("Show delay"), "org.cinnamon", "panels-show-delay", self.panel_id, _("milliseconds"), 0, 2000, 50, 200)#, dep_key="org.cinnamon/panels-autohide")
+        section.add_reveal_row(widget, "org.cinnamon", "panels-autohide", check_func=can_show)
 
-        widget = PanelSpinButton(_("Hide delay"), "org.cinnamon", "panels-hide-delay", self.panel_id, _("milliseconds"), 0, 2000, 50, 200, "org.cinnamon/panels-autohide")
-        section.add_reveal_row(widget)
-        self.widgets.append(widget)
+        widget = PanelSpinButton(_("Hide delay"), "org.cinnamon", "panels-hide-delay", self.panel_id, _("milliseconds"), 0, 2000, 50, 200)#, dep_key="org.cinnamon/panels-autohide")
+        section.add_reveal_row(widget, "org.cinnamon", "panels-autohide", check_func=can_show)
 
-        widget = PanelSwitch(_("Use customized panel size (otherwise it's defined by the theme)"), None, "org.cinnamon", "panels-resizable", self.panel_id)
+        widget = PanelSwitch(_("Use customized panel size (otherwise it's defined by the theme)"), "org.cinnamon", "panels-resizable", self.panel_id)
         section.add_row(widget)
-        self.widgets.append(widget)
-        widget.label1.show()
 
-        string1 = _("Allow Cinnamon to scale panel text and icons according to the panel %s" % dimension_text)
-        string2 = _("Allow Cinnamon to scale panel text and icons according to the panel width")
-        self.size_switch = PanelSwitch(string1, string2, "org.cinnamon", "panels-scale-text-icons", self.panel_id, "org.cinnamon/panels-resizable")
-        section.add_reveal_row(self.size_switch)
-        self.widgets.append(self.size_switch)
-        self.size_switch.label1.show()
+        widget = PanelSwitch(_("Allow Cinnamon to scale panel text and icons according to the panel %s" % dimension_text), "org.cinnamon", "panels-scale-text-icons", self.panel_id)#, "org.cinnamon/panels-resizable")
+        section.add_reveal_row(widget, "org.cinnamon", "panels-resizable", check_func=can_show)
 
-        string1 = _("Panel %s:" % dimension_text)
-        string2 = _("Panel width:")
-        self.size_range = PanelRange(string1, string2, "org.cinnamon", "panels-height", self.panel_id, _("Smaller"), _("Larger"), mini=20, maxi=50, dep_key="org.cinnamon/panels-resizable")
-        self.size_range.add_mark(25.0, Gtk.PositionType.TOP, None)
-        section.add_reveal_row(self.size_range)
-        self.widgets.append(self.size_range)
-        self.size_range.label1.show()
+        widget = PanelRange(_("Panel %s:" % dimension_text), "org.cinnamon", "panels-height", self.panel_id, _("Smaller"), _("Larger"), mini=20, maxi=50, show_value=False)#, dep_key="org.cinnamon/panels-resizable")
+        widget.add_mark(25.0, Gtk.PositionType.TOP, None)
+        widget.set_rounding(0)
+        section.add_reveal_row(widget, "org.cinnamon", "panels-resizable", check_func=can_show)
 
         self.show_all()
 
@@ -135,7 +127,6 @@ class Module:
 
             self.add_panel_button.set_sensitive(False)
 
-            self.revealer.connect("map", self.on_panel_list_changed)
             self.settings.connect("changed::panels-enabled", self.on_panel_list_changed)
 
             self.proxy = None
@@ -290,313 +281,126 @@ class Module:
         if self.panel_id:
             self.proxy.highlightPanel('(ib)', int(self.panel_id), False)
 
-class PanelWidget(SettingsWidget):
-    def __init__(self, dep_key, panel_id):
-        super(PanelWidget, self).__init__()
-
-        self.panel_id = str(panel_id)
-        self.dep_key = dep_key
-
-        self.dependency_invert = False
-        if self.dep_key is not None:
-            if self.dep_key[0] == '!':
-                self.dependency_invert = True
-                self.dep_key = self.dep_key[1:]
-            split = self.dep_key.split('/')
-            self.dep_settings = Gio.Settings.new(split[0])
-            self.dep_key = split[1]
-            self.dep_settings.connect("changed::"+self.dep_key, self.on_dependency_setting_changed)
-
-    def get_boolean(self, settings, key):
-        values = settings.get_strv(key)
-        prop = None
-        for value in values:
-            if value.split(":")[0] == self.panel_id:
-                prop = value.split(":")[1]
-
-        return prop != "false"
-
-    def set_boolean(self, settings, key, value):
-        value = "true" if value else "false" # Convert to text
-
-        values = settings.get_strv(key)
-        _set = False
-
-        for i, val in enumerate(values):
-            if val.split(":")[0] == self.panel_id:
-                values[i] = self.panel_id + ":" + value
-                _set = True
-        if not _set:
-            values.append(self.panel_id + ":" + value)
-
-        settings.set_strv(key, values)
-
-    def set_panel_id(self, panel_id):
-        self.panel_id = str(panel_id)
-        self.on_my_setting_changed(None, None)
-        if self.dep_key:
-            self.on_dependency_setting_changed()
-
-    def on_dependency_setting_changed(self, *args):
-        if not self.dependency_invert:
-            self.revealer.set_reveal_child(self.get_boolean(self.dep_settings, self.dep_key))
-        else:
-            self.revealer.set_reveal_child(not self.get_boolean(self.dep_settings, self.dep_key))
-
-    def get_int(self, settings, key):
-        values = settings.get_strv(key)
-        prop = 0
-        for value in values:
-            if value.split(":")[0] == self.panel_id:
-                prop = value.split(":")[1]
-
-        return int(prop)
-
-    def set_int(self, settings, key, value):
-        values = settings.get_strv(key)
-        _set = False
-        for i, val in enumerate(values):
-            if val.split(":")[0] == self.panel_id:
-                values[i] = self.panel_id + ":" + str(int(value))
-                _set = True
-        if not _set:
-            values.append(self.panel_id + ":" + str(int(value)))
-
-        settings.set_strv(key, values)
-
-    def get_string(self, settings, key):
-        values = settings.get_strv(key)
-        prop = ""
-        for value in values:
-            if value.split(":")[0] == self.panel_id:
-                prop = value.split(":")[1]
-
-        return prop
-
-    def set_string(self, settings, key, value):
-        values = settings.get_strv(key)
-        _set = False
-        for i, val in enumerate(values):
-            if val.split(":")[0] == self.panel_id:
-                values[i] = self.panel_id + ":" + value
-                _set = True
-        if not _set:
-            values.append(self.panel_id + ":" + value)
-
-        settings.set_strv(key, values)
-
-class PanelSwitch(PanelWidget):
-    def __init__(self, label1, label2, schema, key, panel_id, dep_key=None):
-        super(PanelSwitch, self).__init__(dep_key, panel_id)
+class PanelWidgetBackend(object):
+    def connect_to_settings(self, schema, key):
         self.key = key
-
-        self.content_widget = Gtk.Switch()
-        self.label1 = SettingsLabel(label1)
-        self.label1.set_no_show_all(True)
-        self.label2 = SettingsLabel(label2)
-        self.label2.set_no_show_all(True)
-
-        self.pack_start(self.label1, False, False, 0)
-        self.pack_start(self.label2, False, False, 0)
-        self.pack_end(self.content_widget, False, False, 0)
-
         self.settings = Gio.Settings.new(schema)
-        self.connectorId = None
+        self.settings_changed_id = self.settings.connect("changed::"+self.key, self.on_setting_changed)
+        self.connect("destroy", self.on_destroy)
+        self.on_setting_changed()
 
-        self.on_my_setting_changed()
+        # unless we have a binding direction get, we need to connect the handlers after hooking up the settings
+        # this is different from the GSettingsBackend because we cant use a bind here due to the complicated nature
+        # of the getting and setting
+        if self.bind_dir is None or (self.bind_dir & Gio.SettingsBindFlags.GET == 0):
+            self.connect_widget_handlers()
 
-    def on_my_setting_changed(self, *args):
-        if self.connectorId:
-            self.content_widget.disconnect(self.connectorId)                     #  panel-edit-mode can trigger changed:: twice in certain instances,
-        self.content_widget.set_active(self.get_boolean(self.settings, self.key))  #  so disconnect temporarily when we are simply updating the widget state
-        self.connectorId = self.content_widget.connect("notify::active", self.on_my_value_changed)
+    def set_value(self, value):
+        vals = self.settings[self.key]
+        newvals = []
+        for val in vals:
+            if val.split(":")[0] == self.panel_id:
+                newvals.append(self.panel_id + ":" + self.stringify(value))
+            else:
+                newvals.append(val)
+        self.settings[self.key] = newvals
+
+    def get_value(self):
+        vals = self.settings[self.key]
+        for val in vals:
+            [pid, value] = val.split(":")
+            if pid == self.panel_id:
+                return self.unstringify(value)
+
+    def stringify(self, value):
+        return str(value)
+
+    def on_destroy(self, *args):
+        self.settings.disconnect(self.settings_changed_id)
+
+class PanelSwitch(Switch, PanelWidgetBackend):
+    def __init__(self, label, schema, key, panel_id, *args, **kwargs):
+        self.panel_id = panel_id
+        super(PanelSwitch, self).__init__(label, *args, **kwargs)
+
+        self.connect_to_settings(schema, key)
+
+    def stringify(self, value):
+        return "true" if value else "false"
+
+    def unstringify(self, value):
+        return value != "false"
+
+    def on_setting_changed(self, *args):
+        value = self.get_value()
+        if value != self.content_widget.get_active():
+            self.content_widget.set_active(value)
+
+    def connect_widget_handlers(self, *args):
+        self.content_widget.connect("notify::active", self.on_my_value_changed)
 
     def on_my_value_changed(self, *args):
-        self.set_boolean(self.settings, self.key, self.content_widget.get_active())
+        active = self.content_widget.get_active()
+        if self.get_value() != active:
+            self.set_value(active)
 
-    def update_visible_string (self, position):
-        if position:
-            if position == "top" or position == "bottom":
-                self.label1.show()
-                self.label2.hide()
-            else:
-                self.label1.hide()
-                self.label2.show()
-        else:
-            self.label1.show()
+class PanelSpinButton(SpinButton, PanelWidgetBackend):
+    def __init__(self, label, schema, key, panel_id, *args, **kwargs):
+        self.panel_id = panel_id
+        super(PanelSpinButton, self).__init__(label, *args, **kwargs)
 
-class PanelSpinButton(PanelWidget):
-    def __init__(self, label, schema, key, panel_id, units="", mini=None, maxi=None, step=1, page=None, dep_key=None):
-        super(PanelSpinButton, self).__init__(dep_key, panel_id)
-        self.key = key
-        self._changed_timer = None
+        self.content_widget.set_value(0)
 
-        if units:
-            label += " (%s)" % units
+        self.connect_to_settings(schema, key)
 
-        self.label = Gtk.Label.new(label)
-        self.content_widget = Gtk.SpinButton()
+    def get_range(self):
+        return None
 
-        self.pack_start(self.label, False, False, 0)
-        self.pack_end(self.content_widget, False, False, 0)
+    # We use integer directly here because that is all the panel currently uses.
+    # If that changes in the future, we will need to fix this.
+    def stringify(self, value):
+        return str(int(value))
 
-        self.settings = Gio.Settings.new(schema)
+    def unstringify(self, value):
+        return int(value)
 
-        if not page:
-            page = step
+    def on_setting_changed(self, *args):
+        value = self.get_value()
+        if value != int(self.content_widget.get_value()):
+            self.content_widget.set_value(value)
 
-        self.content_widget.set_range(mini, maxi)
-        self.content_widget.set_increments(step, page)
+class PanelComboBox(ComboBox, PanelWidgetBackend):
+    def __init__(self, label, schema, key, panel_id, *args, **kwargs):
+        self.panel_id = panel_id
+        super(PanelComboBox, self).__init__(label, *args, **kwargs)
 
-        self.settings.connect("changed::" + self.key, self.on_my_setting_changed)
-        self.content_widget.connect('value-changed', self.on_my_value_changed)
+        self.connect_to_settings(schema, key)
 
-        self.on_my_setting_changed()
+    def stringify(self, value):
+        return value
 
-    def on_my_setting_changed(self, *args):
-        if not self._changed_timer:
-            self.content_widget.set_value(self.get_int(self.settings, self.key))
+    def unstringify(self, value):
+        return value
 
-    def on_my_value_changed(self, widget):
-        def apply(self):
-            self.set_int(self.settings, self.key, self.content_widget.get_value())
-            self._changed_timer = None
+class PanelRange(Range, PanelWidgetBackend):
+    def __init__(self, label, schema, key, panel_id, *args, **kwargs):
+        self.panel_id = panel_id
+        super(PanelRange, self).__init__(label, *args, **kwargs)
 
-        if self._changed_timer:
-            GLib.source_remove(self._changed_timer)
-        self._changed_timer = GLib.timeout_add(300, apply, self)
+        self.connect_to_settings(schema, key)
 
-class PanelRange(PanelWidget):
-    def __init__(self, label1, label2, schema, key, panel_id, min_label, max_label, mini=None, maxi=None, step=None, dep_key=None):
-        # We do not implement invert and log here since it is not needed
-        super(PanelRange, self).__init__(dep_key, panel_id)
-        self.set_orientation(Gtk.Orientation.VERTICAL)
-        self.set_spacing(0)
+    def get_range(self):
+        return None
 
-        self.key = key
-        self.settings = Gio.Settings.new(schema)
-        self.panel_id = str(panel_id)
-        self._changed_timer = None
+    # We use integer directly here because that is all the panel currently uses.
+    # If that changes in the future, we will need to fix this.
+    def stringify(self, value):
+        return str(int(value))
 
-        hbox = Gtk.Box()
+    def unstringify(self, value):
+        return int(value)
 
-        self.label1 = Gtk.Label.new(label1)
-        self.label1.set_halign(Gtk.Align.CENTER)
-        self.label1.set_no_show_all(True)
-
-        self.label2 = Gtk.Label.new(label2)
-        self.label2.set_halign(Gtk.Align.CENTER)
-        self.label2.set_no_show_all(True)
-
-        self.min_label= Gtk.Label()
-        self.max_label = Gtk.Label()
-        self.min_label.set_alignment(1.0, 0.75)
-        self.max_label.set_alignment(1.0, 0.75)
-        self.min_label.set_margin_right(6)
-        self.max_label.set_margin_left(6)
-        self.min_label.set_markup("<i><small>%s</small></i>" % min_label)
-        self.max_label.set_markup("<i><small>%s</small></i>" % max_label)
-
-        if step is None:
-            self.step = (maxi - mini) * 0.02
-
-        self.content_widget = Gtk.Scale.new_with_range(Gtk.Orientation.HORIZONTAL, mini, maxi, self.step)
-        self.content_widget.set_draw_value(False)
-
-        hbox.pack_start(self.min_label, False, False, 0)
-        hbox.pack_start(self.content_widget, True, True, 0)
-        hbox.pack_start(self.max_label, False, False, 0)
-
-        self.pack_start(self.label1, False, False, 0)
-        self.pack_start(self.label2, False, False, 0)
-        self.pack_start(hbox, True, True, 6)
-
-        self.content_widget.connect("scroll-event", self.on_scroll_event)
-
-        self.content_widget.connect('value-changed', self.on_my_value_changed)
-        self.content_widget.show_all()
-
-    def on_scroll_event(self, widget, event):
-        found, delta_x, delta_y = event.get_scroll_deltas()
-
-        # If you scroll up, delta_y < 0. This is a weird world
-        widget.set_value(widget.get_value() - delta_y * self.step)
-
-        return True
-
-    def on_my_setting_changed(self, *args):
-        def apply(self):
-            self.content_widget.set_value(self.get_int(self.settings, self.key))
-            self._changed_timer = None
-
-        if self._changed_timer:
-            GLib.source_remove(self._changed_timer)
-        self._changed_timer = GLib.timeout_add(300, apply, self)
-
-    def on_my_value_changed(self, widget):
-        def apply(self):
-            self.set_int(self.settings, self.key, self.content_widget.get_value())
-            self._changed_timer = None
-
-        if self._changed_timer:
-            GLib.source_remove(self._changed_timer)
-        self._changed_timer = GLib.timeout_add(300, apply, self)
-
-    def add_mark(self, value, position, markup):
-        self.content_widget.add_mark(value, position, markup)
-
-    def update_visible_string (self, position):
-        if position:
-            if position == "top" or position == "bottom":
-                self.label1.show()
-                self.label2.hide()
-            else:
-                self.label1.hide()
-                self.label2.show()
-        else:
-            self.label1.show()
-
-class PanelComboBox(PanelWidget):
-    def __init__(self, label, schema, key, panel_id, options, dep_key=None):
-        super(PanelComboBox, self).__init__(dep_key, panel_id)
-
-        self.settings = Gio.Settings.new(schema)
-        self.key = key
-        self.option_map = {}
-
-        self.label = Gtk.Label.new(label)
-        self.model = Gtk.ListStore(str, str)
-
-        for option in options:
-            iter = self.model.insert_before(None, None)
-            option.append(iter)
-            self.model.set_value(iter, 0, option[0])
-            self.model.set_value(iter, 1, option[1])
-            self.option_map[option[0]] = iter
-
-        self.content_widget = Gtk.ComboBox.new_with_model(self.model)
-        renderer_text = Gtk.CellRendererText()
-        self.content_widget.pack_start(renderer_text, True)
-        self.content_widget.add_attribute(renderer_text, "text", 1)
-
-        self.pack_start(self.label, False, False, 2)
-        self.pack_end(self.content_widget, False, False, 2)
-        self.content_widget.show_all()
-
-        self.content_widget.connect('changed', self.on_my_value_changed)
-        self.settings.connect("changed::" + self.key, self.on_my_setting_changed)
-
-        self.on_my_setting_changed()
-
-    def on_my_value_changed(self, widget):
-        tree_iter = widget.get_active_iter()
-        if tree_iter != None:
-            value = self.model[tree_iter][0]
-            self.set_string(self.settings, self.key, value)
-
-    def on_my_setting_changed(self, *args):
-        try:
-            self.value = self.get_string(self.settings, self.key)
-            self.content_widget.set_active_iter(self.option_map[self.value])
-        except:
-            pass
+    def on_setting_changed(self, *args):
+        value = self.get_value()
+        if value != int(self.bind_object.get_value()):
+            self.bind_object.set_value(value)
