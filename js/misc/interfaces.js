@@ -2,7 +2,8 @@
 
 const Gio = imports.gi.Gio;
 
-const SETTINGS_DAEMON_NAME = "org.cinnamon.SettingsDaemon";
+const SETTINGS_DAEMON_XRANDR_NAME = "org.cinnamon.SettingsDaemon.XRANDR_2";
+const SETTINGS_DAEMON_POWER_NAME = "org.cinnamon.SettingsDaemon.Power";
 const SETTINGS_DAEMON_POWER_PATH = "/org/cinnamon/SettingsDaemon/Power";
 
 const DBusIface = '\
@@ -102,7 +103,7 @@ xml['org.cinnamon.SettingsDaemon.Power'] =
             </method> \
         </interface> \
     </node>",
-    SETTINGS_DAEMON_NAME,
+    SETTINGS_DAEMON_POWER_NAME,
     SETTINGS_DAEMON_POWER_PATH
 ];
 
@@ -126,7 +127,7 @@ xml['org.cinnamon.SettingsDaemon.Power.Screen'] =
             <signal name='Changed'/> \
         </interface> \
     </node>",
-    SETTINGS_DAEMON_NAME,
+    SETTINGS_DAEMON_POWER_NAME,
     SETTINGS_DAEMON_POWER_PATH
 ];
 
@@ -154,7 +155,7 @@ xml['org.cinnamon.SettingsDaemon.Power.Keyboard'] =
             </signal> \
         </interface> \
     </node>",
-    SETTINGS_DAEMON_NAME,
+    SETTINGS_DAEMON_POWER_NAME,
     SETTINGS_DAEMON_POWER_PATH
 ];
 
@@ -179,7 +180,7 @@ xml['org.cinnamon.SettingsDaemon.XRANDR_2'] =
             </method> \
         </interface> \
     </node>",
-    SETTINGS_DAEMON_NAME,
+    SETTINGS_DAEMON_XRANDR_NAME,
     '/org/cinnamon/SettingsDaemon/XRANDR'
 ];
 

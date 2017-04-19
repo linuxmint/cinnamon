@@ -481,7 +481,7 @@ class SoundTest(Gtk.Dialog):
             sound = "audio-channel-"+position[1]
 
         session_bus = dbus.SessionBus()
-        sound_dbus = session_bus.get_object("org.cinnamon.SettingsDaemon", "/org/cinnamon/SettingsDaemon/Sound")
+        sound_dbus = session_bus.get_object("org.cinnamon.SettingsDaemon.Sound", "/org/cinnamon/SettingsDaemon/Sound")
         play = sound_dbus.get_dbus_method('PlaySoundWithChannel', 'org.cinnamon.SettingsDaemon.Sound')
         play(0, sound, position[1])
 

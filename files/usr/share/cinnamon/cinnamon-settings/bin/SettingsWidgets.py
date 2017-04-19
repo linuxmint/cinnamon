@@ -883,7 +883,7 @@ class SoundFileChooser(SettingsWidget):
 
         try:
             Gio.DBusProxy.new_for_bus(Gio.BusType.SESSION, Gio.DBusProxyFlags.NONE, None,
-                                      'org.cinnamon.SettingsDaemon',
+                                      'org.cinnamon.SettingsDaemon.Sound',
                                       '/org/cinnamon/SettingsDaemon/Sound',
                                       'org.cinnamon.SettingsDaemon.Sound',
                                       None, self._on_proxy_ready, None)

@@ -1,6 +1,6 @@
 [Desktop Entry]
 Name=Cinnamon Killer Daemon
-Comment=Restarts Cinnamon, Nemo and cinnamon-settings-daemon when a key combination is pressed
+Comment=Restarts Cinnamon and Nemo when a key combination is pressed
 Icon=reload
 Exec=cinnamon-killer-daemon
 Terminal=false
