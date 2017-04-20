@@ -2539,8 +2539,6 @@ st_widget_remove_accessible_state (StWidget *widget,
 
 /* GObject */
 
-static void st_widget_accessible_class_init (StWidgetAccessibleClass *klass);
-static void st_widget_accessible_init       (StWidgetAccessible *widget);
 static void st_widget_accessible_dispose    (GObject *gobject);
 
 /* AtkObject */
