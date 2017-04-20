@@ -85,7 +85,7 @@ st_drawing_area_paint (ClutterActor *self)
   StThemeNode *theme_node = st_widget_get_theme_node (ST_WIDGET (self));
   ClutterActorBox allocation_box;
   ClutterActorBox content_box;
-  int width, height;
+  guint width, height;
   CoglColor color;
   guint8 paint_opacity;
 
