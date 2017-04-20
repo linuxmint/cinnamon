@@ -55,10 +55,6 @@ BoxPointer.prototype = {
         this._xPosition = 0;
         this._yPosition = 0;
         this._sourceAlignment = 0.5;
-        this._topmargin=0;     // where we have mixed horizontal and vertical panels we want to avoid
-        this._bottommargin=0;  // the popup menu overlapping any panel
-        this._leftmargin=0;
-        this._rightmargin=0;
     },
 
     show: function(animate, onComplete) {
@@ -404,32 +400,6 @@ BoxPointer.prototype = {
         this.setPosition(this._sourceActor, this._arrowAlignment);
     },
 
-    _calcmargins: function(monitor) {
-        this._topmargin=0;     // where we have mixed horizontal and vertical panels we want to avoid
-        this._bottommargin=0;  // the popup menu overlapping any panel
-        this._leftmargin=0;
-        this._rightmargin=0;
-
-        let panels = Main.panelManager.getPanelsInMonitor(Main.layoutManager.monitors.indexOf(monitor));
-
-        for (let panel of panels) {
-            switch (panel.panelPosition) {
-                case PanelLoc.top:
-                    this._topmargin += panel.actor.height;
-                    break;
-                case PanelLoc.bottom:
-                    this._bottommargin += panel.actor.height;
-                    break;
-                case PanelLoc.left:
-                    this._leftmargin += panel.actor.width;
-                    break;
-                case PanelLoc.right:
-                    this._rightmargin += panel.actor.width;
-                    break;
-            }
-        }
-    },
-
     _reposition: function() {
         let sourceActor = this._sourceActor;
         let alignment = this._arrowAlignment;
@@ -454,8 +424,6 @@ BoxPointer.prototype = {
 
         let gap = themeNode.get_length('-boxpointer-gap');
         let padding = themeNode.get_length('-arrow-rise');
-
-        this._calcmargins(monitor);
 
         let resX, resY;
 
@@ -497,8 +465,8 @@ BoxPointer.prototype = {
         case St.Side.BOTTOM:
             resX = sourceCenterX - (halfMargin + (natWidth - margin) * alignment);
 
-            resX = Math.max(resX, monitor.x + padding + this._leftmargin);
-            resX = Math.min(resX, monitor.x + monitor.width - (padding + natWidth + this._rightmargin));
+            resX = Math.max(resX, monitor.x + padding);
+            resX = Math.min(resX, monitor.x + monitor.width - (padding + natWidth));
 
             arrowOrigin = sourceCenterX - resX;
             if (arrowOrigin <= (x1 + (borderRadius + halfBase))) {
@@ -516,8 +484,8 @@ BoxPointer.prototype = {
         case St.Side.RIGHT:
             resY = sourceCenterY - (halfMargin + (natHeight - margin) * alignment);
 
-            resY = Math.max(resY, monitor.y + padding + this._topmargin);
-            resY = Math.min(resY, monitor.y + monitor.height - (padding + natHeight + this._bottommargin));
+            resY = Math.max(resY, monitor.y + padding);
+            resY = Math.min(resY, monitor.y + monitor.height - (padding + natHeight));
 
             arrowOrigin = sourceCenterY - resY;
             if (arrowOrigin <= (y1 + (borderRadius + halfBase))) {
@@ -574,23 +542,23 @@ BoxPointer.prototype = {
 
         switch (arrowSide) {
         case St.Side.TOP:
-            if (sourceAllocation.y2 + boxHeight > monitor.y + monitor.height - this._bottommargin &&
-                boxHeight < sourceAllocation.y1 - monitor.y -  this._topmargin)
+            if (sourceAllocation.y2 + boxHeight > monitor.y + monitor.height &&
+                boxHeight < sourceAllocation.y1 - monitor.y)
                 return St.Side.BOTTOM;
             break;
         case St.Side.BOTTOM:
-            if (sourceAllocation.y1 - boxHeight < monitor.y +  this._topmargin &&
-                boxHeight < monitor.y + monitor.height -  this._bottommargin - sourceAllocation.y2)
+            if (sourceAllocation.y1 - boxHeight < monitor.y &&
+                boxHeight < monitor.y + monitor.height - sourceAllocation.y2)
                 return St.Side.TOP;
             break;
         case St.Side.LEFT:
-            if (sourceAllocation.x2 + boxWidth > monitor.x + monitor.width -  this._rightmargin &&
-                boxWidth < sourceAllocation.x1 - monitor.x  -  this._leftmargin)
+            if (sourceAllocation.x2 + boxWidth > monitor.x + monitor.width &&
+                boxWidth < sourceAllocation.x1 - monitor.x)
                 return St.Side.RIGHT;
             break;
         case St.Side.RIGHT:
-            if (sourceAllocation.x1 - boxWidth < monitor.x +  this._leftmargin &&
-                boxWidth < monitor.x + monitor.width - this._rightmargin - sourceAllocation.x2)
+            if (sourceAllocation.x1 - boxWidth < monitor.x &&
+                boxWidth < monitor.x + monitor.width - sourceAllocation.x2)
                 return St.Side.LEFT;
             break;
         }

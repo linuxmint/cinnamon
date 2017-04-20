@@ -6,6 +6,10 @@ stage {
     padding-right: 12px;
     padding-bottom: 2em;
     padding-left: 1in;
+    margin: 12pt;
+    margin-right: 12px;
+    margin-bottom: 2em;
+    margin-left: 1in;
 
     background: #ff0000 url('some-background.png');
 }
@@ -58,6 +62,7 @@ stage > #text2 {
 #group2 {
     background-image: url('other-background.png');
     padding: 1px 2px 3px 4px;
+    margin: 1px 2px 3px 4px;
 
     border: 2px solid #000000;
     border-bottom: 5px solid #0000ff;
@@ -74,4 +79,16 @@ ClutterText:visited, StLabel:visited {
 
 StLabel:boxed {
     border: 1px;
+}
+
+#group4 {
+    margin: 1px 2px 3px;
+}
+
+#group5 {
+    margin: 1px 2px;
+}
+
+#group6 {
+    padding: 5px;
 }

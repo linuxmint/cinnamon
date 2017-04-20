@@ -1501,6 +1501,88 @@ do_padding_property (StThemeNode   *node,
 }
 
 static void
+do_margin_property_term (StThemeNode *node,
+                         CRTerm      *term,
+                         gboolean     left,
+                         gboolean     right,
+                         gboolean     top,
+                         gboolean     bottom)
+{
+  int value;
+
+  if (get_length_from_term_int (node, term, FALSE, &value) != VALUE_FOUND)
+    return;
+
+  if (left)
+    node->margin[ST_SIDE_LEFT] = value;
+  if (right)
+    node->margin[ST_SIDE_RIGHT] = value;
+  if (top)
+    node->margin[ST_SIDE_TOP] = value;
+  if (bottom)
+    node->margin[ST_SIDE_BOTTOM] = value;
+}
+
+static void
+do_margin_property (StThemeNode   *node,
+                    CRDeclaration *decl)
+{
+  const char *property_name = decl->property->stryng->str + 6; /* Skip 'margin' */
+
+  if (strcmp (property_name, "") == 0)
+    {
+      /* Slight deviation ... if we don't understand some of the terms and understand others,
+       * then we set the ones we understand and ignore the others instead of ignoring the
+       * whole thing
+       */
+      if (decl->value == NULL) /* 0 values */
+        return;
+      else if (decl->value->next == NULL) /* 1 value */
+        {
+          do_margin_property_term (node, decl->value, TRUE, TRUE, TRUE, TRUE); /* left/right/top/bottom */
+          return;
+        }
+      else if (decl->value->next->next == NULL) /* 2 values */
+        {
+          do_margin_property_term (node, decl->value,       FALSE, FALSE, TRUE,  TRUE);  /* top/bottom */
+          do_margin_property_term (node, decl->value->next, TRUE, TRUE,   FALSE, FALSE); /* left/right */
+        }
+      else if (decl->value->next->next->next == NULL) /* 3 values */
+        {
+          do_margin_property_term (node, decl->value,             FALSE, FALSE, TRUE,  FALSE); /* top */
+          do_margin_property_term (node, decl->value->next,       TRUE,  TRUE,  FALSE, FALSE); /* left/right */
+          do_margin_property_term (node, decl->value->next->next, FALSE, FALSE, FALSE, TRUE);  /* bottom */
+        }
+      else if (decl->value->next->next->next->next == NULL) /* 4 values */
+        {
+          do_margin_property_term (node, decl->value,                   FALSE, FALSE, TRUE,  FALSE); /* top */
+          do_margin_property_term (node, decl->value->next,             FALSE, TRUE,  FALSE, FALSE); /* right */
+          do_margin_property_term (node, decl->value->next->next,       FALSE, FALSE, FALSE, TRUE);  /* bottom */
+          do_margin_property_term (node, decl->value->next->next->next, TRUE,  FALSE, FALSE, FALSE); /* left */
+        }
+      else
+        {
+          g_warning ("Too many values for margin property");
+          return;
+        }
+    }
+  else
+    {
+      if (decl->value == NULL || decl->value->next != NULL)
+        return;
+
+      if (strcmp (property_name, "-left") == 0)
+        do_margin_property_term (node, decl->value, TRUE,  FALSE, FALSE, FALSE);
+      else if (strcmp (property_name, "-right") == 0)
+        do_margin_property_term (node, decl->value, FALSE, TRUE,  FALSE, FALSE);
+      else if (strcmp (property_name, "-top") == 0)
+        do_margin_property_term (node, decl->value, FALSE, FALSE, TRUE,  FALSE);
+      else if (strcmp (property_name, "-bottom") == 0)
+        do_margin_property_term (node, decl->value, FALSE, FALSE, FALSE, TRUE);
+    }
+}
+
+static void
 do_size_property (StThemeNode   *node,
                   CRDeclaration *decl,
                   int           *node_value)
@@ -1547,6 +1629,8 @@ _st_theme_node_ensure_geometry (StThemeNode *node)
         do_outline_property (node, decl);
       else if (g_str_has_prefix (property_name, "padding"))
         do_padding_property (node, decl);
+      else if (g_str_has_prefix (property_name, "margin"))
+        do_margin_property (node, decl);
       else if (strcmp (property_name, "width") == 0)
         do_size_property (node, decl, &node->width);
       else if (strcmp (property_name, "height") == 0)
@@ -2123,6 +2207,18 @@ st_theme_node_get_padding (StThemeNode *node,
   _st_theme_node_ensure_geometry (node);
 
   return node->padding[side];
+}
+
+double
+st_theme_node_get_margin (StThemeNode *node,
+                          StSide side)
+{
+  g_return_val_if_fail (ST_IS_THEME_NODE (node), 0.);
+  g_return_val_if_fail (side >= ST_SIDE_TOP && side <= ST_SIDE_LEFT, 0.);
+
+  _st_theme_node_ensure_geometry (node);
+
+  return node->margin[side];
 }
 
 /**
@@ -2897,6 +2993,21 @@ st_theme_node_get_vertical_padding (StThemeNode *node)
 
   return padding;
 }
+
+void
+_st_theme_node_apply_margins (StThemeNode *node,
+                              ClutterActor *actor)
+{
+  g_return_if_fail (ST_IS_THEME_NODE (node));
+
+  _st_theme_node_ensure_geometry (node);
+
+  clutter_actor_set_margin_left (actor, st_theme_node_get_margin(node, ST_SIDE_LEFT));
+  clutter_actor_set_margin_right (actor, st_theme_node_get_margin(node, ST_SIDE_RIGHT));
+  clutter_actor_set_margin_top (actor, st_theme_node_get_margin(node, ST_SIDE_TOP));
+  clutter_actor_set_margin_bottom (actor, st_theme_node_get_margin(node, ST_SIDE_BOTTOM));
+}
+
 
 static GetFromTermResult
 parse_shadow_property (StThemeNode       *node,
