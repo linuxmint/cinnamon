@@ -213,7 +213,7 @@ function _unloadDesklet(deskletDefinition, deleteConfig) {
     let desklet = deskletObj[deskletDefinition.desklet_id];
     if (desklet){
         try {
-            desklet.destroy();
+            desklet.destroy(deleteConfig);
         } catch (e) {
             global.logError("Failed to destroy desket: " + deskletDefinition.uuid + "/" + deskletDefinition.desklet_id, e);
         }

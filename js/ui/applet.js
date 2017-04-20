@@ -366,13 +366,13 @@ Applet.prototype = {
      *
      * This is meant to be overridden in individual applets.
      */
-    on_applet_removed_from_panel: function() {
+    on_applet_removed_from_panel: function(deleteConfig) {
     },
 
     // should only be called by appletManager
-    _onAppletRemovedFromPanel: function() {
+    _onAppletRemovedFromPanel: function(deleteConfig) {
         global.settings.disconnect(this._panelEditModeChangedId);
-        this.on_applet_removed_from_panel();
+        this.on_applet_removed_from_panel(deleteConfig);
 
         Main.AppletManager.callAppletInstancesChanged(this._uuid);
     },

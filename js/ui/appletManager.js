@@ -247,7 +247,7 @@ function removeAppletFromPanels(appletDefinition, deleteConfig) {
     let applet = appletObj[appletDefinition.applet_id];
     if (applet) {
         try {
-            applet._onAppletRemovedFromPanel();
+            applet._onAppletRemovedFromPanel(deleteConfig);
         } catch (e) {
             global.logError("Error during on_applet_removed_from_panel() call on applet: " + appletDefinition.uuid + "/" + appletDefinition.applet_id, e);
         }
