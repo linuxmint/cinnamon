@@ -1196,12 +1196,7 @@ on_sliced_image_loaded (GObject *source_object,
 static void
 free_glist_unref_gobjects (gpointer p)
 {
-  GList *list = p;
-  GList *iter;
-
-  for (iter = list; iter; iter = iter->next)
-    g_object_unref (iter->data);
-  g_list_free (list);
+  g_list_free_full (p, g_object_unref);
 }
 
 static void
