@@ -392,8 +392,8 @@ _st_create_texture_material (CoglHandle src_texture)
  *****/
 
 static gdouble *
-calculate_gaussian_kernel (gdouble   sigma,
-                           guint     n_values)
+calculate_gaussian_kernel (float   sigma,
+                           gint     n_values)
 {
   gdouble *ret, sum;
   gdouble exp_divisor;
