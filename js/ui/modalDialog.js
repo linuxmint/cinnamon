@@ -603,6 +603,7 @@ SpicesAboutDialog.prototype = {
             return null;
         } catch (e) {
             global.log('Failed to load/parse index.json', e);
+            return null;
         }
     },
 
