@@ -48,11 +48,17 @@ class Module:
             widget.add_mark(24.0, Gtk.PositionType.TOP, None)
             settings.add_row(widget)
 
-            slider = GSettingsRange(_("Acceleration"), "org.cinnamon.settings-daemon.peripherals.mouse", "motion-acceleration", _("Slow"), _("Fast"), 1, 10, show_value=False)
-            settings.add_row(slider)
+            widget = GSettingsSwitch(_("Custom Acceleration"), "org.cinnamon.settings-daemon.peripherals.mouse", "custom-acceleration")
+            settings.add_row(widget)
 
-            slider = GSettingsRange(_("Sensitivity"), "org.cinnamon.settings-daemon.peripherals.mouse", "motion-threshold", _("Low"), _("High"), 1, 10, invert=True, show_value=False)
-            settings.add_row(slider)
+            slider = GSettingsRange(_("Acceleration"), "org.cinnamon.settings-daemon.peripherals.mouse", "motion-acceleration", _("Slow"), _("Fast"), 1, 10, show_value=False)
+            settings.add_reveal_row(slider, "org.cinnamon.settings-daemon.peripherals.mouse", "custom-acceleration")
+
+            widget = GSettingsSwitch(_("Custom Sensitivity"), "org.cinnamon.settings-daemon.peripherals.mouse", "custom-threshold")
+            settings.add_row(widget)
+
+            slider = GSettingsRange(_("Sensitivity"), "org.cinnamon.settings-daemon.peripherals.mouse", "motion-threshold", _("Low"), _("High"), 1, 10, show_value=False, flipped=True)
+            settings.add_reveal_row(slider, "org.cinnamon.settings-daemon.peripherals.mouse", "custom-threshold")
 
             settings = page.add_section(_("Double-Click timeout"))
 
@@ -114,11 +120,17 @@ class Module:
             settings = SettingsBox(_("Pointer speed"))
             revealer.add(settings)
 
-            slider = GSettingsRange(_("Acceleration"), "org.cinnamon.settings-daemon.peripherals.touchpad", "motion-acceleration", _("Slow"), _("Fast"), 1, 10, show_value=False)
-            settings.add_row(slider)
+            switch = GSettingsSwitch(_("Custom Acceleration"), "org.cinnamon.settings-daemon.peripherals.touchpad", "custom-acceleration")
+            settings.add_row(switch)
 
-            slider = GSettingsRange(_("Sensitivity"), "org.cinnamon.settings-daemon.peripherals.touchpad", "motion-threshold", _("Low"), _("High"), 1, 10, invert=True, show_value=False)
-            settings.add_row(slider)
+            slider = GSettingsRange(_("Acceleration"), "org.cinnamon.settings-daemon.peripherals.touchpad", "motion-acceleration", _("Slow"), _("Fast"), 1, 10, show_value=False)
+            settings.add_reveal_row(slider, "org.cinnamon.settings-daemon.peripherals.touchpad", "custom-acceleration")
+
+            switch = GSettingsSwitch(_("Custom Sensitivity"), "org.cinnamon.settings-daemon.peripherals.touchpad", "custom-threshold")
+            settings.add_row(switch)
+
+            slider = GSettingsRange(_("Sensitivity"), "org.cinnamon.settings-daemon.peripherals.touchpad", "motion-threshold", _("Low"), _("High"), 1, 10, show_value=False, flipped=True)
+            settings.add_reveal_row(slider, "org.cinnamon.settings-daemon.peripherals.touchpad", "custom-threshold")
 
             self.sidePage.stack.add_titled(page, "touchpad", _("Touchpad"))
 

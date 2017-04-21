@@ -636,7 +636,7 @@ class Range(SettingsWidget):
     bind_prop = "value"
     bind_dir = Gio.SettingsBindFlags.GET | Gio.SettingsBindFlags.NO_SENSITIVITY
 
-    def __init__(self, label, min_label="", max_label="", mini=None, maxi=None, step=None, invert=False, log=False, show_value=True, dep_key=None, tooltip=""):
+    def __init__(self, label, min_label="", max_label="", mini=None, maxi=None, step=None, invert=False, log=False, show_value=True, dep_key=None, tooltip="", flipped=False):
         super(Range, self).__init__(dep_key=dep_key)
 
         self.set_orientation(Gtk.Orientation.VERTICAL)
@@ -644,6 +644,7 @@ class Range(SettingsWidget):
 
         self.log = log
         self.invert = invert
+        self.flipped = flipped
         self.timer = None
         self.value = 0
 
@@ -672,8 +673,20 @@ class Range(SettingsWidget):
         if log:
             mini = math.log(mini)
             maxi = math.log(maxi)
-            self.map_get = lambda x: math.log(x)
-            self.map_set = lambda x: math.exp(x)
+            if self.flipped:
+                self.map_get = lambda x: -1 * (math.log(x))
+                self.map_set = lambda x: math.exp(x)
+            else:
+                self.map_get = lambda x: math.log(x)
+                self.map_set = lambda x: math.exp(x)
+        elif self.flipped:
+            self.map_get = lambda x: x * -1
+            self.map_set = lambda x: x * -1
+
+        if self.flipped:
+            tmp_mini = mini
+            mini = maxi * -1
+            maxi = tmp_mini * -1
 
         if step is None:
             self.step = (maxi - mini) * 0.02
@@ -682,7 +695,7 @@ class Range(SettingsWidget):
 
         self.content_widget = Gtk.Scale.new_with_range(Gtk.Orientation.HORIZONTAL, mini, maxi, self.step)
         self.content_widget.set_inverted(invert)
-        self.content_widget.set_draw_value(show_value)
+        self.content_widget.set_draw_value(show_value and not self.flipped)
         self.bind_object = self.content_widget.get_adjustment()
 
         if invert:
@@ -703,9 +716,12 @@ class Range(SettingsWidget):
     def apply_later(self, *args):
         def apply(self):
             if self.log:
-                self.set_value(math.exp(self.content_widget.get_value()))
+                self.set_value(math.exp(abs(self.content_widget.get_value())))
             else:
-                self.set_value(self.content_widget.get_value())
+                if self.flipped:
+                    self.set_value(self.content_widget.get_value() * -1)
+                else:
+                    self.set_value(self.content_widget.get_value())
             self.timer = None
 
         if self.timer:
