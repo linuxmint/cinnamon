@@ -476,6 +476,9 @@ st_scroll_bar_scroll_event (ClutterActor       *actor,
     case CLUTTER_SCROLL_RIGHT:
       st_adjustment_set_value (priv->adjustment, value + step);
       break;
+    default:
+          g_return_val_if_reached (FALSE);
+      break;
     }
 
   return TRUE;
