@@ -552,7 +552,7 @@ AppMenuButton.prototype = {
             Main.activateWindow(this.metaWindow, global.get_current_time());
             this.actor.add_style_pseudo_class('focus');
         } else if (!fromDrag) {
-            this.metaWindow.minimize(global.get_current_time());
+            this.metaWindow.minimize();
             this.actor.remove_style_pseudo_class('focus');
         }
     },

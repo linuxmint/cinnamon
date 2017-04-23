@@ -271,7 +271,7 @@ function start() {
                     log_dir.make_directory_with_parents(null);
                 lg_log_file = log_filename.append_to(0, null);
             } else {
-                log_filename.copy(log_backup_filename, 1, null, null, null);
+                log_filename.copy(log_backup_filename, 1, null, null);
                 log_filename.delete(null);
                 lg_log_file = log_filename.append_to(0, null);
             }

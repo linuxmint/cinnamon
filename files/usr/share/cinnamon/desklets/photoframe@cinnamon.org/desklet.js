@@ -119,8 +119,8 @@ MyDesklet.prototype = {
             let contrast_effect = new Clutter.BrightnessContrastEffect();
             let desaturate_effect = new Clutter.DesaturateEffect();
             desaturate_effect.set_factor(0.41);
-            contrast_effect.set_brightness(0.1, 0.1, 0.1);
-            contrast_effect.set_contrast(0.1, 0.1, 0.1);
+            contrast_effect.set_brightness_full(0.1, 0.1, 0.1);
+            contrast_effect.set_contrast_full(0.1, 0.1, 0.1);
             this._bin.add_effect(colorize_effect);
             this._bin.add_effect(contrast_effect);
             this._bin.add_effect(desaturate_effect);

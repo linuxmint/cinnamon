@@ -402,7 +402,7 @@ AppIcon.prototype = {
             if (window.minimized) {
                 this.label = new St.Label({ text: "[" + title + "]"});               
                 let contrast_effect = new Clutter.BrightnessContrastEffect();                
-                contrast_effect.set_brightness(-0.5, -0.5, -0.5);                         
+                contrast_effect.set_brightness_full(-0.5, -0.5, -0.5);
                 this._iconBin.add_effect(contrast_effect);                
             }
             else if (window.tile_type == Meta.WindowTileType.TILED) {

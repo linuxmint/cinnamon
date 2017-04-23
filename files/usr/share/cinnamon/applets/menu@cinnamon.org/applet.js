@@ -2652,7 +2652,7 @@ MyApplet.prototype = {
             if (app) {
                 let button = new FavoritesButton(this, app, launchers.length + 3); // + 3 because we're adding 3 system buttons at the bottom
                 this._favoritesButtons[app] = button;
-                this.favoritesBox.add_actor(button.actor, { y_align: St.Align.END, y_fill: false });
+                this.favoritesBox.add(button.actor, { y_align: St.Align.END, y_fill: false });
 
                 this._addEnterEvent(button, Lang.bind(this, this._favEnterEvent, button));
                 button.actor.connect('leave-event', Lang.bind(this, this._favLeaveEvent, button));
@@ -2664,7 +2664,7 @@ MyApplet.prototype = {
         //Separator
         if (launchers.length != 0) {
                 let separator = new PopupMenu.PopupSeparatorMenuItem();
-                this.favoritesBox.add_actor(separator.actor, { y_align: St.Align.END, y_fill: false });
+                this.favoritesBox.add(separator.actor, { y_align: St.Align.END, y_fill: false });
         }
 
         //Lock screen
@@ -2693,7 +2693,7 @@ MyApplet.prototype = {
             }
         });
 
-        this.favoritesBox.add_actor(button.actor, { y_align: St.Align.END, y_fill: false });
+        this.favoritesBox.add(button.actor, { y_align: St.Align.END, y_fill: false });
 
         //Logout button
         button = new SystemButton(this, "system-log-out", launchers.length + 3,
@@ -2708,7 +2708,7 @@ MyApplet.prototype = {
             this._session.LogoutRemote(0);
         });
 
-        this.favoritesBox.add_actor(button.actor, { y_align: St.Align.END, y_fill: false });
+        this.favoritesBox.add(button.actor, { y_align: St.Align.END, y_fill: false });
 
         //Shutdown button
         button = new SystemButton(this, "system-shutdown", launchers.length + 3,
@@ -2723,7 +2723,7 @@ MyApplet.prototype = {
             this._session.ShutdownRemote();
         });
 
-        this.favoritesBox.add_actor(button.actor, { y_align: St.Align.END, y_fill: false });
+        this.favoritesBox.add(button.actor, { y_align: St.Align.END, y_fill: false });
 
         this._recalc_height();
     },
@@ -2828,7 +2828,7 @@ MyApplet.prototype = {
         this._session = new GnomeSession.SessionManager();
         this._screenSaverProxy = new ScreenSaver.ScreenSaverProxy();
 
-        this.leftPane.add_actor(this.leftBox, { y_align: St.Align.END, y_fill: false });
+        this.leftPane.add(this.leftBox, { y_align: St.Align.END, y_fill: false });
         this._favboxtoggle();
 
         let rightPane = new St.BoxLayout({ vertical: true });
@@ -2884,15 +2884,15 @@ MyApplet.prototype = {
 
         let fav_obj = new FavoritesBox();
         this.favoritesBox = fav_obj.actor;
-        this.leftBox.add_actor(this.favoritesBox, { y_align: St.Align.END, y_fill: false });
+        this.leftBox.add(this.favoritesBox, { y_align: St.Align.END, y_fill: false });
 
         this.mainBox = new St.BoxLayout({ style_class: 'menu-applications-outer-box', vertical:false });
         this.mainBox.add_style_class_name('menu-applications-box'); //this is to support old themes
 
-        this.mainBox.add_actor(this.leftPane, { span: 1 });
-        this.mainBox.add_actor(rightPane, { span: 1 });
+        this.mainBox.add(this.leftPane, { span: 1 });
+        this.mainBox.add(rightPane, { span: 1 });
         this.mainBox._delegate = null;
-        section.actor.add_actor(this.mainBox);
+        section.actor.add(this.mainBox);
 
         this.selectedAppBox = new St.BoxLayout({ style_class: 'menu-selected-app-box', vertical: true });
 
