@@ -1049,6 +1049,7 @@ StScrollBar StButton#vhandle:hover {
     padding-left: 10px;
     padding-right: 10px;
     padding-bottom: 10px;
+    margin: auto;
 }
 .menu-favorites-button:hover {
     color: white;
