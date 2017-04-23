@@ -1527,6 +1527,10 @@ StScrollBar StButton#vhandle:hover {
     text-shadow: black 0px 0px 2px;
     transition-duration: 300;
 }
+.panel-top .applet-box,
+.panel-bottom .applet-box {
+    spacing: 3px;
+}
 .applet-box:checked,
 .applet-box:hover {
     color: #fff;
@@ -1545,10 +1549,6 @@ StScrollBar StButton#vhandle:hover {
 .applet-label {
     font-weight: bold;
     color: #ccc;
-}
-.panel-top .applet-label,
-.panel-bottom .applet-label {
-    margin-left: 6px;
 }
 .applet-box:checked > .applet-label,
 .applet-box:hover > .applet-label {

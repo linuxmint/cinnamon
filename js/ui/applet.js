@@ -805,25 +805,6 @@ TextIconApplet.prototype = {
     },
 
     /**
-     * update_label_margin:
-     *
-     * The margin is set from the CSS.  However if the label is blank/null
-     * then the margin will still display, which is not desirable. So in this
-     * case hide the label.  In a vertical panel the label is going to get blanked
-     * out regardless.
-     */
-    update_label_margin: function () {
-        let text = this._applet_label.get_text();
-
-        if ((text && text != "") && this._applet_icon_box.child &&
-            (this._orientation == St.Side.TOP || this._orientation == St.Side.BOTTOM)) {
-            this.showLabel(); // in case it has been previously hidden
-        } else {
-            this.hideLabel();
-        }
-    },
-
-    /**
      * set_applet_label:
      * @text (string): text to be displayed at the label
      *
@@ -831,7 +812,6 @@ TextIconApplet.prototype = {
      */
     set_applet_label: function (text) {
         this._applet_label.set_text(text);
-        this.update_label_margin();
     },
 
     /**
@@ -865,8 +845,6 @@ TextIconApplet.prototype = {
         } else {
             this.showLabel();
         }
-
-        this.update_label_margin();
     },
     /**
      * hideLabel:
