@@ -710,12 +710,27 @@ Chrome.prototype = {
             y = Math.round(y);
             w = Math.round(w);
             h = Math.round(h);
-            if (actorData.affectsInputRegion && wantsInputRegion) {
-                let rect = new Meta.Rectangle({ x: x, y: y, width: w, height: h});
 
-                if (actorData.actor.get_paint_visibility() &&
-                    !Main.uiGroup.get_skip_paint(actorData.actor))
-                    rects.push(rect);
+            if (actorData.affectsInputRegion
+                && wantsInputRegion
+                && actorData.actor.get_paint_visibility()
+                && !Main.uiGroup.get_skip_paint(actorData.actor)) {
+                // If the actor is clipped, then we don't want the clipped off areas
+                // to affect the input region because input events won't reach the clipped
+                // actor and the area will become an input "black hole"
+                let rect;
+                if (actorData.actor.has_clip) {
+                    let [cx, cy, cw, ch] = actorData.actor.get_clip();
+                    cx = Math.round(x + cx);
+                    cy = Math.round(y + cy);
+                    cw = Math.round(cw);
+                    ch = Math.round(ch);
+                    rect = new Meta.Rectangle({ x: cx, y: cy, width: cw, height: ch});
+                } else {
+                    rect = new Meta.Rectangle({ x: x, y: y, width: w, height: h});
+                }
+
+                rects.push(rect);
             }
 
             if (actorData.affectsStruts) {
