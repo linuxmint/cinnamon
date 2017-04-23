@@ -594,9 +594,9 @@ st_widget_get_theme_node (StWidget *widget)
        * requiring separate style sheets.
        */
       if (st_widget_get_direction (widget) == ST_TEXT_DIRECTION_RTL)
-        direction_pseudo_class = "rtl";
+        direction_pseudo_class = (char *)"rtl";
       else
-        direction_pseudo_class = "ltr";
+        direction_pseudo_class = (char *)"ltr";
 
       if (priv->pseudo_class)
         pseudo_class = g_strconcat(priv->pseudo_class, " ",
@@ -1924,6 +1924,8 @@ filter_by_position (GList            *children,
             continue;
           break;
 
+        case GTK_DIR_TAB_BACKWARD:
+        case GTK_DIR_TAB_FORWARD:
         default:
           g_return_val_if_reached (NULL);
         }
@@ -1982,6 +1984,9 @@ sort_by_position (gconstpointer  a,
     case GTK_DIR_RIGHT:
       cmp = ax - bx;
       break;
+
+    case GTK_DIR_TAB_BACKWARD:
+    case GTK_DIR_TAB_FORWARD:
     default:
       g_return_val_if_reached (0);
     }
@@ -2007,6 +2012,8 @@ sort_by_position (gconstpointer  a,
     case GTK_DIR_RIGHT:
       fmid = (int)(sort_data->box.y1 + sort_data->box.y2) / 2;
       return abs (ay - fmid) - abs (by - fmid);
+    case GTK_DIR_TAB_BACKWARD:
+    case GTK_DIR_TAB_FORWARD:
     default:
       g_return_val_if_reached (0);
     }
@@ -2114,6 +2121,8 @@ st_widget_real_navigate_focus (StWidget         *widget,
             case GTK_DIR_RIGHT:
               sort_data.box.x2 = sort_data.box.x1;
               break;
+            case GTK_DIR_TAB_BACKWARD:
+            case GTK_DIR_TAB_FORWARD:
             default:
               g_warn_if_reached ();
             }
@@ -2307,7 +2316,7 @@ st_set_slow_down_factor (gfloat factor)
  * Returns: the global factor applied to all animation durations
  */
 gfloat
-st_get_slow_down_factor ()
+st_get_slow_down_factor (void)
 {
   return st_slow_down_factor;
 }
