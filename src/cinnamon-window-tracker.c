@@ -172,6 +172,9 @@ cinnamon_window_tracker_is_window_interesting (MetaWindow *window)
       case META_WINDOW_TOOLBAR:
       case META_WINDOW_UTILITY:
         break;
+      default:
+        g_warning("cinnamon_window_tracker_is_window_interesting: default reached");
+      break;
     }
 
   return TRUE;
@@ -910,11 +913,11 @@ cinnamon_startup_sequence_create_icon (CinnamonStartupSequence *sequence, guint 
   icon_name = sn_startup_sequence_get_icon_name ((SnStartupSequence*)sequence);
   if (!icon_name)
     {
-      texture = clutter_texture_new ();
-
       gint scale;
       CinnamonGlobal *global;
       StThemeContext *context;
+
+      texture = clutter_texture_new ();
 
       global = cinnamon_global_get ();
       context = st_theme_context_get_for_stage (cinnamon_global_get_stage (global));
@@ -938,7 +941,7 @@ cinnamon_startup_sequence_create_icon (CinnamonStartupSequence *sequence, guint 
  * Return Value: (transfer none): The global #CinnamonWindowTracker instance
  */
 CinnamonWindowTracker *
-cinnamon_window_tracker_get_default ()
+cinnamon_window_tracker_get_default (void)
 {
   static CinnamonWindowTracker *instance;
 
