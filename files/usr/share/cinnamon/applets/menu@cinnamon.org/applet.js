@@ -943,7 +943,7 @@ FavoritesButton.prototype = {
         let icon_size = 0.6 * real_size / global.ui_scale;
         if (icon_size > MAX_FAV_ICON_SIZE)
             icon_size = MAX_FAV_ICON_SIZE;
-        this.actor.style = "padding-top: "+(icon_size / 3)+"px;padding-bottom: "+(icon_size / 3)+"px; margin:auto;"
+        this.actor.style = "padding-top: "+(icon_size / 3)+"px;padding-bottom: "+(icon_size / 3)+"px;"
 
         this.actor.add_style_class_name('menu-favorites-button');
         let icon = app.create_icon_texture(icon_size);
@@ -993,7 +993,7 @@ SystemButton.prototype = {
         let icon_size = 0.6 * real_size / global.ui_scale;
         if (icon_size > MAX_FAV_ICON_SIZE)
             icon_size = MAX_FAV_ICON_SIZE;
-        this.actor.style = "padding-top: "+(icon_size / 3)+"px;padding-bottom: "+(icon_size / 3)+"px; margin:auto;"
+        this.actor.style = "padding-top: "+(icon_size / 3)+"px;padding-bottom: "+(icon_size / 3)+"px;"
         this.actor.add_style_class_name('menu-favorites-button');
 
         let iconObj = new St.Icon({icon_name: icon, icon_size: icon_size, icon_type: St.IconType.FULLCOLOR});
