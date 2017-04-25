@@ -594,6 +594,9 @@ get_color_from_rgba_term (CRTerm       *term,
         case 3:
           a = value;
           break;
+        default:
+          g_warning("get_color_from_rgba_term: hit default case");
+          break;
         }
 
       arg = arg->next;
@@ -856,6 +859,7 @@ get_length_from_term (StThemeNode *node,
 
   double multiplier = 1.0;
   int scale_factor;
+  double resolution;
 
   g_object_get (node->context, "scale-factor", &scale_factor, NULL);
 
@@ -951,9 +955,10 @@ get_length_from_term (StThemeNode *node,
     case NB_NUM_TYPE:
       g_warning ("Ignoring invalid type of number of length property");
       return VALUE_NOT_FOUND;
+    default:
+      g_warning("get_length_from_term: default case");
+      break;
     }
-
-  double resolution;
 
   switch (type)
     {
@@ -3078,6 +3083,9 @@ parse_shadow_property (StThemeNode       *node,
                                  "not allowed");
                   *spread = value;
                   break;
+                default:
+                  g_warning("parse_shadow_property: default case");
+                  break;
                 }
               continue;
             }
@@ -3453,6 +3461,9 @@ st_theme_node_get_icon_colors (StThemeNode *node)
               break;
             case SUCCESS:
               node->icon_colors->success = color;
+              break;
+            default:
+              g_warning("st_theme_node_get_icon_colors: default case");
               break;
             }
         }
