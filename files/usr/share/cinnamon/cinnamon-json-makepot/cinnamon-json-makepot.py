@@ -4,6 +4,7 @@ import sys
 import os
 import json
 import subprocess
+import tempfile
 from optparse import OptionParser
 
 from gi.repository import GLib
