@@ -277,11 +277,6 @@ st_icon_paint (ClutterActor *actor)
           clutter_actor_get_allocation_box (priv->icon_texture, &allocation);
           clutter_actor_box_get_size (&allocation, &width, &height);
 
-          allocation.x1 = (width - priv->shadow_width) / 2;
-          allocation.y1 = (height - priv->shadow_height) / 2;
-          allocation.x2 = allocation.x1 + priv->shadow_width;
-          allocation.y2 = allocation.y1 + priv->shadow_height;
-
           _st_paint_shadow_with_opacity (priv->shadow_spec,
                                          priv->shadow_material,
                                          &allocation,

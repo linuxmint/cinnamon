@@ -220,10 +220,6 @@ st_label_paint (ClutterActor *actor)
       clutter_actor_get_allocation_box (priv->label, &allocation);
       clutter_actor_box_get_size (&allocation, &width, &height);
 
-      allocation.x1 = allocation.y1 = 0;
-      allocation.x2 = width;
-      allocation.y2 = height;
-
       if (priv->text_shadow_material == COGL_INVALID_HANDLE ||
           width != priv->shadow_width ||
           height != priv->shadow_height)
