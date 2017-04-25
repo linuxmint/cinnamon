@@ -951,6 +951,7 @@ PanelManager.prototype = {
                 }
 
             } else { // Nothing happens. Re-allocate panel
+                this.panels[i]._monitorsChanged = true;
                 this.panels[i]._moveResizePanel();
             }
         }
@@ -1878,9 +1879,11 @@ Panel.prototype = {
         this._hidden = false;
         this._disabled = false;
         this._panelEditMode = false;
-        this._autohideSettings = this._getProperty(PANEL_AUTOHIDE_KEY, "s");
+        this._autohideSettings = null;
         this._themeFontSize = null;
         this._destroyed = false;
+        this._positionChanged = false;
+        this._monitorsChanged = false;
         this._signalManager = new SignalManager.SignalManager(this);
         this.margin_top = 0;
         this.margin_bottom = 0;
@@ -1890,6 +1893,7 @@ Panel.prototype = {
         this._rightPanelBarrier = 0;
         this._topPanelBarrier = 0;
         this._bottomPanelBarrier = 0;
+        this._shadowBox = null;
 
         this.scaleMode = false;
 
@@ -1923,6 +1927,7 @@ Panel.prototype = {
         Main.layoutManager.addChrome(this.actor, { addToWindowgroup: false });
         this._moveResizePanel();
         this._onPanelEditModeChanged();
+        this._processPanelAutoHide();
 
         this.actor.connect('button-press-event', Lang.bind(this, this._onButtonPressEvent));
         this.actor.connect('style-changed', Lang.bind(this, this._moveResizePanel));
@@ -2026,6 +2031,7 @@ Panel.prototype = {
     updatePosition: function(monitorIndex, panelPosition) {
         this.monitorIndex = monitorIndex
         this.panelPosition = panelPosition;
+        this._positionChanged = true;
 
         this.monitor = global.screen.get_monitor_geometry(monitorIndex);
         //
@@ -2338,7 +2344,7 @@ Panel.prototype = {
         this._rightBox.change_style_pseudo_class('dnd', this._panelEditMode);
 
         if (old_mode != this._panelEditMode) {
-            this._processPanelAutoHide();
+            this._updatePanelVisibility();
         }
 
         this.actor.queue_relayout();
@@ -2450,111 +2456,235 @@ Panel.prototype = {
         return panelHeight;
     },
 
+   /**
+    * _setClipRegion:
+    * @hidden: whether the panel should be clipped for hide
+    * @offset: (optional): x or y position offset
+    *
+    * If @hidden is true the clip region is set to the one exposed strip of pixels
+    * adjacent to the monitor edge. Otherwise, the clip region is set to the panel
+    * size plus the shadow on the side of the panel opposite the monitor edge.
+    *
+    * @offset is only used during tweens. If provided, it is used to offset the
+    * current position in order to calculate the exposed size.
+    */
+    _setClipRegion: function(hidden, offset) {
+        let animating = typeof offset === "number";
+        let isHorizontal = this.panelPosition == PanelLoc.top
+                           || this.panelPosition == PanelLoc.bottom;
+
+        // determine exposed amount of panel
+        let exposedAmount;
+        if (isHorizontal) {
+            if (hidden)
+                exposedAmount = animating ? Math.abs(this.actor.y - offset) + 1
+                                          : 1;
+            else
+                exposedAmount = animating ? Math.abs(this.actor.y - offset)
+                                          : this.actor.height;
+        } else {
+            if (hidden)
+                exposedAmount = animating ? Math.abs(this.actor.x - offset) + 1
+                                          : 1;
+            else
+                exposedAmount = animating ? Math.abs(this.actor.x - offset)
+                                          : this.actor.width;
+        }
+
+        // determine offset & set clip
+        // top/left panels: must offset by the hidden amount
+        // bottom/right panels: if showing must offset by shadow size
+        // all panels: if showing increase exposedAmount by shadow size
+
+        // we use only the shadowbox x1 or y1 (offset) to determine shadow size
+        // as some themes use an offset shadow to draw only on one side whereas
+        // others have a shadow all around. using the offset should handle
+        // both cases.
+        if (isHorizontal) {
+            let clipOffsetY = 0;
+            if (this.panelPosition == PanelLoc.top) {
+                clipOffsetY = this.actor.height - exposedAmount;
+            } else {
+                if (!hidden)
+                    clipOffsetY = this._shadowBox.y1;
+            }
+            if (!hidden)
+                exposedAmount += Math.abs(this._shadowBox.y1);
+            this.actor.set_clip(0, clipOffsetY, this.actor.width, exposedAmount);
+        } else {
+            let clipOffsetX = 0;
+            if (this.panelPosition == PanelLoc.left) {
+                clipOffsetX = this.actor.width - exposedAmount;
+            } else {
+                if (!hidden)
+                    clipOffsetX = this._shadowBox.x1;
+            }
+            if (!hidden)
+                exposedAmount += Math.abs(this._shadowBox.x1);
+            this.actor.set_clip(clipOffsetX, 0, exposedAmount, this.actor.height);
+        }
+        // Force the layout manager to update the input region
+        Main.layoutManager._chrome.updateRegions()
+    },
+
     /**
      * _moveResizePanel:
      *
-     * Function to update the panel position and size according to settings
+     * Function to update the panel position, size, and clip region according to settings
      * values.  Note that this is also called when the style changes.
      */
     _moveResizePanel: function() {
-
         if (this._destroyed)
             return false;
 
+        //
+        // layouts set to be full width horizontal panels, and vertical panels set to use as much available space as is left
+        //
+        // NB If you want to use margin to inset the panels within a monitor, then you can't just set it here
+        // else full screen windows will then go right to the edge with the panels floating over
+        //
         this.monitor = global.screen.get_monitor_geometry(this.monitorIndex);
         let horizontal_panel = ((this.panelPosition == PanelLoc.top || this.panelPosition == PanelLoc.bottom) ? true : false);
 
+        // this stands for width on vertical panels, and height on horizontal panels
         let panelHeight = this._getScaledPanelHeight();
-        this._setFont(panelHeight);
 
+        // find heights used by horizontal panels to determine height available for vertical panels.
+        // we need to check Main.panelManager because this can be called before it has initialized.
+        this.toppanelHeight = 0;
+        this.bottompanelHeight = 0;
+        if (Main.panelManager && !horizontal_panel)
+            [this.toppanelHeight, this.bottompanelHeight] = heightsUsedMonitor(this.monitorIndex, Main.panelManager.panels);
+        // get shadow and margins
+        let themeNode = this.actor.get_theme_node();
+
+        // FIXME: inset shadows will probably break clipping.
+        // I haven't seen a theme with inset panel shadows, but if there
+        // are any then we need to just use the dummy shadow box in that case.
+        let shadowBox;
+        let shadow = themeNode.get_box_shadow();
+        if (shadow) {
+            shadowBox = new Clutter.ActorBox;
+            let actorBox = new Clutter.ActorBox;
+            shadow.get_box(actorBox, shadowBox);
+        } else {
+            // if we don't actually have a shadow, just create a dummy shadowBox
+            shadowBox = {x1: 0, y1: 0, x2: 0, y2: 0};
+        }
+
+        let newMarginTop = 0;
+        let newMarginBottom = 0;
+        let newMarginLeft = 0;
+        let newMarginRight = 0;
         try {
-            this.margin_top    = 0;
-            this.margin_bottom = 0;
-            this.margin_left   = 0;
-            this.margin_right  = 0;
-            let themeNode      = this.actor.get_theme_node();
-            this.margin_top    = themeNode.get_margin(St.Side.TOP);
-            this.margin_bottom = themeNode.get_margin(St.Side.BOTTOM);
-            this.margin_left   = themeNode.get_margin(St.Side.LEFT);
-            this.margin_right  = themeNode.get_margin(St.Side.RIGHT);
+            newMarginTop    = themeNode.get_margin(St.Side.TOP);
+            newMarginBottom = themeNode.get_margin(St.Side.BOTTOM);
+            newMarginLeft   = themeNode.get_margin(St.Side.LEFT);
+            newMarginRight  = themeNode.get_margin(St.Side.RIGHT);
         } catch (e) {
             global.log(e);
         }
-        //
-        // set the height of the panel. To find the height available for the vertical panels we need to find out how
-        // much has been used for the horizontal panels on this monitor.
-        //
-        this.toppanelHeight = 0;
-        this.bottompanelHeight = 0;
-        let vertpanelHeight = 0;
 
-        if (!horizontal_panel) {
-            if (Main.panelManager)            // the panelManager has initialized
-                [this.toppanelHeight, this.bottompanelHeight] = heightsUsedMonitor(this.monitorIndex, Main.panelManager.panels);
-        
-            vertpanelHeight = this.monitor.height - this.toppanelHeight - this.bottompanelHeight
-                              - global.ui_scale*(this.margin_top + this.margin_bottom);
-        }
-        this._processPanelAutoHide();
-        //
-        // layouts set to be full width horizontal panels, and vertical panels set to use as much available space as is left 
-        //
-        // FIXME: Should margin be used to inset the panels within a monitor, to create some sort of island panel,
-        //        then it would not work as intended
-        // - full screen windows will then go right to the edge with the panels floating over
-        // - other windows can be placed underneath
-        // - i.e. the internal edge of the panel will not work properly as a hard boundary to windows
-        // Similarly any margin on the internal panel edge will have no effect.
-        //
-        switch (this.panelPosition) {
-            case PanelLoc.top:
-                this.actor.set_size    (this.monitor.width - global.ui_scale*(this.margin_left+this.margin_right),
-                                        panelHeight);
-                this.actor.set_position(this.monitor.x,
-                                        this.monitor.y);
-                break;
-            case PanelLoc.bottom:
-                this.actor.set_size    (this.monitor.width - global.ui_scale*(this.margin_left+this.margin_right),
-                                        panelHeight);
-                this.actor.set_position(this.monitor.x,
-                                        this.monitor.y + this.monitor.height - panelHeight);
-                break;
-            case PanelLoc.left:
-                this.actor.set_size    (panelHeight,
-                                        vertpanelHeight);
-                this.actor.set_position(this.monitor.x,
-                                        this.monitor.y + this.toppanelHeight);
-                break;
-            case PanelLoc.right:
-                this.actor.set_size    (panelHeight,
-                                        vertpanelHeight);
-                this.actor.set_position(this.monitor.x + this.monitor.width - panelHeight,
-                                        this.monitor.y + this.toppanelHeight);
-                break;
-            default:
-                global.log("moveResizePanel - unrecognised panel position "+this.panelPosition);
-        }
-        this._updatePanelBarriers();   // only needed here for when this routine is called when the style changes
+        let panelChanged = false;
 
-        //
-        // If we are adjusting the heights of horizontal panels then the vertical ones on this monitor 
-        // may need to be changed at the same time. 
-        //
+        let shadowChanged = !this._shadowBox
+                            || shadowBox.x1 != this._shadowBox.x1
+                            || shadowBox.x2 != this._shadowBox.x2
+                            || shadowBox.y1 != this._shadowBox.y1
+                            || shadowBox.y2 != this._shadowBox.y2;
+
+        // if the shadow changed, we need to update the clip
+        if (shadowChanged) {
+            panelChanged = true;
+            this._shadowBox = shadowBox;
+        }
+
+        // if the position changed, make sure the panel is showing
+        // so it's more apparent that the panel moved successfully
+        if (this._positionChanged) {
+            panelChanged = true;
+            this._positionChanged = false;
+            this._hidden = false;
+        }
+
+        // if the monitors changed, force update in case the position needs updating
+        if (this._monitorsChanged) {
+            panelChanged = true;
+            this._monitorsChanged = false;
+        }
+
+        // calculate new panel sizes
+        let newVertPanelHeight = this.monitor.height - this.toppanelHeight - this.bottompanelHeight
+                                 - global.ui_scale*(newMarginTop + newMarginBottom);
+        let newHorizPanelWidth = this.monitor.width - global.ui_scale*(newMarginLeft + newMarginRight);
+
+        // and determine if this panel's size changed
         if (horizontal_panel) {
-            if (Main.panelManager) {            // the panelManager has initialized
-                for (let i in Main.panelManager.panels) {
-                    if (Main.panelManager.panels[i])
-                        if ((Main.panelManager.panels[i].panelPosition == PanelLoc.left 
-                        || Main.panelManager.panels[i].panelPosition == PanelLoc.right)
-                        && Main.panelManager.panels[i].monitorIndex == this.monitorIndex)
-                        Main.panelManager.panels[i]._moveResizePanel();
+            if (this.actor.width != newHorizPanelWidth || this.actor.height != panelHeight)
+                panelChanged = true;
+        } else {
+            if (this.actor.width != panelHeight || this.actor.height != newVertPanelHeight)
+                panelChanged = true;
+        }
+
+        if (panelChanged) {
+            // remove any tweens that might be active for autohide
+            Tweener.removeTweens(this.actor);
+
+            this.margin_top = newMarginTop;
+            this.margin_bottom = newMarginBottom;
+            this.margin_left = newMarginLeft;
+            this.margin_right = newMarginRight;
+
+            this._setFont(panelHeight);
+
+            // update size and determine position depending on hidden state
+            let newX, newY;
+            if (horizontal_panel) {
+                newX = this.monitor.x;
+                if (this.panelPosition == PanelLoc.top) {
+                    newY = this._hidden ? this.monitor.y - panelHeight + 1
+                                        : this.monitor.y;
+                } else {
+                    newY = this._hidden ? this.monitor.y + this.monitor.height - 1
+                                        : this.monitor.y + this.monitor.height - panelHeight;
+                }
+                this.actor.set_size(newHorizPanelWidth, panelHeight);
+            } else {
+                newY = this.monitor.y + this.toppanelHeight;
+                if (this.panelPosition == PanelLoc.left) {
+                    newX = this._hidden ? this.monitor.x - panelHeight + 1
+                                        : this.monitor.x;
+                } else {
+                    newX = this._hidden ? this.monitor.x + this.monitor.width - 1
+                                        : this.monitor.x + this.monitor.width - panelHeight;
+                }
+                this.actor.set_size(panelHeight, newVertPanelHeight);
+            }
+
+            // update position and clip region
+            this.actor.set_position(newX, newY)
+            this._setClipRegion(this._hidden);
+
+            // only needed here for when this routine is called when the style changes
+            this._updatePanelBarriers();
+
+            this._updatePanelVisibility();
+
+            // If we are adjusting the heights of horizontal panels then the vertical ones on this monitor
+            // need to be changed at the same time.
+            if (Main.panelManager && horizontal_panel) {
+                let panels = Main.panelManager.getPanelsInMonitor(this.monitorIndex);
+                for (let p of panels) {
+                    if (p.panelPosition == PanelLoc.left || p.panelPosition == PanelLoc.right)
+                        p._moveResizePanel();
                 }
             }
-        }
-        // AppletManager might not be initialized yet
-        if (AppletManager.appletsLoaded)
-            AppletManager.updateAppletPanelHeights(); 
 
+            // AppletManager might not be initialized yet
+            if (AppletManager.appletsLoaded)
+                AppletManager.updateAppletPanelHeights();
+        }
         return true;
     },
 
@@ -3129,80 +3259,41 @@ Panel.prototype = {
 
         // setup panel tween - slide in from edge of monitor
         // if horizontal panel, animation on y. if vertical, animation on x.
-        let origPos;
         let isHorizontal = this.panelPosition == PanelLoc.top
                            || this.panelPosition == PanelLoc.bottom;
         let animationTime = AUTOHIDE_ANIMATION_TIME;
         let panelParams = { time: animationTime,
                             transition: 'easeOutQuad' };
 
-        // get panel shadow box for use in clipping later
-        let theme_node = this.actor.get_theme_node();
-        let shadow = theme_node.get_box_shadow();
-        let shadowBox;
-        if (shadow) {
-            shadowBox = new Clutter.ActorBox;
-            let actorBox = new Clutter.ActorBox;
-            shadow.get_box(actorBox, shadowBox);
-        } else {
-            // if we don't actually have a shadow, just create a dummy shadowBox
-            shadowBox = {x1: 0, y1: 0, x2: 0, y2: 0};
-        }
-
         // set up original and destination positions and add tween
-        // destination position paramater
+        // destination parameter
+        let origPos, destPos;
         if (isHorizontal) {
             let height = this.actor.get_height();
-            let destY;
             if (this.panelPosition == PanelLoc.top) {
-                destY = this.monitor.y;
+                destPos = this.monitor.y;
                 origPos = this.monitor.y - height;
             } else {
-                destY = this.monitor.y + this.monitor.height - height;
+                destPos = this.monitor.y + this.monitor.height - height;
                 origPos = this.monitor.y + this.monitor.height;
             }
-            panelParams['y'] = destY;
+            panelParams['y'] = destPos;
         } else {
             let width = this.actor.get_width();
-            let destX;
             if (this.panelPosition == PanelLoc.left) {
-                destX = this.monitor.x;
+                destPos = this.monitor.x;
                 origPos = this.monitor.x - width;
             } else {
-                destX = this.monitor.width - width + this.monitor.x;
+                destPos = this.monitor.width - width + this.monitor.x;
                 origPos = this.monitor.width + this.monitor.x;
             }
-            panelParams['x'] = destX;
+            panelParams['x'] = destPos;
         }
 
         // setup onUpdate tween parameter to set the actor clip region during animation.
-        // we need to account for the shadow box as well as the exposed part of the
-        // panel when setting the clip size and offset.
-        panelParams['onUpdateParams'] = [origPos, this.panelPosition, isHorizontal, shadowBox];
+        panelParams['onUpdateParams'] = [origPos];
         panelParams['onUpdate'] =
-            Lang.bind(this, function(origPos, panelPosition, isHorizontal, shadowBox) {
-                // Force the layout manager to update the input region
-                Main.layoutManager._chrome.updateRegions()
-                if (isHorizontal) {
-                    let exposedHeight = Math.abs(this.actor.y - origPos);
-                    let clipHeight = exposedHeight + shadowBox.y2;
-                    let clipOffsetY;
-                    if (panelPosition == PanelLoc.top)
-                        clipOffsetY = this.actor.height - exposedHeight;
-                    else
-                        clipOffsetY = 0 + shadowBox.y1;
-                    this.actor.set_clip(0, clipOffsetY, this.monitor.width, clipHeight);
-                } else {
-                    let exposedWidth = Math.abs(this.actor.x - origPos);
-                    let clipWidth = exposedWidth + shadowBox.x2;
-                    let clipOffsetX;
-                    if (panelPosition == PanelLoc.left)
-                        clipOffsetX = this.actor.width - exposedWidth;
-                    else
-                        clipOffsetX = 0 + shadowBox.x1;
-                    this.actor.set_clip(clipOffsetX, 0, clipWidth, this.monitor.height);
-                }
-            });
+            Lang.bind(this, function(origPos) { this._setClipRegion(false, origPos); });
 
         // setup boxes tween - fade in as panel slides
         let boxParams = { opacity: 255,
@@ -3247,55 +3338,30 @@ Panel.prototype = {
         let panelParams = { time: animationTime,
                             transition: 'easeOutQuad' };
 
-        // setup destination position and onUpdateParams for clipping later
+        // setup destination position and add tween destination parameter
         // remember to always leave a vestigial 1px strip or the panel
         // will become inaccessible
+        let destPos;
         if (isHorizontal) {
             let height = this.actor.get_height();
-            let destY;
             if (this.panelPosition == PanelLoc.top)
-                destY = this.monitor.y - height + 1;
+                destPos = this.monitor.y - height + 1;
             else
-                destY = this.monitor.y + this.monitor.height - 1;
-            panelParams['y'] = destY;
-            panelParams['onUpdateParams'] = [destY, this.panelPosition, isHorizontal];
+                destPos = this.monitor.y + this.monitor.height - 1;
+            panelParams['y'] = destPos;
         } else {
             let width = this.actor.get_width();
-            let destX;
             if (this.panelPosition == PanelLoc.left)
-                destX = this.monitor.x - width + 1;
+                destPos = this.monitor.x - width + 1;
             else
-                destX = this.monitor.x + this.monitor.width - 1;
-            panelParams['x'] = destX;
-            panelParams['onUpdateParams'] = [destX, this.panelPosition, isHorizontal];
+                destPos = this.monitor.x + this.monitor.width - 1;
+            panelParams['x'] = destPos;
         }
 
         // setup onUpdate tween parameter to update the actor clip region during animation
-        // we need to account for the the exposed part of the panel when setting the clip
-        // size and offset.
-        // note: ensure at least one exposed panel pixel strip remains after the clip
+        panelParams['onUpdateParams'] = [destPos];
         panelParams['onUpdate'] =
-            Lang.bind(this, function(destPos, panelPosition, isHorizontal) {
-                // Force the layout manager to update the input region
-                Main.layoutManager._chrome.updateRegions()
-                if (isHorizontal) {
-                    let exposedHeight = Math.abs(this.actor.y - destPos) + 1;
-                    let clipOffsetY;
-                    if (panelPosition == PanelLoc.top)
-                        clipOffsetY = this.actor.height - exposedHeight;
-                    else
-                        clipOffsetY = 0;
-                    this.actor.set_clip(0, clipOffsetY, this.monitor.width, exposedHeight);
-                } else {
-                    let exposedWidth = Math.abs(this.actor.x - destPos) + 1;
-                    let clipOffsetX;
-                    if (panelPosition == PanelLoc.left)
-                        clipOffsetX = this.actor.width - exposedWidth;
-                    else
-                        clipOffsetX = 0;
-                    this.actor.set_clip(clipOffsetX, 0, exposedWidth, this.monitor.height);
-                }
-            });
+            Lang.bind(this, function(destPos) { this._setClipRegion(true, destPos); });
         
         // hide boxes after panel slides out
         panelParams['onComplete'] =
