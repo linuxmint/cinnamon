@@ -513,9 +513,13 @@ st_scroll_view_get_preferred_width (ClutterActor *actor,
       break;
     case GTK_POLICY_ALWAYS:
     case GTK_POLICY_AUTOMATIC:
+    case GTK_POLICY_EXTERNAL:
       /* Should theoretically use the min width of the hscrollbar,
        * but that's not cleanly defined at the moment */
       min_width = 0;
+      break;
+    default:
+      g_warn_if_reached();
       break;
     }
 
@@ -566,17 +570,22 @@ st_scroll_view_get_preferred_height (ClutterActor *actor,
   switch (priv->vscrollbar_policy)
     {
     case GTK_POLICY_NEVER:
+    case GTK_POLICY_EXTERNAL:
       break;
     case GTK_POLICY_ALWAYS:
     case GTK_POLICY_AUTOMATIC:
       /* We've requested space for the scrollbar, subtract it back out */
       for_width -= sb_width;
       break;
+    default:
+      g_warn_if_reached();
+      break;
     }
 
   switch (priv->hscrollbar_policy)
     {
     case GTK_POLICY_NEVER:
+    case GTK_POLICY_EXTERNAL:
       account_for_hscrollbar = FALSE;
       break;
     case GTK_POLICY_ALWAYS:
@@ -584,6 +593,9 @@ st_scroll_view_get_preferred_height (ClutterActor *actor,
       break;
     case GTK_POLICY_AUTOMATIC:
       account_for_hscrollbar = for_width < child_min_width;
+      break;
+    default:
+      g_warn_if_reached();
       break;
     }
 
@@ -599,9 +611,13 @@ st_scroll_view_get_preferred_height (ClutterActor *actor,
       break;
     case GTK_POLICY_ALWAYS:
     case GTK_POLICY_AUTOMATIC:
+    case GTK_POLICY_EXTERNAL:
       /* Should theoretically use the min height of the vscrollbar,
        * but that's not cleanly defined at the moment */
       min_height = 0;
+      break;
+    default:
+      g_warn_if_reached();
       break;
     }
 
@@ -865,6 +881,9 @@ st_scroll_view_scroll_event (ClutterActor       *self,
                     "value", &value,
                     NULL);
       break;
+    default:
+      g_warn_if_reached();
+      break;
     }
 
   switch (event->direction)
@@ -884,6 +903,9 @@ st_scroll_view_scroll_event (ClutterActor       *self,
       break;
     case CLUTTER_SCROLL_RIGHT:
       st_adjustment_set_value (priv->hadjustment, value + step);
+      break;
+    default:
+      g_warn_if_reached();
       break;
     }
 
