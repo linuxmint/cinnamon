@@ -233,6 +233,7 @@ function PanelManager() {
 
 PanelManager.prototype = {
     _init: function() {
+        this.dummyPanels = [];
         this.panels = [];
         this.panelsMeta = [];   // Properties of panels in format [<monitor index>, <panelPosition>]
         this.canAdd = true;     // Whether there is space for more panels to be added
@@ -1672,7 +1673,7 @@ PanelContextMenu.prototype = {
         let menuItem = new SettingsLauncher(_("Panel settings"), "panel " + panelId, "emblem-system");
         this.addMenuItem(menuItem);
 
-        let menuItem = new SettingsLauncher(_("Themes"), "themes", "applications-graphics");
+        menuItem = new SettingsLauncher(_("Themes"), "themes", "applications-graphics");
         this.addMenuItem(menuItem);
 
         let menuSetting = new SettingsLauncher(_("System Settings"), "", "preferences-system");
@@ -2948,8 +2949,8 @@ Panel.prototype = {
             }
         }
 
-        let leftBoundary  = Math.round(leftWidth);
-        let rightBoundary = Math.round(allocWidth - rightWidth);
+        leftBoundary  = Math.round(leftWidth);
+        rightBoundary = Math.round(allocWidth - rightWidth);
 
         if (!vertical && (this.actor.get_direction() == St.TextDirection.RTL)) {
             leftBoundary  = allocWidth - leftWidth;
@@ -2998,7 +2999,7 @@ Panel.prototype = {
 
         if (this.panelPosition == PanelLoc.left || this.panelPosition == PanelLoc.right) {
 
-            [leftBoundary, rightBoundary] = this._calcBoxSizes(allocHeight, allocWidth, true); 
+            let [leftBoundary, rightBoundary] = this._calcBoxSizes(allocHeight, allocWidth, true); 
             let childBox = new Clutter.ActorBox();
 
             childBox.x1 = 0;
@@ -3055,7 +3056,7 @@ Panel.prototype = {
             }
         } else {           // horizontal panel
 
-            [leftBoundary, rightBoundary] = this._calcBoxSizes(allocWidth, allocHeight, false); 
+            let [leftBoundary, rightBoundary] = this._calcBoxSizes(allocWidth, allocHeight, false); 
 
             let childBox = new Clutter.ActorBox();
 

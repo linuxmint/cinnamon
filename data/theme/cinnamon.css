@@ -1779,6 +1779,11 @@ StScrollBar StButton#vhandle:hover {
     background-color: rgba(190,190,190,0.2);
 }
 
+.osd-window .level-bar {
+    border-radius: 0.3em;
+    background-color: rgba(190,190,190,0.8);
+}
+
 .tile-preview,
 .tile-hud {
     background-color: rgba(85, 85, 85, 0.5);

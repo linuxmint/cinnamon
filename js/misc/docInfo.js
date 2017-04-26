@@ -55,15 +55,7 @@ DocInfo.prototype = {
     // },
 
     createIcon : function(size) {
-        // let existing = this.factory.lookup(this.uri, this.mtime); // EXPENSIVE
-        // if (existing) {
-        //     let file = Gio.file_new_for_path(existing);
-        //     let thumb_uri = file.get_uri();
-        //     return St.TextureCache.get_default().load_uri_async(thumb_uri, size, size);
-        // }
-        // else {
-            return St.TextureCache.get_default().load_gicon(null, this.gicon, size);
-        // }
+        return new St.Icon({ gicon: this.gicon, icon_size: size });
     },
 
     _realLaunch : function() {

@@ -11,7 +11,7 @@ const assertRaises = JsUnit.assertRaises;
 // We can't depend on environment.js to set up the String.prototype.format,
 // because the tests  run in one JS context, and the imports run in the GJS
 // "load context" which has its own copy of the String class
-const Format = imports.misc.format;
+const Format = imports.format;
 String.prototype.format = Format.format;
 
 // Test common usage and %% handling

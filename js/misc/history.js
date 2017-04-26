@@ -72,7 +72,7 @@ HistoryManager.prototype = {
             this._indexChanged();
         }
 
-        return this._historyIndex[this._history.length];
+        return this._historyIndex.maybeGet(this._history.length);
     },
 
     addItem: function(input) {

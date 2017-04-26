@@ -278,7 +278,7 @@ Calendar.prototype = {
     },
 
     _setWeekdateHeaderWidth: function() {
-        if (this.digitWidth != NaN && this.show_week_numbers && this._weekdateHeader) {
+        if (this._digitWidth != NaN && this.show_week_numbers && this._weekdateHeader) {
             this._weekdateHeader.set_width (this._digitWidth * WEEKDATE_HEADER_WIDTH_DIGITS);
         }
     },

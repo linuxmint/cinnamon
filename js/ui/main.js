@@ -119,14 +119,13 @@ const Settings = imports.ui.settings;
 const Systray = imports.ui.systray;
 const Accessibility = imports.ui.accessibility;
 
-const DEFAULT_BACKGROUND_COLOR = new Clutter.Color();
-DEFAULT_BACKGROUND_COLOR.from_pixel(0x2266bbff);
-
 const LAYOUT_TRADITIONAL = "traditional";
 const LAYOUT_FLIPPED = "flipped";
 const LAYOUT_CLASSIC = "classic";
 
 const CIN_LOG_FOLDER = GLib.get_home_dir() + '/.cinnamon/';
+
+let DEFAULT_BACKGROUND_COLOR = Clutter.Color.from_pixel(0x2266bbff);
 
 let panel = null;
 let soundManager = null;
@@ -272,7 +271,7 @@ function start() {
                     log_dir.make_directory_with_parents(null);
                 lg_log_file = log_filename.append_to(0, null);
             } else {
-                log_filename.copy(log_backup_filename, 1, null, null, null);
+                log_filename.copy(log_backup_filename, 1, null, null);
                 log_filename.delete(null);
                 lg_log_file = log_filename.append_to(0, null);
             }
@@ -367,6 +366,8 @@ function start() {
     stage_bg.add_actor(uiGroup);
 
     global.reparentActor(global.top_window_group, global.stage);
+
+    global.menuStackLength = 0;
 
     layoutManager = new Layout.LayoutManager();
 
@@ -894,7 +895,7 @@ function warningNotify(msg, details, icon) {
     messageTray.add(source);
     let notification = new MessageTray.Notification(source, msg, details, { icon: icon });
     notification.setTransient(false);
-    notification.setUrgency(MessageTray.Urgency.WARNING);
+    notification.setUrgency(MessageTray.Urgency.HIGH);
     source.notify(notification);
 }
 

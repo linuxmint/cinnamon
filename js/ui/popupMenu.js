@@ -1890,7 +1890,7 @@ PopupMenuBase.prototype = {
             childBeforeIndex--;
 
         if (childBeforeIndex < 0
-            || children[childBeforeIndex]._delegate instanceof PopupSeparatorMenuItem) {
+            || children[childBeforeIndex].maybeGet("_delegate") instanceof PopupSeparatorMenuItem) {
             menuItem.actor.hide();
             return;
         }
@@ -1980,7 +1980,7 @@ PopupMenuBase.prototype = {
         for (let i = 0; i < items.length; i++) {
             if (!items[i].visible)
                 continue;
-            if (items[i]._delegate instanceof PopupBaseMenuItem || items[i]._delegate instanceof PopupMenuBase) {
+            if (items[i].maybeGet("_delegate") instanceof PopupBaseMenuItem || items[i].maybeGet("_delegate") instanceof PopupMenuBase) {
                 let itemColumnWidths = items[i]._delegate.getColumnWidths();
                 for (let j = 0; j < itemColumnWidths.length; j++) {
                     if (j >= columnWidths.length || itemColumnWidths[j] > columnWidths[j])
@@ -2001,7 +2001,7 @@ PopupMenuBase.prototype = {
     setColumnWidths: function(widths) {
         let items = this.box.get_children();
         for (let i = 0; i < items.length; i++) {
-            if (items[i]._delegate instanceof PopupBaseMenuItem || items[i]._delegate instanceof PopupMenuBase)
+            if (items[i].maybeGet("_delegate") instanceof PopupBaseMenuItem || items[i].maybeGet("_delegate") instanceof PopupMenuBase)
                 items[i]._delegate.setColumnWidths(widths);
         }
     },

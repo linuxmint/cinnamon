@@ -54,6 +54,7 @@ function recursivelyDeleteDir(dir) {
 }
 
 function getUserDesktopDir() {
+
     // Didn't find a function returning the user desktop dir, so parsing the user-dirs.dirs file to get it
     let userdirsFile = Gio.file_new_for_path(GLib.get_home_dir()+"/.config/user-dirs.dirs");
     let path;
@@ -63,7 +64,7 @@ function getUserDesktopDir() {
             let dataDic = new Array();
             let lines = data[1].toString().split("\n");
             for (var i in lines){
-                if (lines[i][0]=="#") continue;
+                if (!lines[i] || lines[i][0]=="#") continue;
                 let line = lines[i].split("=", 2);
                 if (line.length==2){
                     dataDic[line[0]] = line[1];

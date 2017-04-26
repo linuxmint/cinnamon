@@ -207,7 +207,7 @@ NotificationDaemon.prototype = {
         if (ndata && ndata.notification)
             return ndata.notification.source;
 
-        let isForTransientNotification = (ndata && ndata.hints['transient'] == true);
+        let isForTransientNotification = (ndata && ndata.hints.maybeGet('transient') == true);
 
         // We don't want to override a persistent notification
         // with a transient one from the same sender, so we
@@ -479,10 +479,10 @@ NotificationDaemon.prototype = {
                 notification.setUrgency(MessageTray.Urgency.CRITICAL);
                 break;
         }
-        notification.setResident(hints.resident == true);
+        notification.setResident(hints.maybeGet('resident') == true);
         // 'transient' is a reserved keyword in JS, so we have to retrieve the value
         // of the 'transient' hint with hints['transient'] rather than hints.transient
-        notification.setTransient(hints['transient'] == true);
+        notification.setTransient(hints.maybeGet('transient') == true);
 
         let sourceIconActor = source.useNotificationIcon ? this._iconForNotificationData(icon, hints, source.ICON_SIZE) : null;
         source.processNotification(notification, sourceIconActor);

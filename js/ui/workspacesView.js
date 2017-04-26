@@ -74,8 +74,8 @@ WorkspacesView.prototype = {
         // as an Overview member.
         let overviewShowingId = Main.overview.connect('showing', Lang.bind(this, function() {
             Main.overview.disconnect(overviewShowingId);
-            let activeWorkspaceIndex = global.screen.get_active_workspace_index();
-            this._workspaces[activeWorkspaceIndex].zoomToOverview();
+            let workspaceIndex = global.screen.get_active_workspace_index();
+            this._workspaces[workspaceIndex].zoomToOverview();
         }));
 
         this._scrollAdjustment = new St.Adjustment({ value: activeWorkspaceIndex,
@@ -334,8 +334,8 @@ WorkspacesView.prototype = {
             stackIndices[stack[i].get_meta_window().get_stable_sequence()] = i;
         }
 
-        for (let i = 0; i < this._workspaces.length; i++)
-            this._workspaces[i].syncStacking(stackIndices);
+        for (let j = 0; j < this._workspaces.length; j++)
+            this._workspaces[j].syncStacking(stackIndices);
     },
 
     // sync the workspaces' positions to the value of the scroll adjustment

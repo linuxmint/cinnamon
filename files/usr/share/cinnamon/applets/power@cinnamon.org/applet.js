@@ -179,7 +179,7 @@ BrightnessSlider.prototype = {
         this.addActor(this._slider, {span: -1, expand: true});
 
         this.label = label;
-        this.toolTipText = label;
+        this.tooltipText = label;
         this.tooltip = new Tooltips.Tooltip(this.actor, this.tooltipText);
 
         Interfaces.getDBusProxyAsync(busName, Lang.bind(this, function(proxy, error) {
@@ -511,7 +511,6 @@ MyApplet.prototype = {
                     let status = this._getDeviceStatus(devices[i]);
                     let item = new DeviceItem (devices[i], status, this.aliases);
                     this.menu.addMenuItem(item, position);
-                    this.num_devices = this.num_devices + 1;
                     this._deviceItems.push(item);
                     position++;
                 }

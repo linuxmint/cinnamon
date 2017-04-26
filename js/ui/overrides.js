@@ -170,4 +170,13 @@ function overrideJS() {
         Object.defineProperty(Array.prototype, "find", {enumerable: false});
         // Or else for (let i in arr) loops will explode;
     }
+
+    Object.prototype.maybeGet = function(prop) {
+        if (this.hasOwnProperty(prop)) {
+            return this[prop];
+        } else {
+            return undefined;
+        }
+    };
+    Object.defineProperty(Object.prototype, "maybeGet", {enumerable: false});
 }

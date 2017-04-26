@@ -62,7 +62,7 @@ AM_CONDITIONAL(BUILD_RECORDER, $build_recorder)
 
 CLUTTER_MIN_VERSION=1.10.0
 GOBJECT_INTROSPECTION_MIN_VERSION=0.9.2
-GJS_MIN_VERSION=2.3.1
+GJS_MIN_VERSION=3.2.0
 MUFFIN_MIN_VERSION=3.0.0
 GTK_MIN_VERSION=3.12.0
 GIO_MIN_VERSION=2.35.0
@@ -74,7 +74,7 @@ PKG_CHECK_MODULES(CINNAMON, gio-2.0 >= $GIO_MIN_VERSION
                                gio-unix-2.0 dbus-glib-1 libxml-2.0
                                gtk+-3.0 >= $GTK_MIN_VERSION
                                libmuffin >= $MUFFIN_MIN_VERSION
-                               cjs-internals-1.0 >= $GJS_MIN_VERSION
+                               cjs-1.0 >= $GJS_MIN_VERSION
 			       libcinnamon-menu-3.0 $recorder_modules
                                gdk-x11-3.0 libsoup-2.4 gl
 			       clutter-x11-1.0 >= $CLUTTER_MIN_VERSION
@@ -83,13 +83,11 @@ PKG_CHECK_MODULES(CINNAMON, gio-2.0 >= $GIO_MIN_VERSION
                                polkit-agent-1 >= $POLKIT_MIN_VERSION xfixes
                                libnm-glib libnm-util gnome-keyring-1 atk-bridge-2.0)
 
-PKG_CHECK_MODULES(CINNAMON_JS, gio-2.0 cjs-internals-1.0 >= $GJS_MIN_VERSION)
-
 PKG_CHECK_MODULES(CINNAMON_PERF_HELPER, gtk+-3.0 gio-2.0)
 
 PKG_CHECK_MODULES(CINNAMON_HOTPLUG_SNIFFER, gio-2.0 gdk-pixbuf-2.0)
 
-GJS_VERSION=`$PKG_CONFIG --modversion cjs-internals-1.0`
+GJS_VERSION=`$PKG_CONFIG --modversion cjs-1.0`
 AC_DEFINE_UNQUOTED([GJS_VERSION], ["$GJS_VERSION"], [The version of GJS we're linking to])
 dnl '
 AC_SUBST([GJS_VERSION], ["$GJS_VERSION"])

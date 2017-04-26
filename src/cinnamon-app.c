@@ -186,12 +186,12 @@ cinnamon_app_create_icon_texture (CinnamonApp   *app,
 
   icon = g_app_info_get_icon (G_APP_INFO (gmenu_tree_entry_get_app_info (app->entry)));
   if (icon != NULL)
-    ret = st_texture_cache_load_gicon (st_texture_cache_get_default (), NULL, icon, size);
+    ret = g_object_new (ST_TYPE_ICON, "gicon", icon, "icon-size", size, NULL);
 
   if (ret == NULL)
     {
       icon = g_themed_icon_new ("application-x-executable");
-      ret = st_texture_cache_load_gicon (st_texture_cache_get_default (), NULL, icon, size);
+      ret = g_object_new (ST_TYPE_ICON, "gicon", icon, "icon-size", size, NULL);
       g_object_unref (icon);
     }
 
@@ -565,7 +565,7 @@ cinnamon_app_activate_window (CinnamonApp     *app,
         window = most_recent_transient;
 
 
-      if (!cinnamon_window_tracker_is_window_interesting (window))
+      if (!cinnamon_window_tracker_is_window_interesting (global, window))
         {
           /* We won't get notify::user-time signals for uninteresting windows,
            * which means that an app's last_user_time won't get updated.
@@ -1079,6 +1079,7 @@ _cinnamon_app_handle_startup_sequence (CinnamonApp          *app,
 gboolean
 cinnamon_app_request_quit (CinnamonApp   *app)
 {
+  CinnamonGlobal *global;
   GSList *iter;
 
   if (cinnamon_app_get_state (app) != CINNAMON_APP_STATE_RUNNING)
@@ -1086,14 +1087,16 @@ cinnamon_app_request_quit (CinnamonApp   *app)
 
   /* TODO - check for an XSMP connection; we could probably use that */
 
+  global = cinnamon_global_get ();
+
   for (iter = app->running_state->windows; iter; iter = iter->next)
     {
       MetaWindow *win = iter->data;
 
-      if (!cinnamon_window_tracker_is_window_interesting (win))
+      if (!cinnamon_window_tracker_is_window_interesting (global,  win))
         continue;
 
-      meta_window_delete (win, cinnamon_global_get_current_time (cinnamon_global_get ()));
+      meta_window_delete (win, cinnamon_global_get_current_time (global));
     }
   return TRUE;
 }

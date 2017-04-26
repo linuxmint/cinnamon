@@ -552,7 +552,7 @@ AppMenuButton.prototype = {
             Main.activateWindow(this.metaWindow, global.get_current_time());
             this.actor.add_style_pseudo_class('focus');
         } else if (!fromDrag) {
-            this.metaWindow.minimize(global.get_current_time());
+            this.metaWindow.minimize();
             this.actor.remove_style_pseudo_class('focus');
         }
     },
@@ -967,7 +967,7 @@ MyApplet.prototype = {
         this.settings.bind("enable-scrolling", "scrollable", this._onEnableScrollChanged);
         this.settings.bind("reverse-scrolling", "reverseScroll");
         this.settings.bind("middle-click-close", "middleClickClose");
-        this.settings.bind("buttons-use-entire-space", "buttonsUseEntireSpace", this._refreshItems);
+        this.settings.bind("buttons-use-entire-space", "buttonsUseEntireSpace", this._refreshAllItems);
         this.settings.bind("window-preview", "usePreview", this._onPreviewChanged);
 
         this.signals = new SignalManager.SignalManager(this);

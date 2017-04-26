@@ -869,7 +869,8 @@ CategoryButton.prototype = {
         this.actor._delegate = this;
         this.label = new St.Label({ text: label, style_class: 'menu-category-button-label' });
         if (category && this.icon_name) {
-            this.icon = St.TextureCache.get_default().load_gicon(null, icon, CATEGORY_ICON_SIZE);
+            this.icon = new St.Icon({gicon: icon, icon_size: CATEGORY_ICON_SIZE, icon_type: St.IconType.FULLCOLOR});
+
             if (this.icon) {
                 this.addActor(this.icon);
                 this.icon.realize();
@@ -1265,8 +1266,6 @@ MyApplet.prototype = {
         // The reason we do is in case the Cinnamon icon theme is the same as the one specificed in GTK itself (in .config)
         // In that particular case we get no signal at all.
         this._refreshAll();
-
-        St.TextureCache.get_default().connect("icon-theme-changed", Lang.bind(this, this.onIconThemeChanged));
         this._recalc_height();
 
         this.update_label_visible();
@@ -1277,13 +1276,6 @@ MyApplet.prototype = {
             if (!Main.overview.visible && !Main.expo.visible)
                 this.menu.toggle_with_options(this.enableAnimation);
         }));
-    },
-
-    onIconThemeChanged: function() {
-        if (this.refreshing == false) {
-            this.refreshing = true;
-            Mainloop.timeout_add_seconds(1, Lang.bind(this, this._refreshAll));
-        }
     },
 
     onAppSysChanged: function() {
@@ -2660,7 +2652,7 @@ MyApplet.prototype = {
             if (app) {
                 let button = new FavoritesButton(this, app, launchers.length + 3); // + 3 because we're adding 3 system buttons at the bottom
                 this._favoritesButtons[app] = button;
-                this.favoritesBox.add_actor(button.actor, { y_align: St.Align.END, y_fill: false });
+                this.favoritesBox.add(button.actor, { y_align: St.Align.END, y_fill: false });
 
                 this._addEnterEvent(button, Lang.bind(this, this._favEnterEvent, button));
                 button.actor.connect('leave-event', Lang.bind(this, this._favLeaveEvent, button));
@@ -2672,7 +2664,7 @@ MyApplet.prototype = {
         //Separator
         if (launchers.length != 0) {
                 let separator = new PopupMenu.PopupSeparatorMenuItem();
-                this.favoritesBox.add_actor(separator.actor, { y_align: St.Align.END, y_fill: false });
+                this.favoritesBox.add(separator.actor, { y_align: St.Align.END, y_fill: false });
         }
 
         //Lock screen
@@ -2701,10 +2693,10 @@ MyApplet.prototype = {
             }
         });
 
-        this.favoritesBox.add_actor(button.actor, { y_align: St.Align.END, y_fill: false });
+        this.favoritesBox.add(button.actor, { y_align: St.Align.END, y_fill: false });
 
         //Logout button
-        let button = new SystemButton(this, "system-log-out", launchers.length + 3,
+        button = new SystemButton(this, "system-log-out", launchers.length + 3,
                                       _("Logout"),
                                       _("Leave the session"));
 
@@ -2716,10 +2708,10 @@ MyApplet.prototype = {
             this._session.LogoutRemote(0);
         });
 
-        this.favoritesBox.add_actor(button.actor, { y_align: St.Align.END, y_fill: false });
+        this.favoritesBox.add(button.actor, { y_align: St.Align.END, y_fill: false });
 
         //Shutdown button
-        let button = new SystemButton(this, "system-shutdown", launchers.length + 3,
+        button = new SystemButton(this, "system-shutdown", launchers.length + 3,
                                       _("Quit"),
                                       _("Shutdown the computer"));
 
@@ -2731,7 +2723,7 @@ MyApplet.prototype = {
             this._session.ShutdownRemote();
         });
 
-        this.favoritesBox.add_actor(button.actor, { y_align: St.Align.END, y_fill: false });
+        this.favoritesBox.add(button.actor, { y_align: St.Align.END, y_fill: false });
 
         this._recalc_height();
     },
@@ -2836,7 +2828,7 @@ MyApplet.prototype = {
         this._session = new GnomeSession.SessionManager();
         this._screenSaverProxy = new ScreenSaver.ScreenSaverProxy();
 
-        this.leftPane.add_actor(this.leftBox, { y_align: St.Align.END, y_fill: false });
+        this.leftPane.add(this.leftBox, { y_align: St.Align.END, y_fill: false });
         this._favboxtoggle();
 
         let rightPane = new St.BoxLayout({ vertical: true });
@@ -2892,15 +2884,15 @@ MyApplet.prototype = {
 
         let fav_obj = new FavoritesBox();
         this.favoritesBox = fav_obj.actor;
-        this.leftBox.add_actor(this.favoritesBox, { y_align: St.Align.END, y_fill: false });
+        this.leftBox.add(this.favoritesBox, { y_align: St.Align.END, y_fill: false });
 
         this.mainBox = new St.BoxLayout({ style_class: 'menu-applications-outer-box', vertical:false });
         this.mainBox.add_style_class_name('menu-applications-box'); //this is to support old themes
 
-        this.mainBox.add_actor(this.leftPane, { span: 1 });
-        this.mainBox.add_actor(rightPane, { span: 1 });
-
-        section.actor.add_actor(this.mainBox);
+        this.mainBox.add(this.leftPane, { span: 1 });
+        this.mainBox.add(rightPane, { span: 1 });
+        this.mainBox._delegate = null;
+        section.actor.add(this.mainBox);
 
         this.selectedAppBox = new St.BoxLayout({ style_class: 'menu-selected-app-box', vertical: true });
 
@@ -2912,6 +2904,7 @@ MyApplet.prototype = {
         this.selectedAppBox.add_actor(this.selectedAppTitle);
         this.selectedAppDescription = new St.Label({ style_class: 'menu-selected-app-description', text: "" });
         this.selectedAppBox.add_actor(this.selectedAppDescription);
+        this.selectedAppBox._delegate = null;
         section.actor.add_actor(this.selectedAppBox);
         this.appBoxIter = new VisibleChildIterator(this.applicationsBox);
         this.applicationsBox._vis_iter = this.appBoxIter;
@@ -2947,13 +2940,13 @@ MyApplet.prototype = {
                 actor.hide();
             }
         }
-        let actors = this.categoriesBox.get_children();
+        actors = this.categoriesBox.get_children();
         for (var i=0; i<actors.length; i++){
             let actor = actors[i];
             actor.style_class = "menu-category-button";
             actor.show();
         }
-        let actors = this.favoritesBox.get_children();
+        actors = this.favoritesBox.get_children();
         for (var i=0; i<actors.length; i++){
             let actor = actors[i];
             actor.remove_style_pseudo_class("hover");

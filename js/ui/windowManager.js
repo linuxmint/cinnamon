@@ -562,7 +562,7 @@ WindowManager.prototype = {
     },
 
     _killWindowEffects: function (cinnamonwm, actor) {
-        for(let i in this._effects){
+        for(let i in this.effects){
             this._endWindowEffect(cinnamonwm, i, actor);
         }
     },
@@ -676,7 +676,7 @@ WindowManager.prototype = {
             this._checkDimming(actor.get_meta_window().get_transient_for());
         }
 
-        if (actor.get_meta_window()._cinnamonwm_has_origin === true) {
+        if (actor.get_meta_window()._cinnamonwm_has_origin && actor.get_meta_window()._cinnamonwm_has_origin === true) {
             Main.soundManager.play('minimize');
             try {
                 this._startWindowEffect(cinnamonwm, "unminimize", actor, null, "minimize")

@@ -137,6 +137,10 @@ Map.prototype = {
     },
 
     traditional: function(cinnamonwm, actor, time, transition) {
+        if (!actor._windowType) {
+            actor._windowType = actor.meta_window.get_window_type();
+        }
+
         switch (actor._windowType) {
             case Meta.WindowType.NORMAL:
                 actor.set_pivot_point(0, 0);
@@ -240,6 +244,10 @@ Close.prototype = {
     },
 
     traditional: function(cinnamonwm, actor, time, transition) {
+        if (!actor._windowType) {
+            actor._windowType = actor.meta_window.get_window_type();
+        }
+
         switch (actor._windowType) {
             case Meta.WindowType.NORMAL:
                 actor.set_pivot_point(0, 0);
