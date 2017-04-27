@@ -93,12 +93,13 @@ Desklet.prototype = {
     /**
      * setContent:
      * @actor (Clutter.Actor): actor to be set as child
-     * @params (dictionary): (optional) parameters to be sent
+     * @params (dictionary): (optional) parameters to be sent. This argument
+     * is ignored. Only kept for compatibility reasons
      *
      * Sets the content actor of the desklet as @actor
      */
     setContent: function(actor, params){
-        this.content.set_child(actor, params);
+        this.content.set_child(actor);
     },
 
     /**
