@@ -440,6 +440,7 @@ class CinnamonLog(dbus.service.Object):
         self.notebook.set_action_widget(label, Gtk.PackType.END)
 
         self.pages = {}
+        self.customPages = {}
         self.createPage("Results", "results")
         self.createPage("Inspect", "inspect")
         # self.createPage("Memory", "memory") - TODO: re-implement get_memory_info from cjs
@@ -514,7 +515,7 @@ class CinnamonLog(dbus.service.Object):
         menu.append(self.createMenuItem('Reset Cinnamon Settings', self.onResetClicked))
         menu.append(Gtk.SeparatorMenuItem())
         menu.append(self.createMenuItem('About Melange', self.onAboutClicked))
-        menu.append(self.createMenuItem('Quit', lambda x: Gtk.main_quit()))
+        menu.append(self.createMenuItem('Quit', self.onDelete))
         menu.show_all()
 
         button = Gtk.MenuButton(u"Actions \u25BE")
@@ -530,6 +531,7 @@ class CinnamonLog(dbus.service.Object):
             content = FileWatcherView(dialog.getFile())
             content.show()
             label.connect("close-clicked", self.onCloseTab, content)
+            self.customPages[label] = content
             self.notebook.append_page(content, label)
             self.notebook.set_current_page(self.notebook.get_n_pages()-1)
 
@@ -538,7 +540,8 @@ class CinnamonLog(dbus.service.Object):
     def onCloseTab(self, label, content):
         self.notebook.remove_page(self.notebook.page_num(content))
         content.destroy()
-        
+        del self.customPages[label]
+
     def onAboutClicked(self, menuItem):
         dialog = Gtk.MessageDialog(self.window, 0,
                                    Gtk.MessageType.QUESTION, Gtk.ButtonsType.CLOSE);
@@ -570,7 +573,10 @@ If you defined a hotkey for Melange, pressing it while Melange is visible it wil
         if event.keyval == Gdk.KEY_Escape:
             self.window.hide()
 
-    def onDelete(self, widget, event=None):
+    def onDelete(self, widget=None, event=None):
+        tmpPages = self.customPages.copy()
+        for label, content in tmpPages.iteritems():
+            self.onCloseTab(label, content)
         Gtk.main_quit()
         return False
 
