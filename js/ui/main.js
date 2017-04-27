@@ -927,7 +927,22 @@ function notifyError(msg, details) {
  * extension system as well as debugging.
  */
 function _log(category, msg) {
-    let text = msg;
+    if (msg == undefined) {
+        _log('error', _('logging failed: message was null or undefined'));
+        return;
+    }
+
+    let cat, text;
+    if (typeof category !== 'string')
+        cat = 'info';
+    else
+        cat = category;
+
+    if (typeof msg !== 'string')
+        text = msg.toString();
+    else
+        text = msg;
+
     if (arguments.length > 2) {
         text += ': ';
         for (let i = 2; i < arguments.length; i++) {
@@ -937,7 +952,7 @@ function _log(category, msg) {
         }
     }
     let out = {timestamp: new Date().getTime().toString(),
-                         category: category,
+                         category: cat,
                          message: text };
     _errorLogStack.push(out);
     if (lookingGlass)
@@ -954,7 +969,23 @@ function _log(category, msg) {
  * Returns (boolean): whether @obj is an error object
  */
 function isError(obj) {
-    return typeof(obj) == 'object' && 'message' in obj && 'stack' in obj;
+    if (obj == undefined) return false;
+
+    let isErr = false;
+    if (typeof(obj) == 'object' && 'message' in obj && 'stack' in obj) {
+        isErr = true;
+    } else if (obj instanceof GLib.Error) {
+        // Make existing logging functionality work as expected when passed
+        // a GLib.Error which doesn't normally have a stack trace attached.
+        let stack = new Error().stack;
+        // This is reached the first time isError is called by a _log function,
+        // so strip off this function call and the _log function that called us.
+        let strPos = stack.indexOf('\n', stack.indexOf('\n') + 1)  + 1;
+        stack = stack.substr(strPos);
+        obj.stack = stack;
+        isErr = true;
+    }
+    return isErr;
 }
 
 /**
