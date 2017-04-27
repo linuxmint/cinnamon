@@ -1021,8 +1021,8 @@ restarting Cinnamon."""
         if not version_check:
             if not self.show_prompt(_("Extension %s is not compatible with current version of cinnamon. Using it may break your system. Load anyway?") % uuid):
                 return
-            else:
-                uuid = "!" + uuid
+            #else:
+            #    uuid = "!" + uuid
 
         if not self.themes:
             if self.collection_type in ("applet", "desklet"):

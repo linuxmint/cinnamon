@@ -244,7 +244,7 @@ Extension.prototype = {
 
         // If cinnamon or js version are set, check them
         if('cinnamon-version' in this.meta && !versionCheck(this.meta['cinnamon-version'], Config.PACKAGE_VERSION)) {
-            throw this.logError('Extension is not compatible with current Cinnamon version', null, State.OUT_OF_DATE);
+            global.logError('[' + this.meta.uuid + '] Extension is not compatible with current Cinnamon version', null, State.OUT_OF_DATE);
         }
         if('js-version' in this.meta && !versionCheck(this.meta['js-version'], Config.GJS_VERSION)) {
             throw this.logError('Extension is not compatible with current GJS version', null, State.OUT_OF_DATE);
