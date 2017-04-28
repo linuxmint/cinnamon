@@ -76,6 +76,7 @@ TooltipBase.prototype = {
         this.visible = false;
         this.item = item;
         this.preventShow = false;
+        this.mousePosition = null;
     },
 
     _onMotionEvent: function(actor, event) {
@@ -206,8 +207,6 @@ Tooltip.prototype = {
         this.desktop_settings = new Gio.Settings({
             schema_id: DESKTOP_SCHEMA
         });
-
-        this.mousePosition = null;
     },
 
     hide: function() {
