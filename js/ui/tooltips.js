@@ -206,6 +206,8 @@ Tooltip.prototype = {
         this.desktop_settings = new Gio.Settings({
             schema_id: DESKTOP_SCHEMA
         });
+
+        this.mousePosition = null;
     },
 
     hide: function() {
@@ -215,7 +217,7 @@ Tooltip.prototype = {
     },
 
     show: function() {
-        if (this._tooltip.get_text() == "")
+        if (this._tooltip.get_text() == "" || !this.mousePosition)
             return;
 
         let tooltipWidth = this._tooltip.get_allocation_box().x2 - this._tooltip.get_allocation_box().x1;
@@ -297,7 +299,7 @@ PanelItemTooltip.prototype = {
     },
 
     show: function() {
-        if (this._tooltip.get_text() == "" || global.menuStackLength > 0)
+        if (this._tooltip.get_text() == "" || global.menuStackLength > 0 || !this.mousePosition)
             return;
 
         let op = this._tooltip.get_opacity();
