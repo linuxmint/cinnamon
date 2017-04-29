@@ -407,7 +407,7 @@ AppIndicator.prototype = {
     },
 
     get label() {
-        if (!this._proxy)
+        if (!this._proxy || !this._proxy.cachedProperties.XAyatanaLabel)
             return null;
         return this._proxy.cachedProperties.XAyatanaLabel;
     },
@@ -516,7 +516,7 @@ AppIndicator.prototype = {
                     global.logWarning("Incompatible dbusmenu version: "+version);
                     return callback(false);
                 }
-            }, null
+            }
         );
     },
 

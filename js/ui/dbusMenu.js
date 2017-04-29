@@ -362,7 +362,7 @@ DbusMenuItem.prototype = {
 
     _getFactoryType: function(child_display, child_type) {
         if ((child_display) || (child_type)) {
-            if ((child_display == "rootmenu")||(this._id == this._client.getRootId()))
+            if ((child_display == "rootmenu")||(this._id && this._id == this._client.getRootId()))
                 return PopupMenu.FactoryClassTypes.RootMenuClass;
             if (child_display == "submenu")
                 return PopupMenu.FactoryClassTypes.SubMenuMenuItemClass;
