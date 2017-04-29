@@ -175,6 +175,9 @@ ModalDialog.prototype = {
 
         for (let i = 0; i < buttons.length; i ++) {
             let buttonInfo = buttons[i];
+            if (!buttonInfo.focused) {
+                buttonInfo.focused = false;
+            }
             let label = buttonInfo['label'];
             let action = buttonInfo['action'];
             let key = buttonInfo['key'];

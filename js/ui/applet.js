@@ -201,7 +201,11 @@ Applet.prototype = {
         this._draggable.connect('drag-end', Lang.bind(this, this._onDragEnd));
 
         try {
-            this._scaleMode = AppletManager.enabledAppletDefinitions.idMap[instance_id].panel.scaleMode;
+            if (AppletManager.enabledAppletDefinitions.idMap[instance_id]) {
+                this._scaleMode = AppletManager.enabledAppletDefinitions.idMap[instance_id].panel.scaleMode;
+            } else {
+                throw new Error();
+            }
         } catch (e) {
             // Sometimes applets are naughty and don't pass us our instance_id. In that case, we just find the first non-empty panel and pretend we are on it.
             for (let i in Main.panelManager.panels) {
