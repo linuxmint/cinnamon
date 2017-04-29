@@ -202,7 +202,7 @@ Applet.prototype = {
 
         try {
             if (AppletManager.enabledAppletDefinitions.idMap[instance_id]) {
-               this._scaleMode = AppletManager.enabledAppletDefinitions.idMap[instance_id].panel.scaleMode;
+                this._scaleMode = AppletManager.enabledAppletDefinitions.idMap[instance_id].panel.scaleMode;
             } else {
                 throw new Error();
             }
