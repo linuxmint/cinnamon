@@ -271,6 +271,10 @@ MyApplet.prototype = {
             }));
             this._applet_context_menu.addMenuItem(this.removeWorkspaceMenuItem);
             this.removeWorkspaceMenuItem.setSensitive(global.screen.n_workspaces > 1);
+
+            this._focusWindow = 0;
+            if (global.display.focus_window)
+                this._focusWindow = global.display.focus_window.get_compositor_private();
         }
         catch (e) {
             global.logError(e);
