@@ -257,7 +257,10 @@ function removeAppletFromPanels(appletDefinition, deleteConfig) {
             applet._panelLocation = null;
         }
 
-        delete applet._extension._loadedDefinitions[appletDefinition.applet_id];
+        if (applet._extension) {
+           delete applet._extension._loadedDefinitions[appletDefinition.applet_id];
+        }
+
         delete appletObj[appletDefinition.applet_id];
 
         if (deleteConfig)
@@ -311,8 +314,9 @@ function addAppletToPanels(extension, appletDefinition) {
         let location = appletDefinition.location;
 
         let before = location.get_children()
-            .find(x => (x._applet instanceof Applet.Applet) &&
-                       (appletDefinition.order < x._applet._order));
+            .find(x => {
+                return x._applet && (x._applet instanceof Applet.Applet) && (appletDefinition.order < x._applet._order)
+            });
 
         if (before)
             location.insert_child_below(applet.actor, before);
