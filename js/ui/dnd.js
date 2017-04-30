@@ -408,7 +408,7 @@ const _Draggable = new Lang.Class({
                                                              targX,
                                                              targY,
                                                              0);
-                if (result != DragMotionResult.CONTINUE) {
+                if (result != DragMotionResult.CONTINUE && DRAG_CURSOR_MAP[result]) {
                     global.set_cursor(DRAG_CURSOR_MAP[result]);
                     return false;
                 }
