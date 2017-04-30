@@ -227,6 +227,7 @@ cinnamon_tray_manager_manage_stage (CinnamonTrayManager *manager,
   GdkWindow *stage_window;
   GdkDisplay *display;
   GdkScreen *screen;
+  gint scale;
 
   g_return_if_fail (manager->priv->stage == NULL);
 
@@ -254,7 +255,7 @@ cinnamon_tray_manager_manage_stage (CinnamonTrayManager *manager,
 
   g_object_unref (stage_window);
 
-  gint scale = 1;
+  scale = 1;
 
   g_object_get (cinnamon_global_get (),
                 "ui_scale", &scale,
