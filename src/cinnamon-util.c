@@ -322,6 +322,7 @@ cinnamon_util_get_icon_for_uri (const char *text_uri)
   GFile *file;
   GFileInfo *info;
   GIcon *retval;
+  const char *custom_icon;
 
   /* Here's what we do:
    *  + check for known file: URI
@@ -370,7 +371,7 @@ cinnamon_util_get_icon_for_uri (const char *text_uri)
   if (!info)
     return g_themed_icon_new ("text-x-preview");
 
-  const char *custom_icon = g_file_info_get_attribute_string (info, "metadata::custom-icon");
+  custom_icon = g_file_info_get_attribute_string (info, "metadata::custom-icon");
 
   if (custom_icon)
     {
@@ -462,7 +463,7 @@ cinnamon_util_get_transformed_allocation (ClutterActor    *actor,
    */
   ClutterVertex v[4];
   gfloat x_min, x_max, y_min, y_max;
-  gint i;
+  guint i;
 
   g_return_if_fail (CLUTTER_IS_ACTOR (actor));
 
@@ -557,16 +558,8 @@ cinnamon_util_format_date (const char *format,
  */
 /* Copied from gtkcalendar.c */
 int
-cinnamon_util_get_week_start ()
+cinnamon_util_get_week_start (void)
 {
-  /* Try to get first weekday from gsettings */
-  /* If the value from gsettings is not in the range 0-6,
-   * continue to get the locale's first weekday */
-  GSettings *settings = g_settings_new (DESKTOP_SCHEMA);
-  int week_start = g_settings_get_int (settings, FIRST_WEEKDAY_KEY);
-  g_object_unref (settings);
-
-  if (0 <= week_start && week_start < 7) return week_start;
 
 #ifdef HAVE__NL_TIME_FIRST_WEEKDAY
   union { unsigned int word; char *string; } langinfo;
@@ -576,6 +569,15 @@ cinnamon_util_get_week_start ()
 #else
   char *gtk_week_start;
 #endif
+
+  /* Try to get first weekday from gsettings */
+  /* If the value from gsettings is not in the range 0-6,
+   * continue to get the locale's first weekday */
+  GSettings *settings = g_settings_new (DESKTOP_SCHEMA);
+  int week_start = g_settings_get_int (settings, FIRST_WEEKDAY_KEY);
+  g_object_unref (settings);
+
+  if (0 <= week_start && week_start < 7) return week_start;
 
 #ifdef HAVE__NL_TIME_FIRST_WEEKDAY
   langinfo.string = nl_langinfo (_NL_TIME_FIRST_WEEKDAY);
@@ -774,20 +776,22 @@ cinnamon_get_file_contents_utf8         (const char                   *path,
                                          CinnamonFileContentsCallback  callback,
                                          gpointer                      user_data)
 {
+  gchar *async_path;
+  GTask *task;
+  CinnamonFileContentsCallbackData *data;
+
   if (path == NULL || callback == NULL)
     {
       g_warning ("cinnamon_get_file_contents_utf8: path and callback cannot be null");
       return;
     }
 
-  CinnamonFileContentsCallbackData *data = g_slice_new (CinnamonFileContentsCallbackData);
+  data = g_slice_new (CinnamonFileContentsCallbackData);
 
   data->callback = callback;
   data->user_data = user_data;
 
-  gchar *async_path = g_strdup (path);
-
-  GTask *task;
+  async_path = g_strdup (path);
 
   task = g_task_new (NULL,
                      NULL,
