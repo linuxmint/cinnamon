@@ -2203,7 +2203,7 @@ Panel.prototype = {
 // For empty panels. If over left,right,center box then will not get here.
 //
         this._enterPanel();
-        if (this._dragShowId > 0)
+        if (this._dragShowId && this._dragShowId > 0)
             Mainloop.source_remove(this._dragShowId);
 
         let leaveIfOut = Lang.bind(this, function() {
