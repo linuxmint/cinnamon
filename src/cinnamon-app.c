@@ -221,7 +221,7 @@ cinnamon_app_create_faded_icon_cpu (StTextureCache *cache,
   gboolean have_alpha;
   gint fade_start;
   gint fade_range;
-  guint i, j;
+  int i, j;
   guint pixbuf_byte_size;
   guint8 *orig_pixels;
   guint8 *pixels;
@@ -645,6 +645,9 @@ cinnamon_app_activate_full (CinnamonApp      *app,
         break;
       case CINNAMON_APP_STATE_RUNNING:
         cinnamon_app_activate_window (app, NULL, timestamp);
+        break;
+      default:
+        g_warning("cinnamon_app_activate_full: default case");
         break;
     }
 }
@@ -1382,6 +1385,9 @@ _cinnamon_app_do_match (CinnamonApp         *app,
         break;
       case MATCH_SUBSTRING:
         *substring_results = g_slist_prepend (*substring_results, app);
+        break;
+      default:
+        g_warning("cinnamon_app_do_match: default case");
         break;
     }
 }
