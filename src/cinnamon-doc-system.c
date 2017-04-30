@@ -338,6 +338,7 @@ static void
 cinnamon_doc_system_init (CinnamonDocSystem *self)
 {
   CinnamonDocSystemPrivate *priv;
+  GList *items, *iter;
 
   self->priv = priv = G_TYPE_INSTANCE_GET_PRIVATE (self,
                                                    CINNAMON_TYPE_DOC_SYSTEM,
@@ -347,8 +348,6 @@ cinnamon_doc_system_init (CinnamonDocSystem *self)
   self->priv->deleted_infos = g_hash_table_new_full (NULL, NULL, (GDestroyNotify)gtk_recent_info_unref, NULL);
   self->priv->infos_by_uri = g_hash_table_new_full (g_str_hash, g_str_equal, NULL, (GDestroyNotify)gtk_recent_info_unref);
 
-
-  GList *items, *iter;
   self->priv->infos_by_timestamp = NULL;
   items = gtk_recent_manager_get_items (self->priv->manager);
   for (iter = items; iter; iter = iter->next)
@@ -372,7 +371,7 @@ cinnamon_doc_system_init (CinnamonDocSystem *self)
  * Return Value: (transfer none): The global #CinnamonDocSystem singleton
  */
 CinnamonDocSystem *
-cinnamon_doc_system_get_default ()
+cinnamon_doc_system_get_default (void)
 {
   static CinnamonDocSystem *instance = NULL;
 
