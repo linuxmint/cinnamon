@@ -379,7 +379,7 @@ function versionCheck(required, current) {
         let requiredArray = required[i].split('.');
         if (requiredArray[0] == major &&
             requiredArray[1] == minor &&
-            (requiredArray[2] == point || requiredArray[2] === undefined))
+            (requiredArray[2] === undefined || requiredArray[2] == point))
             return true;
     }
     return false;
