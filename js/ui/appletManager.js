@@ -257,7 +257,8 @@ function removeAppletFromPanels(appletDefinition, deleteConfig) {
             applet._panelLocation = null;
         }
 
-        delete applet._extension._loadedDefinitions[appletDefinition.applet_id];
+        if (applet._extension)
+            delete applet._extension._loadedDefinitions[appletDefinition.applet_id];
         delete appletObj[appletDefinition.applet_id];
 
         if (deleteConfig)
