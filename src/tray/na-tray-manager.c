@@ -323,6 +323,7 @@ na_tray_manager_handle_dock_request (NaTrayManager       *manager,
 {
   Window icon_window = xevent->data.l[2];
   GtkWidget *child;
+  TrayAddPacket *packet;
 
   if (g_hash_table_lookup (manager->socket_table,
                            GINT_TO_POINTER (icon_window)))
@@ -338,7 +339,7 @@ na_tray_manager_handle_dock_request (NaTrayManager       *manager,
   g_signal_emit (manager, manager_signals[TRAY_ICON_ADDED], 0,
 		 child);
 
-  TrayAddPacket *packet = g_new0 (TrayAddPacket, 1);
+  packet = g_new0 (TrayAddPacket, 1);
   packet->child = g_object_ref (child);
   packet->window = icon_window;
   packet->manager = manager;
