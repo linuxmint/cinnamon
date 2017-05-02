@@ -1967,7 +1967,7 @@ st_theme_node_paint (StThemeNode           *node,
    *    such that it's aligned to the outside edges)
    */
 
-  if (node->box_shadow_material)
+  if (node->box_shadow_material != COGL_INVALID_HANDLE)
     _st_paint_shadow_with_opacity (node->box_shadow,
                                    node->box_shadow_material,
                                    &allocation,
