@@ -23,10 +23,13 @@ class ModulePage(BaseListView):
         lookingGlassProxy.connect("InspectorDone", self.onInspectorDone)
         lookingGlassProxy.addStatusChangeCallback(self.onStatusChange)
 
-        self.connect("size-allocate", self.scrollToBottom);
+        self._changed = False
+        self.treeView.connect("size-allocate", self.scrollToBottom)
 
     def scrollToBottom (self, widget, data):
-        self.adjust.set_value(self.adjust.get_upper())
+        if self._changed:
+            self.adjust.set_value(self.adjust.get_upper() - self.adjust.get_page_size())
+            self._changed = False
 
     def cellDataFuncID(self, column, cell, model, iter, data=None):
         cell.set_property("text", "r(%d)" %  model.get_value(iter, 0))
@@ -51,6 +54,7 @@ class ModulePage(BaseListView):
             try:
                 for item in data:
                     self.store.append([int(item["index"]), item["command"], item["type"], item["object"], item["tooltip"]])
+                self._changed = True
                 self.parent.activatePage("results")
             except Exception as e:
                 print e
