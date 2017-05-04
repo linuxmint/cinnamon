@@ -1,3 +1,345 @@
+cinnamon (3.4.0) sonya; urgency=medium
+
+  [ Lars Mueller ]
+  * Fix gnome terminal losing desktop file association during cinnamon restart
+
+  [ Odyseus ]
+  * cinnamon-json-makepot: Added support to scan for JS files inside sub-dirs.
+
+  [ leigh123linux ]
+  * Start systray applet first
+  * Use generic marshaller
+  * Fix file permissions
+
+  [ Jason Hicks ]
+  * Pull functions out of loops in _refreshPlaces, _refreshApps...
+  * Move uri assignment in _refreshRecent's while loop into new...
+  * Use let instead of var in new handler functions
+
+  [ brownsr ]
+  * panel: rework allocation logic to avoid looping in edit mode this was causing the context menu animation to fail to complete causing the user not to be able to exit edit mode
+  * theme-node: Fix leak on stylesheet change. From upstream https://github.com/GNOME/gnome-shell/commit/72bfa9125945919e9d69505d3e739480855f331e
+  * cinnamon_dbus_acquire_name: don't leak the result from upstream https://github.com/GNOME/gnome-shell/commit/3f0fbae7e213b2fbe7267b9d25ac7fcfaa8afcff
+  * cinnamon_dbus_acquire_name: Don't leak error from upstream https://github.com/GNOME/gnome-shell/commit/7f1a258ff9fc768a7fc13e5c37e1fd6d7ab5c33b
+  * keyboard: destroy the key's boxpointer from upstream https://github.com/GNOME/gnome-shell/commit/9d933356e171a1dc49b61b5864826531c0f24d97
+
+  [ Lars Mueller ]
+  * Fix hotcorner hover delay timeout removal This fixes a "Invalid or null source id used when attempting to run Mainloop.source_remove()" when leaving a hotcorner. The timeout is already destroyed by returning false in the callback, but we still knew about the timeout id and tried to remove the non-existing timeout.
+
+  [ brownsr ]
+  * st-box-layout: Don't report a paint volume when we have no allocation from upstream https://github.com/GNOME/gnome-shell/commit/aa6f352cb06d3ae8940af323f048c8c7886fa0cd
+  * window-tracker: fix memory leak from upstream https://github.com/GNOME/gnome-shell/commit/ac22172a6ec37a158ca4cecf8c18f8fb29c1aa97
+
+  [ Michael Webster ]
+  * tooltips.js: Remove leftover logging.
+  * Add cinnamon-stap-monitor utility.
+  * panel.js: Couple fixes to previous commit.  Let the panel sections cover the entire panel in edit mode.  Clean up _allocate a bit - since we always have the center zone occupied (artificially or naturally,) we don't ever need to handle cases where it isn't.
+  * panel.js: Fix dnd pseudo-class style application for vertical panels.
+  * panel: Allow right and left panel zones to naturally fill space.  Fix vertical allocate calculations in st-box-layout (align_end was only working for horizontal box layouts).
+  * panel.js: Cleanup actor and style class names, simplify some code that no longer needs to differentiate between vertical and horizontal panels.
+  * cs_screensaver.py: Expose setting for floating widgets.
+  * panel.js: restore 'important' style flag, accidentally removed from panel zones.
+
+  [ Chris Allan ]
+  * expoThumbnail.js: Don't reposition thumbnails on position-changed.
+
+  [ Michael Webster ]
+  * cs_screensaver.py: Use a stack to switch between default screensaver and plugin previews.
+  * panel.js: Restore some allocation code mistakenly removed in a previous commit.  This restores the behavior of allowing left/right panels to occupy more than half the panel if the center zone is empty.
+
+  [ Lars Mueller ]
+  * [Sound applet] Fix a segmentation This fixes a segmentation fault that happened when menu animations were disabled. Fixes #5977
+
+  [ itzexor ]
+  * cinnamon-desktop-editor: use the default icon when file is nonexistent
+
+  [ brownsr ]
+  * st-theme-node.c: rename a confusing variable At the moment we have an outer loop on i, and then a separately declared internal loop on i This changes the name of the variable in the internal loop to avoid confusion
+  * st-theme-node: Improve error reporting from upstream https://github.com/GNOME/gnome-shell/commit/1d235395765226a981fd31f16adae505ad8642de#diff-ea7efd941b083a785ba5e4b928a26d59
+  * St: support css margin property From upstream https://github.com/GNOME/gnome-shell/commit/2935fd4ffe9176d28f68192bb34bdba1a0e57a2b and https://github.com/GNOME/gnome-shell/commit/216e996f6680a3ffb797caafe1ed29990360c8f1
+
+  [ leigh123linux ]
+  * Fix cursor black background when taking screenshot
+
+  [ Jason Hicks ]
+  * JS API misc/util.js: Add spawnCommandLineAsync
+
+  [ JosephMcc ]
+  * recent-applet: Fix wrong menu placement
+
+  [ NikoKrause ]
+  * Cinnamon Tutorial: Add instructions for xlet l10n
+
+  [ Stephen Collins ]
+  * User applet: Remove inaccurate comment - This is not actually the shutdown applet by Shelly
+
+  [ JosephMcc ]
+  * windowManager: Move handling of workspace switch effects to one place
+  * window-list: Don't lose our focus style class when opening the context menu
+
+  [ Stephen Collins ]
+  * Settings widgets range: Add an optional argument to show the current value of on the scale widget. This was originally the way it worked in the xlet settings, but with the rework, that functionality wasn't reimplemented. This rendered the settings of several applets less usefull. This pull request reimplements the functionality for applets and also makes it available for cinnamon settings as well.
+  * Show desktop applet: fix preview being stuck by keyboard-triggered menu open
+  * settings.js: Rebuild the settings file if it becomes corrupted. If the settings have already been loaded, we use the latest version we have, otherwise we restore from defaults.
+
+  [ JosephMcc ]
+  * vertical-panels: Make proper calculations for panel intellihide
+
+  [ Stephen Collins ]
+  * Keyboard applet: always show something in panel edit mode
+  * Power applet: always show something in panel edit mode
+
+  [ Jason Hicks ]
+  * JS API util.js: Add doNotReap parameter to trySpawn ct. itzexor
+
+  [ Stephen Collins ]
+  * util.js: add documentation for spawn_async
+
+  [ Sam Burgos ]
+  * added support to manage the systemd services available on the system
+
+  [ Michael Webster ]
+  * cs_startup.py: Add a "Run now" button for when a row is selected.
+
+  [ Stephen Collins ]
+  * Make sure applets that don't support vertical panels don't get droped on a vertical panel. This was happening with at least some applets, causing them to 'disappear', and could only be recovered by removing them from applet settings and readding them again.
+
+  [ JosephMcc ]
+  * cinnamon-settings: Fix some sliders being drawn backwards
+
+  [ Stephen Collins ]
+  * settings.js: Handle corrupt settings the right way. Fixes several issues with the previous implementation.
+  * xlet settings: add list widget
+
+  [ Odyseus ]
+  * [Xlet settings] Fix reference to new option added to wrong element
+
+  [ Clement Lefebvre ]
+  * Settings: Add support for lightdm-settings
+
+  [ NikoKrause ]
+  * [xlets-about-dialog] show timestamp if exists else show version & show "more info" button
+
+  [ itzexor ]
+  * spawn_async: clean up the callbacks after we're done
+  * looking-glass: use bracket notation for property accessors when inspecting
+  * Environment: don't fail in toString()
+  * looking-glass: set null results' value to "[null]"
+
+  [ Lars Mueller ]
+  * Fix panel timeout spinbuttons jumping around Fixes #6374
+
+  [ Madh93 ]
+  * Add Manjaro Support in System Info #6387
+
+  [ brownsr ]
+  * systray: add css class to permit theming
+  * st-theme.c: rename confusing variable Compiler is complaining about shadow variables because the same variable names are defined in a function and in an if statement in the function
+
+  [ itzexor ]
+  * systray-applet: don't crash in on_applet_removed_from_panel
+
+  [ brownsr ]
+  * st-theme-node: remove a double declaration that gives a compiler warning
+  * cinnamon-app-system: rename a doubly declared variable causing a compiler warning
+  * st-background-effect: avoid a couple of ISO C90 compiler warnings
+
+  [ Daniel Schürmann ]
+  * Start inode/directory app instead unregistered x-scheme-handler/file in case of unmounted bookmarks
+
+  [ brownsr ]
+  * st-entry: change variable type to avoid compiler warning
+
+  [ Lars Mueller ]
+  * Add a chooser for "inode/directory" to be able to choose the default file manager
+
+  [ brownsr ]
+  * st-polygon: avoid a couple of ISO C90 compiler warnings
+
+  [ leigh123linux ]
+  * remove ENABLE_EXPERIMENTAL_API defines
+
+  [ NikoKrause ]
+  * xlet-settings: add missing string for l10n
+
+  [ brownsr ]
+  * st-box-layout: remove unused variable
+
+  [ itzexor ]
+  * panel.js: refactor Panel._showPanel and Panel._hidePanel
+  * panel.js: don't clip the panel box shadow when showing after hide
+
+  [ JosephMcc ]
+  * cs_accessibility: Restore previous theme when disabling High Contrast
+
+  [ Michael Webster ]
+  * remove panelMenu.js, which is unused but for 2 applets.  There are a bunch of applets that import it but don't use it, all of which can be fixed now.
+
+  [ JosephMcc ]
+  * hotcorners: remove the icon option
+
+  [ itzexor ]
+  * cinnamon-looking-glass.py: handle numpad enter in entry
+
+  [ leigh123linux ]
+  * Remove aclocal as autoreconf runs it
+
+  [ Odyseus ]
+  * Fix for non translated applet names on Remove context menu items.
+
+  [ Lars Mueller ]
+  * [Xlets] Expose config deletion request to xlet
+  * Revert "Fix panel timeout spinbuttons jumping around"
+  * [cs_panel.py] Remove unused methods
+  * [cs_panel.py] Better fix for jumping spinbuttons This fixes it, avoiding excessive disk writing
+
+  [ brownsr ]
+  * st-texture-cache: use convenience function to free linked list
+  * modalDialog: avoid a js warning
+
+  [ Michael Webster ]
+  * utils: add check-js, to scan for runtime-breaking javascript syntax errors.
+
+  [ brownsr ]
+  * Adjustments after enabling margin for st
+  * st-box-layout: change variable type to avoid compiler warning
+  * st-drawing-area: redefine a variable to avoid a compiler warning
+  * st-private: change variable types to match and so avoid compiler warnings
+  * st-button: avoid redundant redeclaration compiler warnings
+  * st-label: avoid redundant redeclaration compiler warnings
+  * st-theme-node: avoid compiler warnings about redundant redeclarations
+  * st-widget: avoid redundant duplicate declarations giving compiler warnings
+  * st_theme: add missing enums and default case avoids compiler warnings done upstream
+
+  [ Nicholas Carrington ]
+  * cs_user.py: Save appropriately sized .face for cinnamon-screensaver
+
+  [ JosephMcc ]
+  * cs_mouse: Add new settings to control acceleration/sensitivity
+  * power-applet: Add support for warning and error style classes
+
+  [ Stephen Collins ]
+  * cs_panel.py: rework individual panel page to simplify code, fix some bugy behavior, and improve readability
+
+  [ brownsr ]
+  * st-widget: use g_clear_pointer https://github.com/GNOME/gnome-shell/commit/4d1358b7ed483b3822ab889e4851cca2c3fa8841#diff-9ad11fdf581414b0f2501e50921d1052
+
+  [ Harry Wynn-Williams ]
+  * Update keybindings.js
+
+  [ Clement Lefebvre ]
+  * Adapt Cinnamon to multi-process CSD
+
+  [ JosephMcc ]
+  * messageTray: Show critical notifications in fullscreen
+
+  [ itzexor ]
+  * panel.js: fix missing variable declaration
+
+  [ Stephen Collins ]
+  * cs_panel.py: replace panel widgets with backended ones. This will hopefully ensure that the widgets are consistent with the rest of Cinnamon in terms of behavior and appearance, as well as easier to maintain.
+
+  [ itzexor ]
+  * panel.js: improve code uniformity in show/hide functions
+  * panel.js: cleanup _processPanelAutoHide usage
+  * panel.js: move clipping code into new _setClipRegion helper
+  * panel.js: keep track of panelPosition and monitor changes
+  * panel.js: refactor _moveResizePanel
+
+  [ brownsr ]
+  * St: support margin: corrections to PR 6271
+  * st-scroll-bar: add default to case statement to avoid compiler warning done using g_return_val_if_reached as upstream
+  * st-scroll-view: add missing enums and default case statements avoids compiler warnings missing enums are placed in the same places as upstream
+
+  [ itzexor ]
+  * layout.js: don't include clipped off areas in input region
+
+  [ brownsr ]
+  * st-theme-node: add defaults to case statements to avoid compiler warnings also treat an iso C warning by moving a variable declaration
+
+  [ Elias Ojala ]
+  * README file to reStructuredText file
+
+  [ brownsr ]
+  * st-widget: add missing enums to avoid compiler warnings
+  * cinnamon-window-tracker: add default to case statement to avoid compiler warnings and a couple of other very minor changes, again to avoid compiler warnings
+  * St: Margin: remove margin:auto from menu applet and default theme This avoids warning messages as margin:auto is not supported And it also means third party theme developers will not copy non-functional CSS The warning messages for the programmatic insertion of margin:auto in the menu applet were particularly cryptic
+
+  [ JosephMcc ]
+  * st: Fix a couple icon/text-shadow bugs
+
+  [ Odyseus ]
+  * cinnamon-json-makepot: Fix for undefined global name.
+
+  [ mikee805 ]
+  * Update cs_power.py
+
+  [ Michael Webster ]
+  * Use St.Icon instead of fetching icons from St.TextureCache.
+  * all: adapt to changes for new cjs (gjs 1.48/mozjs38)
+
+  [ itzexor ]
+  * panel.js warning fix
+  * lookingGlass.js: fix warning
+  * sound-applet: fix warning
+
+  [ JosephMcc ]
+  * osdWindow: Fix the level bar display
+
+  [ Michael Webster ]
+  * Remove memory info stuff from looking glass, cinnamon-global.
+  * control: adjust version reqs for libcjs
+  * all: Some additional warning fixes due to gjs 1.48.0->1.48.2 changes.
+
+  [ JosephMcc ]
+  * panel-launchers: Fix the panel launcher animation
+
+  [ itzexor ]
+  * melange: don't freeze on quit with custom log watchers
+
+  [ JosephMcc ]
+  * desklet.js: Ignore an extra argument to setContent()
+
+  [ Jason Hicks ]
+  * js/ui/tooltip.js: Check if this.mousePosition is defined
+  * Move this.mousePosition initial assignment to TooltipBase
+  * Supress CJS mozjs38 warnings in applet, dbusMenu, indicator...
+  * Correct indentation
+
+  [ SteveMoto ]
+  * reformatting and fix css (#6510)
+
+  [ Simon Brown ]
+  * cinnamon-util: sort out various compiler warnings (#6506)
+  * cinnamon-perf-log: treat a couple of compiler warnings (#6503)
+  * cinnamon-tray-manager: remove an ISO C compiler warning (#6505)
+  * cinnamon-recorder: remove some compiler warnings (#6504)
+  * cinnamon-doc-system: remove a couple of compiler warnings (#6502)
+  * cinnamon-app-system: treat various compiler warnings (#6501)
+  * cinnamon-app: avoid default case and integer/unsigned compiler warnings (#6498)
+  * st-theme-node-drawing:  add default cases to switch statements to avoid compiler warnings (#6495)
+  * workspace-switcher: correct undefined property warning (#6497)
+  * na-tray-manager: remove an ISO C compiler warning (#6508)
+
+  [ Jason Hicks ]
+  * js/ui/dnd.js: Fix undefined error with mozjs38
+  * ui/js/panel.js: Fix undefined this._dragShowId error with mozjs38
+  * js/ui/appletManager: Fix undefined error with mozjs38
+  * js/ui/extension: Fix undefined requiredArray[2] error with mozjs38
+  * js/ui/appletManager: Fix invalid parameter count with mozjs38 for Gio.File.delete
+
+  [ itzexor ]
+  * main.js: improve logging of GLib.Errors and objects (#6486)
+
+  [ NikoKrause ]
+  * [menu-applet & panel-launchers] added new mouse cursors while dragging apps (#5859)
+
+  [ Clement Lefebvre ]
+  * l10n: Update POT file
+  * l10n: Generate additional files
+
+ -- Clement Lefebvre <root@linuxmint.com>  Thu, 04 May 2017 16:02:56 +0100
+
 cinnamon (3.2.8) serena; urgency=medium
 
   [ Michael Webster ]
