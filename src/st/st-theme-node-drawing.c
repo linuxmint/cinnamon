@@ -331,6 +331,9 @@ st_theme_node_get_corner_border_widths (StThemeNode *node,
         if (border_width_2)
             *border_width_2 = node->border_width[ST_SIDE_LEFT];
         break;
+      default:
+        g_warning("st_theme_node_get_corner_border_widths: default case");
+        break;
     }
 }
 
@@ -374,6 +377,9 @@ st_theme_node_lookup_corner (StThemeNode    *node,
       case ST_CORNER_BOTTOMLEFT:
         over (&node->border_color[ST_SIDE_BOTTOM], &corner.color, &corner.border_color_1);
         over (&node->border_color[ST_SIDE_LEFT], &corner.color, &corner.border_color_2);
+        break;
+      default:
+        g_warning("st_theme_node_lookup_corner: default case");
         break;
     }
 
@@ -430,6 +436,9 @@ get_background_scale (StThemeNode *node,
           }
         else if (node->background_size_h > -1)
           *scale_w = node->background_size_h / background_image_height;
+        break;
+      default:
+        g_warning("get_background_scale: default case");
         break;
     }
   if (*scale_h < 0.0)
