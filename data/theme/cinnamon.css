@@ -398,7 +398,7 @@ StScrollBar StButton#vhandle:hover {
     icon-shadow: black 0px 2px 2px;
 }
 .panel-menu {
-    -boxpointer-gap: 4px
+    -boxpointer-gap: 4px;
 }
 .popup-menu-item-dot {
 }
@@ -505,7 +505,7 @@ StScrollBar StButton#vhandle:hover {
 .expo-background {
     background-gradient-start: #000;
     background-gradient-end: #AAA;
-    background-gradient-direction: vertical
+    background-gradient-direction: vertical;
 }
 
 .workspace-overview-background-shade {
@@ -633,7 +633,7 @@ StScrollBar StButton#vhandle:hover {
 .calendar-work-day {
 }
 .calendar-nonwork-day {
-    background-color: rgba(128, 128, 128, .1);
+    background-color: rgba(128, 128, 128, 0.1);
 }
 .calendar-today {
     background-image: url("calendar-today.svg");
@@ -643,7 +643,7 @@ StScrollBar StButton#vhandle:hover {
 }
 .calendar-other-month-day {
     color: #888888;
-    background-color: rgba(64, 64, 64, .5);
+    background-color: rgba(64, 64, 64, 0.5);
 }
 .calendar-day-with-events {
     font-weight: bold;
@@ -789,7 +789,7 @@ StScrollBar StButton#vhandle:hover {
     spacing: 4px;
 }
 .switcher-list .thumbnail {
-    width:  256px;
+    width: 256px;
 }
 .switcher-list .separator {
     width: 1px;
@@ -812,7 +812,7 @@ StScrollBar StButton#vhandle:hover {
     color: white;
 }
 .switcher-preview-backdrop {
-   background-color: rgba(25,25,25,0.65);
+    background-color: rgba(25,25,25,0.65);
 }
 
 /* ===================================================================
@@ -972,7 +972,7 @@ StScrollBar StButton#vhandle:hover {
  * ===================================================================*/
 
 .magnifier-zoom-region {
-    border: 2px solid rgba(128, 0, 0, 255);
+    border: 2px solid rgba(128, 0, 0, 1);
 }
 .magnifier-zoom-region.full-screen {
     border-width: 0px;
@@ -1431,7 +1431,7 @@ StScrollBar StButton#vhandle:hover {
 }
 
 .launcher .icon-box {
-     padding-top: 2px;
+    padding-top: 2px;
 }
 
 .panel-launchers.vertical .launcher .icon-box {
@@ -1502,7 +1502,7 @@ StScrollBar StButton#vhandle:hover {
     background-image: url("overview.png");
 }
 #overview-corner:hover {
-    background-image:   url("overview-hover.png");
+    background-image: url("overview-hover.png");
 }
 /* ===================================================================
  * Applets (applet.js)
@@ -1512,7 +1512,7 @@ StScrollBar StButton#vhandle:hover {
 }
 .applet-separator-line {
     width: 2px;
-    background: rgba(255,255,255,.5);
+    background: rgba(255,255,255,0.5);
 }
 .applet-separator-line-vertical {
     border: 0px solid rgba(255,255,255,0.5);
@@ -1731,7 +1731,7 @@ StScrollBar StButton#vhandle:hover {
 }
 
 .check-box StLabel {
-   font-weight: normal;
+    font-weight: normal;
 }
 
 .radiobutton CinnamonGenericContainer {
@@ -1754,13 +1754,13 @@ StScrollBar StButton#vhandle:hover {
 }
 
 .radiobutton StLabel {
-   padding-top: 4px;
-   font-size: 0.9em;
-   box-shadow: none;
+    padding-top: 4px;
+    font-size: 0.9em;
+    box-shadow: none;
 }
 
 .flashspot {
-   background-color: white;
+    background-color: white;
 }
 
 /* Media keys OSD popup */
