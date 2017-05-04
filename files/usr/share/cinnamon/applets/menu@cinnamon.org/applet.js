@@ -1027,6 +1027,13 @@ CategoriesApplicationsBox.prototype = {
             return true;
         }
         return false;
+    },
+
+    handleDragOver : function(source, actor, x, y, time) {
+        if (source instanceof FavoritesButton)
+            return  global.set_cursor(Cinnamon.Cursor.POINTING_HAND);
+
+        return DND.DragMotionResult.CONTINUE;
     }
 }
 
@@ -1118,6 +1125,13 @@ FavoritesBox.prototype = {
             if (fadeIn)
                 this._dragPlaceholder.animateIn();
         }
+
+        let id = app.get_id();
+        let favoritesMap = AppFavorites.getAppFavorites().getFavoriteMap();
+        let srcIsFavorite = (id in favoritesMap);
+
+        if (!srcIsFavorite)
+            return DND.DragMotionResult.COPY_DROP;
 
         return DND.DragMotionResult.MOVE_DROP;
     },

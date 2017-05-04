@@ -626,7 +626,10 @@ MyApplet.prototype = {
             if (fadeIn) this._dragPlaceholder.animateIn();
         }
 
-        return DND.DragMotionResult.MOVE_DROP;
+        if (source instanceof DND.LauncherDraggable && source.launchersBox == this)
+            return DND.DragMotionResult.MOVE_DROP;
+
+        return DND.DragMotionResult.COPY_DROP;
     },
 
     acceptDrop: function(source, actor, x, y, time) {
