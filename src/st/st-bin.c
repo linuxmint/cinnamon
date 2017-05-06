@@ -252,7 +252,7 @@ st_bin_set_property (GObject      *gobject,
 
     case PROP_Y_FILL:
       st_bin_set_fill (bin,
-                       bin->priv->y_fill,
+                       bin->priv->x_fill,
                        g_value_get_boolean (value));
       break;
 
