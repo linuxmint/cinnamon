@@ -615,6 +615,7 @@ RecentButton.prototype = {
         this.uriDecoded = file.uriDecoded;
         this.appsMenuButton = appsMenuButton;
         this.button_name = file.name;
+        this.menu = null;
         this.actor.set_style_class_name('menu-application-button');
         this.actor._delegate = this;
         this.label = new St.Label({ text: this.button_name, style_class: 'menu-application-button-label' });
@@ -662,16 +663,17 @@ RecentButton.prototype = {
     },
 
     toggleMenu: function() {
-        if (this.appsMenuButton.recentContextMenu == null) {
+        if (this.menu == null) {
             let menu = new PopupMenu.PopupSubMenu(this.actor);
             menu.actor.set_style_class_name('menu-context-menu');
             menu.connect('open-state-changed', Lang.bind(this, this._subMenuOpenStateChanged));
-            this.appsMenuButton.recentContextMenu = menu;
+            this.menu = menu;
         }
 
-        let menu = this.appsMenuButton.recentContextMenu;
+        let menu = this.menu;
 
         if (!menu.isOpen) {
+            this.appsMenuButton.recentContextMenu = menu;
             let parent = menu.actor.get_parent();
             if (parent != null) {
                 parent.remove_child(menu.actor);
@@ -746,10 +748,10 @@ RecentButton.prototype = {
         this.appsMenuButton.recentContextMenu.toggle();
     },
 
-    _subMenuOpenStateChanged: function(recentContextMenu) {
-        if (recentContextMenu.isOpen) {
+    _subMenuOpenStateChanged: function() {
+        if (this.menu.isOpen) {
             this.appsMenuButton._activeContextMenuParent = this;
-            this.appsMenuButton._scrollToButton(recentContextMenu);
+            this.appsMenuButton._scrollToButton(this.menu);
         } else {
             this.appsMenuButton._activeContextMenuItem = null;
             this.appsMenuButton._activeContextMenuParent = null;
@@ -2986,7 +2988,7 @@ MyApplet.prototype = {
             }
         }
 
-        if (excluded != this._activeContextMenuItem) {
+        if (excluded != this._activeContextMenuParent) {
             if (this.recentContextMenu && this.recentContextMenu.isOpen) {
                 if (animate)
                     this.recentContextMenu.sourceActor._delegate.toggleMenu();
