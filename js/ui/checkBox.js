@@ -32,7 +32,7 @@ CheckBoxContainer.prototype = {
         this.label = new St.Label();
         this.label.clutter_text.set_line_wrap(false);
         this.label.clutter_text.set_ellipsize(Pango.EllipsizeMode.NONE);
-        this.actor.add_actor(this.label, { y_fill: true, y_align: St.Align.END });
+        this.actor.add_actor(this.label);
 
         this._spacing = 0;
     },
@@ -52,7 +52,7 @@ CheckBoxContainer.prototype = {
         let min = minBoxWidth + minLabelWidth + this._spacing;
         let nat = natBoxWidth + natLabelWidth + this._spacing;
         [min, nat] = node.adjust_preferred_width(min, nat);
-        
+
         alloc.min_size = min;
         alloc.natural_size = nat;
     },
