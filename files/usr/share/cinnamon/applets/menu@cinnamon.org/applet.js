@@ -2147,7 +2147,7 @@ MyApplet.prototype = {
             Mainloop.source_remove(this.vector_update_loop);
             this.vector_update_loop = 0;
         }
-        this.vector_update_loop = Mainloop.timeout_add(35, Lang.bind(this, this.updateVectorBox));
+        this.vector_update_loop = Mainloop.timeout_add(50, Lang.bind(this, this.updateVectorBox));
     },
 
     updateVectorBox: function(actor) {
@@ -2206,16 +2206,10 @@ MyApplet.prototype = {
                 if (!this.searchActive) {
                     this.placesButton.isHovered = true;
 
-                    Mainloop.idle_add_full(Mainloop.PRIORITY_DEFAULT, Lang.bind(this, function() {
-                        if (this.placesButton.isHovered) {
-                            this._clearPrevCatSelection(this.placesButton);
-                            this.placesButton.actor.style_class = "menu-category-button-selected";
-                            this.closeContextMenus(null, false);
-                            this._displayButtons(null, -1);
-                        } else {
-                            this.placesButton.actor.style_class = "menu-category-button";
-                        }
-                    }))
+                    this._clearPrevCatSelection(this.placesButton);
+                    this.placesButton.actor.style_class = "menu-category-button-selected";
+                    this.closeContextMenus(null, false);
+                    this._displayButtons(null, -1);
 
                     this.makeVectorBox(this.placesButton.actor);
                 }
@@ -2287,16 +2281,10 @@ MyApplet.prototype = {
                     if (!this.searchActive) {
                         this.recentButton.isHovered = true;
 
-                        Mainloop.idle_add_full(Mainloop.PRIORITY_DEFAULT, Lang.bind(this, function() {
-                            if (this.recentButton.isHovered) {
-                                this._clearPrevCatSelection(this.recentButton.actor);
-                                this.recentButton.actor.style_class = "menu-category-button-selected";
-                                this.closeContextMenus(null, false);
-                                this._displayButtons(null, null, -1);
-                            } else {
-                                this.recentButton.actor.style_class = "menu-category-button";
-                            }
-                        }))
+                        this._clearPrevCatSelection(this.recentButton.actor);
+                        this.recentButton.actor.style_class = "menu-category-button-selected";
+                        this.closeContextMenus(null, false);
+                        this._displayButtons(null, null, -1);
 
                         this.makeVectorBox(this.recentButton.actor);
                     }
@@ -2534,15 +2522,9 @@ MyApplet.prototype = {
             if (!this.searchActive) {
                 this._allAppsCategoryButton.isHovered = true;
 
-                Mainloop.idle_add_full(Mainloop.PRIORITY_DEFAULT, Lang.bind(this, function() {
-                    if (this._allAppsCategoryButton.isHovered) {
-                        this._clearPrevCatSelection(this._allAppsCategoryButton.actor);
-                        this._allAppsCategoryButton.actor.style_class = "menu-category-button-selected";
-                        this._select_category(null, this._allAppsCategoryButton);
-                    } else {
-                        this._allAppsCategoryButton.actor.style_class = "menu-category-button";
-                    }
-                }));
+                this._clearPrevCatSelection(this._allAppsCategoryButton.actor);
+                this._allAppsCategoryButton.actor.style_class = "menu-category-button-selected";
+                this._select_category(null, this._allAppsCategoryButton);
 
                 this.makeVectorBox(this._allAppsCategoryButton.actor);
             }
@@ -2605,15 +2587,9 @@ MyApplet.prototype = {
                     if (!this.searchActive) {
                         categoryButton.isHovered = true;
 
-                        Mainloop.idle_add_full(Mainloop.PRIORITY_DEFAULT, Lang.bind(this, function() {
-                            if (categoryButton.isHovered) {
-                                this._clearPrevCatSelection(categoryButton.actor);
-                                categoryButton.actor.style_class = "menu-category-button-selected";
-                                this._select_category(dir, categoryButton);
-                            } else {
-                                categoryButton.actor.style_class = "menu-category-button";
-                            }
-                        }))
+                        this._clearPrevCatSelection(categoryButton.actor);
+                        categoryButton.actor.style_class = "menu-category-button-selected";
+                        this._select_category(dir, categoryButton);
 
                         this.makeVectorBox(categoryButton.actor);
                     }
