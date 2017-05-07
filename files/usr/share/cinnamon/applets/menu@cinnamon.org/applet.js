@@ -644,8 +644,12 @@ RecentButton.prototype = {
     },
 
     activate: function(event) {
-        Gio.app_info_launch_default_for_uri(this.uri, global.create_app_launch_context());
-        this.appsMenuButton.menu.close();
+        try {
+            Gio.app_info_launch_default_for_uri(this.uri, global.create_app_launch_context());
+            this.appsMenuButton.menu.close();
+        } catch (e) {
+            Main.warningNotify(_("This file is no longer available"), e.message, null);
+        }
     },
 
     activateContextMenus: function(event) {
