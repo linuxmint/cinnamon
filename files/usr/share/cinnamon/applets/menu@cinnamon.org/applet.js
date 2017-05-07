@@ -615,6 +615,9 @@ RecentButton.prototype = {
         this.uriDecoded = file.uriDecoded;
         this.appsMenuButton = appsMenuButton;
         this.button_name = file.name;
+
+        this.menu = null;
+
         this.actor.set_style_class_name('menu-application-button');
         this.actor._delegate = this;
         this.label = new St.Label({ text: this.button_name, style_class: 'menu-application-button-label' });
@@ -648,12 +651,14 @@ RecentButton.prototype = {
     activateContextMenus: function(event) {
         let menu = this.appsMenuButton.recentContextMenu;
 
-        if (menu != null && menu.isOpen)
+        if (menu != null && menu.sourceActor._delegate != this)
             this.appsMenuButton.closeContextMenus(this, true);
+
         this.toggleMenu();
     },
 
     closeMenu: function() {
+        this.menu = null;
         this.menu.close();
     },
 
@@ -663,13 +668,11 @@ RecentButton.prototype = {
 
     toggleMenu: function() {
         if (this.appsMenuButton.recentContextMenu == null) {
-            let menu = new PopupMenu.PopupSubMenu(this.actor);
-            menu.actor.set_style_class_name('menu-context-menu');
-            menu.connect('open-state-changed', Lang.bind(this, this._subMenuOpenStateChanged));
-            this.appsMenuButton.recentContextMenu = menu;
+            this.appsMenuButton.createRecentContextMenu(this.actor);
         }
 
         let menu = this.appsMenuButton.recentContextMenu;
+        this.menu = menu;
 
         if (!menu.isOpen) {
             let parent = menu.actor.get_parent();
@@ -746,18 +749,8 @@ RecentButton.prototype = {
         this.appsMenuButton.recentContextMenu.toggle();
     },
 
-    _subMenuOpenStateChanged: function(recentContextMenu) {
-        if (recentContextMenu.isOpen) {
-            this.appsMenuButton._activeContextMenuParent = this;
-            this.appsMenuButton._scrollToButton(recentContextMenu);
-        } else {
-            this.appsMenuButton._activeContextMenuItem = null;
-            this.appsMenuButton._activeContextMenuParent = null;
-        }
-    },
-
     get _contextIsOpen() {
-        return this.appsMenuButton.recentContextMenu != null && this.appsMenuButton.recentContextMenu.isOpen;
+        return this.menu != null && this.menu.isOpen;
     },
 
     destroy: function() {
@@ -1544,27 +1537,51 @@ MyApplet.prototype = {
         }
     },
 
-    _navigateContextMenu: function(actor, symbol, ctrlKey) {
+    _recentMenuOpenStateChanged: function(recentContextMenu) {
+        if (recentContextMenu.isOpen) {
+            this._activeContextMenuParent = recentContextMenu.sourceActor._delegate;
+            this._scrollToButton(recentContextMenu);
+        } else {
+            this._activeContextMenuItem = null;
+            this._activeContextMenuParent = null;
+            for (let item in this._recentButtons) {
+                if (this._recentButtons[item].menu) {
+                    this._recentButtons[item].menu = null;
+                }
+            }
+        }
+    },
+
+    createRecentContextMenu: function(actor) {
+        let menu = new PopupMenu.PopupSubMenu(actor);
+        menu.actor.set_style_class_name('menu-context-menu');
+        menu.connect('open-state-changed', Lang.bind(this, this._recentMenuOpenStateChanged));
+        this.recentContextMenu = menu;
+    },
+
+    _navigateContextMenu: function(button, symbol, ctrlKey) {
         if (symbol === Clutter.KEY_Menu || symbol === Clutter.Escape ||
             (ctrlKey && (symbol === Clutter.KEY_Return || symbol === Clutter.KP_Enter))) {
-            actor.activateContextMenus();
+            button.activateContextMenus();
             return;
         }
 
+        let minIndex = 0;
         let goUp = symbol === Clutter.KEY_Up;
         let nextActive = null;
-        let menuItems = actor.menu._getMenuItems(); // The context menu items
+        let menuItems = button.menu._getMenuItems(); // The context menu items
 
         // The first context menu item of a RecentButton is used just as a label.
         // So remove it from the iteration.
-        if (actor instanceof RecentButton)
-            menuItems.shift();
+        if (button && button instanceof RecentButton) {
+            minIndex = 1;
+        }
 
         let menuItemsLength = menuItems.length;
 
         switch (symbol) {
             case Clutter.KEY_Page_Up:
-                this._activeContextMenuItem = menuItems[0];
+                this._activeContextMenuItem = menuItems[minIndex];
                 this._activeContextMenuItem.setActive(true);
                 return;
             case Clutter.KEY_Page_Down:
@@ -1575,9 +1592,9 @@ MyApplet.prototype = {
 
         if (!this._activeContextMenuItem) {
             if (symbol === Clutter.KEY_Return || symbol === Clutter.KP_Enter) {
-                actor.activate();
+                button.activate();
             } else {
-                this._activeContextMenuItem = menuItems[goUp ? menuItemsLength - 1 : 0];
+                this._activeContextMenuItem = menuItems[goUp ? menuItemsLength - 1 : minIndex];
                 this._activeContextMenuItem.setActive(true);
             }
             return;
@@ -1588,19 +1605,23 @@ MyApplet.prototype = {
             return;
         }
 
-        let i = 0;
-        for (; i < menuItemsLength; i++) {
+        for (let i = minIndex; i < menuItemsLength; i++) {
             if (menuItems[i] === this._activeContextMenuItem) {
-                nextActive = goUp ? (menuItems[i - 1] || null) : (menuItems[i + 1] || null);
+                let nextActiveIndex = (goUp ? i - 1 : i + 1);
+
+                if (nextActiveIndex < minIndex) {
+                    nextActiveIndex = menuItemsLength - 1;
+                } else if (nextActiveIndex > menuItemsLength - 1) {
+                    nextActiveIndex = minIndex;
+                }
+
+                nextActive = menuItems[nextActiveIndex];
+                nextActive.setActive(true);
+                this._activeContextMenuItem = nextActive;
+
                 break;
             }
         }
-
-        if (!nextActive)
-            nextActive = goUp ? menuItems[menuItemsLength - 1] : menuItems[0];
-
-        nextActive.setActive(true);
-        this._activeContextMenuItem = nextActive;
     },
 
     _onMenuKeyPress: function(actor, event) {
@@ -2977,8 +2998,8 @@ MyApplet.prototype = {
     },
 
     closeContextMenus: function(excluded, animate) {
-        for (var app in this._applicationsButtons){
-            if (app != excluded && this._applicationsButtons[app].menu.isOpen){
+        for (let app in this._applicationsButtons){
+            if (this._applicationsButtons[app] != excluded && this._applicationsButtons[app].menu.isOpen){
                 if (animate)
                     this._applicationsButtons[app].toggleMenu();
                 else
@@ -2986,13 +3007,17 @@ MyApplet.prototype = {
             }
         }
 
-        if (excluded != this._activeContextMenuItem) {
-            if (this.recentContextMenu && this.recentContextMenu.isOpen) {
-                if (animate)
-                    this.recentContextMenu.sourceActor._delegate.toggleMenu();
-                else
-                    this.recentContextMenu.sourceActor._delegate.closeMenu();
-            }
+        if (!this.recentContextMenu) {
+            return;
+        }
+
+        let item = this.recentContextMenu.sourceActor._delegate;
+
+        if ((item != excluded || excluded == null) && item.menu && item.menu.isOpen) {
+            if (animate)
+                this.recentContextMenu.toggle();
+            else
+                this.recentContextMenu.close();
         }
     },
 
