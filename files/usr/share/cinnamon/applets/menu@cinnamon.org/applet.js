@@ -6,6 +6,7 @@ const Cinnamon = imports.gi.Cinnamon;
 const St = imports.gi.St;
 const Clutter = imports.gi.Clutter;
 const Main = imports.ui.main;
+const MessageTray = imports.ui.messageTray;
 const PopupMenu = imports.ui.popupMenu;
 const AppFavorites = imports.ui.appFavorites;
 const Gtk = imports.gi.Gtk;
@@ -648,7 +649,14 @@ RecentButton.prototype = {
             Gio.app_info_launch_default_for_uri(this.uri, global.create_app_launch_context());
             this.appsMenuButton.menu.close();
         } catch (e) {
-            Main.warningNotify(_("This file is no longer available"), e.message, null);
+            let source = new MessageTray.SystemNotificationSource();
+            Main.messageTray.add(source);
+            let notification = new MessageTray.Notification(source,
+                                                            _("This file is no longer available"),
+                                                            e.message);
+            notification.setTransient(true);
+            notification.setUrgency(MessageTray.Urgency.NORMAL);
+            source.notify(notification);
         }
     },
 
