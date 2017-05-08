@@ -3014,6 +3014,9 @@ MyApplet.prototype = {
                 this.recentContextMenu.toggle();
             else
                 this.recentContextMenu.close();
+
+            this._activeContextMenuParent = null;
+            this._activeContextMenuItem = null;
         }
     },
 
