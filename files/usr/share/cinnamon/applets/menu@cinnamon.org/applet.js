@@ -1281,6 +1281,8 @@ MyApplet.prototype = {
         this.recentContextMenu = null;
         this.appsContextMenu = null;
 
+        this.lastSelectedCategory = null;
+
         // We shouldn't need to call refreshAll() here... since we get a "icon-theme-changed" signal when CSD starts.
         // The reason we do is in case the Cinnamon icon theme is the same as the one specificed in GTK itself (in .config)
         // In that particular case we get no signal at all.
@@ -2978,6 +2980,12 @@ MyApplet.prototype = {
     },
 
     _select_category : function(dir, categoryButton) {
+        if (dir == this.lastSelectedCategory) {
+            return;
+        }
+
+        this.lastSelectedCategory = dir;
+
         if (dir)
             this._displayButtons(this._listApplications(dir.get_menu_id()));
         else
