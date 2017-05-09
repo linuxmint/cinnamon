@@ -11,7 +11,36 @@ class InspectView(BaseListView):
         self.createTextColumn(1, "Type")
         self.createTextColumn(2, "Value")
 
+        self.popup = Gtk.Menu()
+        self.insertCommand = Gtk.MenuItem("Insert into command entry")
+        self.insertCommand.connect("activate", self.onInsertCommand)
+        self.popup.append(self.insertCommand)
+        self.popup.show_all()
+
+        self.treeView.connect("button-press-event", self.onButtonPressEvent)
         self.treeView.connect("row-activated", self.onRowActivated)
+
+    def onButtonPressEvent(self, treeview, event):
+        x = int(event.x)
+        y = int(event.y)
+        time = event.time
+        pthinfo = treeview.get_path_at_pos(x, y)
+        if pthinfo is not None and event.button == 3:
+            path, col, cellx, celly = pthinfo
+            self.selectedPath = path
+            treeview.grab_focus()
+            treeview.set_cursor( path, col, 0)
+            self.popup.popup( None, None, None, None, event.button, event.time)
+            return True
+
+    def onInsertCommand(self, widget):
+        treeIter = self.store.get_iter(self.selectedPath)
+        objType = self.store.get_value(treeIter, 1)
+        objPath = self.store.get_value(treeIter, 4)
+        if objType == "function":
+            objPath += "()"
+        Gtk.Entry.do_insert_at_cursor(cinnamonLog.commandline, objPath)
+        cinnamonLog.commandline.grab_focus_without_selecting()
 
     def onRowActivated(self, treeview, path, view_column):
         iter = self.store.get_iter(path)
