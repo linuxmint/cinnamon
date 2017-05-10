@@ -491,7 +491,6 @@ class ExtensionSidePage (SidePage):
         self.content_box.show_all()
 
         if not self.themes:
-            self.spices.scrubConfigDirs(self.enabled_extensions)
             try:
                 Gio.DBusProxy.new_for_bus(Gio.BusType.SESSION, Gio.DBusProxyFlags.NONE, None,
                                           "org.Cinnamon", "/org/Cinnamon", "org.Cinnamon", None, self._on_proxy_ready, None)

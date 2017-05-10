@@ -81,6 +81,7 @@ class MainWindow(object):
         self.type = xlet_type
         self.uuid = uuid
         self.selected_instance = None
+        self.gsettings = Gio.Settings.new("org.cinnamon")
 
         self.load_xlet_data()
         self.build_window()
@@ -197,15 +198,39 @@ class MainWindow(object):
     def load_instances(self):
         self.instance_info = []
         path = "%s/.cinnamon/configs/%s" % (home, self.uuid)
-        instances = sorted(os.listdir(path))
+        instances = 0
+        dir_items = sorted(os.listdir(path))
+        try:
+            multi_instance = int(self.xlet_meta["max-instances"]) != 1
+        except (KeyError, ValueError):
+            multi_instance = False
 
-        if len(instances) < 2:
-            self.prev_button.set_no_show_all(True)
-            self.next_button.set_no_show_all(True)
+        for item in dir_items:
+            # ignore anything that isn't json
+            if item[-5:] != ".json":
+                continue
 
-        for instance in instances:
-            instance_id = instance[0:-5]
-            settings = JSONSettingsHandler(os.path.join(path, instance), self.notify_dbus)
+            instance_id = item[0:-5]
+            if not multi_instance and instance_id != self.uuid:
+                continue # for single instance the file name should be [uuid].json
+
+            if multi_instance:
+                try:
+                    int(instance_id)
+                except:
+                    continue # multi-instance should have file names of the form [instance-id].json
+
+                instance_exists = False
+                enabled = self.gsettings.get_strv('enabled-%ss' % self.type)
+                for deninition in enabled:
+                    if uuid in deninition and instance_id in deninition.split(':'):
+                        instance_exists = True
+                        break
+
+                if not instance_exists:
+                    continue
+
+            settings = JSONSettingsHandler(os.path.join(path, item), self.notify_dbus)
             settings.instance_id = instance_id
             instance_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
             self.instance_stack.add_named(instance_box, instance_id)
@@ -246,6 +271,12 @@ class MainWindow(object):
                     self.selected_instance = info
                     if "stack" in info:
                         self.stack_switcher.set_stack(info["stack"])
+
+            instances += 1
+
+        if instances < 2:
+            self.prev_button.set_no_show_all(True)
+            self.next_button.set_no_show_all(True)
 
     def build_with_layout(self, settings_map, info, box, first_key):
         layout = first_key
