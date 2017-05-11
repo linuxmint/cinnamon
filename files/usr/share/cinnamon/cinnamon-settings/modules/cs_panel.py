@@ -152,7 +152,8 @@ class Module:
 
             self.add_panel_button.connect("clicked", self.on_add_panel)
 
-            self.proxy.highlightPanel('(ib)', int(self.panel_id), True)
+            if self.panel_id is not None:
+                self.proxy.highlightPanel('(ib)', int(self.panel_id), True)
 
     def on_add_panel(self, widget):
         if self.proxy:
@@ -245,6 +246,28 @@ class Module:
                 if panel_page != -1:
                     self.panels.append(panel_page)
 
+        # if there are no panels, there's no point in showing the stack
+        if len(self.panels) == 0:
+            self.next_button.hide()
+            self.previous_button.hide()
+            self.config_stack.hide()
+            self.add_panel_button.set_sensitive(True)
+            self.current_panel = None
+            self.panel_id = None
+            return
+
+        self.config_stack.show()
+        self.next_button.show()
+        self.previous_button.show()
+
+        # Disable the panel switch buttons if there's only one panel
+        if len(self.panels) == 1:
+            self.next_button.set_sensitive(False)
+            self.previous_button.set_sensitive(False)
+        else:
+            self.next_button.set_sensitive(True)
+            self.previous_button.set_sensitive(True)
+
         if not current_found:
             self.current_panel = self.panels[0]
             self.panel_id = self.current_panel.panel_id
@@ -261,17 +284,10 @@ class Module:
 
         self.add_panel_button.set_sensitive(can_add)
 
-        # Disable the panel switch buttons if there's only one panel
-        self.next_button.set_sensitive(len(self.panels) > 1)
-        self.previous_button.set_sensitive(len(self.panels) > 1)
-
         try:
             current_idx = self.panels.index(self.panel_id)
         except:
             current_idx = 0
-
-        if len(self.panels) == 0:
-            return
 
         if self.proxy:
             self.proxy.highlightPanel('(ib)', int(self.panel_id), True)
