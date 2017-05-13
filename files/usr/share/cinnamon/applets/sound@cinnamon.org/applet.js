@@ -293,8 +293,8 @@ Player.prototype = {
         let playerBox = new St.BoxLayout();
         this.playerIcon = new St.Icon({icon_type: St.IconType.SYMBOLIC, style_class: "popup-menu-icon"});
         this.playerLabel = new St.Label({y_expand: true, y_align: Clutter.ActorAlign.CENTER});
-        playerBox.add_actor(this.playerIcon, { expand: true, x_fill: false, x_align: St.Align.START });
-        playerBox.add_actor(this.playerLabel, { expand: true, x_fill: false, x_align: St.Align.START });
+        playerBox.add_actor(this.playerIcon);
+        playerBox.add_actor(this.playerLabel);
 
         if (this._mediaServer.CanRaise) {
             let btn = new ControlButton("go-up", _("Open Player"), Lang.bind(this, function(){
@@ -307,17 +307,17 @@ Player.prototype = {
                 }
                 this._applet.menu.close();
             }), true);
-            playerBox.add_actor(btn.actor, { expand: true, x_fill: false, x_align: St.Align.END });
+            playerBox.add_actor(btn.actor);
         }
         if (this._mediaServer.CanQuit) {
             let btn = new ControlButton("window-close", _("Quit Player"), Lang.bind(this, function(){
                 this._mediaServer.QuitRemote();
                 this._applet.menu.close();
             }), true);
-            playerBox.add_actor(btn.actor, { expand: true, x_fill: false, x_align: St.Align.END });
+            playerBox.add_actor(btn.actor);
         }
 
-        this.vertBox.add_actor(playerBox, {expand: false, x_fill: false});
+        this.vertBox.add_actor(playerBox);
 
         // Cover Box (art + track info)
         this._trackCover = new St.Bin({x_align: St.Align.MIDDLE});
