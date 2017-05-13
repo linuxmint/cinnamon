@@ -31,7 +31,7 @@ RadioButtonContainer.prototype = {
         this.label = new St.Label();
         this.label.clutter_text.set_line_wrap(false);
         this.label.clutter_text.set_ellipsize(Pango.EllipsizeMode.NONE);
-        this.actor.add_actor(this.label, { y_fill: true, y_align: St.Align.END });
+        this.actor.add_actor(this.label);
 
         this._spacing = 0;
     },
