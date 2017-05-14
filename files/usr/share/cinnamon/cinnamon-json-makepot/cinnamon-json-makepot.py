@@ -233,6 +233,13 @@ class Main:
                         continue
                     comment = "%s->settings-schema.json->%s->%s" % (self.current_parent_dir, parent, key)
                     self.save_entry(option, comment)
+            elif key == "columns":
+                columns = data[key]
+                for i, col in enumerate(columns):
+                    for col_key in col:
+                        if col_key in ("title", "units"):
+                            comment = "%s->settings-schema.json->%s->columns->%s" % (self.current_parent_dir, parent, col_key)
+                            self.save_entry(col[col_key], comment)
             try:
                 self.extract_strings(data[key], key)
             except AttributeError:
