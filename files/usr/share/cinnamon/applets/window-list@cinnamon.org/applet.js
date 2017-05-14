@@ -1074,7 +1074,7 @@ MyApplet.prototype = {
 
     _onWindowAdded: function(screen, metaWindow, monitor) {
         if (this._shouldAdd(metaWindow))
-            this._addWindow(metaWindow);
+            this._addWindow(metaWindow, false);
     },
 
     _onWindowRemoved: function(screen, metaWindow) {
@@ -1083,7 +1083,7 @@ MyApplet.prototype = {
 
     _onWindowMonitorChanged: function(screen, metaWindow, monitor) {
         if (this._shouldAdd(metaWindow))
-            this._addWindow(metaWindow);
+            this._addWindow(metaWindow, false);
         else
             this._removeWindow(metaWindow);
     },
@@ -1221,7 +1221,7 @@ MyApplet.prototype = {
 
         for (let window of windows) {
             if (this._shouldAdd(window))
-                this._addWindow(window);
+                this._addWindow(window, false);
             else
                 this._removeWindow(window);
         }
@@ -1230,7 +1230,7 @@ MyApplet.prototype = {
     _addWindow: function(metaWindow, alert) {
         for (let window of this._windows)
             if (window.metaWindow == metaWindow &&
-                window.temp == alert)
+                window.alert == alert)
                 return;
 
         let appButton = new AppMenuButton(this, metaWindow, alert);
