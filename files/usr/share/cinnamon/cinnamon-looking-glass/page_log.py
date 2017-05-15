@@ -22,6 +22,7 @@ class LogView(Gtk.ScrolledWindow):
         self.add(self.textview)
 
         self.textbuffer = self.textview.get_buffer()
+        self.scroll_mark =  self.textbuffer.create_mark(None, self.textbuffer.get_end_iter(), False)
 
         self.log = []
         self.addedMessages = 0
@@ -50,7 +51,6 @@ class LogView(Gtk.ScrolledWindow):
         return entry
 
     def onButtonToggled(self, button, data):
-        self.textview.hide()
         active = button.get_active()
         self.enabledTypes[data] = active
         self.typeTags[data].props.invisible = active != True
@@ -59,7 +59,6 @@ class LogView(Gtk.ScrolledWindow):
         #print self.textview.get_preferred_height()
         adj = self.get_vadjustment()
         #adj.set_upper(self.textview.get_allocated_height())
-        self.textview.show()
 
     def onStatusChange(self, online):
         iter = self.textbuffer.get_end_iter()
@@ -86,13 +85,12 @@ class LogView(Gtk.ScrolledWindow):
                         start, end = self.textbuffer.get_bounds()
                         self.textbuffer.delete(start, end)
 
-                    self.textview.hide()
                     iter = self.textbuffer.get_end_iter()
                     for item in data[self.addedMessages:]:
                         entry = self.append(item["category"], float(item["timestamp"])*0.001, item["message"])
                         self.textbuffer.insert_with_tags(iter, entry.formattedText, self.typeTags[entry.category])
                         self.addedMessages += 1
-                    self.textview.show()
+                    self.textview.scroll_to_mark(self.scroll_mark, 0, True, 1, 1)
             except Exception as e:
                 print e
 
