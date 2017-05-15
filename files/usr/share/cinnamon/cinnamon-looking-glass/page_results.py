@@ -1,10 +1,10 @@
-from pageutils import *
-from gi.repository import Gio, Gtk, GObject, Gdk, Pango, GLib
+import pageutils
+from gi.repository import Gtk
 
-class ModulePage(BaseListView):
+class ModulePage(pageutils.BaseListView):
     def __init__(self, parent):
         store = Gtk.ListStore(int, str, str, str, str)
-        BaseListView.__init__(self, store)
+        pageutils.BaseListView.__init__(self, store)
 
         self.parent = parent
         self.adjust = self.get_vadjustment()
@@ -35,13 +35,13 @@ class ModulePage(BaseListView):
         cell.set_property("text", "r(%d)" %  model.get_value(iter, 0))
 
     def onRowActivated(self, treeview, path, view_column):
-        iter = self.store.get_iter(path)
-        id = self.store.get_value(iter, 0)
-        name = self.store.get_value(iter, 1)
-        objType = self.store.get_value(iter, 2)
-        value = self.store.get_value(iter, 3)
+        treeIter = self.store.get_iter(path)
+        resultId = self.store.get_value(treeIter, 0)
+        name = self.store.get_value(treeIter, 1)
+        objType = self.store.get_value(treeIter, 2)
+        value = self.store.get_value(treeIter, 3)
 
-        cinnamonLog.pages["inspect"].inspectElement("r(%d)" % id, objType, name, value)
+        melangeApp.pages["inspect"].inspectElement("r(%d)" % resultId, objType, name, value)
 
     def onStatusChange(self, online):
         if online:
@@ -60,6 +60,6 @@ class ModulePage(BaseListView):
                 print e
 
     def onInspectorDone(self):
-        cinnamonLog.show()
-        cinnamonLog.activatePage("results")
+        melangeApp.show()
+        melangeApp.activatePage("results")
         self.getUpdates()

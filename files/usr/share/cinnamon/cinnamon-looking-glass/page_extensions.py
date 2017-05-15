@@ -1,14 +1,14 @@
 import pageutils
 import os
-from gi.repository import Gio, Gtk, GObject, Gdk, Pango, GLib
+from gi.repository import Gtk, Gdk
 
 class ModulePage(pageutils.BaseListView):
     def __init__(self, parent):
         store = Gtk.ListStore(str, str, str, str, str, str, str, bool, str)
         pageutils.BaseListView.__init__(self, store)
-        self.parent = parent;
+        self.parent = parent
 
-        column = self.createTextColumn(0, "Status")
+        self.createTextColumn(0, "Status")
         self.createTextColumn(1, "Type")
         self.createTextColumn(2, "Name")
         self.createTextColumn(3, "Description")
@@ -36,25 +36,24 @@ class ModulePage(pageutils.BaseListView):
         self.treeView.connect("button-press-event", self.on_button_press_event)
 
     def onViewSource(self, menuItem):
-        iter = self.store.get_iter(self.selectedPath)
-        folder = self.store.get_value(iter, 5)
+        treeIter = self.store.get_iter(self.selectedPath)
+        folder = self.store.get_value(treeIter, 5)
         os.system("xdg-open \"" + folder + "\" &")
 
     def onReloadCode(self, menuItem):
-        iter = self.store.get_iter(self.selectedPath)
-        uuid = self.store.get_value(iter, 4)
-        xletType = self.store.get_value(iter, 1)
+        treeIter = self.store.get_iter(self.selectedPath)
+        uuid = self.store.get_value(treeIter, 4)
+        xletType = self.store.get_value(treeIter, 1)
         lookingGlassProxy.ReloadExtension(uuid, xletType.upper())
 
     def onViewWebPage(self, menuItem):
-        iter = self.store.get_iter(self.selectedPath)
-        url = self.store.get_value(iter, 6)
+        treeIter = self.store.get_iter(self.selectedPath)
+        url = self.store.get_value(treeIter, 6)
         os.system("xdg-open \"" + url + "\" &")
 
     def on_button_press_event(self, treeview, event):
         x = int(event.x)
         y = int(event.y)
-        time = event.time
         pthinfo = treeview.get_path_at_pos(x, y)
         if pthinfo is not None:
             path, col, cellx, celly = pthinfo
@@ -62,12 +61,12 @@ class ModulePage(pageutils.BaseListView):
             treeview.grab_focus()
             treeview.set_cursor( path, col, 0)
 
-            iter = self.store.get_iter(self.selectedPath)
+            treeIter = self.store.get_iter(self.selectedPath)
 
         if event.button == 3:
             if pthinfo is not None:
-                uuid = self.store.get_value(iter, 4)
-                url = self.store.get_value(iter, 6)
+                uuid = self.store.get_value(treeIter, 4)
+                url = self.store.get_value(treeIter, 6)
 
                 self.viewWebPage.set_sensitive(url != "")
                 self.viewSource.set_label(uuid + " (View Source)")
@@ -75,7 +74,7 @@ class ModulePage(pageutils.BaseListView):
             return True
         elif event.type == Gdk.EventType.DOUBLE_BUTTON_PRESS:
             if pthinfo is not None:
-                error = self.store.get_value(iter, 7)
+                error = self.store.get_value(treeIter, 7)
                 if error:
                     self.parent.activatePage("log")
 

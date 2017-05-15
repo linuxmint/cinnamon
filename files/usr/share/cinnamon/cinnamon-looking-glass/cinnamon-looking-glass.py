@@ -15,9 +15,9 @@ import os
 import pyinotify
 import gi
 gi.require_version('Gtk', '3.0')
-from gi.repository import Gio, Gtk, GObject, Gdk, Pango, GLib
+from gi.repository import Gio, Gtk, GObject, Gdk
 import dbus, dbus.service, dbus.glib
-from pageutils import *
+import pageutils
 from lookingglass_proxy import LookingGlassProxy
 from dbus.mainloop.glib import DBusGMainLoop
 import signal
@@ -299,7 +299,7 @@ class ClosableTabLabel(Gtk.Box):
     def button_clicked(self, button, data=None):
         self.emit("close-clicked")
 
-class CinnamonLog(dbus.service.Object):
+class MelangeApp(dbus.service.Object):
     def __init__ (self):
         global lookingGlassProxy
         lookingGlassProxy = LookingGlassProxy()
@@ -389,7 +389,7 @@ class CinnamonLog(dbus.service.Object):
         table.attach(self.notebook, 0, numColumns, 0, 1)
 
         column = 0
-        pickerButton = ImageButton("gtk-color-picker", Gtk.IconSize.SMALL_TOOLBAR)
+        pickerButton = pageutils.ImageButton("gtk-color-picker", Gtk.IconSize.SMALL_TOOLBAR)
         pickerButton.connect("clicked", self.onPickerClicked)
         table.attach(pickerButton, column, column+1, 1, 2, 0, 0, 2)
         column += 1
@@ -409,9 +409,9 @@ class CinnamonLog(dbus.service.Object):
         column += 1
 
         settings = Gio.Settings("org.cinnamon.desktop.keybindings")
-        arr = settings.get_strv("looking-glass-keybinding");
+        arr = settings.get_strv("looking-glass-keybinding")
         accel = ""
-        done_one = False;
+        done_one = False
 
         for element in arr:
             if done_one:
@@ -479,7 +479,7 @@ class CinnamonLog(dbus.service.Object):
 
     def onAboutClicked(self, menuItem):
         dialog = Gtk.MessageDialog(self.window, 0,
-                                   Gtk.MessageType.QUESTION, Gtk.ButtonsType.CLOSE);
+                                   Gtk.MessageType.QUESTION, Gtk.ButtonsType.CLOSE)
 
         dialog.set_title("About Melange")
         dialog.set_markup("""\
@@ -532,7 +532,7 @@ If you defined a hotkey for Melange, pressing it while Melange is visible it wil
     def createPage(self, text, moduleName):
         module = __import__("page_%s" % moduleName)
         module.lookingGlassProxy = self.lookingGlassProxy
-        module.cinnamonLog = self
+        module.melangeApp = self
         label = Gtk.Label(text)
         page = module.ModulePage(self)
         self.pages[moduleName] = page
@@ -548,7 +548,7 @@ if __name__ == "__main__":
     sessionBus = dbus.SessionBus ()
     request = sessionBus.request_name(MELANGE_DBUS_NAME, dbus.bus.NAME_FLAG_DO_NOT_QUEUE)
     if request != dbus.bus.REQUEST_NAME_REPLY_EXISTS:
-        app = CinnamonLog()
+        app = MelangeApp()
     else:
         object = sessionBus.get_object(MELANGE_DBUS_NAME, MELANGE_DBUS_PATH)
         app = dbus.Interface(object, MELANGE_DBUS_NAME)

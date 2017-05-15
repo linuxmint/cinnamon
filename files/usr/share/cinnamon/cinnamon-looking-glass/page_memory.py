@@ -1,10 +1,10 @@
-from pageutils import *
-from gi.repository import Gio, Gtk, GObject, Gdk, Pango, GLib
+import pageutils
+from gi.repository import Gtk
 
-class MemoryView(BaseListView):
+class MemoryView(pageutils.BaseListView):
     def __init__(self):
         store = Gtk.ListStore(str, int)
-        BaseListView.__init__(self, store)
+        pageutils.BaseListView.__init__(self, store)
 
         self.createTextColumn(0, "Name")
         self.createTextColumn(1, "Size (bytes)")
@@ -39,17 +39,17 @@ class MemoryView(BaseListView):
         lookingGlassProxy.FullGc()
         self.getUpdates()
 
-class ModulePage(WindowAndActionBars):
+class ModulePage(pageutils.WindowAndActionBars):
     def __init__(self, parent):
         self.view = MemoryView()
-        WindowAndActionBars.__init__(self, self.view)
+        pageutils.WindowAndActionBars.__init__(self, self.view)
         self.parent = parent
 
-        refresh = ImageButton("view-refresh")
+        refresh = pageutils.ImageButton("view-refresh")
         refresh.set_tooltip_text("Refresh")
         refresh.connect("clicked", self.view.getUpdates)
         self.addToLeftBar(refresh, 1)
-        fullGc = ImageButton("user-trash-full")
+        fullGc = pageutils.ImageButton("user-trash-full")
         fullGc.set_tooltip_text("Full Garbage Collection")
         fullGc.connect ('clicked', self.view.onFullGc)
 

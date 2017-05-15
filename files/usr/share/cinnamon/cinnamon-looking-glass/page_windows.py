@@ -1,10 +1,10 @@
-from pageutils import *
-from gi.repository import Gio, Gtk, GObject, Gdk, Pango, GLib
+import pageutils
+from gi.repository import Gtk
 
-class ModulePage(BaseListView):
+class ModulePage(pageutils.BaseListView):
     def __init__(self, parent):
         store = Gtk.ListStore(int, str, str, str)
-        BaseListView.__init__(self, store)
+        pageutils.BaseListView.__init__(self, store)
         self.parent = parent
 
         column = self.createTextColumn(0, "ID")
@@ -34,36 +34,35 @@ class ModulePage(BaseListView):
         self.popup.append(self.inspectApp)
         self.popup.show_all()
 
-    def cellDataFuncID(self, column, cell, model, iter, data=None):
-        value = model.get_value(iter, 0)
+    def cellDataFuncID(self, column, cell, model, treeIter, data=None):
+        value = model.get_value(treeIter, 0)
         cell.set_property("text", "w(%d) / a(%d)" %  (value, value))
 
     def onRowActivated(self, treeview, path, view_column):
-        iter = self.store.get_iter(path)
-        id = self.store.get_value(iter, 0)
-        title = self.store.get_value(iter, 1)
+        treeIter = self.store.get_iter(path)
+        objId = self.store.get_value(treeIter, 0)
+        title = self.store.get_value(treeIter, 1)
 
-        cinnamonLog.pages["inspect"].inspectElement("w(%d)" % id, "object", title, "<window>")
+        melangeApp.pages["inspect"].inspectElement("w(%d)" % objId, "object", title, "<window>")
 
     def onInspectWindow(self, menuItem):
-        iter = self.store.get_iter(self.selectedPath)
-        id = self.store.get_value(iter, 0)
-        title = self.store.get_value(iter, 1)
+        treeIter = self.store.get_iter(self.selectedPath)
+        objId = self.store.get_value(treeIter, 0)
+        title = self.store.get_value(treeIter, 1)
 
-        cinnamonLog.pages["inspect"].inspectElement("w(%d)" % id, "object", title, "<window>")
+        melangeApp.pages["inspect"].inspectElement("w(%d)" % objId, "object", title, "<window>")
 
     def onInspectApplication(self, menuItem):
-        iter = self.store.get_iter(self.selectedPath)
-        id = self.store.get_value(iter, 0)
-        application = self.store.get_value(iter, 3)
+        treeIter = self.store.get_iter(self.selectedPath)
+        objId = self.store.get_value(treeIter, 0)
+        application = self.store.get_value(treeIter, 3)
 
-        cinnamonLog.pages["inspect"].inspectElement("a(%d)" % id, "object", application, "<application>")
+        melangeApp.pages["inspect"].inspectElement("a(%d)" % objId, "object", application, "<application>")
 
     def onButtonPress(self, treeview, event):
         if event.button == 3:
             x = int(event.x)
             y = int(event.y)
-            time = event.time
             pthinfo = treeview.get_path_at_pos(x, y)
             if pthinfo is not None:
                 path, col, cellx, celly = pthinfo
@@ -71,8 +70,8 @@ class ModulePage(BaseListView):
                 treeview.grab_focus()
                 treeview.set_cursor( path, col, 0)
 
-                iter = self.store.get_iter(self.selectedPath)
-                app = self.store.get_value(iter, 3)
+                treeIter = self.store.get_iter(self.selectedPath)
+                app = self.store.get_value(treeIter, 3)
 
                 self.inspectApp.set_sensitive(app != "<untracked>")
                 self.popup.popup( None, None, None, None, event.button, event.time)
