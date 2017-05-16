@@ -101,13 +101,6 @@ MyApplet.prototype = {
                     Util.spawnCommandLine("dm-tool switch-to-greeter");
                 }));
                 this.menu.addMenuItem(item);
-
-                item = new PopupMenu.PopupIconMenuItem(_("Guest Session"), "guest-session", St.IconType.SYMBOLIC);
-                item.connect('activate', Lang.bind(this, function() {
-                    Util.spawnCommandLine("cinnamon-screensaver-command --lock");
-                    Util.spawnCommandLine("dm-tool switch-to-guest");
-                }));
-                this.menu.addMenuItem(item);
             }
             else if (GLib.file_test("/usr/bin/mdmflexiserver", GLib.FileTest.EXISTS)) {
                 // MDM
