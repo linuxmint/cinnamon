@@ -161,6 +161,7 @@ __proto__: ModalDialog.ModalDialog.prototype,
         entry.label_actor = label;
 
         this._entryText = entry.clutter_text;
+        this._oldText = "";
         this.contentLayout.add(entry, { y_align: St.Align.START });
         this.setInitialKeyFocus(this._entryText);
 
