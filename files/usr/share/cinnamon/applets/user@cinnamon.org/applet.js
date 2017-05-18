@@ -25,24 +25,24 @@ MyApplet.prototype = {
         Applet.TextIconApplet.prototype._init.call(this, orientation, panel_height, instance_id);
 
         this.setAllowedLayout(Applet.AllowedLayout.BOTH);
-        
+
         try {
             this._session = new GnomeSession.SessionManager();
             this._screenSaverProxy = new ScreenSaver.ScreenSaverProxy();
             this.settings = new Settings.AppletSettings(this, "user@cinnamon.org", instance_id);
 
             this.set_applet_icon_symbolic_name("avatar-default");
-                    
+
             this.menuManager = new PopupMenu.PopupMenuManager(this);
             this.menu = new Applet.AppletPopupMenu(this, orientation);
-            this.menuManager.addMenu(this.menu);                                                                    
+            this.menuManager.addMenu(this.menu);
             this._contentSection = new PopupMenu.PopupMenuSection();
-            this.menu.addMenuItem(this._contentSection);      
-            
+            this.menu.addMenuItem(this._contentSection);
+
             let userBox = new St.BoxLayout({ style_class: 'user-box', reactive: true, vertical: false });
 
             this._userIcon = new St.Bin({ style_class: 'user-icon'});
-            
+
             this.settings.bind("display-name", "disp_name", this._updateLabel);
 
             userBox.connect('button-press-event', Lang.bind(this, function() {
@@ -61,7 +61,7 @@ MyApplet.prototype = {
                         { x_fill:  true,
                           y_fill:  false,
                           x_align: St.Align.END,
-                          y_align: St.Align.MIDDLE });    
+                          y_align: St.Align.MIDDLE });
 
             this.menu.addActor(userBox);
 
@@ -146,9 +146,9 @@ MyApplet.prototype = {
     },
 
     on_applet_clicked: function(event) {
-        this.menu.toggle();        
-    }, 
-    
+        this.menu.toggle();
+    },
+
     _updateLabel: function() {
         if (this.disp_name) {
             this.set_applet_label(this._user.get_real_name());
@@ -159,7 +159,7 @@ MyApplet.prototype = {
 
     _onUserChanged: function() {
         if (this._user.is_loaded) {
-            this.set_applet_tooltip(this._user.get_real_name());   
+            this.set_applet_tooltip(this._user.get_real_name());
             this.userLabel.set_text (this._user.get_real_name());
             if (this._userIcon) {
                 let iconFileName = this._user.get_icon_file();
@@ -172,12 +172,12 @@ MyApplet.prototype = {
                 }
                 let img = St.TextureCache.get_default().load_gicon(null, icon, 48);
                 this._userIcon.set_child (img);
-                this._userIcon.show();               
+                this._userIcon.show();
             }
             this._updateLabel();
         }
     },
-    
+
     on_applet_removed_from_panel: function() {
         this.settings.finalize();
     },
@@ -190,7 +190,7 @@ MyApplet.prototype = {
     },
 };
 
-function main(metadata, orientation, panel_height, instance_id) {  
+function main(metadata, orientation, panel_height, instance_id) {
     let myApplet = new MyApplet(orientation, panel_height, instance_id);
-    return myApplet;      
+    return myApplet;
 }
