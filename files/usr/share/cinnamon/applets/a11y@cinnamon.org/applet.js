@@ -41,19 +41,18 @@ MyApplet.prototype = {
         Applet.TextIconApplet.prototype._init.call(this, orientation, panel_height, instance_id);
 
         this.setAllowedLayout(Applet.AllowedLayout.BOTH);
-        
+
         try {
             this.metadata = metadata;
             Main.systrayManager.registerRole("a11y", metadata.uuid);
-            
+
             this.set_applet_icon_symbolic_name("preferences-desktop-accessibility");
             this.set_applet_tooltip(_("Accessibility"));
-            this.orientation = orientation;
-            
+
             this.menuManager = new PopupMenu.PopupMenuManager(this);
             this.menu = new Applet.AppletPopupMenu(this, orientation);
-            this.menuManager.addMenu(this.menu);            
-                                
+            this.menuManager.addMenu(this.menu);
+
             let highContrast = this._buildHCItem();
             this.menu.addMenuItem(highContrast);
 
@@ -90,6 +89,7 @@ MyApplet.prototype = {
             this.a11y_settings = new Gio.Settings({ schema_id: A11Y_SCHEMA });
 
             this._keyboardStateChangedId = Keymap.connect('state-changed', Lang.bind(this, this._handleStateChange));
+            this.set_show_label_in_vertical_panels(false);
             this.hide_applet_label(true);
 
         }
@@ -125,38 +125,17 @@ MyApplet.prototype = {
             if (state & Gdk.ModifierType.MOD3_MASK)
                 modifiers.push('Mod3');
             let keystring = modifiers.join('+');
-//
-// horizontal panels - show the sticky keys in the label, vertical - in a tooltip, and hide any label
-//
-            if (this.orientation == St.Side.LEFT || this.orientation == St.Side.RIGHT) {
-                this.hide_applet_label(true);
-                if (keystring) {
-                    this.set_applet_tooltip(keystring);
-                    this._applet_tooltip.show();
-                } else {
-                    this.reset_tooltip();
-                }
-            } else {
-                this.set_applet_label(keystring);
-                this.hide_applet_label(false);
-                this.reset_tooltip();
-            }
+
+            this.set_applet_label(keystring);
+            this.set_applet_tooltip(keystring);
+            this._applet_tooltip.show();
         } else {
-            this.hide_applet_label (this.orientation == St.Side.LEFT || this.orientation == St.Side.RIGHT);
             this.reset_tooltip();
         }
     },
 
     on_applet_clicked: function(event) {
         this.menu.toggle();
-    },
-
-    on_orientation_changed: function(neworientation) {
-
-        this.orientation = neworientation;
-
-        this.hide_applet_label (this.orientation == St.Side.LEFT || this.orientation == St.Side.RIGHT);
-        this.reset_tooltip();
     },
 
     reset_tooltip: function () {
@@ -257,5 +236,5 @@ MyApplet.prototype = {
 
 function main(metadata, orientation, panel_height, instance_id) {
     let myApplet = new MyApplet(metadata, orientation, panel_height, instance_id);
-    return myApplet;      
+    return myApplet;
 }

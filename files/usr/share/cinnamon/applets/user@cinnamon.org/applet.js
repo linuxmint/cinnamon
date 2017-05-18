@@ -138,7 +138,7 @@ MyApplet.prototype = {
             this._userLoadedId = this._user.connect('notify::is_loaded', Lang.bind(this, this._onUserChanged));
             this._userChangedId = this._user.connect('changed', Lang.bind(this, this._onUserChanged));
             this._onUserChanged();
-            this.on_orientation_changed(orientation);
+            this.set_show_label_in_vertical_panels(false);
         }
         catch (e) {
             global.logError(e);
@@ -180,14 +180,7 @@ MyApplet.prototype = {
 
     on_applet_removed_from_panel: function() {
         this.settings.finalize();
-    },
-
-    on_orientation_changed: function(orientation) {
-        if (orientation == St.Side.LEFT || orientation == St.Side.RIGHT)
-            this.hide_applet_label(true);
-        else
-            this.hide_applet_label(false);
-    },
+    }
 };
 
 function main(metadata, orientation, panel_height, instance_id) {

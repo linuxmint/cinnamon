@@ -253,7 +253,6 @@ MyApplet.prototype = {
         this.setAllowedLayout(Applet.AllowedLayout.BOTH);
 
         this.metadata = metadata;
-        this.orientation = orientation;
 
         this.settings = new Settings.AppletSettings(this, metadata.uuid, instanceId);
 
@@ -298,7 +297,7 @@ MyApplet.prototype = {
             this._devicesChanged();
         }));
 
-        this.update_label_visible();
+        this.set_show_label_in_vertical_panels(false);
     },
 
     _onPanelEditModeChanged: function() {
@@ -574,18 +573,6 @@ MyApplet.prototype = {
 
     on_applet_removed_from_panel: function() {
         Main.systrayManager.unregisterId(this.metadata.uuid);
-    },
-
-    update_label_visible: function() {
-        if (this.orientation == St.Side.LEFT || this.orientation == St.Side.RIGHT)
-            this.hide_applet_label(true);
-        else
-            this.hide_applet_label(false);
-    },
-
-    on_orientation_changed: function(orientation) {
-        this.orientation = orientation;
-        this.update_label_visible();
     }
 };
 

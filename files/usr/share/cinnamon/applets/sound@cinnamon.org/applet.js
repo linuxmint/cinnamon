@@ -837,7 +837,6 @@ MyApplet.prototype = {
 
         try {
             this.metadata = metadata;
-            this.orientation = orientation;
             this.settings = new Settings.AppletSettings(this, metadata.uuid, instanceId);
             this.settings.bind("showtrack", "showtrack", this.on_settings_changed);
             this.settings.bind("middleClickAction", "middleClickAction");
@@ -970,7 +969,7 @@ MyApplet.prototype = {
             this._volumeControlShown = false;
 
             this._showFixedElements();
-            this.updateLabelVisible();
+            this.set_show_label_in_vertical_panels(false);
 
             let appsys = Cinnamon.AppSystem.get_default();
             appsys.connect("installed-changed", Lang.bind(this, this._updateLaunchPlayer));
@@ -1128,13 +1127,6 @@ MyApplet.prototype = {
         }
     },
 
-    updateLabelVisible: function() {
-        if (this.orientation == St.Side.LEFT || this.orientation == St.Side.RIGHT)
-            this.hide_applet_label(true);
-        else
-            this.hide_applet_label(false);
-    },
-
     setAppletText: function(player) {
         let title_text = "";
         if (this.showtrack && player && player._playerStatus == 'Playing') {
@@ -1144,7 +1136,6 @@ MyApplet.prototype = {
             }
         }
         this.set_applet_label(title_text);
-        this.updateLabelVisible();
     },
 
     setAppletTextIcon: function(player, icon) {
@@ -1507,11 +1498,6 @@ MyApplet.prototype = {
 
     unregisterSystrayIcons: function() {
         Main.systrayManager.unregisterId(this.metadata.uuid);
-    },
-
-    on_orientation_changed: function(orientation) {
-        this.orientation = orientation;
-        this.updateLabelVisible();
     }
 };
 

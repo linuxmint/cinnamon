@@ -166,7 +166,6 @@ MyApplet.prototype = {
                 this.actor.show();
                 this.clear_action.actor.show();
                 this.set_applet_label(count.toString());
-                this.hide_applet_label(false);
                 // Find max urgency and derive list icon.
                 let max_urgency = -1;
                 for (let i = 0; i < count; i++) {
@@ -194,7 +193,6 @@ MyApplet.prototype = {
             } else {	// There are no notifications.
                 this._blinking = false;
                 this.set_applet_label('');
-                this.hide_applet_label(true);
                 this.set_applet_icon_symbolic_name("empty-notif");
                 this.clear_action.actor.hide();
                 if (!this.showEmptyTray) {

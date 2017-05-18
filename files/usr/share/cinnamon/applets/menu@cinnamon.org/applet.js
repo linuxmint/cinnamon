@@ -1289,7 +1289,7 @@ MyApplet.prototype = {
         this._refreshAll();
         this._recalc_height();
 
-        this.update_label_visible();
+        this.set_show_label_in_vertical_panels(false);
     },
 
     _updateKeybinding: function() {
@@ -1373,17 +1373,8 @@ MyApplet.prototype = {
         this.applicationsScrollBox.style = "height: "+scrollBoxHeight / global.ui_scale +"px;";
     },
 
-    update_label_visible: function () {
-        if (this.orientation == St.Side.LEFT || this.orientation == St.Side.RIGHT)
-            this.hide_applet_label(true);
-        else
-            this.hide_applet_label(false);
-    },
-
     on_orientation_changed: function (orientation) {
         this.orientation = orientation;
-
-        this.update_label_visible();
 
         this.menu.destroy();
         this.menu = new Applet.AppletPopupMenu(this, orientation);

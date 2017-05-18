@@ -806,6 +806,18 @@ TextIconApplet.prototype = {
         this.actor.add(this._layoutBin, { y_align: St.Align.MIDDLE,
                                           y_fill: false });
         this.actor.set_label_actor(this._applet_label);
+
+        this.show_label_in_vertical_panels = true;
+    },
+
+    /**
+     * set_show_label_in_vertical_panels:
+     * @show (boolean): whether to show the label in vertical panels
+     *
+     * Sets whether to show the label in vertical panels
+     */
+    set_show_label_in_vertical_panels: function (show) {
+        this.show_label_in_vertical_panels = show;
     },
 
     /**
@@ -816,6 +828,20 @@ TextIconApplet.prototype = {
      */
     set_applet_label: function (text) {
         this._applet_label.set_text(text);
+
+        if ((this._orientation == St.Side.LEFT || this._orientation == St.Side.RIGHT) && (this.show_label_in_vertical_panels == false)) {
+            // Hide the label in vertical panel for applets which don't support it
+            this.hide_applet_label(true);
+        }
+        else {
+            if (text == "") {
+                // Hide empty labels
+                this.hide_applet_label(true);
+            }
+            else {
+                this.hide_applet_label(false);
+            }
+        }
     },
 
     /**
@@ -879,5 +905,17 @@ TextIconApplet.prototype = {
 
     on_applet_added_to_panel: function() {
 
+    },
+
+    /**
+     * Override setOrientation, to recall set_applet_label
+     */
+    setOrientation: function (orientation) {
+        this.setOrientationInternal(orientation);
+        this.on_orientation_changed(orientation);
+        this.emit("orientation-changed", orientation);
+        this.finalizeContextMenu();
+        this._orientation = orientation;
+        this.set_applet_label(this._applet_label.get_text());
     }
 };
