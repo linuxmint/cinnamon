@@ -150,7 +150,7 @@ G_DEFINE_TYPE(CinnamonRecorder, cinnamon_recorder, G_TYPE_OBJECT);
  * (Theora does have some support for frames at non-uniform times, but
  * things seem to break down if there are large gaps.)
  */
-#define DEFAULT_PIPELINE "vp8enc min_quantizer=13 max_quantizer=13 cpu-used=5 deadline=1000000 threads=%T ! queue ! webmmux"
+#define DEFAULT_PIPELINE "vp9enc min_quantizer=13 max_quantizer=13 cpu-used=5 deadline=1000000 threads=%T ! queue ! webmmux"
 
 /* The default filename pattern. Example cinnamon-20090311b-2.webm
  */
@@ -1663,7 +1663,7 @@ cinnamon_recorder_set_filename (CinnamonRecorder *recorder,
  * might be used to send the output to an icecast server
  * via shout2send or similar.
  *
- * The default value is 'vp8enc min_quantizer=13 max_quantizer=13 cpu-used=5 deadline=1000000 threads=%T ! queue ! webmmux'
+ * The default value is 'vp9enc min_quantizer=13 max_quantizer=13 cpu-used=5 deadline=1000000 threads=%T ! queue ! webmmux'
  */
 void
 cinnamon_recorder_set_pipeline (CinnamonRecorder *recorder,
