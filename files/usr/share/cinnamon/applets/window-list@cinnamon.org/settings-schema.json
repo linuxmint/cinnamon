@@ -16,7 +16,8 @@
   "reverse-scrolling" : {
       "type" : "switch",
       "default" : false,
-      "description" : "Reverse the direction of mouse-wheel scrolling in the window list"
+      "description" : "Reverse the direction of mouse-wheel scrolling in the window list",
+      "dependency" : "enable-scrolling"
   },
   "middle-click-close": {
       "type": "switch",
