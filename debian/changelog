@@ -1,3 +1,62 @@
+cinnamon (3.4.1) sonya; urgency=medium
+
+  [ Clement Lefebvre ]
+  * Remove usage of GTK_POLICY_EXTERNAL
+
+  [ Stephen Collins ]
+  * checkBox.js: remove extra unused argument which was causing a warning with new cjs/mozjs
+
+  [ Michael Webster ]
+  * st-bin.c: Fix y_fill setter (it was setting x_fill to the value of the existing y_fill, before it is set in the same call).
+  * menu applet: fix keyboard navigation of recent context menu.  Fix closing of same menu when switching to another category.  Also fix closing when opening another recent's context menu.
+  * menu applet: notify when a recent file is activated that can't be accessed.
+  * menu applet: make missing file notification transient.
+  * menu applet (vector box): partially revert c0d37dd79d68c97 - there is flickering as events go from a button to the vector box and back.  Remove the idle callback, and directly react to the enter even once more.  To compensate, increase our maybeUpdateVectorBox delay timeout, which more or less fixes the original problem the above commit was attempting to fix.
+  * menu applet: _select_category - only call displayButtons if the category has really changed.
+  * menu applet: fix keyboard navigation when a second recent context menu is toggled open.
+
+  [ Clement Lefebvre ]
+  * Sound settings: Fix device icons
+
+  [ Stephen Collins ]
+  * xlet-settings.py: ignore files and directories in the config directory that aren't created by our settings api as well as instances that no longer exist
+  * ExtensionCore.py: Don't scrub the config directory on load. This is no longer necessary since xlet settings now ignores anything that isn't an active instance, and some applets need a place to store extra files so they get cleaned up on uninstall.
+  * cs_panel.py: Fix crash when there are no panels
+
+  [ itzexor ]
+  * sound-applet: remove extraneous arguments on add_actor calls
+
+  [ Michael Webster ]
+  * radioButton.js: remove extra argument to add_actor.
+
+  [ itzexor ]
+  * window-list-applet: fix undefined reference warning
+
+  [ Odyseus ]
+  * [cinnamon-json-makepot] Added support to extract "title" and "units" keys on list elements
+
+  [ Michael Webster ]
+  * debian/control: use correct runtime dependency on caribou introspection only.
+
+  [ Clement Lefebvre ]
+  * User applet: Remove ability to switch to guest with LightDM
+
+  [ JosephMcc ]
+  * runDialog.js: Fix undefined variable warning (#6539)
+
+  [ Clement Lefebvre ]
+  * Reorganize the default applets in the panel
+  * User applet: Remove trailing spaces
+  * Applets: Make TextIconApplet smarter and adapt to vertical panels.
+
+  [ Michael Webster ]
+  * menu applet: use _select_category to select recents and places, so we can cache the current selection more accurately and prevent needless calls to _displayButtons.
+
+  [ Stephen Collins ]
+  * window list: add missing dependency to settings (#6551)
+
+ -- Clement Lefebvre <root@linuxmint.com>  Tue, 23 May 2017 15:44:25 +0100
+
 cinnamon (3.4.0) sonya; urgency=medium
 
   [ Lars Mueller ]
