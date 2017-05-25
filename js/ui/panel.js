@@ -1574,7 +1574,7 @@ function populateSettingsMenu(menu, panelId) {
     });
 
     menu.troubleshootItem.menu.addAction(_("Restore all settings to default"), function(event) {
-        let confirm = new ModalDialog.ConfirmDialog("Are you sure you want to restore all settings to default?\n\n",
+        let confirm = new ModalDialog.ConfirmDialog(_("Are you sure you want to restore all settings to default?\n\n"),
                 function() {
                     Util.spawnCommandLine("gsettings reset-recursively org.cinnamon");
                     global.reexec_self();
