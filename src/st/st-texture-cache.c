@@ -121,6 +121,8 @@ st_texture_cache_evict_icons (StTextureCache *cache)
   gpointer key;
   gpointer value;
 
+  g_debug ("%s: Pre-evict count: %d\n", G_STRFUNC, g_hash_table_size (cache->priv->keyed_cache));
+
   g_hash_table_iter_init (&iter, cache->priv->keyed_cache);
   while (g_hash_table_iter_next (&iter, &key, &value))
     {
@@ -133,6 +135,8 @@ st_texture_cache_evict_icons (StTextureCache *cache)
       if (g_str_has_prefix (cache_key, CACHE_PREFIX_ICON))
         g_hash_table_iter_remove (&iter);
     }
+
+  g_debug ("%s: Post-evict count: %d\n", G_STRFUNC, g_hash_table_size (cache->priv->keyed_cache));
 }
 
 static void
@@ -1858,29 +1862,11 @@ st_texture_cache_load_from_raw (StTextureCache    *cache,
 {
   ClutterTexture *texture;
   CoglTexture *texdata;
-  char *key;
-  char *checksum;
 
   texture = create_default_texture ();
   clutter_actor_set_size (CLUTTER_ACTOR (texture), size, size);
 
-  /* In theory, two images of with different width and height could have the same
-   * pixel data and thus hash the same. (Say, a 16x16 and a 8x32 blank image.)
-   * We ignore this for now. If anybody hits this problem they should use
-   * GChecksum directly to compute a checksum including the width and height.
-   */
-  checksum = g_compute_checksum_for_data (G_CHECKSUM_SHA1, data, len);
-  key = g_strdup_printf (CACHE_PREFIX_RAW_CHECKSUM "checksum=%s", checksum);
-  g_free (checksum);
-
-  texdata = g_hash_table_lookup (cache->priv->keyed_cache, key);
-  if (texdata == NULL)
-    {
-      texdata = data_to_cogl_texture (data, has_alpha, width, height, rowstride, TRUE);
-      g_hash_table_insert (cache->priv->keyed_cache, g_strdup (key), texdata);
-    }
-
-  g_free (key);
+  texdata = data_to_cogl_texture (data, has_alpha, width, height, rowstride, TRUE);
 
   set_texture_cogl_texture (texture, texdata);
   return CLUTTER_ACTOR (texture);
