@@ -433,8 +433,11 @@ Overview.prototype = {
     _hideDone: function() {
         this._group.remove_actor(this._coverPane);
         this._coverPane.destroy();
+        this._coverPane = null;
+
         global.overlay_group.remove_actor(this._background);
         this._background.destroy();
+        this._background = null;
 
         // Re-enable unredirection
         Meta.enable_unredirect_for_screen(global.screen);

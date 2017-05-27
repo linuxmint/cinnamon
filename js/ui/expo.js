@@ -472,10 +472,14 @@ Expo.prototype = {
             this._animateVisible();
 
         this._syncInputMode();
+
         global.overlay_group.remove_actor(this._group);
         this._group.destroy();
+        this._group = null;
+
         global.overlay_group.remove_actor(this._background);
         this._background.destroy();
+        this._background = null;
 
         Main.layoutManager._chrome.updateRegions();
     }
