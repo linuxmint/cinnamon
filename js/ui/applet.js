@@ -35,9 +35,16 @@ const AllowedLayout = {  // the panel layout that an applet is suitable for
  * @short_description: Deprecated. Use #PopupMenu.PopupIconMenuItem instead.
  */
 function MenuItem(label, icon, callback) {
-    this.__proto__ = PopupMenu.PopupIconMenuItem.prototype;
-    PopupMenu.PopupIconMenuItem.prototype._init.call(this, label, icon, St.IconType.SYMBOLIC);
-    this.connect('activate', callback);
+    this._init(label, icon, callback);
+}
+
+MenuItem.prototype = {
+    __proto__ : PopupMenu.PopupIconMenuItem.prototype,
+
+    _init: function(label, icon, callback) {
+        PopupMenu.PopupIconMenuItem.prototype._init.call(this, label, icon, St.IconType.SYMBOLIC);
+        this.connect('activate', callback);
+    }
 }
 
 /**

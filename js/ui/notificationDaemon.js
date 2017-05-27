@@ -457,7 +457,7 @@ NotificationDaemon.prototype = {
         }
 
         if (actions.length) {
-            notification.setUseActionIcons(hints['action-icons'] == true);
+            notification.setUseActionIcons(hints.maybeGet('action-icons') == true);
             for (let i = 0; i < actions.length - 1; i += 2) {
                 if (actions[i] == 'default')
                     notification.connect('clicked', Lang.bind(this,
