@@ -309,6 +309,14 @@ class CinnamonSlideshow(dbus.service.Object):
 
 if __name__ == "__main__":
     DBusGMainLoop(set_as_default=True)
-    slideshow = CinnamonSlideshow()
+
+    sessionBus = dbus.SessionBus ()
+    request = sessionBus.request_name(SLIDESHOW_DBUS_NAME, dbus.bus.NAME_FLAG_DO_NOT_QUEUE)
+    if request != dbus.bus.REQUEST_NAME_REPLY_EXISTS:
+        slideshow = CinnamonSlideshow()
+    else:
+        print "cinnamon-slideshow already running."
+        quit()
+
     ml = GLib.MainLoop.new(None, True)
     ml.run()
