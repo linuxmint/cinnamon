@@ -1542,7 +1542,17 @@ do_margin_property (StThemeNode   *node,
         return;
       else if (decl->value->next == NULL) /* 1 value */
         {
-          do_margin_property_term (node, decl->value, TRUE, TRUE, TRUE, TRUE); /* left/right/top/bottom */
+        /* FIXME avoid margin:auto spraying warning messages around. Need to review whether it
+         * should be implemented here.  For the time being just suppress the message
+         */
+          if (decl->value->type == TERM_IDENT && strcmp (decl->value->content.str->stryng->str, "auto") == 0)
+            {
+               ;
+            }
+          else
+            {
+              do_margin_property_term (node, decl->value, TRUE, TRUE, TRUE, TRUE); /* left/right/top/bottom */
+            }
           return;
         }
       else if (decl->value->next->next == NULL) /* 2 values */
