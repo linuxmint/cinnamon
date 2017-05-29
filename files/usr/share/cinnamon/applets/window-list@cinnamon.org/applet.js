@@ -1030,35 +1030,28 @@ MyApplet.prototype = {
             this.actor.set_important(true);
         }
 
-        // Any padding/margin is removed on one side so that the AppMenuButton
-        // boxes butt up against the edge of the screen
-
         if (orientation == St.Side.TOP) {
             for (let child of this.manager_container.get_children()) {
-                child.set_style_class_name('window-list-item-box top');
-                child.set_style('margin-top: 0px; padding-top: 0px;');
+                child.set_style_class_name('window-list-item-box panel-top');
+                child.add_style_class_name('window-list-item-box top'); /* for compatibility */
             }
-            this.actor.set_style('margin-top: 0px; padding-top: 0px;');
         } else if (orientation == St.Side.BOTTOM) {
             for (let child of this.manager_container.get_children()) {
-                child.set_style_class_name('window-list-item-box bottom');
-                child.set_style('margin-bottom: 0px; padding-bottom: 0px;');
+                child.set_style_class_name('window-list-item-box panel-bottom');
+                child.add_style_class_name('window-list-item-box bottom');
             }
-            this.actor.set_style('margin-bottom: 0px; padding-bottom: 0px;');
         } else if (orientation == St.Side.LEFT) {
             for (let child of this.manager_container.get_children()) {
-                child.set_style_class_name('window-list-item-box left');
-                child.set_style('margin-left 0px; padding-left: 0px; padding-right: 0px; margin-right: 0px;');
+                child.set_style_class_name('window-list-item-box panel-left');
+                child.add_style_class_name('window-list-item-box left');
                 child.set_x_align(Clutter.ActorAlign.CENTER);
             }
-            this.actor.set_style('margin-left: 0px; padding-left: 0px; padding-right: 0px; margin-right: 0px;');
         } else if (orientation == St.Side.RIGHT) {
             for (let child of this.manager_container.get_children()) {
-                child.set_style_class_name('window-list-item-box right');
-                child.set_style('margin-left: 0px; padding-left: 0px; padding-right: 0px; margin-right: 0px;');
+                child.set_style_class_name('window-list-item-box panel-right');
+                child.add_style_class_name('window-list-item-box right');
                 child.set_x_align(Clutter.ActorAlign.CENTER);
             }
-            this.actor.set_style('margin-right: 0px; padding-right: 0px; padding-left: 0px; margin-left: 0px;');
         }
 
         if (this.appletEnabled) {
