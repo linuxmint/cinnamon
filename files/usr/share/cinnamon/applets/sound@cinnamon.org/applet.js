@@ -970,6 +970,7 @@ MyApplet.prototype = {
 
             this._showFixedElements();
             this.set_show_label_in_vertical_panels(false);
+            this.set_applet_label(this._applet_label.get_text());
 
             let appsys = Cinnamon.AppSystem.get_default();
             appsys.connect("installed-changed", Lang.bind(this, this._updateLaunchPlayer));
