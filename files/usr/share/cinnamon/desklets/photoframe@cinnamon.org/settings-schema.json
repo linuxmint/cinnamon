@@ -1,6 +1,6 @@
 {
     "directory": {
-        "default": "~/Pictures", 
+        "default": " ", 
         "type": "filechooser", 
         "description" : "Folder",
         "allow-none" : false,
