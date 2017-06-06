@@ -543,6 +543,7 @@ class Spice_Harvester:
         self.progress_window.show()
         self.progresslabel.set_text(_("Installing %s...") % (title))
         self.progressbar.set_fraction(0)
+        self.progressbar.set_text('0%')
 
     def uninstall(self, uuid, name, schema_filename, onFinished=None):
         ui_thread_do(self.ui_uninstalling_xlet, name)
