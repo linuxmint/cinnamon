@@ -503,7 +503,7 @@ class Switch(SettingsWidget):
     def __init__(self, label, dep_key=None, tooltip=""):
         super(Switch, self).__init__(dep_key=dep_key)
 
-        self.content_widget = Gtk.Switch()
+        self.content_widget = Gtk.Switch(valign=Gtk.Align.CENTER)
         self.label = SettingsLabel(label)
         self.pack_start(self.label, False, False, 0)
         self.pack_end(self.content_widget, False, False, 0)
