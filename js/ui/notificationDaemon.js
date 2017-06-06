@@ -255,10 +255,14 @@ NotificationDaemon.prototype = {
          this._startExpire();
     },
     _expireNotification: function() {
-         let ndata = this._expireNotifications[0];
-         ndata.notification.destroy(MessageTray.NotificationDestroyedReason.EXPIRED);
-         this._expireTimer = 0;
-         return false;
+        let ndata = this._expireNotifications[0];
+
+        if (ndata) {
+            ndata.notification.destroy(MessageTray.NotificationDestroyedReason.EXPIRED);
+        }
+
+        this._expireTimer = 0;
+        return false;
     },
  
     // Sends a notification to the notification daemon. Returns the id allocated to the notification.
