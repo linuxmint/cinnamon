@@ -106,15 +106,23 @@ class Module:
 
     def update_preview_cb (self, dialog, preview):
         filename = dialog.get_preview_filename()
-        dialog.set_preview_widget_active(False)
-        if filename is not None and os.path.isfile(filename):
-            try:
-                pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(filename, 128, 128)
-                if pixbuf is not None:
-                    preview.set_from_pixbuf (pixbuf)
-                    dialog.set_preview_widget_active(True)
-            except:
-                pass
+        if filename is not None:
+            if os.path.isfile(filename):
+                try:
+                    pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(filename, 128, -1)
+                    if pixbuf is not None:
+                        if pixbuf.get_height() > 128:
+                            pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(filename, -1, 128)
+
+                        if pixbuf is not None:
+                            preview.set_from_pixbuf(pixbuf)
+                            self.frame.show()
+                            return
+                except GLib.Error as e:
+                    print("Unable to generate preview for file '%s' - %s\n" % (filename, e.message))
+
+        preview.clear()
+        self.frame.hide()
 
     def _on_face_photo_menuitem_activated(self, menuitem):
 
@@ -163,10 +171,21 @@ class Module:
         filter.add_mime_type("image/*")
         dialog.add_filter(filter)
 
-        preview = Gtk.Image()
-        dialog.set_preview_widget(preview);
-        dialog.connect("update-preview", self.update_preview_cb, preview)
+        box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
+        self.frame = Gtk.Frame(visible=False, no_show_all=True)
+        preview = Gtk.Image(visible=True)
+
+        box.pack_start(self.frame, False, False, 0)
+        self.frame.add(preview)
+        dialog.set_preview_widget(box)
+        dialog.set_preview_widget_active(True)
         dialog.set_use_preview_label(False)
+
+        box.set_margin_end(12)
+        box.set_margin_top(12)
+        box.set_size_request(128, -1)
+
+        dialog.connect("update-preview", self.update_preview_cb, preview)
 
         response = dialog.run()
         if response == Gtk.ResponseType.OK:
