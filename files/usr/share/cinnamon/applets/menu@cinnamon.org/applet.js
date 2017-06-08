@@ -2265,6 +2265,11 @@ MyApplet.prototype = {
 
         this._recalc_height();
         this._resizeApplicationsBox();
+
+        this._setCategoriesButtonActive(true);
+        this._select_category(null, this._allAppsCategoryButton);
+        this._allAppsCategoryButton.actor.style_class = "menu-category-button-selected";
+        this._activeContainer = null;
     },
 
     _refreshRecent : function() {
@@ -2488,6 +2493,11 @@ MyApplet.prototype = {
 
         this._recalc_height();
         this._resizeApplicationsBox();
+
+        this._setCategoriesButtonActive(true);
+        this._select_category(null, this._allAppsCategoryButton);
+        this._allAppsCategoryButton.actor.style_class = "menu-category-button-selected";
+        this._activeContainer = null;
     },
 
     _refreshApps : function() {
