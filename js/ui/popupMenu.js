@@ -765,13 +765,16 @@ PopupSliderMenuItem.prototype = {
     },
 
     _moveHandle: function(absX, absY) {
-        let relX, relY, sliderX, sliderY;
-        [sliderX, sliderY] = this._slider.get_transformed_position();
-        relX = absX - sliderX;
-        relY = absY - sliderY;
+        let relX, sliderX, sliderY;
 
-        let width = this._slider.width;
-        let handleRadius = this._slider.get_theme_node().get_length('-slider-handle-radius');
+        let themeNode = this._slider.get_theme_node();
+        let handleRadius = themeNode.get_length('-slider-handle-radius');
+        let paddingLeft = themeNode.get_length('padding-left');
+        let paddingRight = themeNode.get_length('padding-right');
+        let width = this._slider.width - 2*paddingLeft - paddingRight;
+
+        [sliderX, sliderY] = this._slider.get_transformed_position();
+        relX = absX - (sliderX + paddingLeft);
 
         let newvalue;
         if (relX < handleRadius)
