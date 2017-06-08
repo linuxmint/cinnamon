@@ -76,17 +76,24 @@ class BaseChooserButton(Gtk.Button):
             self.menu.popup(None, None, self.popup_menu_below_button, self, event.button, event.time)
 
 class PictureChooserButton(BaseChooserButton):
-    def __init__ (self, num_cols=4, button_picture_size=None, menu_pictures_size=None, has_button_label=False):
+    def __init__ (self, num_cols=4, button_picture_size=24, menu_pictures_size=24, has_button_label=False, keep_square=False):
         super(PictureChooserButton, self).__init__(has_button_label)
         self.num_cols = num_cols
         self.button_picture_size = button_picture_size
         self.menu_pictures_size = menu_pictures_size
+        self.keep_square = keep_square
         self.row = 0
         self.col = 0
         self.progress = 0.0
 
         context = self.get_style_context()
         context.add_class("gtkstyle-fallback")
+
+        self.button_image.set_valign(Gtk.Align.CENTER)
+        if self.keep_square:
+            self.button_image.set_size_request(button_picture_size, button_picture_size)
+        else:
+            self.button_image.set_size_request(-1, button_picture_size)
 
         self.connect_after("draw", self.on_draw)
 
@@ -124,12 +131,41 @@ class PictureChooserButton(BaseChooserButton):
         self.queue_draw()
 
     def set_picture_from_file (self, path):
+        pixbuf = None
+        message = ""
+
         if os.path.exists(path):
-            if self.button_picture_size is None:
+            try:
                 pixbuf = GdkPixbuf.Pixbuf.new_from_file(path)
-            else:
-                pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_scale(path, -1, self.button_picture_size, True)
+            except GLib.Error as e:
+                message = "Could not load pixbuf from '%s': %s" % (path, e.message)
+                error = True
+
+            if pixbuf != None:
+                h = pixbuf.get_height()
+                w = pixbuf.get_width()
+
+                if (self.keep_square and (h > self.button_picture_size or w > self.button_picture_size)):
+                    try:
+                        if h > w:
+                            pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(path, -1, self.button_picture_size)
+                        else:
+                            pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(path, self.button_picture_size, -1)
+                    except GLib.Error as e:
+                        message = "Could not scale pixbuf from '%s': %s" % (path, e.message)
+                        error = True
+                elif h > self.button_picture_size:
+                    try:
+                        pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(path, -1, self.button_picture_size)
+                    except GLib.Error as e:
+                        message = "Could not scale pixbuf from '%s': %s" % (path, e.message)
+                        error = True
+
+        if pixbuf:
             self.button_image.set_from_pixbuf(pixbuf)
+        else:
+            print message
+            self.button_image.set_from_file("/usr/share/cinnamon/faces/user-generic.png")
 
     def set_button_label(self, label):
         self.button_label.set_markup(label)

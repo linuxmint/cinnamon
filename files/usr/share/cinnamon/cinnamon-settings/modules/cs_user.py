@@ -38,7 +38,7 @@ class Module:
 
             settings = page.add_section(_("Account details"))
 
-            self.face_button = PictureChooserButton(num_cols=4, button_picture_size=64, menu_pictures_size=64)
+            self.face_button = PictureChooserButton(num_cols=4, button_picture_size=64, menu_pictures_size=64, keep_square=True)
             self.face_button.set_alignment(0.0, 0.5)
             self.face_button.set_tooltip_text(_("Click to change your picture"))
 
@@ -172,21 +172,6 @@ class Module:
         if response == Gtk.ResponseType.OK:
             path = dialog.get_filename()
             image = PIL.Image.open(path)
-            width, height = image.size
-            if width > height:
-                new_width = height
-                new_height = height
-            elif height > width:
-                new_width = width
-                new_height = width
-            else:
-                new_width = width
-                new_height = height
-            left = (width - new_width)/2
-            top = (height - new_height)/2
-            right = (width + new_width)/2
-            bottom = (height + new_height)/2
-            image = image.crop((left, top, right, bottom))
             image.thumbnail((255, 255), PIL.Image.ANTIALIAS)
             face_path = os.path.join(self.accountService.get_home_dir(), ".face")
             image.save(face_path, "png")
