@@ -15,7 +15,7 @@ from PIL import Image
 import gi
 gi.require_version("Gtk", "3.0")
 gi.require_version("AccountsService", "1.0")
-from gi.repository import Gtk, GObject, Gio, GdkPixbuf, AccountsService
+from gi.repository import Gtk, GObject, Gio, GdkPixbuf, AccountsService, GLib
 
 gettext.install("cinnamon", "/usr/share/locale")
 
@@ -480,6 +480,7 @@ class Module:
 
             self.face_button = Gtk.Button()
             self.face_image = Gtk.Image()
+            self.face_image.set_size_request(96, 96)
             self.face_button.set_image(self.face_image)
             self.face_image.set_from_file("/usr/share/cinnamon/faces/user-generic.png")
             self.face_button.set_alignment(0.0, 0.5)
@@ -749,8 +750,29 @@ class Module:
             else:
                 self.account_type_combo.set_active(0)
 
-            if os.path.exists(user.get_icon_file()):
-                self.face_image.set_from_file(user.get_icon_file())
+            pixbuf = None
+            path = user.get_icon_file()
+
+            if os.path.exists(path):
+                try:
+                    pixbuf = GdkPixbuf.Pixbuf.new_from_file(path)
+                except GLib.Error as e:
+                    message = "Could not load pixbuf from '%s': %s" % (path, e.message)
+                    error = True
+
+                if pixbuf != None:
+                    if pixbuf.get_height() > 96 or pixbuf.get_width() > 96:
+                        try:
+                            if pixbuf.get_height() > pixbuf.get_width():
+                                pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(path, -1, 96)
+                            else:
+                                pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(path, 96, -1)
+                        except GLib.Error as e:
+                            message = "Could not scale pixbuf from '%s': %s" % (path, e.message)
+                            error = True
+
+            if pixbuf:
+                self.face_image.set_from_pixbuf(pixbuf)
             else:
                 self.face_image.set_from_file("/usr/share/cinnamon/faces/user-generic.png")
 
