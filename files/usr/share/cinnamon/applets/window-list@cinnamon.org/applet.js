@@ -764,6 +764,26 @@ AppMenuButtonRightClickMenu.prototype = {
         let mw = this.metaWindow;
         let item;
         let length;
+        
+        // Applet preferences
+        let subMenu = new PopupMenu.PopupSubMenuMenuItem(_("Preferences"));
+        this.addMenuItem(subMenu);
+
+        item = new PopupMenu.PopupIconMenuItem(_("About..."), "dialog-question", St.IconType.SYMBOLIC);
+        item.connect('activate', Lang.bind(this._launcher._applet, this._launcher._applet.openAbout));
+        subMenu.menu.addMenuItem(item);
+
+        item = new PopupMenu.PopupIconMenuItem(_("Configure..."), "system-run", St.IconType.SYMBOLIC);
+        item.connect('activate', Lang.bind(this._launcher._applet, this._launcher._applet.configureApplet));
+        subMenu.menu.addMenuItem(item);
+
+        item = new PopupMenu.PopupIconMenuItem(_("Remove 'Window list'"), "edit-delete", St.IconType.SYMBOLIC);
+        item.connect('activate', Lang.bind(this, function() {
+            AppletManager._removeAppletFromPanel(this._launcher._applet._uuid, this._launcher._applet.instance_id);
+        }));
+        subMenu.menu.addMenuItem(item);
+        
+        this.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
 
         // Move to monitor
         if ((length = Main.layoutManager.monitors.length) == 2) {
