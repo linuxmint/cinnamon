@@ -86,12 +86,15 @@ WindowPreview.prototype = {
         Tooltips.TooltipBase.prototype._init.call(this, item.actor);
         this._applet = item._applet;
 
+// FIXME: there is quite a bit of hardcoding in this part of the code, would benefit from setting up separate CSS
+// and getting rid of the hard-coding.
+
         this.actor = new St.Bin({style_class: "switcher-list", style: "margin: 0px; padding: 8px;"});
         this.actor.show_on_set_parent = false;
 
         this.scaleFactor = St.ThemeContext.get_for_stage(global.stage).scale_factor;
 
-        this.actor.set_size(WINDOW_PREVIEW_WIDTH * 1.3 * this.scaleFactor, WINDOW_PREVIEW_HEIGHT * 1.3 * this.scaleFactor);
+        this.actor.set_size(WINDOW_PREVIEW_WIDTH * 1.2 * this.scaleFactor, WINDOW_PREVIEW_HEIGHT * 1.2 * this.scaleFactor);
         Main.uiGroup.add_actor(this.actor);
 
         this.metaWindow = metaWindow;
@@ -111,7 +114,6 @@ WindowPreview.prototype = {
         this.label = new St.Label();
         this.label.style = "padding: 2px;";
         hbox.add_actor(this.label);
-
         box.add_actor(hbox);
 
         this.thumbnailBin = new St.Bin();
@@ -141,7 +143,9 @@ WindowPreview.prototype = {
         this.muffinWindow = this.metaWindow.get_compositor_private();
         let windowTexture = this.muffinWindow.get_texture();
         let [width, height] = windowTexture.get_size();
-        let scale = Math.min(1.0, WINDOW_PREVIEW_WIDTH / width, WINDOW_PREVIEW_HEIGHT / height);
+        // the 18 is 16 for the icon size + 2px min padding
+        // this is not foolproof - the font used might be large enough to make the label bigger than the icon
+        let scale = Math.min(1.0, WINDOW_PREVIEW_WIDTH / width, (WINDOW_PREVIEW_HEIGHT-18) / height);
 
         if (this.thumbnail) {
             this.thumbnailBin.set_child(null);
@@ -156,7 +160,7 @@ WindowPreview.prototype = {
 
         this._setSize = function() {
             [width, height] = windowTexture.get_size();
-            scale = Math.min(1.0, WINDOW_PREVIEW_WIDTH / width, WINDOW_PREVIEW_HEIGHT / height);
+            scale = Math.min(1.0, WINDOW_PREVIEW_WIDTH / width, (WINDOW_PREVIEW_HEIGHT-18) / height);
             this.thumbnail.set_size(width * scale * this.scaleFactor, height * scale * this.scaleFactor);
         };
         this._sizeChangedId = this.muffinWindow.connect('size-changed',
