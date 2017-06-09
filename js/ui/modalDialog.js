@@ -451,22 +451,23 @@ SpicesAboutDialog.prototype = {
         this.uuid = metadata.uuid;
 
         let contentBox = new St.BoxLayout({vertical: true, style_class: "about-content" });
+        contentBox.set_style("text-align: center");
         this.contentLayout.add_actor(contentBox);
 
-        let topBox = new St.BoxLayout();
+        let topBox = new St.BoxLayout({vertical: true});
         contentBox.add_actor(topBox);
 
         //icon
         let icon;
         if (metadata.icon) {
-            icon = new St.Icon({icon_name: metadata.icon, icon_size: 48, icon_type: St.IconType.FULLCOLOR, style_class: "about-icon"});
+            icon = new St.Icon({icon_name: metadata.icon, icon_size: 48, icon_type: St.IconType.FULLCOLOR});
         } else {
             let file = Gio.file_new_for_path(metadata.path + "/icon.png");
             if (file.query_exists(null)) {
                 let gicon = new Gio.FileIcon({file: file});
-                icon = new St.Icon({gicon: gicon, icon_size: 48, icon_type: St.IconType.FULLCOLOR, style_class: "about-icon"});
+                icon = new St.Icon({gicon: gicon, icon_size: 48, icon_type: St.IconType.FULLCOLOR});
             } else {
-                icon = new St.Icon({icon_name: "cs-"+type, icon_size: 48, icon_type: St.IconType.FULLCOLOR, style_class: "about-icon"});
+                icon = new St.Icon({icon_name: "cs-"+type, icon_size: 48, icon_type: St.IconType.FULLCOLOR});
             }
         }
         topBox.add_actor(icon);
@@ -475,19 +476,8 @@ SpicesAboutDialog.prototype = {
         topBox.add_actor(topTextBox);
 
         /*title*/
-        let titleBox = new St.BoxLayout();
-        topTextBox.add_actor(titleBox);
-
         let title = new St.Label({text: this._(metadata.name), style_class: "about-title"});
-        titleBox.add_actor(title);
-
-        //version
-        if (!('last-edited' in metadata) && metadata.version) {
-            let versionBin = new St.Bin({x_align: St.Align.START, y_align: St.Align.END});
-            titleBox.add_actor(versionBin);
-            let version = new St.Label({text: " v%s".format(metadata.version), style_class: "about-version"});
-            versionBin.add_actor(version);
-        }
+        topTextBox.add_actor(title);
 
         //uuid
         let uuid = new St.Label({text: metadata.uuid, style_class: "about-uuid"});
@@ -503,6 +493,12 @@ SpicesAboutDialog.prototype = {
 
             let lastEdited = new St.Label({text: dateUTC + "\n", style_class: "about-uuid"});
             topTextBox.add_actor(lastEdited);
+        } else {
+            //version
+            if (metadata.version) {
+                let version = new St.Label({text: "v%s".format(metadata.version), style_class: "about-uuid"});
+                topTextBox.add_actor(version);
+            }
         }
 
         //description
@@ -538,7 +534,7 @@ SpicesAboutDialog.prototype = {
                 let wLabel = new St.Label({text: _("Website:")});
                 wsBox.add_actor(wLabel);
 
-                let wsButton = new St.Button({x_align: St.Align.START, style_class: "cinnamon-link", name: "about-website"});
+                let wsButton = new St.Button({style_class: "cinnamon-link", name: "about-website"});
                 wsBox.add_actor(wsButton);
                 let website = new St.Label({text: metadata.website});
                 let wtext = website.clutter_text;
@@ -558,9 +554,9 @@ SpicesAboutDialog.prototype = {
                     list = list.split(",");
 
                 // trim whitespaces, try to translate each item and glue all together
-                list = list.map(String.trim).map(this._, this).join("\n\t");
+                list = list.map(String.trim).map(this._, this).join("\n");
 
-                let contributors = new St.Label({text: _("Contributors:") + "\n\t" + list});
+                let contributors = new St.Label({text: _("Contributors:") + "\n" + list});
                 infoBox.add_actor(contributors);
             }
         }
