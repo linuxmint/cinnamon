@@ -164,7 +164,7 @@ class PictureChooserButton(BaseChooserButton):
         if pixbuf:
             self.button_image.set_from_pixbuf(pixbuf)
         else:
-            print message
+            print(message)
             self.button_image.set_from_file("/usr/share/cinnamon/faces/user-generic.png")
 
     def set_button_label(self, label):
