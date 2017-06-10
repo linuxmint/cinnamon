@@ -21,7 +21,7 @@ MyDesklet.prototype = {
 
 
         this.metadata = metadata
-        this.update_id = null;
+        this.update_id = 0;
 
         try {
             this.settings = new Settings.DeskletSettings(this, this.metadata["uuid"], this.instance_id);
@@ -36,10 +36,9 @@ MyDesklet.prototype = {
             global.logError(e);
         }
 
-        this.dir_monitor_id = null;
+        this.dir_monitor_id = 0;
         this.dir_monitor = null;
         this.dir_file = null;
-
 
         this.setHeader(_("Photo Frame"));
         this._setup_dir_monitor();
@@ -47,9 +46,9 @@ MyDesklet.prototype = {
     },
 
     on_setting_changed: function() {
-        if (this.update_id > 0)
+        if (this.update_id != 0)
             Mainloop.source_remove(this.update_id);
-        this.update_id = null;
+        this.update_id = 0;
         this._setup_dir_monitor();
         if (this.currentPicture)
             this.currentPicture.destroy();
@@ -58,13 +57,27 @@ MyDesklet.prototype = {
     },
 
     _setup_dir_monitor: function() {
-        if (this.dir_monitor_id && this.dir_monitor) {
+        if ((this.dir_monitor_id != 0) && (this.dir_monitor)) {
             this.dir_monitor.disconnect(this.dir_monitor_id)
-            this.dir_monitor_id = null
+            this.dir_monitor_id = 0;
         }
-        this.dir = this.dir.replace('~', GLib.get_home_dir())
-        this.dir_file =  Gio.file_new_for_path(this.dir);
-        this.dir_monitor = this.dir_file.monitor_directory(0, null, null);
+
+        /* The widget used to choose the folder the images are drawn from
+           was changed to use a URI instead of a path. This check is just
+           to ensure that people upgrading cinnamon versions will get the
+           existing path converted to a proper URI */
+        if (this.dir.indexOf("://") === -1) {
+            let file = Gio.file_new_for_path(this.dir);
+            this.dir = file.get_uri()
+        }
+
+        if (this.dir === " ") {
+            let file = Gio.file_new_for_path(GLib.get_user_special_dir(GLib.UserDirectory.DIRECTORY_PICTURES));
+            this.dir = file.get_uri();
+        }
+
+        this.dir_file = Gio.file_new_for_uri(this.dir);
+        this.dir_monitor = this.dir_file.monitor_directory(0, null);
         this.dir_monitor_id = this.dir_monitor.connect('changed', Lang.bind(this, this.on_setting_changed));
     },
 
@@ -81,7 +94,7 @@ MyDesklet.prototype = {
     },
 
     _scan_dir: function(dir) {
-        let dir_file = Gio.file_new_for_path(dir);
+        let dir_file = Gio.file_new_for_uri(dir);
         let fileEnum = dir_file.enumerate_children('standard::type,standard::name', Gio.FileQueryInfoFlags.NONE, null);
 
         let info;
@@ -232,10 +245,7 @@ MyDesklet.prototype = {
 
     _loadImage: function(filePath) {
         try {
-            let file = Gio.file_new_for_path(filePath);
-            let uri = file.get_uri();
-
-            let image = St.TextureCache.get_default().load_uri_async(uri, this.width, this.height);
+            let image = St.TextureCache.get_default().load_uri_async(filePath, this.width, this.height);
 
             image._notif_id = image.connect("notify::size", Lang.bind(this, this._size_pic));
 
