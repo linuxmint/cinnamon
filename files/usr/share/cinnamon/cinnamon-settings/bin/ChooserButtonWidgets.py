@@ -147,10 +147,7 @@ class PictureChooserButton(BaseChooserButton):
 
                 if (self.keep_square and (h > self.button_picture_size or w > self.button_picture_size)):
                     try:
-                        if h > w:
-                            pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(path, -1, self.button_picture_size)
-                        else:
-                            pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(path, self.button_picture_size, -1)
+                        pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(path, self.button_picture_size, self.button_picture_size)
                     except GLib.Error as e:
                         message = "Could not scale pixbuf from '%s': %s" % (path, e.message)
                         error = True

@@ -109,15 +109,11 @@ class Module:
         if filename is not None:
             if os.path.isfile(filename):
                 try:
-                    pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(filename, 128, -1)
+                    pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(filename, 128, 128)
                     if pixbuf is not None:
-                        if pixbuf.get_height() > 128:
-                            pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(filename, -1, 128)
-
-                        if pixbuf is not None:
-                            preview.set_from_pixbuf(pixbuf)
-                            self.frame.show()
-                            return
+                        preview.set_from_pixbuf(pixbuf)
+                        self.frame.show()
+                        return
                 except GLib.Error as e:
                     print("Unable to generate preview for file '%s' - %s\n" % (filename, e.message))
 
