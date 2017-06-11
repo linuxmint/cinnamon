@@ -257,6 +257,8 @@ calculate_and_scroll (ClutterActor  *self,
                     "value", &vvalue,
                     NULL);
     st_adjustment_set_value (priv->vadjustment, vvalue + delta);
+
+    clutter_actor_queue_redraw (self);
 }
 
 static void
@@ -374,9 +376,6 @@ static void
 st_scroll_view_dispose (GObject *object)
 {
   StScrollViewPrivate *priv = ST_SCROLL_VIEW (object)->priv;
-
-  g_signal_handlers_disconnect_by_func (priv->hadjustment, clutter_actor_queue_redraw, object);
-  g_signal_handlers_disconnect_by_func (priv->vadjustment, clutter_actor_queue_redraw, object);
 
   if (priv->vfade_effect)
     {
@@ -896,6 +895,8 @@ st_scroll_view_scroll_event (ClutterActor       *self,
       break;
     }
 
+  clutter_actor_queue_redraw (self);
+
   return TRUE;
 }
 
@@ -1011,16 +1012,6 @@ st_scroll_view_init (StScrollView *self)
 
   clutter_actor_add_child (CLUTTER_ACTOR (self), priv->hscroll);
   clutter_actor_add_child (CLUTTER_ACTOR (self), priv->vscroll);
-
-  g_signal_connect_swapped (priv->hadjustment,
-                            "changed",
-                            G_CALLBACK (clutter_actor_queue_redraw),
-                            CLUTTER_ACTOR (self));
-
-  g_signal_connect_swapped (priv->vadjustment,
-                            "changed",
-                            G_CALLBACK (clutter_actor_queue_redraw),
-                            CLUTTER_ACTOR (self));
 
   /* mouse scroll is enabled by default, so we also need to be reactive */
   priv->mouse_scroll = TRUE;

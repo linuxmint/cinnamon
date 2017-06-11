@@ -481,6 +481,8 @@ st_scroll_bar_scroll_event (ClutterActor       *actor,
       break;
     }
 
+  clutter_actor_queue_redraw (actor);
+
   return TRUE;
 }
 
@@ -584,6 +586,8 @@ move_slider (StScrollBar *bar,
              + lower;
 
   st_adjustment_set_value (priv->adjustment, position);
+
+  clutter_actor_queue_redraw (CLUTTER_ACTOR (bar));
 }
 
 static void
@@ -675,10 +679,17 @@ handle_button_press_event_cb (ClutterActor       *actor,
 
 static void
 animation_completed_cb (ClutterAnimation   *animation,
-                        StScrollBarPrivate *priv)
+                        StScrollBar        *self)
 {
-  g_object_unref (priv->paging_animation);
-  priv->paging_animation = NULL;
+  ClutterTimeline *t;
+
+  t = clutter_animation_get_timeline (animation);
+  g_signal_handlers_disconnect_by_func (t, clutter_actor_queue_redraw, self);
+
+  clutter_actor_queue_redraw (CLUTTER_ACTOR (self));
+
+  g_object_unref (self->priv->paging_animation);
+  self->priv->paging_animation = NULL;
 }
 
 static gboolean
@@ -790,7 +801,8 @@ trough_paging_cb (StScrollBar *self)
   clutter_animation_bind (self->priv->paging_animation, "value", &v);
   t = clutter_animation_get_timeline (self->priv->paging_animation);
   g_signal_connect (a, "completed", G_CALLBACK (animation_completed_cb),
-                    self->priv);
+                    self);
+  g_signal_connect_swapped (t, "new-frame", G_CALLBACK (clutter_actor_queue_redraw), self);
   clutter_timeline_start (t);
 
   return ret;
