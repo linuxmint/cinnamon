@@ -1020,17 +1020,17 @@ PanelManager.prototype = {
         this.dummyCallback = callback;
         this.dummyPanels = [];
 
-        while (this.dummyPanels.push([]) < monitorCount);   // Generate a 2D array of length monitorCount; Push returns new length of array
+        while (this.dummyPanels.push([true, true, true, true]) < monitorCount); // 4 possible panels per monitor
 
         for (let i in this.panelsMeta) {
-            if (this.panelsMeta[i][0] >= monitorCount)      // Monitor does not exist
+            if (this.panelsMeta[i][0] >= monitorCount) // Monitor does not exist
                 continue;
-            this.dummyPanels[this.panelsMeta[i][0]][this.panelsMeta[i][1]] = false; // every location where there is an actual existing panel is noted
+            this.dummyPanels[this.panelsMeta[i][0]][this.panelsMeta[i][1]] = false; // there is an existing panel showing
         }
 
         for (let i = 0; i < monitorCount; i++) {
-            for (let j = 0; j < 4; j++) {               // max of 4 panels per monitor - bottom. top, left, right
-                if (this.dummyPanels[i][j] != false) {      // no panel there at the moment, so show a dummy
+            for (let j = 0; j < 4; j++) {
+                if (this.dummyPanels[i][j] == true) { // no panel there at the moment, so show a dummy
                     this.dummyPanels[i][j] = new PanelDummy(i, j, callback);
                 }
             }
