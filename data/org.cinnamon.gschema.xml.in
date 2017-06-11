@@ -583,7 +583,7 @@
     <child name="sounds" schema="org.cinnamon.sounds" />
 
     <key name="enable-vfade" type="b">
-      <default>true</default>
+      <default>false</default>
       <_summary>Enable the fade effect in Cinnamon scrollviews</_summary>
       <_description>
         Whether the vfade effect is enabled or not
