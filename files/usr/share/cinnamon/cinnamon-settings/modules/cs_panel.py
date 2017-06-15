@@ -27,9 +27,11 @@ class PanelSettingsPage(SettingsPage):
         self.settings = settings
 
         if position in ("top", "bottom"):
-            dimension_text = _("height")
+            dimension_text = _("Panel height:")
+            scale_dimension_text = _("Allow Cinnamon to scale panel text and icons according to the panel height")
         else:
-            dimension_text = _("width")
+            dimension_text = _("Panel width:")
+            scale_dimension_text = _("Allow Cinnamon to scale panel text and icons according to the panel width")
 
         def can_show(vlist, possible):
             for item in vlist:
@@ -52,10 +54,10 @@ class PanelSettingsPage(SettingsPage):
         widget = PanelSwitch(_("Use customized panel size (otherwise it's defined by the theme)"), "org.cinnamon", "panels-resizable", self.panel_id)
         section.add_row(widget)
 
-        widget = PanelSwitch(_("Allow Cinnamon to scale panel text and icons according to the panel %s" % dimension_text), "org.cinnamon", "panels-scale-text-icons", self.panel_id)#, "org.cinnamon/panels-resizable")
+        widget = PanelSwitch(scale_dimension_text, "org.cinnamon", "panels-scale-text-icons", self.panel_id)#, "org.cinnamon/panels-resizable")
         section.add_reveal_row(widget, "org.cinnamon", "panels-resizable", check_func=can_show)
 
-        widget = PanelRange(_("Panel %s:" % dimension_text), "org.cinnamon", "panels-height", self.panel_id, _("Smaller"), _("Larger"), mini=20, maxi=50, show_value=False)#, dep_key="org.cinnamon/panels-resizable")
+        widget = PanelRange(dimension_text, "org.cinnamon", "panels-height", self.panel_id, _("Smaller"), _("Larger"), mini=20, maxi=50, show_value=False)#, dep_key="org.cinnamon/panels-resizable")
         widget.add_mark(25.0, Gtk.PositionType.TOP, None)
         widget.set_rounding(0)
         section.add_reveal_row(widget, "org.cinnamon", "panels-resizable", check_func=can_show)
