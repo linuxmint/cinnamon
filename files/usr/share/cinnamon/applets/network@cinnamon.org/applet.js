@@ -1648,6 +1648,29 @@ NMMessageTraySource.prototype = {
     }
 };
 
+function RescanMenuItem() {
+    this._init.apply(this);
+}
+
+RescanMenuItem.prototype = {
+    __proto__: PopupMenu.PopupBaseMenuItem.prototype,
+
+    _init: function() {
+        PopupMenu.PopupBaseMenuItem.prototype._init.call(this);
+
+
+        this.label = new St.Label({ text: _("Rescan for wireless networks") });
+        this.addActor(this.label);
+        this.actor.label_actor = this.label;
+    },
+
+    activate: function(event) {
+
+        PopupMenu.PopupBaseMenuItem.prototype.activate.call(this, event, true);
+    }
+};
+
+
 function MyApplet(metadata, orientation, panel_height, instance_id) {
     this._init(metadata, orientation, panel_height, instance_id);
 }
@@ -1729,6 +1752,21 @@ MyApplet.prototype = {
             this._devices.vpn.section.actor.hide();
             this.menu.addMenuItem(this._devices.vpn.section);
             this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
+
+            this.rescan_item = new RescanMenuItem();
+
+            this.rescan_item.connect("activate", Lang.bind(this, function() {
+                let devices = this._devices.wireless.devices;
+
+                for (let i = 0; i < devices.length; i++) {
+                    devices[i].device.request_scan_simple(null);
+                }
+            }));
+
+            this.menu.addMenuItem(this.rescan_item);
+
+            this.rescan_item.actor.hide();
+
             this.menu.addSettingsAction(_("Network Settings"), 'network');
             this.menu.addAction(_("Network Connections"), Lang.bind(this, function() {
 				Util.spawnCommandLine("nm-connection-editor");
@@ -1839,6 +1877,21 @@ MyApplet.prototype = {
                 item.updateForDevice(null);
             }
         }
+
+        let show_rescan = false;
+
+        if (this._devices.wireless.devices.length > 0) {
+            let devices = this._devices.wireless.devices;
+
+            for (let i = 0; i < devices.length; i++) {
+                if (devices[i]._client.wireless_get_enabled()) {
+                    show_rescan = true;
+                    break;
+                }
+            }
+        }
+
+        this.rescan_item.actor.visible = show_rescan;
     },
 
     _readDevices: function() {
