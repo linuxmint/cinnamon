@@ -11,6 +11,7 @@ MyApplet.prototype = {
 
     _init: function(metadata, orientation, panelHeight, instance_id) {
         Applet.IconApplet.prototype._init.call(this, orientation, panelHeight, instance_id);
+        this.actor.style_class = 'applet-spacer';
 
         this.bin = new St.Bin();
         this.actor.add(this.bin);
