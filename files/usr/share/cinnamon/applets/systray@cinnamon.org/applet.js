@@ -312,7 +312,11 @@ MyApplet.prototype = {
                 this._statusItems.splice(i, 1);
             }
         }
-        this.manager_container.remove_child(icon);
+
+        if (icon.get_parent() == this.manager_container) {
+            this.manager_container.remove_child(icon);
+        }
+
         icon.destroy();
     },
 
