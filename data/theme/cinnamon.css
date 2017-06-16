@@ -1514,10 +1514,19 @@ StScrollBar StButton#vhandle:hover {
     width: 2px;
     background: rgba(255,255,255,0.5);
 }
+
 .applet-separator-line-vertical {
     border: 0px solid rgba(255,255,255,0.5);
     border-bottom-width: 2px;
 }
+
+.applet-spacer {
+}
+
+.applet-spacer:highlight {
+  background-color: #aa5555;
+}
+
 .applet-box {
     padding-left: 3px;
     padding-right: 3px;
