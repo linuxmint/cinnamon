@@ -44,6 +44,9 @@ LevelBar.prototype = {
         this._bar = new St.Widget({ style_class: 'level-bar',
                                     important: true });
 
+        this.stored_actor_width = 0;
+        this.max_bar_width = 0;
+
         this.actor.set_child(this._bar);
     },
 
@@ -54,10 +57,23 @@ LevelBar.prototype = {
     set level(value) {
         this._level = Math.max(0, Math.min(value, 100));
 
-        let alloc = this.actor.get_allocation_box();
-        let newWidth = Math.round((alloc.x2 - alloc.x1) * this._level / 100);
-        if (newWidth != this._bar.width)
-        this._bar.width = newWidth;
+        /* Track our actor's width - if it changes, we can be certain some setting
+         * or the theme changed.  Make sure we update it, as well as figure out our
+         * level bar's allocation.
+         */
+        if (this.stored_actor_width != this.actor.width) {
+            this.stored_actor_width = this.actor.width;
+
+            let box = this.actor.get_theme_node().get_content_box(this.actor.get_allocation_box());
+
+            this.max_bar_width = box.x2 - box.x1;
+        }
+
+        let newWidth = this.max_bar_width * (this._level / 100);
+
+        if (newWidth != this._bar.width) {
+            this._bar.width = newWidth;
+        }
     },
 
     setLevelBarHeight: function(sizeMultiplier) {
