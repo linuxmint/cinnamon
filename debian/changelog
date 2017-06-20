@@ -1,3 +1,66 @@
+cinnamon (3.4.2) sonya; urgency=medium
+
+  [ Michael Webster ]
+  * st-texture-cache.c: don't cache st_texture_cache_load_from_raw - its only user is the notificationDaemon.  These are transient images that were being stored in the cache that would never be evicted during theme changes (this does not just mean times when the user changed the icon them.)
+
+  [ Clement Lefebvre ]
+  * l10n: Translate hardcoded string for settings reset confirmation dialog
+
+  [ Michael Webster ]
+  * Silence a few more warnings new warnings.
+  * expo, overview: unreference actors that we destroy whenever the respective view closes.
+  * cinnamon-slideshow.py: only allow a single instance to run.
+
+  [ brownsr ]
+  * Sound applet: avoid spacing problem in vertical panel Knock on from commit 3870e42fe58533598ef8998ffb7d6bd3f213cbec
+
+  [ JosephMcc ]
+  * photoframe-desklet: Fix a few issues
+
+  [ Michael Webster ]
+  * notificationDaemon.js: Silence an occasional warning.
+  * SettingsWidgets.py: Make switch widgets use "center" vertical alignment instead of "fill," to prevent the switch growing in height when the label text gets ellipsized (either thru resizing of the window, or localization.)
+
+  [ BinHong Lee ]
+  * Progress bar text initializes and resets
+
+  [ Michael Webster ]
+  * cinnamon-settings-users: Restrict the size of user images, as they are displayed in the right view when a user is selected.  If the image at /var/lib/AccountsService/icons/<user> is set to a ridiculously-sized image, it won't break the ui.
+  * cs_user: Don't let large images break the ui - make sure we scale the selected image to an appropriate size.  Also, don't crop user-selected images (but keep cropping webcam images) - it's strange to select an image file and have the ends of it cut off.
+  * cinnamon-settings-users.py: Fix picture preview in file selector to maintain a reasonable size.
+  * cs_user.py: Handle image previews better in the face chooser dialog.
+
+  [ Jason Hicks ]
+  * ChooserButtonWidgets.py: Fix Python 3 error
+
+  [ brownsr ]
+  * window-list: bring space around preview down and correct a calculation problem beta testing user asked for the space around the window preview to be brought in a bit that in turn highlighted a bug where the scaling was calculated without taking the icon+title into effect I've brought the spare space down a bit, but I can't bring it down further and have it look right in all themes without major surgery, which would be best done in a development cycle.  The space allowance for the icon is not fully adequate as the title font could be set large, and so take up more room than the icon. But I've tried with this height adjustment and this scaling across a wide selection of themes, and it appears to stand up.
+
+  [ Michael Webster ]
+  * cinnamon-settings-users, cs-user, ChooserButtonWidgets: let GdkPixbuf do the work of restricting the size of images while maintaining aspect ratio.  Follow-up to last few commits.
+  * StScrollView: queue redraws whenever the adjustments change, to prevent artifacts outside of the view itself.
+  * StScrollView: More effective way of fixing the graphical artifacts generated during scrolling.  This also appears to fix some unrelated tearing issues I was seeing in the menu while testing.
+  * main.c: Own onboard's dbus name to prevent it starting when gnome's a11y keyboard settings key is active (org.gnome.desktop.a11y.applications screen-keyboard-enabled.) Also own caribou's daemon.  Caribou's OSK won't interfere in a Cinnamon session, but its daemon will run needlessly in the background otherwise.
+
+  [ brownsr ]
+  * panel: avoid cjs giving a warning that dummyPanels[i][j] is undefined
+
+  [ Michael Webster ]
+  * systray applet: make sure an icon actually got parented to this.manager_container before calling remove_child.  This issue can occur during session startup.
+  * StScrollView: queue redraws whenever the adjustments change, to prevent artifacts outside of the view itself.
+  * spacer applet: use a unique style class in the theme to prevent the applet from appearing active when hovered.
+  * theme: add applet-spacer class for spacer applet.
+  * spacer applet: use track_hover instead of a new style to prevent highlighting.
+
+  [ leigh123linux ]
+  * Remove unused dep
+
+  [ Michael Webster ]
+  * osdWindow: get the correct child allocation when calculating the width of the level bar.  If a padding or margin is added to the level-bar style class, it was causing the parent bin to expand to accomodate the child's width plus its required padding.
+  * Revert "StScrollView: queue redraws whenever the adjustments change, to prevent"
+
+ -- Clement Lefebvre <root@linuxmint.com>  Tue, 20 Jun 2017 16:16:34 +0200
+
 cinnamon (3.4.1) sonya; urgency=medium
 
   [ Clement Lefebvre ]
