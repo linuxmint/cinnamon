@@ -130,6 +130,41 @@ window_backed_app_get_window (CinnamonApp     *app)
 }
 
 static ClutterActor *
+get_actor_for_icon_name (CinnamonApp *app,
+                         const gchar *icon_name,
+                         gint         size)
+{
+  ClutterActor *actor;
+  GIcon *icon;
+
+  icon = NULL;
+  actor = NULL;
+
+  g_printerr ("icon name: '%s' - %d\n", icon_name, size);
+
+  if (g_path_is_absolute (icon_name))
+    {
+      GFile *icon_file;
+
+      icon_file = g_file_new_for_path (icon_name);
+      icon = g_file_icon_new (icon_file);
+
+      g_object_unref (icon_file);
+    }
+  else
+    {
+      icon = g_themed_icon_new (icon_name);
+    }
+
+  if (icon != NULL)
+  {
+    actor = g_object_new (ST_TYPE_ICON, "gicon", icon, "icon-size", size, NULL);
+  }
+
+  return actor;
+}
+
+static ClutterActor *
 window_backed_app_get_icon (CinnamonApp *app,
                             int       size)
 {
@@ -138,6 +173,9 @@ window_backed_app_get_icon (CinnamonApp *app,
   gint scale;
   CinnamonGlobal *global;
   StThemeContext *context;
+  const gchar *icon_name;
+
+  actor = NULL;
 
   global = cinnamon_global_get ();
   context = st_theme_context_get_for_stage (cinnamon_global_get_stage (global));
@@ -157,10 +195,21 @@ window_backed_app_get_icon (CinnamonApp *app,
     }
 
   window = window_backed_app_get_window (app);
-  actor = st_texture_cache_bind_pixbuf_property (st_texture_cache_get_default (),
-                                                               G_OBJECT (window),
-                                                               "icon");
-  g_object_set (actor, "width", (float) size, "height", (float) size, NULL);
+
+  icon_name = meta_window_get_icon_name (window);
+
+  if (icon_name != NULL)
+    {
+      actor = get_actor_for_icon_name (app, icon_name, size);
+    }
+
+  if (actor == NULL)
+    {
+      actor = st_texture_cache_bind_pixbuf_property (st_texture_cache_get_default (),
+                                                     G_OBJECT (window), "icon");
+      g_object_set (actor, "width", (float) size, "height", (float) size, NULL);
+    }
+
   return actor;
 }
 
@@ -565,7 +614,7 @@ cinnamon_app_activate_window (CinnamonApp     *app,
         window = most_recent_transient;
 
 
-      if (!cinnamon_window_tracker_is_window_interesting (global, window))
+      if (!cinnamon_window_tracker_is_window_interesting (cinnamon_window_tracker_get_default (), window))
         {
           /* We won't get notify::user-time signals for uninteresting windows,
            * which means that an app's last_user_time won't get updated.
@@ -1096,7 +1145,7 @@ cinnamon_app_request_quit (CinnamonApp   *app)
     {
       MetaWindow *win = iter->data;
 
-      if (!cinnamon_window_tracker_is_window_interesting (global,  win))
+      if (!cinnamon_window_tracker_is_window_interesting (cinnamon_window_tracker_get_default (), win))
         continue;
 
       meta_window_delete (win, cinnamon_global_get_current_time (global));

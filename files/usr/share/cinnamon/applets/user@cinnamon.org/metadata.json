@@ -2,5 +2,6 @@
     "description": "An applet to access your account details, switch users and quickly logout or power off the computer", 
     "uuid": "user@cinnamon.org", 
     "name": "User Applet",
+    "icon": "cs-user",
     "max-instances": -1
 }

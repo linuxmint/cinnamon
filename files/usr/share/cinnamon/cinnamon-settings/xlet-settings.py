@@ -183,17 +183,26 @@ class MainWindow(object):
         self.instance_stack = Gtk.Stack()
         scw.add(self.instance_stack)
 
-        if "icon" in self.xlet_meta:
-            self.window.set_icon_name(self.xlet_meta["icon"])
-        else:
-            icon_path = os.path.join(self.xlet_dir, "icon.png")
-            if os.path.exists(icon_path):
-                self.window.set_icon_from_file(icon_path)
         self.window.set_title(translate(self.uuid, self.xlet_meta["name"]))
 
         self.window.connect("destroy", self.quit)
         self.prev_button.connect("clicked", self.previous_instance)
         self.next_button.connect("clicked", self.next_instance)
+
+        self.window.connect("realize", self.on_window_realized)
+
+    def on_window_realized(self, widget):
+        gdk_window = widget.get_window()
+
+        if "icon" in self.xlet_meta:
+            self.window.set_icon_name(self.xlet_meta["icon"])
+            gdk_window.set_icon_name(self.xlet_meta["icon"])
+        else:
+            icon_path = os.path.join(self.xlet_dir, "icon.png")
+            if os.path.exists(icon_path):
+                self.window.set_icon_from_file(icon_path)
+                gdk_window.set_icon_name(icon_path)
+
 
     def load_instances(self):
         self.instance_info = []

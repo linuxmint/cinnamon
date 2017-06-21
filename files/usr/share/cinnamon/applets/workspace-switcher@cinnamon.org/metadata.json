@@ -2,5 +2,6 @@
  "uuid": "workspace-switcher@cinnamon.org",
  "name": "Workspace switcher",
  "description": "Select the workspace from the panel",
+ "icon": "cs-workspaces",
  "max-instances": -1
 }
