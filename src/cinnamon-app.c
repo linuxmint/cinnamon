@@ -140,8 +140,6 @@ get_actor_for_icon_name (CinnamonApp *app,
   icon = NULL;
   actor = NULL;
 
-  g_printerr ("icon name: '%s' - %d\n", icon_name, size);
-
   if (g_path_is_absolute (icon_name))
     {
       GFile *icon_file;
