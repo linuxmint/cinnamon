@@ -123,7 +123,6 @@ cinnamon_app_get_id (CinnamonApp *app)
 static MetaWindow *
 window_backed_app_get_window (CinnamonApp     *app)
 {
-  g_assert (app->entry == NULL);
   g_assert (app->running_state);
   g_assert (app->running_state->windows);
   return app->running_state->windows->data;
@@ -157,6 +156,7 @@ get_actor_for_icon_name (CinnamonApp *app,
   if (icon != NULL)
   {
     actor = g_object_new (ST_TYPE_ICON, "gicon", icon, "icon-size", size, NULL);
+    g_object_unref (icon);
   }
 
   return actor;
@@ -225,15 +225,34 @@ cinnamon_app_create_icon_texture (CinnamonApp   *app,
 {
   GIcon *icon;
   ClutterActor *ret;
+  gboolean has_custom_icon;
 
+  has_custom_icon = FALSE;
   ret = NULL;
 
-  if (app->entry == NULL)
-    return window_backed_app_get_icon (app, size);
+  if (app->running_state != NULL)
+  {
+    MetaWindow *window;
+    const gchar *icon_name;
+
+    window = window_backed_app_get_window (app);
+
+    icon_name = meta_window_get_icon_name (window);
+
+    has_custom_icon = icon_name != NULL;
+  }
+
+  if (app->entry == NULL || has_custom_icon)
+    {
+      return window_backed_app_get_icon (app, size);
+    }
 
   icon = g_app_info_get_icon (G_APP_INFO (gmenu_tree_entry_get_app_info (app->entry)));
+
   if (icon != NULL)
-    ret = g_object_new (ST_TYPE_ICON, "gicon", icon, "icon-size", size, NULL);
+    {
+      ret = g_object_new (ST_TYPE_ICON, "gicon", icon, "icon-size", size, NULL);
+    }
 
   if (ret == NULL)
     {
