@@ -51,24 +51,23 @@ PanelAppLauncherMenu.prototype = {
             this.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
         }
 
-        let subMenu = new PopupMenu.PopupSubMenuMenuItem(_("Options"));
-        this.addMenuItem(subMenu);
-
         let item = new PopupMenu.PopupIconMenuItem(_("Launch"), "media-playback-start", St.IconType.SYMBOLIC);
         item.connect('activate', Lang.bind(this, this._onLaunchActivate));
-        subMenu.menu.addMenuItem(item);
+        this.addMenuItem(item);
 
         item = new PopupMenu.PopupIconMenuItem(_("Add"), "list-add", St.IconType.SYMBOLIC);
         item.connect('activate', Lang.bind(this, this._onAddActivate));
-        subMenu.menu.addMenuItem(item);
+        this.addMenuItem(item);
 
         item = new PopupMenu.PopupIconMenuItem(_("Edit"), "document-properties", St.IconType.SYMBOLIC);
         item.connect('activate', Lang.bind(this, this._onEditActivate));
-        subMenu.menu.addMenuItem(item);
+        this.addMenuItem(item);
 
         item = new PopupMenu.PopupIconMenuItem(_("Remove"), "window-close", St.IconType.SYMBOLIC);
         item.connect('activate', Lang.bind(this, this._onRemoveActivate));
-        subMenu.menu.addMenuItem(item);
+        this.addMenuItem(item);
+
+        this.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
 
         subMenu = new PopupMenu.PopupSubMenuMenuItem(_("Preferences"));
         this.addMenuItem(subMenu);
