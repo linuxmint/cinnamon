@@ -375,8 +375,8 @@ DeskletContainer.prototype = {
         this.actor = new Clutter.Group();
         this.actor._delegate = this;
 
-        this.lastX = 0;
-        this.lastY = 0;
+        this.last_x = -1;
+        this.last_y = -1;
 
         this._dragPlaceholder = new St.Bin({style_class: 'desklet-drag-placeholder'});
         this._dragPlaceholder.hide();
