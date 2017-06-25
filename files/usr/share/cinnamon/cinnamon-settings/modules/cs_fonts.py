@@ -47,6 +47,7 @@ class Module:
 
             aa_options = [["none", _("None")], ["grayscale", _("Grayscale")], ["rgba", _("Rgba")]]
             hinting_options = [["none", _("None")], ["slight", _("Slight")], ["medium", _("Medium")], ["full", _("Full")]]
+            rgba_options = [["rgba", _("Rgba")], ["rgb", _("Rgb")], ["bgr", _("Bgr")], ["vrgb", _("Vrgb")], ["vbgr", _("Vbgr")]]
 
             size_group = Gtk.SizeGroup.new(Gtk.SizeGroupMode.HORIZONTAL)
             widget = GSettingsSpinButton(_("Text scaling factor"), "org.cinnamon.desktop.interface", "text-scaling-factor", step=0.1, size_group=size_group)
@@ -58,4 +59,8 @@ class Module:
 
             widget = GSettingsComboBox(_("Hinting"), "org.cinnamon.settings-daemon.plugins.xsettings", "hinting", hinting_options, size_group=size_group)
             widget.set_tooltip_text(_("Hinting allows for producing clear, legible text on screen."))
+            settings.add_row(widget)
+
+            widget = GSettingsComboBox(_("RGBA order"), "org.cinnamon.settings-daemon.plugins.xsettings", "rgba-order", rgba_options, size_group=size_group)
+            widget.set_tooltip_text(_("The order of subpixel elements on an LCD screen, only used when antialiasing is set to 'rgba'"))
             settings.add_row(widget)
