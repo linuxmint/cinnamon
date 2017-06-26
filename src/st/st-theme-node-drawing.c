@@ -1415,6 +1415,15 @@ st_theme_node_render_resources (StThemeNode   *node,
   else
     node->border_slices_material = COGL_INVALID_HANDLE;
 
+  node->corner_material[ST_CORNER_TOPLEFT] =
+    st_theme_node_lookup_corner (node, ST_CORNER_TOPLEFT);
+  node->corner_material[ST_CORNER_TOPRIGHT] =
+    st_theme_node_lookup_corner (node, ST_CORNER_TOPRIGHT);
+  node->corner_material[ST_CORNER_BOTTOMRIGHT] =
+    st_theme_node_lookup_corner (node, ST_CORNER_BOTTOMRIGHT);
+  node->corner_material[ST_CORNER_BOTTOMLEFT] =
+    st_theme_node_lookup_corner (node, ST_CORNER_BOTTOMLEFT);
+
   /* Use cairo to prerender the node if there is a gradient, or
    * background image with borders and/or rounded corners,
    * or large corners, since we can't do those things
@@ -1492,15 +1501,6 @@ st_theme_node_render_resources (StThemeNode   *node,
                                                                          node->background_texture);
         }
     }
-
-  node->corner_material[ST_CORNER_TOPLEFT] =
-    st_theme_node_lookup_corner (node, ST_CORNER_TOPLEFT);
-  node->corner_material[ST_CORNER_TOPRIGHT] =
-    st_theme_node_lookup_corner (node, ST_CORNER_TOPRIGHT);
-  node->corner_material[ST_CORNER_BOTTOMRIGHT] =
-    st_theme_node_lookup_corner (node, ST_CORNER_BOTTOMRIGHT);
-  node->corner_material[ST_CORNER_BOTTOMLEFT] =
-    st_theme_node_lookup_corner (node, ST_CORNER_BOTTOMLEFT);
 }
 
 static void
