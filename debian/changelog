@@ -1,3 +1,17 @@
+cinnamon (3.4.3) sonya; urgency=medium
+
+  [ Michael Webster ]
+  * panel-launchers: put individual launcher actions back in the main popup, having an options and preferences submenu was a bit ambiguous.
+
+  [ Simon Brown ]
+  * Panel-launchers: remove an undeclared variable warning (#6648)
+  * deskletManager: Correct call to file.delete (#6650)
+
+  [ Clement Lefebvre ]
+  * Add a menu item to toggle the on-screen keyboard
+
+ -- Clement Lefebvre <root@linuxmint.com>  Mon, 26 Jun 2017 12:44:24 +0200
+
 cinnamon (3.4.2) sonya; urgency=medium
 
   [ Michael Webster ]
