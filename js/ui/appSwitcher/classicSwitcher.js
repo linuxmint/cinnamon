@@ -16,7 +16,6 @@ const Tweener = imports.ui.tweener;
 
 const WindowUtils = imports.misc.windowUtils;
 
-const POPUP_APPICON_SIZE = 96;
 const POPUP_SCROLL_TIME = 0.10; // seconds
 const POPUP_DELAY_TIMEOUT = 150; // milliseconds
 const POPUP_FADE_OUT_TIME = 0.1; // seconds
@@ -428,7 +427,7 @@ AppIcon.prototype = {
     set_size: function(size) {
         if (this.showThumbnail){
             this.icon = new St.Widget();
-            let clones = WindowUtils.createWindowClone(this.window, size, size, true, true);
+            let clones = WindowUtils.createWindowClone(this.window, size * global.ui_scale, size * global.ui_scale, true, true);
             for (let i in clones) {
                 let clone = clones[i];
                 this.icon.add_actor(clone.actor);
@@ -444,6 +443,7 @@ AppIcon.prototype = {
                               icon_type: St.IconType.FULLCOLOR,
                               icon_size: size });
         }
+        size *= global.ui_scale;
         this._iconBin.set_size(size, size);
         this._iconBin.child = this.icon;
     }
@@ -823,7 +823,7 @@ AppList.prototype = {
 
         for(let i =  0; i < iconSizes.length; i++) {
                 this._iconSize = iconSizes[i];
-                height = iconSizes[i] + iconSpacing;
+                height = (iconSizes[i] * global.ui_scale) + iconSpacing;
                 let w = height * this._items.length + totalSpacing;
                 if (w <= availWidth)
                         break;
@@ -831,7 +831,7 @@ AppList.prototype = {
 
         if (this._items.length == 1) {
             this._iconSize = iconSizes[0];
-            height = iconSizes[0] + iconSpacing;
+            height = (iconSizes[0] * global.ui_scale) + iconSpacing;
         }
 
         for(let i = 0; i < this.icons.length; i++) {
