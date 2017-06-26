@@ -235,7 +235,7 @@ function _removeDeskletConfigFile(uuid, instanceId) {
     let file = Gio.File.new_for_path(config_path);
     if (file.query_exists(null)) {
         try {
-            file.delete(null, null);
+            file.delete(null);
         } catch (e) {
             global.logError("Problem removing desklet config file during cleanup.  UUID is " + uuid + " and filename is " + config_path);
         }
