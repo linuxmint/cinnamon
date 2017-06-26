@@ -216,11 +216,6 @@ class CellRendererKeybinding(Gtk.CellRendererText):
 
             shift_group_mask = keymap.get_modifier_mask(Gdk.ModifierIntent.SHIFT_GROUP)
 
-            if Gtk.accelerator_get_default_mod_mask() & accel_mods & shift_group_mask:
-                accel_mods &= ~shift_group_mask
-                group = 0
-                group_mask_disabled = True
-
             retval, keyval, effective_group, level, consumed_modifiers = \
                    keymap.translate_keyboard_state(event.hardware_keycode, accel_mods, group)
 
@@ -235,11 +230,6 @@ class CellRendererKeybinding(Gtk.CellRendererText):
             accel_key = Gdk.KEY_Tab
 
         accel_mods &= Gtk.accelerator_get_default_mod_mask()
-
-        accel_mods &= ~consumed_modifiers
-
-        if accel_key != keyval:
-            accel_mods |= Gdk.ModifierType.SHIFT_MASK
 
         if accel_mods == 0:
             if accel_key == Gdk.KEY_Escape:
@@ -258,6 +248,8 @@ class CellRendererKeybinding(Gtk.CellRendererText):
 
         accel_string = Gtk.accelerator_name_with_keycode(None, accel_key, event.hardware_keycode, Gdk.ModifierType(accel_mods))
         accel_label = Gtk.accelerator_get_label_with_keycode(None, accel_key, event.hardware_keycode, Gdk.ModifierType(accel_mods))
+
+        # print("Storing %s as %s" % (accel_label, accel_string))
 
         if (accel_mods == 0 or accel_mods == Gdk.ModifierType.SHIFT_MASK) and event.hardware_keycode != 0:
             if ((keyval >= Gdk.KEY_a                    and keyval <= Gdk.KEY_z)
