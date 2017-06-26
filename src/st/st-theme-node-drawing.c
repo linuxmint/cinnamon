@@ -1567,7 +1567,7 @@ st_theme_node_paint_borders (StThemeNode           *node,
     {
       ClutterColor effective_border;
       gboolean skip_corner_1, skip_corner_2;
-      float x1, y1, x2, y2;
+      float rects[16];
 
       over (&border_color, &node->background_color, &effective_border);
       alpha = paint_opacity * effective_border.alpha / 255;
@@ -1583,46 +1583,43 @@ st_theme_node_paint_borders (StThemeNode           *node,
           skip_corner_1 = border_radius[ST_CORNER_TOPLEFT] > 0;
           skip_corner_2 = border_radius[ST_CORNER_TOPRIGHT] > 0;
 
-          x1 = skip_corner_1 ? max_width_radius[ST_CORNER_TOPLEFT] : 0;
-          y1 = 0;
-          x2 = skip_corner_2 ? width - max_width_radius[ST_CORNER_TOPRIGHT] : width;
-          y2 = border_width[ST_SIDE_TOP];
-          cogl_rectangle (x1, y1, x2, y2);
+          rects[0] = skip_corner_1 ? max_width_radius[ST_CORNER_TOPLEFT] : 0;
+          rects[1] = 0;
+          rects[2] = skip_corner_2 ? width - max_width_radius[ST_CORNER_TOPRIGHT] : width;
+          rects[3] = border_width[ST_SIDE_TOP];
 
           /* EAST */
           skip_corner_1 = border_radius[ST_CORNER_TOPRIGHT] > 0;
           skip_corner_2 = border_radius[ST_CORNER_BOTTOMRIGHT] > 0;
 
-          x1 = width - border_width[ST_SIDE_RIGHT];
-          y1 = skip_corner_1 ? max_width_radius[ST_CORNER_TOPRIGHT]
+          rects[4] = width - border_width[ST_SIDE_RIGHT];
+          rects[5] = skip_corner_1 ? max_width_radius[ST_CORNER_TOPRIGHT]
                              : border_width[ST_SIDE_TOP];
-          x2 = width;
-          y2 = skip_corner_2 ? height - max_width_radius[ST_CORNER_BOTTOMRIGHT]
+          rects[6] = width;
+          rects[7] = skip_corner_2 ? height - max_width_radius[ST_CORNER_BOTTOMRIGHT]
                              : height - border_width[ST_SIDE_BOTTOM];
-          cogl_rectangle (x1, y1, x2, y2);
 
           /* SOUTH */
           skip_corner_1 = border_radius[ST_CORNER_BOTTOMLEFT] > 0;
           skip_corner_2 = border_radius[ST_CORNER_BOTTOMRIGHT] > 0;
 
-          x1 = skip_corner_1 ? max_width_radius[ST_CORNER_BOTTOMLEFT] : 0;
-          y1 = height - border_width[ST_SIDE_BOTTOM];
-          x2 = skip_corner_2 ? width - max_width_radius[ST_CORNER_BOTTOMRIGHT]
+          rects[8] = skip_corner_1 ? max_width_radius[ST_CORNER_BOTTOMLEFT] : 0;
+          rects[9] = height - border_width[ST_SIDE_BOTTOM];
+          rects[10] = skip_corner_2 ? width - max_width_radius[ST_CORNER_BOTTOMRIGHT]
                              : width;
-          y2 = height;
-          cogl_rectangle (x1, y1, x2, y2);
+          rects[11] = height;
 
           /* WEST */
           skip_corner_1 = border_radius[ST_CORNER_TOPLEFT] > 0;
           skip_corner_2 = border_radius[ST_CORNER_BOTTOMLEFT] > 0;
 
-          x1 = 0;
-          y1 = skip_corner_1 ? max_width_radius[ST_CORNER_TOPLEFT]
+          rects[12] = 0;
+          rects[13] = skip_corner_1 ? max_width_radius[ST_CORNER_TOPLEFT]
                              : border_width[ST_SIDE_TOP];
-          x2 = border_width[ST_SIDE_LEFT];
-          y2 = skip_corner_2 ? height - max_width_radius[ST_CORNER_BOTTOMLEFT]
+          rects[14] = border_width[ST_SIDE_LEFT];
+          rects[15] = skip_corner_2 ? height - max_width_radius[ST_CORNER_BOTTOMLEFT]
                              : height - border_width[ST_SIDE_BOTTOM];
-          cogl_rectangle (x1, y1, x2, y2);
+          cogl_rectangles (rects, 4);
         }
     }
 
@@ -1889,6 +1886,7 @@ st_theme_node_paint_outline (StThemeNode           *node,
 {
   float width, height;
   int outline_width;
+  float rects[16];
   ClutterColor outline_color, effective_outline;
 
   width = box->x2 - box->x1;
@@ -1913,20 +1911,30 @@ st_theme_node_paint_outline (StThemeNode           *node,
    */
 
   /* NORTH */
-  cogl_rectangle (-outline_width, -outline_width,
-                  width + outline_width, 0);
+  rects[0] = -outline_width;
+  rects[1] = -outline_width;
+  rects[2] = width + outline_width;
+  rects[3] = 0;
 
   /* EAST */
-  cogl_rectangle (width, 0,
-                  width + outline_width, height);
+  rects[4] = width;
+  rects[5] = 0;
+  rects[6] = width + outline_width;
+  rects[7] = height;
 
   /* SOUTH */
-  cogl_rectangle (-outline_width, height,
-                  width + outline_width, height + outline_width);
+  rects[8] = -outline_width;
+  rects[9] = height;
+  rects[10] = width + outline_width;
+  rects[11] = height + outline_width;
 
   /* WEST */
-  cogl_rectangle (-outline_width, 0,
-                  0, height);
+  rects[12] = -outline_width;
+  rects[13] = 0;
+  rects[14] = 0;
+  rects[15] = height;
+
+  cogl_rectangles (rects, 4);
 }
 
 void
