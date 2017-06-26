@@ -123,7 +123,7 @@ class MainWindow(object):
             self.quit()
 
     def build_window(self):
-        self.window = Gtk.Window()
+        self.window = XApp.GtkWindow()
         self.window.set_default_size(800, 600)
         main_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
         self.window.add(main_box)
@@ -186,13 +186,10 @@ class MainWindow(object):
 
         if "icon" in self.xlet_meta:
             self.window.set_icon_name(self.xlet_meta["icon"])
-            XApp.gtk_window_set_icon_name(self.window, self.xlet_meta["icon"])
         else:
             icon_path = os.path.join(self.xlet_dir, "icon.png")
             if os.path.exists(icon_path):
                 self.window.set_icon_from_file(icon_path)
-                XApp.gtk_window_set_icon_name(self.window, icon_path)
-
         self.window.set_title(translate(self.uuid, self.xlet_meta["name"]))
 
         self.window.connect("destroy", self.quit)
