@@ -179,8 +179,6 @@ window_backed_app_get_icon (CinnamonApp *app,
   context = st_theme_context_get_for_stage (cinnamon_global_get_stage (global));
   g_object_get (context, "scale-factor", &scale, NULL);
 
-  size *= scale;
-
   /* During a state transition from running to not-running for
    * window-backend apps, it's possible we get a request for the icon.
    * Avoid asserting here and just return an empty image.
@@ -203,6 +201,8 @@ window_backed_app_get_icon (CinnamonApp *app,
 
   if (actor == NULL)
     {
+      size *= scale;
+
       actor = st_texture_cache_bind_pixbuf_property (st_texture_cache_get_default (),
                                                      G_OBJECT (window), "icon");
       g_object_set (actor, "width", (float) size, "height", (float) size, NULL);
