@@ -119,7 +119,7 @@ class MainWindow(object):
             self.xlet_meta = json.loads(raw_data)
         else:
             print("Could not find %s metadata for uuid %s - are you sure it's installed correctly?" % (self.type, self.uuid))
-            self.quit()
+            quit()
 
     def build_window(self):
         self.window = Gtk.Window()
