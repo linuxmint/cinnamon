@@ -137,7 +137,7 @@ st_bin_get_preferred_width (ClutterActor *self,
 
   st_theme_node_adjust_for_height (theme_node, &for_height);
 
-  if (priv->child == NULL)
+  if (priv->child == NULL || !CLUTTER_ACTOR_IS_VISIBLE (priv->child))
     {
       if (min_width_p)
         *min_width_p = 0;
@@ -166,7 +166,7 @@ st_bin_get_preferred_height (ClutterActor *self,
 
   st_theme_node_adjust_for_width (theme_node, &for_width);
 
-  if (priv->child == NULL)
+  if (priv->child == NULL || !CLUTTER_ACTOR_IS_VISIBLE (priv->child))
     {
       if (min_height_p)
         *min_height_p = 0;
