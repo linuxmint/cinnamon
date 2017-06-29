@@ -113,7 +113,7 @@ st_bin_allocate (ClutterActor          *self,
 
   clutter_actor_set_allocation (self, box, flags);
 
-  if (priv->child)
+  if (priv->child && CLUTTER_ACTOR_IS_VISIBLE (priv->child))
     {
       StThemeNode *theme_node = st_widget_get_theme_node (ST_WIDGET (self));
       ClutterActorBox childbox;
