@@ -45,8 +45,7 @@ G_END_DECLS
 
 ClutterActor *_st_widget_get_dnd_clone (StWidget *widget);
 
-void _st_get_align_factors (StWidget *widget,
-                            StAlign   x_align,
+void _st_get_align_factors (StAlign   x_align,
                             StAlign   y_align,
                             gdouble  *x_align_out,
                             gdouble  *y_align_out);
@@ -61,14 +60,6 @@ void _st_actor_get_preferred_height (ClutterActor *actor,
                                      gboolean      x_fill,
                                      gfloat       *min_height_p,
                                      gfloat       *natural_height_p);
-
-void _st_allocate_fill (StWidget        *parent,
-                        ClutterActor    *child,
-                        ClutterActorBox *childbox,
-                        StAlign          x_align,
-                        StAlign          y_align,
-                        gboolean         x_fill,
-                        gboolean         y_fill);
 
 void _st_set_text_from_style (ClutterText *text,
                               StThemeNode *theme_node);
