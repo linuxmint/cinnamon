@@ -92,7 +92,7 @@ class EditableEntry (Gtk.Stack):
     def get_text(self):
         return self.entry.get_text()
 
-class SidePage:
+class SidePage(object):
     def __init__(self, name, icon, keywords, content_box = None, size = None, is_c_mod = False, is_standalone = False, exec_name = None, module=None):
         self.name = name
         self.icon = icon

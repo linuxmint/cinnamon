@@ -1,11 +1,9 @@
 #!/usr/bin/python2
 
-import gi
-gi.require_version("Gtk", "3.0")
-from gi.repository import Gtk
-
-from ExtensionCore import ExtensionSidePage
+from ExtensionCore import ManageSpicesPage, DownloadSpicesPage
+from Spices import Spice_Harvester
 from GSettingsWidgets import *
+from gi.repository import GLib, Gtk
 
 class Module:
     comment = _("Manage your Cinnamon desklets")
@@ -13,36 +11,43 @@ class Module:
     category = "prefs"
 
     def __init__(self, content_box):
-        keywords = _("desklet, desktop, slideshow")
-        self.sidePage = DeskletsViewSidePage(_("Desklets"), "cs-desklets", keywords, content_box, "desklet", self)
+        self.window = None
+        self.sidePage = DeskletsViewSidePage(content_box, self)
 
     def on_module_selected(self):
         if not self.loaded:
             print "Loading Desklets module"
-            self.sidePage.load()
+            self.sidePage.load(self.window)
 
     def _setParentRef(self, window):
-        self.sidePage.window = window
+        self.window = window
 
+class DeskletsViewSidePage(SidePage):
+    collection_type = "desklet"
 
-class DeskletsViewSidePage (ExtensionSidePage):
-    def __init__(self, name, icon, keywords, content_box, collection_type, module):
+    def __init__(self, content_box, module):
         self.RemoveString = _("You can remove specific instances from the desktop via that desklet's context menu")
-        ExtensionSidePage.__init__(self, name, icon, keywords, content_box, collection_type, module)
+        keywords = _("desklet, desktop, slideshow")
 
-    def toSettingString(self, uuid, instanceId):
-        screen = Gdk.Screen.get_default()
-        primary = screen.get_primary_monitor()
-        primary_rect = screen.get_monitor_geometry(primary)
-        return ("%s:%d:%d:%d") % (uuid, instanceId, primary_rect.x + 100, primary_rect.y + 100)
+        super(DeskletsViewSidePage, self).__init__(_("Desklets"), "cs-desklets", keywords, content_box, module=module)
 
-    def fromSettingString(self, string):
-        uuid, instanceId, x, y = string.split(":")
-        return uuid
+    def load(self, window):
+        self.window = window
 
-    def getAdditionalPage(self):
+        self.spices = Spice_Harvester(self.collection_type, self.window)
+
+        self.stack = SettingsStack()
+        self.add_widget(self.stack)
+        self.stack.expand = True
+
+        manage_extensions_page = ManageDeskletsPage(self, self.spices, self.window)
+        self.stack.add_titled(manage_extensions_page, 'installed', _("Manage desklets"))
+
+        download_desklets_page = DownloadSpicesPage(self, self.collection_type, self.spices, self.window)
+        self.stack.add_titled(download_desklets_page, 'more', _("Download desklets"))
+
         page = SettingsPage()
-        page.label = _("General Settings")
+        self.stack.add_titled(page, 'general', _("General Settings"))
 
         settings = page.add_section(_("General Desklets Settings"))
 
@@ -63,4 +68,14 @@ class DeskletsViewSidePage (ExtensionSidePage):
         settings.add_row(GSettingsSwitch(_("Snap desklets to grid"), "org.cinnamon", "desklet-snap"))
         settings.add_reveal_row(GSettingsSpinButton(_("Width of desklet snap grid"), "org.cinnamon", "desklet-snap-interval", "", 0, 100, 1, 5), "org.cinnamon", "desklet-snap")
 
-        return page
+class ManageDeskletsPage(ManageSpicesPage):
+    directories = [("%s/.local/share/cinnamon/desklets") % GLib.get_home_dir(), "/usr/share/cinnamon/desklets"]
+    collection_type = "desklet"
+    installed_page_title = _("Installed desklets")
+    instance_button_text = _("Add")
+    remove_button_text = _("Remove")
+    uninstall_button_text = _("Uninstall")
+    restore_button_text = _("Remove all")
+
+    def __init__(self, parent, spices, window):
+        super(ManageDeskletsPage, self).__init__(parent, self.collection_type, spices, window)
