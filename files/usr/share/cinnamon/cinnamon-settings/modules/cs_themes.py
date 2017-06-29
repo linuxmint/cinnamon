@@ -4,7 +4,8 @@ from gi.repository.Gtk import SizeGroup, SizeGroupMode
 
 from GSettingsWidgets import *
 from CinnamonGtkSettings import GtkSettingsSwitch
-from ExtensionCore import ExtensionSidePage
+from ExtensionCore import DownloadSpicesPage
+from Spices import Spice_Harvester
 
 import glob
 
@@ -19,12 +20,15 @@ class Module:
     def __init__(self, content_box):
         self.keywords = _("themes, style")
         self.icon = "cs-themes"
+        self.window = None
         sidePage = SidePage(_("Themes"), self.icon, self.keywords, content_box, module=self)
         self.sidePage = sidePage
 
     def on_module_selected(self):
         if not self.loaded:
             print "Loading Themes module"
+
+            self.spices = Spice_Harvester('theme', self.window)
 
             self.sidePage.stack = SettingsStack()
             self.sidePage.add_widget(self.sidePage.stack)
@@ -57,13 +61,10 @@ class Module:
             settings.add_row(widget)
 
             widget = self.make_group(_("Desktop"), self.cinnamon_chooser)
-            center_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
-            button = Gtk.LinkButton()
-            button.set_label(_("Add/remove desktop themes..."))
-            button.connect("activate-link", self.add_remove_cinnamon_themes)
-            center_box.pack_end(button, False, False, 0)
-            widget.pack_start(center_box, False, False, 0)
             settings.add_row(widget)
+
+            page = DownloadSpicesPage(self, 'theme', self.spices, self.window)
+            self.sidePage.stack.add_titled(page, 'download', _("Add/Remove"))
 
             page = SettingsPage()
             self.sidePage.stack.add_titled(page, "options", _("Settings"))
@@ -122,7 +123,6 @@ class Module:
             callback = chooser[3]
             payload = (chooser_obj, path_suffix, themes, callback)
             self.refresh_chooser(payload)
-            # thread.start_new_thread(self.refresh_chooser, (payload,))
 
     def refresh_chooser(self, payload):
         (chooser, path_suffix, themes, callback) = payload
@@ -157,7 +157,6 @@ class Module:
                     chooser.add_picture("/usr/share/cinnamon/thumbnails/%s/unknown.png" % path_suffix, callback, title=theme_name, id=theme_name)
                 GLib.timeout_add(5, self.increment_progress, (chooser, inc))
         GLib.timeout_add(500, self.hide_progress, chooser)
-        # thread.exit()
 
     def increment_progress(self, payload):
         (chooser, inc) = payload
@@ -168,7 +167,7 @@ class Module:
         chooser.reset_loading_progress()
 
     def _setParentRef(self, window):
-        pass
+        self.window = window
 
     def make_group(self, group_label, widget, add_widget_to_size_group=True):
         self.size_groups = getattr(self, "size_groups", [Gtk.SizeGroup.new(Gtk.SizeGroupMode.HORIZONTAL) for x in range(2)])
@@ -209,21 +208,6 @@ class Module:
             except:
                 chooser.set_picture_from_file("/usr/share/cinnamon/thumbnails/%s/unknown.png" % path_suffix)
         return chooser
-
-    def add_remove_cinnamon_themes(self, widget):
-        window = Gtk.Window()
-        box = Gtk.VBox()
-        window.add(box)
-        window.set_title(_("Desktop themes"))
-        window.set_default_size(720, 480)
-        window.set_transient_for(widget.get_toplevel())
-        window.set_border_width(6)
-        window.set_position(Gtk.WindowPosition.CENTER)
-        page = ExtensionSidePage(self.name, self.icon, self.keywords, box, "theme", None)
-        page.load(window=window)
-        box.pack_start(page.vbox, True, True, 6)
-        window.show_all()
-        return True
 
     def _on_icon_theme_selected(self, path, theme):
         try:

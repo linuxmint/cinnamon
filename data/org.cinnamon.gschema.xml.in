@@ -21,7 +21,15 @@
         override version check
       </_description>
     </key>
-    
+
+    <key name="extension-cache-updated" type="i">
+      <default>0</default>
+      <summary>Timestamp of last cache refresh</summary>
+      <description>
+        The timestamp of the last time the index cache was updated from the spices website
+      </description>
+    </key>
+
     <key name="enabled-applets" type="as">
       <default>['panel1:right:0:systray@cinnamon.org', 'panel1:left:0:menu@cinnamon.org', 'panel1:left:1:show-desktop@cinnamon.org', 'panel1:left:2:panel-launchers@cinnamon.org', 'panel1:left:3:window-list@cinnamon.org', 'panel1:right:1:keyboard@cinnamon.org', 'panel1:right:2:notifications@cinnamon.org', 'panel1:right:3:removable-drives@cinnamon.org', 'panel1:right:4:user@cinnamon.org', 'panel1:right:5:network@cinnamon.org', 'panel1:right:6:bluetooth@cinnamon.org', 'panel1:right:7:power@cinnamon.org', 'panel1:right:8:calendar@cinnamon.org', 'panel1:right:9:sound@cinnamon.org']</default>
       <_summary>Uuids of applets to enable</_summary>
@@ -30,6 +38,14 @@
         which should be loaded. Append ! in front of uuid to override version
         check.
       </_description>
+    </key>
+
+    <key name="applet-cache-updated" type="i">
+      <default>0</default>
+      <summary>Timestamp of last cache refresh</summary>
+      <description>
+        The timestamp of the last time the index cache was updated from the spices website
+      </description>
     </key>
 
     <key name="next-applet-id" type="i">
@@ -52,7 +68,15 @@
         which should be loaded. uuids should be put in the form uuid:id:x:y, where id is used to distinguish between multiple instances of the same desklet. Append ! in front of uuid to override version check.
       </_description>
     </key>
-    
+
+    <key name="desklet-cache-updated" type="i">
+      <default>0</default>
+      <summary>Timestamp of last cache refresh</summary>
+      <description>
+        The timestamp of the last time the index cache was updated from the spices website
+      </description>
+    </key>
+
     <key name="enabled-search-providers" type="as">
       <default>[]</default>
       <_summary>Uuids of search providers to enable</_summary>
@@ -637,8 +661,16 @@
        The name of the theme
       </_description>
     </key>
+
+    <key name="theme-cache-updated" type="i">
+      <default>0</default>
+      <summary>Timestamp of last cache refresh</summary>
+      <description>
+        The timestamp of the last time the index cache was updated from the spices website
+      </description>
+    </key>
   </schema>
- 
+
   <schema id="org.cinnamon.keyboard" path="/org/cinnamon/keyboard/"
           gettext-domain="@GETTEXT_PACKAGE@">
     <key name="keyboard-type" type="s">
