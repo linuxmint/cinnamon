@@ -153,7 +153,7 @@ st_drawing_area_paint (ClutterActor *self)
 
       cogl_set_source (priv->material);
       cogl_rectangle_with_texture_coords (content_box.x1, content_box.y1,
-                                          width, height,
+                                          content_box.x2, content_box.y2,
                                           0.0f, 0.0f, 1.0f, 1.0f);
     }
 }
