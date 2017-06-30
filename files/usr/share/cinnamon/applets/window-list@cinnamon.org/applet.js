@@ -887,7 +887,7 @@ AppMenuButtonRightClickMenu.prototype = {
         } else {
             item = new PopupMenu.PopupIconMenuItem(_("Minimize"), "view-sort-ascending", St.IconType.SYMBOLIC);
             item.connect('activate', function() {
-                mw.minimize(global.get_current_time());
+                mw.minimize();
             });
         }
         this.addMenuItem(item);
