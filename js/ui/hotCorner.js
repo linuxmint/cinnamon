@@ -282,9 +282,12 @@ HotCorner.prototype = {
                     this.runAction();
                 }
             }
+
+            this.hover_delay_id = 0;
+            return false;
         }));
-        this.hover_delay_id = 0;
-        return false;
+
+        return Clutter.EVENT_PROPAGATE;
     },
 
     _onCornerClicked: function() {
@@ -296,7 +299,8 @@ HotCorner.prototype = {
         if (this.shouldToggleOverviewOnClick())
             this.rippleAnimation();
         this.runAction();
-        return true;
+
+        return Clutter.EVENT_STOP;
     },
 
     _onCornerLeft: function(actor, event) {
@@ -307,14 +311,16 @@ HotCorner.prototype = {
 
         if (event.get_related() != this.actor)
             this._entered = false;
+
         // Consume event, otherwise this will confuse onEnvironsLeft
-        return true;
+        return Clutter.EVENT_STOP;
     },
 
     _onEnvironsLeft: function(actor, event) {
         if (event.get_related() != this._corner)
             this._entered = false;
-        return false;
+
+        return Clutter.EVENT_PROPAGATE;
     },
 
     // Checks if the Activities button is currently sensitive to
