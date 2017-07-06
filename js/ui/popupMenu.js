@@ -2021,10 +2021,11 @@ PopupMenuBase.prototype = {
     },
 
     _getMenuItems: function() {
-        return this.box.get_children().map(function (actor) {
+        return this.box.get_children().filter(function(actor) {
+            return (actor._delegate !== undefined
+                && (actor._delegate instanceof PopupBaseMenuItem || actor._delegate instanceof PopupMenuSection));
+        }).map(function (actor) {
             return actor._delegate;
-        }).filter(function(item) {
-            return item instanceof PopupBaseMenuItem || item instanceof PopupMenuSection;
         });
     },
 
