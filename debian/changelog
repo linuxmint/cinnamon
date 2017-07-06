@@ -1,3 +1,24 @@
+cinnamon (3.4.4) sonya; urgency=medium
+
+  [ Michael Webster ]
+  * classicSwitcher.js: Fix hidpi issues.
+  * KeybindingWidgets.py: fix parsing of accelerators that are shifted but not alpha-numeric characters.
+  * xlet-settings.py: Don't crash when an invalid xlet id is provided.
+
+  [ itzexor ]
+  * window-list applet: fix argument warning
+
+  [ Michael Webster ]
+  * add issue template
+
+  [ Jason Hicks ]
+  * ui/settings: Handle undefined old settings values
+
+  [ Michael Webster ]
+  * hotCorner.js: Fix hover delay callback.
+
+ -- Clement Lefebvre <root@linuxmint.com>  Thu, 06 Jul 2017 11:17:41 +0200
+
 cinnamon (3.4.3) sonya; urgency=medium
 
   [ Michael Webster ]
