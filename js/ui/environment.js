@@ -34,6 +34,9 @@ function _patchContainerClass(containerClass) {
     // method. We conveniently, but somewhat dubiously, take the
     // this opportunity to make it do something more useful.
     containerClass.prototype.add = function(actor, props) {
+        if (actor === undefined) {
+            return false;
+        }
         this.add_actor(actor);
         if (props)
             this.child_set(actor, props);
