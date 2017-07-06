@@ -307,7 +307,7 @@ CinnamonDBus.prototype = {
 
     highlightXlet: function(uuid, instance_id, highlight) {
         let obj = this._getXletObject(uuid, instance_id);
-        if (obj.highlight) obj.highlight(highlight);
+        if (obj && obj.highlight) obj.highlight(highlight);
     },
 
     highlightPanel: function(id, highlight) {
