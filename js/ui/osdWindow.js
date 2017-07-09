@@ -37,6 +37,8 @@ LevelBar.prototype = {
     _init: function() {
         this._level = 0;
 
+        this.initial = true;
+
         this.actor = new St.Bin({ style_class: 'level',
                                   x_align: St.Align.START,
                                   y_fill: true,
@@ -61,7 +63,9 @@ LevelBar.prototype = {
          * or the theme changed.  Make sure we update it, as well as figure out our
          * level bar's allocation.
          */
-        if (this.stored_actor_width != this.actor.width) {
+        if (this.initial || (this.stored_actor_width != this.actor.width)) {
+            this.initial = false;
+
             this.stored_actor_width = this.actor.width;
 
             let box = this.actor.get_theme_node().get_content_box(this.actor.get_allocation_box());
