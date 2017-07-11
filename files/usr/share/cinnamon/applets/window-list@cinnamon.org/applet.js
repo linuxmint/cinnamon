@@ -341,8 +341,10 @@ AppMenuButton.prototype = {
     },
 
     onPanelEditModeChanged: function() {
+        let editMode = global.settings.get_boolean("panel-edit-mode");
         if (this._draggable)
-            this._draggable.inhibit = global.settings.get_boolean("panel-edit-mode");
+            this._draggable.inhibit = editMode;
+        this.actor.reactive = !editMode;
     },
 
     onScrollModeChanged: function() {
