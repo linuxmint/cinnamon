@@ -94,15 +94,8 @@ class Module:
             switch = GSettingsSwitch(_("Disable touchpad while typing"), "org.cinnamon.settings-daemon.peripherals.touchpad", "disable-while-typing")
             settings.add_row(switch)
 
-            button_list = [[0, _("Disabled")], [1, _("Left button")], [2, _("Middle button")], [3, _("Right button")]]
             clickpad_list = [[0, _("Left click only")], [1, _("Emulate mouse buttons")], [2, _("Use multiple fingers for right and middle click")]]
 
-            combo = GSettingsComboBox(_("Two-finger click emulation:"), "org.cinnamon.settings-daemon.peripherals.touchpad", "two-finger-click", button_list, valtype="int")
-            settings.add_row(combo)
-
-            combo = GSettingsComboBox(_("Three-finger click emulation:"), "org.cinnamon.settings-daemon.peripherals.touchpad", "three-finger-click", button_list, valtype="int")
-            settings.add_row(combo)
-            
             combo = GSettingsComboBox(_("Clickpad click action:"), "org.cinnamon.settings-daemon.peripherals.touchpad", "clickpad-click", clickpad_list, valtype="int")
             settings.add_row(combo)
 
