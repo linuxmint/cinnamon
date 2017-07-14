@@ -217,6 +217,7 @@ class MainWindow:
         self.stack_switcher.set_margin_right(n)
 
         self.search_entry = self.builder.get_object("search_box")
+        self.search_entry.set_placeholder_text(_("Search"))
         self.search_entry.connect("changed", self.onSearchTextChanged)
         self.search_entry.connect("icon-press", self.onClearSearchBox)
 
