@@ -62,10 +62,16 @@ function _clamp(value, min, max) {
 
 
 function ScaledPoint(x, y, scaleX, scaleY) {
-    [this.x, this.y, this.scaleX, this.scaleY] = arguments;
+    this._init(x, y, scaleX, scaleY);
 }
 
 ScaledPoint.prototype = {
+    _init: function(x, y, scaleX, scaleY) {
+        this.x = x;
+        this.y = y;
+        this.scaleX = scaleX;
+        this.scaleY = scaleY;
+    },
     getPosition : function() {
         return [this.x, this.y];
     },
@@ -75,11 +81,13 @@ ScaledPoint.prototype = {
     },
 
     setPosition : function(x, y) {
-        [this.x, this.y] = arguments;
+        this.x = x;
+        this.y = y;
     },
 
     setScale : function(scaleX, scaleY) {
-        [this.scaleX, this.scaleY] = arguments;
+        this.scaleX = scaleX;
+        this.scaleY = scaleY;
     },
 
     interpPosition : function(other, step) {
