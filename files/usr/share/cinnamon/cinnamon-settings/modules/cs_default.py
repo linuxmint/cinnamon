@@ -353,9 +353,10 @@ class CustomAppChooserButton(Gtk.AppChooserButton):
         self.setPreference(pref_open_folder, PREF_MEDIA_AUTORUN_X_CONTENT_OPEN_FOLDER)
 
 class OtherTypeDialog(Gtk.Dialog):
-    def __init__(self, media_settings):
+    def __init__(self, media_settings, transient_parent):
         super(OtherTypeDialog, self).__init__(title = _("Other Media"),
-                                              transient_for = None,
+                                              transient_for = transient_parent,
+                                              border_width = 6,
                                               flags = 0)
         self.add_button(_("Close"), Gtk.ResponseType.OK)
 
@@ -472,7 +473,7 @@ class Module:
             print "Loading Default module"
 
             self.media_settings = Gio.Settings.new(MEDIA_HANDLING_SCHEMA)
-            self.other_type_dialog = OtherTypeDialog(self.media_settings)
+            self.other_type_dialog = OtherTypeDialog(self.media_settings, self.sidePage.window)
 
             self.sidePage.stack = SettingsStack()
             self.sidePage.add_widget(self.sidePage.stack)
@@ -531,11 +532,15 @@ class Module:
                 widget.pack_end(button, False, False, 0)
                 settings.add_row(widget)
 
-            button = Button(_("_Other Media..."), self.onMoreClicked)
+            # FIXMEEEEEEEE??
+            button = Button(_("_Other Media...").strip("_"), self.onMoreClicked)
             settings.add_row(button)
 
     def onMoreClicked(self, widget):
         self.other_type_dialog.doShow(widget.get_toplevel())
+
+    def _setParentRef(self, window):
+        self.sidePage.window = window
 
 class InvertedSwitch(SettingsWidget):
     def __init__(self, label, schema, key):
