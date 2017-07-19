@@ -11,6 +11,7 @@ const MessageTray = imports.ui.messageTray;
 const Urgency = imports.ui.messageTray.Urgency;
 const NotificationDestroyedReason = imports.ui.messageTray.NotificationDestroyedReason;
 const Settings = imports.ui.settings;
+const Gettext = imports.gettext.domain("cinnamon-applets");
 
 function MyApplet(metadata, orientation, panel_height, instanceId) {
     this._init(metadata, orientation, panel_height, instanceId);
@@ -314,13 +315,11 @@ function timeify(orig_time) {
             str += _(" (Just now)");
             break;
         case (diff > 15 && diff <= 59):
-            str += _(" (%s seconds ago)").format(diff.toString());
+            str += Gettext.ngettext(" (%d second ago)", " (%d seconds ago)", diff).format(diff);
             break;
-        case (diff > 59 && diff <= 119):
-            str += _(" (%s minute ago)").format(Math.floor(diff / 60).toString());
-            break;
-        case (diff > 119 && diff <= 3540):
-            str += _(" (%s minutes ago)").format(Math.floor(diff / 60).toString());
+        case (diff > 59 && diff <= 3540):
+            diff_minutes = Math.floor(diff / 60);
+            str += Gettext.ngettext(" (%d minute ago)", " (%d minutes ago)", diff_minutes).format(diff_minutes);
             break;
     }
     return str;

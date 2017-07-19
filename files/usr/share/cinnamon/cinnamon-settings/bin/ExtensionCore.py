@@ -1202,10 +1202,7 @@ Please contact the developer.""")
             return
         self.current_num_updates = num
         if num > 0:
-            if num > 1:
-                self.select_updated.set_label(_("%d updates available!") % (len(self.update_list)))
-            else:
-                self.select_updated.set_label(_("%d update available!") % (len(self.update_list)))
+            self.select_updated.set_label(gettext.ngettext("%d update available!", "%d updates available!", num) % num)
             self.select_updated.show()
         else:
             self.select_updated.hide()
