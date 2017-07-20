@@ -1226,7 +1226,6 @@ function _stageEventHandler(actor, event) {
             expo.hide();
             return true;
         case Meta.KeyBindingAction.PANEL_RUN_DIALOG:
-        case Meta.KeyBindingAction.COMMAND_2:
             getRunDialog().open();
             return true;
         case Meta.KeyBindingAction.PANEL_MAIN_MENU:
