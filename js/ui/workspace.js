@@ -178,6 +178,7 @@ WindowClone.prototype = {
 
         this._windowIsZooming = false;
         this._zooming = false;
+        this._zoomStep = 0;
         this._selected = false;
     },
 
@@ -268,7 +269,7 @@ WindowClone.prototype = {
 
     scrollZoom: function (direction) {
         if (direction === Clutter.ScrollDirection.UP) {
-            if (this._zoomStep == undefined)
+            if (this._zoomStep == 0)
                 this._zoomStart();
             if (this._zoomStep < 100) {
                 this._zoomStep += SCROLL_SCALE_AMOUNT;
@@ -368,7 +369,7 @@ WindowClone.prototype = {
         this._zoomGlobalPosition = undefined;
         this._zoomGlobalScale    = undefined;
         this._zoomTargetPosition = undefined;
-        this._zoomStep           = undefined;
+        this._zoomStep           = 0;
     },
 
     _onButtonPress: function(actor, event) {
