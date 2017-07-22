@@ -505,6 +505,12 @@ SpicesAboutDialog.prototype = {
             topTextBox.add_actor(lastEdited);
         }
 
+        this._launchSpiceUpdateCheckWorker(metadata.uuid, (canUpdate) => {
+            let label = canUpdate ? 'An update is available' : 'Up to date';
+            let updateState = new St.Label({text: _(label), style_class: "about-description"});
+            topTextBox.add_actor(updateState);
+        });
+
         //description
         let desc = new St.Label({text: this._(metadata.description), style_class: "about-description"});
         let dText = desc.clutter_text;
@@ -625,7 +631,15 @@ SpicesAboutDialog.prototype = {
     _launchSite: function(a, b, site) {
         Util.spawnCommandLine("xdg-open " + site);
         this.close(global.get_current_time());
-    }
+    },
+
+    _launchSpiceUpdateCheckWorker: function(uuid, cb) {
+        let updaterPath = '/usr/share/cinnamon/js/misc/spiceUpdateChecker.js';
+        Util.spawn_async(['cjs', updaterPath, '--uuid=' + uuid], (result) => {
+            cb(JSON.parse(result));
+            return;
+        });
+    },
 }
 
 /**
