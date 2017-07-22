@@ -168,7 +168,7 @@ PanelAppLauncher.prototype = {
         this._draggable.connect('drag-cancelled', Lang.bind(this, this._onDragCancelled));
         this._draggable.connect('drag-end', Lang.bind(this, this._onDragEnd));
 
-        this._draggable.inhibit = !this.launchersBox.allowDragging || global.settings.get_boolean(PANEL_EDIT_MODE_KEY);
+        this._updateInhibit();
         this.launchersBox.connect("launcher-draggable-setting-changed", Lang.bind(this, this._updateInhibit));
         global.settings.connect('changed::' + PANEL_EDIT_MODE_KEY, Lang.bind(this, this._updateInhibit));
     },
@@ -191,7 +191,9 @@ PanelAppLauncher.prototype = {
     },
 
     _updateInhibit: function(){
-        this._draggable.inhibit = !this.launchersBox.allowDragging || global.settings.get_boolean(PANEL_EDIT_MODE_KEY);
+        let editMode = global.settings.get_boolean(PANEL_EDIT_MODE_KEY);
+        this._draggable.inhibit = !this.launchersBox.allowDragging || editMode;
+        this.actor.reactive = !editMode;
     },
 
     getDragActor: function() {
