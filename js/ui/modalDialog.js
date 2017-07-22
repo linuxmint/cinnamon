@@ -492,12 +492,12 @@ SpicesAboutDialog.prototype = {
 
             let lastEdited = new St.Label({text: dateUTC, style_class: "about-uuid"});
             topTextBox.add_actor(lastEdited);
-        } else {
-            //version
-            if (metadata.version) {
-                let version = new St.Label({text: "v%s".format(metadata.version), style_class: "about-uuid"});
-                topTextBox.add_actor(version);
-            }
+        }
+
+        //version
+        if (metadata.version) {
+            let version = new St.Label({text: "v%s".format(metadata.version), style_class: "about-uuid"});
+            topTextBox.add_actor(version);
         }
 
         //description
