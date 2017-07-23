@@ -466,9 +466,8 @@ ExpoWorkspaceThumbnail.prototype = {
                 // Use the stable sequence for an integer to use as a hash key
                 this.stackIndices[stack[i].get_meta_window().get_stable_sequence()] = i;
             }
+            this.syncStacking(this.stackIndices);
         }
-
-        this.syncStacking(this.stackIndices);
     },
 
     setActive: function(isActive) {
@@ -961,7 +960,7 @@ ExpoWorkspaceThumbnail.prototype = {
             if (dropping) {
                 metaWindow.move_to_monitor(targetMonitor);
                 if (targetMonitor === Main.layoutManager.primaryIndex) {
-                    metaWindow.change_workspace(this.metaWorkspace, false, time);
+                    metaWindow.change_workspace(this.metaWorkspace);
                 }
             }
         }
@@ -975,7 +974,7 @@ ExpoWorkspaceThumbnail.prototype = {
             {
                 canDrop = true;
                 if (dropping) {
-                    metaWindow.change_workspace(this.metaWorkspace, false, time);
+                    metaWindow.change_workspace(this.metaWorkspace);
                 }
             }
             if (movingMonitors) {
