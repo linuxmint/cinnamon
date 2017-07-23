@@ -1192,6 +1192,7 @@ AnimatedIcon.prototype = {
             Mainloop.source_remove(this._timeoutId);
     }
 };
+/* FIXME:  Find out if this TextShadower functionality below is actually used */
 
 function TextShadower() {
     this._init();
@@ -1299,106 +1300,11 @@ PanelCorner.prototype = {
         this._side = side;
         this._box = box;
         this._cornertype = cornertype;
-        this._box.connect('style-changed', Lang.bind(this, this._boxStyleChanged));
 
         this.actor = new St.DrawingArea({ style_class: 'panel-corner' });
 
         this.actor.connect('style-changed', Lang.bind(this, this._styleChanged));
         this.actor.connect('repaint', Lang.bind(this, this._repaint));
-    },
-
-    _findRightmostButton: function(container) {
-        if (!container.get_children)
-            return null;
-
-        let children = container.get_children();
-
-        if (!children || children.length == 0)
-            return null;
-
-        // Start at the back and work backward
-
-        let index = children.length - 1;
-        while (index >= 0 && !children[index].visible)
-            index--;
-
-        if (index < 0)
-            return null;
-
-        return children[index];
-    },
-
-    _findLeftmostButton: function(container) {
-        if (!container.get_children)
-            return null;
-
-        let children = container.get_children();
-
-        if (!children || children.length == 0)
-            return null;
-
-        // Start at the front and work forward
-
-        let index = 0;
-        while (index < children.length && !children[index].visible)
-            index++;
-
-        if (index == children.length)
-            return null;
-
-        return children[index];
-    },
-
-    _boxStyleChanged: function() {
-        let side = this._side;
-        let rtlAwareContainer = this._box instanceof St.BoxLayout;
-        let button;
-
-        if (rtlAwareContainer &&
-            this._box.get_direction() == St.TextDirection.RTL) {
-            if (this._side == St.Side.LEFT)
-                side = St.Side.RIGHT;
-            else if (this._side == St.Side.RIGHT)
-                side = St.Side.LEFT;
-        } // ?? why is there no similar logic for the LTR case ?
-
-        if (side == St.Side.LEFT)
-            button = this._findLeftmostButton(this._box);
-        else if (side == St.Side.RIGHT)
-            button = this._findRightmostButton(this._box);
-
-        //
-        // This section below is puzzling to me.  Appears to be linking the pseudo class of the corner
-        // to the pseudo class of the closest applet.  Why ?  won't fire for vertical panels anyway
-        // as these will have side set to TOP or BOTTOM
-        //
-        if (button) {
-            if (this._button && this._buttonStyleChangedSignalId) {
-                this._button.disconnect(this._buttonStyleChangedSignalId);
-                this._button.style = null;
-            }
-
-            this._button = button;
-
-            button.connect('destroy', Lang.bind(this,
-                function() {
-                    if (this._button == button) {
-                        this._button = null;
-                        this._buttonStyleChangedSignalId = 0;
-                    }
-                }));
-
-            // Synchronize the locate button's pseudo classes with this corner
-            this._buttonStyleChangedSignalId = button.connect('style-changed', Lang.bind(this,
-                function(actor) {
-                    let pseudoClass = button.get_style_pseudo_class();
-                    this.actor.set_style_pseudo_class(pseudoClass);
-                }));
-
-            // The corner doesn't support theme transitions, so override
-            // the .panel-button default
-                button.style = 'transition-duration: 0';
-        }
     },
 
     _repaint: function() {
