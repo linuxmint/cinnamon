@@ -50,7 +50,7 @@ class Main:
         usage = """
             Usage:
 
-            cinnamon-json-makepot -i | -r | [-js] <potfile name>
+            cinnamon-json-makepot -i | -r | -k | [-js] <potfile name>
 
             -js, --js - Runs xgettext on any javascript files in your directory before
                   scanning the settings-schema.json file.  This allows you to generate
@@ -68,6 +68,9 @@ class Main:
 
             -r, --remove - The opposite of install, removes translations from the store.
                   Again, it uses the UUID to find the correct files to remove
+
+            -k, --keyword - Change the variable name gettext is assigned to in your
+                  javascript files. The default is _.
 
             <potfile name> - name of the .pot file to work with.  This can be pre-existing,
             or the name of a new file to use.  If you leave off the .pot extension, it will
@@ -97,6 +100,7 @@ class Main:
         parser.add_option("-j", "--js", action="store_true", dest="js", default=False)
         parser.add_option("-i", "--install", action="store_true", dest="install", default=False)
         parser.add_option("-r", "--remove", action="store_true", dest="remove", default=False)
+        parser.add_option("-k", "--keyword", type="str", dest="keyword", default="_")
 
         (options, args) = parser.parse_args()
 
@@ -132,7 +136,11 @@ class Main:
             try:
                 os.system('find . -iname "*.js" > %s' % tmp.name)
             finally:
-                os.system("xgettext --language=C --keyword=_ --output=%s --files-from=%s" % (self.potname, tmp.name))
+                os.system("xgettext --language=JavaScript --keyword=%s --output=%s --files-from=%s" % (
+                    options.keyword,
+                    self.potname,
+                    tmp.name
+                ))
 
         self.current_parent_dir = ""
 
