@@ -112,6 +112,20 @@ SignalManager.prototype = {
         this._storage.push([sigName, obj, callback, id]);
     },
 
+    connect_after: function(obj, sigName, callback, bind, force) {
+        if (!force && this.isConnected(sigName, obj, callback))
+            return
+
+        let id;
+
+        if (bind)
+            id = obj.connect_after(sigName, Lang.bind(bind, callback));
+        else
+            id = obj.connect_after(sigName, Lang.bind(this._object, callback));
+
+        this._storage.push([sigName, obj, callback, id]);
+    },
+
     _signalIsConnected: function (signal) {
         if (!signal[1])
             return false;
