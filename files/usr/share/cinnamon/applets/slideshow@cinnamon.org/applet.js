@@ -5,8 +5,6 @@ const Main = imports.ui.main;
 const Applet = imports.ui.applet;
 const PopupMenu = imports.ui.popupMenu;
 const Util = imports.misc.util;
-const Gettext = imports.gettext.domain("cinnamon-applets");
-const _ = Gettext.gettext;
 
 function MyApplet(metadata, orientation, panel_height, instanceId) {
     this._init(metadata, orientation, panel_height, instanceId);
@@ -62,7 +60,7 @@ MyApplet.prototype = {
         catch(e) {
             global.logError(e);
         }
-  
+
     },
 
     on_applet_clicked: function(event) {
