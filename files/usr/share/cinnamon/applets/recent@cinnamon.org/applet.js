@@ -8,6 +8,7 @@ const Applet = imports.ui.applet;
 
 const PRIVACY_SCHEMA = "org.cinnamon.desktop.privacy";
 const REMEMBER_RECENT_KEY = "remember-recent-files";
+const PANEL_EDIT_MODE_KEY = "panel-edit-mode";
 
 function MyPopupMenuItem()
 {
@@ -71,9 +72,24 @@ MyApplet.prototype = {
 
             this.recent_id = this.RecentManager.connect('changed', Lang.bind(this, this._refreshRecents));
             this.settings_id = this.privacy_settings.connect("changed::" + REMEMBER_RECENT_KEY, Lang.bind(this, this._refreshRecents));
+            global.settings.connect('changed::' + PANEL_EDIT_MODE_KEY, Lang.bind(this, this._on_panel_edit_mode_changed));
         }
         catch (e) {
             global.logError(e);
+        }
+    },
+
+    _on_panel_edit_mode_changed: function () {
+        if (global.settings.get_boolean(PANEL_EDIT_MODE_KEY)) {
+            if (!this.actor.visible) {
+                this.actor.show();
+            }
+        } else {
+            if (this.privacy_settings.get_boolean(REMEMBER_RECENT_KEY) && !this.actor.visible) {
+                this.actor.show();
+            } else if (!this.privacy_settings.get_boolean(REMEMBER_RECENT_KEY) && this.actor.visible) {
+                this.actor.hide();
+            }
         }
     },
 
@@ -219,10 +235,11 @@ MyApplet.prototype = {
             this._recentButtons = [];
             this.actor.hide();
         }
+        this._on_panel_edit_mode_changed();
     }
 };
 
-function main(metadata, orientation, panel_height, instance_id) {  
+function main(metadata, orientation, panel_height, instance_id) {
     let myApplet = new MyApplet(orientation, panel_height, instance_id);
     return myApplet;
 }
