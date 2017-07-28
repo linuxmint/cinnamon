@@ -14,6 +14,7 @@ const Tweener = imports.ui.tweener;
 const EdgeFlip = imports.ui.edgeFlip;
 const HotCorner = imports.ui.hotCorner;
 const DeskletManager = imports.ui.deskletManager;
+const Panel = imports.ui.panel;
 
 const STARTUP_ANIMATION_TIME = 0.5;
 const KEYBOARD_ANIMATION_TIME = 0.15;
@@ -626,6 +627,12 @@ Chrome.prototype = {
     },
 
     getMonitorInfoForActor: function(actor) {
+        // special case for hideable panel actors:
+        // due to position and clip they may appear originate on an adjacent monitor
+        if (actor.maybeGet("_delegate") instanceof Panel.Panel
+            && actor._delegate.isHideable())
+            return [actor._delegate.monitorIndex, this._monitors[actor._delegate.monitorIndex]];
+
         let [x, y] = actor.get_transformed_position();
         let [w, h] = actor.get_transformed_size();
         let [index, monitor] = this._findMonitorForRect(x, y, w, h);
@@ -715,19 +722,18 @@ Chrome.prototype = {
                 && wantsInputRegion
                 && actorData.actor.get_paint_visibility()
                 && !Main.uiGroup.get_skip_paint(actorData.actor)) {
-                // If the actor is clipped, then we don't want the clipped off areas
-                // to affect the input region because input events won't reach the clipped
-                // actor and the area will become an input "black hole"
-                let rect;
-                if (actorData.actor.has_clip) {
-                    let [cx, cy, cw, ch] = actorData.actor.get_clip();
-                    cx = Math.round(x + cx);
-                    cy = Math.round(y + cy);
-                    cw = Math.round(cw);
-                    ch = Math.round(ch);
-                    rect = new Meta.Rectangle({ x: cx, y: cy, width: cw, height: ch});
-                } else {
-                    rect = new Meta.Rectangle({ x: x, y: y, width: w, height: h});
+
+                let rect = new Meta.Rectangle({ x: x, y: y, width: w, height: h});
+
+                // special case for hideable panel actors:
+                // clip any off-monitor input region
+                if (actorData.actor.maybeGet("_delegate") instanceof Panel.Panel
+                    && actorData.actor._delegate.isHideable()) {
+                    let m = this._monitors[actorData.actor._delegate.monitorIndex];
+                    if (m) {
+                        let mr = {x: m.x, y: m.y, width: m.width, height: m.height};
+                        [, rect] = rect.intersect(new Meta.Rectangle(mr));
+                    }
                 }
 
                 rects.push(rect);
