@@ -258,6 +258,8 @@ class Module:
             self.cursor_chooser.set_tooltip_text(theme)
         except Exception, detail:
             print detail
+
+        self.update_cursor_theme_link(path, theme)
         return True
 
     def _on_cinnamon_theme_selected(self, path, theme):
@@ -366,3 +368,20 @@ class Module:
                         res.remove(j)
             res.append((i[0], i[1]))
         return res
+
+    def update_cursor_theme_link(self, path, name):
+        default_dir = os.path.join(os.path.expanduser("~"), ".icons", "default")
+        index_path = os.path.join(default_dir, "index.theme")
+
+        try:
+            os.makedirs(default_dir)
+        except os.error as e:
+            pass
+
+        if os.path.exists(index_path):
+            os.unlink(index_path)
+
+        contents = "[icon theme]\nInherits=%s\n" % name
+
+        with open(index_path, "w") as f:
+            f.write(contents)
