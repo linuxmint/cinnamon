@@ -190,7 +190,12 @@ MyApplet.prototype = {
     on_applet_added_to_panel: function() {
         this._config = new XApp.KbdLayoutController();
 
-        this._syncConfig();
+        if (global.settings.get_boolean(PANEL_EDIT_MODE_KEY)) {
+            this._syncConfig();
+            this._onPanelEditModeChanged();
+        } else {
+            this._syncConfig();
+        }
 
         this._config.connect('layout-changed', Lang.bind(this, this._syncGroup));
         this._config.connect('config-changed', Lang.bind(this, this._syncConfig));
