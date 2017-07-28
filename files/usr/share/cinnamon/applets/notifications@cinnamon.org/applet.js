@@ -13,6 +13,8 @@ const NotificationDestroyedReason = imports.ui.messageTray.NotificationDestroyed
 const Settings = imports.ui.settings;
 const Gettext = imports.gettext.domain("cinnamon-applets");
 
+const PANEL_EDIT_MODE_KEY = "panel-edit-mode";
+
 function MyApplet(metadata, orientation, panel_height, instanceId) {
     this._init(metadata, orientation, panel_height, instanceId);
 }
@@ -39,7 +41,7 @@ MyApplet.prototype = {
 
         // Events
         Main.messageTray.connect('notify-applet-update', Lang.bind(this, this._notification_added));
-        global.settings.connect('changed::panel-edit-mode', Lang.bind(this, this.on_panel_edit_mode_changed));
+        global.settings.connect('changed::' + PANEL_EDIT_MODE_KEY, Lang.bind(this, this._on_panel_edit_mode_changed));
 
         // States
         this._blinking = false;
@@ -97,7 +99,7 @@ MyApplet.prototype = {
         this._crit_icon = new St.Icon({icon_name: 'critical-notif', icon_type: St.IconType.SYMBOLIC, reactive: true, track_hover: true, style_class: 'system-status-icon' });
         this._alt_crit_icon = new St.Icon({icon_name: 'alt-critical-notif', icon_type: St.IconType.SYMBOLIC, reactive: true, track_hover: true, style_class: 'system-status-icon' });
 
-        this.update_list();
+        this._on_panel_edit_mode_changed();
     },
 
     _notification_added: function (mtray, notification) {	// Notification event handler.
@@ -228,7 +230,15 @@ MyApplet.prototype = {
         }
     },
 
-    on_panel_edit_mode_changed: function () {
+    _on_panel_edit_mode_changed: function () {
+        if (global.settings.get_boolean(PANEL_EDIT_MODE_KEY)) {
+            if (!this.actor.visible) {
+                this.set_applet_icon_symbolic_name("empty-notif");
+                this.actor.show();
+            }
+        } else {
+            this.update_list();
+        }
     },
 
     on_applet_added_to_panel: function() {
