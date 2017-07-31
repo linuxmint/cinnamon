@@ -175,7 +175,7 @@ _st_set_text_from_style (ClutterText *text,
 
   ClutterColor color;
   StTextDecoration decoration;
-  PangoAttrList *attribs;
+  PangoAttrList *attribs = NULL;
   const PangoFontDescription *font;
   gchar *font_string;
   StTextAlign align;
@@ -188,26 +188,31 @@ _st_set_text_from_style (ClutterText *text,
   clutter_text_set_font_name (text, font_string);
   g_free (font_string);
 
-  attribs = pango_attr_list_new ();
-
   decoration = st_theme_node_get_text_decoration (theme_node);
-  if (decoration & ST_TEXT_DECORATION_UNDERLINE)
+
+  if (decoration)
     {
-      PangoAttribute *underline = pango_attr_underline_new (PANGO_UNDERLINE_SINGLE);
-      pango_attr_list_insert (attribs, underline);
+      attribs = pango_attr_list_new ();
+
+      if (decoration & ST_TEXT_DECORATION_UNDERLINE)
+        {
+          PangoAttribute *underline = pango_attr_underline_new (PANGO_UNDERLINE_SINGLE);
+          pango_attr_list_insert (attribs, underline);
+        }
+      if (decoration & ST_TEXT_DECORATION_LINE_THROUGH)
+        {
+          PangoAttribute *strikethrough = pango_attr_strikethrough_new (TRUE);
+          pango_attr_list_insert (attribs, strikethrough);
+        }
+      /* Pango doesn't have an equivalent attribute for _OVERLINE, and we deliberately
+       * skip BLINK (for now...)
+       */
     }
-  if (decoration & ST_TEXT_DECORATION_LINE_THROUGH)
-    {
-      PangoAttribute *strikethrough = pango_attr_strikethrough_new (TRUE);
-      pango_attr_list_insert (attribs, strikethrough);
-    }
-  /* Pango doesn't have an equivalent attribute for _OVERLINE, and we deliberately
-   * skip BLINK (for now...)
-   */
 
   clutter_text_set_attributes (text, attribs);
 
-  pango_attr_list_unref (attribs);
+  if (attribs)
+    pango_attr_list_unref (attribs);
 
   align = st_theme_node_get_text_align (theme_node);
   if(align == ST_TEXT_ALIGN_JUSTIFY) {
