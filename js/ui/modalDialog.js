@@ -475,19 +475,8 @@ SpicesAboutDialog.prototype = {
         topBox.add_actor(topTextBox);
 
         /*title*/
-        let titleBox = new St.BoxLayout();
-        topTextBox.add_actor(titleBox);
-
         let title = new St.Label({text: this._(metadata.name), style_class: "about-title"});
-        titleBox.add_actor(title);
-
-        //version
-        if (!('last-edited' in metadata) && metadata.version) {
-            let versionBin = new St.Bin({x_align: St.Align.START, y_align: St.Align.END});
-            titleBox.add_actor(versionBin);
-            let version = new St.Label({text: " v%s".format(metadata.version), style_class: "about-version"});
-            versionBin.add_actor(version);
-        }
+        topTextBox.add_actor(title);
 
         //uuid
         let uuid = new St.Label({text: metadata.uuid, style_class: "about-uuid"});
@@ -501,8 +490,14 @@ SpicesAboutDialog.prototype = {
                 replace(/T/, ' ').      // replace T with a space
                 replace(/\..+/, ' UTC') // delete the dot and everything after; set UTC label
 
-            let lastEdited = new St.Label({text: dateUTC + "\n", style_class: "about-uuid"});
+            let lastEdited = new St.Label({text: dateUTC, style_class: "about-uuid"});
             topTextBox.add_actor(lastEdited);
+        } else {
+            //version
+            if (metadata.version) {
+                let version = new St.Label({text: "v%s".format(metadata.version), style_class: "about-uuid"});
+                topTextBox.add_actor(version);
+            }
         }
 
         //description
@@ -511,7 +506,7 @@ SpicesAboutDialog.prototype = {
         dText.ellipsize = Pango.EllipsizeMode.NONE;
         dText.line_wrap = true;
         dText.set_line_wrap_mode(Pango.WrapMode.WORD_CHAR);
-        topTextBox.add_actor(desc);
+        contentBox.add_actor(desc);
 
         // optional content
         if(metadata.comments || metadata.website || metadata.contributors){
@@ -522,7 +517,7 @@ SpicesAboutDialog.prototype = {
 
             // comments
             if (metadata.comments) {
-                let comments = new St.Label({text: _("Comments:") + "\n\t" + this._(metadata.comments)});
+                let comments = new St.Label({text: this._(metadata.comments)});
                 let cText = comments.clutter_text;
                 cText.ellipsize = Pango.EllipsizeMode.NONE;
                 cText.line_wrap = true;
@@ -540,7 +535,7 @@ SpicesAboutDialog.prototype = {
 
                 let wsButton = new St.Button({x_align: St.Align.START, style_class: "cinnamon-link", name: "about-website"});
                 wsBox.add_actor(wsButton);
-                let website = new St.Label({text: metadata.website});
+                let website = new St.Label({text: "\t" + metadata.website});
                 let wtext = website.clutter_text;
                 wtext.ellipsize = Pango.EllipsizeMode.NONE;
                 wtext.line_wrap = true;
