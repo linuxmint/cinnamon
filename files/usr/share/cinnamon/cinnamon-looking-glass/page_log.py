@@ -1,6 +1,6 @@
 import datetime
-from pageutils import *
-from gi.repository import Gio, Gtk, GObject, Gdk, Pango, GLib
+import pageutils
+from gi.repository import Gtk
 
 class LogEntry():
     def __init__(self, category, time, message):
@@ -22,6 +22,7 @@ class LogView(Gtk.ScrolledWindow):
         self.add(self.textview)
 
         self.textbuffer = self.textview.get_buffer()
+        self.scroll_mark =  self.textbuffer.create_mark(None, self.textbuffer.get_end_iter(), False)
 
         self.log = []
         self.addedMessages = 0
@@ -50,24 +51,18 @@ class LogView(Gtk.ScrolledWindow):
         return entry
 
     def onButtonToggled(self, button, data):
-        self.textview.hide()
         active = button.get_active()
         self.enabledTypes[data] = active
         self.typeTags[data].props.invisible = active != True
-
         self.textbuffer.set_modified(True)
-        #print self.textview.get_preferred_height()
-        adj = self.get_vadjustment()
-        #adj.set_upper(self.textview.get_allocated_height())
-        self.textview.show()
 
     def onStatusChange(self, online):
-        iter = self.textbuffer.get_end_iter()
+        textIter = self.textbuffer.get_end_iter()
         if online:
             entry = self.append("info", 0, "================ DBus connection established ===============")
         else:
             entry = self.append("warning", 0, "================ DBus connection lost ===============")
-        self.textbuffer.insert_with_tags(iter, entry.formattedText, self.typeTags[entry.category])
+        self.textbuffer.insert_with_tags(textIter, entry.formattedText, self.typeTags[entry.category])
         self.getUpdates(True)
 
     def getUpdates(self, reread = False):
@@ -86,21 +81,20 @@ class LogView(Gtk.ScrolledWindow):
                         start, end = self.textbuffer.get_bounds()
                         self.textbuffer.delete(start, end)
 
-                    self.textview.hide()
-                    iter = self.textbuffer.get_end_iter()
+                    textIter = self.textbuffer.get_end_iter()
                     for item in data[self.addedMessages:]:
                         entry = self.append(item["category"], float(item["timestamp"])*0.001, item["message"])
-                        self.textbuffer.insert_with_tags(iter, entry.formattedText, self.typeTags[entry.category])
+                        self.textbuffer.insert_with_tags(textIter, entry.formattedText, self.typeTags[entry.category])
                         self.addedMessages += 1
-                    self.textview.show()
+                    self.textview.scroll_to_mark(self.scroll_mark, 0, True, 1, 1)
             except Exception as e:
                 print e
 
-class ModulePage(WindowAndActionBars):
+class ModulePage(pageutils.WindowAndActionBars):
     def __init__(self, parent):
         self.view = LogView()
-        WindowAndActionBars.__init__(self, self.view)
-        self.parent = parent;
+        pageutils.WindowAndActionBars.__init__(self, self.view)
+        self.parent = parent
 
         self.addToggleButton("info", "dialog-information", "Show/Hide Messages tagged as 'info'")
         self.addToggleButton("warning", "dialog-warning", "Show/Hide Messages tagged as 'warning'")
@@ -108,7 +102,7 @@ class ModulePage(WindowAndActionBars):
         self.addToggleButton("trace", "dialog-question", "Show/Hide Messages tagged as 'trace'")
 
     def addToggleButton(self, logType, icon, tooltip):
-        button = ImageToggleButton(icon)
+        button = pageutils.ImageToggleButton(icon)
         button.connect("toggled", self.view.onButtonToggled, logType)
         button.set_active(self.view.enabledTypes[logType])
         button.set_tooltip_text(tooltip)

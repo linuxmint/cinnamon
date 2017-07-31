@@ -1,45 +1,73 @@
-from pageutils import *
-from gi.repository import Gio, Gtk, GObject, Gdk, Pango, GLib
+import pageutils
+from gi.repository import Gtk
 
-class InspectView(BaseListView):
+class InspectView(pageutils.BaseListView):
     def __init__(self, parent):
         self.parent = parent
         store = Gtk.ListStore(str, str, str, str, str)
-        BaseListView.__init__(self, store)
+        pageutils.BaseListView.__init__(self, store)
 
         self.createTextColumn(0, "Name")
         self.createTextColumn(1, "Type")
         self.createTextColumn(2, "Value")
 
+        self.popup = Gtk.Menu()
+        self.insertCommand = Gtk.MenuItem("Insert into command entry")
+        self.insertCommand.connect("activate", self.onInsertCommand)
+        self.popup.append(self.insertCommand)
+        self.popup.show_all()
+
+        self.treeView.connect("button-press-event", self.onButtonPressEvent)
         self.treeView.connect("row-activated", self.onRowActivated)
 
-    def onRowActivated(self, treeview, path, view_column):
-        iter = self.store.get_iter(path)
-        name = self.store.get_value(iter, 0)
-        type = self.store.get_value(iter, 1)
-        value = self.store.get_value(iter, 3)
-        path = self.store.get_value(iter, 4)
+    def onButtonPressEvent(self, treeview, event):
+        x = int(event.x)
+        y = int(event.y)
+        pthinfo = treeview.get_path_at_pos(x, y)
+        if pthinfo is not None and event.button == 3:
+            path, col, cellx, celly = pthinfo
+            self.selectedPath = path
+            treeview.grab_focus()
+            treeview.set_cursor(path, col, 0)
+            self.popup.popup( None, None, None, None, event.button, event.time)
+            return True
 
-        self.parent.updateInspector(path, type, name, value, True)
+    def onInsertCommand(self, widget):
+        treeIter = self.store.get_iter(self.selectedPath)
+        objType = self.store.get_value(treeIter, 1)
+        objPath = self.store.get_value(treeIter, 4)
+        if objType == "function":
+            objPath += "()"
+        Gtk.Entry.do_insert_at_cursor(melangeApp.commandline, objPath)
+        melangeApp.commandline.grab_focus_without_selecting()
+
+    def onRowActivated(self, treeview, path, view_column):
+        treeIter = self.store.get_iter(path)
+        name = self.store.get_value(treeIter, 0)
+        objType = self.store.get_value(treeIter, 1)
+        value = self.store.get_value(treeIter, 3)
+        path = self.store.get_value(treeIter, 4)
+
+        self.parent.updateInspector(path, objType, name, value, True)
 
     def setInspectionData(self, path, data):
         self.store.clear()
         for item in data:
             self.store.append([item["name"], item["type"], item["shortValue"], item["value"], path + "['" + item["name"] + "']"])
 
-class ModulePage(WindowAndActionBars):
+class ModulePage(pageutils.WindowAndActionBars):
     def __init__(self, parent):
         self.view = InspectView(self)
-        WindowAndActionBars.__init__(self, self.view)
+        pageutils.WindowAndActionBars.__init__(self, self.view)
         self.parent = parent
 
-        self.back = ImageButton("back")
+        self.back = pageutils.ImageButton("back")
         self.back.set_tooltip_text("Go back")
         self.back.set_sensitive(False)
         self.back.connect("clicked", self.onBackButton)
         self.addToLeftBar(self.back, 1)
 
-        self.insert = ImageButton("insert-object")
+        self.insert = pageutils.ImageButton("insert-object")
         self.insert.set_tooltip_text("Insert into results")
         self.insert.set_sensitive(False)
         self.insert.connect("clicked", self.onInsertButton)
@@ -103,7 +131,7 @@ class ModulePage(WindowAndActionBars):
             self.typeLabel.set_text(objType)
             self.nameLabel.set_text(name)
 
-            cinnamonLog.activatePage("inspect")
+            melangeApp.activatePage("inspect")
             success, data = lookingGlassProxy.Inspect(path)
             if success:
                 try:
@@ -114,9 +142,9 @@ class ModulePage(WindowAndActionBars):
             else:
                 self.view.store.clear()
         elif objType == "undefined":
-            ResultTextDialog("Value for '" + name + "'", "Value is <undefined>")
+            pageutils.ResultTextDialog("Value for '" + name + "'", "Value is <undefined>")
         else:
-            ResultTextDialog("Value for " + objType + " '" + name + "'", value)
+            pageutils.ResultTextDialog("Value for " + objType + " '" + name + "'", value)
 
     def inspectElement(self, path, objType, name, value):
         del self.stack[:]

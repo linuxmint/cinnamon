@@ -1,4 +1,4 @@
-from gi.repository import Gio, Gtk, GObject, Gdk, Pango, GLib
+from gi.repository import Gtk
 
 class ResultTextDialog(Gtk.Dialog):
     def __init__(self, title, text):
@@ -34,7 +34,6 @@ class BaseListView(Gtk.ScrolledWindow):
 
         self.add(self.treeView)
         self.rendererText = Gtk.CellRendererText()
-        #self.rendererText.set_property('ellipsize', pango.ELLIPSIZE_END)
 
     def createTextColumn(self, index, text):
         column = Gtk.TreeViewColumn(text, self.rendererText, text=index)

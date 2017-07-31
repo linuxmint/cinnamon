@@ -15,9 +15,9 @@ import os
 import pyinotify
 import gi
 gi.require_version('Gtk', '3.0')
-from gi.repository import Gio, Gtk, GObject, Gdk, Pango, GLib
+from gi.repository import Gio, Gtk, GObject, Gdk
 import dbus, dbus.service, dbus.glib
-from pageutils import *
+import pageutils
 from lookingglass_proxy import LookingGlassProxy
 from dbus.mainloop.glib import DBusGMainLoop
 import signal
@@ -49,68 +49,6 @@ class MenuButton(Gtk.Button):
                 y + (extents.height-h)-(extents.width-w)/2 + allocation.y,
                 allocation.width,
                 allocation.height)
-
-class ResizeGrip(Gtk.Widget):
-    def __init__(self, parent):
-        Gtk.Widget.__init__(self)
-        self.parentWindow = parent
-
-    def do_realize(self):
-        self.set_realized(True)
-
-        allocation = self.get_allocation()
-
-        attr = Gdk.WindowAttr()
-        attr.window_type = Gdk.WindowType.CHILD
-        attr.wclass = Gdk.WindowWindowClass.INPUT_OUTPUT
-        attr.event_mask = self.get_events() | Gdk.EventMask.EXPOSURE_MASK | Gdk.EventMask.BUTTON_PRESS_MASK
-        attr.x = 0
-        attr.y = 0
-        attr.width = allocation.width
-        attr.height = allocation.height
-
-        mask = Gdk.WindowAttributesType.X | Gdk.WindowAttributesType.Y
-        window = Gdk.Window.new(self.get_parent_window(), attr, mask)
-        self.set_window(window)
-
-        window.set_user_data(self)
-        self.style = self.get_style()
-        self.style.set_background(window, Gtk.StateFlags.NORMAL)
-
-        self.get_window().set_cursor(Gdk.Cursor(Gdk.CursorType.BOTTOM_SIDE))
-        self.connect("draw", self.onDraw)
-
-    def do_unrealize(self):
-        self.get_window().destroy()
-
-    def do_size_request(self, requisition):
-        requisition.height = 4
-        requisition.width = -1
-
-    def do_get_preferred_width(self):
-        req = Gtk.Requisition()
-        self.do_size_request(req)
-        return (req.width, req.width)
-
-    def do_get_preferred_height(self):
-        req = Gtk.Requisition()
-        self.do_size_request(req)
-        return (req.height, req.height)
-
-    def do_size_allocate(self, allocation):
-        if self.get_realized():
-            self.get_window().move_resize(allocation.x, allocation.y, allocation.width, allocation.height)
-            self.queue_draw()
-
-    def do_button_press_event(self, event):
-        self.parentWindow.begin_resize_drag(Gdk.WindowEdge.SOUTH, event.button, int(event.x_root), int(event.y_root), event.time)
-        return True
-
-    def onDraw(self, widget, ctx):
-        width = self.get_window().get_width()
-        # Draw a line using the current theme
-        cr = self.get_window().cairo_create()
-        self.style.do_draw_hline(self.style, cr, Gtk.StateType.NORMAL, self, "", 1, width-2, 1)
 
 class CommandLine(Gtk.Entry):
     def __init__(self):
@@ -361,7 +299,7 @@ class ClosableTabLabel(Gtk.Box):
     def button_clicked(self, button, data=None):
         self.emit("close-clicked")
 
-class CinnamonLog(dbus.service.Object):
+class MelangeApp(dbus.service.Object):
     def __init__ (self):
         global lookingGlassProxy
         lookingGlassProxy = LookingGlassProxy()
@@ -377,7 +315,10 @@ class CinnamonLog(dbus.service.Object):
     @dbus.service.method (MELANGE_DBUS_NAME, in_signature='', out_signature='')
     def show(self):
         if self.window.get_visible():
-            self.window.hide()
+            if self._minimized:
+                self.window.present()
+            else:
+                self.window.hide()
         else:
             self.showAndFocus()
 
@@ -396,32 +337,29 @@ class CinnamonLog(dbus.service.Object):
             self.window.hide()
 
     def showAndFocus(self):
-        self.window.present()
         self.window.show_all()
         self.lookingGlassProxy.refreshStatus()
-        screen = self.window.get_screen()
-        geom = screen.get_monitor_geometry(screen.get_primary_monitor())
-        w, h = self.window.get_size()
-        self.window.resize(geom.width, h)
-        self.window.move(geom.x, geom.y)
         self.commandline.grab_focus()
 
     def run(self):
         self.window = Gtk.Window(Gtk.WindowType.TOPLEVEL)
-        self.window.set_type_hint(Gdk.WindowTypeHint.UTILITY)
-        screen = self.window.get_screen()
-        geom = screen.get_monitor_geometry(screen.get_primary_monitor())
+        self.window.set_title("Melange")
+        self.window.set_icon_name("system-search")
+        self.window.set_default_size(1000, 400)
+        self.window.set_position(Gtk.WindowPosition.MOUSE)
 
-        self.window.set_border_width(0)
-        self.window.set_decorated(False)
-        self.window.set_skip_taskbar_hint(True)
+        # I can't think of a way to reliably detect if the window
+        # is active to determine if we need to present or hide
+        # in show(). Since the window briefly loses focus during
+        # shortcut press we'd be unable to detect it at that time.
+        # Keeping the window on top ensures the window is never
+        # obscured so we can just hide if visible.
         self.window.set_keep_above(True)
-        self.window.set_default_size(geom.width, 200 * self.window.get_scale_factor())
-        self.window.move(geom.x,geom.y)
-        self.window.stick()
 
         self.window.connect("delete_event", self.onDelete)
         self.window.connect("key-press-event", self.onKeyPress)
+        self._minimized = False
+        self.window.connect("window-state-event", self.onWindowState)
 
         numRows = 3
         numColumns = 6
@@ -451,7 +389,7 @@ class CinnamonLog(dbus.service.Object):
         table.attach(self.notebook, 0, numColumns, 0, 1)
 
         column = 0
-        pickerButton = ImageButton("gtk-color-picker", Gtk.IconSize.SMALL_TOOLBAR)
+        pickerButton = pageutils.ImageButton("gtk-color-picker", Gtk.IconSize.SMALL_TOOLBAR)
         pickerButton.connect("clicked", self.onPickerClicked)
         table.attach(pickerButton, column, column+1, 1, 2, 0, 0, 2)
         column += 1
@@ -471,9 +409,9 @@ class CinnamonLog(dbus.service.Object):
         column += 1
 
         settings = Gio.Settings("org.cinnamon.desktop.keybindings")
-        arr = settings.get_strv("looking-glass-keybinding");
+        arr = settings.get_strv("looking-glass-keybinding")
         accel = ""
-        done_one = False;
+        done_one = False
 
         for element in arr:
             if done_one:
@@ -493,9 +431,6 @@ class CinnamonLog(dbus.service.Object):
         box.pack_start(actionButton, False, False, 3)
 
         table.attach(box, column, column+1, 1, 2, 0, 0, 1)
-
-        grip = ResizeGrip(self.window)
-        table.attach(grip, 0, numColumns, 2, 3, Gtk.AttachOptions.EXPAND|Gtk.AttachOptions.FILL, 0, 0, 0)
 
         self.activatePage("results")
         self.statusLabel.hide()
@@ -544,7 +479,7 @@ class CinnamonLog(dbus.service.Object):
 
     def onAboutClicked(self, menuItem):
         dialog = Gtk.MessageDialog(self.window, 0,
-                                   Gtk.MessageType.QUESTION, Gtk.ButtonsType.CLOSE);
+                                   Gtk.MessageType.QUESTION, Gtk.ButtonsType.CLOSE)
 
         dialog.set_title("About Melange")
         dialog.set_markup("""\
@@ -580,6 +515,12 @@ If you defined a hotkey for Melange, pressing it while Melange is visible it wil
         Gtk.main_quit()
         return False
 
+    def onWindowState(self, widget, event):
+        if event.new_window_state & Gdk.WindowState.ICONIFIED:
+            self._minimized = True
+        else:
+            self._minimized = False
+
     def onPickerClicked(self, widget):
         self.lookingGlassProxy.StartInspector()
         self.window.hide()
@@ -591,7 +532,7 @@ If you defined a hotkey for Melange, pressing it while Melange is visible it wil
     def createPage(self, text, moduleName):
         module = __import__("page_%s" % moduleName)
         module.lookingGlassProxy = self.lookingGlassProxy
-        module.cinnamonLog = self
+        module.melangeApp = self
         label = Gtk.Label(text)
         page = module.ModulePage(self)
         self.pages[moduleName] = page
@@ -602,13 +543,12 @@ If you defined a hotkey for Melange, pressing it while Melange is visible it wil
         self.notebook.set_current_page(page)
 
 if __name__ == "__main__":
-    GObject.type_register(ResizeGrip)
     DBusGMainLoop(set_as_default=True)
 
     sessionBus = dbus.SessionBus ()
     request = sessionBus.request_name(MELANGE_DBUS_NAME, dbus.bus.NAME_FLAG_DO_NOT_QUEUE)
     if request != dbus.bus.REQUEST_NAME_REPLY_EXISTS:
-        app = CinnamonLog()
+        app = MelangeApp()
     else:
         object = sessionBus.get_object(MELANGE_DBUS_NAME, MELANGE_DBUS_PATH)
         app = dbus.Interface(object, MELANGE_DBUS_NAME)
