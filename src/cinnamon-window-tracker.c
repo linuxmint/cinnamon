@@ -128,6 +128,7 @@ cinnamon_window_tracker_class_init (CinnamonWindowTrackerClass *klass)
 
 /**
  * cinnamon_window_tracker_is_window_interesting:
+ * @tracker: the CinnamonWindowTracker
  * @window: a #MetaWindow
  *
  * The CinnamonWindowTracker associates certain kinds of windows with

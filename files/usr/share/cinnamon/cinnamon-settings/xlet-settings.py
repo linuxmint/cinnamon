@@ -2,12 +2,13 @@
 
 import gi
 gi.require_version('Gtk', '3.0')
+gi.require_version('XApp', '1.0')
 import sys
 sys.path.append('/usr/share/cinnamon/cinnamon-settings/bin')
 import gettext
 import json
 from JsonSettingsWidgets import *
-from gi.repository import Gtk, Gio
+from gi.repository import Gtk, Gio, XApp
 
 # i18n
 gettext.install("cinnamon", "/usr/share/locale")
@@ -122,7 +123,7 @@ class MainWindow(object):
             quit()
 
     def build_window(self):
-        self.window = Gtk.Window()
+        self.window = XApp.GtkWindow()
         self.window.set_default_size(800, 600)
         main_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
         self.window.add(main_box)

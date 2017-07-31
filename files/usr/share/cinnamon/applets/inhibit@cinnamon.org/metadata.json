@@ -1,5 +1,6 @@
 {
  "uuid": "inhibit@cinnamon.org",
  "name": "Inhibit Applet",
+ "icon": "sleep",
  "description": "This applet is used to disable notifications and power management (including the screensaver and the session from going idle)"
 }
