@@ -2626,7 +2626,9 @@ PopupSubMenu.prototype = {
     _init: function(sourceActor, sourceArrow) {
         PopupMenuBase.prototype._init.call(this, sourceActor);
 
-        this._arrow = sourceArrow;
+        if (sourceArrow) {
+            this._arrow = sourceArrow;
+        }
 
         this.actor = new St.ScrollView({ style_class: 'popup-sub-menu',
                                          hscrollbar_policy: Gtk.PolicyType.NEVER,
@@ -2845,22 +2847,27 @@ PopupSubMenuMenuItem.prototype = {
     _init: function(text) {
         PopupBaseMenuItem.prototype._init.call(this);
 
-        this.actor.add_style_class_name('popup-submenu-menu-item');
+        // This check allows PopupSubMenu to be used as a generic scrollable container. PopupSubMenu
+        // already checks for the truthiness of this._triangle (passed as sourceArrow) before using
+        // it, so we can leave it undefined.
+        if (typeof text === 'string') {
+            this.actor.add_style_class_name('popup-submenu-menu-item');
 
-        this.label = new St.Label({ text: text,
-                                    y_expand: true,
-                                    y_align: Clutter.ActorAlign.CENTER });
-        this.addActor(this.label);
-        this.actor.label_actor = this.label;
+            this.label = new St.Label({ text: text,
+                                        y_expand: true,
+                                        y_align: Clutter.ActorAlign.CENTER });
+            this.addActor(this.label);
+            this.actor.label_actor = this.label;
 
-        this._triangleBin = new St.Bin({ x_align: St.Align.END });
-        this.addActor(this._triangleBin, { expand: true,
-                                           span: -1,
-                                           align: St.Align.END });
+            this._triangleBin = new St.Bin({ x_align: St.Align.END });
+            this.addActor(this._triangleBin, { expand: true,
+                                               span: -1,
+                                               align: St.Align.END });
 
-        this._triangle = arrowIcon(St.Side.RIGHT);
-        this._triangle.pivot_point = new Clutter.Point({ x: 0.5, y: 0.6 });
-        this._triangleBin.child = this._triangle;
+            this._triangle = arrowIcon(St.Side.RIGHT);
+            this._triangle.pivot_point = new Clutter.Point({ x: 0.5, y: 0.6 });
+            this._triangleBin.child = this._triangle;
+        }
 
         this.menu = new PopupSubMenu(this.actor, this._triangle);
         this._signals.connect(this.menu, 'open-state-changed', Lang.bind(this, this._subMenuOpenStateChanged));
