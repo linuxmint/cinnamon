@@ -125,7 +125,6 @@ class MainWindow:
         sidePage = self.store[cat].get_value(iterator,2)
         if not sidePage.is_standalone:
             self.window.set_title(sidePage.name)
-            print(sidePage.icon)
             self.window.set_icon_name(sidePage.icon)
             sidePage.build()
             if sidePage.stack:

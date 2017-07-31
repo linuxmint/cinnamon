@@ -216,6 +216,7 @@ class Module:
         window.add(box)
         window.set_title(_("Desktop themes"))
         window.set_default_size(720, 480)
+        window.set_transient_for(widget.get_toplevel())
         window.set_border_width(6)
         window.set_position(Gtk.WindowPosition.CENTER)
         page = ExtensionSidePage(self.name, self.icon, self.keywords, box, "theme", None)
