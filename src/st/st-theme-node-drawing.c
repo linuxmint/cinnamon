@@ -416,16 +416,12 @@ get_background_scale (StThemeNode *node,
         *scale_w = 1.0;
         break;
       case ST_BACKGROUND_SIZE_CONTAIN:
-        if (background_image_width > background_image_height)
-          *scale_w = painting_area_width / background_image_width;
-        else
-          *scale_w = painting_area_height / background_image_height;
+        *scale_w = MIN (painting_area_width / background_image_width,
+                        painting_area_height / background_image_height);
         break;
       case ST_BACKGROUND_SIZE_COVER:
-        if (background_image_width < background_image_height)
-          *scale_w = painting_area_width / background_image_width;
-        else
-          *scale_w = painting_area_height / background_image_height;
+        *scale_w = MAX (painting_area_width / background_image_width,
+                        painting_area_height / background_image_height);
         break;
       case ST_BACKGROUND_SIZE_FIXED:
         if (node->background_size_w > -1)
