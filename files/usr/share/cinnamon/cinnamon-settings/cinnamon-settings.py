@@ -16,7 +16,8 @@ import unicodedata
 
 import gi
 gi.require_version('Gtk', '3.0')
-from gi.repository import Gio, Gtk, Pango, Gdk
+gi.require_version('XApp', '1.0')
+from gi.repository import Gio, Gtk, Pango, Gdk, XApp
 
 sys.path.append('/usr/share/cinnamon/cinnamon-settings/modules')
 sys.path.append('/usr/share/cinnamon/cinnamon-settings/bin')
@@ -124,6 +125,8 @@ class MainWindow:
         sidePage = self.store[cat].get_value(iterator,2)
         if not sidePage.is_standalone:
             self.window.set_title(sidePage.name)
+            print(sidePage.icon)
+            self.window.set_icon_name(sidePage.icon)
             sidePage.build()
             if sidePage.stack:
                 current_page = sidePage.stack.get_visible_child_name()
@@ -188,7 +191,10 @@ class MainWindow:
     def __init__(self):
         self.builder = Gtk.Builder()
         self.builder.add_from_file("/usr/share/cinnamon/cinnamon-settings/cinnamon-settings.ui")
-        self.window = self.builder.get_object("main_window")
+        self.window = XApp.GtkWindow(visible=True, window_position=Gtk.WindowPosition.CENTER,
+                                     default_width=800, default_height=600)
+        main_box = self.builder.get_object("main_box")
+        self.window.add(main_box)
         self.top_bar = self.builder.get_object("top_bar")
         self.side_view = {}
         self.main_stack = self.builder.get_object("main_stack")
@@ -579,6 +585,7 @@ class MainWindow:
 
     def back_to_icon_view(self, widget):
         self.window.set_title(_("System Settings"))
+        self.window.set_icon_name("preferences-system")
         self.window.resize(WIN_WIDTH, WIN_HEIGHT)
         children = self.content_box.get_children()
         for child in children:
