@@ -117,12 +117,15 @@ st_bin_allocate (ClutterActor          *self,
     {
       StThemeNode *theme_node = st_widget_get_theme_node (ST_WIDGET (self));
       ClutterActorBox childbox;
+      gdouble x_align_f, y_align_f;
 
       st_theme_node_get_content_box (theme_node, box, &childbox);
-      _st_allocate_fill (ST_WIDGET (self), priv->child, &childbox,
-                         priv->x_align, priv->y_align,
-                         priv->x_fill, priv->y_fill);
-      clutter_actor_allocate (priv->child, &childbox, flags);
+      _st_get_align_factors (priv->x_align, priv->y_align,
+                             &x_align_f, &y_align_f);
+      clutter_actor_allocate_align_fill (priv->child, &childbox,
+                                         x_align_f, y_align_f,
+                                         priv->x_fill, priv->y_fill,
+                                         flags);
     }
 }
 

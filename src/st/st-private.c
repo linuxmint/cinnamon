@@ -99,140 +99,18 @@ _st_actor_get_preferred_height (ClutterActor *actor,
   clutter_actor_get_preferred_height (actor, for_width, min_height_p, natural_height_p);
 }
 
-/**
- * _st_allocate_fill:
- * @parent: the parent #StWidget
- * @child: the child (not necessarily an #StWidget)
- * @childbox: total space that could be allocated to @child
- * @x_alignment: horizontal alignment within @childbox
- * @y_alignment: vertical alignment within @childbox
- * @x_fill: whether or not to fill @childbox horizontally
- * @y_fill: whether or not to fill @childbox vertically
- *
- * Given @childbox, containing the initial allocation of @child, this
- * adjusts the horizontal allocation if @x_fill is %FALSE, and the
- * vertical allocation if @y_fill is %FALSE, by:
- *
- *     - reducing the allocation if it is larger than @child's natural
- *       size.
- *
- *     - adjusting the position of the child within the allocation
- *       according to @x_alignment/@y_alignment (and flipping
- *       @x_alignment if @parent has %ST_TEXT_DIRECTION_RTL)
- *
- * If @x_fill and @y_fill are both %TRUE, or if @child's natural size
- * is larger than the initial allocation in @childbox, then @childbox
- * will be unchanged.
- *
- * If you are allocating children with _st_allocate_fill(), you should
- * determine their preferred sizes using
- * _st_actor_get_preferred_width() and
- * _st_actor_get_preferred_height(), not with the corresponding
- * Clutter methods.
- */
-void
-_st_allocate_fill (StWidget        *parent,
-                   ClutterActor    *child,
-                   ClutterActorBox *childbox,
-                   StAlign          x_alignment,
-                   StAlign          y_alignment,
-                   gboolean         x_fill,
-                   gboolean         y_fill)
-{
-  gfloat natural_width, natural_height;
-  gfloat min_width, min_height;
-  gfloat child_width, child_height;
-  gfloat available_width, available_height;
-  ClutterRequestMode request;
-  gdouble x_align, y_align;
-
-  available_width  = childbox->x2 - childbox->x1;
-  available_height = childbox->y2 - childbox->y1;
-
-  if (available_width < 0)
-    {
-      available_width = 0;
-      childbox->x2 = childbox->x1;
-    }
-
-  if (available_height < 0)
-    {
-      available_height = 0;
-      childbox->y2 = childbox->y1;
-    }
-
-  /* If we are filling both horizontally and vertically then we don't
-   * need to do anything else.
-   */
-  if (x_fill && y_fill)
-    return;
-
-  _st_get_align_factors (parent, x_alignment, y_alignment,
-                         &x_align, &y_align);
-
-  /* The following is based on clutter_actor_get_preferred_size(), but
-   * modified to cope with the fact that the available size may be
-   * less than the preferred size.
-   */
-  request = clutter_actor_get_request_mode (child);
-
-  if (request == CLUTTER_REQUEST_HEIGHT_FOR_WIDTH)
-    {
-      clutter_actor_get_preferred_width (child, -1,
-                                         &min_width,
-                                         &natural_width);
-
-      child_width = CLAMP (natural_width, min_width, available_width);
-
-      clutter_actor_get_preferred_height (child, child_width,
-                                          &min_height,
-                                          &natural_height);
-
-      child_height = CLAMP (natural_height, min_height, available_height);
-    }
-  else
-    {
-      clutter_actor_get_preferred_height (child, -1,
-                                          &min_height,
-                                          &natural_height);
-
-      child_height = CLAMP (natural_height, min_height, available_height);
-
-      clutter_actor_get_preferred_width (child, child_height,
-                                         &min_width,
-                                         &natural_width);
-
-      child_width = CLAMP (natural_width, min_width, available_width);
-    }
-
-  if (!x_fill)
-    {
-      childbox->x1 += (int)((available_width - child_width) * x_align);
-      childbox->x2 = childbox->x1 + (int) child_width;
-    }
-
-  if (!y_fill)
-    {
-      childbox->y1 += (int)((available_height - child_height) * y_align);
-      childbox->y2 = childbox->y1 + (int) child_height;
-    }
-}
 
 /**
  * _st_get_align_factors:
- * @widget: an #StWidget
  * @x_align: an #StAlign
  * @y_align: an #StAlign
  * @x_align_out: (out) (allow-none): @x_align as a #gdouble
  * @y_align_out: (out) (allow-none): @y_align as a #gdouble
  *
- * Converts @x_align and @y_align to #gdouble values. If @widget has
- * %ST_TEXT_DIRECTION_RTL, the @x_align_out value will be flipped
- * relative to @x_align.
+ * Converts @x_align and @y_align to #gdouble values.
  */
 void
-_st_get_align_factors (StWidget *widget,
-                       StAlign   x_align,
+_st_get_align_factors (StAlign   x_align,
                        StAlign   y_align,
                        gdouble  *x_align_out,
                        gdouble  *y_align_out)
@@ -257,9 +135,6 @@ _st_get_align_factors (StWidget *widget,
           g_warn_if_reached ();
           break;
         }
-
-      if (st_widget_get_direction (widget) == ST_TEXT_DIRECTION_RTL)
-        *x_align_out = 1.0 - *x_align_out;
     }
 
   if (y_align_out)
