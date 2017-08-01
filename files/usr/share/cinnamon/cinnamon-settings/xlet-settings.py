@@ -4,7 +4,9 @@ import gi
 gi.require_version('Gtk', '3.0')
 gi.require_version('XApp', '1.0')
 import sys
-sys.path.append('/usr/share/cinnamon/cinnamon-settings/bin')
+
+import config
+sys.path.append(config.currentPath + "/bin")
 import gettext
 import json
 from JsonSettingsWidgets import *
