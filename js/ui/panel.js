@@ -932,10 +932,13 @@ PanelManager.prototype = {
 
     _onMonitorsChanged: function() {
         let monitorCount = global.screen.get_n_monitors();
-        let drawcorner = [false,false];
+        let drawcorner = [false, false];
 
         for (let i = 0, len = this.panelsMeta.length; i < len; i++) {
-            if (this.panelsMeta[i] && !this.panels[i]) { // If there is a meta but not a panel, i.e. panel could not create due to non-existent monitor, try again
+            if (!this.panelsMeta[i]) {
+                continue;
+            }
+            if (!this.panels[i]) { // If there is a meta but not a panel, i.e. panel could not create due to non-existent monitor, try again
                                                          // - the monitor may just have been reconnected
                 if (this.panelsMeta[i][0] < monitorCount)  // just check that the monitor is there
                 {
@@ -1033,7 +1036,7 @@ PanelManager.prototype = {
 
         for (let i = 0; i < monitorCount; i++) {
             for (let j = 0; j < 4; j++) {
-                if (this.dummyPanels[i][j] == true) { // no panel there at the moment, so show a dummy
+                if (this.dummyPanels[i] && this.dummyPanels[i][j] == true) { // no panel there at the moment, so show a dummy
                     this.dummyPanels[i][j] = new PanelDummy(i, j, callback);
                 }
             }
@@ -2675,8 +2678,8 @@ Panel.prototype = {
             if (Main.panelManager && horizontal_panel) {
                 let panels = Main.panelManager.getPanelsInMonitor(this.monitorIndex);
                 for (let p = 0, len = panels.length; p < len; p++) {
-                    if (panels[i].panelPosition == PanelLoc.left || panels[i].panelPosition == PanelLoc.right)
-                        panels[i]._moveResizePanel();
+                    if (panels[p].panelPosition == PanelLoc.left || panels[p].panelPosition == PanelLoc.right)
+                        panels[p]._moveResizePanel();
                 }
             }
 
