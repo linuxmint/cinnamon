@@ -2612,10 +2612,10 @@ Panel.prototype = {
             this._monitorsChanged = false;
         }
 
-        // calculate new panel sizes
+        // calculate new panel sizes.  NB margin is already scaled for hidpi
         let newVertPanelHeight = this.monitor.height - this.toppanelHeight - this.bottompanelHeight
-                                 - global.ui_scale*(newMarginTop + newMarginBottom);
-        let newHorizPanelWidth = this.monitor.width - global.ui_scale*(newMarginLeft + newMarginRight);
+                                 - (newMarginTop + newMarginBottom);
+        let newHorizPanelWidth = this.monitor.width - (newMarginLeft + newMarginRight);
 
         // and determine if this panel's size changed
         if (horizontal_panel) {
@@ -2675,8 +2675,8 @@ Panel.prototype = {
             if (Main.panelManager && horizontal_panel) {
                 let panels = Main.panelManager.getPanelsInMonitor(this.monitorIndex);
                 for (let p = 0, len = panels.length; p < len; p++) {
-                    if (panels[i].panelPosition == PanelLoc.left || panels[i].panelPosition == PanelLoc.right)
-                        panels[i]._moveResizePanel();
+                    if (panels[p].panelPosition == PanelLoc.left || panels[p].panelPosition == PanelLoc.right)
+                        panels[p]._moveResizePanel();
                 }
             }
 
