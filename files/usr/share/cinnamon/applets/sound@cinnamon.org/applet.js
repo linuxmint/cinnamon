@@ -1328,8 +1328,10 @@ MyApplet.prototype = {
             this.menu.box.remove_actor(this._players[this._activePlayer].actor);
 
         this._activePlayer = player;
-        if (this.playerControl)
+        if (this.playerControl && this._activePlayer != null) {
             this.menu.addMenuItem(this._players[player], 1);
+        }
+
         this._updatePlayerMenuItems();
     },
 
