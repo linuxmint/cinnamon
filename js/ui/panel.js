@@ -2615,10 +2615,10 @@ Panel.prototype = {
             this._monitorsChanged = false;
         }
 
-        // calculate new panel sizes
+        // calculate new panel sizes.  NB margin is already scaled for hidpi
         let newVertPanelHeight = this.monitor.height - this.toppanelHeight - this.bottompanelHeight
-                                 - global.ui_scale*(newMarginTop + newMarginBottom);
-        let newHorizPanelWidth = this.monitor.width - global.ui_scale*(newMarginLeft + newMarginRight);
+                                 - (newMarginTop + newMarginBottom);
+        let newHorizPanelWidth = this.monitor.width - (newMarginLeft + newMarginRight);
 
         // and determine if this panel's size changed
         if (horizontal_panel) {
