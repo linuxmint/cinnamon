@@ -405,6 +405,8 @@ Chrome.prototype = {
         this._monitors = [];
         this._inOverview = false;
         this._isPopupWindowVisible = false;
+        this._primaryMonitor = null;
+        this._primaryIndex = -1;
         this._updateRegionIdle = 0;
         this._freezeUpdateCount = 0;
 
@@ -577,6 +579,7 @@ Chrome.prototype = {
     _relayout: function() {
         this._monitors = this._layoutManager.monitors;
         this._primaryMonitor = this._layoutManager.primaryMonitor;
+        this._primaryIndex = this._layoutManager.primaryIndex
         this._updateVisibility();
     },
 
@@ -629,7 +632,9 @@ Chrome.prototype = {
 
     findMonitorIndexForActor: function(actor) {
         let [index, monitor] = this.getMonitorInfoForActor(actor);
-        return index;
+        if (monitor)
+            return index;
+        return this._primaryIndex; // Not on any monitor, pretend its on the primary
     },
 
     _queueUpdateRegions: function() {
