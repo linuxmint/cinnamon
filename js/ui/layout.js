@@ -1,5 +1,9 @@
 // -*- mode: js; js-indent-level: 4; indent-tabs-mode: nil -*-
 
+/**
+ * FILE:layout.js
+ * @short_description: The file responsible for managing Cinnamon chrome
+ */
 const Clutter = imports.gi.Clutter;
 const GLib = imports.gi.GLib;
 const Gio = imports.gi.Gio;
@@ -48,6 +52,14 @@ Monitor.prototype = {
     }
 };
 
+/**
+ * #LayoutManager
+ *
+ * @short_description: Manager of Cinnamon Chrome
+ *
+ * Creates and manages the Chrome container which holds
+ * all of the Cinnamon UI actors.
+ */
 function LayoutManager() {
     this._init.apply(this, arguments);
 }
@@ -312,68 +324,129 @@ LayoutManager.prototype = {
         this.keyboardBox.hide();
     },
 
-    // addChrome:
-    // @actor: an actor to add to the chrome
-    // @params: (optional) additional params
-    //
-    // Adds @actor to the chrome, and (unless %affectsInputRegion in
-    // @params is %false) extends the input region to include it.
-    // Changes in @actor's size, position, and visibility will
-    // automatically result in appropriate changes to the input
-    // region.
-    //
-    // If %affectsStruts in @params is %true (and @actor is along a
-    // screen edge), then @actor's size and position will also affect
-    // the window manager struts. Changes to @actor's visibility will
-    // NOT affect whether or not the strut is present, however.
-    //
-    // If %visibleInFullscreen in @params is %true, the actor will be
-    // visible even when a fullscreen window should be covering it.
+    /** 
+     * updateChrome:
+     * @doVisibility (boolean): (optional) whether to recalculate visibility.
+     *
+     * Updates input region and struts for all chrome actors. If @doVisibility is true,
+     * then the visibility state of all chrome actors is recalculated first.
+     *
+     * Use with care as this is already frequently updated, and can reduce performance
+     * if called unnecessarily.
+     */
+    updateChrome: function(doVisibility) {
+        if (doVisibility === true)
+            this._chrome._updateVisibility();
+        else
+            this._chrome._queueUpdateRegions();
+    },
+
+    /**
+     * addChrome:
+     * @actor (Clutter.Actor): an actor to add to the chrome
+     * @params (object): (optional) additional params
+     *      - visibleInFullcreen (boolean): The actor should be hidden when a window on the same monitor is fullscreen. Default %false.
+     *      - affectsStruts (boolean): The actor's allocation should be used to add window manager struts. Default %false.
+     *      - affectsInputRegion (boolean): The actor should be added to the stage input region. Default %true.
+     *      - addToWindowgroup (boolean): The actor should be added as a top-level window. Default %false.
+     *      - doNotAdd (boolean): The actor should not be added to the uiGroup. This has no effect if %addToWindowgroup is %true. Default %false.
+     *
+     * Adds @actor to the chrome, and (unless %affectsInputRegion in
+     * @params is %false) extends the input region to include it.
+     * Changes in @actor's size, position, and visibility will
+     * automatically result in appropriate changes to the input
+     * region.
+     *
+     * If %affectsStruts in @params is %true (and @actor is along a
+     * screen edge), then @actor's size and position will also affect
+     * the window manager struts. Changes to @actor's visibility will
+     * NOT affect whether or not the strut is present, however.
+     *
+     * If %visibleInFullscreen in @params is %true, the actor will be
+     * visible even when a fullscreen window should be covering it.
+     */
     addChrome: function(actor, params) {
         this._chrome.addActor(actor, params);
     },
 
-    // trackChrome:
-    // @actor: a descendant of the chrome to begin tracking
-    // @params: parameters describing how to track @actor
-    //
-    // Tells the chrome to track @actor, which must be a descendant
-    // of an actor added via addChrome(). This can be used to extend the
-    // struts or input region to cover specific children.
-    //
-    // @params can have any of the same values as in addChrome(),
-    // though some possibilities don't make sense (eg, trying to have
-    // a %visibleInFullscreen child of a non-%visibleInFullscreen
-    // parent). By default, @actor has the same params as its chrome
-    // ancestor.
+    /**
+     * trackChrome:
+     * @actor (Clutter.Actor): a descendant of the chrome to begin tracking
+     * @params (object): (optional) additional params - defaults to same as chrome ancestor
+     *      - visibleInFullcreen (boolean): The actor should be hidden when a window on the same monitor is fullscreen.
+     *      - affectsStruts (boolean): The actor's allocation should be used to add window manager struts.
+     *      - affectsInputRegion (boolean): The actor should be added to the stage input region.
+     *      - addToWindowgroup (boolean): The actor should be added as a top-level window.
+     *      - doNotAdd (boolean): The actor should not be added to the uiGroup. This has no effect if %addToWindowgroup is %true.
+     *
+     * Tells the chrome to track @actor, which must be a descendant
+     * of an actor added via addChrome(). This can be used to extend the
+     * struts or input region to cover specific children.
+     *
+     * @params can have any of the same values as in addChrome(),
+     * though some possibilities don't make sense (eg, trying to have
+     * a %visibleInFullscreen child of a non-%visibleInFullscreen
+     * parent).
+     */
     trackChrome: function(actor, params) {
         this._chrome.trackActor(actor, params);
     },
 
-    // untrackChrome:
-    // @actor: an actor previously tracked via trackChrome()
-    //
-    // Undoes the effect of trackChrome()
+    /**
+     * untrackChrome:
+     * @actor (Clutter.Actor): an actor previously tracked via trackChrome()
+     *
+     * Undoes the effect of trackChrome()
+     */
     untrackChrome: function(actor) {
         this._chrome.untrackActor(actor);
     },
 
-    // removeChrome:
-    // @actor: a chrome actor
-    //
-    // Removes @actor from the chrome
+    /**
+     * removeChrome:
+     * @actor (Clutter.Actor): a chrome actor
+     *
+     * Removes the actor from the chrome
+     */
     removeChrome: function(actor) {
         this._chrome.removeActor(actor);
     },
 
+    /**
+     * findMonitorForActor:
+     * @actor (Clutter.Actor): the actor to locate
+     *
+     * Finds the monitor the actor is currently located on.
+     * If the actor is not found the primary monitor is returned.
+     *
+     * Returns (Layout.Monitor): the monitor
+     */
     findMonitorForActor: function(actor) {
         return this._chrome.findMonitorForActor(actor);
     },
 
+    /**
+     * findMonitorIndexForActor
+     * @actor (Clutter.Actor): the actor to locate
+     *
+     * Finds the index of the monitor the actor is currently
+     * located on. If the actor is not found the primary monitor
+     * index is returned.
+     *
+     * Returns (number): the monitor index
+     */
     findMonitorIndexForActor: function(actor) {
         return this._chrome.findMonitorIndexForActor(actor);
     },
 
+    /**
+     * isTrackingChrome:
+     * @actor (Clutter.Actor): the actor to check
+     *
+     * Determines whether the actor is currently tracked or not.
+     *
+     * Returns (boolean): whether the actor is currently tracked
+     */
     isTrackingChrome: function(actor) {
         return this._chrome._findActor(actor) != -1;
     }
@@ -385,7 +458,6 @@ Signals.addSignalMethods(LayoutManager.prototype);
 // This manages Cinnamon "chrome"; the UI that's visible in the
 // normal mode (ie, outside the Overview), that surrounds the main
 // workspace content.
-
 const defaultParams = {
     visibleInFullscreen: false,
     affectsStruts: false,
