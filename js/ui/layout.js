@@ -692,8 +692,8 @@ Chrome.prototype = {
             w = Math.round(w);
             h = Math.round(h);
 
-            if (actorData.affectsInputRegion
-                && wantsInputRegion
+            if (wantsInputRegion
+                && actorData.affectsInputRegion
                 && actorData.actor.get_paint_visibility()
                 && !Main.uiGroup.get_skip_paint(actorData.actor)) {
 
