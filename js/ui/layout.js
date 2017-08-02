@@ -82,13 +82,7 @@ LayoutManager.prototype = {
 
         global.settings.connect("changed::enable-edge-flip", Lang.bind(this, this._onEdgeFlipChanged));
         global.settings.connect("changed::edge-flip-delay", Lang.bind(this, this._onEdgeFlipChanged));
-        global.screen.connect('restacked', Lang.bind(this, this._windowsRestacked));
-        global.screen.connect('monitors-changed',
-                              Lang.bind(this, this._monitorsChanged));
-        global.screen.connect('in-fullscreen-changed',
-                              Lang.bind(this, this._updateFullscreen));
-        global.window_manager.connect('switch-workspace',
-                                      Lang.bind(this, this._windowsRestacked));
+        global.screen.connect('monitors-changed', Lang.bind(this, this._monitorsChanged));
     },
 
     _onEdgeFlipChanged: function(){
@@ -98,14 +92,6 @@ LayoutManager.prototype = {
         this.edgeRight.delay = this.edgeFlipDelay;
         this.edgeLeft.enabled = this.enabledEdgeFlip;
         this.edgeLeft.delay = this.edgeFlipDelay;
-    },
-
-    _windowsRestacked: function() {
-        this._chrome.updateRegions();
-    },
-
-    _updateFullscreen: function() {
-        this._chrome._updateFullscreen();
     },
 
     // This is called by Main after everything else is constructed;
@@ -433,6 +419,8 @@ Chrome.prototype = {
                                     Lang.bind(this, this._relayout));
         global.screen.connect('restacked',
                               Lang.bind(this, this._windowsRestacked));
+        global.screen.connect('in-fullscreen-changed', Lang.bind(this, this._updateFullscreen));
+        global.window_manager.connect('switch-workspace', Lang.bind(this, this._queueUpdateRegions));
 
         // Need to update struts on new workspaces when they are added
         global.screen.connect('notify::n-workspaces',
@@ -675,10 +663,9 @@ Chrome.prototype = {
     },
 
     _windowsRestacked: function() {
-        if (this._isPopupWindowVisible != global.top_window_group.get_children().some(isPopupMetaWindow)) {
+        if (this._isPopupWindowVisible != global.top_window_group.get_children().some(isPopupMetaWindow))
             this._updateVisibility();
-            this._queueUpdateRegions();
-        }
+        this._queueUpdateRegions();
     },
 
     updateRegions: function() {
