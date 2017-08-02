@@ -64,10 +64,10 @@ MyApplet.prototype = {
         this.orientation = orientation;
 
         if (this.orientation == St.Side.TOP || this.orientation == St.Side.BOTTOM) {
-            manager = new Clutter.BoxLayout( { spacing: 2 * global.ui_scale,
+            manager = new Clutter.BoxLayout( { spacing: 2,
                                                orientation: Clutter.Orientation.HORIZONTAL });
         } else {
-            manager = new Clutter.BoxLayout( { spacing: 2 * global.ui_scale,
+            manager = new Clutter.BoxLayout( { spacing: 2,
                                                orientation: Clutter.Orientation.VERTICAL });
         }
         this.manager = manager;
@@ -127,8 +127,7 @@ MyApplet.prototype = {
     _onIndicatorAdded: function(manager, appIndicator) {
         if (!(appIndicator.id in this._shellIndicators)) {
             let size = null;
-            if (this._scaleMode)
-                size = this._getIconSize();
+            size = this._getIconSize(this._panelHeight/global.ui_scale);
 
             let indicatorActor = appIndicator.getActor(size);
             indicatorActor._applet = this;
@@ -170,15 +169,22 @@ MyApplet.prototype = {
         }
     },
 
-    _getIconSize: function() {
+    _getIconSize: function(ht) {
         let size;
-        let disp_size = this._panelHeight * ICON_SCALE_FACTOR;
+        let disp_size = ht * ICON_SCALE_FACTOR;  // hidpi with largest panel, gets up to 80
+
         if (disp_size < 22) {
             size = 16;
         } else if (disp_size < 32) {
             size = 22;
         } else if (disp_size < 48) {
             size = 32;
+        } else if (disp_size < 64) {
+            size = 48;
+        } else if (disp_size < 96) {
+            size = 64;
+        } else if (disp_size < 128) {
+            size = 96;
         } else {
             size = 48;
         }
@@ -222,8 +228,7 @@ MyApplet.prototype = {
     on_panel_height_changed: function() {
         Main.statusIconDispatcher.redisplay();
         let size = null;
-        if (this._scaleMode)
-            size = this._getIconSize();
+        size = this._getIconSize(this._panelHeight/global.ui_scale);
         for (let id in this._shellIndicators) {
             let indicator = Main.indicatorManager.getIndicatorById(id);
             if (indicator) {
@@ -363,7 +368,7 @@ MyApplet.prototype = {
         if (["shutter", "filezilla"].indexOf(role) != -1) {
             global.log("Not resizing " + role + " as it's known to be buggy (" + icon.get_width() + "x" + icon.get_height() + "px)");
         } else {
-            let size = this._getIconSize();
+            let size = this._getIconSize(this._panelHeight);
             icon.set_size(size, size);
             global.log("Resized " + role + " with normalized size (" + icon.get_width() + "x" + icon.get_height() + "px)");
             //Note: dropbox doesn't scale, even though we resize it...
