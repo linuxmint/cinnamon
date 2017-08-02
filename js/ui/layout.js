@@ -414,7 +414,7 @@ Chrome.prototype = {
                                     Lang.bind(this, this._relayout));
         global.screen.connect('restacked',
                               Lang.bind(this, this._windowsRestacked));
-        global.screen.connect('in-fullscreen-changed', Lang.bind(this, this._updateFullscreen));
+        global.screen.connect('in-fullscreen-changed', Lang.bind(this, this._updateVisibility));
         global.window_manager.connect('switch-workspace', Lang.bind(this, this._queueUpdateRegions));
 
         // Need to update struts on new workspaces when they are added
@@ -561,26 +561,23 @@ Chrome.prototype = {
                 visible = true;
             Main.uiGroup.set_skip_paint(actorData.actor, !visible);
         }
+        this._queueUpdateRegions();
     },
 
     _overviewShowing: function() {
         this._inOverview = true;
         this._updateVisibility();
-        this._queueUpdateRegions();
     },
 
     _overviewHidden: function() {
         this._inOverview = false;
         this._updateVisibility();
-        this._queueUpdateRegions();
     },
 
     _relayout: function() {
         this._monitors = this._layoutManager.monitors;
         this._primaryMonitor = this._layoutManager.primaryMonitor;
-        this._updateFullscreen();
         this._updateVisibility();
-        this._queueUpdateRegions();
     },
 
     _findMonitorForRect: function(x, y, w, h) {
@@ -652,15 +649,11 @@ Chrome.prototype = {
         this._queueUpdateRegions();
     },
 
-    _updateFullscreen: function() {
-        this._updateVisibility();
-        this._queueUpdateRegions();
-    },
-
     _windowsRestacked: function() {
         if (this._isPopupWindowVisible != global.top_window_group.get_children().some(isPopupMetaWindow))
             this._updateVisibility();
-        this._queueUpdateRegions();
+        else
+            this._queueUpdateRegions();
     },
 
     updateRegions: function() {
