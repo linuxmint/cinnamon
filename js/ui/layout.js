@@ -148,20 +148,15 @@ LayoutManager.prototype = {
         this.bottomMonitor = this.monitors[this.bottomIndex];
     },
 
-    _updateHotCorners: function() {
+    _updateBoxes: function() {
         if (this.hotCornerManager)
             this.hotCornerManager.updatePosition(this.primaryMonitor, this.bottomMonitor);
-    },
-
-    _updateBoxes: function() {
-        this._updateHotCorners();
         this._chrome._queueUpdateRegions();
     },
 
     _monitorsChanged: function() {
         this._updateMonitors();
         this._updateBoxes();
-        this._updateHotCorners();
         this.emit('monitors-changed');
     },
 
