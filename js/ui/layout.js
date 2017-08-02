@@ -64,8 +64,6 @@ LayoutManager.prototype = {
         this.hideIdleId = 0;
         this._chrome = new Chrome(this);
 
-        this._isPopupWindowVisible = false;
-
         this.enabledEdgeFlip = global.settings.get_boolean("enable-edge-flip");
         this.edgeFlipDelay = global.settings.get_int("edge-flip-delay");
 
@@ -425,6 +423,7 @@ Chrome.prototype = {
 
         this._monitors = [];
         this._inOverview = false;
+        this._isPopupWindowVisible = false;
         this._updateRegionIdle = 0;
         this._freezeUpdateCount = 0;
 
@@ -676,12 +675,7 @@ Chrome.prototype = {
     },
 
     _windowsRestacked: function() {
-        let changed = false;
-
-        if (this._isPopupWindowVisible != global.top_window_group.get_children().some(isPopupMetaWindow))
-            changed = true;
-
-        if (changed) {
+        if (this._isPopupWindowVisible != global.top_window_group.get_children().some(isPopupMetaWindow)) {
             this._updateVisibility();
             this._queueUpdateRegions();
         }
