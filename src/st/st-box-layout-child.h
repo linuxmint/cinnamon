@@ -64,8 +64,8 @@ struct _StBoxLayoutChild
   ClutterChildMeta parent;
 
   gboolean expand;
-  gboolean x_fill : 1;
-  gboolean y_fill : 1;
+  guint x_fill : 1;
+  guint y_fill : 1;
   StAlign x_align;
   StAlign y_align;
 };

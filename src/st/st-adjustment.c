@@ -44,7 +44,7 @@ struct _StAdjustmentPrivate
 {
   /* Do not sanity-check values while constructing,
    * not all properties may be set yet. */
-  gboolean is_constructing : 1;
+  guint is_constructing : 1;
 
   gdouble  lower;
   gdouble  upper;
