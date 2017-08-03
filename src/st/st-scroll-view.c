@@ -114,12 +114,12 @@ struct _StScrollViewPrivate
 
   StScrollViewFade *vfade_effect;
 
-  gboolean      row_size_set : 1;
-  gboolean      column_size_set : 1;
+  guint         row_size_set : 1;
+  guint         column_size_set : 1;
   guint         mouse_scroll : 1;
   guint         hscrollbar_visible : 1;
   guint         vscrollbar_visible : 1;
-  gboolean      auto_scroll : 1;
+  guint         auto_scroll : 1;
   guint         auto_scroll_timeout_id;
 };
 

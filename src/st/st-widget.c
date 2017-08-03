@@ -60,13 +60,13 @@ struct _StWidgetPrivate
 
   StThemeNodeTransition *transition_animation;
 
-  gboolean      is_style_dirty : 1;
-  gboolean      draw_bg_color : 1;
-  gboolean      draw_border_internal : 1;
-  gboolean      track_hover : 1;
-  gboolean      hover : 1;
-  gboolean      can_focus : 1;
-  gboolean      important : 1;
+  guint      is_style_dirty : 1;
+  guint      draw_bg_color : 1;
+  guint      draw_border_internal : 1;
+  guint      track_hover : 1;
+  guint      hover : 1;
+  guint      can_focus : 1;
+  guint      important : 1;
 
   StTextDirection   direction;
 
