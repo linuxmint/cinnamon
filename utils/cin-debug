@@ -11,7 +11,7 @@ if len(sys.argv) != 2:
     print """
     Run as:
 
-        cin-debug <process-name> &
+        cin-debug <process-name>
 
     """
     quit()
