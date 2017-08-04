@@ -445,7 +445,7 @@ out:
 static GdkPixbuf*
 decode_image (const char *val)
 {
-  int i;
+  guint i;
   GError *error = NULL;
   GdkPixbuf *res = NULL;
   struct {
@@ -1364,7 +1364,7 @@ create_faded_icon_cpu (StTextureCache *cache,
   GdkPixbuf *pixbuf;
   int size;
   CoglTexture *texture;
-  gint width, height, rowstride;
+  guint width, height, rowstride;
   guint8 n_channels;
   gboolean have_alpha;
   gint fade_start;

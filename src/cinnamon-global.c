@@ -995,15 +995,15 @@ update_scale_factor (GtkSettings *settings,
                      GParamSpec *pspec,
                      gpointer data)
 {
-  gint scale = 1;
+  guint scale = 1;
   CinnamonGlobal *global = CINNAMON_GLOBAL (data);
   ClutterStage *stage = CLUTTER_STAGE (global->stage);
   StThemeContext *context = st_theme_context_get_for_stage (stage);
   GValue value = G_VALUE_INIT;
 
-  g_value_init (&value, G_TYPE_INT);
+  g_value_init (&value, G_TYPE_UINT);
   if (gdk_screen_get_setting (global->gdk_screen, "gdk-window-scaling-factor", &value)) {
-    scale = g_value_get_int (&value);
+    scale = g_value_get_uint (&value);
     g_object_set (context, "scale-factor", scale, NULL);
 
     if (scale != global->ui_scale) {
@@ -1012,8 +1012,8 @@ update_scale_factor (GtkSettings *settings,
     }
   }
 
-  if (g_settings_get_int (global->settings, "active-display-scale") != scale) {
-    g_settings_set_int (global->settings, "active-display-scale", scale);
+  if (g_settings_get_int (global->settings, "active-display-scale") != (int)scale) {
+    g_settings_set_int (global->settings, "active-display-scale", (int)scale);
   }
 
    /* Make sure clutter and gdk scaling stays disabled
