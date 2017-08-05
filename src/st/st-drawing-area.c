@@ -40,8 +40,8 @@
 G_DEFINE_TYPE(StDrawingArea, st_drawing_area, ST_TYPE_WIDGET);
 
 struct _StDrawingAreaPrivate {
-  CoglHandle texture;
-  CoglHandle material;
+  CoglTexture *texture;
+  CoglPipeline *pipeline;
   cairo_t *context;
   guint needs_repaint : 1;
   guint in_repaint : 1;
@@ -62,17 +62,8 @@ st_drawing_area_dispose (GObject *object)
   StDrawingArea *area = ST_DRAWING_AREA (object);
   StDrawingAreaPrivate *priv = area->priv;
 
-  if (priv->material != COGL_INVALID_HANDLE)
-    {
-      cogl_handle_unref (priv->material);
-      priv->material = COGL_INVALID_HANDLE;
-    }
-
-  if (priv->texture != COGL_INVALID_HANDLE)
-    {
-      cogl_handle_unref (priv->texture);
-      priv->texture = COGL_INVALID_HANDLE;
-    }
+  g_clear_pointer (&priv->pipeline, cogl_object_unref);
+  g_clear_pointer (&priv->texture, cogl_object_unref);
 
   G_OBJECT_CLASS (st_drawing_area_parent_class)->dispose (object);
 }
@@ -86,8 +77,6 @@ st_drawing_area_paint (ClutterActor *self)
   ClutterActorBox allocation_box;
   ClutterActorBox content_box;
   guint width, height;
-  CoglColor color;
-  guint8 paint_opacity;
 
   (CLUTTER_ACTOR_CLASS (st_drawing_area_parent_class))->paint (self);
 
@@ -97,20 +86,25 @@ st_drawing_area_paint (ClutterActor *self)
   width = (int)(0.5 + content_box.x2 - content_box.x1);
   height = (int)(0.5 + content_box.y2 - content_box.y1);
 
-  if (priv->material == COGL_INVALID_HANDLE)
-    priv->material = cogl_material_new ();
+  if (priv->pipeline == NULL)
+    {
+      CoglContext *ctx =
+        clutter_backend_get_cogl_context (clutter_get_default_backend ());
 
-  if (priv->texture != COGL_INVALID_HANDLE &&
+      priv->pipeline = cogl_pipeline_new (ctx);
+    }
+
+  if (priv->texture != NULL &&
       (width != cogl_texture_get_width (priv->texture) ||
        height != cogl_texture_get_height (priv->texture)))
     {
-      cogl_handle_unref (priv->texture);
-      priv->texture = COGL_INVALID_HANDLE;
+      cogl_object_unref (priv->texture);
+      priv->texture = NULL;
     }
 
   if (width > 0 && height > 0)
     {
-      if (priv->texture == COGL_INVALID_HANDLE)
+      if (priv->texture == NULL)
         {
           priv->texture = st_cogl_texture_new_with_size_wrapper (width, height,
                                                                  COGL_TEXTURE_NONE,
@@ -142,19 +136,21 @@ st_drawing_area_paint (ClutterActor *self)
         }
     }
 
-  cogl_material_set_layer (priv->material, 0, priv->texture);
+  cogl_pipeline_set_layer_texture (priv->pipeline, 0, priv->texture);
 
   if (priv->texture)
     {
-      paint_opacity = clutter_actor_get_paint_opacity (self);
-      cogl_color_set_from_4ub (&color,
-                               paint_opacity, paint_opacity, paint_opacity, paint_opacity);
-      cogl_material_set_color (priv->material, &color);
+      CoglColor color;
+      guint8 paint_opacity;
+      CoglFramebuffer *fb = cogl_get_draw_framebuffer ();
 
-      cogl_set_source (priv->material);
-      cogl_rectangle_with_texture_coords (content_box.x1, content_box.y1,
-                                          content_box.x2, content_box.y2,
-                                          0.0f, 0.0f, 1.0f, 1.0f);
+      paint_opacity = clutter_actor_get_paint_opacity (self);
+      cogl_color_init_from_4ub (&color, paint_opacity, paint_opacity, paint_opacity, paint_opacity);
+      cogl_pipeline_set_color (priv->pipeline, &color);
+
+      cogl_framebuffer_draw_rectangle (fb, priv->pipeline,
+                                       content_box.x1, content_box.y1,
+                                       content_box.x2, content_box.y2);
     }
 }
 
@@ -196,7 +192,7 @@ st_drawing_area_init (StDrawingArea *area)
 {
   area->priv = G_TYPE_INSTANCE_GET_PRIVATE (area, ST_TYPE_DRAWING_AREA,
                                             StDrawingAreaPrivate);
-  area->priv->texture = COGL_INVALID_HANDLE;
+  area->priv->texture = NULL;
 }
 
 /**
