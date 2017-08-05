@@ -916,6 +916,62 @@ function notifyError(msg, details) {
 }
 
 /**
+ * formatLogArgument:
+ * @arg (any): A single argument.
+ * @recursion (int): Keeps track of the number of recursions.
+ * @depth (int): Controls how deeply to inspect object structures.
+ *
+ * Used by _log to handle each argument type and its formatting.
+ */
+function formatLogArgument (arg, recursion=0, depth) {
+    // Make sure falsey values are clearly indicated.
+    if (arg === null) {
+        arg = 'null';
+    } else if (arg === undefined) {
+        arg = 'undefined';
+    // Ensure strings are distinguishable.
+    } else if (typeof arg === 'string'
+        && recursion > 0) {
+        arg = `'${arg}'`;
+    }
+    let isGObject = arg.toString().indexOf('[0x') > -1;
+    if (typeof arg === 'object') {
+        let isArray = Array.isArray(arg);
+        let brackets = isArray ? ['[', ']'] : ['{', '}'];
+        let array = isArray ? arg : Object.keys(arg);
+        let string = `${brackets[0]}\n`;
+        // GObjects are referenced in context and likely have circular references.
+        if (recursion === 0) {
+            depth = isGObject ? 2 : 6;
+        }
+        for (let j = 0, len = array.length; j < len; j++) {
+            // Add beginning bracket with indentation
+            let space = Array(recursion)
+                .fill('    ')
+                .join('');
+            // Check if we reached the depth threshold
+            if (recursion > depth) {
+                string += `${space}${arg.toString()}\n`;
+                break;
+            }
+            if (isArray) {
+                string += `${space}${formatLogArgument(arg[j], recursion + 1, depth)},\n`;
+            } else {
+                string += `${space}${array[j]}: ${formatLogArgument(arg[array[j]], recursion + 1, depth)},\n`;
+            }
+        }
+        // Add ending bracket with indentation
+        arg = string + Array(recursion > 0 ? recursion - 1 : recursion)
+            .fill('    ')
+            .join('') + brackets[1];
+    // Functions, numbers, etc.
+    } else if (typeof arg !== 'string' || isGObject) {
+        arg = arg.toString();
+    }
+    return arg;
+}
+
+/**
  * _log:
  * @category (string): string message type ('info', 'error')
  * @msg (string): A message string
@@ -926,34 +982,25 @@ function notifyError(msg, details) {
  * stream.  This is primarily intended for use by the
  * extension system as well as debugging.
  */
-function _log(category, msg) {
-    if (msg == undefined) {
-        _log('error', _('logging failed: message was null or undefined'));
-        return;
+function _log(category='info', msg='') {
+    let args = Array.from(arguments);
+    args.shift();
+    let text = '';
+
+    for (let i = 0, len = args.length; i < len; i++) {
+        args[i] = formatLogArgument(args[i])
     }
 
-    let cat, text;
-    if (typeof category !== 'string')
-        cat = 'info';
-    else
-        cat = category;
-
-    if (typeof msg !== 'string')
-        text = msg.toString();
-    else
-        text = msg;
-
-    if (arguments.length > 2) {
-        text += ': ';
-        for (let i = 2; i < arguments.length; i++) {
-            text += JSON.stringify(arguments[i]);
-            if (i < arguments.length - 1)
-                text += ' ';
-        }
+    if (args.length === 2) {
+        text = `${args[0]}: ${args[1]}`;
+    } else {
+        text = args.join(' ');
     }
-    let out = {timestamp: new Date().getTime().toString(),
-                         category: cat,
-                         message: text };
+    let out = {
+        timestamp: new Date().getTime().toString(),
+        category: category,
+        message: text
+    };
     _errorLogStack.push(out);
     if (lookingGlass)
         lookingGlass.emitLogUpdate();
@@ -1085,11 +1132,13 @@ function _logError(msg, error) {
  */
 
 function _logInfo(msg) {
-    if(isError(msg)) {
+    if (isError(msg)) {
         _log('info', msg.message);
         _LogTraceFormatted(msg.stack);
     } else {
-        _log('info', msg);
+        let args = Array.from(arguments);
+        args.shift();
+        _log('info', msg, ...args);
     }
 }
 
