@@ -1,0 +1,45 @@
+#!/usr/bin/python2
+
+import sys
+import subprocess
+import datetime
+import os
+
+home = os.path.expanduser("~")
+
+if len(sys.argv) < 2:
+    print """
+    Run as:
+
+        cin-debug-run <exec-name> <exec args>
+
+    """
+    quit()
+
+pname = sys.argv[1]
+logfile = "%s/%s-%s.log" % (home, pname, datetime.datetime.now().strftime("%Y-%m-%d-%l:%M:%S"))
+
+runargs = ""
+
+if len(sys.argv) > 2:
+    for i in range(2, len(sys.argv)):
+        runargs += " %s" % sys.argv[i]
+
+gdb_script = \
+"""
+set logging file %s
+set logging on
+set pagination off
+
+define hook-stop
+    thread apply all bt
+    quit
+end
+
+run %s
+""" % (logfile, runargs)
+print(gdb_script)
+os.system("echo '%s' | gdb %s" % (gdb_script, pname))
+
+quit()
+
