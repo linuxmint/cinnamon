@@ -11,6 +11,7 @@ const AppletManager = imports.ui.appletManager;
 const DeskletManager = imports.ui.deskletManager;
 const ExtensionSystem = imports.ui.extensionSystem;
 const SearchProviderManager = imports.ui.searchProviderManager;
+const ModalDialog = imports.ui.modalDialog;
 const Util = imports.misc.util;
 const Cinnamon = imports.gi.Cinnamon;
 
@@ -103,6 +104,10 @@ const CinnamonIface =
                 <arg type="b" direction="in" name="success" /> \
             </method> \
             <method name="ToggleKeyboard"/> \
+            <method name="OpenSpicesAbout"> \
+                <arg type="s" direction="in" name="uuid" /> \
+                <arg type="s" direction="in" name="type" /> \
+            </method> \
         </interface> \
     </node>';
 
@@ -379,6 +384,11 @@ CinnamonDBus.prototype = {
 
     ToggleKeyboard: function() {
         Main.keyboard.toggle();
+    },
+    
+    OpenSpicesAbout: function(uuid, type) {
+        let metadata = Extension.getMetadata(uuid, Extension.Type[type.toUpperCase()]);
+        new ModalDialog.SpicesAboutDialog(metadata, type+"s");
     },
 
     CinnamonVersion: Config.PACKAGE_VERSION
