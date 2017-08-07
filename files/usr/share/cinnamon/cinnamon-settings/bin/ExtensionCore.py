@@ -454,6 +454,12 @@ class ManageSpicesPage(SettingsPage):
         button_group.add_widget(self.restore_button)
         box.add(self.restore_button)
 
+        self.about_button = Gtk.Button(label=_("About"))
+        self.about_button.connect('clicked', self.about)
+        button_group.add_widget(self.about_button)
+        box.add(self.about_button)
+        self.about_button.set_sensitive(False)
+
         # progress bar
         self.progress_bar = self.spices.get_progressbar()
         pb_container = Gtk.Box()
@@ -492,10 +498,12 @@ class ManageSpicesPage(SettingsPage):
             self.instance_button.set_sensitive(False)
             self.remove_button.set_sensitive(False)
             self.uninstall_button.set_sensitive(False)
+            self.about_button.set_sensitive(False)
         else:
             self.instance_button.set_sensitive(row.enabled == 0 or row.max_instances != 1)
             self.remove_button.set_sensitive(row.enabled)
             self.uninstall_button.set_sensitive(row.writable)
+            self.about_button.set_sensitive(True)
 
     def add_instance(self, *args):
         extension_row = self.list_box.get_selected_row()
@@ -531,9 +539,6 @@ class ManageSpicesPage(SettingsPage):
 
         self.spices.uninstall(extension_row.uuid)
 
-    def on_uninstall_finished(self, uuid):
-        self.load_extensions()
-
     def restore_to_default(self, *args):
         if self.collection_type == 'applet':
             msg = _("This will restore the default set of enabled applets. Are you sure you want to do this?")
@@ -545,6 +550,10 @@ class ManageSpicesPage(SettingsPage):
             if self.collection_type != 'extension':
                 os.system(('gsettings reset org.cinnamon next-%s-id') % (self.collection_type))
             os.system(('gsettings reset org.cinnamon enabled-%ss') % (self.collection_type))
+
+    def about(self, *args):
+        row = self.list_box.get_selected_row()
+        self.spices.send_proxy_signal('OpenSpicesAbout', '(ss)', row.uuid, self.collection_type)
 
     def load_extensions(self, *args):
         for row in self.extension_rows:

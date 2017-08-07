@@ -68,7 +68,7 @@ function _createExtensionType(name, folder, manager, overrides){
  * const Type:
  * @EXTENSION: Cinnamon extensions
  * @APPLET: Cinnamon panel applets
- * 
+ *
  * @name: Upper case first character name for printing messages
  *        Also converted to lowercase to find the correct javascript file
  * @folder: The folder name within the system and user cinnamon folders
@@ -78,7 +78,7 @@ function _createExtensionType(name, folder, manager, overrides){
  * @roles: Roles an extension can assume. Values will be set internally, set to null.
  *         key => name of the role, value => reference to the extension object
  * @callbacks: Callbacks used to do some manual actions on load / unload
- * 
+ *
  * Extension types with some attributes helping to load these extension types.
  * Properties are nested, with lowerCamelCase properties (e.g. requiredFunctions) as sub-properties of CAPITAL one (EXTENSION). Thus they are referred to as, e.g., Type.EXTENSION.requiredFunctions
  */
@@ -189,7 +189,7 @@ Extension.prototype = {
             global.logError(error);
         else
             error = new Error(errorMessage);
-        
+
         global.logError(errorMessage);
 
         // An error during initialization leads to unloading the extension again.
@@ -335,7 +335,7 @@ Extension.prototype = {
             if(this.type.roles[role] != null) {
                 return false;
             }
-        
+
             if(roleProvider != null) {
                 this.type.roles[role] = this;
                 this.roleProvider = roleProvider;
@@ -548,6 +548,17 @@ function findExtensionDirectory(uuid, type) {
             return dir;
     }
     return null;
+}
+
+function getMetadata(uuid, type) {
+    let dir = findExtensionDirectory(uuid, type);
+    let metadataFile = dir.get_child('metadata.json');
+
+    let metadataContents = Cinnamon.get_file_contents_utf8_sync(metadataFile.get_path());
+    let metadata = JSON.parse(metadataContents);
+    metadata.path = dir.get_path();
+
+    return metadata;
 }
 
 /**
