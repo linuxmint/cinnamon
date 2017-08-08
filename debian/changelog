@@ -1,3 +1,47 @@
+cinnamon (3.4.5) sonya; urgency=medium
+
+  [ Michael Webster ]
+  * osdWindow.js: Always check the theme node on first showing - an actor's width isn't necessarily filled if it hasn't been explicitly set, causing the first few activations of the OSD to not show an accurate level bar.
+  * cs_default: Fix incorrect button label (but preserve translations).
+
+  [ itzexor ]
+  * main.js: remove obsolete Meta enum member reference
+  * workspace.js: use our normal prototype init method
+  * workspace.js: initalize WindowClone._zoomStep to 0
+
+  [ NikoKrause ]
+  * slideshow-applet: fix translation
+
+  [ Michael Webster ]
+  * cs_themes.py: Create the file "~/.icons/default/index.theme" and set the selected cursor theme inside of it.  This ensures other (non-gtk) applications end up using the same theme (though they are required to be restarted for these changes to take effect.)
+
+  [ NikoKrause ]
+  * keyboard-applet: applet icon vanishes when moved in edit mode
+
+  [ Jason Hicks ]
+  * cinnamon-json-makepot: Add keyword option, change language used by xgettext to JavaScript
+
+  [ brownsr ]
+  * expoThumbnail:  correct a couple of calls with mismatched argument counts
+
+  [ itzexor ]
+  * window-list: set AppMenuButtons unreactive during panel edit mode
+  * panel-launchers: set PanelAppLaunchers unreactive during panel edit mode
+  * windows-quick-list: fix argument warning
+
+  [ Jason Hicks ]
+  * Fix reference to undefined actor._delegate warning
+  * ui/environment: Handle undefined actors in containerClass.prototype.add
+  * ui/cinnamonDBus: Handle null xlet objects in CinnamonDBus.highlightXlet
+
+  [ brownsr ]
+  * deskletManager: initialise some variables and remove the variables that were initialised, probable typo
+
+  [ Michael Webster ]
+  * debian/control: Add libcjs-dbg to cinnamon-dbg depends.
+
+ -- Clement Lefebvre <root@linuxmint.com>  Tue, 08 Aug 2017 12:44:02 +0200
+
 cinnamon (3.4.4) sonya; urgency=medium
 
   [ Michael Webster ]
