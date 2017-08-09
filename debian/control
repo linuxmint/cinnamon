@@ -121,7 +121,7 @@ Depends: cinnamon (= ${binary:Version}),
          libcvc-dbg,
          libcinnamon-desktop-dbg,
          libcinnamon-menu-3-0-dbg,
-         libcjs-dbg,
+         libcjs-dbg | libcjs0e,
          cinnamon-control-center-dbg
 Description: Debugging symbols for the Cinnamon desktop
  Cinnamon is a modern Linux desktop which provides advanced innovative
