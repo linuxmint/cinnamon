@@ -429,6 +429,8 @@ PanelManager.prototype = {
      */
     lowerActorBelowPanels: function(actor, group) {
         for (let i = 0, len = this.panels.length; i < len; i++) {
+            if (!this.panels[i])
+                continue;
             Main.uiGroup.set_child_below_sibling(actor, this.panels[i].actor);
             break;
         }
