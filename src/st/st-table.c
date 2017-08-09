@@ -248,7 +248,7 @@ st_table_homogeneous_allocate (ClutterActor          *self,
 
       meta = (StTableChild *) clutter_container_get_child_meta (CLUTTER_CONTAINER (self), child);
 
-      if (!meta->allocate_hidden && !CLUTTER_ACTOR_IS_VISIBLE (child))
+      if (!meta->allocate_hidden && !clutter_actor_is_visible (child))
         continue;
 
       /* get child properties */
@@ -317,7 +317,7 @@ st_table_calculate_col_widths (StTable *table,
 
       meta = (StTableChild *) clutter_container_get_child_meta (CLUTTER_CONTAINER (table), child);
 
-      if (!meta->allocate_hidden && !CLUTTER_ACTOR_IS_VISIBLE (child))
+      if (!meta->allocate_hidden && !clutter_actor_is_visible (child))
         continue;
 
       /* get child properties */
@@ -424,7 +424,7 @@ st_table_calculate_row_heights (StTable *table,
 
       meta = (StTableChild *) clutter_container_get_child_meta (CLUTTER_CONTAINER (table), child);
 
-      if (!meta->allocate_hidden && !CLUTTER_ACTOR_IS_VISIBLE (child))
+      if (!meta->allocate_hidden && !clutter_actor_is_visible (child))
         continue;
 
       /* get child properties */
@@ -599,7 +599,7 @@ st_table_preferred_allocate (ClutterActor          *self,
 
       meta = (StTableChild *) clutter_container_get_child_meta (CLUTTER_CONTAINER (self), child);
 
-      if (!meta->allocate_hidden && !CLUTTER_ACTOR_IS_VISIBLE (child))
+      if (!meta->allocate_hidden && !clutter_actor_is_visible (child))
         continue;
 
       /* get child properties */
@@ -758,7 +758,7 @@ st_table_get_preferred_width (ClutterActor *self,
 
       meta = (StTableChild *) clutter_container_get_child_meta (CLUTTER_CONTAINER (self), child);
 
-      if (!meta->allocate_hidden && !CLUTTER_ACTOR_IS_VISIBLE (child))
+      if (!meta->allocate_hidden && !clutter_actor_is_visible (child))
         continue;
 
       /* get child properties */
@@ -857,7 +857,7 @@ st_table_get_preferred_height (ClutterActor *self,
 
       meta = (StTableChild *) clutter_container_get_child_meta (CLUTTER_CONTAINER (self), child);
 
-      if (!meta->allocate_hidden && !CLUTTER_ACTOR_IS_VISIBLE (child))
+      if (!meta->allocate_hidden && !clutter_actor_is_visible (child))
         continue;
 
       /* get child properties */

@@ -456,7 +456,7 @@ get_scrollbar_width (StScrollView *scroll,
 {
   StScrollViewPrivate *priv = scroll->priv;
 
-  if (CLUTTER_ACTOR_IS_VISIBLE (priv->vscroll))
+  if (clutter_actor_is_visible (priv->vscroll))
     {
       gfloat min_size;
 
@@ -474,7 +474,7 @@ get_scrollbar_height (StScrollView *scroll,
 {
   StScrollViewPrivate *priv = scroll->priv;
 
-  if (CLUTTER_ACTOR_IS_VISIBLE (priv->hscroll))
+  if (clutter_actor_is_visible (priv->hscroll))
     {
       gfloat min_size;
 
@@ -719,7 +719,7 @@ st_scroll_view_allocate (ClutterActor          *actor,
    */
 
   /* Vertical scrollbar */
-  if (CLUTTER_ACTOR_IS_VISIBLE (priv->vscroll))
+  if (clutter_actor_is_visible (priv->vscroll))
     {
       if (st_widget_get_direction (ST_WIDGET (actor)) == ST_TEXT_DIRECTION_RTL)
         {
@@ -738,7 +738,7 @@ st_scroll_view_allocate (ClutterActor          *actor,
     }
 
   /* Horizontal scrollbar */
-  if (CLUTTER_ACTOR_IS_VISIBLE (priv->hscroll))
+  if (clutter_actor_is_visible (priv->hscroll))
     {
       if (st_widget_get_direction (ST_WIDGET (actor)) == ST_TEXT_DIRECTION_RTL)
         {

@@ -74,7 +74,7 @@ cinnamon_embedded_window_show (GtkWidget *widget)
       /* Size is 0x0 if the GtkWindow is not shown */
       clutter_actor_queue_relayout (CLUTTER_ACTOR (window->priv->actor));
 
-      if (CLUTTER_ACTOR_IS_REALIZED (window->priv->actor))
+      if (clutter_actor_is_realized (window->priv->actor))
         gtk_widget_map (widget);
     }
 }
@@ -230,7 +230,7 @@ _cinnamon_embedded_window_set_actor (CinnamonEmbeddedWindow  *window,
   window->priv->actor = actor;
 
   if (actor &&
-      CLUTTER_ACTOR_IS_REALIZED (actor) &&
+      clutter_actor_is_realized (actor) &&
       gtk_widget_get_visible (GTK_WIDGET (window)))
     gtk_widget_map (GTK_WIDGET (window));
 }

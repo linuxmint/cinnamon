@@ -488,7 +488,7 @@ st_widget_style_changed (StWidget *widget)
     }
 
   /* update the style only if we are mapped */
-  if (CLUTTER_ACTOR_IS_MAPPED (CLUTTER_ACTOR (widget)))
+  if (clutter_actor_is_mapped (CLUTTER_ACTOR (widget)))
     st_widget_recompute_style (widget, old_theme_node);
 
   if (old_theme_node)
@@ -766,7 +766,7 @@ st_widget_real_get_focus_chain (StWidget *widget)
        child != NULL;
        child = clutter_actor_get_next_sibling (child))
     {
-      if (CLUTTER_ACTOR_IS_VISIBLE (child))
+      if (clutter_actor_is_visible (child))
         focus_chain = g_list_prepend (focus_chain, child);
     }
 
@@ -2920,7 +2920,7 @@ check_labels (StWidgetAccessible *widget_accessible,
  *
  * Gets a list of the focusable children of @widget, in "Tab"
  * order. By default, this returns all visible
- * (as in CLUTTER_ACTOR_IS_VISIBLE()) children of @widget.
+ * (as in clutter_actor_is_visible()) children of @widget.
  *
  * Returns: (element-type Clutter.Actor) (transfer container):
  *   @widget's focusable children

@@ -172,7 +172,7 @@ cinnamon_generic_container_get_focus_chain (StWidget *widget)
        child != NULL;
        child = clutter_actor_get_next_sibling (child))
     {
-      if (CLUTTER_ACTOR_IS_VISIBLE (child) &&
+      if (clutter_actor_is_visible (child) &&
           !cinnamon_generic_container_get_skip_paint (self, child))
         focus_chain = g_list_prepend (focus_chain, child);
     }

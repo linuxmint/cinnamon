@@ -309,7 +309,7 @@ get_content_preferred_width (StBoxLayout *self,
       gfloat child_min = 0, child_nat = 0;
       gboolean child_fill;
 
-      if (!CLUTTER_ACTOR_IS_VISIBLE (child))
+      if (!clutter_actor_is_visible (child))
         continue;
 
       n_children++;
@@ -391,7 +391,7 @@ get_content_preferred_height (StBoxLayout *self,
       gfloat child_min = 0, child_nat = 0;
       gboolean child_fill = FALSE;
 
-      if (!CLUTTER_ACTOR_IS_VISIBLE (child))
+      if (!clutter_actor_is_visible (child))
         continue;
 
       n_children++;
@@ -526,7 +526,7 @@ compute_shrinks (StBoxLayout *self,
       fixed = clutter_actor_get_fixed_position_set (child);
 
       shrinks[i].child_index = i;
-      if (CLUTTER_ACTOR_IS_VISIBLE (child) && !fixed)
+      if (clutter_actor_is_visible (child) && !fixed)
         {
           if (priv->is_vertical)
             {
@@ -706,7 +706,7 @@ st_box_layout_allocate (ClutterActor          *actor,
         {
           gboolean expand;
 
-          if (!CLUTTER_ACTOR_IS_VISIBLE (child) ||
+          if (!clutter_actor_is_visible (child) ||
               clutter_actor_get_fixed_position_set (child))
             continue;
 
@@ -770,7 +770,7 @@ st_box_layout_allocate (ClutterActor          *actor,
       StAlign xalign, yalign;
       gdouble xalign_f, yalign_f;
 
-      if (!CLUTTER_ACTOR_IS_VISIBLE (child))
+      if (!clutter_actor_is_visible (child))
         goto next_child;
 
       fixed = clutter_actor_get_fixed_position_set (child);
