@@ -1,3 +1,9 @@
+cinnamon (3.4.6) sonya; urgency=medium
+
+  * Remove strict dependency on libcjs-dbg
+
+ -- Clement Lefebvre <root@linuxmint.com>  Wed, 09 Aug 2017 12:46:49 +0200
+
 cinnamon (3.4.5) sonya; urgency=medium
 
   [ Michael Webster ]
