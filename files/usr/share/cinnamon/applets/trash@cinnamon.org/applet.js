@@ -34,7 +34,7 @@ MyApplet.prototype = {
 
             this._onTrashChange();
 
-            this.monitor = this.trash_directory.monitor_directory(0, null, null);
+            this.monitor = this.trash_directory.monitor_directory(0, null);
             this.monitor.connect('changed', Lang.bind(this, this._onTrashChange));
         }
         catch (e) {
@@ -77,7 +77,7 @@ MyApplet.prototype = {
         this.trash_changed_timeout = 0;
         if (this.trash_directory.query_exists(null)) {
             let children = this.trash_directory.enumerate_children('standard::*', Gio.FileQueryInfoFlags.NONE, null);
-            if (children.next_file(null, null) == null) {
+            if (children.next_file(null) == null) {
                 this.set_applet_icon_symbolic_name("user-trash");
             } else {
                 this.set_applet_icon_symbolic_name("user-trash-full");
