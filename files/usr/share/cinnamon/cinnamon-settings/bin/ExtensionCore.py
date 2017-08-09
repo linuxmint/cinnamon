@@ -525,7 +525,7 @@ class ManageSpicesPage(SettingsPage):
         extension_row = self.list_box.get_selected_row()
 
         if (extension_row.enabled > 1):
-            msg = _("There are %d instances enabled, are you sure you want to remove all of them?\n\n%s" % (extension_row.enabled, self.RemoveString))
+            msg = _("There are %d instances enabled, are you sure you want to remove all of them?\n\nYou can remove individual instances by right clicking on an %s." % (extension_row.enabled, self.collection_type))
             if not show_prompt(msg, self.window):
                 return
 
