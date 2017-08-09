@@ -113,7 +113,7 @@ st_bin_allocate (ClutterActor          *self,
 
   clutter_actor_set_allocation (self, box, flags);
 
-  if (priv->child && CLUTTER_ACTOR_IS_VISIBLE (priv->child))
+  if (priv->child && clutter_actor_is_visible (priv->child))
     {
       StThemeNode *theme_node = st_widget_get_theme_node (ST_WIDGET (self));
       ClutterActorBox childbox;
@@ -140,7 +140,7 @@ st_bin_get_preferred_width (ClutterActor *self,
 
   st_theme_node_adjust_for_height (theme_node, &for_height);
 
-  if (priv->child == NULL || !CLUTTER_ACTOR_IS_VISIBLE (priv->child))
+  if (priv->child == NULL || !clutter_actor_is_visible (priv->child))
     {
       if (min_width_p)
         *min_width_p = 0;
@@ -169,7 +169,7 @@ st_bin_get_preferred_height (ClutterActor *self,
 
   st_theme_node_adjust_for_width (theme_node, &for_width);
 
-  if (priv->child == NULL || !CLUTTER_ACTOR_IS_VISIBLE (priv->child))
+  if (priv->child == NULL || !clutter_actor_is_visible (priv->child))
     {
       if (min_height_p)
         *min_height_p = 0;
