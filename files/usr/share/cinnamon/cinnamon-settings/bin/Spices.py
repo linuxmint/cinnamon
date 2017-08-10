@@ -140,10 +140,7 @@ class Spice_Harvester(GObject.Object):
         self.total_jobs = 0
         self.download_total_files = 0
         self.download_current_file = 0
-
         self.cache_folder = '%s/.cinnamon/spices.cache/%s/' % (home, self.collection_type)
-        if not os.path.exists(self.cache_folder):
-            rec_mkdir(self.cache_folder)
 
         if self.themes:
             self.settings = Gio.Settings.new('org.cinnamon.theme')
@@ -165,11 +162,7 @@ class Spice_Harvester(GObject.Object):
 
         self._load_metadata()
 
-        if not os.path.exists(os.path.join(self.cache_folder, 'index.json')):
-            self.has_cache = False
-        else:
-            self.has_cache = True
-            self._load_cache()
+        self._load_cache()
 
         self.abort_download = ABORT_NONE
         self._sigLoadFinished = None
@@ -439,8 +432,17 @@ class Spice_Harvester(GObject.Object):
         return self.index_cache
 
     def _load_cache(self):
-        self.updates_available = []
         filename = os.path.join(self.cache_folder, 'index.json')
+        if not os.path.exists(self.cache_folder):
+            rec_mkdir(self.cache_folder)
+
+        if not os.path.exists(filename):
+            self.has_cache = False
+            return
+        else:
+            self.has_cache = True
+
+        self.updates_available = []
         f = open(filename, 'r')
         try:
             self.index_cache = json.load(f)
