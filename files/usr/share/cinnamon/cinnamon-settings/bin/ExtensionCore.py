@@ -922,6 +922,9 @@ class DownloadSpicesPage(SettingsPage):
         self.spices.update_all()
 
     def on_page_map(self, *args):
+        GLib.idle_add(self.on_page_shown)
+
+    def on_page_shown(self, *args):
         if not self.spices.processing_jobs:
             if not self.spices.has_cache:
                 if show_prompt(_("In order to view the list of available %ss you will need to download it. Would you like to do so now? (This may take a minute or more depending on your Internet connection)") % self.collection_type, self.window):
