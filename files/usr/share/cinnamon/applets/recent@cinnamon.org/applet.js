@@ -81,15 +81,9 @@ MyApplet.prototype = {
 
     _on_panel_edit_mode_changed: function () {
         if (global.settings.get_boolean(PANEL_EDIT_MODE_KEY)) {
-            if (!this.actor.visible) {
-                this.actor.show();
-            }
+            this.actor.show();
         } else {
-            if (this.privacy_settings.get_boolean(REMEMBER_RECENT_KEY) && !this.actor.visible) {
-                this.actor.show();
-            } else if (!this.privacy_settings.get_boolean(REMEMBER_RECENT_KEY) && this.actor.visible) {
-                this.actor.hide();
-            }
+            this.actor.visible = this._recentButtons.length > 0;
         }
     },
 
