@@ -232,10 +232,7 @@ MyApplet.prototype = {
 
     _on_panel_edit_mode_changed: function () {
         if (global.settings.get_boolean(PANEL_EDIT_MODE_KEY)) {
-            if (!this.actor.visible) {
-                this.set_applet_icon_symbolic_name("empty-notif");
-                this.actor.show();
-            }
+            this.actor.show();
         } else {
             this.update_list();
         }
