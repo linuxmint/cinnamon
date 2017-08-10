@@ -403,6 +403,7 @@ st_background_effect_set_property (GObject      *gobject,
                                    GParamSpec   *pspec)
 {
   StBackgroundEffect *self = ST_BACKGROUND_EFFECT (gobject);
+  GFile *file;
 
   switch (prop_id)
     {
@@ -421,7 +422,7 @@ st_background_effect_set_property (GObject      *gobject,
           break;
         }
 
-      GFile *file = g_file_new_for_path (g_strdup (self->bumpmap_location));
+      file = g_file_new_for_path (g_strdup (self->bumpmap_location));
       if (g_file_query_exists (file, NULL))
         {
           self->bg_bumpmap = st_cogl_texture_new_from_file_wrapper (self->bumpmap_location,

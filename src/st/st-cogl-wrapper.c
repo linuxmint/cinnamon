@@ -12,10 +12,12 @@ static gboolean supports_npot = FALSE;
 inline static gboolean
 hardware_supports_npot_sizes (void)
 {
+  ClutterBackend *backend;
+
     if (cogl_context != NULL)
         return supports_npot;
 
-    ClutterBackend *backend = clutter_get_default_backend ();
+    backend = clutter_get_default_backend ();
     cogl_context = clutter_backend_get_cogl_context (backend);
     supports_npot = cogl_has_feature (cogl_context, COGL_FEATURE_ID_TEXTURE_NPOT);
 
