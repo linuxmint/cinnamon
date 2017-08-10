@@ -13,6 +13,7 @@ try:
     import threading
     import time
     from PIL import Image
+    import config
 except Exception, detail:
     print detail
     sys.exit(1)
@@ -578,10 +579,12 @@ class Spice_Harvester(GObject.Object):
 
                 schema = [filename for filename in contents if 'gschema.xml' in filename]
                 for filename in schema:
-                    if os.path.exists('/usr/bin/gksu') and os.path.exists('/usr/share/cinnamon/cinnamon-settings/bin/installSchema.py'):
+                    if os.path.exists('/usr/bin/gksu') and os.path.exists(config.currentPath + "/bin/installSchema.py"):
                         message = _("Please enter your password to install the required settings schema for %s") % (uuid)
                         path = os.path.join(uuidfolder, filename)
-                        command = 'gksu  --message "<b>%s</b>" /usr/share/cinnamon/cinnamon-settings/bin/installSchema.py %s' % (message, path)
+                        tool = config.currentPath + "/bin/installSchema.py"
+
+                        command = 'gksu  --message "<b>%s</b>" %s %s' % (message, tool, path)
                         os.system(command)
                     else:
                         self.errorMessage(_("Could not install the settings schema for %s.  You will have to perform this step yourself.") % (uuid))
@@ -637,10 +640,10 @@ class Spice_Harvester(GObject.Object):
             if not self.themes:
                 if 'schema-file' in self.meta_map[uuid]:
                     sentence = _("Please enter your password to remove the settings schema for %s") % (uuid)
-                    if os.path.exists('/usr/bin/gksu') and os.path.exists('/usr/share/cinnamon/cinnamon-settings/bin/removeSchema.py'):
+                    if os.path.exists('/usr/bin/gksu') and os.path.exists(config.currentPath + "/bin/removeSchema.py"):
                         for file in self.meta_map[uuid]:
                             launcher = 'gksu  --message "<b>%s</b>"' % sentence
-                            tool = '/usr/share/cinnamon/cinnamon-settings/bin/removeSchema.py %s' % (file)
+                            tool = config.currentPath + "/bin/removeSchema.py %s" % (file)
                             command = '%s %s' % (launcher, tool)
                             os.system(command)
                     else:

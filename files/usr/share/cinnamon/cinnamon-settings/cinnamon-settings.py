@@ -13,14 +13,15 @@ import locale
 import urllib2
 from functools import cmp_to_key
 import unicodedata
+import config
 
 import gi
 gi.require_version('Gtk', '3.0')
 gi.require_version('XApp', '1.0')
 from gi.repository import Gio, Gtk, Pango, Gdk, XApp
 
-sys.path.append('/usr/share/cinnamon/cinnamon-settings/modules')
-sys.path.append('/usr/share/cinnamon/cinnamon-settings/bin')
+sys.path.append(config.currentPath + "/modules")
+sys.path.append(config.currentPath + "/bin")
 import capi
 import proxygsettings
 import SettingsWidgets
@@ -29,13 +30,13 @@ import SettingsWidgets
 gettext.install("cinnamon", "/usr/share/locale")
 
 # Standard setting pages... this can be expanded to include applet dirs maybe?
-mod_files = glob.glob('/usr/share/cinnamon/cinnamon-settings/modules/*.py')
+mod_files = glob.glob(config.currentPath + "/modules/*.py")
 mod_files.sort()
 if len(mod_files) is 0:
     print "No settings modules found!!"
     sys.exit(1)
 
-mod_files = [x.split('/')[6].split('.')[0] for x in mod_files]
+mod_files = [x.split('/')[-1].split('.')[0] for x in mod_files]
 
 for mod_file in mod_files:
     if mod_file[0:3] != "cs_":
@@ -183,7 +184,7 @@ class MainWindow:
     ''' Create the UI '''
     def __init__(self):
         self.builder = Gtk.Builder()
-        self.builder.add_from_file("/usr/share/cinnamon/cinnamon-settings/cinnamon-settings.ui")
+        self.builder.add_from_file(config.currentPath + "/cinnamon-settings.ui")
         self.window = XApp.GtkWindow(visible=True, window_position=Gtk.WindowPosition.CENTER,
                                      default_width=800, default_height=600)
         main_box = self.builder.get_object("main_box")
