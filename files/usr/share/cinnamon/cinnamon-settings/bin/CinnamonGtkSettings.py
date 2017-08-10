@@ -61,6 +61,7 @@ class GtkSettingsSwitch(SettingsWidget):
         super(GtkSettingsSwitch, self).__init__(dep_key=None)
 
         self.content_widget = Gtk.Switch()
+        self.content_widget.set_valign(Gtk.Align.CENTER)
         self.label = Gtk.Label()
         self.label.set_markup(markup)
         self.pack_start(self.label, False, False, 0)
