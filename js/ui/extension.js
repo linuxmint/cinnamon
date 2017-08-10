@@ -121,7 +121,7 @@ Extension.prototype = {
         this.uuid = uuid;
         this.dir = dir;
         this.type = type;
-        this.lowerType = type.name.toLowerCase().replace(" ", "_");
+        this.lowerType = type.name.toLowerCase().replace(/" "/g, "_");
         this.theme = null;
         this.stylesheet = null;
         this.iconDirectory = null;
@@ -136,6 +136,11 @@ Extension.prototype = {
             this.dir = findExtensionSubdirectory(this.dir);
             this.meta.path = this.dir.get_path();
             type.maps.dirs[this.uuid] = this.dir;
+            let pathSections = this.meta.path.split('/');
+            let version = pathSections[pathSections.length - 1];
+            type.maps.importObjects[this.uuid] = imports[this.lowerType + 's'][this.uuid][version];
+        } else {
+            type.maps.importObjects[this.uuid] = imports[this.lowerType + 's'][this.uuid];
         }
 
         this.ensureFileExists(this.dir.get_child(this.lowerType + '.js'));
@@ -147,9 +152,6 @@ Extension.prototype = {
             }));
         }
         this.loadIconDirectory(this.dir);
-
-        imports.addSubImporter(this.lowerType, this.meta.path);
-        type.maps.importObjects[this.uuid] = imports[this.lowerType];
 
         try {
             this.module = type.maps.importObjects[this.uuid][this.lowerType]; // get [extension/applet/desklet].js

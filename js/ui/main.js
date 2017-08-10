@@ -451,6 +451,8 @@ function start() {
     _nWorkspacesChanged();
 
     startTime = new Date().getTime();
+    imports.searchPath.unshift(global.datadir);
+    imports.searchPath.unshift(global.userdatadir);
     AppletManager.init();
     global.log('AppletManager.init() started in %d ms'.format(new Date().getTime() - startTime));
 

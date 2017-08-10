@@ -8,7 +8,7 @@ const Util = imports.misc.util;
 const PopupMenu = imports.ui.popupMenu;
 const UPowerGlib = imports.gi.UPowerGlib;
 const Settings = imports.ui.settings;
-const Calendar = imports.applet.calendar;
+const Calendar = imports.applets['calendar@cinnamon.org'].calendar;
 const CinnamonDesktop = imports.gi.CinnamonDesktop;
 
 String.prototype.capitalize = function() {
