@@ -867,7 +867,7 @@ st_scroll_bar_notify_reactive (StScrollBar *self)
 {
   StScrollBarPrivate *priv = self->priv;
 
-  gboolean reactive = CLUTTER_ACTOR_IS_REACTIVE (self);
+  gboolean reactive = clutter_actor_get_reactive (CLUTTER_ACTOR (self));
 
   clutter_actor_set_reactive (CLUTTER_ACTOR (priv->trough), reactive);
   clutter_actor_set_reactive (CLUTTER_ACTOR (priv->handle), reactive);
