@@ -267,13 +267,15 @@ cinnamon_recorder_init (CinnamonRecorder *recorder)
 {
   GdkRectangle work_rect, geo_rect;
   GdkScreen *screen;
+  gint primary;
+
   /* Calling gst_init() is a no-op if GStreamer was previously initialized */
   gst_init (NULL, NULL);
 
   cinnamon_recorder_src_register ();
 
   screen = gdk_screen_get_default ();
-  gint primary = gdk_screen_get_primary_monitor (screen);
+  primary = gdk_screen_get_primary_monitor (screen);
   gdk_screen_get_monitor_workarea (screen, primary, &work_rect);
   gdk_screen_get_monitor_geometry (screen, primary, &geo_rect);
 
