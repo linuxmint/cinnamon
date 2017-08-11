@@ -214,6 +214,26 @@ function _initRecorder() {
     });
 }
 
+function _addXletDirectoriesToSearchPath() {
+    imports.searchPath.unshift(global.datadir);
+    imports.searchPath.unshift(global.userdatadir);
+    // Including the system data directory also includes unnecessary system utilities,
+    // so we are making sure they are removed.
+    let types = ['applets', 'desklets', 'extensions'];
+    let importsCache = {};
+    for (let i = 0; i < types.length; i++) {
+        // Cache our existing xlet GJS importer objects
+        importsCache[types[i]] = imports[types[i]];
+    }
+    // Remove the two paths we added to the beginning of the array.
+    imports.searchPath.splice(0, 2);
+    for (let i = 0; i < types.length; i++) {
+        // Re-add cached xlet objects
+        imports[types[i]] = importsCache[types[i]];
+        importsCache[types[i]] = undefined;
+    }
+}
+
 function _initUserSession() {
     _initRecorder();
 
@@ -419,6 +439,7 @@ function start() {
     overview.init();
     expo.init();
 
+    _addXletDirectoriesToSearchPath();
     _initUserSession();
 
     // Provide the bus object for gnome-session to
@@ -451,8 +472,6 @@ function start() {
     _nWorkspacesChanged();
 
     startTime = new Date().getTime();
-    imports.searchPath.unshift(global.datadir);
-    imports.searchPath.unshift(global.userdatadir);
     AppletManager.init();
     global.log('AppletManager.init() started in %d ms'.format(new Date().getTime() - startTime));
 
