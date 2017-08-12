@@ -529,38 +529,30 @@ impl_load_pixbuf_file (const char     *uri,
 }
 
 static void
-load_pixbuf_thread (GSimpleAsyncResult *result,
-                    GObject *object,
+load_pixbuf_thread (GTask        *result,
+                    gpointer      source,
+                    gpointer      task_data,
                     GCancellable *cancellable)
 {
   GdkPixbuf *pixbuf;
-  AsyncTextureLoadData *data;
+  AsyncTextureLoadData *data = task_data;
   GError *error = NULL;
 
-  data = g_async_result_get_user_data (G_ASYNC_RESULT (result));
   g_assert (data != NULL);
   g_assert (data->uri != NULL);
 
   pixbuf = impl_load_pixbuf_file (data->uri, data->width, data->height, &error);
 
   if (error != NULL)
-    {
-      g_simple_async_result_set_from_error (result, error);
-      return;
-    }
-
-  if (pixbuf)
-    g_simple_async_result_set_op_res_gpointer (result, g_object_ref (pixbuf),
-                                               g_object_unref);
+    g_task_return_error (result, error);
+  else if (pixbuf)
+    g_task_return_pointer (result, g_object_ref (pixbuf), g_object_unref);
 }
 
 static GdkPixbuf *
 load_pixbuf_async_finish (StTextureCache *cache, GAsyncResult *result, GError **error)
 {
-  GSimpleAsyncResult *simple = G_SIMPLE_ASYNC_RESULT (result);
-  if (g_simple_async_result_propagate_error (simple, error))
-    return NULL;
-  return g_simple_async_result_get_op_res_gpointer (simple);
+return g_task_propagate_pointer (G_TASK (result), error);
 }
 
 static CoglTexture *
@@ -690,10 +682,10 @@ load_texture_async (StTextureCache       *cache,
 {
   if (data->uri)
     {
-      GSimpleAsyncResult *result;
-      result = g_simple_async_result_new (G_OBJECT (cache), on_pixbuf_loaded, data, load_texture_async);
-      g_simple_async_result_run_in_thread (result, load_pixbuf_thread, G_PRIORITY_DEFAULT, NULL);
-      g_object_unref (result);
+      GTask *task = g_task_new (cache, NULL, on_pixbuf_loaded, data);
+      g_task_set_task_data (task, data, NULL);
+      g_task_run_in_thread (task, load_pixbuf_thread);
+      g_object_unref (task);
     }
   else if (data->icon_info)
     {
@@ -1115,15 +1107,15 @@ on_sliced_image_loaded (GObject *source_object,
                         GAsyncResult *res,
                         gpointer user_data)
 {
+  GList *list;
   GObject *cache = source_object;
   AsyncImageData *data = (AsyncImageData *)user_data;
-  GSimpleAsyncResult *simple = G_SIMPLE_ASYNC_RESULT (res);
-  GList *list;
+  GTask *task = G_TASK (res);
 
-  if (g_simple_async_result_propagate_error (simple, NULL))
+  if (g_task_had_error (task))
     return;
 
-  for (list = g_simple_async_result_get_op_res_gpointer (simple); list; list = g_list_next (list))
+  for (list = g_task_propagate_pointer (task, NULL); list; list = list->next)
     {
       ClutterActor *actor = load_from_pixbuf (GDK_PIXBUF (list->data));
       clutter_actor_hide (actor);
@@ -1141,8 +1133,9 @@ free_glist_unref_gobjects (gpointer p)
 }
 
 static void
-load_sliced_image (GSimpleAsyncResult *result,
-                   GObject *object,
+load_sliced_image (GTask        *result,
+                   gpointer      object,
+                   gpointer      task_data,
                    GCancellable *cancellable)
 {
   AsyncImageData *data;
@@ -1152,7 +1145,7 @@ load_sliced_image (GSimpleAsyncResult *result,
 
   g_assert (!cancellable);
 
-  data = g_object_get_data (G_OBJECT (result), "load_sliced_image");
+  data = task_data;
   g_assert (data);
 
   if (!(pix = gdk_pixbuf_new_from_file (data->path, NULL)))
@@ -1172,7 +1165,7 @@ load_sliced_image (GSimpleAsyncResult *result,
   /* We don't need the original pixbuf anymore, though the subpixbufs
      will hold a reference. */
   g_object_unref (pix);
-  g_simple_async_result_set_op_res_gpointer (result, res, free_glist_unref_gobjects);
+  g_task_return_pointer (result, res, free_glist_unref_gobjects);
 }
 
 /**
@@ -1200,7 +1193,7 @@ st_texture_cache_load_sliced_image (StTextureCache *cache,
                                     gpointer        user_data)
 {
   AsyncImageData *data;
-  GSimpleAsyncResult *result;
+  GTask *result;
   ClutterActor *actor = clutter_actor_new ();
 
   data = g_new0 (AsyncImageData, 1);
@@ -1212,10 +1205,9 @@ st_texture_cache_load_sliced_image (StTextureCache *cache,
   data->load_callback_data = user_data;
   g_object_ref (G_OBJECT (actor));
 
-  result = g_simple_async_result_new (G_OBJECT (cache), on_sliced_image_loaded, data, st_texture_cache_load_sliced_image);
-
-  g_object_set_data_full (G_OBJECT (result), "load_sliced_image", data, on_data_destroy);
-  g_simple_async_result_run_in_thread (result, load_sliced_image, G_PRIORITY_DEFAULT, NULL);
+  result = g_task_new (cache, NULL, on_sliced_image_loaded, data);
+  g_task_set_task_data (result, data, on_data_destroy);
+  g_task_run_in_thread (result, load_sliced_image);
 
   g_object_unref (result);
 
