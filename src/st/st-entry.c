@@ -443,7 +443,7 @@ st_entry_allocate (ClutterActor          *actor,
                               flags);
 
       /* reduce the size for the entry */
-      child_box.x2 -= icon_w - priv->spacing;
+      child_box.x2 -= icon_w + priv->spacing;
     }
 
   clutter_actor_get_preferred_height (priv->entry, child_box.x2 - child_box.x1,
