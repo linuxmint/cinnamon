@@ -926,19 +926,20 @@ st_box_layout_paint (ClutterActor *actor)
   ClutterActorBox allocation_box;
   ClutterActorBox content_box;
   ClutterActor *child;
+  CoglFramebuffer *fb = cogl_get_draw_framebuffer ();
 
   get_border_paint_offsets (self, &x, &y);
   if (x != 0 || y != 0)
     {
-      cogl_push_matrix ();
-      cogl_translate ((int)x, (int)y, 0);
+      cogl_framebuffer_push_matrix (fb);
+      cogl_framebuffer_translate (fb, (int)x, (int)y, 0);
     }
 
   st_widget_paint_background (ST_WIDGET (actor));
 
   if (x != 0 || y != 0)
     {
-      cogl_pop_matrix ();
+      cogl_framebuffer_pop_matrix (fb);
     }
 
   if (clutter_actor_get_n_children (actor) == 0)
@@ -956,10 +957,11 @@ st_box_layout_paint (ClutterActor *actor)
    * the borders and background stay in place; after drawing the borders and
    * background, we clip to the content area */
   if (priv->hadjustment || priv->vadjustment)
-    cogl_clip_push_rectangle ((int)content_box.x1,
-                              (int)content_box.y1,
-                              (int)content_box.x2,
-                              (int)content_box.y2);
+    cogl_framebuffer_push_rectangle_clip (fb,
+                                          (int)content_box.x1,
+                                          (int)content_box.y1,
+                                          (int)content_box.x2,
+                                          (int)content_box.y2);
 
   for (child = clutter_actor_get_first_child (actor);
        child != NULL;
@@ -967,7 +969,7 @@ st_box_layout_paint (ClutterActor *actor)
     clutter_actor_paint (child);
 
   if (priv->hadjustment || priv->vadjustment)
-    cogl_clip_pop ();
+    cogl_framebuffer_pop_clip (fb);
 }
 
 static void
@@ -981,19 +983,20 @@ st_box_layout_pick (ClutterActor       *actor,
   ClutterActorBox allocation_box;
   ClutterActorBox content_box;
   ClutterActor *child;
+  CoglFramebuffer *fb = cogl_get_draw_framebuffer ();
 
   get_border_paint_offsets (self, &x, &y);
   if (x != 0 || y != 0)
     {
-      cogl_push_matrix ();
-      cogl_translate ((int)x, (int)y, 0);
+      cogl_framebuffer_push_matrix (fb);
+      cogl_framebuffer_translate (fb, (int)x, (int)y, 0);
     }
 
   CLUTTER_ACTOR_CLASS (st_box_layout_parent_class)->pick (actor, color);
 
   if (x != 0 || y != 0)
     {
-      cogl_pop_matrix ();
+      cogl_framebuffer_pop_matrix (fb);
     }
 
   if (clutter_actor_get_n_children (actor) == 0)
@@ -1008,10 +1011,11 @@ st_box_layout_pick (ClutterActor       *actor,
   content_box.y2 += y;
 
   if (priv->hadjustment || priv->vadjustment)
-    cogl_clip_push_rectangle ((int)content_box.x1,
-                              (int)content_box.y1,
-                              (int)content_box.x2,
-                              (int)content_box.y2);
+    cogl_framebuffer_push_rectangle_clip (fb,
+                                          (int)content_box.x1,
+                                          (int)content_box.y1,
+                                          (int)content_box.x2,
+                                          (int)content_box.y2);
 
   for (child = clutter_actor_get_first_child (actor);
        child != NULL;
@@ -1019,7 +1023,7 @@ st_box_layout_pick (ClutterActor       *actor,
     clutter_actor_paint (child);
 
   if (priv->hadjustment || priv->vadjustment)
-    cogl_clip_pop ();
+    cogl_framebuffer_pop_clip (fb);
 }
 
 static gboolean
