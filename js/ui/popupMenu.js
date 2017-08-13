@@ -2399,6 +2399,7 @@ PopupMenu.prototype = {
                         tweenParams["x"] = this.actor.x - this.actor.width;
                     break;
             }
+
             Tweener.addTween(this.actor, tweenParams);
         }
         else {
@@ -2712,7 +2713,7 @@ PopupSubMenu.prototype = {
 
         let targetAngle = this.actor.text_direction == Clutter.TextDirection.RTL ? -90 : 90;
 
-        if (animate) {
+        if (animate && global.settings.get_boolean("desktop-effects-on-menus")) {
             let [minHeight, naturalHeight] = this.actor.get_preferred_height(-1);
             this.actor.height = 0;
             if (this._arrow)
@@ -2758,7 +2759,7 @@ PopupSubMenu.prototype = {
 
         animate = animate && !this._needsScrollbar();
 
-        if (animate) {
+        if (animate && global.settings.get_boolean("desktop-effects-on-menus")) {
             if (this._arrow)
                 this.actor._arrowRotation = this._arrow.rotation_angle_z;
             Tweener.addTween(this.actor,
@@ -2955,10 +2956,12 @@ PopupComboMenu.prototype = {
         this.actor.opacity = 0;
         this.actor.show();
 
-        Tweener.addTween(this.actor,
-                         { opacity: 255,
-                           transition: 'linear',
-                           time: BoxPointer.POPUP_ANIMATION_TIME });
+        if (global.settings.get_boolean("desktop-effects-on-menus")) {
+            Tweener.addTween(this.actor,
+                             { opacity: 255,
+                               transition: 'linear',
+                               time: BoxPointer.POPUP_ANIMATION_TIME });
+        }
 
         this.savedFocusActor = global.stage.get_key_focus();
         global.stage.set_key_focus(this.actor);
@@ -2970,16 +2973,19 @@ PopupComboMenu.prototype = {
             return;
 
         this.isOpen = false;
-        Tweener.addTween(this.actor,
-                         { opacity: 0,
-                           transition: 'linear',
-                           time: BoxPointer.POPUP_ANIMATION_TIME,
-                           onComplete: Lang.bind(this,
-                               function() {
-                                   this.actor.hide();
-                               })
-                         });
-
+        if (global.settings.get_boolean("desktop-effects-on-menus")) {
+            Tweener.addTween(this.actor,
+                             { opacity: 0,
+                               transition: 'linear',
+                               time: BoxPointer.POPUP_ANIMATION_TIME,
+                               onComplete: Lang.bind(this,
+                                   function() {
+                                       this.actor.hide();
+                                   })
+                             });
+        } else {
+            this.actor.hide();
+        }
         this.emit('open-state-changed', false);
         global.stage.set_key_focus(this.savedFocusActor);
     },
