@@ -46,13 +46,7 @@ MyApplet.prototype = {
         this.setAllowedLayout(Applet.AllowedLayout.BOTH);
 
         try {
-
-            this.clock = new CinnamonDesktop.WallClock();
-
-            this.settings = new Settings.AppletSettings(this, "calendar@cinnamon.org", this.instance_id);
-
             this.menuManager = new PopupMenu.PopupMenuManager(this);
-
             this.orientation = orientation;
 
             this._initContextMenu();
@@ -72,6 +66,8 @@ MyApplet.prototype = {
 
             this._eventList = null;
 
+            this.settings = new Settings.AppletSettings(this, "calendar@cinnamon.org", this.instance_id);
+
             // Calendar
             this._calendar = new Calendar.Calendar(this.settings);
             vbox.add(this._calendar.actor);
@@ -88,17 +84,12 @@ MyApplet.prototype = {
                 global.reparentActor(item.actor, vbox);
             }
 
-            // Track changes to clock settings
             this._dateFormatFull = _("%A %B %-e, %Y");
 
-            this.settings.bind("use-custom-format", "use_custom_format", this.on_settings_changed);
-            this.settings.bind("custom-format", "custom_format", this.on_settings_changed);
+            this.settings.bind("use-custom-format", "use_custom_format", this._onSettingsChanged);
+            this.settings.bind("custom-format", "custom_format", this._onSettingsChanged);
 
-            // Track changes to date&time settings
-            this.datetime_settings = new Gio.Settings({ schema_id: "org.cinnamon.desktop.interface" });
-            this.datetime_settings.connect('changed::clock-show-seconds', Lang.bind(this, this.on_settings_changed));
-            this.datetime_settings.connect('changed::clock-use-24h', Lang.bind(this, this.on_settings_changed));
-            this.datetime_settings.connect('changed::clock-show-date', Lang.bind(this, this.on_settings_changed));
+            this.clock = new CinnamonDesktop.WallClock();
 
             // https://bugzilla.gnome.org/show_bug.cgi?id=655129
             this._upClient = new UPowerGlib.Client();
@@ -107,26 +98,23 @@ MyApplet.prototype = {
             } catch (e) {
                 this._upClient.connect('notify::resume', Lang.bind(this, this._updateClockAndDate));
             }
-
-            // Start the clock
-            this.on_settings_changed();
-            this._updateClockAndDatePeriodic();
-
         }
         catch (e) {
             global.logError(e);
         }
     },
 
+    _clockNotify: function(obj, pspec, data) {
+        this._updateClockAndDate();
+    },
+
     on_applet_clicked: function(event) {
         this.menu.toggle();
     },
 
-    on_settings_changed: function() {
-        if (this._periodicTimeoutId){
-            Mainloop.source_remove(this._periodicTimeoutId);
-        }
-        this._updateClockAndDatePeriodic();
+    _onSettingsChanged: function() {
+        this._updateFormatString();
+        this._updateClockAndDate();
     },
 
     on_custom_format_button_pressed: function() {
@@ -138,59 +126,46 @@ MyApplet.prototype = {
         Util.spawnCommandLine("cinnamon-settings calendar");
     },
 
-    _updateClockAndDate: function() {
-        let now = new Date();
-        let nextUpdate = 60 - now.getSeconds() + 1;
+    _updateFormatString: function() {
         let in_vertical_panel = (this.orientation == St.Side.LEFT || this.orientation == St.Side.RIGHT);
-        let label_string;
 
-        // Applet label
         if (this.use_custom_format) {
-            label_string = now.toLocaleFormat(this.custom_format);
-            if (!label_string) {
+            if (!this.clock.set_format_string(this.custom_format)) {
                 global.logError("Calendar applet: bad time format string - check your string.");
-                label_string = "~CLOCK FORMAT ERROR~ " + now.toLocaleFormat("%l:%M %p");
+                this.clock.set_format_string("~CLOCK FORMAT ERROR~ %l:%M %p");
             }
-            this.set_applet_label(label_string);
-            if(this.custom_format.search("%S") > 0 || this.custom_format.search("%c") > 0 || this.custom_format.search("%T") > 0 || this.custom_format.search("%X") > 0) {
-                nextUpdate = 1;
-            }
+        } else if (in_vertical_panel) {
+            this.clock.set_format_string("%H%n%M");
+        } else {
+            this.clock.set_format_string(null);
         }
-        else if (in_vertical_panel) {
-            label_string = now.toLocaleFormat("%H%n%M"); // this is all that will fit in a vertical panel with a typical default font
-            this.set_applet_label(label_string);
-        }
-        else {
-            if (this.clock) { // We lose cinnamon-desktop temporarily during suspend
-                let label_string = this.clock.get_clock().capitalize();
-                this.set_applet_label(label_string);
-
-                if(this.datetime_settings.get_boolean("clock-show-seconds")) {
-                    nextUpdate = 1;
-                }
-            }
-        }
-
-        // Applet content
-        let dateFormattedFull = now.toLocaleFormat(this._dateFormatFull).capitalize();
-        if (dateFormattedFull !== this._lastDateFormattedFull) {
-            this._date.set_text(dateFormattedFull);
-            this.set_applet_tooltip(dateFormattedFull);
-            this._lastDateFormattedFull = dateFormattedFull;
-        }
-
-        return nextUpdate;
     },
 
-    _updateClockAndDatePeriodic: function() {
-        let nextUpdate = this._updateClockAndDate();
-        this._periodicTimeoutId = Mainloop.timeout_add_seconds(nextUpdate, Lang.bind(this, this._updateClockAndDatePeriodic));
+    _updateClockAndDate: function() {
+        let label_string = this.clock.get_clock();
+
+        if (!this.use_custom_format) {
+            label_string = label_string.capitalize();
+        }
+
+        this.set_applet_label(label_string);
+
+        /* Applet content - st_label_set_text and set_applet_tooltip both compare new to
+         * existing strings before proceeding, so no need to check here also */
+        let dateFormattedFull = this.clock.get_clock_for_format(this._dateFormatFull).capitalize();
+
+        this._date.set_text(dateFormattedFull);
+        this.set_applet_tooltip(dateFormattedFull);
+    },
+
+    on_applet_added_to_panel: function() {
+        this._onSettingsChanged();
+        this.clock_notify_id = this.clock.connect("notify::clock", () => this._clockNotify());
     },
 
     on_applet_removed_from_panel: function() {
-        if (this._periodicTimeoutId){
-            Mainloop.source_remove(this._periodicTimeoutId);
-        }
+        this.clock.disconnect(this.clock_notify_id);
+        this.clock_notify_id = 0;
     },
 
     _initContextMenu: function () {
@@ -232,7 +207,7 @@ MyApplet.prototype = {
     on_orientation_changed: function (orientation) {
         this.orientation = orientation;
         this._initContextMenu();
-        this.on_settings_changed();
+        this._onSettingsChanged();
     }
 
 };
