@@ -1085,6 +1085,7 @@ PopupIndicatorMenuItem.prototype = {
         this._icon = new St.Icon({ style_class: 'popup-menu-icon', icon_type: St.IconType.FULLCOLOR });
 
         this._ornament.child = this._icon;
+        this._ornament.child._delegate = this._ornament;
         this.addActor(this._ornament, {span: 0});
         this.addActor(this.label);
         this.addActor(this._accel, { align: St.Align.END });
