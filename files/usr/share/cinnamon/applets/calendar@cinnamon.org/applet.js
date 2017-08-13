@@ -1,7 +1,6 @@
 const Applet = imports.ui.applet;
 const Gio = imports.gi.Gio;
 const Lang = imports.lang;
-const Mainloop = imports.mainloop;
 const Clutter = imports.gi.Clutter;
 const St = imports.gi.St;
 const Util = imports.misc.util;
@@ -90,6 +89,7 @@ MyApplet.prototype = {
             this.settings.bind("custom-format", "custom_format", this._onSettingsChanged);
 
             this.clock = new CinnamonDesktop.WallClock();
+            this.clock_notify_id = 0;
 
             // https://bugzilla.gnome.org/show_bug.cgi?id=655129
             this._upClient = new UPowerGlib.Client();
@@ -160,12 +160,17 @@ MyApplet.prototype = {
 
     on_applet_added_to_panel: function() {
         this._onSettingsChanged();
-        this.clock_notify_id = this.clock.connect("notify::clock", () => this._clockNotify());
+
+        if (this.clock_notify_id == 0) {
+            this.clock_notify_id = this.clock.connect("notify::clock", () => this._clockNotify());
+        }
     },
 
     on_applet_removed_from_panel: function() {
-        this.clock.disconnect(this.clock_notify_id);
-        this.clock_notify_id = 0;
+        if (this.clock_notify_id > 0) {
+            this.clock.disconnect(this.clock_notify_id);
+            this.clock_notify_id = 0;
+        }
     },
 
     _initContextMenu: function () {
