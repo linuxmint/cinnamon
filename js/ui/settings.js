@@ -625,12 +625,14 @@ XletSettingsBase.prototype = {
                 let templateData = Cinnamon.get_file_contents_utf8_sync(templateFile.get_path());
                 let checksum = global.get_md5_for_string(templateData);
 
-                try {
-                    if (checksum != this.settingsData.__md5__) this._doUpgrade(templateData, checksum);
-                    this._saveToFile();
-                } catch(e) {
-                    if (e) global.logError(e);
-                    global.logWarning("upgrade failed for " + this.uuid + ": falling back to previous settings");
+                if (checksum != this.settingsData.__md5__) {
+                    try {
+                        this._doUpgrade(templateData, checksum);
+                        this._saveToFile();
+                    } catch(e) {
+                        if (e) global.logError(e);
+                        global.logWarning("upgrade failed for " + this.uuid + ": falling back to previous settings");
+                    }
                 }
             }
             // if settings-schema.json is missing, we can still load the settings from data, so we
