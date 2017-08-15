@@ -561,6 +561,18 @@ st_box_layout_style_changed (StWidget *self)
 }
 
 static void
+layout_notify (GObject    *object,
+               GParamSpec *pspec,
+               gpointer    user_data)
+{
+  GObject *self = user_data;
+  const char *prop_name = g_param_spec_get_name (pspec);
+
+  if (g_object_class_find_property (G_OBJECT_GET_CLASS (self), prop_name))
+    g_object_notify (self, prop_name);
+}
+
+static void
 st_box_layout_class_init (StBoxLayoutClass *klass)
 {
   GObjectClass *object_class = G_OBJECT_CLASS (klass);
@@ -624,6 +636,7 @@ st_box_layout_init (StBoxLayout *self)
   layout = clutter_box_layout_new ();
   g_signal_connect_swapped (layout, "layout-changed",
                             G_CALLBACK (clutter_actor_queue_relayout), self);
+  g_signal_connect (layout, "notify", G_CALLBACK (layout_notify), self);
   clutter_actor_set_layout_manager (CLUTTER_ACTOR (self), layout);
 }
 
