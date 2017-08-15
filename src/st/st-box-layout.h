@@ -86,10 +86,6 @@ void     st_box_layout_set_pack_start (StBoxLayout *box,
                                        gboolean     pack_start);
 gboolean st_box_layout_get_pack_start (StBoxLayout *box);
 
-void     st_box_layout_set_align_end (StBoxLayout *box,
-                                      gboolean     align_end);
-gboolean st_box_layout_get_align_end (StBoxLayout *box);
-
 void     st_box_layout_insert_actor (StBoxLayout  *self,
                                      ClutterActor *actor,
                                      int           pos);

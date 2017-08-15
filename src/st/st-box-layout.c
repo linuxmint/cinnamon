@@ -73,7 +73,6 @@ enum {
 
   PROP_VERTICAL,
   PROP_PACK_START,
-  PROP_ALIGN_END,
 
   PROP_HADJUST,
   PROP_VADJUST
@@ -81,8 +80,6 @@ enum {
 
 struct _StBoxLayoutPrivate
 {
-  guint         is_align_end : 1;
-
   StAdjustment *hadjustment;
   StAdjustment *vadjustment;
 };
@@ -210,10 +207,6 @@ st_box_layout_get_property (GObject    *object,
       g_value_set_boolean (value, clutter_box_layout_get_pack_start (CLUTTER_BOX_LAYOUT (layout)));
       break;
 
-    case PROP_ALIGN_END:
-      g_value_set_boolean (value, priv->is_align_end);
-      break;
-
     case PROP_HADJUST:
       scrollable_get_adjustments (ST_SCROLLABLE (object), &adjustment, NULL);
       g_value_set_object (value, adjustment);
@@ -245,10 +238,6 @@ st_box_layout_set_property (GObject      *object,
 
     case PROP_PACK_START:
       st_box_layout_set_pack_start (box, g_value_get_boolean (value));
-      break;
-
-    case PROP_ALIGN_END:
-      st_box_layout_set_align_end (box, g_value_get_boolean (value));
       break;
 
     case PROP_HADJUST:
@@ -610,13 +599,6 @@ st_box_layout_class_init (StBoxLayoutClass *klass)
                                 ST_PARAM_READWRITE);
   g_object_class_install_property (object_class, PROP_PACK_START, pspec);
 
-  pspec = g_param_spec_boolean ("align-end",
-                                "Align End",
-                                "Whether the children should be flushed to the end",
-                                FALSE,
-                                ST_PARAM_READWRITE);
-  g_object_class_install_property (object_class, PROP_ALIGN_END, pspec);
-
   /* StScrollable properties */
   g_object_class_override_property (object_class,
                                     PROP_HADJUST,
@@ -625,7 +607,6 @@ st_box_layout_class_init (StBoxLayoutClass *klass)
   g_object_class_override_property (object_class,
                                     PROP_VADJUST,
                                     "vadjustment");
-
 }
 
 static void
@@ -740,45 +721,6 @@ st_box_layout_get_pack_start (StBoxLayout *box)
   g_return_val_if_fail (ST_IS_BOX_LAYOUT (box), FALSE);
 
   return clutter_box_layout_get_pack_start (CLUTTER_BOX_LAYOUT (clutter_actor_get_layout_manager (CLUTTER_ACTOR (box))));
-}
-
-/**
- * st_box_layout_set_align_end:
- * @box: A #StBoxLayout
- * @align_end: %TRUE if the layout should use align-end
- *
- * Set the value of the #StBoxLayout::align-end property.
- *
- */
-void
-st_box_layout_set_align_end (StBoxLayout *box,
-                             gboolean     align_end)
-{
-  g_return_if_fail (ST_IS_BOX_LAYOUT (box));
-
-  if (box->priv->is_align_end != align_end)
-    {
-      box->priv->is_align_end = align_end;
-      clutter_actor_queue_relayout ((ClutterActor*) box);
-
-      g_object_notify (G_OBJECT (box), "align-end");
-    }
-}
-
-/**
- * st_box_layout_get_align_end:
- * @box: A #StBoxLayout
- *
- * Get the value of the #StBoxLayout::align-end property.
- *
- * Returns: %TRUE if align-end is enabled
- */
-gboolean
-st_box_layout_get_align_end (StBoxLayout *box)
-{
-  g_return_val_if_fail (ST_IS_BOX_LAYOUT (box), FALSE);
-
-  return box->priv->is_align_end;
 }
 
 /**
