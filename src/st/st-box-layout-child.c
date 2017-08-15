@@ -111,18 +111,6 @@ st_box_layout_child_set_property (GObject      *object,
 }
 
 static void
-st_box_layout_child_dispose (GObject *object)
-{
-  G_OBJECT_CLASS (st_box_layout_child_parent_class)->dispose (object);
-}
-
-static void
-st_box_layout_child_finalize (GObject *object)
-{
-  G_OBJECT_CLASS (st_box_layout_child_parent_class)->finalize (object);
-}
-
-static void
 st_box_layout_child_class_init (StBoxLayoutChildClass *klass)
 {
   GObjectClass *object_class = G_OBJECT_CLASS (klass);
@@ -130,9 +118,6 @@ st_box_layout_child_class_init (StBoxLayoutChildClass *klass)
 
   object_class->get_property = st_box_layout_child_get_property;
   object_class->set_property = st_box_layout_child_set_property;
-  object_class->dispose = st_box_layout_child_dispose;
-  object_class->finalize = st_box_layout_child_finalize;
-
 
   pspec = g_param_spec_boolean ("expand", "Expand",
                                 "Allocate the child extra space",
