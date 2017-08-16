@@ -191,76 +191,6 @@ st_icon_finalize (GObject *gobject)
 }
 
 static void
-st_icon_get_preferred_height (ClutterActor *actor,
-                              gfloat        for_width,
-                              gfloat       *min_height_p,
-                              gfloat       *nat_height_p)
-{
-  StIconPrivate *priv = ST_ICON (actor)->priv;
-  StThemeNode *theme_node = st_widget_get_theme_node (ST_WIDGET (actor));
-
-  if (min_height_p)
-    *min_height_p = priv->icon_size * priv->icon_scale;
-
-  if (nat_height_p)
-    *nat_height_p = priv->icon_size * priv->icon_scale;
-
-  st_theme_node_adjust_preferred_height (theme_node, min_height_p, nat_height_p);
-}
-
-static void
-st_icon_get_preferred_width (ClutterActor *actor,
-                             gfloat        for_height,
-                             gfloat       *min_width_p,
-                             gfloat       *nat_width_p)
-{
-  StIconPrivate *priv = ST_ICON (actor)->priv;
-  StThemeNode *theme_node = st_widget_get_theme_node (ST_WIDGET (actor));
-
-  if (min_width_p)
-    *min_width_p = priv->icon_size * priv->icon_scale;
-
-  if (nat_width_p)
-    *nat_width_p = priv->icon_size * priv->icon_scale;
-
-  st_theme_node_adjust_preferred_width (theme_node, min_width_p, nat_width_p);
-}
-
-static void
-st_icon_allocate (ClutterActor           *actor,
-                  const ClutterActorBox  *box,
-                  ClutterAllocationFlags  flags)
-{
-  StIconPrivate *priv = ST_ICON (actor)->priv;
-  StThemeNode *theme_node = st_widget_get_theme_node (ST_WIDGET (actor));
-
-  clutter_actor_set_allocation (actor, box, flags);
-
-  if (priv->icon_texture)
-    {
-      ClutterActorBox content_box;
-
-      st_theme_node_get_content_box (theme_node, box, &content_box);
-
-      /* Center the texture in the allocation; scaling up the icon from the size
-       * we loaded it at is just a bad idea and probably accidental. Main downside
-       * of doing this is that it may not be obvious that they have to turn off
-       * fill to align the icon non-centered in the parent container.
-       *
-       * We don't use clutter_actor_allocate_align_fill() for a bit of efficiency
-       * and because we expect to get rid of the child actor in favor of a
-       * CoglTexture in the future.
-       */
-      content_box.x1 = (int)(0.5 + content_box.x1 + (content_box.x2 - content_box.x1 - (priv->icon_size * priv->icon_scale)) / 2.);
-      content_box.x2 = content_box.x1 + (priv->icon_size * priv->icon_scale);
-      content_box.y1 = (int)(0.5 + content_box.y1 + (content_box.y2 - content_box.y1 - (priv->icon_size * priv->icon_scale)) / 2.);
-      content_box.y2 = content_box.y1 + (priv->icon_size * priv->icon_scale);
-
-      clutter_actor_allocate (priv->icon_texture, &content_box, flags);
-    }
-}
-
-static void
 st_icon_paint (ClutterActor *actor)
 {
   StIconPrivate *priv = ST_ICON (actor)->priv;
@@ -336,9 +266,6 @@ st_icon_class_init (StIconClass *klass)
   object_class->dispose = st_icon_dispose;
   object_class->finalize = st_icon_finalize;
 
-  actor_class->get_preferred_height = st_icon_get_preferred_height;
-  actor_class->get_preferred_width = st_icon_get_preferred_width;
-  actor_class->allocate = st_icon_allocate;
   actor_class->paint = st_icon_paint;
 
   widget_class->style_changed = st_icon_style_changed;
@@ -375,8 +302,14 @@ st_icon_class_init (StIconClass *klass)
 static void
 st_icon_init (StIcon *self)
 {
+  ClutterLayoutManager *layout_manager;
+
   self->priv = ST_ICON_GET_PRIVATE (self);
 
+  layout_manager = clutter_bin_layout_new (CLUTTER_BIN_ALIGNMENT_FILL,
+                                           CLUTTER_BIN_ALIGNMENT_FILL);
+
+  clutter_actor_set_layout_manager (CLUTTER_ACTOR (self), layout_manager);
   self->priv->icon_size = DEFAULT_ICON_SIZE;
   self->priv->prop_icon_size = -1;
   self->priv->icon_type = DEFAULT_ICON_TYPE;
@@ -436,6 +369,8 @@ st_icon_finish_update (StIcon *icon)
     {
       priv->icon_texture = priv->pending_texture;
       priv->pending_texture = NULL;
+      clutter_actor_set_x_align (priv->icon_texture, CLUTTER_ACTOR_ALIGN_CENTER);
+      clutter_actor_set_y_align (priv->icon_texture, CLUTTER_ACTOR_ALIGN_CENTER);
       clutter_actor_add_child (CLUTTER_ACTOR (icon), priv->icon_texture);
 
       /* Remove the temporary ref we added */
