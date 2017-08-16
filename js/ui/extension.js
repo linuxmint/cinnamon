@@ -51,7 +51,6 @@ function _createExtensionType(name, folder, manager, overrides){
 
     let path = GLib.build_filenamev([global.userdatadir, folder]);
     type.userDir = path;
-
     // create user directories if they don't exist.
     let dir = Gio.file_new_for_path(type.userDir)
     try {
@@ -121,7 +120,7 @@ Extension.prototype = {
         this.uuid = uuid;
         this.dir = dir;
         this.type = type;
-        this.lowerType = type.name.toLowerCase().replace(/" "/g, "_");
+        this.lowerType = type.name.toLowerCase().replace(/\s/g, "_");
         this.theme = null;
         this.stylesheet = null;
         this.iconDirectory = null;
@@ -511,6 +510,7 @@ function unloadExtension(uuid, type, deleteConfig = true) {
 }
 
 function forgetExtension(uuid, type, forgetMeta) {
+    delete imports[type.maps.objects[uuid].lowerType + 's'][uuid];
     delete type.maps.importObjects[uuid];
     delete type.maps.objects[uuid];
     if(forgetMeta)
@@ -528,8 +528,10 @@ function forgetExtension(uuid, type, forgetMeta) {
 function reloadExtension(uuid, type) {
     let extension = type.maps.objects[uuid];
 
-    if(extension)
+    if (extension) {
         unloadExtension(uuid, type, false);
+        Main._addXletDirectoriesToSearchPath();
+    }
 
     loadExtension(uuid, type);
 }
