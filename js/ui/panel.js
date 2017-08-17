@@ -39,6 +39,8 @@ const TIME_DELTA = 1500;
 
 const APPLETS_DROP_ANIMATION_TIME = 0.2;
 
+const PANEL_PEEK_TIME = 1500;
+
 const EDIT_MODE_MIN_BOX_SIZE = 25;
 const VALID_ICON_SIZE_VALUES = [-1, 0, 16, 22, 24, 32, 48];
 
@@ -1942,6 +1944,7 @@ Panel.prototype = {
         this._bottomPanelBarrier = 0;
         this._shadowBox = null;
         this._panelZoneIconSizes = null;
+        this._peeking = false;
 
         this.themeSettings = new Gio.Settings({ schema_id: 'org.cinnamon.theme' });
 
@@ -2202,6 +2205,26 @@ Panel.prototype = {
         return;
     },
 
+
+    peekPanel: function() {
+        if (!this._hidden || this._peeking)
+            return;
+
+        if (this._showHideTimer > 0) {
+            Mainloop.source_remove(this._showHideTimer);
+            this._showHideTimer = 0;
+        }
+
+        this._peeking = true;
+        this._showPanel();
+
+        Mainloop.timeout_add(PANEL_PEEK_TIME, () => {
+            this._peeking = false;
+            this._updatePanelVisibility();
+            return false;
+        });
+    },
+
     /**
      * highlight:
      * @highlight (boolean): whether to turn on or off
@@ -2209,7 +2232,13 @@ Panel.prototype = {
      * Turns on/off the highlight of the panel
      */
     highlight: function(highlight) {
+        if (highlight == this.actor.has_style_pseudo_class('highlight'))
+            return;
+
         this.actor.change_style_pseudo_class('highlight', highlight);
+
+        if (highlight)
+            this.peekPanel();
     },
 
     /**
@@ -3389,7 +3418,7 @@ Panel.prototype = {
 
         } // end of switch on autohidesettings
 
-        if (this._panelEditMode)
+        if (this._panelEditMode || this._peeking)
             this._shouldShow = true;
         this._queueShowHidePanel();
     },
