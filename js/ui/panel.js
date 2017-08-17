@@ -1804,6 +1804,8 @@ Panel.prototype = {
         this._topPanelBarrier = 0;
         this._bottomPanelBarrier = 0;
         this._shadowBox = null;
+        this._peekId = 0;
+        this._peeking = false;
 
         this.scaleMode = false;
 
@@ -2062,7 +2064,28 @@ Panel.prototype = {
      * Turns on/off the highlight of the panel
      */
     highlight: function(highlight) {
-        this.actor.change_style_pseudo_class('highlight', highlight);
+        let isHighlighted = this.actor.has_style_pseudo_class('highlight');
+        if (isHighlighted != highlight) {
+            this.actor.change_style_pseudo_class('highlight', highlight);
+            if (highlight)
+                this._peekPanel();
+        }
+    },
+
+    _peekPanel: function(done) {
+        if (done && this._peekId > 0) {
+            this._peekId = 0;
+            this._peeking = false;
+            this._updatePanelVisibility();
+        } else if (this._hidden & !this._peeking & this._peekId === 0) {
+            if (this._showHideTimer > 0) {
+                Mainloop.source_remove(this._showHideTimer);
+                this._showHideTimer = 0;
+            }
+            this._peeking = true;
+            this._showPanel();
+            this._peekId = Mainloop.timeout_add(1500, Lang.bind(this, this._peekPanel, true));
+        }
     },
 
     /**
@@ -3021,7 +3044,7 @@ Panel.prototype = {
         // default for always-show or undefined states
         let shouldShow = true;
 
-        if (!this._panelEditMode) {
+        if (!this._panelEditMode && !this._peeking) {
             let setting = this._autohideSettings
             if (setting === "false")
                 shouldShow = true;
@@ -3297,5 +3320,5 @@ Panel.prototype = {
         Tweener.addTween(this._rightBox, boxParams);
 
         this._hidden = true;
-    },
+    }
 };
