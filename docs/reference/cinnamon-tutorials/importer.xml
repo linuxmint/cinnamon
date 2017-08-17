@@ -146,10 +146,10 @@
       The best way is using <code>imports.ui.manager.xlet[UUID]</code>.
       <code>manager</code> is one of <code>appletManager</code>, <code>deskletManager</code>, or <code>extensionSystem</code>.
       <code>xlet</code> is the xlet type pluralized and is one of <code>applets</code>, <code>desklets</code>, or <code>extensions</code>.
-      <code>UUID</code> is a string of your xlet's UUID.
+      <code>UUID</code> is the string of your xlet's UUID.
 
       <para>
-        Importing applets:
+        Importing for applets:
         <informalexample>
           <programlisting>
             const Module = imports.ui.appletManager['foo@bar'].module; // get module.js in your applet directory
@@ -158,7 +158,7 @@
       </para>
 
       <para>
-        Importing desklets:
+        Importing for desklets:
         <informalexample>
           <programlisting>
             const Module = imports.ui.deskletManager['foo@bar'].module; // get module.js in your desklet directory
@@ -167,7 +167,7 @@
       </para>
 
       <para>
-        Importing extensions:
+        Importing for extensions:
         <informalexample>
           <programlisting>
             const Module = imports.ui.extensionSystem['foo@bar'].module; // get module.js in your extension directory
@@ -176,10 +176,10 @@
       </para>
     </para>
     <para>
-      In Cinnamon 3.6+, you can also import xlets by using imports.xletTypePluralized[UUID]. This method is not compatible with previous versions of Cinnamon.
+      In Cinnamon 3.6+, you can also import xlets by using <code>imports.xletTypePluralized[UUID]</code>. This method is not compatible with previous versions of Cinnamon.
 
       <para>
-        Importing applets:
+        Importing for applets:
         <informalexample>
           <programlisting>
             const Module = imports.applets['foo@bar'].module;
@@ -188,7 +188,7 @@
       </para>
 
       <para>
-        Importing desklets:
+        Importing for desklets:
         <informalexample>
           <programlisting>
             const Module = imports.desklets['foo@bar'].module;
@@ -197,7 +197,7 @@
       </para>
 
       <para>
-        Importing extensions:
+        Importing for extensions:
         <informalexample>
           <programlisting>
             const Module = imports.extensions['foo@bar'].module;
