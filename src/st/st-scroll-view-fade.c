@@ -292,6 +292,15 @@ st_scroll_view_fade_set_actor (ClutterActorMeta *meta,
 
   g_return_if_fail (actor == NULL || ST_IS_SCROLL_VIEW (actor));
 
+  if (!clutter_feature_available (CLUTTER_FEATURE_SHADERS_GLSL))
+    {
+      /* if we don't have support for GLSL shaders then we
+       * forcibly disable the ActorMeta
+       */
+      clutter_actor_meta_set_enabled (meta, FALSE);
+      return;
+    }
+
   if (self->shader == COGL_INVALID_HANDLE)
     {
       clutter_actor_meta_set_enabled (meta, FALSE);
