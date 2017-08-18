@@ -748,7 +748,7 @@ st_entry_key_press_event (ClutterActor    *actor,
 
   /* paste */
   if ((event->modifier_state & CLUTTER_CONTROL_MASK)
-      && (event->keyval == CLUTTER_v || event->keyval == CLUTTER_V))
+      && (event->keyval == CLUTTER_KEY_v || event->keyval == CLUTTER_KEY_V))
     {
       StClipboard *clipboard;
 
@@ -761,7 +761,7 @@ st_entry_key_press_event (ClutterActor    *actor,
 
   /* copy */
   if ((event->modifier_state & CLUTTER_CONTROL_MASK)
-      && (event->keyval == CLUTTER_c || event->keyval == CLUTTER_C))
+      && (event->keyval == CLUTTER_KEY_c || event->keyval == CLUTTER_KEY_C))
     {
       StClipboard *clipboard;
       gchar *text;
@@ -779,7 +779,7 @@ st_entry_key_press_event (ClutterActor    *actor,
 
   /* cut */
   if ((event->modifier_state & CLUTTER_CONTROL_MASK)
-      && (event->keyval == CLUTTER_x || event->keyval == CLUTTER_X))
+      && (event->keyval == CLUTTER_KEY_x || event->keyval == CLUTTER_KEY_X))
     {
       StClipboard *clipboard;
       gchar *text;
