@@ -441,52 +441,28 @@ function _removeAppletFromPanel(uuid, applet_id) {
 }
 
 function saveAppletsPositions() {
-    let zones_strings = ["left", "center", "right"];
-    let allApplets = new Array();
-    for (var i in Main.panelManager.panels){
-        let panel = Main.panelManager.panels[i];
-        if (!panel) continue;
-        for (var j in zones_strings){
-            let zone_string = zones_strings[j];
-            let zone = panel["_"+zone_string+"Box"];
-            let children = zone.get_children();
-            for (var k in children) if (children[k]._applet) allApplets.push(children[k]._applet);
-        }
-    }
-    let applets = new Array();
-    for (var i in Main.panelManager.panels){
-        let panel = Main.panelManager.panels[i];
-        if (!panel)
-            continue;
+    let enabled = global.settings.get_strv('enabled-applets');
+    let newEnabled = [];
 
-        let panel_string = "panel" + i;
-
-        for (var j in zones_strings){
-            let zone_string = zones_strings[j];
-            let zone = panel["_"+zone_string+"Box"];
-            for (var k in allApplets){
-                let applet = allApplets[k];
-                let appletZone;
-                if (applet._newPanelLocation != null)
-                    appletZone = applet._newPanelLocation;
-                else
-                    appletZone = applet._panelLocation;
-                let appletOrder;
-                if (applet._newOrder != null)
-                    appletOrder = applet._newOrder;
-                else
-                    appletOrder = applet._order;
-
-                if (appletZone == zone)
-                    applets.push(panel_string+":"+zone_string+":"+appletOrder+":"+applet._uuid+":"+applet.instance_id);
+    for (let i = 0; i < enabled.length; i++) {
+        let info = enabled[i].split(':');
+        let applet = appletObj[info[4]];
+        if (applet._newOrder !== null) {
+            if (applet._newPanelId !== null) {
+                info[0] = 'panel' + applet._newPanelId;
+                info[1] = applet._zoneString;
+                applet._newPanelId = null;
             }
+            info[2] = applet._newOrder;
+            applet._newOrder = null;
+            newEnabled.push(info.join(':'));
+        }
+        else {
+            newEnabled.push(enabled[i]);
         }
     }
-    for (var i in allApplets){
-        allApplets[i]._newPanelLocation = null;
-        allApplets[i]._newOrder = null;
-    }
-    global.settings.set_strv('enabled-applets', applets);
+
+    global.settings.set_strv('enabled-applets', newEnabled);
 }
 
 function updateAppletPanelHeights(force_recalc) {

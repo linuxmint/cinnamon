@@ -192,6 +192,7 @@ Applet.prototype = {
                                 // This value is set by Cinnamon when loading/listening_to gsettings.
         this._newOrder = null;      //  Used when moving an applet
         this._panelLocation = null;     // Backlink to the panel location our applet is in, set by Cinnamon.
+        this._newPanelId = null;  //  Used when moving an applet
         this._newPanelLocation = null;  //  Used when moving an applet
         this._applet_enabled = true;    // Whether the applet is enabled or not (if not it hides in the panel as if it wasn't there)
         this._orientation = orientation;  // orientation of the panel the applet is on  St.Side.TOP BOTTOM LEFT RIGHT
