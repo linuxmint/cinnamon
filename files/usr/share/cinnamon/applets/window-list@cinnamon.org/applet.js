@@ -307,18 +307,25 @@ AppMenuButton.prototype = {
         this._updateIconId = this.metaWindow.connect('notify::icon',
                 Lang.bind(this, this.setIcon));
 
-        this._progress = this.metaWindow.progress;
+        this._progress = 0;
+
+        if (this.metaWindow.progress !== undefined) {
+            this._progress = this.metaWindow.progress;
+
+            this._updateProgressId = this.metaWindow.connect("notify::progress", () => {
+                if (this.metaWindow.progress != this._progress) {
+                    this._progress = this.metaWindow.progress;
+
+                    this.progressOverlay.visible = this._progress > 0;
+
+                    this.actor.queue_relayout();
+                }
+            });
+        } else {
+            this.progressOverlay.visible = false;
+        }
+
         /* TODO: this._progressPulse = this.metaWindow.progress_pulse; */
-
-        this._updateProgressId = this.metaWindow.connect("notify::progress", () => {
-            if (this.metaWindow.progress != this._progress) {
-                this._progress = this.metaWindow.progress;
-
-                this.progressOverlay.visible = this._progress > 0;
-
-                this.actor.queue_relayout();
-            }
-        });
 
         this.onPreviewChanged();
 
