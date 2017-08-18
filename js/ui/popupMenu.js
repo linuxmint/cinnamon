@@ -2033,6 +2033,10 @@ PopupMenuBase.prototype = {
         });
     },
 
+    get animating() {
+        return this.animating_for_open || this.animating_for_close;
+    },
+
     get firstMenuItem() {
         let items = this._getMenuItems();
         if (items.length)
@@ -2137,8 +2141,10 @@ PopupMenu.prototype = {
         PopupMenuBase.prototype._init.call (this, sourceActor, 'popup-menu-content');
 
         this.paint_count = 0;
-        this.animating = false;
+        this.animating_for_open = false;
+        this.animating_for_close = false;
         this._slidePosition = -1;
+        this.tween_add_id = 0;
 
         this.actor = new St.Bin({ style_class: 'menu',
                                   important: true });
@@ -2260,8 +2266,19 @@ PopupMenu.prototype = {
             Main.uiGroup.set_child_above_sibling(this.actor, null);
         }
 
+        // If we are still animating for close, we must remove the tween.
+        // This can happen when menus are opened and closed in rapid succession.
+        if (this.animating_for_close) {
+            Tweener.removeTweens(this.actor);
+            this.animating_for_close = false;
+        }
+
         if (animate && global.settings.get_boolean("desktop-effects-on-menus")) {
-            this.animating = true;
+            if (this.tween_add_id > 0) {
+                Mainloop.source_remove(this.tween_add_id);
+                this.tween_add_id = 0;
+            }
+            this.animating_for_open = true;
 
             // the actor is going to be painted before we set the right position for animation so we set the opacity
             // to 0 in order to prevent flashing in the wrong position
@@ -2269,7 +2286,12 @@ PopupMenu.prototype = {
             this.actor.show();
 
             // we need to give the actors a chance to allocate before animating so we get the correct values
-            Mainloop.idle_add(Lang.bind(this, function() {
+            this.tween_add_id = Mainloop.idle_add(Lang.bind(this, function() {
+                this.tween_add_id = 0;
+                // The menu may have been closed already by the time this anon function is called
+                if (!this.animating_for_open || !this.isOpen)
+                    return false;
+
                 let tweenParams = {
                     transition: "easeOutQuad",
                     time: .15,
@@ -2291,7 +2313,7 @@ PopupMenu.prototype = {
                     opacity: 255,
                     onCompleteScope: this,
                     onComplete: function() {
-                        this.animating = false;
+                        this.animating_for_open = false;
                         this.actor.remove_clip();
                     }
                 }
@@ -2325,7 +2347,7 @@ PopupMenu.prototype = {
             }));
         }
         else {
-            this.animating = false;
+            this.animating_for_open = false;
             this.actor.show();
         }
 
@@ -2350,8 +2372,15 @@ PopupMenu.prototype = {
         if (this._activeMenuItem)
             this._activeMenuItem.setActive(false);
 
+        // If we are still animating for open, we must remove the tween.
+        // This can happen when menus are opened and closed in rapid succession.
+        if (this.animating_for_open) {
+            Tweener.removeTweens(this.actor)
+            this.animating_for_open = false;
+        }
+
         if (animate && global.settings.get_boolean("desktop-effects-on-menus")) {
-            this.animating = true;
+            this.animating_for_close = true;
             let tweenParams = {
                 transition: "easeInQuad",
                 time: .15,
@@ -2373,13 +2402,12 @@ PopupMenu.prototype = {
                 onCompleteScope: this,
                 opacity: 0,
                 onComplete: function() {
-                    this.animating = false;
+                    this.animating_for_close = false;
                     this.actor.hide();
                     this.actor.remove_clip();
                     this.actor.opacity = 255;
                 }
             }
-
             switch (this._orientation) {
                 case St.Side.TOP:
                 case St.Side.BOTTOM:
@@ -2404,7 +2432,7 @@ PopupMenu.prototype = {
             Tweener.addTween(this.actor, tweenParams);
         }
         else {
-            this.animating = false;
+            this.animating_for_close = false;
             this.actor.hide();
         }
         this.emit('open-state-changed', false);
