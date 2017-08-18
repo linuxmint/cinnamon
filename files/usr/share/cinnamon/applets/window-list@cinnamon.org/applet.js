@@ -280,6 +280,11 @@ AppMenuButton.prototype = {
                 Lang.bind(this, this._getPreferredHeight));
         this.actor.connect('allocate', Lang.bind(this, this._allocate));
 
+        this.progressOverlay = new St.Widget({ style_class: "window-list-item-box", reactive: false, important: true  })
+        this.progressOverlay.add_style_pseudo_class("progress");
+
+        this.actor.add_actor(this.progressOverlay);
+
         this._iconBox = new Cinnamon.Slicer({ name: 'appMenuIcon' });
         this._iconBox.connect('style-changed',
                               Lang.bind(this, this._onIconBoxStyleChanged));
@@ -301,6 +306,19 @@ AppMenuButton.prototype = {
                 Lang.bind(this, this.setDisplayTitle));
         this._updateIconId = this.metaWindow.connect('notify::icon',
                 Lang.bind(this, this.setIcon));
+
+        this._progress = this.metaWindow.progress;
+        /* TODO: this._progressPulse = this.metaWindow.progress_pulse; */
+
+        this._updateProgressId = this.metaWindow.connect("notify::progress", () => {
+            if (this.metaWindow.progress != this._progress) {
+                this._progress = this.metaWindow.progress;
+
+                this.progressOverlay.visible = this._progress > 0;
+
+                this.actor.queue_relayout();
+            }
+        });
 
         this.onPreviewChanged();
 
@@ -687,6 +705,17 @@ AppMenuButton.prototype = {
 
             this._label.allocate(childBox, flags);
         }
+
+        if (!this.progressOverlay.visible) {
+            return;
+        }
+
+        childBox.x1 = 0;
+        childBox.y1 = 0;
+        childBox.y2 = this.actor.height;
+        childBox.x2 = Math.max((this.actor.width) * (this._progress / 100.0), 1.0);
+
+        this.progressOverlay.allocate(childBox, flags);
     },
 
     updateLabelVisible: function() {
