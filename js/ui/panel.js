@@ -1645,8 +1645,19 @@ PanelZoneDNDHandler.prototype = {
         let childProperty = vertical_panel ? 'height' : 'width';
 
         for (let i = 0, len = children.length; i < len; i++) {
-            //if (children[i] == this._dragPlaceholder.actor) continue;
-            if (y > children[i].get_allocation_box().y1 + children[i][childProperty] / 2) pos = i;
+            let allocation = children[i].get_allocation_box();
+            let childCenter;
+            let dragCoord;
+            if (vertical_panel) {
+                childCenter = (allocation.y1 + allocation.y2) / 2;
+                dragCoord = y;
+            }
+            else {
+                childCenter = (allocation.x1 + allocation.x2) / 2;
+                dragCoord = x;
+            }
+            if (dragCoord > childCenter) pos = i;
+            else break;
         }
 
         if (pos != this._dragPlaceholderPos) {
