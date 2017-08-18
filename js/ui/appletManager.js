@@ -120,7 +120,7 @@ function getAppletDefinition(definition) {
             location = getLocation(panel, elements[1]);
         }
 
-        return {
+        appletDefinition = {
             panel: panel,
             panelId: panelId,
             orientation: orientation,
@@ -131,6 +131,9 @@ function getAppletDefinition(definition) {
             uuid: elements[3],
             applet_id: elements[4]
         };
+
+        if (elements.length > 5) appletDefinition.overrides = elements[5].split(',');
+        return appletDefinition;
     }
 
     global.logError("Bad applet definition: " + definition);
@@ -345,34 +348,125 @@ function addAppletToPanels(extension, appletDefinition) {
 function removeAppletFromInappropriatePanel (extension, applet, appletDefinition) {
     //  We want to ensure that applets placed in a panel can be shown correctly
     //  - particularly because wide applets will not fit in a vertical panel unless
-    //  they have logic to manage this explicitly
-    //  If the applet is of type Icon Applet (and not a text icon applet) then should be fine otherwise
-    //  we look to see if it has declared itself suitable via a getAllowedLayout call
+    //  they have logic to manage this explicitly.
     //
-    //  If the applet turns out to be unsuitable then remove it.  The applet will show with a red
-    //  indicator in the applet list
-    if (applet instanceof Applet.IconApplet && !(applet instanceof Applet.TextIconApplet)) {
-        ;
-    } else {
-        let allowedLayout = applet.getAllowedLayout();
+    //  If the applet is of type IconApplet (and not a TextIconApplet) then it should be fine.
+    //  If not, we check if the user has previously opted to leave it there anyway.
+    //  Then we look to see if it has declared itself suitable via a call to applet.getAllowedLayout().
+    //
+    //  If the applet turns out to be unsuitable the user is then asked if they want to keep it anyway,
+    //  remove it, or try to find another panel that supports it.
+    if (applet instanceof Applet.IconApplet && !(applet instanceof Applet.TextIconApplet)) return;
+    if (appletDefinition.overrides && appletDefinition.overrides.indexOf('orient') != -1) return;
 
-        if ((appletDefinition.orientation == St.Side.LEFT || appletDefinition.orientation == St.Side.RIGHT) &&
-             allowedLayout == Applet.AllowedLayout.HORIZONTAL) {
-            global.logError("applet " + appletDefinition.uuid + " not suitable for panel orientation " + appletDefinition.orientation);
-            removeAppletFromPanels(extension._loadedDefinitions[appletDefinition.applet_id]);
-            let dialog = new ModalDialog.NotifyDialog(_("This applet is not suitable for vertical panels") + "\n\n");
-            dialog.open();
-        } else if ((appletDefinition.orientation == St.Side.TOP || appletDefinition.orientation == St.Side.BOTTOM) &&
-                    allowedLayout == Applet.AllowedLayout.VERTICAL) {
-                global.logError("applet " + appletDefinition.uuid + " not suitable for panel orientation " + appletDefinition.orientation);
-                removeAppletFromPanels(extension._loadedDefinitions[appletDefinition.applet_id]);
-                let dialog = new ModalDialog.NotifyDialog(_("This applet is not suitable for horizontal panels") + "\n\n");
-                dialog.open();
-        }
+    let allowedLayout = applet.getAllowedLayout();
+
+    if ((allowedLayout == Applet.AllowedLayout.HORIZONTAL && [St.Side.LEFT, St.Side.RIGHT].indexOf(appletDefinition.orientation) != -1) ||
+        (allowedLayout == Applet.AllowedLayout.VERTICAL && [St.Side.TOP, St.Side.BOTTOM].indexOf(appletDefinition.orientation) != -1)) {
+
+        global.logWarning((allowedLayout == Applet.AllowedLayout.HORIZONTAL)+", "+[St.Side.LEFT, St.Side.RIGHT].indexOf(appletDefinition.orientation));
+
+        let label_text = "<b>" + extension.meta.name + "</b>\n" +
+                         _("This applet does not support panels of that type. This can cause visual glitches in the panel.") + "\n" +
+                         _("Would you like to continue using it anyway, remove it from the panel, or try to move it to a different panel?");
+        let label = new St.Label({text: label_text});
+        label.clutter_text.set_use_markup(true);
+
+        let dialog = new ModalDialog.ModalDialog();
+        dialog.contentLayout.add(label);
+
+        dialog.setButtons([
+            {
+                label: _("Leave it"),
+                action: function() {
+                    dialog.destroy();
+                    verticalPanelOverride(appletDefinition);
+                }
+            },
+            {
+                label: _("Remove it"),
+                action: function() {
+                    dialog.destroy();
+                    removeApplet(appletDefinition);
+                }
+            },
+            {
+                label: _("Move to another panel"),
+                action: function() {
+                    dialog.destroy();
+                    moveApplet(appletDefinition, allowedLayout);
+                }
+            }
+        ]);
+
+        dialog.open();
     }
 }
 
+function verticalPanelOverride(appletDefinition) {
+    let list = global.settings.get_strv('enabled-applets');
+    for (let i = 0; i < list.length; i++) {
+        let info = list[i].split(':');
+        if (info[3] == appletDefinition.uuid && info[4] == appletDefinition.applet_id) {
+            let overrides;
+            if (info.length > 5) overrides = info[5].split;
+            else overrides = [];
+            overrides.push('orient');
+            info[5] = overrides.join(',');
+            list[i] = info.join(':');
+            break;
+        }
+    }
 
+    global.settings.set_strv('enabled-applets', list);
+}
+
+function removeApplet(appletDefinition) {
+    let oldList = global.settings.get_strv('enabled-applets');
+    let newList = []
+
+    for (let i = 0; i < oldList.length; i++) {
+        let info = oldList[i].split(':');
+        if (info[3] != appletDefinition.uuid || info[4] != appletDefinition.applet_id) {
+            newList.push(oldList[i]);
+        }
+    }
+
+    global.settings.set_strv('enabled-applets', newList);
+}
+
+function moveApplet(appletDefinition, allowedLayout) {
+    let panelId = null;
+    let panels = global.settings.get_strv('panels-enabled');
+    for (let i = 0; i < panels.length; i++) {
+        let panelInfo = panels[i].split(':');
+        global.logWarning(allowedLayout==Applet.AllowedLayout.HORIZONTAL);
+        if ((allowedLayout == Applet.AllowedLayout.HORIZONTAL && ['top', 'bottom'].indexOf(panelInfo[2]) != -1) ||
+            (allowedLayout == Applet.AllowedLayout.VERTICAL && ['left', 'right'].indexOf(panelInfo[2]) != -1)) {
+            panelId = 'panel' + panelInfo[0];
+            break;
+        }
+    }
+
+    if (panelId == null) {
+        removeApplet(appletDefinition);
+        let dialog = new ModalDialog.NotifyDialog(_("A suitable panel could not be found. The applet has been removed instead.") + "\n\n");
+        dialog.open();
+        return;
+    }
+
+    let list = global.settings.get_strv('enabled-applets');
+    for (let i = 0; i < list.length; i++) {
+        let info = list[i].split(':');
+        if (info[3] == appletDefinition.uuid && info[4] == appletDefinition.applet_id) {
+            info[0] = panelId;
+            list[i] = info.join(':');
+            break;
+        }
+    }
+
+    global.settings.set_strv('enabled-applets', list);
+}
 
 function get_role_provider(role) {
     if (Extension.Type.APPLET.roles[role]) {
