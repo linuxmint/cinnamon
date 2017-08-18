@@ -1750,6 +1750,7 @@ PanelZoneDNDHandler.prototype = {
     _hasSupportedLayout: function(applet) {
         let layout = applet.getAllowedLayout();
         if (layout == Applet.AllowedLayout.BOTH) return true;
+        if (applet instanceof Applet.IconApplet && !(applet instanceof Applet.TextIconApplet)) return true;
         if (layout == ((this._panelZone.get_parent()._delegate.is_vertical) ? Applet.AllowedLayout.VERTICAL : Applet.AllowedLayout.HORIZONTAL)) return true;
         return false;
     }
