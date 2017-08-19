@@ -754,7 +754,10 @@ st_entry_key_press_event (ClutterActor    *actor,
 
       clipboard = st_clipboard_get_default ();
 
-      st_clipboard_get_text (clipboard, st_entry_clipboard_callback, actor);
+      st_clipboard_get_text (clipboard,
+                             ST_CLIPBOARD_TYPE_CLIPBOARD,
+                             st_entry_clipboard_callback,
+                             actor);
 
       return TRUE;
     }
@@ -771,7 +774,9 @@ st_entry_key_press_event (ClutterActor    *actor,
       text = clutter_text_get_selection ((ClutterText*) priv->entry);
 
       if (text && strlen (text))
-        st_clipboard_set_text (clipboard, text);
+        st_clipboard_set_text (clipboard,
+                               ST_CLIPBOARD_TYPE_CLIPBOARD,
+                               text);
 
       return TRUE;
     }
@@ -790,7 +795,7 @@ st_entry_key_press_event (ClutterActor    *actor,
 
       if (text && strlen (text))
         {
-          st_clipboard_set_text (clipboard, text);
+          st_clipboard_set_text (clipboard,ST_CLIPBOARD_TYPE_CLIPBOARD, text);
 
           /* now delete the text */
           clutter_text_delete_selection ((ClutterText *) priv->entry);

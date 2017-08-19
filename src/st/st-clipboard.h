@@ -72,6 +72,11 @@ struct _StClipboardClass
   GObjectClass parent_class;
 };
 
+typedef enum {
+  ST_CLIPBOARD_TYPE_PRIMARY,
+  ST_CLIPBOARD_TYPE_CLIPBOARD
+} StClipboardType;
+
 /**
  * StClipboardCallbackFunc:
  * @clipboard: A #StClipboard
@@ -89,9 +94,11 @@ GType st_clipboard_get_type (void);
 StClipboard* st_clipboard_get_default (void);
 
 void st_clipboard_get_text (StClipboard             *clipboard,
+                            StClipboardType          type,
                             StClipboardCallbackFunc  callback,
                             gpointer                 user_data);
 void st_clipboard_set_text (StClipboard             *clipboard,
+                            StClipboardType          type,
                             const gchar             *text);
 
 G_END_DECLS
