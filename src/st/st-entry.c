@@ -734,6 +734,41 @@ st_entry_clipboard_callback (StClipboard *clipboard,
 }
 
 static gboolean
+clutter_text_button_press_event (ClutterActor       *actor,
+                                 ClutterButtonEvent *event,
+                                 gpointer            user_data)
+{
+  StEntryPrivate *priv = ST_ENTRY_PRIV (user_data);
+  GtkSettings *settings = gtk_settings_get_default ();
+  gboolean primary_paste_enabled;
+
+  g_object_get (settings,
+                "gtk-enable-primary-paste", &primary_paste_enabled,
+                NULL);
+
+  if (primary_paste_enabled && event->button == 2
+      && clutter_text_get_editable (CLUTTER_TEXT (priv->entry)))
+    {
+      StClipboard *clipboard;
+
+      clipboard = st_clipboard_get_default ();
+
+      /* By the time the clipboard callback is called,
+       * the rest of the signal handlers will have
+       * run, making the text cursor to be in the correct
+       * place.
+       */
+      st_clipboard_get_text (clipboard,
+                             ST_CLIPBOARD_TYPE_PRIMARY,
+                             st_entry_clipboard_callback,
+                             user_data);
+    }
+
+  return FALSE;
+}
+
+
+static gboolean
 st_entry_key_press_event (ClutterActor    *actor,
                           ClutterKeyEvent *event)
 {
@@ -912,6 +947,9 @@ st_entry_init (StEntry *entry)
 
   g_signal_connect (priv->entry, "notify::password-char",
                     G_CALLBACK (clutter_text_password_char_cb), entry);
+
+  g_signal_connect (priv->entry, "button-press-event",
+                    G_CALLBACK (clutter_text_button_press_event), entry);
 
   g_signal_connect (priv->entry, "notify::selection-bound",
                     G_CALLBACK (clutter_text_selection_bound_cb), entry);
