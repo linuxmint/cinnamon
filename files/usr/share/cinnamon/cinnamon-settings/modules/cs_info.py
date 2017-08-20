@@ -152,6 +152,15 @@ class Module:
 
             settings = page.add_section(_("System info"))
 
+            if os.path.exists('/usr/share/linuxmint/logo.png'): #Be sure to change the other path below, if you don't want to risk exceptions
+	            widget = SettingsWidget()
+	            widget.set_spacing(40)
+	            image = Gtk.Image()
+	            image.set_from_file("/usr/share/linuxmint/logo.png")
+	            widget.pack_start(image, True, False, 0)
+	            widget.pack_end(image, True, False, 0)
+	            settings.add_row(widget)
+            
             for (key, value) in infos:
                 widget = SettingsWidget()
                 widget.set_spacing(40)
