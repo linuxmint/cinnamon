@@ -135,7 +135,10 @@ Package: cinnamon-common
 Replaces: cinnamon (<< ${cinnamon:Version})
 Breaks: cinnamon (<< ${cinnamon:Version})
 Architecture: all
-Depends: ${misc:Depends}, python
+Depends: gettext,
+         python,
+         xdg-utils,
+         ${misc:Depends}
 Description: Cinnamon desktop (Common data files)
  Cinnamon is a modern Linux desktop which provides advanced innovative
  features and a traditional user experience. It's easy to use, powerful
