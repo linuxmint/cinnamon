@@ -1302,6 +1302,7 @@ PanelCorner.prototype = {
         this._side = side;
         this._box = box;
         this._cornertype = cornertype;
+        this.cornerRadius = 0;
 
         this.actor = new St.DrawingArea({ style_class: 'panel-corner' });
 
@@ -1456,6 +1457,17 @@ PanelCorner.prototype = {
 
         this.actor.set_size(cornerRadius, cornerRadius);
         this.actor.set_anchor_point(0, 0);
+
+        // since the corners are a child actor of the panel, we need to account
+        // for their size when setting the panel clip region. we keep track here
+        // so the panel can easily check it.
+        this.cornerRadius = cornerRadius;
+
+        // ugly hack: force the panel to reset its clip region since we just added
+        // to the total allocation after it has already clipped to its own
+        // allocation
+        let panel = this._box.get_parent()._delegate;
+        panel._setClipRegion(panel._hidden);
     }
 }; // end of panel corner
 
@@ -2407,6 +2419,15 @@ Panel.prototype = {
         let isHorizontal = this.panelPosition == PanelLoc.top
                            || this.panelPosition == PanelLoc.bottom;
 
+        // determine corners size so we can extend allocation when not
+        // hiding or animating.
+        let cornerRadius = 0;
+        if (this._leftCorner && this._leftCorner.cornerRadius > 0) {
+            cornerRadius = this._leftCorner.cornerRadius;
+        } else if (this._rightCorner && this._rightCorner.cornerRadius > 0) {
+            cornerRadius = this._rightCorner.cornerRadius;
+        }
+
         // determine exposed amount of panel
         let exposedAmount;
         if (isHorizontal) {
@@ -2427,8 +2448,8 @@ Panel.prototype = {
 
         // determine offset & set clip
         // top/left panels: must offset by the hidden amount
-        // bottom/right panels: if showing must offset by shadow size
-        // all panels: if showing increase exposedAmount by shadow size
+        // bottom/right panels: if showing must offset by shadow size and corner radius
+        // all panels: if showing increase exposedAmount by shadow size and corner radius
 
         // we use only the shadowbox x1 or y1 (offset) to determine shadow size
         // as some themes use an offset shadow to draw only on one side whereas
@@ -2440,10 +2461,10 @@ Panel.prototype = {
                 clipOffsetY = this.actor.height - exposedAmount;
             } else {
                 if (!hidden)
-                    clipOffsetY = this._shadowBox.y1;
+                    clipOffsetY = this._shadowBox.y1 - cornerRadius;
             }
             if (!hidden)
-                exposedAmount += Math.abs(this._shadowBox.y1);
+                exposedAmount += Math.abs(this._shadowBox.y1) + cornerRadius;
             this.actor.set_clip(0, clipOffsetY, this.actor.width, exposedAmount);
         } else {
             let clipOffsetX = 0;
@@ -2451,10 +2472,10 @@ Panel.prototype = {
                 clipOffsetX = this.actor.width - exposedAmount;
             } else {
                 if (!hidden)
-                    clipOffsetX = this._shadowBox.x1;
+                    clipOffsetX = this._shadowBox.x1 - cornerRadius;
             }
             if (!hidden)
-                exposedAmount += Math.abs(this._shadowBox.x1);
+                exposedAmount += Math.abs(this._shadowBox.x1) + cornerRadius;
             this.actor.set_clip(clipOffsetX, 0, exposedAmount, this.actor.height);
         }
         // Force the layout manager to update the input region
