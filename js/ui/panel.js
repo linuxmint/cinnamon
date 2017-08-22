@@ -1626,6 +1626,8 @@ PanelZoneDNDHandler.prototype = {
         this._panelZone._delegate = this;
         this._dragPlaceholder = null;
         this._dragPlaceholderPos = -1;
+
+        this._panelZone.connect('leave-event', Lang.bind(this, this._clearDragPlaceholder));
     },
 
     handleDragOver: function(source, actor, x, y, time) {
@@ -1701,6 +1703,10 @@ PanelZoneDNDHandler.prototype = {
         }
 
         return DND.DragMotionResult.MOVE_DROP;
+    },
+
+    handleDragOut: function() {
+        this._clearDragPlaceholder();
     },
 
     acceptDrop: function(source, actor, x, y, time) {
