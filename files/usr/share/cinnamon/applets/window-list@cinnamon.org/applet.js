@@ -1342,18 +1342,26 @@ MyApplet.prototype = {
         if (!(source instanceof AppMenuButton))
             return DND.DragMotionResult.NO_DROP;
 
-        source.actor.hide();
         let children = this.manager_container.get_children();
+        let isVertical = this.manager_container.height > this.manager_container.width;
 
-        let pos = children.length;
+        this._dragPlaceholderPos = -1
+        for (let i = children.length - 1; i >= 0; i--) {
+            if (!children[i].visible)
+                continue;
 
-        if (this.manager_container.height > this.manager_container.width) // assume oriented vertically
-            while (--pos && y < children[pos].get_allocation_box().y1);
-        else
-            while (--pos && x < children[pos].get_allocation_box().x1);
+            if (isVertical) {
+                if (y > children[i].get_allocation_box().y1) {
+                    this._dragPlaceholderPos = i;
+                    break;
+                }
+            } else if  (x > children[i].get_allocation_box().x1) {
+                this._dragPlaceholderPos = i;
+                break;
+            }
+        }
 
-        this._dragPlaceholderPos = pos;
-
+        source.actor.hide();
         if (this._dragPlaceholder == undefined) {
             this._dragPlaceholder = new DND.GenericDragPlaceholderItem();
             this._dragPlaceholder.child.set_width (source.actor.width);
