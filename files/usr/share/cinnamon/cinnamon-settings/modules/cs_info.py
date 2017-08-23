@@ -149,18 +149,23 @@ class Module:
 
             page = SettingsPage()
             self.sidePage.add_widget(page)
+	    settings = page.add_section(_("System info"))
+	    #if os.path.exists('/usr/share/linuxmint/logo.png'): (Other Method)
+	    try:
+	        widget = SettingsWidget()
+	        widget.set_spacing(40)
+		image = Gtk.Image()
+		image.set_from_icon_name("distributor-logo", 48) #I don't know why it spams invalid icon size warnings, at least they don't cause exceptions though
+	        widget.pack_start(image, True, False, 0)
+	        widget.pack_end(image, True, False, 0)
+	        settings.add_row(widget)
+	    except: #If you want the other method, just use this code in place of the above code from 'Image =', downwards
+                image = Gtk.Image()
+	        image.set_from_file("/usr/share/linuxmint/logo.png")
+	        widget.pack_start(image, True, False, 0)
+	        widget.pack_end(image, True, False, 0)
+	        settings.add_row(widget)
 
-            settings = page.add_section(_("System info"))
-
-            if os.path.exists('/usr/share/linuxmint/logo.png'): #Be sure to change the other path below, if you don't want to risk exceptions
-	            widget = SettingsWidget()
-	            widget.set_spacing(40)
-	            image = Gtk.Image()
-	            image.set_from_file("/usr/share/linuxmint/logo.png")
-	            widget.pack_start(image, True, False, 0)
-	            widget.pack_end(image, True, False, 0)
-	            settings.add_row(widget)
-            
             for (key, value) in infos:
                 widget = SettingsWidget()
                 widget.set_spacing(40)
