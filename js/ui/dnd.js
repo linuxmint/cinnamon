@@ -90,6 +90,7 @@ const _Draggable = new Lang.Class({
 
         this.actor = actor;
         this.target = null;
+        this.recentDropTarget = null;
 
         if (target) {
             this.target = target;
@@ -370,9 +371,18 @@ const _Draggable = new Lang.Class({
     _updateDragHover : function () {
         this._updateHoverId = 0;
         let target = null;
+        let result = null;
 
         let x = this._overrideX == undefined ? this._dragX : this._overrideX;
         let y = this._overrideY == undefined ? this._dragY : this._overrideY;
+
+        if (this.recentDropTarget) {
+            let allocation = this.recentDropTarget.get_allocation_box();
+            if (x < allocation.x1 || x > allocation.x2 || y < allocation.y1 || y > allocation.y2) {
+                this.recentDropTarget._delegate.handleDragOut();
+                this.recentDropTarget = null;
+            }
+        }
 
         if (this.target)
             target = this.target;
@@ -389,10 +399,9 @@ const _Draggable = new Lang.Class({
         for (let i = 0; i < dragMonitors.length; i++) {
             let motionFunc = dragMonitors[i].dragMotion;
             if (motionFunc) {
-                let result = motionFunc(dragEvent);
-                if (result != DragMotionResult.CONTINUE) {
-                    global.set_cursor(DRAG_CURSOR_MAP[result]);
-                    return false;
+                result = motionFunc(dragEvent);
+                if (result == DragMotionResult.MOVE_DROP || result == DragMotionResult.COPY_DROP) {
+                    break;
                 }
             }
         }
@@ -403,19 +412,20 @@ const _Draggable = new Lang.Class({
                 // We currently loop through all parents on drag-over even if one of the children has handled it.
                 // We can check the return value of the function and break the loop if it's true if we don't want
                 // to continue checking the parents.
-                let result = target._delegate.handleDragOver(this.actor._delegate,
+                result = target._delegate.handleDragOver(this.actor._delegate,
                                                              this._dragActor,
                                                              targX,
                                                              targY,
                                                              0);
-                if (result != DragMotionResult.CONTINUE && DRAG_CURSOR_MAP[result]) {
-                    global.set_cursor(DRAG_CURSOR_MAP[result]);
-                    return false;
+                if (result == DragMotionResult.MOVE_DROP || result == DragMotionResult.COPY_DROP) {
+                    if (target._delegate.handleDragOut) this.recentDropTarget = target;
+                    break;
                 }
             }
             target = target.get_parent();
         }
-        global.set_cursor(Cinnamon.Cursor.DND_IN_DRAG);
+        if (result in DRAG_CURSOR_MAP) global.set_cursor(DRAG_CURSOR_MAP[result]);
+        else global.set_cursor(Cinnamon.Cursor.DND_IN_DRAG);
         return false;
     },
 

@@ -1626,6 +1626,8 @@ PanelZoneDNDHandler.prototype = {
         this._panelZone._delegate = this;
         this._dragPlaceholder = null;
         this._dragPlaceholderPos = -1;
+
+        this._panelZone.connect('leave-event', Lang.bind(this, this._clearDragPlaceholder));
     },
 
     handleDragOver: function(source, actor, x, y, time) {
@@ -1645,8 +1647,19 @@ PanelZoneDNDHandler.prototype = {
         let childProperty = vertical_panel ? 'height' : 'width';
 
         for (let i = 0, len = children.length; i < len; i++) {
-            //if (children[i] == this._dragPlaceholder.actor) continue;
-            if (y > children[i].get_allocation_box().y1 + children[i][childProperty] / 2) pos = i;
+            let allocation = children[i].get_allocation_box();
+            let childCenter;
+            let dragCoord;
+            if (vertical_panel) {
+                childCenter = (allocation.y1 + allocation.y2) / 2;
+                dragCoord = y;
+            }
+            else {
+                childCenter = (allocation.x1 + allocation.x2) / 2;
+                dragCoord = x;
+            }
+            if (dragCoord > childCenter) pos = i;
+            else break;
         }
 
         if (pos != this._dragPlaceholderPos) {
@@ -1690,6 +1703,10 @@ PanelZoneDNDHandler.prototype = {
         }
 
         return DND.DragMotionResult.MOVE_DROP;
+    },
+
+    handleDragOut: function() {
+        this._clearDragPlaceholder();
     },
 
     acceptDrop: function(source, actor, x, y, time) {
@@ -1739,6 +1756,7 @@ PanelZoneDNDHandler.prototype = {
     _hasSupportedLayout: function(applet) {
         let layout = applet.getAllowedLayout();
         if (layout == Applet.AllowedLayout.BOTH) return true;
+        if (applet instanceof Applet.IconApplet && !(applet instanceof Applet.TextIconApplet)) return true;
         if (layout == ((this._panelZone.get_parent()._delegate.is_vertical) ? Applet.AllowedLayout.VERTICAL : Applet.AllowedLayout.HORIZONTAL)) return true;
         return false;
     }
