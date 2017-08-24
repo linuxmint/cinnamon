@@ -270,12 +270,6 @@ scroll_bar_allocate_children (StScrollBar           *bar,
           handle_box.y2 = content_box.y2;
         }
 
-      /* snap to pixel */
-      handle_box.x1 = (int) handle_box.x1;
-      handle_box.y1 = (int) handle_box.y1;
-      handle_box.x2 = (int) handle_box.x2;
-      handle_box.y2 = (int) handle_box.y2;
-
       clutter_actor_allocate (priv->handle,
                               &handle_box,
                               flags);
