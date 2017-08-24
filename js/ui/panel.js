@@ -2434,7 +2434,7 @@ Panel.prototype = {
             this.actor.set_clip(clipOffsetX, 0, exposedAmount, this.actor.height);
         }
         // Force the layout manager to update the input region
-        Main.layoutManager._chrome.updateRegions()
+        Main.layoutManager.updateChrome()
     },
 
     /**
@@ -3160,9 +3160,6 @@ Panel.prototype = {
         if (this._disabled) return;
         if (!this._hidden) return;
 
-        // Force the panel to be on top (hack to correct issues when switching workspace)
-        Main.layoutManager._windowsRestacked();
-
         // setup panel tween - slide in from edge of monitor
         // if horizontal panel, animation on y. if vertical, animation on x.
         let isHorizontal = this.panelPosition == PanelLoc.top
@@ -3232,9 +3229,6 @@ Panel.prototype = {
         this._showHideTimer = 0;
 
         if ((this._shouldShow && !force) || global.menuStackLength > 0) return;
-
-        // Force the panel to be on top (hack to correct issues when switching workspace)
-        Main.layoutManager._windowsRestacked();
 
         // setup panel tween - slide out the monitor edge leaving one pixel
         // if horizontal panel, animation on y. if vertical, animation on x.
