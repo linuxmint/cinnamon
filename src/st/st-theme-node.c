@@ -2006,6 +2006,7 @@ _st_theme_node_ensure_background (StThemeNode *node)
           if (decl->value->type == TERM_URI)
             {
               CRStyleSheet *base_stylesheet;
+              GFile *file;
 
               if (decl->parent_statement != NULL)
                 base_stylesheet = decl->parent_statement->parent_sheet;
@@ -2013,10 +2014,11 @@ _st_theme_node_ensure_background (StThemeNode *node)
                 base_stylesheet = NULL;
 
               g_free (node->background_bumpmap);
-              node->background_bumpmap = _st_theme_resolve_url (node->theme,
-                                                                base_stylesheet,
-                                                                decl->value->content.str->stryng->str);
-              
+              file = _st_theme_resolve_url (node->theme,
+                                            base_stylesheet,
+                                            decl->value->content.str->stryng->str);
+              node->background_bumpmap = g_file_get_path (file);
+              g_object_unref (file);
             }
           else if (term_is_inherit (decl->value))
             {
