@@ -94,6 +94,9 @@ st_box_layout_child_get_property (GObject    *object,
           break;
         case CLUTTER_BOX_ALIGNMENT_END:
           align = ST_ALIGN_END;
+          break;
+        default:
+          g_assert_not_reached ();
         }
       g_value_set_enum (value, align);
       break;
@@ -139,6 +142,9 @@ st_box_layout_child_set_property (GObject      *object,
           break;
         case ST_ALIGN_END:
           align = CLUTTER_BOX_ALIGNMENT_END;
+          break;
+        default:
+          g_assert_not_reached ();
         }
       g_object_set (meta, g_param_spec_get_name (pspec), align, NULL);
       break;
