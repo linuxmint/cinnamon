@@ -404,7 +404,7 @@ st_label_set_text (StLabel     *label,
 ClutterActor*
 st_label_get_clutter_text (StLabel *label)
 {
-  g_return_val_if_fail (ST_LABEL (label), NULL);
+  g_return_val_if_fail (ST_IS_LABEL (label), NULL);
 
   return label->priv->label;
 }
