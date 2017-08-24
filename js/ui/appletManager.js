@@ -120,7 +120,7 @@ function getAppletDefinition(definition) {
             location = getLocation(panel, elements[1]);
         }
 
-        appletDefinition = {
+        let appletDefinition = {
             panel: panel,
             panelId: panelId,
             orientation: orientation,

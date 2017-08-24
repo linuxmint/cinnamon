@@ -1842,6 +1842,8 @@ Panel.prototype = {
 
         if (this.is_vertical) {
             this._set_vertical_panel_style();
+        } else {
+            this._set_horizontal_panel_style();
         }
 
         this.actor.add_actor(this._leftBox);
