@@ -37,7 +37,7 @@ class MenuButton(Gtk.Button):
     def onClicked(self, widget):
         x, y, w, h = self.getScreenCoordinates()
         self.menu.popup(None, None, lambda menu, data: (x, y+h, True), None, 1, 0)
-                
+
     def getScreenCoordinates(self):
         parent = self.get_parent_window()
         x, y = parent.get_root_origin()
@@ -128,8 +128,8 @@ class CommandLine(Gtk.Entry):
 class NewLogDialog(Gtk.Dialog):
     def __init__(self, parent):
         Gtk.Dialog.__init__(self, "Add a new file watcher", parent, 0,
-            (Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL,
-             Gtk.STOCK_OK, Gtk.ResponseType.OK))
+                            (Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL,
+                             Gtk.STOCK_OK, Gtk.ResponseType.OK))
 
         self.set_default_size(150, 100)
 
@@ -138,7 +138,7 @@ class NewLogDialog(Gtk.Dialog):
 
         box = self.get_content_area()
         box.add(label)
-        
+
         self.store = Gtk.ListStore(str, str)
         self.store.append(["glass.log", "~/.cinnamon/glass.log"])
         self.store.append(["custom", "<Select file>"])
@@ -148,18 +148,18 @@ class NewLogDialog(Gtk.Dialog):
         renderer_text = Gtk.CellRendererText()
         self.combo.pack_start(renderer_text, True)
         self.combo.add_attribute(renderer_text, "text", 1)
-        
+
         table = Gtk.Table(2, 2, False)
         table.attach(Gtk.Label(label="File: ", halign=Gtk.Align.START), 0, 1, 0, 1)
         table.attach(self.combo, 1, 2, 0, 1)
         table.attach(Gtk.Label(label="Name: ", halign=Gtk.Align.START), 0, 1, 1, 2)
         self.entry = Gtk.Entry()
         table.attach(self.entry, 1, 2, 1, 2)
-        
+
         self.filename = None
         box.add(table)
         self.show_all()
-        
+
     def onComboChanged(self, combo):
         tree_iter = combo.get_active_iter()
         if tree_iter != None:
@@ -173,21 +173,21 @@ class NewLogDialog(Gtk.Dialog):
                 else:
                     combo.set_active(-1)
             return False
-                    
+
     def isValid(self):
         return self.entry.get_text() != "" and self.filename != None and os.path.isfile(os.path.expanduser(self.filename))
-        
+
     def getFile(self):
         return os.path.expanduser(self.filename)
-        
+
     def getName(self):
         return self.entry.get_text()
-        
+
     def selectFile(self):
         dialog = Gtk.FileChooserDialog("Please select a log file", self,
-            Gtk.FileChooserAction.OPEN,
-            (Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL,
-             Gtk.STOCK_OPEN, Gtk.ResponseType.OK))
+                                       Gtk.FileChooserAction.OPEN,
+                                       (Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL,
+                                        Gtk.STOCK_OPEN, Gtk.ResponseType.OK))
 
         filter_text = Gtk.FileFilter()
         filter_text.set_name("Text files")
@@ -198,19 +198,19 @@ class NewLogDialog(Gtk.Dialog):
         filter_any.set_name("Any files")
         filter_any.add_pattern("*")
         dialog.add_filter(filter_any)
-        
+
         response = dialog.run()
         result = None
         if response == Gtk.ResponseType.OK:
             result = dialog.get_filename()
         dialog.destroy()
-        
+
         return result
 
 class FileWatchHandler(pyinotify.ProcessEvent):
     def __init__(self, view):
         self.view = view
-        
+
     def process_IN_CLOSE_WRITE(self, event):
         self.view.getUpdates()
 
@@ -240,7 +240,7 @@ class FileWatcherView(Gtk.ScrolledWindow):
 
         self.show_all()
         self.getUpdates()
-        
+
         handler = FileWatchHandler(self)
         wm = pyinotify.WatchManager()
         self.notifier = pyinotify.ThreadedNotifier(wm, handler)
@@ -248,12 +248,12 @@ class FileWatcherView(Gtk.ScrolledWindow):
         self.notifier.start()
         self.connect("destroy", self.onDestroy)
         self.connect("size-allocate", self.onSizeChanged)
-        
+
     def onDestroy(self, widget):
         if self.notifier:
             self.notifier.stop()
             self.notifier = None
-        
+
     def onSizeChanged(self, widget, bla):
         if self.changed > 0:
             end_iter = self.textbuffer.get_end_iter()
@@ -263,7 +263,7 @@ class FileWatcherView(Gtk.ScrolledWindow):
     def getUpdates(self):
         self.changed = 2 # onSizeChanged will be called twice, but only the second time is final
         self.textbuffer.set_text(open(self.filename, 'r').read())
-                
+
 class ClosableTabLabel(Gtk.Box):
     __gsignals__ = {
         "close-clicked": (GObject.SIGNAL_RUN_FIRST, GObject.TYPE_NONE, ()),
@@ -272,10 +272,10 @@ class ClosableTabLabel(Gtk.Box):
         Gtk.Box.__init__(self)
         self.set_orientation(Gtk.Orientation.HORIZONTAL)
         self.set_spacing(5)
-        
+
         label = Gtk.Label(label_text)
         self.pack_start(label, True, True, 0)
-        
+
         button = Gtk.Button()
         button.set_relief(Gtk.ReliefStyle.NONE)
         button.set_focus_on_click(False)
@@ -291,11 +291,11 @@ class ClosableTabLabel(Gtk.Box):
                 "}"
         provider = Gtk.CssProvider()
         provider.load_from_data(data)
-        button.get_style_context().add_provider(provider, 600) 
+        button.get_style_context().add_provider(provider, 600)
         self.pack_start(button, False, False, 0)
-        
+
         self.show_all()
-    
+
     def button_clicked(self, button, data=None):
         self.emit("close-clicked")
 
@@ -471,7 +471,7 @@ class MelangeApp(dbus.service.Object):
             self.notebook.set_current_page(self.notebook.get_n_pages()-1)
 
         dialog.destroy()
-        
+
     def onCloseTab(self, label, content):
         self.notebook.remove_page(self.notebook.page_num(content))
         content.destroy()

@@ -302,7 +302,7 @@ class AutostartApp():
 
         if (self.get_boolean(key_file, GLib.KEY_FILE_DESKTOP_KEY_HIDDEN, False) != self.hidden or
             self.get_boolean(key_file, "X-GNOME-Autostart-enabled", True) != self.enabled or
-            self.get_shown(key_file) != self.shown):
+                self.get_shown(key_file) != self.shown):
             return False
 
         if self.get_boolean(key_file, GLib.KEY_FILE_DESKTOP_KEY_NO_DISPLAY, False) != self.no_display:

@@ -15,5 +15,5 @@ if __name__ == "__main__":
         name = p[:i]
         description = p[i+3:]
         results.append({'id': name, 'label': _("Install package : ") + name, 'description': description})
-    
+
     print json.dumps(results)

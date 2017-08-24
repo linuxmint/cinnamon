@@ -118,7 +118,7 @@ class IconPicker(object):
         chooser = Gtk.FileChooserDialog(title=_("Choose an icon"),
                                         parent=self.dialog,
                                         buttons=(Gtk.STOCK_CANCEL, Gtk.ResponseType.REJECT,
-                                        Gtk.STOCK_OK, Gtk.ResponseType.ACCEPT))
+                                                 Gtk.STOCK_OK, Gtk.ResponseType.ACCEPT))
         chooser.add_shortcut_folder("/usr/share/pixmaps")
         chooser.add_shortcut_folder("/usr/share/icons")
         fn = get_icon_string(self.image)
@@ -320,7 +320,7 @@ class LauncherEditor(ItemEditor):
         chooser = Gtk.FileChooserDialog(title=_("Choose a command"),
                                         parent=self.dialog,
                                         buttons=(Gtk.STOCK_CANCEL, Gtk.ResponseType.REJECT,
-                                        Gtk.STOCK_OK, Gtk.ResponseType.ACCEPT))
+                                                 Gtk.STOCK_OK, Gtk.ResponseType.ACCEPT))
         response = chooser.run()
         if response == Gtk.ResponseType.ACCEPT:
             self.builder.get_object('exec-entry').set_text(escape_space(chooser.get_filename()))
@@ -416,7 +416,7 @@ class CinnamonLauncherEditor(ItemEditor):
         chooser = Gtk.FileChooserDialog(title=_("Choose a command"),
                                         parent=self.dialog,
                                         buttons=(Gtk.STOCK_CANCEL, Gtk.ResponseType.REJECT,
-                                        Gtk.STOCK_OK, Gtk.ResponseType.ACCEPT))
+                                                 Gtk.STOCK_OK, Gtk.ResponseType.ACCEPT))
         response = chooser.run()
         if response == Gtk.ResponseType.ACCEPT:
             self.builder.get_object('exec-entry').set_text(escape_space(chooser.get_filename()))

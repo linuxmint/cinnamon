@@ -531,10 +531,10 @@ class TweenMenuItem(Gtk.MenuItem):
 class EffectChooserButton(BaseChooserButton):
     __gproperties__ = {
         "effect": (str,
-                  "effect value",
-                  "Value of the selected effect",
-                  None,
-                  GObject.PARAM_READWRITE)
+                   "effect value",
+                   "Value of the selected effect",
+                   None,
+                   GObject.PARAM_READWRITE)
     }
 
     def __init__(self, effect_styles=None):

@@ -93,7 +93,7 @@ class EditableEntry (Gtk.Notebook):
 
     __gsignals__ = {
         'changed': (GObject.SIGNAL_RUN_FIRST, None,
-                      (str,))
+                    (str,))
     }
 
     PAGE_BUTTON = 0
@@ -810,10 +810,10 @@ class Module:
             user = model[treeiter][INDEX_USER_OBJECT]
             message = _("Are you sure you want to permanently delete %s and all the files associated with this user?") % user.get_user_name()
             d = Gtk.MessageDialog(self.window,
-                              Gtk.DialogFlags.MODAL | Gtk.DialogFlags.DESTROY_WITH_PARENT,
-                              Gtk.MessageType.QUESTION,
-                              Gtk.ButtonsType.YES_NO,
-                              message)
+                                  Gtk.DialogFlags.MODAL | Gtk.DialogFlags.DESTROY_WITH_PARENT,
+                                  Gtk.MessageType.QUESTION,
+                                  Gtk.ButtonsType.YES_NO,
+                                  message)
             d.set_markup(message)
             d.set_default_response(Gtk.ResponseType.NO)
             r = d.run()
@@ -880,10 +880,10 @@ class Module:
             group = model[treeiter][INDEX_GROUPNAME]
             message = _("Are you sure you want to permanently delete %s?") % group
             d = Gtk.MessageDialog(self.window,
-                              Gtk.DialogFlags.MODAL | Gtk.DialogFlags.DESTROY_WITH_PARENT,
-                              Gtk.MessageType.QUESTION,
-                              Gtk.ButtonsType.YES_NO,
-                              message)
+                                  Gtk.DialogFlags.MODAL | Gtk.DialogFlags.DESTROY_WITH_PARENT,
+                                  Gtk.MessageType.QUESTION,
+                                  Gtk.ButtonsType.YES_NO,
+                                  message)
             d.set_markup(message)
             d.set_default_response(Gtk.ResponseType.NO)
             r = d.run()
@@ -915,7 +915,3 @@ class Module:
 if __name__ == "__main__":
     module = Module()
     Gtk.main()
-
-
-
-

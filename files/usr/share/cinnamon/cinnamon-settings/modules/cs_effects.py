@@ -30,7 +30,7 @@ TIME_SETS = {
 }
 
 COMBINATIONS = {
-   #  name           effect    transition    time
+    #  name           effect    transition    time
     "cinnamon":   ("cinnamon", "cinnamon", "cinnamon"),
     "scale":      ("scale",    "normal",   "normal"),
     "fancyScale": ("scale",    "extra",    "slow"),
@@ -39,7 +39,7 @@ COMBINATIONS = {
     "move":       ("move",     "normal",   "fast"),
     "flyUp":      ("flyUp",    "normal",   "fast"),
     "flyDown":    ("flyDown",  "normal",   "fast"),
-   #for previous versions
+    #for previous versions
     "default":    ("default",  "normal",   "default")
 }
 
@@ -52,7 +52,7 @@ OPTIONS = (
     ("move",       _("Move")),
     ("flyUp",      _("Fly up, down")),
     ("flyDown",    _("Fly down, up")),
-   #for previous versions
+    #for previous versions
     ("default",    _("Default"))
 )
 TYPES = ("map", "close", "minimize", "maximize", "unmaximize", "tile")

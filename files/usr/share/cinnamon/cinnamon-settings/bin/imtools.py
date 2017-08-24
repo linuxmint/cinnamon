@@ -53,8 +53,8 @@ class InvalidWriteFormatError(Exception):
 
 
 def drop_shadow(image, horizontal_offset=5, vertical_offset=5,
-    background_color=(255, 255, 255, 0), shadow_color=0x444444,
-    border=8, shadow_blur=3, force_background_color=False, cache=None):
+                background_color=(255, 255, 255, 0), shadow_color=0x444444,
+                border=8, shadow_blur=3, force_background_color=False, cache=None):
     """Add a gaussian blur drop shadow to an image.
 
     :param image: The image to overlay on top of the shadow.
@@ -97,8 +97,8 @@ def drop_shadow(image, horizontal_offset=5, vertical_offset=5,
             mode = 'RGB'
         #create cache id
         id = ''.join([str(x) for x in ['shadow_', size,
-            horizontal_offset, vertical_offset, border, shadow_blur,
-            background_color, shadow_color]])
+                                       horizontal_offset, vertical_offset, border, shadow_blur,
+                                       background_color, shadow_color]])
 
         #look up in cache
         if id in cache:
@@ -108,7 +108,7 @@ def drop_shadow(image, horizontal_offset=5, vertical_offset=5,
     if back is None:
         #size of backdrop
         back_size = (size[0] + abs(horizontal_offset) + 2 * border,
-                        size[1] + abs(vertical_offset) + 2 * border)
+                     size[1] + abs(vertical_offset) + 2 * border)
 
         #create shadow mask
         if mode == 'RGBA':
@@ -121,7 +121,7 @@ def drop_shadow(image, horizontal_offset=5, vertical_offset=5,
         shadow_left = border + max(horizontal_offset, 0)
         shadow_top = border + max(vertical_offset, 0)
         paste(shadow, image_mask, (shadow_left, shadow_top,
-                                shadow_left + size[0], shadow_top + size[1]))
+                                   shadow_left + size[0], shadow_top + size[1]))
         del image_mask  # free up memory
 
         #blur shadow mask
@@ -151,7 +151,7 @@ def drop_shadow(image, horizontal_offset=5, vertical_offset=5,
         if force_background_color:
             mask = get_alpha(back)
             paste(back, Image.new('RGB', back.size, background_color),
-                (0, 0), ImageChops.invert(mask))
+                  (0, 0), ImageChops.invert(mask))
             back.putalpha(mask)
     else:
         paste(back, image, (image_left, image_top))
@@ -159,7 +159,7 @@ def drop_shadow(image, horizontal_offset=5, vertical_offset=5,
     return back
 
 def round_image(image, cache={}, round_all=True, rounding_type=None,
-        radius=100, opacity=255, pos=ROUNDED_POS, back_color='#FFFFFF'):
+                radius=100, opacity=255, pos=ROUNDED_POS, back_color='#FFFFFF'):
 
     if image.mode != 'RGBA':
         image = image.convert('RGBA')
@@ -170,12 +170,12 @@ def round_image(image, cache={}, round_all=True, rounding_type=None,
     mask = create_rounded_rectangle(image.size, cache, radius, opacity, pos)
 
     paste(image, Image.new('RGB', image.size, back_color), (0, 0),
-        ImageChops.invert(mask))
+          ImageChops.invert(mask))
     image.putalpha(mask)
     return image
 
 def create_rounded_rectangle(size=(600, 400), cache={}, radius=100,
-        opacity=255, pos=ROUNDED_POS):
+                             opacity=255, pos=ROUNDED_POS):
     #rounded_rectangle
     im_x, im_y = size
     rounded_rectangle_id = ROUNDED_RECTANGLE_ID % (radius, opacity, size, pos)
@@ -227,7 +227,7 @@ def create_corner(radius=100, opacity=255, factor=2):
     corner = Image.new('L', (factor * radius, factor * radius), 0)
     draw = ImageDraw.Draw(corner)
     draw.pieslice((0, 0, 2 * factor * radius, 2 * factor * radius),
-        180, 270, fill=opacity)
+                  180, 270, fill=opacity)
     corner = corner.resize((radius, radius), Image.ANTIALIAS)
     return corner
 
@@ -362,7 +362,7 @@ def fill_background_color(image, color):
     if image.mode == 'LA':
         image = image.convert('RGBA')
     elif image.mode != 'RGBA' and\
-        not (image.mode == 'P' and 'transparency' in image.info):
+            not (image.mode == 'P' and 'transparency' in image.info):
         return image
     if len(color) == 4 and color[-1] != 255:
         mode = 'RGBA'
@@ -386,9 +386,9 @@ def fill_background_color(image, color):
 
 
 def generate_layer(image_size, mark, method,
-        horizontal_offset, vertical_offset,
-        horizontal_justification, vertical_justification,
-        orientation, opacity):
+                   horizontal_offset, vertical_offset,
+                   horizontal_justification, vertical_justification,
+                   orientation, opacity):
     """Generate new layer for backgrounds or watermarks on which a given
     image ``mark`` can be positioned, scaled or repeated.
 
@@ -426,12 +426,12 @@ def generate_layer(image_size, mark, method,
     elif method == 'Scale':
         # scale, but preserve the aspect ratio
         ratio = min(float(image_size[0]) / mark.size[0],
-            float(image_size[1]) / mark.size[1])
+                    float(image_size[1]) / mark.size[1])
         w = int(mark.size[0] * ratio)
         h = int(mark.size[1] * ratio)
         mark = mark.resize((w, h))
         paste(layer, mark, ((image_size[0] - w) / 2,
-            (image_size[1] - h) / 2))
+                            (image_size[1] - h) / 2))
     elif method == 'By Offset':
         location = calculate_location(
             horizontal_offset, vertical_offset,
@@ -491,7 +491,7 @@ def blend(im1, im2, amount, color=None):
         we, he = expanded.size
         wi, hi = im1.size
         paste(expanded, im1, ((we - wi) / 2, (he - hi) / 2),
-            im1.convert('RGBA'))
+              im1.convert('RGBA'))
         im1 = expanded
     return Image.blend(im1, im2, amount)
 
@@ -521,8 +521,8 @@ def reduce_opacity(im, opacity):
 
 
 def calculate_location(horizontal_offset, vertical_offset,
-        horizontal_justification, vertical_justification,
-        canvas_size, image_size):
+                       horizontal_justification, vertical_justification,
+                       canvas_size, image_size):
     """Calculate location based on offset and justification. Offsets
     can be positive and negative.
 
@@ -616,7 +616,7 @@ def has_transparency(image):
     :rtype: boolean
     """
     return (image.mode == 'P' and 'transparency' in image.info) or\
-            has_alpha(image)
+        has_alpha(image)
 
 
 if Image.VERSION == '1.1.7':
@@ -863,7 +863,7 @@ def paste(destination, source, box=(0, 0), mask=None, force=False):
         if has_alpha(source):
             # invert_alpha = the transparant pixels of the destination
             if has_alpha(destination) and (destination.size == source.size
-                    or force):
+                                           or force):
                 invert_alpha = ImageOps.invert(get_alpha(destination))
                 if invert_alpha.size != source.size:
                     # if sizes are not the same be careful!
@@ -937,7 +937,7 @@ def convert(image, mode, *args, **keyw):
             output = image.convert('RGB').convert(
                 mode, colors=255, *args, **keyw)
             paste(output,
-                255, alpha.point(COLOR_MAP))
+                  255, alpha.point(COLOR_MAP))
             output.info['transparency'] = 255
             return output
         return image.convert('RGB').convert(mode, *args, **keyw)
@@ -1115,17 +1115,17 @@ def get_exif_transposition(orientation):
         transposition_reverse = Image.FLIP_TOP_BOTTOM,
     elif orientation == 5:
         transposition = Image.FLIP_LEFT_RIGHT, \
-                                        Image.ROTATE_90
+            Image.ROTATE_90
         transposition_reverse = Image.ROTATE_270, \
-                                        Image.FLIP_LEFT_RIGHT
+            Image.FLIP_LEFT_RIGHT
     elif orientation == 6:
         transposition = Image.ROTATE_270,
         transposition_reverse = Image.ROTATE_90,
     elif orientation == 7:
         transposition = Image.FLIP_LEFT_RIGHT, \
-                                        Image.ROTATE_270
+            Image.ROTATE_270
         transposition_reverse = Image.ROTATE_90, \
-                                        Image.FLIP_LEFT_RIGHT
+            Image.FLIP_LEFT_RIGHT
     elif orientation == 8:
         transposition = Image.ROTATE_90,
         transposition_reverse = Image.ROTATE_270,
@@ -1215,8 +1215,8 @@ def checkboard(size, delta=8, fg=(128, 128, 128), bg=(204, 204, 204)):
         image = Image.new("RGB", size, bg)
         draw_square = ImageDraw.Draw(image).rectangle
         squares = (square(i, j)
-           for i_start, j in zip(cycle((0, 1)), range(n))
-           for i in range(i_start, n, 2))
+                   for i_start, j in zip(cycle((0, 1)), range(n))
+                   for i in range(i_start, n, 2))
         for sq in squares:
             draw_square(sq, fill=fg)
         CHECKBOARD[size] = image

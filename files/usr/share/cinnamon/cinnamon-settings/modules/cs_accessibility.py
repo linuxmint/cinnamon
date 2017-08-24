@@ -65,11 +65,11 @@ class Module:
             settings.add_row(switch)
 
             switch = GSettingsDependencySwitch(_("Screen reader"),
-                                     "org.cinnamon.desktop.a11y.applications",
-                                     "screen-reader-enabled",
-                                     None,
-                                     ["orca"],
-                                     ["gnome-orca"])
+                                               "org.cinnamon.desktop.a11y.applications",
+                                               "screen-reader-enabled",
+                                               None,
+                                               ["orca"],
+                                               ["gnome-orca"])
             settings.add_row(switch)
 
 # Desktop Zoom
@@ -470,5 +470,3 @@ class Module:
             ret = self.iface_settings.get_default_value(KEY_TEXT_SCALING_FACTOR).get_double()
 
         return ret
-
-

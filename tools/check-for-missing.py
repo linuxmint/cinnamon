@@ -18,7 +18,7 @@ status=0
 for f in subprocess.Popen(["git", "ls-files"], stdout=subprocess.PIPE).stdout:
     f = f.strip()
     if (not os.path.exists(os.path.join(distdir, f)) and
-        not any((fnmatch.fnmatch(f, p) for p in excludes))):
+            not any((fnmatch.fnmatch(f, p) for p in excludes))):
         print "File missing from distribution:", f
         status=1
 

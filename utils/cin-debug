@@ -22,7 +22,7 @@ logfile = "%s/%s-%s.log" % (home, pname, datetime.datetime.now().strftime("%Y-%m
 
 
 gdb_script = \
-"""
+    """
 set logging file %s
 set logging on
 set pagination off

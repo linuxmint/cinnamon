@@ -26,7 +26,7 @@ if len(sys.argv) > 2:
         runargs += " %s" % sys.argv[i]
 
 gdb_script = \
-"""
+    """
 set logging file %s
 set logging on
 set pagination off

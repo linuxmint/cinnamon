@@ -43,8 +43,8 @@ def markup(line, obj):
     def format_type_link(match):
         res = match.group(1)
         return '<link linkend="{link}"><code>{name}</code></link>'.format(
-                link = get_type_link(res, obj.file),
-                name = res)
+            link = get_type_link(res, obj.file),
+            name = res)
 
     line = re.sub('#(([\w]*\.)?[\w]+)', format_type_link, line)
 
@@ -84,14 +84,14 @@ def markup(line, obj):
 
         if thing in prop_names and not full.endswith("()"):
             return '<link linkend="cinnamon-js-{prefix}--{thing}"><code>{full}</code></link>'.format(
-                    prefix = object.prefix,
-                    thing = thing,
-                    full = full)
+                prefix = object.prefix,
+                thing = thing,
+                full = full)
         elif thing in func_names or (thing in enum_names and not full.endswith("()")):
             return '<link linkend="cinnamon-js-{prefix}-{thing}"><code>{full}</code></link>'.format(
-                    prefix = object.prefix,
-                    thing = thing,
-                    full = full)
+                prefix = object.prefix,
+                thing = thing,
+                full = full)
         else:
             return '<code>{name}</code>'.format(name = full)
 
@@ -152,9 +152,9 @@ class JSThing():
         for line in joined:
             if line.split('\n')[0].strip() == '```':
                 description += '<informalexample><programlisting>{0}</programlisting></informalexample>'\
-                        .format(line.replace('```', ''))
+                    .format(line.replace('```', ''))
                 continue
-            
+
             if line == '':
                 continue
 
@@ -166,8 +166,8 @@ class JSThing():
 
             if in_list:
                 description += '<itemizedlist>' + \
-                        '\n'.join('<listitem>{0}</listitem>'.format(item) for item in list_buffer) + \
-                        '</itemizedlist>'
+                    '\n'.join('<listitem>{0}</listitem>'.format(item) for item in list_buffer) + \
+                    '</itemizedlist>'
                 list_buffer = []
                 in_list = False
 
@@ -176,8 +176,8 @@ class JSThing():
 
         if in_list:
             description += '<itemizedlist>' + \
-                    '\n'.join('<listitem>{0}</listitem>'.format(item) for item in list_buffer) + \
-                    '</itemizedlist>'
+                '\n'.join('<listitem>{0}</listitem>'.format(item) for item in list_buffer) + \
+                '</itemizedlist>'
             list_buffer = []
 
         return description
@@ -649,14 +649,14 @@ def get_function_header(obj):
         return ""
 
     functions = [FUNCTION_HEADER_ITEM_FORMAT.format(
-                return_link = get_type_link(func.return_value.arg_type, obj.file),
-                return_name = func.return_value.arg_type,
-                prefix = obj.prefix,
-                name = func.name) for func in obj.functions]
+        return_link = get_type_link(func.return_value.arg_type, obj.file),
+        return_name = func.return_value.arg_type,
+        prefix = obj.prefix,
+        name = func.name) for func in obj.functions]
 
     return FUNCTION_HEADER_FORMAT.format(
-            prefix = obj.prefix,
-            function_headers = "\n".join(functions))
+        prefix = obj.prefix,
+        function_headers = "\n".join(functions))
 
 def get_signal_header(obj):
     if len(obj.signals) == 0:
@@ -667,8 +667,8 @@ def get_signal_header(obj):
                name = sig.name) for sig in obj.signals]
 
     return SIGNAL_HEADER_FORMAT.format(
-            prefix = obj.prefix,
-            signal_headers = "\n".join(signals))
+        prefix = obj.prefix,
+        signal_headers = "\n".join(signals))
 
 def get_properties_header(obj):
     if len(obj.properties) == 0:
@@ -745,8 +745,8 @@ def get_description(obj):
         return ""
 
     return DESCRIPTION_FORMAT.format(
-            prefix=obj.prefix,
-            description = obj.get_xml_description())
+        prefix=obj.prefix,
+        description = obj.get_xml_description())
 
 def get_functions(obj):
     if len(obj.functions) == 0:
@@ -794,8 +794,8 @@ def get_functions(obj):
             return_desc = return_desc))
 
     return FUNCTIONS_FORMAT.format(
-            prefix = obj.prefix,
-            functions = "\n".join(functions))
+        prefix = obj.prefix,
+        functions = "\n".join(functions))
 
 def get_signals(obj):
     if len(obj.signals) == 0:
@@ -836,8 +836,8 @@ def get_signals(obj):
             params = params))
 
     return SIGNALS_FORMAT.format(
-            prefix = obj.prefix,
-            signals = "\n".join(signals))
+        prefix = obj.prefix,
+        signals = "\n".join(signals))
 
 
 def get_properties(obj):
@@ -853,8 +853,8 @@ def get_properties(obj):
         description = prop.get_xml_description()) for prop in obj.properties]
 
     return PROPERTIES_FORMAT.format(
-         prefix = obj.prefix,
-         properties = "\n".join(properties))
+        prefix = obj.prefix,
+        properties = "\n".join(properties))
 
 def get_enums(obj):
     if len(obj.enums) == 0:
@@ -874,5 +874,5 @@ def get_enums(obj):
             enum_items = "\n".join(items)))
 
     return ENUMS_FORMAT.format(
-            prefix = obj.prefix,
-            enums = "\n".join(enums))
+        prefix = obj.prefix,
+        enums = "\n".join(enums))
