@@ -1815,7 +1815,7 @@ Panel.prototype = {
         this._menus = new PopupMenu.PopupMenuManager(this);
 
         this._leftBox    = new St.BoxLayout({ name: 'panelLeft', style_class: 'panelLeft', important: true });
-        this._rightBox   = new St.BoxLayout({ name: 'panelRight', style_class: 'panelRight', align_end: true, important: true });
+        this._rightBox   = new St.BoxLayout({ name: 'panelRight', style_class: 'panelRight', important: true });
         this._centerBox  = new St.BoxLayout({ name: 'panelCenter',  style_class: 'panelCenter', important: true });
 
         if (this.is_vertical) {
@@ -2616,7 +2616,7 @@ Panel.prototype = {
         this._rightBox.add_style_class_name('vertical');
         this._rightBox.set_vertical(true);
         this._rightBox.set_x_align(Clutter.ActorAlign.FILL);
-        this._rightBox.set_y_align(Clutter.ActorAlign.FILL);
+        this._rightBox.set_y_align(Clutter.ActorAlign.END);
 
         this._leftBox.add_style_class_name('vertical');
         this._leftBox.set_vertical(true);

@@ -73,7 +73,6 @@ enum {
 
   PROP_VERTICAL,
   PROP_PACK_START,
-  PROP_ALIGN_END,
 
   PROP_HADJUST,
   PROP_VADJUST
@@ -81,12 +80,6 @@ enum {
 
 struct _StBoxLayoutPrivate
 {
-  guint         spacing;
-
-  guint         is_vertical : 1;
-  guint         is_pack_start : 1;
-  guint         is_align_end : 1;
-
   StAdjustment *hadjustment;
   StAdjustment *vadjustment;
 };
@@ -197,20 +190,21 @@ st_box_layout_get_property (GObject    *object,
                             GParamSpec *pspec)
 {
   StBoxLayoutPrivate *priv = ST_BOX_LAYOUT (object)->priv;
+  ClutterLayoutManager *layout;
   StAdjustment *adjustment;
+  ClutterOrientation orientation;
 
   switch (property_id)
     {
     case PROP_VERTICAL:
-      g_value_set_boolean (value, priv->is_vertical);
+      layout = clutter_actor_get_layout_manager (CLUTTER_ACTOR (object));
+      orientation = clutter_box_layout_get_orientation (CLUTTER_BOX_LAYOUT (layout));
+      g_value_set_boolean (value, orientation == CLUTTER_ORIENTATION_VERTICAL);
       break;
 
     case PROP_PACK_START:
-      g_value_set_boolean (value, priv->is_pack_start);
-      break;
-
-    case PROP_ALIGN_END:
-      g_value_set_boolean (value, priv->is_align_end);
+      layout = clutter_actor_get_layout_manager (CLUTTER_ACTOR (object));
+      g_value_set_boolean (value, clutter_box_layout_get_pack_start (CLUTTER_BOX_LAYOUT (layout)));
       break;
 
     case PROP_HADJUST:
@@ -244,10 +238,6 @@ st_box_layout_set_property (GObject      *object,
 
     case PROP_PACK_START:
       st_box_layout_set_pack_start (box, g_value_get_boolean (value));
-      break;
-
-    case PROP_ALIGN_END:
-      st_box_layout_set_align_end (box, g_value_get_boolean (value));
       break;
 
     case PROP_HADJUST:
@@ -287,326 +277,6 @@ st_box_layout_dispose (GObject *object)
   G_OBJECT_CLASS (st_box_layout_parent_class)->dispose (object);
 }
 
-static void
-get_content_preferred_width (StBoxLayout *self,
-                             gfloat       for_height,
-                             gfloat      *min_width_p,
-                             gfloat      *natural_width_p)
-{
-  StBoxLayoutPrivate *priv = self->priv;
-  gint n_children = 0;
-  gint n_fixed = 0;
-  gfloat min_width, natural_width;
-  ClutterActor *child;
-
-  min_width = 0;
-  natural_width = 0;
-
-  for (child = clutter_actor_get_first_child (CLUTTER_ACTOR (self));
-       child != NULL;
-       child = clutter_actor_get_next_sibling (child))
-    {
-      gfloat child_min = 0, child_nat = 0;
-      gboolean child_fill;
-
-      if (!clutter_actor_is_visible (child))
-        continue;
-
-      n_children++;
-
-      if (clutter_actor_get_fixed_position_set (child))
-        {
-          n_fixed++;
-          continue;
-        }
-
-      if (priv->is_vertical)
-        {
-          _st_actor_get_preferred_width (child, -1, FALSE,
-                                         &child_min, &child_nat);
-          min_width = MAX (child_min, min_width);
-          natural_width = MAX (child_nat, natural_width);
-        }
-      else
-        {
-          clutter_container_child_get (CLUTTER_CONTAINER (self), child,
-                                       "y-fill", &child_fill,
-                                       NULL);
-          _st_actor_get_preferred_width (child, for_height, child_fill,
-                                         &child_min, &child_nat);
-          min_width += child_min;
-          natural_width += child_nat;
-        }
-    }
-
-  if (!priv->is_vertical && (n_children - n_fixed) > 1)
-    {
-      min_width += priv->spacing * (n_children - n_fixed - 1);
-      natural_width += priv->spacing * (n_children - n_fixed - 1);
-    }
-
-  if (min_width_p)
-    *min_width_p = min_width;
-
-  if (natural_width_p)
-    *natural_width_p = natural_width;
-}
-
-static void
-st_box_layout_get_preferred_width (ClutterActor *actor,
-                                   gfloat        for_height,
-                                   gfloat       *min_width_p,
-                                   gfloat       *natural_width_p)
-{
-  StThemeNode *theme_node = st_widget_get_theme_node (ST_WIDGET (actor));
-
-  st_theme_node_adjust_for_height (theme_node, &for_height);
-
-  get_content_preferred_width (ST_BOX_LAYOUT (actor), for_height,
-                               min_width_p, natural_width_p);
-
-  st_theme_node_adjust_preferred_width (theme_node,
-                                        min_width_p, natural_width_p);
-}
-
-static void
-get_content_preferred_height (StBoxLayout *self,
-                              gfloat       for_width,
-                              gfloat      *min_height_p,
-                              gfloat      *natural_height_p)
-{
-  StBoxLayoutPrivate *priv = self->priv;
-  gint n_children = 0;
-  gint n_fixed = 0;
-  gfloat min_height, natural_height;
-  ClutterActor *child;
-
-  min_height = 0;
-  natural_height = 0;
-
-  for (child = clutter_actor_get_first_child (CLUTTER_ACTOR (self));
-       child != NULL;
-       child = clutter_actor_get_next_sibling (child))
-    {
-      gfloat child_min = 0, child_nat = 0;
-      gboolean child_fill = FALSE;
-
-      if (!clutter_actor_is_visible (child))
-        continue;
-
-      n_children++;
-
-      if (clutter_actor_get_fixed_position_set (child))
-        {
-          n_fixed++;
-          continue;
-        }
-
-      if (priv->is_vertical)
-        {
-          clutter_container_child_get ((ClutterContainer*) self, child,
-                                       "x-fill", &child_fill,
-                                       NULL);
-        }
-      _st_actor_get_preferred_height (child,
-                                      (priv->is_vertical) ? for_width : -1,
-                                      child_fill,
-                                      &child_min,
-                                      &child_nat);
-
-      if (!priv->is_vertical)
-        {
-          min_height = MAX (child_min, min_height);
-          natural_height = MAX (child_nat, natural_height);
-        }
-      else
-        {
-          min_height += child_min;
-          natural_height += child_nat;
-        }
-    }
-
-  if (priv->is_vertical && (n_children - n_fixed) > 1)
-    {
-      min_height += priv->spacing * (n_children - n_fixed - 1);
-      natural_height += priv->spacing * (n_children - n_fixed - 1);
-    }
-
-  if (min_height_p)
-    *min_height_p = min_height;
-
-  if (natural_height_p)
-    *natural_height_p = natural_height;
-}
-
-static void
-st_box_layout_get_preferred_height (ClutterActor *actor,
-                                    gfloat        for_width,
-                                    gfloat       *min_height_p,
-                                    gfloat       *natural_height_p)
-{
-  StBoxLayout *self = ST_BOX_LAYOUT (actor);
-  StBoxLayoutPrivate *priv = self->priv;
-  StThemeNode *theme_node = st_widget_get_theme_node (ST_WIDGET (actor));
-
-  st_theme_node_adjust_for_width (theme_node, &for_width);
-
-  if (priv->hadjustment)
-    {
-      /* If we're scrolled, the parent calls us with the width that
-       * we'll actually get, which can be smaller than the minimum
-       * width that we give our contents.
-       */
-      gfloat min_width;
-
-      get_content_preferred_width (self, -1, &min_width, NULL);
-      for_width = MAX (for_width, min_width);
-    }
-
-  get_content_preferred_height (self, for_width,
-                                min_height_p, natural_height_p);
-
-  st_theme_node_adjust_preferred_height (theme_node,
-                                         min_height_p, natural_height_p);
-}
-
-typedef struct {
-  int child_index;
-  gfloat shrink_amount;
-} BoxChildShrink;
-
-/* Sort with the greatest shrink amount first */
-static int
-compare_by_shrink_amount (const void *a,
-                          const void *b)
-{
-  float diff = ((const BoxChildShrink *)a)->shrink_amount - ((const BoxChildShrink *)b)->shrink_amount;
-  return diff < 0 ? 1 : (diff == 0 ? 0 : -1);
-}
-
-/* Sort in ascending order by child index */
-static int
-compare_by_child_index (const void *a,
-                        const void *b)
-{
-  return ((const BoxChildShrink *)a)->child_index - ((const BoxChildShrink *)b)->child_index;
-}
-
-static BoxChildShrink *
-compute_shrinks (StBoxLayout *self,
-                 gfloat       for_length,
-                 gfloat       total_shrink)
-{
-  StBoxLayoutPrivate *priv = self->priv;
-  int n_children = clutter_actor_get_n_children (CLUTTER_ACTOR (self));
-  BoxChildShrink *shrinks = g_new0 (BoxChildShrink, n_children);
-  gfloat shrink_so_far;
-  gfloat base_shrink = 0; /* the "= 0" is just to make gcc happy */
-  int n_shrink_children;
-  ClutterActor *child;
-  int i = 0;
-
-  /* The effect that we want is that all the children get an equal chance
-   * to expand from their minimum size up to the natural size. Or to put
-   * it a different way, we want to start by shrinking only the child that
-   * can shrink most, then shrink that and the next most shrinkable child,
-   * to the point where we are shrinking everything.
-   */
-
-  /* Find the amount of possible shrink for each child */
-  int n_possible_shrink_children = 0;
-  for (child = clutter_actor_get_first_child (CLUTTER_ACTOR (self));
-       child != NULL;
-       child = clutter_actor_get_next_sibling (child))
-    {
-      gfloat child_min, child_nat;
-      gboolean child_fill;
-      gboolean fixed;
-
-      fixed = clutter_actor_get_fixed_position_set (child);
-
-      shrinks[i].child_index = i;
-      if (clutter_actor_is_visible (child) && !fixed)
-        {
-          if (priv->is_vertical)
-            {
-              clutter_container_child_get ((ClutterContainer*) self, child,
-                                           "x-fill", &child_fill,
-                                           NULL);
-              _st_actor_get_preferred_height (child,
-                                              for_length, child_fill,
-                                              &child_min, &child_nat);
-            }
-          else
-            {
-              clutter_container_child_get ((ClutterContainer*) self, child,
-                                           "y-fill", &child_fill,
-                                           NULL);
-              _st_actor_get_preferred_width (child,
-                                             for_length, child_fill,
-                                             &child_min, &child_nat);
-            }
-
-          shrinks[i].shrink_amount = MAX (0., child_nat - child_min);
-          n_possible_shrink_children++;
-        }
-      else
-        {
-          shrinks[i].shrink_amount = -1.;
-        }
-
-      i++;
-    }
-
-  /* We want to process children starting from the child with the maximum available
-   * shrink, so sort in this order; !visible children end up at the end */
-  qsort (shrinks, n_children, sizeof (BoxChildShrink), compare_by_shrink_amount);
-
-  /*   +--+
-   *   |  |
-   *   |  | +--
-   *   |  | | |
-   *   |  | | | +-+
-   * --+--+-+-+-+-+----------
-   *   |  | | | | | +-+ +-+
-   *   |  | | | | | | | | |
-   * --+--+-+-+-+-+-+-+------
-   *
-   * We are trying to find the correct position for the upper line the "water mark"
-   * so that total of the portion of the bars above the line is equal to the total
-   * amount we want to shrink.
-   */
-
-  /* Start by moving the line downward, top-of-bar by top-of-bar */
-  shrink_so_far = 0;
-  for (n_shrink_children = 1; n_shrink_children <= n_possible_shrink_children; n_shrink_children++)
-    {
-      if (n_shrink_children < n_possible_shrink_children)
-        base_shrink = shrinks[n_shrink_children].shrink_amount;
-      else
-        base_shrink = 0;
-      shrink_so_far += n_shrink_children * (shrinks[n_shrink_children - 1].shrink_amount - base_shrink);
-
-      if (shrink_so_far >= total_shrink || n_shrink_children == n_possible_shrink_children)
-        break;
-    }
-
-  /* OK, we found enough shrinkage, move it back upwards to the right position */
-  base_shrink += (shrink_so_far - total_shrink) / n_shrink_children;
-  if (base_shrink < 0) /* can't shrink that much, probably round-off error */
-    base_shrink = 0;
-
-  /* Assign the portion above the base shrink line to the shrink_amount */
-  for (i = 0; i < n_shrink_children; i++)
-    shrinks[i].shrink_amount -= base_shrink;
-  for (; i < n_children; i++)
-    shrinks[i].shrink_amount = 0;
-
-  /* And sort back to their original order */
-  qsort (shrinks, n_children, sizeof (BoxChildShrink), compare_by_child_index);
-
-  return shrinks;
-}
 
 static void
 st_box_layout_allocate (ClutterActor          *actor,
@@ -615,29 +285,23 @@ st_box_layout_allocate (ClutterActor          *actor,
 {
   StBoxLayoutPrivate *priv = ST_BOX_LAYOUT (actor)->priv;
   StThemeNode *theme_node = st_widget_get_theme_node (ST_WIDGET (actor));
+  ClutterLayoutManager *layout = clutter_actor_get_layout_manager (actor);
   ClutterActorBox content_box;
   gfloat avail_width, avail_height, min_width, natural_width, min_height, natural_height;
-  gfloat position, next_position;
-  gint n_expand_children = 0, i;
-  gfloat expand_amount, shrink_amount;
-  BoxChildShrink *shrinks = NULL;
-                 // Home-made logical xor
-  gboolean flip = (!(st_widget_get_direction (ST_WIDGET (actor)) == ST_TEXT_DIRECTION_RTL) != !priv->is_align_end);
-  gboolean reverse_order = (!priv->is_align_end != !priv->is_pack_start);
+
   ClutterActor *child;
 
-  clutter_actor_set_allocation (actor, box, flags);
+  CLUTTER_ACTOR_CLASS (st_box_layout_parent_class)->allocate (actor, box, flags);
 
   st_theme_node_get_content_box (theme_node, box, &content_box);
+  clutter_actor_box_get_size (&content_box, &avail_width, &avail_height);
 
-  avail_width  = content_box.x2 - content_box.x1;
-  avail_height = content_box.y2 - content_box.y1;
-
-  get_content_preferred_width (ST_BOX_LAYOUT (actor), avail_height,
-                               &min_width, &natural_width);
-  get_content_preferred_height (ST_BOX_LAYOUT (actor), MAX (avail_width, min_width),
-                                &min_height, &natural_height);
-
+  clutter_layout_manager_get_preferred_width (layout, CLUTTER_CONTAINER (actor),
+                                              avail_height,
+                                              &min_width, &natural_width);
+  clutter_layout_manager_get_preferred_height (layout, CLUTTER_CONTAINER (actor),
+                                               MAX (avail_width, min_width),
+                                               &min_height, &natural_height);
 
   /* update adjustments for scrolling */
   if (priv->vadjustment)
@@ -671,206 +335,6 @@ st_box_layout_allocate (ClutterActor          *actor,
       prev_value = st_adjustment_get_value (priv->hadjustment);
       st_adjustment_set_value (priv->hadjustment, prev_value);
     }
-
-  if (avail_height < min_height)
-    {
-      avail_height = min_height;
-      content_box.y2 = content_box.y1 + avail_height;
-    }
-
-  if (avail_width < min_width)
-    {
-      avail_width = min_width;
-      content_box.x2 = content_box.x1 + avail_width;
-    }
-
-  if (priv->is_vertical)
-    {
-      expand_amount = MAX (0, avail_height - natural_height);
-      shrink_amount = MAX (0, natural_height - avail_height);
-    }
-  else
-    {
-      expand_amount = MAX (0, avail_width - natural_width);
-      shrink_amount = MAX (0, natural_width - avail_width);
-    }
-
-
-  if (expand_amount > 0)
-    {
-      /* count the number of children with expand set to TRUE */
-      n_expand_children = 0;
-      for (child = clutter_actor_get_first_child (actor);
-           child != NULL;
-           child = clutter_actor_get_next_sibling (child))
-        {
-          gboolean expand;
-
-          if (!clutter_actor_is_visible (child) ||
-              clutter_actor_get_fixed_position_set (child))
-            continue;
-
-          clutter_container_child_get ((ClutterContainer *) actor,
-                                       child,
-                                       "expand", &expand,
-                                       NULL);
-          if (expand)
-            n_expand_children++;
-        }
-
-      if (n_expand_children == 0)
-        expand_amount = 0;
-    }
-  else if (shrink_amount > 0)
-    {
-      shrinks = compute_shrinks (ST_BOX_LAYOUT (actor),
-                                 priv->is_vertical ? avail_width : avail_height,
-                                 shrink_amount);
-     }
-
-  if (priv->is_vertical)
-    {
-      if (flip)
-        {
-          position = content_box.y2;
-        }
-      else
-        {
-          position = content_box.y1;
-        }
-    }
-  else
-    {
-      if (flip)
-        {
-          position = content_box.x2;
-        }
-      else
-        {
-          position = content_box.x1;
-        }
-    }
-
-  if (reverse_order)
-    {
-      child = clutter_actor_get_last_child (actor);
-      i = clutter_actor_get_n_children (actor) - 1;
-    }
-  else
-    {
-      child = clutter_actor_get_first_child (actor);
-      i = 0;
-    }
-    
-  while (child != NULL)
-    {
-      ClutterActorBox child_box;
-      gfloat child_min, child_nat, child_allocated;
-      gboolean xfill, yfill, expand, fixed;
-      StAlign xalign, yalign;
-      gdouble xalign_f, yalign_f;
-
-      if (!clutter_actor_is_visible (child))
-        goto next_child;
-
-      fixed = clutter_actor_get_fixed_position_set (child);
-      if (fixed)
-        {
-          clutter_actor_allocate_preferred_size (child, flags);
-          goto next_child;
-        }
-
-      clutter_container_child_get ((ClutterContainer*) actor, child,
-                                   "x-fill", &xfill,
-                                   "y-fill", &yfill,
-                                   "x-align", &xalign,
-                                   "y-align", &yalign,
-                                   "expand", &expand,
-                                   NULL);
-
-      _st_get_align_factors (xalign, yalign, &xalign_f, &yalign_f);
-
-      if (priv->is_vertical)
-        {
-          _st_actor_get_preferred_height (child, avail_width, xfill,
-                                          &child_min, &child_nat);
-        }
-      else
-        {
-          _st_actor_get_preferred_width (child, avail_height, yfill,
-                                         &child_min, &child_nat);
-        }
-
-      child_allocated = child_nat;
-      if (expand_amount > 0 && expand)
-        child_allocated +=  expand_amount / n_expand_children;
-      else if (shrink_amount > 0)
-        child_allocated -= shrinks[i].shrink_amount;
-
-      if (flip) {
-        next_position = position - child_allocated;
-      }
-      else {
-        next_position = position + child_allocated;
-      }
-
-      if (priv->is_vertical)
-        {
-          if (flip)
-            {
-              child_box.y1 = (int)(0.5 + next_position);
-              child_box.y2 = (int)(0.5 + position);
-            }
-          else
-            {
-              child_box.y1 = (int)(0.5 + position);
-              child_box.y2 = (int)(0.5 + next_position);
-            }
-
-          child_box.x1 = content_box.x1;
-          child_box.x2 = content_box.x2;
-        }
-      else
-        {
-          if (flip)
-            {
-              child_box.x1 = (int)(0.5 + next_position);
-              child_box.x2 = (int)(0.5 + position);
-            }
-          else
-            {
-              child_box.x1 = (int)(0.5 + position);
-              child_box.x2 = (int)(0.5 + next_position);
-            }
-
-          child_box.y1 = content_box.y1;
-          child_box.y2 = content_box.y2;
-        }
-
-      clutter_actor_allocate_align_fill (child, &child_box,
-                                         xalign_f, yalign_f,
-                                         xfill, yfill, flags);
-
-      if (flip)
-        position = next_position - priv->spacing;
-      else
-        position = next_position + priv->spacing;
-
-    next_child:
-      if (reverse_order)
-        {
-          child = clutter_actor_get_previous_sibling (child);
-          i--;
-        }
-      else
-        {
-          child = clutter_actor_get_next_sibling (child);
-          i++;
-        }
-    }
-
-  if (shrinks)
-    g_free (shrinks);
 }
 
 static void
@@ -1079,15 +543,26 @@ st_box_layout_style_changed (StWidget *self)
 {
   StBoxLayoutPrivate *priv = ST_BOX_LAYOUT (self)->priv;
   StThemeNode *theme_node = st_widget_get_theme_node (self);
-  guint old_spacing = priv->spacing;
+  ClutterBoxLayout *layout;
   double spacing;
+  layout = CLUTTER_BOX_LAYOUT (clutter_actor_get_layout_manager (CLUTTER_ACTOR (self)));
 
   spacing = st_theme_node_get_length (theme_node, "spacing");
-  priv->spacing = (int)(spacing + 0.5);
-  if (priv->spacing != old_spacing)
-    clutter_actor_queue_relayout (CLUTTER_ACTOR (self));
+  clutter_box_layout_set_spacing (layout, (int)(spacing + 0.5));
 
   ST_WIDGET_CLASS (st_box_layout_parent_class)->style_changed (self);
+}
+
+static void
+layout_notify (GObject    *object,
+               GParamSpec *pspec,
+               gpointer    user_data)
+{
+  GObject *self = user_data;
+  const char *prop_name = g_param_spec_get_name (pspec);
+
+  if (g_object_class_find_property (G_OBJECT_GET_CLASS (self), prop_name))
+    g_object_notify (self, prop_name);
 }
 
 static void
@@ -1105,8 +580,6 @@ st_box_layout_class_init (StBoxLayoutClass *klass)
   object_class->dispose = st_box_layout_dispose;
 
   actor_class->allocate = st_box_layout_allocate;
-  actor_class->get_preferred_width = st_box_layout_get_preferred_width;
-  actor_class->get_preferred_height = st_box_layout_get_preferred_height;
   actor_class->apply_transform = st_box_layout_apply_transform;
 
   actor_class->paint = st_box_layout_paint;
@@ -1130,13 +603,6 @@ st_box_layout_class_init (StBoxLayoutClass *klass)
                                 ST_PARAM_READWRITE);
   g_object_class_install_property (object_class, PROP_PACK_START, pspec);
 
-  pspec = g_param_spec_boolean ("align-end",
-                                "Align End",
-                                "Whether the children should be flushed to the end",
-                                FALSE,
-                                ST_PARAM_READWRITE);
-  g_object_class_install_property (object_class, PROP_ALIGN_END, pspec);
-
   /* StScrollable properties */
   g_object_class_override_property (object_class,
                                     PROP_HADJUST,
@@ -1145,13 +611,18 @@ st_box_layout_class_init (StBoxLayoutClass *klass)
   g_object_class_override_property (object_class,
                                     PROP_VADJUST,
                                     "vadjustment");
-
 }
 
 static void
 st_box_layout_init (StBoxLayout *self)
 {
+  ClutterLayoutManager *layout;
   self->priv = BOX_LAYOUT_PRIVATE (self);
+  layout = clutter_box_layout_new ();
+  g_signal_connect_swapped (layout, "layout-changed",
+                            G_CALLBACK (clutter_actor_queue_relayout), self);
+  g_signal_connect (layout, "notify", G_CALLBACK (layout_notify), self);
+  clutter_actor_set_layout_manager (CLUTTER_ACTOR (self), layout);
 }
 
 /**
@@ -1179,12 +650,17 @@ void
 st_box_layout_set_vertical (StBoxLayout *box,
                             gboolean     vertical)
 {
+  ClutterLayoutManager *layout;
+  ClutterOrientation orientation;
   g_return_if_fail (ST_IS_BOX_LAYOUT (box));
 
-  if (box->priv->is_vertical != vertical)
+  layout = clutter_actor_get_layout_manager (CLUTTER_ACTOR (box));
+  orientation = vertical ? CLUTTER_ORIENTATION_VERTICAL
+                         : CLUTTER_ORIENTATION_HORIZONTAL;
+
+  if (clutter_box_layout_get_orientation (CLUTTER_BOX_LAYOUT (layout)) != orientation)
     {
-      box->priv->is_vertical = vertical;
-      clutter_actor_queue_relayout ((ClutterActor*) box);
+      clutter_box_layout_set_orientation (CLUTTER_BOX_LAYOUT (layout), orientation);
 
       g_object_notify (G_OBJECT (box), "vertical");
     }
@@ -1201,9 +677,13 @@ st_box_layout_set_vertical (StBoxLayout *box,
 gboolean
 st_box_layout_get_vertical (StBoxLayout *box)
 {
+  ClutterLayoutManager *layout;
+  ClutterOrientation orientation;
   g_return_val_if_fail (ST_IS_BOX_LAYOUT (box), FALSE);
 
-  return box->priv->is_vertical;
+  layout = clutter_actor_get_layout_manager (CLUTTER_ACTOR (box));
+  orientation = clutter_box_layout_get_orientation (CLUTTER_BOX_LAYOUT (layout));
+  return orientation == CLUTTER_ORIENTATION_VERTICAL;
 }
 
 /**
@@ -1218,12 +698,14 @@ void
 st_box_layout_set_pack_start (StBoxLayout *box,
                               gboolean     pack_start)
 {
+  ClutterBoxLayout *layout;
   g_return_if_fail (ST_IS_BOX_LAYOUT (box));
 
-  if (box->priv->is_pack_start != pack_start)
+  layout = CLUTTER_BOX_LAYOUT (clutter_actor_get_layout_manager (CLUTTER_ACTOR (box)));
+
+  if (clutter_box_layout_get_pack_start (layout) != pack_start)
     {
-      box->priv->is_pack_start = pack_start;
-      clutter_actor_queue_relayout ((ClutterActor*) box);
+      clutter_box_layout_set_pack_start (layout, pack_start);
 
       g_object_notify (G_OBJECT (box), "pack-start");
     }
@@ -1242,46 +724,7 @@ st_box_layout_get_pack_start (StBoxLayout *box)
 {
   g_return_val_if_fail (ST_IS_BOX_LAYOUT (box), FALSE);
 
-  return box->priv->is_pack_start;
-}
-
-/**
- * st_box_layout_set_align_end:
- * @box: A #StBoxLayout
- * @align_end: %TRUE if the layout should use align-end
- *
- * Set the value of the #StBoxLayout::align-end property.
- *
- */
-void
-st_box_layout_set_align_end (StBoxLayout *box,
-                             gboolean     align_end)
-{
-  g_return_if_fail (ST_IS_BOX_LAYOUT (box));
-
-  if (box->priv->is_align_end != align_end)
-    {
-      box->priv->is_align_end = align_end;
-      clutter_actor_queue_relayout ((ClutterActor*) box);
-
-      g_object_notify (G_OBJECT (box), "align-end");
-    }
-}
-
-/**
- * st_box_layout_get_align_end:
- * @box: A #StBoxLayout
- *
- * Get the value of the #StBoxLayout::align-end property.
- *
- * Returns: %TRUE if align-end is enabled
- */
-gboolean
-st_box_layout_get_align_end (StBoxLayout *box)
-{
-  g_return_val_if_fail (ST_IS_BOX_LAYOUT (box), FALSE);
-
-  return box->priv->is_align_end;
+  return clutter_box_layout_get_pack_start (CLUTTER_BOX_LAYOUT (clutter_actor_get_layout_manager (CLUTTER_ACTOR (box))));
 }
 
 /**
