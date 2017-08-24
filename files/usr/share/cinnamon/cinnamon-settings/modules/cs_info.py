@@ -155,7 +155,7 @@ class Module:
 	        widget = SettingsWidget()
 	        widget.set_spacing(40)
 		image = Gtk.Image()
-		image.set_from_icon_name("distributor-logo", 48) #I don't know why it spams invalid icon size warnings, at least they don't cause exceptions though
+		image.set_from_icon_name("distributor-logo", 6) #I don't know why it spams invalid icon size warnings, at least they don't cause exceptions though
 	        widget.pack_start(image, True, False, 0)
 	        widget.pack_end(image, True, False, 0)
 	        settings.add_row(widget)
