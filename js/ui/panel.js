@@ -1616,14 +1616,16 @@ PanelContextMenu.prototype = {
     }
 }
 
-function PanelZoneDNDHandler(panelZone){
-    this._init(panelZone);
+function PanelZoneDNDHandler(panelZone, zoneString, panelId){
+    this._init(panelZone, zoneString, panelId);
 }
 
 PanelZoneDNDHandler.prototype = {
-    _init : function(panelZone) {
+    _init : function(panelZone, zoneString, panelId) {
         this._panelZone = panelZone;
         this._panelZone._delegate = this;
+        this._zoneString = zoneString;
+        this._panelId = panelId;
         this._dragPlaceholder = null;
         this._dragPlaceholderPos = -1;
 
@@ -1737,6 +1739,8 @@ PanelZoneDNDHandler.prototype = {
         }
         source.actor._applet._newOrder = insertAppletPos;
         source.actor._applet._newPanelLocation = this._panelZone;
+        source.actor._applet._zoneString = this._zoneString;
+        source.actor._applet._newPanelId = this._panelId;
 
         this._clearDragPlaceholder();
         actor.destroy();
@@ -1844,9 +1848,9 @@ Panel.prototype = {
         this.actor.add_actor(this._centerBox);
         this.actor.add_actor(this._rightBox);
 
-        this._leftBoxDNDHandler   = new PanelZoneDNDHandler(this._leftBox);
-        this._centerBoxDNDHandler = new PanelZoneDNDHandler(this._centerBox);
-        this._rightBoxDNDHandler  = new PanelZoneDNDHandler(this._rightBox);
+        this._leftBoxDNDHandler   = new PanelZoneDNDHandler(this._leftBox, 'left', this.panelId);
+        this._centerBoxDNDHandler = new PanelZoneDNDHandler(this._centerBox, 'center', this.panelId);
+        this._rightBoxDNDHandler  = new PanelZoneDNDHandler(this._rightBox, 'right', this.panelId);
 
         this.drawCorners(drawcorner);
 
