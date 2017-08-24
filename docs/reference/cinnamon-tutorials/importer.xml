@@ -142,60 +142,68 @@
     <title>Importing xlet modules</title>
 
     <para>
-      When you want to split a big xlet code into smaller files, you'll need to import them.
-      A simple way is using <code>imports.xlet</code>, where <code>xlet</code> is your xlet type
-      (<code>applet</code>, <code>desklet</code>, <code>extension</code>, <code>search_provider</code>)
-      <informalexample>
-        <programlisting>
-          imports.applet.foo // get foo.js in your applet directory
-        </programlisting>
-      </informalexample>
+      When you want to split a big xlet file into smaller files, you'll need to import them.
+      The best way is using <code>imports.ui.manager.xlet[UUID]</code>.
+      <code>manager</code> is one of <code>appletManager</code>, <code>deskletManager</code>, or <code>extensionSystem</code>.
+      <code>xlet</code> is the xlet type pluralized and is one of <code>applets</code>, <code>desklets</code>, or <code>extensions</code>.
+      <code>UUID</code> is the string of your xlet's UUID.
+
+      <para>
+        Importing for applets:
+        <informalexample>
+          <programlisting>
+            const Module = imports.ui.appletManager['foo@bar'].module; // get module.js in your applet directory
+          </programlisting>
+        </informalexample>
+      </para>
+
+      <para>
+        Importing for desklets:
+        <informalexample>
+          <programlisting>
+            const Module = imports.ui.deskletManager['foo@bar'].module; // get module.js in your desklet directory
+          </programlisting>
+        </informalexample>
+      </para>
+
+      <para>
+        Importing for extensions:
+        <informalexample>
+          <programlisting>
+            const Module = imports.ui.extensionSystem['foo@bar'].module; // get module.js in your extension directory
+          </programlisting>
+        </informalexample>
+      </para>
     </para>
-  </sect2>
-
-  <sect2>
-    <title><code>__init__.js</code></title>
-
     <para>
-      When writing xlets, it is common that you have some functions or constants that you need in many files.
-      For that, there is <code>__init__.js</code>.
-      It is a normal JavaScript file, but every function or variable can be accessed directly via <code>import.*</code>.
-    </para>
+      In Cinnamon 3.6+, you can also import xlets by using <code>imports.xletTypePluralized[UUID]</code>. This method is not compatible with previous versions of Cinnamon.
 
-    <para>
-      Examples are often used functions, like a modified <code>_()</code> function for translating your xlet.
-    </para>
+      <para>
+        Importing for applets:
+        <informalexample>
+          <programlisting>
+            const Module = imports.applets['foo@bar'].module;
+          </programlisting>
+        </informalexample>
+      </para>
 
-    <para>
-      <code>__init__.js</code>
-      <informalexample>
-        <programlisting>
-          const Gettext = imports.gettext;
+      <para>
+        Importing for desklets:
+        <informalexample>
+          <programlisting>
+            const Module = imports.desklets['foo@bar'].module;
+          </programlisting>
+        </informalexample>
+      </para>
 
-          const uuid = "xlet@uuid";
-
-          Gettext.bindtextdomain(uuid, GLib.get_home_dir() + "/.local/share/locale");
-
-          function _(str){
-            return Gettext.dgettext(uuid, str);
-          }
-        </programlisting>
-      </informalexample>
-      In your other files:
-      <informalexample>
-        <programlisting>
-          const uuid = imports.xlet.uuid;
-          const _ = imports.xlet._;
-        </programlisting>
-      </informalexample>
-    </para>
-
-    <para>
-      Remember: replace <code>xlet</code> in <code>imports.xlet</code> to your xlet type.
-    </para>
-
-    <para>
-      There is no harm renaming <code>__init__.js</code> to something else (like <code>util.js</code>) and using <code>imports.xlet.util.*</code>.
+      <para>
+        Importing for extensions:
+        <informalexample>
+          <programlisting>
+            const Module = imports.extensions['foo@bar'].module;
+          </programlisting>
+        </informalexample>
+      </para>
     </para>
   </sect2>
 </chapter>
