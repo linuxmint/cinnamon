@@ -2123,7 +2123,7 @@ MyApplet.prototype = {
                                           urc_x: w, urc_y: 0,
                                           lrc_x: w, lrc_y: bh });
 
-        this.categoriesApplicationsBox.actor.add_actor(this.vectorBox);
+        this.categoriesOverlayBox.add_actor(this.vectorBox);
         this.vectorBox.set_position(xformed_mouse_x, 0);
 
         this.vectorBox.show();
@@ -2865,8 +2865,10 @@ MyApplet.prototype = {
         this.searchEntryText.connect('key-press-event', Lang.bind(this, this._onMenuKeyPress));
         this._previousSearchPattern = "";
 
+        this.categoriesOverlayBox = new Clutter.Actor();
         this.categoriesApplicationsBox = new CategoriesApplicationsBox();
-        rightPane.add_actor(this.categoriesApplicationsBox.actor);
+        this.categoriesOverlayBox.add_actor(this.categoriesApplicationsBox.actor);
+        rightPane.add_actor(this.categoriesOverlayBox);
         this.categoriesBox = new St.BoxLayout({ style_class: 'menu-categories-box',
                                                 vertical: true,
                                                 accessible_role: Atk.Role.LIST });
