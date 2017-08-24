@@ -2478,10 +2478,11 @@ PopupMenu.prototype = {
         let y1 = monitor.y;
         let y2 = y1 + monitor.height;
 
-        // remove panels from workable area to avoid overlapping them
+        // remove visible panels from workable area to avoid overlapping them
         let panels = Main.panelManager.getPanelsInMonitor(Main.layoutManager.monitors.indexOf(monitor));
 
         for (let panel of panels) {
+            if (!panel.getIsVisible()) continue;
             switch (panel.panelPosition) {
                 case PanelLoc.top:
                     y1 += panel.actor.height;

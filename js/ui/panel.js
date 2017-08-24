@@ -3306,4 +3306,8 @@ Panel.prototype = {
 
         this._hidden = true;
     },
+
+    getIsVisible: function() {
+        return this._shouldShow;
+    }
 };
