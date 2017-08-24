@@ -486,18 +486,17 @@ SpicesAboutDialog.prototype = {
         if ('last-edited' in metadata) {
             let lastEditedTimestamp = metadata['last-edited'];
             let date = new Date(lastEditedTimestamp*1000);
-            let dateUTC = date.toISOString().
-                replace(/T/, ' ').      // replace T with a space
-                replace(/\..+/, ' UTC') // delete the dot and everything after; set UTC label
+            let dateUTC = date.toISOString().replace(/T/, ' ');               // replace T with a space;
+            dateUTC = dateUTC.substring(0,dateUTC.lastIndexOf(':')) + ' UTC'; // remove seconds and append UTC label
 
-            let lastEdited = new St.Label({text: dateUTC, style_class: "about-uuid"});
+            let lastEdited = new St.Label({text: _("Build date:") + " " + dateUTC, style_class: "about-uuid"});
             topTextBox.add_actor(lastEdited);
-        } else {
-            //version
-            if (metadata.version) {
-                let version = new St.Label({text: "v%s".format(metadata.version), style_class: "about-uuid"});
-                topTextBox.add_actor(version);
-            }
+        }
+
+        //version
+        if (metadata.version) {
+            let version = new St.Label({text: _("Version:") + " " + "%s".format(metadata.version), style_class: "about-uuid"});
+            topTextBox.add_actor(version);
         }
 
         //description
