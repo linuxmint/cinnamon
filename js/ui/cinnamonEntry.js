@@ -69,7 +69,7 @@ _EntryMenu.prototype = {
     },
 
     _updatePasteItem: function() {
-        this._clipboard.get_text(Lang.bind(this,
+        this._clipboard.get_text(St.ClipboardType.CLIPBOARD, Lang.bind(this,
             function(clipboard, text) {
                 this._pasteItem.setSensitive(text && text != '');
             }));
@@ -85,11 +85,11 @@ _EntryMenu.prototype = {
 
     _onCopyActivated: function() {
         let selection = this._entry.clutter_text.get_selection();
-        this._clipboard.set_text(selection);
+        this._clipboard.set_text(St.ClipboardType.CLIPBOARD, selection);
     },
 
     _onPasteActivated: function() {
-        this._clipboard.get_text(Lang.bind(this,
+        this._clipboard.get_text(St.ClipboardType.CLIPBOARD, Lang.bind(this,
             function(clipboard, text) {
                 if (!text)
                     return;
