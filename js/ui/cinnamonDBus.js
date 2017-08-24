@@ -108,6 +108,18 @@ const CinnamonIface =
                 <arg type="s" direction="in" name="uuid" /> \
                 <arg type="s" direction="in" name="type" /> \
             </method> \
+            <method name="GetMonitors"> \
+                <arg type="ai" direction="out" name="monitors" /> \
+            </method> \
+            <method name="GetMonitorWorkRect"> \
+                <arg type="i" direction="in" name="monitor" /> \
+                <arg type="ai" direction="out" name="rect" /> \
+            </method> \
+            <signal name="MonitorsChanged"/> \
+            <method name="GetRunState"> \
+               <arg type="i" direction="out" name="state" /> \
+            </method> \
+            <signal name="RunStateChanged"/> \
         </interface> \
     </node>';
 
@@ -119,6 +131,12 @@ CinnamonDBus.prototype = {
     _init: function() {
         this._dbusImpl = Gio.DBusExportedObject.wrapJSObject(CinnamonIface, this);
         this._dbusImpl.export(Gio.DBus.session, '/org/Cinnamon');
+
+        /* Although this signal comes from muffin, it is actually initiated by the
+         * layoutManager.Chrome.updateRegions method.  Workspace code in muffin filters
+         * out chrome updates that don't actually change the workarea before emitting this
+         * signal, which is desirable. */
+        global.screen.connect("workareas-changed", ()=> this.EmitMonitorsChanged());
     },
 
     /**
@@ -389,6 +407,28 @@ CinnamonDBus.prototype = {
     OpenSpicesAbout: function(uuid, type) {
         let metadata = Extension.getMetadata(uuid, Extension.Type[type.toUpperCase()]);
         new ModalDialog.SpicesAboutDialog(metadata, type+"s");
+    },
+
+    GetMonitors: function() {
+        return Main.layoutManager.monitors.map(mon => mon.index);
+    },
+
+    GetMonitorWorkRect: function(index) {
+        let rect = global.screen.get_active_workspace().get_work_area_for_monitor(index);
+
+        return [rect.x, rect.y, rect.width, rect.height];
+    },
+
+    GetRunState: function() {
+        return Main.runState;
+    },
+
+    EmitRunStateChanged: function() {
+        this._dbusImpl.emit_signal('RunStateChanged', null);
+    },
+
+    EmitMonitorsChanged: function() {
+        this._dbusImpl.emit_signal('MonitorsChanged', null);
     },
 
     CinnamonVersion: Config.PACKAGE_VERSION

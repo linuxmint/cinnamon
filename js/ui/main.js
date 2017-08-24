@@ -180,11 +180,28 @@ let popup_rendering_actor = null;
 
 let xlet_startup_error = false;
 
+const RunState = {
+    INIT : 0,
+    STARTUP : 1,
+    RUNNING : 2
+}
+
+let runState = RunState.INIT;
+
 // Override Gettext localization
 const Gettext = imports.gettext;
 Gettext.bindtextdomain('cinnamon', '/usr/share/locale');
 Gettext.textdomain('cinnamon');
 const _ = Gettext.gettext;
+
+function setRunState(state) {
+    let oldState = runState;
+
+    if (state != oldState) {
+        runState = state;
+        cinnamonDBusService.EmitRunStateChanged();
+    }
+}
 
 function _initRecorder() {
     let recorderSettings = new Gio.Settings({ schema_id: 'org.cinnamon.recorder' });
@@ -314,6 +331,7 @@ function start() {
     Gio.DesktopAppInfo.set_desktop_env('X-Cinnamon');
 
     cinnamonDBusService = new CinnamonDBus.CinnamonDBus();
+    setRunState(RunState.STARTUP);
 
     // Ensure CinnamonWindowTracker and CinnamonAppUsage are initialized; this will
     // also initialize CinnamonAppSystem first.  CinnamonAppSystem
@@ -507,6 +525,8 @@ function start() {
         }));
     } else {
         global.background_actor.show();
+        setRunState(Main.RunState.RUNNING);
+
         if (do_login_sound)
             soundManager.play_once_per_session('login');
     }

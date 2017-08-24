@@ -251,6 +251,8 @@ LayoutManager.prototype = {
 
         global.window_group.remove_clip();
         this._chrome.thawUpdateRegions();
+
+        Main.setRunState(Main.RunState.RUNNING);
     },
 
     showKeyboard: function () {
