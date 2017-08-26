@@ -199,6 +199,15 @@ st_bin_dispose (GObject *gobject)
   G_OBJECT_CLASS (st_bin_parent_class)->dispose (gobject);
 }
 
+static void
+st_bin_popup_menu (StWidget *widget)
+{
+  StBinPrivate *priv = ST_BIN (widget)->priv;
+
+  if (priv->child && ST_IS_WIDGET (priv->child))
+    st_widget_popup_menu (ST_WIDGET (priv->child));
+}
+
 static gboolean
 st_bin_navigate_focus (StWidget         *widget,
                        ClutterActor     *from,
@@ -317,6 +326,7 @@ st_bin_class_init (StBinClass *klass)
   actor_class->get_preferred_height = st_bin_get_preferred_height;
   actor_class->allocate = st_bin_allocate;
 
+  widget_class->popup_menu = st_bin_popup_menu;
   widget_class->navigate_focus = st_bin_navigate_focus;
 
   /**

@@ -695,7 +695,7 @@ st_widget_key_press_event (ClutterActor    *actor,
       (event->keyval == CLUTTER_KEY_F10 &&
        (event->modifier_state & CLUTTER_SHIFT_MASK)))
     {
-      g_signal_emit (actor, signals[POPUP_MENU], 0);
+      st_widget_popup_menu (ST_WIDGET (actor));
       return TRUE;
     }
 
@@ -1841,6 +1841,18 @@ st_widget_get_can_focus (StWidget *widget)
 
   return widget->priv->can_focus;
 }
+/**
+ * st_widget_popup_menu:
+ * @self: A #StWidget
+ *
+ * Asks the widget to pop-up a context menu.
+ */
+void
+st_widget_popup_menu (StWidget *self)
+{
+  g_signal_emit (self, signals[POPUP_MENU], 0);
+}
+
 
 /* filter @children to contain only only actors that overlap @rbox
  * when moving in @direction. (Assuming no transformations.)
