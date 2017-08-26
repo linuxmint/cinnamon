@@ -2219,6 +2219,10 @@ PopupMenu.prototype = {
 
         this.setMaxHeight();
 
+        /* I'd rather this be inside the active tween scope as an onUpdate param, but how do you modify
+         * a tweens own parameters during said tweening? */
+        this._breadth = 0;
+
         this.isOpen = true;
         if (global.menuStackLength == undefined)
             global.menuStackLength = 0;
@@ -2262,69 +2266,80 @@ PopupMenu.prototype = {
 
         if (animate && global.settings.get_boolean("desktop-effects-on-menus")) {
             this.animating = true;
-
-            // the actor is going to be painted before we set the right position for animation so we set the opacity
-            // to 0 in order to prevent flashing in the wrong position
-            this.actor.opacity = 0;
             this.actor.show();
 
-            // we need to give the actors a chance to allocate before animating so we get the correct values
-            Mainloop.idle_add(Lang.bind(this, function() {
-                let tweenParams = {
-                    transition: "easeOutQuad",
-                    time: .15,
-                    onUpdate: Lang.bind(this, function(dest) {
-                        let clipY = 0;
-                        let clipX = 0;
-                        switch (this._orientation) {
-                            case St.Side.TOP:
-                            case St.Side.BOTTOM:
-                                clipY = dest - this.actor.y;
-                                break;
-                            case St.Side.LEFT:
-                            case St.Side.RIGHT:
-                                clipX = dest - this.actor.x;
-                                break;
-                        }
-                        this.actor.set_clip(clipX, clipY, this.actor.width, this.actor.height);
-                    }),
-                    opacity: 255,
-                    onCompleteScope: this,
-                    onComplete: function() {
-                        this.animating = false;
-                        this.actor.remove_clip();
+            let tweenParams = {
+                transition: "easeOutQuad",
+                time: .15,
+                onUpdate: Lang.bind(this, function(dest) {
+                    let clipY = 0;
+                    let clipX = 0;
+                    let xUpdate = 0;
+                    let yUpdate = 0;
+
+                    switch (this._orientation) {
+                        case St.Side.TOP:
+                        case St.Side.BOTTOM:
+                            clipY = dest - this.actor.y;
+
+                            if (this.actor.width != this._breadth) {
+                                [xUpdate, yUpdate] = this._calculatePosition();
+                                this.actor.x = xUpdate;
+                                this._breadth = this.actor.width;
+                            }
+
+                            break;
+                        case St.Side.LEFT:
+                        case St.Side.RIGHT:
+                            clipX = dest - this.actor.x;
+
+                            if (this.actor.height != this._breadth) {
+                                [xUpdate, yUpdate] = this._calculatePosition();
+                                this.actor.y = yUpdate;
+                                this._breadth = this.actor.height;
+                            }
+
+                            break;
                     }
-                }
 
-                let [xPos, yPos] = this._calculatePosition();
-
-                switch (this._orientation) {
-                    case St.Side.TOP:
-                    case St.Side.BOTTOM:
-                        this.actor["x"] = xPos;
-                        tweenParams["y"] = yPos;
-                        tweenParams["onUpdateParams"] = [yPos];
-                        if (this.sideFlipped)
-                            this.actor["y"] = yPos + this.actor.height;
-                        else
-                            this.actor["y"] = yPos - this.actor.height;
-                        break;
-                    case St.Side.LEFT:
-                    case St.Side.RIGHT:
-                        this.actor["y"] = yPos;
-                        tweenParams["x"] = xPos;
-                        tweenParams["onUpdateParams"] = [xPos];
-                        if (this.sideFlipped)
-                            this.actor["x"] = xPos + this.actor.width;
-                        else
-                            this.actor["x"] = xPos - this.actor.width;
-                        break;
+                    this.actor.set_clip(clipX, clipY, this.actor.width, this.actor.height);
+                }),
+                onCompleteScope: this,
+                onComplete: function() {
+                    this.animating = false;
+                    this.actor.remove_clip();
                 }
-                this.actor.opacity = 0;
-                Tweener.addTween(this.actor, tweenParams);
-            }));
-        }
-        else {
+            }
+
+            let [xPos, yPos] = this._calculatePosition();
+
+            switch (this._orientation) {
+                case St.Side.TOP:
+                case St.Side.BOTTOM:
+                    this.actor.x = xPos;
+                    this._breadth = this.actor.width;
+                    tweenParams["y"] = yPos;
+                    tweenParams["onUpdateParams"] = [yPos];
+                    if (this.sideFlipped)
+                        this.actor.y = yPos + this.actor.height;
+                    else
+                        this.actor.y = yPos - this.actor.height;
+                    break;
+                case St.Side.LEFT:
+                case St.Side.RIGHT:
+                    this.actor.y = yPos;
+                    this._breadth = this.actor.height;
+                    tweenParams["x"] = xPos;
+                    tweenParams["onUpdateParams"] = [xPos];
+                    if (this.sideFlipped)
+                        this.actor.x = xPos + this.actor.width;
+                    else
+                        this.actor.x = xPos - this.actor.width;
+                    break;
+            }
+
+            Tweener.addTween(this.actor, tweenParams);
+        } else {
             this.animating = false;
             this.actor.show();
         }
@@ -2371,12 +2386,10 @@ PopupMenu.prototype = {
                         this.actor.set_clip(clipX, clipY, this.actor.width, this.actor.height);
                     }),
                 onCompleteScope: this,
-                opacity: 0,
                 onComplete: function() {
                     this.animating = false;
                     this.actor.hide();
                     this.actor.remove_clip();
-                    this.actor.opacity = 255;
                 }
             }
 

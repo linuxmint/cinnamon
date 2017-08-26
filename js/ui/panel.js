@@ -2368,20 +2368,20 @@ Panel.prototype = {
                 // NB test on parent fails with centre aligned vertical box, but works for the test against the actor
                 if (this._context_menu._getMenuItems().length > 0 &&
                    (target.get_parent() == this.actor || target == this.actor)) {
-                    this._context_menu.toggle();
-                    if (!this._context_menu.isOpen)
-                        return;
-
-                    switch (this.panelPosition) {
-                        case PanelLoc.top:
-                        case PanelLoc.bottom:
-                            this._context_menu.shiftToPosition(x);
-                            break;
-                        case PanelLoc.left:
-                        case PanelLoc.right:
-                            this._context_menu.shiftToPosition(y);
-                            break;
+                    if (!this._context_menu.isOpen) {
+                        switch (this.panelPosition) {
+                            case PanelLoc.top:
+                            case PanelLoc.bottom:
+                                this._context_menu.shiftToPosition(x);
+                                break;
+                            case PanelLoc.left:
+                            case PanelLoc.right:
+                                this._context_menu.shiftToPosition(y);
+                                break;
+                        }
                     }
+
+                    this._context_menu.toggle();
                 }
             } catch(e) {
                 global.log(e);

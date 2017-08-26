@@ -968,12 +968,15 @@ AppMenuButtonRightClickMenu.prototype = {
             this._launcher._applet._menuOpen = true;
         else
             this._launcher._applet._menuOpen = false;
+    },
 
-        if (!isOpening) {
-            return;
+    toggle: function() {
+        if (!this.isOpen) {
+            this.removeAll();
+            this._populateMenu();
         }
-        this.removeAll();
-        this._populateMenu();
+
+        Applet.AppletPopupMenu.prototype.toggle.call(this);
     },
 };
 

@@ -50,38 +50,23 @@ MyApplet.prototype = {
 
             this._initContextMenu();
 
-            this._calendarArea = new St.BoxLayout({name: 'calendarArea' });
-            this.menu.addActor(this._calendarArea);
-
-            // Fill up the first column
-
-            let vbox = new St.BoxLayout({vertical: true});
-            this._calendarArea.add(vbox);
-
             // Date
             this._date = new St.Label();
             this._date.style_class = 'datemenu-date-label';
-            vbox.add(this._date);
-
-            this._eventList = null;
+            this.menu.addActor(this._date);
 
             this.settings = new Settings.AppletSettings(this, "calendar@cinnamon.org", this.instance_id);
 
             // Calendar
             this._calendar = new Calendar.Calendar(this.settings);
-            vbox.add(this._calendar.actor);
+
+            this.menu.addActor(this._calendar.actor);
+            this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
 
             let item = new PopupMenu.PopupMenuItem(_("Date and Time Settings"))
             item.connect("activate", Lang.bind(this, this._onLaunchSettings));
-            //this.menu.addMenuItem(item);
-            if (item) {
-                let separator = new PopupMenu.PopupSeparatorMenuItem();
-                separator.setColumnWidths(1);
-                vbox.add(separator.actor, {y_align: St.Align.END, expand: true, y_fill: false});
 
-                item.actor.can_focus = false;
-                global.reparentActor(item.actor, vbox);
-            }
+            this.menu.addMenuItem(item);
 
             this._dateFormatFull = _("%A %B %-e, %Y");
 
@@ -164,6 +149,9 @@ MyApplet.prototype = {
         if (this.clock_notify_id == 0) {
             this.clock_notify_id = this.clock.connect("notify::clock", () => this._clockNotify());
         }
+
+        /* Populates the calendar so our menu allocation is correct for animation */
+        this._updateCalendar();
     },
 
     on_applet_removed_from_panel: function() {
@@ -174,44 +162,26 @@ MyApplet.prototype = {
     },
 
     _initContextMenu: function () {
-        if (this._calendarArea) this._calendarArea.unparent();
-        if (this.menu) this.menuManager.removeMenu(this.menu);
-
         this.menu = new Applet.AppletPopupMenu(this, this.orientation);
         this.menuManager.addMenu(this.menu);
-
-        if (this._calendarArea){
-            this.menu.addActor(this._calendarArea);
-            this._calendarArea.show_all();
-        }
 
         // Whenever the menu is opened, select today
         this.menu.connect('open-state-changed', Lang.bind(this, function(menu, isOpen) {
             if (isOpen) {
-                let now = new Date();
-                /* Passing true to setDate() forces events to be reloaded. We
-                 * want this behavior, because
-                 *
-                 *   o It will cause activation of the calendar server which is
-                 *     useful if it has crashed
-                 *
-                 *   o It will cause the calendar server to reload events which
-                 *     is useful if dynamic updates are not supported or not
-                 *     properly working
-                 *
-                 * Since this only happens when the menu is opened, the cost
-                 * isn't very big.
-                 */
-                this._calendar.setDate(now, true);
-                // No need to update this._eventList as ::selected-date-changed
-                // signal will fire
+                this._updateCalendar();
             }
         }));
     },
 
+    _updateCalendar: function () {
+        let now = new Date();
+
+        this._calendar.setDate(now, true);
+    },
+
     on_orientation_changed: function (orientation) {
         this.orientation = orientation;
-        this._initContextMenu();
+        this.menu.setOrientation(orientation);
         this._onSettingsChanged();
     }
 
