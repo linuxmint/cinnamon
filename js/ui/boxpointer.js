@@ -91,6 +91,10 @@ BoxPointer.prototype = {
     },
 
     hide: function(animate, onComplete) {
+
+        if (!this.actor.visible)
+            return;
+
         let xOffset = 0;
         let yOffset = 0;
         let themeNode = this.actor.get_theme_node();
