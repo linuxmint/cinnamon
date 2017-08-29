@@ -510,10 +510,14 @@ function unloadExtension(uuid, type, deleteConfig = true) {
 }
 
 function forgetExtension(uuid, type, forgetMeta) {
-    delete imports[type.maps.objects[uuid].lowerType + 's'][uuid];
-    delete type.maps.importObjects[uuid];
-    delete type.maps.objects[uuid];
-    if(forgetMeta)
+    if (type.maps.objects.hasOwnProperty(uuid) &&
+        imports[type.maps.objects[uuid].lowerType + 's'].hasOwnProperty(uuid))
+        delete imports[type.maps.objects[uuid].lowerType + 's'][uuid];
+    if (type.maps.importObjects.hasOwnProperty(uuid))
+        delete type.maps.importObjects[uuid];
+    if (type.maps.objects.hasOwnProperty(uuid))
+        delete type.maps.objects[uuid];
+    if (forgetMeta && type.maps.meta.hasOwnProperty(uuid))
         delete type.maps.meta[uuid];
 }
 
