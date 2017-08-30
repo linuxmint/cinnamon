@@ -141,6 +141,7 @@ void                  st_widget_set_hover                 (StWidget        *widg
                                                            gboolean         hover);
 void                  st_widget_sync_hover                (StWidget        *widget);
 gboolean              st_widget_get_hover                 (StWidget        *widget);
+void                  st_widget_popup_menu                (StWidget        *self);
 
 void                  st_widget_ensure_style              (StWidget        *widget);
 
