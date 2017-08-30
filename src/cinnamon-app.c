@@ -1477,11 +1477,8 @@ cinnamon_app_dispose (GObject *object)
       app->entry = NULL;
     }
 
-  if (app->running_state)
-    {
-      while (app->running_state->windows)
-        _cinnamon_app_remove_window (app, app->running_state->windows->data);
-    }
+  while (app->running_state)
+    _cinnamon_app_remove_window (app, app->running_state->windows->data);
 
   g_clear_pointer (&app->keywords, g_free);
 
