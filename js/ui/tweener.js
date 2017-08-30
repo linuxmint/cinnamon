@@ -13,29 +13,8 @@ const Tweener = imports.tweener.tweener;
  * @short_description: File providing tweening functions
  *
  * This is a wrapper around imports.tweener.tweener that adds a bit of
- * Clutter integration and some additional callbacks:
- *
- *   1. If the tweening target is a Clutter.Actor, then the tweenings
- *      will automatically be removed if the actor is destroyed
- *
- *   2. If target._delegate.onAnimationStart() exists, it will be
- *      called when the target starts being animated.
- *
- *   3. If target._delegate.onAnimationComplete() exists, it will be
- *      called once the target is no longer being animated.
- *
- * The onAnimationStart() and onAnimationComplete() callbacks differ
- * from the tweener onStart and onComplete parameters, in that (1)
- * they track whether or not the target has *any* tweens attached to
- * it, as opposed to be called for *each* tween, and (2)
- * onAnimationComplete() is always called when the object stops being
- * animated, regardless of whether it stopped normally or abnormally.
- *
- * onAnimationComplete() is called at idle time, which means that if a
- * tween completes and then another is added before returning to the
- * main loop, the complete callback will not be called (until the new
- * tween finishes).
- *
+ * Clutter integration. If the tweening target is a Clutter.Actor, then
+ * the tweenings will automatically be removed if the actor is destroyed.
  *
  * ActionScript Tweener methods that imports.tweener.tweener doesn't
  * currently implement: getTweens, getVersion, registerTransition,
@@ -242,7 +221,6 @@ function _wrapTweening(target, tweeningParameters) {
         }
     }
 
-    _addHandler(target, tweeningParameters, 'onStart', _tweenStarted);
     _addHandler(target, tweeningParameters, 'onComplete', _tweenCompleted);
 }
 
@@ -250,7 +228,7 @@ function _getTweenState(target) {
     // If we were paranoid, we could keep a plist mapping targets to
     // states... but we're not that paranoid.
     if (!target.__CinnamonTweenerState)
-        _resetTweenState(target);
+        target.__CinnamonTweenerState = {};
     return target.__CinnamonTweenerState;
 }
 
@@ -260,10 +238,6 @@ function _resetTweenState(target) {
     if (state) {
         if (state.destroyedId)
             state.actor.disconnect(state.destroyedId);
-        if (state.idleCompletedId) {
-            Mainloop.source_remove(state.idleCompletedId);
-            state.idleCompletedId = 0;
-        }
     }
 
     target.__CinnamonTweenerState = {};
@@ -289,34 +263,11 @@ function _actorDestroyed(target) {
     Tweener.removeTweens(target);
 }
 
-function _tweenStarted(target) {
-    let state = _getTweenState(target);
-    let delegate = target._delegate;
-
-    if (!state.running && delegate && delegate.onAnimationStart)
-        delegate.onAnimationStart();
-    state.running = true;
-}
 
 function _tweenCompleted(target) {
-    let state = _getTweenState(target);
 
-    if (!state.idleCompletedId)
-        state.idleCompletedId = Mainloop.idle_add(Lang.bind(null, _idleCompleted, target));
-}
-
-function _idleCompleted(target) {
-    let state = _getTweenState(target);
-    let delegate = target._delegate;
-
-    if (!isTweening(target)) {
+    if (!isTweening(target))
         _resetTweenState(target);
-        if (delegate && delegate.onAnimationComplete)
-            delegate.onAnimationComplete();
-    }
-
-    state.idleCompletedId = 0;
-    return false;
 }
 
 /**
