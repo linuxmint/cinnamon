@@ -1,4 +1,9 @@
+====
+Linux Mint Cinnamon
+====
 Cinnamon is a Linux desktop which provides advanced innovative features and a traditional user experience.
+
+.. image:: https://www.linuxmint.com/pictures/screenshots/sarah/cinnamon.png
 
 The desktop layout is similar to Gnome 2. 
 The underlying technology is forked from Gnome Shell.
