@@ -217,7 +217,7 @@ class CellRendererKeybinding(Gtk.CellRendererText):
             shift_group_mask = keymap.get_modifier_mask(Gdk.ModifierIntent.SHIFT_GROUP)
 
             retval, keyval, effective_group, level, consumed_modifiers = \
-                   keymap.translate_keyboard_state(event.hardware_keycode, accel_mods, group)
+                keymap.translate_keyboard_state(event.hardware_keycode, accel_mods, group)
 
             if group_mask_disabled:
                 effective_group = 1
@@ -253,22 +253,22 @@ class CellRendererKeybinding(Gtk.CellRendererText):
 
         if (accel_mods == 0 or accel_mods == Gdk.ModifierType.SHIFT_MASK) and event.hardware_keycode != 0:
             if ((keyval >= Gdk.KEY_a                    and keyval <= Gdk.KEY_z)
-            or  (keyval >= Gdk.KEY_A                    and keyval <= Gdk.KEY_Z)
-            or  (keyval >= Gdk.KEY_0                    and keyval <= Gdk.KEY_9)
-            or  (keyval >= Gdk.KEY_kana_fullstop        and keyval <= Gdk.KEY_semivoicedsound)
-            or  (keyval >= Gdk.KEY_Arabic_comma         and keyval <= Gdk.KEY_Arabic_sukun)
-            or  (keyval >= Gdk.KEY_Serbian_dje          and keyval <= Gdk.KEY_Cyrillic_HARDSIGN)
-            or  (keyval >= Gdk.KEY_Greek_ALPHAaccent    and keyval <= Gdk.KEY_Greek_omega)
-            or  (keyval >= Gdk.KEY_hebrew_doublelowline and keyval <= Gdk.KEY_hebrew_taf)
-            or  (keyval >= Gdk.KEY_Thai_kokai           and keyval <= Gdk.KEY_Thai_lekkao)
-            or  (keyval >= Gdk.KEY_Hangul               and keyval <= Gdk.KEY_Hangul_Special)
-            or  (keyval >= Gdk.KEY_Hangul_Kiyeog        and keyval <= Gdk.KEY_Hangul_J_YeorinHieuh)
-            or  keyval in FORBIDDEN_KEYVALS):
+                or  (keyval >= Gdk.KEY_A                    and keyval <= Gdk.KEY_Z)
+                or  (keyval >= Gdk.KEY_0                    and keyval <= Gdk.KEY_9)
+                or  (keyval >= Gdk.KEY_kana_fullstop        and keyval <= Gdk.KEY_semivoicedsound)
+                or  (keyval >= Gdk.KEY_Arabic_comma         and keyval <= Gdk.KEY_Arabic_sukun)
+                or  (keyval >= Gdk.KEY_Serbian_dje          and keyval <= Gdk.KEY_Cyrillic_HARDSIGN)
+                or  (keyval >= Gdk.KEY_Greek_ALPHAaccent    and keyval <= Gdk.KEY_Greek_omega)
+                or  (keyval >= Gdk.KEY_hebrew_doublelowline and keyval <= Gdk.KEY_hebrew_taf)
+                or  (keyval >= Gdk.KEY_Thai_kokai           and keyval <= Gdk.KEY_Thai_lekkao)
+                or  (keyval >= Gdk.KEY_Hangul               and keyval <= Gdk.KEY_Hangul_Special)
+                or  (keyval >= Gdk.KEY_Hangul_Kiyeog        and keyval <= Gdk.KEY_Hangul_J_YeorinHieuh)
+                    or  keyval in FORBIDDEN_KEYVALS):
                 dialog = Gtk.MessageDialog(None,
-                                    Gtk.DialogFlags.DESTROY_WITH_PARENT,
-                                    Gtk.MessageType.ERROR,
-                                    Gtk.ButtonsType.OK,
-                                    None)
+                                           Gtk.DialogFlags.DESTROY_WITH_PARENT,
+                                           Gtk.MessageType.ERROR,
+                                           Gtk.ButtonsType.OK,
+                                           None)
                 dialog.set_default_size(400, 200)
                 msg = _("\nThis key combination, \'<b>%s</b>\' cannot be used because it would become impossible to type using this key.\n\n")
                 msg += _("Please try again with a modifier key such as Control, Alt or Super (Windows key) at the same time.\n")

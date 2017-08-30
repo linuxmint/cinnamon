@@ -15,7 +15,7 @@ class MessageDialogWindow(Gtk.Window):
             glib.timeout_add(1000 * (self.counter % 7), self.show_urgent)
         else:
             self.set_urgency_hint(1==1)
-        
+
 
 win = MessageDialogWindow()
 win.connect("delete-event", Gtk.main_quit)

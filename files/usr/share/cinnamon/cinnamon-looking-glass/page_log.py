@@ -34,7 +34,7 @@ class LogView(Gtk.ScrolledWindow):
             'warning': self.textbuffer.create_tag("warning", foreground="#c8bf33", invisible=self.enabledTypes["warning"] != True, invisible_set=True),
             'error': self.textbuffer.create_tag("error", foreground="#9f1313", invisible=self.enabledTypes["error"] != True, invisible_set=True),
             'trace': self.textbuffer.create_tag("trace", foreground="#18186f", invisible=self.enabledTypes["trace"] != True, invisible_set=True)
-            }
+        }
 
         #todo: load all enabled types from gsettings
         #self.enabledTypes = {'info': False, 'warning': False, 'error': False, 'trace': False }
@@ -107,4 +107,3 @@ class ModulePage(pageutils.WindowAndActionBars):
         button.set_active(self.view.enabledTypes[logType])
         button.set_tooltip_text(tooltip)
         self.addToLeftBar(button, 1)
-

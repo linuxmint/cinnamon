@@ -298,4 +298,3 @@ class List(SettingsWidget):
 
     def connect_widget_handlers(self, *args):
         pass
-

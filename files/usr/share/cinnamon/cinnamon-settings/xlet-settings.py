@@ -370,8 +370,8 @@ class MainWindow(object):
         dialog = Gtk.FileChooserDialog(_("Select or enter file to export to"),
                                        None,
                                        Gtk.FileChooserAction.SAVE,
-                                      (Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL,
-                                       Gtk.STOCK_SAVE, Gtk.ResponseType.ACCEPT))
+                                       (Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL,
+                                        Gtk.STOCK_SAVE, Gtk.ResponseType.ACCEPT))
         dialog.set_do_overwrite_confirmation(True)
         filter_text = Gtk.FileFilter()
         filter_text.add_pattern("*.json")
@@ -392,8 +392,8 @@ class MainWindow(object):
         dialog = Gtk.FileChooserDialog(_("Select a JSON file to import"),
                                        None,
                                        Gtk.FileChooserAction.OPEN,
-                                      (Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL,
-                                       Gtk.STOCK_OPEN, Gtk.ResponseType.OK))
+                                       (Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL,
+                                        Gtk.STOCK_OPEN, Gtk.ResponseType.OK))
         filter_text = Gtk.FileFilter()
         filter_text.add_pattern("*.json")
         filter_text.set_name(_("JSON files"))

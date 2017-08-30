@@ -601,7 +601,7 @@ class Spice_Harvester(GObject.Object):
                 md = json.loads(raw_meta)
 
             if not self.themes and len(schema) > 0:
-                    md['schema-file'] = ','.join(schema)
+                md['schema-file'] = ','.join(schema)
             md['last-edited'] = self.index_cache[uuid]['last_edited']
 
             raw_meta = json.dumps(md, indent=4)

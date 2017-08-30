@@ -60,15 +60,15 @@ def rotate_270(im): return im.transpose(Image.ROTATE_270)
 def transpose(im): return rotate_90(flip_horizontal(im))
 def transverse(im): return rotate_90(flip_vertical(im))
 orientation_funcs = [None,
-                 lambda x: x,
-                 flip_horizontal,
-                 rotate_180,
-                 flip_vertical,
-                 transpose,
-                 rotate_270,
-                 transverse,
-                 rotate_90
-                ]
+                     lambda x: x,
+                     flip_horizontal,
+                     rotate_180,
+                     flip_vertical,
+                     transpose,
+                     rotate_270,
+                     transverse,
+                     rotate_90
+                     ]
 def apply_orientation(im):
     """
     Extract the oritentation EXIF tag from the image, which should be a PIL Image instance,

@@ -508,16 +508,16 @@ class Module:
             print "Loading Sound module"
 
             self.outputDeviceList = Gtk.ListStore(str, # name
-                                  str, # device
-                                  bool, # active
-                                  int, # id
-                                  GdkPixbuf.Pixbuf) # icon
+                                                  str, # device
+                                                  bool, # active
+                                                  int, # id
+                                                  GdkPixbuf.Pixbuf) # icon
 
             self.inputDeviceList = Gtk.ListStore(str, # name
-                                  str, # device
-                                  bool, # active
-                                  int, # id
-                                  GdkPixbuf.Pixbuf) # icon
+                                                 str, # device
+                                                 bool, # active
+                                                 int, # id
+                                                 GdkPixbuf.Pixbuf) # icon
 
             self.appList = {}
 

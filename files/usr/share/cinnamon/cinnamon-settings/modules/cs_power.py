@@ -102,13 +102,13 @@ class Module:
         self.up_client = UPowerGlib.Client.new()
 
         self.csd_power_proxy = Gio.DBusProxy.new_sync(
-                Gio.bus_get_sync(Gio.BusType.SESSION, None),
-                Gio.DBusProxyFlags.NONE,
-                None,
-                "org.cinnamon.SettingsDaemon.Power",
-                "/org/cinnamon/SettingsDaemon/Power",
-                "org.cinnamon.SettingsDaemon.Power",
-                None)
+            Gio.bus_get_sync(Gio.BusType.SESSION, None),
+            Gio.DBusProxyFlags.NONE,
+            None,
+            "org.cinnamon.SettingsDaemon.Power",
+            "/org/cinnamon/SettingsDaemon/Power",
+            "org.cinnamon.SettingsDaemon.Power",
+            None)
 
         self.settings = Gio.Settings.new("org.cinnamon")
 
@@ -205,13 +205,13 @@ class Module:
             return
 
         proxy = Gio.DBusProxy.new_sync(
-                Gio.bus_get_sync(Gio.BusType.SESSION, None),
-                Gio.DBusProxyFlags.NONE,
-                None,
-                "org.cinnamon.SettingsDaemon.Power",
-                "/org/cinnamon/SettingsDaemon/Power",
-                "org.cinnamon.SettingsDaemon.Power.Screen",
-                None)
+            Gio.bus_get_sync(Gio.BusType.SESSION, None),
+            Gio.DBusProxyFlags.NONE,
+            None,
+            "org.cinnamon.SettingsDaemon.Power",
+            "/org/cinnamon/SettingsDaemon/Power",
+            "org.cinnamon.SettingsDaemon.Power.Screen",
+            None)
 
         try:
             brightness = proxy.GetPercentage()
@@ -510,13 +510,13 @@ def get_available_options(up_client):
     try:
         connection = Gio.bus_get_sync(Gio.BusType.SYSTEM, None)
         proxy = Gio.DBusProxy.new_sync(
-                connection,
-                Gio.DBusProxyFlags.NONE,
-                None,
-                "org.freedesktop.login1",
-                "/org/freedesktop/login1",
-                "org.freedesktop.login1.Manager",
-                None)
+            connection,
+            Gio.DBusProxyFlags.NONE,
+            None,
+            "org.freedesktop.login1",
+            "/org/freedesktop/login1",
+            "org.freedesktop.login1.Manager",
+            None)
 
         can_suspend = proxy.CanSuspend() == "yes"
         can_hibernate = proxy.CanHibernate() == "yes"

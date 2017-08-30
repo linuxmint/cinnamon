@@ -3,7 +3,7 @@ from gi.repository import Gtk
 class ResultTextDialog(Gtk.Dialog):
     def __init__(self, title, text):
         Gtk.Dialog.__init__(self, title, None, 0,
-            (Gtk.STOCK_CLOSE, Gtk.ResponseType.CLOSE))
+                            (Gtk.STOCK_CLOSE, Gtk.ResponseType.CLOSE))
 
         self.set_default_size(350, 70)
 

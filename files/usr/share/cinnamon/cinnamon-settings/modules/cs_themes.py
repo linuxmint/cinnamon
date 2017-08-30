@@ -148,8 +148,8 @@ class Module:
                 theme_path = theme[1]
                 try:
                     for path in ["%s/%s/%s/thumbnail.png" % (theme_path, theme_name, path_suffix),
-                             "/usr/share/cinnamon/thumbnails/%s/%s.png" % (path_suffix, theme_name),
-                             "/usr/share/cinnamon/thumbnails/%s/unknown.png" % path_suffix]:
+                                 "/usr/share/cinnamon/thumbnails/%s/%s.png" % (path_suffix, theme_name),
+                                 "/usr/share/cinnamon/thumbnails/%s/unknown.png" % path_suffix]:
                         if os.path.exists(path):
                             chooser.add_picture(path, callback, title=theme_name, id=theme_name)
                             break

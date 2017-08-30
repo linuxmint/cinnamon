@@ -25,24 +25,24 @@ CINNAMON_SCHEMA = "org.cinnamon.desktop.keybindings"
 
 CATEGORIES = [
 
-#   Label                   id                  parent
-#(child)Label                       id                  parent
+    #   Label                   id                  parent
+    #(child)Label                       id                  parent
 
     [_("General"),          "general",          None,       "preferences-desktop-keyboard-shortcuts"],
-        [_("Troubleshooting"),      "trouble",          "general",      None],
+    [_("Troubleshooting"),      "trouble",          "general",      None],
     [_("Windows"),          "windows",          None,       "preferences-system-windows"],
-        [_("Positioning"),          "win-position",     "windows",      None],
-        [_("Tiling and Snapping"),  "win-tiling",       "windows",      None],
-        [_("Inter-workspace"),      "win-workspaces",   "windows",      None],
-        [_("Inter-monitor"),        "win-monitors",     "windows",      None],
+    [_("Positioning"),          "win-position",     "windows",      None],
+    [_("Tiling and Snapping"),  "win-tiling",       "windows",      None],
+    [_("Inter-workspace"),      "win-workspaces",   "windows",      None],
+    [_("Inter-monitor"),        "win-monitors",     "windows",      None],
     [_("Workspaces"),       "workspaces",       None,       "video-display"],
-        [_("Direct Navigation"),    "ws-navi",          "workspaces",   None],
+    [_("Direct Navigation"),    "ws-navi",          "workspaces",   None],
     [_("System"),           "system",           None,       "preferences-system"],
-        [_("Hardware"),             "sys-hw",           "system",       None],
-        [_("Screenshots and Recording"),"sys-screen",   "system",       None],
+    [_("Hardware"),             "sys-hw",           "system",       None],
+    [_("Screenshots and Recording"),"sys-screen",   "system",       None],
     [_("Launchers"),        "launchers",        None,       "applications-utilities"],
     [_("Sound and Media"),  "media",            None,       "applications-multimedia"],
-        [_("Quiet Keys"),           "media-quiet",      "media",        None],
+    [_("Quiet Keys"),           "media-quiet",      "media",        None],
     [_("Universal Access"), "accessibility",    None,       "preferences-desktop-accessibility"],
     [_("Custom Shortcuts"), "custom",           None,       "cinnamon-panel-launcher"]
 ]
@@ -472,10 +472,10 @@ class Module:
 
                     if found and keybinding.label != current_keybinding.label:
                         dialog = Gtk.MessageDialog(None,
-                                    Gtk.DialogFlags.DESTROY_WITH_PARENT,
-                                    Gtk.MessageType.QUESTION,
-                                    Gtk.ButtonsType.YES_NO,
-                                    None)
+                                                   Gtk.DialogFlags.DESTROY_WITH_PARENT,
+                                                   Gtk.MessageType.QUESTION,
+                                                   Gtk.ButtonsType.YES_NO,
+                                                   None)
                         dialog.set_default_size(400, 200)
                         msg = _("This key combination, <b>%(combination)s</b> is currently in use by <b>%(old)s</b>.  ")
                         msg += _("If you continue, the combination will be reassigned to <b>%(new)s</b>.\n\n")
@@ -746,10 +746,10 @@ class AddCustomDialog(Gtk.Dialog):
         else:
             ok_button_label = _("Add")
         super(AddCustomDialog, self).__init__(_("Add custom shortcut"),
-                                                None,
-                                                0,
-                                                (ok_button_label, Gtk.ResponseType.OK,
-                                                _("Cancel"), Gtk.ResponseType.CANCEL))
+                                              None,
+                                              0,
+                                              (ok_button_label, Gtk.ResponseType.OK,
+                                               _("Cancel"), Gtk.ResponseType.CANCEL))
         self.set_default_size(350, 100)
         name_box = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 2)
         command_box = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 2)

@@ -49,7 +49,7 @@ def bind_with_mapping(self, key, widget, prop, flags, key_to_prop, prop_to_key):
         self._ignore_key_changed = False
 
     if not (flags & (Gio.SettingsBindFlags.SET | Gio.SettingsBindFlags.GET)): # ie Gio.SettingsBindFlags.DEFAULT
-       flags |= Gio.SettingsBindFlags.SET | Gio.SettingsBindFlags.GET
+        flags |= Gio.SettingsBindFlags.SET | Gio.SettingsBindFlags.GET
     if flags & Gio.SettingsBindFlags.GET:
         key_changed(self, key)
         if not (flags & Gio.SettingsBindFlags.GET_NO_CHANGES):

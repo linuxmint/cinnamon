@@ -41,7 +41,7 @@ except Exception, detail:
 
 for i in range(len(modules)):
     try:
-        mod = modules[i].Module(None)  
+        mod = modules[i].Module(None)
 
         if mod.category in ("admin"):
             category = "Settings;System;"
@@ -60,7 +60,7 @@ Categories=Settings;
 """ % {'module': mod.name, 'category': category, 'icon': mod.sidePage.icon}
 
         additionalfiles.generate(DOMAIN, PATH, "files/usr/share/applications/cinnamon-settings-%s.desktop" % mod.name, prefix, mod.sidePage.name, mod.comment, "", None, mod.sidePage.keywords)
-        
+
     except:
         print "Failed to load module %s" % modules[i]
         import traceback

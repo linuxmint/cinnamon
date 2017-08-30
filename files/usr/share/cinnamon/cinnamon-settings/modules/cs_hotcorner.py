@@ -313,7 +313,3 @@ class HotCornerConfiguration():
         if self.timer:
             GLib.source_remove(self.timer)
         self.timer = GLib.timeout_add(250, apply, self)
-
-
-
-
