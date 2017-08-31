@@ -510,15 +510,18 @@ function unloadExtension(uuid, type, deleteConfig = true) {
 }
 
 function forgetExtension(uuid, type, forgetMeta) {
-    if (type.maps.objects.hasOwnProperty(uuid) &&
-        imports[type.maps.objects[uuid].lowerType + 's'].hasOwnProperty(uuid))
-        delete imports[type.maps.objects[uuid].lowerType + 's'][uuid];
-    if (type.maps.importObjects.hasOwnProperty(uuid))
+    if (typeof type.maps.importObjects[uuid] !== 'undefined') {
         delete type.maps.importObjects[uuid];
-    if (type.maps.objects.hasOwnProperty(uuid))
+    }
+    if (typeof type.maps.objects[uuid] !== 'undefined') {
+        if (typeof imports[type.maps.objects[uuid].lowerType + 's'][uuid] !== 'undefined') {
+            delete imports[type.maps.objects[uuid].lowerType + 's'][uuid];
+        }
         delete type.maps.objects[uuid];
-    if (forgetMeta && type.maps.meta.hasOwnProperty(uuid))
+    }
+    if (forgetMeta && typeof type.maps.meta[uuid] !== 'undefined') {
         delete type.maps.meta[uuid];
+    }
 }
 
 /**
