@@ -281,7 +281,6 @@ AppMenuButton.prototype = {
         this.actor.connect('allocate', Lang.bind(this, this._allocate));
 
         this.progressOverlay = new St.Widget({ style_class: "window-list-item-box", reactive: false, important: true  })
-        this.progressOverlay.add_style_pseudo_class("progress");
 
         this.actor.add_actor(this.progressOverlay);
 
@@ -317,6 +316,11 @@ AppMenuButton.prototype = {
                     this._progress = this.metaWindow.progress;
 
                     this.progressOverlay.visible = this._progress > 0;
+                    if (this.progressOverlay.visible) {
+                        this.progressOverlay.add_style_pseudo_class("progress");
+                    } else {
+                        this.progressOverlay.remove_style_pseudo_class("progress");
+                    }
 
                     this.actor.queue_relayout();
                 }
