@@ -310,7 +310,9 @@ AppMenuButton.prototype = {
 
         if (this.metaWindow.progress !== undefined) {
             this._progress = this.metaWindow.progress;
-
+            if (this._progress > 0) {
+                this.progressOverlay.add_style_pseudo_class("progress");
+            }
             this._updateProgressId = this.metaWindow.connect("notify::progress", () => {
                 if (this.metaWindow.progress != this._progress) {
                     this._progress = this.metaWindow.progress;
