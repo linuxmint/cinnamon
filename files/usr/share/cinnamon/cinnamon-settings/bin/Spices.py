@@ -1,5 +1,5 @@
 try:
-    from SettingsWidgets import rec_mkdir
+    from Utils import rec_mkdir
     import gettext
     from gi.repository import Gio, Gtk, GObject, Gdk, GdkPixbuf, GLib
     import tempfile
