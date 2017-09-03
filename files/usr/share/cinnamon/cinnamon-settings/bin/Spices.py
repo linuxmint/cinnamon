@@ -153,6 +153,9 @@ class Spice_Harvester(GObject.Object):
         if self.themes:
             self.install_folder = '%s/.themes/' % (home)
             self.spices_directories = (self.install_folder, '%s/.themes/' % (home))
+        elif self.collection_type == 'search-provider':
+            self.install_folder = '%s/.local/share/cinnamon/search_providers/' % home
+            self.spices_directories = (self.install_folder, )
         else:
             self.install_folder = '%s/.local/share/cinnamon/%ss/' % (home, self.collection_type)
             if self.collection_type == 'extension':
