@@ -178,6 +178,12 @@ var SETTINGS_TYPES = {
             "default",
             "columns"
         ]
+    },
+    "searchprovider": {
+        "required-fields": [
+            "type",
+            "default"
+        ]
     }
 };
 

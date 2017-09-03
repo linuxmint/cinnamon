@@ -14,12 +14,13 @@ from gi.repository import Gio, Gtk, GObject, Gdk, GLib, GdkPixbuf, CDesktopEnums
 
 from ChooserButtonWidgets import *
 from KeybindingWidgets import ButtonKeybinding
+from Spices import Spice_Harvester
 
 settings_objects = {}
 
 CAN_BACKEND = ["Switch", "SpinButton", "Entry", "TextView", "FontButton", "Range", "ComboBox",
                "ColorChooser", "FileChooser", "SoundFileChooser", "IconChooser", "TweenChooser",
-               "EffectChooser", "DateChooser", "Keybinding"]
+               "EffectChooser", "DateChooser", "Keybinding", "SearchProviderChooser"]
 
 class EditableEntry (Gtk.Stack):
 
@@ -1162,3 +1163,105 @@ class Text(SettingsWidget):
 
         self.content_widget = Gtk.Label(label=label, halign=align)
         self.pack_start(self.content_widget, True, True, 0)
+
+class SearchProviderChooser(SettingsWidget):
+    bind_dir = None
+
+    def __init__(self, label, size_group=None, dep_key=None, tooltip=""):
+        super(SearchProviderChooser, self).__init__(dep_key=dep_key)
+        self.label = SettingsLabel(label)
+
+        self.spices = Spice_Harvester('search-provider')
+
+        self.content_widget = Gtk.Button(_("Select"))
+
+        self.model = Gtk.ListStore(str, GdkPixbuf.Pixbuf, str, bool)
+        self.model.set_sort_column_id(2, Gtk.SortType.ASCENDING)
+
+        self.pack_start(self.label, False, False, 0)
+        self.pack_end(self.content_widget, False, False, 0)
+
+        self.load_providers()
+
+        self.set_tooltip_text(tooltip)
+
+        if size_group:
+            self.add_to_size_group(size_group)
+
+    def connect_widget_handlers(self, *args):
+        self.content_widget.connect('clicked', self.on_clicked)
+
+    def on_clicked(self, *args):
+        dialog = Gtk.Dialog(title=_("Select search providers"),
+                            transient_for=self.get_toplevel(),
+                            default_height=300,
+                            default_width=300,
+                            buttons=(_("_Cancel"), Gtk.ResponseType.CANCEL,
+                                     _("_OK"), Gtk.ResponseType.ACCEPT))
+
+        content = dialog.get_content_area()
+        scrollbox = Gtk.ScrolledWindow()
+        content.pack_start(scrollbox, True, True, 0)
+
+        dialog.tree = Gtk.TreeView()
+        scrollbox.add(dialog.tree)
+        dialog.tree.set_model(self.model)
+        dialog.tree.set_headers_visible(False)
+
+        icon = Gtk.CellRendererPixbuf()
+        icon_column = Gtk.TreeViewColumn('', icon, pixbuf=1)
+        dialog.tree.append_column(icon_column)
+        name = Gtk.CellRendererText()
+        name_column = Gtk.TreeViewColumn('', name, text=2)
+        dialog.tree.append_column(name_column)
+        enabled = Gtk.CellRendererToggle()
+        enabled.props.mode = Gtk.CellRendererMode.ACTIVATABLE
+        enabled_column = Gtk.TreeViewColumn('', enabled)
+        dialog.tree.append_column(enabled_column)
+
+        dialog.value = self.value[:]
+
+        def set_enabled_state(column, cell, model, iter, data):
+            uuid = model[iter][0]
+            cell.set_property('active', uuid in dialog.value)
+        enabled_column.set_cell_data_func(enabled, set_enabled_state)
+
+        enabled_column.set_clickable(True)
+        def on_toggled(renderer, path, model, dialog):
+            uuid = model[path][0]
+            if uuid in dialog.value:
+                dialog.value.remove(uuid)
+            else:
+                dialog.value.append(uuid)
+        enabled.connect('toggled', on_toggled, self.model, dialog)
+
+        content.show_all()
+
+        if (dialog.run() == Gtk.ResponseType.ACCEPT):
+            self.set_value(dialog.value)
+
+        dialog.destroy()
+
+    def on_setting_changed(self, *args):
+        self.value = self.get_value()
+
+    def load_providers(self, *args):
+        providers = self.spices.get_installed()
+
+        for uuid in providers:
+            icon = None
+            if 'icon' in providers[uuid]:
+                icon_name = providers[uuid]['icon']
+                if Gtk.IconTheme.get_default().has_icon(icon_name):
+                    icon = Gtk.IconTheme.get_default().load_icon(icon_name, 3, 0)
+
+            if icon is None and os.path.exists('%s/icon.png' % providers[uuid]['path']):
+                try:
+                    icon = GdkPixbuf.Pixbuf.new_from_file_at_scale('%s/icon.png' % providers[uuid]['path'], 24, 24, True)
+                except:
+                    icon = None
+
+            if icon is None:
+                icon = Gtk.IconTheme.get_default().load_icon('cs-providers', 3, 0)
+
+            self.model.append([uuid, icon, providers[uuid]['name'], False])
