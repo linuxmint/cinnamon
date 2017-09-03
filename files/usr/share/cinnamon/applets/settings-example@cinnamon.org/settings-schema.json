@@ -50,7 +50,7 @@
         "section6": {
             "type": "section",
             "title": "Other choosers",
-            "keys": ["font-select", "date-select"]
+            "keys": ["font-select", "date-select", "provider"]
         },
         "section7": {
             "type": "section",
@@ -195,5 +195,10 @@
             {"id": "file", "title": "File Path", "type": "file", "select-dir": false}
         ],
         "default" : []
+    },
+    "provider" : {
+        "type" : "searchprovider",
+        "description" : "Search providers",
+        "default" : ["apt@cinnamon.org"]
     }
 }
