@@ -236,7 +236,7 @@ function _addXletDirectoriesToSearchPath() {
     imports.searchPath.unshift(global.userdatadir);
     // Including the system data directory also includes unnecessary system utilities,
     // so we are making sure they are removed.
-    let types = ['applets', 'desklets', 'extensions'];
+    let types = ['applets', 'desklets', 'extensions', 'search_providers'];
     let importsCache = {};
     for (let i = 0; i < types.length; i++) {
         // Cache our existing xlet GJS importer objects
