@@ -6,6 +6,7 @@ const GLib = imports.gi.GLib;
 const GObject = imports.gi.GObject;
 const Tweener = imports.tweener.tweener;
 const TweenList = imports.tweener.tweenList;
+const Signals = imports.signals;
 
 function init() {
     overrideGio();
@@ -13,6 +14,7 @@ function init() {
     overrideMainloop();
     overrideJS();
     overrideTweener();
+    overrideSignals();
 }
 
 function check_schema_and_init(obj, method, params) {
@@ -198,6 +200,7 @@ function overrideTweener() {
         const tween = originalTweenListClone(omitEvents);
         tween.min = this.min;
         tween.max = this.max;
+        return tween;
     };
 
     Tweener._updateTweenByIndex = function(i) {
@@ -459,5 +462,33 @@ function overrideTweener() {
         }
 
         return true;
+    };
+}
+
+function overrideSignals() {
+    if (Signals._signalHandlerIsConnected != null) {
+        return;
+    }
+
+    function _signalHandlerIsConnected(id) {
+        if (! '_signalConnections' in this)
+            return false;
+
+        for (let connection of this._signalConnections) {
+            if (connection.id == id) {
+                if (connection.disconnected)
+                    return false;
+                else
+                    return true;
+            }
+        }
+
+        return false;
+    }
+
+    const originalAddSignalMethods = Signals.addSignalMethods;
+    Signals.addSignalMethods = function(proto) {
+        originalAddSignalMethods(proto);
+        Signals._addSignalMethod(proto, 'signalHandlerIsConnected', _signalHandlerIsConnected);
     };
 }
