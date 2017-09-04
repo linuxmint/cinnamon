@@ -541,6 +541,9 @@ function saveAppletsPositions() {
     for (let i = 0; i < enabled.length; i++) {
         let info = enabled[i].split(':');
         let applet = appletObj[info[4]];
+        if (!applet) {
+            continue;
+        }
         if (applet._newOrder !== null) {
             if (applet._newPanelId !== null) {
                 info[0] = 'panel' + applet._newPanelId;

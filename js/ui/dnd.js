@@ -384,10 +384,15 @@ const _Draggable = new Lang.Class({
             }
         }
 
-        if (this.target)
+        if (this.target) {
             target = this.target;
-        else
-            target = this._dragActor.get_stage().get_actor_at_pos(Clutter.PickMode.ALL, x, y);
+        } else {
+            let stage = this._dragActor.get_stage();
+            if (!stage) {
+                return;
+            }
+            target = stage.get_actor_at_pos(Clutter.PickMode.ALL, x, y);
+        }
 
         let dragEvent = {
             x: this._dragX,
