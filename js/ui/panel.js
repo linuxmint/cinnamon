@@ -1466,8 +1466,10 @@ PanelCorner.prototype = {
         // ugly hack: force the panel to reset its clip region since we just added
         // to the total allocation after it has already clipped to its own
         // allocation
-        let panel = this._box.get_parent()._delegate;
-        panel._setClipRegion(panel._hidden);
+        let panel = this._box.get_parent();
+        // for some reason style-changed is called on destroy
+        if (panel && panel._delegate)
+            panel._delegate._setClipRegion(panel._delegate._hidden);
     }
 }; // end of panel corner
 
