@@ -387,7 +387,7 @@ CinnamonDBus.prototype = {
     },
     
     OpenSpicesAbout: function(uuid, type) {
-        let metadata = Extension.getMetadata(uuid, Extension.Type[type.toUpperCase()]);
+        let metadata = Extension.getMetadata(uuid, Extension.Type[type.toUpperCase().replace('-', '_')]);
         new ModalDialog.SpicesAboutDialog(metadata, type+"s");
     },
 
