@@ -105,8 +105,8 @@ const Type = {
 };
 
 // Create a dummy metadata object when metadata parsing failed or was not done yet.
-function createMetaDummy(uuid, path, state, type) {
-    return { name: uuid, description: 'Metadata load failed', state: state, path: path, error: '', type: type };
+function createMetaDummy(uuid, path, state) {
+    return { name: uuid, description: 'Metadata load failed', state: state, path: path, error: ''};
 }
 
 // The Extension object itself
@@ -123,7 +123,7 @@ Extension.prototype = {
         this.theme = null;
         this.stylesheet = null;
         this.iconDirectory = null;
-        this.meta = createMetaDummy(this.uuid, dir.get_path(), State.INITIALIZING, type);
+        this.meta = createMetaDummy(this.uuid, dir.get_path(), State.INITIALIZING);
         this.startTime = new Date().getTime();
 
         this.loadMetaData(dir.get_child('metadata.json'));
@@ -221,7 +221,6 @@ Extension.prototype = {
             // Store some additional crap here
             this.meta.state = oldState;
             this.meta.path = oldPath;
-            this.meta.type = this.type;
             this.meta.error = '';
 
             this.type.maps.meta[this.uuid] = this.meta;
