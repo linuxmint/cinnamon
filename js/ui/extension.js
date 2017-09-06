@@ -38,20 +38,18 @@ function _createExtensionType(name, folder, manager, overrides){
         },
         maps: {
             importObjects: {},
-            objects: {},
+            objects: {}, // Extension constructor instances
             meta: {},
             dirs: {}
         }
     };
 
-    for(let prop in overrides)
-        type[prop] = overrides[prop];
+    Object.assign(type, overrides);
 
     // Add signal methods
     Signals.addSignalMethods(type);
 
-    let path = GLib.build_filenamev([global.userdatadir, folder]);
-    type.userDir = path;
+    type.userDir = GLib.build_filenamev([global.userdatadir, folder]);
     // create user directories if they don't exist.
     let dir = Gio.file_new_for_path(type.userDir)
     try {
