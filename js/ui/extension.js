@@ -441,7 +441,7 @@ function loadExtension(uuid, type) {
     let extension = type.maps.objects[uuid];
     if(!extension) {
         try {
-            type.maps.dirs[uuid] = findExtensionDirectory(uuid, type);
+            type.maps.dirs[uuid] = findExtensionDirectory(uuid, type.userDir, type.folder);
 
             if (type.maps.dirs[uuid] == null)
                 throw ("not-found");
@@ -542,8 +542,8 @@ function reloadExtension(uuid, type) {
     loadExtension(uuid, type);
 }
 
-function findExtensionDirectory(uuid, type) {
-    let dirPath = type.userDir + "/" + uuid;
+function findExtensionDirectory(uuid, userDir, folder) {
+    let dirPath = `${userDir}/${uuid}`;
     let dir = Gio.file_new_for_path(dirPath);
     if (dir.query_file_type(Gio.FileQueryInfoFlags.NONE, null)
             == Gio.FileType.DIRECTORY)
@@ -551,7 +551,7 @@ function findExtensionDirectory(uuid, type) {
 
     let systemDataDirs = GLib.get_system_data_dirs();
     for (let datadir of systemDataDirs) {
-        dirPath = datadir + '/cinnamon/' + type.folder + '/' + uuid;
+        dirPath = `${datadir}/cinnamon/${folder}/${uuid}`;
         dir = Gio.file_new_for_path(dirPath);
         if (dir.query_file_type(Gio.FileQueryInfoFlags.NONE, null)
                 == Gio.FileType.DIRECTORY)
@@ -561,7 +561,7 @@ function findExtensionDirectory(uuid, type) {
 }
 
 function getMetadata(uuid, type) {
-    let dir = findExtensionDirectory(uuid, type);
+    let dir = findExtensionDirectory(uuid, type.userDir, type.folder);
     let metadataFile = dir.get_child('metadata.json');
 
     let metadataContents = Cinnamon.get_file_contents_utf8_sync(metadataFile.get_path());

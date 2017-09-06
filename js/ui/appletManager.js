@@ -590,7 +590,8 @@ function updateAppletPanelHeights(force_recalc) {
 
 // Deprecated, kept for compatibility reasons
 function _find_applet(uuid) {
-    return Extension.findExtensionDirectory(uuid, Extension.Type.APPLET);
+    const {userDir, folder} = Extension.Type.APPLET;
+    return Extension.findExtensionDirectory(uuid, userDir, folder);
 }
 
 function get_object_for_instance (appletId) {
