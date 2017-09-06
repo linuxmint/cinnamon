@@ -3,6 +3,10 @@
 const Gio = imports.gi.Gio;
 const GLib = imports.gi.GLib;
 
+const FunctionConstructor = Symbol();
+const Symbols = {};
+Symbols[FunctionConstructor] = 0..constructor.constructor;
+
 function listDirAsync(file, callback) {
     let allFiles = [];
     file.enumerate_children_async(Gio.FILE_ATTRIBUTE_STANDARD_NAME,
@@ -81,4 +85,66 @@ function getUserDesktopDir() {
     let file = Gio.file_new_for_path(path);
     if (file.query_exists(null)) return path;
     else return null;
+}
+
+function requireModule(path, dir) {
+    // Check for the file extension
+    if (path.substr(-3) !== '.js') {
+        path += '.js';
+    }
+    // Check relative paths
+    if (path[0] === '.' || path[0] !== '/') {
+        path = path.replace(/\.\//g, '');
+        if (dir) {
+            path = `${dir}/${path}`;
+        }
+    }
+    let file = Gio.File.new_for_path(path);
+    let [success, JS] = file.load_contents(null);
+    if (!success) {
+        return null;
+    }
+
+    // module.exports as an object holding a module's namespaces is a node convention, and is intended
+    // to help interop with other libraries.
+    const exports = {};
+    const module = {
+        exports: exports
+    };
+
+    // Regex match the top level variables names, and append them to the module.exports object,
+    // mimicking the native CJS importer.
+    JS = JS.toString();
+    let modules = []
+        .concat(JS.match(/^(?:[^ \n(a-zA-Z0-9\/])*(function{1,}) ([a-zA-Z_$]*[^(])/gm))
+        .concat(JS.match(/^(var{1,}) ([a-zA-Z_$]*)/gm))
+        .concat(JS.match(/^^(const{1,}) ([a-zA-Z_$]*)/gm))
+        .concat(JS.match(/^(let{1,}) ([a-zA-Z_$]*)/gm));
+    for (var i = 0; i < modules.length; i++) {
+        if (!modules[i]) {
+            continue;
+        }
+        let module = modules[i].split(' ')[1];
+        // Regex doesn't filter commented out variables, so checking each namespace for undefined.
+        JS += `module.exports.${module} = typeof ${module} !== 'undefined' ? ${module} : null;\n`;
+    }
+    // Return the exports objecting containing all of our top level namespaces.
+    JS += `return module.exports;`;
+    try {
+        // Create the function returning module.exports and return it to Extension so it can be called by the
+        // appropriate manager.
+        return Symbols[FunctionConstructor]('require', 'exports', 'module', JS).call(
+            exports,
+            function require(path) {
+                return requireModule(path, dir);
+            },
+            exports,
+            module
+        );
+    } catch(e) {
+        // Since constructing functions obscures the path in stack traces, we will put the correct path back.
+        e.stack = e.stack.replace(/([^@]*(?=\s)\sFunction)/g, path);
+        global.logError(e.stack)
+        return null;
+    }
 }

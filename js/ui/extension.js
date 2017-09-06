@@ -14,6 +14,7 @@ const DeskletManager = imports.ui.deskletManager;
 const ExtensionSystem = imports.ui.extensionSystem;
 const SearchProviderManager = imports.ui.searchProviderManager;
 const Main = imports.ui.main;
+const FileUtils = imports.misc.fileUtils;
 
 const State = {
     INITIALIZING: 0,
@@ -153,7 +154,8 @@ Extension.prototype = {
         this.loadIconDirectory(this.dir);
 
         try {
-            this.module = type.maps.importObjects[this.uuid][this.lowerType]; // get [extension/applet/desklet].js
+            // get [extension/applet/desklet].js
+            this.module = FileUtils.requireModule(`${this.meta.path}/${this.lowerType}.js`, this.meta.path);
         } catch (e) {
             throw this.logError('Error importing ' + this.lowerType + '.js from ' + this.uuid, e);
         }
