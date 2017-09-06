@@ -118,7 +118,7 @@ Extension.prototype = {
     _init: function(dir, type, force, uuid) {
         this.uuid = uuid;
         this.dir = dir;
-        this.type = type;
+        this.upperType = type.name.toUpperCase().replace(/\s/g, "_");
         this.lowerType = type.name.toLowerCase().replace(/\s/g, "_");
         this.theme = null;
         this.stylesheet = null;
@@ -143,7 +143,7 @@ Extension.prototype = {
 
         this.ensureFileExists(this.dir.get_child(this.lowerType + '.js'));
         this.loadStylesheet(this.dir.get_child('stylesheet.css'));
-        
+
         if (this.stylesheet) {
             Main.themeManager.connect('theme-set', Lang.bind(this, function() {
                 this.loadStylesheet(this.dir.get_child('stylesheet.css'));
@@ -158,8 +158,8 @@ Extension.prototype = {
             throw this.logError('Error importing ' + this.lowerType + '.js from ' + this.uuid, e);
         }
 
-        for (let i = 0; i < this.type.requiredFunctions.length; i++) {
-            let func = this.type.requiredFunctions[i];
+        for (let i = 0; i < type.requiredFunctions.length; i++) {
+            let func = type.requiredFunctions[i];
             if (!this.module[func]) {
                 throw this.logError('Function "' + func + '" is missing');
             }
@@ -171,14 +171,14 @@ Extension.prototype = {
     finalize : function() {
         this.meta.state = State.LOADED;
 
-        this.type.emit('extension-loaded', this.uuid);
+        Type[this.upperType].emit('extension-loaded', this.uuid);
 
         let endTime = new Date().getTime();
         global.log('Loaded %s %s in %d ms'.format(this.lowerType, this.uuid, (endTime - this.startTime)));
     },
 
     formatError:function(message) {
-        return '[%s "%s"]: %s'.format(this.type.name, this.uuid, message);
+        return '[%s "%s"]: %s'.format(Type[this.upperType].name, this.uuid, message);
     },
 
     logError: function (message, error, state) {
@@ -217,43 +217,43 @@ Extension.prototype = {
             this.ensureFileExists(metadataFile);
             let metadataContents = Cinnamon.get_file_contents_utf8_sync(metadataFile.get_path());
             this.meta = JSON.parse(metadataContents);
-            
+
             // Store some additional crap here
             this.meta.state = oldState;
             this.meta.path = oldPath;
             this.meta.error = '';
 
-            this.type.maps.meta[this.uuid] = this.meta;
+            Type[this.upperType].maps.meta[this.uuid] = this.meta;
         } catch (e) {
-            this.meta = createMetaDummy(this.uuid, oldPath, State.ERROR, this.type);
-            this.type.maps.meta[this.uuid] = this.meta;
+            this.meta = createMetaDummy(this.uuid, oldPath, State.ERROR, Type[this.upperType]);
+            Type[this.upperType].maps.meta[this.uuid] = this.meta;
             throw this.logError('Failed to load/parse metadata.json', e);
         }
     },
 
     validateMetaData: function() {
         // Some properties are required to run
-        this.checkProperties(this.type.requiredProperties, true);
+        this.checkProperties(Type[this.upperType].requiredProperties, true);
 
         // Others are nice to have
-        this.checkProperties(this.type.niceToHaveProperties, false);
+        this.checkProperties(Type[this.upperType].niceToHaveProperties, false);
 
         if (this.meta.uuid != this.uuid) {
             throw this.logError('uuid "' + this.meta.uuid + '" from metadata.json does not match directory name.');
         }
 
         // If cinnamon or js version are set, check them
-        if('cinnamon-version' in this.meta && !versionCheck(this.meta['cinnamon-version'], Config.PACKAGE_VERSION)) {
+        if ('cinnamon-version' in this.meta && !versionCheck(this.meta['cinnamon-version'], Config.PACKAGE_VERSION)) {
             throw this.logError('Extension is not compatible with current Cinnamon version', null, State.OUT_OF_DATE);
         }
-        if('js-version' in this.meta && !versionCheck(this.meta['js-version'], Config.GJS_VERSION)) {
+        if ('js-version' in this.meta && !versionCheck(this.meta['js-version'], Config.GJS_VERSION)) {
             throw this.logError('Extension is not compatible with current GJS version', null, State.OUT_OF_DATE);
         }
 
         // If a role is set, make sure it's a valid one
         let role = this.meta['role'];
-        if(role) {
-            if (!(role in this.type.roles)) {
+        if (role) {
+            if (!(role in Type[this.upperType].roles)) {
                 throw this.logError('Unknown role definition: ' + role + ' in metadata.json');
             }
         }
@@ -299,7 +299,7 @@ Extension.prototype = {
             }
         }
     },
-    
+
     loadIconDirectory: function(dir) {
         let iconDir = dir.get_child("icons");
         if (iconDir.query_exists(null)) {
@@ -308,7 +308,7 @@ Extension.prototype = {
             Gtk.IconTheme.get_default().append_search_path(path);
         }
     },
-    
+
     unloadIconDirectory: function() {
         if (this.iconDirectory) {
             let iconTheme = Gtk.IconTheme.get_default();
@@ -330,17 +330,15 @@ Extension.prototype = {
     },
 
     lockRole: function(roleProvider) {
-        let role = this.meta['role'];
-        if(role && this.type.roles[role] != this) {
-            if(this.type.roles[role] != null) {
+        if (this.meta && Type[this.upperType].roles[this.meta.role] !== this.uuid) {
+            if (Type[this.upperType].roles[this.meta.role] != null) {
                 return false;
             }
 
-            if(roleProvider != null) {
-                this.type.roles[role] = this;
+            if (roleProvider != null) {
+                Type[this.upperType].roles[this.meta.role] = this.uuid;
                 this.roleProvider = roleProvider;
-                global.log("Role locked: " + role);
-                return true;
+                global.log(`Role locked: ${this.meta.role}`);
             }
         }
 
@@ -348,11 +346,10 @@ Extension.prototype = {
     },
 
     unlockRole: function() {
-        let role = this.meta['role'];
-        if(role && this.type.roles[role] == this) {
-            this.type.roles[role] = null;
+        if (this.meta.role && Type[this.upperType].roles[role] === this.uuid) {
+            Type[this.upperType].roles[this.meta.role] = null;
             this.roleProvider = null;
-            global.log("Role unlocked: " + role);
+            global.log(`Role unlocked: ${this.meta.role}`);
         }
     }
 }
@@ -454,7 +451,7 @@ function loadExtension(uuid, type) {
             extension.finalize();
             Main.cinnamonDBusService.EmitXletAddedComplete(true, uuid);
         } catch (e) {
-            /* Silently fail to load xlets that aren't actually installed - 
+            /* Silently fail to load xlets that aren't actually installed -
                but no error, since the user can't do anything about it anyhow
                (short of editing gsettings).  Silent failure is consistent with
                other reactions in Cinnamon to missing items (e.g. panel launchers
