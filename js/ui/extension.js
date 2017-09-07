@@ -110,65 +110,109 @@ function createMetaDummy(uuid, path, state) {
 }
 
 // The Extension object itself
-function Extension(dir, type, force, uuid) {
-    this._init(dir, type, force, uuid);
+function Extension(type, uuid) {
+    return new Promise((resolve) => {
+        let extension = type.maps.objects[uuid];
+        if (extension) {
+            resolve(extension);
+            return;
+        }
+        type.maps.dirs[uuid] = findExtensionDirectory(uuid, type.userDir, type.folder);
+
+        if (type.maps.dirs[uuid] == null) {
+            forgetExtension(uuid, type, true);
+            return;
+        }
+        this._init(type.maps.dirs[uuid], type, uuid).then(function(extension) {
+            type.maps.objects[uuid] = extension;
+
+            if(!type.callbacks.finishExtensionLoad(extension)) {
+                throw new Error(type.name + ' ' + uuid + ': Could not create applet object.');
+            }
+            extension.finalize();
+            Main.cinnamonDBusService.EmitXletAddedComplete(true, uuid);
+            resolve(extension);
+        }).catch(function(e) {
+            /* Silently fail to load xlets that aren't actually installed -
+               but no error, since the user can't do anything about it anyhow
+               (short of editing gsettings).  Silent failure is consistent with
+               other reactions in Cinnamon to missing items (e.g. panel launchers
+               just don't show up if their program isn't installed, but we don't
+               remove them or anything) */
+            Main.cinnamonDBusService.EmitXletAddedComplete(false, uuid);
+            Main.xlet_startup_error = true;
+            forgetExtension(uuid, type);
+            if(e._alreadyLogged) {
+                e = undefined;
+            }
+            global.logError('Could not load ' + type.name.toLowerCase() + ' ' + uuid, e);
+            type.maps.meta[uuid].state = State.ERROR;
+            if (!type.maps.meta[uuid].name) {
+                type.maps.meta[uuid].name = uuid
+            }
+            resolve(null);
+        });
+    });
 }
 
 Extension.prototype = {
-    _init: function(dir, type, force, uuid) {
-        this.uuid = uuid;
-        this.dir = dir;
-        this.upperType = type.name.toUpperCase().replace(/\s/g, "_");
-        this.lowerType = type.name.toLowerCase().replace(/\s/g, "_");
-        this.theme = null;
-        this.stylesheet = null;
-        this.iconDirectory = null;
-        this.meta = createMetaDummy(this.uuid, dir.get_path(), State.INITIALIZING);
-        this.startTime = new Date().getTime();
+    _init: function(dir, type, uuid) {
+        return new Promise((resolve, reject) => {
+            this.uuid = uuid;
+            this.dir = dir;
+            this.upperType = type.name.toUpperCase().replace(/\s/g, "_");
+            this.lowerType = type.name.toLowerCase().replace(/\s/g, "_");
+            this.theme = null;
+            this.stylesheet = null;
+            this.iconDirectory = null;
+            this.meta = createMetaDummy(this.uuid, dir.get_path(), State.INITIALIZING);
+            this.startTime = new Date().getTime();
 
-        this.loadMetaData(dir.get_child('metadata.json'));
-        if (!force)
-            this.validateMetaData();
-
-        if (this.meta.multiversion) {
-            this.dir = findExtensionSubdirectory(this.dir);
-            this.meta.path = this.dir.get_path();
-            type.maps.dirs[this.uuid] = this.dir;
-            let pathSections = this.meta.path.split('/');
-            let version = pathSections[pathSections.length - 1];
-            type.maps.importObjects[this.uuid] = imports[this.lowerType + 's'][this.uuid][version];
-        } else {
-            type.maps.importObjects[this.uuid] = imports[this.lowerType + 's'][this.uuid];
-        }
-
-        this.ensureFileExists(this.dir.get_child(this.lowerType + '.js'));
-        this.loadStylesheet(this.dir.get_child('stylesheet.css'));
-
-        if (this.stylesheet) {
-            Main.themeManager.connect('theme-set', Lang.bind(this, function() {
-                this.loadStylesheet(this.dir.get_child('stylesheet.css'));
-            }));
-        }
-        this.loadIconDirectory(this.dir);
-
-        try {
-            // get [extension/applet/desklet].js
-            this.module = FileUtils.requireModule(`${this.meta.path}/${this.lowerType}.js`, this.meta.path);
-            if (!this.module) {
-                throw new Error();
+            this.loadMetaData(dir.get_child('metadata.json'));
+            if (uuid.indexOf('!') !== 0) {
+                this.uuid = uuid.replace(/^!/, '');
+                this.validateMetaData();
             }
-        } catch (e) {
-            throw this.logError(`Error importing ${this.lowerType}.js from ${this.uuid}`, e);
-        }
 
-        for (let i = 0; i < type.requiredFunctions.length; i++) {
-            let func = type.requiredFunctions[i];
-            if (!this.module[func]) {
-                throw this.logError(`Function "${func}" is missing`);
+            if (this.meta.multiversion) {
+                this.dir = findExtensionSubdirectory(this.dir);
+                this.meta.path = this.dir.get_path();
+                type.maps.dirs[this.uuid] = this.dir;
+                let pathSections = this.meta.path.split('/');
+                let version = pathSections[pathSections.length - 1];
+                type.maps.importObjects[this.uuid] = imports[this.lowerType + 's'][this.uuid][version];
+            } else {
+                type.maps.importObjects[this.uuid] = imports[this.lowerType + 's'][this.uuid];
             }
-        }
 
-        type.maps.objects[this.uuid] = this;
+            this.ensureFileExists(this.dir.get_child(this.lowerType + '.js'));
+            this.loadStylesheet(this.dir.get_child('stylesheet.css'));
+
+            if (this.stylesheet) {
+                Main.themeManager.connect('theme-set', () => {
+                    this.loadStylesheet(this.dir.get_child('stylesheet.css'));
+                });
+            }
+            this.loadIconDirectory(this.dir);
+
+            try {
+                // get [extension/applet/desklet].js
+                this.module = FileUtils.requireModule(`${this.meta.path}/${this.lowerType}.js`, this.meta.path);
+                if (!this.module) {
+                    throw new Error();
+                }
+            } catch (e) {
+                reject(this.logError(`Error importing ${this.lowerType}.js from ${this.uuid}`, e));
+            }
+
+            for (let i = 0; i < type.requiredFunctions.length; i++) {
+                let func = type.requiredFunctions[i];
+                if (!this.module[func]) {
+                    reject(this.logError(`Function "${func}" is missing`));
+                }
+            }
+            resolve(this);
+        });
     },
 
     finalize : function() {
@@ -435,48 +479,7 @@ function getMetaStateString(state) {
  * @type (Extension.Type): type of xlet
  */
 function loadExtension(uuid, type) {
-    let force = uuid.indexOf("!") == 0;
-    uuid = uuid.replace(/^!/,'');
-
-    let extension = type.maps.objects[uuid];
-    if(!extension) {
-        try {
-            type.maps.dirs[uuid] = findExtensionDirectory(uuid, type.userDir, type.folder);
-
-            if (type.maps.dirs[uuid] == null)
-                throw ("not-found");
-
-            extension = new Extension(type.maps.dirs[uuid], type, force, uuid);
-
-            if(!type.callbacks.finishExtensionLoad(extension))
-                throw (type.name + ' ' + uuid + ': Could not create applet object.');
-
-            extension.finalize();
-            Main.cinnamonDBusService.EmitXletAddedComplete(true, uuid);
-        } catch (e) {
-            /* Silently fail to load xlets that aren't actually installed -
-               but no error, since the user can't do anything about it anyhow
-               (short of editing gsettings).  Silent failure is consistent with
-               other reactions in Cinnamon to missing items (e.g. panel launchers
-               just don't show up if their program isn't installed, but we don't
-               remove them or anything) */
-            if (e == "not-found") {
-                forgetExtension(uuid, type, true);
-                return null;
-            }
-            Main.cinnamonDBusService.EmitXletAddedComplete(false, uuid);
-            Main.xlet_startup_error = true;
-            forgetExtension(uuid, type);
-            if(e._alreadyLogged)
-                e = undefined;
-            global.logError('Could not load ' + type.name.toLowerCase() + ' ' + uuid, e);
-            type.maps.meta[uuid].state = State.ERROR;
-            if (!type.maps.meta[uuid].name)
-                type.maps.meta[uuid].name = uuid
-            return null;
-        }
-    }
-    return extension;
+    return new Extension(type, uuid);
 }
 
 /**

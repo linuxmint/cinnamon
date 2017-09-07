@@ -91,20 +91,32 @@ function onEnabledExtensionsChanged() {
             Extension.unloadExtension(uuid, Extension.Type.EXTENSION);
     }
 
-    for (let i = 0; i < enabledExtensions.length; i++) {
-        Extension.loadExtension(enabledExtensions[i], Extension.Type.EXTENSION);
-    }
+    initEnabledExtensions();
+}
+
+function initEnabledExtensions(callback = null) {
+    const doExtensionLoad = function(i) {
+        if (!enabledExtensions[i]) {
+            if (callback) callback();
+            return;
+        }
+        Extension.loadExtension(enabledExtensions[i], Extension.Type.EXTENSION).then(function(extension) {
+            doExtensionLoad(i + 1);
+        });
+    };
+    doExtensionLoad(0);
 }
 
 function init() {
-    extensions = Extension.Type.EXTENSION.maps.importObjects;
-    extensionMeta = Extension.Type.EXTENSION.maps.meta;
-    ExtensionState = Extension.State;
+    return new Promise(function(resolve) {
+        extensions = Extension.Type.EXTENSION.maps.importObjects;
+        extensionMeta = Extension.Type.EXTENSION.maps.meta;
+        ExtensionState = Extension.State;
 
-    global.settings.connect('changed::' + ENABLED_EXTENSIONS_KEY, onEnabledExtensionsChanged);
-
-    enabledExtensions = global.settings.get_strv(ENABLED_EXTENSIONS_KEY);
-    for (let i = 0; i < enabledExtensions.length; i++) {
-        Extension.loadExtension(enabledExtensions[i], Extension.Type.EXTENSION);
-    }
+        enabledExtensions = global.settings.get_strv(ENABLED_EXTENSIONS_KEY);
+        initEnabledExtensions(function() {
+            global.settings.connect('changed::' + ENABLED_EXTENSIONS_KEY, onEnabledExtensionsChanged);
+            resolve();
+        });
+    });
 }

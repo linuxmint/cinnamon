@@ -35,20 +35,36 @@ const Roles = {
 let enabledAppletDefinitions;
 let clipboard = [];
 
+function initEnabledApplets(callback = null) {
+    let uuidList = Object.keys(enabledAppletDefinitions.uuidMap);
+    const doAppletLoad = function(i) {
+        if (!uuidList[i]) {
+            if (callback) callback();
+            return;
+        }
+        Extension.loadExtension(uuidList[i], Extension.Type.APPLET).then(function(extension) {
+            doAppletLoad(i + 1);
+        });
+    };
+    doAppletLoad(0);
+}
+
 function init() {
-    applets = Extension.Type.APPLET.maps.importObjects;
-    appletMeta = Extension.Type.APPLET.maps.meta;
+    return new Promise(function(resolve) {
+        applets = Extension.Type.APPLET.maps.importObjects;
+        appletMeta = Extension.Type.APPLET.maps.meta;
 
-    appletsLoaded = false;
+        appletsLoaded = false;
 
-    // Load all applet extensions, the applets themselves will be added in finishExtensionLoad
-    enabledAppletDefinitions = getEnabledAppletDefinitions();
-    for (let uuid in enabledAppletDefinitions.uuidMap) {
-        Extension.loadExtension(uuid, Extension.Type.APPLET);
-    }
-    appletsLoaded = true;
+        // Load all applet extensions, the applets themselves will be added in finishExtensionLoad
+        enabledAppletDefinitions = getEnabledAppletDefinitions();
 
-    global.settings.connect('changed::enabled-applets', onEnabledAppletsChanged);
+        initEnabledApplets(function() {
+            appletsLoaded = true;
+            global.settings.connect('changed::enabled-applets', onEnabledAppletsChanged);
+            resolve();
+        });
+    });
 }
 
 // Callback for extension.js
@@ -235,9 +251,7 @@ function onEnabledAppletsChanged() {
 
         // Make sure all applet extensions are loaded.
         // Once loaded, the applets will add themselves via finishExtensionLoad
-        for (let uuid in enabledAppletDefinitions.uuidMap) {
-            Extension.loadExtension(uuid, Extension.Type.APPLET);
-        }
+        initEnabledApplets(enabledAppletDefinitions.uuidMap);
     }
     catch(e) {
         global.logError('Failed to refresh list of applets', e);

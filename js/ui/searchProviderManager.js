@@ -40,16 +40,31 @@ function onEnabledSearchProvidersChanged() {
     }
 }
 
-function init() {
-    extensions = Extension.Type.SEARCH_PROVIDER.maps.importObjects;
-    extensionMeta = Extension.Type.SEARCH_PROVIDER.maps.meta;
+function initEnabledSearchProviders(callback = null) {
+    const doSearchProviderLoad = function(i) {
+        if (!enabledSearchProviders[i]) {
+            if (callback) callback();
+            return;
+        }
+        Extension.loadExtension(enabledSearchProviders[i], Extension.Type.SEARCH_PROVIDER).then(function(extension) {
+            doSearchProviderLoad(i + 1);
+        });
+    };
+    doSearchProviderLoad(0);
+}
 
-    global.settings.connect('changed::' + ENABLED_SEARCH_PROVIDERS_KEY, onEnabledSearchProvidersChanged);
-    
-    enabledSearchProviders = global.settings.get_strv(ENABLED_SEARCH_PROVIDERS_KEY);
-    for (let i = 0; i < enabledSearchProviders.length; i++){
-        Extension.loadExtension(enabledSearchProviders[i], Extension.Type.SEARCH_PROVIDER);
-    }
+function init() {
+    return new Promise(function(resolve) {
+        extensions = Extension.Type.SEARCH_PROVIDER.maps.importObjects;
+        extensionMeta = Extension.Type.SEARCH_PROVIDER.maps.meta;
+
+        enabledSearchProviders = global.settings.get_strv(ENABLED_SEARCH_PROVIDERS_KEY);
+
+        initEnabledSearchProviders(function() {
+            global.settings.connect('changed::' + ENABLED_SEARCH_PROVIDERS_KEY, onEnabledSearchProvidersChanged);
+            resolve();
+        });
+    });
 }
 
 function get_object_for_uuid(uuid){

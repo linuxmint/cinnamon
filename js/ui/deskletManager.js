@@ -33,30 +33,45 @@ let mouseTrackTimoutId = 0;
 const ENABLED_DESKLETS_KEY = 'enabled-desklets';
 const DESKLET_SNAP_KEY = 'desklet-snap';
 const DESKLET_SNAP_INTERVAL_KEY = 'desklet-snap-interval';
+
+function initEnabledDesklets(callback = null) {
+    let uuidList = Object.keys(enabledDeskletDefinitions.uuidMap);
+    const doDeskletLoad = function(i) {
+        if (!uuidList[i]) {
+            if (callback) callback();
+            return;
+        }
+        Extension.loadExtension(uuidList[i], Extension.Type.DESKLET).then(function(extension) {
+            doDeskletLoad(i + 1);
+        });
+    };
+    doDeskletLoad(0);
+}
+
 /**
  * init:
  *
  * Initialize desklet manager
  */
 function init(){
-    desklets = Extension.Type.DESKLET.maps.importObjects;
-    deskletMeta = Extension.Type.DESKLET.maps.meta;
+    return new Promise(function(resolve) {
+        desklets = Extension.Type.DESKLET.maps.importObjects;
+        deskletMeta = Extension.Type.DESKLET.maps.meta;
 
-    deskletsLoaded = false
+        deskletsLoaded = false
 
-    enabledDeskletDefinitions = getEnabledDeskletDefinitions();
-    let hasDesklets = false;
-    for (let uuid in enabledDeskletDefinitions.uuidMap) {
-        if(Extension.loadExtension(uuid, Extension.Type.DESKLET))
-            hasDesklets = true;
-    }
+        enabledDeskletDefinitions = getEnabledDeskletDefinitions();
 
-    global.settings.connect('changed::' + ENABLED_DESKLETS_KEY, _onEnabledDeskletsChanged);
-    global.settings.connect('changed::' + DESKLET_SNAP_KEY, _onDeskletSnapChanged);
-    global.settings.connect('changed::' + DESKLET_SNAP_INTERVAL_KEY, _onDeskletSnapChanged);
+        initEnabledDesklets(function() {
+            global.settings.connect('changed::' + ENABLED_DESKLETS_KEY, _onEnabledDeskletsChanged);
+            global.settings.connect('changed::' + DESKLET_SNAP_KEY, _onDeskletSnapChanged);
+            global.settings.connect('changed::' + DESKLET_SNAP_INTERVAL_KEY, _onDeskletSnapChanged);
 
-    deskletsLoaded = true;
-    enableMouseTracking(true);
+            deskletsLoaded = true;
+            enableMouseTracking(true);
+            resolve();
+        });
+    });
 }
 
 function enableMouseTracking(enable) {
