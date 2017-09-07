@@ -3,6 +3,7 @@
 const Gio = imports.gi.Gio;
 const GLib = imports.gi.GLib;
 
+const LoadedModules = [];
 const FunctionConstructor = Symbol();
 const Symbols = {};
 Symbols[FunctionConstructor] = 0..constructor.constructor;
@@ -87,32 +88,55 @@ function getUserDesktopDir() {
     else return null;
 }
 
-function requireModule(path, dir) {
-    // Check the file extension
-    if (path.substr(-3) !== '.js') {
-        path += '.js';
-    }
-    // Check relative paths
-    if (path[0] === '.' || path[0] !== '/') {
-        path = path.replace(/\.\//g, '');
-        if (dir) {
-            path = `${dir}/${path}`;
-        }
-    }
-    let file = Gio.File.new_for_path(path);
-    let [success, JS] = file.load_contents(null);
-    if (!success) {
-        return null;
-    }
+function requireModuleError(path, e) {
+    // Since constructing functions obscures the path in stack traces, we will put the correct path back.
+    e.stack = e.stack.replace(/([^@]*(?=\s)\sFunction)/g, path);
+    global.logError(`requireModule: Unable to load ${path}`, e);
+    return e;
+}
+
+function findModuleIndex(path) {
+    return LoadedModules.findIndex(function(cachedModule) {
+        return cachedModule.path === path;
+    });
+}
+
+function getModuleByIndex(index) {
+    return LoadedModules[index].module;
+}
+
+function createExports(path, dir, file, size, JS, returnIndex) {
+    JS = JS.toString();
+    // Import data is stored in an array of objects and the module index is looked up by path.
+    const importerData = {
+        size: size,
+        path: path,
+        module: null
+    };
     // module.exports as an object holding a module's namespaces is a node convention, and is intended
     // to help interop with other libraries.
     const exports = {};
     const module = {
         exports: exports
     };
+
+    // Storing by array index that other extension classes can look up.
+    let moduleIndex = findModuleIndex(path);
+    if (moduleIndex > -1) {
+        // Module already exists, check if its been updated
+        if (size === LoadedModules[moduleIndex].size) {
+            // Return the cache
+            return LoadedModules[moduleIndex].exports;
+        }
+        // Module has been updated
+        LoadedModules[moduleIndex] = importerData;
+    } else {
+        LoadedModules.push(importerData);
+        moduleIndex = LoadedModules.length - 1;
+    }
+
     // Regex matches the top level variable names, and appends them to the module.exports object,
     // mimicking the native CJS importer.
-    JS = JS.toString();
     let modules = []
         .concat(JS.match(/^(?:[^ \n(a-zA-Z0-9\/])*(function{1,}) ([a-zA-Z_$]*[^(])/gm))
         .concat(JS.match(/^(var{1,}) ([a-zA-Z_$]*)/gm))
@@ -131,7 +155,7 @@ function requireModule(path, dir) {
     try {
         // Create the function returning module.exports and return it to Extension so it can be called by the
         // appropriate manager.
-        return Symbols[FunctionConstructor](
+        importerData.module = Symbols[FunctionConstructor](
             'require',
             'exports',
             'module',
@@ -148,10 +172,52 @@ function requireModule(path, dir) {
             dir,
             file.get_basename()
         );
+        if (returnIndex) {
+            return moduleIndex;
+        }
+        return importerData.module;
     } catch(e) {
-        // Since constructing functions obscures the path in stack traces, we will put the correct path back.
-        e.stack = e.stack.replace(/([^@]*(?=\s)\sFunction)/g, path);
-        global.logError(`requireModule: Unable to load ${path}`, e);
-        return null;
+        // Remove the module from the index
+        LoadedModules[moduleIndex] = undefined;
+        LoadedModules.splice(moduleIndex, 1);
+        throw requireModuleError(path, e);
     }
+}
+
+function requireModule(path, dir, async = false, returnIndex = false) {
+    // Check the file extension
+    if (path.substr(-3) !== '.js') {
+        path += '.js';
+    }
+    // Check relative paths
+    if (path[0] === '.' || path[0] !== '/') {
+        path = path.replace(/\.\//g, '');
+        if (dir) {
+            path = `${dir}/${path}`;
+        }
+    }
+    let success, JS;
+    let file = Gio.File.new_for_commandline_arg(path);
+    let info = file.query_info('*', Gio.FileQueryInfoFlags.NOFOLLOW_SYMLINKS, null);
+    let size = info.get_size();
+    if (!async) {
+        [success, JS] = file.load_contents(null);
+        if (!success) {
+            return null;
+        }
+        return createExports(path, dir, file, size, JS, returnIndex);
+    }
+    return new Promise(function(resolve, reject) {
+        file.load_contents_async(null, function(object, result) {
+            try {
+                [success, JS] = file.load_contents_finish(result);
+                if (!success) {
+                    throw requireModuleError(path, e);
+                }
+                resolve(createExports(path, dir, file, size, JS, returnIndex));
+            } catch (e) {
+                reject(e);
+            }
+        });
+    });
 }

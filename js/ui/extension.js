@@ -195,23 +195,28 @@ Extension.prototype = {
             }
             this.loadIconDirectory(this.dir);
 
-            try {
-                // get [extension/applet/desklet].js
-                this.module = FileUtils.requireModule(`${this.meta.path}/${this.lowerType}.js`, this.meta.path);
-                if (!this.module) {
-                    throw new Error();
+            // get [extension/applet/desklet].js
+            this.moduleIndex = FileUtils.requireModule(
+                `${this.meta.path}/${this.lowerType}.js`, // path
+                this.meta.path, // dir
+                true, // async
+                true // returnIndex
+            ).then((moduleIndex) => {
+                if (moduleIndex == null) {
+                    throw new Error(`Could not find module index: ${moduleIndex}`);
                 }
-            } catch (e) {
+                global.log(this.uuid, moduleIndex)
+                this.moduleIndex = moduleIndex;
+                for (let i = 0; i < type.requiredFunctions.length; i++) {
+                    let func = type.requiredFunctions[i];
+                    if (!FileUtils.LoadedModules[moduleIndex].module[func]) {
+                        reject(this.logError(`Function "${func}" is missing`));
+                    }
+                }
+                resolve(this);
+            }).catch((e) => {
                 reject(this.logError(`Error importing ${this.lowerType}.js from ${this.uuid}`, e));
-            }
-
-            for (let i = 0; i < type.requiredFunctions.length; i++) {
-                let func = type.requiredFunctions[i];
-                if (!this.module[func]) {
-                    reject(this.logError(`Function "${func}" is missing`));
-                }
-            }
-            resolve(this);
+            });
         });
     },
 

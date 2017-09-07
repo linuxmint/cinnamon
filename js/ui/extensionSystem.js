@@ -1,6 +1,7 @@
 // -*- mode: js; js-indent-level: 4; indent-tabs-mode: nil -*-
 
 const Extension = imports.ui.extension;
+const FileUtils = imports.misc.fileUtils;
 
 // Maps uuid -> importer object (extension directory tree)
 let extensions;
@@ -31,7 +32,7 @@ function enableExtension(uuid) {
 // Callback for extension.js
 function prepareExtensionUnload(extension) {
     try {
-        extension.module.disable();
+        FileUtils.LoadedModules[extension.moduleIndex].module.disable();
     } catch (e) {
         extension.logError('Failed to evaluate \'disable\' function on extension: ' + extension.uuid, e);
     }
@@ -43,12 +44,12 @@ function prepareExtensionUnload(extension) {
 
 // Callback for extension.js
 function finishExtensionLoad(extension) {
-    if (!extension.lockRole(extension.module)) {
+    if (!extension.lockRole(FileUtils.LoadedModules[extension.moduleIndex].module)) {
         return false;
     }
 
     try {
-        extension.module.init(extension.meta);
+        FileUtils.LoadedModules[extension.moduleIndex].module.init(extension.meta);
     } catch (e) {
         extension.logError('Failed to evaluate \'init\' function on extension: ' + extension.uuid, e);
         return false;
@@ -56,7 +57,7 @@ function finishExtensionLoad(extension) {
 
     let extensionCallbacks;
     try {
-        extensionCallbacks = extension.module.enable();
+        extensionCallbacks = FileUtils.LoadedModules[extension.moduleIndex].module.enable();
     } catch (e) {
         extension.logError('Failed to evaluate \'enable\' function on extension: ' + extension.uuid, e);
         return false;

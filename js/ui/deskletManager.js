@@ -11,6 +11,7 @@ const Desklet = imports.ui.desklet;
 const DND = imports.ui.dnd;
 const Extension = imports.ui.extension;
 const Main = imports.ui.main;
+const FileUtils = imports.misc.fileUtils;
 
 // Maps uuid -> metadata object
 let deskletMeta;
@@ -310,7 +311,7 @@ function _createDesklets(extension, deskletDefinition) {
 
     let desklet;
     try {
-        desklet = extension.module.main(extension.meta, desklet_id);
+        desklet = FileUtils.LoadedModules[extension.moduleIndex].module.main(extension.meta, desklet_id);
     } catch (e) {
         extension.logError('Failed to evaluate \'main\' function on desklet: ' + deskletDefinition.uuid + "/" + deskletDefinition.desklet_id, e);
         return null;

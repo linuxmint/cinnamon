@@ -10,6 +10,7 @@ const Main = imports.ui.main;
 const Applet = imports.ui.applet;
 const Extension = imports.ui.extension;
 const ModalDialog = imports.ui.modalDialog;
+const FileUtils = imports.misc.fileUtils;
 const Gettext = imports.gettext;
 
 // Maps uuid -> metadata object
@@ -533,7 +534,7 @@ function createApplet(extension, appletDefinition) {
 
     let applet;
     try {
-        applet = extension.module.main(extension.meta, orientation, panel_height, applet_id);
+        applet = FileUtils.LoadedModules[extension.moduleIndex].module.main(extension.meta, orientation, panel_height, applet_id);
     } catch (e) {
         extension.logError('Failed to evaluate \'main\' function on applet: ' + appletDefinition.uuid + "/" + appletDefinition.applet_id, e);
         return null;
