@@ -492,14 +492,14 @@ function unloadExtension(uuid, type, deleteConfig = true) {
         // but it will be removed on next reboot, and hopefully nothing
         // broke too much.
         try {
-            extension.type.callbacks.prepareExtensionUnload(extension, deleteConfig);
+            Type[extension.upperType].callbacks.prepareExtensionUnload(extension, deleteConfig);
         } catch(e) {
             global.logError('Error disabling ' + extension.lowerType + ' ' + extension.uuid, e);
         }
         extension.unloadStylesheet();
         extension.unloadIconDirectory();
 
-        extension.type.emit('extension-unloaded', extension.uuid);
+        Type[extension.upperType].emit('extension-unloaded', extension.uuid);
 
         forgetExtension(extension.uuid, type, true);
     }
