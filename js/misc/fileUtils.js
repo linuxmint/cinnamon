@@ -88,7 +88,7 @@ function getUserDesktopDir() {
 }
 
 function requireModule(path, dir) {
-    // Check for the file extension
+    // Check the file extension
     if (path.substr(-3) !== '.js') {
         path += '.js';
     }
@@ -104,21 +104,19 @@ function requireModule(path, dir) {
     if (!success) {
         return null;
     }
-
     // module.exports as an object holding a module's namespaces is a node convention, and is intended
     // to help interop with other libraries.
     const exports = {};
     const module = {
         exports: exports
     };
-
-    // Regex match the top level variables names, and append them to the module.exports object,
+    // Regex matches the top level variable names, and appends them to the module.exports object,
     // mimicking the native CJS importer.
     JS = JS.toString();
     let modules = []
         .concat(JS.match(/^(?:[^ \n(a-zA-Z0-9\/])*(function{1,}) ([a-zA-Z_$]*[^(])/gm))
         .concat(JS.match(/^(var{1,}) ([a-zA-Z_$]*)/gm))
-        .concat(JS.match(/^^(const{1,}) ([a-zA-Z_$]*)/gm))
+        .concat(JS.match(/^(const{1,}) ([a-zA-Z_$]*)/gm))
         .concat(JS.match(/^(let{1,}) ([a-zA-Z_$]*)/gm));
     for (var i = 0; i < modules.length; i++) {
         if (!modules[i]) {
@@ -128,18 +126,27 @@ function requireModule(path, dir) {
         // Regex doesn't filter commented out variables, so checking each namespace for undefined.
         JS += `module.exports.${module} = typeof ${module} !== 'undefined' ? ${module} : null;\n`;
     }
-    // Return the exports objecting containing all of our top level namespaces.
+    // Return the exports object containing all of our top level namespaces.
     JS += `return module.exports;`;
     try {
         // Create the function returning module.exports and return it to Extension so it can be called by the
         // appropriate manager.
-        return Symbols[FunctionConstructor]('require', 'exports', 'module', JS).call(
+        return Symbols[FunctionConstructor](
+            'require',
+            'exports',
+            'module',
+            '__dirname',
+            '__filename',
+            JS
+        ).call(
             exports,
             function require(path) {
                 return requireModule(path, dir);
             },
             exports,
-            module
+            module,
+            dir,
+            file.get_basename()
         );
     } catch(e) {
         // Since constructing functions obscures the path in stack traces, we will put the correct path back.
