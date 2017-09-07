@@ -154,14 +154,17 @@ Extension.prototype = {
         try {
             // get [extension/applet/desklet].js
             this.module = FileUtils.requireModule(`${this.meta.path}/${this.lowerType}.js`, this.meta.path);
+            if (!this.module) {
+                throw new Error();
+            }
         } catch (e) {
-            throw this.logError('Error importing ' + this.lowerType + '.js from ' + this.uuid, e);
+            throw this.logError(`Error importing ${this.lowerType}.js from ${this.uuid}`, e);
         }
 
         for (let i = 0; i < type.requiredFunctions.length; i++) {
             let func = type.requiredFunctions[i];
             if (!this.module[func]) {
-                throw this.logError('Function "' + func + '" is missing');
+                throw this.logError(`Function "${func}" is missing`);
             }
         }
 
@@ -198,7 +201,7 @@ Extension.prototype = {
             this.unlockRole();
             this.unloadStylesheet();
             this.unloadIconDirectory();
-            forgetExtension(this.uuid);
+            forgetExtension(this.uuid, Type[this.upperType]);
         }
         error._alreadyLogged = true;
         return error;
@@ -346,7 +349,7 @@ Extension.prototype = {
     },
 
     unlockRole: function() {
-        if (this.meta.role && Type[this.upperType].roles[role] === this.uuid) {
+        if (this.meta.role && Type[this.upperType].roles[this.meta.role] === this.uuid) {
             Type[this.upperType].roles[this.meta.role] = null;
             this.roleProvider = null;
             global.log(`Role unlocked: ${this.meta.role}`);

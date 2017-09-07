@@ -151,7 +151,7 @@ function requireModule(path, dir) {
     } catch(e) {
         // Since constructing functions obscures the path in stack traces, we will put the correct path back.
         e.stack = e.stack.replace(/([^@]*(?=\s)\sFunction)/g, path);
-        global.logError(e.stack)
+        global.logError(`requireModule: Unable to load ${path}`, e);
         return null;
     }
 }
