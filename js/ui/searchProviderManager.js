@@ -13,7 +13,7 @@ var extensionMeta;
 const searchProviderObj = {};
 // Arrays of uuids
 var enabledSearchProviders;
-
+let promises = [];
 const ENABLED_SEARCH_PROVIDERS_KEY = 'enabled-search-providers';
 
 // Callback for extension.js
@@ -30,27 +30,34 @@ function finishExtensionLoad(extension) {
 function onEnabledSearchProvidersChanged() {
     enabledSearchProviders = global.settings.get_strv(ENABLED_SEARCH_PROVIDERS_KEY);
 
-    for(let uuid in Extension.Type.SEARCH_PROVIDER.maps.objects) {
-        if(enabledSearchProviders.indexOf(uuid) == -1)
-            Extension.unloadExtension(uuid, Extension.Type.SEARCH_PROVIDER);
-    }
-    
-    for(let i=0; i<enabledSearchProviders.length; i++) {
-        Extension.loadExtension(enabledSearchProviders[i], Extension.Type.SEARCH_PROVIDER);
-    }
+    unloadRemovedSearchProviders().then(initEnabledSearchProviders);
 }
 
-function initEnabledSearchProviders(callback = null) {
-    const doSearchProviderLoad = function(i) {
-        if (!enabledSearchProviders[i]) {
-            if (callback) callback();
-            return;
+function initEnabledSearchProviders() {
+    return new Promise(function(resolve) {
+        for (let i = 0; i < enabledSearchProviders.length; i++) {
+            promises.push(Extension.loadExtension(enabledSearchProviders[i], Extension.Type.SEARCH_PROVIDER))
         }
-        Extension.loadExtension(enabledSearchProviders[i], Extension.Type.SEARCH_PROVIDER).then(function(extension) {
-            doSearchProviderLoad(i + 1);
+        Promise.all(promises).then(function() {
+            promises = [];
+            resolve();
         });
-    };
-    doSearchProviderLoad(0);
+    });
+}
+
+function unloadRemovedSearchProviders() {
+    return new Promise(function(resolve) {
+        let uuidList = Object.keys(Extension.Type.SEARCH_PROVIDER.maps.objects);
+        for (let i = 0; i < enabledSearchProviders.length; i++) {
+            if (enabledSearchProviders.indexOf(uuidList[i]) === -1) {
+                promises.push(Extension.unloadExtension(uuidList[i], Extension.Type.SEARCH_PROVIDER));
+            }
+        }
+        Promise.all(promises).then(function() {
+            promises = [];
+            resolve();
+        });
+    });
 }
 
 function init() {
@@ -60,7 +67,7 @@ function init() {
 
         enabledSearchProviders = global.settings.get_strv(ENABLED_SEARCH_PROVIDERS_KEY);
 
-        initEnabledSearchProviders(function() {
+        initEnabledSearchProviders().then(function() {
             global.settings.connect('changed::' + ENABLED_SEARCH_PROVIDERS_KEY, onEnabledSearchProvidersChanged);
             resolve();
         });

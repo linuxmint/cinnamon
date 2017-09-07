@@ -106,7 +106,7 @@ const Type = {
 
 // Create a dummy metadata object when metadata parsing failed or was not done yet.
 function createMetaDummy(uuid, path, state) {
-    return { name: uuid, description: 'Metadata load failed', state: state, path: path, error: ''};
+    return {name: uuid, description: 'Metadata load failed', state: state, path: path, error: ''};
 }
 
 // The Extension object itself
@@ -142,7 +142,7 @@ function Extension(type, uuid) {
             Main.cinnamonDBusService.EmitXletAddedComplete(false, uuid);
             Main.xlet_startup_error = true;
             forgetExtension(uuid, type);
-            if(e._alreadyLogged) {
+            if (e._alreadyLogged) {
                 e = undefined;
             }
             global.logError('Could not load ' + type.name.toLowerCase() + ' ' + uuid, e);
@@ -377,7 +377,9 @@ Extension.prototype = {
     },
 
     lockRole: function(roleProvider) {
-        if (this.meta && Type[this.upperType].roles[this.meta.role] !== this.uuid) {
+        if (this.meta
+            && this.meta.role
+            && Type[this.upperType].roles[this.meta.role] !== this.uuid) {
             if (Type[this.upperType].roles[this.meta.role] != null) {
                 return false;
             }
@@ -490,25 +492,28 @@ function loadExtension(uuid, type) {
  * @deleteConfig (bool): delete also config files, defaults to true
  */
 function unloadExtension(uuid, type, deleteConfig = true) {
-    let extension = type.maps.objects[uuid];
-    if (extension) {
-        extension.unlockRole();
+    return new Promise(function(resolve, reject) {
+        let extension = type.maps.objects[uuid];
+        if (extension) {
+            extension.unlockRole();
 
-        // Try to disable it -- if it's ERROR'd, we can't guarantee that,
-        // but it will be removed on next reboot, and hopefully nothing
-        // broke too much.
-        try {
-            Type[extension.upperType].callbacks.prepareExtensionUnload(extension, deleteConfig);
-        } catch(e) {
-            global.logError('Error disabling ' + extension.lowerType + ' ' + extension.uuid, e);
+            // Try to disable it -- if it's ERROR'd, we can't guarantee that,
+            // but it will be removed on next reboot, and hopefully nothing
+            // broke too much.
+            try {
+                Type[extension.upperType].callbacks.prepareExtensionUnload(extension, deleteConfig);
+            } catch(e) {
+                global.logError('Error disabling ' + extension.lowerType + ' ' + extension.uuid, e);
+            }
+            extension.unloadStylesheet();
+            extension.unloadIconDirectory();
+
+            Type[extension.upperType].emit('extension-unloaded', extension.uuid);
+
+            forgetExtension(extension.uuid, type, true);
+            resolve();
         }
-        extension.unloadStylesheet();
-        extension.unloadIconDirectory();
-
-        Type[extension.upperType].emit('extension-unloaded', extension.uuid);
-
-        forgetExtension(extension.uuid, type, true);
-    }
+    });
 }
 
 function forgetExtension(uuid, type, forgetMeta) {
@@ -538,8 +543,11 @@ function reloadExtension(uuid, type) {
     let extension = type.maps.objects[uuid];
 
     if (extension) {
-        unloadExtension(uuid, type, false);
-        Main._addXletDirectoriesToSearchPath();
+        unloadExtension(uuid, type, false).then(function() {
+            Main._addXletDirectoriesToSearchPath();
+            loadExtension(uuid, type);
+        });
+        return;
     }
 
     loadExtension(uuid, type);

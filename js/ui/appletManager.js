@@ -13,12 +13,12 @@ const ModalDialog = imports.ui.modalDialog;
 const Gettext = imports.gettext;
 
 // Maps uuid -> metadata object
-var appletMeta;
+let appletMeta;
 // Maps uuid -> importer object (applet directory tree)
-var applets;
+let applets;
 // Maps applet_id -> applet objects
 const appletObj = [];
-var appletsLoaded = false;
+let appletsLoaded = false;
 
 // An applet can assume a role
 // Instead of hardcoding looking for a particular applet,
@@ -34,19 +34,34 @@ const Roles = {
 
 let enabledAppletDefinitions;
 let clipboard = [];
+let promises = [];
 
-function initEnabledApplets(callback = null) {
-    let uuidList = Object.keys(enabledAppletDefinitions.uuidMap);
-    const doAppletLoad = function(i) {
-        if (!uuidList[i]) {
-            if (callback) callback();
-            return;
+function initEnabledApplets() {
+    return new Promise(function(resolve) {
+        let uuidList = Object.keys(enabledAppletDefinitions.uuidMap);
+        for (let i = 0; i < uuidList.length; i++) {
+            promises.push(Extension.loadExtension(uuidList[i], Extension.Type.APPLET))
         }
-        Extension.loadExtension(uuidList[i], Extension.Type.APPLET).then(function(extension) {
-            doAppletLoad(i + 1);
+        Promise.all(promises).then(function() {
+            promises = [];
+            resolve();
         });
-    };
-    doAppletLoad(0);
+    });
+}
+
+function unloadRemovedApplets() {
+    return new Promise(function(resolve) {
+        let uuidList = Object.keys(enabledAppletDefinitions.uuidMap);
+        for (let i = 0; i < uuidList.length; i++) {
+            if (!enabledAppletDefinitions.uuidMap[uuidList[i]]) {
+                promises.push(Extension.unloadExtension(uuidList[i], Extension.Type.APPLET));
+            }
+        }
+        Promise.all(promises).then(function() {
+            promises = [];
+            resolve();
+        });
+    });
 }
 
 function init() {
@@ -59,7 +74,7 @@ function init() {
         // Load all applet extensions, the applets themselves will be added in finishExtensionLoad
         enabledAppletDefinitions = getEnabledAppletDefinitions();
 
-        initEnabledApplets(function() {
+        initEnabledApplets().then(function() {
             appletsLoaded = true;
             global.settings.connect('changed::enabled-applets', onEnabledAppletsChanged);
             resolve();
@@ -230,34 +245,29 @@ function onEnabledAppletsChanged() {
         }
 
         // Unload all applet extensions that do not exist in the definition anymore.
-        for (let uuid in oldEnabledAppletDefinitions.uuidMap) {
-            if(!enabledAppletDefinitions.uuidMap[uuid]) {
-                Extension.unloadExtension(uuid, Extension.Type.APPLET);
-            }
-        }
+        unloadRemovedApplets().then(function() {
+            // Add or move applet instances of already loaded applet extensions
+            for (let applet_id in enabledAppletDefinitions.idMap) {
+                let newDef = enabledAppletDefinitions.idMap[applet_id];
+                let oldDef = oldEnabledAppletDefinitions.idMap[applet_id];
 
-        // Add or move applet instances of already loaded applet extensions
-        for (let applet_id in enabledAppletDefinitions.idMap) {
-            let newDef = enabledAppletDefinitions.idMap[applet_id];
-            let oldDef = oldEnabledAppletDefinitions.idMap[applet_id];
-
-            if(!oldDef || !appletDefinitionsEqual(newDef, oldDef)) {
-                let extension = Extension.Type.APPLET.maps.objects[newDef.uuid];
-                if(extension) {
-                    addAppletToPanels(extension, newDef);
+                if(!oldDef || !appletDefinitionsEqual(newDef, oldDef)) {
+                    let extension = Extension.Type.APPLET.maps.objects[newDef.uuid];
+                    if(extension) {
+                        addAppletToPanels(extension, newDef);
+                    }
                 }
             }
-        }
 
-        // Make sure all applet extensions are loaded.
-        // Once loaded, the applets will add themselves via finishExtensionLoad
-        initEnabledApplets(enabledAppletDefinitions.uuidMap);
+            // Make sure all applet extensions are loaded.
+            // Once loaded, the applets will add themselves via finishExtensionLoad
+            initEnabledApplets(enabledAppletDefinitions.uuidMap);
+            Main.statusIconDispatcher.redisplay();
+        });
     }
     catch(e) {
         global.logError('Failed to refresh list of applets', e);
     }
-
-    Main.statusIconDispatcher.redisplay();
 }
 
 function removeAppletFromPanels(appletDefinition, deleteConfig) {

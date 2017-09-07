@@ -3,20 +3,20 @@
 const Extension = imports.ui.extension;
 
 // Maps uuid -> importer object (extension directory tree)
-var extensions;
+let extensions;
 // Maps uuid -> metadata object
-var extensionMeta;
+let extensionMeta;
 // Lists extension uuid's that are currently active;
 const runningExtensions = {};
 // Arrays of uuids
-var enabledExtensions;
+let enabledExtensions;
 // Maps extension.uuid -> extension objects
 const extensionObj = [];
-
+let promises = [];
 const ENABLED_EXTENSIONS_KEY = 'enabled-extensions';
 
 // Deprecated, kept for compatibility reasons
-var ExtensionState;
+let ExtensionState;
 
 // Deprecated, kept for compatibility reasons
 function disableExtension(uuid) {
@@ -86,25 +86,34 @@ function get_object_for_uuid(uuid) {
 function onEnabledExtensionsChanged() {
     enabledExtensions = global.settings.get_strv(ENABLED_EXTENSIONS_KEY);
 
-    for (let uuid in Extension.Type.EXTENSION.maps.objects) {
-        if (enabledExtensions.indexOf(uuid) == -1)
-            Extension.unloadExtension(uuid, Extension.Type.EXTENSION);
-    }
-
-    initEnabledExtensions();
+    unloadRemovedExtensions().then(initEnabledExtensions);
 }
 
 function initEnabledExtensions(callback = null) {
-    const doExtensionLoad = function(i) {
-        if (!enabledExtensions[i]) {
-            if (callback) callback();
-            return;
+    return new Promise(function(resolve) {
+        for (let i = 0; i < enabledExtensions.length; i++) {
+            promises.push(Extension.loadExtension(enabledExtensions[i], Extension.Type.EXTENSION))
         }
-        Extension.loadExtension(enabledExtensions[i], Extension.Type.EXTENSION).then(function(extension) {
-            doExtensionLoad(i + 1);
+        Promise.all(promises).then(function() {
+            promises = [];
+            resolve();
         });
-    };
-    doExtensionLoad(0);
+    });
+}
+
+function unloadRemovedExtensions() {
+    return new Promise(function(resolve) {
+        let uuidList = Object.keys(Extension.Type.EXTENSION.maps.objects);
+        for (let i = 0; i < uuidList.length; i++) {
+            if (enabledExtensions.indexOf(uuidList[i]) === -1) {
+                promises.push(Extension.unloadExtension(uuidList[i], Extension.Type.EXTENSION));
+            }
+        }
+        Promise.all(promises).then(function() {
+            promises = [];
+            resolve();
+        });
+    });
 }
 
 function init() {
@@ -114,7 +123,7 @@ function init() {
         ExtensionState = Extension.State;
 
         enabledExtensions = global.settings.get_strv(ENABLED_EXTENSIONS_KEY);
-        initEnabledExtensions(function() {
+        initEnabledExtensions().then(function() {
             global.settings.connect('changed::' + ENABLED_EXTENSIONS_KEY, onEnabledExtensionsChanged);
             resolve();
         });
