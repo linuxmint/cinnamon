@@ -1,7 +1,7 @@
 // -*- mode: js; js-indent-level: 4; indent-tabs-mode: nil -*-
 
 const Extension = imports.ui.extension;
-const FileUtils = imports.misc.fileUtils;
+const {getModuleByIndex} = imports.misc.fileUtils;
 
 // Maps uuid -> importer object (extension directory tree)
 let extensions;
@@ -32,7 +32,7 @@ function enableExtension(uuid) {
 // Callback for extension.js
 function prepareExtensionUnload(extension) {
     try {
-        FileUtils.LoadedModules[extension.moduleIndex].module.disable();
+        getModuleByIndex(extension.moduleIndex).disable();
     } catch (e) {
         extension.logError('Failed to evaluate \'disable\' function on extension: ' + extension.uuid, e);
     }
@@ -44,12 +44,12 @@ function prepareExtensionUnload(extension) {
 
 // Callback for extension.js
 function finishExtensionLoad(extension) {
-    if (!extension.lockRole(FileUtils.LoadedModules[extension.moduleIndex].module)) {
+    if (!extension.lockRole(getModuleByIndex(extension.moduleIndex))) {
         return false;
     }
 
     try {
-        FileUtils.LoadedModules[extension.moduleIndex].module.init(extension.meta);
+        getModuleByIndex(extension.moduleIndex).init(extension.meta);
     } catch (e) {
         extension.logError('Failed to evaluate \'init\' function on extension: ' + extension.uuid, e);
         return false;
@@ -57,7 +57,7 @@ function finishExtensionLoad(extension) {
 
     let extensionCallbacks;
     try {
-        extensionCallbacks = FileUtils.LoadedModules[extension.moduleIndex].module.enable();
+        extensionCallbacks = getModuleByIndex(extension.moduleIndex).enable();
     } catch (e) {
         extension.logError('Failed to evaluate \'enable\' function on extension: ' + extension.uuid, e);
         return false;

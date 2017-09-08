@@ -102,7 +102,18 @@ function findModuleIndex(path) {
 }
 
 function getModuleByIndex(index) {
+    if (!LoadedModules[index]) {
+        return;
+    }
     return LoadedModules[index].module;
+}
+
+function unloadModule(index) {
+    if (!LoadedModules[index]) {
+        return;
+    }
+    LoadedModules[index] = undefined;
+    LoadedModules.splice(index, 1);
 }
 
 function createExports(path, dir, file, size, JS, returnIndex) {
@@ -126,7 +137,7 @@ function createExports(path, dir, file, size, JS, returnIndex) {
         // Module already exists, check if its been updated
         if (size === LoadedModules[moduleIndex].size) {
             // Return the cache
-            return LoadedModules[moduleIndex].exports;
+            return returnIndex ? moduleIndex : LoadedModules[moduleIndex].module;
         }
         // Module has been updated
         LoadedModules[moduleIndex] = importerData;
@@ -172,14 +183,10 @@ function createExports(path, dir, file, size, JS, returnIndex) {
             dir,
             file.get_basename()
         );
-        if (returnIndex) {
-            return moduleIndex;
-        }
-        return importerData.module;
+        return returnIndex ? moduleIndex : importerData.module;
     } catch(e) {
         // Remove the module from the index
-        LoadedModules[moduleIndex] = undefined;
-        LoadedModules.splice(moduleIndex, 1);
+        unloadModule(index);
         throw requireModuleError(path, e);
     }
 }

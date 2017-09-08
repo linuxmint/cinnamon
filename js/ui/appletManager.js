@@ -10,7 +10,7 @@ const Main = imports.ui.main;
 const Applet = imports.ui.applet;
 const Extension = imports.ui.extension;
 const ModalDialog = imports.ui.modalDialog;
-const FileUtils = imports.misc.fileUtils;
+const {getModuleByIndex} = imports.misc.fileUtils;
 const Gettext = imports.gettext;
 
 // Maps uuid -> metadata object
@@ -50,9 +50,9 @@ function initEnabledApplets() {
     });
 }
 
-function unloadRemovedApplets() {
+function unloadRemovedApplets(oldEnabledAppletDefinitions) {
     return new Promise(function(resolve) {
-        let uuidList = Object.keys(enabledAppletDefinitions.uuidMap);
+        let uuidList = Object.keys(oldEnabledAppletDefinitions.uuidMap);
         for (let i = 0; i < uuidList.length; i++) {
             if (!enabledAppletDefinitions.uuidMap[uuidList[i]]) {
                 promises.push(Extension.unloadExtension(uuidList[i], Extension.Type.APPLET));
@@ -246,7 +246,7 @@ function onEnabledAppletsChanged() {
         }
 
         // Unload all applet extensions that do not exist in the definition anymore.
-        unloadRemovedApplets().then(function() {
+        unloadRemovedApplets(oldEnabledAppletDefinitions).then(function() {
             // Add or move applet instances of already loaded applet extensions
             for (let applet_id in enabledAppletDefinitions.idMap) {
                 let newDef = enabledAppletDefinitions.idMap[applet_id];
@@ -503,7 +503,8 @@ function moveApplet(appletDefinition, allowedLayout) {
 }
 
 function get_role_provider(role) {
-    if (Extension.Type.APPLET.roles[role]) {
+    if (Extension.Type.APPLET.roles[role]
+        && Extension.Type.APPLET.roles[role].roleProvider) {
         return Extension.Type.APPLET.roles[role].roleProvider;
     }
     return null;
@@ -534,7 +535,7 @@ function createApplet(extension, appletDefinition) {
 
     let applet;
     try {
-        applet = FileUtils.LoadedModules[extension.moduleIndex].module.main(extension.meta, orientation, panel_height, applet_id);
+        applet = getModuleByIndex(extension.moduleIndex).main(extension.meta, orientation, panel_height, applet_id);
     } catch (e) {
         extension.logError('Failed to evaluate \'main\' function on applet: ' + appletDefinition.uuid + "/" + appletDefinition.applet_id, e);
         return null;

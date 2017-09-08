@@ -311,7 +311,7 @@ function _createDesklets(extension, deskletDefinition) {
 
     let desklet;
     try {
-        desklet = FileUtils.LoadedModules[extension.moduleIndex].module.main(extension.meta, desklet_id);
+        desklet = getModuleByIndex(extension.moduleIndex).main(extension.meta, desklet_id);
     } catch (e) {
         extension.logError('Failed to evaluate \'main\' function on desklet: ' + deskletDefinition.uuid + "/" + deskletDefinition.desklet_id, e);
         return null;

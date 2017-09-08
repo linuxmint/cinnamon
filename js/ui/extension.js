@@ -14,7 +14,7 @@ const DeskletManager = imports.ui.deskletManager;
 const ExtensionSystem = imports.ui.extensionSystem;
 const SearchProviderManager = imports.ui.searchProviderManager;
 const Main = imports.ui.main;
-const FileUtils = imports.misc.fileUtils;
+const {requireModule, unloadModule, getModuleByIndex} = imports.misc.fileUtils;
 
 const State = {
     INITIALIZING: 0,
@@ -196,7 +196,7 @@ Extension.prototype = {
             this.loadIconDirectory(this.dir);
 
             // get [extension/applet/desklet].js
-            this.moduleIndex = FileUtils.requireModule(
+            requireModule(
                 `${this.meta.path}/${this.lowerType}.js`, // path
                 this.meta.path, // dir
                 true, // async
@@ -207,9 +207,10 @@ Extension.prototype = {
                 }
                 global.log(this.uuid, moduleIndex)
                 this.moduleIndex = moduleIndex;
+                let module = getModuleByIndex(moduleIndex);
                 for (let i = 0; i < type.requiredFunctions.length; i++) {
                     let func = type.requiredFunctions[i];
-                    if (!FileUtils.LoadedModules[moduleIndex].module[func]) {
+                    if (!module[func]) {
                         reject(this.logError(`Function "${func}" is missing`));
                     }
                 }
@@ -526,6 +527,7 @@ function forgetExtension(uuid, type, forgetMeta) {
         delete type.maps.importObjects[uuid];
     }
     if (typeof type.maps.objects[uuid] !== 'undefined') {
+        unloadModule(type.maps.objects[uuid].moduleIndex);
         if (typeof imports[type.maps.objects[uuid].lowerType + 's'][uuid] !== 'undefined') {
             delete imports[type.maps.objects[uuid].lowerType + 's'][uuid];
         }

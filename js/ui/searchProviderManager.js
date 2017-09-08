@@ -1,7 +1,7 @@
 // -*- mode: js; js-indent-level: 4; indent-tabs-mode: nil -*-
 
 const Extension = imports.ui.extension;
-const FileUtils = imports.misc.fileUtils;
+const {getModuleByIndex} = imports.misc.fileUtils;
 const GLib = imports.gi.GLib;
 const Gio = imports.gi.Gio;
 const Lang = imports.lang;
@@ -24,7 +24,7 @@ function prepareExtensionUnload(extension) {
 
 // Callback for extension.js
 function finishExtensionLoad(extension) {
-    searchProviderObj[extension.uuid] = FileUtils.LoadedModules[extension.moduleIndex].module;
+    searchProviderObj[extension.uuid] = getModuleByIndex(extension.moduleIndex);
     return true;
 }
 
