@@ -8,8 +8,6 @@ const Lang = imports.lang;
 
 // Maps uuid -> importer object (extension directory tree)
 var extensions;
-// Maps uuid -> metadata object
-var extensionMeta;
 // Maps uuid -> extension state object (returned from init())
 const searchProviderObj = {};
 // Arrays of uuids
@@ -48,10 +46,10 @@ function initEnabledSearchProviders() {
 
 function unloadRemovedSearchProviders() {
     return new Promise(function(resolve) {
-        let uuidList = Object.keys(Extension.Type.SEARCH_PROVIDER.maps.objects);
+        let uuidList = Extension.extensions;
         for (let i = 0; i < enabledSearchProviders.length; i++) {
-            if (enabledSearchProviders.indexOf(uuidList[i]) === -1) {
-                promises.push(Extension.unloadExtension(uuidList[i], Extension.Type.SEARCH_PROVIDER));
+            if (enabledSearchProviders.indexOf(uuidList[i].uuid) === -1) {
+                promises.push(Extension.unloadExtension(uuidList[i].uuid, Extension.Type.SEARCH_PROVIDER));
             }
         }
         Promise.all(promises).then(function() {
@@ -63,8 +61,7 @@ function unloadRemovedSearchProviders() {
 
 function init() {
     return new Promise(function(resolve) {
-        extensions = Extension.Type.SEARCH_PROVIDER.maps.importObjects;
-        extensionMeta = Extension.Type.SEARCH_PROVIDER.maps.meta;
+        extensions = imports.search_providers;
 
         enabledSearchProviders = global.settings.get_strv(ENABLED_SEARCH_PROVIDERS_KEY);
 
@@ -80,23 +77,23 @@ function get_object_for_uuid(uuid){
 }
 
 function launch_all(pattern, callback){
-    var provider, supports_locale, language_names;
-    for (var i in enabledSearchProviders){
-        try{
+    let provider, supports_locale, language_names;
+    for (let i in enabledSearchProviders){
+        let extension = Extension.getExtension(enabledSearchProviders[i]);
+        try {
             provider = get_object_for_uuid(enabledSearchProviders[i]);
             provider.uuid = enabledSearchProviders[i];
-            if (provider)
-            {
-                if (extensionMeta[enabledSearchProviders[i]] && extensionMeta[enabledSearchProviders[i]].supported_locales){
+            if (provider) {
+                if (extension && extension.meta.supported_locales){
                     supports_locale = false;
                     language_names = GLib.get_language_names();
-                    for (var j in language_names){
-                        if (extensionMeta[enabledSearchProviders[i]].supported_locales.indexOf(language_names[j]) != -1){
+                    for (let j in language_names){
+                        if (extension.meta[enabledSearchProviders[i]].supported_locales.indexOf(language_names[j]) != -1){
                             supports_locale = true;
                             break;
                         }
                     }
-                }else{
+                } else {
                     supports_locale = true;
                 }
                 if (supports_locale){
@@ -104,11 +101,11 @@ function launch_all(pattern, callback){
                         cb(p, results);
                     }, provider, callback);
                     provider.get_locale_string = Lang.bind(this, function(key, providerData){
-                        if (extensionMeta[providerData] && extensionMeta[providerData].locale_data && extensionMeta[providerData].locale_data[key]){
+                        if (extension.meta[providerData] && extension.meta[providerData].locale_data && extension.meta[providerData].locale_data[key]){
                             language_names = GLib.get_language_names();
-                            for (var j in language_names){
-                                if (extensionMeta[providerData].locale_data[key][language_names[j]]){
-                                    return extensionMeta[providerData].locale_data[key][language_names[j]];
+                            for (let j in language_names){
+                                if (extension.meta[providerData].locale_data[key][language_names[j]]){
+                                    return extension.meta[providerData].locale_data[key][language_names[j]];
                                 }
                             }
                         }

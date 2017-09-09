@@ -13,8 +13,6 @@ const ModalDialog = imports.ui.modalDialog;
 const {getModuleByIndex} = imports.misc.fileUtils;
 const Gettext = imports.gettext;
 
-// Maps uuid -> metadata object
-let appletMeta;
 // Maps uuid -> importer object (applet directory tree)
 let applets;
 // Maps applet_id -> applet objects
@@ -67,8 +65,7 @@ function unloadRemovedApplets(oldEnabledAppletDefinitions) {
 
 function init() {
     return new Promise(function(resolve) {
-        applets = Extension.Type.APPLET.maps.importObjects;
-        appletMeta = Extension.Type.APPLET.maps.meta;
+        applets = imports.applets;
 
         appletsLoaded = false;
 
@@ -253,8 +250,8 @@ function onEnabledAppletsChanged() {
                 let oldDef = oldEnabledAppletDefinitions.idMap[applet_id];
 
                 if(!oldDef || !appletDefinitionsEqual(newDef, oldDef)) {
-                    let extension = Extension.Type.APPLET.maps.objects[newDef.uuid];
-                    if(extension) {
+                    let extension = Extension.getExtension(newDef.uuid);
+                    if (extension) {
                         addAppletToPanels(extension, newDef);
                     }
                 }
@@ -653,9 +650,8 @@ function loadAppletsOnPanel(panel) {
             definition.panel = panel;
             definition.location = getLocation(panel, definition.location_label);
             definition.orientation = orientation;
-
-            let extension = Extension.Type.APPLET.maps.objects[definition.uuid];
-            if(extension) {
+            let extension = Extension.getExtension(definition.uuid);
+            if (extension) {
                 addAppletToPanels(extension, definition);
             }
         }
@@ -690,7 +686,7 @@ function updateAppletsOnPanel (panel) {
                 } catch (e) {
                     global.logError("Error during setPanelHeight() and setOrientation() call on applet: " + definition.uuid + "/" + applet_id, e);
                 }
-                removeAppletFromInappropriatePanel (Extension.Type.APPLET.maps.objects[definition.uuid], appletObj[applet_id], definition);
+                removeAppletFromInappropriatePanel(getExtension(definition.uuid), appletObj[applet_id], definition);
             }
         }
     }

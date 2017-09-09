@@ -5,8 +5,6 @@ const {getModuleByIndex} = imports.misc.fileUtils;
 
 // Maps uuid -> importer object (extension directory tree)
 let extensions;
-// Maps uuid -> metadata object
-let extensionMeta;
 // Lists extension uuid's that are currently active;
 const runningExtensions = {};
 // Arrays of uuids
@@ -104,10 +102,10 @@ function initEnabledExtensions(callback = null) {
 
 function unloadRemovedExtensions() {
     return new Promise(function(resolve) {
-        let uuidList = Object.keys(Extension.Type.EXTENSION.maps.objects);
+        let uuidList = Extension.extensions;
         for (let i = 0; i < uuidList.length; i++) {
-            if (enabledExtensions.indexOf(uuidList[i]) === -1) {
-                promises.push(Extension.unloadExtension(uuidList[i], Extension.Type.EXTENSION));
+            if (enabledExtensions.indexOf(uuidList[i].uuid) === -1) {
+                promises.push(Extension.unloadExtension(uuidList[i].uuid, Extension.Type.EXTENSION));
             }
         }
         Promise.all(promises).then(function() {
@@ -119,8 +117,7 @@ function unloadRemovedExtensions() {
 
 function init() {
     return new Promise(function(resolve) {
-        extensions = Extension.Type.EXTENSION.maps.importObjects;
-        extensionMeta = Extension.Type.EXTENSION.maps.meta;
+        extensions = imports.extensions;
         ExtensionState = Extension.State;
 
         enabledExtensions = global.settings.get_strv(ENABLED_EXTENSIONS_KEY);

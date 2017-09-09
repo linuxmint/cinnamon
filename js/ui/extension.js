@@ -36,12 +36,7 @@ function _createExtensionType(name, folder, manager, overrides){
             finishExtensionLoad: manager.finishExtensionLoad,
             prepareExtensionUnload: manager.prepareExtensionUnload
         },
-        maps: {
-            importObjects: {},
-            objects: {}, // Extension constructor instances
-            meta: {},
-            dirs: {}
-        }
+        userDir: GLib.build_filenamev([global.userdatadir, folder])
     };
 
     Object.assign(type, overrides);
@@ -49,7 +44,6 @@ function _createExtensionType(name, folder, manager, overrides){
     // Add signal methods
     Signals.addSignalMethods(type);
 
-    type.userDir = GLib.build_filenamev([global.userdatadir, folder]);
     // create user directories if they don't exist.
     let dir = Gio.file_new_for_path(type.userDir)
     try {
@@ -80,6 +74,7 @@ function _createExtensionType(name, folder, manager, overrides){
  * Extension types with some attributes helping to load these extension types.
  * Properties are nested, with lowerCamelCase properties (e.g. requiredFunctions) as sub-properties of CAPITAL one (EXTENSION). Thus they are referred to as, e.g., Type.EXTENSION.requiredFunctions
  */
+const extensions = [];
 const Type = {
     EXTENSION: _createExtensionType("Extension", "extensions", ExtensionSystem, {
         requiredFunctions: ["init", "disable", "enable"],
@@ -109,25 +104,39 @@ function createMetaDummy(uuid, path, state) {
     return {name: uuid, description: 'Metadata load failed', state: state, path: path, error: ''};
 }
 
+function findExtensionIndex(uuid) {
+    return extensions.findIndex(function(extension) {
+        return extension.uuid === uuid;
+    });
+}
+
+function getExtension(uuid) {
+    let index = findExtensionIndex(uuid);
+    if (!extensions[index]) {
+        return null;
+    }
+    return extensions[index];
+}
+
 // The Extension object itself
 function Extension(type, uuid) {
     return new Promise((resolve) => {
-        let extension = type.maps.objects[uuid];
+        let extension = getExtension(uuid);
         if (extension) {
             resolve(extension);
             return;
         }
-        type.maps.dirs[uuid] = findExtensionDirectory(uuid, type.userDir, type.folder);
+        let dir = findExtensionDirectory(uuid, type.userDir, type.folder);
 
-        if (type.maps.dirs[uuid] == null) {
+        if (dir == null) {
             forgetExtension(uuid, type, true);
             return;
         }
-        this._init(type.maps.dirs[uuid], type, uuid).then(function(extension) {
-            type.maps.objects[uuid] = extension;
+        this._init(dir, type, uuid).then(function(extension) {
+            extensions.push(extension);
 
             if(!type.callbacks.finishExtensionLoad(extension)) {
-                throw new Error(type.name + ' ' + uuid + ': Could not create applet object.');
+                throw new Error(`${type.name} ${uuid}: Could not create applet object.`);
             }
             extension.finalize();
             Main.cinnamonDBusService.EmitXletAddedComplete(true, uuid);
@@ -145,11 +154,7 @@ function Extension(type, uuid) {
             if (e._alreadyLogged) {
                 e = undefined;
             }
-            global.logError('Could not load ' + type.name.toLowerCase() + ' ' + uuid, e);
-            type.maps.meta[uuid].state = State.ERROR;
-            if (!type.maps.meta[uuid].name) {
-                type.maps.meta[uuid].name = uuid
-            }
+            global.logError(`Could not load ${type.name.toLowerCase()} ${uuid}`, e);
             resolve(null);
         });
     });
@@ -158,6 +163,7 @@ function Extension(type, uuid) {
 Extension.prototype = {
     _init: function(dir, type, uuid) {
         return new Promise((resolve, reject) => {
+            this.name = type.name;
             this.uuid = uuid;
             this.dir = dir;
             this.upperType = type.name.toUpperCase().replace(/\s/g, "_");
@@ -168,40 +174,40 @@ Extension.prototype = {
             this.meta = createMetaDummy(this.uuid, dir.get_path(), State.INITIALIZING);
             this.startTime = new Date().getTime();
 
-            this.loadMetaData(dir.get_child('metadata.json'));
-            if (uuid.indexOf('!') !== 0) {
-                this.uuid = uuid.replace(/^!/, '');
-                this.validateMetaData();
-            }
+            this.loadMetaData(dir.get_child('metadata.json')).then(() => {
+                if (uuid.indexOf('!') !== 0) {
+                    this.uuid = uuid.replace(/^!/, '');
+                    this.validateMetaData();
+                }
 
-            if (this.meta.multiversion) {
-                this.dir = findExtensionSubdirectory(this.dir);
-                this.meta.path = this.dir.get_path();
-                type.maps.dirs[this.uuid] = this.dir;
-                let pathSections = this.meta.path.split('/');
-                let version = pathSections[pathSections.length - 1];
-                type.maps.importObjects[this.uuid] = imports[this.lowerType + 's'][this.uuid][version];
-            } else {
-                type.maps.importObjects[this.uuid] = imports[this.lowerType + 's'][this.uuid];
-            }
+                if (this.meta.multiversion) {
+                    this.dir = findExtensionSubdirectory(this.dir);
+                    this.meta.path = this.dir.get_path();
+                    let pathSections = this.meta.path.split('/');
+                    let version = pathSections[pathSections.length - 1];
+                    try {
+                        imports[type.folder][this.uuid] = imports[type.folder][this.uuid][version];
+                    } catch (e) {/* Extension was reloaded */}
+                }
 
-            this.ensureFileExists(this.dir.get_child(this.lowerType + '.js'));
-            this.loadStylesheet(this.dir.get_child('stylesheet.css'));
+                this.ensureFileExists(this.dir.get_child(`${this.lowerType}.js`));
+                this.loadStylesheet(this.dir.get_child('stylesheet.css'));
 
-            if (this.stylesheet) {
-                Main.themeManager.connect('theme-set', () => {
-                    this.loadStylesheet(this.dir.get_child('stylesheet.css'));
-                });
-            }
-            this.loadIconDirectory(this.dir);
+                if (this.stylesheet) {
+                    Main.themeManager.connect('theme-set', () => {
+                        this.loadStylesheet(this.dir.get_child('stylesheet.css'));
+                    });
+                }
+                this.loadIconDirectory(this.dir);
 
-            // get [extension/applet/desklet].js
-            requireModule(
-                `${this.meta.path}/${this.lowerType}.js`, // path
-                this.meta.path, // dir
-                true, // async
-                true // returnIndex
-            ).then((moduleIndex) => {
+                // get [extension/applet/desklet].js
+                return requireModule(
+                    `${this.meta.path}/${this.lowerType}.js`, // path
+                    this.meta.path, // dir
+                    true, // async
+                    true // returnIndex
+                );
+            }).then((moduleIndex) => {
                 if (moduleIndex == null) {
                     throw new Error(`Could not find module index: ${moduleIndex}`);
                 }
@@ -227,11 +233,11 @@ Extension.prototype = {
         Type[this.upperType].emit('extension-loaded', this.uuid);
 
         let endTime = new Date().getTime();
-        global.log('Loaded %s %s in %d ms'.format(this.lowerType, this.uuid, (endTime - this.startTime)));
+        global.log(`Loaded ${this.lowerType} ${this.uuid} in ${endTime - this.startTime} ms`);
     },
 
     formatError:function(message) {
-        return '[%s "%s"]: %s'.format(Type[this.upperType].name, this.uuid, message);
+        return `[${this.name} "${this.uuid}"]: ${message}`;
     },
 
     logError: function (message, error, state) {
@@ -247,7 +253,7 @@ Extension.prototype = {
         global.logError(errorMessage);
 
         // An error during initialization leads to unloading the extension again.
-        if(this.meta.state == State.INITIALIZING) {
+        if (this.meta.state == State.INITIALIZING) {
             this.unlockRole();
             this.unloadStylesheet();
             this.unloadIconDirectory();
@@ -262,26 +268,30 @@ Extension.prototype = {
     },
 
     loadMetaData: function(metadataFile) {
-
-        let oldState = this.meta.state;
-        let oldPath = this.meta.path;
-
-        try {
+        return new Promise((resolve, reject) => {
+            let oldState = this.meta.state;
+            let oldPath = this.meta.path;
             this.ensureFileExists(metadataFile);
-            let metadataContents = Cinnamon.get_file_contents_utf8_sync(metadataFile.get_path());
-            this.meta = JSON.parse(metadataContents);
+            metadataFile.load_contents_async(null, (object, result) => {
+                try {
+                    let [success, json] = metadataFile.load_contents_finish(result);
+                    if (!success) {
+                        reject();
+                        return;
+                    }
+                    this.meta = JSON.parse(json);
 
-            // Store some additional crap here
-            this.meta.state = oldState;
-            this.meta.path = oldPath;
-            this.meta.error = '';
-
-            Type[this.upperType].maps.meta[this.uuid] = this.meta;
-        } catch (e) {
-            this.meta = createMetaDummy(this.uuid, oldPath, State.ERROR, Type[this.upperType]);
-            Type[this.upperType].maps.meta[this.uuid] = this.meta;
-            throw this.logError('Failed to load/parse metadata.json', e);
-        }
+                    // Store some additional crap here
+                    this.meta.state = oldState;
+                    this.meta.path = oldPath;
+                    this.meta.error = '';
+                    resolve();
+                } catch (e) {
+                    this.meta = createMetaDummy(this.uuid, oldPath, State.ERROR);
+                    reject(this.logError('Failed to load/parse metadata.json', e));
+                }
+            });
+        });
     },
 
     validateMetaData: function() {
@@ -292,7 +302,7 @@ Extension.prototype = {
         this.checkProperties(Type[this.upperType].niceToHaveProperties, false);
 
         if (this.meta.uuid != this.uuid) {
-            throw this.logError('uuid "' + this.meta.uuid + '" from metadata.json does not match directory name.');
+            throw this.logError(`uuid "${this.meta.uuid}" from metadata.json does not match directory name.`);
         }
 
         // If cinnamon or js version are set, check them
@@ -307,7 +317,7 @@ Extension.prototype = {
         let role = this.meta['role'];
         if (role) {
             if (!(role in Type[this.upperType].roles)) {
-                throw this.logError('Unknown role definition: ' + role + ' in metadata.json');
+                throw this.logError(`Unknown role definition: ${role} in metadata.json`);
             }
         }
     },
@@ -316,7 +326,7 @@ Extension.prototype = {
         for (let i = 0; i < properties.length; i++) {
             let prop = properties[i];
             if (!this.meta[prop]) {
-                let msg = 'Missing property "' + prop + '" in metadata.json';
+                let msg = `Missing property "${prop}" in metadata.json`;
                 if(fatal)
                     throw this.logError(msg);
                 else
@@ -335,8 +345,9 @@ Extension.prototype = {
             }
 
             try {
-                this.theme.load_stylesheet(file.get_path());
-                this.stylesheet = file.get_path();
+                let path = file.get_path();
+                this.theme.load_stylesheet(path);
+                this.stylesheet = path;
             } catch (e) {
                 throw this.logError('Stylesheet parse error', e);
             }
@@ -378,7 +389,7 @@ Extension.prototype = {
 
     ensureFileExists: function(file) {
         if (!file.query_exists(null)) {
-            throw this.logError('File not found: ' + file.get_path());
+            throw this.logError(`File not found: ${file.get_path()}`);
         }
     },
 
@@ -499,8 +510,9 @@ function loadExtension(uuid, type) {
  */
 function unloadExtension(uuid, type, deleteConfig = true) {
     return new Promise(function(resolve, reject) {
-        let extension = type.maps.objects[uuid];
-        if (extension) {
+        let extensionIndex = findExtensionIndex(uuid);
+        if (extensionIndex > -1) {
+            let extension = extensions[extensionIndex];
             extension.unlockRole();
 
             // Try to disable it -- if it's ERROR'd, we can't guarantee that,
@@ -509,33 +521,36 @@ function unloadExtension(uuid, type, deleteConfig = true) {
             try {
                 Type[extension.upperType].callbacks.prepareExtensionUnload(extension, deleteConfig);
             } catch(e) {
-                global.logError('Error disabling ' + extension.lowerType + ' ' + extension.uuid, e);
+                global.logError(`Error disabling ${extension.lowerType} ${extension.uuid}`, e);
             }
             extension.unloadStylesheet();
             extension.unloadIconDirectory();
 
             Type[extension.upperType].emit('extension-unloaded', extension.uuid);
 
-            forgetExtension(extension.uuid, type, true);
+            forgetExtension(extensionIndex, uuid, type, true);
             resolve();
         }
     });
 }
 
-function forgetExtension(uuid, type, forgetMeta) {
-    if (typeof type.maps.importObjects[uuid] !== 'undefined') {
+function forgetExtension(extensionIndex, uuid, type, forgetMeta) {
+    /*if (typeof type.maps.importObjects[uuid] !== 'undefined') {
         delete type.maps.importObjects[uuid];
-    }
-    if (typeof type.maps.objects[uuid] !== 'undefined') {
-        unloadModule(type.maps.objects[uuid].moduleIndex);
-        if (typeof imports[type.maps.objects[uuid].lowerType + 's'][uuid] !== 'undefined') {
-            delete imports[type.maps.objects[uuid].lowerType + 's'][uuid];
+    }*/
+    if (typeof extensions[extensionIndex] !== 'undefined') {
+        unloadModule(extensions[extensionIndex].moduleIndex);
+        if (typeof imports[type.folder][uuid] !== 'undefined') {
+            delete imports[type.folder][uuid];
         }
-        delete type.maps.objects[uuid];
+        if (forgetMeta) {
+            extensions[extensionIndex] = undefined;
+            extensions.splice(extensionIndex, 1);
+        }
     }
-    if (forgetMeta && typeof type.maps.meta[uuid] !== 'undefined') {
+    /*if (forgetMeta && typeof type.maps.meta[uuid] !== 'undefined') {
         delete type.maps.meta[uuid];
-    }
+    }*/
 }
 
 /**
@@ -547,9 +562,7 @@ function forgetExtension(uuid, type, forgetMeta) {
  * Reloads an xlet. Useful when the source has changed.
  */
 function reloadExtension(uuid, type) {
-    let extension = type.maps.objects[uuid];
-
-    if (extension) {
+    if (findExtensionIndex(uuid) > -1) {
         unloadExtension(uuid, type, false).then(function() {
             Main._addXletDirectoriesToSearchPath();
             loadExtension(uuid, type);
@@ -627,15 +640,17 @@ function findExtensionSubdirectory(dir) {
         else
             return dir;
     } catch (e) {
-        global.logError('Error looking for extension version for ' + dir.get_basename() + ' in directory ' + dir, e);
+        global.logError(`Error looking for extension version for ${dir.get_basename()} in directory ${dir}`, e);
         return dir;
     }
 }
 
 function get_max_instances (uuid, type) {
-    if (uuid in type.maps.meta) {
-        if ("max-instances" in type.maps.meta[uuid]) {
-            let i = type.maps.meta[uuid]["max-instances"];
+    let extension = getExtension(uuid);
+
+    if (extension && extension.uuid) {
+        if (extension.meta['max-instances']) {
+            let i = extension.meta['max-instances'];
             return parseInt(i);
         }
     }

@@ -601,7 +601,7 @@ XletSettingsBase.prototype = {
         if (!configDir.query_exists(null)) configDir.make_directory_with_parents(null);
         this.file = configDir.get_child(this.instanceId + ".json");
         this.monitor = this.file.monitor_file(Gio.FileMonitorFlags.NONE, null);
-        let xletDir = this.ext_type.maps.dirs[this.uuid];
+        let xletDir = Extension.getExtension(this.uuid).dir;
         let templateFile = xletDir.get_child("settings-schema.json");
 
         // If the settings have already been installed previously we need to check if the schema
@@ -788,12 +788,11 @@ AppletSettings.prototype = {
      * @instanceId (int): instance id of the applet
      */
     _init: function (xlet, uuid, instanceId) {
-        this.ext_type = Extension.Type.APPLET;
         XletSettingsBase.prototype._init.call(this, xlet, uuid, instanceId, "Applet");
     },
 
     _get_is_multi_instance_xlet: function(uuid) {
-        return Extension.get_max_instances(uuid, this.ext_type) != 1;
+        return Extension.get_max_instances(uuid) != 1;
     },
 };
 
@@ -817,12 +816,11 @@ DeskletSettings.prototype = {
      * @instanceId (int): instance id of the desklet
      */
     _init: function (xlet, uuid, instanceId) {
-        this.ext_type = Extension.Type.DESKLET;
         XletSettingsBase.prototype._init.call(this, xlet, uuid, instanceId, "Desklet");
     },
 
     _get_is_multi_instance_xlet: function(uuid) {
-        return Extension.get_max_instances(uuid, this.ext_type) > 1;
+        return Extension.get_max_instances(uuid) > 1;
     }
 };
 
@@ -845,7 +843,6 @@ ExtensionSettings.prototype = {
      * @uuid (string): uuid of the extension
      */
     _init: function (xlet, uuid) {
-        this.ext_type = Extension.Type.EXTENSION;
         XletSettingsBase.prototype._init.call(this, xlet, uuid, null, "Extension");
     },
 

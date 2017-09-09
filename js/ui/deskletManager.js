@@ -13,8 +13,6 @@ const Extension = imports.ui.extension;
 const Main = imports.ui.main;
 const FileUtils = imports.misc.fileUtils;
 
-// Maps uuid -> metadata object
-let deskletMeta;
 // Maps uuid -> importer object (desklet directory tree)
 let desklets;
 // Maps uuid -> desklet objects
@@ -71,8 +69,7 @@ function unloadRemovedDesklets() {
  */
 function init(){
     return new Promise(function(resolve) {
-        desklets = Extension.Type.DESKLET.maps.importObjects;
-        deskletMeta = Extension.Type.DESKLET.maps.meta;
+        desklets = imports.desklets;
 
         deskletsLoaded = false
 
@@ -214,7 +211,7 @@ function _onEnabledDeskletsChanged(){
                 let oldDef = enabledDeskletDefinitions.idMap[desklet_id];
 
                 if (!oldDef || !_deskletDefinitionsEqual(newDef, oldDef)) {
-                    let extension = Extension.Type.DESKLET.maps.objects[newDef.uuid];
+                    let extension = Extension.getExtension(newDef.uuid);
                     if (extension) {
                         _loadDesklet(extension, newDef);
                     }
