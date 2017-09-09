@@ -32,7 +32,7 @@ function prepareExtensionUnload(extension) {
     try {
         getModuleByIndex(extension.moduleIndex).disable();
     } catch (e) {
-        extension.logError('Failed to evaluate \'disable\' function on extension: ' + extension.uuid, e);
+        Extension.logError('Failed to evaluate \'disable\' function on extension: ' + extension.uuid, e);
     }
     delete runningExtensions[extension.uuid];
 
@@ -41,7 +41,8 @@ function prepareExtensionUnload(extension) {
 }
 
 // Callback for extension.js
-function finishExtensionLoad(extension) {
+function finishExtensionLoad(extensionIndex) {
+    let extension = Extension.extensions[extensionIndex];
     if (!extension.lockRole(getModuleByIndex(extension.moduleIndex))) {
         return false;
     }
@@ -49,7 +50,7 @@ function finishExtensionLoad(extension) {
     try {
         getModuleByIndex(extension.moduleIndex).init(extension.meta);
     } catch (e) {
-        extension.logError('Failed to evaluate \'init\' function on extension: ' + extension.uuid, e);
+        Extension.logError('Failed to evaluate \'init\' function on extension: ' + extension.uuid, e);
         return false;
     }
 
@@ -57,7 +58,7 @@ function finishExtensionLoad(extension) {
     try {
         extensionCallbacks = getModuleByIndex(extension.moduleIndex).enable();
     } catch (e) {
-        extension.logError('Failed to evaluate \'enable\' function on extension: ' + extension.uuid, e);
+        Extension.logError('Failed to evaluate \'enable\' function on extension: ' + extension.uuid, e);
         return false;
     }
 

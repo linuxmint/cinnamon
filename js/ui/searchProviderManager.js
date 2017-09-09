@@ -21,7 +21,8 @@ function prepareExtensionUnload(extension) {
 }
 
 // Callback for extension.js
-function finishExtensionLoad(extension) {
+function finishExtensionLoad(extensionIndex) {
+    let extension = Extension.extensions[extensionIndex];
     searchProviderObj[extension.uuid] = getModuleByIndex(extension.moduleIndex);
     return true;
 }

@@ -130,7 +130,7 @@ function getModuleByIndex(index) {
 
 function unloadModule(index) {
     if (!LoadedModules[index]) {
-        throw requireModuleError('<unloadModule>', new Error('Unable to unload module.'));
+        return;
     }
     LoadedModules[index] = undefined;
     LoadedModules.splice(index, 1);

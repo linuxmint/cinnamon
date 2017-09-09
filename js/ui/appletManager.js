@@ -65,7 +65,7 @@ function unloadRemovedApplets(oldEnabledAppletDefinitions) {
     });
 }
 
-function init() {
+function init(startTime) {
     return new Promise(function(resolve) {
         applets = imports.applets;
         appletMeta = Extension.Type.APPLET.legacyMeta;
@@ -77,14 +77,16 @@ function init() {
         initEnabledApplets().then(function() {
             appletsLoaded = true;
             global.settings.connect('changed::enabled-applets', onEnabledAppletsChanged);
+            global.log('AppletManager.init() started in %d ms'.format(new Date().getTime() - startTime));
             resolve();
         });
     });
 }
 
 // Callback for extension.js
-function finishExtensionLoad(extension) {
+function finishExtensionLoad(extensionIndex) {
     // Add all applet instances for this extension
+    let extension = Extension.extensions[extensionIndex];
     let definitions = enabledAppletDefinitions.uuidMap[extension.uuid];
     if (definitions) {
         for(let i=0; i<definitions.length; i++) {
@@ -367,7 +369,7 @@ function addAppletToPanels(extension, appletDefinition) {
         return true;
     } catch(e) {
         extension.unlockRole();
-        extension.logError('Failed to load applet: ' + appletDefinition.uuid + "/" + appletDefinition.applet_id, e);
+        Extension.logError('Failed to load applet: ' + appletDefinition.uuid + "/" + appletDefinition.applet_id, e);
         return false;
     }
 }
@@ -532,7 +534,7 @@ function createApplet(extension, appletDefinition) {
     try {
         applet = getModuleByIndex(extension.moduleIndex).main(extension.meta, orientation, panel_height, applet_id);
     } catch (e) {
-        extension.logError('Failed to evaluate \'main\' function on applet: ' + appletDefinition.uuid + "/" + appletDefinition.applet_id, e);
+        Extension.logError('Failed to evaluate \'main\' function on applet: ' + appletDefinition.uuid + "/" + appletDefinition.applet_id, e);
         return null;
     }
 

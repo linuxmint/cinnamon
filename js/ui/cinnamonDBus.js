@@ -403,10 +403,11 @@ CinnamonDBus.prototype = {
     ToggleKeyboard: function() {
         Main.keyboard.toggle();
     },
-    
+
     OpenSpicesAbout: function(uuid, type) {
-        let metadata = Extension.getMetadata(uuid, Extension.Type[type.toUpperCase()]);
-        new ModalDialog.SpicesAboutDialog(metadata, type+"s");
+        Extension.getMetadata(uuid, Extension.Type[type.toUpperCase()]).then(function(metadata) {
+            new ModalDialog.SpicesAboutDialog(metadata, `${type}s`);
+        });
     },
 
     GetMonitors: function() {

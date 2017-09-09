@@ -175,8 +175,9 @@ function getEnabledDeskletDefinitions() {
 }
 
 // Callback for extension.js
-function finishExtensionLoad(extension) {
+function finishExtensionLoad(extensionIndex) {
     // Add all desklet instances for this extension
+    let extension = Extension.extensions[extensionIndex];
     let definitions = enabledDeskletDefinitions.uuidMap[extension.uuid];
     if (definitions) {
         for(let i=0; i<definitions.length; i++) {
@@ -292,7 +293,7 @@ function _loadDesklet(extension, deskletDefinition) {
 
         return true;
     } catch (e) {
-        extension.logError('Failed to load desklet: ' + deskletDefinition.uuid + "/" + deskletDefinition.desklet_id, e);
+        Extension.logError('Failed to load desklet: ' + deskletDefinition.uuid + "/" + deskletDefinition.desklet_id, e);
         return false;
     }
 }
@@ -309,7 +310,7 @@ function _createDesklets(extension, deskletDefinition) {
     try {
         desklet = getModuleByIndex(extension.moduleIndex).main(extension.meta, desklet_id);
     } catch (e) {
-        extension.logError('Failed to evaluate \'main\' function on desklet: ' + deskletDefinition.uuid + "/" + deskletDefinition.desklet_id, e);
+        Extension.logError('Failed to evaluate \'main\' function on desklet: ' + deskletDefinition.uuid + "/" + deskletDefinition.desklet_id, e);
         return null;
     }
 
