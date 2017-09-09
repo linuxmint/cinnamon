@@ -262,6 +262,10 @@ class MainWindow(object):
                                     continue
                                 new_opt_data[translate(self.uuid, option)] = opt_data[option]
                             settings_map[setting][key] = new_opt_data
+                        elif key in "columns":
+                            columns_data = settings_map[setting][key]
+                            for column in columns_data:
+                                column["title"] = translate(self.uuid, column["title"])
             finally:
                 # if a layout is not explicitly defined, generate the settings
                 # widgets based on the order they occur
