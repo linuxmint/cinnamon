@@ -15,6 +15,8 @@ const FileUtils = imports.misc.fileUtils;
 
 // Maps uuid -> importer object (desklet directory tree)
 let desklets;
+// Kept for compatibility
+let deskletMeta;
 // Maps uuid -> desklet objects
 let deskletObj = {};
 
@@ -70,7 +72,7 @@ function unloadRemovedDesklets() {
 function init(){
     return new Promise(function(resolve) {
         desklets = imports.desklets;
-
+        deskletMeta = Extension.Type.DESKLET.legacyMeta;
         deskletsLoaded = false
 
         enabledDeskletDefinitions = getEnabledDeskletDefinitions();

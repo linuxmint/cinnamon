@@ -15,6 +15,8 @@ const Gettext = imports.gettext;
 
 // Maps uuid -> importer object (applet directory tree)
 let applets;
+// Kept for compatibility
+let appletMeta;
 // Maps applet_id -> applet objects
 const appletObj = [];
 let appletsLoaded = false;
@@ -66,7 +68,7 @@ function unloadRemovedApplets(oldEnabledAppletDefinitions) {
 function init() {
     return new Promise(function(resolve) {
         applets = imports.applets;
-
+        appletMeta = Extension.Type.APPLET.legacyMeta;
         appletsLoaded = false;
 
         // Load all applet extensions, the applets themselves will be added in finishExtensionLoad

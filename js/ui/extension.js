@@ -36,7 +36,8 @@ function _createExtensionType(name, folder, manager, overrides){
             finishExtensionLoad: manager.finishExtensionLoad,
             prepareExtensionUnload: manager.prepareExtensionUnload
         },
-        userDir: GLib.build_filenamev([global.userdatadir, folder])
+        userDir: GLib.build_filenamev([global.userdatadir, folder]),
+        legacyMeta: {}
     };
 
     Object.assign(type, overrides);
@@ -189,6 +190,9 @@ Extension.prototype = {
                         imports[type.folder][this.uuid] = imports[type.folder][this.uuid][version];
                     } catch (e) {/* Extension was reloaded */}
                 }
+
+                // Many xlets still use appletMeta/deskletMeta to get the path
+                type.legacyMeta[uuid] = {path: this.meta.path};
 
                 this.ensureFileExists(this.dir.get_child(`${this.lowerType}.js`));
                 this.loadStylesheet(this.dir.get_child('stylesheet.css'));
