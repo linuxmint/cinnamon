@@ -3,6 +3,26 @@
 const Gio = imports.gi.Gio;
 const GLib = imports.gi.GLib;
 
+const importNames = [
+    'mainloop',
+    'jsUnit',
+    'format',
+    'signals',
+    'lang',
+    'tweener',
+    'overrides',
+    'gettext',
+    'coverage',
+    'package',
+    'cairo',
+    'byteArray',
+    'cairoNative'
+];
+const cinnamonImportNames = [
+    'ui',
+    'misc',
+    'perf'
+];
 const LoadedModules = [];
 const FunctionConstructor = Symbol();
 const Symbols = {};
@@ -117,7 +137,7 @@ function unloadModule(index) {
 }
 
 function createExports(path, dir, file, size, JS, returnIndex) {
-    JS = JS.toString();
+    JS = `${JS};`;
     // Import data is stored in an array of objects and the module index is looked up by path.
     const importerData = {
         size: size,
@@ -186,12 +206,27 @@ function createExports(path, dir, file, size, JS, returnIndex) {
         return returnIndex ? moduleIndex : importerData.module;
     } catch(e) {
         // Remove the module from the index
-        unloadModule(index);
+        unloadModule(moduleIndex);
         throw requireModuleError(path, e);
     }
 }
 
 function requireModule(path, dir, async = false, returnIndex = false) {
+    // Allow passing through native bindings, e.g. const Cinnamon = require('gi.Cinnamon');
+    // Check if this is a GI import
+    if (path.substr(0, 3) === 'gi.') {
+        return imports.gi[path.substr(3, path.length)];
+    }
+    // Check if this is a Cinnamon import
+    let importPrefix = path.split('.')[0];
+    if (cinnamonImportNames.indexOf(importPrefix) > -1
+        && path.substr(0, importPrefix.length + 1) === `${importPrefix}.`) {
+        return imports[importPrefix][path.substr(importPrefix.length + 1, path.length)];
+    }
+    // Check if this is a top level import
+    if (importNames.indexOf(path) > -1) {
+        return imports[path];
+    }
     // Check the file extension
     if (path.substr(-3) !== '.js') {
         path += '.js';

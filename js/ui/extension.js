@@ -211,7 +211,6 @@ Extension.prototype = {
                 if (moduleIndex == null) {
                     throw new Error(`Could not find module index: ${moduleIndex}`);
                 }
-                global.log(this.uuid, moduleIndex)
                 this.moduleIndex = moduleIndex;
                 let module = getModuleByIndex(moduleIndex);
                 for (let i = 0; i < type.requiredFunctions.length; i++) {
