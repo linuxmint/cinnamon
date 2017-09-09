@@ -111,7 +111,7 @@ function getUserDesktopDir() {
 function requireModuleError(path, e) {
     // Since constructing functions obscures the path in stack traces, we will put the correct path back.
     e.stack = e.stack.replace(/([^@]*(?=\s)\sFunction)/g, path);
-    global.logError(`requireModule: Unable to load ${path}`, e);
+    e.message = `requireModule: Unable to load ${path}\n${e.message}`;
     return e;
 }
 
@@ -123,14 +123,14 @@ function findModuleIndex(path) {
 
 function getModuleByIndex(index) {
     if (!LoadedModules[index]) {
-        return;
+        throw requireModuleError('<getModuleByIndex>', new Error('Module does not exist.'));
     }
     return LoadedModules[index].module;
 }
 
 function unloadModule(index) {
     if (!LoadedModules[index]) {
-        return;
+        throw requireModuleError('<unloadModule>', new Error('Unable to unload module.'));
     }
     LoadedModules[index] = undefined;
     LoadedModules.splice(index, 1);
@@ -139,7 +139,7 @@ function unloadModule(index) {
 function createExports(path, dir, file, size, JS, returnIndex) {
     JS = `${JS};`;
     // Import data is stored in an array of objects and the module index is looked up by path.
-    const importerData = {
+    let importerData = {
         size: size,
         path: path,
         module: null
@@ -155,7 +155,8 @@ function createExports(path, dir, file, size, JS, returnIndex) {
     let moduleIndex = findModuleIndex(path);
     if (moduleIndex > -1) {
         // Module already exists, check if its been updated
-        if (size === LoadedModules[moduleIndex].size) {
+        if (size === LoadedModules[moduleIndex].size
+            && LoadedModules[moduleIndex].module != null) {
             // Return the cache
             return returnIndex ? moduleIndex : LoadedModules[moduleIndex].module;
         }
@@ -173,7 +174,7 @@ function createExports(path, dir, file, size, JS, returnIndex) {
         .concat(JS.match(/^(var{1,}) ([a-zA-Z_$]*)/gm))
         .concat(JS.match(/^(const{1,}) ([a-zA-Z_$]*)/gm))
         .concat(JS.match(/^(let{1,}) ([a-zA-Z_$]*)/gm));
-    for (var i = 0; i < modules.length; i++) {
+    for (let i = 0; i < modules.length; i++) {
         if (!modules[i]) {
             continue;
         }
@@ -204,10 +205,8 @@ function createExports(path, dir, file, size, JS, returnIndex) {
             file.get_basename()
         );
         return returnIndex ? moduleIndex : importerData.module;
-    } catch(e) {
-        // Remove the module from the index
-        unloadModule(moduleIndex);
-        throw requireModuleError(path, e);
+    } catch (e) {
+        throw requireModuleError(path, new Error(`Module import exception.`));
     }
 }
 
@@ -238,28 +237,38 @@ function requireModule(path, dir, async = false, returnIndex = false) {
             path = `${dir}/${path}`;
         }
     }
-    let success, JS;
+    let success, JS, info, size;
     let file = Gio.File.new_for_commandline_arg(path);
-    let info = file.query_info('*', Gio.FileQueryInfoFlags.NOFOLLOW_SYMLINKS, null);
-    let size = info.get_size();
+    if (!file.query_exists(null)) {
+        throw requireModuleError(path, e);
+    }
+    let flags = Gio.FileQueryInfoFlags.NOFOLLOW_SYMLINKS;
+    let priority = GLib.PRIORITY_DEFAULT;
+
     if (!async) {
+        info = file.query_info('*', flags, null);
+        size = info.get_size();
         [success, JS] = file.load_contents(null);
         if (!success) {
-            return null;
+            throw requireModuleError(path, new Error('Unable to query file info.'));
         }
         return createExports(path, dir, file, size, JS, returnIndex);
     }
     return new Promise(function(resolve, reject) {
-        file.load_contents_async(null, function(object, result) {
-            try {
-                [success, JS] = file.load_contents_finish(result);
-                if (!success) {
-                    throw requireModuleError(path, e);
+        file.query_info_async('*', flags, priority, null, function(file, result) {
+            info = file.query_info_finish(result);
+            size = info.get_size();
+            file.load_contents_async(null, function(object, result) {
+                try {
+                    [success, JS] = file.load_contents_finish(result);
+                    if (!success) {
+                        throw requireModuleError(path, e);
+                    }
+                    resolve(createExports(path, dir, file, size, JS, returnIndex));
+                } catch (e) {
+                    reject(e);
                 }
-                resolve(createExports(path, dir, file, size, JS, returnIndex));
-            } catch (e) {
-                reject(e);
-            }
+            });
         });
     });
 }
