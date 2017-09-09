@@ -2131,7 +2131,7 @@ Panel.prototype = {
                                    // the destroy process can test it
 
         this._clearPanelBarriers();
-        AppletManager.unloadAppletsOnPanel(this);
+        AppletManager.unloadAppletsOnPanel(this.panelId);
         this._context_menu.close();
         this._context_menu.destroy();
 

@@ -244,7 +244,6 @@ function _unloadDesklet(deskletDefinition, deleteConfig) {
         if (deleteConfig)
             _removeDeskletConfigFile(deskletDefinition.uuid, deskletDefinition.desklet_id);
 
-        delete desklet._extension._loadedDefinitions[deskletDefinition.desklet_id];
         delete deskletObj[deskletDefinition.desklet_id];
     }
 }
@@ -278,8 +277,6 @@ function _loadDesklet(extension, deskletDefinition) {
         // Now actually lock the desklets role and set the provider
         if(!extension.lockRole(desklet))
             return false;
-
-        desklet._extension = extension;
 
         if (!Main.deskletContainer.contains(desklet.actor)) Main.deskletContainer.addDesklet(desklet.actor);
         desklet.actor.set_position(deskletDefinition.x, deskletDefinition.y);
