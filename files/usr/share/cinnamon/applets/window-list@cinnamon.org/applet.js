@@ -280,7 +280,8 @@ AppMenuButton.prototype = {
                 Lang.bind(this, this._getPreferredHeight));
         this.actor.connect('allocate', Lang.bind(this, this._allocate));
 
-        this.progressOverlay = new St.Widget({ style_class: "window-list-item-box", reactive: false, important: true  })
+        this.progressOverlay = new St.Widget({ style_class: "window-list-item-box", reactive: false, important: true  });
+        this.progressOverlay.add_style_pseudo_class("progress");
 
         this.actor.add_actor(this.progressOverlay);
 
@@ -311,24 +312,24 @@ AppMenuButton.prototype = {
         if (this.metaWindow.progress !== undefined) {
             this._progress = this.metaWindow.progress;
             if (this._progress > 0) {
-                this.progressOverlay.add_style_pseudo_class("progress");
-            }
+                this.progressOverlay.show();
+            } else
+                this.progressOverlay.hide();
             this._updateProgressId = this.metaWindow.connect("notify::progress", () => {
                 if (this.metaWindow.progress != this._progress) {
                     this._progress = this.metaWindow.progress;
 
-                    this.progressOverlay.visible = this._progress > 0;
-                    if (this.progressOverlay.visible) {
-                        this.progressOverlay.add_style_pseudo_class("progress");
+                    if (this._progress >0) {
+                        this.progressOverlay.show()
                     } else {
-                        this.progressOverlay.remove_style_pseudo_class("progress");
+                        this.progressOverlay.hide();
                     }
 
                     this.actor.queue_relayout();
                 }
             });
         } else {
-            this.progressOverlay.visible = false;
+            this.progressOverlay.hide();
         }
 
         /* TODO: this._progressPulse = this.metaWindow.progress_pulse; */
