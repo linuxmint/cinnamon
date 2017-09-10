@@ -159,23 +159,17 @@ function ensureFileExists(file) {
 
 // The Extension object itself
 function Extension(type, uuid) {
-    return new Promise((resolve, reject) => {
-        let extension = getExtension(uuid);
-        if (extension) {
-           resolve(true);
-            return;
-        }
-        let dir = findExtensionDirectory(uuid, type.userDir, type.folder);
+    let extension = getExtension(uuid);
+    if (extension) {
+        return Promise.resolve(true);
+    }
+    let dir = findExtensionDirectory(uuid, type.userDir, type.folder);
 
-        if (dir == null) {
-            forgetExtension(uuid, type, true);
-            resolve(null);
-            return;
-        }
-        this._init(dir, type, uuid).then(function() {
-            resolve(true);
-        });
-    });
+    if (dir == null) {
+        forgetExtension(uuid, type, true);
+        return Promise.resolve(null);
+    }
+    return this._init(dir, type, uuid);
 }
 
 Extension.prototype = {

@@ -33,65 +33,64 @@ const Roles = {
     PANEL_LAUNCHER: 'panellauncher'
 };
 
-let enabledAppletDefinitions;
+let rawDefinitions;
+let definitions = [];
 let clipboard = [];
 let promises = [];
 
 function initEnabledApplets() {
-    return new Promise(function(resolve) {
-        let uuidList = Object.keys(enabledAppletDefinitions.uuidMap);
-        for (let i = 0; i < uuidList.length; i++) {
-            promises.push(Extension.loadExtension(uuidList[i], Extension.Type.APPLET))
-        }
-        Promise.all(promises).then(function() {
-            promises = [];
-            resolve();
-        });
+    for (let i = 0; i < definitions.length; i++) {
+        promises.push(Extension.loadExtension(definitions[i].uuid, Extension.Type.APPLET))
+    }
+    return Promise.all(promises).then(function() {
+        promises = [];
     });
 }
 
-function unloadRemovedApplets(oldEnabledAppletDefinitions) {
-    return new Promise(function(resolve) {
-        let uuidList = Object.keys(oldEnabledAppletDefinitions.uuidMap);
-        for (let i = 0; i < uuidList.length; i++) {
-            if (!enabledAppletDefinitions.uuidMap[uuidList[i]]) {
-                promises.push(Extension.unloadExtension(uuidList[i], Extension.Type.APPLET));
-            }
-        }
-        Promise.all(promises).then(function() {
-            promises = [];
-            resolve();
-        });
+function unloadRemovedApplets(removedAppletDefinitions) {
+    for (let i = 0; i < removedAppletDefinitions.length; i++) {
+         promises.push(Extension.unloadExtension(removedAppletDefinitions[i], Extension.Type.APPLET));
+    }
+    return Promise.all(promises).then(function() {
+        promises = [];
     });
 }
 
 function init(startTime) {
-    return new Promise(function(resolve) {
-        applets = imports.applets;
-        appletMeta = Extension.Type.APPLET.legacyMeta;
-        appletsLoaded = false;
+    applets = imports.applets;
+    appletMeta = Extension.Type.APPLET.legacyMeta;
+    appletsLoaded = false;
 
-        // Load all applet extensions, the applets themselves will be added in finishExtensionLoad
-        enabledAppletDefinitions = getEnabledAppletDefinitions();
+    // Load all applet extensions, the applets themselves will be added in finishExtensionLoad
+    definitions = getDefinitions();
 
-        initEnabledApplets().then(function() {
-            appletsLoaded = true;
-            global.settings.connect('changed::enabled-applets', onEnabledAppletsChanged);
-            global.log('AppletManager.init() started in %d ms'.format(new Date().getTime() - startTime));
-            resolve();
-        });
+    return initEnabledApplets().then(function() {
+        appletsLoaded = true;
+        global.settings.connect('changed::enabled-applets', onEnabledAppletsChanged);
+        global.log('AppletManager.init() started in %d ms'.format(new Date().getTime() - startTime));
     });
+}
+
+function getAppletDefinition({uuid, applet_id}) {
+    let index = definitions.findIndex(function(definition) {
+        return definition.uuid === uuid || definition.applet_id === applet_id;
+    });
+    if (!definitions[index]) {
+        return null;
+    }
+    return definitions[index];
 }
 
 // Callback for extension.js
 function finishExtensionLoad(extensionIndex) {
     // Add all applet instances for this extension
     let extension = Extension.extensions[extensionIndex];
-    let definitions = enabledAppletDefinitions.uuidMap[extension.uuid];
-    if (definitions) {
-        for(let i=0; i<definitions.length; i++) {
-            if (!addAppletToPanels(extension, definitions[i]))
-                return false;
+    for (let i = 0; i < definitions.length; i++) {
+        if (definitions[i].uuid !== extension.uuid) {
+            continue;
+        }
+        if (!addAppletToPanels(extension, definitions[i])) {
+            return false;
         }
     }
     return true;
@@ -100,39 +99,32 @@ function finishExtensionLoad(extensionIndex) {
 // Callback for extension.js
 function prepareExtensionUnload(extension, deleteConfig) {
     // Remove all applet instances for this extension
-    for(let applet_id in extension._loadedDefinitions) {
-        removeAppletFromPanels(extension._loadedDefinitions[applet_id], deleteConfig);
+    for (var i = 0; i < definitions.length; i++) {
+        if (extension.uuid !== definitions[i].uuid) {
+            continue;
+        }
+        removeAppletFromPanels(definitions[i], deleteConfig);
     }
 }
 
-function getEnabledAppletDefinitions() {
-    let result = {
-        // the raw list from gsettings
-        raw: global.settings.get_strv('enabled-applets'),
-        // maps uuid -> list of applet definitions
-        uuidMap: {},
-        // maps applet_id -> single applet definition
-        idMap: []
-    };
+function getDefinitions() {
+    let _definitions = [];
+    rawDefinitions = global.settings.get_strv('enabled-applets');
 
     // Upgrade settings if required
-    checkForUpgrade(result.raw);
-
+    checkForUpgrade(rawDefinitions);
     // Parse all definitions
-    for (let i=0; i<result.raw.length; i++) {
-        let appletDefinition = getAppletDefinition(result.raw[i]);
-        if(appletDefinition) {
-            if(!result.uuidMap[appletDefinition.uuid])
-                result.uuidMap[appletDefinition.uuid] = [];
-            result.uuidMap[appletDefinition.uuid].push(appletDefinition);
-            result.idMap[appletDefinition.applet_id] = appletDefinition;
+    for (let i = 0; i < rawDefinitions.length; i++) {
+        let appletDefinition = createAppletDefinition(rawDefinitions[i]);
+        if (appletDefinition) {
+            _definitions.push(appletDefinition);
         }
     }
 
-    return result;
+    return _definitions;
 }
 
-function getAppletDefinition(definition) {
+function createAppletDefinition(definition) {
     // format used in gsettings is 'panel:location:order:uuid:applet_id' where:
     // - panel is something like 'panel1',
     // - location is either 'left', 'center' or 'right',
@@ -140,6 +132,12 @@ function getAppletDefinition(definition) {
     // - applet_id is a unique id assigned to the applet instance when added.
     let elements = definition.split(":");
     if (elements.length > 4) {
+        // Its important we check if the definition object already exists before creating a new object, otherwise we are
+        // creating duplicate references that could cause memory leaks.
+        let existingDefinition = getAppletDefinition({applet_id: elements[4]});
+        if (existingDefinition) {
+            return existingDefinition;
+        }
         let panelId = parseInt(elements[0].slice(5));
         let panel = Main.panelManager.panels[panelId];
         let orientation;
@@ -161,7 +159,8 @@ function getAppletDefinition(definition) {
             center: elements[1] == "center",
             order: order,
             uuid: elements[3],
-            applet_id: elements[4]
+            applet_id: elements[4],
+            applet: null
         };
 
         if (elements.length > 5) appletDefinition.overrides = elements[5].split(',');
@@ -235,34 +234,49 @@ function appletDefinitionsEqual(a, b) {
 
 function onEnabledAppletsChanged() {
     try {
-        let oldEnabledAppletDefinitions = enabledAppletDefinitions;
-        enabledAppletDefinitions = getEnabledAppletDefinitions();
+        let oldDefinitions = definitions;
+        // We are first creating a copy of the new definitions array. Overwriting an array with references will
+        // duplicate the references on to the second array, and cause a memory leak.
+        definitions = getDefinitions();
+        let removedAppletDefinitions = [];
         // Remove all applet instances that do not exist in the definition anymore.
-        for (let applet_id in oldEnabledAppletDefinitions.idMap) {
-            if(!enabledAppletDefinitions.idMap[applet_id]) {
-                let removeConfig = Extension.get_max_instances(oldEnabledAppletDefinitions.idMap[applet_id].uuid, Extension.Type.APPLET) != 1;
-                removeAppletFromPanels(oldEnabledAppletDefinitions.idMap[applet_id], removeConfig);
+        for (let i = 0; i < oldDefinitions.length; i++) {
+            let appletDefinition = getAppletDefinition({applet_id: oldDefinitions[i].applet_id});
+            if (!appletDefinition) {
+                removedAppletDefinitions.push(oldDefinitions[i].uuid);
+                removeAppletFromPanels(
+                    oldDefinitions[i],
+                    Extension.get_max_instances(oldDefinitions[i].uuid, Extension.Type.APPLET) !== 1
+                );
             }
         }
-
         // Unload all applet extensions that do not exist in the definition anymore.
-        unloadRemovedApplets(oldEnabledAppletDefinitions).then(function() {
+        unloadRemovedApplets(removedAppletDefinitions).then(function() {
             // Add or move applet instances of already loaded applet extensions
-            for (let applet_id in enabledAppletDefinitions.idMap) {
-                let newDef = enabledAppletDefinitions.idMap[applet_id];
-                let oldDef = oldEnabledAppletDefinitions.idMap[applet_id];
+            const getOldAppletDefinition = function(applet_id) {
+                let index = oldDefinitions.findIndex(function(definition) {
+                    return definition.applet_id === applet_id;
+                });
+                if (index === -1) {
+                    return null;
+                }
+                return oldDefinitions[index];
+            };
+            for (let i = 0; i < definitions.length; i++) {
+                let newDefinition = getAppletDefinition({applet_id: definitions[i].applet_id});
+                let oldDefinition = getOldAppletDefinition(definitions[i].applet_id);
 
-                if(!oldDef || !appletDefinitionsEqual(newDef, oldDef)) {
-                    let extension = Extension.getExtension(newDef.uuid);
+                if (!oldDefinition || !appletDefinitionsEqual(newDefinition, oldDefinition)) {
+                    let extension = Extension.getExtension(newDefinition.uuid);
                     if (extension) {
-                        addAppletToPanels(extension, newDef);
+                        addAppletToPanels(extension, newDefinition);
                     }
                 }
             }
 
             // Make sure all applet extensions are loaded.
             // Once loaded, the applets will add themselves via finishExtensionLoad
-            initEnabledApplets(enabledAppletDefinitions.uuidMap);
+            initEnabledApplets();
             Main.statusIconDispatcher.redisplay();
         });
     }
@@ -272,29 +286,29 @@ function onEnabledAppletsChanged() {
 }
 
 function removeAppletFromPanels(appletDefinition, deleteConfig) {
-    let applet = appletObj[appletDefinition.applet_id];
+    let {applet, uuid, applet_id} = appletDefinition;
     if (applet) {
         try {
             applet._onAppletRemovedFromPanel(deleteConfig);
         } catch (e) {
-            global.logError("Error during on_applet_removed_from_panel() call on applet: " + appletDefinition.uuid + "/" + appletDefinition.applet_id, e);
+            global.logError(`Error during on_applet_removed_from_panel() call on applet: ${uuid}/${applet_id}`, e);
         }
 
         if (applet._panelLocation != null) {
             applet._panelLocation.remove_actor(applet.actor);
             applet._panelLocation = null;
         }
+        appletDefinition.applet = null;
 
-        delete appletObj[appletDefinition.applet_id];
-
-        if (deleteConfig)
-            _removeAppletConfigFile(appletDefinition.uuid, appletDefinition.applet_id);
+        if (deleteConfig) {
+            _removeAppletConfigFile(uuid, applet_id);
+        }
 
         /* normal occurs during _onAppletRemovedFromPanel, but when a panel is removed,
-         * appletObj hasn't had the instance removed yet, so let's run it one more time
+         * the applet object hasn't had the instance removed yet, so let's run it one more time
          * here when everything has been updated.
          */
-        callAppletInstancesChanged(appletDefinition.uuid);
+        callAppletInstancesChanged(uuid);
     }
 }
 
@@ -357,14 +371,9 @@ function addAppletToPanels(extension, appletDefinition) {
 
         applet._panelLocation = location;
 
-        if(!extension._loadedDefinitions) {
-            extension._loadedDefinitions = {};
-        }
-        extension._loadedDefinitions[appletDefinition.applet_id] = appletDefinition;
-
         applet.on_applet_added_to_panel_internal(appletsLoaded);
 
-        removeAppletFromInappropriatePanel (extension, applet, appletDefinition);
+        removeAppletFromInappropriatePanel (extension, appletDefinition);
 
         return true;
     } catch(e) {
@@ -374,7 +383,7 @@ function addAppletToPanels(extension, appletDefinition) {
     }
 }
 
-function removeAppletFromInappropriatePanel (extension, applet, appletDefinition) {
+function removeAppletFromInappropriatePanel (extension, appletDefinition) {
     //  We want to ensure that applets placed in a panel can be shown correctly
     //  - particularly because wide applets will not fit in a vertical panel unless
     //  they have logic to manage this explicitly.
@@ -385,10 +394,10 @@ function removeAppletFromInappropriatePanel (extension, applet, appletDefinition
     //
     //  If the applet turns out to be unsuitable the user is then asked if they want to keep it anyway,
     //  remove it, or try to find another panel that supports it.
-    if (applet instanceof Applet.IconApplet && !(applet instanceof Applet.TextIconApplet)) return;
+    if (appletDefinition.applet instanceof Applet.IconApplet && !(appletDefinition.applet instanceof Applet.TextIconApplet)) return;
     if (appletDefinition.overrides && appletDefinition.overrides.indexOf('orient') != -1) return;
 
-    let allowedLayout = applet.getAllowedLayout();
+    let allowedLayout = appletDefinition.applet.getAllowedLayout();
 
     if ((allowedLayout == Applet.AllowedLayout.HORIZONTAL && [St.Side.LEFT, St.Side.RIGHT].indexOf(appletDefinition.orientation) != -1) ||
         (allowedLayout == Applet.AllowedLayout.VERTICAL && [St.Side.TOP, St.Side.BOTTOM].indexOf(appletDefinition.orientation) != -1)) {
@@ -512,50 +521,49 @@ function get_role_provider_exists(role) {
 function createApplet(extension, appletDefinition) {
     if (!appletDefinition.panelId) return null;
 
-    let applet_id = appletDefinition.applet_id;
-    let orientation = appletDefinition.orientation;
+    let {applet_id, uuid, orientation} = appletDefinition;
     let panel_height;
 
     panel_height = setHeightForPanel(Main.panelManager.panels[appletDefinition.panelId]);
 
-    if (appletObj[applet_id] != undefined) {
-        global.log(applet_id + ' applet already loaded');
-        appletObj[applet_id].setOrientation(orientation);
-        if (appletObj[applet_id]._panelHeight != panel_height) {
-            appletObj[applet_id].setPanelHeight(panel_height);
+    if (appletDefinition.applet != null) {
+        global.log(`${uuid}/${applet_id} applet already loaded`);
+        appletDefinition.applet.setOrientation(orientation);
+        if (appletDefinition.applet._panelHeight !== panel_height) {
+            appletDefinition.applet.setPanelHeight(panel_height);
         }
 
-        return appletObj[applet_id];
+        return appletDefinition.applet;
     }
 
     let applet;
     try {
         applet = getModuleByIndex(extension.moduleIndex).main(extension.meta, orientation, panel_height, applet_id);
     } catch (e) {
-        Extension.logError('Failed to evaluate \'main\' function on applet: ' + appletDefinition.uuid + "/" + appletDefinition.applet_id, e);
+        Extension.logError(`Failed to evaluate 'main' function on applet: ${uuid}/${applet_id}`, uuid, e);
         return null;
     }
 
-    appletObj[applet_id] = applet;
     applet._uuid = extension.uuid;
     applet._meta = extension.meta;
     applet.instance_id = applet_id;
     applet.panel = Main.panelManager.panels[appletDefinition.panelId];
+    appletDefinition.applet = applet;
 
     Gettext.bindtextdomain(applet._uuid, GLib.get_home_dir() + "/.local/share/locale");
 
     applet.finalizeContextMenu();
 
-    return(applet);
+    return applet;
 }
 
 function _removeAppletFromPanel(uuid, applet_id) {
-    let enabledApplets = enabledAppletDefinitions.raw;
-    for (let i=0; i<enabledApplets.length; i++) {
-        let appletDefinition = getAppletDefinition(enabledApplets[i]);
+
+    for (let i=0; i < rawDefinitions.length; i++) {
+        let appletDefinition = createAppletDefinition(rawDefinitions[i]);
         if (appletDefinition) {
             if (uuid == appletDefinition.uuid && applet_id == appletDefinition.applet_id) {
-                let newEnabledApplets = enabledApplets.slice(0);
+                let newEnabledApplets = rawDefinitions.slice(0);
                 newEnabledApplets.splice(i, 1);
                 global.settings.set_strv('enabled-applets', newEnabledApplets);
                 break;
@@ -570,7 +578,7 @@ function saveAppletsPositions() {
 
     for (let i = 0; i < enabled.length; i++) {
         let info = enabled[i].split(':');
-        let applet = appletObj[info[4]];
+        let {applet} = getAppletDefinition({applet_id: info[4]});
         if (!applet) {
             continue;
         }
@@ -593,17 +601,14 @@ function saveAppletsPositions() {
 }
 
 function updateAppletPanelHeights(force_recalc) {
-    if(!enabledAppletDefinitions)
+    if(!definitions || definitions.length === 0)
         return;
 
-    for (let applet_id in enabledAppletDefinitions.idMap) {
-        if (appletObj[applet_id]) {
-            let appletDefinition = enabledAppletDefinitions.idMap[applet_id];
-            let newheight;
-            newheight = setHeightForPanel(Main.panelManager.panels[appletDefinition.panelId]);
-
-            if (appletObj[applet_id]._panelHeight != newheight || force_recalc) {
-                appletObj[applet_id].setPanelHeight(newheight);
+    for (let i = 0; i < definitions.length; i++) {
+        if (definitions[i] && definitions[i].applet) {
+            let newheight = setHeightForPanel(Main.panelManager.panels[definitions[i].panelId]);
+            if (definitions[i].applet._panelHeight !== newheight || force_recalc) {
+                definitions[i].applet.setPanelHeight(newheight);
             }
         }
     }
@@ -616,16 +621,20 @@ function _find_applet(uuid) {
 }
 
 function get_object_for_instance (appletId) {
-    if (appletId in appletObj) {
-        return appletObj[appletId];
-    } else {
+    let {applet} = getAppletDefinition({applet_id: appletId});
+    if (!applet) {
         return null;
     }
+    return applet;
 }
 
 function get_object_for_uuid (uuid, instanceId) {
-    return appletObj.find(x => x && x._uuid == uuid &&
-                               (x.instance_id == instanceId || instanceId == uuid));
+    let index = definitions.findIndex(function(definiton) {
+        return (definiton.applet
+            && definition.applet._uuid === uuid
+            && (definition.instance_id === instanceId || instanceId === uuid));
+    });
+    return definitions[index].applet;
 }
 
 
@@ -642,12 +651,11 @@ function loadAppletsOnPanel(panel) {
 
     let definition;
 
-    for (let applet_id in enabledAppletDefinitions.idMap){
-        definition = enabledAppletDefinitions.idMap[applet_id];
-        if(definition.panelId == panel.panelId) {
-            definition.panel = panel;
-            definition.location = getLocation(panel, definition.location_label);
-            definition.orientation = orientation;
+    for (var i = 0; i < definitions.length; i++) {
+        if (definitions[i].panelId === panel.panelId) {
+            definitions[i].panelId = panel.panelId;
+            definitions[i].location = getLocation(panel, definition.location_label);
+            definitions[i].orientation = orientation;
             let extension = Extension.getExtension(definition.uuid);
             if (extension) {
                 addAppletToPanels(extension, definition);
@@ -671,20 +679,19 @@ function updateAppletsOnPanel (panel) {
 
     let definition;
 
-    for (let applet_id in enabledAppletDefinitions.idMap){
-        definition = enabledAppletDefinitions.idMap[applet_id];
-        if(definition.panel == panel) {
-            definition.location = getLocation(panel, definition.location_label);
-            definition.orientation = orientation;
+    for (let i = 0; i < definitions.length; i++) {
+        if (definitions[i].panelId === panel.panelId) {
+            definitions[i].location = getLocation(panel, definition.location_label);
+            definitions[i].orientation = orientation;
 
-            if (appletObj[applet_id]) {
+            if (definitions[i].applet) {
                 try {
-                    appletObj[applet_id].setOrientation(orientation);
-                    appletObj[applet_id].setPanelHeight(height);
+                    definitions[i].applet.setOrientation(orientation);
+                    definitions[i].applet.setPanelHeight(height);
                 } catch (e) {
-                    global.logError("Error during setPanelHeight() and setOrientation() call on applet: " + definition.uuid + "/" + applet_id, e);
+                    global.logError("Error during setPanelHeight() and setOrientation() call on applet: " + definitions[i].uuid + "/" + definitions[i].applet_id, e);
                 }
-                removeAppletFromInappropriatePanel(getExtension(definition.uuid), appletObj[applet_id], definition);
+                removeAppletFromInappropriatePanel(getExtension(definitions[i].uuid), definitions[i]);
             }
         }
     }
@@ -697,13 +704,16 @@ function updateAppletsOnPanel (panel) {
  * Unloads all applets on the panel
  */
 function unloadAppletsOnPanel (panelId) {
-    let panelApplets = enabledAppletDefinitions.idMap.filter(x => x.panelId === panelId);
-    for (let i in panelApplets)
-        removeAppletFromPanels(panelApplets[i], false);
+    for (let i = 0; i < definitions.length; i++) {
+        if (definitions[i].panelId !== panelId) {
+            continue;
+        }
+        removeAppletFromPanels(definitions[i], false);
+    }
 }
 
 function copyAppletConfiguration(panelId) {
-    clipboard = enabledAppletDefinitions.idMap.filter(x => x.panelId == panelId);
+    clipboard = definitions.filter(definition => definition.panelId === panelId);
 }
 
 function clearAppletConfiguration(panelId) {
@@ -741,15 +751,18 @@ function pasteAppletConfiguration(panelId) {
 }
 
 function getRunningInstancesForUuid(uuid) {
-    return appletObj.filter(x => x && x._uuid == uuid);
+    return definitions.filter(function(definition) {
+        return definition.uuid === uuid;
+    }).map(function(definition) {
+        return definition.applet;
+    });
 }
 
 function callAppletInstancesChanged(uuid) {
-    for (let applet_id in enabledAppletDefinitions.idMap) {
-        if (appletObj[applet_id]) {
-            if (uuid == appletObj[applet_id]._uuid) {
-                appletObj[applet_id].on_applet_instances_changed();
-            }
+    for (var i = 0; i < definitions.length; i++) {
+        if (definitions[i]
+            && uuid === definitions[i].uuid) {
+            definitions[i].applet.on_applet_instances_changed();
         }
     }
 }

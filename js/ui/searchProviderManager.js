@@ -34,42 +34,34 @@ function onEnabledSearchProvidersChanged() {
 }
 
 function initEnabledSearchProviders() {
-    return new Promise(function(resolve) {
-        for (let i = 0; i < enabledSearchProviders.length; i++) {
-            promises.push(Extension.loadExtension(enabledSearchProviders[i], Extension.Type.SEARCH_PROVIDER))
-        }
-        Promise.all(promises).then(function() {
-            promises = [];
-            resolve();
-        });
+    for (let i = 0; i < enabledSearchProviders.length; i++) {
+        promises.push(Extension.loadExtension(enabledSearchProviders[i], Extension.Type.SEARCH_PROVIDER))
+    }
+    return Promise.all(promises).then(function() {
+        promises = [];
     });
 }
 
 function unloadRemovedSearchProviders() {
-    return new Promise(function(resolve) {
-        let uuidList = Extension.extensions;
-        for (let i = 0; i < enabledSearchProviders.length; i++) {
-            if (enabledSearchProviders.indexOf(uuidList[i].uuid) === -1) {
-                promises.push(Extension.unloadExtension(uuidList[i].uuid, Extension.Type.SEARCH_PROVIDER));
-            }
+    let uuidList = Extension.extensions;
+    for (let i = 0; i < enabledSearchProviders.length; i++) {
+        if (enabledSearchProviders.indexOf(uuidList[i].uuid) === -1) {
+            promises.push(Extension.unloadExtension(uuidList[i].uuid, Extension.Type.SEARCH_PROVIDER));
         }
-        Promise.all(promises).then(function() {
-            promises = [];
-            resolve();
-        });
+    }
+    return Promise.all(promises).then(function() {
+        promises = [];
+        resolve();
     });
 }
 
 function init() {
-    return new Promise(function(resolve) {
-        extensions = imports.search_providers;
+    extensions = imports.search_providers;
 
-        enabledSearchProviders = global.settings.get_strv(ENABLED_SEARCH_PROVIDERS_KEY);
+    enabledSearchProviders = global.settings.get_strv(ENABLED_SEARCH_PROVIDERS_KEY);
 
-        initEnabledSearchProviders().then(function() {
-            global.settings.connect('changed::' + ENABLED_SEARCH_PROVIDERS_KEY, onEnabledSearchProvidersChanged);
-            resolve();
-        });
+    return initEnabledSearchProviders().then(function() {
+        global.settings.connect('changed::' + ENABLED_SEARCH_PROVIDERS_KEY, onEnabledSearchProvidersChanged);
     });
 }
 

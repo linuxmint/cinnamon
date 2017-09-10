@@ -90,41 +90,32 @@ function onEnabledExtensionsChanged() {
 }
 
 function initEnabledExtensions(callback = null) {
-    return new Promise(function(resolve) {
-        for (let i = 0; i < enabledExtensions.length; i++) {
-            promises.push(Extension.loadExtension(enabledExtensions[i], Extension.Type.EXTENSION))
-        }
-        Promise.all(promises).then(function() {
-            promises = [];
-            resolve();
-        });
+    for (let i = 0; i < enabledExtensions.length; i++) {
+        promises.push(Extension.loadExtension(enabledExtensions[i], Extension.Type.EXTENSION))
+    }
+    return Promise.all(promises).then(function() {
+        promises = [];
     });
 }
 
 function unloadRemovedExtensions() {
-    return new Promise(function(resolve) {
-        let uuidList = Extension.extensions;
-        for (let i = 0; i < uuidList.length; i++) {
-            if (enabledExtensions.indexOf(uuidList[i].uuid) === -1) {
-                promises.push(Extension.unloadExtension(uuidList[i].uuid, Extension.Type.EXTENSION));
-            }
+    let uuidList = Extension.extensions;
+    for (let i = 0; i < uuidList.length; i++) {
+        if (enabledExtensions.indexOf(uuidList[i].uuid) === -1) {
+            promises.push(Extension.unloadExtension(uuidList[i].uuid, Extension.Type.EXTENSION));
         }
-        Promise.all(promises).then(function() {
-            promises = [];
-            resolve();
-        });
+    }
+    return Promise.all(promises).then(function() {
+        promises = [];
     });
 }
 
 function init() {
-    return new Promise(function(resolve) {
-        extensions = imports.extensions;
-        ExtensionState = Extension.State;
+    extensions = imports.extensions;
+    ExtensionState = Extension.State;
 
-        enabledExtensions = global.settings.get_strv(ENABLED_EXTENSIONS_KEY);
-        initEnabledExtensions().then(function() {
-            global.settings.connect('changed::' + ENABLED_EXTENSIONS_KEY, onEnabledExtensionsChanged);
-            resolve();
-        });
+    enabledExtensions = global.settings.get_strv(ENABLED_EXTENSIONS_KEY);
+    return initEnabledExtensions().then(function() {
+        global.settings.connect('changed::' + ENABLED_EXTENSIONS_KEY, onEnabledExtensionsChanged);
     });
 }

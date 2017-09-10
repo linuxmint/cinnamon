@@ -37,30 +37,24 @@ const DESKLET_SNAP_KEY = 'desklet-snap';
 const DESKLET_SNAP_INTERVAL_KEY = 'desklet-snap-interval';
 
 function initEnabledDesklets() {
-    return new Promise(function(resolve) {
-        let uuidList = Object.keys(enabledDeskletDefinitions.uuidMap);
-        for (let i = 0; i < uuidList.length; i++) {
-            promises.push(Extension.loadExtension(uuidList[i], Extension.Type.DESKLET))
-        }
-        Promise.all(promises).then(function() {
-            promises = [];
-            resolve();
-        });
+    let uuidList = Object.keys(enabledDeskletDefinitions.uuidMap);
+    for (let i = 0; i < uuidList.length; i++) {
+        promises.push(Extension.loadExtension(uuidList[i], Extension.Type.DESKLET))
+    }
+    return Promise.all(promises).then(function() {
+        promises = [];
     });
 }
 
 function unloadRemovedDesklets() {
-    return new Promise(function(resolve) {
-        let uuidList = Object.keys(enabledDeskletDefinitions.uuidMap);
-        for (let i = 0; i < uuidList.length; i++) {
-            if (!enabledDeskletDefinitions.uuidMap[uuidList[i]]) {
-                promises.push(Extension.unloadExtension(uuidList[i], Extension.Type.DESKLET));
-            }
+    let uuidList = Object.keys(enabledDeskletDefinitions.uuidMap);
+    for (let i = 0; i < uuidList.length; i++) {
+        if (!enabledDeskletDefinitions.uuidMap[uuidList[i]]) {
+            promises.push(Extension.unloadExtension(uuidList[i], Extension.Type.DESKLET));
         }
-        Promise.all(promises).then(function() {
-            promises = [];
-            resolve();
-        });
+    }
+    return Promise.all(promises).then(function() {
+        promises = [];
     });
 }
 
@@ -70,22 +64,19 @@ function unloadRemovedDesklets() {
  * Initialize desklet manager
  */
 function init(){
-    return new Promise(function(resolve) {
-        desklets = imports.desklets;
-        deskletMeta = Extension.Type.DESKLET.legacyMeta;
-        deskletsLoaded = false
+    desklets = imports.desklets;
+    deskletMeta = Extension.Type.DESKLET.legacyMeta;
+    deskletsLoaded = false
 
-        enabledDeskletDefinitions = getEnabledDeskletDefinitions();
+    enabledDeskletDefinitions = getEnabledDeskletDefinitions();
 
-        initEnabledDesklets().then(function() {
-            global.settings.connect('changed::' + ENABLED_DESKLETS_KEY, _onEnabledDeskletsChanged);
-            global.settings.connect('changed::' + DESKLET_SNAP_KEY, _onDeskletSnapChanged);
-            global.settings.connect('changed::' + DESKLET_SNAP_INTERVAL_KEY, _onDeskletSnapChanged);
+    return initEnabledDesklets().then(function() {
+        global.settings.connect('changed::' + ENABLED_DESKLETS_KEY, _onEnabledDeskletsChanged);
+        global.settings.connect('changed::' + DESKLET_SNAP_KEY, _onDeskletSnapChanged);
+        global.settings.connect('changed::' + DESKLET_SNAP_INTERVAL_KEY, _onDeskletSnapChanged);
 
-            deskletsLoaded = true;
-            enableMouseTracking(true);
-            resolve();
-        });
+        deskletsLoaded = true;
+        enableMouseTracking(true);
     });
 }
 

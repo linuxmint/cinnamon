@@ -305,16 +305,15 @@ CinnamonDBus.prototype = {
         let res = [];
 
         if (type == "applet") {
-            list = AppletManager.appletObj;
-            for (let key in list) {
-                res.push(list[key]._uuid);
+            for (var i = 0; i < AppletManager.definitions.length; i++) {
+                res.push(AppletManager.definitions[i].uuid);
             }
-        } else if (type == "desklet") {
+        } else if (type == "desklet") { // TODO
             list = DeskletManager.deskletObj;
             for (let key in list) {
                 res.push(list[key]._uuid);
             }
-        } else {
+        } else { // TODO
             list = ExtensionSystem.runningExtensions;
             for (let uuid in list) {
                 res.push(uuid);

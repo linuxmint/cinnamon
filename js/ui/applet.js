@@ -209,9 +209,9 @@ Applet.prototype = {
         this._draggable.connect('drag-end', Lang.bind(this, this._onDragEnd));
 
         try {
-            if (AppletManager.enabledAppletDefinitions.idMap[instance_id]) {
-                let panelId = AppletManager.enabledAppletDefinitions.idMap[instance_id].panelId;
-                this._scaleMode = Main.panelManager.panels[panelId].scaleMode;
+            let appletDefinition = AppletManager.getAppletDefinition({applet_id: instance_id});
+            if (appletDefinition) {
+                this._scaleMode = Main.panelManager.panels[appletDefinition.panelId].scaleMode;
             } else {
                 throw new Error();
             }
