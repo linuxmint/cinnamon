@@ -470,7 +470,7 @@ Applet.prototype = {
         if (panel_height && panel_height > 0) {
             this._panelHeight = panel_height;
         }
-        this._scaleMode = AppletManager.enabledAppletDefinitions.idMap[this.instance_id].panel.scaleMode;
+        this._scaleMode = this.panel.scaleMode;
         this.on_panel_height_changed_internal();
     },
 

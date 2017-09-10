@@ -518,7 +518,8 @@ function createApplet(extension, appletDefinition) {
 
     panel_height = setHeightForPanel(
         Main.panelManager.panels[appletDefinition.panelId],
-        Main.panelManager.panels[appletDefinition.panelId].panelPosition);
+        Main.panelManager.panels[appletDefinition.panelId].panelPosition
+    );
 
     if (appletObj[applet_id] != undefined) {
         global.log(applet_id + ' applet already loaded');
