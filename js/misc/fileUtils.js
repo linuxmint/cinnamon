@@ -110,8 +110,12 @@ function getUserDesktopDir() {
 
 function requireModuleError(path, e) {
     // Since constructing functions obscures the path in stack traces, we will put the correct path back.
-    e.stack = e.stack.replace(/([^@]*(?=\s)\sFunction)/g, path);
-    e.message = `requireModule: Unable to load ${path}\n${e.message}`;
+    e.stack = e.stack.replace(/([^@]*(?=\s)\sFunction)/, path)
+        .split('\n')
+        .filter(function(line) {
+            return !line.match(/<Promise>|wrapPromise/);
+        })
+        .join('\n');
     return e;
 }
 
@@ -136,7 +140,7 @@ function unloadModule(index) {
     LoadedModules.splice(index, 1);
 }
 
-function createExports(path, dir, file, size, JS, returnIndex) {
+function createExports({path, dir, file, size, JS, returnIndex, reject}) {
     JS = `${JS};`;
     // Import data is stored in an array of objects and the module index is looked up by path.
     let importerData = {
@@ -204,9 +208,15 @@ function createExports(path, dir, file, size, JS, returnIndex) {
             dir,
             file.get_basename()
         );
+
         return returnIndex ? moduleIndex : importerData.module;
     } catch (e) {
-        throw requireModuleError(path, new Error(`Module import exception.`));
+        let error = requireModuleError(path, e);
+        if (reject) {
+            reject(error);
+            return;
+        }
+        throw error;
     }
 }
 
@@ -252,7 +262,7 @@ function requireModule(path, dir, async = false, returnIndex = false) {
         if (!success) {
             throw requireModuleError(path, new Error('Unable to query file info.'));
         }
-        return createExports(path, dir, file, size, JS, returnIndex);
+        return createExports({path, dir, file, size, JS, returnIndex});
     }
     return new Promise(function(resolve, reject) {
         file.query_info_async('*', flags, priority, null, function(file, result) {
@@ -262,11 +272,11 @@ function requireModule(path, dir, async = false, returnIndex = false) {
                 try {
                     [success, JS] = file.load_contents_finish(result);
                     if (!success) {
-                        throw requireModuleError(path, e);
+                        throw new Error('Unable to load file contents.');
                     }
-                    resolve(createExports(path, dir, file, size, JS, returnIndex));
+                    resolve(createExports({path, dir, file, size, JS, returnIndex, reject}));
                 } catch (e) {
-                    reject(e);
+                    reject(requireModuleError(path, e));
                 }
             });
         });

@@ -193,17 +193,17 @@ function setOrientationForPanel(panelPos) {
     return orientation;
 }
 
-function setHeightForPanel(panelObj, panelPos) {
+function setHeightForPanel(panel) {
     let height;
-    switch (panelPos)  // for vertical panels use the width instead of the height
+    switch (panel.panelPosition)  // for vertical panels use the width instead of the height
     {
         case 0:
         case 1:
-                height = panelObj.actor.get_height();
+                height = panel.actor.get_height();
         break;
         case 2:
         case 3:
-                height = panelObj.actor.get_width();
+                height = panel.actor.get_width();
         break;
     }
     return height;
@@ -516,10 +516,7 @@ function createApplet(extension, appletDefinition) {
     let orientation = appletDefinition.orientation;
     let panel_height;
 
-    panel_height = setHeightForPanel(
-        Main.panelManager.panels[appletDefinition.panelId],
-        Main.panelManager.panels[appletDefinition.panelId].panelPosition
-    );
+    panel_height = setHeightForPanel(Main.panelManager.panels[appletDefinition.panelId]);
 
     if (appletObj[applet_id] != undefined) {
         global.log(applet_id + ' applet already loaded');
@@ -603,10 +600,7 @@ function updateAppletPanelHeights(force_recalc) {
         if (appletObj[applet_id]) {
             let appletDefinition = enabledAppletDefinitions.idMap[applet_id];
             let newheight;
-            newheight = setHeightForPanel(
-                Main.panelManager.panels[appletDefinition.panelId],
-                Main.panelManager.panels[appletDefinition.panelId].panelPosition
-            );
+            newheight = setHeightForPanel(Main.panelManager.panels[appletDefinition.panelId]);
 
             if (appletObj[applet_id]._panelHeight != newheight || force_recalc) {
                 appletObj[applet_id].setPanelHeight(newheight);
@@ -673,7 +667,7 @@ function updateAppletsOnPanel (panel) {
     let orientation;
 
     orientation = setOrientationForPanel(panel.panelPosition);
-    height = setHeightForPanel(panel, panel.panelPosition);
+    height = setHeightForPanel(panel);
 
     let definition;
 

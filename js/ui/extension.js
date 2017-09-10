@@ -120,23 +120,24 @@ function getExtension(uuid) {
     return extensions[index];
 }
 
-function formatError(name, uuid, message) {
-    return `[${this.name} "${this.uuid}"]: ${message}`;
+function formatError(uuid, message) {
+    return `[${uuid}]: ${message}`;
 }
 
-function logError (message, uuid, error, state) {
-    let errorMessage = formatError(message);
-    if(error) {
-        global.logError(error);
-    } else {
+function logError(message, uuid, error, state) {
+    let errorMessage = formatError(uuid, message);
+    if (!error) {
         error = new Error(errorMessage);
+    } else {
+        error.message = `\n${formatError(uuid, error.message)}`;
+        error.message += `\n${errorMessage}`;
     }
 
-    global.logError(errorMessage);
+    global.logError(error);
 
     // An error during initialization leads to unloading the extension again.
-    if (uuid) {
-        let extension = getExtension(uuid);
+    let extension = getExtension(uuid);
+    if (extension) {
         extension.meta.state = state || State.ERROR;
         extension.meta.error += message;
         if (extension.meta.state === State.INITIALIZING) {
@@ -274,9 +275,9 @@ Extension.prototype = {
             Main.xlet_startup_error = true;
             forgetExtension(uuid, type);
             if (e._alreadyLogged) {
-                e = undefined;
+                return;
             }
-            throw logError(`Error importing ${this.lowerType}.js from ${uuid}`, uuid, e);
+            logError(`Error importing ${this.lowerType}.js from ${uuid}`, uuid, e);
         });
     },
 
@@ -656,7 +657,7 @@ function findExtensionSubdirectory(dir) {
                 resolve(largest ? largest[1] : dir);
             } catch (e) {
                 global.logError(`Error looking for extension version for ${dir.get_basename()} in directory ${dir}`, e);
-                resolve(dor)
+                resolve(dir)
             }
 
         });
