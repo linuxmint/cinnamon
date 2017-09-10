@@ -561,7 +561,12 @@ _st_create_shadow_cairo_pattern (StShadow        *shadow_spec,
   g_return_val_if_fail (shadow_spec != NULL, NULL);
   g_return_val_if_fail (src_pattern != NULL, NULL);
 
-  cairo_pattern_get_surface (src_pattern, &src_surface);
+  if (cairo_pattern_get_surface (src_pattern, &src_surface) != CAIRO_STATUS_SUCCESS)
+    /* The most likely reason we can't get the pattern is that sizing went hairwire
+     * and the caller tried to create a surface too big for memory, leaving us with
+     * a pattern in an error state; we return a transparent pattern for the shadow.
+     */
+    return cairo_pattern_create_rgba(1.0, 1.0, 1.0, 0.0);
 
   width_in  = cairo_image_surface_get_width  (src_surface);
   height_in = cairo_image_surface_get_height (src_surface);
