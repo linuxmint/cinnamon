@@ -324,7 +324,7 @@ class Spice_Harvester(GObject.Object):
                 pass
             if self.abort_download == ABORT_ERROR:
                 self.errorMessage(_("An error occurred while trying to access the server.  Please try again in a little while."), self.error)
-            raise Exception(_("Download aborted."))
+            raise Exception(_("Download aborted for %s.") % url)
 
         return outfile
 
