@@ -51,7 +51,6 @@ function unloadRemovedSearchProviders() {
     }
     return Promise.all(promises).then(function() {
         promises = [];
-        resolve();
     });
 }
 

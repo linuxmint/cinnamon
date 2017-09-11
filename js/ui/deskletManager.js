@@ -11,16 +11,15 @@ const Desklet = imports.ui.desklet;
 const DND = imports.ui.dnd;
 const Extension = imports.ui.extension;
 const Main = imports.ui.main;
-const FileUtils = imports.misc.fileUtils;
+const {getModuleByIndex} = imports.misc.fileUtils;
 
 // Maps uuid -> importer object (desklet directory tree)
 let desklets;
 // Kept for compatibility
 let deskletMeta;
-// Maps uuid -> desklet objects
-let deskletObj = {};
 
-let enabledDeskletDefinitions;
+let rawDefinitions;
+let definitions = [];
 
 let deskletsLoaded = false;
 
@@ -37,21 +36,17 @@ const DESKLET_SNAP_KEY = 'desklet-snap';
 const DESKLET_SNAP_INTERVAL_KEY = 'desklet-snap-interval';
 
 function initEnabledDesklets() {
-    let uuidList = Object.keys(enabledDeskletDefinitions.uuidMap);
-    for (let i = 0; i < uuidList.length; i++) {
-        promises.push(Extension.loadExtension(uuidList[i], Extension.Type.DESKLET))
+    for (let i = 0; i < definitions.length; i++) {
+        promises.push(Extension.loadExtension(definitions[i].uuid, Extension.Type.DESKLET))
     }
     return Promise.all(promises).then(function() {
         promises = [];
     });
 }
 
-function unloadRemovedDesklets() {
-    let uuidList = Object.keys(enabledDeskletDefinitions.uuidMap);
-    for (let i = 0; i < uuidList.length; i++) {
-        if (!enabledDeskletDefinitions.uuidMap[uuidList[i]]) {
-            promises.push(Extension.unloadExtension(uuidList[i], Extension.Type.DESKLET));
-        }
+function unloadRemovedDesklets(removedDeskletUUIDs) {
+    for (let i = 0; i < removedDeskletUUIDs.length; i++) {
+        promises.push(Extension.unloadExtension(removedDeskletUUIDs[i], Extension.Type.DESKLET));
     }
     return Promise.all(promises).then(function() {
         promises = [];
@@ -68,7 +63,7 @@ function init(){
     deskletMeta = Extension.Type.DESKLET.legacyMeta;
     deskletsLoaded = false
 
-    enabledDeskletDefinitions = getEnabledDeskletDefinitions();
+    definitions = getDefinitions();
 
     return initEnabledDesklets().then(function() {
         global.settings.connect('changed::' + ENABLED_DESKLETS_KEY, _onEnabledDeskletsChanged);
@@ -80,34 +75,48 @@ function init(){
     });
 }
 
+function getDeskletDefinition({uuid, desklet_id}) {
+    let index = definitions.findIndex(function(definition) {
+        return definition.uuid === uuid || definition.desklet_id === desklet_id;
+    });
+    if (!definitions[index]) {
+        return null;
+    }
+    return definitions[index];
+}
+
 function enableMouseTracking(enable) {
-    if(enable && !mouseTrackTimoutId)
+    if (enable && !mouseTrackTimoutId) {
         mouseTrackTimoutId = Mainloop.timeout_add(500, checkMouseTracking);
-    else if (!enable && mouseTrackTimoutId) {
+    } else if (!enable && mouseTrackTimoutId) {
         Mainloop.source_remove(mouseTrackTimoutId);
         mouseTrackTimoutId = 0;
-        for(let desklet_id in deskletObj) {
-            deskletObj[desklet_id]._untrackMouse();
+
+        for (let i = 0; i < definitions.length; i++) {
+            if (definitions[i].desklet) {
+                definitions[i].desklet._untrackMouse();
+            }
         }
     }
 }
 
 function hasMouseWindow(){
     let window = global.screen.get_mouse_window(null);
-    return window && window.window_type != Meta.WindowType.DESKTOP;
+    return window && window.window_type !== Meta.WindowType.DESKTOP;
 }
 
 function checkMouseTracking() {
     let enable = !hasMouseWindow();
-    if(mouseTrackEnabled != enable) {
+    if (mouseTrackEnabled !== enable) {
         mouseTrackEnabled = enable;
-        if(enable) {
-            for(let desklet_id in deskletObj) {
-                deskletObj[desklet_id]._trackMouse();
+        for (let i = 0; i < definitions.length; i++) {
+            if (!definitions[i].desklet) {
+                continue;
             }
-        } else {
-            for(let desklet_id in deskletObj) {
-                deskletObj[desklet_id]._untrackMouse();
+            if (enable) {
+                definitions[i].desklet._trackMouse();
+            } else {
+                definitions[i].desklet._untrackMouse();
             }
         }
     }
@@ -118,7 +127,7 @@ function checkMouseTracking() {
  * removeDesklet:
  * @uuid (string): uuid of the desklet
  * @desklet_id (int): id of the desklet
- * 
+ *
  * Disable and remove the desklet @uuid:@desklet_id
  */
 function removeDesklet(uuid, desklet_id){
@@ -132,48 +141,39 @@ function removeDesklet(uuid, desklet_id){
 }
 
 /**
- * getEnabledDeskletDefinitons:
+ * getDefinitons:
  *
  * Gets the list of enabled desklets. Returns an associative array of three items:
  * raw: the unprocessed array from gsettings
- * uuidMap: maps uuid -> list of desklet definitions
- * idMap: maps desklet_id -> single desklet definition
+ * definitions: Array(Object)
  *
  * Returns (dictionary): Associative array of three items
  */
-function getEnabledDeskletDefinitions() {
-    let result = {
-        // the raw list from gsettings
-        raw: global.settings.get_strv(ENABLED_DESKLETS_KEY),
-        // maps uuid -> list of desklet definitions
-        uuidMap: {},
-        // maps desklet_id -> single desklet definition
-        idMap: {}
-    };
+function getDefinitions() {
+    let _definitions = [];
+    rawDefinitions = global.settings.get_strv(ENABLED_DESKLETS_KEY);
 
     // Parse all definitions
-    for (let i=0; i<result.raw.length; i++) {
-        let deskletDefinition = _getDeskletDefinition(result.raw[i]);
-        if(deskletDefinition) {
-            if(!result.uuidMap[deskletDefinition.uuid])
-                result.uuidMap[deskletDefinition.uuid] = [];
-            result.uuidMap[deskletDefinition.uuid].push(deskletDefinition);
-            result.idMap[deskletDefinition.desklet_id] = deskletDefinition;
+    for (let i=0; i < rawDefinitions.length; i++) {
+        let deskletDefinition = createDeskletDefinition(rawDefinitions[i]);
+        if (deskletDefinition) {
+            _definitions.push(deskletDefinition);
         }
     }
 
-    return result;
+    return _definitions;
 }
 
 // Callback for extension.js
 function finishExtensionLoad(extensionIndex) {
     // Add all desklet instances for this extension
     let extension = Extension.extensions[extensionIndex];
-    let definitions = enabledDeskletDefinitions.uuidMap[extension.uuid];
-    if (definitions) {
-        for(let i=0; i<definitions.length; i++) {
-            if (!_loadDesklet(extension, definitions[i]))
-                return false;
+    for (let i = 0; i < definitions.length; i++) {
+        if (definitions[i].uuid !== extension.uuid) {
+            continue;
+        }
+        if (!_loadDesklet(extension, definitions[i])) {
+            return false;
         }
     }
     return true;
@@ -182,61 +182,84 @@ function finishExtensionLoad(extensionIndex) {
 // Callback for extension.js
 function prepareExtensionUnload(extension, deleteConfig) {
     // Remove all desklet instances for this extension
-    for(let desklet_id in extension._loadedDefinitions) {
-        _unloadDesklet(extension._loadedDefinitions[desklet_id], deleteConfig);
+    for (let i = 0; i < definitions.length; i++) {
+        definitions[i]
+        if (extension.uuid !== definitions[i].uuid) {
+            continue;
+        }
+        _unloadDesklet(definitions[i], deleteConfig);
     }
 }
 
-function _onEnabledDeskletsChanged(){
+function _onEnabledDeskletsChanged() {
     try {
-        let newEnabledDeskletDefinitions = getEnabledDeskletDefinitions();
+        let oldDefinitions = definitions;
+        definitions = getDefinitions();
+        let removedDeskletUUIDs = [];
         // Remove all desklet instances that do not exist in the definition anymore.
-        for (let desklet_id in enabledDeskletDefinitions.idMap) {
-            if (!newEnabledDeskletDefinitions.idMap[desklet_id]) {
-                _unloadDesklet(enabledDeskletDefinitions.idMap[desklet_id], true);
+        for (let i = 0; i < oldDefinitions.length; i++) {
+            let deskletDefinition = getDeskletDefinition({desklet_id: oldDefinitions[i].desklet_id});
+            if (!deskletDefinition) {
+                removedDeskletUUIDs.push(oldDefinitions[i].uuid);
+                _unloadDesklet(oldDefinitions[i], true);
             }
         }
-
+        // Make a unique array of removed UUIDs
+        let uniqueSet = new Set();
+        let uniqueRemovedUUIDs = [];
+        for (let i = 0; i < removedDeskletUUIDs.length; i++) {
+          if (uniqueSet.has(removedDeskletUUIDs[i]) === false) {
+            uniqueRemovedUUIDs.push(removedDeskletUUIDs[i]);
+            uniqueSet.add(removedDeskletUUIDs[i]);
+          }
+        }
         // Unload all desklet extensions that do not exist in the definition anymore.
-        unloadRemovedDesklets().then(function() {
+        unloadRemovedDesklets(uniqueRemovedUUIDs).then(function() {
             // Add or move desklet instances of already loaded desklet extensions
-            for (let desklet_id in newEnabledDeskletDefinitions.idMap) {
-                let newDef = newEnabledDeskletDefinitions.idMap[desklet_id];
-                let oldDef = enabledDeskletDefinitions.idMap[desklet_id];
+            const getOlddeskletDefinition = function(desklet_id) {
+                let index = oldDefinitions.findIndex(function(definition) {
+                    return definition.desklet_id === desklet_id;
+                });
+                if (index === -1) {
+                    return null;
+                }
+                return oldDefinitions[index];
+            };
+            for (let i = 0; i < definitions.length; i++) {
+                let newDefinition = getDeskletDefinition({desklet_id: definitions[i].desklet_id});
+                let oldDefinition = getOlddeskletDefinition(definitions[i].desklet_id);
 
-                if (!oldDef || !_deskletDefinitionsEqual(newDef, oldDef)) {
-                    let extension = Extension.getExtension(newDef.uuid);
+                if (!oldDefinition || !_deskletDefinitionsEqual(newDefinition, oldDefinition)) {
+                    let extension = Extension.getExtension(newDefinition.uuid);
                     if (extension) {
-                        _loadDesklet(extension, newDef);
+                        _loadDesklet(extension, newDefinition);
                     }
                 }
             }
-
-            enabledDeskletDefinitions = newEnabledDeskletDefinitions;
 
             // Make sure all desklet extensions are loaded.
             // Once loaded, the desklets will add themselves via finishExtensionLoad
             initEnabledDesklets();
         });
-
-    } catch (e) {
+    } catch(e) {
         global.logError('Failed to refresh list of desklets', e);
     }
 }
 
 function _unloadDesklet(deskletDefinition, deleteConfig) {
-    let desklet = deskletObj[deskletDefinition.desklet_id];
-    if (desklet){
+    let {uuid, desklet_id} = deskletDefinition;
+    if (deskletDefinition.desklet) {
         try {
-            desklet.destroy(deleteConfig);
+            deskletDefinition.desklet.destroy(deleteConfig);
         } catch (e) {
-            global.logError("Failed to destroy desket: " + deskletDefinition.uuid + "/" + deskletDefinition.desklet_id, e);
+            global.logError("Failed to destroy desket: " + uuid + "/" + desklet_id, e);
         }
 
-        if (deleteConfig)
-            _removeDeskletConfigFile(deskletDefinition.uuid, deskletDefinition.desklet_id);
+        if (deleteConfig) {
+            _removeDeskletConfigFile(uuid, desklet_id);
+        }
 
-        delete deskletObj[deskletDefinition.desklet_id];
+        deskletDefinition.desklet = null;
     }
 }
 
@@ -260,23 +283,18 @@ function _loadDesklet(extension, deskletDefinition) {
     // Try to lock the desklets role
     if(!extension.lockRole(null))
         return false;
-    
+
     try {
         let desklet = _createDesklets(extension, deskletDefinition);
         if (!desklet)
             return false;
-        
+
         // Now actually lock the desklets role and set the provider
         if(!extension.lockRole(desklet))
             return false;
 
         if (!Main.deskletContainer.contains(desklet.actor)) Main.deskletContainer.addDesklet(desklet.actor);
         desklet.actor.set_position(deskletDefinition.x, deskletDefinition.y);
-
-        if(!extension._loadedDefinitions) {
-            extension._loadedDefinitions = {};
-        }
-        extension._loadedDefinitions[deskletDefinition.desklet_id] = deskletDefinition;
 
         desklet.on_desklet_added_to_desktop_internal(deskletsLoaded && !deskletsDragging);
 
@@ -290,39 +308,40 @@ function _loadDesklet(extension, deskletDefinition) {
 }
 
 function _createDesklets(extension, deskletDefinition) {
-    let desklet_id = deskletDefinition.desklet_id;
+    let {uuid, desklet_id} = deskletDefinition;
 
-    if (deskletObj[desklet_id]) {
+    if (deskletDefinition.desklet) {
         global.log(desklet_id + ' desklet already loaded');
-        return deskletObj[desklet_id];
+        return deskletDefinition.desklet;
     }
 
     let desklet;
     try {
         desklet = getModuleByIndex(extension.moduleIndex).main(extension.meta, desklet_id);
     } catch (e) {
-        Extension.logError('Failed to evaluate \'main\' function on desklet: ' + deskletDefinition.uuid + "/" + deskletDefinition.desklet_id, e);
+        Extension.logError('Failed to evaluate \'main\' function on desklet: ' + uuid + "/" + desklet_id, e);
         return null;
     }
 
-    deskletObj[desklet_id] = desklet;
+    deskletDefinition.desklet = desklet;
     desklet._uuid = extension.uuid;
     desklet._meta = extension.meta;
     desklet.instance_id = desklet_id;  // In case desklet constructor didn't set this
-    
+
     desklet.finalizeContextMenu();
-    
+
     return desklet;
 }
 
-function _getDeskletDefinition(definition) {
+function createDeskletDefinition(definition) {
     let elements = definition.split(":");
     if (elements.length == 4) {
         return {
             uuid: elements[0],
             desklet_id: elements[1],
             x: elements[2],
-            y: elements[3]
+            y: elements[3],
+            desklet: null
         };
     } else {
         global.logError("Bad desklet definition: " + definition);
@@ -331,26 +350,28 @@ function _getDeskletDefinition(definition) {
 }
 
 function _deskletDefinitionsEqual(a, b) {
-    return (a.uuid == b.uuid && a.x == b.x && a.y == b.y);
+    return (a && b && (a.uuid === b.uuid && a.x === b.x && a.y === b.y));
 }
 
 function get_object_for_instance (deskletId) {
-    if (deskletId in deskletObj) {
-        return deskletObj[deskletId];
-    } else {
+    let {desklet} = getDeskletDefinition({desklet_id: deskletId});
+    if (!desklet) {
         return null;
     }
+    return desklet;
 }
 
 function get_object_for_uuid (uuid, instanceId) {
-    for (let thisInstanceId in deskletObj) {
-        if (deskletObj[thisInstanceId]._uuid == uuid) {
-            if (instanceId == uuid || thisInstanceId == instanceId) {
-                return deskletObj[thisInstanceId]
-            }
-        }
+    let index = definitions.findIndex(function(definition) {
+        return (definition
+            && definition.desklet
+            && definition.desklet._uuid === uuid
+            && (definition.desklet_id === instanceId || instanceId === uuid));
+    });
+    if (index === -1) {
+        return null;
     }
-    return null;
+    return definitions[index].desklet;
 }
 
 function _onDeskletSnapChanged(){
@@ -375,7 +396,7 @@ function _onDeskletSnapChanged(){
 
 /**
  * #DeskletContainer
- * 
+ *
  * Container that contains manages all desklets actors
  */
 function DeskletContainer(){
@@ -397,7 +418,7 @@ DeskletContainer.prototype = {
     /**
      * addDesklet:
      * @actor (Clutter.Actor): actor of desklet to be added
-     * 
+     *
      * Adds @actor to the desklet container
      */
     addDesklet: function(actor){
@@ -407,7 +428,7 @@ DeskletContainer.prototype = {
     /**
      * contains:
      * @actor (Clutter.Actor): actor to be tested
-     * 
+     *
      * Whether the desklet container contains @actor
      *
      * Returns (boolean): whether the desklet container contains the actor

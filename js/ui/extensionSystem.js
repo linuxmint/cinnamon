@@ -6,7 +6,7 @@ const {getModuleByIndex} = imports.misc.fileUtils;
 // Maps uuid -> importer object (extension directory tree)
 let extensions;
 // Lists extension uuid's that are currently active;
-const runningExtensions = {};
+const runningExtensions = [];
 // Arrays of uuids
 let enabledExtensions;
 // Maps extension.uuid -> extension objects
@@ -34,7 +34,10 @@ function prepareExtensionUnload(extension) {
     } catch (e) {
         Extension.logError('Failed to evaluate \'disable\' function on extension: ' + extension.uuid, e);
     }
-    delete runningExtensions[extension.uuid];
+    let runningExtensionIndex = runningExtensions.findIndex(function(uuid) {
+        return extension.uuid === uuid;
+    });
+    runningExtensions.splice(runningExtensionIndex, 1);
 
     if (extensionObj[extension.uuid])
         delete extensionObj[extension.uuid];
@@ -62,7 +65,7 @@ function finishExtensionLoad(extensionIndex) {
         return false;
     }
 
-    runningExtensions[extension.uuid] = true;
+    runningExtensions.push(extension.uuid);
 
     // extensionCallbacks is an object returned by the enable() function defined in extension.js.
     // The extensionCallbacks object should contain functions that can be used by the "callback" key
