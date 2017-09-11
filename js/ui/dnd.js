@@ -261,7 +261,7 @@ const _Draggable = new Lang.Class({
 
         if (this.actor._delegate && this.actor._delegate.getDragActor) {
             this._dragActor = this.actor._delegate.getDragActor();
-            this._dragActor.reparent(Main.uiGroup);
+            global.reparentActor(this._dragActor, Main.uiGroup);
             this._dragActor.raise_top();
             Cinnamon.util_set_hidden_from_pick(this._dragActor, true);
 
@@ -310,7 +310,7 @@ const _Draggable = new Lang.Class({
             this._dragOffsetX = actorStageX - this._dragStartX;
             this._dragOffsetY = actorStageY - this._dragStartY;
 
-            this._dragActor.reparent(Main.uiGroup);
+            global.reparentActor(this._dragActor, Main.uiGroup);
             this._dragActor.raise_top();
             Cinnamon.util_set_hidden_from_pick(this._dragActor, true);
         }
@@ -621,7 +621,7 @@ const _Draggable = new Lang.Class({
 
     _onAnimationComplete : function (dragActor, eventTime) {
         if (this._dragOrigParent) {
-            dragActor.reparent(this._dragOrigParent);
+            global.reparentActor (dragActor, this._dragOrigParent);
             dragActor.set_scale(this._dragOrigScale, this._dragOrigScale);
             dragActor.set_position(this._dragOrigX, this._dragOrigY);
         } else {
