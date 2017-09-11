@@ -83,6 +83,7 @@ def get_timestring(time_seconds):
 
 
 CSD_SCHEMA = "org.cinnamon.settings-daemon.plugins.power"
+CSM_SCHEMA = "org.cinnamon.SessionManager"
 
 class Module:
     name = "power"
@@ -125,7 +126,7 @@ class Module:
 
         section = power_page.add_section(_("Power Options"))
 
-        lid_options, button_power_options, critical_options = get_available_options(self.up_client)
+        lid_options, button_power_options, critical_options, can_suspend, can_hybrid_sleep = get_available_options(self.up_client)
 
         size_group = Gtk.SizeGroup(mode=Gtk.SizeGroupMode.HORIZONTAL)
 
@@ -168,6 +169,11 @@ class Module:
 
         if self.has_battery and UPowerGlib.MAJOR_VERSION == 0 and UPowerGlib.MINOR_VERSION <= 99:
             section.add_row(GSettingsComboBox(_("When the battery is critically low"), CSD_SCHEMA, "critical-battery-action", critical_options, size_group=size_group))
+
+        if can_suspend and can_hybrid_sleep:
+            switch = GSettingsSwitch(_("Enable Hybrid Sleep"), CSM_SCHEMA, "prefer-hybrid-sleep")
+            switch.set_tooltip_text(_("Replaces Suspend with Hybrid Sleep"))
+            section.add_row(switch)
 
         # Batteries
 
@@ -506,6 +512,7 @@ class Module:
 def get_available_options(up_client):
     can_suspend = False
     can_hibernate = False
+    can_hybrid_sleep = False
 
     try:
         connection = Gio.bus_get_sync(Gio.BusType.SYSTEM, None)
@@ -520,6 +527,7 @@ def get_available_options(up_client):
 
         can_suspend = proxy.CanSuspend() == "yes"
         can_hibernate = proxy.CanHibernate() == "yes"
+        can_hybrid_sleep = proxy.CanHybridSleep() == "yes"
     except:
         pass
 
@@ -527,6 +535,7 @@ def get_available_options(up_client):
     try:
         can_suspend = can_suspend or up_client.get_can_suspend()
         can_hibernate = can_hibernate or up_client.get_can_hibernate()
+        can_hybrid_sleep = can_hibernate or up_client.get_can_hybrid_sleep()
     except:
         pass
 
@@ -564,7 +573,7 @@ def get_available_options(up_client):
         for options in lid_options, button_power_options, critical_options:
             remove(options, "hibernate")
 
-    return lid_options, button_power_options, critical_options
+    return lid_options, button_power_options, critical_options, can_suspend, can_hybrid_sleep
 
 class BrightnessSlider(SettingsWidget):
     step = 5
