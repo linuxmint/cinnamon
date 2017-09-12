@@ -726,10 +726,13 @@ AppMenuButton.prototype = {
 
         childBox.x1 = 0;
         childBox.y1 = 0;
+        childBox.x2 = this.actor.width;
         childBox.y2 = this.actor.height;
-        childBox.x2 = Math.max((this.actor.width) * (this._progress / 100.0), 1.0);
 
         this.progressOverlay.allocate(childBox, flags);
+
+        let clip_width = Math.max((this.actor.width) * (this._progress / 100.0), 1.0);
+        this.progressOverlay.set_clip(0, 0, clip_width, this.actor.height);
     },
 
     updateLabelVisible: function() {
