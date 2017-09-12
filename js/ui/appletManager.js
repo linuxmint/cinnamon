@@ -58,7 +58,11 @@ function unloadRemovedApplets(removedApplets) {
 }
 
 function init(startTime) {
-    applets = imports.applets;
+    try {
+        applets = imports.applets;
+    } catch (e) {
+        applets = {};
+    }
     appletMeta = Extension.Type.APPLET.legacyMeta;
     appletsLoaded = false;
 

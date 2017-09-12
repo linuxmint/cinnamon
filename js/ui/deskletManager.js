@@ -60,7 +60,11 @@ function unloadRemovedDesklets(removedDeskletUUIDs) {
  * Initialize desklet manager
  */
 function init(){
-    desklets = imports.desklets;
+    try {
+        desklets = imports.desklets;
+    } catch (e) {
+        desklets = {};
+    }
     deskletMeta = Extension.Type.DESKLET.legacyMeta;
     deskletsLoaded = false
 

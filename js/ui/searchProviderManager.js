@@ -57,7 +57,11 @@ function unloadRemovedSearchProviders() {
 }
 
 function init() {
-    extensions = imports.search_providers;
+    try {
+        extensions = imports.search_providers;
+    } catch (e) {
+        extensions = {};
+    }
 
     enabledSearchProviders = global.settings.get_strv(ENABLED_SEARCH_PROVIDERS_KEY);
 

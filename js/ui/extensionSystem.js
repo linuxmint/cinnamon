@@ -116,7 +116,11 @@ function unloadRemovedExtensions() {
 }
 
 function init() {
-    extensions = imports.extensions;
+    try {
+        extensions = imports.extensions;
+    } catch (e) {
+        extensions = {};
+    }
     ExtensionState = Extension.State;
 
     enabledExtensions = global.settings.get_strv(ENABLED_EXTENSIONS_KEY);
