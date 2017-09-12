@@ -525,7 +525,7 @@ function start() {
         }));
     } else {
         global.background_actor.show();
-        setRunState(Main.RunState.RUNNING);
+        setRunState(RunState.RUNNING);
 
         if (do_login_sound)
             soundManager.play_once_per_session('login');
