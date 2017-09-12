@@ -363,7 +363,7 @@ function latinise(string){
  * queryCollection:
  * @collection (array): an array of objects to query
  * @query (object): key-value pairs to find in the collection
- * @indexOnly (false): defaults to false, returns only the matching
+ * @indexOnly (boolean): defaults to false, returns only the matching
  * object's index if true.
  *
  * Returns (object|null): the matched object, or null if no object

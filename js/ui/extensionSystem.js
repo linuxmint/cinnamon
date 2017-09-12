@@ -102,7 +102,9 @@ function initEnabledExtensions(callback = null) {
 }
 
 function unloadRemovedExtensions() {
-    let uuidList = Extension.extensions;
+    let uuidList = Extension.extensions.filter(function(extension) {
+        return extension.lowerType === 'extension';
+    });
     for (let i = 0; i < uuidList.length; i++) {
         if (enabledExtensions.indexOf(uuidList[i].uuid) === -1) {
             promises.push(Extension.unloadExtension(uuidList[i].uuid, Extension.Type.EXTENSION));

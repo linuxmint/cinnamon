@@ -43,7 +43,9 @@ function initEnabledSearchProviders() {
 }
 
 function unloadRemovedSearchProviders() {
-    let uuidList = Extension.extensions;
+    let uuidList = Extension.extensions.filter(function(extension) {
+        return extension.lowerType === 'search_provider';
+    });
     for (let i = 0; i < enabledSearchProviders.length; i++) {
         if (enabledSearchProviders.indexOf(uuidList[i].uuid) === -1) {
             promises.push(Extension.unloadExtension(uuidList[i].uuid, Extension.Type.SEARCH_PROVIDER));
