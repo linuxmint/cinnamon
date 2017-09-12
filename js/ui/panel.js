@@ -234,6 +234,7 @@ function PanelManager() {
 PanelManager.prototype = {
     _init: function() {
         this.dummyPanels = [];
+        this.panelCount = 0;
         this.panels = [];
         this.panelsMeta = [];   // Properties of panels in format [<monitor index>, <panelPosition>]
         this.canAdd = true;     // Whether there is space for more panels to be added
@@ -454,6 +455,7 @@ PanelManager.prototype = {
      * Remove the panel from the list panels-enabled
      */
     removePanel: function(panelId) {
+        this.panelCount -= 1;
         let list = global.settings.get_strv("panels-enabled");
         for (let i = 0, len = list.length; i < len; i++) {
             if (list[i].split(":")[0] == panelId) {
@@ -712,23 +714,16 @@ PanelManager.prototype = {
         }
         let[toppheight,botpheight] = heightsUsedMonitor(monitorIndex, panelList);
         panelList[ID] = new Panel(ID, monitorIndex, panelPosition, toppheight, botpheight, drawcorner); // create a new panel
+        this.panelCount += 1;
 
         return panelList[ID];
     },
 
     _checkCanAdd: function() {
         let monitorCount = global.screen.get_n_monitors();
-        let panelCount = monitorCount * 4;          // max of 4 panels on a monitor, one per edge
+        let panelCount = (monitorCount * 4) - this.panelCount;          // max of 4 panels on a monitor, one per edge
 
-        for (let i = 0, len = this.panelsMeta.length; i < len; i++) {
-            if (this.panelsMeta[i] && this.panelsMeta[i][0] >= monitorCount)  // Monitor does not exist
-                continue;
-            panelCount --;
-        }
-
-        if (this.canAdd != (panelCount != 0)) {
-            this.canAdd = (panelCount != 0);
-        }
+        this.canAdd = panelCount > 0;
     },
 
     _updateAllPointerBarriers: function() {
@@ -952,6 +947,7 @@ PanelManager.prototype = {
                 if (this.panels[i]) {
                     this.panels[i].destroy();
                     delete this.panels[i];
+                    this.panelCount -= 1;
                 }
 
             } else { // Nothing happens. Re-allocate panel
