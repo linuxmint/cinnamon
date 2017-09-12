@@ -211,7 +211,10 @@ Applet.prototype = {
         try {
             let appletDefinition = AppletManager.getAppletDefinition({applet_id: instance_id});
             if (appletDefinition) {
-                this._scaleMode = Main.panelManager.panels[appletDefinition.panelId].scaleMode;
+                let panelIndex = Main.panelManager.panels.findIndex(function(panel) {
+                    return panel && (panel.panelId === appletDefinition.panelId);
+                });
+                this._scaleMode = Main.panelManager.panels[panelIndex].scaleMode;
             } else {
                 throw new Error();
             }

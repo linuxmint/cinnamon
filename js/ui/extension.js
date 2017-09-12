@@ -15,6 +15,7 @@ const ExtensionSystem = imports.ui.extensionSystem;
 const SearchProviderManager = imports.ui.searchProviderManager;
 const Main = imports.ui.main;
 const {requireModule, unloadModule, getModuleByIndex} = imports.misc.fileUtils;
+const {queryCollection} = imports.misc.util;
 
 const State = {
     INITIALIZING: 0,
@@ -106,18 +107,8 @@ function createMetaDummy(uuid, path, state) {
     return {name: uuid, description: 'Metadata load failed', state: state, path: path, error: ''};
 }
 
-function findExtensionIndex(uuid) {
-    return extensions.findIndex(function(extension) {
-        return extension.uuid === uuid;
-    });
-}
-
 function getExtension(uuid) {
-    let index = findExtensionIndex(uuid);
-    if (!extensions[index]) {
-        return null;
-    }
-    return extensions[index];
+    return queryCollection(extensions, {uuid});
 }
 
 function formatError(uuid, message) {
@@ -494,7 +485,7 @@ function loadExtension(uuid, type) {
  */
 function unloadExtension(uuid, type, deleteConfig = true) {
     return new Promise(function(resolve, reject) {
-        let extensionIndex = findExtensionIndex(uuid);
+        let extensionIndex = queryCollection(extensions, {uuid}, true);
         if (extensionIndex > -1) {
             let extension = extensions[extensionIndex];
             extension.unlockRole();
@@ -521,9 +512,9 @@ function unloadExtension(uuid, type, deleteConfig = true) {
 function forgetExtension(extensionIndex, uuid, type, forgetMeta) {
     if (typeof extensions[extensionIndex] !== 'undefined') {
         unloadModule(extensions[extensionIndex].moduleIndex);
-        if (typeof imports[type.folder][uuid] !== 'undefined') {
-            delete imports[type.folder][uuid];
-        }
+        try {
+           delete imports[type.folder][uuid];
+        } catch (e) {}
         if (forgetMeta) {
             extensions[extensionIndex] = undefined;
             extensions.splice(extensionIndex, 1);
@@ -540,7 +531,7 @@ function forgetExtension(extensionIndex, uuid, type, forgetMeta) {
  * Reloads an xlet. Useful when the source has changed.
  */
 function reloadExtension(uuid, type) {
-    if (findExtensionIndex(uuid) > -1) {
+    if (getExtension(uuid)) {
         unloadExtension(uuid, type, false).then(function() {
             Main._addXletDirectoriesToSearchPath();
             loadExtension(uuid, type);

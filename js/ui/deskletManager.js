@@ -12,6 +12,7 @@ const DND = imports.ui.dnd;
 const Extension = imports.ui.extension;
 const Main = imports.ui.main;
 const {getModuleByIndex} = imports.misc.fileUtils;
+const {queryCollection} = imports.misc.util;
 
 // Maps uuid -> importer object (desklet directory tree)
 let desklets;
@@ -75,14 +76,8 @@ function init(){
     });
 }
 
-function getDeskletDefinition({uuid, desklet_id}) {
-    let index = definitions.findIndex(function(definition) {
-        return definition.uuid === uuid || definition.desklet_id === desklet_id;
-    });
-    if (!definitions[index]) {
-        return null;
-    }
-    return definitions[index];
+function getDeskletDefinition(definition) {
+    return queryCollection(definitions, definition);
 }
 
 function enableMouseTracking(enable) {
