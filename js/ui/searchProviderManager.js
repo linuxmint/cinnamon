@@ -57,6 +57,7 @@ function unloadRemovedSearchProviders() {
 }
 
 function init() {
+    let startTime = new Date().getTime();
     try {
         extensions = imports.search_providers;
     } catch (e) {
@@ -67,6 +68,7 @@ function init() {
 
     return initEnabledSearchProviders().then(function() {
         global.settings.connect('changed::' + ENABLED_SEARCH_PROVIDERS_KEY, onEnabledSearchProvidersChanged);
+        global.log(`SearchProviderManager started in ${new Date().getTime() - startTime} ms`);
     });
 }
 

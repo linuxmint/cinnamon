@@ -92,7 +92,7 @@ function onEnabledExtensionsChanged() {
     unloadRemovedExtensions().then(initEnabledExtensions);
 }
 
-function initEnabledExtensions(callback = null) {
+function initEnabledExtensions() {
     for (let i = 0; i < enabledExtensions.length; i++) {
         promises.push(Extension.loadExtension(enabledExtensions[i], Extension.Type.EXTENSION))
     }
@@ -116,6 +116,7 @@ function unloadRemovedExtensions() {
 }
 
 function init() {
+    let startTime = new Date().getTime();
     try {
         extensions = imports.extensions;
     } catch (e) {
@@ -126,5 +127,6 @@ function init() {
     enabledExtensions = global.settings.get_strv(ENABLED_EXTENSIONS_KEY);
     return initEnabledExtensions().then(function() {
         global.settings.connect('changed::' + ENABLED_EXTENSIONS_KEY, onEnabledExtensionsChanged);
+        global.log(`ExtensionSystem started in ${new Date().getTime() - startTime} ms`);
     });
 }

@@ -60,6 +60,7 @@ function unloadRemovedDesklets(removedDeskletUUIDs) {
  * Initialize desklet manager
  */
 function init(){
+    let startTime = new Date().getTime();
     try {
         desklets = imports.desklets;
     } catch (e) {
@@ -77,6 +78,7 @@ function init(){
 
         deskletsLoaded = true;
         enableMouseTracking(true);
+        global.log(`DeskletManager started in ${new Date().getTime() - startTime} ms`);
     });
 }
 

@@ -141,7 +141,6 @@ function unloadModule(index) {
 }
 
 function createExports({path, dir, file, size, JS, returnIndex, reject}) {
-    JS = `${JS};`;
     // Import data is stored in an array of objects and the module index is looked up by path.
     let importerData = {
         size: size,
@@ -171,6 +170,7 @@ function createExports({path, dir, file, size, JS, returnIndex, reject}) {
         moduleIndex = LoadedModules.length - 1;
     }
 
+    JS = `${JS};`;
     // Regex matches the top level variable names, and appends them to the module.exports object,
     // mimicking the native CJS importer.
     let modules = []
@@ -188,6 +188,7 @@ function createExports({path, dir, file, size, JS, returnIndex, reject}) {
     }
     // Return the exports object containing all of our top level namespaces.
     JS += `return module.exports;`;
+
     try {
         // Create the function returning module.exports and return it to Extension so it can be called by the
         // appropriate manager.
@@ -208,7 +209,6 @@ function createExports({path, dir, file, size, JS, returnIndex, reject}) {
             dir,
             file.get_basename()
         );
-
         return returnIndex ? moduleIndex : importerData.module;
     } catch (e) {
         let error = requireModuleError(path, e);
@@ -247,38 +247,30 @@ function requireModule(path, dir, async = false, returnIndex = false) {
             path = `${dir}/${path}`;
         }
     }
-    let success, JS, info, size;
+    let success, JS;
     let file = Gio.File.new_for_commandline_arg(path);
     if (!file.query_exists(null)) {
         throw requireModuleError(path, e);
     }
-    let flags = Gio.FileQueryInfoFlags.NOFOLLOW_SYMLINKS;
-    let priority = GLib.PRIORITY_DEFAULT;
 
     if (!async) {
-        info = file.query_info('*', flags, null);
-        size = info.get_size();
         [success, JS] = file.load_contents(null);
         if (!success) {
             throw requireModuleError(path, new Error('Unable to query file info.'));
         }
-        return createExports({path, dir, file, size, JS, returnIndex});
+        return createExports({path, dir, file, size: JS.length, JS, returnIndex});
     }
     return new Promise(function(resolve, reject) {
-        file.query_info_async('*', flags, priority, null, function(file, result) {
-            info = file.query_info_finish(result);
-            size = info.get_size();
-            file.load_contents_async(null, function(object, result) {
-                try {
-                    [success, JS] = file.load_contents_finish(result);
-                    if (!success) {
-                        throw new Error('Unable to load file contents.');
-                    }
-                    resolve(createExports({path, dir, file, size, JS, returnIndex, reject}));
-                } catch (e) {
-                    reject(requireModuleError(path, e));
+        file.load_contents_async(null, function(object, result) {
+            try {
+                [success, JS] = file.load_contents_finish(result);
+                if (!success) {
+                    throw new Error('Unable to load file contents.');
                 }
-            });
+                resolve(createExports({path, dir, file, size: JS.length, JS, returnIndex, reject}));
+            } catch (e) {
+                reject(requireModuleError(path, e));
+            }
         });
     });
 }

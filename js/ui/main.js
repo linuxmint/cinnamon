@@ -488,7 +488,7 @@ function start() {
     _nWorkspacesChanged();
 
     Promise.all([
-        AppletManager.init(new Date().getTime()),
+        AppletManager.init(),
         ExtensionSystem.init(),
         DeskletManager.init(),
         SearchProviderManager.init()

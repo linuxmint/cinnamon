@@ -218,7 +218,6 @@ Extension.prototype = {
                 return findExtensionSubdirectory(this.dir).then((dir) => {
                     this.dir = dir;
                     this.meta.path = this.dir.get_path();
-                    this.meta.path = this.dir.get_path();
                     let pathSections = this.meta.path.split('/');
                     let version = pathSections[pathSections.length - 1];
                     try {
@@ -233,11 +232,10 @@ Extension.prototype = {
                 throw new Error(`Could not find module index: ${moduleIndex}`);
             }
             this.moduleIndex = moduleIndex;
-            let module = getModuleByIndex(moduleIndex);
             for (let i = 0; i < type.requiredFunctions.length; i++) {
                 let func = type.requiredFunctions[i];
-                if (!module[func]) {
-                    reject(logError(`Function "${func}" is missing`, uuid));
+                if (!getModuleByIndex(moduleIndex)[func]) {
+                    throw new Error(`Function "${func}" is missing`);
                 }
             }
 

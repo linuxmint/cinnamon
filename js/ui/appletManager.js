@@ -57,7 +57,8 @@ function unloadRemovedApplets(removedApplets) {
     });
 }
 
-function init(startTime) {
+function init() {
+    let startTime = new Date().getTime();
     try {
         applets = imports.applets;
     } catch (e) {
@@ -72,7 +73,7 @@ function init(startTime) {
     return initEnabledApplets().then(function() {
         appletsLoaded = true;
         global.settings.connect('changed::enabled-applets', onEnabledAppletsChanged);
-        global.log('AppletManager.init() started in %d ms'.format(new Date().getTime() - startTime));
+        global.log(`AppletManager started in ${new Date().getTime() - startTime} ms`);
     });
 }
 
