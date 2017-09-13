@@ -40,6 +40,8 @@ SLEEP_DELAY_OPTIONS = [
     (1800, _("30 minutes")),
     (2700, _("45 minutes")),
     (3600, _("1 hour")),
+    (7200, _("2 hours")),
+    (10800, _("3 hours")),
     (0, _("Never"))
 ]
 
