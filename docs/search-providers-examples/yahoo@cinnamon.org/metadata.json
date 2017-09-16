@@ -5,7 +5,7 @@
     "supported_locales": ["en"],
     "locale_data": {
         "yahoo_url": {
-            "en": "http://us.yhs4.search.yahoo.com/yhs/search?p=%s&fr=sfp&fr2=&type=__alt__ddc_linuxmint_com&hspart=ddc&hsimp=yhs-linuxmint&iscqry="
+            "en": "https://search.yahoo.com/yhs/search?p=%s&fr=sfp&fr2=&type=__alt__ddc_linuxmint_com&hspart=ddc&hsimp=yhs-linuxmint&iscqry="
         }
     }
 }
