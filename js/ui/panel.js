@@ -1714,8 +1714,6 @@ PanelZoneDNDHandler.prototype = {
             // If the placeholder already exists, we just move
             // it, but if we are adding it, expand its size in
             // an animation
-            let fadeIn;
-            let move = false;
 
             if (this._dragPlaceholder) {
                 this._panelZone.set_child_at_index(this._dragPlaceholder.actor,
