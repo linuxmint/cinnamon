@@ -463,8 +463,9 @@ AppMenuButton.prototype = {
     },
 
     handleDragOver: function(source, actor, x, y, time) {
-        if (this._draggable && this._draggable.inhibit)
-            return DND.DragMotionResult.MOVE_DROP;
+        if (this._draggable && this._draggable.inhibit) {
+            return DND.DragMotionResult.CONTINUE;
+        }
 
         if (source instanceof AppMenuButton)
             return DND.DragMotionResult.CONTINUE;

@@ -1639,51 +1639,66 @@ PanelZoneDNDHandler.prototype = {
         this._dragPlaceholder = null;
         this._dragPlaceholderPos = -1;
 
-        this._panelZone.connect('leave-event', Lang.bind(this, this._clearDragPlaceholder));
+        this._origAppletCenters = null;
+
+        this._panelZone.connect('leave-event', Lang.bind(this, this._handleLeaveEvent));
     },
 
     handleDragOver: function(source, actor, x, y, time) {
 
         if (!(source instanceof Applet.Applet)) return DND.DragMotionResult.NO_DROP;
 
-        let children = this._panelZone.get_children();
-        let appletPos = children.indexOf(source.actor);
-
-        let vertical_panel = this._panelZone.get_parent()._delegate.is_vertical;
-
         if (!this._hasSupportedLayout(source)) {
             return DND.DragMotionResult.NO_DROP;
         }
 
-        let pos = 0;
-        let childProperty = vertical_panel ? 'height' : 'width';
+        let vertical_panel = this._panelZone.get_parent()._delegate.is_vertical;
+        let children = this._panelZone.get_children();
 
-        for (let i = 0, len = children.length; i < len; i++) {
-            let allocation = children[i].get_allocation_box();
-            let childCenter;
-            let dragCoord;
+        if (this._origAppletCenters == null) {
+            this._origAppletCenters = [];
+            this._origAppletPos = children.indexOf(source.actor);
+
+            let j;
+
+            for (j = 0; j < children.length; j++) {
+                let allocation = children[j].get_allocation_box();
+                let center = 0;
+                if (vertical_panel) {
+                    center = (allocation.y1 + allocation.y2) / 2;
+                } else {
+                    center = (allocation.x1 + allocation.x2) / 2;
+                }
+
+                this._origAppletCenters.push(center);
+            }
+        }
+
+        let pos = 0;
+        let i = 0;
+
+        while (i < this._origAppletCenters.length) {
             if (vertical_panel) {
-                childCenter = (allocation.y1 + allocation.y2) / 2;
-                dragCoord = y;
+                if (y > (this._origAppletCenters[i])) {
+                    pos = ++i;
+                } else {
+                    break;
+                }
+            } else {
+                if (x > (this._origAppletCenters[i])) {
+                    pos = ++i;
+                } else {
+                    break;
+                }
             }
-            else {
-                childCenter = (allocation.x1 + allocation.x2) / 2;
-                dragCoord = x;
-            }
-            if (dragCoord > childCenter) pos = i;
-            else break;
         }
 
         if (pos != this._dragPlaceholderPos) {
             this._dragPlaceholderPos = pos;
-
             // Don't allow positioning before or after self
-            if (appletPos != -1 && pos == appletPos) {
-                if (this._dragPlaceholder) {
-                    this._dragPlaceholder.animateOutAndDestroy();
-                }
-                this._dragPlaceholder = null;
 
+            if (this._origAppletPos != -1 && (pos == this._origAppletPos || pos == this._origAppletPos + 1)) {
+                this._clearDragPlaceholder();
                 return DND.DragMotionResult.CONTINUE;
             }
 
@@ -1691,30 +1706,34 @@ PanelZoneDNDHandler.prototype = {
             // it, but if we are adding it, expand its size in
             // an animation
             let fadeIn;
+            let move = false;
+
             if (this._dragPlaceholder) {
-                this._dragPlaceholder.actor.destroy();
-                fadeIn = false;
+                this._panelZone.set_child_at_index(this._dragPlaceholder.actor,
+                                                   this._dragPlaceholderPos);
             } else {
-                fadeIn = true;
-            }
+                this._dragPlaceholder = new DND.GenericDragPlaceholderItem();
 
-            this._dragPlaceholder = new DND.GenericDragPlaceholderItem();
-            if (vertical_panel) {
-                this._dragPlaceholder.child.set_width (10);
-                this._dragPlaceholder.child.set_height (20);
-            } else {
-                this._dragPlaceholder.child.set_width (20);
-                this._dragPlaceholder.child.set_height (10);
-            }
+                if (vertical_panel) {
+                    this._dragPlaceholder.child.set_width (10 * global.ui_scale);
+                    this._dragPlaceholder.child.set_height (20 * global.ui_scale);
+                } else {
+                    this._dragPlaceholder.child.set_width (20 * global.ui_scale);
+                    this._dragPlaceholder.child.set_height (10 * global.ui_scale);
+                }
 
-            this._panelZone.insert_child_at_index(this._dragPlaceholder.actor,
-                                                  this._dragPlaceholderPos);
+                this._panelZone.insert_child_at_index(this._dragPlaceholder.actor,
+                                                      this._dragPlaceholderPos);
 
-            if (fadeIn)
                 this._dragPlaceholder.animateIn();
+            }
         }
 
         return DND.DragMotionResult.MOVE_DROP;
+    },
+
+    _handleLeaveEvent: function() {
+        this._clearDragPlaceholder();
     },
 
     handleDragOut: function() {
@@ -1722,6 +1741,7 @@ PanelZoneDNDHandler.prototype = {
     },
 
     acceptDrop: function(source, actor, x, y, time) {
+        this._origAppletCenters = null;
 
         if (!(source instanceof Applet.Applet)) return false;
 
@@ -1736,7 +1756,7 @@ PanelZoneDNDHandler.prototype = {
 
         let children = this._panelZone.get_children();
         let curAppletPos = 0;
-        let insertAppletPos;
+        let insertAppletPos = null;
 
         for (let i = 0, len = children.length; i < len; i++) {
             if (children[i]._delegate instanceof Applet.Applet){
