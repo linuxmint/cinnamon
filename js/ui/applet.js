@@ -246,6 +246,7 @@ Applet.prototype = {
         this._dragging = true;
         this._applet_tooltip.hide();
         this._applet_tooltip.preventShow = true;
+        Main.panelManager.resetPanelDND();
     },
 
     _onDragEnd: function() {

@@ -1057,6 +1057,14 @@ PanelManager.prototype = {
                 break;
             }
         }
+    },
+
+    resetPanelDND: function() {
+        for (let i = 0; i < this.panels.length; i++) {
+            if (this.panels[i]) {
+                this.panels[i].resetDNDZones();
+            }
+        }
     }
 
 };  // end of panel manager
@@ -1640,6 +1648,7 @@ PanelZoneDNDHandler.prototype = {
         this._dragPlaceholderPos = -1;
 
         this._origAppletCenters = null;
+        this._origAppletPos = -1;
 
         this._panelZone.connect('leave-event', Lang.bind(this, this._handleLeaveEvent));
     },
@@ -1820,6 +1829,12 @@ PanelZoneDNDHandler.prototype = {
         if (applet instanceof Applet.IconApplet && !(applet instanceof Applet.TextIconApplet)) return true;
         if (layout == ((this._panelZone.get_parent()._delegate.is_vertical) ? Applet.AllowedLayout.VERTICAL : Applet.AllowedLayout.HORIZONTAL)) return true;
         return false;
+    },
+
+    reset: function() {
+        this._origAppletCenters = null;
+        this._origAppletPos = -1;
+        this._clearDragPlaceholder();
     }
 }
 
@@ -3422,5 +3437,11 @@ Panel.prototype = {
 
     getIsVisible: function() {
         return this._shouldShow;
+    },
+
+    resetDNDZones: function() {
+        this._leftBoxDNDHandler.reset();
+        this._centerBoxDNDHandler.reset();
+        this._rightBoxDNDHandler.reset();
     }
 };
