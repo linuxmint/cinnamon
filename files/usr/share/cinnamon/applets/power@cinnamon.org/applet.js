@@ -10,11 +10,14 @@ const Pango = imports.gi.Pango;
 const Main = imports.ui.main;
 const Settings = imports.ui.settings;
 const GnomeSession = imports.misc.gnomeSession;
+const Mainloop = imports.mainloop;
 
 const BrightnessBusName = "org.cinnamon.SettingsDaemon.Power.Screen";
 const KeyboardBusName = "org.cinnamon.SettingsDaemon.Power.Keyboard";
 
 const PANEL_EDIT_MODE_KEY = "panel-edit-mode";
+
+const DELAY_SEC_REFRESH_DEVICES = 2;
 
 const UPDeviceType = {
     UNKNOWN: 0,
@@ -285,6 +288,8 @@ MyApplet.prototype = {
 
         this._proxy = null;
 
+        this.availableDevices = [];
+
         global.settings.connect('changed::' + PANEL_EDIT_MODE_KEY, Lang.bind(this, this._onPanelEditModeChanged));
 
         Interfaces.getDBusProxyAsync("org.cinnamon.SettingsDaemon.Power", Lang.bind(this, function(proxy, error) {
@@ -298,6 +303,25 @@ MyApplet.prototype = {
         }));
 
         this.set_show_label_in_vertical_panels(false);
+    },
+
+    // Do a sync refresh on each device stored in this.availableDevices
+    _refreshAllDevice: function() {
+        let node = '<node> \
+                        <interface name="org.freedesktop.UPower.Device"> \
+                            <method name="Refresh" /> \
+                        </interface> \
+                    </node>';
+
+        this.availableDevices.forEach(function (objectPath) {
+            let proxy = Gio.DBusProxy.makeProxyWrapper(node);
+
+            let p = new proxy(Gio.DBus.system,
+                              'org.freedesktop.UPower',
+                              objectPath);
+
+            p.RefreshSync();
+        });
     },
 
     _onPanelEditModeChanged: function() {
@@ -485,8 +509,15 @@ MyApplet.prototype = {
             if (!error) {
                 let devices = result[0];
                 let position = 0;
+                // Clear available devices list
+                this.availableDevices.length = 0;
                 for (let i = 0; i < devices.length; i++) {
                     let [device_id, vendor, model, device_type, icon, percentage, state, seconds] = devices[i];
+                    /*
+                    Store available devices.
+                    Later this list will be used to refresh the devices
+                    */
+                    this.availableDevices.push(device_id);
 
                     // Ignore AC_POWER devices
                     if (device_type == UPDeviceType.AC_POWER)
@@ -569,6 +600,13 @@ MyApplet.prototype = {
                 }
             }
         }));
+
+        /*
+        After handling devices changed signal, schedule a device refresh
+        with delay defined by DELAY_SEC_REFRESH_DEVICES in seconds
+        */
+        Mainloop.timeout_add_seconds(DELAY_SEC_REFRESH_DEVICES,
+                                     Lang.bind(this, this._refreshAllDevice));
     },
 
     on_applet_removed_from_panel: function() {
