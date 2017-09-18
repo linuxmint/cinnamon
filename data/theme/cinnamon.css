@@ -1268,7 +1268,7 @@ StScrollBar StButton#vhandle:hover {
     background-gradient-end: rgba(255,144,144,0.5);
 }
 
-.window-list-item-box:progress {
+.window-list-item-box .progress {
     background-gradient-direction: vertical;
     background-gradient-start: rgba(255,52,52,0.5);
     background-gradient-end: rgba(255,144,144,0.5);
