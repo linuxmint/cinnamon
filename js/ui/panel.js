@@ -1790,24 +1790,25 @@ PanelZoneDNDHandler.prototype = {
            be something like 'panelLeft' or 'panelLeft vertical'*/
 
         if (this._panelZone.has_style_class_name("panelRight") || this._panelZone.has_style_class_name("panelLeft")) {
-          this._panelZone.set_size(-1, -1);  /* kludge pt 2 - if the box being dropped into
-                                               has been set a fixed size then we need to let it adjust. */
+            this._panelZone.set_size(-1, -1);  /* kludge pt 2 - if the box being dropped into
+                                                  has been set a fixed size then we need to let it adjust. */
 
         }
 
         if (sourcebox.has_style_class_name("panelRight") || sourcebox.has_style_class_name("panelLeft")) {
-          children = sourcebox.get_children();
-          if (children.length == 0) {         /* put back some minimum space if the source box is now empty */
-            if (sourcebox.get_parent()._delegate.is_vertical) {
-               let height = sourcebox.get_height();
-             if (height < EDIT_MODE_MIN_BOX_SIZE * global.ui_scale)
-                 sourcebox.set_height(EDIT_MODE_MIN_BOX_SIZE * global.ui_scale);
-            } else {
-              let width = sourcebox.get_width();
-              if (width < EDIT_MODE_MIN_BOX_SIZE * global.ui_scale)
-                 sourcebox.set_width(EDIT_MODE_MIN_BOX_SIZE * global.ui_scale);
+            children = sourcebox.get_children();
+
+            if (children.length == 0) {         /* put back some minimum space if the source box is now empty */
+                if (sourcebox.get_parent()._delegate.is_vertical) {
+                    let height = sourcebox.get_height();
+                    if (height < EDIT_MODE_MIN_BOX_SIZE * global.ui_scale)
+                        sourcebox.set_height(EDIT_MODE_MIN_BOX_SIZE * global.ui_scale);
+                } else {
+                    let width = sourcebox.get_width();
+                    if (width < EDIT_MODE_MIN_BOX_SIZE * global.ui_scale)
+                        sourcebox.set_width(EDIT_MODE_MIN_BOX_SIZE * global.ui_scale);
+                }
             }
-          }
         }
 
         return true;
@@ -2359,21 +2360,21 @@ Panel.prototype = {
            - perhaps x_fill etc. is turned on elsewhere  */
 
         if (this._panelEditMode) {
-          if (this.is_vertical) {
-            let height = this._rightBox.get_height();
-            if (height < EDIT_MODE_MIN_BOX_SIZE * global.ui_scale)
-                this._rightBox.set_height(EDIT_MODE_MIN_BOX_SIZE * global.ui_scale);
-            height = this._leftBox.get_height();
-            if (height < EDIT_MODE_MIN_BOX_SIZE * global.ui_scale)
-                this._leftBox.set_height(EDIT_MODE_MIN_BOX_SIZE * global.ui_scale);
-          } else {
-            let width = this._rightBox.get_width();
-            if (width < EDIT_MODE_MIN_BOX_SIZE * global.ui_scale)
-                this._rightBox.set_width(EDIT_MODE_MIN_BOX_SIZE * global.ui_scale);
-            width = this._leftBox.get_width();
-            if (width < EDIT_MODE_MIN_BOX_SIZE * global.ui_scale)
-                this._leftBox.set_width(EDIT_MODE_MIN_BOX_SIZE * global.ui_scale);
-          }
+            if (this.is_vertical) {
+                let height = this._rightBox.get_height();
+                if (height < EDIT_MODE_MIN_BOX_SIZE * global.ui_scale)
+                    this._rightBox.set_height(EDIT_MODE_MIN_BOX_SIZE * global.ui_scale);
+                height = this._leftBox.get_height();
+                if (height < EDIT_MODE_MIN_BOX_SIZE * global.ui_scale)
+                    this._leftBox.set_height(EDIT_MODE_MIN_BOX_SIZE * global.ui_scale);
+            } else {
+                let width = this._rightBox.get_width();
+                if (width < EDIT_MODE_MIN_BOX_SIZE * global.ui_scale)
+                    this._rightBox.set_width(EDIT_MODE_MIN_BOX_SIZE * global.ui_scale);
+                width = this._leftBox.get_width();
+                if (width < EDIT_MODE_MIN_BOX_SIZE * global.ui_scale)
+                    this._leftBox.set_width(EDIT_MODE_MIN_BOX_SIZE * global.ui_scale);
+            }
         } else {
             this._rightBox.set_size(-1, -1);
             this._leftBox.set_size(-1, -1);
