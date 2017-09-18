@@ -280,8 +280,7 @@ AppMenuButton.prototype = {
                 Lang.bind(this, this._getPreferredHeight));
         this.actor.connect('allocate', Lang.bind(this, this._allocate));
 
-        this.progressOverlay = new St.Widget({ style_class: "window-list-item-box", reactive: false, important: true  });
-        this.progressOverlay.add_style_pseudo_class("progress");
+        this.progressOverlay = new St.Widget({ style_class: "progress", reactive: false, important: true  });
 
         this.actor.add_actor(this.progressOverlay);
 
