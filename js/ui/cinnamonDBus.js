@@ -414,6 +414,12 @@ CinnamonDBus.prototype = {
     },
 
     GetMonitorWorkRect: function(index) {
+        let n_mons = global.screen.get_n_monitors();
+
+        if ((index < 0) || index > (n_mons - 1)) {
+            throw new Error("GetMonitorWorkRect: invalid monitor index: " + index + ".  Must be 0 to " + (n_mons - 1));
+        }
+
         let rect = global.screen.get_active_workspace().get_work_area_for_monitor(index);
 
         return [rect.x, rect.y, rect.width, rect.height];
