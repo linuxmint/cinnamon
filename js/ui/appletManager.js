@@ -348,7 +348,7 @@ function addAppletToPanels(extension, appletDefinition) {
 
         applet._order = appletDefinition.order;
 
-        let location = appletDefinition.location;
+        let location = getLocation(applet.panel, appletDefinition.location_label);
 
         // Remove it from its previous panel location (if it had one)
         if (applet._panelLocation != null && location != applet._panelLocation) {

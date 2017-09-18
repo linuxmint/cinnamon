@@ -124,6 +124,12 @@ function logError(message, uuid, error, state) {
         error.message += `\n${errorMessage}`;
     }
 
+    error.stack = error.stack.split('\n')
+        .filter(function(line) {
+            return !line.match(/<Promise>|wrapPromise/);
+        })
+        .join('\n');
+
     global.logError(error);
 
     // An error during initialization leads to unloading the extension again.
@@ -494,7 +500,7 @@ function unloadExtension(uuid, type, deleteConfig = true) {
             try {
                 Type[extension.upperType].callbacks.prepareExtensionUnload(extension, deleteConfig);
             } catch(e) {
-                global.logError(`Error disabling ${extension.lowerType} ${extension.uuid}`, e);
+                logError(`Error disabling ${extension.lowerType} ${extension.uuid}`, extension.uuid, e);
             }
             extension.unloadStylesheet();
             extension.unloadIconDirectory();
@@ -583,7 +589,7 @@ function loadMetaData({state, path, uuid, userDir, folder}) {
                 }
                 meta = JSON.parse(json);
             } catch (e) {
-                global.logError(`Failed to load/parse metadata.json`, e);
+                logError(`Failed to load/parse metadata.json`, uuid, e);
                 meta = createMetaDummy(uuid, oldPath, State.ERROR);
 
             }
@@ -639,7 +645,7 @@ function findExtensionSubdirectory(dir) {
                 fileEnum.close(null);
                 resolve(largest ? largest[1] : dir);
             } catch (e) {
-                global.logError(`Error looking for extension version for ${dir.get_basename()} in directory ${dir}`, e);
+                logError(`Error looking for extension version for ${dir.get_basename()} in directory ${dir}`, 'findExtensionSubdirectory', e);
                 resolve(dir)
             }
 

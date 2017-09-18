@@ -23,6 +23,9 @@ const cinnamonImportNames = [
     'misc',
     'perf'
 ];
+const giImportNames = imports.gi.GIRepository.Repository
+    .get_default()
+    .get_loaded_namespaces();
 const LoadedModules = [];
 const FunctionConstructor = Symbol();
 const Symbols = {};
@@ -108,26 +111,15 @@ function getUserDesktopDir() {
     else return null;
 }
 
-function requireModuleError(path, e) {
-    // Since constructing functions obscures the path in stack traces, we will put the correct path back.
-    e.stack = e.stack.replace(/([^@]*(?=\s)\sFunction)/, path)
-        .split('\n')
-        .filter(function(line) {
-            return !line.match(/<Promise>|wrapPromise/);
-        })
-        .join('\n');
-    return e;
-}
-
 function findModuleIndex(path) {
     return LoadedModules.findIndex(function(cachedModule) {
-        return cachedModule.path === path;
+        return cachedModule && cachedModule.path === path;
     });
 }
 
 function getModuleByIndex(index) {
     if (!LoadedModules[index]) {
-        throw requireModuleError('<getModuleByIndex>', new Error('Module does not exist.'));
+        throw new Error('[getModuleByIndex] Module does not exist.');
     }
     return LoadedModules[index].module;
 }
@@ -136,15 +128,24 @@ function unloadModule(index) {
     if (!LoadedModules[index]) {
         return;
     }
-    LoadedModules[index] = undefined;
-    LoadedModules.splice(index, 1);
+    let indexes = [];
+    for (let i = 0; i < LoadedModules.length; i++) {
+        if (LoadedModules[i] && LoadedModules[i].dir === LoadedModules[index].dir) {
+            indexes.push(i);
+        }
+    }
+    for (var i = 0; i < indexes.length; i++) {
+        LoadedModules[indexes[i]].module = undefined;
+        LoadedModules[indexes[i]].size = -1;
+    }
 }
 
 function createExports({path, dir, file, size, JS, returnIndex, reject}) {
     // Import data is stored in an array of objects and the module index is looked up by path.
     let importerData = {
-        size: size,
-        path: path,
+        size,
+        path,
+        dir,
         module: null
     };
     // module.exports as an object holding a module's namespaces is a node convention, and is intended
@@ -170,24 +171,29 @@ function createExports({path, dir, file, size, JS, returnIndex, reject}) {
         moduleIndex = LoadedModules.length - 1;
     }
 
-    JS = `${JS};`;
+    JS = `'use strict';${JS};`;
     // Regex matches the top level variable names, and appends them to the module.exports object,
     // mimicking the native CJS importer.
-    let modules = []
-        .concat(JS.match(/^(?:[^ \n(a-zA-Z0-9\/])*(function{1,}) ([a-zA-Z_$]*[^(])/gm))
-        .concat(JS.match(/^(var{1,}) ([a-zA-Z_$]*)/gm))
-        .concat(JS.match(/^(const{1,}) ([a-zA-Z_$]*)/gm))
-        .concat(JS.match(/^(let{1,}) ([a-zA-Z_$]*)/gm));
-    for (let i = 0; i < modules.length; i++) {
-        if (!modules[i]) {
-            continue;
+    const exportsRegex = /^(module\.exports(.?([A-Za-z_$]*))) = ([A-Za-z_;]*)$/gm;
+    const varRegex = /^(const|var|let|function{1,}) ([a-zA-Z_$]*)/gm;
+    let match;
+
+    if (!JS.match(exportsRegex)) {
+        while ((match = varRegex.exec(JS)) != null) {
+            if (match.index === varRegex.lastIndex) {
+                varRegex.lastIndex++;
+            }
+            // Don't modularize native imports
+            if (match[2]
+                && importNames.indexOf(match[2].toLowerCase()) === -1
+                && giImportNames.indexOf(match[2]) === -1) {
+                JS += `module.exports.${match[2]} = typeof ${match[2]} !== 'undefined' ? ${match[2]} : null;`;
+            }
         }
-        let module = modules[i].split(' ')[1];
-        // Regex doesn't filter commented out variables, so checking each namespace for undefined.
-        JS += `module.exports.${module} = typeof ${module} !== 'undefined' ? ${module} : null;\n`;
     }
-    // Return the exports object containing all of our top level namespaces.
-    JS += `return module.exports;`;
+    // Return the exports object containing all of our top level namespaces, and include the sourceURL so
+    // Spidermonkey includes the file names in stack traces.
+    JS += `return module.exports;//# sourceURL=${path}`;
 
     try {
         // Create the function returning module.exports and return it to Extension so it can be called by the
@@ -209,14 +215,14 @@ function createExports({path, dir, file, size, JS, returnIndex, reject}) {
             dir,
             file.get_basename()
         );
+
         return returnIndex ? moduleIndex : importerData.module;
     } catch (e) {
-        let error = requireModuleError(path, e);
         if (reject) {
-            reject(error);
+            reject(e);
             return;
         }
-        throw error;
+        throw e;
     }
 }
 
@@ -249,14 +255,15 @@ function requireModule(path, dir, async = false, returnIndex = false) {
     }
     let success, JS;
     let file = Gio.File.new_for_commandline_arg(path);
+    let fileLoadErrorMessage = '[requireModule] Unable to load file contents.';
     if (!file.query_exists(null)) {
-        throw requireModuleError(path, e);
+        throw new Error(`[requireModule] Path does not exist.\n${path}`);
     }
 
     if (!async) {
         [success, JS] = file.load_contents(null);
         if (!success) {
-            throw requireModuleError(path, new Error('Unable to query file info.'));
+            throw new Error(fileLoadErrorMessage);
         }
         return createExports({path, dir, file, size: JS.length, JS, returnIndex});
     }
@@ -265,11 +272,11 @@ function requireModule(path, dir, async = false, returnIndex = false) {
             try {
                 [success, JS] = file.load_contents_finish(result);
                 if (!success) {
-                    throw new Error('Unable to load file contents.');
+                    throw new Error(fileLoadErrorMessage);
                 }
                 resolve(createExports({path, dir, file, size: JS.length, JS, returnIndex, reject}));
             } catch (e) {
-                reject(requireModuleError(path, e));
+                reject(e);
             }
         });
     });
