@@ -975,26 +975,37 @@ function formatLogArgument (arg, recursion=0, depth) {
         && recursion > 0) {
         arg = `'${arg}'`;
     }
-    let isGObject = arg.toString().indexOf('[0x') > -1;
+    // Check if we reached the depth threshold
+    if (recursion + 1 > depth) {
+        try {
+            arg = JSON.stringify(arg);
+        } catch (e) {
+            arg = arg.toString();
+        }
+        return arg;
+    }
+    let isGObject;
+    let space = Array(recursion)
+        .fill('    ')
+        .join('');
+    // Need to work around CJS being unable to stringify some native objects
+    // https://github.com/linuxmint/cjs/blob/f7638496ea1bec4c6774e6065cb3b2c38b30a7bf/cjs/context.cpp#L138
+    try {
+        isGObject = arg.toString().indexOf('[0x') > -1;
+    } catch (e) {
+        arg = '<unreadable>';
+    }
     if (typeof arg === 'object') {
         let isArray = Array.isArray(arg);
         let brackets = isArray ? ['[', ']'] : ['{', '}'];
         let array = isArray ? arg : Object.keys(arg);
-        let string = `${brackets[0]}\n`;
+        // Add beginning bracket with indentation
+        let string = `${brackets[0]}${recursion + 1 > depth ? '' : '\n'}`;
         // GObjects are referenced in context and likely have circular references.
         if (recursion === 0) {
             depth = isGObject ? 2 : 6;
         }
         for (let j = 0, len = array.length; j < len; j++) {
-            // Add beginning bracket with indentation
-            let space = Array(recursion)
-                .fill('    ')
-                .join('');
-            // Check if we reached the depth threshold
-            if (recursion > depth) {
-                string += `${space}${arg.toString()}\n`;
-                break;
-            }
             if (isArray) {
                 string += `${space}${formatLogArgument(arg[j], recursion + 1, depth)},\n`;
             } else {
@@ -1006,6 +1017,13 @@ function formatLogArgument (arg, recursion=0, depth) {
             .fill('    ')
             .join('') + brackets[1];
     // Functions, numbers, etc.
+    } else if (typeof arg === 'function') {
+        let array = arg.toString().split('\n');
+        for (var i = 0; i < array.length; i++) {
+            if (i === 0) continue;
+            array[i] = `${space}${array[i]}`;
+        }
+        arg = array.join('\n');
     } else if (typeof arg !== 'string' || isGObject) {
         arg = arg.toString();
     }
