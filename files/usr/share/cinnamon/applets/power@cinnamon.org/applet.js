@@ -17,7 +17,7 @@ const KeyboardBusName = "org.cinnamon.SettingsDaemon.Power.Keyboard";
 
 const PANEL_EDIT_MODE_KEY = "panel-edit-mode";
 
-const DELAY_SEC_REFRESH_DEVICES = 8;
+const INTERVAL_SEC_REFRESH_DEVICES = 8;
 
 const UPDeviceType = {
     UNKNOWN: 0,
@@ -292,6 +292,10 @@ MyApplet.prototype = {
 
         global.settings.connect('changed::' + PANEL_EDIT_MODE_KEY, Lang.bind(this, this._onPanelEditModeChanged));
 
+        // Start refresh all device timer
+        Mainloop.timeout_add_seconds(INTERVAL_SEC_REFRESH_DEVICES,
+                                     Lang.bind(this, this._refreshAllDevice));
+
         Interfaces.getDBusProxyAsync("org.cinnamon.SettingsDaemon.Power", Lang.bind(this, function(proxy, error) {
             this._proxy = proxy;
 
@@ -322,6 +326,10 @@ MyApplet.prototype = {
 
             p.RefreshSync();
         });
+
+        // Update refresh all device timer
+        Mainloop.timeout_add_seconds(INTERVAL_SEC_REFRESH_DEVICES,
+                                     Lang.bind(this, this._refreshAllDevice));
     },
 
     _onPanelEditModeChanged: function() {
@@ -600,13 +608,6 @@ MyApplet.prototype = {
                 }
             }
         }));
-
-        /*
-        After handling devices changed signal, schedule a device refresh
-        with delay defined by DELAY_SEC_REFRESH_DEVICES in seconds
-        */
-        Mainloop.timeout_add_seconds(DELAY_SEC_REFRESH_DEVICES,
-                                     Lang.bind(this, this._refreshAllDevice));
     },
 
     on_applet_removed_from_panel: function() {
