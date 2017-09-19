@@ -2406,7 +2406,7 @@ font_family_from_terms (CRTerm *term,
           if (term->the_operator == NO_OP)
             g_string_append (family_string, " ");
           else
-            g_string_append (family_string, ", ");
+            g_string_append (family_string, ",");
         }
       else
         {
