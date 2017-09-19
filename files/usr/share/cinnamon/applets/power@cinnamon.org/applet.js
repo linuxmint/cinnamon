@@ -17,7 +17,7 @@ const KeyboardBusName = "org.cinnamon.SettingsDaemon.Power.Keyboard";
 
 const PANEL_EDIT_MODE_KEY = "panel-edit-mode";
 
-const DELAY_SEC_REFRESH_DEVICES = 2;
+const DELAY_SEC_REFRESH_DEVICES = 8;
 
 const UPDeviceType = {
     UNKNOWN: 0,
