@@ -581,6 +581,16 @@ AppIndicator.prototype = {
         }
     },
 
+    secondaryActivate: function() {
+        if (this._proxy) {
+            let test = this._proxy.call({
+                name: 'SecondaryActivate',
+                paramTypes: 'ii',
+                paramValues: [0, 0]
+            });
+        }
+    },
+
     scroll: function(dx, dy) {
         if (this._proxy) {
             if (dx != 0) {
@@ -1108,9 +1118,13 @@ IndicatorActor.prototype = {
             } else if (event.get_button() == 1) {
                 this.menu.close();
                 this._indicator.open();
+            }else if (event.get_button() == 2) {
+                this._indicator.secondaryActivate();
             }
         } else if ((event.get_button() == 1) && this.menu) {
             this.menu.toggle();
+        } else if ((event.get_button() == 2) && this.menu) {
+            this._indicator.secondaryActivate();
         }
         return false;
     },
