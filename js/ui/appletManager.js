@@ -3,8 +3,6 @@
 const GLib = imports.gi.GLib;
 const Gio = imports.gi.Gio;
 const St = imports.gi.St;
-const Cinnamon = imports.gi.Cinnamon;
-const Lang = imports.lang;
 
 const Main = imports.ui.main;
 const Applet = imports.ui.applet;
@@ -92,7 +90,8 @@ function finishExtensionLoad(extensionIndex) {
     // Add all applet instances for this extension
     let extension = Extension.extensions[extensionIndex];
     for (let i = 0; i < definitions.length; i++) {
-        if (definitions[i].uuid !== extension.uuid) {
+        if (definitions[i].uuid !== extension.uuid
+            || definitions[i].applet != null) {
             continue;
         }
         if (!addAppletToPanels(extension, definitions[i])) {
@@ -513,9 +512,11 @@ function moveApplet(appletDefinition, allowedLayout) {
 }
 
 function get_role_provider(role) {
-    if (Extension.Type.APPLET.roles[role]
-        && Extension.Type.APPLET.roles[role].roleProvider) {
-        return Extension.Type.APPLET.roles[role].roleProvider;
+    if (Extension.Type.APPLET.roles[role]) {
+        let instances = getRunningInstancesForUuid(Extension.Type.APPLET.roles[role]);
+        if (instances.length > 0) {
+            return instances[0];
+        }
     }
     return null;
 }

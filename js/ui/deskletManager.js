@@ -1,5 +1,4 @@
 // -*- indent-tabs-mode: nil -*-
-const Cinnamon = imports.gi.Cinnamon;
 const Clutter = imports.gi.Clutter;
 const Gio = imports.gi.Gio;
 const GLib = imports.gi.GLib;

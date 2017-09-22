@@ -3,7 +3,6 @@
 const Extension = imports.ui.extension;
 const {getModuleByIndex} = imports.misc.fileUtils;
 const GLib = imports.gi.GLib;
-const Gio = imports.gi.Gio;
 const Lang = imports.lang;
 
 // Maps uuid -> importer object (extension directory tree)
