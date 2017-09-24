@@ -984,7 +984,7 @@ function formatLogArgument(arg = '', recursion = 0, depth = 6) {
         return arg;
     }
     let isGObject;
-    let space = Array.apply(this, Array(recursion))
+    let space = Array.apply(null, Array(recursion))
         .map(String.prototype.valueOf, '    ')
         .join('');
     // Need to work around CJS being unable to stringify some native objects
