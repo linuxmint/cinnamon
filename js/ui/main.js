@@ -964,16 +964,15 @@ function notifyError(msg, details) {
  *
  * Used by _log to handle each argument type and its formatting.
  */
-function formatLogArgument (arg, recursion=0, depth) {
+function formatLogArgument(arg = '', recursion = 0, depth = 6) {
     // Make sure falsey values are clearly indicated.
     if (arg === null) {
         arg = 'null';
     } else if (arg === undefined) {
         arg = 'undefined';
     // Ensure strings are distinguishable.
-    } else if (typeof arg === 'string'
-        && recursion > 0) {
-        arg = `'${arg}'`;
+    } else if (typeof arg === 'string' && recursion > 0) {
+        arg = '\'' + arg + '\'';
     }
     // Check if we reached the depth threshold
     if (recursion + 1 > depth) {
@@ -985,8 +984,8 @@ function formatLogArgument (arg, recursion=0, depth) {
         return arg;
     }
     let isGObject;
-    let space = Array(recursion)
-        .fill('    ')
+    let space = Array.apply(this, Array(recursion))
+        .map(String.prototype.valueOf, '    ')
         .join('');
     // Need to work around CJS being unable to stringify some native objects
     // https://github.com/linuxmint/cjs/blob/f7638496ea1bec4c6774e6065cb3b2c38b30a7bf/cjs/context.cpp#L138
@@ -1000,28 +999,28 @@ function formatLogArgument (arg, recursion=0, depth) {
         let brackets = isArray ? ['[', ']'] : ['{', '}'];
         let array = isArray ? arg : Object.keys(arg);
         // Add beginning bracket with indentation
-        let string = `${brackets[0]}${recursion + 1 > depth ? '' : '\n'}`;
+        let string = brackets[0] + (recursion + 1 > depth ? '' : '\n');
         // GObjects are referenced in context and likely have circular references.
         if (recursion === 0) {
             depth = isGObject ? 2 : 6;
         }
         for (let j = 0, len = array.length; j < len; j++) {
             if (isArray) {
-                string += `${space}${formatLogArgument(arg[j], recursion + 1, depth)},\n`;
+                string += space + formatLogArgument(arg[j], recursion + 1, depth) + ',\n';
             } else {
-                string += `${space}${array[j]}: ${formatLogArgument(arg[array[j]], recursion + 1, depth)},\n`;
+                string += space + array[j] + ': ' + formatLogArgument(arg[array[j]], recursion + 1, depth) + ',\n';
             }
         }
         // Add ending bracket with indentation
-        arg = string + Array(recursion > 0 ? recursion - 1 : recursion)
-            .fill('    ')
+        arg = string + Array.apply(null, Array(recursion > 0 ? recursion - 1 : recursion))
+            .map(String.prototype.valueOf, '    ')
             .join('') + brackets[1];
     // Functions, numbers, etc.
     } else if (typeof arg === 'function') {
         let array = arg.toString().split('\n');
-        for (var i = 0; i < array.length; i++) {
+        for (let i = 0; i < array.length; i++) {
             if (i === 0) continue;
-            array[i] = `${space}${array[i]}`;
+            array[i] = space + array[i];
         }
         arg = array.join('\n');
     } else if (typeof arg !== 'string' || isGObject) {
@@ -1041,8 +1040,8 @@ function formatLogArgument (arg, recursion=0, depth) {
  * stream.  This is primarily intended for use by the
  * extension system as well as debugging.
  */
-function _log(category='info', msg='') {
-    let args = Array.from(arguments);
+function _log(category= 'info', msg= '') {
+    let args = Array.prototype.slice.call(arguments);
     args.shift();
     let text = '';
 
@@ -1051,7 +1050,7 @@ function _log(category='info', msg='') {
     }
 
     if (args.length === 2) {
-        text = `${args[0]}: ${args[1]}`;
+        text = args[0] + ': ' + args[1];
     } else {
         text = args.join(' ');
     }
@@ -1195,9 +1194,10 @@ function _logInfo(msg) {
         _log('info', msg.message);
         _LogTraceFormatted(msg.stack);
     } else {
-        let args = Array.from(arguments);
+        let args = ['info', msg]
+            .concat(Array.prototype.slice.call(arguments));
         args.shift();
-        _log('info', msg, ...args);
+        _log.apply(this, args);
     }
 }
 
