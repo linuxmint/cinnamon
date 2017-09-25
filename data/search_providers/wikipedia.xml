@@ -2,10 +2,10 @@
 <ShortName>Wikipedia</ShortName>
 <Description>Wikipedia, the free encyclopedia</Description>
 <InputEncoding>UTF-8</InputEncoding>
-<Image width="16" height="16">data:image/x-icon;base64,AAABAAEAEBAQAAEABAAoAQAAFgAAACgAAAAQAAAAIAAAAAEABAAAAAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAEAgQAhIOEAMjHyABIR0gA6ejpAGlqaQCpqKkAKCgoAPz9%2FAAZGBkAmJiYANjZ2ABXWFcAent6ALm6uQA8OjwAiIiIiIiIiIiIiI4oiL6IiIiIgzuIV4iIiIhndo53KIiIiB%2FWvXoYiIiIfEZfWBSIiIEGi%2FfoqoiIgzuL84i9iIjpGIoMiEHoiMkos3FojmiLlUipYliEWIF%2BiDe0GoRa7D6GPbjcu1yIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA</Image>
-<Url type="text/html" method="GET" template="http://{language}.wikipedia.org/wiki/Special:Search?search={searchTerms}"/>
+<Image width="16" height="16">data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAMAAAAoLQ9TAAAABGdBTUEAALGPC/xhBQAAACBjSFJNAAB6JgAAgIQAAPoAAACA6AAAdTAAAOpgAAA6mAAAF3CculE8AAAA2FBMVEUAAAAkHh4jHx8jICAkHyEkHx8iHiAjHx8iHSIjHx8kHx8lISEiHx8jHx8iHCIhISEkHyAiHyEzMzMjHyAiHx8kHyAjHiAhISEkHx8jHyAkICAjHyAjIyMkHyAnJyckJCQjHx8oGxsjHyAiICAAAAAjHx8jHx8iICAiICAlICAiHyAiHx8jHyAfHx8AAAAkHh4kICAjHyAjHyEkHiEiHiIkICAjHyAjHiEjHyAeHh4iHyEjHyAkJCQjHyAjHiAiICAkHyAjHiAkICAuFxckHiEkGyQkHx////+J8/smAAAAR3RSTlMAKpKqpDmGmjWLcj6jmy0X7ZQF1EuWsC565U/1Fp4NDpMT9lkB07tpcDDIWv4ZAis474VNTLqnZvERlfoH5Kho159xC1UcY91qqm8AAAABYktHREdgvcl7AAAAB3RJTUUH4QkWFQIodMCjVgAAAIVJREFUGNOdjlcbgWAAhV9CVuSTvZURCdl7hP//kzxGXPNenucs+B2fXwoEQ5IcjkjRWFxJQFJNIdIKWgayuYcnXxAUS+VKlVr9GWo0dYxWuwNd81Uj96BvDbCVd+/QGqGPHSZTb2k2F/JiuVrbnqBtHHO72x8+X4zjCc6q+313uYJ740/um0oLayWpHuMAAAAldEVYdGRhdGU6Y3JlYXRlADIwMTctMDktMjJUMjE6MDI6NDArMDA6MDAuOIoZAAAAJXRFWHRkYXRlOm1vZGlmeQAyMDE3LTA5LTIyVDIxOjAyOjQwKzAwOjAwX2UypQAAAABJRU5ErkJggg==</Image>
+<Url type="text/html" method="GET" template="https://{language}.wikipedia.org/wiki/Special:Search?search={searchTerms}"/>
 <!-- The criterion for being below is being listed with more than 100,000
-articles on http://meta.wikimedia.org/wiki/List_of_Wikipedias -->
+articles on https://meta.wikimedia.org/wiki/List_of_Wikipedias -->
 <Language>ar</Language>
 <Language>bg</Language>
 <Language>ca</Language>
