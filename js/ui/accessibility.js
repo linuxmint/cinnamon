@@ -21,7 +21,7 @@ A11yHandler.prototype = {
         this.a11y_keyboard_settings = new Gio.Settings( { schema_id: "org.cinnamon.desktop.a11y.keyboard" });
         this.wm_settings = new Gio.Settings( { schema_id: "org.cinnamon.desktop.wm.preferences" });
 
-        this._signalManager = new SignalManager.SignalManager(this);
+        this._signalManager = new SignalManager.SignalManager(null);
 
         /* Feature toggles */
         this._toggle_keys_osd = false;

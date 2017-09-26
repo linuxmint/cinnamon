@@ -1887,7 +1887,7 @@ Panel.prototype = {
         this._destroyed = false;
         this._positionChanged = false;
         this._monitorsChanged = false;
-        this._signalManager = new SignalManager.SignalManager(this);
+        this._signalManager = new SignalManager.SignalManager(null);
         this.margin_top = 0;
         this.margin_bottom = 0;
         this.margin_left = 0;
@@ -1942,12 +1942,12 @@ Panel.prototype = {
         this.actor.connect('get-preferred-height', Lang.bind(this, this._getPreferredHeight));
         this.actor.connect('allocate', Lang.bind(this, this._allocate));
 
-        this._signalManager.connect(global.settings, "changed::" + PANEL_AUTOHIDE_KEY, this._processPanelAutoHide);
-        this._signalManager.connect(global.settings, "changed::" + PANEL_HEIGHT_KEY, this._moveResizePanel);
-        this._signalManager.connect(global.settings, "changed::" + PANEL_RESIZABLE_KEY, this._moveResizePanel);
-        this._signalManager.connect(global.settings, "changed::" + PANEL_SCALE_TEXT_ICONS_KEY, this._onScaleTextIconsChanged);
-        this._signalManager.connect(global.settings, "changed::panel-edit-mode", this._onPanelEditModeChanged);
-        this._signalManager.connect(global.settings, "changed::no-adjacent-panel-barriers", this._updatePanelBarriers);
+        this._signalManager.connect(global.settings, "changed::" + PANEL_AUTOHIDE_KEY, this._processPanelAutoHide, this);
+        this._signalManager.connect(global.settings, "changed::" + PANEL_HEIGHT_KEY, this._moveResizePanel, this);
+        this._signalManager.connect(global.settings, "changed::" + PANEL_RESIZABLE_KEY, this._moveResizePanel, this);
+        this._signalManager.connect(global.settings, "changed::" + PANEL_SCALE_TEXT_ICONS_KEY, this._onScaleTextIconsChanged, this);
+        this._signalManager.connect(global.settings, "changed::panel-edit-mode", this._onPanelEditModeChanged, this);
+        this._signalManager.connect(global.settings, "changed::no-adjacent-panel-barriers", this._updatePanelBarriers, this);
     },
 
     drawCorners: function(drawcorner)
@@ -2436,8 +2436,8 @@ Panel.prototype = {
             return;
 
         this._focusWindow = global.display.focus_window.get_compositor_private();
-        this._signalManager.connect(this._focusWindow, "position-changed", this._updatePanelVisibility);
-        this._signalManager.connect(this._focusWindow, "size-changed", this._updatePanelVisibility);
+        this._signalManager.connect(this._focusWindow, "position-changed", this._updatePanelVisibility, this);
+        this._signalManager.connect(this._focusWindow, "size-changed", this._updatePanelVisibility, this);
         this._updatePanelVisibility();
     },
 
@@ -2445,13 +2445,13 @@ Panel.prototype = {
         this._autohideSettings = this._getProperty(PANEL_AUTOHIDE_KEY, "s");
 
         if (this._autohideSettings == "intel") {
-            this._signalManager.connect(global.display, "notify::focus-window", this._onFocusChanged);
+            this._signalManager.connect(global.display, "notify::focus-window", this._onFocusChanged, this);
             /* focus-window signal is emitted when the workspace change
              * animation starts. When the animation ends, we do the position
              * check again because the windows have moved. We cannot use
              * _onFocusChanged because _onFocusChanged does nothing when there
              * is no actual focus change. */
-            this._signalManager.connect(global.window_manager, "switch-workspace-complete", this._updatePanelVisibility);
+            this._signalManager.connect(global.window_manager, "switch-workspace-complete", this._updatePanelVisibility, this);
             this._onFocusChanged();
         } else {
             this._signalManager.disconnect("notify::focus-window");

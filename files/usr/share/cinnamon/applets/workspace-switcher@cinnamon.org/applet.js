@@ -24,10 +24,10 @@ WorkspaceButton.prototype = {
         this.workspace_name = Main.getWorkspaceName(index);
         this.actor = null; // defined in subclass
 
-        this.ws_signals = new SignalManager.SignalManager(this);
+        this.ws_signals = new SignalManager.SignalManager(null);
 
-        this.ws_signals.connect(this.workspace, "window-added", this.update);
-        this.ws_signals.connect(this.workspace, "window-removed", this.update);
+        this.ws_signals.connect(this.workspace, "window-added", this.update, this);
+        this.ws_signals.connect(this.workspace, "window-removed", this.update, this);
     },
 
     show : function() {
@@ -221,7 +221,7 @@ MyApplet.prototype = {
         try {
             this.orientation = orientation;
             this.panel_height = panel_height;
-            this.signals = new SignalManager.SignalManager(this);
+            this.signals = new SignalManager.SignalManager(null);
             this.buttons = [];
             this._last_switch = 0;
             this._last_switch_direction = 0;
@@ -385,7 +385,7 @@ MyApplet.prototype = {
         this.signals.disconnectAllSignals();
         if (this.display_type == "visual" && !suppress_graph) {
             // In visual mode, keep track of window events to represent them
-            this.signals.connect(global.display, "notify::focus-window", this._onFocusChanged);
+            this.signals.connect(global.display, "notify::focus-window", this._onFocusChanged, this);
             this._onFocusChanged();
         }
     },
@@ -402,8 +402,8 @@ MyApplet.prototype = {
             return;
 
         this._focusWindow = global.display.focus_window.get_compositor_private();
-        this.signals.connect(this._focusWindow, "position-changed", Lang.bind(this, this._onPositionChanged));
-        this.signals.connect(this._focusWindow, "size-changed", Lang.bind(this, this._onPositionChanged));
+        this.signals.connect(this._focusWindow, "position-changed", Lang.bind(this, this._onPositionChanged), this);
+        this.signals.connect(this._focusWindow, "size-changed", Lang.bind(this, this._onPositionChanged), this);
         this._onPositionChanged();
     },
 

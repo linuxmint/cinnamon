@@ -24,10 +24,10 @@ MyApplet.prototype = {
         this.settings.bindProperty(Settings.BindingDirection.IN, "peek-opacity", "peek_opacity", null, null);
         this.settings.bindProperty(Settings.BindingDirection.IN, "peek-blur", "peek_blur", null, null);
 
-        this.signals = new SignalManager.SignalManager(this);
+        this.signals = new SignalManager.SignalManager(null);
         this.actor.connect('enter-event', Lang.bind(this, this._on_enter));
         this.actor.connect('leave-event', Lang.bind(this, this._on_leave));
-        this.signals.connect(global.stage, 'notify::key-focus', this._on_leave);
+        this.signals.connect(global.stage, 'notify::key-focus', this._on_leave, this);
 
         this._did_peek = false;
         this._peek_timeout_id = 0;

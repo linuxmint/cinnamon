@@ -55,22 +55,22 @@ function TooltipBase(item) {
 
 TooltipBase.prototype = {
     _init: function(item) {
-        this.signals = new SignalManager.SignalManager(this);
+        this.signals = new SignalManager.SignalManager(null);
 
-        this.signals.connect(global.stage, 'notify::key-focus', this._hide);
-        this.signals.connect(item, 'enter-event', this._onEnterEvent);
-        this.signals.connect(item, 'motion-event', this._onMotionEvent);
-        this.signals.connect(item, 'leave-event', this._hide);
-        this.signals.connect(item, 'button-press-event', this._hide);
-        this.signals.connect(item, 'button-release-event', this._hide);
-        this.signals.connect(item, 'destroy', this.destroy);
+        this.signals.connect(global.stage, 'notify::key-focus', this._hide, this);
+        this.signals.connect(item, 'enter-event', this._onEnterEvent, this);
+        this.signals.connect(item, 'motion-event', this._onMotionEvent, this);
+        this.signals.connect(item, 'leave-event', this._hide, this);
+        this.signals.connect(item, 'button-press-event', this._hide, this);
+        this.signals.connect(item, 'button-release-event', this._hide, this);
+        this.signals.connect(item, 'destroy', this.destroy, this);
         this.signals.connect(item, 'allocation-changed', function() {
             // An allocation change could mean that the actor has moved,
             // so hide, but wait until after the allocation cycle.
             Mainloop.idle_add(Lang.bind(this, function() {
                 this._hide();
             }));
-        });
+        }, this);
 
         this._showTimer = null;
         this.visible = false;
