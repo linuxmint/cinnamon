@@ -195,7 +195,8 @@ Extension.prototype = {
             // get [extension/applet/desklet].js
             return requireModule(
                 `${this.meta.path}/${this.lowerType}.js`, // path
-                this.meta.path, // dir
+                this.meta.path, // dir,
+                this.lowerType, // type
                 true, // async
                 true // returnIndex
             );

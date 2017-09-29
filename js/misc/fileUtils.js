@@ -140,7 +140,7 @@ function unloadModule(index) {
     }
 }
 
-function createExports({path, dir, file, size, JS, returnIndex, reject}) {
+function createExports({path, dir, type, file, size, JS, returnIndex, reject}) {
     // Import data is stored in an array of objects and the module index is looked up by path.
     let importerData = {
         size,
@@ -187,13 +187,22 @@ function createExports({path, dir, file, size, JS, returnIndex, reject}) {
             if (match[2]
                 && importNames.indexOf(match[2].toLowerCase()) === -1
                 && giImportNames.indexOf(match[2]) === -1) {
-                JS += `module.exports.${match[2]} = typeof ${match[2]} !== 'undefined' ? ${match[2]} : null;`;
+                JS += `exports.${match[2]} = typeof ${match[2]} !== 'undefined' ? ${match[2]} : null;`;
             }
         }
     }
+
+    // send_results is overridden in SearchProviderManager, so we need to make sure the send_results
+    // function on the exports object, what SearchProviderManager actually has access to outside the
+    // module scope, is called.
+    if (type === 'search_provider') {
+        JS += 'var send_results = function() {exports.send_results.apply(this, arguments)};' +
+            'var get_locale_string = function() {return exports.get_locale_string.apply(this, arguments)};';
+    }
+
     // Return the exports object containing all of our top level namespaces, and include the sourceURL so
     // Spidermonkey includes the file names in stack traces.
-    JS += `return module.exports;//# sourceURL=${path}`;
+    JS += `return exports;//# sourceURL=${path}`;
 
     try {
         // Create the function returning module.exports and return it to Extension so it can be called by the
@@ -226,7 +235,7 @@ function createExports({path, dir, file, size, JS, returnIndex, reject}) {
     }
 }
 
-function requireModule(path, dir, async = false, returnIndex = false) {
+function requireModule(path, dir, type, async = false, returnIndex = false) {
     // Allow passing through native bindings, e.g. const Cinnamon = require('gi.Cinnamon');
     // Check if this is a GI import
     if (path.substr(0, 3) === 'gi.') {
@@ -274,7 +283,7 @@ function requireModule(path, dir, async = false, returnIndex = false) {
                 if (!success) {
                     throw new Error(fileLoadErrorMessage);
                 }
-                resolve(createExports({path, dir, file, size: JS.length, JS, returnIndex, reject}));
+                resolve(createExports({path, dir, type, file, size: JS.length, JS, returnIndex, reject}));
             } catch (e) {
                 reject(e);
             }
