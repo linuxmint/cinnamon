@@ -3,6 +3,11 @@
     "type": "section",
     "description": "Behavior"
   },
+  "show-all-workspaces" : {
+    "type" : "switch",
+    "default" : false,
+    "description": "Show windows from all workspaces"
+  },
   "enable-alerts" : {
       "type" : "switch",
       "default" : true,
