@@ -1021,6 +1021,7 @@ MyApplet.prototype = {
 
         this.settings = new Settings.AppletSettings(this, "window-list@cinnamon.org", this.instance_id);
 
+        this.settings.bind("show-all-workspaces", "showAllWorkspaces");
         this.settings.bind("enable-alerts", "enableAlerts", this._updateAttentionGrabber);
         this.settings.bind("enable-scrolling", "scrollable", this._onEnableScrollChanged);
         this.settings.bind("reverse-scrolling", "reverseScroll");
@@ -1209,7 +1210,8 @@ MyApplet.prototype = {
     _refreshItem: function(window) {
         window.actor.visible =
             (window.metaWindow.get_workspace() == global.screen.get_active_workspace()) ||
-            window.metaWindow.is_on_all_workspaces();
+            window.metaWindow.is_on_all_workspaces() ||
+            this.showAllWorkspaces;
 
         /* The above calculates the visibility if it were the normal
          * AppMenuButton. If this is actually a temporary AppMenuButton for
@@ -1276,6 +1278,16 @@ MyApplet.prototype = {
 
         // Now track the windows in our favorite monitors
         let windows = global.display.list_windows(0);
+        if (this.showAllWorkspaces) {
+            for (let wks=0; wks<global.screen.n_workspaces; wks++) {
+                let metaWorkspace = global.screen.get_workspace_by_index(wks);
+                let wks_windows = metaWorkspace.list_windows();
+                for (let wks_window of wks_windows) {
+                    windows.push(wks_window);
+                }
+            }
+        }
+
 
         for (let window of windows) {
             if (this._shouldAdd(window))
@@ -1303,8 +1315,11 @@ MyApplet.prototype = {
             if (metaWindow.get_workspace().index() < global.screen.get_active_workspace_index())
                 this.manager_container.set_child_at_index(appButton.actor, 0);
         } else {
-            if (metaWindow.get_workspace() != global.screen.get_active_workspace())
-                appButton.actor.hide();
+            if (metaWindow.get_workspace() != global.screen.get_active_workspace()) {
+                if (!(this.showAllWorkspaces)) {
+                    appButton.actor.hide();
+                }
+            }
         }
     },
 
