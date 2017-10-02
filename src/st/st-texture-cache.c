@@ -483,6 +483,8 @@ load_pixbuf_thread (GTask        *result,
     g_task_return_error (result, error);
   else if (pixbuf)
     g_task_return_pointer (result, g_object_ref (pixbuf), g_object_unref);
+
+  g_clear_object (&pixbuf);
 }
 
 static GdkPixbuf *
@@ -1043,7 +1045,7 @@ on_sliced_image_loaded (GObject *source_object,
                         GAsyncResult *res,
                         gpointer user_data)
 {
-  GList *list;
+  GList *list, *pixbufs;
   GObject *cache = source_object;
   AsyncImageData *data = (AsyncImageData *)user_data;
   GTask *task = G_TASK (res);
@@ -1051,12 +1053,15 @@ on_sliced_image_loaded (GObject *source_object,
   if (g_task_had_error (task))
     return;
 
-  for (list = g_task_propagate_pointer (task, NULL); list; list = list->next)
+  pixbufs = g_task_propagate_pointer (task, NULL);
+  for (list = pixbufs; list; list = list->next)
     {
       ClutterActor *actor = load_from_pixbuf (GDK_PIXBUF (list->data));
       clutter_actor_hide (actor);
       clutter_actor_add_child (data->actor, actor);
     }
+
+  g_list_free_full (pixbufs, g_object_unref);
 
   if (data->load_callback != NULL)
     data->load_callback (cache, data->load_callback_data);
