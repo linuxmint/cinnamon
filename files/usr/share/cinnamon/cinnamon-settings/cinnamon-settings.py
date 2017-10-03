@@ -72,8 +72,7 @@ CONTROL_CENTER_MODULES = [
     [_("Network"),                          "network",            "cs-network",                 "hardware",      _("network, wireless, wifi, ethernet, broadband, internet")],
     [_("Display"),                          "display",            "cs-display",                 "hardware",      _("display, screen, monitor, layout, resolution, dual, lcd")],
     [_("Color"),                            "color",              "cs-color",                   "hardware",      _("color, profile, display, printer, output")],
-    [_("Graphics Tablet"),                  "wacom",              "cs-tablet",                  "hardware",      _("wacom, digitize, tablet, graphics, calibrate, stylus")],
-    [_("Online Accounts"),                  "online-accounts",    "cs-online-accounts",         "prefs",         _("Google, Facebook, Twitter, Yahoo, Web, Online, Chat, Calendar, Mail, Contact, ownCloud, Kerberos, IMAP, SMTP, Pocket, ReadItLater")],
+    [_("Graphics Tablet"),                  "wacom",              "cs-tablet",                  "hardware",      _("wacom, digitize, tablet, graphics, calibrate, stylus")]
 ]
 
 STANDALONE_MODULES = [
