@@ -48,6 +48,7 @@ public_icons = \
 	hicolor_categories_scalable_cs-network.svg \
 	hicolor_categories_scalable_cs-notifications.svg \
 	hicolor_categories_scalable_cs-overview.svg \
+	hicolor_categories_scalable_cs-online-accounts.svg \
 	hicolor_categories_scalable_cs-panel.svg \
 	hicolor_categories_scalable_cs-power.svg \
 	hicolor_categories_scalable_cs-printer.svg \
