@@ -1,14 +1,10 @@
 const Applet = imports.ui.applet;
 const XApp = imports.gi.XApp;
 const Lang = imports.lang;
-const Cinnamon = imports.gi.Cinnamon;
-const Clutter = imports.gi.Clutter;
 const St = imports.gi.St;
-const Gtk = imports.gi.Gtk;
 const Main = imports.ui.main;
 const PopupMenu = imports.ui.popupMenu;
 const Util = imports.misc.util;
-const Settings = imports.ui.settings;
 const Mainloop = imports.mainloop;
 const Gio = imports.gi.Gio;
 const Cairo = imports.cairo;
@@ -40,7 +36,7 @@ EmblemedIcon.prototype = {
         let cr = actor.get_context();
         let [w, h] = actor.get_surface_size();
 
-        cr.save()
+        cr.save();
 
         let surf = St.TextureCache.get_default().load_file_to_cairo_surface(this.path);
 
@@ -71,7 +67,7 @@ EmblemedIcon.prototype = {
 
         cr.paint();
 
-        cr.restore()
+        cr.restore();
 
         XApp.KbdLayoutController.render_cairo_subscript(cr,
                                                         true_x_offset + (true_width / 2),
@@ -98,7 +94,7 @@ EmblemedIcon.prototype = {
     set_style_class_name: function(name) {
         return;
     }
-}
+};
 
 function LayoutMenuItem() {
     this._init.apply(this, arguments);
@@ -251,7 +247,7 @@ MyApplet.prototype = {
                 }
 
                 name = this.use_upper ? name.toUpperCase() : name;
-                actor = new St.Label({ text: name })
+                actor = new St.Label({ text: name });
             }
 
             let item = new LayoutMenuItem(this._config, i, actor, groups[i]);
@@ -307,8 +303,8 @@ MyApplet.prototype = {
 
             name = this.use_upper ? name.toUpperCase() : name;
 
-            this.set_applet_label(name)
-            this.hide_applet_icon()
+            this.set_applet_label(name);
+            this.hide_applet_icon();
         }
     },
 
