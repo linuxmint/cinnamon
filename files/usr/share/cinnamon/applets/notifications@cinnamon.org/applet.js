@@ -5,9 +5,7 @@ const Gtk = imports.gi.Gtk;
 const Gio = imports.gi.Gio;
 const PopupMenu = imports.ui.popupMenu;
 const St = imports.gi.St;
-const Clutter = imports.gi.Clutter;
 const Mainloop = imports.mainloop;
-const MessageTray = imports.ui.messageTray;
 const Urgency = imports.ui.messageTray.Urgency;
 const NotificationDestroyedReason = imports.ui.messageTray.NotificationDestroyedReason;
 const Settings = imports.ui.settings;
@@ -140,7 +138,7 @@ MyApplet.prototype = {
         this.notifications.push(notification);
         // Steal the notication panel.
         notification.expand();
-        this._notificationbin.add(notification.actor)
+        this._notificationbin.add(notification.actor);
         notification.actor._parent_container = this._notificationbin;
         notification.actor.add_style_class_name('notification-applet-padding');
         // Register for destruction.
@@ -259,7 +257,6 @@ MyApplet.prototype = {
     },
 
     _update_timestamp: function () {
-        let dateFormat = _("%l:%M %p");
         let actors = this._notificationbin.get_children();
         if (actors) {
             for (let i = 0; i < actors.length; i++) {
@@ -318,16 +315,17 @@ function timeify(orig_time) {
         str = orig_time.toLocaleFormat('%r');
     }
     switch (true) {
-        case (diff <= 15):
+        case (diff <= 15): {
             str += _(" (Just now)");
             break;
-        case (diff > 15 && diff <= 59):
+        } case (diff > 15 && diff <= 59): {
             str += Gettext.ngettext(" (%d second ago)", " (%d seconds ago)", diff).format(diff);
             break;
-        case (diff > 59 && diff <= 3540):
-            diff_minutes = Math.floor(diff / 60);
+        } case (diff > 59 && diff <= 3540): {
+            let diff_minutes = Math.floor(diff / 60);
             str += Gettext.ngettext(" (%d minute ago)", " (%d minutes ago)", diff_minutes).format(diff_minutes);
             break;
+        }
     }
     return str;
 }
