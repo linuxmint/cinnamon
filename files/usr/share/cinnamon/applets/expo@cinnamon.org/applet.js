@@ -18,7 +18,7 @@ MyApplet.prototype = {
             this.set_applet_tooltip(_("Expo"));
             this._hover_activates = false;
 
-            this.settings = new Settings.AppletSettings(this, metadata["uuid"], this.instance_id);
+            this.settings = new Settings.AppletSettings(this, metadata.uuid, this.instance_id);
 
             this.settings.bind("activate-on-hover", "_hover_activates");
 
