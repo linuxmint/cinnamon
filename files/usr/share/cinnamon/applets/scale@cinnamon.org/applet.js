@@ -13,12 +13,12 @@ MyApplet.prototype = {
     _init: function(metadata, orientation, panel_height, instance_id) {
         Applet.IconApplet.prototype._init.call(this, orientation, panel_height, instance_id);
 
-        try {            
+        try {
             this.set_applet_icon_symbolic_name("cinnamon-scale");
-            this.set_applet_tooltip(_("Scale"));            
-            this._hover_activates = false;            
+            this.set_applet_tooltip(_("Scale"));
+            this._hover_activates = false;
 
-            this.settings = new Settings.AppletSettings(this, metadata["uuid"], this.instance_id);
+            this.settings = new Settings.AppletSettings(this, metadata.uuid, this.instance_id);
 
             this.settings.bind("activate-on-hover", "_hover_activates");
 
