@@ -31,7 +31,7 @@ MyApplet.prototype = {
         if (this.bin) {
             this.bin.destroy();
 
-            this.bin = new St.Bin;
+            this.bin = new St.Bin();
             this.actor.add(this.bin);
 
             this.width_changed();
