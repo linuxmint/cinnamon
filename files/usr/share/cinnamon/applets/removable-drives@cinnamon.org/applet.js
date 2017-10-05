@@ -22,8 +22,8 @@ DriveMenuItem.prototype = {
         this.addActor(this.label);
 
         let ejectIcon = new St.Icon({ icon_name: 'media-eject',
-				      icon_type: St.IconType.SYMBOLIC,
-				      style_class: 'popup-menu-icon ' });
+                      icon_type: St.IconType.SYMBOLIC,
+                      style_class: 'popup-menu-icon ' });
         let ejectButton = new St.Button({ child: ejectIcon });
         ejectButton.connect('clicked', Lang.bind(this, this._eject));
         this.addActor(ejectButton);
@@ -46,17 +46,17 @@ function MyApplet(orientation, panel_height, instance_id) {
 MyApplet.prototype = {
     __proto__: Applet.IconApplet.prototype,
 
-    _init: function(orientation, panel_height, instance_id) {        
+    _init: function(orientation, panel_height, instance_id) {
         Applet.IconApplet.prototype._init.call(this, orientation, panel_height, instance_id);
-        
-        try {        
+
+        try {
             this.set_applet_icon_symbolic_name("drive-harddisk");
             this.set_applet_tooltip(_("Removable drives"));
-            
+
             this.menuManager = new PopupMenu.PopupMenuManager(this);
             this.menu = new Applet.AppletPopupMenu(this, orientation);
-            this.menuManager.addMenu(this.menu);            
-                                            
+            this.menuManager.addMenu(this.menu);
+
             this._contentSection = new PopupMenu.PopupMenuSection();
             this.menu.addMenuItem(this._contentSection);
 
@@ -67,19 +67,19 @@ MyApplet.prototype = {
                 let homeFile = Gio.file_new_for_path(GLib.get_home_dir());
                 let homeUri = homeFile.get_uri();
                 Gio.app_info_launch_default_for_uri(homeUri, null);
-            });     
-            
+            });
+
             Main.placesManager.connect('mounts-updated', Lang.bind(this, this._update));
         }
         catch (e) {
             global.logError(e);
         }
     },
-    
+
     on_applet_clicked: function(event) {
-        this.menu.toggle();        
+        this.menu.toggle();
     },
-    
+
     _update: function() {
         this._contentSection.removeAll();
 
@@ -94,10 +94,10 @@ MyApplet.prototype = {
 
         this.actor.visible = any;
     }
-    
+
 };
 
-function main(metadata, orientation, panel_height, instance_id) {  
+function main(metadata, orientation, panel_height, instance_id) {
     let myApplet = new MyApplet(orientation, panel_height, instance_id);
-    return myApplet;      
+    return myApplet;
 }
