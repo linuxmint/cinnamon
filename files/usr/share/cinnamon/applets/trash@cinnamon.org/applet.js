@@ -1,9 +1,7 @@
 const St = imports.gi.St;
 const ModalDialog = imports.ui.modalDialog;
 const Gio = imports.gi.Gio;
-const Gtk = imports.gi.Gtk;
 const Lang = imports.lang;
-const Clutter = imports.gi.Clutter;
 const Applet = imports.ui.applet;
 const PopupMenu = imports.ui.popupMenu;
 const Mainloop = imports.mainloop;
@@ -95,7 +93,7 @@ MyApplet.prototype = {
     }
 };
 
-function main(metadata, orientation, panel_height, instance_id) {      
+function main(metadata, orientation, panel_height, instance_id) {
     let myApplet = new MyApplet(orientation, panel_height, instance_id);
-    return myApplet;      
+    return myApplet;
 }
