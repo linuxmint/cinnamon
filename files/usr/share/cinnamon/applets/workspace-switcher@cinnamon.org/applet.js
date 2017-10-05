@@ -114,11 +114,6 @@ WorkspaceGraph.prototype = {
             let cr = area.get_context();
             let [area_width, area_height] = area.get_surface_size();
 
-            let workspace_is_active = false;
-            if (this.index == global.screen.get_active_workspace_index()) {
-                workspace_is_active = true;
-            }
-
             // construct a list with all windows
             let windows = this.workspace.list_windows();
             windows = windows.filter( Main.isInteresting );
