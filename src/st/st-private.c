@@ -225,46 +225,40 @@ _st_set_text_from_style (ClutterText *text,
 }
 
 /**
- * _st_create_texture_material:
+ * _st_create_texture_pipeline:
  * @src_texture: The CoglTexture for the material
  *
  * Creates a simple material which contains the given texture as a
  * single layer.
  */
-CoglHandle
-_st_create_texture_material (CoglHandle src_texture)
+CoglPipeline *
+_st_create_texture_pipeline (CoglTexture *src_texture)
 {
-  static CoglHandle texture_material_template = COGL_INVALID_HANDLE;
-  CoglHandle material;
+  static CoglPipeline *texture_pipeline_template = NULL;
+  CoglPipeline *pipeline;
 
-  g_return_val_if_fail (src_texture != COGL_INVALID_HANDLE,
-                        COGL_INVALID_HANDLE);
+  g_return_val_if_fail (src_texture != NULL, NULL);
 
-  /* We use a material that has a dummy texture as a base for all
-     texture materials. The idea is that only the Cogl texture object
-     would be different in the children so it is likely that Cogl will
-     be able to share GL programs between all the textures. */
-  if (G_UNLIKELY (texture_material_template == COGL_INVALID_HANDLE))
+  /* The only state used in the pipeline that would affect the shader
+     generation is the texture type on the layer. Therefore we create
+     a template pipeline which sets this state and all texture
+     pipelines are created as a copy of this. That way Cogl can find
+     the shader state for the pipeline more quickly by looking at the
+     pipeline ancestry instead of resorting to the shader cache. */
+  if (G_UNLIKELY (texture_pipeline_template == NULL))
     {
-      static const guint8 white_pixel[] = { 0xff, 0xff, 0xff, 0xff };
-      CoglHandle dummy_texture;
-
-      dummy_texture = st_cogl_texture_new_from_data_wrapper (1, 1,
-                                                             COGL_TEXTURE_NONE,
-                                                             COGL_PIXEL_FORMAT_RGBA_8888_PRE,
-                                                             COGL_PIXEL_FORMAT_ANY,
-                                                             4, white_pixel);
-
-      texture_material_template = cogl_material_new ();
-      cogl_material_set_layer (texture_material_template, 0, dummy_texture);
-      cogl_handle_unref (dummy_texture);
+      texture_pipeline_template = cogl_pipeline_new (st_get_cogl_context());
+      cogl_pipeline_set_layer_null_texture (texture_pipeline_template,
+                                            0, /* layer */
+                                            COGL_TEXTURE_TYPE_2D);
     }
 
-  material = cogl_material_copy (texture_material_template);
+  pipeline = cogl_pipeline_copy (texture_pipeline_template);
 
-  cogl_material_set_layer (material, 0, src_texture);
+  if (src_texture != NULL)
+    cogl_pipeline_set_layer_texture (pipeline, 0, src_texture);
 
-  return material;
+  return pipeline;
 }
 
 /*****
@@ -407,21 +401,20 @@ blur_pixels (guchar  *pixels_in,
   return pixels_out;
 }
 
-CoglHandle
-_st_create_shadow_material (StShadow   *shadow_spec,
-                            CoglHandle  src_texture)
+CoglPipeline *
+_st_create_shadow_pipeline (StShadow     *shadow_spec,
+                            CoglTexture  *src_texture)
 {
-  static CoglHandle shadow_material_template = COGL_INVALID_HANDLE;
+  static CoglPipeline *shadow_pipeline_template = NULL;
 
-  CoglHandle  material;
-  CoglHandle  texture;
-  guchar     *pixels_in, *pixels_out;
-  gint        width_in, height_in, rowstride_in;
-  gint        width_out, height_out, rowstride_out;
+  CoglPipeline *pipeline;
+  CoglPipeline *texture;
+  guchar *pixels_in, *pixels_out;
+  gint width_in, height_in, rowstride_in;
+  gint width_out, height_out, rowstride_out;
 
-  g_return_val_if_fail (shadow_spec != NULL, COGL_INVALID_HANDLE);
-  g_return_val_if_fail (src_texture != COGL_INVALID_HANDLE,
-                        COGL_INVALID_HANDLE);
+  g_return_val_if_fail (shadow_spec != NULL, NULL);
+  g_return_val_if_fail (src_texture != NULL, NULL);
 
   width_in  = cogl_texture_get_width  (src_texture);
   height_in = cogl_texture_get_height (src_texture);
@@ -446,83 +439,98 @@ _st_create_shadow_material (StShadow   *shadow_spec,
 
   g_free (pixels_out);
 
-  if (G_UNLIKELY (shadow_material_template == COGL_INVALID_HANDLE))
+  if (G_UNLIKELY (shadow_pipeline_template == NULL))
     {
-      shadow_material_template = cogl_material_new ();
+      shadow_pipeline_template = cogl_pipeline_new (st_get_cogl_context());
 
-      /* We set up the material to blend the shadow texture with the combine
+      /* We set up the pipeline to blend the shadow texture with the combine
        * constant, but defer setting the latter until painting, so that we can
        * take the actor's overall opacity into account. */
-      cogl_material_set_layer_combine (shadow_material_template, 0,
+      cogl_pipeline_set_layer_combine (shadow_pipeline_template, 0,
                                        "RGBA = MODULATE (CONSTANT, TEXTURE[A])",
                                        NULL);
     }
 
-  material = cogl_material_copy (shadow_material_template);
+  pipeline = cogl_pipeline_copy (shadow_pipeline_template);
 
-  cogl_material_set_layer (material, 0, texture);
+  cogl_pipeline_set_layer_texture (pipeline, 0, texture);
 
-  cogl_handle_unref (texture);
+  cogl_object_unref (texture);
 
-  return material;
+  return pipeline;
 }
 
-CoglHandle
-_st_create_shadow_material_from_actor (StShadow     *shadow_spec,
+CoglPipeline *
+_st_create_shadow_pipeline_from_actor (StShadow     *shadow_spec,
                                        ClutterActor *actor)
 {
-  CoglHandle shadow_material = COGL_INVALID_HANDLE;
+  CoglPipeline *shadow_pipeline = NULL;
 
   if (CLUTTER_IS_TEXTURE (actor))
     {
-      CoglHandle texture;
+      CoglTexture *texture;
 
       texture = clutter_texture_get_cogl_texture (CLUTTER_TEXTURE (actor));
-      shadow_material = _st_create_shadow_material (shadow_spec, texture);
+      shadow_pipeline = _st_create_shadow_pipeline (shadow_spec, texture);
     }
   else
     {
-      CoglHandle buffer, offscreen;
+      CoglTexture *buffer;
+      CoglOffscreen *offscreen;
+      CoglFramebuffer *fb;
       ClutterActorBox box;
       CoglColor clear_color;
       float width, height;
+      CoglError *catch_error = NULL;
 
       clutter_actor_get_allocation_box (actor, &box);
       clutter_actor_box_get_size (&box, &width, &height);
 
       if (width == 0 || height == 0)
-        return COGL_INVALID_HANDLE;
+        return NULL;
 
       buffer = st_cogl_texture_new_with_size_wrapper (width, height,
                                                       COGL_TEXTURE_NO_SLICING,
                                                       COGL_PIXEL_FORMAT_ANY);
 
-      if (buffer == COGL_INVALID_HANDLE)
-        return COGL_INVALID_HANDLE;
+      if (buffer == NULL)
+        return NULL;
 
-      offscreen = cogl_offscreen_new_to_texture (buffer);
+      offscreen = cogl_offscreen_new_with_texture (buffer);
+      fb = COGL_FRAMEBUFFER (offscreen);
 
-      if (offscreen == COGL_INVALID_HANDLE)
+      if (!cogl_framebuffer_allocate (fb, &catch_error))
         {
-          cogl_handle_unref (buffer);
-          return COGL_INVALID_HANDLE;
+          cogl_error_free (catch_error);
+          cogl_object_unref (buffer);
+          return NULL;
         }
 
-      cogl_color_set_from_4ub (&clear_color, 0, 0, 0, 0);
-      cogl_push_framebuffer (offscreen);
-      cogl_clear (&clear_color, COGL_BUFFER_BIT_COLOR);
-      cogl_translate (-box.x1, -box.y1, 0);
-      cogl_ortho (0, width, height, 0, 0, 1.0);
+      cogl_color_init_from_4ub (&clear_color, 0, 0, 0, 0);
+
+      /* XXX: There's no way to render a ClutterActor to an offscreen
+       * as it uses the implicit API. */
+      G_GNUC_BEGIN_IGNORE_DEPRECATIONS;
+      cogl_push_framebuffer (fb);
+      G_GNUC_END_IGNORE_DEPRECATIONS;
+
+      cogl_framebuffer_clear (fb, COGL_BUFFER_BIT_COLOR, &clear_color);
+      cogl_framebuffer_translate (fb, -box.x1, -box.y1, 0);
+      cogl_framebuffer_orthographic (fb, 0, 0, width, height, 0, 1.0);
       clutter_actor_paint (actor);
+
+      G_GNUC_BEGIN_IGNORE_DEPRECATIONS;
       cogl_pop_framebuffer ();
-      cogl_handle_unref (offscreen);
+      G_GNUC_END_IGNORE_DEPRECATIONS;
 
-      shadow_material = _st_create_shadow_material (shadow_spec, buffer);
+      cogl_object_unref (fb);
 
-      cogl_handle_unref (buffer);
+      shadow_pipeline = _st_create_shadow_pipeline (shadow_spec, buffer);
+
+      cogl_object_unref (buffer);
     }
 
-  return shadow_material;
+  return shadow_pipeline;
 }
 
 /**
@@ -675,29 +683,26 @@ _st_create_shadow_cairo_pattern (StShadow        *shadow_spec,
 
 void
 _st_paint_shadow_with_opacity (StShadow        *shadow_spec,
-                               CoglHandle       shadow_material,
+                               CoglPipeline    *shadow_pipeline,
                                ClutterActorBox *box,
                                guint8           paint_opacity)
 {
   ClutterActorBox shadow_box;
-  CoglColor       color;
+  CoglColor color;
+  CoglFramebuffer *fb = cogl_get_draw_framebuffer ();
 
   g_return_if_fail (shadow_spec != NULL);
-  g_return_if_fail (shadow_material != COGL_INVALID_HANDLE);
+  g_return_if_fail (shadow_pipeline != NULL);
 
   st_shadow_get_box (shadow_spec, box, &shadow_box);
 
-  cogl_color_set_from_4ub (&color,
-                           shadow_spec->color.red   * paint_opacity / 255,
-                           shadow_spec->color.green * paint_opacity / 255,
-                           shadow_spec->color.blue  * paint_opacity / 255,
-                           shadow_spec->color.alpha * paint_opacity / 255);
-  cogl_color_premultiply (&color);
-
-  cogl_material_set_layer_combine_constant (shadow_material, 0, &color);
-
-  cogl_set_source (shadow_material);
-  cogl_rectangle_with_texture_coords (shadow_box.x1, shadow_box.y1,
-                                      shadow_box.x2, shadow_box.y2,
-                                      0, 0, 1, 1);
+  cogl_color_init_from_4ub (&color,
+                            shadow_spec->color.red   * paint_opacity / 255,
+                            shadow_spec->color.green * paint_opacity / 255,
+                            shadow_spec->color.blue  * paint_opacity / 255,
+                            shadow_spec->color.alpha * paint_opacity / 255);
+  cogl_pipeline_set_layer_combine_constant (shadow_pipeline, 0, &color);
+  cogl_framebuffer_draw_rectangle (fb, shadow_pipeline,
+                                   shadow_box.x1, shadow_box.y1,
+                                   shadow_box.x2, shadow_box.y2);
 }

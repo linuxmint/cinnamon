@@ -390,7 +390,7 @@ st_theme_node_lookup_corner (StThemeNode    *node,
 
   key = corner_to_string (&corner);
   texture = st_texture_cache_load (cache, key, ST_TEXTURE_CACHE_POLICY_NONE, load_corner, &corner, NULL);
-  material = _st_create_texture_material (texture);
+  material = _st_create_texture_pipeline (texture);
   cogl_handle_unref (texture);
 
   g_free (key);
@@ -1410,7 +1410,7 @@ st_theme_node_render_resources (StThemeNode   *node,
     }
 
   if (node->border_slices_texture)
-    node->border_slices_material = _st_create_texture_material (node->border_slices_texture);
+    node->border_slices_material = _st_create_texture_pipeline (node->border_slices_texture);
   else
     node->border_slices_material = COGL_INVALID_HANDLE;
 
@@ -1439,17 +1439,17 @@ st_theme_node_render_resources (StThemeNode   *node,
     node->prerendered_texture = st_theme_node_prerender_background (node);
 
   if (node->prerendered_texture)
-    node->prerendered_material = _st_create_texture_material (node->prerendered_texture);
+    node->prerendered_material = _st_create_texture_pipeline (node->prerendered_texture);
   else
     node->prerendered_material = COGL_INVALID_HANDLE;
 
   if (box_shadow_spec && !has_inset_box_shadow)
     {
       if (node->border_slices_texture != COGL_INVALID_HANDLE)
-        node->box_shadow_material = _st_create_shadow_material (box_shadow_spec,
+        node->box_shadow_material = _st_create_shadow_pipeline (box_shadow_spec,
                                                                 node->border_slices_texture);
       else if (node->prerendered_texture != COGL_INVALID_HANDLE)
-        node->box_shadow_material = _st_create_shadow_material (box_shadow_spec,
+        node->box_shadow_material = _st_create_shadow_pipeline (box_shadow_spec,
                                                                 node->prerendered_texture);
       else if (node->background_color.alpha > 0 || has_border)
         {
@@ -1478,7 +1478,7 @@ st_theme_node_render_resources (StThemeNode   *node,
               cogl_pop_framebuffer ();
               cogl_handle_unref (offscreen);
 
-              node->box_shadow_material = _st_create_shadow_material (box_shadow_spec,
+              node->box_shadow_material = _st_create_shadow_pipeline (box_shadow_spec,
                                                                       buffer);
             }
           cogl_handle_unref (buffer);
@@ -1489,14 +1489,14 @@ st_theme_node_render_resources (StThemeNode   *node,
   if (background_image != NULL && !has_border && !has_border_radius)
     {
       node->background_texture = st_texture_cache_load_file_to_cogl_texture (texture_cache, background_image);
-      node->background_material = _st_create_texture_material (node->background_texture);
+      node->background_material = _st_create_texture_pipeline (node->background_texture);
 
       if (node->background_repeat)
         cogl_material_set_layer_wrap_mode (node->background_material, 0, COGL_MATERIAL_WRAP_MODE_REPEAT);
 
       if (background_image_shadow_spec)
         {
-          node->background_shadow_material = _st_create_shadow_material (background_image_shadow_spec,
+          node->background_shadow_material = _st_create_shadow_pipeline (background_image_shadow_spec,
                                                                          node->background_texture);
         }
     }
