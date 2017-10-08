@@ -1533,6 +1533,8 @@ st_theme_node_paint_borders (StThemeNode           *node,
   int corner_id, side_id;
   ClutterColor border_color;
   guint8 alpha;
+  float nvert[12];
+  guint nvertc;
 
   width = box->x2 - box->x1;
   height = box->y2 - box->y1;
@@ -1766,21 +1768,27 @@ st_theme_node_paint_borders (StThemeNode           *node,
        * We draw it in at most 3 pieces - first the top and bottom if
        * necessary, then the main rectangle
        */
+      nvertc = 0;
       if (max_border_radius > border_width[ST_SIDE_TOP])
-        cogl_rectangle (MAX(max_border_radius, border_width[ST_SIDE_LEFT]),
-                        border_width[ST_SIDE_TOP],
-                        width - MAX(max_border_radius, border_width[ST_SIDE_RIGHT]),
-                        max_border_radius);
+        {
+          nvert[nvertc++] = MAX(max_border_radius, border_width[ST_SIDE_LEFT]);
+          nvert[nvertc++] = border_width[ST_SIDE_TOP];
+          nvert[nvertc++] = width - MAX(max_border_radius, border_width[ST_SIDE_RIGHT]);
+          nvert[nvertc++] = max_border_radius;
+        }
       if (max_border_radius > border_width[ST_SIDE_BOTTOM])
-        cogl_rectangle (MAX(max_border_radius, border_width[ST_SIDE_LEFT]),
-                        height - max_border_radius,
-                        width - MAX(max_border_radius, border_width[ST_SIDE_RIGHT]),
-                        height - border_width[ST_SIDE_BOTTOM]);
+        {
+          nvert[nvertc++] = MAX(max_border_radius, border_width[ST_SIDE_LEFT]);
+          nvert[nvertc++] = height - max_border_radius;
+          nvert[nvertc++] = width - MAX(max_border_radius, border_width[ST_SIDE_RIGHT]);
+          nvert[nvertc++] = height - border_width[ST_SIDE_BOTTOM];
+        }
+      nvert[nvertc++] = border_width[ST_SIDE_LEFT];
+      nvert[nvertc++] = MAX(border_width[ST_SIDE_TOP], max_border_radius);
+      nvert[nvertc++] = width - border_width[ST_SIDE_RIGHT];
+      nvert[nvertc++] = height - MAX(border_width[ST_SIDE_BOTTOM], max_border_radius);
 
-      cogl_rectangle (border_width[ST_SIDE_LEFT],
-                      MAX(border_width[ST_SIDE_TOP], max_border_radius),
-                      width - border_width[ST_SIDE_RIGHT],
-                      height - MAX(border_width[ST_SIDE_BOTTOM], max_border_radius));
+      cogl_rectangles (nvert, (int)nvertc/4);
     }
 }
 
