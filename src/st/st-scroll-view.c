@@ -519,6 +519,9 @@ st_scroll_view_get_preferred_width (ClutterActor *actor,
        * but that's not cleanly defined at the moment */
       min_width = 0;
       break;
+    default:
+      g_warn_if_reached();
+      break;
     }
 
   if (priv->vscrollbar_policy != GTK_POLICY_NEVER)
@@ -574,6 +577,9 @@ st_scroll_view_get_preferred_height (ClutterActor *actor,
       /* We've requested space for the scrollbar, subtract it back out */
       for_width -= sb_width;
       break;
+    default:
+      g_warn_if_reached();
+      break;
     }
 
   switch (priv->hscrollbar_policy)
@@ -586,6 +592,9 @@ st_scroll_view_get_preferred_height (ClutterActor *actor,
       break;
     case GTK_POLICY_AUTOMATIC:
       account_for_hscrollbar = for_width < child_min_width;
+      break;
+    default:
+      g_warn_if_reached();
       break;
     }
 
@@ -604,6 +613,9 @@ st_scroll_view_get_preferred_height (ClutterActor *actor,
       /* Should theoretically use the min height of the vscrollbar,
        * but that's not cleanly defined at the moment */
       min_height = 0;
+      break;
+    default:
+      g_warn_if_reached();
       break;
     }
 
