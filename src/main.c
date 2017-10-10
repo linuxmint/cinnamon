@@ -151,10 +151,6 @@ cinnamon_dbus_init (gboolean replace)
   cinnamon_dbus_acquire_name (bus,
                            DBUS_NAME_FLAG_REPLACE_EXISTING,
                            &request_name_result,
-                           "org.gnome.Caribou.Daemon", FALSE);
-  cinnamon_dbus_acquire_name (bus,
-                           DBUS_NAME_FLAG_REPLACE_EXISTING,
-                           &request_name_result,
                            "org.onboard.Onboard", FALSE);
   g_object_unref (bus);
   g_object_unref (session);
