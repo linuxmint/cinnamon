@@ -272,7 +272,9 @@ LayoutManager.prototype = {
         this._chrome.updateRegions();
 
         this._keyboardHeightNotifyId = this.keyboardBox.connect('notify::height', Lang.bind(this, function () {
-            this.keyboardBox.y = this.focusMonitor.y + this.focusMonitor.height - this.keyboardBox.height;
+            if (this.keyboardBox.y != 0) {
+                this.keyboardBox.y = this.focusMonitor.y + this.focusMonitor.height - this.keyboardBox.height;
+            }
         }));
 
     },

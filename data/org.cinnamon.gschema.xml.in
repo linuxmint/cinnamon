@@ -687,8 +687,21 @@
         Can be:  on-demand: display the keyboard only at user demand, either when the applet is clicked, or a keyboard shortcut is used.  accessible: display the keyboard any time an input field becomes the desktop keyboard focus.
       </_description>
     </key>
+    <key name="keyboard-size" type="i">
+      <default>3</default>
+      <_summary>The size of the keyboard. Set this value to X for the keyboard to take 1/x of the screen.</_summary>
+      <_description>
+        The size of the keyboard. Set this value to X for the keyboard to take 1/x of the screen.
+      </_description>
+    </key>
+    <key name="keyboard-position" type="s">
+      <default>'bottom'</default>
+      <_summary>Keyboard position</_summary>
+      <_description>
+        Keyboard position.
+      </_description>
+    </key>
   </schema>
-    
   <schema id="org.cinnamon.recorder" path="/org/cinnamon/recorder/"
           gettext-domain="@GETTEXT_PACKAGE@">
     <key name="framerate" type="i">
