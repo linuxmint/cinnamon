@@ -150,7 +150,8 @@ class Module:
 
             settings.add_row(switch)
 
-            keyboard_type_options = [["touch",     _("Touch")],
+            keyboard_type_options = [["tablet",     _("Tablet")],
+                                     ["touch",     _("Touch")],
                                      ["fullscale", _("Full scale")],
                                      ["scan",      _("Scanning")]]
 
