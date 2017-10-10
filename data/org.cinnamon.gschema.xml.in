@@ -674,7 +674,7 @@
   <schema id="org.cinnamon.keyboard" path="/org/cinnamon/keyboard/"
           gettext-domain="@GETTEXT_PACKAGE@">
     <key name="keyboard-type" type="s">
-      <default>'touch'</default>
+      <default>'tablet'</default>
       <_summary>Which keyboard to use</_summary>
       <_description>
         The type of keyboard to use.
@@ -695,7 +695,7 @@
       </_description>
     </key>
     <key name="keyboard-position" type="s">
-      <default>'bottom'</default>
+      <default>'top'</default>
       <_summary>Keyboard position</_summary>
       <_description>
         Keyboard position.
