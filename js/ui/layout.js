@@ -21,7 +21,6 @@ const DeskletManager = imports.ui.deskletManager;
 const Panel = imports.ui.panel;
 
 const STARTUP_ANIMATION_TIME = 0.5;
-const KEYBOARD_ANIMATION_TIME = 0.15;
 
 function isPopupMetaWindow(actor) {
     switch(actor.meta_window.get_window_type()) {
@@ -83,11 +82,9 @@ LayoutManager.prototype = {
                                               reactive: true,
                                               track_hover: true });
         this.keyboardBox.hide();
-        this.keyboardBox.opacity = 0;
 
         this.addChrome(this.keyboardBox, { visibleInFullscreen: true, affectsStruts: false });
 
-        // this.keyboardBox.opacity = 100;
         this._keyboardHeightNotifyId = 0;
 
         this._monitorsChanged();
@@ -263,23 +260,12 @@ LayoutManager.prototype = {
         }
 
         if (!this.keyboardBox.visible) {
-            this.keyboardBox.opacity = 0;
             this.keyboardBox.show();
         }
 
         // this.keyboardBox.raise_top();
         Main.panelManager.lowerActorBelowPanels(this.keyboardBox);
 
-        Tweener.addTween(this.keyboardBox,
-                         { opacity: 255,
-                           time: KEYBOARD_ANIMATION_TIME,
-                           transition: 'easeOutQuad',
-                           onComplete: this._showKeyboardComplete,
-                           onCompleteScope: this
-                         });
-    },
-
-    _showKeyboardComplete: function() {
         // Poke Chrome to update the input shape; it doesn't notice
         // anchor point changes
         this._chrome.modifyActorParams(this.keyboardBox, { affectsStruts: true });
@@ -308,22 +294,12 @@ LayoutManager.prototype = {
     hideKeyboard: function (immediate) {
         if (Main.messageTray) Main.messageTray.hide();
 
-        Tweener.addTween(this.keyboardBox,
-                         { opacity: 0,
-                           time: immediate ? 0 : KEYBOARD_ANIMATION_TIME,
-                           transition: 'easeOutQuad',
-                           onComplete: this._hideKeyboardComplete,
-                           onCompleteScope: this
-                         });
+        this.keyboardBox.hide();
+        this._chrome.modifyActorParams(this.keyboardBox, { affectsStruts: false });
+        this._chrome.updateRegions();
 
         this.hideIdleId = 0;
         return false;
-    },
-
-    _hideKeyboardComplete: function() {
-        this._chrome.modifyActorParams(this.keyboardBox, { affectsStruts: false });
-        this._chrome.updateRegions();
-        this.keyboardBox.hide();
     },
 
     /** 
