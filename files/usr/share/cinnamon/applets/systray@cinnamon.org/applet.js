@@ -58,7 +58,7 @@ MyApplet.prototype = {
         this.actor.set_style_class_name('systray');
         this.actor.set_important(true);  // ensure we get class details from the default theme if not present
 
-        this._signalManager = new SignalManager.SignalManager(this);
+        this._signalManager = new SignalManager.SignalManager(null);
         let manager;
 
         this.orientation = orientation;
@@ -133,9 +133,9 @@ MyApplet.prototype = {
             indicatorActor._applet = this;
 
             this._shellIndicators[appIndicator.id] = indicatorActor;
-            this._signalManager.connect(indicatorActor.actor, 'destroy', this._onIndicatorIconDestroy);
-            this._signalManager.connect(indicatorActor.actor, 'enter-event', this._onEnterEvent);
-            this._signalManager.connect(indicatorActor.actor, 'leave-event', this._onLeaveEvent);
+            this._signalManager.connect(indicatorActor.actor, 'destroy', this._onIndicatorIconDestroy, this);
+            this._signalManager.connect(indicatorActor.actor, 'enter-event', this._onEnterEvent, this);
+            this._signalManager.connect(indicatorActor.actor, 'leave-event', this._onLeaveEvent, this);
 
             this.manager_container.add_actor(indicatorActor.actor);
 
@@ -218,9 +218,9 @@ MyApplet.prototype = {
     on_applet_added_to_panel: function() {
         Main.statusIconDispatcher.start(this.actor.get_parent().get_parent());
 
-        this._signalManager.connect(Main.statusIconDispatcher, 'status-icon-added', this._onTrayIconAdded);
-        this._signalManager.connect(Main.statusIconDispatcher, 'status-icon-removed', this._onTrayIconRemoved);
-        this._signalManager.connect(Main.statusIconDispatcher, 'before-redisplay', this._onBeforeRedisplay);
+        this._signalManager.connect(Main.statusIconDispatcher, 'status-icon-added', this._onTrayIconAdded, this);
+        this._signalManager.connect(Main.statusIconDispatcher, 'status-icon-removed', this._onTrayIconRemoved, this);
+        this._signalManager.connect(Main.statusIconDispatcher, 'before-redisplay', this._onBeforeRedisplay, this);
         this._signalManager.connect(Main.systrayManager, "changed", Main.statusIconDispatcher.redisplay, Main.statusIconDispatcher);
         this._addIndicatorSupport();
     },

@@ -14,6 +14,8 @@ const MessageTray = imports.ui.messageTray;
 
 const KEYBOARD_SCHEMA = 'org.cinnamon.keyboard';
 const KEYBOARD_TYPE = 'keyboard-type';
+const KEYBOARD_SIZE = 'keyboard-size';
+const KEYBOARD_POSITION = 'keyboard-position';
 const ACTIVATION_MODE = 'activation-mode';
 
 const A11Y_APPLICATIONS_SCHEMA = 'org.cinnamon.desktop.a11y.applications';
@@ -218,6 +220,8 @@ Keyboard.prototype = {
     _settingsChanged: function (settings, key) {
         this._enableKeyboard = this._a11yApplicationsSettings.get_boolean(SHOW_KEYBOARD);
         this.accessibleMode = this._keyboardSettings.get_string(ACTIVATION_MODE) == "accessible";
+        this.keyboard_size = this._keyboardSettings.get_int(KEYBOARD_SIZE);
+        this.keyboard_position = this._keyboardSettings.get_string(KEYBOARD_POSITION);
 
         if (!this._enableKeyboard && !this._keyboard)
             return;
@@ -380,7 +384,7 @@ Keyboard.prototype = {
         Main.layoutManager.keyboardBox.set_size(focus.width, -1);
         this.actor.width = focus.width;
 
-        let maxHeight = focus.height / 3;
+        let maxHeight = focus.height / this.keyboard_size;
 
         this.monitorIndex = index;
 
@@ -399,8 +403,12 @@ Keyboard.prototype = {
         let keySize = Math.min(keyWidth, keyHeight);
         this.actor.height = (keySize * this._numOfVertKeys) + allVerticalSpacing + (2 * padding) + this._panelPadding;
 
-        Main.layoutManager.keyboardBox.set_position(focus.x,
-                                                    focus.y + focus.height - this.actor.height);
+        let keyboard_y = 0;
+        if (this.keyboard_position == "bottom") {
+            keyboard_y = focus.y + focus.height - this.actor.height;
+        }
+
+        Main.layoutManager.keyboardBox.set_position(focus.x, keyboard_y);
 
         let rows = this._current_page.get_children();
         for (let i = 0; i < rows.length; ++i) {

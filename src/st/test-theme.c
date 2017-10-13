@@ -151,6 +151,9 @@ side_to_string (StSide side)
       return "bottom";
     case ST_SIDE_LEFT:
       return "left";
+    default:
+      g_warn_if_reached();
+      break;
     }
 
   return "<unknown>";

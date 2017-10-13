@@ -94,12 +94,9 @@ class Module:
             switch = GSettingsSwitch(_("Disable touchpad while typing"), "org.cinnamon.settings-daemon.peripherals.touchpad", "disable-while-typing")
             settings.add_row(switch)
 
-            button_list = [[0, _("Disabled")], [1, _("Left button")], [2, _("Middle button")], [3, _("Right button")]]
+            clickpad_list = [[0, _("Left click only")], [3, _("Automatic")], [1, _("Emulate mouse buttons")], [2, _("Use multiple fingers for right and middle click")]]
 
-            combo = GSettingsComboBox(_("Two-finger click emulation:"), "org.cinnamon.settings-daemon.peripherals.touchpad", "two-finger-click", button_list, valtype="int")
-            settings.add_row(combo)
-
-            combo = GSettingsComboBox(_("Three-finger click emulation:"), "org.cinnamon.settings-daemon.peripherals.touchpad", "three-finger-click", button_list, valtype="int")
+            combo = GSettingsComboBox(_("Clickpad click action:"), "org.cinnamon.settings-daemon.peripherals.touchpad", "clickpad-click", clickpad_list, valtype="int")
             settings.add_row(combo)
 
             settings = SettingsBox(_("Scrolling"))
@@ -108,13 +105,10 @@ class Module:
             switch = GSettingsSwitch(_("Reverse scrolling direction"), "org.cinnamon.settings-daemon.peripherals.touchpad", "natural-scroll")
             settings.add_row(switch)
 
-            switch = GSettingsSwitch(_("Vertical edge scrolling"), "org.cinnamon.settings-daemon.peripherals.touchpad", "vertical-edge-scrolling")
-            settings.add_row(switch)
-            switch = GSettingsSwitch(_("Horizontal edge scrolling"), "org.cinnamon.settings-daemon.peripherals.touchpad", "horizontal-edge-scrolling")
-            settings.add_row(switch)
-            switch = GSettingsSwitch(_("Vertical two-finger scrolling"), "org.cinnamon.settings-daemon.peripherals.touchpad", "vertical-two-finger-scrolling")
-            settings.add_row(switch)
-            switch = GSettingsSwitch(_("Horizontal two-finger scrolling"), "org.cinnamon.settings-daemon.peripherals.touchpad", "horizontal-two-finger-scrolling")
+            clickpad_list = [[0, _("No scrolling")], [3, _("Automatic")], [1, _("Two-finger scrolling")], [2, _("Edge scrolling")]]
+            combo = GSettingsComboBox(_("Scrolling method:"), "org.cinnamon.settings-daemon.peripherals.touchpad", "scrolling-method", clickpad_list, valtype="int")
+            settings.add_row(combo)
+            switch = GSettingsSwitch(_("Horizontal scrolling"), "org.cinnamon.settings-daemon.peripherals.touchpad", "horizontal-scrolling")
             settings.add_row(switch)
 
             settings = SettingsBox(_("Pointer speed"))

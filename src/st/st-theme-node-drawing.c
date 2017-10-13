@@ -1657,6 +1657,9 @@ st_theme_node_paint_borders (StThemeNode           *node,
                                                     max_width_radius[ST_CORNER_BOTTOMLEFT], height,
                                                     0, 0.5, 0.5, 1);
                 break;
+              default:
+                g_warn_if_reached();
+                break;
             }
         }
     }
@@ -1750,6 +1753,9 @@ st_theme_node_paint_borders (StThemeNode           *node,
                     verts[6] = max_border_radius;
                     verts[7] = height - border_width[ST_SIDE_BOTTOM];
                   }
+                break;
+              default:
+                g_warn_if_reached();
                 break;
             }
           cogl_rectangles (verts, n_rects);

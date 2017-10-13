@@ -62,8 +62,6 @@ struct _StIconPrivate
   gint          icon_scale;
 
   CoglHandle    shadow_material;
-  float         shadow_width;
-  float         shadow_height;
   StShadow     *shadow_spec;
 };
 
@@ -315,8 +313,6 @@ st_icon_init (StIcon *self)
   self->priv->icon_type = DEFAULT_ICON_TYPE;
 
   self->priv->shadow_material = COGL_INVALID_HANDLE;
-  self->priv->shadow_width = -1;
-  self->priv->shadow_height = -1;
   self->priv->icon_scale = 1;
 }
 
@@ -332,19 +328,8 @@ st_icon_update_shadow_material (StIcon *icon)
     }
 
   if (priv->shadow_spec)
-   {
-     CoglHandle material;
-     gint width, height;
-
-     clutter_texture_get_base_size (CLUTTER_TEXTURE (priv->icon_texture),
-                                    &width, &height);
-
-     material = _st_create_shadow_material_from_actor (priv->shadow_spec,
-                                                       priv->icon_texture);
-     priv->shadow_material = material;
-     priv->shadow_width = width;
-     priv->shadow_height = height;
-   }
+     priv->shadow_material = _st_create_shadow_material_from_actor (priv->shadow_spec,
+                                                                    priv->icon_texture);
 }
 
 static void

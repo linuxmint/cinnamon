@@ -6,6 +6,8 @@ const Applet = imports.ui.applet;
 const Main = imports.ui.main;
 const PopupMenu = imports.ui.popupMenu;
 
+const PANEL_EDIT_MODE_KEY = "panel-edit-mode";
+
 function DriveMenuItem(place) {
     this._init(place);
 }
@@ -53,6 +55,8 @@ MyApplet.prototype = {
             this.set_applet_icon_symbolic_name("drive-harddisk");
             this.set_applet_tooltip(_("Removable drives"));
 
+            global.settings.connect('changed::' + PANEL_EDIT_MODE_KEY, Lang.bind(this, this._onPanelEditModeChanged));
+
             this.menuManager = new PopupMenu.PopupMenuManager(this);
             this.menu = new Applet.AppletPopupMenu(this, orientation);
             this.menuManager.addMenu(this.menu);
@@ -70,9 +74,19 @@ MyApplet.prototype = {
             });
 
             Main.placesManager.connect('mounts-updated', Lang.bind(this, this._update));
+            this._onPanelEditModeChanged();
         }
         catch (e) {
             global.logError(e);
+        }
+    },
+
+    _onPanelEditModeChanged: function() {
+        if (global.settings.get_boolean(PANEL_EDIT_MODE_KEY)) {
+            this.actor.show();
+        }
+        else {
+            this._update();
         }
     },
 
