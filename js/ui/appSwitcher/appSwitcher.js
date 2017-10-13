@@ -70,7 +70,10 @@ function getWindowsForBinding(binding) {
             break;
         default:
             // Switch between windows of current workspace
-            windows = windows.filter( matchWorkspace, global.screen.get_active_workspace() );
+            this._showAllWorkspaces = global.settings.get_boolean("alttab-switcher-show-all-workspaces");
+            if (!this._showAllWorkspaces) {
+                windows = windows.filter( matchWorkspace, global.screen.get_active_workspace() );
+            }
             break;
     }
 

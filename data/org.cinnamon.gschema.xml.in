@@ -538,6 +538,11 @@
       <_description>Duration of the effect (in milliseconds)</_description>
     </key>
 
+    <key type="b" name="alttab-switcher-show-all-workspaces">
+      <default>false</default>
+      <_summary>Show all windows from all workspaces</_summary>
+    </key>
+
     <key name="bring-windows-to-current-workspace" type="b">
       <default>false</default>
       <summary>Brings windows requiring attention to the current workspace</summary>
