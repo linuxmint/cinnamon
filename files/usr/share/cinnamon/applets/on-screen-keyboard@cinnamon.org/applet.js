@@ -1,18 +1,7 @@
 const Applet = imports.ui.applet;
-const Mainloop = imports.mainloop;
 const Gio = imports.gi.Gio;
-const Interfaces = imports.misc.interfaces;
-const Util = imports.misc.util;
 const Lang = imports.lang;
-const Cinnamon = imports.gi.Cinnamon;
-const Clutter = imports.gi.Clutter;
-const St = imports.gi.St;
-const PopupMenu = imports.ui.popupMenu;
-const GLib = imports.gi.GLib;
-const Pango = imports.gi.Pango;
-const Tooltips = imports.ui.tooltips;
 const Main = imports.ui.main;
-const Settings = imports.ui.settings;
 
 function MyApplet(metadata, orientation, panel_height, instanceId) {
     this._init(metadata, orientation, panel_height, instanceId);

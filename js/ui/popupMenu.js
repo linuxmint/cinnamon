@@ -105,7 +105,7 @@ PopupBaseMenuItem.prototype = {
                                          style_class: null,
                                          focusOnHover: true
                                        });
-        this._signals = new SignalManager.SignalManager(this);
+        this._signals = new SignalManager.SignalManager(null);
         this.actor = new Cinnamon.GenericContainer({ style_class: 'popup-menu-item',
                                                   reactive: params.reactive,
                                                   track_hover: params.reactive,
@@ -1681,7 +1681,7 @@ PopupMenuBase.prototype = {
     _init: function(sourceActor, styleClass) {
         this.sourceActor = sourceActor;
 
-        this._signals = new SignalManager.SignalManager(this);
+        this._signals = new SignalManager.SignalManager(null);
         if (styleClass !== undefined) {
             this.box = new St.BoxLayout({ style_class: styleClass,
                                           vertical: true });
@@ -1952,7 +1952,7 @@ PopupMenuBase.prototype = {
             this._signals.connect(this, 'open-state-changed', function(self, open) {
                 if (!open)
                     menuItem.menu.close(false);
-            });
+            }, this);
         } else if (menuItem instanceof PopupSeparatorMenuItem) {
             this._connectItemSignals(menuItem);
 
@@ -3403,20 +3403,20 @@ PopupMenuManager.prototype = {
         this._menuStack = [];
         this._preGrabInputMode = null;
         this._grabbedFromKeynav = false;
-        this._signals = new SignalManager.SignalManager(this);
+        this._signals = new SignalManager.SignalManager(null);
     },
 
     addMenu: function(menu, position) {
-        this._signals.connect(menu, 'open-state-changed', this._onMenuOpenState);
-        this._signals.connect(menu, 'child-menu-added', this._onChildMenuAdded);
-        this._signals.connect(menu, 'child-menu-removed', this._onChildMenuRemoved);
-        this._signals.connect(menu, 'destroy', this._onMenuDestroy);
+        this._signals.connect(menu, 'open-state-changed', this._onMenuOpenState, this);
+        this._signals.connect(menu, 'child-menu-added', this._onChildMenuAdded, this);
+        this._signals.connect(menu, 'child-menu-removed', this._onChildMenuRemoved, this);
+        this._signals.connect(menu, 'destroy', this._onMenuDestroy, this);
 
         let source = menu.sourceActor;
 
         if (source) {
-            this._signals.connect(source, 'enter-event', function() { this._onMenuSourceEnter(menu); });
-            this._signals.connect(source, 'key-focus-in', function() { this._onMenuSourceEnter(menu); });
+            this._signals.connect(source, 'enter-event', function() { this._onMenuSourceEnter(menu); }, this);
+            this._signals.connect(source, 'key-focus-in', function() { this._onMenuSourceEnter(menu); }, this);
         }
 
         if (position == undefined)
@@ -3446,11 +3446,11 @@ PopupMenuManager.prototype = {
         if (!Main.pushModal(this._owner.actor)) {
             return;
         }
-        this._signals.connect(global.stage, 'captured-event', this._onEventCapture);
+        this._signals.connect(global.stage, 'captured-event', this._onEventCapture, this);
         // captured-event doesn't see enter/leave events
-        this._signals.connect(global.stage, 'enter-event', this._onEventCapture);
-        this._signals.connect(global.stage, 'leave-event', this._onEventCapture);
-        this._signals.connect(global.stage, 'notify::key-focus', this._onKeyFocusChanged);
+        this._signals.connect(global.stage, 'enter-event', this._onEventCapture, this);
+        this._signals.connect(global.stage, 'leave-event', this._onEventCapture, this);
+        this._signals.connect(global.stage, 'notify::key-focus', this._onKeyFocusChanged, this);
 
         this.grabbed = true;
     },

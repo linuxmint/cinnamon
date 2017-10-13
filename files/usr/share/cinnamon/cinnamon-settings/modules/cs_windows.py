@@ -129,6 +129,9 @@ class Module:
             widget = GSettingsSpinButton(_("Delay before displaying the alt-tab switcher"), "org.cinnamon", "alttab-switcher-delay", units=_("milliseconds"), mini=0, maxi=1000, step=50, page=150)
             settings.add_row(widget)
 
+            widget = GSettingsSwitch(_("Show windows from all workspaces"), "org.cinnamon", "alttab-switcher-show-all-workspaces")
+            settings.add_row(widget)
+
 class TitleBarButtonsOrderSelector(SettingsBox):
     def __init__(self):
         self.schema = "org.cinnamon.muffin"

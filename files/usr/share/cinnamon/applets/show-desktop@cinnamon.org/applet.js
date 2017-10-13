@@ -1,6 +1,5 @@
 const Applet = imports.ui.applet;
 const Settings = imports.ui.settings;  // Needed for settings API
-const Main = imports.ui.main;
 const Mainloop = imports.mainloop;
 const Tweener = imports.ui.tweener;
 const Clutter = imports.gi.Clutter;
@@ -24,10 +23,10 @@ MyApplet.prototype = {
         this.settings.bindProperty(Settings.BindingDirection.IN, "peek-opacity", "peek_opacity", null, null);
         this.settings.bindProperty(Settings.BindingDirection.IN, "peek-blur", "peek_blur", null, null);
 
-        this.signals = new SignalManager.SignalManager(this);
+        this.signals = new SignalManager.SignalManager(null);
         this.actor.connect('enter-event', Lang.bind(this, this._on_enter));
         this.actor.connect('leave-event', Lang.bind(this, this._on_leave));
-        this.signals.connect(global.stage, 'notify::key-focus', this._on_leave);
+        this.signals.connect(global.stage, 'notify::key-focus', this._on_leave, this);
 
         this._did_peek = false;
         this._peek_timeout_id = 0;
@@ -64,16 +63,15 @@ MyApplet.prototype = {
             }
 
             this._peek_timeout_id = Mainloop.timeout_add(this.peek_delay, Lang.bind(this, function() {
-                if (this.actor.hover
-                    && !this._applet_context_menu.isOpen
-                    && !global.settings.get_boolean("panel-edit-mode")) {
+                if (this.actor.hover &&
+                    !this._applet_context_menu.isOpen &&
+                    !global.settings.get_boolean("panel-edit-mode")) {
 
                     Tweener.addTween(global.window_group,
                                      {opacity: this.peek_opacity, time: 0.275, transition: "easeInSine"});
 
                     let windows = global.get_window_actors();
                     for (let i = 0; i < windows.length; i++) {
-                        let window = windows[i].meta_window;
                         let compositor = windows[i];
 
                         if (this.peek_blur) {

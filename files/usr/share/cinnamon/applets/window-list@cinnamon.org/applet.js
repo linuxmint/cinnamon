@@ -57,18 +57,15 @@ const Applet = imports.ui.applet;
 const AppletManager = imports.ui.appletManager;
 const DND = imports.ui.dnd;
 const Main = imports.ui.main;
-const Panel = imports.ui.panel;
 const PopupMenu = imports.ui.popupMenu;
 const Settings = imports.ui.settings;
 const SignalManager = imports.misc.signalManager;
 const Tooltips = imports.ui.tooltips;
-const Tweener = imports.ui.tweener;
-const Util = imports.misc.util;
 
 const HORIZONTAL_ICON_SIZE = 16; // too bad this can't be defined in theme (cinnamon-app.create_icon_texture returns a clutter actor, not a themable object -
                                  // probably something that could be addressed
-const ICON_HEIGHT_FACTOR = .64;
-const VERTICAL_ICON_HEIGHT_FACTOR = .75;
+const ICON_HEIGHT_FACTOR = 0.64;
+const VERTICAL_ICON_HEIGHT_FACTOR = 0.75;
 const MAX_TEXT_LENGTH = 1000;
 const FLASH_INTERVAL = 500;
 
@@ -138,7 +135,7 @@ WindowPreview.prototype = {
 
     show: function() {
         if (!this.actor || this._applet._menuOpen)
-            return
+            return;
 
         this.muffinWindow = this.metaWindow.get_compositor_private();
         let windowTexture = this.muffinWindow.get_texture();
@@ -184,7 +181,7 @@ WindowPreview.prototype = {
         }
 
         let previewLeft;
-        if (this._applet.orientation == St.Side.BOTTOM || this._applet.orientation == St.Side.TOP) { 
+        if (this._applet.orientation == St.Side.BOTTOM || this._applet.orientation == St.Side.TOP) {
             // centre the applet on the window list item if window list is on the top or bottom panel
             previewLeft = this.item.get_transformed_position()[0] + this.item.get_transformed_size()[0]/2 - previewWidth/2;
         } else if (this._applet.orientation == St.Side.LEFT) {
@@ -240,7 +237,7 @@ WindowPreview.prototype = {
         }
         this.actor = null;
     }
-}
+};
 
 function AppMenuButton(applet, metaWindow, alert) {
     this._init(applet, metaWindow, alert);
@@ -319,7 +316,7 @@ AppMenuButton.prototype = {
                     this._progress = this.metaWindow.progress;
 
                     if (this._progress >0) {
-                        this.progressOverlay.show()
+                        this.progressOverlay.show();
                     } else {
                         this.progressOverlay.hide();
                     }
@@ -355,7 +352,7 @@ AppMenuButton.prototype = {
         this._needsAttention = false;
 
         this.setDisplayTitle();
-        this.onFocus()
+        this.onFocus();
         this.setIcon();
 
         if (this.alert)
@@ -1029,23 +1026,23 @@ MyApplet.prototype = {
         this.settings.bind("buttons-use-entire-space", "buttonsUseEntireSpace", this._refreshAllItems);
         this.settings.bind("window-preview", "usePreview", this._onPreviewChanged);
 
-        this.signals = new SignalManager.SignalManager(this);
+        this.signals = new SignalManager.SignalManager(null);
 
         let tracker = Cinnamon.WindowTracker.get_default();
-        this.signals.connect(tracker, "notify::focus-app", this._onFocus);
-        this.signals.connect(global.screen, 'window-added', this._onWindowAdded);
-        this.signals.connect(global.screen, 'window-removed', this._onWindowRemoved);
-        this.signals.connect(global.screen, 'window-monitor-changed', this._onWindowMonitorChanged);
-        this.signals.connect(global.screen, 'window-workspace-changed', this._onWindowWorkspaceChanged);
-        this.signals.connect(global.screen, 'window-skip-taskbar-changed', this._onWindowSkipTaskbarChanged);
-        this.signals.connect(global.screen, 'monitors-changed', this._updateWatchedMonitors);
-        this.signals.connect(global.window_manager, 'switch-workspace', this._refreshAllItems);
+        this.signals.connect(tracker, "notify::focus-app", this._onFocus, this);
+        this.signals.connect(global.screen, 'window-added', this._onWindowAdded, this);
+        this.signals.connect(global.screen, 'window-removed', this._onWindowRemoved, this);
+        this.signals.connect(global.screen, 'window-monitor-changed', this._onWindowMonitorChanged, this);
+        this.signals.connect(global.screen, 'window-workspace-changed', this._onWindowWorkspaceChanged, this);
+        this.signals.connect(global.screen, 'window-skip-taskbar-changed', this._onWindowSkipTaskbarChanged, this);
+        this.signals.connect(global.screen, 'monitors-changed', this._updateWatchedMonitors, this);
+        this.signals.connect(global.window_manager, 'switch-workspace', this._refreshAllItems, this);
 
-        this.signals.connect(global.window_manager, 'minimize', this._onWindowStateChange);
-        this.signals.connect(global.window_manager, 'maximize', this._onWindowStateChange);
-        this.signals.connect(global.window_manager, 'unmaximize', this._onWindowStateChange);
-        this.signals.connect(global.window_manager, 'map', this._onWindowStateChange);
-        this.signals.connect(global.window_manager, 'tile', this._onWindowStateChange);
+        this.signals.connect(global.window_manager, 'minimize', this._onWindowStateChange, this);
+        this.signals.connect(global.window_manager, 'maximize', this._onWindowStateChange, this);
+        this.signals.connect(global.window_manager, 'unmaximize', this._onWindowStateChange, this);
+        this.signals.connect(global.window_manager, 'map', this._onWindowStateChange, this);
+        this.signals.connect(global.window_manager, 'tile', this._onWindowStateChange, this);
 
         this.actor.connect('style-changed', Lang.bind(this, this._updateSpacing));
 
@@ -1167,8 +1164,8 @@ MyApplet.prototype = {
 
     _updateAttentionGrabber: function() {
         if (this.enableAlerts) {
-            this.signals.connect(global.display, "window-marked-urgent", this._onWindowDemandsAttention);
-            this.signals.connect(global.display, "window-demands-attention", this._onWindowDemandsAttention);
+            this.signals.connect(global.display, "window-marked-urgent", this._onWindowDemandsAttention, this);
+            this.signals.connect(global.display, "window-demands-attention", this._onWindowDemandsAttention, this);
         } else {
             this.signals.disconnect("window-marked-urgent");
             this.signals.disconnect("window-demands-attention");

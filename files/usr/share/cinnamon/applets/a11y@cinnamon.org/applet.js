@@ -1,4 +1,3 @@
-const St = imports.gi.St;
 const PopupMenu = imports.ui.popupMenu;
 const Gio = imports.gi.Gio;
 const Lang = imports.lang;
@@ -14,12 +13,7 @@ const KEY_MOUSE_KEYS_ENABLED  = 'mousekeys-enable';
 
 const APPLICATIONS_SCHEMA = 'org.cinnamon.desktop.a11y.applications';
 
-const DPI_LOW_REASONABLE_VALUE  = 50;
-const DPI_HIGH_REASONABLE_VALUE = 500;
-
 const DPI_FACTOR_LARGE   = 1.25;
-const DPI_FACTOR_LARGER  = 1.5;
-const DPI_FACTOR_LARGEST = 2.0;
 
 const DESKTOP_INTERFACE_SCHEMA = 'org.cinnamon.desktop.interface';
 const KEY_GTK_THEME      = 'gtk-theme';

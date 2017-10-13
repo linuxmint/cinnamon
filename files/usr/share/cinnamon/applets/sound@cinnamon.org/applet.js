@@ -10,7 +10,6 @@ const St = imports.gi.St;
 const PopupMenu = imports.ui.popupMenu;
 const GLib = imports.gi.GLib;
 const Cvc = imports.gi.Cvc;
-const Pango = imports.gi.Pango;
 const Tooltips = imports.ui.tooltips;
 const Main = imports.ui.main;
 const Settings = imports.ui.settings;
@@ -77,7 +76,7 @@ ControlButton.prototype = {
         this.button.can_focus = status;
         this.button.reactive = status;
     }
-}
+};
 
 function VolumeSlider(){
     this._init.apply(this, arguments);
@@ -140,7 +139,7 @@ VolumeSlider.prototype = {
 
         let volume = this._value * this.applet._volumeMax, muted;
 
-        if(this._value < .005){
+        if(this._value < 0.005){
             volume = 0;
             muted = true;
         } else {
@@ -172,7 +171,7 @@ VolumeSlider.prototype = {
     },
 
     _volumeToIcon: function(value){
-        if(value < .005)
+        if(value < 0.005)
             return this.isMic? "microphone-sensitivity-none" : "audio-volume-muted";
         let n = Math.floor(3 * value), icon;
         if(n < 1)
@@ -184,7 +183,7 @@ VolumeSlider.prototype = {
 
         return this.isMic? "microphone-sensitivity-" + icon : "audio-volume-" + icon;
     }
-}
+};
 
 function StreamMenuSection(){
     this._init.apply(this, arguments);
@@ -227,7 +226,7 @@ StreamMenuSection.prototype = {
         let slider = new VolumeSlider(applet, stream, name, iconName);
         this.addMenuItem(slider);
     }
-}
+};
 
 function Player() {
     this._init.apply(this, arguments);
@@ -283,7 +282,7 @@ Player.prototype = {
         if (!this._prop || !this._mediaServerPlayer || !this._mediaServer)
             return;
 
-        let mainBox = new PopupMenu.PopupMenuSection;
+        let mainBox = new PopupMenu.PopupMenuSection();
         this.addMenuItem(mainBox);
 
         this.vertBox = new St.BoxLayout({ style_class: "sound-player", important: true, vertical: true });
@@ -495,7 +494,7 @@ Player.prototype = {
         this._canSeek = this._getCanSeek();
 
         if (this._songLength == 0 || position == false)
-            this._canSeek = false
+            this._canSeek = false;
     },
 
     _setPosition: function(value) {
@@ -610,7 +609,6 @@ Player.prototype = {
                 let cover_path = "";
                 if (this._trackCoverFile.match(/^http/)) {
                     this._hideCover();
-                    let cover = Gio.file_new_for_uri(decodeURIComponent(this._trackCoverFile));
                     this._trackCoverFileTmp = Gio.file_new_tmp('XXXXXX.mediaplayer-cover')[0];
                     Util.spawn_async(['wget', this._trackCoverFile, '-O', this._trackCoverFileTmp.get_path()], Lang.bind(this, this._onDownloadedCover));
                 }
@@ -797,7 +795,7 @@ Player.prototype = {
         PopupMenu.PopupMenuSection.prototype.destroy.call(this);
     }
 
-}
+};
 
 function MediaPlayerLauncher(app, menu) {
     this._init(app, menu);
@@ -939,7 +937,7 @@ MyApplet.prototype = {
             this._applet_context_menu.addMenuItem(this.mute_out_switch);
             this._applet_context_menu.addMenuItem(this.mute_in_switch);
 
-            this._applet_context_menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem);
+            this._applet_context_menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
 
             this._outputApplicationsMenu = new PopupMenu.PopupSubMenuMenuItem(_("Applications"));
             this._selectOutputDeviceItem = new PopupMenu.PopupSubMenuMenuItem(_("Output device"));
@@ -948,7 +946,7 @@ MyApplet.prototype = {
             this._outputApplicationsMenu.actor.hide();
             this._selectOutputDeviceItem.actor.hide();
 
-            this._inputSection = new PopupMenu.PopupMenuSection;
+            this._inputSection = new PopupMenu.PopupMenuSection();
             this._inputVolumeSection = new VolumeSlider(this, null, _("Microphone"), null);
             this._inputVolumeSection.connect("values-changed", Lang.bind(this, this._inputValuesChanged));
             this._selectInputDeviceItem = new PopupMenu.PopupSubMenuMenuItem(_("Input device"));
@@ -959,7 +957,7 @@ MyApplet.prototype = {
             this._selectInputDeviceItem.actor.hide();
             this._inputSection.actor.hide();
 
-            this._applet_context_menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem);
+            this._applet_context_menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
 
             this.mute_out_switch.connect('toggled', Lang.bind(this, this._toggle_out_mute));
             this.mute_in_switch.connect('toggled', Lang.bind(this, this._toggle_in_mute));
@@ -1156,7 +1154,6 @@ MyApplet.prototype = {
     },
 
     _addPlayer: function(busName, owner) {
-        let position;
         if (this._players[owner]) {
             let prevName = this._players[owner]._busName;
             // HAVE: ADDING: ACTION:
@@ -1245,7 +1242,7 @@ MyApplet.prototype = {
         //do we know already this player?
         for (let i = 0, l = this._knownPlayers.length; i < l; ++i) {
             if (this._knownPlayers[i] === entry)
-                return
+                return;
         }
         //No, save it to _knownPlayers and update player list
         this._knownPlayers.push(entry);
@@ -1265,12 +1262,12 @@ MyApplet.prototype = {
         this._updateLaunchPlayer();
 
         //between these two separators will be the player MenuSection (position 3)
-        this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem);
+        this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
         this._outputVolumeSection = new VolumeSlider(this, null, _("Volume"), null);
         this._outputVolumeSection.connect("values-changed", Lang.bind(this, this._outputValuesChanged));
 
         this.menu.addMenuItem(this._outputVolumeSection);
-        this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem);
+        this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
 
         this.menu.addSettingsAction(_("Sound Settings"), 'sound');
     },

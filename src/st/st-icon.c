@@ -62,8 +62,7 @@ struct _StIconPrivate
   gint          icon_scale;
 
   CoglPipeline  *shadow_pipeline;
-  float         shadow_width;
-  float         shadow_height;
+
   StShadow     *shadow_spec;
 };
 
@@ -294,8 +293,7 @@ st_icon_init (StIcon *self)
   self->priv->icon_type = DEFAULT_ICON_TYPE;
 
   self->priv->shadow_pipeline = NULL;
-  self->priv->shadow_width = -1;
-  self->priv->shadow_height = -1;
+
   self->priv->icon_scale = 1;
 }
 
@@ -307,16 +305,7 @@ st_icon_update_shadow_pipeline (StIcon *icon)
   g_clear_pointer (&priv->shadow_pipeline, cogl_object_unref);
 
   if (priv->shadow_spec)
-   {
-     gint width, height;
-
-     clutter_texture_get_base_size (CLUTTER_TEXTURE (priv->icon_texture),
-                                    &width, &height);
-
      priv->shadow_pipeline = _st_create_shadow_pipeline_from_actor (priv->shadow_spec, priv->icon_texture);
-     priv->shadow_width = width;
-     priv->shadow_height = height;
-   }
 }
 
 static void

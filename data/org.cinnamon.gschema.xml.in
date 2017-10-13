@@ -538,6 +538,11 @@
       <_description>Duration of the effect (in milliseconds)</_description>
     </key>
 
+    <key type="b" name="alttab-switcher-show-all-workspaces">
+      <default>false</default>
+      <_summary>Show all windows from all workspaces</_summary>
+    </key>
+
     <key name="bring-windows-to-current-workspace" type="b">
       <default>false</default>
       <summary>Brings windows requiring attention to the current workspace</summary>
@@ -674,7 +679,7 @@
   <schema id="org.cinnamon.keyboard" path="/org/cinnamon/keyboard/"
           gettext-domain="@GETTEXT_PACKAGE@">
     <key name="keyboard-type" type="s">
-      <default>'touch'</default>
+      <default>'tablet'</default>
       <_summary>Which keyboard to use</_summary>
       <_description>
         The type of keyboard to use.
@@ -687,8 +692,21 @@
         Can be:  on-demand: display the keyboard only at user demand, either when the applet is clicked, or a keyboard shortcut is used.  accessible: display the keyboard any time an input field becomes the desktop keyboard focus.
       </_description>
     </key>
+    <key name="keyboard-size" type="i">
+      <default>3</default>
+      <_summary>The size of the keyboard. Set this value to X for the keyboard to take 1/x of the screen.</_summary>
+      <_description>
+        The size of the keyboard. Set this value to X for the keyboard to take 1/x of the screen.
+      </_description>
+    </key>
+    <key name="keyboard-position" type="s">
+      <default>'top'</default>
+      <_summary>Keyboard position</_summary>
+      <_description>
+        Keyboard position.
+      </_description>
+    </key>
   </schema>
-    
   <schema id="org.cinnamon.recorder" path="/org/cinnamon/recorder/"
           gettext-domain="@GETTEXT_PACKAGE@">
     <key name="framerate" type="i">

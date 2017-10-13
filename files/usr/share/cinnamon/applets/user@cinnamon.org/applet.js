@@ -1,16 +1,13 @@
-const Cinnamon = imports.gi.Cinnamon;
 const Applet = imports.ui.applet;
 const Lang = imports.lang;
 const St = imports.gi.St;
 const PopupMenu = imports.ui.popupMenu;
 const Util = imports.misc.util;
 const GLib = imports.gi.GLib;
-const Gio = imports.gi.Gio
+const Gio = imports.gi.Gio;
 const AccountsService = imports.gi.AccountsService;
 const GnomeSession = imports.misc.gnomeSession;
 const ScreenSaver = imports.misc.screenSaver;
-const Main = imports.ui.main;
-const Panel = imports.ui.panel;
 const Settings = imports.ui.settings;
 
 

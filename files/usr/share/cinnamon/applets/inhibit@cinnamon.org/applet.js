@@ -43,8 +43,8 @@ InhibitSwitch.prototype = {
 
         this.sessionProxy = null;
         this.sessionCookie = null;
-        this.sigAddedId = 0
-        this.sigRemovedId = 0
+        this.sigAddedId = 0;
+        this.sigRemovedId = 0;
 
         GnomeSession.SessionManager(Lang.bind(this, function(proxy, error) {
             if (error)
@@ -141,9 +141,9 @@ MyApplet.prototype = {
         this.menu.addMenuItem(this.inhibitSwitch);
 
         this.set_applet_icon_symbolic_name('inhibit');
-        this.set_applet_tooltip(_("Inhibit applet"))
+        this.set_applet_tooltip(_("Inhibit applet"));
 
-        this.notif_settings = new Gio.Settings({ schema_id: "org.cinnamon.desktop.notifications" })
+        this.notif_settings = new Gio.Settings({ schema_id: "org.cinnamon.desktop.notifications" });
         this.notificationsSwitch = new PopupMenu.PopupSwitchMenuItem(_("Notifications"), this.notif_settings.get_boolean("display-notifications"));
 
         this.notif_settings.connect('changed::display-notifications', Lang.bind(this, function() {
