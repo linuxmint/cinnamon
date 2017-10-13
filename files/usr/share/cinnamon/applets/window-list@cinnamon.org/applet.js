@@ -1029,23 +1029,23 @@ MyApplet.prototype = {
         this.settings.bind("buttons-use-entire-space", "buttonsUseEntireSpace", this._refreshAllItems);
         this.settings.bind("window-preview", "usePreview", this._onPreviewChanged);
 
-        this.signals = new SignalManager.SignalManager(this);
+        this.signals = new SignalManager.SignalManager(null);
 
         let tracker = Cinnamon.WindowTracker.get_default();
-        this.signals.connect(tracker, "notify::focus-app", this._onFocus);
-        this.signals.connect(global.screen, 'window-added', this._onWindowAdded);
-        this.signals.connect(global.screen, 'window-removed', this._onWindowRemoved);
-        this.signals.connect(global.screen, 'window-monitor-changed', this._onWindowMonitorChanged);
-        this.signals.connect(global.screen, 'window-workspace-changed', this._onWindowWorkspaceChanged);
-        this.signals.connect(global.screen, 'window-skip-taskbar-changed', this._onWindowSkipTaskbarChanged);
-        this.signals.connect(global.screen, 'monitors-changed', this._updateWatchedMonitors);
-        this.signals.connect(global.window_manager, 'switch-workspace', this._refreshAllItems);
+        this.signals.connect(tracker, "notify::focus-app", this._onFocus, this);
+        this.signals.connect(global.screen, 'window-added', this._onWindowAdded, this);
+        this.signals.connect(global.screen, 'window-removed', this._onWindowRemoved, this);
+        this.signals.connect(global.screen, 'window-monitor-changed', this._onWindowMonitorChanged, this);
+        this.signals.connect(global.screen, 'window-workspace-changed', this._onWindowWorkspaceChanged, this);
+        this.signals.connect(global.screen, 'window-skip-taskbar-changed', this._onWindowSkipTaskbarChanged, this);
+        this.signals.connect(global.screen, 'monitors-changed', this._updateWatchedMonitors, this);
+        this.signals.connect(global.window_manager, 'switch-workspace', this._refreshAllItems, this);
 
-        this.signals.connect(global.window_manager, 'minimize', this._onWindowStateChange);
-        this.signals.connect(global.window_manager, 'maximize', this._onWindowStateChange);
-        this.signals.connect(global.window_manager, 'unmaximize', this._onWindowStateChange);
-        this.signals.connect(global.window_manager, 'map', this._onWindowStateChange);
-        this.signals.connect(global.window_manager, 'tile', this._onWindowStateChange);
+        this.signals.connect(global.window_manager, 'minimize', this._onWindowStateChange, this);
+        this.signals.connect(global.window_manager, 'maximize', this._onWindowStateChange, this);
+        this.signals.connect(global.window_manager, 'unmaximize', this._onWindowStateChange, this);
+        this.signals.connect(global.window_manager, 'map', this._onWindowStateChange, this);
+        this.signals.connect(global.window_manager, 'tile', this._onWindowStateChange, this);
 
         this.actor.connect('style-changed', Lang.bind(this, this._updateSpacing));
 
@@ -1167,8 +1167,8 @@ MyApplet.prototype = {
 
     _updateAttentionGrabber: function() {
         if (this.enableAlerts) {
-            this.signals.connect(global.display, "window-marked-urgent", this._onWindowDemandsAttention);
-            this.signals.connect(global.display, "window-demands-attention", this._onWindowDemandsAttention);
+            this.signals.connect(global.display, "window-marked-urgent", this._onWindowDemandsAttention, this);
+            this.signals.connect(global.display, "window-demands-attention", this._onWindowDemandsAttention, this);
         } else {
             this.signals.disconnect("window-marked-urgent");
             this.signals.disconnect("window-demands-attention");

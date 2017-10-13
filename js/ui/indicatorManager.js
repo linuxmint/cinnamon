@@ -985,9 +985,9 @@ IndicatorActor.prototype = {
         this._updatedLabel();
         this._updatedStatus();
 
-        this._signalManager = new SignalManager.SignalManager(this);
-        this._signalManager.connect(this.actor, 'scroll-event', this._handleScrollEvent);
-        this._signalManager.connect(Gtk.IconTheme.get_default(), 'changed', this._invalidateIcon);
+        this._signalManager = new SignalManager.SignalManager(null);
+        this._signalManager.connect(this.actor, 'scroll-event', this._handleScrollEvent, this);
+        this._signalManager.connect(Gtk.IconTheme.get_default(), 'changed', this._invalidateIcon, this);
         //this._signalManager.connect(this._indicator, 'icon', this._updateIcon);
         //this._signalManager.connect(this._indicator, 'overlay-icon', this._updateOverlayIcon);
         //this._signalManager.connect(this._indicator, 'ready', this._invalidateIcon);
