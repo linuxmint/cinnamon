@@ -147,28 +147,39 @@ class Module:
 
             infos = createSystemInfos()
 
-            page = SettingsPage()
-            self.sidePage.add_widget(page)
-
+             page = SettingsPage()
+             self.sidePage.add_widget(page)
+	    settings = page.add_section(_("System info"))
+	    #if os.path.exists('/usr/share/linuxmint/logo.png'): (Other Method)
+	    try:
+	        widget = SettingsWidget()
+	        widget.set_spacing(40)
+		image = Gtk.Image()
+		image.set_from_icon_name("distributor-logo", 6) #I don't know why it spams invalid icon size warnings, at least they don't cause exceptions though
+	        widget.pack_start(image, True, False, 0)
+	        widget.pack_end(image, True, False, 0)
+	        settings.add_row(widget)
+	    except: #If you want the other method, just use this code in place of the above code from 'Image =', downwards
             settings = page.add_section(_("System info"))
-
-            for (key, value) in infos:
+            #if os.path.exists('/usr/share/linuxmint/logo.png'): (Other Method)
+            try:
                 widget = SettingsWidget()
                 widget.set_spacing(40)
-                labelKey = Gtk.Label.new(key)
-                widget.pack_start(labelKey, False, False, 0)
-                labelKey.get_style_context().add_class("dim-label")
-                labelValue = Gtk.Label.new(value)
-                widget.pack_end(labelValue, False, False, 0)
+                 image = Gtk.Image()
+	        image.set_from_file("/usr/share/linuxmint/logo.png")
+	        widget.pack_start(image, True, False, 0)
+	        widget.pack_end(image, True, False, 0)
+	        settings.add_row(widget)
+                image.set_from_icon_name("distributor-logo", 6) #I don't know why it spams invalid icon size warnings, at least they don't cause exceptions though
+                widget.pack_start(image, True, False, 0)
+                widget.pack_end(image, True, False, 0)
                 settings.add_row(widget)
-
-            if os.path.exists("/usr/bin/upload-system-info"):
-                widget = SettingsWidget()
-                button = Gtk.Button(_("Upload system information"))
-                button.set_tooltip_text(_("No personal information included"))
-                button.connect("clicked", self.on_button_clicked)
-                widget.pack_start(button, True, True, 0)
+            except: #If you want the other method, just use this code in place of the above code from 'Image =', downwards
+                image = Gtk.Image()
+                image.set_from_file("/usr/share/linuxmint/logo.png")
+                widget.pack_start(image, True, False, 0)
+                widget.pack_end(image, True, False, 0)
                 settings.add_row(widget)
-
-    def on_button_clicked(self, button):
-        subprocess.Popen(["upload-system-info"])
+ 
+             for (key, value) in infos:
+                 widget = SettingsWidget()
