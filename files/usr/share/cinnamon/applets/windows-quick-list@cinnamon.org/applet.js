@@ -1,15 +1,13 @@
 const Applet = imports.ui.applet;
 const Cinnamon = imports.gi.Cinnamon;
-const GLib = imports.gi.GLib;
 const Lang = imports.lang;
-const Mainloop = imports.mainloop;
 const PopupMenu = imports.ui.popupMenu;
 const St = imports.gi.St;
 const Main = imports.ui.main;
 
 function MyApplet(metadata, orientation, panel_height, instance_id) {
     this._init(metadata, orientation, panel_height, instance_id);
-};
+}
 
 MyApplet.prototype = {
     __proto__: Applet.IconApplet.prototype,
@@ -108,7 +106,7 @@ MyApplet.prototype = {
             global.logError(e);
         }
         if (empty_menu) {
-            let item = new PopupMenu.PopupMenuItem(_("No open windows"))
+            let item = new PopupMenu.PopupMenuItem(_("No open windows"));
             item.actor.reactive = false;
             item.actor.can_focus = false;
             item.label.add_style_class_name('popup-subtitle-menu-item');

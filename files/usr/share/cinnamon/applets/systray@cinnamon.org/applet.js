@@ -8,7 +8,7 @@ const Main = imports.ui.main;
 const Mainloop = imports.mainloop;
 const SignalManager = imports.misc.signalManager;
 
-const ICON_SCALE_FACTOR = .8; // for custom panel heights, 20 (default icon size) / 25 (default panel height)
+const ICON_SCALE_FACTOR = 0.8; // for custom panel heights, 20 (default icon size) / 25 (default panel height)
 
 const DEFAULT_ICON_SIZE = 20;
 
@@ -251,7 +251,7 @@ MyApplet.prototype = {
             // child instanceof CinnamonTrayIcon.
             return (child.toString().indexOf("CinnamonTrayIcon") != -1);
         });
-        for (var i = 0; i < children.length; i++) {
+        for (let i = 0; i < children.length; i++) {
             children[i].destroy();
         }
     },

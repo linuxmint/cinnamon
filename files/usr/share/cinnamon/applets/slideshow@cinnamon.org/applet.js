@@ -53,7 +53,7 @@ MyApplet.prototype = {
                     "preferences-desktop-wallpaper",
                     St.IconType.SYMBOLIC);
             this.open_settings_context_menu_item.connect('activate', Lang.bind(this, function() {
-                Util.spawnCommandLine("cinnamon-settings backgrounds")
+                Util.spawnCommandLine("cinnamon-settings backgrounds");
             }));
             this._applet_context_menu.addMenuItem(this.open_settings_context_menu_item);
         }

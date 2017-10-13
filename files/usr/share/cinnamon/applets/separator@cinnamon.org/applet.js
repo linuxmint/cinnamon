@@ -45,7 +45,7 @@ MyApplet.prototype = {
             this._line.set_width((this._panelHeight - 8));
         }
     },
-}; 
+};
 
 function main(metadata, orientation, panel_height, instance_id) {
     let myApplet = new MyApplet(orientation, panel_height, instance_id);

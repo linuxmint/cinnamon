@@ -1,13 +1,11 @@
 const Applet = imports.ui.applet;
 const AppletManager = imports.ui.appletManager;
 
-const Clutter = imports.gi.Clutter;
 const St = imports.gi.St;
 const Cinnamon = imports.gi.Cinnamon;
 const Lang = imports.lang;
 const Gio = imports.gi.Gio;
 const PopupMenu = imports.ui.popupMenu;
-const Main = imports.ui.main;
 const GLib = imports.gi.GLib;
 const Tooltips = imports.ui.tooltips;
 const DND = imports.ui.dnd;
@@ -17,11 +15,10 @@ const Settings = imports.ui.settings;
 const Signals = imports.signals;
 
 const DEFAULT_ICON_SIZE = 20;
-const ICON_HEIGHT_FACTOR = .8;
+const ICON_HEIGHT_FACTOR = 0.8;
 
 const PANEL_EDIT_MODE_KEY = 'panel-edit-mode';
 const PANEL_LAUNCHERS_KEY = 'panel-launchers';
-const PANEL_LAUNCHERS_DRAGGABLE_KEY = 'panel-launchers-draggable';
 
 const CUSTOM_LAUNCHERS_PATH = GLib.get_home_dir() + '/.cinnamon/panel-launchers';
 
@@ -80,7 +77,7 @@ PanelAppLauncherMenu.prototype = {
         item.connect('activate', Lang.bind(this._launcher._applet, this._launcher._applet.configureApplet));
         subMenu.menu.addMenuItem(item);
 
-        item = new PopupMenu.PopupIconMenuItem(_("Remove 'Panel launchers'"), "edit-delete", St.IconType.SYMBOLIC);
+        item = new PopupMenu.PopupIconMenuItem(_("Remove '%s'").format(_("Panel launchers")), "edit-delete", St.IconType.SYMBOLIC);
         item.connect('activate', Lang.bind(this, function() {
             AppletManager._removeAppletFromPanel(this._launcher._applet._uuid, this._launcher._applet.instance_id);
         }));
@@ -108,7 +105,7 @@ PanelAppLauncherMenu.prototype = {
     _launchAction: function(event, name) {
         this._launcher.launchAction(name);
     }
-}
+};
 
 function PanelAppLauncher(launchersBox, app, appinfo, orientation, panel_height, scale) {
     this._init(launchersBox, app, appinfo, orientation, panel_height, scale);
@@ -322,7 +319,7 @@ PanelAppLauncher.prototype = {
         }
         return null;
     }
-}
+};
 
 function MyApplet(metadata, orientation, panel_height, instance_id) {
     this._init(metadata, orientation, panel_height, instance_id);
@@ -351,8 +348,8 @@ MyApplet.prototype = {
 
         this.uuid = metadata.uuid;
 
-        this._settings_proxy = new Array();
-        this._launchers = new Array();
+        this._settings_proxy = [];
+        this._launchers = [];
 
         this.actor.add(this.myactor);
         this.actor.reactive = global.settings.get_boolean(PANEL_EDIT_MODE_KEY);
@@ -435,7 +432,7 @@ MyApplet.prototype = {
         let appinfo = null;
         if (!app)
             appinfo = Gio.DesktopAppInfo.new_from_filename(CUSTOM_LAUNCHERS_PATH+"/"+path);
-        return [app, appinfo]
+        return [app, appinfo];
     },
 
     on_panel_height_changed: function() {
@@ -460,8 +457,8 @@ MyApplet.prototype = {
 
     reload: function() {
         this.myactor.destroy_all_children();
-        this._launchers = new Array();
-        this._settings_proxy = new Array();
+        this._launchers = [];
+        this._settings_proxy = [];
 
         for (let file of this.launcherList) {
             let [app, appinfo] = this.loadSingleApp(file);
@@ -647,7 +644,6 @@ MyApplet.prototype = {
                 children[i] == this._dragPlaceholder.actor)
                 continue;
 
-            let childId = children[i]._delegate.getId();
             if (source === children[i]._delegate)
                 continue;
             launcherPos++;

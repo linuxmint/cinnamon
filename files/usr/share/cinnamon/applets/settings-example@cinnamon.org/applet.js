@@ -65,16 +65,16 @@ MyApplet.prototype = {
 
     on_settings_changed: function() {
         if (this.use_custom) {
-            this.set_applet_label(this.custom_label)
+            this.set_applet_label(this.custom_label);
         } else {
             this.set_applet_label(_("Hi there!"));
         }
 
         let icon_file = Gio.File.new_for_path(this.icon_name);
         if (icon_file.query_exists(null)) {
-            this.set_applet_icon_path(this.icon_name)
+            this.set_applet_icon_path(this.icon_name);
         } else {
-            this.set_applet_icon_name(this.icon_name)
+            this.set_applet_icon_name(this.icon_name);
         }
 
         this.spinner_val_demo.label.clutter_text.set_text("Spinner value is: " + this.spinner_number);
@@ -109,12 +109,12 @@ MyApplet.prototype = {
         //animate icon
         Tweener.addTween(this._applet_icon, {
             margin_left: 10,
-            time: .5,
+            time: 0.5,
             transition: this.tween_function,
             onComplete: function(){
                 Tweener.addTween(this._applet_icon, {
                     margin_left: 0,
-                    time: .5,
+                    time: 0.5,
                     transition: this.tween_function
                 });
             },

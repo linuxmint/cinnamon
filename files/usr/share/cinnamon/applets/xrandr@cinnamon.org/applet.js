@@ -8,19 +8,19 @@ const Lang = imports.lang;
 const Applet = imports.ui.applet;
 const PopupMenu = imports.ui.popupMenu;
 
-const N_ = function(e) { return e };
+const N_ = function(e) { return e; };
 
 const possibleRotations = [ CinnamonDesktop.RRRotation.ROTATION_0,
-			    CinnamonDesktop.RRRotation.ROTATION_90,
-			    CinnamonDesktop.RRRotation.ROTATION_180,
-			    CinnamonDesktop.RRRotation.ROTATION_270
-			  ];
+                CinnamonDesktop.RRRotation.ROTATION_90,
+                CinnamonDesktop.RRRotation.ROTATION_180,
+                CinnamonDesktop.RRRotation.ROTATION_270
+              ];
 
 let rotations = [ [ CinnamonDesktop.RRRotation.ROTATION_0, N_("Normal") ],
-		  [ CinnamonDesktop.RRRotation.ROTATION_90, N_("Left") ],
-		  [ CinnamonDesktop.RRRotation.ROTATION_270, N_("Right") ],
-		  [ CinnamonDesktop.RRRotation.ROTATION_180, N_("Upside-down") ]
-		];
+          [ CinnamonDesktop.RRRotation.ROTATION_90, N_("Left") ],
+          [ CinnamonDesktop.RRRotation.ROTATION_270, N_("Right") ],
+          [ CinnamonDesktop.RRRotation.ROTATION_180, N_("Upside-down") ]
+        ];
 
 function MyApplet(orientation, panel_height, instance_id) {
     this._init(orientation, panel_height, instance_id);
@@ -29,13 +29,13 @@ function MyApplet(orientation, panel_height, instance_id) {
 MyApplet.prototype = {
     __proto__: Applet.IconApplet.prototype,
 
-    _init: function(orientation, panel_height, instance_id) {        
+    _init: function(orientation, panel_height, instance_id) {
         Applet.IconApplet.prototype._init.call(this, orientation, panel_height, instance_id);
-        
-        try {        
+
+        try {
             this.set_applet_icon_symbolic_name("preferences-desktop-display");
             this.set_applet_tooltip(_("Display"));
-            
+
             this.menuManager = new PopupMenu.PopupMenuManager(this);
             this.menu = new Applet.AppletPopupMenu(this, orientation);
             this.menuManager.addMenu(this.menu);
@@ -61,16 +61,16 @@ MyApplet.prototype = {
             global.logError(e);
         }
     },
-    
+
     on_applet_clicked: function(event) {
-        this.menu.toggle();        
+        this.menu.toggle();
     },
-    
+
     _randrEvent: function() {
         this.menu.removeAll();
         this._createMenu();
     },
-    
+
     _createMenu: function() {
         let config = CinnamonDesktop.RRConfig.new_current(this._screen);
         let outputs = config.get_outputs();
@@ -136,14 +136,11 @@ MyApplet.prototype = {
             retval = current;
         }
         return retval;
-    }    
-    
+    }
+
 };
 
-function main(metadata, orientation, panel_height, instance_id) {  
+function main(metadata, orientation, panel_height, instance_id) {
     let myApplet = new MyApplet(orientation, panel_height, instance_id);
-    return myApplet;      
+    return myApplet;
 }
-
-
-

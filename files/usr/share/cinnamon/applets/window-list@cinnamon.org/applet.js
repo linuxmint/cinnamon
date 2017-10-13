@@ -57,18 +57,15 @@ const Applet = imports.ui.applet;
 const AppletManager = imports.ui.appletManager;
 const DND = imports.ui.dnd;
 const Main = imports.ui.main;
-const Panel = imports.ui.panel;
 const PopupMenu = imports.ui.popupMenu;
 const Settings = imports.ui.settings;
 const SignalManager = imports.misc.signalManager;
 const Tooltips = imports.ui.tooltips;
-const Tweener = imports.ui.tweener;
-const Util = imports.misc.util;
 
 const HORIZONTAL_ICON_SIZE = 16; // too bad this can't be defined in theme (cinnamon-app.create_icon_texture returns a clutter actor, not a themable object -
                                  // probably something that could be addressed
-const ICON_HEIGHT_FACTOR = .64;
-const VERTICAL_ICON_HEIGHT_FACTOR = .75;
+const ICON_HEIGHT_FACTOR = 0.64;
+const VERTICAL_ICON_HEIGHT_FACTOR = 0.75;
 const MAX_TEXT_LENGTH = 1000;
 const FLASH_INTERVAL = 500;
 
@@ -138,7 +135,7 @@ WindowPreview.prototype = {
 
     show: function() {
         if (!this.actor || this._applet._menuOpen)
-            return
+            return;
 
         this.muffinWindow = this.metaWindow.get_compositor_private();
         let windowTexture = this.muffinWindow.get_texture();
@@ -184,7 +181,7 @@ WindowPreview.prototype = {
         }
 
         let previewLeft;
-        if (this._applet.orientation == St.Side.BOTTOM || this._applet.orientation == St.Side.TOP) { 
+        if (this._applet.orientation == St.Side.BOTTOM || this._applet.orientation == St.Side.TOP) {
             // centre the applet on the window list item if window list is on the top or bottom panel
             previewLeft = this.item.get_transformed_position()[0] + this.item.get_transformed_size()[0]/2 - previewWidth/2;
         } else if (this._applet.orientation == St.Side.LEFT) {
@@ -240,7 +237,7 @@ WindowPreview.prototype = {
         }
         this.actor = null;
     }
-}
+};
 
 function AppMenuButton(applet, metaWindow, alert) {
     this._init(applet, metaWindow, alert);
@@ -319,7 +316,7 @@ AppMenuButton.prototype = {
                     this._progress = this.metaWindow.progress;
 
                     if (this._progress >0) {
-                        this.progressOverlay.show()
+                        this.progressOverlay.show();
                     } else {
                         this.progressOverlay.hide();
                     }
@@ -355,7 +352,7 @@ AppMenuButton.prototype = {
         this._needsAttention = false;
 
         this.setDisplayTitle();
-        this.onFocus()
+        this.onFocus();
         this.setIcon();
 
         if (this.alert)

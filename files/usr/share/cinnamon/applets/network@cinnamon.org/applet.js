@@ -43,20 +43,6 @@ const NM80211ApSecurityFlags = NetworkManager['80211ApSecurityFlags'];
 // (the remaining are placed into More...)
 const NUM_VISIBLE_NETWORKS = 5;
 
-function macToArray(string) {
-    return string.split(':').map(function(el) {
-        return parseInt(el, 16);
-    });
-}
-
-function macCompare(one, two) {
-    for (let i = 0; i < 6; i++) {
-        if (one[i] != two[i])
-            return false;
-    }
-    return true;
-}
-
 function ssidCompare(one, two) {
     if (!one || !two)
         return false;
@@ -116,7 +102,7 @@ NMNetworkMenuItem.prototype = {
 
         this._label = new St.Label({ text: title });
         this.addActor(this._label);
-        let strStrengh = new String(this.bestAP.strength);
+        let strStrengh = String(this.bestAP.strength);
         strStrengh = strStrengh + '%';
         this._labelStrength = new St.Label({ text: strStrengh });
         this.addActor(this._labelStrength, { align: St.Align.END });
@@ -151,7 +137,7 @@ NMNetworkMenuItem.prototype = {
             this.bestAP = ap;
 
         this._signalIcon.icon_name = this._getIcon();
-        let strStrengh = new String(this.bestAP.strength);
+        let strStrengh = String(this.bestAP.strength);
         strStrengh = strStrengh + '%';
         this._labelStrength.set_text(strStrengh);
     },
@@ -923,9 +909,9 @@ NMDeviceBluetooth.prototype = {
     },
 
     _createAutomaticConnection: function() {
-        let connection = new NetworkManager.Connection;
+        let connection = new NetworkManager.Connection();
         connection._uuid = NetworkManager.utils_uuid_generate();
-        connection.add_setting(new NetworkManager.SettingBluetooth);
+        connection.add_setting(new NetworkManager.SettingBluetooth());
         connection.add_setting(new NetworkManager.SettingConnection({
             uuid: connection._uuid,
             id: this._autoConnectionName,
@@ -1186,14 +1172,14 @@ NMDeviceWireless.prototype = {
         if (rsn_flags != NM80211ApSecurityFlags.NONE) {
             /* RSN check first so that WPA+WPA2 APs are treated as RSN/WPA2 */
             if (rsn_flags & NM80211ApSecurityFlags.KEY_MGMT_802_1X)
-	        type = NMAccessPointSecurity.WPA2_ENT;
-	    else if (rsn_flags & NM80211ApSecurityFlags.KEY_MGMT_PSK)
-	        type = NMAccessPointSecurity.WPA2_PSK;
+                type = NMAccessPointSecurity.WPA2_ENT;
+            else if (rsn_flags & NM80211ApSecurityFlags.KEY_MGMT_PSK)
+                type = NMAccessPointSecurity.WPA2_PSK;
         } else if (wpa_flags != NM80211ApSecurityFlags.NONE) {
             if (wpa_flags & NM80211ApSecurityFlags.KEY_MGMT_802_1X)
                 type = NMAccessPointSecurity.WPA_ENT;
             else if (wpa_flags & NM80211ApSecurityFlags.KEY_MGMT_PSK)
-	        type = NMAccessPointSecurity.WPA_PSK;
+                type = NMAccessPointSecurity.WPA_PSK;
         } else {
             if (flags & NM80211ApFlags.PRIVACY)
                 type = NMAccessPointSecurity.WEP;
@@ -1427,7 +1413,6 @@ NMDeviceWireless.prototype = {
             return;
         }
 
-        let obj = this._connections[pos];
         this._connections.splice(pos, 1);
 
         let anyauto = false, forceupdate = false;
@@ -1510,7 +1495,6 @@ NMDeviceWireless.prototype = {
     },
 
     _createActiveConnectionItem: function() {
-        let icon, title;
         if (this._activeConnection._connection) {
             let connection = this._activeConnection._connection;
             if (!this._activeNetwork) {
@@ -1531,7 +1515,6 @@ NMDeviceWireless.prototype = {
                 this._activeConnectionItem = new PopupMenu.PopupImageMenuItem(connection._name, 'network-wireless-connected', { reactive: false });
         } else {
             // We cannot read the connection (due to ACL, or API incompatibility), but we still show signal if we have it
-            let menuItem;
             if (this._activeNetwork)
                 this._activeConnectionItem = new NMNetworkMenuItem(this._activeNetwork.accessPoints, undefined,
                                                                    { reactive: false });
@@ -1582,15 +1565,15 @@ NMDeviceWireless.prototype = {
             apObj.item = new NMNetworkMenuItem(apObj.accessPoints);
             apObj.item.connect('activate', Lang.bind(this, function() {
                 let accessPoints = sortAccessPoints(apObj.accessPoints);
-                if (   (accessPoints[0]._secType == NMAccessPointSecurity.WPA2_ENT)
-                    || (accessPoints[0]._secType == NMAccessPointSecurity.WPA_ENT)) {
+                if ((accessPoints[0]._secType == NMAccessPointSecurity.WPA2_ENT) ||
+                    (accessPoints[0]._secType == NMAccessPointSecurity.WPA_ENT)) {
                     // 802.1x-enabled APs require further configuration, so they're
                     // handled in cinnamon-settings
                     Util.spawn(['cinnamon-settings', 'network', 'connect-8021x-wifi',
                                 this.device.get_path(), accessPoints[0].dbus_path]);
                 } else {
                     let connection = this._createAutomaticConnection(apObj);
-                    this._client.add_and_activate_connection(connection, this.device, accessPoints[0].dbus_path, null)
+                    this._client.add_and_activate_connection(connection, this.device, accessPoints[0].dbus_path, null);
                 }
             }));
         }
@@ -1973,7 +1956,7 @@ MyApplet.prototype = {
         let pos = devices.indexOf(wrapper);
         devices.splice(pos, 1);
 
-        this._syncSectionTitle(wrapper.category)
+        this._syncSectionTitle(wrapper.category);
     },
 
     _syncActiveConnections: function() {
@@ -2081,15 +2064,15 @@ MyApplet.prototype = {
                         }
                     }
                 } else
-                    a._primaryDevice = this._devices.vpn.device
+                    a._primaryDevice = this._devices.vpn.device;
 
                 if (a._primaryDevice)
                     a._primaryDevice.setActiveConnection(a);
 
-                if (a.state == NetworkManager.ActiveConnectionState.ACTIVATED
-                    && a._primaryDevice && a._primaryDevice._notification) {
-                    a._primaryDevice._notification.destroy();
-                    a._primaryDevice._notification = null;
+                if (a.state == NetworkManager.ActiveConnectionState.ACTIVATED &&
+                    a._primaryDevice && a._primaryDevice._notification) {
+                        a._primaryDevice._notification.destroy();
+                        a._primaryDevice._notification = null;
                 }
             }
         }
@@ -2098,10 +2081,10 @@ MyApplet.prototype = {
     },
 
     _notifyActivated: function(activeConnection) {
-        if (activeConnection.state == NetworkManager.ActiveConnectionState.ACTIVATED
-            && activeConnection._primaryDevice && activeConnection._primaryDevice._notification) {
-            activeConnection._primaryDevice._notification.destroy();
-            activeConnection._primaryDevice._notification = null;
+        if (activeConnection.state == NetworkManager.ActiveConnectionState.ACTIVATED &&
+            activeConnection._primaryDevice && activeConnection._primaryDevice._notification) {
+                activeConnection._primaryDevice._notification.destroy();
+                activeConnection._primaryDevice._notification = null;
         }
 
         this._updateIcon();
@@ -2232,8 +2215,6 @@ MyApplet.prototype = {
             this._updateFrequencySeconds = DEFAULT_PERIODIC_UPDATE_FREQUENCY_SECONDS;
             this._syncActiveConnections();
             let mc = this._mainConnection;
-            let hasApIcon = false;
-            let hasMobileIcon = false;
 
             if (!mc) {
                 this._setIcon('network-offline');
@@ -2281,13 +2262,11 @@ MyApplet.prototype = {
                         } else {
                             this._setIcon('network-wireless-signal-' + signalToIcon(ap.strength));
                             this.set_applet_tooltip(_("Wireless connection") + ": " + ap.get_ssid() + " ("+ ap.strength +"%)");
-                            hasApIcon = true;
                         }
-                        break;
                     } else {
                         log('Active connection with no primary device?');
-                        break;
                     }
+                    break;
                 case NMConnectionCategory.WIRED:
                     this._setIcon('network-wired');
                     this.set_applet_tooltip(_("Connected to the wired network"));
@@ -2307,7 +2286,6 @@ MyApplet.prototype = {
 
                     this._setIcon('network-cellular-signal-' + signalToIcon(dev.mobileDevice.signal_quality));
                     this.set_applet_tooltip(_("Connected to the cellular network"));
-                    hasMobileIcon = true;
                     break;
                 case NMConnectionCategory.VPN:
                     this._setIcon('network-vpn');
