@@ -984,9 +984,10 @@ function formatLogArgument(arg = '', recursion = 0, depth = 6) {
         return arg;
     }
     let isGObject;
-    let space = Array.apply(null, Array(recursion))
-        .map(String.prototype.valueOf, '    ')
-        .join('');
+    let space = '';
+    for (let i = 0; i < recursion + 1; i++) {
+        space += '    ';
+    }
     // Need to work around CJS being unable to stringify some native objects
     // https://github.com/linuxmint/cjs/blob/f7638496ea1bec4c6774e6065cb3b2c38b30a7bf/cjs/context.cpp#L138
     try {
@@ -1011,10 +1012,9 @@ function formatLogArgument(arg = '', recursion = 0, depth = 6) {
                 string += space + array[j] + ': ' + formatLogArgument(arg[array[j]], recursion + 1, depth) + ',\n';
             }
         }
-        // Add ending bracket with indentation
-        arg = string + Array.apply(null, Array(recursion > 0 ? recursion - 1 : recursion))
-            .map(String.prototype.valueOf, '    ')
-            .join('') + brackets[1];
+        // Remove one level of indentation and add the closing bracket.
+        space = space.substr(4, space.length);
+        arg = string + space + brackets[1];
     // Functions, numbers, etc.
     } else if (typeof arg === 'function') {
         let array = arg.toString().split('\n');
@@ -1040,13 +1040,16 @@ function formatLogArgument(arg = '', recursion = 0, depth = 6) {
  * stream.  This is primarily intended for use by the
  * extension system as well as debugging.
  */
-function _log(category= 'info', msg= '') {
+function _log(category = 'info', msg = '') {
+    // Convert arguments into an array so it can be iterated.
     let args = Array.prototype.slice.call(arguments);
+    // Remove category from the list of loggable arguments, renderLogLine will
+    // format it into the final string separately.
     args.shift();
     let text = '';
 
     for (let i = 0, len = args.length; i < len; i++) {
-        args[i] = formatLogArgument(args[i])
+        args[i] = formatLogArgument(args[i]);
     }
 
     if (args.length === 2) {
@@ -1194,10 +1197,10 @@ function _logInfo(msg) {
         _log('info', msg.message);
         _LogTraceFormatted(msg.stack);
     } else {
-        let args = ['info', msg]
-            .concat(Array.prototype.slice.call(arguments));
-        args.shift();
-        _log.apply(this, args);
+        // Convert arguments to an array, add 'info' to the beginning of it. Invoke _log with apply so
+        // unlimited arguments can be passed to it.
+        let args = Array.prototype.slice.call(arguments);
+        _log.apply(this, ['info'].concat(args));
     }
 }
 
