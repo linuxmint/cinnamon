@@ -457,18 +457,6 @@ cinnamon_app_system_get_tree (CinnamonAppSystem *self)
 }
 
 /**
- * cinnamon_app_system_get_settings_tree:
- *
- * Return Value: (transfer none): The #GMenuTree for apps
- * OBSOLETE - ONLY LEFT IN FOR COMPATIBILITY
- * RETURNS EMPTY GMenuTree
- */
-GMenuTree *
-cinnamon_app_system_get_settings_tree (CinnamonAppSystem *self)
-{
-  return self->priv->settings_tree;
-}
-/**
  * cinnamon_app_system_lookup_setting:
  *
  * Returns: (transfer none): Application in gnomecc.menu, or %NULL if none
