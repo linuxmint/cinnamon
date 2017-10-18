@@ -964,48 +964,65 @@ function notifyError(msg, details) {
  *
  * Used by _log to handle each argument type and its formatting.
  */
-function formatLogArgument (arg, recursion=0, depth) {
+function formatLogArgument(arg = '', recursion = 0, depth = 6) {
     // Make sure falsey values are clearly indicated.
     if (arg === null) {
         arg = 'null';
     } else if (arg === undefined) {
         arg = 'undefined';
     // Ensure strings are distinguishable.
-    } else if (typeof arg === 'string'
-        && recursion > 0) {
-        arg = `'${arg}'`;
+    } else if (typeof arg === 'string' && recursion > 0) {
+        arg = '\'' + arg + '\'';
     }
-    let isGObject = arg.toString().indexOf('[0x') > -1;
+    // Check if we reached the depth threshold
+    if (recursion + 1 > depth) {
+        try {
+            arg = JSON.stringify(arg);
+        } catch (e) {
+            arg = arg.toString();
+        }
+        return arg;
+    }
+    let isGObject;
+    let space = '';
+    for (let i = 0; i < recursion + 1; i++) {
+        space += '    ';
+    }
+    // Need to work around CJS being unable to stringify some native objects
+    // https://github.com/linuxmint/cjs/blob/f7638496ea1bec4c6774e6065cb3b2c38b30a7bf/cjs/context.cpp#L138
+    try {
+        isGObject = arg.toString().indexOf('[0x') > -1;
+    } catch (e) {
+        arg = '<unreadable>';
+    }
     if (typeof arg === 'object') {
         let isArray = Array.isArray(arg);
         let brackets = isArray ? ['[', ']'] : ['{', '}'];
         let array = isArray ? arg : Object.keys(arg);
-        let string = `${brackets[0]}\n`;
+        // Add beginning bracket with indentation
+        let string = brackets[0] + (recursion + 1 > depth ? '' : '\n');
         // GObjects are referenced in context and likely have circular references.
         if (recursion === 0) {
             depth = isGObject ? 2 : 6;
         }
         for (let j = 0, len = array.length; j < len; j++) {
-            // Add beginning bracket with indentation
-            let space = Array(recursion)
-                .fill('    ')
-                .join('');
-            // Check if we reached the depth threshold
-            if (recursion > depth) {
-                string += `${space}${arg.toString()}\n`;
-                break;
-            }
             if (isArray) {
-                string += `${space}${formatLogArgument(arg[j], recursion + 1, depth)},\n`;
+                string += space + formatLogArgument(arg[j], recursion + 1, depth) + ',\n';
             } else {
-                string += `${space}${array[j]}: ${formatLogArgument(arg[array[j]], recursion + 1, depth)},\n`;
+                string += space + array[j] + ': ' + formatLogArgument(arg[array[j]], recursion + 1, depth) + ',\n';
             }
         }
-        // Add ending bracket with indentation
-        arg = string + Array(recursion > 0 ? recursion - 1 : recursion)
-            .fill('    ')
-            .join('') + brackets[1];
+        // Remove one level of indentation and add the closing bracket.
+        space = space.substr(4, space.length);
+        arg = string + space + brackets[1];
     // Functions, numbers, etc.
+    } else if (typeof arg === 'function') {
+        let array = arg.toString().split('\n');
+        for (let i = 0; i < array.length; i++) {
+            if (i === 0) continue;
+            array[i] = space + array[i];
+        }
+        arg = array.join('\n');
     } else if (typeof arg !== 'string' || isGObject) {
         arg = arg.toString();
     }
@@ -1023,17 +1040,20 @@ function formatLogArgument (arg, recursion=0, depth) {
  * stream.  This is primarily intended for use by the
  * extension system as well as debugging.
  */
-function _log(category='info', msg='') {
-    let args = Array.from(arguments);
+function _log(category = 'info', msg = '') {
+    // Convert arguments into an array so it can be iterated.
+    let args = Array.prototype.slice.call(arguments);
+    // Remove category from the list of loggable arguments, renderLogLine will
+    // format it into the final string separately.
     args.shift();
     let text = '';
 
     for (let i = 0, len = args.length; i < len; i++) {
-        args[i] = formatLogArgument(args[i])
+        args[i] = formatLogArgument(args[i]);
     }
 
     if (args.length === 2) {
-        text = `${args[0]}: ${args[1]}`;
+        text = args[0] + ': ' + args[1];
     } else {
         text = args.join(' ');
     }
@@ -1177,9 +1197,10 @@ function _logInfo(msg) {
         _log('info', msg.message);
         _LogTraceFormatted(msg.stack);
     } else {
-        let args = Array.from(arguments);
-        args.shift();
-        _log('info', msg, ...args);
+        // Convert arguments to an array, add 'info' to the beginning of it. Invoke _log with apply so
+        // unlimited arguments can be passed to it.
+        let args = Array.prototype.slice.call(arguments);
+        _log.apply(this, ['info'].concat(args));
     }
 }
 
