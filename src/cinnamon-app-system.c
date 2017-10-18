@@ -6,18 +6,13 @@
 #include <string.h>
 
 #include <gio/gio.h>
-#include <gio/gdesktopappinfo.h>
-#include <gtk/gtk.h>
-#include <clutter/clutter.h>
 #include <glib/gi18n.h>
-#include <meta/display.h>
 
 #include "cinnamon-app-private.h"
 #include "cinnamon-window-tracker-private.h"
 #include "cinnamon-app-system-private.h"
 #include "cinnamon-global.h"
 #include "cinnamon-util.h"
-#include "st.h"
 
 /* Vendor prefixes are something that can be preprended to a .desktop
  * file name.  Undo this.
