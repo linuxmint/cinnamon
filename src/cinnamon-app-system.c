@@ -336,8 +336,6 @@ on_apps_tree_changed_cb (GMenuTree *tree,
   GHashTable *new_apps;
   GHashTableIter iter;
   gpointer key, value;
-  GSList *removed_apps = NULL;
-  GSList *removed_node;
 
   g_assert (tree == self->priv->apps_tree);
 
@@ -431,14 +429,8 @@ on_apps_tree_changed_cb (GMenuTree *tree,
       const char *id = key;
       
       if (!g_hash_table_lookup (new_apps, id))
-        removed_apps = g_slist_prepend (removed_apps, (char*)id);
+        g_hash_table_iter_remove (&iter);
     }
-  for (removed_node = removed_apps; removed_node; removed_node = removed_node->next)
-    {
-      const char *id = removed_node->data;
-      g_hash_table_remove (self->priv->id_to_app, id);
-    }
-  g_slist_free (removed_apps);
       
   g_hash_table_destroy (new_apps);
 
