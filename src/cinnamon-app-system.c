@@ -344,7 +344,15 @@ on_apps_tree_changed_cb (GMenuTree *tree,
 
   if (!gmenu_tree_load_sync (self->priv->apps_tree, &error))
     {
-      g_warning ("Failed to load apps: %s", error->message);
+      if (error)
+        {
+          g_warning ("Failed to load apps: %s", error->message);
+          g_error_free (error);
+        }
+      else
+        {
+          g_warning ("Failed to load apps");
+        }
       return;
     }
 
