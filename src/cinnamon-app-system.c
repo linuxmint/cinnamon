@@ -815,9 +815,8 @@ search_tree (CinnamonAppSystem *self,
   g_hash_table_iter_init (&iter, apps);
   while (g_hash_table_iter_next (&iter, &key, &value))
     {
-      const char *id = key;
       CinnamonApp *app = value;
-      (void)id;
+
       _cinnamon_app_do_match (app, normalized_terms,
                            &prefix_results,
                            &substring_results);
