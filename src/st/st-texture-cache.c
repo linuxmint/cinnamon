@@ -1768,6 +1768,8 @@ st_texture_cache_load_file_simple (StTextureCache *cache,
 
   texture = st_texture_cache_load_uri_sync (cache, ST_TEXTURE_CACHE_POLICY_FOREVER,
                                             uri, -1, -1, &error);
+  g_object_unref (file);
+  g_free (uri);
   if (texture == NULL)
     {
       g_warning ("Failed to load %s: %s", file_path, error->message);
