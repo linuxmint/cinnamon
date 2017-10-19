@@ -532,6 +532,11 @@
       <_summary>Enforce displaying the alt-tab switcher on the primary monitor instead of the active one</_summary>
     </key>
 
+    <key type="b" name="alttab-minimized-aware">
+    <default>true</default>
+      <summary>Move minimized windows to the end of the appSwitcher</summary>
+    </key>
+
     <key type="i" name="alttab-switcher-delay">
       <default>100</default>
       <_summary>Duration of the effect (in milliseconds)</_summary>
