@@ -71,6 +71,7 @@ cinnamon_util_get_file_display_name_if_mount (GFile *file)
       if (!ret && g_file_equal (file, compare))
         ret = g_mount_get_name (mount);
       g_object_unref (mount);
+      g_object_unref (compare);
     }
   g_list_free (mounts);
   g_object_unref (monitor);
@@ -180,6 +181,7 @@ cinnamon_util_get_file_icon_if_mount (GFile *file)
           ret = g_mount_get_icon (mount);
         }
       g_object_unref (mount);
+      g_object_unref (compare);
     }
   g_list_free (mounts);
   g_object_unref (monitor);
@@ -352,7 +354,10 @@ cinnamon_util_get_icon_for_uri (const char *text_uri)
 
   retval = cinnamon_util_get_file_icon_if_mount (file);
   if (retval)
-    return retval;
+    {
+      g_object_unref (file);
+      return retval;
+    }
 
   /* gvfs doesn't give us a nice icon for subfolders of the trash, so
    * overriding */
