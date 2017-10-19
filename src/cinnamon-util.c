@@ -91,6 +91,7 @@ cinnamon_util_get_file_display_for_common_files (GFile *file)
        * nemo */
       return g_strdup (_("Home"));
     }
+  g_object_unref (compare);
 
   compare = g_file_new_for_path ("/");
   if (g_file_equal (file, compare))
@@ -262,7 +263,7 @@ cinnamon_util_get_label_for_uri (const char *text_uri)
         label = cinnamon_util_get_file_description (file);
       if (!label)
         label = cinnamon_util_get_file_display_name (file, TRUE);
-        g_object_unref (file);
+      g_object_unref (file);
 
       return label;
     }
