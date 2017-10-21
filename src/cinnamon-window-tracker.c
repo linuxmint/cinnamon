@@ -312,21 +312,21 @@ get_app_from_gapplication_id (MetaWindow  *window)
 }
 
 /*
- * get_app_from_flatpak_id:
+ * get_app_from_sandboxed_app_id:
  * @window: a #MetaWindow
  *
  * Looks only at the given window, and attempts to determine
- * an application based on its Flatpak ID.  If one can't be determined,
+ * an application based on its Flatpak or Snap ID.  If one can't be determined,
  * return %NULL.
  *
  * Return value: (transfer full): A newly-referenced #CinnamonApp, or %NULL
  */
 static CinnamonApp *
-get_app_from_flatpak_id (MetaWindow  *window)
+get_app_from_sandboxed_app_id (MetaWindow  *window)
 {
   const char *id;
 
-  id = meta_window_get_flatpak_id (window);
+  id = meta_window_get_sandboxed_app_id (window);
   if (!id)
     return NULL;
 
@@ -446,10 +446,10 @@ get_app_for_window (CinnamonWindowTracker    *tracker,
   if (meta_window_is_remote (window))
     return _cinnamon_app_new_for_window (window);
 
-  /* Check if the window was opened from within a Flatpak sandbox; if this
+  /* Check if the window was opened from within a sandbox; if this
    * is the case, a corresponding .desktop file is guaranteed to match;
    */
-  result = get_app_from_flatpak_id (window);
+  result = get_app_from_sandboxed_app_id (window);
   if (result != NULL)
     return result;
 
