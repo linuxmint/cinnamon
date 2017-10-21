@@ -15,14 +15,21 @@ const DISABLE_HOVER_TIMEOUT = 500; // milliseconds
 function sortWindowsByUserTime(win1, win2) {
     let t1 = win1.get_user_time();
     let t2 = win2.get_user_time();
-    let m1 = win1.minimized;
-    let m2 = win2.minimized;
-    if (m1 == m2) {
-        return (t2 > t1) ? 1 : -1;   
+
+    this.minimizedAwareAltTab = global.settings.get_boolean("alttab-minimized-aware");
+    if (this.minimizedAwareAltTab) {
+      let m1 = win1.minimized;
+      let m2 = win2.minimized;
+      if (m1 == m2) {
+          return (t2 > t1) ? 1 : -1;
+      }
+      else {
+          return m1 ? 1 : -1;
+      }
     }
     else {
-        return m1 ? 1 : -1;
-    }    
+      return (t2 > t1) ? 1 : -1;
+    }
 }
 
 function matchSkipTaskbar(win) {
