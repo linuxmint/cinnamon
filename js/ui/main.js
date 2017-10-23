@@ -125,7 +125,7 @@ const LAYOUT_CLASSIC = "classic";
 
 const CIN_LOG_FOLDER = GLib.get_home_dir() + '/.cinnamon/';
 
-let DEFAULT_BACKGROUND_COLOR = Clutter.Color.from_pixel(0x2266bbff);
+let DEFAULT_BACKGROUND_COLOR = Clutter.Color.from_pixel(0x000000ff);
 
 let panel = null;
 let soundManager = null;
