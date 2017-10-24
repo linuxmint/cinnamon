@@ -489,7 +489,7 @@ SpicesAboutDialog.prototype = {
             let dateUTC = date.toISOString().replace(/T/, ' ');               // replace T with a space;
             dateUTC = dateUTC.substring(0,dateUTC.lastIndexOf(':')) + ' UTC'; // remove seconds and append UTC label
 
-            let lastEdited = new St.Label({text: _("Build date:") + " " + dateUTC, style_class: "about-uuid"});
+            let lastEdited = new St.Label({text: _("Last modified:") + " " + dateUTC, style_class: "about-uuid"});
             topTextBox.add_actor(lastEdited);
         }
 

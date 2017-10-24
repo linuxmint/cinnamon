@@ -96,7 +96,7 @@ class Module:
 
             clickpad_list = [[0, _("Left click only")], [3, _("Automatic")], [1, _("Emulate mouse buttons")], [2, _("Use multiple fingers for right and middle click")]]
 
-            combo = GSettingsComboBox(_("Clickpad click action:"), "org.cinnamon.settings-daemon.peripherals.touchpad", "clickpad-click", clickpad_list, valtype="int")
+            combo = GSettingsComboBox(_("Click actions"), "org.cinnamon.settings-daemon.peripherals.touchpad", "clickpad-click", clickpad_list, valtype="int")
             settings.add_row(combo)
 
             settings = SettingsBox(_("Scrolling"))
@@ -106,7 +106,7 @@ class Module:
             settings.add_row(switch)
 
             clickpad_list = [[0, _("No scrolling")], [3, _("Automatic")], [1, _("Two-finger scrolling")], [2, _("Edge scrolling")]]
-            combo = GSettingsComboBox(_("Scrolling method:"), "org.cinnamon.settings-daemon.peripherals.touchpad", "scrolling-method", clickpad_list, valtype="int")
+            combo = GSettingsComboBox(_("Scrolling method"), "org.cinnamon.settings-daemon.peripherals.touchpad", "scrolling-method", clickpad_list, valtype="int")
             settings.add_row(combo)
             switch = GSettingsSwitch(_("Horizontal scrolling"), "org.cinnamon.settings-daemon.peripherals.touchpad", "horizontal-scrolling")
             settings.add_row(switch)

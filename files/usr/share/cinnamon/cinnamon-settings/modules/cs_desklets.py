@@ -41,10 +41,10 @@ class DeskletsViewSidePage(SidePage):
         self.stack.expand = True
 
         manage_extensions_page = ManageDeskletsPage(self, self.spices, self.window)
-        self.stack.add_titled(manage_extensions_page, 'installed', _("Manage desklets"))
+        self.stack.add_titled(manage_extensions_page, 'installed', _("Manage"))
 
         download_desklets_page = DownloadSpicesPage(self, self.collection_type, self.spices, self.window)
-        self.stack.add_titled(download_desklets_page, 'more', _("Download desklets"))
+        self.stack.add_titled(download_desklets_page, 'more', _("Download"))
 
         page = SettingsPage()
         self.stack.add_titled(page, 'general', _("General Settings"))
