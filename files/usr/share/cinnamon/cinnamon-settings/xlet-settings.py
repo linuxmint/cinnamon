@@ -39,7 +39,8 @@ XLET_SETTINGS_WIDGETS = {
     "effect"            :   "JSONSettingsEffectChooser",
     "datechooser"       :   "JSONSettingsDateChooser",
     "keybinding"        :   "JSONSettingsKeybinding",
-    "list"              :   "JSONSettingsList"
+    "list"              :   "JSONSettingsList",
+    "searchprovider"    :   "JSONSettingsSearchProviderChooser"
 }
 
 class XLETSettingsButton(Button):

@@ -1,11 +1,10 @@
 try:
-    from SettingsWidgets import rec_mkdir
+    from Utils import rec_mkdir
     import gettext
     from gi.repository import Gio, Gtk, GObject, Gdk, GdkPixbuf, GLib
     import tempfile
     import os
     import sys
-    import urllib2
     import zipfile
     import shutil
     import cgi
@@ -14,9 +13,14 @@ try:
     import time
     from PIL import Image
     import config
-except Exception, detail:
-    print detail
+except Exception as detail:
+    print(detail)
     sys.exit(1)
+
+try:
+    from urllib2 import urlopen
+except:
+    from urllib.request import urlopen
 
 try:
     import json
@@ -57,7 +61,7 @@ def removeEmptyFolders(path):
     # if folder empty, delete it
     files = os.listdir(path)
     if len(files) == 0:
-        print "Removing empty folder:", path
+        print("Removing empty folder:", path)
         os.rmdir(path)
 
 class ThreadedTaskManager(GObject.GObject):
@@ -153,6 +157,9 @@ class Spice_Harvester(GObject.Object):
         if self.themes:
             self.install_folder = '%s/.themes/' % (home)
             self.spices_directories = (self.install_folder, '%s/.themes/' % (home))
+        elif self.collection_type == 'search-provider':
+            self.install_folder = '%s/.local/share/cinnamon/search_providers/' % home
+            self.spices_directories = (self.install_folder, )
         else:
             self.install_folder = '%s/.local/share/cinnamon/%ss/' % (home, self.collection_type)
             if self.collection_type == 'extension':
@@ -335,9 +342,9 @@ class Spice_Harvester(GObject.Object):
         count = 0
         blockSize = 1024 * 8
         try:
-            urlobj = urllib2.urlopen(url)
+            urlobj = urlopen(url)
             assert urlobj.getcode() == 200
-        except Exception, detail:
+        except Exception as detail:
             f.close()
             self.abort_download = ABORT_ERROR
             self.error = detail
@@ -377,8 +384,8 @@ class Spice_Harvester(GObject.Object):
                     metadata['path'] = subdirectory
                     metadata['writable'] = os.access(subdirectory, os.W_OK)
                     self.meta_map[uuid] = metadata
-                except Exception, detail:
-                    print detail
+                except Exception as detail:
+                    print(detail)
                     print("Skipping %s: there was a problem trying to read metadata.json" % uuid)
 
     def _directory_changed(self, *args):
@@ -446,7 +453,7 @@ class Spice_Harvester(GObject.Object):
         f = open(filename, 'r')
         try:
             self.index_cache = json.load(f)
-        except ValueError, detail:
+        except ValueError as detail:
             try:
                 os.remove(filename)
             except:
@@ -533,7 +540,7 @@ class Spice_Harvester(GObject.Object):
     def _is_bad_image(self, path):
         try:
             Image.open(path)
-        except IOError, detail:
+        except IOError as detail:
             return True
         return False
 
@@ -614,7 +621,7 @@ class Spice_Harvester(GObject.Object):
                 shutil.rmtree(dest)
             shutil.copytree(uuidfolder, dest)
 
-        except Exception, detail:
+        except Exception as detail:
             if not self.abort_download:
                 self.errorMessage(_("An error occurred during installation or updating. You may wish to report this incident to the developer of %s.\n\nIf this was an update, the previous installation is unchanged") % (uuid), str(detail))
             return False
@@ -664,7 +671,7 @@ class Spice_Harvester(GObject.Object):
                 if (os.path.exists(os.path.join(settings_dir, uuid))):
                     shutil.rmtree(os.path.join(settings_dir, uuid))
             shutil.rmtree(os.path.join(self.install_folder, uuid))
-        except Exception, detail:
+        except Exception as detail:
             self.errorMessage(_("Problem uninstalling %s. You may need to remove it manually.") % (job['uuid']), detail)
 
     """ applies all available updates"""

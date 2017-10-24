@@ -6,6 +6,7 @@ from GSettingsWidgets import *
 from CinnamonGtkSettings import GtkSettingsSwitch
 from ExtensionCore import DownloadSpicesPage
 from Spices import Spice_Harvester
+from Utils import walk_directories
 
 import glob
 

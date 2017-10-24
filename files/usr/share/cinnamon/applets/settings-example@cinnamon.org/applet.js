@@ -6,6 +6,82 @@ const Settings = imports.ui.settings;  // Needed for settings API
 const Gio = imports.gi.Gio;
 const Tweener = imports.ui.tweener;
 const Main = imports.ui.main;
+const SearchProviderManager = imports.ui.searchProviderManager;
+const St = imports.gi.St;
+
+function SearchProviderResultButton(appsMenuButton, provider, result) {
+    this._init(appsMenuButton, provider, result);
+}
+
+SearchProviderResultButton.prototype = {
+    __proto__: PopupMenu.PopupBaseMenuItem.prototype,
+
+    _init: function(appsMenuButton, provider, result) {
+        this.provider = provider;
+        this.result = result;
+
+        this.appsMenuButton = appsMenuButton;
+        PopupMenu.PopupBaseMenuItem.prototype._init.call(this, {hover: false});
+        this.actor.set_style_class_name('menu-application-button');
+
+        // We need this fake app to help appEnterEvent/appLeaveEvent
+        // work with our search result.
+        this.app = {
+            get_app_info: {
+                get_filename: function() {
+                    return result.id;
+                }
+            },
+            get_id: function() {
+                return -1;
+            },
+            get_description: function() {
+                return result.description;
+            },
+            get_name: function() {
+                return result.label;
+            }
+        };
+
+        this.icon = null;
+        if (result.icon){
+            this.icon = result.icon;
+        }else if (result.icon_app){
+            this.icon = result.icon_app.create_icon_texture(16);
+        }else if (result.icon_filename){
+            this.icon = new St.Icon({gicon: new Gio.FileIcon({file: Gio.file_new_for_path(result.icon_filename)}), icon_size: 16});
+        }
+
+        if (this.icon){
+            this.addActor(this.icon);
+        }
+        this.label = new St.Label({ text: result.label, style_class: 'menu-application-button-label' });
+        this.addActor(this.label);
+        this.isDraggableApp = false;
+        if (this.icon) {
+            this.icon.realize();
+        }
+        this.label.realize();
+    },
+
+    _onButtonReleaseEvent: function (actor, event) {
+        if (event.get_button() == 1){
+            this.activate(event);
+        }
+        return true;
+    },
+
+    activate: function(event) {
+        try{
+            this.provider.on_result_selected(this.result);
+            this.appsMenuButton.menu.close();
+        }
+        catch(e)
+        {
+            global.logError(e);
+        }
+    }
+}
 
 function MyApplet(orientation, panel_height, instance_id) {
     this._init(orientation, panel_height, instance_id); // Be sure to pass instanceId from the main function
@@ -16,6 +92,7 @@ MyApplet.prototype = {
 
     _init: function(orientation, panel_height, instance_id) {
         Applet.TextIconApplet.prototype._init.call(this, orientation, panel_height, instance_id);
+        this.instance_id = instance_id;
 
         this.menuManager = new PopupMenu.PopupMenuManager(this);
         this.menu = new Applet.AppletPopupMenu(this, orientation);
@@ -39,6 +116,8 @@ MyApplet.prototype = {
         this.settings.bind("custom-label", "custom_label", this.on_settings_changed);
         this.settings.bind("tween-function", "tween_function", this.on_settings_changed);
         this.settings.bind("keybinding-test", "keybinding", this.on_keybinding_changed);
+        this.settings.bind("provider", "provider", this.on_providers_changed);
+        this.on_providers_changed();
 
         this.settings.connect("changed::signal-test", Lang.bind(this, this.on_signal_test_fired));
 
@@ -48,11 +127,15 @@ MyApplet.prototype = {
         this.combo_val_demo = new PopupMenu.PopupMenuItem("");
         this.slider_demo = new PopupMenu.PopupSliderMenuItem(0);
         this.slider_demo.connect("value-changed", Lang.bind(this, this.on_slider_changed));
+        this.search_entry = new St.Entry();
+        this.search_entry.clutter_text.connect("text-changed", Lang.bind(this, this.search));
+        this.results_box = new PopupMenu.PopupMenuSection();
 
         this.menu.addMenuItem(this.spinner_val_demo);
         this.menu.addMenuItem(this.combo_val_demo);
         this.menu.addMenuItem(this.slider_demo);
-
+        this.menu.addActor(this.search_entry);
+        this.menu.addMenuItem(this.results_box);
 
         /* Let's set up our applet's initial state now that we have our setting properties defined */
         this.on_keybinding_changed();
@@ -130,6 +213,32 @@ MyApplet.prototype = {
         }));
     },
 
+    on_providers_changed: function() {
+        SearchProviderManager.register(this._uuid+this.instance_id, this.provider);
+    },
+
+    search: function() {
+        this.results_box.removeAll();
+        SearchProviderManager.launch_from_list(this.provider, this.search_entry.text, Lang.bind(this, function(provider, results) {
+            try {
+                for (let i in results){
+                    if (!results[i].type || results[i].type != 'software') {
+                        let button = new SearchProviderResultButton(this, provider, results[i]);
+                        this.results_box.addMenuItem(button);
+                        // button.actor.connect('leave-event', Lang.bind(this, this._appLeaveEvent, button));
+                        // this._addEnterEvent(button, Lang.bind(this, this._appEnterEvent, button));
+                        // this._searchProviderButtons.push(button);
+                        // this.applicationsBox.add_actor(button.actor);
+                        // button.actor.realize();
+                    }
+                }
+            } catch(e) {
+                global.log(e);
+            }
+
+        }));
+    },
+
     on_applet_clicked: function(event) {
         this.menu.toggle();
     },
@@ -138,6 +247,7 @@ MyApplet.prototype = {
         this.settings.finalize();    // This is called when a user removes the applet from the panel.. we want to
                                      // Remove any connections and file listeners here, which our settings object
                                      // has a few of
+        SearchProviderManager.unregister(this._uuid+this.instance_id);
     }
 };
 

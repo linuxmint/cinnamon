@@ -3292,7 +3292,7 @@ MyApplet.prototype = {
             this.selectedAppDescription.set_text("");
         }
 
-        SearchProviderManager.launch_all(pattern, Lang.bind(this, function(provider, results){
+        SearchProviderManager.launch_enabled(pattern, Lang.bind(this, function(provider, results){
             try{
             for (var i in results){
                 if (results[i].type != 'software')
