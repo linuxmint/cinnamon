@@ -242,7 +242,7 @@ deep_count_one (DeepCountState *state,
       subdir = g_file_get_child (state->file, g_file_info_get_name (info));
       state->deep_count_subdirectories =
         g_list_append (state->deep_count_subdirectories, subdir);
-    } 
+    }
   else
     {
       content_type = g_file_info_get_content_type (info);
@@ -311,10 +311,10 @@ deep_count_more_files_callback (GObject *source_object,
       deep_count_finish (state);
       return;
     }
-	
+
   files = g_file_enumerator_next_files_finish (state->enumerator,
                                                res, NULL);
-  
+
   for (l = files; l != NULL; l = l->next)
     {
       info = l->data;
@@ -361,7 +361,7 @@ deep_count_callback (GObject *source_object,
 
   enumerator = g_file_enumerate_children_finish (G_FILE (source_object),
                                                  res, NULL);
-	
+
   if (enumerator == NULL)
     {
       deep_count_next_dir (state);
@@ -432,7 +432,7 @@ query_info_async_ready_cb (GObject *source,
                                        G_IO_ERROR_NOT_DIRECTORY,
                                        "Not a directory");
       g_simple_async_result_complete_in_idle (self->priv->async_result);
-
+      g_object_unref(info);
       return;
     }
 
@@ -582,11 +582,11 @@ cinnamon_mime_sniffer_sniff_async (CinnamonMimeSniffer *self,
   g_assert (self->priv->watchdog_id == 0);
   g_assert (self->priv->async_result == NULL);
 
-  self->priv->async_result = 
+  self->priv->async_result =
     g_simple_async_result_new (G_OBJECT (self),
                                callback, user_data,
                                cinnamon_mime_sniffer_sniff_finish);
-  
+
   self->priv->cancellable = g_cancellable_new ();
 
   self->priv->watchdog_id =
