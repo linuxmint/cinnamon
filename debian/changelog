@@ -1,3 +1,431 @@
+cinnamon (3.6.0) sylvia; urgency=medium
+
+  [ itzexor ]
+  * melange/cinnamon-looking-glass.py: convert to normal toplevel window
+  * melange/page_results.py: fix scrolling
+  * melange/page_inspect.py: add ability to insert property path into entry
+  * melange/page_log.py: implement autoscrolling
+  * melange/all: various cleanups
+
+  [ NikoKrause ]
+  * xlets-about-dialog: improvements for about dialog
+
+  [ brownsr ]
+  * st-theme-node-drawing: correct logic for calculation of cover and contain fixed upstream a long time ago https://github.com/GNOME/gnome-shell/commit/3dbf06420df0ad669f12939a788ed44061dcc1e1
+  * st-theme-node-drawing: Group multiple cogl_rectangle calls https://github.com/GNOME/gnome-shell/commit/d8540819af7978b3c244877ddb85109a55278bee#diff-8a01b40c2c1be22ef97916811be0ab65
+  * st-theme-node-drawing: move setting of corner material before rendering box shadow https://github.com/GNOME/gnome-shell/commit/36fc3a5c9671c45ca17e8169826e21ae4f9d5fa8#diff-8a01b40c2c1be22ef97916811be0ab65
+
+  [ Michael Webster ]
+  * cinnamon-app.c: read the icon name or icon path from muffin when getting a window- backed icon, if it's been set (by us in some other app via gdk_window_set_icon_name()
+  * remove a comment
+  * cinnamon-app.c: If a custom icon_name is set in the MetaWindow, always use that, whether we have a matched desktop entry or not.
+  * Update for XApp api
+  * xlet-settings.py: Use XAppGtkWindow, which takes care of all setting of icon names by shadowing the respective GtkWindow methods.
+  * Fix scaling for icon-name app icons
+
+  [ brownsr ]
+  * st: Remove _st_allocate_fill https://github.com/GNOME/gnome-shell/commit/24ad59ea3728cf55ad127085e486d73345e33a35#diff-578ccc5ce70c4a11d7f30e3f38002f0b plus a very minor simplification in st-box-layout
+  * st-bin: Make sure not to allocate hidden children https://github.com/GNOME/gnome-shell/commit/7e343f11f28a736d88619b85c9b9c6ea52a7e142#diff-b948bb195b709c61ce7275142a2fbdfd
+  * st-widget: Unset hover when setting track_hover to FALSE https://github.com/GNOME/gnome-shell/commit/79bfea5970a055a3990f7e52a3669a59594851a1#diff-b948bb195b709c61ce7275142a2fbdfd
+  * st-bin: Don't allocate a hidden actor https://github.com/GNOME/gnome-shell/commit/50f8ae6fc756d1a0fb33912e6b9d08a8fa71c197#diff-b948bb195b709c61ce7275142a2fbdfd
+  * st-private: Don't create attr lists if we don't need them https://github.com/GNOME/gnome-shell/commit/7e5f1fe41104dfcf4ca2a104651441ae49ee5865#diff-b948bb195b709c61ce7275142a2fbdfd
+  * StDrawingArea: fix texture drawing https://github.com/GNOME/gnome-shell/commit/587c93eadf01fafc6a6a6cb53aac94d9802de44d#diff-b948bb195b709c61ce7275142a2fbdfd
+  * st-widget: remove stylable property https://github.com/GNOME/gnome-shell/commit/5c0ee02251ebd21f72ee8d32b93d707547a06803#diff-b948bb195b709c61ce7275142a2fbdfd
+
+  [ Michael Webster ]
+  * osdWindow.js: Always check the theme node on first showing - an actor's width isn't necessarily filled if it hasn't been explicitly set, causing the first few activations of the OSD to not show an accurate level bar.
+  * cs_default: Fix incorrect button label (but preserve translations).
+
+  [ itzexor ]
+  * main.js: remove obsolete Meta enum member reference
+  * workspace.js: use our normal prototype init method
+  * workspace.js: initalize WindowClone._zoomStep to 0
+
+  [ NikoKrause ]
+  * slideshow-applet: fix translation
+
+  [ Michael Webster ]
+  * cs_themes.py: Create the file "~/.icons/default/index.theme" and set the selected cursor theme inside of it.  This ensures other (non-gtk) applications end up using the same theme (though they are required to be restarted for these changes to take effect.)
+
+  [ NikoKrause ]
+  * keyboard-applet: applet icon vanishes when moved in edit mode
+
+  [ Jason Hicks ]
+  * cinnamon-json-makepot: Add keyword option, change language used by xgettext to JavaScript
+
+  [ brownsr ]
+  * expoThumbnail:  correct a couple of calls with mismatched argument counts
+
+  [ itzexor ]
+  * window-list: set AppMenuButtons unreactive during panel edit mode
+  * panel-launchers: set PanelAppLaunchers unreactive during panel edit mode
+  * windows-quick-list: fix argument warning
+
+  [ Jason Hicks ]
+  * Fix reference to undefined actor._delegate warning
+  * ui/environment: Handle undefined actors in containerClass.prototype.add
+  * ui/cinnamonDBus: Handle null xlet objects in CinnamonDBus.highlightXlet
+
+  [ brownsr ]
+  * deskletManager: initialise some variables and remove the variables that were initialised, probable typo
+
+  [ NikoKrause ]
+  * panel settings: split height/width translation strings
+
+  [ Stephen Collins ]
+  * cinnamon-settings.py: allow search box placeholder text to be translated
+
+  [ leigh123linux ]
+  * Fonts: Add setting for RGBA order
+
+  [ Michael Webster ]
+  * network applet: Add a menu item to re-scan for wireless networks.
+
+  [ NikoKrause ]
+  * Translation: fetch some strings with ngettext
+
+  [ Michael Webster ]
+  * cinnamon-settings: Use an XAppGtkWindow, and update the icon depending on what sidepage we're on.
+  * window-list: Update the icon according to notifications from an item's underlying MetaWindow.
+  * cinnamon-screensaver-lock-dialog.py: use XApp window wrapper to set an icon name.  Fix the dialog's icon to use the same icon if the user's can't be found (the old 'fallback' doesn't exist anymore, at least in a fresh Mint installation.)
+
+  [ Jason Hicks ]
+  * js/ui/panel: Change for ... in loops to length caching for loops since they are iterating arrays
+
+  [ Michael Webster ]
+  * cs_themes: set a parent window for the cinnamon themes spice window.
+
+  [ Jason Hicks ]
+  * popupMenu: Migrate signals to SignalManager management, add...
+
+  [ Michael Webster ]
+  * debian/control: Add libcjs-dbg to cinnamon-dbg depends.
+  * sound applet: Avoid warnings when changing applet settings with no currently active player.
+
+  [ Lars Mueller ]
+  * Make cinnamon-settings unaware of installation location
+
+  [ Jason Hicks ]
+  * Fix TypeError regression when resizing panels
+
+  [ Michael Webster ]
+  * Add utils/cin-debug-run, a simpler trace tool.
+
+  [ brownsr ]
+  * fix some signed vs unsigned compiler warnings
+  * avoid signed ints for bit flags results are implementation specific and can give odd results if bit operators are used.  gboolean maps to int, not unsigned, so replace gboolean bit flags with guint. based on https://github.com/GNOME/gnome-shell/commit/69f17da5ca191c57acb6dfc5bbedc6f14f768e9b#diff-9ad11fdf581414b0f2501e50921d1052 with one additional instance found
+  * systray: Improve icon scaling in hidpi They were coming up a bit small. Indicator icons were coming up double size. The default of 16px indicator icons in non-scaled panels was awfully blurry. Icon spacing appeared to be scaled up in hidpi for no good reason.
+  * panel: correct margin calculation in hidpi + minor correction to regression from 718ce025dc360d62c6e510b5b57483553bf80c1c
+
+  [ Stephen Collins ]
+  * cinnamon-settings <spices>: rewrite to simplify code and implement a more modern ui
+  * Add a dbus method to open the about dialog for applets, desklets and extensions, and a button in extension settings to call it.
+  * Applet settings: fix error on removing multiple instances
+
+  [ Jason Hicks ]
+  * windows-quick-list: wrap menu in scrollable submenu container
+
+  [ brownsr ]
+  * panel: Remove dead code
+
+  [ NikoKrause ]
+  * recent-applet: always show icon in panel-edit-mode
+  * notifications-applet: always show applet icon in panel-edit-mode
+
+  [ itzexor ]
+  * cin-debug: don't suggest backgrounding
+
+  [ brownsr ]
+  * st-drawing-area: Fix Cogl deprecations from upstream https://github.com/GNOME/gnome-shell/commit/ad75739fc5fc03173648a5c7a636b7d7ee0918e5#diff-b0a9fbb0a9269c620f76c568a690c7aa
+
+  [ itzexor ]
+  * panel.js: don't error on nonexistent panel
+
+  [ Jason Hicks ]
+  * trash applet: Fix arguments warnings
+
+  [ brownsr ]
+  * various: replace deprecated macros
+
+  [ Michael Webster ]
+  * recent applet: the visibility check can be distilled into just checking if the recent list is not empty, and clutter_actor_show/_hide do their own visiblity check before doing anything.
+  * notification applet: don't change the icon when panel-edit mode changes - just show it, whatever its icon.  Also, no need to check for existing visibility, we want it to show regardless.
+
+  [ Jason Hicks ]
+  * main: Improve logging
+
+  [ Michael Webster ]
+  * CinnamonGtkSettings.py: set switch valign to centered, to prevent it being stretched by multi-line text.
+
+  [ Stephen Collins ]
+  * Spices settings: fix prompt getting 'stuck' when cache is downloaded for the first time
+  * Spices settings: Fix the trasition animation when switching to the downloads page
+
+  [ Jason Hicks ]
+  * extension: Use imports.searchPath instead of imports.addSubImporter
+  * Ensure only applets, desklets, and extensions are added to imports.searchPath
+
+  [ Michael Webster ]
+  * calendar applet: Remove timer code and use updated WallClock api.
+  * clock desklet: Refactor to use new WallClock api. calendar applet: track the notify handler id better thru applet_added and _removed functions.
+  * debian/control: update cinnamon-desktop runtime dependency for dev version.
+
+  [ brownsr ]
+  * st: Make BoxLayout use a Clutter layout manager internally https://github.com/GNOME/gnome-shell/commit/aa394754b6d78e682f99d3aff7f170bea04b0a8a#diff-b948bb195b709c61ce7275142a2fbdfd NB align-end left present but non-functional, to be returned to
+  * st: Remove empty dispose/finalize methods from StBoxLayoutChild https://github.com/GNOME/gnome-shell/commit/741b204fc7e023493d378d9fea8323f6a9a17823#diff-b948bb195b709c61ce7275142a2fbdfd
+  * st: Notify on BoxLayout property changes https://github.com/GNOME/gnome-shell/commit/6a19b7c1b0cea3eb78c581e5ed417a0f9e04f9c7#diff-b948bb195b709c61ce7275142a2fbdfd
+  * st: Translate StBoxLayoutChild properties to ClutterBoxChild https://github.com/GNOME/gnome-shell/commit/144f7d6813a9c2e43bc2b17055a5337db97d05d3
+  * panel, st-box-layout: Remove align_end, enabled by using a clutter layout manager This allowed the standard clutter alignment to be used, and the retirement of align_end
+
+  [ Jason Hicks ]
+  * Ensure extensions fully reload
+  * Update documentation for xlet importation
+  * Update grammar, formatting for xlet importation docs
+
+  [ brownsr ]
+  * various: correct some iso C compiler warnings
+  * cinnamon-embedded-window, st-scroll-bar: fix deprecations cinnamon-embedded-window needs correcting from https://github.com/linuxmint/Cinnamon/commit/348186dabeb2063afffc379410b963c3992e9493
+  * texture-cache: Remove FBO path for padding icons adapted from https://github.com/GNOME/gnome-shell/commit/4184edc7f8cd17e0dbfe5c6c3422b2bf94e85e45#diff-3ca4e78fe4368510730192b6d59c2c80 Premise is that GtkIconTheme now pads icons, so it's dead code. Please comment if you think this premise is not right
+  * st-entry.c: make it recognise upper case ctrl-c, x, v adapted from https://github.com/GNOME/gnome-shell/commit/387f5143f02f720b4d084aa4fca65e2ff31176b0#diff-b948bb195b709c61ce7275142a2fbdfd
+  * st-texture-cache: port to GTask from https://github.com/GNOME/gnome-shell/commit/f2731d4d6a9ca1338dbc38c8f33fdde0113f9b50#diff-b948bb195b709c61ce7275142a2fbdfd and https://github.com/GNOME/gnome-shell/commit/df0b465e76305e011c5106d78b6fd19891db900d#diff-b948bb195b709c61ce7275142a2fbdfd
+  * st-box-layout: Fix Cogl deprecations From upstream https://github.com/GNOME/gnome-shell/commit/8dab692f93522e3adbe3d03e59ddaca5c9a1e6ee
+  * st-entry.c: Fix spacing on right icon in entry https://github.com/GNOME/gnome-shell/commit/954d262d674f597a35a4b4342a6d4fc41dc8ff43#diff-b948bb195b709c61ce7275142a2fbdfd
+  * st-widget: Don't add hidden actors to the paint volume https://github.com/GNOME/gnome-shell/commit/ea55c36a3a2f1abcaa8e202e0f67a29ed807cebe#diff-b948bb195b709c61ce7275142a2fbdfd
+  * St: avoid blocking IO to resolve relative urls https://github.com/GNOME/gnome-shell/commit/f7af96dbb2152c796c5877585e7d1e555471d6ce#diff-c391ade4ef6206f5dd58f1a00c6a6217 https://github.com/GNOME/gnome-shell/commit/9860b1c677430fe96f6afdd95a2958bce398ca62#diff-c391ade4ef6206f5dd58f1a00c6a6217
+  * popupmenu: fix an undeclared variable
+  * popupMenu: ensure all tweens are controlled by the settings
+
+  [ Jakob Stigloher ]
+  * settings.js: Do not write valid settings files again to the disk
+
+  [ brownsr ]
+  * st-texture-cache:remove unused base64 code path https://github.com/GNOME/gnome-shell/commit/2dc41c944e3594bc0d9636d2515c50a1cbc4f88c
+  * st-icon: remove custom size request/allocate https://github.com/GNOME/gnome-shell/commit/f5431612341887a339f545ddef5268d362c62755#diff-b9152792660693113ebfebfbd89105a2
+  * st-scroll-view-fade: Refuse to work without GLSL https://github.com/GNOME/gnome-shell/commit/ce5cd3bf30f9778746b94daa1f68c07854d2cfaa#diff-b948bb195b709c61ce7275142a2fbdfd
+
+  [ Michael Webster ]
+  * window-list applet: Add rudimentary support for progress display.
+
+  [ Stephen Collins ]
+  * Fix dnd position calculations for horizontal panels
+  * Fix dnd for icon-only applets in vertical panels
+
+  [ Michael Webster ]
+  * window-list: Don't break when muffin doesn't support progress. (just softens the dependency, this can be removed later)
+
+  [ brownsr ]
+  * st-clipboard: Add the ability to choose the clipboard type https://github.com/GNOME/gnome-shell/commit/0616261a9455574fc26b452343b6bf9b8e0400b1#diff-f46ca0c0ff266172bd910e27927f342d
+  * st-entry: Implement middle click paste https://github.com/GNOME/gnome-shell/commit/eaf184b5852825d49c85c683bd7bde96df02baf2#diff-f46ca0c0ff266172bd910e27927f342d adapted up to latest gnome st code
+  * scroll-bar: Remove jitter on the scroll bar when moving the mouse https://github.com/GNOME/gnome-shell/commit/2492dc50db89042d19edb2210fdeac7f5c54d8db#diff-b948bb195b709c61ce7275142a2fbdfd
+  * st-theme-node-transition: stop using clutter alpha https://github.com/GNOME/gnome-shell/commit/50f96d1c9cfc422128c5325fbbb03c0ab256d069#diff-58ec506f144fcf489b16beab596a99af
+
+  [ collinss ]
+  * Remove old applet download-related code that is no longer used
+
+  [ Fabio Fantoni ]
+  * Remove deprecated and unused gnome-keyring
+  * Added missed gettext and xdg-utils to cinnamon-common deps
+
+  [ itzexor ]
+  * layout.js: special case handling of panel actors
+  * layout.js: slight optimization for popup window tracking
+  * layout.js: optimize signals a bit
+  * layout.js: only update hotcorners once on monitor change
+  * layout.js: queue region update directly in _updateVisibility
+  * layout.js: add same guarantee to Chrome.findMonitorIndexForActor
+  * layout.js: small short circuiting optimization
+  * layout.js: add LayoutManager.updateChrome() and docs
+  * panel.js: use new updateChrome helper from LayoutManager
+
+  [ NikoKrause ]
+  * spices about dialog: clearify what the date means ...
+
+  [ Stephen Collins ]
+  * dnd: call handleDragOut on a drop tartget (if available) when leaving the area, and use this function to remove the drag placeholder when dragging an applet. This fixes an issue where the drag placeholder would get stuck after a dnd, leaving an empty space with no applets
+  * Simplify how applet positions are saved after a dnd operation and allow extra properties to be added to a definition in the enabled-applets key
+  * Improve the way cinnamon handles applets that are added to an unsupported panel. Previously, Cinnamon would send a message to cinnamon-settings saying there was an error. With this change, the user is now prompted with the following options: 1. Leave the applet on the panel anyway (some applets are still suitable for vertical panels under certain circumstances - even if they aren't marked as such). In this case an override is added to the applet definition to avoid the user being prompted in the future. 2. Remove the applet. 3. Try to move the applet to a different panel. If a suitable panel cannot be found, the applet is removed instead.
+  * Don't let hidden panels offset the menu position. It can lead to awkward placement in situations such as when there are mixed panels and auto-hide is involved
+
+  [ brownsr ]
+  * st-theme-node.c: Correct a function call that was missed in https://github.com/linuxmint/Cinnamon/commit/5a9ad973e766db9a0781d1791e31d89ce8d66dcb#diff-ea7efd941b083a785ba5e4b928a26d59
+  * st-entry: change deprecated key symbols
+
+  [ Michael Webster ]
+  * Fix a couple issues from previous commits:
+
+  [ Fabio Fantoni ]
+  * Change deprecated python-imaging to new fork pillow
+
+  [ Michael Webster ]
+  * st-label.c: Apply upstream patch -
+  * st-label.c: Use correct type check instead of cast.
+
+  [ itzexor ]
+  * menu-applet: use a generic clutter actor container
+  * panel.js: add some hacks to account for panel corners in clip region
+
+  [ brownsr ]
+  * st-box-layout.c: remove a couple of unused variables
+  * st-box-layout-child.c: treat compiler warnings
+
+  [ Cobinja ]
+  * extension.js: Fix startup with invalid xlet uuid (#6858)
+
+  [ Simon Brown ]
+  * cinnamon-app.c: Don't crash when trying to dispose (#6853)
+  * st-bin: delegate popup-menu signal to child if we have one (#6849)
+  * boxpointer: Don't hide when we're already hidden (#6854)
+  * tweener: Remove the onAnimationStart/onAnimationComplete callbacks (#6855)
+
+  [ Fabio Fantoni ]
+  * Use pkexec instead deprecated gksu for cinnamon-settings-users (#6827)
+
+  [ Leigh Scott ]
+  * fix indent (#6844)
+
+  [ Jason Hicks ]
+  * extension.js: Fix ReloadExtension error in forgetExtension (#6862)
+  * window list: Prevent the progress indicator from showing when set to 0 (#6866)
+  * window-list/fixup e6c3a21: Make sure the progress is shown if its > 0 on init (#6867)
+
+  [ leigh123linux ]
+  * Bump version for muffin build dep
+
+  [ itzexor ]
+  * panel.js: check if the panel corner has a parent (#6869)
+
+  [ Clement Lefebvre ]
+  * Settings: Add the ability to select HybridSleep
+  * Settings: Show the URL in the terminal when a download fails
+
+  [ Michael Webster ]
+  * cinnamonDBus: add api to allow nemo startup timing to be more consistent.
+  * main.js: Fix invalid ref to Main during no-animation startup.
+
+  [ brownsr ]
+  * panel: ensure rightbox has something to drag into in edit mode when empty
+  * Defend against failure of cairo_pattern_get_surface() https://github.com/GNOME/gnome-shell/commit/6d22670307928dfdce75a7536598486fa25d51d7#diff-8a01b40c2c1be22ef97916811be0ab65
+
+  [ Jason Hicks ]
+  * panel: Increment panelCount by 1
+
+  [ brownsr ]
+  * window-list: correct progress overlay logic it was showing unwanted artefacts as it was using .visible instead of a direct show or hide of the actor. Simplified the use of the pseudoclass to ensure it was only set once.  Theme Graphite-Zero can be used for testing if required the unwanted artefacts are particularly visible in a vertical left panel
+
+  [ Jason Hicks ]
+  * dnd, appletManager: Fix applet DND on mozjs52
+
+  [ Michael Webster ]
+  * window-list applet: Use clipping to adjust the progress overlay, instead of changing the width.
+
+  [ Jason Hicks ]
+  * main.js: Add search_providers to xlet types in _addXletDirectoriesToSearchPath
+
+  [ Michael Webster ]
+  * popupMenu.js: Stop relying on an idle callback to toggle menus.
+  * dnd.js: Use get_transformed_allocation instead of get_allocation_box
+  * panel dnd: Improve stability when dragging.
+  * applet.js: Only try to add a context menu separator once, to prevent warnings during DnD operations.
+  * panel dnd: ensure a clean slate when an applet drag begins.  We work with lists across all panels (with 3 zones apiece), but only the final drop zone can know when a drag ends.  It's easier to make sure we're cleared out at the start of a drag instead.
+  * panel.js: Clean up some unused variables.
+  * cinnamonDBus.js: catch an invalid monitor index before it goes to muffin (where it will g_assert and crash cinnamon.)
+
+  [ JosephMcc ]
+  * Use a style class name for the new window list progress indicator
+
+  [ NikoKrause ]
+  * xlet-settings: translate title in list widget
+
+  [ brownsr ]
+  * panel: tidy up some indentation
+  * dnd: avoid use of deprecated reparent
+  * dnd: Don't queue an idle handler if we already have one https://github.com/GNOME/gnome-shell/commit/fce2930b859af8530c4fed9f258e8186649455d2#diff-902d56799170f0dc27500667c665b683 no observable difference in use
+  * theme-node: Fix font family formatting https://github.com/GNOME/gnome-shell/commit/6fc5b0477ba1c77b6bcdd23e07254fbe97c92b83#diff-b948bb195b709c61ce7275142a2fbdfd
+
+  [ slepton ]
+  * Update cs_power.py
+
+  [ wesdawg ]
+  * Search provider updates (#6905)
+
+  [ BG Stack ]
+  * add Show all workspaces setting to window list (#6922)
+
+  [ Simon Brown ]
+  * st-texture-cache: Plug some pixbuf refcount leaks on async operations (#6921)
+
+  [ guzzard ]
+  * indicatorManager.js: add support for appindicator SecondaryActivate (#6915)
+
+  [ Björn Esser ]
+  * cinnamon-settings: Add online-accounts (#6881)
+
+  [ Clement Lefebvre ]
+  * Settings: Add an icon for GOA
+  * Settings: Wrap Online Accounts into a Python module and provide information about supported accounts
+
+  [ Albert Pool ]
+  * Make touchpad settings compatible with libinput (#6694)
+
+  [ Clement Lefebvre ]
+  * On-screen keyboard: Don't register Caribou's daemon DBUS name
+  * On-screen keyboard: Don't register Onboard's DBUS name
+  * On-screen keyboard: Add 'tablet' as a layout option in the settings
+  * On-screen keyboard: Remove animations
+  * On-screen keyboard: Make size and position configurable
+  * On-screen keyboard: Default position to top and layout to tablet
+
+  [ Simon Brown ]
+  * environment: stray semicolon (#6936)
+
+  [ Ingo Lafrenz ]
+  * improve menu search results (#4053) (#6929)
+
+  [ NikoKrause ]
+  * removable-drives applet: show applet in panel edit mode (#6917)
+
+  [ Simon Brown ]
+  * st: add some default cases and avoid compiler warnings (#6932)
+  * st-icon: remove unused fields (#6934)
+
+  [ BG Stack ]
+  * Add 'show all workspaces' option to appSwitcher (#6938)
+
+  [ Jason Hicks ]
+  * Performance: Avoid caching `this` context in SignalManager instances (#6918)
+
+  [ NikoKrause ]
+  * Applets: fix linter warnings (#6927)
+
+  [ JosephMcc ]
+  * window-manager: Show the workspace OSD even when effects are disabled (#6944)
+
+  [ Jason Hicks ]
+  * Improve JS logging
+
+  [ brownsr ]
+  * cinnamon-util: fix GFile leak https://github.com/GNOME/gnome-shell/commit/447246da741da9126aadb41c98a9179290bbcd86#diff-e13d0669f81906a880112b462a031c53 also fix an instance of deceptive indentation
+  * cinnamon-util: fix some more leaks
+
+  [ Simon Brown ]
+  * st-texture-cache:  load file simple, avoid leaks (#6953)
+
+  [ H8to ]
+  * Add alternative alt+tab behaviour to appSwitcher (#6952)
+
+  [ Clement Lefebvre ]
+  * Alt-tab: Set alttab-minimized-aware to false by default.
+  * Main: Use black for the default stage color
+  * XDG Menu: Remove legacy items
+
+  [ Simon Brown ]
+  * cinnamon-mime-sniffer: fix a GFile leak (#6955)
+
+  [ Clement Lefebvre ]
+  * l10n: Update POT file and fix some msgids
+
+ -- Clement Lefebvre <root@linuxmint.com>  Tue, 24 Oct 2017 16:33:22 +0100
+
 cinnamon (3.4.4) sonya; urgency=medium
 
   [ Michael Webster ]
