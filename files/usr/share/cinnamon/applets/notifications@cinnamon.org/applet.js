@@ -44,6 +44,8 @@ MyApplet.prototype = {
         // States
         this._blinking = false;
         this._blink_toggle = false;
+
+        this._applet_context_menu.addMenuItem(new MuteNotificationsSwitch());
     },
 
     _display: function() {
@@ -328,4 +330,29 @@ function timeify(orig_time) {
         }
     }
     return str;
+}
+
+function MuteNotificationsSwitch() {
+    this._init();
+}
+
+MuteNotificationsSwitch.prototype = {
+    __proto__: PopupMenu.PopupSwitchIconMenuItem.prototype,
+
+    _init: function() {
+        let settings = new Gio.Settings({ schema_id: "org.cinnamon.desktop.notifications" });
+
+        PopupMenu.PopupSwitchIconMenuItem.prototype._init.call(this,
+            _("Mute notifications"),
+            !settings.get_boolean("display-notifications"),
+            "user-busy",
+            St.IconType.SYMBOLIC);
+
+        settings.connect("changed::display-notifications", () => {
+            this.setToggleState(!settings.get_boolean("display-notifications"));
+        });
+        this.connect("toggled", () => {
+            settings.set_boolean("display-notifications", !this.state);
+        });
+    }
 }
