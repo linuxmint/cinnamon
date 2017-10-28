@@ -16,6 +16,9 @@ const KeyboardBusName = "org.cinnamon.SettingsDaemon.Power.Keyboard";
 
 const PANEL_EDIT_MODE_KEY = "panel-edit-mode";
 
+const INHIBIT_IDLE_FLAG = 8;
+const INHIBIT_SLEEP_FLAG = 4;
+
 const UPDeviceType = {
     UNKNOWN: 0,
     AC_POWER: 1,
@@ -151,6 +154,118 @@ DeviceItem.prototype = {
     }
 }
 
+function InhibitSwitch(applet) {
+    this._init(applet);
+}
+
+InhibitSwitch.prototype = {
+    __proto__: PopupMenu.PopupBaseMenuItem.prototype,
+
+    _init: function(applet) {
+
+        this._applet = applet;
+
+        PopupMenu.PopupBaseMenuItem.prototype._init.call(this);
+
+        this.label = new St.Label({ text: _("Inhibit power management"), reactive: true });
+
+        this._statusIcon = new St.Icon({ style_class: 'popup-menu-icon',
+            icon_type: St.IconType.SYMBOLIC,
+            icon_name: "dialog-warning-symbolic",
+            reactive: true });
+
+        this._icon = new St.Icon({ style_class: 'popup-menu-icon',
+            icon_name: "inhibit",
+            icon_type: St.IconType.SYMBOLIC });
+
+        this._switch = new PopupMenu.Switch(false);
+
+        this.addActor(this._icon, {span: 0});
+        this.addActor(this.label);
+        this.addActor(this._statusIcon);
+
+        this._statusBin = new St.Bin({ x_align: St.Align.END });
+        this.addActor(this._statusBin, { expand: false, span: -1, align: St.Align.END });
+        this._statusBin.child = this._switch.actor;
+
+        this.actor.hide();
+        this.tooltip = new Tooltips.Tooltip(this._statusIcon, "");
+
+        this.sessionProxy = null;
+        this.sessionCookie = null;
+        this.sigAddedId = 0;
+        this.sigRemovedId = 0;
+
+        GnomeSession.SessionManager(Lang.bind(this, function(proxy, error) {
+            if (error)
+                return;
+
+            this.sessionProxy = proxy;
+            this.actor.show();
+            this.updateStatus();
+            this.propId = this.sessionProxy.connect("g-properties-changed",
+                                                    Lang.bind(this, this.updateStatus));
+        }));
+    },
+
+    activate: function(event) {
+        if (this._switch.actor.mapped) {
+            this._switch.toggle();
+        }
+
+        this.toggled(this._switch.state);
+
+        PopupMenu.PopupBaseMenuItem.prototype.activate.call(this, event, true);
+    },
+
+    updateStatus: function(o) {
+        let current_state = this.sessionProxy.InhibitedActions;
+
+        if (current_state & INHIBIT_IDLE_FLAG ||
+            current_state & INHIBIT_SLEEP_FLAG) {
+            this._icon.set_icon_name("inhibit-active");
+        } else {
+            this._icon.set_icon_name("inhibit");
+        }
+
+        if (current_state >= INHIBIT_SLEEP_FLAG && !this.sessionCookie) {
+            this.tooltip.set_text(_("Power management is already inhibited by another program"));
+            this._statusIcon.set_opacity(255);
+        } else {
+            this._statusIcon.set_opacity(0);
+        }
+    },
+
+    toggled: function(active) {
+        if (active && !this.sessionCookie) {
+            this.sessionProxy.InhibitRemote("inhibit@cinnamon.org",
+                                            0,
+                                            "prevent idle functions like screen blanking and dimming",
+                                            INHIBIT_IDLE_FLAG,
+                                            Lang.bind(this, function(cookie) {
+                                                this.sessionCookie = cookie;
+                                                this.updateStatus();
+                                            }));
+        } else if (!active && this.sessionCookie) {
+            this.sessionProxy.UninhibitRemote(this.sessionCookie);
+            this.sessionCookie = null;
+            this.updateStatus();
+        }
+    },
+
+    kill: function() {
+        if (!this.sessionProxy)
+            return;
+
+        if (this.sessionCookie) {
+            this.sessionProxy.UninhibitRemote(this.sessionCookie);
+            this.sessionCookie = null;
+        }
+
+        this.sessionProxy.disconnect(this.propId);
+    }
+};
+
 function BrightnessSlider(applet, label, icon, busName, minimum_value){
     this._init(applet, label, icon, busName, minimum_value);
 }
@@ -280,6 +395,9 @@ MyApplet.prototype = {
         this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
 
         this.menu.addSettingsAction(_("Power Settings"), 'power');
+
+        this.inhibitSwitch = new InhibitSwitch(this);
+        this._applet_context_menu.addMenuItem(this.inhibitSwitch);
 
         this.actor.connect("scroll-event", Lang.bind(this, this._onScrollEvent));
 
@@ -572,6 +690,7 @@ MyApplet.prototype = {
     },
 
     on_applet_removed_from_panel: function() {
+        this.inhibitSwitch.kill();
         Main.systrayManager.unregisterId(this.metadata.uuid);
     }
 };
