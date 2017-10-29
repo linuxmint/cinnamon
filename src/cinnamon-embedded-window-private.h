@@ -14,7 +14,7 @@ void _cinnamon_embedded_window_allocate (CinnamonEmbeddedWindow *window,
 				      int                  width,
 				      int                  height);
 
-void _cinnamon_embedded_window_realize   (CinnamonEmbeddedWindow *window);
-void _cinnamon_embedded_window_unrealize (CinnamonEmbeddedWindow *window);
+void _cinnamon_embedded_window_map   (CinnamonEmbeddedWindow *window);
+void _cinnamon_embedded_window_unmap (CinnamonEmbeddedWindow *window);
 
 #endif /* __CINNAMON_EMBEDDED_WINDOW_PRIVATE_H__ */
