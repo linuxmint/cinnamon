@@ -574,7 +574,7 @@ class Spice_Harvester(GObject.Object):
                 if 'po' in contents:
                     po_dir = os.path.join(uuidfolder, 'po')
                     for file in os.listdir(po_dir):
-                        if file.split(".")[1] == 'po':
+                        if file.endswith('.po'):
                             lang = file.split(".")[0]
                             locale_dir = os.path.join(locale_inst, lang, 'LC_MESSAGES')
                             rec_mkdir(locale_dir)
