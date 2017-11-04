@@ -23,8 +23,8 @@ gettext.install("cinnamon", "/usr/share/locale")
 (INDEX_GID, INDEX_GROUPNAME) = range(2)
 
 class GroupDialog (Gtk.Dialog):
-    def __init__ (self, label, value):
-        super(GroupDialog, self).__init__()
+    def __init__ (self, label, value, parent = None):
+        super(GroupDialog, self).__init__(None, parent)
 
         try:
             self.set_modal(True)
@@ -153,8 +153,8 @@ class EditableEntry (Gtk.Notebook):
 
 class PasswordDialog(Gtk.Dialog):
 
-    def __init__ (self, user, password_mask, group_mask):
-        super(PasswordDialog, self).__init__()
+    def __init__ (self, user, password_mask, group_mask, parent = None):
+        super(PasswordDialog, self).__init__(None, parent)
 
         self.user = user
         self.password_mask = password_mask
@@ -323,8 +323,8 @@ class PasswordDialog(Gtk.Dialog):
 
 class NewUserDialog(Gtk.Dialog):
 
-    def __init__ (self):
-        super(NewUserDialog, self).__init__()
+    def __init__ (self, parent = None):
+        super(NewUserDialog, self).__init__(None, parent)
 
         try:
             self.set_modal(True)
@@ -380,8 +380,8 @@ class NewUserDialog(Gtk.Dialog):
 
 class GroupsDialog(Gtk.Dialog):
 
-    def __init__ (self, username):
-        super(GroupsDialog, self).__init__()
+    def __init__ (self, username, parent = None):
+        super(GroupsDialog, self).__init__(None, parent)
 
         try:
             self.set_modal(True)
@@ -570,14 +570,14 @@ class Module:
         model, treeiter = self.users_treeview.get_selection().get_selected()
         if treeiter != None:
             user = model[treeiter][INDEX_USER_OBJECT]
-            dialog = PasswordDialog(user, self.password_mask, self.groups_label)
+            dialog = PasswordDialog(user, self.password_mask, self.groups_label, self.window)
             response = dialog.run()
 
     def _on_groups_button_clicked(self, widget):
         model, treeiter = self.users_treeview.get_selection().get_selected()
         if treeiter != None:
             user = model[treeiter][INDEX_USER_OBJECT]
-            dialog = GroupsDialog(user.get_user_name())
+            dialog = GroupsDialog(user.get_user_name(), self.window)
             response = dialog.run()
             if response == Gtk.ResponseType.OK:
                 groups = dialog.get_selected_groups()
@@ -825,7 +825,7 @@ class Module:
                     self.load_groups()
 
     def on_user_addition(self, event):
-        dialog = NewUserDialog()
+        dialog = NewUserDialog(self.window)
         response = dialog.run()
         if response == Gtk.ResponseType.OK:
             if dialog.account_type_combo.get_active() == 1:
@@ -893,7 +893,7 @@ class Module:
             d.destroy()
 
     def on_group_addition(self, event):
-        dialog = GroupDialog(_("Group Name"), "")
+        dialog = GroupDialog(_("Group Name"), "", self.window)
         response = dialog.run()
         if response == Gtk.ResponseType.OK:
             subprocess.call(["groupadd", dialog.entry.get_text().lower()])
@@ -904,7 +904,7 @@ class Module:
         model, treeiter = self.groups_treeview.get_selection().get_selected()
         if treeiter != None:
             group = model[treeiter][INDEX_GROUPNAME]
-            dialog = GroupDialog(_("Group Name"), group)
+            dialog = GroupDialog(_("Group Name"), group, self.window)
             response = dialog.run()
             if response == Gtk.ResponseType.OK:
                 subprocess.call(["groupmod", group, "-n", dialog.entry.get_text().lower()])
