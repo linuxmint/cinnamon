@@ -1,4 +1,4 @@
-#!/usr/bin/python2
+#!/usr/bin/python3
 
 import os
 import glob
@@ -34,7 +34,7 @@ class Module:
 
     def on_module_selected(self):
         if not self.loaded:
-            print "Loading Startup Applications module"
+            print("Loading Startup Applications module")
 
             page = SettingsPage()
             page.expand = True
@@ -58,7 +58,7 @@ class Module:
             try:
                 os.makedirs(user_autostart_dir)
             except:
-                print "Could not create autostart dir: %s" % user_autostart_dir
+                print("Could not create autostart dir: %s" % user_autostart_dir)
 
     def gather_apps(self):
         system_files = []
@@ -99,7 +99,7 @@ class AutostartApp():
         try:
             self.key_file.load_from_file(self.app, GLib.KeyFileFlags.KEEP_COMMENTS and GLib.KeyFileFlags.KEEP_TRANSLATIONS)
         except GLib.GError:
-            print "Failed to load %s" % self.app
+            print("Failed to load %s" % self.app)
             return
 
         self.key_file_loaded = True
@@ -560,7 +560,7 @@ class AutostartBox(Gtk.Box):
             try:
                 shutil.copyfile(desktop_file_dir, user_desktop_file)
             except IOError:
-                print "Failed to copy desktop file %s" % desktop_file_name
+                print("Failed to copy desktop file %s" % desktop_file_name)
 
             app = AutostartApp(user_desktop_file, user_position=os.path.dirname(user_desktop_file))
 

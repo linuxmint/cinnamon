@@ -1,3 +1,5 @@
+#!/usr/bin/python3
+
 try:
     from SettingsWidgets import rec_mkdir
     import gettext
@@ -5,7 +7,6 @@ try:
     import tempfile
     import os
     import sys
-    import urllib2
     import zipfile
     import shutil
     import cgi
@@ -13,9 +14,11 @@ try:
     import threading
     import time
     from PIL import Image
-except Exception, detail:
-    print detail
+except Exception as detail:
+    print(detail)
     sys.exit(1)
+
+from urllib.request import urlopen
 
 try:
     import json
@@ -56,7 +59,7 @@ def removeEmptyFolders(path):
     # if folder empty, delete it
     files = os.listdir(path)
     if len(files) == 0:
-        print "Removing empty folder:", path
+        print("Removing empty folder:", path)
         os.rmdir(path)
 
 class ThreadedTaskManager(GObject.GObject):
@@ -314,9 +317,9 @@ class Spice_Harvester(GObject.Object):
             self.monitorId = self.monitor.connect('changed', self._directory_changed)
             self._directory_changed()
 
-    def _download(self, outfd, outfile, url):
+    def _download(self, outfd, outfile, url, binary=True):
         try:
-            self._url_retrieve(url, outfd, self._update_progress)
+            self._url_retrieve(url, outfd, self._update_progress, binary)
         except KeyboardInterrupt:
             try:
                 os.remove(outfile)
@@ -328,16 +331,16 @@ class Spice_Harvester(GObject.Object):
 
         return outfile
 
-    def _url_retrieve(self, url, f, reporthook):
+    def _url_retrieve(self, url, f, reporthook, binary):
         #Like the one in urllib. Unlike urllib.retrieve url_retrieve
         #can be interrupted. KeyboardInterrupt exception is rasied when
         #interrupted.
         count = 0
         blockSize = 1024 * 8
         try:
-            urlobj = urllib2.urlopen(url)
+            urlobj = urlopen(url)
             assert urlobj.getcode() == 200
-        except Exception, detail:
+        except Exception as detail:
             f.close()
             self.abort_download = ABORT_ERROR
             self.error = detail
@@ -351,6 +354,8 @@ class Spice_Harvester(GObject.Object):
                 count += 1
                 if not data:
                     break
+                if not binary:
+                    data = data.decode("utf-8")
                 f.write(data)
                 ui_thread_do(reporthook, count, blockSize, totalSize)
         except KeyboardInterrupt:
@@ -378,8 +383,8 @@ class Spice_Harvester(GObject.Object):
                         metadata['path'] = subdirectory
                         metadata['writable'] = os.access(subdirectory, os.W_OK)
                         self.meta_map[uuid] = metadata
-                    except Exception, detail:
-                        print detail
+                    except Exception as detail:
+                        print(detail)
                         print("Skipping %s: there was a problem trying to read metadata.json" % uuid)
             else:
                 print("%s does not exist! Creating it now." % directory)
@@ -450,7 +455,7 @@ class Spice_Harvester(GObject.Object):
         f = open(filename, 'r')
         try:
             self.index_cache = json.load(f)
-        except ValueError, detail:
+        except ValueError as detail:
             try:
                 os.remove(filename)
             except:
@@ -478,7 +483,7 @@ class Spice_Harvester(GObject.Object):
 
         filename = os.path.join(self.cache_folder, "index.json")
         f = open(filename, 'w')
-        self._download(f, filename, download_url)
+        self._download(f, filename, download_url, binary=False)
 
         self._load_cache()
         self._download_image_cache()
@@ -504,7 +509,7 @@ class Spice_Harvester(GObject.Object):
 
             # if the image doesn't exist, is corrupt, or may have changed we want to download it
             if not os.path.isfile(icon_path) or self._is_bad_image(icon_path) or self.old_cache[uuid]["last_edited"] != self.index_cache[uuid]["last_edited"]:
-                fstream = open(icon_path, 'w')
+                fstream = open(icon_path, 'w+b')
                 self.download_manager.push(self._download, self._check_download_image_cache_complete, (fstream, icon_path, download_url))
                 self.download_total_files += 1
 
@@ -541,7 +546,7 @@ class Spice_Harvester(GObject.Object):
     def _is_bad_image(self, path):
         try:
             Image.open(path)
-        except IOError, detail:
+        except IOError as detail:
             return True
         return False
 
@@ -559,7 +564,7 @@ class Spice_Harvester(GObject.Object):
         try:
             uuid = job['uuid']
 
-            download_url = URL_SPICES_HOME + self.index_cache[uuid]['file'];
+            download_url = URL_SPICES_HOME + self.index_cache[uuid]['file']
             self.current_uuid = uuid
 
             fd, ziptempfile = tempfile.mkstemp()
@@ -621,7 +626,7 @@ class Spice_Harvester(GObject.Object):
                 shutil.rmtree(dest)
             shutil.copytree(uuidfolder, dest)
 
-        except Exception, detail:
+        except Exception as detail:
             if not self.abort_download:
                 self.errorMessage(_("An error occurred during the installation of %s. Please report this incident to its developer.") % uuid, str(detail))
             return False
@@ -669,7 +674,7 @@ class Spice_Harvester(GObject.Object):
                 if (os.path.exists(os.path.join(settings_dir, uuid))):
                     shutil.rmtree(os.path.join(settings_dir, uuid))
             shutil.rmtree(os.path.join(self.install_folder, uuid))
-        except Exception, detail:
+        except Exception as detail:
             self.errorMessage(_("A problem occurred while removing %s.") % job['uuid'], str(detail))
 
     """ applies all available updates"""

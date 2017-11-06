@@ -1,4 +1,4 @@
-#!/usr/bin/python2
+#!/usr/bin/python3
 
 import gi
 gi.require_version('CinnamonDesktop', '3.0')
@@ -100,7 +100,7 @@ class Module:
         if self.loaded:
             # self.loaded = False
             return
-        print "Loading Power module"
+        print("Loading Power module")
 
         self.up_client = UPowerGlib.Client.new()
 
@@ -199,8 +199,8 @@ class Module:
                         break
                     except:
                         pass
-        except Exception, detail:
-            print "Failed to query backlight information in cs_power module: %s" % detail
+        except Exception as detail:
+            print("Failed to query backlight information in cs_power module: %s" % detail)
 
         if primary_output is None:
             if self.show_battery_page:

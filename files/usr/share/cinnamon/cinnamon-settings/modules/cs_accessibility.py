@@ -1,4 +1,4 @@
-#!/usr/bin/python2
+#!/usr/bin/python3
 
 import gi
 gi.require_version("Gtk", "3.0")
@@ -32,7 +32,7 @@ class Module:
 
     def on_module_selected(self):
         if not self.loaded:
-            print "Loading Accessibility module"
+            print("Loading Accessibility module")
 
             self.iface_settings = Gio.Settings(schema_id="org.cinnamon.desktop.interface")
             self.wm_settings = Gio.Settings(schema_id="org.cinnamon.desktop.wm.preferences");

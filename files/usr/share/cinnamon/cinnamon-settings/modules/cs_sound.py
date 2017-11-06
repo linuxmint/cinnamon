@@ -496,7 +496,7 @@ class Module:
 
     def on_module_selected(self):
         if not self.loaded:
-            print "Loading Sound module"
+            print("Loading Sound module")
 
             self.outputDeviceList = Gtk.ListStore(str, # name
                                                   str, # device

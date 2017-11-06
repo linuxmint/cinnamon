@@ -1,4 +1,4 @@
-#!/usr/bin/python2
+#!/usr/bin/python3
 
 import os.path
 
@@ -45,7 +45,7 @@ class GtkSettingsEditor:
         return result
 
     def set_boolean(self, key, value):
-        print "set", value
+        print("set", value)
         keyfile = self._get_keyfile()
         keyfile.set_boolean(SETTINGS_GROUP_NAME, key, value)
 

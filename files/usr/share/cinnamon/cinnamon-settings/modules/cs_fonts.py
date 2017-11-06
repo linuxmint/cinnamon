@@ -1,4 +1,4 @@
-#!/usr/bin/python2
+#!/usr/bin/python3
 
 import gi
 gi.require_version("Gtk", "3.0")
@@ -19,7 +19,7 @@ class Module:
 
     def on_module_selected(self):
         if not self.loaded:
-            print "Loading Fonts module"
+            print("Loading Fonts module")
 
             page = SettingsPage()
             self.sidePage.add_widget(page)

@@ -1,4 +1,4 @@
-#!/usr/bin/python2
+#!/usr/bin/python3
 
 import sys
 from ExtensionCore import ManageSpicesPage, DownloadSpicesPage
@@ -17,7 +17,7 @@ class Module:
 
     def on_module_selected(self):
         if not self.loaded:
-            print "Loading Applets module"
+            print("Loading Applets module")
             self.sidePage.load(self.window)
 
     def _setParentRef(self, window):

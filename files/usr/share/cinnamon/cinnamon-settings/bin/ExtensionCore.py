@@ -1,4 +1,4 @@
-#!/usr/bin/python2
+#!/usr/bin/python3
 
 import sys
 import os
@@ -7,8 +7,8 @@ import json
 import cgi
 import subprocess
 import gettext
-from HTMLParser import HTMLParser
-import htmlentitydefs
+from html.parser import HTMLParser
+import html.entities as entities
 
 import dbus
 import gi
@@ -32,10 +32,10 @@ ROW_SIZE = 32
 
 UNSAFE_ITEMS = ['spawn_sync', 'spawn_command_line_sync', 'GTop', 'get_file_contents_utf8_sync']
 
-curr_ver = subprocess.check_output(['cinnamon', '--version']).splitlines()[0].split(' ')[1]
+curr_ver = subprocess.check_output(['cinnamon', '--version']).decode("utf-8").splitlines()[0].split(' ')[1]
 
 def find_extension_subdir(directory):
-    largest = [0]
+    largest = ['0']
     curr_a = curr_ver.split('.')
 
     for subdir in os.listdir(directory):
@@ -47,7 +47,7 @@ def find_extension_subdir(directory):
 
         subdir_a = subdir.split(".")
 
-        if cmp(subdir_a, curr_a) <= 0 and cmp(largest, subdir_a) <= 0:
+        if subdir_a < curr_a and largest < subdir_a:
             largest = subdir_a
 
     if len(largest) == 1:
@@ -114,15 +114,15 @@ class MyHTMLParser(HTMLParser):
         self.strings.append(data)
 
     def handle_charref(self, number):
-        codepoint = int(number[1:], 16) if number[0] in (u'x', u'X') else int(number)
-        self.strings.append(unichr(codepoint))
+        codepoint = int(number[1:], 16) if number[0] in ('x', 'X') else int(number)
+        self.strings.append(chr(codepoint))
 
     def handle_entityref(self, name):
-        codepoint = htmlentitydefs.name2codepoint[name]
-        self.strings.append(unichr(codepoint))
+        codepoint = entities.name2codepoint[name]
+        self.strings.append(chr(codepoint))
 
     def get_text(self):
-        return u''.join(self.strings)
+        return ''.join(self.strings)
 
 def sanitize_html(string):
     parser = MyHTMLParser()
@@ -583,8 +583,8 @@ class ManageSpicesPage(SettingsPage):
                 self.list_box.add(extension_row)
                 self.extension_rows.append(extension_row)
                 extension_row.set_enabled(self.spices.get_enabled(uuid))
-            except Exception, msg:
-                print "Failed to load extension %s: %s" % (uuid, msg)
+            except Exception as msg:
+                print("Failed to load extension %s: %s" % (uuid, msg))
 
         self.list_box.show_all()
 

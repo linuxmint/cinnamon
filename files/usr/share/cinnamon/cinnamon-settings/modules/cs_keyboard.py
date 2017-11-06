@@ -1,4 +1,4 @@
-#!/usr/bin/python2
+#!/usr/bin/python3
 
 from gi.repository import Gio, Gtk, GObject, Gdk
 import cgi
@@ -212,7 +212,7 @@ class Module:
 
     def on_module_selected(self):
         if not self.loaded:
-            print "Loading Keyboard module"
+            print("Loading Keyboard module")
 
             self.sidePage.stack = SettingsStack()
             self.sidePage.add_widget(self.sidePage.stack)

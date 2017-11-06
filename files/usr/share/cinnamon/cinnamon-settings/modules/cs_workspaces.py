@@ -1,4 +1,4 @@
-#!/usr/bin/python2
+#!/usr/bin/python3
 
 from GSettingsWidgets import *
 
@@ -18,7 +18,7 @@ class Module:
 
     def on_module_selected(self):
         if not self.loaded:
-            print "Loading Workspaces module"
+            print("Loading Workspaces module")
 
             self.sidePage.stack = SettingsStack()
             self.sidePage.add_widget(self.sidePage.stack)

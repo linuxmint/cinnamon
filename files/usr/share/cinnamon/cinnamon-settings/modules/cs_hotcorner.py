@@ -1,4 +1,5 @@
-#!/usr/bin/python2
+#!/usr/bin/python3
+
 import cairo
 import math
 
@@ -24,7 +25,7 @@ class Module:
 
     def on_module_selected(self):
         if not self.loaded:
-            print "Loading HotCorner module"
+            print("Loading HotCorner module")
 
             self.corners = []
             for i in range(4):

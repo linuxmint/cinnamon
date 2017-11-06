@@ -245,10 +245,10 @@ class MainWindow(object):
             first_key = next(iter(settings_map.values()))
 
             try:
-                for setting in settings_map.keys():
+                for setting in settings_map:
                     if setting == "__md5__":
                         continue
-                    for key in settings_map[setting].keys():
+                    for key in settings_map[setting]:
                         if key in ("description", "tooltip", "units"):
                             try:
                                 settings_map[setting][key] = translate(self.uuid, settings_map[setting][key])
@@ -257,7 +257,7 @@ class MainWindow(object):
                         elif key in "options":
                             new_opt_data = collections.OrderedDict()
                             opt_data = settings_map[setting][key]
-                            for option in opt_data.keys():
+                            for option in opt_data:
                                 if opt_data[option] == "custom":
                                     continue
                                 new_opt_data[translate(self.uuid, option)] = opt_data[option]
@@ -324,7 +324,7 @@ class MainWindow(object):
         for key, item in settings_map.items():
             if key == "__md5__":
                 continue
-            if "type" in item.keys():
+            if "type" in item:
                 settings_type = item["type"]
                 if settings_type in ("header", "section"):
                     section = page.add_section(translate(self.uuid, item["description"]))

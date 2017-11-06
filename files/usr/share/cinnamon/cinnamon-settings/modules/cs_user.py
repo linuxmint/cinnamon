@@ -1,4 +1,4 @@
-#!/usr/bin/python2
+#!/usr/bin/python3
 
 try:
     import PAM
@@ -31,7 +31,7 @@ class Module:
 
     def on_module_selected(self):
         if not self.loaded:
-            print "Loading User module"
+            print("Loading User module")
 
             page = SettingsPage()
             self.sidePage.add_widget(page)
@@ -77,7 +77,7 @@ class Module:
             widget = SettingsWidget()
             label = Gtk.Label.new(_("Password"))
             widget.pack_start(label, False, False, 0)
-            password_mask = Gtk.Label.new(u'\u2022\u2022\u2022\u2022\u2022\u2022')
+            password_mask = Gtk.Label.new('\u2022\u2022\u2022\u2022\u2022\u2022')
             password_mask.set_alignment(0.9, 0.5)
             self.password_button = Gtk.Button()
             size_group.add_widget(self.password_button)
@@ -124,7 +124,7 @@ class Module:
 
         # streamer takes -t photos, uses /dev/video0
         if 0 != subprocess.call(["streamer", "-j90", "-t8", "-s800x600", "-o", "/tmp/temp-account-pic00.jpeg"]):
-            print "Error: Webcam not available"
+            print("Error: Webcam not available")
             return
 
         # Use the 8th frame (the webcam takes a few frames to "lighten up")
@@ -352,12 +352,12 @@ class PasswordDialog(Gtk.Dialog):
             try:
                 auth.authenticate()
                 auth.acct_mgmt()
-            except PAM.error, resp:
+            except PAM.error as resp:
                 self.current_password.set_icon_from_stock(Gtk.EntryIconPosition.SECONDARY, Gtk.STOCK_DIALOG_WARNING)
                 self.current_password.set_icon_tooltip_text(Gtk.EntryIconPosition.SECONDARY, _("Wrong password"))
                 self.correct_current_password = False
             except:
-                print 'Internal error'
+                print('Internal error')
             else:
                 self.current_password.set_icon_from_stock(Gtk.EntryIconPosition.SECONDARY, None)
                 self.correct_current_password = True

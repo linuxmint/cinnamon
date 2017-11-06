@@ -1,3 +1,5 @@
+#!/usr/bin/python3
+
 from __future__ import division
 from gi.repository import Gtk, GObject, GLib, GdkPixbuf
 import cairo
