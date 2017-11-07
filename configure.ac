@@ -68,6 +68,7 @@ GTK_MIN_VERSION=3.12.0
 GIO_MIN_VERSION=2.35.0
 POLKIT_MIN_VERSION=0.100
 STARTUP_NOTIFICATION_MIN_VERSION=0.11
+NM_MIN_VERSION=1.6
 
 # Collect more than 20 libraries for a prize!
 PKG_CHECK_MODULES(CINNAMON, gio-2.0 >= $GIO_MIN_VERSION
@@ -81,7 +82,7 @@ PKG_CHECK_MODULES(CINNAMON, gio-2.0 >= $GIO_MIN_VERSION
                                libstartup-notification-1.0 >= $STARTUP_NOTIFICATION_MIN_VERSION
                                gobject-introspection-1.0 >= $GOBJECT_INTROSPECTION_MIN_VERSION
                                polkit-agent-1 >= $POLKIT_MIN_VERSION xfixes
-                               libnm-glib libnm-util atk-bridge-2.0)
+                               libnm >= $NM_MIN_VERSION atk-bridge-2.0)
 
 PKG_CHECK_MODULES(CINNAMON_PERF_HELPER, gtk+-3.0 gio-2.0)
 
