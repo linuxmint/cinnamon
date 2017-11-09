@@ -368,19 +368,23 @@ class Spice_Harvester(GObject.Object):
         self.meta_map = {}
 
         for directory in self.spices_directories:
-            extensions = os.listdir(directory)
+            if os.path.exists(directory):
+                extensions = os.listdir(directory)
 
-            for uuid in extensions:
-                subdirectory = os.path.join(directory, uuid)
-                try:
-                    json_data = open(os.path.join(subdirectory, 'metadata.json')).read()
-                    metadata = json.loads(json_data)
-                    metadata['path'] = subdirectory
-                    metadata['writable'] = os.access(subdirectory, os.W_OK)
-                    self.meta_map[uuid] = metadata
-                except Exception, detail:
-                    print detail
-                    print("Skipping %s: there was a problem trying to read metadata.json" % uuid)
+                for uuid in extensions:
+                    subdirectory = os.path.join(directory, uuid)
+                    try:
+                        json_data = open(os.path.join(subdirectory, 'metadata.json')).read()
+                        metadata = json.loads(json_data)
+                        metadata['path'] = subdirectory
+                        metadata['writable'] = os.access(subdirectory, os.W_OK)
+                        self.meta_map[uuid] = metadata
+                    except Exception, detail:
+                        print detail
+                        print("Skipping %s: there was a problem trying to read metadata.json" % uuid)
+            else:
+                print("%s does not exist! Creating it now." % directory)
+                subprocess.call(["mkdir", "-p", directory])
 
     def _directory_changed(self, *args):
         self._load_metadata()
