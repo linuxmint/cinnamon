@@ -1,3 +1,28 @@
+cinnamon (3.6.1) sylvia; urgency=medium
+
+  [ Germán Franco ]
+  * Fix blurry and off-centered arrow in popup submenus (#6986)
+
+  [ Stephen Collins ]
+  * cinnamon-settings: remove ui file that is no longer used since the extension-settings-rework (#6990)
+
+  [ Jason Hicks ]
+  * Spices.py: Fix xlets not installing if a file without an extension is in the po directory (#6968)
+
+  [ Germán Franco ]
+  * TreeListWidgets.py: edit elements with double click (#6978)
+
+  [ Abdous Kamel ]
+  * Fixing Gtk-Message when running a dialog (#6977)
+
+  [ itzexor ]
+  * window-list: account for hidden items during DnD repositioning (#6987)
+
+  [ Clement Lefebvre ]
+  * Spices: Don't fail if the spice directory is missing
+
+ -- Clement Lefebvre <root@linuxmint.com>  Thu, 09 Nov 2017 13:30:28 +0000
+
 cinnamon (3.6.0) sylvia; urgency=medium
 
   [ itzexor ]
