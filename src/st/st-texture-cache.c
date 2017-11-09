@@ -1120,7 +1120,7 @@ load_sliced_image (GTask        *result,
  *
  * This function reads a single image file which contains multiple images internally.
  * The image file will be divided using @grid_width and @grid_height;
- * note that the dimensions of the image loaded from @path 
+ * note that the dimensions of the image loaded from @path
  * should be a multiple of the specified grid dimensions.
  *
  * Returns: (transfer none): A new #ClutterActor
@@ -1772,8 +1772,13 @@ st_texture_cache_load_file_simple (StTextureCache *cache,
   g_free (uri);
   if (texture == NULL)
     {
-      g_warning ("Failed to load %s: %s", file_path, error->message);
-      g_clear_error (&error);
+      if (error)
+        {
+          g_warning ("Failed to load %s: %s", file_path, error->message);
+          g_clear_error (&error);
+        }
+      else
+        g_warning ("Failed to load %s", file_path);
       texture = clutter_texture_new ();
     }
   return texture;
