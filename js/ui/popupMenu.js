@@ -2881,7 +2881,7 @@ PopupSubMenuMenuItem.prototype = {
                                                align: St.Align.END });
 
             this._triangle = arrowIcon(St.Side.RIGHT);
-            this._triangle.pivot_point = new Clutter.Point({ x: 0.5, y: 0.6 });
+            this._triangle.pivot_point = new Clutter.Point({ x: 0.5, y: 0.5 });
             this._triangleBin.child = this._triangle;
         }
 
