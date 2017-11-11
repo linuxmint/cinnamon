@@ -1,3 +1,13 @@
+cinnamon (3.6.2) sylvia; urgency=medium
+
+  [ Simon Brown ]
+  * st-texture-cache: avoid potential null pointer dereference (#7001)
+
+  [ Clement Lefebvre ]
+  * Packaging: Add missing polkit policy file
+
+ -- Clement Lefebvre <root@linuxmint.com>  Sat, 11 Nov 2017 17:19:36 +0000
+
 cinnamon (3.6.1) sylvia; urgency=medium
 
   [ Germán Franco ]
