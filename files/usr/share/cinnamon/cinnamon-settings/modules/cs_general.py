@@ -23,7 +23,7 @@ class Module:
             settings = page.add_section(_("Desktop Scaling"))
 
             ui_scales = [[0, _("Auto")], [1, _("Normal")], [2, _("Double (Hi-DPI)")]]
-            combo = GSettingsComboBox(_("User interface scaling:"), "org.cinnamon.desktop.interface", "scaling-factor", ui_scales, valtype="uint")
+            combo = GSettingsComboBox(_("User interface scaling:"), "org.cinnamon.desktop.interface", "scaling-factor", ui_scales, valtype=int)
             settings.add_row(combo)
 
             # Some applications hard code the GNOME path for HiDPI settings,

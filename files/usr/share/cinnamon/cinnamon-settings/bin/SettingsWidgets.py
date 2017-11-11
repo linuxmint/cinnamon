@@ -749,7 +749,7 @@ class Range(SettingsWidget):
 class ComboBox(SettingsWidget):
     bind_dir = None
 
-    def __init__(self, label, options=[], valtype="string", size_group=None, dep_key=None, tooltip=""):
+    def __init__(self, label, options=[], valtype=None, size_group=None, dep_key=None, tooltip=""):
         super(ComboBox, self).__init__(dep_key=dep_key)
 
         self.valtype = valtype
@@ -792,8 +792,11 @@ class ComboBox(SettingsWidget):
         self.content_widget.connect('changed', self.on_my_value_changed)
 
     def set_options(self, options):
-        # assume all keys are the same type (mixing types is going to cause an error somewhere)
-        var_type = type(options[0][0])
+        if self.valtype is not None:
+            var_type = self.valtype
+        else:
+            # assume all keys are the same type (mixing types is going to cause an error somewhere)
+            var_type = type(options[0][0])
         self.model = Gtk.ListStore(var_type, str)
 
         for option in options:
