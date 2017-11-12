@@ -681,7 +681,7 @@ IconApplet.prototype = {
     },
 
     _ensureIcon: function() {
-        if (!this._applet_icon)
+        if (!this._applet_icon || !(this._applet_icon instanceof St.Icon))
             this._applet_icon = new St.Icon({ reactive: true, track_hover: true, style_class: 'applet-icon'});
 
         this._applet_icon_box.set_child(this._applet_icon);
