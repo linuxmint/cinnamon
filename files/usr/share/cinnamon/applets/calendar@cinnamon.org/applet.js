@@ -117,10 +117,12 @@ MyApplet.prototype = {
         if (this.use_custom_format) {
             if (!this.clock.set_format_string(this.custom_format)) {
                 global.logError("Calendar applet: bad time format string - check your string.");
-                this.clock.set_format_string("~CLOCK FORMAT ERROR~ %l:%M %p");
+                this.clock.set_format_string("FORMAT ERROR %l:%M %p");
             }
         } else if (in_vertical_panel) {
-            this.clock.set_format_string("%H%n%M");
+            /* Replaces the colon in the clock with a newline and removes "AM/PM" in 12 hour clock format */
+            let vertical_format = this.clock.get_clock_for_format(this.clock.get_default_time_format().replace(':', '%n').replace(' %p', ''))
+            this.clock.set_format_string(vertical_format);
         } else {
             this.clock.set_format_string(null);
         }
