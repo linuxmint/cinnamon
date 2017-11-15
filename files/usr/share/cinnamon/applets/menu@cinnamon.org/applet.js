@@ -1282,7 +1282,6 @@ MyApplet.prototype = {
         // The reason we do is in case the Cinnamon icon theme is the same as the one specificed in GTK itself (in .config)
         // In that particular case we get no signal at all.
         this._refreshAll();
-        this._recalc_height();
 
         this.set_show_label_in_vertical_panels(false);
     },
@@ -1307,6 +1306,8 @@ MyApplet.prototype = {
             this._refreshFavs();
             this._refreshPlaces();
             this._refreshRecent();
+
+            this._resizeApplicationsBox();
         }
         catch (exception) {
             global.log(exception);
@@ -1317,6 +1318,8 @@ MyApplet.prototype = {
     _refreshBelowApps: function() {
         this._refreshPlaces();
         this._refreshRecent();
+
+        this._resizeApplicationsBox();
     },
 
     openMenu: function() {
@@ -2256,7 +2259,6 @@ MyApplet.prototype = {
 
         this._setCategoriesButtonActive(!this.searchActive);
 
-        this._recalc_height();
         this._resizeApplicationsBox();
     },
 
@@ -2479,7 +2481,6 @@ MyApplet.prototype = {
 
         this._setCategoriesButtonActive(!this.searchActive);
 
-        this._recalc_height();
         this._resizeApplicationsBox();
     },
 
@@ -2731,8 +2732,6 @@ MyApplet.prototype = {
         });
 
         this.favoritesBox.add(button.actor, { y_align: St.Align.END, y_fill: false });
-
-        this._recalc_height();
     },
 
     _loadCategory: function(dir, top_dir) {
@@ -2924,6 +2923,8 @@ MyApplet.prototype = {
         Mainloop.idle_add(Lang.bind(this, function() {
             this._clearAllSelections(true);
         }));
+
+        this.menu.actor.connect("allocation-changed", Lang.bind(this, this._on_allocation_changed));
     },
 
     _updateVFade: function() {
@@ -2938,6 +2939,10 @@ MyApplet.prototype = {
 
     _update_autoscroll: function() {
         this.applicationsScrollBox.set_auto_scrolling(this.autoscroll_enabled);
+    },
+
+    _on_allocation_changed: function(box, flags, data) {
+        this._recalc_height();
     },
 
     _clearAllSelections: function(hide_apps) {
