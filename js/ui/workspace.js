@@ -262,7 +262,7 @@ WindowClone.prototype = {
         this.disconnectAll();
     },
 
-    _onPointerLeave: function (actor, event) {
+    _onPointerLeave: function () {
         if (this._zoomStep)
             this._zoomEnd();
     },
@@ -324,7 +324,6 @@ WindowClone.prototype = {
 
         this._zoomLocalOrig  = new ScaledPoint(this.actor.x, this.actor.y, this.actor.scale_x, this.actor.scale_y);
         this._zoomGlobalOrig = new ScaledPoint();
-        let parent = this._origParent = this.actor.get_parent();
         let [width, height] = this.actor.get_transformed_size();
         this._zoomGlobalOrig.setPosition.apply(this._zoomGlobalOrig, this.actor.get_transformed_position());
         this._zoomGlobalOrig.setScale(width / this.actor.width, height / this.actor.height);
@@ -372,24 +371,24 @@ WindowClone.prototype = {
         this._zoomStep           = 0;
     },
 
-    _onButtonPress: function(actor, event) {
+    _onButtonPress: function() {
         this.emit('selected', global.get_current_time());
         // a button-press on a clone already showing a menu should
         // not open a new-menu, only close the current menu.
         this.menuCancelled = closeContextMenu(this);
     },
 
-    _onButtonRelease: function(actor, event) {
-        if ( event.get_button()==1 ) {
+    _onButtonRelease: function(event) {
+        if ( event.get_button() == 1 ) {
             this._selected = true;
             this.emit('activated', global.get_current_time());
             return true;
         }
-        if (event.get_button()==2){
+        if (event.get_button() == 2){
             this.emit('closed', global.get_current_time());
             return true;
         }
-        if (event.get_button()==3){
+        if (event.get_button() == 3){
             if (!this.menuCancelled) {
                 this.emit('context-menu-requested');
             }

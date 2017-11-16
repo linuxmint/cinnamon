@@ -58,7 +58,7 @@ A11yHandler.prototype = {
             this._signalManager.disconnect("bell");
     },
 
-    on_settings_changed: function(settings, key) {
+    on_settings_changed: function() {
         this.state_on_sound = this.a11y_keyboard_settings.get_string("togglekeys-sound-on");
         this.state_off_sound = this.a11y_keyboard_settings.get_string("togglekeys-sound-off");
 
@@ -84,7 +84,7 @@ A11yHandler.prototype = {
         }
     },
 
-    on_keymap_state_changed: function(keymap) {
+    on_keymap_state_changed: function() {
         let new_caps = Keymap.get_caps_lock_state();
         let new_num = Keymap.get_num_lock_state();
 
