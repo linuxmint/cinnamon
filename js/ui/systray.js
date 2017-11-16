@@ -33,7 +33,7 @@ SystrayManager.prototype = {
         this.emit("changed");
     },
     
-    getRoles: function(id) {
+    getRoles: function() {
         let roles = [];
         for (let i = 0; i < this._roles.length; i++) {
             roles.push(this._roles[i].role);
