@@ -1763,7 +1763,7 @@ PanelZoneDNDHandler.prototype = {
 
         let children = this._panelZone.get_children();
         let curAppletPos = 0;
-        let insertAppletPos = null;
+        let insertAppletPos = 0;
 
         for (let i = 0, len = children.length; i < len; i++) {
             if (children[i]._delegate instanceof Applet.Applet){
