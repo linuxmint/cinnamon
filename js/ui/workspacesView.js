@@ -254,7 +254,7 @@ WorkspacesView.prototype = {
     _workspacesChanged: function() {
         let removedCount = 0;
         this._workspaces.slice().forEach(function(workspace, i) {
-            let metaWorkspace = global.screen.get_workspace_by_index(i-removedCount);
+            let metaWorkspace = global.screen.get_workspace_by_index(i - removedCount);
             if (workspace.metaWorkspace != metaWorkspace) {
                 Tweener.removeTweens(workspace.actor);
                 workspace.destroy();
@@ -266,7 +266,7 @@ WorkspacesView.prototype = {
         while (global.screen.n_workspaces > this._workspaces.length) {
             let lastWs = global.screen.get_workspace_by_index(this._workspaces.length);
             let workspace = new Workspace.Workspace(lastWs, this);
-            this._workspaces.push(workspace)
+            this._workspaces.push(workspace);
             this.actor.add_actor(workspace.actor);
         }
         this._animating = false;
