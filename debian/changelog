@@ -1,3 +1,39 @@
+cinnamon (3.6.3) sylvia; urgency=medium
+
+  [ Clement Lefebvre ]
+  * Show-desktop: Disable peek-at-desktop by default
+
+  [ Michael Webster ]
+  * menu applet: recalculate applications list box height when the menu's allocation changes.
+
+  [ Stephen Collins ]
+  * Applets: when setting an icon, make sure it's actually an St.Icon. Some applets (such as the keyboard applet) set _applet_icon to something other than an St.Icon, so it causes an error when trying to set the icon using one of the api functions. This was causing the keyboard applet not to show in panel edit mode after a keyboard layout was added and removed. (#7008)
+  * applet settings: fix panel switch buttons not being hidden when there is only one panel (#7023)
+
+  [ Bernhard Landauer ]
+  * add Adwaita-dark thumbnails (#7015)
+
+  [ Stephen Collins ]
+  * extesion settings: scan system folder for extensions. While we don't ship with any extensions, other distros may choose to do so
+
+  [ brownsr ]
+  * initialise applet position to avoid drag and drop errors in edit mode occasionally the null applet position was being carried through to the writing of the new applet causing apparent drop failures, and to the disappearance of the highlighted drop box.  Much visible weirdness with a very simple solution
+
+  [ Stephen Collins ]
+  * workspace switcher: fix undeclared variable warning
+  * applet settings: Improve the logic for highlighting the panel. The panel is now only highlighted when there is more than one panel, and it's better about selecting and highlighting the correct panel when one is added or removed
+
+  [ icarter09 ]
+  * Fixed spacing. Added missing semicolon. (#7032)
+
+  [ Jason Hicks ]
+  * popupMenu: Prevent warning of this._triangle (#7033)
+
+  [ Corbin Auriti ]
+  * Clock applet: Respect 12h/24h choice in vertical mode (#7034)
+
+ -- Clement Lefebvre <root@linuxmint.com>  Fri, 17 Nov 2017 10:48:22 +0000
+
 cinnamon (3.6.2) sylvia; urgency=medium
 
   [ Simon Brown ]
