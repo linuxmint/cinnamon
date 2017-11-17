@@ -21,7 +21,7 @@
         "description" : "Date format",
         "indent": true,
         "dependency" : "use-custom-format",
-        "tooltip" : "Set your custom format here."
+        "tooltip" : "Set your custom format here. \nNote: if you have a vertical panel, use '%n' to create a newline"
     },
     "format-button" : {
         "type" : "button",

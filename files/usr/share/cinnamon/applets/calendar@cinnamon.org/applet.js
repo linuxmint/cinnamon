@@ -133,14 +133,15 @@ MyApplet.prototype = {
         let label_string = this.clock.get_clock();
         let in_vertical_panel = (this.orientation == St.Side.LEFT || this.orientation == St.Side.RIGHT);
 
-        if (!this.use_custom_format && !in_vertical_panel) {
+        if (!this.use_custom_format) {
             label_string = label_string.capitalize();
-        }
-        else {
-            let vertical_format = this.clock.get_default_time_format();
-            /* First removes the date, then changes single splits 24hr mode, then removes "AM/PM" in 12hr mode, finaly replacing : with a newline */
-            vertical_format = vertical_format.replace('%A %B %e, ', '').replace('%R', '%H%n%M').replace(' %p', '').replace(new RegExp(":", 'g'), "%n");
-            label_string = this.clock.get_clock_for_format(vertical_format);
+    
+            if (in_vertical_panel) {
+                let vertical_format = this.clock.get_default_time_format();
+                /* First removes the date, then changes single splits 24hr mode, then removes "AM/PM" in 12hr mode, finaly replacing : with a newline */
+                vertical_format = vertical_format.replace('%A %B %e, ', '').replace('%R', '%H%n%M').replace(' %p', '').replace(new RegExp(":", 'g'), "%n");
+                label_string = this.clock.get_clock_for_format(vertical_format);
+            }
         }
 
         this.set_applet_label(label_string);
