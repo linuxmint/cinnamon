@@ -117,10 +117,13 @@ MyApplet.prototype = {
         if (this.use_custom_format) {
             if (!this.clock.set_format_string(this.custom_format)) {
                 global.logError("Calendar applet: bad time format string - check your string.");
-                this.clock.set_format_string("~CLOCK FORMAT ERROR~ %l:%M %p");
+                this.clock.set_format_string("FORMAT ERROR %l:%M %p");
             }
         } else if (in_vertical_panel) {
-            this.clock.set_format_string("%H%n%M");
+           /* First removes the date, then changes single splits 24hr mode, then removes "AM/PM" in 12hr mode, finaly replacing : with a newline */
+           let current_format = this.clock.get_default_time_format();
+           let vertical_format = current_format.replace('%A %B %e, ', '').replace('%R', '%H%n%M').replace(' %p', '').replace(new RegExp(":", 'g'), "%n");
+           this.clock.set_format_string(vertical_format);
         } else {
             this.clock.set_format_string(null);
         }
@@ -128,9 +131,16 @@ MyApplet.prototype = {
 
     _updateClockAndDate: function() {
         let label_string = this.clock.get_clock();
+        let in_vertical_panel = (this.orientation == St.Side.LEFT || this.orientation == St.Side.RIGHT);
 
-        if (!this.use_custom_format) {
+        if (!this.use_custom_format && !in_vertical_panel) {
             label_string = label_string.capitalize();
+        }
+        else {
+            let vertical_format = this.clock.get_default_time_format();
+            /* First removes the date, then changes single splits 24hr mode, then removes "AM/PM" in 12hr mode, finaly replacing : with a newline */
+            vertical_format = vertical_format.replace('%A %B %e, ', '').replace('%R', '%H%n%M').replace(' %p', '').replace(new RegExp(":", 'g'), "%n");
+            label_string = this.clock.get_clock_for_format(vertical_format);
         }
 
         this.set_applet_label(label_string);
