@@ -80,6 +80,9 @@ MyApplet.prototype = {
             this.desktop_settings.connect("changed::clock-use-24h", Lang.bind(this, function(key) {
                 this._onSettingsChanged();
             }));
+            this.desktop_settings.connect("changed::clock-show-seconds", Lang.bind(this, function(key) {
+                this._onSettingsChanged();
+            }));
 
             this.clock = new CinnamonDesktop.WallClock();
             this.clock_notify_id = 0;
@@ -129,11 +132,14 @@ MyApplet.prototype = {
             }
         } else if (in_vertical_panel) {
             let use_24h = this.desktop_settings.get_boolean("clock-use-24h");
+            let show_seconds = this.desktop_settings.get_boolean("clock-show-seconds");
 
             if (use_24h) {
-                this.clock.set_format_string("%H%n%M");
+                if (show_seconds){ this.clock.set_format_string("%H%n%M%n%S"); }
+                else { this.clock.set_format_string("%H%n%M%"); }
             } else {
-                this.clock.set_format_string("%I%n%M");
+                if (show_seconds){ this.clock.set_format_string("%l%n%M%n%S"); }
+                else { this.clock.set_format_string("%l%n%M%"); }
             }
         } else {
             this.clock.set_format_string(null);
