@@ -2863,9 +2863,9 @@ PopupSubMenuMenuItem.prototype = {
     _init: function(text) {
         PopupBaseMenuItem.prototype._init.call(this);
 
-        // This check allows PopupSubMenu to be used as a generic scrollable container. PopupSubMenu
-        // already checks for the truthiness of this._triangle (passed as sourceArrow) before using
-        // it, so we can leave it undefined.
+        this._triangle = null;
+
+        // This check allows PopupSubMenu to be used as a generic scrollable container.
         if (typeof text === 'string') {
             this.actor.add_style_class_name('popup-submenu-menu-item');
 
