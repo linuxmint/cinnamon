@@ -73,6 +73,14 @@ MyApplet.prototype = {
             this.settings.bind("use-custom-format", "use_custom_format", this._onSettingsChanged);
             this.settings.bind("custom-format", "custom_format", this._onSettingsChanged);
 
+            /* FIXME: Add gobject properties to the WallClock class to allow easier access from
+             * its clients, and possibly a separate signal to notify of updates to these properties
+             * (though GObject "changed" would be sufficient.) */
+            this.desktop_settings = new Gio.Settings({ schema_id: "org.cinnamon.desktop.interface" });
+            this.desktop_settings.connect("changed::clock-use-24h", Lang.bind(this, function(key) {
+                this._onSettingsChanged();
+            }));
+
             this.clock = new CinnamonDesktop.WallClock();
             this.clock_notify_id = 0;
 
@@ -117,13 +125,16 @@ MyApplet.prototype = {
         if (this.use_custom_format) {
             if (!this.clock.set_format_string(this.custom_format)) {
                 global.logError("Calendar applet: bad time format string - check your string.");
-                this.clock.set_format_string("FORMAT ERROR %l:%M %p");
+                this.clock.set_format_string("~CLOCK FORMAT ERROR~ %l:%M %p");
             }
         } else if (in_vertical_panel) {
-           /* First removes the date, then changes single splits 24hr mode, then removes "AM/PM" in 12hr mode, finaly replacing : with a newline */
-           let current_format = this.clock.get_default_time_format();
-           let vertical_format = current_format.replace('%A %B %e, ', '').replace('%R', '%H%n%M').replace(' %p', '').replace(new RegExp(":", 'g'), "%n");
-           this.clock.set_format_string(vertical_format);
+            let use_24h = this.desktop_settings.get_boolean("clock-use-24h");
+
+            if (use_24h) {
+                this.clock.set_format_string("%H%n%M");
+            } else {
+                this.clock.set_format_string("%I%n%M");
+            }
         } else {
             this.clock.set_format_string(null);
         }
@@ -131,16 +142,9 @@ MyApplet.prototype = {
 
     _updateClockAndDate: function() {
         let label_string = this.clock.get_clock();
-        let in_vertical_panel = (this.orientation == St.Side.LEFT || this.orientation == St.Side.RIGHT);
 
-        if (!this.use_custom_format && !in_vertical_panel) {
+        if (!this.use_custom_format) {
             label_string = label_string.capitalize();
-        }
-        else {
-            let vertical_format = this.clock.get_default_time_format();
-            /* First removes the date, then changes single splits 24hr mode, then removes "AM/PM" in 12hr mode, finaly replacing : with a newline */
-            vertical_format = vertical_format.replace('%A %B %e, ', '').replace('%R', '%H%n%M').replace(' %p', '').replace(new RegExp(":", 'g'), "%n");
-            label_string = this.clock.get_clock_for_format(vertical_format);
         }
 
         this.set_applet_label(label_string);
