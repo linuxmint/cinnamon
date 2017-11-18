@@ -185,7 +185,7 @@ st_theme_class_init (StThemeClass *klass)
                                                G_SIGNAL_RUN_LAST,
                                                0, /* no default handler slot */
                                                NULL, NULL, NULL,
-                                               G_TYPE_NONE, 0);  
+                                               G_TYPE_NONE, 0);
 }
 
 static CRStyleSheet *
@@ -1104,12 +1104,14 @@ _st_theme_resolve_url (StTheme      *theme,
 
       base_filename = g_hash_table_lookup (theme->filenames_by_stylesheet, base_stylesheet);
 
-      /* This is an internal function, if we get here with
-         a bad @base_stylesheet we have a problem. */
-      g_assert (base_filename);
+      if (base_filename == NULL)
+      {
+        g_warning ("Can't get base to resolve url '%s'", url);
+        return NULL;
+      }
 
-      dirname = g_path_get_dirname (base_filename);
-      stylesheet = g_file_new_for_path (dirname);
+      dirname = g_path_get_dirname (base_filename); /* returns . if empty */
+      stylesheet = g_file_new_for_path (dirname);   /* always returns something */
       resource = g_file_resolve_relative_path (stylesheet, url);
 
       g_object_unref (stylesheet);
