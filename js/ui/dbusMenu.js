@@ -467,7 +467,7 @@ DBusClient.prototype = {
 
     sendEvent: function(id, event, params, timestamp) {
         if (this._proxyMenu) {
-            if (!params) 
+            if (!params)
                 params = GLib.Variant.new_int32(0);
 
             this._proxyMenu.EventRemote(id, event, params, timestamp, 
