@@ -469,10 +469,8 @@ DBusClient.prototype = {
         if (this._proxyMenu) {
             if (!params)
                 params = GLib.Variant.new_int32(0);
-
             this._proxyMenu.EventRemote(id, event, params, timestamp, 
             function(result, error) {}); // We don't care
-
             if (event == PopupMenu.FactoryEventTypes.opened)
                 this.sendAboutToShow(id);
         }
