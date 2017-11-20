@@ -135,11 +135,17 @@ MyApplet.prototype = {
             let show_seconds = this.desktop_settings.get_boolean("clock-show-seconds");
 
             if (use_24h) {
-                if (show_seconds){ this.clock.set_format_string("%H%n%M%n%S"); }
-                else { this.clock.set_format_string("%H%n%M%"); }
+                if (show_seconds) {
+                    this.clock.set_format_string("%H%n%M%n%S");
+                } else {
+                    this.clock.set_format_string("%H%n%M%");
+                }
             } else {
-                if (show_seconds){ this.clock.set_format_string("%l%n%M%n%S"); }
-                else { this.clock.set_format_string("%l%n%M%"); }
+                if (show_seconds) {
+                    this.clock.set_format_string("%l%n%M%n%S");
+                } else {
+                    this.clock.set_format_string("%l%n%M%");
+                }
             }
         } else {
             this.clock.set_format_string(null);
