@@ -685,7 +685,7 @@ class Module:
                 icon = lookup.load_icon()
 
         if icon is None:
-        	if (iconName is not None and "bluetooth" in iconName):
+            if (iconName is not None and "bluetooth" in iconName):
                 icon = iconTheme.load_icon("bluetooth", 32, 0)
             else:
                 icon = iconTheme.load_icon("audio-card", 32, 0)
