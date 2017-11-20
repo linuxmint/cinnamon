@@ -1,3 +1,25 @@
+cinnamon (3.6.4) sylvia; urgency=medium
+
+  [ Michael Webster ]
+  * calendar applet: Just listen to the gsetting key for 24h to make sure the vertical panel default clock obeys global date/time settings.
+
+  [ Simon Brown ]
+  * st-theme.c: st_theme_resolve_url could assert with a theme issue (#7046)
+
+  [ brownsr ]
+  * st-theme: ensure callers of st_theme_resolve_url cater for it returning null knock-on from previous commit
+
+  [ JosephMcc ]
+  * cinnamon-settings: Use icon buttons in the xlet management pages
+
+  [ François Lachèse ]
+  * Fixes crash if device.get_icon_name() is Null (#7054)
+
+  [ Corbin Auriti ]
+  * Allow showing seconds on vertical panel (#7038)
+
+ -- Clement Lefebvre <root@linuxmint.com>  Mon, 20 Nov 2017 10:05:39 +0000
+
 cinnamon (3.6.3) sylvia; urgency=medium
 
   [ Clement Lefebvre ]
