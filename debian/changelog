@@ -1,3 +1,11 @@
+cinnamon (3.6.5) sylvia; urgency=medium
+
+  [ Michael Webster ]
+  * cs_sound.py: Replace tab with space.
+  * calendar applet: Fix formatting.
+
+ -- Clement Lefebvre <root@linuxmint.com>  Mon, 20 Nov 2017 15:15:07 +0000
+
 cinnamon (3.6.4) sylvia; urgency=medium
 
   [ Michael Webster ]
