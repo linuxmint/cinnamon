@@ -677,6 +677,7 @@ class Module:
 
         iconTheme = Gtk.IconTheme.get_default()
         gicon = device.get_gicon()
+        iconName = device.get_icon_name()
         icon = None
         if gicon is not None:
             lookup = iconTheme.lookup_by_gicon(gicon, 32, 0)
@@ -684,7 +685,7 @@ class Module:
                 icon = lookup.load_icon()
 
         if icon is None:
-            if ("bluetooth" in device.get_icon_name()):
+        	if (iconName is not None and "bluetooth" in iconName):
                 icon = iconTheme.load_icon("bluetooth", 32, 0)
             else:
                 icon = iconTheme.load_icon("audio-card", 32, 0)
