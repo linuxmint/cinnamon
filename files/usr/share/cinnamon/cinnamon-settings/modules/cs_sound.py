@@ -671,6 +671,7 @@ class Module:
         id = getattr(self.controller, "lookup_"+type+"_id")(newDevice)
         if id != None and id != getattr(self, type+"Id"):
             getattr(self.controller, "change_"+type)(id)
+            self.profile.setDevice(id)
 
     def deviceAdded(self, c, id, type):
         device = getattr(self.controller, "lookup_"+type+"_id")(id)
