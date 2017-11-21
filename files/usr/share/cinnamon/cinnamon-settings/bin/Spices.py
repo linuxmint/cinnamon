@@ -13,7 +13,6 @@ try:
     import threading
     import time
     from PIL import Image
-    import config
 except Exception, detail:
     print detail
     sys.exit(1)
@@ -575,6 +574,7 @@ class Spice_Harvester(GObject.Object):
             # check integrity of the download
 
             if not self.themes:
+                # Install spice localization files, if any
                 if 'po' in contents:
                     po_dir = os.path.join(uuidfolder, 'po')
                     for file in os.listdir(po_dir):
@@ -584,15 +584,13 @@ class Spice_Harvester(GObject.Object):
                             rec_mkdir(locale_dir)
                             subprocess.call(['msgfmt', '-c', os.path.join(po_dir, file), '-o', os.path.join(locale_dir, '%s.mo' % uuid)])
 
+                # Install spice schema file, if any
                 schema = [filename for filename in contents if 'gschema.xml' in filename]
                 for filename in schema:
-                    if os.path.exists('/usr/bin/gksu') and os.path.exists(config.currentPath + "/bin/installSchema.py"):
-                        message = _("Please enter your password to install the required settings schema for %s") % (uuid)
+                    if os.path.exists('/usr/bin/gksu'):
+                        message = _("Please enter your password to install the required settings schema for ") + uuid
                         path = os.path.join(uuidfolder, filename)
-                        tool = config.currentPath + "/bin/installSchema.py"
-
-                        command = 'gksu  --message "<b>%s</b>" %s %s' % (message, tool, path)
-                        os.system(command)
+                        os.system('gksu  --message "<b>%s</b>" cinnamon-schema-install %s' % (message, path))
                     else:
                         self.errorMessage(_("Could not install the settings schema for %s.  You will have to perform this step yourself.") % (uuid))
 
@@ -645,14 +643,12 @@ class Spice_Harvester(GObject.Object):
         try:
             uuid = job['uuid']
             if not self.themes:
+                # Uninstall spice schema files, if any
                 if 'schema-file' in self.meta_map[uuid]:
-                    sentence = _("Please enter your password to remove the settings schema for %s") % (uuid)
-                    if os.path.exists('/usr/bin/gksu') and os.path.exists(config.currentPath + "/bin/removeSchema.py"):
-                        for file in self.meta_map[uuid]:
-                            launcher = 'gksu  --message "<b>%s</b>"' % sentence
-                            tool = config.currentPath + "/bin/removeSchema.py %s" % (file)
-                            command = '%s %s' % (launcher, tool)
-                            os.system(command)
+                    if os.path.exists('/usr/bin/gksu'):
+                        for path in self.meta_map[uuid]['schema-file'].split(','):
+                            message = _("Please enter your password to remove the settings schema for ") + uuid
+                            os.system('gksu  --message "<b>%s</b>" cinnamon-schema-remove %s' % (message, path))
                     else:
                         self.errorMessage(_("Could not remove the settings schema for %s.  You will have to perform this step yourself.  This is not a critical error.") % (job["uuid"]))
 
