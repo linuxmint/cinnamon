@@ -1,3 +1,9 @@
+cinnamon (3.6.6) sylvia; urgency=medium
+
+  * Sound settings: Assign the selected device to the profile selector.
+
+ -- Clement Lefebvre <root@linuxmint.com>  Thu, 23 Nov 2017 09:55:33 +0000
+
 cinnamon (3.6.5) sylvia; urgency=medium
 
   [ Michael Webster ]
