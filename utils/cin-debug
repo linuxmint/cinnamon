@@ -1,4 +1,4 @@
-#!/usr/bin/python2
+#!/usr/bin/python3
 
 import sys
 import subprocess
@@ -8,16 +8,16 @@ import os
 home = os.path.expanduser("~")
 
 if len(sys.argv) != 2:
-    print """
+    print("""
     Run as:
 
         cin-debug <process-name>
 
-    """
+    """)
     quit()
 
 pname = sys.argv[1]
-pid = subprocess.check_output(["pidof", pname])
+pid = subprocess.check_output(["pidof", pname]).decode('utf-8')
 logfile = "%s/%s-%s.log" % (home, pname, datetime.datetime.now().strftime("%Y-%m-%d-%l:%M:%S"))
 
 
