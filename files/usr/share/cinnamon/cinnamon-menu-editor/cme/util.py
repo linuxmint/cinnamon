@@ -26,13 +26,13 @@ DESKTOP_GROUP = GLib.KEY_FILE_DESKTOP_GROUP
 KEY_FILE_FLAGS = GLib.KeyFileFlags.KEEP_COMMENTS | GLib.KeyFileFlags.KEEP_TRANSLATIONS
 
 def fillKeyFile(keyfile, items):
-    for key, item in items.iteritems():
+    for key, item in items.items():
         if item is None:
             continue
 
         if isinstance(item, bool):
             keyfile.set_boolean(DESKTOP_GROUP, key, item)
-        elif isinstance(item, basestring):
+        elif isinstance(item, str):
             keyfile.set_string(DESKTOP_GROUP, key, item)
         elif isinstance(item, Sequence):
             keyfile.set_string_list(DESKTOP_GROUP, key, item)
