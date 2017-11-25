@@ -1483,11 +1483,19 @@ MyApplet.prototype = {
             return;
         }
 
+        /* Fedora, Red Hat Enterprise Linux and CentOS */
+        path = "/usr/share/pixmaps/fedora-logo-sprite.svg";
+        if (GLib.file_test(path, GLib.FileTest.EXISTS)) {
+            this.set_applet_icon_path(path);
+            return;
+        }
+
         path = global.datadir + "/theme/menu-symbolic.svg";
         if (GLib.file_test(path, GLib.FileTest.EXISTS)) {
             this.set_applet_icon_symbolic_path(path);
             return;
         }
+
         /* If all else fails, this will yield no icon */
         this.set_applet_icon_path("");
     },
