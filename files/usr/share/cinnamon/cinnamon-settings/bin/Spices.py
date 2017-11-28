@@ -158,7 +158,7 @@ class Spice_Harvester(GObject.Object):
             if self.collection_type == 'extension':
                 self.spices_directories = (self.install_folder, )
             else:
-                self.spices_directories = (self.install_folder, '/usr/share/cinnamon/%ss/' % self.collection_type)
+                self.spices_directories = ('/usr/share/cinnamon/%ss/' % self.collection_type, self.install_folder)
 
         self._load_metadata()
 
