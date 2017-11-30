@@ -410,7 +410,25 @@ CinnamonDBus.prototype = {
     },
 
     GetMonitors: function() {
-        return Main.layoutManager.monitors.map(mon => mon.index);
+        let monitors = [];
+
+        try {
+            for (let i = 0; i < Main.layoutManager.monitors.length; i++) {
+                let current = Main.layoutManager.monitors[i];
+
+                monitors.push(current.index);
+            }
+        } catch (e) {
+            log(e.message);
+            /* Something broke, trigger a GDBus.Error back to the caller instead of returning bad things */
+            monitors = [];
+        }
+
+        if (monitors.length == 0) {
+            throw new Error("GetMonitors: no valid monitors");
+        }
+
+        return monitors;
     },
 
     GetMonitorWorkRect: function(index) {
