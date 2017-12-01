@@ -2098,33 +2098,59 @@ MyApplet.prototype = {
         }
     },
 
+    /*
+     * The vectorBox overlays the the categoriesBox to aid in navigation from categories to apps
+     * by preventing misselections. It is set to the same size as the categoriesOverlayBox and
+     * categoriesBox.
+     *
+     * The actor is a quadrilateral that we turn into a triangle by setting the A and B vertices to
+     * the same position. The size and origin of the vectorBox are calculated in _getVectorInfo().
+     * Using those properties, the bounding box is sized as (w, h) and the triangle is defined as
+     * follows:
+     *   _____
+     *  |    /|D
+     *  |   / |     AB: (mx, my)
+     *  | A/  |      C: (w, h)
+     *  | B\  |      D: (w, 0)
+     *  |   \ |
+     *  |____\|C
+     */
+
+    _getVectorInfo: function() {
+        let [mx, my, mask] = global.get_pointer();
+        let [bx, by] = this.categoriesOverlayBox.get_transformed_position();
+        let [bw, bh] = this.categoriesOverlayBox.get_transformed_size();
+
+        let xformed_mx = mx - bx;
+        let xformed_my = my - by;
+
+        if (xformed_mx < 0 || xformed_mx > bw || xformed_my < 0 || xformed_my > bh) {
+            return null;
+        }
+
+        return { mx: xformed_mx,
+                 my: xformed_my,
+                 w: bw,
+                 h: bh };
+    },
+
     makeVectorBox: function(actor) {
         this.destroyVectorBox(actor);
-        let [mx, my, mask] = global.get_pointer();
-        let [bx, by] = this.categoriesApplicationsBox.actor.get_transformed_position();
-        let [bw, bh] = this.categoriesApplicationsBox.actor.get_transformed_size();
-        let [appbox_x, appbox_y] = this.applicationsBox.get_transformed_position();
+        let vi = this._getVectorInfo();
+        if (!vi) {
+            return;
+        }
 
-        let right_x = appbox_x - bx;
-        let xformed_mouse_x = mx-bx;
-        let xformed_mouse_y = my-by;
-        let w = Math.max(right_x-xformed_mouse_x, 0);
-
-        let ulc_y = xformed_mouse_y + 0;
-        let llc_y = xformed_mouse_y + 0;
-
-        this.vectorBox = new St.Polygon({ debug: false, width: w, height: bh,
-                                          ulc_x: 0, ulc_y: ulc_y,
-                                          llc_x: 0, llc_y: llc_y,
-                                          urc_x: w, urc_y: 0,
-                                          lrc_x: w, lrc_y: bh });
+        this.vectorBox = new St.Polygon({ debug: false, width: vi.w, height: vi.h,
+                                          ulc_x: vi.mx, ulc_y: vi.my,
+                                          llc_x: vi.mx, llc_y: vi.my,
+                                          urc_x: vi.w, urc_y: 0,
+                                          lrc_x: vi.w, lrc_y: vi.h });
 
         this.categoriesOverlayBox.add_actor(this.vectorBox);
-        this.vectorBox.set_position(xformed_mouse_x, 0);
 
         this.vectorBox.show();
         this.vectorBox.set_reactive(true);
-        this.vectorBox.raise_top();
 
         this.vectorBox.connect("leave-event", Lang.bind(this, this.destroyVectorBox));
         this.vectorBox.connect("motion-event", Lang.bind(this, this.maybeUpdateVectorBox));
@@ -2142,16 +2168,10 @@ MyApplet.prototype = {
 
     updateVectorBox: function(actor) {
         if (this.vectorBox) {
-            let [mx, my, mask] = global.get_pointer();
-            let [bx, by] = this.categoriesApplicationsBox.actor.get_transformed_position();
-            let xformed_mouse_x = mx-bx;
-            let [appbox_x, appbox_y] = this.applicationsBox.get_transformed_position();
-            let right_x = appbox_x - bx;
-            if ((right_x-xformed_mouse_x) > 0) {
-                this.vectorBox.width = Math.max(right_x-xformed_mouse_x, 0);
-                this.vectorBox.set_position(xformed_mouse_x, 0);
-                this.vectorBox.urc_x = this.vectorBox.width;
-                this.vectorBox.lrc_x = this.vectorBox.width;
+            let vi = this._getVectorInfo();
+            if (vi) {
+                this.vectorBox.ulc_x = vi.mx;
+                this.vectorBox.llc_x = vi.mx;
                 this.vectorBox.queue_repaint();
             } else {
                 this.destroyVectorBox(actor);
@@ -2854,13 +2874,15 @@ MyApplet.prototype = {
         this.searchEntryText.connect('key-press-event', Lang.bind(this, this._onMenuKeyPress));
         this._previousSearchPattern = "";
 
-        this.categoriesOverlayBox = new Clutter.Actor();
         this.categoriesApplicationsBox = new CategoriesApplicationsBox();
-        this.categoriesOverlayBox.add_actor(this.categoriesApplicationsBox.actor);
-        rightPane.add_actor(this.categoriesOverlayBox);
+        rightPane.add_actor(this.categoriesApplicationsBox.actor);
+
+        this.categoriesOverlayBox = new Clutter.Actor();
         this.categoriesBox = new St.BoxLayout({ style_class: 'menu-categories-box',
                                                 vertical: true,
                                                 accessible_role: Atk.Role.LIST });
+        this.categoriesOverlayBox.add_actor(this.categoriesBox);
+
         this.applicationsScrollBox = new St.ScrollView({ x_fill: true, y_fill: false, y_align: St.Align.START, style_class: 'vfade menu-applications-scrollbox' });
 
         this.a11y_settings = new Gio.Settings({ schema_id: "org.cinnamon.desktop.a11y.applications" });
@@ -2887,7 +2909,7 @@ MyApplet.prototype = {
         this.applicationsBox.add_style_class_name('menu-applications-box'); //this is to support old themes
         this.applicationsScrollBox.add_actor(this.applicationsBox);
         this.applicationsScrollBox.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC);
-        this.categoriesApplicationsBox.actor.add_actor(this.categoriesBox);
+        this.categoriesApplicationsBox.actor.add_actor(this.categoriesOverlayBox);
         this.categoriesApplicationsBox.actor.add_actor(this.applicationsScrollBox);
 
         let fav_obj = new FavoritesBox();
