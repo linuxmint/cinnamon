@@ -125,8 +125,8 @@ DeviceItem.prototype = {
             }
             catch(e) {
                 // ignore malformed aliases
+                global.logError(alias);
             }
-            global.logError(alias);
         }
 
         this.label = new St.Label({ text: "%s %d%%".format(description, Math.round(percentage)) });
