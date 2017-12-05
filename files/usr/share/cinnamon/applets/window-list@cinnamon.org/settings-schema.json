@@ -42,5 +42,23 @@
       "type": "switch",
       "default": true,
       "description": "Show window thumbnails on hover"
+  },
+  "window-preview-show-label": {
+      "type": "switch",
+      "default": true,
+      "description": "Show title above thumbnail",
+      "dependency": "window-preview"
+  },
+  "window-preview-scale": {
+      "type": "radiogroup",
+      "default": 1,
+      "description": "Thumbnail size",
+      "options": {
+          "Small": 0.75,
+          "Medium": 1,
+          "Large": 1.25,
+          "Largest": 1.5
+      },
+      "dependency": "window-preview"
   }
 }
