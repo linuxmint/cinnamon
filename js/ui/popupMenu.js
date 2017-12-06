@@ -21,23 +21,23 @@ const RadioButton = imports.ui.radioButton;
 const Params = imports.misc.params;
 const Util = imports.misc.util;
 
-const SLIDER_SCROLL_STEP = 0.05; /* Slider scrolling step in % */
+var SLIDER_SCROLL_STEP = 0.05; /* Slider scrolling step in % */
 
-const PanelLoc = {
+var PanelLoc = {
     top : 0,
     bottom : 1,
     left : 2,
     right : 3
 };
 
-const OrnamentType = {
+var OrnamentType = {
     NONE: 0,
     CHECK: 1,
     DOT: 2,
     ICON: 3
 };
 
-const FactoryClassTypes = {
+var FactoryClassTypes = {
     'RootMenuClass'            : "RootMenuClass",
     'MenuItemClass'            : "MenuItemClass",
     'SubMenuMenuItemClass'     : "SubMenuMenuItemClass",
@@ -45,7 +45,7 @@ const FactoryClassTypes = {
     'SeparatorMenuItemClass'   : "SeparatorMenuItemClass"
 };
 
-const FactoryEventTypes = {
+var FactoryEventTypes = {
     'opened'    : "opened",
     'closed'    : "closed",
     'clicked'   : "clicked"

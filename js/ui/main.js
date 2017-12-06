@@ -119,74 +119,74 @@ const Settings = imports.ui.settings;
 const Systray = imports.ui.systray;
 const Accessibility = imports.ui.accessibility;
 
-const LAYOUT_TRADITIONAL = "traditional";
-const LAYOUT_FLIPPED = "flipped";
-const LAYOUT_CLASSIC = "classic";
+var LAYOUT_TRADITIONAL = "traditional";
+var LAYOUT_FLIPPED = "flipped";
+var LAYOUT_CLASSIC = "classic";
 
-const CIN_LOG_FOLDER = GLib.get_home_dir() + '/.cinnamon/';
+var CIN_LOG_FOLDER = GLib.get_home_dir() + '/.cinnamon/';
 
-let DEFAULT_BACKGROUND_COLOR = Clutter.Color.from_pixel(0x000000ff);
+var DEFAULT_BACKGROUND_COLOR = Clutter.Color.from_pixel(0x000000ff);
 
-let panel = null;
-let soundManager = null;
-let backgroundManager = null;
-let slideshowManager = null;
-let placesManager = null;
-let panelManager = null;
-let osdWindowManager = null;
-let overview = null;
-let expo = null;
-let runDialog = null;
-let lookingGlass = null;
-let wm = null;
-let a11yHandler = null;
-let messageTray = null;
-let indicatorManager = null;
-let notificationDaemon = null;
-let windowAttentionHandler = null;
-let recorder = null;
-let cinnamonDBusService = null;
-let modalCount = 0;
-let modalActorFocusStack = [];
-let uiGroup = null;
-let magnifier = null;
-let xdndHandler = null;
-let statusIconDispatcher = null;
-let keyboard = null;
-let layoutManager = null;
-let themeManager = null;
-let keybindingManager = null;
-let _errorLogStack = [];
-let _startDate;
-let _defaultCssStylesheet = null;
-let _cssStylesheet = null;
-let dynamicWorkspaces = null;
-let tracker = null;
-let settingsManager = null;
-let systrayManager = null;
-let wmSettings = null;
+var panel = null;
+var soundManager = null;
+var backgroundManager = null;
+var slideshowManager = null;
+var placesManager = null;
+var panelManager = null;
+var osdWindowManager = null;
+var overview = null;
+var expo = null;
+var runDialog = null;
+var lookingGlass = null;
+var wm = null;
+var a11yHandler = null;
+var messageTray = null;
+var indicatorManager = null;
+var notificationDaemon = null;
+var windowAttentionHandler = null;
+var recorder = null;
+var cinnamonDBusService = null;
+var modalCount = 0;
+var modalActorFocusStack = [];
+var uiGroup = null;
+var magnifier = null;
+var xdndHandler = null;
+var statusIconDispatcher = null;
+var keyboard = null;
+var layoutManager = null;
+var themeManager = null;
+var keybindingManager = null;
+var _errorLogStack = [];
+var _startDate;
+var _defaultCssStylesheet = null;
+var _cssStylesheet = null;
+var dynamicWorkspaces = null;
+var tracker = null;
+var settingsManager = null;
+var systrayManager = null;
+var wmSettings = null;
 
-let workspace_names = [];
+var workspace_names = [];
 
-let applet_side = St.Side.TOP; // Kept to maintain compatibility. Doesn't seem to be used anywhere
-let deskletContainer = null;
+var applet_side = St.Side.TOP; // Kept to maintain compatibility. Doesn't seem to be used anywhere
+var deskletContainer = null;
 
-let software_rendering = false;
+var software_rendering = false;
 
-let lg_log_file;
-let can_log = false;
+var lg_log_file;
+var can_log = false;
 
-let popup_rendering_actor = null;
+var popup_rendering_actor = null;
 
-let xlet_startup_error = false;
+var xlet_startup_error = false;
 
-const RunState = {
+var RunState = {
     INIT : 0,
     STARTUP : 1,
     RUNNING : 2
 }
 
-let runState = RunState.INIT;
+var runState = RunState.INIT;
 
 // Override Gettext localization
 const Gettext = imports.gettext;

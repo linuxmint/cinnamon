@@ -5,7 +5,6 @@ const GLib = imports.gi.GLib;
 const Gtk = imports.gi.Gtk;
 const St = imports.gi.St;
 const Lang = imports.lang;
-const Meta = imports.gi.Meta;
 const Cinnamon = imports.gi.Cinnamon;
 const Signals = imports.signals;
 const Tweener = imports.ui.tweener;
@@ -13,37 +12,37 @@ const Main = imports.ui.main;
 
 const Params = imports.misc.params;
 
-const DND_ANIMATION_TIME = 0.2;
+var DND_ANIMATION_TIME = 0.2;
 // Time to scale down to maxDragActorSize
-const SCALE_ANIMATION_TIME = 0.25;
+var SCALE_ANIMATION_TIME = 0.25;
 // Time to animate to original position on cancel
-const SNAP_BACK_ANIMATION_TIME = 0.25;
+var SNAP_BACK_ANIMATION_TIME = 0.25;
 // Time to animate to original position on success
-const REVERT_ANIMATION_TIME = 0.75;
+var REVERT_ANIMATION_TIME = 0.75;
 
-const DragMotionResult = {
+var DragMotionResult = {
     NO_DROP:   0,
     COPY_DROP: 1,
     MOVE_DROP: 2,
     CONTINUE:  3
 };
 
-const DRAG_CURSOR_MAP = {
+var DRAG_CURSOR_MAP = {
     0: Cinnamon.Cursor.DND_UNSUPPORTED_TARGET,
     1: Cinnamon.Cursor.DND_COPY,
     2: Cinnamon.Cursor.DND_MOVE
 };
 
-const DragDropResult = {
+var DragDropResult = {
     FAILURE:  0,
     SUCCESS:  1,
     CONTINUE: 2
 };
 
-let eventHandlerActor = null;
-let currentDraggable = null;
-let dragMonitors = [];
-let targetMonitors = [];
+var eventHandlerActor = null;
+var currentDraggable = null;
+var dragMonitors = [];
+var targetMonitors = [];
 
 function _getEventHandlerActor() {
     if (!eventHandlerActor) {

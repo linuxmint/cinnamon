@@ -17,9 +17,9 @@ function _launchDialog(type, callback, params) {
 	let args = ["cinnamon-file-dialog"];
 	if (params.selectMultiple) type += 3; //add 3 to use the select-multiple version
 	args.push(String(type));
-	if (params.path) args.push("-p", params.path.replace("~", GLib.get_home_dir()));
+	if (params.path) args.push("-p", params.path.replace(/~/, GLib.get_home_dir()));
 	if (params.name) args.push("-n", params.name);
-	if (params.directory) args.push("-d", params.directory.replace("~", GLib.get_home_dir()));
+	if (params.directory) args.push("-d", params.directory.replace(/~/, GLib.get_home_dir()));
 	if (params.filters) {
 		let filterList = [];
 		for (let i = 0; i < params.filters.length; i++) {
