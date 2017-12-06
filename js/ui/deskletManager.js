@@ -14,22 +14,22 @@ const {getModuleByIndex} = imports.misc.fileUtils;
 const {queryCollection} = imports.misc.util;
 
 // Maps uuid -> importer object (desklet directory tree)
-let desklets;
+var desklets;
 // Kept for compatibility
-let deskletMeta;
+var deskletMeta;
 
-let rawDefinitions;
-let definitions = [];
+var rawDefinitions;
+var definitions = [];
 
-let deskletsLoaded = false;
+var deskletsLoaded = false;
 
-let deskletsDragging = false;
+var deskletsDragging = false;
 
-let userDeskletsDir;
+var userDeskletsDir;
 
-let mouseTrackEnabled = false;
-let mouseTrackTimoutId = 0;
-let promises = [];
+var mouseTrackEnabled = false;
+var mouseTrackTimoutId = 0;
+var promises = [];
 
 const ENABLED_DESKLETS_KEY = 'enabled-desklets';
 const DESKLET_SNAP_KEY = 'desklet-snap';

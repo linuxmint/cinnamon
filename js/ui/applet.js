@@ -8,7 +8,6 @@ const Main = imports.ui.main;
 const DND = imports.ui.dnd;
 const Clutter = imports.gi.Clutter;
 const AppletManager = imports.ui.appletManager;
-const Gtk = imports.gi.Gtk;
 const Util = imports.misc.util;
 const Pango = imports.gi.Pango;
 const Mainloop = imports.mainloop;
@@ -17,14 +16,14 @@ const ModalDialog = imports.ui.modalDialog;
 const Signals = imports.signals;
 const Gettext = imports.gettext;
 
-const COLOR_ICON_HEIGHT_FACTOR = .875;  // Panel height factor for normal color icons
-const PANEL_FONT_DEFAULT_HEIGHT = 11.5; // px
-const PANEL_SYMBOLIC_ICON_DEFAULT_HEIGHT = 1.14 * PANEL_FONT_DEFAULT_HEIGHT; // ems conversion
-const DEFAULT_PANEL_HEIGHT = 25;
-const DEFAULT_ICON_HEIGHT = 22;
-const FALLBACK_ICON_HEIGHT = 22;
+var COLOR_ICON_HEIGHT_FACTOR = .875;  // Panel height factor for normal color icons
+var PANEL_FONT_DEFAULT_HEIGHT = 11.5; // px
+var PANEL_SYMBOLIC_ICON_DEFAULT_HEIGHT = 1.14 * PANEL_FONT_DEFAULT_HEIGHT; // ems conversion
+var DEFAULT_PANEL_HEIGHT = 25;
+var DEFAULT_ICON_HEIGHT = 22;
+var FALLBACK_ICON_HEIGHT = 22;
 
-const AllowedLayout = {  // the panel layout that an applet is suitable for
+var AllowedLayout = {  // the panel layout that an applet is suitable for
     VERTICAL: 'vertical',
     HORIZONTAL: 'horizontal',
     BOTH: 'both'

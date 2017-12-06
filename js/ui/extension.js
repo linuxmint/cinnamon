@@ -15,7 +15,7 @@ const Main = imports.ui.main;
 const {requireModule, unloadModule, getModuleByIndex} = imports.misc.fileUtils;
 const {queryCollection} = imports.misc.util;
 
-const State = {
+var State = {
     INITIALIZING: 0,
     LOADED: 1,
     ERROR: 2,
@@ -74,9 +74,9 @@ function _createExtensionType(name, folder, manager, overrides){
  * Extension types with some attributes helping to load these extension types.
  * Properties are nested, with lowerCamelCase properties (e.g. requiredFunctions) as sub-properties of CAPITAL one (EXTENSION). Thus they are referred to as, e.g., Type.EXTENSION.requiredFunctions
  */
-let startTime;
-const extensions = [];
-const Type = {
+var startTime;
+var extensions = [];
+var Type = {
     EXTENSION: _createExtensionType("Extension", "extensions", ExtensionSystem, {
         requiredFunctions: ["init", "disable", "enable"],
         requiredProperties: ["uuid", "name", "description", "cinnamon-version"],

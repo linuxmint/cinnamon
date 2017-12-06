@@ -3,18 +3,17 @@
 const Extension = imports.ui.extension;
 const {getModuleByIndex} = imports.misc.fileUtils;
 const GLib = imports.gi.GLib;
-const Lang = imports.lang;
 
 // Maps uuid -> importer object (extension directory tree)
-let extensions;
+var extensions;
 // Kept for compatibility
-let extensionMeta;
+var extensionMeta;
 // Maps uuid -> extension state object (returned from init())
-const searchProviderObj = {};
+var searchProviderObj = {};
 // Arrays of uuids
-let enabledSearchProviders;
-let promises = [];
-const ENABLED_SEARCH_PROVIDERS_KEY = 'enabled-search-providers';
+var enabledSearchProviders;
+var promises = [];
+var ENABLED_SEARCH_PROVIDERS_KEY = 'enabled-search-providers';
 
 // Callback for extension.js
 function prepareExtensionUnload(extension) {

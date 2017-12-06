@@ -4,18 +4,18 @@ const Extension = imports.ui.extension;
 const {getModuleByIndex} = imports.misc.fileUtils;
 
 // Maps uuid -> importer object (extension directory tree)
-let extensions;
+var extensions;
 // Lists extension uuid's that are currently active;
-const runningExtensions = [];
+var runningExtensions = [];
 // Arrays of uuids
-let enabledExtensions;
+var enabledExtensions;
 // Maps extension.uuid -> extension objects
-const extensionObj = [];
-let promises = [];
-const ENABLED_EXTENSIONS_KEY = 'enabled-extensions';
+var extensionObj = [];
+var promises = [];
+var ENABLED_EXTENSIONS_KEY = 'enabled-extensions';
 
 // Deprecated, kept for compatibility reasons
-let ExtensionState;
+var ExtensionState;
 
 // Deprecated, kept for compatibility reasons
 function disableExtension(uuid) {

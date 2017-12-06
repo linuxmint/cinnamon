@@ -3,7 +3,7 @@
 const Gio = imports.gi.Gio;
 const GLib = imports.gi.GLib;
 
-const importNames = [
+var importNames = [
     'mainloop',
     'jsUnit',
     'format',
@@ -18,17 +18,17 @@ const importNames = [
     'byteArray',
     'cairoNative'
 ];
-const cinnamonImportNames = [
+var cinnamonImportNames = [
     'ui',
     'misc',
     'perf'
 ];
-const giImportNames = imports.gi.GIRepository.Repository
+var giImportNames = imports.gi.GIRepository.Repository
     .get_default()
     .get_loaded_namespaces();
-const LoadedModules = [];
-const FunctionConstructor = Symbol();
-const Symbols = {};
+var LoadedModules = [];
+var FunctionConstructor = Symbol();
+var Symbols = {};
 Symbols[FunctionConstructor] = 0..constructor.constructor;
 
 function listDirAsync(file, callback) {

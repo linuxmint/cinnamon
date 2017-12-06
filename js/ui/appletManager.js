@@ -13,12 +13,12 @@ const {queryCollection} = imports.misc.util;
 const Gettext = imports.gettext;
 
 // Maps uuid -> importer object (applet directory tree)
-let applets;
+var applets;
 // Kept for compatibility
-let appletMeta;
+var appletMeta;
 // Maps applet_id -> applet objects
-const appletObj = [];
-let appletsLoaded = false;
+var appletObj = [];
+var appletsLoaded = false;
 
 // An applet can assume a role
 // Instead of hardcoding looking for a particular applet,
@@ -27,15 +27,15 @@ let appletsLoaded = false;
 // For now, just notifications, but could be expanded.
 // question - should multiple applets be able to fill
 // the same role?
-const Roles = {
+var Roles = {
     NOTIFICATIONS: 'notifications',
     PANEL_LAUNCHER: 'panellauncher'
 };
 
-let rawDefinitions;
-let definitions = [];
-let clipboard = [];
-let promises = [];
+var rawDefinitions;
+var definitions = [];
+var clipboard = [];
+var promises = [];
 
 function initEnabledApplets() {
     for (let i = 0; i < definitions.length; i++) {

@@ -12,7 +12,6 @@ const Cinnamon = imports.gi.Cinnamon;
 const Main = imports.ui.main;
 const Signals = imports.signals;
 const Extension = imports.ui.extension;
-const Mainloop = imports.mainloop;
 
 /**
  * ENUM:BindingDirection
@@ -31,7 +30,7 @@ const Mainloop = imports.mainloop;
  * Deprecated since 3.2: Binding direction is no longer meaningful. Please do not
  * use in new code.
  */
-const BindingDirection = {
+var BindingDirection = {
     IN : 1,
     OUT : 2,
     BIDIRECTIONAL : 3
