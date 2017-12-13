@@ -333,14 +333,17 @@ function _removeAppletConfigFile(uuid, instanceId) {
     }
 }
 
-function addAppletToPanels(extension, appletDefinition) {
+function addAppletToPanels(extension, appletDefinition, panel = null) {
     if (!appletDefinition.panelId) return true;
 
     try {
         // Create the applet
-        let applet = createApplet(extension, appletDefinition);
-        if(applet == null)
+        let applet = createApplet(extension, appletDefinition, panel);
+        if (applet == null) {
             return false;
+        } else if (applet === true) {
+            return true;
+        }
 
         // Now actually lock the applets role and set the provider
         extension.lockRole(applet);
@@ -525,15 +528,24 @@ function get_role_provider_exists(role) {
     return get_role_provider(role) != null;
 }
 
-function createApplet(extension, appletDefinition) {
+function createApplet(extension, appletDefinition, panel = null) {
     if (!appletDefinition.panelId) return null;
 
     let {applet_id, uuid, orientation} = appletDefinition;
 
-    let panelIndex = Main.panelManager.panels.findIndex(function(panel) {
-        return panel && (panel.panelId === appletDefinition.panelId);
-    });
-    let panel = Main.panelManager.panels[panelIndex];
+    if (!panel) {
+        let panelIndex = Main.panelManager.panels.findIndex(function(panel) {
+            return panel && (panel.panelId === appletDefinition.panelId);
+        });
+        if (panelIndex === -1) {
+            panelIndex = appletDefinition.panelId;
+        }
+        panel = Main.panelManager.panels[panelIndex];
+    }
+    if (!panel) {
+        // Applet exists on removed panel
+        return true;
+    }
     let panel_height = setHeightForPanel(panel);
 
     if (appletDefinition.applet != null) {
@@ -672,7 +684,7 @@ function loadAppletsOnPanel(panel) {
             definitions[i].orientation = orientation;
             let extension = Extension.getExtension(definitions[i].uuid);
             if (extension) {
-                addAppletToPanels(extension, definitions[i]);
+                addAppletToPanels(extension, definitions[i], panel);
             }
         }
     }
