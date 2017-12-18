@@ -128,7 +128,7 @@ def sanitize_html(string):
     parser = MyHTMLParser()
     parser.feed(string)
     text = parser.get_text()
-    return text.strip('\\n ').strip('\\n').replace('\\n', ' ').replace('  ', ' ').replace('\\', '')
+    return text.strip('\n ').strip('\n').replace('\n', ' ').replace('  ', ' ').replace('\\', '')
 
 
 class ManageSpicesRow(Gtk.ListBoxRow):
