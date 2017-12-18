@@ -1,3 +1,23 @@
+cinnamon (3.6.7) sylvia; urgency=medium
+
+  [ NikoKrause ]
+  * Online Accounts: Use translations (#7088)
+
+  [ Michael Webster ]
+  * cinnamonDBus.js: Have GetMonitors throw an error back to GDBus if something goes wrong.
+
+  [ itzexor ]
+  * menu-applet: rework vectorBox
+
+  [ jrsrjrsr ]
+  * Fix Issue #7114
+
+  [ NikoKrause ]
+  * Spices description: Do not cut off the letter `n` (#7103)
+  * Xlets: Fix shown info for overwritten xlets. (#7090)
+
+ -- Clement Lefebvre <root@linuxmint.com>  Mon, 18 Dec 2017 12:52:43 +0000
+
 cinnamon (3.6.6) sylvia; urgency=medium
 
   * Sound settings: Assign the selected device to the profile selector.
