@@ -1,0 +1,282 @@
+#!/usr/bin/python3
+
+import os
+import json
+import subprocess
+import collections
+import argparse
+
+LOCALE_DIR = os.path.join(os.path.expanduser('~'), '.local/share/locale')
+
+USAGE_DESCRIPTION = """\
+Parses files in an applet, desklet or extension's directories, \
+extracts translatable strings, and then generates a .pot file for them.
+"""
+
+USAGE_EPILOG = """\
+For example:
+cinnamon-xlet-makepot example@mydomain.org/
+
+Will generate a file called example@mydomain.org.pot, in the directory \
+example@mydomain.org/po/ which contains all of the strings that need to be \
+translated. Translators can then use this pot file to generate .po \
+files which contain translations for the extracted strings.
+"""
+
+try:
+    import polib
+except:
+    print("""\
+
+Module "polib" not available.
+
+You will need to install this module using your distribution's package manager
+(in debian-based syatems "apt-get install python3-polib")
+""")
+    quit()
+
+def scan_json(dir, pot_path):
+    append = os.path.exists(pot_path)
+    if append:
+        pot_file = polib.pofile(pot_path)
+    else:
+        pot_file = polib.POFile()
+
+    for root, dirs, files in os.walk(dir):
+        rel_root = os.path.relpath(root)
+        for file in files:
+            if rel_root is '.':
+                rel_path = file
+            else:
+                rel_path = os.path.join(rel_root, file)
+            if file == 'settings-schema.json':
+                fp = open(os.path.join(root, file))
+                data = json.load(fp, object_pairs_hook=collections.OrderedDict)
+                fp.close()
+                extract_settings_strings(data, rel_path, pot_file)
+            elif file == 'metadata.json':
+                fp = open(os.path.join(root, file))
+                data = json.load(fp, object_pairs_hook=collections.OrderedDict)
+                fp.close()
+                extract_metadata_strings(data, rel_path, pot_file)
+
+    if append:
+        pot_file.save(pot_path)
+    else:
+        pot_file.save(fpath=pot_path)
+
+def extract_settings_strings(data, dir, pot_file, parent=""):
+    for key in data.keys():
+        if key in ("description", "tooltip", "units", "title"):
+            comment = "%s->%s->%s" % (dir, parent, key)
+            save_entry(data[key], comment, pot_file)
+        elif key in "options":
+            opt_data = data[key]
+            for option in opt_data.keys():
+                if opt_data[option] == "custom":
+                    continue
+                comment = "%s->%s->%s" % (dir, parent, key)
+                save_entry(option, comment, pot_file)
+        elif key == "columns":
+            columns = data[key]
+            for i, col in enumerate(columns):
+                for col_key in col:
+                    if col_key in ("title", "units"):
+                        comment = "%s->%s->columns->%s" % (dir, parent, col_key)
+                        save_entry(col[col_key], comment, pot_file)
+        try:
+            extract_settings_strings(data[key], dir, pot_file, key)
+        except AttributeError:
+            pass
+
+def extract_metadata_strings(data, dir, pot_file):
+    for key in data:
+        if key in ("name", "description", "comments"):
+            comment = "%s->%s" % (dir, key)
+            save_entry(data[key], comment, pot_file)
+        elif key == "contributors":
+            comment = "%s->%s" % (dir, key)
+
+            values = data[key]
+            if isinstance(values, str):
+                values = values.split(",")
+
+            for value in values:
+                save_entry(value.strip(), comment, pot_file)
+
+def save_entry(msgid, comment, pot_file):
+    if not msgid.strip():
+        return
+
+    entry = pot_file.find(msgid)
+    if entry:
+        if comment not in entry.comment:
+            if entry.comment:
+                entry.comment += "\n"
+            entry.comment += comment
+    else:
+        entry = polib.POEntry(msgid=msgid, comment=comment)
+        pot_file.append(entry)
+
+def remove_empty_folders(path):
+    if not os.path.isdir(path):
+        return
+
+    # remove empty subfolders
+    files = os.listdir(path)
+    if len(files):
+        for f in files:
+            fullpath = os.path.join(path, f)
+            if os.path.isdir(fullpath):
+                remove_empty_folders(fullpath)
+
+    # if folder empty, delete it
+    files = os.listdir(path)
+    if len(files) == 0:
+        print('Removing empty folder:', path)
+        os.rmdir(path)
+
+def do_install(uuid, dir):
+    podir = os.path.join(dir, "po")
+    files_installed = 0
+    for root, subFolders, files in os.walk(podir):
+        for file in files:
+            locale_name, ext = os.path.splitext(file)
+            if ext == '.po':
+                lang_locale_dir = os.path.join(LOCALE_DIR, locale_name, 'LC_MESSAGES')
+                os.makedirs(lang_locale_dir, mode=0o755, exist_ok=True)
+                subprocess.call(["msgfmt", "-c", os.path.join(root, file), "-o", os.path.join(lang_locale_dir, '%s.mo' % uuid)])
+                files_installed += 1
+    if files_installed is 0:
+        print('Nothing to install')
+    else:
+        print('installed %i files' % files_installed)
+
+def do_remove(uuid):
+    files_removed = 0
+    if (os.path.exists(LOCALE_DIR)):
+        locale_names = os.listdir(LOCALE_DIR)
+        for locale_name in locale_names:
+            lang_locale_dir = os.path.join(LOCALE_DIR, locale_name)
+            mo_file = os.path.join(lang_locale_dir, 'LC_MESSAGES', "%s.mo" % uuid)
+            if os.path.isfile(mo_file):
+                os.remove(mo_file)
+                files_removed += 1
+            remove_empty_folders(lang_locale_dir)
+    if files_removed is 0:
+        print("Nothing to remove")
+    else:
+        print('removed %i files' % files_removed)
+
+def scan_xlet():
+    parser = argparse.ArgumentParser(description=USAGE_DESCRIPTION, epilog=USAGE_EPILOG, formatter_class=argparse.RawDescriptionHelpFormatter)
+    parser.add_argument('-j', '--skip-js', action='store_false', dest='js', default=True,
+        help='If this option is not included, javascript files will be scanned for translatable strings.')
+    parser.add_argument('-p', '--skip-python', action='store_false', dest='python', default=True,
+        help='If this option is not included, python files will be scanned for translatable strings.')
+    parser.add_argument('-i', '--install', action='store_true', dest='install', default=False,
+        help=('Compiles and installs any .po files contained in a po folder to the system locale store. '
+              'Use this option to test your translations locally before uploading to Spices. '
+              'It will use the applet, desklet, or extension UUID as the translation domain.'))
+    parser.add_argument('-r', '--remove', action='store_true', dest='remove', default=False,
+        help=('The opposite of install, removes translations from the store. Again, it uses the UUID '
+              'to find the correct files to remove.'))
+    parser.add_argument('-k', '--keyword', dest='keyword', default='_',
+        help='Change the variable name gettext is assigned to in your files. The default is _.')
+    parser.add_argument('-o', '--potfile', dest='out_file', default=None,
+        help=('Use this option to specify the location for the generated .pot file. By default '
+              '<uuid>/po/<uuid>.pot is used. This is where translators are expecting to find the pot '
+              'file, so you should only use this option if you want the pot file elsewhere for your own use.'))
+    parser.add_argument('dir', help='the path to the applet/desklet/extension directory')
+
+    args = parser.parse_args()
+
+    dir = os.path.abspath(args.dir)
+    if not os.path.exists(dir):
+        print('%s does not exist' % dir)
+        quit()
+
+    uuid = os.path.basename(dir)
+
+    if os.path.exists(os.path.join(dir, 'files', uuid)):
+        dir = os.path.join(dir, 'files', uuid)
+
+    if args.install:
+        do_install(uuid, dir)
+        quit()
+
+    if args.remove:
+        do_remove(uuid)
+        quit()
+
+    if args.out_file is not None:
+        pot_path = os.path.abspath(args.out_file)
+    else:
+        pot_path = os.path.join(dir, 'po', uuid + '.pot')
+
+    pwd = os.getcwd()
+    os.chdir(dir)
+    if args.js or args.python:
+        try:
+            output = subprocess.check_output(["xgettext", "--version"])
+        except OSError:
+            print("xgettext not found, you may need to install the gettext package")
+            quit()
+
+    os.makedirs(os.path.dirname(pot_path), mode=0o755, exist_ok=True)
+
+    pot_exists = False
+    if args.js:
+        print("Scanning JavaScript files...")
+
+        js_files = []
+        for root, dirs, files in os.walk(dir):
+            rel_root = os.path.relpath(root)
+            js_files += [os.path.join(rel_root, file) for file in files if file.endswith('.js')]
+        if len(js_files) == 0:
+            print('none found')
+        else:
+            print('found %i file(s)\n' % len(js_files))
+            command_args = [
+                'xgettext',
+                '--language=JavaScript',
+                '--keyword=%s' % args.keyword,
+                '--output=%s' % pot_path
+            ]
+            command_args += js_files
+            os.system(' '.join(command_args))
+            pot_exists = True
+
+    if args.python:
+        print("Scanning for python files...")
+
+        py_files = []
+        for root, dirs, files in os.walk(dir):
+            rel_root = os.path.relpath(root)
+            py_files += [os.path.join(rel_root, file) for file in files if file.endswith('.py')]
+        if len(py_files) == 0:
+            print('none found')
+        else:
+            print('found %i file(s)\n' % len(py_files))
+            command_args = [
+                'xgettext',
+                '--language=Python',
+                '--keyword=%s' % args.keyword,
+                '--output=%s' % pot_path
+            ]
+            if pot_exists:
+                command_args.append('-j')
+            command_args += py_files
+            os.system(' '.join(command_args))
+
+    print("Scanning metadata.json and settings-schema.json...")
+    scan_json(dir, pot_path)
+
+    os.chdir(pwd)
+
+    print("Extraction complete")
+    quit()
+
+
+if __name__ == "__main__":
+    scan_xlet()
