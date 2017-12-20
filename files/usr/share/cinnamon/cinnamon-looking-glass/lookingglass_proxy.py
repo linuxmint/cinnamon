@@ -1,3 +1,5 @@
+#!/usr/bin/python3
+
 import dbus
 from gi.repository import Gio
 

@@ -1,4 +1,4 @@
-#!/usr/bin/python2
+#!/usr/bin/python3
 
 # Todo:
 # - TextTag.invisible does not work nicely with scrollheight, find out why
@@ -453,7 +453,7 @@ class MelangeApp(dbus.service.Object):
         menu.append(self.createMenuItem('Quit', self.onDelete))
         menu.show_all()
 
-        button = Gtk.MenuButton(u"Actions \u25BE")
+        button = Gtk.MenuButton("Actions \u25BE")
         button.set_popup(menu)
         return button
 
@@ -510,7 +510,7 @@ If you defined a hotkey for Melange, pressing it while Melange is visible it wil
 
     def onDelete(self, widget=None, event=None):
         tmpPages = self.customPages.copy()
-        for label, content in tmpPages.iteritems():
+        for label, content in tmpPages.items():
             self.onCloseTab(label, content)
         Gtk.main_quit()
         return False
