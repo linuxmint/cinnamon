@@ -1,10 +1,11 @@
-#!/usr/bin/python2
+#!/usr/bin/python3
 #-*-indent-tabs-mode: nil-*-
 
 import sys
 import os.path
 
 import gi
+gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk, Gio
 
 SCHEMAS = "org.cinnamon.desklets.launcher"
