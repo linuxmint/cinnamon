@@ -1,4 +1,4 @@
-#!/usr/bin/python2
+#!/usr/bin/python3
 
 import os
 import sys
@@ -49,8 +49,8 @@ class GroupDialog (Gtk.Dialog):
             self.add_buttons(Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL, Gtk.STOCK_OK, Gtk.ResponseType.OK, )
             self.set_response_sensitive(Gtk.ResponseType.OK, False)
 
-        except Exception, detail:
-            print detail
+        except Exception as detail:
+            print(detail)
 
     def _on_entry_changed(self, entry):
         name = entry.get_text()
@@ -231,7 +231,7 @@ class PasswordDialog(Gtk.Dialog):
             mask.remove("nopasswdlogin")
             mask = ", ".join(mask)
             self.group_mask.set_text(mask)
-            self.password_mask.set_text(u'\u2022\u2022\u2022\u2022\u2022\u2022')
+            self.password_mask.set_text('\u2022\u2022\u2022\u2022\u2022\u2022')
         self.destroy()
 
     def set_passwords_visibility(self):
@@ -360,8 +360,8 @@ class NewUserDialog(Gtk.Dialog):
             self.add_buttons(Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL, Gtk.STOCK_ADD, Gtk.ResponseType.OK, )
             self.set_response_sensitive(Gtk.ResponseType.OK, False)
 
-        except Exception, detail:
-            print detail
+        except Exception as detail:
+            print(detail)
 
     def _on_info_changed(self, widget):
         fullname = self.realname_entry.get_text()
@@ -412,8 +412,8 @@ class GroupsDialog(Gtk.Dialog):
 
             self.add_buttons(Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL, Gtk.STOCK_OK, Gtk.ResponseType.OK, )
 
-        except Exception, detail:
-            print detail
+        except Exception as detail:
+            print(detail)
 
     def get_selected_groups(self):
         groups = []
@@ -563,8 +563,8 @@ class Module:
 
             self.builder.get_object("box_users").hide()
 
-        except Exception, detail:
-            print detail
+        except Exception as detail:
+            print(detail)
 
     def _on_password_button_clicked(self, widget):
         model, treeiter = self.users_treeview.get_selection().get_selected()
@@ -742,7 +742,7 @@ class Module:
             self.realname_entry.set_text(user.get_real_name())
 
             if user.get_password_mode() == AccountsService.UserPasswordMode.REGULAR:
-                self.password_mask.set_text(u'\u2022\u2022\u2022\u2022\u2022\u2022')
+                self.password_mask.set_text('\u2022\u2022\u2022\u2022\u2022\u2022')
             elif user.get_password_mode() == AccountsService.UserPasswordMode.NONE:
                 self.password_mask.set_markup("<b>%s</b>" % _("No password set"))
             else:
@@ -776,7 +776,7 @@ class Module:
                 self.face_image.set_from_pixbuf(pixbuf)
             else:
                 if message != "":
-                    print message
+                    print(message)
                 self.face_image.set_from_file("/usr/share/cinnamon/faces/user-generic.png")
 
             groups = []
@@ -788,7 +788,7 @@ class Module:
             self.builder.get_object("box_users").show()
 
             # Count the number of connections for the currently logged-in user
-            connections = int(subprocess.check_output(["w", "-hs", user.get_user_name()]).count("\n"))
+            connections = int(subprocess.check_output(["w", "-hs", user.get_user_name()]).decode("utf-8").count("\n"))
             if connections > 0:
                 self.builder.get_object("button_delete_user").set_sensitive(False)
                 self.builder.get_object("button_delete_user").set_tooltip_text(_("This user is currently logged in"))
@@ -850,7 +850,7 @@ class Module:
     def on_user_edition(self, event):
         model, treeiter = self.users_treeview.get_selection().get_selected()
         if treeiter != None:
-            print "Editing user %s" % model[treeiter][INDEX_USER_OBJECT].get_user_name()
+            print("Editing user %s" % model[treeiter][INDEX_USER_OBJECT].get_user_name())
 
 # GROUPS CALLBACKS
 
