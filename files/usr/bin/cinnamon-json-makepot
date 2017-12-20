@@ -1,11 +1,30 @@
 #!/usr/bin/python3
 
-""" Launch the cinnamon json makepot utility
+"""
+This script is now just a wrapper around the cinnamon-xlet-makepot utility.
+It is kept for backwards compatibility as it is currently used by other scripts
+(notably the cinnamon-spices-makepot script found in the 3rd party spices repos).
 
-See cinnamon/cinnamon-json-makepot/cinnamon-json-makepot.py for usage info
+for usage info type:
+cinnamon-xlet-makepot -h
+* Note that the Javascript arguement is inverted because previously Javascript files
+were not scanned by default, but now are.
 """
 
 import os
 import sys
 
-os.execvp("/usr/share/cinnamon/cinnamon-json-makepot/cinnamon-json-makepot.py", (" ",) + tuple(sys.argv[1:]))
+args = sys.argv[1:]
+potfile = args.pop()
+if '-j' in args:
+    args.remove('-j')
+elif '--js' in args:
+    args.remove('--js')
+else:
+    args.append('-j')
+
+args.append('-o '+potfile)
+# args.append(potfile)
+args.append(os.getcwd())
+print(args)
+os.execvp("cinnamon-xlet-makepot", args)
