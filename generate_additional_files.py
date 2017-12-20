@@ -1,4 +1,4 @@
-#!/usr/bin/python2
+#!/usr/bin/python3
 
 DOMAIN = "cinnamon"
 PATH = "/usr/share/locale"
