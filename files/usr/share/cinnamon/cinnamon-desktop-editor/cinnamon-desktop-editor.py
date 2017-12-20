@@ -1,4 +1,4 @@
-#!/usr/bin/python2
+#!/usr/bin/python3
 
 import sys
 import os
@@ -470,7 +470,7 @@ class Main:
             editor = LauncherEditor(self.orig_file, self.nemo_launcher_cb, self.dest_dir)
             editor.dialog.show_all()
         else:
-            print "Invalid args"
+            print("Invalid args")
 
     def directory_cb(self, success, dest_path):
         self.end()
