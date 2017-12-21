@@ -1,4 +1,4 @@
-#! /usr/bin/python2
+#!/usr/bin/python3
 
 from gi.repository import Gio, GLib
 import dbus, dbus.service, dbus.glib
@@ -293,7 +293,7 @@ class CinnamonSlideshow(dbus.service.Object):
                                 else:
                                     propAttr = prop.attrib
                                     wpName = prop.text
-                                    locName = self.splitLocaleCode(propAttr.get(locAttrName)) if propAttr.has_key(locAttrName) else ("", "")
+                                    locName = self.splitLocaleCode(propAttr.get(locAttrName)) if locAttrName in propAttr else ("", "")
                                     names.append((locName, wpName))
                         wallpaperData["name"] = self.getLocalWallpaperName(names, loc)
 
@@ -302,8 +302,8 @@ class CinnamonSlideshow(dbus.service.Object):
                                 wallpaperData["name"] = os.path.basename(wallpaperData["filename"])
                             res.append(wallpaperData)
             return res
-        except Exception, detail:
-            print detail
+        except Exception as detail:
+            print(detail)
             return []
 ###############
 
@@ -315,7 +315,7 @@ if __name__ == "__main__":
     if request != dbus.bus.REQUEST_NAME_REPLY_EXISTS:
         slideshow = CinnamonSlideshow()
     else:
-        print "cinnamon-slideshow already running."
+        print("cinnamon-slideshow already running.")
         quit()
 
     ml = GLib.MainLoop.new(None, True)
