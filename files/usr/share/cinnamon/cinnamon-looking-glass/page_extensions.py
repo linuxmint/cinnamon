@@ -1,3 +1,5 @@
+#!/usr/bin/python3
+
 import pageutils
 import os
 from gi.repository import Gtk, Gdk

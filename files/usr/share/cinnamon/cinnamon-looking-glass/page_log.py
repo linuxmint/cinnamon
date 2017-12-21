@@ -1,3 +1,5 @@
+#!/usr/bin/python3
+
 import datetime
 import pageutils
 from gi.repository import Gtk
@@ -88,7 +90,7 @@ class LogView(Gtk.ScrolledWindow):
                         self.addedMessages += 1
                     self.textview.scroll_to_mark(self.scroll_mark, 0, True, 1, 1)
             except Exception as e:
-                print e
+                print(e)
 
 class ModulePage(pageutils.WindowAndActionBars):
     def __init__(self, parent):
