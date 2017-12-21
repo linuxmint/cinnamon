@@ -1,4 +1,4 @@
-#!/usr/bin/python2
+#!/usr/bin/python3
 
 import os
 
@@ -47,7 +47,7 @@ def check_file_for_dupe_lets(file):
                 for obj in scope_vars:
                     if obj.depth == depth:
                         if obj.exists(let_var):
-                            print "Dupe let declaration: '%s' in '%s' at line %d" % (let_var, file.name, line_num)
+                            print("Dupe let declaration: '%s' in '%s' at line %d" % (let_var, file.name, line_num))
                             found = True
                         else:
                             obj.add(let_var)
@@ -90,7 +90,7 @@ def check_file_for_missing_commas(file):
                 depth += 1
 
                 if need_comma_or_final_closure:
-                    print "Missing comma after prototype method - '%s' at line %d" % (file.name, line_num)
+                    print("Missing comma after prototype method - '%s' at line %d" % (file.name, line_num))
                     found = True
                     need_comma_or_final_closure = False
                 if "prototype={" in line[:char_num + 1].replace(" ", ""):
@@ -111,7 +111,7 @@ def check_file_for_missing_commas(file):
                 if in_proto and need_comma_or_final_closure:
                     need_comma_or_final_closure = False
             elif need_comma_or_final_closure and (char not in (" ", "\n", "\t")):
-                print "Missing comma after prototype method - '%s' at line %d" % (file.name, line_num)
+                print("Missing comma after prototype method - '%s' at line %d" % (file.name, line_num))
                 found = True
                 need_comma_or_final_closure = False
 
@@ -121,7 +121,7 @@ def check_file_for_missing_commas(file):
 
 ##########################################
 
-print "Checking for duplicate 'let' declarations - mozjs38 crashes if one is encountered within the same scope..."
+print("Checking for duplicate 'let' declarations - mozjs38 crashes if one is encountered within the same scope...")
 found = False
 
 for root, dirs, files in os.walk("."):
@@ -131,9 +131,9 @@ for root, dirs, files in os.walk("."):
                 if check_file_for_dupe_lets(file):
                     found = True
 if not found:
-    print "... no problems found"
+    print("... no problems found")
 
-print "\nChecking for missing comma separators between prototype methods - cinnamon crashes if one is missed..."
+print("\nChecking for missing comma separators between prototype methods - cinnamon crashes if one is missed...")
 found = False
 
 for root, dirs, files in os.walk("."):
@@ -144,7 +144,7 @@ for root, dirs, files in os.walk("."):
                     found = True
 
 if not found:
-    print "... no problems found"
+    print("... no problems found")
 
 quit()
 
