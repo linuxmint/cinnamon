@@ -22,12 +22,7 @@ class MainWindow:
 
         user_id = os.getuid()
         username = pwd.getpwuid(user_id).pw_name
-        real_name = pwd.getpwuid(user_id).pw_gecos
         home_dir = pwd.getpwuid(user_id).pw_dir
-
-        real_name = real_name.replace(",", "")
-        if real_name == "":
-            real_name = username
 
         self.builder = Gtk.Builder()
         self.builder.add_from_file("/usr/share/cinnamon/cinnamon-screensaver-lock-dialog/cinnamon-screensaver-lock-dialog.ui")
@@ -42,7 +37,6 @@ class MainWindow:
         XApp.set_window_icon_name(self.window, "cs-screensaver")
 
         self.builder.get_object("label_description").set_markup("<i>%s</i>" % _("Please type an away message for the lock screen"))
-        self.builder.get_object("label_away_message").set_markup("<b>%s: </b>" % real_name)
 
         if os.path.exists("%s/.face" % home_dir):
             self.image.set_from_file("%s/.face" % home_dir)
