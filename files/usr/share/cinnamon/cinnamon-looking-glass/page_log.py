@@ -21,6 +21,7 @@ class LogView(Gtk.ScrolledWindow):
 
         self.textview = Gtk.TextView()
         self.textview.set_editable(False)
+        self.textview.set_left_margin(6)
         self.add(self.textview)
 
         self.textbuffer = self.textview.get_buffer()
