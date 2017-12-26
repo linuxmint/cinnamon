@@ -29,7 +29,7 @@ class ButtonKeybinding(Gtk.TreeView):
                          "accelerator string",
                          "Parseable accelerator string",
                          None,
-                         GObject.PARAM_READWRITE)
+                         GObject.ParamFlags.READWRITE)
     }
 
     def __init__(self):
@@ -112,7 +112,7 @@ class CellRendererKeybinding(Gtk.CellRendererText):
                          "accelerator string",
                          "Parseable accelerator string",
                          None,
-                         GObject.PARAM_READWRITE)
+                         GObject.ParamFlags.READWRITE)
     }
 
     def __init__(self, a_widget, accel_string=None):

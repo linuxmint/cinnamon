@@ -31,7 +31,7 @@ class Module:
             # values.
             schema = Gio.SettingsSchemaSource.get_default().lookup("org.gnome.desktop.interface", False)
             if schema is not None:
-                gnome_settings = Gio.Settings("org.gnome.desktop.interface")
+                gnome_settings = Gio.Settings(schema="org.gnome.desktop.interface")
 
                 def on_changed(widget):
                     tree_iter = widget.get_active_iter()

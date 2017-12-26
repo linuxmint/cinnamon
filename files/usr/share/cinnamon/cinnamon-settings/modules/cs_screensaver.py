@@ -395,7 +395,7 @@ class ScreensaverBox(Gtk.Box):
         else:
             command = [os.path.join(path, "main")]
 
-        GObject.idle_add(self.idle_spawn_plug, command)
+        GLib.idle_add(self.idle_spawn_plug, command)
 
     def idle_spawn_plug(self, command):
         try:
