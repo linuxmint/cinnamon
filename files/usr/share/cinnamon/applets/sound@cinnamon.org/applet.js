@@ -1055,8 +1055,7 @@ MyApplet.prototype = {
             if (this.middleClickAction === "mute") {
                 this._toggle_out_mute();
                 this._toggle_in_mute();
-            }
-            else if (this.middleClickAction === "out_mute")
+            } else if (this.middleClickAction === "out_mute")
                 this._toggle_out_mute();
             else if (this.middleClickAction === "in_mute")
                 this._toggle_in_mute();
