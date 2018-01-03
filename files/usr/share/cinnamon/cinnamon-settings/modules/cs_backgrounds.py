@@ -419,7 +419,7 @@ class Module:
     def update_folder_list(self):
         path = os.path.expanduser("~/.cinnamon/backgrounds")
         if not os.path.exists(path):
-            rec_mkdir(path)
+            os.makedirs(path, mode=0o755, exist_ok=True)
         path = os.path.expanduser("~/.cinnamon/backgrounds/user-folders.lst")
         if len(self.user_backgrounds) == 0:
             file_data = ""

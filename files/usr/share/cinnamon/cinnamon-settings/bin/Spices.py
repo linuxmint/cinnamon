@@ -1,7 +1,6 @@
 #!/usr/bin/python3
 
 try:
-    from SettingsWidgets import rec_mkdir
     import gettext
     from gi.repository import Gio, Gtk, GObject, Gdk, GdkPixbuf, GLib
     import tempfile
@@ -444,7 +443,7 @@ class Spice_Harvester(GObject.Object):
     def _load_cache(self):
         filename = os.path.join(self.cache_folder, 'index.json')
         if not os.path.exists(self.cache_folder):
-            rec_mkdir(self.cache_folder)
+            os.makedirs(self.cache_folder, mode=0o755, exist_ok=True)
 
         if not os.path.exists(filename):
             self.has_cache = False
@@ -590,7 +589,7 @@ class Spice_Harvester(GObject.Object):
                         if file.endswith('.po'):
                             lang = file.split(".")[0]
                             locale_dir = os.path.join(locale_inst, lang, 'LC_MESSAGES')
-                            rec_mkdir(locale_dir)
+                            os.makedirs(locale_dir, mode=0o755, exist_ok=True)
                             subprocess.call(['msgfmt', '-c', os.path.join(po_dir, file), '-o', os.path.join(locale_dir, '%s.mo' % uuid)])
 
                 # Install spice schema file, if any

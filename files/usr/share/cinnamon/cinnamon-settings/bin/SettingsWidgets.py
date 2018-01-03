@@ -232,16 +232,6 @@ def walk_directories(dirs, filter_func, return_directories=False):
         #logging.critical("Error parsing directories", exc_info=True)
     return valid
 
-def rec_mkdir(path):
-    if os.path.exists(path):
-        return
-
-    rec_mkdir(os.path.split(path)[0])
-
-    if os.path.exists(path):
-        return
-    os.mkdir(path)
-
 class Section(Gtk.Box):
     def __init__(self, name):
         self.name = name
