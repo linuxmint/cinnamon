@@ -170,9 +170,71 @@ VolumeSlider.prototype = {
         this.emit("values-changed", iconName, percentage);
     },
 
+    setValue: function(value) {
+        if (isNaN(value))
+            throw TypeError('The slider value must be a number');
+
+        this._value = Math.max(Math.min(value/this.applet.pcMaxVolume, 1), 0);
+        this._slider.queue_repaint();
+    },
+
+    _onScrollEvent: function (actor, event) {
+        let direction = event.get_scroll_direction();
+
+        if (direction == Clutter.ScrollDirection.DOWN) {
+            this._value = Math.max(0, this._value - VOLUME_ADJUSTMENT_STEP/this.applet.pcMaxVolume)*this.applet.pcMaxVolume;
+        }
+        else if (direction == Clutter.ScrollDirection.UP) {
+            this._value = Math.min(1, this._value + VOLUME_ADJUSTMENT_STEP/this.applet.pcMaxVolume)*this.applet.pcMaxVolume;
+        }
+
+        this._slider.queue_repaint();
+        this.emit('value-changed', this._value);
+    },
+
+    _moveHandle: function(absX, absY) {
+        let relX, relY, sliderX, sliderY;
+        [sliderX, sliderY] = this._slider.get_transformed_position();
+        relX = absX - sliderX;
+        relY = absY - sliderY;
+
+        let width = this._slider.width;
+        let handleRadius = this._slider.get_theme_node().get_length('-slider-handle-radius');
+
+        let newvalue;
+        if (relX < handleRadius)
+            newvalue = 0;
+        else if (relX > width - handleRadius)
+            newvalue = 1;
+        else
+            newvalue = (relX - handleRadius) / (width - 2 * handleRadius);
+        this._value = newvalue*this.applet.pcMaxVolume;
+        this._slider.queue_repaint();
+        this.emit('value-changed', this._value);
+    },
+
+    get value() {
+        return this._value;
+    },
+
+    _onKeyPressEvent: function (actor, event) {
+        let key = event.get_key_symbol();
+        if (key == Clutter.KEY_Right || key == Clutter.KEY_Left) {
+            let delta = key == Clutter.KEY_Right ? VOLUME_ADJUSTMENT_STEP : -VOLUME_ADJUSTMENT_STEP;
+            let rawValue = Math.max(0, Math.min(this._value + delta/this.applet.pcMaxVolume, 1))*this.applet.pcMaxVolume;
+            this._value = Math.round(rawValue/VOLUME_ADJUSTMENT_STEP)*VOLUME_ADJUSTMENT_STEP;
+            this._slider.queue_repaint();
+            this.emit('value-changed', this._value);
+            this.emit('drag-end');
+            return true;
+        }
+        return false;
+    },
+
     _volumeToIcon: function(value){
         if(value < 0.005)
             return this.isMic? "microphone-sensitivity-none" : "audio-volume-muted";
+
         let n = Math.floor(3 * value), icon;
         if(n < 1)
             icon = "low";
@@ -181,6 +243,31 @@ VolumeSlider.prototype = {
         else
             icon = "high";
 
+        if (this.applet.percentMaxVolume > 100) {
+            let realValue = value * 100;
+            if (realValue <= 100) {
+                this.applet.actor.style_class = 'sound-normal';
+                this.actor.style_class = 'sound-normal';
+                if (realValue <= 33)
+                    icon = "low";
+                else if (realValue <= 67)
+                    icon = "medium";
+                else
+                    icon = "high";
+            } else if (realValue <= 115) {
+                this.applet.actor.style_class = 'sound-veryhigh';
+                this.actor.style_class = 'sound-veryhigh'
+            } else if (realValue <= 130) {
+                this.applet.actor.style_class = 'sound-superhigh';
+                this.actor.style_class = 'sound-superhigh'
+            } else {
+                this.applet.actor.style_class = 'sound-extrahigh';
+                this.actor.style_class = 'sound-extrahigh'
+            }
+        } else {
+            this.applet.actor.style_class = 'sound-normal';
+            this.actor.style_class = 'sound-normal';
+        }
         return this.isMic? "microphone-sensitivity-" + icon : "audio-volume-" + icon;
     }
 };
@@ -835,11 +922,18 @@ MyApplet.prototype = {
 
         try {
             this.metadata = metadata;
+
+            this.cssfile = metadata.path + "/stylesheet.css";
+
             this.settings = new Settings.AppletSettings(this, metadata.uuid, instanceId);
             this.settings.bind("showtrack", "showtrack", this.on_settings_changed);
             this.settings.bind("middleClickAction", "middleClickAction");
             this.settings.bind("showalbum", "showalbum", this.on_settings_changed);
             this.settings.bind("truncatetext", "truncatetext", this.on_settings_changed);
+
+            this.settings.bind("percentMaxVolume", "percentMaxVolume", this.on_settings_changed);
+            this.pcMaxVolume = this.percentMaxVolume/100;
+
             this.settings.bind("hideSystray", "hideSystray", function() {
                 if (this.hideSystray) this.registerSystrayIcons();
                 else this.unregisterSystrayIcons();
@@ -914,6 +1008,7 @@ MyApplet.prototype = {
             this._control.connect('stream-added', Lang.bind(this, this._onStreamAdded));
             this._control.connect('stream-removed', Lang.bind(this, this._onStreamRemoved));
 
+            // The problem described below is corrected by this version, with colorful icons.
             this._volumeMax = 1*this._control.get_vol_max_norm(); // previously was 1.5*this._control.get_vol_max_norm();, but we'd need a little mark on the slider to make it obvious to the user we're going over 100%..
             this._streams = [];
             this._devices = [];
@@ -1039,7 +1134,7 @@ MyApplet.prototype = {
             this._output.push_volume();
         }
         else if (direction == Clutter.ScrollDirection.UP) {
-            this._output.volume = Math.min(this._volumeMax, currentVolume + this._volumeMax * VOLUME_ADJUSTMENT_STEP);
+            this._output.volume = Math.min(this._volumeMax*this.pcMaxVolume, currentVolume + this._volumeMax * VOLUME_ADJUSTMENT_STEP);
             this._output.push_volume();
             this._output.change_is_muted(false);
         }

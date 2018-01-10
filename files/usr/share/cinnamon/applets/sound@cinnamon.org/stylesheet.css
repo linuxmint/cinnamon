@@ -1,0 +1,24 @@
+/* 
+Style sheet for the Sound Applet.
+*/
+
+.sound-normal {
+
+background-color: transparent;
+color: white;
+}
+
+.sound-veryhigh {
+background-color: transparent;
+color: yellow;
+}
+
+.sound-superhigh {
+background-color: transparent;
+color: orange;
+}
+
+.sound-extrahigh {
+background-color: transparent;
+color: red;
+}
