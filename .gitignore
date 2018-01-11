@@ -47,6 +47,7 @@ libtool
 m4/
 man/Makefile
 man/Makefile.in
+node_modules/
 po/Makefile
 po/Makefile.in.in
 po/Makevars.template
