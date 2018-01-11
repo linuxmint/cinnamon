@@ -1,0 +1,28 @@
+{
+  "name": "cinnamon",
+  "version": "3.6.7",
+  "description": "A Linux desktop featuring a traditional layout, built from modern technology and introducing brand new innovative features.",
+  "main": "index.js",
+  "directories": {
+    "doc": "docs",
+    "man": "man",
+    "test": "tests"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/linuxmint/Cinnamon.git"
+  },
+  "author": "",
+  "license": "GPL-2.0",
+  "bugs": {
+    "url": "https://github.com/linuxmint/Cinnamon/issues"
+  },
+  "homepage": "https://github.com/linuxmint/Cinnamon#readme",
+  "devDependencies": {
+    "babel-eslint": "^8.2.1",
+    "eslint": "^4.15.0"
+  }
+}
