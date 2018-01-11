@@ -156,7 +156,7 @@ VolumeSlider.prototype = {
     },
 
     _update: function(){
-        let value = (!this.stream || this.stream.is_muted)? 0 : this.stream.volume / this.applet._volumeMax;
+        let value = (!this.stream || this.stream.is_muted)? 0 : this.stream.volume / this.applet._volumeNominal;
         let percentage = Math.round(value * 100) + "%";
 
         this.tooltip.set_text(this.tooltipText + percentage);
@@ -164,7 +164,7 @@ VolumeSlider.prototype = {
         if (this.app_icon == null) {
             this.icon.icon_name = iconName;
         }
-        this.setValue(value);
+        this.setValue(value/this.applet.pcMaxVolume);
 
         // send data to applet
         this.emit("values-changed", iconName, percentage);
@@ -174,7 +174,7 @@ VolumeSlider.prototype = {
         if (isNaN(value))
             throw TypeError('The slider value must be a number');
 
-        this._value = Math.max(Math.min(value/this.applet.pcMaxVolume, 1), 0);
+        this._value = Math.max(Math.min(value, 1), 0);
         this._slider.queue_repaint();
     },
 
@@ -182,10 +182,10 @@ VolumeSlider.prototype = {
         let direction = event.get_scroll_direction();
 
         if (direction == Clutter.ScrollDirection.DOWN) {
-            this._value = Math.max(0, this._value - VOLUME_ADJUSTMENT_STEP/this.applet.pcMaxVolume)*this.applet.pcMaxVolume;
+            this._value = Math.max(0, this._value - VOLUME_ADJUSTMENT_STEP/this.applet.pcMaxVolume);
         }
         else if (direction == Clutter.ScrollDirection.UP) {
-            this._value = Math.min(1, this._value + VOLUME_ADJUSTMENT_STEP/this.applet.pcMaxVolume)*this.applet.pcMaxVolume;
+            this._value = Math.min(1, this._value + VOLUME_ADJUSTMENT_STEP/this.applet.pcMaxVolume);
         }
 
         this._slider.queue_repaint();
@@ -208,7 +208,8 @@ VolumeSlider.prototype = {
             newvalue = 1;
         else
             newvalue = (relX - handleRadius) / (width - 2 * handleRadius);
-        this._value = newvalue*this.applet.pcMaxVolume;
+        this._value = newvalue;
+        
         this._slider.queue_repaint();
         this.emit('value-changed', this._value);
     },
@@ -221,8 +222,7 @@ VolumeSlider.prototype = {
         let key = event.get_key_symbol();
         if (key == Clutter.KEY_Right || key == Clutter.KEY_Left) {
             let delta = key == Clutter.KEY_Right ? VOLUME_ADJUSTMENT_STEP : -VOLUME_ADJUSTMENT_STEP;
-            let rawValue = Math.max(0, Math.min(this._value + delta/this.applet.pcMaxVolume, 1))*this.applet.pcMaxVolume;
-            this._value = Math.round(rawValue/VOLUME_ADJUSTMENT_STEP)*VOLUME_ADJUSTMENT_STEP;
+            this._value = Math.max(0, Math.min(this._value + delta/this.applet.pcMaxVolume, 1));
             this._slider.queue_repaint();
             this.emit('value-changed', this._value);
             this.emit('drag-end');
@@ -933,6 +933,7 @@ MyApplet.prototype = {
 
             this.settings.bind("percentMaxVolume", "percentMaxVolume", this.on_settings_changed);
             this.pcMaxVolume = this.percentMaxVolume/100;
+            this.old_pcMaxVolume = this.pcMaxVolume;
 
             this.settings.bind("hideSystray", "hideSystray", function() {
                 if (this.hideSystray) this.registerSystrayIcons();
@@ -1009,7 +1010,9 @@ MyApplet.prototype = {
             this._control.connect('stream-removed', Lang.bind(this, this._onStreamRemoved));
 
             // The problem described below is corrected by this version, with colorful icons.
-            this._volumeMax = 1*this._control.get_vol_max_norm(); // previously was 1.5*this._control.get_vol_max_norm();, but we'd need a little mark on the slider to make it obvious to the user we're going over 100%..
+            //this._volumeMax = 1*this._control.get_vol_max_norm(); // previously was 1.5*this._control.get_vol_max_norm();, but we'd need a little mark on the slider to make it obvious to the user we're going over 100%..
+            this._volumeNominal = 1*this._control.get_vol_max_norm();
+            this._volumeMax = this.pcMaxVolume * this._volumeNominal;
             this._streams = [];
             this._devices = [];
             this._recordingAppsNum = 0;
@@ -1080,6 +1083,13 @@ MyApplet.prototype = {
             this.setAppletTextIcon();
 
         this._changeActivePlayer(this._activePlayer);
+
+        this.pcMaxVolume = this.percentMaxVolume/100;
+        this._volumeMax = this.pcMaxVolume * this._volumeNominal;
+        this._outputVolumeSection.setValue(Math.min(this._outputVolumeSection._value/this.pcMaxVolume*this.old_pcMaxVolume, 1));
+        this.old_pcMaxVolume = this.pcMaxVolume;
+        this._outputVolumeSection._onValueChanged();
+        this._outputVolumeSection._update();
     },
 
     on_applet_removed_from_panel : function() {
@@ -1125,7 +1135,7 @@ MyApplet.prototype = {
 
         if (direction == Clutter.ScrollDirection.DOWN) {
             let prev_muted = this._output.is_muted;
-            this._output.volume = Math.max(0, currentVolume - this._volumeMax * VOLUME_ADJUSTMENT_STEP);
+            this._output.volume = Math.max(0, currentVolume - this._volumeNominal * VOLUME_ADJUSTMENT_STEP);
             if (this._output.volume < 1) {
                 this._output.volume = 0;
                 if (!prev_muted)
@@ -1134,7 +1144,7 @@ MyApplet.prototype = {
             this._output.push_volume();
         }
         else if (direction == Clutter.ScrollDirection.UP) {
-            this._output.volume = Math.min(this._volumeMax*this.pcMaxVolume, currentVolume + this._volumeMax * VOLUME_ADJUSTMENT_STEP);
+            this._output.volume = Math.min(this._volumeMax, currentVolume + this._volumeNominal * VOLUME_ADJUSTMENT_STEP);
             this._output.push_volume();
             this._output.change_is_muted(false);
         }
