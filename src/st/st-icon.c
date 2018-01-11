@@ -61,7 +61,8 @@ struct _StIconPrivate
   gint          icon_size;       /* icon size we are using */
   gint          icon_scale;
 
-  CoglHandle    shadow_material;
+  CoglPipeline  *shadow_pipeline;
+
   StShadow     *shadow_spec;
 };
 
@@ -153,23 +154,11 @@ st_icon_dispose (GObject *gobject)
       priv->pending_texture = NULL;
     }
 
-  if (priv->gicon)
-    {
-      g_object_unref (priv->gicon);
-      priv->gicon = NULL;
-    }
+  g_clear_object (&priv->gicon);
 
-  if (priv->shadow_material)
-    {
-      cogl_handle_unref (priv->shadow_material);
-      priv->shadow_material = COGL_INVALID_HANDLE;
-    }
+  g_clear_pointer (&priv->shadow_pipeline, cogl_object_unref);
 
-  if (priv->shadow_spec)
-    {
-      st_shadow_unref (priv->shadow_spec);
-      priv->shadow_spec = NULL;
-    }
+  g_clear_pointer (&priv->shadow_spec, st_shadow_unref);
 
   G_OBJECT_CLASS (st_icon_parent_class)->dispose (gobject);
 }
@@ -197,7 +186,7 @@ st_icon_paint (ClutterActor *actor)
 
   if (priv->icon_texture)
     {
-      if (priv->shadow_material)
+      if (priv->shadow_pipeline)
         {
           ClutterActorBox allocation;
           float width, height;
@@ -206,7 +195,7 @@ st_icon_paint (ClutterActor *actor)
           clutter_actor_box_get_size (&allocation, &width, &height);
 
           _st_paint_shadow_with_opacity (priv->shadow_spec,
-                                         priv->shadow_material,
+                                         priv->shadow_pipeline,
                                          &allocation,
                                          clutter_actor_get_paint_opacity (priv->icon_texture));
         }
@@ -222,17 +211,8 @@ st_icon_style_changed (StWidget *widget)
   StThemeNode *theme_node = st_widget_get_theme_node (widget);
   StIconPrivate *priv = self->priv;
 
-  if (priv->shadow_spec)
-    {
-      st_shadow_unref (priv->shadow_spec);
-      priv->shadow_spec = NULL;
-    }
-
-  if (priv->shadow_material)
-    {
-      cogl_handle_unref (priv->shadow_material);
-      priv->shadow_material = COGL_INVALID_HANDLE;
-    }
+  g_clear_pointer (&priv->shadow_pipeline, cogl_object_unref);
+  g_clear_pointer (&priv->shadow_spec, st_shadow_unref);
 
   priv->shadow_spec = st_theme_node_get_shadow (theme_node, "icon-shadow");
 
@@ -312,31 +292,27 @@ st_icon_init (StIcon *self)
   self->priv->prop_icon_size = -1;
   self->priv->icon_type = DEFAULT_ICON_TYPE;
 
-  self->priv->shadow_material = COGL_INVALID_HANDLE;
+  self->priv->shadow_pipeline = NULL;
+
   self->priv->icon_scale = 1;
 }
 
 static void
-st_icon_update_shadow_material (StIcon *icon)
+st_icon_update_shadow_pipeline (StIcon *icon)
 {
   StIconPrivate *priv = icon->priv;
 
-  if (priv->shadow_material)
-    {
-      cogl_handle_unref (priv->shadow_material);
-      priv->shadow_material = COGL_INVALID_HANDLE;
-    }
+  g_clear_pointer (&priv->shadow_pipeline, cogl_object_unref);
 
   if (priv->shadow_spec)
-     priv->shadow_material = _st_create_shadow_material_from_actor (priv->shadow_spec,
-                                                                    priv->icon_texture);
+     priv->shadow_pipeline = _st_create_shadow_pipeline_from_actor (priv->shadow_spec, priv->icon_texture);
 }
 
 static void
 on_pixbuf_changed (ClutterTexture *texture,
                    StIcon         *icon)
 {
-  st_icon_update_shadow_material (icon);
+  st_icon_update_shadow_pipeline (icon);
 }
 
 static void
@@ -361,7 +337,7 @@ st_icon_finish_update (StIcon *icon)
       /* Remove the temporary ref we added */
       g_object_unref (priv->icon_texture);
 
-      st_icon_update_shadow_material (icon);
+      st_icon_update_shadow_pipeline (icon);
 
       /* "pixbuf-change" is actually a misnomer for "texture-changed" */
       g_signal_connect (priv->icon_texture, "pixbuf-change",
