@@ -88,7 +88,9 @@ EmblemedIcon.prototype = {
     },
 
     set_icon_size: function(size) {
-        this.actor.width = this.actor.height = size;
+        if (size > 0) {  /* note that -1 is a valid value, meaning to take the theme default */
+            this.actor.width = this.actor.height = size;
+        }
     },
 
     set_style_class_name: function(name) {
