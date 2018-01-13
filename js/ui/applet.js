@@ -21,7 +21,6 @@ const COLOR_ICON_HEIGHT_FACTOR = .875;  // Panel height factor for normal color 
 const PANEL_FONT_DEFAULT_HEIGHT = 11.5; // px
 const PANEL_SYMBOLIC_ICON_DEFAULT_HEIGHT = 1.14 * PANEL_FONT_DEFAULT_HEIGHT; // ems conversion
 const DEFAULT_PANEL_HEIGHT = 25;
-const DEFAULT_ICON_HEIGHT = 22;
 const FALLBACK_ICON_HEIGHT = 22;
 
 const AllowedLayout = {  // the panel layout that an applet is suitable for
@@ -697,20 +696,16 @@ IconApplet.prototype = {
             case St.IconType.FULLCOLOR:
                 this._applet_icon.set_icon_size(this._scaleMode ?
                                                 fullcolor_scaleup :
-                                                DEFAULT_ICON_HEIGHT);
+                                                -1);
                 this._applet_icon.set_style_class_name('applet-icon');
             break;
             case St.IconType.SYMBOLIC:
+            default:
                 this._applet_icon.set_icon_size(this._scaleMode ?
                                                 symb_scaleup :
                                                 -1);
                 this._applet_icon.set_style_class_name('system-status-icon');
             break;
-            default:
-                this._applet_icon.set_icon_size(this._scaleMode ?
-                                                symb_scaleup :
-                                                -1);
-                                                this._applet_icon.set_style_class_name('system-status-icon');
         }
     },
 
