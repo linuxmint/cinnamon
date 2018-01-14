@@ -54,8 +54,6 @@ enum
   PROP_TEXT
 };
 
-#define ST_LABEL_GET_PRIVATE(obj)     (G_TYPE_INSTANCE_GET_PRIVATE ((obj), ST_TYPE_LABEL, StLabelPrivate))
-
 struct _StLabelPrivate
 {
   ClutterActor *label;
@@ -67,7 +65,7 @@ struct _StLabelPrivate
   float         shadow_height;
 };
 
-G_DEFINE_TYPE (StLabel, st_label, ST_TYPE_WIDGET);
+G_DEFINE_TYPE_WITH_PRIVATE (StLabel, st_label, ST_TYPE_WIDGET);
 
 static GType st_label_accessible_get_type (void) G_GNUC_CONST;
 
@@ -236,8 +234,6 @@ st_label_class_init (StLabelClass *klass)
   StWidgetClass *widget_class = ST_WIDGET_CLASS (klass);
   GParamSpec *pspec;
 
-  g_type_class_add_private (klass, sizeof (StLabelPrivate));
-
   gobject_class->set_property = st_label_set_property;
   gobject_class->get_property = st_label_get_property;
   gobject_class->dispose = st_label_dispose;
@@ -270,7 +266,7 @@ st_label_init (StLabel *label)
 {
   StLabelPrivate *priv;
 
-  label->priv = priv = ST_LABEL_GET_PRIVATE (label);
+  label->priv = priv = st_label_get_instance_private (label);
 
   label->priv->label = g_object_new (CLUTTER_TYPE_TEXT,
                                      "ellipsize", PANGO_ELLIPSIZE_END,

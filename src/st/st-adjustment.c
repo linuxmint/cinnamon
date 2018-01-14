@@ -36,10 +36,6 @@
 #include "st-adjustment.h"
 #include "st-private.h"
 
-G_DEFINE_TYPE (StAdjustment, st_adjustment, G_TYPE_OBJECT)
-
-#define ADJUSTMENT_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), ST_TYPE_ADJUSTMENT, StAdjustmentPrivate))
-
 struct _StAdjustmentPrivate
 {
   /* Do not sanity-check values while constructing,
@@ -53,6 +49,8 @@ struct _StAdjustmentPrivate
   gdouble  page_increment;
   gdouble  page_size;
 };
+
+G_DEFINE_TYPE_WITH_PRIVATE (StAdjustment, st_adjustment, G_TYPE_OBJECT)
 
 enum
 {
@@ -190,8 +188,6 @@ st_adjustment_class_init (StAdjustmentClass *klass)
 {
   GObjectClass *object_class = G_OBJECT_CLASS (klass);
 
-  g_type_class_add_private (klass, sizeof (StAdjustmentPrivate));
-
   object_class->constructed = st_adjustment_constructed;
   object_class->get_property = st_adjustment_get_property;
   object_class->set_property = st_adjustment_set_property;
@@ -273,7 +269,7 @@ st_adjustment_class_init (StAdjustmentClass *klass)
 static void
 st_adjustment_init (StAdjustment *self)
 {
-  self->priv = ADJUSTMENT_PRIVATE (self);
+  self->priv = st_adjustment_get_instance_private (self);
 
   self->priv->is_constructing = TRUE;
 }

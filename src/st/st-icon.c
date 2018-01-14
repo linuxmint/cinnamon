@@ -42,11 +42,6 @@ enum
   PROP_ICON_SIZE
 };
 
-G_DEFINE_TYPE (StIcon, st_icon, ST_TYPE_WIDGET)
-
-#define ST_ICON_GET_PRIVATE(obj)    \
-  (G_TYPE_INSTANCE_GET_PRIVATE ((obj), ST_TYPE_ICON, StIconPrivate))
-
 struct _StIconPrivate
 {
   ClutterActor *icon_texture;
@@ -65,6 +60,8 @@ struct _StIconPrivate
 
   StShadow     *shadow_spec;
 };
+
+G_DEFINE_TYPE_WITH_PRIVATE (StIcon, st_icon, ST_TYPE_WIDGET)
 
 static void st_icon_update               (StIcon *icon);
 static gboolean st_icon_update_icon_size (StIcon *icon);
@@ -237,8 +234,6 @@ st_icon_class_init (StIconClass *klass)
   ClutterActorClass *actor_class = CLUTTER_ACTOR_CLASS (klass);
   StWidgetClass *widget_class = ST_WIDGET_CLASS (klass);
 
-  g_type_class_add_private (klass, sizeof (StIconPrivate));
-
   object_class->get_property = st_icon_get_property;
   object_class->set_property = st_icon_set_property;
   object_class->dispose = st_icon_dispose;
@@ -282,7 +277,7 @@ st_icon_init (StIcon *self)
 {
   ClutterLayoutManager *layout_manager;
 
-  self->priv = ST_ICON_GET_PRIVATE (self);
+  self->priv = st_icon_get_instance_private (self);
 
   layout_manager = clutter_bin_layout_new (CLUTTER_BIN_ALIGNMENT_FILL,
                                            CLUTTER_BIN_ALIGNMENT_FILL);
