@@ -204,32 +204,6 @@ VolumeSlider.prototype = {
         this.emit('value-changed', this._value);
     },
 
-    _moveHandle: function(absX, absY) {
-        let relX, relY, sliderX, sliderY;
-        [sliderX, sliderY] = this._slider.get_transformed_position();
-        relX = absX - sliderX;
-        relY = absY - sliderY;
-
-        let width = this._slider.width;
-        let handleRadius = this._slider.get_theme_node().get_length('-slider-handle-radius');
-
-        let newvalue;
-        if (relX < handleRadius)
-            newvalue = 0;
-        else if (relX > width - handleRadius)
-            newvalue = 1;
-        else
-            newvalue = (relX - handleRadius) / (width - 2 * handleRadius);
-        this._value = newvalue;
-        
-        this._slider.queue_repaint();
-        this.emit('value-changed', this._value);
-    },
-
-    get value() {
-        return this._value;
-    },
-
     _onKeyPressEvent: function (actor, event) {
         let key = event.get_key_symbol();
         if (key == Clutter.KEY_Right || key == Clutter.KEY_Left) {
