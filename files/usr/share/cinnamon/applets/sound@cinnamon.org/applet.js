@@ -85,9 +85,15 @@ function VolumeSlider(){
 VolumeSlider.prototype = {
     __proto__: PopupMenu.PopupSliderMenuItem.prototype,
 
-    _init: function(applet, stream, tooltip, app_icon){
+    _init: function(applet, stream, tooltip, app_icon, is_master){
         PopupMenu.PopupSliderMenuItem.prototype._init.call(this, 0);
         this.applet = applet;
+        
+        if (is_master == null || is_master == undefined) {
+            this.is_master = false
+        } else {
+            this.is_master = is_master
+        }
 
         if(tooltip)
             this.tooltipText = tooltip + ": ";
@@ -164,6 +170,12 @@ VolumeSlider.prototype = {
         if (this.app_icon == null) {
             this.icon.icon_name = iconName;
         }
+        
+        let _icon_and_slider_style_class = this._volumeToStyleClass(value);
+        if (this.is_master)
+            this.applet.actor.style_class = _icon_and_slider_style_class;
+        this.actor.style_class = _icon_and_slider_style_class;
+        
         this.setValue(value/this.applet.pcMaxVolume);
 
         // send data to applet
@@ -243,32 +255,21 @@ VolumeSlider.prototype = {
         else
             icon = "high";
 
-        if (this.applet.percentMaxVolume > 100) {
-            let realValue = value * 100;
-            if (realValue <= 100) {
-                this.applet.actor.style_class = 'sound-normal';
-                this.actor.style_class = 'sound-normal';
-                if (realValue <= 33)
-                    icon = "low";
-                else if (realValue <= 67)
-                    icon = "medium";
-                else
-                    icon = "high";
-            } else if (realValue <= 115) {
-                this.applet.actor.style_class = 'sound-veryhigh';
-                this.actor.style_class = 'sound-veryhigh'
-            } else if (realValue <= 130) {
-                this.applet.actor.style_class = 'sound-superhigh';
-                this.actor.style_class = 'sound-superhigh'
-            } else {
-                this.applet.actor.style_class = 'sound-extrahigh';
-                this.actor.style_class = 'sound-extrahigh'
-            }
-        } else {
-            this.applet.actor.style_class = 'sound-normal';
-            this.actor.style_class = 'sound-normal';
-        }
         return this.isMic? "microphone-sensitivity-" + icon : "audio-volume-" + icon;
+    },
+    
+    _volumeToStyleClass: function(value){
+        let _icon_and_slider_style_class = 'sound-normal';
+        if (value > 1) {
+            if (value <= 1.15) {
+                _icon_and_slider_style_class = 'sound-veryhigh'
+            } else if (value <= 1.3) {
+                _icon_and_slider_style_class = 'sound-superhigh'
+            } else {
+                _icon_and_slider_style_class = 'sound-extrahigh'
+            }
+        }
+        return _icon_and_slider_style_class
     }
 };
 
@@ -310,7 +311,7 @@ StreamMenuSection.prototype = {
             iconName = "audio-x-generic";
         }
 
-        let slider = new VolumeSlider(applet, stream, name, iconName);
+        let slider = new VolumeSlider(applet, stream, name, iconName, false);
         this.addMenuItem(slider);
     }
 };
@@ -1045,7 +1046,7 @@ MyApplet.prototype = {
             this._selectOutputDeviceItem.actor.hide();
 
             this._inputSection = new PopupMenu.PopupMenuSection();
-            this._inputVolumeSection = new VolumeSlider(this, null, _("Microphone"), null);
+            this._inputVolumeSection = new VolumeSlider(this, null, _("Microphone"), null, false);
             this._inputVolumeSection.connect("values-changed", Lang.bind(this, this._inputValuesChanged));
             this._selectInputDeviceItem = new PopupMenu.PopupSubMenuMenuItem(_("Input device"));
             this._inputSection.addMenuItem(this._inputVolumeSection);
@@ -1368,7 +1369,7 @@ MyApplet.prototype = {
 
         //between these two separators will be the player MenuSection (position 3)
         this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
-        this._outputVolumeSection = new VolumeSlider(this, null, _("Volume"), null);
+        this._outputVolumeSection = new VolumeSlider(this, null, _("Volume"), null, true);
         this._outputVolumeSection.connect("values-changed", Lang.bind(this, this._outputValuesChanged));
 
         this.menu.addMenuItem(this._outputVolumeSection);
@@ -1568,6 +1569,10 @@ MyApplet.prototype = {
             this._streams.push({id: id, type: "SourceOutput"});
             if (this._recordingAppsNum++ === 0)
                 this._inputSection.actor.show();
+        }
+        
+        if (this._outputVolumeSection != null) {
+            this.actor.style_class = this._outputVolumeSection.actor.style_class;
         }
     },
 
