@@ -115,7 +115,6 @@ Priority: extra
 Architecture: any
 Depends: cinnamon (= ${binary:Version}),
          ${misc:Depends},
-         gnome-dbg,
          nemo-dbg,
          muffin-dbg,
          libcvc-dbg,
