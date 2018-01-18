@@ -281,17 +281,6 @@ class ClosableTabLabel(Gtk.Box):
         button.set_focus_on_click(False)
         button.add(Gtk.Image.new_from_stock(Gtk.STOCK_CLOSE, Gtk.IconSize.MENU))
         button.connect("clicked", self.button_clicked)
-        data =  ".button {\n" \
-                "-GtkButton-default-border : 0px;\n" \
-                "-GtkButton-default-outside-border : 0px;\n" \
-                "-GtkButton-inner-border: 0px;\n" \
-                "-GtkWidget-focus-line-width : 0px;\n" \
-                "-GtkWidget-focus-padding : 0px;\n" \
-                "padding: 0px;\n" \
-                "}"
-        provider = Gtk.CssProvider()
-        provider.load_from_data(data)
-        button.get_style_context().add_provider(provider, 600)
         self.pack_start(button, False, False, 0)
 
         self.show_all()
