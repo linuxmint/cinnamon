@@ -2,7 +2,6 @@
 
 const Clutter = imports.gi.Clutter;
 const Lang = imports.lang;
-const Meta = imports.gi.Meta;
 const Cinnamon = imports.gi.Cinnamon;
 const St = imports.gi.St;
 const Signals = imports.signals;
@@ -11,15 +10,15 @@ const Main = imports.ui.main;
 const Tweener = imports.ui.tweener;
 const Workspace = imports.ui.workspace;
 
-const WORKSPACE_SWITCH_TIME = 0.25;
+var WORKSPACE_SWITCH_TIME = 0.25;
 
-const SwipeScrollDirection = {
+var SwipeScrollDirection = {
     NONE: 0,
     HORIZONTAL: 1,
     VERTICAL: 2
 };
 
-const SwipeScrollResult = {
+var SwipeScrollResult = {
     CANCEL: 0,
     SWIPE: 1,
     CLICK: 2

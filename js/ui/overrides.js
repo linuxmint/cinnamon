@@ -146,6 +146,10 @@ function overrideJS() {
         return this.charAt(0).toUpperCase();
     }
 
+    if (!String.prototype.includes) {
+        String.prototype.includes = String.prototype.contains;
+    }
+
     Number.prototype.clamp = function(min, max) {
         return Math.min(Math.max(this, min), max);
     };

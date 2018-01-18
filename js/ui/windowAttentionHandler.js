@@ -35,7 +35,7 @@ WindowAttentionHandler.prototype = {
             let ignored_classes = global.settings.get_strv("demands-attention-ignored-wm-classes");
 
             for (let i = 0; i < ignored_classes.length; i++) {
-                if (wmclass.toLowerCase().contains(ignored_classes[i].toLowerCase())) {
+                if (wmclass.toLowerCase().includes(ignored_classes[i].toLowerCase())) {
                     return;
                 }
             }

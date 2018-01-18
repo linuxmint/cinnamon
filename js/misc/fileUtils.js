@@ -99,7 +99,7 @@ function getUserDesktopDir() {
                 }
             }
             if (dataDic["XDG_DESKTOP_DIR"])
-                path = dataDic["XDG_DESKTOP_DIR"].substring(1, dataDic["XDG_DESKTOP_DIR"].length-1).replace("$HOME", GLib.get_home_dir());
+                path = dataDic["XDG_DESKTOP_DIR"].substring(1, dataDic["XDG_DESKTOP_DIR"].length-1).replace(/\$HOME/, GLib.get_home_dir());
             else
                 path = GLib.get_home_dir() + '/Desktop';
         }catch(e){

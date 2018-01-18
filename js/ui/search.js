@@ -292,9 +292,9 @@ OpenSearchSystem.prototype = {
     activateResult: function(id, params) {
         let searchTerms = this._terms.join(' ');
 
-        let url = this._providers[id].url.replace('{searchTerms}', encodeURIComponent(searchTerms));
-        if (url.match('{language}'))
-            url = url.replace('{language}', this._providers[id].lang);
+        let url = this._providers[id].url.replace(/{searchTerms}/g, encodeURIComponent(searchTerms));
+        if (url.match(/{language}/g))
+            url = url.replace(/{language}/g, this._providers[id].lang);
 
         try {
             Gio.app_info_launch_default_for_uri(url, global.create_app_launch_context());
