@@ -358,3 +358,29 @@ function latinise(string){
     }
     return string;
 }
+
+/**
+ * queryCollection:
+ * @collection (array): an array of objects to query
+ * @query (object): key-value pairs to find in the collection
+ * @indexOnly (boolean): defaults to false, returns only the matching
+ * object's index if true.
+ *
+ * Returns (object|null): the matched object, or null if no object
+ * in the collection matches all conditions of the query.
+ */
+function queryCollection(collection, query, indexOnly = false) {
+    let queryKeys = Object.keys(query);
+    for (let i = 0; i < collection.length; i++) {
+        let matches = 0;
+        for (let z = 0; z < queryKeys.length; z++) {
+            if (collection[i][queryKeys[z]] === query[queryKeys[z]]) {
+                matches += 1;
+            }
+        }
+        if (matches === queryKeys.length) {
+            return indexOnly ? i : collection[i];
+        }
+    }
+    return indexOnly ? -1 : null;
+}

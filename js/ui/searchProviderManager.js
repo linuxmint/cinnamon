@@ -1,20 +1,19 @@
 // -*- mode: js; js-indent-level: 4; indent-tabs-mode: nil -*-
 
 const Extension = imports.ui.extension;
+const {getModuleByIndex} = imports.misc.fileUtils;
 const GLib = imports.gi.GLib;
-const Gio = imports.gi.Gio;
-const Lang = imports.lang;
 
 // Maps uuid -> importer object (extension directory tree)
 var extensions;
-// Maps uuid -> metadata object
+// Kept for compatibility
 var extensionMeta;
 // Maps uuid -> extension state object (returned from init())
-const searchProviderObj = {};
+var searchProviderObj = {};
 // Arrays of uuids
 var enabledSearchProviders;
-
-const ENABLED_SEARCH_PROVIDERS_KEY = 'enabled-search-providers';
+var promises = [];
+var ENABLED_SEARCH_PROVIDERS_KEY = 'enabled-search-providers';
 
 // Callback for extension.js
 function prepareExtensionUnload(extension) {
@@ -22,81 +21,113 @@ function prepareExtensionUnload(extension) {
 }
 
 // Callback for extension.js
-function finishExtensionLoad(extension) {
-    searchProviderObj[extension.uuid] = extension.module;
+function finishExtensionLoad(extensionIndex) {
+    let extension = Extension.extensions[extensionIndex];
+    searchProviderObj[extension.uuid] = getModuleByIndex(extension.moduleIndex);
     return true;
 }
 
 function onEnabledSearchProvidersChanged() {
     enabledSearchProviders = global.settings.get_strv(ENABLED_SEARCH_PROVIDERS_KEY);
 
-    for(let uuid in Extension.Type.SEARCH_PROVIDER.maps.objects) {
-        if(enabledSearchProviders.indexOf(uuid) == -1)
-            Extension.unloadExtension(uuid, Extension.Type.SEARCH_PROVIDER);
+    unloadRemovedSearchProviders().then(initEnabledSearchProviders);
+}
+
+function initEnabledSearchProviders() {
+    for (let i = 0; i < enabledSearchProviders.length; i++) {
+        promises.push(Extension.loadExtension(enabledSearchProviders[i], Extension.Type.SEARCH_PROVIDER))
     }
-    
-    for(let i=0; i<enabledSearchProviders.length; i++) {
-        Extension.loadExtension(enabledSearchProviders[i], Extension.Type.SEARCH_PROVIDER);
+    return Promise.all(promises).then(function() {
+        promises = [];
+    });
+}
+
+function unloadRemovedSearchProviders() {
+    let extensions = Extension.extensions.filter(function(extension) {
+        return extension.lowerType === 'search_provider';
+    });
+    for (let i = 0; i < extensions.length; i++) {
+        if (enabledSearchProviders.indexOf(extensions[i].uuid) === -1) {
+            promises.push(Extension.unloadExtension(extensions[i].uuid, Extension.Type.SEARCH_PROVIDER));
+        }
     }
+    return Promise.all(promises).then(function() {
+        promises = [];
+    });
 }
 
 function init() {
-    extensions = Extension.Type.SEARCH_PROVIDER.maps.importObjects;
-    extensionMeta = Extension.Type.SEARCH_PROVIDER.maps.meta;
-
-    global.settings.connect('changed::' + ENABLED_SEARCH_PROVIDERS_KEY, onEnabledSearchProvidersChanged);
-    
-    enabledSearchProviders = global.settings.get_strv(ENABLED_SEARCH_PROVIDERS_KEY);
-    for (let i = 0; i < enabledSearchProviders.length; i++){
-        Extension.loadExtension(enabledSearchProviders[i], Extension.Type.SEARCH_PROVIDER);
+    let startTime = new Date().getTime();
+    try {
+        extensions = imports.search_providers;
+    } catch (e) {
+        extensions = {};
     }
+    extensionMeta = Extension.Type.SEARCH_PROVIDER.legacyMeta;
+
+    enabledSearchProviders = global.settings.get_strv(ENABLED_SEARCH_PROVIDERS_KEY);
+
+    return initEnabledSearchProviders().then(function() {
+        global.settings.connect('changed::' + ENABLED_SEARCH_PROVIDERS_KEY, onEnabledSearchProvidersChanged);
+        global.log(`SearchProviderManager started in ${new Date().getTime() - startTime} ms`);
+    });
 }
 
 function get_object_for_uuid(uuid){
     return searchProviderObj[uuid];
 }
 
-function launch_all(pattern, callback){
-    var provider, supports_locale, language_names;
-    for (var i in enabledSearchProviders){
-        try{
-            provider = get_object_for_uuid(enabledSearchProviders[i]);
-            provider.uuid = enabledSearchProviders[i];
-            if (provider)
-            {
-                if (extensionMeta[enabledSearchProviders[i]] && extensionMeta[enabledSearchProviders[i]].supported_locales){
-                    supports_locale = false;
-                    language_names = GLib.get_language_names();
-                    for (var j in language_names){
-                        if (extensionMeta[enabledSearchProviders[i]].supported_locales.indexOf(language_names[j]) != -1){
-                            supports_locale = true;
-                            break;
-                        }
-                    }
-                }else{
-                    supports_locale = true;
-                }
-                if (supports_locale){
-                    provider.send_results = Lang.bind(this, function(results, p, cb){
-                        cb(p, results);
-                    }, provider, callback);
-                    provider.get_locale_string = Lang.bind(this, function(key, providerData){
-                        if (extensionMeta[providerData] && extensionMeta[providerData].locale_data && extensionMeta[providerData].locale_data[key]){
-                            language_names = GLib.get_language_names();
-                            for (var j in language_names){
-                                if (extensionMeta[providerData].locale_data[key][language_names[j]]){
-                                    return extensionMeta[providerData].locale_data[key][language_names[j]];
-                                }
-                            }
-                        }
-                        return "";
-                    }, enabledSearchProviders[i]);
-                    provider.perform_search(pattern);
+function checkLocaleSupport(meta, language_names) {
+    for (let i = 0; i < language_names.length; i++) {
+        if (!meta.supported_locales
+            || meta.supported_locales.indexOf(language_names[i]) > -1) {
+            return true;
+        }
+    }
+    return false;
+}
+
+function override_send_results(provider, callback) {
+    return function send_results(results) {
+        callback(provider, results);
+    };
+}
+
+function override_get_locale_string(meta, language_names) {
+    return function get_locale_string(key) {
+        if (meta && meta.locale_data && meta.locale_data[key]) {
+            for (let i = 0; i < language_names.length; i++) {
+                if (meta.locale_data[key][language_names[i]]){
+                    return meta.locale_data[key][language_names[i]];
                 }
             }
         }
-        catch(e)
-        {
+        return "";
+    };
+}
+
+function launch_all(pattern, callback){
+    let provider;
+    let language_names = GLib.get_language_names();
+    for (let i = 0; i < enabledSearchProviders.length; i++) {
+        let extension = Extension.getExtension(enabledSearchProviders[i]);
+        if (!extension || !extension.meta) {
+            continue;
+        }
+
+        if (!checkLocaleSupport(extension.meta, language_names)) {
+            global.logError('[' + enabledSearchProviders[i] + '] No locale support found for '
+                + language_names.join(', '))
+            continue;
+        }
+
+        try {
+            provider = get_object_for_uuid(enabledSearchProviders[i]);
+            provider.uuid = enabledSearchProviders[i];
+            provider.send_results = override_send_results(provider, callback);
+            provider.get_locale_string = override_get_locale_string(extension.meta, language_names);
+            provider.perform_search(pattern);
+        } catch (e) {
             global.logError(e);
         }
     }

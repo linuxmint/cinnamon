@@ -1,19 +1,18 @@
 // -*- mode: js; js-indent-level: 4; indent-tabs-mode: nil -*-
 
 const Extension = imports.ui.extension;
+const {getModuleByIndex} = imports.misc.fileUtils;
 
 // Maps uuid -> importer object (extension directory tree)
 var extensions;
-// Maps uuid -> metadata object
-var extensionMeta;
 // Lists extension uuid's that are currently active;
-const runningExtensions = {};
+var runningExtensions = [];
 // Arrays of uuids
 var enabledExtensions;
 // Maps extension.uuid -> extension objects
-const extensionObj = [];
-
-const ENABLED_EXTENSIONS_KEY = 'enabled-extensions';
+var extensionObj = [];
+var promises = [];
+var ENABLED_EXTENSIONS_KEY = 'enabled-extensions';
 
 // Deprecated, kept for compatibility reasons
 var ExtensionState;
@@ -31,38 +30,42 @@ function enableExtension(uuid) {
 // Callback for extension.js
 function prepareExtensionUnload(extension) {
     try {
-        extension.module.disable();
+        getModuleByIndex(extension.moduleIndex).disable();
     } catch (e) {
-        extension.logError('Failed to evaluate \'disable\' function on extension: ' + extension.uuid, e);
+        Extension.logError('Failed to evaluate \'disable\' function on extension: ' + extension.uuid, e);
     }
-    delete runningExtensions[extension.uuid];
+    let runningExtensionIndex = runningExtensions.findIndex(function(uuid) {
+        return extension.uuid === uuid;
+    });
+    runningExtensions.splice(runningExtensionIndex, 1);
 
     if (extensionObj[extension.uuid])
         delete extensionObj[extension.uuid];
 }
 
 // Callback for extension.js
-function finishExtensionLoad(extension) {
-    if (!extension.lockRole(extension.module)) {
+function finishExtensionLoad(extensionIndex) {
+    let extension = Extension.extensions[extensionIndex];
+    if (!extension.lockRole(getModuleByIndex(extension.moduleIndex))) {
         return false;
     }
 
     try {
-        extension.module.init(extension.meta);
+        getModuleByIndex(extension.moduleIndex).init(extension.meta);
     } catch (e) {
-        extension.logError('Failed to evaluate \'init\' function on extension: ' + extension.uuid, e);
+        Extension.logError('Failed to evaluate \'init\' function on extension: ' + extension.uuid, e);
         return false;
     }
 
     let extensionCallbacks;
     try {
-        extensionCallbacks = extension.module.enable();
+        extensionCallbacks = getModuleByIndex(extension.moduleIndex).enable();
     } catch (e) {
-        extension.logError('Failed to evaluate \'enable\' function on extension: ' + extension.uuid, e);
+        Extension.logError('Failed to evaluate \'enable\' function on extension: ' + extension.uuid, e);
         return false;
     }
 
-    runningExtensions[extension.uuid] = true;
+    runningExtensions.push(extension.uuid);
 
     // extensionCallbacks is an object returned by the enable() function defined in extension.js.
     // The extensionCallbacks object should contain functions that can be used by the "callback" key
@@ -86,25 +89,44 @@ function get_object_for_uuid(uuid) {
 function onEnabledExtensionsChanged() {
     enabledExtensions = global.settings.get_strv(ENABLED_EXTENSIONS_KEY);
 
-    for (let uuid in Extension.Type.EXTENSION.maps.objects) {
-        if (enabledExtensions.indexOf(uuid) == -1)
-            Extension.unloadExtension(uuid, Extension.Type.EXTENSION);
-    }
+    unloadRemovedExtensions().then(initEnabledExtensions);
+}
 
+function initEnabledExtensions() {
     for (let i = 0; i < enabledExtensions.length; i++) {
-        Extension.loadExtension(enabledExtensions[i], Extension.Type.EXTENSION);
+        promises.push(Extension.loadExtension(enabledExtensions[i], Extension.Type.EXTENSION))
     }
+    return Promise.all(promises).then(function() {
+        promises = [];
+    });
+}
+
+function unloadRemovedExtensions() {
+    let uuidList = Extension.extensions.filter(function(extension) {
+        return extension.lowerType === 'extension';
+    });
+    for (let i = 0; i < uuidList.length; i++) {
+        if (enabledExtensions.indexOf(uuidList[i].uuid) === -1) {
+            promises.push(Extension.unloadExtension(uuidList[i].uuid, Extension.Type.EXTENSION));
+        }
+    }
+    return Promise.all(promises).then(function() {
+        promises = [];
+    });
 }
 
 function init() {
-    extensions = Extension.Type.EXTENSION.maps.importObjects;
-    extensionMeta = Extension.Type.EXTENSION.maps.meta;
+    let startTime = new Date().getTime();
+    try {
+        extensions = imports.extensions;
+    } catch (e) {
+        extensions = {};
+    }
     ExtensionState = Extension.State;
 
-    global.settings.connect('changed::' + ENABLED_EXTENSIONS_KEY, onEnabledExtensionsChanged);
-
     enabledExtensions = global.settings.get_strv(ENABLED_EXTENSIONS_KEY);
-    for (let i = 0; i < enabledExtensions.length; i++) {
-        Extension.loadExtension(enabledExtensions[i], Extension.Type.EXTENSION);
-    }
+    return initEnabledExtensions().then(function() {
+        global.settings.connect('changed::' + ENABLED_EXTENSIONS_KEY, onEnabledExtensionsChanged);
+        global.log(`ExtensionSystem started in ${new Date().getTime() - startTime} ms`);
+    });
 }

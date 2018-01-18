@@ -176,31 +176,49 @@
       </para>
     </para>
     <para>
-      In Cinnamon 3.6+, you can also import xlets by using <code>imports.xletTypePluralized[UUID]</code>. This method is not compatible with previous versions of Cinnamon.
+      In Cinnamon 3.6+, there is now a simpler way to import files using <code>require</code>. This method is not compatible with previous versions of Cinnamon.
 
       <para>
-        Importing for applets:
+        Importing GI modules:
         <informalexample>
           <programlisting>
-            const Module = imports.applets['foo@bar'].module;
+            const Cinnamon = require('gi.Cinnamon');
           </programlisting>
         </informalexample>
       </para>
 
       <para>
-        Importing for desklets:
+        Importing Cinnamon modules:
         <informalexample>
           <programlisting>
-            const Module = imports.desklets['foo@bar'].module;
+            const DND = require('ui.dnd');
           </programlisting>
         </informalexample>
       </para>
 
       <para>
-        Importing for extensions:
+        Importing other JS files (".js" extension is optional):
         <informalexample>
           <programlisting>
-            const Module = imports.extensions['foo@bar'].module;
+            const MenuItem = require('./menuItem.js').MenuItem;
+          </programlisting>
+        </informalexample>
+      </para>
+
+      <para>
+        You can also manually export your modules by adding them to <code>module.exports</code> at the end of the file.
+        Inside your module file:
+        <informalexample>
+          <programlisting>
+            function MenuItem() {...}
+            ...
+            module.exports = MenuItem;
+          </programlisting>
+        </informalexample>
+        Then from the file you want import MenuItem from:
+        <informalexample>
+          <programlisting>
+            const MenuItem = require('./menuItem');
           </programlisting>
         </informalexample>
       </para>

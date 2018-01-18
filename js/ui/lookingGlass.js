@@ -605,26 +605,23 @@ Melange.prototype = {
     // DBus function
     GetExtensionList: function() {
         try {
-            let extensionList = [];
-            for (let type in Extension.Type) {
-                type = Extension.Type[type];
-                for(let uuid in type.maps.meta){
-                    let meta = type.maps.meta[uuid];
-                    // There can be cases where we create dummy extension metadata
-                    // that's not really a proper extension. Don't bother with these.
-                    if (meta.name) {
-                        extensionList.push({
-                            status: Extension.getMetaStateString(meta.state),
-                            name: meta.name,
-                            description: meta.description,
-                            uuid: uuid,
-                            folder: meta.path,
-                            url: meta.url ? meta.url : '',
-                            type: type.name,
-                            error_message: meta.error ? meta.error : _("Loaded successfully"),
-                            error: meta.error ? "true" : "false" // Must use string due to dbus restrictions
-                        });
-                    }
+            let extensionList = Array(Extension.extensions.length);
+            for (let i = 0; i < extensionList.length; i++) {
+                let meta = Extension.extensions[i].meta;
+                // There can be cases where we create dummy extension metadata
+                // that's not really a proper extension. Don't bother with these.
+                if (meta.name) {
+                    extensionList[i] = {
+                        status: Extension.getMetaStateString(meta.state),
+                        name: meta.name,
+                        description: meta.description,
+                        uuid: Extension.extensions[i].uuid,
+                        folder: meta.path,
+                        url: meta.url ? meta.url : '',
+                        type: Extension.extensions[i].name,
+                        error_message: meta.error ? meta.error : _("Loaded successfully"),
+                        error: meta.error ? "true" : "false" // Must use string due to dbus restrictions
+                    };
                 }
             }
             return [true, extensionList];

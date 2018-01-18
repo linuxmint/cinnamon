@@ -1563,7 +1563,7 @@ function populateSettingsMenu(menu, panelId) {
         let dialog = new ModalDialog.ConfirmDialog(
                 _("Are you sure you want to clear all applets on this panel?") + "\n\n",
                 Lang.bind(this, function() {
-                    AppletManager.clearAppletConfiguration(this.panelId);
+                    AppletManager.clearAppletConfiguration(this.panelId, true);
                 }));
         dialog.open();
     });
@@ -1621,10 +1621,10 @@ PanelContextMenu.prototype = {
         this.addPanelItem.setSensitive(Main.panelManager.canAdd);
         this.pasteAppletItem.setSensitive(AppletManager.clipboard.length != 0);
 
-        let defs = AppletManager.enabledAppletDefinitions.idMap;
+        let {definitions} = AppletManager;
         let nonEmpty = false;
-        for (let i = 0, len = defs.length; i < len; i++) {
-            if (defs[i] && defs[i].panelId == this.panelId) {
+        for (let i = 0, len = definitions.length; i < len; i++) {
+            if (definitions[i] && definitions[i].panelId === this.panelId) {
                 nonEmpty = true;
                 break;
             }
@@ -2131,7 +2131,7 @@ Panel.prototype = {
                                    // the destroy process can test it
 
         this._clearPanelBarriers();
-        AppletManager.unloadAppletsOnPanel(this);
+        AppletManager.unloadAppletsOnPanel(this.panelId);
         this._context_menu.close();
         this._context_menu.destroy();
 

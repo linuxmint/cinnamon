@@ -3,7 +3,7 @@
  * FILE:main.js
  * @short_description: This is the heart of Cinnamon, the mother of everything.
  * @placesManager (PlacesManager.PlacesManager): The places manager
- * @overview (Overview.Overview): The "scale" overview 
+ * @overview (Overview.Overview): The "scale" overview
  * @expo (Expo.Expo): The "expo" overview
  * @runDialog (RunDialog.RunDialog): The run dialog
  * @lookingGlass (LookingGlass.Melange): The looking glass object
@@ -258,8 +258,6 @@ function _initUserSession() {
 
     systrayManager = new Systray.SystrayManager();
     indicatorManager = new IndicatorManager.IndicatorManager();
-    
-    ExtensionSystem.init();
 
     Meta.keybindings_set_custom_handler('panel-run-dialog', function() {
        getRunDialog().open();
@@ -320,13 +318,13 @@ function start() {
 
     log("About to start Cinnamon");
     if (GLib.getenv('CINNAMON_SOFTWARE_RENDERING')) {
-        log("ACTIVATING SOFTWARE RENDERING");        
+        log("ACTIVATING SOFTWARE RENDERING");
         global.logError("Cinnamon Software Rendering mode enabled");
         software_rendering = true;
     }
 
     // Chain up async errors reported from C
-    global.connect('notify-error', function (global, msg, detail) { notifyError(msg, detail); });    
+    global.connect('notify-error', function (global, msg, detail) { notifyError(msg, detail); });
 
     Gio.DesktopAppInfo.set_desktop_env('X-Cinnamon');
 
@@ -352,9 +350,9 @@ function start() {
     // actor so set it anyways.
     global.stage.color = DEFAULT_BACKGROUND_COLOR;
     global.stage.no_clear_hint = true;
-    
+
     Gtk.IconTheme.get_default().append_search_path("/usr/share/cinnamon/icons/");
-    _defaultCssStylesheet = global.datadir + '/theme/cinnamon.css';    
+    _defaultCssStylesheet = global.datadir + '/theme/cinnamon.css';
 
     soundManager = new SoundManager.SoundManager();
 
@@ -365,7 +363,7 @@ function start() {
     backgroundManager = new BackgroundManager.BackgroundManager();
 
     slideshowManager = new SlideshowManager.SlideshowManager();
-    
+
     deskletContainer = new DeskletManager.DeskletContainer();
 
     // Set up stage hierarchy to group all UI actors under one container.
@@ -433,17 +431,17 @@ function start() {
     overview = new Overview.Overview();
     expo = new Expo.Expo();
 
-    statusIconDispatcher = new StatusIconDispatcher.StatusIconDispatcher();  
+    statusIconDispatcher = new StatusIconDispatcher.StatusIconDispatcher();
 
     layoutManager._updateBoxes();
-    
+
     wm = new WindowManager.WindowManager();
     messageTray = new MessageTray.MessageTray();
     keyboard = new Keyboard.Keyboard();
     notificationDaemon = new NotificationDaemon.NotificationDaemon();
     windowAttentionHandler = new WindowAttentionHandler.WindowAttentionHandler();
 
-    placesManager = new PlacesManager.PlacesManager();    
+    placesManager = new PlacesManager.PlacesManager();
 
     keybindingManager = new Keybindings.KeybindingManager();
     magnifier = new Magnifier.Magnifier();
@@ -451,7 +449,7 @@ function start() {
     Meta.later_add(Meta.LaterType.BEFORE_REDRAW, _checkWorkspaces);
 
     dynamicWorkspaces = false; // This should be configurable
-    
+
     layoutManager.init();
     keyboard.init();
     overview.init();
@@ -477,7 +475,7 @@ function start() {
         let module = eval('imports.perf.' + perfModuleName + ';');
         Scripting.runPerfScript(module, perfOutput);
     }
-    
+
     wmSettings = new Gio.Settings({schema_id: "org.cinnamon.desktop.wm.preferences"})
     workspace_names = wmSettings.get_strv("workspace-names");
 
@@ -489,56 +487,56 @@ function start() {
 
     _nWorkspacesChanged();
 
-    startTime = new Date().getTime();
-    AppletManager.init();
-    global.log('AppletManager.init() started in %d ms'.format(new Date().getTime() - startTime));
+    Promise.all([
+        AppletManager.init(),
+        ExtensionSystem.init(),
+        DeskletManager.init(),
+        SearchProviderManager.init()
+    ]).then(function() {
+        createLookingGlass();
 
-    DeskletManager.init();
-    SearchProviderManager.init();
+        a11yHandler = new Accessibility.A11yHandler();
 
-    createLookingGlass();
+        if (software_rendering && !GLib.getenv('CINNAMON_2D')) {
+            notifyCinnamon2d();
+        }
 
-    a11yHandler = new Accessibility.A11yHandler();
+        if (xlet_startup_error)
+            Mainloop.timeout_add_seconds(3, notifyXletStartupError);
 
-    if (software_rendering && !GLib.getenv('CINNAMON_2D')) {
-        notifyCinnamon2d();
-    }
+        let sound_settings = new Gio.Settings( {schema_id: "org.cinnamon.sounds"} );
+        let do_login_sound = sound_settings.get_boolean("login-enabled");
 
-    if (xlet_startup_error)
-        Mainloop.timeout_add_seconds(3, notifyXletStartupError);
+        // We're mostly prepared for the startup animation
+        // now, but since a lot is going on asynchronously
+        // during startup, let's defer the startup animation
+        // until the event loop is uncontended and idle.
+        // This helps to prevent us from running the animation
+        // when the system is bogged down
+        if (do_animation) {
+            let id = GLib.idle_add(GLib.PRIORITY_LOW, Lang.bind(this, function() {
+                if (do_login_sound)
+                    soundManager.play_once_per_session('login');
+                layoutManager._startupAnimation();
+                return GLib.SOURCE_REMOVE;
+            }));
+        } else {
+            global.background_actor.show();
+            setRunState(RunState.RUNNING);
 
-    let sound_settings = new Gio.Settings( {schema_id: "org.cinnamon.sounds"} );
-    let do_login_sound = sound_settings.get_boolean("login-enabled");
-
-    // We're mostly prepared for the startup animation
-    // now, but since a lot is going on asynchronously
-    // during startup, let's defer the startup animation
-    // until the event loop is uncontended and idle.
-    // This helps to prevent us from running the animation
-    // when the system is bogged down
-    if (do_animation) {
-        let id = GLib.idle_add(GLib.PRIORITY_LOW, Lang.bind(this, function() {
             if (do_login_sound)
                 soundManager.play_once_per_session('login');
-            layoutManager._startupAnimation();
-            return GLib.SOURCE_REMOVE;
-        }));
-    } else {
-        global.background_actor.show();
-        setRunState(RunState.RUNNING);
+        }
 
-        if (do_login_sound)
-            soundManager.play_once_per_session('login');
-    }
+        // Disable panel edit mode when Cinnamon starts
+        if (global.settings.get_boolean("panel-edit-mode")) {
+            global.settings.set_boolean("panel-edit-mode", false);
+        }
 
-    // Disable panel edit mode when Cinnamon starts
-    if (global.settings.get_boolean("panel-edit-mode")) {
-        global.settings.set_boolean("panel-edit-mode", false);
-    }
+        global.connect('shutdown', do_shutdown_sequence);
 
-    global.connect('shutdown', do_shutdown_sequence);
-
-    global.log('Cinnamon took %d ms to start'.format(new Date().getTime() - cinnamonStartTime));
+        global.log('Cinnamon took %d ms to start'.format(new Date().getTime() - cinnamonStartTime));
+    });
 }
 
 function notifyCinnamon2d() {
@@ -1071,9 +1069,9 @@ function _log(category = 'info', msg = '') {
 /**
  * isError:
  * @obj (Object): the object to be tested
- * 
+ *
  * Tests whether @obj is an error object
- * 
+ *
  * Returns (boolean): whether @obj is an error object
  */
 function isError(obj) {
@@ -1099,7 +1097,7 @@ function isError(obj) {
 /**
  * _LogTraceFormatted:
  * @stack (string): the stack trace
- * 
+ *
  * Prints the stack trace to the LookingGlass
  * error stream in a predefined format
  */
@@ -1159,13 +1157,13 @@ function _logWarning(msg) {
  * _logError:
  * @msg (string): (optional) The message string
  * @error (Error): (optional) The error object
- * 
+ *
  * Logs the following (if present) to the
  * LookingGlass error stream:
  * - The message from the error object
  * - The stack trace of the error object
  * - The message @msg
- * 
+ *
  * It can be called in the form of either _logError(msg),
  * _logError(error) or _logError(msg, error).
  */
@@ -1186,9 +1184,9 @@ function _logError(msg, error) {
 /**
  * _logInfo:
  * @msg (Error/string): The error object or the message string
- * 
+ *
  * Logs the message to the LookingGlass
- * error stream. If @msg is an Error object, 
+ * error stream. If @msg is an Error object,
  * its stack trace will also be printed
  */
 
@@ -1219,7 +1217,7 @@ function formatTime(d) {
 /**
  * renderLogLine:
  * @line (dictionary): a log line
- * 
+ *
  * Converts a log line object into a string
  *
  * Returns (string): line in the format CATEGORY t=TIME MESSAGE
@@ -1312,7 +1310,7 @@ function _stageEventHandler(actor, event) {
         expo.hide();
         return true;
     }
-       
+
     if (action == Meta.KeyBindingAction.SWITCH_PANELS) {
         //Used to call the ctrlalttabmanager in Gnome Shell
         return true;
@@ -1329,8 +1327,8 @@ function _stageEventHandler(actor, event) {
              wm.actionMoveWorkspaceRight();
              return true;
         case Meta.KeyBindingAction.WORKSPACE_UP:
-            overview.hide();   
-            expo.hide();                  
+            overview.hide();
+            expo.hide();
             return true;
         case Meta.KeyBindingAction.WORKSPACE_DOWN:
             overview.hide();
@@ -1375,7 +1373,7 @@ function _findModal(actor) {
  * @timestamp is optionally used to associate the call with a specific user
  * initiated event.  If not provided then the value of
  * global.get_current_time() is assumed.
- * 
+ *
  * Returns (boolean): true iff we successfully acquired a grab or already had one
  */
 function pushModal(actor, timestamp, options) {
@@ -1670,7 +1668,7 @@ function isInteresting(metaWindow) {
     if (tracker.get_window_app(metaWindow)) {
         // orphans don't have an app!
         return false;
-    }    
+    }
     let type = metaWindow.get_window_type();
     return type === Meta.WindowType.DIALOG || type === Meta.WindowType.MODAL_DIALOG;
 }
