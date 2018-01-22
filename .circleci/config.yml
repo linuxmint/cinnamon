@@ -1,0 +1,80 @@
+version: 2.0
+
+shared: &shared
+
+    steps:
+
+        - checkout
+
+        - run:
+            name: Prepare environment
+            command: apt-get update
+
+        - run:
+            name: Install dependencies
+            command: |
+                wget https://github.com/linuxmint/xapps/releases/download/master.${CIRCLE_JOB}/packages.tar.gz -O xapps.tar.gz
+                wget https://github.com/linuxmint/cjs/releases/download/master.${CIRCLE_JOB}/packages.tar.gz -O cjs.tar.gz
+                wget https://github.com/linuxmint/cinnamon-translations/releases/download/master.${CIRCLE_JOB}/packages.tar.gz -O cinnamon-translations.tar.gz
+                wget https://github.com/linuxmint/cinnamon-desktop/releases/download/master.${CIRCLE_JOB}/packages.tar.gz -O cinnamon-desktop.tar.gz
+                wget https://github.com/linuxmint/cinnamon-menus/releases/download/master.${CIRCLE_JOB}/packages.tar.gz -O cinnamon-menus.tar.gz
+                wget https://github.com/linuxmint/cinnamon-session/releases/download/master.${CIRCLE_JOB}/packages.tar.gz -O cinnamon-session.tar.gz
+                wget https://github.com/linuxmint/cinnamon-settings-daemon/releases/download/master.${CIRCLE_JOB}/packages.tar.gz -O cinnamon-settings-daemon.tar.gz
+                wget https://github.com/linuxmint/cinnamon-control-center/releases/download/master.${CIRCLE_JOB}/packages.tar.gz -O cinnamon-control-center.tar.gz
+                wget https://github.com/linuxmint/cinnamon-screensaver/releases/download/master.${CIRCLE_JOB}/packages.tar.gz -O cinnamon-screensaver.tar.gz
+                wget https://github.com/linuxmint/muffin/releases/download/master.${CIRCLE_JOB}/packages.tar.gz -O muffin.tar.gz
+                wget https://github.com/linuxmint/nemo/releases/download/master.${CIRCLE_JOB}/packages.tar.gz -O nemo.tar.gz
+                ls *.tar.gz | xargs -i tar zxvf {}
+                apt install --yes --allow-downgrades ./packages/*.deb
+                rm -rf packages
+
+        - run:
+            name: Build project
+            command: mint-build -i
+
+        - run:
+            name: Prepare packages
+            command: |
+                if [ -z $CI_PULL_REQUEST ]; then
+                    mkdir /packages
+                    mv /root/*.deb /packages/
+                    git log > /packages/git.log
+                    cd /
+                    tar zcvf packages.tar.gz packages
+                fi
+
+        - run:
+            name: Deploy packages to Github
+            command: |
+                if [ -z $CI_PULL_REQUEST ]; then
+                    wget https://github.com/tcnksm/ghr/releases/download/v0.5.4/ghr_v0.5.4_linux_amd64.zip
+                    apt-get install --yes unzip
+                    unzip ghr_v0.5.4_linux_amd64.zip
+                    TAG="master".$CIRCLE_JOB
+                    ./ghr -t $GITHUB_TOKEN -u $CIRCLE_PROJECT_USERNAME -r $CIRCLE_PROJECT_REPONAME -replace $TAG /packages.tar.gz
+                    ./ghr -t $GITHUB_TOKEN -u $CIRCLE_PROJECT_USERNAME -r $CIRCLE_PROJECT_REPONAME -recreate -b "Latest unstable packages" $TAG /packages.tar.gz
+                fi
+
+jobs:
+    "mint18":
+        <<: *shared
+        docker:
+            - image: linuxmintd/mint18-amd64
+
+    "mint19":
+        <<: *shared
+        docker:
+            - image: linuxmintd/mint19-amd64
+
+    "lmde3":
+        <<: *shared
+        docker:
+            - image: linuxmintd/lmde3-amd64
+
+workflows:
+    version: 2
+    build:
+        jobs:
+            - "mint18"
+            - "mint19"
+            - "lmde3"
