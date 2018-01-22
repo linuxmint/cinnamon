@@ -9,8 +9,9 @@ shared: &shared
         - run:
             name: Prepare environment
             command: |
-                locale-gen en_US.UTF-8
                 apt-get update
+                apt-get install --yes locales
+                locale-gen en_US.UTF-8
 
         - run:
             name: Install dependencies
