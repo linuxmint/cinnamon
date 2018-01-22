@@ -598,7 +598,7 @@ const _Draggable = new Lang.Class({
 
     _restoreDragActor: function(eventTime) {
         this._dragInProgress = false;
-        [restoreX, restoreY, restoreScale] = this._getRestoreLocation();
+        let [restoreX, restoreY, restoreScale] = this._getRestoreLocation();
 
         // fade the actor back in at its original location
         this._dragActor.set_position(restoreX, restoreY);
