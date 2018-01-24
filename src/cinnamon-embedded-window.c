@@ -19,20 +19,11 @@
  *  - CinnamonGtkEmbed is created for the CinnamonEmbeddedWindow
  *  - actor is added to a stage
  *
- * Ideally, the way it would work is that the GtkWindow is mapped
- * if and only if both:
+ * The GtkWindow is mapped if and only if both:
  *
- * - GTK_WIDGET_VISIBLE (window) [widget has been shown]
+ * - gtk_window_visible (window) [widget has been shown]
  * - Actor is mapped [actor and all parents visible, actor in stage]
  *
- * Implementing this perfectly is not currently possible, due to problems
- * in Clutter, see:
- *
- * http://bugzilla.openedhand.com/show_bug.cgi?id=1138
- *
- * So until that is fixed we use the "realized" state of the ClutterActor
- * as a stand-in for the ideal mapped state, this will work as long
- * as the ClutterActor and all its parents are in fact visible.
  */
 
 G_DEFINE_TYPE (CinnamonEmbeddedWindow, cinnamon_embedded_window, GTK_TYPE_WINDOW);
@@ -230,7 +221,7 @@ _cinnamon_embedded_window_set_actor (CinnamonEmbeddedWindow  *window,
   window->priv->actor = actor;
 
   if (actor &&
-      clutter_actor_is_realized (CLUTTER_ACTOR (actor)) &&
+      clutter_actor_is_mapped (CLUTTER_ACTOR (actor)) &&
       gtk_widget_get_visible (GTK_WIDGET (window)))
     gtk_widget_map (GTK_WIDGET (window));
 }
@@ -270,7 +261,7 @@ _cinnamon_embedded_window_allocate (CinnamonEmbeddedWindow *window,
 }
 
 void
-_cinnamon_embedded_window_realize (CinnamonEmbeddedWindow *window)
+_cinnamon_embedded_window_map (CinnamonEmbeddedWindow *window)
 {
   g_return_if_fail (CINNAMON_IS_EMBEDDED_WINDOW (window));
 
@@ -279,7 +270,7 @@ _cinnamon_embedded_window_realize (CinnamonEmbeddedWindow *window)
 }
 
 void
-_cinnamon_embedded_window_unrealize (CinnamonEmbeddedWindow *window)
+_cinnamon_embedded_window_unmap (CinnamonEmbeddedWindow *window)
 {
   g_return_if_fail (CINNAMON_IS_EMBEDDED_WINDOW (window));
 
