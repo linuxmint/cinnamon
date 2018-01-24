@@ -61,5 +61,20 @@
         "type" : "switch",
         "description" : "Hide system tray icons for compatible players",
         "default": true
+    },
+    "section3": {
+        "type": "section",
+        "description" : "Sound Settings"
+    },
+    "percentMaxVolume": {
+        "type": "spinbutton",
+        "default": 100,
+        "min": 30,
+        "max": 150,
+        "units": "% of nominal volume",
+        "step": 5,
+        "description": "Maximum volume control",
+        "tooltip": "You can try to increase the volume of your sound card up to 150% of its nominal value. Use with caution. You can also set a value less than 100%, for example on a child's computer."
     }
+    
 }

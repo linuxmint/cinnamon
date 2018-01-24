@@ -88,7 +88,7 @@ VolumeSlider.prototype = {
     _init: function(applet, stream, tooltip, app_icon){
         PopupMenu.PopupSliderMenuItem.prototype._init.call(this, 0);
         this.applet = applet;
-
+        
         if(tooltip)
             this.tooltipText = tooltip + ": ";
         else
@@ -112,6 +112,10 @@ VolumeSlider.prototype = {
         this.addActor(this._slider, {span: -1, expand: true});
 
         this.connectWithStream(stream);
+    },
+    
+    set_master: function(is_master) {
+        this.is_master = is_master
     },
 
     connectWithStream: function(stream){
@@ -156,7 +160,7 @@ VolumeSlider.prototype = {
     },
 
     _update: function(){
-        let value = (!this.stream || this.stream.is_muted)? 0 : this.stream.volume / this.applet._volumeMax;
+        let value = (!this.stream || this.stream.is_muted)? 0 : this.stream.volume / this.applet._volumeNominal;
         let percentage = Math.round(value * 100) + "%";
 
         this.tooltip.set_text(this.tooltipText + percentage);
@@ -164,15 +168,57 @@ VolumeSlider.prototype = {
         if (this.app_icon == null) {
             this.icon.icon_name = iconName;
         }
-        this.setValue(value);
+        
+        let _icon_and_slider_style_class = this._volumeToStyleClass(value);
+        if (this.is_master)
+            this.applet.actor.style_class = _icon_and_slider_style_class;
+        this.actor.style_class = _icon_and_slider_style_class;
+        
+        this.setValue(value/this.applet.pcMaxVolume);
 
         // send data to applet
         this.emit("values-changed", iconName, percentage);
     },
 
+    setValue: function(value) {
+        if (isNaN(value))
+            throw TypeError('The slider value must be a number');
+
+        this._value = Math.max(Math.min(value, 1), 0);
+        this._slider.queue_repaint();
+    },
+
+    _onScrollEvent: function (actor, event) {
+        let direction = event.get_scroll_direction();
+
+        if (direction == Clutter.ScrollDirection.DOWN) {
+            this._value = Math.max(0, this._value - VOLUME_ADJUSTMENT_STEP/this.applet.pcMaxVolume);
+        }
+        else if (direction == Clutter.ScrollDirection.UP) {
+            this._value = Math.min(1, this._value + VOLUME_ADJUSTMENT_STEP/this.applet.pcMaxVolume);
+        }
+
+        this._slider.queue_repaint();
+        this.emit('value-changed', this._value);
+    },
+
+    _onKeyPressEvent: function (actor, event) {
+        let key = event.get_key_symbol();
+        if (key == Clutter.KEY_Right || key == Clutter.KEY_Left) {
+            let delta = key == Clutter.KEY_Right ? VOLUME_ADJUSTMENT_STEP : -VOLUME_ADJUSTMENT_STEP;
+            this._value = Math.max(0, Math.min(this._value + delta/this.applet.pcMaxVolume, 1));
+            this._slider.queue_repaint();
+            this.emit('value-changed', this._value);
+            this.emit('drag-end');
+            return true;
+        }
+        return false;
+    },
+
     _volumeToIcon: function(value){
         if(value < 0.005)
             return this.isMic? "microphone-sensitivity-none" : "audio-volume-muted";
+
         let n = Math.floor(3 * value), icon;
         if(n < 1)
             icon = "low";
@@ -182,6 +228,20 @@ VolumeSlider.prototype = {
             icon = "high";
 
         return this.isMic? "microphone-sensitivity-" + icon : "audio-volume-" + icon;
+    },
+    
+    _volumeToStyleClass: function(value){
+        let _icon_and_slider_style_class = 'sound-normal';
+        if (value > 1) {
+            if (value <= 1.15) {
+                _icon_and_slider_style_class = 'sound-veryhigh'
+            } else if (value <= 1.3) {
+                _icon_and_slider_style_class = 'sound-superhigh'
+            } else {
+                _icon_and_slider_style_class = 'sound-extrahigh'
+            }
+        }
+        return _icon_and_slider_style_class
     }
 };
 
@@ -224,6 +284,7 @@ StreamMenuSection.prototype = {
         }
 
         let slider = new VolumeSlider(applet, stream, name, iconName);
+        slider.set_master(false);
         this.addMenuItem(slider);
     }
 };
@@ -835,11 +896,19 @@ MyApplet.prototype = {
 
         try {
             this.metadata = metadata;
+
+            this.cssfile = metadata.path + "/stylesheet.css";
+
             this.settings = new Settings.AppletSettings(this, metadata.uuid, instanceId);
             this.settings.bind("showtrack", "showtrack", this.on_settings_changed);
             this.settings.bind("middleClickAction", "middleClickAction");
             this.settings.bind("showalbum", "showalbum", this.on_settings_changed);
             this.settings.bind("truncatetext", "truncatetext", this.on_settings_changed);
+
+            this.settings.bind("percentMaxVolume", "percentMaxVolume", this.on_settings_changed);
+            this.pcMaxVolume = this.percentMaxVolume/100;
+            this.old_pcMaxVolume = this.pcMaxVolume;
+
             this.settings.bind("hideSystray", "hideSystray", function() {
                 if (this.hideSystray) this.registerSystrayIcons();
                 else this.unregisterSystrayIcons();
@@ -914,7 +983,10 @@ MyApplet.prototype = {
             this._control.connect('stream-added', Lang.bind(this, this._onStreamAdded));
             this._control.connect('stream-removed', Lang.bind(this, this._onStreamRemoved));
 
-            this._volumeMax = 1*this._control.get_vol_max_norm(); // previously was 1.5*this._control.get_vol_max_norm();, but we'd need a little mark on the slider to make it obvious to the user we're going over 100%..
+            // The problem described below is corrected by this version, with colorful icons.
+            //this._volumeMax = 1*this._control.get_vol_max_norm(); // previously was 1.5*this._control.get_vol_max_norm();, but we'd need a little mark on the slider to make it obvious to the user we're going over 100%..
+            this._volumeNominal = 1*this._control.get_vol_max_norm();
+            this._volumeMax = this.pcMaxVolume * this._volumeNominal;
             this._streams = [];
             this._devices = [];
             this._recordingAppsNum = 0;
@@ -948,6 +1020,7 @@ MyApplet.prototype = {
 
             this._inputSection = new PopupMenu.PopupMenuSection();
             this._inputVolumeSection = new VolumeSlider(this, null, _("Microphone"), null);
+            this._inputVolumeSection.set_master(false);
             this._inputVolumeSection.connect("values-changed", Lang.bind(this, this._inputValuesChanged));
             this._selectInputDeviceItem = new PopupMenu.PopupSubMenuMenuItem(_("Input device"));
             this._inputSection.addMenuItem(this._inputVolumeSection);
@@ -985,6 +1058,13 @@ MyApplet.prototype = {
             this.setAppletTextIcon();
 
         this._changeActivePlayer(this._activePlayer);
+
+        this.pcMaxVolume = this.percentMaxVolume/100;
+        this._volumeMax = this.pcMaxVolume * this._volumeNominal;
+        this._outputVolumeSection.setValue(Math.min(this._outputVolumeSection._value/this.pcMaxVolume*this.old_pcMaxVolume, 1));
+        this.old_pcMaxVolume = this.pcMaxVolume;
+        this._outputVolumeSection._onValueChanged();
+        this._outputVolumeSection._update();
     },
 
     on_applet_removed_from_panel : function() {
@@ -1030,7 +1110,7 @@ MyApplet.prototype = {
 
         if (direction == Clutter.ScrollDirection.DOWN) {
             let prev_muted = this._output.is_muted;
-            this._output.volume = Math.max(0, currentVolume - this._volumeMax * VOLUME_ADJUSTMENT_STEP);
+            this._output.volume = Math.max(0, currentVolume - this._volumeNominal * VOLUME_ADJUSTMENT_STEP);
             if (this._output.volume < 1) {
                 this._output.volume = 0;
                 if (!prev_muted)
@@ -1039,7 +1119,7 @@ MyApplet.prototype = {
             this._output.push_volume();
         }
         else if (direction == Clutter.ScrollDirection.UP) {
-            this._output.volume = Math.min(this._volumeMax, currentVolume + this._volumeMax * VOLUME_ADJUSTMENT_STEP);
+            this._output.volume = Math.min(this._volumeMax, currentVolume + this._volumeNominal * VOLUME_ADJUSTMENT_STEP);
             this._output.push_volume();
             this._output.change_is_muted(false);
         }
@@ -1269,6 +1349,7 @@ MyApplet.prototype = {
         //between these two separators will be the player MenuSection (position 3)
         this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
         this._outputVolumeSection = new VolumeSlider(this, null, _("Volume"), null);
+        this._outputVolumeSection.set_master(true);
         this._outputVolumeSection.connect("values-changed", Lang.bind(this, this._outputValuesChanged));
 
         this.menu.addMenuItem(this._outputVolumeSection);
@@ -1468,6 +1549,10 @@ MyApplet.prototype = {
             this._streams.push({id: id, type: "SourceOutput"});
             if (this._recordingAppsNum++ === 0)
                 this._inputSection.actor.show();
+        }
+        
+        if (this._outputVolumeSection != null) {
+            this.actor.style_class = this._outputVolumeSection.actor.style_class;
         }
     },
 
