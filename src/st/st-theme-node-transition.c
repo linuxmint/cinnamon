@@ -218,7 +218,6 @@ setup_framebuffers (StThemeNodeTransition *transition,
                     const ClutterActorBox *allocation)
 {
   StThemeNodeTransitionPrivate *priv = transition->priv;
-  CoglColor clear_color = { 0, 0, 0, 0 };
   guint width, height;
 
   /* template material to avoid unnecessary shader compilation */
@@ -249,11 +248,11 @@ setup_framebuffers (StThemeNodeTransition *transition,
 
   if (priv->old_offscreen)
     cogl_handle_unref (priv->old_offscreen);
-  priv->old_offscreen = cogl_offscreen_new_to_texture (priv->old_texture);
+  priv->old_offscreen = cogl_offscreen_new_with_texture (priv->old_texture);
 
   if (priv->new_offscreen)
     cogl_handle_unref (priv->new_offscreen);
-  priv->new_offscreen = cogl_offscreen_new_to_texture (priv->new_texture);
+  priv->new_offscreen = cogl_offscreen_new_with_texture (priv->new_texture);
 
   g_return_val_if_fail (priv->old_offscreen != COGL_INVALID_HANDLE, FALSE);
   g_return_val_if_fail (priv->new_offscreen != COGL_INVALID_HANDLE, FALSE);
@@ -262,40 +261,50 @@ setup_framebuffers (StThemeNodeTransition *transition,
     {
       if (G_UNLIKELY (material_template == COGL_INVALID_HANDLE))
         {
-          material_template = cogl_material_new ();
+          CoglContext *ctx =
+            clutter_backend_get_cogl_context (clutter_get_default_backend ());
+          material_template = cogl_pipeline_new (ctx);
 
-          cogl_material_set_layer_combine (material_template, 0,
+          cogl_pipeline_set_layer_combine (material_template, 0,
                                            "RGBA = REPLACE (TEXTURE)",
                                            NULL);
-          cogl_material_set_layer_combine (material_template, 1,
+          cogl_pipeline_set_layer_combine (material_template, 1,
                                            "RGBA = INTERPOLATE (PREVIOUS, "
                                                                "TEXTURE, "
                                                                "CONSTANT[A])",
                                            NULL);
-          cogl_material_set_layer_combine (material_template, 2,
+          cogl_pipeline_set_layer_combine (material_template, 2,
                                            "RGBA = MODULATE (PREVIOUS, "
                                                             "PRIMARY)",
                                            NULL);
         }
-      priv->material = cogl_material_copy (material_template);
+      priv->material = cogl_pipeline_copy (material_template);
     }
 
-  cogl_material_set_layer (priv->material, 0, priv->new_texture);
-  cogl_material_set_layer (priv->material, 1, priv->old_texture);
+  cogl_pipeline_set_layer_texture (priv->material, 0, priv->new_texture);
+  cogl_pipeline_set_layer_texture (priv->material, 1, priv->old_texture);
+
+  cogl_framebuffer_clear4f (priv->old_offscreen, COGL_BUFFER_BIT_COLOR,
+                            0, 0, 0, 0);
+  cogl_framebuffer_orthographic (priv->old_offscreen,
+                                 priv->offscreen_box.x1,
+                                 priv->offscreen_box.y1,
+                                 priv->offscreen_box.x2,
+                                 priv->offscreen_box.y2, 0.0, 1.0);
+
+  cogl_framebuffer_clear4f (priv->new_offscreen, COGL_BUFFER_BIT_COLOR,
+                            0, 0, 0, 0);
+  cogl_framebuffer_orthographic (priv->new_offscreen,
+                                 priv->offscreen_box.x1,
+                                 priv->offscreen_box.y1,
+                                 priv->offscreen_box.x2,
+                                 priv->offscreen_box.y2, 0.0, 1.0);
 
   cogl_push_framebuffer (priv->old_offscreen);
-  cogl_clear (&clear_color, COGL_BUFFER_BIT_COLOR);
-  cogl_ortho (priv->offscreen_box.x1, priv->offscreen_box.x2,
-              priv->offscreen_box.y2, priv->offscreen_box.y1,
-              0.0, 1.0);
   st_theme_node_paint (priv->old_theme_node, allocation, 255);
   cogl_pop_framebuffer ();
 
   cogl_push_framebuffer (priv->new_offscreen);
-  cogl_clear (&clear_color, COGL_BUFFER_BIT_COLOR);
-  cogl_ortho (priv->offscreen_box.x1, priv->offscreen_box.x2,
-              priv->offscreen_box.y2, priv->offscreen_box.y1,
-              0.0, 1.0);
   st_theme_node_paint (priv->new_theme_node, allocation, 255);
   cogl_pop_framebuffer ();
 
@@ -308,6 +317,7 @@ st_theme_node_transition_paint (StThemeNodeTransition *transition,
                                 guint8                 paint_opacity)
 {
   StThemeNodeTransitionPrivate *priv = transition->priv;
+  CoglFramebuffer *fb = cogl_get_draw_framebuffer ();
 
   CoglColor constant;
   float tex_coords[] = {
@@ -332,20 +342,21 @@ st_theme_node_transition_paint (StThemeNodeTransition *transition,
         return;
     }
 
-  cogl_color_set_from_4f (&constant, 0., 0., 0.,
-                          clutter_timeline_get_progress (priv->timeline));
-  cogl_material_set_layer_combine_constant (priv->material, 1, &constant);
+  cogl_color_init_from_4f (&constant, 0., 0., 0.,
+                           clutter_timeline_get_progress (priv->timeline));
+  cogl_pipeline_set_layer_combine_constant (priv->material, 1, &constant);
 
-  cogl_material_set_color4ub (priv->material,
+  cogl_pipeline_set_color4ub (priv->material,
                               paint_opacity, paint_opacity,
                               paint_opacity, paint_opacity);
 
-  cogl_set_source (priv->material);
-  cogl_rectangle_with_multitexture_coords (priv->offscreen_box.x1,
-                                           priv->offscreen_box.y1,
-                                           priv->offscreen_box.x2,
-                                           priv->offscreen_box.y2,
-                                           tex_coords, 8);
+  cogl_framebuffer_draw_multitextured_rectangle (fb, priv->material,
+                                                 priv->offscreen_box.x1,
+                                                 priv->offscreen_box.y1,
+                                                 priv->offscreen_box.x2,
+                                                 priv->offscreen_box.y2,
+                                                 tex_coords, 8);
+
 }
 
 static void
