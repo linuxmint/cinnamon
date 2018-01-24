@@ -45,6 +45,8 @@
         "default": "mute",
         "options": {
             "Toggle Mute": "mute",
+            "Toggle Mute output": "out_mute",
+            "Toggle Mute input": "in_mute",
             "Toggle Play / Pause": "player"
         },
         "description": "Action on middle click"

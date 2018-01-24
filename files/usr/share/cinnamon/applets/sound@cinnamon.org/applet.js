@@ -1052,8 +1052,13 @@ MyApplet.prototype = {
 
         //mute or play / pause players on middle click
         if (buttonId === 2) {
-            if (this.middleClickAction === "mute")
+            if (this.middleClickAction === "mute") {
                 this._toggle_out_mute();
+                this._toggle_in_mute();
+            } else if (this.middleClickAction === "out_mute")
+                this._toggle_out_mute();
+            else if (this.middleClickAction === "in_mute")
+                this._toggle_in_mute();
             else if (this.middleClickAction === "player")
                 this._players[this._activePlayer]._mediaServerPlayer.PlayPauseRemote();
         } else if (buttonId === 8) { // previous and next track on mouse buttons 4 and 5 (8 and 9 by X11 numbering)
