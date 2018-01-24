@@ -145,6 +145,11 @@ class TitleBarButtonsOrderSelector(SettingsBox):
         self.settings = Gio.Settings.new(self.schema)
         self.value = self.settings.get_string(self.key)
 
+        self.gtk_schema = "org.cinnamon.desktop.interface"
+        self.gtk_key = "gtk-decoration-layout"
+
+        self.gtk_settings = Gio.Settings.new(self.gtk_schema)
+
         left_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
         left_box.set_border_width(5)
         left_box.set_margin_left(20)
@@ -258,4 +263,6 @@ class TitleBarButtonsOrderSelector(SettingsBox):
                         left_items.append(value)
                     else:
                         right_items.append(value)
-        self.settings.set_string(self.key, ','.join(str(item) for item in left_items) + ':' + ','.join(str(item) for item in right_items))
+        value = ','.join(str(item) for item in left_items) + ':' + ','.join(str(item) for item in right_items)
+        self.settings.set_string(self.key, value)
+        self.gtk_settings.set_string(self.gtk_key, value)
