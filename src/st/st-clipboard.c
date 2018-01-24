@@ -33,11 +33,6 @@
 #include <clutter/x11/clutter-x11.h>
 #include <string.h>
 
-G_DEFINE_TYPE (StClipboard, st_clipboard, G_TYPE_OBJECT)
-
-#define CLIPBOARD_PRIVATE(o) \
-  (G_TYPE_INSTANCE_GET_PRIVATE ((o), ST_TYPE_CLIPBOARD, StClipboardPrivate))
-
 struct _StClipboardPrivate
 {
   Window clipboard_window;
@@ -46,6 +41,8 @@ struct _StClipboardPrivate
   Atom  *supported_targets;
   gint   n_targets;
 };
+
+G_DEFINE_TYPE_WITH_PRIVATE (StClipboard, st_clipboard, G_TYPE_OBJECT)
 
 typedef struct _EventFilterData EventFilterData;
 struct _EventFilterData
@@ -174,8 +171,6 @@ st_clipboard_class_init (StClipboardClass *klass)
 {
   GObjectClass *object_class = G_OBJECT_CLASS (klass);
 
-  g_type_class_add_private (klass, sizeof (StClipboardPrivate));
-
   object_class->get_property = st_clipboard_get_property;
   object_class->set_property = st_clipboard_set_property;
   object_class->dispose = st_clipboard_dispose;
@@ -188,7 +183,7 @@ st_clipboard_init (StClipboard *self)
   Display *dpy;
   StClipboardPrivate *priv;
 
-  priv = self->priv = CLIPBOARD_PRIVATE (self);
+  priv = self->priv = st_clipboard_get_instance_private (self);
 
   priv->clipboard_window =
     XCreateSimpleWindow (clutter_x11_get_default_display (),

@@ -28,8 +28,6 @@ enum {
   LAST_SIGNAL
 };
 
-#define ST_THEME_NODE_TRANSITION_GET_PRIVATE(obj) (G_TYPE_INSTANCE_GET_PRIVATE ((obj), ST_TYPE_THEME_NODE_TRANSITION, StThemeNodeTransitionPrivate))
-
 struct _StThemeNodeTransitionPrivate {
   StThemeNode *old_theme_node;
   StThemeNode *new_theme_node;
@@ -55,7 +53,7 @@ struct _StThemeNodeTransitionPrivate {
 
 static guint signals[LAST_SIGNAL] = { 0 };
 
-G_DEFINE_TYPE (StThemeNodeTransition, st_theme_node_transition, G_TYPE_OBJECT);
+G_DEFINE_TYPE_WITH_PRIVATE (StThemeNodeTransition, st_theme_node_transition, G_TYPE_OBJECT);
 
 
 static void
@@ -428,7 +426,7 @@ st_theme_node_transition_dispose (GObject *object)
 static void
 st_theme_node_transition_init (StThemeNodeTransition *transition)
 {
-  transition->priv = ST_THEME_NODE_TRANSITION_GET_PRIVATE (transition);
+  transition->priv = st_theme_node_transition_get_instance_private (transition);
 
   transition->priv->old_theme_node = NULL;
   transition->priv->new_theme_node = NULL;
@@ -446,8 +444,6 @@ static void
 st_theme_node_transition_class_init (StThemeNodeTransitionClass *klass)
 {
   GObjectClass *object_class = G_OBJECT_CLASS (klass);
-
-  g_type_class_add_private (klass, sizeof (StThemeNodeTransitionPrivate));
 
   object_class->dispose = st_theme_node_transition_dispose;
 

@@ -124,9 +124,7 @@ static guint signals[LAST_SIGNAL] = { 0, };
 
 gfloat st_slow_down_factor = 1.0;
 
-G_DEFINE_TYPE (StWidget, st_widget, CLUTTER_TYPE_ACTOR);
-
-#define ST_WIDGET_GET_PRIVATE(obj)    (G_TYPE_INSTANCE_GET_PRIVATE ((obj), ST_TYPE_WIDGET, StWidgetPrivate))
+G_DEFINE_TYPE_WITH_PRIVATE (StWidget, st_widget, CLUTTER_TYPE_ACTOR);
 
 static void st_widget_recompute_style (StWidget    *widget,
                                        StThemeNode *old_theme_node);
@@ -782,8 +780,6 @@ st_widget_class_init (StWidgetClass *klass)
   GObjectClass *gobject_class = G_OBJECT_CLASS (klass);
   ClutterActorClass *actor_class = CLUTTER_ACTOR_CLASS (klass);
   GParamSpec *pspec;
-
-  g_type_class_add_private (klass, sizeof (StWidgetPrivate));
 
   gobject_class->set_property = st_widget_set_property;
   gobject_class->get_property = st_widget_get_property;
@@ -1526,7 +1522,7 @@ st_widget_init (StWidget *actor)
 {
   StWidgetPrivate *priv;
 
-  actor->priv = priv = ST_WIDGET_GET_PRIVATE (actor);
+  actor->priv = priv = st_widget_get_instance_private (actor);
   priv->transition_animation = NULL;
   priv->local_state_set = atk_state_set_new ();
 
@@ -1769,7 +1765,7 @@ st_widget_sync_hover (StWidget *widget)
   ClutterDeviceManager *device_manager;
   ClutterInputDevice *pointer;
   ClutterActor *pointer_actor;
-  
+
   if (widget->priv->track_hover) {
     device_manager = clutter_device_manager_get_default ();
     pointer = clutter_device_manager_get_core_device (device_manager,
@@ -2540,12 +2536,6 @@ static void check_pseudo_class     (StWidgetAccessible *self,
 static void check_labels           (StWidgetAccessible *self,
                                     StWidget *widget);
 
-G_DEFINE_TYPE (StWidgetAccessible, st_widget_accessible, CALLY_TYPE_ACTOR)
-
-#define ST_WIDGET_ACCESSIBLE_GET_PRIVATE(obj) \
-  (G_TYPE_INSTANCE_GET_PRIVATE ((obj), ST_TYPE_WIDGET_ACCESSIBLE, \
-                                StWidgetAccessiblePrivate))
-
 struct _StWidgetAccessiblePrivate
 {
   /* Cached values (used to avoid extra notifications) */
@@ -2558,6 +2548,7 @@ struct _StWidgetAccessiblePrivate
   AtkObject *current_label;
 };
 
+G_DEFINE_TYPE_WITH_PRIVATE (StWidgetAccessible, st_widget_accessible, CALLY_TYPE_ACTOR)
 
 static AtkObject *
 st_widget_get_accessible (ClutterActor *actor)
@@ -2674,14 +2665,12 @@ st_widget_accessible_class_init (StWidgetAccessibleClass *klass)
   atk_class->initialize = st_widget_accessible_initialize;
   atk_class->get_role = st_widget_accessible_get_role;
   atk_class->get_name = st_widget_accessible_get_name;
-
-  g_type_class_add_private (gobject_class, sizeof (StWidgetAccessiblePrivate));
 }
 
 static void
 st_widget_accessible_init (StWidgetAccessible *self)
 {
-  StWidgetAccessiblePrivate *priv = ST_WIDGET_ACCESSIBLE_GET_PRIVATE (self);
+  StWidgetAccessiblePrivate *priv = st_widget_accessible_get_instance_private (self);
 
   self->priv = priv;
 }
@@ -2968,7 +2957,7 @@ st_widget_destroy_children (StWidget *widget)
  * @widget: An #StWidget
  * @actor: A #ClutterActor
  * @pos: An #int
- * 
+ *
  *
  * A simple compatibility wrapper around clutter_actor_set_child_at_index.
  *

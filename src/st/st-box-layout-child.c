@@ -30,10 +30,6 @@
 
 G_DEFINE_TYPE (StBoxLayoutChild, st_box_layout_child, CLUTTER_TYPE_CHILD_META)
 
-#define BOX_LAYOUT_CHILD_PRIVATE(o) \
-  (G_TYPE_INSTANCE_GET_PRIVATE ((o), ST_TYPE_BOX_LAYOUT_CHILD, StBoxLayoutChildPrivate))
-
-
 enum
 {
   PROP_0,
