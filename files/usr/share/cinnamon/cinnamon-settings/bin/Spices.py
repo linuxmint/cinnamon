@@ -387,6 +387,7 @@ class Spice_Harvester(GObject.Object):
 
     def _directory_changed(self, *args):
         self._load_metadata()
+        self._generate_update_list()
         self.emit("installed-changed")
 
     """ returns a dictionary of the metadata by uuid of all installed spices"""
@@ -446,7 +447,6 @@ class Spice_Harvester(GObject.Object):
         else:
             self.has_cache = True
 
-        self.updates_available = []
         f = open(filename, 'r')
         try:
             self.index_cache = json.load(f)
@@ -457,6 +457,10 @@ class Spice_Harvester(GObject.Object):
                 pass
             self.errorMessage(_("Something went wrong with the spices download.  Please try refreshing the list again."), str(detail))
 
+        self._generate_update_list()
+
+    def _generate_update_list(self):
+        self.updates_available = []
         for uuid in self.index_cache:
             if self.get_is_installed(uuid) and self.get_has_update(uuid):
                 self.updates_available.append(uuid)
