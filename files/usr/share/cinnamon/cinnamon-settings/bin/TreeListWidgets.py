@@ -38,7 +38,18 @@ PROPERTIES_MAP = {
 }
 
 def list_edit_factory(options):
-    class Widget(CLASS_TYPE_MAP[options["type"]]):
+    kwargs = {}
+    if 'options' in options:
+        kwargs['valtype'] = VARIABLE_TYPE_MAP[options['type']]
+        widget_type = ComboBox
+        options_list = options['options']
+        if isinstance(options_list, dict):
+            kwargs['options'] = [(b, a) for a, b in options_list.items()]
+        else:
+            kwargs['options'] = zip(options_list, options_list)
+    else:
+        widget_type = CLASS_TYPE_MAP[options["type"]]
+    class Widget(widget_type):
         def __init__(self, **kwargs):
             super(Widget, self).__init__(**kwargs)
 
@@ -78,7 +89,6 @@ def list_edit_factory(options):
                     return self.bind_object.get_property(self.bind_prop)
                 return self.content_widget.get_property(self.bind_prop)
 
-    kwargs = {}
     for prop in options:
         if prop in PROPERTIES_MAP:
             kwargs[PROPERTIES_MAP[prop]] = options[prop]
