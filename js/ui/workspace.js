@@ -29,7 +29,7 @@ const SCROLL_SCALE_AMOUNT = 50;
 const LIGHTBOX_FADE_TIME = 0.1;
 const CLOSE_BUTTON_FADE_TIME = 0.1;
 
-const BUTTON_LAYOUT_SCHEMA = 'org.cinnamon.muffin';
+const BUTTON_LAYOUT_SCHEMA = 'org.cinnamon.desktop.wm.preferences';
 const BUTTON_LAYOUT_KEY = 'button-layout';
 
 const DEMANDS_ATTENTION_CLASS_NAME = "window-list-item-demands-attention";

@@ -137,7 +137,7 @@ class Module:
 
 class TitleBarButtonsOrderSelector(SettingsBox):
     def __init__(self):
-        self.schema = "org.cinnamon.muffin"
+        self.schema = "org.cinnamon.desktop.wm.preferences"
         self.key = "button-layout"
 
         super(TitleBarButtonsOrderSelector, self).__init__(_("Buttons"))
