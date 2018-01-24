@@ -483,6 +483,8 @@ static void
 recorder_draw_buffer_meter (CinnamonRecorder *recorder)
 {
   int fill_level;
+  float vert[16];
+  guint nvert;
 
   recorder_update_memory_used (recorder, FALSE);
 
@@ -497,14 +499,24 @@ recorder_draw_buffer_meter (CinnamonRecorder *recorder)
   fill_level = MIN (60, (recorder->memory_used * 60) / recorder->memory_target);
 
   /* A hollow rectangle filled from the left to fill_level */
-  cogl_rectangle (recorder->horizontal_adjust - 64, recorder->stage_height - recorder->vertical_adjust - 10,
-                  recorder->horizontal_adjust - 2,  recorder->stage_height - recorder->vertical_adjust - 9);
-  cogl_rectangle (recorder->horizontal_adjust - 64, recorder->stage_height - recorder->vertical_adjust - 9,
-                  recorder->horizontal_adjust - (63 - fill_level), recorder->stage_height - recorder->vertical_adjust - 3);
-  cogl_rectangle (recorder->horizontal_adjust - 3,  recorder->stage_height - recorder->vertical_adjust - 9,
-                  recorder->horizontal_adjust - 2,  recorder->stage_height - recorder->vertical_adjust - 3);
-  cogl_rectangle (recorder->horizontal_adjust - 64, recorder->stage_height - recorder->vertical_adjust - 3,
-                  recorder->horizontal_adjust - 2,  recorder->stage_height - recorder->vertical_adjust - 2);
+  nvert = 0;
+  vert[nvert++] = recorder->horizontal_adjust - 64;
+  vert[nvert++] = recorder->stage_height - recorder->vertical_adjust - 10;
+  vert[nvert++] = recorder->horizontal_adjust - 2;
+  vert[nvert++] = recorder->stage_height - recorder->vertical_adjust - 9;
+  vert[nvert++] = recorder->horizontal_adjust - 64;
+  vert[nvert++] = recorder->stage_height - recorder->vertical_adjust - 9;
+  vert[nvert++] = recorder->horizontal_adjust - (63 - fill_level);
+  vert[nvert++] = recorder->stage_height - recorder->vertical_adjust - 3;
+  vert[nvert++] = recorder->horizontal_adjust - 3;
+  vert[nvert++] = recorder->stage_height - recorder->vertical_adjust - 9;
+  vert[nvert++] = recorder->horizontal_adjust - 2;
+  vert[nvert++] = recorder->stage_height - recorder->vertical_adjust - 3;
+  vert[nvert++] = recorder->horizontal_adjust - 64;
+  vert[nvert++] = recorder->stage_height - recorder->vertical_adjust - 3;
+  vert[nvert++] = recorder->horizontal_adjust - 2;
+  vert[nvert++] = recorder->stage_height - recorder->vertical_adjust - 2;
+  cogl_rectangles (vert, (int)nvert/4);
 }
 
 /* We want to time-stamp each frame based on the actual time it was
