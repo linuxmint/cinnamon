@@ -37,6 +37,13 @@ var BindingDirection = {
 };
 
 var SETTINGS_TYPES = {
+    "secrettype" : {
+        "required-fields": [
+            "type",
+            "default",
+            "description"
+        ]
+    },
     "checkbox" : {
         "required-fields": [
             "type",
@@ -208,19 +215,19 @@ var NON_SETTING_TYPES = {
 };
 
 function settings_not_initialized_error(uuid) {
-    global.logError("Could not set up binding - settings object was not initialized successfully for " + uuid);
+    global.logError("Oh noes! An error! Could not set up binding - settings object was not initialized successfully for " + uuid);
 }
 
 function key_not_found_error (key_name, uuid) {
-    global.logError("Could not find setting key '" + key_name + "' for applet/desklet uuid " + uuid);
+    global.logError("Huston, we have a problem. Could not find setting key '" + key_name + "' for applet/desklet uuid " + uuid);
 }
 
 function invalid_setting_type_error (key_name, uuid, type) {
-    global.logError("Invalid setting type '" + type + "' for setting key '" + key_name + "' of applet/desklet uuid " + uuid);
+    global.logError("I have a bad feeling about this! Invalid setting type '" + type + "' for setting key '" + key_name + "' of applet/desklet uuid " + uuid);
 }
 
 function options_not_supported_error(key_name, uuid, type) {
-    global.logError("Invalid request for key '" + key_name + "' of applet/desklet uuid '" + uuid + "': type '" + type + "' doesn't support options");
+    global.logError("This shouldn't be good. Invalid request for key '" + key_name + "' of applet/desklet uuid '" + uuid + "': type '" + type + "' doesn't support options");
 }
 
 function binding_not_found_error(key_name, uuid) {
