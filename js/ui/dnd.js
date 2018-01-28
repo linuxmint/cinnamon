@@ -74,7 +74,7 @@ function isDragging() {
     return currentDraggable != null;
 }
 
-const _Draggable = new Lang.Class({
+var _Draggable = new Lang.Class({
     Name: 'Draggable',
 
     _init : function(actor, params, target) {
