@@ -34,6 +34,9 @@ const VOLUME_ADJUSTMENT_STEP = 0.05; /* Volume adjustment step in % */
 
 const ICON_SIZE = 28;
 
+const CINNAMON_DESKTOP_SOUNDS = "org.cinnamon.desktop.sound";
+const MAXIMUM_VOLUME_KEY = "maximum-volume";
+
 function ControlButton() {
     this._init.apply(this, arguments);
 }
@@ -156,8 +159,15 @@ VolumeSlider.prototype = {
     },
 
     _update: function(){
-        let value = (!this.stream || this.stream.is_muted)? 0 : this.stream.volume / this.applet._volumeMax;
-        let percentage = Math.round(value * 100) + "%";
+        let value = (!this.stream || this.stream.is_muted)? 0 : this.stream.volume / this.applet._volumeMax; // percentage of volume_max (set as value in the widget)
+        let visible_value = (!this.stream || this.stream.is_muted)? 0 : this.stream.volume / this.applet._volumeNorm; // percentage of volume_norm (shown to the user)
+        let delta = VOLUME_ADJUSTMENT_STEP;
+        if (visible_value > 1 - delta/2 && visible_value < 1 + delta/2) {
+            visible_value = 1; // 100% is magnetic
+            value = this.applet._volumeNorm / this.applet._volumeMax;
+        }
+
+        let percentage = Math.round(visible_value * 100) + "%";
 
         this.tooltip.set_text(this.tooltipText + percentage);
         let iconName = this._volumeToIcon(value);
@@ -914,7 +924,10 @@ MyApplet.prototype = {
             this._control.connect('stream-added', Lang.bind(this, this._onStreamAdded));
             this._control.connect('stream-removed', Lang.bind(this, this._onStreamRemoved));
 
-            this._volumeMax = 1*this._control.get_vol_max_norm(); // previously was 1.5*this._control.get_vol_max_norm();, but we'd need a little mark on the slider to make it obvious to the user we're going over 100%..
+            this._sound_settings = new Gio.Settings({ schema_id: CINNAMON_DESKTOP_SOUNDS });
+            this._volumeMax = this._sound_settings.get_int(MAXIMUM_VOLUME_KEY) / 100 * this._control.get_vol_max_norm();
+            this._volumeNorm = this._control.get_vol_max_norm();
+
             this._streams = [];
             this._devices = [];
             this._recordingAppsNum = 0;
@@ -972,10 +985,18 @@ MyApplet.prototype = {
 
             let appsys = Cinnamon.AppSystem.get_default();
             appsys.connect("installed-changed", Lang.bind(this, this._updateLaunchPlayer));
+
+
+            this._outputVolumeSection.set_mark(this._volumeNorm / this._volumeMax);
+            this._sound_settings.connect("changed::" + MAXIMUM_VOLUME_KEY, Lang.bind(this, this._on_sound_settings_change));
         }
         catch (e) {
             global.logError(e);
         }
+    },
+
+    _on_sound_settings_change : function() {
+        this._volumeMax = this._sound_settings.get_int(MAXIMUM_VOLUME_KEY) / 100 * this._control.get_vol_max_norm();
     },
 
     on_settings_changed : function() {
@@ -1030,7 +1051,7 @@ MyApplet.prototype = {
 
         if (direction == Clutter.ScrollDirection.DOWN) {
             let prev_muted = this._output.is_muted;
-            this._output.volume = Math.max(0, currentVolume - this._volumeMax * VOLUME_ADJUSTMENT_STEP);
+            this._output.volume = Math.max(0, currentVolume - this._volumeNorm * VOLUME_ADJUSTMENT_STEP);
             if (this._output.volume < 1) {
                 this._output.volume = 0;
                 if (!prev_muted)
@@ -1039,7 +1060,7 @@ MyApplet.prototype = {
             this._output.push_volume();
         }
         else if (direction == Clutter.ScrollDirection.UP) {
-            this._output.volume = Math.min(this._volumeMax, currentVolume + this._volumeMax * VOLUME_ADJUSTMENT_STEP);
+            this._output.volume = Math.min(this._volumeMax, currentVolume + this._volumeNorm * VOLUME_ADJUSTMENT_STEP);
             this._output.push_volume();
             this._output.change_is_muted(false);
         }
