@@ -986,8 +986,10 @@ MyApplet.prototype = {
             let appsys = Cinnamon.AppSystem.get_default();
             appsys.connect("installed-changed", Lang.bind(this, this._updateLaunchPlayer));
 
+            if (this._volumeMax > this._volumeNorm) {
+                this._outputVolumeSection.set_mark(this._volumeNorm / this._volumeMax);
+            }
 
-            this._outputVolumeSection.set_mark(this._volumeNorm / this._volumeMax);
             this._sound_settings.connect("changed::" + MAXIMUM_VOLUME_KEY, Lang.bind(this, this._on_sound_settings_change));
         }
         catch (e) {
@@ -997,6 +999,13 @@ MyApplet.prototype = {
 
     _on_sound_settings_change : function() {
         this._volumeMax = this._sound_settings.get_int(MAXIMUM_VOLUME_KEY) / 100 * this._control.get_vol_max_norm();
+        if (this._volumeMax > this._volumeNorm) {
+            this._outputVolumeSection.set_mark(this._volumeNorm / this._volumeMax);
+        }
+        else {
+            this._outputVolumeSection.set_mark(0);
+        }
+        this._outputVolumeSection.actor.paint();
     },
 
     on_settings_changed : function() {
