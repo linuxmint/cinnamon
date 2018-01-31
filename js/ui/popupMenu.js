@@ -651,6 +651,7 @@ PopupSliderMenuItem.prototype = {
 
         this._releaseId = this._motionId = 0;
         this._dragging = false;
+        this._mark_position = 0; // 0 means no mark
     },
 
     setValue: function(value) {
@@ -710,6 +711,16 @@ PopupSliderMenuItem.prototype = {
         Clutter.cairo_set_source_color(cr, color);
         cr.arc(handleX, handleY, handleRadius, 0, 2 * Math.PI);
         cr.fill();
+
+        // Draw a mark to indicate a certain value
+        if (this._mark_position > 0) {
+            let markWidth = 2;
+            let markHeight = sliderHeight + 4;
+            let xMark = sliderWidth * this._mark_position + markWidth / 2;
+            let yMark = height / 2 - markHeight / 2;
+            cr.rectangle(xMark, yMark, markWidth, markHeight);
+            cr.fill();
+        }
 
         cr.$dispose();
     },
@@ -782,6 +793,7 @@ PopupSliderMenuItem.prototype = {
             newvalue = 1;
         else
             newvalue = (relX - handleRadius) / (width - 2 * handleRadius);
+
         this._value = newvalue;
         this._slider.queue_repaint();
         this.emit('value-changed', this._value);
@@ -789,6 +801,10 @@ PopupSliderMenuItem.prototype = {
 
     get value() {
         return this._value;
+    },
+
+    set_mark: function (value) {
+        this._mark_position = value;
     },
 
     _onKeyPressEvent: function (actor, event) {
