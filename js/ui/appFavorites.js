@@ -44,7 +44,7 @@ AppFavorites.prototype = {
     },
 
     getFavorites: function() {
-        return this._getIds().map((id) => this._favorites[id]);
+        return Object.values(this._favorites);
     },
 
     isFavorite: function(appId) {
