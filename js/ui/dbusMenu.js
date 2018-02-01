@@ -157,7 +157,7 @@ PropertyStore.prototype = {
     compareNew: function(name, newValue) {
         if (!(name in MandatedTypes))
             return true; 
-        if (name in MandatedTypes && newValue && newValue.is_of_type && !newValue.is_of_type(MandatedTypes[name]))
+        if (newValue && newValue.is_of_type && !newValue.is_of_type(MandatedTypes[name]))
             return false;
 
         let oldValue = this.get(name);
