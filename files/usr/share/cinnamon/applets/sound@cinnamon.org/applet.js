@@ -125,6 +125,7 @@ VolumeSlider.prototype = {
             this.actor.show();
             this.stream = stream;
             this.isMic = stream instanceof Cvc.MixerSource || stream instanceof Cvc.MixerSourceOutput;
+            this.isOutputSink = stream instanceof Cvc.MixerSink;
 
             let mutedId = stream.connect("notify::is-muted", Lang.bind(this, this._update));
             let volumeId = stream.connect("notify::volume", Lang.bind(this, this._update));
@@ -140,7 +141,9 @@ VolumeSlider.prototype = {
     _onValueChanged: function(){
         if(!this.stream) return;
 
-        let volume = this._value * this.applet._volumeMax, muted;
+        let muted;
+        // Use the scaled volume max only for the main output
+        let volume = this._value * (this.isOutputSink ? this.applet._volumeMax : this.applet._volumeNorm);
 
         if(this._value < 0.005){
             volume = 0;
@@ -159,12 +162,21 @@ VolumeSlider.prototype = {
     },
 
     _update: function(){
-        let value = (!this.stream || this.stream.is_muted)? 0 : this.stream.volume / this.applet._volumeMax; // percentage of volume_max (set as value in the widget)
-        let visible_value = (!this.stream || this.stream.is_muted)? 0 : this.stream.volume / this.applet._volumeNorm; // percentage of volume_norm (shown to the user)
-        let delta = VOLUME_ADJUSTMENT_STEP;
-        if (visible_value > 1 - delta/2 && visible_value < 1 + delta/2) {
-            visible_value = 1; // 100% is magnetic
-            value = this.applet._volumeNorm / this.applet._volumeMax;
+        // value: percentage of volume_max (set as value in the widget)
+        // visible_value: percentage of volume_norm (shown to the user)
+        // these only differ for the output, and only when the user changes the maximum volume
+        let volume = (!this.stream || this.stream.is_muted) ? 0 : this.stream.volume;
+        let value, visible_value, delta = VOLUME_ADJUSTMENT_STEP;
+
+        if (this.isOutputSink) {
+            value = volume / this.applet._volumeMax;
+            visible_value = volume / this.applet._volumeNorm;
+            if (visible_value > 1 - delta/2 && visible_value < 1 + delta/2) {
+                visible_value = 1; // 100% is magnetic
+                value = this.applet._volumeNorm / this.applet._volumeMax;
+            }
+        } else {
+            value = visible_value = volume / this.applet._volumeNorm;
         }
 
         let percentage = Math.round(visible_value * 100) + "%";
@@ -1005,7 +1017,7 @@ MyApplet.prototype = {
         else {
             this._outputVolumeSection.set_mark(0);
         }
-        this._outputVolumeSection.actor.paint();
+        this._outputVolumeSection._update();
     },
 
     on_settings_changed : function() {
