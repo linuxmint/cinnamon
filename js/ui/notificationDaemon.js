@@ -121,11 +121,6 @@ NotificationDaemon.prototype = {
         }
         setting(this, this.settings, "boolean", "removeOld", "remove-old");
         setting(this, this.settings, "int", "timeout", "timeout");
-
-        Cinnamon.WindowTracker.get_default().connect('notify::focus-app',
-            Lang.bind(this, this._onFocusAppChanged));
-        Main.overview.connect('hidden',
-            Lang.bind(this, this._onFocusAppChanged));
     },
 
    // Create an icon for a notification from icon string/path.
@@ -523,20 +518,6 @@ NotificationDaemon.prototype = {
             Config.PACKAGE_VERSION,
             '1.2'
         ];
-    },
-
-    _onFocusAppChanged: function() {
-        let tracker = Cinnamon.WindowTracker.get_default();
-        if (!tracker.focus_app)
-            return;
-
-        for (let i = 0; i < this._sources.length; i++) {
-            let source = this._sources[i];
-            if (source.app == tracker.focus_app) {
-                source.destroyNonResidentNotifications();
-                return;
-            }
-        }
     },
 
     _emitNotificationClosed: function(id, reason) {
