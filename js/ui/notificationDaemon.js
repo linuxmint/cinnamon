@@ -611,10 +611,7 @@ Source.prototype = {
             this._setSummaryIcon(icon);
 
         let tracker = Cinnamon.WindowTracker.get_default();
-        if (notification.resident && this.app && tracker.focus_app == this.app)
-            this.pushNotification(notification);
-        else
-            this.notify(notification);
+        this.notify(notification);
     },
 
     handleSummaryClick: function() {
