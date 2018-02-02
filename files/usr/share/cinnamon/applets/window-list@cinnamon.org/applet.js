@@ -353,12 +353,12 @@ AppMenuButton.prototype = {
         if (this.alert)
             this.getAttention();
 
-        this.window_signals.connect(metaWindow, 'notify::title', this.setDisplayTitle, this);
-        this.window_signals.connect(metaWindow, "notify::minimized", this.setDisplayTitle, this);
-        this.window_signals.connect(metaWindow, "notify::tile-type", this.setDisplayTitle, this);
-        this.window_signals.connect(metaWindow, "notify::icon", this.setIcon, this);
-        this.window_signals.connect(metaWindow, "notify::appears-focused", this.onFocus, this);
-        this.window_signals.connect(metaWindow, "unmanaged", this.onUnmanaged, this);
+        this.window_signals.connect(this.metaWindow, 'notify::title', this.setDisplayTitle, this);
+        this.window_signals.connect(this.metaWindow, "notify::minimized", this.setDisplayTitle, this);
+        this.window_signals.connect(this.metaWindow, "notify::tile-type", this.setDisplayTitle, this);
+        this.window_signals.connect(this.metaWindow, "notify::icon", this.setIcon, this);
+        this.window_signals.connect(this.metaWindow, "notify::appears-focused", this.onFocus, this);
+        this.window_signals.connect(this.metaWindow, "unmanaged", this.onUnmanaged, this);
     },
 
     onUnmanaged: function() {
@@ -1126,7 +1126,7 @@ MyApplet.prototype = {
 
     _onWindowAdded: function(screen, metaWindow, monitor) {
         if (this._shouldAdd(metaWindow))
-            this._addWindow(metaWindow, false);
+            this._addWindow_async(metaWindow, false);
     },
 
     _onWindowMonitorChanged: function(screen, metaWindow, monitor) {
@@ -1263,6 +1263,10 @@ MyApplet.prototype = {
             else
                 this._removeWindow(window);
         }
+    },
+
+    _addWindow_async: function(metaWindow, alert) {
+        Mainloop.timeout_add(20, Lang.bind(this, this._addWindow, metaWindow, alert));
     },
 
     _addWindow: function(metaWindow, alert) {
