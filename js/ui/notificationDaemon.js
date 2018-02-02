@@ -610,7 +610,6 @@ Source.prototype = {
         if (!this.app && icon)
             this._setSummaryIcon(icon);
 
-        let tracker = Cinnamon.WindowTracker.get_default();
         this.notify(notification);
     },
 
