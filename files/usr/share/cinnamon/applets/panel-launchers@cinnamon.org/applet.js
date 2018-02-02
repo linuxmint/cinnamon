@@ -239,20 +239,18 @@ PanelAppLauncher.prototype = {
     },
 
     launch: function() {
-        let allocation = this._iconBox.get_allocation_box();
-        this._iconBox.width = allocation.x2 - allocation.x1;
-        this._iconBox.height = allocation.y2 - allocation.y1;
+        if (this.isCustom()) {
+            this.appinfo.launch([], null);
+        }
+        else {
+            this.app.open_new_window(-1);
+        }
         this._animateIcon(0);
-        if (this.isCustom()) this.appinfo.launch([], null);
-        else this.app.open_new_window(-1);
     },
 
     launchAction: function(name) {
-        let allocation = this._iconBox.get_allocation_box();
-        this._iconBox.width = allocation.x2 - allocation.x1;
-        this._iconBox.height = allocation.y2 - allocation.y1;
-        this._animateIcon(0);
         this.getAppInfo().launch_action(name, null);
+        this._animateIcon(0);
     },
 
     getId: function() {
