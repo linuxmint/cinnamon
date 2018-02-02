@@ -1033,7 +1033,7 @@ MyApplet.prototype = {
         this.settings.bind("buttons-use-entire-space", "buttonsUseEntireSpace", this._refreshAllItems);
         this.settings.bind("window-preview", "usePreview", this._onPreviewChanged);
 
-        this.signals.connect(global.screen, 'window-added', this._onWindowAdded, this);
+        this.signals.connect(global.screen, 'window-added', this._onWindowAddedAsync, this);
         this.signals.connect(global.screen, 'window-monitor-changed', this._onWindowMonitorChanged, this);
         this.signals.connect(global.screen, 'window-workspace-changed', this._onWindowWorkspaceChanged, this);
         this.signals.connect(global.screen, 'window-skip-taskbar-changed', this._onWindowSkipTaskbarChanged, this);
@@ -1124,9 +1124,13 @@ MyApplet.prototype = {
         this.manager.set_spacing(spacing * global.ui_scale);
     },
 
+    _onWindowAddedAsync: function(screen, metaWindow, monitor) {
+        Mainloop.timeout_add(20, Lang.bind(this, this._onWindowAdded, screen, metaWindow, monitor));
+    },
+
     _onWindowAdded: function(screen, metaWindow, monitor) {
         if (this._shouldAdd(metaWindow))
-            this._addWindow_async(metaWindow, false);
+            this._addWindow(metaWindow, false);
     },
 
     _onWindowMonitorChanged: function(screen, metaWindow, monitor) {
@@ -1263,10 +1267,6 @@ MyApplet.prototype = {
             else
                 this._removeWindow(window);
         }
-    },
-
-    _addWindow_async: function(metaWindow, alert) {
-        Mainloop.timeout_add(20, Lang.bind(this, this._addWindow, metaWindow, alert));
     },
 
     _addWindow: function(metaWindow, alert) {
