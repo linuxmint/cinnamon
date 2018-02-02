@@ -1657,6 +1657,9 @@ function queueDeferredWork(workId) {
  */
 function isInteresting(metaWindow) {
 
+    if (metaWindow.get_title() == "JavaEmbeddedFrame")
+        return false;
+
     // Include any window the tracker finds interesting
     if (tracker.is_window_interesting(metaWindow)) {
         return true;
