@@ -257,6 +257,7 @@ AppMenuButton.prototype = {
         this.metaWindow = metaWindow;
         this.alert = alert;
         this.labelVisible = false;
+        this.window_signals = new SignalManager.SignalManager(null);
 
         if (this._applet.orientation == St.Side.TOP)
             this.actor.add_style_class_name('top');
@@ -295,13 +296,6 @@ AppMenuButton.prototype = {
 
         this._iconBottomClip = 0;
         this._visible = true;
-
-        this._updateCaptionId = this.metaWindow.connect('notify::title',
-                Lang.bind(this, this.setDisplayTitle));
-        this._updateTileTypeId = this.metaWindow.connect('notify::tile-type',
-                Lang.bind(this, this.setDisplayTitle));
-        this._updateIconId = this.metaWindow.connect('notify::icon',
-                Lang.bind(this, this.setIcon));
 
         this._progress = 0;
 
@@ -347,6 +341,7 @@ AppMenuButton.prototype = {
         global.settings.connect('changed::panel-edit-mode', Lang.bind(this, this.onPanelEditModeChanged));
 
         this._windows = this._applet._windows;
+
         this.scrollConnector = null;
         this.onScrollModeChanged();
         this._needsAttention = false;
@@ -357,6 +352,18 @@ AppMenuButton.prototype = {
 
         if (this.alert)
             this.getAttention();
+
+        this.window_signals.connect(this.metaWindow, 'notify::title', this.setDisplayTitle, this);
+        this.window_signals.connect(this.metaWindow, "notify::minimized", this.setDisplayTitle, this);
+        this.window_signals.connect(this.metaWindow, "notify::tile-type", this.setDisplayTitle, this);
+        this.window_signals.connect(this.metaWindow, "notify::icon", this.setIcon, this);
+        this.window_signals.connect(this.metaWindow, "notify::appears-focused", this.onFocus, this);
+        this.window_signals.connect(this.metaWindow, "unmanaged", this.onUnmanaged, this);
+    },
+
+    onUnmanaged: function() {
+        this.destroy();
+        this._windows.splice(this._windows.indexOf(this), 1);
     },
 
     onPreviewChanged: function() {
@@ -510,9 +517,7 @@ AppMenuButton.prototype = {
     },
 
     destroy: function() {
-        this.metaWindow.disconnect(this._updateCaptionId);
-        this.metaWindow.disconnect(this._updateTileTypeId);
-        this.metaWindow.disconnect(this._updateIconId);
+        this.window_signals.disconnectAllSignals();
         this._tooltip.destroy();
         if (this.rightClickMenu) {
             this.rightClickMenu.destroy();
@@ -987,6 +992,8 @@ MyApplet.prototype = {
     _init: function(orientation, panel_height, instance_id) {
         Applet.Applet.prototype._init.call(this, orientation, panel_height, instance_id);
 
+        this.signals = new SignalManager.SignalManager(null);
+
         this.setAllowedLayout(Applet.AllowedLayout.BOTH);
 
         this.actor.set_track_hover(false);
@@ -1026,23 +1033,12 @@ MyApplet.prototype = {
         this.settings.bind("buttons-use-entire-space", "buttonsUseEntireSpace", this._refreshAllItems);
         this.settings.bind("window-preview", "usePreview", this._onPreviewChanged);
 
-        this.signals = new SignalManager.SignalManager(null);
-
-        let tracker = Cinnamon.WindowTracker.get_default();
-        this.signals.connect(tracker, "notify::focus-app", this._onFocus, this);
-        this.signals.connect(global.screen, 'window-added', this._onWindowAdded, this);
-        this.signals.connect(global.screen, 'window-removed', this._onWindowRemoved, this);
+        this.signals.connect(global.screen, 'window-added', this._onWindowAddedAsync, this);
         this.signals.connect(global.screen, 'window-monitor-changed', this._onWindowMonitorChanged, this);
         this.signals.connect(global.screen, 'window-workspace-changed', this._onWindowWorkspaceChanged, this);
         this.signals.connect(global.screen, 'window-skip-taskbar-changed', this._onWindowSkipTaskbarChanged, this);
         this.signals.connect(global.screen, 'monitors-changed', this._updateWatchedMonitors, this);
         this.signals.connect(global.window_manager, 'switch-workspace', this._refreshAllItems, this);
-
-        this.signals.connect(global.window_manager, 'minimize', this._onWindowStateChange, this);
-        this.signals.connect(global.window_manager, 'maximize', this._onWindowStateChange, this);
-        this.signals.connect(global.window_manager, 'unmaximize', this._onWindowStateChange, this);
-        this.signals.connect(global.window_manager, 'map', this._onWindowStateChange, this);
-        this.signals.connect(global.window_manager, 'tile', this._onWindowStateChange, this);
 
         this.actor.connect('style-changed', Lang.bind(this, this._updateSpacing));
 
@@ -1128,13 +1124,13 @@ MyApplet.prototype = {
         this.manager.set_spacing(spacing * global.ui_scale);
     },
 
+    _onWindowAddedAsync: function(screen, metaWindow, monitor) {
+        Mainloop.timeout_add(20, Lang.bind(this, this._onWindowAdded, screen, metaWindow, monitor));
+    },
+
     _onWindowAdded: function(screen, metaWindow, monitor) {
         if (this._shouldAdd(metaWindow))
             this._addWindow(metaWindow, false);
-    },
-
-    _onWindowRemoved: function(screen, metaWindow) {
-        this._removeWindow(metaWindow);
     },
 
     _onWindowMonitorChanged: function(screen, metaWindow, monitor) {
@@ -1199,11 +1195,6 @@ MyApplet.prototype = {
             this._addWindow(window, true);
     },
 
-    _onFocus: function() {
-        for (let window of this._windows)
-            window.onFocus();
-    },
-
     _refreshItem: function(window) {
         window.actor.visible =
             (window.metaWindow.get_workspace() == global.screen.get_active_workspace()) ||
@@ -1222,28 +1213,12 @@ MyApplet.prototype = {
         for (let window of this._windows) {
             this._refreshItem(window);
         }
-        this._onFocus();
     },
 
     _reTitleItems: function() {
         for (let window of this._windows) {
             window.setDisplayTitle();
         }
-    },
-
-    _onWindowStateChange: function(cinnamonwm, actor) {
-        for (let window of this._windows)
-            if (window.metaWindow == actor.metaWindow)
-                window.setDisplayTitle();
-    },
-
-    // Used by windowManager for traditional minimize and map effect
-    getOriginFromWindow: function(metaWindow) {
-        for (let window of this._windows)
-            if (window.metaWindow == metaWindow)
-                return window.actor;
-
-        return false;
     },
 
     _updateWatchedMonitors: function() {
@@ -1304,6 +1279,7 @@ MyApplet.prototype = {
         this.manager_container.add_actor(appButton.actor);
 
         this._windows.push(appButton);
+
         /* We want to make the AppMenuButtons look like they are ordered by
          * workspace. So if we add an AppMenuButton for a window in another
          * workspace, put it in the right position. It is at the end by

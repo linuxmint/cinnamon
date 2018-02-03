@@ -1656,21 +1656,22 @@ function queueDeferredWork(workId) {
  * Returns (boolean): whether the window is interesting
  */
 function isInteresting(metaWindow) {
+
     if (metaWindow.get_title() == "JavaEmbeddedFrame")
         return false;
 
+    // Include any window the tracker finds interesting
     if (tracker.is_window_interesting(metaWindow)) {
-        // The nominal case.
         return true;
     }
-    // The rest of this function is devoted to discovering "orphan" windows
-    // (dialogs without an associated app, e.g., the Logout dialog).
-    if (tracker.get_window_app(metaWindow)) {
-        // orphans don't have an app!
-        return false;
-    }
+
+    // Include app-less dialogs
     let type = metaWindow.get_window_type();
-    return type === Meta.WindowType.DIALOG || type === Meta.WindowType.MODAL_DIALOG;
+    if (!tracker.get_window_app(metaWindow) && (type === Meta.WindowType.DIALOG || type === Meta.WindowType.MODAL_DIALOG)) {
+        return true;
+    }
+
+    return false;
 }
 
 /**
