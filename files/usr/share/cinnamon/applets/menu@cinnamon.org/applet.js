@@ -1031,7 +1031,7 @@ CategoriesApplicationsBox.prototype = {
 
     handleDragOver : function(source, actor, x, y, time) {
         if (source instanceof FavoritesButton)
-            return  global.set_cursor(Cinnamon.Cursor.POINTING_HAND);
+            return DND.DragMotionResult.POINTING_DROP;
 
         return DND.DragMotionResult.CONTINUE;
     }
