@@ -1966,8 +1966,13 @@ PopupMenuBase.prototype = {
             this._connectSubMenuSignals(menuItem, menuItem.menu);
             this._connectItemSignals(menuItem);
             this._signals.connect(this, 'open-state-changed', function(self, open) {
-                if (!open)
-                    menuItem.menu.close(false);
+                if (!open && menuItem.menu.isOpen) {
+                    if (this.animating) {
+                        menuItem.menu.closeAfterUnmap();
+                    } else {
+                        menuItem.menu.close(false);
+                    }
+                }
             }, this);
         } else if (menuItem instanceof PopupSeparatorMenuItem) {
             this._connectItemSignals(menuItem);
@@ -2657,6 +2662,7 @@ PopupSubMenu.prototype = {
      */
     _init: function(sourceActor, sourceArrow) {
         PopupMenuBase.prototype._init.call(this, sourceActor);
+        this.unmapId = 0;
 
         if (sourceArrow) {
             this._arrow = sourceArrow;
@@ -2818,6 +2824,22 @@ PopupSubMenu.prototype = {
                 this.isOpen = false;
                 this.emit('open-state-changed', false);
             }
+    },
+
+    //Closes the submenu after it has been unmapped. Used to prevent size changes
+    //when the parent is closing at the same time and may be tweening.
+    closeAfterUnmap: function() {
+        if (this.isOpen && this.actor.mapped) {
+            if (!this.unmapId) {
+                this.unmapId = this.actor.connect("notify::mapped", Lang.bind(this, function() {
+                    this.actor.disconnect(this.unmapId);
+                    this.unmapId = 0;
+                    this.close(false);
+                }));
+            }
+        } else {
+            this.close(false);
+        }
     },
 
     _onKeyPressEvent: function(actor, event) {
