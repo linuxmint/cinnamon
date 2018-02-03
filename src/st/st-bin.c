@@ -38,8 +38,6 @@
 #include "st-enum-types.h"
 #include "st-private.h"
 
-#define ST_BIN_GET_PRIVATE(obj)       (G_TYPE_INSTANCE_GET_PRIVATE ((obj), ST_TYPE_BIN, StBinPrivate))
-
 struct _StBinPrivate
 {
   ClutterActor *child;
@@ -65,6 +63,7 @@ enum
 static void clutter_container_iface_init (ClutterContainerIface *iface);
 
 G_DEFINE_TYPE_WITH_CODE (StBin, st_bin, ST_TYPE_WIDGET,
+                         G_ADD_PRIVATE (StBin)
                          G_IMPLEMENT_INTERFACE (CLUTTER_TYPE_CONTAINER,
                                                 clutter_container_iface_init));
 
@@ -316,8 +315,6 @@ st_bin_class_init (StBinClass *klass)
   StWidgetClass *widget_class = ST_WIDGET_CLASS (klass);
   GParamSpec *pspec;
 
-  g_type_class_add_private (klass, sizeof (StBinPrivate));
-
   gobject_class->set_property = st_bin_set_property;
   gobject_class->get_property = st_bin_get_property;
   gobject_class->dispose = st_bin_dispose;
@@ -397,7 +394,7 @@ st_bin_class_init (StBinClass *klass)
 static void
 st_bin_init (StBin *bin)
 {
-  bin->priv = ST_BIN_GET_PRIVATE (bin);
+  bin->priv = st_bin_get_instance_private (bin);
 
   bin->priv->x_align = ST_ALIGN_MIDDLE;
   bin->priv->y_align = ST_ALIGN_MIDDLE;

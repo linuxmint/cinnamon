@@ -1,3 +1,5 @@
+#!/usr/bin/python3
+
 import pageutils
 from gi.repository import Gtk
 
@@ -57,7 +59,7 @@ class ModulePage(pageutils.BaseListView):
                 self._changed = True
                 self.parent.activatePage("results")
             except Exception as e:
-                print e
+                print(e)
 
     def onInspectorDone(self):
         melangeApp.show()

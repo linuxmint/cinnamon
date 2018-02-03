@@ -44,13 +44,51 @@ function _patchContainerClass(containerClass) {
 }
 
 function init() {
+    const readOnlyError = function(property) {
+        global.logError(`The ${property} object is read-only.`);
+    };
     // Add some bindings to the global JS namespace; (gjs keeps the web
     // browser convention of having that namespace be called 'window'.)
-    window.global = Cinnamon.Global.get();
-
-    window._ = Gettext.gettext;
-    window.C_ = Gettext.pgettext;
-    window.ngettext = Gettext.ngettext;
+    Object.defineProperty(window, 'global', {
+        get: function() {
+            return Cinnamon.Global.get();
+        },
+        set: function() {
+            readOnlyError('global');
+        },
+        configurable: false,
+        enumerable: false
+    });
+    Object.defineProperty(window, '_', {
+        get: function() {
+            return Gettext.gettext;
+        },
+        set: function() {
+            readOnlyError('gettext');
+        },
+        configurable: false,
+        enumerable: false
+    });
+    Object.defineProperty(window, 'C_', {
+        get: function() {
+            return Gettext.pgettext;
+        },
+        set: function() {
+            readOnlyError('pgettext');
+        },
+        configurable: false,
+        enumerable: false
+    });
+    Object.defineProperty(window, 'ngettext', {
+        get: function() {
+            return Gettext.ngettext;
+        },
+        set: function() {
+            readOnlyError('ngettext');
+        },
+        configurable: false,
+        enumerable: false
+    });
 
     // Set the default direction for St widgets (this needs to be done before any use of St)
     if (Gtk.Widget.get_default_direction() == Gtk.TextDirection.RTL) {

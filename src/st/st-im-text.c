@@ -66,9 +66,6 @@
 
 #include "st-im-text.h"
 
-#define ST_IM_TEXT_GET_PRIVATE(obj)    \
-        (G_TYPE_INSTANCE_GET_PRIVATE ((obj), ST_TYPE_IM_TEXT, StIMTextPrivate))
-
 struct _StIMTextPrivate
 {
   GtkIMContext *im_context;
@@ -81,7 +78,7 @@ static void st_im_text_commit_cb (GtkIMContext *context,
                                   const gchar  *str,
                                   StIMText     *imtext);
 
-G_DEFINE_TYPE (StIMText, st_im_text, CLUTTER_TYPE_TEXT)
+G_DEFINE_TYPE_WITH_PRIVATE (StIMText, st_im_text, CLUTTER_TYPE_TEXT)
 
 static void
 st_im_text_dispose (GObject *object)
@@ -479,8 +476,6 @@ st_im_text_class_init (StIMTextClass *klass)
   GObjectClass *object_class = G_OBJECT_CLASS (klass);
   ClutterActorClass *actor_class = CLUTTER_ACTOR_CLASS (klass);
 
-  g_type_class_add_private (klass, sizeof (StIMTextPrivate));
-
   object_class->dispose = st_im_text_dispose;
 
   actor_class->paint = st_im_text_paint;
@@ -500,7 +495,7 @@ st_im_text_init (StIMText *self)
 {
   StIMTextPrivate *priv;
 
-  self->priv = priv = ST_IM_TEXT_GET_PRIVATE (self);
+  self->priv = priv = st_im_text_get_instance_private (self);
 
   priv->im_context = gtk_im_multicontext_new ();
   g_signal_connect (priv->im_context, "commit",

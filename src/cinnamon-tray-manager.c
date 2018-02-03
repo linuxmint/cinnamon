@@ -265,8 +265,9 @@ cinnamon_tray_manager_manage_stage (CinnamonTrayManager *manager,
 
   na_tray_manager_manage_screen (manager->priv->na_manager, screen);
 
-  g_signal_connect (theme_widget, "style-changed",
-                    G_CALLBACK (cinnamon_tray_manager_style_changed), manager);
+  g_signal_connect_object (theme_widget, "style-changed",
+                    G_CALLBACK (cinnamon_tray_manager_style_changed),
+                    manager, 0);
   cinnamon_tray_manager_style_changed (theme_widget, manager);
 }
 
@@ -355,13 +356,13 @@ static void
 cinnamon_tray_manager_child_redisplay (gpointer socket_pointer, gpointer child_pointer, gpointer user_data)
 {
   CinnamonTrayManagerChild *child = child_pointer;
-  
+
   g_return_if_fail(child != NULL);
-  
+
   if (child->actor && CLUTTER_IS_ACTOR(child->actor)) {
     clutter_actor_destroy(child->actor);
   }
-  
+
   on_plug_added(socket_pointer, child->manager);
 }
 

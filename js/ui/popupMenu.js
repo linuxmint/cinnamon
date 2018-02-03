@@ -21,23 +21,23 @@ const RadioButton = imports.ui.radioButton;
 const Params = imports.misc.params;
 const Util = imports.misc.util;
 
-const SLIDER_SCROLL_STEP = 0.05; /* Slider scrolling step in % */
+var SLIDER_SCROLL_STEP = 0.05; /* Slider scrolling step in % */
 
-const PanelLoc = {
+var PanelLoc = {
     top : 0,
     bottom : 1,
     left : 2,
     right : 3
 };
 
-const OrnamentType = {
+var OrnamentType = {
     NONE: 0,
     CHECK: 1,
     DOT: 2,
     ICON: 3
 };
 
-const FactoryClassTypes = {
+var FactoryClassTypes = {
     'RootMenuClass'            : "RootMenuClass",
     'MenuItemClass'            : "MenuItemClass",
     'SubMenuMenuItemClass'     : "SubMenuMenuItemClass",
@@ -45,7 +45,7 @@ const FactoryClassTypes = {
     'SeparatorMenuItemClass'   : "SeparatorMenuItemClass"
 };
 
-const FactoryEventTypes = {
+var FactoryEventTypes = {
     'opened'    : "opened",
     'closed'    : "closed",
     'clicked'   : "clicked"
@@ -651,6 +651,7 @@ PopupSliderMenuItem.prototype = {
 
         this._releaseId = this._motionId = 0;
         this._dragging = false;
+        this._mark_position = 0; // 0 means no mark
     },
 
     setValue: function(value) {
@@ -710,6 +711,16 @@ PopupSliderMenuItem.prototype = {
         Clutter.cairo_set_source_color(cr, color);
         cr.arc(handleX, handleY, handleRadius, 0, 2 * Math.PI);
         cr.fill();
+
+        // Draw a mark to indicate a certain value
+        if (this._mark_position > 0) {
+            let markWidth = 2;
+            let markHeight = sliderHeight + 4;
+            let xMark = sliderWidth * this._mark_position + markWidth / 2;
+            let yMark = height / 2 - markHeight / 2;
+            cr.rectangle(xMark, yMark, markWidth, markHeight);
+            cr.fill();
+        }
 
         cr.$dispose();
     },
@@ -782,6 +793,7 @@ PopupSliderMenuItem.prototype = {
             newvalue = 1;
         else
             newvalue = (relX - handleRadius) / (width - 2 * handleRadius);
+
         this._value = newvalue;
         this._slider.queue_repaint();
         this.emit('value-changed', this._value);
@@ -789,6 +801,10 @@ PopupSliderMenuItem.prototype = {
 
     get value() {
         return this._value;
+    },
+
+    set_mark: function (value) {
+        this._mark_position = value;
     },
 
     _onKeyPressEvent: function (actor, event) {
@@ -1950,8 +1966,13 @@ PopupMenuBase.prototype = {
             this._connectSubMenuSignals(menuItem, menuItem.menu);
             this._connectItemSignals(menuItem);
             this._signals.connect(this, 'open-state-changed', function(self, open) {
-                if (!open)
-                    menuItem.menu.close(false);
+                if (!open && menuItem.menu.isOpen) {
+                    if (this.animating) {
+                        menuItem.menu.closeAfterUnmap();
+                    } else {
+                        menuItem.menu.close(false);
+                    }
+                }
             }, this);
         } else if (menuItem instanceof PopupSeparatorMenuItem) {
             this._connectItemSignals(menuItem);
@@ -2641,6 +2662,7 @@ PopupSubMenu.prototype = {
      */
     _init: function(sourceActor, sourceArrow) {
         PopupMenuBase.prototype._init.call(this, sourceActor);
+        this.unmapId = 0;
 
         if (sourceArrow) {
             this._arrow = sourceArrow;
@@ -2804,6 +2826,22 @@ PopupSubMenu.prototype = {
             }
     },
 
+    //Closes the submenu after it has been unmapped. Used to prevent size changes
+    //when the parent is closing at the same time and may be tweening.
+    closeAfterUnmap: function() {
+        if (this.isOpen && this.actor.mapped) {
+            if (!this.unmapId) {
+                this.unmapId = this.actor.connect("notify::mapped", Lang.bind(this, function() {
+                    this.actor.disconnect(this.unmapId);
+                    this.unmapId = 0;
+                    this.close(false);
+                }));
+            }
+        } else {
+            this.close(false);
+        }
+    },
+
     _onKeyPressEvent: function(actor, event) {
         // Move focus back to parent menu if the user types Left.
 
@@ -2863,9 +2901,9 @@ PopupSubMenuMenuItem.prototype = {
     _init: function(text) {
         PopupBaseMenuItem.prototype._init.call(this);
 
-        // This check allows PopupSubMenu to be used as a generic scrollable container. PopupSubMenu
-        // already checks for the truthiness of this._triangle (passed as sourceArrow) before using
-        // it, so we can leave it undefined.
+        this._triangle = null;
+
+        // This check allows PopupSubMenu to be used as a generic scrollable container.
         if (typeof text === 'string') {
             this.actor.add_style_class_name('popup-submenu-menu-item');
 
@@ -2881,7 +2919,7 @@ PopupSubMenuMenuItem.prototype = {
                                                align: St.Align.END });
 
             this._triangle = arrowIcon(St.Side.RIGHT);
-            this._triangle.pivot_point = new Clutter.Point({ x: 0.5, y: 0.6 });
+            this._triangle.pivot_point = new Clutter.Point({ x: 0.5, y: 0.5 });
             this._triangleBin.child = this._triangle;
         }
 

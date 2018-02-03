@@ -236,6 +236,10 @@ MyApplet.prototype = {
             this.actor.add_actor (this.manager_container);
             this.manager_container.show();
 
+            this._focusWindow = 0;
+            if (global.display.focus_window)
+                this._focusWindow = global.display.focus_window.get_compositor_private();
+
             this.settings = new Settings.AppletSettings(this, metadata.uuid, instance_id);
             this.settings.bind("display_type", "display_type", this._createButtons);
 
@@ -266,10 +270,6 @@ MyApplet.prototype = {
             }));
             this._applet_context_menu.addMenuItem(this.removeWorkspaceMenuItem);
             this.removeWorkspaceMenuItem.setSensitive(global.screen.n_workspaces > 1);
-
-            this._focusWindow = 0;
-            if (global.display.focus_window)
-                this._focusWindow = global.display.focus_window.get_compositor_private();
         }
         catch (e) {
             global.logError(e);

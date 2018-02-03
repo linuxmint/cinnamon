@@ -135,7 +135,7 @@ PropertyStore.prototype = {
 
     set: function(name, value) {
         if (name in MandatedTypes && value && value.is_of_type && !value.is_of_type(MandatedTypes[name]))
-            global.logWarning("Cannot set property "+name+": type mismatch!");
+            global.logWarning("Cannot set property " + name + ": type mismatch!");
         else if (value)
             this._props[name] = value;
         else
@@ -157,13 +157,13 @@ PropertyStore.prototype = {
     compareNew: function(name, newValue) {
         if (!(name in MandatedTypes))
             return true; 
-        if (name in MandatedTypes && newValue && newValue.is_of_type && !newValue.is_of_type(MandatedTypes[name]))
+        if (newValue && newValue.is_of_type && !newValue.is_of_type(MandatedTypes[name]))
             return false;
 
         let oldValue = this.get(name);
         if (oldValue == newValue)
             return false;
-        if (newValue && !oldValue || oldValue && !newValue)
+        if ((newValue && !oldValue) || (oldValue && !newValue))
             return true;
 
         let isOldContainer = oldValue.is_container();
@@ -249,7 +249,7 @@ DbusMenuItem.prototype = {
             this.setIconName(propStore.getString("icon-name"));
         if ("icon-data" in properties)
             this.setGdkIcon(this._getGdkIcon(propStore.getVariant("icon-data")));
-        if (("children-display" in properties)||("type" in properties))
+        if (("children-display" in properties) || ("type" in properties))
             this.setFactoryType(this._getFactoryType(propStore.getString('children-display'), propStore.getString('type')));
         if ("action" in properties)
             this.setAction(propStore.getString("action"));
@@ -291,7 +291,7 @@ DbusMenuItem.prototype = {
             params.iconName = propStore.getString("icon-name");
         if ("icon-data" in properties)
             params.iconData = this._getGdkIcon(propStore.getVariant("icon-data"));
-        if (("children-display" in properties)||("type" in properties))
+        if (("children-display" in properties) || ("type" in properties))
             params.type = this._getFactoryType(propStore.getString('children-display'), propStore.getString('type'))
         if ("action" in properties)
             params.action = propStore.getString("action");
@@ -315,7 +315,7 @@ DbusMenuItem.prototype = {
                 let accelName = "";
                 let keySequence = keyArray[0];
                 let len = keySequence.length;
-                if ((len == 1)&&(keySequence[0].length == 1))
+                if ((len == 1) && (keySequence[0].length == 1))
                     return keySequence[0];
                 for (let pos in keySequence) {
                     let token = keySequence[pos];
@@ -470,7 +470,7 @@ DBusClient.prototype = {
             if (!params)
                 params = GLib.Variant.new_int32(0);
             this._proxyMenu.EventRemote(id, event, params, timestamp, 
-                function(result, error) {}); // We don't care
+            function(result, error) {}); // We don't care
             if (event == PopupMenu.FactoryEventTypes.opened)
                 this.sendAboutToShow(id);
         }

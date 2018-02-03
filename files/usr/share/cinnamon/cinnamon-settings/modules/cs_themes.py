@@ -326,7 +326,7 @@ class Module:
 
     def _load_metacity_themes(self):
         dirs = ("/usr/share/themes", os.path.join(os.path.expanduser("~"), ".themes"))
-        valid = walk_directories(dirs, lambda d: os.path.exists(os.path.join(d, "metacity-1")), return_directories=True)
+        valid = walk_directories(dirs, lambda d: os.path.exists(os.path.join(d, "metacity-1/metacity-theme-3.xml")), return_directories=True)
         valid.sort(lambda a,b: cmp(a[0].lower(), b[0].lower()))
         res = []
         for i in valid:

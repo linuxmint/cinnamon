@@ -38,7 +38,18 @@ PROPERTIES_MAP = {
 }
 
 def list_edit_factory(options):
-    class Widget(CLASS_TYPE_MAP[options["type"]]):
+    kwargs = {}
+    if 'options' in options:
+        kwargs['valtype'] = VARIABLE_TYPE_MAP[options['type']]
+        widget_type = ComboBox
+        options_list = options['options']
+        if isinstance(options_list, dict):
+            kwargs['options'] = [(b, a) for a, b in options_list.items()]
+        else:
+            kwargs['options'] = zip(options_list, options_list)
+    else:
+        widget_type = CLASS_TYPE_MAP[options["type"]]
+    class Widget(widget_type):
         def __init__(self, **kwargs):
             super(Widget, self).__init__(**kwargs)
 
@@ -78,7 +89,6 @@ def list_edit_factory(options):
                     return self.bind_object.get_property(self.bind_prop)
                 return self.content_widget.get_property(self.bind_prop)
 
-    kwargs = {}
     for prop in options:
         if prop in PROPERTIES_MAP:
             kwargs[PROPERTIES_MAP[prop]] = options[prop]
@@ -157,6 +167,8 @@ class List(SettingsWidget):
         button_toolbar.insert(self.move_down_button, 4)
 
         self.content_widget.get_selection().connect("changed", self.update_button_sensitivity)
+        self.content_widget.set_activate_on_single_click(False)
+        self.content_widget.connect("row-activated", self.on_row_activated)
 
         self.set_tooltip_text(tooltip)
 
@@ -178,6 +190,9 @@ class List(SettingsWidget):
             self.move_down_button.set_sensitive(False)
         else:
             self.move_down_button.set_sensitive(True)
+
+    def on_row_activated(self, *args):
+        self.edit_item()
 
     def add_item(self, *args):
         data = self.open_add_edit_dialog()

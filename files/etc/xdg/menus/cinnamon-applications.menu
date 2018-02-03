@@ -6,11 +6,6 @@
   <Name>Applications</Name>
   <Directory>cinnamon-menu-applications.directory</Directory>
 
-  <!-- Scan legacy dirs first, as later items take priority -->
-  <KDELegacyDirs/>
-  <LegacyDir>/etc/X11/applnk</LegacyDir>
-  <LegacyDir>/usr/share/cinnamon/apps</LegacyDir>
-
   <!-- Read standard .directory and .desktop file locations -->
   <DefaultAppDirs/>
   <DefaultDirectoryDirs/>

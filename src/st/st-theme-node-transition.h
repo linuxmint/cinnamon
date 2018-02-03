@@ -47,9 +47,6 @@ struct _StThemeNodeTransition {
 
 struct _StThemeNodeTransitionClass {
   GObjectClass parent_class;
-
-  void (*completed) (StThemeNodeTransition *transition);
-  void (*new_frame) (StThemeNodeTransition *transition);
 };
 
 GType st_theme_node_transition_get_type (void) G_GNUC_CONST;

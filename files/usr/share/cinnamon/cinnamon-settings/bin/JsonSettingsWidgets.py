@@ -141,8 +141,8 @@ class JSONSettingsHandler(object):
 
     def resume_monitor(self):
         if self.resume_timeout:
-            GObject.source_remove(self.resume_timeout)
-        self.resume_timeout = GObject.timeout_add(2000, self.do_resume)
+            GLib.source_remove(self.resume_timeout)
+        self.resume_timeout = GLib.timeout_add(2000, self.do_resume)
 
     def do_resume(self):
         self.file_monitor = self.file_obj.monitor_file(Gio.FileMonitorFlags.SEND_MOVED, None)

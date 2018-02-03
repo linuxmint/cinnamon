@@ -38,6 +38,7 @@ class Module:
     def on_button_clicked(self, button):
         gladefile = "/usr/share/cinnamon/cinnamon-settings/cinnamon-online-accounts-info.ui"
         self.builder = Gtk.Builder()
+        self.builder.set_translation_domain('cinnamon')
         self.builder.add_from_file(gladefile)
         self.window = self.builder.get_object("main_window")
         self.window.set_title(_("Online Accounts"))

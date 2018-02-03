@@ -192,7 +192,12 @@
             {"id": "number", "title": "Id number", "type": "integer", "min": 0, "max": 100},
             {"id": "icon", "title": "Icon", "type": "icon"},
             {"id": "key", "title": "Shortcut key", "type": "keybinding"},
-            {"id": "file", "title": "File Path", "type": "file", "select-dir": false}
+            {"id": "file", "title": "File Path", "type": "file", "select-dir": false},
+            {"id": "color", "title": "Color", "type": "integer", "default": 5, "options": {
+                    "red": 5,
+                    "blue": 4,
+                    "green": 3
+                }}
         ],
         "default" : []
     }

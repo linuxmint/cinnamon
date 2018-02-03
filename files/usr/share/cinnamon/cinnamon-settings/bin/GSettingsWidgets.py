@@ -93,10 +93,10 @@ class BinFileMonitor(GObject.GObject):
 
     def queue_emit_changed(self, file, other, event_type, data=None):
         if self.changed_id > 0:
-            GObject.source_remove(self.changed_id)
+            GLib.source_remove(self.changed_id)
             self.changed_id = 0
 
-        self.changed_id = GObject.idle_add(self._emit_changed)
+        self.changed_id = GLib.idle_add(self._emit_changed)
 
 file_monitor = None
 
@@ -147,7 +147,7 @@ class DependencyCheckInstallButton(Gtk.Box):
 
         self.connect("destroy", self.on_destroy)
 
-        GObject.idle_add(self.check)
+        GLib.idle_add(self.check)
 
     def check(self):
         self.start_pulse()
@@ -159,7 +159,7 @@ class DependencyCheckInstallButton(Gtk.Box):
                 success = False
                 break
 
-        GObject.idle_add(self.on_check_complete, success)
+        GLib.idle_add(self.on_check_complete, success)
 
         return False
 
@@ -169,11 +169,11 @@ class DependencyCheckInstallButton(Gtk.Box):
 
     def start_pulse(self):
         self.cancel_pulse()
-        self.progress_source_id = GObject.timeout_add(200, self.pulse_progress)
+        self.progress_source_id = GLib.timeout_add(200, self.pulse_progress)
 
     def cancel_pulse(self):
         if (self.progress_source_id > 0):
-            GObject.source_remove(self.progress_source_id)
+            GLib.source_remove(self.progress_source_id)
             self.progress_source_id = 0
 
     def on_check_complete(self, result, data=None):

@@ -126,6 +126,9 @@ class Module:
             widget = GSettingsSwitch(_("Display the alt-tab switcher on the primary monitor instead of the active one"), "org.cinnamon", "alttab-switcher-enforce-primary-monitor")
             settings.add_row(widget)
 
+            widget = GSettingsSwitch(_("Move minimized windows to the end of the alt-tab switcher"), "org.cinnamon", "alttab-minimized-aware")
+            settings.add_row(widget)
+
             widget = GSettingsSpinButton(_("Delay before displaying the alt-tab switcher"), "org.cinnamon", "alttab-switcher-delay", units=_("milliseconds"), mini=0, maxi=1000, step=50, page=150)
             settings.add_row(widget)
 
@@ -134,7 +137,7 @@ class Module:
 
 class TitleBarButtonsOrderSelector(SettingsBox):
     def __init__(self):
-        self.schema = "org.cinnamon.muffin"
+        self.schema = "org.cinnamon.desktop.wm.preferences"
         self.key = "button-layout"
 
         super(TitleBarButtonsOrderSelector, self).__init__(_("Buttons"))

@@ -1,3 +1,5 @@
+#!/usr/bin/python3
+
 import pageutils
 from gi.repository import Gtk
 
@@ -89,4 +91,4 @@ class ModulePage(pageutils.BaseListView):
                 for item in data:
                     self.store.append([int(item["id"]), item["title"], item["wmclass"], item["app"]])
             except Exception as e:
-                print e
+                print(e)

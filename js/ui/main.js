@@ -3,7 +3,7 @@
  * FILE:main.js
  * @short_description: This is the heart of Cinnamon, the mother of everything.
  * @placesManager (PlacesManager.PlacesManager): The places manager
- * @overview (Overview.Overview): The "scale" overview 
+ * @overview (Overview.Overview): The "scale" overview
  * @expo (Expo.Expo): The "expo" overview
  * @runDialog (RunDialog.RunDialog): The run dialog
  * @lookingGlass (LookingGlass.Melange): The looking glass object
@@ -89,7 +89,7 @@ const Lang = imports.lang;
 const SoundManager = imports.ui.soundManager;
 const BackgroundManager = imports.ui.backgroundManager;
 const SlideshowManager = imports.ui.slideshowManager;
-const AppletManager = imports.ui.appletManager;
+var AppletManager = imports.ui.appletManager;
 const SearchProviderManager = imports.ui.searchProviderManager;
 const DeskletManager = imports.ui.deskletManager;
 const ExtensionSystem = imports.ui.extensionSystem;
@@ -119,74 +119,74 @@ const Settings = imports.ui.settings;
 const Systray = imports.ui.systray;
 const Accessibility = imports.ui.accessibility;
 
-const LAYOUT_TRADITIONAL = "traditional";
-const LAYOUT_FLIPPED = "flipped";
-const LAYOUT_CLASSIC = "classic";
+var LAYOUT_TRADITIONAL = "traditional";
+var LAYOUT_FLIPPED = "flipped";
+var LAYOUT_CLASSIC = "classic";
 
-const CIN_LOG_FOLDER = GLib.get_home_dir() + '/.cinnamon/';
+var CIN_LOG_FOLDER = GLib.get_home_dir() + '/.cinnamon/';
 
-let DEFAULT_BACKGROUND_COLOR = Clutter.Color.from_pixel(0x2266bbff);
+var DEFAULT_BACKGROUND_COLOR = Clutter.Color.from_pixel(0x000000ff);
 
-let panel = null;
-let soundManager = null;
-let backgroundManager = null;
-let slideshowManager = null;
-let placesManager = null;
-let panelManager = null;
-let osdWindowManager = null;
-let overview = null;
-let expo = null;
-let runDialog = null;
-let lookingGlass = null;
-let wm = null;
-let a11yHandler = null;
-let messageTray = null;
-let indicatorManager = null;
-let notificationDaemon = null;
-let windowAttentionHandler = null;
-let recorder = null;
-let cinnamonDBusService = null;
-let modalCount = 0;
-let modalActorFocusStack = [];
-let uiGroup = null;
-let magnifier = null;
-let xdndHandler = null;
-let statusIconDispatcher = null;
-let keyboard = null;
-let layoutManager = null;
-let themeManager = null;
-let keybindingManager = null;
-let _errorLogStack = [];
-let _startDate;
-let _defaultCssStylesheet = null;
-let _cssStylesheet = null;
-let dynamicWorkspaces = null;
-let tracker = null;
-let settingsManager = null;
-let systrayManager = null;
-let wmSettings = null;
+var panel = null;
+var soundManager = null;
+var backgroundManager = null;
+var slideshowManager = null;
+var placesManager = null;
+var panelManager = null;
+var osdWindowManager = null;
+var overview = null;
+var expo = null;
+var runDialog = null;
+var lookingGlass = null;
+var wm = null;
+var a11yHandler = null;
+var messageTray = null;
+var indicatorManager = null;
+var notificationDaemon = null;
+var windowAttentionHandler = null;
+var recorder = null;
+var cinnamonDBusService = null;
+var modalCount = 0;
+var modalActorFocusStack = [];
+var uiGroup = null;
+var magnifier = null;
+var xdndHandler = null;
+var statusIconDispatcher = null;
+var keyboard = null;
+var layoutManager = null;
+var themeManager = null;
+var keybindingManager = null;
+var _errorLogStack = [];
+var _startDate;
+var _defaultCssStylesheet = null;
+var _cssStylesheet = null;
+var dynamicWorkspaces = null;
+var tracker = null;
+var settingsManager = null;
+var systrayManager = null;
+var wmSettings = null;
 
-let workspace_names = [];
+var workspace_names = [];
 
-let applet_side = St.Side.TOP; // Kept to maintain compatibility. Doesn't seem to be used anywhere
-let deskletContainer = null;
+var applet_side = St.Side.TOP; // Kept to maintain compatibility. Doesn't seem to be used anywhere
+var deskletContainer = null;
 
-let software_rendering = false;
+var software_rendering = false;
 
-let lg_log_file;
-let can_log = false;
+var lg_log_file;
+var can_log = false;
 
-let popup_rendering_actor = null;
+var popup_rendering_actor = null;
 
-let xlet_startup_error = false;
+var xlet_startup_error = false;
 
-const RunState = {
+var RunState = {
     INIT : 0,
     STARTUP : 1,
     RUNNING : 2
 }
 
-let runState = RunState.INIT;
+var runState = RunState.INIT;
 
 // Override Gettext localization
 const Gettext = imports.gettext;
@@ -258,8 +258,6 @@ function _initUserSession() {
 
     systrayManager = new Systray.SystrayManager();
     indicatorManager = new IndicatorManager.IndicatorManager();
-    
-    ExtensionSystem.init();
 
     Meta.keybindings_set_custom_handler('panel-run-dialog', function() {
        getRunDialog().open();
@@ -320,13 +318,13 @@ function start() {
 
     log("About to start Cinnamon");
     if (GLib.getenv('CINNAMON_SOFTWARE_RENDERING')) {
-        log("ACTIVATING SOFTWARE RENDERING");        
+        log("ACTIVATING SOFTWARE RENDERING");
         global.logError("Cinnamon Software Rendering mode enabled");
         software_rendering = true;
     }
 
     // Chain up async errors reported from C
-    global.connect('notify-error', function (global, msg, detail) { notifyError(msg, detail); });    
+    global.connect('notify-error', function (global, msg, detail) { notifyError(msg, detail); });
 
     Gio.DesktopAppInfo.set_desktop_env('X-Cinnamon');
 
@@ -352,9 +350,9 @@ function start() {
     // actor so set it anyways.
     global.stage.color = DEFAULT_BACKGROUND_COLOR;
     global.stage.no_clear_hint = true;
-    
+
     Gtk.IconTheme.get_default().append_search_path("/usr/share/cinnamon/icons/");
-    _defaultCssStylesheet = global.datadir + '/theme/cinnamon.css';    
+    _defaultCssStylesheet = global.datadir + '/theme/cinnamon.css';
 
     soundManager = new SoundManager.SoundManager();
 
@@ -365,7 +363,7 @@ function start() {
     backgroundManager = new BackgroundManager.BackgroundManager();
 
     slideshowManager = new SlideshowManager.SlideshowManager();
-    
+
     deskletContainer = new DeskletManager.DeskletContainer();
 
     // Set up stage hierarchy to group all UI actors under one container.
@@ -433,17 +431,17 @@ function start() {
     overview = new Overview.Overview();
     expo = new Expo.Expo();
 
-    statusIconDispatcher = new StatusIconDispatcher.StatusIconDispatcher();  
+    statusIconDispatcher = new StatusIconDispatcher.StatusIconDispatcher();
 
     layoutManager._updateBoxes();
-    
+
     wm = new WindowManager.WindowManager();
     messageTray = new MessageTray.MessageTray();
     keyboard = new Keyboard.Keyboard();
     notificationDaemon = new NotificationDaemon.NotificationDaemon();
     windowAttentionHandler = new WindowAttentionHandler.WindowAttentionHandler();
 
-    placesManager = new PlacesManager.PlacesManager();    
+    placesManager = new PlacesManager.PlacesManager();
 
     keybindingManager = new Keybindings.KeybindingManager();
     magnifier = new Magnifier.Magnifier();
@@ -451,7 +449,7 @@ function start() {
     Meta.later_add(Meta.LaterType.BEFORE_REDRAW, _checkWorkspaces);
 
     dynamicWorkspaces = false; // This should be configurable
-    
+
     layoutManager.init();
     keyboard.init();
     overview.init();
@@ -477,7 +475,7 @@ function start() {
         let module = eval('imports.perf.' + perfModuleName + ';');
         Scripting.runPerfScript(module, perfOutput);
     }
-    
+
     wmSettings = new Gio.Settings({schema_id: "org.cinnamon.desktop.wm.preferences"})
     workspace_names = wmSettings.get_strv("workspace-names");
 
@@ -489,56 +487,56 @@ function start() {
 
     _nWorkspacesChanged();
 
-    startTime = new Date().getTime();
-    AppletManager.init();
-    global.log('AppletManager.init() started in %d ms'.format(new Date().getTime() - startTime));
+    Promise.all([
+        AppletManager.init(),
+        ExtensionSystem.init(),
+        DeskletManager.init(),
+        SearchProviderManager.init()
+    ]).then(function() {
+        createLookingGlass();
 
-    DeskletManager.init();
-    SearchProviderManager.init();
+        a11yHandler = new Accessibility.A11yHandler();
 
-    createLookingGlass();
+        if (software_rendering && !GLib.getenv('CINNAMON_2D')) {
+            notifyCinnamon2d();
+        }
 
-    a11yHandler = new Accessibility.A11yHandler();
+        if (xlet_startup_error)
+            Mainloop.timeout_add_seconds(3, notifyXletStartupError);
 
-    if (software_rendering && !GLib.getenv('CINNAMON_2D')) {
-        notifyCinnamon2d();
-    }
+        let sound_settings = new Gio.Settings( {schema_id: "org.cinnamon.sounds"} );
+        let do_login_sound = sound_settings.get_boolean("login-enabled");
 
-    if (xlet_startup_error)
-        Mainloop.timeout_add_seconds(3, notifyXletStartupError);
+        // We're mostly prepared for the startup animation
+        // now, but since a lot is going on asynchronously
+        // during startup, let's defer the startup animation
+        // until the event loop is uncontended and idle.
+        // This helps to prevent us from running the animation
+        // when the system is bogged down
+        if (do_animation) {
+            let id = GLib.idle_add(GLib.PRIORITY_LOW, Lang.bind(this, function() {
+                if (do_login_sound)
+                    soundManager.play_once_per_session('login');
+                layoutManager._startupAnimation();
+                return GLib.SOURCE_REMOVE;
+            }));
+        } else {
+            global.background_actor.show();
+            setRunState(RunState.RUNNING);
 
-    let sound_settings = new Gio.Settings( {schema_id: "org.cinnamon.sounds"} );
-    let do_login_sound = sound_settings.get_boolean("login-enabled");
-
-    // We're mostly prepared for the startup animation
-    // now, but since a lot is going on asynchronously
-    // during startup, let's defer the startup animation
-    // until the event loop is uncontended and idle.
-    // This helps to prevent us from running the animation
-    // when the system is bogged down
-    if (do_animation) {
-        let id = GLib.idle_add(GLib.PRIORITY_LOW, Lang.bind(this, function() {
             if (do_login_sound)
                 soundManager.play_once_per_session('login');
-            layoutManager._startupAnimation();
-            return GLib.SOURCE_REMOVE;
-        }));
-    } else {
-        global.background_actor.show();
-        setRunState(RunState.RUNNING);
+        }
 
-        if (do_login_sound)
-            soundManager.play_once_per_session('login');
-    }
+        // Disable panel edit mode when Cinnamon starts
+        if (global.settings.get_boolean("panel-edit-mode")) {
+            global.settings.set_boolean("panel-edit-mode", false);
+        }
 
-    // Disable panel edit mode when Cinnamon starts
-    if (global.settings.get_boolean("panel-edit-mode")) {
-        global.settings.set_boolean("panel-edit-mode", false);
-    }
+        global.connect('shutdown', do_shutdown_sequence);
 
-    global.connect('shutdown', do_shutdown_sequence);
-
-    global.log('Cinnamon took %d ms to start'.format(new Date().getTime() - cinnamonStartTime));
+        global.log('Cinnamon took %d ms to start'.format(new Date().getTime() - cinnamonStartTime));
+    });
 }
 
 function notifyCinnamon2d() {
@@ -964,48 +962,65 @@ function notifyError(msg, details) {
  *
  * Used by _log to handle each argument type and its formatting.
  */
-function formatLogArgument (arg, recursion=0, depth) {
+function formatLogArgument(arg = '', recursion = 0, depth = 6) {
     // Make sure falsey values are clearly indicated.
     if (arg === null) {
         arg = 'null';
     } else if (arg === undefined) {
         arg = 'undefined';
     // Ensure strings are distinguishable.
-    } else if (typeof arg === 'string'
-        && recursion > 0) {
-        arg = `'${arg}'`;
+    } else if (typeof arg === 'string' && recursion > 0) {
+        arg = '\'' + arg + '\'';
     }
-    let isGObject = arg.toString().indexOf('[0x') > -1;
+    // Check if we reached the depth threshold
+    if (recursion + 1 > depth) {
+        try {
+            arg = JSON.stringify(arg);
+        } catch (e) {
+            arg = arg.toString();
+        }
+        return arg;
+    }
+    let isGObject;
+    let space = '';
+    for (let i = 0; i < recursion + 1; i++) {
+        space += '    ';
+    }
+    // Need to work around CJS being unable to stringify some native objects
+    // https://github.com/linuxmint/cjs/blob/f7638496ea1bec4c6774e6065cb3b2c38b30a7bf/cjs/context.cpp#L138
+    try {
+        isGObject = arg.toString().indexOf('[0x') > -1;
+    } catch (e) {
+        arg = '<unreadable>';
+    }
     if (typeof arg === 'object') {
         let isArray = Array.isArray(arg);
         let brackets = isArray ? ['[', ']'] : ['{', '}'];
         let array = isArray ? arg : Object.keys(arg);
-        let string = `${brackets[0]}\n`;
+        // Add beginning bracket with indentation
+        let string = brackets[0] + (recursion + 1 > depth ? '' : '\n');
         // GObjects are referenced in context and likely have circular references.
         if (recursion === 0) {
             depth = isGObject ? 2 : 6;
         }
         for (let j = 0, len = array.length; j < len; j++) {
-            // Add beginning bracket with indentation
-            let space = Array(recursion)
-                .fill('    ')
-                .join('');
-            // Check if we reached the depth threshold
-            if (recursion > depth) {
-                string += `${space}${arg.toString()}\n`;
-                break;
-            }
             if (isArray) {
-                string += `${space}${formatLogArgument(arg[j], recursion + 1, depth)},\n`;
+                string += space + formatLogArgument(arg[j], recursion + 1, depth) + ',\n';
             } else {
-                string += `${space}${array[j]}: ${formatLogArgument(arg[array[j]], recursion + 1, depth)},\n`;
+                string += space + array[j] + ': ' + formatLogArgument(arg[array[j]], recursion + 1, depth) + ',\n';
             }
         }
-        // Add ending bracket with indentation
-        arg = string + Array(recursion > 0 ? recursion - 1 : recursion)
-            .fill('    ')
-            .join('') + brackets[1];
+        // Remove one level of indentation and add the closing bracket.
+        space = space.substr(4, space.length);
+        arg = string + space + brackets[1];
     // Functions, numbers, etc.
+    } else if (typeof arg === 'function') {
+        let array = arg.toString().split('\n');
+        for (let i = 0; i < array.length; i++) {
+            if (i === 0) continue;
+            array[i] = space + array[i];
+        }
+        arg = array.join('\n');
     } else if (typeof arg !== 'string' || isGObject) {
         arg = arg.toString();
     }
@@ -1023,17 +1038,20 @@ function formatLogArgument (arg, recursion=0, depth) {
  * stream.  This is primarily intended for use by the
  * extension system as well as debugging.
  */
-function _log(category='info', msg='') {
-    let args = Array.from(arguments);
+function _log(category = 'info', msg = '') {
+    // Convert arguments into an array so it can be iterated.
+    let args = Array.prototype.slice.call(arguments);
+    // Remove category from the list of loggable arguments, renderLogLine will
+    // format it into the final string separately.
     args.shift();
     let text = '';
 
     for (let i = 0, len = args.length; i < len; i++) {
-        args[i] = formatLogArgument(args[i])
+        args[i] = formatLogArgument(args[i]);
     }
 
     if (args.length === 2) {
-        text = `${args[0]}: ${args[1]}`;
+        text = args[0] + ': ' + args[1];
     } else {
         text = args.join(' ');
     }
@@ -1051,9 +1069,9 @@ function _log(category='info', msg='') {
 /**
  * isError:
  * @obj (Object): the object to be tested
- * 
+ *
  * Tests whether @obj is an error object
- * 
+ *
  * Returns (boolean): whether @obj is an error object
  */
 function isError(obj) {
@@ -1079,7 +1097,7 @@ function isError(obj) {
 /**
  * _LogTraceFormatted:
  * @stack (string): the stack trace
- * 
+ *
  * Prints the stack trace to the LookingGlass
  * error stream in a predefined format
  */
@@ -1139,13 +1157,13 @@ function _logWarning(msg) {
  * _logError:
  * @msg (string): (optional) The message string
  * @error (Error): (optional) The error object
- * 
+ *
  * Logs the following (if present) to the
  * LookingGlass error stream:
  * - The message from the error object
  * - The stack trace of the error object
  * - The message @msg
- * 
+ *
  * It can be called in the form of either _logError(msg),
  * _logError(error) or _logError(msg, error).
  */
@@ -1166,9 +1184,9 @@ function _logError(msg, error) {
 /**
  * _logInfo:
  * @msg (Error/string): The error object or the message string
- * 
+ *
  * Logs the message to the LookingGlass
- * error stream. If @msg is an Error object, 
+ * error stream. If @msg is an Error object,
  * its stack trace will also be printed
  */
 
@@ -1177,9 +1195,10 @@ function _logInfo(msg) {
         _log('info', msg.message);
         _LogTraceFormatted(msg.stack);
     } else {
-        let args = Array.from(arguments);
-        args.shift();
-        _log('info', msg, ...args);
+        // Convert arguments to an array, add 'info' to the beginning of it. Invoke _log with apply so
+        // unlimited arguments can be passed to it.
+        let args = Array.prototype.slice.call(arguments);
+        _log.apply(this, ['info'].concat(args));
     }
 }
 
@@ -1198,7 +1217,7 @@ function formatTime(d) {
 /**
  * renderLogLine:
  * @line (dictionary): a log line
- * 
+ *
  * Converts a log line object into a string
  *
  * Returns (string): line in the format CATEGORY t=TIME MESSAGE
@@ -1291,7 +1310,7 @@ function _stageEventHandler(actor, event) {
         expo.hide();
         return true;
     }
-       
+
     if (action == Meta.KeyBindingAction.SWITCH_PANELS) {
         //Used to call the ctrlalttabmanager in Gnome Shell
         return true;
@@ -1308,8 +1327,8 @@ function _stageEventHandler(actor, event) {
              wm.actionMoveWorkspaceRight();
              return true;
         case Meta.KeyBindingAction.WORKSPACE_UP:
-            overview.hide();   
-            expo.hide();                  
+            overview.hide();
+            expo.hide();
             return true;
         case Meta.KeyBindingAction.WORKSPACE_DOWN:
             overview.hide();
@@ -1354,7 +1373,7 @@ function _findModal(actor) {
  * @timestamp is optionally used to associate the call with a specific user
  * initiated event.  If not provided then the value of
  * global.get_current_time() is assumed.
- * 
+ *
  * Returns (boolean): true iff we successfully acquired a grab or already had one
  */
 function pushModal(actor, timestamp, options) {
@@ -1637,21 +1656,22 @@ function queueDeferredWork(workId) {
  * Returns (boolean): whether the window is interesting
  */
 function isInteresting(metaWindow) {
+
     if (metaWindow.get_title() == "JavaEmbeddedFrame")
         return false;
 
+    // Include any window the tracker finds interesting
     if (tracker.is_window_interesting(metaWindow)) {
-        // The nominal case.
         return true;
     }
-    // The rest of this function is devoted to discovering "orphan" windows
-    // (dialogs without an associated app, e.g., the Logout dialog).
-    if (tracker.get_window_app(metaWindow)) {
-        // orphans don't have an app!
-        return false;
-    }    
+
+    // Include app-less dialogs
     let type = metaWindow.get_window_type();
-    return type === Meta.WindowType.DIALOG || type === Meta.WindowType.MODAL_DIALOG;
+    if (!tracker.get_window_app(metaWindow) && (type === Meta.WindowType.DIALOG || type === Meta.WindowType.MODAL_DIALOG)) {
+        return true;
+    }
+
+    return false;
 }
 
 /**

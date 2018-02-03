@@ -64,18 +64,18 @@ void _st_actor_get_preferred_height (ClutterActor *actor,
 void _st_set_text_from_style (ClutterText *text,
                               StThemeNode *theme_node);
 
-CoglHandle _st_create_texture_material (CoglHandle src_texture);
+CoglPipeline * _st_create_texture_pipeline (CoglTexture *src_texture);
 
 /* Helper for widgets which need to draw additional shadows */
-CoglHandle _st_create_shadow_material (StShadow   *shadow_spec,
-                                       CoglHandle  src_texture);
-CoglHandle _st_create_shadow_material_from_actor (StShadow     *shadow_spec,
-                                                  ClutterActor *actor);
-cairo_pattern_t *_st_create_shadow_cairo_pattern (StShadow        *shadow_spec,
-                                                  cairo_pattern_t *src_pattern);
+CoglPipeline * _st_create_shadow_pipeline (StShadow    *shadow_spec,
+                                           CoglTexture *src_texture);
+CoglPipeline * _st_create_shadow_pipeline_from_actor (StShadow     *shadow_spec,
+                                                      ClutterActor *actor);
+cairo_pattern_t * _st_create_shadow_cairo_pattern (StShadow        *shadow_spec,
+                                                   cairo_pattern_t *src_pattern);
 
 void _st_paint_shadow_with_opacity (StShadow        *shadow_spec,
-                                    CoglHandle       shadow_material,
+                                    CoglPipeline    *shadow_pipeline,
                                     ClutterActorBox *box,
                                     guint8           paint_opacity);
 

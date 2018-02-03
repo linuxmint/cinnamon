@@ -116,7 +116,7 @@ MyApplet.prototype = {
 
     activateWindow: function(metaWorkspace, metaWindow) {
         if (this._menu.isOpen) {
-            this._menu.toggle();
+            this._menu.toggle_with_options(false);
         }
         this.menu.toggle();
         if(!metaWindow.is_on_all_workspaces()) { metaWorkspace.activate(global.get_current_time()); }
@@ -127,7 +127,7 @@ MyApplet.prototype = {
     on_applet_clicked: function(event) {
         this.updateMenu();
         if (!this._menu.isOpen) {
-            this._menu.toggle();
+            this._menu.toggle_with_options(false);
         }
         this.menu.toggle();
     }

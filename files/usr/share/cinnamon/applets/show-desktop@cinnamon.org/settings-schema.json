@@ -5,7 +5,7 @@
  },
  "peek-at-desktop" : {
     "type" : "switch",
-    "default" : true,
+    "default" : false,
     "description": "Peek at the desktop on hover",
     "tooltip": "Peek at the desktop when hovering the applet"
  },

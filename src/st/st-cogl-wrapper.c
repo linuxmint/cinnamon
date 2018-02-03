@@ -12,18 +12,21 @@ static gboolean supports_npot = FALSE;
 inline static gboolean
 hardware_supports_npot_sizes (void)
 {
-  ClutterBackend *backend;
-
     if (cogl_context != NULL)
         return supports_npot;
 
-    backend = clutter_get_default_backend ();
-    cogl_context = clutter_backend_get_cogl_context (backend);
+    cogl_context = st_get_cogl_context();
     supports_npot = cogl_has_feature (cogl_context, COGL_FEATURE_ID_TEXTURE_NPOT);
 
     g_message ("cogl npot texture sizes %s", supports_npot ? "SUPPORTED" : "NOT supported");
 
     return supports_npot;
+}
+
+CoglContext *
+st_get_cogl_context (void)
+{
+    return clutter_backend_get_cogl_context (clutter_get_default_backend ());
 }
 
 /**

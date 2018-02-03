@@ -1,4 +1,4 @@
-#!/usr/bin/python2
+#!/usr/bin/python3
 #
 # This is a simple script that we use to check for files in git
 # and not in the distribution. It was previously written in cinnamon
@@ -16,10 +16,10 @@ os.chdir(srcdir)
 
 status=0
 for f in subprocess.Popen(["git", "ls-files"], stdout=subprocess.PIPE).stdout:
-    f = f.strip()
+    f = f.decode('utf-8').strip()
     if (not os.path.exists(os.path.join(distdir, f)) and
             not any((fnmatch.fnmatch(f, p) for p in excludes))):
-        print "File missing from distribution:", f
+        print("File missing from distribution:", f)
         status=1
 
 sys.exit(status)

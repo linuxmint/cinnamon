@@ -113,7 +113,7 @@ st_theme_node_dispose (GObject *gobject)
     {
       g_object_unref (node->border_image);
       node->border_image = NULL;
-    } 
+    }
 
   if (node->icon_colors)
     {
@@ -1873,9 +1873,11 @@ _st_theme_node_ensure_background (StThemeNode *node)
                    file = _st_theme_resolve_url (node->theme,
                                                  base_stylesheet,
                                                  term->content.str->stryng->str);
-
-                   node->background_image = g_file_get_path (file);
-                   g_object_unref (file);
+                   if (file)
+                     {
+                       node->background_image = g_file_get_path (file);
+                       g_object_unref (file);
+                     }
                 }
             }
         }
@@ -1984,8 +1986,11 @@ _st_theme_node_ensure_background (StThemeNode *node)
                                             base_stylesheet,
                                             decl->value->content.str->stryng->str);
 
-              node->background_image = g_file_get_path (file);
-              g_object_unref (file);
+              if (file)
+                {
+                  node->background_image = g_file_get_path (file);
+                  g_object_unref (file);
+                }
             }
           else if (term_is_inherit (decl->value))
             {
@@ -2017,8 +2022,11 @@ _st_theme_node_ensure_background (StThemeNode *node)
               file = _st_theme_resolve_url (node->theme,
                                             base_stylesheet,
                                             decl->value->content.str->stryng->str);
-              node->background_bumpmap = g_file_get_path (file);
-              g_object_unref (file);
+              if (file)
+                {
+                  node->background_bumpmap = g_file_get_path (file);
+                  g_object_unref (file);
+                }
             }
           else if (term_is_inherit (decl->value))
             {
@@ -2952,8 +2960,11 @@ st_theme_node_get_border_image (StThemeNode *node)
             base_stylesheet = NULL;
 
           file = _st_theme_resolve_url (node->theme, base_stylesheet, url);
-          filename = g_file_get_path (file);
-          g_object_unref (file);
+          if (file)
+            {
+              filename = g_file_get_path (file);
+              g_object_unref (file);
+            }
 
           if (filename == NULL)
             goto next_property;

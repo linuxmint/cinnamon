@@ -73,6 +73,17 @@ MyApplet.prototype = {
             this.settings.bind("use-custom-format", "use_custom_format", this._onSettingsChanged);
             this.settings.bind("custom-format", "custom_format", this._onSettingsChanged);
 
+            /* FIXME: Add gobject properties to the WallClock class to allow easier access from
+             * its clients, and possibly a separate signal to notify of updates to these properties
+             * (though GObject "changed" would be sufficient.) */
+            this.desktop_settings = new Gio.Settings({ schema_id: "org.cinnamon.desktop.interface" });
+            this.desktop_settings.connect("changed::clock-use-24h", Lang.bind(this, function(key) {
+                this._onSettingsChanged();
+            }));
+            this.desktop_settings.connect("changed::clock-show-seconds", Lang.bind(this, function(key) {
+                this._onSettingsChanged();
+            }));
+
             this.clock = new CinnamonDesktop.WallClock();
             this.clock_notify_id = 0;
 
@@ -120,7 +131,22 @@ MyApplet.prototype = {
                 this.clock.set_format_string("~CLOCK FORMAT ERROR~ %l:%M %p");
             }
         } else if (in_vertical_panel) {
-            this.clock.set_format_string("%H%n%M");
+            let use_24h = this.desktop_settings.get_boolean("clock-use-24h");
+            let show_seconds = this.desktop_settings.get_boolean("clock-show-seconds");
+
+            if (use_24h) {
+                if (show_seconds) {
+                    this.clock.set_format_string("%H%n%M%n%S");
+                } else {
+                    this.clock.set_format_string("%H%n%M%");
+                }
+            } else {
+                if (show_seconds) {
+                    this.clock.set_format_string("%l%n%M%n%S");
+                } else {
+                    this.clock.set_format_string("%l%n%M%");
+                }
+            }
         } else {
             this.clock.set_format_string(null);
         }

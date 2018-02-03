@@ -1,3 +1,5 @@
+#!/usr/bin/python3
+
 import pageutils
 from gi.repository import Gtk
 
@@ -32,7 +34,7 @@ class MemoryView(pageutils.BaseListView):
         success, time_last_gc, data = lookingGlassProxy.GetMemoryInfo()
         if success:
             self.secondsLabel.set_text("%d" % time_last_gc)
-            for key in data.keys():
+            for key in data:
                 self.store.append([key, data[key]])
 
     def onFullGc(self, widget):

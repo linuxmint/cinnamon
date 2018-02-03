@@ -41,10 +41,10 @@ class DeskletsViewSidePage(SidePage):
         self.stack.expand = True
 
         manage_extensions_page = ManageDeskletsPage(self, self.spices, self.window)
-        self.stack.add_titled(manage_extensions_page, 'installed', _("Manage desklets"))
+        self.stack.add_titled(manage_extensions_page, 'installed', _("Manage"))
 
         download_desklets_page = DownloadSpicesPage(self, self.collection_type, self.spices, self.window)
-        self.stack.add_titled(download_desklets_page, 'more', _("Download desklets"))
+        self.stack.add_titled(download_desklets_page, 'more', _("Download"))
 
         page = SettingsPage()
         self.stack.add_titled(page, 'general', _("General Settings"))
@@ -53,7 +53,7 @@ class DeskletsViewSidePage(SidePage):
 
         dec = [[0, _("No decoration")], [1, _("Border only")], [2, _("Border and header")]]
         widget = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
-        combo_box = GSettingsComboBox(_("Decoration of desklets"), "org.cinnamon", "desklet-decorations", dec, valtype="int")
+        combo_box = GSettingsComboBox(_("Decoration of desklets"), "org.cinnamon", "desklet-decorations", dec, valtype=int)
         widget.pack_start(combo_box, False, False, 0)
         line1 = Gtk.Label()
         line1.set_markup("<i><small>%s</small></i>" % _("Note: Some desklets require the border/header to be always present"))

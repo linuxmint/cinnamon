@@ -1,3 +1,5 @@
+#!/usr/bin/python3
+
 import pageutils
 from gi.repository import Gtk
 
@@ -137,7 +139,7 @@ class ModulePage(pageutils.WindowAndActionBars):
                 try:
                     self.view.setInspectionData(path, data)
                 except Exception as e:
-                    print e
+                    print(e)
                     self.view.store.clear()
             else:
                 self.view.store.clear()

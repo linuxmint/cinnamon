@@ -1,10 +1,8 @@
 // -*- mode: js; js-indent-level: 4; indent-tabs-mode: nil -*-
 
 const Gio = imports.gi.Gio;
-const Lang = imports.lang;
-const Signals = imports.signals;
 
-const PresenceIface = '\
+var PresenceIface = '\
 <node> \
     <interface name="org.gnome.SessionManager.Presence"> \
         <method name="SetStatus"> \
@@ -17,7 +15,7 @@ const PresenceIface = '\
     </interface> \
 </node>';
 
-const PresenceStatus = {
+var PresenceStatus = {
     AVAILABLE: 0,
     INVISIBLE: 1,
     BUSY: 2,
@@ -30,7 +28,7 @@ function Presence(initCallback, cancellable) {
                              '/org/gnome/SessionManager/Presence', initCallback, cancellable);
 }
 
-const InhibitorIface = ' \
+var InhibitorIface = ' \
 <node> \
     <interface name="org.gnome.SessionManager.Inhibitor"> \
         <property name="app_id" type="s" access="read" /> \
@@ -47,7 +45,7 @@ function Inhibitor(objectPath, initCallback, cancellable) {
     return new InhibitorProxy(Gio.DBus.session, 'org.gnome.SessionManager', objectPath, initCallback, cancellable);
 }
 
-const SessionManagerIface = '\
+var SessionManagerIface = '\
 <node> \
     <interface name="org.gnome.SessionManager"> \
         <method name="Logout"> \

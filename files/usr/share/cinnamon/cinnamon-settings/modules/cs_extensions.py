@@ -41,13 +41,13 @@ class ExtensionViewSidePage(SidePage):
         self.stack.expand = True
 
         manage_extensions_page = ManageExtensionsPage(self, self.spices, window)
-        self.stack.add_titled(manage_extensions_page, "installed", _("Manage extensions"))
+        self.stack.add_titled(manage_extensions_page, "installed", _("Manage"))
 
         download_extensions_page = DownloadSpicesPage(self, self.collection_type, self.spices, window)
-        self.stack.add_titled(download_extensions_page, "more", _("Download extensions"))
+        self.stack.add_titled(download_extensions_page, "more", _("Download"))
 
 class ManageExtensionsPage(ManageSpicesPage):
-    directories = [("%s/.local/share/cinnamon/extensions") % GLib.get_home_dir()]
+    directories = ['/usr/share/cinnamon/extensions', ("%s/.local/share/cinnamon/extensions") % GLib.get_home_dir()]
     collection_type = "extension"
     installed_page_title = _("Installed extensions")
     instance_button_text = _("Enable")

@@ -36,7 +36,7 @@ class MenuEditor(object):
     def loadDOM(self):
         try:
             self.dom = xml.dom.minidom.parse(self.path)
-        except (IOError, xml.parsers.expat.ExpatError), e:
+        except (IOError, xml.parsers.expat.ExpatError) as e:
             self.dom = xml.dom.minidom.parseString(util.getUserMenuXml(self.tree))
         util.removeWhitespaceNodes(self.dom)
 

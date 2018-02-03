@@ -1,4 +1,4 @@
-#!/usr/bin/python2
+#!/usr/bin/python3
 
 import sys
 import os
@@ -15,8 +15,8 @@ from gi.repository import GLib, Gtk, Gio, CMenu, GdkPixbuf
 sys.path.insert(0, '/usr/share/cinnamon/cinnamon-menu-editor')
 from cme import util
 
-sys.path.insert(0, '/usr/share/cinnamon/cinnamon-settings')
-from bin import JsonSettingsWidgets
+sys.path.insert(0, '/usr/share/cinnamon/cinnamon-settings/bin')
+import JsonSettingsWidgets
 
 # i18n
 gettext.install("cinnamon", "/usr/share/locale")
@@ -470,7 +470,7 @@ class Main:
             editor = LauncherEditor(self.orig_file, self.nemo_launcher_cb, self.dest_dir)
             editor.dialog.show_all()
         else:
-            print "Invalid args"
+            print("Invalid args")
 
     def directory_cb(self, success, dest_path):
         self.end()

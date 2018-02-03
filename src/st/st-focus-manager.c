@@ -33,14 +33,12 @@
 
 #include "st-focus-manager.h"
 
-#define ST_FOCUS_MANAGER_GET_PRIVATE(obj) (G_TYPE_INSTANCE_GET_PRIVATE ((obj), ST_TYPE_FOCUS_MANAGER, StFocusManagerPrivate))
-
 struct _StFocusManagerPrivate
 {
   GHashTable *groups;
 };
 
-G_DEFINE_TYPE (StFocusManager, st_focus_manager, G_TYPE_OBJECT)
+G_DEFINE_TYPE_WITH_PRIVATE (StFocusManager, st_focus_manager, G_TYPE_OBJECT)
 
 static void
 st_focus_manager_dispose (GObject *object)
@@ -61,15 +59,13 @@ st_focus_manager_class_init (StFocusManagerClass *klass)
 {
   GObjectClass *object_class = G_OBJECT_CLASS (klass);
 
-  g_type_class_add_private (klass, sizeof (StFocusManagerPrivate));
-
   object_class->dispose = st_focus_manager_dispose;
 }
 
 static void
 st_focus_manager_init (StFocusManager *manager)
 {
-  manager->priv = ST_FOCUS_MANAGER_GET_PRIVATE (manager);
+  manager->priv = st_focus_manager_get_instance_private (manager);
   manager->priv->groups = g_hash_table_new (NULL, NULL);
 }
 

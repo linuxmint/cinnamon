@@ -64,9 +64,6 @@ enum
   LAST_SIGNAL
 };
 
-#define ST_BUTTON_GET_PRIVATE(obj)    \
-  (G_TYPE_INSTANCE_GET_PRIVATE ((obj), ST_TYPE_BUTTON, StButtonPrivate))
-
 struct _StButtonPrivate
 {
   gchar *text;
@@ -83,7 +80,7 @@ struct _StButtonPrivate
 
 static guint button_signals[LAST_SIGNAL] = { 0, };
 
-G_DEFINE_TYPE (StButton, st_button, ST_TYPE_BIN);
+G_DEFINE_TYPE_WITH_PRIVATE (StButton, st_button, ST_TYPE_BIN);
 
 static GType st_button_accessible_get_type (void) G_GNUC_CONST;
 
@@ -376,8 +373,6 @@ st_button_class_init (StButtonClass *klass)
   StWidgetClass *widget_class = ST_WIDGET_CLASS (klass);
   GParamSpec *pspec;
 
-  g_type_class_add_private (klass, sizeof (StButtonPrivate));
-
   gobject_class->set_property = st_button_set_property;
   gobject_class->get_property = st_button_get_property;
   gobject_class->finalize = st_button_finalize;
@@ -447,7 +442,7 @@ st_button_class_init (StButtonClass *klass)
 static void
 st_button_init (StButton *button)
 {
-  button->priv = ST_BUTTON_GET_PRIVATE (button);
+  button->priv = st_button_get_instance_private (button);
   button->priv->spacing = 6;
   button->priv->button_mask = ST_BUTTON_ONE;
 

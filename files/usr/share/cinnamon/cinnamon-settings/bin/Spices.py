@@ -13,7 +13,6 @@ try:
     import threading
     import time
     from PIL import Image
-    import config
 except Exception, detail:
     print detail
     sys.exit(1)
@@ -158,7 +157,7 @@ class Spice_Harvester(GObject.Object):
             if self.collection_type == 'extension':
                 self.spices_directories = (self.install_folder, )
             else:
-                self.spices_directories = (self.install_folder, '/usr/share/cinnamon/%ss/' % self.collection_type)
+                self.spices_directories = ('/usr/share/cinnamon/%ss/' % self.collection_type, self.install_folder)
 
         self._load_metadata()
 
@@ -261,7 +260,8 @@ class Spice_Harvester(GObject.Object):
             total = self.download_total_files
             current = total - self.download_manager.get_n_jobs()
             fraction = float(current) / float(total)
-            self._set_progressbar_text(_("Downloading image cache %i/%i") % (current, total))
+            text = "%s %i/%i" % (_("Downloading images:"), current, total)
+            self._set_progressbar_text(text)
         else:
             fraction = count * blockSize / float((totalSize / blockSize + 1) * (blockSize))
 
@@ -367,22 +367,27 @@ class Spice_Harvester(GObject.Object):
         self.meta_map = {}
 
         for directory in self.spices_directories:
-            extensions = os.listdir(directory)
+            if os.path.exists(directory):
+                extensions = os.listdir(directory)
 
-            for uuid in extensions:
-                subdirectory = os.path.join(directory, uuid)
-                try:
-                    json_data = open(os.path.join(subdirectory, 'metadata.json')).read()
-                    metadata = json.loads(json_data)
-                    metadata['path'] = subdirectory
-                    metadata['writable'] = os.access(subdirectory, os.W_OK)
-                    self.meta_map[uuid] = metadata
-                except Exception, detail:
-                    print detail
-                    print("Skipping %s: there was a problem trying to read metadata.json" % uuid)
+                for uuid in extensions:
+                    subdirectory = os.path.join(directory, uuid)
+                    try:
+                        json_data = open(os.path.join(subdirectory, 'metadata.json')).read()
+                        metadata = json.loads(json_data)
+                        metadata['path'] = subdirectory
+                        metadata['writable'] = os.access(subdirectory, os.W_OK)
+                        self.meta_map[uuid] = metadata
+                    except Exception, detail:
+                        print detail
+                        print("Skipping %s: there was a problem trying to read metadata.json" % uuid)
+            else:
+                print("%s does not exist! Creating it now." % directory)
+                subprocess.call(["mkdir", "-p", directory])
 
     def _directory_changed(self, *args):
         self._load_metadata()
+        self._generate_update_list()
         self.emit("installed-changed")
 
     """ returns a dictionary of the metadata by uuid of all installed spices"""
@@ -442,7 +447,6 @@ class Spice_Harvester(GObject.Object):
         else:
             self.has_cache = True
 
-        self.updates_available = []
         f = open(filename, 'r')
         try:
             self.index_cache = json.load(f)
@@ -453,6 +457,10 @@ class Spice_Harvester(GObject.Object):
                 pass
             self.errorMessage(_("Something went wrong with the spices download.  Please try refreshing the list again."), str(detail))
 
+        self._generate_update_list()
+
+    def _generate_update_list(self):
+        self.updates_available = []
         for uuid in self.index_cache:
             if self.get_is_installed(uuid) and self.get_has_update(uuid):
                 self.updates_available.append(uuid)
@@ -462,7 +470,7 @@ class Spice_Harvester(GObject.Object):
         self.old_cache = self.index_cache
 
         job = {'func': self._download_cache}
-        job['progress_text'] = _("Refreshing the %s cache from the Cinnamon spices website") % self.collection_type
+        job['progress_text'] = _("Refreshing the cache")
         self._push_job(job)
 
     def _download_cache(self, load_assets=True):
@@ -544,7 +552,7 @@ class Spice_Harvester(GObject.Object):
     """ downloads and installs the given extension"""
     def install(self, uuid):
         job = {'uuid': uuid, 'func': self._install, 'callback': self._install_finished}
-        job['progress_text'] = _("Installing %s %s") % (self.collection_type, uuid)
+        job['progress_text'] = _("Installing %s") % uuid
         self._push_job(job)
 
     def _install(self, job):
@@ -570,24 +578,23 @@ class Spice_Harvester(GObject.Object):
             # check integrity of the download
 
             if not self.themes:
+                # Install spice localization files, if any
                 if 'po' in contents:
                     po_dir = os.path.join(uuidfolder, 'po')
                     for file in os.listdir(po_dir):
-                        if file.split(".")[1] == 'po':
+                        if file.endswith('.po'):
                             lang = file.split(".")[0]
                             locale_dir = os.path.join(locale_inst, lang, 'LC_MESSAGES')
                             rec_mkdir(locale_dir)
                             subprocess.call(['msgfmt', '-c', os.path.join(po_dir, file), '-o', os.path.join(locale_dir, '%s.mo' % uuid)])
 
+                # Install spice schema file, if any
                 schema = [filename for filename in contents if 'gschema.xml' in filename]
                 for filename in schema:
-                    if os.path.exists('/usr/bin/gksu') and os.path.exists(config.currentPath + "/bin/installSchema.py"):
-                        message = _("Please enter your password to install the required settings schema for %s") % (uuid)
+                    if os.path.exists('/usr/bin/gksu'):
+                        message = _("Please enter your password to install the required settings schema for ") + uuid
                         path = os.path.join(uuidfolder, filename)
-                        tool = config.currentPath + "/bin/installSchema.py"
-
-                        command = 'gksu  --message "<b>%s</b>" %s %s' % (message, tool, path)
-                        os.system(command)
+                        os.system('gksu  --message "<b>%s</b>" cinnamon-schema-install %s' % (message, path))
                     else:
                         self.errorMessage(_("Could not install the settings schema for %s.  You will have to perform this step yourself.") % (uuid))
 
@@ -616,7 +623,7 @@ class Spice_Harvester(GObject.Object):
 
         except Exception, detail:
             if not self.abort_download:
-                self.errorMessage(_("An error occurred during installation or updating. You may wish to report this incident to the developer of %s.\n\nIf this was an update, the previous installation is unchanged") % (uuid), str(detail))
+                self.errorMessage(_("An error occurred during the installation of %s. Please report this incident to its developer.") % uuid, str(detail))
             return False
 
         try:
@@ -633,21 +640,19 @@ class Spice_Harvester(GObject.Object):
     """ uninstalls and removes the given extension"""
     def uninstall(self, uuid):
         job = {'uuid': uuid, 'func': self._uninstall}
-        job['progress_text'] = _("Uninstalling %s %s") % (self.collection_type, uuid)
+        job['progress_text'] = _("Uninstalling %s") % uuid
         self._push_job(job)
 
     def _uninstall(self, job):
         try:
             uuid = job['uuid']
             if not self.themes:
+                # Uninstall spice schema files, if any
                 if 'schema-file' in self.meta_map[uuid]:
-                    sentence = _("Please enter your password to remove the settings schema for %s") % (uuid)
-                    if os.path.exists('/usr/bin/gksu') and os.path.exists(config.currentPath + "/bin/removeSchema.py"):
-                        for file in self.meta_map[uuid]:
-                            launcher = 'gksu  --message "<b>%s</b>"' % sentence
-                            tool = config.currentPath + "/bin/removeSchema.py %s" % (file)
-                            command = '%s %s' % (launcher, tool)
-                            os.system(command)
+                    if os.path.exists('/usr/bin/gksu'):
+                        for path in self.meta_map[uuid]['schema-file'].split(','):
+                            message = _("Please enter your password to remove the settings schema for ") + uuid
+                            os.system('gksu  --message "<b>%s</b>" cinnamon-schema-remove %s' % (message, path))
                     else:
                         self.errorMessage(_("Could not remove the settings schema for %s.  You will have to perform this step yourself.  This is not a critical error.") % (job["uuid"]))
 
@@ -665,7 +670,7 @@ class Spice_Harvester(GObject.Object):
                     shutil.rmtree(os.path.join(settings_dir, uuid))
             shutil.rmtree(os.path.join(self.install_folder, uuid))
         except Exception, detail:
-            self.errorMessage(_("Problem uninstalling %s. You may need to remove it manually.") % (job['uuid']), detail)
+            self.errorMessage(_("A problem occurred while removing %s.") % job['uuid'], str(detail))
 
     """ applies all available updates"""
     def update_all(self):

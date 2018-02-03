@@ -9,6 +9,8 @@ import dbus
 
 CINNAMON_SOUNDS = "org.cinnamon.sounds"
 CINNAMON_DESKTOP_SOUNDS = "org.cinnamon.desktop.sound"
+MAXIMUM_VOLUME_KEY = "maximum-volume"
+
 DECAY_STEP = .15
 
 EFFECT_LIST = [
@@ -159,10 +161,8 @@ class Slider(SettingsWidget):
         self.slider.add_mark(val, Gtk.PositionType.TOP, "")
 
 class VolumeBar(Slider):
-    def __init__(self, normVolume, maxVolume, title=_("Volume: "), gicon=None, sizeGroup=None):
+    def __init__(self, normVolume, maxPercent, title=_("Volume: "), gicon=None, sizeGroup=None):
         self.normVolume = normVolume
-        self.maxVolume = maxVolume
-        self.maxPercent = 100*maxVolume/normVolume
         self.volume = 0
         self.isMuted = False
         self.baseTitle = title
@@ -172,7 +172,7 @@ class VolumeBar(Slider):
         self.mutedHandlerId = 0
         self.volumeHandlerId = 0
 
-        super(VolumeBar, self).__init__(title, _("Softer"), _("Louder"), 0, self.maxPercent, sizeGroup, 1, 5, 0, gicon)
+        super(VolumeBar, self).__init__(title, _("Softer"), _("Louder"), 0, maxPercent, sizeGroup, 1, 5, 0, gicon)
         self.set_spacing(0)
         self.set_border_width(2)
         self.set_margin_left(23)
@@ -188,7 +188,7 @@ class VolumeBar(Slider):
 
         self.leftBox.pack_start(self.muteSwitch, False, False, 0)
 
-        if maxVolume > normVolume:
+        if maxPercent > 100:
             self.setMark(100)
 
         self.muteSwitchHandlerId = self.muteSwitch.connect("clicked", self.toggleMute)
@@ -502,6 +502,7 @@ class Module:
     def __init__(self, content_box):
         keywords = _("sound, media, music, speakers, audio")
         self.sidePage = SidePage(_("Sound"), "cs-sound", keywords, content_box, module=self)
+        self.sound_settings = Gio.Settings(CINNAMON_DESKTOP_SOUNDS)
 
     def on_module_selected(self):
         if not self.loaded:
@@ -548,7 +549,8 @@ class Module:
         sizeGroup = Gtk.SizeGroup.new(Gtk.SizeGroupMode.HORIZONTAL)
 
         # ouput volume
-        self.outVolume = VolumeBar(self.controller.get_vol_max_norm(), self.controller.get_vol_max_amplified(), sizeGroup=sizeGroup)
+        max_volume = self.sound_settings.get_int(MAXIMUM_VOLUME_KEY)
+        self.outVolume = VolumeBar(self.controller.get_vol_max_norm(), max_volume, sizeGroup=sizeGroup)
         devSettings.add_row(self.outVolume)
 
         # balance
@@ -578,7 +580,7 @@ class Module:
         sizeGroup = Gtk.SizeGroup.new(Gtk.SizeGroupMode.HORIZONTAL)
 
         # input volume
-        self.inVolume = VolumeBar(self.controller.get_vol_max_norm(), self.controller.get_vol_max_amplified(), sizeGroup=sizeGroup)
+        self.inVolume = VolumeBar(self.controller.get_vol_max_norm(), max_volume, sizeGroup=sizeGroup)
         devSettings.add_row(self.inVolume)
 
         # input level
@@ -603,7 +605,7 @@ class Module:
         self.sidePage.stack.add_titled(page, "effects", _("Sound Effects"))
 
         effectsVolumeSection = page.add_section(_("Effects Volume"))
-        self.effectsVolume = VolumeBar(self.controller.get_vol_max_norm(), self.controller.get_vol_max_norm())
+        self.effectsVolume = VolumeBar(self.controller.get_vol_max_norm(), 100)
         effectsVolumeSection.add_row(self.effectsVolume)
 
         effectsSection = SoundBox(_("Effects"))
@@ -634,6 +636,25 @@ class Module:
         box.pack_start(label, False, False, 0)
         noAppsMessage.pack_start(box, True, True, 0)
         self.appStack.add_named(noAppsMessage, "noAppsMessage")
+
+        ## Settings page
+        page = SettingsPage()
+        self.sidePage.stack.add_titled(page, "settings", _("Settings"))
+
+        amplificationSection = page.add_section(_("Amplification"))
+        self.maxVolume = Slider(_("Maximum volume: %d") % max_volume + "%", _("Reduced"), _("Amplified"), 1, 150, sizeGroup, step=1, page=10, value=max_volume, gicon=None, iconName=None)
+        self.maxVolume.adjustment.connect("value-changed", self.onMaxVolumeChanged)
+        self.maxVolume.setMark(100)
+        amplificationSection.add_row(self.maxVolume)
+
+    def onMaxVolumeChanged(self, adjustment):
+        newValue = int(round(adjustment.get_value()))
+        self.sound_settings.set_int(MAXIMUM_VOLUME_KEY, newValue)
+        self.maxVolume.label.set_label(_("Maximum volume: %d") % newValue + "%")
+        self.outVolume.adjustment.set_upper(newValue)
+        self.outVolume.slider.clear_marks()
+        if (newValue > 100):
+            self.outVolume.setMark(100)
 
     def inializeController(self):
         self.controller = Cvc.MixerControl(name = "cinnamon")
@@ -671,12 +692,14 @@ class Module:
         id = getattr(self.controller, "lookup_"+type+"_id")(newDevice)
         if id != None and id != getattr(self, type+"Id"):
             getattr(self.controller, "change_"+type)(id)
+            self.profile.setDevice(id)
 
     def deviceAdded(self, c, id, type):
         device = getattr(self.controller, "lookup_"+type+"_id")(id)
 
         iconTheme = Gtk.IconTheme.get_default()
         gicon = device.get_gicon()
+        iconName = device.get_icon_name()
         icon = None
         if gicon is not None:
             lookup = iconTheme.lookup_by_gicon(gicon, 32, 0)
@@ -684,7 +707,7 @@ class Module:
                 icon = lookup.load_icon()
 
         if icon is None:
-            if ("bluetooth" in device.get_icon_name()):
+            if (iconName is not None and "bluetooth" in iconName):
                 icon = iconTheme.load_icon("bluetooth", 32, 0)
             else:
                 icon = iconTheme.load_icon("audio-card", 32, 0)
@@ -759,7 +782,7 @@ class Module:
         stream = self.controller.lookup_stream_id(id)
 
         if stream in self.controller.get_sink_inputs():
-            self.appList[id] = VolumeBar(self.controller.get_vol_max_norm(), self.controller.get_vol_max_norm(), stream.props.name + ": ", stream.get_gicon())
+            self.appList[id] = VolumeBar(self.controller.get_vol_max_norm(), 100, stream.props.name + ": ", stream.get_gicon())
             self.appList[id].setStream(stream)
             self.appSettings.add_row(self.appList[id])
             self.appSettings.list_box.invalidate_headers()

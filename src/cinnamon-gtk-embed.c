@@ -199,24 +199,24 @@ cinnamon_gtk_embed_allocate (ClutterActor          *actor,
 }
 
 static void
-cinnamon_gtk_embed_realize (ClutterActor *actor)
+cinnamon_gtk_embed_map (ClutterActor *actor)
 {
   CinnamonGtkEmbed *embed = CINNAMON_GTK_EMBED (actor);
 
-  _cinnamon_embedded_window_realize (embed->priv->window);
+  _cinnamon_embedded_window_map (embed->priv->window);
 
-  CLUTTER_ACTOR_CLASS (cinnamon_gtk_embed_parent_class)->realize (actor);
+  CLUTTER_ACTOR_CLASS (cinnamon_gtk_embed_parent_class)->map (actor);
 }
 
 static void
-cinnamon_gtk_embed_unrealize (ClutterActor *actor)
+cinnamon_gtk_embed_unmap (ClutterActor *actor)
 {
   CinnamonGtkEmbed *embed = CINNAMON_GTK_EMBED (actor);
-  
-  if (embed->priv->window)
-    _cinnamon_embedded_window_unrealize (embed->priv->window);
 
-  CLUTTER_ACTOR_CLASS (cinnamon_gtk_embed_parent_class)->unrealize (actor);
+  if (embed->priv->window)
+    _cinnamon_embedded_window_unmap (embed->priv->window);
+
+  CLUTTER_ACTOR_CLASS (cinnamon_gtk_embed_parent_class)->unmap (actor);
 }
 
 static void
@@ -244,8 +244,8 @@ cinnamon_gtk_embed_class_init (CinnamonGtkEmbedClass *klass)
   actor_class->get_preferred_width = cinnamon_gtk_embed_get_preferred_width;
   actor_class->get_preferred_height = cinnamon_gtk_embed_get_preferred_height;
   actor_class->allocate = cinnamon_gtk_embed_allocate;
-  actor_class->realize = cinnamon_gtk_embed_realize;
-  actor_class->unrealize = cinnamon_gtk_embed_unrealize;
+  actor_class->map = cinnamon_gtk_embed_map;
+  actor_class->unmap = cinnamon_gtk_embed_unmap;
 
   g_object_class_install_property (object_class,
                                    PROP_WINDOW,

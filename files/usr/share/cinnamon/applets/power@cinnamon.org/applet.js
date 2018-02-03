@@ -125,8 +125,8 @@ DeviceItem.prototype = {
             }
             catch(e) {
                 // ignore malformed aliases
+                global.logError(alias);
             }
-            global.logError(alias);
         }
 
         this.label = new St.Label({ text: "%s %d%%".format(description, Math.round(percentage)) });
@@ -421,9 +421,6 @@ MyApplet.prototype = {
                 C_("time of battery remaining", "%d:%02d").format(hours,minutes) + ")";
         }
         this.set_applet_label(labelText);
-        if (this.labelinfo != "nothing") {
-            this._applet_label.set_margin_left(1.0);
-        }
 
         if (icon) {
             if(this.panel_icon_name != icon) {
@@ -550,6 +547,7 @@ MyApplet.prototype = {
                 }
                 else {
                     // If there are no battery devices, show brightness info or disable the applet
+                    this.set_applet_label("");
                     if (this.brightness.actor.visible) {
                         // Show the brightness info
                         this.set_applet_tooltip(_("Brightness"));

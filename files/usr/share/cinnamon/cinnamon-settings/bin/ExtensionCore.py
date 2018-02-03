@@ -128,7 +128,7 @@ def sanitize_html(string):
     parser = MyHTMLParser()
     parser.feed(string)
     text = parser.get_text()
-    return text.strip('\\n ').strip('\\n').replace('\\n', ' ').replace('  ', ' ').replace('\\', '')
+    return text.strip('\n ').strip('\n').replace('\n', ' ').replace('  ', ' ').replace('\\', '')
 
 
 class ManageSpicesRow(Gtk.ListBoxRow):
@@ -241,7 +241,12 @@ class ManageSpicesRow(Gtk.ListBoxRow):
             self.set_can_config()
 
         if not self.writable:
-            self.add_status('locked', 'changes-prevent-symbolic', _("This is a system %s and cannot be removed") % (self.extension_type))
+            if self.extension_type == "applet":
+                self.add_status('locked', 'changes-prevent-symbolic', _("This is a system applet. It cannot be removed."))
+            elif self.extension_type == "desklet":
+                self.add_status('locked', 'changes-prevent-symbolic', _("This is a system desklet. It cannot be removed."))
+            elif self.extension_type == "extension":
+                self.add_status('locked', 'changes-prevent-symbolic', _("This is a system extension. It cannot be removed."))
 
         try:
             schema_filename = self.metadata['schema-file']
@@ -291,7 +296,12 @@ class ManageSpicesRow(Gtk.ListBoxRow):
         self.enabled = enabled
 
         if self.enabled:
-            self.add_status('enabled', 'object-select-symbolic', _("This %s is currently enabled") % (self.extension_type))
+            if self.extension_type == "applet":
+                self.add_status('enabled', 'object-select-symbolic', _("This applet is currently enabled"))
+            elif self.extension_type == "desklet":
+                self.add_status('enabled', 'object-select-symbolic', _("This desklet is currently enabled"))
+            elif self.extension_type == "extension":
+                self.add_status('enabled', 'object-select-symbolic', _("This extension is currently enabled"))
         else:
             self.remove_status('enabled')
         if self.has_config:
@@ -329,8 +339,12 @@ class ManageSpicesRow(Gtk.ListBoxRow):
 
     def on_scan_complete(self, is_dangerous):
         if is_dangerous:
-            self.add_status('dangerous', 'dialog-warning-symbolic', _("This %s contains function calls that could potentially cause Cinnamon to crash or freeze. If you are experiencing crashes or freezing, please try removing this %s.") % (self.extension_type, self.extension_type))
-
+            if self.extension_type == "applet":
+                self.add_status('dangerous', 'dialog-warning-symbolic', _("This applet contains function calls that could potentially cause Cinnamon to crash or freeze. If you are experiencing crashes or freezing, please try removing it."))
+            elif self.extension_type == "desklet":
+                self.add_status('dangerous', 'dialog-warning-symbolic', _("This desklet contains function calls that could potentially cause Cinnamon to crash or freeze. If you are experiencing crashes or freezing, please try removing it."))
+            elif self.extension_type == "extension":
+                self.add_status('dangerous', 'dialog-warning-symbolic', _("This extension contains function calls that could potentially cause Cinnamon to crash or freeze. If you are experiencing crashes or freezing, please try removing it."))
 
 class ManageSpicesPage(SettingsPage):
     def __init__(self, parent, collection_type, spices, window):
@@ -368,7 +382,14 @@ class ManageSpicesPage(SettingsPage):
         toolbar = Gtk.Toolbar.new()
         Gtk.StyleContext.add_class(Gtk.Widget.get_style_context(toolbar), 'cs-header')
         label = Gtk.Label()
-        markup = GLib.markup_escape_text(_("Installed %ss") % self.collection_type)
+        if self.collection_type == 'applet':
+            markup = GLib.markup_escape_text(_("Installed applets"))
+        elif self.collection_type == 'desklet':
+            markup = GLib.markup_escape_text(_("Installed desklets"))
+        elif self.collection_type == 'extension':
+            markup = GLib.markup_escape_text(_("Installed extensions"))
+        elif self.collection_type == 'theme':
+            markup = GLib.markup_escape_text(_("Installed themes"))
         label.set_markup('<b>{}</b>'.format(markup))
         title_holder = Gtk.ToolItem()
         title_holder.add(label)
@@ -426,37 +447,41 @@ class ManageSpicesPage(SettingsPage):
         button_holder.set_expand(True)
         button_toolbar.add(button_holder)
         box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
-        button_group = Gtk.SizeGroup.new(Gtk.SizeGroupMode.HORIZONTAL)
         box.set_halign(Gtk.Align.CENTER)
         button_holder.add(box)
 
         # buttons
-        self.instance_button = Gtk.Button(label=self.instance_button_text)
+        self.instance_button = Gtk.Button.new_from_icon_name("list-add-symbolic", Gtk.IconSize.MENU)
+        self.instance_button.set_size_request(50, -1)
+        self.instance_button.set_tooltip_text(self.instance_button_text)
         self.instance_button.connect('clicked', self.add_instance)
-        button_group.add_widget(self.instance_button)
         box.add(self.instance_button)
         self.instance_button.set_sensitive(False)
 
-        self.remove_button = Gtk.Button(label=self.remove_button_text)
+        self.remove_button = Gtk.Button.new_from_icon_name("list-remove-symbolic", Gtk.IconSize.MENU)
+        self.remove_button.set_size_request(50, -1)
+        self.remove_button.set_tooltip_text(self.remove_button_text)
         self.remove_button.connect('clicked', self.remove_all_instances)
-        button_group.add_widget(self.remove_button)
         box.add(self.remove_button)
         self.remove_button.set_sensitive(False)
 
-        self.uninstall_button = Gtk.Button(label=self.uninstall_button_text)
+        self.uninstall_button = Gtk.Button.new_from_icon_name("edit-delete-symbolic", Gtk.IconSize.MENU)
+        self.uninstall_button.set_size_request(50, -1)
+        self.uninstall_button.set_tooltip_text(self.uninstall_button_text)
         self.uninstall_button.connect('clicked', self.uninstall_extension)
-        button_group.add_widget(self.uninstall_button)
         box.add(self.uninstall_button)
         self.uninstall_button.set_sensitive(False)
 
-        self.restore_button = Gtk.Button(label=self.restore_button_text)
+        self.restore_button = Gtk.Button.new_from_icon_name("edit-undo-symbolic", Gtk.IconSize.MENU)
+        self.restore_button.set_size_request(50, -1)
+        self.restore_button.set_tooltip_text(self.restore_button_text)
         self.restore_button.connect('clicked', self.restore_to_default)
-        button_group.add_widget(self.restore_button)
         box.add(self.restore_button)
 
-        self.about_button = Gtk.Button(label=_("About"))
+        self.about_button = Gtk.Button.new_from_icon_name("help-about-symbolic", Gtk.IconSize.MENU)
+        self.about_button.set_size_request(50, -1)
+        self.about_button.set_tooltip_text(_("About"))
         self.about_button.connect('clicked', self.about)
-        button_group.add_widget(self.about_button)
         box.add(self.about_button)
         self.about_button.set_sensitive(False)
 
@@ -525,7 +550,7 @@ class ManageSpicesPage(SettingsPage):
         extension_row = self.list_box.get_selected_row()
 
         if (extension_row.enabled > 1):
-            msg = _("There are %d instances enabled, are you sure you want to remove all of them?\n\nYou can remove individual instances by right clicking on an %s." % (extension_row.enabled, self.collection_type))
+            msg = _("There are multiple instances enabled. Are you sure you want to remove all of them?")
             if not show_prompt(msg, self.window):
                 return
 
@@ -578,7 +603,7 @@ class ManageSpicesPage(SettingsPage):
             enabled = self.spices.get_enabled(row.uuid)
             row.set_enabled(enabled)
             if enabled and not self.spices.get_is_running(row.uuid):
-                row.add_status('error', 'dialog-error-symbolic', _("Something went wrong while loading the %s %s. Please make sure you are using the latest version, and then report the issue to the developer.") % (self.collection_type, row.uuid))
+                row.add_status('error', 'dialog-error-symbolic', _("Something went wrong while loading %s. Please make sure you are using the latest version, and then report the issue to its developer.") % row.uuid)
             else:
                 row.remove_status('error')
 
@@ -740,7 +765,14 @@ class DownloadSpicesPage(SettingsPage):
         toolbar = Gtk.Toolbar.new()
         Gtk.StyleContext.add_class(Gtk.Widget.get_style_context(toolbar), 'cs-header')
         label = Gtk.Label()
-        markup = GLib.markup_escape_text(_("Download %ss") % self.collection_type)
+        if self.collection_type == 'applet':
+            markup = GLib.markup_escape_text(_("Available applets"))
+        elif self.collection_type == 'desklet':
+            markup = GLib.markup_escape_text(_("Available desklets"))
+        elif self.collection_type == 'extension':
+            markup = GLib.markup_escape_text(_("Available extensions"))
+        elif self.collection_type == 'theme':
+            markup = GLib.markup_escape_text(_("Available themes"))
         label.set_markup('<b>{}</b>'.format(markup))
         title_holder = Gtk.ToolItem()
         title_holder.add(label)
@@ -782,32 +814,35 @@ class DownloadSpicesPage(SettingsPage):
         button_holder.set_expand(True)
         button_toolbar.add(button_holder)
         box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
-        button_group = Gtk.SizeGroup.new(Gtk.SizeGroupMode.HORIZONTAL)
         box.set_halign(Gtk.Align.CENTER)
         button_holder.add(box)
 
         # buttons
-        self.more_info_button = Gtk.Button(label=_("More info"))
+        self.more_info_button = Gtk.Button.new_from_icon_name("dialog-information-symbolic", Gtk.IconSize.MENU)
+        self.more_info_button.set_size_request(50, -1)
+        self.more_info_button.set_tooltip_text(_("More info"))
         self.more_info_button.connect('clicked', self.get_more_info)
-        button_group.add_widget(self.more_info_button)
         box.add(self.more_info_button)
         self.more_info_button.set_sensitive(False)
 
-        self.uninstall_button = Gtk.Button(label=_("Uninstall"))
+        self.uninstall_button = Gtk.Button.new_from_icon_name("edit-delete-symbolic", Gtk.IconSize.MENU)
+        self.uninstall_button.set_size_request(50, -1)
+        self.uninstall_button.set_tooltip_text(_("Uninstall"))
         self.uninstall_button.connect('clicked', self.uninstall)
-        button_group.add_widget(self.uninstall_button)
         box.add(self.uninstall_button)
         self.uninstall_button.set_sensitive(False)
 
-        self.update_all_button = Gtk.Button(label=_("Update all"))
+        self.update_all_button = Gtk.Button.new_from_icon_name("software-update-available-symbolic", Gtk.IconSize.MENU)
+        self.update_all_button.set_size_request(50, -1)
+        self.update_all_button.set_tooltip_text(_("Update all"))
         self.update_all_button.connect('clicked', self.update_all)
-        button_group.add_widget(self.update_all_button)
         box.add(self.update_all_button)
         self.update_all_button.set_sensitive(False)
 
-        self.refresh_button = Gtk.Button(label=_("Refresh"))
+        self.refresh_button = Gtk.Button.new_from_icon_name("emblem-synchronizing-symbolic", Gtk.IconSize.MENU)
+        self.refresh_button.set_size_request(50, -1)
+        self.refresh_button.set_tooltip_text(_("Refresh"))
         self.refresh_button.connect('clicked', self.refresh)
-        button_group.add_widget(self.refresh_button)
         box.add(self.refresh_button)
 
         # progress bar
@@ -926,11 +961,9 @@ class DownloadSpicesPage(SettingsPage):
 
     def on_page_shown(self, *args):
         if not self.spices.processing_jobs:
-            if not self.spices.has_cache:
-                if show_prompt(_("In order to view the list of available %ss you will need to download it. Would you like to do so now? (This may take a minute or more depending on your Internet connection)") % self.collection_type, self.window):
-                    self.spices.refresh_cache()
-            elif self.spices.get_cache_age() > 7:
-                if show_prompt(_("The list of available %ss may be out of date. Would you like to update now? (This may take a minute or more depending on your Internet connection)") % self.collection_type, self.window):
+            if (not self.spices.has_cache) or self.spices.get_cache_age() > 7:
+                prompt = _("Your cache is out of date. Would you like to update it now?")
+                if show_prompt(prompt, self.window):
                     self.spices.refresh_cache()
 
         self.search_entry.grab_focus()
