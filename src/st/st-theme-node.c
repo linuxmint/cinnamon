@@ -611,6 +611,52 @@ get_color_from_rgba_term (CRTerm       *term,
 }
 
 static GetFromTermResult
+get_color_from_context (CRTerm         *term,
+                        StThemeContext *context,
+                        ClutterColor   *color)
+{
+  CRTerm *arg = term->ext_content.func_param;
+  gchar *name;
+  const ClutterColor *envcolor;
+
+  if (arg == NULL || arg->the_operator != NO_OP)
+    return VALUE_NOT_FOUND;
+
+  if (arg->type == TERM_STRING &&
+           arg->content.str &&
+           arg->content.str->stryng &&
+           arg->content.str->stryng->str)
+    {
+      name = arg->content.str->stryng->str;
+      envcolor = st_theme_context_get_color (context, name);
+      if (!envcolor)
+        return VALUE_NOT_FOUND;
+
+      *color = *envcolor;
+
+      /* Alpha can be overriden with an optional second parameter */
+      if (arg->next != NULL)
+        {
+          double alpha;
+
+          arg = arg->next;
+          if (arg->the_operator != COMMA)
+              return VALUE_NOT_FOUND;
+
+          if (arg->type != NUM_GENERIC)
+            return VALUE_NOT_FOUND;
+
+          alpha = CLAMP(arg->content.num->val, 0, 1);
+          color->alpha = color_component_from_double(alpha);
+        }
+
+      return VALUE_FOUND;
+    }
+
+  return VALUE_NOT_FOUND;
+}
+
+static GetFromTermResult
 get_color_from_term (StThemeNode  *node,
                      CRTerm       *term,
                      ClutterColor *color)
@@ -633,10 +679,12 @@ get_color_from_term (StThemeNode  *node,
   else if (term->type == TERM_FUNCTION &&
            term->content.str &&
            term->content.str->stryng &&
-           term->content.str->stryng->str &&
-           strcmp (term->content.str->stryng->str, "rgba") == 0)
+           term->content.str->stryng->str)
     {
-      return get_color_from_rgba_term (term, color);
+      if (strcmp (term->content.str->stryng->str, "rgba") == 0)
+        return get_color_from_rgba_term (term, color);
+      else if (strcmp (term->content.str->stryng->str, "env") == 0)
+        return get_color_from_context (term, node->context, color);
     }
 
   status = cr_rgb_set_from_term (&rgb, term);

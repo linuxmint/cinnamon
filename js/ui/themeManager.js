@@ -11,6 +11,10 @@ const Signals = imports.signals;
 const SETTINGS_SCHEMA = 'org.cinnamon.theme';
 const SETTINGS_KEY = 'name';
 
+const COLOR_SETTINGS_SCHEMA = SETTINGS_SCHEMA + '.colors';
+const ENABLE_COLORS_KEY = 'enable';
+const COLOR_KEYS = [ 'accent', 'text' ];
+
 function ThemeManager() {
     this._init();
 }
@@ -18,10 +22,19 @@ function ThemeManager() {
 ThemeManager.prototype = {
     _init: function() {
         this._settings = new Gio.Settings({ schema_id: SETTINGS_SCHEMA });
-        this._changedId = this._settings.connect('changed::'+SETTINGS_KEY, Lang.bind(this, this._changeTheme));
+        this._settings.connect('changed::'+SETTINGS_KEY, Lang.bind(this, this._changeTheme));
+
+        this._colorSettings = new Gio.Settings({ schema_id: COLOR_SETTINGS_SCHEMA });
+        this._colorSettings.connect('changed::'+ENABLE_COLORS_KEY, Lang.bind(this, this._enableThemeColors));
+        for(let k of COLOR_KEYS) {
+          this._colorSettings.connect('changed::'+k, (_s,key) => { this._changeThemeColor(key) });
+          this._changeThemeColor(k);
+        }
+
         this._changeTheme();
-    },    
-    
+        this._enableThemeColors();
+    },
+
     _findTheme: function(themeName) {
         let themeDirectory = null;
         let path = GLib.build_filenamev([GLib.get_home_dir(), '.themes', themeName, 'cinnamon']);
@@ -38,7 +51,7 @@ ThemeManager.prototype = {
                     break;
                 }
             }
-        }        
+        }
         return themeDirectory;
     },
 
@@ -55,7 +68,7 @@ ThemeManager.prototype = {
             }
         }
         let _stylesheet = null;
-        let _themeName = this._settings.get_string(SETTINGS_KEY);        
+        let _themeName = this._settings.get_string(SETTINGS_KEY);
 
         if (_themeName) {
             this.themeDirectory = this._findTheme(_themeName);
@@ -73,6 +86,17 @@ ThemeManager.prototype = {
             global.log('added icon directory: ' + this.themeDirectory);
         }
         this.emit('theme-set');
+    },
+
+    _enableThemeColors: function() {
+        let enable = this._colorSettings.get_boolean(ENABLE_COLORS_KEY);
+        Main.enableThemeColors(enable);
+    },
+
+    _changeThemeColor: function(key) {
+        let colorStr = this._colorSettings.get_string(key);
+        if(colorStr)
+            Main.setThemeColor(key, colorStr);
     }
 };
 Signals.addSignalMethods(ThemeManager.prototype);

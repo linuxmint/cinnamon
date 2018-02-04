@@ -896,6 +896,33 @@ function loadTheme() {
 }
 
 /**
+ * enableThemeColors:
+ * @enable (boolean): True to enable, false to disabled
+ *
+ * Enable or disable user defined colors in themes.
+ */
+function enableThemeColors(enable) {
+    let themeContext = St.ThemeContext.get_for_stage (global.stage);
+    themeContext.custom_colors = enable;
+}
+
+/**
+ * setThemeColor:
+ * @key (string): The color name to set_theme
+ * @colorStr (string): A color in the CSS format
+ *
+ * Set a color for themes to use it.
+ */
+function setThemeColor(key, colorStr) {
+    let themeContext = St.ThemeContext.get_for_stage (global.stage);
+    let [success, color] = Clutter.Color.from_string(colorStr);
+    if(success)
+        themeContext.set_color(key, color);
+    else
+        global.logError(colorStr + ' is not a valid color value.');
+}
+
+/**
  * notify:
  * @msg (string): A message
  * @details (string): Additional information to be

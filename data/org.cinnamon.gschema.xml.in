@@ -679,6 +679,35 @@
         The timestamp of the last time the index cache was updated from the spices website
       </description>
     </key>
+
+    <child name="colors" schema="org.cinnamon.theme.colors"/>
+  </schema>
+
+  <schema id="org.cinnamon.theme.colors" path="/org/cinnamon/theme/colors/"
+        gettext-domain="@GETTEXT_PACKAGE@">
+    <key name="enable" type="b">
+      <default>false</default>
+      <_summary>Enable support for custom colors</_summary>
+      <_description>
+        Whether themes should use user defined colors or their defaults
+      </_description>
+    </key>
+
+    <key name="accent" type="s">
+      <default>'#4c4c4c'</default>
+      <_summary>Accent theme color</_summary>
+      <_description>
+        Dynamic color used by themes as an accent in any CSS format
+      </_description>
+    </key>
+
+    <key name="text" type="s">
+      <default>'#ffffff'</default>
+      <_summary>Text theme color</_summary>
+      <_description>
+        Dynamic color used by themes for the text (in any CSS format). It may be used in contrast to the accent color
+      </_description>
+    </key>
   </schema>
 
   <schema id="org.cinnamon.keyboard" path="/org/cinnamon/keyboard/"

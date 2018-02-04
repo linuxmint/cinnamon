@@ -69,6 +69,18 @@ class Module:
             page = SettingsPage()
             self.sidePage.stack.add_titled(page, "options", _("Settings"))
 
+            settings = page.add_section(_("Desktop color options"))
+
+            invert = lambda b: not b
+            widget = GSettingsSwitch(_("Use default colors"), "org.cinnamon.theme.colors", "enable", map_get=invert, map_set=invert)
+            settings.add_row(widget)
+
+            widget = GSettingsColorChooser(_("Accent color"), "org.cinnamon.theme.colors", "accent")
+            settings.add_reveal_row(widget, "org.cinnamon.theme.colors", "enable")
+
+            widget = GSettingsColorChooser(_("Text color"), "org.cinnamon.theme.colors", "text")
+            settings.add_reveal_row(widget, "org.cinnamon.theme.colors", "enable")
+
             settings = page.add_section(_("Miscellaneous options"))
 
             widget = GSettingsSwitch(_("Show icons in menus"), "org.cinnamon.settings-daemon.plugins.xsettings", "menus-have-icons")

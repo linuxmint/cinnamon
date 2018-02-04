@@ -60,6 +60,12 @@ void                        st_theme_context_set_font       (StThemeContext     
                                                              const PangoFontDescription *font);
 const PangoFontDescription *st_theme_context_get_font       (StThemeContext             *context);
 
+void                        st_theme_context_set_color      (StThemeContext             *context,
+                                                             const gchar                *variable,
+                                                             ClutterColor               *color);
+const ClutterColor         *st_theme_context_get_color      (StThemeContext             *context,
+                                                             const gchar                *variable);
+
 StThemeNode *               st_theme_context_get_root_node  (StThemeContext             *context);
 StThemeNode *               st_theme_context_intern_node    (StThemeContext             *context,
                                                              StThemeNode                *node);

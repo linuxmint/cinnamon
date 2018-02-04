@@ -20,15 +20,27 @@
  */
 
 #include <config.h>
+#include <string.h>
 
 #include "st-texture-cache.h"
 #include "st-theme.h"
 #include "st-theme-context.h"
 
+enum {
+    ENV_COLOR_ACCENT,
+    ENV_COLOR_TEXT,
+
+    LAST_ENV_COLOR
+};
+
 struct _StThemeContext {
   GObject parent;
 
   PangoFontDescription *font;
+
+  gboolean custom_colors;
+  ClutterColor *env_colors[LAST_ENV_COLOR];
+
   StThemeNode *root_node;
   StTheme *theme;
 
@@ -47,7 +59,15 @@ struct _StThemeContextClass {
 enum
 {
   PROP_0,
-  PROP_SCALE_FACTOR
+  PROP_SCALE_FACTOR,
+  PROP_CUSTOM_COLORS
+};
+
+static const gchar *env_color_names[LAST_ENV_COLOR] = { "accent", "text" };
+static const ClutterColor default_env_color_values[LAST_ENV_COLOR] =
+{
+  { 0, 0, 0, 0xff },          /* ENV_COLOR_ACCENT */
+  { 0xff, 0xff, 0xff, 0xff }  /* ENV_COLOR_TEXT */
 };
 
 enum
@@ -79,6 +99,7 @@ static void
 st_theme_context_finalize (GObject *object)
 {
   StThemeContext *context = ST_THEME_CONTEXT (object);
+  int i;
 
   g_signal_handlers_disconnect_by_func (st_texture_cache_get_default (),
                                        (gpointer) on_icon_theme_changed,
@@ -96,6 +117,9 @@ st_theme_context_finalize (GObject *object)
     g_object_unref (context->theme);
 
   pango_font_description_free (context->font);
+
+  for (i = 0; i < LAST_ENV_COLOR; i++)
+    clutter_color_free (context->env_colors[i]);
 
   G_OBJECT_CLASS (st_theme_context_parent_class)->finalize (object);
 }
@@ -122,6 +146,13 @@ st_theme_context_class_init (StThemeContextClass *klass)
                                                      0, G_MAXINT, 1,
                                                      G_PARAM_READABLE | G_PARAM_WRITABLE));
 
+  g_object_class_install_property (object_class,
+                                   PROP_CUSTOM_COLORS,
+                                   g_param_spec_boolean ("custom-colors",
+                                                         "Custom colors",
+                                                         "Enable global colors used to customize parts of the themes",
+                                                         TRUE,
+                                                         G_PARAM_READABLE | G_PARAM_WRITABLE));
   signals[CHANGED] =
     g_signal_new ("changed",
                   G_TYPE_FROM_CLASS (klass),
@@ -134,7 +165,14 @@ st_theme_context_class_init (StThemeContextClass *klass)
 static void
 st_theme_context_init (StThemeContext *context)
 {
+  int i;
+
   context->font = pango_font_description_from_string (DEFAULT_FONT);
+
+  /* All could be set to white by default, but that's not good for readability */
+  for (i = 0; i < LAST_ENV_COLOR; i++)
+    context->env_colors[i] = clutter_color_copy(&default_env_color_values[i]);
+  context->custom_colors = TRUE;
 
   g_signal_connect (st_texture_cache_get_default (),
                     "icon-theme-changed",
@@ -174,6 +212,16 @@ st_theme_context_set_property (GObject      *object,
 
         break;
       }
+    case PROP_CUSTOM_COLORS:
+      {
+        gboolean custom_colors = g_value_get_boolean (value);
+        if (custom_colors != context->custom_colors)
+          {
+            context->custom_colors = custom_colors;
+            st_theme_context_changed (context);
+          }
+        break;
+      }
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
       break;
@@ -192,6 +240,9 @@ st_theme_context_get_property (GObject    *object,
     {
     case PROP_SCALE_FACTOR:
       g_value_set_int (value, context->scale_factor);
+      break;
+    case PROP_CUSTOM_COLORS:
+      g_value_set_boolean (value, context->custom_colors);
       break;
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
@@ -371,6 +422,58 @@ st_theme_context_get_font (StThemeContext *context)
   g_return_val_if_fail (ST_IS_THEME_CONTEXT (context), NULL);
 
   return context->font;
+}
+
+void
+st_theme_context_set_color (StThemeContext *context,
+                            const gchar    *variable,
+                            ClutterColor   *color)
+{
+  ClutterColor* old;
+  int i = 0;
+
+  g_return_if_fail (ST_IS_THEME_CONTEXT (context));
+  g_return_if_fail (color != NULL);
+
+  while (i < LAST_ENV_COLOR) {
+    if (strcmp (variable, env_color_names[i]) == 0)
+      {
+        old = context->env_colors[i];
+        if (color != old && !clutter_color_equal(color, old))
+          {
+            clutter_color_free (old);
+            context->env_colors[i] = clutter_color_copy (color);
+            context->env_colors[i]->alpha = 0xff; /* rgb only */
+            if (context->custom_colors)
+              st_theme_context_changed (context);
+          }
+        return;
+      }
+    i++;
+  }
+
+  g_warning("st_theme_context_set_color: Unrecognized env color '%s'", variable);
+}
+
+const ClutterColor *
+st_theme_context_get_color (StThemeContext *context,
+                            const gchar    *variable)
+{
+  int i = 0;
+  g_return_val_if_fail (ST_IS_THEME_CONTEXT (context), NULL);
+
+  if (!(context->custom_colors))
+    return NULL;
+
+  while (i < LAST_ENV_COLOR) {
+    if (strcmp (variable, env_color_names[i]) == 0)
+      return context->env_colors[i];
+    i++;
+  }
+
+  g_warning("st_theme_context_get_color: Unrecognized env color '%s'", variable);
+
+  return NULL;
 }
 
 /**
