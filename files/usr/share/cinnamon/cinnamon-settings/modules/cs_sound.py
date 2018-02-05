@@ -600,19 +600,19 @@ class Module:
         self.inputStack.add_named(noInputsMessage, "noInputsMessage")
         self.inputStack.show_all()
 
-        ## Effects page
+        ## Sounds page
         page = SettingsPage()
-        self.sidePage.stack.add_titled(page, "effects", _("Sound Effects"))
+        self.sidePage.stack.add_titled(page, "sounds", _("Sounds"))
 
-        effectsVolumeSection = page.add_section(_("Effects Volume"))
-        self.effectsVolume = VolumeBar(self.controller.get_vol_max_norm(), 100)
-        effectsVolumeSection.add_row(self.effectsVolume)
+        soundsVolumeSection = page.add_section(_("Sounds Volume"))
+        self.soundsVolume = VolumeBar(self.controller.get_vol_max_norm(), 100)
+        soundsVolumeSection.add_row(self.soundsVolume)
 
-        effectsSection = SoundBox(_("Effects"))
-        page.pack_start(effectsSection, True, True, 0)
+        soundsSection = SoundBox(_("Sounds"))
+        page.pack_start(soundsSection, True, True, 0)
         sizeGroup = Gtk.SizeGroup.new(Gtk.SizeGroupMode.HORIZONTAL)
         for effect in EFFECT_LIST:
-            effectsSection.add_row(Effect(effect, sizeGroup))
+            soundsSection.add_row(Effect(effect, sizeGroup))
 
         ## Applications page
         page = SettingsPage()
@@ -788,7 +788,7 @@ class Module:
             self.appSettings.list_box.invalidate_headers()
             self.appSettings.show_all()
         elif stream == self.controller.get_event_sink_input():
-            self.effectsVolume.setStream(stream)
+            self.soundsVolume.setStream(stream)
 
         self.checkAppState()
 
