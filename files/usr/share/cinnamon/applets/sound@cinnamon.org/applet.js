@@ -1347,7 +1347,7 @@ MyApplet.prototype = {
                 this._chooseActivePlayerItem.actor.hide();
             }
         } else {
-            if (this._launchPlayerItem.menu.numMenuItems) {
+            if (this.playerControl && this._launchPlayerItem.menu.numMenuItems) {
                 this._launchPlayerItem.actor.show();
             } else {
                 this._launchPlayerItem.actor.hide();
