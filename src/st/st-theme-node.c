@@ -616,7 +616,6 @@ get_color_from_context (CRTerm         *term,
                         ClutterColor   *color)
 {
   CRTerm *arg = term->ext_content.func_param;
-  gchar *name;
   const ClutterColor *envcolor;
 
   if (arg == NULL || arg->the_operator != NO_OP)
@@ -627,7 +626,7 @@ get_color_from_context (CRTerm         *term,
            arg->content.str->stryng &&
            arg->content.str->stryng->str)
     {
-      name = arg->content.str->stryng->str;
+      gchar *name = arg->content.str->stryng->str;
       envcolor = st_theme_context_get_color (context, name);
       if (!envcolor)
         return VALUE_NOT_FOUND;
@@ -637,17 +636,12 @@ get_color_from_context (CRTerm         *term,
       /* Alpha can be overriden with an optional second parameter */
       if (arg->next != NULL)
         {
-          double alpha;
-
           arg = arg->next;
-          if (arg->the_operator != COMMA)
-              return VALUE_NOT_FOUND;
-
-          if (arg->type != NUM_GENERIC)
-            return VALUE_NOT_FOUND;
-
-          alpha = CLAMP(arg->content.num->val, 0, 1);
-          color->alpha = color_component_from_double(alpha);
+          if (arg->the_operator == COMMA && arg->type == NUM_GENERIC)
+            {
+              double alpha = CLAMP(arg->content.num->val, 0, 1);
+              color->alpha = color_component_from_double(alpha);
+            }
         }
 
       return VALUE_FOUND;
