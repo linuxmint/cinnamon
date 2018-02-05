@@ -1279,15 +1279,15 @@ StScrollBar StButton#vhandle:hover {
  * ===================================================================*/
 
 .sound-player StButton {
-    width: 22px;
-    height: 13px;
+    width: 18px;
+    height: 18px;
     padding: 5px;
     color: #aaa;
 }
 
 .sound-player StButton:small {
     width: 16px;
-    height: 8px;
+    height: 16px;
     padding: 1px;
 }
 
