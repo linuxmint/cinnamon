@@ -1073,6 +1073,12 @@ MyApplet.prototype = {
             this._output.push_volume();
             this._output.change_is_muted(false);
         }
+        else if (direction == Clutter.ScrollDirection.LEFT) {
+            this._players[this._activePlayer]._mediaServerPlayer.PreviousRemote();
+        }
+        else if (direction == Clutter.ScrollDirection.RIGHT) {
+            this._players[this._activePlayer]._mediaServerPlayer.NextRemote();
+        }
 
         this._notifyVolumeChange(this._output);
     },
