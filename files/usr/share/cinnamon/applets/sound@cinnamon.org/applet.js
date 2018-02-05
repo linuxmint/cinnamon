@@ -771,7 +771,12 @@ Player.prototype = {
                     cover_path = null;
                 }
                 else {
-                    this.cover = new Clutter.Texture({width: 300, keep_aspect_ratio: true, filter_quality: 2, filename: cover_path});
+                    if (this._applet.keepAlbumAspectRatio) {
+                        this.cover = new Clutter.Texture({width: 300, keep_aspect_ratio: true, filter_quality: 2, filename: cover_path});
+                    }
+                    else {
+                        this.cover = new Clutter.Texture({width: 300, height: 300, keep_aspect_ratio: false, filter_quality: 2, filename: cover_path});
+                    }
                 }
                 this.coverBox.add_actor(this.cover);
                 this.coverBox.set_child_below_sibling(this.cover, this.trackInfo);
@@ -850,6 +855,7 @@ MyApplet.prototype = {
             this.settings.bind("middleClickAction", "middleClickAction");
             this.settings.bind("showalbum", "showalbum", this.on_settings_changed);
             this.settings.bind("truncatetext", "truncatetext", this.on_settings_changed);
+            this.settings.bind("keepAlbumAspectRatio", "keepAlbumAspectRatio", this.on_settings_changed);
             this.settings.bind("hideSystray", "hideSystray", function() {
                 if (this.hideSystray) this.registerSystrayIcons();
                 else this.unregisterSystrayIcons();
