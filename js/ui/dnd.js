@@ -21,16 +21,18 @@ var SNAP_BACK_ANIMATION_TIME = 0.25;
 var REVERT_ANIMATION_TIME = 0.75;
 
 var DragMotionResult = {
-    NO_DROP:   0,
-    COPY_DROP: 1,
-    MOVE_DROP: 2,
-    CONTINUE:  3
+    NO_DROP:       0,
+    COPY_DROP:     1,
+    MOVE_DROP:     2,
+    POINTING_DROP: 3,
+    CONTINUE:      4
 };
 
 var DRAG_CURSOR_MAP = {
     0: Cinnamon.Cursor.DND_UNSUPPORTED_TARGET,
     1: Cinnamon.Cursor.DND_COPY,
-    2: Cinnamon.Cursor.DND_MOVE
+    2: Cinnamon.Cursor.DND_MOVE,
+    3: Cinnamon.Cursor.POINTING_HAND
 };
 
 var DragDropResult = {
