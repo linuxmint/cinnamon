@@ -494,6 +494,21 @@ Notification.prototype = {
                                         col: 2,
                                         y_expand: false,
                                         y_fill: false });
+
+        // notification dismiss button
+        let icon = new St.Icon({ icon_name: 'window-close',
+                                 icon_type: St.IconType.SYMBOLIC,
+                                 icon_size: 16 });
+        let closeButton = new St.Button({ child: icon, opacity: 128 });
+        closeButton.connect('clicked', Lang.bind(this, this.destroy));
+        closeButton.connect('notify::hover', function() { closeButton.opacity = closeButton.hover ? 255 : 128; });
+        this._table.add(closeButton, { row: 0,
+                                       col: 3,
+                                       x_expand: false,
+                                       y_expand: false,
+                                       y_fill: false,
+                                       y_align: St.Align.START });
+
         this._timeLabel = new St.Label();
         this._titleLabel = new St.Label();
         this._bannerBox.add_actor(this._titleLabel);
@@ -738,10 +753,10 @@ Notification.prototype = {
     _updateLastColumnSettings: function() {
         if (this._scrollArea)
             this._table.child_set(this._scrollArea, { col: this._imageBin ? 2 : 1,
-                                                      col_span: this._imageBin ? 1 : 2 });
+                                                      col_span: this._imageBin ? 2 : 3 });
         if (this._actionArea)
             this._table.child_set(this._actionArea, { col: this._imageBin ? 2 : 1,
-                                                      col_span: this._imageBin ? 1 : 2 });
+                                                      col_span: this._imageBin ? 2 : 3 });
     },
 
     setImage: function(image) {
