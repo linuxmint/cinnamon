@@ -30,7 +30,8 @@ function finishExtensionLoad(extensionIndex) {
 function onEnabledSearchProvidersChanged() {
     enabledSearchProviders = global.settings.get_strv(ENABLED_SEARCH_PROVIDERS_KEY);
 
-    unloadRemovedSearchProviders().then(initEnabledSearchProviders);
+    unloadRemovedSearchProviders();
+    initEnabledSearchProviders();
 }
 
 function initEnabledSearchProviders() {
@@ -48,12 +49,9 @@ function unloadRemovedSearchProviders() {
     });
     for (let i = 0; i < extensions.length; i++) {
         if (enabledSearchProviders.indexOf(extensions[i].uuid) === -1) {
-            promises.push(Extension.unloadExtension(extensions[i].uuid, Extension.Type.SEARCH_PROVIDER));
+            Extension.unloadExtension(extensions[i].uuid, Extension.Type.SEARCH_PROVIDER);
         }
     }
-    return Promise.all(promises).then(function() {
-        promises = [];
-    });
 }
 
 function init() {

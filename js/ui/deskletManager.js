@@ -46,11 +46,8 @@ function initEnabledDesklets() {
 
 function unloadRemovedDesklets(removedDeskletUUIDs) {
     for (let i = 0; i < removedDeskletUUIDs.length; i++) {
-        promises.push(Extension.unloadExtension(removedDeskletUUIDs[i], Extension.Type.DESKLET));
+        Extension.unloadExtension(removedDeskletUUIDs[i], Extension.Type.DESKLET);
     }
-    return Promise.all(promises).then(function() {
-        promises = [];
-    });
 }
 
 /**
@@ -192,58 +189,51 @@ function prepareExtensionUnload(extension, deleteConfig) {
 }
 
 function _onEnabledDeskletsChanged() {
-    try {
-        let oldDefinitions = definitions;
-        definitions = getDefinitions();
-        let removedDeskletUUIDs = [];
-        // Remove all desklet instances that do not exist in the definition anymore.
-        for (let i = 0; i < oldDefinitions.length; i++) {
-            let deskletDefinition = getDeskletDefinition({desklet_id: oldDefinitions[i].desklet_id});
-            if (!deskletDefinition) {
-                removedDeskletUUIDs.push(oldDefinitions[i].uuid);
-                _unloadDesklet(oldDefinitions[i], true);
-            }
-        }
-        // Make a unique array of removed UUIDs
-        let uniqueSet = new Set();
-        let uniqueRemovedUUIDs = [];
-        for (let i = 0; i < removedDeskletUUIDs.length; i++) {
-          if (uniqueSet.has(removedDeskletUUIDs[i]) === false) {
-            uniqueRemovedUUIDs.push(removedDeskletUUIDs[i]);
-            uniqueSet.add(removedDeskletUUIDs[i]);
-          }
-        }
-        // Unload all desklet extensions that do not exist in the definition anymore.
-        unloadRemovedDesklets(uniqueRemovedUUIDs).then(function() {
-            // Add or move desklet instances of already loaded desklet extensions
-            const getOlddeskletDefinition = function(desklet_id) {
-                let index = oldDefinitions.findIndex(function(definition) {
-                    return definition.desklet_id === desklet_id;
-                });
-                if (index === -1) {
-                    return null;
-                }
-                return oldDefinitions[index];
-            };
-            for (let i = 0; i < definitions.length; i++) {
-                let newDefinition = getDeskletDefinition({desklet_id: definitions[i].desklet_id});
-                let oldDefinition = getOlddeskletDefinition(definitions[i].desklet_id);
+    let oldDefinitions = definitions.slice();
+    definitions = getDefinitions();
+    let addedDesklets = [];
+    let removedDesklets = [];
+    let unChangedDesklets = [];
 
-                if (!oldDefinition || !_deskletDefinitionsEqual(newDefinition, oldDefinition)) {
-                    let extension = Extension.getExtension(newDefinition.uuid);
-                    if (extension) {
-                        _loadDesklet(extension, newDefinition);
-                    }
-                }
-            }
+    for (let i = 0; i < definitions.length; i++) {
+        let {uuid} = definitions[i];
+        let oldDefinition = queryCollection(oldDefinitions, {uuid});
 
-            // Make sure all desklet extensions are loaded.
-            // Once loaded, the desklets will add themselves via finishExtensionLoad
-            initEnabledDesklets();
-        });
-    } catch(e) {
-        global.logError('Failed to refresh list of desklets', e);
+        let isEqualToOldDefinition = _deskletDefinitionsEqual(definitions[i], oldDefinition);
+
+        if (oldDefinition && !isEqualToOldDefinition) {
+            removedDesklets.push(oldDefinition);
+        }
+
+        if (!oldDefinition || !isEqualToOldDefinition) {
+            let extension = Extension.getExtension(uuid);
+            addedDesklets.push({extension, definition: definitions[i]});
+            continue;
+        }
+
+        unChangedDesklets.push(uuid);
     }
+    for (let i = 0; i < oldDefinitions.length; i++) {
+        if (unChangedDesklets.indexOf(oldDefinitions[i].uuid) === -1) {
+            removedDesklets.push(oldDefinitions[i]);
+        }
+    }
+    for (let i = 0; i < removedDesklets.length; i++) {
+        let {uuid} = removedDesklets[i];
+        _unloadDesklet(
+            removedDesklets[i],
+            Extension.get_max_instances(uuid, Extension.Type.DESKLET) !== 1
+        );
+        Extension.unloadExtension(uuid, Extension.Type.DESKLET);
+    }
+    for (let i = 0; i < addedDesklets.length; i++) {
+        let {extension, definition} = addedDesklets[i];
+        _loadDesklet(extension, definition);
+    }
+
+    // Make sure all desklet extensions are loaded.
+    // Once loaded, the desklets will add themselves via finishExtensionLoad
+    initEnabledDesklets();
 }
 
 function _unloadDesklet(deskletDefinition, deleteConfig) {
@@ -281,7 +271,7 @@ function _removeDeskletConfigFile(uuid, instanceId) {
 
 function _loadDesklet(extension, deskletDefinition) {
     // Try to lock the desklets role
-    if(!extension.lockRole(null))
+    if (!extension || !extension.lockRole(null))
         return false;
 
     try {

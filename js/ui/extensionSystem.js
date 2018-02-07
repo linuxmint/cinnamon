@@ -89,7 +89,8 @@ function get_object_for_uuid(uuid) {
 function onEnabledExtensionsChanged() {
     enabledExtensions = global.settings.get_strv(ENABLED_EXTENSIONS_KEY);
 
-    unloadRemovedExtensions().then(initEnabledExtensions);
+    unloadRemovedExtensions();
+    initEnabledExtensions();
 }
 
 function initEnabledExtensions() {
@@ -107,12 +108,9 @@ function unloadRemovedExtensions() {
     });
     for (let i = 0; i < uuidList.length; i++) {
         if (enabledExtensions.indexOf(uuidList[i].uuid) === -1) {
-            promises.push(Extension.unloadExtension(uuidList[i].uuid, Extension.Type.EXTENSION));
+            Extension.unloadExtension(uuidList[i].uuid, Extension.Type.EXTENSION);
         }
     }
-    return Promise.all(promises).then(function() {
-        promises = [];
-    });
 }
 
 function init() {
