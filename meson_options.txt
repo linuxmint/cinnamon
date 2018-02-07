@@ -1,0 +1,4 @@
+option('bluetooth',      type: 'boolean', value: true)
+option('gtkdoc',         type: 'boolean', value: true)
+option('ca-certificates',type: 'string',  value: '')
+option('jhbuild-wrapper',type: 'boolean', value: false)

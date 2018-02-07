@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/sh -e
 
 usage() {
     echo >&2 "Usage run-test.sh [-v|--verbose] <test_js>..."
@@ -27,7 +27,7 @@ done
 
 builddir=`dirname $0`
 builddir=`cd $builddir && pwd`
-srcdir=$builddir/@srcdir@
+srcdir=@srcdir@
 srcdir=`cd $srcdir && pwd`
 
 GI_TYPELIB_PATH="$GI_TYPELIB_PATH${GI_TYPELIB_PATH:+:}@MUFFIN_TYPELIB_DIR@:$builddir/../src"
