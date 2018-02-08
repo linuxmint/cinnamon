@@ -265,6 +265,7 @@ class CSGSettingsBackend(object):
             self.settings.bind(self.key, bind_object, self.bind_prop, self.bind_dir)
         else:
             self.settings.connect("changed::"+self.key, self.on_setting_changed)
+            self.settings.bind_writable(self.key, bind_object, "sensitive", False)
             self.on_setting_changed()
             self.connect_widget_handlers()
 
