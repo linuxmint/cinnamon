@@ -91,7 +91,7 @@ Source.prototype = {
     },
 
     createNotificationIcon : function() {
-        return this._app.create_icon_texture(this.ICON_SIZE);
+        return this._app.create_icon_texture_for_window(this.ICON_SIZE, this._window);
     },
 
     open : function(notification) {

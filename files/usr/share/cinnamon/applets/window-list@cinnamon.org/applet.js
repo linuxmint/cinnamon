@@ -104,7 +104,9 @@ WindowPreview.prototype = {
         let iconBox = new St.Bin();
         let tracker = Cinnamon.WindowTracker.get_default();
         let app = tracker.get_window_app(this.metaWindow);
-        let icon = app ? app.create_icon_texture(16) : new St.Icon({ icon_name: 'application-default-icon', icon_type: St.IconType.FULLCOLOR, icon_size: 16 });
+        let icon = app ?
+            app.create_icon_texture_for_window(16, this.metaWindow) :
+            new St.Icon({ icon_name: 'application-default-icon', icon_type: St.IconType.FULLCOLOR, icon_size: 16 });
         iconBox.set_child(icon);
         hbox.add_actor(iconBox);
 
@@ -759,7 +761,7 @@ AppMenuButton.prototype = {
             this.iconSize = HORIZONTAL_ICON_SIZE;
 
         let icon = app ?
-            app.create_icon_texture(this.iconSize) :
+            app.create_icon_texture_for_window(this.iconSize, this.metaWindow) :
             new St.Icon({ icon_name: 'application-default-icon',
                 icon_type: St.IconType.FULLCOLOR,
                 icon_size: this.iconSize });

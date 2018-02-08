@@ -164,7 +164,8 @@ get_actor_for_icon_name (CinnamonApp *app,
 
 static ClutterActor *
 window_backed_app_get_icon (CinnamonApp *app,
-                            int       size)
+                            int          size,
+                            MetaWindow  *for_window)
 {
   MetaWindow *window;
   ClutterActor *actor;
@@ -190,7 +191,7 @@ window_backed_app_get_icon (CinnamonApp *app,
       return actor;
     }
 
-  window = window_backed_app_get_window (app);
+  window = for_window ? for_window : window_backed_app_get_window (app);
 
   icon_name = meta_window_get_icon_name (window);
 
@@ -213,6 +214,8 @@ window_backed_app_get_icon (CinnamonApp *app,
 
 /**
  * cinnamon_app_create_icon_texture:
+ * @app: a #CinnamonApp
+ * @size: the size of the icon to create
  *
  * Look up the icon for this application, and create a #ClutterTexture
  * for it at the given size.
@@ -221,21 +224,61 @@ window_backed_app_get_icon (CinnamonApp *app,
  */
 ClutterActor *
 cinnamon_app_create_icon_texture (CinnamonApp   *app,
-                               int         size)
+                                  int            size)
+{
+    return cinnamon_app_create_icon_texture_for_window (app, size, NULL);
+}
+
+/**
+ * cinnamon_app_create_icon_texture_for_window:
+ * @app: a #CinnamonApp
+ * @size: the size of the icon to create
+ * @for_window: (nullable): Optional - the backing MetaWindow to look up for.
+ *
+ * Look up the icon for this application, and create a #ClutterTexture
+ * for it at the given size.  If for_window is NULL, it bases the icon
+ * off the most-recently-used window for the app, otherwise it attempts to
+ * use for_window for determining the icon.
+ *
+ * Return value: (transfer none): A floating #ClutterActor
+ */
+ClutterActor *
+cinnamon_app_create_icon_texture_for_window (CinnamonApp   *app,
+                                             int            size,
+                                             MetaWindow    *for_window)
 {
   GIcon *icon;
   ClutterActor *ret;
+  MetaWindow *window;
+
   gboolean has_custom_icon;
 
   has_custom_icon = FALSE;
   ret = NULL;
 
+  window = NULL;
+
   if (app->running_state != NULL)
   {
-    MetaWindow *window;
     const gchar *icon_name;
 
-    window = window_backed_app_get_window (app);
+    if (for_window != NULL)
+      {
+        if (g_slist_find (app->running_state->windows, for_window) != NULL)
+          {
+            window = for_window;
+          }
+        else
+          {
+            g_warning ("cinnamon_app_create_icon_texture: MetaWindow %p provided that does not match App %p",
+                       for_window, app);
+          }
+      }
+
+    if (window == NULL)
+      {
+        window = window_backed_app_get_window (app);
+      }
 
     icon_name = meta_window_get_icon_name (window);
 
@@ -244,7 +287,7 @@ cinnamon_app_create_icon_texture (CinnamonApp   *app,
 
   if (app->entry == NULL || has_custom_icon)
     {
-      return window_backed_app_get_icon (app, size);
+      return window_backed_app_get_icon (app, size, window);
     }
 
   icon = g_app_info_get_icon (G_APP_INFO (gmenu_tree_entry_get_app_info (app->entry)));
@@ -392,7 +435,7 @@ cinnamon_app_get_faded_icon (CinnamonApp *app, int size)
    * app-tracked from not.
    */
   if (!app->entry)
-    return window_backed_app_get_icon (app, size);
+    return window_backed_app_get_icon (app, size, NULL);
 
   global = cinnamon_global_get ();
   context = st_theme_context_get_for_stage (cinnamon_global_get_stage (global));

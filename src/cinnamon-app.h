@@ -38,8 +38,11 @@ GType cinnamon_app_get_type (void) G_GNUC_CONST;
 const char *cinnamon_app_get_id (CinnamonApp *app);
 GMenuTreeEntry *cinnamon_app_get_tree_entry (CinnamonApp *app);
 GDesktopAppInfo *cinnamon_app_get_app_info (CinnamonApp *app);
-
-ClutterActor *cinnamon_app_create_icon_texture (CinnamonApp *app, int size);
+ClutterActor *cinnamon_app_create_icon_texture (CinnamonApp *app,
+                                                int          size);
+ClutterActor *cinnamon_app_create_icon_texture_for_window (CinnamonApp   *app,
+                                                           int            size,
+                                                           MetaWindow    *for_window);
 ClutterActor *cinnamon_app_get_faded_icon (CinnamonApp *app, int size);
 const char *cinnamon_app_get_name (CinnamonApp *app);
 const char *cinnamon_app_get_description (CinnamonApp *app);

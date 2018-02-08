@@ -64,7 +64,7 @@ MyApplet.prototype = {
                         item.connect('activate', Lang.bind(this, function() { this.activateWindow(metaWorkspace, metaWindow); } ));
                         item._window = sticky_windows[i];
                         let app = tracker.get_window_app(item._window);
-                        item._icon = app.create_icon_texture(24);
+                        item._icon = app.create_icon_texture_for_window(24, item._window);
                         item.addActor(item._icon, { align: St.Align.END });
                         this.menu.addMenuItem(item);
                         empty_menu = false;
@@ -95,7 +95,7 @@ MyApplet.prototype = {
                         item.connect('activate', Lang.bind(this, function() { this.activateWindow(metaWorkspace, metaWindow); } ));
                         item._window = windows[i];
                         let app = tracker.get_window_app(item._window);
-                        item._icon = app.create_icon_texture(24);
+                        item._icon = app.create_icon_texture_for_window(24, item._window);
                         item.addActor(item._icon, { align: St.Align.END });
                         this.menu.addMenuItem(item);
                         empty_menu = false;

@@ -112,7 +112,7 @@ ExpoWindowClone.prototype = {
             this.metaWindow._expoApp = app;
         }
         if (app) {
-            iconActor = app.create_icon_texture(ICON_SIZE);
+            iconActor = app.create_icon_texture_for_window(ICON_SIZE, this.metaWindow);
         }
         if (!iconActor) {
             iconActor = new St.Icon({ icon_name: 'applications-other',

@@ -262,7 +262,7 @@ AppSwitcher3D.prototype = {
         }
 
         let app = this._tracker.get_window_app(this._windows[this._currentIndex]);
-        this._icon = app ? app.create_icon_texture(ICON_SIZE) : null;
+        this._icon = app ? app.create_icon_texture_for_window(ICON_SIZE, this._windows[this._currentIndex]) : null;
 
         if (!this._icon) {
             this._icon = new St.Icon({

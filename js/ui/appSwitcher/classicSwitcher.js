@@ -438,7 +438,7 @@ AppIcon.prototype = {
             }
         } else {
             this.icon = this.app ?
-                this.app.create_icon_texture(size) :
+                this.app.create_icon_texture_for_window(size, this.window) :
                 new St.Icon({ icon_name: 'application-default-icon',
                               icon_type: St.IconType.FULLCOLOR,
                               icon_size: size });
