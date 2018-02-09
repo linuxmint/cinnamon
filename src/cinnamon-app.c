@@ -164,15 +164,13 @@ get_actor_for_icon_name (CinnamonApp *app,
 
 static ClutterActor *
 window_backed_app_get_icon (CinnamonApp *app,
-                            int          size,
-                            MetaWindow  *for_window)
+                            int          size)
 {
   MetaWindow *window;
   ClutterActor *actor;
   gint scale;
   CinnamonGlobal *global;
   StThemeContext *context;
-  const gchar *icon_name;
 
   actor = NULL;
 
@@ -191,23 +189,13 @@ window_backed_app_get_icon (CinnamonApp *app,
       return actor;
     }
 
-  window = for_window ? for_window : window_backed_app_get_window (app);
+  window = window_backed_app_get_window (app);
 
-  icon_name = meta_window_get_icon_name (window);
+  size *= scale;
 
-  if (icon_name != NULL)
-    {
-      actor = get_actor_for_icon_name (app, icon_name, size);
-    }
-
-  if (actor == NULL)
-    {
-      size *= scale;
-
-      actor = st_texture_cache_bind_pixbuf_property (st_texture_cache_get_default (),
-                                                     G_OBJECT (window), "icon");
-      g_object_set (actor, "width", (float) size, "height", (float) size, NULL);
-    }
+  actor = st_texture_cache_bind_pixbuf_property (st_texture_cache_get_default (),
+                                                 G_OBJECT (window), "icon");
+  g_object_set (actor, "width", (float) size, "height", (float) size, NULL);
 
   return actor;
 }
@@ -226,7 +214,31 @@ ClutterActor *
 cinnamon_app_create_icon_texture (CinnamonApp   *app,
                                   int            size)
 {
-    return cinnamon_app_create_icon_texture_for_window (app, size, NULL);
+  GIcon *icon;
+  ClutterActor *ret;
+
+  ret = NULL;
+
+  if (app->entry == NULL)
+    {
+      return window_backed_app_get_icon (app, size);
+    }
+
+  icon = g_app_info_get_icon (G_APP_INFO (gmenu_tree_entry_get_app_info (app->entry)));
+
+  if (icon != NULL)
+    {
+      ret = g_object_new (ST_TYPE_ICON, "gicon", icon, "icon-size", size, NULL);
+    }
+
+  if (ret == NULL)
+    {
+      icon = g_themed_icon_new ("application-x-executable");
+      ret = g_object_new (ST_TYPE_ICON, "gicon", icon, "icon-size", size, NULL);
+      g_object_unref (icon);
+    }
+
+  return ret;
 }
 
 /**
@@ -247,14 +259,7 @@ cinnamon_app_create_icon_texture_for_window (CinnamonApp   *app,
                                              int            size,
                                              MetaWindow    *for_window)
 {
-  GIcon *icon;
-  ClutterActor *ret;
   MetaWindow *window;
-
-  gboolean has_custom_icon;
-
-  has_custom_icon = FALSE;
-  ret = NULL;
 
   window = NULL;
 
@@ -275,36 +280,18 @@ cinnamon_app_create_icon_texture_for_window (CinnamonApp   *app,
           }
       }
 
-    if (window == NULL)
+    if (window != NULL)
       {
-        window = window_backed_app_get_window (app);
+        icon_name = meta_window_get_icon_name (window);
+
+        if (icon_name != NULL)
+          {
+            return get_actor_for_icon_name (app, icon_name, size);
+          }
       }
-
-    icon_name = meta_window_get_icon_name (window);
-
-    has_custom_icon = icon_name != NULL;
   }
 
-  if (app->entry == NULL || has_custom_icon)
-    {
-      return window_backed_app_get_icon (app, size, window);
-    }
-
-  icon = g_app_info_get_icon (G_APP_INFO (gmenu_tree_entry_get_app_info (app->entry)));
-
-  if (icon != NULL)
-    {
-      ret = g_object_new (ST_TYPE_ICON, "gicon", icon, "icon-size", size, NULL);
-    }
-
-  if (ret == NULL)
-    {
-      icon = g_themed_icon_new ("application-x-executable");
-      ret = g_object_new (ST_TYPE_ICON, "gicon", icon, "icon-size", size, NULL);
-      g_object_unref (icon);
-    }
-
-  return ret;
+  return cinnamon_app_create_icon_texture (app, size);
 }
 
 typedef struct {
@@ -435,7 +422,7 @@ cinnamon_app_get_faded_icon (CinnamonApp *app, int size)
    * app-tracked from not.
    */
   if (!app->entry)
-    return window_backed_app_get_icon (app, size, NULL);
+    return window_backed_app_get_icon (app, size);
 
   global = cinnamon_global_get ();
   context = st_theme_context_get_for_stage (cinnamon_global_get_stage (global));
