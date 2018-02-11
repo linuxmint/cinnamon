@@ -115,6 +115,7 @@ struct _StThemeNode {
   CoglPipeline *border_slices_material;
   CoglPipeline *prerendered_texture;
   CoglPipeline *prerendered_material;
+  CoglPipeline *color_pipeline;
   CoglHandle corner_material[4];
 };
 
