@@ -1501,11 +1501,11 @@ st_theme_node_render_resources (StThemeNode   *node,
 
 static void
 paint_material_with_opacity (CoglHandle       material,
+                             CoglFramebuffer  *fb,
                              ClutterActorBox *box,
                              ClutterActorBox *coords,
                              guint8           paint_opacity)
 {
-  CoglFramebuffer *fb = cogl_get_draw_framebuffer ();
   cogl_pipeline_set_color4ub (material,
                               paint_opacity, paint_opacity, paint_opacity, paint_opacity);
 
@@ -1799,10 +1799,10 @@ st_theme_node_paint_borders (StThemeNode           *node,
 
 static void
 st_theme_node_paint_sliced_border_image (StThemeNode           *node,
+                                         CoglFramebuffer       *fb,
                                          const ClutterActorBox *box,
                                          guint8                 paint_opacity)
 {
-  CoglFramebuffer *fb = cogl_get_draw_framebuffer ();
   gfloat ex, ey;
   gfloat tx1, ty1, tx2, ty2;
   gint border_left, border_right, border_top, border_bottom;
@@ -1891,6 +1891,7 @@ st_theme_node_paint_sliced_border_image (StThemeNode           *node,
 
 static void
 st_theme_node_paint_outline (StThemeNode           *node,
+                             CoglFramebuffer       *fb,
                              const ClutterActorBox *box,
                              guint8                 paint_opacity)
 
@@ -2014,20 +2015,21 @@ st_theme_node_paint (StThemeNode           *node,
                                                   &paint_box);
 
           paint_material_with_opacity (node->prerendered_material,
+                                       fb,
                                        &paint_box,
                                        NULL,
                                        paint_opacity);
         }
 
       if (node->border_slices_material != COGL_INVALID_HANDLE)
-        st_theme_node_paint_sliced_border_image (node, &allocation, paint_opacity);
+        st_theme_node_paint_sliced_border_image (node, fb, &allocation, paint_opacity);
     }
   else
     {
       st_theme_node_paint_borders (node, fb, box, paint_opacity);
     }
 
-  st_theme_node_paint_outline (node, box, paint_opacity);
+  st_theme_node_paint_outline (node, fb, box, paint_opacity);
 
   if (node->background_texture != COGL_INVALID_HANDLE)
     {
@@ -2069,6 +2071,7 @@ st_theme_node_paint (StThemeNode           *node,
                                        paint_opacity);
 
       paint_material_with_opacity (node->background_material,
+                                   fb,
                                    &background_box,
                                    &texture_coords,
                                    paint_opacity);
