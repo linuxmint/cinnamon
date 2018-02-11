@@ -1322,6 +1322,7 @@ _st_theme_node_init_drawing_state (StThemeNode *node)
 }
 
 static void st_theme_node_paint_borders (StThemeNode           *node,
+                                         CoglFramebuffer       *framebuffer,
                                          const ClutterActorBox *box,
                                          guint8                 paint_opacity);
 
@@ -1471,9 +1472,7 @@ st_theme_node_render_resources (StThemeNode   *node,
                                      height, 0, 1.0);
               cogl_framebuffer_clear4f (offscreen, COGL_BUFFER_BIT_COLOR, 0, 0, 0, 0);
 
-              cogl_push_framebuffer (offscreen);
-              st_theme_node_paint_borders (node, &box, 0xFF);
-              cogl_pop_framebuffer ();
+              st_theme_node_paint_borders (node, offscreen, &box, 0xFF);
               cogl_handle_unref (offscreen);
 
               node->box_shadow_material = _st_create_shadow_pipeline (box_shadow_spec,
@@ -1522,10 +1521,10 @@ paint_material_with_opacity (CoglHandle       material,
 
 static void
 st_theme_node_paint_borders (StThemeNode           *node,
+                             CoglFramebuffer       *fb,
                              const ClutterActorBox *box,
                              guint8                 paint_opacity)
 {
-  CoglFramebuffer *fb = cogl_get_draw_framebuffer ();
   float width, height;
   guint border_width[4];
   guint border_radius[4];
@@ -1951,6 +1950,7 @@ st_theme_node_paint_outline (StThemeNode           *node,
 
 void
 st_theme_node_paint (StThemeNode           *node,
+                     CoglFramebuffer       *fb,
                      const ClutterActorBox *box,
                      guint8                 paint_opacity)
 {
@@ -2024,7 +2024,7 @@ st_theme_node_paint (StThemeNode           *node,
     }
   else
     {
-      st_theme_node_paint_borders (node, box, paint_opacity);
+      st_theme_node_paint_borders (node, fb, box, paint_opacity);
     }
 
   st_theme_node_paint_outline (node, box, paint_opacity);
@@ -2033,7 +2033,6 @@ st_theme_node_paint (StThemeNode           *node,
     {
       ClutterActorBox background_box;
       ClutterActorBox texture_coords;
-      CoglFramebuffer *fb = cogl_get_draw_framebuffer ();
       gboolean has_visible_outline;
 
       /* If the node doesn't have an opaque or repeating background or

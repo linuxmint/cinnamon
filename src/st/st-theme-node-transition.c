@@ -298,13 +298,9 @@ setup_framebuffers (StThemeNodeTransition *transition,
                                  priv->offscreen_box.x2,
                                  priv->offscreen_box.y2, 0.0, 1.0);
 
-  cogl_push_framebuffer (priv->old_offscreen);
-  st_theme_node_paint (priv->old_theme_node, allocation, 255);
-  cogl_pop_framebuffer ();
+  st_theme_node_paint (priv->old_theme_node, priv->old_offscreen, allocation, 255);
 
-  cogl_push_framebuffer (priv->new_offscreen);
-  st_theme_node_paint (priv->new_theme_node, allocation, 255);
-  cogl_pop_framebuffer ();
+  st_theme_node_paint (priv->new_theme_node, priv->new_offscreen, allocation, 255);
 
   return TRUE;
 }
