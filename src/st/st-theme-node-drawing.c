@@ -174,7 +174,6 @@ create_corner_material (StCornerSpec *corner)
                                                    data);
 
   g_free (data);
-  g_assert (texture != COGL_INVALID_HANDLE);
 
   return texture;
 }
@@ -341,7 +340,7 @@ static CoglHandle
 st_theme_node_lookup_corner (StThemeNode    *node,
                              StCorner        corner_id)
 {
-  CoglHandle texture, material;
+  CoglHandle texture, material= COGL_INVALID_HANDLE;
   char *key;
   StTextureCache *cache;
   StCornerSpec corner;
@@ -390,8 +389,11 @@ st_theme_node_lookup_corner (StThemeNode    *node,
 
   key = corner_to_string (&corner);
   texture = st_texture_cache_load (cache, key, ST_TEXTURE_CACHE_POLICY_NONE, load_corner, &corner, NULL);
-  material = _st_create_texture_pipeline (texture);
-  cogl_handle_unref (texture);
+  if (texture)
+    {
+      material = _st_create_texture_pipeline (texture);
+      cogl_handle_unref (texture);
+    }
 
   g_free (key);
 
