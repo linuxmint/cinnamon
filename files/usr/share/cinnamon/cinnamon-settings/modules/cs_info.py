@@ -159,6 +159,7 @@ class Module:
                 widget.pack_start(labelKey, False, False, 0)
                 labelKey.get_style_context().add_class("dim-label")
                 labelValue = Gtk.Label.new(value)
+                labelValue.set_selectable(True)
                 widget.pack_end(labelValue, False, False, 0)
                 settings.add_row(widget)
 
