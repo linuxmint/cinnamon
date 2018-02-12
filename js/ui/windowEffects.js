@@ -143,9 +143,11 @@ Map.prototype = {
 
         switch (actor._windowType) {
             case Meta.WindowType.NORMAL:
+            case Meta.WindowType.MODAL_DIALOG:
+            case Meta.WindowType.DIALOG:
                 actor.set_pivot_point(0, 0);
-                actor.scale_x = 0.01;
-                actor.scale_y = 0.05;
+                actor.scale_x = 0.94;
+                actor.scale_y = 0.94;
                 actor.opacity = 0;
                 this._fadeWindow(cinnamonwm, actor, actor.orig_opacity, time, transition);
                 this._scaleWindow(cinnamonwm, actor, 1, 1, time, transition);
@@ -168,15 +170,6 @@ Map.prototype = {
                 actor.opacity = 0;
                 this._scaleWindow(cinnamonwm, actor, 1, 1, time, transition, true);
                 this._fadeWindow(cinnamonwm, actor, actor.orig_opacity, time, transition);
-                break;
-            case Meta.WindowType.MODAL_DIALOG:
-            case Meta.WindowType.DIALOG:
-                actor.set_pivot_point(0, 0);
-                actor.scale_x = 1;
-                actor.scale_y = 0;
-                actor.opacity = 0;
-                this._fadeWindow(cinnamonwm, actor, actor.orig_opacity, time, transition);
-                this._scaleWindow(cinnamonwm, actor, 1, 1, time, transition);
                 break;
             default:
                 this._fadeWindow(cinnamonwm, actor, actor.orig_opacity, time, transition);
@@ -250,15 +243,11 @@ Close.prototype = {
 
         switch (actor._windowType) {
             case Meta.WindowType.NORMAL:
-                actor.set_pivot_point(0, 0);
-                this._scaleWindow(cinnamonwm, actor, 0.8, 0.8, time, transition);
-                this._fadeWindow(cinnamonwm, actor, 0, time, transition);
-                break;
             case Meta.WindowType.MODAL_DIALOG:
             case Meta.WindowType.DIALOG:
                 actor.set_pivot_point(0, 0);
-                this._fadeWindow(cinnamonwm, actor, 0.5, time, transition);
-                this._scaleWindow(cinnamonwm, actor, 1.0, 0, time, transition);
+                this._scaleWindow(cinnamonwm, actor, 0.88, 0.88, time, transition);
+                this._fadeWindow(cinnamonwm, actor, 0, time, transition);
                 break;
             default:
                 this.scale(cinnamonwm, actor, time, transition);

@@ -217,7 +217,7 @@
     </key>
     
     <key type="i" name="desktop-effects-close-time">
-      <default>175</default>
+      <default>120</default>
       <_summary>Duration of the effect (in milliseconds)</_summary>
       <_description>
        Duration of the effect (in milliseconds)    
@@ -241,7 +241,7 @@
     </key>
     
     <key type="i" name="desktop-effects-map-time">
-      <default>175</default>
+      <default>100</default>
       <_summary>Duration of the effect (in milliseconds)</_summary>
       <_description>
        Duration of the effect (in milliseconds)    
@@ -266,7 +266,7 @@
     </key>
     
     <key type="i" name="desktop-effects-minimize-time">
-      <default>200</default>
+      <default>160</default>
       <_summary>Duration of the effect (in milliseconds)</_summary>
       <_description>
        Duration of the effect (in milliseconds)    
