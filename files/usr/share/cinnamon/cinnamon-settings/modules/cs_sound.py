@@ -642,7 +642,7 @@ class Module:
         self.sidePage.stack.add_titled(page, "settings", _("Settings"))
 
         amplificationSection = page.add_section(_("Amplification"))
-        self.maxVolume = Slider(_("Maximum volume: %d") % max_volume + "%", _("Reduced"), _("Amplified"), 1, 150, sizeGroup, step=1, page=10, value=max_volume, gicon=None, iconName=None)
+        self.maxVolume = Slider(_("Maximum volume: %d") % max_volume + "%", _("Reduced"), _("Amplified"), 1, 150, None, step=1, page=10, value=max_volume, gicon=None, iconName=None)
         self.maxVolume.adjustment.connect("value-changed", self.onMaxVolumeChanged)
         self.maxVolume.setMark(100)
         amplificationSection.add_row(self.maxVolume)
