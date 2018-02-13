@@ -5,7 +5,7 @@
         "page1": {
             "type": "page",
             "title": "Visible settings",
-            "sections": ["section1", "section2"]
+            "sections": ["section0", "section1", "section2"]
         },
         "page2": {
             "type": "page",
@@ -21,6 +21,11 @@
             "type": "page",
             "title": "Editable list settings",
             "sections": ["section7"]
+        },
+        "section0": {
+            "type": "section",
+            "title": "Info",
+            "keys": ["label-info"]
         },
         "section1": {
             "type": "section",
@@ -57,6 +62,10 @@
             "title": "My list",
             "keys": ["tree"]
         }
+    },
+    "label-info" : {
+        "type" : "label",
+        "description" : "Play with these widgets and see the automatic reaction in the panel applet.\n\nThis is a label, and the content can't be modified nor accessed. You may want to use a label to show aditional hints or instructions, for example."
     },
     "icon-name": {
         "type": "iconfilechooser",
