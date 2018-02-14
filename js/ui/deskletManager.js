@@ -191,44 +191,37 @@ function prepareExtensionUnload(extension, deleteConfig) {
 function _onEnabledDeskletsChanged() {
     let oldDefinitions = definitions.slice();
     definitions = getDefinitions();
-    let addedDesklets = [];
     let removedDesklets = [];
     let unChangedDesklets = [];
 
     for (let i = 0; i < definitions.length; i++) {
-        let {uuid} = definitions[i];
-        let oldDefinition = queryCollection(oldDefinitions, {uuid});
+        let {uuid, desklet_id} = definitions[i];
+        let oldDefinition = queryCollection(oldDefinitions, {uuid, desklet_id});
 
         let isEqualToOldDefinition = _deskletDefinitionsEqual(definitions[i], oldDefinition);
 
         if (oldDefinition && !isEqualToOldDefinition) {
-            removedDesklets.push(oldDefinition);
+            removedDesklets.push({changed: true, definition: oldDefinition});
         }
 
         if (!oldDefinition || !isEqualToOldDefinition) {
-            let extension = Extension.getExtension(uuid);
-            addedDesklets.push({extension, definition: definitions[i]});
             continue;
         }
 
-        unChangedDesklets.push(uuid);
+        unChangedDesklets.push(desklet_id);
     }
     for (let i = 0; i < oldDefinitions.length; i++) {
-        if (unChangedDesklets.indexOf(oldDefinitions[i].uuid) === -1) {
-            removedDesklets.push(oldDefinitions[i]);
+        if (unChangedDesklets.indexOf(oldDefinitions[i].desklet_id) === -1) {
+            removedDesklets.push({changed: false, definition: oldDefinitions[i]});
         }
     }
     for (let i = 0; i < removedDesklets.length; i++) {
-        let {uuid} = removedDesklets[i];
+        let {uuid} = removedDesklets[i].definition;
         _unloadDesklet(
-            removedDesklets[i],
-            Extension.get_max_instances(uuid, Extension.Type.DESKLET) !== 1
+            removedDesklets[i].definition,
+            Extension.get_max_instances(uuid, Extension.Type.DESKLET) !== 1 && !removedDesklets[i].changed
         );
         Extension.unloadExtension(uuid, Extension.Type.DESKLET);
-    }
-    for (let i = 0; i < addedDesklets.length; i++) {
-        let {extension, definition} = addedDesklets[i];
-        _loadDesklet(extension, definition);
     }
 
     // Make sure all desklet extensions are loaded.
