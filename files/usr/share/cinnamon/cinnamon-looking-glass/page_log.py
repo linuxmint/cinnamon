@@ -99,10 +99,10 @@ class ModulePage(pageutils.WindowAndActionBars):
         pageutils.WindowAndActionBars.__init__(self, self.view)
         self.parent = parent
 
-        self.addToggleButton("info", "dialog-information", "Show/Hide Messages tagged as 'info'")
-        self.addToggleButton("warning", "dialog-warning", "Show/Hide Messages tagged as 'warning'")
-        self.addToggleButton("error", "dialog-error", "Show/Hide Messages tagged as 'error'")
-        self.addToggleButton("trace", "dialog-question", "Show/Hide Messages tagged as 'trace'")
+        self.addToggleButton("info", "dialog-information-symbolic", "Show/Hide Messages tagged as 'info'")
+        self.addToggleButton("warning", "dialog-warning-symbolic", "Show/Hide Messages tagged as 'warning'")
+        self.addToggleButton("error", "dialog-error-symbolic", "Show/Hide Messages tagged as 'error'")
+        self.addToggleButton("trace", "dialog-question-symbolic", "Show/Hide Messages tagged as 'trace'")
 
     def addToggleButton(self, logType, icon, tooltip):
         button = pageutils.ImageToggleButton(icon)

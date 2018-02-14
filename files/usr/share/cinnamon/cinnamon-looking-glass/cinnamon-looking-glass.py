@@ -389,7 +389,7 @@ class MelangeApp(dbus.service.Object):
         table.attach(self.notebook, 0, numColumns, 0, 1)
 
         column = 0
-        pickerButton = pageutils.ImageButton("gtk-color-picker", Gtk.IconSize.SMALL_TOOLBAR)
+        pickerButton = pageutils.ImageButton("color-select-symbolic")
         pickerButton.connect("clicked", self.onPickerClicked)
         table.attach(pickerButton, column, column+1, 1, 2, 0, 0, 2)
         column += 1
