@@ -248,7 +248,6 @@ function appletDefinitionsEqual(a, b) {
 function onEnabledAppletsChanged() {
     let oldDefinitions = definitions.slice();
     definitions = getDefinitions();
-    let addedApplets = [];
     let removedApplets = [];
     let unChangedApplets = [];
 
@@ -259,12 +258,10 @@ function onEnabledAppletsChanged() {
         let isEqualToOldDefinition = appletDefinitionsEqual(definitions[i], oldDefinition);
 
         if (oldDefinition && !isEqualToOldDefinition) {
-            removedApplets.push(oldDefinition);
+            removedApplets.push({changed: true, definition: oldDefinition});
         }
 
         if (!oldDefinition || !isEqualToOldDefinition) {
-            let extension = Extension.getExtension(uuid);
-            addedApplets.push({extension, definition: definitions[i]});
             continue;
         }
 
@@ -272,20 +269,16 @@ function onEnabledAppletsChanged() {
     }
     for (let i = 0; i < oldDefinitions.length; i++) {
         if (unChangedApplets.indexOf(oldDefinitions[i].applet_id) === -1) {
-            removedApplets.push(oldDefinitions[i]);
+            removedApplets.push({changed: false, definition: oldDefinitions[i]});
         }
     }
     for (let i = 0; i < removedApplets.length; i++) {
-        let {uuid} = removedApplets[i];
+        let {uuid} = removedApplets[i].definition;
         removeAppletFromPanels(
-            removedApplets[i],
-            Extension.get_max_instances(uuid, Extension.Type.APPLET) !== 1
+            removedApplets[i].definition,
+            Extension.get_max_instances(uuid, Extension.Type.APPLET) !== 1 && !removedApplets[i].changed
         );
         Extension.unloadExtension(uuid, Extension.Type.APPLET);
-    }
-    for (let i = 0; i < addedApplets.length; i++) {
-        let {extension, definition} = addedApplets[i];
-        addAppletToPanels(extension, definition);
     }
 
     // Make sure all applet extensions are loaded.
