@@ -1563,7 +1563,7 @@ function populateSettingsMenu(menu, panelId) {
         let dialog = new ModalDialog.ConfirmDialog(
                 _("Are you sure you want to clear all applets on this panel?") + "\n\n",
                 Lang.bind(this, function() {
-                    AppletManager.clearAppletConfiguration(this.panelId, true);
+                    AppletManager.clearAppletConfiguration(this.panelId);
                 }));
         dialog.open();
     });
