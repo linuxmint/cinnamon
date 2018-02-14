@@ -364,6 +364,10 @@ class MelangeApp(dbus.service.Object):
         numRows = 3
         numColumns = 6
         table = Gtk.Table(numRows, numColumns, False)
+        table.set_margin_start(6)
+        table.set_margin_end(6)
+        table.set_margin_top(6)
+        table.set_margin_bottom(6)
         self.window.add(table)
 
         self.notebook = Gtk.Notebook()
