@@ -253,8 +253,8 @@ function onEnabledAppletsChanged() {
     let unChangedApplets = [];
 
     for (let i = 0; i < definitions.length; i++) {
-        let {uuid} = definitions[i];
-        let oldDefinition = queryCollection(oldDefinitions, {uuid});
+        let {uuid, applet_id} = definitions[i];
+        let oldDefinition = queryCollection(oldDefinitions, {uuid, applet_id});
 
         let isEqualToOldDefinition = appletDefinitionsEqual(definitions[i], oldDefinition);
 
@@ -268,10 +268,10 @@ function onEnabledAppletsChanged() {
             continue;
         }
 
-        unChangedApplets.push(uuid);
+        unChangedApplets.push(applet_id);
     }
     for (let i = 0; i < oldDefinitions.length; i++) {
-        if (unChangedApplets.indexOf(oldDefinitions[i].uuid) === -1) {
+        if (unChangedApplets.indexOf(oldDefinitions[i].applet_id) === -1) {
             removedApplets.push(oldDefinitions[i]);
         }
     }
