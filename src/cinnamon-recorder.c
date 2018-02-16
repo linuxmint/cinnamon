@@ -1390,13 +1390,13 @@ recorder_pipeline_bus_watch (GstBus     *bus,
 {
   RecorderPipeline *pipeline = data;
 
-  switch (message->type)
+  if (message->type == GST_MESSAGE_EOS)
     {
-    case GST_MESSAGE_EOS:
       recorder_pipeline_closed (pipeline);
       return FALSE; /* remove watch */
-    case GST_MESSAGE_ERROR:
-      {
+    }
+  else if (message->type == GST_MESSAGE_ERROR)
+    {
         GError *error;
 
         gst_message_parse_error (message, &error, NULL);
@@ -1404,44 +1404,6 @@ recorder_pipeline_bus_watch (GstBus     *bus,
         g_error_free (error);
         recorder_pipeline_closed (pipeline);
         return FALSE; /* remove watch */
-      }
-    case GST_MESSAGE_UNKNOWN:
-    case GST_MESSAGE_WARNING:
-    case GST_MESSAGE_INFO:
-    case GST_MESSAGE_TAG:
-    case GST_MESSAGE_BUFFERING:
-    case GST_MESSAGE_STATE_CHANGED:
-    case GST_MESSAGE_STATE_DIRTY:
-    case GST_MESSAGE_STEP_DONE:
-    case GST_MESSAGE_CLOCK_PROVIDE:
-    case GST_MESSAGE_CLOCK_LOST:
-    case GST_MESSAGE_NEW_CLOCK:
-    case GST_MESSAGE_STRUCTURE_CHANGE:
-    case GST_MESSAGE_STREAM_STATUS:
-    case GST_MESSAGE_APPLICATION:
-    case GST_MESSAGE_ELEMENT:
-    case GST_MESSAGE_SEGMENT_START:
-    case GST_MESSAGE_SEGMENT_DONE:
-    case GST_MESSAGE_DURATION_CHANGED:
-    case GST_MESSAGE_LATENCY:
-    case GST_MESSAGE_ASYNC_START:
-    case GST_MESSAGE_ASYNC_DONE:
-    case GST_MESSAGE_REQUEST_STATE:
-    case GST_MESSAGE_STEP_START:
-    case GST_MESSAGE_QOS:
-    case GST_MESSAGE_PROGRESS:
-    case GST_MESSAGE_TOC:
-    case GST_MESSAGE_RESET_TIME:
-    case GST_MESSAGE_STREAM_START:
-    case GST_MESSAGE_NEED_CONTEXT:
-    case GST_MESSAGE_HAVE_CONTEXT:
-    case GST_MESSAGE_EXTENDED:
-    case GST_MESSAGE_DEVICE_ADDED:
-    case GST_MESSAGE_DEVICE_REMOVED:
-    case GST_MESSAGE_ANY:
-      break; 
-    default:
-      break;
     }
 
   /* Leave the watch in place */
