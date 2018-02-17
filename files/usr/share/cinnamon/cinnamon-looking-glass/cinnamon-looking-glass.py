@@ -364,6 +364,10 @@ class MelangeApp(dbus.service.Object):
         numRows = 3
         numColumns = 6
         table = Gtk.Table(numRows, numColumns, False)
+        table.set_margin_start(6)
+        table.set_margin_end(6)
+        table.set_margin_top(6)
+        table.set_margin_bottom(6)
         self.window.add(table)
 
         self.notebook = Gtk.Notebook()
@@ -389,7 +393,7 @@ class MelangeApp(dbus.service.Object):
         table.attach(self.notebook, 0, numColumns, 0, 1)
 
         column = 0
-        pickerButton = pageutils.ImageButton("gtk-color-picker", Gtk.IconSize.SMALL_TOOLBAR)
+        pickerButton = pageutils.ImageButton("color-select-symbolic")
         pickerButton.connect("clicked", self.onPickerClicked)
         table.attach(pickerButton, column, column+1, 1, 2, 0, 0, 2)
         column += 1

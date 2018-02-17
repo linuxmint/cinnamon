@@ -63,31 +63,16 @@ class WindowAndActionBars(Gtk.Table):
         self.bottom.set_border_width(2)
         self.bottom.pack_start(widget, False, False, padding)
 
-def loadIcon(name, size=Gtk.IconSize.LARGE_TOOLBAR):
-    theme = Gtk.IconTheme.get_default()
-    success, width, height = Gtk.icon_size_lookup(size)
-    if success and theme.has_icon(name):
-        return theme.load_icon(name, width, 0)
-    return None
-
 class ImageButton(Gtk.Button):
-    def __init__(self, iconName, size=Gtk.IconSize.LARGE_TOOLBAR):
+    def __init__(self, icon_name, size=Gtk.IconSize.MENU):
         Gtk.Button.__init__(self)
 
-        icon = loadIcon(iconName, size)
-
-        if icon is not None:
-            image = Gtk.Image()
-            image.set_from_gicon(icon, size)
-            self.add(image)
+        image = Gtk.Image.new_from_icon_name(icon_name, size)
+        self.add(image)
 
 class ImageToggleButton(Gtk.ToggleButton):
-    def __init__(self, iconName, size=Gtk.IconSize.LARGE_TOOLBAR):
+    def __init__(self, icon_name, size=Gtk.IconSize.MENU):
         Gtk.ToggleButton.__init__(self)
 
-        icon = loadIcon(iconName, size)
-
-        if icon is not None:
-            image = Gtk.Image()
-            image.set_from_gicon(icon, size)
-            self.add(image)
+        image = Gtk.Image.new_from_icon_name(icon_name, size)
+        self.add(image)

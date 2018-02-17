@@ -63,13 +63,13 @@ class ModulePage(pageutils.WindowAndActionBars):
         pageutils.WindowAndActionBars.__init__(self, self.view)
         self.parent = parent
 
-        self.back = pageutils.ImageButton("back")
+        self.back = pageutils.ImageButton("go-previous-symbolic")
         self.back.set_tooltip_text("Go back")
         self.back.set_sensitive(False)
         self.back.connect("clicked", self.onBackButton)
         self.addToLeftBar(self.back, 1)
 
-        self.insert = pageutils.ImageButton("insert-object")
+        self.insert = pageutils.ImageButton("insert-object-symbolic")
         self.insert.set_tooltip_text("Insert into results")
         self.insert.set_sensitive(False)
         self.insert.connect("clicked", self.onInsertButton)
