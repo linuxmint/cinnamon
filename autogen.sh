@@ -64,6 +64,22 @@ AC_DEFUN([AC_ISC_POSIX],
 )
 EOL
 
+# Ping default gateway to test internet connectivity is available.
+GATEWAY="$(ip r | grep default | cut -d ' ' -f 3)"
+ONLINE=$(ping -q -w 1 -c 1 ${GATEWAY} > /dev/null); ONLINE_STATUS="$?"
+
+if [ "$ONLINE_STATUS" -eq 0 ]; then
+    (wget -qO "$srcdir/config.guess" \
+    "http://git.savannah.gnu.org/gitweb/?p=config.git;a=blob_plain;f=config.guess;hb=HEAD") && \
+    echo "Downloaded config.guess to the source directory." >&2
+
+    (wget -qO "$srcdir/config.sub" \
+    "http://git.savannah.gnu.org/gitweb/?p=config.git;a=blob_plain;f=config.sub;hb=HEAD") && \
+    echo "Downloaded config.sub to the source directory." >&2
+else
+    echo "Please get config.guess and config.sub from ftp://ftp.gnu.org/pub/gnu/config/ instead."
+fi
+
 glib-gettextize --force --copy || exit 1
 gtkdocize --copy || exit 1
 intltoolize --force --copy --automake || exit 1
