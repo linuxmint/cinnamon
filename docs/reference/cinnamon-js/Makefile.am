@@ -1,10 +1,13 @@
 ## Process this file with automake to produce Makefile.in
-$(DOC_MAIN_SGML_FILE): $(top_srcdir)/js/*/* gen_lib.py gen_doc.py
-	./gen_doc.py $(top_srcdir) $(PACKAGE_VERSION)
 
-# we want $(DOC_MAIN_SGML_FILE) to be built before sgml-build
-# and sgml-build depends on $(DOC_MODULE)-sections.txt
-$(DOC_MODULE)-sections.txt: $(DOC_MAIN_SGML_FILE)
+# Generate the sgml using the python script. this is a dependency
+# of scan-build.stamp in gtk-doc.make via HFILE_GLOBS
+gen-doc.stamp: $(top_srcdir)/js/*/* gen_lib.py gen_doc.py
+	./gen_doc.py $(top_srcdir) $(PACKAGE_VERSION)
+	touch gen-doc.stamp
+
+#for gtk-doc older than 1.27
+$(DOC_MAIN_SGML_FILE): gen-doc.stamp
 
 # We require automake 1.6 at least.
 AUTOMAKE_OPTIONS = 1.6
@@ -54,7 +57,7 @@ FIXXREF_OPTIONS=--src-lang=js
 # Used for dependencies. The docs will be rebuilt if any of these change.
 # e.g. HFILE_GLOB=$(top_srcdir)/gtk/*.h
 # e.g. CFILE_GLOB=$(top_srcdir)/gtk/*.c
-HFILE_GLOB=
+HFILE_GLOB=gen-doc.stamp
 CFILE_GLOB=
 
 # Extra header to include when scanning, which are not under DOC_SOURCE_DIR
@@ -84,6 +87,10 @@ GTKDOC_LIBS=
 
 # This includes the standard gtk-doc make rules, copied by gtkdocize.
 include $(top_srcdir)/gtk-doc.make
+
+# Add our custom stamp to the gtk-doc.make stamps list so it'll get
+# cleaned
+DOC_STAMPS += gen-doc.stamp
 
 # Other files to distribute
 # e.g. EXTRA_DIST += version.xml.in

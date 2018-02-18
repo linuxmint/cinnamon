@@ -1,9 +1,4 @@
 ## Process this file with automake to produce Makefile.in
-
-# we want $(DOC_MAIN_SGML_FILE) to be built before sgml-build
-# and sgml-build depends on $(DOC_MODULE)-sections.txt
-$(DOC_MODULE)-sections.txt: $(DOC_MAIN_SGML_FILE)
-
 # We require automake 1.6 at least.
 AUTOMAKE_OPTIONS = 1.6
 
