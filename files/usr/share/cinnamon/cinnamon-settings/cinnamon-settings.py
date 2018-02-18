@@ -258,15 +258,10 @@ class MainWindow:
                 self.unsortedSidePages.append((samodule.sidePage, samodule.name, samodule.category))
 
         # sort the modules alphabetically according to the current locale
-        sidePageNamesToSort = map(lambda m: m[0].name, self.unsortedSidePages)
-        sortedSidePageNames = sorted(sidePageNamesToSort, key=cmp_to_key(locale.strcoll))
-        for sidePageName in sortedSidePageNames:
-            nextSidePage = None
-            for trySidePage in self.unsortedSidePages:
-                if(trySidePage[0].name == sidePageName):
-                    nextSidePage = trySidePage
-
-            self.sidePages.append(nextSidePage);
+        localeStrKey = cmp_to_key(locale.strcoll)
+        # Apply locale key to the field name of each side page.
+        sidePagesKey = lambda m : localeStrKey(m[0].name)
+        self.sidePages = sorted(self.unsortedSidePages, key=sidePagesKey)
 
 
         # create the backing stores for the side nav-view.
