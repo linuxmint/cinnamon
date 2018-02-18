@@ -72,8 +72,6 @@ GSList         *cinnamon_app_system_subsearch                 (CinnamonAppSystem
                                                             GSList          *previous_results,
                                                             GSList          *terms);
 
-GMenuTree      *cinnamon_app_system_get_settings_tree         (CinnamonAppSystem *system);
-
 GSList         *cinnamon_app_system_search_settings           (CinnamonAppSystem *system,
                                                             GSList         *terms);
 CinnamonApp       *cinnamon_app_system_lookup_setting            (CinnamonAppSystem *system,

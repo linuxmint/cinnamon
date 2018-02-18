@@ -6,18 +6,13 @@
 #include <string.h>
 
 #include <gio/gio.h>
-#include <gio/gdesktopappinfo.h>
-#include <gtk/gtk.h>
-#include <clutter/clutter.h>
 #include <glib/gi18n.h>
-#include <meta/display.h>
 
 #include "cinnamon-app-private.h"
 #include "cinnamon-window-tracker-private.h"
 #include "cinnamon-app-system-private.h"
 #include "cinnamon-global.h"
 #include "cinnamon-util.h"
-#include "st.h"
 
 /* Vendor prefixes are something that can be preprended to a .desktop
  * file name.  Undo this.
@@ -156,8 +151,7 @@ cinnamon_app_system_finalize (GObject *object)
   g_hash_table_destroy (priv->id_to_app);
   g_hash_table_destroy (priv->setting_id_to_app);
   g_hash_table_destroy (priv->startup_wm_class_to_app);
-  g_slist_foreach (priv->known_vendor_prefixes, (GFunc)g_free, NULL);
-  g_slist_free (priv->known_vendor_prefixes);
+  g_slist_free_full (priv->known_vendor_prefixes, g_free);
   priv->known_vendor_prefixes = NULL;
 
   G_OBJECT_CLASS (cinnamon_app_system_parent_class)->finalize (object);
@@ -342,18 +336,23 @@ on_apps_tree_changed_cb (GMenuTree *tree,
   GHashTable *new_apps;
   GHashTableIter iter;
   gpointer key, value;
-  GSList *removed_apps = NULL;
-  GSList *removed_node;
 
   g_assert (tree == self->priv->apps_tree);
 
-  g_slist_foreach (self->priv->known_vendor_prefixes, (GFunc)g_free, NULL);
-  g_slist_free (self->priv->known_vendor_prefixes);
+  g_slist_free_full (self->priv->known_vendor_prefixes, g_free);
   self->priv->known_vendor_prefixes = NULL;
 
   if (!gmenu_tree_load_sync (self->priv->apps_tree, &error))
     {
-      g_warning ("Failed to load apps: %s", error->message);
+      if (error)
+        {
+          g_warning ("Failed to load apps: %s", error->message);
+          g_error_free (error);
+        }
+      else
+        {
+          g_warning ("Failed to load apps");
+        }
       return;
     }
 
@@ -438,14 +437,8 @@ on_apps_tree_changed_cb (GMenuTree *tree,
       const char *id = key;
       
       if (!g_hash_table_lookup (new_apps, id))
-        removed_apps = g_slist_prepend (removed_apps, (char*)id);
+        g_hash_table_iter_remove (&iter);
     }
-  for (removed_node = removed_apps; removed_node; removed_node = removed_node->next)
-    {
-      const char *id = removed_node->data;
-      g_hash_table_remove (self->priv->id_to_app, id);
-    }
-  g_slist_free (removed_apps);
       
   g_hash_table_destroy (new_apps);
 
@@ -463,18 +456,6 @@ cinnamon_app_system_get_tree (CinnamonAppSystem *self)
   return self->priv->apps_tree;
 }
 
-/**
- * cinnamon_app_system_get_settings_tree:
- *
- * Return Value: (transfer none): The #GMenuTree for apps
- * OBSOLETE - ONLY LEFT IN FOR COMPATIBILITY
- * RETURNS EMPTY GMenuTree
- */
-GMenuTree *
-cinnamon_app_system_get_settings_tree (CinnamonAppSystem *self)
-{
-  return self->priv->settings_tree;
-}
 /**
  * cinnamon_app_system_lookup_setting:
  *
@@ -857,15 +838,13 @@ search_tree (CinnamonAppSystem *self,
   g_hash_table_iter_init (&iter, apps);
   while (g_hash_table_iter_next (&iter, &key, &value))
     {
-      const char *id = key;
       CinnamonApp *app = value;
-      (void)id;
+
       _cinnamon_app_do_match (app, normalized_terms,
                            &prefix_results,
                            &substring_results);
     }
-  g_slist_foreach (normalized_terms, (GFunc)g_free, NULL);
-  g_slist_free (normalized_terms);
+  g_slist_free_full (normalized_terms, g_free);
 
   return g_slist_concat (prefix_results, substring_results);
 }
@@ -917,8 +896,7 @@ cinnamon_app_system_subsearch (CinnamonAppSystem   *system,
                            &prefix_results,
                            &substring_results);
     }
-  g_slist_foreach (normalized_terms, (GFunc)g_free, NULL);
-  g_slist_free (normalized_terms);
+  g_slist_free_full (normalized_terms, g_free);
 
   /* Note that a shorter term might have matched as a prefix, but
      when extended only as a substring, so we have to redo the
