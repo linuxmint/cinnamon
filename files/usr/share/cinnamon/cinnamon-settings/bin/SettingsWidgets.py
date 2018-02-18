@@ -380,21 +380,6 @@ class SettingsBox(Gtk.Frame):
         toolbar.add(title_holder)
         self.box.add(toolbar)
 
-        toolbar_separator = Gtk.Separator(orientation=Gtk.Orientation.HORIZONTAL)
-        self.box.add(toolbar_separator)
-        separator_context = toolbar_separator.get_style_context()
-        frame_color = frame_style.get_border_color(Gtk.StateFlags.NORMAL).to_string()
-        css_provider = Gtk.CssProvider()
-        css_data = ".separator { -GtkWidget-wide-separators: 0; \
-                                   color: %s;                    \
-                               }" % frame_color
-        try:
-            css_provider.load_from_data(css_data)
-        except:
-            # we must be using python 3
-            css_provider.load_from_data(str.encode(css_data))
-        separator_context.add_provider(css_provider, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
-
         self.need_separator = False
 
     def add_row(self, widget):
