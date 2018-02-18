@@ -1274,6 +1274,17 @@ StScrollBar StButton#vhandle:hover {
     background-gradient-end: rgba(255,144,144,0.5);
 }
 
+.window-list-preview {
+    background: rgba(80,80,80,0.8);
+    border: 2px solid #a5a5a5;
+    border-radius: 8px;
+    font-size: 9pt;
+    color: white;
+    text-shadow: black 0px 0px 2px;
+    padding: 8px;
+    spacing: 4px;
+}
+
 /* ===================================================================
  * Sound Applet (sound@cinnamon.org)
  * ===================================================================*/

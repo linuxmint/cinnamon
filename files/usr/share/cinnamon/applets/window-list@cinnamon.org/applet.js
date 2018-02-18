@@ -72,53 +72,38 @@ const FLASH_INTERVAL = 500;
 const WINDOW_PREVIEW_WIDTH = 200;
 const WINDOW_PREVIEW_HEIGHT = 150;
 
-function WindowPreview(item, metaWindow) {
-    this._init(item, metaWindow);
+function WindowPreview(item, metaWindow, previewScale, showLabel) {
+    this._init(item, metaWindow, previewScale, showLabel);
 }
 
 WindowPreview.prototype = {
     __proto__: Tooltips.TooltipBase.prototype,
 
-    _init: function(item, metaWindow) {
+    _init: function(item, metaWindow, previewScale, showLabel) {
         Tooltips.TooltipBase.prototype._init.call(this, item.actor);
         this._applet = item._applet;
-
-// FIXME: there is quite a bit of hardcoding in this part of the code, would benefit from setting up separate CSS
-// and getting rid of the hard-coding.
-
-        this.actor = new St.Bin({style_class: "switcher-list", style: "margin: 0px; padding: 8px;"});
-        this.actor.show_on_set_parent = false;
-
-        this.scaleFactor = St.ThemeContext.get_for_stage(global.stage).scale_factor;
-
-        this.actor.set_size(WINDOW_PREVIEW_WIDTH * 1.2 * this.scaleFactor, WINDOW_PREVIEW_HEIGHT * 1.2 * this.scaleFactor);
-        Main.uiGroup.add_actor(this.actor);
-
+        this.uiScale = St.ThemeContext.get_for_stage(global.stage).scale_factor;
+        this.thumbScale = previewScale;
         this.metaWindow = metaWindow;
         this.muffinWindow = null;
         this._sizeChangedId = null;
 
-        let box = new St.BoxLayout({ vertical: true });
-        let hbox = new St.BoxLayout();
-
-        let iconBox = new St.Bin();
-        let tracker = Cinnamon.WindowTracker.get_default();
-        let app = tracker.get_window_app(this.metaWindow);
-        let icon = app ?
-            app.create_icon_texture_for_window(16, this.metaWindow) :
-            new St.Icon({ icon_name: 'application-default-icon', icon_type: St.IconType.FULLCOLOR, icon_size: 16 });
-        iconBox.set_child(icon);
-        hbox.add_actor(iconBox);
+        this.actor = new St.BoxLayout({ vertical: true, style_class: "window-list-preview", important: true });
+        this.actor.show_on_set_parent = false;
+        Main.uiGroup.add_actor(this.actor);
 
         this.label = new St.Label();
-        this.label.style = "padding: 2px;";
-        hbox.add_actor(this.label);
-        box.add_actor(hbox);
+        this.labelBin = new St.Bin({ y_align: St.Align.MIDDLE });
+        this.labelBin.set_width(WINDOW_PREVIEW_WIDTH * this.thumbScale * this.uiScale);
+        this.labelBin.add_actor(this.label);
+        this.actor.add_actor(this.labelBin);
+
+        if (!showLabel) {
+            this.labelBin.hide();
+        }
 
         this.thumbnailBin = new St.Bin();
-        box.add_actor(this.thumbnailBin);
-
-        this.actor.set_child(box);
+        this.actor.add_actor(this.thumbnailBin);
     },
 
     _onEnterEvent: function(actor, event) {
@@ -128,6 +113,14 @@ WindowPreview.prototype = {
             this._showTimer = Mainloop.timeout_add(300, Lang.bind(this, this._onShowTimerComplete));
 
         this.mousePosition = event.get_coords();
+    },
+
+    _getScaledTextureSize: function(windowTexture) {
+        let [width, height] = windowTexture.get_size();
+        let scale = this.thumbScale * this.uiScale *
+                    Math.min(WINDOW_PREVIEW_WIDTH / width, WINDOW_PREVIEW_HEIGHT / height);
+        return [ width * scale,
+                 height * scale ];
     },
 
     _hide: function(actor, event) {
@@ -141,10 +134,7 @@ WindowPreview.prototype = {
 
         this.muffinWindow = this.metaWindow.get_compositor_private();
         let windowTexture = this.muffinWindow.get_texture();
-        let [width, height] = windowTexture.get_size();
-        // the 18 is 16 for the icon size + 2px min padding
-        // this is not foolproof - the font used might be large enough to make the label bigger than the icon
-        let scale = Math.min(1.0, WINDOW_PREVIEW_WIDTH / width, (WINDOW_PREVIEW_HEIGHT-18) / height);
+        let [width, height] = this._getScaledTextureSize(windowTexture);
 
         if (this.thumbnail) {
             this.thumbnailBin.set_child(null);
@@ -153,17 +143,15 @@ WindowPreview.prototype = {
 
         this.thumbnail = new Clutter.Clone({
             source: windowTexture,
-            width: width * scale * this.scaleFactor,
-            height: height * scale * this.scaleFactor
+            width: width,
+            height: height
         });
 
-        this._setSize = function() {
-            [width, height] = windowTexture.get_size();
-            scale = Math.min(1.0, WINDOW_PREVIEW_WIDTH / width, (WINDOW_PREVIEW_HEIGHT-18) / height);
-            this.thumbnail.set_size(width * scale * this.scaleFactor, height * scale * this.scaleFactor);
-        };
         this._sizeChangedId = this.muffinWindow.connect('size-changed',
-            Lang.bind(this, this._setSize));
+            Lang.bind(this, function() {
+                let [width, height] = this._getScaledTextureSize(windowTexture);
+                this.thumbnail.set_size(width, height);
+            }));
 
         this.thumbnailBin.set_child(this.thumbnail);
 
@@ -373,7 +361,7 @@ AppMenuButton.prototype = {
             this._tooltip.destroy();
 
         if (this._applet.usePreview)
-            this._tooltip = new WindowPreview(this, this.metaWindow, this._applet.orientation);
+            this._tooltip = new WindowPreview(this, this.metaWindow, this._applet.previewScale, this._applet.showLabel);
         else
             this._tooltip = new Tooltips.PanelItemTooltip(this, "", this._applet.orientation);
 
@@ -1034,6 +1022,8 @@ MyApplet.prototype = {
         this.settings.bind("middle-click-close", "middleClickClose");
         this.settings.bind("buttons-use-entire-space", "buttonsUseEntireSpace", this._refreshAllItems);
         this.settings.bind("window-preview", "usePreview", this._onPreviewChanged);
+        this.settings.bind("window-preview-show-label", "showLabel", this._onPreviewChanged);
+        this.settings.bind("window-preview-scale", "previewScale", this._onPreviewChanged);
 
         this.signals.connect(global.screen, 'window-added', this._onWindowAddedAsync, this);
         this.signals.connect(global.screen, 'window-monitor-changed', this._onWindowMonitorChanged, this);
