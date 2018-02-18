@@ -14,7 +14,7 @@ const Util = imports.misc.util;
 const Settings = imports.ui.settings;
 const Signals = imports.signals;
 
-const DEFAULT_ICON_SIZE = 20;
+const DEFAULT_ICON_SIZE = 22;
 const ICON_HEIGHT_FACTOR = 0.8;
 
 const PANEL_EDIT_MODE_KEY = 'panel-edit-mode';
