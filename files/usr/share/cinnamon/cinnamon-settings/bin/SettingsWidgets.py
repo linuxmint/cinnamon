@@ -511,7 +511,8 @@ class Switch(SettingsWidget):
         self.set_tooltip_text(tooltip)
 
     def clicked(self, *args):
-        self.content_widget.set_active(not self.content_widget.get_active())
+        if self.is_sensitive():
+            self.content_widget.set_active(not self.content_widget.get_active())
 
 class SpinButton(SettingsWidget):
     bind_prop = "value"
