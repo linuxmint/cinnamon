@@ -455,7 +455,8 @@ _st_create_shadow_pipeline (StShadow     *shadow_spec,
 
   cogl_pipeline_set_layer_texture (pipeline, 0, texture);
 
-  cogl_object_unref (texture);
+  if (texture)
+    cogl_object_unref (texture);
 
   return pipeline;
 }

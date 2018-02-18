@@ -678,8 +678,11 @@ st_texture_cache_reset_texture (StTextureCachePropertyBind *bind,
       texdata = pixbuf_to_cogl_texture (pixbuf);
       g_object_unref (pixbuf);
 
-      clutter_texture_set_cogl_texture (bind->texture, texdata);
-      cogl_object_unref (texdata);
+      if (texdata)
+        {
+          clutter_texture_set_cogl_texture (bind->texture, texdata);
+          cogl_object_unref (texdata);
+        }
 
       clutter_actor_set_opacity (CLUTTER_ACTOR (bind->texture), 255);
     }
