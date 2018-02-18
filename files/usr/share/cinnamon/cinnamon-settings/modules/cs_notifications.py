@@ -61,6 +61,9 @@ class Module:
         switch = GSettingsSwitch(_("Have notifications fade out when hovered over"), "org.cinnamon.desktop.notifications", "fade-on-mouseover")
         settings.add_reveal_row(switch, "org.cinnamon.desktop.notifications", "display-notifications")
 
+        switch = GSettingsSwitch(_("Show notifications on the bottom side of the screen"), "org.cinnamon.desktop.notifications", "bottom-notifications")
+        settings.add_reveal_row(switch, "org.cinnamon.desktop.notifications", "display-notifications")
+
         spin = GSettingsSpinButton(_("Hover opacity"), "org.cinnamon.desktop.notifications", "fade-opacity", _("%"), 0, 100)
         settings.add_reveal_row(spin)
         spin.revealer.settings = Gio.Settings.new("org.cinnamon.desktop.notifications")

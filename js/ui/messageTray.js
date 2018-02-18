@@ -1474,6 +1474,10 @@ MessageTray.prototype = {
         this.settings.connect("changed::fade-opacity", Lang.bind(this, function() {
             this.fadeOpacity = this.settings.get_int("fade-opacity");
         }))
+        this.bottomPosition = this.settings.get_boolean("bottom-notifications");
+        this.settings.connect("changed::bottom-notifications", () => {
+            this.bottomPosition = this.settings.get_boolean("bottom-notifications");
+        });
         this._setSizePosition();
 
         let updateLockState = Lang.bind(this, function() {
@@ -1686,14 +1690,22 @@ MessageTray.prototype = {
 
         let monitor = Main.layoutManager.primaryMonitor;
         let topPanel = Main.panelManager.getPanel(0, 0);
+        let bottomPanel = Main.panelManager.getPanel(0, 1);
         let rightPanel = Main.panelManager.getPanel(0, 3);
         let topGap = 5;
+        let bottomGap = 15;
         let rightGap = 0;
-        if (topPanel)
-            topGap += topPanel.actor.get_height();
-        if (rightPanel)
+
+        if (rightPanel) {
             rightGap += rightPanel.actor.get_width();
-        this._notificationBin.y = monitor.y + topGap * 2; // Notifications appear from here (for the animation)
+        }
+
+        if (!this.bottomPosition) {
+            if (topPanel) {
+                topGap += topPanel.actor.get_height();
+            }
+            this._notificationBin.y = monitor.y + topGap * 2; // Notifications appear from here (for the animation)
+        }
 
         let margin = this._notification._table.get_theme_node().get_length('margin-from-right-edge-of-screen');
         this._notificationBin.x = monitor.x + monitor.width - this._notification._table.width - margin - rightGap;
@@ -1704,6 +1716,29 @@ MessageTray.prototype = {
             Main.layoutManager._chrome.modifyActorParams(this._notificationBin, { visibleInFullscreen: false });
         }
         this._notificationBin.show();
+
+        if (this.bottomPosition) {
+            if (bottomPanel) {
+                bottomGap += bottomPanel.actor.get_height();
+            }
+            let getBottomPositionY = () => {
+                return monitor.height - this._notificationBin.height - bottomGap;
+            };
+            let shouldReturn = false;
+            let initialY = getBottomPositionY();
+            // For multi-line notifications, the correct height will not be known until the notification is done animating,
+            // so this will set _notificationBin.y when queue-redraw is emitted, and return early if the  height decreases
+            // to prevent unnecessary property setting.
+            this.bottomPositionSignal = this._notificationBin.connect('queue-redraw', () => {
+                if (shouldReturn) {
+                    return;
+                }
+                this._notificationBin.y = getBottomPositionY();
+                if (initialY > this._notificationBin.y) {
+                    shouldReturn = true;
+                }
+            });
+        }
 
         this._updateShowingNotification();
 
@@ -1795,20 +1830,34 @@ MessageTray.prototype = {
     },
 
     _hideNotification: function() {
+        let y;
         this._focusGrabber.ungrabFocus();
         if (this._notificationExpandedId) {
             this._notification.disconnect(this._notificationExpandedId);
             this._notificationExpandedId = 0;
         }
 
-        this._tween(this._notificationBin, '_notificationState', State.HIDDEN,
-                    { y: Main.layoutManager.primaryMonitor.y,
-                      opacity: 0,
-                      time: ANIMATION_TIME,
-                      transition: 'easeOutQuad',
-                      onComplete: this._hideNotificationCompleted,
-                      onCompleteScope: this
-                    });
+        if (this.bottomPosition) {
+            if (this.bottomPositionSignal) {
+                this._notificationBin.disconnect(this.bottomPositionSignal);
+            }
+            y = Main.layoutManager.primaryMonitor.height;
+            let bottomPanel = Main.panelManager.getPanel(0, 1);
+            if (bottomPanel) {
+                y -= bottomPanel.actor.get_height() - 15;
+            }
+        } else {
+            y = Main.layoutManager.primaryMonitor.y;
+        }
+
+        this._tween(this._notificationBin, '_notificationState', State.HIDDEN, {
+            y,
+            opacity: 0,
+            time: ANIMATION_TIME,
+            transition: 'easeOutQuad',
+            onComplete: this._hideNotificationCompleted,
+            onCompleteScope: this
+        });
     },
 
     _hideNotificationCompleted: function() {
