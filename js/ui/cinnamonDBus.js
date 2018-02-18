@@ -83,6 +83,7 @@ const CinnamonIface =
             <method name="JumpToNewWorkspace" /> \
             <method name="RemoveCurrentWorkspace" /> \
             <method name="ShowExpo" /> \
+            <method name="ShowOverview" /> \
             <method name="GetRunningXletUUIDs"> \
                 <arg type="s" direction="in" /> \
                 <arg type="as" direction="out" /> \
@@ -387,6 +388,11 @@ CinnamonDBus.prototype = {
     ShowExpo: function() {
         if (!Main.expo.animationInProgress)
             Main.expo.toggle();
+    },
+
+    ShowOverview: function() {
+        if (!Main.overview.animationInProgress)
+            Main.overview.toggle();
     },
 
     PushSubprocessResult: function(process_id, result, success) {
