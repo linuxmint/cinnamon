@@ -619,7 +619,8 @@ Player.prototype = {
                 let cover_path = "";
                 if (this._trackCoverFile.match(/^http/)) {
                     this._hideCover();
-                    this._trackCoverFileTmp = Gio.file_new_tmp('XXXXXX.mediaplayer-cover')[0];
+                    if(!this._trackCoverFileTmp)
+                        this._trackCoverFileTmp = Gio.file_new_tmp('XXXXXX.mediaplayer-cover')[0];
                     Util.spawn_async(['wget', this._trackCoverFile, '-O', this._trackCoverFileTmp.get_path()], Lang.bind(this, this._onDownloadedCover));
                 }
                 else {
