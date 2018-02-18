@@ -502,6 +502,7 @@ _st_create_shadow_pipeline_from_actor (StShadow     *shadow_spec,
       if (!cogl_framebuffer_allocate (fb, &catch_error))
         {
           cogl_error_free (catch_error);
+          cogl_object_unref (offscreen);
           cogl_object_unref (buffer);
           return NULL;
         }
