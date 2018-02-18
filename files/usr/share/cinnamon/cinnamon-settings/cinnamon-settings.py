@@ -77,17 +77,22 @@ CONTROL_CENTER_MODULES = [
 
 STANDALONE_MODULES = [
     #         Label                          Executable                          Icon                Category        Keywords for filter
-    [_("Printers"),                      "system-config-printer",        "cs-printer",         "hardware",       _("printers, laser, inkjet")],
-    [_("Firewall"),                      "gufw",                         "cs-firewall",        "admin",          _("firewall, block, filter, programs")],
-    [_("Languages"),                     "mintlocale",                   "cs-language",        "prefs",          _("language, install, foreign")],
-    [_("Input Method"),                  "mintlocale im",                "cs-input-method",    "prefs",          _("language, install, foreign, input, method, chinese, korean, japanese, typing")],
-    [_("Login Window"),                  "gksu /usr/sbin/mdmsetup",      "cs-login",           "admin",          _("login, mdm, gdm, manager, user, password, startup, switch")],
-    [_("Login Window"),                  "lightdm-settings",             "cs-login",           "admin",          _("login, lightdm, mdm, gdm, manager, user, password, startup, switch")],
-    [_("Driver Manager"),                "mintdrivers",                  "cs-drivers",         "admin",          _("video, driver, wifi, card, hardware, proprietary, nvidia, radeon, nouveau, fglrx")],
-    [_("Software Sources"),              "mintsources",                  "cs-sources",         "admin",          _("ppa, repository, package, source, download")],
-    [_("Users and Groups"),              "cinnamon-settings-users",      "cs-user-accounts",   "admin",          _("user, users, account, accounts, group, groups, password")],
-    [_("Bluetooth"),                     "blueberry",                    "cs-bluetooth",       "hardware",       _("bluetooth, dongle, transfer, mobile")],
-    [_("Manage Services and Units"),     "systemd-manager-pkexec",       "cs-sources",         "admin",          _("systemd, units, services, systemctl, init")]
+    [_("Printers"),                      "system-config-printer",               "cs-printer",         "hardware",       _("printers, laser, inkjet")],
+    [_("Firewall"),                      "gufw",                                "cs-firewall",        "admin",          _("firewall, block, filter, programs")],
+    [_("Firewall"),                      "firewall-config",                     "cs-firewall",        "admin",          _("firewall, block, filter, programs")],
+    [_("Languages"),                     "mintlocale",                          "cs-language",        "prefs",          _("language, install, foreign")],
+    [_("Input Method"),                  "mintlocale im",                       "cs-input-method",    "prefs",          _("language, install, foreign, input, method, chinese, korean, japanese, typing")],
+    [_("Login Window"),                  "gksu /usr/sbin/mdmsetup",             "cs-login",           "admin",          _("login, mdm, gdm, manager, user, password, startup, switch")],
+    [_("Login Window"),                  "lightdm-settings",                    "cs-login",           "admin",          _("login, lightdm, mdm, gdm, manager, user, password, startup, switch")],
+    [_("Login Window"),                  "lightdm-gtk-greeter-settings-pkexec", "cs-login",           "admin",          _("login, lightdm, manager, settings, editor")],
+    [_("Driver Manager"),                "mintdrivers",                         "cs-drivers",         "admin",          _("video, driver, wifi, card, hardware, proprietary, nvidia, radeon, nouveau, fglrx")],
+    [_("Nvidia Settings"),               "nvidia-settings",                     "cs-drivers",         "admin",          _("video, driver, proprietary, nvidia, settings")],
+    [_("Software Sources"),              "mintsources",                         "cs-sources",         "admin",          _("ppa, repository, package, source, download")],
+    [_("Package Management"),            "dnfdragora",                          "cs-sources",         "admin",          _("update, install, repository, package, source, download")],
+    [_("Package Management"),            "yumex-dnf",                           "cs-sources",         "admin",          _("update, install, repository, package, source, download")],
+    [_("Users and Groups"),              "cinnamon-settings-users",             "cs-user-accounts",   "admin",          _("user, users, account, accounts, group, groups, password")],
+    [_("Bluetooth"),                     "blueberry",                           "cs-bluetooth",       "hardware",       _("bluetooth, dongle, transfer, mobile")],
+    [_("Manage Services and Units"),     "systemd-manager-pkexec",              "cs-sources",         "admin",          _("systemd, units, services, systemctl, init")]
 ]
 
 def print_timing(func):
