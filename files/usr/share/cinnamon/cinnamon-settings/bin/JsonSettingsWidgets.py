@@ -76,7 +76,10 @@ class JSONSettingsHandler(object):
         return props[prop]
 
     def has_property(self, key, prop):
-        return prop in self.settings
+        return prop in self.settings[key]
+
+    def has_key(self, key):
+        return key in self.settings
 
     def object_value_changed(self, obj, value, key):
         for info in self.bindings[key]:
@@ -246,7 +249,7 @@ def json_settings_factory(subclass):
             self.attach()
 
         def set_dep_key(self, dep_key):
-            if self.settings.has_property(dep_key):
+            if self.settings.has_key(dep_key):
                 self.settings.bind(dep_key, self, "sensitive", Gio.SettingsBindFlags.GET)
             else:
                 print("Ignoring dependency on key '%s': no such key in the schema" % dep_key)
