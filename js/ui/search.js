@@ -276,17 +276,15 @@ OpenSearchSystem.prototype = {
         let langs = GLib.get_language_names();
 
         langs.push('en');
-        let lang = null;
+        provider.lang = null;
         for (let i = 0; i < langs.length; i++) {
-            for (let k = 0; k < provider.langs.length; k++) {
-                if (langs[i] == provider.langs[k])
-                    lang = langs[i];
+            if (provider.langs.includes(langs[i])) {
+                provider.lang = langs[i];
+                return true;
             }
-            if (lang)
-                break;
         }
-        provider.lang = lang;
-        return lang != null;
+
+        return false;
     },
 
     activateResult: function(id, params) {
@@ -327,13 +325,10 @@ OpenSearchSystem.prototype = {
         let file = Gio.file_new_for_path(global.datadir + '/search_providers');
         FileUtils.listDirAsync(file, Lang.bind(this, function(files) {
             for (let i = 0; i < files.length; i++) {
-                let enabled = true;
                 let name = files[i].get_name();
-                for (let k = 0; k < names.length; k++)
-                    if (names[k] == name)
-                        enabled = false;
-                if (enabled)
+                if (!names.includes(name)) {
                     this._addProvider(name);
+                }
             }
         }));
     }
