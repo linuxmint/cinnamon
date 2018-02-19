@@ -382,7 +382,7 @@ st_widget_paint_background (StWidget *widget)
                                     &allocation,
                                     opacity);
   else
-    st_theme_node_paint (theme_node, &allocation, opacity);
+    st_theme_node_paint (theme_node, cogl_get_draw_framebuffer (), &allocation, opacity);
 
   // ClutterEffect *effect = clutter_actor_get_effect (actor, "background-effect");
 
