@@ -270,7 +270,7 @@ OpenSearchSystem.prototype = {
     },
 
     _checkSupportedProviderLanguage: function(provider) {
-        if (provider.url.search(/{language}/) == -1)
+        if (!provider.url.includes('{language}'))
             return true;
 
         let langs = GLib.get_language_names();
@@ -293,8 +293,7 @@ OpenSearchSystem.prototype = {
         let searchTerms = this._terms.join(' ');
 
         let url = this._providers[id].url.replace(/{searchTerms}/g, encodeURIComponent(searchTerms));
-        if (url.match(/{language}/g))
-            url = url.replace(/{language}/g, this._providers[id].lang);
+        url = url.replace(/{language}/g, this._providers[id].lang);
 
         try {
             Gio.app_info_launch_default_for_uri(url, global.create_app_launch_context());
@@ -382,7 +381,7 @@ SearchSystem.prototype = {
     },
 
     updateSearch: function(searchString) {
-        searchString = searchString.replace(/^\s+/g, '').replace(/\s+$/g, '');
+        searchString = searchString.trim();
         if (searchString == '')
             return;
 
