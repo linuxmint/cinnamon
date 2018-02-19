@@ -1,4 +1,4 @@
-#!/usr/bin/python2
+#!/usr/bin/python3
 
 from gi.repository.Gtk import SizeGroup, SizeGroupMode
 
@@ -26,7 +26,7 @@ class Module:
 
     def on_module_selected(self):
         if not self.loaded:
-            print "Loading Themes module"
+            print("Loading Themes module")
 
             self.spices = Spice_Harvester('theme', self.window)
 
@@ -214,8 +214,8 @@ class Module:
             self.settings.set_string("icon-theme", theme)
             self.icon_chooser.set_button_label(theme)
             self.icon_chooser.set_tooltip_text(theme)
-        except Exception, detail:
-            print detail
+        except Exception as detail:
+            print(detail)
         return True
 
     def _on_metacity_theme_selected(self, path, theme):
@@ -223,8 +223,8 @@ class Module:
             self.wm_settings.set_string("theme", theme)
             self.metacity_chooser.set_button_label(theme)
             self.metacity_chooser.set_tooltip_text(theme)
-        except Exception, detail:
-            print detail
+        except Exception as detail:
+            print(detail)
         return True
 
     def _on_gtk_theme_selected(self, path, theme):
@@ -232,8 +232,8 @@ class Module:
             self.settings.set_string("gtk-theme", theme)
             self.theme_chooser.set_button_label(theme)
             self.theme_chooser.set_tooltip_text(theme)
-        except Exception, detail:
-            print detail
+        except Exception as detail:
+            print(detail)
         return True
 
     def _on_cursor_theme_selected(self, path, theme):
@@ -241,8 +241,8 @@ class Module:
             self.settings.set_string("cursor-theme", theme)
             self.cursor_chooser.set_button_label(theme)
             self.cursor_chooser.set_tooltip_text(theme)
-        except Exception, detail:
-            print detail
+        except Exception as detail:
+            print(detail)
 
         self.update_cursor_theme_link(path, theme)
         return True
@@ -252,15 +252,15 @@ class Module:
             self.cinnamon_settings.set_string("name", theme)
             self.cinnamon_chooser.set_button_label(theme)
             self.cinnamon_chooser.set_tooltip_text(theme)
-        except Exception, detail:
-            print detail
+        except Exception as detail:
+            print(detail)
         return True
 
     def _load_gtk_themes(self):
         """ Only shows themes that have variations for gtk+-3 and gtk+-2 """
         dirs = ("/usr/share/themes", os.path.join(os.path.expanduser("~"), ".themes"))
         valid = walk_directories(dirs, self.filter_func_gtk_dir, return_directories=True)
-        valid.sort(lambda a,b: cmp(a[0].lower(), b[0].lower()))
+        valid.sort(key=lambda a: a[0].lower())
         res = []
         for i in valid:
             for j in res:
@@ -297,7 +297,7 @@ class Module:
                 except Exception as e:
                     print (e)
 
-        valid.sort(lambda a,b: cmp(a[0].lower(), b[0].lower()))
+        valid.sort(key=lambda a: a[0].lower())
         res = []
         for i in valid:
             for j in res:
@@ -312,7 +312,7 @@ class Module:
     def _load_cursor_themes(self):
         dirs = ("/usr/share/icons", os.path.join(os.path.expanduser("~"), ".icons"))
         valid = walk_directories(dirs, lambda d: os.path.isdir(d) and os.path.exists(os.path.join(d, "cursors")), return_directories=True)
-        valid.sort(lambda a,b: cmp(a[0].lower(), b[0].lower()))
+        valid.sort(key=lambda a: a[0].lower())
         res = []
         for i in valid:
             for j in res:
@@ -327,7 +327,7 @@ class Module:
     def _load_metacity_themes(self):
         dirs = ("/usr/share/themes", os.path.join(os.path.expanduser("~"), ".themes"))
         valid = walk_directories(dirs, lambda d: os.path.exists(os.path.join(d, "metacity-1/metacity-theme-3.xml")), return_directories=True)
-        valid.sort(lambda a,b: cmp(a[0].lower(), b[0].lower()))
+        valid.sort(key=lambda a: a[0].lower())
         res = []
         for i in valid:
             for j in res:
@@ -342,7 +342,7 @@ class Module:
     def _load_cinnamon_themes(self):
         dirs = ("/usr/share/themes", os.path.join(os.path.expanduser("~"), ".themes"))
         valid = walk_directories(dirs, lambda d: os.path.exists(os.path.join(d, "cinnamon")), return_directories=True)
-        valid.sort(lambda a,b: cmp(a[0].lower(), b[0].lower()))
+        valid.sort(key=lambda a: a[0].lower())
         res = []
         for i in valid:
             for j in res:

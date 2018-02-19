@@ -1,3 +1,5 @@
+#!/usr/bin/python3
+
 from gi.repository import Gio, GObject
 from SettingsWidgets import *
 from TreeListWidgets import List
@@ -74,16 +76,13 @@ class JSONSettingsHandler(object):
         return props[prop]
 
     def has_property(self, key, prop):
-        return prop in self.settings.keys()
-
-    def has_key(self, key):
-        return key in self.settings
+        return prop in self.settings
 
     def object_value_changed(self, obj, value, key):
         for info in self.bindings[key]:
             if obj == info["obj"]:
                 value = info["obj"].get_property(info["prop"])
-                if "map_set" in info.keys() and info["map_set"] != None:
+                if "map_set" in info and info["map_set"] != None:
                     value = info["map_set"](value)
             else:
                 self.set_object_value(info, value)
@@ -94,7 +93,7 @@ class JSONSettingsHandler(object):
             return
 
         with info["obj"].freeze_notify():
-            if "map_get" in info.keys() and info["map_get"] != None:
+            if "map_get" in info and info["map_get"] != None:
                 value = info["map_get"](value)
             if value != info["obj"].get_property(info["prop"]):
                 info["obj"].set_property(info["prop"], value)
@@ -247,7 +246,7 @@ def json_settings_factory(subclass):
             self.attach()
 
         def set_dep_key(self, dep_key):
-            if self.settings.has_key(dep_key):
+            if self.settings.has_property(dep_key):
                 self.settings.bind(dep_key, self, "sensitive", Gio.SettingsBindFlags.GET)
             else:
                 print("Ignoring dependency on key '%s': no such key in the schema" % dep_key)

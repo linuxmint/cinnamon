@@ -1,3 +1,5 @@
+#!/usr/bin/python3
+
 """
     made with the file cjs/tweener/equations.js
 

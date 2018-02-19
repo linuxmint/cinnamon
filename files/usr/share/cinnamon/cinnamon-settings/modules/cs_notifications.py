@@ -1,4 +1,4 @@
-#!/usr/bin/python2
+#!/usr/bin/python3
 
 import gi
 gi.require_version('Notify', '0.7')
@@ -43,7 +43,7 @@ class Module:
         if self.loaded:
             return
 
-        print "Loading Notifications module"
+        print("Loading Notifications module")
 
         Notify.init("cinnamon-settings-notifications-test")
 

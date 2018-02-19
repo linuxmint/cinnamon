@@ -1,4 +1,4 @@
-#!/usr/bin/python2
+#!/usr/bin/python3
 
 from GSettingsWidgets import *
 from gi.repository import *
@@ -207,11 +207,11 @@ class DefaultAppChooserButton(Gtk.AppChooserButton):
 
     def onChanged(self, button):
         info = button.get_app_info()
-        print "%s: " % info.get_name()
+        print("%s: " % info.get_name())
         if info:
             supported_mimetypes = info.get_supported_types()
             hardcoded_mimetypes = None
-            if self.generic_content_type in mimetypes.keys():
+            if self.generic_content_type in mimetypes:
                 hardcoded_mimetypes = mimetypes[self.generic_content_type]
 
             set_mimes = []
@@ -221,24 +221,24 @@ class DefaultAppChooserButton(Gtk.AppChooserButton):
                 for t in sorted(supported_mimetypes):
                     if t.startswith(self.generic_content_type):
                         if info.set_as_default_for_type (t):
-                            print "  Set as default for supported %s" % t
+                            print("  Set as default for supported %s" % t)
                             set_mimes.append(t)
                         else:
-                            print "  Failed to set as default application for '%s'" % t
+                            print("  Failed to set as default application for '%s'" % t)
 
             # Also assign mimes hardcoded in the mimetypes hashtable
             if hardcoded_mimetypes is not None:
                 for t in sorted(hardcoded_mimetypes):
                     if t not in set_mimes:
                         if info.set_as_default_for_type (t):
-                            print "  Set as default for hardcoded %s" % t
+                            print("  Set as default for hardcoded %s" % t)
                         else:
-                            print "  Failed to set as default application for '%s'" % t
+                            print("  Failed to set as default application for '%s'" % t)
 
             #Web
             if self.content_type == "x-scheme-handler/http":
                 if info.set_as_default_for_type ("x-scheme-handler/https") == False:
-                    print "  Failed to set '%s' as the default application for '%s'" % (info.get_name(), "x-scheme-handler/https")
+                    print("  Failed to set '%s' as the default application for '%s'" % (info.get_name(), "x-scheme-handler/https"))
 
 class DefaultTerminalButton(Gtk.AppChooserButton): #TODO: See if we can get this to change the x-terminal-emulator default to allow it to be a more global change rather then just cinnamon/nemo
     def __init__(self):
@@ -409,7 +409,7 @@ class OtherTypeDialog(Gtk.Dialog):
                 break
 
         if description == None:
-            print "Content type '%s' is missing from the info panel" % content_type
+            print("Content type '%s' is missing from the info panel" % content_type)
             return Gio.content_type_get_description(content_type)
 
         return description
@@ -470,7 +470,7 @@ class Module:
 
     def on_module_selected(self):
         if not self.loaded:
-            print "Loading Default module"
+            print("Loading Default module")
 
             self.media_settings = Gio.Settings.new(MEDIA_HANDLING_SCHEMA)
             self.other_type_dialog = OtherTypeDialog(self.media_settings, self.sidePage.window)

@@ -1,4 +1,4 @@
-#!/usr/bin/python2
+#!/usr/bin/python3
 
 import sys
 
@@ -75,7 +75,7 @@ class Module:
 
     def on_module_selected(self):
         if not self.loaded:
-            print "Loading Panel module"
+            print("Loading Panel module")
 
             self.settings = Gio.Settings.new("org.cinnamon")
 

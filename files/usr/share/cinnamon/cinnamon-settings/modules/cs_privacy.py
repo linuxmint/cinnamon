@@ -1,4 +1,4 @@
-#!/usr/bin/python2
+#!/usr/bin/python3
 
 from GSettingsWidgets import *
 
@@ -20,7 +20,7 @@ class Module:
 
     def on_module_selected(self):
         if not self.loaded:
-            print "Loading Privacy module"
+            print("Loading Privacy module")
 
             page = SettingsPage()
             self.sidePage.add_widget(page)

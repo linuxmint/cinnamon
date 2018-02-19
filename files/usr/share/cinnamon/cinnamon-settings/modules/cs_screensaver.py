@@ -1,4 +1,4 @@
-#!/usr/bin/python2
+#!/usr/bin/python3
 
 import os, json, subprocess, re
 from xml.etree import ElementTree
@@ -59,7 +59,7 @@ class Module:
         if self.loaded:
             return
 
-        print "Loading Screensaver module"
+        print("Loading Screensaver module")
 
         schema = "org.cinnamon.desktop.screensaver"
         self.settings = Gio.Settings.new(schema)
@@ -303,8 +303,8 @@ class ScreensaverBox(Gtk.Box):
                         description = _(description)
                         row = ScreensaverRow(name, label, description, XSCREENSAVER_PATH, "xscreensaver")
                         xscreensavers.append(row)
-                    except Exception, detail:
-                        print "Unable to parse xscreensaver information at %s: %s" % (path, detail)
+                    except Exception as detail:
+                        print("Unable to parse xscreensaver information at %s: %s" % (path, detail))
 
                 xscreensavers = sorted(xscreensavers, key=lambda x: x.name)
                 for xscreensaver in xscreensavers:
@@ -312,8 +312,8 @@ class ScreensaverBox(Gtk.Box):
                     if self.current_name == "xscreensaver-" + xscreensaver.uuid:
                         self.list_box.select_row(xscreensaver)
                 gettext.install("cinnamon", "/usr/share/locale")
-            except Exception, detail:
-                print "Unable to parse xscreensaver hacks: %s" % detail
+            except Exception as detail:
+                print("Unable to parse xscreensaver hacks: %s" % detail)
 
     def parse_dir(self, path, directory, ss_type):
         try:
@@ -338,7 +338,7 @@ class ScreensaverBox(Gtk.Box):
             if self.current_name == uuid:
                 self.list_box.select_row(row)
         except:
-            print "Unable to parse screensaver information at %s" % path
+            print("Unable to parse screensaver information at %s" % path)
 
     def kill_plug(self):
         if not self.proc:
@@ -391,7 +391,7 @@ class ScreensaverBox(Gtk.Box):
         try:
             self.proc = Gio.Subprocess.new(command, Gio.SubprocessFlags.STDOUT_PIPE | Gio.SubprocessFlags.STDERR_SILENCE)
         except GLib.Error as e:
-            print e.message
+            print(e.message)
 
         pipe = self.proc.get_stdout_pipe()
         bytes_read = pipe.read_bytes(1024, None)

@@ -1,3 +1,5 @@
+#!/usr/bin/python3
+
 # Copyright (C) 2007-2010 www.stani.be
 #
 # This program is free software: you can redistribute it and/or modify
@@ -14,10 +16,9 @@
 # along with this program.  If not, see http://www.gnu.org/licenses/
 
 import os
-from cStringIO import StringIO
+from io import StringIO
 from itertools import cycle
-from urllib import urlopen
-
+from urllib.request import urlopen
 from PIL import Image
 from PIL import ImageDraw
 from PIL import ImageEnhance

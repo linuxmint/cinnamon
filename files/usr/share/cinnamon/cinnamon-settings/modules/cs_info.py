@@ -1,4 +1,4 @@
-#!/usr/bin/python2
+#!/usr/bin/python3
 
 import platform
 import subprocess
@@ -26,7 +26,7 @@ def getProcessOut(command):
         if not line:
             break
         if line != '':
-            lines.append(line)
+            lines.append(line.decode('utf-8'))
     timer.cancel()
     return lines
 
@@ -87,13 +87,13 @@ def createSystemInfos():
     infos = []
     arch = platform.machine().replace("_", "-")
     (memsize, memunit) = procInfos['mem_total'].split(" ")
-    processorName = procInfos['cpu_name'].replace("(R)", u"\u00A9").replace("(TM)", u"\u2122")
+    processorName = procInfos['cpu_name'].replace("(R)", "\u00A9").replace("(TM)", "\u2122")
     if 'cpu_cores' in procInfos:
-        processorName = processorName + u" \u00D7 " + procInfos['cpu_cores']
+        processorName = processorName + " \u00D7 " + procInfos['cpu_cores']
 
     if os.path.exists("/etc/linuxmint/info"):
         args = shlex.split("awk -F \"=\" '/GRUB_TITLE/ {print $2}' /etc/linuxmint/info")
-        title = subprocess.check_output(args).rstrip("\n")
+        title = subprocess.check_output(args).decode('utf-8').rstrip("\n")
         infos.append((_("Operating System"), title))
     elif os.path.exists("/etc/arch-release"):
         contents = open("/etc/arch-release", 'r').readline().split()
@@ -143,7 +143,7 @@ class Module:
 
     def on_module_selected(self):
         if not self.loaded:
-            print "Loading Info module"
+            print("Loading Info module")
 
             infos = createSystemInfos()
 

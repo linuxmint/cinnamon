@@ -1,3 +1,5 @@
+#!/usr/bin/python3
+
 from gi.repository import Gio, GLib
 from SettingsWidgets import *
 
@@ -293,14 +295,14 @@ def g_settings_factory(subclass):
     class NewClass(globals()[subclass], CSGSettingsBackend):
         def __init__(self, label, schema, key, *args, **kwargs):
             self.key = key
-            if schema not in settings_objects.keys():
+            if schema not in settings_objects:
                 settings_objects[schema] = Gio.Settings.new(schema)
             self.settings = settings_objects[schema]
 
-            if kwargs.has_key("map_get"):
+            if "map_get" in kwargs:
                 self.map_get = kwargs["map_get"]
                 del kwargs["map_get"]
-            if kwargs.has_key("map_set"):
+            if "map_set" in kwargs:
                 self.map_set = kwargs["map_set"]
                 del kwargs["map_set"]
 

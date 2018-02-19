@@ -1,4 +1,4 @@
-#!/usr/bin/python2
+#!/usr/bin/python3
 
 from ExtensionCore import ManageSpicesPage, DownloadSpicesPage
 from SettingsWidgets import SidePage, SettingsStack
@@ -16,7 +16,7 @@ class Module:
 
     def on_module_selected(self):
         if not self.loaded:
-            print "Loading Extensions module"
+            print("Loading Extensions module")
             self.sidePage.load(self.window)
 
     def _setParentRef(self, window):

@@ -1,4 +1,4 @@
-#!/usr/bin/python2
+#!/usr/bin/python3
 
 from gi.repository import Gio
 
@@ -34,7 +34,7 @@ class Module:
         if self.loaded:
             return
 
-        print "Loading Desktop module"
+        print("Loading Desktop module")
 
         page = SettingsPage()
         self.sidePage.add_widget(page)

@@ -1,3 +1,5 @@
+#!/usr/bin/python3
+
 # Copyright (C) 2007-2010 www.stani.be
 #
 # This program is free software: you can redistribute it and/or modify
@@ -44,8 +46,8 @@ class CManager():
                 if os.path.exists(path):
                     try:
                         self.modules = self.modules + Gio.io_modules_load_all_in_directory(path)
-                    except Exception, e:
-                        print "capi failed to load multiarch modules from %s: " % path, e
+                    except Exception as e:
+                        print("capi failed to load multiarch modules from %s: " % path, e)
 
     def get_c_widget(self, mod_id):
         extension = self.extension_point.get_extension_by_name(mod_id)

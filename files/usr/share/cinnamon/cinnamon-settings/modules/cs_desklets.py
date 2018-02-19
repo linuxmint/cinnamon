@@ -1,4 +1,4 @@
-#!/usr/bin/python2
+#!/usr/bin/python3
 
 from ExtensionCore import ManageSpicesPage, DownloadSpicesPage
 from Spices import Spice_Harvester
@@ -16,7 +16,7 @@ class Module:
 
     def on_module_selected(self):
         if not self.loaded:
-            print "Loading Desklets module"
+            print("Loading Desklets module")
             self.sidePage.load(self.window)
 
     def _setParentRef(self, window):

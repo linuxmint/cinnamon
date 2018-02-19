@@ -1,8 +1,6 @@
-#!/usr/bin/python2
+#!/usr/bin/python3
 
 import sys
-reload(sys)
-sys.setdefaultencoding('utf-8')
 
 import os
 import glob
@@ -10,7 +8,7 @@ import gettext
 import time
 import traceback
 import locale
-import urllib2
+import urllib.request as urllib
 from functools import cmp_to_key
 import unicodedata
 import config
@@ -33,7 +31,7 @@ gettext.install("cinnamon", "/usr/share/locale")
 mod_files = glob.glob(config.currentPath + "/modules/*.py")
 mod_files.sort()
 if len(mod_files) is 0:
-    print "No settings modules found!!"
+    print("No settings modules found!!")
     sys.exit(1)
 
 mod_files = [x.split('/')[-1].split('.')[0] for x in mod_files]
@@ -101,7 +99,7 @@ def print_timing(func):
         t1 = time.time()
         res = func(*arg)
         t2 = time.time()
-        print '%s took %0.3f ms' % (func.func_name, (t2-t1)*1000.0)
+        print('%s took %0.3f ms' % (func.func_name, (t2-t1)*1000.0))
         return res
     return wrapper
 
@@ -182,7 +180,7 @@ class MainWindow:
         self.window.resize(WIN_WIDTH, use_height)
 
     def deselect(self, cat):
-        for key in self.side_view.keys():
+        for key in self.side_view:
             if key is not cat:
                 self.side_view[key].unselect_all()
 
@@ -190,7 +188,7 @@ class MainWindow:
     def __init__(self):
         self.builder = Gtk.Builder()
         self.builder.add_from_file(config.currentPath + "/cinnamon-settings.ui")
-        self.window = XApp.GtkWindow(visible=True, window_position=Gtk.WindowPosition.CENTER,
+        self.window = XApp.GtkWindow(window_position=Gtk.WindowPosition.CENTER,
                                      default_width=800, default_height=600)
         main_box = self.builder.get_object("main_box")
         self.window.add(main_box)
@@ -249,7 +247,7 @@ class MainWindow:
                 if self.loadCheck(mod) and self.setParentRefs(mod):
                     self.unsortedSidePages.append((mod.sidePage, mod.name, mod.category))
             except:
-                print "Failed to load module %s" % module
+                print("Failed to load module %s" % module)
                 traceback.print_exc()
 
         for item in CONTROL_CENTER_MODULES:
@@ -275,14 +273,14 @@ class MainWindow:
         self.storeFilter = {}
         for sidepage in self.sidePages:
             sp, sp_id, sp_cat = sidepage
-            if not self.store.has_key(sp_cat):  #       Label         Icon          sidePage     Category
+            if sp_cat not in self.store:        #       Label         Icon    sidePage    Category
                 self.store[sidepage[2]] = Gtk.ListStore(str,          str,    object,     str)
                 for category in CATEGORIES:
                     if category["id"] == sp_cat:
                         category["show"] = True
 
             # Don't allow item names (and their translations) to be more than 30 chars long. It looks ugly and it creates huge gaps in the icon views
-            name = unicode(sp.name,'utf-8')
+            name = sp.name
             if len(name) > 30:
                 name = "%s..." % name[:30]
             sidePagesIters[sp_id] = (self.store[sp_cat].append([name, sp.icon, sp, sp_cat]), sp_cat)
@@ -290,7 +288,7 @@ class MainWindow:
         self.min_label_length = 0
         self.min_pix_length = 0
 
-        for key in self.store.keys():
+        for key in self.store:
             char, pix = self.get_label_min_width(self.store[key])
             self.min_label_length = max(char, self.min_label_length)
             self.min_pix_length = max(pix, self.min_pix_length)
@@ -315,7 +313,7 @@ class MainWindow:
         self.calculate_bar_heights()
 
         # Select the first sidePage
-        if len(sys.argv) > 1 and sys.argv[1] in sidePagesIters.keys():
+        if len(sys.argv) > 1 and sys.argv[1] in sidePagesIters:
             (iter, cat) = sidePagesIters[sys.argv[1]]
             path = self.store[cat].get_path(iter)
             if path:
@@ -602,10 +600,10 @@ if __name__ == "__main__":
 
     ps = proxygsettings.get_proxy_settings()
     if ps:
-        proxy = urllib2.ProxyHandler(ps)
+        proxy = urllib.ProxyHandler(ps)
     else:
-        proxy = urllib2.ProxyHandler()
-    urllib2.install_opener(urllib2.build_opener(proxy))
+        proxy = urllib.ProxyHandler()
+    urllib.install_opener(urllib.build_opener(proxy))
 
     window = MainWindow()
     signal.signal(signal.SIGINT, window.quit)

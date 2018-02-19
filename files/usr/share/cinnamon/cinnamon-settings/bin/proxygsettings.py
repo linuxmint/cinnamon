@@ -1,3 +1,5 @@
+#!/usr/bin/python3
+
 # -*- coding: utf-8 -*-
 #
 # Copyright 2011-2012 Canonical Ltd.
@@ -83,7 +85,7 @@ def proxy_url_from_settings(scheme, gsettings):
 def get_proxy_settings():
     """Parse the proxy settings as returned by the gsettings executable
        and return a dictionary with a proxy URL for each scheme ."""
-    output = subprocess.check_output(GSETTINGS_CMDLINE.split())
+    output = subprocess.check_output(GSETTINGS_CMDLINE.split()).decode("utf-8")
     gsettings = {}
     base_len = len("org.gnome.system.proxy.")
     # pylint: disable=E1103
@@ -101,7 +103,7 @@ def get_proxy_settings():
         elif value.isdigit():
             parsed_value = int(value)
         else:
-            print CANNOT_PARSE_WARNING % value
+            print(CANNOT_PARSE_WARNING % value)
             parsed_value = value
         relative_key = (path + "." + key)[base_len:]
         gsettings[relative_key] = parsed_value

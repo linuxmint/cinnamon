@@ -1,4 +1,4 @@
-#!/usr/bin/python2
+#!/usr/bin/python3
 
 from GSettingsWidgets import *
 
@@ -13,7 +13,7 @@ class Module:
 
     def on_module_selected(self):
         if not self.loaded:
-            print "Loading Online Account module"
+            print("Loading Online Account module")
 
             page = SettingsPage()
             self.sidePage.add_widget(page)
@@ -30,8 +30,8 @@ class Module:
                 content = self.sidePage.content_box.c_manager.get_c_widget("online-accounts")
                 content.set_no_show_all(True)
                 page.pack_start(content, True, True, 0)
-            except Exception, detail:
-                print detail
+            except Exception as detail:
+                print(detail)
 
             page.expand = True
 
