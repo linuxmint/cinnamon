@@ -25,24 +25,18 @@ AppFavorites.prototype = {
     _reload: function() {
         let ids = global.settings.get_strv(this.FAVORITE_APPS_KEY);
         let appSys = Cinnamon.AppSystem.get_default();
-        let apps = ids.map(function (id) {
-                let app = appSys.lookup_app(id);
-                return app;
-            }).filter(function (app) {
-                return app != null;
-            });
-        this._favorites = {};
-        for (let i = 0; i < apps.length; i++) {
-            let app = apps[i];
-            this._favorites[app.get_id()] = app;
-        }
+        this._favorites = ids.reduce((favorites, id) => {
+            const app = appSys.lookup_app(id);
+            if (app) {
+                favorites[app.get_id()] = app;
+            }
+
+            return favorites;
+        }, {});
     },
 
     _getIds: function() {
-        let ret = [];
-        for (let id in this._favorites)
-            ret.push(id);
-        return ret;
+        return Object.keys(this._favorites);
     },
 
     getFavoriteMap: function() {
@@ -50,10 +44,7 @@ AppFavorites.prototype = {
     },
 
     getFavorites: function() {
-        let ret = [];
-        for (let id in this._favorites)
-            ret.push(this._favorites[id]);
-        return ret;
+        return Object.values(this._favorites);
     },
 
     isFavorite: function(appId) {
@@ -64,8 +55,8 @@ AppFavorites.prototype = {
         if (appId in this._favorites)
             return false;
 
-        let app = Cinnamon.AppSystem.get_default().lookup_app(appId);
-        if (!app) app = Cinnamon.AppSystem.get_default().lookup_settings_app(appId);
+        let appSys = Cinnamon.AppSystem.get_default();
+        let app = appSys.lookup_app(appId) || appSys.lookup_settings_app(appId);
 
         if (!app)
             return false;
