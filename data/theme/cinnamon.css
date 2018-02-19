@@ -226,7 +226,7 @@ StScrollBar StButton#vhandle:hover {
 }
 /* Switches (to be used in menus) */
 .toggle-switch {
-    width: 65px;
+    width: 64px;
     height: 22px;
 }
 .toggle-switch-us {
