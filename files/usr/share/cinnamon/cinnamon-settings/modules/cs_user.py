@@ -253,6 +253,7 @@ class PasswordDialog(Gtk.Dialog):
         self.new_password = Gtk.Entry()
         self.new_password.set_icon_from_icon_name(Gtk.EntryIconPosition.SECONDARY, "view-refresh")
         self.new_password.set_icon_tooltip_text(Gtk.EntryIconPosition.SECONDARY, _("Generate a password"))
+        self.new_password.set_tooltip_text(_("Generate a password"))
         self.new_password.connect("icon-release", self._on_new_password_icon_released)
         self.new_password.connect("changed", self._on_passwords_changed)
         table.attach(self.new_password, 1, 3, 1, 2)
@@ -317,7 +318,7 @@ class PasswordDialog(Gtk.Dialog):
         passwd.close()
 
         if passwd.exitstatus is None or passwd.exitstatus > 0:
-            self.infobar.show()
+            self.infobar.show_all()
         else:
             self.destroy()
 
@@ -355,11 +356,13 @@ class PasswordDialog(Gtk.Dialog):
             except PAM.error as resp:
                 self.current_password.set_icon_from_stock(Gtk.EntryIconPosition.SECONDARY, Gtk.STOCK_DIALOG_WARNING)
                 self.current_password.set_icon_tooltip_text(Gtk.EntryIconPosition.SECONDARY, _("Wrong password"))
+                self.current_password.set_tooltip_text(_("Wrong password"))
                 self.correct_current_password = False
             except:
                 print('Internal error')
             else:
                 self.current_password.set_icon_from_stock(Gtk.EntryIconPosition.SECONDARY, None)
+                self.current_password.set_tooltip_text("")
                 self.correct_current_password = True
                 self.check_passwords()
 
@@ -401,8 +404,10 @@ class PasswordDialog(Gtk.Dialog):
         if new_password != confirm_password:
             self.confirm_password.set_icon_from_stock(Gtk.EntryIconPosition.SECONDARY, Gtk.STOCK_DIALOG_WARNING)
             self.confirm_password.set_icon_tooltip_text(Gtk.EntryIconPosition.SECONDARY, _("Passwords do not match"))
+            self.confirm_password.set_tooltip_text(_("Passwords do not match"))
         else:
             self.confirm_password.set_icon_from_stock(Gtk.EntryIconPosition.SECONDARY, None)
+            self.confirm_password.set_tooltip_text("")
         if len(new_password) < 8:
             self.strengh_label.set_text(_("Too short"))
             self.strengh_indicator.set_fraction(0.0)
