@@ -240,6 +240,7 @@ def scan_xlet():
             command_args = [
                 'xgettext',
                 '--language=JavaScript',
+                '--from-code=UTF-8',
                 '--keyword=%s' % args.keyword,
                 '--output=%s' % pot_path
             ]
@@ -261,6 +262,7 @@ def scan_xlet():
             command_args = [
                 'xgettext',
                 '--language=Python',
+                '--from-code=UTF-8',
                 '--keyword=%s' % args.keyword,
                 '--output=%s' % pot_path
             ]
