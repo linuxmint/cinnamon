@@ -53,12 +53,12 @@ def scan_json(dir, pot_path):
                 fp = open(os.path.join(root, file))
                 data = json.load(fp, object_pairs_hook=collections.OrderedDict)
                 fp.close()
-                extract_settings_strings(data, rel_path, pot_file)
+                extract_settings_strings(data, rel_path.replace('/', '->'), pot_file)
             elif file == 'metadata.json':
                 fp = open(os.path.join(root, file))
                 data = json.load(fp, object_pairs_hook=collections.OrderedDict)
                 fp.close()
-                extract_metadata_strings(data, rel_path, pot_file)
+                extract_metadata_strings(data, rel_path.replace('/', '->'), pot_file)
 
     if append:
         pot_file.save(pot_path)
