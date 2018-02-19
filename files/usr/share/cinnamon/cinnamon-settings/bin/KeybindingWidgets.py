@@ -146,11 +146,11 @@ class CellRendererKeybinding(Gtk.CellRendererText):
             raise AttributeError('unknown property %s' % prop.name)
 
     def update_label(self):
-        if not self.accel_string:
-            text = _("unassigned")
-        else:
+        text = _("unassigned")
+        if self.accel_string:
             key, codes, mods = Gtk.accelerator_parse_with_keycode(self.accel_string)
-            text = Gtk.accelerator_get_label_with_keycode(None, key, codes[0], mods)
+            if codes is not None and len(codes) > 0:
+                text = Gtk.accelerator_get_label_with_keycode(None, key, codes[0], mods)
         self.set_property("text", text)
 
     def set_value(self, accel_string=None):
