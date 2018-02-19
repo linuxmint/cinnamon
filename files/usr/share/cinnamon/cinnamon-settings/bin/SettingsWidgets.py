@@ -1167,5 +1167,16 @@ class Text(SettingsWidget):
         super(Text, self).__init__()
         self.label = label
 
-        self.content_widget = Gtk.Label(label=label, halign=align)
+        if align == Gtk.Align.END:
+            xalign = 1.0
+            justification = Gtk.Justification.RIGHT
+        elif align == Gtk.Align.CENTER:
+            xalign = 0.5
+            justification = Gtk.Justification.CENTER
+        else: # START and FILL align left
+            xalign = 0
+            justification = Gtk.Justification.LEFT
+
+        self.content_widget = Gtk.Label(label, halign=align, xalign=xalign, justify=justification)
+        self.content_widget.set_line_wrap(True)
         self.pack_start(self.content_widget, True, True, 0)
