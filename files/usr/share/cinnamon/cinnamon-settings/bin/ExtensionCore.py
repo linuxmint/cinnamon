@@ -61,10 +61,10 @@ def translate(uuid, string):
     #check for a translation for this xlet
     if uuid not in translations:
         try:
-            translations[uuid] = gettext.translation(uuid, home + '/.local/share/locale').ugettext
+            translations[uuid] = gettext.translation(uuid, home + '/.local/share/locale').gettext
         except IOError:
             try:
-                translations[uuid] = gettext.translation(uuid, '/usr/share/locale').ugettext
+                translations[uuid] = gettext.translation(uuid, '/usr/share/locale').gettext
             except IOError:
                 translations[uuid] = None
 
