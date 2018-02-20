@@ -1,3 +1,3 @@
 [org.cinnamon]
-favorite-apps=[ 'firefox.desktop', 'mintinstall.desktop', 'cinnamon-settings.desktop', 'xchat.desktop', 'gnome-terminal.desktop', 'nemo.desktop' ]
+favorite-apps=[ 'firefox.desktop', 'mintinstall.desktop', 'cinnamon-settings.desktop', 'xchat.desktop', 'org.gnome.Terminal.desktop', 'nemo.desktop' ]
 

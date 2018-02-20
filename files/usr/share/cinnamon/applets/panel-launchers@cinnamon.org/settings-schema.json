@@ -5,7 +5,7 @@
     },
     "launcherList": {
         "type": "generic",
-        "default": ["firefox.desktop", "gnome-terminal.desktop", "nemo.desktop"]
+        "default": ["firefox.desktop", "org.gnome.Terminal.desktop", "nemo.desktop"]
     },
     "allow-dragging": {
         "type": "switch",
