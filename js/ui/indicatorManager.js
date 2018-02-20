@@ -975,7 +975,7 @@ IndicatorActor.prototype = {
         this._iconSize = size;
         this._iconCache = new IconCache();
         this._mainIcon = new St.Bin();
-        this._overlayIcon = new St.Bin({ 'x-align': St.Align.END, 'y-align': St.Align.END });
+        this._overlayIcon = new St.Bin();
         this._label = new St.Label({'y-align': St.Align.END });//FIXME: We need an style class for the label.
 
         this.actor.add_actor(this._mainIcon);
@@ -1056,10 +1056,12 @@ IndicatorActor.prototype = {
     },
 
     _updatedLabel: function() {
-        if (this._indicator.label != undefined)
+        if (this._indicator.label != undefined) {
             this._label.set_text(this._indicator.label);
-        else
+        } else {
             this._label.set_text("");
+            this.actor.remove_style_class_name('applet-box');
+        }
     },
 
     // FIXME: When an indicator is in passive state, the recommended behavior is hide his actor,
@@ -1217,8 +1219,9 @@ IndicatorActor.prototype = {
     _createIconByName: function(path, iconSize) {
         try {
             let pixbuf = GdkPixbuf.Pixbuf.new_from_file(path);
-            let icon = new St.Icon({ 
-                style_class: 'applet-icon',//FIXME: Use instead the status icon style class.
+            let icon = new St.Icon({
+                name: 'CinnamonTrayIcon',
+                style_class: '',//FIXME: Use instead the status icon style class.
                 gicon: pixbuf,
             });
             if (iconSize)
