@@ -76,7 +76,7 @@ MyApplet.prototype = {
         this.manager_container.show();
 
         this._statusItems = [];
-        this._shellIndicators = {};
+        this._shellIndicators = [];
         this.menuFactory = new IndicatorMenuFactory();
         this.menuManager = new PopupMenu.PopupMenuManager(this);
         this._signalAdded = 0;
@@ -116,23 +116,26 @@ MyApplet.prototype = {
             this.signalRemoved = 0;
         }
 
-        for (let id in this._shellIndicators) {
-            this._shellIndicators[id].destroy();
+        for (let i = 0; i < this._shellIndicators.length; i++) {
+            this._shellIndicators[i].instance.destroy();
         }
 
-        this._shellIndicators = {};
+        this._shellIndicators = [];
 
     },
 
     _onIndicatorAdded: function(manager, appIndicator) {
         if (!(appIndicator.id in this._shellIndicators)) {
             let size = null;
-            size = this._getIconSize(this._panelHeight/global.ui_scale);
+            size = this._getIconSize(this._panelHeight / global.ui_scale);
 
             let indicatorActor = appIndicator.getActor(size);
             indicatorActor._applet = this;
 
-            this._shellIndicators[appIndicator.id] = indicatorActor;
+            this._shellIndicators.push({
+                id: appIndicator.id,
+                instance: indicatorActor
+            });
             this._signalManager.connect(indicatorActor.actor, 'destroy', this._onIndicatorIconDestroy, this);
             this._signalManager.connect(indicatorActor.actor, 'enter-event', this._onEnterEvent, this);
             this._signalManager.connect(indicatorActor.actor, 'leave-event', this._onLeaveEvent, this);
@@ -161,9 +164,9 @@ MyApplet.prototype = {
     },
 
     _onIndicatorIconDestroy: function(actor) {
-        for (let id in this._shellIndicators) {
-            if (this._shellIndicators[id].actor == actor) {
-                delete this._shellIndicators[id];
+        for (let i = 0; i < this._shellIndicators.length; i++) {
+            if (this._shellIndicators[i].instance.actor == actor) {
+                this._shellIndicators.splice(this._shellIndicators.indexOf(this._shellIndicators[i]), 1);
                 break;
             }
         }
@@ -192,10 +195,12 @@ MyApplet.prototype = {
     },
 
     _onIndicatorRemoved: function(manager, appIndicator) {
-        if (appIndicator.id in this._shellIndicators) {
-            let indicatorActor = this._shellIndicators[appIndicator.id];
-            delete this._shellIndicators[appIndicator.id];
-            indicatorActor.destroy();
+        for (let i = 0; i < this._shellIndicators.length; i++) {
+            if (this._shellIndicators[i].id === appIndicator.id) {
+                this._shellIndicators[i].instance.destroy();
+                this._shellIndicators.splice(this._shellIndicators.indexOf(this._shellIndicators[i]), 1);
+                break;
+            }
         }
     },
 
@@ -228,11 +233,12 @@ MyApplet.prototype = {
     on_panel_height_changed: function() {
         Main.statusIconDispatcher.redisplay();
         let size = null;
-        size = this._getIconSize(this._panelHeight/global.ui_scale);
-        for (let id in this._shellIndicators) {
-            let indicator = Main.indicatorManager.getIndicatorById(id);
+        size = this._getIconSize(this._panelHeight / global.ui_scale);
+
+        for (let i = 0; i < this._shellIndicators.length; i++) {
+            let indicator = Main.indicatorManager.getIndicatorById(this._shellIndicators[i].id);
             if (indicator) {
-                this._shellIndicators[id].setSize(size);
+                this._shellIndicators[i].instance.setSize(size);
             }
         }
     },
