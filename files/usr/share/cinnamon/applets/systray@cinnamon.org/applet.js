@@ -130,7 +130,6 @@ MyApplet.prototype = {
             size = this._getIconSize(this._panelHeight / global.ui_scale);
 
             let indicatorActor = appIndicator.getActor(size);
-            indicatorActor._applet = this;
 
             this._shellIndicators.push({
                 id: appIndicator.id,
