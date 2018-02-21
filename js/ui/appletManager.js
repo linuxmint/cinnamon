@@ -781,9 +781,14 @@ function pasteAppletConfiguration(panelId) {
 }
 
 function getRunningInstancesForUuid(uuid) {
-    return filterDefinitionsByUUID(uuid).map(function(definition) {
-        return definition.applet;
-    });
+    let definitions = filterDefinitionsByUUID(uuid);
+    let result = [];
+    for (let i = 0; i < definitions.length; i++) {
+        if (definitions[i].applet != null) {
+            result.push(definitions[i].applet);
+        }
+    }
+    return result;
 }
 
 function callAppletInstancesChanged(uuid) {
