@@ -587,18 +587,11 @@ function createApplet(extension, appletDefinition, panel = null) {
 }
 
 function _removeAppletFromPanel(uuid, applet_id) {
-
-    for (let i=0; i < rawDefinitions.length; i++) {
-        let appletDefinition = createAppletDefinition(rawDefinitions[i]);
-        if (appletDefinition) {
-            if (uuid == appletDefinition.uuid && applet_id == appletDefinition.applet_id) {
-                let newEnabledApplets = rawDefinitions.slice(0);
-                newEnabledApplets.splice(i, 1);
-                global.settings.set_strv('enabled-applets', newEnabledApplets);
-                break;
-            }
-        }
+    let definition = queryCollection(definitions, {uuid, applet_id});
+    if (!definition) {
+        return false;
     }
+    removeApplet(definition);
 }
 
 function saveAppletsPositions() {
