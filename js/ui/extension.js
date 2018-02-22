@@ -314,7 +314,7 @@ Extension.prototype = {
                 if(fatal)
                     throw logError(msg, this.uuid);
                 else
-                    global.logWarning(this.formatError(this.name, this.uuid, msg));
+                    global.logWarning(formatError(this.uuid, msg));
             }
         }
     },
