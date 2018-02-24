@@ -38,6 +38,7 @@ class ButtonKeybinding(Gtk.TreeView):
         self.set_headers_visible(False)
         self.set_enable_search(False)
         self.set_hover_selection(True)
+        self.set_tooltip_text(CellRendererKeybinding.TOOLTIP_TEXT)
 
         self.entry_store = None
         self.accel_string = ""
@@ -114,6 +115,10 @@ class CellRendererKeybinding(Gtk.CellRendererText):
                          None,
                          GObject.ParamFlags.READWRITE)
     }
+
+    TOOLTIP_TEXT = "%s\n%s\n%s" % (_("Click to set a new accelerator key."),
+                                   _("Press Escape or click again to cancel the operation."),
+                                   _("Press Backspace to clear the existing keybinding."))
 
     def __init__(self, a_widget, accel_string=None):
         super(CellRendererKeybinding, self).__init__()
