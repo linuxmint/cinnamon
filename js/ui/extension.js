@@ -181,7 +181,7 @@ Extension.prototype = {
 
         const finishLoad = () => {
             // Many xlets still use appletMeta/deskletMeta to get the path
-            type.legacyMeta[uuid] = {path: this.meta.path};
+            type.legacyMeta[uuid] = Object.assign({}, this.meta);
 
             ensureFileExists(this.dir.get_child(`${this.lowerType}.js`));
             this.loadStylesheet(this.dir.get_child('stylesheet.css'));
