@@ -651,8 +651,7 @@ na_tray_manager_set_visual_property (NaTrayManager *manager)
   visual_atom = gdk_x11_get_xatom_by_name_for_display (display,
 						       "_NET_SYSTEM_TRAY_VISUAL");
 
-  if (gdk_screen_get_rgba_visual (manager->screen) != NULL &&
-      gdk_display_supports_composite (display))
+  if (gdk_screen_get_rgba_visual (manager->screen) != NULL)
     xvisual = GDK_VISUAL_XVISUAL (gdk_screen_get_rgba_visual (manager->screen));
   else
     {
