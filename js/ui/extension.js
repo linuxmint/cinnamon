@@ -196,6 +196,7 @@ Extension.prototype = {
             return requireModule(
                 `${this.meta.path}/${this.lowerType}.js`, // path
                 this.meta.path, // dir,
+                this.meta, // meta
                 this.lowerType, // type
                 true, // async
                 true // returnIndex

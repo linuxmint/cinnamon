@@ -5,6 +5,8 @@ const {getModuleByIndex} = imports.misc.fileUtils;
 
 // Maps uuid -> importer object (extension directory tree)
 var extensions;
+// Kept for compatibility
+var extensionMeta;
 // Lists extension uuid's that are currently active;
 var runningExtensions = [];
 // Arrays of uuids
@@ -34,6 +36,7 @@ function prepareExtensionUnload(extension) {
     } catch (e) {
         Extension.logError('Failed to evaluate \'disable\' function on extension: ' + extension.uuid, e);
     }
+    extensionMeta = Extension.Type.EXTENSION.legacyMeta;
     let runningExtensionIndex = runningExtensions.findIndex(function(uuid) {
         return extension.uuid === uuid;
     });
