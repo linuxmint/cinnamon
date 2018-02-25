@@ -722,7 +722,7 @@ cinnamon_global_set_cursor (CinnamonGlobal *global,
         default:
           g_return_if_reached ();
         }
-      cursor = gdk_cursor_new (cursor_type);
+      cursor = gdk_cursor_new_for_display (gdk_display_get_default(), cursor_type);
     }
 
   gdk_window_set_cursor (global->stage_gdk_window, cursor);
