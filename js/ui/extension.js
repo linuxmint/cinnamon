@@ -223,11 +223,6 @@ Extension.prototype = {
                 return findExtensionSubdirectory(this.dir).then((dir) => {
                     this.dir = dir;
                     this.meta.path = this.dir.get_path();
-                    let pathSections = this.meta.path.split('/');
-                    let version = pathSections[pathSections.length - 1];
-                    try {
-                        imports[type.folder][this.uuid] = imports[type.folder][this.uuid][version];
-                    } catch (e) {/* Extension was reloaded */}
                     return finishLoad();
                 });
             }
