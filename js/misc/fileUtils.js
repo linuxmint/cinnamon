@@ -218,7 +218,7 @@ function createExports({path, dir, meta, type, file, size, JS, returnIndex, reje
         ).call(
             exports,
             function require(path) {
-                return requireModule(path, dir);
+                return requireModule(path, dir, meta, type);
             },
             exports,
             module,

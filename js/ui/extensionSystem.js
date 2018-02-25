@@ -36,7 +36,6 @@ function prepareExtensionUnload(extension) {
     } catch (e) {
         Extension.logError('Failed to evaluate \'disable\' function on extension: ' + extension.uuid, e);
     }
-    extensionMeta = Extension.Type.EXTENSION.legacyMeta;
     let runningExtensionIndex = runningExtensions.findIndex(function(uuid) {
         return extension.uuid === uuid;
     });
@@ -123,6 +122,7 @@ function init() {
     } catch (e) {
         extensions = {};
     }
+    extensionMeta = Extension.Type.EXTENSION.legacyMeta;
     ExtensionState = Extension.State;
 
     enabledExtensions = global.settings.get_strv(ENABLED_EXTENSIONS_KEY);
