@@ -284,6 +284,9 @@ function onEnabledAppletsChanged() {
     }
     for (let i = 0; i < addedApplets.length; i++) {
         let {extension, definition} = addedApplets[i];
+        if (!extension) {
+            continue;
+        }
         addAppletToPanels(extension, definition);
     }
 
