@@ -244,7 +244,7 @@ Extension.prototype = {
             extensions.push(this);
 
             if(!type.callbacks.finishExtensionLoad(extensions.length - 1)) {
-                throw new Error(`${type.name} ${uuid}: Could not create applet object.`);
+                throw new Error(`${type.name} ${uuid}: Could not create ${this.lowerType} object.`);
             }
             this.finalize();
             Main.cinnamonDBusService.EmitXletAddedComplete(true, uuid);
