@@ -58,21 +58,8 @@ class Module:
         switch = GSettingsSwitch(_("Remove notifications after their timeout is reached"), "org.cinnamon.desktop.notifications", "remove-old")
         settings.add_reveal_row(switch, "org.cinnamon.desktop.notifications", "display-notifications")
 
-        switch = GSettingsSwitch(_("Have notifications fade out when hovered over"), "org.cinnamon.desktop.notifications", "fade-on-mouseover")
-        settings.add_reveal_row(switch, "org.cinnamon.desktop.notifications", "display-notifications")
-
         switch = GSettingsSwitch(_("Show notifications on the bottom side of the screen"), "org.cinnamon.desktop.notifications", "bottom-notifications")
         settings.add_reveal_row(switch, "org.cinnamon.desktop.notifications", "display-notifications")
-
-        spin = GSettingsSpinButton(_("Hover opacity"), "org.cinnamon.desktop.notifications", "fade-opacity", _("%"), 0, 100)
-        settings.add_reveal_row(spin)
-        spin.revealer.settings = Gio.Settings.new("org.cinnamon.desktop.notifications")
-
-        def on_settings_changed(*args):
-            spin.revealer.set_reveal_child(spin.revealer.settings["fade-on-mouseover"] and spin.revealer.settings["display-notifications"])
-        spin.revealer.settings.connect("changed::fade-on-mouseover", on_settings_changed)
-        spin.revealer.settings.connect("changed::display-notifications", on_settings_changed)
-        on_settings_changed()
 
         button = Button(_("Display a test notification"), self.send_test)
         settings.add_row(button)
