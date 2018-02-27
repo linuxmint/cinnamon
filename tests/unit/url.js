@@ -38,6 +38,10 @@ const tests = [
       output: [ { url: 'http://www.gnome.org:99/port', pos: 10 } ] },
     { input: 'This is an ftp://www.gnome.org/ test.',
       output: [ { url: 'ftp://www.gnome.org/', pos: 11 } ] },
+    { input: 'https://www.gnome.org/(some_url,_with_very_unusual_characters)',
+      output: [ { url: 'https://www.gnome.org/(some_url,_with_very_unusual_characters)', pos: 0 } ] },
+    { input: 'https://www.gnome.org/(some_url_with_unbalanced_parenthesis',
+      output: [ { url: 'https://www.gnome.org/', pos: 0 } ] },
 
     { input: 'Visit http://www.gnome.org/ and http://developer.gnome.org',
       output: [ { url: 'http://www.gnome.org/', pos: 6 },
