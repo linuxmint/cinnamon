@@ -5,6 +5,7 @@ const GLib = imports.gi.GLib;
 const St = imports.gi.St;
 const Meta = imports.gi.Meta;
 const Mainloop = imports.mainloop;
+const Lang = imports.lang;
 
 const Desklet = imports.ui.desklet;
 const DND = imports.ui.dnd;
@@ -396,6 +397,9 @@ DeskletContainer.prototype = {
 
         this._dragPlaceholder = new St.Bin({style_class: 'desklet-drag-placeholder'});
         this._dragPlaceholder.hide();
+
+        this.isModal = false;
+        this.stageEventIds = [];
     },
 
     /**
@@ -521,5 +525,60 @@ DeskletContainer.prototype = {
 
     hideDragPlaceholder: function() {
         this._dragPlaceholder.hide();
+    },
+
+    setModal: function() {
+        if (this.isModal) {
+            return;
+        }
+
+        this.stageEventIds = [
+            global.stage.connect('captured-event', Lang.bind(this, this.handleStageEvent)),
+            global.stage.connect('enter-event', Lang.bind(this, this.handleStageEvent)),
+            global.stage.connect('leave-event', Lang.bind(this, this.handleStageEvent))
+        ];
+
+        if (Main.pushModal(this.actor)) {
+            this.isModal = true;
+        }
+    },
+
+    unsetModal: function() {
+        if (!this.isModal) {
+            return;
+        }
+
+        for (let i = 0; i < this.stageEventIds.length; i++) {
+            global.stage.disconnect(this.stageEventIds[i]);
+        }
+        this.stageEventIds = [];
+
+        Main.popModal(this.actor);
+        this.isModal = false;
+    },
+
+    handleStageEvent: function(actor, event) {
+        let target = event.get_source();
+        let type = event.type();
+
+        if ((type === Clutter.EventType.BUTTON_PRESS || type === Clutter.EventType.BUTTON_RELEASE)
+            && target.toString().indexOf('ClutterStage') > -1) {
+            this.lower();
+        }
+
+        return false;
+    },
+
+    raise: function() {
+        if (this.actor.get_children().length === 0) {
+            return;
+        }
+        this.actor.get_parent().set_child_above_sibling(this.actor, null);
+        this.setModal();
+    },
+
+    lower: function() {
+        this.actor.get_parent().set_child_below_sibling(this.actor, global.window_group);
+        this.unsetModal();
     }
 };

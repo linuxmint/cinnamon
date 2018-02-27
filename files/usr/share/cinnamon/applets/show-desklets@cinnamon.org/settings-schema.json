@@ -1,0 +1,7 @@
+{
+    "showKey": {
+        "type": "keybinding",
+        "description": "Show desklets shortcut",
+        "default": "<Super>Tab::"
+    }
+}
