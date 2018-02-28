@@ -135,6 +135,9 @@ class Module:
             widget = GSettingsSwitch(_("Show windows from all workspaces"), "org.cinnamon", "alttab-switcher-show-all-workspaces")
             settings.add_row(widget)
 
+            widget = GSettingsSwitch(_("Cycle through open windows of the same application on current workspace only"), "org.cinnamon", "app-switcher-only-current-workspace")
+            settings.add_row(widget)
+
 class TitleBarButtonsOrderSelector(SettingsBox):
     def __init__(self):
         self.schema = "org.cinnamon.desktop.wm.preferences"
