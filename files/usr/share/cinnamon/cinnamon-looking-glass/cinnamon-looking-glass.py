@@ -15,7 +15,7 @@ import os
 import pyinotify
 import gi
 gi.require_version('Gtk', '3.0')
-from gi.repository import Gio, Gtk, GObject, Gdk
+from gi.repository import Gio, Gtk, GObject, Gdk, GLib
 import dbus, dbus.service, dbus.glib
 import pageutils
 from lookingglass_proxy import LookingGlassProxy
@@ -229,6 +229,7 @@ class FileWatcherView(Gtk.ScrolledWindow):
 
         self.filename = filename
         self.changed = 0
+        self.updateId = 0
         self.set_shadow_type(Gtk.ShadowType.ETCHED_IN)
         self.set_policy(Gtk.PolicyType.AUTOMATIC, Gtk.PolicyType.AUTOMATIC)
 
@@ -261,8 +262,16 @@ class FileWatcherView(Gtk.ScrolledWindow):
             self.changed -= 1
 
     def getUpdates(self):
+        # only update 2 times per second max
+        # without this rate limiting, certain file modifications can cause a crash at Gtk.TextBuffer.set_text()
+        if self.updateId == 0:
+            self.updateId = GLib.timeout_add(500, self.update)
+
+    def update(self):
         self.changed = 2 # onSizeChanged will be called twice, but only the second time is final
         self.textbuffer.set_text(open(self.filename, 'r').read())
+        self.updateId = 0
+        return False
 
 class ClosableTabLabel(Gtk.Box):
     __gsignals__ = {
@@ -281,17 +290,6 @@ class ClosableTabLabel(Gtk.Box):
         button.set_focus_on_click(False)
         button.add(Gtk.Image.new_from_stock(Gtk.STOCK_CLOSE, Gtk.IconSize.MENU))
         button.connect("clicked", self.button_clicked)
-        data =  ".button {\n" \
-                "-GtkButton-default-border : 0px;\n" \
-                "-GtkButton-default-outside-border : 0px;\n" \
-                "-GtkButton-inner-border: 0px;\n" \
-                "-GtkWidget-focus-line-width : 0px;\n" \
-                "-GtkWidget-focus-padding : 0px;\n" \
-                "padding: 0px;\n" \
-                "}"
-        provider = Gtk.CssProvider()
-        provider.load_from_data(data)
-        button.get_style_context().add_provider(provider, 600)
         self.pack_start(button, False, False, 0)
 
         self.show_all()
