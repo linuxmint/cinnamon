@@ -140,7 +140,7 @@ function unloadModule(index) {
     }
 }
 
-function createExports({path, dir, type, file, size, JS, returnIndex, reject}) {
+function createExports({path, dir, meta, type, file, size, JS, returnIndex, reject}) {
     // Import data is stored in an array of objects and the module index is looked up by path.
     let importerData = {
         size,
@@ -211,16 +211,18 @@ function createExports({path, dir, type, file, size, JS, returnIndex, reject}) {
             'require',
             'exports',
             'module',
+            '__meta',
             '__dirname',
             '__filename',
             JS
         ).call(
             exports,
             function require(path) {
-                return requireModule(path, dir);
+                return requireModule(path, dir, meta, type);
             },
             exports,
             module,
+            meta,
             dir,
             file.get_basename()
         );
@@ -235,7 +237,7 @@ function createExports({path, dir, type, file, size, JS, returnIndex, reject}) {
     }
 }
 
-function requireModule(path, dir, type, async = false, returnIndex = false) {
+function requireModule(path, dir, meta, type, async = false, returnIndex = false) {
     // Allow passing through native bindings, e.g. const Cinnamon = require('gi.Cinnamon');
     // Check if this is a GI import
     if (path.substr(0, 3) === 'gi.') {
@@ -274,7 +276,7 @@ function requireModule(path, dir, type, async = false, returnIndex = false) {
         if (!success) {
             throw new Error(fileLoadErrorMessage);
         }
-        return createExports({path, dir, file, size: JS.length, JS, returnIndex});
+        return createExports({path, dir, meta, type, file, size: JS.length, JS, returnIndex});
     }
     return new Promise(function(resolve, reject) {
         file.load_contents_async(null, function(object, result) {
@@ -283,7 +285,7 @@ function requireModule(path, dir, type, async = false, returnIndex = false) {
                 if (!success) {
                     throw new Error(fileLoadErrorMessage);
                 }
-                resolve(createExports({path, dir, type, file, size: JS.length, JS, returnIndex, reject}));
+                resolve(createExports({path, dir, meta, type, file, size: JS.length, JS, returnIndex, reject}));
             } catch (e) {
                 reject(e);
             }

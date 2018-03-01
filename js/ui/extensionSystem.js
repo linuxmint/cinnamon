@@ -5,6 +5,8 @@ const {getModuleByIndex} = imports.misc.fileUtils;
 
 // Maps uuid -> importer object (extension directory tree)
 var extensions;
+// Kept for compatibility
+var extensionMeta;
 // Lists extension uuid's that are currently active;
 var runningExtensions = [];
 // Arrays of uuids
@@ -120,6 +122,7 @@ function init() {
     } catch (e) {
         extensions = {};
     }
+    extensionMeta = Extension.Type.EXTENSION.legacyMeta;
     ExtensionState = Extension.State;
 
     enabledExtensions = global.settings.get_strv(ENABLED_EXTENSIONS_KEY);

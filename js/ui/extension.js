@@ -196,6 +196,7 @@ Extension.prototype = {
             return requireModule(
                 `${this.meta.path}/${this.lowerType}.js`, // path
                 this.meta.path, // dir,
+                this.meta, // meta
                 this.lowerType, // type
                 true, // async
                 true // returnIndex
@@ -223,11 +224,6 @@ Extension.prototype = {
                 return findExtensionSubdirectory(this.dir).then((dir) => {
                     this.dir = dir;
                     this.meta.path = this.dir.get_path();
-                    let pathSections = this.meta.path.split('/');
-                    let version = pathSections[pathSections.length - 1];
-                    try {
-                        imports[type.folder][this.uuid] = imports[type.folder][this.uuid][version];
-                    } catch (e) {/* Extension was reloaded */}
                     return finishLoad();
                 });
             }
@@ -248,7 +244,7 @@ Extension.prototype = {
             extensions.push(this);
 
             if(!type.callbacks.finishExtensionLoad(extensions.length - 1)) {
-                throw new Error(`${type.name} ${uuid}: Could not create applet object.`);
+                throw new Error(`${type.name} ${uuid}: Could not create ${this.lowerType} object.`);
             }
             this.finalize();
             Main.cinnamonDBusService.EmitXletAddedComplete(true, uuid);
