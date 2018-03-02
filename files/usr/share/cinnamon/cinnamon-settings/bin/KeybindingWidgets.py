@@ -182,6 +182,7 @@ class CellRendererKeybinding(Gtk.CellRendererText):
             self.teaching = False
 
     def on_focus_out(self, widget, event):
+        self.teaching = False
         self.ungrab()
 
     def on_key_press(self, widget, event):
