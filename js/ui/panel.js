@@ -3041,6 +3041,12 @@ Panel.prototype = {
         let allocHeight  = box.y2 - box.y1;
         let allocWidth   = box.x2 - box.x1;
 
+        let childBox = new Clutter.ActorBox();
+        childBox.x1 = box.x1;
+        childBox.x2 = childBox.x1 + allocWidth;
+        childBox.y1 = box.y1;
+        childBox.y2 = childBox.y1 + allocHeight;
+
         /* The boxes are layout managers, so they rubber-band around their contents and have a few
            characteristics that they enforce on their contents.  Of particular note is that the alignment
            - LEFT, CENTER, RIGHT - is not independent of the fill as it probably ought to be, and that there
@@ -3054,17 +3060,16 @@ Panel.prototype = {
         if (this.panelPosition == PanelLoc.left || this.panelPosition == PanelLoc.right) {
 
             let [leftBoundary, rightBoundary] = this._calcBoxSizes(allocHeight, allocWidth, true);
-            let childBox = new Clutter.ActorBox();
+            leftBoundary += box.y1;
+            rightBoundary += box.y1;
 
-            childBox.x1 = 0;
-            childBox.x2 = allocWidth;
-            this._setVertChildbox (childBox,0, leftBoundary);
+            this._setVertChildbox (childBox, box.y1, leftBoundary);
             this._leftBox.allocate(childBox, flags);
 
             this._setVertChildbox (childBox, leftBoundary, rightBoundary);
             this._centerBox.allocate(childBox, flags);
 
-            this._setVertChildbox (childBox, rightBoundary, allocHeight);
+            this._setVertChildbox (childBox, rightBoundary, box.y2);
             this._rightBox.allocate(childBox, flags);
 
             // Corners are in response to a bit of optional css and are about painting corners just outside the panels so as to create a seamless
@@ -3111,18 +3116,16 @@ Panel.prototype = {
         } else {           // horizontal panel
 
             let [leftBoundary, rightBoundary] = this._calcBoxSizes(allocWidth, allocHeight, false);
+            leftBoundary += box.x1;
+            rightBoundary += box.x1;
 
-            let childBox = new Clutter.ActorBox();
-
-            childBox.y1 = 0;
-            childBox.y2 = allocHeight;
-            this._setHorizChildbox (childBox,0,leftBoundary,leftBoundary, allocWidth);
+            this._setHorizChildbox (childBox, box.x1, leftBoundary, leftBoundary, box.x2);
             this._leftBox.allocate(childBox, flags);
 
-            this._setHorizChildbox (childBox,leftBoundary,rightBoundary,rightBoundary,leftBoundary);
+            this._setHorizChildbox (childBox, leftBoundary, rightBoundary, rightBoundary, leftBoundary);
             this._centerBox.allocate(childBox, flags);
 
-            this._setHorizChildbox (childBox,rightBoundary,allocWidth,0,rightBoundary);
+            this._setHorizChildbox (childBox, rightBoundary, box.x2, box.x1, rightBoundary);
             this._rightBox.allocate(childBox, flags);
 
             if (this.drawcorner[0]) {
