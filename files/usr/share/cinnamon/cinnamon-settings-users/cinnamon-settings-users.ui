@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!-- Generated with glade 3.20.2 -->
 <interface>
-  <!-- interface-requires gtk+ 3.0 -->
+  <requires lib="gtk+" version="3.0"/>
   <object class="GtkWindow" id="main_window">
     <property name="visible">True</property>
     <property name="can_focus">False</property>
@@ -8,7 +9,6 @@
     <property name="default_width">640</property>
     <property name="default_height">480</property>
     <property name="icon_name">users</property>
-    <property name="has_resize_grip">False</property>
     <child>
       <object class="GtkNotebook" id="notebook1">
         <property name="visible">True</property>
@@ -56,11 +56,10 @@
                     <property name="layout_style">spread</property>
                     <child>
                       <object class="GtkButton" id="button_add_user">
-                        <property name="label">gtk-add</property>
+                        <property name="label" translatable="yes">Add</property>
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
                         <property name="receives_default">True</property>
-                        <property name="use_stock">True</property>
                       </object>
                       <packing>
                         <property name="expand">False</property>
@@ -70,11 +69,10 @@
                     </child>
                     <child>
                       <object class="GtkButton" id="button_delete_user">
-                        <property name="label">gtk-delete</property>
+                        <property name="label" translatable="yes">Delete</property>
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
                         <property name="receives_default">True</property>
-                        <property name="use_stock">True</property>
                       </object>
                       <packing>
                         <property name="expand">False</property>
@@ -162,11 +160,10 @@
                 <property name="layout_style">spread</property>
                 <child>
                   <object class="GtkButton" id="button_add_group">
-                    <property name="label">gtk-add</property>
+                    <property name="label" translatable="yes">Add</property>
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
                     <property name="receives_default">True</property>
-                    <property name="use_stock">True</property>
                   </object>
                   <packing>
                     <property name="expand">False</property>
@@ -176,11 +173,10 @@
                 </child>
                 <child>
                   <object class="GtkButton" id="button_edit_group">
-                    <property name="label">gtk-edit</property>
+                    <property name="label" translatable="yes">Edit</property>
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
                     <property name="receives_default">True</property>
-                    <property name="use_stock">True</property>
                   </object>
                   <packing>
                     <property name="expand">False</property>
@@ -190,11 +186,10 @@
                 </child>
                 <child>
                   <object class="GtkButton" id="button_delete_group">
-                    <property name="label">gtk-delete</property>
+                    <property name="label" translatable="yes">Delete</property>
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
                     <property name="receives_default">True</property>
-                    <property name="use_stock">True</property>
                   </object>
                   <packing>
                     <property name="expand">False</property>
@@ -226,6 +221,9 @@
           </packing>
         </child>
       </object>
+    </child>
+    <child type="titlebar">
+      <placeholder/>
     </child>
   </object>
 </interface>
