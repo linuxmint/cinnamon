@@ -3041,11 +3041,9 @@ Panel.prototype = {
         let allocHeight  = box.y2 - box.y1;
         let allocWidth   = box.x2 - box.x1;
 
-        let childBox = new Clutter.ActorBox();
-        childBox.x1 = box.x1;
-        childBox.x2 = childBox.x1 + allocWidth;
-        childBox.y1 = box.y1;
-        childBox.y2 = childBox.y1 + allocHeight;
+        /* Panel left/center/bottom will fit inside this box, which is equivalent
+           to the CSS content-box (imaginary box inside borders and paddings) */
+        let childBox = box.copy();
 
         /* The boxes are layout managers, so they rubber-band around their contents and have a few
            characteristics that they enforce on their contents.  Of particular note is that the alignment
@@ -3059,6 +3057,8 @@ Panel.prototype = {
 
         if (this.panelPosition == PanelLoc.left || this.panelPosition == PanelLoc.right) {
 
+            /* Distribute sizes for the allocated height with points relative to
+               the children allocation box, inside borders and paddings. */
             let [leftBoundary, rightBoundary] = this._calcBoxSizes(allocHeight, allocWidth, true);
             leftBoundary += box.y1;
             rightBoundary += box.y1;
@@ -3115,6 +3115,8 @@ Panel.prototype = {
             }
         } else {           // horizontal panel
 
+            /* Distribute sizes for the allocated width with points relative to
+               the children allocation box, inside borders and paddings. */
             let [leftBoundary, rightBoundary] = this._calcBoxSizes(allocWidth, allocHeight, false);
             leftBoundary += box.x1;
             rightBoundary += box.x1;
