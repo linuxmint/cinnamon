@@ -3084,35 +3084,25 @@ Panel.prototype = {
             if (this.drawcorner[0]) {
                 [cornerMinWidth, cornerWidth]   = this._leftCorner.actor.get_preferred_width(-1);
                 [cornerMinHeight, cornerHeight] = this._leftCorner.actor.get_preferred_height(-1);
+                if (this.panelPosition === PanelLoc.left) { // left panel
+                    this._setCornerChildbox(childBox, box.x2, box.x2+cornerWidth, 0, cornerWidth);
+                } else { // right panel
+                    this._setCornerChildbox(childBox, box.x1-cornerWidth, box.x1, 0, cornerWidth);
+                }
+                this._leftCorner.actor.allocate(childBox, flags);
             }
 
             if (this.drawcorner[1]) {
                 [cornerMinWidth, cornerWidth]   = this._rightCorner.actor.get_preferred_width(-1);
                 [cornerMinHeight, cornerHeight] = this._rightCorner.actor.get_preferred_height(-1);
+                if (this.panelPosition === PanelLoc.left) { // left panel
+                    this._setCornerChildbox(childBox, box.x2, box.x2+cornerWidth, this.actor.height-cornerHeight, this.actor.height);
+                } else { // right panel
+                    this._setCornerChildbox(childBox, box.x1-cornerWidth, box.x1, this.actor.height-cornerHeight, this.actor.height);
+                }
+                this._rightCorner.actor.allocate(childBox, flags);
             }
 
-            if (this.panelPosition == PanelLoc.left) { // left panel
-                if (this.drawcorner[0]) {
-                    this._setCornerChildbox(childBox, box.x2, box.x2+cornerWidth, box.y1, box.y1+cornerWidth);
-                    this._leftCorner.actor.allocate(childBox, flags);
-                }
-
-                if (this.drawcorner[1]) {
-                    this._setCornerChildbox(childBox, box.x2, box.x2+cornerWidth, box.y2-cornerHeight, box.y2);
-                    this._rightCorner.actor.allocate(childBox, flags);
-                }
-            }
-            if (this.panelPosition == PanelLoc.right) {          // right panel
-                if (this.drawcorner[0]) {
-                    this._setCornerChildbox(childBox, box.x1-cornerWidth, box.x2, box.y1, box.y1+cornerWidth);
-                    this._leftCorner.actor.allocate(childBox, flags);
-                }
-
-                if (this.drawcorner[1]) {
-                    this._setCornerChildbox(childBox, box.x1-cornerWidth, box.x2, box.y2-cornerHeight, box.y2);
-                    this._rightCorner.actor.allocate(childBox, flags);
-                }
-            }
         } else {           // horizontal panel
 
             /* Distribute sizes for the allocated width with points relative to
@@ -3133,31 +3123,23 @@ Panel.prototype = {
             if (this.drawcorner[0]) {
                 [cornerMinWidth, cornerWidth]   = this._leftCorner.actor.get_preferred_width(-1);
                 [cornerMinHeight, cornerHeight] = this._leftCorner.actor.get_preferred_height(-1);
+                if (this.panelPosition === PanelLoc.top) { // top panel
+                    this._setCornerChildbox(childBox, 0, cornerWidth, box.y2, box.y2+cornerHeight);
+                } else { // bottom panel
+                    this._setCornerChildbox(childBox, 0, cornerWidth, box.y1-cornerHeight, box.y2);
+                }
+                this._leftCorner.actor.allocate(childBox, flags);
             }
 
             if (this.drawcorner[1]) {
                 [cornerMinWidth, cornerWidth]   = this._rightCorner.actor.get_preferred_width(-1);
                 [cornerMinHeight, cornerHeight] = this._rightCorner.actor.get_preferred_height(-1);
-            }
-
-            if (this.panelPosition == PanelLoc.top) { // top panel
-                if (this.drawcorner[0]) {
-                    this._setCornerChildbox(childBox, 0, cornerWidth, allocHeight,allocHeight + cornerHeight );
-                    this._leftCorner.actor.allocate(childBox, flags);
+                if (this.panelPosition === PanelLoc.top) { // top panel
+                  this._setCornerChildbox(childBox, this.actor.width-cornerWidth, this.actor.width, box.y2, box.y2+cornerHeight);
+                } else { // bottom panel
+                  this._setCornerChildbox(childBox, this.actor.width-cornerWidth, this.actor.width, box.y1-cornerHeight, box.y1);
                 }
-                if (this.drawcorner[1]) {
-                    this._setCornerChildbox(childBox, allocWidth - cornerWidth, allocWidth, allocHeight,allocHeight + cornerHeight );
-                    this._rightCorner.actor.allocate(childBox, flags);
-                }
-            } else { // bottom
-                if (this.drawcorner[0]) {
-                    this._setCornerChildbox(childBox, 0,cornerWidth, box.y1 - cornerHeight, box.y2);
-                    this._leftCorner.actor.allocate(childBox, flags);
-                }
-                if (this.drawcorner[1]) {
-                    this._setCornerChildbox(childBox, allocWidth - cornerWidth, allocWidth, box.y1 - cornerHeight,box.y2 );
-                    this._rightCorner.actor.allocate(childBox, flags);
-                }
+                this._rightCorner.actor.allocate(childBox, flags);
             }
         }
     },
