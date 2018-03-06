@@ -103,6 +103,7 @@ MyApplet.prototype = {
     _notification_added: function (mtray, notification) {	// Notification event handler.
         // Ignore transient notifications?
         if (this.ignoreTransientNotifications && notification.isTransient) {
+            notification.destroy();
             return;
         }
 
