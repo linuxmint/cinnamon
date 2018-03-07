@@ -2547,14 +2547,14 @@ PopupMenu.prototype = {
                 else if (xPos + natWidth > x2) xPos = x2 - natWidth;
 
                 // now we calculate the x postion based on the orientation
-                if (this._orientation == St.Side.BOTTOM) {
+                if (this._orientation === St.Side.BOTTOM) {
                     this.sideFlipped = true;
-                    yPos = sourceBox.y1 - natHeight;
+                    yPos = Math.min(y2, sourceBox.y1) - natHeight;
                     styleClasses.push("bottom");
                 }
                 else {
                     this.sideFlipped = false;
-                    yPos = sourceBox.y2;
+                    yPos = Math.max(sourceBox.y2, y1);
                     styleClasses.push("top");
                 }
                 break;
@@ -2569,14 +2569,14 @@ PopupMenu.prototype = {
 
                 // now we calculate the x postion based on the orientation
                 // if the menu opens to the right, we also need to make sure we have room for it on that side
-                if (this._orientation == St.Side.RIGHT || x2 - sourceBox.x2 < natWidth) {
+                if (this._orientation === St.Side.RIGHT || x2 - sourceBox.x2 < natWidth) {
                     this.sideFlipped = true;
-                    xPos = sourceBox.x1 - natWidth;
+                    xPos = Math.min(sourceBox.x1, x2) - natWidth;
                     styleClasses.push("right");
                 }
                 else {
                     this.sideFlipped = false;
-                    xPos = sourceBox.x2;
+                    xPos = Math.max(sourceBox.x2, x1);
                     styleClasses.push("left");
                 }
                 break;
