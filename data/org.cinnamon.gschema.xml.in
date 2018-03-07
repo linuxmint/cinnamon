@@ -462,14 +462,6 @@
       </_description>
     </key>
 
-    <key name="enable-looking-glass-logs" type="b">
-      <default>true</default>
-      <_summary>Enable or disable sending Looking Glass global.log output to file</_summary>
-      <_description>
-        Whether looking glass log data is written to the file: ~/.cinnamon/glass.log or not
-      </_description>
-    </key>
-
     <key name="workspace-expo-view-as-grid" type="b">
       <default>false</default>
       <summary>Display the Expo view as a grid</summary>

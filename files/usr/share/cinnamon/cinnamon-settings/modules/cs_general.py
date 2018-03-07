@@ -58,6 +58,3 @@ class Module:
 
             switch = GSettingsSwitch(_("Enable support for indicators (Requires Cinnamon restart)"), "org.cinnamon", "enable-indicators")
             settings.add_row(switch)
-
-            switch = GSettingsSwitch(_("Log LookingGlass output to ~/.cinnamon/glass.log (Requires Cinnamon restart)"), "org.cinnamon", "enable-looking-glass-logs")
-            settings.add_row(switch)
