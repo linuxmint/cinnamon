@@ -3041,8 +3041,8 @@ Panel.prototype = {
         let allocHeight  = box.y2 - box.y1;
         let allocWidth   = box.x2 - box.x1;
 
-        /* Panel left/center/bottom will fit inside this box, which is equivalent
-           to the CSS content-box (imaginary box inside borders and paddings) */
+        /* Left, center and right panel sections will fit inside this box, which is 
+           equivalent to the CSS content-box (imaginary box inside borders and paddings) */
         let childBox = box.copy();
 
         /* The boxes are layout managers, so they rubber-band around their contents and have a few
