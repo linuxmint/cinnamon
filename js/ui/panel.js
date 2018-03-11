@@ -2767,10 +2767,11 @@ Panel.prototype = {
     },
 
     _set_horizontal_panel_style: function() {
+        let rtl = this.actor.get_direction() === St.TextDirection.RTL;
 
         this._leftBox.remove_style_class_name('vertical');
         this._leftBox.set_vertical(false);
-        this._leftBox.set_x_align(Clutter.ActorAlign.START);
+        this._leftBox.set_x_align(rtl ? Clutter.ActorAlign.END : Clutter.ActorAlign.START);
         this._leftBox.set_y_align(Clutter.ActorAlign.FILL);
 
         this._centerBox.remove_style_class_name('vertical');
@@ -2780,7 +2781,7 @@ Panel.prototype = {
 
         this._rightBox.remove_style_class_name('vertical');
         this._rightBox.set_vertical(false);
-        this._rightBox.set_x_align(Clutter.ActorAlign.END);
+        this._rightBox.set_x_align(rtl ? Clutter.ActorAlign.START : Clutter.ActorAlign.END);
         this._rightBox.set_y_align(Clutter.ActorAlign.FILL);
     },
 
@@ -2996,9 +2997,9 @@ Panel.prototype = {
         leftBoundary  = Math.round(leftWidth);
         rightBoundary = Math.round(allocWidth - rightWidth);
 
-        if (!vertical && (this.actor.get_direction() == St.TextDirection.RTL)) {
-            leftBoundary  = allocWidth - leftWidth;
-            rightBoundary = rightWidth;
+        if (!vertical && (this.actor.get_direction() === St.TextDirection.RTL)) {
+            leftBoundary  = Math.round(allocWidth - leftWidth);
+            rightBoundary = Math.round(rightWidth);
         }
 
         return [leftBoundary, rightBoundary];
@@ -3041,7 +3042,7 @@ Panel.prototype = {
         let allocHeight  = box.y2 - box.y1;
         let allocWidth   = box.x2 - box.x1;
 
-        /* Left, center and right panel sections will fit inside this box, which is 
+        /* Left, center and right panel sections will fit inside this box, which is
            equivalent to the CSS content-box (imaginary box inside borders and paddings) */
         let childBox = box.copy();
 
