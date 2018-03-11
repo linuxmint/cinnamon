@@ -4,7 +4,6 @@
 
 #include "cinnamon-tray-icon.h"
 #include "cinnamon-gtk-embed.h"
-#include "cinnamon-window-tracker.h"
 #include "tray/na-tray-child.h"
 #include <gdk/gdkx.h>
 #include "st.h"
