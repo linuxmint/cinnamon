@@ -2752,6 +2752,8 @@ MyApplet.prototype = {
         });
 
         this.favoritesBox.add(button.actor, { y_align: St.Align.END, y_fill: false });
+
+        this._recalc_height();
     },
 
     _loadCategory: function(dir, top_dir) {
