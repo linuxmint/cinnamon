@@ -33,7 +33,7 @@
 #include <clutter/x11/clutter-x11.h>
 #include <gdk/gdkx.h>
 #include <girepository.h>
-#include <cjs/gjs.h>
+#include <gjs/gjs.h>
 #include <gtk/gtk.h>
 
 #include "cinnamon-global.h"

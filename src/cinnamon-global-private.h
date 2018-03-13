@@ -27,7 +27,7 @@
 #include "cinnamon-wm.h"
 #include "st.h"
 
-#include <cjs/gjs.h>
+#include <gjs/gjs.h>
 
 struct _CinnamonGlobal {
   GObject parent;
