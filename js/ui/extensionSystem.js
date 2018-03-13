@@ -46,8 +46,7 @@ function prepareExtensionUnload(extension) {
 }
 
 // Callback for extension.js
-function finishExtensionLoad(extensionIndex) {
-    let extension = Extension.extensions[extensionIndex];
+function finishExtensionLoad(extension) {
     if (!extension.lockRole(getModuleByIndex(extension.moduleIndex))) {
         return false;
     }

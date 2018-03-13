@@ -139,7 +139,7 @@ function logError(message, uuid, error, state) {
             extension.unlockRole();
             extension.unloadStylesheet();
             extension.unloadIconDirectory();
-            forgetExtension(uuid, Type[extension.upperType]);
+            forgetExtension(extension, uuid, Type[extension.upperType]);
         }
     }
     error._alreadyLogged = true;
@@ -161,7 +161,7 @@ function Extension(type, uuid) {
     let dir = findExtensionDirectory(uuid, type.userDir, type.folder);
 
     if (dir == null) {
-        forgetExtension(uuid, type, true);
+        forgetExtension(extension, uuid, type, true);
         return Promise.resolve(null);
     }
     return this._init(dir, type, uuid);
@@ -178,7 +178,8 @@ Extension.prototype = {
         this.stylesheet = null;
         this.iconDirectory = null;
         this.meta = createMetaDummy(uuid, dir.get_path(), State.INITIALIZING);
-
+        // Add the extension to the global collection
+        extensions.push(this);
         const finishLoad = () => {
             // Many xlets still use appletMeta/deskletMeta to get the path
             type.legacyMeta[uuid] = {path: this.meta.path};
@@ -240,10 +241,7 @@ Extension.prototype = {
                 }
             }
 
-            // Add the extension to the global collection
-            extensions.push(this);
-
-            if(!type.callbacks.finishExtensionLoad(extensions.length - 1)) {
+            if (!type.callbacks.finishExtensionLoad(this)) {
                 throw new Error(`${type.name} ${uuid}: Could not create ${this.lowerType} object.`);
             }
             this.finalize();
@@ -257,7 +255,7 @@ Extension.prototype = {
                remove them or anything) */
             Main.cinnamonDBusService.EmitXletAddedComplete(false, uuid);
             Main.xlet_startup_error = true;
-            forgetExtension(uuid, type);
+            forgetExtension(this, uuid, type);
             if (e._alreadyLogged) {
                 return;
             }
@@ -501,19 +499,20 @@ function unloadExtension(uuid, type, deleteConfig = true) {
 
         Type[extension.upperType].emit('extension-unloaded', extension.uuid);
 
-        forgetExtension(extensionIndex, uuid, type, true);
+        forgetExtension(extension, uuid, type, true);
     }
 }
 
-function forgetExtension(extensionIndex, uuid, type, forgetMeta) {
-    if (typeof extensions[extensionIndex] !== 'undefined') {
-        unloadModule(extensions[extensionIndex].moduleIndex);
+function forgetExtension(extension, uuid, type, forgetMeta) {
+    if (extension) {
+        unloadModule(extension.moduleIndex);
         try {
-           delete imports[type.folder][uuid];
+            delete imports[type.folder][uuid];
         } catch (e) {}
         if (forgetMeta) {
-            extensions[extensionIndex] = undefined;
-            extensions.splice(extensionIndex, 1);
+            let index = queryCollection(extensions, {uuid}, true);
+            extensions[index] = undefined;
+            extensions.splice(index, 1);
         }
     }
 }
@@ -527,11 +526,10 @@ function forgetExtension(extensionIndex, uuid, type, forgetMeta) {
  * Reloads an xlet. Useful when the source has changed.
  */
 function reloadExtension(uuid, type) {
-    if (getExtension(uuid)) {
+    let extension = getExtension(uuid);
+    if (extension) {
         unloadExtension(uuid, type, false);
-        Main._addXletDirectoriesToSearchPath();
-        loadExtension(uuid, type);
-        return;
+        forgetExtension(extension, uuid, type);
     }
 
     loadExtension(uuid, type);

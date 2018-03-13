@@ -83,9 +83,8 @@ function filterDefinitionsByUUID(uuid) {
 }
 
 // Callback for extension.js
-function finishExtensionLoad(extensionIndex) {
+function finishExtensionLoad(extension) {
     // Add all applet instances for this extension
-    let extension = Extension.extensions[extensionIndex];
     for (let i = 0; i < definitions.length; i++) {
         if (definitions[i].uuid !== extension.uuid
             || definitions[i].applet != null) {
