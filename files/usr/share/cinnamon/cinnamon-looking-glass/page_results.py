@@ -5,7 +5,7 @@ from gi.repository import Gtk
 
 class ModulePage(pageutils.BaseListView):
     def __init__(self, parent):
-        store = Gtk.ListStore(int, str, str, str, str)
+        store = Gtk.ListStore(int, str, str, str, str, str)
         pageutils.BaseListView.__init__(self, store)
 
         self.parent = parent
@@ -41,7 +41,7 @@ class ModulePage(pageutils.BaseListView):
         resultId = self.store.get_value(treeIter, 0)
         name = self.store.get_value(treeIter, 1)
         objType = self.store.get_value(treeIter, 2)
-        value = self.store.get_value(treeIter, 3)
+        value = self.store.get_value(treeIter, 5)
 
         melangeApp.pages["inspect"].inspectElement("r(%d)" % resultId, objType, name, value)
 
@@ -55,7 +55,12 @@ class ModulePage(pageutils.BaseListView):
         if success:
             try:
                 for item in data:
-                    self.store.append([int(item["index"]), item["command"], item["type"], item["object"], item["tooltip"]])
+                    self.store.append([int(item["index"]),
+                                       item["command"],
+                                       item["type"],
+                                       pageutils.shortenValue(item["object"]),
+                                       item["tooltip"],
+                                       item["object"]])
                 self._changed = True
                 self.parent.activatePage("results")
             except Exception as e:
