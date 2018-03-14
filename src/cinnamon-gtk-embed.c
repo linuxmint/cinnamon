@@ -224,9 +224,9 @@ cinnamon_gtk_embed_dispose (GObject *object)
 {
   CinnamonGtkEmbed *embed = CINNAMON_GTK_EMBED (object);
 
-  cinnamon_gtk_embed_set_window (embed, NULL);
-
   G_OBJECT_CLASS (cinnamon_gtk_embed_parent_class)->dispose (object);
+
+  cinnamon_gtk_embed_set_window (embed, NULL);
 }
 
 static void
