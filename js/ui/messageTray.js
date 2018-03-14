@@ -440,16 +440,12 @@ Notification.prototype = {
         this._bannerBodyText = null;
         this._bannerBodyMarkup = false;
         this._titleFitsInBannerMode = true;
-        this._inhibitTransparency = false;
         this._titleDirection = St.TextDirection.NONE;
         this._spacing = 0;
 
         this._imageBin = null;
         this._timestamp = new Date();
         this._inNotificationBin = false;
-
-        this.enter_id = 0;
-        this.leave_id = 0;
 
         source.connect('destroy', Lang.bind(this,
             function (source, reason) {
@@ -461,8 +457,6 @@ Notification.prototype = {
         this.actor._parent_container = null;
         this.actor.connect('clicked', Lang.bind(this, this._onClicked));
         this.actor.connect('destroy', Lang.bind(this, this._onDestroy));
-
-        this.updateFadeOnMouseover();
 
         this._table = new St.Table({ name: 'notification',
                                      reactive: true });
@@ -494,6 +488,21 @@ Notification.prototype = {
                                         col: 2,
                                         y_expand: false,
                                         y_fill: false });
+
+        // notification dismiss button
+        let icon = new St.Icon({ icon_name: 'window-close',
+                                 icon_type: St.IconType.SYMBOLIC,
+                                 icon_size: 16 });
+        let closeButton = new St.Button({ child: icon, opacity: 128 });
+        closeButton.connect('clicked', Lang.bind(this, this.destroy));
+        closeButton.connect('notify::hover', function() { closeButton.opacity = closeButton.hover ? 255 : 128; });
+        this._table.add(closeButton, { row: 0,
+                                       col: 3,
+                                       x_expand: false,
+                                       y_expand: false,
+                                       y_fill: false,
+                                       y_align: St.Align.START });
+
         this._timeLabel = new St.Label();
         this._titleLabel = new St.Label();
         this._bannerBox.add_actor(this._titleLabel);
@@ -608,36 +617,6 @@ Notification.prototype = {
         this._updated();
     },
 
-    updateFadeOnMouseover: function() {
-        // Transparency on mouse over?
-        if (Main.messageTray.fadeOnMouseover && !this._inhibitTransparency) {
-            // Register to every notification as we intend to support multiple notifications on screen.
-            this.enter_id = this.actor.connect('enter-event', Lang.bind(this, function() {
-                Tweener.addTween(this.actor, {
-                    opacity: ((Main.messageTray.fadeOpacity / 100) * 255).clamp(0, 255),
-                    time: ANIMATION_TIME,
-                    transition: 'easeOutQuad'
-                });
-            }));
-            this.leave_id = this.actor.connect('leave-event', Lang.bind(this, function() {
-                Tweener.addTween(this.actor, {
-                    opacity: (this._table.get_theme_node().get_length('opacity') / global.ui_scale) || 255,
-                    time: ANIMATION_TIME,
-                    transition: 'easeOutQuad'
-                });
-            }));
-        } else {
-            if (this.enter_id > 0) {
-                this.actor.disconnect(this.enter_id);
-                this.enter_id = 0;
-            }
-            if (this.leave_id > 0) {
-                this.actor.disconnect(this.leave_id);
-                this.leave_id = 0;
-            }
-        }
-    },
-
     setIconVisible: function(visible) {
         this._icon.visible = visible;
     },
@@ -738,10 +717,10 @@ Notification.prototype = {
     _updateLastColumnSettings: function() {
         if (this._scrollArea)
             this._table.child_set(this._scrollArea, { col: this._imageBin ? 2 : 1,
-                                                      col_span: this._imageBin ? 1 : 2 });
+                                                      col_span: this._imageBin ? 2 : 3 });
         if (this._actionArea)
             this._table.child_set(this._actionArea, { col: this._imageBin ? 2 : 1,
-                                                      col_span: this._imageBin ? 1 : 2 });
+                                                      col_span: this._imageBin ? 2 : 3 });
     },
 
     setImage: function(image) {
@@ -812,10 +791,6 @@ Notification.prototype = {
         this._buttonBox.add(button);
         this._buttonFocusManager.add_group(this._buttonBox);
         button.connect('clicked', Lang.bind(this, this._onActionInvoked, id));
-
-        this._inhibitTransparency = true;
-
-        this.updateFadeOnMouseover();
 
         this._updated();
     },
@@ -1469,11 +1444,6 @@ MessageTray.prototype = {
 			updater();
 		}
 		setting(this, this.settings, "_notificationsEnabled", "display-notifications");
-		setting(this, this.settings, "fadeOnMouseover", "fade-on-mouseover");
-        this.fadeOpacity = this.settings.get_int("fade-opacity");
-        this.settings.connect("changed::fade-opacity", Lang.bind(this, function() {
-            this.fadeOpacity = this.settings.get_int("fade-opacity");
-        }))
         this.bottomPosition = this.settings.get_boolean("bottom-notifications");
         this.settings.connect("changed::bottom-notifications", () => {
             this.bottomPosition = this.settings.get_boolean("bottom-notifications");
