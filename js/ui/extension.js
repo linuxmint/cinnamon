@@ -481,9 +481,8 @@ function loadExtension(uuid, type) {
  * @deleteConfig (bool): delete also config files, defaults to true
  */
 function unloadExtension(uuid, type, deleteConfig = true) {
-    let extensionIndex = queryCollection(extensions, {uuid}, true);
-    if (extensionIndex > -1) {
-        let extension = extensions[extensionIndex];
+    let extension = getExtension(uuid);
+    if (extension) {
         extension.unlockRole();
 
         // Try to disable it -- if it's ERROR'd, we can't guarantee that,

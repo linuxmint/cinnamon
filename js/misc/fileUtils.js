@@ -123,7 +123,6 @@ function unloadModule(index) {
     if (!LoadedModules[index]) {
         return;
     }
-    let indexes = [];
     for (let i = 0; i < LoadedModules.length; i++) {
         if (LoadedModules[i] && LoadedModules[i].dir === LoadedModules[index].dir) {
             LoadedModules[i].module = undefined;
@@ -174,9 +173,11 @@ function createExports({path, dir, fileName, meta, returnIndex, reject}) {
         }
         throw e;
     }
-    importerData.module.__meta = meta;
-    importerData.module.__dirname = dir;
-    importerData.module.__filename = fileName;
+    try {
+        importerData.module.__meta = meta;
+        importerData.module.__dirname = dir;
+        importerData.module.__filename = fileName;
+    } catch (e) {/* Directory import */}
 
     return returnIndex ? moduleIndex : importerData.module;
 }
@@ -234,11 +235,6 @@ function requireModule(path, dir, meta, async = false, returnIndex = false) {
         if (dir) {
             path = `${dir}/${path}`;
         }
-    }
-
-    let file = Gio.File.new_for_commandline_arg(path);
-    if (!file.query_exists(null)) {
-        throw new Error(`[requireModule] Path does not exist.\n${path}`);
     }
 
     if (!async) {
