@@ -349,10 +349,7 @@ MyApplet.prototype = {
         icon._rolePosition = position;
 
         if (this._scaleMode) {
-            let timerId = Mainloop.timeout_add(500, Lang.bind(this, function() {
-                this._resizeStatusItem(role, icon);
-                Mainloop.source_remove(timerId);
-            }));
+            this._resizeStatusItem(role, icon);
         } else {
             icon.set_pivot_point(0.5, 0.5);
             icon.set_scale((DEFAULT_ICON_SIZE * global.ui_scale) / icon.width,
