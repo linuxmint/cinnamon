@@ -55,7 +55,6 @@ na_tray_child_realize (GtkWidget *widget)
       /* Set a transparent background */
       cairo_pattern_t *transparent = cairo_pattern_create_rgba (0, 0, 0, 0);
       gdk_window_set_background_pattern (window, transparent);
-      gdk_window_set_composited (window, TRUE);
       cairo_pattern_destroy (transparent);
 
       child->parent_relative_bg = FALSE;
@@ -74,17 +73,19 @@ na_tray_child_realize (GtkWidget *widget)
       child->parent_relative_bg = FALSE;
     }
 
-  gdk_window_set_composited (window, child->composited);
-
   gtk_widget_set_app_paintable (GTK_WIDGET (child),
                                 child->parent_relative_bg || child->has_alpha);
 
   /* Double-buffering will interfere with the parent-relative-background fake
    * transparency, since the double-buffer code doesn't know how to fill in the
    * background of the double-buffer correctly.
+   * The function is deprecated because it is only meaningful on X11 - the
+   * same is true for XEmbed of course, so just ignore the warning.
    */
+G_GNUC_BEGIN_IGNORE_DEPRECATIONS
   gtk_widget_set_double_buffered (GTK_WIDGET (child),
                                   child->parent_relative_bg);
+G_GNUC_END_IGNORE_DEPRECATIONS
 }
 
 static void
@@ -285,8 +286,6 @@ na_tray_child_new (GdkScreen *screen,
   visual_has_alpha = red_prec + blue_prec + green_prec < depth;
   child->has_alpha = visual_has_alpha;
 
-  child->composited = child->has_alpha;
-
   return GTK_WIDGET (child);
 }
 
@@ -362,32 +361,6 @@ na_tray_child_has_alpha (NaTrayChild *child)
   return child->has_alpha;
 }
 
-/**
- * na_tray_child_set_composited;
- * @child: a #NaTrayChild
- * @composited: %TRUE if the child's window should be redirected
- *
- * Sets whether the #GdkWindow of the child should be set redirected
- * using gdk_window_set_composited(). By default this is based off of
- * na_tray_child_has_alpha(), but it may be useful to override it in
- * certain circumstances; for example, if the #NaTrayChild is added
- * to a parent window and that parent window is composited against the
- * background.
- */
-void
-na_tray_child_set_composited (NaTrayChild *child,
-                              gboolean     composited)
-{
-  g_return_if_fail (NA_IS_TRAY_CHILD (child));
-
-  if (child->composited == composited)
-    return;
-
-  child->composited = composited;
-  if (gtk_widget_get_realized (GTK_WIDGET (child)))
-    gdk_window_set_composited (gtk_widget_get_window (GTK_WIDGET (child)),
-                               composited);
-}
 
 /* If we are faking transparency with a window-relative background, force a
  * redraw of the icon. This should be called if the background changes or if
