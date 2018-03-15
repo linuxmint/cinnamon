@@ -540,11 +540,6 @@
       <_summary>Show all windows from all workspaces</_summary>
     </key>
 
-    <key type="b" name="app-switcher-only-current-workspace">
-      <default>false</default>
-      <_summary>Cycle through open windows of the same application on current workspace only</_summary>
-    </key>
-
     <key name="bring-windows-to-current-workspace" type="b">
       <default>false</default>
       <summary>Brings windows requiring attention to the current workspace</summary>
