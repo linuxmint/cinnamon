@@ -226,8 +226,6 @@ function requireModule(path, dir, meta, async = false, returnIndex = false) {
     // Check the file extension
     if (fileName.substr(-3) === '.js') {
         fileName = fileName.substr(0, fileName.length - 3);
-    } else {
-        path += '.js';
     }
     // Check relative paths
     if (fileName[0] === '.' || path[0] !== '/') {
