@@ -13,8 +13,6 @@ const Main = imports.ui.main;
 const {getModuleByIndex} = imports.misc.fileUtils;
 const {queryCollection} = imports.misc.util;
 
-// Maps uuid -> importer object (desklet directory tree)
-var desklets;
 // Kept for compatibility
 var deskletMeta;
 
@@ -57,11 +55,6 @@ function unloadRemovedDesklets(removedDeskletUUIDs) {
  */
 function init(){
     let startTime = new Date().getTime();
-    try {
-        desklets = imports.desklets;
-    } catch (e) {
-        desklets = {};
-    }
     deskletMeta = Extension.Type.DESKLET.legacyMeta;
     deskletsLoaded = false
 

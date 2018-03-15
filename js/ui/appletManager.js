@@ -12,8 +12,6 @@ const {getModuleByIndex} = imports.misc.fileUtils;
 const {queryCollection} = imports.misc.util;
 const Gettext = imports.gettext;
 
-// Maps uuid -> importer object (applet directory tree)
-var applets;
 // Kept for compatibility
 var appletMeta;
 // Maps applet_id -> applet objects
@@ -54,11 +52,6 @@ function unloadRemovedApplets(removedApplets) {
 
 function init() {
     let startTime = new Date().getTime();
-    try {
-        applets = imports.applets;
-    } catch (e) {
-        applets = {};
-    }
     appletMeta = Extension.Type.APPLET.legacyMeta;
     appletsLoaded = false;
 

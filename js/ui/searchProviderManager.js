@@ -4,8 +4,6 @@ const Extension = imports.ui.extension;
 const {getModuleByIndex} = imports.misc.fileUtils;
 const GLib = imports.gi.GLib;
 
-// Maps uuid -> importer object (extension directory tree)
-var extensions;
 // Kept for compatibility
 var extensionMeta;
 // Maps uuid -> extension state object (returned from init())
@@ -55,11 +53,6 @@ function unloadRemovedSearchProviders() {
 
 function init() {
     let startTime = new Date().getTime();
-    try {
-        extensions = imports.search_providers;
-    } catch (e) {
-        extensions = {};
-    }
     extensionMeta = Extension.Type.SEARCH_PROVIDER.legacyMeta;
 
     enabledSearchProviders = global.settings.get_strv(ENABLED_SEARCH_PROVIDERS_KEY);

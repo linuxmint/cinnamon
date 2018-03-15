@@ -3,8 +3,6 @@
 const Extension = imports.ui.extension;
 const {getModuleByIndex} = imports.misc.fileUtils;
 
-// Maps uuid -> importer object (extension directory tree)
-var extensions;
 // Kept for compatibility
 var extensionMeta;
 // Lists extension uuid's that are currently active;
@@ -116,11 +114,6 @@ function unloadRemovedExtensions() {
 
 function init() {
     let startTime = new Date().getTime();
-    try {
-        extensions = imports.extensions;
-    } catch (e) {
-        extensions = {};
-    }
     extensionMeta = Extension.Type.EXTENSION.legacyMeta;
     ExtensionState = Extension.State;
 
