@@ -90,7 +90,16 @@ function init() {
         configurable: false,
         enumerable: false
     });
-    window.require = requireModule;
+    Object.defineProperty(window, 'require', {
+        get: function() {
+            return requireModule;
+        },
+        set: function() {
+            readOnlyError('require');
+        },
+        configurable: false,
+        enumerable: false
+    });
 
     // Set the default direction for St widgets (this needs to be done before any use of St)
     if (Gtk.Widget.get_default_direction() == Gtk.TextDirection.RTL) {
