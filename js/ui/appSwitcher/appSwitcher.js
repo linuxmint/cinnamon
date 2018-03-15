@@ -71,9 +71,14 @@ function getWindowsForBinding(binding) {
             windows = windows.filter( matchSkipTaskbar );
             break;
         case 'switch-group':
-            // Switch between windows of same application from all workspaces
+            // Switch between windows of same application from all workspaces or current workspace
+            this._currentWorkspace = global.settings.get_boolean("app-switcher-only-current-workspace");
             let focused = global.display.focus_window ? global.display.focus_window : windows[0];
-            windows = windows.filter( matchWmClass, focused.get_wm_class() );
+            if (this._currentWorkspace) {
+                windows = windows.filter( matchWorkspace, focused.get_wm_class() );
+            } else {
+                windows = windows.filter( matchWmClass, focused.get_wm_class() );
+            }
             break;
         default:
             // Switch between windows of current workspace
