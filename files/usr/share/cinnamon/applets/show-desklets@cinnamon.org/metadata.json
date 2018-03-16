@@ -1,0 +1,7 @@
+{
+    "uuid": "show-desklets@cinnamon.org",
+    "name": "Show Desklets",
+    "description": "Raises desklets above windows",
+    "icon": "cs-desklets",
+    "max-instances": -1
+}
