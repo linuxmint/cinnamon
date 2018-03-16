@@ -2,19 +2,17 @@ const Applet = imports.ui.applet;
 const Settings = imports.ui.settings;  // Needed for settings API
 const Mainloop = imports.mainloop;
 const Tweener = imports.ui.tweener;
+const Main = imports.ui.main;
+const PopupMenu = imports.ui.popupMenu;
+const St = imports.gi.St;
 const Clutter = imports.gi.Clutter;
 const Lang = imports.lang;
 const SignalManager = imports.misc.signalManager;
 
-function MyApplet(orientation, panel_height, instance_id) {
-    this._init(orientation, panel_height, instance_id);
-}
+class MyApplet extends Applet.IconApplet {
 
-MyApplet.prototype = {
-    __proto__: Applet.IconApplet.prototype,
-
-    _init: function(orientation, panel_height, instance_id) {
-        Applet.IconApplet.prototype._init.call(this, orientation, panel_height, instance_id);
+    _init(orientation, panel_height, instance_id) {
+        super._init(orientation, panel_height, instance_id);
 
         this.settings = new Settings.AppletSettings(this, "show-desktop@cinnamon.org", instance_id);
 
@@ -33,13 +31,21 @@ MyApplet.prototype = {
 
         this.set_applet_icon_name("user-desktop");
         this.set_applet_tooltip(_("Show desktop"));
-    },
 
-    on_applet_removed_from_panel: function() {
+        this.showDeskletsOption = new PopupMenu.PopupIconMenuItem(
+            _('Show Desklets'),
+            'cs-desklets',
+            St.IconType.FULLCOLOR
+        );
+        this.showDeskletsOption.connect('activate', () => this.toggleShowDesklets());
+        this._applet_context_menu.addMenuItem(this.showDeskletsOption);
+    }
+
+    on_applet_removed_from_panel() {
         this.signals.disconnectAllSignals();
-    },
+    }
 
-    show_all_windows: function(time) {
+    show_all_windows(time) {
         let windows = global.get_window_actors();
         for(let i = 0; i < windows.length; i++){
             let window = windows[i].meta_window;
@@ -52,9 +58,9 @@ MyApplet.prototype = {
             }
         }
         Tweener.addTween(global.window_group, { opacity: 255, time: time, transition: "easeOutSine" });
-    },
+    }
 
-    _on_enter: function(event) {
+    _on_enter(event) {
         if (this.peek_at_desktop) {
 
             if (this._peek_timeout_id > 0) {
@@ -86,9 +92,9 @@ MyApplet.prototype = {
                 return false;
             }));
         }
-    },
+    }
 
-    _on_leave: function(event) {
+    _on_leave(event) {
         if (this._did_peek) {
             this.show_all_windows(0.2);
             this._did_peek = false;
@@ -97,9 +103,9 @@ MyApplet.prototype = {
             Mainloop.source_remove(this._peek_timeout_id);
             this._peek_timeout_id = 0;
         }
-    },
+    }
 
-    on_applet_clicked: function(event) {
+    on_applet_clicked(event) {
         global.screen.toggle_desktop(global.get_current_time());
         this.show_all_windows(0);
         if (this._peek_timeout_id > 0) {
@@ -108,9 +114,18 @@ MyApplet.prototype = {
         }
         this._did_peek = false;
     }
+
+    toggleShowDesklets() {
+        if (Main.deskletContainer.isModal) {
+            Main.deskletContainer.lower();
+            this.showDeskletsOption.label.set_text(_('Show Desklets'));
+        } else {
+            Main.deskletContainer.raise();
+            this.showDeskletsOption.label.set_text(_('Hide Desklets'));
+        }
+    }
 };
 
 function main(metadata, orientation, panel_height, instance_id) {
-    let myApplet = new MyApplet(orientation, panel_height, instance_id);
-    return myApplet;
+    return new MyApplet(orientation, panel_height, instance_id);
 }
