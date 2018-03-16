@@ -1,6 +1,5 @@
 dist_man_MANS = cinnamon.1			\
 	        cinnamon2d.1			\
-		cinnamon-extension-tool.1	\
 		cinnamon-launcher.1		\
 		cinnamon-menu-editor.1		\
 		cinnamon-settings.1		\

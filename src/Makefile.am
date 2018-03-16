@@ -29,17 +29,8 @@ CLEANFILES += $(service_DATA)
 
 CLEANFILES += $(gir_DATA) $(typelib_DATA)
 
-bin_SCRIPTS += cinnamon-extension-tool
-EXTRA_DIST += cinnamon-extension-tool.in
 bin_PROGRAMS = cinnamon-real
-
-if USE_JHBUILD_WRAPPER_SCRIPT
-cinnamon = cinnamon-jhbuild
-bin_SCRIPTS += cinnamon-jhbuild
-else
 cinnamon = cinnamon-real
-endif
-EXTRA_DIST += cinnamon-jhbuild.in
 
 noinst_DATA = cinnamon
 cinnamon: $(cinnamon) Makefile
@@ -54,21 +45,11 @@ generated_script_substitutions = \
 	    -e "s|@datadir[@]|$(datadir)|" \
 	    -e "s|@libexecdir[@]|$(libexecdir)|" \
 	    -e "s|@libdir[@]|$(libdir)|" \
-	    -e "s|@JHBUILD_TYPELIBDIR[@]|$(JHBUILD_TYPELIBDIR)|" \
 	    -e "s|@pkgdatadir[@]|$(pkgdatadir)|" \
 	    -e "s|@pkglibexecdir[@]|$(pkglibexecdir)|" \
-	    -e "s|@PYTHON[@]|$(PYTHON)|" \
 	    -e "s|@VERSION[@]|$(VERSION)|" \
 	    -e "s|@sysconfdir[@]|$(sysconfdir)|" \
         -e "s|@GJS_CONSOLE[@]|$(GJS_CONSOLE)|"
-
-cinnamon-jhbuild: cinnamon-jhbuild.in cinnamon-real Makefile
-	$(AM_V_GEN) sed $(generated_script_substitutions) $< > $@.tmp && mv $@.tmp $@ && chmod a+x $@
-	@# Regenerate libtool wrapper so Alt+F2 restart will work
-	@$(LIBTOOL) --mode=execute test -f cinnamon-real
-
-cinnamon-extension-tool: cinnamon-extension-tool.in Makefile
-	$(AM_V_GEN) sed $(generated_script_substitutions) $< > $@.tmp && mv $@.tmp $@ && chmod a+x $@
 
 CLEANFILES += cinnamon $(bin_SCRIPTS)
 

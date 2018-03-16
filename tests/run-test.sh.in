@@ -30,7 +30,7 @@ builddir=`cd $builddir && pwd`
 srcdir=$builddir/@srcdir@
 srcdir=`cd $srcdir && pwd`
 
-GI_TYPELIB_PATH="$GI_TYPELIB_PATH${GI_TYPELIB_PATH:+:}@MUFFIN_TYPELIB_DIR@:@JHBUILD_TYPELIBDIR@:$builddir/../src"
+GI_TYPELIB_PATH="$GI_TYPELIB_PATH${GI_TYPELIB_PATH:+:}@MUFFIN_TYPELIB_DIR@:$builddir/../src"
 GJS_PATH="$srcdir:$srcdir/../js"
 GJS_DEBUG_OUTPUT=stderr
 $verbose || GJS_DEBUG_TOPICS="JS ERROR;JS LOG"

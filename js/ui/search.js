@@ -297,7 +297,7 @@ OpenSearchSystem.prototype = {
             Gio.app_info_launch_default_for_uri(url, global.create_app_launch_context());
         } catch (e) {
             // TODO: remove this after glib will be removed from moduleset
-            // In the default jhbuild, gio is in our prefix but gvfs is not
+            // In the default build gio is in our prefix but gvfs is not
             Util.spawn(['gvfs-open', url])
         }
 

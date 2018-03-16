@@ -31,7 +31,6 @@ EXTRA_DIST += $(TEST_MISC)
 run-test.sh: run-test.sh.in
 	$(AM_V_GEN) sed \
 	    -e "s|@MUFFIN_TYPELIB_DIR[@]|$(MUFFIN_TYPELIB_DIR)|" \
-	    -e "s|@JHBUILD_TYPELIBDIR[@]|$(JHBUILD_TYPELIBDIR)|" \
 	    -e "s|@srcdir[@]|$(srcdir)|" \
 	    $< > $@ && chmod a+x $@
 

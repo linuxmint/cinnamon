@@ -72,7 +72,6 @@ src/Makefile.in
 src/cinnamon
 src/cinnamon-enum-types.c
 src/cinnamon-enum-types.h
-src/cinnamon-extension-tool
 src/cinnamon-hotplug-sniffer
 src/cinnamon-marshal.c
 src/cinnamon-marshal.h

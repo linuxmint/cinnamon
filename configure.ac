@@ -38,10 +38,6 @@ PKG_PROG_PKG_CONFIG([0.22])
 
 GLIB_GSETTINGS
 
-# Get a value to substitute into cinnamon.in
-AM_PATH_PYTHON([2.5])
-AC_SUBST(PYTHON)
-
 # We need at least this, since gst_plugin_register_static() was added
 # in 0.10.16, but nothing older than 0.10.21 has been tested.
 GSTREAMER_MIN_VERSION=0.11.92
@@ -93,8 +89,6 @@ dnl '
 AC_SUBST([GJS_VERSION], ["$GJS_VERSION"])
 
 GOBJECT_INTROSPECTION_CHECK([$GOBJECT_INTROSPECTION_MIN_VERSION])
-JHBUILD_TYPELIBDIR="$INTROSPECTION_TYPELIBDIR"
-AC_SUBST(JHBUILD_TYPELIBDIR)
 
 saved_CFLAGS=$CFLAGS
 saved_LIBS=$LIBS
@@ -161,10 +155,6 @@ AC_SUBST(TYPELIBDIR)
 
 m4_ifdef([AX_COMPILER_FLAGS],
          [AX_COMPILER_FLAGS([WARN_CFLAGS],[WARN_LDFLAGS])])
-
-AC_ARG_ENABLE(jhbuild-wrapper-script,
-  AS_HELP_STRING([--jhbuild-wrapper-script=yes],[Make "cinnamon" script work for jhbuild]),,enable_jhbuild_wrapper_script=no)
-AM_CONDITIONAL(USE_JHBUILD_WRAPPER_SCRIPT, test "x$enable_jhbuild_wrapper_script" = xyes)
 
 AC_ARG_ENABLE([gtk-doc],
   AC_HELP_STRING([--enable-gtk-doc],
