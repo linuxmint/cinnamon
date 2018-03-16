@@ -32,13 +32,13 @@ class MyApplet extends Applet.IconApplet {
         this.set_applet_icon_name("user-desktop");
         this.set_applet_tooltip(_("Show desktop"));
 
-        this.showDeskletsOption = new PopupMenu.PopupIconMenuItem(
+        let showDeskletsOption = new PopupMenu.PopupIconMenuItem(
             _('Show Desklets'),
             'cs-desklets',
             St.IconType.FULLCOLOR
         );
-        this.showDeskletsOption.connect('activate', () => this.toggleShowDesklets());
-        this._applet_context_menu.addMenuItem(this.showDeskletsOption);
+        showDeskletsOption.connect('activate', () => this.toggleShowDesklets());
+        this._applet_context_menu.addMenuItem(showDeskletsOption);
     }
 
     on_applet_removed_from_panel() {
