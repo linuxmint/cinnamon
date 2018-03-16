@@ -14,7 +14,7 @@ except ImportError:
     try:
         import simplejson as json
     except ImportError:
-        print 'The Python simplejson module is required'
+        print('The Python simplejson module is required')
         sys.exit(1)
 
 parser = optparse.OptionParser()
@@ -97,35 +97,35 @@ function disable() {
 }
 
 if options.create_extension:
-    print
-    print '''Name should be a very short (ideally descriptive) string.
+    print()
+    print('''Name should be a very short (ideally descriptive) string.
 Examples are: "Click To Focus",  "Adblock", "Cinnamon Window Shrinker".
-'''
-    name = raw_input('Name: ').strip()
-    print
-    print '''Description is a single-sentence explanation of what your extension does.
+''')
+    name = input('Name: ').strip()
+    print()
+    print('''Description is a single-sentence explanation of what your extension does.
 Examples are: "Make windows visible on click", "Block advertisement popups"
               "Animate windows shrinking on minimize"
-'''
-    description = raw_input('Description: ').strip()
+''')
+    description = input('Description: ').strip()
     underifier = re.compile('[^A-Za-z]')
     sample_uuid = underifier.sub('_', name)
     hostname = socket.gethostname()
     sample_uuid = sample_uuid + '@' + hostname
 
-    print
-    print '''Uuid is a globally-unique identifier for your extension.
+    print()
+    print('''Uuid is a globally-unique identifier for your extension.
 This should be in the format of an email address (foo.bar@extensions.example.com), but
 need not be an actual email address, though it's a good idea to base the uuid on your
 email address.  For example, if your email address is janedoe@example.com, you might
-use an extension title clicktofocus@janedoe.example.com.'''
-    uuid = raw_input('Uuid [%s]: ' % (sample_uuid, )).strip()
+use an extension title clicktofocus@janedoe.example.com.''')
+    uuid = input('Uuid [%s]: ' % (sample_uuid, )).strip()
     if uuid == '':
         uuid = sample_uuid
 
     extension_path = os.path.join(os.path.expanduser('~/.local'), 'share', 'cinnamon', 'extensions', uuid)
     if os.path.exists(extension_path):
-        print "Extension path %r already exists" % (extension_path, )
+        print("Extension path %r already exists" % (extension_path, ))
         sys.exit(0)
     os.makedirs(extension_path)
     meta = { 'name': name,
@@ -140,13 +140,13 @@ use an extension title clicktofocus@janedoe.example.com.'''
         f.write(json.write(meta) + '\n')
     f.close()
 
-    for filename, contents in SAMPLE_EXTENSION_FILES.iteritems():
+    for filename, contents in SAMPLE_EXTENSION_FILES.items():
         path = os.path.join(extension_path, filename)
         f = open(path, 'w')
         f.write(contents)
         f.close()
 
-    print "Created extension in %r" % (extension_path, )
+    print("Created extension in %r" % (extension_path, ))
     extensionjs_path = os.path.join(extension_path, 'extension.js')
     subprocess.Popen(['xdg-open', extensionjs_path])
     sys.exit(0)
