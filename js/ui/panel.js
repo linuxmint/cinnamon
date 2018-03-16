@@ -2767,10 +2767,11 @@ Panel.prototype = {
     },
 
     _set_horizontal_panel_style: function() {
+        let rtl = this.actor.get_direction() === St.TextDirection.RTL;
 
         this._leftBox.remove_style_class_name('vertical');
         this._leftBox.set_vertical(false);
-        this._leftBox.set_x_align(Clutter.ActorAlign.START);
+        this._leftBox.set_x_align(rtl ? Clutter.ActorAlign.END : Clutter.ActorAlign.START);
         this._leftBox.set_y_align(Clutter.ActorAlign.FILL);
 
         this._centerBox.remove_style_class_name('vertical');
@@ -2780,7 +2781,7 @@ Panel.prototype = {
 
         this._rightBox.remove_style_class_name('vertical');
         this._rightBox.set_vertical(false);
-        this._rightBox.set_x_align(Clutter.ActorAlign.END);
+        this._rightBox.set_x_align(rtl ? Clutter.ActorAlign.START : Clutter.ActorAlign.END);
         this._rightBox.set_y_align(Clutter.ActorAlign.FILL);
     },
 
@@ -2996,9 +2997,9 @@ Panel.prototype = {
         leftBoundary  = Math.round(leftWidth);
         rightBoundary = Math.round(allocWidth - rightWidth);
 
-        if (!vertical && (this.actor.get_direction() == St.TextDirection.RTL)) {
-            leftBoundary  = allocWidth - leftWidth;
-            rightBoundary = rightWidth;
+        if (!vertical && (this.actor.get_direction() === St.TextDirection.RTL)) {
+            leftBoundary  = Math.round(allocWidth - leftWidth);
+            rightBoundary = Math.round(rightWidth);
         }
 
         return [leftBoundary, rightBoundary];
@@ -3041,6 +3042,10 @@ Panel.prototype = {
         let allocHeight  = box.y2 - box.y1;
         let allocWidth   = box.x2 - box.x1;
 
+        /* Left, center and right panel sections will fit inside this box, which is
+           equivalent to the CSS content-box (imaginary box inside borders and paddings) */
+        let childBox = box.copy();
+
         /* The boxes are layout managers, so they rubber-band around their contents and have a few
            characteristics that they enforce on their contents.  Of particular note is that the alignment
            - LEFT, CENTER, RIGHT - is not independent of the fill as it probably ought to be, and that there
@@ -3053,18 +3058,19 @@ Panel.prototype = {
 
         if (this.panelPosition == PanelLoc.left || this.panelPosition == PanelLoc.right) {
 
+            /* Distribute sizes for the allocated height with points relative to
+               the children allocation box, inside borders and paddings. */
             let [leftBoundary, rightBoundary] = this._calcBoxSizes(allocHeight, allocWidth, true);
-            let childBox = new Clutter.ActorBox();
+            leftBoundary += box.y1;
+            rightBoundary += box.y1;
 
-            childBox.x1 = 0;
-            childBox.x2 = allocWidth;
-            this._setVertChildbox (childBox,0, leftBoundary);
+            this._setVertChildbox (childBox, box.y1, leftBoundary);
             this._leftBox.allocate(childBox, flags);
 
             this._setVertChildbox (childBox, leftBoundary, rightBoundary);
             this._centerBox.allocate(childBox, flags);
 
-            this._setVertChildbox (childBox, rightBoundary, allocHeight);
+            this._setVertChildbox (childBox, rightBoundary, box.y2);
             this._rightBox.allocate(childBox, flags);
 
             // Corners are in response to a bit of optional css and are about painting corners just outside the panels so as to create a seamless
@@ -3079,80 +3085,62 @@ Panel.prototype = {
             if (this.drawcorner[0]) {
                 [cornerMinWidth, cornerWidth]   = this._leftCorner.actor.get_preferred_width(-1);
                 [cornerMinHeight, cornerHeight] = this._leftCorner.actor.get_preferred_height(-1);
+                if (this.panelPosition === PanelLoc.left) { // left panel
+                    this._setCornerChildbox(childBox, box.x2, box.x2+cornerWidth, 0, cornerWidth);
+                } else { // right panel
+                    this._setCornerChildbox(childBox, box.x1-cornerWidth, box.x1, 0, cornerWidth);
+                }
+                this._leftCorner.actor.allocate(childBox, flags);
             }
 
             if (this.drawcorner[1]) {
                 [cornerMinWidth, cornerWidth]   = this._rightCorner.actor.get_preferred_width(-1);
                 [cornerMinHeight, cornerHeight] = this._rightCorner.actor.get_preferred_height(-1);
+                if (this.panelPosition === PanelLoc.left) { // left panel
+                    this._setCornerChildbox(childBox, box.x2, box.x2+cornerWidth, this.actor.height-cornerHeight, this.actor.height);
+                } else { // right panel
+                    this._setCornerChildbox(childBox, box.x1-cornerWidth, box.x1, this.actor.height-cornerHeight, this.actor.height);
+                }
+                this._rightCorner.actor.allocate(childBox, flags);
             }
 
-            if (this.panelPosition == PanelLoc.left) { // left panel
-                if (this.drawcorner[0]) {
-                    this._setCornerChildbox(childBox, box.x2, box.x2+cornerWidth, box.y1, box.y1+cornerWidth);
-                    this._leftCorner.actor.allocate(childBox, flags);
-                }
-
-                if (this.drawcorner[1]) {
-                    this._setCornerChildbox(childBox, box.x2, box.x2+cornerWidth, box.y2-cornerHeight, box.y2);
-                    this._rightCorner.actor.allocate(childBox, flags);
-                }
-            }
-            if (this.panelPosition == PanelLoc.right) {          // right panel
-                if (this.drawcorner[0]) {
-                    this._setCornerChildbox(childBox, box.x1-cornerWidth, box.x2, box.y1, box.y1+cornerWidth);
-                    this._leftCorner.actor.allocate(childBox, flags);
-                }
-
-                if (this.drawcorner[1]) {
-                    this._setCornerChildbox(childBox, box.x1-cornerWidth, box.x2, box.y2-cornerHeight, box.y2);
-                    this._rightCorner.actor.allocate(childBox, flags);
-                }
-            }
         } else {           // horizontal panel
 
+            /* Distribute sizes for the allocated width with points relative to
+               the children allocation box, inside borders and paddings. */
             let [leftBoundary, rightBoundary] = this._calcBoxSizes(allocWidth, allocHeight, false);
+            leftBoundary += box.x1;
+            rightBoundary += box.x1;
 
-            let childBox = new Clutter.ActorBox();
-
-            childBox.y1 = 0;
-            childBox.y2 = allocHeight;
-            this._setHorizChildbox (childBox,0,leftBoundary,leftBoundary, allocWidth);
+            this._setHorizChildbox (childBox, box.x1, leftBoundary, leftBoundary, box.x2);
             this._leftBox.allocate(childBox, flags);
 
-            this._setHorizChildbox (childBox,leftBoundary,rightBoundary,rightBoundary,leftBoundary);
+            this._setHorizChildbox (childBox, leftBoundary, rightBoundary, rightBoundary, leftBoundary);
             this._centerBox.allocate(childBox, flags);
 
-            this._setHorizChildbox (childBox,rightBoundary,allocWidth,0,rightBoundary);
+            this._setHorizChildbox (childBox, rightBoundary, box.x2, box.x1, rightBoundary);
             this._rightBox.allocate(childBox, flags);
 
             if (this.drawcorner[0]) {
                 [cornerMinWidth, cornerWidth]   = this._leftCorner.actor.get_preferred_width(-1);
                 [cornerMinHeight, cornerHeight] = this._leftCorner.actor.get_preferred_height(-1);
+                if (this.panelPosition === PanelLoc.top) { // top panel
+                    this._setCornerChildbox(childBox, 0, cornerWidth, box.y2, box.y2+cornerHeight);
+                } else { // bottom panel
+                    this._setCornerChildbox(childBox, 0, cornerWidth, box.y1-cornerHeight, box.y2);
+                }
+                this._leftCorner.actor.allocate(childBox, flags);
             }
 
             if (this.drawcorner[1]) {
                 [cornerMinWidth, cornerWidth]   = this._rightCorner.actor.get_preferred_width(-1);
                 [cornerMinHeight, cornerHeight] = this._rightCorner.actor.get_preferred_height(-1);
-            }
-
-            if (this.panelPosition == PanelLoc.top) { // top panel
-                if (this.drawcorner[0]) {
-                    this._setCornerChildbox(childBox, 0, cornerWidth, allocHeight,allocHeight + cornerHeight );
-                    this._leftCorner.actor.allocate(childBox, flags);
+                if (this.panelPosition === PanelLoc.top) { // top panel
+                  this._setCornerChildbox(childBox, this.actor.width-cornerWidth, this.actor.width, box.y2, box.y2+cornerHeight);
+                } else { // bottom panel
+                  this._setCornerChildbox(childBox, this.actor.width-cornerWidth, this.actor.width, box.y1-cornerHeight, box.y1);
                 }
-                if (this.drawcorner[1]) {
-                    this._setCornerChildbox(childBox, allocWidth - cornerWidth, allocWidth, allocHeight,allocHeight + cornerHeight );
-                    this._rightCorner.actor.allocate(childBox, flags);
-                }
-            } else { // bottom
-                if (this.drawcorner[0]) {
-                    this._setCornerChildbox(childBox, 0,cornerWidth, box.y1 - cornerHeight, box.y2);
-                    this._leftCorner.actor.allocate(childBox, flags);
-                }
-                if (this.drawcorner[1]) {
-                    this._setCornerChildbox(childBox, allocWidth - cornerWidth, allocWidth, box.y1 - cornerHeight,box.y2 );
-                    this._rightCorner.actor.allocate(childBox, flags);
-                }
+                this._rightCorner.actor.allocate(childBox, flags);
             }
         }
     },
