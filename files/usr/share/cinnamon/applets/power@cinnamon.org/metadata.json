@@ -2,5 +2,5 @@
  "uuid": "power@cinnamon.org",
  "name": "Power Manager",
  "description": "Cinnamon power management applet",
- "icon": "battery-full-charging"
+ "icon": "cs-power"
 }
