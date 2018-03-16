@@ -116,15 +116,11 @@ class MyApplet extends Applet.IconApplet {
     }
 
     toggleShowDesklets() {
-        if (Main.deskletContainer.isModal) {
-            Main.deskletContainer.lower();
-            this.showDeskletsOption.label.set_text(_('Show Desklets'));
-        } else {
+        if (!Main.deskletContainer.isModal) {
             Main.deskletContainer.raise();
-            this.showDeskletsOption.label.set_text(_('Hide Desklets'));
         }
     }
-};
+}
 
 function main(metadata, orientation, panel_height, instance_id) {
     return new MyApplet(orientation, panel_height, instance_id);
