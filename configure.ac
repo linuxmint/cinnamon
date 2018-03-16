@@ -39,7 +39,7 @@ PKG_PROG_PKG_CONFIG([0.22])
 GLIB_GSETTINGS
 
 # Get a value to substitute into cinnamon.in
-AM_PATH_PYTHON([2.5])
+AM_PATH_PYTHON([3])
 AC_SUBST(PYTHON)
 
 # We need at least this, since gst_plugin_register_static() was added
