@@ -595,12 +595,8 @@ class Spice_Harvester(GObject.Object):
                 # Install spice schema file, if any
                 schema = [filename for filename in contents if 'gschema.xml' in filename]
                 for filename in schema:
-                    if os.path.exists('/usr/bin/gksu'):
-                        message = _("Please enter your password to install the required settings schema for ") + uuid
-                        path = os.path.join(uuidfolder, filename)
-                        os.system('gksu  --message "<b>%s</b>" cinnamon-schema-install %s' % (message, path))
-                    else:
-                        self.errorMessage(_("Could not install the settings schema for %s.  You will have to perform this step yourself.") % (uuid))
+                    path = os.path.join(uuidfolder, filename)
+                    subprocess.call(['pkexec', 'cinnamon-schema-install', path])
 
             meta_path = os.path.join(uuidfolder, 'metadata.json')
             if self.themes and not os.path.exists(meta_path):
@@ -653,12 +649,8 @@ class Spice_Harvester(GObject.Object):
             if not self.themes:
                 # Uninstall spice schema files, if any
                 if 'schema-file' in self.meta_map[uuid]:
-                    if os.path.exists('/usr/bin/gksu'):
-                        for path in self.meta_map[uuid]['schema-file'].split(','):
-                            message = _("Please enter your password to remove the settings schema for ") + uuid
-                            os.system('gksu  --message "<b>%s</b>" cinnamon-schema-remove %s' % (message, path))
-                    else:
-                        self.errorMessage(_("Could not remove the settings schema for %s.  You will have to perform this step yourself.  This is not a critical error.") % (job["uuid"]))
+                    for path in self.meta_map[uuid]['schema-file'].split(','):
+                        subprocess.call(['pkexec', 'cinnamon-schema-remove', path])
 
                 # Uninstall spice localization files, if any
                 if (os.path.exists(locale_inst)):
