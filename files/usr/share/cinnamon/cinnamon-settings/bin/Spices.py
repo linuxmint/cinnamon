@@ -436,6 +436,10 @@ class Spice_Harvester(GObject.Object):
     def are_updates_available(self):
         return len(self.updates_available) > 0
 
+    """ returns the number of available updates"""
+    def get_n_updates(self):
+        return len(self.updates_available)
+
     """ retrieves a copy of the index cache """
     def get_cache(self):
         return self.index_cache
