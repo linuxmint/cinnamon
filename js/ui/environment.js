@@ -13,6 +13,7 @@ const Gtk = imports.gi.Gtk;
 const Cinnamon = imports.gi.Cinnamon;
 const St = imports.gi.St;
 const Overrides = imports.ui.overrides;
+const {requireModule} = imports.misc.fileUtils;
 
 // We can't import cinnamon JS modules yet, because they may have
 // variable initializations, etc, that depend on init() already having
@@ -85,6 +86,16 @@ function init() {
         },
         set: function() {
             readOnlyError('ngettext');
+        },
+        configurable: false,
+        enumerable: false
+    });
+    Object.defineProperty(window, 'require', {
+        get: function() {
+            return requireModule;
+        },
+        set: function() {
+            readOnlyError('require');
         },
         configurable: false,
         enumerable: false

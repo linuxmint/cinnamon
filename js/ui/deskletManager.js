@@ -14,8 +14,6 @@ const Main = imports.ui.main;
 const {getModuleByIndex} = imports.misc.fileUtils;
 const {queryCollection} = imports.misc.util;
 
-// Maps uuid -> importer object (desklet directory tree)
-var desklets;
 // Kept for compatibility
 var deskletMeta;
 
@@ -59,11 +57,6 @@ function unloadRemovedDesklets(removedDeskletUUIDs) {
  */
 function init(){
     let startTime = new Date().getTime();
-    try {
-        desklets = imports.desklets;
-    } catch (e) {
-        desklets = {};
-    }
     deskletMeta = Extension.Type.DESKLET.legacyMeta;
     deskletsLoaded = false
 
@@ -164,9 +157,8 @@ function getDefinitions() {
 }
 
 // Callback for extension.js
-function finishExtensionLoad(extensionIndex) {
+function finishExtensionLoad(extension) {
     // Add all desklet instances for this extension
-    let extension = Extension.extensions[extensionIndex];
     for (let i = 0; i < definitions.length; i++) {
         if (definitions[i].uuid !== extension.uuid) {
             continue;

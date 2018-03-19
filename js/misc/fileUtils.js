@@ -2,6 +2,7 @@
 
 const Gio = imports.gi.Gio;
 const GLib = imports.gi.GLib;
+var getExtension = null;
 
 var importNames = [
     'mainloop',
@@ -23,13 +24,7 @@ var cinnamonImportNames = [
     'misc',
     'perf'
 ];
-var giImportNames = imports.gi.GIRepository.Repository
-    .get_default()
-    .get_loaded_namespaces();
 var LoadedModules = [];
-var FunctionConstructor = Symbol();
-var Symbols = {};
-Symbols[FunctionConstructor] = 0..constructor.constructor;
 
 function listDirAsync(file, callback) {
     let allFiles = [];
@@ -128,106 +123,49 @@ function unloadModule(index) {
     if (!LoadedModules[index]) {
         return;
     }
-    let indexes = [];
     for (let i = 0; i < LoadedModules.length; i++) {
         if (LoadedModules[i] && LoadedModules[i].dir === LoadedModules[index].dir) {
-            indexes.push(i);
+            LoadedModules[i].module = undefined;
+            delete LoadedModules[i].module;
+            LoadedModules.splice(LoadedModules.findIndex(module => module.dir === LoadedModules[i].dir), 1);
         }
-    }
-    for (var i = 0; i < indexes.length; i++) {
-        LoadedModules[indexes[i]].module = undefined;
-        LoadedModules[indexes[i]].size = -1;
     }
 }
 
-function createExports({path, dir, meta, type, file, size, JS, returnIndex, reject}) {
+function getModuleFromImports(importerData, dir, fileName) {
+    try {
+        // Make sure the file is removed from the importer. This should propagate and finalize
+        // the GjsModule object, so xlets can be fully reloaded.
+        delete imports[fileName];
+    } catch (e) {/* Not imported yet */}
+
+    let oldSearchPath = imports.searchPath.slice();
+    imports.searchPath = [dir];
+    importerData.module = imports[fileName];
+    imports.searchPath = oldSearchPath;
+
+    return importerData;
+}
+
+function createExports({path, dir, fileName, meta, returnIndex, reject}) {
     // Import data is stored in an array of objects and the module index is looked up by path.
     let importerData = {
-        size,
         path,
         dir,
         module: null
-    };
-    // module.exports as an object holding a module's namespaces is a node convention, and is intended
-    // to help interop with other libraries.
-    const exports = {};
-    const module = {
-        exports: exports
     };
 
     // Storing by array index that other extension classes can look up.
     let moduleIndex = findModuleIndex(path);
     if (moduleIndex > -1) {
-        // Module already exists, check if its been updated
-        if (size === LoadedModules[moduleIndex].size
-            && LoadedModules[moduleIndex].module != null) {
-            // Return the cache
-            return returnIndex ? moduleIndex : LoadedModules[moduleIndex].module;
-        }
-        // Module has been updated
-        LoadedModules[moduleIndex] = importerData;
+        importerData = LoadedModules[moduleIndex];
     } else {
         LoadedModules.push(importerData);
         moduleIndex = LoadedModules.length - 1;
     }
 
-    JS = `'use strict';${JS};`;
-    // Regex matches the top level variable names, and appends them to the module.exports object,
-    // mimicking the native CJS importer.
-    const exportsRegex = /^(module\.exports(.?([A-Za-z_$]*))) = ([A-Za-z_;]*)$/gm;
-    const varRegex = /^(const|var|let|function{1,}) ([a-zA-Z_$]*)/gm;
-    let match;
-
-    if (!JS.match(exportsRegex)) {
-        while ((match = varRegex.exec(JS)) != null) {
-            if (match.index === varRegex.lastIndex) {
-                varRegex.lastIndex++;
-            }
-            // Don't modularize native imports
-            if (match[2]
-                && importNames.indexOf(match[2].toLowerCase()) === -1
-                && giImportNames.indexOf(match[2]) === -1) {
-                JS += `exports.${match[2]} = typeof ${match[2]} !== 'undefined' ? ${match[2]} : null;`;
-            }
-        }
-    }
-
-    // send_results is overridden in SearchProviderManager, so we need to make sure the send_results
-    // function on the exports object, what SearchProviderManager actually has access to outside the
-    // module scope, is called.
-    if (type === 'search_provider') {
-        JS += 'var send_results = function() {exports.send_results.apply(this, arguments)};' +
-            'var get_locale_string = function() {return exports.get_locale_string.apply(this, arguments)};';
-    }
-
-    // Return the exports object containing all of our top level namespaces, and include the sourceURL so
-    // Spidermonkey includes the file names in stack traces.
-    JS += `return exports;//# sourceURL=${path}`;
-
     try {
-        // Create the function returning module.exports and return it to Extension so it can be called by the
-        // appropriate manager.
-        importerData.module = Symbols[FunctionConstructor](
-            'require',
-            'exports',
-            'module',
-            '__meta',
-            '__dirname',
-            '__filename',
-            JS
-        ).call(
-            exports,
-            function require(path) {
-                return requireModule(path, dir, meta, type);
-            },
-            exports,
-            module,
-            meta,
-            dir,
-            file.get_basename()
-        );
-
-        return returnIndex ? moduleIndex : importerData.module;
+        importerData = getModuleFromImports(importerData, dir, fileName);
     } catch (e) {
         if (reject) {
             reject(e);
@@ -235,9 +173,37 @@ function createExports({path, dir, meta, type, file, size, JS, returnIndex, reje
         }
         throw e;
     }
+    try {
+        importerData.module.__meta = meta;
+        importerData.module.__dirname = dir;
+        importerData.module.__filename = fileName;
+    } catch (e) {/* Directory import */}
+
+    return returnIndex ? moduleIndex : importerData.module;
 }
 
-function requireModule(path, dir, meta, type, async = false, returnIndex = false) {
+function requireModule(path, dir, meta, async = false, returnIndex = false) {
+    if (!meta) {
+        // If require is being called from within an xlet, we need to look backwards into the
+        // stack, pick out the UUID, and then fetch the associated extension object.
+        let callStack = new Error().stack.split('\n');
+        let uuid = null;
+        for (let i = 0; i < callStack.length; i++) {
+            uuid = callStack[i].match(/(\w|-|\.|_)+@(\w|-|\.|_)+/g);
+            if (uuid) {
+                uuid = uuid[0];
+                break;
+            }
+        }
+        // fileUtils.js loads before the global object is created, so need to load it on first
+        // invocation once.
+        if (!getExtension) {
+            getExtension = imports.ui.extension.getExtension;
+        }
+        let extension = getExtension(uuid);
+        meta = extension.meta;
+        dir = meta.path;
+    }
     // Allow passing through native bindings, e.g. const Cinnamon = require('gi.Cinnamon');
     // Check if this is a GI import
     if (path.substr(0, 3) === 'gi.') {
@@ -253,42 +219,30 @@ function requireModule(path, dir, meta, type, async = false, returnIndex = false
     if (importNames.indexOf(path) > -1) {
         return imports[path];
     }
+
+    let pathSections = path.split('/');
+    let fileName = pathSections[pathSections.length - 1];
+
     // Check the file extension
-    if (path.substr(-3) !== '.js') {
-        path += '.js';
+    if (fileName.substr(-3) === '.js') {
+        fileName = fileName.substr(0, fileName.length - 3);
     }
     // Check relative paths
-    if (path[0] === '.' || path[0] !== '/') {
+    if (fileName[0] === '.' || path[0] !== '/') {
         path = path.replace(/\.\//g, '');
         if (dir) {
             path = `${dir}/${path}`;
         }
     }
-    let success, JS;
-    let file = Gio.File.new_for_commandline_arg(path);
-    let fileLoadErrorMessage = '[requireModule] Unable to load file contents.';
-    if (!file.query_exists(null)) {
-        throw new Error(`[requireModule] Path does not exist.\n${path}`);
-    }
 
     if (!async) {
-        [success, JS] = file.load_contents(null);
-        if (!success) {
-            throw new Error(fileLoadErrorMessage);
-        }
-        return createExports({path, dir, meta, type, file, size: JS.length, JS, returnIndex});
+        return createExports({path, dir, fileName, meta, returnIndex});
     }
     return new Promise(function(resolve, reject) {
-        file.load_contents_async(null, function(object, result) {
-            try {
-                [success, JS] = file.load_contents_finish(result);
-                if (!success) {
-                    throw new Error(fileLoadErrorMessage);
-                }
-                resolve(createExports({path, dir, meta, type, file, size: JS.length, JS, returnIndex, reject}));
-            } catch (e) {
-                reject(e);
-            }
-        });
+        try {
+            resolve(createExports({path, dir, fileName, meta, returnIndex, reject}));
+        } catch (e) {
+            reject(e);
+        }
     });
 }

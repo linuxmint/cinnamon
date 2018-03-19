@@ -600,7 +600,11 @@ XletSettingsBase.prototype = {
         if (!configDir.query_exists(null)) configDir.make_directory_with_parents(null);
         this.file = configDir.get_child(this.instanceId + ".json");
         this.monitor = this.file.monitor_file(Gio.FileMonitorFlags.NONE, null);
-        let xletDir = Extension.getExtension(this.uuid).dir;
+        let xlet = Extension.getExtension(this.uuid);
+        if (!xlet) {
+            return;
+        }
+        let xletDir = xlet.dir;
         let templateFile = xletDir.get_child("settings-schema.json");
 
         // If the settings have already been installed previously we need to check if the schema
