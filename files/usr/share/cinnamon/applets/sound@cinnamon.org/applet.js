@@ -166,7 +166,7 @@ VolumeSlider.prototype = {
         // visible_value: percentage of volume_norm (shown to the user)
         // these only differ for the output, and only when the user changes the maximum volume
         let volume = (!this.stream || this.stream.is_muted) ? 0 : this.stream.volume;
-        let value, visible_value, delta = VOLUME_ADJUSTMENT_STEP;
+        let value, visible_value, delta = VOLUME_ADJUSTMENT_STEP * this.applet._volumeMax / this.applet._volumeNorm;
 
         if (this.isOutputSink) {
             value = volume / this.applet._volumeMax;
