@@ -378,7 +378,7 @@ class SettingsBox(Gtk.Frame):
             vbox.add(Gtk.Separator(orientation=Gtk.Orientation.HORIZONTAL))
         list_box = Gtk.ListBox()
         list_box.set_selection_mode(Gtk.SelectionMode.NONE)
-        row = Gtk.ListBoxRow()
+        row = Gtk.ListBoxRow(can_focus=False)
         row.add(widget)
         if isinstance(widget, Switch):
             list_box.connect("row-activated", widget.clicked)
@@ -394,7 +394,7 @@ class SettingsBox(Gtk.Frame):
             vbox.add(Gtk.Separator(orientation=Gtk.Orientation.HORIZONTAL))
         list_box = Gtk.ListBox()
         list_box.set_selection_mode(Gtk.SelectionMode.NONE)
-        row = Gtk.ListBoxRow()
+        row = Gtk.ListBoxRow(can_focus=False)
         row.add(widget)
         if isinstance(widget, Switch):
             list_box.connect("row-activated", widget.clicked)
