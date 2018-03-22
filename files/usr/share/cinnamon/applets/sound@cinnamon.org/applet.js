@@ -161,6 +161,33 @@ VolumeSlider.prototype = {
             this.applet._notifyVolumeChange(this.stream);
     },
 
+    _onScrollEvent: function (actor, event) {
+        let direction = event.get_scroll_direction();
+
+        if (direction == Clutter.ScrollDirection.DOWN) {
+            this._value = Math.max(0, this._value - VOLUME_ADJUSTMENT_STEP/this.applet._volumeMax*this.applet._volumeNorm);
+        }
+        else if (direction == Clutter.ScrollDirection.UP) {
+            this._value = Math.min(1, this._value + VOLUME_ADJUSTMENT_STEP/this.applet._volumeMax*this.applet._volumeNorm);
+        }
+
+        this._slider.queue_repaint();
+        this.emit('value-changed', this._value);
+    },
+
+    _onKeyPressEvent: function (actor, event) {
+        let key = event.get_key_symbol();
+        if (key == Clutter.KEY_Right || key == Clutter.KEY_Left) {
+            let delta = key == Clutter.KEY_Right ? VOLUME_ADJUSTMENT_STEP : -VOLUME_ADJUSTMENT_STEP;
+            this._value = Math.max(0, Math.min(this._value + delta/this.applet._volumeMax*this.applet._volumeNorm, 1));
+            this._slider.queue_repaint();
+            this.emit('value-changed', this._value);
+            this.emit('drag-end');
+            return true;
+        }
+        return false;
+    },
+
     _update: function(){
         // value: percentage of volume_max (set as value in the widget)
         // visible_value: percentage of volume_norm (shown to the user)
@@ -168,7 +195,7 @@ VolumeSlider.prototype = {
         let volume = (!this.stream || this.stream.is_muted) ? 0 : this.stream.volume;
         let value, visible_value, delta = VOLUME_ADJUSTMENT_STEP * this.applet._volumeMax / this.applet._volumeNorm;
 
-        if (this.isOutputSink) {
+		if (this.isOutputSink) {
             value = volume / this.applet._volumeMax;
             visible_value = volume / this.applet._volumeNorm;
             if (visible_value > 1 - delta/2 && visible_value < 1 + delta/2) {
