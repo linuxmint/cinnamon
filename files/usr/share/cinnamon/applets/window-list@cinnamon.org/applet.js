@@ -615,15 +615,15 @@ AppMenuButton.prototype = {
     _getPreferredWidth: function(actor, forHeight, alloc) {
         let [minSize, naturalSize] = this._iconBox.get_preferred_width(forHeight);
         // minimum size just enough for icon if we ever get that many apps going
-
-        alloc.min_size = naturalSize + 2 * 3 * global.ui_scale;
+        alloc.min_size = naturalSize;
 
         if (this._applet.orientation == St.Side.TOP || this._applet.orientation == St.Side.BOTTOM ) {
         // the 'buttons use entire space' option only makes sense on horizontal panels
             if (this._applet.buttonsUseEntireSpace) {
                 let [lminSize, lnaturalSize] = this._label.get_preferred_width(forHeight);
+                let spacing = this.actor.get_theme_node().get_length('spacing');
                 alloc.natural_size = Math.max(150 * global.ui_scale,
-                        lnaturalSize + naturalSize + 3 * 3 * global.ui_scale);
+                        naturalSize + spacing + lnaturalSize);
             } else {
                 alloc.natural_size = 150 * global.ui_scale;
             }
@@ -664,49 +664,38 @@ AppMenuButton.prototype = {
         let [minWidth, minHeight, naturalWidth, naturalHeight] = this._iconBox.get_preferred_size();
 
         let direction = this.actor.get_text_direction();
-        let xPadding = 3 * global.ui_scale;
+        let spacing = Math.floor(this.actor.get_theme_node().get_length('spacing'));
         let yPadding = Math.floor(Math.max(0, allocHeight - naturalHeight) / 2);
 
-        childBox.y1 = yPadding;
+        childBox.y1 = box.y1 + yPadding;
         childBox.y2 = childBox.y1 + Math.min(naturalHeight, allocHeight);
 
         if (this.labelVisible) {
-            if (direction == Clutter.TextDirection.LTR) {
-                if (allocWidth < naturalWidth + xPadding * 2)
-                    childBox.x1 = Math.max(0, (allocWidth - naturalWidth) / 2);
-                else
-                    childBox.x1 = Math.min(allocWidth, xPadding);
-                childBox.x2 = Math.min(childBox.x1 + naturalWidth, allocWidth);
+            if (direction === Clutter.TextDirection.LTR) {
+                childBox.x1 = box.x1;
             } else {
-                if (allocWidth < naturalWidth + xPadding * 2)
-                    childBox.x1 = Math.max(0, (allocWidth - naturalWidth) / 2);
-                else
-                    childBox.x1 = allocWidth - naturalWidth - xPadding;
-                childBox.x2 = Math.min(childBox.x1 + naturalWidth, allocWidth);
+                childBox.x1 = Math.max(box.x1, box.x2 - naturalWidth);
             }
+            childBox.x2 = Math.min(childBox.x1 + naturalWidth, box.x2);
         } else {
-            if (allocWidth < naturalWidth)
-                childBox.x1 = Math.max(0, (allocWidth - naturalWidth) / 2);
-            else
-                childBox.x1 = (allocWidth - naturalWidth) / 2;
-            childBox.x2 = Math.min(childBox.x1 + naturalWidth, allocWidth);
+            childBox.x1 = box.x1 + Math.max(0, (allocWidth - naturalWidth) / 2);
+            childBox.x2 = Math.min(childBox.x1 + naturalWidth, box.x2);
         }
-
         this._iconBox.allocate(childBox, flags);
 
         if (this.labelVisible) {
             [minWidth, minHeight, naturalWidth, naturalHeight] = this._label.get_preferred_size();
 
             yPadding = Math.floor(Math.max(0, allocHeight - naturalHeight) / 2);
-            childBox.y1 = yPadding;
+            childBox.y1 = box.y1 + yPadding;
             childBox.y2 = childBox.y1 + Math.min(naturalHeight, allocHeight);
-            if (direction == Clutter.TextDirection.LTR) {
+            if (direction === Clutter.TextDirection.LTR) {
                 // Reuse the values from the previous allocation
-                childBox.x1 = Math.min(childBox.x2 + xPadding, Math.max(0, allocWidth - xPadding));
-                childBox.x2 = Math.max(childBox.x1, allocWidth - xPadding);
+                childBox.x1 = Math.min(childBox.x2 + spacing, box.x2);
+                childBox.x2 = box.x2;
             } else {
-                childBox.x2 = Math.max(childBox.x1 - xPadding, 0);
-                childBox.x1 = Math.min(childBox.x2, xPadding);
+                childBox.x2 = Math.max(childBox.x1 - spacing, box.x1);
+                childBox.x1 = box.x1;
             }
 
             this._label.allocate(childBox, flags);

@@ -365,9 +365,7 @@ StScrollBar StButton#vhandle:hover {
 .panel-corner:focus {
     -panel-corner-inner-border-color: rgba(255,255,255,0.8);
 }
-#appMenu {
-    spacing: 4px;
-}
+
 .panel-button #appMenuIcon {
     app-icon-bottom-clip: 1px;
 }
@@ -1236,11 +1234,6 @@ StScrollBar StButton#vhandle:hover {
 .window-list-box.vertical #appMenuIcon {
     padding-top: 3px;
 }
-.window-list-item-label {
-    font-weight: bold;
-    width: 15em;
-    min-width: 5px;
-}
 .window-list-item-box {
     color: rgba(255,255,255,1.0);
     background-gradient-direction: vertical;
@@ -1249,6 +1242,11 @@ StScrollBar StButton#vhandle:hover {
     box-shadow: inset 0px 0px 1px 1px rgba(170,170,170,0.5);
     border-radius: 2px 2px 0px 0px;
     transition-duration: 100;
+    spacing: 0.5em;
+}
+.window-list-item-box.top,
+.window-list-item-box.bottom {
+    padding: 0 0.5em;
 }
 .window-list-item-box:active,
 .window-list-item-box:checked,
@@ -1820,4 +1818,3 @@ StScrollBar StButton#vhandle:hover {
 .systray {
     spacing: 5px;
 }
-
