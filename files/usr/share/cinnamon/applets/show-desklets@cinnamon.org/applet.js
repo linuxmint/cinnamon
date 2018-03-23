@@ -5,8 +5,8 @@ const Settings = imports.ui.settings;
 
 // ES2015 class syntax can be used for Cinnamon 3.8+
 class CinnamonShowDeskletsApplet extends Applet.IconApplet {
-    _init(orientation, panel_height, instance_id) {
-        super._init(orientation, panel_height, instance_id);
+    constructor(orientation, panel_height, instance_id) {
+        super(orientation, panel_height, instance_id);
 
         this.set_applet_icon_name('cs-desklets');
         this.set_applet_tooltip(_('Show Desklets'));
