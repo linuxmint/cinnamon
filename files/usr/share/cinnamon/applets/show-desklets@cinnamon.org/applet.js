@@ -4,7 +4,7 @@ const Main = imports.ui.main;
 const Settings = imports.ui.settings;
 
 // ES2015 class syntax can be used for Cinnamon 3.8+
-class MyApplet extends Applet.IconApplet {
+class CinnamonShowDeskletsApplet extends Applet.IconApplet {
     _init(orientation, panel_height, instance_id) {
         super._init(orientation, panel_height, instance_id);
 
@@ -58,5 +58,5 @@ class MyApplet extends Applet.IconApplet {
 }
 
 function main(metadata, orientation, panel_height, instance_id) {
-    return new MyApplet(orientation, panel_height, instance_id);
+    return new CinnamonShowDeskletsApplet(orientation, panel_height, instance_id);
 }

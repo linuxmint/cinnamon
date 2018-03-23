@@ -32,11 +32,11 @@ function _onVertSepRepaint (area)
     cr.$dispose();
 };
 
-function MyApplet(orientation, panel_height, instance_id) {
+function CinnamonCalendarApplet(orientation, panel_height, instance_id) {
     this._init(orientation, panel_height, instance_id);
 }
 
-MyApplet.prototype = {
+CinnamonCalendarApplet.prototype = {
     __proto__: Applet.TextApplet.prototype,
 
     _init: function(orientation, panel_height, instance_id) {
@@ -214,6 +214,5 @@ MyApplet.prototype = {
 };
 
 function main(metadata, orientation, panel_height, instance_id) {
-    let myApplet = new MyApplet(orientation, panel_height, instance_id);
-    return myApplet;
+    return new CinnamonCalendarApplet(orientation, panel_height, instance_id);
 }

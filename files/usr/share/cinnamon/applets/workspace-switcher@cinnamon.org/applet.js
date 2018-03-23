@@ -201,11 +201,11 @@ SimpleButton.prototype = {
     }
 };
 
-function MyApplet(metadata, orientation, panel_height, instance_id) {
+function CinnamonWorkspaceSwitcher(metadata, orientation, panel_height, instance_id) {
     this._init(metadata, orientation, panel_height, instance_id);
 }
 
-MyApplet.prototype = {
+CinnamonWorkspaceSwitcher.prototype = {
     __proto__: Applet.Applet.prototype,
 
     _init: function(metadata, orientation, panel_height, instance_id) {
@@ -413,6 +413,5 @@ MyApplet.prototype = {
 };
 
 function main(metadata, orientation, panel_height, instance_id) {
-    let myApplet = new MyApplet(metadata, orientation, panel_height, instance_id);
-    return myApplet;
+    return new CinnamonWorkspaceSwitcher(metadata, orientation, panel_height, instance_id);
 }

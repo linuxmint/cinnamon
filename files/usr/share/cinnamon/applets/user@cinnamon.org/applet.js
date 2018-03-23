@@ -11,11 +11,11 @@ const ScreenSaver = imports.misc.screenSaver;
 const Settings = imports.ui.settings;
 
 
-function MyApplet(orientation, panel_height, instance_id) {
+function CinnamonUserApplet(orientation, panel_height, instance_id) {
     this._init(orientation, panel_height, instance_id);
 }
 
-MyApplet.prototype = {
+CinnamonUserApplet.prototype = {
     __proto__: Applet.TextIconApplet.prototype,
 
     _init: function(orientation, panel_height, instance_id) {
@@ -181,6 +181,5 @@ MyApplet.prototype = {
 };
 
 function main(metadata, orientation, panel_height, instance_id) {
-    let myApplet = new MyApplet(orientation, panel_height, instance_id);
-    return myApplet;
+    return new CinnamonUserApplet(orientation, panel_height, instance_id);
 }

@@ -13,11 +13,11 @@ const Gettext = imports.gettext.domain("cinnamon-applets");
 
 const PANEL_EDIT_MODE_KEY = "panel-edit-mode";
 
-function MyApplet(metadata, orientation, panel_height, instanceId) {
+function CinnamonNotificationsApplet(metadata, orientation, panel_height, instanceId) {
     this._init(metadata, orientation, panel_height, instanceId);
 }
 
-MyApplet.prototype = {
+CinnamonNotificationsApplet.prototype = {
     __proto__: Applet.TextIconApplet.prototype,
 
     _init: function(metadata, orientation, panel_height, instanceId) {
@@ -271,8 +271,7 @@ MyApplet.prototype = {
 };
 
 function main(metadata, orientation, panel_height, instanceId) {
-    let myApplet = new MyApplet(metadata, orientation, panel_height, instanceId);
-    return myApplet;
+    return new CinnamonNotificationsApplet(metadata, orientation, panel_height, instanceId);
 }
 
 function stringify(count) {

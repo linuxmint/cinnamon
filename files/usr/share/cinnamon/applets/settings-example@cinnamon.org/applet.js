@@ -7,11 +7,11 @@ const Gio = imports.gi.Gio;
 const Tweener = imports.ui.tweener;
 const Main = imports.ui.main;
 
-function MyApplet(orientation, panel_height, instance_id) {
+function CinnamonSettingsExampleApplet(orientation, panel_height, instance_id) {
     this._init(orientation, panel_height, instance_id); // Be sure to pass instanceId from the main function
 }
 
-MyApplet.prototype = {
+CinnamonSettingsExampleApplet.prototype = {
     __proto__: Applet.TextIconApplet.prototype,
 
     _init: function(orientation, panel_height, instance_id) {
@@ -142,7 +142,6 @@ MyApplet.prototype = {
 };
 
 function main(metadata, orientation, panel_height, instance_id) {  // Make sure you collect and pass on instanceId
-    let myApplet = new MyApplet(orientation, panel_height, instance_id);
-    return myApplet;
+    return new CinnamonSettingsExampleApplet(orientation, panel_height, instance_id);
 }
 

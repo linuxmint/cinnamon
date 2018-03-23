@@ -2,11 +2,11 @@ const Applet = imports.ui.applet;
 const St = imports.gi.St;
 const Clutter = imports.gi.Clutter;
 
-function MyApplet(orientation, panel_height, instance_id) {
+function CinnamonSeparatorApplet(orientation, panel_height, instance_id) {
     this._init(orientation, panel_height, instance_id);
 }
 
-MyApplet.prototype = {
+CinnamonSeparatorApplet.prototype = {
     __proto__: Applet.Applet.prototype,
 
     _init: function(orientation, panel_height, instance_id) {
@@ -48,6 +48,5 @@ MyApplet.prototype = {
 };
 
 function main(metadata, orientation, panel_height, instance_id) {
-    let myApplet = new MyApplet(orientation, panel_height, instance_id);
-    return myApplet;
+    return new CinnamonSeparatorApplet(orientation, panel_height, instance_id);
 }

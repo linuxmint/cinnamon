@@ -3,11 +3,11 @@ const Lang = imports.lang;
 const Main = imports.ui.main;
 const Settings = imports.ui.settings;
 
-function MyApplet(metadata, orientation, panel_height, instance_id) {
+function CinnamonExpoApplet(metadata, orientation, panel_height, instance_id) {
     this._init(metadata, orientation, panel_height, instance_id);
 }
 
-MyApplet.prototype = {
+CinnamonExpoApplet.prototype = {
     __proto__: Applet.IconApplet.prototype,
 
     _init: function(metadata, orientation, panel_height, instance_id) {
@@ -48,6 +48,5 @@ MyApplet.prototype = {
 };
 
 function main(metadata, orientation, panel_height, instance_id) {
-    let myApplet = new MyApplet(metadata, orientation, panel_height, instance_id);
-    return myApplet;
+    return new CinnamonExpoApplet(metadata, orientation, panel_height, instance_id);
 }

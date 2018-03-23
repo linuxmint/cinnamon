@@ -42,11 +42,11 @@ IndicatorMenuFactory.prototype = {
     }
 };
 
-function MyApplet(orientation, panel_height, instance_id) {
+function CinnamonSystrayApplet(orientation, panel_height, instance_id) {
     this._init(orientation, panel_height, instance_id);
 }
 
-MyApplet.prototype = {
+CinnamonSystrayApplet.prototype = {
     __proto__: Applet.Applet.prototype,
 
     _init: function(orientation, panel_height, instance_id) {
@@ -381,6 +381,5 @@ MyApplet.prototype = {
 };
 
 function main(metadata, orientation, panel_height, instance_id) {
-    let myApplet = new MyApplet(orientation, panel_height, instance_id);
-    return myApplet;
+    return new CinnamonSystrayApplet(orientation, panel_height, instance_id);
 }

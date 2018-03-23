@@ -9,14 +9,14 @@ const Tweener = imports.ui.tweener;
 const Util = imports.misc.util;
 const Settings = imports.ui.settings;
 
-function MyDesklet(metadata, desklet_id){
+function CinnamonPhotoFrameDesklet(metadata, desklet_id) {
     this._init(metadata, desklet_id);
 }
 
-MyDesklet.prototype = {
+CinnamonPhotoFrameDesklet.prototype = {
     __proto__: Desklet.Desklet.prototype,
 
-    _init: function(metadata, desklet_id){
+    _init: function(metadata, desklet_id) {
         Desklet.Desklet.prototype._init.call(this, metadata, desklet_id);
 
 
@@ -150,7 +150,7 @@ MyDesklet.prototype = {
         }
     },
 
-    _update_loop: function(){
+    _update_loop: function() {
         this._update();
         this.update_id = Mainloop.timeout_add_seconds(this.delay, Lang.bind(this, this._update_loop));
     },
@@ -173,14 +173,14 @@ MyDesklet.prototype = {
         image.set_size(width, height);
     },
 
-    _update: function(){       
+    _update: function() {
         if (this.updateInProgress) {
             return;
         }
         this.updateInProgress = true;
         try {
             let image_path;
-            if (!this.shuffle){
+            if (!this.shuffle) {
                 image_path = this._images.shift();
                 this._images.push(image_path);
             } else {
@@ -226,11 +226,11 @@ MyDesklet.prototype = {
             global.logError(e);
         } finally {
             this.updateInProgress = false;
-        }       
+        }
     },
 
-    on_desklet_clicked: function(event){  
-        try {             
+    on_desklet_clicked: function(event) {
+        try {
             if (event.get_button() == 1) {
                 this._update();
             }
@@ -240,7 +240,7 @@ MyDesklet.prototype = {
         }
         catch (e) {
             global.logError(e);
-	}
+        }
     },
 
     _loadImage: function(filePath) {
@@ -257,7 +257,6 @@ MyDesklet.prototype = {
     },
 }
 
-function main(metadata, desklet_id){
-    let desklet = new MyDesklet(metadata, desklet_id);
-    return desklet;
+function main(metadata, desklet_id) {
+    return new CinnamonPhotoFrameDesklet(metadata, desklet_id);
 }

@@ -3,11 +3,11 @@ const Gio = imports.gi.Gio;
 const Lang = imports.lang;
 const Main = imports.ui.main;
 
-function MyApplet(metadata, orientation, panel_height, instanceId) {
+function CinnamonOnScreenKeyboardApplet(metadata, orientation, panel_height, instanceId) {
     this._init(metadata, orientation, panel_height, instanceId);
 }
 
-MyApplet.prototype = {
+CinnamonOnScreenKeyboardApplet.prototype = {
     __proto__: Applet.IconApplet.prototype,
 
     _init: function(metadata, orientation, panel_height, instanceId) {
@@ -33,6 +33,5 @@ MyApplet.prototype = {
 };
 
 function main(metadata, orientation, panel_height, instanceId) {
-    let myApplet = new MyApplet(metadata, orientation, panel_height, instanceId);
-    return myApplet;
+    return new CinnamonOnScreenKeyboardApplet(metadata, orientation, panel_height, instanceId);
 }

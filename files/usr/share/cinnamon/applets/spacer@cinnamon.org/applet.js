@@ -2,11 +2,11 @@ const Applet = imports.ui.applet;
 const St = imports.gi.St;
 const Settings = imports.ui.settings;
 
-function MyApplet(metadata, orientation, panelHeight, instance_id) {
+function CinnamonSpacerApplet(metadata, orientation, panelHeight, instance_id) {
     this._init(metadata, orientation, panelHeight, instance_id);
 }
 
-MyApplet.prototype = {
+CinnamonSpacerApplet.prototype = {
     __proto__: Applet.IconApplet.prototype,
 
     _init: function(metadata, orientation, panelHeight, instance_id) {
@@ -51,6 +51,5 @@ MyApplet.prototype = {
 };
 
 function main(metadata, orientation, panelHeight, instance_id) {
-    let myApplet = new MyApplet(metadata, orientation, panelHeight, instance_id);
-    return myApplet;
+    return new CinnamonSpacerApplet(metadata, orientation, panelHeight, instance_id);
 }

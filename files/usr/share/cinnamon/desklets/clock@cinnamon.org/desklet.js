@@ -6,14 +6,14 @@ const CinnamonDesktop = imports.gi.CinnamonDesktop;
 const Desklet = imports.ui.desklet;
 const Settings = imports.ui.settings;
 
-function MyDesklet(metadata, desklet_id){
+function CinnamonClockDesklet(metadata, desklet_id) {
     this._init(metadata, desklet_id);
 }
 
-MyDesklet.prototype = {
+CinnamonClockDesklet.prototype = {
     __proto__: Desklet.Desklet.prototype,
 
-    _init: function(metadata, desklet_id){
+    _init: function(metadata, desklet_id) {
         Desklet.Desklet.prototype._init.call(this, metadata);
         this._date = new St.Label({style_class: "clock-desklet-label"});
         this.setContent(this._date);
@@ -27,7 +27,7 @@ MyDesklet.prototype = {
         this.settings.bind("font-size", "size", this._onSettingsChanged);
         this.settings.bind("text-color", "color", this._onSettingsChanged);
         this.settings.bind("use-custom-format", "use_custom_format", this._onSettingsChanged);
-        
+
         this._menu.addSettingsAction(_("Date and Time Settings"), "calendar")
     },
 
@@ -35,7 +35,7 @@ MyDesklet.prototype = {
         this._updateClock();
     },
 
-    _onSettingsChanged: function(){
+    _onSettingsChanged: function() {
         this._date.style="font-size: " + this.size + "pt;\ncolor: " + this.color;
         this._updateFormatString();
         this._updateClock();
@@ -67,7 +67,7 @@ MyDesklet.prototype = {
         }
     },
 
-    _updateClock: function(){
+    _updateClock: function() {
         if (this.use_custom_format) {
             this._date.set_text(this.clock.get_clock());
         } else {
@@ -79,7 +79,6 @@ MyDesklet.prototype = {
     }
 }
 
-function main(metadata, desklet_id){
-    let desklet = new MyDesklet(metadata, desklet_id);
-    return desklet;
+function main(metadata, desklet_id) {
+    return new CinnamonClockDesklet(metadata, desklet_id);
 }

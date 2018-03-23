@@ -883,11 +883,11 @@ MediaPlayerLauncher.prototype = {
     }
 };
 
-function MyApplet(metadata, orientation, panel_height, instanceId) {
+function CinnamonSoundApplet(metadata, orientation, panel_height, instanceId) {
     this._init(metadata, orientation, panel_height, instanceId);
 }
 
-MyApplet.prototype = {
+CinnamonSoundApplet.prototype = {
     __proto__: Applet.TextIconApplet.prototype,
 
     _init: function(metadata, orientation, panel_height, instanceId) {
@@ -1606,6 +1606,5 @@ MyApplet.prototype = {
 };
 
 function main(metadata, orientation, panel_height, instanceId) {
-    let myApplet = new MyApplet(metadata, orientation, panel_height, instanceId);
-    return myApplet;
+    return new CinnamonSoundApplet(metadata, orientation, panel_height, instanceId);
 }

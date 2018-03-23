@@ -24,11 +24,11 @@ const HIGH_CONTRAST_THEME = 'HighContrast';
 
 const Keymap = Gdk.Keymap.get_default();
 
-function MyApplet(metadata, orientation, panel_height, applet_id) {
+function CinnamonA11YApplet(metadata, orientation, panel_height, applet_id) {
     this._init(metadata, orientation, panel_height, applet_id);
 }
 
-MyApplet.prototype = {
+CinnamonA11YApplet.prototype = {
     __proto__: Applet.TextIconApplet.prototype,
 
     _init: function(metadata, orientation, panel_height, instance_id) {
@@ -229,6 +229,5 @@ MyApplet.prototype = {
 };
 
 function main(metadata, orientation, panel_height, instance_id) {
-    let myApplet = new MyApplet(metadata, orientation, panel_height, instance_id);
-    return myApplet;
+    return new CinnamonA11YApplet(metadata, orientation, panel_height, instance_id);
 }

@@ -9,11 +9,11 @@ const Util = imports.misc.util;
 
 const MESSAGE = _("Are you sure you want to delete all items from the trash?") + "\n" + _("This operation cannot be undone.");
 
-function MyApplet(orientation, panel_height, instance_id) {
+function CinnamonTrashApplet(orientation, panel_height, instance_id) {
     this._init(orientation, panel_height, instance_id);
 }
 
-MyApplet.prototype = {
+CinnamonTrashApplet.prototype = {
     __proto__: Applet.IconApplet.prototype,
 
     _init: function(orientation, panel_height, instance_id) {
@@ -94,6 +94,5 @@ MyApplet.prototype = {
 };
 
 function main(metadata, orientation, panel_height, instance_id) {
-    let myApplet = new MyApplet(orientation, panel_height, instance_id);
-    return myApplet;
+    return new CinnamonTrashApplet(orientation, panel_height, instance_id);
 }

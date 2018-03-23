@@ -120,12 +120,12 @@ InhibitSwitch.prototype = {
     }
 };
 
-function MyApplet(metadata, orientation, panel_height, instanceId) {
+function CinnamonInhibitApplet(metadata, orientation, panel_height, instanceId) {
     this._init(metadata, orientation, panel_height, instanceId);
 }
 
 
-MyApplet.prototype = {
+CinnamonInhibitApplet.prototype = {
     __proto__: Applet.IconApplet.prototype,
 
     _init: function(metadata, orientation, panel_height, instanceId) {
@@ -166,6 +166,5 @@ MyApplet.prototype = {
 };
 
 function main(metadata, orientation, panel_height, instanceId) {
-    let myApplet = new MyApplet(metadata, orientation, panel_height, instanceId);
-    return myApplet;
+    return new CinnamonInhibitApplet(metadata, orientation, panel_height, instanceId);
 }

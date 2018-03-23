@@ -16,14 +16,14 @@ const CUSTOM_LAUNCHERS_PATH = GLib.get_home_dir() + '/.cinnamon/panel-launchers/
 const ICON_SIZE = 48;
 const ANIM_ICON_SIZE = 40;
 
-function MyDesklet(metadata, desklet_id){
+function CinnamonLauncherDesklet(metadata, desklet_id) {
     this._init(metadata, desklet_id);
 }
 
-MyDesklet.prototype = {
+CinnamonLauncherDesklet.prototype = {
     __proto__: Desklet.Desklet.prototype,
 
-    _init: function(metadata, desklet_id){
+    _init: function(metadata, desklet_id) {
         Desklet.Desklet.prototype._init.call(this, metadata, desklet_id);
         this._launcherSettings = new Gio.Settings({schema_id: 'org.cinnamon.desklets.launcher'});
 
@@ -48,7 +48,7 @@ MyDesklet.prototype = {
         let appSys = Cinnamon.AppSystem.get_default();
         let desktopFile, app;
         for (let i in settingsList) {
-            if (settingsList[i].split(":")[0] == this.instance_id){
+            if (settingsList[i].split(":")[0] == this.instance_id) {
                 desktopFile = settingsList[i].split(":")[1];
                 app = appSys.lookup_app(desktopFile);
                 if (!app) app = appSys.lookup_settings_app(desktopFile);
@@ -106,20 +106,20 @@ MyDesklet.prototype = {
         this._icon = null;
     },
 
-    _animateIcon: function(step){
+    _animateIcon: function(step) {
         if (step>=3) return;
         Tweener.addTween(this._icon,
                          { width: ANIM_ICON_SIZE * global.ui_scale,
                            height: ANIM_ICON_SIZE * global.ui_scale,
                            time: 0.2,
                            transition: 'easeOutQuad',
-                           onComplete: function(){
+                           onComplete: function() {
                                Tweener.addTween(this._icon,
                                                 { width: ICON_SIZE * global.ui_scale,
                                                   height: ICON_SIZE * global.ui_scale,
                                                   time: 0.2,
                                                   transition: 'easeOutQuad',
-                                                  onComplete: function(){
+                                                  onComplete: function() {
                                                       this._animateIcon(step+1);
                                                   },
                                                   onCompleteScope: this
@@ -141,7 +141,6 @@ MyDesklet.prototype = {
     }
 };
 
-function main(metadata, desklet_id){
-    let desklet = new MyDesklet(metadata, desklet_id);
-    return desklet;
+function main(metadata, desklet_id) {
+    return new CinnamonLauncherDesklet(metadata, desklet_id);
 }
