@@ -10,9 +10,8 @@ const Lang = imports.lang;
 const SignalManager = imports.misc.signalManager;
 
 class CinnamonShowDesktopApplet extends Applet.IconApplet {
-
-    _init(orientation, panel_height, instance_id) {
-        super._init(orientation, panel_height, instance_id);
+    constructor(orientation, panel_height, instance_id) {
+        super(orientation, panel_height, instance_id);
 
         this.settings = new Settings.AppletSettings(this, "show-desktop@cinnamon.org", instance_id);
 
