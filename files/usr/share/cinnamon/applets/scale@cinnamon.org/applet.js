@@ -3,15 +3,9 @@ const Lang = imports.lang;
 const Main = imports.ui.main;
 const Settings = imports.ui.settings;
 
-function CinnamonScaleApplet(metadata, orientation, panel_height, instance_id) {
-    this._init(metadata, orientation, panel_height, instance_id);
-}
-
-CinnamonScaleApplet.prototype = {
-    __proto__: Applet.IconApplet.prototype,
-
-    _init: function(metadata, orientation, panel_height, instance_id) {
-        Applet.IconApplet.prototype._init.call(this, orientation, panel_height, instance_id);
+class CinnamonScaleApplet extends Applet.IconApplet {
+    constructor(metadata, orientation, panel_height, instance_id) {
+        super(orientation, panel_height, instance_id);
 
         try {
             this.set_applet_icon_symbolic_name("cinnamon-scale");
@@ -27,25 +21,25 @@ CinnamonScaleApplet.prototype = {
         catch (e) {
             global.logError(e);
         }
-    },
+    }
 
-    on_applet_clicked: function(event) {
+    on_applet_clicked(event) {
         if (this._hover_activates)
             return;
         this.doAction();
-    },
+    }
 
-    _onEntered: function(event) {
+    _onEntered(event) {
         if (!this._hover_activates || global.settings.get_boolean("panel-edit-mode"))
             return;
         this.doAction();
-    },
+    }
 
-    doAction: function() {
+    doAction() {
         if (!Main.overview.animationInProgress)
             Main.overview.toggle();
     }
-};
+}
 
 function main(metadata, orientation, panel_height, instance_id) {
     return new CinnamonScaleApplet(metadata, orientation, panel_height, instance_id);
