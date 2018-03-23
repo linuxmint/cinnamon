@@ -56,7 +56,7 @@ const PanelLoc = {
  * `true`.
  */
 function TooltipBase(item) {
-    throw new TypeError("Trying to instantiate abstract class TooltipBase");
+    this._init(item);
 }
 
 TooltipBase.prototype = {
