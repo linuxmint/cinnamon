@@ -13,12 +13,8 @@ const Pango = imports.gi.Pango;
 
 const MIN_SWITCH_INTERVAL_MS = 220;
 
-function WorkspaceButton(index, applet) {
-    this._init(index, applet);
-}
-
-WorkspaceButton.prototype = {
-    _init : function(index, applet) {
+class WorkspaceButton {
+    constructor(index, applet) {
         this.index = index;
         this.applet = applet;
         this.workspace = global.screen.get_workspace_by_index(this.index);
@@ -29,39 +25,33 @@ WorkspaceButton.prototype = {
 
         this.ws_signals.connect(this.workspace, "window-added", this.update, this);
         this.ws_signals.connect(this.workspace, "window-removed", this.update, this);
-    },
+    }
 
-    show : function() {
+    show() {
         this.actor.connect('button-release-event', Lang.bind(this, this.onClicked));
         this._tooltip = new Tooltips.PanelItemTooltip(this, this.workspace_name, this.applet.orientation);
-    },
+    }
 
-    onClicked: function(actor, event) {
+    onClicked(actor, event) {
         if (event.get_button() == 1) {
             Main.wm.moveToWorkspace(this.workspace);
         }
-    },
+    }
 
-    update: function() {
+    update() {
         // defined in subclass
-    },
+    }
 
-    destroy: function() {
+    destroy() {
         this.ws_signals.disconnectAllSignals();
         this._tooltip.destroy();
         this.actor.destroy();
     }
-};
-
-function WorkspaceGraph(index, applet) {
-    this._init(index, applet);
 }
 
-WorkspaceGraph.prototype = {
-    __proto__: WorkspaceButton.prototype,
-
-    _init: function(index, applet) {
-        WorkspaceButton.prototype._init.call(this, index, applet);
+class WorkspaceGraph extends WorkspaceButton {
+    constructor(index, applet) {
+        super(index, applet);
 
         this.actor = new St.Bin({ reactive: true,
                                   style_class: 'workspace',
@@ -86,9 +76,9 @@ WorkspaceGraph.prototype = {
         if (index == global.screen.get_active_workspace_index()) {
             this.actor.add_style_pseudo_class('active');
         }
-    },
+    }
 
-    scale: function (windows_rect, workspace_rect, area_width, area_height) {
+    scale (windows_rect, workspace_rect, area_width, area_height) {
         let scaled_rect = new Meta.Rectangle();
         let x_ratio = area_width / workspace_rect.width;
         let y_ratio = area_height / workspace_rect.height;
@@ -97,84 +87,75 @@ WorkspaceGraph.prototype = {
         scaled_rect.width = windows_rect.width * x_ratio;
         scaled_rect.height = windows_rect.height * y_ratio;
         return scaled_rect;
-    },
+    }
 
-    sortWindowsByUserTime: function (win1, win2) {
+    sortWindowsByUserTime (win1, win2) {
         let t1 = win1.get_user_time();
         let t2 = win2.get_user_time();
         return (t2 < t1) ? 1 : -1;
-    },
+    }
 
-    onRepaint: function(area) {
-        try {
-            let graphThemeNode = this.graphArea.get_theme_node();
-            let workspaceThemeNode = this.panelApplet.actor.get_theme_node();
-            let height = this.panelApplet._panelHeight - workspaceThemeNode.get_vertical_padding();
-            let borderWidth = workspaceThemeNode.get_border_width(St.Side.TOP) + workspaceThemeNode.get_border_width(St.Side.BOTTOM);
+    onRepaint(area) {
+        let graphThemeNode = this.graphArea.get_theme_node();
+        let workspaceThemeNode = this.panelApplet.actor.get_theme_node();
+        let height = this.panelApplet._panelHeight - workspaceThemeNode.get_vertical_padding();
+        let borderWidth = workspaceThemeNode.get_border_width(St.Side.TOP) + workspaceThemeNode.get_border_width(St.Side.BOTTOM);
 
-            this.graphArea.set_size(this.sizeRatio * height, height - borderWidth);
-            let cr = area.get_context();
-            let [area_width, area_height] = area.get_surface_size();
+        this.graphArea.set_size(this.sizeRatio * height, height - borderWidth);
+        let cr = area.get_context();
+        let [area_width, area_height] = area.get_surface_size();
 
-            // construct a list with all windows
-            let windows = this.workspace.list_windows();
-            windows = windows.filter( Main.isInteresting );
-            windows = windows.filter(
-                function(w) {
-                    return !w.is_skip_taskbar() && !w.minimized;
-                });
-            windows.sort(this.sortWindowsByUserTime);
+        // construct a list with all windows
+        let windows = this.workspace.list_windows();
+        windows = windows.filter( Main.isInteresting );
+        windows = windows.filter(
+            function(w) {
+                return !w.is_skip_taskbar() && !w.minimized;
+            });
+        windows.sort(this.sortWindowsByUserTime);
 
-            if (windows.length) {
-                let windowBackgroundColor;
-                let windowBorderColor;
-                for (let i = 0; i < windows.length; ++i) {
-                    let metaWindow = windows[i];
-                    let scaled_rect = this.scale(metaWindow.get_outer_rect(), this.workspace_size, area_width, area_height);
+        if (windows.length) {
+            let windowBackgroundColor;
+            let windowBorderColor;
+            for (let i = 0; i < windows.length; ++i) {
+                let metaWindow = windows[i];
+                let scaled_rect = this.scale(metaWindow.get_outer_rect(), this.workspace_size, area_width, area_height);
 
-                    cr.setLineWidth(1);
-                    if (metaWindow.has_focus()) {
-                        windowBorderColor = graphThemeNode.get_color('-active-window-border');
-                        Clutter.cairo_set_source_color(cr, windowBorderColor);
-                    }
-                    else {
-                        windowBorderColor = graphThemeNode.get_color('-inactive-window-border');
-                        Clutter.cairo_set_source_color(cr, windowBorderColor);
-                    }
-                    cr.rectangle(scaled_rect.x, scaled_rect.y, scaled_rect.width, scaled_rect.height);
-                    cr.strokePreserve();
-                    if (metaWindow.has_focus()) {
-                        windowBackgroundColor = graphThemeNode.get_color('-active-window-background');
-                        Clutter.cairo_set_source_color(cr, windowBackgroundColor);
-                    }
-                    else {
-                        windowBackgroundColor = graphThemeNode.get_color('-inactive-window-background');
-                        Clutter.cairo_set_source_color(cr, windowBackgroundColor);
-                    }
-
-                    cr.fill();
+                cr.setLineWidth(1);
+                if (metaWindow.has_focus()) {
+                    windowBorderColor = graphThemeNode.get_color('-active-window-border');
+                    Clutter.cairo_set_source_color(cr, windowBorderColor);
                 }
+                else {
+                    windowBorderColor = graphThemeNode.get_color('-inactive-window-border');
+                    Clutter.cairo_set_source_color(cr, windowBorderColor);
+                }
+                cr.rectangle(scaled_rect.x, scaled_rect.y, scaled_rect.width, scaled_rect.height);
+                cr.strokePreserve();
+                if (metaWindow.has_focus()) {
+                    windowBackgroundColor = graphThemeNode.get_color('-active-window-background');
+                    Clutter.cairo_set_source_color(cr, windowBackgroundColor);
+                }
+                else {
+                    windowBackgroundColor = graphThemeNode.get_color('-inactive-window-background');
+                    Clutter.cairo_set_source_color(cr, windowBackgroundColor);
+                }
+
+                cr.fill();
             }
-
-            cr.$dispose();
-        } catch(e) {
-            global.logError(e);
         }
-    },
 
-    update: function() {
+        cr.$dispose();
+    }
+
+    update() {
         this.graphArea.queue_repaint();
     }
-};
-
-function SimpleButton(index, applet) {
-    this._init(index, applet);
 }
 
-SimpleButton.prototype = {
-    __proto__: WorkspaceButton.prototype,
-    _init : function(index, applet) {
-        WorkspaceButton.prototype._init.call(this, index, applet);
+class SimpleButton extends WorkspaceButton {
+    constructor(index, applet) {
+        super(index, applet);
 
         this.actor = new St.Button({ name: 'workspaceButton',
                                      style_class: 'workspace-button',
@@ -194,94 +175,79 @@ SimpleButton.prototype = {
         let label = new St.Label({ text: (index + 1).toString() });
         label.clutter_text.set_ellipsize(Pango.EllipsizeMode.NONE);
         this.actor.set_child(label);
-    },
-
-    update: function() {
-
     }
-};
-
-function CinnamonWorkspaceSwitcher(metadata, orientation, panel_height, instance_id) {
-    this._init(metadata, orientation, panel_height, instance_id);
 }
 
-CinnamonWorkspaceSwitcher.prototype = {
-    __proto__: Applet.Applet.prototype,
-
-    _init: function(metadata, orientation, panel_height, instance_id) {
-        Applet.Applet.prototype._init.call(this, orientation, panel_height, instance_id);
+class CinnamonWorkspaceSwitcher extends Applet.Applet {
+    constructor(metadata, orientation, panel_height, instance_id) {
+        super(orientation, panel_height, instance_id);
 
         this.setAllowedLayout(Applet.AllowedLayout.BOTH);
 
-        try {
-            this.orientation = orientation;
-            this.panel_height = panel_height;
-            this.signals = new SignalManager.SignalManager(null);
-            this.buttons = [];
-            this._last_switch = 0;
-            this._last_switch_direction = 0;
+        this.orientation = orientation;
+        this.panel_height = panel_height;
+        this.signals = new SignalManager.SignalManager(null);
+        this.buttons = [];
+        this._last_switch = 0;
+        this._last_switch_direction = 0;
 
-            let manager;
-            if (this.orientation == St.Side.TOP || this.orientation == St.Side.BOTTOM) {
-                manager = new Clutter.BoxLayout({ spacing: 2 * global.ui_scale,
-                                                  homogeneous: true,
-                                                  orientation: Clutter.Orientation.HORIZONTAL });
-            } else {
-                manager = new Clutter.BoxLayout({ spacing: 2 * global.ui_scale,
-                                                  homogeneous: true,
-                                                  orientation: Clutter.Orientation.VERTICAL });
-            }
-            this.manager = manager;
-            this.manager_container = new Clutter.Actor({ layout_manager: manager });
-            this.actor.add_actor (this.manager_container);
-            this.manager_container.show();
-
-            this._focusWindow = 0;
-            if (global.display.focus_window)
-                this._focusWindow = global.display.focus_window.get_compositor_private();
-
-            this.settings = new Settings.AppletSettings(this, metadata.uuid, instance_id);
-            this.settings.bind("display_type", "display_type", this._createButtons);
-
-            this.actor.connect('scroll-event', this.hook.bind(this));
-
-            this._createButtons();
-            global.screen.connect('notify::n-workspaces', Lang.bind(this, this.onNumberOfWorkspacesChanged));
-            global.window_manager.connect('switch-workspace', Lang.bind(this, this._createButtons));
-            this.on_panel_edit_mode_changed();
-            global.settings.connect('changed::panel-edit-mode', Lang.bind(this, this.on_panel_edit_mode_changed));
-
-            let expoMenuItem = new PopupMenu.PopupIconMenuItem(_("Manage workspaces (Expo)"), "view-grid-symbolic", St.IconType.SYMBOLIC);
-            expoMenuItem.connect('activate', Lang.bind(this, function() {
-                if (!Main.expo.animationInProgress)
-                    Main.expo.toggle();
-            }));
-            this._applet_context_menu.addMenuItem(expoMenuItem);
-
-            let addWorkspaceMenuItem = new PopupMenu.PopupIconMenuItem (_("Add a new workspace"), "list-add", St.IconType.SYMBOLIC);
-            addWorkspaceMenuItem.connect('activate', Lang.bind(this, function() {
-                Main._addWorkspace();
-            }));
-            this._applet_context_menu.addMenuItem(addWorkspaceMenuItem);
-
-            this.removeWorkspaceMenuItem = new PopupMenu.PopupIconMenuItem (_("Remove the current workspace"), "list-remove", St.IconType.SYMBOLIC);
-            this.removeWorkspaceMenuItem.connect('activate', Lang.bind(this, function() {
-                this.removeWorkspace();
-            }));
-            this._applet_context_menu.addMenuItem(this.removeWorkspaceMenuItem);
-            this.removeWorkspaceMenuItem.setSensitive(global.screen.n_workspaces > 1);
+        let manager;
+        if (this.orientation == St.Side.TOP || this.orientation == St.Side.BOTTOM) {
+            manager = new Clutter.BoxLayout({ spacing: 2 * global.ui_scale,
+                                                homogeneous: true,
+                                                orientation: Clutter.Orientation.HORIZONTAL });
+        } else {
+            manager = new Clutter.BoxLayout({ spacing: 2 * global.ui_scale,
+                                                homogeneous: true,
+                                                orientation: Clutter.Orientation.VERTICAL });
         }
-        catch (e) {
-            global.logError(e);
-        }
-    },
+        this.manager = manager;
+        this.manager_container = new Clutter.Actor({ layout_manager: manager });
+        this.actor.add_actor (this.manager_container);
+        this.manager_container.show();
 
-    onNumberOfWorkspacesChanged: function() {
+        this._focusWindow = 0;
+        if (global.display.focus_window)
+            this._focusWindow = global.display.focus_window.get_compositor_private();
+
+        this.settings = new Settings.AppletSettings(this, metadata.uuid, instance_id);
+        this.settings.bind("display_type", "display_type", this._createButtons);
+
+        this.actor.connect('scroll-event', this.hook.bind(this));
+
+        this._createButtons();
+        global.screen.connect('notify::n-workspaces', Lang.bind(this, this.onNumberOfWorkspacesChanged));
+        global.window_manager.connect('switch-workspace', Lang.bind(this, this._createButtons));
+        this.on_panel_edit_mode_changed();
+        global.settings.connect('changed::panel-edit-mode', Lang.bind(this, this.on_panel_edit_mode_changed));
+
+        let expoMenuItem = new PopupMenu.PopupIconMenuItem(_("Manage workspaces (Expo)"), "view-grid-symbolic", St.IconType.SYMBOLIC);
+        expoMenuItem.connect('activate', Lang.bind(this, function() {
+            if (!Main.expo.animationInProgress)
+                Main.expo.toggle();
+        }));
+        this._applet_context_menu.addMenuItem(expoMenuItem);
+
+        let addWorkspaceMenuItem = new PopupMenu.PopupIconMenuItem (_("Add a new workspace"), "list-add", St.IconType.SYMBOLIC);
+        addWorkspaceMenuItem.connect('activate', Lang.bind(this, function() {
+            Main._addWorkspace();
+        }));
+        this._applet_context_menu.addMenuItem(addWorkspaceMenuItem);
+
+        this.removeWorkspaceMenuItem = new PopupMenu.PopupIconMenuItem (_("Remove the current workspace"), "list-remove", St.IconType.SYMBOLIC);
+        this.removeWorkspaceMenuItem.connect('activate', Lang.bind(this, function() {
+            this.removeWorkspace();
+        }));
+        this._applet_context_menu.addMenuItem(this.removeWorkspaceMenuItem);
+        this.removeWorkspaceMenuItem.setSensitive(global.screen.n_workspaces > 1);
+    }
+
+    onNumberOfWorkspacesChanged() {
         this.removeWorkspaceMenuItem.setSensitive(global.screen.n_workspaces > 1);
         this._createButtons();
-    },
+    }
 
-    removeWorkspace : function (){
+    removeWorkspace  (){
         if (global.screen.n_workspaces <= 1) {
             return;
         }
@@ -298,16 +264,16 @@ CinnamonWorkspaceSwitcher.prototype = {
         else {
             removeAction();
         }
-    },
+    }
 
-    on_panel_edit_mode_changed: function() {
+    on_panel_edit_mode_changed() {
         let reactive = !global.settings.get_boolean('panel-edit-mode');
         for (let i = 0; i < this.buttons.length; ++i) {
             this.buttons[i].reactive = reactive;
         }
-    },
+    }
 
-    on_orientation_changed: function(neworientation) {
+    on_orientation_changed(neworientation) {
         this.orientation = neworientation;
 
         if (this.orientation == St.Side.TOP || this.orientation == St.Side.BOTTOM)
@@ -316,13 +282,13 @@ CinnamonWorkspaceSwitcher.prototype = {
             this.manager.set_vertical(true);
 
         this._createButtons();
-    },
+    }
 
-    on_panel_height_changed: function() {
+    on_panel_height_changed() {
         this._createButtons();
-    },
+    }
 
-    hook: function(actor, event) {
+    hook(actor, event) {
         let now = (new Date()).getTime();
         let direction = event.get_scroll_direction();
 
@@ -340,9 +306,9 @@ CinnamonWorkspaceSwitcher.prototype = {
             this._last_switch = now;
             this._last_switch_direction = direction;
         }
-    },
+    }
 
-    _createButtons: function() {
+    _createButtons() {
         for (let i = 0; i < this.buttons.length; ++i) {
             this.buttons[i].destroy();
         }
@@ -383,9 +349,9 @@ CinnamonWorkspaceSwitcher.prototype = {
             this.signals.connect(global.display, "notify::focus-window", this._onFocusChanged, this);
             this._onFocusChanged();
         }
-    },
+    }
 
-    _onFocusChanged: function() {
+    _onFocusChanged() {
         if (global.display.focus_window &&
             this._focusWindow == global.display.focus_window.get_compositor_private())
             return;
@@ -400,17 +366,17 @@ CinnamonWorkspaceSwitcher.prototype = {
         this.signals.connect(this._focusWindow, "position-changed", Lang.bind(this, this._onPositionChanged), this);
         this.signals.connect(this._focusWindow, "size-changed", Lang.bind(this, this._onPositionChanged), this);
         this._onPositionChanged();
-    },
+    }
 
-    _onPositionChanged: function() {
+    _onPositionChanged() {
         let button = this.buttons[global.screen.get_active_workspace_index()];
         button.update();
-    },
+    }
 
-    on_applet_removed_from_panel: function() {
+    on_applet_removed_from_panel() {
         this.signals.disconnectAllSignals();
     }
-};
+}
 
 function main(metadata, orientation, panel_height, instance_id) {
     return new CinnamonWorkspaceSwitcher(metadata, orientation, panel_height, instance_id);
