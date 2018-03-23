@@ -7,7 +7,7 @@ const Util = imports.misc.util;
 const PopupMenu = imports.ui.popupMenu;
 const UPowerGlib = imports.gi.UPowerGlib;
 const Settings = imports.ui.settings;
-const Calendar = imports.applets['calendar@cinnamon.org'].calendar;
+const Calendar = require('./calendar');
 const CinnamonDesktop = imports.gi.CinnamonDesktop;
 
 String.prototype.capitalize = function() {
@@ -32,15 +32,9 @@ function _onVertSepRepaint (area)
     cr.$dispose();
 };
 
-function CinnamonCalendarApplet(orientation, panel_height, instance_id) {
-    this._init(orientation, panel_height, instance_id);
-}
-
-CinnamonCalendarApplet.prototype = {
-    __proto__: Applet.TextApplet.prototype,
-
-    _init: function(orientation, panel_height, instance_id) {
-        Applet.TextApplet.prototype._init.call(this, orientation, panel_height, instance_id);
+class CinnamonCalendarApplet extends Applet.TextApplet {
+    constructor(orientation, panel_height, instance_id) {
+        super(orientation, panel_height, instance_id);
 
         this.setAllowedLayout(Applet.AllowedLayout.BOTH);
 
@@ -98,31 +92,31 @@ CinnamonCalendarApplet.prototype = {
         catch (e) {
             global.logError(e);
         }
-    },
+    }
 
-    _clockNotify: function(obj, pspec, data) {
+    _clockNotify(obj, pspec, data) {
         this._updateClockAndDate();
-    },
+    }
 
-    on_applet_clicked: function(event) {
+    on_applet_clicked(event) {
         this.menu.toggle();
-    },
+    }
 
-    _onSettingsChanged: function() {
+    _onSettingsChanged() {
         this._updateFormatString();
         this._updateClockAndDate();
-    },
+    }
 
-    on_custom_format_button_pressed: function() {
+    on_custom_format_button_pressed() {
         Util.spawnCommandLine("xdg-open http://www.foragoodstrftime.com/");
-    },
+    }
 
-    _onLaunchSettings: function() {
+    _onLaunchSettings() {
         this.menu.close();
         Util.spawnCommandLine("cinnamon-settings calendar");
-    },
+    }
 
-    _updateFormatString: function() {
+    _updateFormatString() {
         let in_vertical_panel = (this.orientation == St.Side.LEFT || this.orientation == St.Side.RIGHT);
 
         if (this.use_custom_format) {
@@ -150,9 +144,9 @@ CinnamonCalendarApplet.prototype = {
         } else {
             this.clock.set_format_string(null);
         }
-    },
+    }
 
-    _updateClockAndDate: function() {
+    _updateClockAndDate() {
         let label_string = this.clock.get_clock();
 
         if (!this.use_custom_format) {
@@ -167,9 +161,9 @@ CinnamonCalendarApplet.prototype = {
 
         this._date.set_text(dateFormattedFull);
         this.set_applet_tooltip(dateFormattedFull);
-    },
+    }
 
-    on_applet_added_to_panel: function() {
+    on_applet_added_to_panel() {
         this._onSettingsChanged();
 
         if (this.clock_notify_id == 0) {
@@ -178,16 +172,16 @@ CinnamonCalendarApplet.prototype = {
 
         /* Populates the calendar so our menu allocation is correct for animation */
         this._updateCalendar();
-    },
+    }
 
-    on_applet_removed_from_panel: function() {
+    on_applet_removed_from_panel() {
         if (this.clock_notify_id > 0) {
             this.clock.disconnect(this.clock_notify_id);
             this.clock_notify_id = 0;
         }
-    },
+    }
 
-    _initContextMenu: function () {
+    _initContextMenu () {
         this.menu = new Applet.AppletPopupMenu(this, this.orientation);
         this.menuManager.addMenu(this.menu);
 
@@ -197,21 +191,20 @@ CinnamonCalendarApplet.prototype = {
                 this._updateCalendar();
             }
         }));
-    },
+    }
 
-    _updateCalendar: function () {
+    _updateCalendar () {
         let now = new Date();
 
         this._calendar.setDate(now, true);
-    },
+    }
 
-    on_orientation_changed: function (orientation) {
+    on_orientation_changed (orientation) {
         this.orientation = orientation;
         this.menu.setOrientation(orientation);
         this._onSettingsChanged();
     }
-
-};
+}
 
 function main(metadata, orientation, panel_height, instance_id) {
     return new CinnamonCalendarApplet(orientation, panel_height, instance_id);
