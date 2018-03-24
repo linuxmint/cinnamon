@@ -1390,7 +1390,8 @@ class CinnamonSoundApplet extends Applet.TextIconApplet {
 
         this._activePlayer = player;
         if (this.playerControl && this._activePlayer != null) {
-            this.menu.addMenuItem(this._players[player], 1);
+            let menuItem = this._players[player];
+            this.menu.addMenuItem(menuItem, 1);
         }
 
         this._updatePlayerMenuItems();
