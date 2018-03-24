@@ -1150,7 +1150,7 @@ StScrollBar StButton#vhandle:hover {
     padding-right: 5px;
 
 }
-.menu-category-button-button:hover {
+.menu-category-button-selected:hover {
     background-color: #969696;
     border-radius: 8px;
 }
