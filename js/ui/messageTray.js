@@ -1675,8 +1675,8 @@ MessageTray.prototype = {
         let topPanel = Main.panelManager.getPanel(0, 0);
         let bottomPanel = Main.panelManager.getPanel(0, 1);
         let rightPanel = Main.panelManager.getPanel(0, 3);
-        let topGap = 5;
-        let bottomGap = 15;
+        let topGap = 10;
+        let bottomGap = 10;
         let rightGap = 0;
 
         if (rightPanel) {
@@ -1687,7 +1687,7 @@ MessageTray.prototype = {
             if (topPanel) {
                 topGap += topPanel.actor.get_height();
             }
-            this._notificationBin.y = monitor.y + topGap * 2; // Notifications appear from here (for the animation)
+            this._notificationBin.y = monitor.y + topGap; // Notifications appear from here (for the animation)
         }
 
         let margin = this._notification._table.get_theme_node().get_length('margin-from-right-edge-of-screen');
