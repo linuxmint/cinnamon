@@ -1695,7 +1695,7 @@ MessageTray.prototype = {
                 bottomGap += bottomPanel.actor.get_height();
             }
             let getBottomPositionY = () => {
-                return monitor.height - this._notificationBin.height - bottomGap;
+                return monitor.y + monitor.height - this._notificationBin.height - bottomGap;
             };
             let shouldReturn = false;
             let initialY = getBottomPositionY();
@@ -1803,24 +1803,18 @@ MessageTray.prototype = {
     },
 
     _hideNotification: function() {
-        let y;
         this._focusGrabber.ungrabFocus();
         if (this._notificationExpandedId) {
             this._notification.disconnect(this._notificationExpandedId);
             this._notificationExpandedId = 0;
         }
 
+        let y = Main.layoutManager.primaryMonitor.y;
         if (this.bottomPosition) {
             if (this.bottomPositionSignal) {
                 this._notificationBin.disconnect(this.bottomPositionSignal);
             }
-            y = Main.layoutManager.primaryMonitor.height;
-            let bottomPanel = Main.panelManager.getPanel(0, 1);
-            if (bottomPanel) {
-                y -= bottomPanel.actor.get_height() - 15;
-            }
-        } else {
-            y = Main.layoutManager.primaryMonitor.y;
+            y += Main.layoutManager.primaryMonitor.height - this._notificationBin.height;
         }
 
         this._tween(this._notificationBin, '_notificationState', State.HIDDEN, {
