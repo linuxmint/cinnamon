@@ -184,7 +184,7 @@ function heightsUsedMonitor (monitorIndex, listofpanels) {
             if (listofpanels[i].monitorIndex == monitorIndex) {
                 if (listofpanels[i].panelPosition == PanelLoc.top)
                     toppanelHeight = listofpanels[i].actor.height;
-                if (listofpanels[i].panelPosition == PanelLoc.bottom)
+                else if (listofpanels[i].panelPosition == PanelLoc.bottom)
                     bottompanelHeight = listofpanels[i].actor.height;
             }
         }
