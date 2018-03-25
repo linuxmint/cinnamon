@@ -59,6 +59,8 @@ struct _StWidgetPrivate
   gchar        *inline_style;
 
   StThemeNodeTransition *transition_animation;
+  StBackgroundBlurEffect *background_blur_effect;
+  StBackgroundBumpmapEffect *background_bumpmap_effect;
 
   guint      is_style_dirty : 1;
   guint      draw_bg_color : 1;
@@ -128,6 +130,8 @@ G_DEFINE_TYPE_WITH_PRIVATE (StWidget, st_widget, CLUTTER_TYPE_ACTOR);
 
 static void st_widget_recompute_style (StWidget    *widget,
                                        StThemeNode *old_theme_node);
+static void st_widget_add_background_effects (StWidget    *widget,
+                                              StThemeNode *old_theme_node);
 static gboolean st_widget_real_navigate_focus (StWidget         *widget,
                                                ClutterActor     *from,
                                                GtkDirectionType  direction);
@@ -278,6 +282,18 @@ st_widget_dispose (GObject *gobject)
   st_widget_remove_transition (actor);
 
   g_clear_pointer (&priv->label_actor, g_object_unref);
+  if (priv->background_blur_effect)
+    {
+      g_object_run_dispose (G_OBJECT (priv->background_blur_effect));
+      g_object_unref (priv->background_blur_effect);
+      priv->background_blur_effect = NULL;
+    }
+      if (priv->background_bumpmap_effect)
+    {
+      g_object_run_dispose (G_OBJECT (priv->background_bumpmap_effect));
+      g_object_unref (priv->background_bumpmap_effect);
+      priv->background_bumpmap_effect = NULL;
+    }
 
   g_clear_object (&priv->prev_first_child);
   g_clear_object (&priv->prev_last_child);
@@ -361,7 +377,7 @@ st_widget_allocate (ClutterActor          *actor,
  * @widget: The #StWidget
  *
  * Paint the background of the widget. This is meant to be called by
- * subclasses of StWiget that need to paint the background without
+ * subclasses of StWidget that need to paint the background without
  * painting children.
  */
 void
@@ -382,22 +398,12 @@ st_widget_paint_background (StWidget *widget)
                                     &allocation,
                                     opacity);
   else
-    st_theme_node_paint (theme_node, cogl_get_draw_framebuffer (), &allocation, opacity);
-
-  // ClutterEffect *effect = clutter_actor_get_effect (actor, "background-effect");
-
-  // if (effect == NULL)
-  //   {
-  //     effect = st_background_effect_new ();
-  //     clutter_actor_add_effect_with_name (actor, "background-effect", effect);
-  //   }
-
-  // const char *bumpmap_path = st_theme_node_get_background_bumpmap(theme_node);
-
-  // g_object_set (effect,
-  //               "bumpmap",
-  //               bumpmap_path,
-  //               NULL);
+    st_theme_node_paint (theme_node,
+                         cogl_get_draw_framebuffer(),
+                         &allocation,
+                         opacity,
+                         widget->priv->background_blur_effect,
+                         widget->priv->background_bumpmap_effect);
 }
 
  static void
@@ -487,7 +493,11 @@ st_widget_style_changed (StWidget *widget)
 
   /* update the style only if we are mapped */
   if (clutter_actor_is_mapped (CLUTTER_ACTOR (widget)))
-    st_widget_recompute_style (widget, old_theme_node);
+    {
+      st_widget_recompute_style (widget, old_theme_node);
+
+      st_widget_add_background_effects(widget, old_theme_node);
+    }
 
   if (old_theme_node)
     g_object_unref (old_theme_node);
@@ -1524,6 +1534,8 @@ st_widget_init (StWidget *actor)
 
   actor->priv = priv = st_widget_get_instance_private (actor);
   priv->transition_animation = NULL;
+  priv->background_blur_effect = NULL;
+  priv->background_bumpmap_effect = NULL;
   priv->local_state_set = atk_state_set_new ();
 
   /* connect style changed */
@@ -1538,6 +1550,57 @@ on_transition_completed (StThemeNodeTransition *transition,
                          StWidget              *widget)
 {
   st_widget_remove_transition (widget);
+}
+
+static void st_widget_add_background_effects (StWidget    *widget,
+                                              StThemeNode *old_theme_node )
+{
+StThemeNode *new_theme_node = st_widget_get_theme_node (widget);
+
+  if (old_theme_node)
+    {
+      if (old_theme_node->background_blur > 0)
+        {
+          if (widget->priv->background_blur_effect != NULL)
+            {
+              g_object_run_dispose (G_OBJECT (widget->priv->background_blur_effect));
+              g_object_unref (widget->priv->background_blur_effect);
+              widget->priv->background_blur_effect = NULL;
+            }
+        }
+      if (old_theme_node->background_bumpmap != NULL)
+        {
+          if (widget->priv->background_bumpmap_effect != NULL)
+            {
+              g_object_run_dispose (G_OBJECT (widget->priv->background_bumpmap_effect));
+              g_object_unref (widget->priv->background_bumpmap_effect);
+              widget->priv->background_bumpmap_effect = NULL;
+            }
+        }
+    }
+
+  if (new_theme_node)
+    {
+      if (new_theme_node->background_blur > 0)
+        {
+          if (widget->priv->background_blur_effect == NULL)
+            {
+              widget->priv->background_blur_effect = (StBackgroundBlurEffect *) st_background_blur_effect_new ();
+              widget->priv->background_blur_effect->blur_size = new_theme_node->background_blur;
+            }
+        }
+      if (new_theme_node->background_bumpmap != NULL)
+        {
+          const char *bumpmap_path;
+
+          if (widget->priv->background_bumpmap_effect == NULL)
+            {
+              widget->priv->background_bumpmap_effect = (StBackgroundBumpmapEffect *) st_background_bumpmap_effect_new ();
+            }
+          bumpmap_path = st_theme_node_get_background_bumpmap(new_theme_node);
+          widget->priv->background_bumpmap_effect->bumpmap_path = strdup (bumpmap_path);
+        }
+    }
 }
 
 static void
@@ -1617,7 +1680,7 @@ st_widget_ensure_style (StWidget *widget)
   g_return_if_fail (ST_IS_WIDGET (widget));
 
   if (widget->priv->is_style_dirty)
-    st_widget_recompute_style (widget, NULL);
+      st_widget_recompute_style (widget, NULL);
 }
 
 static StTextDirection default_direction = ST_TEXT_DIRECTION_LTR;
