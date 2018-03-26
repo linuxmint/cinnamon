@@ -829,8 +829,6 @@ Player.prototype = {
                 this.coverBox.set_child_below_sibling(this.cover, this.trackInfo);
                 this._applet.setAppletTextIcon(this, cover_path);
 
-
-
                 /*Tweener.addTween(this._trackCover, { opacity: 255,
                     time: 0.3,
                     transition: 'easeInCubic'
