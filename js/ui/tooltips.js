@@ -327,16 +327,16 @@ PanelItemTooltip.prototype = {
             if (!panel.getIsVisible()) continue;
             switch (panel.panelPosition) {
                 case PanelLoc.top:
-                    panelTop = panel.actor.height + 1;
+                    panelTop = panel.actor.height;
                     break;
                 case PanelLoc.bottom:
-                    panelBottom = panel.actor.height + 1;
+                    panelBottom = panel.actor.height;
                     break;
                 case PanelLoc.left:
-                    panelLeft = panel.actor.width + 1;
+                    panelLeft = panel.actor.width;
                     break;
                 case PanelLoc.right:
-                    panelRight = panel.actor.width + 1;
+                    panelRight = panel.actor.width;
                     break;
             }
         }
