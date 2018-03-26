@@ -150,6 +150,9 @@ VolumeSlider.prototype = {
             muted = true;
         } else {
             muted = false;
+            //100% is magnetic:
+            if (volume != this.applet._volumeNorm && volume > this.applet._volumeNorm*(1-VOLUME_ADJUSTMENT_STEP/2) && volume < this.applet._volumeNorm*(1+VOLUME_ADJUSTMENT_STEP/2))
+                volume = this.applet._volumeNorm;
         }
         this.stream.volume = volume;
         this.stream.push_volume();
@@ -188,6 +191,7 @@ VolumeSlider.prototype = {
         return false;
     },
 
+
     _update: function(){
         // value: percentage of volume_max (set as value in the widget)
         // visible_value: percentage of volume_norm (shown to the user)
@@ -195,15 +199,18 @@ VolumeSlider.prototype = {
         let volume = (!this.stream || this.stream.is_muted) ? 0 : this.stream.volume;
         let value, visible_value, delta = VOLUME_ADJUSTMENT_STEP * this.applet._volumeMax / this.applet._volumeNorm;
 
-		if (this.isOutputSink) {
+        if (this.isOutputSink) {
             value = volume / this.applet._volumeMax;
             visible_value = volume / this.applet._volumeNorm;
-            if (visible_value > 1 - delta/2 && visible_value < 1 + delta/2) {
+            if (visible_value != 1 && visible_value > 1 - delta/2 && visible_value < 1 + delta/2) {
                 visible_value = 1; // 100% is magnetic
                 value = this.applet._volumeNorm / this.applet._volumeMax;
+                this.applet._output.volume = this.applet._volumeNorm;
+                this.applet._output.push_volume();
             }
         } else {
-            value = visible_value = volume / this.applet._volumeNorm;
+            visible_value = volume / this.applet._volumeNorm;
+            value = visible_value
         }
 
         let percentage = Math.round(visible_value * 100) + "%";
@@ -1111,11 +1118,18 @@ MyApplet.prototype = {
                 this._output.volume = 0;
                 if (!prev_muted)
                     this._output.change_is_muted(true);
+            } else {
+                // 100% is magnetic:
+                if (this._output.volume!=this._volumeNorm && this._output.volume>this._volumeNorm*(1-VOLUME_ADJUSTMENT_STEP/2) && this._output.volume<this._volumeNorm*(1+VOLUME_ADJUSTMENT_STEP/2))
+                    this._output.volume=this._volumeNorm;
             }
             this._output.push_volume();
         }
         else if (direction == Clutter.ScrollDirection.UP) {
             this._output.volume = Math.min(this._volumeMax, currentVolume + this._volumeNorm * VOLUME_ADJUSTMENT_STEP);
+            // 100% is magnetic:
+            if (this._output.volume!=this._volumeNorm && this._output.volume>this._volumeNorm*(1-VOLUME_ADJUSTMENT_STEP/2) && this._output.volume<this._volumeNorm*(1+VOLUME_ADJUSTMENT_STEP/2))
+                this._output.volume=this._volumeNorm;
             this._output.push_volume();
             this._output.change_is_muted(false);
         }
