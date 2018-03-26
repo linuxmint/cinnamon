@@ -2974,7 +2974,7 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
             for (let i = 0; i < this._applicationsButtons.length; i++) {
                 let button = this._applicationsButtons[i];
                 let appId = button.app.get_id();
-                if (apps.indexOf(appId)) != -1) {
+                if (apps.indexOf(appId) != -1) {
                     button.actor.show();
                     if (appId == exactMatch) {
                         selectedActor = button.actor;
@@ -3121,8 +3121,8 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
     }
 
     _matchNames(names, pattern){
-        var res = [];
-        var exactMatch = null;
+        let res = [];
+        let exactMatch = null;
         for (let id = 0; id < names.length; id++) {
             if (pattern) {
                 let name = names[id].name;
@@ -3198,24 +3198,24 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
             return false;
         }
 
-        var result = this._listApplications(null, pattern);
-        var appResults = result[0];
-        var exactMatch = result[1];
-        var placesResults = [];
+        let result = this._listApplications(null, pattern);
+        let appResults = result[0];
+        let exactMatch = result[1];
+        let placesResults = [];
 
         result = this._listBookmarks(pattern);
-        var bookmarks = result[0];
+        let bookmarks = result[0];
         exactMatch = exactMatch || result[1];
-        for (var i in bookmarks)
+        for (let i in bookmarks)
             placesResults.push(bookmarks[i].name);
 
         result = this._listDevices(pattern);
-        var devices = result[0];
+        let devices = result[0];
         exactMatch = exactMatch || result[1];
-        for (var i in devices)
+        for (let i in devices)
             placesResults.push(devices[i].name);
 
-        var recentResults = [];
+        let recentResults = [];
         for (let i = 0; i < this._recentButtons.length; i++) {
             if (!(this._recentButtons[i] instanceof RecentClearButton) && this._recentButtons[i].button_name.toLowerCase().indexOf(pattern) != -1)
                 recentResults.push(this._recentButtons[i].button_name);
