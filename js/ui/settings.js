@@ -319,7 +319,9 @@ XletSettingsBase.prototype = {
         this.bindings[key].push(info);
 
         // add a save function for objects or arrays
-        if (typeof(this.settingsData[key].value) === "object" && !this.settingsData[key].value.save) {
+        if (this.settingsData[key] != null
+            && this.settingsData[key].value != null
+            && typeof(this.settingsData[key].value) === "object" && !this.settingsData[key].value.save) {
             info.isObject = true;
             this.settingsData[key].value.save = Lang.bind(this, this._saveToFile);
         }
