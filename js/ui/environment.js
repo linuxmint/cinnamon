@@ -103,6 +103,21 @@ function init() {
         return St.describe_actor(this);
     };
 
+    let originalSetText = St.Label.prototype.set_text;
+    St.Label.prototype.set_text = function(text) {
+        // Warn about non-strings being passed to set_text.
+        if (typeof text !== 'string') {
+            global.dump_gjs_stack(
+                `Invalid value of type ${typeof text} passed to St.Label.prototype.set_text.`
+            );
+            return false;
+        }
+        // Only call set_text if the text has changed.
+        if (text !== this.text) {
+            originalSetText.call(this, ...arguments);
+        }
+    };
+
     let origToString = Object.prototype.toString;
     Object.prototype.toString = function() {
         let base = origToString.call(this);
