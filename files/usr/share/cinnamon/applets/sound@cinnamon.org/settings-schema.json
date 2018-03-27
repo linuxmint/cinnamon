@@ -51,6 +51,12 @@
         },
         "description": "Action on middle click"
     },
+    "horizontalScroll": {
+        "type": "switch",
+        "default": false,
+        "description": "Use horizontal scrolling to move between tracks",
+        "dependency": "playerControl"
+    },
     "showalbum": {
         "type": "switch",
         "default": false,
