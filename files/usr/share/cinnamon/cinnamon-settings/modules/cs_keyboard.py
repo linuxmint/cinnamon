@@ -465,9 +465,7 @@ class Module:
             for keybinding in category.keybindings:
                 for entry in keybinding.entries:
                     found = False
-                    if accel_string.lower() == entry.lower():
-                        found = True
-                    elif accel_string.replace("<Primary>", "<Control>").lower() == entry.lower():
+                    if Gtk.accelerator_parse_with_keycode(accel_string) == Gtk.accelerator_parse_with_keycode(entry):
                         found = True
 
                     if found and keybinding.label != current_keybinding.label:
