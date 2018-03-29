@@ -536,6 +536,9 @@ StScrollBar StButton#vhandle:hover {
 /* ===================================================================
  * Date applet
  * ===================================================================*/
+/*calendar-background allows the date applet calendar to be themed seperately from other applet menus*/
+.calendar-background {
+}
 .calendar {
     padding: .4em 1.75em;
     spacing-rows: 0px;
