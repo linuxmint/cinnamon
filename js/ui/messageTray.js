@@ -623,10 +623,22 @@ Notification.prototype = {
 
     _createScrollArea: function() {
         this._table.add_style_class_name('multi-line-notification');
+
+        // FIXME: this doesn't actually scroll/limit notification size with the current policies.
+        // if we allow scrolling, then there doesn't seem to be a minimum height when inside the
+        // tray which breaks the layout and in the extreme case makes the notifications unreadable
         this._scrollArea = new St.ScrollView({ name: 'notification-scrollview',
                                                vscrollbar_policy: Gtk.PolicyType.NEVER,
                                                hscrollbar_policy: Gtk.PolicyType.NEVER,
                                                style_class: 'vfade' });
+
+        // prevent non-scrollable notifications from taking scroll events, otherwise we can't
+        // easily scroll the message tray.
+        // FIXME: if we enable scrolling then we may want to toggle this based on vscrollbar_visible
+        // or whether the notification is in the tray.
+        // something like: scrollArea.connect("notify::vscrollbar-visible", () => (enable = visible));
+        this._scrollArea.enable_mouse_scrolling = false;
+
         this._table.add(this._scrollArea, { row: 1,
                                             col: 2 });
         this._updateLastColumnSettings();
