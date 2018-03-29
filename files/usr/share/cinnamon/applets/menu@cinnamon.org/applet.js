@@ -3308,19 +3308,6 @@ MyApplet.prototype = {
 
         this._displayButtons(null, placesResults, recentResults, appResults, acResults);
 
-        this.appBoxIter.reloadVisible();
-        if (this.appBoxIter.getNumVisibleChildren() > 0) {
-            let item_actor = this.appBoxIter.getFirstVisible();
-            this._selectedItemIndex = this.appBoxIter.getAbsoluteIndexOfChild(item_actor);
-            this._activeContainer = this.applicationsBox;
-            if (item_actor && item_actor != this.searchEntry) {
-                item_actor._delegate.emit('enter-event');
-            }
-        } else {
-            this.selectedAppTitle.set_text("");
-            this.selectedAppDescription.set_text("");
-        }
-
         SearchProviderManager.launch_all(pattern, Lang.bind(this, function(provider, results){
             try{
             for (var i in results){
@@ -3336,6 +3323,19 @@ MyApplet.prototype = {
             }
             }catch(e){global.log(e);}
         }));
+        
+        this.appBoxIter.reloadVisible();
+        if (this.appBoxIter.getNumVisibleChildren() > 0) {
+            let item_actor = this.appBoxIter.getFirstVisible();
+            this._selectedItemIndex = this.appBoxIter.getAbsoluteIndexOfChild(item_actor);
+            this._activeContainer = this.applicationsBox;
+            if (item_actor && item_actor != this.searchEntry) {
+                item_actor._delegate.emit('enter-event');
+            }
+        } else {
+            this.selectedAppTitle.set_text("");
+            this.selectedAppDescription.set_text("");
+        }
 
         return false;
     },
