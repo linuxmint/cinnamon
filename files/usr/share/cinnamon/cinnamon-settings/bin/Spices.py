@@ -409,10 +409,7 @@ class Spice_Harvester(GObject.Object):
             return False
 
         try:
-            if self.meta_map[uuid]["last-edited"] == self.index_cache[uuid]["last_edited"]:
-                return False
-            else:
-                return True
+            return self.meta_map[uuid]["last-edited"] < self.index_cache[uuid]["last_edited"]
         except Exception as e:
             return False
 
