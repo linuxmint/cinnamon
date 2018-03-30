@@ -338,9 +338,10 @@ class SettingsPage(Gtk.Box):
 
         return section
 
-    def add_reveal_section(self, title, schema=None, key=None, values=None):
+    def add_reveal_section(self, title, schema=None, key=None, values=None, revealer=None):
         section = SettingsBox(title)
-        revealer = SettingsRevealer(schema, key, values)
+        if revealer is None:
+            revealer = SettingsRevealer(schema, key, values)
         revealer.add(section)
         section._revealer = revealer
         self.pack_start(revealer, False, False, 0)
@@ -388,7 +389,7 @@ class SettingsBox(Gtk.Frame):
 
         self.need_separator = True
 
-    def add_reveal_row(self, widget, schema=None, key=None, values=None, check_func=None):
+    def add_reveal_row(self, widget, schema=None, key=None, values=None, check_func=None, revealer=None):
         vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
         if self.need_separator:
             vbox.add(Gtk.Separator(orientation=Gtk.Orientation.HORIZONTAL))
@@ -400,7 +401,8 @@ class SettingsBox(Gtk.Frame):
             list_box.connect("row-activated", widget.clicked)
         list_box.add(row)
         vbox.add(list_box)
-        revealer = SettingsRevealer(schema, key, values, check_func)
+        if revealer is None:
+            revealer = SettingsRevealer(schema, key, values, check_func)
         widget.revealer = revealer
         revealer.add(vbox)
         self.box.add(revealer)

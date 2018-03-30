@@ -1,7 +1,7 @@
 {
     "layout1": {
         "type": "layout",
-        "pages": ["page1", "page2", "page3", "page4"],
+        "pages": ["page1", "page2", "page3", "page4", "page5"],
         "page1": {
             "type": "page",
             "title": "Visible settings",
@@ -21,6 +21,11 @@
             "type": "page",
             "title": "Editable list settings",
             "sections": ["section7"]
+        },
+        "page5": {
+            "type": "page",
+            "title": "Dependencies",
+            "sections": ["section8", "section9"]
         },
         "section0": {
             "type": "section",
@@ -61,6 +66,17 @@
             "type": "section",
             "title": "My list",
             "keys": ["tree"]
+        },
+        "section8": {
+            "type": "section",
+            "title": "Show dependencies section",
+            "keys": ["show-deps-section"]
+        },
+        "section9": {
+            "type": "section",
+            "title": "Dependencies section",
+            "dependency": "!show-deps-section",
+            "keys": ["deps-info", "dep-combo", "dep-combo-info1", "dep-combo-info2", "dep-spin", "dep-spin-info1", "dep-spin-info2"]
         }
     },
     "label-info" : {
@@ -209,5 +225,54 @@
                 }}
         ],
         "default" : []
+    },
+    "show-deps-section" : {
+        "type" : "switch",
+        "default" : false,
+        "description": "Show the dependencies section",
+        "tooltip": "Checking this box shows the Dependencies section below. Unchecking hides it."
+    },
+    "deps-info" : {
+        "type" : "label",
+        "description" : "You can see this section because the switch above is on. Try switching it off and see what happens."
+    },
+    "dep-combo" : {
+        "type" : "combobox",
+        "description" : "Show info",
+        "default" : "option1",
+        "options" : {
+            "Show info #1" : "option1",
+            "Show info #2" : "option2",
+            "Don't show info #1 or #2" : "option3"
+        }
+    },
+    "dep-combo-info1" : {
+        "type" : "label",
+        "description" : "Info #1: You are seeing this info because the first option is selected in the combo box above. Try selecting different options to see different information.",
+        "dependency" : "dep-combo=option1"
+    },
+    "dep-combo-info2" : {
+        "type" : "label",
+        "description" : "Info #2: You are seeing different text now because you selected the second option in the combo box above.",
+        "dependency" : "dep-combo=option2"
+    },
+    "dep-spin" : {
+        "type" : "spinbutton",
+        "description" : "Number value",
+        "min" : 0,
+        "max" : 10,
+        "step" : 1,
+        "units" : "",
+        "default" : 0
+    },
+    "dep-spin-info1" : {
+        "type" : "label",
+        "description" : "The value of the spinner above is less than 5",
+        "dependency" : "dep-spin<5"
+    },
+    "dep-spin-info2" : {
+        "type" : "label",
+        "description" : "The value of the spinner above is greater than or equal to 5",
+        "dependency" : "dep-spin>=5"
     }
 }

@@ -5,6 +5,7 @@ from SettingsWidgets import *
 from TreeListWidgets import List
 import collections
 import json
+import operator
 
 CAN_BACKEND.append("List")
 
@@ -19,10 +20,13 @@ JSON_SETTINGS_PROPERTIES_MAP = {
     "height"        : "height",
     "tooltip"       : "tooltip",
     "possible"      : "possible",
-    "dependency"    : "dep_key",
     "expand-width"  : "expand_width",
     "columns"       : "columns"
 }
+
+OPERATIONS = ['<=', '>=', '<', '>', '!=', '=']
+
+OPERATIONS_MAP = {'<': operator.lt, '<=': operator.le, '>': operator.gt, '>=': operator.ge, '!=': operator.ne, '=': operator.eq}
 
 class JSONSettingsHandler(object):
     def __init__(self, filepath, notify_callback=None):
@@ -71,6 +75,14 @@ class JSONSettingsHandler(object):
             if self.notify_callback:
                 self.notify_callback(self, key, value)
 
+            if key in self.bindings:
+                for info in self.bindings[key]:
+                    self.set_object_value(info, value)
+
+            if key in self.listeners:
+                for callback in self.listeners[key]:
+                    callback(key, value)
+
     def get_property(self, key, prop):
         props = self.settings[key]
         return props[prop]
@@ -87,9 +99,15 @@ class JSONSettingsHandler(object):
                 value = info["obj"].get_property(info["prop"])
                 if "map_set" in info and info["map_set"] != None:
                     value = info["map_set"](value)
-            else:
+
+        for info in self.bindings[key]:
+            if obj != info["obj"]:
                 self.set_object_value(info, value)
         self.set_value(key, value)
+
+        if key in self.listeners:
+            for callback in self.listeners[key]:
+                callback(key, value)
 
     def set_object_value(self, info, value):
         if info["dir"] & Gio.SettingsBindFlags.GET == 0:
@@ -196,6 +214,49 @@ class JSONSettingsHandler(object):
         new_file.write(raw_data)
         new_file.close()
 
+class JSONSettingsRevealer(Gtk.Revealer):
+    def __init__(self, settings, key):
+        super(JSONSettingsRevealer, self).__init__()
+        self.settings = settings
+
+        self.key = None
+        self.op = None
+        self.value = None
+        for op in OPERATIONS:
+            if op in key:
+                self.op = op
+                self.key, self.value = key.split(op)
+                break
+
+        if self.key is None:
+            if key[:1] is '!':
+                self.invert = True
+                self.key = key[1:]
+            else:
+                self.invert = False
+                self.key = key
+
+        self.box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=15)
+        Gtk.Revealer.add(self, self.box)
+
+        self.set_transition_type(Gtk.RevealerTransitionType.SLIDE_DOWN)
+        self.set_transition_duration(150)
+
+        self.settings.listen(self.key, self.key_changed)
+        self.key_changed(self.key, self.settings.get_value(self.key))
+
+    def add(self, widget):
+        self.box.pack_start(widget, False, True, 0)
+
+    def key_changed(self, key, value):
+        if self.op is not None:
+            val_type = type(value)
+            self.set_reveal_child(OPERATIONS_MAP[self.op](value, val_type(self.value)))
+        elif value != self.invert:
+            self.set_reveal_child(True)
+        else:
+            self.set_reveal_child(False)
+
 class JSONSettingsBackend(object):
     def attach(self):
         if hasattr(self, "set_rounding") and self.settings.has_property(self.key, "round"):
@@ -247,12 +308,6 @@ def json_settings_factory(subclass):
                         kwargs["options"].append((label, value))
             super(NewClass, self).__init__(**kwargs)
             self.attach()
-
-        def set_dep_key(self, dep_key):
-            if self.settings.has_key(dep_key):
-                self.settings.bind(dep_key, self, "sensitive", Gio.SettingsBindFlags.GET)
-            else:
-                print("Ignoring dependency on key '%s': no such key in the schema" % dep_key)
 
     return NewClass
 
