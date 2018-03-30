@@ -1,0 +1,44 @@
+#!/usr/bin/python3
+
+import sys
+import os
+
+import gi
+gi.require_version('Gtk', '3.0')
+
+sys.path.append('/usr/share/cinnamon/cinnamon-settings/bin')
+from Spices import Spice_Harvester
+
+spice_type = sys.argv[1]
+if len(sys.argv) > 2:
+    source_dir = os.path.abspath(sys.argv[2])
+else:
+    source_dir = os.cwd()
+
+uuid = os.path.basename(source_dir)
+if os.path.exists(os.path.join(source_dir, 'files')):
+    source_dir = os.path.join(source_dir, 'files', uuid)
+
+if spice_type not in ['applet', 'desklet', 'extension', 'theme', 'search_provider']:
+    print('invalid argument %s' % spice_type)
+
+if not os.path.exists(source_dir):
+    print('invalid directory')
+    quit()
+
+if spice_type is 'theme':
+    theme_file = os.path.join(source_dir, 'Cinnamon/cinnamon.css')
+    if not os.path.exists(theme_file):
+        print('Invalid theme - missing file cinnamon.css')
+        quit()
+else:
+    if not os.path.exists(os.path.join(source_dir, 'metadata.json')):
+        print('Invalid %s - metadata.json not found' % spice_type)
+        quit()
+    if not os.path.exists(os.path.join(source_dir, '%s.js' % spice_type)):
+        print('Invalid %s - %s.json not found' % (spice_type, spice_type))
+        quit()
+
+spices = Spice_Harvester(spice_type)
+
+spices.install_from_folder(source_dir, uuid)
