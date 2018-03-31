@@ -392,14 +392,20 @@ class MelangeApp(dbus.service.Object):
 
         column = 0
         pickerButton = pageutils.ImageButton("color-select-symbolic")
+        pickerButton.set_tooltip_text("Select an actor to inspect")
         pickerButton.connect("clicked", self.onPickerClicked)
         table.attach(pickerButton, column, column+1, 1, 2, 0, 0, 2)
         column += 1
 
-        table.attach(Gtk.Label("Exec:"), column, column+1, 1, 2, 0, 0, 3)
+        fullGc = pageutils.ImageButton("user-trash-full-symbolic")
+        fullGc.set_tooltip_text("Invoke garbage collection")
+        # ignore signal arg
+        fullGc.connect ('clicked', lambda source: lookingGlassProxy.FullGc())
+        table.attach(fullGc, column, column+1, 1, 2, 0, 0, 2)
         column += 1
 
         self.commandline = CommandLine()
+        self.commandline.set_tooltip_text("Evaluate javascript")
         table.attach(self.commandline, column, column+1, 1, 2, Gtk.AttachOptions.EXPAND|Gtk.AttachOptions.FILL, 0, 3, 2)
         column += 1
 
@@ -410,26 +416,21 @@ class MelangeApp(dbus.service.Object):
         table.attach(self.statusLabel, column, column+1, 1, 2, 0, 0, 1)
         column += 1
 
+        box = Gtk.HBox()
         settings = Gio.Settings("org.cinnamon.desktop.keybindings")
         arr = settings.get_strv("looking-glass-keybinding")
-        accel = ""
-        done_one = False
-
-        for element in arr:
-            if done_one:
-                accel += ", "
-
-            accel += element.replace("<", "&lt;").replace(">", "&gt;")
-            if not done_one:
-                done_one = True
-
-        keybinding = Gtk.Label()
-        keybinding.set_markup('<i>Toggle shortcut: %s</i>' % accel)
+        if len(arr) > 0:
+            # only the first mapped keybinding
+            [accelKey, mask] = Gtk.accelerator_parse(arr[0])
+            if accelKey == 0 and mask == 0:
+                # failed to parse, fallback to plain accel string
+                label = Gtk.Label(arr[0])
+            else:
+                label = Gtk.Label(Gtk.accelerator_get_label(accelKey, mask))
+            label.set_tooltip_text("Toggle shortcut")
+            box.pack_start(label, False, False, 3)
 
         actionButton = self.createActionButton()
-
-        box = Gtk.HBox()
-        box.pack_start(keybinding, False, False, 3)
         box.pack_start(actionButton, False, False, 3)
 
         table.attach(box, column, column+1, 1, 2, 0, 0, 1)
