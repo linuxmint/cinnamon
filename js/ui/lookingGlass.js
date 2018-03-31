@@ -4,6 +4,7 @@ const Cinnamon = imports.gi.Cinnamon;
 const Clutter = imports.gi.Clutter;
 const Cogl = imports.gi.Cogl;
 const Gio = imports.gi.Gio;
+const GLib = imports.gi.GLib;
 const Lang = imports.lang;
 const Meta = imports.gi.Meta;
 const Signals = imports.signals;
@@ -515,7 +516,7 @@ Melange.prototype = {
 
         let resultObj;
 
-        let ts = new Date().getTime();
+        let ts = GLib.get_monotonic_time();
 
         try {
             resultObj = eval(fullCmd);
@@ -523,9 +524,9 @@ Melange.prototype = {
             resultObj = '<exception ' + e + '>';
         }
 
-        let ts2 = new Date().getTime();
+        let ts2 = GLib.get_monotonic_time();
 
-        let tooltip = _("Execution time (ms): ") + (ts2 - ts);
+        let tooltip = _("Execution time (ms): ") + (ts2 - ts) / 1000;
 
         this._pushResult(command, resultObj, tooltip);
 
@@ -591,8 +592,8 @@ Melange.prototype = {
         try {
             let inspector = new Inspector();
             inspector.connect('target', Lang.bind(this, function(i, target, stageX, stageY) {
-                this._pushResult('<inspect x:' + stageX + ' y:' + stageY + '>',
-                                 target, "");
+                let name = '<inspect x:' + stageX + ' y:' + stageY + '>';
+                this._pushResult(name, target, "Inspected actor");
             }));
             inspector.connect('closed', Lang.bind(this, function() {
                 this.emitInspectorDone();
