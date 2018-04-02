@@ -165,32 +165,31 @@ RadioButtonGroup.prototype = {
    },
 
    buttonClicked: function(actor, buttonId) {
-      for (var i in this._buttons) {
-         if (buttonId != this._buttons[i]['id'] && this._buttons[i]['button'].actor.checked) {
-            this._buttons[i]['button'].actor.checked = false;
-         }
-         else if (buttonId == this._buttons[i]['id'] && !this._buttons[i]['button'].actor.checked) {
-            this._buttons[i]['button'].actor.checked = true;
-         }
-      }
+        for (const button of this._buttons) {
+            if (buttonId !== button['id'] && button['button'].actor.checked) {
+                button['button'].actor.checked = false;
+            }
+            else if (buttonId === button['id'] && !button['button'].actor.checked) {
+                button['button'].actor.checked = true;
+            }
+        }
       
-      // Only trigger real changes to radio selection.
-      if (buttonId != this._activeId) {
-         this._activeId = buttonId;
-         this.emit('radio-changed', this._activeId);
-      }
+        // Only trigger real changes to radio selection.
+        if (buttonId !== this._activeId) {
+            this._activeId = buttonId;
+            this.emit('radio-changed', this._activeId);
+        }
    },
 
    setActive: function(buttonId) {
-      for (var i in this._buttons) {
-         this._buttons[i]['button'].actor.checked = 
-           (buttonId == this._buttons[i]['id']);
-      }
+        for (const button of this._buttons) {
+            button['button'].actor.checked = buttonId === button['id'];
+        }
 
-      if (this._activeId != buttonId) {
-         this._activeId = buttonId;
-         this.emit('radio-changed', this._activeId);
-      }
+        if (this._activeId != buttonId) {
+            this._activeId = buttonId;
+            this.emit('radio-changed', this._activeId);
+        }
    },
 
    getActive: function() {
