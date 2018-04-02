@@ -27,7 +27,7 @@ if not os.path.exists(source_dir):
     quit()
 
 if spice_type is 'theme':
-    theme_file = os.path.join(source_dir, 'Cinnamon/cinnamon.css')
+    theme_file = os.path.join(source_dir, 'cinnamon/cinnamon.css')
     if not os.path.exists(theme_file):
         print('Invalid theme - missing file cinnamon.css')
         quit()
