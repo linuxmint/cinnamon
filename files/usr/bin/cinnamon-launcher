@@ -3,16 +3,16 @@
 """ Launches or restarts cinnamon
 """
 
-FALLBACK_COMMAND = "metacity"
-FALLBACK_ARGS = ("--replace",)
-
 import os
 import sys
 import gettext
 
 import gi
-gi.require_version('Gtk', '3.0')
+gi.require_version('Gtk', '3.0')  # noqa
 from gi.repository import Gtk
+
+FALLBACK_COMMAND = "metacity"
+FALLBACK_ARGS = ("--replace",)
 
 gettext.install("cinnamon", "/usr/share/locale")
 
@@ -28,6 +28,7 @@ elif os.path.exists("/usr/bin/tint2"):
     panel_process_name = "tint2"
     panel_cmd = "killall tint2; tint2 &"
 
+
 def confirm_restart():
     d = Gtk.MessageDialog(parent=None, flags=0, message_type=Gtk.MessageType.WARNING, buttons=Gtk.ButtonsType.YES_NO)
     d.set_keep_above(True)
@@ -37,6 +38,7 @@ def confirm_restart():
     resp = d.run()
     d.destroy()
     return (resp == Gtk.ResponseType.YES)
+
 
 if __name__ == "__main__":
     cinnamon_pid = os.fork()

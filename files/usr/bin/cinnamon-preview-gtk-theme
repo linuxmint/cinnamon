@@ -8,7 +8,7 @@ Usage:  cinnamon-preview-gtk-theme theme-name
 import sys
 
 import gi
-gi.require_version("Gtk", "3.0")
+gi.require_version("Gtk", "3.0")  # noqa
 from gi.repository import Gtk
 
 if __name__ == '__main__':

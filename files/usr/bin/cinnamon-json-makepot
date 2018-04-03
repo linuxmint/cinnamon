@@ -18,8 +18,8 @@ args = sys.argv[1:]
 if '-h' in args:
     print("cinnamon-json-makepot is deprecated - please use cinnamon-xlet-makepot instead\ntype cinnamon-xlet-makepot -h for usage information.")
     quit()
-elif '-i' not in args and '--install' not in args and
-     '-r' not in args and '--remove' not in args:
+if '-i' not in args and '--install' not in args and \
+   '-r' not in args and '--remove' not in args:
     potfile = args.pop()
     if '-j' in args:
         args.remove('-j')
