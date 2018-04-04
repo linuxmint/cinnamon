@@ -14,9 +14,11 @@ try:
     ENVIRON = os.environ['XDG_CURRENT_DESKTOP']
 except:
     ENVIRON = ""
+
 D_GROUP = "Desktop Entry"
 DEFAULT_ICON = "system-run"
 AUTOSTART_APPS = []
+
 
 def list_header_func(row, before, user_data):
     if before and not row.get_header():
@@ -150,7 +152,7 @@ class AutostartApp():
         if only_show_in:
             found = False
             for i in only_show_in:
-                if i == ENVIRON:
+                if i in ('GNOME', 'X-Cinnamon'):
                     found = True
                     break
             if not found:
