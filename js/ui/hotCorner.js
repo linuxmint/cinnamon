@@ -32,7 +32,7 @@ HotCornerManager.prototype = {
         this.parseGSettings();
         global.settings.connect('changed::' + OVERVIEW_CORNERS_KEY, Lang.bind(this, this.parseGSettings));
 
-        this.updatePosition(Main.layoutManager.primaryMonitor, Main.layoutManager.bottomMonitor);
+        this.updatePosition(Main.layoutManager.primaryMonitor);
     },
 
     parseGSettings: function() {
@@ -49,23 +49,23 @@ HotCornerManager.prototype = {
         return true;
     },
 
-    updatePosition: function(primaryMonitor, bottomMonitor) {
-        let p_x = primaryMonitor.x;
-        let p_y = primaryMonitor.y;
-        let b_x = bottomMonitor.x;
-        let b_y = bottomMonitor.y + bottomMonitor.height;
+    updatePosition: function(monitor) {
+        let left   = monitor.x;
+        let right  = monitor.x + monitor.width - 2;
+        let top    = monitor.y;
+        let bottom = monitor.y + monitor.height - 2;
 
         // Top Left: 0
-        this.corners[0].actor.set_position(p_x, p_y);
+        this.corners[0].actor.set_position(left, top);
 
         // Top Right: 1
-        this.corners[1].actor.set_position(p_x + primaryMonitor.width - 2, p_y);
+        this.corners[1].actor.set_position(right, top);
 
         // Bottom Left: 2
-        this.corners[2].actor.set_position(b_x, b_y - 1);
+        this.corners[2].actor.set_position(left, bottom);
 
         // Bottom Right: 3
-        this.corners[3].actor.set_position(b_x + bottomMonitor.width - 2, b_y - 1);
+        this.corners[3].actor.set_position(right, bottom);
 
         return true;
     }
