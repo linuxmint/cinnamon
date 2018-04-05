@@ -38,7 +38,7 @@ HotCornerManager.prototype = {
     parseGSettings: function() {
         let options = global.settings.get_strv(OVERVIEW_CORNERS_KEY);
         if (options.length != 4) {
-            global.log(_("Invalid overview options: Incorrect number of corners"));
+            global.logError(_("Invalid overview options: Incorrect number of corners"));
             return false;
         }
 
