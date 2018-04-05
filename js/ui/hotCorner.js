@@ -9,7 +9,7 @@ const Layout = imports.ui.layout;
 const Main = imports.ui.main;
 const Tweener = imports.ui.tweener;
 const Mainloop = imports.mainloop;
-const HOT_CORNER_ACTIVATION_TIMEOUT = 0.5;
+const HOT_CORNER_ACTIVATION_TIMEOUT = 500; // Milliseconds
 const OVERVIEW_CORNERS_KEY = 'hotcorner-layout';
 const Tooltips = imports.ui.tooltips;
 
@@ -118,7 +118,7 @@ HotCorner.prototype = {
             this._corner.set_position(0, 0);
         }
 
-        this._activationTime = 0;
+        this._activationTime = 0; // Milliseconds
 
         this.actor.connect('leave-event',
             Lang.bind(this, this._onEnvironsLeft));
@@ -240,8 +240,8 @@ HotCorner.prototype = {
         this._animRipple(this._ripple3, 0.35, 1.0, 0.0, 0.3, 1);
     },
 
-    runAction: function() {
-        this._activationTime = Date.now() / 1000;
+    runAction: function(timestamp) {
+        this._activationTime = timestamp;
 
         switch (this.action) {
             case 'expo':
@@ -253,7 +253,7 @@ HotCorner.prototype = {
                     Main.overview.toggle();
                 break;
             case 'desktop':
-                global.screen.toggle_desktop(global.get_current_time());
+                global.screen.toggle_desktop(timestamp);
                 break;
             default:
                 Util.spawnCommandLine(this.action);
@@ -266,6 +266,7 @@ HotCorner.prototype = {
             this.hover_delay_id = 0;
         }
 
+        let timestamp = global.get_current_time();
         this.hover_delay_id = Mainloop.timeout_add(this.hover_delay, Lang.bind(this, function() {
             if (!this._entered && !this.tile_delay) {
                 this._entered = true;
@@ -279,7 +280,7 @@ HotCorner.prototype = {
                 }
                 if (run) {
                     this.rippleAnimation();
-                    this.runAction();
+                    this.runAction(timestamp + this.hover_delay);
                 }
             }
 
@@ -296,9 +297,10 @@ HotCorner.prototype = {
             this.hover_delay_id = 0;
         }
 
-        if (this.shouldToggleOverviewOnClick())
+        if (this.shouldToggleOverviewOnClick()) {
             this.rippleAnimation();
-        this.runAction();
+            this.runAction(global.get_current_time());
+        }
 
         return Clutter.EVENT_STOP;
     },
@@ -332,7 +334,7 @@ HotCorner.prototype = {
     shouldToggleOverviewOnClick: function() {
         if (Main.overview.animationInProgress)
             return false;
-        if (this._activationTime == 0 || Date.now() / 1000 - this._activationTime > HOT_CORNER_ACTIVATION_TIMEOUT)
+        if (global.get_current_time() - this._activationTime > HOT_CORNER_ACTIVATION_TIMEOUT)
             return true;
         return false;
     }
