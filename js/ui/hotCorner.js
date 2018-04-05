@@ -189,7 +189,10 @@ HotCorner.prototype = {
 
         ripple._opacity = startOpacity;
 
-        ripple.set_anchor_point_from_gravity(Clutter.Gravity.CENTER);
+        // Set anchor point on the center of the ripples
+        ripple.set_pivot_point(0.5, 0.5);
+        ripple.set_translation(-ripple.width/2, -ripple.height/2, 0);
+
         ripple.visible = true;
         ripple.opacity = 255 * Math.sqrt(startOpacity);
         ripple.scale_x = ripple.scale_y = startScale;
