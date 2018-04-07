@@ -110,11 +110,7 @@ class HotCornerDisplay(Gtk.DrawingArea):
         Gtk.DrawingArea.__init__(self, **kwargs)
         self.connect('draw', self.expose)
 
-        self.cornerEnabled = []
-        self.cornerEnabled.append(True)
-        self.cornerEnabled.append(True)
-        self.cornerEnabled.append(True)
-        self.cornerEnabled.append(True)
+        self.cornerEnabled = [True, True, True, True]
 
     def setCornerEnabled(self, index, value):
         self.cornerEnabled[index] = value
@@ -123,7 +119,7 @@ class HotCornerDisplay(Gtk.DrawingArea):
         if self.cornerEnabled[index]:
             cr.set_source_rgba(self.activeColor.red, self.activeColor.green, self.activeColor.blue, self.activeColor.alpha)
         else:
-            cr.set_source_rgba(self.inactiveColor.red, self.inactiveColor.green, self.inactiveColor.blue, self.inactiveColor.alpha)
+            cr.set_source_rgba(1, 1, 1, .25)
 
     def _getColor(self, context, default, alternative):
         (succ, color) = context.lookup_color(default)
@@ -131,67 +127,57 @@ class HotCornerDisplay(Gtk.DrawingArea):
             (succ, color) = context.lookup_color(alternative)
         return color
 
-    #Renders button with corner visuals
+    # Render display with corner visuals
     def expose(self, widget, cr):
         context = self.get_style_context()
-        context.save()
-        context.add_class(Gtk.STYLE_CLASS_BUTTON)
 
         self.activeColor = self._getColor(context, "success_color", "question_bg_color")
-        self.inactiveColor = self._getColor(context, "error_color", "error_bg_color")
-        self.inactiveColor.alpha *= 0.35
         self.activeColor.alpha *= 0.9
 
         allocation = self.get_allocation()
 
-        self.allocWidth = allocation.width
-        self.allocHeight = allocation.height
-
-        cr.save()
         cr.set_antialias(cairo.ANTIALIAS_SUBPIXEL)
 
-        cr.rectangle(0, 0, self.allocWidth, self.allocHeight)
-        cr.clip()
-        Gtk.render_background(context, cr, -10, -10, self.allocWidth+20, self.allocHeight+20)
-
-        cr.rectangle(0, 0, self.allocWidth, self.allocHeight)
-        cr.clip()
+        middleX = allocation.width // 2
+        middleY = allocation.height // 2
+        pat = cairo.RadialGradient(middleX, middleY, 0, middleX, middleY, middleX)
+        pat.add_color_stop_rgb(.2, .25, .25, .25)
+        pat.add_color_stop_rgb(1, .15, .15, .15)
+        cr.set_source(pat)
+        cr.rectangle(0, 0, allocation.width, allocation.height)
+        cr.fill()
 
         cr.set_line_width(1)
 
+        cornerSize = 50
+
         self._setCornerColor(cr, 0)
-        cr.move_to(1,51)
-        cr.line_to(1,1)
-        cr.arc(1, 1, 51, _0_DEG, _90_DEG)
+        cr.move_to(0,0)
+        cr.line_to(cornerSize,0)
+        cr.arc(0, 0, cornerSize, _0_DEG, _90_DEG)
         cr.fill()
 
         self._setCornerColor(cr, 1)
-        cr.move_to(self.allocWidth-1,1)
-        cr.line_to(self.allocWidth-1,51)
-        cr.arc(self.allocWidth-1, 1, 51, _90_DEG, _180_DEG)
+        cr.move_to(allocation.width, 0)
+        cr.line_to(allocation.width, cornerSize)
+        cr.arc(allocation.width, 0, cornerSize, _90_DEG, _180_DEG)
         cr.fill()
 
         self._setCornerColor(cr, 2)
-        cr.move_to(1,self.allocHeight-1)
-        cr.line_to(1,self.allocHeight-51)
-        cr.arc(1, self.allocHeight, 51, _270_DEG, _90_DEG)
+        cr.move_to(0, allocation.height)
+        cr.line_to(0, allocation.height-cornerSize)
+        cr.arc(0, allocation.height, cornerSize, _270_DEG, _0_DEG)
         cr.fill()
 
         self._setCornerColor(cr, 3)
-        cr.move_to(self.allocWidth,self.allocHeight-50)
-        cr.line_to(self.allocWidth,self.allocHeight)
-        cr.arc(self.allocWidth, self.allocHeight, 50, _180_DEG, _270_DEG)
+        cr.move_to(allocation.width, allocation.height)
+        cr.line_to(allocation.width-cornerSize, allocation.height)
+        cr.arc(allocation.width, allocation.height, cornerSize, _180_DEG, _270_DEG)
         cr.fill()
 
         cr.set_source_rgba(0, 0, 0, 1)
-        cr.rectangle(0, 0, self.allocWidth, self.allocHeight)
+        cr.rectangle(0, 0, allocation.width, allocation.height)
         cr.stroke()
-
-        context.restore()
-
-        cr.stroke_preserve()
-
-        cr.restore()
 
         return True
 
