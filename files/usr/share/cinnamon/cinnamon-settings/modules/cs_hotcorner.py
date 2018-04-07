@@ -27,10 +27,6 @@ class Module:
         if not self.loaded:
             print("Loading HotCorner module")
 
-            self.corners = []
-            for i in range(4):
-                self.corners.append(HotCornerConfiguration(i, self.onConfigChanged))
-
             self.settings = Gio.Settings.new('org.cinnamon')
             self.settings.connect('changed::hotcorner-layout', self.on_settings_changed)
             oc_list = self.settings.get_strv("hotcorner-layout")
@@ -39,23 +35,23 @@ class Module:
                 props = item.split(":")
                 self.properties.append(props)
 
-            table = Gtk.Table.new(2, 3, False)
-            table.set_row_spacings(5)
-            table.set_col_spacings(10)
-            table.set_margin_top(2)
-            table.set_margin_bottom(2)
-            table.set_border_width(8)
+            self.corners = []
+            for i in range(4):
+                self.corners.append(HotCornerConfiguration(i, self.onConfigChanged))
 
-            self.cornerDisplay = HotCornerDisplay()
-            table.attach(self.cornerDisplay, 1, 2, 0, 2)
-            table.attach(self.corners[0].build(), 0, 1, 0, 1, Gtk.AttachOptions.FILL, Gtk.AttachOptions.EXPAND|Gtk.AttachOptions.FILL)
-            table.attach(self.corners[1].build(), 2, 3, 0, 1, Gtk.AttachOptions.FILL, Gtk.AttachOptions.EXPAND|Gtk.AttachOptions.FILL)
-            table.attach(self.corners[2].build(), 0, 1, 1, 2, Gtk.AttachOptions.FILL, Gtk.AttachOptions.EXPAND|Gtk.AttachOptions.FILL)
-            table.attach(self.corners[3].build(), 2, 3, 1, 2, Gtk.AttachOptions.FILL, Gtk.AttachOptions.EXPAND|Gtk.AttachOptions.FILL)
+            self.cornerDisplay = HotCornerDisplay(halign=Gtk.Align.FILL, hexpand=True)
+            self.cornerDisplay.set_size_request(200, 200)
 
-            self.cornerDisplay.set_size_request(200, 250)
+            grid = Gtk.Grid(row_spacing=32, column_spacing=16, halign=Gtk.Align.FILL)
+            grid.set_border_width(16)
 
-            self.sidePage.add_widget(table)
+            grid.attach(self.cornerDisplay, 1, 0, 1, 2)
+            grid.attach(self.corners[0], 0, 0, 1, 1)
+            grid.attach(self.corners[1], 2, 0, 1, 1)
+            grid.attach(self.corners[2], 0, 1, 1, 1)
+            grid.attach(self.corners[3], 2, 1, 1, 1)
+
+            self.sidePage.add_widget(grid)
 
             self.on_settings_changed(self.settings, "hotcorner-layout")
 
@@ -73,12 +69,6 @@ class Module:
             prop = self.properties[corner.index]
             function = prop[0]
             enabled = prop[1] == "true"
-            isEnabled = False
-
-            if prop[1] == "true":
-                isEnabled = True
-            else:
-                isEnabled = False
 
             try:
                 delay = prop[2]
@@ -86,7 +76,7 @@ class Module:
                 delay = "0"
 
             corner.setValues(function, enabled, delay)
-            self.cornerDisplay.setCornerEnabled(corner.index, isEnabled)
+            self.cornerDisplay.setCornerEnabled(corner.index, enabled)
         self.cornerDisplay.queue_draw()
 
     def onConfigChanged(self, index, function, enabled, delay):
@@ -115,9 +105,9 @@ class Module:
         self.settings.set_strv("hotcorner-layout", oc_list)
 
 
-class HotCornerDisplay(Gtk.Label):
-    def __init__(self):
-        Gtk.Label.__init__(self, label = "")
+class HotCornerDisplay(Gtk.DrawingArea):
+    def __init__(self, **kwargs):
+        Gtk.DrawingArea.__init__(self, **kwargs)
         self.connect('draw', self.expose)
 
         self.cornerEnabled = []
@@ -199,15 +189,15 @@ class HotCornerDisplay(Gtk.Label):
 
         context.restore()
 
-
         cr.stroke_preserve()
 
         cr.restore()
 
         return True
 
-class HotCornerConfiguration():
+class HotCornerConfiguration(Gtk.Box):
     def __init__(self, index, updateCallback):
+        Gtk.Box.__init__(self, orientation=Gtk.Orientation.VERTICAL)
         self.updateCallback = updateCallback
         self.index = index
         self.timer = None
@@ -217,58 +207,43 @@ class HotCornerConfiguration():
         self.functionStore.append(['desktop', _("Show the desktop")])
         self.functionStore.append(['custom', _("Run a command")])
 
-    def build(self):
-        self.box = Gtk.VBox.new(3, False)
+        enableBox = Gtk.Box(spacing=8)
+        enableLabel = Gtk.Label(_("Enable this corner"))
+        self.enableSwitch = Gtk.Switch()
+        enableBox.pack_start(enableLabel, False, True, 0)
+        enableBox.pack_end(self.enableSwitch, False, False, 0)
 
         self.functionCombo = Gtk.ComboBox.new_with_model(self.functionStore)
-        self.functionCombo.set_entry_text_column(1)
         rendererText = Gtk.CellRendererText()
         self.functionCombo.pack_start(rendererText, True)
         self.functionCombo.add_attribute(rendererText, "text", 1)
 
-        self.customEntry = Gtk.Entry()
-        self.customEntry.set_no_show_all(True)
-        self.hoverCheckbox = Gtk.CheckButton()
-        self.hoverCheckbox.set_label(_("Hover enabled"))
-        self.hoverDelayBox = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
-        self.hoverDelayLabel = Gtk.Label.new(_("Hover delay"))
-        self.hoverDelaySpinner = Gtk.SpinButton.new_with_range(0, 1000, 50)
-        self.hoverDelayUnitsLabel = Gtk.Label.new(_("ms"))
+        self.commandRevealer = Gtk.Revealer()
+        self.commandEntry = Gtk.Entry(placeholder_text=_("Type a command..."), margin_bottom=8)
+        self.commandRevealer.add(self.commandEntry)
+        self.commandRevealer.set_reveal_child(False)
 
-        self.box.pack_start(self.functionCombo, True, True, 0)
-        self.box.pack_start(self.customEntry, True, True, 0)
-        self.box.pack_start(self.hoverCheckbox, True, True, 0)
-        self.hoverDelayBox.pack_start(self.hoverDelayLabel, False, False, 5)
-        self.hoverDelayBox.pack_end(self.hoverDelayUnitsLabel, False, False, 5)
-        self.hoverDelayBox.pack_end(self.hoverDelaySpinner, False, False, 5)
-        self.box.pack_start(self.hoverDelayBox, True, True, 0)
+        self.hoverDelayBox = Gtk.Box(spacing=8)
+        hoverDelayLabel = Gtk.Label(_("Activation delay (ms)"))
+        self.hoverDelaySpinner = Gtk.SpinButton.new_with_range(0, 1000, 50)
+        self.hoverDelayBox.pack_start(hoverDelayLabel, False, True, 0)
+        self.hoverDelayBox.pack_end(self.hoverDelaySpinner, False, False, 0)
+
+        self.pack_start(enableBox, False, False, 0)
+        self.pack_start(self.functionCombo, False, False, 8)
+        self.pack_start(self.commandRevealer, False, False, 0)
+        self.pack_start(self.hoverDelayBox, False, False, 0)
 
         self.functionCombo.connect('changed', self.on_widget_changed)
-        self.customEntry.connect('changed', self.on_widget_changed)
-        self.hoverCheckbox.connect('toggled', self.on_widget_changed)
+        self.commandEntry.connect('changed', self.on_widget_changed)
+        self.enableSwitch.connect('notify::active', self.on_widget_changed)
         self.hoverDelaySpinner.connect('value-changed', self.on_widget_changed)
 
-        self.functionCombo.show()
-        self.hoverCheckbox.show()
-        self.customEntry.show()
-        self.hoverDelayLabel.show()
-        self.hoverDelaySpinner.show()
-        self.hoverDelayUnitsLabel.show()
-        self.hoverDelayBox.show()
-        self.box.show()
-
-        alignment = Gtk.Alignment()
-        if self.index < 2:
-            alignment.set(0, 0, 1, 0)
-        else:
-            alignment.set(0, 1, 1, 0)
-        alignment.add(self.box)
-        alignment.set_size_request(180, 50)
-
-        return alignment
+        if self.index > 1: # Bottom left/right corners
+            self.set_valign(Gtk.Align.END)
 
     def setValues(self, function, enabled, delay):
-        hideCustomEntry = True
+        showCommandEntry = False
 
         if function == "expo":
             self.functionCombo.set_active(0)
@@ -277,35 +252,31 @@ class HotCornerConfiguration():
         elif function == "desktop":
             self.functionCombo.set_active(2)
         else:
-            hideCustomEntry = False
+            showCommandEntry = True
             self.functionCombo.set_active(3)
-            if self.customEntry.get_text() != function:
-                self.customEntry.set_text(function)
+            if self.commandEntry.get_text() != function:
+                self.commandEntry.set_text(function)
 
-        if hideCustomEntry:
-            self.customEntry.hide()
-        else:
-            self.customEntry.show()
+        self.commandRevealer.set_reveal_child(showCommandEntry)
 
-        if self.hoverCheckbox.get_active() != enabled:
-            self.hoverCheckbox.set_active(enabled)
+        if self.enableSwitch.get_active() != enabled:
+            self.enableSwitch.set_active(enabled)
 
+        self.functionCombo.set_sensitive(enabled)
+        self.commandEntry.set_sensitive(enabled)
         self.hoverDelayBox.set_sensitive(enabled)
         self.hoverDelaySpinner.set_value(int(delay))
 
-    def on_widget_changed(self, widget):
+    def on_widget_changed(self, *args):
         def apply(self):
             iter = self.functionCombo.get_active_iter()
             if iter != None:
                 function = self.functionStore.get_value(iter, 0)
-                enabled = self.hoverCheckbox.get_active()
+                enabled = self.enableSwitch.get_active()
                 delay = str(int(self.hoverDelaySpinner.get_value()))
 
-                if function != 'custom':
-                    self.customEntry.hide()
-                else:
-                    self.customEntry.show()
-                    function = self.customEntry.get_text()
+                if function == 'custom':
+                    function = self.commandEntry.get_text()
 
                 self.updateCallback(self.index, function, enabled, delay)
 
