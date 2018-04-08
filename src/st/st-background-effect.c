@@ -92,13 +92,8 @@ gboolean st_paint_background_blur_effect (StBackgroundBlurEffect *self,
                                           CoglFramebuffer    *fb,
                                           ClutterActorBox    *box)
 {
-  uint8_t *data;
   unsigned int i;
-  guint size;
-  guint rowstride;
-  CoglOffscreen *offscreen;
-  CoglError *catch_error = NULL;
-  CoglFramebuffer *fbo;
+
 
   self->bg_width = ceil(box->x2 - box->x1);
   self->bg_height = ceil(box->y2 - box->y1);
@@ -115,6 +110,9 @@ gboolean st_paint_background_blur_effect (StBackgroundBlurEffect *self,
 
     for (i = 0; i < self->blur_size; i++)  /* process more blur as multiple repetitions */
     {
+      uint8_t *data;
+      guint size;
+      guint rowstride;
       /* read and stash the section of background currently displayed under the actor */
 
       size = (self->bg_width) * (self->bg_height) * 4;
@@ -147,17 +145,6 @@ gboolean st_paint_background_blur_effect (StBackgroundBlurEffect *self,
                                                                     rowstride,
                                                                     data);
 
-          offscreen = cogl_offscreen_new_with_texture (self->bg_texture);
-          fbo = COGL_FRAMEBUFFER (offscreen);
-
-/*        if (!cogl_framebuffer_allocate (fbo, &catch_error))
-        {
-          cogl_error_free (catch_error);
-          cogl_object_unref (offscreen);
-          cogl_object_unref (self->bg_texture);
-          return FALSE;
-        } */
-
           g_free (data);
         }
 
@@ -184,8 +171,6 @@ gboolean st_paint_background_blur_effect (StBackgroundBlurEffect *self,
       cogl_pipeline_set_layer_texture (self->pipeline1, 0, self->bg_texture);
 
       cogl_framebuffer_draw_rectangle (fb, self->pipeline1, 0, 0, self->bg_width,self->bg_height);
-
-      cogl_object_unref (offscreen);
     }
 
     return TRUE;
@@ -311,9 +296,6 @@ gboolean st_paint_background_bumpmap_effect (StBackgroundBumpmapEffect *self,
   uint8_t *data;
   guint size;
   guint rowstride;
-  CoglOffscreen *offscreen;
-  CoglError *catch_error = NULL;
-  CoglFramebuffer *fbo;
 
   self->bg_width = ceil(box->x2 - box->x1);
   self->bg_height = ceil(box->y2 - box->y1);
@@ -391,23 +373,12 @@ gboolean st_paint_background_bumpmap_effect (StBackgroundBumpmapEffect *self,
             }
 
         self->bg_texture = st_cogl_texture_new_from_data_wrapper (self->bg_width,
-                                                            self->bg_height,
-                                   COGL_TEXTURE_NO_SLICING,
-                                   COGL_PIXEL_FORMAT_RGBA_8888_PRE,
-                                   COGL_PIXEL_FORMAT_RGBA_8888_PRE,
-                                                   rowstride,
-                                                   data);
-
-        offscreen = cogl_offscreen_new_with_texture (self->bg_texture);
-        fbo = COGL_FRAMEBUFFER (offscreen);
- /*       if (!cogl_framebuffer_allocate (fbo, &catch_error))
-        {
-          cogl_error_free (catch_error);
-          cogl_object_unref (offscreen);
-          cogl_object_unref (self->bg_texture);
-          return FALSE;
-        } */
-
+                                                                  self->bg_height,
+                                                                  COGL_TEXTURE_NO_SLICING,
+                                                                  COGL_PIXEL_FORMAT_RGBA_8888_PRE,
+                                                                  COGL_PIXEL_FORMAT_RGBA_8888_PRE,
+                                                                  rowstride,
+                                                                  data);
         g_free (data);
       }
 
@@ -458,8 +429,6 @@ gboolean st_paint_background_bumpmap_effect (StBackgroundBumpmapEffect *self,
     cogl_pipeline_set_layer_texture (self->pipeline0, 0, self->bg_texture);
 
     cogl_framebuffer_draw_rectangle (fb, self->pipeline0, 0, 0, self->bg_width,self->bg_height);
-
-    cogl_object_unref (offscreen);
 
     return TRUE;
 }
