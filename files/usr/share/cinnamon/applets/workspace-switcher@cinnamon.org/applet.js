@@ -78,8 +78,9 @@ WorkspaceGraph.prototype = {
         if (applet.orientation == St.Side.LEFT || applet.orientation == St.Side.RIGHT)
             height = height / this.sizeRatio;
 
-        this.actor.set_size(this.sizeRatio * height, height);
-        this.graphArea.set_size(this.sizeRatio * height, height);
+        let width = Math.round(this.sizeRatio * height);
+        this.actor.set_size(width, height);
+        this.graphArea.set_size(width, height);
         this.graphArea.connect('repaint', Lang.bind(this, this.onRepaint));
         if (index == global.screen.get_active_workspace_index()) {
             this.actor.add_style_pseudo_class('active');
