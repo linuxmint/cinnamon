@@ -546,7 +546,7 @@ class AutostartBox(Gtk.Box):
             AUTOSTART_APPS[key] = app
 
             app.basename = os.path.basename(app.app)
-            app.dir = os.path.basename(app.app)
+            app.dir = os.path.dirname(app.app)
             app.hidden = False
             app.no_display = False
             app.enabled = True
