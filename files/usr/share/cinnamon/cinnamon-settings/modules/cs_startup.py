@@ -212,10 +212,7 @@ class AutostartApp():
             self.save_done_success()
             return False
 
-        if self.system_position:
-            use_path = os.path.join(self.system_position, self.basename)
-        else:
-            use_path = self.path
+        use_path = self.path
 
         key_file = GLib.KeyFile.new()
 
