@@ -14,8 +14,12 @@ were not scanned by default, but now are.
 import os
 import sys
 
-args = sys.argv[1:]
-potfile = args.pop()
+args = sys.argv[:]
+if args[-1][0] != '-':
+    potfile = args.pop()
+    args.append('-o')
+    args.append(potfile)
+
 if '-j' in args:
     args.remove('-j')
 elif '--js' in args:
@@ -23,8 +27,6 @@ elif '--js' in args:
 else:
     args.append('-j')
 
-args.append('-o '+potfile)
-# args.append(potfile)
 args.append(os.getcwd())
 print(args)
 os.execvp("cinnamon-xlet-makepot", args)
