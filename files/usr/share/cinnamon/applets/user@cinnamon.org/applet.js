@@ -132,7 +132,7 @@ MyApplet.prototype = {
             this.menu.addMenuItem(item);
 
             this._user = AccountsService.UserManager.get_default().get_user(GLib.get_user_name());
-            this._userLoadedId = this._user.connect('notify::is_loaded', Lang.bind(this, this._onUserChanged));
+            this._userLoadedId = this._user.connect('notify::is-loaded', Lang.bind(this, this._onUserChanged));
             this._userChangedId = this._user.connect('changed', Lang.bind(this, this._onUserChanged));
             this._onUserChanged();
             this.set_show_label_in_vertical_panels(false);
