@@ -6,6 +6,7 @@
 import os
 import sys
 import gettext
+from setproctitle import setproctitle
 
 import gi
 gi.require_version('Gtk', '3.0')  # noqa
@@ -41,6 +42,7 @@ def confirm_restart():
 
 
 if __name__ == "__main__":
+    setproctitle("cinnamon-launcher")
     cinnamon_pid = os.fork()
     if cinnamon_pid == 0:
         os.execvp("cinnamon", ("cinnamon", "--replace", ) + tuple(sys.argv[1:]))

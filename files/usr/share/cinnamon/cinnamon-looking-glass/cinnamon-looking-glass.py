@@ -22,6 +22,7 @@ import pageutils
 from lookingglass_proxy import LookingGlassProxy
 import signal
 signal.signal(signal.SIGINT, signal.SIG_DFL)
+from setproctitle import setproctitle
 
 MELANGE_DBUS_NAME = "org.Cinnamon.Melange"
 MELANGE_DBUS_PATH = "/org/Cinnamon/Melange"
@@ -546,6 +547,7 @@ If you defined a hotkey for Melange, pressing it while Melange is visible it wil
         self.notebook.set_current_page(page)
 
 if __name__ == "__main__":
+    setproctitle("cinnamon-looking-glass")
     DBusGMainLoop(set_as_default=True)
 
     sessionBus = dbus.SessionBus ()

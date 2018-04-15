@@ -7,6 +7,7 @@ import glob
 from optparse import OptionParser
 import shutil
 import subprocess
+from setproctitle import setproctitle
 
 import gi
 gi.require_version("Gtk", "3.0")
@@ -419,6 +420,7 @@ class Main:
         Gtk.main_quit()
 
 if __name__ == "__main__":
+    setproctitle("cinnamon-desktop-editor")
     Gtk.Window.set_default_icon_name(DEFAULT_ICON_NAME)
     Main()
     Gtk.main()

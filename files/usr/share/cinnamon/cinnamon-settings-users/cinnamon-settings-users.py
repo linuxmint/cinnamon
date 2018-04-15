@@ -9,6 +9,7 @@ import shutil
 import re
 import subprocess
 from random import randint
+from setproctitle import setproctitle
 
 import PIL
 from PIL import Image
@@ -950,5 +951,6 @@ class Module:
 
 
 if __name__ == "__main__":
+    setproctitle("cinnamon-settings-users")
     module = Module()
     Gtk.main()
