@@ -249,8 +249,8 @@ MyApplet.prototype = {
     _update_timestamp: function () {
         let actors = this._notificationbin.get_children();
         if (actors) {
-            for (let i = 0; i < actors.length; i++) {
-                let notification = actors[i]._delegate;
+            for (let i = 0; i < this.notifications.length; i++) {
+                let notification = this.notifications[i];
                 let orig_time = notification._timestamp;
                 notification._timeLabel.clutter_text.set_markup(timeify(orig_time));
             }
