@@ -256,7 +256,7 @@ class Module:
             headingbox.pack_end(Gtk.Label.new(_("To edit a keyboard binding, click it and press the new keys, or press backspace to clear it.")), False, False, 1)
 
             paned = Gtk.Paned(orientation = Gtk.Orientation.HORIZONTAL)
-            Gtk.StyleContext.add_class(Gtk.Widget.get_style_context(paned), "wide")
+            paned.set_wide_handle(True)
 
             left_vbox = Gtk.Box.new(Gtk.Orientation.VERTICAL, 2)
             right_vbox = Gtk.Box.new(Gtk.Orientation.VERTICAL, 2)
