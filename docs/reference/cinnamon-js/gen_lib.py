@@ -626,7 +626,7 @@ def write_sgml(files, version):
         chapters = "\n".join(chapters)))
 
 def create_file(obj):
-    file_obj = open('{0}/{1}.xml'.format(obj.directory, obj.name), 'w')
+    file_obj = open('{0}/{1}.xml'.format(obj.directory, obj.name), 'w', encoding="utf-8")
     short_description = obj.short_description.description.replace("\n", " ").strip()
     file_obj.write(FILE_FORMAT.format(
         prefix = obj.prefix,
