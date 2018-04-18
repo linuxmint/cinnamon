@@ -6,7 +6,5 @@ var PACKAGE_NAME = '@PACKAGE_NAME@';
 var PACKAGE_VERSION = '@PACKAGE_VERSION@';
 /* The version of GJS we're linking to */
 var GJS_VERSION = '@GJS_VERSION@';
-/* 1 if gnome-bluetooth is available, 0 otherwise */
-var HAVE_BLUETOOTH = @HAVE_BLUETOOTH@;
 /* The system TLS CA list */
 var CINNAMON_SYSTEM_CA_FILE = '@CINNAMON_SYSTEM_CA_FILE@';

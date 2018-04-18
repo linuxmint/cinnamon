@@ -249,7 +249,7 @@ center_pointer_on_screen ()
   Display *dpy;
   Window root_window;
   Screen *screen;
-  
+
   dpy = XOpenDisplay(0);
   root_window = XRootWindow(dpy, 0);
   XSelectInput(dpy, root_window, KeyReleaseMask);
@@ -310,9 +310,6 @@ main (int argc, char **argv)
   cinnamon_perf_log_init ();
 
   g_irepository_prepend_search_path (CINNAMON_PKGLIBDIR);
-#if HAVE_BLUETOOTH
-  g_irepository_prepend_search_path (BLUETOOTH_DIR);
-#endif
 
   /* Disable debug spew from various libraries */
   g_log_set_handler ("Cvc", G_LOG_LEVEL_DEBUG,
