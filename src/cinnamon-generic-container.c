@@ -236,6 +236,60 @@ cinnamon_generic_container_set_skip_paint (CinnamonGenericContainer  *self,
   clutter_actor_queue_redraw (CLUTTER_ACTOR (self));
 }
 
+static gboolean
+cinnamon_generic_container_get_paint_volume (ClutterActor *self,
+                                          ClutterPaintVolume *volume)
+{
+  ClutterActorBox paint_box, alloc_box;
+  StThemeNode *theme_node;
+  ClutterVertex origin;
+
+  /* Setting the paint volume does not make sense when we don't have any allocation */
+  if (!clutter_actor_has_allocation (self))
+    return FALSE;
+
+  theme_node = st_widget_get_theme_node (ST_WIDGET (self));
+  clutter_actor_get_allocation_box (self, &alloc_box);
+
+  st_theme_node_get_paint_box (theme_node, &alloc_box, &paint_box);
+
+  origin.x = paint_box.x1 - alloc_box.x1;
+  origin.y = paint_box.y1 - alloc_box.y1;
+  origin.z = 0.0f;
+
+  clutter_paint_volume_set_origin (volume, &origin);
+  clutter_paint_volume_set_width (volume, paint_box.x2 - paint_box.x1);
+  clutter_paint_volume_set_height (volume, paint_box.y2 - paint_box.y1);
+
+  if (!clutter_actor_get_clip_to_allocation (self))
+    {
+      ClutterActor *child;
+      /* Based on ClutterGroup/ClutterBox; include the children's
+       * paint volumes, since they may paint outside our allocation.
+       */
+      for (child = clutter_actor_get_first_child (self);
+           child != NULL;
+           child = clutter_actor_get_next_sibling (child))
+        {
+          const ClutterPaintVolume *child_volume;
+
+          if (!CLUTTER_ACTOR_IS_VISIBLE (child))
+            continue;
+
+          if (cinnamon_generic_container_get_skip_paint (CINNAMON_GENERIC_CONTAINER  (self), child))
+            continue;
+
+          child_volume = clutter_actor_get_transformed_paint_volume (child, self);
+          if (!child_volume)
+            return FALSE;
+
+          clutter_paint_volume_union (volume, child_volume);
+        }
+    }
+
+  return TRUE;
+}
+
 static void
 cinnamon_generic_container_finalize (GObject *object)
 {
@@ -260,6 +314,7 @@ cinnamon_generic_container_class_init (CinnamonGenericContainerClass *klass)
   actor_class->allocate = cinnamon_generic_container_allocate;
   actor_class->paint = cinnamon_generic_container_paint;
   actor_class->pick = cinnamon_generic_container_pick;
+  actor_class->get_paint_volume = cinnamon_generic_container_get_paint_volume;
 
   widget_class->get_focus_chain = cinnamon_generic_container_get_focus_chain;
 
