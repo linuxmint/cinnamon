@@ -3307,7 +3307,7 @@ MyApplet.prototype = {
         }
 
         this._displayButtons(null, placesResults, recentResults, appResults, acResults);
-        
+
         this.appBoxIter.reloadVisible();
         if (this.appBoxIter.getNumVisibleChildren() > 0) {
             let item_actor = this.appBoxIter.getFirstVisible();
@@ -3345,7 +3345,7 @@ MyApplet.prototype = {
             }
             }catch(e){global.log(e);}
         }));
-        
+ 
         return false;
     },
 
