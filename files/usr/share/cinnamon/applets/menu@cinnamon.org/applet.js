@@ -3333,7 +3333,7 @@ MyApplet.prototype = {
                     this.applicationsBox.add_actor(button.actor);
                     button.actor.realize();
                     if (this._selectedItemIndex === null) {
-						this.appBoxIter.reloadVisible();
+                        this.appBoxIter.reloadVisible();
                         let item_actor = this.appBoxIter.getFirstVisible();
                         this._selectedItemIndex = this.appBoxIter.getAbsoluteIndexOfChild(item_actor);
                         this._activeContainer = this.applicationsBox;
