@@ -103,7 +103,7 @@ VolumeSlider.prototype = {
 
         this.app_icon = app_icon;
         if (this.app_icon == null) {
-            this.iconName = this.isMic ? "microphone-sensitivity-none" : "audio-volume-muted";
+            this.iconName = this.isMic ? "microphone-sensitivity-muted" : "audio-volume-muted";
             this.icon = new St.Icon({icon_name: this.iconName, icon_type: St.IconType.SYMBOLIC, icon_size: 16});
         }
         else {
@@ -193,16 +193,18 @@ VolumeSlider.prototype = {
     },
 
     _volumeToIcon: function(value){
-        if(value < 0.005)
-            return this.isMic? "microphone-sensitivity-none" : "audio-volume-muted";
-        let n = Math.floor(3 * value), icon;
-        if(n < 1)
-            icon = "low";
-        else if(n < 2)
-            icon = "medium";
-        else
-            icon = "high";
-
+        let icon;
+        if(value < 0.005) {
+            icon = "muted";
+        } else {
+            let n = Math.floor(3 * value);
+            if(n < 1)
+                icon = "low";
+            else if(n < 2)
+                icon = "medium";
+            else
+                icon = "high";
+        }
         return this.isMic? "microphone-sensitivity-" + icon : "audio-volume-" + icon;
     }
 };
@@ -965,7 +967,7 @@ MyApplet.prototype = {
             this.actor.connect('scroll-event', Lang.bind(this, this._onScrollEvent));
 
             this.mute_out_switch = new PopupMenu.PopupSwitchIconMenuItem(_("Mute output"), false, "audio-volume-muted", St.IconType.SYMBOLIC);
-            this.mute_in_switch = new PopupMenu.PopupSwitchIconMenuItem(_("Mute input"), false, "microphone-sensitivity-none", St.IconType.SYMBOLIC);
+            this.mute_in_switch = new PopupMenu.PopupSwitchIconMenuItem(_("Mute input"), false, "microphone-sensitivity-muted", St.IconType.SYMBOLIC);
             this._applet_context_menu.addMenuItem(this.mute_out_switch);
             this._applet_context_menu.addMenuItem(this.mute_in_switch);
 
