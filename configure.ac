@@ -103,20 +103,6 @@ PKG_CHECK_MODULES(GDMUSER, dbus-glib-1 gtk+-3.0)
 PKG_CHECK_MODULES(TRAY, clutter-1.0 gtk+-3.0)
 PKG_CHECK_MODULES(DESKTOP_SCHEMAS, cinnamon-desktop >= 2.4.0)
 
-AC_MSG_CHECKING([for bluetooth support])
-PKG_CHECK_EXISTS([gnome-bluetooth-1.0 >= 3.1.0],
-        [BLUETOOTH_DIR=`$PKG_CONFIG --variable=applet_libdir gnome-bluetooth-1.0`
-	 BLUETOOTH_LIBS=`$PKG_CONFIG --variable=applet_libs gnome-bluetooth-1.0`
-	 AC_SUBST([BLUETOOTH_LIBS],["$BLUETOOTH_LIBS"])
-	 AC_SUBST([BLUETOOTH_DIR],["$BLUETOOTH_DIR"])
-	 AC_DEFINE_UNQUOTED([BLUETOOTH_DIR],["$BLUETOOTH_DIR"],[Path to installed GnomeBluetooth typelib and library])
-	 AC_DEFINE([HAVE_BLUETOOTH],[1],[Define if you have libgnome-bluetooth-applet])
-	 AC_SUBST([HAVE_BLUETOOTH],[1])
-	 AC_MSG_RESULT([yes])],
-	[AC_DEFINE([HAVE_BLUETOOTH],[0])
-	 AC_SUBST([HAVE_BLUETOOTH],[0])
-	 AC_MSG_RESULT([no])])
-
 MUFFIN_GIR_DIR=`$PKG_CONFIG --variable=girdir libmuffin`
 MUFFIN_TYPELIB_DIR=`$PKG_CONFIG --variable=typelibdir libmuffin`
 AC_SUBST(MUFFIN_GIR_DIR)
