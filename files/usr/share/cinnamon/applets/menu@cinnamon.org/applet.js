@@ -3345,7 +3345,7 @@ MyApplet.prototype = {
             }
             }catch(e){global.log(e);}
         }));
- 
+
         return false;
     },
 
