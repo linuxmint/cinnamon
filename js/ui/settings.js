@@ -212,15 +212,19 @@ function settings_not_initialized_error(uuid) {
 }
 
 function key_not_found_error (key_name, uuid) {
-    global.logError("Could not find setting key '" + key_name + "' for applet/desklet uuid " + uuid);
+    global.logError("Could not find setting key '" + key_name + "' for xlet " + uuid);
+}
+
+function invalidKeyValueError (key_name, uuid) {
+    global.logError(`Setting key ${key_name} for xlet ${uuid} is undefined or null`);
 }
 
 function invalid_setting_type_error (key_name, uuid, type) {
-    global.logError("Invalid setting type '" + type + "' for setting key '" + key_name + "' of applet/desklet uuid " + uuid);
+    global.logError("Invalid setting type '" + type + "' for setting key '" + key_name + "' of xlet " + uuid);
 }
 
 function options_not_supported_error(key_name, uuid, type) {
-    global.logError("Invalid request for key '" + key_name + "' of applet/desklet uuid '" + uuid + "': type '" + type + "' doesn't support options");
+    global.logError("Invalid request for key '" + key_name + "' of xlet '" + uuid + "': type '" + type + "' doesn't support options");
 }
 
 function binding_not_found_error(key_name, uuid) {
@@ -299,6 +303,10 @@ XletSettingsBase.prototype = {
             key_not_found_error(key, this.uuid);
             return false;
         }
+        if (this.settingsData[key] == null) {
+            invalidKeyValueError(key, this.uuid);
+            return false;
+        }
         if (!(this.settingsData[key].type in SETTINGS_TYPES)) {
             invalid_setting_type_error(key, this.uuid, this.settingsData[key].type);
             return false;
@@ -319,8 +327,7 @@ XletSettingsBase.prototype = {
         this.bindings[key].push(info);
 
         // add a save function for objects or arrays
-        if (this.settingsData[key] != null
-            && this.settingsData[key].value != null
+        if (this.settingsData[key].value != null
             && typeof(this.settingsData[key].value) === "object" && !this.settingsData[key].value.save) {
             info.isObject = true;
             this.settingsData[key].value.save = Lang.bind(this, this._saveToFile);
