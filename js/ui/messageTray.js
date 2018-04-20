@@ -196,21 +196,21 @@ URLHighlighter.prototype = {
     },
 
     _findUrlAtPos: function(event) {
+        if (!this._urls.length)
+            return -1;
+
         let success;
         let [x, y] = event.get_coords();
-        [success, x, y] = this.actor.transform_stage_point(x, y);
-        let find_pos = -1;
-        for (let i = 0; i < this.actor.clutter_text.text.length; i++) {
-            let [success, px, py, line_height] = this.actor.clutter_text.position_to_coords(i);
-            if (py > y || py + line_height < y || x < px)
-                continue;
-            find_pos = i;
-        }
-        if (find_pos != -1) {
-            for (let i = 0; i < this._urls.length; i++)
-            if (find_pos >= this._urls[i].pos &&
-                this._urls[i].pos + this._urls[i].url.length > find_pos)
-                return i;
+        let ct = this.actor.clutter_text;
+        [success, x, y] = ct.transform_stage_point(x, y);
+        if (success && x >= 0 && x <= ct.width
+                    && y >= 0 && y <= ct.height) {
+            let pos = ct.coords_to_position(x, y);
+            for (let i = 0; i < this._urls.length; i++) {
+                let url = this._urls[i]
+                if (pos >= url.pos && pos <= url.pos + url.url.length)
+                    return i;
+            }
         }
         return -1;
     }
@@ -622,10 +622,22 @@ Notification.prototype = {
 
     _createScrollArea: function() {
         this._table.add_style_class_name('multi-line-notification');
+
+        // FIXME: this doesn't actually scroll/limit notification size with the current policies.
+        // if we allow scrolling, then there doesn't seem to be a minimum height when inside the
+        // tray which breaks the layout and in the extreme case makes the notifications unreadable
         this._scrollArea = new St.ScrollView({ name: 'notification-scrollview',
                                                vscrollbar_policy: Gtk.PolicyType.NEVER,
                                                hscrollbar_policy: Gtk.PolicyType.NEVER,
                                                style_class: 'vfade' });
+
+        // prevent non-scrollable notifications from taking scroll events, otherwise we can't
+        // easily scroll the message tray.
+        // FIXME: if we enable scrolling then we may want to toggle this based on vscrollbar_visible
+        // or whether the notification is in the tray.
+        // something like: scrollArea.connect("notify::vscrollbar-visible", () => (enable = visible));
+        this._scrollArea.enable_mouse_scrolling = false;
+
         this._table.add(this._scrollArea, { row: 1,
                                             col: 2 });
         this._updateLastColumnSettings();
