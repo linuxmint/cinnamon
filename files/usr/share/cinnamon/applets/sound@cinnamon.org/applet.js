@@ -150,6 +150,9 @@ VolumeSlider.prototype = {
             muted = true;
         } else {
             muted = false;
+            //100% is magnetic:
+            if (volume != this.applet._volumeNorm && volume > this.applet._volumeNorm*(1-VOLUME_ADJUSTMENT_STEP/2) && volume < this.applet._volumeNorm*(1+VOLUME_ADJUSTMENT_STEP/2))
+                volume = this.applet._volumeNorm;
         }
         this.stream.volume = volume;
         this.stream.push_volume();
@@ -161,22 +164,53 @@ VolumeSlider.prototype = {
             this.applet._notifyVolumeChange(this.stream);
     },
 
+    _onScrollEvent: function (actor, event) {
+        let direction = event.get_scroll_direction();
+
+        if (direction == Clutter.ScrollDirection.DOWN) {
+            this._value = Math.max(0, this._value - VOLUME_ADJUSTMENT_STEP/this.applet._volumeMax*this.applet._volumeNorm);
+        }
+        else if (direction == Clutter.ScrollDirection.UP) {
+            this._value = Math.min(1, this._value + VOLUME_ADJUSTMENT_STEP/this.applet._volumeMax*this.applet._volumeNorm);
+        }
+
+        this._slider.queue_repaint();
+        this.emit('value-changed', this._value);
+    },
+
+    _onKeyPressEvent: function (actor, event) {
+        let key = event.get_key_symbol();
+        if (key == Clutter.KEY_Right || key == Clutter.KEY_Left) {
+            let delta = key == Clutter.KEY_Right ? VOLUME_ADJUSTMENT_STEP : -VOLUME_ADJUSTMENT_STEP;
+            this._value = Math.max(0, Math.min(this._value + delta/this.applet._volumeMax*this.applet._volumeNorm, 1));
+            this._slider.queue_repaint();
+            this.emit('value-changed', this._value);
+            this.emit('drag-end');
+            return true;
+        }
+        return false;
+    },
+
+
     _update: function(){
         // value: percentage of volume_max (set as value in the widget)
         // visible_value: percentage of volume_norm (shown to the user)
         // these only differ for the output, and only when the user changes the maximum volume
         let volume = (!this.stream || this.stream.is_muted) ? 0 : this.stream.volume;
-        let value, visible_value, delta = VOLUME_ADJUSTMENT_STEP;
+        let value, visible_value, delta = VOLUME_ADJUSTMENT_STEP * this.applet._volumeMax / this.applet._volumeNorm;
 
         if (this.isOutputSink) {
             value = volume / this.applet._volumeMax;
             visible_value = volume / this.applet._volumeNorm;
-            if (visible_value > 1 - delta/2 && visible_value < 1 + delta/2) {
+            if (visible_value != 1 && visible_value > 1 - delta/2 && visible_value < 1 + delta/2) {
                 visible_value = 1; // 100% is magnetic
                 value = this.applet._volumeNorm / this.applet._volumeMax;
+                this.applet._output.volume = this.applet._volumeNorm;
+                this.applet._output.push_volume();
             }
         } else {
-            value = visible_value = volume / this.applet._volumeNorm;
+            visible_value = volume / this.applet._volumeNorm;
+            value = visible_value
         }
 
         let percentage = Math.round(visible_value * 100) + "%";
@@ -797,8 +831,6 @@ Player.prototype = {
                 this.coverBox.set_child_below_sibling(this.cover, this.trackInfo);
                 this._applet.setAppletTextIcon(this, cover_path);
 
-
-
                 /*Tweener.addTween(this._trackCover, { opacity: 255,
                     time: 0.3,
                     transition: 'easeInCubic'
@@ -1086,11 +1118,18 @@ MyApplet.prototype = {
                 this._output.volume = 0;
                 if (!prev_muted)
                     this._output.change_is_muted(true);
+            } else {
+                // 100% is magnetic:
+                if (this._output.volume!=this._volumeNorm && this._output.volume>this._volumeNorm*(1-VOLUME_ADJUSTMENT_STEP/2) && this._output.volume<this._volumeNorm*(1+VOLUME_ADJUSTMENT_STEP/2))
+                    this._output.volume=this._volumeNorm;
             }
             this._output.push_volume();
         }
         else if (direction == Clutter.ScrollDirection.UP) {
             this._output.volume = Math.min(this._volumeMax, currentVolume + this._volumeNorm * VOLUME_ADJUSTMENT_STEP);
+            // 100% is magnetic:
+            if (this._output.volume!=this._volumeNorm && this._output.volume>this._volumeNorm*(1-VOLUME_ADJUSTMENT_STEP/2) && this._output.volume<this._volumeNorm*(1+VOLUME_ADJUSTMENT_STEP/2))
+                this._output.volume=this._volumeNorm;
             this._output.push_volume();
             this._output.change_is_muted(false);
         }
