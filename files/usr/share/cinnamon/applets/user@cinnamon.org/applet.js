@@ -92,7 +92,7 @@ MyApplet.prototype = {
 
             if (GLib.getenv("XDG_SEAT_PATH")) {
                 // LightDM
-                item = new PopupMenu.PopupIconMenuItem(_("Switch User"), "switch-user", St.IconType.SYMBOLIC);
+                item = new PopupMenu.PopupIconMenuItem(_("Switch User"), "system-switch-user", St.IconType.SYMBOLIC);
                 item.connect('activate', Lang.bind(this, function() {
                     Util.spawnCommandLine("cinnamon-screensaver-command --lock");
                     Util.spawnCommandLine("dm-tool switch-to-greeter");
@@ -101,7 +101,7 @@ MyApplet.prototype = {
             }
             else if (GLib.file_test("/usr/bin/mdmflexiserver", GLib.FileTest.EXISTS)) {
                 // MDM
-                item = new PopupMenu.PopupIconMenuItem(_("Switch User"), "switch-user", St.IconType.SYMBOLIC);
+                item = new PopupMenu.PopupIconMenuItem(_("Switch User"), "system-switch-user", St.IconType.SYMBOLIC);
                 item.connect('activate', Lang.bind(this, function() {
                     Util.spawnCommandLine("mdmflexiserver");
                 }));
@@ -109,7 +109,7 @@ MyApplet.prototype = {
             }
             else if (GLib.file_test("/usr/bin/gdmflexiserver", GLib.FileTest.EXISTS)) {
                 // GDM
-                item = new PopupMenu.PopupIconMenuItem(_("Switch User"), "switch-user", St.IconType.SYMBOLIC);
+                item = new PopupMenu.PopupIconMenuItem(_("Switch User"), "system-switch-user", St.IconType.SYMBOLIC);
                 item.connect('activate', Lang.bind(this, function() {
                     Util.spawnCommandLine("cinnamon-screensaver-command --lock");
                     Util.spawnCommandLine("gdmflexiserver");
