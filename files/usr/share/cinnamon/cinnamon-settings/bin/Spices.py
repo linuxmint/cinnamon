@@ -201,19 +201,19 @@ class Spice_Harvester(GObject.Object):
             if signal_name == name:
                 callback(*params)
 
-    """ connects a callback to a dbus signal"""
     def connect_proxy(self, name, callback):
+        """ connects a callback to a dbus signal"""
         self._proxy_signals.append((name, callback))
 
-    """ disconnects a previously connected dbus signal"""
     def disconnect_proxy(self, name):
+        """ disconnects a previously connected dbus signal"""
         for signal in self._proxy_signals:
             if name in signal:
                 self._proxy_signals.remove(signal)
                 break
 
-    """ sends a command over dbus"""
     def send_proxy_signal(self, command, *args):
+        """ sends a command over dbus"""
         if self._proxy is None:
             self._proxy_deferred_actions.append((command, args))
         else:
@@ -229,14 +229,15 @@ class Spice_Harvester(GObject.Object):
             self.running_uuids = []
         self.emit('status-changed')
 
-    """ opens to the web page of the given uuid"""
     def open_spice_page(self, uuid):
+        """ opens to the web page of the given uuid"""
         id = self.index_cache[uuid]['spices-id']
         os.system('xdg-open "%s/%ss/view/%s"' % (URL_SPICES_HOME, self.collection_type, id))
 
-    """ returns a Gtk.Widget that can be added to the application. This widget will show the progress of any
-        asynchronous actions taking place (ie. refreshing the cache or downloading an applet)"""
     def get_progressbar(self):
+        """ returns a Gtk.Widget that can be added to the application. This widget will show the
+            progress of any asynchronous actions taking place (ie. refreshing the cache or
+            downloading an applet)"""
         progressbar = Gtk.ProgressBar()
         progressbar.set_show_text(True)
         progressbar.set_text('')
@@ -409,16 +410,16 @@ class Spice_Harvester(GObject.Object):
         self._generate_update_list()
         self.emit("installed-changed")
 
-    """ returns a dictionary of the metadata by uuid of all installed spices"""
     def get_installed(self):
+        """ returns a dictionary of the metadata by uuid of all installed spices"""
         return self.meta_map
 
-    """ returns a boolean specifying whether the given spice is installed or not"""
     def get_is_installed(self, uuid):
+        """ returns a boolean specifying whether the given spice is installed or not"""
         return uuid in self.meta_map
 
-    """ returns a boolean indicating whether the given spice has an update available"""
     def get_has_update(self, uuid):
+        """ returns a boolean indicating whether the given spice has an update available"""
         if uuid not in self.index_cache:
             return False
 
@@ -427,8 +428,8 @@ class Spice_Harvester(GObject.Object):
         except Exception as e:
             return False
 
-    """ returns the number of instances currently enabled"""
     def get_enabled(self, uuid):
+        """ returns the number of instances currently enabled"""
         enabled_count = 0
         if not self.themes:
             enabled_list = self.settings.get_strv(self.enabled_key)
@@ -440,20 +441,21 @@ class Spice_Harvester(GObject.Object):
 
         return enabled_count
 
-    """ checks whether the spice is currently running (it may be enabled but not running if there was an error in initialization)"""
     def get_is_running(self, uuid):
+        """ checks whether the spice is currently running (it may be enabled but not running if
+            there was an error in initialization)"""
         return uuid in self.running_uuids
 
-    """ returns True if there are updates available or False otherwise"""
     def are_updates_available(self):
+        """ returns True if there are updates available or False otherwise"""
         return len(self.updates_available) > 0
 
-    """ returns the number of available updates"""
     def get_n_updates(self):
+        """ returns the number of available updates"""
         return len(self.updates_available)
 
-    """ retrieves a copy of the index cache """
     def get_cache(self):
+        """ retrieves a copy of the index cache """
         return self.index_cache
 
     def _load_cache(self):
@@ -485,8 +487,8 @@ class Spice_Harvester(GObject.Object):
             if self.get_is_installed(uuid) and self.get_has_update(uuid):
                 self.updates_available.append(uuid)
 
-    """ downloads an updated version of the index and assets"""
     def refresh_cache(self):
+        """ downloads an updated version of the index and assets"""
         self.old_cache = self.index_cache
 
         job = {'func': self._download_cache}
@@ -569,8 +571,8 @@ class Spice_Harvester(GObject.Object):
     def _sanitize_thumb(self, basename):
         return basename.replace("jpg", "png").replace("JPG", "png").replace("PNG", "png")
 
-    """ downloads and installs the given extension"""
     def install(self, uuid):
+        """ downloads and installs the given extension"""
         job = {'uuid': uuid, 'func': self._install, 'callback': self._install_finished}
         job['progress_text'] = _("Installing %s") % uuid
         self._push_job(job)
@@ -604,8 +606,8 @@ class Spice_Harvester(GObject.Object):
         except Exception:
             pass
 
-    """ installs a spice from a specified folder"""
     def install_from_folder(self, folder, uuid, from_spices=False):
+        """ installs a spice from a specified folder"""
         contents = os.listdir(folder)
 
         if not self.themes:
@@ -656,8 +658,8 @@ class Spice_Harvester(GObject.Object):
         if self.get_enabled(uuid):
             self.send_proxy_signal('ReloadXlet', '(ss)', uuid, self.collection_type.upper())
 
-    """ uninstalls and removes the given extension"""
     def uninstall(self, uuid):
+        """ uninstalls and removes the given extension"""
         job = {'uuid': uuid, 'func': self._uninstall}
         job['progress_text'] = _("Uninstalling %s") % uuid
         self._push_job(job)
@@ -687,13 +689,13 @@ class Spice_Harvester(GObject.Object):
         except Exception as detail:
             self.errorMessage(_("A problem occurred while removing %s.") % job['uuid'], str(detail))
 
-    """ applies all available updates"""
     def update_all(self):
+        """ applies all available updates"""
         for uuid in self.updates_available:
             self.install(uuid)
 
-    """ trigger in-progress download to halt"""
     def abort(self, *args):
+        """ trigger in-progress download to halt"""
         self.abort_download = ABORT_USER
         return
 
@@ -757,8 +759,8 @@ class Spice_Harvester(GObject.Object):
                 new_list.append(enabled_extension)
         self.settings.set_strv(self.enabled_key, new_list)
 
-    """ gets the icon  for a given uuid"""
     def get_icon(self, uuid):
+        """ gets the icon  for a given uuid"""
         try:
             if self.themes:
                 file_path = os.path.join(self.cache_folder, os.path.basename(self.index_cache[uuid]['screenshot']))
