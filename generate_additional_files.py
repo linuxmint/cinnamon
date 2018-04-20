@@ -1,11 +1,14 @@
 #!/usr/bin/python3
 
+import os
+import gettext
+import sys
+
+sys.path.append('/usr/lib/linuxmint/common')  # noqa
+import additionalfiles
+
 DOMAIN = "cinnamon"
 PATH = "/usr/share/locale"
-
-import os, gettext, sys
-sys.path.append('/usr/lib/linuxmint/common')
-import additionalfiles
 
 os.environ['LANGUAGE'] = "en_US.UTF-8"
 gettext.install(DOMAIN, PATH)

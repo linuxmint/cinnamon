@@ -1,20 +1,18 @@
 #!/usr/bin/python3
 
+import os
+import gettext
+import glob
+import sys
+
+sys.path.append('/usr/lib/linuxmint/common')  # noqa
+import additionalfiles
+
 DOMAIN = "cinnamon"
 PATH = "/usr/share/locale"
 
-import os, gettext, sys
-sys.path.append('/usr/lib/linuxmint/common')
-import additionalfiles
-
 os.environ['LANGUAGE'] = "en_US.UTF-8"
 gettext.install(DOMAIN, PATH)
-
-import os
-import glob
-import polib
-import sys
-from gi.repository import GLib
 
 try:
     sys.path.append('files/usr/share/cinnamon/cinnamon-settings')
@@ -60,7 +58,7 @@ Categories=Settings;
 
         additionalfiles.generate(DOMAIN, PATH, "files/usr/share/applications/cinnamon-settings-%s.desktop" % mod.name, prefix, mod.sidePage.name, mod.comment, "", None, mod.sidePage.keywords)
 
-    except:
+    except Exception:
         print("Failed to load module %s" % module)
         import traceback
         traceback.print_exc()
