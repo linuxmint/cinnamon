@@ -96,9 +96,13 @@ class Module:
             for path in [os.path.expanduser("~/.themes"), "/usr/share/themes", os.path.expanduser("~/.icons"), "/usr/share/icons"]:
                 if os.path.exists(path):
                     file_obj = Gio.File.new_for_path(path)
-                    file_monitor = file_obj.monitor_directory(Gio.FileMonitorFlags.SEND_MOVED, None)
-                    file_monitor.connect("changed", self.on_file_changed)
-                    self.monitors.append(file_monitor)
+                    try:
+                        file_monitor = file_obj.monitor_directory(Gio.FileMonitorFlags.SEND_MOVED, None)
+                        file_monitor.connect("changed", self.on_file_changed)
+                        self.monitors.append(file_monitor)
+                    except Exception as e:
+                        # File monitors can fail when the OS runs out of file handles
+                        print(e)
 
             self.refresh()
 

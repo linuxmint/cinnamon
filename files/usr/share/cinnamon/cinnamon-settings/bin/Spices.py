@@ -168,8 +168,13 @@ class Spice_Harvester(GObject.Object):
         self.abort_download = ABORT_NONE
         self._sigLoadFinished = None
 
-        self.monitor = Gio.File.new_for_path(self.install_folder).monitor_directory(0, None)
-        self.monitorId = self.monitor.connect('changed', self._directory_changed)
+        self.monitorId = 0
+        try:
+            self.monitor = Gio.File.new_for_path(self.install_folder).monitor_directory(0, None)
+            self.monitorId = self.monitor.connect('changed', self._directory_changed)
+        except Exception as e:
+            # File monitors can fail when the OS runs out of file handles
+            print(e)
 
         try:
             Gio.DBusProxy.new_for_bus(Gio.BusType.SESSION, Gio.DBusProxyFlags.NONE, None,
@@ -315,7 +320,12 @@ class Spice_Harvester(GObject.Object):
             self.total_jobs = 0
             self._set_progressbar_visible(False)
             self._set_progressbar_text('')
-            self.monitorId = self.monitor.connect('changed', self._directory_changed)
+            if self.monitor is not None:
+                try:
+                    self.monitorId = self.monitor.connect('changed', self._directory_changed)
+                except Exception as e:
+                    # File monitors can fail when the OS runs out of file handles
+                    print(e)
             self._directory_changed()
 
     def _download(self, outfd, outfile, url, binary=True):
