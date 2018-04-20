@@ -283,6 +283,7 @@ MyApplet.prototype = {
             if (file.query_exists(null)) {
                 this._applet_icon = new EmblemedIcon(file.get_path(), this._config.get_current_flag_id(), "applet-icon");
                 this._applet_icon_box.set_child(this._applet_icon.actor);
+                this._applet_icon_box.show();
 
                 this._setStyle();
 
@@ -304,7 +305,7 @@ MyApplet.prototype = {
             name = this.use_upper ? name.toUpperCase() : name;
 
             this.set_applet_label(name);
-            this.hide_applet_icon();
+            this._applet_icon_box.hide();
         }
     },
 
