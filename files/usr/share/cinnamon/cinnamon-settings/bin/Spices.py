@@ -586,6 +586,7 @@ class Spice_Harvester(GObject.Object):
         except Exception:
             pass
 
+    """ installs a spice from a specified folder"""
     def install_from_folder(self, folder, uuid, from_spices=False):
         contents = os.listdir(folder)
 
