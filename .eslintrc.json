@@ -13,7 +13,7 @@
             "ecmaVersion": "2015",
             "experimentalObjectRestSpread": true
         },
-        "sourceType": "default"
+        "sourceType": "script"
     },
     "globals": {
         "imports": false,
@@ -21,7 +21,12 @@
         "print": false,
         "_": false,
         "C_": false,
-        "ngettext": false
+        "ngettext": false,
+        "send_results": false,
+        "get_locale_string": false,
+        "__dirname": false,
+        "__filename": false,
+        "__meta": false
     },
     "rules": {
         "comma-dangle": 0,
@@ -38,7 +43,7 @@
         "no-ex-assign": 0,
         "no-extra-boolean-cast": 1,
         "no-extra-parens": 0,
-        "no-extra-semi": 1,
+        "no-extra-semi": 0,
         "no-func-assign": 1,
         "no-inner-declarations": 0,
         "no-invalid-regexp": 2,
@@ -116,8 +121,13 @@
         "no-undef-init": 0,
         "no-undef": 2,
         "no-undefined": 0,
-        "no-unused-vars": 1,
-        "no-use-before-define": 2,
+        "no-unused-vars": [1, {
+            "args": "none",
+            "ignoreRestSiblings": true,
+            "vars": "local",
+            "varsIgnorePattern": "^main|^x|^y|^mask|[iI]d$|[A-Z_0-9]|^applets|^desklets|^extensions|^init|^start|^success|^mod|^mods|^timeout|^expires|^height|^rtl|^min"
+        }],
+        "no-use-before-define": [2, {"functions": false}],
         "callback-return": 0,
         "handle-callback-err": 0,
         "no-mixed-requires": 0,
@@ -137,7 +147,16 @@
         "func-names": 0,
         "func-style": 0,
         "id-length": 0,
-        "indent": [1, 4, {"ObjectExpression": "first", "ignoreComments": true, "SwitchCase": 1}],
+        "indent": [1, 4, {
+            "ArrayExpression": "off",
+            "ObjectExpression": "off",
+            "ignoreComments": true,
+            "SwitchCase": 1,
+            "CallExpression": {"arguments": "off"},
+            "flatTernaryExpressions": false,
+            "FunctionExpression": {"parameters": "off"},
+            "MemberExpression": 0
+        }],
         "key-spacing": 0,
         "lines-around-comment": 0,
         "linebreak-style": 0,
@@ -150,7 +169,7 @@
         "no-inline-comments": 0,
         "no-lonely-if": 0,
         "no-mixed-spaces-and-tabs": 2,
-        "no-multiple-empty-lines": [1, {"max": 2}],
+        "no-multiple-empty-lines": [1, {"max": 4}],
         "no-nested-ternary": 2,
         "no-new-object": 1,
         "no-spaced-func": 0,
