@@ -100,18 +100,7 @@ function overrideGio() {
 function overrideDumpStack() {
     global._dump_gjs_stack = global.dump_gjs_stack;
     global.dump_gjs_stack = function(message = 'global.dump_gjs_stack():') {
-        try {
-            throw new Error();
-        } catch (e) {
-            let lines = e.stack.split('\n')
-            // Remove stack leading to this function, so the problem function is at the top.
-            for (let i = 0; i < lines.length; i++) {
-                if (lines[i].indexOf('overrides.js') > -1) {
-                    lines.splice(lines.indexOf(lines[i]), 1);
-                }
-            }
-            log(`${message}\n${lines.join('\n')}`);
-        }
+        global.logWarning(`${message}\n${new Error().stack}`);
     }
 }
 
