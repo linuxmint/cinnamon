@@ -453,7 +453,6 @@ Notification.prototype = {
             }));
 
         this.actor = new St.Button({ accessible_role: Atk.Role.NOTIFICATION });
-        this.actor._delegate = this;
         this.actor._parent_container = null;
         this.actor.connect('clicked', Lang.bind(this, this._onClicked));
         this.actor.connect('destroy', Lang.bind(this, this._onDestroy));
@@ -1019,7 +1018,6 @@ Notification.prototype = {
     destroy: function(reason) {
         this._destroyedReason = reason;
         this.actor.destroy();
-        this.actor._delegate = null;
     }
 };
 Signals.addSignalMethods(Notification.prototype);
