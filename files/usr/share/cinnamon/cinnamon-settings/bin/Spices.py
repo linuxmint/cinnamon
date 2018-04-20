@@ -251,6 +251,8 @@ class Spice_Harvester(GObject.Object):
     def _set_progressbar_fraction(self, fraction):
         for progressbar in self.progressbars:
             progressbar.set_fraction(fraction)
+        if self.window:
+            self.window.set_progress(int(fraction*100))
 
     def _set_progressbar_visible(self, visible):
         for progressbar in self.progressbars:
