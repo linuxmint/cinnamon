@@ -15,16 +15,23 @@ import os
 import sys
 
 args = sys.argv[1:]
-potfile = args.pop()
-if '-j' in args:
-    args.remove('-j')
-elif '--js' in args:
-    args.remove('--js')
-else:
-    args.append('-j')
+if '-h' in args:
+    print("cinnamon-json-makepot is deprecated - please use cinnamon-xlet-makepot instead\ntype cinnamon-xlet-makepot -h for usage information.")
+    quit()
+elif '-i' not in args and '--install' not in args and
+     '-r' not in args and '--remove' not in args:
+    potfile = args.pop()
+    if '-j' in args:
+        args.remove('-j')
+    elif '--js' in args:
+        args.remove('--js')
+    else:
+        args.append('-j')
 
-args.append('-o '+potfile)
-# args.append(potfile)
+    args.append('-o')
+    args.append(potfile)
+
 args.append(os.getcwd())
-print(args)
-os.execvp("cinnamon-xlet-makepot", args)
+command = 'cinnamon-xlet-makepot'
+args.insert(0, command)
+os.execvp(command, args)
