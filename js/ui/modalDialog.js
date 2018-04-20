@@ -469,6 +469,7 @@ SpicesAboutDialog.prototype = {
                 icon = new St.Icon({icon_name: "cs-"+type, icon_size: 48, icon_type: St.IconType.FULLCOLOR, style_class: "about-icon"});
             }
         }
+        icon.set_y_align(Clutter.ActorAlign.START);
         topBox.add_actor(icon);
 
         let topTextBox = new St.BoxLayout({vertical: true});
