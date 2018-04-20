@@ -65,7 +65,6 @@ class ModulePage(pageutils.WindowAndActionBars):
 
         self.back = pageutils.ImageButton("go-previous-symbolic")
         self.back.set_tooltip_text("Go back")
-        self.back.set_sensitive(False)
         self.back.connect("clicked", self.onBackButton)
         self.addToLeftBar(self.back, 1)
 
@@ -106,20 +105,22 @@ class ModulePage(pageutils.WindowAndActionBars):
             lookingGlassProxy.AddResult(path)
 
     def onBackButton(self, widget):
-        self.popInspectionElement()
+        if len(self.stack) > 0:
+            self.popInspectionElement()
+        else:
+            melangeApp.activatePage("results")
+
 
     def popInspectionElement(self):
         if len(self.stack) > 0:
             self.updateInspector(*self.stack.pop())
 
         sensitive = len(self.stack) > 0
-        self.back.set_sensitive(sensitive)
         self.insert.set_sensitive(sensitive)
 
     def pushInspectionElement(self):
         if self.currentInspection is not None:
             self.stack.append(self.currentInspection)
-            self.back.set_sensitive(True)
             self.insert.set_sensitive(True)
 
     def updateInspector(self, path, objType, name, value, pushToStack=False):
@@ -151,6 +152,5 @@ class ModulePage(pageutils.WindowAndActionBars):
     def inspectElement(self, path, objType, name, value):
         del self.stack[:]
         self.currentInspection = None
-        self.back.set_sensitive(False)
         self.insert.set_sensitive(False)
         self.updateInspector(path, objType, name, value)
