@@ -315,7 +315,7 @@ Player.prototype = {
         // Player info
         let playerBox = new St.BoxLayout();
         this.playerIcon = new St.Icon({icon_type: St.IconType.SYMBOLIC, style_class: "popup-menu-icon"});
-        this.playerLabel = new St.Label({y_expand: true, y_align: Clutter.ActorAlign.CENTER});
+        this.playerLabel = new St.Label({ y_expand: true, y_align: Clutter.ActorAlign.CENTER, x_expand: true });
         playerBox.add_actor(this.playerIcon);
         playerBox.add_actor(this.playerLabel);
 
