@@ -2043,10 +2043,11 @@ PopupMenuBase.prototype = {
     },
 
     _getMenuItems: function() {
-        return this.box.get_children().filter(actor => {
-            return (actor._delegate !== undefined
-                && (actor._delegate instanceof PopupBaseMenuItem || actor._delegate instanceof PopupMenuSection));
-        }).map(actor => actor._delegate);
+        return this.box.get_children().reduce((children, actor) => {
+            if (actor._delegate instanceof PopupBaseMenuItem || actor._delegate instanceof PopupMenuSection)
+                children.push(actor._delegate);
+            return children;
+        }, []);
     },
 
     get firstMenuItem() {
