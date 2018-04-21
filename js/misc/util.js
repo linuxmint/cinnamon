@@ -10,7 +10,8 @@
  */
 
 const GLib = imports.gi.GLib;
-
+const GObject = imports.gi.GObject;
+const Gir = imports.gi.GIRepository;
 const Main = imports.ui.main;
 
 // http://daringfireball.net/2010/07/improved_regex_for_matching_urls
@@ -383,4 +384,53 @@ function queryCollection(collection, query, indexOnly = false) {
         }
     }
     return indexOnly ? -1 : null;
+}
+
+const READWRITE = GObject.ParamFlags.READABLE | GObject.ParamFlags.WRITABLE;
+
+// Based on https://gist.github.com/ptomato/c4245c77d375022a43c5
+function _getWritablePropertyNamesForObjectInfo(info) {
+    let propertyNames = [];
+    let propertyCount = Gir.object_info_get_n_properties(info);
+    for(let i = 0; i < propertyCount; i++) {
+        let propertyInfo = Gir.object_info_get_property(info, i);
+        let flags = Gir.property_info_get_flags(propertyInfo);
+        if ((flags & READWRITE) == READWRITE) {
+            propertyNames.push(propertyInfo.get_name());
+
+        }
+    }
+    return propertyNames;
+}
+
+/**
+ * getGObjectPropertyValues:
+ * @object (GObject.Object): GObject to inspect
+ *
+ * Returns (object): JS representation of the passed GObject
+ */
+function getGObjectPropertyValues(obj, r = 0) {
+    let repository = Gir.Repository.get_default();
+    let baseInfo = repository.find_by_gtype(obj.constructor.$gtype);
+    let propertyNames = [];
+    for (let info = baseInfo; info !== null; info = Gir.object_info_get_parent(info)) {
+        propertyNames = propertyNames.concat(_getWritablePropertyNamesForObjectInfo(info));
+    }
+    if (r > 0 && propertyNames.length === 0) {
+        return obj.toString();
+    }
+    let jsRepresentation = {};
+    for (let i = 0; i < propertyNames.length; i++) {
+        try {
+            let value = obj[propertyNames[i]];
+            if ((value instanceof GObject.Object) && r < 4) {
+                value = getGObjectPropertyValues(value, r + 1);
+            }
+            jsRepresentation[propertyNames[i]] = value;
+        } catch (e) {
+            /* Error: Can't convert non-null pointer to JS value */
+            jsRepresentation[propertyNames[i]] = '<non-null pointer>';
+        }
+    }
+    return jsRepresentation;
 }
