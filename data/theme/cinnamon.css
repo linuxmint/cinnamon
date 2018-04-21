@@ -1151,8 +1151,6 @@ StScrollBar StButton#vhandle:hover {
 
 }
 .menu-category-button-selected:hover {
-    background-color: #969696;
-    border-radius: 8px;
 }
 /* Name and description of the currently hovered item in the menu
  * This appears on the bottom right hand corner of the menu*/
