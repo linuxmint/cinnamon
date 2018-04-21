@@ -72,7 +72,7 @@ MyApplet.prototype = {
 
             this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
 
-            item = new PopupMenu.PopupIconMenuItem(_("Lock Screen"), "lock-screen", St.IconType.SYMBOLIC);
+            item = new PopupMenu.PopupIconMenuItem(_("Lock Screen"), "system-lock-screen", St.IconType.SYMBOLIC);
             item.connect('activate', Lang.bind(this, function() {
                 let screensaver_settings = new Gio.Settings({ schema_id: "org.cinnamon.desktop.screensaver" });
                 let screensaver_dialog = Gio.file_new_for_path("/usr/bin/cinnamon-screensaver-command");
@@ -125,7 +125,7 @@ MyApplet.prototype = {
 
             this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
 
-            item = new PopupMenu.PopupIconMenuItem(_("Power Off..."), "shutdown", St.IconType.SYMBOLIC);
+            item = new PopupMenu.PopupIconMenuItem(_("Power Off..."), "system-shutdown", St.IconType.SYMBOLIC);
             item.connect('activate', Lang.bind(this, function() {
                 this._session.ShutdownRemote();
             }));
