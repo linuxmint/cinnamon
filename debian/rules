@@ -14,10 +14,6 @@ DEB_HOST_MULTIARCH ?= $(shell dpkg-architecture -qDEB_HOST_MULTIARCH)
 # To avoid running configure twice (because gnome-autogen.sh)
 export NOCONFIGURE=yes
 
-ifneq (,$(filter parallel=%,$(DEB_BUILD_OPTIONS)))
-  DH_PARALLEL_OPTION=--parallel
-endif
-
 # This will set current version string
 VERSION := $(shell dpkg-parsechangelog | sed -n 's/Version: //p')
 # This will set major version string (strip substring '.<something>' after 'maemo<something>')
@@ -26,7 +22,7 @@ CINNAMON_VERSION := $(shell echo $(VERSION) | sed 's/\(.*.*\)\..*/\1.0/')
 DH_GENCONTROL_ARGS = -Vcinnamon:Version=$(CINNAMON_VERSION)
 
 %:
-	dh  $@ --with autoreconf,python2,gir $(DH_PARALLEL_OPTION)
+	dh  $@ --with python2,gir
 
 
 override_dh_autoreconf:
