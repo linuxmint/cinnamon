@@ -1,2 +1,0 @@
-rm_conffile /etc/init.d/cinnamon
-rm_conffile /etc/init/cinnamon.conf
