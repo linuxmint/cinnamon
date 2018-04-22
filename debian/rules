@@ -4,8 +4,8 @@
 # Uncomment this to turn on verbose mode.
 #export DH_VERBOSE=1
 
-# turn on Makefile verbose mode
-export V=1
+# Force UTF8 to workaround doc build error
+export LC_ALL=C.UTF-8
 
 export DEB_LDFLAGS_MAINT_APPEND=-Wl,--as-needed
 export DEB_BUILD_MAINT_OPTIONS = hardening=+all
@@ -22,8 +22,7 @@ CINNAMON_VERSION := $(shell echo $(VERSION) | sed 's/\(.*.*\)\..*/\1.0/')
 DH_GENCONTROL_ARGS = -Vcinnamon:Version=$(CINNAMON_VERSION)
 
 %:
-	dh  $@ --with python2,gir
-
+	dh $@ --with python2,python3,gir
 
 override_dh_autoreconf:
 	dh_autoreconf --as-needed ./autogen.sh
@@ -33,8 +32,9 @@ override_dh_auto_configure:
 	                     --disable-schemas-install\
 			     --enable-gtk-doc
 
-# Disable checks since they are not functional for the moment
 override_dh_auto_test:
+	# Disable checks since they are not functional for the moment
+	:
 
 override_dh_install-indep:
 	dh_install --list-missing
