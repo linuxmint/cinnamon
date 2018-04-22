@@ -380,13 +380,13 @@ class AppMenuButton {
 
         // Find the current focused window
         let windows = this.actor.get_parent().get_children()
-            .filter(function(item) {
-                return item.visible;
-            }).map(function(item) {
-                return item._delegate;
-            });
+        .filter(function(item) {
+            return item.visible;
+        }).map(function(item) {
+            return item._delegate;
+        });
 
-            windows = windows.reverse();
+        windows = windows.reverse();
 
         let i = windows.length;
         while (i-- && !windows[i].metaWindow.has_focus());
@@ -835,7 +835,7 @@ class AppMenuButtonRightClickMenu extends Applet.AppletPopupMenu {
                         ws.setSensitive(false);
 
                     ws.connect('activate', function() {
-                       mw.change_workspace(global.screen.get_workspace_by_index(j));
+                        mw.change_workspace(global.screen.get_workspace_by_index(j));
                     });
                     item.menu.addMenuItem(ws);
                 }

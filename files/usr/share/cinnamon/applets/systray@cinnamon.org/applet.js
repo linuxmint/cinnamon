@@ -143,7 +143,7 @@ class CinnamonSystrayApplet extends Applet.Applet {
     }
 
     _onEnterEvent(actor, event) {
-       this.set_applet_tooltip(actor._delegate.getToolTip());
+        this.set_applet_tooltip(actor._delegate.getToolTip());
     }
 
     _onLeaveEvent(actor, event) {

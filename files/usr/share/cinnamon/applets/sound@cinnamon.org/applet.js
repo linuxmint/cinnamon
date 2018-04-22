@@ -182,7 +182,7 @@ class VolumeSlider extends PopupMenu.PopupSliderMenuItem {
     }
 
 
-    _update: function(){
+    _update() {
         // value: percentage of volume_max (set as value in the widget)
         // visible_value: percentage of volume_norm (shown to the user)
         // these only differ for the output, and only when the user changes the maximum volume
@@ -477,16 +477,16 @@ class Player extends PopupMenu.PopupMenuSection {
         }));
 
         this._propChangedId = this._prop.connectSignal('PropertiesChanged', Lang.bind(this, function(proxy, sender, [iface, props]) {
-                if (props.PlaybackStatus)
-                    this._setStatus(props.PlaybackStatus.unpack());
-                if (props.Metadata)
-                    this._setMetadata(props.Metadata.deep_unpack());
-                if (props.CanGoNext || props.CanGoPrevious)
-                    this._updateControls();
-                if (props.LoopStatus)
-                    this._setLoopStatus(props.LoopStatus.unpack());
-                if (props.Shuffle)
-                    this._setShuffle(props.Shuffle.unpack());
+            if (props.PlaybackStatus)
+                this._setStatus(props.PlaybackStatus.unpack());
+            if (props.Metadata)
+                this._setMetadata(props.Metadata.deep_unpack());
+            if (props.CanGoNext || props.CanGoPrevious)
+                this._updateControls();
+            if (props.LoopStatus)
+                this._setLoopStatus(props.LoopStatus.unpack());
+            if (props.Shuffle)
+                this._setShuffle(props.Shuffle.unpack());
         }));
 
         //get the desktop entry and pass it to the applet
@@ -508,22 +508,22 @@ class Player extends PopupMenu.PopupMenuSection {
 
     _updateControls() {
         this._prop.GetRemote(MEDIA_PLAYER_2_PLAYER_NAME, 'CanGoNext',
-                             Lang.bind(this, function(value, err) {
-                                let canGoNext = true;
-                                if (!err)
-                                    canGoNext = value[0].unpack();
-                                this._nextButton.setEnabled(canGoNext);
-                                })
-                            );
+            Lang.bind(this, function(value, err) {
+                let canGoNext = true;
+                if (!err)
+                    canGoNext = value[0].unpack();
+                this._nextButton.setEnabled(canGoNext);
+            })
+        );
 
         this._prop.GetRemote(MEDIA_PLAYER_2_PLAYER_NAME, 'CanGoPrevious',
-                             Lang.bind(this, function(value, err) {
-                                let canGoPrevious = true;
-                                if (!err)
-                                    canGoPrevious = value[0].unpack();
-                                this._prevButton.setEnabled(canGoPrevious);
-                                })
-                            );
+            Lang.bind(this, function(value, err) {
+                let canGoPrevious = true;
+                if (!err)
+                    canGoPrevious = value[0].unpack();
+                this._prevButton.setEnabled(canGoPrevious);
+            })
+        );
     }
 
     _updatePositionSlider(position) {
@@ -792,22 +792,22 @@ class Player extends PopupMenu.PopupMenuSection {
             time: 0.3,
             transition: 'easeOutCubic',
             onComplete: Lang.bind(this, function() {*/
-                this.coverBox.remove_actor(this.cover);
-                if (! cover_path || ! GLib.file_test(cover_path, GLib.FileTest.EXISTS)) {
-                    this.cover = new St.Icon({style_class: 'sound-player-generic-coverart', important: true, icon_name: "media-optical", icon_size: 300, icon_type: St.IconType.FULLCOLOR});
-                    cover_path = null;
-                }
-                else {
-                    if (this._applet.keepAlbumAspectRatio) {
-                        this.cover = new Clutter.Texture({width: 300, keep_aspect_ratio: true, filter_quality: 2, filename: cover_path});
-                    }
-                    else {
-                        this.cover = new Clutter.Texture({width: 300, height: 300, keep_aspect_ratio: false, filter_quality: 2, filename: cover_path});
-                    }
-                }
-                this.coverBox.add_actor(this.cover);
-                this.coverBox.set_child_below_sibling(this.cover, this.trackInfo);
-                this._applet.setAppletTextIcon(this, cover_path);
+        this.coverBox.remove_actor(this.cover);
+        if (! cover_path || ! GLib.file_test(cover_path, GLib.FileTest.EXISTS)) {
+            this.cover = new St.Icon({style_class: 'sound-player-generic-coverart', important: true, icon_name: "media-optical", icon_size: 300, icon_type: St.IconType.FULLCOLOR});
+            cover_path = null;
+        }
+        else {
+            if (this._applet.keepAlbumAspectRatio) {
+                this.cover = new Clutter.Texture({width: 300, keep_aspect_ratio: true, filter_quality: 2, filename: cover_path});
+            }
+            else {
+                this.cover = new Clutter.Texture({width: 300, height: 300, keep_aspect_ratio: false, filter_quality: 2, filename: cover_path});
+            }
+        }
+        this.coverBox.add_actor(this.cover);
+        this.coverBox.set_child_below_sibling(this.cover, this.trackInfo);
+        this._applet.setAppletTextIcon(this, cover_path);
 
                 /*Tweener.addTween(this._trackCover, { opacity: 255,
                     time: 0.3,
@@ -1490,8 +1490,8 @@ class CinnamonSoundApplet extends Applet.TextIconApplet {
 
                 //hide submenu if showing them is unnecessary
                 let selectItem = this["_select" + type[0].toUpperCase() + type.slice(1) + "DeviceItem"];
-                if(selectItem.menu.numMenuItems <= 1)
-                        selectItem.actor.hide();
+                if (selectItem.menu.numMenuItems <= 1)
+                    selectItem.actor.hide();
 
                 this._devices.splice(i, 1);
                 break;

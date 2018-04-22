@@ -114,11 +114,11 @@ class CinnamonRecentApplet extends Applet.IconApplet {
                     new_button = this._recentButtons.find(button => ((button.uri) && (button.uri == uri)));
 
                     if (new_button == undefined) {
-                         let icon = this.RecentManager._infosByTimestamp[id].createIcon(22);
-                         let menuItem = new MyPopupMenuItem(icon, this.RecentManager._infosByTimestamp[id].name, uri, {});
-                         this.menu.addMenuItem(menuItem);
-                         menuItem.connect('activate', Lang.bind(this, this._launchFile, this.RecentManager._infosByTimestamp[id]));
-                         new_button = menuItem;
+                        let icon = this.RecentManager._infosByTimestamp[id].createIcon(22);
+                        let menuItem = new MyPopupMenuItem(icon, this.RecentManager._infosByTimestamp[id].name, uri, {});
+                        this.menu.addMenuItem(menuItem);
+                        menuItem.connect('activate', Lang.bind(this, this._launchFile, this.RecentManager._infosByTimestamp[id]));
+                        new_button = menuItem;
                     }
 
                     new_recents.push(new_button);

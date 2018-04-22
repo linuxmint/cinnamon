@@ -576,7 +576,7 @@ class CinnamonPanelLaunchersApplet extends Applet.Applet {
                     this._animatingPlaceholdersCount++;
                     this._dragPlaceholder.actor.connect('destroy',
                         Lang.bind(this, function() {
-                        this._animatingPlaceholdersCount--;
+                            this._animatingPlaceholdersCount--;
                         }));
                 }
                 this._dragPlaceholder = null;

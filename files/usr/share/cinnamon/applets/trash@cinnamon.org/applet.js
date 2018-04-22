@@ -52,7 +52,7 @@ class CinnamonTrashApplet extends Applet.IconApplet {
     }
 
     _onTrashChange() {
-      if (this.trash_changed_timeout > 0) {
+        if (this.trash_changed_timeout > 0) {
             Mainloop.source_remove(this.trash_changed_timeout);
             this.trash_changed_timeout = 0;
         }

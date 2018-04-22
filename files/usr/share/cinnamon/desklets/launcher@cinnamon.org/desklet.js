@@ -137,9 +137,9 @@ class CinnamonLauncherDesklet extends Desklet.Desklet {
         this.content.height = allocation.y2 - allocation.y1;
         this._animateIcon(0);
         if (this._app.open_new_window) {
-          this._app.open_new_window(-1);
+            this._app.open_new_window(-1);
         } else {
-          this._app.launch([], null);
+            this._app.launch([], null);
         }
     }
 }

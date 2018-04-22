@@ -316,13 +316,13 @@ class CinnamonWorkspaceSwitcher extends Applet.Applet {
         let suppress_graph = false; // suppress the graph and replace by buttons if size ratio
                                     // would be unworkable in a vertical panel
         if (this.orientation == St.Side.LEFT || this.orientation == St.Side.RIGHT) {
-          let workspace_size = new Meta.Rectangle();
-          global.screen.get_workspace_by_index(0).get_work_area_all_monitors(workspace_size);
-          let sizeRatio = workspace_size.width / workspace_size.height;
-          if (sizeRatio >= 2.35) {  // completely empirical, other than the widest
+            let workspace_size = new Meta.Rectangle();
+            global.screen.get_workspace_by_index(0).get_work_area_all_monitors(workspace_size);
+            let sizeRatio = workspace_size.width / workspace_size.height;
+            if (sizeRatio >= 2.35) {  // completely empirical, other than the widest
                                     // ratio single screen I know is 21*9 = 2.33
-              suppress_graph = true;
-          }
+                suppress_graph = true;
+            }
         }
 
         if (this.display_type == "visual" && !suppress_graph)

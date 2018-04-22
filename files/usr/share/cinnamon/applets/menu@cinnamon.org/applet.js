@@ -60,7 +60,7 @@ class VisibleChildIterator {
 
     reloadVisible() {
         this.array = this.container.get_focus_chain()
-            .filter(x => !(x._delegate instanceof PopupMenu.PopupSeparatorMenuItem));
+        .filter(x => !(x._delegate instanceof PopupMenu.PopupSeparatorMenuItem));
     }
 
     getNextVisible(curChild) {
@@ -338,7 +338,7 @@ class TransientButton extends PopupMenu.PopupBaseMenuItem {
         } catch (e) {
             this.handler = null;
             let iconName = this.isPath ? 'folder' : 'unknown';
-            this.icon = new St.Icon({icon_name: iconName, icon_size: APPLICATION_ICON_SIZE, icon_type: St.IconType.FULLCOLOR,});
+            this.icon = new St.Icon({icon_name: iconName, icon_size: APPLICATION_ICON_SIZE, icon_type: St.IconType.FULLCOLOR});
             // @todo Would be nice to indicate we don't have a handler for this file.
             this.actor.set_style_class_name('menu-application-button');
         }
@@ -1413,7 +1413,7 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
                 this._set_default_menu_icon();
             }
         } catch(e) {
-           global.logWarning("Could not load icon file \""+this.menuIcon+"\" for menu button");
+            global.logWarning("Could not load icon file \""+this.menuIcon+"\" for menu button");
         }
 
         if (this.menuIconCustom && this.menuIcon == "") {
@@ -1694,8 +1694,8 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
                             }
                             else {
                                 item_actor = (this._previousVisibleIndex != null) ?
-                                                this.appBoxIter.getVisibleItem(this._previousVisibleIndex) :
-                                                this.appBoxIter.getFirstVisible();
+                                    this.appBoxIter.getVisibleItem(this._previousVisibleIndex) :
+                                    this.appBoxIter.getFirstVisible();
                             }
                             break;
                         case "left":
@@ -1708,8 +1708,8 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
                                     item_actor = this.categoriesBox.get_child_at_index(index);
                                 } else {
                                     item_actor = (this._previousVisibleIndex != null) ?
-                                                    this.appBoxIter.getVisibleItem(this._previousVisibleIndex) :
-                                                    this.appBoxIter.getFirstVisible();
+                                        this.appBoxIter.getVisibleItem(this._previousVisibleIndex) :
+                                        this.appBoxIter.getFirstVisible();
                                 }
                             }
                             break;
@@ -1744,8 +1744,8 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
                         case "right":
                             this._previousSelectedActor = this.applicationsBox.get_child_at_index(index);
                             item_actor = (this._previousTreeSelectedActor != null) ?
-                                            this._previousTreeSelectedActor :
-                                            this.catBoxIter.getFirstVisible();
+                                this._previousTreeSelectedActor :
+                                this.catBoxIter.getFirstVisible();
                             this._previousTreeSelectedActor = item_actor;
                             index = item_actor.get_parent()._vis_iter.getAbsoluteIndexOfChild(item_actor);
 
@@ -1758,8 +1758,8 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
                         case "left":
                             this._previousSelectedActor = this.applicationsBox.get_child_at_index(index);
                             item_actor = (this._previousTreeSelectedActor != null) ?
-                                            this._previousTreeSelectedActor :
-                                            this.catBoxIter.getFirstVisible();
+                                this._previousTreeSelectedActor :
+                                this.catBoxIter.getFirstVisible();
                             this._previousTreeSelectedActor = item_actor;
                             break;
                         case "top":
@@ -1786,21 +1786,21 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
                             break;
                         case "right":
                             item_actor = (this._previousTreeSelectedActor != null) ?
-                                            this._previousTreeSelectedActor :
-                                            this.catBoxIter.getFirstVisible();
+                                this._previousTreeSelectedActor :
+                                this.catBoxIter.getFirstVisible();
                             this._previousTreeSelectedActor = item_actor;
                             break;
                         case "left":
                             item_actor = (this._previousTreeSelectedActor != null) ?
-                                            this._previousTreeSelectedActor :
-                                            this.catBoxIter.getFirstVisible();
+                                this._previousTreeSelectedActor :
+                                this.catBoxIter.getFirstVisible();
                             this._previousTreeSelectedActor = item_actor;
                             index = item_actor.get_parent()._vis_iter.getAbsoluteIndexOfChild(item_actor);
 
                             item_actor._delegate.emit('enter-event');
                             item_actor = (this._previousVisibleIndex != null) ?
-                                            this.appBoxIter.getVisibleItem(this._previousVisibleIndex) :
-                                            this.appBoxIter.getFirstVisible();
+                                this.appBoxIter.getVisibleItem(this._previousVisibleIndex) :
+                                this.appBoxIter.getFirstVisible();
                             break;
                         case "top":
                             item_actor = this.favBoxIter.getFirstVisible();
@@ -1833,7 +1833,7 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
                     item_actor._delegate.activateContextMenus();
                 return true;
             } else if (this._activeContainer === this.favoritesBox && symbol === Clutter.Delete) {
-               item_actor = this.favoritesBox.get_child_at_index(this._selectedItemIndex);
+                item_actor = this.favoritesBox.get_child_at_index(this._selectedItemIndex);
                 if (item_actor._delegate instanceof FavoritesButton) {
                     let favorites = AppFavorites.getAppFavorites().getFavorites();
                     let numFavorites = favorites.length;
@@ -2429,14 +2429,14 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
 
                 this.makeVectorBox(this._allAppsCategoryButton.actor);
             }
-         }));
-         this._allAppsCategoryButton.actor.connect('leave-event', Lang.bind(this, function () {
+        }));
+        this._allAppsCategoryButton.actor.connect('leave-event', Lang.bind(this, function () {
             this._previousSelectedActor = this._allAppsCategoryButton.actor;
             this._allAppsCategoryButton.isHovered = false;
-         }));
+        }));
 
-         this.categoriesBox.add_actor(this._allAppsCategoryButton.actor);
-         this._categoryButtons.push(this._allAppsCategoryButton);
+        this.categoriesBox.add_actor(this._allAppsCategoryButton.actor);
+        this._categoryButtons.push(this._allAppsCategoryButton);
 
         let trees = [appsys.get_tree()];
 
@@ -2463,10 +2463,10 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
                 let prefIdB = prefCats.indexOf(menuIdB);
 
                 if (prefIdA < 0 && prefIdB >= 0) {
-                  return -1;
+                    return -1;
                 }
                 if (prefIdA >= 0 && prefIdB < 0) {
-                  return 1;
+                    return 1;
                 }
 
                 let nameA = a.get_name().toLowerCase();
@@ -2521,8 +2521,8 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
                     handleEnterEvent(categoryButton, dir);
                     handleLeaveEvent(categoryButton, dir);
 
-                  this._categoryButtons.push(categoryButton);
-                  this.categoriesBox.add_actor(categoryButton.actor);
+                    this._categoryButtons.push(categoryButton);
+                    this.categoriesBox.add_actor(categoryButton.actor);
                 }
             }
         }
@@ -2584,8 +2584,8 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
 
         //Separator
         if (launchers.length != 0) {
-                let separator = new PopupMenu.PopupSeparatorMenuItem();
-                this.favoritesBox.add(separator.actor, { y_align: St.Align.END, y_fill: false });
+            let separator = new PopupMenu.PopupSeparatorMenuItem();
+            this.favoritesBox.add(separator.actor, { y_align: St.Align.END, y_fill: false });
         }
 
         //Lock screen
@@ -2793,12 +2793,12 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
         let vscroll = this.applicationsScrollBox.get_vscroll_bar();
         vscroll.connect('scroll-start',
                         Lang.bind(this, function() {
-                                      this.menu.passEvents = true;
-                                  }));
+                            this.menu.passEvents = true;
+                        }));
         vscroll.connect('scroll-stop',
                         Lang.bind(this, function() {
-                                      this.menu.passEvents = false;
-                                  }));
+                            this.menu.passEvents = false;
+                        }));
 
         this.applicationsBox = new St.BoxLayout({ style_class: 'menu-applications-inner-box', vertical:true });
         this.applicationsBox.add_style_class_name('menu-applications-box'); //this is to support old themes
@@ -2963,61 +2963,61 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
             } else {
                 this._applicationsButtons.forEach( function (item, index) {
                     if (item.category.indexOf(appCategory) != -1) {
-                            item.actor.show();
+                        item.actor.show();
                     } else {
-                            item.actor.hide();
+                        item.actor.hide();
                     }
                 });
             }
         } else if (apps) {
             for (let i = 0; i < this._applicationsButtons.length; i++) {
-                    if (apps.indexOf(this._applicationsButtons[i].app.get_id()) != -1) {
-                            this._applicationsButtons[i].actor.show();
-                    } else {
-                            this._applicationsButtons[i].actor.hide();
-                    }
+                if (apps.indexOf(this._applicationsButtons[i].app.get_id()) != -1) {
+                    this._applicationsButtons[i].actor.show();
+                } else {
+                    this._applicationsButtons[i].actor.hide();
+                }
             }
         } else {
             this._applicationsButtons.forEach( function (item, index) {
-                        item.actor.hide();
+                item.actor.hide();
             });
         }
         if (places) {
             if (places == -1) {
                 this._placesButtons.forEach( function (item, index) {
-                   item.actor.show();
+                    item.actor.show();
                 });
             } else {
                 for (let i = 0; i < this._placesButtons.length; i++) {
                     if (places.indexOf(this._placesButtons[i].button_name) != -1) {
-                            this._placesButtons[i].actor.show();
+                        this._placesButtons[i].actor.show();
                     } else {
-                            this._placesButtons[i].actor.hide();
+                        this._placesButtons[i].actor.hide();
                     }
                 }
             }
         } else {
             this._placesButtons.forEach( function (item, index) {
-                        item.actor.hide();
+                item.actor.hide();
             });
         }
         if (recent) {
             if (recent == -1) {
                 this._recentButtons.forEach( function (item, index) {
-                        item.actor.show();
+                    item.actor.show();
                 });
             } else {
                 for (let i = 0; i < this._recentButtons.length; i++) {
                     if (recent.indexOf(this._recentButtons[i].button_name) != -1) {
-                            this._recentButtons[i].actor.show();
+                        this._recentButtons[i].actor.show();
                     } else {
-                            this._recentButtons[i].actor.hide();
+                        this._recentButtons[i].actor.hide();
                     }
                 }
             }
         } else {
             this._recentButtons.forEach( function (item, index) {
-                        item.actor.hide();
+                item.actor.hide();
             });
         }
         if (autocompletes) {
@@ -3054,22 +3054,22 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
                 } else {
                     button.set_style_class_name("menu-category-button-greyed");
                 }
-             }
+            }
         } catch (e) {
             global.log(e);
         }
-     }
+    }
 
-     resetSearch(){
+    resetSearch(){
         this.searchEntry.set_text("");
         this._previousSearchPattern = "";
         this.searchActive = false;
         this._clearAllSelections(true);
         this._setCategoriesButtonActive(true);
         global.stage.set_key_focus(this.searchEntry);
-     }
+    }
 
-     _onSearchTextChanged (se, prop) {
+    _onSearchTextChanged (se, prop) {
         if (this.menuIsOpening) {
             this.menuIsOpening = false;
             return;
@@ -3110,21 +3110,21 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
     }
 
     _listBookmarks(pattern){
-       let bookmarks = Main.placesManager.getBookmarks();
-       var res = [];
-       for (let id = 0; id < bookmarks.length; id++) {
-          if (!pattern || bookmarks[id].name.toLowerCase().indexOf(pattern)!=-1) res.push(bookmarks[id]);
-       }
-       return res;
+        let bookmarks = Main.placesManager.getBookmarks();
+        var res = [];
+        for (let id = 0; id < bookmarks.length; id++) {
+            if (!pattern || bookmarks[id].name.toLowerCase().indexOf(pattern)!=-1) res.push(bookmarks[id]);
+        }
+        return res;
     }
 
     _listDevices(pattern){
-       let devices = Main.placesManager.getMounts();
-       var res = [];
-       for (let id = 0; id < devices.length; id++) {
-          if (!pattern || devices[id].name.toLowerCase().indexOf(pattern)!=-1) res.push(devices[id]);
-       }
-       return res;
+        let devices = Main.placesManager.getMounts();
+        var res = [];
+        for (let id = 0; id < devices.length; id++) {
+            if (!pattern || devices[id].name.toLowerCase().indexOf(pattern)!=-1) res.push(devices[id]);
+        }
+        return res;
     }
 
     _listApplications(category_menu_id, pattern){
@@ -3137,24 +3137,24 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
         let res;
         if (pattern){
             res = [];
-            var regexpPattern = new RegExp("\\b"+pattern);
-            var foundByName = false;
-            for (var i in this._applicationsButtons) {
+            let regexpPattern = new RegExp("\\b"+pattern);
+            let foundByName = false;
+            for (let i in this._applicationsButtons) {
                 let app = this._applicationsButtons[i].app;
                 if (Util.latinise(app.get_name().toLowerCase()).match(regexpPattern) != null) {
-                  res.push(app.get_id());
-                  foundByName = true;
+                    res.push(app.get_id());
+                    foundByName = true;
                 }
             }
             if (!foundByName) {
-              for (var i in this._applicationsButtons) {
-                  let app = this._applicationsButtons[i].app;
-                  if (Util.latinise(app.get_name().toLowerCase()).indexOf(pattern)!=-1 ||
-                      (app.get_keywords() && Util.latinise(app.get_keywords().toLowerCase()).indexOf(pattern)!=-1) ||
-                      (app.get_description() && Util.latinise(app.get_description().toLowerCase()).indexOf(pattern)!=-1) ||
-                      (app.get_id() && Util.latinise(app.get_id().slice(0, -8).toLowerCase()).indexOf(pattern)!=-1))
-                           res.push(app.get_id());
-              }
+                for (let i in this._applicationsButtons) {
+                    let app = this._applicationsButtons[i].app;
+                    if (Util.latinise(app.get_name().toLowerCase()).indexOf(pattern)!=-1 ||
+                        (app.get_keywords() && Util.latinise(app.get_keywords().toLowerCase()).indexOf(pattern)!=-1) ||
+                        (app.get_description() && Util.latinise(app.get_description().toLowerCase()).indexOf(pattern)!=-1) ||
+                        (app.get_id() && Util.latinise(app.get_id().slice(0, -8).toLowerCase()).indexOf(pattern)!=-1))
+                        res.push(app.get_id());
+                }
             }
         } else res = applist;
         return res;
@@ -3216,26 +3216,26 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
 
         SearchProviderManager.launch_all(pattern, Lang.bind(this, function(provider, results){
             try{
-            for (var i in results){
-                if (results[i].type != 'software')
-                {
-                    let button = new SearchProviderResultButton(this, provider, results[i]);
-                    button.actor.connect('leave-event', Lang.bind(this, this._appLeaveEvent, button));
-                    this._addEnterEvent(button, Lang.bind(this, this._appEnterEvent, button));
-                    this._searchProviderButtons.push(button);
-                    this.applicationsBox.add_actor(button.actor);
-                    button.actor.realize();
-                    if (this._selectedItemIndex === null) {
-                        this.appBoxIter.reloadVisible();
-                        let item_actor = this.appBoxIter.getFirstVisible();
-                        this._selectedItemIndex = this.appBoxIter.getAbsoluteIndexOfChild(item_actor);
-                        this._activeContainer = this.applicationsBox;
-                        if (item_actor && item_actor != this.searchEntry) {
-                            item_actor._delegate.emit('enter-event');
+                for (var i in results){
+                    if (results[i].type != 'software')
+                    {
+                        let button = new SearchProviderResultButton(this, provider, results[i]);
+                        button.actor.connect('leave-event', Lang.bind(this, this._appLeaveEvent, button));
+                        this._addEnterEvent(button, Lang.bind(this, this._appEnterEvent, button));
+                        this._searchProviderButtons.push(button);
+                        this.applicationsBox.add_actor(button.actor);
+                        button.actor.realize();
+                        if (this._selectedItemIndex === null) {
+                            this.appBoxIter.reloadVisible();
+                            let item_actor = this.appBoxIter.getFirstVisible();
+                            this._selectedItemIndex = this.appBoxIter.getAbsoluteIndexOfChild(item_actor);
+                            this._activeContainer = this.applicationsBox;
+                            if (item_actor && item_actor != this.searchEntry) {
+                                item_actor._delegate.emit('enter-event');
+                            }
                         }
                     }
                 }
-            }
             }catch(e){global.log(e);}
         }));
 

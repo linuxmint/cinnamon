@@ -210,7 +210,7 @@ class CinnamonPhotoFrameDesklet extends Desklet.Desklet {
             this._bin.set_child(this.currentPicture);
         }
         if (old_pic) {
-          old_pic.destroy();
+            old_pic.destroy();
         }
 
         this.updateInProgress = false;
