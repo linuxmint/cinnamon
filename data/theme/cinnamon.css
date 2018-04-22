@@ -1362,24 +1362,24 @@ StScrollBar StButton#vhandle:hover {
 /* Controls the styling when using the "Simple buttons" option */
 .panel-top .workspace-switcher,
 .panel-bottom .workspace-switcher {
-    padding-left: 3px;
-    padding-right: 3px;
+    padding: 0 3px;
 }
 
-.panel-left .workspace-switcher
+.panel-left .workspace-switcher,
 .panel-right .workspace-switcher {
-    padding-top: 3px;
-    padding-bottom: 3px;
+    padding: 3px;
 }
 
 .workspace-button {
-    width: 20px;
-    height: 10px;
     color: #cccccc;
     border: 1px;
     border-color: #a6a6a6;
-    padding-top: 2px;
+    padding: 0 8px;
     transition-duration: 300;
+}
+
+.vertical .workspace-button {
+    padding: 4px 0;
 }
 
 .workspace-button:outlined {

@@ -9,6 +9,7 @@ const SignalManager = imports.misc.signalManager;
 const Tooltips = imports.ui.tooltips;
 const Settings = imports.ui.settings;
 const ModalDialog = imports.ui.modalDialog;
+const Pango = imports.gi.Pango;
 
 const MIN_SWITCH_INTERVAL_MS = 220;
 
@@ -186,14 +187,12 @@ SimpleButton.prototype = {
         if (applet.orientation == St.Side.TOP || applet.orientation == St.Side.BOTTOM) {
             this.actor.set_height(applet._panelHeight);
         } else {
-            this.actor.set_height(0.6 * applet._panelHeight);  // factors are completely empirical
-            this.actor.set_width(0.9 * applet._panelHeight);
+            this.actor.set_width(applet._panelHeight);
+            this.actor.add_style_class_name('vertical');
         }
 
-        if (applet.orientation == St.Side.LEFT || applet.orientation == St.Side.RIGHT)
-            this.actor.add_style_class_name('vertical');
-
         let label = new St.Label({ text: (index + 1).toString() });
+        label.clutter_text.set_ellipsize(Pango.EllipsizeMode.NONE);
         this.actor.set_child(label);
     },
 
