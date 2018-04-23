@@ -25,7 +25,7 @@ files which contain translations for the extracted strings.
 
 try:
     import polib
-except:
+except Exception:
     print("""\
 
 Module "polib" not available.
@@ -34,6 +34,7 @@ You will need to install this module using your distribution's package manager
 (in debian-based syatems "apt-get install python3-polib")
 """)
     quit()
+
 
 def scan_json(dir, pot_path):
     append = os.path.exists(pot_path)
@@ -65,6 +66,7 @@ def scan_json(dir, pot_path):
     else:
         pot_file.save(fpath=pot_path)
 
+
 def extract_settings_strings(data, dir, pot_file, parent=""):
     for key in data.keys():
         if key in ("description", "tooltip", "units", "title"):
@@ -89,6 +91,7 @@ def extract_settings_strings(data, dir, pot_file, parent=""):
         except AttributeError:
             pass
 
+
 def extract_metadata_strings(data, dir, pot_file):
     for key in data:
         if key in ("name", "description", "comments"):
@@ -104,6 +107,7 @@ def extract_metadata_strings(data, dir, pot_file):
             for value in values:
                 save_entry(value.strip(), comment, pot_file)
 
+
 def save_entry(msgid, comment, pot_file):
     if not msgid.strip():
         return
@@ -117,6 +121,7 @@ def save_entry(msgid, comment, pot_file):
     else:
         entry = polib.POEntry(msgid=msgid, comment=comment)
         pot_file.append(entry)
+
 
 def remove_empty_folders(path):
     if not os.path.isdir(path):
@@ -136,6 +141,7 @@ def remove_empty_folders(path):
         print('Removing empty folder:', path)
         os.rmdir(path)
 
+
 def do_install(uuid, dir):
     podir = os.path.join(dir, "po")
     files_installed = 0
@@ -151,6 +157,7 @@ def do_install(uuid, dir):
         print('Nothing to install')
     else:
         print('installed %i files' % files_installed)
+
 
 def do_remove(uuid):
     files_removed = 0
@@ -168,25 +175,26 @@ def do_remove(uuid):
     else:
         print('removed %i files' % files_removed)
 
+
 def scan_xlet():
     parser = argparse.ArgumentParser(description=USAGE_DESCRIPTION, epilog=USAGE_EPILOG, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument('-j', '--skip-js', action='store_false', dest='js', default=True,
-        help='If this option is not included, javascript files will be scanned for translatable strings.')
+                        help='If this option is not included, javascript files will be scanned for translatable strings.')
     parser.add_argument('-p', '--skip-python', action='store_false', dest='python', default=True,
-        help='If this option is not included, python files will be scanned for translatable strings.')
+                        help='If this option is not included, python files will be scanned for translatable strings.')
     parser.add_argument('-i', '--install', action='store_true', dest='install', default=False,
-        help=('Compiles and installs any .po files contained in a po folder to the system locale store. '
-              'Use this option to test your translations locally before uploading to Spices. '
-              'It will use the applet, desklet, or extension UUID as the translation domain.'))
+                        help=('Compiles and installs any .po files contained in a po folder to the system locale store. '
+                              'Use this option to test your translations locally before uploading to Spices. '
+                              'It will use the applet, desklet, or extension UUID as the translation domain.'))
     parser.add_argument('-r', '--remove', action='store_true', dest='remove', default=False,
-        help=('The opposite of install, removes translations from the store. Again, it uses the UUID '
-              'to find the correct files to remove.'))
+                        help=('The opposite of install, removes translations from the store. Again, it uses the UUID '
+                              'to find the correct files to remove.'))
     parser.add_argument('-k', '--keyword', dest='keyword', default='_',
-        help='Change the variable name gettext is assigned to in your files. The default is _.')
+                        help='Change the variable name gettext is assigned to in your files. The default is _.')
     parser.add_argument('-o', '--potfile', dest='out_file', default=None,
-        help=('Use this option to specify the location for the generated .pot file. By default '
-              '<uuid>/po/<uuid>.pot is used. This is where translators are expecting to find the pot '
-              'file, so you should only use this option if you want the pot file elsewhere for your own use.'))
+                        help=('Use this option to specify the location for the generated .pot file. By default '
+                              '<uuid>/po/<uuid>.pot is used. This is where translators are expecting to find the pot '
+                              'file, so you should only use this option if you want the pot file elsewhere for your own use.'))
     parser.add_argument('dir', help='the path to the applet/desklet/extension directory')
 
     args = parser.parse_args()
@@ -218,7 +226,7 @@ def scan_xlet():
     os.chdir(dir)
     if args.js or args.python:
         try:
-            output = subprocess.check_output(["xgettext", "--version"])
+            subprocess.check_output(["xgettext", "--version"])
         except OSError:
             print("xgettext not found, you may need to install the gettext package")
             quit()

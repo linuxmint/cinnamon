@@ -7,7 +7,7 @@ Usage:  cinnamon-menu-editor
 
 import sys
 
-sys.path.insert(0, '/usr/share/cinnamon/cinnamon-menu-editor')
+sys.path.insert(0, '/usr/share/cinnamon/cinnamon-menu-editor')  # noqa
 from cme import MainWindow
 
 
@@ -16,11 +16,12 @@ def main():
         from MenuEditor import config
         datadir = config.pkgdatadir
         version = config.VERSION
-    except:
+    except Exception:
         datadir = '.'
         version = '0.9'
     app = MainWindow.MainWindow(datadir, version)
     app.run()
+
 
 if __name__ == '__main__':
     main()
