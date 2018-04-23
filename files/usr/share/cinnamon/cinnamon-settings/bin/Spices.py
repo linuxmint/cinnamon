@@ -14,6 +14,7 @@ try:
     import time
     import dbus
     from PIL import Image
+    import datetime
 except Exception as detail:
     print(detail)
     sys.exit(1)
@@ -421,10 +422,7 @@ class Spice_Harvester(GObject.Object):
             return False
 
         try:
-            if self.meta_map[uuid]["last-edited"] == self.index_cache[uuid]["last_edited"]:
-                return False
-            else:
-                return True
+            return self.meta_map[uuid]["last-edited"] < self.index_cache[uuid]["last_edited"]
         except Exception as e:
             return False
 
@@ -592,52 +590,8 @@ class Spice_Harvester(GObject.Object):
             zip.extractall(tempfolder)
 
             uuidfolder = os.path.join(tempfolder, uuid)
-            contents = os.listdir(uuidfolder)
-            # do we need to check file permissions?
-            #         os.chmod(os.path.join(dirname, file.filename), 0o755)
 
-            # check integrity of the download
-
-            if not self.themes:
-                # Install spice localization files, if any
-                if 'po' in contents:
-                    po_dir = os.path.join(uuidfolder, 'po')
-                    for file in os.listdir(po_dir):
-                        if file.endswith('.po'):
-                            lang = file.split(".")[0]
-                            locale_dir = os.path.join(locale_inst, lang, 'LC_MESSAGES')
-                            os.makedirs(locale_dir, mode=0o755, exist_ok=True)
-                            subprocess.call(['msgfmt', '-c', os.path.join(po_dir, file), '-o', os.path.join(locale_dir, '%s.mo' % uuid)])
-
-                # Install spice schema file, if any
-                schema = [filename for filename in contents if 'gschema.xml' in filename]
-                for filename in schema:
-                    path = os.path.join(uuidfolder, filename)
-                    subprocess.call(['pkexec', 'cinnamon-schema-install', path])
-
-            meta_path = os.path.join(uuidfolder, 'metadata.json')
-            if self.themes and not os.path.exists(meta_path):
-                md = {}
-            else:
-                file = open(meta_path, 'r')
-                raw_meta = file.read()
-                file.close()
-                md = json.loads(raw_meta)
-
-            if not self.themes and len(schema) > 0:
-                md['schema-file'] = ','.join(schema)
-            md['last-edited'] = self.index_cache[uuid]['last_edited']
-
-            raw_meta = json.dumps(md, indent=4)
-            file = open(meta_path, 'w+')
-            file.write(raw_meta)
-            file.close()
-
-            dest = os.path.join(self.install_folder, uuid)
-            if os.path.exists(dest):
-                shutil.rmtree(dest)
-            shutil.copytree(uuidfolder, dest)
-
+            self.install_from_folder(uuidfolder, uuid, True)
         except Exception as detail:
             if not self.abort_download:
                 self.errorMessage(_("An error occurred during the installation of %s. Please report this incident to its developer.") % uuid, str(detail))
@@ -648,6 +602,53 @@ class Spice_Harvester(GObject.Object):
             os.remove(ziptempfile)
         except Exception:
             pass
+
+    """ installs a spice from a specified folder"""
+    def install_from_folder(self, folder, uuid, from_spices=False):
+        contents = os.listdir(folder)
+
+        if not self.themes:
+            # Install spice localization files, if any
+            if 'po' in contents:
+                po_dir = os.path.join(folder, 'po')
+                for file in os.listdir(po_dir):
+                    if file.endswith('.po'):
+                        lang = file.split(".")[0]
+                        locale_dir = os.path.join(locale_inst, lang, 'LC_MESSAGES')
+                        os.makedirs(locale_dir, mode=0o755, exist_ok=True)
+                        subprocess.call(['msgfmt', '-c', os.path.join(po_dir, file), '-o', os.path.join(locale_dir, '%s.mo' % uuid)])
+
+            # Install spice schema file, if any
+            schema = [filename for filename in contents if 'gschema.xml' in filename]
+            for filename in schema:
+                path = os.path.join(folder, filename)
+                subprocess.call(['pkexec', 'cinnamon-schema-install', path])
+
+        dest = os.path.join(self.install_folder, uuid)
+        if os.path.exists(dest):
+            shutil.rmtree(dest)
+        shutil.copytree(folder, dest)
+
+        meta_path = os.path.join(dest, 'metadata.json')
+        if self.themes and not os.path.exists(meta_path):
+            md = {}
+        else:
+            file = open(meta_path, 'r')
+            raw_meta = file.read()
+            file.close()
+            md = json.loads(raw_meta)
+
+        if not self.themes and len(schema) > 0:
+            md['schema-file'] = ','.join(schema)
+        if from_spices and uuid in self.index_cache:
+            md['last-edited'] = self.index_cache[uuid]['last_edited']
+        else:
+            md['last-edited'] = int(datetime.datetime.utcnow().timestamp())
+
+        raw_meta = json.dumps(md, indent=4)
+        file = open(meta_path, 'w+')
+        file.write(raw_meta)
+        file.close()
 
     def _install_finished(self, job):
         uuid = job['uuid']
