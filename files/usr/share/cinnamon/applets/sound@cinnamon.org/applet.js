@@ -900,6 +900,7 @@ MyApplet.prototype = {
             this.settings = new Settings.AppletSettings(this, metadata.uuid, instanceId);
             this.settings.bind("showtrack", "showtrack", this.on_settings_changed);
             this.settings.bind("middleClickAction", "middleClickAction");
+            this.settings.bind("horizontalScroll", "horizontalScroll")
             this.settings.bind("showalbum", "showalbum", this.on_settings_changed);
             this.settings.bind("truncatetext", "truncatetext", this.on_settings_changed);
             this.settings.bind("keepAlbumAspectRatio", "keepAlbumAspectRatio", this.on_settings_changed);
@@ -1133,11 +1134,13 @@ MyApplet.prototype = {
             this._output.push_volume();
             this._output.change_is_muted(false);
         }
-        else if (direction == Clutter.ScrollDirection.LEFT) {
-            this._players[this._activePlayer]._mediaServerPlayer.PreviousRemote();
-        }
-        else if (direction == Clutter.ScrollDirection.RIGHT) {
-            this._players[this._activePlayer]._mediaServerPlayer.NextRemote();
+        else if (this.horizontalScroll) {
+            if (direction == Clutter.ScrollDirection.LEFT) {
+                this._players[this._activePlayer]._mediaServerPlayer.PreviousRemote();
+            }
+            else {
+                this._players[this._activePlayer]._mediaServerPlayer.NextRemote();
+            }
         }
 
         this._notifyVolumeChange(this._output);
