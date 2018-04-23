@@ -80,6 +80,7 @@ const Mainloop = imports.mainloop;
 const Meta = imports.gi.Meta;
 const Cinnamon = imports.gi.Cinnamon;
 const St = imports.gi.St;
+const GObject = imports.gi.GObject;
 const PointerTracker = imports.misc.pointerTracker;
 const Lang = imports.lang;
 
@@ -953,28 +954,23 @@ function formatLogArgument(arg = '', recursion = 0, depth = 6) {
         }
         return arg;
     }
-    let isGObject;
+    let isGObject = arg instanceof GObject.Object;
     let space = '';
     for (let i = 0; i < recursion + 1; i++) {
         space += '    ';
     }
-    // Need to work around CJS being unable to stringify some native objects
-    // https://github.com/linuxmint/cjs/blob/f7638496ea1bec4c6774e6065cb3b2c38b30a7bf/cjs/context.cpp#L138
-    try {
-        isGObject = arg.toString().indexOf('[0x') > -1;
-    } catch (e) {
-        arg = '<unreadable>';
-    }
     if (typeof arg === 'object') {
         let isArray = Array.isArray(arg);
         let brackets = isArray ? ['[', ']'] : ['{', '}'];
+        if (isGObject) {
+            arg = Util.getGObjectPropertyValues(arg);
+            if (Object.keys(arg).length === 0) {
+                return arg.toString();
+            }
+        }
         let array = isArray ? arg : Object.keys(arg);
         // Add beginning bracket with indentation
         let string = brackets[0] + (recursion + 1 > depth ? '' : '\n');
-        // GObjects are referenced in context and likely have circular references.
-        if (recursion === 0) {
-            depth = isGObject ? 2 : 6;
-        }
         for (let j = 0, len = array.length; j < len; j++) {
             if (isArray) {
                 string += space + formatLogArgument(arg[j], recursion + 1, depth) + ',\n';
