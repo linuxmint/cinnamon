@@ -549,6 +549,7 @@ def get_available_options(up_client):
 
     lid_options = [
         ("suspend", _("Suspend")),
+        ("shutdown", _("Shutdown immediately")),
         ("hibernate", _("Hibernate")),
         ("nothing", _("Do nothing"))
     ]
@@ -563,6 +564,7 @@ def get_available_options(up_client):
     ]
 
     critical_options = [
+        ("shutdown", _("Shutdown immediately")),
         ("hibernate", _("Hibernate")),
         ("nothing", _("Do nothing"))
     ]
