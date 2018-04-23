@@ -11,6 +11,7 @@ const St = imports.gi.St;
 const BoxPointer = imports.ui.boxpointer;
 const Main = imports.ui.main;
 const MessageTray = imports.ui.messageTray;
+const Panel = imports.ui.panel;
 
 const KEYBOARD_SCHEMA = 'org.cinnamon.keyboard';
 const KEYBOARD_TYPE = 'keyboard-type';
@@ -21,7 +22,7 @@ const ACTIVATION_MODE = 'activation-mode';
 const A11Y_APPLICATIONS_SCHEMA = 'org.cinnamon.desktop.a11y.applications';
 const SHOW_KEYBOARD = 'screen-keyboard-enabled';
 
-const CaribouKeyboardIface = 
+const CaribouKeyboardIface =
     "<node> \
         <interface name='org.gnome.Caribou.Keyboard'> \
             <method name='Show'> \
@@ -371,15 +372,18 @@ Keyboard.prototype = {
         let focus = Main.layoutManager.focusMonitor;
         let index = Main.layoutManager.focusIndex;
 
-        let panel = null;
-
-        if (Main.panelManager)
-            panel = Main.panelManager.getPanel(index, true);
-
-        if (panel)
-            this._panelPadding = panel.actor.height;
-        else
-            this._panelPadding = 0;
+        let panelPadding = 0;
+        let panels = Main.getPanels();
+        if(panels) {
+            let [topPadding, bottomPadding] = Panel.heightsUsedMonitor(index, panels);
+            if(this.keyboard_position == "bottom") {
+                this.actor.style = `padding-bottom: ${bottomPadding}px; padding-top: 0;`;
+                panelPadding = bottomPadding;
+            } else {
+                this.actor.style = `padding-top: ${topPadding}px; padding-bottom: 0;`;
+                panelPadding = topPadding;
+            }
+        }
 
         Main.layoutManager.keyboardBox.set_size(focus.width, -1);
         this.actor.width = focus.width;
@@ -390,18 +394,19 @@ Keyboard.prototype = {
 
         let layout = this._current_page;
         let verticalSpacing = layout.get_theme_node().get_length('spacing');
-        let padding = layout.get_theme_node().get_length('padding');
+        let vpadding = layout.get_theme_node().get_vertical_padding();
+        let hpadding = layout.get_theme_node().get_horizontal_padding();
 
         let box = layout.get_child_at_index(0).get_child_at_index(0);
         let horizontalSpacing = box.get_theme_node().get_length('spacing');
         let allHorizontalSpacing = (this._numOfHorizKeys - 1) * horizontalSpacing;
-        let keyWidth = Math.floor((this.actor.width - allHorizontalSpacing - 2 * padding) / this._numOfHorizKeys);
+        let keyWidth = Math.floor((this.actor.width - allHorizontalSpacing - hpadding) / this._numOfHorizKeys);
 
         let allVerticalSpacing = (this._numOfVertKeys - 1) * verticalSpacing;
-        let keyHeight = Math.floor((maxHeight - allVerticalSpacing - 2 * padding) / this._numOfVertKeys);
+        let keyHeight = Math.floor((maxHeight - allVerticalSpacing - vpadding) / this._numOfVertKeys);
 
         let keySize = Math.min(keyWidth, keyHeight);
-        this.actor.height = (keySize * this._numOfVertKeys) + allVerticalSpacing + (2 * padding) + this._panelPadding;
+        this.actor.height = maxHeight + panelPadding;
 
         let keyboard_y = 0;
         if (this.keyboard_position == "bottom") {
