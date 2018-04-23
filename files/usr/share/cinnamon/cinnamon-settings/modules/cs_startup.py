@@ -1,5 +1,6 @@
 #!/usr/bin/python3
 
+import collections
 import os
 import glob
 import shutil
@@ -14,13 +15,34 @@ try:
     ENVIRON = os.environ['XDG_CURRENT_DESKTOP']
 except:
     ENVIRON = ""
+
 D_GROUP = "Desktop Entry"
 DEFAULT_ICON = "system-run"
-AUTOSTART_APPS = []
+AUTOSTART_APPS = collections.OrderedDict()
+
 
 def list_header_func(row, before, user_data):
     if before and not row.get_header():
         row.set_header(Gtk.Separator(orientation=Gtk.Orientation.HORIZONTAL))
+
+
+def get_appname(filename):
+    """ Get the desktop basename without the .desktop """
+    basename = os.path.basename(filename)
+    if basename.endswith('.desktop'):
+        basename = basename[:-len('.desktop')]
+    return basename
+
+
+def get_blacklisted_apps():
+    source = Gio.SettingsSchemaSource.get_default()
+    schema = source.lookup('org.cinnamon.SessionManager', True)
+    if not schema or not schema.has_key('autostart-blacklist'):  # noqa
+        return {}
+
+    cs_settings = Gio.Settings('org.cinnamon.SessionManager')
+    return set(cs_settings['autostart-blacklist'])
+
 
 class Module:
     name = "startup"
@@ -47,7 +69,7 @@ class Module:
 
             self.gather_apps()
 
-            for app in AUTOSTART_APPS:
+            for app in AUTOSTART_APPS.values():
                 if app.key_file_loaded and app.shown and not app.no_display and not app.hidden:
                     row = AutostartRow(app)
                     settings.add_row(row)
@@ -63,23 +85,27 @@ class Module:
     def gather_apps(self):
         system_files = []
 
+        blacklisted_apps = get_blacklisted_apps()
+
         user_files = glob.glob(os.path.join(GLib.get_user_config_dir(), "autostart", "*.desktop"))
         for app in user_files:
-            AUTOSTART_APPS.append(AutostartApp(app, user_position=os.path.dirname(app)))
+            key = get_appname(app)
+            if key in blacklisted_apps:
+                continue
+            AUTOSTART_APPS[key] = AutostartApp(app, user_position=os.path.dirname(app))
 
         for d in GLib.get_system_config_dirs():
             system_files.extend(glob.glob(os.path.join(d, "autostart", "*.desktop")))
 
         for sys_app in system_files:
-            found = False
-            for app in AUTOSTART_APPS:
-                if os.path.basename(sys_app) == os.path.basename(app.app):
-                    app.system_position = os.path.dirname(sys_app)
-                    found = True
-                    break
-
-            if not found:
-                AUTOSTART_APPS.append(AutostartApp(sys_app, system_position=os.path.dirname(sys_app)))
+            key = get_appname(sys_app)
+            if key in blacklisted_apps:
+                continue
+            if key in AUTOSTART_APPS:
+                AUTOSTART_APPS[key].system_position = os.path.dirname(sys_app)
+            else:
+                AUTOSTART_APPS[key] = AutostartApp(sys_app,
+                                                   system_position=os.path.dirname(sys_app))
 
 class AutostartApp():
     def __init__(self, app, user_position=None, system_position=None):
@@ -150,7 +176,7 @@ class AutostartApp():
         if only_show_in:
             found = False
             for i in only_show_in:
-                if i == ENVIRON:
+                if i in ('GNOME', 'X-Cinnamon'):
                     found = True
                     break
             if not found:
@@ -186,10 +212,7 @@ class AutostartApp():
             self.save_done_success()
             return False
 
-        if self.system_position:
-            use_path = os.path.join(self.system_position, self.basename)
-        else:
-            use_path = self.path
+        use_path = self.path
 
         key_file = GLib.KeyFile.new()
 
@@ -519,9 +542,11 @@ class AutostartBox(Gtk.Box):
                 return
 
             app = AutostartApp(filename, user_position=os.path.dirname(filename))
+            key = get_appname(app)
+            AUTOSTART_APPS[key] = app
 
             app.basename = os.path.basename(app.app)
-            app.dir = os.path.basename(app.app)
+            app.dir = os.path.dirname(app.app)
             app.hidden = False
             app.no_display = False
             app.enabled = True
@@ -563,6 +588,8 @@ class AutostartBox(Gtk.Box):
                 print("Failed to copy desktop file %s" % desktop_file_name)
 
             app = AutostartApp(user_desktop_file, user_position=os.path.dirname(user_desktop_file))
+            key = get_appname(user_desktop_file)
+            AUTOSTART_APPS[key] = app
 
             app.enabled = True
 
@@ -600,11 +627,8 @@ class AutostartBox(Gtk.Box):
         return filename
 
     def find_app_with_basename(self, basename):
-        for app in AUTOSTART_APPS:
-            if basename == app.basename:
-                return app
-
-        return None
+        key = get_appname(basename)
+        return AUTOSTART_APPS.get(key)
 
     def popup_menu_below_button (self, *args):
         # the introspection for GtkMenuPositionFunc seems to change with each Gtk version,
