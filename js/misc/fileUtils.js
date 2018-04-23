@@ -171,14 +171,14 @@ function createExports({path, dir, meta, type, file, size, JS, returnIndex, reje
         moduleIndex = LoadedModules.length - 1;
     }
 
-    JS = `'use strict';${JS};`;
+    JS = `'use strict';\n${JS};`;
     // Regex matches the top level variable names, and appends them to the module.exports object,
     // mimicking the native CJS importer.
-    const exportsRegex = /^(module\.exports(.?([A-Za-z_$]*))) = ([A-Za-z_;]*)$/gm;
-    const varRegex = /^(const|var|let|function{1,}) ([a-zA-Z_$]*)/gm;
+    const exportsRegex = /^module\.exports(\.[a-zA-Z0-9_$]+)?\s*=/m;
+    const varRegex = /^(const|var|let|function|class)\s+([a-zA-Z0-9_$]+)/gm;
     let match;
 
-    if (!JS.match(exportsRegex)) {
+    if (!exportsRegex.test(JS)) {
         while ((match = varRegex.exec(JS)) != null) {
             if (match.index === varRegex.lastIndex) {
                 varRegex.lastIndex++;
