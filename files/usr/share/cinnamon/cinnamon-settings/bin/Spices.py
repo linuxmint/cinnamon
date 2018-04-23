@@ -171,6 +171,7 @@ class Spice_Harvester(GObject.Object):
         self._sigLoadFinished = None
 
         self.monitorId = 0
+        self.monitor = None
         try:
             self.monitor = Gio.File.new_for_path(self.install_folder).monitor_directory(0, None)
             self.monitorId = self.monitor.connect('changed', self._directory_changed)
