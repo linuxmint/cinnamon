@@ -45,8 +45,8 @@ class MenuButton(Gtk.Button):
         h = parent.get_height()
         extents = parent.get_frame_extents()
         allocation = self.get_allocation()
-        return (x + (extents.width-w)/2 + allocation.x,
-                y + (extents.height-h)-(extents.width-w)/2 + allocation.y,
+        return (x + (extents.width-w)//2 + allocation.x,
+                y + (extents.height-h)-(extents.width-w)//2 + allocation.y,
                 allocation.width,
                 allocation.height)
 
