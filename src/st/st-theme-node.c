@@ -3862,6 +3862,17 @@ st_theme_node_paint_equal (StThemeNode *node,
   if (g_strcmp0 (node->background_image, other->background_image) != 0)
     return FALSE;
 
+  if (node->background_image)
+    {
+      if (node->background_position_set != other->background_position_set)
+        return FALSE;
+
+      if (node->background_position_set &&
+         (node->background_position_x != other->background_position_x ||
+          node->background_position_y != other->background_position_y))
+        return FALSE;
+    }
+
   _st_theme_node_ensure_geometry (node);
   _st_theme_node_ensure_geometry (other);
 
