@@ -12,6 +12,7 @@ try:
     import subprocess
     import threading
     import time
+    import dbus
     from PIL import Image
 except Exception as detail:
     print(detail)
@@ -204,7 +205,7 @@ class Spice_Harvester(GObject.Object):
 
     """ disconnects a previously connected dbus signal"""
     def disconnect_proxy(self, name):
-        for signal in self._proxy+_signals:
+        for signal in self._proxy_signals:
             if name in signal:
                 self._proxy_signals.remove(signal)
                 break
@@ -714,8 +715,8 @@ class Spice_Harvester(GObject.Object):
     def enable_extension(self, uuid, panel=1, box='right', position=0):
         if self.collection_type == 'applet':
             entries = []
-            applet_id = self.settings.get_int('next-applet-id');
-            self.settings.set_int('next-applet-id', (applet_id+1));
+            applet_id = self.settings.get_int('next-applet-id')
+            self.settings.set_int('next-applet-id', (applet_id+1))
 
             for entry in self.settings.get_strv(self.enabled_key):
                 info = entry.split(':')
@@ -730,8 +731,8 @@ class Spice_Harvester(GObject.Object):
 
             self.settings.set_strv(self.enabled_key, entries)
         elif self.collection_type == 'desklet':
-            desklet_id = self.settings.get_int('next-desklet-id');
-            self.settings.set_int('next-desklet-id', (desklet_id+1));
+            desklet_id = self.settings.get_int('next-desklet-id')
+            self.settings.set_int('next-desklet-id', (desklet_id+1))
             enabled = self.settings.get_strv(self.enabled_key)
 
             screen = Gdk.Screen.get_default()
