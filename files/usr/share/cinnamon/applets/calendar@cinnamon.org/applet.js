@@ -49,6 +49,7 @@ MyApplet.prototype = {
             this.orientation = orientation;
 
             this._initContextMenu();
+            this.menu.setCustomStyleClass('calendar-background');
 
             // Date
             this._date = new St.Label();
