@@ -9,18 +9,10 @@ const GnomeSession = imports.misc.gnomeSession;
 const INHIBIT_IDLE_FLAG = 8;
 const INHIBIT_SLEEP_FLAG = 4;
 
-function InhibitSwitch(applet) {
-    this._init(applet);
-}
-
-InhibitSwitch.prototype = {
-    __proto__: PopupMenu.PopupBaseMenuItem.prototype,
-
-    _init: function(applet) {
-
+class InhibitSwitch extends PopupMenu.PopupBaseMenuItem {
+    constructor(applet) {
+        super();
         this._applet = applet;
-
-        PopupMenu.PopupBaseMenuItem.prototype._init.call(this);
 
         this.label = new St.Label({ text: _("Power management") });
 
@@ -56,9 +48,9 @@ InhibitSwitch.prototype = {
             this.propId = this.sessionProxy.connect("g-properties-changed",
                                                     Lang.bind(this, this.updateStatus));
         }));
-    },
+    }
 
-    activate: function(event) {
+    activate(event) {
         if (this._switch.actor.mapped) {
             this._switch.toggle();
         }
@@ -66,9 +58,9 @@ InhibitSwitch.prototype = {
         this.toggled(this._switch.state);
 
         PopupMenu.PopupBaseMenuItem.prototype.activate.call(this, event, true);
-    },
+    }
 
-    updateStatus: function(o) {
+    updateStatus(o) {
         let current_state = this.sessionProxy.InhibitedActions;
 
         if (current_state & INHIBIT_IDLE_FLAG ||
@@ -88,9 +80,9 @@ InhibitSwitch.prototype = {
             this.tooltip.set_text("");
             this._statusIcon.set_opacity(0);
         }
-    },
+    }
 
-    toggled: function(active) {
+    toggled(active) {
         if (!active && !this.sessionCookie) {
             this.sessionProxy.InhibitRemote("inhibit@cinnamon.org",
                                             0,
@@ -105,9 +97,9 @@ InhibitSwitch.prototype = {
             this.sessionCookie = null;
             this.updateStatus();
         }
-    },
+    }
 
-    kill: function() {
+    kill() {
         if (!this.sessionProxy)
             return;
 
@@ -118,18 +110,11 @@ InhibitSwitch.prototype = {
 
         this.sessionProxy.disconnect(this.propId);
     }
-};
-
-function MyApplet(metadata, orientation, panel_height, instanceId) {
-    this._init(metadata, orientation, panel_height, instanceId);
 }
 
-
-MyApplet.prototype = {
-    __proto__: Applet.IconApplet.prototype,
-
-    _init: function(metadata, orientation, panel_height, instanceId) {
-        Applet.IconApplet.prototype._init.call(this, orientation, panel_height, instanceId);
+class CinnamonInhibitApplet extends Applet.IconApplet {
+    constructor(metadata, orientation, panel_height, instanceId) {
+        super(orientation, panel_height, instanceId);
 
         this.metadata = metadata;
 
@@ -154,18 +139,17 @@ MyApplet.prototype = {
         }));
 
         this.menu.addMenuItem(this.notificationsSwitch);
-    },
+    }
 
-    on_applet_clicked: function(event) {
+    on_applet_clicked(event) {
         this.menu.toggle();
-    },
+    }
 
-    on_applet_removed_from_panel: function() {
+    on_applet_removed_from_panel() {
         this.inhibitSwitch.kill();
     }
-};
+}
 
 function main(metadata, orientation, panel_height, instanceId) {
-    let myApplet = new MyApplet(metadata, orientation, panel_height, instanceId);
-    return myApplet;
+    return new CinnamonInhibitApplet(metadata, orientation, panel_height, instanceId);
 }

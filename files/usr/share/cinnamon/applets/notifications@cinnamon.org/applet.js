@@ -13,15 +13,9 @@ const Gettext = imports.gettext.domain("cinnamon-applets");
 
 const PANEL_EDIT_MODE_KEY = "panel-edit-mode";
 
-function MyApplet(metadata, orientation, panel_height, instanceId) {
-    this._init(metadata, orientation, panel_height, instanceId);
-}
-
-MyApplet.prototype = {
-    __proto__: Applet.TextIconApplet.prototype,
-
-    _init: function(metadata, orientation, panel_height, instanceId) {
-        Applet.TextIconApplet.prototype._init.call(this, orientation, panel_height, instanceId);
+class CinnamonNotificationsApplet extends Applet.TextIconApplet {
+    constructor(metadata, orientation, panel_height, instanceId) {
+        super(orientation, panel_height, instanceId);
 
         this.setAllowedLayout(Applet.AllowedLayout.BOTH);
 
@@ -44,9 +38,9 @@ MyApplet.prototype = {
         // States
         this._blinking = false;
         this._blink_toggle = false;
-    },
+    }
 
-    _display: function() {
+    _display() {
         // Always start the applet empty, void of any notifications.
         this.set_applet_icon_symbolic_name("empty-notif");
         this.set_applet_tooltip(_("Notifications"));
@@ -98,9 +92,9 @@ MyApplet.prototype = {
         this._alt_crit_icon = new St.Icon({icon_name: 'alt-critical-notif', icon_type: St.IconType.SYMBOLIC, reactive: true, track_hover: true, style_class: 'system-status-icon' });
 
         this._on_panel_edit_mode_changed();
-    },
+    }
 
-    _notification_added: function (mtray, notification) {	// Notification event handler.
+    _notification_added (mtray, notification) {	// Notification event handler.
         // Ignore transient notifications?
         if (this.ignoreTransientNotifications && notification.isTransient) {
             notification.destroy();
@@ -137,9 +131,9 @@ MyApplet.prototype = {
         notification._timeLabel.show();
 
         this.update_list();
-    },
+    }
 
-    _item_clicked: function(notification, destroyed) {
+    _item_clicked(notification, destroyed) {
         let i = this.notifications.indexOf(notification);
         if (i != -1) {
             this.notifications.splice(i, 1);
@@ -148,9 +142,9 @@ MyApplet.prototype = {
             }
         }
         this.update_list();
-    },
+    }
 
-    update_list: function () {
+    update_list () {
         try {
             let count = this.notifications.length;
             if (count > 0) {	// There are notifications.
@@ -196,9 +190,9 @@ MyApplet.prototype = {
         catch (e) {
             global.logError(e);
         }
-    },
+    }
 
-    _clear_all: function() {
+    _clear_all() {
         let count = this.notifications.length;
         if (count > 0) {
             for (let i = count-1; i >=0; i--) {
@@ -208,29 +202,29 @@ MyApplet.prototype = {
         }
         this.notifications = [];
         this.update_list();
-    },
+    }
 
-    _show_hide_tray: function() {	// Show or hide the notification tray.
+    _show_hide_tray() {	// Show or hide the notification tray.
         if (this.notifications.length || this.showEmptyTray) {
             this.actor.show();
         } else {
             this.actor.hide();
         }
-    },
+    }
 
-    _on_panel_edit_mode_changed: function () {
+    _on_panel_edit_mode_changed () {
         if (global.settings.get_boolean(PANEL_EDIT_MODE_KEY)) {
             this.actor.show();
         } else {
             this.update_list();
         }
-    },
+    }
 
-    on_applet_added_to_panel: function() {
+    on_applet_added_to_panel() {
         this.on_orientation_changed(this._orientation);
-    },
+    }
 
-    on_orientation_changed: function (orientation) {
+    on_orientation_changed (orientation) {
         this._orientation = orientation;
 
         if (this.menu) {
@@ -239,14 +233,14 @@ MyApplet.prototype = {
         this.menu = new Applet.AppletPopupMenu(this, orientation);
         this.menuManager.addMenu(this.menu);
         this._display();
-    },
+    }
 
-    on_applet_clicked: function(event) {
+    on_applet_clicked(event) {
         this._update_timestamp();
         this.menu.toggle();
-    },
+    }
 
-    _update_timestamp: function () {
+    _update_timestamp() {
         let len = this.notifications.length;
         if (len > 0) {
             for (let i = 0; i < len; i++) {
@@ -255,9 +249,9 @@ MyApplet.prototype = {
                 notification._timeLabel.clutter_text.set_markup(timeify(orig_time));
             }
         }
-    },
+    }
 
-    critical_blink: function () {
+    critical_blink () {
         if (!this._blinking)
             return;
         if (this._blink_toggle) {
@@ -268,11 +262,10 @@ MyApplet.prototype = {
         this._blink_toggle = !this._blink_toggle;
         Mainloop.timeout_add_seconds(1, Lang.bind(this, this.critical_blink));
     }
-};
+}
 
 function main(metadata, orientation, panel_height, instanceId) {
-    let myApplet = new MyApplet(metadata, orientation, panel_height, instanceId);
-    return myApplet;
+    return new CinnamonNotificationsApplet(metadata, orientation, panel_height, instanceId);
 }
 
 function stringify(count) {

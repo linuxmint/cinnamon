@@ -37,12 +37,8 @@ const ICON_SIZE = 28;
 const CINNAMON_DESKTOP_SOUNDS = "org.cinnamon.desktop.sound";
 const MAXIMUM_VOLUME_KEY = "maximum-volume";
 
-function ControlButton() {
-    this._init.apply(this, arguments);
-}
-
-ControlButton.prototype = {
-    _init: function(icon, tooltip, callback, small = false) {
+class ControlButton {
+    constructor(icon, tooltip, callback, small = false) {
         this.actor = new St.Bin();
 
         this.button = new St.Button();
@@ -59,37 +55,31 @@ ControlButton.prototype = {
         this.actor.add_actor(this.button);
 
         this.tooltip = new Tooltips.Tooltip(this.button, tooltip);
-    },
+    }
 
-    getActor: function() {
+    getActor() {
         return this.actor;
-    },
+    }
 
-    setData: function(icon, tooltip) {
+    setData(icon, tooltip) {
         this.icon.icon_name = icon;
         this.tooltip.set_text(tooltip);
-    },
+    }
 
-    setActive: function(status){
+    setActive(status) {
         this.button.change_style_pseudo_class("active", status);
-    },
+    }
 
-    setEnabled: function(status){
+    setEnabled(status) {
         this.button.change_style_pseudo_class("disabled", !status);
         this.button.can_focus = status;
         this.button.reactive = status;
     }
-};
-
-function VolumeSlider(){
-    this._init.apply(this, arguments);
 }
 
-VolumeSlider.prototype = {
-    __proto__: PopupMenu.PopupSliderMenuItem.prototype,
-
-    _init: function(applet, stream, tooltip, app_icon){
-        PopupMenu.PopupSliderMenuItem.prototype._init.call(this, 0);
+class VolumeSlider extends PopupMenu.PopupSliderMenuItem {
+    constructor(applet, stream, tooltip, app_icon) {
+        super(0);
         this.applet = applet;
 
         if(tooltip)
@@ -115,10 +105,10 @@ VolumeSlider.prototype = {
         this.addActor(this._slider, {span: -1, expand: true});
 
         this.connectWithStream(stream);
-    },
+    }
 
-    connectWithStream: function(stream){
-        if(!stream){
+    connectWithStream(stream) {
+        if(!stream) {
             this.actor.hide();
             this.stream = null;
         } else {
@@ -129,23 +119,23 @@ VolumeSlider.prototype = {
 
             let mutedId = stream.connect("notify::is-muted", Lang.bind(this, this._update));
             let volumeId = stream.connect("notify::volume", Lang.bind(this, this._update));
-            this.connect("destroy", function(){
+            this.connect("destroy", function() {
                 stream.disconnect(mutedId);
                 stream.disconnect(volumeId);
             });
         }
 
         this._update();
-    },
+    }
 
-    _onValueChanged: function(){
+    _onValueChanged() {
         if(!this.stream) return;
 
         let muted;
         // Use the scaled volume max only for the main output
         let volume = this._value * (this.isOutputSink ? this.applet._volumeMax : this.applet._volumeNorm);
 
-        if(this._value < 0.005){
+        if(this._value < 0.005) {
             volume = 0;
             muted = true;
         } else {
@@ -162,9 +152,9 @@ VolumeSlider.prototype = {
 
         if(!this._dragging)
             this.applet._notifyVolumeChange(this.stream);
-    },
+    }
 
-    _onScrollEvent: function (actor, event) {
+    _onScrollEvent(actor, event) {
         let direction = event.get_scroll_direction();
 
         if (direction == Clutter.ScrollDirection.DOWN) {
@@ -176,9 +166,9 @@ VolumeSlider.prototype = {
 
         this._slider.queue_repaint();
         this.emit('value-changed', this._value);
-    },
+    }
 
-    _onKeyPressEvent: function (actor, event) {
+    _onKeyPressEvent(actor, event) {
         let key = event.get_key_symbol();
         if (key == Clutter.KEY_Right || key == Clutter.KEY_Left) {
             let delta = key == Clutter.KEY_Right ? VOLUME_ADJUSTMENT_STEP : -VOLUME_ADJUSTMENT_STEP;
@@ -189,10 +179,10 @@ VolumeSlider.prototype = {
             return true;
         }
         return false;
-    },
+    }
 
 
-    _update: function(){
+    _update() {
         // value: percentage of volume_max (set as value in the widget)
         // visible_value: percentage of volume_norm (shown to the user)
         // these only differ for the output, and only when the user changes the maximum volume
@@ -224,9 +214,9 @@ VolumeSlider.prototype = {
 
         // send data to applet
         this.emit("values-changed", iconName, percentage);
-    },
+    }
 
-    _volumeToIcon: function(value){
+    _volumeToIcon(value) {
         let icon;
         if(value < 0.005) {
             icon = "muted";
@@ -241,17 +231,11 @@ VolumeSlider.prototype = {
         }
         return this.isMic? "microphone-sensitivity-" + icon : "audio-volume-" + icon;
     }
-};
-
-function StreamMenuSection(){
-    this._init.apply(this, arguments);
 }
 
-StreamMenuSection.prototype = {
-    __proto__: PopupMenu.PopupMenuSection.prototype,
-
-    _init: function(applet, stream){
-        PopupMenu.PopupMenuSection.prototype._init.call(this);
+class StreamMenuSection extends PopupMenu.PopupMenuSection {
+    constructor(applet, stream) {
+        super();
 
         let iconName = stream.icon_name;
         let name = stream.name;
@@ -284,17 +268,11 @@ StreamMenuSection.prototype = {
         let slider = new VolumeSlider(applet, stream, name, iconName);
         this.addMenuItem(slider);
     }
-};
-
-function Player() {
-    this._init.apply(this, arguments);
 }
 
-Player.prototype = {
-    __proto__: PopupMenu.PopupMenuSection.prototype,
-
-    _init: function(applet, busname, owner) {
-        PopupMenu.PopupMenuSection.prototype._init.call(this);
+class Player extends PopupMenu.PopupMenuSection {
+    constructor(applet, busname, owner) {
+        super();
         this.showPosition = true;
         this._owner = owner;
         this._busName = busname;
@@ -334,9 +312,9 @@ Player.prototype = {
                                                   this._dbus_acquired();
                                               }
                                           }));
-    },
+    }
 
-    _dbus_acquired: function() {
+    _dbus_acquired() {
         if (!this._prop || !this._mediaServerPlayer || !this._mediaServer)
             return;
 
@@ -354,7 +332,7 @@ Player.prototype = {
         playerBox.add_actor(this.playerLabel);
 
         if (this._mediaServer.CanRaise) {
-            let btn = new ControlButton("go-up", _("Open Player"), Lang.bind(this, function(){
+            let btn = new ControlButton("go-up", _("Open Player"), Lang.bind(this, function() {
                 if (this._name === "spotify") {
                     // Spotify isn't able to raise via Dbus once its main UI is closed
                     Util.spawn(['spotify']);
@@ -367,7 +345,7 @@ Player.prototype = {
             playerBox.add_actor(btn.actor);
         }
         if (this._mediaServer.CanQuit) {
-            let btn = new ControlButton("window-close", _("Quit Player"), Lang.bind(this, function(){
+            let btn = new ControlButton("window-close", _("Quit Player"), Lang.bind(this, function() {
                 this._mediaServer.QuitRemote();
                 this._applet.menu.close();
             }), true);
@@ -411,16 +389,16 @@ Player.prototype = {
 
         // Playback controls
         let trackControls = new St.Bin({x_align: St.Align.MIDDLE});
-        this._prevButton = new ControlButton("media-skip-backward", _("Previous"), Lang.bind(this, function(){
+        this._prevButton = new ControlButton("media-skip-backward", _("Previous"), Lang.bind(this, function() {
             this._mediaServerPlayer.PreviousRemote();
         }));
-        this._playButton = new ControlButton("media-playback-start", _("Play"), Lang.bind(this, function(){
+        this._playButton = new ControlButton("media-playback-start", _("Play"), Lang.bind(this, function() {
             this._mediaServerPlayer.PlayPauseRemote();
         }));
-        this._stopButton = new ControlButton("media-playback-stop", _("Stop"), Lang.bind(this, function(){
+        this._stopButton = new ControlButton("media-playback-stop", _("Stop"), Lang.bind(this, function() {
             this._mediaServerPlayer.StopRemote();
         }));
-        this._nextButton = new ControlButton("media-skip-forward", _("Next"), Lang.bind(this, function(){
+        this._nextButton = new ControlButton("media-skip-forward", _("Next"), Lang.bind(this, function() {
             this._mediaServerPlayer.NextRemote();
         }));
         this.trackInfo.add_actor(trackControls);
@@ -430,14 +408,14 @@ Player.prototype = {
         this.controls.add_actor(this._stopButton.getActor());
         this.controls.add_actor(this._nextButton.getActor());
         trackControls.set_child(this.controls);
-        if(this._mediaServerPlayer.LoopStatus){
+        if(this._mediaServerPlayer.LoopStatus) {
             this._loopButton = new ControlButton("media-playlist-consecutive", _("Consecutive Playing"), Lang.bind(this, this._toggleLoopStatus));
             this._loopButton.actor.visible = this._applet.extendedPlayerControl;
             this.controls.add_actor(this._loopButton.getActor());
 
             this._setLoopStatus(this._mediaServerPlayer.LoopStatus);
         }
-        if(this._mediaServerPlayer.Shuffle !== undefined){
+        if(this._mediaServerPlayer.Shuffle !== undefined) {
             this._shuffleButton = new ControlButton("media-playlist-shuffle", _("No Shuffle"), Lang.bind(this, this._toggleShuffle));
             this._shuffleButton.actor.visible = this._applet.extendedPlayerControl;
             this.controls.add_actor(this._shuffleButton.getActor());
@@ -499,64 +477,64 @@ Player.prototype = {
         }));
 
         this._propChangedId = this._prop.connectSignal('PropertiesChanged', Lang.bind(this, function(proxy, sender, [iface, props]) {
-                if (props.PlaybackStatus)
-                    this._setStatus(props.PlaybackStatus.unpack());
-                if (props.Metadata)
-                    this._setMetadata(props.Metadata.deep_unpack());
-                if (props.CanGoNext || props.CanGoPrevious)
-                    this._updateControls();
-                if (props.LoopStatus)
-                    this._setLoopStatus(props.LoopStatus.unpack());
-                if (props.Shuffle)
-                    this._setShuffle(props.Shuffle.unpack());
+            if (props.PlaybackStatus)
+                this._setStatus(props.PlaybackStatus.unpack());
+            if (props.Metadata)
+                this._setMetadata(props.Metadata.deep_unpack());
+            if (props.CanGoNext || props.CanGoPrevious)
+                this._updateControls();
+            if (props.LoopStatus)
+                this._setLoopStatus(props.LoopStatus.unpack());
+            if (props.Shuffle)
+                this._setShuffle(props.Shuffle.unpack());
         }));
 
         //get the desktop entry and pass it to the applet
-        this._prop.GetRemote(MEDIA_PLAYER_2_NAME, "DesktopEntry", Lang.bind(this, function(value){
+        this._prop.GetRemote(MEDIA_PLAYER_2_NAME, "DesktopEntry", Lang.bind(this, function(value) {
             this._applet.passDesktopEntry(value[0].unpack());
         }));
 
         this._getPosition();
-    },
+    }
 
-    _getName: function() {
+    _getName() {
         return this._name.charAt(0).toUpperCase() + this._name.slice(1);
-    },
+    }
 
 
-    _setName: function(status) {
+    _setName(status) {
         this.playerLabel.set_text(this._getName() + " - " + _(status));
-    },
+    }
 
-    _updateControls: function() {
+    _updateControls() {
         this._prop.GetRemote(MEDIA_PLAYER_2_PLAYER_NAME, 'CanGoNext',
-                             Lang.bind(this, function(value, err) {
-                                let canGoNext = true;
-                                if (!err)
-                                    canGoNext = value[0].unpack();
-                                this._nextButton.setEnabled(canGoNext);
-                                })
-                            );
+            Lang.bind(this, function(value, err) {
+                let canGoNext = true;
+                if (!err)
+                    canGoNext = value[0].unpack();
+                this._nextButton.setEnabled(canGoNext);
+            })
+        );
 
         this._prop.GetRemote(MEDIA_PLAYER_2_PLAYER_NAME, 'CanGoPrevious',
-                             Lang.bind(this, function(value, err) {
-                                let canGoPrevious = true;
-                                if (!err)
-                                    canGoPrevious = value[0].unpack();
-                                this._prevButton.setEnabled(canGoPrevious);
-                                })
-                            );
-    },
+            Lang.bind(this, function(value, err) {
+                let canGoPrevious = true;
+                if (!err)
+                    canGoPrevious = value[0].unpack();
+                this._prevButton.setEnabled(canGoPrevious);
+            })
+        );
+    }
 
-    _updatePositionSlider: function(position) {
+    _updatePositionSlider(position) {
         this._canSeek = this._getCanSeek();
 
         if (this._songLength == 0 || position == false)
             this._canSeek = false;
-    },
+    }
 
-    _setPosition: function(value) {
-        if(value === "slider"){
+    _setPosition(value) {
+        if(value === "slider") {
             let time = this._positionSlider._value * this._songLength;
             this._wantedSeekValue = Math.round(time * 1000000);
             this._mediaServerPlayer.SetPositionRemote(this._trackObj, time * 1000000);
@@ -568,17 +546,17 @@ Player.prototype = {
             this._currentTime = value / 1000000;
             this._updateTimer();
         }
-    },
+    }
 
-    _getPosition: function() {
+    _getPosition() {
         this._prop.GetRemote(MEDIA_PLAYER_2_PLAYER_NAME, 'Position', Lang.bind(this, function(position, ex) {
             if (!ex) {
                 this._setPosition(position[0].get_int64());
             }
         }));
-    },
+    }
 
-    _getCanSeek: function() {
+    _getCanSeek() {
         let can_seek = true;
         this._prop.GetRemote(MEDIA_PLAYER_2_PLAYER_NAME, 'CanSeek', Lang.bind(this, function(position, ex) {
             if (!ex) {
@@ -593,9 +571,9 @@ Player.prototype = {
             }
         }
         return can_seek;
-    },
+    }
 
-    _setMetadata: function(metadata) {
+    _setMetadata(metadata) {
         if (!metadata)
             return;
         if (metadata["mpris:length"]) {
@@ -681,9 +659,9 @@ Player.prototype = {
                 this._showCover(false);
         }
         this._applet.setAppletTextIcon(this, true);
-    },
+    }
 
-    _setStatus: function(status) {
+    _setStatus(status) {
         if (!status)
             return;
         this._updatePositionSlider();
@@ -710,9 +688,9 @@ Player.prototype = {
         }
 
         this._setName(status);
-    },
+    }
 
-    _toggleLoopStatus: function(){
+    _toggleLoopStatus() {
         let mapping = {
             "None": "Playlist",
             "Playlist": "Track",
@@ -721,9 +699,9 @@ Player.prototype = {
 
         this._mediaServerPlayer.LoopStatus = mapping[this._mediaServerPlayer.LoopStatus];
         this._setLoopStatus(this._mediaServerPlayer.LoopStatus);
-    },
+    }
 
-    _setLoopStatus: function(status){
+    _setLoopStatus(status) {
         if(status === "None")
             this._loopButton.setData("media-playlist-consecutive-symbolic", _("Consecutive Playing"));
         else if(status === "Track")
@@ -732,27 +710,27 @@ Player.prototype = {
             this._loopButton.setData("media-playlist-repeat", _("Repeat All"));
 
         this._loopButton.setActive(status !== "None");
-    },
+    }
 
-    _toggleShuffle: function(){
+    _toggleShuffle() {
         this._mediaServerPlayer.Shuffle = !this._mediaServerPlayer.Shuffle;
-    },
+    }
 
-    _setShuffle: function(status){
+    _setShuffle(status) {
         this._shuffleButton.setData("media-playlist-shuffle", status? _("Shuffle") : _("No Shuffle"));
         this._shuffleButton.setActive(status);
-    },
+    }
 
-    _updateTimer: function() {
+    _updateTimer() {
         if (!this._seeking && this.showPosition && this._canSeek) {
             if (!isNaN(this._currentTime) && !isNaN(this._songLength) && this._currentTime > 0)
                 this._positionSlider.setValue(this._currentTime / this._songLength);
             else
                 this._positionSlider.setValue(0);
         }
-    },
+    }
 
-    _runTimerCallback: function() {
+    _runTimerCallback() {
         if (this._playerStatus == 'Playing') {
             if (this._timerTicker < 10) {
                 this._currentTime += 1;
@@ -766,9 +744,9 @@ Player.prototype = {
         }
 
         return false;
-    },
+    }
 
-    _runTimer: function() {
+    _runTimer() {
         if (this._canSeek) {
             if (this._timeoutId != 0) {
                 Mainloop.source_remove(this._timeoutId);
@@ -781,55 +759,55 @@ Player.prototype = {
                 this._timeoutId = Mainloop.timeout_add(1000, Lang.bind(this, this._runTimerCallback));
             }
         }
-    },
+    }
 
-    _pauseTimer: function() {
+    _pauseTimer() {
         if (this._timeoutId != 0) {
             Mainloop.source_remove(this._timeoutId);
             this._timeoutId = 0;
         }
         this._updateTimer();
-    },
+    }
 
-    _stopTimer: function() {
+    _stopTimer() {
         this._currentTime = 0;
         this._pauseTimer();
         this._updateTimer();
-    },
+    }
 
-    _onDownloadedCover: function() {
+    _onDownloadedCover() {
         let cover_path = this._trackCoverFileTmp.get_path();
         this._showCover(cover_path);
-    },
+    }
 
-    _hideCover: function() {
+    _hideCover() {
         /*Tweener.addTween(this.trackCoverContainer, { opacity: 0,
             time: 0.3,
             transition: 'easeOutCubic',
         });*/
-    },
+    }
 
-    _showCover: function(cover_path) {
+    _showCover(cover_path) {
         /*Tweener.addTween(this._trackCover, { opacity: 0,
             time: 0.3,
             transition: 'easeOutCubic',
             onComplete: Lang.bind(this, function() {*/
-                this.coverBox.remove_actor(this.cover);
-                if (! cover_path || ! GLib.file_test(cover_path, GLib.FileTest.EXISTS)) {
-                    this.cover = new St.Icon({style_class: 'sound-player-generic-coverart', important: true, icon_name: "media-optical", icon_size: 300, icon_type: St.IconType.FULLCOLOR});
-                    cover_path = null;
-                }
-                else {
-                    if (this._applet.keepAlbumAspectRatio) {
-                        this.cover = new Clutter.Texture({width: 300, keep_aspect_ratio: true, filter_quality: 2, filename: cover_path});
-                    }
-                    else {
-                        this.cover = new Clutter.Texture({width: 300, height: 300, keep_aspect_ratio: false, filter_quality: 2, filename: cover_path});
-                    }
-                }
-                this.coverBox.add_actor(this.cover);
-                this.coverBox.set_child_below_sibling(this.cover, this.trackInfo);
-                this._applet.setAppletTextIcon(this, cover_path);
+        this.coverBox.remove_actor(this.cover);
+        if (! cover_path || ! GLib.file_test(cover_path, GLib.FileTest.EXISTS)) {
+            this.cover = new St.Icon({style_class: 'sound-player-generic-coverart', important: true, icon_name: "media-optical", icon_size: 300, icon_type: St.IconType.FULLCOLOR});
+            cover_path = null;
+        }
+        else {
+            if (this._applet.keepAlbumAspectRatio) {
+                this.cover = new Clutter.Texture({width: 300, keep_aspect_ratio: true, filter_quality: 2, filename: cover_path});
+            }
+            else {
+                this.cover = new Clutter.Texture({width: 300, height: 300, keep_aspect_ratio: false, filter_quality: 2, filename: cover_path});
+            }
+        }
+        this.coverBox.add_actor(this.cover);
+        this.coverBox.set_child_below_sibling(this.cover, this.trackInfo);
+        this._applet.setAppletTextIcon(this, cover_path);
 
                 /*Tweener.addTween(this._trackCover, { opacity: 255,
                     time: 0.3,
@@ -837,14 +815,14 @@ Player.prototype = {
                 });
             })
         });*/
-    },
+    }
 
-    onSettingsChanged: function(){
+    onSettingsChanged() {
         this._loopButton.actor.visible = this._applet.extendedPlayerControl;
         this._shuffleButton.actor.visible = this._applet.extendedPlayerControl;
-    },
+    }
 
-    destroy: function() {
+    destroy() {
         if (this._timeoutId != 0) {
             Mainloop.source_remove(this._timeoutId);
             this._timeoutId = 0;
@@ -856,18 +834,11 @@ Player.prototype = {
 
         PopupMenu.PopupMenuSection.prototype.destroy.call(this);
     }
-
-};
-
-function MediaPlayerLauncher(app, menu) {
-    this._init(app, menu);
 }
 
-MediaPlayerLauncher.prototype = {
-    __proto__: PopupMenu.PopupBaseMenuItem.prototype,
-
-    _init: function (app, menu) {
-        PopupMenu.PopupBaseMenuItem.prototype._init.call(this, {});
+class MediaPlayerLauncher extends PopupMenu.PopupBaseMenuItem {
+    constructor(app, menu) {
+        super({});
 
         this._app = app;
         this._menu = menu;
@@ -876,182 +847,171 @@ MediaPlayerLauncher.prototype = {
         this._icon = app.create_icon_texture(ICON_SIZE);
         this.addActor(this._icon, { expand: false });
         this.connect("activate", Lang.bind(this, this._onActivate));
-    },
+    }
 
-    _onActivate: function(actor, event, keepMenu) {
+    _onActivate(actor, event, keepMenu) {
         this._app.activate_full(-1, event.get_time());
     }
-};
-
-function MyApplet(metadata, orientation, panel_height, instanceId) {
-    this._init(metadata, orientation, panel_height, instanceId);
 }
 
-MyApplet.prototype = {
-    __proto__: Applet.TextIconApplet.prototype,
-
-    _init: function(metadata, orientation, panel_height, instanceId) {
-        Applet.TextIconApplet.prototype._init.call(this, orientation, panel_height, instanceId);
+class CinnamonSoundApplet extends Applet.TextIconApplet {
+    constructor(metadata, orientation, panel_height, instanceId) {
+        super(orientation, panel_height, instanceId);
 
         this.setAllowedLayout(Applet.AllowedLayout.BOTH);
 
-        try {
-            this.metadata = metadata;
-            this.settings = new Settings.AppletSettings(this, metadata.uuid, instanceId);
-            this.settings.bind("showtrack", "showtrack", this.on_settings_changed);
-            this.settings.bind("middleClickAction", "middleClickAction");
-            this.settings.bind("horizontalScroll", "horizontalScroll")
-            this.settings.bind("showalbum", "showalbum", this.on_settings_changed);
-            this.settings.bind("truncatetext", "truncatetext", this.on_settings_changed);
-            this.settings.bind("keepAlbumAspectRatio", "keepAlbumAspectRatio", this.on_settings_changed);
-            this.settings.bind("hideSystray", "hideSystray", function() {
-                if (this.hideSystray) this.registerSystrayIcons();
-                else this.unregisterSystrayIcons();
-            });
-
-            this.settings.bind("playerControl", "playerControl", this.on_settings_changed);
-            this.settings.bind("extendedPlayerControl", "extendedPlayerControl", function(){
-                for(let i in this._players)
-                    this._players[i].onSettingsChanged();
-            });
-
-            this.settings.bind("_knownPlayers", "_knownPlayers");
+        this.metadata = metadata;
+        this.settings = new Settings.AppletSettings(this, metadata.uuid, instanceId);
+        this.settings.bind("showtrack", "showtrack", this.on_settings_changed);
+        this.settings.bind("middleClickAction", "middleClickAction");
+        this.settings.bind("horizontalScroll", "horizontalScroll")
+        this.settings.bind("showalbum", "showalbum", this.on_settings_changed);
+        this.settings.bind("truncatetext", "truncatetext", this.on_settings_changed);
+        this.settings.bind("keepAlbumAspectRatio", "keepAlbumAspectRatio", this.on_settings_changed);
+        this.settings.bind("hideSystray", "hideSystray", function() {
             if (this.hideSystray) this.registerSystrayIcons();
+            else this.unregisterSystrayIcons();
+        });
 
-            this.menuManager = new PopupMenu.PopupMenuManager(this);
-            this.menu = new Applet.AppletPopupMenu(this, orientation);
-            this.menuManager.addMenu(this.menu);
+        this.settings.bind("playerControl", "playerControl", this.on_settings_changed);
+        this.settings.bind("extendedPlayerControl", "extendedPlayerControl", function() {
+            for(let i in this._players)
+                this._players[i].onSettingsChanged();
+        });
 
-            this.set_applet_icon_symbolic_name('audio-x-generic');
+        this.settings.bind("_knownPlayers", "_knownPlayers");
+        if (this.hideSystray) this.registerSystrayIcons();
 
-            this._players = {};
-            this._playerItems = [];
-            this._activePlayer = null;
+        this.menuManager = new PopupMenu.PopupMenuManager(this);
+        this.menu = new Applet.AppletPopupMenu(this, orientation);
+        this.menuManager.addMenu(this.menu);
 
-            Interfaces.getDBusAsync(Lang.bind(this, function (proxy, error) {
-                this._dbus = proxy;
+        this.set_applet_icon_symbolic_name('audio-x-generic');
 
-                // player DBus name pattern
-                let name_regex = /^org\.mpris\.MediaPlayer2\./;
-                // load players
-                this._dbus.ListNamesRemote(Lang.bind(this,
-                    function(names) {
-                        for (let n in names[0]) {
-                            let name = names[0][n];
-                            if (name_regex.test(name)) {
-                                this._dbus.GetNameOwnerRemote(name, Lang.bind(this,
-                                    function(owner) {
-                                        this._addPlayer(name, owner);
-                                    }
-                                ));
-                            }
-                        }
-                    }
-                ));
+        this._players = {};
+        this._playerItems = [];
+        this._activePlayer = null;
 
-                // watch players
-                this._ownerChangedId = this._dbus.connectSignal('NameOwnerChanged', Lang.bind(this,
-                    function(proxy, sender, [name, old_owner, new_owner]) {
+        Interfaces.getDBusAsync(Lang.bind(this, function (proxy, error) {
+            this._dbus = proxy;
+
+            // player DBus name pattern
+            let name_regex = /^org\.mpris\.MediaPlayer2\./;
+            // load players
+            this._dbus.ListNamesRemote(Lang.bind(this,
+                function(names) {
+                    for (let n in names[0]) {
+                        let name = names[0][n];
                         if (name_regex.test(name)) {
-                            if (new_owner && !old_owner)
-                                this._addPlayer(name, new_owner);
-                            else if (old_owner && !new_owner)
-                                this._removePlayer(name, old_owner);
-                            else
-                                this._changePlayerOwner(name, old_owner, new_owner);
+                            this._dbus.GetNameOwnerRemote(name, Lang.bind(this,
+                                function(owner) {
+                                    this._addPlayer(name, owner);
+                                }
+                            ));
                         }
                     }
-                ));
-            }));
+                }
+            ));
 
-            this._control = new Cvc.MixerControl({ name: 'Cinnamon Volume Control' });
-            this._control.connect('state-changed', Lang.bind(this, this._onControlStateChanged));
+            // watch players
+            this._ownerChangedId = this._dbus.connectSignal('NameOwnerChanged', Lang.bind(this,
+                function(proxy, sender, [name, old_owner, new_owner]) {
+                    if (name_regex.test(name)) {
+                        if (new_owner && !old_owner)
+                            this._addPlayer(name, new_owner);
+                        else if (old_owner && !new_owner)
+                            this._removePlayer(name, old_owner);
+                        else
+                            this._changePlayerOwner(name, old_owner, new_owner);
+                    }
+                }
+            ));
+        }));
 
-            this._control.connect('output-added', Lang.bind(this, this._onDeviceAdded, "output"));
-            this._control.connect('output-removed', Lang.bind(this, this._onDeviceRemoved, "output"));
-            this._control.connect('active-output-update', Lang.bind(this, this._onDeviceUpdate, "output"));
+        this._control = new Cvc.MixerControl({ name: 'Cinnamon Volume Control' });
+        this._control.connect('state-changed', Lang.bind(this, this._onControlStateChanged));
 
-            this._control.connect('input-added', Lang.bind(this, this._onDeviceAdded, "input"));
-            this._control.connect('input-removed', Lang.bind(this, this._onDeviceRemoved, "input"));
-            this._control.connect('active-input-update', Lang.bind(this, this._onDeviceUpdate, "input"));
+        this._control.connect('output-added', Lang.bind(this, this._onDeviceAdded, "output"));
+        this._control.connect('output-removed', Lang.bind(this, this._onDeviceRemoved, "output"));
+        this._control.connect('active-output-update', Lang.bind(this, this._onDeviceUpdate, "output"));
 
-            this._control.connect('stream-added', Lang.bind(this, this._onStreamAdded));
-            this._control.connect('stream-removed', Lang.bind(this, this._onStreamRemoved));
+        this._control.connect('input-added', Lang.bind(this, this._onDeviceAdded, "input"));
+        this._control.connect('input-removed', Lang.bind(this, this._onDeviceRemoved, "input"));
+        this._control.connect('active-input-update', Lang.bind(this, this._onDeviceUpdate, "input"));
 
-            this._sound_settings = new Gio.Settings({ schema_id: CINNAMON_DESKTOP_SOUNDS });
-            this._volumeMax = this._sound_settings.get_int(MAXIMUM_VOLUME_KEY) / 100 * this._control.get_vol_max_norm();
-            this._volumeNorm = this._control.get_vol_max_norm();
+        this._control.connect('stream-added', Lang.bind(this, this._onStreamAdded));
+        this._control.connect('stream-removed', Lang.bind(this, this._onStreamRemoved));
 
-            this._streams = [];
-            this._devices = [];
-            this._recordingAppsNum = 0;
+        this._sound_settings = new Gio.Settings({ schema_id: CINNAMON_DESKTOP_SOUNDS });
+        this._volumeMax = this._sound_settings.get_int(MAXIMUM_VOLUME_KEY) / 100 * this._control.get_vol_max_norm();
+        this._volumeNorm = this._control.get_vol_max_norm();
 
-            this._output = null;
-            this._outputMutedId = 0;
-            this._outputIcon = "audio-volume-muted";
+        this._streams = [];
+        this._devices = [];
+        this._recordingAppsNum = 0;
 
-            this._input = null;
-            this._inputMutedId = 0;
+        this._output = null;
+        this._outputMutedId = 0;
+        this._outputIcon = "audio-volume-muted";
 
-            this._icon_name = '';
-            this._icon_path = null;
-            this._iconTimeoutId = 0;
+        this._input = null;
+        this._inputMutedId = 0;
 
-            this.actor.connect('scroll-event', Lang.bind(this, this._onScrollEvent));
+        this._icon_name = '';
+        this._icon_path = null;
+        this._iconTimeoutId = 0;
 
-            this.mute_out_switch = new PopupMenu.PopupSwitchIconMenuItem(_("Mute output"), false, "audio-volume-muted", St.IconType.SYMBOLIC);
-            this.mute_in_switch = new PopupMenu.PopupSwitchIconMenuItem(_("Mute input"), false, "microphone-sensitivity-muted", St.IconType.SYMBOLIC);
-            this._applet_context_menu.addMenuItem(this.mute_out_switch);
-            this._applet_context_menu.addMenuItem(this.mute_in_switch);
+        this.actor.connect('scroll-event', Lang.bind(this, this._onScrollEvent));
 
-            this._applet_context_menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
+        this.mute_out_switch = new PopupMenu.PopupSwitchIconMenuItem(_("Mute output"), false, "audio-volume-muted", St.IconType.SYMBOLIC);
+        this.mute_in_switch = new PopupMenu.PopupSwitchIconMenuItem(_("Mute input"), false, "microphone-sensitivity-none", St.IconType.SYMBOLIC);
+        this._applet_context_menu.addMenuItem(this.mute_out_switch);
+        this._applet_context_menu.addMenuItem(this.mute_in_switch);
 
-            this._outputApplicationsMenu = new PopupMenu.PopupSubMenuMenuItem(_("Applications"));
-            this._selectOutputDeviceItem = new PopupMenu.PopupSubMenuMenuItem(_("Output device"));
-            this._applet_context_menu.addMenuItem(this._outputApplicationsMenu);
-            this._applet_context_menu.addMenuItem(this._selectOutputDeviceItem);
-            this._outputApplicationsMenu.actor.hide();
-            this._selectOutputDeviceItem.actor.hide();
+        this._applet_context_menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
 
-            this._inputSection = new PopupMenu.PopupMenuSection();
-            this._inputVolumeSection = new VolumeSlider(this, null, _("Microphone"), null);
-            this._inputVolumeSection.connect("values-changed", Lang.bind(this, this._inputValuesChanged));
-            this._selectInputDeviceItem = new PopupMenu.PopupSubMenuMenuItem(_("Input device"));
-            this._inputSection.addMenuItem(this._inputVolumeSection);
-            this._inputSection.addMenuItem(this._selectInputDeviceItem);
-            this._applet_context_menu.addMenuItem(this._inputSection);
+        this._outputApplicationsMenu = new PopupMenu.PopupSubMenuMenuItem(_("Applications"));
+        this._selectOutputDeviceItem = new PopupMenu.PopupSubMenuMenuItem(_("Output device"));
+        this._applet_context_menu.addMenuItem(this._outputApplicationsMenu);
+        this._applet_context_menu.addMenuItem(this._selectOutputDeviceItem);
+        this._outputApplicationsMenu.actor.hide();
+        this._selectOutputDeviceItem.actor.hide();
 
-            this._selectInputDeviceItem.actor.hide();
-            this._inputSection.actor.hide();
+        this._inputSection = new PopupMenu.PopupMenuSection();
+        this._inputVolumeSection = new VolumeSlider(this, null, _("Microphone"), null);
+        this._inputVolumeSection.connect("values-changed", Lang.bind(this, this._inputValuesChanged));
+        this._selectInputDeviceItem = new PopupMenu.PopupSubMenuMenuItem(_("Input device"));
+        this._inputSection.addMenuItem(this._inputVolumeSection);
+        this._inputSection.addMenuItem(this._selectInputDeviceItem);
+        this._applet_context_menu.addMenuItem(this._inputSection);
 
-            this._applet_context_menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
+        this._selectInputDeviceItem.actor.hide();
+        this._inputSection.actor.hide();
 
-            this.mute_out_switch.connect('toggled', Lang.bind(this, this._toggle_out_mute));
-            this.mute_in_switch.connect('toggled', Lang.bind(this, this._toggle_in_mute));
+        this._applet_context_menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
 
-            this._control.open();
+        this.mute_out_switch.connect('toggled', Lang.bind(this, this._toggle_out_mute));
+        this.mute_in_switch.connect('toggled', Lang.bind(this, this._toggle_in_mute));
 
-            this._volumeControlShown = false;
+        this._control.open();
 
-            this._showFixedElements();
-            this.set_show_label_in_vertical_panels(false);
-            this.set_applet_label(this._applet_label.get_text());
+        this._volumeControlShown = false;
 
-            let appsys = Cinnamon.AppSystem.get_default();
-            appsys.connect("installed-changed", Lang.bind(this, this._updateLaunchPlayer));
+        this._showFixedElements();
+        this.set_show_label_in_vertical_panels(false);
+        this.set_applet_label(this._applet_label.get_text());
 
-            if (this._volumeMax > this._volumeNorm) {
-                this._outputVolumeSection.set_mark(this._volumeNorm / this._volumeMax);
-            }
+        let appsys = Cinnamon.AppSystem.get_default();
+        appsys.connect("installed-changed", Lang.bind(this, this._updateLaunchPlayer));
 
-            this._sound_settings.connect("changed::" + MAXIMUM_VOLUME_KEY, Lang.bind(this, this._on_sound_settings_change));
+        if (this._volumeMax > this._volumeNorm) {
+            this._outputVolumeSection.set_mark(this._volumeNorm / this._volumeMax);
         }
-        catch (e) {
-            global.logError(e);
-        }
-    },
 
-    _on_sound_settings_change : function() {
+        this._sound_settings.connect("changed::" + MAXIMUM_VOLUME_KEY, Lang.bind(this, this._on_sound_settings_change));
+    }
+
+    _on_sound_settings_change () {
         this._volumeMax = this._sound_settings.get_int(MAXIMUM_VOLUME_KEY) / 100 * this._control.get_vol_max_norm();
         if (this._volumeMax > this._volumeNorm) {
             this._outputVolumeSection.set_mark(this._volumeNorm / this._volumeMax);
@@ -1060,18 +1020,18 @@ MyApplet.prototype = {
             this._outputVolumeSection.set_mark(0);
         }
         this._outputVolumeSection._update();
-    },
+    }
 
-    on_settings_changed : function() {
+    on_settings_changed () {
         if(this.playerControl && this._activePlayer)
             this.setAppletTextIcon(this._players[this._activePlayer], true);
         else
             this.setAppletTextIcon();
 
         this._changeActivePlayer(this._activePlayer);
-    },
+    }
 
-    on_applet_removed_from_panel : function() {
+    on_applet_removed_from_panel () {
         if (this.hideSystray)
             this.unregisterSystrayIcons();
         if (this._iconTimeoutId) {
@@ -1082,13 +1042,13 @@ MyApplet.prototype = {
 
         for(let i in this._players)
             this._players[i].destroy();
-    },
+    }
 
-    on_applet_clicked: function(event) {
+    on_applet_clicked(event) {
         this.menu.toggle();
-    },
+    }
 
-    _toggle_out_mute: function() {
+    _toggle_out_mute() {
         if (this._output.is_muted) {
             this._output.change_is_muted(false);
             this.mute_out_switch.setToggleState(false);
@@ -1096,9 +1056,9 @@ MyApplet.prototype = {
             this._output.change_is_muted(true);
             this.mute_out_switch.setToggleState(true);
         }
-    },
+    }
 
-    _toggle_in_mute: function() {
+    _toggle_in_mute() {
         if (this._input.is_muted) {
             this._input.change_is_muted(false);
             this.mute_in_switch.setToggleState(false);
@@ -1106,9 +1066,9 @@ MyApplet.prototype = {
             this._input.change_is_muted(true);
             this.mute_in_switch.setToggleState(true);
         }
-    },
+    }
 
-    _onScrollEvent: function(actor, event) {
+    _onScrollEvent(actor, event) {
         let direction = event.get_scroll_direction();
         let currentVolume = this._output.volume;
 
@@ -1144,9 +1104,9 @@ MyApplet.prototype = {
         }
 
         this._notifyVolumeChange(this._output);
-    },
+    }
 
-    _onButtonPressEvent: function (actor, event) {
+    _onButtonPressEvent (actor, event) {
         let buttonId = event.get_button();
 
         //mute or play / pause players on middle click
@@ -1167,9 +1127,9 @@ MyApplet.prototype = {
         }
 
         return Applet.Applet.prototype._onButtonPressEvent.call(this, actor, event);
-    },
+    }
 
-    setIcon: function(icon, source) {
+    setIcon(icon, source) {
         if (this._iconTimeoutId) {
             Mainloop.source_remove(this._iconTimeoutId);
             this._iconTimeoutId = null;
@@ -1203,9 +1163,9 @@ MyApplet.prototype = {
             //if we have no active player show the output icon
             this.set_applet_icon_symbolic_name(this._outputIcon);
         }
-    },
+    }
 
-    setAppletIcon: function(player, path) {
+    setAppletIcon(player, path) {
         if (path) {
             if (path === true) {
                 // Restore the icon path from the saved path.
@@ -1228,9 +1188,9 @@ MyApplet.prototype = {
         else {
             this.setIcon('audio-x-generic', 'player-name');
         }
-    },
+    }
 
-    setAppletText: function(player) {
+    setAppletText(player) {
         let title_text = "";
         if (this.showtrack && player && player._playerStatus == 'Playing') {
             title_text = player._title + ' - ' + player._artist;
@@ -1239,25 +1199,25 @@ MyApplet.prototype = {
             }
         }
         this.set_applet_label(title_text);
-    },
+    }
 
-    setAppletTextIcon: function(player, icon) {
+    setAppletTextIcon(player, icon) {
         if (player && player._owner != this._activePlayer)
             return;
         this.setAppletIcon(player, icon);
         this.setAppletText(player);
-    },
+    }
 
-    _isInstance: function(busName) {
+    _isInstance(busName) {
         // MPRIS instances are in the form
         //   org.mpris.MediaPlayer2.name.instanceXXXX
         // ...except for VLC, which to this day uses
         //   org.mpris.MediaPlayer2.name-XXXX
         return busName.split('.').length > 4 ||
                 /^org\.mpris\.MediaPlayer2\.vlc-\d+$/.test(busName);
-    },
+    }
 
-    _addPlayer: function(busName, owner) {
+    _addPlayer(busName, owner) {
         if (this._players[owner]) {
             let prevName = this._players[owner]._busName;
             // HAVE: ADDING: ACTION:
@@ -1284,9 +1244,9 @@ MyApplet.prototype = {
             this._updatePlayerMenuItems();
             this.setAppletTextIcon();
         }
-    },
+    }
 
-    _switchPlayer: function(owner) {
+    _switchPlayer(owner) {
         if(this._players[owner]) {
             // The player exists, switch to it
             this._changeActivePlayer(owner);
@@ -1297,9 +1257,9 @@ MyApplet.prototype = {
             this._removePlayerItem(owner);
             this._updatePlayerMenuItems();
         }
-    },
+    }
 
-    _removePlayerItem: function(owner) {
+    _removePlayerItem(owner) {
         // Remove the player from the player switching list
         for(let i = 0, l = this._playerItems.length; i < l; ++i) {
             let playerItem = this._playerItems[i];
@@ -1309,9 +1269,9 @@ MyApplet.prototype = {
                 break;
             }
         }
-    },
+    }
 
-    _removePlayer: function(busName, owner) {
+    _removePlayer(busName, owner) {
         if (this._players[owner] && this._players[owner]._busName == busName) {
             this._removePlayerItem(owner);
 
@@ -1329,9 +1289,9 @@ MyApplet.prototype = {
             this._updatePlayerMenuItems();
             this.setAppletTextIcon();
         }
-    },
+    }
 
-    _changePlayerOwner: function(busName, oldOwner, newOwner) {
+    _changePlayerOwner(busName, oldOwner, newOwner) {
         if (this._players[oldOwner] && busName == this._players[oldOwner]._busName) {
             this._players[newOwner] = this._players[oldOwner];
             this._players[newOwner]._owner = newOwner;
@@ -1339,10 +1299,10 @@ MyApplet.prototype = {
             if (this._activePlayer == oldOwner)
                 this._activePlayer = newOwner;
         }
-    },
+    }
 
     //will be called by an instance of #Player
-    passDesktopEntry: function(entry){
+    passDesktopEntry(entry) {
         //do we know already this player?
         for (let i = 0, l = this._knownPlayers.length; i < l; ++i) {
             if (this._knownPlayers[i] === entry)
@@ -1352,9 +1312,9 @@ MyApplet.prototype = {
         this._knownPlayers.push(entry);
         this._knownPlayers.save();
         this._updateLaunchPlayer();
-    },
+    }
 
-    _showFixedElements: function() {
+    _showFixedElements() {
         // The list to use when switching between active players
         this._chooseActivePlayerItem = new PopupMenu.PopupSubMenuMenuItem(_("Choose player controls"));
         this._chooseActivePlayerItem.actor.hide();
@@ -1374,14 +1334,14 @@ MyApplet.prototype = {
         this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
 
         this.menu.addSettingsAction(_("Sound Settings"), 'sound');
-    },
+    }
 
-    _updateLaunchPlayer: function() {
+    _updateLaunchPlayer() {
         let availablePlayers = [];
 
         let appsys = Cinnamon.AppSystem.get_default();
         //_knownPlayers is an array containing the paths of desktop files
-        for(let i = 0, l = this._knownPlayers.length; i < l; ++i){
+        for(let i = 0, l = this._knownPlayers.length; i < l; ++i) {
             let app = appsys.lookup_app(this._knownPlayers[i] + ".desktop");
             if (app)
                 availablePlayers.push(app);
@@ -1398,9 +1358,9 @@ MyApplet.prototype = {
         } else {
             this._launchPlayerItem.actor.hide();
         }
-    },
+    }
 
-    _updatePlayerMenuItems: function() {
+    _updatePlayerMenuItems() {
         if (this.playerControl && this._activePlayer) {
             this._launchPlayerItem.actor.hide();
             this._chooseActivePlayerItem.actor.show();
@@ -1422,43 +1382,44 @@ MyApplet.prototype = {
                 this._launchPlayerItem.actor.hide();
             }
         }
-    },
+    }
 
-    _changeActivePlayer: function(player) {
+    _changeActivePlayer(player) {
         if (this._activePlayer)
             this.menu.box.remove_actor(this._players[this._activePlayer].actor);
 
         this._activePlayer = player;
         if (this.playerControl && this._activePlayer != null) {
-            this.menu.addMenuItem(this._players[player], 1);
+            let menuItem = this._players[player];
+            this.menu.addMenuItem(menuItem, 1);
         }
 
         this._updatePlayerMenuItems();
-    },
+    }
 
-    _notifyVolumeChange: function(stream) {
+    _notifyVolumeChange(stream) {
         Main.soundManager.playVolume('volume', stream.decibel);
-    },
+    }
 
-    _mutedChanged: function(object, param_spec, property) {
+    _mutedChanged(object, param_spec, property) {
         if (property == "_output") {
             this.mute_out_switch.setToggleState(this._output.is_muted);
         } else if (property == "_input") {
             this.mute_in_switch.setToggleState(this._input.is_muted);
         }
-    },
+    }
 
-    _outputValuesChanged: function(actor, iconName, percentage) {
+    _outputValuesChanged(actor, iconName, percentage) {
         this.setIcon(iconName, "output");
         this.mute_out_switch.setIconSymbolicName(iconName);
         this.set_applet_tooltip(_("Volume") + ": " + percentage);
-    },
+    }
 
-    _inputValuesChanged: function(actor, iconName) {
+    _inputValuesChanged(actor, iconName) {
         this.mute_in_switch.setIconSymbolicName(iconName);
-    },
+    }
 
-    _onControlStateChanged: function() {
+    _onControlStateChanged() {
         if (this._control.get_state() == Cvc.MixerControlState.READY) {
             this._readOutput();
             this._readInput();
@@ -1466,9 +1427,9 @@ MyApplet.prototype = {
         } else {
             this.actor.hide();
         }
-    },
+    }
 
-    _readOutput: function() {
+    _readOutput() {
         if (this._outputMutedId) {
             this._output.disconnect(this._outputMutedId);
             this._outputMutedId = 0;
@@ -1481,9 +1442,9 @@ MyApplet.prototype = {
         } else {
             this.setIcon("audio-volume-muted-symbolic", "output");
         }
-    },
+    }
 
-    _readInput: function() {
+    _readInput() {
         if (this._inputMutedId) {
             this._input.disconnect(this._inputMutedId);
             this._inputMutedId = 0;
@@ -1496,13 +1457,13 @@ MyApplet.prototype = {
         } else {
             this._inputSection.actor.hide();
         }
-    },
+    }
 
-    _onDeviceAdded: function(control, id, type){
+    _onDeviceAdded(control, id, type) {
         let device = this._control["lookup_" + type + "_id"](id);
 
         let item = new PopupMenu.PopupMenuItem(device.description);
-        item.activate = Lang.bind(this, function(){
+        item.activate = Lang.bind(this, function() {
             this._control["change_" + type](device);
         });
 
@@ -1518,10 +1479,10 @@ MyApplet.prototype = {
             selectItem.actor.show();
 
         this._devices.push({id: id, type: type, item: item});
-    },
+    }
 
-    _onDeviceRemoved: function(control, id, type){
-        for (let i = 0, l = this._devices.length; i < l; ++i){
+    _onDeviceRemoved(control, id, type) {
+        for (let i = 0, l = this._devices.length; i < l; ++i) {
             if (this._devices[i].type === type && this._devices[i].id === id) {
                 let device = this._devices[i];
                 if (device.item)
@@ -1529,25 +1490,25 @@ MyApplet.prototype = {
 
                 //hide submenu if showing them is unnecessary
                 let selectItem = this["_select" + type[0].toUpperCase() + type.slice(1) + "DeviceItem"];
-                if(selectItem.menu.numMenuItems <= 1)
-                        selectItem.actor.hide();
+                if (selectItem.menu.numMenuItems <= 1)
+                    selectItem.actor.hide();
 
                 this._devices.splice(i, 1);
                 break;
             }
         }
-    },
+    }
 
-    _onDeviceUpdate: function(control, id, type){
+    _onDeviceUpdate(control, id, type) {
         this["_read" + type[0].toUpperCase() + type.slice(1)]();
 
         for (let i = 0, l = this._devices.length; i < l; ++i) {
             if (this._devices[i].type === type)
                 this._devices[i].item.setShowDot(id === this._devices[i].id);
         }
-    },
+    }
 
-    _onStreamAdded: function(control, id){
+    _onStreamAdded(control, id) {
         let stream = this._control.lookup_stream_id(id);
         let appId = stream.application_id;
 
@@ -1568,11 +1529,11 @@ MyApplet.prototype = {
             if (this._recordingAppsNum++ === 0)
                 this._inputSection.actor.show();
         }
-    },
+    }
 
-    _onStreamRemoved: function(control, id){
+    _onStreamRemoved(control, id) {
         for (let i = 0, l = this._streams.length; i < l; ++i) {
-            if(this._streams[i].id === id){
+            if(this._streams[i].id === id) {
                 let stream = this._streams[i];
                 if(stream.item)
                     stream.item.destroy();
@@ -1589,23 +1550,22 @@ MyApplet.prototype = {
                 break;
             }
         }
-    },
+    }
 
-    registerSystrayIcons: function() {
+    registerSystrayIcons() {
         for (let i = 0; i < players_with_seek_support.length; i++) {
             Main.systrayManager.registerRole(players_with_seek_support[i], this.metadata.uuid);
         }
         for (let i = 0; i < players_without_seek_support.length; i++) {
             Main.systrayManager.registerRole(players_without_seek_support[i], this.metadata.uuid);
         }
-    },
+    }
 
-    unregisterSystrayIcons: function() {
+    unregisterSystrayIcons() {
         Main.systrayManager.unregisterId(this.metadata.uuid);
     }
-};
+}
 
 function main(metadata, orientation, panel_height, instanceId) {
-    let myApplet = new MyApplet(metadata, orientation, panel_height, instanceId);
-    return myApplet;
+    return new CinnamonSoundApplet(metadata, orientation, panel_height, instanceId);
 }

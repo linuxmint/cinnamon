@@ -9,38 +9,27 @@ const Util = imports.misc.util;
 
 const MESSAGE = _("Are you sure you want to delete all items from the trash?") + "\n" + _("This operation cannot be undone.");
 
-function MyApplet(orientation, panel_height, instance_id) {
-    this._init(orientation, panel_height, instance_id);
-}
+class CinnamonTrashApplet extends Applet.IconApplet {
+    constructor(orientation, panel_height, instance_id) {
+        super(orientation, panel_height, instance_id);
 
-MyApplet.prototype = {
-    __proto__: Applet.IconApplet.prototype,
+        this.set_applet_icon_symbolic_name("user-trash");
+        this.set_applet_tooltip(_("Trash"));
 
-    _init: function(orientation, panel_height, instance_id) {
-        Applet.IconApplet.prototype._init.call(this, orientation, panel_height, instance_id);
+        this.trash_path = 'trash:///';
+        this.trash_directory =  Gio.file_new_for_uri(this.trash_path);
 
-        try {
-            this.set_applet_icon_symbolic_name("user-trash");
-            this.set_applet_tooltip(_("Trash"));
+        this._initContextMenu();
 
-            this.trash_path = 'trash:///';
-            this.trash_directory =  Gio.file_new_for_uri(this.trash_path);
+        this.trash_changed_timeout = 0;
 
-            this._initContextMenu();
+        this._onTrashChange();
 
-            this.trash_changed_timeout = 0;
+        this.monitor = this.trash_directory.monitor_directory(0, null);
+        this.monitor.connect('changed', Lang.bind(this, this._onTrashChange));
+    }
 
-            this._onTrashChange();
-
-            this.monitor = this.trash_directory.monitor_directory(0, null);
-            this.monitor.connect('changed', Lang.bind(this, this._onTrashChange));
-        }
-        catch (e) {
-            global.logError(e);
-        }
-    },
-
-    _initContextMenu: function () {
+    _initContextMenu() {
         this.empty_item = new PopupMenu.PopupIconMenuItem(_("Empty Trash"),
                 "list-remove",
                 St.IconType.SYMBOLIC);
@@ -52,26 +41,26 @@ MyApplet.prototype = {
                 St.IconType.SYMBOLIC);
         this.open_item.connect('activate', Lang.bind(this, this._openTrash));
         this._applet_context_menu.addMenuItem(this.open_item);
-    },
+    }
 
-    on_applet_clicked: function(event) {
+    on_applet_clicked(event) {
         this._openTrash();
-    },
+    }
 
-    _openTrash: function() {
+    _openTrash() {
         Gio.app_info_launch_default_for_uri(this.trash_directory.get_uri(), null);
-    },
+    }
 
-    _onTrashChange: function() {
-      if (this.trash_changed_timeout > 0) {
+    _onTrashChange() {
+        if (this.trash_changed_timeout > 0) {
             Mainloop.source_remove(this.trash_changed_timeout);
             this.trash_changed_timeout = 0;
         }
 
         this.trash_changed_timeout = Mainloop.timeout_add_seconds(1, Lang.bind(this, this._onTrashChangeTimeout));
-    },
+    }
 
-    _onTrashChangeTimeout: function() {
+    _onTrashChangeTimeout() {
         this.trash_changed_timeout = 0;
         if (this.trash_directory.query_exists(null)) {
             let children = this.trash_directory.enumerate_children('standard::*', Gio.FileQueryInfoFlags.NONE, null);
@@ -82,18 +71,17 @@ MyApplet.prototype = {
             }
             children.close(null);
         }
-    },
+    }
 
-    _emptyTrash: function() {
+    _emptyTrash() {
         new ModalDialog.ConfirmDialog(MESSAGE, this._doEmptyTrash).open();
-    },
+    }
 
-    _doEmptyTrash: function() {
+    _doEmptyTrash() {
         Util.spawn(['gvfs-trash', '--empty']);
     }
-};
+}
 
 function main(metadata, orientation, panel_height, instance_id) {
-    let myApplet = new MyApplet(orientation, panel_height, instance_id);
-    return myApplet;
+    return new CinnamonTrashApplet(orientation, panel_height, instance_id);
 }

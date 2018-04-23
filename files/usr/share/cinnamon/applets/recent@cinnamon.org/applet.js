@@ -10,17 +10,9 @@ const PRIVACY_SCHEMA = "org.cinnamon.desktop.privacy";
 const REMEMBER_RECENT_KEY = "remember-recent-files";
 const PANEL_EDIT_MODE_KEY = "panel-edit-mode";
 
-function MyPopupMenuItem()
-{
-    this._init.apply(this, arguments);
-}
-
-MyPopupMenuItem.prototype =
-{
-    __proto__: PopupMenu.PopupBaseMenuItem.prototype,
-
-    _init: function(icon, text, uri, params) {
-        PopupMenu.PopupBaseMenuItem.prototype._init.call(this, params);
+class MyPopupMenuItem extends PopupMenu.PopupBaseMenuItem {
+    constructor(icon, text, uri, params) {
+        super(params);
         this.box = new St.BoxLayout({ style_class: 'popup-combobox-item' });
         this.icon = icon;
         this.uri = uri;
@@ -35,90 +27,79 @@ MyPopupMenuItem.prototype =
     }
 };
 
-function MyApplet(orientation, panel_height, instance_id) {
-    this._init(orientation, panel_height, instance_id);
-}
+class CinnamonRecentApplet extends Applet.IconApplet {
+    constructor(orientation, panel_height, instance_id) {
+        super(orientation, panel_height, instance_id);
 
-MyApplet.prototype = {
-    __proto__: Applet.IconApplet.prototype,
+        this.set_applet_icon_symbolic_name("document-open-recent");
+        this.set_applet_tooltip(_("Recent documents"));
 
-    _init: function(orientation, panel_height, instance_id) {
-        Applet.IconApplet.prototype._init.call(this, orientation, panel_height, instance_id);
+        this.menuManager = new PopupMenu.PopupMenuManager(this);
+        this.menu = new Applet.AppletPopupMenu(this, orientation);
+        this.menuManager.addMenu(this.menu);
 
-        try {
-            this.set_applet_icon_symbolic_name("document-open-recent");
-            this.set_applet_tooltip(_("Recent documents"));
+        this.mainContainer = new St.BoxLayout({ vertical: true });
+        this.menu.addActor(this.mainContainer);
 
-            this.menuManager = new PopupMenu.PopupMenuManager(this);
-            this.menu = new Applet.AppletPopupMenu(this, orientation);
-            this.menuManager.addMenu(this.menu);
+        this.recentsScrollBox = new St.ScrollView({ x_fill: true, y_fill: false, y_align: St.Align.START });
+        this.recentsScrollBox.set_auto_scrolling(true);
+        this.mainContainer.add(this.recentsScrollBox);
 
-            this.mainContainer = new St.BoxLayout({ vertical: true });
-            this.menu.addActor(this.mainContainer);
+        this.recentsBox = new St.BoxLayout({ vertical:true });
+        this.recentsScrollBox.add_actor(this.recentsBox);
+        this.recentsScrollBox.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC);
 
-            this.recentsScrollBox = new St.ScrollView({ x_fill: true, y_fill: false, y_align: St.Align.START });
-            this.recentsScrollBox.set_auto_scrolling(true);
-            this.mainContainer.add(this.recentsScrollBox);
+        this.RecentManager = new DocInfo.DocManager();
+        this.privacy_settings = new Gio.Settings( {schema_id: PRIVACY_SCHEMA} );
 
-            this.recentsBox = new St.BoxLayout({ vertical:true });
-            this.recentsScrollBox.add_actor(this.recentsBox);
-            this.recentsScrollBox.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC);
+        this._recentButtons = [];
+        this._display();
 
-            this.RecentManager = new DocInfo.DocManager();
-            this.privacy_settings = new Gio.Settings( {schema_id: PRIVACY_SCHEMA} );
+        this.recent_id = this.RecentManager.connect('changed', Lang.bind(this, this._refreshRecents));
+        this.settings_id = this.privacy_settings.connect("changed::" + REMEMBER_RECENT_KEY, Lang.bind(this, this._refreshRecents));
+        global.settings.connect('changed::' + PANEL_EDIT_MODE_KEY, Lang.bind(this, this._on_panel_edit_mode_changed));
+    }
 
-            this._recentButtons = [];
-            this._display();
-
-            this.recent_id = this.RecentManager.connect('changed', Lang.bind(this, this._refreshRecents));
-            this.settings_id = this.privacy_settings.connect("changed::" + REMEMBER_RECENT_KEY, Lang.bind(this, this._refreshRecents));
-            global.settings.connect('changed::' + PANEL_EDIT_MODE_KEY, Lang.bind(this, this._on_panel_edit_mode_changed));
-        }
-        catch (e) {
-            global.logError(e);
-        }
-    },
-
-    _on_panel_edit_mode_changed: function () {
+    _on_panel_edit_mode_changed () {
         if (global.settings.get_boolean(PANEL_EDIT_MODE_KEY)) {
             this.actor.show();
         } else {
             this.actor.visible = this._recentButtons.length > 0;
         }
-    },
+    }
 
-    on_applet_removed_from_panel: function () {
+    on_applet_removed_from_panel () {
         this.RecentManager.disconnect(this.recent_id);
         this.privacy_settings.disconnect(this.settings_id);
-    },
+    }
 
-    on_applet_clicked: function(event) {
+    on_applet_clicked(event) {
         this.menu.toggle();
-    },
+    }
 
-    _display: function() {
+    _display() {
         this._refreshRecents();
-    },
+    }
 
-    _launchFile: function(a, b, c, docinfo) {
+    _launchFile(a, b, c, docinfo) {
         docinfo.launch();
-    },
+    }
 
-    _clearAll: function() {
+    _clearAll() {
         let GtkRecent = new Gtk.RecentManager();
         GtkRecent.purge_items();
-    },
+    }
 
-    destroy: function() {
+    destroy() {
         this.RecentManager.disconnectAll();
         this.actor._delegate = null;
         this.menu.destroy();
         this.actor.destroy();
         this._recentButtons = null;
         this.emit('destroy');
-    },
+    }
 
-    _refreshRecents: function() {
+    _refreshRecents() {
         if (this.privacy_settings.get_boolean(REMEMBER_RECENT_KEY)) {
             let new_recents = [];
             let have_recents = false;
@@ -133,11 +114,11 @@ MyApplet.prototype = {
                     new_button = this._recentButtons.find(button => ((button.uri) && (button.uri == uri)));
 
                     if (new_button == undefined) {
-                         let icon = this.RecentManager._infosByTimestamp[id].createIcon(22);
-                         let menuItem = new MyPopupMenuItem(icon, this.RecentManager._infosByTimestamp[id].name, uri, {});
-                         this.menu.addMenuItem(menuItem);
-                         menuItem.connect('activate', Lang.bind(this, this._launchFile, this.RecentManager._infosByTimestamp[id]));
-                         new_button = menuItem;
+                        let icon = this.RecentManager._infosByTimestamp[id].createIcon(22);
+                        let menuItem = new MyPopupMenuItem(icon, this.RecentManager._infosByTimestamp[id].name, uri, {});
+                        this.menu.addMenuItem(menuItem);
+                        menuItem.connect('activate', Lang.bind(this, this._launchFile, this.RecentManager._infosByTimestamp[id]));
+                        new_button = menuItem;
                     }
 
                     new_recents.push(new_button);
@@ -231,9 +212,8 @@ MyApplet.prototype = {
         }
         this._on_panel_edit_mode_changed();
     }
-};
+}
 
 function main(metadata, orientation, panel_height, instance_id) {
-    let myApplet = new MyApplet(orientation, panel_height, instance_id);
-    return myApplet;
+    return new CinnamonRecentApplet(orientation, panel_height, instance_id);
 }

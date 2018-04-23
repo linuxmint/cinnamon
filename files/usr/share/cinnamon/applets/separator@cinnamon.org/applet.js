@@ -2,28 +2,21 @@ const Applet = imports.ui.applet;
 const St = imports.gi.St;
 const Clutter = imports.gi.Clutter;
 
-function MyApplet(orientation, panel_height, instance_id) {
-    this._init(orientation, panel_height, instance_id);
-}
-
-MyApplet.prototype = {
-    __proto__: Applet.Applet.prototype,
-
-    _init: function(orientation, panel_height, instance_id) {
-        Applet.Applet.prototype._init.call(this, orientation, panel_height, instance_id);
+class CinnamonSeparatorApplet extends Applet.Applet {
+    constructor(orientation, panel_height, instance_id) {
+        super(orientation, panel_height, instance_id);
         this.actor.style_class = 'applet-separator';
 
         this.setAllowedLayout(Applet.AllowedLayout.BOTH);
 
         this.on_orientation_changed(orientation);
-    },
+    }
 
-    on_panel_height_changed: function() {
+    on_panel_height_changed() {
         this.on_orientation_changed(this.orientation);
-    },
+    }
 
-    on_orientation_changed: function(neworientation) {
-
+    on_orientation_changed(neworientation) {
         this.orientation = neworientation;
 
         if (this.orientation == St.Side.TOP || this.orientation == St.Side.BOTTOM) {
@@ -44,10 +37,9 @@ MyApplet.prototype = {
             this._line.set_height(2);
             this._line.set_width((this._panelHeight - 8));
         }
-    },
-};
+    }
+}
 
 function main(metadata, orientation, panel_height, instance_id) {
-    let myApplet = new MyApplet(orientation, panel_height, instance_id);
-    return myApplet;
+    return new CinnamonSeparatorApplet(orientation, panel_height, instance_id);
 }

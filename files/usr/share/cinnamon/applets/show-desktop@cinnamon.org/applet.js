@@ -9,10 +9,9 @@ const Clutter = imports.gi.Clutter;
 const Lang = imports.lang;
 const SignalManager = imports.misc.signalManager;
 
-class MyApplet extends Applet.IconApplet {
-
-    _init(orientation, panel_height, instance_id) {
-        super._init(orientation, panel_height, instance_id);
+class CinnamonShowDesktopApplet extends Applet.IconApplet {
+    constructor(orientation, panel_height, instance_id) {
+        super(orientation, panel_height, instance_id);
 
         this.settings = new Settings.AppletSettings(this, "show-desktop@cinnamon.org", instance_id);
 
@@ -123,5 +122,5 @@ class MyApplet extends Applet.IconApplet {
 }
 
 function main(metadata, orientation, panel_height, instance_id) {
-    return new MyApplet(orientation, panel_height, instance_id);
+    return new CinnamonShowDesktopApplet(orientation, panel_height, instance_id);
 }
