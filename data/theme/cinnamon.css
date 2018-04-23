@@ -1031,7 +1031,9 @@ StScrollBar StButton#vhandle:hover {
  * Menu (menu.js)
  * ===================================================================*/
 /* Main menu title */
-
+/* menu-background allows the menu applet to be themed separately from other applet menus */
+.menu-background {
+}
 .menu-favorites-box {
     padding: 10px;
     border: 1px solid #666;
