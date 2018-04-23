@@ -9,9 +9,9 @@ const Layout = imports.ui.layout;
 const Main = imports.ui.main;
 const Tweener = imports.ui.tweener;
 const Mainloop = imports.mainloop;
-const HOT_CORNER_ACTIVATION_TIMEOUT = 0.5;
+
+const HOT_CORNER_ACTIVATION_TIMEOUT = 500; // Milliseconds
 const OVERVIEW_CORNERS_KEY = 'hotcorner-layout';
-const Tooltips = imports.ui.tooltips;
 
 // Map texts to boolean value
 const TF = [];
@@ -32,13 +32,13 @@ HotCornerManager.prototype = {
         this.parseGSettings();
         global.settings.connect('changed::' + OVERVIEW_CORNERS_KEY, Lang.bind(this, this.parseGSettings));
 
-        this.updatePosition(Main.layoutManager.primaryMonitor, Main.layoutManager.bottomMonitor);
+        this.updatePosition(Main.layoutManager.primaryMonitor);
     },
 
     parseGSettings: function() {
         let options = global.settings.get_strv(OVERVIEW_CORNERS_KEY);
         if (options.length != 4) {
-            global.log(_("Invalid overview options: Incorrect number of corners"));
+            global.logError(_("Invalid overview options: Incorrect number of corners"));
             return false;
         }
 
@@ -49,23 +49,23 @@ HotCornerManager.prototype = {
         return true;
     },
 
-    updatePosition: function(primaryMonitor, bottomMonitor) {
-        let p_x = primaryMonitor.x;
-        let p_y = primaryMonitor.y;
-        let b_x = bottomMonitor.x;
-        let b_y = bottomMonitor.y + bottomMonitor.height;
+    updatePosition: function(monitor) {
+        let left   = monitor.x;
+        let right  = monitor.x + monitor.width - 2;
+        let top    = monitor.y;
+        let bottom = monitor.y + monitor.height - 2;
 
         // Top Left: 0
-        this.corners[0].actor.set_position(p_x, p_y);
+        this.corners[0].actor.set_position(left, top);
 
         // Top Right: 1
-        this.corners[1].actor.set_position(p_x + primaryMonitor.width - 2, p_y);
+        this.corners[1].actor.set_position(right, top);
 
         // Bottom Left: 2
-        this.corners[2].actor.set_position(b_x, b_y - 1);
+        this.corners[2].actor.set_position(left, bottom);
 
         // Bottom Right: 3
-        this.corners[3].actor.set_position(b_x + bottomMonitor.width - 2, b_y - 1);
+        this.corners[3].actor.set_position(right, bottom);
 
         return true;
     }
@@ -81,62 +81,31 @@ function HotCorner() {
 
 HotCorner.prototype = {
     _init: function() {
-        // We use this flag to mark the case where the user has entered the
-        // hot corner and has not left both the hot corner and a surrounding
-        // guard area (the "environs"). This avoids triggering the hot corner
-        // multiple times due to an accidental jitter.
-        this._entered = false;
 
         this.action = null; // The action to activate when hot corner is triggered
         this.hover = false; // Whether the hot corners responds to hover
         this.hover_delay = 0; // Hover delay activation
         this.hover_delay_id = 0; // Hover delay timer ID
+        this._activationTime = 0; // Milliseconds
 
         // Construct the hot corner 'ripples'
-        this.actor = new Clutter.Group({
-            name: 'hot-corner-environs',
-            width: 3,
-            height: 3,
-            reactive: true
-        });
-
-        this._corner = new Clutter.Rectangle({
+        this.actor = new Clutter.Actor({
             name: 'hot-corner',
             width: 2,
-            height: 1,
+            height: 2,
             opacity: 0,
             reactive: true
         });
-        this._corner._delegate = this;
-
-        this.actor.add_actor(this._corner);
-
-        if (St.Widget.get_default_direction() == St.TextDirection.RTL) {
-            this._corner.set_position(this.actor.width - this._corner.width, 0);
-            this.actor.set_anchor_point_from_gravity(Clutter.Gravity.NORTH_EAST);
-        } else {
-            this._corner.set_position(0, 0);
-        }
-
-        this._activationTime = 0;
-
-        this.actor.connect('leave-event',
-            Lang.bind(this, this._onEnvironsLeft));
-
-        // Clicking on the hot corner environs should result in the
-        // same behavior as clicking on the hot corner.
-        this.actor.connect('button-release-event',
-            Lang.bind(this, this._onCornerClicked));
 
         // In addition to being triggered by the mouse enter event,
         // the hot corner can be triggered by clicking on it. This is
         // useful if the user wants to undo the effect of triggering
         // the hot corner once in the hot corner.
-        this._corner.connect('enter-event',
+        this.actor.connect('enter-event',
             Lang.bind(this, this._onCornerEntered));
-        this._corner.connect('button-release-event',
+        this.actor.connect('button-release-event',
             Lang.bind(this, this._onCornerClicked));
-        this._corner.connect('leave-event',
+        this.actor.connect('leave-event',
             Lang.bind(this, this._onCornerLeft));
 
         this.tile_delay = false;
@@ -189,12 +158,15 @@ HotCorner.prototype = {
 
         ripple._opacity = startOpacity;
 
-        ripple.set_anchor_point_from_gravity(Clutter.Gravity.CENTER);
+        // Set anchor point on the center of the ripples
+        ripple.set_pivot_point(0.5, 0.5);
+        ripple.set_translation(-ripple.width/2, -ripple.height/2, 0);
+
         ripple.visible = true;
         ripple.opacity = 255 * Math.sqrt(startOpacity);
         ripple.scale_x = ripple.scale_y = startScale;
 
-        let [x, y] = this._corner.get_transformed_position();
+        let [x, y] = this.actor.get_transformed_position();
         ripple.x = x;
         ripple.y = y;
 
@@ -240,8 +212,8 @@ HotCorner.prototype = {
         this._animRipple(this._ripple3, 0.35, 1.0, 0.0, 0.3, 1);
     },
 
-    runAction: function() {
-        this._activationTime = Date.now() / 1000;
+    runAction: function(timestamp) {
+        this._activationTime = timestamp;
 
         switch (this.action) {
             case 'expo':
@@ -253,7 +225,7 @@ HotCorner.prototype = {
                     Main.overview.toggle();
                 break;
             case 'desktop':
-                global.screen.toggle_desktop(global.get_current_time());
+                global.screen.toggle_desktop(timestamp);
                 break;
             default:
                 Util.spawnCommandLine(this.action);
@@ -266,9 +238,9 @@ HotCorner.prototype = {
             this.hover_delay_id = 0;
         }
 
+        let timestamp = global.get_current_time();
         this.hover_delay_id = Mainloop.timeout_add(this.hover_delay, Lang.bind(this, function() {
-            if (!this._entered && !this.tile_delay) {
-                this._entered = true;
+            if (!this.tile_delay) {
                 let run = false;
                 if (!(Main.expo.visible || Main.overview.visible)) {
                     run = true;
@@ -279,7 +251,7 @@ HotCorner.prototype = {
                 }
                 if (run) {
                     this.rippleAnimation();
-                    this.runAction();
+                    this.runAction(timestamp + this.hover_delay);
                 }
             }
 
@@ -296,9 +268,10 @@ HotCorner.prototype = {
             this.hover_delay_id = 0;
         }
 
-        if (this.shouldToggleOverviewOnClick())
+        if (this.shouldToggleOverviewOnClick()) {
             this.rippleAnimation();
-        this.runAction();
+            this.runAction(global.get_current_time());
+        }
 
         return Clutter.EVENT_STOP;
     },
@@ -309,18 +282,8 @@ HotCorner.prototype = {
             this.hover_delay_id = 0;
         }
 
-        if (event.get_related() != this.actor)
-            this._entered = false;
-
-        // Consume event, otherwise this will confuse onEnvironsLeft
+        // Consume event
         return Clutter.EVENT_STOP;
-    },
-
-    _onEnvironsLeft: function(actor, event) {
-        if (event.get_related() != this._corner)
-            this._entered = false;
-
-        return Clutter.EVENT_PROPAGATE;
     },
 
     // Checks if the Activities button is currently sensitive to
@@ -332,7 +295,7 @@ HotCorner.prototype = {
     shouldToggleOverviewOnClick: function() {
         if (Main.overview.animationInProgress)
             return false;
-        if (this._activationTime == 0 || Date.now() / 1000 - this._activationTime > HOT_CORNER_ACTIVATION_TIMEOUT)
+        if (global.get_current_time() - this._activationTime > HOT_CORNER_ACTIVATION_TIMEOUT)
             return true;
         return false;
     }

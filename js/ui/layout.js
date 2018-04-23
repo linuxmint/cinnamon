@@ -108,7 +108,7 @@ LayoutManager.prototype = {
     // not exist yet when the LayoutManager was constructed.
     init: function() {
         this._chrome.init();
-        
+
         this.edgeRight = new EdgeFlip.EdgeFlipper(St.Side.RIGHT, Main.wm.actionFlipWorkspaceRight);
         this.edgeLeft = new EdgeFlip.EdgeFlipper(St.Side.LEFT, Main.wm.actionFlipWorkspaceLeft);
 
@@ -119,7 +119,7 @@ LayoutManager.prototype = {
 
         this.hotCornerManager = new HotCorner.HotCornerManager();
     },
-    
+
     _toggleExpo: function() {
         if (Main.expo.animationInProgress)
             return;
@@ -130,7 +130,7 @@ LayoutManager.prototype = {
         }
         Main.expo.toggle();
     },
-    
+
     _updateMonitors: function() {
         let screen = global.screen;
 
@@ -159,7 +159,7 @@ LayoutManager.prototype = {
 
     _updateBoxes: function() {
         if (this.hotCornerManager)
-            this.hotCornerManager.updatePosition(this.primaryMonitor, this.bottomMonitor);
+            this.hotCornerManager.updatePosition(this.primaryMonitor);
         this._chrome._queueUpdateRegions();
     },
 
@@ -238,7 +238,7 @@ LayoutManager.prototype = {
                            time: STARTUP_ANIMATION_TIME,
                            transition: 'easeOutQuad',
                            onComplete: this._startupAnimationComplete,
-                           onCompleteScope: this });       
+                           onCompleteScope: this });
     },
 
     _startupAnimationComplete: function() {
@@ -304,7 +304,7 @@ LayoutManager.prototype = {
         return false;
     },
 
-    /** 
+    /**
      * updateChrome:
      * @doVisibility (boolean): (optional) whether to recalculate visibility.
      *
@@ -539,7 +539,7 @@ Chrome.prototype = {
         }
         return -1;
     },
-    
+
     modifyActorParams: function(actor, params) {
         let index = this._findActor(actor);
         if (index == -1)
