@@ -143,7 +143,6 @@ var SETTINGS_TYPES = {
             "default",
             "min",
             "max",
-            "units",
             "step",
             "description"
         ]
