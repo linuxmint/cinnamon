@@ -2,8 +2,10 @@
 
 try:
     import pam
+    print("Using pam module (python3-pampy)")
 except:
     import PAM
+    print("Using PAM module (python3-pam)")
     pam = None
 import pexpect
 import time
@@ -349,7 +351,7 @@ class PasswordDialog(Gtk.Dialog):
         self.set_passwords_visibility()
 
     def auth_pam(self):
-        if not pam.authenticate(GLib.get_user_name(), self.current_password.get_text(), 'passwd'):
+        if not pam.pam().authenticate(GLib.get_user_name(), self.current_password.get_text(), 'passwd'):
             raise PasswordError("Invalid password")
 
     def auth_PyPAM(self):
