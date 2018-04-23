@@ -3332,6 +3332,15 @@ MyApplet.prototype = {
                     this._searchProviderButtons.push(button);
                     this.applicationsBox.add_actor(button.actor);
                     button.actor.realize();
+                    if (this._selectedItemIndex === null) {
+                        this.appBoxIter.reloadVisible();
+                        let item_actor = this.appBoxIter.getFirstVisible();
+                        this._selectedItemIndex = this.appBoxIter.getAbsoluteIndexOfChild(item_actor);
+                        this._activeContainer = this.applicationsBox;
+                        if (item_actor && item_actor != this.searchEntry) {
+                            item_actor._delegate.emit('enter-event');
+                        }
+                    }
                 }
             }
             }catch(e){global.log(e);}
