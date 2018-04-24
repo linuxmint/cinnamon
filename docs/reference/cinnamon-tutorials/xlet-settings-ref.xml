@@ -394,9 +394,18 @@
       These fields can be added to any widget:
 
       <itemizedlist>
-        <listitem><code>indent: true</code>: Indent the widget in the settings page to help with organizing your layout.</listitem>
-        <listitem><code>dependency: &lt;key&gt;</code>: where <code>key</code> is the name of a <code>checkbox</code> setting. If that checkbox setting is un-checked, this setting will be made insensitive (greyed out). The checkbox must occur <emphasis>before</emphasis> the setting that depends on it.</listitem>
+        <listitem>
+            <code>dependency: </code>Shows or hides the settings widget based on the value of another key in the settings-schema file. There are several possibl values for this option:
+            <itemizedlist>
+                <listitem>The most common value for this option is simply the <code>key</code> of the setting you wish to depend on. This is most useful for depending on a boolean setting such as a switch. This will make your setting hide if the key you're depending on is false, and show it when the key is true.</listitem>
+                <listitem>If you wish to 'invert' the dependence you can precede the key with a <code>!</code>. This will make your setting hide if the key you're depending on is true, and show it when the key is false.</listitem>
+                <listitem>For non-boolean values, you can use a simple expression of the form <code>my-key=value</code> where <code>my-key</code> is the key you're depending on, and <code>value</code> is the value that wish to compare to. In addition to '=' you can also use '&lt;', '&lt;=', '&gt;', '&gt;=', and '!='.</listitem>
+            </itemizedlist>
+            <para>In addition to settings widgets, a dependency can also be added to a section to show or hide the section and all it's widgets. This works with or without the <code>layout</code> item.</para>
+            <para>New in Cinnamon 3.8.</para>
+        </listitem>
         <listitem><code>tooltip</code>: Adds a popup tooltip to the widget</listitem>
+        <listitem><code>indent: true</code>: Indent the widget in the settings page to help with organizing your layout. Note: this key has been deprecated since Cinnamon 3.2 and will be ignored.</listitem>
       </itemizedlist>
     </sect3>
   </sect2>

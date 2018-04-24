@@ -299,18 +299,25 @@ class MainWindow(object):
             page_stack.add_titled(page, page_key, translate(self.uuid, page_def["title"]))
             for section_key in page_def["sections"]:
                 section_def = layout[section_key]
-                section = page.add_section(translate(self.uuid, section_def["title"]))
+                if 'dependency' in section_def:
+                    revealer = JSONSettingsRevealer(info['settings'], section_def['dependency'])
+                    section = page.add_reveal_section(translate(self.uuid, section_def["title"]), revealer=revealer)
+                else:
+                    section = page.add_section(translate(self.uuid, section_def["title"]))
                 for key in section_def["keys"]:
                     item = settings_map[key]
                     settings_type = item["type"]
                     if settings_type == "button":
                         widget = XLETSettingsButton(item, self.uuid, info["id"])
-                        section.add_row(widget)
                     elif settings_type == "label":
                         widget = Text(translate(self.uuid, item["description"]))
-                        section.add_row(widget)
                     elif settings_type in XLET_SETTINGS_WIDGETS:
                         widget = globals()[XLET_SETTINGS_WIDGETS[settings_type]](key, info["settings"], item)
+
+                    if 'dependency' in item:
+                        revealer = JSONSettingsRevealer(info['settings'], item['dependency'])
+                        section.add_reveal_row(widget, revealer=revealer)
+                    else:
                         section.add_row(widget)
 
     def build_from_order(self, settings_map, info, box, first_key):
@@ -327,16 +334,27 @@ class MainWindow(object):
             if "type" in item:
                 settings_type = item["type"]
                 if settings_type in ("header", "section"):
-                    section = page.add_section(translate(self.uuid, item["description"]))
-                elif settings_type == "button":
+                    if 'dependency' in item:
+                        revealer = JSONSettingsRevealer(info['settings'], item['dependency'])
+                        section = page.add_reveal_section(translate(self.uuid, item["description"]), revealer=revealer)
+                    else:
+                        section = page.add_section(translate(self.uuid, item["description"]))
+                    continue
+
+                if settings_type == "button":
                     widget = XLETSettingsButton(item, self.uuid, info["id"])
-                    section.add_row(widget)
                 elif settings_type == "label":
                     widget = Text(translate(self.uuid, item["description"]))
-                    section.add_row(widget)
                 elif settings_type in XLET_SETTINGS_WIDGETS:
                     widget = globals()[XLET_SETTINGS_WIDGETS[settings_type]](key, info["settings"], item)
+
+                if 'dependency' in item:
+                    revealer = JSONSettingsRevealer(info['settings'], item['dependency'])
+                    section.add_reveal_row(widget, revealer=revealer)
+                else:
                     section.add_row(widget)
+
+
 
     def notify_dbus(self, handler, key, value):
         proxy.updateSetting('(ssss)', self.uuid, handler.instance_id, key, json.dumps(value))
