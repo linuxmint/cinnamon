@@ -53,7 +53,7 @@ class WorkspaceGraph extends WorkspaceButton {
     constructor(index, applet) {
         super(index, applet);
 
-        this.actor = new St.Bin({ reactive: true,
+        this.actor = new St.Bin({ reactive: applet._draggable.inhibit,
                                   style_class: 'workspace',
                                   y_fill: true,
                                   important: true });
@@ -159,7 +159,7 @@ class SimpleButton extends WorkspaceButton {
 
         this.actor = new St.Button({ name: 'workspaceButton',
                                      style_class: 'workspace-button',
-                                     reactive: true });
+                                     reactive: applet._draggable.inhibit });
 
         if (index == global.screen.get_active_workspace_index()) {
             this.actor.add_style_pseudo_class('outlined');
@@ -218,7 +218,6 @@ class CinnamonWorkspaceSwitcher extends Applet.Applet {
         this._createButtons();
         global.screen.connect('notify::n-workspaces', Lang.bind(this, this.onNumberOfWorkspacesChanged));
         global.window_manager.connect('switch-workspace', Lang.bind(this, this._createButtons));
-        this.on_panel_edit_mode_changed();
         global.settings.connect('changed::panel-edit-mode', Lang.bind(this, this.on_panel_edit_mode_changed));
 
         let expoMenuItem = new PopupMenu.PopupIconMenuItem(_("Manage workspaces (Expo)"), "view-grid-symbolic", St.IconType.SYMBOLIC);
@@ -269,7 +268,7 @@ class CinnamonWorkspaceSwitcher extends Applet.Applet {
     on_panel_edit_mode_changed() {
         let reactive = !global.settings.get_boolean('panel-edit-mode');
         for (let i = 0; i < this.buttons.length; ++i) {
-            this.buttons[i].reactive = reactive;
+            this.buttons[i].actor.reactive = reactive;
         }
     }
 
