@@ -22,7 +22,7 @@ CINNAMON_VERSION := $(shell echo $(VERSION) | sed 's/\(.*.*\)\..*/\1.0/')
 DH_GENCONTROL_ARGS = -Vcinnamon:Version=$(CINNAMON_VERSION)
 
 %:
-	dh $@ --with python2,python3,gir
+	dh $@ --with python3,gir
 
 override_dh_autoreconf:
 	dh_autoreconf --as-needed ./autogen.sh
