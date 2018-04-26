@@ -334,6 +334,10 @@ NMDevice.prototype = {
         this._autoConnectionItem = null;
         this._overflowItem = null;
 
+        this._carrierChangedId = 0;
+        this._firmwareChangedId = 0;
+        this._firmwareMissingId = 0;
+
         if (this.device) {
             this.statusItem = new PopupMenu.PopupSwitchMenuItem(this._getDescription(), this.connected, { style_class: 'popup-subtitle-menu-item' });
             this._statusChanged = this.statusItem.connect('toggled', Lang.bind(this, function(item, state) {
@@ -369,6 +373,10 @@ NMDevice.prototype = {
         if (this._firmwareChangedId) {
             GObject.Object.prototype.disconnect.call(this.device, this._firmwareChangedId);
             this._firmwareChangedId = 0;
+        }
+        if (this._firmwareMissingId) {
+            GObject.Object.prototype.disconnect.call(this.device, this._firmwareMissingId);
+            this._firmwareMissingId = 0;
         }
 
         this._clearSection();
