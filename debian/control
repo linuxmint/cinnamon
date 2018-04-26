@@ -64,7 +64,7 @@ Depends:
  gir1.2-gtkclutter-1.0,
  gir1.2-keybinder-3.0,
  gir1.2-meta-muffin-0.0 (>= ${cinnamon:Version}),
- gir1.2-nm-1.0 [linux-any],
+ gir1.2-nm-1.0 [linux-any] | gir1.2-networkmanager-1.0 [linux-any],
  gir1.2-nma-1.0 [linux-any],
  gir1.2-nmgtk-1.0,
  gir1.2-notify-0.7,
