@@ -32,7 +32,6 @@ var LONGER_HIDE_TIMEOUT = 0.6;
 
 var MAX_SOURCE_TITLE_WIDTH = 180;
 
-
 // We delay hiding of the tray if the mouse is within MOUSE_LEFT_ACTOR_THRESHOLD
 // range from the point where it left the tray.
 var MOUSE_LEFT_ACTOR_THRESHOLD = 20;
@@ -1040,6 +1039,7 @@ function Source(title) {
 
 Source.prototype = {
     ICON_SIZE: 24,
+    MAX_NOTIFICATIONS: 10,
 
     _init: function(title) {
         this.title = title;
@@ -1119,6 +1119,10 @@ Source.prototype = {
 
     _updateCount: function() {
         let count = this.notifications.length;
+        if (count > this.MAX_NOTIFICATIONS) {
+            let oldestNotif = this.notifications.shift();
+            oldestNotif.destroy();
+        }
         this._setCount(count, count > 1);
     },
 
