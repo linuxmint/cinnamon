@@ -16,18 +16,65 @@ const ModalDialog = imports.ui.modalDialog;
 const Signals = imports.signals;
 const Gettext = imports.gettext;
 
-var COLOR_ICON_HEIGHT_FACTOR = .875;  // Panel height factor for normal color icons
+var COLOR_ICON_HEIGHT_FACTOR = .85;  // Panel height factor for normal color icons
 var PANEL_FONT_DEFAULT_HEIGHT = 11.5; // px
 var PANEL_SYMBOLIC_ICON_DEFAULT_HEIGHT = 1.14 * PANEL_FONT_DEFAULT_HEIGHT; // ems conversion
 var DEFAULT_PANEL_HEIGHT = 25;
-var DEFAULT_ICON_HEIGHT = 22;
-var FALLBACK_ICON_HEIGHT = 22;
+var STD_ICON_SIZES = [16, 24, 32, 48, 64, 96]; // hidpi with largest panel, gets up to 80
+var DEFAULT_ICON_SIZE = 22;
 
 var AllowedLayout = {  // the panel layout that an applet is suitable for
     VERTICAL: 'vertical',
     HORIZONTAL: 'horizontal',
     BOTH: 'both'
 };
+
+/**
+ * getPanelIconSize:
+ * @applet (Applet): the applet in which the icon will go
+ * @icon_type (St.IconType): the icon type we want the size for
+ *
+ * Calculates the icon size of an applet based on the available space,
+ * but it will only return one of the standard icon sizes so that the
+ * icon does not look blurry.
+ *
+ * Returns: an integer, the icon size
+ */
+function getPanelIconSize(applet, icon_type) {
+    if (icon_type === St.IconType.FULLCOLOR) {
+        if (applet._scaleMode)
+            return toStdIconSize(applet._panelHeight * COLOR_ICON_HEIGHT_FACTOR / global.ui_scale);
+        else
+            return DEFAULT_ICON_SIZE;
+    } else {
+        if (applet._scaleMode)
+            return applet._panelHeight / DEFAULT_PANEL_HEIGHT * PANEL_SYMBOLIC_ICON_DEFAULT_HEIGHT / global.ui_scale;
+        else
+            return -1;
+    }
+}
+
+/**
+ * toStdIconSize:
+ * @max_size (integer): the maximum size of the icon
+ *
+ * Calculates the nearest standard icon size up to a maximum.
+ *
+ * Returns: an integer, the icon size
+ */
+function toStdIconSize(max_size) {
+    // Standard sizes are equally spaciated by 'halves' of powers of two.
+    // For example next(16) = 16 + 16/2 = 24, next(24) = 24 + 16/2 = 32 and so on.
+    // We substract 8 because the array starts at 16 and it is the 8th 'half'
+    // starting from cero (0, 2, 3, 4, 6, 8, 12 and 16)
+    let idx = Math.floor(Math.log2(max_size) * 2) - 8;
+    if (idx < 0)
+        idx = 0;
+    else if (idx >= STD_ICON_SIZES.length)
+        idx = STD_ICON_SIZES.length - 1;
+
+    return STD_ICON_SIZES[idx];
+}
 
 /**
  * #MenuItem
@@ -694,29 +741,14 @@ var IconApplet = class IconApplet extends Applet {
     }
 
     _setStyle() {
-
-        let symb_scaleup = ((this._panelHeight / DEFAULT_PANEL_HEIGHT) * PANEL_SYMBOLIC_ICON_DEFAULT_HEIGHT) / global.ui_scale;
-        let fullcolor_scaleup = this._panelHeight * COLOR_ICON_HEIGHT_FACTOR / global.ui_scale;
         let icon_type = this._applet_icon.get_icon_type();
+        let icon_size = getPanelIconSize(this, icon_type);
 
-        switch (icon_type) {
-            case St.IconType.FULLCOLOR:
-                this._applet_icon.set_icon_size(this._scaleMode ?
-                                                fullcolor_scaleup :
-                                                DEFAULT_ICON_HEIGHT);
-                this._applet_icon.set_style_class_name('applet-icon');
-            break;
-            case St.IconType.SYMBOLIC:
-                this._applet_icon.set_icon_size(this._scaleMode ?
-                                                symb_scaleup :
-                                                -1);
-                this._applet_icon.set_style_class_name('system-status-icon');
-            break;
-            default:
-                this._applet_icon.set_icon_size(this._scaleMode ?
-                                                symb_scaleup :
-                                                -1);
-                                                this._applet_icon.set_style_class_name('system-status-icon');
+        this._applet_icon.set_icon_size(icon_size);
+        if (icon_type === St.IconType.FULLCOLOR) {
+            this._applet_icon.set_style_class_name('applet-icon');
+        } else {
+            this._applet_icon.set_style_class_name('system-status-icon');
         }
     }
 
