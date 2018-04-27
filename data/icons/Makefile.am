@@ -22,6 +22,7 @@ public_icons = \
 	hicolor_categories_16x16_cs-backgrounds.svg \
 	hicolor_categories_scalable_cs-applets.svg \
 	hicolor_categories_scalable_cs-backgrounds.svg \
+	hicolor_categories_scalable_cs-backgrounds-symbolic.svg \
 	hicolor_categories_scalable_cs-bluetooth.svg \
 	hicolor_categories_scalable_cs-cat-admin.svg \
 	hicolor_categories_scalable_cs-cat-appearance.svg \
@@ -31,6 +32,7 @@ public_icons = \
 	hicolor_categories_scalable_cs-date-time.svg \
 	hicolor_categories_scalable_cs-default-applications.svg \
 	hicolor_categories_scalable_cs-desklets.svg \
+	hicolor_categories_scalable_cs-desklets-symbolic.svg \
 	hicolor_categories_scalable_cs-desktop-effects.svg \
 	hicolor_categories_scalable_cs-desktop.svg \
 	hicolor_categories_scalable_cs-details.svg \
