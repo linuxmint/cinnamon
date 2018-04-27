@@ -16,11 +16,10 @@ const ModalDialog = imports.ui.modalDialog;
 const Signals = imports.signals;
 const Gettext = imports.gettext;
 
-var COLOR_ICON_HEIGHT_FACTOR = .85;  // Panel height factor for normal color icons
+var COLOR_ICON_HEIGHT_FACTOR = .65;  // Panel height factor for normal color icons
 var PANEL_FONT_DEFAULT_HEIGHT = 11.5; // px
 var PANEL_SYMBOLIC_ICON_DEFAULT_HEIGHT = 1.14 * PANEL_FONT_DEFAULT_HEIGHT; // ems conversion
 var DEFAULT_PANEL_HEIGHT = 25;
-var STD_ICON_SIZES = [16, 24, 32, 48, 64, 96]; // hidpi with largest panel, gets up to 80
 var DEFAULT_ICON_SIZE = 22;
 
 var AllowedLayout = {  // the panel layout that an applet is suitable for
@@ -63,17 +62,19 @@ function getPanelIconSize(applet, icon_type) {
  * Returns: an integer, the icon size
  */
 function toStdIconSize(max_size) {
-    // Standard sizes are equally spaciated by 'halves' of powers of two.
-    // For example next(16) = 16 + 16/2 = 24, next(24) = 24 + 16/2 = 32 and so on.
-    // We substract 8 because the array starts at 16 and it is the 8th 'half'
-    // starting from cero (0, 2, 3, 4, 6, 8, 12 and 16)
-    let idx = Math.floor(Math.log2(max_size) * 2) - 8;
-    if (idx < 0)
-        idx = 0;
-    else if (idx >= STD_ICON_SIZES.length)
-        idx = STD_ICON_SIZES.length - 1;
-
-    return STD_ICON_SIZES[idx];
+    max_size = Math.floor(max_size);
+    if (max_size <= 16)
+        return 16;
+    else if (max_size <= 22)
+        return 22;
+    else if (max_size <= 24)
+        return 24;
+    else if (max_size <= 32)
+        return 32;
+    else if (max_size <= 48)
+        return 48;
+    else // Panel icons reach 32 at most with the largest panel, also on hidpi
+        return 64;
 }
 
 /**
