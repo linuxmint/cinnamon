@@ -9,10 +9,6 @@ const Mainloop = imports.mainloop;
 const SignalManager = imports.misc.signalManager;
 const {findIndex} = imports.misc.util;
 
-const ICON_SCALE_FACTOR = 0.8; // for custom panel heights, 20 (default icon size) / 25 (default panel height)
-
-const DEFAULT_ICON_SIZE = 20;
-
 const NO_RESIZE_ROLES = ['shutter', 'filezilla'];
 
 // Override the factory and create an AppletPopupMenu instead of a PopupMenu
@@ -53,6 +49,7 @@ class CinnamonSystrayApplet extends Applet.Applet {
         let manager;
 
         this.orientation = orientation;
+        this.icon_size = Applet.getPanelIconSize(this, St.IconType.FULLCOLOR);
 
         if (this.orientation == St.Side.TOP || this.orientation == St.Side.BOTTOM) {
             manager = new Clutter.BoxLayout( { spacing: 2,
@@ -116,10 +113,7 @@ class CinnamonSystrayApplet extends Applet.Applet {
 
     _onIndicatorAdded(manager, appIndicator) {
         if (!(appIndicator.id in this._shellIndicators)) {
-            let size = null;
-            size = this._getIconSize(this._panelHeight / global.ui_scale);
-
-            let indicatorActor = appIndicator.getActor(size);
+            let indicatorActor = appIndicator.getActor(this.icon_size);
 
             this._shellIndicators.push({
                 id: appIndicator.id,
@@ -159,28 +153,6 @@ class CinnamonSystrayApplet extends Applet.Applet {
                 break;
             }
         }
-    }
-
-    _getIconSize(ht) {
-        let size;
-        let disp_size = ht * ICON_SCALE_FACTOR;  // hidpi with largest panel, gets up to 80
-
-        if (disp_size < 22) {
-            size = 16;
-        } else if (disp_size < 32) {
-            size = 22;
-        } else if (disp_size < 48) {
-            size = 32;
-        } else if (disp_size < 64) {
-            size = 48;
-        } else if (disp_size < 96) {
-            size = 64;
-        } else if (disp_size < 128) {
-            size = 96;
-        } else {
-            size = 48;
-        }
-        return size;
     }
 
     _onIndicatorRemoved(manager, appIndicator) {
@@ -232,13 +204,12 @@ class CinnamonSystrayApplet extends Applet.Applet {
 
     on_panel_height_changed() {
         Main.statusIconDispatcher.redisplay();
-        let size = null;
-        size = this._getIconSize(this._panelHeight / global.ui_scale);
+        this.icon_size = Applet.getPanelIconSize(this, St.IconType.FULLCOLOR);
 
         for (let i = 0; i < this._shellIndicators.length; i++) {
             let indicator = Main.indicatorManager.getIndicatorById(this._shellIndicators[i].id);
             if (indicator) {
-                this._shellIndicators[i].instance.setSize(size);
+                this._shellIndicators[i].instance.setSize(this.icon_size);
             }
         }
     }
@@ -324,10 +295,6 @@ class CinnamonSystrayApplet extends Applet.Applet {
         else {
             if (this._scaleMode) {
                 this._resizeStatusItem(role, icon);
-            } else {
-                icon.set_pivot_point(0.5, 0.5);
-                icon.set_scale((DEFAULT_ICON_SIZE * global.ui_scale) / icon.width,
-                               (DEFAULT_ICON_SIZE * global.ui_scale) / icon.height);
             }
         }
     }
@@ -336,8 +303,7 @@ class CinnamonSystrayApplet extends Applet.Applet {
         if (NO_RESIZE_ROLES.indexOf(role) > -1) {
             global.log("Not resizing " + role + " as it's known to be buggy (" + icon.get_width() + "x" + icon.get_height() + "px)");
         } else {
-            let size = this._getIconSize(this._panelHeight);
-            icon.set_size(size, size);
+            icon.set_size(this.icon_size, this.icon_size);
             global.log("Resized " + role + " with normalized size (" + icon.get_width() + "x" + icon.get_height() + "px)");
             //Note: dropbox doesn't scale, even though we resize it...
         }
