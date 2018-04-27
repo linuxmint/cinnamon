@@ -1777,6 +1777,9 @@ CinnamonNetworkApplet.prototype = {
 				Util.spawnCommandLine("nm-connection-editor");
             }));
 
+            this.menu.connect("open-state-changed", Lang.bind(this, this._updateForMenuToggle));
+            this._periodicTimeoutId = 0;
+
             this._activeConnections = [ ];
             this._connections = [ ];
 
@@ -2217,8 +2220,9 @@ CinnamonNetworkApplet.prototype = {
     },
 
     _updateIcon: function() {
+        let new_delay = DEFAULT_PERIODIC_UPDATE_FREQUENCY_SECONDS;
+
         try {
-            this._updateFrequencySeconds = DEFAULT_PERIODIC_UPDATE_FREQUENCY_SECONDS;
             this._syncActiveConnections();
             let mc = this._mainConnection;
 
@@ -2226,7 +2230,7 @@ CinnamonNetworkApplet.prototype = {
                 this._setIcon('network-offline');
                 this.set_applet_tooltip(_("No connection"));
             } else if (mc.state == NM.ActiveConnectionState.ACTIVATING) {
-                this._updateFrequencySeconds = FAST_PERIODIC_UPDATE_FREQUENCY_SECONDS;
+                new_delay = FAST_PERIODIC_UPDATE_FREQUENCY_SECONDS;
                 switch (mc._section) {
                 case NMConnectionCategory.WWAN:
                     this._setIcon('network-cellular-acquiring');
@@ -2309,12 +2313,38 @@ CinnamonNetworkApplet.prototype = {
         catch (e) {
             global.logError(e);
         }
+
+        if (this.menu.isOpen) {
+            return FAST_PERIODIC_UPDATE_FREQUENCY_SECONDS;
+        }
+
+        return new_delay;
     },
 
     _periodicUpdateIcon: function() {
-        this._updateIcon();
-        this._updateFrequencySeconds = Math.max(2, this._updateFrequencySeconds);
+        let new_delay = this._updateIcon();
+
+        if (this._updateFrequencySeconds != new_delay) {
+            this._restartPeriodicUpdateTimer(new_delay);
+        } else {
+            return GLib.SOURCE_CONTINUE;
+        }
+
+        return GLib.SOURCE_REMOVE;
+    },
+
+    _restartPeriodicUpdateTimer: function(new_delay) {
+        if (this._periodicTimeoutId > 0) {
+            Mainloop.source_remove(this._periodicTimeoutId);
+        }
+
+        this._updateFrequencySeconds = new_delay;
+
         this._periodicTimeoutId = Mainloop.timeout_add_seconds(this._updateFrequencySeconds, Lang.bind(this, this._periodicUpdateIcon));
+    },
+
+    _updateForMenuToggle: function() {
+        this._periodicUpdateIcon();
     },
 
     on_applet_removed_from_panel: function() {
