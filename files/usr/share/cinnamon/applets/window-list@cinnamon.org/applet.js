@@ -64,8 +64,7 @@ const Tooltips = imports.ui.tooltips;
 
 const HORIZONTAL_ICON_SIZE = 16; // too bad this can't be defined in theme (cinnamon-app.create_icon_texture returns a clutter actor, not a themable object -
                                  // probably something that could be addressed
-const ICON_HEIGHT_FACTOR = 0.64;
-const VERTICAL_ICON_HEIGHT_FACTOR = 0.75;
+
 const MAX_TEXT_LENGTH = 1000;
 const FLASH_INTERVAL = 500;
 
@@ -676,7 +675,7 @@ class AppMenuButton {
             }
             childBox.x2 = Math.min(childBox.x1 + naturalWidth, box.x2);
         } else {
-            childBox.x1 = box.x1 + Math.max(0, (allocWidth - naturalWidth) / 2);
+            childBox.x1 = box.x1 + Math.floor(Math.max(0, allocWidth - naturalWidth) / 2);
             childBox.x2 = Math.min(childBox.x1 + naturalWidth, box.x2);
         }
         this._iconBox.allocate(childBox, flags);
@@ -728,18 +727,16 @@ class AppMenuButton {
         let tracker = Cinnamon.WindowTracker.get_default();
         let app = tracker.get_window_app(this.metaWindow);
 
-        if (this._applet._scaleMode && this.labelVisible)
-            this.iconSize = Math.round(this._applet._panelHeight * ICON_HEIGHT_FACTOR / global.ui_scale);
-        else if (!this.labelVisible)
-            this.iconSize = Math.round(this._applet._panelHeight * VERTICAL_ICON_HEIGHT_FACTOR / global.ui_scale);
+        if (this.labelVisible && !this._applet._scaleMode)
+            this.icon_size = HORIZONTAL_ICON_SIZE;
         else
-            this.iconSize = HORIZONTAL_ICON_SIZE;
+            this.icon_size = this._applet.icon_size;
 
         let icon = app ?
-            app.create_icon_texture_for_window(this.iconSize, this.metaWindow) :
+            app.create_icon_texture_for_window(this.icon_size, this.metaWindow) :
             new St.Icon({ icon_name: 'application-default-icon',
                 icon_type: St.IconType.FULLCOLOR,
-                icon_size: this.iconSize });
+                icon_size: this.icon_size });
 
         let old_child = this._iconBox.get_child();
         this._iconBox.set_child(icon);
@@ -964,6 +961,7 @@ class CinnamonWindowListApplet extends Applet.Applet {
         this.actor.set_track_hover(false);
         this.actor.set_style_class_name("window-list-box");
         this.orientation = orientation;
+        this.icon_size = Applet.getPanelIconSize(this, St.IconType.FULLCOLOR);
         this.appletEnabled = false;
         //
         // A layout manager is used to cater for vertical panels as well as horizontal
@@ -1030,6 +1028,7 @@ class CinnamonWindowListApplet extends Applet.Applet {
     }
 
     on_panel_height_changed() {
+        this.icon_size = Applet.getPanelIconSize(this, St.IconType.FULLCOLOR);
         this._refreshAllItems();
     }
 
