@@ -3,7 +3,6 @@
 from gi.repository.Gtk import SizeGroup, SizeGroupMode
 
 from GSettingsWidgets import *
-from CinnamonGtkSettings import GtkSettingsSwitch
 from ExtensionCore import DownloadSpicesPage
 from Spices import Spice_Harvester
 
@@ -75,13 +74,6 @@ class Module:
             settings.add_row(widget)
 
             widget = GSettingsSwitch(_("Show icons on buttons"), "org.cinnamon.settings-daemon.plugins.xsettings", "buttons-have-icons")
-            settings.add_row(widget)
-
-            dark_text = _("Use a dark theme variant when available in certain applications")
-            dark_italic = _("(Applications must be restarted for this change to take effect)")
-
-            widget = GtkSettingsSwitch("%s\n<i><small>%s</small></i>" % (dark_text, dark_italic),
-                                       "gtk-application-prefer-dark-theme")
             settings.add_row(widget)
 
             self.builder = self.sidePage.builder
