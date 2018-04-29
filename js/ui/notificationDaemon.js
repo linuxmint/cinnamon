@@ -3,6 +3,7 @@
 const Clutter = imports.gi.Clutter;
 const Gio = imports.gi.Gio;
 const GLib = imports.gi.GLib;
+const Gtk = imports.gi.Gtk;
 const Lang = imports.lang;
 const Cinnamon = imports.gi.Cinnamon;
 const St = imports.gi.St;
@@ -96,6 +97,39 @@ const rewriteRules = {
     ]
 };
 
+// loads an image or icon to a clutter actor from
+// a uri, path, or icon name
+// returns null on failure
+function textToActor(text, size) {
+    let image = null;
+    if (typeof(text) === "string") {
+        try {
+            if (text.startsWith("file://")) {
+                // file URI
+                image = St.TextureCache.get_default().load_uri_async(text, size, size);
+            } else if (text.startsWith("/")) {
+                // absolute path
+                let uri = GLib.filename_to_uri(text, null);
+                image = St.TextureCache.get_default().load_uri_async(uri, size, size);
+            } else {
+                // icon name
+                // Use Gtk to test if icon exists first:
+                let iconInfo = Gtk.IconTheme.get_default().lookup_icon(text, size, 0);
+                if (iconInfo) {
+                    let icon_type = St.IconType.FULLCOLOR;
+                    if (text.search("-symbolic") != -1)
+                        icon_type = St.IconType.SYMBOLIC;
+                    image = new St.Icon({icon_name: text, icon_type: icon_type, icon_size: size});
+                }
+            }
+        } catch (e) {
+            global.logError(`failed to load notification image '${text}'`, e);
+            image = null;
+        }
+    }
+    return image;
+}
+
 function NotificationDaemon() {
     this._init();
 }
@@ -129,9 +163,12 @@ NotificationDaemon.prototype = {
             Lang.bind(this, this._onFocusAppChanged));
     },
 
-   // Create an icon for a notification from icon string/path.
-    _iconForNotificationData: function(icon, hints, size) {
+   // Create an icon and possibly an image from the notification params
+    _getImages: function(source, app_icon, hints) {
         let textureCache = St.TextureCache.get_default();
+        let imageSize = MessageTray.Notification.prototype.IMAGE_SIZE;
+        let iconSize = source.ICON_SIZE;
+        let icon, image;
 
         // If an icon is not specified, we use 'image-data' or 'image-path' hint for an icon
         // and don't show a large image. There are currently many applications that use
@@ -141,41 +178,43 @@ NotificationDaemon.prototype = {
         // So the logic here does the right thing for this case. If both an icon and either
         // one of 'image-data' or 'image-path' are specified, we show both an icon and
         // a large image.
-        if (icon) {
-            if (icon.substr(0, 7) == 'file://')
-                return textureCache.load_uri_async(icon, size, size);
-            else if (icon[0] == '/') {
-                let uri = GLib.filename_to_uri(icon, null);
-                return textureCache.load_uri_async(uri, size, size);
-            } else {
-                let icon_type = St.IconType.FULLCOLOR;
-                if (icon.search("-symbolic") != -1)
-                    icon_type = St.IconType.SYMBOLIC;
-                return new St.Icon({ icon_name: icon,
-                                     icon_type: icon_type,
-                                     icon_size: size });
+        if (app_icon)
+            icon = textToActor(app_icon, iconSize);
+
+        let size = icon ? imageSize : iconSize;
+        if (hints['image-data']) {
+            try {
+                let [width, height, rowStride, hasAlpha,
+                     bitsPerSample, nChannels, data] = hints['image-data'];
+                image = textureCache.load_from_raw(data, hasAlpha, width, height, rowStride, size);
+            } catch (e) {
+                global.logError("failed to load notification image-data", e);
+                image = null;
             }
-        } else if (hints['image-data']) {
-            let [width, height, rowStride, hasAlpha,
-                 bitsPerSample, nChannels, data] = hints['image-data'];
-            return textureCache.load_from_raw(data, hasAlpha, width, height, rowStride, size);
         } else if (hints['image-path']) {
-            return textureCache.load_uri_async(GLib.filename_to_uri(hints['image-path'], null), size, size);
-        } else {
-            let stockIcon;
-            switch (hints.urgency) {
-                case Urgency.LOW:
-                case Urgency.NORMAL:
-                    stockIcon = 'dialog-information';
-                    break;
-                case Urgency.CRITICAL:
-                    stockIcon = 'dialog-error';
-                    break;
-            }
-            return new St.Icon({ icon_name: stockIcon,
-                                 icon_type: St.IconType.FULLCOLOR,
-                                 icon_size: size });
+            image = textToActor(hints['image-path'], size);
         }
+
+        if (!icon) {
+            if (image) {
+                // if there is no icon the image was loaded at icon size to make one
+                icon = image;
+                image = null;
+            } else {
+                // if we fail to load any image, a dialog icon is used as a fallback
+                let stockIcon;
+                if (hints.urgency === Urgency.CRITICAL)
+                    stockIcon = 'dialog-error';
+                else
+                    stockIcon = 'dialog-information';
+
+                icon = new St.Icon({ icon_name: stockIcon,
+                                     icon_type: St.IconType.SYMBOLIC,
+                                     icon_size: iconSize });
+            }
+        }
+
+        return [icon, image];
     },
 
     _lookupSource: function(title, pid) {
@@ -398,7 +437,7 @@ NotificationDaemon.prototype = {
             [ndata.id, ndata.icon, ndata.summary, ndata.body,
              ndata.actions, ndata.hints, ndata.notification, ndata.timeout, ndata.expires];
 
-        let iconActor = this._iconForNotificationData(icon, hints, source.ICON_SIZE);
+        let [iconActor, imageActor] = this._getImages(source, icon, hints);
 
         if (notification == null) {    // Create a new notification!
             notification = new MessageTray.Notification(source, summary, body,
@@ -443,20 +482,9 @@ NotificationDaemon.prototype = {
                                                  clear: true });
         }
 
-        // We only display a large image if an icon is also specified.
-        if (icon && (hints['image-data'] || hints['image-path'])) {
-            let image = null;
-            if (hints['image-data']) {
-                let [width, height, rowStride, hasAlpha,
-                 bitsPerSample, nChannels, data] = hints['image-data'];
-                image = St.TextureCache.get_default().load_from_raw(data, hasAlpha,
-                                                                    width, height, rowStride, notification.IMAGE_SIZE);
-            } else if (hints['image-path']) {
-                image = St.TextureCache.get_default().load_uri_async(GLib.filename_to_uri(hints['image-path'], null),
-                                                                     notification.IMAGE_SIZE,
-                                                                     notification.IMAGE_SIZE);
-            }
-            notification.setImage(image);
+        // We only get a large image if an icon is also specified.
+        if (imageActor) {
+            notification.setImage(imageActor);
         } else {
             notification.unsetImage();
         }
