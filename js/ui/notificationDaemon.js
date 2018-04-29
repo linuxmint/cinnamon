@@ -113,9 +113,6 @@ NotificationDaemon.prototype = {
 
         this._expireTimer = 0;
 
-        Main.statusIconDispatcher.connect('message-icon-added', Lang.bind(this, this._onTrayIconAdded));
-        Main.statusIconDispatcher.connect('message-icon-removed', Lang.bind(this, this._onTrayIconRemoved));
-
         // Settings
         this.settings = new Gio.Settings({ schema_id: "org.cinnamon.desktop.notifications" });
         function setting(self, source, type, camelCase, dashed) {
@@ -181,11 +178,10 @@ NotificationDaemon.prototype = {
         }
     },
 
-    _lookupSource: function(title, pid, trayIcon) {
+    _lookupSource: function(title, pid) {
         for (let i = 0; i < this._sources.length; i++) {
             let source = this._sources[i];
-            if (source.pid == pid &&
-                (source.initialTitle == title || source.trayIcon == trayIcon))
+            if (source.pid == pid && source.initialTitle == title)
                 return source;
         }
         return null;
@@ -194,17 +190,14 @@ NotificationDaemon.prototype = {
     // Returns the source associated with ndata.notification if it is set.
     // Otherwise, returns the source associated with the title and pid if
     // such source is stored in this._sources and the notification is not
-    // transient. If the existing or requested source is associated with
-    // a tray icon and passed in pid matches a pid of an existing source,
-    // the title match is ignored to enable representing a tray icon and
-    // notifications from the same application with a single source.
+    // transient.
     //
     // If no existing source is found, a new source is created as long as
     // pid is provided.
     //
     // Either a pid or ndata.notification is needed to retrieve or
     // create a source.
-    _getSource: function(title, pid, ndata, sender, trayIcon) {
+    _getSource: function(title, pid, ndata, sender) {
         if (!pid && !(ndata && ndata.notification))
             return null;
 
@@ -222,14 +215,14 @@ NotificationDaemon.prototype = {
         // always create a new source object for new transient notifications
         // and never add it to this._sources .
         if (!isForTransientNotification) {
-            let source = this._lookupSource(title, pid, trayIcon);
+            let source = this._lookupSource(title, pid);
             if (source) {
                 source.setTitle(title);
                 return source;
             }
         }
 
-        let source = new Source(title, pid, sender, trayIcon);
+        let source = new Source(title, pid, sender);
         source.setTransient(isForTransientNotification);
 
         if (!isForTransientNotification) {
@@ -496,8 +489,7 @@ NotificationDaemon.prototype = {
         // of the 'transient' hint with hints['transient'] rather than hints.transient
         notification.setTransient(hints.maybeGet('transient') == true);
 
-        let sourceIconActor = source.useNotificationIcon ? this._iconForNotificationData(icon, hints, source.ICON_SIZE) : null;
-        source.processNotification(notification, sourceIconActor);
+        source.processNotification(notification);
     },
 
     CloseNotification: function(id) {
@@ -559,27 +551,17 @@ NotificationDaemon.prototype = {
     _emitActionInvoked: function(id, action) {
         this._dbusImpl.emit_signal('ActionInvoked',
                                    GLib.Variant.new('(us)', [id, action]));
-    },
-
-    _onTrayIconAdded: function(o, icon) {
-        let source = this._getSource(icon.title || icon.wm_class || _("Unknown"), icon.pid, null, null, icon);
-    },
-
-    _onTrayIconRemoved: function(o, icon) {
-        let source = this._lookupSource(null, icon.pid, true);
-        if (source)
-            source.destroy();
     }
 };
 
-function Source(title, pid, sender, trayIcon) {
-    this._init(title, pid, sender, trayIcon);
+function Source(title, pid, sender) {
+    this._init(title, pid, sender);
 }
 
 Source.prototype = {
     __proto__:  MessageTray.Source.prototype,
 
-    _init: function(title, pid, sender, trayIcon) {
+    _init: function(title, pid, sender) {
         MessageTray.Source.prototype._init.call(this, title);
 
         this.initialTitle = title;
@@ -596,64 +578,22 @@ Source.prototype = {
         this._setApp();
         if (this.app)
             this.title = this.app.get_name();
-        else
-            this.useNotificationIcon = true;
-
-        this.trayIcon = trayIcon;
-        if (this.trayIcon) {
-            this._setSummaryIcon(this.trayIcon);
-            this.useNotificationIcon = false;
-        }
     },
 
     _onNameVanished: function() {
         // Destroy the notification source when its sender is removed from DBus.
         // Only do so if this.app is set to avoid removing "notify-send" sources, senders
-        // of which are removed from DBus immediately.
-        // Sender being removed from DBus would normally result in a tray icon being removed,
-        // so allow the code path that handles the tray icon being removed to handle that case.
-        if (!this.trayIcon && this.app)
+        // of which are removed from DBus immediately. For app-less sources, the source is
+        // removed when the last notification is dismissed.
+        if (this.app)
             this.destroy();
     },
 
-    processNotification: function(notification, icon) {
+    processNotification: function(notification) {
         if (!this.app)
             this._setApp();
-        if (!this.app && icon)
-            this._setSummaryIcon(icon);
 
         this.notify(notification);
-    },
-
-    handleSummaryClick: function() {
-        if (!this.trayIcon)
-            return false;
-
-        let event = Clutter.get_current_event();
-        if (event.type() != Clutter.EventType.BUTTON_RELEASE)
-            return false;
-
-        // Left clicks are passed through only where there aren't unacknowledged
-        // notifications, so it possible to open them in summary mode; right
-        // clicks are always forwarded, as the right click menu is not useful for
-        // tray icons
-        if (event.get_button() == 1 &&
-            this.notifications.length > 0)
-            return false;
-
-        if (Main.overview.visible) {
-            // We can't just connect to Main.overview's 'hidden' signal,
-            // because it's emitted *before* it calls popModal()...
-            let id = global.connect('notify::stage-input-mode', Lang.bind(this,
-                function () {
-                    global.disconnect(id);
-                    this.trayIcon.click(event);
-                }));
-            Main.overview.hide();
-        } else {
-            this.trayIcon.click(event);
-        }
-        return true;
     },
 
     _getApp: function() {
@@ -663,12 +603,6 @@ Source.prototype = {
         if (app != null)
             return app;
 
-        if (this.trayIcon) {
-            app = Cinnamon.AppSystem.get_default().lookup_wmclass(this.trayIcon.wmclass);
-            if (app != null)
-                return app;
-        }
-
         return null;
     },
 
@@ -677,23 +611,6 @@ Source.prototype = {
             return;
 
         this.app = this._getApp();
-        if (!this.app)
-            return;
-
-        // Only override the icon if we were previously using
-        // notification-based icons (ie, not a trayicon) or if it was unset before
-        if (!this.trayIcon) {
-            this.useNotificationIcon = false;
-            let icon = null;
-            if (this.app.get_app_info() != null && this.app.get_app_info().get_icon() != null) {
-                icon = new St.Icon({gicon: this.app.get_app_info().get_icon(), icon_size: this.ICON_SIZE, icon_type: St.IconType.FULLCOLOR});
-            }
-            if (icon == null) {
-                icon = new St.Icon({icon_name: "application-x-executable", icon_size: this.ICON_SIZE, icon_type: St.IconType.FULLCOLOR});
-            }
-
-            this._setSummaryIcon(icon);
-        }
     },
 
     open: function(notification) {
@@ -702,12 +619,11 @@ Source.prototype = {
     },
 
     _lastNotificationRemoved: function() {
-        if (!this.trayIcon)
-            this.destroy();
+        this.destroy();
     },
 
     openApp: function() {
-        if (this.app == null)
+        if (!this.app)
             return;
 
         let windows = this.app.get_windows();
