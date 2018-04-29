@@ -1840,8 +1840,8 @@ MessageTray.prototype = {
         if (AppletManager.get_role_provider_exists(AppletManager.Roles.NOTIFICATIONS) && !this._notificationRemoved) {
             this.emit('notify-applet-update', notification);
         } else {
-            if (notification.isTransient)
-                notification.destroy(NotificationDestroyedReason.EXPIRED);
+            // if there is no tray applet, the notification expires as soon as it is hidden
+            notification.destroy(NotificationDestroyedReason.EXPIRED);
         }
         this._notification = null;
         this._notificationRemoved = false;
