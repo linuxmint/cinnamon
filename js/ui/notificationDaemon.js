@@ -116,7 +116,7 @@ NotificationDaemon.prototype = {
         Main.statusIconDispatcher.connect('message-icon-added', Lang.bind(this, this._onTrayIconAdded));
         Main.statusIconDispatcher.connect('message-icon-removed', Lang.bind(this, this._onTrayIconRemoved));
 
-// Settings
+        // Settings
         this.settings = new Gio.Settings({ schema_id: "org.cinnamon.desktop.notifications" });
         function setting(self, source, type, camelCase, dashed) {
             function updater() { self[camelCase] = source["get_"+type](dashed); }
@@ -247,20 +247,20 @@ NotificationDaemon.prototype = {
     },
 
     _startExpire: function() {
-         if (this.removeOld && this._expireNotifications.length && !this._expireTimer) {
+        if (this.removeOld && this._expireNotifications.length && !this._expireTimer) {
             this._expireTimer = Mainloop.timeout_add_seconds(Math.max((this._expireNotifications[0].expires-Date.now())/1000, 1), Lang.bind(this, this._expireNotification));
         }
     },
     _stopExpire: function() {
-         if (this._expireTimer == 0) {
+        if (this._expireTimer == 0) {
             return;
         }
-         Mainloop.source_remove(this._expireTimer);
-         this._expireTimer = 0;
+        Mainloop.source_remove(this._expireTimer);
+        this._expireTimer = 0;
     },
     _restartExpire: function() {
-         this._stopExpire();
-         this._startExpire();
+        this._stopExpire();
+        this._startExpire();
     },
     _expireNotification: function() {
         let ndata = this._expireNotifications[0];
@@ -332,7 +332,7 @@ NotificationDaemon.prototype = {
         } else if (timeout == -1) { // Default expiration.
             expires = ndata.expires = Date.now()+this.timeout*1000;
         } else {    // Custom expiration.
-             expires = ndata.expires = Date.now()+timeout;
+            expires = ndata.expires = Date.now()+timeout;
         }
  
         // Does this notification expire?
@@ -434,7 +434,7 @@ NotificationDaemon.prototype = {
                             if (notifications[i] == ndata) {
                                 notifications.splice(i, 1);
                                 break;
-                             }
+                            }
                         }
                         this._restartExpire();
                     }
@@ -601,8 +601,8 @@ Source.prototype = {
 
         this.trayIcon = trayIcon;
         if (this.trayIcon) {
-           this._setSummaryIcon(this.trayIcon);
-           this.useNotificationIcon = false;
+            this._setSummaryIcon(this.trayIcon);
+            this.useNotificationIcon = false;
         }
     },
 
