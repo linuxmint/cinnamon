@@ -78,7 +78,7 @@ function spawn(argv) {
 }
 
 let subprocess_id = 0;
-let subprocess_callbacks = {};
+var subprocess_callbacks = {};
 /**
  * spawn_async:
  * @args: an array containing all arguments of the command to be run
