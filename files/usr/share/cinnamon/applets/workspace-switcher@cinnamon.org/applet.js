@@ -30,6 +30,9 @@ class WorkspaceButton {
     show() {
         this.actor.connect('button-release-event', Lang.bind(this, this.onClicked));
         this._tooltip = new Tooltips.PanelItemTooltip(this, this.workspace_name, this.applet.orientation);
+        if (this.index === global.screen.get_active_workspace_index()) {
+            this.activate(true);
+        }
     }
 
     onClicked(actor, event) {
@@ -40,6 +43,10 @@ class WorkspaceButton {
 
     update() {
         // defined in subclass
+    }
+
+    activate(active) {
+        // Defined in subclass
     }
 
     destroy() {
@@ -53,7 +60,7 @@ class WorkspaceGraph extends WorkspaceButton {
     constructor(index, applet) {
         super(index, applet);
 
-        this.actor = new St.Bin({ reactive: true,
+        this.actor = new St.Bin({ reactive: applet._draggable.inhibit,
                                   style_class: 'workspace',
                                   y_fill: true,
                                   important: true });
@@ -73,9 +80,6 @@ class WorkspaceGraph extends WorkspaceButton {
         this.actor.set_size(width, height);
         this.graphArea.set_size(width, height);
         this.graphArea.connect('repaint', Lang.bind(this, this.onRepaint));
-        if (index == global.screen.get_active_workspace_index()) {
-            this.actor.add_style_pseudo_class('active');
-        }
     }
 
     scale (windows_rect, workspace_rect, area_width, area_height) {
@@ -151,6 +155,13 @@ class WorkspaceGraph extends WorkspaceButton {
     update() {
         this.graphArea.queue_repaint();
     }
+
+    activate(active) {
+        if (active)
+            this.actor.add_style_pseudo_class('active');
+        else
+            this.actor.remove_style_pseudo_class('active');
+    }
 }
 
 class SimpleButton extends WorkspaceButton {
@@ -159,11 +170,7 @@ class SimpleButton extends WorkspaceButton {
 
         this.actor = new St.Button({ name: 'workspaceButton',
                                      style_class: 'workspace-button',
-                                     reactive: true });
-
-        if (index == global.screen.get_active_workspace_index()) {
-            this.actor.add_style_pseudo_class('outlined');
-        }
+                                     reactive: applet._draggable.inhibit });
 
         if (applet.orientation == St.Side.TOP || applet.orientation == St.Side.BOTTOM) {
             this.actor.set_height(applet._panelHeight);
@@ -175,6 +182,13 @@ class SimpleButton extends WorkspaceButton {
         let label = new St.Label({ text: (index + 1).toString() });
         label.clutter_text.set_ellipsize(Pango.EllipsizeMode.NONE);
         this.actor.set_child(label);
+    }
+
+    activate(active) {
+        if (active)
+            this.actor.add_style_pseudo_class('outlined');
+        else
+            this.actor.remove_style_pseudo_class('outlined');
     }
 }
 
@@ -217,8 +231,7 @@ class CinnamonWorkspaceSwitcher extends Applet.Applet {
 
         this._createButtons();
         global.screen.connect('notify::n-workspaces', Lang.bind(this, this.onNumberOfWorkspacesChanged));
-        global.window_manager.connect('switch-workspace', Lang.bind(this, this._createButtons));
-        this.on_panel_edit_mode_changed();
+        global.window_manager.connect('switch-workspace', this._onWorkspaceChanged.bind(this));
         global.settings.connect('changed::panel-edit-mode', Lang.bind(this, this.on_panel_edit_mode_changed));
 
         let expoMenuItem = new PopupMenu.PopupIconMenuItem(_("Manage workspaces (Expo)"), "view-grid-symbolic", St.IconType.SYMBOLIC);
@@ -266,10 +279,15 @@ class CinnamonWorkspaceSwitcher extends Applet.Applet {
         }
     }
 
+    _onWorkspaceChanged(wm, from, to) {
+        this.buttons[from].activate(false);
+        this.buttons[to].activate(true);
+    }
+
     on_panel_edit_mode_changed() {
         let reactive = !global.settings.get_boolean('panel-edit-mode');
         for (let i = 0; i < this.buttons.length; ++i) {
-            this.buttons[i].reactive = reactive;
+            this.buttons[i].actor.reactive = reactive;
         }
     }
 
