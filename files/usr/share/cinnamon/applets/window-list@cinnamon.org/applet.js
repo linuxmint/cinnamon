@@ -1165,6 +1165,9 @@ class CinnamonWindowListApplet extends Applet.Applet {
          * one isn't shown! */
         if (window.alert)
             window.actor.visible = !window.actor.visible;
+
+        if (window.actor.visible)
+            window.setIcon();
     }
 
     _refreshAllItems() {
