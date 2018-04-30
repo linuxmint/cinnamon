@@ -66,7 +66,7 @@ const CornerType = {
     dummy : 4
 };
 
-const PanelLoc = {
+var PanelLoc = {
     top : 0,
     bottom : 1,
     left : 2,

@@ -1,20 +1,17 @@
 const Lang = imports.lang;
 const Mainloop = imports.mainloop;
 const St = imports.gi.St;
+const Gio = imports.gi.Gio;
 
 const Applet = imports.ui.applet;
 const Main = imports.ui.main;
 const SignalManager = imports.misc.signalManager;
 const Tweener = imports.ui.tweener;
-const Gio = imports.gi.Gio;
+const {PanelLoc} = imports.ui.panel;
+
 const DESKTOP_SCHEMA = 'org.cinnamon.desktop.interface';
 const CURSOR_SIZE_KEY = 'cursor-size';
-const PanelLoc = {
-    top : 0,
-    bottom : 1,
-    left : 2,
-    right : 3
-};
+
 /**
  * #TooltipBase
  * @item (Clutter.Actor): The object owning the tooltip.
@@ -323,14 +320,14 @@ PanelItemTooltip.prototype = {
         switch (this.orientation) {
             case St.Side.BOTTOM:
                 panel = Main.panelManager.getPanel(Main.layoutManager.monitors.indexOf(monitor), PanelLoc.bottom);
-                tooltipTop = monitor.height - tooltipHeight - panel.actor.height;
+                tooltipTop = monitor.y + monitor.height - tooltipHeight - panel.actor.height;
                 tooltipLeft = this.mousePosition[0] - Math.round(tooltipWidth / 2);
                 tooltipLeft = Math.max(tooltipLeft, monitor.x);
                 tooltipLeft = Math.min(tooltipLeft, monitor.x + monitor.width - tooltipWidth);
                 break;
             case St.Side.TOP:
                 panel = Main.panelManager.getPanel(Main.layoutManager.monitors.indexOf(monitor), PanelLoc.top);
-                tooltipTop =  panel.actor.height;
+                tooltipTop =  monitor.y + panel.actor.height;
                 tooltipLeft = this.mousePosition[0] - Math.round(tooltipWidth / 2);
                 tooltipLeft = Math.max(tooltipLeft, monitor.x);
                 tooltipLeft = Math.min(tooltipLeft, monitor.x + monitor.width - tooltipWidth);
