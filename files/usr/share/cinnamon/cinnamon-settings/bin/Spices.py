@@ -67,6 +67,7 @@ class ThreadedTaskManager(GObject.GObject):
     def __init__(self, max_threads):
         super(ThreadedTaskManager, self).__init__()
         self.max_threads = max_threads
+        self.abort_status = False
         self.jobs = []
         self.threads = []
         self.lock = threading.Lock()
@@ -79,7 +80,9 @@ class ThreadedTaskManager(GObject.GObject):
         return len(self.jobs) > 0 or len(self.threads) > 0
 
     def push(self, func, callback, data):
+        self.lock.acquire()
         self.jobs.insert(0, (func, callback, data))
+        self.lock.release()
 
         if self.start_id == 0:
             self.start_id = GLib.idle_add(self.check_start_job)
@@ -90,10 +93,13 @@ class ThreadedTaskManager(GObject.GObject):
             if len(self.threads) == self.max_threads:
                 return
 
+            self.lock.acquire()
             job = self.jobs.pop()
             newthread = threading.Thread(target=self.thread_function_wrapper, args=job)
-            newthread.start()
             self.threads.append(newthread)
+            self.lock.release()
+
+            newthread.start()
 
             self.check_start_job()
 
@@ -106,12 +112,22 @@ class ThreadedTaskManager(GObject.GObject):
         except:
             pass
 
+        if self.abort_status and not self.busy():
+            self.abort_status = False
+
+        self.lock.release()
+
         self.check_start_job()
 
         if callback is not None:
             ui_thread_do(callback, result)
 
-        self.lock.release()
+    def abort(self):
+        if self.busy():
+            self.lock.acquire()
+            self.abort_status = True
+            del self.jobs[:]
+            self.lock.release()
 
 class Spice_Harvester(GObject.Object):
     __gsignals__ = {
@@ -129,7 +145,6 @@ class Spice_Harvester(GObject.Object):
         self.index_cache = {}
         self.meta_map = {}
         self.download_manager = ThreadedTaskManager(10)
-        self.error = None
         self._proxy = None
         self._proxy_deferred_actions = []
         self._proxy_signals = []
@@ -335,52 +350,43 @@ class Spice_Harvester(GObject.Object):
     def _download(self, outfd, outfile, url, binary=True):
         try:
             self._url_retrieve(url, outfd, self._update_progress, binary)
-        except KeyboardInterrupt:
+        except Exception as e:
             try:
                 os.remove(outfile)
             except OSError:
                 pass
-            if self.abort_download == ABORT_ERROR:
-                self.errorMessage(_("An error occurred while trying to access the server.  Please try again in a little while."), self.error)
-            raise Exception(_("Download aborted for %s.") % url)
+            if not isinstance(e, KeyboardInterrupt):
+                self.errorMessage(_("An error occurred while trying to access the server. Please try again in a little while."), e)
+            return None
 
         return outfile
 
     def _url_retrieve(self, url, f, reporthook, binary):
         #Like the one in urllib. Unlike urllib.retrieve url_retrieve
-        #can be interrupted. KeyboardInterrupt exception is rasied when
+        #can be interrupted. KeyboardInterrupt exception is raised when
         #interrupted.
         count = 0
         blockSize = 1024 * 8
         try:
-            urlobj = urlopen(url)
-            assert urlobj.getcode() == 200
-        except Exception as detail:
+            with urlopen(url) as urlobj:
+                assert urlobj.getcode() == 200
+
+                totalSize = int(urlobj.info()['content-length'])
+
+                while not self._is_aborted():
+                    data = urlobj.read(blockSize)
+                    count += 1
+                    if not data:
+                        break
+                    if not binary:
+                        data = data.decode("utf-8")
+                    f.write(data)
+                    ui_thread_do(reporthook, count, blockSize, totalSize)
+        except Exception as e:
+            self.abort()
             f.close()
-            self.abort_download = ABORT_ERROR
-            self.error = detail
-            raise KeyboardInterrupt
+            raise e
 
-        totalSize = int(urlobj.info()['content-length'])
-
-        try:
-            while self.abort_download == ABORT_NONE:
-                data = urlobj.read(blockSize)
-                count += 1
-                if not data:
-                    break
-                if not binary:
-                    data = data.decode("utf-8")
-                f.write(data)
-                ui_thread_do(reporthook, count, blockSize, totalSize)
-        except KeyboardInterrupt:
-            f.close()
-            self.abort_download = ABORT_USER
-
-        if self.abort_download > ABORT_NONE:
-            raise KeyboardInterrupt
-
-        del urlobj
         f.close()
 
     def _load_metadata(self):
@@ -500,7 +506,8 @@ class Spice_Harvester(GObject.Object):
 
         filename = os.path.join(self.cache_folder, "index.json")
         f = open(filename, 'w')
-        self._download(f, filename, download_url, binary=False)
+        if self._download(f, filename, download_url, binary=False) is None:
+            return
 
         self._load_cache()
         self._download_image_cache()
@@ -578,15 +585,18 @@ class Spice_Harvester(GObject.Object):
         self._push_job(job)
 
     def _install(self, job):
+        uuid = job['uuid']
+
+        download_url = URL_SPICES_HOME + self.index_cache[uuid]['file']
+        self.current_uuid = uuid
+
+        fd, ziptempfile = tempfile.mkstemp()
+        f = os.fdopen(fd, 'wb')
+
+        if self._download(f, ziptempfile, download_url) is None:
+            return
+
         try:
-            uuid = job['uuid']
-
-            download_url = URL_SPICES_HOME + self.index_cache[uuid]['file']
-            self.current_uuid = uuid
-
-            fd, ziptempfile = tempfile.mkstemp()
-            f = os.fdopen(fd, 'wb')
-            self._download(f, ziptempfile, download_url)
             zip = zipfile.ZipFile(ziptempfile)
 
             tempfolder = tempfile.mkdtemp()
@@ -598,7 +608,7 @@ class Spice_Harvester(GObject.Object):
         except Exception as detail:
             if not self.abort_download:
                 self.errorMessage(_("An error occurred during the installation of %s. Please report this incident to its developer.") % uuid, str(detail))
-            return False
+            return
 
         try:
             shutil.rmtree(tempfolder)
@@ -694,10 +704,13 @@ class Spice_Harvester(GObject.Object):
         for uuid in self.updates_available:
             self.install(uuid)
 
-    def abort(self, *args):
+    def abort(self, abort_type=ABORT_USER):
         """ trigger in-progress download to halt"""
-        self.abort_download = ABORT_USER
-        return
+        self.abort_download = abort_type
+        self.download_manager.abort()
+
+    def _is_aborted(self):
+        return self.download_manager.abort_status
 
     def _ui_error_message(self, msg, detail = None):
         dialog = Gtk.MessageDialog(transient_for = self.window,
