@@ -4,6 +4,7 @@
 
 #include "cinnamon-tray-icon.h"
 #include "cinnamon-gtk-embed.h"
+#include "cinnamon-window-tracker.h"
 #include "tray/na-tray-child.h"
 #include <gdk/gdkx.h>
 #include "st.h"
@@ -67,13 +68,13 @@ cinnamon_tray_icon_constructed (GObject *object)
   plug_xid = GDK_WINDOW_XID (icon_app_window);
 
   display = gtk_widget_get_display (GTK_WIDGET (icon->priv->socket));
-  gdk_error_trap_push ();
+  gdk_x11_display_error_trap_push ();
   _NET_WM_PID = gdk_x11_get_xatom_by_name_for_display (display, "_NET_WM_PID");
   result = XGetWindowProperty (GDK_DISPLAY_XDISPLAY (display), plug_xid,
                                _NET_WM_PID, 0, G_MAXLONG, False, XA_CARDINAL,
                                &type, &format, &nitems,
                                &bytes_after, (guchar **)&val);
-  if (!gdk_error_trap_pop () &&
+  if (!gdk_x11_display_error_trap_pop () &&
       result == Success &&
       type == XA_CARDINAL &&
       nitems == 1)
@@ -189,7 +190,7 @@ cinnamon_tray_icon_click (CinnamonTrayIcon *icon,
 
   g_return_if_fail (clutter_event_type (event) == CLUTTER_BUTTON_RELEASE);
 
-  gdk_error_trap_push ();
+  gdk_x11_display_error_trap_push ();
 
   remote_window = gtk_socket_get_plug_window (GTK_SOCKET (icon->priv->socket));
   xwindow = GDK_WINDOW_XID (remote_window);
@@ -235,5 +236,5 @@ cinnamon_tray_icon_click (CinnamonTrayIcon *icon,
   xcevent.type = LeaveNotify;
   XSendEvent (xdisplay, xwindow, False, 0, (XEvent *)&xcevent);
 
-  gdk_error_trap_pop_ignored ();
+  gdk_x11_display_error_trap_pop_ignored ();
 }
