@@ -141,48 +141,17 @@ class WindowPreview extends Tooltips.TooltipBase {
             height: height
         });
 
-        this._sizeChangedId = this.muffinWindow.connect('size-changed',
-            Lang.bind(this, function() {
-                let [width, height] = this._getScaledTextureSize(windowTexture);
-                this.thumbnail.set_size(width, height);
-            }));
+        this._sizeChangedId = this.muffinWindow.connect('size-changed', () => {
+            let [width, height] = this._getScaledTextureSize(windowTexture);
+            this.thumbnail.set_size(width, height);
+            this._set_position();
+        });
 
         this.thumbnailBin.set_child(this.thumbnail);
 
-        let allocation = this.actor.get_allocation_box();
-        let previewHeight = allocation.y2 - allocation.y1;
-        let previewWidth = allocation.x2 - allocation.x1;
-
-        let monitor = Main.layoutManager.findMonitorForActor(this.item);
-        let previewTop;
-
-        if (this._applet.orientation == St.Side.BOTTOM) {
-            previewTop = this.item.get_transformed_position()[1] - previewHeight - 5;
-        } else if (this._applet.orientation == St.Side.TOP) {
-            previewTop = this.item.get_transformed_position()[1] + this.item.get_transformed_size()[1] + 5;
-        } else {
-            previewTop = this.item.get_transformed_position()[1];
-        }
-
-        let previewLeft;
-        if (this._applet.orientation == St.Side.BOTTOM || this._applet.orientation == St.Side.TOP) {
-            // centre the applet on the window list item if window list is on the top or bottom panel
-            previewLeft = this.item.get_transformed_position()[0] + this.item.get_transformed_size()[0]/2 - previewWidth/2;
-        } else if (this._applet.orientation == St.Side.LEFT) {
-            previewLeft = this.item.get_transformed_position()[0] + this.item.get_transformed_size()[0] + 5;
-        } else if (this._applet.orientation == St.Side.RIGHT) {
-            previewLeft = this.item.get_transformed_position()[0] - previewWidth -5;
-        }
-        previewLeft = Math.round(previewLeft);
-        previewLeft = Math.max(previewLeft, monitor.x);
-        previewLeft = Math.min(previewLeft, monitor.x + monitor.width - previewWidth);
-
-        previewTop  = Math.round(previewTop);
-        previewTop  = Math.min(previewTop, monitor.y + monitor.height - previewHeight);
-
-        this.actor.set_position(previewLeft, previewTop);
-
         this.actor.show();
+        this._set_position();
+
         this.visible = true;
         this._applet.cancelErodeTooltip();
         this._applet._tooltipShowing = true;
@@ -201,6 +170,42 @@ class WindowPreview extends Tooltips.TooltipBase {
             this.actor.hide();
         }
         this.visible = false;
+    }
+
+    _set_position() {
+        let allocation = this.actor.get_allocation_box();
+        let previewHeight = allocation.y2 - allocation.y1;
+        let previewWidth = allocation.x2 - allocation.x1;
+
+        let monitor = Main.layoutManager.findMonitorForActor(this.item);
+
+        let previewTop;
+        if (this._applet.orientation === St.Side.BOTTOM) {
+            previewTop = this.item.get_transformed_position()[1] - previewHeight - 5;
+        } else if (this._applet.orientation === St.Side.TOP) {
+            previewTop = this.item.get_transformed_position()[1] + this.item.get_transformed_size()[1] + 5;
+        } else {
+            previewTop = this.item.get_transformed_position()[1];
+        }
+
+        let previewLeft;
+        if (this._applet.orientation === St.Side.BOTTOM || this._applet.orientation === St.Side.TOP) {
+            // centre the applet on the window list item if window list is on the top or bottom panel
+            previewLeft = this.item.get_transformed_position()[0] + this.item.get_transformed_size()[0]/2 - previewWidth/2;
+        } else if (this._applet.orientation === St.Side.LEFT) {
+            previewLeft = this.item.get_transformed_position()[0] + this.item.get_transformed_size()[0] + 5;
+        } else {
+            previewLeft = this.item.get_transformed_position()[0] - previewWidth - 5;
+        }
+
+        previewLeft = Math.round(previewLeft);
+        previewLeft = Math.max(previewLeft, monitor.x);
+        previewLeft = Math.min(previewLeft, monitor.x + monitor.width - previewWidth);
+
+        previewTop  = Math.round(previewTop);
+        previewTop  = Math.min(previewTop, monitor.y + monitor.height - previewHeight);
+
+        this.actor.set_position(previewLeft, previewTop);
     }
 
     set_text(text) {
