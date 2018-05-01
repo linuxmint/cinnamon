@@ -1720,17 +1720,11 @@ MessageTray.prototype = {
         this._updateShowingNotification();
 
         let [x, y, mods] = global.get_pointer();
-        // We save the position of the mouse at the time when we started showing the notification
-        // in order to determine if the notification popped up under it. We make that check if
-        // the user starts moving the mouse and _onTrayHoverChanged() gets called. We don't
-        // expand the notification if it just happened to pop up under the mouse unless the user
-        // explicitly mouses away from it and then mouses back in.
-        this._showNotificationMouseX = x;
-        this._showNotificationMouseY = y;
-        // We save the y coordinate of the mouse at the time when we started showing the notification
-        // and then we update it in _notifiationTimeout() if the mouse is moving towards the
-        // notification. We don't pop down the notification if the mouse is moving towards it.
-        this._lastSeenMouseY = y;
+        // We save the distance of the mouse to the notification at the time
+        // when we started showing the it and then we update it in
+        // _notifiationTimeout() if the mouse is moving towards the notification.
+        // We don't pop down the notification if the mouse is moving towards it.
+        this._lastSeenMouseDistance = Math.abs(this._notificationBin.y - y);
     },
 
     _updateShowingNotification: function() {
@@ -1791,12 +1785,13 @@ MessageTray.prototype = {
 
     _notificationTimeout: function() {
         let [x, y, mods] = global.get_pointer();
-        if (y > this._lastSeenMouseY + 10 || this._notification.actor.hover) {
+        let distance = Math.abs(this._notificationBin.y - y);
+        if (distance < this._lastSeenMouseDistance - 50 || this._notification.actor.hover) {
             // The mouse is moving towards the notification, so don't
             // hide it yet. (We just create a new timeout (and destroy
-            // the old one) each time because the bookkeeping is
-            // simpler.)
-            this._lastSeenMouseY = y;
+            // the old one) each time because the bookkeeping is simpler.)
+
+            this._lastSeenMouseDistance = distance;
             this._updateNotificationTimeout(1000);
         } else {
             this._notificationTimeoutId = 0;
