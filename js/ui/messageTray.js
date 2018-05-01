@@ -1433,8 +1433,6 @@ MessageTray.prototype = {
         this._traySummoned = false;
         this._useLongerTrayLeftTimeout = false;
         this._trayLeftTimeoutId = 0;
-        this._pointerInTray = false;
-        this._pointerInKeyboard = false;
         this._notificationState = State.HIDDEN;
         this._notificationTimeoutId = 0;
         this._notificationExpandedId = 0;
@@ -1591,14 +1589,12 @@ MessageTray.prototype = {
 
     _escapeTray: function() {
         this._unlock();
-        this._pointerInTray = false;
         this._updateNotificationTimeout(0);
         this._updateState();
     },
 
     // All of the logic for what happens when occurs here; the various
-    // event handlers merely update variables such as
-    // 'this._pointerInTray', 'this._summaryState', etc, and
+    // event handlers merely update variables and
     // _updateState() figures out what (if anything) needs to be done
     // at the present time.
     _updateState: function() {
@@ -1609,9 +1605,7 @@ MessageTray.prototype = {
 
         let notificationExpired = (this._notificationTimeoutId == 0 &&
                 !(this._notification && this._notification.urgency == Urgency.CRITICAL) &&
-                !this._pointerInTray &&
-                !this._locked &&
-                !(this._pointerInKeyboard && notificationExpanded)
+                !this._locked
             ) || this._notificationRemoved;
         let canShowNotification = notificationsPending && this._notificationsEnabled;
 
@@ -1797,7 +1791,7 @@ MessageTray.prototype = {
 
     _notificationTimeout: function() {
         let [x, y, mods] = global.get_pointer();
-        if (y > this._lastSeenMouseY + 10) {
+        if (y > this._lastSeenMouseY + 10 || this._notification.actor.hover) {
             // The mouse is moving towards the notification, so don't
             // hide it yet. (We just create a new timeout (and destroy
             // the old one) each time because the bookkeeping is
@@ -1848,7 +1842,7 @@ MessageTray.prototype = {
             this.emit('notify-applet-update', notification);
         } else {
             if (notification.isTransient)
-                notification.destroy(NotificationDestroyedReason.EXPIRED);  
+                notification.destroy(NotificationDestroyedReason.EXPIRED);
         }
         this._notification = null;
         this._notificationRemoved = false;
