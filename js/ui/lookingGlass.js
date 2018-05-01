@@ -77,6 +77,11 @@ WindowList.prototype = {
         this.latestWindowList = [];
         for (let i = 0; i < windows.length; i++) {
             let metaWindow = windows[i].metaWindow;
+
+            // only track "interesting" windows
+            if (!Main.isInteresting(metaWindow))
+                continue;
+
             // Avoid multiple connections
             if (!metaWindow._lookingGlassManaged) {
                 metaWindow.connect('unmanaged', Lang.bind(this, this._updateWindowList));
@@ -86,19 +91,20 @@ WindowList.prototype = {
                 this.lastId++;
             }
 
-            let lgInfo = { id: metaWindow._lgId.toString(), title: metaWindow.title, wmclass: metaWindow.get_wm_class(), app: ''};
+            let lgInfo = {
+                id: metaWindow._lgId.toString(),
+                title: objectToString(metaWindow.title),
+                wmclass: objectToString(metaWindow.get_wm_class()),
+                app: '' };
 
             let app = tracker.get_window_app(metaWindow);
             if (app != null && !app.is_window_backed()) {
-                lgInfo.app = app.get_id();
+                lgInfo.app = objectToString(app.get_id());
             } else {
                 lgInfo.app = '<untracked>';
             }
 
-            // Ignore menus
-            let wtype = metaWindow.get_window_type();
-            if (wtype != Meta.WindowType.MENU && wtype != Meta.WindowType.DROPDOWN_MENU && wtype != Meta.WindowType.POPUP_MENU)
-                this.latestWindowList.push(lgInfo);
+            this.latestWindowList.push(lgInfo);
         }
 
         // Make sure the list changed before notifying listeneres
