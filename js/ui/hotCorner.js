@@ -44,6 +44,9 @@ HotCornerManager.prototype = {
 
         for (let i = 0; i < 4; i++) {
             let elements = options[i].split(':');
+            // We've also split the command if it contained colons,
+            // so remove (splice), rejoin (join) and reinsert (unshift) it.
+            // It has no effect with empty or no-colon commands
             let cmd = elements.splice(0, elements.length-2).join(':');
             elements.unshift(cmd);
             this.corners[i].setProperties(elements);
