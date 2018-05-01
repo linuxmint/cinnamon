@@ -47,13 +47,7 @@ StScrollBar StButton#hhandle:hover,
 StScrollBar StButton#vhandle:hover {
     background-color: rgba(204,204,204,0.5);
 }
-.separator {
-    -gradient-height: 2px;
-    -gradient-start: rgba(85,85,85,1);
-    -gradient-end: #555555;
-    -margin-horizontal: 1.5em;
-    height: 1em;
-}
+
 .slider {
     height: 1em;
     min-width: 15em;
@@ -190,12 +184,12 @@ StScrollBar StButton#vhandle:hover {
 .popup-combobox-item {
     spacing: 1em;
 }
-.popup-separator-menu-item {
-    -gradient-height: 2px;
-    -gradient-start: rgba(85,85,85,1);
-    -gradient-end: #555555;
-    -margin-horizontal: 1.5em;
-    height: 1em;
+
+.separator,
+.popup-menu-item.separator {
+    background-color: #555555;
+    height: 2px;
+    margin: .4em 1.75em;
 }
 .popup-alternating-menu-item:alternate {
     font-weight: bold;
