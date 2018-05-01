@@ -1,3 +1,35 @@
+cinnamon (3.8.1) tara; urgency=medium
+
+  [ Michael Webster ]
+  * network applet: Disconnect all signals for NMDevice when our proxy gets destroyed. When the device became unavailable, we would connect to 'firmware-missing' to get notified when it was available again.  At some point, a change to networking caused the NMDevice to get destroyed rather than lingering for the firmware to 'return.'
+  * st-label.c: remove the reference to our ClutterText when  it gets finalized during a Clutter.Actor.destroy() chain.
+
+  [ NikoKrause ]
+  * add symbolics cs-desklet and cs-backgrounds
+
+  [ Michael Webster ]
+  * network applet: Don't show unmanaged networks in the list.
+  * network applet: refresh the panel icon more frequently when the menu is open.
+  * network applet: show the actual active connection's signal strength in the AP list, rather than the strongest AP for a given ssid, which may not be the same thing.
+
+  [ JosephMcc ]
+  * cs_themes.py: Remove the setting for prefer-dark-themes (#7517)
+
+  [ Germán Franco ]
+  * Fix panel tooltips position with multiple monitors (#7503)
+  * window-list: update icons on panel height/orientation changed (#7514)
+  * Workspace switcher improvements (#7508)
+
+  [ Clement Lefebvre ]
+  * systray: Bail out if the plug window is gone
+
+  [ Germán Franco ]
+  * Allow colons in hot corners commands (#7528)
+  * Remove exported variable warning (#7524)
+  * Xlet settings: don't show a row for "generic" settings entries (#7526)
+
+ -- Clement Lefebvre <root@linuxmint.com>  Tue, 01 May 2018 16:05:14 +0100
+
 cinnamon (3.8.0) tara; urgency=medium
 
   [ Stephen Collins ]
