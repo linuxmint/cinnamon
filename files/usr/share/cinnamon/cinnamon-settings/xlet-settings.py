@@ -313,6 +313,8 @@ class MainWindow(object):
                         widget = Text(translate(self.uuid, item["description"]))
                     elif settings_type in XLET_SETTINGS_WIDGETS:
                         widget = globals()[XLET_SETTINGS_WIDGETS[settings_type]](key, info["settings"], item)
+                    else:
+                        continue
 
                     if 'dependency' in item:
                         revealer = JSONSettingsRevealer(info['settings'], item['dependency'])
@@ -347,6 +349,8 @@ class MainWindow(object):
                     widget = Text(translate(self.uuid, item["description"]))
                 elif settings_type in XLET_SETTINGS_WIDGETS:
                     widget = globals()[XLET_SETTINGS_WIDGETS[settings_type]](key, info["settings"], item)
+                else:
+                    continue
 
                 if 'dependency' in item:
                     revealer = JSONSettingsRevealer(info['settings'], item['dependency'])
