@@ -44,6 +44,8 @@ HotCornerManager.prototype = {
 
         for (let i = 0; i < 4; i++) {
             let elements = options[i].split(':');
+            let cmd = elements.splice(0, elements.length-2).join(':');
+            elements.unshift(cmd);
             this.corners[i].setProperties(elements);
         }
         return true;

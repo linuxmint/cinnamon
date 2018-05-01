@@ -32,7 +32,7 @@ class Module:
             oc_list = self.settings.get_strv("hotcorner-layout")
             self.properties = []
             for item in oc_list:
-                props = item.split(":")
+                props = item.rsplit(":", 2)
                 self.properties.append(props)
 
             self.corners = []
@@ -59,7 +59,7 @@ class Module:
         oc_list = self.settings.get_strv("hotcorner-layout")
         del self.properties[:]
         for item in oc_list:
-            props = item.split(":")
+            props = item.rsplit(":", 2)
             self.properties.append(props)
         self.update()
 
