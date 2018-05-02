@@ -50,8 +50,8 @@ CATEGORIES = [
 KEYBINDINGS = [
     #   KB Label                        Schema                  Key name               Array?  Category
     # General
-    [_("Toggle Scale"), MUFFIN_KEYBINDINGS_SCHEMA, "switch-to-workspace-down", "general"],
-    [_("Toggle Expo"), MUFFIN_KEYBINDINGS_SCHEMA, "switch-to-workspace-up", "general"],
+    [_("Toggle Scale"), MUFFIN_KEYBINDINGS_SCHEMA, "show-scale", "general"],
+    [_("Toggle Expo"), MUFFIN_KEYBINDINGS_SCHEMA, "show-expo", "general"],
     [_("Cycle through open windows"), MUFFIN_KEYBINDINGS_SCHEMA, "switch-windows", "general"],
     [_("Cycle backwards through open windows"), MUFFIN_KEYBINDINGS_SCHEMA, "switch-windows-backward", "general"],
     [_("Cycle through open windows of the same application"), MUFFIN_KEYBINDINGS_SCHEMA, "switch-group", "general"],
@@ -120,6 +120,8 @@ KEYBINDINGS = [
     [_("Move window to up monitor"), MUFFIN_KEYBINDINGS_SCHEMA, "move-to-monitor-up", "win-monitors"],
     [_("Move window to down monitor"), MUFFIN_KEYBINDINGS_SCHEMA, "move-to-monitor-down", "win-monitors"],
     # Workspaces
+    [_("Switch to top workspace"), MUFFIN_KEYBINDINGS_SCHEMA, "switch-to-workspace-up", "workspaces"],
+    [_("Switch to down workspace"), MUFFIN_KEYBINDINGS_SCHEMA, "switch-to-workspace-down", "workspaces"],
     [_("Switch to left workspace"), MUFFIN_KEYBINDINGS_SCHEMA, "switch-to-workspace-left", "workspaces"],
     [_("Switch to right workspace"), MUFFIN_KEYBINDINGS_SCHEMA, "switch-to-workspace-right", "workspaces"],
     # Workspaces - Direct Nav
