@@ -50,7 +50,7 @@ const POSITIONS = {
 };
 
 const DEFAULT_SLOT_FRACTION = 0.825;
-const WINDOWOVERLAY_ICON_SIZE = 32;
+const WINDOWOVERLAY_ICON_SIZE = 16;
 
 function _interpolate(start, end, step) {
     return start + (end - start) * step;
@@ -394,7 +394,6 @@ WindowOverlay.prototype = {
         this._windowClone = windowClone;
         this._parentActor = parentActor;
         this._hidden = false;
-        this._hovering = false;
         this._isSelected = null;
 
         let tracker = Cinnamon.WindowTracker.get_default();
@@ -408,29 +407,39 @@ WindowOverlay.prototype = {
                                  icon_type: St.IconType.FULLCOLOR,
                                  icon_size: WINDOWOVERLAY_ICON_SIZE });
         }
-        this.icon = icon;
-        icon.width = WINDOWOVERLAY_ICON_SIZE;
-        icon.height = WINDOWOVERLAY_ICON_SIZE;
 
-        this._applicationIconBox = new St.Bin({ style_class: 'window-iconbox' });
-        this._applicationIconBox.set_opacity(255);
-        this._applicationIconBox.add_actor(icon);
-        parentActor.add_actor(this._applicationIconBox);
+        // Window border
+        this.border = new St.Bin({ style_class: 'window-border' });
+        this.borderWidth = 0;
 
-        let button = new St.Button({ style_class: 'window-close' });
-        this.closeButton = button;
+        // Caption (icon + title)
+        let caption = new St.BoxLayout({ style_class: 'window-caption' });
+        caption._spacing = 0;
+        let title = new St.Label({ text: metaWindow.title, y_align: Clutter.ActorAlign.CENTER });
+        title.clutter_text.ellipsize = Pango.EllipsizeMode.END;
+        this._updateCaptionId = metaWindow.connect('notify::title', w => {
+            title.set_text(w.title);
+            this._windowClone.myContainer._showWindowOverlay(this._windowClone, false);
+        });
+        caption.add_actor(icon);
+        caption.add_actor(title);
+
+        // Close button
+        let button = new St.Button({ style_class: 'window-close', track_hover: true });
+        button.connect('clicked', this.closeWindow.bind(this));
         button._overlap = 0;
-        button.hide();
-        parentActor.add_actor(button);
-        button.connect('style-changed',
-                       Lang.bind(this, this._onStyleChanged));
-        button.connect('clicked', Lang.bind(this, this.closeWindow));
 
-        this.refreshTitle(metaWindow.title);
-        this._updateCaptionId = metaWindow.connect('notify::title',
-            Lang.bind(this, function(w) {
-                this.refreshTitle(w.title);
-            }));
+        parentActor.add_actor(this.border);
+        parentActor.add_actor(caption);
+        parentActor.add_actor(button);
+
+        this.caption = caption;
+        this.closeButton = button;
+
+        let styleChangedCallback = this._onStyleChanged.bind(this);
+        this.border.connect('style-changed', styleChangedCallback);
+        caption.connect('style-changed', styleChangedCallback);
+        button.connect('style-changed', styleChangedCallback);
 
         this._pointerTracker = new PointerTracker.PointerTracker();
         windowClone.actor.connect('motion-event', Lang.bind(this, this._onPointerMotion));
@@ -455,87 +464,105 @@ WindowOverlay.prototype = {
     },
 
     _onWindowDemandsAttention: function(display, metaWindow) {
-        if (metaWindow != this._windowClone.metaWindow) return;
-
-        if (!this.title.has_style_class_name(DEMANDS_ATTENTION_CLASS_NAME)) {
-            this.title.add_style_class_name(DEMANDS_ATTENTION_CLASS_NAME);
-            this._applicationIconBox.add_style_class_name(DEMANDS_ATTENTION_CLASS_NAME);
-        }
+        if (metaWindow === this._windowClone.metaWindow)
+            this.caption.add_style_class_name(DEMANDS_ATTENTION_CLASS_NAME);
     },
 
-    refreshTitle: function(titleText) {
-        let name = '';
-        if (this.title) {
-            name = this.title.name;
-            this._parentActor.remove_actor(this.title);
-            this.title.destroy();
-        }
-        let title = new St.Label({ style_class: 'window-caption',
-                                   text: titleText });
-        this.title = title;
-        title.name = name;
-        title.clutter_text.ellipsize = Pango.EllipsizeMode.END;
-        title._spacing = 0;
-        this._parentActor.add_actor(title);
-        let mw = this._windowClone.metaWindow
-        if (mw.is_urgent && (mw.is_demanding_attention() || mw.is_urgent())) {
-            this.title.add_style_class_name(DEMANDS_ATTENTION_CLASS_NAME);
-            this._applicationIconBox.add_style_class_name(DEMANDS_ATTENTION_CLASS_NAME);
-        }
-        title.connect('style-changed',
-                      Lang.bind(this, this._onStyleChanged));
-        if (this._parentActor.get_stage()) {
-            this._onStyleChanged();
-        }
-    },
-
-    setSelected: function(selected) {
-        if (this._isSelected === selected) {
+    setSelected: function(selected, timeout) {
+        if (this._isSelected === selected)
             return;
-        }
         this._isSelected = selected;
-        this.title.name = selected ? 'selected' : '';
-        this.refreshTitle(this.title.text);
 
         if (selected) {
             this._showCloseButton();
-        }
-        else {
-            this.hideCloseButton();
+        } else {
+            if (timeout > 0) {
+                // Monkey patch to avoid animation if we enter again from
+                // the button. Once it is hidden we set this to false again.
+                this._isSelected = true;
+                this._idleHideCloseButton(timeout);
+            } else {
+                this._hideCloseButton();
+            }
         }
     },
 
     hide: function() {
         this._hidden = true;
-        this.closeButton.hide();
-        this.title.hide();
-        this._applicationIconBox.hide();
+        this.caption.hide();
+        this.setSelected(false);
     },
 
     show: function() {
         this._hidden = false;
-        this._hovering = false;
-        this.title.show();
-        this._applicationIconBox.show();
+        this.caption.show();
     },
 
     fadeIn: function() {
+        if (!this._hidden) return;
         this.show();
-        this.title.opacity = 0;
         this._parentActor.raise_top();
-        Tweener.addTween(this.title,
-                        { opacity: 255,
-                          time: CLOSE_BUTTON_FADE_TIME,
-                          transition: 'easeOutQuad' });
+        this.caption.opacity = 0;
+        Tweener.addTween(this.caption,
+                       { opacity: 255,
+                         time: CLOSE_BUTTON_FADE_TIME,
+                         transition: 'easeOutQuad' });
     },
 
-    chromeWidth: function () {
-        return this.closeButton.width - this.closeButton._overlap;
+    _idleHideCloseButton: function(timeout) {
+        if (this._idleToggleCloseId === 0)
+          this._idleToggleCloseId = Mainloop.timeout_add(timeout, this._idleToggleCloseButton.bind(this));
+    },
+
+    _idleToggleCloseButton: function() {
+        this._idleToggleCloseId = 0;
+        if (!this._windowClone.actor.has_pointer && !this.closeButton.has_pointer) {
+            this._isSelected = false;
+            this._hideCloseButton();
+        }
+        return false;
+    },
+
+    _hideCloseButton: function() {
+        if (this._idleToggleCloseId > 0) {
+            Mainloop.source_remove(this._idleToggleCloseId);
+            this._idleToggleCloseId = 0;
+        }
+        for (let item of [this.closeButton, this.border]) {
+            item.opacity = 255;
+            Tweener.addTween(item,
+                           { opacity: 0,
+                             time: CLOSE_BUTTON_FADE_TIME,
+                             transition: 'easeInQuad',
+                             onComplete: () => item.hide() });
+        }
+        this.caption.remove_style_pseudo_class('focus');
+    },
+
+    _showCloseButton: function() {
+        this._parentActor.raise_top();
+        for (let item of [this.closeButton, this.border]) {
+            item.show();
+            item.opacity = 0;
+            Tweener.addTween(item,
+                           { opacity: 255,
+                             time: CLOSE_BUTTON_FADE_TIME,
+                             transition: 'easeInQuad' });
+        }
+        this.caption.add_style_pseudo_class('focus');
+        this.emit('show-close-button');
+    },
+
+    chromeWidths: function () {
+        /* Reserve space for the close button on both sides, because we don't
+           know on which side it is. Also to horizontally center the window. */
+        let close_buttn = Math.max(this.borderWidth, this.closeButton.width - this.closeButton._overlap)
+        return [close_buttn, close_buttn];
     },
 
     chromeHeights: function () {
-        return [this.closeButton.height - this.closeButton._overlap,
-               this._applicationIconBox.height + this.title._spacing];
+        return [Math.max(this.closeButton.height - this.closeButton._overlap, this.borderWidth),
+               this.caption.height + this.caption._spacing];
     },
 
     /**
@@ -549,11 +576,13 @@ WindowOverlay.prototype = {
     // as windowClone might be moving.
     // See Workspace._showWindowOverlay
     updatePositions: function(cloneX, cloneY, cloneWidth, cloneHeight, maxWidth) {
+        let border = this.border;
+        let caption = this.caption;
         let button = this.closeButton;
 
         let settings = new Gio.Settings({ schema_id: BUTTON_LAYOUT_SCHEMA });
         let layout = settings.get_string(BUTTON_LAYOUT_KEY);
-        let rtl = St.Widget.get_default_direction() == St.TextDirection.RTL;
+        let rtl = St.Widget.get_default_direction() === St.TextDirection.RTL;
 
         let split = layout.split(":");
         let side;
@@ -564,29 +593,26 @@ WindowOverlay.prototype = {
 
         let buttonX;
         let buttonY = cloneY - (button.height - button._overlap);
-        if (side == St.Side.LEFT)
+        if (side === St.Side.LEFT)
             buttonX = cloneX - (button.width - button._overlap);
         else
             buttonX = cloneX + (cloneWidth - button._overlap);
 
         button.set_position(Math.round(buttonX), Math.round(buttonY));
 
-        this.updateIconCaptionWidth = Lang.bind(this, function() {
-            let title = this.title;
-            let iconWidth = this._applicationIconBox.width + title._spacing;
-            title.width = Math.min(maxWidth - iconWidth, title.width);
-            let titleX = cloneX + (iconWidth + cloneWidth - title.width) / 2;
-            let titleY = cloneY + cloneHeight + title._spacing + (WINDOWOVERLAY_ICON_SIZE/2) - (title.height/2);
-            title.set_position(Math.floor(titleX), Math.floor(titleY));
+        let borderX = cloneX - this.borderWidth;
+        let borderY = cloneY - this.borderWidth;
+        let borderWidth = cloneWidth + 2 * this.borderWidth;
+        let borderHeight = cloneHeight + 2 * this.borderWidth;
+        border.set_position(Math.round(borderX), Math.round(borderY));
+        border.set_size(Math.round(borderWidth), Math.round(borderHeight));
 
-            let icon = this._applicationIconBox;
-
-            let iconX = titleX - iconWidth;
-            let iconY = cloneY + cloneHeight + title._spacing;
-
-            icon.set_position(Math.floor(iconX), Math.floor(iconY));
-        });
-        this.updateIconCaptionWidth();
+        let [minW, captionWidth] = caption.get_preferred_width(-1);
+        captionWidth = Math.min(maxWidth, captionWidth);
+        let captionX = cloneX + (cloneWidth - captionWidth) / 2;
+        let captionY = cloneY + cloneHeight + caption._spacing;
+        caption.set_position(Math.round(captionX), Math.round(captionY));
+        caption.width = captionWidth;
     },
 
     closeWindow: function() {
@@ -624,10 +650,10 @@ WindowOverlay.prototype = {
         }
         this.disconnectAttentionSignals();
         this._windowClone.metaWindow.disconnect(this._updateCaptionId);
-        this.title.destroy();
+
+        this.border.destroy();
+        this.caption.destroy();
         this.closeButton.destroy();
-        this.icon.destroy();
-        this._applicationIconBox.destroy();
     },
 
     _onPointerMotion: function() {
@@ -637,57 +663,26 @@ WindowOverlay.prototype = {
         // as the close button will be shown as needed when the overlays
         // are shown again
         if (this._hidden) return;
-        if (this._hovering) return;
-
-        this._hovering = true;
-        this._showCloseButton();
-    },
-
-    _showCloseButton: function() {
-        this._parentActor.raise_top();
-        this.closeButton.show();
-        this.emit('show-close-button');
+        this.setSelected(true);
     },
 
     _onPointerLeave: function() {
         if (!this._pointerTracker.hasMoved()) {return;}
-        this._hovering = false;
-        this._idleHideCloseButton();
-    },
 
-    _idleHideCloseButton: function() {
-        if (this._idleToggleCloseId == 0)
-            this._idleToggleCloseId = Mainloop.timeout_add(750, Lang.bind(this, this._idleToggleCloseButton));
-    },
-
-    _idleToggleCloseButton: function() {
-        this._idleToggleCloseId = 0;
-        if (!this._windowClone.actor.has_pointer && !this.closeButton.has_pointer) {
-            this.closeButton.hide();
-        }
-
-        return false;
-    },
-
-    hideCloseButton: function() {
-        if (this._idleToggleCloseId > 0) {
-            Mainloop.source_remove(this._idleToggleCloseId);
-            this._idleToggleCloseId = 0;
-        }
-        this.closeButton.hide();
+        this.setSelected(false, 750);
     },
 
     _onStyleChanged: function() {
-        let titleNode = this.title.get_theme_node();
-        this.title._spacing = titleNode.get_length('-cinnamon-caption-spacing');
+        let titleNode = this.caption.get_theme_node();
+        this.caption._spacing = titleNode.get_length('-cinnamon-caption-spacing');
 
         let closeNode = this.closeButton.get_theme_node();
         this.closeButton._overlap = closeNode.get_length('-cinnamon-close-overlap');
 
+        let borderNode = this.border.get_theme_node();
+        this.borderWidth = borderNode.get_border_width(St.Side.TOP);
+
         this._parentActor.queue_relayout();
-        if (this.updateIconCaptionWidth) {
-            this.updateIconCaptionWidth();
-        }
     }
 };
 Signals.addSignalMethods(WindowOverlay.prototype);
@@ -916,24 +911,19 @@ WorkspaceMonitor.prototype = {
      */
     _computeWindowLayout: function(metaWindow, slot) {
         let [x, y, width, height] = this._getSlotGeometry(slot);
-
         let rect = metaWindow.get_outer_rect();
-        let buttonOuterHeight, captionIconHeight;
-        let buttonOuterWidth = 0;
+        let topBorder = 0, bottomBorder = 0, leftBorder = 0, rightBorder = 0;
 
         if (this._windows.length) {
-            [buttonOuterHeight, captionIconHeight] = this._windows[0].overlay.chromeHeights();
-            buttonOuterWidth = this._windows[0].overlay.chromeWidth();
-        } else {
-            [buttonOuterHeight, captionIconHeight] = [0, 0];
+            [topBorder, bottomBorder] = this._windows[0].overlay.chromeHeights();
+            [leftBorder, rightBorder]  = this._windows[0].overlay.chromeWidths();
         }
-        let scale = Math.min((width - buttonOuterWidth) / rect.width,
-                             (height - buttonOuterHeight - captionIconHeight) / rect.height,
+        let scale = Math.min((width - leftBorder - rightBorder) / rect.width,
+                            (height - topBorder - bottomBorder) / rect.height,
                              1.0);
-
-        x = Math.floor(x + (width - scale * rect.width) / 2);
-        y = Math.floor(y + ((height - (scale * rect.height)) / 2) - captionIconHeight);
-
+        // This is magic
+        x = Math.floor(x + (width - scale * rect.width - rightBorder + leftBorder) / 2);
+        y = Math.floor(y + (height - scale * rect.height - bottomBorder + topBorder) / 2);
         return [x, y, scale];
     },
 
@@ -1003,9 +993,7 @@ WorkspaceMonitor.prototype = {
                                    scale_y: scale,
                                    time: Overview.ANIMATION_TIME,
                                    transition: 'easeOutQuad',
-                                   onComplete: Lang.bind(this, function() {
-                                      this._showWindowOverlay(clone, true);
-                                   })
+                                   onComplete: () => this._showWindowOverlay(clone, true)
                                  });
             } else {
                 clone.actor.set_position(x, y);
@@ -1066,9 +1054,8 @@ WorkspaceMonitor.prototype = {
     _showAllOverlays: function() {
         let currentWorkspace = global.screen.get_active_workspace();
         for (let i = 0; i < this._windows.length; i++) {
-            let clone = this._windows[i];
-            this._showWindowOverlay(clone,
-                                    this.metaWorkspace == null || this.metaWorkspace == currentWorkspace);
+            this._showWindowOverlay(this._windows[i],
+                    this.metaWorkspace == null || this.metaWorkspace === currentWorkspace);
         }
     },
 
@@ -1408,9 +1395,8 @@ WorkspaceMonitor.prototype = {
     _onShowOverlayClose: function (windowOverlay) {
         for (let i = 0; i < this._windows.length; i++) {
             let overlay = this._windows[i].overlay;
-            if (overlay == windowOverlay)
-                continue;
-            overlay.hideCloseButton();
+            if (overlay !== windowOverlay)
+                overlay.setSelected(false);
         }
     },
 

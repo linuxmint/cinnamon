@@ -409,17 +409,6 @@ StScrollBar StButton#vhandle:hover {
 #overview {
     spacing: 12px;
 }
-.window-caption {
-    background-color: black;
-    color: white;
-    spacing: 25px;
-}
-
-.window-caption#selected {
-    background-color: white;
-    color: black;
-    spacing: 25px;
-}
 
 .workspace-controls {
     visible-height: 32px; /* Amount visible before hovering */
@@ -461,23 +450,37 @@ StScrollBar StButton#vhandle:hover {
     outline: 2px solid white;
     border: 1px solid #888;
 }
+
 .window-caption {
     background: rgba(85,85,85,0.8);
-    border: 1px solid rgba(128,128,128,0.40);
+    border: 2px solid #a5a5a5;
     border-radius: 4px;
-    font-size: 9pt;
-    padding: 2px 8px;
-    -cinnamon-caption-spacing: 4px;
+    padding: .5em;
+    spacing: .5em;
+    -cinnamon-caption-spacing: 8px;
+    font-size: 10pt;
+    color: #ccc;
+    max-width: 20em;
 }
+.window-caption:focus {
+    color: #fff;
+}
+
+.window-border {
+    border: 3px #a5a5a5;
+    border-radius: 4px;
+    background-color: rgba(255,255,255,.05);
+    /* Cover rounded corners and some bad adjustment gaps */
+    box-shadow: 0 0 0 1px #a5a5a5 inset;
+}
+
 .window-close {
     background-image: url("close-window.svg");
-    height: 34px;
-    width: 34px;
-    -cinnamon-close-overlap: 17px;
+    height: 28px;
+    width: 28px;
+    -cinnamon-close-overlap: 13px;
 }
-.window-close:rtl {
-    -st-background-image-shadow: 2px 2px 6px rgba(0,0,0,0.5);
-}
+.window-close:hover {/* ! */}
 
 .window-close-area {
     background-image: url("trash-icon.png");
