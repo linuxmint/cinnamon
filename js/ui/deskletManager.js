@@ -422,8 +422,11 @@ DeskletContainer.prototype = {
         this.stageEventIds = [];
 
         this.keybindingSettings = new Gio.Settings({ schema_id: KEYBINDING_SCHEMA });
-        let keyBinding = this.keybindingSettings.get_strv(SHOW_DESKLETS_KEY);
-        Main.keybindingManager.addHotKeyArray(SHOW_DESKLETS_KEY, keyBinding, () => this.toggle());
+        Main.keybindingManager.addHotKeyArray(
+            SHOW_DESKLETS_KEY,
+            this.keybindingSettings.get_strv(SHOW_DESKLETS_KEY),
+            () => this.toggle()
+        );
         global.settings.connect('changed::panel-edit-mode', () => {
             if (this.isModal) {
                 this.lower();
