@@ -20,6 +20,7 @@ D_GROUP = "Desktop Entry"
 DEFAULT_ICON = "system-run"
 AUTOSTART_APPS = collections.OrderedDict()
 
+KEYFILE_FLAGS = GLib.KeyFileFlags.KEEP_COMMENTS and GLib.KeyFileFlags.KEEP_TRANSLATIONS
 
 def list_header_func(row, before, user_data):
     if before and not row.get_header():
@@ -123,7 +124,7 @@ class AutostartApp():
 
     def load(self):
         try:
-            self.key_file.load_from_file(self.app, GLib.KeyFileFlags.KEEP_COMMENTS and GLib.KeyFileFlags.KEEP_TRANSLATIONS)
+            self.key_file.load_from_file(self.app, KEYFILE_FLAGS)
         except GLib.GError as e:
             print("Failed to load %s" % self.app, e)
             return
@@ -207,17 +208,20 @@ class AutostartApp():
             self.app = os.path.join(self.system_position, self.basename)
             os.remove(old_app)
             self.key_file = GLib.KeyFile.new()
-            if self.key_file.load_from_file(self.app, GLib.KeyFileFlags.KEEP_COMMENTS and GLib.KeyFileFlags.KEEP_TRANSLATIONS):
+            if self.key_file.load_from_file(self.app, KEYFILE_FLAGS):
                 self.load()
             self.save_done_success()
             return False
 
-        use_path = self.path
-
-        key_file = GLib.KeyFile.new()
-
         try:
-            key_file.load_from_file(use_path, GLib.KeyFileFlags.KEEP_COMMENTS and GLib.KeyFileFlags.KEEP_TRANSLATIONS)
+            key_file = GLib.KeyFile.new()
+
+            if self.user_position == None:
+                self.user_position = os.path.join(GLib.get_user_config_dir(), "autostart")
+                self.path = os.path.join(self.user_position, self.basename)
+                key_file.load_from_file(os.path.join(self.system_position, self.basename), KEYFILE_FLAGS)
+            else:
+                key_file.load_from_file(self.path, KEYFILE_FLAGS)
         except:
             key_file.set_string(D_GROUP, GLib.KEY_FILE_DESKTOP_KEY_TYPE, "Application")
             key_file.set_string(D_GROUP, GLib.KEY_FILE_DESKTOP_KEY_EXEC, "/bin/false")
@@ -258,13 +262,6 @@ class AutostartApp():
 
         return False
 
-    def queue_save(self):
-        if self.user_position == None:
-            self.user_position = os.path.join(GLib.get_user_config_dir(), "autostart")
-            self.path = os.path.join(self.user_position, self.basename)
-
-        self.save()
-
     def update(self, info):
         changed = False
         if info["name"] != self.name:
@@ -291,12 +288,12 @@ class AutostartApp():
             changed = True
 
         if changed:
-            self.queue_save()
+            self.save()
 
     def set_enabled(self, enabled):
         self.enabled = enabled
         self.save_mask.add_item("enabled")
-        self.queue_save()
+        self.save()
 
     def remove(self):
         if not self.system_position and self.user_position:
@@ -306,13 +303,13 @@ class AutostartApp():
             self.save_mask.add_item("hidden")
             self.enabled = False
             self.save_mask.add_item("enabled")
-            self.queue_save()
+            self.save()
 
     def update_description(self):
         if self.name == "":
             self.name = _("No name")
         if self.comment == "":
-            self.comment == _("No description")
+            self.comment = _("No description")
 
     def user_equals_system(self):
         if not self.system_position:
@@ -566,7 +563,7 @@ class AutostartBox(Gtk.Box):
 
             app.save_mask.add_item("all")
 
-            app.queue_save()
+            app.save()
 
             row = AutostartRow(app)
             self.add_row(row)
@@ -599,7 +596,7 @@ class AutostartBox(Gtk.Box):
 
             app.save_mask.add_item("all")
 
-            app.queue_save()
+            app.save()
 
             row = AutostartRow(app)
             self.add_row(row)
