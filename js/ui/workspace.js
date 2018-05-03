@@ -34,22 +34,7 @@ const BUTTON_LAYOUT_KEY = 'button-layout';
 
 const DEMANDS_ATTENTION_CLASS_NAME = "window-list-item-demands-attention";
 
-// Define a layout scheme for small window counts. For larger
-// counts we fall back to an algorithm. We need more schemes here
-// unless we have a really good algorithm.
-
-// Each triplet is [xCenter, yCenter, scale] where the scale
-// is relative to the width of the workspace.
-const POSITIONS = {
-        1: [[0.5, 0.525, 0.875]],
-        2: [[0.25, 0.525, 0.48], [0.75, 0.525, 0.48]],
-        3: [[0.25, 0.275, 0.48],  [0.75, 0.275, 0.48],  [0.5, 0.75, 0.48]],
-        4: [[0.25, 0.275, 0.47],   [0.75, 0.275, 0.47], [0.25, 0.75, 0.47], [0.75, 0.75, 0.47]],
-        5: [[0.165, 0.25, 0.32], [0.495, 0.25, 0.32], [0.825, 0.25, 0.32], [0.25, 0.75, 0.32], [0.75, 0.75, 0.32]],
-        6: [[0.165, 0.25, 0.32], [0.495, 0.25, 0.32], [0.825, 0.25, 0.32], [0.165, 0.75, 0.32], [0.495, 0.75, 0.32], [0.825, 0.75, 0.32]]
-};
-
-const DEFAULT_SLOT_FRACTION = 0.825;
+const DEFAULT_SLOT_FRACTION = 0.99;
 const WINDOWOVERLAY_ICON_SIZE = 16;
 
 function _interpolate(start, end, step) {
@@ -275,7 +260,6 @@ WindowClone.prototype = {
         [this.actor.scale_x, this.actor.scale_y] = this._zoomGlobalOrig.interpScale(this._zoomTarget, this._zoomStep / 100);
 
         let [width, height] = this.actor.get_transformed_size();
-
         let monitorIndex = this.metaWindow.get_monitor();
         let monitor = Main.layoutManager.monitors[monitorIndex];
         let availArea = new Meta.Rectangle({ x: monitor.x,
@@ -889,10 +873,10 @@ WorkspaceMonitor.prototype = {
      * of a given window layout slot.
      */
     _getSlotGeometry: function(slot) {
-        let [xCenter, yCenter, fraction] = slot;
+        let [xCenter, yCenter, xFraction, yFraction] = slot;
 
-        let width = (this._width - this._margin * 2) * fraction;
-        let height = (this._height - this._margin * 2) * fraction;
+        let width = (this._width - this._margin * 2) * xFraction;
+        let height = (this._height - this._margin * 2) * yFraction;
 
         let x = this._x + this._margin + xCenter * (this._width - this._margin * 2) - width / 2 ;
         let y = this._y + this._margin + yCenter * (this._height - this._margin * 2) - height / 2;
@@ -1401,28 +1385,30 @@ WorkspaceMonitor.prototype = {
     },
 
     _computeAllWindowSlots: function(numberOfWindows) {
-        if (!numberOfWindows) return [];
+        if (numberOfWindows <= 0) return [];
+
         let gridWidth = Math.ceil(Math.sqrt(numberOfWindows));
         let gridHeight = Math.ceil(numberOfWindows / gridWidth);
-        let fraction = DEFAULT_SLOT_FRACTION * (1. / gridWidth);
-        this._slotWidth = Math.floor(fraction * this._width);
+        let xFraction = DEFAULT_SLOT_FRACTION / gridWidth;
+        let yFraction = DEFAULT_SLOT_FRACTION / gridHeight;
+        this._slotWidth = Math.floor(xFraction * (this._width - this._margin * 2));
 
-        let computeWindowSlot = function(windowIndex, numberOfWindows) {
-            if (numberOfWindows in POSITIONS)
-                return POSITIONS[numberOfWindows][windowIndex];
-
-            // If we don't have a predefined scheme for this window count,
-            // arrange the windows in a grid pattern.
-
-            let xCenter = (.5 / gridWidth) + ((windowIndex) % gridWidth) / gridWidth;
-            let yCenter = (.5 / gridHeight) + Math.floor((windowIndex / gridWidth)) / gridHeight;
-            return [xCenter, yCenter, fraction];
-        };
-
+        // Arrange the windows in a grid pattern.
         let slots = [];
         for (let i = 0; i < numberOfWindows; i++) {
-            slots.push(computeWindowSlot(i, numberOfWindows));
+            let xCenter = (0.5 + i % gridWidth) / gridWidth;
+            let yCenter = (0.5 + Math.floor(i / gridWidth)) / gridHeight;
+            slots[i] = [xCenter, yCenter, xFraction, yFraction];
         }
+
+        /* Shift last row to the center by adding half the unused space to
+           the x-coordinate (this usually does just 0, 1 or 2 iterations) */
+        let slots_last_row = numberOfWindows % gridWidth;
+        let remaining_space = 1 - slots_last_row / gridWidth;
+        for (let i = slots.length - slots_last_row; i < slots.length; i++) {
+            slots[i][0] += remaining_space / 2;
+        }
+
         return slots;
     },
 
@@ -1625,7 +1611,7 @@ Workspace.prototype = {
         this.currentMonitorIndex = Main.layoutManager.primaryIndex;
         Main.layoutManager.monitors.forEach(function(monitor, ix) {
             let m = new WorkspaceMonitor(metaWorkspace, ix, this, ix === this.currentMonitorIndex)
-            m.setGeometry(monitor.x, monitor.y, monitor.width, monitor.height, 0);
+            m.setGeometry(monitor.x, monitor.y, monitor.width, monitor.height, monitor.width * .01);
             this._monitors.push(m);
             this.actor.add_actor(m.actor);
         }, this);
