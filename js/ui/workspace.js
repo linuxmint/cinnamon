@@ -2,7 +2,6 @@
 
 const Clutter = imports.gi.Clutter;
 const Gio = imports.gi.Gio;
-const Lang = imports.lang;
 const Mainloop = imports.mainloop;
 const Meta = imports.gi.Meta;
 const Pango = imports.gi.Pango;
@@ -122,10 +121,9 @@ WindowClone.prototype = {
         this._stackAbove = null;
 
         let sizeChangedId = this.realWindow.connect('size-changed',
-            Lang.bind(this, this._onRealWindowSizeChanged));
-        let workspaceChangedId = this.metaWindow.connect('workspace-changed', Lang.bind(this, function(w, oldws) {
-            this.emit('workspace-changed', oldws);
-        }));
+                this._onRealWindowSizeChanged.bind(this));
+        let workspaceChangedId = this.metaWindow.connect('workspace-changed',
+                (w, oldws) => this.emit('workspace-changed', oldws));
         let realWindowDestroyId = 0;
         this._disconnectWindowSignals = function() {
             this._disconnectWindowSignals = function() {};
@@ -134,20 +132,16 @@ WindowClone.prototype = {
             this.realWindow.disconnect(realWindowDestroyId);
         };
         realWindowDestroyId = this.realWindow.connect('destroy',
-            Lang.bind(this, this._disconnectWindowSignals));
+            this._disconnectWindowSignals.bind(this));
 
+        this.myContainer.connect('selection-changed', this._zoomEnd.bind(this));
 
-        this.myContainer.connect('selection-changed', Lang.bind(this, this._zoomEnd));
+        this.actor.connect('button-release-event', this._onButtonRelease.bind(this));
+        this.actor.connect('button-press-event', this._onButtonPress.bind(this));
+        this.actor.connect('scroll-event', this._onScroll.bind(this));
 
-        this.actor.connect('button-release-event', Lang.bind(this, this._onButtonRelease));
-        this.actor.connect('button-press-event', Lang.bind(this, this._onButtonPress));
-
-        this.actor.connect('scroll-event',
-                           Lang.bind(this, this._onScroll));
-
-        this.actor.connect('destroy', Lang.bind(this, this._onDestroy));
-        this.actor.connect('leave-event',
-                           Lang.bind(this, this._onPointerLeave));
+        this.actor.connect('destroy', this._onDestroy.bind(this));
+        this.actor.connect('leave-event', this._onPointerLeave.bind(this));
 
         this._windowIsZooming = false;
         this._zooming = false;
@@ -423,16 +417,17 @@ WindowOverlay.prototype = {
         button.connect('style-changed', styleChangedCallback);
 
         this._pointerTracker = new PointerTracker.PointerTracker();
-        windowClone.actor.connect('motion-event', Lang.bind(this, this._onPointerMotion));
-        windowClone.actor.connect('leave-event', Lang.bind(this, this._onPointerLeave));
+        windowClone.actor.connect('motion-event', this._onPointerMotion.bind(this));
+        windowClone.actor.connect('leave-event', this._onPointerLeave.bind(this));
 
         this._idleToggleCloseId = 0;
-        windowClone.actor.connect('destroy', Lang.bind(this, this._onDestroy));
-        windowClone.connect('zoom-start', Lang.bind(this, this.hide));
-        windowClone.connect('zoom-end', Lang.bind(this, this.show));
+        windowClone.actor.connect('destroy', this._onDestroy.bind(this));
+        windowClone.connect('zoom-start', this.hide.bind(this));
+        windowClone.connect('zoom-end', this.show.bind(this));
 
-        let attentionId = global.display.connect('window-demands-attention', Lang.bind(this, this._onWindowDemandsAttention));
-        let urgentId = global.display.connect('window-marked-urgent', Lang.bind(this, this._onWindowDemandsAttention));
+        let demandsAttentionCallback = this._onWindowDemandsAttention.bind(this);
+        let attentionId = global.display.connect('window-demands-attention', demandsAttentionCallback);
+        let urgentId = global.display.connect('window-marked-urgent', demandsAttentionCallback);
         this.disconnectAttentionSignals = function() {
             global.display.disconnect(attentionId);
             global.display.disconnect(urgentId);
@@ -492,7 +487,7 @@ WindowOverlay.prototype = {
 
     _idleHideCloseButton: function(timeout) {
         if (this._idleToggleCloseId === 0)
-          this._idleToggleCloseId = Mainloop.timeout_add(timeout, this._idleToggleCloseButton.bind(this));
+            this._idleToggleCloseId = Mainloop.timeout_add(timeout, this._idleToggleCloseButton.bind(this));
     },
 
     _idleToggleCloseButton: function() {
@@ -601,24 +596,22 @@ WindowOverlay.prototype = {
         let workspace = metaWindow.get_workspace();
 
         if (this._disconnectWindowAdded) {this._disconnectWindowAdded();}
-        let windowAddedId = workspace.connect('window-added',Lang.bind(this, function(ws, win){
+        let windowAddedId = workspace.connect('window-added', (ws, win) => {
             if (this._disconnectWindowAdded) {this._disconnectWindowAdded();}
-            if (win.get_transient_for() == metaWindow) {
-
+            if (win.get_transient_for() === metaWindow) {
                 // use an idle handler to avoid mapping problems -
                 // see comment in Workspace._windowAdded
-                Mainloop.idle_add(Lang.bind(this,
-                                            function() {
-                                                this._windowClone.emit('activated');
-                                                return false;
-                                            }));
+                Mainloop.idle_add(() => {
+                    this._windowClone.emit('activated');
+                    return false;
+                });
             }
-        }));
+        });
 
-        this._disconnectWindowAdded = Lang.bind(this, function() {
+        this._disconnectWindowAdded = () => {
             workspace.disconnect(windowAddedId);
             this._disconnectWindowAdded = 0;
-        });
+        };
 
         metaWindow.delete(global.get_current_time());
     },
@@ -704,14 +697,12 @@ WorkspaceMonitor.prototype = {
         this.actor.add_actor(this._dropRect);
         this.actor.add_actor(this._windowOverlaysGroup);
 
-        this.actor.connect('destroy', Lang.bind(this, this._onDestroy));
-        Main.overview.connect('overview-background-button-press', function() {
-            closeContextMenu();
-        });
+        this.actor.connect('destroy', this._onDestroy.bind(this));
+        Main.overview.connect('overview-background-button-press', closeContextMenu);
 
-        this.stickyCallbackId = workspace.myView.connect('sticky-detected', Lang.bind(this, function(box, metaWindow) {
+        this.stickyCallbackId = workspace.myView.connect('sticky-detected', (box, metaWindow) => {
             this._doAddWindow(metaWindow);
-        }));
+        });
         let windows = global.get_window_actors().filter(this._isMyWindow, this);
 
         // Create clones for windows that should be
@@ -726,32 +717,32 @@ WorkspaceMonitor.prototype = {
         // Track window changes
         if (this.metaWorkspace) {
             this._windowAddedId = this.metaWorkspace.connect('window-added',
-                                                             Lang.bind(this, this._windowAdded));
+                                                  this._windowAdded.bind(this));
             this._windowRemovedId = this.metaWorkspace.connect('window-removed',
-                                                               Lang.bind(this, this._windowRemoved));
+                                                  this._windowRemoved.bind(this));
         }
         this._windowEnteredMonitorId = global.screen.connect('window-entered-monitor',
-            Lang.bind(this, this._windowEnteredMonitor));
+                                              this._windowEnteredMonitor.bind(this));
         this._windowLeftMonitorId = global.screen.connect('window-left-monitor',
-            Lang.bind(this, this._windowLeftMonitor));
+                                              this._windowLeftMonitor.bind(this));
         this._repositionWindowsId = 0;
 
         this.leavingOverview = false;
 
         this._kbWindowIndex = 0; // index of the current keyboard-selected window
         if (hasFocus) {
-            this.onInitialPositionWindows = Lang.bind(this, function() {
+            this.onInitialPositionWindows = () => {
                 // default-select the first window
                 this.selectAnotherWindow(Clutter.Home);
-                Mainloop.idle_add(Lang.bind(this, function() {
+                Mainloop.idle_add(() => {
                     // if keyboard focus is at the default position,
                     // make sure that the close button is drawn,
                     // which must done a little bit later
                     if (this._kbWindowIndex === 0) {
                         this.selectAnotherWindow(Clutter.Home);
                     }
-                }));
-            });
+                });
+            };
         }
     },
 
@@ -789,10 +780,10 @@ WorkspaceMonitor.prototype = {
     },
 
     _onCloneContextMenuRequested: function(clone) {
-        menuShowing = new WindowContextMenu(clone.actor, clone.metaWindow, Lang.bind(this, function() {
+        menuShowing = new WindowContextMenu(clone.actor, clone.metaWindow, () => {
             menuShowing = null; menuClone = null;
             this._myWorkspace.emit('focus-refresh-required');
-        }));
+        });
         menuClone = clone;
         menuShowing.toggle();
     },
@@ -842,11 +833,10 @@ WorkspaceMonitor.prototype = {
         this._margin = margin;
 
         // This is sometimes called during allocation, so we do this later
-        Meta.later_add(Meta.LaterType.BEFORE_REDRAW, Lang.bind(this,
-            function () {
-                this.positionWindows(WindowPositionFlags.ANIMATE);
-                return false;
-            }));
+        Meta.later_add(Meta.LaterType.BEFORE_REDRAW, () => {
+            this.positionWindows(WindowPositionFlags.ANIMATE);
+            return false;
+        });
     },
 
     _lookupIndex: function (metaWindow) {
@@ -1134,7 +1124,7 @@ WorkspaceMonitor.prototype = {
         this._cursorY = y;
 
         this._repositionWindowsId = Mainloop.timeout_add(750,
-            Lang.bind(this, this._delayedWindowRepositioning));
+                this._delayedWindowRepositioning.bind(this));
     },
 
     _doAddWindow : function(metaWin) {
@@ -1145,14 +1135,13 @@ WorkspaceMonitor.prototype = {
         if (!win) {
             // Newly-created windows are added to a workspace before
             // the compositor finds out about them...
-            Mainloop.idle_add(Lang.bind(this,
-                                        function () {
-                                            if (this.actor &&
-                                                metaWin.get_compositor_private() &&
-                                                metaWin.get_workspace() == this.metaWorkspace)
-                                                this._doAddWindow(metaWin);
-                                            return false;
-                                        }));
+            Mainloop.idle_add(() => {
+                if (this.actor &&
+                    metaWin.get_compositor_private() &&
+                    metaWin.get_workspace() === this.metaWorkspace)
+                    this._doAddWindow(metaWin);
+                return false;
+            });
             return;
         }
 
@@ -1199,13 +1188,13 @@ WorkspaceMonitor.prototype = {
     },
 
     _windowEnteredMonitor : function(metaScreen, monitorIndex, metaWin) {
-        if (monitorIndex == this.monitorIndex) {
+        if (monitorIndex === this.monitorIndex) {
             this._doAddWindow(metaWin);
         }
     },
 
     _windowLeftMonitor : function(metaScreen, monitorIndex, metaWin) {
-        if (monitorIndex == this.monitorIndex) {
+        if (monitorIndex === this.monitorIndex) {
             this._doRemoveWindow(metaWin);
         }
     },
@@ -1243,8 +1232,8 @@ WorkspaceMonitor.prototype = {
             Mainloop.source_remove(this._repositionWindowsId);
             this._repositionWindowsId = 0;
         }
-        this._overviewHiddenId = Main.overview.connect('hidden', Lang.bind(this,
-                                                                           this._doneLeavingOverview));
+        this._overviewHiddenId = Main.overview.connect('hidden',
+                this._doneLeavingOverview.bind(this));
 
         if (this.metaWorkspace != null && this.metaWorkspace != currentWorkspace)
             return;
@@ -1334,37 +1323,27 @@ WorkspaceMonitor.prototype = {
         let clone = new WindowClone(win, this);
         let overlay = new WindowOverlay(clone, this._windowOverlaysGroup);
 
-        clone.connect('workspace-changed', Lang.bind(this, function() {
+        clone.connect('workspace-changed', () => {
             this._doRemoveWindow(clone.metaWindow);
             if (clone.metaWindow.is_on_all_workspaces()) {
                 // Muffin appears not to broadcast when a window turns sticky
                 this._myWorkspace.myView.emit('sticky-detected', clone.metaWindow);
             }
-        }));
-        clone.connect('selected',
-                      Lang.bind(this, this._onCloneSelected));
-        clone.connect('activated',
-                      Lang.bind(this, this._onCloneActivated));
-        clone.connect('closed',
-                      Lang.bind(this, this._onCloneClosed));
-        clone.connect('context-menu-requested',
-                      Lang.bind(this, this._onCloneContextMenuRequested));
-        clone.connect('zoom-start', Lang.bind(this, function(clone) {
+        });
+        clone.connect('selected', this._onCloneSelected.bind(this));
+        clone.connect('activated', this._onCloneActivated.bind(this));
+        clone.connect('closed', this._onCloneClosed.bind(this));
+        clone.connect('context-menu-requested', this._onCloneContextMenuRequested.bind(this));
+        clone.connect('zoom-start', clone => {
             this.selectClone(clone);
             this._windowIsZooming = true;
-        }));
-        clone.connect('zoom-end',
-                      Lang.bind(this, function() {
-                          this._windowIsZooming = false;
-                      }));
-        clone.connect('size-changed',
-                      Lang.bind(this, function() {
-                          this.positionWindows(0);
-                      }));
+        });
+        clone.connect('zoom-end', () => { this._windowIsZooming = false });
+        clone.connect('size-changed', () => { this.positionWindows(0) });
 
         this.actor.add_actor(clone.actor);
 
-        overlay.connect('show-close-button', Lang.bind(this, this._onShowOverlayClose));
+        overlay.connect('show-close-button', this._onShowOverlayClose.bind(this));
 
         this._windows.push(clone);
         clone.overlay = overlay;
@@ -1440,49 +1419,49 @@ WindowContextMenu.prototype = {
         this.actor.hide();
         let orientation = St.Side.TOP;
         this.onClose = onClose;
-        actor.connect('key-press-event', Lang.bind(this, this._onSourceKeyPress));
-        this.connect('open-state-changed', Lang.bind(this, this._onToggled));
+        actor.connect('key-press-event', this._onSourceKeyPress.bind(this));
+        this.connect('open-state-changed', this._onToggled.bind(this));
 
         this.metaWindow = metaWindow;
 
         this.itemCloseWindow = new PopupMenu.PopupMenuItem(_("Close"));
-        this.itemCloseWindow.connect('activate', Lang.bind(this, this._onCloseWindowActivate));
+        this.itemCloseWindow.connect('activate', this._onCloseWindowActivate.bind(this));
 
         if (metaWindow.minimized)
             this.itemMinimizeWindow = new PopupMenu.PopupMenuItem(_("Restore"));
         else
             this.itemMinimizeWindow = new PopupMenu.PopupMenuItem(_("Minimize"));
-        this.itemMinimizeWindow.connect('activate', Lang.bind(this, this._onMinimizeWindowActivate));
+        this.itemMinimizeWindow.connect('activate', this._onMinimizeWindowActivate.bind(this));
 
         this.itemMaximizeWindow = new PopupMenu.PopupMenuItem(_("Maximize"));
-        this.itemMaximizeWindow.connect('activate', Lang.bind(this, this._onMaximizeWindowActivate));
+        this.itemMaximizeWindow.connect('activate', this._onMaximizeWindowActivate.bind(this));
 
         this.itemMoveToLeftWorkspace = new PopupMenu.PopupMenuItem(_("Move to left workspace"));
-        this.itemMoveToLeftWorkspace.connect('activate', Lang.bind(this, this._onMoveToLeftWorkspace));
+        this.itemMoveToLeftWorkspace.connect('activate', this._onMoveToLeftWorkspace.bind(this));
 
         this.itemMoveToRightWorkspace = new PopupMenu.PopupMenuItem(_("Move to right workspace"));
-        this.itemMoveToRightWorkspace.connect('activate', Lang.bind(this, this._onMoveToRightWorkspace));
+        this.itemMoveToRightWorkspace.connect('activate', this._onMoveToRightWorkspace.bind(this));
 
         this.itemOnAllWorkspaces = new PopupMenu.PopupMenuItem(_("Visible on all workspaces"));
-        this.itemOnAllWorkspaces.connect('activate', Lang.bind(this, this._toggleOnAllWorkspaces));
+        this.itemOnAllWorkspaces.connect('activate', this._toggleOnAllWorkspaces.bind(this));
 
         let itemMoveToNewWorkspace = new PopupMenu.PopupMenuItem(_("Move to a new workspace"));
-        itemMoveToNewWorkspace.connect('activate', Lang.bind(this, function() {
+        itemMoveToNewWorkspace.connect('activate', () => {
             Main.moveWindowToNewWorkspace(metaWindow, true);
-        }));
+        });
 
         let monitorItems = [];
         if (Main.layoutManager.monitors.length > 1) {
-            Main.layoutManager.monitors.forEach(function(monitor, index) {
+            Main.layoutManager.monitors.forEach((monitor, index) => {
                 if (index !== metaWindow.get_monitor()) {
                     let itemChangeMonitor = new PopupMenu.PopupMenuItem(
                         _("Move to monitor %d").format(index + 1));
-                    itemChangeMonitor.connect('activate', Lang.bind(this, function() {
+                    itemChangeMonitor.connect('activate', () => {
                         metaWindow.move_to_monitor(index);
-                    }));
+                    });
                     monitorItems.push(itemChangeMonitor);
                 }
-            }, this);
+            });
             monitorItems.push(new PopupMenu.PopupSeparatorMenuItem());
         }
 
@@ -1496,9 +1475,9 @@ WindowContextMenu.prototype = {
             this.itemMaximizeWindow,
             this.itemCloseWindow
         ]);
-        (orientation == St.Side.BOTTOM ? items : items.reverse()).forEach(function(item) {
+        (orientation == St.Side.BOTTOM ? items : items.reverse()).forEach(item => {
             this.addMenuItem(item);
-        }, this);
+        });
         this.setActiveItem(0);
      },
 
@@ -1605,15 +1584,15 @@ Workspace.prototype = {
         this._monitors = [];
         this._activeClone = null;
         this.currentMonitorIndex = Main.layoutManager.primaryIndex;
-        Main.layoutManager.monitors.forEach(function(monitor, ix) {
+        Main.layoutManager.monitors.forEach((monitor, ix) => {
             let m = new WorkspaceMonitor(metaWorkspace, ix, this, ix === this.currentMonitorIndex)
             m.setGeometry(monitor.x, monitor.y, monitor.width, monitor.height, monitor.width * .01);
             this._monitors.push(m);
             this.actor.add_actor(m.actor);
-        }, this);
-        this.connect('focus-refresh-required', Lang.bind(this, function() {
+        });
+        this.connect('focus-refresh-required', () => {
             this.selectNextNonEmptyMonitor(this.currentMonitorIndex - 1, 1);
-        }));
+        });
     },
 
     findNextNonEmptyMonitor: function(start, increment) {
@@ -1710,9 +1689,7 @@ Workspace.prototype = {
     },
 
     destroy: function() {
-        this._monitors.forEach(function(monitor) {
-            monitor.destroy();
-        }, this);
+        this._monitors.forEach(monitor => monitor.destroy());
         this.actor.destroy();
     },
 
@@ -1721,50 +1698,40 @@ Workspace.prototype = {
     },
 
     zoomFromOverview: function() {
-        this._monitors.forEach(function(monitor) {
-            monitor.zoomFromOverview();
-        }, this);
+        this._monitors.forEach(monitor => monitor.zoomFromOverview());
     },
 
     zoomToOverview: function() {
-        this._monitors.forEach(function(monitor) {
-            monitor.zoomToOverview();
-        }, this);
+        this._monitors.forEach(monitor => monitor.zoomToOverview());
         this.emit('focus-refresh-required');
     },
 
     hasMaximizedWindows: function() {
-        let has = false;
-        this._monitors.forEach(function(monitor) {
-            has = has || monitor.hasMaximizedWindows();
-        }, this);
-        return has;
+        for(let monitor of this._monitors) {
+            if (monitor.hasMaximizedWindows())
+                return true;
+        }
+        return false;
     },
 
     isEmpty: function() {
-        let hasWindows = false;
-        this._monitors.forEach(function(monitor) {
-            hasWindows = hasWindows || !monitor.isEmpty();
-        }, this);
-        return !hasWindows;
+        for(let monitor of this._monitors) {
+            if (!monitor.isEmpty())
+                return false;
+        }
+        return true;
     },
 
     showWindowsOverlays: function() {
-        this._monitors.forEach(function(monitor) {
-            monitor.showWindowsOverlays();
-        }, this);
+        this._monitors.forEach(monitor => monitor.showWindowsOverlays());
     },
 
     hideWindowsOverlays: function() {
-        this._monitors.forEach(function(monitor) {
-            monitor.hideWindowsOverlays();
-        }, this);
+        this._monitors.forEach(monitor =>  monitor.hideWindowsOverlays());
     },
 
     syncStacking: function(arg1) {
-        this._monitors.forEach(function(monitor) {
-            monitor.syncStacking(arg1);
-        }, this);
+        this._monitors.forEach(monitor => monitor.syncStacking(arg1));
     }
 };
 Signals.addSignalMethods(Workspace.prototype);
