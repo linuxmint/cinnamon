@@ -124,8 +124,8 @@ class AutostartApp():
     def load(self):
         try:
             self.key_file.load_from_file(self.app, GLib.KeyFileFlags.KEEP_COMMENTS and GLib.KeyFileFlags.KEEP_TRANSLATIONS)
-        except GLib.GError:
-            print("Failed to load %s" % self.app)
+        except GLib.GError as e:
+            print("Failed to load %s" % self.app, e)
             return
 
         self.key_file_loaded = True
@@ -542,7 +542,7 @@ class AutostartBox(Gtk.Box):
                 return
 
             app = AutostartApp(filename, user_position=os.path.dirname(filename))
-            key = get_appname(app)
+            key = get_appname(filename)
             AUTOSTART_APPS[key] = app
 
             app.basename = os.path.basename(app.app)
