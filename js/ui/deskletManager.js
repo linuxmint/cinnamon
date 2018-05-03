@@ -36,6 +36,8 @@ var deskletChangeKey = 0;
 const ENABLED_DESKLETS_KEY = 'enabled-desklets';
 const DESKLET_SNAP_KEY = 'desklet-snap';
 const DESKLET_SNAP_INTERVAL_KEY = 'desklet-snap-interval';
+const KEYBINDING_SCHEMA = 'org.cinnamon.desktop.keybindings';
+const SHOW_DESKLETS_KEY = 'show-desklets';
 
 function initEnabledDesklets() {
     for (let i = 0; i < definitions.length; i++) {
@@ -418,6 +420,15 @@ DeskletContainer.prototype = {
 
         this.isModal = false;
         this.stageEventIds = [];
+
+        this.keybindingSettings = new Gio.Settings({ schema_id: KEYBINDING_SCHEMA });
+        let keyBinding = this.keybindingSettings.get_strv(SHOW_DESKLETS_KEY);
+        Main.keybindingManager.addHotKeyArray(SHOW_DESKLETS_KEY, keyBinding, () => this.toggle());
+        global.settings.connect('changed::panel-edit-mode', () => {
+            if (this.isModal) {
+                this.lower();
+            }
+        });
     },
 
     /**
@@ -601,5 +612,13 @@ DeskletContainer.prototype = {
     lower: function() {
         this.actor.get_parent().set_child_below_sibling(this.actor, global.window_group);
         this.unsetModal();
+    },
+
+    toggle: function() {
+        if (this.isModal) {
+            this.lower();
+        } else {
+            this.raise();
+        }
     }
 };

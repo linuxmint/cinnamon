@@ -337,6 +337,7 @@ function start() {
 
     slideshowManager = new SlideshowManager.SlideshowManager();
 
+    keybindingManager = new Keybindings.KeybindingManager();
     deskletContainer = new DeskletManager.DeskletContainer();
 
     // Set up stage hierarchy to group all UI actors under one container.
@@ -416,7 +417,6 @@ function start() {
 
     placesManager = new PlacesManager.PlacesManager();
 
-    keybindingManager = new Keybindings.KeybindingManager();
     magnifier = new Magnifier.Magnifier();
 
     Meta.later_add(Meta.LaterType.BEFORE_REDRAW, _checkWorkspaces);
