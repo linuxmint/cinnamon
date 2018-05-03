@@ -15,7 +15,7 @@ const Tweener = imports.ui.tweener;
 const WorkspacesView = imports.ui.workspacesView;
 
 // Time for initial animation going into Overview mode
-const ANIMATION_TIME = 0.25;
+var ANIMATION_TIME = 0.25;
 
 const SwipeScrollDirection = WorkspacesView.SwipeScrollDirection;
 
@@ -464,5 +464,3 @@ Overview.prototype = {
     }
 };
 Signals.addSignalMethods(Overview.prototype);
-
-
