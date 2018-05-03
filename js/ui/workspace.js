@@ -20,8 +20,6 @@ const PointerTracker = imports.misc.pointerTracker;
 const GridNavigator = imports.misc.gridNavigator;
 const WindowUtils = imports.misc.windowUtils;
 
-const FOCUS_ANIMATION_TIME = 0.15;
-
 const WINDOW_DND_SIZE = 256;
 
 const SCROLL_SCALE_AMOUNT = 50;
@@ -340,21 +338,20 @@ WindowClone.prototype = {
     },
 
     _onButtonRelease: function(actor, event) {
-        if ( event.get_button()==1 ) {
-            this._selected = true;
-            this.emit('activated', global.get_current_time());
-            return true;
-        }
-        if (event.get_button()==2){
-            this.emit('closed', global.get_current_time());
-            return true;
-        }
-        if (event.get_button()==3){
-            if (!this.menuCancelled) {
-                this.emit('context-menu-requested');
-            }
-            this.menuCancelled = false;
-            return true;
+        switch (event.get_button()) {
+            case 1:
+                this._selected = true;
+                this.emit('activated', global.get_current_time());
+                return true;
+            case 2:
+                this.emit('closed', global.get_current_time());
+                return true;
+            case 3:
+                if (!this.menuCancelled) {
+                    this.emit('context-menu-requested');
+                }
+                this.menuCancelled = false;
+                return true;
         }
         return false;
     }
@@ -1005,9 +1002,8 @@ WorkspaceMonitor.prototype = {
             return minimizedDiff || stackIndices[a.metaWindow.get_stable_sequence()] - stackIndices[b.metaWindow.get_stable_sequence()];
         });
 
-        clones = clones.slice().reverse();
         let below = this._dropRect;
-        for (let i = 0; i < clones.length; i++) {
+        for (let i = clones.length - 1; i >= 0; i--) {
             let clone = clones[i];
             clone.setStackAbove(below);
             below = clone.actor;
