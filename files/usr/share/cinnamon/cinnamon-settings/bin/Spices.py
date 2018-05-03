@@ -30,7 +30,7 @@ home = os.path.expanduser("~")
 locale_inst = '%s/.local/share/locale' % home
 settings_dir = '%s/.cinnamon/configs/' % home
 
-URL_SPICES_HOME = "http://cinnamon-spices.linuxmint.com"
+URL_SPICES_HOME = "https://cinnamon-spices.linuxmint.com"
 URL_MAP = {
     'applet': URL_SPICES_HOME + "/json/applets.json",
     'theme': URL_SPICES_HOME + "/json/themes.json",
