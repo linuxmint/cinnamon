@@ -29,7 +29,7 @@ class CinnamonShowDesktopApplet extends Applet.IconApplet {
         this._peek_timeout_id = 0;
 
         this.set_applet_icon_name("user-desktop");
-        this.set_applet_tooltip(_("Show desktop"));
+        this.set_applet_tooltip(_("Left click to show desktop, or middle click to show desklets"));
 
         let showDeskletsOption = new PopupMenu.PopupIconMenuItem(
             _('Show Desklets'),
@@ -112,6 +112,10 @@ class CinnamonShowDesktopApplet extends Applet.IconApplet {
             this._peek_timeout_id = 0;
         }
         this._did_peek = false;
+    }
+
+    on_applet_middle_clicked(event) {
+        Main.deskletContainer.toggle();
     }
 
     toggleShowDesklets() {
