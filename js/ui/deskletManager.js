@@ -421,17 +421,22 @@ DeskletContainer.prototype = {
         this.isModal = false;
         this.stageEventIds = [];
 
-        this.keybindingSettings = new Gio.Settings({ schema_id: KEYBINDING_SCHEMA });
-        Main.keybindingManager.addHotKeyArray(
-            SHOW_DESKLETS_KEY,
-            this.keybindingSettings.get_strv(SHOW_DESKLETS_KEY),
-            () => this.toggle()
-        );
+        this.keyBindingSettings = new Gio.Settings({ schema_id: KEYBINDING_SCHEMA });
+        this.keyBindingSettings.connect('changed::show-desklets', () => this.applyKeyBindings());
+        this.applyKeyBindings();
         global.settings.connect('changed::panel-edit-mode', () => {
             if (this.isModal) {
                 this.lower();
             }
         });
+    },
+
+    applyKeyBindings: function() {
+        Main.keybindingManager.addHotKeyArray(
+            SHOW_DESKLETS_KEY,
+            this.keyBindingSettings.get_strv(SHOW_DESKLETS_KEY),
+            () => this.toggle()
+        );
     },
 
     /**
