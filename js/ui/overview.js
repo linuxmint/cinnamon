@@ -464,5 +464,3 @@ Overview.prototype = {
     }
 };
 Signals.addSignalMethods(Overview.prototype);
-
-
