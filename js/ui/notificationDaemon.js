@@ -156,10 +156,10 @@ NotificationDaemon.prototype = {
             switch (hints.urgency) {
                 case Urgency.LOW:
                 case Urgency.NORMAL:
-                    stockIcon = 'gtk-dialog-info';
+                    stockIcon = 'dialog-information';
                     break;
                 case Urgency.CRITICAL:
-                    stockIcon = 'gtk-dialog-error';
+                    stockIcon = 'dialog-error';
                     break;
             }
             return new St.Icon({ icon_name: stockIcon,
