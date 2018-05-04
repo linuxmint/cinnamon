@@ -1549,7 +1549,7 @@ NMDeviceWireless.prototype = {
                     item_aps = this._activeNetwork.accessPoints;
                 }
 
-                this._activeConnectionItem = new NMNetworkMenuItem(active_aps,
+                this._activeConnectionItem = new NMNetworkMenuItem(item_aps,
                                                                    undefined,
                                                                    { reactive: false });
             } else{
