@@ -50,8 +50,9 @@ CATEGORIES = [
 KEYBINDINGS = [
     #   KB Label                        Schema                  Key name               Array?  Category
     # General
-    [_("Toggle Scale"), MUFFIN_KEYBINDINGS_SCHEMA, "switch-to-workspace-down", "general"],
-    [_("Toggle Expo"), MUFFIN_KEYBINDINGS_SCHEMA, "switch-to-workspace-up", "general"],
+    [_("Show the window selection screen"), MUFFIN_KEYBINDINGS_SCHEMA, "switch-to-workspace-down", "general"],
+    [_("Show the workspace selection screen"), MUFFIN_KEYBINDINGS_SCHEMA, "switch-to-workspace-up", "general"],
+    [_("Show desktop"), MUFFIN_KEYBINDINGS_SCHEMA, "show-desktop", "general"],
     [_("Show Desklets"), CINNAMON_SCHEMA, "show-desklets", "general"],
     [_("Cycle through open windows"), MUFFIN_KEYBINDINGS_SCHEMA, "switch-windows", "general"],
     [_("Cycle backwards through open windows"), MUFFIN_KEYBINDINGS_SCHEMA, "switch-windows-backward", "general"],
@@ -65,7 +66,6 @@ KEYBINDINGS = [
     [_("Unmaximize window"), MUFFIN_KEYBINDINGS_SCHEMA, "unmaximize", "windows"],
     [_("Minimize window"), MUFFIN_KEYBINDINGS_SCHEMA, "minimize", "windows"],
     [_("Close window"), MUFFIN_KEYBINDINGS_SCHEMA, "close", "windows"],
-    [_("Show desktop"), MUFFIN_KEYBINDINGS_SCHEMA, "show-desktop", "windows"],
     [_("Activate window menu"), MUFFIN_KEYBINDINGS_SCHEMA, "activate-window-menu", "windows"],
     [_("Raise window"), MUFFIN_KEYBINDINGS_SCHEMA, "raise", "windows"],
     [_("Lower window"), MUFFIN_KEYBINDINGS_SCHEMA, "lower", "windows"],
