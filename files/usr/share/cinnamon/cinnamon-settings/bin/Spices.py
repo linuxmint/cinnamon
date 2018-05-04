@@ -611,6 +611,11 @@ class Spice_Harvester(GObject.Object):
         contents = os.listdir(folder)
 
         if not self.themes:
+            # ensure proper file permissions
+            for root, dirs, files in os.walk(folder):
+                for file in files:
+                    os.chmod(os.path.join(root, file), 0o755)
+
             # Install spice localization files, if any
             if 'po' in contents:
                 po_dir = os.path.join(folder, 'po')
