@@ -698,15 +698,17 @@ class AutostartRow(Gtk.ListBoxRow):
         self.delay_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
         self.delay_box.props.hexpand = False
         self.delay_box.set_margin_right(15)
-        label = Gtk.Label(_("Delay"))
-        self.delay_box.pack_start(label, False, False, 0)
-        self.delay_time_label = Gtk.Label()
         delay_time_markup = GLib.markup_escape_text(self.app.delay)
-        self.delay_time_label.set_markup(delay_time_markup)
-        self.delay_time_label.get_style_context().add_class("dim-label")
-        self.delay_box.pack_start(self.delay_time_label, False, False, 0)
+        if delay_time_markup != "0":
+            label = Gtk.Label(_("Delay"))
+            self.delay_box.pack_start(label, False, False, 0)
+            self.delay_time_label = Gtk.Label()
+            self.delay_time_label.set_text(_("%s s") % delay_time_markup)
+            self.delay_time_label.get_style_context().add_class("dim-label")
+            self.delay_box.pack_start(self.delay_time_label, False, False, 0)
         grid.attach_next_to(self.delay_box, self.desc_box, Gtk.PositionType.RIGHT, 1, 1)
         self.delay_box.set_sensitive(app.enabled)
+
 
         switch_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
         switch_box.set_margin_top(5)
