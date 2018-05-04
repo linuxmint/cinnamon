@@ -278,21 +278,28 @@ Applet.prototype = {
     },
 
     _onButtonPressEvent: function (actor, event) {
-        if (this._applet_enabled) {
-            if (event.get_button() == 1) {
-                if (!this._draggable.inhibit) {
-                    return false;
-                } else {
-                    if (this._applet_context_menu.isOpen) {
-                        this._applet_context_menu.toggle();
-                    }
-                    this.on_applet_clicked(event);
-                }
-            }
-            if (event.get_button() == 3) {
-                if (this._applet_context_menu._getMenuItems().length > 0) {
+        if (!this._applet_enabled) {
+            return false;
+        }
+
+        let button = event.get_button();
+        if (button < 3) {
+            if (!this._draggable.inhibit) {
+                return false;
+            } else {
+                if (this._applet_context_menu.isOpen) {
                     this._applet_context_menu.toggle();
                 }
+            }
+        }
+
+        if (button === 1) {
+            this.on_applet_clicked(event);
+        } else if (button === 2) {
+            this.on_applet_middle_clicked(event);
+        } else if (button === 3) {
+            if (this._applet_context_menu._getMenuItems().length > 0) {
+                this._applet_context_menu.toggle();
             }
         }
         return true;
@@ -334,6 +341,18 @@ Applet.prototype = {
      * This is meant to be overridden in individual applets.
      */
     on_applet_clicked: function(event) {
+        // Implemented by Applets
+    },
+
+    /**
+     * on_applet_middle_clicked:
+     * @event (Clutter.Event): the event object
+     *
+     * This function is called when the applet is clicked with the middle mouse button.
+     *
+     * This is meant to be overridden in individual applets.
+     */
+    on_applet_middle_clicked: function(event) {
         // Implemented by Applets
     },
 
