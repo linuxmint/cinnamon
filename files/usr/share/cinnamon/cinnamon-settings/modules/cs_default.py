@@ -207,8 +207,10 @@ class DefaultAppChooserButton(Gtk.AppChooserButton):
 
     def onChanged(self, button):
         info = button.get_app_info()
-        print("%s: " % info.get_name())
+
         if info:
+            print("%s: " % info.get_name())
+
             supported_mimetypes = info.get_supported_types()
             hardcoded_mimetypes = None
             if self.generic_content_type in mimetypes:
