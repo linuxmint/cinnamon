@@ -358,12 +358,14 @@ class Spice_Harvester(GObject.Object):
                     print(e)
             self._directory_changed()
 
-    def _download(self, outfd, outfile, url, binary=True):
+    def _download(self, out_file, url, binary=True):
         try:
-            self._url_retrieve(url, outfd, self._update_progress, binary)
+            open_args = 'wb' if binary else 'w'
+            with open(out_file, open_args) as outfd:
+                self._url_retrieve(url, outfd, self._update_progress, binary)
         except Exception as e:
             try:
-                os.remove(outfile)
+                os.remove(out_file)
             except OSError:
                 pass
             if not isinstance(e, KeyboardInterrupt) and not self.download_manager.abort_status:
@@ -371,9 +373,9 @@ class Spice_Harvester(GObject.Object):
             self.abort()
             return None
 
-        return outfile
+        return out_file
 
-    def _url_retrieve(self, url, f, reporthook, binary):
+    def _url_retrieve(self, url, outfd, reporthook, binary):
         #Like the one in urllib. Unlike urllib.retrieve url_retrieve
         #can be interrupted. KeyboardInterrupt exception is raised when
         #interrupted.
@@ -392,13 +394,10 @@ class Spice_Harvester(GObject.Object):
                         break
                     if not binary:
                         data = data.decode("utf-8")
-                    f.write(data)
+                    outfd.write(data)
                     ui_thread_do(reporthook, count, blockSize, totalSize)
         except Exception as e:
-            f.close()
             raise e
-
-        f.close()
 
     def _load_metadata(self):
         self.meta_map = {}
@@ -516,8 +515,7 @@ class Spice_Harvester(GObject.Object):
         download_url = URL_MAP[self.collection_type]
 
         filename = os.path.join(self.cache_folder, "index.json")
-        f = open(filename, 'w')
-        if self._download(f, filename, download_url, binary=False) is None:
+        if self._download(filename, download_url, binary=False) is None:
             return
 
         self._load_cache()
@@ -544,8 +542,7 @@ class Spice_Harvester(GObject.Object):
 
             # if the image doesn't exist, is corrupt, or may have changed we want to download it
             if not os.path.isfile(icon_path) or self._is_bad_image(icon_path) or self.old_cache[uuid]["last_edited"] != self.index_cache[uuid]["last_edited"]:
-                fstream = open(icon_path, 'w+b')
-                self.download_manager.push(self._download, self._check_download_image_cache_complete, (fstream, icon_path, download_url))
+                self.download_manager.push(self._download, self._check_download_image_cache_complete, (icon_path, download_url))
                 self.download_total_files += 1
 
         ui_thread_do(self._check_download_image_cache_complete)
@@ -602,9 +599,8 @@ class Spice_Harvester(GObject.Object):
         self.current_uuid = uuid
 
         fd, ziptempfile = tempfile.mkstemp()
-        f = os.fdopen(fd, 'wb')
 
-        if self._download(f, ziptempfile, download_url) is None:
+        if self._download(ziptempfile, download_url) is None:
             return
 
         try:
