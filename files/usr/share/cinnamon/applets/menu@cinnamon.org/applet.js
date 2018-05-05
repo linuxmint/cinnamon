@@ -889,7 +889,7 @@ class FavoritesButton extends GenericApplicationButton {
     }
 }
 
-class SystemButton extends PopupMenu.PopupSubMenuMenuItem {
+class SystemButton extends PopupMenu.PopupBaseMenuItem {
     constructor(appsMenuButton, icon, nbFavorites, name, desc) {
         super({hover: false});
 
