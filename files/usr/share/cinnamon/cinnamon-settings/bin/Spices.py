@@ -295,7 +295,7 @@ class Spice_Harvester(GObject.Object):
 
     # updates any progress bars with the download progress
     def _update_progress(self, count, blockSize, totalSize):
-        if self.download_manager.busy():
+        if self.download_manager.busy() and self.download_total_files > 1:
             total = self.download_total_files
             current = total - self.download_manager.get_n_jobs()
             fraction = float(current) / float(total)
