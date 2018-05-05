@@ -366,8 +366,9 @@ class Spice_Harvester(GObject.Object):
                 os.remove(outfile)
             except OSError:
                 pass
-            if not isinstance(e, KeyboardInterrupt):
+            if not isinstance(e, KeyboardInterrupt) and not self.download_manager.abort_status:
                 self.errorMessage(_("An error occurred while trying to access the server. Please try again in a little while."), e)
+            self.abort()
             return None
 
         return outfile
@@ -379,7 +380,7 @@ class Spice_Harvester(GObject.Object):
         count = 0
         blockSize = 1024 * 8
         try:
-            with urlopen(url) as urlobj:
+            with urlopen(url, timeout=15) as urlobj:
                 assert urlobj.getcode() == 200
 
                 totalSize = int(urlobj.info()['content-length'])
@@ -394,7 +395,6 @@ class Spice_Harvester(GObject.Object):
                     f.write(data)
                     ui_thread_do(reporthook, count, blockSize, totalSize)
         except Exception as e:
-            self.abort()
             f.close()
             raise e
 
