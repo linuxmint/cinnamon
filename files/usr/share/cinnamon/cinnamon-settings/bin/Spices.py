@@ -80,9 +80,8 @@ class ThreadedTaskManager(GObject.GObject):
         return len(self.jobs) > 0 or len(self.threads) > 0
 
     def push(self, func, callback, data):
-        self.lock.acquire()
-        self.jobs.insert(0, (func, callback, data))
-        self.lock.release()
+        with self.lock:
+            self.jobs.insert(0, (func, callback, data))
 
         if self.start_id == 0:
             self.start_id = GLib.idle_add(self.check_start_job)
@@ -93,11 +92,10 @@ class ThreadedTaskManager(GObject.GObject):
             if len(self.threads) == self.max_threads:
                 return
 
-            self.lock.acquire()
-            job = self.jobs.pop()
-            newthread = threading.Thread(target=self.thread_function_wrapper, args=job)
-            self.threads.append(newthread)
-            self.lock.release()
+            with self.lock:
+                job = self.jobs.pop()
+                newthread = threading.Thread(target=self.thread_function_wrapper, args=job)
+                self.threads.append(newthread)
 
             newthread.start()
 
@@ -106,16 +104,14 @@ class ThreadedTaskManager(GObject.GObject):
     def thread_function_wrapper(self, func, callback, data):
         result = func(*data)
 
-        self.lock.acquire()
-        try:
-            self.threads.remove(threading.current_thread())
-        except:
-            pass
+        with self.lock:
+            try:
+                self.threads.remove(threading.current_thread())
+            except:
+                pass
 
-        if self.abort_status and not self.busy():
-            self.abort_status = False
-
-        self.lock.release()
+            if self.abort_status and not self.busy():
+                self.abort_status = False
 
         self.check_start_job()
 
@@ -124,10 +120,9 @@ class ThreadedTaskManager(GObject.GObject):
 
     def abort(self):
         if self.busy():
-            self.lock.acquire()
-            self.abort_status = True
-            del self.jobs[:]
-            self.lock.release()
+            with self.lock:
+                self.abort_status = True
+                del self.jobs[:]
 
 class Spice_Harvester(GObject.Object):
     __gsignals__ = {
