@@ -201,20 +201,36 @@ class Spice_Harvester(GObject.Object):
             print(e)
 
     def _on_proxy_ready (self, object, result, data=None):
-        self._proxy = Gio.DBusProxy.new_for_bus_finish(result)
-        self._proxy.connect('g-signal', self._on_signal)
+        try:
+            self._proxy = Gio.DBusProxy.new_for_bus_finish(result)
+            self._proxy.connect('g-signal', self._on_signal)
 
-        for command, args in self._proxy_deferred_actions:
-            getattr(self._proxy, command)(*args)
-        self._proxy_deferred_actions = []
+            if self._proxy.get_name_owner():
+                self.send_deferred_proxy_calls()
+            else:
+                print("org.Cinnamon proxy created, but no owner - is Cinnamon running?")
+        except GLib.Error as e:
+            print("Could not establish proxy for org.Cinnamon: %s" % e.message)
 
         self.connect_proxy('XletAddedComplete', self._update_status)
         self._update_status()
 
     def _on_signal(self, proxy, sender_name, signal_name, params):
+        if signal_name == "RunStateChanged":
+            if self._proxy.GetRunState() == 2:
+                self.send_deferred_proxy_calls()
+                return
+
         for name, callback in self._proxy_signals:
             if signal_name == name:
                 callback(*params)
+
+    def send_deferred_proxy_calls(self):
+        if self._proxy.get_name_owner() and self._proxy_deferred_actions:
+            for command, args in self._proxy_deferred_actions:
+                getattr(self._proxy, command)(*args)
+
+            self._proxy_deferred_actions = []
 
     def connect_proxy(self, name, callback):
         """ connects a callback to a dbus signal"""
@@ -229,14 +245,14 @@ class Spice_Harvester(GObject.Object):
 
     def send_proxy_signal(self, command, *args):
         """ sends a command over dbus"""
-        if self._proxy is None:
+        if self._proxy is None or not self._proxy.get_name_owner():
             self._proxy_deferred_actions.append((command, args))
         else:
             getattr(self._proxy, command)(*args)
 
     def _update_status(self, *args):
         try:
-            if self._proxy:
+            if self._proxy and self._proxy.get_name_owner():
                 self.running_uuids = self._proxy.GetRunningXletUUIDs('(s)', self.collection_type)
             else:
                 self.running_uuids = []
