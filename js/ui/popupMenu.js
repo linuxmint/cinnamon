@@ -22,6 +22,7 @@ const Params = imports.misc.params;
 const Util = imports.misc.util;
 
 var SLIDER_SCROLL_STEP = 0.05; /* Slider scrolling step in % */
+var MENU_ANIMATION_TIME = 0.15; /* Seconds */
 
 var PanelLoc = {
     top : 0,
@@ -2287,7 +2288,7 @@ PopupMenu.prototype = {
 
             let tweenParams = {
                 transition: "easeOutQuad",
-                time: .15,
+                time: MENU_ANIMATION_TIME,
                 onUpdate: dest => {
                     let clipY = 0;
                     let clipX = 0;
@@ -2335,22 +2336,24 @@ PopupMenu.prototype = {
                     this.actor.x = xPos;
                     this._breadth = this.actor.width;
                     tweenParams["y"] = yPos;
+                    yPos -= this.actor.margin_top;
                     tweenParams["onUpdateParams"] = [yPos];
-                    if (this.sideFlipped)
-                        this.actor.y = yPos + this.actor.height;
-                    else
-                        this.actor.y = yPos - this.actor.height;
+                    if (this.sideFlipped) // Bottom
+                        this.actor.y = yPos + this.actor.height - this.actor.margin_top;
+                    else // Top
+                        this.actor.y = yPos - this.actor.height + this.actor.margin_bottom;
                     break;
                 case St.Side.LEFT:
                 case St.Side.RIGHT:
                     this.actor.y = yPos;
                     this._breadth = this.actor.height;
                     tweenParams["x"] = xPos;
+                    xPos -= this.actor.margin_left;
                     tweenParams["onUpdateParams"] = [xPos];
-                    if (this.sideFlipped)
-                        this.actor.x = xPos + this.actor.width;
-                    else
-                        this.actor.x = xPos - this.actor.width;
+                    if (this.sideFlipped) // Right
+                        this.actor.x = xPos + this.actor.width - this.actor.margin_left;
+                    else // Left
+                        this.actor.x = xPos - this.actor.width + this.actor.margin_right;
                     break;
             }
 
@@ -2385,7 +2388,7 @@ PopupMenu.prototype = {
             this.animating = true;
             let tweenParams = {
                 transition: "easeInQuad",
-                time: .15,
+                time: MENU_ANIMATION_TIME,
                 onUpdate: dest => {
                         let clipY = 0;
                         let clipX = 0;
@@ -2411,21 +2414,21 @@ PopupMenu.prototype = {
             switch (this._orientation) {
                 case St.Side.TOP:
                 case St.Side.BOTTOM:
-                    let yPos = this.actor.y;
-                    tweenParams["onUpdateParams"] = [yPos];
-                    if (this.sideFlipped)
-                        tweenParams["y"] = this.actor.y + this.actor.height;
-                    else
-                        tweenParams["y"] = this.actor.y - this.actor.height;
+                    let yPos = this.actor.y - this.actor.margin_top;
+                    tweenParams["onUpdateParams"] = [yPos - this.actor.margin_top];
+                    if (this.sideFlipped) // Botton
+                        tweenParams["y"] = yPos + this.actor.height + this.actor.margin_bottom;
+                    else // Top
+                        tweenParams["y"] = yPos - this.actor.height - this.actor.margin_top;
                     break;
                 case St.Side.LEFT:
                 case St.Side.RIGHT:
-                    let xPos = this.actor.x;
-                    tweenParams["onUpdateParams"] = [xPos];
-                    if (this.sideFlipped)
-                        tweenParams["x"] = this.actor.x + this.actor.width;
-                    else
-                        tweenParams["x"] = this.actor.x - this.actor.width;
+                    let xPos = this.actor.x - this.actor.margin_left;
+                    tweenParams["onUpdateParams"] = [xPos - this.actor.margin_left];
+                    if (this.sideFlipped) // Right
+                        tweenParams["x"] = xPos + this.actor.width + this.actor.margin_right;
+                    else // Left
+                        tweenParams["x"] = xPos - this.actor.width - this.actor.margin_left;
                     break;
             }
 
