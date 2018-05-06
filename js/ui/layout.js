@@ -5,6 +5,7 @@
  * @short_description: The file responsible for managing Cinnamon chrome
  */
 const Clutter = imports.gi.Clutter;
+const Cinnamon = imports.gi.Cinnamon;
 const GLib = imports.gi.GLib;
 const Gio = imports.gi.Gio;
 const Lang = imports.lang;
@@ -606,7 +607,21 @@ Chrome.prototype = {
             let actorData = this._trackedActors[i], visible;
             if (!actorData.isToplevel)
                 continue;
-            else if (this._inOverview)
+            else if (global.stage_input_mode == Cinnamon.StageInputMode.FULLSCREEN) {
+                let monitor = this.findMonitorForActor(actorData.actor);
+
+                if (global.screen.get_n_monitors() == 1 || !monitor.inFullscreen) {
+                    visible = true;
+                } else {
+                    if (Main.modalActorFocusStack.length > 0) {
+                        let modalActor = Main.modalActorFocusStack[Main.modalActorFocusStack.length - 1].actor;
+
+                        if (this.findMonitorForActor(modalActor) == monitor) {
+                            visible = true;
+                        }
+                    }
+                }
+            } else if (this._inOverview)
                 visible = true;
             else if (!actorData.visibleInFullscreen &&
                      this.findMonitorForActor(actorData.actor).inFullscreen)
