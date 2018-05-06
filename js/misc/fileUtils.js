@@ -202,7 +202,7 @@ function createExports({path, dir, meta, type, file, size, JS, returnIndex, reje
 
     // Return the exports object containing all of our top level namespaces, and include the sourceURL so
     // Spidermonkey includes the file names in stack traces.
-    JS += `return exports;//# sourceURL=${path}`;
+    JS += `return module.exports;//# sourceURL=${path}`;
 
     try {
         // Create the function returning module.exports and return it to Extension so it can be called by the
