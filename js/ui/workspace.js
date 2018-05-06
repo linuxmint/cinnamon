@@ -26,9 +26,6 @@ const SCROLL_SCALE_AMOUNT = 50;
 const LIGHTBOX_FADE_TIME = 0.1;
 const CLOSE_BUTTON_FADE_TIME = 0.1;
 
-const BUTTON_LAYOUT_SCHEMA = 'org.cinnamon.desktop.wm.preferences';
-const BUTTON_LAYOUT_KEY = 'button-layout';
-
 const DEMANDS_ATTENTION_CLASS_NAME = "window-list-item-demands-attention";
 
 const DEFAULT_SLOT_FRACTION = 0.99;
@@ -556,16 +553,8 @@ WindowOverlay.prototype = {
         let caption = this.caption;
         let button = this.closeButton;
 
-        let settings = new Gio.Settings({ schema_id: BUTTON_LAYOUT_SCHEMA });
-        let layout = settings.get_string(BUTTON_LAYOUT_KEY);
-        let rtl = St.Widget.get_default_direction() === St.TextDirection.RTL;
-
-        let split = layout.split(":");
-        let side;
-        if (split[0].indexOf("close") > -1)
-            side = rtl ? St.Side.RIGHT : St.Side.LEFT;
-        else
-            side = rtl ? St.Side.LEFT : St.Side.RIGHT;
+        let layout = Meta.prefs_get_button_layout();
+        let side = layout.left_buttons.includes(Meta.ButtonFunction.CLOSE) ? St.Side.LEFT : St.Side.RIGHT;
 
         let buttonX;
         let buttonY = cloneY - (button.height - button._overlap);
