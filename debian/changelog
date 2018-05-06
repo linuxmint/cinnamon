@@ -1,3 +1,73 @@
+cinnamon (3.8.2) tara; urgency=medium
+
+  [ Clement Lefebvre ]
+  * Startup settings: Fix blurry icons
+  * Startup settings: Fix using the wrong variable
+  * Startup settings: Use icons in button box
+
+  [ Michael Webster ]
+  * Spices.py: Use https for spices downloads.
+
+  [ Clement Lefebvre ]
+  * Startup settings: Show delay units and only show delay when it's not 0
+  * l10n: Update POT file
+
+  [ Cobinja ]
+  * Startup settings: Fix creation of autostart files
+
+  [ Germán Franco ]
+  * notificationDaemon: Fix fallback icon names (#7533)
+
+  [ Jason Hicks ]
+  *  Make the key binding setting for Show Desklets global (#7538)
+
+  [ Clement Lefebvre ]
+  * l10n: Rephrase a few msgids
+
+  [ James Ross ]
+  * Notification clearing on app focus + blacklist + limit (#7513)
+
+  [ Michael Webster ]
+  * cs_default: Don't print info before checking that it's valid.
+  * menu applet: Wrong parent class for SystemButton (fixes focus stealing when hovering over system buttons.)
+
+  [ Germán Franco ]
+  * Fix window list previews position
+
+  [ Stephen Collins ]
+  * Spices.py: refactor downloading code for better error handling
+  * Spices.py: fix file permissions durring install
+
+  [ Michael Webster ]
+  * Spices.py: Handle the cinnamon proxy better regardless of whether cinnamon is running or not.
+
+  [ Fabio Fantoni ]
+  * debian: now that python3 migration is completed remove python2
+  * debian/control: increase deps version of muffin, cjs and cinnamon-desktop
+
+  [ Germán Franco ]
+  * popupMenu: fix menu cutoff during open/close animation (#7547)
+
+  [ Stephen Collins ]
+  * Fix some issues with the download refactoring in Spices.py (#7549)
+
+  [ Arda Güler ]
+  * Minor lang changes (#7554)
+
+  [ Jason Hicks ]
+  * fileUtils: Fix module exporter bug, fix line numbers in stack traces being incorrect (#7553)
+
+  [ Germán Franco ]
+  * Notification close policy (#7531)
+
+  [ Michael Webster ]
+  * chrome: Improve visibility conditions for panels and other chrome (#7552)
+
+  [ Clement Lefebvre ]
+  * l10n: Update POT file
+
+ -- Clement Lefebvre <root@linuxmint.com>  Sun, 06 May 2018 16:12:57 +0100
+
 cinnamon (3.8.1) tara; urgency=medium
 
   [ Michael Webster ]
