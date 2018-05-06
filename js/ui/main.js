@@ -1358,6 +1358,8 @@ function pushModal(actor, timestamp, options) {
     modalActorFocusStack.push(record);
 
     global.stage.set_key_focus(actor);
+
+    layoutManager.updateChrome(true);
     return true;
 }
 
@@ -1413,6 +1415,9 @@ function popModal(actor, timestamp) {
 
     global.end_modal(timestamp);
     global.set_stage_input_mode(Cinnamon.StageInputMode.NORMAL);
+
+    layoutManager.updateChrome(true);
+
     Meta.enable_unredirect_for_screen(global.screen);
 }
 
