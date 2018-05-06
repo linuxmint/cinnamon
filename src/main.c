@@ -206,7 +206,7 @@ cinnamon_perf_log_init (void)
                                    "i");
   cinnamon_perf_log_define_statistic (perf_log,
                                    "malloc.usedSize",
-                                   "Amount of malloc'ed memory currently in use",
+                                   "Amount of allocated memory currently in use",
                                    "i");
 
   cinnamon_perf_log_add_statistics_callback (perf_log,

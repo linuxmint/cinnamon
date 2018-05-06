@@ -610,8 +610,8 @@ cinnamon_util_get_week_start (void)
 
   if (week_start < 0 || week_start > 6)
     {
-      g_warning ("Whoever translated calendar:week_start:0 for GTK+ "
-                 "did so wrongly.\n");
+      g_warning ("calendar:week_start:0 for GTK+ "
+                 "was translated wrongly.\n");
       week_start = 0;
     }
 #endif
