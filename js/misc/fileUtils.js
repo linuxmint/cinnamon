@@ -171,11 +171,11 @@ function createExports({path, dir, meta, type, file, size, JS, returnIndex, reje
         moduleIndex = LoadedModules.length - 1;
     }
 
-    JS = `'use strict';\n${JS};`;
+    JS = `'use strict';${JS};`;
     // Regex matches the top level variable names, and appends them to the module.exports object,
     // mimicking the native CJS importer.
     const exportsRegex = /^module\.exports(\.[a-zA-Z0-9_$]+)?\s*=/m;
-    const varRegex = /^(const|var|let|function|class)\s+([a-zA-Z0-9_$]+)/gm;
+    const varRegex = /^(?:'use strict';){0,}(const|var|let|function|class)\s+([a-zA-Z0-9_$]+)/gm;
     let match;
 
     if (!exportsRegex.test(JS)) {
@@ -202,7 +202,7 @@ function createExports({path, dir, meta, type, file, size, JS, returnIndex, reje
 
     // Return the exports object containing all of our top level namespaces, and include the sourceURL so
     // Spidermonkey includes the file names in stack traces.
-    JS += `return exports;//# sourceURL=${path}`;
+    JS += `return module.exports;//# sourceURL=${path}`;
 
     try {
         // Create the function returning module.exports and return it to Extension so it can be called by the
