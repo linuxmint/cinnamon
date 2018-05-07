@@ -1247,6 +1247,15 @@ StScrollBar StButton#vhandle:hover {
     transition-duration: 100;
     spacing: 0.5em;
 }
+.window-list-item-box.top {
+    border-radius: 0px 0px 2px 2px;
+}
+.window-list-item-box.left {
+    border-radius: 0px 2px 2px 0px;
+}
+.window-list-item-box.right {
+    border-radius: 2px 0px 0px 2px;
+}
 .window-list-item-box.top,
 .window-list-item-box.bottom {
     padding: 0 0.5em;
@@ -1258,11 +1267,9 @@ StScrollBar StButton#vhandle:hover {
     background-gradient-start: rgba(226,226,226,0.5);
     background-gradient-end: rgba(122,122,122,0.5);
     box-shadow: inset 0px 0px 1px 1px rgba(170,170,170,0.5);
-    border-radius: 2px 2px 0px 0px;
 }
 .window-list-item-box:hover {
     box-shadow: inset 0px 0px 1px 1px rgba(170,170,170,1.0);
-    border-radius: 2px 2px 0px 0px;
 }
 .window-list-item-demands-attention {
     background-gradient-start: rgba(255,52,52,0.5);
@@ -1271,8 +1278,19 @@ StScrollBar StButton#vhandle:hover {
 
 .window-list-item-box .progress {
     background-gradient-direction: vertical;
-    background-gradient-start: rgba(255,52,52,0.5);
-    background-gradient-end: rgba(255,144,144,0.5);
+    background-gradient-start: rgba(255,255,255,0.6);
+    background-gradient-end: rgba(255,255,255,0.3);
+    border-radius: 2px 2px 0px 0px;
+    box-shadow: inset 0px 0px 1px 1px rgba(170,170,170,0.5);
+}
+.panel-top .window-list-item-box .progress {
+    border-radius: 0px 0px 2px 2px;
+}
+.panel-left .window-list-item-box .progress {
+    border-radius: 0px 2px 2px 0px;
+}
+.panel-right .window-list-item-box .progress {
+    border-radius: 2px 0px 0px 2px;
 }
 
 .window-list-preview {
