@@ -397,13 +397,16 @@ WindowOverlay.prototype = {
         caption.add_actor(title);
 
         // Close button
-        let button = new St.Button({ style_class: 'window-close', track_hover: true });
+        let button = new St.Button({ style_class: 'window-close' });
         button.connect('clicked', this.closeWindow.bind(this));
         button._overlap = 0;
 
         parentActor.add_actor(this.border);
         parentActor.add_actor(caption);
         parentActor.add_actor(button);
+
+        button.hide();
+        this.border.hide();
 
         this.caption = caption;
         this.closeButton = button;
@@ -507,7 +510,7 @@ WindowOverlay.prototype = {
                            { opacity: 0,
                              time: CLOSE_BUTTON_FADE_TIME,
                              transition: 'easeInQuad',
-                             onComplete: () => item.hide() });
+                             onComplete: item.hide });
         }
         this.caption.remove_style_pseudo_class('focus');
     },
@@ -660,7 +663,7 @@ function WorkspaceMonitor() {
 }
 
 WorkspaceMonitor.prototype = {
-    _init : function(metaWorkspace, monitorIndex, workspace, hasFocus) {
+    _init : function(metaWorkspace, monitorIndex, workspace) {
         this._myWorkspace = workspace;
 
         this.metaWorkspace = metaWorkspace;
@@ -719,20 +722,6 @@ WorkspaceMonitor.prototype = {
         this.leavingOverview = false;
 
         this._kbWindowIndex = 0; // index of the current keyboard-selected window
-        if (hasFocus) {
-            this.onInitialPositionWindows = () => {
-                // default-select the first window
-                this.selectAnotherWindow(Clutter.Home);
-                Mainloop.idle_add(() => {
-                    // if keyboard focus is at the default position,
-                    // make sure that the close button is drawn,
-                    // which must done a little bit later
-                    if (this._kbWindowIndex === 0) {
-                        this.selectAnotherWindow(Clutter.Home);
-                    }
-                });
-            };
-        }
     },
 
     selectAnotherWindow: function(symbol) {
@@ -960,10 +949,6 @@ WorkspaceMonitor.prototype = {
                 clone.actor.set_scale(scale, scale);
                 this._showWindowOverlay(clone, isOnCurrentWorkspace);
             }
-        }
-        if (this.onInitialPositionWindows) {
-            this.onInitialPositionWindows();
-            this.onInitialPositionWindows = null;
         }
     },
 
@@ -1574,7 +1559,7 @@ Workspace.prototype = {
         this._activeClone = null;
         this.currentMonitorIndex = Main.layoutManager.primaryIndex;
         Main.layoutManager.monitors.forEach((monitor, ix) => {
-            let m = new WorkspaceMonitor(metaWorkspace, ix, this, ix === this.currentMonitorIndex)
+            let m = new WorkspaceMonitor(metaWorkspace, ix, this);
             m.setGeometry(monitor.x, monitor.y, monitor.width, monitor.height, monitor.width * .01);
             this._monitors.push(m);
             this.actor.add_actor(m.actor);
@@ -1692,7 +1677,9 @@ Workspace.prototype = {
 
     zoomToOverview: function() {
         this._monitors.forEach(monitor => monitor.zoomToOverview());
-        this.emit('focus-refresh-required');
+
+        Mainloop.timeout_add(Overview.ANIMATION_TIME * 1000,
+            this.emit.bind(this, 'focus-refresh-required'));
     },
 
     hasMaximizedWindows: function() {
