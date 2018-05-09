@@ -322,7 +322,6 @@ WindowClone.prototype = {
     },
 
     _onButtonPress: function(actor, event) {
-        this.emit('selected', global.get_current_time());
         // a button-press on a clone already showing a menu should
         // not open a new-menu, only close the current menu.
         this.menuCancelled = closeContextMenu(this);
@@ -465,8 +464,10 @@ WindowOverlay.prototype = {
 
     hide: function() {
         this._hidden = true;
+        this._isSelected = false;
         this.caption.hide();
-        this.setSelected(false);
+        this.border.hide();
+        this.closeButton.hide();
     },
 
     show: function() {
@@ -526,7 +527,6 @@ WindowOverlay.prototype = {
                              transition: 'easeInQuad' });
         }
         this.caption.add_style_pseudo_class('focus');
-        this.emit('show-close-button');
     },
 
     chromeWidths: function () {
@@ -629,7 +629,7 @@ WindowOverlay.prototype = {
         // as the close button will be shown as needed when the overlays
         // are shown again
         if (this._hidden) return;
-        this.setSelected(true);
+        this.emit('selected', global.get_current_time());
     },
 
     _onPointerLeave: function() {
@@ -992,6 +992,7 @@ WorkspaceMonitor.prototype = {
                 clone.overlay.fadeIn();
             else
                 clone.overlay.show();
+            this._myWorkspace.emit('focus-refresh-required');
         }
     },
 
@@ -1021,7 +1022,6 @@ WorkspaceMonitor.prototype = {
         }
 
         this.positionWindows(WindowPositionFlags.ANIMATE);
-        this._myWorkspace.emit('focus-refresh-required');
         this._repositionWindowsId = 0;
         return false;
     },
@@ -1073,9 +1073,6 @@ WorkspaceMonitor.prototype = {
 
         if (this._kbWindowIndex >= this._windows.length) {
             this._kbWindowIndex = this._windows.length - 1;
-        }
-        if (clone === this._myWorkspace._activeClone) {
-            this.selectIndex(this._kbWindowIndex);
         }
 
         clone.destroy();
@@ -1149,7 +1146,6 @@ WorkspaceMonitor.prototype = {
 
         if (this.actor.get_stage()) {
             this.positionWindows(WindowPositionFlags.ANIMATE);
-            this._myWorkspace.emit('focus-refresh-required');
         }
     },
 
@@ -1304,7 +1300,7 @@ WorkspaceMonitor.prototype = {
                 this._myWorkspace.myView.emit('sticky-detected', clone.metaWindow);
             }
         });
-        clone.connect('selected', this._onCloneSelected.bind(this));
+
         clone.connect('activated', this._onCloneActivated.bind(this));
         clone.connect('closed', this._onCloneClosed.bind(this));
         clone.connect('context-menu-requested', this._onCloneContextMenuRequested.bind(this));
@@ -1317,20 +1313,12 @@ WorkspaceMonitor.prototype = {
 
         this.actor.add_actor(clone.actor);
 
-        overlay.connect('show-close-button', this._onShowOverlayClose.bind(this));
+        overlay.connect('selected', this.selectClone.bind(this, clone));
 
         this._windows.push(clone);
         clone.overlay = overlay;
 
         return clone;
-    },
-
-    _onShowOverlayClose: function (windowOverlay) {
-        for (let i = 0; i < this._windows.length; i++) {
-            let overlay = this._windows[i].overlay;
-            if (overlay !== windowOverlay)
-                overlay.setSelected(false);
-        }
     },
 
     _computeAllWindowSlots: function(numberOfWindows) {
@@ -1359,10 +1347,6 @@ WorkspaceMonitor.prototype = {
         }
 
         return slots;
-    },
-
-    _onCloneSelected : function (clone, time) {
-        this.selectClone(clone);
     },
 
     _onCloneActivated : function (clone, time) {
@@ -1600,10 +1584,13 @@ Workspace.prototype = {
             if (current) {
                 current.overlay.setSelected(false);
             }
-            if (this._activeClone) {
-                this._activeClone.overlay.setSelected(true);
-            }
             wsMonitor.emit('selection-changed');
+        }
+
+        // We might have left the focused clone, hiding the overlay,
+        // and entered it again to show it.
+        if (this._activeClone) {
+            this._activeClone.overlay.setSelected(true);
         }
     },
 
@@ -1677,9 +1664,6 @@ Workspace.prototype = {
 
     zoomToOverview: function() {
         this._monitors.forEach(monitor => monitor.zoomToOverview());
-
-        Mainloop.timeout_add(Overview.ANIMATION_TIME * 1000,
-            this.emit.bind(this, 'focus-refresh-required'));
     },
 
     hasMaximizedWindows: function() {
