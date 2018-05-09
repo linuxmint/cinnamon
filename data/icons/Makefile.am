@@ -18,8 +18,6 @@ public_icons = \
     hicolor_actions_scalable_num-lock-off-symbolic.svg \
 	hicolor_apps_scalable_cinnamon-panel-launcher.svg \
     hicolor_apps_scalable_removable-drives.svg \
-	hicolor_categories_16x16_cs-desklets.svg \
-	hicolor_categories_16x16_cs-backgrounds.svg \
 	hicolor_categories_scalable_cs-applets.svg \
 	hicolor_categories_scalable_cs-backgrounds.svg \
 	hicolor_categories_scalable_cs-backgrounds-symbolic.svg \
