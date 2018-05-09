@@ -71,11 +71,11 @@ WorkspacesView.prototype = {
         // workspaces have been created. This cannot be done first because
         // window movement depends on the Workspaces object being accessible
         // as an Overview member.
-        let overviewShowingId = Main.overview.connect('showing', Lang.bind(this, function() {
+        let overviewShowingId = Main.overview.connect('showing', () => {
             Main.overview.disconnect(overviewShowingId);
-            let workspaceIndex = global.screen.get_active_workspace_index();
-            this._workspaces[workspaceIndex].zoomToOverview();
-        }));
+            for(let workspace of this._workspaces)
+                workspace.zoomToOverview();
+        });
 
         this._scrollAdjustment = new St.Adjustment({ value: activeWorkspaceIndex,
                                                      lower: 0,
@@ -175,7 +175,7 @@ WorkspacesView.prototype = {
     _updateWorkspaceActors: function(showAnimation) {
         let active = global.screen.get_active_workspace_index();
 
-        // Animation is turned off in a multi-manager scenario till we fix 
+        // Animation is turned off in a multi-manager scenario till we fix
         // the animations so that they respect the monitor boundaries.
         this._animating = Main.layoutManager.monitors.length < 2 && showAnimation;
 

@@ -809,12 +809,6 @@ WorkspaceMonitor.prototype = {
         this._width = width;
         this._height = height;
         this._margin = margin;
-
-        // This is sometimes called during allocation, so we do this later
-        Meta.later_add(Meta.LaterType.BEFORE_REDRAW, () => {
-            this.positionWindows(WindowPositionFlags.ANIMATE);
-            return false;
-        });
     },
 
     _lookupIndex: function (metaWindow) {
@@ -891,26 +885,23 @@ WorkspaceMonitor.prototype = {
         }
 
         closeContextMenu();
-        let clones = this._windows.slice();
 
         let initialPositioning = flags & WindowPositionFlags.INITIAL;
         let animate = flags & WindowPositionFlags.ANIMATE;
 
+        let clones = this._windows;
         // Start the animations
         let slots = this._computeAllWindowSlots(clones.length);
-        //clones = this._orderWindowsByMotionAndStartup(clones, slots);
 
         let currentWorkspace = global.screen.get_active_workspace();
         let isOnCurrentWorkspace = this.metaWorkspace == null || this.metaWorkspace == currentWorkspace;
 
-        for (let i = 0; i < clones.length; i++) {
-            let slot = slots[i];
+        for (let i = clones.length - 1; i >= 0; --i) {
             let clone = clones[i];
             let metaWindow = clone.metaWindow;
-            let mainIndex = this._lookupIndex(metaWindow);
             let overlay = clone.overlay;
 
-            let [x, y, scale] = this._computeWindowLayout(metaWindow, slot);
+            let [x, y, scale] = this._computeWindowLayout(metaWindow, slots[i]);
 
             if (overlay)
                 overlay.hide();
