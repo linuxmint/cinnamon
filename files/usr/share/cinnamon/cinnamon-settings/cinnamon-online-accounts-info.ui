@@ -1,11 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Generated with glade 3.20.0 -->
+<!-- Generated with glade 3.22.1 -->
 <interface>
   <requires lib="gtk+" version="3.0"/>
   <object class="GtkWindow" id="main_window">
     <property name="can_focus">False</property>
     <property name="default_width">500</property>
     <property name="default_height">600</property>
+    <child>
+      <placeholder/>
+    </child>
     <child>
       <object class="GtkBox">
         <property name="visible">True</property>
@@ -82,6 +85,7 @@
                   <object class="GtkImage">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
+                    <property name="pixel_size">22</property>
                     <property name="icon_name">goa-account-google</property>
                     <property name="icon_size">3</property>
                   </object>
@@ -121,6 +125,7 @@
                   <object class="GtkImage">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
+                    <property name="pixel_size">22</property>
                     <property name="icon_name">goa-account-owncloud</property>
                     <property name="icon_size">3</property>
                   </object>
@@ -222,7 +227,8 @@
                   <object class="GtkImage">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
-                    <property name="icon_name">gnome-contacts</property>
+                    <property name="pixel_size">22</property>
+                    <property name="icon_name">org.gnome.Contacts</property>
                     <property name="icon_size">3</property>
                   </object>
                   <packing>
@@ -261,7 +267,8 @@
                   <object class="GtkImage">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
-                    <property name="icon_name">gnome-documents</property>
+                    <property name="pixel_size">22</property>
+                    <property name="icon_name">org.gnome.Documents</property>
                     <property name="icon_size">3</property>
                   </object>
                   <packing>
@@ -300,7 +307,8 @@
                   <object class="GtkImage">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
-                    <property name="icon_name">emblem-web</property>
+                    <property name="pixel_size">22</property>
+                    <property name="icon_name">org.gnome.Maps</property>
                     <property name="icon_size">3</property>
                   </object>
                   <packing>
@@ -339,6 +347,7 @@
                   <object class="GtkImage">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
+                    <property name="pixel_size">22</property>
                     <property name="icon_name">evolution</property>
                     <property name="icon_size">3</property>
                   </object>
@@ -438,7 +447,8 @@
                   <object class="GtkImage">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
-                    <property name="icon_name">gnome-calendar</property>
+                    <property name="pixel_size">22</property>
+                    <property name="icon_name">org.gnome.Calendar</property>
                     <property name="icon_size">3</property>
                   </object>
                   <packing>
@@ -477,7 +487,8 @@
                   <object class="GtkImage">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
-                    <property name="icon_name">emblem-camera</property>
+                    <property name="pixel_size">22</property>
+                    <property name="icon_name">org.gnome.Photos</property>
                     <property name="icon_size">3</property>
                   </object>
                   <packing>
