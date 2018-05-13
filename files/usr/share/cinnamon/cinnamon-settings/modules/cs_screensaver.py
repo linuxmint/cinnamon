@@ -11,19 +11,6 @@ from gi.repository import Gtk, Gdk, GLib, Pango
 
 from GSettingsWidgets import *
 
-LOCK_DELAY_OPTIONS = [
-    (0, _("Lock immediately")),
-    (15, _("15 seconds")),
-    (30, _("30 seconds")),
-    (60, _("1 minute")),
-    (120, _("2 minutes")),
-    (180, _("3 minutes")),
-    (300, _("5 minutes")),
-    (600, _("10 minutes")),
-    (1800, _("30 minutes")),
-    (3600, _("1 hour"))
-]
-
 LOCK_INACTIVE_OPTIONS = [
     (0,    _("Never")),
     (60,   _("1 minute")),
@@ -96,9 +83,9 @@ class Module:
         widget.set_tooltip_text(_("Enable this option to require a password when the screen turns itself off, or when the screensaver activates after a period of inactivity"))
         settings.add_row(widget)
 
-        widget = GSettingsComboBox(_("Delay before locking"), schema, "lock-delay", LOCK_DELAY_OPTIONS, valtype=int, size_group=size_group)
-        widget.set_tooltip_text(_("This option defines the amount of time to wait before locking the screen, after showing the screensaver or after turning off the screen"))
-        settings.add_reveal_row(widget, schema, "lock-enabled")
+        spin = GSettingsSpinButton(_("Delay before locking"), schema, "lock-delay", mini=0, maxi=3600, step=60, units=_("seconds"), size_group=size_group)
+        spin.set_tooltip_text(_("This option defines the amount of time to wait before locking the screen, after showing the screensaver or after turning off the screen"))
+        settings.add_reveal_row(spin, schema, "lock-enabled")
 
         # Customize
         page = SettingsPage()
