@@ -1038,7 +1038,7 @@ StScrollBar StButton#vhandle:hover {
 .menu-background {
 }
 .menu-favorites-box {
-    padding: 10px;
+    padding: 0.8em;
     border: 1px solid #666;
     border-radius: 8px;
     background-gradient-direction: vertical;
@@ -1047,10 +1047,7 @@ StScrollBar StButton#vhandle:hover {
     transition-duration: 300;
 }
 .menu-favorites-button {
-    padding-top: 10px;
-    padding-left: 10px;
-    padding-right: 10px;
-    padding-bottom: 10px;
+    padding: 0.8em;
 }
 .menu-favorites-button:hover {
     color: white;
@@ -1060,16 +1057,7 @@ StScrollBar StButton#vhandle:hover {
     box-shadow: inset 0px 0px 1px 1px rgba(255,255,255,0.06);
     border-radius: 4px;
 }
-.menu-places-box {
-    padding: 10px;
-    border: 0px solid #666;
-}
-.menu-places-button {
-    padding-top: 10px;
-    padding-left: 10px;
-    padding-right: 10px;
-    padding-bottom: 10px;
-}
+
 .menu-categories-box {
     padding-top: 10px;
     padding-left: 30px;
