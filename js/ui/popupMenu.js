@@ -2267,7 +2267,7 @@ PopupMenu.prototype = {
 
         if (parentPanel) {
             let monitor = Main.layoutManager.findMonitorForActor(this.sourceActor)
-            let panels = Main.panelManager.getPanelsInMonitor(Main.layoutManager.monitors.indexOf(monitor));
+            let panels = Main.panelManager.getPanelsInMonitor(monitor.index);
             let children = Main.uiGroup.get_children();
             let panelIndex = children.indexOf(parentPanel);
 
@@ -2478,7 +2478,7 @@ PopupMenu.prototype = {
         let maxHeight = monitor.height;
         let maxWidth = monitor.width;
 
-        let panels = Main.panelManager.getPanelsInMonitor(Main.layoutManager.monitors.indexOf(monitor));
+        let panels = Main.panelManager.getPanelsInMonitor(monitor.index);
 
         for (let panel of panels) {
             if (panel.panelPosition == PanelLoc.top || panel.panelPosition == PanelLoc.bottom) {
@@ -2510,7 +2510,7 @@ PopupMenu.prototype = {
         let y2 = y1 + monitor.height;
 
         // remove visible panels from workable area to avoid overlapping them
-        let panels = Main.panelManager.getPanelsInMonitor(Main.layoutManager.monitors.indexOf(monitor));
+        let panels = Main.panelManager.getPanelsInMonitor(monitor.index);
 
         for (let panel of panels) {
             if (!panel.getIsVisible()) continue;
