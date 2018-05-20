@@ -274,6 +274,7 @@ class Player extends PopupMenu.PopupMenuSection {
     constructor(applet, busname, owner) {
         super();
         this.showPosition = true;
+        this._canSeek = true;
         this._owner = owner;
         this._busName = busname;
         this._applet = applet;
@@ -442,21 +443,15 @@ class Player extends PopupMenu.PopupMenuSection {
 
         this._applet._updatePlayerMenuItems();
 
-        /* these players don't support seek */
-        if (!this._getCanSeek() || this._mediaServerPlayer.Rate != 1) {
-            this.showPosition = false;
-            this._positionSlider.actor.hide();
-        }
-
         this._timeoutId = 0;
 
+        this._updatePositionSlider();
         this._setStatus(this._mediaServerPlayer.PlaybackStatus);
         this._trackId = {};
         this._setMetadata(this._mediaServerPlayer.Metadata);
         this._currentTime = 0;
         this._timerTicker = 0;
         this._wantedSeekValue = 0;
-        this._updatePositionSlider();
 
         this._mediaServerPlayerId = this._mediaServerPlayer.connectSignal('Seeked', Lang.bind(this, function(id, sender, value) {
             if (value > 0) {
@@ -527,10 +522,10 @@ class Player extends PopupMenu.PopupMenuSection {
     }
 
     _updatePositionSlider(position) {
-        this._canSeek = this._getCanSeek();
-
-        if (this._songLength == 0 || position == false)
+        if (position === false)
             this._canSeek = false;
+        else
+            this._getCanSeek();
     }
 
     _setPosition(value) {
@@ -556,21 +551,31 @@ class Player extends PopupMenu.PopupMenuSection {
         }));
     }
 
+    _setCanSeek(seek) {
+        if (seek && this._mediaServerPlayer.Rate === 1) {
+            this._canSeek = this.showPosition = true;
+            this._positionSlider.actor.show();
+            this._runTimer();
+        } else {
+            this._canSeek = this.showPosition = false;
+            this._positionSlider.actor.hide();
+        }
+    }
+
     _getCanSeek() {
-        let can_seek = true;
-        this._prop.GetRemote(MEDIA_PLAYER_2_PLAYER_NAME, 'CanSeek', Lang.bind(this, function(position, ex) {
-            if (!ex) {
-                can_seek = position[0].get_boolean();
-            }
-        }));
-        // Some players say they "CanSeek" but don't actually give their position over dbus (spotify for instance)
+        // Some players say they "CanSeek" but don't actually give their position over dbus
         for (let i = 0; i < players_without_seek_support.length; i++) {
             if (players_without_seek_support[i] === this._name) {
-                can_seek = false;
-                break;
+                this._setCanSeek(false);
+                return;
             }
         }
-        return can_seek;
+
+        this._prop.GetRemote(MEDIA_PLAYER_2_PLAYER_NAME, 'CanSeek', (position, ex) => {
+            if (!ex) {
+                this._setCanSeek(position[0].get_boolean());
+            }
+        });
     }
 
     _setMetadata(metadata) {
@@ -664,13 +669,12 @@ class Player extends PopupMenu.PopupMenuSection {
     _setStatus(status) {
         if (!status)
             return;
-        this._updatePositionSlider();
         this._playerStatus = status;
         if (status == "Playing") {
             this._playButton.setData("media-playback-pause", _("Pause"));
             this.playerIcon.set_icon_name("media-playback-start");
             this._applet.setAppletTextIcon(this, true);
-            this._runTimer();
+            this._updatePositionSlider();
         }
         else if (status == "Paused") {
             this._playButton.setData("media-playback-start", _("Play"));
