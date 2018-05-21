@@ -158,17 +158,22 @@ function Extension(type, uuid) {
     if (extension) {
         return Promise.resolve(true);
     }
+    let force = false;
+    if (uuid.substr(0, 1) === '!') {
+        uuid = uuid.replace(/^!/, '');
+        force = true;
+    }
     let dir = findExtensionDirectory(uuid, type.userDir, type.folder);
 
     if (dir == null) {
         forgetExtension(uuid, type, true);
         return Promise.resolve(null);
     }
-    return this._init(dir, type, uuid);
+    return this._init(dir, type, uuid, force);
 }
 
 Extension.prototype = {
-    _init: function(dir, type, uuid) {
+    _init: function(dir, type, uuid, force) {
         this.name = type.name;
         this.uuid = uuid;
         this.dir = dir;
@@ -215,8 +220,8 @@ Extension.prototype = {
             // https://github.com/linuxmint/cjs/blob/055da399c794b0b4d76ecd7b5fabf7f960f77518/modules/_lie.js#L9
             startTime = new Date().getTime();
             this.meta = meta;
-            if (uuid.indexOf('!') !== 0) {
-                this.uuid = uuid.replace(/^!/, '');
+
+            if (!force) {
                 this.validateMetaData();
             }
 
