@@ -1,3 +1,21 @@
+cinnamon (3.8.3) tara; urgency=medium
+
+  [ NikoKrause ]
+  * Use default icon names in Online Accounts (GOA) (#7559)
+  * fix symbolic icons and delete obsolete (#7566)
+  * Cinnamon theme: window-list progress improvements (#7562)
+
+  [ Clement Lefebvre ]
+  * Settings: Fix launching mintsources/mintdrivers/lightdm-settings
+
+  [ Michael Webster ]
+  * cs_startup.py: Always have delay widgets, but hide/show them depending on if there's a delay or not.
+
+  [ Jason Hicks ]
+  * extension: Fix inability to force xlet installs (#7571)
+
+ -- Clement Lefebvre <root@linuxmint.com>  Mon, 21 May 2018 13:00:33 +0100
+
 cinnamon (3.8.2) tara; urgency=medium
 
   [ Clement Lefebvre ]
