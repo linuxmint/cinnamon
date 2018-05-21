@@ -696,16 +696,19 @@ class AutostartRow(Gtk.ListBoxRow):
         self.delay_box.props.hexpand = False
         self.delay_box.set_margin_right(15)
         delay_time_markup = GLib.markup_escape_text(self.app.delay)
-        if delay_time_markup != "0":
-            label = Gtk.Label(_("Delay"))
-            self.delay_box.pack_start(label, False, False, 0)
-            self.delay_time_label = Gtk.Label()
-            self.delay_time_label.set_text(_("%s s") % delay_time_markup)
-            self.delay_time_label.get_style_context().add_class("dim-label")
-            self.delay_box.pack_start(self.delay_time_label, False, False, 0)
+
+        label = Gtk.Label(_("Delay"))
+        self.delay_box.pack_start(label, False, False, 0)
+        self.delay_time_label = Gtk.Label()
+        self.delay_time_label.set_text(_("%s s") % delay_time_markup)
+        self.delay_time_label.get_style_context().add_class("dim-label")
+        self.delay_box.pack_start(self.delay_time_label, False, False, 0)
         grid.attach_next_to(self.delay_box, self.desc_box, Gtk.PositionType.RIGHT, 1, 1)
         self.delay_box.set_sensitive(app.enabled)
 
+        self.delay_box.show_all()
+        self.delay_box.set_no_show_all(True)
+        self.delay_box.set_visible(delay_time_markup != "0")
 
         switch_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
         switch_box.set_margin_top(5)
@@ -726,6 +729,7 @@ class AutostartRow(Gtk.ListBoxRow):
         self.name_label.set_markup("<b>{}</b>".format(name_markup))
         self.comment_label.set_markup("<small>{}</small>".format(comment_markup))
         self.delay_time_label.set_markup(delay_time_markup)
+        self.delay_box.set_visible(delay_time_markup != "0")
 
     def on_switch_activated(self, switch, gparam):
         active = switch.get_active()
