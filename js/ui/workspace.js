@@ -10,7 +10,6 @@ const St = imports.gi.St;
 const Signals = imports.signals;
 
 const DND = imports.ui.dnd;
-const Lightbox = imports.ui.lightbox;
 const Main = imports.ui.main;
 const Overview = imports.ui.overview;
 const PopupMenu = imports.ui.popupMenu;
@@ -21,64 +20,12 @@ const WindowUtils = imports.misc.windowUtils;
 
 const WINDOW_DND_SIZE = 256;
 
-const SCROLL_SCALE_AMOUNT = 50;
-
-const LIGHTBOX_FADE_TIME = 0.1;
 const CLOSE_BUTTON_FADE_TIME = 0.1;
 
 const DEMANDS_ATTENTION_CLASS_NAME = "window-list-item-demands-attention";
 
 const DEFAULT_SLOT_FRACTION = 0.99;
 const WINDOWOVERLAY_ICON_SIZE = 16;
-
-function _interpolate(start, end, step) {
-    return start + (end - start) * step;
-}
-
-function _clamp(value, min, max) {
-    return Math.max(min, Math.min(max, value));
-}
-
-
-function ScaledPoint(x, y, scaleX, scaleY) {
-    this._init(x, y, scaleX, scaleY);
-}
-
-ScaledPoint.prototype = {
-    _init: function(x, y, scaleX, scaleY) {
-        this.x = x;
-        this.y = y;
-        this.scaleX = scaleX;
-        this.scaleY = scaleY;
-    },
-    getPosition : function() {
-        return [this.x, this.y];
-    },
-
-    getScale : function() {
-        return [this.scaleX, this.scaleY];
-    },
-
-    setPosition : function(x, y) {
-        this.x = x;
-        this.y = y;
-    },
-
-    setScale : function(scaleX, scaleY) {
-        this.scaleX = scaleX;
-        this.scaleY = scaleY;
-    },
-
-    interpPosition : function(other, step) {
-        return [_interpolate(this.x, other.x, step),
-                _interpolate(this.y, other.y, step)];
-    },
-
-    interpScale : function(other, step) {
-        return [_interpolate(this.scaleX, other.scaleX, step),
-                _interpolate(this.scaleY, other.scaleY, step)];
-    }
-};
 
 var menuShowing = null;
 var menuClone = null;
@@ -131,18 +78,11 @@ WindowClone.prototype = {
         realWindowDestroyId = this.realWindow.connect('destroy',
             this._disconnectWindowSignals.bind(this));
 
-        this.myContainer.connect('selection-changed', this._zoomEnd.bind(this));
-
         this.actor.connect('button-release-event', this._onButtonRelease.bind(this));
         this.actor.connect('button-press-event', this._onButtonPress.bind(this));
-        this.actor.connect('scroll-event', this._onScroll.bind(this));
 
         this.actor.connect('destroy', this._onDestroy.bind(this));
-        this.actor.connect('leave-event', this._onPointerLeave.bind(this));
 
-        this._windowIsZooming = false;
-        this._zooming = false;
-        this._zoomStep = 0;
         this._selected = false;
     },
 
@@ -169,9 +109,6 @@ WindowClone.prototype = {
 
     setStackAbove: function (actor) {
         this._stackAbove = actor;
-        if (this._zooming)
-            // We'll fix up the stack after the zooming
-            return;
         if (this._stackAbove == null)
             this.actor.lower_bottom();
         else
@@ -180,20 +117,6 @@ WindowClone.prototype = {
 
     destroy: function () {
         this.actor.destroy();
-    },
-
-    zoomFromOverview: function() {
-        if (this._zooming) {
-            // If the user clicked on the zoomed window, or we are
-            // returning there anyways, then we can zoom right to the
-            // window, but if we are going to some other window, then
-            // we need to cancel the zoom before animating, or it
-            // will look funny.
-
-            if (!this._selected &&
-                this.metaWindow != global.display.focus_window)
-                this._zoomEnd();
-        }
     },
 
     _onRealWindowSizeChanged: function() {
@@ -206,119 +129,8 @@ WindowClone.prototype = {
 
         this.metaWindow._delegate = null;
         this.actor._delegate = null;
-        if (this._zoomLightbox)
-            this._zoomLightbox.destroy();
 
         this.disconnectAll();
-    },
-
-    _onPointerLeave: function (actor, event) {
-        if (this._zoomStep)
-            this._zoomEnd();
-    },
-
-    scrollZoom: function (direction) {
-        if (direction === Clutter.ScrollDirection.UP) {
-            if (this._zoomStep == 0)
-                this._zoomStart();
-            if (this._zoomStep < 100) {
-                this._zoomStep += SCROLL_SCALE_AMOUNT;
-                this._zoomUpdate();
-            }
-        } else if (direction === Clutter.ScrollDirection.DOWN) {
-            if (this._zoomStep > 0) {
-                this._zoomStep -= SCROLL_SCALE_AMOUNT;
-                this._zoomStep = Math.max(0, this._zoomStep);
-                this._zoomUpdate();
-            }
-            if (this._zoomStep <= 0.0) {
-                this._zoomEnd();
-            }
-        } else if (direction < 0) {
-            this._zoomEnd();
-        }
-    },
-
-    _onScroll : function (actor, event) {
-        let direction = event.get_scroll_direction();
-        this.scrollZoom(direction);
-    },
-
-    _zoomUpdate : function () {
-        [this.actor.x, this.actor.y] = this._zoomGlobalOrig.interpPosition(this._zoomTarget, this._zoomStep / 100);
-        [this.actor.scale_x, this.actor.scale_y] = this._zoomGlobalOrig.interpScale(this._zoomTarget, this._zoomStep / 100);
-
-        let [width, height] = this.actor.get_transformed_size();
-        let monitorIndex = this.metaWindow.get_monitor();
-        let monitor = Main.layoutManager.monitors[monitorIndex];
-        let availArea = new Meta.Rectangle({ x: monitor.x,
-                                             y: monitor.y,
-                                             width: monitor.width,
-                                             height: monitor.height });
-
-        this.actor.x = _clamp(this.actor.x, availArea.x, availArea.x + availArea.width - width);
-        this.actor.y = _clamp(this.actor.y, availArea.y, availArea.y + availArea.height - height);
-    },
-
-    _zoomStart : function () {
-        if (!this._zooming) {
-            this.emit('zoom-start');
-        }
-        this._zooming = true;
-
-        if (!this._zoomLightbox)
-            this._zoomLightbox = new Lightbox.Lightbox(Main.uiGroup,
-                                                       { fadeTime: LIGHTBOX_FADE_TIME });
-        this._zoomLightbox.show();
-
-        this._zoomLocalOrig  = new ScaledPoint(this.actor.x, this.actor.y, this.actor.scale_x, this.actor.scale_y);
-        this._zoomGlobalOrig = new ScaledPoint();
-        let parent = this._origParent = this.actor.get_parent();
-        let [width, height] = this.actor.get_transformed_size();
-        this._zoomGlobalOrig.setPosition.apply(this._zoomGlobalOrig, this.actor.get_transformed_position());
-        this._zoomGlobalOrig.setScale(width / this.actor.width, height / this.actor.height);
-
-        global.reparentActor(this.actor, Main.uiGroup);
-        this._zoomLightbox.highlight(this.actor);
-
-        [this.actor.x, this.actor.y]             = this._zoomGlobalOrig.getPosition();
-        [this.actor.scale_x, this.actor.scale_y] = this._zoomGlobalOrig.getScale();
-
-        this.actor.raise_top();
-
-        this._zoomTarget = new ScaledPoint(0, 0, 1.0, 1.0);
-        this._zoomTarget.setPosition(this.actor.x - (this.actor.width - width) / 2, this.actor.y - (this.actor.height - height) / 2);
-        this._zoomStep = 0;
-
-        this._zoomUpdate();
-    },
-
-    _zoomEnd : function () {
-        if (!this._zooming) {return;}
-        this._zooming = false;
-        this.emit('zoom-end');
-
-        global.reparentActor(this.actor, this._origParent);
-        if (this._stackAbove == null)
-            this.actor.lower_bottom();
-        // If the workspace has been destroyed while we were reparented to
-        // the stage, _stackAbove will be unparented and we can't raise our
-        // actor above it - as we are bound to be destroyed anyway in that
-        // case, we can skip that step
-        else if (this._stackAbove.get_parent())
-            this.actor.raise(this._stackAbove);
-
-        [this.actor.x, this.actor.y]             = this._zoomLocalOrig.getPosition();
-        [this.actor.scale_x, this.actor.scale_y] = this._zoomLocalOrig.getScale();
-
-        this._zoomLightbox.hide();
-
-        this._zoomLocalPosition  = undefined;
-        this._zoomLocalScale     = undefined;
-        this._zoomGlobalPosition = undefined;
-        this._zoomGlobalScale    = undefined;
-        this._zoomTargetPosition = undefined;
-        this._zoomStep           = 0;
     },
 
     _onButtonPress: function(actor, event) {
@@ -421,8 +233,6 @@ WindowOverlay.prototype = {
 
         this._idleToggleCloseId = 0;
         windowClone.actor.connect('destroy', this._onDestroy.bind(this));
-        windowClone.connect('zoom-start', this.hide.bind(this));
-        windowClone.connect('zoom-end', this.show.bind(this));
 
         let demandsAttentionCallback = this._onWindowDemandsAttention.bind(this);
         let attentionId = global.display.connect('window-demands-attention', demandsAttentionCallback);
@@ -782,12 +592,6 @@ WorkspaceMonitor.prototype = {
         return false;
     },
 
-    zoomSelectedWindow: function(direction) {
-        if (this._kbWindowIndex > -1 && this._kbWindowIndex < this._windows.length) {
-            this._windows[this._kbWindowIndex].scrollZoom(direction);
-        }
-    },
-
     closeSelectedWindow: function() {
         if (this._kbWindowIndex > -1 && this._kbWindowIndex < this._windows.length) {
             this._windows[this._kbWindowIndex].overlay.closeWindow();
@@ -996,9 +800,6 @@ WorkspaceMonitor.prototype = {
     },
 
     _delayedWindowRepositioning: function() {
-        if (this._windowIsZooming)
-            return true;
-
         let [x, y, mask] = global.get_pointer();
 
         let pointerHasMoved = (this._cursorX != x && this._cursorY != y);
@@ -1203,8 +1004,6 @@ WorkspaceMonitor.prototype = {
         for (let i = 0; i < this._windows.length; i++) {
             let clone = this._windows[i];
 
-            clone.zoomFromOverview();
-
             if (clone.metaWindow.showing_on_its_workspace()) {
                 Tweener.addTween(clone.actor,
                                  { x: clone.origX,
@@ -1295,11 +1094,6 @@ WorkspaceMonitor.prototype = {
         clone.connect('activated', this._onCloneActivated.bind(this));
         clone.connect('closed', this._onCloneClosed.bind(this));
         clone.connect('context-menu-requested', this._onCloneContextMenuRequested.bind(this));
-        clone.connect('zoom-start', clone => {
-            this.selectClone(clone);
-            this._windowIsZooming = true;
-        });
-        clone.connect('zoom-end', () => { this._windowIsZooming = false });
         clone.connect('size-changed', () => { this.positionWindows(0) });
 
         this.actor.add_actor(clone.actor);
@@ -1622,18 +1416,7 @@ Workspace.prototype = {
             Main.overview.hide();
             return true;
         }
-        if (symbol === Clutter.plus && modifiers & Clutter.ModifierType.CONTROL_MASK) {
-            activeMonitor.zoomSelectedWindow(Clutter.ScrollDirection.UP);
-            return true;
-        }
-        if (symbol === Clutter.minus && modifiers & Clutter.ModifierType.CONTROL_MASK) {
-            activeMonitor.zoomSelectedWindow(Clutter.ScrollDirection.DOWN);
-            return true;
-        }
-        if (symbol - '48' === 0 && modifiers & Clutter.ModifierType.CONTROL_MASK) {
-            activeMonitor.zoomSelectedWindow(-1); // end zoom
-            return true;
-        }
+
         if (modifiers & ctrlAltMask) {
             return false;
         }
