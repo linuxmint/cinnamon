@@ -2974,9 +2974,9 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
             for (let i = 0; i < this._applicationsButtons.length; i++) {
                 let button = this._applicationsButtons[i];
                 let appId = button.app.get_id();
-                if (apps.indexOf(appId) != -1) {
+                if (apps.indexOf(appId) !== -1) {
                     button.actor.show();
-                    if (appId == exactMatch) {
+                    if (appId === exactMatch) {
                         selectedActor = button.actor;
                     }
                 } else {
@@ -2989,16 +2989,16 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
             });
         }
         if (places) {
-            if (places == -1) {
+            if (places === -1) {
                 this._placesButtons.forEach( function (item, index) {
                     item.actor.show();
                 });
             } else {
                 for (let i = 0; i < this._placesButtons.length; i++) {
                     let buttonName = this._placesButtons[i].button_name;
-                    if (places.indexOf(buttonName) != -1) {
+                    if (places.indexOf(buttonName) !== -1) {
                         this._placesButtons[i].actor.show();
-                        if (!selectedActor && buttonName == exactMatch)
+                        if (!selectedActor && buttonName === exactMatch)
                             selectedActor = this._placesButtons[i].actor;
                     } else {
                         this._placesButtons[i].actor.hide();
@@ -3127,8 +3127,8 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
             if (pattern) {
                 let name = names[id].name;
                 let lowerName = name.toLowerCase();
-                if (lowerName.indexOf(pattern) != -1) res.push(names[id]);
-                if (!exactMatch && lowerName == pattern) exactMatch = name;
+                if (lowerName.indexOf(pattern) !== -1) res.push(names[id]);
+                if (!exactMatch && lowerName === pattern) exactMatch = name;
             } else res.push(names[id]);
         }
         return [res, exactMatch];
@@ -3158,20 +3158,20 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
             for (let i in this._applicationsButtons) {
                 let app = this._applicationsButtons[i].app;
                 let latinisedLowerName = Util.latinise(app.get_name().toLowerCase());
-                if (latinisedLowerName.match(regexpPattern) != null) {
+                if (latinisedLowerName.match(regexpPattern) !== null) {
                     res.push(app.get_id());
                     foundByName = true;
-                    if (!exactMatch && latinisedLowerName == pattern)
+                    if (!exactMatch && latinisedLowerName === pattern)
                         exactMatch = app.get_id();
                 }
             }
             if (!foundByName) {
                 for (let i in this._applicationsButtons) {
                     let app = this._applicationsButtons[i].app;
-                    if (Util.latinise(app.get_name().toLowerCase()).indexOf(pattern)!=-1 ||
-                        (app.get_keywords() && Util.latinise(app.get_keywords().toLowerCase()).indexOf(pattern)!=-1) ||
-                        (app.get_description() && Util.latinise(app.get_description().toLowerCase()).indexOf(pattern)!=-1) ||
-                        (app.get_id() && Util.latinise(app.get_id().slice(0, -8).toLowerCase()).indexOf(pattern)!=-1))
+                    if (Util.latinise(app.get_name().toLowerCase()).indexOf(pattern)!==-1 ||
+                        (app.get_keywords() && Util.latinise(app.get_keywords().toLowerCase()).indexOf(pattern)!==-1) ||
+                        (app.get_description() && Util.latinise(app.get_description().toLowerCase()).indexOf(pattern)!==-1) ||
+                        (app.get_id() && Util.latinise(app.get_id().slice(0, -8).toLowerCase()).indexOf(pattern)!==-1))
                         res.push(app.get_id());
                 }
             }
