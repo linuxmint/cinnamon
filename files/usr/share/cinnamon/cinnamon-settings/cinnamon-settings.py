@@ -187,11 +187,11 @@ class MainWindow:
     def __init__(self):
         self.builder = Gtk.Builder()
         self.builder.add_from_file(config.currentPath + "/cinnamon-settings.ui")
-        self.window = XApp.GtkWindow(window_position=Gtk.WindowPosition.CENTER,
-                                     default_width=800, default_height=600)
+        self.window = self.builder.get_object('MainWind')
         main_box = self.builder.get_object("main_box")
         self.window.add(main_box)
         self.top_bar = self.builder.get_object("top_bar")
+        self.title_lbl = self.builder.get_object("title_lbl")
         self.side_view = {}
         self.main_stack = self.builder.get_object("main_stack")
         self.main_stack.set_transition_type(Gtk.StackTransitionType.CROSSFADE)
@@ -307,6 +307,7 @@ class MainWindow:
 
         # set up larger components.
         self.window.set_title(_("System Settings"))
+        self.title_lbl.set_label(self.window.get_title())
         self.button_back.connect('clicked', self.back_to_icon_view)
 
         self.calculate_bar_heights()
