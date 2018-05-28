@@ -203,16 +203,10 @@ class SAModule:
         self.category = category
 
     def process (self):
-        name = self.name.replace("gksudo ", "")
-        name = name.replace("gksu ", "")
+        name = self.name.replace("pkexec ", "")
         name = name.split()[0]
 
-        for path in os.environ["PATH"].split(os.pathsep):
-            path = path.strip('"')
-            exe_file = os.path.join(path, name)
-            if os.path.isfile(exe_file) and os.access(exe_file, os.X_OK):
-                return True
-        return False
+        return GLib.find_program_in_path(name) is not None
 
 def walk_directories(dirs, filter_func, return_directories=False):
     # If return_directories is False: returns a list of valid subdir names
