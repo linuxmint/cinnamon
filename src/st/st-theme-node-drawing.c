@@ -1460,6 +1460,7 @@ st_theme_node_render_resources (StThemeNode   *node,
       else if (node->background_color.alpha > 0 || has_border)
         {
           CoglHandle buffer, offscreen;
+          CoglError *error = NULL;
           int texture_width = ceil (width);
           int texture_height = ceil (height);
 
@@ -1467,9 +1468,14 @@ st_theme_node_render_resources (StThemeNode   *node,
                                                           texture_height,
                                                           COGL_TEXTURE_NO_SLICING,
                                                           COGL_PIXEL_FORMAT_ANY);
+          if (buffer == NULL)
+            {
+              return;
+            }
+
           offscreen = cogl_offscreen_new_with_texture (buffer);
 
-          if (offscreen != COGL_INVALID_HANDLE)
+          if (cogl_framebuffer_allocate (COGL_FRAMEBUFFER (offscreen), &error))
             {
               ClutterActorBox box = { 0, 0, width, height };
               cogl_framebuffer_orthographic (offscreen, 0, 0,
@@ -1483,6 +1489,14 @@ st_theme_node_render_resources (StThemeNode   *node,
               node->box_shadow_material = _st_create_shadow_pipeline (box_shadow_spec,
                                                                       buffer);
             }
+          else
+            {
+              if (error)
+                {
+                  cogl_error_free (error);
+                }
+            }
+
           cogl_handle_unref (buffer);
         }
     }
