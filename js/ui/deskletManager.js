@@ -136,7 +136,7 @@ function removeDesklet(uuid, desklet_id){
     for (let i = 0; i < list.length; i++){
         let definition = list[i];
         let elements = definition.split(":");
-        if (uuid == elements[0] && desklet_id == elements[1]) list.splice(i, 1);
+        if (uuid === elements[0] && desklet_id === elements[1]) list.splice(i, 1);
     }
     global.settings.set_strv(ENABLED_DESKLETS_KEY, list);
 }
@@ -473,7 +473,7 @@ DeskletContainer.prototype = {
         this._dragPlaceholder.show();
         let interval = global.settings.get_int(DESKLET_SNAP_INTERVAL_KEY);
 
-        if (this.last_x == -1 && this.last_y == -1) {
+        if (this.last_x === -1 && this.last_y === -1) {
             this.last_x = actor.get_x();
             this.last_y = actor.get_y();
         }
@@ -527,7 +527,7 @@ DeskletContainer.prototype = {
         let enabledDesklets = global.settings.get_strv(ENABLED_DESKLETS_KEY);
         for (let i = 0; i < enabledDesklets.length; i++){
             let definition = enabledDesklets[i];
-            if (definition.indexOf(source._uuid + ":" + source.instance_id) == 0){
+            if (definition.indexOf(source._uuid + ":" + source.instance_id) === 0){
                 let elements = definition.split(":");
                 elements[2] = actor.get_x();
                 elements[3] = actor.get_y();

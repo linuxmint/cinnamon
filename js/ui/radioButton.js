@@ -186,7 +186,7 @@ RadioButtonGroup.prototype = {
             button['button'].actor.checked = buttonId === button['id'];
         }
 
-        if (this._activeId != buttonId) {
+        if (this._activeId !== buttonId) {
             this._activeId = buttonId;
             this.emit('radio-changed', this._activeId);
         }

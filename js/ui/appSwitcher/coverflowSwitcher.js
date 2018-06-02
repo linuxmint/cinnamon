@@ -33,7 +33,7 @@ CoverflowSwitcher.prototype = {
     },
 
     _selectNext: function() {
-        if (this._currentIndex == this._windows.length - 1) {
+        if (this._currentIndex === this._windows.length - 1) {
             this._currentIndex = 0;
             this._flipStack(Clutter.Gravity.WEST);
         } else {
@@ -43,7 +43,7 @@ CoverflowSwitcher.prototype = {
     },
 
     _selectPrevious: function() {
-        if (this._currentIndex == 0) {
+        if (this._currentIndex === 0) {
             this._currentIndex = this._windows.length-1;
             this._flipStack(Clutter.Gravity.EAST);
         } else {
@@ -57,7 +57,7 @@ CoverflowSwitcher.prototype = {
         
         let xOffset, angle;
         
-        if(gravity == Clutter.Gravity.WEST) {
+        if(gravity === Clutter.Gravity.WEST) {
             xOffset = -this._xOffsetLeft;
             angle = BLEND_OUT_ANGLE;
         } else {
@@ -69,7 +69,7 @@ CoverflowSwitcher.prototype = {
         
         for (let i in this._previews) {
             let preview = this._previews[i];
-            preview._cfIsLast = (i == this._windows.length-1);
+            preview._cfIsLast = (i === this._windows.length-1);
             this._animatePreviewToSide(preview, i, gravity, xOffset, {
                 opacity: 0,
                 rotation_angle_y: angle,
@@ -85,7 +85,7 @@ CoverflowSwitcher.prototype = {
     _onFlipIn: function(preview, index, gravity) {
         let xOffsetStart, xOffsetEnd, angleStart, angleEnd;
         
-        if(gravity == Clutter.Gravity.WEST) {
+        if(gravity === Clutter.Gravity.WEST) {
             xOffsetStart = this._activeMonitor.width + this._xOffsetLeft;
             xOffsetEnd = this._xOffsetRight;
             angleStart = -BLEND_OUT_ANGLE;
@@ -106,14 +106,14 @@ CoverflowSwitcher.prototype = {
             onComplete: this._onFlipComplete,
             onCompleteScope: this
         };
-        let oppositeGravity = (gravity == Clutter.Gravity.WEST) ? Clutter.Gravity.EAST : Clutter.Gravity.WEST;
+        let oppositeGravity = (gravity === Clutter.Gravity.WEST) ? Clutter.Gravity.EAST : Clutter.Gravity.WEST;
         
-        if (index == this._currentIndex) {
+        if (index === this._currentIndex) {
             preview.raise_top();
             let extraParams = preview._cfIsLast ? lastExtraParams : null;
             this._animatePreviewToMid(preview, oppositeGravity, animation_time, extraParams);
         } else {
-            if(gravity == Clutter.Gravity.EAST)
+            if(gravity === Clutter.Gravity.EAST)
                 preview.raise_top();
             else
                 preview.lower_bottom();
@@ -133,14 +133,14 @@ CoverflowSwitcher.prototype = {
     
     _onFlipComplete: function() {
         this._looping = false;
-        if(this._requiresUpdate == true) {
+        if(this._requiresUpdate === true) {
             this._requiresUpdate = false;
             this._updateList();
         }
     },
     
     _animatePreviewToMid: function(preview, oldGravity, animation_time, extraParams) {
-        let rotation_vertex_x = (oldGravity == Clutter.Gravity.EAST) ? preview.width / 2 : -preview.width / 2;
+        let rotation_vertex_x = (oldGravity === Clutter.Gravity.EAST) ? preview.width / 2 : -preview.width / 2;
         preview.move_anchor_point_from_gravity(Clutter.Gravity.CENTER);
         preview.rotation_center_y = new Clutter.Vertex({ x: rotation_vertex_x, y: 0.0, z: 0.0 });
         preview.raise_top();
@@ -190,7 +190,7 @@ CoverflowSwitcher.prototype = {
         for (let i in this._previews) {
             let preview = this._previews[i];
 
-            if (i == this._currentIndex) {
+            if (i === this._currentIndex) {
                 this._animatePreviewToMid(preview, preview.get_anchor_point_gravity(), animation_time);
             } else if (i < this._currentIndex) {
                 preview.raise_top();

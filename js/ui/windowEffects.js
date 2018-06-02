@@ -334,9 +334,9 @@ Tile.prototype = {
 
     scale: function(cinnamonwm, actor, time, transition, args){
         let [targetX, targetY, targetWidth, targetHeight] = args;
-        if(targetWidth == actor.width)
+        if(targetWidth === actor.width)
             targetWidth -= 1;
-        if(targetHeight == actor.height)
+        if(targetHeight === actor.height)
             targetHeight -= 1;
 
         let scale_x = targetWidth / actor.width;

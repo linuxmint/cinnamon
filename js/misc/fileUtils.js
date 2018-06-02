@@ -69,12 +69,12 @@ function recursivelyDeleteDir(dir) {
                                           Gio.FileQueryInfoFlags.NONE, null);
 
     let info, child;
-    while ((info = children.next_file(null)) != null) {
+    while ((info = children.next_file(null)) !== null) {
         let type = info.get_file_type();
         let child = dir.get_child(info.get_name());
-        if (type == Gio.FileType.REGULAR)
+        if (type === Gio.FileType.REGULAR)
             deleteGFile(child);
-        else if (type == Gio.FileType.DIRECTORY)
+        else if (type === Gio.FileType.DIRECTORY)
             recursivelyDeleteDir(child);
     }
 
@@ -160,7 +160,7 @@ function createExports({path, dir, meta, type, file, size, JS, returnIndex, reje
     if (moduleIndex > -1) {
         // Module already exists, check if its been updated
         if (size === LoadedModules[moduleIndex].size
-            && LoadedModules[moduleIndex].module != null) {
+            && LoadedModules[moduleIndex].module !== null) {
             // Return the cache
             return returnIndex ? moduleIndex : LoadedModules[moduleIndex].module;
         }
@@ -179,7 +179,7 @@ function createExports({path, dir, meta, type, file, size, JS, returnIndex, reje
     let match;
 
     if (!exportsRegex.test(JS)) {
-        while ((match = varRegex.exec(JS)) != null) {
+        while ((match = varRegex.exec(JS)) !== null) {
             if (match.index === varRegex.lastIndex) {
                 varRegex.lastIndex++;
             }

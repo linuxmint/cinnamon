@@ -146,10 +146,10 @@ Slider.prototype = {
     _onScrollEvent: function (actor, event) {
         let direction = event.get_scroll_direction();
 
-        if (direction == Clutter.ScrollDirection.DOWN) {
+        if (direction === Clutter.ScrollDirection.DOWN) {
             this._value = Math.max(0, this._value - SLIDER_SCROLL_STEP);
         }
-        else if (direction == Clutter.ScrollDirection.UP) {
+        else if (direction === Clutter.ScrollDirection.UP) {
             this._value = Math.min(1, this._value + SLIDER_SCROLL_STEP);
         }
 
@@ -187,8 +187,8 @@ Slider.prototype = {
 
     _onKeyPressEvent: function (actor, event) {
         let key = event.get_key_symbol();
-        if (key == Clutter.KEY_Right || key == Clutter.KEY_Left) {
-            let delta = key == Clutter.KEY_Right ? 0.1 : -0.1;
+        if (key === Clutter.KEY_Right || key === Clutter.KEY_Left) {
+            let delta = key === Clutter.KEY_Right ? 0.1 : -0.1;
             this._value = Math.max(0, Math.min(this._value + delta, 1));
             this.actor.queue_repaint();
             this.emit('value-changed', this._value);

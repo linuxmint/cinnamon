@@ -86,7 +86,7 @@ ModalDialog.prototype = {
 
         this._dialogLayout = new St.BoxLayout({ style_class: 'modal-dialog',
                                                 vertical:    true });
-        if (params.styleClass != null) {
+        if (params.styleClass !== null) {
             this._dialogLayout.add_style_class_name(params.styleClass);
         }
 
@@ -189,11 +189,11 @@ ModalDialog.prototype = {
                                                 label:       label });
 
             let x_alignment;
-            if (buttons.length == 1)
+            if (buttons.length === 1)
                 x_alignment = St.Align.END;
-            else if (i == 0)
+            else if (i === 0)
                 x_alignment = St.Align.START;
-            else if (i == buttons.length - 1)
+            else if (i === buttons.length - 1)
                 x_alignment = St.Align.END;
             else
                 x_alignment = St.Align.MIDDLE;
@@ -203,7 +203,7 @@ ModalDialog.prototype = {
                 focusSetExplicitly = true;
             }
 
-            if (!focusSetExplicitly && !nofocus && (this._initialKeyFocus == this._dialogLayout ||
+            if (!focusSetExplicitly && !nofocus && (this._initialKeyFocus === this._dialogLayout ||
                 this._buttonLayout.contains(this._initialKeyFocus)))
             {
                 this._initialKeyFocus = buttonInfo.button;
@@ -294,7 +294,7 @@ ModalDialog.prototype = {
      * Opens and displays the modal dialog.
      */
     open: function(timestamp) {
-        if (this.state == State.OPENED || this.state == State.OPENING)
+        if (this.state === State.OPENED || this.state === State.OPENING)
             return true;
 
         if (!this.pushModal(timestamp))
@@ -312,7 +312,7 @@ ModalDialog.prototype = {
      * Closes the modal dialog.
      */
     close: function(timestamp) {
-        if (this.state == State.CLOSED || this.state == State.CLOSING)
+        if (this.state === State.CLOSED || this.state === State.CLOSING)
             return;
 
         this.state = State.CLOSING;
@@ -402,10 +402,10 @@ ModalDialog.prototype = {
      * complete.
      */
     _fadeOutDialog: function(timestamp) {
-        if (this.state == State.CLOSED || this.state == State.CLOSING)
+        if (this.state === State.CLOSED || this.state === State.CLOSING)
             return;
 
-        if (this.state == State.FADED_OUT)
+        if (this.state === State.FADED_OUT)
             return;
 
         this.popModal(timestamp);

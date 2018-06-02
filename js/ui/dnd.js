@@ -66,14 +66,14 @@ function addDragMonitor(monitor) {
 
 function removeDragMonitor(monitor) {
     for (let i = 0; i < dragMonitors.length; i++)
-        if (dragMonitors[i] == monitor) {
+        if (dragMonitors[i] === monitor) {
             dragMonitors.splice(i, 1);
             return;
         }
 }
 
 function isDragging() {
-    return currentDraggable != null;
+    return currentDraggable !== null;
 }
 
 var _Draggable = new Lang.Class({
@@ -131,7 +131,7 @@ var _Draggable = new Lang.Class({
         if (this.inhibit)
             return false;
 
-        if (event.get_button() != 1)
+        if (event.get_button() !== 1)
             return false;
 
         if (Tweener.getTweenCount(actor))
@@ -183,11 +183,11 @@ var _Draggable = new Lang.Class({
         // didn't start the drag, to drop the draggable in case the drag was in progress, and
         // to complete the drag and ensure that whatever happens to be under the pointer does
         // not get triggered if the drag was cancelled with Esc.
-        if (event.type() == Clutter.EventType.BUTTON_RELEASE) {
+        if (event.type() === Clutter.EventType.BUTTON_RELEASE) {
             this._buttonDown = false;
             if (this._dragInProgress) {
                 return this._dragActorDropped(event);
-            } else if (this._dragActor != null && !this._animationInProgress) {
+            } else if (this._dragActor !== null && !this._animationInProgress) {
                 // Drag must have been cancelled with Esc.
                 this._dragComplete();
                 return true;
@@ -198,17 +198,17 @@ var _Draggable = new Lang.Class({
             }
         // We intercept MOTION event to figure out if the drag has started and to draw
         // this._dragActor under the pointer when dragging is in progress
-        } else if (event.type() == Clutter.EventType.MOTION) {
+        } else if (event.type() === Clutter.EventType.MOTION) {
             if (this._dragInProgress) {
                 return this._updateDragPosition(event);
-            } else if (this._dragActor == null) {
+            } else if (this._dragActor === null) {
                 return this._maybeStartDrag(event);
             }
         // We intercept KEY_PRESS event so that we can process Esc key press to cancel
         // dragging and ignore all other key presses.
-        } else if (event.type() == Clutter.EventType.KEY_PRESS && this._dragInProgress) {
+        } else if (event.type() === Clutter.EventType.KEY_PRESS && this._dragInProgress) {
             let symbol = event.get_key_symbol();
-            if (symbol == Clutter.Escape) {
+            if (symbol === Clutter.Escape) {
                 this._cancelDrag(event.get_time());
                 return true;
             }
@@ -317,14 +317,14 @@ var _Draggable = new Lang.Class({
         }
 
         this._dragOrigOpacity = this._dragActor.opacity;
-        if (this._dragActorOpacity != undefined)
+        if (this._dragActorOpacity !== undefined)
             this._dragActor.opacity = this._dragActorOpacity;
 
         this._snapBackX = this._dragStartX + this._dragOffsetX;
         this._snapBackY = this._dragStartY + this._dragOffsetY;
         this._snapBackScale = this._dragActor.scale_x;
 
-        if (this._dragActorMaxSize != undefined) {
+        if (this._dragActorMaxSize !== undefined) {
             let [scaledWidth, scaledHeight] = this._dragActor.get_transformed_size();
             let currentSize = Math.max(scaledWidth, scaledHeight);
             if (currentSize > this._dragActorMaxSize) {
@@ -374,8 +374,8 @@ var _Draggable = new Lang.Class({
         let target = null;
         let result = null;
 
-        let x = this._overrideX == undefined ? this._dragX : this._overrideX;
-        let y = this._overrideY == undefined ? this._dragY : this._overrideY;
+        let x = this._overrideX === undefined ? this._dragX : this._overrideX;
+        let y = this._overrideY === undefined ? this._dragY : this._overrideY;
 
         if (this.recentDropTarget) {
             let allocation = Cinnamon.util_get_transformed_allocation(this.recentDropTarget);
@@ -407,7 +407,7 @@ var _Draggable = new Lang.Class({
             let motionFunc = dragMonitors[i].dragMotion;
             if (motionFunc) {
                 result = motionFunc(dragEvent);
-                if (result == DragMotionResult.MOVE_DROP || result == DragMotionResult.COPY_DROP) {
+                if (result === DragMotionResult.MOVE_DROP || result === DragMotionResult.COPY_DROP) {
                     break;
                 }
             }
@@ -424,7 +424,7 @@ var _Draggable = new Lang.Class({
                                                              targX,
                                                              targY,
                                                              0);
-                if (result == DragMotionResult.MOVE_DROP || result == DragMotionResult.COPY_DROP) {
+                if (result === DragMotionResult.MOVE_DROP || result === DragMotionResult.COPY_DROP) {
                     if (target._delegate.handleDragOut) this.recentDropTarget = target;
                     break;
                 }
@@ -456,10 +456,10 @@ var _Draggable = new Lang.Class({
     },
 
     _setDragActorPosition: function() {
-        this._dragActor.x = this._overrideX == undefined ?
+        this._dragActor.x = this._overrideX === undefined ?
             this._dragX + this._dragOffsetX : this._overrideX;
 
-        this._dragActor.y = this._overrideY == undefined ?
+        this._dragActor.y = this._overrideY === undefined ?
             this._dragY + this._dragOffsetY : this._overrideY;
     },
 
@@ -467,8 +467,8 @@ var _Draggable = new Lang.Class({
         let [dropX, dropY] = event.get_coords();
         let target = null;
 
-        if (this._overrideX != undefined) dropX = this._overrideX;
-        if (this._overrideY != undefined) dropY = this._overrideY;
+        if (this._overrideX !== undefined) dropX = this._overrideX;
+        if (this._overrideY !== undefined) dropY = this._overrideY;
 
         if (this.target)
             target = this.target;
@@ -511,7 +511,7 @@ var _Draggable = new Lang.Class({
                                                 event.get_time())) {
                     // If it accepted the drop without taking the actor,
                     // handle it ourselves.
-                    if (this._dragActor.get_parent() == Main.uiGroup) {
+                    if (this._dragActor.get_parent() === Main.uiGroup) {
                         if (this._restoreOnSuccess) {
                             this._restoreDragActor(event.get_time());
                             return true;
@@ -550,7 +550,7 @@ var _Draggable = new Lang.Class({
             let [parentWidth, parentHeight] = this._dragOrigParent.get_size();
             let [parentScaledWidth, parentScaledHeight] = this._dragOrigParent.get_transformed_size();
             let parentScale = 1.0;
-            if (parentWidth != 0)
+            if (parentWidth !== 0)
                 parentScale = parentScaledWidth / parentWidth;
 
             x = parentX + parentScale * this._dragOrigX;
@@ -700,7 +700,7 @@ GenericDragItemContainer.prototype = {
     },
 
     _allocate: function(actor, box, flags) {
-        if (this.child == null)
+        if (this.child === null)
             return;
 
         let availWidth = box.x2 - box.x1;
@@ -725,7 +725,7 @@ GenericDragItemContainer.prototype = {
         alloc.min_size = 0;
         alloc.natural_size = 0;
 
-        if (this.child == null)
+        if (this.child === null)
             return;
 
         let [minHeight, natHeight] = this.child.get_preferred_height(forWidth);
@@ -737,7 +737,7 @@ GenericDragItemContainer.prototype = {
         alloc.min_size = 0;
         alloc.natural_size = 0;
 
-        if (this.child == null)
+        if (this.child === null)
             return;
 
         let [minWidth, natWidth] = this.child.get_preferred_width(forHeight);
@@ -746,7 +746,7 @@ GenericDragItemContainer.prototype = {
     },
 
     setChild: function(actor) {
-        if (this.child == actor)
+        if (this.child === actor)
             return;
 
         this.actor.destroy_all_children();
@@ -756,7 +756,7 @@ GenericDragItemContainer.prototype = {
     },
 
     animateIn: function() {
-        if (this.child == null)
+        if (this.child === null)
             return;
 
         this.childScale = 0;
@@ -770,7 +770,7 @@ GenericDragItemContainer.prototype = {
     },
 
     animateOutAndDestroy: function() {
-        if (this.child == null) {
+        if (this.child === null) {
             this.actor.destroy();
             return;
         }
@@ -791,7 +791,7 @@ GenericDragItemContainer.prototype = {
     set childScale(scale) {
         this._childScale = scale;
 
-        if (this.child == null)
+        if (this.child === null)
             return;
 
         this.child.set_scale_with_gravity(scale, scale,
@@ -806,7 +806,7 @@ GenericDragItemContainer.prototype = {
     set childOpacity(opacity) {
         this._childOpacity = opacity;
 
-        if (this.child == null)
+        if (this.child === null)
             return;
 
         this.child.set_opacity(opacity);

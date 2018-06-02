@@ -134,7 +134,7 @@ Desklet.prototype = {
     _updateDecoration: function(){
         let dec = global.settings.get_int('desklet-decorations');
         let preventDecorations = this.metadata['prevent-decorations'];
-        if (preventDecorations == true){
+        if (preventDecorations === true){
             dec = 0;
         }
                       
@@ -183,7 +183,7 @@ Desklet.prototype = {
     },
 
     _onButtonReleaseEvent: function(actor, event) {
-        if (event.get_button() == 3) {
+        if (event.get_button() === 3) {
             this._menu.toggle();
         } else {
             if (this._menu.isOpen) {

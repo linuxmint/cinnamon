@@ -17,7 +17,7 @@ SystrayManager.prototype = {
     
     unregisterRole: function(role, id) {
         for (let i = this._roles.length - 1; i >= 0; i--) {
-            if (this._roles[i].id == id && this._roles[i].role == role) {
+            if (this._roles[i].id === id && this._roles[i].role === role) {
                 this._roles.splice(i, 1);
             }
         }
@@ -26,7 +26,7 @@ SystrayManager.prototype = {
     
     unregisterId: function(id) {
         for (let i = this._roles.length - 1; i >= 0; i--) {
-            if (this._roles[i].id == id) {
+            if (this._roles[i].id === id) {
                 this._roles.splice(i, 1);
             }
         }

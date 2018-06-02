@@ -39,7 +39,7 @@ XdndHandler.prototype = {
 
     // Called when the user cancels the drag (i.e release the button)
     _onLeave: function() {
-        if (this._windowGroupVisibilityHandlerId != 0) {
+        if (this._windowGroupVisibilityHandlerId !== 0) {
             global.window_group.disconnect(this._windowGroupVisibilityHandlerId);
             this._windowGroupVisibilityHandlerId = 0;
         }
@@ -107,7 +107,7 @@ XdndHandler.prototype = {
             let motionFunc = DND.dragMonitors[i].dragMotion;
             if (motionFunc) {
                 let result = motionFunc(dragEvent);
-                if (result != DND.DragMotionResult.CONTINUE)
+                if (result !== DND.DragMotionResult.CONTINUE)
                     return;
             }
         }
@@ -119,7 +119,7 @@ XdndHandler.prototype = {
                                                                       x,
                                                                       y,
                                                                       global.get_current_time());
-                    if (result != DND.DragMotionResult.CONTINUE)
+                    if (result !== DND.DragMotionResult.CONTINUE)
                         return;
                 }
                 pickedActor = pickedActor.get_parent();

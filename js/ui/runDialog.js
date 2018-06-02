@@ -78,15 +78,15 @@ function completeCommand(text) {
     // Replace an escaped space "\ " with a random unicode character, find the
     // last space, and then restore "\ " since we don't want to split at escaped strings
     let last = text.replace(/\\ /g, '\uf001').match(/[^ ]*$/)[0].replace(/\uf001/g, '\\ ');
-    if (last.length == 0)
+    if (last.length === 0)
         return ["",[]];
 
     let last_path = last.replace(/[^/]*$/, "");
     let paths = [];
-    if (last.charAt(0) == '/') {
+    if (last.charAt(0) === '/') {
         // Match absolute path
         paths = [last_path];
-    } else if (last.length != text.length) {
+    } else if (last.length !== text.length) {
         // Match filename in home directory
         paths = [GLib.build_filenamev([GLib.get_home_dir(), last_path])];
     } else {
@@ -108,25 +108,25 @@ function completeCommand(text) {
                 // Escape strings
                 name = name.replace(/ /g, "\\ ")
 
-                if (info.get_file_type() == Gio.FileType.DIRECTORY)
+                if (info.get_file_type() === Gio.FileType.DIRECTORY)
                     name += "/";
                 else
                     name += " ";
 
-                if (name.slice(0, last.length) == last)
+                if (name.slice(0, last.length) === last)
                     results.push(name);
             }
         } catch (e) {
         }
     });
 
-    if (results.length == 0) return ["", []];
+    if (results.length === 0) return ["", []];
 
     let common = results.reduce(function(s1, s2) {
         let k = last.length;
         let max = Math.min(s1.length, s2.length);
 
-        while (k < max && s1[k] == s2[k]) k++;
+        while (k < max && s1[k] === s2[k]) k++;
 
         return s1.substr(0, k);
     });
@@ -198,7 +198,7 @@ __proto__: ModalDialog.ModalDialog.prototype,
 
     _onKeyPress: function (o, e) {
         let symbol = e.get_key_symbol();
-        if (symbol == Clutter.Return || symbol == Clutter.KP_Enter) {
+        if (symbol === Clutter.Return || symbol === Clutter.KP_Enter) {
             this.popModal();
             if (Cinnamon.get_event_state(e) & Clutter.ModifierType.CONTROL_MASK)
                 this._run(o.get_text(), true);
@@ -212,20 +212,20 @@ __proto__: ModalDialog.ModalDialog.prototype,
             }
             return true;
         }
-        if (symbol == Clutter.Escape) {
+        if (symbol === Clutter.Escape) {
             this.close();
             return true;
         }
-        if (symbol == Clutter.Tab) {
+        if (symbol === Clutter.Tab) {
             this._updateCompletions(true);
             return true;
         }
-        if (symbol == Clutter.BackSpace) {
+        if (symbol === Clutter.BackSpace) {
             this._completionSelected = 0;
             this._completionBox.hide();
             this._oldText = "";
         }
-        if (this._completionBox.get_text() != "" &&
+        if (this._completionBox.get_text() !== "" &&
                 this._completionBox.visible) {
             if (this._updateCompletionTimer) {
                 Mainloop.source_remove(this._updateCompletionTimer);
@@ -254,7 +254,7 @@ __proto__: ModalDialog.ModalDialog.prototype,
          * not perform completions, since completions will list all files in
          * /home/user/, which is unexpected.
          */
-        if (!tab && text.charAt(text.length - 1) == "/") {
+        if (!tab && text.charAt(text.length - 1) === "/") {
             this._completionBox.hide();
             this._oldText = "";
             return;
@@ -266,7 +266,7 @@ __proto__: ModalDialog.ModalDialog.prototype,
         /* If update is caused by user typing "tab" and no text has changed
          * since then, cycle through available completions.
          */
-        if (this._oldText == text && tab && this._completionBox.visible) {
+        if (this._oldText === text && tab && this._completionBox.visible) {
             this._completionSelected ++;
             this._completionSelected %= this._completions.length;
             this._showCompletions(text);
@@ -324,7 +324,7 @@ __proto__: ModalDialog.ModalDialog.prototype,
             end--;
 
         for (; i < end; i++) {
-            if (i == this._completionSelected) {
+            if (i === this._completionSelected) {
                 text = text + "<b>" + orig + this._completions[i] + "</b>" + "\n";
                 this._entryText.set_text(orig + this._completions[i]);
             } else {
@@ -353,7 +353,7 @@ __proto__: ModalDialog.ModalDialog.prototype,
         let aliases = global.settings.get_strv(ALIASES_KEY);
         let split = input.split(" ");
         for (let i = 0; i < aliases.length; i++) {
-            if (split[0] == aliases[i].split(":")[0]) {
+            if (split[0] === aliases[i].split(":")[0]) {
                 split[0] = aliases[i].split(":")[1];
                 break;
             }
@@ -371,10 +371,10 @@ __proto__: ModalDialog.ModalDialog.prototype,
             // Mmmh, that failed - see if @input matches an existing file
             let path = null;
             input = input.trim();
-            if (input.charAt(0) == '/') {
+            if (input.charAt(0) === '/') {
                 path = input;
             } else {
-                if (input.charAt(0) == '~')
+                if (input.charAt(0) === '~')
                     input = input.slice(1);
                 path = GLib.build_filenamev([GLib.get_home_dir(), input]);
             }

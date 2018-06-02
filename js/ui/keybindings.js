@@ -72,7 +72,7 @@ KeybindingManager.prototype = {
 
         let empty = true;
         for (let i = 0; empty && (i < bindings.length); i++) {
-            empty = bindings[i].toString().trim() == "";
+            empty = bindings[i].toString().trim() === "";
         }
 
         if (empty) {
@@ -95,7 +95,7 @@ KeybindingManager.prototype = {
     },
 
     removeHotKey: function(name) {
-        if (this.bindings[name] == undefined)
+        if (this.bindings[name] === undefined)
             return;
         global.display.remove_custom_keybinding(name);
         global.display.rebuild_keybindings();
@@ -147,7 +147,7 @@ KeybindingManager.prototype = {
     },
 
     on_media_key_pressed: function(display, screen, event, kb, action) {
-        if (Main.modalCount == 0 && !Main.overview.visible && !Main.expo.visible)
+        if (Main.modalCount === 0 && !Main.overview.visible && !Main.expo.visible)
             this._proxy.HandleKeybindingRemote(action);
     }
 };

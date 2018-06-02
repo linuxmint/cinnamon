@@ -93,13 +93,13 @@ Lightbox.prototype = {
             // and add it to this._children as the new topmost actor.
             newChild.lower(this.actor);
             this._children.push(newChild);
-        } else if (newChildIndex == 0) {
+        } else if (newChildIndex === 0) {
             // Bottom of stack
             this._children.unshift(newChild);
         } else {
             // Somewhere else; insert it into the correct spot
             let prevChild = this._children.indexOf(children[newChildIndex - 1]);
-            if (prevChild != -1) // paranoia
+            if (prevChild !== -1) // paranoia
                 this._children.splice(prevChild + 1, 0, newChild);
         }
     },
@@ -135,10 +135,10 @@ Lightbox.prototype = {
 
     _actorRemoved : function(container, child) {
         let index = this._children.indexOf(child);
-        if (index != -1) // paranoia
+        if (index !== -1) // paranoia
             this._children.splice(index, 1);
 
-        if (child == this._highlighted)
+        if (child === this._highlighted)
             this._highlighted = null;
     },
 
@@ -151,7 +151,7 @@ Lightbox.prototype = {
      * argument, all actors will be unhighlighted.
      */
     highlight : function(window) {
-        if (this._highlighted == window)
+        if (this._highlighted === window)
             return;
 
         // Walk this._children raising and lowering actors as needed.
@@ -162,9 +162,9 @@ Lightbox.prototype = {
 
         let below = this.actor;
         for (let i = this._children.length - 1; i >= 0; i--) {
-            if (this._children[i] == window)
+            if (this._children[i] === window)
                 this._children[i].raise_top();
-            else if (this._children[i] == this._highlighted)
+            else if (this._children[i] === this._highlighted)
                 this._children[i].lower(below);
             else
                 below = this._children[i];
@@ -189,7 +189,7 @@ Lightbox.prototype = {
      * by destroying its container or by explicitly calling this.destroy().
      */
     _onDestroy: function() {
-        if (this._allocationChangedSignalId != 0)
+        if (this._allocationChangedSignalId !== 0)
             this._container.disconnect(this._allocationChangedSignalId);
         this._container.disconnect(this._actorAddedSignalId);
         this._container.disconnect(this._actorRemovedSignalId);

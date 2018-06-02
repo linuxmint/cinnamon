@@ -192,7 +192,7 @@ ClassicSwitcher.prototype = {
     },
 
     _selectNext: function() {
-        if (this._currentIndex == this._windows.length - 1) {
+        if (this._currentIndex === this._windows.length - 1) {
             this._currentIndex = 0;
         } else {
             this._currentIndex = this._currentIndex + 1;
@@ -200,7 +200,7 @@ ClassicSwitcher.prototype = {
     },
 
     _selectPrevious: function() {
-        if (this._currentIndex == 0) {
+        if (this._currentIndex === 0) {
             this._currentIndex = this._windows.length-1;
         } else {
             this._currentIndex = this._currentIndex - 1;
@@ -219,7 +219,7 @@ ClassicSwitcher.prototype = {
         this._doWindowPreview();
         this._destroyThumbnails();
         
-        if (this._thumbnailTimeoutId != 0) {
+        if (this._thumbnailTimeoutId !== 0) {
             Mainloop.source_remove(this._thumbnailTimeoutId);
             this._thumbnailTimeoutId = 0;
         }
@@ -237,11 +237,11 @@ ClassicSwitcher.prototype = {
     },
 
     _onDestroy: function() {
-        if (this._thumbnailTimeoutId != 0) {
+        if (this._thumbnailTimeoutId !== 0) {
             Mainloop.source_remove(this._thumbnailTimeoutId);
             this._thumbnailTimeoutId = 0;
         }
-        if (this._displayPreviewTimeoutId != 0) {
+        if (this._displayPreviewTimeoutId !== 0) {
             Mainloop.source_remove(this._displayPreviewTimeoutId);
             this._displayPreviewTimeoutId = 0;
         }
@@ -404,10 +404,10 @@ AppIcon.prototype = {
                 contrast_effect.set_brightness_full(-0.5, -0.5, -0.5);
                 this._iconBin.add_effect(contrast_effect);                
             }
-            else if (window.tile_type == Meta.WindowTileType.TILED) {
+            else if (window.tile_type === Meta.WindowTileType.TILED) {
                 this.label = new St.Label({ text: "|" + title });
             }
-            else if (window.tile_type == Meta.WindowTileType.SNAPPED) {
+            else if (window.tile_type === Meta.WindowTileType.SNAPPED) {
                 this.label = new St.Label({ text: "||" + title });
             }
             else {
@@ -577,14 +577,14 @@ SwitcherList.prototype = {
     },
 
     highlight: function(index, justOutline) {
-        if (this._highlighted != -1) {
+        if (this._highlighted !== -1) {
             this._items[this._highlighted].remove_style_pseudo_class('outlined');
             this._items[this._highlighted].remove_style_pseudo_class('selected');
         }
 
         this._highlighted = index;
 
-        if (this._highlighted != -1) {
+        if (this._highlighted !== -1) {
             if (justOutline)
                 this._items[this._highlighted].add_style_pseudo_class('outlined');
             else
@@ -608,7 +608,7 @@ SwitcherList.prototype = {
                                         time: POPUP_SCROLL_TIME,
                                         transition: 'easeOutQuad',
                                         onComplete: Lang.bind(this, function () {
-                                                                        if (this._highlighted == 0) {
+                                                                        if (this._highlighted === 0) {
                                                                             this._scrollableLeft = false;
                                                                             this.actor.queue_relayout();
                                                                         }
@@ -626,7 +626,7 @@ SwitcherList.prototype = {
                                         time: POPUP_SCROLL_TIME,
                                         transition: 'easeOutQuad',
                                         onComplete: Lang.bind(this, function () {
-                                                                        if (this._highlighted == this._items.length - 1) {
+                                                                        if (this._highlighted === this._items.length - 1) {
                                                                             this._scrollableRight = false;
                                                                             this.actor.queue_relayout();
                                                                         }
@@ -717,7 +717,7 @@ SwitcherList.prototype = {
 
         let monitor = this._activeMonitor;
         let parentRightPadding = this.actor.get_parent().get_theme_node().get_padding(St.Side.RIGHT);
-        if (this.actor.allocation.x2 == monitor.x + monitor.width - parentRightPadding) {
+        if (this.actor.allocation.x2 === monitor.x + monitor.width - parentRightPadding) {
             if (this._squareItems)
                 childWidth = childHeight;
             else {
@@ -727,7 +727,7 @@ SwitcherList.prototype = {
         }
 
         for (let i = 0; i < children.length; i++) {
-            if (this._items.indexOf(children[i]) != -1) {
+            if (this._items.indexOf(children[i]) !== -1) {
                 let [childMin, childNat] = children[i].get_preferred_height(childWidth);
                 let vSpacing = (childHeight - childNat) / 2;
                 childBox.x1 = x;
@@ -737,7 +737,7 @@ SwitcherList.prototype = {
                 children[i].allocate(childBox, flags);
 
                 x += this._list.spacing + childWidth;
-            } else if (children[i] == this._separator) {
+            } else if (children[i] === this._separator) {
                 // We want the separator to be more compact than the rest.
                 childBox.x1 = x;
                 childBox.y1 = 0;
@@ -804,7 +804,7 @@ AppList.prototype = {
             return;
         }
         let j = 0;
-        while(this._items.length > 1 && this._items[j].style_class != 'item-box') {
+        while(this._items.length > 1 && this._items[j].style_class !== 'item-box') {
                 j++;
         }
         let themeNode = this._items[j].get_theme_node();
@@ -829,13 +829,13 @@ AppList.prototype = {
                         break;
         }
 
-        if (this._items.length == 1) {
+        if (this._items.length === 1) {
             this._iconSize = iconSizes[0];
             height = (iconSizes[0] * global.ui_scale) + iconSpacing;
         }
 
         for(let i = 0; i < this.icons.length; i++) {
-            if (this.icons[i].icon != null)
+            if (this.icons[i].icon !== null)
                 break;
             this.icons[i].set_size(this._iconSize);
         }
@@ -868,7 +868,7 @@ AppList.prototype = {
     // We override SwitcherList's _onItemEnter method to delay
     // activation when the thumbnail list is open
     _onItemEnter: function (index) {
-        if (this._mouseTimeOutId != 0)
+        if (this._mouseTimeOutId !== 0)
             Mainloop.source_remove(this._mouseTimeOutId);
         this._itemEntered(index);
     },
@@ -883,14 +883,14 @@ AppList.prototype = {
     // We override SwitcherList's highlight() method to also deal with
     // the AppList->ThumbnailList arrows.
     highlight : function(n, justOutline) {
-        if (this._curApp != -1) {
+        if (this._curApp !== -1) {
             this._arrows[this._curApp].hide();
         }
         
         SwitcherList.prototype.highlight.call(this, n, justOutline);
         this._curApp = n;
  
-        if (n != -1 && this._showArrows) {
+        if (n !== -1 && this._showArrows) {
             this._arrows[n].show();
         }
     },
@@ -923,7 +923,7 @@ ThumbnailList.prototype = {
         // We fake the value of 'separatorAdded' when the app has no window
         // on the current workspace, to avoid displaying a useless separator in
         // that case.
-        let separatorAdded = windows.length == 0 || windows[0].get_workspace() != activeWorkspace;
+        let separatorAdded = windows.length === 0 || windows[0].get_workspace() !== activeWorkspace;
 
         this._labels = new Array();
         this._thumbnailBins = new Array();
@@ -931,7 +931,7 @@ ThumbnailList.prototype = {
         this._windows = windows;
 
         for (let i = 0; i < windows.length; i++) {
-            if (!separatorAdded && windows[i].get_workspace() != activeWorkspace) {
+            if (!separatorAdded && windows[i].get_workspace() !== activeWorkspace) {
               this.addSeparator();
               separatorAdded = true;
             }

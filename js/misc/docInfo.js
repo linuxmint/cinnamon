@@ -67,7 +67,7 @@ DocInfo.prototype = {
     //         this._realLaunch();
     //     } catch (e) {
     //         let q = GLib.quark_from_static_string("g-vfs-error-quark");
-    //         if (e.domain == q) {/* gvfs cache invalid - not sure why... retry succeeds */
+    //         if (e.domain === q) {/* gvfs cache invalid - not sure why... retry succeeds */
     //             this._realLaunch();
     //         } else {
     //             Main.notify(_("Problem opening file"),
@@ -84,7 +84,7 @@ DocInfo.prototype = {
     // },
 
     launch : function() {
-        // if (this.mtime == -1) {
+        // if (this.mtime === -1) {
         //     let file = Gio.File.new_for_uri(this.uri);
         //     file.mount_enclosing_volume(0, null, null, Lang.bind(this, this._onMountCallback), null);
         // } else {
@@ -97,10 +97,10 @@ DocInfo.prototype = {
         for (let i = 0; i < terms.length; i++) {
             let term = terms[i];
             let idx = this._lowerName.indexOf(term);
-            if (idx == 0) {
+            if (idx === 0) {
                 mtype = Search.MatchType.PREFIX;
             } else if (idx > 0) {
-                if (mtype == Search.MatchType.NONE)
+                if (mtype === Search.MatchType.NONE)
                     mtype = Search.MatchType.SUBSTRING;
             } else {
                 return Search.MatchType.NONE;
@@ -113,7 +113,7 @@ DocInfo.prototype = {
 var docManagerInstance = null;
 
 function getDocManager() {
-    if (docManagerInstance == null)
+    if (docManagerInstance === null)
         docManagerInstance = new DocManager();
     return docManagerInstance;
 }
@@ -181,13 +181,13 @@ DocManager.prototype = {
         for (let i = 0; i < items.length; i++) {
             let item = items[i];
             let mtype = item.matchTerms(terms);
-            if (mtype == Search.MatchType.MULTIPLE_PREFIX)
+            if (mtype === Search.MatchType.MULTIPLE_PREFIX)
                 multiplePrefixMatches.push(item.uri);
-            else if (mtype == Search.MatchType.PREFIX)
+            else if (mtype === Search.MatchType.PREFIX)
                 prefixMatches.push(item.uri);
-            else if (mtype == Search.MatchType.MULTIPLE_SUBSTRING)
+            else if (mtype === Search.MatchType.MULTIPLE_SUBSTRING)
                 multipleSubtringMatches.push(item.uri);
-            else if (mtype == Search.MatchType.SUBSTRING)
+            else if (mtype === Search.MatchType.SUBSTRING)
                 substringMatches.push(item.uri);
          }
         return multiplePrefixMatches.concat(prefixMatches.concat(multipleSubtringMatches.concat(substringMatches)));

@@ -269,7 +269,7 @@ function fixupPCIDescription(desc) {
     for (let i = 0; i < _IGNORED_PHRASES.length; i++) {
         let item = _IGNORED_PHRASES[i];
         let pos = desc.indexOf(item);
-        if (pos != -1) {
+        if (pos !== -1) {
             let before = desc.substring(0, pos);
             let after = desc.substring(pos + item.length, desc.length);
             desc = before + after;
@@ -283,10 +283,10 @@ function fixupPCIDescription(desc) {
         let item = words[i];
 
         // skip empty items (that come out from consecutive spaces)
-        if (item.length == 0)
+        if (item.length === 0)
             continue;
 
-        if (_IGNORED_WORDS.indexOf(item) == -1) {
+        if (_IGNORED_WORDS.indexOf(item) === -1) {
             out.push(item);
         }
     }
@@ -395,7 +395,7 @@ function _getWritablePropertyNamesForObjectInfo(info) {
     for(let i = 0; i < propertyCount; i++) {
         let propertyInfo = Gir.object_info_get_property(info, i);
         let flags = Gir.property_info_get_flags(propertyInfo);
-        if ((flags & READWRITE) == READWRITE) {
+        if ((flags & READWRITE) === READWRITE) {
             propertyNames.push(propertyInfo.get_name());
 
         }

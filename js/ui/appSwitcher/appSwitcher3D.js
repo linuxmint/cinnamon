@@ -93,19 +93,19 @@ AppSwitcher3D.prototype = {
             let metaWin = this._windows[i];
             let compositor = this._windows[i].get_compositor_private();
 
-            if (i != this._currentIndex)
+            if (i !== this._currentIndex)
                 preview.lower_bottom();
             let rotation_vertex_x = 0.0;
-            if (preview.get_anchor_point_gravity() == Clutter.Gravity.EAST) {
+            if (preview.get_anchor_point_gravity() === Clutter.Gravity.EAST) {
                 rotation_vertex_x = preview.width / 2;
-            } else if (preview.get_anchor_point_gravity() == Clutter.Gravity.WEST) {
+            } else if (preview.get_anchor_point_gravity() === Clutter.Gravity.WEST) {
                 rotation_vertex_x = -preview.width / 2;
             }
             preview.move_anchor_point_from_gravity(compositor.get_anchor_point_gravity());
             preview.rotation_center_y = new Clutter.Vertex({ x: rotation_vertex_x, y: 0.0, z: 0.0 });
 
             Tweener.addTween(preview, {
-                opacity: (!metaWin.minimized && metaWin.get_workspace() == currentWorkspace
+                opacity: (!metaWin.minimized && metaWin.get_workspace() === currentWorkspace
                     || metaWin.is_on_all_workspaces()) ? endOpacity : 0,
                 x: ((metaWin.minimized) ? 0 : compositor.x) - monitor.x,
                 y: ((metaWin.minimized) ? 0 : compositor.y) - monitor.y,
@@ -182,7 +182,7 @@ AppSwitcher3D.prototype = {
                     scale = Math.min(previewWidth / width, previewHeight / height);
 
                 let preview = new St.Button({
-                    opacity: (!metaWin.minimized && metaWin.get_workspace() == currentWorkspace || metaWin.is_on_all_workspaces()) ? 255 : 0,
+                    opacity: (!metaWin.minimized && metaWin.get_workspace() === currentWorkspace || metaWin.is_on_all_workspaces()) ? 255 : 0,
                     reactive: true,
                     anchor_gravity: Clutter.Gravity.CENTER,
                     x: ((metaWin.minimized) ? 0 : compositor.x + compositor.width / 2) - monitor.x,

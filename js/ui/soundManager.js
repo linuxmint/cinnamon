@@ -84,7 +84,7 @@ SoundManager.prototype = {
     play: function(sound) {
         if (this.startup_delay)
             return;
-        if (this.enabled[sound] && this.file[sound] != "") {
+        if (this.enabled[sound] && this.file[sound] !== "") {
             this.playSoundFile(0, this.file[sound]);
         }
     },
@@ -92,7 +92,7 @@ SoundManager.prototype = {
     playVolume: function(sound, volume) {
         if (this.startup_delay)
             return;
-        if (this.enabled[sound] && this.file[sound] != "") {
+        if (this.enabled[sound] && this.file[sound] !== "") {
             this.playSoundFileVolume(0, this.file[sound], volume);
         }
     },
@@ -105,7 +105,7 @@ SoundManager.prototype = {
      */
 
     play_once_per_session: function(sound) {
-        if (this.enabled[sound] && this.file[sound] != "") {
+        if (this.enabled[sound] && this.file[sound] !== "") {
             this.playSoundFile(PLAY_ONCE_FLAG, this.file[sound]);
         }
     },

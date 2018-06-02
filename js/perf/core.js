@@ -80,7 +80,7 @@ function run() {
         // We go to the overview twice for each configuration; the first time
         // to calculate the mipmaps for the windows, the second time to get
         // a clean set of numbers.
-        if ((i % 2) == 0) {
+        if ((i % 2) === 0) {
             let config = WINDOW_CONFIGS[i / 2];
             yield Scripting.destroyTestWindows();
 
@@ -144,14 +144,14 @@ function script_applicationsShowStart(time) {
 
 function script_applicationsShowDone(time) {
     applicationsShowCount++;
-    if (applicationsShowCount == 1)
+    if (applicationsShowCount === 1)
         METRICS.applicationsShowTimeFirst.value = time - applicationsShowStart;
     else
         METRICS.applicationsShowTimeSubsequent.value = time - applicationsShowStart;
 }
 
 function script_afterShowHide(time) {
-    if (overviewShowCount == 1) {
+    if (overviewShowCount === 1) {
         METRICS.usedAfterOverview.value = mallocUsedSize;
     } else {
         METRICS.leakedAfterOverview.value = mallocUsedSize - METRICS.usedAfterOverview.value;
@@ -164,7 +164,7 @@ function malloc_usedSize(time, bytes) {
 
 function _frameDone(time) {
     if (showingOverview) {
-        if (overviewFrames == 0)
+        if (overviewFrames === 0)
             overviewLatency = time - overviewShowStart;
 
         overviewFrames++;
@@ -181,16 +181,16 @@ function _frameDone(time) {
         // be 1 frame for a FPS computation, hence the '- 1'
         let fps = (overviewFrames - 1) / dt;
 
-        if (overviewShowCount == 1) {
+        if (overviewShowCount === 1) {
             METRICS.overviewLatencyFirst.value = overviewLatency;
             METRICS.overviewFpsFirst.value = fps;
-        } else if (overviewShowCount == 2) {
+        } else if (overviewShowCount === 2) {
             METRICS.overviewLatencySubsequent.value = overviewLatency;
         }
 
         // Other than overviewFpsFirst, we collect FPS metrics the second
         // we show each window configuration. overviewShowCount is 1,2,3...
-        if (overviewShowCount % 2 == 0) {
+        if (overviewShowCount % 2 === 0) {
             let config = WINDOW_CONFIGS[(overviewShowCount / 2) - 1];
             METRICS[config.metric].value = fps;
         }

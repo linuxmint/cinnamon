@@ -352,7 +352,7 @@ SearchSystem.prototype = {
 
     unregisterProvider: function (provider) {
         let index = this._providers.indexOf(provider);
-        if (index == -1)
+        if (index === -1)
             return;
         provider.searchSystem = null;
         this._providers.splice(index, 1);
@@ -377,7 +377,7 @@ SearchSystem.prototype = {
 
     updateSearch: function(searchString) {
         searchString = searchString.trim();
-        if (searchString == '')
+        if (searchString === '')
             return;
 
         let terms = searchString.split(/\s+/);
@@ -388,10 +388,10 @@ SearchSystem.prototype = {
         if (!terms)
             return;
 
-        let isSubSearch = terms.length == this._previousTerms.length;
+        let isSubSearch = terms.length === this._previousTerms.length;
         if (isSubSearch) {
             for (let i = 0; i < terms.length; i++) {
-                if (terms[i].indexOf(this._previousTerms[i]) != 0) {
+                if (terms[i].indexOf(this._previousTerms[i]) !== 0) {
                     isSubSearch = false;
                     break;
                 }

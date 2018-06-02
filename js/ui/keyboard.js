@@ -61,7 +61,7 @@ Key.prototype = {
         this._extended_keys = this._key.get_extended_keys();
         this._extended_keyboard = null;
 
-        if (this._key.name == 'Control_L' || this._key.name == 'Alt_L')
+        if (this._key.name === 'Control_L' || this._key.name === 'Alt_L')
             this._key.latch = true;
 
         this._key.connect('key-pressed', Lang.bind(this, function ()
@@ -134,14 +134,14 @@ Key.prototype = {
         let source = event.get_source();
         let type = event.type();
 
-        if ((type == Clutter.EventType.BUTTON_PRESS ||
-             type == Clutter.EventType.BUTTON_RELEASE) &&
+        if ((type === Clutter.EventType.BUTTON_PRESS ||
+             type === Clutter.EventType.BUTTON_RELEASE) &&
             this._extended_keyboard.contains(source)) {
             source.extended_key.press();
             source.extended_key.release();
             return false;
         }
-        if (type == Clutter.EventType.BUTTON_PRESS) {
+        if (type === Clutter.EventType.BUTTON_PRESS) {
             this._boxPointer.actor.hide();
             this._ungrab();
             return true;
@@ -209,18 +209,18 @@ Keyboard.prototype = {
     // Compare two timestamps taking into account
     // CURRENT_TIME (0)
     _compareTimestamp: function(one, two) {
-        if (one == two)
+        if (one === two)
             return 0;
-        if (one == Clutter.CURRENT_TIME)
+        if (one === Clutter.CURRENT_TIME)
             return 1;
-        if (two == Clutter.CURRENT_TIME)
+        if (two === Clutter.CURRENT_TIME)
             return -1;
         return one - two;
     },
 
     _settingsChanged: function (settings, key) {
         this._enableKeyboard = this._a11yApplicationsSettings.get_boolean(SHOW_KEYBOARD);
-        this.accessibleMode = this._keyboardSettings.get_string(ACTIVATION_MODE) == "accessible";
+        this.accessibleMode = this._keyboardSettings.get_string(ACTIVATION_MODE) === "accessible";
         this.keyboard_size = this._keyboardSettings.get_int(KEYBOARD_SIZE);
         this.keyboard_position = this._keyboardSettings.get_string(KEYBOARD_POSITION);
 
@@ -228,7 +228,7 @@ Keyboard.prototype = {
             return;
 
         if (this._enableKeyboard && this._keyboard &&
-            this._keyboard.keyboard_type == this._keyboardSettings.get_string(KEYBOARD_TYPE))
+            this._keyboard.keyboard_type === this._keyboardSettings.get_string(KEYBOARD_TYPE))
             return;
 
         if (this._keyboard)
@@ -238,7 +238,7 @@ Keyboard.prototype = {
             // If we've been called because the setting actually just
             // changed to true (as opposed to being called from
             // this._init()), then we want to pop up the keyboard.
-            let showKeyboard = (settings != null);
+            let showKeyboard = (settings !== null);
 
             // However, caribou-gtk-module or this._onKeyFocusChanged
             // will probably immediately tell us to hide it, so we
@@ -336,16 +336,16 @@ Keyboard.prototype = {
             let right_box = new St.BoxLayout({ style_class: 'keyboard-row' });
             let left_box = new St.BoxLayout({ style_class: 'keyboard-row' });
             for (let j = 0; j < children.length; ++j) {
-                if (this._numOfHorizKeys == 0)
+                if (this._numOfHorizKeys === 0)
                     this._numOfHorizKeys = children.length;
                 let key = children[j];
                 let button = new Key(key);
 
-                if (key.align == 'right')
+                if (key.align === 'right')
                     right_box.add(button.actor);
                 else
                     left_box.add(button.actor);
-                if (key.name == 'Caribou_Prefs') {
+                if (key.name === 'Caribou_Prefs') {
                     key.connect('key-released', Lang.bind(this, this.hide));
                 }
             }
@@ -359,7 +359,7 @@ Keyboard.prototype = {
         let rows = level.get_rows();
         for (let i = 0; i < rows.length; ++i) {
             let row = rows[i];
-            if (this._numOfVertKeys == 0)
+            if (this._numOfVertKeys === 0)
                 this._numOfVertKeys = rows.length;
             this._addRows(row.get_columns(), layout);
         }
@@ -376,7 +376,7 @@ Keyboard.prototype = {
         let panels = Main.getPanels();
         if(panels) {
             let [topPadding, bottomPadding] = Panel.heightsUsedMonitor(index, panels);
-            if(this.keyboard_position == "bottom") {
+            if(this.keyboard_position === "bottom") {
                 this.actor.style = `padding-bottom: ${bottomPadding}px; padding-top: 0;`;
                 panelPadding = bottomPadding;
             } else {
@@ -409,7 +409,7 @@ Keyboard.prototype = {
         this.actor.height = maxHeight + panelPadding;
 
         let keyboard_y = 0;
-        if (this.keyboard_position == "bottom") {
+        if (this.keyboard_position === "bottom") {
             keyboard_y = focus.y + focus.height - this.actor.height;
         }
 
@@ -454,7 +454,7 @@ Keyboard.prototype = {
         let active_level = active_group.active_level;
         let layers = this._groups[active_group_name];
 
-        if (this._current_page != null) {
+        if (this._current_page !== null) {
             this._current_page.hide();
         }
 
@@ -475,7 +475,7 @@ Keyboard.prototype = {
     },
 
     show: function () {
-        let needs_redraw = this.monitorIndex != Main.layoutManager.focusIndex;
+        let needs_redraw = this.monitorIndex !== Main.layoutManager.focusIndex;
 
         if (!Main.layoutManager._keyboardVisible || needs_redraw)
             this._redraw();
@@ -516,7 +516,7 @@ Keyboard.prototype = {
         if (this._compareTimestamp(timestamp, this._timestamp) < 0)
             return;
 
-        if (timestamp != Clutter.CURRENT_TIME)
+        if (timestamp !== Clutter.CURRENT_TIME)
             this._timestamp = timestamp;
         this.show();
     },
@@ -528,7 +528,7 @@ Keyboard.prototype = {
         if (this._compareTimestamp(timestamp, this._timestamp) < 0)
             return;
 
-        if (timestamp != Clutter.CURRENT_TIME)
+        if (timestamp !== Clutter.CURRENT_TIME)
             this._timestamp = timestamp;
         this.hide();
     },
