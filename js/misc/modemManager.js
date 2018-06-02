@@ -12,7 +12,7 @@ const Signals = imports.signals;
 //
 let _mpd;
 function _getMobileProvidersDatabase() {
-    if (_mpd == null) {
+    if (_mpd === null) {
         try {
             _mpd = new NMGtk.MobileProvidersDatabase();
             _mpd.init(null);
@@ -34,7 +34,7 @@ function _getMobileProvidersDatabase() {
 //
 function _findProviderForMccMnc(operator_name, operator_code) {
     if (operator_name) {
-        if (operator_name.length != 0 &&
+        if (operator_name.length !== 0 &&
             (operator_name.length > 6 || operator_name.length < 5)) {
             // this looks like a valid name, i.e. not an MCCMNC (that some
             // devices return when not yet connected
@@ -49,9 +49,9 @@ function _findProviderForMccMnc(operator_name, operator_code) {
     }
 
     let needle;
-    if ((!operator_name || operator_name.length == 0) && operator_code)
+    if ((!operator_name || operator_name.length === 0) && operator_code)
         needle = operator_code;
-    else if (operator_name && (operator_name.length == 6 || operator_name.length == 5))
+    else if (operator_name && (operator_name.length === 6 || operator_name.length === 5))
         needle = operator_name;
     else // nothing to search
         return null;
@@ -71,7 +71,7 @@ function _findProviderForMccMnc(operator_name, operator_code) {
 // Tries to find the operator name corresponding to the given SID
 //
 function _findProviderForSid(sid) {
-    if (sid == 0)
+    if (sid === 0)
         return null;
 
     let mpd = _getMobileProvidersDatabase();
@@ -188,7 +188,7 @@ const ModemCdma = new Lang.Class({
 
             // receiving this signal means the device got activated
             // and we can finally call GetServingSystem
-            if (this.operator_name == null)
+            if (this.operator_name === null)
                 this._refreshServingSystem();
         }));
         this._proxy.GetSignalQualityRemote(Lang.bind(this, function(result, err) {
@@ -294,7 +294,7 @@ const BroadbandModem = new Lang.Class({
             new_name += this.operator_name_3gpp;
 
         if (this.operator_name_cdma && this.operator_name_cdma.length > 0) {
-            if (new_name != "")
+            if (new_name !== "")
                 new_name += ", ";
             new_name += this.operator_name_cdma;
         }

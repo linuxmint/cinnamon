@@ -190,7 +190,7 @@ Magnifier.prototype = {
     isActive: function() {
         // Sufficient to check one ZoomRegion since Magnifier's active
         // state applies to all of them.
-        if (this._zoomRegions.length == 0)
+        if (this._zoomRegions.length === 0)
             return false;
         else
             return this._zoomRegions[0].isActive();
@@ -236,7 +236,7 @@ Magnifier.prototype = {
     scrollToMousePos: function() {
         let [xMouse, yMouse, mask] = global.get_pointer();
 
-        if (xMouse != this.xMouse || yMouse != this.yMouse) {
+        if (xMouse !== this.xMouse || yMouse !== this.yMouse) {
             this.xMouse = xMouse;
             this.yMouse = yMouse;
 
@@ -581,7 +581,7 @@ Magnifier.prototype = {
         if (this._zoomRegions.length) {
             let position = this._settings.get_enum(SCREEN_POSITION_KEY);
             this._zoomRegions[0].setScreenPosition(position);
-            if (position != ScreenPosition.FULL_SCREEN)
+            if (position !== ScreenPosition.FULL_SCREEN)
                 this._updateLensMode();
         }
     },
@@ -687,7 +687,7 @@ ZoomRegion.prototype = {
      * @return  Whether this ZoomRegion is active (boolean).
      */
     isActive: function() {
-        return this._magView != null;
+        return this._magView !== null;
     },
 
     /**
@@ -1002,7 +1002,7 @@ ZoomRegion.prototype = {
      */
     scrollToMousePos: function() {
         this._followingCursor = true;
-        if (this._mouseTrackingMode != MouseTrackingMode.NONE)
+        if (this._mouseTrackingMode !== MouseTrackingMode.NONE)
             this._changeROI({ redoCursorTracking: true });
         else
             this._updateMousePosition();
@@ -1068,7 +1068,7 @@ ZoomRegion.prototype = {
 
         // Add either the given mouseSourceActor to the ZoomRegion, or a clone of
         // it.
-        if (this._mouseSourceActor.get_parent() != null)
+        if (this._mouseSourceActor.get_parent() !== null)
             this._mouseActor = new Clutter.Clone({ source: this._mouseSourceActor });
         else
             this._mouseActor = this._mouseSourceActor;
@@ -1081,7 +1081,7 @@ ZoomRegion.prototype = {
     },
 
     _destroyActors: function() {
-        if (this._mouseActor == this._mouseSourceActor)
+        if (this._mouseActor === this._mouseSourceActor)
             this._mouseActor.get_parent().remove_actor (this._mouseActor);
         if (this._crossHairs)
             this._crossHairs.removeFromParent(this._crossHairsActor);
@@ -1138,7 +1138,7 @@ ZoomRegion.prototype = {
         this._yMagFactor = params.yMagFactor;
 
         if (params.redoCursorTracking &&
-            this._mouseTrackingMode != MouseTrackingMode.NONE) {
+            this._mouseTrackingMode !== MouseTrackingMode.NONE) {
             // This depends on this.xMagFactor/yMagFactor already being updated
             [params.xCenter, params.yCenter] = this._centerFromMousePosition();
         }
@@ -1190,10 +1190,10 @@ ZoomRegion.prototype = {
         // doesn't necessarily imply
         // this._screenPosition = ScreenPosition.FULL_SCREEN;
 
-        if (this._viewPortX != 0 || this._viewPortY != 0)
+        if (this._viewPortX !== 0 || this._viewPortY !== 0)
             return false;
-        if (this._viewPortWidth != global.screen_width ||
-            this._viewPortHeight != global.screen_height)
+        if (this._viewPortWidth !== global.screen_width ||
+            this._viewPortHeight !== global.screen_height)
             return false;
         return true;
     },
@@ -1205,13 +1205,13 @@ ZoomRegion.prototype = {
         let xMouse = this._magnifier.xMouse;
         let yMouse = this._magnifier.yMouse;
 
-        if (this._mouseTrackingMode == MouseTrackingMode.PROPORTIONAL) {
+        if (this._mouseTrackingMode === MouseTrackingMode.PROPORTIONAL) {
             return this._centerFromMouseProportional(xMouse, yMouse);
         }
-        else if (this._mouseTrackingMode == MouseTrackingMode.PUSH) {
+        else if (this._mouseTrackingMode === MouseTrackingMode.PUSH) {
             return this._centerFromMousePush(xMouse, yMouse);
         }
-        else if (this._mouseTrackingMode == MouseTrackingMode.CENTERED) {
+        else if (this._mouseTrackingMode === MouseTrackingMode.CENTERED) {
             return this._centerFromMouseCentered(xMouse, yMouse);
         }
 
@@ -1362,7 +1362,7 @@ Crosshairs.prototype = {
             let container = magnifiedMouse.get_parent();
             if (container) {
                 crosshairsActor = this._actor;
-                if (this._actor.get_parent() != null) {
+                if (this._actor.get_parent() !== null) {
                     crosshairsActor = new Clutter.Clone({ source: this._actor });
                     this._clones.push(crosshairsActor);
                 }
@@ -1388,7 +1388,7 @@ Crosshairs.prototype = {
      * child actor if it was just a clone of the crosshairs actor.
      */
     removeFromParent: function(childActor) {
-        if (childActor == this._actor)
+        if (childActor === this._actor)
             childActor.get_parent().remove_actor(childActor);
         else
             childActor.destroy();

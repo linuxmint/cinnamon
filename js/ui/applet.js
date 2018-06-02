@@ -312,7 +312,7 @@ Applet.prototype = {
      * Sets the tooltip of the applet
      */
     set_applet_tooltip: function (text) {
-        if (text != this._applet_tooltip_text) {
+        if (text !== this._applet_tooltip_text) {
             this._applet_tooltip_text = text;
             this._applet_tooltip.set_text(text);
         }
@@ -326,7 +326,7 @@ Applet.prototype = {
      * padding to 0px and doesn't react to clicks
      */
     set_applet_enabled: function (enabled) {
-        if (enabled != this._applet_enabled) {
+        if (enabled !== this._applet_enabled) {
             this._applet_enabled = enabled;
             this.actor.visible = enabled;
         }
@@ -422,7 +422,7 @@ Applet.prototype = {
      *
      */
     setOrientationInternal: function (orientation) {
-        if (orientation == St.Side.LEFT || orientation == St.Side.RIGHT) {
+        if (orientation === St.Side.LEFT || orientation === St.Side.RIGHT) {
             this.actor.add_style_class_name('vertical');
             this.actor.set_important(true);
             this.actor.set_vertical(true);
@@ -522,7 +522,7 @@ Applet.prototype = {
         // Add default context menus if we're in panel edit mode, ensure their removal if we're not
         let items = this._applet_context_menu._getMenuItems();
 
-        if (this.context_menu_item_remove == null) {
+        if (this.context_menu_item_remove === null) {
             this.context_menu_item_remove = new PopupMenu.PopupIconMenuItem(_("Remove '%s'")
                 .format(this._(this._meta.name)),
                    "edit-delete",
@@ -532,35 +532,35 @@ Applet.prototype = {
             }));
         }
 
-        if (this.context_menu_item_about == null) {
+        if (this.context_menu_item_about === null) {
             this.context_menu_item_about = new PopupMenu.PopupIconMenuItem(_("About..."),
                     "dialog-question",
                     St.IconType.SYMBOLIC);
             this.context_menu_item_about.connect('activate', Lang.bind(this, this.openAbout));
         }
 
-        if (this.context_menu_separator == null && this._applet_context_menu._getMenuItems().length > 0) {
+        if (this.context_menu_separator === null && this._applet_context_menu._getMenuItems().length > 0) {
             this.context_menu_separator = new PopupMenu.PopupSeparatorMenuItem();
             this._applet_context_menu.addMenuItem(this.context_menu_separator);
         }
 
-        if (items.indexOf(this.context_menu_item_about) == -1) {
+        if (items.indexOf(this.context_menu_item_about) === -1) {
             this._applet_context_menu.addMenuItem(this.context_menu_item_about);
         }
 
         if (!this._meta["hide-configuration"] && GLib.file_test(this._meta["path"] + "/settings-schema.json", GLib.FileTest.EXISTS)) {
-            if (this.context_menu_item_configure == null) {
+            if (this.context_menu_item_configure === null) {
                 this.context_menu_item_configure = new PopupMenu.PopupIconMenuItem(_("Configure..."),
                         "system-run",
                         St.IconType.SYMBOLIC);
                 this.context_menu_item_configure.connect('activate', Lang.bind(this, this.configureApplet));
             }
-            if (items.indexOf(this.context_menu_item_configure) == -1) {
+            if (items.indexOf(this.context_menu_item_configure) === -1) {
                 this._applet_context_menu.addMenuItem(this.context_menu_item_configure);
             }
         }
 
-        if (items.indexOf(this.context_menu_item_remove) == -1) {
+        if (items.indexOf(this.context_menu_item_remove) === -1) {
             this._applet_context_menu.addMenuItem(this.context_menu_item_remove);
         }
     },
@@ -859,12 +859,12 @@ TextIconApplet.prototype = {
     set_applet_label: function (text) {
         this._applet_label.set_text(text);
 
-        if ((this._orientation == St.Side.LEFT || this._orientation == St.Side.RIGHT) && (this.show_label_in_vertical_panels == false)) {
+        if ((this._orientation === St.Side.LEFT || this._orientation === St.Side.RIGHT) && (this.show_label_in_vertical_panels === false)) {
             // Hide the label in vertical panel for applets which don't support it
             this.hide_applet_label(true);
         }
         else {
-            if (text == "") {
+            if (text === "") {
                 // Hide empty labels
                 this.hide_applet_label(true);
             }
@@ -882,7 +882,7 @@ TextIconApplet.prototype = {
      * padding to 0px and doesn't react to clicks
      */
     set_applet_enabled: function (enabled) {
-        if (enabled != this._applet_enabled) {
+        if (enabled !== this._applet_enabled) {
             this._applet_enabled = enabled;
             this.actor.visible = enabled;
             if (this._applet_icon) {

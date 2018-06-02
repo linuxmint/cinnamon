@@ -165,7 +165,7 @@ function Extension(type, uuid) {
     }
     let dir = findExtensionDirectory(uuid, type.userDir, type.folder);
 
-    if (dir == null) {
+    if (dir === null) {
         forgetExtension(uuid, type, true);
         return Promise.resolve(null);
     }
@@ -234,7 +234,7 @@ Extension.prototype = {
             }
             return finishLoad();
         }).then((moduleIndex) => {
-            if (moduleIndex == null) {
+            if (moduleIndex === null) {
                 throw new Error(`Could not find module index: ${moduleIndex}`);
             }
             this.moduleIndex = moduleIndex;
@@ -287,7 +287,7 @@ Extension.prototype = {
         // Others are nice to have
         this.checkProperties(Type[this.upperType].niceToHaveProperties, false);
 
-        if (this.meta.uuid != this.uuid) {
+        if (this.meta.uuid !== this.uuid) {
             throw logError(`uuid "${this.meta.uuid}" from metadata.json does not match directory name.`, this.uuid);
         }
 
@@ -340,7 +340,7 @@ Extension.prototype = {
     },
 
     unloadStylesheet: function () {
-        if (this.theme != null && this.stylesheet != null) {
+        if (this.theme !== null && this.stylesheet !== null) {
             try {
                 this.theme.unload_stylesheet(this.stylesheet);
             } catch (e) {
@@ -363,7 +363,7 @@ Extension.prototype = {
             let iconTheme = Gtk.IconTheme.get_default();
             let searchPath = iconTheme.get_search_path();
             for (let i = 0; i < searchPath.length; i++) {
-                if (searchPath[i] == this.iconDirectory) {
+                if (searchPath[i] === this.iconDirectory) {
                     searchPath.splice(i,1);
                     iconTheme.set_search_path(searchPath);
                     break;
@@ -376,11 +376,11 @@ Extension.prototype = {
         if (this.meta
             && this.meta.role
             && Type[this.upperType].roles[this.meta.role] !== this.uuid) {
-            if (Type[this.upperType].roles[this.meta.role] != null) {
+            if (Type[this.upperType].roles[this.meta.role] !== null) {
                 return false;
             }
 
-            if (roleProvider != null) {
+            if (roleProvider !== null) {
                 Type[this.upperType].roles[this.meta.role] = this.uuid;
                 this.roleProvider = roleProvider;
                 global.log(`Role locked: ${this.meta.role}`);
@@ -419,9 +419,9 @@ function versionCheck(required, current) {
     let point = currentArray[2];
     for (let i = 0; i < required.length; i++) {
         let requiredArray = required[i].split('.');
-        if (requiredArray[0] == major &&
-            requiredArray[1] == minor &&
-            (requiredArray[2] === undefined || requiredArray[2] == point))
+        if (requiredArray[0] === major &&
+            requiredArray[1] === minor &&
+            (requiredArray[2] === undefined || requiredArray[2] === point))
             return true;
     }
     return false;
@@ -438,14 +438,14 @@ function versionLeq(a, b) {
     a = a.split('.');
     b = b.split('.');
 
-    if (a.length == 2)
+    if (a.length === 2)
         a.push(0);
 
-    if (b.length == 2)
+    if (b.length === 2)
         b.push(0);
 
     for (let i = 0; i < 3; i++) {
-        if (a[i] == b[i])
+        if (a[i] === b[i])
             continue;
         else if (a[i] > b[i])
             return false;
@@ -621,7 +621,7 @@ function findExtensionSubdirectory(dir) {
                 let fileEnum = obj.enumerate_children_finish(res);
                 let info;
                 let largest = null;
-                while ((info = fileEnum.next_file(null)) != null) {
+                while ((info = fileEnum.next_file(null)) !== null) {
                     let fileType = info.get_file_type();
                     if (fileType !== Gio.FileType.DIRECTORY) {
                         continue;

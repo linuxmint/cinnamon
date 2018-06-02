@@ -36,7 +36,7 @@ Overview.prototype = {
             Lang.bind(this, function() {
                 let node = this._group.get_theme_node();
                 let spacing = node.get_length('spacing');
-                if (spacing != this._spacing) {
+                if (spacing !== this._spacing) {
                     this._spacing = spacing;
                 }
             }));
@@ -71,7 +71,7 @@ Overview.prototype = {
 
     setScrollAdjustment: function(adjustment, direction) {
         this._scrollAdjustment = adjustment;
-        if (this._scrollAdjustment == null)
+        if (this._scrollAdjustment === null)
             this._scrollDirection = SwipeScrollDirection.NONE;
         else
             this._scrollDirection = direction;
@@ -79,8 +79,8 @@ Overview.prototype = {
 
     _onButtonPress: function(actor, event) {
         this.emit('overview-background-button-press', actor, event);
-        if (this._scrollDirection == SwipeScrollDirection.NONE
-            || event.get_button() != 1)
+        if (this._scrollDirection === SwipeScrollDirection.NONE
+            || event.get_button() !== 1)
             return false;
 
         let [stageX, stageY] = event.get_coords();
@@ -109,9 +109,9 @@ Overview.prototype = {
                 let maxValue = this._scrollAdjustment.upper - this._scrollAdjustment.page_size;
 
                 let direction;
-                if (this._scrollDirection == SwipeScrollDirection.HORIZONTAL) {
+                if (this._scrollDirection === SwipeScrollDirection.HORIZONTAL) {
                     direction = stageX > this._dragStartX ? -1 : 1;
-                    if (St.Widget.get_default_direction() == St.TextDirection.RTL)
+                    if (St.Widget.get_default_direction() === St.TextDirection.RTL)
                         direction *= -1;
                 } else {
                     direction = stageY > this._dragStartY ? -1 : 1;
@@ -156,7 +156,7 @@ Overview.prototype = {
                     result = SwipeScrollResult.CLICK;
                     this.emit('swipe-scroll-end', result);
                 } else {
-                    if (newValue == this._dragStartValue)
+                    if (newValue === this._dragStartValue)
                         result = SwipeScrollResult.CANCEL;
                     else
                         result = SwipeScrollResult.SWIPE;
@@ -184,7 +184,7 @@ Overview.prototype = {
                 global.stage.disconnect(this._capturedEventId);
                 this._capturedEventId = 0;
 
-                return result != SwipeScrollResult.CLICK;
+                return result !== SwipeScrollResult.CLICK;
 
             case Clutter.EventType.MOTION:
                 [stageX, stageY] = event.get_coords();
@@ -202,8 +202,8 @@ Overview.prototype = {
                     Math.abs(stageY - this._dragStartY) < threshold)
                     return true;
 
-                if (this._scrollDirection == SwipeScrollDirection.HORIZONTAL) {
-                    if (St.Widget.get_default_direction() == St.TextDirection.RTL)
+                if (this._scrollDirection === SwipeScrollDirection.HORIZONTAL) {
+                    if (St.Widget.get_default_direction() === St.TextDirection.RTL)
                         this._scrollAdjustment.value -= (dx / primary.width) * this._scrollAdjustment.page_size;
                     else
                         this._scrollAdjustment.value += (dx / primary.width) * this._scrollAdjustment.page_size;
@@ -388,7 +388,7 @@ Overview.prototype = {
                 Main.popModal(this._group);
                 this._modal = false;
             }
-            else if (global.stage_input_mode == Cinnamon.StageInputMode.FULLSCREEN)
+            else if (global.stage_input_mode === Cinnamon.StageInputMode.FULLSCREEN)
                 global.stage_input_mode = Cinnamon.StageInputMode.NORMAL;
         }
     },

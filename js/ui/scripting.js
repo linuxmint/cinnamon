@@ -91,7 +91,7 @@ function PerfHelper() {
 
 let _perfHelper = null;
 function _getPerfHelper() {
-    if (_perfHelper == null)
+    if (_perfHelper === null)
         _perfHelper = new PerfHelper();
 
     return _perfHelper;
@@ -252,9 +252,9 @@ function _collect(scriptModule, outputFile) {
         Cinnamon.write_string_to_stream(out, ',\n"monitors":\n[');
         for (let i = 0; i < monitors.length; i++) {
             let monitor = monitors[i];
-            if (i != 0)
+            if (i !== 0)
                 Cinnamon.write_string_to_stream(out, ', ');
-            Cinnamon.write_string_to_stream(out, '"%s%dx%d+%d+%d"'.format(i == primary ? "*" : "",
+            Cinnamon.write_string_to_stream(out, '"%s%dx%d+%d+%d"'.format(i === primary ? "*" : "",
                                                                        monitor.width, monitor.height,
                                                                        monitor.x, monitor.y));
         }
@@ -266,15 +266,15 @@ function _collect(scriptModule, outputFile) {
             let metric = scriptModule.METRICS[name];
             // Extra checks here because JSON.stringify generates
             // invalid JSON for undefined values
-            if (metric.description == null) {
+            if (metric.description === null) {
                 log("Error: No description found for metric " + name);
                 continue;
             }
-            if (metric.units == null) {
+            if (metric.units === null) {
                 log("Error: No units found for metric " + name);
                 continue;
             }
-            if (metric.value == null) {
+            if (metric.value === null) {
                 log("Error: No value found for metric " + name);
                 continue;
             }

@@ -67,7 +67,7 @@ HistoryManager.prototype = {
     },
 
     lastItem: function() {
-        if (this._historyIndex != this._history.length) {
+        if (this._historyIndex !== this._history.length) {
             this._historyIndex = this._history.length;
             this._indexChanged();
         }
@@ -76,12 +76,12 @@ HistoryManager.prototype = {
     },
 
     addItem: function(input) {
-        if (this._history.length == 0 ||
-            this._history[this._history.length - 1] != input) {
+        if (this._history.length === 0 ||
+            this._history[this._history.length - 1] !== input) {
 
             if (this._deduplicate) {
                 this._history = this._history.filter(function(x) {
-                    return x != input;
+                    return x !== input;
                 });
             }
 
@@ -93,10 +93,10 @@ HistoryManager.prototype = {
 
     _onEntryKeyPress: function(entry, event) {
         let symbol = event.get_key_symbol();
-        if (symbol == Clutter.KEY_Up) {
+        if (symbol === Clutter.KEY_Up) {
             this.prevItem(entry.get_text());
             return true;
-        } else if (symbol == Clutter.KEY_Down) {
+        } else if (symbol === Clutter.KEY_Down) {
             this.nextItem(entry.get_text());
             return true;
         }

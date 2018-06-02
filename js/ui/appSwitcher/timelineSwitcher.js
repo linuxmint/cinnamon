@@ -43,13 +43,13 @@ TimelineSwitcher.prototype = {
     },
 
     _updateList: function(direction) {
-        if(this._previews.length == 0)
+        if(this._previews.length === 0)
             return;
 
         let monitor = this._activeMonitor;
         let animation_time = AppSwitcher3D.ANIMATION_TIME;
         
-        if(this._previews.length == 1) {
+        if(this._previews.length === 1) {
             let preview = this._previews[0];
             Tweener.addTween(preview, {
                 opacity: 255,
@@ -69,7 +69,7 @@ TimelineSwitcher.prototype = {
             i = parseInt(i);
             let distance = (this._currentIndex > i) ? this._previews.length - this._currentIndex + i : i - this._currentIndex;
 
-            if (distance == this._previews.length - 1 && direction > 0) {
+            if (distance === this._previews.length - 1 && direction > 0) {
                 preview.__looping = true;
                 Tweener.addTween(preview, {
                     opacity: 0,
@@ -83,7 +83,7 @@ TimelineSwitcher.prototype = {
                     onComplete: this._onFadeForwardComplete,
                     onCompleteScope: this,
                 });
-            } else if (distance == 0 && direction < 0) {
+            } else if (distance === 0 && direction < 0) {
                 preview.__looping = true;
                 Tweener.addTween(preview, {
                     opacity: 0,

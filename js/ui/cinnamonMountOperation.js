@@ -175,7 +175,7 @@ CinnamonMountOperation.prototype = {
 
             this._processesDialog.connect('response', 
                                           Lang.bind(this, function(object, choice) {
-                                              if (choice == -1) {
+                                              if (choice === -1) {
                                                   this.mountOp.reply(Gio.MountOperationResult.ABORTED);
                                               } else {
                                                   this.mountOp.set_choice(choice);
@@ -300,7 +300,7 @@ CinnamonMountPasswordNotification.prototype = {
 
     _onEntryActivated: function() {
         let text = this._responseEntry.get_text();
-        if (text == '')
+        if (text === '')
             return;
 
         this.source.emit('password-ready', text);
@@ -363,13 +363,13 @@ CinnamonProcessesDialog.prototype = {
 
         this._applicationList.connect('actor-added',
                                       Lang.bind(this, function() {
-                                          if (this._applicationList.get_n_children() == 1)
+                                          if (this._applicationList.get_n_children() === 1)
                                               scrollView.show();
                                       }));
 
         this._applicationList.connect('actor-removed',
                                       Lang.bind(this, function() {
-                                          if (this._applicationList.get_n_children() == 0)
+                                          if (this._applicationList.get_n_children() === 0)
                                               scrollView.hide();
                                       }));
     },

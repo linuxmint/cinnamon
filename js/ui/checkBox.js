@@ -110,7 +110,7 @@ CheckBoxBase.prototype = {
                          y_fill: true,
                          y_align: St.Align.MIDDLE };
 
-        if (params != undefined) {
+        if (params !== undefined) {
             this._params = Params.parse(params, this._params);
         }
 

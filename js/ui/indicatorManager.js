@@ -129,7 +129,7 @@ IndicatorManager.prototype = {
 
     // handlers = { "signal": handler }
     _connectAndSaveId: function(target, handlers , idArray) {
-        idArray = typeof idArray != 'undefined' ? idArray : [];
+        idArray = typeof idArray !== 'undefined' ? idArray : [];
         for (let signal in handlers) {
             idArray.push(target.connect(signal, handlers[signal]));
         }
@@ -144,7 +144,7 @@ IndicatorManager.prototype = {
     },
 
     _onIndicatorDispatch: function(notifierWatcher, id) {
-        if (this.statusNotifierWatcher != null) {
+        if (this.statusNotifierWatcher !== null) {
             let appIndicator = notifierWatcher.getItemById(id);
             let signalsIndicator = this._connectAndSaveId(appIndicator, {
                 'ready'        : Lang.bind(this, this._onIndicatorReady),
@@ -197,11 +197,11 @@ IndicatorManager.prototype = {
     },
 
     _conditionalEnable: function(id, rolesHandled, blackList) {
-        if (blackList && (blackList.indexOf(id) != -1)) {
+        if (blackList && (blackList.indexOf(id) !== -1)) {
             this._enableIndicatorId(id, false);
             global.log("Hiding indicator (blacklisted): " + id);
             return false;
-        } else if (rolesHandled && (rolesHandled.indexOf(id) != -1)) {
+        } else if (rolesHandled && (rolesHandled.indexOf(id) !== -1)) {
             this._enableIndicatorId(id, false);
             global.log("Hiding indicator (role already handled): " + id);
             return false;
@@ -219,9 +219,9 @@ IndicatorManager.prototype = {
 
     isInBlackList: function(id) {
         let hiddenIcons = Main.systrayManager.getRoles();
-        if (hiddenIcons.indexOf(id) != -1 )
+        if (hiddenIcons.indexOf(id) !== -1 )
             return true;
-        if (this._blackList.indexOf(id) != -1 )
+        if (this._blackList.indexOf(id) !== -1 )
             return true;
         return false;
     },
@@ -235,7 +235,7 @@ IndicatorManager.prototype = {
 
     removeFromBlackList: function(id) {
         let pos = this._blackList.indexOf(id);
-        if (pos != -1) {
+        if (pos !== -1) {
             this._blackList.splice(pos, 1);
             this._disableIndicatorId(id, true);
         }
@@ -256,26 +256,26 @@ IndicatorManager.prototype = {
     },
 
     setEnabled: function(enable) {
-        if (this._enable != enable) {
+        if (this._enable !== enable) {
             this._enable = enable;
             this._indicators = {};
             if (this._enable) {
                 this._indicatorsSignals = {};
                 this.statusNotifierWatcher = new StatusNotifierWatcher();
-                if (this._signalStatus == 0) {
+                if (this._signalStatus === 0) {
                     this._signalStatus = this.statusNotifierWatcher.connect('indicator-dispatch',
                                          Lang.bind(this, this._onIndicatorDispatch));
                 }
-                if (this._signalSystray == 0) {
+                if (this._signalSystray === 0) {
                     this._signalSystray = Main.systrayManager.connect('changed',
                                           Lang.bind(this, this._onSystrayManagerChanged));
                 }
             } else {
-                if (this._signalStatus != 0) {
+                if (this._signalStatus !== 0) {
                     this.statusNotifierWatcher.disconnect(this._signalStatus);
                     this._signalStatus = 0;
                 }
-                if (this._signalSystray != 0) {
+                if (this._signalSystray !== 0) {
                     Main.systrayManager.disconnect(this._signalSystray);
                     this._signalSystray = 0;
                 }
@@ -288,7 +288,7 @@ IndicatorManager.prototype = {
 
     destroy: function() {
         this.setEnabled(false);
-        if (this._signalSettings != 0) {
+        if (this._signalSettings !== 0) {
             global.settings.disconnect(this._signalSettings);
             this._signalSettings = 0;
         }
@@ -365,7 +365,7 @@ AppIndicator.prototype = {
     // The Author of the spec didn't like the PropertiesChanged signal, so he invented his own
     _translateNewSignals: function(proxy, signal, params) {
         if (this._proxy) {
-            if (signal.substr(0, 3) == 'New') {
+            if (signal.substr(0, 3) === 'New') {
                 let prop = signal.substr(3);
 
                 if (this._proxy.propertyWhitelist.indexOf(prop) > -1)
@@ -377,11 +377,11 @@ AppIndicator.prototype = {
                 if (this._proxy.propertyWhitelist.indexOf(prop + 'Name') > -1)
                     this._proxy.invalidateProperty(prop + 'Name');
             // and the ayatana guys made sure to invent yet another way of composing these signals...
-            } else if (signal == 'XAyatanaNewLabel') { 
+            } else if (signal === 'XAyatanaNewLabel') { 
                 this._proxy.invalidateProperty('XAyatanaLabel');
-            } else if (signal == 'XAyatanaNewLabelGuide') {
+            } else if (signal === 'XAyatanaNewLabelGuide') {
                 this._proxy.invalidateProperty('XAyatanaNewLabelGuide');
-            } else if (signal == 'XAyatanaOrderingIndex') {
+            } else if (signal === 'XAyatanaOrderingIndex') {
                 this._proxy.invalidateProperty('XAyatanaNewOrderingIndex');
             }
         }
@@ -469,7 +469,7 @@ AppIndicator.prototype = {
     },
 
     setEnabled: function(enable) {
-        if (this._isEnabled != enable) {
+        if (this._isEnabled !== enable) {
             this._isEnabled = enable;
             if (this._isEnabled)
                 this._initialize();
@@ -525,25 +525,25 @@ AppIndicator.prototype = {
         // a few need to be passed down to the displaying code
 
         // all these can mean that the icon has to be changed
-        if (property == 'Status' || property.substr(0, 4) == 'Icon' || property.substr(0, 13) == 'AttentionIcon')
+        if (property === 'Status' || property.substr(0, 4) === 'Icon' || property.substr(0, 13) === 'AttentionIcon')
             this.emit('icon');
 
         // same for overlays
-        if (property.substr(0, 11) == 'OverlayIcon')
+        if (property.substr(0, 11) === 'OverlayIcon')
             this.emit('overlay-icon');
 
         // this may make all of our icons invalid
-        if (property == 'IconThemePath') {
+        if (property === 'IconThemePath') {
             this.emit('icon');
             this.emit('overlay-icon');
         }
 
         // the label will be handled elsewhere
-        if (property == 'XAyatanaLabel')
+        if (property === 'XAyatanaLabel')
             this.emit('label');
 
         // status updates are important for the StatusNotifierDispatcher
-        if (property == 'Status')
+        if (property === 'Status')
             this.emit('status');
     },
 
@@ -593,14 +593,14 @@ AppIndicator.prototype = {
 
     scroll: function(dx, dy) {
         if (this._proxy) {
-            if (dx != 0) {
+            if (dx !== 0) {
                 this._proxy.call({
                     name: 'Scroll',
                     paramTypes: 'is',
                     paramValues: [ Math.floor(dx), 'horizontal' ]
                 });
             }
-            if (dy != 0) {
+            if (dy !== 0) {
                 this._proxy.call({
                     name: 'Scroll',
                     paramTypes: 'is',
@@ -668,7 +668,7 @@ StatusNotifierWatcher.prototype = {
         // while kde apps send a bus name
         let service = params[0];
         let busName, objPath;
-        if (service.charAt(0) == '/') { // looks like a path
+        if (service.charAt(0) === '/') { // looks like a path
             busName = invocation.get_sender();
             objPath = service;
         } else { // we hope it is a bus name
@@ -697,7 +697,7 @@ StatusNotifierWatcher.prototype = {
     _itemVanished: function(proxy, busName) {
         // FIXME: this is useless if the path name disappears while the bus stays alive (not unheard of)
         for (let id in this._items) {
-            if (id.indexOf(busName) == 0) {
+            if (id.indexOf(busName) === 0) {
                 this._remove(id);
             }
         }
@@ -857,7 +857,7 @@ XmlLessDBusProxy.prototype = {
 
         function maybeFinished() {
             waitFor -= 1;
-            if (waitFor == 0 && callback)
+            if (waitFor === 0 && callback)
                 callback();
         }
     },
@@ -1010,7 +1010,7 @@ IndicatorActor.prototype = {
 
     // handlers = { "signal": handler }
     _connectAndSaveId: function(target, handlers , idArray) {
-        idArray = typeof idArray != 'undefined' ? idArray : [];
+        idArray = typeof idArray !== 'undefined' ? idArray : [];
         for (let signal in handlers) {
             idArray.push(target.connect(signal, handlers[signal]));
         }
@@ -1041,7 +1041,7 @@ IndicatorActor.prototype = {
     },
 
     setSize: function(size) {
-        if (this._iconSize != size) {
+        if (this._iconSize !== size) {
             this._iconSize = size;
             this._invalidateIcon();
         }
@@ -1056,7 +1056,7 @@ IndicatorActor.prototype = {
     },
 
     _updatedLabel: function() {
-        if (this._indicator.label != undefined) {
+        if (this._indicator.label !== undefined) {
             this._label.set_text(this._indicator.label);
         } else {
             this._label.set_text("");
@@ -1067,9 +1067,9 @@ IndicatorActor.prototype = {
     // FIXME: When an indicator is in passive state, the recommended behavior is hide his actor,
     // but this involve for example, never display the update notifier on ubuntu.
     _updatedStatus: function() {
-        if (this._indicator.status == SNIStatus.PASSIVE)
+        if (this._indicator.status === SNIStatus.PASSIVE)
             this.actor.visible = this._showInPassiveMode;
-        else if (this._indicator.status == SNIStatus.ACTIVE || this._indicator.status == SNIStatus.NEEDS_ATTENTION)
+        else if (this._indicator.status === SNIStatus.ACTIVE || this._indicator.status === SNIStatus.NEEDS_ATTENTION)
             this.actor.visible = true;
         if ((this.menu)&&(!this.actor.visible))
             this.menu.close(false);
@@ -1114,18 +1114,18 @@ IndicatorActor.prototype = {
             return false;
 
         if (this.openMenuOnRightClick) {
-            if ((event.get_button() == 3) && this.menu) {
+            if ((event.get_button() === 3) && this.menu) {
                 this.menu.toggle();
                 return true;
-            } else if (event.get_button() == 1) {
+            } else if (event.get_button() === 1) {
                 this.menu.close();
                 this._indicator.open();
-            }else if (event.get_button() == 2) {
+            }else if (event.get_button() === 2) {
                 this._indicator.secondaryActivate();
             }
-        } else if ((event.get_button() == 1) && this.menu) {
+        } else if ((event.get_button() === 1) && this.menu) {
             this.menu.toggle();
-        } else if ((event.get_button() == 2) && this.menu) {
+        } else if ((event.get_button() === 2) && this.menu) {
             this._indicator.secondaryActivate();
         }
         return false;
@@ -1161,7 +1161,7 @@ IndicatorActor.prototype = {
         // realSize will contain the actual icon size in contrast to the requested icon size.
         let realSize = size;
         let path = null;
-        if (name && name[0] == "/") {
+        if (name && name[0] === "/") {
             //HACK: icon is a path name. This is not specified by the api but at least inidcator-sensors uses it.
             let [ format, width, height ] = GdkPixbuf.Pixbuf.get_file_info(name);
             if (!format) {
@@ -1311,7 +1311,7 @@ IndicatorActor.prototype = {
         let newIcon = null;
 
         // we might need to use the AttentionIcon*, which have precedence over the normal icons
-        if (this._indicator.status == SNIStatus.NEEDS_ATTENTION) {
+        if (this._indicator.status === SNIStatus.NEEDS_ATTENTION) {
             let [ name, pixmap, theme ] = this._indicator.attentionIcon;
 
             if (name && name.length)
@@ -1369,20 +1369,20 @@ IndicatorActor.prototype = {
     },
 
     _handleScrollEvent: function(actor, event) {
-        if (actor != this)
+        if (actor !== this)
             return Clutter.EVENT_PROPAGATE;
 
-        if (event.get_source() != this)
+        if (event.get_source() !== this)
             return Clutter.EVENT_PROPAGATE;
 
-        if (event.type() != Clutter.EventType.SCROLL)
+        if (event.type() !== Clutter.EventType.SCROLL)
             return Clutter.EVENT_PROPAGATE;
 
         // Since Clutter 1.10, clutter will always send a smooth scrolling event
         // with explicit deltas, no matter what input device is used
         // In fact, for every scroll there will be a smooth and non-smooth scroll
         // event, and we can choose which one we interpret.
-        if (event.get_scroll_direction() == Clutter.ScrollDirection.SMOOTH) {
+        if (event.get_scroll_direction() === Clutter.ScrollDirection.SMOOTH) {
             let [ dx, dy ] = event.get_scroll_delta();
 
             this._indicator.scroll(dx, dy);

@@ -114,7 +114,7 @@ WorkspacesView.prototype = {
         let modifiers = Cinnamon.get_event_state(event);
         let symbol = event.get_key_symbol();
 
-        if (symbol == Clutter.Escape)
+        if (symbol === Clutter.Escape)
         {
             Main.overview.hide();
             return true;
@@ -194,7 +194,7 @@ WorkspacesView.prototype = {
                 // we have to call _updateVisibility() once before the
                 // animation and once afterwards - it does not really
                 // matter which tween we use, so we pick the first one ...
-                if (w == 0) {
+                if (w === 0) {
                     this._updateVisibility();
                     params.onComplete = Lang.bind(this,
                         function() {
@@ -205,7 +205,7 @@ WorkspacesView.prototype = {
                 Tweener.addTween(workspace.actor, params);
             } else {
                 workspace.actor.set_position(x, 0);
-                if (w == 0)
+                if (w === 0)
                     this._updateVisibility();
             }
         }
@@ -221,7 +221,7 @@ WorkspacesView.prototype = {
                 workspace.actor.show();
             } else {
                 workspace.showWindowsOverlays();
-                workspace.actor.visible = (w == active);
+                workspace.actor.visible = (w === active);
             }
         }
     },
@@ -254,7 +254,7 @@ WorkspacesView.prototype = {
         let removedCount = 0;
         this._workspaces.slice().forEach(function(workspace, i) {
             let metaWorkspace = global.screen.get_workspace_by_index(i - removedCount);
-            if (workspace.metaWorkspace != metaWorkspace) {
+            if (workspace.metaWorkspace !== metaWorkspace) {
                 Tweener.removeTweens(workspace.actor);
                 workspace.destroy();
                 this._workspaces.splice(i - removedCount, 1);
@@ -306,7 +306,7 @@ WorkspacesView.prototype = {
     _swipeScrollEnd: function(overview, result) {
         this._scrolling = false;
 
-        if (result == SwipeScrollResult.CLICK) {
+        if (result === SwipeScrollResult.CLICK) {
             let [x, y, mod] = global.get_pointer();
             let actor = global.stage.get_actor_at_pos(Clutter.PickMode.ALL,
                                                       x, y);
@@ -346,7 +346,7 @@ WorkspacesView.prototype = {
         let active = global.screen.get_active_workspace_index();
         let current = Math.round(adj.value);
 
-        if (active != current) {
+        if (active !== current) {
             let metaWorkspace = this._workspaces[current].metaWorkspace;
             metaWorkspace.activate(global.get_current_time());
         }
@@ -356,7 +356,7 @@ WorkspacesView.prototype = {
         let lastWorkspaceX = this._workspaces[last].actor.x;
         let workspacesWidth = lastWorkspaceX - firstWorkspaceX;
 
-        if (adj.upper == 1)
+        if (adj.upper === 1)
             return;
 
         let currentX = firstWorkspaceX;

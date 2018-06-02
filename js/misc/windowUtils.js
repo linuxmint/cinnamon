@@ -60,7 +60,7 @@ function createWindowClone(metaWindow, width, height, withTransients, withPositi
     }
     let params = {};
     params.source = texture;
-    if (scale != 1) {
+    if (scale !== 1) {
       params.width = Math.round(texWidth * scale);
       params.height = Math.round(texHeight * scale);
       x = Math.round(x * scale);

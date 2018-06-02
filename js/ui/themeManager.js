@@ -47,7 +47,7 @@ ThemeManager.prototype = {
         if (this.themeDirectory) {
             let searchPath = iconTheme.get_search_path();
             for (let i = 0; i < searchPath.length; i++) {
-                if (searchPath[i] == this.themeDirectory) {
+                if (searchPath[i] === this.themeDirectory) {
                     searchPath.splice(i,1);
                     iconTheme.set_search_path(searchPath);
                     break;

@@ -40,9 +40,9 @@ BackgroundManager.prototype = {
     _onColorShadingTypeChanged: function(schema, key) {
         let oldValue = this.color_shading_type
         let newValue = this._gnomeSettings.get_string(key);
-        if (oldValue != newValue) {
+        if (oldValue !== newValue) {
             let cinnamonValue = this._cinnamonSettings.get_string(key);
-            if (cinnamonValue != newValue) {
+            if (cinnamonValue !== newValue) {
                 global.log("BackgroundManager: %s changed (%s --> %s)".format(key, oldValue, newValue));
                 this._cinnamonSettings.set_string(key, newValue);
             }
@@ -53,9 +53,9 @@ BackgroundManager.prototype = {
     _onPictureOptionsChanged: function(schema, key) {
         let oldValue = this.picture_options
         let newValue = this._gnomeSettings.get_string(key);
-        if (oldValue != newValue) {
+        if (oldValue !== newValue) {
             let cinnamonValue = this._cinnamonSettings.get_string(key);
-            if (cinnamonValue != newValue) {
+            if (cinnamonValue !== newValue) {
                 global.log("BackgroundManager: %s changed (%s --> %s)".format(key, oldValue, newValue));
                 this._cinnamonSettings.set_string(key, newValue);
             }
@@ -66,9 +66,9 @@ BackgroundManager.prototype = {
     _onPictureURIChanged: function(schema, key) {
         let oldValue = this.picture_uri
         let newValue = this._gnomeSettings.get_string(key);
-        if (oldValue != newValue) {
+        if (oldValue !== newValue) {
             let cinnamonValue = this._cinnamonSettings.get_string(key);
-            if (cinnamonValue != newValue) {
+            if (cinnamonValue !== newValue) {
                 global.log("BackgroundManager: %s changed (%s --> %s)".format(key, oldValue, newValue));
                 this._cinnamonSettings.set_string(key, newValue);
             }
@@ -79,9 +79,9 @@ BackgroundManager.prototype = {
     _onPrimaryColorChanged: function(schema, key) {
         let oldValue = this.primary_color
         let newValue = this._gnomeSettings.get_string(key);
-        if (oldValue != newValue) {
+        if (oldValue !== newValue) {
             let cinnamonValue = this._cinnamonSettings.get_string(key);
-            if (cinnamonValue != newValue) {
+            if (cinnamonValue !== newValue) {
                 global.log("BackgroundManager: %s changed (%s --> %s)".format(key, oldValue, newValue));
                 this._cinnamonSettings.set_string(key, newValue);
             }
@@ -92,9 +92,9 @@ BackgroundManager.prototype = {
     _onSecondaryColorChanged: function(schema, key) {
         let oldValue = this.secondary_color
         let newValue = this._gnomeSettings.get_string(key);
-        if (oldValue != newValue) {
+        if (oldValue !== newValue) {
             let cinnamonValue = this._cinnamonSettings.get_string(key);
-            if (cinnamonValue != newValue) {
+            if (cinnamonValue !== newValue) {
                 global.log("BackgroundManager: %s changed (%s --> %s)".format(key, oldValue, newValue));
                 this._cinnamonSettings.set_string(key, newValue);
             }
@@ -105,9 +105,9 @@ BackgroundManager.prototype = {
     _onPictureOpacityChanged: function(schema, key) {
         let oldValue = this.picture_opacity
         let newValue = this._gnomeSettings.get_int(key);
-        if (oldValue != newValue) {
+        if (oldValue !== newValue) {
             let cinnamonValue = this._cinnamonSettings.get_int(key);
-            if (cinnamonValue != newValue) {
+            if (cinnamonValue !== newValue) {
                 global.log("BackgroundManager: %s changed (%s --> %s)".format(key, oldValue, newValue));
                 this._cinnamonSettings.set_int(key, newValue);
             }

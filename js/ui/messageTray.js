@@ -99,7 +99,7 @@ URLHighlighter.prototype = {
             let [hasColor, color] = this.actor.get_theme_node().lookup_color('link-color', false);
             if (hasColor) {
                 let linkColor = color.to_string().substr(0, 7);
-                if (linkColor != this._linkColor) {
+                if (linkColor !== this._linkColor) {
                     this._linkColor = linkColor;
                     this._highlightUrls();
                 }
@@ -116,22 +116,22 @@ URLHighlighter.prototype = {
             // Don't try to URL highlight when invisible.
             // The MessageTray doesn't actually hide us, so
             // we need to check for paint opacities as well.
-            if (!actor.visible || actor.get_paint_opacity() == 0)
+            if (!actor.visible || actor.get_paint_opacity() === 0)
                 return false;
 
             // Keep Notification.actor from seeing this and taking
             // a pointer grab, which would block our button-release-event
             // handler, if an URL is clicked
-            return this._findUrlAtPos(event) != -1;
+            return this._findUrlAtPos(event) !== -1;
         }));
         this.actor.connect('button-release-event', Lang.bind(this, function (actor, event) {
-            if (!actor.visible || actor.get_paint_opacity() == 0)
+            if (!actor.visible || actor.get_paint_opacity() === 0)
                 return false;
 
             let urlId = this._findUrlAtPos(event);
-            if (urlId != -1) {
+            if (urlId !== -1) {
                 let url = this._urls[urlId].url;
-                if (url.indexOf(':') == -1)
+                if (url.indexOf(':') === -1)
                     url = 'http://' + url;
                 try {
                     Gio.app_info_launch_default_for_uri(url, global.create_app_launch_context());
@@ -145,21 +145,21 @@ URLHighlighter.prototype = {
             return false;
         }));
         this.actor.connect('motion-event', Lang.bind(this, function(actor, event) {
-            if (!actor.visible || actor.get_paint_opacity() == 0)
+            if (!actor.visible || actor.get_paint_opacity() === 0)
                 return false;
 
             let urlId = this._findUrlAtPos(event);
-            if (urlId != -1 && !this._cursorChanged) {
+            if (urlId !== -1 && !this._cursorChanged) {
                 global.set_cursor(Cinnamon.Cursor.POINTING_HAND);
                 this._cursorChanged = true;
-            } else if (urlId == -1) {
+            } else if (urlId === -1) {
                 global.unset_cursor();
                 this._cursorChanged = false;
             }
             return false;
         }));
         this.actor.connect('leave-event', Lang.bind(this, function() {
-            if (!this.actor.visible || this.actor.get_paint_opacity() == 0)
+            if (!this.actor.visible || this.actor.get_paint_opacity() === 0)
                 return;
 
             if (this._cursorChanged) {
@@ -262,8 +262,8 @@ FocusGrabber.prototype = {
         this._prevFocusedWindow = global.display.focus_window;
         this._prevKeyFocusActor = global.stage.get_key_focus();
 
-        if (global.stage_input_mode == Cinnamon.StageInputMode.NONREACTIVE ||
-            global.stage_input_mode == Cinnamon.StageInputMode.NORMAL)
+        if (global.stage_input_mode === Cinnamon.StageInputMode.NONREACTIVE ||
+            global.stage_input_mode === Cinnamon.StageInputMode.NORMAL)
             global.set_stage_input_mode(Cinnamon.StageInputMode.FOCUSED);
 
         // Use captured-event to notice clicks outside the focused actor
@@ -301,7 +301,7 @@ FocusGrabber.prototype = {
                 break;
             case Clutter.EventType.KEY_PRESS:
                 let symbol = event.get_key_symbol();
-                if (symbol == Clutter.Escape) {
+                if (symbol === Clutter.Escape) {
                     this.emit('escape-pressed');
                     return true;
                 }
@@ -581,7 +581,7 @@ Notification.prototype = {
         this._titleLabel.clutter_text.set_markup('<b>' + title + '</b>');
         this._timeLabel.clutter_text.set_markup(this._timestamp.toLocaleTimeString());
         this._timeLabel.hide();
-        if (Pango.find_base_dir(title, -1) == Pango.Direction.RTL)
+        if (Pango.find_base_dir(title, -1) === Pango.Direction.RTL)
             this._titleDirection = St.TextDirection.RTL;
         else
             this._titleDirection = St.TextDirection.LTR;
@@ -690,9 +690,9 @@ Notification.prototype = {
     // Scrolls the content area (if scrollable) to the indicated edge
     scrollTo: function(side) {
         let adjustment = this._scrollArea.vscroll.adjustment;
-        if (side == St.Side.TOP)
+        if (side === St.Side.TOP)
             adjustment.value = adjustment.lower;
-        else if (side == St.Side.BOTTOM)
+        else if (side === St.Side.BOTTOM)
             adjustment.value = adjustment.upper;
     },
 
@@ -865,7 +865,7 @@ Notification.prototype = {
         let timeBox = new Clutter.ActorBox();
         let titleBoxW = Math.min(titleNatW, availWidth);
         let timeBoxW = Math.min(timeNatW, availWidth);
-        if (this._titleDirection == St.TextDirection.RTL) {
+        if (this._titleDirection === St.TextDirection.RTL) {
             titleBox.x1 = availWidth - titleBoxW;
             titleBox.x2 = availWidth;
             timeBox.x1 = availWidth - timeBoxW;
@@ -900,7 +900,7 @@ Notification.prototype = {
         } else {
             let bannerBox = new Clutter.ActorBox();
 
-            if (this._titleDirection == St.TextDirection.RTL) {
+            if (this._titleDirection === St.TextDirection.RTL) {
                 bannerBox.x1 = 0;
                 bannerBox.x2 = titleBox.x1 - this._spacing;
 
@@ -923,7 +923,7 @@ Notification.prototype = {
             // Make _bannerLabel visible if the entire notification
             // fits on one line, or if the notification is currently
             // unexpanded and only showing one line anyway.
-            if (!this.expanded || (bannerFits && this._table.row_count == 1))
+            if (!this.expanded || (bannerFits && this._table.row_count === 1))
                 this._bannerLabel.opacity = 255;
         }
 
@@ -963,7 +963,7 @@ Notification.prototype = {
             this._titleLabel.clutter_text.line_wrap = true;
             this._titleLabel.clutter_text.line_wrap_mode = Pango.WrapMode.WORD_CHAR;
             this._titleLabel.clutter_text.ellipsize = Pango.EllipsizeMode.NONE;
-        } else if (this._table.row_count > 1 && this._bannerLabel.opacity != 0) {
+        } else if (this._table.row_count > 1 && this._bannerLabel.opacity !== 0) {
             // We always hide the banner if the notification has additional content.
             //
             // We don't need to wrap the banner that doesn't fit the way we wrap the
@@ -1090,7 +1090,7 @@ Source.prototype = {
         let [minWidth, minHeight, naturalWidth, naturalHeight] = this._counterBin.get_preferred_size();
         let direction = this.actor.get_direction();
 
-        if (direction == St.TextDirection.LTR) {
+        if (direction === St.TextDirection.LTR) {
             // allocate on the right in LTR
             childBox.x1 = box.x2 - naturalWidth;
             childBox.x2 = box.x2;
@@ -1162,7 +1162,7 @@ Source.prototype = {
                     return;
 
                 this.notifications.splice(index, 1);
-                if (this.notifications.length == 0)
+                if (this.notifications.length === 0)
                     this._lastNotificationRemoved();
 
                 this._updateCount();
@@ -1265,7 +1265,7 @@ SummaryItem.prototype = {
 
         this.notificationStackView.vscroll.adjustment.connect('changed', Lang.bind(this, function(adjustment) {
             let currentValue = adjustment.value + adjustment.page_size;
-            if (currentValue == this._oldMaxScrollAdjustment)
+            if (currentValue === this._oldMaxScrollAdjustment)
                 this.scrollTo(St.Side.BOTTOM);
             this._oldMaxScrollAdjustment = adjustment.upper;
         }));
@@ -1309,7 +1309,7 @@ SummaryItem.prototype = {
 
     setTitleWidth: function(width) {
         width = Math.round(width);
-        if (width != this._sourceTitleBin.width)
+        if (width !== this._sourceTitleBin.width)
             this._sourceTitleBin.width = width;
     },
 
@@ -1334,7 +1334,7 @@ SummaryItem.prototype = {
             notification.disconnect(stackedNotification.notificationExpandedId);
             notification.disconnect(stackedNotification.notificationDoneDisplayingId);
             notification.disconnect(stackedNotification.notificationDestroyedId);
-            if (notification.actor.get_parent() == this.notificationStack)
+            if (notification.actor.get_parent() === this.notificationStack)
                 this.notificationStack.remove_actor(notification.actor);
             notification.setIconVisible(true);
         }
@@ -1365,9 +1365,9 @@ SummaryItem.prototype = {
     // Scrolls the notifiction stack to the indicated edge
     scrollTo: function(side) {
         let adjustment = this.notificationStackView.vscroll.adjustment;
-        if (side == St.Side.TOP)
+        if (side === St.Side.TOP)
             adjustment.value = adjustment.lower;
-        else if (side == St.Side.BOTTOM)
+        else if (side === St.Side.BOTTOM)
             adjustment.value = adjustment.upper;
     },
 
@@ -1381,7 +1381,7 @@ SummaryItem.prototype = {
 
     _notificationDestroyed: function(notification) {
         for (let i = 0; i < this._stackedNotifications.length; i++) {
-            if (this._stackedNotifications[i].notification == notification) {
+            if (this._stackedNotifications[i].notification === notification) {
                 let stackedNotification = this._stackedNotifications[i];
                 notification.disconnect(stackedNotification.notificationExpandedId);
                 notification.disconnect(stackedNotification.notificationDoneDisplayingId);
@@ -1503,14 +1503,14 @@ MessageTray.prototype = {
 
     _onSourceDestroy: function(source) {
         let index = this._getSourceIndex(source);
-        if (index == -1)
+        if (index === -1)
             return;
 
         this._sources.splice(index, 1);
 
         let needUpdate = false;
 
-        if (this._notification && this._notification.source == source) {
+        if (this._notification && this._notification.source === source) {
             this._updateNotificationTimeout(0);
             this._notificationRemoved = true;
             needUpdate = true;
@@ -1521,7 +1521,7 @@ MessageTray.prototype = {
     },
 
     _onNotificationDestroy: function(notification) {
-        if (this._notification == notification && (this._notificationState == State.SHOWN || this._notificationState == State.SHOWING)) {
+        if (this._notification === notification && (this._notificationState === State.SHOWN || this._notificationState === State.SHOWING)) {
             this._updateNotificationTimeout(0);
             this._notificationRemoved = true;
             this._updateState();
@@ -1530,7 +1530,7 @@ MessageTray.prototype = {
 
         let index = this._notificationQueue.indexOf(notification);
         notification.destroy();
-        if (index != -1)
+        if (index !== -1)
             this._notificationQueue.splice(index, 1);
     },
 
@@ -1556,7 +1556,7 @@ MessageTray.prototype = {
     },
 
     _onNotify: function(source, notification) {
-        if (this._notification == notification) {
+        if (this._notification === notification) {
             // If a notification that is being shown is updated, we update
             // how it is shown and extend the time until it auto-hides.
             // If a new notification is updated while it is being hidden,
@@ -1574,14 +1574,14 @@ MessageTray.prototype = {
     },
 
     _onStatusChanged: function(status) {
-        this._backFromAway = (this._userStatus == GnomeSession.PresenceStatus.IDLE && this._userStatus != status);
+        this._backFromAway = (this._userStatus === GnomeSession.PresenceStatus.IDLE && this._userStatus !== status);
         this._userStatus = status;
 
-        if (status == GnomeSession.PresenceStatus.BUSY) {
+        if (status === GnomeSession.PresenceStatus.BUSY) {
             // remove notification and allow the summary to be closed now
             this._updateNotificationTimeout(0);
             this._busy = true;
-        } else if (status != GnomeSession.PresenceStatus.IDLE) {
+        } else if (status !== GnomeSession.PresenceStatus.IDLE) {
             // We preserve the previous value of this._busy if the status turns to IDLE
             // so that we don't start showing notifications queued during the BUSY state
             // as the screensaver gets activated.
@@ -1603,17 +1603,17 @@ MessageTray.prototype = {
     // at the present time.
     _updateState: function() {
         // Notifications
-        let notificationUrgent = this._notificationQueue.length > 0 && this._notificationQueue[0].urgency == Urgency.CRITICAL;
+        let notificationUrgent = this._notificationQueue.length > 0 && this._notificationQueue[0].urgency === Urgency.CRITICAL;
         let notificationsPending = this._notificationQueue.length > 0 && (!this._busy || notificationUrgent);
         let notificationExpanded = this._notificationBin.y < 0;
 
-        let notificationExpired = (this._notificationTimeoutId == 0 &&
-                !(this._notification && this._notification.urgency == Urgency.CRITICAL) &&
+        let notificationExpired = (this._notificationTimeoutId === 0 &&
+                !(this._notification && this._notification.urgency === Urgency.CRITICAL) &&
                 !this._locked
             ) || this._notificationRemoved;
         let canShowNotification = notificationsPending && this._notificationsEnabled;
 
-        if (this._notificationState == State.HIDDEN) {
+        if (this._notificationState === State.HIDDEN) {
             if (canShowNotification) {
                 this._showNotification();
             }
@@ -1628,7 +1628,7 @@ MessageTray.prototype = {
                     }
                 }
             }
-        } else if (this._notificationState == State.SHOWN) {
+        } else if (this._notificationState === State.SHOWN) {
             if (notificationExpired)
                 this._hideNotification();
         }
@@ -1645,7 +1645,7 @@ MessageTray.prototype = {
 
         Tweener.addTween(actor, params);
 
-        let valuing = (value == State.SHOWN) ? State.SHOWING : State.HIDING;
+        let valuing = (value === State.SHOWN) ? State.SHOWING : State.HIDING;
         this[statevar] = valuing;
     },
 
@@ -1691,7 +1691,7 @@ MessageTray.prototype = {
         let margin = this._notification._table.get_theme_node().get_length('margin-from-right-edge-of-screen');
         this._notificationBin.x = monitor.x + monitor.width - this._notification._table.width - margin - rightGap;
         Main.soundManager.play('notification');
-        if (this._notification.urgency == Urgency.CRITICAL) {
+        if (this._notification.urgency === Urgency.CRITICAL) {
             Main.layoutManager._chrome.modifyActorParams(this._notificationBin, { visibleInFullscreen: true });
         } else {
             Main.layoutManager._chrome.modifyActorParams(this._notificationBin, { visibleInFullscreen: false });
@@ -1769,7 +1769,7 @@ MessageTray.prototype = {
 
     _showNotificationCompleted: function() {
         this._notificationTimeoutId = 0;
-        if (this._notification.urgency != Urgency.CRITICAL) {
+        if (this._notification.urgency !== Urgency.CRITICAL) {
             this._updateNotificationTimeout(NOTIFICATION_TIMEOUT * 1000);
         } else if (AppletManager.get_role_provider_exists(AppletManager.Roles.NOTIFICATIONS)) {
             this._updateNotificationTimeout(NOTIFICATION_CRITICAL_TIMEOUT_WITH_APPLET * 1000);
@@ -1878,7 +1878,7 @@ MessageTray.prototype = {
 
         if (this._notificationBin.y < expandedY)
             this._notificationBin.y = expandedY;
-        else if (this._notification.actor.y != expandedY)
+        else if (this._notification.actor.y !== expandedY)
             this._tween(this._notificationBin, '_notificationState', State.SHOWN,
                         { y: newY,
                           time: ANIMATION_TIME,

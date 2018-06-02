@@ -66,7 +66,7 @@ function LayoutManager() {
 
 LayoutManager.prototype = {
     _init: function () {
-        this._rtl = (St.Widget.get_default_direction() == St.TextDirection.RTL);
+        this._rtl = (St.Widget.get_default_direction() === St.TextDirection.RTL);
         this.monitors = [];
         this.primaryMonitor = null;
         this.primaryIndex = -1;
@@ -140,7 +140,7 @@ LayoutManager.prototype = {
         for (let i = 0; i < nMonitors; i++)
             this.monitors.push(new Monitor(i, screen.get_monitor_geometry(i)));
 
-        if (nMonitors == 1) {
+        if (nMonitors === 1) {
             this.primaryIndex = this.bottomIndex = 0;
         } else {
             // If there are monitors below the primary, then we need
@@ -186,9 +186,9 @@ LayoutManager.prototype = {
 
     get focusIndex() {
         let i = 0;
-        if (global.stage.key_focus != null)
+        if (global.stage.key_focus !== null)
             i = this.findMonitorIndexForActor(global.stage.key_focus);
-        else if (global.display.focus_window != null)
+        else if (global.display.focus_window !== null)
             i = global.display.focus_window.get_monitor();
         return i;
     },
@@ -273,7 +273,7 @@ LayoutManager.prototype = {
         this._chrome.updateRegions();
 
         this._keyboardHeightNotifyId = this.keyboardBox.connect('notify::height', Lang.bind(this, function () {
-            if (this.keyboardBox.y != 0) {
+            if (this.keyboardBox.y !== 0) {
                 this.keyboardBox.y = this.focusMonitor.y + this.focusMonitor.height - this.keyboardBox.height;
             }
         }));
@@ -281,7 +281,7 @@ LayoutManager.prototype = {
     },
 
     queueHideKeyboard: function() {
-        if (this.hideIdleId != 0) {
+        if (this.hideIdleId !== 0) {
             Mainloop.source_remove(this.hideIdleId);
             this.hideIdleId = 0;
         }
@@ -429,7 +429,7 @@ LayoutManager.prototype = {
      * Returns (boolean): whether the actor is currently tracked
      */
     isTrackingChrome: function(actor) {
-        return this._chrome._findActor(actor) != -1;
+        return this._chrome._findActor(actor) !== -1;
     }
 };
 Signals.addSignalMethods(LayoutManager.prototype);
@@ -496,7 +496,7 @@ Chrome.prototype = {
     trackActor: function(actor, params) {
         let ancestor = actor.get_parent();
         let index = this._findActor(ancestor);
-        while (ancestor && index == -1) {
+        while (ancestor && index === -1) {
             ancestor = ancestor.get_parent();
             index = this._findActor(ancestor);
         }
@@ -523,7 +523,7 @@ Chrome.prototype = {
     removeActor: function(actor) {
         let i = this._findActor(actor);
 
-        if (i == -1)
+        if (i === -1)
             return;
         let actorData = this._trackedActors[i];
 
@@ -535,7 +535,7 @@ Chrome.prototype = {
     _findActor: function(actor) {
         for (let i = 0; i < this._trackedActors.length; i++) {
             let actorData = this._trackedActors[i];
-            if (actorData.actor == actor)
+            if (actorData.actor === actor)
                 return i;
         }
         return -1;
@@ -543,7 +543,7 @@ Chrome.prototype = {
 
     modifyActorParams: function(actor, params) {
         let index = this._findActor(actor);
-        if (index == -1)
+        if (index === -1)
             throw new Error('could not find actor in chrome');
         for (var i in params){
             this._trackedActors[index][i] = params[i];
@@ -552,13 +552,13 @@ Chrome.prototype = {
     },
 
     _trackActor: function(actor, params) {
-        if (this._findActor(actor) != -1)
+        if (this._findActor(actor) !== -1)
             throw new Error('trying to re-track existing chrome actor');
 
         let actorData = Params.parse(params, defaultParams);
         actorData.actor = actor;
-        if (actorData.addToWindowgroup) actorData.isToplevel = actor.get_parent() == global.window_group;
-        else actorData.isToplevel = actor.get_parent() == Main.uiGroup;
+        if (actorData.addToWindowgroup) actorData.isToplevel = actor.get_parent() === global.window_group;
+        else actorData.isToplevel = actor.get_parent() === Main.uiGroup;
         actorData.visibleId = actor.connect('notify::visible',
                                             Lang.bind(this, this._queueUpdateRegions));
         actorData.allocationId = actor.connect('notify::allocation',
@@ -575,7 +575,7 @@ Chrome.prototype = {
     _untrackActor: function(actor) {
         let i = this._findActor(actor);
 
-        if (i == -1)
+        if (i === -1)
             return;
         let actorData = this._trackedActors[i];
 
@@ -589,7 +589,7 @@ Chrome.prototype = {
 
     _actorReparented: function(actor, oldParent) {
         let i = this._findActor(actor);
-        if (i == -1)
+        if (i === -1)
             return;
         let actorData = this._trackedActors[i];
 
@@ -597,8 +597,8 @@ Chrome.prototype = {
         if (!newParent)
             this._untrackActor(actor);
         else{
-            if (actorData.addToWindowgroup) actorData.isToplevel = (newParent == global.window_group);
-            else actorData.isToplevel = (newParent == Main.uiGroup);
+            if (actorData.addToWindowgroup) actorData.isToplevel = (newParent === global.window_group);
+            else actorData.isToplevel = (newParent === Main.uiGroup);
         }
     },
 
@@ -607,16 +607,16 @@ Chrome.prototype = {
             let actorData = this._trackedActors[i], visible;
             if (!actorData.isToplevel)
                 continue;
-            else if (global.stage_input_mode == Cinnamon.StageInputMode.FULLSCREEN) {
+            else if (global.stage_input_mode === Cinnamon.StageInputMode.FULLSCREEN) {
                 let monitor = this.findMonitorForActor(actorData.actor);
 
-                if (global.screen.get_n_monitors() == 1 || !monitor.inFullscreen) {
+                if (global.screen.get_n_monitors() === 1 || !monitor.inFullscreen) {
                     visible = true;
                 } else {
                     if (Main.modalActorFocusStack.length > 0) {
                         let modalActor = Main.modalActorFocusStack[Main.modalActorFocusStack.length - 1].actor;
 
-                        if (this.findMonitorForActor(modalActor) == monitor) {
+                        if (this.findMonitorForActor(modalActor) === monitor) {
                             visible = true;
                         }
                     }
@@ -722,7 +722,7 @@ Chrome.prototype = {
     },
 
     _windowsRestacked: function() {
-        if (this._isPopupWindowVisible != global.top_window_group.get_children().some(isPopupMetaWindow))
+        if (this._isPopupWindowVisible !== global.top_window_group.get_children().some(isPopupMetaWindow))
             this._updateVisibility();
         else
             this._queueUpdateRegions();

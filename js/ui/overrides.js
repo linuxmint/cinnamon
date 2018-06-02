@@ -24,7 +24,7 @@ function check_schema_and_init(obj, method, params) {
         return;
     }
     let listSchemas = Gio.Settings.list_schemas();
-    if (listSchemas.indexOf(params.schema) != -1) {
+    if (listSchemas.indexOf(params.schema) !== -1) {
         method.call(obj, params);
     } else {
         method.call(obj, { schema_id: "org.cinnamon.invalid-schema" });
@@ -34,7 +34,7 @@ function check_schema_and_init(obj, method, params) {
 }
 
 function key_exists (obj, key) {
-    return obj.list_keys().indexOf(key) != -1;
+    return obj.list_keys().indexOf(key) !== -1;
 }
 
 function check_key_and_get (obj, method, key) {
@@ -119,7 +119,7 @@ function overrideMainloop() {
     Mainloop.__real_source_remove = Mainloop.source_remove;
 
     Mainloop.source_remove = function (id) {
-        let dump = GLib.MainContext.default().find_source_by_id(id) == null;
+        let dump = GLib.MainContext.default().find_source_by_id(id) === null;
         if (dump) {
             global.dump_gjs_stack('Invalid or null source id used when attempting to run Mainloop.source_remove()');
         } else {
@@ -196,7 +196,7 @@ function overrideJS() {
 }
 
 function overrideTweener() {
-    if (Tweener.restrictedWords.min != null) {
+    if (Tweener.restrictedWords.min !== null) {
         return;
     }
 
@@ -216,7 +216,7 @@ function overrideTweener() {
     Tweener._updateTweenByIndex = function(i) {
         var tweening = Tweener._tweenList[i];
 
-        if (tweening == null || !tweening.scope)
+        if (tweening === null || !tweening.scope)
             return false;
 
         var currentTime = Tweener._getCurrentTweeningTime(tweening);
@@ -273,7 +273,7 @@ function overrideTweener() {
 
                     if (tweening.properties[name].isSpecialProperty) {
                         // It's a special property, tunnel via the special property function
-                        if (_specialPropertyList[name].preProcess != undefined) {
+                        if (_specialPropertyList[name].preProcess !== undefined) {
                             tweening.properties[name].valueComplete = Tweener._specialPropertyList[name].preProcess(scope, Tweener._specialPropertyList[name].parameters, tweening.properties[name].originalValueComplete, tweening.properties[name].extra);
                         }
                         pv = Tweener._specialPropertyList[name].getValue(scope, Tweener._specialPropertyList[name].parameters, tweening.properties[name].extra);
@@ -371,11 +371,11 @@ function overrideTweener() {
 
             // Verifies whether the properties exist or not, for warning messages
             for (istr in properties) {
-                if (Tweener._specialPropertyList[istr] != undefined) {
+                if (Tweener._specialPropertyList[istr] !== undefined) {
                     properties[istr].isSpecialProperty = true;
                 } else {
                     for (var i = 0; i < scopes.length; i++) {
-                        if (scopes[i][istr] == undefined)
+                        if (scopes[i][istr] === undefined)
                             log("The property " + istr + " doesn't seem to be a normal object property of " + scopes[i] + " or a registered special property");
                     }
                     properties[istr].isSpecialProperty = false;
@@ -394,7 +394,7 @@ function overrideTweener() {
         var transition;
 
         // FIXME: Tweener allows you to use functions with an all lower-case name
-        if (typeof obj.transition == "string") {
+        if (typeof obj.transition === "string") {
             transition = imports.tweener.equations[obj.transition];
         } else {
             transition = obj.transition;
@@ -464,7 +464,7 @@ function overrideTweener() {
 
             // Immediate update and removal if it's an immediate tween
             // If not deleted, it executes at the end of this frame execution
-            if (time == 0 && delay == 0) {
+            if (time === 0 && delay === 0) {
                 var myT = Tweener._tweenList.length-1;
                 Tweener._updateTweenByIndex(myT);
                 Tweener._removeTweenByIndex(myT);
@@ -476,7 +476,7 @@ function overrideTweener() {
 }
 
 function overrideSignals() {
-    if (Signals._signalHandlerIsConnected != null) {
+    if (Signals._signalHandlerIsConnected !== null) {
         return;
     }
 
@@ -485,7 +485,7 @@ function overrideSignals() {
             return false;
 
         for (let connection of this._signalConnections) {
-            if (connection.id == id) {
+            if (connection.id === id) {
                 if (connection.disconnected)
                     return false;
                 else

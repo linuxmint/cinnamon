@@ -89,21 +89,21 @@ A11yHandler.prototype = {
         let new_num = Keymap.get_num_lock_state();
 
         if (this._toggle_keys_osd) {
-            if (new_caps != this.caps) {
+            if (new_caps !== this.caps) {
                 this.popup_state_osd(CAPS, new_caps);
             }
 
-            if (new_num != this.num) {
+            if (new_num !== this.num) {
                 this.popup_state_osd(NUM, new_num);
             }
         }
 
         if (this._toggle_keys_sound) {
-            if (new_caps != this.caps) {
+            if (new_caps !== this.caps) {
                 this.play_state_sound(CAPS, new_caps);
             }
 
-            if (new_num != this.num) {
+            if (new_num !== this.num) {
                 this.play_state_sound(NUM, new_num);
             }
         }

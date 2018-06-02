@@ -180,11 +180,11 @@ SignalManager.prototype = {
         let results = this._storage;
 
         if (sigName)
-            results = results.filter(x => x[0] == sigName);
+            results = results.filter(x => x[0] === sigName);
         if (obj)
-            results = results.filter(x => x[1] == obj);
+            results = results.filter(x => x[1] === obj);
         if (callback)
-            results = results.filter(x => x[2] == callback);
+            results = results.filter(x => x[2] === callback);
 
         return results;
     },
@@ -209,7 +209,7 @@ SignalManager.prototype = {
         let results = this.getSignals.apply(this, arguments);
         results.filter(this._signalIsConnected).forEach(x => x[1].disconnect(x[3]));
 
-        this._storage = this._storage.filter(x => results.indexOf(x) == -1);
+        this._storage = this._storage.filter(x => results.indexOf(x) === -1);
     },
 
     /**

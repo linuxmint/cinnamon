@@ -190,7 +190,7 @@ const _ = Gettext.gettext;
 function setRunState(state) {
     let oldState = runState;
 
-    if (state != oldState) {
+    if (state !== oldState) {
         runState = state;
         cinnamonDBusService.EmitRunStateChanged();
     }
@@ -200,7 +200,7 @@ function _initRecorder() {
     let recorderSettings = new Gio.Settings({ schema_id: 'org.cinnamon.recorder' });
 
     global.screen.connect('toggle-recording', function() {
-        if (recorder == null) {
+        if (recorder === null) {
             recorder = new Cinnamon.Recorder({ stage: global.stage });
         }
 
@@ -588,9 +588,9 @@ function _makeDefaultWorkspaceName(index) {
  */
 function setWorkspaceName(index, name) {
     name.trim();
-    if (name != getWorkspaceName(index)) {
+    if (name !== getWorkspaceName(index)) {
         _fillWorkspaceNames(index);
-        workspace_names[index] = (name == _makeDefaultWorkspaceName(index) ?
+        workspace_names[index] = (name === _makeDefaultWorkspaceName(index) ?
             "" :
             name);
         _trimWorkspaceNames();
@@ -625,7 +625,7 @@ function getWorkspaceName(index) {
  * Returns (boolean): whether the workspace uses the default name
  */
 function hasDefaultWorkspaceName(index) {
-    return getWorkspaceName(index) == _makeDefaultWorkspaceName(index);
+    return getWorkspaceName(index) === _makeDefaultWorkspaceName(index);
 }
 
 function _addWorkspace() {
@@ -636,7 +636,7 @@ function _addWorkspace() {
 }
 
 function _removeWorkspace(workspace) {
-    if (global.screen.n_workspaces == 1 || dynamicWorkspaces)
+    if (global.screen.n_workspaces === 1 || dynamicWorkspaces)
         return false;
     let index = workspace.index();
     if (index < workspace_names.length) {
@@ -682,9 +682,9 @@ function _checkWorkspaces() {
     for (let i = 0; i < _workspaces.length; i++) {
         let lastRemoved = _workspaces[i]._lastRemovedWindow;
         if (lastRemoved &&
-            (lastRemoved.get_window_type() == Meta.WindowType.SPLASHSCREEN ||
-             lastRemoved.get_window_type() == Meta.WindowType.DIALOG ||
-             lastRemoved.get_window_type() == Meta.WindowType.MODAL_DIALOG))
+            (lastRemoved.get_window_type() === Meta.WindowType.SPLASHSCREEN ||
+             lastRemoved.get_window_type() === Meta.WindowType.DIALOG ||
+             lastRemoved.get_window_type() === Meta.WindowType.MODAL_DIALOG))
                 emptyWorkspaces[i] = false;
         else
             emptyWorkspaces[i] = true;
@@ -738,7 +738,7 @@ function _windowRemoved(workspace, window) {
     workspace._lastRemovedWindow = window;
     _queueCheckWorkspaces();
     Mainloop.timeout_add(LAST_WINDOW_GRACE_TIME, function() {
-        if (workspace._lastRemovedWindow == window) {
+        if (workspace._lastRemovedWindow === window) {
             workspace._lastRemovedWindow = null;
             _queueCheckWorkspaces();
         }
@@ -748,14 +748,14 @@ function _windowRemoved(workspace, window) {
 function _windowLeftMonitor(metaScreen, monitorIndex, metaWin) {
     // If the window left the primary monitor, that
     // might make that workspace empty
-    if (monitorIndex == layoutManager.primaryIndex)
+    if (monitorIndex === layoutManager.primaryIndex)
         _queueCheckWorkspaces();
 }
 
 function _windowEnteredMonitor(metaScreen, monitorIndex, metaWin) {
     // If the window entered the primary monitor, that
     // might make that workspace non-empty
-    if (monitorIndex == layoutManager.primaryIndex)
+    if (monitorIndex === layoutManager.primaryIndex)
         _queueCheckWorkspaces();
 }
 
@@ -769,7 +769,7 @@ function _windowsRestacked() {
 function _queueCheckWorkspaces() {
     if (!dynamicWorkspaces)
         return false;
-    if (_checkWorkspacesId == 0)
+    if (_checkWorkspacesId === 0)
         _checkWorkspacesId = Meta.later_add(Meta.LaterType.BEFORE_REDRAW, _checkWorkspaces);
     return true;
 }
@@ -781,7 +781,7 @@ function _nWorkspacesChanged() {
     let oldNumWorkspaces = _workspaces.length;
     let newNumWorkspaces = global.screen.n_workspaces;
 
-    if (oldNumWorkspaces == newNumWorkspaces)
+    if (oldNumWorkspaces === newNumWorkspaces)
         return false;
 
     let lostWorkspaces = [];
@@ -803,7 +803,7 @@ function _nWorkspacesChanged() {
         let removedNum = oldNumWorkspaces - newNumWorkspaces;
         for (let w = 0; w < oldNumWorkspaces; w++) {
             let workspace = global.screen.get_workspace_by_index(w);
-            if (_workspaces[w] != workspace) {
+            if (_workspaces[w] !== workspace) {
                 removedIndex = w;
                 break;
             }
@@ -855,12 +855,12 @@ function loadTheme() {
     let themeContext = St.ThemeContext.get_for_stage (global.stage);
     let theme = new St.Theme ({ fallback_stylesheet: _defaultCssStylesheet });
     let stylesheetLoaded = false;
-    if (_cssStylesheet != null) {
+    if (_cssStylesheet !== null) {
         stylesheetLoaded = theme.load_stylesheet(_cssStylesheet);
     }
     if (!stylesheetLoaded) {
         theme.load_stylesheet(_defaultCssStylesheet);
-        if (_cssStylesheet != null) {
+        if (_cssStylesheet !== null) {
             global.logError("There was some problem parsing the theme: " + _cssStylesheet + ".  Falling back to the default theme.");
         }
     }
@@ -1046,10 +1046,10 @@ function _log(category = 'info', msg = '') {
  * Returns (boolean): whether @obj is an error object
  */
 function isError(obj) {
-    if (obj == undefined) return false;
+    if (obj === undefined) return false;
 
     let isErr = false;
-    if (typeof(obj) == 'object' && 'message' in obj && 'stack' in obj) {
+    if (typeof(obj) === 'object' && 'message' in obj && 'stack' in obj) {
         isErr = true;
     } else if (obj instanceof GLib.Error) {
         // Make existing logging functionality work as expected when passed
@@ -1201,10 +1201,10 @@ function logStackTrace(msg) {
  * Returns (boolean): whether the window is on the workspace
  */
 function isWindowActorDisplayedOnWorkspace(win, workspaceIndex) {
-    if (win.get_workspace() == workspaceIndex) {return true;}
+    if (win.get_workspace() === workspaceIndex) {return true;}
     let mwin = win.get_meta_window();
     return mwin && (mwin.is_on_all_workspaces() ||
-        (wm.workspacesOnlyOnPrimary && mwin.get_monitor() != layoutManager.primaryIndex)
+        (wm.workspacesOnlyOnPrimary && mwin.get_monitor() !== layoutManager.primaryIndex)
     );
 }
 
@@ -1228,10 +1228,10 @@ function getWindowActorsForWorkspace(workspaceIndex) {
 // all key events will be delivered to the stage, so ::captured-event
 // on the stage can be used for global keybindings.)
 function _stageEventHandler(actor, event) {
-    if (modalCount == 0)
+    if (modalCount === 0)
         return false;
-    if (event.type() != Clutter.EventType.KEY_PRESS) {
-        if(!popup_rendering_actor || event.type() != Clutter.EventType.BUTTON_RELEASE)
+    if (event.type() !== Clutter.EventType.KEY_PRESS) {
+        if(!popup_rendering_actor || event.type() !== Clutter.EventType.BUTTON_RELEASE)
             return false;
         return (event.get_source() && popup_rendering_actor.contains(event.get_source()));
     }
@@ -1243,7 +1243,7 @@ function _stageEventHandler(actor, event) {
     // This relies on the fact that Clutter.ModifierType is the same as Gdk.ModifierType
     let action = global.display.get_keybinding_action(keyCode, modifierState);
 
-    if (action == Meta.KeyBindingAction.CUSTOM) {
+    if (action === Meta.KeyBindingAction.CUSTOM) {
         global.display.keybinding_action_invoke_by_code(keyCode, modifierState);
     }
 
@@ -1252,13 +1252,13 @@ function _stageEventHandler(actor, event) {
         return false;
 
     // This isn't a Meta.KeyBindingAction yet
-    if (symbol == Clutter.Super_L || symbol == Clutter.Super_R) {
+    if (symbol === Clutter.Super_L || symbol === Clutter.Super_R) {
         overview.hide();
         expo.hide();
         return true;
     }
 
-    if (action == Meta.KeyBindingAction.SWITCH_PANELS) {
+    if (action === Meta.KeyBindingAction.SWITCH_PANELS) {
         //Used to call the ctrlalttabmanager in Gnome Shell
         return true;
     }
@@ -1295,7 +1295,7 @@ function _stageEventHandler(actor, event) {
 
 function _findModal(actor) {
     for (let i = 0; i < modalActorFocusStack.length; i++) {
-        if (modalActorFocusStack[i].actor == actor)
+        if (modalActorFocusStack[i].actor === actor)
             return i;
     }
     return -1;
@@ -1324,10 +1324,10 @@ function _findModal(actor) {
  * Returns (boolean): true iff we successfully acquired a grab or already had one
  */
 function pushModal(actor, timestamp, options) {
-    if (timestamp == undefined)
+    if (timestamp === undefined)
         timestamp = global.get_current_time();
 
-    if (modalCount == 0) {
+    if (modalCount === 0) {
         if (!global.begin_modal(timestamp, options ? options : 0)) {
             log('pushModal: invocation of begin_modal failed');
             return false;
@@ -1349,7 +1349,7 @@ function pushModal(actor, timestamp, options) {
         focus: global.stage.get_key_focus(),
         destroyId: actorDestroyId
     };
-    if (record.focus != null) {
+    if (record.focus !== null) {
         record.focusDestroyId = record.focus.connect('destroy', function() {
             record.focus = null;
             record.focusDestroyId = null;
@@ -1377,7 +1377,7 @@ function pushModal(actor, timestamp, options) {
  * global.get_current_time() is assumed.
  */
 function popModal(actor, timestamp) {
-    if (timestamp == undefined)
+    if (timestamp === undefined)
         timestamp = global.get_current_time();
 
     let focusIndex = _findModal(actor);
@@ -1394,7 +1394,7 @@ function popModal(actor, timestamp) {
     let record = modalActorFocusStack[focusIndex];
     record.actor.disconnect(record.destroyId);
 
-    if (focusIndex == modalActorFocusStack.length - 1) {
+    if (focusIndex === modalActorFocusStack.length - 1) {
         if (record.focus)
             record.focus.disconnect(record.focusDestroyId);
         global.stage.set_key_focus(record.focus);
@@ -1429,7 +1429,7 @@ function popModal(actor, timestamp) {
  * Returns (LookingGlass.Melange): looking glass object
  */
 function createLookingGlass() {
-    if (lookingGlass == null) {
+    if (lookingGlass === null) {
         lookingGlass = new LookingGlass.Melange();
     }
     return lookingGlass;
@@ -1443,7 +1443,7 @@ function createLookingGlass() {
  * Returns (RunDialog.RunDialog): run dialog object
  */
 function getRunDialog() {
-    if (runDialog == null) {
+    if (runDialog === null) {
         runDialog = new RunDialog.RunDialog();
     }
     return runDialog;
@@ -1465,7 +1465,7 @@ function activateWindow(window, time, workspaceNum) {
     if (!time)
         time = global.get_current_time();
 
-    if (windowWorkspaceNum != activeWorkspaceNum) {
+    if (windowWorkspaceNum !== activeWorkspaceNum) {
         let workspace = global.screen.get_workspace_by_index(windowWorkspaceNum);
         workspace.activate_with_focus(window, time);
     } else {
@@ -1502,7 +1502,7 @@ function _runDeferredWork(workId) {
 
     _deferredWorkQueue.splice(index, 1);
     _deferredWorkData[workId].callback();
-    if (_deferredWorkQueue.length == 0 && _deferredTimeoutId > 0) {
+    if (_deferredWorkQueue.length === 0 && _deferredTimeoutId > 0) {
         Mainloop.source_remove(_deferredTimeoutId);
         _deferredTimeoutId = 0;
     }
@@ -1523,7 +1523,7 @@ function _runBeforeRedrawQueue() {
 
 function _queueBeforeRedraw(workId) {
     _beforeRedrawQueue.push(workId);
-    if (_beforeRedrawQueue.length == 1) {
+    if (_beforeRedrawQueue.length === 1) {
         Meta.later_add(Meta.LaterType.BEFORE_REDRAW, function () {
             _runBeforeRedrawQueue();
             return false;
@@ -1589,7 +1589,7 @@ function queueDeferredWork(workId) {
     if (data.actor.mapped) {
         _queueBeforeRedraw(workId);
         return;
-    } else if (_deferredTimeoutId == 0) {
+    } else if (_deferredTimeoutId === 0) {
         _deferredTimeoutId = Mainloop.timeout_add_seconds(DEFERRED_TIMEOUT_SECONDS, function () {
             _runAllDeferredWork();
             _deferredTimeoutId = 0;
@@ -1609,7 +1609,7 @@ function queueDeferredWork(workId) {
  */
 function isInteresting(metaWindow) {
 
-    if (metaWindow.get_title() == "JavaEmbeddedFrame")
+    if (metaWindow.get_title() === "JavaEmbeddedFrame")
         return false;
 
     // Include any window the tracker finds interesting

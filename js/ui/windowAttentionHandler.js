@@ -47,7 +47,7 @@ WindowAttentionHandler.prototype = {
                     window.change_workspace(global.screen.get_active_workspace());
                 }
                 else {
-                    if (global.screen.get_active_workspace().index() != window.get_workspace().index()) {
+                    if (global.screen.get_active_workspace().index() !== window.get_workspace().index()) {
                         window.get_workspace().activate(global.get_current_time());
                     }
                 }

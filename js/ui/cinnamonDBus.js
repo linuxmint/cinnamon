@@ -160,7 +160,7 @@ CinnamonDBus.prototype = {
         try {
             returnValue = JSON.stringify(eval(code));
             // A hack; DBus doesn't have null/undefined
-            if (returnValue == undefined)
+            if (returnValue === undefined)
                 returnValue = '';
             success = true;
         } catch (e) {
@@ -373,14 +373,14 @@ CinnamonDBus.prototype = {
     JumpToNewWorkspace: function() {
         Main._addWorkspace();
         let num = global.screen.get_n_workspaces();
-        if (global.screen.get_workspace_by_index(num - 1) != null) {
+        if (global.screen.get_workspace_by_index(num - 1) !== null) {
             global.screen.get_workspace_by_index(num - 1).activate(global.get_current_time());
         }
     },
 
     RemoveCurrentWorkspace: function() {
         let index = global.screen.get_active_workspace_index();
-        if (global.screen.get_workspace_by_index(index) != null) {
+        if (global.screen.get_workspace_by_index(index) !== null) {
             Main._removeWorkspace(global.screen.get_workspace_by_index(index));
         }
     },
@@ -428,7 +428,7 @@ CinnamonDBus.prototype = {
             monitors = [];
         }
 
-        if (monitors.length == 0) {
+        if (monitors.length === 0) {
             throw new Error("GetMonitors: no valid monitors");
         }
 

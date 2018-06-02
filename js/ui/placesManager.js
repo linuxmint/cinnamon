@@ -41,10 +41,10 @@ PlaceInfo.prototype = {
         for (let i = 0; i < terms.length; i++) {
             let term = terms[i];
             let idx = this._lowerName.indexOf(term);
-            if (idx == 0) {
+            if (idx === 0) {
                 mtype = Search.MatchType.PREFIX;
             } else if (idx > 0) {
-                if (mtype == Search.MatchType.NONE)
+                if (mtype === Search.MatchType.NONE)
                     mtype = Search.MatchType.SUBSTRING;
             } else {
                 return Search.MatchType.NONE;
@@ -65,9 +65,9 @@ function _makeLaunchContext(params)
                                     timestamp: 0 });
 
     let launchContext = global.create_app_launch_context();
-    if (params.workspace != -1)
+    if (params.workspace !== -1)
         launchContext.set_desktop(params.workspace);
-    if (params.timestamp != 0)
+    if (params.timestamp !== 0)
         launchContext.set_timestamp(params.timestamp);
 
     return launchContext;
@@ -231,7 +231,7 @@ PlacesManager.prototype = {
 
     // Mounting a device triggers a lot of different events, wait 3 seconds and try to only call this._updateDevices() once
     _updateDevicesAsync: function() {
-        if (this._deviceUpdateAwaiting == false) {
+        if (this._deviceUpdateAwaiting === false) {
             this._deviceUpdateAwaiting = true;
             Mainloop.timeout_add(3000, Lang.bind(this, function () {
                 this._updateDevices();
@@ -288,7 +288,7 @@ PlacesManager.prototype = {
             let volumes = drives[i].get_volumes();
             for(let j = 0; j < volumes.length; j++) {
                 let mount = volumes[j].get_mount();
-                if(mount != null) {
+                if(mount !== null) {
                     this._addMount(mount);
                 }
             }
@@ -297,11 +297,11 @@ PlacesManager.prototype = {
         /* add all volumes that is not associated with a drive */
         let volumes = this._volumeMonitor.get_volumes();
         for(let i = 0; i < volumes.length; i++) {
-            if(volumes[i].get_drive() != null)
+            if(volumes[i].get_drive() !== null)
                 continue;
 
             let mount = volumes[i].get_mount();
-            if(mount != null) {
+            if(mount !== null) {
                 this._addMount(mount);
             }
         }
@@ -359,9 +359,9 @@ PlacesManager.prototype = {
             let bookmark = bookmarksOrder[i];
             let label = bookmarksToLabel[bookmark];
             let file = Gio.file_new_for_uri(bookmark);
-            if (label == null)
+            if (label === null)
                 label = Cinnamon.util_get_label_for_uri(bookmark);
-            if (label == null)
+            if (label === null)
                 continue;
             
             let item; 
@@ -421,7 +421,7 @@ PlacesManager.prototype = {
     _lookupIndexById: function(sourceArray, id) {
         for (let i = 0; i < sourceArray.length; i++) {
             let place = sourceArray[i];
-            if (place.id == id)
+            if (place.id === id)
                 return i;
         }
         return -1;
@@ -431,11 +431,11 @@ PlacesManager.prototype = {
         let colonIdx = id.indexOf(':');
         let type = id.substring(0, colonIdx);
         let sourceArray = null;
-        if (type == 'special')
+        if (type === 'special')
             sourceArray = this._defaultPlaces;
-        else if (type == 'mount')
+        else if (type === 'mount')
             sourceArray = this._mounts;
-        else if (type == 'bookmark')
+        else if (type === 'bookmark')
             sourceArray = this._bookmarks;
         return sourceArray[this._lookupIndexById(sourceArray, id)];
     },
@@ -492,13 +492,13 @@ PlaceSearchProvider.prototype = {
         for (let i = 0; i < places.length; i++) {
             let place = places[i];
             let mtype = place.matchTerms(terms);
-            if (mtype == Search.MatchType.MULTIPLE_PREFIX)
+            if (mtype === Search.MatchType.MULTIPLE_PREFIX)
                 multiplePrefixResults.push(place.id);
-            else if (mtype == Search.MatchType.PREFIX)
+            else if (mtype === Search.MatchType.PREFIX)
                 prefixResults.push(place.id);
-            else if (mtype == Search.MatchType.MULTIPLE_SUBSTRING)
+            else if (mtype === Search.MatchType.MULTIPLE_SUBSTRING)
                 multipleSubstringResults.push(place.id);
-            else if (mtype == Search.MatchType.SUBSTRING)
+            else if (mtype === Search.MatchType.SUBSTRING)
                 substringResults.push(place.id);
         }
         multiplePrefixResults.sort(this._compareResultMeta);

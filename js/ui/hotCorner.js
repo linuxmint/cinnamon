@@ -37,7 +37,7 @@ HotCornerManager.prototype = {
 
     parseGSettings: function() {
         let options = global.settings.get_strv(OVERVIEW_CORNERS_KEY);
-        if (options.length != 4) {
+        if (options.length !== 4) {
             global.logError(_("Invalid overview options: Incorrect number of corners"));
             return false;
         }
@@ -251,8 +251,8 @@ HotCorner.prototype = {
                 if (!(Main.expo.visible || Main.overview.visible)) {
                     run = true;
                 }
-                if ((Main.expo.visible && this.action == 'expo') ||
-                    (Main.overview.visible && this.action == 'scale')) {
+                if ((Main.expo.visible && this.action === 'expo') ||
+                    (Main.overview.visible && this.action === 'scale')) {
                     run = true;
                 }
                 if (run) {

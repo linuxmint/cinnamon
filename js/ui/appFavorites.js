@@ -62,7 +62,7 @@ AppFavorites.prototype = {
             return false;
 
         let ids = this._getIds();
-        if (pos == -1)
+        if (pos === -1)
             ids.push(appId);
         else
             ids.splice(pos, 0, appId);
@@ -88,7 +88,7 @@ AppFavorites.prototype = {
         if (!appId in this._favorites)
             return false;
 
-        let ids = this._getIds().filter(function (id) { return id != appId; });
+        let ids = this._getIds().filter(function (id) { return id !== appId; });
         global.settings.set_strv(this.FAVORITE_APPS_KEY, ids);
         return true;
     },
@@ -102,7 +102,7 @@ Signals.addSignalMethods(AppFavorites.prototype);
 
 var appFavoritesInstance = null;
 function getAppFavorites() {
-    if (appFavoritesInstance == null)
+    if (appFavoritesInstance === null)
         appFavoritesInstance = new AppFavorites();
     return appFavoritesInstance;
 }

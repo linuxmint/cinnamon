@@ -287,7 +287,7 @@ function getTweenCount(scope) {
  * Returns whether @scope is animating
  */
 function isTweening(scope) {
-    return Tweener.getTweenCount(scope) != 0;
+    return Tweener.getTweenCount(scope) !== 0;
 }
 
 /**
@@ -302,7 +302,7 @@ function isTweening(scope) {
 function removeTweens(scope) {
     if (Tweener.removeTweens.apply(null, arguments)) {
         // If we just removed the last active tween, clean up
-        if (Tweener.getTweenCount(scope) == 0)
+        if (Tweener.getTweenCount(scope) === 0)
             _tweenCompleted(scope);
         return true;
     } else

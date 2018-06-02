@@ -302,7 +302,7 @@ XletSettingsBase.prototype = {
             key_not_found_error(key, this.uuid);
             return false;
         }
-        if (this.settingsData[key] == null) {
+        if (this.settingsData[key] === null) {
             invalidKeyValueError(key, this.uuid);
             return false;
         }
@@ -326,7 +326,7 @@ XletSettingsBase.prototype = {
         this.bindings[key].push(info);
 
         // add a save function for objects or arrays
-        if (this.settingsData[key].value != null
+        if (this.settingsData[key].value !== null
             && typeof(this.settingsData[key].value) === "object" && !this.settingsData[key].value.save) {
             info.isObject = true;
             this.settingsData[key].value.save = Lang.bind(this, this._saveToFile);
@@ -385,7 +385,7 @@ XletSettingsBase.prototype = {
         if ((key in this.bindings)) {
             for (let i in this.bindings[key]) {
                 let info = this.bindings[key][i];
-                if (info.bindObject != bindObject) continue;
+                if (info.bindObject !== bindObject) continue;
                 delete bindObject[info.propertyName];
                 this.bindings[key].splice(i, 1);
                 return true;
@@ -410,7 +410,7 @@ XletSettingsBase.prototype = {
         if ((key in this.bindings)) {
             for (let i in this.bindings[key]) {
                 let info = this.bindings[key][i];
-                if (info.bindObject != this.bindObject) continue;
+                if (info.bindObject !== this.bindObject) continue;
                 delete this.bindObject[info.propertyName];
                 this.bindings[key].splice(i, 1);
                 return true;
@@ -463,7 +463,7 @@ XletSettingsBase.prototype = {
     },
 
     _setValue: function(value, key) {
-        if (this.settingsData[key].value != value || typeof(value) == "object") {
+        if (this.settingsData[key].value !== value || typeof(value) === "object") {
             this.settingsData[key].value = value;
             this._saveToFile();
         }
@@ -542,7 +542,7 @@ XletSettingsBase.prototype = {
             return;
         }
 
-        if (this.settingsData[key].options != options) {
+        if (this.settingsData[key].options !== options) {
             this.settingsData[key].options = options;
             this._saveToFile();
         }
@@ -567,7 +567,7 @@ XletSettingsBase.prototype = {
 
             let oldValue = oldSettings[key].value;
             let value = this.settingsData[key].value;
-            if (value == oldValue) continue;
+            if (value === oldValue) continue;
 
             changed = true;
             if (key in this.bindings) {
@@ -632,7 +632,7 @@ XletSettingsBase.prototype = {
                 let templateData = Cinnamon.get_file_contents_utf8_sync(templateFile.get_path());
                 let checksum = global.get_md5_for_string(templateData);
 
-                if (checksum != this.settingsData.__md5__) {
+                if (checksum !== this.settingsData.__md5__) {
                     try {
                         this._doUpgrade(templateData, checksum);
                         this._saveToFile();
@@ -721,7 +721,7 @@ XletSettingsBase.prototype = {
             case "radiogroup":
                 found = false;
                 for (let opt in setting["options"]) {
-                    if (val == setting["options"][opt]) {
+                    if (val === setting["options"][opt]) {
                         found = true;
                         break;
                     }
@@ -799,7 +799,7 @@ AppletSettings.prototype = {
     },
 
     _get_is_multi_instance_xlet: function(uuid) {
-        return Extension.get_max_instances(uuid) != 1;
+        return Extension.get_max_instances(uuid) !== 1;
     },
 };
 

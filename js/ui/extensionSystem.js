@@ -82,7 +82,7 @@ function finishExtensionLoad(extensionIndex) {
 
 function get_object_for_uuid(uuid) {
     for (let thisExtensionUUID in extensionObj) {
-        if (extensionObj[thisExtensionUUID]._uuid == uuid)
+        if (extensionObj[thisExtensionUUID]._uuid === uuid)
             return extensionObj[thisExtensionUUID];
     }
     return null;

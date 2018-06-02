@@ -145,9 +145,9 @@ NotificationDaemon.prototype = {
         // one of 'image-data' or 'image-path' are specified, we show both an icon and
         // a large image.
         if (icon) {
-            if (icon.substr(0, 7) == 'file://')
+            if (icon.substr(0, 7) === 'file://')
                 return textureCache.load_uri_async(icon, size, size);
-            else if (icon[0] == '/') {
+            else if (icon[0] === '/') {
                 let uri = GLib.filename_to_uri(icon, null);
                 return textureCache.load_uri_async(uri, size, size);
             } else
@@ -180,8 +180,8 @@ NotificationDaemon.prototype = {
     _lookupSource: function(title, pid, trayIcon) {
         for (let i = 0; i < this._sources.length; i++) {
             let source = this._sources[i];
-            if (source.pid == pid &&
-                (source.initialTitle == title || source.trayIcon == trayIcon))
+            if (source.pid === pid &&
+                (source.initialTitle === title || source.trayIcon === trayIcon))
                 return source;
         }
         return null;
@@ -211,7 +211,7 @@ NotificationDaemon.prototype = {
         if (ndata && ndata.notification)
             return ndata.notification.source;
 
-        let isForTransientNotification = (ndata && ndata.hints.maybeGet('transient') == true);
+        let isForTransientNotification = (ndata && ndata.hints.maybeGet('transient') === true);
 
         // We don't want to override a persistent notification
         // with a transient one from the same sender, so we
@@ -248,7 +248,7 @@ NotificationDaemon.prototype = {
         }
     },
     _stopExpire: function() {
-         if (this._expireTimer == 0) {
+         if (this._expireTimer === 0) {
             return;
         }
          Mainloop.source_remove(this._expireTimer);
@@ -284,7 +284,7 @@ NotificationDaemon.prototype = {
         if (rewrites) {
             for (let i = 0; i < rewrites.length; i++) {
                 let rule = rewrites[i];
-                if (summary.search(rule.pattern) != -1)
+                if (summary.search(rule.pattern) !== -1)
                     summary = summary.replace(rule.pattern, rule.replacement);
             }
         }
@@ -312,7 +312,7 @@ NotificationDaemon.prototype = {
                       hints: hints,
                       timeout: timeout };
         // Does this notification replace another?
-        if (replacesId != 0 && this._notifications[replacesId]) {
+        if (replacesId !== 0 && this._notifications[replacesId]) {
             ndata.id = id = replacesId;
             ndata.notification = this._notifications[replacesId].notification;
         } else {
@@ -323,16 +323,16 @@ NotificationDaemon.prototype = {
 
         // Find expiration timestamp.
         let expires;
-        if (!timeout || hints.resident || hints.urgency == 2) { // Never expires.
+        if (!timeout || hints.resident || hints.urgency === 2) { // Never expires.
             expires = ndata.expires = 0;
-        } else if (timeout == -1) { // Default expiration.
+        } else if (timeout === -1) { // Default expiration.
             expires = ndata.expires = Date.now()+this.timeout*1000;
         } else {    // Custom expiration.
              expires = ndata.expires = Date.now()+timeout;
         }
  
         // Does this notification expire?
-        if (expires != 0) {
+        if (expires !== 0) {
             // Find place in the notification queue.
             let notifications = this._expireNotifications, i;
             for (i = notifications.length; i > 0; --i) {    // Backwards search, likely to be faster.
@@ -341,7 +341,7 @@ NotificationDaemon.prototype = {
                     break;
                 }
             }
-            if (i == 0) notifications.unshift(ndata);
+            if (i === 0) notifications.unshift(ndata);
             this._restartExpire()
         }
 
@@ -403,7 +403,7 @@ NotificationDaemon.prototype = {
 
         let iconActor = this._iconForNotificationData(icon, hints, source.ICON_SIZE);
 
-        if (notification == null) {    // Create a new notification!
+        if (notification === null) {    // Create a new notification!
             notification = new MessageTray.Notification(source, summary, body,
                                                         { icon: iconActor,
                                                           bannerMarkup: true });
@@ -427,7 +427,7 @@ NotificationDaemon.prototype = {
                     if (ndata.expires) {
                         let notifications = this._expireNotifications;
                         for (var i = 0, j = notifications.length; i < j; ++i) {
-                            if (notifications[i] == ndata) {
+                            if (notifications[i] === ndata) {
                                 notifications.splice(i, 1);
                                 break;
                              }
@@ -465,9 +465,9 @@ NotificationDaemon.prototype = {
         }
 
         if (actions.length) {
-            notification.setUseActionIcons(hints.maybeGet('action-icons') == true);
+            notification.setUseActionIcons(hints.maybeGet('action-icons') === true);
             for (let i = 0; i < actions.length - 1; i += 2) {
-                if (actions[i] == 'default')
+                if (actions[i] === 'default')
                     notification.connect('clicked', Lang.bind(this,
                         function() {
                             this._emitActionInvoked(ndata.id, "default");
@@ -487,10 +487,10 @@ NotificationDaemon.prototype = {
                 notification.setUrgency(MessageTray.Urgency.CRITICAL);
                 break;
         }
-        notification.setResident(hints.maybeGet('resident') == true);
+        notification.setResident(hints.maybeGet('resident') === true);
         // 'transient' is a reserved keyword in JS, so we have to retrieve the value
         // of the 'transient' hint with hints['transient'] rather than hints.transient
-        notification.setTransient(hints.maybeGet('transient') == true);
+        notification.setTransient(hints.maybeGet('transient') === true);
 
         let sourceIconActor = source.useNotificationIcon ? this._iconForNotificationData(icon, hints, source.ICON_SIZE) : null;
         source.processNotification(notification, sourceIconActor);
@@ -540,7 +540,7 @@ NotificationDaemon.prototype = {
 
         for (let i = 0; i < this._sources.length; i++) {
             let source = this._sources[i];
-            if (source.app == tracker.focus_app) {
+            if (source.app === tracker.focus_app) {
                 source.destroyNonResidentNotifications();
                 return;
             }
@@ -626,14 +626,14 @@ Source.prototype = {
             return false;
 
         let event = Clutter.get_current_event();
-        if (event.type() != Clutter.EventType.BUTTON_RELEASE)
+        if (event.type() !== Clutter.EventType.BUTTON_RELEASE)
             return false;
 
         // Left clicks are passed through only where there aren't unacknowledged
         // notifications, so it possible to open them in summary mode; right
         // clicks are always forwarded, as the right click menu is not useful for
         // tray icons
-        if (event.get_button() == 1 &&
+        if (event.get_button() === 1 &&
             this.notifications.length > 0)
             return false;
 
@@ -656,12 +656,12 @@ Source.prototype = {
         let app;
 
         app = Cinnamon.WindowTracker.get_default().get_app_from_pid(this.pid);
-        if (app != null)
+        if (app !== null)
             return app;
 
         if (this.trayIcon) {
             app = Cinnamon.AppSystem.get_default().lookup_wmclass(this.trayIcon.wmclass);
-            if (app != null)
+            if (app !== null)
                 return app;
         }
 
@@ -682,10 +682,10 @@ Source.prototype = {
             this.useNotificationIcon = false;
             
             let icon = null;                
-            if (this.app.get_app_info() != null && this.app.get_app_info().get_icon() != null) {
+            if (this.app.get_app_info() !== null && this.app.get_app_info().get_icon() !== null) {
                 icon = new St.Icon({gicon: this.app.get_app_info().get_icon(), icon_size: this.ICON_SIZE, icon_type: St.IconType.FULLCOLOR});
             }
-            if (icon == null) {
+            if (icon === null) {
                 icon = new St.Icon({icon_name: "application-x-executable", icon_size: this.ICON_SIZE, icon_type: St.IconType.FULLCOLOR});        
             }            
 
@@ -704,7 +704,7 @@ Source.prototype = {
     },
 
     openApp: function() {
-        if (this.app == null)
+        if (this.app === null)
             return;
 
         let windows = this.app.get_windows();

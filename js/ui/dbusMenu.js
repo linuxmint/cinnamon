@@ -161,7 +161,7 @@ PropertyStore.prototype = {
             return false;
 
         let oldValue = this.get(name);
-        if (oldValue == newValue)
+        if (oldValue === newValue)
             return false;
         if ((newValue && !oldValue) || (oldValue && !newValue))
             return true;
@@ -170,16 +170,16 @@ PropertyStore.prototype = {
         let isNewContainer = newValue.is_container();
 
         if ((!isOldContainer) && (!isNewContainer)) {
-            return (oldValue.compare(newValue) != 0);
-        } else if (isOldContainer != isNewContainer)
+            return (oldValue.compare(newValue) !== 0);
+        } else if (isOldContainer !== isNewContainer)
             return true;
 
         let oldArray = oldValue.deep_unpack();
         let newArray = newValue.deep_unpack();
-        if (oldArray.length != newArray.length)
+        if (oldArray.length !== newArray.length)
             return true;
         for (let child in oldArray) {
-            if (!(child in newArray) || (oldArray[child] != newArray[child]))
+            if (!(child in newArray) || (oldArray[child] !== newArray[child]))
                 return true;
         }
         return false;
@@ -315,7 +315,7 @@ DbusMenuItem.prototype = {
                 let accelName = "";
                 let keySequence = keyArray[0];
                 let len = keySequence.length;
-                if ((len == 1) && (keySequence[0].length == 1))
+                if ((len === 1) && (keySequence[0].length === 1))
                     return keySequence[0];
                 for (let pos in keySequence) {
                     let token = keySequence[pos];
@@ -324,7 +324,7 @@ DbusMenuItem.prototype = {
                     else
                         accelName += this._kdeToGtkKey(token);
                 }
-                if (accelName == "<>")
+                if (accelName === "<>")
                     accelName = "+";
                 let [key, mods] = Gtk.accelerator_parse(accelName);
                 let value = Gtk.accelerator_get_label(key, mods);
@@ -339,36 +339,36 @@ DbusMenuItem.prototype = {
     //FIXME: We need to convert more keys to Gtk?
     _kdeToGtkKey: function(key) {
         let keyLower = key.toLowerCase();
-        if (keyLower == "pgup")
+        if (keyLower === "pgup")
             return "Page_Up";
-        else if (keyLower == "pgdown")
+        else if (keyLower === "pgdown")
             return "Page_Down";
-        else if (keyLower == "esc")
+        else if (keyLower === "esc")
             return "Escape";
-        else if (keyLower == "ins")
+        else if (keyLower === "ins")
             return "Insert";
-        else if (keyLower == "del")
+        else if (keyLower === "del")
             return "Delete";
-        else if (keyLower == "space")
+        else if (keyLower === "space")
             return "space";
-        else if (keyLower == "backspace")
+        else if (keyLower === "backspace")
             return "BackSpace";
-        else if (keyLower == "media stop")
+        else if (keyLower === "media stop")
             return "XF86AudioStop";
-        else if (keyLower == "media play")
+        else if (keyLower === "media play")
             return "XF86AudioPlay";
         return key;
     },
 
     _getFactoryType: function(child_display, child_type) {
         if ((child_display) || (child_type)) {
-            if ((child_display == "rootmenu")||(this._id && this._id == this._client.getRootId()))
+            if ((child_display === "rootmenu")||(this._id && this._id === this._client.getRootId()))
                 return PopupMenu.FactoryClassTypes.RootMenuClass;
-            if (child_display == "submenu")
+            if (child_display === "submenu")
                 return PopupMenu.FactoryClassTypes.SubMenuMenuItemClass;
-            else if (child_display == "section")
+            else if (child_display === "section")
                 return PopupMenu.FactoryClassTypes.MenuSectionMenuItemClass;
-            else if (child_type == "separator")
+            else if (child_type === "separator")
                 return PopupMenu.FactoryClassTypes.SeparatorMenuItemClass;
             return PopupMenu.FactoryClassTypes.MenuItemClass;
         }
@@ -471,7 +471,7 @@ DBusClient.prototype = {
                 params = GLib.Variant.new_int32(0);
             this._proxyMenu.EventRemote(id, event, params, timestamp, 
             function(result, error) {}); // We don't care
-            if (event == PopupMenu.FactoryEventTypes.opened)
+            if (event === PopupMenu.FactoryEventTypes.opened)
                 this.sendAboutToShow(id);
         }
     },
@@ -482,7 +482,7 @@ DBusClient.prototype = {
     },
 
     _requestLayoutUpdate: function() {
-        if (this._idLayoutUpdate != 0)
+        if (this._idLayoutUpdate !== 0)
             this._idLayoutUpdate = 0;
         if (this._flagLayoutUpdateInProgress)
             this._flagLayoutUpdateRequired = true;
@@ -495,7 +495,7 @@ DBusClient.prototype = {
         if (this._propertiesRequestedFor.length < 1)
             GLib.idle_add(GLib.PRIORITY_DEFAULT_IDLE, Lang.bind(this, this._beginRequestProperties));
 
-        if (this._propertiesRequestedFor.filter(function(e) { return e === id; }).length == 0)
+        if (this._propertiesRequestedFor.filter(function(e) { return e === id; }).length === 0)
             this._propertiesRequestedFor.push(id);
 
     },
@@ -537,7 +537,7 @@ DBusClient.prototype = {
             }
 
             for (let id in this._items)
-                if (this._items[id]._dbusClientGcTag != tag)
+                if (this._items[id]._dbusClientGcTag !== tag)
                     delete this._items[id];
         }
     },
@@ -592,7 +592,7 @@ DBusClient.prototype = {
                     // Try to recycle an old child
                     let oldChild = -1;
                     for (let j = 0; j < oldChildrenIds.length; ++j) {
-                        if (oldChildrenIds[j] == childrenIds[i]) {
+                        if (oldChildrenIds[j] === childrenIds[i]) {
                             oldChild = oldChildrenIds.splice(j, 1)[0];
                             break;
                         }
@@ -636,7 +636,7 @@ DBusClient.prototype = {
     },
 
     _onLayoutUpdated: function(proxy, sender, items) {
-        if (this._idLayoutUpdate == 0) {
+        if (this._idLayoutUpdate === 0) {
             this._idLayoutUpdate = GLib.idle_add(GLib.PRIORITY_DEFAULT_IDLE,
                 Lang.bind(this, this._requestLayoutUpdate));
         }

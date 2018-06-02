@@ -154,8 +154,8 @@ BoxPointer.prototype = {
         let borderWidth = themeNode.get_length('-arrow-border-width');
         alloc.min_size += borderWidth * 2;
         alloc.natural_size += borderWidth * 2;
-        if ((!isWidth && (this._arrowSide == St.Side.TOP || this._arrowSide == St.Side.BOTTOM))
-            || (isWidth && (this._arrowSide == St.Side.LEFT || this._arrowSide == St.Side.RIGHT))) {
+        if ((!isWidth && (this._arrowSide === St.Side.TOP || this._arrowSide === St.Side.BOTTOM))
+            || (isWidth && (this._arrowSide === St.Side.LEFT || this._arrowSide === St.Side.RIGHT))) {
             let rise = themeNode.get_length('-arrow-rise');
             alloc.min_size += rise;
             alloc.natural_size += rise;
@@ -231,7 +231,7 @@ BoxPointer.prototype = {
 
         let [width, height] = area.get_surface_size();
         let [boxWidth, boxHeight] = [width, height];
-        if (this._arrowSide == St.Side.TOP || this._arrowSide == St.Side.BOTTOM) {
+        if (this._arrowSide === St.Side.TOP || this._arrowSide === St.Side.BOTTOM) {
             boxHeight -= rise;
         } else {
             boxWidth -= rise;
@@ -240,9 +240,9 @@ BoxPointer.prototype = {
 
         // Translate so that box goes from 0,0 to boxWidth,boxHeight,
         // with the arrow poking out of that
-        if (this._arrowSide == St.Side.TOP) {
+        if (this._arrowSide === St.Side.TOP) {
             cr.translate(0, rise);
-        } else if (this._arrowSide == St.Side.LEFT) {
+        } else if (this._arrowSide === St.Side.LEFT) {
             cr.translate(rise, 0);
         }
 
@@ -256,36 +256,36 @@ BoxPointer.prototype = {
 
         switch (this._arrowSide) {
         case St.Side.TOP:
-            if (this._arrowOrigin == x1)
+            if (this._arrowOrigin === x1)
                 skipTopLeft = true;
-            else if (this._arrowOrigin == x2)
+            else if (this._arrowOrigin === x2)
                 skipTopRight = true;
             break;
 
         case St.Side.RIGHT:
-            if (this._arrowOrigin == y1)
+            if (this._arrowOrigin === y1)
                 skipTopRight = true;
-            else if (this._arrowOrigin == y2)
+            else if (this._arrowOrigin === y2)
                 skipBottomRight = true;
             break;
 
         case St.Side.BOTTOM:
-            if (this._arrowOrigin == x1)
+            if (this._arrowOrigin === x1)
                 skipBottomLeft = true;
-            else if (this._arrowOrigin == x2)
+            else if (this._arrowOrigin === x2)
                 skipBottomRight = true;
             break;
 
         case St.Side.LEFT:
-            if (this._arrowOrigin == y1)
+            if (this._arrowOrigin === y1)
                 skipTopLeft = true;
-            else if (this._arrowOrigin == y2)
+            else if (this._arrowOrigin === y2)
                 skipBottomLeft = true;
             break;
         }
 
         cr.moveTo(x1 + borderRadius, y1);
-        if (this._arrowSide == St.Side.TOP) {
+        if (this._arrowSide === St.Side.TOP) {
             if (skipTopLeft) {
                 cr.moveTo(x1, y2 - borderRadius);
                 cr.lineTo(x1, y1 - rise);
@@ -307,7 +307,7 @@ BoxPointer.prototype = {
                    3*Math.PI/2, Math.PI*2);
         }
 
-        if (this._arrowSide == St.Side.RIGHT) {
+        if (this._arrowSide === St.Side.RIGHT) {
             if (skipTopRight) {
                 cr.lineTo(x2 + rise, y1);
                 cr.lineTo(x2 + rise, y1 + halfBase);
@@ -328,7 +328,7 @@ BoxPointer.prototype = {
                    0, Math.PI/2);
         }
 
-        if (this._arrowSide == St.Side.BOTTOM) {
+        if (this._arrowSide === St.Side.BOTTOM) {
             if (skipBottomLeft) {
                 cr.lineTo(x1 + halfBase, y2);
                 cr.lineTo(x1, y2 + rise);
@@ -349,7 +349,7 @@ BoxPointer.prototype = {
                    Math.PI/2, Math.PI);
         }
 
-        if (this._arrowSide == St.Side.LEFT) {
+        if (this._arrowSide === St.Side.LEFT) {
             if (skipTopLeft) {
                 cr.lineTo(x1, y1 + halfBase);
                 cr.lineTo(x1 - rise, y1);
@@ -522,7 +522,7 @@ BoxPointer.prototype = {
     // the Y axis for St.Side.LEFT, St.Side.RIGHT from the top and X axis from
     // the left for St.Side.TOP and St.Side.BOTTOM.
     setArrowOrigin: function(origin) {
-        if (this._arrowOrigin != origin) {
+        if (this._arrowOrigin !== origin) {
             this._arrowOrigin = origin;
             this._border.queue_repaint();
         }
@@ -534,7 +534,7 @@ BoxPointer.prototype = {
         // to position the BoxPoiner via the x/y properties will result in
         // allocation loops and warnings. Instead we do the positioning via
         // the anchor point, which is independent of allocation, and leave
-        // x == y == 0.
+        // x === y === 0.
         this.actor.set_anchor_point(-(this._xPosition + this._xOffset),
                                     -(this._yPosition + this._yOffset));
     },
@@ -572,7 +572,7 @@ BoxPointer.prototype = {
 
     _updateFlip: function() {
         let arrowSide = this._calculateArrowSide(this._userArrowSide);
-        if (this._arrowSide != arrowSide) {
+        if (this._arrowSide !== arrowSide) {
             this._arrowSide = arrowSide;
             this._reposition();
             Meta.later_add(Meta.LaterType.BEFORE_REDRAW, Lang.bind(this, function() {

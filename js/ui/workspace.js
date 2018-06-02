@@ -201,7 +201,7 @@ WindowClone.prototype = {
         if (this._zooming)
             // We'll fix up the stack after the zooming
             return;
-        if (this._stackAbove == null)
+        if (this._stackAbove === null)
             this.actor.lower_bottom();
         else
             this.actor.raise(this._stackAbove);
@@ -220,7 +220,7 @@ WindowClone.prototype = {
             // will look funny.
 
             if (!this._selected &&
-                this.metaWindow != global.display.focus_window)
+                this.metaWindow !== global.display.focus_window)
                 this._zoomEnd();
         }
     },
@@ -269,7 +269,7 @@ WindowClone.prototype = {
 
     scrollZoom: function (direction) {
         if (direction === Clutter.ScrollDirection.UP) {
-            if (this._zoomStep == 0)
+            if (this._zoomStep === 0)
                 this._zoomStart();
             if (this._zoomStep < 100) {
                 this._zoomStep += SCROLL_SCALE_AMOUNT;
@@ -350,7 +350,7 @@ WindowClone.prototype = {
         this.emit('zoom-end');
 
         global.reparentActor(this.actor, this._origParent);
-        if (this._stackAbove == null)
+        if (this._stackAbove === null)
             this.actor.lower_bottom();
         // If the workspace has been destroyed while we were reparented to
         // the stage, _stackAbove will be unparented and we can't raise our
@@ -479,7 +479,7 @@ WindowOverlay.prototype = {
     },
 
     _onWindowDemandsAttention: function(display, metaWindow) {
-        if (metaWindow != this._windowClone.metaWindow) return;
+        if (metaWindow !== this._windowClone.metaWindow) return;
 
         if (!this.title.has_style_class_name(DEMANDS_ATTENTION_CLASS_NAME)) {
             this.title.add_style_class_name(DEMANDS_ATTENTION_CLASS_NAME);
@@ -577,7 +577,7 @@ WindowOverlay.prototype = {
 
         let settings = new Gio.Settings({ schema_id: BUTTON_LAYOUT_SCHEMA });
         let layout = settings.get_string(BUTTON_LAYOUT_KEY);
-        let rtl = St.Widget.get_default_direction() == St.TextDirection.RTL;
+        let rtl = St.Widget.get_default_direction() === St.TextDirection.RTL;
 
         let split = layout.split(":");
         let side;
@@ -588,7 +588,7 @@ WindowOverlay.prototype = {
 
         let buttonX;
         let buttonY = cloneY - (button.height - button._overlap);
-        if (side == St.Side.LEFT)
+        if (side === St.Side.LEFT)
             buttonX = cloneX - (button.width - button._overlap);
         else
             buttonX = cloneX + (cloneWidth - button._overlap);
@@ -620,7 +620,7 @@ WindowOverlay.prototype = {
         if (this._disconnectWindowAdded) {this._disconnectWindowAdded();}
         let windowAddedId = workspace.connect('window-added',Lang.bind(this, function(ws, win){
             if (this._disconnectWindowAdded) {this._disconnectWindowAdded();}
-            if (win.get_transient_for() == metaWindow) {
+            if (win.get_transient_for() === metaWindow) {
 
                 // use an idle handler to avoid mapping problems -
                 // see comment in Workspace._windowAdded
@@ -680,7 +680,7 @@ WindowOverlay.prototype = {
     },
 
     _idleHideCloseButton: function() {
-        if (this._idleToggleCloseId == 0)
+        if (this._idleToggleCloseId === 0)
             this._idleToggleCloseId = Mainloop.timeout_add(750, Lang.bind(this, this._idleToggleCloseButton));
     },
 
@@ -899,7 +899,7 @@ WorkspaceMonitor.prototype = {
 
     _lookupIndex: function (metaWindow) {
         for (let i = 0; i < this._windows.length; i++) {
-            if (this._windows[i].metaWindow == metaWindow) {
+            if (this._windows[i].metaWindow === metaWindow) {
                 return i;
             }
         }
@@ -986,7 +986,7 @@ WorkspaceMonitor.prototype = {
         //clones = this._orderWindowsByMotionAndStartup(clones, slots);
 
         let currentWorkspace = global.screen.get_active_workspace();
-        let isOnCurrentWorkspace = this.metaWorkspace == null || this.metaWorkspace == currentWorkspace;
+        let isOnCurrentWorkspace = this.metaWorkspace === null || this.metaWorkspace === currentWorkspace;
 
         for (let i = 0; i < clones.length; i++) {
             let slot = slots[i];
@@ -1092,7 +1092,7 @@ WorkspaceMonitor.prototype = {
         for (let i = 0; i < this._windows.length; i++) {
             let clone = this._windows[i];
             this._showWindowOverlay(clone,
-                                    this.metaWorkspace == null || this.metaWorkspace == currentWorkspace);
+                                    this.metaWorkspace === null || this.metaWorkspace === currentWorkspace);
         }
     },
 
@@ -1102,7 +1102,7 @@ WorkspaceMonitor.prototype = {
 
         let [x, y, mask] = global.get_pointer();
 
-        let pointerHasMoved = (this._cursorX != x && this._cursorY != y);
+        let pointerHasMoved = (this._cursorX !== x && this._cursorY !== y);
         let inWorkspace = (this._x < x && x < this._x + this._width &&
                            this._y < y && y < this._y + this._height);
 
@@ -1137,7 +1137,7 @@ WorkspaceMonitor.prototype = {
         // find the position of the window in our list
         let index = this._lookupIndex (metaWin);
 
-        if (index == -1)
+        if (index === -1)
             return;
 
         // Check if window still should be here
@@ -1206,7 +1206,7 @@ WorkspaceMonitor.prototype = {
                                         function () {
                                             if (this.actor &&
                                                 metaWin.get_compositor_private() &&
-                                                metaWin.get_workspace() == this.metaWorkspace)
+                                                metaWin.get_workspace() === this.metaWorkspace)
                                                 this._doAddWindow(metaWin);
                                             return false;
                                         }));
@@ -1215,7 +1215,7 @@ WorkspaceMonitor.prototype = {
 
         // We might have the window in our list already if it was on all workspaces and
         // now was moved to this workspace
-        if (this._lookupIndex (metaWin) != -1) {
+        if (this._lookupIndex (metaWin) !== -1) {
             return;
         }
 
@@ -1256,13 +1256,13 @@ WorkspaceMonitor.prototype = {
     },
 
     _windowEnteredMonitor : function(metaScreen, monitorIndex, metaWin) {
-        if (monitorIndex == this.monitorIndex) {
+        if (monitorIndex === this.monitorIndex) {
             this._doAddWindow(metaWin);
         }
     },
 
     _windowLeftMonitor : function(metaScreen, monitorIndex, metaWin) {
-        if (monitorIndex == this.monitorIndex) {
+        if (monitorIndex === this.monitorIndex) {
             this._doRemoveWindow(metaWin);
         }
     },
@@ -1303,7 +1303,7 @@ WorkspaceMonitor.prototype = {
         this._overviewHiddenId = Main.overview.connect('hidden', Lang.bind(this,
                                                                            this._doneLeavingOverview));
 
-        if (this.metaWorkspace != null && this.metaWorkspace != currentWorkspace)
+        if (this.metaWorkspace !== null && this.metaWorkspace !== currentWorkspace)
             return;
 
         // Position and scale the windows.
@@ -1377,7 +1377,7 @@ WorkspaceMonitor.prototype = {
 
     // Tests if @win belongs to this workspace
     _isMyWindow : function (win) {
-        return (this.metaWorkspace == null || Main.isWindowActorDisplayedOnWorkspace(win, this.metaWorkspace.index()) && (!win.get_meta_window() || win.get_meta_window().get_monitor() == this.monitorIndex));
+        return (this.metaWorkspace === null || Main.isWindowActorDisplayedOnWorkspace(win, this.metaWorkspace.index()) && (!win.get_meta_window() || win.get_meta_window().get_monitor() === this.monitorIndex));
     },
 
     // Tests if @win should be shown in the Overview
@@ -1432,7 +1432,7 @@ WorkspaceMonitor.prototype = {
     _onShowOverlayClose: function (windowOverlay) {
         for (let i = 0; i < this._windows.length; i++) {
             let overlay = this._windows[i].overlay;
-            if (overlay == windowOverlay)
+            if (overlay === windowOverlay)
                 continue;
             overlay.hideCloseButton();
         }
@@ -1552,7 +1552,7 @@ WindowContextMenu.prototype = {
             this.itemMaximizeWindow,
             this.itemCloseWindow
         ]);
-        (orientation == St.Side.BOTTOM ? items : items.reverse()).forEach(function(item) {
+        (orientation === St.Side.BOTTOM ? items : items.reverse()).forEach(function(item) {
             this.addMenuItem(item);
         }, this);
         this.setActiveItem(0);
@@ -1570,12 +1570,12 @@ WindowContextMenu.prototype = {
         } else {
             this.itemOnAllWorkspaces.label.set_text(_("Visible on all workspaces"));
         }
-        if (this.metaWindow.get_workspace().get_neighbor(Meta.MotionDirection.LEFT) != this.metaWindow.get_workspace())
+        if (this.metaWindow.get_workspace().get_neighbor(Meta.MotionDirection.LEFT) !== this.metaWindow.get_workspace())
             this.itemMoveToLeftWorkspace.actor.show();
         else
             this.itemMoveToLeftWorkspace.actor.hide();
 
-        if (this.metaWindow.get_workspace().get_neighbor(Meta.MotionDirection.RIGHT) != this.metaWindow.get_workspace())
+        if (this.metaWindow.get_workspace().get_neighbor(Meta.MotionDirection.RIGHT) !== this.metaWindow.get_workspace())
             this.itemMoveToRightWorkspace.actor.show();
         else
             this.itemMoveToRightWorkspace.actor.hide();
@@ -1631,13 +1631,13 @@ WindowContextMenu.prototype = {
 
     _onSourceKeyPress: function(actor, event) {
         let symbol = event.get_key_symbol();
-        if (symbol == Clutter.KEY_space || symbol == Clutter.KEY_Return) {
+        if (symbol === Clutter.KEY_space || symbol === Clutter.KEY_Return) {
             this.menu.toggle();
             return true;
-        } else if (symbol == Clutter.KEY_Escape && this.menu.isOpen) {
+        } else if (symbol === Clutter.KEY_Escape && this.menu.isOpen) {
             this.menu.close();
             return true;
-        } else if (symbol == Clutter.KEY_Down) {
+        } else if (symbol === Clutter.KEY_Down) {
             if (!this.menu.isOpen)
                 this.menu.toggle();
             this.menu.actor.navigate_focus(this.actor, Gtk.DirectionType.DOWN, false);

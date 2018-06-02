@@ -91,7 +91,7 @@ function init() {
     });
 
     // Set the default direction for St widgets (this needs to be done before any use of St)
-    if (Gtk.Widget.get_default_direction() == Gtk.TextDirection.RTL) {
+    if (Gtk.Widget.get_default_direction() === Gtk.TextDirection.RTL) {
         St.Widget.set_default_direction(St.TextDirection.RTL);
     }
 

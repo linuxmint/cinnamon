@@ -65,13 +65,13 @@ _EntryMenu.prototype = {
 
     _updateCopyItem: function() {
         let selection = this._entry.clutter_text.get_selection();
-        this._copyItem.setSensitive(selection && selection != '');
+        this._copyItem.setSensitive(selection && selection !== '');
     },
 
     _updatePasteItem: function() {
         this._clipboard.get_text(St.ClipboardType.CLIPBOARD, Lang.bind(this,
             function(clipboard, text) {
-                this._pasteItem.setSensitive(text && text != '');
+                this._pasteItem.setSensitive(text && text !== '');
             }));
     },
 
@@ -117,7 +117,7 @@ function _onClicked(actor, action) {
 
     if (entry._menu.isOpen) {
         entry._menu.close();
-    } else if (action.get_button() == 3) {
+    } else if (action.get_button() === 3) {
         let [stageX, stageY] = action.get_coords();
         _setMenuAlignment(entry, stageX);
         entry._menu.open();

@@ -37,7 +37,7 @@ var commandHeader = 'const Clutter = imports.gi.Clutter; ' +
 
 const HISTORY_KEY = 'looking-glass-history';
 function objectToString(o) {
-    if (typeof(o) == typeof(objectToString)) {
+    if (typeof(o) === typeof(objectToString)) {
         // special case this since the default is way, way too verbose
         return '<js function>';
     } else {
@@ -89,7 +89,7 @@ WindowList.prototype = {
             let lgInfo = { id: metaWindow._lgId.toString(), title: metaWindow.title, wmclass: metaWindow.get_wm_class(), app: ''};
             
             let app = tracker.get_window_app(metaWindow);
-            if (app != null && !app.is_window_backed()) {
+            if (app !== null && !app.is_window_backed()) {
                 lgInfo.app = app.get_id();
             } else {
                 lgInfo.app = '<untracked>';
@@ -97,15 +97,15 @@ WindowList.prototype = {
             
             // Ignore menus
             let wtype = metaWindow.get_window_type();
-            if(wtype != Meta.WindowType.MENU && wtype != Meta.WindowType.DROPDOWN_MENU && wtype != Meta.WindowType.POPUP_MENU)
+            if(wtype !== Meta.WindowType.MENU && wtype !== Meta.WindowType.DROPDOWN_MENU && wtype !== Meta.WindowType.POPUP_MENU)
                 this.latestWindowList.push(lgInfo);
         }
         
         // Make sure the list changed before notifying listeneres
-        let changed = oldWindowList.length != this.latestWindowList.length;
+        let changed = oldWindowList.length !== this.latestWindowList.length;
         if(!changed) {
             for(let i=0; i<oldWindowList.length; i++) {
-                if(oldWindowList[i].id != this.latestWindowList[i].id) {
+                if(oldWindowList[i].id !== this.latestWindowList[i].id) {
                     changed = true;
                     break;
                 }
@@ -187,9 +187,9 @@ Inspector.prototype = {
     },
 
     _onCapturedEvent: function (actor, event) {
-        if(event.type() == Clutter.EventType.KEY_PRESS && (event.get_key_symbol() == Clutter.Control_L ||
-                                                           event.get_key_symbol() == Clutter.Control_R ||
-                                                           event.get_key_symbol() == Clutter.Pause)) {
+        if(event.type() === Clutter.EventType.KEY_PRESS && (event.get_key_symbol() === Clutter.Control_L ||
+                                                           event.get_key_symbol() === Clutter.Control_R ||
+                                                           event.get_key_symbol() === Clutter.Pause)) {
             this.passThroughEvents = !this.passThroughEvents;
             this._updatePassthroughText();
             return true;
@@ -239,12 +239,12 @@ Inspector.prototype = {
     },
 
     _onDestroy: function() {
-        if (this._borderPaintTarget != null)
+        if (this._borderPaintTarget !== null)
             this._borderPaintTarget.disconnect(this._borderPaintId);
     },
 
     _onKeyPressEvent: function (actor, event) {
-        if (event.get_key_symbol() == Clutter.Escape)
+        if (event.get_key_symbol() === Clutter.Escape)
             this._close();
         return true;
     },
@@ -263,7 +263,7 @@ Inspector.prototype = {
         case Clutter.ScrollDirection.UP:
             // select parent
             let parent = this._target.get_parent();
-            if (parent != null) {
+            if (parent !== null) {
                 this._target = parent;
                 this._update(event);
             }
@@ -271,11 +271,11 @@ Inspector.prototype = {
 
         case Clutter.ScrollDirection.DOWN:
             // select child
-            if (this._target != this._pointerTarget) {
+            if (this._target !== this._pointerTarget) {
                 let child = this._pointerTarget;
                 while (child) {
                     let parent = child.get_parent();
-                    if (parent == this._target)
+                    if (parent === this._target)
                         break;
                     child = parent;
                 }
@@ -303,7 +303,7 @@ Inspector.prototype = {
                                                    stageX,
                                                    stageY);
 
-        if (target != this._pointerTarget)
+        if (target !== this._pointerTarget)
             this._target = target;
         this._pointerTarget = target;
 
@@ -311,8 +311,8 @@ Inspector.prototype = {
         this._displayText.text = '';
         this._displayText.text = position + ' ' + this._target;
 
-        if (this._borderPaintTarget != this._target) {
-            if (this._borderPaintTarget != null)
+        if (this._borderPaintTarget !== this._target) {
+            if (this._borderPaintTarget !== null)
                 this._borderPaintTarget.disconnect(this._borderPaintId);
             this._borderPaintTarget = this._target;
             this._borderPaintId = addBorderPaintHook(this._target);
@@ -476,9 +476,9 @@ Melange.prototype = {
                 shortValue = value;
                 let i = value.indexOf('\n');
                 let j = value.indexOf('\r');
-                if( j != -1 && (i == -1 || i > j))
+                if( j !== -1 && (i === -1 || i > j))
                     i = j;
-                if(i != -1)
+                if(i !== -1)
                     shortValue = value.substr(0, i) + '.. <more>';
             }
             resultObj.push({ name: key, type: type, value: value, shortValue: shortValue});

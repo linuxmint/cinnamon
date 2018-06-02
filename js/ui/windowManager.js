@@ -116,7 +116,7 @@ TilePreview.prototype = {
         if (!windowActor)
             return;
 
-        if (this._snapQueued != snapQueued) {
+        if (this._snapQueued !== snapQueued) {
             this._updateStyle();
             this._snapQueued = snapQueued;
         }
@@ -124,8 +124,8 @@ TilePreview.prototype = {
         if (this._rect && this._rect.equal(tileRect))
             return;
 
-        let changeMonitor = (this._monitorIndex == -1 ||
-                             this._monitorIndex != monitorIndex);
+        let changeMonitor = (this._monitorIndex === -1 ||
+                             this._monitorIndex !== monitorIndex);
 
         this._monitorIndex = monitorIndex;
         this._rect = tileRect;
@@ -206,9 +206,9 @@ HudPreview.prototype = {
     },
 
     show: function(currentProximityZone, workArea, snapQueued) {
-        let changeZone = (this._zone != currentProximityZone);
+        let changeZone = (this._zone !== currentProximityZone);
 
-        if (this._snapQueued != snapQueued) {
+        if (this._snapQueued !== snapQueued) {
             this._updateSnapStyle();
             this._snapQueued = snapQueued;
         }
@@ -505,15 +505,15 @@ WindowManager.prototype = {
         if (!actor)
             return global.settings.get_boolean("desktop-effects");
         let type = actor.meta_window.get_window_type();
-        if (type == Meta.WindowType.NORMAL) {
+        if (type === Meta.WindowType.NORMAL) {
             return global.settings.get_boolean("desktop-effects");
         }
-        if (type == Meta.WindowType.DIALOG || type == Meta.WindowType.MODAL_DIALOG) {
+        if (type === Meta.WindowType.DIALOG || type === Meta.WindowType.MODAL_DIALOG) {
             return global.settings.get_boolean("desktop-effects") && global.settings.get_boolean("desktop-effects-on-dialogs");
         }
-        if (type == Meta.WindowType.MENU ||
-            type == Meta.WindowType.DROPDOWN_MENU ||
-            type == Meta.WindowType.POPUP_MENU) {
+        if (type === Meta.WindowType.MENU ||
+            type === Meta.WindowType.DROPDOWN_MENU ||
+            type === Meta.WindowType.POPUP_MENU) {
             return global.settings.get_boolean("desktop-effects") && global.settings.get_boolean("desktop-effects-on-menus");
         }
         return false;
@@ -596,11 +596,11 @@ WindowManager.prototype = {
     _hasAttachedDialogs: function(window, ignoreWindow) {
         var count = 0;
         window.foreach_transient(function(win) {
-            if (win != ignoreWindow && win.is_attached_dialog())
+            if (win !== ignoreWindow && win.is_attached_dialog())
                 count++;
             return false;
         });
-        return count != 0;
+        return count !== 0;
     },
 
     _checkDimming: function(window, ignoreWindow) {
@@ -614,7 +614,7 @@ WindowManager.prototype = {
         } else if (!shouldDim && window._dimmed) {
             window._dimmed = false;
             this._dimmedWindows = this._dimmedWindows.filter(function(win) {
-                                                                 return win != window;
+                                                                 return win !== window;
                                                              });
             if (!Main.overview.visible)
                 this._undimWindow(window, true);
@@ -684,7 +684,7 @@ WindowManager.prototype = {
             } catch(e) {
                 //catch "no origin found"
             }
-        } else if (actor.meta_window.get_window_type() == Meta.WindowType.NORMAL) {
+        } else if (actor.meta_window.get_window_type() === Meta.WindowType.NORMAL) {
             Main.soundManager.play('map');
         }
         this._startWindowEffect(cinnamonwm, "map", actor);
@@ -692,7 +692,7 @@ WindowManager.prototype = {
 
     _destroyWindow : function(cinnamonwm, actor) {
 
-        if (actor.meta_window.get_window_type() == Meta.WindowType.NORMAL) {
+        if (actor.meta_window.get_window_type() === Meta.WindowType.NORMAL) {
             Main.soundManager.play('close');
         }
 
@@ -711,7 +711,7 @@ WindowManager.prototype = {
         }
         if (window._dimmed) {
             this._dimmedWindows = this._dimmedWindows.filter(function(win) {
-                                                                 return win != window;
+                                                                 return win !== window;
                                                              });
         }
 
@@ -741,22 +741,22 @@ WindowManager.prototype = {
          */
         let xDest = 0, yDest = 0;
 
-        if (direction == Meta.MotionDirection.UP ||
-            direction == Meta.MotionDirection.UP_LEFT ||
-            direction == Meta.MotionDirection.UP_RIGHT)
+        if (direction === Meta.MotionDirection.UP ||
+            direction === Meta.MotionDirection.UP_LEFT ||
+            direction === Meta.MotionDirection.UP_RIGHT)
                 yDest = global.screen_height;
-        else if (direction == Meta.MotionDirection.DOWN ||
-            direction == Meta.MotionDirection.DOWN_LEFT ||
-            direction == Meta.MotionDirection.DOWN_RIGHT)
+        else if (direction === Meta.MotionDirection.DOWN ||
+            direction === Meta.MotionDirection.DOWN_LEFT ||
+            direction === Meta.MotionDirection.DOWN_RIGHT)
                 yDest = -global.screen_height;
 
-        if (direction == Meta.MotionDirection.LEFT ||
-            direction == Meta.MotionDirection.UP_LEFT ||
-            direction == Meta.MotionDirection.DOWN_LEFT)
+        if (direction === Meta.MotionDirection.LEFT ||
+            direction === Meta.MotionDirection.UP_LEFT ||
+            direction === Meta.MotionDirection.DOWN_LEFT)
                 xDest = global.screen_width;
-        else if (direction == Meta.MotionDirection.RIGHT ||
-                 direction == Meta.MotionDirection.UP_RIGHT ||
-                 direction == Meta.MotionDirection.DOWN_RIGHT)
+        else if (direction === Meta.MotionDirection.RIGHT ||
+                 direction === Meta.MotionDirection.UP_RIGHT ||
+                 direction === Meta.MotionDirection.DOWN_RIGHT)
                 xDest = -global.screen_width;
 
         for (let i = 0; i < windows.length; i++) {
@@ -765,18 +765,18 @@ WindowManager.prototype = {
             if (!window.meta_window.showing_on_its_workspace())
                 continue;
 
-            if ((window.meta_window == this._movingWindow) ||
-                ((global.display.get_grab_op() == Meta.GrabOp.MOVING ||
-                  global.display.get_grab_op() == Meta.GrabOp.KEYBOARD_MOVING)
-                 && window.meta_window == global.display.get_focus_window())) {
+            if ((window.meta_window === this._movingWindow) ||
+                ((global.display.get_grab_op() === Meta.GrabOp.MOVING ||
+                  global.display.get_grab_op() === Meta.GrabOp.KEYBOARD_MOVING)
+                 && window.meta_window === global.display.get_focus_window())) {
                 /* We are moving this window to the other workspace. In fact,
                  * it is already on the other workspace, so it is hidden. We
                  * force it to show and then don't animate it, so it stays
                  * there while other windows move. */
                 window.show_all();
                 this._movingWindow = undefined;
-            } else if (window.get_workspace() == from) {
-                if (window.origX == undefined) {
+            } else if (window.get_workspace() === from) {
+                if (window.origX === undefined) {
                     window.origX = window.x;
                     window.origY = window.y;
                 }
@@ -792,8 +792,8 @@ WindowManager.prototype = {
                               window.origY = undefined;
                           }
                         });
-            } else if (window.get_workspace() == to) {
-                if (window.origX == undefined) {
+            } else if (window.get_workspace() === to) {
+                if (window.origX === undefined) {
                     window.origX = window.x;
                     window.origY = window.y;
                     window.set_position(window.origX - xDest, window.origY - yDest);
@@ -897,7 +897,7 @@ WindowManager.prototype = {
     _hideWorkspaceOSD : function() {
         for (let i = 0; i < this._workspace_osd_array.length; i++) {
             let osd = this._workspace_osd_array[i];
-            if (osd != null) {
+            if (osd !== null) {
                 osd.hide();
                 Main.layoutManager.removeChrome(osd);
                 osd.destroy();
@@ -908,17 +908,17 @@ WindowManager.prototype = {
 
     _showSnapOSD : function(metaScreen, monitorIndex) {
         if (global.settings.get_boolean("show-snap-osd")) {
-            if (this._snapOsd == null) {
+            if (this._snapOsd === null) {
                 this._snapOsd = new ModalDialog.InfoOSD();
 
                 let mod = this.settings.get_string("snap-modifier");
-                if (mod == "Super")
+                if (mod === "Super")
                     this._snapOsd.addText(_("Hold <Super> to enter snap mode"));
-                else if (mod == "Alt")
+                else if (mod === "Alt")
                     this._snapOsd.addText(_("Hold <Alt> to enter snap mode"));
-                else if (mod == "Control")
+                else if (mod === "Control")
                     this._snapOsd.addText(_("Hold <Ctrl> to enter snap mode"));
-                else if (mod == "Shift")
+                else if (mod === "Shift")
                     this._snapOsd.addText(_("Hold <Shift> to enter snap mode"));
                 this._snapOsd.addText(_("Use the arrow keys to shift workspaces"));
             }
@@ -927,18 +927,18 @@ WindowManager.prototype = {
     },
 
     _hideSnapOSD : function() {
-        if (this._snapOsd != null) {
+        if (this._snapOsd !== null) {
             this._snapOsd.hide();
         }
     },
 
     _createAppSwitcher : function(binding) {
-        if (AppSwitcher.getWindowsForBinding(binding).length == 0)
+        if (AppSwitcher.getWindowsForBinding(binding).length === 0)
             return;
         let style = global.settings.get_string("alttab-switcher-style");
-        if(style == 'coverflow')
+        if(style === 'coverflow')
             new CoverflowSwitcher.CoverflowSwitcher(binding);
-        else if(style == 'timeline')
+        else if(style === 'timeline')
             new TimelineSwitcher.TimelineSwitcher(binding);
         else
             new ClassicSwitcher.ClassicSwitcher(binding);
@@ -954,7 +954,7 @@ WindowManager.prototype = {
         }
         this._movingWindow = window;
         let workspace = global.screen.get_active_workspace().get_neighbor(direction);
-        if (workspace != global.screen.get_active_workspace()) {
+        if (workspace !== global.screen.get_active_workspace()) {
             window.change_workspace(workspace);
             workspace.activate_with_focus(window, global.get_current_time());
         }
@@ -970,7 +970,7 @@ WindowManager.prototype = {
 
     moveToWorkspace: function(workspace, direction_hint) {
         let active = global.screen.get_active_workspace();
-        if (workspace != active) {
+        if (workspace !== active) {
             if (direction_hint)
                 workspace.activate_with_direction_hint(direction_hint, global.get_current_time());
             else
@@ -979,21 +979,21 @@ WindowManager.prototype = {
     },
 
     _showWorkspaceSwitcher : function(display, screen, window, binding) {
-        if (binding.get_name() == 'switch-to-workspace-up') {
+        if (binding.get_name() === 'switch-to-workspace-up') {
             Main.expo.toggle();
             return;
         }
-        if (binding.get_name() == 'switch-to-workspace-down') {
+        if (binding.get_name() === 'switch-to-workspace-down') {
             Main.overview.toggle();
             return;
         }
 
-        if (screen.n_workspaces == 1)
+        if (screen.n_workspaces === 1)
             return;
 
-        if (binding.get_name() == 'switch-to-workspace-left') {
+        if (binding.get_name() === 'switch-to-workspace-left') {
            this.actionMoveWorkspaceLeft();
-        } else if (binding.get_name() == 'switch-to-workspace-right') {
+        } else if (binding.get_name() === 'switch-to-workspace-right') {
            this.actionMoveWorkspaceRight();
         }
     },
@@ -1001,7 +1001,7 @@ WindowManager.prototype = {
     actionMoveWorkspaceLeft: function() {
         let active = global.screen.get_active_workspace();
         let neighbor = active.get_neighbor(Meta.MotionDirection.LEFT)
-        if (active != neighbor) {
+        if (active !== neighbor) {
             this.moveToWorkspace(neighbor, Meta.MotionDirection.LEFT);
         }
     },
@@ -1009,7 +1009,7 @@ WindowManager.prototype = {
     actionMoveWorkspaceRight: function() {
         let active = global.screen.get_active_workspace();
         let neighbor = active.get_neighbor(Meta.MotionDirection.RIGHT)
-        if (active != neighbor) {
+        if (active !== neighbor) {
             this.moveToWorkspace(neighbor, Meta.MotionDirection.RIGHT);
         }
     },
@@ -1025,7 +1025,7 @@ WindowManager.prototype = {
     actionFlipWorkspaceLeft: function() {
         var active = global.screen.get_active_workspace();
         var neighbor = active.get_neighbor(Meta.MotionDirection.LEFT);
-        if (active != neighbor) {
+        if (active !== neighbor) {
             neighbor.activate(global.get_current_time());
             let [x, y, mods] = global.get_pointer();
             global.set_pointer(global.screen_width - 10, y);
@@ -1035,7 +1035,7 @@ WindowManager.prototype = {
     actionFlipWorkspaceRight: function() {
         var active = global.screen.get_active_workspace();
         var neighbor = active.get_neighbor(Meta.MotionDirection.RIGHT);
-        if (active != neighbor) {
+        if (active !== neighbor) {
             neighbor.activate(global.get_current_time());
             let [x, y, mods] = global.get_pointer();
             global.set_pointer(10, y);

@@ -15,7 +15,7 @@ PointerTracker.prototype = {
         this.hasMoved = function() {
             let [screen, pointerX, pointerY] = pointer.get_position();
             try {
-                return !(screen == lastScreen && pointerX == lastPointerX && pointerY == lastPointerY);
+                return !(screen === lastScreen && pointerX === lastPointerX && pointerY === lastPointerY);
             } finally {
                 [lastScreen, lastPointerX, lastPointerY] = [screen, pointerX, pointerY];
             }

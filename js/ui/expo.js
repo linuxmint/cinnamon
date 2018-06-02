@@ -47,7 +47,7 @@ Expo.prototype = {
             Lang.bind(this, function() {
                 let node = this._group.get_theme_node();
                 let spacing = node.get_length('spacing');
-                if (spacing != this._spacing) {
+                if (spacing !== this._spacing) {
                     this._spacing = spacing;
                     this._relayout();
                 }
@@ -187,7 +187,7 @@ Expo.prototype = {
         this.hide();
 
         let primary = Main.layoutManager.primaryMonitor;
-        let rtl = (St.Widget.get_default_direction () == St.TextDirection.RTL);
+        let rtl = (St.Widget.get_default_direction () === St.TextDirection.RTL);
 
         let contentY = 0;
         let contentHeight = primary.height;
@@ -221,7 +221,7 @@ Expo.prototype = {
 
         this._addWorkspaceButton.set_position((primary.width - buttonWidth), buttonY);
         this._addWorkspaceButton.set_size(buttonWidth, buttonHeight); 
-        if (this._addWorkspaceButton.get_theme_node().get_background_image() == null)
+        if (this._addWorkspaceButton.get_theme_node().get_background_image() === null)
             this._addWorkspaceButton.set_style('background-image: url("/usr/share/cinnamon/theme/add-workspace.png");'); 
 
         this._windowCloseArea.set_position((primary.width - this._windowCloseArea.width) / 2 , primary.height);
@@ -315,7 +315,7 @@ Expo.prototype = {
                     onComplete: function() {
                         global.overlay_group.remove_actor(clone);
                         clone.destroy();
-                        if (index == Main.layoutManager.monitors.length < 1) {
+                        if (index === Main.layoutManager.monitors.length < 1) {
                             this._showDone();
                         }
                     }, 
@@ -378,7 +378,7 @@ Expo.prototype = {
                 Main.popModal(this._group);
                 this._modal = false;
             }
-            else if (global.stage_input_mode == Cinnamon.StageInputMode.FULLSCREEN)
+            else if (global.stage_input_mode === Cinnamon.StageInputMode.FULLSCREEN)
                 global.stage_input_mode = Cinnamon.StageInputMode.NORMAL;
         }
     },
@@ -422,7 +422,7 @@ Expo.prototype = {
                 onComplete: function() {
                     global.overlay_group.remove_actor(cover);
                     cover.destroy();
-                    if (index == Main.layoutManager.monitors.length < 1) {
+                    if (index === Main.layoutManager.monitors.length < 1) {
                         this._group.hide();
                         this._hideDone();
                     }

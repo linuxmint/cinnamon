@@ -63,7 +63,7 @@ LevelBar.prototype = {
          * or the theme changed.  Make sure we update it, as well as figure out our
          * level bar's allocation.
          */
-        if (this.initial || (this.stored_actor_width != this.actor.width)) {
+        if (this.initial || (this.stored_actor_width !== this.actor.width)) {
             this.initial = false;
 
             this.stored_actor_width = this.actor.width;
@@ -75,7 +75,7 @@ LevelBar.prototype = {
 
         let newWidth = this.max_bar_width * (this._level / 100);
 
-        if (newWidth != this._bar.width) {
+        if (newWidth !== this._bar.width) {
             this._bar.width = newWidth;
         }
     },
@@ -125,8 +125,8 @@ OsdWindow.prototype = {
     },
 
     setLevel: function(level) {
-        this._level.actor.visible = (level != undefined);
-        if (level != undefined) {
+        this._level.actor.visible = (level !== undefined);
+        if (level !== undefined) {
             if (this.actor.visible)
                 Tweener.addTween(this._level,
                                  { level: level,
@@ -138,7 +138,7 @@ OsdWindow.prototype = {
     },
 
     show: function() {
-        if (this._osdBaseSize == undefined)
+        if (this._osdBaseSize === undefined)
             return;
 
         if (!this._icon.gicon)
@@ -243,7 +243,7 @@ OsdWindowManager.prototype = {
 
     _monitorsChanged: function() {
         for (let i = 0; i < Main.layoutManager.monitors.length; i++) {
-            if (this._osdWindows[i] == undefined)
+            if (this._osdWindows[i] === undefined)
                 this._osdWindows[i] = new OsdWindow(i);
         }
 
@@ -262,11 +262,11 @@ OsdWindowManager.prototype = {
     },
 
     show: function(monitorIndex, icon, level, convertIndex) {
-        if (monitorIndex != -1) {
+        if (monitorIndex !== -1) {
             if (convertIndex)
                 monitorIndex = convertGdkIndex(monitorIndex);
             for (let i = 0; i < this._osdWindows.length; i++) {
-                if (i == monitorIndex)
+                if (i === monitorIndex)
                     this._showOsdWindow(i, icon, level);
                 else
                     this._osdWindows[i].cancel();

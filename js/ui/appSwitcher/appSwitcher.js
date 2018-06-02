@@ -20,7 +20,7 @@ function sortWindowsByUserTime(win1, win2) {
     if (this.minimizedAwareAltTab) {
       let m1 = win1.minimized;
       let m2 = win2.minimized;
-      if (m1 == m2) {
+      if (m1 === m2) {
           return (t2 > t1) ? 1 : -1;
       }
       else {
@@ -37,15 +37,15 @@ function matchSkipTaskbar(win) {
 }
 
 function matchWmClass(win) {
-    return win.get_wm_class() == this && !win.is_skip_taskbar();
+    return win.get_wm_class() === this && !win.is_skip_taskbar();
 }
 
 function matchWorkspace(win) {
-    return win.get_workspace() == this && !win.is_skip_taskbar();
+    return win.get_workspace() === this && !win.is_skip_taskbar();
 }
 
 function primaryModifier(mask) {
-    if (mask == 0)
+    if (mask === 0)
         return 0;
 
     let primary = 1;
@@ -335,7 +335,7 @@ AppSwitcher.prototype = {
         let [x, y, mods] = global.get_pointer();
         let state = mods & this._modifierMask;
 
-        if (state == 0) {
+        if (state === 0) {
             if (this._initialDelayTimeoutId !== 0)
                 this._currentIndex = (this._currentIndex + 1) % this._windows.length;
             this._activateSelected();
@@ -348,7 +348,7 @@ AppSwitcher.prototype = {
     _scrollEvent: function(actor, event) {
         if(this._checkSwitchTime()) {
             actor.set_reactive(false);
-            if (event.get_scroll_direction() == Clutter.ScrollDirection.UP)
+            if (event.get_scroll_direction() === Clutter.ScrollDirection.UP)
                 this._previous();
             else
                 this._next();
@@ -360,7 +360,7 @@ AppSwitcher.prototype = {
     _disableHover : function() {
         this._mouseActive = false;
 
-        if (this._motionTimeoutId != 0)
+        if (this._motionTimeoutId !== 0)
             Mainloop.source_remove(this._motionTimeoutId);
 
         this._motionTimeoutId = Mainloop.timeout_add(DISABLE_HOVER_TIMEOUT, Lang.bind(this, this._mouseTimedOut));
@@ -379,7 +379,7 @@ AppSwitcher.prototype = {
         let nextIndex = (global.screen.n_workspaces + current + direction) % global.screen.n_workspaces;
         let workspace = global.screen.get_workspace_by_index(nextIndex);
         workspace.activate(global.get_current_time());
-        if (current == global.screen.get_active_workspace_index())
+        if (current === global.screen.get_active_workspace_index())
             return false;
             
         Main.wm.showWorkspaceOSD();
@@ -398,8 +398,8 @@ AppSwitcher.prototype = {
 
     _removeDestroyedWindow: function(window) {
         for (let i in this._windows) {
-            if (window == this._windows[i]) {
-                if (this._windows.length == 1)
+            if (window === this._windows[i]) {
+                if (this._windows.length === 1)
                     this.destroy();
                 else {
                     this._windows.splice(i, 1);
@@ -451,11 +451,11 @@ AppSwitcher.prototype = {
         this._onDestroy();
         
         this._windows = null;
-        if (this._motionTimeoutId != 0) {
+        if (this._motionTimeoutId !== 0) {
             Mainloop.source_remove(this._motionTimeoutId);
             this._motionTimeoutId = 0;
         }
-        if (this._checkDestroyedTimeoutId != 0) {
+        if (this._checkDestroyedTimeoutId !== 0) {
             Mainloop.source_remove(this._checkDestroyedTimeoutId);
             this._checkDestroyedTimeoutId = 0;
         }
