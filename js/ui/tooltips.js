@@ -121,13 +121,7 @@ TooltipBase.prototype = {
     _onHideTimerComplete: function() {
         this._hideTimer = null;
 
-        let [abs_x, abs_y, mods] = global.get_pointer();
-        let box = this.item.get_allocation_box();
-
-        let [success, x, y] = this.item.get_parent().transform_stage_point(abs_x, abs_y);
-
-        if ((x < box.x1) || (x > box.x2) ||
-            (y < box.y1) || (y > box.y2)) {
+        if (!this.item.has_pointer) {
             this._hide();
         }
 
