@@ -212,7 +212,7 @@ __proto__: ModalDialog.ModalDialog.prototype,
             }
             return true;
         }
-        if (symbol == Clutter.Escape) {
+        if (symbol == Clutter.Escape || symbol == Clutter.Super_L || symbol == Clutter.Super_R) {
             this.close();
             return true;
         }
