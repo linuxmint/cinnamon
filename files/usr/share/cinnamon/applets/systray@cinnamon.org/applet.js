@@ -341,12 +341,18 @@ class CinnamonSystrayApplet extends Applet.Applet {
         }
         icon._rolePosition = position;
 
-        if (this._scaleMode) {
-            this._resizeStatusItem(role, icon);
-        } else {
-            icon.set_pivot_point(0.5, 0.5);
-            icon.set_scale((DEFAULT_ICON_SIZE * global.ui_scale) / icon.width,
-                           (DEFAULT_ICON_SIZE * global.ui_scale) / icon.height);
+        if (["skypeforlinux"].indexOf(role) != -1) {
+            icon.set_size(16, 16);
+            global.log("Resize " + role + " with hardcoded size (" + icon.get_width() + "x" + icon.get_height() + "px)");
+        }
+        else {
+            if (this._scaleMode) {
+                this._resizeStatusItem(role, icon);
+            } else {
+                icon.set_pivot_point(0.5, 0.5);
+                icon.set_scale((DEFAULT_ICON_SIZE * global.ui_scale) / icon.width,
+                               (DEFAULT_ICON_SIZE * global.ui_scale) / icon.height);
+            }
         }
     }
 
