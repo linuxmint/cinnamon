@@ -186,32 +186,6 @@ class Module:
         self.build_battery_page()
         self.csd_power_proxy.connect("g-properties-changed", self.build_battery_page)
 
-        primary_output = None
-        try:
-            screen = CinnamonDesktop.RRScreen.new(Gdk.Screen.get_default())
-            outputs = CinnamonDesktop.RRScreen.list_outputs(screen)
-            for output in outputs:
-                if (output.is_connected() and output.is_laptop()):
-                    try:
-                        # Try to get the backlight info, if it fails just move on (we used to rely on output.get_backlight_min() and output.get_backlight_max() but these aren't reliable)
-                        output.get_backlight()
-                        primary_output = output
-                        break
-                    except:
-                        pass
-        except Exception as detail:
-            print("Failed to query backlight information in cs_power module: %s" % detail)
-
-        if primary_output is None:
-            if self.show_battery_page:
-                self.sidePage.add_widget(self.sidePage.stack)
-                self.sidePage.stack.add_titled(power_page, "power", _("Power"))
-                self.sidePage.stack.add_titled(self.battery_page, "batteries", _("Batteries"))
-            else:
-
-                self.sidePage.add_widget(power_page)
-            return
-
         proxy = Gio.DBusProxy.new_sync(
             Gio.bus_get_sync(Gio.BusType.SESSION, None),
             Gio.DBusProxyFlags.NONE,
@@ -223,7 +197,9 @@ class Module:
 
         try:
             brightness = proxy.GetPercentage()
-        except:
+        except GLib.Error as e:
+            print("Power module brightness page not available: %s" % e.message)
+
             if self.show_battery_page:
                 self.sidePage.add_widget(self.sidePage.stack)
                 self.sidePage.stack.add_titled(power_page, "power", _("Power"))
