@@ -1946,11 +1946,6 @@ CinnamonNetworkApplet.prototype = {
             // already seen, not adding again
             return;
         }
-
-        if (device.state === NetworkManager.DeviceState.UNMANAGED) {
-            return;
-        }
-
         let wrapperClass = this._dtypes[device.get_device_type()];
         if (wrapperClass) {
             let wrapper = new wrapperClass(this._client, device, this._connections);
