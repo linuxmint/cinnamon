@@ -259,6 +259,7 @@ class Seeker extends Slider.Slider {
         });
 
         this._seekChangedId = mediaServerPlayer.connectSignal('Seeked', (id, sender, value) => {
+            // Seek value sent by the player
             if (value > 0) {
                 this._setPosition(value);
             }
@@ -269,9 +270,11 @@ class Seeker extends Slider.Slider {
                 // value we set on the slider
                 this._setPosition(this._wantedSeekValue);
             }
-            // Seek value sent by the player
-            else
-                this._setPosition(value);
+            else {
+                // Some players send negative values (Rhythmbox).
+                // Only positive values or zero are allowed.
+                this._setPosition(0);
+            }
 
             this._wantedSeekValue = 0;
         });
@@ -298,6 +301,7 @@ class Seeker extends Slider.Slider {
         this._trackid = trackid;
         this._length = length;
         this._currentTime = 0;
+        this._updateValue();
     }
 
     _updateValue() {
@@ -369,7 +373,7 @@ class Seeker extends Slider.Slider {
     }
 
     _setPosition(value) {
-        if(value > 0) {
+        if(value >= 0) {
             this._currentTime = value / 1000000;
             this._updateValue();
         } else {
