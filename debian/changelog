@@ -1,3 +1,25 @@
+cinnamon (3.8.4) tara; urgency=medium
+
+  [ Michael Webster ]
+  * SettingsWidgets.py: strip pkexec from standalone module exec strings when checking for their existence.  Simplify the check as well.
+  * st-theme-node-drawing,transition.c: initialize framebuffer early to check for error.
+  * cs_startup.py: Don't lose 's' for delay time when editing and saving an entry.
+  * tooltips.js: use ClutterActor's has-pointer property for timeout callback check.
+  * network applet: Fix typo with showing access points in certain instances - caused by 319958fac2dd9347
+  * cs_power.py: Eliminate redundant check for screen backlight.  It fails incorrectly.
+
+  [ Clement Lefebvre ]
+  * systray: Fix skype
+  * Revert "network applet: Don't show unmanaged networks in the list."
+
+  [ Michael Webster ]
+  * cs_power.py: Display a keyboard backlight section on the brightness (#7621)
+
+  [ Clement Lefebvre ]
+  * l10n: Update POT file
+
+ -- Clement Lefebvre <root@linuxmint.com>  Fri, 08 Jun 2018 11:51:41 +0100
+
 cinnamon (3.8.3) tara; urgency=medium
 
   [ NikoKrause ]
