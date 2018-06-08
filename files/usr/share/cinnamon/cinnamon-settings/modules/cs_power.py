@@ -218,13 +218,29 @@ class Module:
             size_group = Gtk.SizeGroup(mode=Gtk.SizeGroupMode.HORIZONTAL)
 
             section = page.add_section(_("Screen brightness"))
-            section.add_row(BrightnessSlider(section, proxy))
+            section.add_row(BrightnessSlider(section, proxy, _("Screen brightness")))
 
             section.add_row(GSettingsSwitch(_("On battery, dim screen when inactive"), CSD_SCHEMA, "idle-dim-battery"))
 
             section.add_reveal_row(GSettingsComboBox(_("Brightness level when inactive"), CSD_SCHEMA, "idle-brightness", IDLE_BRIGHTNESS_OPTIONS, valtype=int, size_group=size_group), CSD_SCHEMA, "idle-dim-battery")
 
             section.add_reveal_row(GSettingsComboBox(_("Dim screen after inactive for"), CSD_SCHEMA, "idle-dim-time", IDLE_DELAY_OPTIONS, valtype=int, size_group=size_group), CSD_SCHEMA, "idle-dim-battery")
+
+            proxy = Gio.DBusProxy.new_sync(Gio.bus_get_sync(Gio.BusType.SESSION, None),
+                                           Gio.DBusProxyFlags.NONE,
+                                           None,
+                                           "org.cinnamon.SettingsDaemon.Power",
+                                           "/org/cinnamon/SettingsDaemon/Power",
+                                           "org.cinnamon.SettingsDaemon.Power.Keyboard",
+                                           None)
+
+            try:
+                brightness = proxy.GetPercentage()
+            except GLib.Error as e:
+                print("Power module no keyboard backlight: %s" % e.message)
+            else:
+                section = page.add_section(_("Keyboard backlight"))
+                section.add_row(BrightnessSlider(section, proxy, _("Backlight brightness")))
 
     def build_battery_page(self, *args):
 
@@ -558,7 +574,7 @@ def get_available_options(up_client):
 class BrightnessSlider(SettingsWidget):
     step = 5
 
-    def __init__(self, section, proxy):
+    def __init__(self, section, proxy, label):
         super(BrightnessSlider, self).__init__()
         self.set_orientation(Gtk.Orientation.VERTICAL)
         self.set_spacing(0)
@@ -569,7 +585,7 @@ class BrightnessSlider(SettingsWidget):
 
         hbox = Gtk.Box()
 
-        self.label = Gtk.Label.new(_("Screen brightness"))
+        self.label = Gtk.Label.new(label)
         self.label.set_halign(Gtk.Align.CENTER)
 
         self.min_label= Gtk.Label()
