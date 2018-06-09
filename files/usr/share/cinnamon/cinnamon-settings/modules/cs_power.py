@@ -45,7 +45,7 @@ SLEEP_DELAY_OPTIONS = [
     (0, _("Never"))
 ]
 
-(UP_ID, UP_VENDOR, UP_MODEL, UP_TYPE, UP_ICON, UP_PERCENTAGE, UP_STATE, UP_SECONDS) = range(8)
+(UP_ID, UP_VENDOR, UP_MODEL, UP_TYPE, UP_ICON, UP_PERCENTAGE, UP_STATE, UP_BATTERY_LEVEL, UP_SECONDS) = range(9)
 
 def get_timestring(time_seconds):
     minutes = int((time_seconds / 60.0) + 0.5)
@@ -311,6 +311,7 @@ class Module:
     def set_device_ups_primary(self, device):
         device_id = device[UP_ID]
         percentage = device[UP_PERCENTAGE]
+        battery_level = device[UP_BATTERY_LEVEL]
         state = device[UP_STATE]
         time = device[UP_SECONDS]
         vendor = device[UP_VENDOR]
@@ -340,12 +341,13 @@ class Module:
         if (model != "" or vendor != ""):
             desc = "%s %s" % (vendor, model)
 
-        widget = self.create_battery_row(device_id, "battery", desc, percentage, details)
+        widget = self.create_battery_row(device_id, "battery", desc, percentage, battery_level, details)
         return widget
 
     def set_device_battery_primary(self, device):
         device_id = device[UP_ID]
         percentage = device[UP_PERCENTAGE]
+        battery_level = device[UP_BATTERY_LEVEL]
         state = device[UP_STATE]
         time = device[UP_SECONDS]
         vendor = device[UP_VENDOR]
@@ -380,7 +382,7 @@ class Module:
         if (model != "" or vendor != ""):
             desc = "%s %s" % (vendor, model)
 
-        widget = self.create_battery_row(device_id, "battery", desc, percentage, details)
+        widget = self.create_battery_row(device_id, "battery", desc, percentage, battery_level, details)
         return widget
 
     def set_device_battery_additional(self, device):
@@ -411,6 +413,7 @@ class Module:
         device_id = device[UP_ID]
         kind = device[UP_TYPE]
         percentage = device[UP_PERCENTAGE]
+        battery_level = device[UP_BATTERY_LEVEL]
         vendor = device[UP_VENDOR]
         model = device[UP_MODEL]
 
@@ -445,10 +448,10 @@ class Module:
         if (model != "" or vendor != ""):
             desc = "%s %s" % (vendor, model)
 
-        widget = self.create_battery_row(device_id, icon_name, desc, percentage)
+        widget = self.create_battery_row(device_id, icon_name, desc, percentage, battery_level)
         return widget
 
-    def create_battery_row(self, device_id, icon_name, desc, percentage, details=None):
+    def create_battery_row(self, device_id, icon_name, desc, percentage, battery_level, details=None):
 
         if device_id in self.aliases:
             desc = self.aliases[device_id]
@@ -467,22 +470,33 @@ class Module:
         label_box.pack_start(entry, False, False, 0)
         self.battery_label_size_group.add_widget(label_box)
         hbox.pack_start(label_box, False, False, 0)
-        label = Gtk.Label()
-        label.set_markup("%d%%" % int(percentage))
-        label.set_size_request(30, -1)
-        hbox.pack_start(label, False, False, 15)
 
-        level_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
-        level_bar = Gtk.LevelBar()
-        level_bar.set_mode(Gtk.LevelBarMode.DISCRETE)
-        level_bar.set_min_value(0)
-        level_bar.set_max_value(10)
-        level_bar.add_offset_value("high", 5)
-        level_bar.add_offset_value("low", 2)
-        level_box.set_valign(Gtk.Align.CENTER)
-        level_bar.set_value(round(percentage / 10))
-        level_box.pack_start(level_bar, True, True, 0)
-        hbox.pack_start(level_box, True, True, 0)
+        if battery_level == UPowerGlib.DeviceLevel.NONE:
+            label = Gtk.Label()
+            label.set_markup("%d%%" % int(percentage))
+            label.set_size_request(30, -1)
+            hbox.pack_start(label, False, False, 15)
+
+            level_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
+            level_bar = Gtk.LevelBar()
+            level_bar.set_mode(Gtk.LevelBarMode.DISCRETE)
+            level_bar.set_min_value(0)
+            level_bar.set_max_value(10)
+            level_bar.add_offset_value("high", 5)
+            level_bar.add_offset_value("low", 2)
+            level_box.set_valign(Gtk.Align.CENTER)
+            level_bar.set_value(round(percentage / 10))
+            level_box.pack_start(level_bar, True, True, 0)
+            hbox.pack_start(level_box, True, True, 0)
+        else:
+            status_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
+            status_icon = Gtk.Image.new_from_icon_name(self.bat_level_to_icon(battery_level), Gtk.IconSize.DND)
+            status_box.pack_start(status_icon, False, False, 15)
+
+            status_label = Gtk.Label(self.bat_level_to_label(battery_level))
+            status_box.pack_start(status_label, False, False, 0)
+            hbox.pack_start(status_box, True, True, 0)
+
         vbox.pack_start(hbox, False, False, 0)
 
         if details:
@@ -494,6 +508,28 @@ class Module:
         widget.pack_start(vbox, True, True, 0)
 
         return widget
+
+    def bat_level_to_icon(self, level):
+        if level in (UPowerGlib.DeviceLevel.FULL, UPowerGlib.DeviceLevel.HIGH):
+            return "battery-full"
+        elif level == UPowerGlib.DeviceLevel.NORMAL:
+            return "battery-good"
+        elif level == UPowerGlib.DeviceLevel.LOW:
+            return "battery-low"
+        elif level == UPowerGlib.DeviceLevel.CRITICAL:
+            return "battery-caution"
+
+    def bat_level_to_label(self, level):
+        if level == UPowerGlib.DeviceLevel.FULL:
+            return _("Battery full")
+        elif level == UPowerGlib.DeviceLevel.HIGH:
+            return _("Battery almost full")
+        elif level == UPowerGlib.DeviceLevel.NORMAL:
+            return _("Battery good")
+        elif level == UPowerGlib.DeviceLevel.LOW:
+            return _("Low battery")
+        elif level == UPowerGlib.DeviceLevel.CRITICAL:
+            return _("Critically low battery")
 
     def on_alias_changed(self, entry, event, device_id):
         self.aliases[device_id] = entry.get_text()
