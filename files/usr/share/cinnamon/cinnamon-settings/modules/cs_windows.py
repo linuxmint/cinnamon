@@ -73,7 +73,10 @@ class Module:
             settings.add_row(widget)
 
             widget = GSettingsSwitch(_("Automatically raise focused windows"), "org.cinnamon.desktop.wm.preferences", "auto-raise")
-            settings.add_row(widget)
+            settings.add_reveal_row(widget)
+
+            widget.revealer.settings = Gio.Settings("org.cinnamon.desktop.wm.preferences")
+            widget.revealer.settings.bind_with_mapping("focus-mode", widget.revealer, "reveal-child", Gio.SettingsBindFlags.GET, lambda x: x in ("sloppy", "mouse"), None)
 
             widget = GSettingsSwitch(_("Bring windows which require attention to the current workspace"), "org.cinnamon", "bring-windows-to-current-workspace")
             settings.add_row(widget)
