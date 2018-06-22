@@ -1,3 +1,16 @@
+cinnamon (3.8.5) tara; urgency=medium
+
+  [ David H. Gutteridge ]
+  * Update po/README: provide a link to Launchpad (#7655)
+
+  [ Michael Webster ]
+  * cs_windows.py: have the 'auto-raise' setting only visible when supported focus modes are active.
+
+  [ Clement Lefebvre ]
+  * Revert "shell-embedded-window: change realize to map (#6965)"
+
+ -- Clement Lefebvre <root@linuxmint.com>  Fri, 22 Jun 2018 20:59:33 +0200
+
 cinnamon (3.8.4) tara; urgency=medium
 
   [ Michael Webster ]
