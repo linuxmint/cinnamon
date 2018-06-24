@@ -1,3 +1,10 @@
+cinnamon (3.8.6) tara; urgency=medium
+
+  * Revert "network applet: Fix typo with showing access points in certain instances -"
+  * Revert "network applet: show the actual active connection's signal strength"
+
+ -- Clement Lefebvre <root@linuxmint.com>  Sun, 24 Jun 2018 17:19:57 +0200
+
 cinnamon (3.8.5) tara; urgency=medium
 
   [ David H. Gutteridge ]
