@@ -13,6 +13,9 @@ const MessageTray = imports.ui.messageTray;
 const ModemManager = imports.misc.modemManager;
 const Util = imports.misc.util;
 
+const DEFAULT_PERIODIC_UPDATE_FREQUENCY_SECONDS = 10;
+const FAST_PERIODIC_UPDATE_FREQUENCY_SECONDS = 2;
+
 const NMConnectionCategory = {
     INVALID: 'invalid',
     WIRED: 'wired',
@@ -1514,49 +1517,19 @@ NMDeviceWireless.prototype = {
                 }
             }
 
-            if (this._activeNetwork) {
-                /* We don't want to send all logical access points to a new menu item
-                 * if there's already a connection, just the one actually being used, otherwise
-                 * you could end up showing the wrong current connection strength on the menu item,
-                 * if you happen to be, for example, connected the the N-speed AP of your router, which
-                 * is preferred, even though the G-speed AP might have a stronger signal strength.
-                 * Currently on the available AP's in our list, the strongest signal is picked for display
-                 * out of all logical APs - regardless of other qualities.
-                 */
-                let item_aps = [];
-
-                if (this.device.active_access_point) {
-                    item_aps = [this.device.active_access_point];
-                } else {
-                    item_aps = this._activeNetwork.accessPoints;
-                }
-                this._activeConnectionItem = new NMNetworkMenuItem(item_aps,
-                                                                   undefined,
-                                                                   { reactive: false });
-            } else {
-                this._activeConnectionItem = new PopupMenu.PopupImageMenuItem(connection._name,
-                                                                              'network-wireless-connected',
-                                                                              { reactive: false });
-            }
+            if (this._activeNetwork)
+                this._activeConnectionItem = new NMNetworkMenuItem(this._activeNetwork.accessPoints, undefined, { reactive: false });
+            else
+                this._activeConnectionItem = new PopupMenu.PopupImageMenuItem(connection._name, 'network-wireless-connected', { reactive: false });
         } else {
             // We cannot read the connection (due to ACL, or API incompatibility), but we still show signal if we have it
-            if (this._activeNetwork) {
-                let item_aps = [];
-
-                if (this.device.active_access_point) {
-                    item_aps = [this.device.active_access_point];
-                } else {
-                    item_aps = this._activeNetwork.accessPoints;
-                }
-
-                this._activeConnectionItem = new NMNetworkMenuItem(active_aps,
-                                                                   undefined,
+            if (this._activeNetwork)
+                this._activeConnectionItem = new NMNetworkMenuItem(this._activeNetwork.accessPoints, undefined,
                                                                    { reactive: false });
-            } else{
+            else
                 this._activeConnectionItem = new PopupMenu.PopupImageMenuItem(_("Connected (private)"),
                                                                               'network-wireless-connected',
                                                                               { reactive: false });
-            }
         }
         this._activeConnectionItem.setShowDot(true);
     },
@@ -1790,8 +1763,8 @@ CinnamonNetworkApplet.prototype = {
 				Util.spawnCommandLine("nm-connection-editor");
             }));
 
-            this._activeWirelessSignalMonitorId = 0;
-            this._currentAp = null;
+            this.menu.connect("open-state-changed", Lang.bind(this, this._updateForMenuToggle));
+            this._periodicTimeoutId = 0;
 
             this._activeConnections = [ ];
             this._connections = [ ];
@@ -1836,6 +1809,9 @@ CinnamonNetworkApplet.prototype = {
                     this._settings.connect('new-connection', Lang.bind(this, this._newConnection));
                 }
             }));
+
+            this._periodicUpdateIcon();
+
         }
         catch (e) {
             global.logError(e);
@@ -2116,8 +2092,6 @@ CinnamonNetworkApplet.prototype = {
     },
 
     _notifyActivated: function(activeConnection) {
-        this._removeSignalMonitor();
-
         if (activeConnection.state == NetworkManager.ActiveConnectionState.ACTIVATED &&
             activeConnection._primaryDevice && activeConnection._primaryDevice._notification) {
                 activeConnection._primaryDevice._notification.destroy();
@@ -2229,7 +2203,6 @@ CinnamonNetworkApplet.prototype = {
     _syncNMState: function() {
         if (!this._client.manager_running) {
             log('NetworkManager is not running, hiding...');
-            this._removeSignalMonitor();
             this.menu.close();
             this.actor.hide();
             return;
@@ -2238,7 +2211,6 @@ CinnamonNetworkApplet.prototype = {
 
         if (!this._client.networking_enabled) {
             this._setIcon('network-offline');
-            this._removeSignalMonitor();
             this._hideDevices();
             this._statusItem.label.text = _("Networking is disabled");
             this._statusSection.actor.show();
@@ -2250,6 +2222,8 @@ CinnamonNetworkApplet.prototype = {
     },
 
     _updateIcon: function() {
+        let new_delay = DEFAULT_PERIODIC_UPDATE_FREQUENCY_SECONDS;
+
         try {
             this._syncActiveConnections();
             let mc = this._mainConnection;
@@ -2258,6 +2232,7 @@ CinnamonNetworkApplet.prototype = {
                 this._setIcon('network-offline');
                 this.set_applet_tooltip(_("No connection"));
             } else if (mc.state == NetworkManager.ActiveConnectionState.ACTIVATING) {
+                new_delay = FAST_PERIODIC_UPDATE_FREQUENCY_SECONDS;
                 switch (mc._section) {
                 case NMConnectionCategory.WWAN:
                     this._setIcon('network-cellular-acquiring');
@@ -2297,16 +2272,8 @@ CinnamonNetworkApplet.prototype = {
                             this._setIcon('network-wireless-connected');
                             this.set_applet_tooltip(_("Connected to the wireless network"));
                         } else {
-                            this._setIcon('network-wireless-signal-' + signalToIcon(ap.get_strength()));
-                            this.set_applet_tooltip(_("Wireless connection") + ": " + ap.get_ssid() + " ("+ ap.get_strength() +"%)");
-
-                            if (ap != this._currentAp) {
-                                this._removeSignalMonitor();
-                                this._activeWirelessSignalMonitorId = ap.connect("notify::strength",
-                                                                                 Lang.bind(this, this._updatePanel));
-
-                                this._currentAp = ap;
-                            }
+                            this._setIcon('network-wireless-signal-' + signalToIcon(ap.strength));
+                            this.set_applet_tooltip(_("Wireless connection") + ": " + ap.get_ssid() + " ("+ ap.strength +"%)");
                         }
                     } else {
                         log('Active connection with no primary device?');
@@ -2348,26 +2315,46 @@ CinnamonNetworkApplet.prototype = {
         catch (e) {
             global.logError(e);
         }
-    },
 
-    _updatePanel: function(ap, pspec) {
-        this._updateIcon();
-    },
-
-    _removeSignalMonitor: function() {
-        if (this._currentAp != null) {
-            this._currentAp.disconnect(this._activeWirelessSignalMonitorId);
+        if (this.menu.isOpen) {
+            return FAST_PERIODIC_UPDATE_FREQUENCY_SECONDS;
         }
 
-        this._activeWirelessSignalMonitorId = 0;
-        this._currentAp = null;
+        return new_delay;
+    },
+
+    _periodicUpdateIcon: function() {
+        let new_delay = this._updateIcon();
+
+        if (this._updateFrequencySeconds != new_delay) {
+            this._restartPeriodicUpdateTimer(new_delay);
+        } else {
+            return GLib.SOURCE_CONTINUE;
+        }
+
+        return GLib.SOURCE_REMOVE;
+    },
+
+    _restartPeriodicUpdateTimer: function(new_delay) {
+        if (this._periodicTimeoutId > 0) {
+            Mainloop.source_remove(this._periodicTimeoutId);
+        }
+
+        this._updateFrequencySeconds = new_delay;
+
+        this._periodicTimeoutId = Mainloop.timeout_add_seconds(this._updateFrequencySeconds, Lang.bind(this, this._periodicUpdateIcon));
+    },
+
+    _updateForMenuToggle: function() {
+        this._periodicUpdateIcon();
     },
 
     on_applet_removed_from_panel: function() {
         Main.systrayManager.unregisterRole("network", this.metadata.uuid);
         Main.systrayManager.unregisterRole("nm-applet", this.metadata.uuid);
-
-        this._removeSignalMonitor();
+        if (this._periodicTimeoutId){
+            Mainloop.source_remove(this._periodicTimeoutId);
+        }
     },
 
 };
