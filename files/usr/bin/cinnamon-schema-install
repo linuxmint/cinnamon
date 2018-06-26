@@ -1,7 +1,67 @@
 #!/usr/bin/python3
 
+import functools
 import os
+import shutil
+import stat
+import subprocess
 import sys
 
-os.system("cp %s /usr/share/glib-2.0/schemas/" % (sys.argv[1]))
-os.system("glib-compile-schemas /usr/share/glib-2.0/schemas/")
+print_e = functools.partial(print, file = sys.stderr)
+
+if len(sys.argv) != 2:
+	print_e("usage:", sys.argv[0], "<schema-file>")
+	sys.exit(1)
+
+try:
+	pkexec_uid = os.environ["PKEXEC_UID"]
+	pkexec_uid = int(pkexec_uid)
+except KeyError:
+	print_e("PKEXEC_UID environment variable not found.")
+	print_e("This program is designed to be run only via pkexec.")
+	sys.exit(1)
+
+# 1 MB should be more than enough
+SCHEMA_MAX_SIZE = 1024 * 1024
+schema_dir = "/usr/share/glib-2.0/schemas/"
+schema_src_file = sys.argv[1]
+schema_base = os.path.basename(schema_src_file)
+schema_dst_file = schema_dir + schema_base
+
+try:
+	with open(schema_src_file, 'r') as src_file:
+		src_stat = os.fstat(src_file.fileno())
+
+		# prevent special files as input which could possibly block or
+		# cause disk space exhaustion
+		if not stat.S_ISREG(src_stat.st_mode):
+			print_e("schema file", schema_src_file, "is not a regular file")
+			sys.exit(1)
+		# prevent a file not accessible to the invoking user to be
+		# copied world-readable into a system directory
+		elif src_stat.st_uid != pkexec_uid:
+			print_e("schema file", schema_src_file, "is not owned by the user that invoked pkexec")
+			sys.exit(1)
+		# sanity check or schema file size, 1 MB should be more than
+		# enough
+		elif src_stat.st_size > SCHEMA_MAX_SIZE:
+			print_e("schema file", schema_src_file, "is too large. Maximum allowed size is", SCHEMA_MAX_SIZE)
+			sys.exit(1)
+
+		# make sure we create a new target file and don't overwrite an
+		# existing one
+		with open(schema_dst_file, 'x') as dst_file:
+			shutil.copyfileobj(src_file, dst_file)
+except Exception as e:
+	print_e("Failed to copy", schema_src_file + ":", e)
+	sys.exit(1)
+
+try:
+	subprocess.check_call(
+		["glib-compile-schemas", schema_dir],
+		shell = False,
+		close_fds = True
+	)
+except Exception as e:
+	print_e("Failed to compile schemas:", e)
+	sys.exit(1)
