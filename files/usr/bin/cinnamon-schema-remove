@@ -1,7 +1,37 @@
 #!/usr/bin/python3
 
+import functools
 import os
+import subprocess
 import sys
 
-os.system("rm /usr/share/glib-2.0/schemas/%s" % (sys.argv[1]))
-os.system("glib-compile-schemas /usr/share/glib-2.0/schemas/")
+print_e = functools.partial(print, file = sys.stderr)
+
+if len(sys.argv) != 2:
+	print_e("usage:", sys.argv[0], "<schema-file>")
+	sys.exit(1)
+
+schema = sys.argv[1]
+
+if '/' in schema or '..' in schema:
+	print_e("invalid schema name", schema)
+	sys.exit(1)
+
+schema_dir = "/usr/share/glib-2.0/schemas/"
+path = schema_dir + schema
+
+try:
+	os.unlink(path)
+except Exception as e:
+	print_e("Failed to remove", path + ":", e)
+	sys.exit(1)
+
+try:
+	subprocess.check_call(
+		["glib-compile-schemas", schema_dir],
+		shell = False,
+		close_fds = True
+	)
+except Exception as e:
+	print_e("Failed to compile schemas:", e)
+	sys.exit(1)
