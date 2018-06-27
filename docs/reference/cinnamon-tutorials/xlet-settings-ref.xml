@@ -164,6 +164,18 @@
 
     </sect3>
     <sect3>
+      <title>timechooser</title>
+      <itemizedlist>
+        <listitem><code>type</code>: should be <code>timechooser</code></listitem>
+        <listitem><code>default</code>: default time - should be of the form <code>{h: '12', m: '0', s: '0'}</code></listitem>
+        <listitem><code>description</code>: String describing the setting</listitem>
+      </itemizedlist>
+
+      <para>A button that opens a dialog that lets you select a time. The time is stored as three key/value pairs representing the numerical value for the hour('h'), minute('m'), and second('s').</para>
+      <para>New in Cinnamon 4.2</para>
+
+    </sect3>
+    <sect3>
       <title>tween</title>
       <itemizedlist>
         <listitem><code>type</code>: should be <code>tween</code></listitem>

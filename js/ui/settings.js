@@ -170,6 +170,13 @@ var SETTINGS_TYPES = {
             "description"
         ]
     },
+    "timechooser" : {
+        "required-fields": [
+            "type",
+            "default",
+            "description"
+        ]
+    },
     "list" : {
         "required-fields": [
             "type",

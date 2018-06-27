@@ -25,7 +25,8 @@ JSON_SETTINGS_PROPERTIES_MAP = {
     "event-sounds"     : "event_sounds",
     "default_icon"     : "default_icon",
     "icon_categories"  : "icon_categories",
-    "default_category" : "default_category"
+    "default_category" : "default_category",
+    "show-seconds"     : "show_seconds"
 }
 
 OPERATIONS = ['<=', '>=', '<', '>', '!=', '=']

@@ -43,6 +43,7 @@ XLET_SETTINGS_WIDGETS = {
     "tween"             :   "JSONSettingsTweenChooser",
     "effect"            :   "JSONSettingsEffectChooser",
     "datechooser"       :   "JSONSettingsDateChooser",
+    "timechooser"       :   "JSONSettingsTimeChooser",
     "keybinding"        :   "JSONSettingsKeybinding",
     "list"              :   "JSONSettingsList"
 }
