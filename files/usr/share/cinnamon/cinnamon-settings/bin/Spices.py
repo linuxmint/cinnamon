@@ -643,12 +643,6 @@ class Spice_Harvester(GObject.Object):
                         os.makedirs(locale_dir, mode=0o755, exist_ok=True)
                         subprocess.call(['msgfmt', '-c', os.path.join(po_dir, file), '-o', os.path.join(locale_dir, '%s.mo' % uuid)])
 
-            # Install spice schema file, if any
-            schema = [filename for filename in contents if 'gschema.xml' in filename]
-            for filename in schema:
-                path = os.path.join(folder, filename)
-                subprocess.call(['pkexec', 'cinnamon-schema-install', path])
-
         dest = os.path.join(self.install_folder, uuid)
         if os.path.exists(dest):
             shutil.rmtree(dest)
@@ -663,8 +657,6 @@ class Spice_Harvester(GObject.Object):
             file.close()
             md = json.loads(raw_meta)
 
-        if not self.themes and len(schema) > 0:
-            md['schema-file'] = ','.join(schema)
         if from_spices and uuid in self.index_cache:
             md['last-edited'] = self.index_cache[uuid]['last_edited']
         else:
@@ -690,11 +682,6 @@ class Spice_Harvester(GObject.Object):
         try:
             uuid = job['uuid']
             if not self.themes:
-                # Uninstall spice schema files, if any
-                if 'schema-file' in self.meta_map[uuid]:
-                    for path in self.meta_map[uuid]['schema-file'].split(','):
-                        subprocess.call(['pkexec', 'cinnamon-schema-remove', path])
-
                 # Uninstall spice localization files, if any
                 if (os.path.exists(locale_inst)):
                     i19_folders = os.listdir(locale_inst)
