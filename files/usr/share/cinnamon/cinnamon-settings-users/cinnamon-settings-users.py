@@ -19,6 +19,35 @@ from gi.repository import Gtk, GObject, Gio, GdkPixbuf, AccountsService, GLib
 
 gettext.install("cinnamon", "/usr/share/locale")
 
+class PrivHelper(object):
+    """A helper for performing temporary privilege drops. Necessary for
+    security when accessing user controlled files as root."""
+
+    def __init__(self):
+
+        self.orig_uid = os.getuid()
+        self.orig_gid = os.getgid()
+        self.orig_groups = os.getgroups()
+
+    def drop_privs(self, user):
+
+        uid = user.get_uid()
+        # the user's main group id
+        gid = pwd.getpwuid(uid).pw_gid
+
+        # initialize the user's supplemental groups and main group
+        os.initgroups(user.get_user_name(), gid)
+        os.setegid(gid)
+        os.seteuid(uid)
+
+    def restore_privs(self):
+
+        os.seteuid(self.orig_uid)
+        os.setegid(self.orig_gid)
+        os.setgroups(self.orig_groups)
+
+priv_helper = PrivHelper()
+
 (INDEX_USER_OBJECT, INDEX_USER_PICTURE, INDEX_USER_DESCRIPTION) = range(3)
 (INDEX_GID, INDEX_GROUPNAME) = range(2)
 
@@ -642,7 +671,11 @@ class Module:
                 image = PIL.Image.open(path)
                 image.thumbnail((96, 96), Image.ANTIALIAS)
                 face_path = os.path.join(user.get_home_dir(), ".face")
-                image.save(face_path, "png")
+                try:
+                    priv_helper.drop_privs(user)
+                    image.save(face_path, "png")
+                finally:
+                    priv_helper.restore_privs()
                 user.set_icon_file(face_path)
                 self.face_image.set_from_file(face_path)
                 model.set_value(treeiter, INDEX_USER_PICTURE, GdkPixbuf.Pixbuf.new_from_file_at_size(face_path, 48, 48))
@@ -675,7 +708,11 @@ class Module:
                 user = model[treeiter][INDEX_USER_OBJECT]
                 user.set_icon_file(path)
                 self.face_image.set_from_file(path)
-                shutil.copy(path, os.path.join(user.get_home_dir(), ".face"))
+                try:
+                    priv_helper.drop_privs(user)
+                    shutil.copy(path, os.path.join(user.get_home_dir(), ".face"))
+                finally:
+                    priv_helper.restore_privs()
                 model.set_value(treeiter, INDEX_USER_PICTURE, GdkPixbuf.Pixbuf.new_from_file_at_size(path, 48, 48))
                 model.row_changed(model.get_path(treeiter), treeiter)
 
