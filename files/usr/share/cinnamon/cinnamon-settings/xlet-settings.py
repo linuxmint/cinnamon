@@ -4,7 +4,7 @@ import gi
 gi.require_version('Gtk', '3.0')
 gi.require_version('XApp', '1.0')
 import sys
-
+import traceback
 import config
 sys.path.append(config.currentPath + "/bin")
 import gettext
@@ -295,32 +295,41 @@ class MainWindow(object):
 
         for page_key in layout["pages"]:
             page_def = layout[page_key]
-            page = SettingsPage()
-            page_stack.add_titled(page, page_key, translate(self.uuid, page_def["title"]))
-            for section_key in page_def["sections"]:
-                section_def = layout[section_key]
-                if 'dependency' in section_def:
-                    revealer = JSONSettingsRevealer(info['settings'], section_def['dependency'])
-                    section = page.add_reveal_section(translate(self.uuid, section_def["title"]), revealer=revealer)
-                else:
-                    section = page.add_section(translate(self.uuid, section_def["title"]))
-                for key in section_def["keys"]:
-                    item = settings_map[key]
-                    settings_type = item["type"]
-                    if settings_type == "button":
-                        widget = XLETSettingsButton(item, self.uuid, info["id"])
-                    elif settings_type == "label":
-                        widget = Text(translate(self.uuid, item["description"]))
-                    elif settings_type in XLET_SETTINGS_WIDGETS:
-                        widget = globals()[XLET_SETTINGS_WIDGETS[settings_type]](key, info["settings"], item)
+            if page_def['type'] == 'custom':
+                page = self.create_custom_widget(page_def, info['settings'])
+                if page is None:
+                    continue
+            else:
+                page = SettingsPage()
+                for section_key in page_def["sections"]:
+                    section_def = layout[section_key]
+                    if 'dependency' in section_def:
+                        revealer = JSONSettingsRevealer(info['settings'], section_def['dependency'])
+                        section = page.add_reveal_section(translate(self.uuid, section_def["title"]), revealer=revealer)
                     else:
-                        continue
+                        section = page.add_section(translate(self.uuid, section_def["title"]))
+                    for key in section_def["keys"]:
+                        item = settings_map[key]
+                        settings_type = item["type"]
+                        if settings_type == "button":
+                            widget = XLETSettingsButton(item, self.uuid, info["id"])
+                        elif settings_type == "label":
+                            widget = Text(translate(self.uuid, item["description"]))
+                        elif settings_type == 'custom':
+                            widget = self.create_custom_widget(item, key, info['settings'])
+                            if widget is None:
+                                continue
+                        elif settings_type in XLET_SETTINGS_WIDGETS:
+                            widget = globals()[XLET_SETTINGS_WIDGETS[settings_type]](key, info["settings"], item)
+                        else:
+                            continue
 
-                    if 'dependency' in item:
-                        revealer = JSONSettingsRevealer(info['settings'], item['dependency'])
-                        section.add_reveal_row(widget, revealer=revealer)
-                    else:
-                        section.add_row(widget)
+                        if 'dependency' in item:
+                            revealer = JSONSettingsRevealer(info['settings'], item['dependency'])
+                            section.add_reveal_row(widget, revealer=revealer)
+                        else:
+                            section.add_row(widget)
+            page_stack.add_titled(page, page_key, translate(self.uuid, page_def["title"]))
 
     def build_from_order(self, settings_map, info, box, first_key):
         page = SettingsPage()
@@ -347,6 +356,10 @@ class MainWindow(object):
                     widget = XLETSettingsButton(item, self.uuid, info["id"])
                 elif settings_type == "label":
                     widget = Text(translate(self.uuid, item["description"]))
+                elif settings_type == 'custom':
+                    widget = self.create_custom_widget(item, key, info['settings'])
+                    if widget is None:
+                        continue
                 elif settings_type in XLET_SETTINGS_WIDGETS:
                     widget = globals()[XLET_SETTINGS_WIDGETS[settings_type]](key, info["settings"], item)
                 else:
@@ -358,7 +371,27 @@ class MainWindow(object):
                 else:
                     section.add_row(widget)
 
+    def create_custom_widget(self, info, *args):
+        file_name = info['file']
+        widget_name = info['widget']
+        try:
+            with open(os.path.join(self.xlet_dir, file_name), 'r') as f:
+                exec_globals = {'SettingsWidget': SettingsWidget, 'SettingsPage': SettingsPage}
+                exec(compile(f.read(), file_name, 'exec'), globals())
 
+            return globals()[widget_name](info, *args)
+
+        except Exception as e:
+            if isinstance(e, OSError):
+                err_msg = 'file %s does not exist or is corrupted' % file_name
+            elif isinstance(e, SyntaxError):
+                err_msg = 'syntax error in file %s' % file_name
+            else:
+                err_msg = str(e)
+
+            traceback.print_exc()
+            print('Cannot create custom widget: %s' % err_msg)
+            return None
 
     def notify_dbus(self, handler, key, value):
         proxy.updateSetting('(ssss)', self.uuid, handler.instance_id, key, json.dumps(value))
