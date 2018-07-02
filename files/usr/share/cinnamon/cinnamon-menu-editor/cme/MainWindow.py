@@ -35,37 +35,69 @@ _ = gettext.gettext
 from cme.MenuEditor import MenuEditor
 from cme import util
 
-class MainWindow(object):
+class MainWindow(Gtk.Window):
+    def __init__(self, datadir, version):
+        super(MainWindow, self).__init__(default_height=530, default_width=675)
+        self.set_default_icon_name('alacarte')
+
+        self.file_path = datadir
+        self.version = version
+
+        main_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, margin=10, spacing=5)
+        close_button = Gtk.Button('Close', hexpand=False, halign=Gtk.Align.END)
+
+        self.add(main_box)
+        main_box.pack_start(CMEContent(), True, True, 0)
+        main_box.pack_end(close_button, False, False, 0)
+
+        self.connect("destroy", self.quit)
+        close_button.connect('clicked', self.quit)
+
+        self.show_all()
+
+    def quit(self, *args):
+        Gtk.main_quit()
+
+class CMEContent(Gtk.Box):
     timer = None
     #hack to make editing menu properties work
     edit_pool = []
 
-    def __init__(self, datadir, version):
-        self.file_path = datadir
-        self.version = version
+    def __init__(self):
+        super(CMEContent, self).__init__()
+
         self.editor = MenuEditor()
         self.editor.tree.connect("changed", self.menuChanged)
-        Gtk.Window.set_default_icon_name('alacarte')
         self.tree = Gtk.Builder()
         self.tree.set_translation_domain(config.GETTEXT_PACKAGE)
         self.tree.add_from_file('/usr/share/cinnamon/cinnamon-menu-editor/cinnamon-menu-editor.ui')
+        self.pack_start(self.tree.get_object('main_content'), True, True, 0)
+
         self.tree.connect_signals(self)
         self.setupMenuTree()
         self.setupItemTree()
-        self.tree.get_object('edit_delete').set_sensitive(False)
-        self.tree.get_object('edit_properties').set_sensitive(False)
-        self.tree.get_object('edit_cut').set_sensitive(False)
-        self.tree.get_object('edit_copy').set_sensitive(False)
-        self.tree.get_object('edit_paste').set_sensitive(False)
+
+        self.actions = {}
+        action_map = [
+            ('delete', self.on_edit_delete_activate),
+            ('properties', self.on_edit_properties_activate),
+            ('cut', self.on_edit_cut_activate),
+            ('copy', self.on_edit_copy_activate),
+            ('paste', self.on_edit_paste_activate)
+        ]
+        action_group = Gio.SimpleActionGroup()
+        self.insert_action_group('app', action_group)
+        self.tree.get_object('edit_menu').insert_action_group('app', action_group)
+        for name, callback in action_map:
+            self.actions[name] = Gio.SimpleAction.new('edit_%s' % name, None)
+            self.actions[name].connect('activate', callback)
+            self.actions[name].set_enabled(False)
+            action_group.insert(self.actions[name])
+
         self.cut_copy_buffer = None
         self.file_id = None
         self.last_tree = None
-        self.main_window = self.tree.get_object('mainwindow')
-
-    def run(self):
         self.loadMenus()
-        self.tree.get_object('mainwindow').show_all()
-        Gtk.main()
 
     def menuChanged(self, *a):
         self.loadUpdates()
@@ -213,14 +245,14 @@ class MainWindow(object):
             if not show:
                 name = "<small><i>%s</i></small>" % (name,)
 
-            icon = util.getIcon(menu, self.main_window)
+            icon = util.getIcon(menu, self.get_toplevel())
             iters[menu] = self.menu_store.append(iters[parent], (icon, name, False, menu))
             self.loadMenu(iters, menu)
 
     def loadItems(self, menu):
         self.item_store.clear()
         for item, show in self.editor.getItems(menu):
-            icon = util.getIcon(item, self.main_window)
+            icon = util.getIcon(item, self.get_toplevel())
             if isinstance(item, CMenu.TreeDirectory):
                 name = item.get_name()
             elif isinstance(item, CMenu.TreeEntry):
@@ -285,7 +317,7 @@ class MainWindow(object):
         process = subprocess.Popen(['cinnamon-desktop-editor', '-mlauncher', '-o' + file_path], env=os.environ)
         GObject.timeout_add(100, self.waitForNewItemProcess, process, parent.get_menu_id(), file_path)
 
-    def on_edit_delete_activate(self, menu):
+    def on_edit_delete_activate(self, *args):
         item_tree = self.tree.get_object('item_tree')
         items, iter = item_tree.get_selection().get_selected()
         if not iter:
@@ -298,7 +330,7 @@ class MainWindow(object):
         elif isinstance(item, CMenu.TreeSeparator):
             self.editor.deleteSeparator(item)
 
-    def on_edit_properties_activate(self, menu):
+    def on_edit_properties_activate(self, *args):
         item_tree = self.tree.get_object(self.last_tree)
         items, iter = item_tree.get_selection().get_selected()
         if not iter:
@@ -322,7 +354,7 @@ class MainWindow(object):
             process = subprocess.Popen(['cinnamon-desktop-editor', '-m' + file_type, '-o' + file_path], env=os.environ)
             GObject.timeout_add(100, self.waitForEditProcess, process, file_path)
 
-    def on_edit_cut_activate(self, menu):
+    def on_edit_cut_activate(self, *args):
         item_tree = self.tree.get_object('item_tree')
         items, iter = item_tree.get_selection().get_selected()
         item = items[iter][3]
@@ -332,7 +364,7 @@ class MainWindow(object):
             return
         (self.cut_copy_buffer, self.file_id) = self.editor.cutItem(item)
 
-    def on_edit_copy_activate(self, menu):
+    def on_edit_copy_activate(self, *args):
         item_tree = self.tree.get_object('item_tree')
         items, iter = item_tree.get_selection().get_selected()
         item = items[iter][3]
@@ -342,7 +374,7 @@ class MainWindow(object):
             return
         (self.cut_copy_buffer, self.file_id) = self.editor.copyItem(item)
 
-    def on_edit_paste_activate(self, menu):
+    def on_edit_paste_activate(self, *args):
         item_tree = self.tree.get_object('item_tree')
         items, iter = item_tree.get_selection().get_selected()
         if not iter:
@@ -373,18 +405,13 @@ class MainWindow(object):
         item_tree = self.tree.get_object('item_tree')
         item_tree.get_selection().unselect_all()
         self.loadItems(self.menu_store[menu_path][3])
-        self.tree.get_object('edit_delete').set_sensitive(False)
-        self.tree.get_object('edit_properties').set_sensitive(True)
-        self.tree.get_object('edit_cut').set_sensitive(False)
-        self.tree.get_object('edit_copy').set_sensitive(False)
-        self.tree.get_object('properties_button').set_sensitive(True)
-        self.tree.get_object('delete_button').set_sensitive(False)
-        self.tree.get_object('cut_button').set_sensitive(False)
-        self.tree.get_object('copy_button').set_sensitive(False)
+        self.actions['cut'].set_enabled(False)
+        self.actions['copy'].set_enabled(False)
+        self.actions['delete'].set_enabled(False)
+        self.actions['properties'].set_enabled(True)
 
         can_paste = isinstance(menu, CMenu.TreeDirectory) and self.cut_copy_buffer is not None
-        self.tree.get_object('edit_paste').set_sensitive(can_paste)
-        self.tree.get_object('paste_button').set_sensitive(can_paste)
+        self.actions['paste'].set_enabled(can_paste)
 
         index = menus.get_path(iter).get_indices()[menus.get_path(iter).get_depth() - 1]
         parent_iter = menus.iter_parent(iter)
@@ -412,23 +439,17 @@ class MainWindow(object):
             return
 
         item = items[iter][3]
-        self.tree.get_object('edit_delete').set_sensitive(True)
-        self.tree.get_object('delete_button').set_sensitive(True)
+        self.actions['delete'].set_enabled(True)
 
         can_edit = not isinstance(item, CMenu.TreeSeparator)
-        self.tree.get_object('edit_properties').set_sensitive(can_edit)
-        self.tree.get_object('properties_button').set_sensitive(can_edit)
+        self.actions['properties'].set_enabled(can_edit)
 
         can_cut_copy = not isinstance(item, CMenu.TreeDirectory)
-        self.tree.get_object('cut_button').set_sensitive(can_cut_copy)
-        self.tree.get_object('copy_button').set_sensitive(can_cut_copy)
-        self.tree.get_object('edit_cut').set_sensitive(can_cut_copy)
-        self.tree.get_object('edit_copy').set_sensitive(can_cut_copy)
+        self.actions['cut'].set_enabled(can_cut_copy)
+        self.actions['copy'].set_enabled(can_cut_copy)
 
         can_paste = isinstance(item, CMenu.TreeDirectory) and self.cut_copy_buffer is not None
-
-        self.tree.get_object('edit_paste').set_sensitive(can_paste)
-        self.tree.get_object('paste_button').set_sensitive(can_paste)
+        self.actions['paste'].set_enabled(can_paste)
 
         index = items.get_path(iter).get_indices()[0]
         can_go_up = index > 0 and isinstance(item, CMenu.TreeDirectory)
@@ -492,24 +513,3 @@ class MainWindow(object):
 
     def on_restore_button_clicked(self, button):
         self.editor.restoreToSystem()
-
-    def on_close_button_clicked(self, button):
-        self.quit()
-
-    def on_properties_button_clicked(self, button):
-        self.on_edit_properties_activate(None)
-
-    def on_delete_button_clicked(self, button):
-        self.on_edit_delete_activate(None)
-
-    def on_cut_button_clicked(self, button):
-        self.on_edit_cut_activate(None)
-
-    def on_copy_button_clicked(self, button):
-        self.on_edit_copy_activate(None)
-
-    def on_paste_button_clicked(self, button):
-        self.on_edit_paste_activate(None)
-
-    def quit(self):
-        Gtk.main_quit()

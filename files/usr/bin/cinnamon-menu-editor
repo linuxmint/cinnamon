@@ -6,12 +6,15 @@ Usage:  cinnamon-menu-editor
 """
 
 import sys
+import gi
+gi.require_version('Gtk', '3.0')
+from gi.repository import Gtk
 
-sys.path.insert(0, '/usr/share/cinnamon/cinnamon-menu-editor')  # noqa
-from cme import MainWindow
+sys.path.append('/usr/share/cinnamon/cinnamon-menu-editor')  # noqa
+from cme.MainWindow import MainWindow
 
 
-def main():
+if __name__ == '__main__':
     try:
         from MenuEditor import config
         datadir = config.pkgdatadir
@@ -19,9 +22,5 @@ def main():
     except Exception:
         datadir = '.'
         version = '0.9'
-    app = MainWindow.MainWindow(datadir, version)
-    app.run()
-
-
-if __name__ == '__main__':
-    main()
+    app = MainWindow(datadir, version)
+    Gtk.main()
