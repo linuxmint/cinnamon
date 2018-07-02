@@ -678,7 +678,7 @@ XletSettingsBase.prototype = {
         for (let key in this.settingsData) {
             let props = this.settingsData[key];
             if (!has_required_fields(props, key)) return false;
-            if (props.type in SETTINGS_TYPES)
+            if ('default' in props)
                 props.value = props.default;
         }
         this.settingsData.__md5__ = checksum;
@@ -693,8 +693,8 @@ XletSettingsBase.prototype = {
         for (let key in newSettings) {
             let props = newSettings[key];
 
-            if (!("type" in props) || !(props.type in SETTINGS_TYPES)) continue;
-            let type = SETTINGS_TYPES[props.type];
+            // ignore anything that doesn't appear to be a valid settings type
+            if (!("type" in props) || !("default" in props)) continue;
 
             // If the setting already exists, we want to use the old value. If not we use the default.
             let oldValue = null;
