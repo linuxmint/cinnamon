@@ -1288,10 +1288,6 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
         Main.keybindingManager.removeHotKey("overlay-key-" + this.instance_id);
     }
 
-    _launch_editor() {
-        Util.spawnCommandLine("cinnamon-menu-editor");
-    }
-
     on_applet_clicked(event) {
         this.menu.toggle_with_options(this.enableAnimation);
     }

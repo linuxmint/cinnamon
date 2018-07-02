@@ -1,7 +1,7 @@
 {
     "layout" : {
         "type" : "layout",
-        "pages" : ["panel", "menu"],
+        "pages" : ["panel", "menu", "edit-menu-items"],
         "panel" : {
             "type" : "page",
             "title" : "Panel",
@@ -11,6 +11,12 @@
             "type" : "page",
             "title" : "Menu",
             "sections" : ["menu-layout", "menu-behave"]
+        },
+        "edit-menu-items" : {
+            "type" : "custom",
+            "title" : "Edit",
+            "file" : "cme.py",
+            "widget" : "MenuEditorPage"
         },
         "panel-appear" : {
             "type" : "section",
@@ -25,7 +31,7 @@
         "menu-layout" : {
             "type" : "section",
             "title" : "Layout and content",
-            "keys" : ["show-category-icons", "show-application-icons", "favbox-show", "show-places", "menu-editor-button"]
+            "keys" : ["show-category-icons", "show-application-icons", "favbox-show", "show-places"]
         },
         "menu-behave" : {
             "type" : "section",
@@ -116,11 +122,5 @@
     "default": false,
     "description": "Use menu animations",
     "tooltip": "Allow the menu to animate on open and close"
- },
-  "menu-editor-button" : {
-    "type" : "button",
-    "description" : "Open the menu editor",
-    "callback" : "_launch_editor",
-    "tooltip" : "Press this button to customize your menu entries."
  }
 }
