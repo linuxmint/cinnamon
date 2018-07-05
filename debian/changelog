@@ -1,3 +1,13 @@
+cinnamon (3.8.7) tara; urgency=medium
+
+  [ Michael Webster ]
+  * spices: Remove support for installing/removing system-wide gsettings schemas.
+
+  [ Matthias Gerstner ]
+  * cinnamon-settings-users.py: fix symlink attack vulnerability
+
+ -- Clement Lefebvre <root@linuxmint.com>  Thu, 05 Jul 2018 11:45:59 +0200
+
 cinnamon (3.8.6) tara; urgency=medium
 
   * Revert "network applet: Fix typo with showing access points in certain instances -"
