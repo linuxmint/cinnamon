@@ -73,6 +73,11 @@ function NMNetworkMenuItem() {
     this._init.apply(this, arguments);
 }
 
+function default_to_private_connections(client) {
+    let perms = client.get_permission_result (NM.Client.ClientPermission.SETTINGS_MODIFY_SYSTEM);
+    return (perms != NM.Client.ClientPermissionResult.YES);
+}
+
 NMNetworkMenuItem.prototype = {
     __proto__: PopupMenu.PopupBaseMenuItem.prototype,
 
@@ -740,12 +745,14 @@ NMDeviceWired.prototype = {
         let connection = new NM.SimpleConnection();
         connection._uuid = NM.utils_uuid_generate();
         connection.add_setting(new NM.SettingWired());
-        connection.add_setting(new NM.SettingConnection({
+        let setting_conn = new NM.SettingConnection({
             uuid: connection._uuid,
             id: this._autoConnectionName,
             type: NM.SETTING_WIRED_SETTING_NAME,
             autoconnect: true
-        }));
+        });
+        setting_conn.add_permission('user', GLib.get_user_name(), null);
+        connection.add_setting(setting_conn);
         return connection;
     }
 };
@@ -994,6 +1001,8 @@ NMDeviceWireless.prototype = {
 
         this._overflowItem = null;
         this._networks = [ ];
+
+        this._client = client;
 
         // breaking the layers with this, but cannot call
         // this.connectionValid until I have a device
@@ -1533,12 +1542,27 @@ NMDeviceWireless.prototype = {
 
         let connection = new NM.SimpleConnection();
         connection.add_setting(new NM.SettingWireless());
-        connection.add_setting(new NM.SettingConnection({
+        let setting_conn = new NM.SettingConnection({
             id: name,
             autoconnect: true, // NetworkManager will know to ignore this if appropriate
             uuid: NM.utils_uuid_generate(),
             type: NM.SETTING_WIRELESS_SETTING_NAME
-        }));
+        });
+        if (default_to_private_connections(this._client)) {
+            setting_conn.add_permission('user', GLib.get_user_name(), null);
+            if (apObj.security == NMAccessPointSecurity.WPA2_PSK ||
+                apObj.security == NMAccessPointSecurity.WPA_PSK) {
+                connection.add_setting(new NM.SettingWirelessSecurity({
+                    psk_flags: NM.SettingSecretFlags.AGENT_OWNED
+                }));
+            }
+            if (apObj.security == NMAccessPointSecurity.WEP) {
+                connection.add_setting(new NM.SettingWirelessSecurity({
+                    wep_key_flags: NM.SettingSecretFlags.AGENT_OWNED
+                }));
+            }
+        }
+        connection.add_setting(setting_conn);
         return connection;
     },
 
