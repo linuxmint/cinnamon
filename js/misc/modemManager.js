@@ -2,7 +2,7 @@
 
 const Gio = imports.gi.Gio;
 const Lang = imports.lang;
-const NMGtk = imports.gi.NMGtk;
+const NMA = imports.gi.NMA;
 const Signals = imports.signals;
 
 // _getMobileProvidersDatabase:
@@ -14,7 +14,7 @@ let _mpd;
 function _getMobileProvidersDatabase() {
     if (_mpd == null) {
         try {
-            _mpd = new NMGtk.MobileProvidersDatabase();
+            _mpd = new NMA.MobileProvidersDatabase();
             _mpd.init(null);
         } catch (e) {
             log(e.message);
