@@ -145,7 +145,7 @@ cinn_conf.set('pkglibexecdir',      join_paths(get_option('libexecdir'), meson.p
 cinn_conf.set('sysconfdir',         get_option('sysconfdir'))
 
 
-cinnamon = executable(cinnamon_exename,
+cinnamon = executable('cinnamon',
   'main.c',
   include_directories: [ rootInclude, stInclude, ],
   dependencies: cinnamon_deps,
@@ -198,6 +198,9 @@ st_gir = gnome.generate_gir(libcinnamon,
   include_directories: [
     include_directories('.'),
   ],
+
+  install: true,
+  install_dir_typelib: pkglibdir,
   # dependencies: deps to use during introspection scanning
   # export_packages: extra packages the gir file exports
   # header: (Added 0.43.0) name of main c header to include for the library, e.g. glib.h
@@ -236,6 +239,7 @@ gnome.generate_gir(libcinnamon,
   # dependencies: deps to use during introspection scanning
   # include_directories: extra include paths to look for gir files
   install: true,
+  install_dir_typelib: pkglibdir,
   # install_dir_gir: (Added 0.35.0) which directory to install the gir file into
   # install_dir_typelib: (Added 0.35.0) which directory to install the typelib file into
   # link_with: list of libraries to link with

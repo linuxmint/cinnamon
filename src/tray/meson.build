@@ -7,6 +7,7 @@ libcinnamon_tray = static_library('cinnamon-tray',
     'na-tray-manager.c',
   ],
   dependencies: [
+    clutter,
     gtk3,
     x11,
   ],

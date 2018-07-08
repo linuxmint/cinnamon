@@ -127,8 +127,8 @@ conf.set('HAVE_FDWALK', cc.has_function('fdwalk'))
 
 
 pkglibdir  = join_paths(get_option('libdir'),     meson.project_name())
-# libexecdir = join_paths(pkglibdir, meson.project_name())
-libexecdir = join_paths(get_option('libexecdir'), meson.project_name())
+libexecdir = join_paths(pkglibdir, meson.project_name())
+# libexecdir = join_paths(get_option('libexecdir'), meson.project_name())
 pkgdatadir = join_paths(get_option('datadir'),    meson.project_name())
 
 
