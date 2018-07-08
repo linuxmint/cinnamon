@@ -1,6 +1,6 @@
 # https://github.com/linuxmint/cinnamon
 project('cinnamon', 'c',
-  version: '3.6.7',
+  version: '3.8.7',
   meson_version: '>=0.42.0',
   default_options: [
     'sysconfdir=/etc',
@@ -69,18 +69,6 @@ gjs_console = cjs.get_pkgconfig_variable('cjs_console')
 
 muffin_gir_dir     = libmuffin.get_pkgconfig_variable('girdir')
 muffin_typelib_dir = libmuffin.get_pkgconfig_variable('typelibdir')
-jhbuild_typelibdir = gobject  .get_pkgconfig_variable('typelibdir')
-
-# Facultative dependencies
-
-if get_option('bluetooth')
-  gnome_bluetooth = dependency('gnome-bluetooth-1.0', version: '>=3.1.0')
-  gnome_bluetooth_dir = gnome_bluetooth.get_pkgconfig_variable('applet_libdir')
-  conf.set_quoted('BLUETOOTH_DIR', gnome_bluetooth_dir)
-else
-  gnome_bluetooth = dependency('', required: false)
-endif
-conf.set10('HAVE_BLUETOOTH', gnome_bluetooth.found())
 
 
 conf.set('HAVE_MALLINFO', cc.has_function('mallinfo'))
@@ -137,8 +125,6 @@ conf.set('HAVE_SYS_RESOURCE_H', cc.has_header('sys/resource.h'))
 conf.set('HAVE_FDWALK', cc.has_function('fdwalk'))
 
 
-
-use_jhbuild_wrapper_script = get_option('jhbuild-wrapper')
 
 pkglibdir  = join_paths(get_option('libdir'),     meson.project_name())
 # libexecdir = join_paths(pkglibdir, meson.project_name())

@@ -135,9 +135,7 @@ libcinnamon = shared_library('cinnamon',
 
 
 cinn_conf = configuration_data()
-cinn_conf.set('PYTHON',             import('python3').find_python().path())
 cinn_conf.set('VERSION',            meson.project_version())
-cinn_conf.set('JHBUILD_TYPELIBDIR', jhbuild_typelibdir)
 cinn_conf.set('bindir',             get_option('bindir'))
 cinn_conf.set('datadir',            get_option('datadir'))
 cinn_conf.set('libdir',             get_option('libdir'))
@@ -146,20 +144,6 @@ cinn_conf.set('pkgdatadir',         pkgdatadir)
 cinn_conf.set('pkglibexecdir',      join_paths(get_option('libexecdir'), meson.project_name()))
 cinn_conf.set('sysconfdir',         get_option('sysconfdir'))
 
-
-if use_jhbuild_wrapper_script
-  cinnamon_jhbuild = configure_file(
-    input : 'cinnamon-jhbuild.in',
-    output: 'cinnamon',
-    configuration: cinn_conf,
-  )
-  install_data(cinnamon_jhbuild,
-    install_mode: 'rwxr-xr-x',
-    install_dir: get_option('bindir'),
-  )
-endif
-
-cinnamon_exename = use_jhbuild_wrapper_script ? 'cinnamon-real' : 'cinnamon'
 
 cinnamon = executable(cinnamon_exename,
   'main.c',
@@ -170,18 +154,6 @@ cinnamon = executable(cinnamon_exename,
   install_rpath: join_paths(get_option('prefix'), pkglibdir),
 )
 
-
-
-cinnamon_extension_tool = configure_file(
-  input : 'cinnamon-extension-tool.in',
-  output: 'cinnamon-extension-tool',
-  configuration: cinn_conf,
-)
-
-# install_data(cinnamon_extension_tool,
-#   install_dir: get_option('bindir'),
-#   install_mode: 'rwxr-xr-x',
-# )
 
 cinnamon_perf_helper = executable('cinnamon-perf-helper',
   'cinnamon-perf-helper.c',

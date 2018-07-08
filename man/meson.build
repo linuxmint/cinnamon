@@ -1,5 +1,4 @@
 install_man([
-    'cinnamon-extension-tool.1',
     'cinnamon-launcher.1',
     'cinnamon-menu-editor.1',
     'cinnamon-settings.1',
