@@ -393,8 +393,9 @@ function _onDeskletSnapChanged(){
 
         enabledDesklets[i] = elements.join(":");
     }
-
+    global.settings.disconnect(deskletChangeKey);
     global.settings.set_strv(ENABLED_DESKLETS_KEY, enabledDesklets);
+    deskletChangeKey = global.settings.connect('changed::' + ENABLED_DESKLETS_KEY, _onEnabledDeskletsChanged);
     return;
 }
 
