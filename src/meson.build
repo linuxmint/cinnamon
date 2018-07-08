@@ -178,10 +178,10 @@ cinnamon_extension_tool = configure_file(
   configuration: cinn_conf,
 )
 
-install_data(cinnamon_extension_tool,
-  install_mode: 'rwxr-xr-x',
-  install_dir: get_option('bindir'),
-)
+# install_data(cinnamon_extension_tool,
+#   install_dir: get_option('bindir'),
+#   install_mode: 'rwxr-xr-x',
+# )
 
 cinnamon_perf_helper = executable('cinnamon-perf-helper',
   'cinnamon-perf-helper.c',
