@@ -1764,7 +1764,9 @@ CinnamonNetworkApplet.prototype = {
             }));
 
             this.menu.connect("open-state-changed", Lang.bind(this, this._updateForMenuToggle));
+
             this._periodicTimeoutId = 0;
+            this._updateFrequencySeconds = DEFAULT_PERIODIC_UPDATE_FREQUENCY_SECONDS;
 
             this._activeConnections = [ ];
             this._connections = [ ];
