@@ -1762,6 +1762,9 @@ CinnamonNetworkApplet.prototype = {
             this.menu.addAction(_("Network Connections"), Lang.bind(this, function() {
 				Util.spawnCommandLine("nm-connection-editor");
             }));
+            this.menu.addAction(_("Airplane Mode"), Lang.bind(this, function() {
+                Util.spawnCommandLine("rfkill block all");
+            }));
 
             this.menu.connect("open-state-changed", Lang.bind(this, this._updateForMenuToggle));
 
