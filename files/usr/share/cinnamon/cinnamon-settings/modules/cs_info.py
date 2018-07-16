@@ -163,13 +163,14 @@ class Module:
                 widget.pack_end(labelValue, False, False, 0)
                 settings.add_row(widget)
 
-            if os.path.exists("/usr/bin/upload-system-info"):
-                widget = SettingsWidget()
-                button = Gtk.Button(_("Upload system information"))
-                button.set_tooltip_text(_("No personal information included"))
-                button.connect("clicked", self.on_button_clicked)
-                widget.pack_start(button, True, True, 0)
-                settings.add_row(widget)
+    #        Put this back once we find a replacement for anonymous gist creation
+    #         if os.path.exists("/usr/bin/upload-system-info"):
+    #             widget = SettingsWidget()
+    #             button = Gtk.Button(_("Upload system information"))
+    #             button.set_tooltip_text(_("No personal information included"))
+    #             button.connect("clicked", self.on_button_clicked)
+    #             widget.pack_start(button, True, True, 0)
+    #             settings.add_row(widget)
 
-    def on_button_clicked(self, button):
-        subprocess.Popen(["upload-system-info"])
+    # def on_button_clicked(self, button):
+    #     subprocess.Popen(["upload-system-info"])
