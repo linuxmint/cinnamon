@@ -75,6 +75,12 @@ var SessionManagerIface = '\
        <method name="GetInhibitors"> \
            <arg type="ao" name="inhibitors" direction="out"/> \
        </method> \
+       <signal name="InhibitorAdded"> \
+           <arg type="o" name="id" direction="out"/> \
+       </signal> \
+       <signal name="InhibitorRemoved"> \
+           <arg type="o" name="id" direction="out"/> \
+       </signal> \
        <property name="InhibitedActions" type="u" access="read"/> \
     </interface> \
 </node>';
