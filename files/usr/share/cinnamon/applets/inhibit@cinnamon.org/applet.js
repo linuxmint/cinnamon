@@ -93,9 +93,8 @@ class InhibitSwitch extends PopupMenu.PopupBaseMenuItem {
                                                 this.updateStatus();
                                             }));
         } else if (active && this.sessionCookie) {
-            this.sessionProxy.UninhibitRemote(this.sessionCookie);
+            this.sessionProxy.UninhibitRemote(this.sessionCookie, Lang.bind(this, this.updateStatus));
             this.sessionCookie = null;
-            this.updateStatus();
         }
     }
 
