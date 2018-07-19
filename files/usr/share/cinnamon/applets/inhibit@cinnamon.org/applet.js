@@ -76,9 +76,11 @@ class InhibitSwitch extends PopupMenu.PopupBaseMenuItem {
             this.tooltip.set_text(_("Power management is already inhibited by another program"));
             this._applet.set_applet_tooltip(_("Power management: inhibited by another program"));
             this._statusIcon.set_opacity(255);
+            this._applet.inhibitors.updateInhibitors(this.sessionProxy);
         } else {
             this.tooltip.set_text("");
             this._statusIcon.set_opacity(0);
+            this._applet.inhibitors.resetInhibitors();
         }
     }
 
@@ -111,6 +113,156 @@ class InhibitSwitch extends PopupMenu.PopupBaseMenuItem {
     }
 }
 
+class InhibitorMenuItem extends PopupMenu.PopupIconMenuItem {
+    constructor(appId) {
+        super(
+            appId, 
+            "dialog-information-symbolic", 
+            St.IconType.SYMBOLIC, 
+            { activate: false, hover: false }
+        );
+        
+        this._tooltip = new Tooltips.Tooltip(this.actor, "");
+    }
+    
+    provideReason(reason) {
+        this._tooltip.set_text(reason);
+    }
+}
+
+class InhibitorMenuSection extends PopupMenu.PopupMenuSection {
+    constructor() {
+        super();
+        
+        this._itemsByObjPath = {}; // e.g. "/org/gnome/SessionManager/Inhibitor42"
+        this._itemCount = 0;
+        this._updateId = 0; // light-weight way to abort an in-progress update (by incrementing)
+        
+        this._createHeading();
+        
+        this.actor.hide();
+    }
+    
+    _createHeading() {
+        let headingText = _("Apps inhibiting power management:");
+        let heading = new PopupMenu.PopupMenuItem(headingText, { reactive: false });
+        this.addMenuItem(heading);
+    }
+    
+    resetInhibitors() {
+        // Abort any in-progress update or else it may continue to add menu items 
+        // even after we've cleared them.
+        this._updateId++;
+        
+        if (this._itemCount) {
+            this._itemsByObjPath = {};
+            this._itemCount = 0;
+            
+            // Clear all, but make sure we still have a heading for next time we're shown.
+            this.removeAll();
+            this._createHeading();
+            
+            this.actor.hide();
+        }
+    }
+    
+    updateInhibitors(sessionProxy) {
+        // Grab a new ID for this update while at the same time aborting any other in-progress 
+        // update. We don't want to end up with duplicate menu items!
+        let updateId = ++this._updateId;
+        
+        sessionProxy.GetInhibitorsRemote(Lang.bind(this, function(objectPaths) {
+            if (updateId != this._updateId) {
+                return;
+            }
+            
+            objectPaths = String(objectPaths).split(','); // Given object, convert to string[].
+            
+            // Add menu items for any paths we haven't seen before, and keep track of the paths
+            // iterated so we can figure out which of our existing paths are no longer present.
+            
+            let pathsPresent = {};
+            
+            for (let objectPath of objectPaths) {
+                if (objectPath) {
+                    pathsPresent[objectPath] = true;
+                    
+                    if (!(objectPath in this._itemsByObjPath)) {
+                        this._addInhibitor(objectPath, updateId);
+                    }
+                }
+            }
+            
+            // Remove menu items for those paths no longer present.
+            for (let objectPath in this._itemsByObjPath) {
+                if (!(objectPath in pathsPresent)) {
+                    this._removeInhibitor(objectPath);
+                }
+            }
+        }));
+    }
+    
+    // Precondition: objectPath not already in _itemsByObjPath
+    _addInhibitor(objectPath, updateId) {
+        GnomeSession.Inhibitor(objectPath, Lang.bind(this, function(inhibitorProxy, error) {
+            if (error || updateId != this._updateId) {
+                return;
+            }
+            
+            inhibitorProxy.GetFlagsRemote(Lang.bind(this, function(flags) {
+                if (updateId != this._updateId) {
+                    return;
+                }
+                
+                flags = parseInt(flags, 10); // Given object, convert to integer.
+                
+                // Only include those inhibiting sleep, idle, or both.
+                if (flags < INHIBIT_SLEEP_FLAG) {
+                    return;
+                }
+                
+                inhibitorProxy.GetAppIdRemote(Lang.bind(this, function(appId) {
+                    if (updateId != this._updateId) {
+                        return;
+                    }
+                    
+                    appId = String(appId); // Given object, convert to string.
+                    
+                    // Can go ahead and create the menu item now and fill in the reason later.
+                    let menuItem = new InhibitorMenuItem(appId);
+                    inhibitorProxy.GetReasonRemote(Lang.bind(this, function(reason) {
+                        if (updateId != this._updateId) {
+                            return;
+                        }
+                        
+                        reason = String(reason); // Given object, convert to string.
+                        menuItem.provideReason(reason);
+                    }));
+                    
+                    this.addMenuItem(menuItem);
+                    this._itemsByObjPath[objectPath] = menuItem;
+                    
+                    // Show the menu section upon adding the first inhibitor item.
+                    if (!(this._itemCount++)) {
+                        this.actor.show();
+                    }
+                }));
+            }));
+        }));
+    }
+    
+    // Precondition: objectPath already in _itemsByObjPath
+    _removeInhibitor(objectPath) {
+        this._itemsByObjPath[objectPath].destroy();
+        delete this._itemsByObjPath[objectPath];
+        
+        // Hide the menu section upon removing the last inhibitor item.
+        if (!(--this._itemCount)) {
+            this.actor.hide();
+        }
+    }
+}
+
 class CinnamonInhibitApplet extends Applet.IconApplet {
     constructor(metadata, orientation, panel_height, instanceId) {
         super(orientation, panel_height, instanceId);
@@ -138,6 +290,23 @@ class CinnamonInhibitApplet extends Applet.IconApplet {
         }));
 
         this.menu.addMenuItem(this.notificationsSwitch);
+        
+        this._createInhibitorMenuSection(orientation);
+    }
+    
+    _createInhibitorMenuSection(orientation) {
+        this._inhibitorMenuSection = new InhibitorMenuSection();
+        this._inhibitorSeparator = new PopupMenu.PopupSeparatorMenuItem();
+        
+        if (orientation == St.Side.BOTTOM) {
+            // Add above the switches.
+            this.menu.addMenuItem(this._inhibitorSeparator, 0);
+            this.menu.addMenuItem(this._inhibitorMenuSection, 0);
+        } else {
+            // Add below the switches.
+            this.menu.addMenuItem(this._inhibitorSeparator);
+            this.menu.addMenuItem(this._inhibitorMenuSection);
+        }
     }
 
     on_applet_clicked(event) {
@@ -146,6 +315,20 @@ class CinnamonInhibitApplet extends Applet.IconApplet {
 
     on_applet_removed_from_panel() {
         this.inhibitSwitch.kill();
+    }
+    
+    on_orientation_changed(orientation) {
+        this._inhibitorMenuSection.destroy();
+        this._inhibitorSeparator.destroy();
+        
+        this._createInhibitorMenuSection(orientation);
+        
+        // Will put the inhibitor menu section into the correct state.
+        this.inhibitSwitch.updateStatus();
+    }
+    
+    get inhibitors() {
+        return this._inhibitorMenuSection;
     }
 }
 
