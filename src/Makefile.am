@@ -10,7 +10,7 @@ service_in_files =
 
 -include $(INTROSPECTION_MAKEFILE)
 INTROSPECTION_GIRS =
-INTROSPECTION_SCANNER_ARGS = --warn-all --add-include-path=$(srcdir)
+INTROSPECTION_SCANNER_ARGS = --warn-all --add-include-path=$(srcdir) --add-include-path=$(MUFFIN_GIR_DIR) -L$(MUFFIN_TYPELIB_DIR)
 INTROSPECTION_COMPILER_ARGS = --includedir=$(srcdir) --includedir=$(MUFFIN_TYPELIB_DIR)
 
 typelibdir = $(pkglibdir)
@@ -49,6 +49,7 @@ generated_script_substitutions = \
 	    -e "s|@pkglibexecdir[@]|$(pkglibexecdir)|" \
 	    -e "s|@VERSION[@]|$(VERSION)|" \
 	    -e "s|@sysconfdir[@]|$(sysconfdir)|" \
+			-e "s|@MUFFIN_PLUGIN_API_VERSION[@]|$(MUFFIN_PLUGIN_API_VERSION)|" \
         -e "s|@GJS_CONSOLE[@]|$(GJS_CONSOLE)|"
 
 CLEANFILES += cinnamon $(bin_SCRIPTS)
@@ -61,13 +62,17 @@ cinnamon_cflags =				\
 	$(WARN_CFLAGS)				\
 	$(CINNAMON_CFLAGS)			\
 	-I$(srcdir)/tray			\
-    -DCLUTTER_ENABLE_EXPERIMENTAL_API   \
-    -DCOGL_ENABLE_EXPERIMENTAL_API  \
+	-DCLUTTER_ENABLE_EXPERIMENTAL_API				\
+	-DCOGL_ENABLE_EXPERIMENTAL_API \
+	-DCOGL_ENABLE_EXPERIMENTAL_2_0_API   \
+	-DCLUTTER_DISABLE_DEPRECATION_WARNINGS				\
+	-DCOGL_DISABLE_DEPRECATION_WARNINGS				\
 	-DVERSION=\"$(VERSION)\"		\
 	-DLOCALEDIR=\"$(datadir)/locale\" 	\
 	-DDATADIR=\"$(datadir)\"		\
 	-DCINNAMON_LIBEXECDIR=\"$(libexecdir)\"	\
 	-DCINNAMON_DATADIR=\"$(pkgdatadir)\"	\
+	-DMUFFIN_TYPELIB_DIR=\"$(MUFFIN_TYPELIB_DIR)\" \
 	-DCINNAMON_PKGLIBDIR=\"$(pkglibdir)\" \
 	-DCINNAMON_PKGLIBEXECDIR=\"$(pkglibexecdir)\"	\
 	-DJSDIR=\"$(pkgdatadir)/js\"
@@ -136,7 +141,8 @@ libcinnamon_la_gir_sources = \
 cinnamon_real_SOURCES =		\
 	main.c
 cinnamon_real_CPPFLAGS = $(cinnamon_cflags)
-cinnamon_real_LDADD = libcinnamon.la $(libcinnamon_la_LIBADD)
+cinnamon_real_LDADD = libcinnamon.la $(libcinnamon_la_LIBADD) $(MUFFIN_LIBS)
+cinnamon_real_LDFLAGS = -rpath $(MUFFIN_TYPELIB_DIR)
 cinnamon_real_DEPENDENCIES = libcinnamon.la
 
 ########################################
@@ -180,9 +186,9 @@ cinnamon_perf_helper_LDADD = $(CINNAMON_PERF_HELPER_LIBS)
 
 noinst_PROGRAMS += run-js-test
 
-run_js_test_CPPFLAGS = $(cinnamon_cflags)
+run_js_test_CPPFLAGS = $(MUFFIN_CFLAGS) $(cinnamon_cflags)
 run_js_test_LDADD = libcinnamon.la $(libcinnamon_la_LIBADD)
-run_js_test_LDFLAGS = $(WARN_LDFLAGS) -export-dynamic
+run_js_test_LDFLAGS = $(WARN_LDFLAGS) -export-dynamic -rpath $(MUFFIN_TYPELIB_DIR)
 
 run_js_test_SOURCES =			\
 	run-js-test.c
@@ -222,7 +228,7 @@ libcinnamon_la_LIBADD =		\
 libcinnamon_la_CPPFLAGS = $(cinnamon_cflags)
 
 Cinnamon-0.1.gir: libcinnamon.la St-1.0.gir
-Cinnamon_0_1_gir_INCLUDES = Clutter-1.0 ClutterX11-1.0 Meta-Muffin.0 Soup-2.4 CMenu-3.0 NetworkManager-1.0 NMClient-1.0
+Cinnamon_0_1_gir_INCLUDES = Clutter-0 ClutterX11-0 CoglPango-0 Cogl-0 Meta-Muffin.0 Soup-2.4 CMenu-3.0 NetworkManager-1.0 NMClient-1.0
 Cinnamon_0_1_gir_CFLAGS = $(libcinnamon_la_CPPFLAGS) -I $(srcdir)
 Cinnamon_0_1_gir_LIBS = libcinnamon.la
 Cinnamon_0_1_gir_FILES = $(libcinnamon_la_gir_sources)
@@ -232,7 +238,7 @@ INTROSPECTION_GIRS += Cinnamon-0.1.gir
 CLEANFILES += Cinnamon-0.1.gir
 
 St-1.0.gir: libst-1.0.la
-St_1_0_gir_INCLUDES = Clutter-1.0 Gtk-3.0
+St_1_0_gir_INCLUDES = Clutter-0 ClutterX11-0 CoglPango-0 Cogl-0 Meta-Muffin.0 Gtk-3.0
 St_1_0_gir_CFLAGS = $(st_cflags) -DST_COMPILATION
 St_1_0_gir_LIBS = libst-1.0.la
 St_1_0_gir_FILES = $(filter-out %-private.h $(st_non_gir_sources), $(addprefix $(srcdir)/,$(st_source_h))) \

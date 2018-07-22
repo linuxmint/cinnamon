@@ -1,6 +1,6 @@
 // -*- mode: js; js-indent-level: 4; indent-tabs-mode: nil -*-
 
-imports.gi.versions.Clutter = '1.0';
+imports.gi.versions.Clutter = '0';
 imports.gi.versions.Gio = '2.0';
 imports.gi.versions.Gdk = '3.0';
 imports.gi.versions.GdkPixbuf = '2.0';
