@@ -74,8 +74,8 @@ function NMNetworkMenuItem() {
 }
 
 function default_to_private_connections(client) {
-    let perms = client.get_permission_result (NM.Client.ClientPermission.SETTINGS_MODIFY_SYSTEM);
-    return (perms != NM.Client.ClientPermissionResult.YES);
+    let perms = client.get_permission_result (NM.ClientPermission.SETTINGS_MODIFY_SYSTEM);
+    return (perms != NM.ClientPermissionResult.YES);
 }
 
 NMNetworkMenuItem.prototype = {
