@@ -74,10 +74,10 @@ PKG_CHECK_MODULES(CINNAMON, gio-2.0 >= $GIO_MIN_VERSION
                                cjs-1.0 >= $GJS_MIN_VERSION
                                libcinnamon-menu-3.0 $recorder_modules
                                gdk-x11-3.0 libsoup-2.4 gl
-                               muffin-clutter-0
-                               muffin-cogl-0
-                               muffin-cogl-path-0
                                muffin-cogl-pango-0
+                               muffin-cogl-path-0
+                               muffin-cogl-0
+                               muffin-clutter-0
                                libstartup-notification-1.0 >= $STARTUP_NOTIFICATION_MIN_VERSION
                                gobject-introspection-1.0 >= $GOBJECT_INTROSPECTION_MIN_VERSION
                                polkit-agent-1 >= $POLKIT_MIN_VERSION xfixes
@@ -102,9 +102,9 @@ AC_CHECK_FUNCS(XFixesCreatePointerBarrier)
 CFLAGS=$saved_CFLAGS
 LIBS=$saved_LIBS
 
-PKG_CHECK_MODULES(ST, muffin-clutter-0 muffin-cogl-0 muffin-cogl-path-0 muffin-cogl-pango-0 gtk+-3.0 libcroco-0.6 >= 0.6.2 cinnamon-desktop >= 2.4.0 x11)
+PKG_CHECK_MODULES(ST, muffin-cogl-path-0 muffin-clutter-0 gtk+-3.0 libcroco-0.6 >= 0.6.2 cinnamon-desktop >= 2.4.0 x11)
 PKG_CHECK_MODULES(GDMUSER, dbus-glib-1 gtk+-3.0)
-PKG_CHECK_MODULES(TRAY, muffin-clutter-0 muffin-cogl-0 muffin-cogl-path-0 muffin-cogl-pango-0 gtk+-3.0)
+PKG_CHECK_MODULES(TRAY, muffin-clutter-0 gtk+-3.0)
 PKG_CHECK_MODULES(DESKTOP_SCHEMAS, cinnamon-desktop >= 2.4.0)
 
 MUFFIN_GIR_DIR=`$PKG_CONFIG --variable=girdir libmuffin`

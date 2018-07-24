@@ -8,6 +8,7 @@
 #define __ST_COGL_WRAPPER_H__
 
 #include <clutter/clutter.h>
+#include <cogl/cogl.h>
 
 G_BEGIN_DECLS
 

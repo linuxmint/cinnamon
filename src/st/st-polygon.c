@@ -201,9 +201,9 @@ st_polygon_paint (ClutterActor *self)
         coords[6] = priv->urc_x;
         coords[7] = priv->urc_y;
 
-        // CoglPath *selection_path = cogl_path_new();
-        // cogl_path_polygon (selection_path, (float *)coords, 4);
-        // cogl_path_fill (selection_path);
+        CoglPath *selection_path = cogl2_path_new();
+        cogl_path_polygon (selection_path, (float *)coords, 4);
+        cogl_path_fill (selection_path);
     }
 }
 
@@ -233,9 +233,9 @@ st_polygon_pick (ClutterActor       *self,
                               pick_color->blue,
                               pick_color->alpha);
 
-    // CoglPath *selection_path = cogl_path_new();
-    // cogl_path_polygon (selection_path, (float *)coords, 4);
-    // cogl_path_fill (selection_path);
+    CoglPath *selection_path = cogl2_path_new();
+    cogl_path_polygon (selection_path, (float *)coords, 4);
+    cogl_path_fill (selection_path);
 }
 
 static void
