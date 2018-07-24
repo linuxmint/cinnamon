@@ -15,6 +15,7 @@ AM_INIT_AUTOMAKE([1.11 no-dist-gzip dist-xz tar-ustar foreign subdir-objects])
 AM_MAINTAINER_MODE([enable])
 
 m4_ifdef([AM_SILENT_RULES],[AM_SILENT_RULES([yes])])
+m4_divert_text([DEFAULTS], [: "${ARFLAGS=cr} ${AR_FLAGS=cr}"])
 
 # Checks for programs.
 AC_PROG_CC
