@@ -127,7 +127,7 @@ class InhibitSwitch extends PopupMenu.PopupBaseMenuItem {
     }
 }
 
-class InhibitorMenuItem extends PopupMenu.PopupIconMenuItem {
+class InhibitingAppMenuItem extends PopupMenu.PopupIconMenuItem {
     constructor(appId) {
         super(
             appId, 
@@ -136,11 +136,47 @@ class InhibitorMenuItem extends PopupMenu.PopupIconMenuItem {
             { activate: false, hover: false }
         );
         
+        this.appId = appId;
+        this._reasonsByObjPath = {};
+        this._inhibitorCount = 0;
         this._tooltip = new Tooltips.Tooltip(this.actor, "");
     }
     
-    provideReason(reason) {
-        this._tooltip.set_text(reason);
+    addInhibitor(objectPath, reason) {
+        if (!(objectPath in this._reasonsByObjPath)) {
+            this._reasonsByObjPath[objectPath] = reason;
+            this._inhibitorCount++;
+            this._updateTooltip();
+        }
+    }
+    
+    updateInhibitor(objectPath, reason) {
+        if (objectPath in this._reasonsByObjPath) {
+            this._reasonsByObjPath[objectPath] = reason;
+            this._updateTooltip();
+        }
+    }
+    
+    removeInhibitor(objectPath) {
+        if (objectPath in this._reasonsByObjPath) {
+            delete this._reasonsByObjPath[objectPath];
+            this._inhibitorCount--;
+            this._updateTooltip();
+        }
+    }
+    
+    hasInhibitor() {
+        return !!this._inhibitorCount;
+    }
+    
+    _updateTooltip() {
+        let reasons = Object.values(this._reasonsByObjPath)
+            .map(r => r && r.trim()) // Remove extraneous whitespace.
+            .filter(Boolean); // Discard null/empty reasons.
+            
+        reasons = Array.from(new Set(reasons)); // Keep only unique reasons.
+        
+        this._tooltip.set_text(reasons.join("\n"));
     }
 }
 
@@ -148,7 +184,14 @@ class InhibitorMenuSection extends PopupMenu.PopupMenuSection {
     constructor() {
         super();
         
-        this._itemsByObjPath = {}; // e.g. "/org/gnome/SessionManager/Inhibitor42"
+        // Menu items indexed by app ID e.g. "org.gnome.Rhythmbox3".
+        // Each menu item is associated with exactly one app ID and vice versa.
+        this._itemsByAppId = {};
+        
+        // Menu items indexed by object path e.g. "/org/gnome/SessionManager/Inhibitor42".
+        // Multiple paths may point to the same item if an app creates multiple inhibitors.
+        this._itemsByObjPath = {};
+        
         this._itemCount = 0;
         this._updateId = 0; // light-weight way to abort an in-progress update (by incrementing)
         
@@ -169,6 +212,7 @@ class InhibitorMenuSection extends PopupMenu.PopupMenuSection {
         this._updateId++;
         
         if (this._itemCount) {
+            this._itemsByAppId = {};
             this._itemsByObjPath = {};
             this._itemCount = 0;
             
@@ -242,24 +286,34 @@ class InhibitorMenuSection extends PopupMenu.PopupMenuSection {
                     
                     appId = String(appId); // Given object, convert to string.
                     
-                    // Can go ahead and create the menu item now and fill in the reason later.
-                    let menuItem = new InhibitorMenuItem(appId);
+                    // Get/create the menu item for this app.
+                    let menuItem;
+                    if (appId in this._itemsByAppId) {
+                        menuItem = this._itemsByAppId[appId];
+                    } else {
+                        menuItem = new InhibitingAppMenuItem(appId);
+                        this._itemsByAppId[appId] = menuItem;
+                        this.addMenuItem(menuItem);
+                        
+                        // Show the menu section upon adding the first menu item.
+                        if (!(this._itemCount++)) {
+                            this.actor.show();
+                        }
+                    }
+                    
+                    this._itemsByObjPath[objectPath] = menuItem;
+                    
+                    // Go ahead and add the inhibitor to the item now and fill in the reason later.
+                    menuItem.addInhibitor(objectPath);
+                    
                     inhibitorProxy.GetReasonRemote(Lang.bind(this, function(reason) {
                         if (updateId != this._updateId) {
                             return;
                         }
                         
                         reason = String(reason); // Given object, convert to string.
-                        menuItem.provideReason(reason);
+                        menuItem.updateInhibitor(objectPath, reason);
                     }));
-                    
-                    this.addMenuItem(menuItem);
-                    this._itemsByObjPath[objectPath] = menuItem;
-                    
-                    // Show the menu section upon adding the first inhibitor item.
-                    if (!(this._itemCount++)) {
-                        this.actor.show();
-                    }
                 }));
             }));
         }));
@@ -267,12 +321,19 @@ class InhibitorMenuSection extends PopupMenu.PopupMenuSection {
     
     // Precondition: objectPath already in _itemsByObjPath
     _removeInhibitor(objectPath) {
-        this._itemsByObjPath[objectPath].destroy();
+        let menuItem = this._itemsByObjPath[objectPath];
         delete this._itemsByObjPath[objectPath];
+        menuItem.removeInhibitor(objectPath);
         
-        // Hide the menu section upon removing the last inhibitor item.
-        if (!(--this._itemCount)) {
-            this.actor.hide();
+        // Remove the menu item if the last inhibitor for the app has been removed.
+        if (!menuItem.hasInhibitor()) {
+            delete this._itemsByAppId[menuItem.appId];
+            menuItem.destroy();
+            
+            // Hide the menu section upon removing the last menu item.
+            if (!(--this._itemCount)) {
+                this.actor.hide();
+            }
         }
     }
 }
