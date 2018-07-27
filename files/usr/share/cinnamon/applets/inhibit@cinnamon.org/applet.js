@@ -46,12 +46,12 @@ class InhibitSwitch extends PopupMenu.PopupBaseMenuItem {
             this.actor.show();
             this.updateStatus();
             
-            this.inhibitorAddedId = this.sessionProxy.connectSignal(
+            this.sigAddedId = this.sessionProxy.connectSignal(
                 "InhibitorAdded", 
                 Lang.bind(this, this.updateStatus)
             );
             
-            this.inhibitorRemovedId = this.sessionProxy.connectSignal(
+            this.sigRemovedId = this.sessionProxy.connectSignal(
                 "InhibitorRemoved",
                 Lang.bind(this, this.updateStatus)
             );
@@ -117,8 +117,13 @@ class InhibitSwitch extends PopupMenu.PopupBaseMenuItem {
             this.sessionCookie = null;
         }
 
-        this.sessionProxy.disconnect(this.inhibitorAddedId);
-        this.sessionProxy.disconnect(this.inhibitorRemovedId);
+        if (this.sigAddedId) {
+            this.sessionProxy.disconnectSignal(this.sigAddedId);
+        }
+        
+        if (this.sigRemovedId) {
+            this.sessionProxy.disconnectSignal(this.sigRemovedId);
+        }
     }
 }
 
