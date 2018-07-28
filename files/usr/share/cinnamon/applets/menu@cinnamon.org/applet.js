@@ -1832,7 +1832,7 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
                 if (item_actor._delegate instanceof ApplicationButton || item_actor._delegate instanceof RecentButton)
                     item_actor._delegate.activateContextMenus();
                 return true;
-            } else if (this._activeContainer === this.favoritesBox && symbol === Clutter.Delete) {
+            } else if (!this.searchActive && this._activeContainer === this.favoritesBox && symbol === Clutter.Delete) {
                 item_actor = this.favoritesBox.get_child_at_index(this._selectedItemIndex);
                 if (item_actor._delegate instanceof FavoritesButton) {
                     let favorites = AppFavorites.getAppFavorites().getFavorites();
@@ -3062,11 +3062,6 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
 
     resetSearch(){
         this.searchEntry.set_text("");
-        this._previousSearchPattern = "";
-        this.searchActive = false;
-        this._clearAllSelections(true);
-        this._setCategoriesButtonActive(true);
-        global.stage.set_key_focus(this.searchEntry);
     }
 
     _onSearchTextChanged (se, prop) {
@@ -3091,6 +3086,7 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
                         }));
                 }
                 this._setCategoriesButtonActive(false);
+                this.lastSelectedCategory = "search"
                 this._doSearch();
             } else {
                 if (this._searchIconClickedId > 0)
