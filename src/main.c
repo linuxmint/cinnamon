@@ -309,7 +309,6 @@ main (int argc, char **argv)
   cinnamon_a11y_init ();
   cinnamon_perf_log_init ();
 
-  g_irepository_prepend_search_path (MUFFIN_TYPELIB_DIR);
   g_irepository_prepend_search_path (CINNAMON_PKGLIBDIR);
 
   /* Disable debug spew from various libraries */
