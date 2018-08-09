@@ -491,10 +491,12 @@ class Module:
         else:
             status_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
             status_icon = Gtk.Image.new_from_icon_name(self.bat_level_to_icon(battery_level), Gtk.IconSize.BUTTON)
+            status_icon.set_size_request(30, -1)
+
             status_box.pack_start(status_icon, False, False, 15)
 
             status_label = Gtk.Label(self.bat_level_to_label(battery_level))
-            status_box.pack_start(status_label, False, False, 0)
+            status_box.pack_end(status_label, False, False, 0)
             hbox.pack_start(status_box, True, True, 0)
 
         vbox.pack_start(hbox, False, False, 0)
@@ -503,6 +505,7 @@ class Module:
             label = Gtk.Label()
             label.set_markup(details)
             label.get_style_context().add_class("dim-label")
+            label.set_halign(Gtk.Align.END)
             vbox.pack_end(label, False, False, 0)
 
         widget.pack_start(vbox, True, True, 0)
