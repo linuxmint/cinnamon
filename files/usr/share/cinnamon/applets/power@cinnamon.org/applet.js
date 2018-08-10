@@ -185,6 +185,7 @@ class BrightnessSlider extends PopupMenu.PopupSliderMenuItem {
         this._applet = applet;
         this._seeking = false;
         this._minimum_value = minimum_value;
+        this._step = .05;
 
         this.connect("drag-begin", Lang.bind(this, function() {
             this._seeking = true;
@@ -205,6 +206,14 @@ class BrightnessSlider extends PopupMenu.PopupSliderMenuItem {
         Interfaces.getDBusProxyAsync(busName, Lang.bind(this, function(proxy, error) {
             this._proxy = proxy;
             this._proxy.GetPercentageRemote(Lang.bind(this, this._dbusAcquired));
+
+            try {
+                this._proxy.GetStepRemote((step) => {
+                    this._step = (step / 100);
+                });
+            } catch(e) {
+                this._step = .05;
+            }
         }));
     }
 
@@ -227,7 +236,28 @@ class BrightnessSlider extends PopupMenu.PopupSliderMenuItem {
         if (value < this._minimum_value) {
             value = this._minimum_value;
         }
-        this._setBrightness(Math.round(value * 100));
+
+        let i = this._minimum_value;
+        let v = value;
+        let step = this._step;
+
+        while (i < 1.0) {
+            if (v > (i + step)) {
+                i = i + step;
+                continue;
+            }
+
+            if (((i + step) - v) < (v - i)) {
+                v = i + step;
+            } else {
+                v = i;
+            }
+
+            break;
+        }
+
+        this.setValue(v);
+        this._setBrightness(Math.round(v * 100));
     }
 
     _getBrightness() {

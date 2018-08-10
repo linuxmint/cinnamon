@@ -636,8 +636,26 @@ class BrightnessSlider(SettingsWidget):
         self.min_label.set_markup("<i><small>0%</small></i>")
         self.max_label.set_markup("<i><small>100%</small></i>")
 
-        self.content_widget = Gtk.Scale.new_with_range(Gtk.Orientation.HORIZONTAL, 1, 100, 5)
+        step = 5
+
+        try:
+            # Keyboard backlight
+            step = proxy.GetStep()
+            self.content_widget = Gtk.Scale.new_with_range(Gtk.Orientation.HORIZONTAL, 0, 100, step)
+            val = 0
+
+            while val < 100 - step:
+                val += step
+
+                self.content_widget.add_mark(val, Gtk.PositionType.BOTTOM, None)
+
+        except GLib.Error:
+            self.content_widget = Gtk.Scale.new_with_range(Gtk.Orientation.HORIZONTAL, 1, 100, step)
+
+        self.step = step
+
         self.content_widget.set_draw_value(False)
+        self.content_widget.set_digits(0)
 
         hbox.pack_start(self.min_label, False, False, 0)
         hbox.pack_start(self.content_widget, True, True, 0)
@@ -646,11 +664,13 @@ class BrightnessSlider(SettingsWidget):
         self.pack_start(self.label, False, False, 0)
         self.pack_start(hbox, True, True, 6)
 
-        self.on_dbus_changed()
-
         self.proxy.connect("g-signal", self.on_dbus_changed)
         self.content_widget.connect("scroll-event", self.on_scroll_event)
-        self.content_widget.connect("value-changed", self.apply_later)
+        self.content_widget.connect("change-value", self.on_change_value)
+
+        self.value_changed_id = self.content_widget.connect("value-changed", self.apply_later)
+
+        self.on_dbus_changed()
 
     def apply_later(self, *args):
         def apply(self):
@@ -661,18 +681,49 @@ class BrightnessSlider(SettingsWidget):
             GLib.source_remove(self.timer)
         self.timer = GLib.timeout_add(300, apply, self)
 
+    def on_change_value(self, range, scroll_type, value, data=None):
+        # Keyboard backlights can have very few adjustment steps (for instance,
+        # 0, 50% and 100% in the case of a lenovo p51 laptop.)  It's desirable
+        # to have the adjustment ratchet to these values, otherwise you can
+        # have the slider misrepresenting the actual value.
+        #
+        # This intermediate step (change-value signal) lets us clamp the new
+        # value to an actual valid position before sending it to the proxy.
+        i = 0
+        v = round(value)
+        step = self.step
+
+        while i < 100:
+            if v > i + step:
+                i += step
+                continue
+
+            if ((i + step) - v) < (v - i):
+                v = i + step
+            else:
+                v = i
+
+            break
+
+        self.content_widget.set_value(v)
+
+        return True
+
     def on_scroll_event(self, widget, event):
         found, delta_x, delta_y = event.get_scroll_deltas()
 
         # If you scroll up, delta_y < 0. This is a weird world
-        widget.set_value(widget.get_value() - delta_y * self.step)
+        self.content_widget.set_value(widget.get_value() - delta_y * self.step)
 
         return True
 
     def on_dbus_changed(self, *args):
         try:
             brightness = self.proxy.GetPercentage()
+
+            self.content_widget.handler_block(self.value_changed_id)
             self.content_widget.set_value(brightness)
+            self.content_widget.handler_unblock(self.value_changed_id)
         except:
             self.section.hide()
 
