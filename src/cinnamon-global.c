@@ -1023,13 +1023,7 @@ update_scale_factor (GtkSettings *settings,
   g_object_get (gtk_settings, "gtk-xft-dpi", &xft_dpi, NULL);
   g_object_set (clutter_settings_get_default (), "font-dpi", xft_dpi, NULL);
 
-   /* Make sure clutter and gdk scaling stays disabled
-    * window-scaling-factor doesn't exist yet in clutter < 1.18 */
-  if (g_object_class_find_property (G_OBJECT_GET_CLASS (clutter_settings_get_default ()),
-                                    "window-scaling-factor"))
-    {
-      g_object_set (clutter_settings_get_default (), "window-scaling-factor", 1, NULL);
-    }
+   /* Make sure gdk scaling stays disabled */
   gdk_x11_display_set_window_scale (gdk_display_get_default (), 1);
 }
 
