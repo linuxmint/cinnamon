@@ -287,6 +287,21 @@ class BrightnessSlider extends PopupMenu.PopupSliderMenuItem {
 
         this.tooltip.set_text(this.tooltipText);
     }
+
+    /* Overriding PopupSliderMenuItem so we can modify the scroll step */
+    _onScrollEvent(actor, event) {
+        let direction = event.get_scroll_direction();
+
+        if (direction == Clutter.ScrollDirection.DOWN) {
+            this._value = Math.max(0, this._value - this._step);
+        }
+        else if (direction == Clutter.ScrollDirection.UP) {
+            this._value = Math.min(1, this._value + this._step);
+        }
+
+        this._slider.queue_repaint();
+        this.emit('value-changed', this._value);
+    }
 }
 
 class CinnamonPowerApplet extends Applet.TextIconApplet {
