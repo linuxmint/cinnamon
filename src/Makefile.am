@@ -146,7 +146,7 @@ cinnamon_real_CPPFLAGS = \
 	$(MUFFIN_CFLAGS) \
 	$(cinnamon_cflags)
 
-cinnamon_real_LDADD = libcinnamon.la $(CINNAMON_LIBS) $(MUFFIN_LIBS) -lm
+cinnamon_real_LDADD = libcinnamon.la $(CINNAMON_LIBS) $(MUFFIN_LIBS) -lm -lpthread
 cinnamon_real_LDFLAGS = -rpath $(MUFFIN_TYPELIB_DIR)
 cinnamon_real_DEPENDENCIES = libcinnamon.la
 
@@ -222,6 +222,7 @@ cinnamon-enum-types.c: $(srcdir)/cinnamon-enum-types.c.in stamp-cinnamon-enum-ty
 EXTRA_DIST += cinnamon-enum-types.c.in
 
 libcinnamon_libadd =		\
+	-lpthread \
 	-lm			\
 	$(CINNAMON_LIBS)	\
 	libst-1.0.la       	\
