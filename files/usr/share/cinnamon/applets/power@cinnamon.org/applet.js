@@ -257,7 +257,11 @@ class BrightnessSlider extends PopupMenu.PopupSliderMenuItem {
         }
 
         this.setValue(v);
-        this._setBrightness(Math.round(v * 100));
+
+        // A non-zero minimum brightness can cause our stepped value
+        // to exceed 100, making the slider jitter (because c-s-d rejects
+        // the value)
+        this._setBrightness(Math.min(100, Math.round(v * 100)));
     }
 
     _getBrightness() {
