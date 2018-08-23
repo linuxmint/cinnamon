@@ -187,21 +187,33 @@ class PictureChooserButton(BaseChooserButton):
 
     def add_picture(self, path, callback, title=None, id=None):
         if os.path.exists(path):
+            pixbuf = None
+            GdkPixbufMethod = None
+            args = [path]
+
             if self.menu_pictures_size is None:
-                pixbuf = GdkPixbuf.Pixbuf.new_from_file(path)
+                GdkPixbufMethod = GdkPixbuf.Pixbuf.new_from_file
             else:
-                pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_scale(path, -1, self.menu_pictures_size, True)
-            image = Gtk.Image.new_from_pixbuf (pixbuf)
+                GdkPixbufMethod = GdkPixbuf.Pixbuf.new_from_file_at_scale
+                args = [path, -1, self.menu_pictures_size, True]
+
+            try:
+                pixbuf = GdkPixbufMethod(*args)
+            except GLib.Error as e:
+                print('Caught GLib.Error exception: {}\npath: {}'.format(str(path)))
+
             menuitem = Gtk.MenuItem()
-            if title is not None:
-                vbox = Gtk.VBox()
-                vbox.pack_start(image, False, False, 2)
-                label = Gtk.Label()
-                label.set_text(title)
-                vbox.pack_start(label, False, False, 2)
-                menuitem.add(vbox)
-            else:
-                menuitem.add(image)
+            if pixbuf is not None:
+                image = Gtk.Image.new_from_pixbuf (pixbuf)
+                if title is not None:
+                    vbox = Gtk.VBox()
+                    vbox.pack_start(image, False, False, 2)
+                    label = Gtk.Label()
+                    label.set_text(title)
+                    vbox.pack_start(label, False, False, 2)
+                    menuitem.add(vbox)
+                else:
+                    menuitem.add(image)
             if id is not None:
                 menuitem.connect('activate', self._on_picture_selected, path, callback, id)
             else:
