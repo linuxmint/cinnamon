@@ -200,7 +200,7 @@ class PictureChooserButton(BaseChooserButton):
             try:
                 pixbuf = GdkPixbufMethod(*args)
             except GLib.Error as e:
-                print('Caught GLib.Error exception: {}\npath: {}'.format(str(path)))
+                print('Caught GLib.Error exception: {}\npath: {}'.format(e, str(path)))
 
             menuitem = Gtk.MenuItem()
             if pixbuf is not None:
