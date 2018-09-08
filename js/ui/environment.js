@@ -28,8 +28,13 @@ function _patchContainerClass(containerClass) {
     // This one is a straightforward mapping of the C method
     containerClass.prototype.child_set = function(actor, props) {
         let meta = this.get_child_meta(actor);
-        for (let prop in props)
-            meta[prop] = props[prop];
+        // Some properties cannot be modified in mozjs60.
+        // e.g. "Property StTableChild.y_align is not writable"
+        for (let key in props) {
+            try {
+                meta[key] = props[key];
+            } catch (e) {}
+        }
     };
 
     // clutter_container_add() actually is a an add-many-actors

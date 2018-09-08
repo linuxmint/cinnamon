@@ -209,12 +209,12 @@ function _step(g, finish, onError) {
         waitFunction(function() {
                          _step(g, finish, onError);
                      });
-    } catch (err if err instanceof StopIteration) {
-        if (finish)
-            finish();
     } catch (err) {
-        if (onError)
-            onError(err);
+        if (err instanceof StopIteration) {
+            if (onError) onError(err);
+            return;
+        }
+        if (finish) finish();
     }
 }
 
