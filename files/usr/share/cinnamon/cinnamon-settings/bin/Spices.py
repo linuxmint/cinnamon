@@ -402,6 +402,9 @@ class Spice_Harvester(GObject.Object):
     def _load_metadata(self):
         self.meta_map = {}
 
+        if self.themes: # Themes don't have metadata.json
+            return
+
         for directory in self.spices_directories:
             if os.path.exists(directory):
                 extensions = os.listdir(directory)
