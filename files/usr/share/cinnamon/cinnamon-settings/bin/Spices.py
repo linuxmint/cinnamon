@@ -19,7 +19,8 @@ except Exception as detail:
     print(detail)
     sys.exit(1)
 
-from urllib.request import urlopen
+from http.client import HTTPSConnection
+from urllib.parse import urlparse
 
 try:
     import json
@@ -381,21 +382,26 @@ class Spice_Harvester(GObject.Object):
         #interrupted.
         count = 0
         blockSize = 1024 * 8
+        parsed_url = urlparse(url)
+        host = parsed_url.netloc
         try:
-            with urlopen(url, timeout=15) as urlobj:
-                assert urlobj.getcode() == 200
+            connection = HTTPSConnection(host, timeout=15)
+            headers = { "Accept-Encoding": "identity", "Host": host, "User-Agent": "Python/3" }
+            connection.request("GET", parsed_url.path, headers=headers)
+            urlobj = connection.getresponse()
+            assert urlobj.getcode() == 200
 
-                totalSize = int(urlobj.info()['content-length'])
+            totalSize = int(urlobj.info()['content-length'])
 
-                while not self._is_aborted():
-                    data = urlobj.read(blockSize)
-                    count += 1
-                    if not data:
-                        break
-                    if not binary:
-                        data = data.decode("utf-8")
-                    outfd.write(data)
-                    ui_thread_do(reporthook, count, blockSize, totalSize)
+            while not self._is_aborted():
+                data = urlobj.read(blockSize)
+                count += 1
+                if not data:
+                    break
+                if not binary:
+                    data = data.decode("utf-8")
+                outfd.write(data)
+                ui_thread_do(reporthook, count, blockSize, totalSize)
         except Exception as e:
             raise e
 
