@@ -1,3 +1,18 @@
+cinnamon (3.8.9) tara; urgency=medium
+
+  [ Michael Webster ]
+  * cs_sound.py: Gracefully handle input streams that don't have a name, ignore streams created by sound effects and a11y utilities, and don't add the same source id more than once.
+  * menu applet: Make sure the menu is fully reset when the search entry is cleared (thru any means) and don't let the favorites Del key handler steal keystrokes from an active search.
+
+  [ Jason Hicks ]
+  * popupMenu: Fix undefined _delegate property warning (#7706)
+  * deskletManager: Fix launcher-list gsetting resetting on desklet snap grid width change
+
+  [ Clement Lefebvre ]
+  * Spices.py: Fix connection to server with certain connexions
+
+ -- Clement Lefebvre <root@linuxmint.com>  Tue, 11 Sep 2018 14:39:40 +0100
+
 cinnamon (3.8.8) tara; urgency=medium
 
   [ Michael Webster ]
