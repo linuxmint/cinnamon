@@ -323,7 +323,7 @@ NotificationDaemon.prototype = {
 
         // Find expiration timestamp.
         let expires;
-        if (!timeout || hints.resident || hints.urgency == 2) { // Never expires.
+        if (!timeout || hints.resident) { // Never expires.
             expires = ndata.expires = 0;
         } else if (timeout == -1) { // Default expiration.
             expires = ndata.expires = Date.now()+this.timeout*1000;
