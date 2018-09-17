@@ -1,6 +1,6 @@
 # https://github.com/linuxmint/cinnamon
 project('cinnamon', 'c',
-  version: '3.8.7',
+  version: '3.8.8',
   meson_version: '>=0.42.0',
   default_options: [
     'sysconfdir=/etc',
