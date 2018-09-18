@@ -27,8 +27,6 @@ const Tweener = imports.tweener.tweener;
  * affect the entire application.)
  */
 
-const tweenStateObjects = [];
-
 /**
  * init:
  *
@@ -226,41 +224,23 @@ function _wrapTweening(target, tweeningParameters) {
     _addHandler(target, tweeningParameters, 'onComplete', _tweenCompleted);
 }
 
-function _findTweenStateIndex(target) {
-    return tweenStateObjects.findIndex(function(stateObj) {
-        return stateObj.target === target;
-    });
-}
-
 function _getTweenState(target) {
     // If we were paranoid, we could keep a plist mapping targets to
     // states... but we're not that paranoid.
-    let stateIndex = _findTweenStateIndex(target);
-    if (stateIndex === -1) {
-        tweenStateObjects.push({
-            target,
-            state: {}
-        });
-        stateIndex = tweenStateObjects.length - 1;
-    }
-    return tweenStateObjects[stateIndex].state;
+    if (!target.__CinnamonTweenerState)
+        target.__CinnamonTweenerState = {};
+    return target.__CinnamonTweenerState;
 }
 
 function _resetTweenState(target) {
-    let stateIndex = _findTweenStateIndex(target);
-    if (stateIndex === -1) {
-        return;
-    }
-    let {state} = tweenStateObjects[stateIndex];
+    let state = target.__CinnamonTweenerState;
 
     if (state) {
         if (state.destroyedId)
             state.actor.disconnect(state.destroyedId);
     }
 
-    tweenStateObjects[stateIndex].state = null;
-    tweenStateObjects[stateIndex].target = null;
-    tweenStateObjects.splice(stateIndex, 1);
+    target.__CinnamonTweenerState = {};
 }
 
 function _addHandler(target, params, name, handler) {
