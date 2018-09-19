@@ -1312,6 +1312,7 @@ PanelCorner.prototype = {
 
         this.actor.connect('style-changed', Lang.bind(this, this._styleChanged));
         this.actor.connect('repaint', Lang.bind(this, this._repaint));
+        this._box.connect('destroy', () => this._box = null);
     },
 
     _repaint: function() {
@@ -1467,6 +1468,7 @@ PanelCorner.prototype = {
         // so the panel can easily check it.
         this.cornerRadius = cornerRadius;
 
+        if (!this._box) return;
         // ugly hack: force the panel to reset its clip region since we just added
         // to the total allocation after it has already clipped to its own
         // allocation
