@@ -9,7 +9,7 @@ const Applet = imports.ui.applet;
 const Extension = imports.ui.extension;
 const ModalDialog = imports.ui.modalDialog;
 const {getModuleByIndex} = imports.misc.fileUtils;
-const {queryCollection} = imports.misc.util;
+const {queryCollection, findIndex} = imports.misc.util;
 const Gettext = imports.gettext;
 
 // Maps uuid -> importer object (applet directory tree)
@@ -106,6 +106,19 @@ function prepareExtensionUnload(extension, deleteConfig) {
             continue;
         }
         removeAppletFromPanels(definitions[i], deleteConfig);
+    }
+}
+
+// Callback for extension.js
+function prepareExtensionReload(extension) {
+    for (var i = 0; i < definitions.length; i++) {
+        if (extension.uuid === definitions[i].uuid) {
+            let {applet, applet_id} = definitions[i];
+            if (!applet) continue;
+            global.log(`Reloading applet: ${extension.uuid}/${applet_id}`);
+            applet.on_applet_reloaded();
+            return;
+        }
     }
 }
 
@@ -273,15 +286,23 @@ function onEnabledAppletsChanged() {
     for (let i = 0; i < oldDefinitions.length; i++) {
         if (unChangedApplets.indexOf(oldDefinitions[i].applet_id) === -1) {
             removedApplets.push({changed: false, definition: oldDefinitions[i]});
+        } else {
+            let removedIndex = findIndex(removedApplets, function(item) {
+                return item.definition.applet_id === oldDefinitions[i].applet_id;
+            });
+            if (removedIndex === -1) continue;
+            removedApplets[removedIndex].changed = false;
         }
     }
     for (let i = 0; i < removedApplets.length; i++) {
         let {uuid} = removedApplets[i].definition;
         removeAppletFromPanels(
             removedApplets[i].definition,
-            Extension.get_max_instances(uuid, Extension.Type.APPLET) !== 1 && !removedApplets[i].changed
+            Extension.get_max_instances(uuid, Extension.Type.APPLET) !== 1 && !removedApplets[i].changed,
+            removedApplets[i].changed
         );
     }
+
     for (let i = 0; i < addedApplets.length; i++) {
         let {extension, definition} = addedApplets[i];
         if (!extension) {
@@ -293,13 +314,16 @@ function onEnabledAppletsChanged() {
     // Make sure all applet extensions are loaded.
     // Once loaded, the applets will add themselves via finishExtensionLoad
     initEnabledApplets();
-    Main.statusIconDispatcher.redisplay();
 }
 
-function removeAppletFromPanels(appletDefinition, deleteConfig) {
+function removeAppletFromPanels(appletDefinition, deleteConfig, changed = false) {
     let {applet, uuid, applet_id} = appletDefinition;
     if (applet) {
         try {
+            if (changed) {
+                global.log(`Reloading applet: ${uuid}/${applet_id}`);
+                applet.on_applet_reloaded();
+            }
             applet._onAppletRemovedFromPanel(deleteConfig);
         } catch (e) {
             global.logError(`Error during on_applet_removed_from_panel() call on applet: ${uuid}/${applet_id}`, e);

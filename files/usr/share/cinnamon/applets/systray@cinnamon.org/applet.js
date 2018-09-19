@@ -7,10 +7,13 @@ const PopupMenu = imports.ui.popupMenu;
 const Main = imports.ui.main;
 const Mainloop = imports.mainloop;
 const SignalManager = imports.misc.signalManager;
+const {findIndex} = imports.misc.util;
 
 const ICON_SCALE_FACTOR = 0.8; // for custom panel heights, 20 (default icon size) / 25 (default panel height)
 
 const DEFAULT_ICON_SIZE = 20;
+
+const NO_RESIZE_ROLES = ['shutter', 'filezilla'];
 
 // Override the factory and create an AppletPopupMenu instead of a PopupMenu
 class IndicatorMenuFactory extends PopupMenu.PopupMenuFactory {
@@ -202,7 +205,11 @@ class CinnamonSystrayApplet extends Applet.Applet {
         }
     }
 
-    on_applet_removed_from_panel () {
+    on_applet_reloaded() {
+        this.reloading = true;
+    }
+
+    on_applet_removed_from_panel() {
         this._signalManager.disconnectAllSignals();
         this._removeIndicatorSupport();
     }
@@ -215,6 +222,11 @@ class CinnamonSystrayApplet extends Applet.Applet {
         this._signalManager.connect(Main.statusIconDispatcher, 'before-redisplay', this._onBeforeRedisplay, this);
         this._signalManager.connect(Main.systrayManager, "changed", Main.statusIconDispatcher.redisplay, Main.statusIconDispatcher);
         this._addIndicatorSupport();
+
+        if (this.reloading) {
+            this.reloading = false;
+            Main.statusIconDispatcher.redisplay();
+        }
     }
 
     on_panel_height_changed() {
@@ -235,9 +247,9 @@ class CinnamonSystrayApplet extends Applet.Applet {
         // There might still be pending delayed operations to insert/resize of them
         // And that would crash Cinnamon
         for (var i = 0; i < this._statusItems.length; i++) {
-            this._statusItems[i].obsolete = true;
+            this._statusItems[i].icon = null;
+            this._statusItems[i].state.obsolete = true;
         }
-        this._statusItems = [];
 
         let children = this.manager_container.get_children().filter(function(child) {
             // We are only interested in the status icons and apparently we can not ask for
@@ -261,32 +273,49 @@ class CinnamonSystrayApplet extends Applet.Applet {
 
             global.log("Adding systray: " + role + " (" + icon.get_width() + "x" + icon.get_height() + "px)");
 
-            if (icon.get_parent())
-                icon.get_parent().remove_child(icon);
+            let parent = icon.get_parent();
+            if (parent) parent.remove_child(icon);
 
-            icon.obsolete = false;
-            this._statusItems.push(icon);
+            let iconIndex = findIndex(this._statusItems, function(statusItem) {
+                return statusItem.state.role === role;
+            });
+            if (iconIndex === -1) {
+                this._statusItems.push({
+                    icon,
+                    state: {
+                        obsolete: false,
+                        role
+                    }
+                });
+                iconIndex = this._statusItems.length - 1;
+            } else {
+                this._statusItems[iconIndex].icon = icon;
+                this._statusItems[iconIndex].state.obsolete = false;
+            }
+            this._signalManager.connect(icon, 'destroy', (actor) => {
+                let iconIndex = findIndex(this._statusItems, function(statusItem) {
+                    return statusItem.state.role === role;
+                });
+                if (iconIndex === -1) return;
 
-            if (["pidgin"].indexOf(role) != -1) {
+                this._statusItems[iconIndex].icon = null;
+                this._statusItems[iconIndex].state.obsolete = true;
+            });
+
+            if (role === 'pidgin') {
                 // Delay pidgin insertion by 10 seconds
                 // Pidgin is very weird.. it starts with a small icon
                 // Then replaces that icon with a bigger one when the connection is established
                 // Pidgin can be fixed by inserting or resizing after a delay
                 // The delay is big because resizing/inserting too early
                 // makes pidgin invisible (in absence of disk cache).. even if we resize/insert again later
-                this._insertStatusItemLater(role, icon, -1, 10000);
-            } else if (["shutter", "filezilla", "dropbox", "thunderbird", "unknown", "blueberry-tray.py", "mintupdate.py"].indexOf(role) != -1) {
-                // Delay insertion by 1 second
-                // This fixes an invisible icon in the absence of disk cache for : shutter
-                // filezilla, dropbox, thunderbird, blueberry, mintupdate are known to show up in the wrong size or position, this should fix them as well
-                // Note: as of Oct 2015, the dropbox systray is calling itself "unknown"
-                this._insertStatusItemLater(role, icon, -1, 1000);
+                this._insertStatusItemLater(role, icon, 10000);
             } else {
                 // Delay all other apps by 1 second...
                 // For many of them, we don't need to do that,
                 // It's a small delay though and that fixes most buggy apps
                 // And we're far from having an exhaustive list of them..
-                this._insertStatusItemLater(role, icon, -1, 1000);
+                this._insertStatusItemLater(role, icon, 1000);
             }
 
         } catch (e) {
@@ -294,52 +323,41 @@ class CinnamonSystrayApplet extends Applet.Applet {
         }
     }
 
-    _insertStatusItemLater(role, icon, position, delay) {
+    _insertStatusItemLater(role, icon, delay) {
         // Inserts an icon in the systray after a delay (useful for buggy icons)
         // Delaying the insertion of pidgin by 10 seconds for instance is known to fix it on empty disk cache
-        let timerId = Mainloop.timeout_add(delay, Lang.bind(this, function() {
-            this._insertStatusItem(role, icon, position);
+        let timerId = Mainloop.timeout_add(delay, () => {
+            this._insertStatusItem(role, icon);
             Mainloop.source_remove(timerId);
-        }));
+        });
     }
 
     _onTrayIconRemoved(o, icon) {
-        icon.obsolete = true;
-        for (var i = 0; i < this._statusItems.length; i++) {
-            if (this._statusItems[i] == icon) {
-                this._statusItems.splice(i, 1);
+        for (let i = 0; i < this._statusItems.length; i++) {
+            if (this._statusItems[i].icon === icon) {
+                this._statusItems[i].icon = null;
+                this._statusItems[i].state.obsolete = true;
+                // Normally we could splice this, but we need the obsolete state for this icon.
+                // _onTrayIconAdded will continue re-using this indice.
+                break;
             }
         }
 
-        if (icon.get_parent() == this.manager_container) {
+        if (icon.get_parent() === this.manager_container) {
             this.manager_container.remove_child(icon);
         }
 
         icon.destroy();
     }
 
-    _insertStatusItem(role, icon, position) {
-        if (icon.obsolete == true) {
+    _insertStatusItem(role, icon) {
+        let iconIndex = findIndex(this._statusItems, function(statusItem) {
+            return statusItem.state.role === role;
+        });
+        if (this.reloading || iconIndex === -1 || iconIndex > -1 && (this._statusItems[iconIndex].state.obsolete || !this._statusItems[iconIndex].icon)) {
             return;
         }
-        let children = this.manager_container.get_children().filter(function(child) {
-            // We are only interested in the status icons and apparently we can not ask for
-            // child instanceof CinnamonTrayIcon.
-            return (child.toString().indexOf("CinnamonTrayIcon") != -1);
-        });
-        let i;
-        for (i = children.length - 1; i >= 0; i--) {
-            let rolePosition = children[i]._rolePosition;
-            if (position > rolePosition) {
-                this.manager_container.insert_child_at_index(icon, i + 1);
-                break;
-            }
-        }
-        if (i == -1) {
-            // If we didn't find a position, we must be first
-            this.manager_container.insert_child_at_index(icon, 0);
-        }
-        icon._rolePosition = position;
+        this.manager_container.insert_child_at_index(icon, 0);
 
         if (["skypeforlinux"].indexOf(role) != -1) {
             icon.set_size(16, 16);
@@ -357,11 +375,15 @@ class CinnamonSystrayApplet extends Applet.Applet {
     }
 
     _resizeStatusItem(role, icon) {
-        if (icon.obsolete == true) {
+        let iconIndex = findIndex(this._statusItems, function(statusItem) {
+            return statusItem.state.role === role;
+        });
+        if (iconIndex === -1 || iconIndex > -1 && this._statusItems[iconIndex].state.obsolete) {
             return;
         }
+        icon = this._statusItems[iconIndex].icon;
 
-        if (["shutter", "filezilla"].indexOf(role) != -1) {
+        if (NO_RESIZE_ROLES.indexOf(role) > -1) {
             global.log("Not resizing " + role + " as it's known to be buggy (" + icon.get_width() + "x" + icon.get_height() + "px)");
         } else {
             let size = this._getIconSize(this._panelHeight);

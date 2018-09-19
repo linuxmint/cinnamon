@@ -406,6 +406,16 @@ Applet.prototype = {
     on_applet_removed_from_panel: function(deleteConfig) {
     },
 
+    /**
+     * on_applet_reloaded:
+     *
+     * This function is called by appletManager when the applet is reloaded.
+     *
+     * This is meant to be overridden in individual applets.
+     */
+    on_applet_reloaded: function(deleteConfig) {
+    },
+
     // should only be called by appletManager
     _onAppletRemovedFromPanel: function(deleteConfig) {
         global.settings.disconnect(this._panelEditModeChangedId);
