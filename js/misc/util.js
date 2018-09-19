@@ -397,7 +397,7 @@ function queryCollection(collection, query, indexOnly = false) {
 function findIndex(array, callback) {
     for (let i = 0, len = array.length; i < len; i++) {
         if (callback(array[i], i, array)) {
-        return i;
+            return i;
         }
     }
     return -1;

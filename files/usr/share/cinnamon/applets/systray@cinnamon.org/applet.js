@@ -354,7 +354,10 @@ class CinnamonSystrayApplet extends Applet.Applet {
         let iconIndex = findIndex(this._statusItems, function(statusItem) {
             return statusItem.state.role === role;
         });
-        if (this.reloading || iconIndex === -1 || iconIndex > -1 && (this._statusItems[iconIndex].state.obsolete || !this._statusItems[iconIndex].icon)) {
+        if (this.reloading
+            || iconIndex === -1
+            || this._statusItems[iconIndex].state.obsolete
+            || !this._statusItems[iconIndex].icon) {
             return;
         }
         this.manager_container.insert_child_at_index(icon, 0);
@@ -378,7 +381,7 @@ class CinnamonSystrayApplet extends Applet.Applet {
         let iconIndex = findIndex(this._statusItems, function(statusItem) {
             return statusItem.state.role === role;
         });
-        if (iconIndex === -1 || iconIndex > -1 && this._statusItems[iconIndex].state.obsolete) {
+        if (iconIndex === -1 || this._statusItems[iconIndex].state.obsolete) {
             return;
         }
         icon = this._statusItems[iconIndex].icon;
