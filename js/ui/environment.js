@@ -6,6 +6,7 @@ imports.gi.versions.Gdk = '3.0';
 imports.gi.versions.GdkPixbuf = '2.0';
 imports.gi.versions.Gtk = '3.0';
 
+const GObject = imports.gi.GObject;
 const Clutter = imports.gi.Clutter;
 const Gettext = imports.gettext;
 const GLib = imports.gi.GLib;
@@ -99,6 +100,13 @@ function init() {
     _patchContainerClass(St.BoxLayout);
     _patchContainerClass(St.Table);
 
+    // Cache the original toString since it will be overriden for Clutter.Actor
+    GObject.Object.prototype._toString = GObject.Object.prototype.toString;
+    // Add method to determine if a GObject is finalized - needed to prevent accessing
+    // objects that have been disposed in C code.
+    GObject.Object.prototype.is_finalized = function() {
+        return this._toString().includes('FINALIZED');
+    };
     Clutter.Actor.prototype.toString = function() {
         return St.describe_actor(this);
     };

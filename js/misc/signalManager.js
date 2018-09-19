@@ -9,6 +9,9 @@ const _signalIsConnected = function(signal) {
     if (obj instanceof GObject.Object) { // GObject
         // MetaWindowActor is always destroyed in muffin, so accessing the
         // object here will trigger finalized object warnings from CJS.
+        if (obj.is_finalized()) {
+            return false;
+        }
         return GObject.signal_handler_is_connected(obj, id);
     }
     if ('signalHandlerIsConnected' in obj) { // JS Object
