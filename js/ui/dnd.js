@@ -672,7 +672,7 @@ var _Draggable = class _Draggable {
         this._dragState = DragState.INIT;
         currentDraggable = null;
     }
-};
+}
 
 Signals.addSignalMethods(_Draggable.prototype);
 
@@ -701,12 +701,8 @@ function makeDraggable(actor, params, target) {
     return new _Draggable(actor, params, target);
 }
 
-function GenericDragItemContainer() {
-    this._init();
-}
-
-GenericDragItemContainer.prototype = {
-    _init() {
+var GenericDragItemContainer = class GenericDragItemContainer {
+    constructor() {
         this.actor = new Cinnamon.GenericContainer({ style_class: 'drag-item-container' });
         this.actor.connect('get-preferred-width',
                            Lang.bind(this, this._getPreferredWidth));
@@ -720,7 +716,7 @@ GenericDragItemContainer.prototype = {
         this._childScale = 1;
         this._childOpacity = 255;
         this.animatingOut = false;
-    },
+    }
 
     _allocate(actor, box, flags) {
         if (this.child == null)
@@ -742,7 +738,7 @@ GenericDragItemContainer.prototype = {
         childBox.y2 = childBox.y1 + childHeight;
 
         this.child.allocate(childBox, flags);
-    },
+    }
 
     _getPreferredHeight(actor, forWidth, alloc) {
         alloc.min_size = 0;
@@ -754,7 +750,7 @@ GenericDragItemContainer.prototype = {
         let [minHeight, natHeight] = this.child.get_preferred_height(forWidth);
         alloc.min_size += minHeight * this.child.scale_y;
         alloc.natural_size += natHeight * this.child.scale_y;
-    },
+    }
 
     _getPreferredWidth(actor, forHeight, alloc) {
         alloc.min_size = 0;
@@ -766,7 +762,7 @@ GenericDragItemContainer.prototype = {
         let [minWidth, natWidth] = this.child.get_preferred_width(forHeight);
         alloc.min_size = minWidth * this.child.scale_y;
         alloc.natural_size = natWidth * this.child.scale_y;
-    },
+    }
 
     setChild(actor) {
         if (this.child == actor)
@@ -776,7 +772,7 @@ GenericDragItemContainer.prototype = {
 
         this.child = actor;
         this.actor.add_actor(this.child);
-    },
+    }
 
     animateIn() {
         if (this.child == null)
@@ -790,7 +786,7 @@ GenericDragItemContainer.prototype = {
                            time: DND_ANIMATION_TIME,
                            transition: 'easeOutQuad'
                          });
-    },
+    }
 
     animateOutAndDestroy() {
         if (this.child == null) {
@@ -809,7 +805,7 @@ GenericDragItemContainer.prototype = {
                                this.actor.destroy();
                            })
                          });
-    },
+    }
 
     set childScale(scale) {
         this._childScale = scale;
@@ -820,11 +816,11 @@ GenericDragItemContainer.prototype = {
         this.child.set_scale_with_gravity(scale, scale,
                                           Clutter.Gravity.CENTER);
         this.actor.queue_relayout();
-    },
+    }
 
     get childScale() {
         return this._childScale;
-    },
+    }
 
     set childOpacity(opacity) {
         this._childOpacity = opacity;
@@ -834,37 +830,30 @@ GenericDragItemContainer.prototype = {
 
         this.child.set_opacity(opacity);
         this.actor.queue_redraw();
-    },
+    }
 
     get childOpacity() {
         return this._childOpacity;
     }
-};
-
-function GenericDragPlaceholderItem() {
-    this._init();
 }
 
-GenericDragPlaceholderItem.prototype = {
-    __proto__: GenericDragItemContainer.prototype,
-
-    _init() {
-        GenericDragItemContainer.prototype._init.call(this);
+var GenericDragPlaceholderItem = class GenericDragPlaceholderItem extends GenericDragItemContainer {
+    constructor() {
+        super();
         this.setChild(new St.Bin({ style_class: 'drag-placeholder' }));
     }
-};
-
-function LauncherDraggable() {
-    this._init();
 }
 
-LauncherDraggable.prototype = {
+var LauncherDraggable = class LauncherDraggable {
+    constructor() {
+        this._init(); // Compatibility: some xlets call _init directly
+    }
     _init() {
         this.launchersBox = null;
-    },
+    }
 
     getId() {
         /* Implemented by draggable launchers */
         global.logError("Could not complete drag-and-drop.  Launcher does not implement LauncherDraggable");
     }
-};
+}
