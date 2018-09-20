@@ -235,7 +235,7 @@ function _getTweenState(target) {
 function _resetTweenState(target) {
     let state = target.__CinnamonTweenerState;
 
-    if (state) {
+    if (state && !target.is_finalized()) {
         if (state.destroyedId)
             state.actor.disconnect(state.destroyedId);
     }
