@@ -188,17 +188,17 @@ class PictureChooserButton(BaseChooserButton):
     def add_picture(self, path, callback, title=None, id=None):
         if os.path.exists(path):
             pixbuf = None
-            GdkPixbufMethod = None
+            gdk_pixbuf_method = None
             args = [path]
 
             if self.menu_pictures_size is None:
-                GdkPixbufMethod = GdkPixbuf.Pixbuf.new_from_file
+                gdk_pixbuf_method = GdkPixbuf.Pixbuf.new_from_file
             else:
-                GdkPixbufMethod = GdkPixbuf.Pixbuf.new_from_file_at_scale
+                gdk_pixbuf_method = GdkPixbuf.Pixbuf.new_from_file_at_scale
                 args = [path, -1, self.menu_pictures_size, True]
 
             try:
-                pixbuf = GdkPixbufMethod(*args)
+                pixbuf = gdk_pixbuf_method(*args)
             except GLib.Error as e:
                 print('Caught GLib.Error exception: {}\npath: {}'.format(e, str(path)))
 
