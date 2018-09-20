@@ -3622,7 +3622,7 @@ PopupMenuManager.prototype = {
     _shouldBlockEvent: function(event) {
         let src = event.get_source();
 
-        if (src.is_finalized() || this._activeMenu != null && this._activeMenu.actor.contains(src))
+        if (src.is_finalized() || (this._activeMenu != null && this._activeMenu.actor.contains(src)))
             return false;
 
         return (this._menus.find(x => x.sourceActor &&
