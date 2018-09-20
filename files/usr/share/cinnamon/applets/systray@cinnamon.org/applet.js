@@ -66,7 +66,6 @@ class CinnamonSystrayApplet extends Applet.Applet {
         this.actor.add_actor (this.manager_container);
         this.manager_container.show();
 
-        this._statusItems = [];
         this._shellIndicators = [];
         this.menuFactory = new IndicatorMenuFactory();
         this.menuManager = new PopupMenu.PopupMenuManager(this);
@@ -206,7 +205,7 @@ class CinnamonSystrayApplet extends Applet.Applet {
     }
 
     on_applet_reloaded() {
-        this.reloading = true;
+        global.trayReloading = true;
     }
 
     on_applet_removed_from_panel() {
@@ -215,7 +214,9 @@ class CinnamonSystrayApplet extends Applet.Applet {
     }
 
     on_applet_added_to_panel() {
-        Main.statusIconDispatcher.start(this.actor.get_parent().get_parent());
+        if (!global.trayReloading) {
+            Main.statusIconDispatcher.start(this.actor.get_parent().get_parent());
+        }
 
         this._signalManager.connect(Main.statusIconDispatcher, 'status-icon-added', this._onTrayIconAdded, this);
         this._signalManager.connect(Main.statusIconDispatcher, 'status-icon-removed', this._onTrayIconRemoved, this);
@@ -223,8 +224,8 @@ class CinnamonSystrayApplet extends Applet.Applet {
         this._signalManager.connect(Main.systrayManager, "changed", Main.statusIconDispatcher.redisplay, Main.statusIconDispatcher);
         this._addIndicatorSupport();
 
-        if (this.reloading) {
-            this.reloading = false;
+        if (global.trayReloading) {
+            global.trayReloading = false;
             Main.statusIconDispatcher.redisplay();
         }
     }
@@ -246,10 +247,6 @@ class CinnamonSystrayApplet extends Applet.Applet {
         // Mark all icons as obsolete
         // There might still be pending delayed operations to insert/resize of them
         // And that would crash Cinnamon
-        for (var i = 0; i < this._statusItems.length; i++) {
-            this._statusItems[i].icon = null;
-            this._statusItems[i].state.obsolete = true;
-        }
 
         let children = this.manager_container.get_children().filter(function(child) {
             // We are only interested in the status icons and apparently we can not ask for
@@ -275,32 +272,6 @@ class CinnamonSystrayApplet extends Applet.Applet {
 
             let parent = icon.get_parent();
             if (parent) parent.remove_child(icon);
-
-            let iconIndex = findIndex(this._statusItems, function(statusItem) {
-                return statusItem.state.role === role;
-            });
-            if (iconIndex === -1) {
-                this._statusItems.push({
-                    icon,
-                    state: {
-                        obsolete: false,
-                        role
-                    }
-                });
-                iconIndex = this._statusItems.length - 1;
-            } else {
-                this._statusItems[iconIndex].icon = icon;
-                this._statusItems[iconIndex].state.obsolete = false;
-            }
-            this._signalManager.connect(icon, 'destroy', (actor) => {
-                let iconIndex = findIndex(this._statusItems, function(statusItem) {
-                    return statusItem.state.role === role;
-                });
-                if (iconIndex === -1) return;
-
-                this._statusItems[iconIndex].icon = null;
-                this._statusItems[iconIndex].state.obsolete = true;
-            });
 
             if (role === 'pidgin') {
                 // Delay pidgin insertion by 10 seconds
@@ -333,16 +304,6 @@ class CinnamonSystrayApplet extends Applet.Applet {
     }
 
     _onTrayIconRemoved(o, icon) {
-        for (let i = 0; i < this._statusItems.length; i++) {
-            if (this._statusItems[i].icon === icon) {
-                this._statusItems[i].icon = null;
-                this._statusItems[i].state.obsolete = true;
-                // Normally we could splice this, but we need the obsolete state for this icon.
-                // _onTrayIconAdded will continue re-using this indice.
-                break;
-            }
-        }
-
         if (icon.get_parent() === this.manager_container) {
             this.manager_container.remove_child(icon);
         }
@@ -351,13 +312,7 @@ class CinnamonSystrayApplet extends Applet.Applet {
     }
 
     _insertStatusItem(role, icon) {
-        let iconIndex = findIndex(this._statusItems, function(statusItem) {
-            return statusItem.state.role === role;
-        });
-        if (this.reloading
-            || iconIndex === -1
-            || this._statusItems[iconIndex].state.obsolete
-            || !this._statusItems[iconIndex].icon) {
+        if (icon.is_finalized()) {
             return;
         }
         this.manager_container.insert_child_at_index(icon, 0);
@@ -378,14 +333,6 @@ class CinnamonSystrayApplet extends Applet.Applet {
     }
 
     _resizeStatusItem(role, icon) {
-        let iconIndex = findIndex(this._statusItems, function(statusItem) {
-            return statusItem.state.role === role;
-        });
-        if (iconIndex === -1 || this._statusItems[iconIndex].state.obsolete) {
-            return;
-        }
-        icon = this._statusItems[iconIndex].icon;
-
         if (NO_RESIZE_ROLES.indexOf(role) > -1) {
             global.log("Not resizing " + role + " as it's known to be buggy (" + icon.get_width() + "x" + icon.get_height() + "px)");
         } else {
