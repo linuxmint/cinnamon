@@ -1467,6 +1467,7 @@ PanelCorner.prototype = {
         // so the panel can easily check it.
         this.cornerRadius = cornerRadius;
 
+        if (this._box.is_finalized()) return;
         // ugly hack: force the panel to reset its clip region since we just added
         // to the total allocation after it has already clipped to its own
         // allocation
