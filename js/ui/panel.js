@@ -3152,7 +3152,7 @@ Panel.prototype = {
      * position of mouse/active window. It then calls the _queueShowHidePanel
      * function to show or hide the panel as necessary.
      *
-     * false = autohide, true = always show, intel = Intelligent
+     * true = autohide, false = always show, intel = Intelligent
      */
     _updatePanelVisibility: function() {
 
