@@ -186,11 +186,19 @@ class PictureChooserButton(BaseChooserButton):
         menu.destroy()
 
     def add_picture(self, path, callback, title=None, id=None):
+        pixbuf = None
         if os.path.exists(path):
-            if self.menu_pictures_size is None:
-                pixbuf = GdkPixbuf.Pixbuf.new_from_file(path)
-            else:
-                pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_scale(path, -1, self.menu_pictures_size, True)
+            try:
+                if self.menu_pictures_size is None:
+                    pixbuf = GdkPixbuf.Pixbuf.new_from_file(path)
+                else:
+                    pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_scale(path, -1, self.menu_pictures_size, True)
+            except GLib.Error as e:
+                print('Caught GLib.Error exception: {}\npath: {}'.format(e, str(path)))
+
+            if pixbuf is None:
+                return
+
             image = Gtk.Image.new_from_pixbuf (pixbuf)
             menuitem = Gtk.MenuItem()
             if title is not None:
