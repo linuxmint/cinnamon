@@ -386,6 +386,23 @@ function queryCollection(collection, query, indexOnly = false) {
     return indexOnly ? -1 : null;
 }
 
+/**
+ * findIndex:
+ * @array (array): Array to be iterated.
+ * @callback (function): The function to call on every iteration,
+ * should return a boolean value.
+ *
+ * Returns (number): the index of @array.
+ */
+function findIndex(array, callback) {
+    for (let i = 0, len = array.length; i < len; i++) {
+        if (callback(array[i], i, array)) {
+            return i;
+        }
+    }
+    return -1;
+}
+
 const READWRITE = GObject.ParamFlags.READABLE | GObject.ParamFlags.WRITABLE;
 
 // Based on https://gist.github.com/ptomato/c4245c77d375022a43c5

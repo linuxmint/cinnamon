@@ -111,6 +111,14 @@ Desklet.prototype = {
     },
 
     /**
+     * on_desklet_reloaded:
+     *
+     * Callback when desklet is reloaded. To be overridden by individual desklets
+     */
+    on_desklet_reloaded: function() {
+    },
+
+    /**
      * destroy:
      *
      * Destroys the actor with an fading animation
