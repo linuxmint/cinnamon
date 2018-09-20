@@ -3608,7 +3608,9 @@ PopupMenuManager.prototype = {
     },
 
     _activeMenuContains: function(actor) {
-        return this._activeMenu != null
+
+        return !actor.is_finalized()
+                && this._activeMenu != null
                 && (this._activeMenu.actor.contains(actor) ||
                     (this._activeMenu.sourceActor && this._activeMenu.sourceActor.contains(actor)));
     },
@@ -3620,7 +3622,7 @@ PopupMenuManager.prototype = {
     _shouldBlockEvent: function(event) {
         let src = event.get_source();
 
-        if (this._activeMenu != null && this._activeMenu.actor.contains(src))
+        if (src.is_finalized() || this._activeMenu != null && this._activeMenu.actor.contains(src))
             return false;
 
         return (this._menus.find(x => x.sourceActor &&
