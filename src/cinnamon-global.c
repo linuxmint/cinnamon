@@ -16,7 +16,6 @@
 
 #include <X11/extensions/Xfixes.h>
 #include <cogl-pango/cogl-pango.h>
-#include <clutter/glx/clutter-glx.h>
 #include <clutter/x11/clutter-x11.h>
 #include <gdk/gdkx.h>
 #include <gio/gio.h>
@@ -51,7 +50,7 @@ struct _CinnamonGlobal {
   /* We use this window to get a notification from GTK+ when
    * a widget in our process does a GTK+ grab.  See
    * http://bugzilla.gnome.org/show_bug.cgi?id=570641
-   * 
+   *
    * This window is never mapped or shown.
    */
   GtkWindow *grab_notifier;
@@ -1018,13 +1017,13 @@ update_scale_factor (GtkSettings *settings,
     g_settings_set_int (global->settings, "active-display-scale", (int)scale);
   }
 
-   /* Make sure clutter and gdk scaling stays disabled
-    * window-scaling-factor doesn't exist yet in clutter < 1.18 */
-  if (g_object_class_find_property (G_OBJECT_GET_CLASS (clutter_settings_get_default ()),
-                                    "window-scaling-factor"))
-    {
-      g_object_set (clutter_settings_get_default (), "window-scaling-factor", 1, NULL);
-    }
+  GtkSettings *gtk_settings = gtk_settings_get_default ();
+  int xft_dpi;
+
+  g_object_get (gtk_settings, "gtk-xft-dpi", &xft_dpi, NULL);
+  g_object_set (clutter_settings_get_default (), "font-dpi", xft_dpi, NULL);
+
+   /* Make sure gdk scaling stays disabled */
   gdk_x11_display_set_window_scale (gdk_display_get_default (), 1);
 }
 
@@ -1284,10 +1283,10 @@ pre_exec_close_fds(void)
 /**
  * cinnamon_global_reexec_self:
  * @global: A #CinnamonGlobal
- * 
- * Restart the current process.  Only intended for development purposes. 
+ *
+ * Restart the current process.  Only intended for development purposes.
  */
-void 
+void
 cinnamon_global_reexec_self (CinnamonGlobal *global)
 {
   GPtrArray *arr;
@@ -1296,20 +1295,20 @@ cinnamon_global_reexec_self (CinnamonGlobal *global)
   char *buf_p;
   char *buf_end;
   GError *error = NULL;
-  
+
   /* Linux specific (I think, anyways). */
   if (!g_file_get_contents ("/proc/self/cmdline", &buf, &len, &error))
     {
       g_warning ("failed to get /proc/self/cmdline: %s", error->message);
       return;
     }
-      
+
   buf_end = buf+len;
   arr = g_ptr_array_new ();
   /* The cmdline file is NUL-separated */
   for (buf_p = buf; buf_p < buf_end; buf_p = buf_p + strlen (buf_p) + 1)
     g_ptr_array_add (arr, buf_p);
-  
+
   g_ptr_array_add (arr, NULL);
 
   /* Close all file descriptors other than stdin/stdout/stderr, otherwise
@@ -1363,7 +1362,7 @@ static void
 grab_notify (GtkWidget *widget, gboolean was_grabbed, gpointer user_data)
 {
   CinnamonGlobal *global = CINNAMON_GLOBAL (user_data);
-  
+
   global->gtk_grab_active = !was_grabbed;
 
   /* Update for the new setting of gtk_grab_active */
@@ -1420,7 +1419,7 @@ cinnamon_global_get_pointer (CinnamonGlobal         *global,
   GdkDevice *gdevice;
   GdkScreen *gscreen;
   GdkModifierType raw_mods;
-  
+
   gmanager = gdk_display_get_device_manager (global->gdk_display);
   gdevice = gdk_device_manager_get_client_pointer (gmanager);
   gdk_device_get_position (gdevice, &gscreen, x, y);
@@ -1449,7 +1448,7 @@ cinnamon_global_set_pointer (CinnamonGlobal         *global,
   GdkDevice *gdevice;
   GdkScreen *gscreen;
   int x2, y2;
-  
+
   gmanager = gdk_display_get_device_manager (global->gdk_display);
   gdevice = gdk_device_manager_get_client_pointer (gmanager);
   gdk_device_get_position (gdevice, &gscreen, &x2, &y2);
@@ -1597,7 +1596,7 @@ cinnamon_global_create_app_launch_context (CinnamonGlobal *global)
   GdkAppLaunchContext *context;
 
   context = gdk_display_get_app_launch_context (global->gdk_display);
-  
+
   gdk_app_launch_context_set_timestamp (context, cinnamon_global_get_current_time (global));
 
   // Make sure that the app is opened on the current workspace even if
