@@ -104,8 +104,15 @@ function init() {
     GObject.Object.prototype._toString = GObject.Object.prototype.toString;
     // Add method to determine if a GObject is finalized - needed to prevent accessing
     // objects that have been disposed in C code.
-    GObject.Object.prototype.is_finalized = function() {
+    GObject.Object.prototype.is_finalized = function is_finalized() {
         return this._toString().includes('FINALIZED');
+    };
+    // Override destroy so it checks if its finalized before calling the real destroy method.
+    Clutter.Actor.prototype._destroy = Clutter.Actor.prototype.destroy;
+    Clutter.Actor.prototype.destroy = function destroy() {
+        if (!this.is_finalized()) {
+            this._destroy();
+        }
     };
     Clutter.Actor.prototype.toString = function() {
         return St.describe_actor(this);
