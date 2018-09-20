@@ -840,6 +840,7 @@ Switch.prototype = {
     },
 
     setToggleState: function(state) {
+        if (this.actor.is_finalized()) return;
         this.actor.change_style_pseudo_class('checked', state);
         this.state = state;
     },
