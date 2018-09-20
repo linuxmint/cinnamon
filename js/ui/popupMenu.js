@@ -2208,7 +2208,7 @@ PopupMenu.prototype = {
     setCustomStyleClass: function(className) {
         this.customStyleClass = className;
         if (this.actor.get_style_class_name()) {
-            this.actor.set_style_class_name(this.actor.get_style_class_name() + "" + className)
+            this.actor.set_style_class_name(this.actor.get_style_class_name() + " " + className);
         } else {
             this.actor.set_style_class_name(className);
         }
