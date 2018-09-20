@@ -245,6 +245,7 @@ Tooltip.prototype = {
     },
 
     _destroy: function() {
+        if (this._tooltip.is_finalized()) return;
         this._tooltip.destroy();
     }
 };
