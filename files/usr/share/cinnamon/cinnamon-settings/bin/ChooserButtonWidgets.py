@@ -186,34 +186,30 @@ class PictureChooserButton(BaseChooserButton):
         menu.destroy()
 
     def add_picture(self, path, callback, title=None, id=None):
+        pixbuf = None
         if os.path.exists(path):
-            pixbuf = None
-            gdk_pixbuf_method = None
-            args = [path]
-
-            if self.menu_pictures_size is None:
-                gdk_pixbuf_method = GdkPixbuf.Pixbuf.new_from_file
-            else:
-                gdk_pixbuf_method = GdkPixbuf.Pixbuf.new_from_file_at_scale
-                args = [path, -1, self.menu_pictures_size, True]
-
             try:
-                pixbuf = gdk_pixbuf_method(*args)
+                if self.menu_pictures_size is None:
+                    pixbuf = GdkPixbuf.Pixbuf.new_from_file(path)
+                else:
+                    pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_scale(path, -1, self.menu_pictures_size, True)
             except GLib.Error as e:
                 print('Caught GLib.Error exception: {}\npath: {}'.format(e, str(path)))
 
+            if pixbuf is None:
+                return
+
+            image = Gtk.Image.new_from_pixbuf (pixbuf)
             menuitem = Gtk.MenuItem()
-            if pixbuf is not None:
-                image = Gtk.Image.new_from_pixbuf (pixbuf)
-                if title is not None:
-                    vbox = Gtk.VBox()
-                    vbox.pack_start(image, False, False, 2)
-                    label = Gtk.Label()
-                    label.set_text(title)
-                    vbox.pack_start(label, False, False, 2)
-                    menuitem.add(vbox)
-                else:
-                    menuitem.add(image)
+            if title is not None:
+                vbox = Gtk.VBox()
+                vbox.pack_start(image, False, False, 2)
+                label = Gtk.Label()
+                label.set_text(title)
+                vbox.pack_start(label, False, False, 2)
+                menuitem.add(vbox)
+            else:
+                menuitem.add(image)
             if id is not None:
                 menuitem.connect('activate', self._on_picture_selected, path, callback, id)
             else:
