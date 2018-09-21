@@ -384,20 +384,20 @@ st_widget_paint_background (StWidget *widget)
   else
     st_theme_node_paint (theme_node, cogl_get_draw_framebuffer (), &allocation, opacity);
 
-  // ClutterEffect *effect = clutter_actor_get_effect (actor, "background-effect");
+  ClutterEffect *effect = clutter_actor_get_effect (CLUTTER_ACTOR(widget), "background-effect");
 
-  // if (effect == NULL)
-  //   {
-  //     effect = st_background_effect_new ();
-  //     clutter_actor_add_effect_with_name (actor, "background-effect", effect);
-  //   }
+  if (effect == NULL)
+  {
+      effect = st_background_effect_new ();
+      clutter_actor_add_effect_with_name (CLUTTER_ACTOR(widget), "background-effect", effect);
+  }
 
-  // const char *bumpmap_path = st_theme_node_get_background_bumpmap(theme_node);
+  const char *bumpmap_path = st_theme_node_get_background_bumpmap(theme_node);
 
-  // g_object_set (effect,
-  //               "bumpmap",
-  //               bumpmap_path,
-  //               NULL);
+  g_object_set (effect,
+                "bumpmap",
+                bumpmap_path,
+                NULL);
 }
 
  static void
