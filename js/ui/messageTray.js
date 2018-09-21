@@ -1027,7 +1027,6 @@ Notification.prototype = {
     },
 
     destroy: function(reason) {
-        if (this.actor.is_finalized()) return;
         this._destroyedReason = reason;
         this.actor.destroy();
     }
