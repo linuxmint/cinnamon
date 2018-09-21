@@ -1,5 +1,6 @@
 // -*- mode: js; js-indent-level: 4; indent-tabs-mode: nil -*-
 
+const GObject = imports.gi.GObject;
 const Clutter = imports.gi.Clutter;
 const Lang = imports.lang;
 const Mainloop = imports.mainloop;
@@ -233,7 +234,7 @@ function _getTweenState(target) {
 }
 
 function _resetTweenState(target) {
-    if (target.is_finalized()) return;
+    if (!target || (target instanceof GObject.Object && target.is_finalized())) return;
     let state = target.__CinnamonTweenerState;
 
     if (state && state.actor && !state.actor.is_finalized()) {
