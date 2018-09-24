@@ -346,13 +346,13 @@ PanelManager.prototype = {
                     pright = this._loadPanel(stash[j][0], stash[j][1], stash[j][2], [true,true]);
                 }
                 if (stash[j][2] == PanelLoc.bottom && stash[j][1] == i) {
-                    drawcorner[0] = (panels_used[i][2])? false : true;
-                    drawcorner[1] = (panels_used[i][3])? false : true;
+                    drawcorner[0] = !(panels_used[i][2]);
+                    drawcorner[1] = !(panels_used[i][3]);
                     this._loadPanel(stash[j][0], stash[j][1], stash[j][2], drawcorner);
                 }
                 if (stash[j][2] == PanelLoc.top && stash[j][1] == i) {
-                    drawcorner[0] = (panels_used[i][2])? false : true;
-                    drawcorner[1] = (panels_used[i][3])? false : true;
+                    drawcorner[0] = !(panels_used[i][2]);
+                    drawcorner[1] = !(panels_used[i][3]);
                     this._loadPanel(stash[j][0], stash[j][1], stash[j][2], drawcorner);
                 }
             }
@@ -896,8 +896,8 @@ PanelManager.prototype = {
             for (let j = 0, len = stash.length; j < len; j++) {
                 let drawcorner = [false, false];
                 if (stash[j][2] == PanelLoc.bottom && stash[j][1] == i) {
-                    drawcorner[0] = (panels_used[i][2])? false : true;
-                    drawcorner[1] = (panels_used[i][3])? false : true;
+                    drawcorner[0] = !(panels_used[i][2]);
+                    drawcorner[1] = !(panels_used[i][3]);
                     if (this.panels[stash[j][0]]) {  // panel will not have loaded if previous monitor disconnected etc.
                         this.panels[stash[j][0]].drawcorner = drawcorner;
                         this.panels[stash[j][0]].drawCorners(drawcorner);
@@ -916,8 +916,8 @@ PanelManager.prototype = {
                     }
                 }
                 if (stash[j][2] == PanelLoc.top && stash[j][1] == i) {
-                    drawcorner[0] = (panels_used[i][2])? false : true;
-                    drawcorner[1] = (panels_used[i][3])? false : true;
+                    drawcorner[0] = !(panels_used[i][2]);
+                    drawcorner[1] = !(panels_used[i][3]);
                     if (this.panels[stash[j][0]]) {
                         this.panels[stash[j][0]].drawcorner = drawcorner;
                         this.panels[stash[j][0]].drawCorners(drawcorner);
@@ -2474,7 +2474,7 @@ Panel.prototype = {
     _getScaledPanelHeight: function() {
         let panelHeight = 0;
         let panelResizable = this._getProperty(PANEL_RESIZABLE_KEY, "b");
-        let isHorizontal = ((this.panelPosition == PanelLoc.top || this.panelPosition == PanelLoc.bottom) ? true : false);
+        let isHorizontal = (!!((this.panelPosition == PanelLoc.top || this.panelPosition == PanelLoc.bottom)));
 
         if (panelResizable) {
             panelHeight = this._getProperty(PANEL_HEIGHT_KEY, "i") * global.ui_scale;
@@ -2591,7 +2591,7 @@ Panel.prototype = {
         // else full screen windows will then go right to the edge with the panels floating over
         //
         this.monitor = global.screen.get_monitor_geometry(this.monitorIndex);
-        let horizontal_panel = ((this.panelPosition == PanelLoc.top || this.panelPosition == PanelLoc.bottom) ? true : false);
+        let horizontal_panel = (!!((this.panelPosition == PanelLoc.top || this.panelPosition == PanelLoc.bottom)));
 
         // this stands for width on vertical panels, and height on horizontal panels
         let panelHeight = this._getScaledPanelHeight();
