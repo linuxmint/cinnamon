@@ -481,7 +481,7 @@ function overrideSignals() {
     }
 
     function _signalHandlerIsConnected(id) {
-        if (! '_signalConnections' in this)
+        if (!( '_signalConnections' in this))
             return false;
 
         for (let connection of this._signalConnections) {
