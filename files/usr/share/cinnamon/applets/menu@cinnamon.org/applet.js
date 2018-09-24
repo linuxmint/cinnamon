@@ -1958,7 +1958,9 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
     }
 
     _clearPrevSelection(actor) {
-        if (this._previousSelectedActor && this._previousSelectedActor != actor) {
+        if (this._previousSelectedActor
+            && !this._previousSelectedActor.is_finalized()
+            && this._previousSelectedActor != actor) {
             if (this._previousSelectedActor._delegate instanceof ApplicationButton ||
                 this._previousSelectedActor._delegate instanceof RecentButton ||
                 this._previousSelectedActor._delegate instanceof SearchProviderResultButton ||

@@ -1120,7 +1120,7 @@ WorkspaceMonitor.prototype = {
     },
 
     showWindowsOverlays: function() {
-        if (this.leavingOverview)
+        if (this.leavingOverview || this._windowOverlaysGroup.is_finalized())
             return;
 
         this._windowOverlaysGroup.show();

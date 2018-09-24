@@ -511,7 +511,7 @@ var _Draggable = new Lang.Class({
                                                 event.get_time())) {
                     // If it accepted the drop without taking the actor,
                     // handle it ourselves.
-                    if (this._dragActor.get_parent() == Main.uiGroup) {
+                    if (!this._dragActor.is_finalized() && this._dragActor.get_parent() === Main.uiGroup) {
                         if (this._restoreOnSuccess) {
                             this._restoreDragActor(event.get_time());
                             return true;
