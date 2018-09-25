@@ -1040,9 +1040,6 @@ var PopupImageMenuItem = class PopupImageMenuItem extends PopupBaseMenuItem {
  * the item. The default ornament is an icon,  but can be replace for a check button,
  * a radio button or empty.
  */
-function PopupIndicatorMenuItem() {
-    return this._init.apply(this, arguments);
-}
 
 var PopupIndicatorMenuItem = class PopupIndicatorMenuItem extends PopupBaseMenuItem {
     _init(text, params) {
@@ -1542,7 +1539,7 @@ var PopupMenuAbstractItem = class PopupMenuAbstractItem {
     }
 
     // handlers = { "signal": handler }
-    _connectAndSaveId(target, handlers , idArray) {
+    _connectAndSaveId(target, handlers, idArray) {
         idArray = typeof idArray != 'undefined' ? idArray : [];
         for (let signal in handlers) {
             idArray.push(target.connect(signal, handlers[signal]));
