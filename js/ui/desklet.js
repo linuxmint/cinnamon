@@ -115,8 +115,8 @@ var Desklet = class Desklet {
      *
      * Callback when desklet is reloaded. To be overridden by individual desklets
      */
-    on_desklet_reloaded: function() {
-    },
+    on_desklet_reloaded() {
+    }
 
     /**
      * destroy:

@@ -390,8 +390,8 @@ var Applet = class Applet {
      *
      * This is meant to be overridden in individual applets.
      */
-    on_applet_reloaded: function(deleteConfig) {
-    },
+    on_applet_reloaded(deleteConfig) {
+    }
 
     // should only be called by appletManager
     _onAppletRemovedFromPanel(deleteConfig) {
