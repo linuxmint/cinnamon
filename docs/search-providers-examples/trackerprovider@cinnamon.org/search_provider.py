@@ -59,4 +59,4 @@ if __name__ == "__main__":
     final_results = []
     for i in results:
         final_results += results[i]
-    print json.dumps(final_results)
+    print(json.dumps(final_results))
