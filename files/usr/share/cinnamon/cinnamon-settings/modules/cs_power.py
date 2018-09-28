@@ -582,6 +582,7 @@ def get_available_options(up_client):
         ("suspend", _("Suspend")),
         ("shutdown", _("Shutdown immediately")),
         ("hibernate", _("Hibernate")),
+        ("blank", _("Lock Screen")),
         ("nothing", _("Do nothing"))
     ]
 
