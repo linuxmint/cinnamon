@@ -173,6 +173,7 @@ class WindowPreview extends Tooltips.TooltipBase {
     }
 
     _set_position() {
+        if (!this.actor || this.actor.is_finalized()) return;
         let allocation = this.actor.get_allocation_box();
         let previewHeight = allocation.y2 - allocation.y1;
         let previewWidth = allocation.x2 - allocation.x1;
