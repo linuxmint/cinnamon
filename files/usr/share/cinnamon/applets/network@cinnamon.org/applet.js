@@ -42,18 +42,6 @@ const NM80211ApSecurityFlags = NM['80211ApSecurityFlags'];
 // (the remaining are placed into More...)
 const NUM_VISIBLE_NETWORKS = 5;
 
-function ssidCompare(one, two) {
-    if (!one || !two)
-        return false;
-    if (one.length != two.length)
-        return false;
-    for (let i = 0; i < one.length; i++) {
-        if (one[i] != two[i])
-            return false;
-    }
-    return true;
-}
-
 // shared between NMNetworkMenuItem and NMDeviceWWAN
 function signalToIcon(value) {
     if (value > 80)
@@ -215,7 +203,7 @@ NMWiredSectionTitleMenuItem.prototype = {
 
         // Immediately reset the switch to false, it will be updated appropriately
         // by state-changed signals in devices (but fixes the VPN not being in sync
-        // if the ActiveConnection object is never seen by libnm-glib)
+        // if the ActiveConnection object is never seen by libnm)
         this._switch.setToggleState(false);
 
         if (newState)
@@ -1229,7 +1217,7 @@ NMDeviceWireless.prototype = {
     },
 
     _networkCompare: function(network, accessPoint) {
-        if (!ssidCompare(network.ssid, accessPoint.get_ssid().get_data()))
+        if (!network.ssid.equal(accessPoint.get_ssid()))
             return false;
         if (network.mode != accessPoint.mode)
             return false;
@@ -1536,7 +1524,7 @@ NMDeviceWireless.prototype = {
 
     _createAutomaticConnection: function(apObj) {
         let name;
-        let ssid = NM.utils_ssid_to_utf8(apObj.ssid);
+        let ssid = NM.utils_ssid_to_utf8(apObj.ssid.get_data());
         if (ssid) {
             /* TRANSLATORS: this the automatic wireless connection name (including the network name) */
             name = _("Auto %s").format(ssid);
@@ -1684,8 +1672,17 @@ CinnamonNetworkApplet.prototype = {
             this._currentIconName = undefined;
             this._setIcon('network-offline');
 
-            this._client = NM.Client.new(null);
+            NM.Client.new_async(null, Lang.bind(this, this._clientGot));
+        }
+        catch (e) {
+            global.logError(e);
+        }
+    },
 
+    _clientGot: function(obj, result) {
+        try {
+            this._client = NM.Client.new_finish(result);
+ 
             this._statusSection = new PopupMenu.PopupMenuSection();
             this._statusItem = new PopupMenu.PopupMenuItem('', { style_class: 'popup-inactive-menu-item', reactive: false });
             this._statusSection.addMenuItem(this._statusItem);
@@ -1946,7 +1943,7 @@ CinnamonNetworkApplet.prototype = {
 
             this._syncSectionTitle(wrapper.category);
         } else
-            log('Invalid network device type, is ' + device.get_device_type());
+            log('Unknown network device type, is ' + device.get_device_type());
     },
 
     _deviceRemoved: function(client, device) {
