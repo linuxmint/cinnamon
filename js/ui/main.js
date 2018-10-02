@@ -458,6 +458,8 @@ function start() {
     global.screen.connect('window-left-monitor', _windowLeftMonitor);
     global.screen.connect('restacked', _windowsRestacked);
 
+    global.display.connect('gl-video-memory-purged', loadTheme);
+
     _nWorkspacesChanged();
 
     Promise.all([

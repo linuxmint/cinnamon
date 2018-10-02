@@ -13,6 +13,7 @@ const GLib = imports.gi.GLib;
 const Gtk = imports.gi.Gtk;
 const Cinnamon = imports.gi.Cinnamon;
 const St = imports.gi.St;
+const Meta = imports.gi.Meta;
 const Overrides = imports.ui.overrides;
 
 // We can't import cinnamon JS modules yet, because they may have
@@ -90,6 +91,8 @@ function init() {
         configurable: false,
         enumerable: false
     });
+    // Prevent usage of meta_pre_exec_close_fds in the JS context
+    Meta.pre_exec_close_fds = null;
 
     // Set the default direction for St widgets (this needs to be done before any use of St)
     if (Gtk.Widget.get_default_direction() == Gtk.TextDirection.RTL) {
