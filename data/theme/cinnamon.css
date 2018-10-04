@@ -480,7 +480,9 @@ StScrollBar StButton#vhandle:hover {
     width: 28px;
     -cinnamon-close-overlap: 13px;
 }
-.window-close:hover {/* ! */}
+.window-close:hover {
+    background-image: url("close-window-hover.svg");
+}
 
 .window-close-area {
     background-image: url("trash-icon.png");
