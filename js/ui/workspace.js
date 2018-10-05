@@ -714,13 +714,13 @@ WorkspaceMonitor.prototype = {
                     /* Hidden windows should fade in and grow
                      * therefore we need to resize them now so they
                      * can be scaled up later */
-                     if (initialPositioning) {
-                         clone.actor.opacity = 0;
-                         clone.actor.scale_x = 0;
-                         clone.actor.scale_y = 0;
-                         clone.actor.x = x;
-                         clone.actor.y = y;
-                     }
+                    if (initialPositioning) {
+                        clone.actor.opacity = 0;
+                        clone.actor.scale_x = 0;
+                        clone.actor.scale_y = 0;
+                        clone.actor.x = this._width / 2;
+                        clone.actor.y = this._height / 2;
+                    }
 
                      // Make the window slightly transparent to indicate it's hidden
                      Tweener.addTween(clone.actor,
@@ -1019,6 +1019,8 @@ WorkspaceMonitor.prototype = {
                 Tweener.addTween(clone.actor,
                                  { scale_x: 0,
                                    scale_y: 0,
+                                   x: this._width / 2,
+                                   y: this._height / 2,
                                    opacity: 0,
                                    time: Overview.ANIMATION_TIME,
                                    transition: 'easeOutQuad'
