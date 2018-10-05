@@ -698,10 +698,11 @@ XletSettingsBase.prototype = {
 
             // If the setting already exists, we want to use the old value. If not we use the default.
             let oldValue = null;
-            if (this.settingsData[key] && this.settingsData[key].value !== undefined)
+            if (this.settingsData[key] && this.settingsData[key].value !== undefined) {
                 oldValue = this.settingsData[key].value;
                 if (key in this.settingsData && this._checkSanity(oldValue, newSettings[key])) newSettings[key].value = oldValue;
-            if (!newSettings[key].value) newSettings[key].value = newSettings[key].default;
+            }
+            if (!("value" in newSettings[key])) newSettings[key].value = newSettings[key].default;
         }
 
         newSettings.__md5__ = checksum;
