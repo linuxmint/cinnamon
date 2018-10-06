@@ -1005,7 +1005,7 @@ class CinnamonWindowListApplet extends Applet.Applet {
         this.signals.connect(global.screen, 'window-workspace-changed', this._onWindowWorkspaceChanged, this);
         this.signals.connect(global.screen, 'window-skip-taskbar-changed', this._onWindowSkipTaskbarChanged, this);
         this.signals.connect(global.screen, 'monitors-changed', this._updateWatchedMonitors, this);
-        this.signals.connect(global.window_manager, 'switch-workspace', this._refreshAllItems, this);
+        this.signals.connect(Main.wm, 'switch-workspace', this._refreshAllItems, this);
 
         this.actor.connect('style-changed', Lang.bind(this, this._updateSpacing));
 

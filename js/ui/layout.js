@@ -442,7 +442,6 @@ Chrome.prototype = {
         global.screen.connect('restacked',
                               Lang.bind(this, this._windowsRestacked));
         global.screen.connect('in-fullscreen-changed', Lang.bind(this, this._updateVisibility));
-        global.window_manager.connect('switch-workspace', Lang.bind(this, this._queueUpdateRegions));
 
         // Need to update struts on new workspaces when they are added
         global.screen.connect('notify::n-workspaces',

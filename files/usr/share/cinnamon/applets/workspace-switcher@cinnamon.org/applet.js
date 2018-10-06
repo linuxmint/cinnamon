@@ -231,7 +231,7 @@ class CinnamonWorkspaceSwitcher extends Applet.Applet {
 
         this._createButtons();
         global.screen.connect('notify::n-workspaces', Lang.bind(this, this.onNumberOfWorkspacesChanged));
-        global.window_manager.connect('switch-workspace', this._onWorkspaceChanged.bind(this));
+        Main.wm.connect('switch-workspace', this._onWorkspaceChanged.bind(this));
         global.settings.connect('changed::panel-edit-mode', Lang.bind(this, this.on_panel_edit_mode_changed));
 
         let expoMenuItem = new PopupMenu.PopupIconMenuItem(_("Manage workspaces (Expo)"), "view-grid-symbolic", St.IconType.SYMBOLIC);
@@ -279,7 +279,7 @@ class CinnamonWorkspaceSwitcher extends Applet.Applet {
         }
     }
 
-    _onWorkspaceChanged(wm, from, to) {
+    _onWorkspaceChanged(windowManager, wm, from, to) {
         this.buttons[from].activate(false);
         this.buttons[to].activate(true);
     }

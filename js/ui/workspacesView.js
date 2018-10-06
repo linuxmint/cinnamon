@@ -91,13 +91,13 @@ WorkspacesView.prototype = {
         this._swipeScrollEndId = 0;
 
         let restackedNotifyId = global.screen.connect('restacked', Lang.bind(this, this._onRestacked));
-        let switchWorkspaceNotifyId = global.window_manager.connect('switch-workspace',
+        let switchWorkspaceNotifyId = Main.wm.connect('switch-workspace',
                                           Lang.bind(this, this._activeWorkspaceChanged));
 
         let nWorkspacesChangedId = global.screen.connect('notify::n-workspaces', Lang.bind(this, this._workspacesChanged));
 
         this._disconnectHandlers = function() {
-            global.window_manager.disconnect(switchWorkspaceNotifyId);
+            Main.wm.disconnect(switchWorkspaceNotifyId);
             global.screen.disconnect(nWorkspacesChangedId);
             global.screen.disconnect(restackedNotifyId);
         };
@@ -272,7 +272,7 @@ WorkspacesView.prototype = {
         this._updateVisibility();
     },
 
-    _activeWorkspaceChanged: function(wm, from, to, direction) {
+    _activeWorkspaceChanged: function(windowManager, wm, from, to, direction) {
         if (this._scrolling)
             return;
 

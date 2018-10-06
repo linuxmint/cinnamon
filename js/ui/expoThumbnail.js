@@ -1098,7 +1098,7 @@ ExpoThumbnailsBox.prototype = {
 
     show: function() {
         this.switchWorkspaceNotifyId =
-            global.window_manager.connect('switch-workspace',
+            Main.wm.connect('switch-workspace',
                                           Lang.bind(this, this.activeWorkspaceChanged));
 
         this.workspaceAddedId = global.screen.connect('workspace-added', Lang.bind(this, function(screen, index) {
@@ -1206,7 +1206,7 @@ ExpoThumbnailsBox.prototype = {
     },
 
     hide: function() {
-        global.window_manager.disconnect(this.switchWorkspaceNotifyId);
+        Main.wm.disconnect(this.switchWorkspaceNotifyId);
         global.screen.disconnect(this.workspaceAddedId);
         global.screen.disconnect(this.workspaceRemovedId);
 
@@ -1683,7 +1683,8 @@ ExpoThumbnailsBox.prototype = {
         this.emit('allocated');
     },
 
-    activeWorkspaceChanged: function(wm, from, to, direction) {
+    activeWorkspaceChanged: function(windowManager, wm, from, to, direction) {
+        if (!this.thumbnails[this.kbThumbnailIndex]) return;
         this.thumbnails[this.kbThumbnailIndex].showKeyboardSelectedState(false);
         this.kbThumbnailIndex = global.screen.get_active_workspace_index();
         this.thumbnails[this.kbThumbnailIndex].showKeyboardSelectedState(true);

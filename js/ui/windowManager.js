@@ -6,6 +6,7 @@ const Meta = imports.gi.Meta;
 const St = imports.gi.St;
 const Cinnamon = imports.gi.Cinnamon;
 const Mainloop = imports.mainloop;
+const Signals = imports.signals;
 const Gio = imports.gi.Gio;
 const AppSwitcher = imports.ui.appSwitcher.appSwitcher;
 const CoverflowSwitcher = imports.ui.appSwitcher.coverflowSwitcher;
@@ -433,7 +434,13 @@ WindowManager.prototype = {
 
         this._switchData = null;
         this._cinnamonwm.connect('kill-window-effects', Lang.bind(this, this._killWindowEffects));
-        this._cinnamonwm.connect('switch-workspace', Lang.bind(this, this._switchWorkspace));
+        this._cinnamonwm.connect(
+            'switch-workspace',
+            (...args) => Mainloop.idle_add_full(
+                Mainloop.PRIORITY_DEFAULT,
+                () => this._switchWorkspace(...args)
+            )
+        );
         this._cinnamonwm.connect('minimize', Lang.bind(this, this._minimizeWindow));
         this._cinnamonwm.connect('maximize', Lang.bind(this, this._maximizeWindow));
         this._cinnamonwm.connect('unmaximize', Lang.bind(this, this._unmaximizeWindow));
@@ -723,10 +730,18 @@ WindowManager.prototype = {
         this._startWindowEffect(cinnamonwm, "close", actor);
     },
 
-    _switchWorkspace : function(cinnamonwm, from, to, direction) {
+    emitSwitchWorkspace: function() {
+        Mainloop.idle_add_full(
+            Mainloop.PRIORITY_LOW,
+            () => this.emit('switch-workspace', ...Array.from(arguments))
+        );
+    },
+
+    _switchWorkspace: function(cinnamonwm, from, to, direction) {
         if (!this._shouldAnimate()) {
             this.showWorkspaceOSD();
             cinnamonwm.completed_switch_workspace();
+            this.emitSwitchWorkspace(...arguments);
             return;
         }
 
@@ -814,6 +829,7 @@ WindowManager.prototype = {
 
         Tweener.addTween(this, {time: WINDOW_ANIMATION_TIME, onComplete: function() {
             cinnamonwm.completed_switch_workspace();
+            this.emitSwitchWorkspace(...arguments);
         }});
     },
 
@@ -1042,3 +1058,5 @@ WindowManager.prototype = {
         }
     }
 };
+
+Signals.addSignalMethods(WindowManager.prototype);
