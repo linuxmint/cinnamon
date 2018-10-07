@@ -371,11 +371,15 @@ WindowOverlay.prototype = {
 
         let buttonX;
         let buttonY = cloneY - (button.height - button._overlap);
-        if (side === St.Side.LEFT)
+        if (side === St.Side.LEFT) {
             buttonX = cloneX - (button.width - button._overlap);
-        else
+            button.remove_style_class_name('right');
+            button.add_style_class_name('left');
+        } else {
             buttonX = cloneX + (cloneWidth - button._overlap);
-
+            button.remove_style_class_name('left');
+            button.add_style_class_name('right');
+        }
         button.set_position(Math.round(buttonX), Math.round(buttonY));
 
         let borderX = cloneX - this.borderWidth;
