@@ -524,6 +524,13 @@ WorkspaceMonitor.prototype = {
             }
         }
 
+        let empty_label = new St.Label({ text: _("No open windows") });
+        this._emptyPlaceHolder = new St.Bin({
+            style_class: 'overview-empty-placeholder',
+            child: empty_label
+        });
+        this.actor.insert_child_below(this._emptyPlaceHolder, null);
+
         // Track window changes
         if (this.metaWorkspace) {
             this._windowAddedId = this.metaWorkspace.connect('window-added',
@@ -838,6 +845,18 @@ WorkspaceMonitor.prototype = {
         this._windowOverlaysGroup.hide();
     },
 
+    _updateEmptyPlaceholder: function() {
+        let placeholder = this._emptyPlaceHolder;
+        if (this._windows.length > 0) {
+            placeholder.hide();
+        } else {
+            let x = this._monitor.x + Math.floor((this._monitor.width - placeholder.width)/2);
+            let y = this._monitor.y + Math.floor((this._monitor.height - placeholder.height)/2);
+            placeholder.set_position(x, y);
+            placeholder.show();
+        }
+    },
+
     _doRemoveWindow : function(metaWin) {
         let win = metaWin.get_compositor_private();
 
@@ -897,6 +916,8 @@ WorkspaceMonitor.prototype = {
         if (this.isEmpty()) {
             if(clone.closedFromOverview)
                 Main.overview.hide();
+            else
+                this._updateEmptyPlaceholder();
         } else {
             this._repositionWindowsId = Mainloop.timeout_add(750,
                 this._delayedWindowRepositioning.bind(this));
@@ -950,6 +971,8 @@ WorkspaceMonitor.prototype = {
             clone.actor.set_position (this._x, this._y);
         }
 
+        this._updateEmptyPlaceholder();
+
         if (this.actor.get_stage()) {
             this.positionWindows(WindowPositionFlags.ANIMATE);
         }
@@ -994,6 +1017,8 @@ WorkspaceMonitor.prototype = {
             this.positionWindows(WindowPositionFlags.ANIMATE | WindowPositionFlags.INITIAL);
         else
             this.positionWindows(WindowPositionFlags.INITIAL);
+
+        this._updateEmptyPlaceholder();
     },
 
     // Animates the return from Overview mode

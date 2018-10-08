@@ -505,6 +505,11 @@ StScrollBar StButton#vhandle:hover {
     text-align: center;
 }
 
+.overview-empty-placeholder {
+    color: #ffffff;
+    font-size: 2em;
+}
+
 .expo-background {
     background-gradient-start: #000;
     background-gradient-end: #AAA;
