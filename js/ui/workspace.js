@@ -48,6 +48,7 @@ WindowClone.prototype = {
         this.metaWindow = realWindow.meta_window;
         this.metaWindow._delegate = this;
         this.overlay = null;
+        this.closedFromOverview = false;
 
         // Original position of the full-sized window
         this.origX = 0;
@@ -146,6 +147,7 @@ WindowClone.prototype = {
                 this.emit('activated', global.get_current_time());
                 return true;
             case 2:
+                this.closedFromOverview = true;
                 this.emit('closed', global.get_current_time());
                 return true;
             case 3:
@@ -418,6 +420,8 @@ WindowOverlay.prototype = {
             workspace.disconnect(windowAddedId);
             this._disconnectWindowAdded = 0;
         };
+
+        this._windowClone.closedFromOverview = true;
 
         metaWindow.delete(global.get_current_time());
     },
@@ -890,8 +894,14 @@ WorkspaceMonitor.prototype = {
         this._cursorX = x;
         this._cursorY = y;
 
-        this._repositionWindowsId = Mainloop.timeout_add(750,
+        if (this.isEmpty()) {
+            if(clone.closedFromOverview)
+                Main.overview.hide();
+        } else {
+            this._repositionWindowsId = Mainloop.timeout_add(750,
                 this._delayedWindowRepositioning.bind(this));
+        }
+
     },
 
     _doAddWindow : function(metaWin) {
