@@ -1067,6 +1067,13 @@ WorkspaceMonitor.prototype = {
             }
         }
 
+        if (this._emptyPlaceHolder.visible) {
+            Tweener.addTween(this._emptyPlaceHolder, {
+                opacity: 0,
+                time: Overview.ANIMATION_TIME,
+                transition: 'easeOutQuad'
+            });
+        }
     },
 
     destroy : function() {
