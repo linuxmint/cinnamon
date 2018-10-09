@@ -634,11 +634,6 @@ class Spice_Harvester(GObject.Object):
         contents = os.listdir(folder)
 
         if not self.themes:
-            # ensure proper file permissions
-            for root, dirs, files in os.walk(folder):
-                for file in files:
-                    os.chmod(os.path.join(root, file), 0o755)
-
             # Install spice localization files, if any
             if 'po' in contents:
                 po_dir = os.path.join(folder, 'po')
@@ -653,6 +648,12 @@ class Spice_Harvester(GObject.Object):
         if os.path.exists(dest):
             shutil.rmtree(dest)
         shutil.copytree(folder, dest)
+
+        if not self.themes:
+            # ensure proper file permissions
+            for root, dirs, files in os.walk(dest):
+                for file in files:
+                    os.chmod(os.path.join(root, file), 0o755)
 
         meta_path = os.path.join(dest, 'metadata.json')
         if self.themes and not os.path.exists(meta_path):
