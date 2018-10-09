@@ -235,8 +235,8 @@ Overview.prototype = {
         if (!Main.pushModal(this._group))
             return;
         this._modal = true;
-        this._animateVisible();
         this._shown = true;
+        this._animateVisible();
 
         this._buttonPressId = this._group.connect('button-press-event',
             Lang.bind(this, this._onButtonPress));
@@ -292,18 +292,27 @@ Overview.prototype = {
         global.overlay_group.add_actor(this.workspacesView.actor);
         Main.panelManager.disablePanels();
 
-        this._group.opacity = 0;
-        Tweener.addTween(this._group,
-                         { opacity: 255,
-                           transition: 'easeOutQuad',
-                           time: ANIMATION_TIME,
-                           onComplete: this._showDone,
-                           onCompleteScope: this
-                         });
+        let animate = global.settings.get_boolean("desktop-effects");
+        if (animate) {
+            this._group.opacity = 0;
+            Tweener.addTween(this._group, {
+                opacity: 255,
+                transition: 'easeOutQuad',
+                time: ANIMATION_TIME,
+                onComplete: this._showDone,
+                onCompleteScope: this
+            });
+        }
+
 
         this._coverPane.raise_top();
         this._coverPane.show();
         this.emit('showing');
+
+        if (!animate) {
+            this._group.opacity = 255;
+            this._showDone();
+        }
     },
 
     // showTemporarily:
@@ -328,10 +337,10 @@ Overview.prototype = {
         if (!this._shown)
             return;
 
+        this._shown = false;
         if (!this._shownTemporarily)
             this._animateNotVisible();
 
-        this._shown = false;
         this._syncInputMode();
 
         if (this._buttonPressId > 0)
@@ -402,18 +411,24 @@ Overview.prototype = {
 
         this.workspacesView.hide();
 
-        // Make other elements fade out.
-        Tweener.addTween(this._group,
-                         { opacity: 0,
-                           transition: 'easeOutQuad',
-                           time: ANIMATION_TIME,
-                           onComplete: this._hideDone,
-                           onCompleteScope: this
-                         });
+        let animate = global.settings.get_boolean("desktop-effects");
+        if (animate) {
+            // Make other elements fade out.
+            Tweener.addTween(this._group, {
+                opacity: 0,
+                transition: 'easeOutQuad',
+                time: ANIMATION_TIME,
+                onComplete: this._hideDone,
+                onCompleteScope: this
+            });
+        }
 
         this._coverPane.raise_top();
         this._coverPane.show();
         this.emit('hiding');
+
+        if (!animate)
+            this._hideDone();
     },
 
     _showDone: function() {
