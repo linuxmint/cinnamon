@@ -251,16 +251,16 @@ Overview.prototype = {
         // one. Instances of this class share a single CoglTexture behind the
         // scenes which allows us to show the background with different
         // rendering options without duplicating the texture data.
-        this._background = new Clutter.Group();
-        this._background.hide();
-        global.overlay_group.add_actor(this._background);
+        this._background = new Clutter.Actor();
+        this._background.set_position(0, 0);
+        this._group.add_actor(this._background);
 
-        this._desktopBackground = Meta.BackgroundActor.new_for_screen(global.screen);
-        this._background.add_actor(this._desktopBackground);
+        let desktopBackground = Meta.BackgroundActor.new_for_screen(global.screen);
+        this._background.add_actor(desktopBackground);
 
-        this._backgroundShade = new St.Bin({style_class: 'workspace-overview-background-shade'});
-        this._background.add_actor(this._backgroundShade);
-        this._backgroundShade.set_size(global.screen_width, global.screen_height);
+        let backgroundShade = new St.Bin({style_class: 'workspace-overview-background-shade'});
+        backgroundShade.set_size(global.screen_width, global.screen_height);
+        this._background.add_actor(backgroundShade);
 
         this.visible = true;
         this.animationInProgress = true;
@@ -272,7 +272,7 @@ Overview.prototype = {
         this._group.add_actor(this._coverPane);
         this._coverPane.set_position(0, 0);
         this._coverPane.set_size(global.screen_width, global.screen_height);
-        this._coverPane.connect('event', Lang.bind(this, function (actor, event) { return true; }));
+        this._coverPane.connect('event', () => true);
         this._coverPane.hide();
 
         // All the the actors in the window group are completely obscured,
@@ -287,7 +287,6 @@ Overview.prototype = {
         Meta.disable_unredirect_for_screen(global.screen);
         global.window_group.hide();
         this._group.show();
-        this._background.show();
 
         this.workspacesView = new WorkspacesView.WorkspacesView();
         global.overlay_group.add_actor(this.workspacesView.actor);
@@ -435,7 +434,7 @@ Overview.prototype = {
         this._coverPane.destroy();
         this._coverPane = null;
 
-        global.overlay_group.remove_actor(this._background);
+        this._group.remove_actor(this._background);
         this._background.destroy();
         this._background = null;
 
