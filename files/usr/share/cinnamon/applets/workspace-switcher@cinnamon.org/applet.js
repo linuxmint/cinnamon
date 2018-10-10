@@ -280,6 +280,7 @@ class CinnamonWorkspaceSwitcher extends Applet.Applet {
     }
 
     _onWorkspaceChanged(windowManager, wm, from, to) {
+        if (!this.buttons[from] || !this.buttons[to]) return;
         this.buttons[from].activate(false);
         this.buttons[to].activate(true);
     }
