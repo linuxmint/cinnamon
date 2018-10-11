@@ -108,6 +108,32 @@ WindowClone.prototype = {
         this.origY = y;
     },
 
+    closeWindow: function() {
+        let workspace = this.metaWindow.get_workspace();
+
+        if (this._disconnectWindowAdded) {this._disconnectWindowAdded();}
+        let windowAddedId = workspace.connect('window-added', (ws, win) => {
+            if (this._disconnectWindowAdded) {this._disconnectWindowAdded();}
+            if (win.get_transient_for() === this.metaWindow) {
+                // use an idle handler to avoid mapping problems -
+                // see comment in Workspace._windowAdded
+                Mainloop.idle_add(() => {
+                    this.emit('activated');
+                    return false;
+                });
+            }
+        });
+
+        this._disconnectWindowAdded = () => {
+            workspace.disconnect(windowAddedId);
+            this._disconnectWindowAdded = 0;
+        };
+
+        this.closedFromOverview = true;
+
+        this.metaWindow.delete(global.get_current_time());
+    },
+
     setStackAbove: function (actor) {
         this._stackAbove = actor;
         if (this._stackAbove == null)
@@ -127,6 +153,8 @@ WindowClone.prototype = {
 
     _onDestroy: function() {
         this._disconnectWindowSignals();
+        if (this._disconnectWindowAdded)
+            this._disconnectWindowAdded();
 
         this.metaWindow._delegate = null;
         this.actor._delegate = null;
@@ -148,7 +176,7 @@ WindowClone.prototype = {
                 return true;
             case 2:
                 this.closedFromOverview = true;
-                this.emit('closed', global.get_current_time());
+                this.closeWindow();
                 return true;
             case 3:
                 if (!this.menuCancelled) {
@@ -211,7 +239,7 @@ WindowOverlay.prototype = {
 
         // Close button
         let button = new St.Button({ style_class: 'window-close' });
-        button.connect('clicked', this.closeWindow.bind(this));
+        button.connect('clicked', () => this._windowClone.closeWindow());
         button._overlap = 0;
 
         parentActor.add_actor(this.border);
@@ -397,33 +425,6 @@ WindowOverlay.prototype = {
         let captionY = cloneY + cloneHeight + caption._spacing;
         caption.set_position(Math.round(captionX), Math.round(captionY));
         caption.width = captionWidth;
-    },
-
-    closeWindow: function() {
-        let metaWindow = this._windowClone.metaWindow;
-        let workspace = metaWindow.get_workspace();
-
-        if (this._disconnectWindowAdded) {this._disconnectWindowAdded();}
-        let windowAddedId = workspace.connect('window-added', (ws, win) => {
-            if (this._disconnectWindowAdded) {this._disconnectWindowAdded();}
-            if (win.get_transient_for() === metaWindow) {
-                // use an idle handler to avoid mapping problems -
-                // see comment in Workspace._windowAdded
-                Mainloop.idle_add(() => {
-                    this._windowClone.emit('activated');
-                    return false;
-                });
-            }
-        });
-
-        this._disconnectWindowAdded = () => {
-            workspace.disconnect(windowAddedId);
-            this._disconnectWindowAdded = 0;
-        };
-
-        this._windowClone.closedFromOverview = true;
-
-        metaWindow.delete(global.get_current_time());
     },
 
     _onDestroy: function() {
@@ -1108,7 +1109,6 @@ WorkspaceMonitor.prototype = {
         });
 
         clone.connect('activated', this._onCloneActivated.bind(this));
-        clone.connect('closed', this._onCloneClosed.bind(this));
         clone.connect('context-menu-requested', this._onCloneContextMenuRequested.bind(this));
         clone.connect('size-changed', () => { this.positionWindows(0) });
 
@@ -1155,10 +1155,6 @@ WorkspaceMonitor.prototype = {
         if (this.metaWorkspace)
             wsIndex = this.metaWorkspace.index();
         Main.activateWindow(clone.metaWindow, time, wsIndex);
-    },
-
-    _onCloneClosed : function (clone, time) {
-        clone.metaWindow.delete(global.get_current_time());
     }
 };
 
