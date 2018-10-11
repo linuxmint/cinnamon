@@ -306,22 +306,16 @@ WorkspacesView.prototype = {
     _swipeScrollEnd: function(overview, result) {
         this._scrolling = false;
 
-        if (result == SwipeScrollResult.CLICK) {
-            let [x, y, mod] = global.get_pointer();
-            let actor = global.stage.get_actor_at_pos(Clutter.PickMode.ALL,
-                                                      x, y);
-
-            // Only switch to the workspace when there's no application
-            // windows open. The problem is that it's too easy to miss
-            // an app window and get the wrong one focused.
+        // Close overview on click when there are no windows
+        if (result === SwipeScrollResult.CLICK) {
             let active = global.screen.get_active_workspace_index();
-            if (this._workspaces[active].isEmpty() &&
-                this.actor.contains(actor))
+            if (this._workspaces[active].isEmpty())
                 Main.overview.hide();
+        } else {
+            // Make sure title captions etc are shown as necessary
+            this._updateVisibility();
         }
 
-        // Make sure title captions etc are shown as necessary
-        this._updateVisibility();
     },
 
     _onRestacked: function() {
