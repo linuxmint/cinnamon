@@ -578,7 +578,7 @@ class AppMenuButton {
         if (!this._hasFocus()) {
             Main.activateWindow(this.metaWindow, global.get_current_time());
             this.actor.add_style_pseudo_class('focus');
-        } else if (!fromDrag) {
+        } else if (!fromDrag && this._applet.leftClickMinimize) {
             this.metaWindow.minimize();
             this.actor.remove_style_pseudo_class('focus');
         }
@@ -990,6 +990,7 @@ class CinnamonWindowListApplet extends Applet.Applet {
         this.settings.bind("enable-alerts", "enableAlerts", this._updateAttentionGrabber);
         this.settings.bind("enable-scrolling", "scrollable", this._onEnableScrollChanged);
         this.settings.bind("reverse-scrolling", "reverseScroll");
+        this.settings.bind("left-click-minimize", "leftClickMinimize");
         this.settings.bind("middle-click-close", "middleClickClose");
         this.settings.bind("buttons-use-entire-space", "buttonsUseEntireSpace", this._refreshAllItems);
         this.settings.bind("window-preview", "usePreview", this._onPreviewChanged);
