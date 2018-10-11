@@ -542,8 +542,8 @@ WorkspaceMonitor.prototype = {
                                               this._windowEnteredMonitor.bind(this));
         this._windowLeftMonitorId = global.screen.connect('window-left-monitor',
                                               this._windowLeftMonitor.bind(this));
-        this._repositionWindowsId = 0;
 
+        this._animating = false; // Indicate if windows are being repositioned
         this.leavingOverview = false;
 
         this._kbWindowIndex = 0; // index of the current keyboard-selected window
@@ -698,10 +698,6 @@ WorkspaceMonitor.prototype = {
     positionWindows : function(flags) {
         if (Main.expo.visible)
             return;
-        if (this._repositionWindowsId > 0) {
-            Mainloop.source_remove(this._repositionWindowsId);
-            this._repositionWindowsId = 0;
-        }
 
         closeContextMenu();
 
@@ -714,6 +710,10 @@ WorkspaceMonitor.prototype = {
 
         let currentWorkspace = global.screen.get_active_workspace();
         let isOnCurrentWorkspace = this.metaWorkspace == null || this.metaWorkspace == currentWorkspace;
+
+        if (clones.length > 0 && animate && isOnCurrentWorkspace) {
+            this._animating = true;
+        }
 
         for (let i = clones.length - 1; i >= 0; --i) {
             let clone = clones[i];
@@ -752,7 +752,10 @@ WorkspaceMonitor.prototype = {
                                    scale_y: scale,
                                    time: Overview.ANIMATION_TIME,
                                    transition: 'easeOutQuad',
-                                   onComplete: () => this._showWindowOverlay(clone, true)
+                                   onComplete: () => {
+                                       this._animating = false
+                                       this._showWindowOverlay(clone, true);
+                                   }
                                  });
             } else {
                 clone.actor.set_position(x, y);
@@ -785,6 +788,10 @@ WorkspaceMonitor.prototype = {
     },
 
     _showWindowOverlay: function(clone, fade) {
+        // Prevent showing overlay now. Sometimes called during animations
+        if (this._animating)
+            return;
+
         if (this._slotWidth) {
             // This is a little messy and complicated because when we
             // start the fade-in we may not have done the final positioning
@@ -808,30 +815,10 @@ WorkspaceMonitor.prototype = {
 
     _showAllOverlays: function() {
         let currentWorkspace = global.screen.get_active_workspace();
-        for (let i = 0; i < this._windows.length; i++) {
-            this._showWindowOverlay(this._windows[i],
-                    this.metaWorkspace == null || this.metaWorkspace === currentWorkspace);
+        let fade = this.metaWorkspace == null || this.metaWorkspace === currentWorkspace;
+        for (let clone of this._windows) {
+            this._showWindowOverlay(clone, fade);
         }
-    },
-
-    _delayedWindowRepositioning: function() {
-        let [x, y, mask] = global.get_pointer();
-
-        let pointerHasMoved = (this._cursorX != x && this._cursorY != y);
-        let inWorkspace = (this._x < x && x < this._x + this._width &&
-                           this._y < y && y < this._y + this._height);
-
-        if (pointerHasMoved && inWorkspace) {
-            // store current cursor position
-            this._cursorX = x;
-            this._cursorY = y;
-            return true;
-        }
-
-        let animate = global.settings.get_boolean("desktop-effects");
-        this.positionWindows(animate ? WindowPositionFlags.ANIMATE : 0);
-        this._repositionWindowsId = 0;
-        return false;
     },
 
     showWindowsOverlays: function() {
@@ -897,31 +884,14 @@ WorkspaceMonitor.prototype = {
 
         clone.destroy();
 
-
-        // We need to reposition the windows; to avoid shuffling windows
-        // around while the user is interacting with the workspace, we delay
-        // the positioning until the pointer remains still for at least 750 ms
-        // or is moved outside the workspace
-
-        // remove old handler
-        if (this._repositionWindowsId > 0) {
-            Mainloop.source_remove(this._repositionWindowsId);
-            this._repositionWindowsId = 0;
-        }
-
-        // setup new handler
-        let [x, y, mask] = global.get_pointer();
-        this._cursorX = x;
-        this._cursorY = y;
-
         if (this.isEmpty()) {
             if(clone.closedFromOverview)
                 Main.overview.hide();
             else
                 this._updateEmptyPlaceholder();
         } else {
-            this._repositionWindowsId = Mainloop.timeout_add(750,
-                this._delayedWindowRepositioning.bind(this));
+            let animate = global.settings.get_boolean("desktop-effects");
+            this.positionWindows(animate ? WindowPositionFlags.ANIMATE : 0);
         }
 
     },
@@ -1032,10 +1002,6 @@ WorkspaceMonitor.prototype = {
 
         this.hideWindowsOverlays();
 
-        if (this._repositionWindowsId > 0) {
-            Mainloop.source_remove(this._repositionWindowsId);
-            this._repositionWindowsId = 0;
-        }
         this._overviewHiddenId = Main.overview.connect('hidden',
                 this._doneLeavingOverview.bind(this));
 
@@ -1102,11 +1068,6 @@ WorkspaceMonitor.prototype = {
         }
         global.screen.disconnect(this._windowEnteredMonitorId);
         global.screen.disconnect(this._windowLeftMonitorId);
-
-        if (this._repositionWindowsId > 0) {
-            Mainloop.source_remove(this._repositionWindowsId);
-            this._repositionWindowsId = 0;
-        }
 
         // Usually, the windows will be destroyed automatically with
         // their parent (this.actor), but we might have a zoomed window
