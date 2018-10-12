@@ -410,6 +410,8 @@ st_scroll_view_dispose (GObject *object)
     priv->setting_connect_id = 0;
   }
 
+  g_clear_object (&priv->settings);
+
   g_signal_handlers_disconnect_by_func (ST_SCROLL_VIEW (object), motion_event_cb, ST_SCROLL_VIEW (object));
 
   G_OBJECT_CLASS (st_scroll_view_parent_class)->dispose (object);
