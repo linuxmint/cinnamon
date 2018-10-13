@@ -58,6 +58,8 @@ WorkspacesView.prototype = {
         this._scrolling = false; // swipe-scrolling
         this._animatingScroll = false; // programatically updating the adjustment
 
+        this._keyIsHandled = false;
+
         let activeWorkspaceIndex = global.screen.get_active_workspace_index();
         this._workspaces = [];
         for (let i = 0; i < global.screen.n_workspaces; i++) {
@@ -103,7 +105,8 @@ WorkspacesView.prototype = {
         };
 
         this._onRestacked();
-        this.actor.connect('key-press-event', Lang.bind(this, this._onStageKeyPress));
+        this.actor.connect('key-press-event', this._onStageKeyPress.bind(this));
+        this.actor.connect('key-release-event', this._onStageKeyRelease.bind(this));
         global.stage.set_key_focus(this.actor);
 
         let primary = Main.layoutManager.primaryMonitor;
@@ -111,17 +114,28 @@ WorkspacesView.prototype = {
     },
 
     _onStageKeyPress: function(actor, event) {
+        let activeWorkspaceIndex = global.screen.get_active_workspace_index();
+        let activeWorkspace = this._workspaces[activeWorkspaceIndex];
+        this._keyIsHandled = activeWorkspace._onKeyPress(actor, event);
+        return this._keyIsHandled;
+    },
+
+    _onStageKeyRelease: function(actor, event) {
+        if (this._keyIsHandled)
+            return false;
+
         let modifiers = Cinnamon.get_event_state(event);
         let symbol = event.get_key_symbol();
 
-        if (symbol == Clutter.Escape)
-        {
-            Main.overview.hide();
-            return true;
+        switch (symbol) {
+            case Clutter.Escape:
+            case Clutter.Super_L:
+            case Clutter.Super_R:
+                Main.overview.hide();
+                return true;
+            default:
+                return false;
         }
-        let activeWorkspaceIndex = global.screen.get_active_workspace_index();
-        let activeWorkspace = this._workspaces[activeWorkspaceIndex];
-        return activeWorkspace._onKeyPress(actor, event);
     },
 
     setGeometry: function(x, y, width, height, spacing) {
@@ -275,6 +289,8 @@ WorkspacesView.prototype = {
     _activeWorkspaceChanged: function(wm, from, to, direction) {
         if (this._scrolling)
             return;
+
+        this._keyIsHandled = true;
 
         this._scrollToActive(true);
     },
