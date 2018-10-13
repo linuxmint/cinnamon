@@ -1255,9 +1255,10 @@ function _stageEventHandler(actor, event) {
 
     // This isn't a Meta.KeyBindingAction yet
     if (symbol == Clutter.Super_L || symbol == Clutter.Super_R) {
-        overview.hide();
-        expo.hide();
-        return true;
+        if (expo.visible) {
+            expo.hide();
+            return true;
+        }
     }
 
     if (action == Meta.KeyBindingAction.SWITCH_PANELS) {
