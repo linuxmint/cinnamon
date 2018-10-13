@@ -123,26 +123,16 @@ WindowClone.prototype = {
         this.metaWindow._delegate = this;
         this.overlay = null;
 
-        this.origX = realWindow.x;
-        this.origY = realWindow.y;
-
-        let outerRect = realWindow.meta_window.get_outer_rect();
+        // Original position of the full-sized window
+        this.origX = 0;
+        this.origY = 0;
 
         // The MetaShapedTexture that we clone has a size that includes
         // the invisible border; this is inconvenient; rather than trying
         // to compensate all over the place we insert a ClutterGroup into
         // the hierarchy that is sized to only the visible portion.
-        this.actor = new Clutter.Group({ reactive: true,
-            x: this.origX, y: this.origY,
-            width: outerRect.width, height: outerRect.height
-            });
+        this.actor = new Clutter.Actor({ reactive: true });
         this.refreshClone(true);
-        // We expect this.actor to be used for all interaction rather than
-        // this.clone; as the former is reactive and the latter
-        // is not, this just works for most cases. However, for DND all
-        // actors are picked, so DND operations would operate on the clone.
-        // To avoid this, we hide it from pick.
-        Cinnamon.util_set_hidden_from_pick(this.clone, true);
 
         this.actor._delegate = this;
 
@@ -155,7 +145,7 @@ WindowClone.prototype = {
         }));
         let realWindowDestroyId = 0;
         this._disconnectWindowSignals = function() {
-            this._disconnectWindowSignals = function() {};            
+            this._disconnectWindowSignals = function() {};
             this.metaWindow.disconnect(workspaceChangedId);
             this.realWindow.disconnect(sizeChangedId);
             this.realWindow.disconnect(realWindowDestroyId);
@@ -183,17 +173,24 @@ WindowClone.prototype = {
     },
 
     refreshClone: function(withTransients) {
-        if (this.clone) {this.clone.destroy();}
-        this.clone = new St.Widget({ reactive: false });
-        this.actor.add_actor(this.clone);
-        let [pwidth, pheight] = [this.realWindow.width, this.realWindow.height];
+        this.actor.destroy_all_children();
+
+        let {x, y, width, height} = this.metaWindow.get_outer_rect();
         let clones = WindowUtils.createWindowClone(this.metaWindow, 0, 0, withTransients);
-        for (let i in clones) {
-            let clone = clones[i].actor;
-            this.clone.add_actor(clone);
-            let [width, height] = clone.get_size();
-            clone.set_position(Math.round((pwidth - width) / 2), Math.round((pheight - height) / 2));
+        let leftGap, topGap;
+        for (let clone of clones) {
+            leftGap = x - clone.x;
+            topGap = y - clone.y;
+            if (clone !== clones[0]) {
+                clone.actor.set_clip(leftGap, topGap, width, height);
+            }
+            clone.actor.set_position(-leftGap, -topGap);
+            this.actor.add_actor(clone.actor);
         }
+        this.actor.set_size(width, height);
+        this.actor.set_position(x, y);
+        this.origX = x;
+        this.origY = y;
     },
 
     setStackAbove: function (actor) {
@@ -225,29 +222,8 @@ WindowClone.prototype = {
         }
     },
 
-    _getInvisibleBorderPadding: function() {
-        // We need to adjust the position of the actor because of the
-        // consequences of invisible borders -- in reality, the texture
-        // has an extra set of "padding" around it that we need to trim
-        // down.
-
-        // The outer rect paradoxically is the smaller rectangle,
-        // containing the positions of the visible frame. The input
-        // rect contains everything, including the invisible border
-        // padding.
-        let outerRect = this.metaWindow.get_outer_rect();
-        let inputRect = this.metaWindow.get_input_rect();
-        let [borderX, borderY] = [outerRect.x - inputRect.x,
-                                  outerRect.y - inputRect.y];
-
-        return [borderX, borderY];
-    },
-
     _onRealWindowSizeChanged: function() {
-        let [borderX, borderY] = this._getInvisibleBorderPadding();
-        let outerRect = this.metaWindow.get_outer_rect();
-        this.actor.set_size(outerRect.width, outerRect.height);
-        this.clone.set_position(-borderX, -borderY);
+        this.refreshClone(true);
         this.emit('size-changed');
     },
 
@@ -435,7 +411,7 @@ WindowOverlay.prototype = {
         this.icon = icon;
         icon.width = WINDOWOVERLAY_ICON_SIZE;
         icon.height = WINDOWOVERLAY_ICON_SIZE;
-        
+
         this._applicationIconBox = new St.Bin({ style_class: 'window-iconbox' });
         this._applicationIconBox.set_opacity(255);
         this._applicationIconBox.add_actor(icon);
@@ -520,7 +496,7 @@ WindowOverlay.prototype = {
         this._isSelected = selected;
         this.title.name = selected ? 'selected' : '';
         this.refreshTitle(this.title.text);
-        
+
         if (selected) {
             this._showCloseButton();
         }
@@ -593,7 +569,7 @@ WindowOverlay.prototype = {
         else
             buttonX = cloneX + (cloneWidth - button._overlap);
 
-        button.set_position(Math.floor(buttonX), Math.floor(buttonY));
+        button.set_position(Math.round(buttonX), Math.round(buttonY));
 
         this.updateIconCaptionWidth = Lang.bind(this, function() {
             let title = this.title;
@@ -662,7 +638,7 @@ WindowOverlay.prototype = {
         // are shown again
         if (this._hidden) return;
         if (this._hovering) return;
-        
+
         this._hovering = true;
         this._showCloseButton();
     },
@@ -802,7 +778,7 @@ WorkspaceMonitor.prototype = {
             });
         }
     },
-    
+
     selectAnotherWindow: function(symbol) {
         let numWindows = this._windows.length;
         if (numWindows === 0) {
@@ -818,7 +794,7 @@ WorkspaceMonitor.prototype = {
         this.selectIndex(nextIndex);
         return true;
     },
-    
+
     showActiveSelection: function() {
         this.selectIndex(this._kbWindowIndex);
     },
@@ -844,7 +820,7 @@ WorkspaceMonitor.prototype = {
         menuClone = clone;
         menuShowing.toggle();
     },
-    
+
     showMenuForSelectedWindow: function() {
         if (this._kbWindowIndex > -1 && this._kbWindowIndex < this._windows.length) {
             let window = this._windows[this._kbWindowIndex];
@@ -1170,7 +1146,7 @@ WorkspaceMonitor.prototype = {
         if (clone === this._myWorkspace._activeClone) {
             this.selectIndex(this._kbWindowIndex);
         }
-        
+
         clone.destroy();
 
 
@@ -1456,7 +1432,7 @@ WorkspaceMonitor.prototype = {
             let yCenter = (.5 / gridHeight) + Math.floor((windowIndex / gridWidth)) / gridHeight;
             return [xCenter, yCenter, fraction];
         };
-        
+
         let slots = [];
         for (let i = 0; i < numberOfWindows; i++) {
             slots.push(computeWindowSlot(i, numberOfWindows));
@@ -1474,9 +1450,9 @@ WorkspaceMonitor.prototype = {
             wsIndex = this.metaWorkspace.index();
         Main.activateWindow(clone.metaWindow, time, wsIndex);
     },
-    
-    _onCloneClosed : function (clone, time) {        
-        clone.metaWindow.delete(global.get_current_time());        
+
+    _onCloneClosed : function (clone, time) {
+        clone.metaWindow.delete(global.get_current_time());
     }
 };
 
@@ -1810,7 +1786,7 @@ Workspace.prototype = {
             monitor.showWindowsOverlays();
         }, this);
     },
-    
+
     hideWindowsOverlays: function() {
         this._monitors.forEach(function(monitor) {
             monitor.hideWindowsOverlays();
