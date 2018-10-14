@@ -827,10 +827,14 @@ WindowManager.prototype = {
             }
         }
 
-        Tweener.addTween(this, {time: WINDOW_ANIMATION_TIME, onComplete: function() {
-            cinnamonwm.completed_switch_workspace();
-            this.emitSwitchWorkspace(...arguments);
-        }});
+        Tweener.addTween(this, {
+            time: WINDOW_ANIMATION_TIME,
+            onComplete: function() {
+                cinnamonwm.completed_switch_workspace();
+                this.emitSwitchWorkspace(...arguments);
+            },
+            onCompleteParams: Array.from(arguments)
+        });
     },
 
     _showTilePreview: function(cinnamonwm, window, tileRect, monitorIndex, snapQueued) {
