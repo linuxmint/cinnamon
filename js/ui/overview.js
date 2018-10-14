@@ -131,16 +131,13 @@ Overview.prototype = {
                 // even if the user stops dragging rather "throws" by
                 // releasing during the drag.
                 let distance = this._dragStartValue - this._scrollAdjustment.value;
-                let noStop = Math.abs(distance / difference) > 0.5;
+                let dt = (event.get_time() - this._lastMotionTime) / 1000;
+                let passedHalf = Math.abs(distance / difference) > 0.5;
 
-                // We detect if the user is stopped by comparing the
-                // timestamp of the button release with the timestamp of
-                // the last motion. Experimentally, a difference of 0 or 1
-                // millisecond indicates that the mouse is in motion, a
-                // larger difference indicates that the mouse is stopped.
-                if ((this._lastMotionTime > 0 &&
-                     this._lastMotionTime > event.get_time() - 2) ||
-                    noStop) {
+                /* Switch to the next page if the scroll ammount is more
+                   than half the page width or is faster than 25px/s.
+                   This number comes from experimental tests. */
+                if (Math.abs(distance) > dt * 25 || passedHalf) {
                     if (this._dragStartValue + difference >= minValue &&
                         this._dragStartValue + difference <= maxValue)
                         newValue += difference;
