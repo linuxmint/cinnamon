@@ -436,8 +436,8 @@ WindowManager.prototype = {
         this._cinnamonwm.connect('kill-window-effects', Lang.bind(this, this._killWindowEffects));
         this._cinnamonwm.connect(
             'switch-workspace',
-            (...args) => Mainloop.idle_add_full(
-                Mainloop.PRIORITY_DEFAULT,
+            (...args) => Meta.later_add(
+                Meta.LaterType.BEFORE_REDRAW,
                 () => this._switchWorkspace(...args)
             )
         );
