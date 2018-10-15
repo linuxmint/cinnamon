@@ -49,6 +49,7 @@ WindowClone.prototype = {
         this.metaWindow._delegate = this;
         this.overlay = null;
         this.closedFromOverview = false;
+        this._is_new_window = false; // Window opened while in the overview
 
         // Original position of the full-sized window
         this.origX = 0;
@@ -726,7 +727,7 @@ WorkspaceMonitor.prototype = {
             if (overlay)
                 overlay.hide();
             if (animate && isOnCurrentWorkspace) {
-                if (!metaWindow.showing_on_its_workspace()) {
+                if (!metaWindow.showing_on_its_workspace() || clone._is_new_window) {
                     /* Hidden windows should fade in and grow
                      * therefore we need to resize them now so they
                      * can be scaled up later */
@@ -736,7 +737,14 @@ WorkspaceMonitor.prototype = {
                         clone.actor.scale_y = 0;
                         clone.actor.x = this._width / 2;
                         clone.actor.y = this._height / 2;
+                    } else if (clone._is_new_window) {
+                        clone.actor.opacity = 0;
+                        clone.actor.scale_x = 0;
+                        clone.actor.scale_y = 0;
+                        clone.actor.x = x + clone.actor.width * scale / 2;
+                        clone.actor.y = y + clone.actor.height * scale / 2;
                     }
+
 
                      // Make the window slightly transparent to indicate it's hidden
                      Tweener.addTween(clone.actor,
@@ -763,6 +771,8 @@ WorkspaceMonitor.prototype = {
                 clone.actor.set_scale(scale, scale);
                 this._showWindowOverlay(clone, isOnCurrentWorkspace);
             }
+
+            clone._is_new_window = false;
         }
     },
 
@@ -863,22 +873,6 @@ WorkspaceMonitor.prototype = {
 
         this._windows.splice(index, 1);
 
-        // If metaWin.get_compositor_private() returned non-NULL, that
-        // means the window still exists (and is just being moved to
-        // another workspace or something), so set its overviewHint
-        // accordingly. (If it returned NULL, then the window is being
-        // destroyed; we'd like to animate this, but it's too late at
-        // this point.)
-        if (win) {
-            let [stageX, stageY] = clone.actor.get_transformed_position();
-            let [stageWidth, stageHeight] = clone.actor.get_transformed_size();
-            win._overviewHint = {
-                x: stageX,
-                y: stageY,
-                scale: stageWidth / clone.actor.width
-            };
-        }
-
         if (this._kbWindowIndex >= this._windows.length) {
             this._kbWindowIndex = this._windows.length - 1;
         }
@@ -926,26 +920,10 @@ WorkspaceMonitor.prototype = {
         }
         let clone = this._addWindowClone(win);
 
-        if (win._overviewHint) {
-            let x = win._overviewHint.x - this.actor.x;
-            let y = win._overviewHint.y - this.actor.y;
-            let scale = win._overviewHint.scale;
-            delete win._overviewHint;
-
-            clone.actor.set_position (x, y);
-            clone.actor.set_scale (scale, scale);
-        } else {
-            // Position new windows at the top corner of the workspace rather
-            // than where they were placed for real to avoid the window
-            // being clipped to the workspaceView. Its not really more
-            // natural for the window to suddenly appear in the overview
-            // on some seemingly random location anyway.
-            clone.actor.set_position (this._x, this._y);
-        }
-
         this._updateEmptyPlaceholder();
 
         if (this.actor.get_stage()) {
+            clone._is_new_window = true;
             let animate = global.settings.get_boolean("desktop-effects");
             this.positionWindows(animate ? WindowPositionFlags.ANIMATE : 0);
         }
