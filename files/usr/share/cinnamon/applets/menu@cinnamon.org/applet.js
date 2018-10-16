@@ -1522,6 +1522,7 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
     }
 
     _onMenuKeyPress(actor, event) {
+        if (!this._activeContainer) return;
         let symbol = event.get_key_symbol();
         let item_actor;
         let index = 0;
@@ -2652,19 +2653,20 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
     }
 
     _loadCategory(dir, top_dir) {
-        var iter = dir.iter();
-        var has_entries = false;
-        var nextType;
+        let iter = dir.iter();
+        let has_entries = false;
+        let nextType;
         if (!top_dir) top_dir = dir;
         while ((nextType = iter.next()) != CMenu.TreeItemType.INVALID) {
             if (nextType == CMenu.TreeItemType.ENTRY) {
-                var entry = iter.get_entry();
-                if (!entry.get_app_info().get_nodisplay()) {
+                let entry = iter.get_entry();
+                let appInfo = entry.get_app_info();
+                if (appInfo && !appInfo.get_nodisplay()) {
                     has_entries = true;
-                    var app = appsys.lookup_app_by_tree_entry(entry);
+                    let app = appsys.lookup_app_by_tree_entry(entry);
                     if (!app)
                         app = appsys.lookup_settings_app_by_tree_entry(entry);
-                    var app_key = app.get_id();
+                    let app_key = app.get_id();
                     if (app_key == null) {
                         app_key = app.get_name() + ":" +
                             app.get_description();
@@ -2673,8 +2675,8 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
 
                         let applicationButton = new ApplicationButton(this, app, this.showApplicationIcons);
 
-                        var app_is_known = false;
-                        for (var i = 0; i < this._knownApps.length; i++) {
+                        let app_is_known = false;
+                        for (let i = 0; i < this._knownApps.length; i++) {
                             if (this._knownApps[i] == app_key) {
                                 app_is_known = true;
                             }
