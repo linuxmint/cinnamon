@@ -155,6 +155,7 @@ HotCorner.prototype = {
     },
 
     _animRipple: function(ripple, delay, time, startScale, startOpacity, finalScale) {
+        Tweener.removeTweens(ripple);
         // We draw a ripple by using a source image and animating it scaling
         // outwards and fading away. We want the ripples to move linearly
         // or it looks unrealistic, but if the opacity of the ripple goes
