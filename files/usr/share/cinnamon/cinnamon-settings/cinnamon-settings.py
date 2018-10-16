@@ -216,7 +216,7 @@ class MainWindow:
         self.stack_switcher = self.builder.get_object("stack_switcher")
 
         m, n = self.button_back.get_preferred_width()
-        self.stack_switcher.set_margin_right(n)
+        self.stack_switcher.set_margin_end(n)
 
         self.search_entry = self.builder.get_object("search_box")
         self.search_entry.set_placeholder_text(_("Search"))
@@ -229,7 +229,6 @@ class MainWindow:
         self.window.show()
 
         self.builder.connect_signals(self)
-        self.window.set_has_resize_grip(False)
         self.unsortedSidePages = []
         self.sidePages = []
         self.settings = Gio.Settings.new("org.cinnamon")
@@ -417,10 +416,9 @@ class MainWindow:
         img = Gtk.Image.new_from_icon_name(category["icon"], Gtk.IconSize.BUTTON)
         box.pack_start(img, False, False, 4)
 
-        widget = Gtk.Label()
+        widget = Gtk.Label(yalign=0.5)
         widget.set_use_markup(True)
         widget.set_markup('<span size="12000">%s</span>' % category["label"])
-        widget.set_alignment(.5, .5)
         box.pack_start(widget, False, False, 1)
         self.side_view_container.pack_start(box, False, False, 0)
         widget = Gtk.IconView.new_with_model(self.storeFilter[category["id"]])
@@ -434,9 +432,8 @@ class MainWindow:
         widget.set_margin(20)
 
         pixbuf_renderer = Gtk.CellRendererPixbuf()
-        text_renderer = Gtk.CellRendererText(ellipsize=Pango.EllipsizeMode.NONE, wrap_mode=Pango.WrapMode.WORD_CHAR, wrap_width=0, width_chars=self.min_label_length, alignment=Pango.Alignment.CENTER)
+        text_renderer = Gtk.CellRendererText(ellipsize=Pango.EllipsizeMode.NONE, wrap_mode=Pango.WrapMode.WORD_CHAR, wrap_width=0, width_chars=self.min_label_length, alignment=Pango.Alignment.CENTER, xalign=0.5)
 
-        text_renderer.set_alignment(.5, 0)
         area.pack_start(pixbuf_renderer, True, True, False)
         area.pack_start(text_renderer, True, True, False)
         area.add_attribute(pixbuf_renderer, "icon-name", 1)
