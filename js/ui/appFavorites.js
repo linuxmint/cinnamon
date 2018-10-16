@@ -85,7 +85,7 @@ AppFavorites.prototype = {
     },
 
     _removeFavorite: function(appId) {
-        if (!appId in this._favorites)
+        if (!(appId in this._favorites))
             return false;
 
         let ids = this._getIds().filter(function (id) { return id != appId; });
