@@ -1134,6 +1134,9 @@ StScrollBar StButton#vhandle:hover {
     color: #9C9C9C;
     font-style: italic;
 }
+.menu-category-button-greyed StIcon {
+	opacity: 0.5;
+}
 .menu-category-button-selected {
     padding-top: 7px;
     padding-left: 7px;

@@ -3064,10 +3064,20 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
             let categoriesButtons = this.categoriesBox.get_children();
             for (var i in categoriesButtons) {
                 let button = categoriesButtons[i];
+                let icon = button._delegate.icon;
                 if (active){
                     button.set_style_class_name("menu-category-button");
+                    if (icon) {
+                        icon.set_opacity(255);
+                    }
                 } else {
                     button.set_style_class_name("menu-category-button-greyed");
+                    if (icon) {
+                        let icon_opacity = icon.get_theme_node().get_double('opacity');
+                        icon_opacity = Math.min(Math.max(0, icon_opacity), 1);
+                        if (icon_opacity) // Don't set opacity to 0 if not defined
+                            icon.set_opacity(icon_opacity * 255);
+                    }
                 }
             }
         } catch (e) {
