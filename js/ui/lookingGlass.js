@@ -53,17 +53,17 @@ WindowList.prototype = {
     _init : function () {
         this.lastId = 0;
         this.latestWindowList = [];
-        
+
         let tracker = Cinnamon.WindowTracker.get_default();
         global.display.connect('window-created', Lang.bind(this, this._updateWindowList));
         tracker.connect('tracked-windows-changed', Lang.bind(this, this._updateWindowList));
     },
-    
+
     getWindowById: function(id) {
         let windows = global.get_window_actors();
         for (let i = 0; i < windows.length; i++) {
             let metaWindow = windows[i].metaWindow;
-            if(metaWindow._lgId === id)
+            if (metaWindow._lgId === id)
                 return metaWindow;
         }
         return null;
@@ -72,46 +72,52 @@ WindowList.prototype = {
     _updateWindowList: function() {
         let windows = global.get_window_actors();
         let tracker = Cinnamon.WindowTracker.get_default();
-        
+
         let oldWindowList = this.latestWindowList;
         this.latestWindowList = [];
         for (let i = 0; i < windows.length; i++) {
             let metaWindow = windows[i].metaWindow;
+
+            // only track "interesting" windows
+            if (!Main.isInteresting(metaWindow))
+                continue;
+
             // Avoid multiple connections
             if (!metaWindow._lookingGlassManaged) {
                 metaWindow.connect('unmanaged', Lang.bind(this, this._updateWindowList));
                 metaWindow._lookingGlassManaged = true;
-                
+
                 metaWindow._lgId = this.lastId;
                 this.lastId++;
             }
-            
-            let lgInfo = { id: metaWindow._lgId.toString(), title: metaWindow.title, wmclass: metaWindow.get_wm_class(), app: ''};
-            
+
+            let lgInfo = {
+                id: metaWindow._lgId.toString(),
+                title: objectToString(metaWindow.title),
+                wmclass: objectToString(metaWindow.get_wm_class()),
+                app: '' };
+
             let app = tracker.get_window_app(metaWindow);
             if (app != null && !app.is_window_backed()) {
-                lgInfo.app = app.get_id();
+                lgInfo.app = objectToString(app.get_id());
             } else {
                 lgInfo.app = '<untracked>';
             }
-            
-            // Ignore menus
-            let wtype = metaWindow.get_window_type();
-            if(wtype != Meta.WindowType.MENU && wtype != Meta.WindowType.DROPDOWN_MENU && wtype != Meta.WindowType.POPUP_MENU)
-                this.latestWindowList.push(lgInfo);
+
+            this.latestWindowList.push(lgInfo);
         }
-        
+
         // Make sure the list changed before notifying listeneres
         let changed = oldWindowList.length != this.latestWindowList.length;
-        if(!changed) {
-            for(let i=0; i<oldWindowList.length; i++) {
-                if(oldWindowList[i].id != this.latestWindowList[i].id) {
+        if (!changed) {
+            for (let i = 0; i < oldWindowList.length; i++) {
+                if (oldWindowList[i].id != this.latestWindowList[i].id) {
                     changed = true;
                     break;
                 }
             }
         }
-        if(changed)
+        if (changed)
             Main.createLookingGlass().emitWindowListUpdate();
     }
 };
@@ -178,24 +184,24 @@ Inspector.prototype = {
         this.passThroughEvents = false;
         this._updatePassthroughText();
     },
-    
+
     _updatePassthroughText: function() {
-        if(this.passThroughEvents)
+        if (this.passThroughEvents)
             this._passThroughText.text = '(Press Pause or Control to disable event pass through)';
         else
             this._passThroughText.text = '(Press Pause or Control to enable event pass through)';
     },
 
     _onCapturedEvent: function (actor, event) {
-        if(event.type() == Clutter.EventType.KEY_PRESS && (event.get_key_symbol() == Clutter.Control_L ||
-                                                           event.get_key_symbol() == Clutter.Control_R ||
-                                                           event.get_key_symbol() == Clutter.Pause)) {
+        if (event.type() == Clutter.EventType.KEY_PRESS && (event.get_key_symbol() == Clutter.Control_L ||
+                                                            event.get_key_symbol() == Clutter.Control_R ||
+                                                            event.get_key_symbol() == Clutter.Pause)) {
             this.passThroughEvents = !this.passThroughEvents;
             this._updatePassthroughText();
             return true;
         }
 
-        if(this.passThroughEvents)
+        if (this.passThroughEvents)
             return false;
 
         switch (event.type()) {
@@ -260,34 +266,34 @@ Inspector.prototype = {
 
     _onScrollEvent: function (actor, event) {
         switch (event.get_scroll_direction()) {
-        case Clutter.ScrollDirection.UP:
-            // select parent
-            let parent = this._target.get_parent();
-            if (parent != null) {
-                this._target = parent;
-                this._update(event);
-            }
-            break;
-
-        case Clutter.ScrollDirection.DOWN:
-            // select child
-            if (this._target != this._pointerTarget) {
-                let child = this._pointerTarget;
-                while (child) {
-                    let parent = child.get_parent();
-                    if (parent == this._target)
-                        break;
-                    child = parent;
-                }
-                if (child) {
-                    this._target = child;
+            case Clutter.ScrollDirection.UP:
+                // select parent
+                let parent = this._target.get_parent();
+                if (parent != null) {
+                    this._target = parent;
                     this._update(event);
                 }
-            }
-            break;
+                break;
 
-        default:
-            break;
+            case Clutter.ScrollDirection.DOWN:
+                // select child
+                if (this._target != this._pointerTarget) {
+                    let child = this._pointerTarget;
+                    while (child) {
+                        let parent = child.get_parent();
+                        if (parent == this._target)
+                            break;
+                        child = parent;
+                    }
+                    if (child) {
+                        this._target = child;
+                        this._update(event);
+                    }
+                }
+                break;
+
+            default:
+                break;
         }
         return true;
     },
@@ -450,7 +456,7 @@ Melange.prototype = {
         let result = {"o": obj, "index": index};
         this.rawResults.push({command: command, type: typeof(obj), object: objectToString(obj), index: index.toString(), tooltip: tooltip});
         this.emitResultUpdate();
-        
+
         this._results.push(result);
         this._it = obj;
     },
@@ -476,14 +482,14 @@ Melange.prototype = {
                 shortValue = value;
                 let i = value.indexOf('\n');
                 let j = value.indexOf('\r');
-                if( j != -1 && (i == -1 || i > j))
+                if (j != -1 && (i == -1 || i > j))
                     i = j;
-                if(i != -1)
+                if (i != -1)
                     shortValue = value.substr(0, i) + '.. <more>';
             }
             resultObj.push({ name: key, type: type, value: value, shortValue: shortValue});
         }
-        
+
         return resultObj;
     },
 
@@ -501,13 +507,13 @@ Melange.prototype = {
 
     getWindowApp: function(idx) {
         let metaWindow = this._windowList.getWindowById(idx)
-        if(metaWindow) {
+        if (metaWindow) {
             let tracker = Cinnamon.WindowTracker.get_default();
             return tracker.get_window_app(metaWindow);
         }
         return null;
     },
-    
+
     // DBus function
     Eval: function(command) {
         this._history.addItem(command);
@@ -636,23 +642,23 @@ Melange.prototype = {
     ReloadExtension: function(uuid, type) {
         Extension.reloadExtension(uuid, Extension.Type[type]);
     },
-    
+
     emitLogUpdate: function() {
         this._dbusImpl.emit_signal('LogUpdate', null);
     },
-    
+
     emitWindowListUpdate: function() {
         this._dbusImpl.emit_signal('WindowListUpdate', null);
     },
-    
+
     emitResultUpdate: function() {
         this._dbusImpl.emit_signal('ResultUpdate', null);
     },
-    
+
     emitInspectorDone: function() {
         this._dbusImpl.emit_signal('InspectorDone', null);
     },
-    
+
     emitExtensionListUpdate: function() {
         this._dbusImpl.emit_signal('ExtensionListUpdate', null);
     },
