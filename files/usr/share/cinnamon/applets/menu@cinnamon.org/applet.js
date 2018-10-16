@@ -2137,8 +2137,8 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
             this._categoryButtons.push(this.placesButton);
             this.categoriesBox.add_actor(this.placesButton.actor);
 
-            let bookmarks = this._listBookmarks();
-            let devices = this._listDevices();
+            let bookmarks = this._listBookmarks()[0];
+            let devices = this._listDevices()[0];
             let places = bookmarks.concat(devices);
 
             let handleEnterEvent = (button) => {
@@ -2958,7 +2958,8 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
         }
     }
 
-    _displayButtons(appCategory, places, recent, apps, autocompletes){
+    _displayButtons(appCategory, places, recent, apps, autocompletes, exactMatch){
+        let selectedActor = null;
         if (appCategory) {
             if (appCategory == "all") {
                 this._applicationsButtons.forEach( function (item, index) {
@@ -2975,10 +2976,15 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
             }
         } else if (apps) {
             for (let i = 0; i < this._applicationsButtons.length; i++) {
-                if (apps.indexOf(this._applicationsButtons[i].app.get_id()) != -1) {
-                    this._applicationsButtons[i].actor.show();
+                let button = this._applicationsButtons[i];
+                let appId = button.app.get_id();
+                if (apps.indexOf(appId) !== -1) {
+                    button.actor.show();
+                    if (appId === exactMatch) {
+                        selectedActor = button.actor;
+                    }
                 } else {
-                    this._applicationsButtons[i].actor.hide();
+                    button.actor.hide();
                 }
             }
         } else {
@@ -2987,14 +2993,17 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
             });
         }
         if (places) {
-            if (places == -1) {
+            if (places === -1) {
                 this._placesButtons.forEach( function (item, index) {
                     item.actor.show();
                 });
             } else {
                 for (let i = 0; i < this._placesButtons.length; i++) {
-                    if (places.indexOf(this._placesButtons[i].button_name) != -1) {
+                    let buttonName = this._placesButtons[i].button_name;
+                    if (places.indexOf(buttonName) !== -1) {
                         this._placesButtons[i].actor.show();
+                        if (!selectedActor && buttonName === exactMatch)
+                            selectedActor = this._placesButtons[i].actor;
                     } else {
                         this._placesButtons[i].actor.hide();
                     }
@@ -3046,6 +3055,8 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
                 item.actor.hide();
             }
         });
+
+        return selectedActor;
     }
 
     _setCategoriesButtonActive(active) {
@@ -3109,22 +3120,26 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
         }
     }
 
-    _listBookmarks(pattern){
-        let bookmarks = Main.placesManager.getBookmarks();
-        var res = [];
-        for (let id = 0; id < bookmarks.length; id++) {
-            if (!pattern || bookmarks[id].name.toLowerCase().indexOf(pattern)!=-1) res.push(bookmarks[id]);
+    _matchNames(names, pattern){
+        let res = [];
+        let exactMatch = null;
+        for (let id = 0; id < names.length; id++) {
+            if (pattern) {
+                let name = names[id].name;
+                let lowerName = name.toLowerCase();
+                if (lowerName.indexOf(pattern) !== -1) res.push(names[id]);
+                if (!exactMatch && lowerName === pattern) exactMatch = name;
+            } else res.push(names[id]);
         }
-        return res;
+        return [res, exactMatch];
+    }
+
+    _listBookmarks(pattern){
+        return this._matchNames(Main.placesManager.getBookmarks(), pattern);
     }
 
     _listDevices(pattern){
-        let devices = Main.placesManager.getMounts();
-        var res = [];
-        for (let id = 0; id < devices.length; id++) {
-            if (!pattern || devices[id].name.toLowerCase().indexOf(pattern)!=-1) res.push(devices[id]);
-        }
-        return res;
+        return this._matchNames(Main.placesManager.getMounts(), pattern);
     }
 
     _listApplications(category_menu_id, pattern){
@@ -3135,29 +3150,33 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
             applist = "all";
         }
         let res;
+        let exactMatch = null;
         if (pattern){
             res = [];
             let regexpPattern = new RegExp("\\b"+pattern);
             let foundByName = false;
             for (let i in this._applicationsButtons) {
                 let app = this._applicationsButtons[i].app;
-                if (Util.latinise(app.get_name().toLowerCase()).match(regexpPattern) != null) {
+                let latinisedLowerName = Util.latinise(app.get_name().toLowerCase());
+                if (latinisedLowerName.match(regexpPattern) !== null) {
                     res.push(app.get_id());
                     foundByName = true;
+                    if (!exactMatch && latinisedLowerName === pattern)
+                        exactMatch = app.get_id();
                 }
             }
             if (!foundByName) {
                 for (let i in this._applicationsButtons) {
                     let app = this._applicationsButtons[i].app;
-                    if (Util.latinise(app.get_name().toLowerCase()).indexOf(pattern)!=-1 ||
-                        (app.get_keywords() && Util.latinise(app.get_keywords().toLowerCase()).indexOf(pattern)!=-1) ||
-                        (app.get_description() && Util.latinise(app.get_description().toLowerCase()).indexOf(pattern)!=-1) ||
-                        (app.get_id() && Util.latinise(app.get_id().slice(0, -8).toLowerCase()).indexOf(pattern)!=-1))
+                    if (Util.latinise(app.get_name().toLowerCase()).indexOf(pattern)!==-1 ||
+                        (app.get_keywords() && Util.latinise(app.get_keywords().toLowerCase()).indexOf(pattern)!==-1) ||
+                        (app.get_description() && Util.latinise(app.get_description().toLowerCase()).indexOf(pattern)!==-1) ||
+                        (app.get_id() && Util.latinise(app.get_id().slice(0, -8).toLowerCase()).indexOf(pattern)!==-1))
                         res.push(app.get_id());
                 }
             }
         } else res = applist;
-        return res;
+        return [res, exactMatch];
     }
 
     _doSearch(){
@@ -3179,15 +3198,24 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
             return false;
         }
 
-        var appResults = this._listApplications(null, pattern);
-        var placesResults = [];
-        var bookmarks = this._listBookmarks(pattern);
+        let result = this._listApplications(null, pattern);
+        let appResults = result[0];
+        let exactMatch = result[1];
+        let placesResults = [];
+
+        result = this._listBookmarks(pattern);
+        let bookmarks = result[0];
+        exactMatch = exactMatch || result[1];
         for (let i in bookmarks)
             placesResults.push(bookmarks[i].name);
-        var devices = this._listDevices(pattern);
+
+        result = this._listDevices(pattern);
+        let devices = result[0];
+        exactMatch = exactMatch || result[1];
         for (let i in devices)
             placesResults.push(devices[i].name);
-        var recentResults = [];
+
+        let recentResults = [];
         for (let i = 0; i < this._recentButtons.length; i++) {
             if (!(this._recentButtons[i] instanceof RecentClearButton) && this._recentButtons[i].button_name.toLowerCase().indexOf(pattern) != -1)
                 recentResults.push(this._recentButtons[i].button_name);
@@ -3199,13 +3227,14 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
             acResults = this._getCompletions(this.searchEntryText.get_text());
         }
 
-        this._displayButtons(null, placesResults, recentResults, appResults, acResults);
+        let selectedActor = this._displayButtons(null, placesResults, recentResults, appResults, acResults, exactMatch);
 
         this.appBoxIter.reloadVisible();
         if (this.appBoxIter.getNumVisibleChildren() > 0) {
-            let item_actor = this.appBoxIter.getFirstVisible();
+            let item_actor = selectedActor || this.appBoxIter.getFirstVisible();
             this._selectedItemIndex = this.appBoxIter.getAbsoluteIndexOfChild(item_actor);
             this._activeContainer = this.applicationsBox;
+            this._scrollToButton(item_actor._delegate);
             if (item_actor && item_actor != this.searchEntry) {
                 item_actor._delegate.emit('enter-event');
             }
