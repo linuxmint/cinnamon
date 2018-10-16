@@ -1268,7 +1268,6 @@ function _stageEventHandler(actor, event) {
     switch (action) {
         // left/right would effectively act as synonyms for up/down if we enabled them;
         // but that could be considered confusing; we also disable them in the main view.
-        //
          case Meta.KeyBindingAction.WORKSPACE_LEFT:
              wm.actionMoveWorkspaceLeft();
              return true;
@@ -1285,10 +1284,6 @@ function _stageEventHandler(actor, event) {
             return true;
         case Meta.KeyBindingAction.PANEL_RUN_DIALOG:
             getRunDialog().open();
-            return true;
-        case Meta.KeyBindingAction.PANEL_MAIN_MENU:
-            overview.hide();
-            expo.hide();
             return true;
     }
 
