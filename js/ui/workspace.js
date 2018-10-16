@@ -223,7 +223,7 @@ WindowOverlay.prototype = {
         }
 
         // Window border
-        this.border = new St.Bin({ style_class: 'window-border' });
+        this.border = new St.Widget({ style_class: 'window-border', important: true });
         this.borderWidth = 0;
 
         // Caption (icon + title)
