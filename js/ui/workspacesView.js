@@ -203,7 +203,7 @@ WorkspacesView.prototype = {
                         });
                 }
                 Tweener.addTween(workspace.actor, params);
-            } else {
+            } else if (!workspace.actor.is_finalized()) {
                 workspace.actor.set_position(x, 0);
                 if (w == 0)
                     this._updateVisibility();
@@ -219,7 +219,7 @@ WorkspacesView.prototype = {
             if (this._animating || this._scrolling) {
                 workspace.hideWindowsOverlays();
                 workspace.actor.show();
-            } else {
+            } else if (!workspace.actor.is_finalized()) {
                 workspace.showWindowsOverlays();
                 workspace.actor.visible = (w == active);
             }

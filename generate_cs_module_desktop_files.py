@@ -8,6 +8,8 @@ import sys
 sys.path.append('/usr/lib/linuxmint/common')  # noqa
 import additionalfiles
 
+import traceback
+
 DOMAIN = "cinnamon"
 PATH = "/usr/share/locale"
 
@@ -60,5 +62,4 @@ Categories=Settings;
 
     except Exception:
         print("Failed to load module %s" % module)
-        import traceback
         traceback.print_exc()

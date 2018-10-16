@@ -772,7 +772,28 @@ class Module:
         stream = self.controller.lookup_stream_id(id)
 
         if stream in self.controller.get_sink_inputs():
-            self.appList[id] = VolumeBar(self.controller.get_vol_max_norm(), 100, stream.props.name + ": ", stream.get_gicon())
+            name = stream.props.name
+
+            # FIXME: We use to filter out by PA_PROP_APPLICATION_ID.  But
+            # most streams report this as null now... why??
+            if name in ("speech-dispatcher", "libcanberra"):
+                # speech-dispatcher: orca/speechd/spd-say
+                # libcanberra: cinnamon effects, test sounds
+                return
+
+            if id in self.appList.keys():
+                # Don't add an input more than once
+                return
+
+            if name == None:
+                name = _("Unknown")
+
+            label = "%s: " % name
+
+            self.appList[id] = VolumeBar(self.controller.get_vol_max_norm(),
+                                         100,
+                                         label,
+                                         stream.get_gicon())
             self.appList[id].setStream(stream)
             self.appSettings.add_row(self.appList[id])
             self.appSettings.list_box.invalidate_headers()

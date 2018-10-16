@@ -1,3 +1,10 @@
+cinnamon (3.8.8) tara; urgency=medium
+
+  [ Michael Webster ]
+  * network applet: Initialize CinnamonNetworkApplet._updateFrequencySeconds before using in _periodicUpdateIcon.
+
+ -- Clement Lefebvre <root@linuxmint.com>  Tue, 17 Jul 2018 09:41:21 +0200
+
 cinnamon (3.8.7) tara; urgency=medium
 
   [ Michael Webster ]

@@ -192,6 +192,19 @@ function prepareExtensionUnload(extension, deleteConfig) {
     }
 }
 
+// Callback for extension.js
+function prepareExtensionReload(extension) {
+    for (var i = 0; i < definitions.length; i++) {
+        if (extension.uuid === definitions[i].uuid) {
+            let {desklet, desklet_id} = definitions[i];
+            if (!desklet) continue;
+            global.log(`Reloading desklet: ${extension.uuid}/${desklet_id}`);
+            desklet.on_desklet_reloaded();
+            return;
+        }
+    }
+}
+
 function _onEnabledDeskletsChanged() {
     let oldDefinitions = definitions.slice();
     definitions = getDefinitions();
@@ -393,8 +406,9 @@ function _onDeskletSnapChanged(){
 
         enabledDesklets[i] = elements.join(":");
     }
-
+    global.settings.disconnect(deskletChangeKey);
     global.settings.set_strv(ENABLED_DESKLETS_KEY, enabledDesklets);
+    deskletChangeKey = global.settings.connect('changed::' + ENABLED_DESKLETS_KEY, _onEnabledDeskletsChanged);
     return;
 }
 

@@ -107,9 +107,9 @@ class Main:
 
         elapsed = now - self.start_time
 
-        string = str(timedelta(seconds=int(elapsed + .5)))
+        time_passed = timedelta(seconds=int(elapsed + .5))
 
-        self.timer_label.set_text("Elapsed time: %s" % string)
+        self.timer_label.set_text("Elapsed time: {}".format(time_passed))
 
         return True
 

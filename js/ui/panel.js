@@ -1467,6 +1467,7 @@ PanelCorner.prototype = {
         // so the panel can easily check it.
         this.cornerRadius = cornerRadius;
 
+        if (this._box.is_finalized()) return;
         // ugly hack: force the panel to reset its clip region since we just added
         // to the total allocation after it has already clipped to its own
         // allocation
@@ -3152,7 +3153,7 @@ Panel.prototype = {
      * position of mouse/active window. It then calls the _queueShowHidePanel
      * function to show or hide the panel as necessary.
      *
-     * false = autohide, true = always show, intel = Intelligent
+     * true = autohide, false = always show, intel = Intelligent
      */
     _updatePanelVisibility: function() {
 

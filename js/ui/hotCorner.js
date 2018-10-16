@@ -92,7 +92,7 @@ HotCorner.prototype = {
         this.hover = false; // Whether the hot corners responds to hover
         this.hover_delay = 0; // Hover delay activation
         this.hover_delay_id = 0; // Hover delay timer ID
-        this._activationTime = 0; // Milliseconds
+        this._hoverActivationTime = 0; // Milliseconds
 
         // Construct the hot corner 'ripples'
         this.actor = new Clutter.Actor({
@@ -155,6 +155,7 @@ HotCorner.prototype = {
     },
 
     _animRipple: function(ripple, delay, time, startScale, startOpacity, finalScale) {
+        Tweener.removeTweens(ripple);
         // We draw a ripple by using a source image and animating it scaling
         // outwards and fading away. We want the ripples to move linearly
         // or it looks unrealistic, but if the opacity of the ripple goes
@@ -219,8 +220,6 @@ HotCorner.prototype = {
     },
 
     runAction: function(timestamp) {
-        this._activationTime = timestamp;
-
         switch (this.action) {
             case 'expo':
                 if (!Main.expo.animationInProgress)
@@ -244,26 +243,22 @@ HotCorner.prototype = {
             this.hover_delay_id = 0;
         }
 
-        let timestamp = global.get_current_time();
-        this.hover_delay_id = Mainloop.timeout_add(this.hover_delay, Lang.bind(this, function() {
+        /* Get the timestamp outside the timeout handler because
+           global.get_current_time() can only be called within the
+           scope of an event handler or it will return 0 */
+        let timestamp = global.get_current_time() + this.hover_delay;
+        this.hover_delay_id = Mainloop.timeout_add(this.hover_delay, () => {
             if (!this.tile_delay) {
-                let run = false;
-                if (!(Main.expo.visible || Main.overview.visible)) {
-                    run = true;
-                }
-                if ((Main.expo.visible && this.action == 'expo') ||
-                    (Main.overview.visible && this.action == 'scale')) {
-                    run = true;
-                }
-                if (run) {
+                if (this.shouldRunAction(timestamp, false)) {
+                    this._hoverActivationTime = timestamp;
                     this.rippleAnimation();
-                    this.runAction(timestamp + this.hover_delay);
+                    this.runAction(timestamp);
                 }
             }
 
             this.hover_delay_id = 0;
             return false;
-        }));
+        });
 
         return Clutter.EVENT_PROPAGATE;
     },
@@ -274,9 +269,10 @@ HotCorner.prototype = {
             this.hover_delay_id = 0;
         }
 
-        if (this.shouldToggleOverviewOnClick()) {
+        let timestamp = global.get_current_time();
+        if (this.shouldRunAction(timestamp, true)) {
             this.rippleAnimation();
-            this.runAction(global.get_current_time());
+            this.runAction(timestamp);
         }
 
         return Clutter.EVENT_STOP;
@@ -287,22 +283,24 @@ HotCorner.prototype = {
             Mainloop.source_remove(this.hover_delay_id);
             this.hover_delay_id = 0;
         }
-
         // Consume event
         return Clutter.EVENT_STOP;
     },
 
-    // Checks if the Activities button is currently sensitive to
-    // clicks. The first call to this function within the
-    // HOT_CORNER_ACTIVATION_TIMEOUT time of the hot corner being
-    // triggered will return false. This avoids opening and closing
-    // the overview if the user both triggered the hot corner and
-    // clicked the Activities button.
-    shouldToggleOverviewOnClick: function() {
+    shouldRunAction: function(timestamp, click) {
+        /* Expo and scale disable hot corners except theirs */
+        if ((Main.expo.visible && this.action != 'expo') ||
+            (Main.overview.visible && this.action != 'scale'))
+            return false;
+
         if (Main.overview.animationInProgress)
             return false;
-        if (global.get_current_time() - this._activationTime > HOT_CORNER_ACTIVATION_TIMEOUT)
-            return true;
-        return false;
+
+        /* This avoids launching the action twice if the user both hovered
+           and clicked the corner actor at the same time */
+        if (click && timestamp - this._hoverActivationTime < HOT_CORNER_ACTIVATION_TIMEOUT)
+            return false;
+
+        return true;
     }
 };

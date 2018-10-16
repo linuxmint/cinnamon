@@ -33,15 +33,9 @@ var AllowedLayout = {  // the panel layout that an applet is suitable for
  * #MenuItem
  * @short_description: Deprecated. Use #PopupMenu.PopupIconMenuItem instead.
  */
-function MenuItem(label, icon, callback) {
-    this._init(label, icon, callback);
-}
-
-MenuItem.prototype = {
-    __proto__ : PopupMenu.PopupIconMenuItem.prototype,
-
-    _init: function(label, icon, callback) {
-        PopupMenu.PopupIconMenuItem.prototype._init.call(this, label, icon, St.IconType.SYMBOLIC);
+var MenuItem = class MenuItem extends PopupMenu.PopupIconMenuItem {
+    _init(label, icon, callback) {
+        super._init(label, icon, St.IconType.SYMBOLIC);
         this.connect('activate', callback);
     }
 }
@@ -54,34 +48,21 @@ MenuItem.prototype = {
  *
  * Inherits: PopupMenu.PopupMenu
  */
-function AppletContextMenu(launcher, orientation) {
-    this._init(launcher, orientation);
-}
-
-AppletContextMenu.prototype = {
-    __proto__: PopupMenu.PopupMenu.prototype,
-
-    /**
-     * _init:
-     * @launcher (Applet.Applet): The applet that contains the context menu
-     * @orientation (St.Side): The orientation of the applet
-     *
-     * Constructor function
-     */
-    _init: function(launcher, orientation) {
-        PopupMenu.PopupMenu.prototype._init.call(this, launcher.actor, orientation);
+var AppletContextMenu = class AppletContextMenu extends PopupMenu.PopupMenu {
+    _init(launcher, orientation) {
+        super._init(launcher.actor, orientation);
         Main.uiGroup.add_actor(this.actor);
         this.actor.hide();
         this.connect("open-state-changed", Lang.bind(this, this._onOpenStateChanged, launcher.actor));
         launcher.connect("orientation-changed", Lang.bind(this, function(a, orientation) {
             this.setArrowSide(orientation);
         }));
-    },
+    }
 
-    _onOpenStateChanged: function(menu, open, sourceActor) {
+    _onOpenStateChanged(menu, open, sourceActor) {
         sourceActor.change_style_pseudo_class("checked", open);
     }
-};
+}
 
 /**
  * #AppletPopupMenu:
@@ -91,12 +72,7 @@ AppletContextMenu.prototype = {
  *
  * Inherits: PopupMenu.PopupMenu
  */
-function AppletPopupMenu(launcher, orientation) {
-    this._init(launcher, orientation);
-}
-
-AppletPopupMenu.prototype = {
-    __proto__: PopupMenu.PopupMenu.prototype,
+var AppletPopupMenu = class AppletPopupMenu extends PopupMenu.PopupMenu {
 
     /**
      * _init:
@@ -105,8 +81,8 @@ AppletPopupMenu.prototype = {
      *
      * Constructor function
      */
-    _init: function(launcher, orientation) {
-        PopupMenu.PopupMenu.prototype._init.call(this, launcher.actor, orientation);
+    _init(launcher, orientation) {
+        super._init(launcher.actor, orientation);
         Main.uiGroup.add_actor(this.actor);
         this.actor.hide();
         this.launcher = launcher;
@@ -116,17 +92,17 @@ AppletPopupMenu.prototype = {
         } else if (launcher._applet) {
             launcher._applet.connect("orientation-changed", Lang.bind(this, this._onOrientationChanged));
         }
-    },
+    }
 
-    _onOrientationChanged: function(a, orientation) {
+    _onOrientationChanged(a, orientation) {
         this.setArrowSide(orientation);
-    },
+    }
 
-    _onOpenStateChanged: function(menu, open, sourceActor) {
+    _onOpenStateChanged(menu, open, sourceActor) {
         if (!sourceActor._applet_context_menu.isOpen)
             sourceActor.actor.change_style_pseudo_class("checked", open);
     }
-};
+}
 
 /**
  * #Applet
@@ -156,11 +132,7 @@ AppletPopupMenu.prototype = {
  *
  * Base applet class that other applets can inherit
  */
-function Applet(orientation, panelHeight, instance_id) {
-    this._init(orientation, panelHeight, instance_id);
-}
-
-Applet.prototype = {
+var Applet = class Applet {
 
     /**
      * _init:
@@ -168,7 +140,12 @@ Applet.prototype = {
      * @panelHeight (int): height of the panel containing the applet
      * @instance_id (int): instance id of the applet
      */
-    _init: function(orientation, panel_height, instance_id) {
+
+    constructor() {
+        return this._init.apply(this, arguments);
+    }
+
+    _init(orientation, panel_height, instance_id) {
 
         this.actor = new St.BoxLayout({ style_class: 'applet-box',
                                         reactive: true,
@@ -237,47 +214,47 @@ Applet.prototype = {
         this._panelEditModeChangedId = global.settings.connect('changed::panel-edit-mode', Lang.bind(this, function() {
             this._setAppletReactivity();
         }));
-    },
+    }
 
     /* FIXME:  This makes no sense - inhibit flag should = panel edit mode, right?
      *         Needs fixed in dnd.js also, it expects this backwards logic right now
      */
 
-    _setAppletReactivity: function() {
+    _setAppletReactivity() {
         this._draggable.inhibit = !global.settings.get_boolean('panel-edit-mode');
-    },
+    }
 
-    _onDragBegin: function() {
+    _onDragBegin() {
         this._dragging = true;
         this._applet_tooltip.hide();
         this._applet_tooltip.preventShow = true;
         Main.panelManager.resetPanelDND();
-    },
+    }
 
-    _onDragEnd: function() {
+    _onDragEnd() {
         this._dragging = false;
         this._applet_tooltip.preventShow = false;
-    },
+    }
 
-    _onDragCancelled: function() {
+    _onDragCancelled() {
         this._dragging = false;
         this._applet_tooltip.preventShow = false;
-    },
+    }
 
-    getDragActor: function() {
+    getDragActor() {
         let clone = new Clutter.Clone({ source: this.actor });
         clone.width = this.actor.width;
         clone.height = this.actor.height;
         return clone;
-    },
+    }
 
     // Returns the original actor that should align with the actor
     // we show as the item is being dragged.
-    getDragActorSource: function() {
+    getDragActorSource() {
         return this.actor;
-    },
+    }
 
-    _onButtonPressEvent: function (actor, event) {
+    _onButtonPressEvent (actor, event) {
         if (!this._applet_enabled) {
             return false;
         }
@@ -303,7 +280,7 @@ Applet.prototype = {
             }
         }
         return true;
-    },
+    }
 
     /**
      * set_applet_tooltip:
@@ -311,12 +288,12 @@ Applet.prototype = {
      *
      * Sets the tooltip of the applet
      */
-    set_applet_tooltip: function (text) {
+    set_applet_tooltip (text) {
         if (text != this._applet_tooltip_text) {
             this._applet_tooltip_text = text;
             this._applet_tooltip.set_text(text);
         }
-    },
+    }
 
     /**
      * set_applet_enabled:
@@ -325,12 +302,12 @@ Applet.prototype = {
      * Sets whether the applet is enabled or not. A disabled applet sets its
      * padding to 0px and doesn't react to clicks
      */
-    set_applet_enabled: function (enabled) {
+    set_applet_enabled (enabled) {
         if (enabled != this._applet_enabled) {
             this._applet_enabled = enabled;
             this.actor.visible = enabled;
         }
-    },
+    }
 
     /**
      * on_applet_clicked:
@@ -340,9 +317,9 @@ Applet.prototype = {
      *
      * This is meant to be overridden in individual applets.
      */
-    on_applet_clicked: function(event) {
+    on_applet_clicked(event) {
         // Implemented by Applets
-    },
+    }
 
     /**
      * on_applet_middle_clicked:
@@ -352,9 +329,9 @@ Applet.prototype = {
      *
      * This is meant to be overridden in individual applets.
      */
-    on_applet_middle_clicked: function(event) {
+    on_applet_middle_clicked(event) {
         // Implemented by Applets
-    },
+    }
 
 
     /**
@@ -366,11 +343,11 @@ Applet.prototype = {
      *
      * This is meant to be overridden in individual applets
      */
-    on_applet_instances_changed: function() {
+    on_applet_instances_changed() {
 
-    },
+    }
 
-    on_applet_added_to_panel_internal: function(userEnabled) {
+    on_applet_added_to_panel_internal(userEnabled) {
         if (userEnabled) {
             Mainloop.timeout_add(300, Lang.bind(this, function() {
                 let [x, y] = this.actor.get_transformed_position();
@@ -384,7 +361,7 @@ Applet.prototype = {
         this.on_applet_added_to_panel(userEnabled);
 
         Main.AppletManager.callAppletInstancesChanged(this._uuid);
-    },
+    }
 
     /**
      * on_applet_added_to_panel:
@@ -393,8 +370,8 @@ Applet.prototype = {
      *
      * This is meant to be overridden in individual applets.
      */
-    on_applet_added_to_panel: function(userEnabled) {
-    },
+    on_applet_added_to_panel(userEnabled) {
+    }
 
     /**
      * on_applet_removed_from_panel:
@@ -403,16 +380,26 @@ Applet.prototype = {
      *
      * This is meant to be overridden in individual applets.
      */
-    on_applet_removed_from_panel: function(deleteConfig) {
-    },
+    on_applet_removed_from_panel(deleteConfig) {
+    }
+
+    /**
+     * on_applet_reloaded:
+     *
+     * This function is called by appletManager when the applet is reloaded.
+     *
+     * This is meant to be overridden in individual applets.
+     */
+    on_applet_reloaded(deleteConfig) {
+    }
 
     // should only be called by appletManager
-    _onAppletRemovedFromPanel: function(deleteConfig) {
+    _onAppletRemovedFromPanel(deleteConfig) {
         global.settings.disconnect(this._panelEditModeChangedId);
         this.on_applet_removed_from_panel(deleteConfig);
 
         Main.AppletManager.callAppletInstancesChanged(this._uuid);
-    },
+    }
 
     /**
      * setOrientationInternal:
@@ -421,7 +408,7 @@ Applet.prototype = {
      * Sets the orientation of the St.BoxLayout.
      *
      */
-    setOrientationInternal: function (orientation) {
+    setOrientationInternal (orientation) {
         if (orientation == St.Side.LEFT || orientation == St.Side.RIGHT) {
             this.actor.add_style_class_name('vertical');
             this.actor.set_important(true);
@@ -431,7 +418,7 @@ Applet.prototype = {
             this.actor.remove_style_class_name('vertical');
             this.actor.set_vertical(false);
         }
-    },
+    }
 
     /**
      * setOrientation:
@@ -441,12 +428,12 @@ Applet.prototype = {
      *
      * This function should only be called by appletManager
      */
-    setOrientation: function (orientation) {
+    setOrientation (orientation) {
         this.setOrientationInternal(orientation);
         this.on_orientation_changed(orientation);
         this.emit("orientation-changed", orientation);
         this.finalizeContextMenu();
-    },
+    }
 
     /**
      * setAllowedLayout:
@@ -456,9 +443,9 @@ Applet.prototype = {
      * AllowedLayout.HORIZONTAL, AllowedLayout.VERTICAL, and
      * AllowedLayout.BOTH.
      */
-    setAllowedLayout: function (layout) {
+    setAllowedLayout (layout) {
         this._allowedLayout = layout;
-    },
+    }
 
     /**
      * getAllowedLayout:
@@ -467,9 +454,9 @@ Applet.prototype = {
      *
      * Returns (Applet.AllowedLayout): The allowed layout of the applet
      */
-    getAllowedLayout: function() {
+    getAllowedLayout() {
         return this._allowedLayout;
-    },
+    }
 
     /**
      * on_orientation_changed:
@@ -479,9 +466,9 @@ Applet.prototype = {
      *
      * This is meant to be overridden in individual applets.
      */
-    on_orientation_changed: function(orientation) {
+    on_orientation_changed(orientation) {
         // Implemented by Applets
-    },
+    }
 
     /**
      * setPanelHeight:
@@ -489,22 +476,22 @@ Applet.prototype = {
      *
      * Sets the panel height property of the applet.
      */
-    setPanelHeight: function (panel_height) {
+    setPanelHeight (panel_height) {
         if (panel_height && panel_height > 0) {
             this._panelHeight = panel_height;
         }
         this._scaleMode = this.panel.scaleMode;
         this.on_panel_height_changed_internal();
-    },
+    }
 
     /**
      * on_panel_height_changed_internal:
      *
      * This function is called when the panel containing the applet changes height
      */
-    on_panel_height_changed_internal: function() {
+    on_panel_height_changed_internal() {
         this.on_panel_height_changed();
-    },
+    }
 
     /**
      * on_panel_height_changed:
@@ -513,11 +500,11 @@ Applet.prototype = {
      *
      * This is meant to be overridden in individual applets.
      */
-    on_panel_height_changed: function() {
+    on_panel_height_changed() {
         // Implemented byApplets
-    },
+    }
 
-    finalizeContextMenu: function () {
+    finalizeContextMenu () {
 
         // Add default context menus if we're in panel edit mode, ensure their removal if we're not
         let items = this._applet_context_menu._getMenuItems();
@@ -563,10 +550,10 @@ Applet.prototype = {
         if (items.indexOf(this.context_menu_item_remove) == -1) {
             this._applet_context_menu.addMenuItem(this.context_menu_item_remove);
         }
-    },
+    }
 
     // translation
-    _: function(str) {
+    _(str) {
         // look into the text domain first
         let translated = Gettext.dgettext(this._uuid, str);
 
@@ -575,7 +562,7 @@ Applet.prototype = {
             return translated;
         // else, use the default cinnamon domain
         return _(str);
-    },
+    }
 
     /**
      * highlight:
@@ -583,15 +570,15 @@ Applet.prototype = {
      *
      * Turns on/off the highlight of the applet
      */
-    highlight: function(highlight) {
+    highlight(highlight) {
         this.actor.change_style_pseudo_class("highlight", highlight);
-    },
+    }
 
-    openAbout: function() {
+    openAbout() {
         new ModalDialog.SpicesAboutDialog(this._meta, "applets");
-    },
+    }
 
-    configureApplet: function() {
+    configureApplet() {
         Util.spawnCommandLine("xlet-settings applet " + this._uuid + " " + this.instance_id);
     }
 };
@@ -607,12 +594,7 @@ Signals.addSignalMethods(Applet.prototype);
  *
  * Inherits: Applet.Applet
  */
-function IconApplet(orientation, panel_height, instance_id) {
-    this._init(orientation, panel_height, instance_id);
-}
-
-IconApplet.prototype = {
-    __proto__: Applet.prototype,
+var IconApplet = class IconApplet extends Applet {
 
     /**
      * _init:
@@ -620,15 +602,15 @@ IconApplet.prototype = {
      * @panelHeight (int): height of the panel containing the applet
      * @instance_id (int): instance id of the applet
      */
-    _init: function(orientation, panel_height, instance_id) {
-        Applet.prototype._init.call(this, orientation, panel_height, instance_id);
+    _init(orientation, panel_height, instance_id) {
+        super._init(orientation, panel_height, instance_id);
 
         this._applet_icon_box = new St.Bin(); // https://developer.gnome.org/st/stable/StBin.htm
 
         this._applet_icon_box.set_fill(true,true);
         this._applet_icon_box.set_alignment(St.Align.MIDDLE,St.Align.MIDDLE);
         this.actor.add(this._applet_icon_box);
-    },
+    }
 
     /**
      * set_applet_icon_name:
@@ -638,13 +620,13 @@ IconApplet.prototype = {
      *
      * The icon will be full color
      */
-    set_applet_icon_name: function (icon_name) {
+    set_applet_icon_name (icon_name) {
         this._ensureIcon();
 
         this._applet_icon.set_icon_name(icon_name);
         this._applet_icon.set_icon_type(St.IconType.FULLCOLOR);
         this._setStyle();
-    },
+    }
 
     /**
      * set_applet_icon_symbolic_name:
@@ -654,13 +636,13 @@ IconApplet.prototype = {
      *
      * The icon will be symbolic
      */
-    set_applet_icon_symbolic_name: function (icon_name) {
+    set_applet_icon_symbolic_name (icon_name) {
         this._ensureIcon();
 
         this._applet_icon.set_icon_name(icon_name);
         this._applet_icon.set_icon_type(St.IconType.SYMBOLIC);
         this._setStyle();
-    },
+    }
 
     /**
      * set_applet_icon_path:
@@ -670,7 +652,7 @@ IconApplet.prototype = {
      *
      * The icon will be full color
      */
-    set_applet_icon_path: function (icon_path) {
+    set_applet_icon_path (icon_path) {
         this._ensureIcon();
 
         try {
@@ -681,7 +663,7 @@ IconApplet.prototype = {
         } catch (e) {
             global.log(e);
         }
-    },
+    }
 
     /**
      * set_applet_icon_symbolic_path:
@@ -691,7 +673,7 @@ IconApplet.prototype = {
      *
      * The icon will be symbolic
      */
-    set_applet_icon_symbolic_path: function(icon_path) {
+    set_applet_icon_symbolic_path(icon_path) {
         this._ensureIcon();
 
         try {
@@ -702,16 +684,16 @@ IconApplet.prototype = {
         } catch (e) {
             global.log(e);
         }
-    },
+    }
 
-    _ensureIcon: function() {
+    _ensureIcon() {
         if (!this._applet_icon || !(this._applet_icon instanceof St.Icon))
             this._applet_icon = new St.Icon({ reactive: true, track_hover: true, style_class: 'applet-icon'});
 
         this._applet_icon_box.set_child(this._applet_icon);
-    },
+    }
 
-    _setStyle: function() {
+    _setStyle() {
 
         let symb_scaleup = ((this._panelHeight / DEFAULT_PANEL_HEIGHT) * PANEL_SYMBOLIC_ICON_DEFAULT_HEIGHT) / global.ui_scale;
         let fullcolor_scaleup = this._panelHeight * COLOR_ICON_HEIGHT_FACTOR / global.ui_scale;
@@ -736,14 +718,14 @@ IconApplet.prototype = {
                                                 -1);
                                                 this._applet_icon.set_style_class_name('system-status-icon');
         }
-    },
+    }
 
-    on_panel_height_changed_internal: function() {
+    on_panel_height_changed_internal() {
         if (this._applet_icon)
             this._setStyle();
         this.on_panel_height_changed();
     }
-};
+}
 
 /**
  * #TextApplet:
@@ -754,12 +736,7 @@ IconApplet.prototype = {
  *
  * Inherits: Applet.Applet
  */
-function TextApplet(orientation, panel_height, instance_id) {
-    this._init(orientation, panel_height, instance_id);
-}
-
-TextApplet.prototype = {
-    __proto__: Applet.prototype,
+var TextApplet = class TextApplet extends Applet {
 
     /**
      * _init:
@@ -770,8 +747,8 @@ TextApplet.prototype = {
      * Note that suitability for display in a vertical panel is handled by having applets declare
      * they work OK, handled elsewhere
      */
-    _init: function(orientation, panel_height, instance_id) {
-        Applet.prototype._init.call(this, orientation, panel_height, instance_id);
+    _init(orientation, panel_height, instance_id) {
+        super._init(orientation, panel_height, instance_id);
         this._applet_label = new St.Label({ reactive: true,
                                             track_hover: true,
                                             style_class: 'applet-label'});
@@ -783,7 +760,7 @@ TextApplet.prototype = {
         this.actor.add(this._layoutBin, { y_align: St.Align.MIDDLE,
                                           y_fill: false });
         this.actor.set_label_actor(this._applet_label);
-    },
+    }
 
     /**
      * set_applet_label:
@@ -791,13 +768,13 @@ TextApplet.prototype = {
      *
      * Sets the text of the actor to @text
      */
-    set_applet_label: function (text) {
+    set_applet_label (text) {
         this._applet_label.set_text(text);
-    },
-
-    on_applet_added_to_panel: function() {
     }
-};
+
+    on_applet_added_to_panel() {
+    }
+}
 
 /**
  * #TextIconApplet:
@@ -810,12 +787,7 @@ TextApplet.prototype = {
  * Note that suitability for display in a vertical panel is handled by having applets declare
  * they work OK, handled elsewhere
  */
-function TextIconApplet(orientation, panel_height, instance_id) {
-    this._init(orientation, panel_height, instance_id);
-}
-
-TextIconApplet.prototype = {
-    __proto__: IconApplet.prototype,
+var TextIconApplet = class TextIconApplet extends IconApplet {
 
     /**
      * _init:
@@ -823,8 +795,8 @@ TextIconApplet.prototype = {
      * @panelHeight (int): height of the panel containing the applet
      * @instance_id (int): instance id of the applet
      */
-    _init: function(orientation, panel_height, instance_id) {
-        IconApplet.prototype._init.call(this, orientation, panel_height, instance_id);
+    _init(orientation, panel_height, instance_id) {
+        super._init(orientation, panel_height, instance_id);
         this._applet_label = new St.Label({ reactive: true,
                                             track_hover: true,
                                             style_class: 'applet-label'});
@@ -838,7 +810,7 @@ TextIconApplet.prototype = {
         this.actor.set_label_actor(this._applet_label);
 
         this.show_label_in_vertical_panels = true;
-    },
+    }
 
     /**
      * set_show_label_in_vertical_panels:
@@ -846,9 +818,9 @@ TextIconApplet.prototype = {
      *
      * Sets whether to show the label in vertical panels
      */
-    set_show_label_in_vertical_panels: function (show) {
+    set_show_label_in_vertical_panels (show) {
         this.show_label_in_vertical_panels = show;
-    },
+    }
 
     /**
      * set_applet_label:
@@ -856,7 +828,7 @@ TextIconApplet.prototype = {
      *
      * Sets the text of the actor to @text
      */
-    set_applet_label: function (text) {
+    set_applet_label (text) {
         this._applet_label.set_text(text);
 
         if ((this._orientation == St.Side.LEFT || this._orientation == St.Side.RIGHT) && (this.show_label_in_vertical_panels == false)) {
@@ -872,7 +844,7 @@ TextIconApplet.prototype = {
                 this.hide_applet_label(false);
             }
         }
-    },
+    }
 
     /**
      * set_applet_enabled:
@@ -881,7 +853,7 @@ TextIconApplet.prototype = {
      * Sets whether the applet is enabled or not. A disabled applet sets its
      * padding to 0px and doesn't react to clicks
      */
-    set_applet_enabled: function (enabled) {
+    set_applet_enabled (enabled) {
         if (enabled != this._applet_enabled) {
             this._applet_enabled = enabled;
             this.actor.visible = enabled;
@@ -889,7 +861,7 @@ TextIconApplet.prototype = {
                 this._applet_icon.visible = enabled;
             }
         }
-    },
+    }
 
     /**
      * hide_applet_label:
@@ -899,48 +871,48 @@ TextIconApplet.prototype = {
      * function to hide applet labels when an applet is placed in a vertical
      * panel
      */
-    hide_applet_label: function (hide) {
+    hide_applet_label (hide) {
         if (hide) {
             this.hideLabel();
         } else {
             this.showLabel();
         }
-    },
+    }
     /**
      * hideLabel:
      *
      * Hides the applet label
      */
-    hideLabel: function () {
+    hideLabel () {
         this._applet_label.hide();
         this._layoutBin.hide();
-    },
+    }
     /**
      * showLabel:
      *
      * Shows the applet label
      */
-    showLabel: function () {
+    showLabel () {
         this._applet_label.show();
         this._layoutBin.show();
-    },
+    }
     /**
      * hide_applet_icon:
      *
      * Hides the icon of the applet
      */
-    hide_applet_icon: function () {
+    hide_applet_icon () {
         this._applet_icon_box.child = null;
-    },
+    }
 
-    on_applet_added_to_panel: function() {
+    on_applet_added_to_panel() {
 
-    },
+    }
 
     /**
      * Override setOrientation, to recall set_applet_label
      */
-    setOrientation: function (orientation) {
+    setOrientation (orientation) {
         this.setOrientationInternal(orientation);
         this.on_orientation_changed(orientation);
         this.emit("orientation-changed", orientation);
@@ -948,4 +920,4 @@ TextIconApplet.prototype = {
         this._orientation = orientation;
         this.set_applet_label(this._applet_label.get_text());
     }
-};
+}

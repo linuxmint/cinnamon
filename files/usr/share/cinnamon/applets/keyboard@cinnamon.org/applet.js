@@ -128,6 +128,8 @@ class CinnamonKeyboardApplet extends Applet.TextIconApplet {
 
             this._layoutItems = [ ];
 
+            this.im_running = false;
+
             this.show_flags = false;
             this.use_upper = false;
             this.use_variants = false;
@@ -149,6 +151,8 @@ class CinnamonKeyboardApplet extends Applet.TextIconApplet {
                 Util.spawn(['gucharmap']);
             }));
             this.menu.addSettingsAction(_("Keyboard Settings"), 'keyboard');
+
+            Gio.DBus.session.watch_name("org.fcitx.Fcitx", Gio.BusNameWatcherFlags.NONE, Lang.bind(this, this._itemAppeared), Lang.bind(this, this._itemVanished));
         }
         catch (e) {
             global.logError(e);
@@ -183,6 +187,16 @@ class CinnamonKeyboardApplet extends Applet.TextIconApplet {
 
     on_applet_clicked(event) {
         this.menu.toggle();
+    }
+
+    _itemAppeared(proxy, busName, owner) {
+        this.im_running = true;
+        this._syncConfig();
+    }
+
+    _itemVanished(proxy, busName) {
+        this.im_running = false;
+        this._syncConfig();
     }
 
     _syncConfig() {
@@ -243,6 +257,7 @@ class CinnamonKeyboardApplet extends Applet.TextIconApplet {
     }
 
     _syncGroup() {
+
         let selected = this._config.get_current_group();
 
         if (this._selectedLayout) {
@@ -290,6 +305,10 @@ class CinnamonKeyboardApplet extends Applet.TextIconApplet {
 
             this.set_applet_label(name);
             this._applet_icon_box.hide();
+        }
+
+        if (this.im_running) {
+        	this.actor.hide();
         }
     }
 

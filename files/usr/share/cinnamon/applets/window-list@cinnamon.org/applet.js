@@ -78,9 +78,9 @@ class WindowPreview extends Tooltips.TooltipBase {
         this._applet = item._applet;
         this.uiScale = St.ThemeContext.get_for_stage(global.stage).scale_factor;
         this.thumbScale = previewScale;
-        this.metaWindow = metaWindow;
-        this.muffinWindow = null;
+        this.muffinWindow = metaWindow.get_compositor_private();
         this._sizeChangedId = null;
+        this.thumbnail = null;
 
         this.actor = new St.BoxLayout({ vertical: true, style_class: "window-list-preview", important: true });
         this.actor.show_on_set_parent = false;
@@ -118,7 +118,7 @@ class WindowPreview extends Tooltips.TooltipBase {
     }
 
     _hide(actor, event) {
-        Tooltips.TooltipBase.prototype._hide.call(this, actor, event);
+        super._hide.call(this, actor, event);
         this._applet.erodeTooltip();
     }
 
@@ -126,13 +126,13 @@ class WindowPreview extends Tooltips.TooltipBase {
         if (!this.actor || this._applet._menuOpen)
             return;
 
-        this.muffinWindow = this.metaWindow.get_compositor_private();
         let windowTexture = this.muffinWindow.get_texture();
         let [width, height] = this._getScaledTextureSize(windowTexture);
 
         if (this.thumbnail) {
             this.thumbnailBin.set_child(null);
             this.thumbnail.destroy();
+            this.thumbnail = null;
         }
 
         this.thumbnail = new Clutter.Clone({
@@ -165,6 +165,7 @@ class WindowPreview extends Tooltips.TooltipBase {
         if (this.thumbnail) {
             this.thumbnailBin.set_child(null);
             this.thumbnail.destroy();
+            this.thumbnail = null;
         }
         if (this.actor) {
             this.actor.hide();
@@ -173,6 +174,7 @@ class WindowPreview extends Tooltips.TooltipBase {
     }
 
     _set_position() {
+        if (!this.actor || this.actor.is_finalized()) return;
         let allocation = this.actor.get_allocation_box();
         let previewHeight = allocation.y2 - allocation.y1;
         let previewWidth = allocation.x2 - allocation.x1;
@@ -220,11 +222,13 @@ class WindowPreview extends Tooltips.TooltipBase {
         if (this.thumbnail) {
             this.thumbnailBin.set_child(null);
             this.thumbnail.destroy();
+            this.thumbnail = null;
         }
         if (this.actor) {
             this.actor.destroy();
+            this.actor = null;
         }
-        this.actor = null;
+        this.muffinWindow = null;
     }
 }
 

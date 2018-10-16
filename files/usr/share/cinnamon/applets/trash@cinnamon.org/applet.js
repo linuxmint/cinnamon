@@ -78,7 +78,7 @@ class CinnamonTrashApplet extends Applet.IconApplet {
     }
 
     _doEmptyTrash() {
-        Util.spawn(['gvfs-trash', '--empty']);
+        Util.spawn(['gio', 'trash', '--empty']);
     }
 }
 

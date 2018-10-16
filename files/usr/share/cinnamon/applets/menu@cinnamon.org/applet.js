@@ -1522,6 +1522,7 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
     }
 
     _onMenuKeyPress(actor, event) {
+        if (!this._activeContainer) return;
         let symbol = event.get_key_symbol();
         let item_actor;
         let index = 0;
@@ -1832,7 +1833,7 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
                 if (item_actor._delegate instanceof ApplicationButton || item_actor._delegate instanceof RecentButton)
                     item_actor._delegate.activateContextMenus();
                 return true;
-            } else if (this._activeContainer === this.favoritesBox && symbol === Clutter.Delete) {
+            } else if (!this.searchActive && this._activeContainer === this.favoritesBox && symbol === Clutter.Delete) {
                 item_actor = this.favoritesBox.get_child_at_index(this._selectedItemIndex);
                 if (item_actor._delegate instanceof FavoritesButton) {
                     let favorites = AppFavorites.getAppFavorites().getFavorites();
@@ -1958,7 +1959,9 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
     }
 
     _clearPrevSelection(actor) {
-        if (this._previousSelectedActor && this._previousSelectedActor != actor) {
+        if (this._previousSelectedActor
+            && !this._previousSelectedActor.is_finalized()
+            && this._previousSelectedActor != actor) {
             if (this._previousSelectedActor._delegate instanceof ApplicationButton ||
                 this._previousSelectedActor._delegate instanceof RecentButton ||
                 this._previousSelectedActor._delegate instanceof SearchProviderResultButton ||
@@ -2650,19 +2653,20 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
     }
 
     _loadCategory(dir, top_dir) {
-        var iter = dir.iter();
-        var has_entries = false;
-        var nextType;
+        let iter = dir.iter();
+        let has_entries = false;
+        let nextType;
         if (!top_dir) top_dir = dir;
         while ((nextType = iter.next()) != CMenu.TreeItemType.INVALID) {
             if (nextType == CMenu.TreeItemType.ENTRY) {
-                var entry = iter.get_entry();
-                if (!entry.get_app_info().get_nodisplay()) {
+                let entry = iter.get_entry();
+                let appInfo = entry.get_app_info();
+                if (appInfo && !appInfo.get_nodisplay()) {
                     has_entries = true;
-                    var app = appsys.lookup_app_by_tree_entry(entry);
+                    let app = appsys.lookup_app_by_tree_entry(entry);
                     if (!app)
                         app = appsys.lookup_settings_app_by_tree_entry(entry);
-                    var app_key = app.get_id();
+                    let app_key = app.get_id();
                     if (app_key == null) {
                         app_key = app.get_name() + ":" +
                             app.get_description();
@@ -2671,8 +2675,8 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
 
                         let applicationButton = new ApplicationButton(this, app, this.showApplicationIcons);
 
-                        var app_is_known = false;
-                        for (var i = 0; i < this._knownApps.length; i++) {
+                        let app_is_known = false;
+                        for (let i = 0; i < this._knownApps.length; i++) {
                             if (this._knownApps[i] == app_key) {
                                 app_is_known = true;
                             }
@@ -3062,11 +3066,6 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
 
     resetSearch(){
         this.searchEntry.set_text("");
-        this._previousSearchPattern = "";
-        this.searchActive = false;
-        this._clearAllSelections(true);
-        this._setCategoriesButtonActive(true);
-        global.stage.set_key_focus(this.searchEntry);
     }
 
     _onSearchTextChanged (se, prop) {
@@ -3091,6 +3090,7 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
                         }));
                 }
                 this._setCategoriesButtonActive(false);
+                this.lastSelectedCategory = "search"
                 this._doSearch();
             } else {
                 if (this._searchIconClickedId > 0)

@@ -207,6 +207,7 @@ Tooltip.prototype = {
     },
 
     hide: function() {
+        if (this._tooltip.is_finalized()) return;
         this._tooltip.hide();
 
         this.visible = false;
@@ -302,43 +303,39 @@ PanelItemTooltip.prototype = {
         this._tooltip.set_opacity(0);
         this._tooltip.show();
 
-        let tooltipHeight = this._tooltip.get_allocation_box().y2 - this._tooltip.get_allocation_box().y1;
-        let tooltipWidth = this._tooltip.get_allocation_box().x2 - this._tooltip.get_allocation_box().x1;
-
         let monitor = Main.layoutManager.findMonitorForActor(this._panelItem.actor);
 
+        let [minW, minH, tooltipWidth, tooltipHeight] = this._tooltip.get_preferred_size();
         let tooltipTop = 0;
         let tooltipLeft = 0;
-        let panel = 0;
+        let panel = null;
 
         switch (this.orientation) {
             case St.Side.BOTTOM:
-                panel = Main.panelManager.getPanel(Main.layoutManager.monitors.indexOf(monitor), PanelLoc.bottom);
+                panel = Main.panelManager.getPanel(monitor.index, PanelLoc.bottom);
                 tooltipTop = monitor.y + monitor.height - tooltipHeight - panel.actor.height;
                 tooltipLeft = this.mousePosition[0] - Math.round(tooltipWidth / 2);
                 tooltipLeft = Math.max(tooltipLeft, monitor.x);
                 tooltipLeft = Math.min(tooltipLeft, monitor.x + monitor.width - tooltipWidth);
                 break;
             case St.Side.TOP:
-                panel = Main.panelManager.getPanel(Main.layoutManager.monitors.indexOf(monitor), PanelLoc.top);
+                panel = Main.panelManager.getPanel(monitor.index, PanelLoc.top);
                 tooltipTop =  monitor.y + panel.actor.height;
                 tooltipLeft = this.mousePosition[0] - Math.round(tooltipWidth / 2);
                 tooltipLeft = Math.max(tooltipLeft, monitor.x);
                 tooltipLeft = Math.min(tooltipLeft, monitor.x + monitor.width - tooltipWidth);
                 break;
             case St.Side.LEFT:
-                panel = Main.panelManager.getPanel(Main.layoutManager.monitors.indexOf(monitor), PanelLoc.left);
+                panel = Main.panelManager.getPanel(monitor.index, PanelLoc.left);
                 tooltipTop = this._panelItem.actor.get_transformed_position()[1];
-                tooltipTop = tooltipTop + Math.round((this._panelItem.actor.get_allocation_box().y2 -
-                    this._panelItem.actor.get_allocation_box().y1) / 2) - Math.round(tooltipHeight / 2);
-                tooltipLeft = panel.actor.width;
+                tooltipTop += Math.round((this._panelItem.actor.height - tooltipHeight) / 2);
+                tooltipLeft = monitor.x + panel.actor.width;
                 break;
             case St.Side.RIGHT:
-                panel = Main.panelManager.getPanel(Main.layoutManager.monitors.indexOf(monitor), PanelLoc.right);
+                panel = Main.panelManager.getPanel(monitor.index, PanelLoc.right);
                 tooltipTop = this._panelItem.actor.get_transformed_position()[1];
-                tooltipTop = tooltipTop + Math.round((this._panelItem.actor.get_allocation_box().y2 -
-                    this._panelItem.actor.get_allocation_box().y1) / 2) - Math.round(tooltipHeight / 2);
-                tooltipLeft = monitor.width - tooltipWidth - panel.actor.width;
+                tooltipTop += Math.round((this._panelItem.actor.height - tooltipHeight) / 2);
+                tooltipLeft = monitor.x + monitor.width - tooltipWidth - panel.actor.width;
                 break;
             default:
                 break;

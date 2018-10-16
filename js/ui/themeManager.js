@@ -23,22 +23,27 @@ ThemeManager.prototype = {
     },    
     
     _findTheme: function(themeName) {
+        /* This follows the same order of precedence that Gtk uses for icon and widget themes. */
+
+        let dirs = [GLib.build_filenamev([GLib.get_user_data_dir(), 'themes', themeName, 'cinnamon']),
+                    GLib.build_filenamev([GLib.get_home_dir(), '.themes', themeName, 'cinnamon'])];
+
+        let sys_dirs = GLib.get_system_data_dirs()
+
+        for (let i = 0; i < sys_dirs.length; i++) {
+            dirs.push(GLib.build_filenamev([sys_dirs[i], 'themes', themeName, 'cinnamon']));
+        }
+
         let themeDirectory = null;
-        let path = GLib.build_filenamev([GLib.get_home_dir(), '.themes', themeName, 'cinnamon']);
-        let file = Gio.file_new_for_path(GLib.build_filenamev([path, 'cinnamon.css']));
-        if (file.query_exists(null))
-            themeDirectory = path;
-        else {
-            let sysdirs = GLib.get_system_data_dirs();
-            for (let i = 0; i < sysdirs.length; i++) {
-                path = GLib.build_filenamev([sysdirs[i], 'themes', themeName, 'cinnamon']);
-                let file = Gio.file_new_for_path(GLib.build_filenamev([path, 'cinnamon.css']));
-                if (file.query_exists(null)) {
-                    themeDirectory = path;
-                    break;
-                }
+
+        for (let i = 0; i < dirs.length; i++) {
+            let file = Gio.file_new_for_path(GLib.build_filenamev([dirs[i], 'cinnamon.css']));
+            if (file.query_exists(null)) {
+                themeDirectory = dirs[i];
+                break;
             }
-        }        
+        }
+
         return themeDirectory;
     },
 

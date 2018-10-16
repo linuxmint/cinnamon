@@ -1,17 +1,19 @@
 // -*- mode: js; js-indent-level: 4; indent-tabs-mode: nil -*-
 
-imports.gi.versions.Clutter = '1.0';
+imports.gi.versions.Clutter = '0';
 imports.gi.versions.Gio = '2.0';
 imports.gi.versions.Gdk = '3.0';
 imports.gi.versions.GdkPixbuf = '2.0';
 imports.gi.versions.Gtk = '3.0';
 
+const GObject = imports.gi.GObject;
 const Clutter = imports.gi.Clutter;
 const Gettext = imports.gettext;
 const GLib = imports.gi.GLib;
 const Gtk = imports.gi.Gtk;
 const Cinnamon = imports.gi.Cinnamon;
 const St = imports.gi.St;
+const Meta = imports.gi.Meta;
 const Overrides = imports.ui.overrides;
 
 // We can't import cinnamon JS modules yet, because they may have
@@ -89,6 +91,8 @@ function init() {
         configurable: false,
         enumerable: false
     });
+    // Prevent usage of meta_pre_exec_close_fds in the JS context
+    Meta.pre_exec_close_fds = null;
 
     // Set the default direction for St widgets (this needs to be done before any use of St)
     if (Gtk.Widget.get_default_direction() == Gtk.TextDirection.RTL) {
@@ -99,6 +103,20 @@ function init() {
     _patchContainerClass(St.BoxLayout);
     _patchContainerClass(St.Table);
 
+    // Cache the original toString since it will be overriden for Clutter.Actor
+    GObject.Object.prototype._toString = GObject.Object.prototype.toString;
+    // Add method to determine if a GObject is finalized - needed to prevent accessing
+    // objects that have been disposed in C code.
+    GObject.Object.prototype.is_finalized = function is_finalized() {
+        return this._toString().includes('FINALIZED');
+    };
+    // Override destroy so it checks if its finalized before calling the real destroy method.
+    Clutter.Actor.prototype._destroy = Clutter.Actor.prototype.destroy;
+    Clutter.Actor.prototype.destroy = function destroy() {
+        if (!this.is_finalized()) {
+            this._destroy();
+        }
+    };
     Clutter.Actor.prototype.toString = function() {
         return St.describe_actor(this);
     };

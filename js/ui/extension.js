@@ -33,7 +33,8 @@ function _createExtensionType(name, folder, manager, overrides){
         roles: {},
         callbacks: {
             finishExtensionLoad: manager.finishExtensionLoad,
-            prepareExtensionUnload: manager.prepareExtensionUnload
+            prepareExtensionUnload: manager.prepareExtensionUnload,
+            prepareExtensionReload: manager.prepareExtensionReload
         },
         userDir: GLib.build_filenamev([global.userdatadir, folder]),
         legacyMeta: {}
@@ -86,7 +87,8 @@ var Type = {
         roles: {
             notifications: null,
             windowlist: null,
-            panellauncher: null
+            panellauncher: null,
+            tray: null
         }
     }),
     DESKLET: _createExtensionType("Desklet", "desklets", DeskletManager, {
@@ -487,7 +489,7 @@ function loadExtension(uuid, type) {
  * @type (Extension.Type): type of xlet
  * @deleteConfig (bool): delete also config files, defaults to true
  */
-function unloadExtension(uuid, type, deleteConfig = true) {
+function unloadExtension(uuid, type, deleteConfig = true, reload = false) {
     let extensionIndex = queryCollection(extensions, {uuid}, true);
     if (extensionIndex > -1) {
         let extension = extensions[extensionIndex];
@@ -497,6 +499,9 @@ function unloadExtension(uuid, type, deleteConfig = true) {
         // but it will be removed on next reboot, and hopefully nothing
         // broke too much.
         try {
+            if (reload) {
+                Type[extension.upperType].callbacks.prepareExtensionReload(extension);
+            }
             Type[extension.upperType].callbacks.prepareExtensionUnload(extension, deleteConfig);
         } catch (e) {
             logError(`Error disabling ${extension.lowerType} ${extension.uuid}`, extension.uuid, e);
@@ -533,7 +538,7 @@ function forgetExtension(extensionIndex, uuid, type, forgetMeta) {
  */
 function reloadExtension(uuid, type) {
     if (getExtension(uuid)) {
-        unloadExtension(uuid, type, false);
+        unloadExtension(uuid, type, false, true);
         Main._addXletDirectoriesToSearchPath();
         loadExtension(uuid, type);
         return;

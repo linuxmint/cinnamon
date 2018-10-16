@@ -511,7 +511,7 @@ var _Draggable = new Lang.Class({
                                                 event.get_time())) {
                     // If it accepted the drop without taking the actor,
                     // handle it ourselves.
-                    if (this._dragActor.get_parent() == Main.uiGroup) {
+                    if (!this._dragActor.is_finalized() && this._dragActor.get_parent() === Main.uiGroup) {
                         if (this._restoreOnSuccess) {
                             this._restoreDragActor(event.get_time());
                             return true;
@@ -635,7 +635,7 @@ var _Draggable = new Lang.Class({
     },
 
     _dragComplete: function() {
-        if (!this._actorDestroyed)
+        if (!this._actorDestroyed && !this._dragActor.is_finalized())
             Cinnamon.util_set_hidden_from_pick(this._dragActor, false);
 
         this._ungrabEvents();
@@ -789,6 +789,7 @@ GenericDragItemContainer.prototype = {
     },
 
     set childScale(scale) {
+        if (this.child.is_finalized()) return;
         this._childScale = scale;
 
         if (this.child == null)
@@ -804,6 +805,7 @@ GenericDragItemContainer.prototype = {
     },
 
     set childOpacity(opacity) {
+        if (this.child.is_finalized()) return;
         this._childOpacity = opacity;
 
         if (this.child == null)

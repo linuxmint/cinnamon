@@ -163,17 +163,17 @@ class MainWindow(object):
         menu = Gtk.Menu()
         menu.set_halign(Gtk.Align.END)
 
-        restore_option = Gtk.MenuItem(_("Import from a file"))
+        restore_option = Gtk.MenuItem(label=_("Import from a file"))
         menu.append(restore_option)
         restore_option.connect("activate", self.restore)
         restore_option.show()
 
-        backup_option = Gtk.MenuItem(_("Export to a file"))
+        backup_option = Gtk.MenuItem(label=_("Export to a file"))
         menu.append(backup_option)
         backup_option.connect("activate", self.backup)
         backup_option.show()
 
-        reset_option = Gtk.MenuItem(_("Reset to defaults"))
+        reset_option = Gtk.MenuItem(label=_("Reset to defaults"))
         menu.append(reset_option)
         reset_option.connect("activate", self.reset)
         reset_option.show()
