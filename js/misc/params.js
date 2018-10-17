@@ -18,7 +18,7 @@ function parse(params, defaults, allowExtras) {
     let ret = {};
 
     if (!params)
-        return defaults;
+        return Object.assign({}, defaults);
 
     for (let prop in params) {
         if (!(prop in defaults) && !allowExtras)
