@@ -280,8 +280,12 @@ class CinnamonWorkspaceSwitcher extends Applet.Applet {
     }
 
     _onWorkspaceChanged(windowManager, wm, from, to) {
-        if (!this.buttons[from] || !this.buttons[to]) return;
-        this.buttons[from].activate(false);
+        // Make sure we always reset everything to inactive before setting
+        // a new active item. This prevents multiple buttons from being highlighted.
+        for (let i = 0; i < this.buttons.length; i++) {
+            this.buttons[i].activate(false);
+        }
+
         this.buttons[to].activate(true);
     }
 

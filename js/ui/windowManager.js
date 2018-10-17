@@ -411,6 +411,8 @@ WindowManager.prototype = {
         this._tiling = [];
         this._mapping = [];
         this._destroying = [];
+        this._stageRelayoutQueue = [];
+        this._lastAfterStageRelayoutTime = 0;
 
         this.effects = {
             map: new WindowEffects.Map(this),
@@ -441,6 +443,7 @@ WindowManager.prototype = {
                 () => this._switchWorkspace(...args)
             )
         );
+
         this._cinnamonwm.connect('minimize', Lang.bind(this, this._minimizeWindow));
         this._cinnamonwm.connect('maximize', Lang.bind(this, this._maximizeWindow));
         this._cinnamonwm.connect('unmaximize', Lang.bind(this, this._unmaximizeWindow));
@@ -492,6 +495,58 @@ WindowManager.prototype = {
         global.screen.connect ("show-workspace-osd", Lang.bind (this, this.showWorkspaceOSD));
 
         this.settings = new Gio.Settings({schema_id: "org.cinnamon.muffin"});
+    },
+
+    // This function will invoke @cb after the next stage relayout occurs.
+    // This is done by connecting to the stage's 'queue-relayout' signal
+    // with connect_after. All signal IDs are tracked in a queue to prevent
+    // losing an ID (and failing to disconnect from the stage).
+
+    afterStageRelayout: function(callback) {
+        // If we are receiving multiple inputs within 32ms, e.g.,
+        // twice the maximum amount of time Cinnamon should be spending
+        // rendering a frame, we can assume it will cause a race
+        // condition so clear the entire queue to prevent missed
+        // signal disconnections.
+        let now = Date.now();
+        if ((now - this._lastAfterStageRelayoutTime) < 32) {
+            this._resetStageRelayoutQueue();
+            // Make sure whatever state is relying on the callback
+            // stays in sync.
+            callback();
+            return;
+        }
+        this._lastAfterStageRelayoutTime = now;
+
+        let index = this._stageRelayoutQueue.length;
+        let id = global.stage.connect_after('queue-relayout', () => {
+            let nextQueue = [];
+            for (let i = 0; i < this._stageRelayoutQueue.length; i++) {
+                let queuedItem = this._stageRelayoutQueue[i];
+                let {id, cb} = queuedItem;
+                if (id && cb === callback && index === i) {
+                    global.stage.disconnect(id);
+                    queuedItem.id = 0;
+                    cb();
+                } else {
+                    // Filter items that have been invoked previously.
+                    nextQueue.push(queuedItem);
+                }
+            }
+            this._stageRelayoutQueue = nextQueue;
+        });
+        this._stageRelayoutQueue.push({
+            id,
+            cb: callback
+        });
+    },
+
+    _resetStageRelayoutQueue: function() {
+        for (let i = 0; i < this._stageRelayoutQueue.length; i++) {
+            let {id} = this._stageRelayoutQueue[i];
+            if (id) global.stage.disconnect(id);
+        }
+        this._stageRelayoutQueue = [];
     },
 
     blockAnimations: function() {
@@ -731,10 +786,7 @@ WindowManager.prototype = {
     },
 
     emitSwitchWorkspace: function() {
-        Mainloop.idle_add_full(
-            Mainloop.PRIORITY_LOW,
-            () => this.emit('switch-workspace', ...Array.from(arguments))
-        );
+        this.afterStageRelayout(() => this.emit('switch-workspace', ...arguments));
     },
 
     _switchWorkspace: function(cinnamonwm, from, to, direction) {
@@ -829,11 +881,10 @@ WindowManager.prototype = {
 
         Tweener.addTween(this, {
             time: WINDOW_ANIMATION_TIME,
-            onComplete: function() {
+            onComplete: () => {
                 cinnamonwm.completed_switch_workspace();
                 this.emitSwitchWorkspace(...arguments);
-            },
-            onCompleteParams: Array.from(arguments)
+            }
         });
     },
 
