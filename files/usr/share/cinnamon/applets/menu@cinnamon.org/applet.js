@@ -2903,10 +2903,10 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
             this._displayButtons(null, null, -1);
         } else
         if (name == null) {
-            this._displayButtons(this._listApplications(null));
+            this._displayButtons(this._listApplications(null)[0]);
         } else
         {
-            this._displayButtons(this._listApplications(name));
+            this._displayButtons(this._listApplications(name)[0]);
         }
 
         this.closeContextMenus(null, false);
