@@ -19,6 +19,7 @@ const ModalDialog = imports.ui.modalDialog;
 const Tweener = imports.ui.tweener;
 
 const WINDOW_ANIMATION_TIME = 0.25;
+const WORKSPACE_SWITCH_ANIMATION_TIME = 0.075;
 const TILE_HUD_ANIMATION_TIME = 0.15;
 const DIM_TIME = 0.500;
 const DIM_DESATURATION = 0.6;
@@ -850,7 +851,7 @@ WindowManager.prototype = {
                 Tweener.addTween(window,
                         { x: window.origX + xDest,
                           y: window.origY + yDest,
-                          time: WINDOW_ANIMATION_TIME,
+                          time: WORKSPACE_SWITCH_ANIMATION_TIME,
                           transition: 'easeOutQuad',
                           onComplete: function() {
                               window.hide();
@@ -868,7 +869,7 @@ WindowManager.prototype = {
                 Tweener.addTween(window,
                         { x: window.origX,
                           y: window.origY,
-                          time: WINDOW_ANIMATION_TIME,
+                          time: WORKSPACE_SWITCH_ANIMATION_TIME,
                           transition: 'easeOutQuad',
                           onComplete: Lang.bind(window, function() {
                               window.origX = undefined;
@@ -880,7 +881,7 @@ WindowManager.prototype = {
         }
 
         Tweener.addTween(this, {
-            time: WINDOW_ANIMATION_TIME,
+            time: WORKSPACE_SWITCH_ANIMATION_TIME,
             onComplete: () => {
                 cinnamonwm.completed_switch_workspace();
                 this.emitSwitchWorkspace(...arguments);
