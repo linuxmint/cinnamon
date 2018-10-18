@@ -17,6 +17,7 @@ nobase_dist_js_DATA = \
 	misc/signalManager.js     \
 	misc/timers.js       \
 	misc/util.js		\
+	misc/state.js \
 	misc/windowUtils.js		\
 	perf/core.js		\
     ui/accessibility.js \
