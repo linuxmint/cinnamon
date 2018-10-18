@@ -45,10 +45,11 @@ function _patchContainerClass(containerClass) {
     };
 }
 
+function readOnlyError(property) {
+    global.logError(`The ${property} object is read-only.`);
+};
+
 function init() {
-    const readOnlyError = function(property) {
-        global.logError(`The ${property} object is read-only.`);
-    };
     // Add some bindings to the global JS namespace; (gjs keeps the web
     // browser convention of having that namespace be called 'window'.)
     Object.defineProperty(window, 'global', {
