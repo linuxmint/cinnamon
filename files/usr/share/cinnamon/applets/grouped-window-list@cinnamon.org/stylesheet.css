@@ -1,0 +1,40 @@
+.thumbnail-row .thumbnail-alerts {
+  background: rgba(255,52,52,0.3);
+}
+.thumbnail-icon {
+  width: 16px;
+  height: 16px;
+}
+.thumbnail-label {
+  padding-left: 4px;
+}
+.thumbnail-label-no-icon {
+  padding-left: 4px;
+}
+.app-list-item-box {
+  z-index: -9;
+}
+.window-icon-list-numlabel {
+  z-index: 99;
+  text-shadow: black 1px 0px 2px
+}
+.window-icon-list-buttonbox {
+  spacing: 2px;
+}
+.panel-top .window-list-item-box:closed,
+.panel-bottom .window-list-item-box:closed,
+.panel-left .window-list-item-box:closed,
+.panel-right .window-list-item-box:closed {
+  background-gradient-direction: vertical !important;
+  background-gradient-start: rgba(0,0,0,0.0) !important;
+  background-gradient-end: rgba(0,0,0,0.0) !important;
+  border-radius: 0px 0px 0px 0px !important;
+  border-image: none !important;
+  border-color: rgba(0,0,0,0.0) !important;
+  box-shadow: inset 0px 0px 0px 0px rgba(0,0,0,0.0) !important;
+}
+.window-list-item-demands-attention {
+}
+.app-button-label {
+  padding-left: 4px;
+}
