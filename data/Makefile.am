@@ -29,6 +29,7 @@ dist_theme_DATA = \
     theme/cinnamon.css             \
     theme/close.svg                \
     theme/close-window.svg         \
+    theme/close-window-hover.svg   \
     theme/corner-ripple.png        \
     theme/menu-symbolic.svg        \
     theme/overview-hover.png       \
@@ -72,4 +73,3 @@ CLEANFILES =						\
 SUBDIRS = \
 	icons    \
 	$(NULL)
-
