@@ -654,15 +654,15 @@ ConfirmDialog.prototype = {
 
         this.setButtons([
             {
+                label: _("No"),
+                action: Lang.bind(this, this.destroy)
+            },
+            {
                 label: _("Yes"),
                 action: Lang.bind(this, function(){
                     this.destroy();
                     this.callback();
                 })
-            },
-            {
-                label: _("No"),
-                action: Lang.bind(this, this.destroy)
             }
         ]);
     },
