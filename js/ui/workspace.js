@@ -526,10 +526,10 @@ WorkspaceMonitor.prototype = {
             }
         }
 
-        let empty_label = new St.Label({ text: _("No open windows") });
         this._emptyPlaceHolder = new St.Bin({
             style_class: 'overview-empty-placeholder',
-            child: empty_label
+            child: new St.Label({ text: _("No open windows") }),
+            important: true
         });
         this.actor.insert_child_below(this._emptyPlaceHolder, null);
 
