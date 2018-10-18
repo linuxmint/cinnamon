@@ -1,0 +1,572 @@
+{
+  "layout": {
+    "type" : "layout",
+    "pages": ["generalPage", "panelPage", "thumbnailsPage", "contextMenuPage", "themePage"],
+    "generalPage": {
+      "type" : "page",
+      "title" : "General",
+      "sections": ["generalSection", "hotKeysSection"]
+    },
+    "panelPage": {
+      "type" : "page",
+      "title" : "Panel",
+      "sections": ["appButtonsSection"]
+    },
+    "thumbnailsPage": {
+      "type" : "page",
+      "title" : "Thumbnails",
+      "sections": ["thumbnailsSection", "hoverPeekSection"]
+    },
+    "contextMenuPage": {
+      "type" : "page",
+      "title" : "Context Menu",
+      "sections": ["contextMenuSection"]
+    },
+    "themePage": {
+      "type" : "page",
+      "title" : "Theming",
+      "sections": ["stylingSection", "iconSection", "presetSection"]
+    },
+    "generalSection": {
+      "type" : "section",
+      "title" : "Behavior",
+      "keys": [
+        "group-apps",
+        "scroll-behavior",
+        "left-click-action",
+        "middle-click-action",
+        "system-favorites",
+        "list-monitor-windows",
+        "show-all-workspaces",
+        "include-all-windows"
+      ]
+    },
+    "appButtonsSection": {
+      "type" : "section",
+      "title" : "App Buttons",
+      "keys": [
+        "enable-app-button-width",
+        "app-button-width",
+        "number-display",
+        "title-display",
+        "launcher-animation-effect",
+        "pinned-apps",
+        "show-alerts",
+        "show-pinned",
+        "enable-app-button-dragging",
+        "pinOnDrag"
+      ]
+    },
+    "hotKeysSection": {
+      "type" : "section",
+      "title" : "Hot Keys",
+      "keys": [
+        "cycleMenusHotkey",
+        "show-apps-order-hotkey",
+        "show-apps-order-timeout"
+      ]
+    },
+    "thumbnailsSection": {
+      "type" : "section",
+      "title" : "Thumbnails",
+      "keys": [
+        "thumbnail-timeout",
+        "thumbnail-size",
+        "thumbnail-close-button-size",
+        "thumbnail-padding",
+        "thumbnail-scroll-behavior",
+        "show-thumbnails",
+        "show-icons",
+        "animate-thumbnails",
+        "vertical-thumbnails",
+        "sort-thumbnails",
+        "highlight-last-focused-thumbnail",
+        "onclick-thumbnails"
+      ]
+    },
+    "hoverPeekSection": {
+      "type" : "section",
+      "title" : "Hover Peek",
+      "keys": [
+        "enable-hover-peek",
+        "hover-peek-time",
+        "hover-peek-opacity"
+      ]
+    },
+    "contextMenuSection": {
+      "type" : "section",
+      "title" : "",
+      "keys": [
+        "show-recent",
+        "firefox-menu",
+        "menuItemType",
+        "autostart-menu-item",
+        "launch-new-instance-menu-item",
+        "monitor-move-all-windows"
+      ]
+    },
+    "stylingSection": {
+      "type" : "section",
+      "title" : "Styling",
+      "keys": [
+        "show-active",
+        "hoverPseudoClass",
+        "focusPseudoClass",
+        "activePseudoClass",
+        "app-button-transition-duration"
+      ]
+    },
+    "iconSection": {
+      "type" : "section",
+      "title" : "Icons",
+      "keys": [
+        "icon-spacing",
+        "enable-iconSize",
+        "icon-size"
+      ]
+    },
+    "presetSection": {
+      "type" : "section",
+      "title" : "Recommended Presets",
+      "keys": [
+        "mintYPreset",
+        "mintXPreset"
+      ]
+    }
+  },
+  "number-display": {
+    "type": "combobox",
+    "default": 1,
+    "description": "Number display",
+    "options": {
+      "Smart": 1,
+      "Normal": 2,
+      "None": 3,
+      "All": 4
+    },
+    "tooltip": "normal: display window number, smart: display window number if more than one window, none: don't display number, all: display window number for favorites too"
+  },
+  "title-display": {
+    "type": "combobox",
+    "default": 1,
+    "description": "Title display",
+    "options": {
+      "None": 1,
+      "App": 2,
+      "Title": 3,
+      "Focused": 4
+    },
+    "tooltip": "focused: show focused window title, title: display the window title, app: diplay app name, none: don't display anything"
+  },
+  "scroll-behavior": {
+    "type": "combobox",
+    "default": 1,
+    "description": "Mouse wheel scroll behavior",
+    "options": {
+      "None": 1,
+      "Cycle apps": 2,
+      "Cycle windows": 3
+    },
+    "tooltip": "Choose if scrolling the mouse wheel cycles running apps, an app button's windows on hover, or is disabled."
+  },
+  "left-click-action": {
+    "type": "combobox",
+    "default": 2,
+    "description": "Left click action",
+    "options": {
+      "None": 1,
+      "Toggle activation of last focused window": 2,
+      "Cycle windows": 3
+    },
+    "tooltip": "Left click action"
+  },
+  "middle-click-action": {
+    "type": "combobox",
+    "default": 2,
+    "description": "Middle click action",
+    "options": {
+      "None": 1,
+      "Launch new app instance": 2,
+      "Close last focused window in group": 3
+    },
+    "tooltip": "Middle click action"
+  },
+  "pinned-apps": {
+    "type": "generic",
+    "default": []
+  },
+  "group-apps": {
+    "type": "checkbox",
+    "default": true,
+    "description": "Group apps",
+    "tooltip": "Group each app's set of windows."
+  },
+  "show-alerts": {
+    "type": "checkbox",
+    "default": true,
+    "description": "Show app alerts and notifications",
+    "tooltip": "If enabled, notifications and alerts will appear."
+  },
+  "show-pinned": {
+    "type": "checkbox",
+    "default": true,
+    "description": "Show pinned apps",
+    "tooltip": "Controls whether or not the pinned apps appear in the panel if they are not open."
+  },
+  "system-favorites": {
+    "type": "checkbox",
+    "default": false,
+    "description": "Use system favorites for pinned apps",
+    "tooltip": "Controls whether or not pinned apps consist of the system favorites list."
+  },
+  "show-all-workspaces": {
+    "type": "checkbox",
+    "default": false,
+    "description": "Show windows from all workspaces",
+    "tooltip": "Show windows from all workspaces"
+  },
+  "enable-app-button-dragging": {
+    "type": "checkbox",
+    "default": true,
+    "description": "Enable app button dragging",
+    "tooltip": "Enable app button dragging"
+  },
+  "pinOnDrag": {
+    "type": "checkbox",
+    "default": true,
+    "description": "Pin apps when dragged to a new position",
+    "tooltip": "Pin apps when dragged to a new position"
+  },
+  "launcher-animation-effect": {
+    "type": "combobox",
+    "default": 1,
+    "description": "Launcher animation effect",
+    "options": {
+      "None": 1,
+      "Fade": 2,
+      "Scale": 3
+    },
+    "tooltip": "Left click action"
+  },
+  "list-monitor-windows": {
+    "type": "checkbox",
+    "default": false,
+    "description": "Only list windows from the monitor displaying this instance",
+    "tooltip": "This option will only come into effect for monitors displaying an ITM instance."
+  },
+  "cycleMenusHotkey": {
+    "type": "keybinding",
+    "default": "<Super>space",
+    "description": "Global hotkey for cycling through thumbnail menus",
+    "tooltip": "This allows you to cycle through the menus without activating a window."
+  },
+  "show-apps-order-hotkey": {
+    "type": "keybinding",
+    "default": "<Super>grave",
+    "description": "Global hotkey to show the order of apps",
+    "tooltip": "When triggered, the window count label will be replaced with its order in the app list temporarily."
+  },
+  "show-apps-order-timeout": {
+    "type": "spinbutton",
+    "default": 2500,
+    "min": 100,
+    "max": 10000,
+    "step": 10,
+    "units": "milliseconds",
+    "description": "Duration of the apps order display on hotkey press",
+    "tooltip": "Determines the duration the window count labels are replaced with the app's order number."
+  },
+  "enable-app-button-width": {
+    "type": "checkbox",
+    "default": false,
+    "description": "Use a custom width for app buttons",
+    "tooltip": "When disabled, the app button width is determined by the panel height."
+  },
+  "app-button-width": {
+    "dependency": "enable-app-button-width",
+    "type": "spinbutton",
+    "default": 31,
+    "min": 1,
+    "max": 250,
+    "step": 2,
+    "units": "px",
+    "description": "App button width",
+    "tooltip": "Controls the width of the application button. This option only works for horizontal panels."
+  },
+  "thumbnail-timeout": {
+    "type": "spinbutton",
+    "default": 50,
+    "min": 0,
+    "max": 5000,
+    "step": 5,
+    "units": "milliseconds",
+    "description": "Thumbnail timeout",
+    "tooltip": "Controls how quickly an app's set of window thumbnails will fade out when the mouse leaves the app button."
+  },
+  "thumbnail-size": {
+    "type": "spinbutton",
+    "default": 6,
+    "min": 0,
+    "max": 100,
+    "step": 1,
+    "units": "size",
+    "description": "Thumbnail size",
+    "tooltip": "Controls the size of the thumbnails."
+  },
+  "thumbnail-close-button-size": {
+    "type": "spinbutton",
+    "default": 16,
+    "min": 8,
+    "max": 32,
+    "step": 1,
+    "units": "px",
+    "description": "Close button size",
+    "tooltip": "Controls how large the thumbnail close button is."
+  },
+  "thumbnail-padding": {
+    "type": "spinbutton",
+    "default": 1,
+    "min": 0,
+    "max": 12,
+    "step": 1,
+    "units": "px",
+    "description": "Thumbnail padding",
+    "tooltip": "Controls how much space will be around the window preview thumbnails."
+  },
+  "thumbnail-scroll-behavior": {
+    "type": "checkbox",
+    "default": false,
+    "description": "Cycle windows on mouse wheel scroll",
+    "tooltip": "Choose whether or not scrolling the mouse wheel cycles windows when hovering over a thumbnail menu."
+  },
+  "show-thumbnails": {
+    "type": "checkbox",
+    "default": true,
+    "description": "Show thumbnails",
+    "tooltip": "Show window thumbnails when hovering over an app button."
+  },
+  "show-icons": {
+    "type": "checkbox",
+    "default": true,
+    "description": "Show icons",
+    "tooltip": "Show the window's icon next to the title."
+  },
+  "animate-thumbnails": {
+    "type": "checkbox",
+    "default": false,
+    "description": "Animate thumbnails",
+    "tooltip": "If enabled, thumbnails will animate when appearing and disappearing."
+  },
+  "vertical-thumbnails": {
+    "type": "checkbox",
+    "default": false,
+    "description": "Enable vertical thumbnails",
+    "tooltip": "If enabled, thumbnails will stack vertically."
+  },
+  "sort-thumbnails": {
+    "type": "checkbox",
+    "default": false,
+    "description": "Sort windows for each app by last focused",
+    "tooltip": "Controls whether the order windows appear for an app is by last focused, or the order they were opened."
+  },
+  "highlight-last-focused-thumbnail": {
+    "type": "checkbox",
+    "default": true,
+    "description": "Highlight the last focused window within an app group",
+    "tooltip": "When enabled, the last window that was interacted with will be indicated."
+  },
+  "onclick-thumbnails": {
+    "type": "checkbox",
+    "default": false,
+    "description": "Open thumbnails on click",
+    "tooltip": "Open the thumbnails on click if there is more than one window open."
+  },
+  "include-all-windows": {
+    "type": "checkbox",
+    "default": true,
+    "description": "Include all app windows",
+    "tooltip": "Controls whether or not thumbnails for smalller child windows, such as exit confirmations and file dialogues will be included in the thumbnail list."
+  },
+  "show-recent": {
+    "type": "checkbox",
+    "default": true,
+    "description": "Show recent items",
+    "tooltip": "Controls whether recent items will appear in the context menu."
+  },
+  "menuItemType": {
+    "type": "combobox",
+    "default": 1,
+    "description": "Menu item type",
+    "options": {
+      "Symbolic icons": 1,
+      "Non-symbolic icons": 2,
+      "No icons": 3
+    },
+    "tooltip": "Determines whether menu item icons are symbolic, non-symbolic, or not shown."
+  },
+  "firefox-menu": {
+    "type": "combobox",
+    "dependency": "show-recent",
+    "default": 1,
+    "description": "Firefox context menu",
+    "options": {
+      "Most Visited": 1,
+      "Recent History": 2,
+      "Bookmarks": 3
+    },
+    "tooltip": "Most Visited: show the sites you visit most, Recent History: display the the last pages you visited, Bookmarks: show your favorite bookmarks."
+  },
+  "autostart-menu-item": {
+    "type": "checkbox",
+    "default": true,
+    "description": "Show autostart option",
+    "tooltip": "Shows the autostart toggle option in an app's context menu."
+  },
+  "launch-new-instance-menu-item": {
+    "type": "checkbox",
+    "default": false,
+    "description": "Show new window option",
+    "tooltip": "Shows the \"New Window\" option in an app's context menu if it doesn't already have one from the app's own action menu items."
+  },
+  "monitor-move-all-windows": {
+    "type": "checkbox",
+    "default": true,
+    "description": "Apply the monitor move option to all windows",
+    "tooltip": "When clicking \"Move to monitor\" in the context menu, this option will move all of an app's windows instead of just the last focused window from the app."
+  },
+  "enable-hover-peek": {
+    "type": "checkbox",
+    "default": true,
+    "description": "Show windows when hovered over",
+    "tooltip": "Controls whether or not windows display when hovered over."
+  },
+  "hover-peek-time": {
+    "type": "spinbutton",
+    "dependency": "enable-hover-peek",
+    "default": 300,
+    "min": 0,
+    "max": 1000,
+    "step": 5,
+    "units": "milliseconds",
+    "description": "Window fade time",
+    "tooltip": "Controls how quickly a window will fade on hover."
+  },
+  "hover-peek-opacity": {
+    "type": "spinbutton",
+    "dependency": "enable-hover-peek",
+    "default": 94,
+    "min": 0,
+    "max": 100,
+    "step": 1,
+    "units": "percent",
+    "description": "Window opacity",
+    "tooltip": "Opacity of the windows on hover."
+  },
+  "show-active": {
+    "type": "checkbox",
+    "default": false,
+    "description": "Show active app indicators",
+    "tooltip": "Active app styling will indicate if an app is active."
+  },
+  "icon-spacing": {
+    "type": "spinbutton",
+    "default": 3,
+    "min": 0,
+    "max": 15,
+    "step": 1,
+    "units": "px",
+    "description": "Icon spacing",
+    "tooltip": "Controls how much space is between the icons."
+  },
+  "icon-padding": {
+    "type": "spinbutton",
+    "default": 0,
+    "min": 0,
+    "max": 15,
+    "step": 1,
+    "units": "px",
+    "description": "Icon padding",
+    "tooltip": "Controls how much horizontal padding is inside the app buttons. Padding is only applied to instances of this applet on horizontal panels."
+  },
+  "enable-iconSize": {
+    "type": "checkbox",
+    "default": false,
+    "description": "Adjust icon size",
+    "tooltip": "Adjust icon size independent of Cinnamon's panel scaling."
+  },
+  "icon-size": {
+    "type": "spinbutton",
+    "dependency": "enable-iconSize",
+    "default": 28,
+    "min": 16,
+    "max": 128,
+    "step": 2,
+    "units": "px",
+    "description": "Icon size",
+    "tooltip": "Set icon size"
+  },
+  "hoverPseudoClass": {
+    "type": "combobox",
+    "default": 3,
+    "description": "App button hover pseudo class",
+    "options": {
+      "hover": 1,
+      "focus": 2,
+      "active": 3,
+      "outlined": 4,
+      "selected": 5,
+      "checked": 6
+    },
+    "tooltip": "Overrides the pseudo class for app buttons on hover."
+  },
+  "focusPseudoClass": {
+    "type": "combobox",
+    "default": 2,
+    "description": "App button focus pseudo class",
+    "options": {
+      "hover": 1,
+      "focus": 2,
+      "active": 3,
+      "outlined": 4,
+      "selected": 5,
+      "checked": 6
+    },
+    "tooltip": "Overrides the pseudo class for app button on focus."
+  },
+  "activePseudoClass": {
+    "type": "combobox",
+    "default": 4,
+    "description": "App button active pseudo class",
+    "options": {
+      "hover": 1,
+      "focus": 2,
+      "active": 3,
+      "outlined": 4,
+      "selected": 5,
+      "checked": 6
+    },
+    "tooltip": "Overrides the pseudo class for app buttons when they are active."
+  },
+  "app-button-transition-duration": {
+    "type": "spinbutton",
+    "default": 0,
+    "min": 0,
+    "max": 4000,
+    "step": 1,
+    "units": "ms",
+    "description": "App button transition duration",
+    "tooltip": "Overrides the theme's animation time for app buttons. If set to zero, the theme's transition duration will be used."
+  },
+  "mintYPreset": {
+    "type" : "button",
+    "description" : "Mint Y and Variants",
+    "callback" : "handleMintYThemePreset",
+    "tooltip" : "Mint Y and Variants"
+  },
+  "mintXPreset": {
+    "type" : "button",
+    "description" : "Mint X, Linux Mint, and Variants",
+    "callback" : "handleMintXThemePreset",
+    "tooltip" : "Mint X, Linux Mint, and Variants"
+  }
+}
