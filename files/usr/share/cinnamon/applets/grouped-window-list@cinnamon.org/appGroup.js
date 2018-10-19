@@ -528,6 +528,10 @@ class AppGroup {
             this.actor.remove_style_pseudo_class('closed');
         }
 
+        if (this.actor.has_style_pseudo_class('focus')) {
+            this.hadFocusPseudoClass = true;
+        }
+
         if (!this.actor.has_style_pseudo_class('hover')) {
             this.actor.add_style_pseudo_class('hover');
         }
@@ -545,6 +549,11 @@ class AppGroup {
         if (this.hadClosedPseudoClass && this.groupState.metaWindows.length === 0) {
             this.hadClosedPseudoClass = false;
             this.actor.add_style_pseudo_class('closed');
+        }
+
+        if (this.hadFocusPseudoClass) {
+            this.hadFocusPseudoClass = false;
+            this.actor.add_style_pseudo_class('focus');
         }
 
         this.setFavoriteAttributes();
@@ -593,6 +602,7 @@ class AppGroup {
         if (hasFocus) {
             this.listState.trigger('updateFocusState', this.groupState.appId);
             this.actor.add_style_pseudo_class('focus');
+            this.actor.add_style_pseudo_class('groupFocus');
             if (this.actor.has_style_class_name('window-list-item-demands-attention')) {
                 this.actor.remove_style_class_name('window-list-item-demands-attention');
             }
@@ -602,6 +612,7 @@ class AppGroup {
             this._needsAttention = false;
         } else {
             this.actor.remove_style_pseudo_class('focus');
+            this.actor.remove_style_pseudo_class('groupFocus');
         }
         if (this.groupState.metaWindows.length > 0) {
             this.actor.add_style_pseudo_class('running');
