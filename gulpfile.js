@@ -1,3 +1,5 @@
+const fs = require('fs');
+const os = require('os');
 const gulp = require('gulp');
 const clear = require('clear');
 const {exec} = require('child_process');
@@ -11,14 +13,45 @@ const getArgs = function() {
         alias: 't'
     })
     .argv;
-    return [argv.u, argv.t];
-}
 
+    const UUID = argv.u;
+    const TYPE = argv.t;
+
+    if (!UUID) {
+        throw new Error('Unable to get the UUID.');
+    }
+
+    if (!TYPE) {
+        throw new Error('Unable to get the xlet type.');
+    }
+
+    return [UUID, TYPE];
+}
 
 gulp.task('install', (done) => {
     const [UUID, TYPE] = getArgs();
-    exec(
-        `cp -arf ./files/usr/share/cinnamon/${TYPE}s/${UUID} /usr/share/cinnamon/${TYPE}s`,
+    const systemXletDir = `/usr/share/cinnamon/${TYPE}s/${UUID}/`;
+    const localXletDir = `./files${systemXletDir}`;
+    const systemDirExists = fs.existsSync(systemXletDir);
+    const localDirExists = fs.existsSync(localXletDir);
+
+    const {uid, gid} = fs.statSync(systemXletDir);
+    const userInfo = os.userInfo();
+
+    if (!systemDirExists) {
+        throw new Error('Xlet does not exist in the system directory.');
+    }
+
+    if (!localDirExists) {
+        throw new Error('Xlet does not exist in the local directory.');
+    }
+
+    if (uid !== userInfo.uid || gid !== userInfo.gid) {
+        throw new Error(`Incorrect permission are set for the system directory. Please run 'gulp spawn-watch help'.`);
+    }
+
+    exec(`rm -rf ${systemXletDir} && ` +
+        `cp -arf ${localXletDir} /usr/share/cinnamon/${TYPE}s`,
         function(err, stdout, stderr) {
             console.log(stdout);
             console.log(stderr);
