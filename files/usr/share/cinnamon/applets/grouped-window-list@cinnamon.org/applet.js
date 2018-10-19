@@ -378,7 +378,6 @@ class GroupedWindowListApplet extends Applet.Applet {
             {key: 'enable-iconSize', value: 'enableIconSize', cb: this.updateActorAttributes},
             {key: 'icon-size', value: 'iconSize', cb: this.updateActorAttributes},
             {key: 'show-recent', value: 'showRecent', cb: null},
-            {key: 'menuItemType', value: 'menuItemType', cb: null},
             {key: 'autostart-menu-item', value: 'autoStart', cb: null},
             {key: 'launch-new-instance-menu-item', value: 'launchNewInstance', cb: null},
             {key: 'monitor-move-all-windows', value: 'monitorMoveAllWindows', cb: null},
