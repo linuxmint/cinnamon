@@ -98,7 +98,6 @@
       "title" : "",
       "keys": [
         "show-recent",
-        "firefox-menu",
         "menuItemType",
         "autostart-menu-item",
         "launch-new-instance-menu-item",
@@ -403,18 +402,6 @@
       "No icons": 3
     },
     "tooltip": "Determines whether menu item icons are symbolic, non-symbolic, or not shown."
-  },
-  "firefox-menu": {
-    "type": "combobox",
-    "dependency": "show-recent",
-    "default": 1,
-    "description": "Firefox context menu",
-    "options": {
-      "Most Visited": 1,
-      "Recent History": 2,
-      "Bookmarks": 3
-    },
-    "tooltip": "Most Visited: show the sites you visit most, Recent History: display the the last pages you visited, Bookmarks: show your favorite bookmarks."
   },
   "autostart-menu-item": {
     "type": "checkbox",

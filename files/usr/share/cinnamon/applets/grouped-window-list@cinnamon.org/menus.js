@@ -19,8 +19,6 @@ const {
     autoStartStrDir
 } = require('./constants');
 
-const getFirefoxHistory = require('./firefox');
-
 const convertRange = function(value, r1, r2) {
     return ((value - r1[0]) * (r2[1] - r2[0])) / (r1[1] - r1[0]) + r2[0];
 };
@@ -170,46 +168,6 @@ class AppMenuButtonRightClickMenu extends Applet.AppletPopupMenu {
                     handlePlaceLaunch(item, i);
                     subMenu.menu.addMenuItem(item);
                 }
-                this.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
-            }
-
-            // History
-            if (
-                this.groupState.appId === 'firefox.desktop' ||
-                this.groupState.appId === 'firefox web browser.desktop'
-            ) {
-                let histories = null;
-                tryFn(() => {
-                    histories = getFirefoxHistory(this.state.settings);
-                });
-                let subMenu;
-
-                if (histories) {
-                    subMenu = new PopupMenu.PopupSubMenuMenuItem(
-                        _(ffOptions.find((ffOption) => ffOption.id === this.state.settings.firefoxMenu).label)
-                    );
-                    tryFn(() => {
-                        let handleHistoryLaunch = (item, i) => {
-                            this.signals.connect(item, 'activate', () => {
-                                Gio.app_info_launch_default_for_uri(
-                                    histories[i].uri,
-                                    global.create_app_launch_context()
-                                )
-                            });
-                        };
-                        for (let i = 0, len = histories.length; i < len; i++) {
-                            item = createMenuItem({label: _(histories[i].title), icon: 'go-next'});
-                            handleHistoryLaunch(item, i);
-                            subMenu.menu.addMenuItem(item);
-                        }
-                    });
-                } else {
-                    subMenu = createMenuItem({
-                        label: _('Bookmarks/History requires gir1.2-gda-5.0'),
-                        icon: 'help-about'
-                    });
-                }
-                this.addMenuItem(subMenu);
                 this.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
             }
 
