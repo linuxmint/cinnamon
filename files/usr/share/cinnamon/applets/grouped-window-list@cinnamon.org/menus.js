@@ -259,7 +259,7 @@ class AppMenuButtonRightClickMenu extends Applet.AppletPopupMenu {
         this.signals.connect(item, 'activate', () => this.state.trigger('configureApplet'));
         subMenu.menu.addMenuItem(item);
 
-        item = createMenuItem({label: _('Remove') + " 'Icing Task Manager'", icon: 'edit-delete'});
+        item = createMenuItem({label: _('Remove') + " 'Grouped Window List'", icon: 'edit-delete'});
         this.signals.connect(item, 'activate', () => {
             AppletManager._removeAppletFromPanel(this.state.uuid, this.state.instance_id);
         });
@@ -435,7 +435,7 @@ class AppMenuButtonRightClickMenu extends Applet.AppletPopupMenu {
         let cmd = [
             'bash',
             '-c',
-            'python3 ~/.local/share/cinnamon/applets/IcingTaskManager@json/3.8/utils.py get_process ' + proc.toString()
+            'python3 /usr/share/cinnamon/applets/grouped-window-list@cinnamon.org/utils.py get_process ' + proc.toString()
         ];
         spawn_async(cmd, (stdout) => {
             if (stdout) {
