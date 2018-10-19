@@ -25,7 +25,7 @@
     "themePage": {
       "type" : "page",
       "title" : "Theming",
-      "sections": ["stylingSection", "iconSection", "presetSection"]
+      "sections": ["stylingSection", "iconSection"]
     },
     "generalSection": {
       "type" : "section",
@@ -108,10 +108,6 @@
       "type" : "section",
       "title" : "Styling",
       "keys": [
-        "show-active",
-        "hoverPseudoClass",
-        "focusPseudoClass",
-        "activePseudoClass",
         "app-button-transition-duration"
       ]
     },
@@ -122,14 +118,6 @@
         "icon-spacing",
         "enable-iconSize",
         "icon-size"
-      ]
-    },
-    "presetSection": {
-      "type" : "section",
-      "title" : "Recommended Presets",
-      "keys": [
-        "mintYPreset",
-        "mintXPreset"
       ]
     }
   },
@@ -449,12 +437,6 @@
     "description": "Window opacity",
     "tooltip": "Opacity of the windows on hover."
   },
-  "show-active": {
-    "type": "checkbox",
-    "default": false,
-    "description": "Show active app indicators",
-    "tooltip": "Active app styling will indicate if an app is active."
-  },
   "icon-spacing": {
     "type": "spinbutton",
     "default": 3,
@@ -492,48 +474,6 @@
     "description": "Icon size",
     "tooltip": "Set icon size"
   },
-  "hoverPseudoClass": {
-    "type": "combobox",
-    "default": 3,
-    "description": "App button hover pseudo class",
-    "options": {
-      "hover": 1,
-      "focus": 2,
-      "active": 3,
-      "outlined": 4,
-      "selected": 5,
-      "checked": 6
-    },
-    "tooltip": "Overrides the pseudo class for app buttons on hover."
-  },
-  "focusPseudoClass": {
-    "type": "combobox",
-    "default": 2,
-    "description": "App button focus pseudo class",
-    "options": {
-      "hover": 1,
-      "focus": 2,
-      "active": 3,
-      "outlined": 4,
-      "selected": 5,
-      "checked": 6
-    },
-    "tooltip": "Overrides the pseudo class for app button on focus."
-  },
-  "activePseudoClass": {
-    "type": "combobox",
-    "default": 4,
-    "description": "App button active pseudo class",
-    "options": {
-      "hover": 1,
-      "focus": 2,
-      "active": 3,
-      "outlined": 4,
-      "selected": 5,
-      "checked": 6
-    },
-    "tooltip": "Overrides the pseudo class for app buttons when they are active."
-  },
   "app-button-transition-duration": {
     "type": "spinbutton",
     "default": 0,
@@ -543,17 +483,5 @@
     "units": "ms",
     "description": "App button transition duration",
     "tooltip": "Overrides the theme's animation time for app buttons. If set to zero, the theme's transition duration will be used."
-  },
-  "mintYPreset": {
-    "type" : "button",
-    "description" : "Mint Y and Variants",
-    "callback" : "handleMintYThemePreset",
-    "tooltip" : "Mint Y and Variants"
-  },
-  "mintXPreset": {
-    "type" : "button",
-    "description" : "Mint X, Linux Mint, and Variants",
-    "callback" : "handleMintXThemePreset",
-    "tooltip" : "Mint X, Linux Mint, and Variants"
   }
 }
