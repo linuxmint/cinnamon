@@ -34,14 +34,6 @@ const constants = {
         {id: 2, label: 'FULLCOLOR'},
         {id: 3, label: null}
     ],
-    pseudoOptions: [
-        {id: 1, label: 'hover'},
-        {id: 2, label: 'focus'},
-        {id: 3, label: 'active'},
-        {id: 4, label: 'outlined'},
-        {id: 5, label: 'selected'},
-        {id: 6, label: 'checked'}
-    ],
     autoStartStrDir: './.config/autostart'
 };
 
