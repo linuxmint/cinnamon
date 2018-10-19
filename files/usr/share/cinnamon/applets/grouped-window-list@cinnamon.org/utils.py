@@ -4,7 +4,6 @@ import subprocess
 import os
 import json
 import sys
-import random
 
 cli = sys.argv
 
@@ -26,7 +25,7 @@ def spawn(command):
 """
 Utility script that creates GDesktop files for Wine and other window backed applications.
 """
-def handleCli():
+def handle_cli():
 
     if cli[1] == 'get_process':
         process = spawn('cat /proc/{}/cmdline'.format(cli[2]))
@@ -53,24 +52,24 @@ def handleCli():
         try:
             procArray = process.split('/')
             paLen = len(procArray)
-            processName = procArray[paLen - 1].title()
+            process_name = procArray[paLen - 1].title()
 
             # Since this is a window backed app, make sure it has an icon association.
 
-            iconsDir = '{}/.local/share/icons/hicolor/48x48/apps/'.format(os.getenv('HOME'))
+            icons_dir = '{}/.local/share/icons/hicolor/48x48/apps/'.format(os.getenv('HOME'))
 
-            if '\\ ' in processName:
-                processName = processName.replace('\\ ', ' ')
+            if '\\ ' in process_name:
+                process_name = process_name.replace('\\ ', ' ')
 
-            if '.Exe' in processName:
-                processName = processName.replace('.Exe', '')
+            if '.Exe' in process_name:
+                process_name = process_name.replace('.Exe', '')
 
-            iconFile = processName+'.png'
+            icon_file = process_name+'.png'
 
-            if ' ' in iconFile:
-                iconFile = iconFile.replace(' ', '')
+            if ' ' in icon_file:
+                icon_file = icon_file.replace(' ', '')
 
-            icon = iconsDir+iconFile
+            icon = icons_dir+icon_file
 
             try:
                 try:
@@ -80,35 +79,35 @@ def handleCli():
             except subprocess.CalledProcessError:
                 icon = None
 
-            gMenu = '[Desktop Entry]\n' \
-                    'Type=Application\n' \
-                    'Encoding=UTF-8\n' \
-                    'Name={}\n' \
-                    'Comment={}\n' \
-                    'Exec={}\n' \
-                    'Terminal=false\n' \
-                    'StartupNotify=true\n'.format(processName, processName, process)
+            g_menu = '[Desktop Entry]\n' \
+                     'Type=Application\n' \
+                     'Encoding=UTF-8\n' \
+                     'Name={}\n' \
+                     'Comment={}\n' \
+                     'Exec={}\n' \
+                     'Terminal=false\n' \
+                     'StartupNotify=true\n'.format(process_name, process_name, process)
 
             if icon:
-                gMenu += 'Icon={}\n'.format(icon)
+                g_menu += 'Icon={}\n'.format(icon)
 
 
             if '.exe' in process:
-                gMenu += 'GenericName=Wine application\n' \
-                         'Categories=Wine;\n' \
-                         'MimeType=application/x-ms-dos-executable;application/x-msi;application/x-ms-shortcut; \n' \
+                g_menu += 'GenericName=Wine application\n' \
+                          'Categories=Wine;\n' \
+                          'MimeType=application/x-ms-dos-executable;application/x-msi;application/x-ms-shortcut; \n' \
 
-            desktopFile = 'icing_{}.desktop'.format(str(random.random()).split('.')[1])
-            desktopPath = '{}/.local/share/applications/{}'.format(os.getenv('HOME'), desktopFile)
+            desktop_file = '{}.cinnamon-generated.desktop'.format(process_name)
+            desktop_path = '{}/.local/share/applications/{}'.format(os.getenv('HOME'), desktop_file)
 
-            with open(desktopPath, 'w', encoding='utf-8') as desktop:
-                print(gMenu)
-                desktop.write(gMenu)
-                spawn('chmod +x {}'.format(desktopPath))
-                print(desktopFile)
+            with open(desktop_path, 'w', encoding='utf-8') as desktop:
+                print(g_menu)
+                desktop.write(g_menu)
+                spawn('chmod +x {}'.format(desktop_path))
+                print(desktop_file)
 
         except KeyError as e:
             print(e)
             return
 
-handleCli()
+handle_cli()

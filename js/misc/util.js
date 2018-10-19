@@ -513,7 +513,7 @@ function tryFn(callback, errCallback) {
  * @ms (number): Milliseconds until the timeout expires.
  *
  * Convenience wrapper for a Mainloop.timeout_add loop that
- * return false.
+ * returns false.
  *
  * Returns (number): The ID of the loop.
  */
@@ -548,7 +548,7 @@ function clearTimeout(id) {
  * @ms (number): Milliseconds between invocations.
  *
  * Convenience wrapper for a Mainloop.timeout_add loop that
- * return true.
+ * returns true.
  *
  * Returns (number): The ID of the loop.
  */
@@ -581,12 +581,6 @@ function clearInterval(id) {
  * @callback (function): Function to throttle.
  * @interval (number): Milliseconds to throttle invocations to.
  * @callFirst (boolean): Specify invoking on the leading edge of the timeout.
- *
- * Try-catch can degrade performance in the function scope it is
- * called in. By using a wrapper for try-catch, the function scope is
- * reduced to the wrapper and not a potentially performance critical
- * function calling the wrapper. Use of try-catch in any form will
- * be slower than writing defensive code.
  *
  * Returns (any): The output of @callback.
  */
