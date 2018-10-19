@@ -45,8 +45,9 @@ gulp.task('reload', gulp.series('install', reload));
 
 gulp.task('watch', (done) => {
     const [UUID, TYPE] = getArgs();
-    console.log(`Watching glob pattern: ${`./files/usr/share/cinnamon/${TYPE}s/${UUID}/**/**/*.{js,json,py,css,po}`}`)
-    gulp.watch(`./files/usr/share/cinnamon/${TYPE}s/${UUID}/**/**/*.{js,json,py,css,po}`)
+    const glob = `./files/usr/share/cinnamon/${TYPE}s/${UUID}/**/**/*.{js,json,py,css,po}`;
+    console.log(`Watching glob pattern: ${glob}`)
+    gulp.watch(glob)
     .on('change', gulp.parallel('reload'));
     done();
 });
@@ -85,12 +86,12 @@ gulp.task('help', gulp.series('clear-terminal', (done) => {
 
         To do that, run: 'sudo chown -R $USER:$USER /usr/share/cinnamon'
 
-        To use this script, run 'gulp spawn-watch --uuid <xlet uuid> --type <xlet type>'.
-        Example: 'gulp spawn-watch --uuid grouped-window-list@cinnamon.org --type applet'
+        To use this script, run 'gulp spawn-watch --uuid="<xlet uuid>" --type="<xlet type>"'.
+        Example: 'gulp spawn-watch --uuid="grouped-window-list@cinnamon.org" --type="applet"'
 
         Options:
-            --uuid, u               UUID of the xlet to watch.
-            --type, t              Type of the xlet
+            --uuid                 UUID of the xlet to watch.
+            --type                 Type of the xlet
         `
     );
     process.exit(0);
