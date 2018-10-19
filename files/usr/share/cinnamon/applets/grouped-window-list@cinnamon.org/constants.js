@@ -24,16 +24,6 @@ const constants = {
         pinnedApps: 1,
         none: 2
     },
-    ffOptions: [
-        {id: 1, label: 'Most Visited'},
-        {id: 2, label: 'Recent History'},
-        {id: 3, label: 'Bookmarks'}
-    ],
-    menuItemTypeOptions: [
-        {id: 1, label: 'SYMBOLIC'},
-        {id: 2, label: 'FULLCOLOR'},
-        {id: 3, label: null}
-    ],
     autoStartStrDir: './.config/autostart'
 };
 
