@@ -98,7 +98,6 @@
       "title" : "",
       "keys": [
         "show-recent",
-        "menuItemType",
         "autostart-menu-item",
         "launch-new-instance-menu-item",
         "monitor-move-all-windows"
@@ -379,17 +378,6 @@
     "default": true,
     "description": "Show recent items",
     "tooltip": "Controls whether recent items will appear in the context menu."
-  },
-  "menuItemType": {
-    "type": "combobox",
-    "default": 1,
-    "description": "Menu item type",
-    "options": {
-      "Symbolic icons": 1,
-      "Non-symbolic icons": 2,
-      "No icons": 3
-    },
-    "tooltip": "Determines whether menu item icons are symbolic, non-symbolic, or not shown."
   },
   "autostart-menu-item": {
     "type": "checkbox",
