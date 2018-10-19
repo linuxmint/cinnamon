@@ -509,13 +509,13 @@ class WindowThumbnail {
         });
 
         this.label = new St.Label({
-            style_class: this.icon ? 'thumbnail-label' : 'thumbnail-label-no-icon'
+            style_class: 'grouped-window-list-thumbnail-label'
         });
 
         if (this.state.settings.showIcons) {
             this.icon = this.groupState.app.create_icon_texture(16);
             this.themeIcon = new St.BoxLayout({
-                style_class: 'thumbnail-icon'
+                style_class: 'grouped-window-list-thumbnail-icon'
             });
             this.themeIcon.add_actor(this.icon);
             this.container.add_actor(this.themeIcon);
@@ -589,7 +589,7 @@ class WindowThumbnail {
         }
         this._needsAttention = true;
         if (this.metaWindow === window) {
-            this.actor.add_style_class_name('thumbnail-alerts');
+            this.actor.add_style_class_name('grouped-window-list-thumbnail-alert');
             return true;
         }
         return false;

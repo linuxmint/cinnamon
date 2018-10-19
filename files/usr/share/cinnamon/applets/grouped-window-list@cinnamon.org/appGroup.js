@@ -21,7 +21,6 @@ const {
     RESERVE_KEYS,
     TitleDisplay,
     NumberDisplay,
-    pseudoOptions
 } = require('./constants');
 
 // returns [x1,x2] so that the area between x1 and x2 is
@@ -32,14 +31,6 @@ const center = function(length, naturalLength) {
     let x1 = Math.max(0, Math.floor((length - maxLength) / 2));
     let x2 = Math.min(length, x1 + maxLength);
     return [x1, x2];
-};
-
-const getPseudoClass = function(pseudoClass) {
-    let item = find(pseudoOptions, (item) => item.id === pseudoClass);
-    if (item) {
-        return item.label;
-    }
-    return 'outlined';
 };
 
 const getFocusState = function(metaWindow) {
@@ -131,7 +122,6 @@ class AppGroup {
         this.time = params.time;
         this.focusedWindow = false;
         this.title = '';
-        this.pseudoClassStash = [];
 
         this.actor = new St.Bin({
             style_class: 'window-list-item-box',
@@ -163,12 +153,12 @@ class AppGroup {
         this.updateIconBoxClip();
         this.setActorAttributes();
         this.label = new St.Label({
-            style_class: 'app-button-label',
+            style_class: 'grouped-window-list-button-label',
             text: '',
             show_on_set_parent: this.state.settings.titleDisplay !== 1 && this.state.settings.titleDisplay !== 4
         });
         this.numberLabel = new St.Label({
-            style_class: 'window-list-item-label window-icon-list-numlabel',
+            style_class: 'window-list-item-label grouped-window-list-number-label',
             text: ''
         });
         this.numberLabel.clutter_text.ellipsize = false;
@@ -370,18 +360,13 @@ class AppGroup {
     flashButton(counter) {
         if (!this._needsAttention || !this.actor) return;
 
-        const activePseudoClass = getPseudoClass(this.state.settings.activePseudoClass);
-        if (this.state.settings.showActive) {
-            this.actor.remove_style_pseudo_class(activePseudoClass);
-        }
+        this.actor.remove_style_pseudo_class('running');
         this.actor.add_style_class_name('window-list-item-demands-attention');
         if (counter < 4) {
             setTimeout(() => {
                 if (this.actor && this.actor.has_style_class_name('window-list-item-demands-attention')) {
                     this.actor.remove_style_class_name('window-list-item-demands-attention');
-                    if (this.state.settings.showActive) {
-                        this.actor.add_style_pseudo_class(activePseudoClass);
-                    }
+                    this.actor.add_style_pseudo_class('running');
                 }
                 setTimeout(() => {
                     this.flashButton(++counter);
@@ -537,15 +522,14 @@ class AppGroup {
         if (this.state.panelEditMode) {
             return false;
         }
-        let hoverPseudoClass = getPseudoClass(this.state.settings.hoverPseudoClass);
 
         if (this.actor.has_style_pseudo_class('closed')) {
             this.hadClosedPseudoClass = true;
             this.actor.remove_style_pseudo_class('closed');
         }
 
-        if (!this.actor.has_style_pseudo_class(hoverPseudoClass)) {
-            this.actor.add_style_pseudo_class(hoverPseudoClass);
+        if (!this.actor.has_style_pseudo_class('hover')) {
+            this.actor.add_style_pseudo_class('hover');
         }
 
         this.hoverMenu.onMenuEnter();
@@ -570,11 +554,7 @@ class AppGroup {
     resetHoverStatus() {
         if (this.actor.is_finalized()) return;
 
-        let hoverPseudoClass = getPseudoClass(this.state.settings.hoverPseudoClass);
-        let focusPseudoClass = getPseudoClass(this.state.settings.focusPseudoClass);
-        let activePseudoClass = getPseudoClass(this.state.settings.activePseudoClass);
         let focused = false;
-
         each(this.groupState.metaWindows, function(metaWindow) {
             if (getFocusState(metaWindow)) {
                 focused = true;
@@ -582,17 +562,16 @@ class AppGroup {
             }
         });
 
-        if (!focused && (hoverPseudoClass !== focusPseudoClass || hoverPseudoClass !== activePseudoClass)) {
-            this.actor.remove_style_pseudo_class(hoverPseudoClass);
+        if (!focused) {
+            this.actor.remove_style_pseudo_class('hover');
         }
     }
 
     setActiveStatus(windows) {
-        let pseudoClass = getPseudoClass(this.state.settings.activePseudoClass);
-        if (windows.length > 0 && !this.actor.has_style_pseudo_class(pseudoClass)) {
-            this.actor.add_style_pseudo_class(pseudoClass);
+        if (windows.length > 0 && !this.actor.has_style_pseudo_class('running')) {
+            this.actor.add_style_pseudo_class('running');
         } else {
-            this.actor.remove_style_pseudo_class(pseudoClass);
+            this.actor.remove_style_pseudo_class('running');
         }
     }
 
@@ -611,10 +590,9 @@ class AppGroup {
     onFocusChange(hasFocus) {
         // If any of the windows associated with our app have focus,
         // we should set ourselves to active
-        let focusPseudoClass = getPseudoClass(this.state.settings.focusPseudoClass);
         if (hasFocus) {
             this.listState.trigger('updateFocusState', this.groupState.appId);
-            this.actor.add_style_pseudo_class(focusPseudoClass);
+            this.actor.add_style_pseudo_class('focus');
             if (this.actor.has_style_class_name('window-list-item-demands-attention')) {
                 this.actor.remove_style_class_name('window-list-item-demands-attention');
             }
@@ -623,14 +601,10 @@ class AppGroup {
             }
             this._needsAttention = false;
         } else {
-            this.actor.remove_style_pseudo_class(focusPseudoClass);
-            // If hover pseudo class is substituted with the active pseudo class, make sure it gets removed.
-            if (this.state.settings.hoverPseudoClass === 3) {
-                this.actor.remove_style_pseudo_class(getPseudoClass(this.state.settings.hoverPseudoClass));
-            }
+            this.actor.remove_style_pseudo_class('focus');
         }
-        if (this.state.settings.showActive && this.groupState.metaWindows.length > 0) {
-            this.actor.add_style_pseudo_class(getPseudoClass(this.state.settings.activePseudoClass));
+        if (this.groupState.metaWindows.length > 0) {
+            this.actor.add_style_pseudo_class('running');
         }
         this.resetHoverStatus();
     }
@@ -1008,14 +982,8 @@ class AppGroup {
     }
 
     setFavoriteAttributes() {
-        let pseudoClasses = ['active', 'focus', 'hover'];
         if ((!this.groupState.app || this.groupState.app.state === 0) && this.groupState.isFavoriteApp) {
-            for (let i = 0; i < pseudoClasses.length; i++) {
-                let pseudoClass = getPseudoClass(this.state.settings[pseudoClasses[i] + 'PseudoClass']);
-                if (this.actor.has_style_pseudo_class(pseudoClass)) {
-                    this.actor.remove_style_pseudo_class(pseudoClass);
-                }
-            }
+            this.actor.set_style_pseudo_class('closed');
         }
     }
 

@@ -1275,7 +1275,8 @@ StScrollBar StButton#vhandle:hover {
 }
 .window-list-item-box:active,
 .window-list-item-box:checked,
-.window-list-item-box:focus {
+.window-list-item-box:focus,
+.window-list-item-box:running {
     background-gradient-direction: vertical;
     background-gradient-start: rgba(226,226,226,0.5);
     background-gradient-end: rgba(122,122,122,0.5);
@@ -1315,6 +1316,35 @@ StScrollBar StButton#vhandle:hover {
     text-shadow: black 0px 0px 2px;
     padding: 8px;
     spacing: 4px;
+}
+
+/* ===================================================================
+ * Grouped window list (grouped-window-list@cinnamon.org)
+ * ===================================================================*/
+
+.grouped-window-list-thumbnail-label {
+    padding-left: 4px;
+}
+.grouped-window-list-number-label {
+    z-index: 99;
+    text-shadow: black 1px 0px 2px;
+}
+.grouped-window-list-button-label {
+    padding-left: 4px;
+}
+.grouped-window-list-thumbnail-alert {
+    background: rgba(255,52,52,0.3);
+}
+.grouped-window-list-thumbnail-icon {
+}
+.window-list-item-box:closed {
+    background-gradient-direction: vertical;
+    background-gradient-start: rgba(0,0,0,0.0);
+    background-gradient-end: rgba(0,0,0,0.0);
+    border-radius: 0px 0px 0px 0px;
+    border-image: none;
+    border-color: rgba(0,0,0,0.0);
+    box-shadow: inset 0px 0px 0px 0px rgba(0,0,0,0.0);
 }
 
 /* ===================================================================

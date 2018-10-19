@@ -331,7 +331,6 @@ class GroupedWindowListApplet extends Applet.Applet {
     bindSettings() {
         let settingsProps = [
             {key: 'show-pinned', value: 'showPinned', cb: this.refreshCurrentAppList},
-            {key: 'show-active', value: 'showActive', cb: this.refreshCurrentAppList},
             {key: 'show-alerts', value: 'showAlerts', cb: this.updateAttentionState},
             {key: 'group-apps', value: 'groupApps', cb: this.refreshCurrentAppList},
             {key: 'enable-app-button-dragging', value: 'enableDragging', cb: null},
@@ -343,9 +342,6 @@ class GroupedWindowListApplet extends Applet.Applet {
             {key: 'show-apps-order-hotkey', value: 'showAppsOrderHotkey', cb: this.bindAppKeys},
             {key: 'show-apps-order-timeout', value: 'showAppsOrderTimeout', cb: null},
             {key: 'cycleMenusHotkey', value: 'cycleMenusHotkey', cb: this.bindAppKeys},
-            {key: 'hoverPseudoClass', value: 'hoverPseudoClass', cb: this.refreshCurrentAppList},
-            {key: 'focusPseudoClass', value: 'focusPseudoClass', cb: this.refreshCurrentAppList},
-            {key: 'activePseudoClass', value: 'activePseudoClass', cb: this.refreshCurrentAppList},
             {
                 key: 'app-button-transition-duration',
                 value: 'appButtonTransitionDuration',
@@ -579,24 +575,6 @@ class GroupedWindowListApplet extends Applet.Applet {
         each(this.appLists, function(appList) {
             appList.refreshList();
         });
-    }
-
-    handleMintYThemePreset() {
-        this.settings.setValue('hoverPseudoClass', 1);
-        this.settings.setValue('focusPseudoClass', 1);
-        this.settings.setValue('activePseudoClass', 3);
-        this.settings.setValue('number-display', 1);
-        this.settings.setValue('show-active', true);
-        this.refreshCurrentAppList();
-    }
-
-    handleMintXThemePreset() {
-        this.settings.setValue('hoverPseudoClass', 3);
-        this.settings.setValue('focusPseudoClass', 2);
-        this.settings.setValue('activePseudoClass', 4);
-        this.settings.setValue('number-display', 1);
-        this.settings.setValue('show-active', false);
-        this.refreshCurrentAppList();
     }
 
     updateFavorites() {
