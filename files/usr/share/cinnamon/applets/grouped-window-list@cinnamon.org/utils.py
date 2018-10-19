@@ -5,15 +5,15 @@ import os
 import json
 import sys
 
-cli = sys.argv
+CLI = sys.argv
 
-def parseArgs(command):
+def parse_args(command):
     return command.split(' ')
 
 def spawn(command):
     try:
         process = subprocess.run(
-            parseArgs(command),
+            parse_args(command),
             stdout=subprocess.PIPE,
             check=True
         )
@@ -22,13 +22,11 @@ def spawn(command):
     out = process.stdout.decode('utf-8')
     return out
 
-"""
-Utility script that creates GDesktop files for Wine and other window backed applications.
-"""
+# Utility script that creates GDesktop files for Wine and other window backed applications.
 def handle_cli():
 
-    if cli[1] == 'get_process':
-        process = spawn('cat /proc/{}/cmdline'.format(cli[2]))
+    if CLI[1] == 'get_process':
+        process = spawn('cat /proc/{}/cmdline'.format(CLI[2]))
 
         if '.exe' in process:
             if 'Z:' in process:
@@ -36,7 +34,7 @@ def handle_cli():
 
             process = process.replace('\\', '/')
             process = process.split('.exe')[0] + '.exe'
-            process = 'wine '+process.replace(' ', '\ ')
+            process = 'wine '+process.replace(' ', r'\ ')
 
         process = json.dumps(process)
         if '\\u0000' in process:
@@ -50,9 +48,9 @@ def handle_cli():
             process = 'playonlinux'
 
         try:
-            procArray = process.split('/')
-            paLen = len(procArray)
-            process_name = procArray[paLen - 1].title()
+            proc_array = process.split('/')
+            pa_len = len(proc_array)
+            process_name = proc_array[pa_len - 1].title()
 
             # Since this is a window backed app, make sure it has an icon association.
 
@@ -95,7 +93,8 @@ def handle_cli():
             if '.exe' in process:
                 g_menu += 'GenericName=Wine application\n' \
                           'Categories=Wine;\n' \
-                          'MimeType=application/x-ms-dos-executable;application/x-msi;application/x-ms-shortcut; \n' \
+                          'MimeType=application/x-ms-dos-executable;' \
+                          'application/x-msi;application/x-ms-shortcut; \n' \
 
             desktop_file = '{}.cinnamon-generated.desktop'.format(process_name)
             desktop_path = '{}/.local/share/applications/{}'.format(os.getenv('HOME'), desktop_file)
@@ -106,8 +105,8 @@ def handle_cli():
                 spawn('chmod +x {}'.format(desktop_path))
                 print(desktop_file)
 
-        except KeyError as e:
-            print(e)
+        except KeyError as err:
+            print(err)
             return
 
 handle_cli()
