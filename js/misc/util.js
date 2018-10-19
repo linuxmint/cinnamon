@@ -438,7 +438,7 @@ function each(obj, callback) {
         }
     } else {
         let keys = Object.keys(obj);
-        for (let i = 0, len = obj.length; i < len; i++) {
+        for (let i = 0, len = keys.length; i < len; i++) {
             let key = keys[i];
             callback(obj[key], key);
         }
