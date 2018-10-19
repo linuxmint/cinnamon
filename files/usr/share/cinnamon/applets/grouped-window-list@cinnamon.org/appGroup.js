@@ -752,7 +752,6 @@ class AppGroup {
         };
 
         if (button === 1) {
-            global.log(this.state.settings.leftClickAction)
             if (this.state.settings.leftClickAction === 1) {
                 return;
             }
