@@ -9,12 +9,10 @@ const PopupMenu = imports.ui.popupMenu;
 const Applet = imports.ui.applet;
 const SignalManager = imports.misc.signalManager;
 
-const {each, find, findIndex, tryFn, unref, trySpawnCommandLine, spawn_async} = imports.misc.util;
+const {each, findIndex, tryFn, unref, trySpawnCommandLine, spawn_async} = imports.misc.util;
 const {
     OPACITY_OPAQUE,
     RESERVE_KEYS,
-    menuItemTypeOptions,
-    ffOptions,
     FavType,
     autoStartStrDir
 } = require('./constants');
@@ -77,15 +75,10 @@ class AppMenuButtonRightClickMenu extends Applet.AppletPopupMenu {
         let isWindowBacked = this.groupState.app.is_window_backed();
 
         let createMenuItem = (opts = {label: '', icon: null}) => {
-            if (this.state.settings.menuItemType < 3 && opts.icon) {
-                let refMenuType = find(
-                    menuItemTypeOptions,
-                    (item) => item.id === this.state.settings.menuItemType
-                );
-                return new PopupMenu.PopupIconMenuItem(opts.label, opts.icon, St.IconType[refMenuType.label]);
-            } else {
-                return new PopupMenu.PopupMenuItem(opts.label);
+            if (opts.icon) {
+                return new PopupMenu.PopupIconMenuItem(opts.label, opts.icon, St.IconType.SYMBOLIC);
             }
+            return new PopupMenu.PopupMenuItem(opts.label);
         };
 
         if (hasWindows) {
