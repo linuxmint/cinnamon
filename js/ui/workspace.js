@@ -612,7 +612,7 @@ WorkspaceMonitor.prototype = {
 
     closeSelectedWindow: function() {
         if (this._kbWindowIndex > -1 && this._kbWindowIndex < this._windows.length) {
-            this._windows[this._kbWindowIndex].overlay.closeWindow();
+            this._windows[this._kbWindowIndex].closeWindow();
         }
     },
 
@@ -1376,7 +1376,10 @@ Workspace.prototype = {
     _onKeyPress: function(actor, event) {
         let modifiers = Cinnamon.get_event_state(event);
         let symbol = event.get_key_symbol();
+        let keycode = event.get_key_code();
         let ctrlAltMask = Clutter.ModifierType.CONTROL_MASK | Clutter.ModifierType.MOD1_MASK;
+        // This relies on the fact that Clutter.ModifierType is the same as Gdk.ModifierType
+        let action = global.display.get_keybinding_action(keycode, modifiers);
 
         if ((symbol === Clutter.ISO_Left_Tab || symbol === Clutter.Tab)  && !(modifiers & ctrlAltMask)) {
             let increment = symbol === Clutter.ISO_Left_Tab ? -1 : 1;
@@ -1393,7 +1396,8 @@ Workspace.prototype = {
             return true;
         }
 
-        if (symbol === Clutter.w && modifiers & Clutter.ModifierType.CONTROL_MASK) {
+        if (action === Meta.KeyBindingAction.CLOSE ||
+            symbol === Clutter.w && modifiers & Clutter.ModifierType.CONTROL_MASK) {
             activeMonitor.closeSelectedWindow();
             return true;
         }
