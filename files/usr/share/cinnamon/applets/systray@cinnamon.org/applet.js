@@ -202,9 +202,9 @@ class CinnamonSystrayApplet extends Applet.Applet {
         }
     }
 
-    on_panel_height_changed() {
+    on_panel_icon_size_changed(size) {
         Main.statusIconDispatcher.redisplay();
-        this.icon_size = this.getPanelIconSize(St.IconType.FULLCOLOR);
+        this.icon_size = size;
 
         for (let i = 0; i < this._shellIndicators.length; i++) {
             let indicator = Main.indicatorManager.getIndicatorById(this._shellIndicators[i].id);
@@ -212,10 +212,6 @@ class CinnamonSystrayApplet extends Applet.Applet {
                 this._shellIndicators[i].instance.setSize(this.icon_size);
             }
         }
-    }
-
-    on_panel_icon_size_changed(size) {
-        this.icon_size = size;
     }
 
     _onBeforeRedisplay() {
