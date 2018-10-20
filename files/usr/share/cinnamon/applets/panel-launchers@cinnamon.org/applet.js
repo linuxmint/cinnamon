@@ -307,7 +307,7 @@ class CinnamonPanelLaunchersApplet extends Applet.Applet {
         this.setAllowedLayout(Applet.AllowedLayout.BOTH);
 
         this.orientation = orientation;
-        this.icon_size = Applet.getPanelIconSize(this, St.IconType.FULLCOLOR);
+        this.icon_size = this.getPanelIconSize(St.IconType.FULLCOLOR);
         this._dragPlaceholder = null;
         this._dragPlaceholderPos = -1;
         this._animatingPlaceholdersCount = 0;
@@ -409,7 +409,7 @@ class CinnamonPanelLaunchersApplet extends Applet.Applet {
     }
 
     on_panel_height_changed() {
-        this.icon_size = Applet.getPanelIconSize(this, St.IconType.FULLCOLOR);
+        this.icon_size = this.getPanelIconSize(St.IconType.FULLCOLOR);
         this.reload();
     }
 

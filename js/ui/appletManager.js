@@ -213,22 +213,6 @@ function setOrientationForPanel(panelPos) {
     return orientation;
 }
 
-function setHeightForPanel(panel) {
-    let height;
-    switch (panel.panelPosition)  // for vertical panels use the width instead of the height
-    {
-        case 0:
-        case 1:
-                height = panel.actor.get_height();
-        break;
-        case 2:
-        case 3:
-                height = panel.actor.get_width();
-        break;
-    }
-    return height;
-}
-
 function checkForUpgrade(newEnabledApplets) {
     // upgrade if old version
     let nextAppletId = global.settings.get_int("next-applet-id");
@@ -576,14 +560,10 @@ function createApplet(extension, appletDefinition, panel = null) {
         // Applet exists on removed panel
         return true;
     }
-    let panel_height = setHeightForPanel(panel);
 
     if (appletDefinition.applet != null) {
         global.log(`${uuid}/${applet_id} applet already loaded`);
         appletDefinition.applet.setOrientation(orientation);
-        if (appletDefinition.applet._panelHeight !== panel_height) {
-            appletDefinition.applet.setPanelHeight(panel_height);
-        }
 
         return appletDefinition.applet;
     }
@@ -594,7 +574,10 @@ function createApplet(extension, appletDefinition, panel = null) {
         if (!module) {
             return null;
         }
-        applet = module.main(extension.meta, orientation, panel_height, applet_id);
+        // FIXME: Panel height is now available before an applet is initialized,
+        // so we don't need to pass it to the constructor anymore, but would
+        // require a compatibility clean-up effort.
+        applet = module.main(extension.meta, orientation, panel.height, applet_id);
     } catch (e) {
         Extension.logError(`Failed to evaluate 'main' function on applet: ${uuid}/${applet_id}`, uuid, e);
         return null;
@@ -651,20 +634,6 @@ function saveAppletsPositions() {
     }
 
     global.settings.set_strv('enabled-applets', newEnabled);
-}
-
-function updateAppletPanelHeights(force_recalc) {
-    if(!definitions || definitions.length === 0)
-        return;
-
-    for (let i = 0; i < definitions.length; i++) {
-        if (definitions[i] && definitions[i].applet) {
-            let newheight = setHeightForPanel(definitions[i].applet.panel);
-            if (definitions[i].applet._panelHeight !== newheight || force_recalc) {
-                definitions[i].applet.setPanelHeight(newheight);
-            }
-        }
-    }
 }
 
 // Deprecated, kept for compatibility reasons
@@ -724,11 +693,7 @@ function loadAppletsOnPanel(panel) {
  * Updates the definition, orientation and height of applets on the panel
  */
 function updateAppletsOnPanel (panel) {
-    let height;
-    let orientation;
-
-    orientation = setOrientationForPanel(panel.panelPosition);
-    height = setHeightForPanel(panel);
+    let orientation = setOrientationForPanel(panel.panelPosition);
 
     for (let i = 0; i < definitions.length; i++) {
         if (definitions[i].panelId === panel.panelId) {
@@ -737,9 +702,8 @@ function updateAppletsOnPanel (panel) {
             if (definitions[i].applet) {
                 try {
                     definitions[i].applet.setOrientation(orientation);
-                    definitions[i].applet.setPanelHeight(height);
                 } catch (e) {
-                    global.logError("Error during setPanelHeight() and setOrientation() call on applet: " + definitions[i].uuid + "/" + definitions[i].applet_id, e);
+                    global.logError("Error during setOrientation() call on applet: " + definitions[i].uuid + "/" + definitions[i].applet_id, e);
                 }
                 removeAppletFromInappropriatePanel(Extension.getExtension(definitions[i].uuid), definitions[i]);
             }
