@@ -440,6 +440,7 @@ WindowOverlay.prototype = {
         this.border.destroy();
         this.caption.destroy();
         this.closeButton.destroy();
+        this.border = this.caption = this.closeButton = null;
     },
 
     _onPointerMotion: function() {
@@ -877,10 +878,13 @@ WorkspaceMonitor.prototype = {
             this._kbWindowIndex = this._windows.length - 1;
         }
 
+        this.showActiveSelection();
+
+        let closedFromOverview = clone.closedFromOverview;
         clone.destroy();
 
         if (this.isEmpty()) {
-            if(clone.closedFromOverview)
+            if(closedFromOverview)
                 Main.overview.hide();
             else
                 this._updateEmptyPlaceholder();
