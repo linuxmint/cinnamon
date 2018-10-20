@@ -240,6 +240,7 @@ class GroupedWindowListApplet extends Applet.Applet {
             setSettingsValue: (k, v) => this.settings.setValue(k, v),
             getPanel: () => (this.panel ? this.panel : null),
             getPanelHeight: () => this._panelHeight,
+            getPanelIconSize: () => this.getPanelIconSize(),
             getScaleMode: () => this._scaleMode,
             getAppSystem: () => Cinnamon.AppSystem.get_default(),
             getAppFromWMClass: (specialApps, metaWindow) => this.getAppFromWMClass(specialApps, metaWindow),
@@ -456,6 +457,10 @@ class GroupedWindowListApplet extends Applet.Applet {
         }
         this.settings.finalize();
         unref(this, RESERVE_KEYS);
+    }
+
+    on_panel_icon_size_changed(iconSize) {
+        global.log({iconSize})
     }
 
     // Override Applet._onButtonPressEvent due to the applet menu being replicated in AppMenuButtonRightClickMenu.

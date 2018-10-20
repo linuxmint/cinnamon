@@ -49,7 +49,7 @@ class CinnamonSystrayApplet extends Applet.Applet {
         let manager;
 
         this.orientation = orientation;
-        this.icon_size = Applet.getPanelIconSize(this, St.IconType.FULLCOLOR);
+        this.icon_size = this.getPanelIconSize(St.IconType.FULLCOLOR);
 
         if (this.orientation == St.Side.TOP || this.orientation == St.Side.BOTTOM) {
             manager = new Clutter.BoxLayout( { spacing: 2,
@@ -204,7 +204,7 @@ class CinnamonSystrayApplet extends Applet.Applet {
 
     on_panel_height_changed() {
         Main.statusIconDispatcher.redisplay();
-        this.icon_size = Applet.getPanelIconSize(this, St.IconType.FULLCOLOR);
+        this.icon_size = this.getPanelIconSize(St.IconType.FULLCOLOR);
 
         for (let i = 0; i < this._shellIndicators.length; i++) {
             let indicator = Main.indicatorManager.getIndicatorById(this._shellIndicators[i].id);
