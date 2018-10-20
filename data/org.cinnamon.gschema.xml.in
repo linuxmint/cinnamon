@@ -152,7 +152,7 @@
     </key>
 
     <key type="s" name="panel-zone-icon-sizes">
-      <default>"[{\"panelId\": 1, \"left\": 32, \"center\": 32, \"right\": 32}]"</default>
+      <default>'[{"panelId": 1, "left": 0, "center": 0, "right": 0}]'</default>
       <_summary>Per-zone icon-size configuration</_summary>
       <_description>
         Panel zone configuration objects for icon size.
