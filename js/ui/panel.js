@@ -2870,7 +2870,7 @@ Panel.prototype = {
         if (height === this.height) return;
 
         this.height = height;
-        this.emit('size-change', height);
+        this.emit('size-changed', height);
     },
 
     _onScaleTextIconsChanged: function() {
@@ -2926,7 +2926,7 @@ Panel.prototype = {
 
         this._panelZoneIconSizes = panelZoneIconSizes;
 
-        if (changed) this.emit('icon-size-change');
+        if (changed) this.emit('icon-size-changed');
     },
 
     getPanelZoneIconSize: function(locationLabel, iconType) {
