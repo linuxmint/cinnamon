@@ -413,6 +413,10 @@ class CinnamonPanelLaunchersApplet extends Applet.Applet {
         this.reload();
     }
 
+    on_panel_icon_size_changed(size) {
+        this.icon_size = size;
+    }
+
     on_orientation_changed(neworientation) {
         this.orientation = neworientation;
         if (this.orientation == St.Side.TOP || this.orientation == St.Side.BOTTOM) {

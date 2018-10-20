@@ -214,6 +214,10 @@ class CinnamonSystrayApplet extends Applet.Applet {
         }
     }
 
+    on_panel_icon_size_changed(size) {
+        this.icon_size = size;
+    }
+
     _onBeforeRedisplay() {
         // Mark all icons as obsolete
         // There might still be pending delayed operations to insert/resize of them
