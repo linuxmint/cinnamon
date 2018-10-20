@@ -961,7 +961,7 @@ class CinnamonWindowListApplet extends Applet.Applet {
         this.actor.set_track_hover(false);
         this.actor.set_style_class_name("window-list-box");
         this.orientation = orientation;
-        this.icon_size = Applet.getPanelIconSize(this, St.IconType.FULLCOLOR);
+        this.icon_size = this.getPanelIconSize(St.IconType.FULLCOLOR);
         this.appletEnabled = false;
         //
         // A layout manager is used to cater for vertical panels as well as horizontal
@@ -1028,7 +1028,7 @@ class CinnamonWindowListApplet extends Applet.Applet {
     }
 
     on_panel_height_changed() {
-        this.icon_size = Applet.getPanelIconSize(this, St.IconType.FULLCOLOR);
+        this.icon_size = this.getPanelIconSize(St.IconType.FULLCOLOR);
         this._refreshAllItems();
     }
 

@@ -16,66 +16,11 @@ const ModalDialog = imports.ui.modalDialog;
 const Signals = imports.signals;
 const Gettext = imports.gettext;
 
-var COLOR_ICON_HEIGHT_FACTOR = .65;  // Panel height factor for normal color icons
-var PANEL_FONT_DEFAULT_HEIGHT = 11.5; // px
-var PANEL_SYMBOLIC_ICON_DEFAULT_HEIGHT = 1.14 * PANEL_FONT_DEFAULT_HEIGHT; // ems conversion
-var DEFAULT_PANEL_HEIGHT = 25;
-var DEFAULT_ICON_SIZE = 22;
-
 var AllowedLayout = {  // the panel layout that an applet is suitable for
     VERTICAL: 'vertical',
     HORIZONTAL: 'horizontal',
     BOTH: 'both'
 };
-
-/**
- * getPanelIconSize:
- * @applet (Applet): the applet in which the icon will go
- * @icon_type (St.IconType): the icon type we want the size for
- *
- * Calculates the icon size of an applet based on the available space,
- * but it will only return one of the standard icon sizes so that the
- * icon does not look blurry.
- *
- * Returns: an integer, the icon size
- */
-function getPanelIconSize(applet, icon_type) {
-    if (icon_type === St.IconType.FULLCOLOR) {
-        if (applet._scaleMode)
-            return toStdIconSize(applet._panelHeight * COLOR_ICON_HEIGHT_FACTOR / global.ui_scale);
-        else
-            return DEFAULT_ICON_SIZE;
-    } else {
-        if (applet._scaleMode)
-            return applet._panelHeight / DEFAULT_PANEL_HEIGHT * PANEL_SYMBOLIC_ICON_DEFAULT_HEIGHT / global.ui_scale;
-        else
-            return -1;
-    }
-}
-
-/**
- * toStdIconSize:
- * @max_size (integer): the maximum size of the icon
- *
- * Calculates the nearest standard icon size up to a maximum.
- *
- * Returns: an integer, the icon size
- */
-function toStdIconSize(max_size) {
-    max_size = Math.floor(max_size);
-    if (max_size <= 16)
-        return 16;
-    else if (max_size <= 22)
-        return 22;
-    else if (max_size <= 24)
-        return 24;
-    else if (max_size <= 32)
-        return 32;
-    else if (max_size <= 48)
-        return 48;
-    else // Panel icons reach 32 at most with the largest panel, also on hidpi
-        return 64;
-}
 
 /**
  * #MenuItem
@@ -212,16 +157,20 @@ var Applet = class Applet {
         this.actor._applet = this;  // Backlink to get the applet from its actor
                                     // (handy when we want to know stuff about a particular applet within the panel)
         this.actor._delegate = this;
+
+        this.panel = null;
         this._order = 0;        // Defined in gsettings, this is the order of the applet within a panel location.
                                 // This value is set by Cinnamon when loading/listening_to gsettings.
         this._newOrder = null;      //  Used when moving an applet
         this._panelLocation = null;     // Backlink to the panel location our applet is in, set by Cinnamon.
+        this.locationLabel = 'right';
         this._newPanelId = null;  //  Used when moving an applet
         this._newPanelLocation = null;  //  Used when moving an applet
         this._applet_enabled = true;    // Whether the applet is enabled or not (if not it hides in the panel as if it wasn't there)
         this._orientation = orientation;  // orientation of the panel the applet is on  St.Side.TOP BOTTOM LEFT RIGHT
+        this._lastIconType = St.IconType.FULLCOLOR;
+        this._iconSize = null;
 
-        this._panelHeight = panel_height ? panel_height : 25;
         this.instance_id = instance_id; // Needed by appletSettings
         this._uuid = null;      // Defined in gsettings, set by Cinnamon.
         this._hook = null;      // Defined in metadata.json, set by appletManager
@@ -232,27 +181,23 @@ var Applet = class Applet {
         this._draggable.connect('drag-cancelled', Lang.bind(this, this._onDragCancelled));
         this._draggable.connect('drag-end', Lang.bind(this, this._onDragEnd));
 
-        try {
-            let appletDefinition = AppletManager.getAppletDefinition({applet_id: instance_id});
-            if (appletDefinition) {
-                let panelIndex = Main.panelManager.panels.findIndex(function(panel) {
-                    return panel && (panel.panelId === appletDefinition.panelId);
-                });
-                if (panelIndex > -1) {
-                    this._scaleMode = Main.panelManager.panels[panelIndex].scaleMode;
-                }
-            } else {
-                throw new Error();
+
+        let appletDefinition = AppletManager.getAppletDefinition({applet_id: instance_id});
+        if (appletDefinition) {
+            let panelIndex = Util.findIndex(Main.panelManager.panels, function(panel) {
+                return panel && (panel.panelId === appletDefinition.panelId);
+            });
+            if (panelIndex > -1) {
+                let panel = Main.panelManager.panels[panelIndex];
+                this._scaleMode = panel.scaleMode;
+                this.locationLabel = appletDefinition.location_label;
+                this.panel = panel;
+                this._uuid = appletDefinition.uuid;
             }
-        } catch (e) {
-            // Sometimes applets are naughty and don't pass us our instance_id. In that case, we just find the first non-empty panel and pretend we are on it.
-            for (let i in Main.panelManager.panels) {
-                this._scaleMode = true;
-                if (Main.panelManager.panels[i]) {
-                    this._scaleMode = Main.panelManager.panels[i].scaleMode;
-                }
-            }
+        } else {
+            throw new Error(`[Applet] Unable to find definition for applet ${instance_id}`);
         }
+
         this._applet_tooltip_text = "";
 
         this.context_menu_item_remove = null;
@@ -406,6 +351,8 @@ var Applet = class Applet {
             }));
         }
 
+        this._panelSizeChangeId = this.panel.connect('size-change', () => this.on_panel_height_changed_internal());
+        this._panelIconSizeChangeId = this.panel.connect('icon-size-change', () => this.on_panel_icon_size_changed_internal());
         this.on_applet_added_to_panel(userEnabled);
 
         Main.AppletManager.callAppletInstancesChanged(this._uuid);
@@ -444,6 +391,8 @@ var Applet = class Applet {
     // should only be called by appletManager
     _onAppletRemovedFromPanel(deleteConfig) {
         global.settings.disconnect(this._panelEditModeChangedId);
+        this.panel.disconnect(this._panelSizeChangeId);
+        this.panel.disconnect(this._panelIconSizeChangeId);
         this.on_applet_removed_from_panel(deleteConfig);
 
         Main.AppletManager.callAppletInstancesChanged(this._uuid);
@@ -518,18 +467,11 @@ var Applet = class Applet {
         // Implemented by Applets
     }
 
-    /**
-     * setPanelHeight:
-     * @panelHeight (int): panelHeight
-     *
-     * Sets the panel height property of the applet.
-     */
-    setPanelHeight (panel_height) {
-        if (panel_height && panel_height > 0) {
-            this._panelHeight = panel_height;
-        }
-        this._scaleMode = this.panel.scaleMode;
-        this.on_panel_height_changed_internal();
+    getPanelIconSize(iconType = St.IconType.FULLCOLOR) {
+        this._lastIconType = iconType;
+        this._iconSize = this.panel.getPanelZoneIconSize(this.locationLabel, iconType);
+        global.log(`Retrieving an icon size of ${this._iconSize} for ${this._uuid}`);
+        return this._iconSize;
     }
 
     /**
@@ -549,6 +491,27 @@ var Applet = class Applet {
      * This is meant to be overridden in individual applets.
      */
     on_panel_height_changed() {
+        // Implemented byApplets
+    }
+
+    on_panel_icon_size_changed_internal() {
+        let size = this.panel.getPanelZoneIconSize(this.locationLabel, this._lastIconType);
+        if (!this._iconSize || this._iconSize !== size) {
+            this._iconSize = size;
+            this.on_panel_icon_size_changed(size);
+        }
+    }
+
+    /**
+     * on_panel_icon_size_changed:
+     * @size (number): new icon size
+     *
+     * This function is called when the icon size preference for the panel zone
+     * containing this applet is changed.
+     *
+     * This is meant to be overridden in individual applets.
+     */
+    on_panel_icon_size_changed() {
         // Implemented byApplets
     }
 
@@ -628,6 +591,10 @@ var Applet = class Applet {
 
     configureApplet() {
         Util.spawnCommandLine("xlet-settings applet " + this._uuid + " " + this.instance_id);
+    }
+
+    get _panelHeight() {
+        return this.panel.height;
     }
 };
 Signals.addSignalMethods(Applet.prototype);
@@ -743,9 +710,8 @@ var IconApplet = class IconApplet extends Applet {
 
     _setStyle() {
         let icon_type = this._applet_icon.get_icon_type();
-        let icon_size = getPanelIconSize(this, icon_type);
 
-        this._applet_icon.set_icon_size(icon_size);
+        this._applet_icon.set_icon_size(this._iconSize);
         if (icon_type === St.IconType.FULLCOLOR) {
             this._applet_icon.set_style_class_name('applet-icon');
         } else {
