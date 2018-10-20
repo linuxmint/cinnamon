@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 
 import sys
-
+import json
 import dbus
 import gi
 gi.require_version('Gtk', '3.0')
@@ -43,6 +43,25 @@ class PanelSettingsPage(SettingsPage):
 
         options = [["true", _("Auto hide panel")], ["false", _("Always show panel")], ["intel", _("Intelligently hide panel")]]
         widget = PanelComboBox(_("Auto-hide panel"), "org.cinnamon", "panels-autohide", self.panel_id, options)
+        section.add_row(widget)
+
+        options = [
+            [-1, 'Scale to panel size exactly'],
+            [0, 'Scale to panel size optimally'],
+            [16, '16px'],
+            [22, '22px'],
+            [24, '24px'],
+            [32, '32px'],
+            [48, '48px'],
+            [64, '64px']
+        ]
+        widget = PanelJSONComboBox(_("Left panel zone icon size"), "org.cinnamon", "panel-zone-icon-sizes", self.panel_id, 'left', options)
+        section.add_row(widget)
+
+        widget = PanelJSONComboBox(_("Center panel zone icon size"), "org.cinnamon", "panel-zone-icon-sizes", self.panel_id, 'center', options)
+        section.add_row(widget)
+
+        widget = PanelJSONComboBox(_("Right panel zone icon size"), "org.cinnamon", "panel-zone-icon-sizes", self.panel_id, 'right', options)
         section.add_row(widget)
 
         widget = PanelSpinButton(_("Show delay"), "org.cinnamon", "panels-show-delay", self.panel_id, _("milliseconds"), 0, 2000, 50, 200)#, dep_key="org.cinnamon/panels-autohide")
@@ -399,6 +418,42 @@ class PanelComboBox(ComboBox, PanelWidgetBackend):
 
     def unstringify(self, value):
         return value
+
+class PanelJSONComboBox(ComboBox, PanelWidgetBackend):
+    def __init__(self, label, schema, key, panel_id, zone, *args, **kwargs):
+        self.panel_id = panel_id
+        self.zone = zone
+        super(PanelJSONComboBox, self).__init__(label, *args, **kwargs)
+
+        self.connect_to_settings(schema, key)
+
+    def stringify(self, value):
+        return value
+
+    def unstringify(self, value):
+        return value
+
+    def set_value(self, value):
+        vals = json.loads(self.settings[self.key])
+        for obj in vals:
+            if obj['panelId'] != int(self.panel_id):
+                continue
+            for key, val in obj.items():
+                if key == self.zone:
+                    obj[key] = int(value)
+                    break
+
+        self.settings[self.key] = json.dumps(vals)
+
+    def get_value(self):
+        vals = self.settings[self.key]
+        vals = json.loads(vals)
+        for obj in vals:
+            if obj['panelId'] != int(self.panel_id):
+                continue
+            for key, val in obj.items():
+                if key == self.zone:
+                    return int(val)
 
 class PanelRange(Range, PanelWidgetBackend):
     def __init__(self, label, schema, key, panel_id, *args, **kwargs):

@@ -319,11 +319,9 @@ class AppGroup {
         let panelHeight = this.state.trigger('getPanelHeight');
         panelHeight = panelHeight % 2 > 0 ? panelHeight + 1 : panelHeight;
         let height = this.state.settings.enableIconSize ? this.state.settings.iconSize : panelHeight;
-        if (this.state.trigger('getScaleMode') && this.labelVisible) {
-            this.iconSize = Math.round((height * ICON_HEIGHT_FACTOR) / global.ui_scale);
-        } else {
-            this.iconSize = Math.round((height * VERTICAL_ICON_HEIGHT_FACTOR) / global.ui_scale);
-        }
+
+        this.iconSize = this.state.trigger('getPanelIconSize');
+
         let icon;
         if (this.groupState.app) {
             icon = this.groupState.app.create_icon_texture(this.iconSize);
