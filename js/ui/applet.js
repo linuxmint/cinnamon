@@ -498,6 +498,11 @@ var Applet = class Applet {
         let size = this.panel.getPanelZoneIconSize(this.locationLabel, this._lastIconType);
         if (!this._iconSize || this._iconSize !== size) {
             this._iconSize = size;
+
+            if (this._applet_icon) {
+                this._applet_icon.set_icon_size(size);
+            }
+
             this.on_panel_icon_size_changed(size);
         }
     }
@@ -711,10 +716,11 @@ var IconApplet = class IconApplet extends Applet {
     _setStyle() {
         let icon_type = this._applet_icon.get_icon_type();
 
-        this._applet_icon.set_icon_size(this._iconSize);
         if (icon_type === St.IconType.FULLCOLOR) {
+            this._applet_icon.set_icon_size(this.getPanelIconSize(St.IconType.FULLCOLOR));
             this._applet_icon.set_style_class_name('applet-icon');
         } else {
+            this._applet_icon.set_icon_size(this.getPanelIconSize(St.IconType.SYMBOLIC));
             this._applet_icon.set_style_class_name('system-status-icon');
         }
     }
