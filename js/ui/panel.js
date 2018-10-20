@@ -2947,6 +2947,7 @@ Panel.prototype = {
             } else {
                 iconSize = this.height * COLOR_ICON_HEIGHT_FACTOR / global.ui_scale
             }
+            iconSize = Math.floor(iconSize);
         } else if (iconSize === 0) { // To best fit within the panel size
             iconSize = toStandardIconSize(this.height);
         }
