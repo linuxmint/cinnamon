@@ -1991,7 +1991,7 @@ Panel.prototype = {
         this._signalManager.connect(global.settings, "changed::panel-edit-mode", this._onPanelEditModeChanged, this);
         this._signalManager.connect(global.settings, "changed::no-adjacent-panel-barriers", this._updatePanelBarriers, this);
 
-        this._onPanelZoneIconSizesChanged(true);
+        this._onPanelZoneIconSizesChanged();
     },
 
     drawCorners: function(drawcorner)
@@ -2871,6 +2871,9 @@ Panel.prototype = {
 
         this.height = height;
         this.emit('size-changed', height);
+
+        // In case icon sizes are responding to panel height
+        this._onPanelZoneIconSizesChanged();
     },
 
     _onScaleTextIconsChanged: function() {
@@ -2879,7 +2882,7 @@ Panel.prototype = {
         this._setPanelHeight();
     },
 
-    _onPanelZoneIconSizesChanged: function(init = false) {
+    _onPanelZoneIconSizesChanged: function() {
         let panelZoneIconSizes = this._getJSONProperty(PANEL_ZONE_ICON_SIZES);
 
         if (!panelZoneIconSizes) return;

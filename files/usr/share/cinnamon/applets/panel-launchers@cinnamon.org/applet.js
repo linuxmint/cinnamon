@@ -415,6 +415,7 @@ class CinnamonPanelLaunchersApplet extends Applet.Applet {
 
     on_panel_icon_size_changed(size) {
         this.icon_size = size;
+        this.reload();
     }
 
     on_orientation_changed(neworientation) {
