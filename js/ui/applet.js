@@ -351,8 +351,8 @@ var Applet = class Applet {
             }));
         }
 
-        this._panelSizeChangeId = this.panel.connect('size-change', () => this.on_panel_height_changed_internal());
-        this._panelIconSizeChangeId = this.panel.connect('icon-size-change', () => this.on_panel_icon_size_changed_internal());
+        this._panelSizeChangeId = this.panel.connect('size-changed', () => this.on_panel_height_changed_internal());
+        this._panelIconSizeChangeId = this.panel.connect('icon-size-changed', () => this.on_panel_icon_size_changed_internal());
         this.on_applet_added_to_panel(userEnabled);
 
         Main.AppletManager.callAppletInstancesChanged(this._uuid);
