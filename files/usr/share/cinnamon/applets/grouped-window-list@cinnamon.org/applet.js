@@ -376,8 +376,6 @@ class GroupedWindowListApplet extends Applet.Applet {
             {key: 'title-display', value: 'titleDisplay', cb: this.updateTitleDisplay},
             {key: 'scroll-behavior', value: 'scrollBehavior', cb: null},
             {key: 'icon-spacing', value: 'iconSpacing', cb: this.updateSpacing},
-            {key: 'enable-iconSize', value: 'enableIconSize', cb: this.updateActorAttributes},
-            {key: 'icon-size', value: 'iconSize', cb: this.updateActorAttributes},
             {key: 'show-recent', value: 'showRecent', cb: null},
             {key: 'autostart-menu-item', value: 'autoStart', cb: null},
             {key: 'launch-new-instance-menu-item', value: 'launchNewInstance', cb: null},
@@ -460,7 +458,11 @@ class GroupedWindowListApplet extends Applet.Applet {
     }
 
     on_panel_icon_size_changed(iconSize) {
-        global.log({iconSize})
+        each(this.appLists, (workspace) => {
+            each(workspace.appList, (appGroup) => {
+                appGroup.setIcon(iconSize);
+            });
+        });
     }
 
     // Override Applet._onButtonPressEvent due to the applet menu being replicated in AppMenuButtonRightClickMenu.

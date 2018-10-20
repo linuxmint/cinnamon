@@ -114,9 +114,7 @@
       "type" : "section",
       "title" : "Icons",
       "keys": [
-        "icon-spacing",
-        "enable-iconSize",
-        "icon-size"
+        "icon-spacing"
       ]
     }
   },
@@ -444,23 +442,6 @@
     "units": "px",
     "description": "Icon padding",
     "tooltip": "Controls how much horizontal padding is inside the app buttons. Padding is only applied to instances of this applet on horizontal panels."
-  },
-  "enable-iconSize": {
-    "type": "checkbox",
-    "default": false,
-    "description": "Adjust icon size",
-    "tooltip": "Adjust icon size independent of Cinnamon's panel scaling."
-  },
-  "icon-size": {
-    "type": "spinbutton",
-    "dependency": "enable-iconSize",
-    "default": 28,
-    "min": 16,
-    "max": 128,
-    "step": 2,
-    "units": "px",
-    "description": "Icon size",
-    "tooltip": "Set icon size"
   },
   "app-button-transition-duration": {
     "type": "spinbutton",

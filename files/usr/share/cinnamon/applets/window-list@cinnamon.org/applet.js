@@ -1031,6 +1031,10 @@ class CinnamonWindowListApplet extends Applet.Applet {
         this._refreshAllItems();
     }
 
+    on_panel_icon_size_changed(size) {
+        this.icon_size = size;
+    }
+
     on_orientation_changed(orientation) {
         this.orientation = orientation;
 

@@ -258,7 +258,7 @@ class AppGroup {
         if (this.state.isHorizontal) {
             this.actor.height = this.state.trigger('getPanelHeight');
         }
-        this.setIcon();
+        this.setIcon(this.state.trigger('getPanelIconSize'));
         this.updateIconBoxClip();
         this.setIconPadding();
         this.setMargin();
@@ -315,12 +315,8 @@ class AppGroup {
         }
     }
 
-    setIcon() {
-        let panelHeight = this.state.trigger('getPanelHeight');
-        panelHeight = panelHeight % 2 > 0 ? panelHeight + 1 : panelHeight;
-        let height = this.state.settings.enableIconSize ? this.state.settings.iconSize : panelHeight;
-
-        this.iconSize = this.state.trigger('getPanelIconSize');
+    setIcon(size) {
+        this.iconSize = size;
 
         let icon;
         if (this.groupState.app) {
