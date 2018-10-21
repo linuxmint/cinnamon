@@ -380,8 +380,6 @@ class GroupedWindowListApplet extends Applet.Applet {
             {key: 'autostart-menu-item', value: 'autoStart', cb: null},
             {key: 'launch-new-instance-menu-item', value: 'launchNewInstance', cb: null},
             {key: 'monitor-move-all-windows', value: 'monitorMoveAllWindows', cb: null},
-            {key: 'enable-app-button-width', value: 'enableAppButtonWidth', cb: this.updateActorAttributes},
-            {key: 'app-button-width', value: 'appButtonWidth', cb: this.updateActorAttributes},
             {key: 'system-favorites', value: 'systemFavorites', cb: this.updateFavorites},
             {key: 'show-all-workspaces', value: 'showAllWorkspaces', cb: this.refreshAllAppLists},
             {key: 'list-monitor-windows', value: 'listMonitorWindows', cb: this.handleMonitorWindowsPrefsChange}
