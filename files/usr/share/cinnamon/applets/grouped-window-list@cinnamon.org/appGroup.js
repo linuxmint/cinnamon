@@ -252,11 +252,7 @@ class AppGroup {
         if (!this.state.isHorizontal
             || this.state.settings.titleDisplay === 1
             || this.state.settings.titleDisplay === 3 && !this.labelVisible) {
-            if (this.state.settings.enableAppButtonWidth) {
-                this.actor.width = this.state.settings.appButtonWidth;
-            } else {
-                this.actor.width = this.state.trigger('getPanelHeight');
-            }
+            this.actor.width = this.state.trigger('getPanelHeight');
         }
 
         if (this.state.isHorizontal) {
@@ -470,6 +466,7 @@ class AppGroup {
             transition: 'easeOutQuad',
             onComplete: () => {
                 this.label.show();
+                this.setActorAttributes();
             }
         });
         return false;
