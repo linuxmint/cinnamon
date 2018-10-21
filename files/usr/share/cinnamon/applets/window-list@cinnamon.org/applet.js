@@ -1117,7 +1117,7 @@ class CinnamonWindowListApplet extends Applet.Applet {
     _onWindowSkipTaskbarChanged(screen, metaWindow) {
         let window = this._windows.find(win => (win.metaWindow == metaWindow));
 
-        if (window && !Main.isInteresting(metaWindow)) {
+        if (window && window.is_skip_taskbar()) {
             this._removeWindow(metaWindow);
             return;
         }
@@ -1279,6 +1279,7 @@ class CinnamonWindowListApplet extends Applet.Applet {
 
     _shouldAdd(metaWindow) {
         return Main.isInteresting(metaWindow) &&
+            !metaWindow.is_skip_taskbar() &&
             this._monitorWatchList.indexOf(metaWindow.get_monitor()) != -1;
     }
 
