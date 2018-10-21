@@ -32,8 +32,7 @@
         "middle-click-action",
         "system-favorites",
         "list-monitor-windows",
-        "show-all-workspaces",
-        "include-all-windows"
+        "show-all-workspaces"
       ]
     },
     "appButtonsSection": {
@@ -328,12 +327,6 @@
     "default": false,
     "description": "Open thumbnails on click",
     "tooltip": "Open the thumbnails on click if there is more than one window open."
-  },
-  "include-all-windows": {
-    "type": "checkbox",
-    "default": true,
-    "description": "Include all app windows",
-    "tooltip": "Controls whether or not thumbnails for smalller child windows, such as exit confirmations and file dialogues will be included in the thumbnail list."
   },
   "show-recent": {
     "type": "checkbox",

@@ -246,7 +246,6 @@ class GroupedWindowListApplet extends Applet.Applet {
             getAppSystem: () => Cinnamon.AppSystem.get_default(),
             getAppFromWMClass: (specialApps, metaWindow) => this.getAppFromWMClass(specialApps, metaWindow),
             getTracker: () => this.tracker,
-            isWindowInteresting: (metaWindow) => Main.isInteresting(metaWindow),
             addWindowToAllWorkspaces: (win, app, isFavoriteApp) => {
                 each(this.appLists, function(appList) {
                     appList.windowAdded(appList.metaWorkspace, win, app, isFavoriteApp);
@@ -320,6 +319,7 @@ class GroupedWindowListApplet extends Applet.Applet {
         this.signals.connect(global.screen, 'workspace-removed', (...args) => this.onWorkspaceRemoved(...args));
         this.signals.connect(global.screen, 'window-monitor-changed', (...args) => this.onWindowMonitorChanged(...args));
         this.signals.connect(global.screen, 'monitors-changed', (...args) => this.on_applet_instances_changed(...args));
+        this.signals.connect(global.screen, 'window-skip-taskbar-changed', (...args) => this.onWindowSkipTaskbarChanged(...args));
         this.signals.connect(global.display, 'window-marked-urgent', (...args) => this.updateAttentionState(...args));
         this.signals.connect(global.display, 'window-demands-attention', (...args) => this.updateAttentionState(...args));
         this.signals.connect(global.settings, 'changed::panel-edit-mode', (...args) => this.on_panel_edit_mode_changed(...args));
@@ -372,7 +372,6 @@ class GroupedWindowListApplet extends Applet.Applet {
             {key: 'show-thumbnails', value: 'showThumbs', cb: this.updateVerticalThumbnailState},
             {key: 'show-icons', value: 'showIcons', cb: this.updateVerticalThumbnailState},
             {key: 'animate-thumbnails', value: 'animateThumbs', cb: null},
-            {key: 'include-all-windows', value: 'includeAllWindows', cb: this.refreshCurrentWindows},
             {key: 'number-display', value: 'numDisplay', cb: this.updateWindowNumberState},
             {key: 'title-display', value: 'titleDisplay', cb: this.updateTitleDisplay},
             {key: 'scroll-behavior', value: 'scrollBehavior', cb: null},
@@ -481,8 +480,9 @@ class GroupedWindowListApplet extends Applet.Applet {
     onWindowMonitorChanged(screen, metaWindow, metaWorkspace) {
         if (this.state.settings.listMonitorWindows
             && this.state.monitorWatchList.length !== this.numberOfMonitors) {
-            this.getCurrentAppList().windowRemoved(metaWorkspace, metaWindow);
-            this.getCurrentAppList().windowAdded(metaWorkspace, metaWindow);
+            let appList = this.getCurrentAppList();
+            appList.windowRemoved(metaWorkspace, metaWindow);
+            appList.windowAdded(metaWorkspace, metaWindow);
         }
     }
 
@@ -1000,6 +1000,17 @@ class GroupedWindowListApplet extends Applet.Applet {
 
         this.actor.remove_all_children();
         this.actor.add_child(this.appLists[refWorkspace].actor);
+    }
+
+    onWindowSkipTaskbarChanged(screen, metaWindow) {
+        let appList = this.getCurrentAppList();
+
+        if (metaWindow.is_skip_taskbar()) {
+            appList.windowRemoved(appList.metaWorkspace, metaWindow);
+            return;
+        }
+
+        appList.windowAdded(appList.metaWorkspace, metaWindow);
     }
 
     onOverviewShow() {
