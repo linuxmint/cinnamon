@@ -460,7 +460,7 @@ class GroupedWindowListApplet extends Applet.Applet {
     on_panel_icon_size_changed(iconSize) {
         each(this.appLists, (workspace) => {
             each(workspace.appList, (appGroup) => {
-                appGroup.setIcon(iconSize);
+                appGroup.setActorAttributes(iconSize);
             });
         });
     }
