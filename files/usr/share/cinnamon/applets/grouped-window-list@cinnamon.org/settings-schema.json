@@ -1,7 +1,7 @@
 {
   "layout": {
     "type" : "layout",
-    "pages": ["generalPage", "panelPage", "thumbnailsPage", "contextMenuPage", "themePage"],
+    "pages": ["generalPage", "panelPage", "thumbnailsPage", "contextMenuPage"],
     "generalPage": {
       "type" : "page",
       "title" : "General",
@@ -22,11 +22,6 @@
       "title" : "Context Menu",
       "sections": ["contextMenuSection"]
     },
-    "themePage": {
-      "type" : "page",
-      "title" : "Theming",
-      "sections": ["stylingSection", "iconSection"]
-    },
     "generalSection": {
       "type" : "section",
       "title" : "Behavior",
@@ -45,11 +40,11 @@
       "type" : "section",
       "title" : "App Buttons",
       "keys": [
-        "enable-app-button-width",
-        "app-button-width",
         "number-display",
         "title-display",
         "launcher-animation-effect",
+        "icon-spacing",
+        "app-button-transition-duration",
         "pinned-apps",
         "show-alerts",
         "show-pinned",
@@ -101,20 +96,6 @@
         "autostart-menu-item",
         "launch-new-instance-menu-item",
         "monitor-move-all-windows"
-      ]
-    },
-    "stylingSection": {
-      "type" : "section",
-      "title" : "Styling",
-      "keys": [
-        "app-button-transition-duration"
-      ]
-    },
-    "iconSection": {
-      "type" : "section",
-      "title" : "Icons",
-      "keys": [
-        "icon-spacing"
       ]
     }
   },
@@ -259,23 +240,6 @@
     "units": "milliseconds",
     "description": "Duration of the apps order display on hotkey press",
     "tooltip": "Determines the duration the window count labels are replaced with the app's order number."
-  },
-  "enable-app-button-width": {
-    "type": "checkbox",
-    "default": false,
-    "description": "Use a custom width for app buttons",
-    "tooltip": "When disabled, the app button width is determined by the panel height."
-  },
-  "app-button-width": {
-    "dependency": "enable-app-button-width",
-    "type": "spinbutton",
-    "default": 31,
-    "min": 1,
-    "max": 250,
-    "step": 2,
-    "units": "px",
-    "description": "App button width",
-    "tooltip": "Controls the width of the application button. This option only works for horizontal panels."
   },
   "thumbnail-timeout": {
     "type": "spinbutton",
@@ -425,7 +389,7 @@
   },
   "icon-spacing": {
     "type": "spinbutton",
-    "default": 3,
+    "default": 6,
     "min": 0,
     "max": 15,
     "step": 1,
