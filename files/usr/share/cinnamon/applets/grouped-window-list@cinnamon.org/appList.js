@@ -397,7 +397,7 @@ class AppList {
         if (refApp > -1) {
             this.appList[refApp].windowRemoved(metaWorkspace, metaWindow, refWindow, (appId, isFavoriteApp) => {
                 if (isFavoriteApp || (isFavoriteApp && !this.state.settings.groupApps && windowCount === 0)) {
-                    this.appList[refApp].groupState.trigger('isFavoriteApp');
+                    this.appList[refApp].actor.set_style_pseudo_class('closed');
                     if (this.state.settings.titleDisplay > 1) {
                         this.appList[refApp].hideLabel(true);
                         this.appList[refApp].groupState.set({groupReady: false});
