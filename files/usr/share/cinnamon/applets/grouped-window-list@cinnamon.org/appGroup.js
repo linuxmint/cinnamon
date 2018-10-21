@@ -266,13 +266,16 @@ class AppGroup {
     }
 
     setIconPadding() {
-        this.themeNode = this.actor.peek_theme_node();
         this.padding = this.labelVisible ? 0 : Math.floor(this.actor.width - this.iconSize) / 2;
         if (global.ui_scale > 1) {
             this.padding = this.padding / global.ui_scale - Math.ceil(this.padding / 4);
         }
-        const rightPadding = 0;
-        this.actor.style = 'padding-left: ' + this.padding + 'px;padding-right: ' + rightPadding + 'px;';
+
+        if (this.state.settings.titleDisplay > 1 && this.labelVisible) {
+            this.iconBox.style = 'padding: 0px;';
+        } else {
+            this.actor.style = `padding-left: ${this.padding}px; padding-right: 0px;`;
+        }
     }
 
     setMargin() {
@@ -466,7 +469,6 @@ class AppGroup {
             transition: 'easeOutQuad',
             onComplete: () => {
                 this.label.show();
-                this.setActorAttributes();
             }
         });
         return false;
