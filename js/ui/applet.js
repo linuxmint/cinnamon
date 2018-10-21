@@ -470,7 +470,6 @@ var Applet = class Applet {
     getPanelIconSize(iconType = St.IconType.FULLCOLOR) {
         this._lastIconType = iconType;
         this._iconSize = this.panel.getPanelZoneIconSize(this.locationLabel, iconType);
-        global.log(`Retrieving an icon size of ${this._iconSize} for ${this._uuid}`);
         return this._iconSize;
     }
 

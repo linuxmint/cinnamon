@@ -239,7 +239,11 @@ class AppGroup {
         }
     }
 
-    setActorAttributes() {
+    setActorAttributes(iconSize) {
+        if (!iconSize) {
+            iconSize = this.state.trigger('getPanelIconSize');
+        }
+
         this.actor.style = null;
 
         // TODO: Button width should be applied to buttons if they don't have a label set, not based on
@@ -258,7 +262,7 @@ class AppGroup {
         if (this.state.isHorizontal) {
             this.actor.height = this.state.trigger('getPanelHeight');
         }
-        this.setIcon(this.state.trigger('getPanelIconSize'));
+        this.setIcon(iconSize);
         this.updateIconBoxClip();
         this.setIconPadding();
         this.setMargin();
@@ -315,8 +319,8 @@ class AppGroup {
         }
     }
 
-    setIcon(size) {
-        this.iconSize = size;
+    setIcon(iconSize) {
+        this.iconSize = iconSize;
 
         let icon;
         if (this.groupState.app) {
