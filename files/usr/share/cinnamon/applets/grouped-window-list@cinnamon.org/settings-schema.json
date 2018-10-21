@@ -215,7 +215,7 @@
   },
   "list-monitor-windows": {
     "type": "checkbox",
-    "default": false,
+    "default": true,
     "description": "Only list windows from the monitor displaying this instance",
     "tooltip": "This option will only come into effect for monitors displaying an ITM instance."
   },

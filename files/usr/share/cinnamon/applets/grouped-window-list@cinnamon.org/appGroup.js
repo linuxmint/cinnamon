@@ -573,8 +573,8 @@ class AppGroup {
         }
     }
 
-    setActiveStatus(windows) {
-        if (windows.length > 0 && !this.actor.has_style_pseudo_class('running')) {
+    setActiveStatus(state) {
+        if (state && !this.actor.has_style_pseudo_class('running')) {
             this.actor.add_style_pseudo_class('running');
         } else {
             this.actor.remove_style_pseudo_class('running');
@@ -890,6 +890,7 @@ class AppGroup {
             // in appList to put the final nail in the coffin.
             if (typeof cb === 'function') {
                 cb(this.groupState.appId, this.groupState.isFavoriteApp);
+                if (this.groupState.isFavoriteApp) this.setActiveStatus(false);
             }
         }
     }
