@@ -333,8 +333,7 @@ class AppList {
                 if ((this.state.settings.showAllWorkspaces
                         || _appWindows[i].is_on_all_workspaces()
                         || _appWindows[i].get_workspace() === this.metaWorkspace)
-                    && (this.state.settings.includeAllWindows
-                        || this.state.trigger('isWindowInteresting', _appWindows[i]))
+                    && !_appWindows[i].is_skip_taskbar()
                     && (!this.state.settings.listMonitorWindows
                         || this.state.monitorWatchList.indexOf(_appWindows[i].get_monitor()) > -1)) {
                     appWindows.push(_appWindows[i]);

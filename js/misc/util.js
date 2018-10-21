@@ -431,8 +431,7 @@ function find(arr, callback) {
 function each(obj, callback) {
     if (Array.isArray(obj)) {
         for (let i = 0, len = obj.length; i < len; i++) {
-            let returnValue = callback(obj[i], i);
-            if (returnValue === false) {
+            if (callback(obj[i], i) === false) {
                 return;
             }
         }
