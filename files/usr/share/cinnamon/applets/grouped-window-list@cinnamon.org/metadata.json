@@ -3,6 +3,6 @@
     "role": "panellauncher",
     "uuid": "grouped-window-list@cinnamon.org",
     "description": "Main Cinnamon window list with app grouping",
-    "icon": "view-list",
+    "icon": "gnome-window-manager",
     "max-instances": -1
 }
