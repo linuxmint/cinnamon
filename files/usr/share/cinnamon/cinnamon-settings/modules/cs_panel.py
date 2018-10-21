@@ -46,8 +46,8 @@ class PanelSettingsPage(SettingsPage):
         section.add_row(widget)
 
         options = [
-            [-1, 'Scale to panel size exactly'],
-            [0, 'Scale to panel size optimally'],
+            [-1, _("Scale to panel size exactly")],
+            [0, _("Scale to panel size optimally")],
             [16, '16px'],
             [22, '22px'],
             [24, '24px'],
