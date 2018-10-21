@@ -327,7 +327,7 @@ function removeAppletFromPanels(appletDefinition, deleteConfig, changed = false)
          * the applet object hasn't had the instance removed yet, so let's run it one more time
          * here when everything has been updated.
          */
-        callAppletInstancesChanged(uuid);
+        callAppletInstancesChanged(uuid, null);
     }
 }
 
@@ -781,12 +781,12 @@ function getRunningInstancesForUuid(uuid) {
     return result;
 }
 
-function callAppletInstancesChanged(uuid) {
+function callAppletInstancesChanged(uuid, originInstance) {
     for (var i = 0; i < definitions.length; i++) {
         if (definitions[i]
             && definitions[i].applet
             && uuid === definitions[i].uuid) {
-            definitions[i].applet.on_applet_instances_changed();
+            definitions[i].applet.on_applet_instances_changed(originInstance);
         }
     }
 }
