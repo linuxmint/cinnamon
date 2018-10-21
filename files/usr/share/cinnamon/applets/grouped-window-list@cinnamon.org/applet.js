@@ -961,6 +961,16 @@ class GroupedWindowListApplet extends Applet.Applet {
     }
 
     onSwitchWorkspace() {
+        // Defer loading of windows until the next tick so we have a complete monitor
+        // watch list built from other app instances
+        if (this.state.settings.listMonitorWindows) {
+            setTimeout(() => this._onSwitchWorkspace(), 0);
+        } else {
+            this._onSwitchWorkspace();
+        }
+    }
+
+    _onSwitchWorkspace() {
         this.state.set({currentWs: global.screen.get_active_workspace_index()});
         let metaWorkspace = global.screen.get_workspace_by_index(this.state.currentWs);
 
