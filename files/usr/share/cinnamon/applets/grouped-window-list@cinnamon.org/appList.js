@@ -160,7 +160,7 @@ class AppList {
             let wmClass = apps[i].get_startup_wm_class();
             if (wmClass) {
                 let id = apps[i].get_id();
-                this.specialApps.push({id: id, wmClass: wmClass});
+                this.specialApps.push({id, wmClass});
             }
         }
     }
@@ -173,6 +173,26 @@ class AppList {
         this.appList = [];
         this.getSpecialApps();
         this.loadFavorites();
+        this.refreshApps();
+    }
+
+    refreshWindows() {
+        each(this.appList, (appGroup) => {
+            if (!appGroup) return;
+            let isClosed = false;
+            each(appGroup.groupState.metaWindows, (metaWindow) => {
+                if (!metaWindow) {
+                    isClosed = true;
+                    return;
+                }
+                this.windowRemoved(this.metaWorkspace, metaWindow);
+            });
+            if ((isClosed || appGroup.groupState.metaWindows.length === 0)
+                && !appGroup.actor.is_finalized()) {
+                appGroup.groupState.set({metaWindows: []});
+                appGroup.actor.set_style_pseudo_class('closed');
+            }
+        });
         this.refreshApps();
     }
 
