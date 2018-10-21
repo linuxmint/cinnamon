@@ -335,6 +335,9 @@ var Applet = class Applet {
      * removed from the panels. It is intended to assist in delegation of
      * responsibilities between duplicate applet instances.
      *
+     * Applets should not create any references to @instance, since that
+     * could impede garbage collection.
+     *
      * This is meant to be overridden in individual applets
      */
     on_applet_instances_changed() {
