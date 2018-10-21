@@ -372,7 +372,7 @@ class GroupedWindowListApplet extends Applet.Applet {
             {key: 'show-thumbnails', value: 'showThumbs', cb: this.updateVerticalThumbnailState},
             {key: 'show-icons', value: 'showIcons', cb: this.updateVerticalThumbnailState},
             {key: 'animate-thumbnails', value: 'animateThumbs', cb: null},
-            {key: 'include-all-windows', value: 'includeAllWindows', cb: this.refreshCurrentAppList},
+            {key: 'include-all-windows', value: 'includeAllWindows', cb: this.refreshCurrentWindows},
             {key: 'number-display', value: 'numDisplay', cb: this.updateWindowNumberState},
             {key: 'title-display', value: 'titleDisplay', cb: this.updateTitleDisplay},
             {key: 'scroll-behavior', value: 'scrollBehavior', cb: null},
@@ -410,12 +410,15 @@ class GroupedWindowListApplet extends Applet.Applet {
     }
 
     on_applet_instances_changed(instance) {
-        if ((!instance || instance.instance_id !== this.instance_id)
-            && this.state.appletReady) {
-            this.numberOfMonitors = null;
-            this.updateMonitorWatchlist();
-            setTimeout(() => this.refreshCurrentAppList(), 0);
+        if (!this.state.appletReady
+            || !this.state.settings.listMonitorWindows
+            || (instance && instance.instance_id === this.instance_id)) {
+            return;
         }
+
+        this.numberOfMonitors = null;
+        this.updateMonitorWatchlist();
+        this.refreshCurrentWindows();
     }
 
     on_panel_edit_mode_changed() {
@@ -578,13 +581,18 @@ class GroupedWindowListApplet extends Applet.Applet {
     }
 
     refreshCurrentAppList() {
-        if (!this.appLists[this.state.currentWs]) return;
-        this.appLists[this.state.currentWs].refreshList();
+        let appList = this.appLists[this.state.currentWs];
+        if (appList) setTimeout(() => appList.refreshList(), 0);
+    }
+
+    refreshCurrentWindows() {
+        let appList = this.appLists[this.state.currentWs];
+        if (appList) appList.refreshWindows();
     }
 
     refreshAllAppLists() {
         each(this.appLists, function(appList) {
-            appList.refreshList();
+            setTimeout(() => appList.refreshList(), 0);
         });
     }
 
