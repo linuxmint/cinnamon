@@ -329,6 +329,7 @@ var Applet = class Applet {
 
     /**
      * on_applet_instances_changed:
+     * @instance (Applet) the instance that was changed
      *
      * This function is called when an applet *of the same uuid* is added or
      * removed from the panels. It is intended to assist in delegation of
@@ -355,7 +356,7 @@ var Applet = class Applet {
         this._panelIconSizeChangeId = this.panel.connect('icon-size-changed', () => this.on_panel_icon_size_changed_internal());
         this.on_applet_added_to_panel(userEnabled);
 
-        Main.AppletManager.callAppletInstancesChanged(this._uuid);
+        Main.AppletManager.callAppletInstancesChanged(this._uuid, this);
     }
 
     /**
@@ -395,7 +396,7 @@ var Applet = class Applet {
         this.panel.disconnect(this._panelIconSizeChangeId);
         this.on_applet_removed_from_panel(deleteConfig);
 
-        Main.AppletManager.callAppletInstancesChanged(this._uuid);
+        Main.AppletManager.callAppletInstancesChanged(this._uuid, this);
     }
 
     /**
