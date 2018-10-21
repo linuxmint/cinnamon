@@ -72,6 +72,7 @@ class PinnedFavs {
 
     triggerUpdate(appId, pos, isFavoriteApp) {
         let currentAppList = this.params.state.trigger('getCurrentAppList');
+        if (!currentAppList) return;
         let refApp = findIndex(currentAppList.appList, (appGroup) => appGroup.groupState.appId === appId);
         if (refApp > -1) {
             // Destroy pinned app
@@ -408,9 +409,12 @@ class GroupedWindowListApplet extends Applet.Applet {
         this.state.set({appletReady: true});
     }
 
-    on_applet_instances_changed(loaded) {
-        if (this.state.appletReady) {
+    on_applet_instances_changed(instance) {
+        if ((!instance || instance.instance_id !== this.instance_id)
+            && this.state.appletReady) {
+            this.numberOfMonitors = null;
             this.updateMonitorWatchlist();
+            setTimeout(() => this.refreshCurrentAppList(), 0);
         }
     }
 
@@ -574,6 +578,7 @@ class GroupedWindowListApplet extends Applet.Applet {
     }
 
     refreshCurrentAppList() {
+        if (!this.appLists[this.state.currentWs]) return;
         this.appLists[this.state.currentWs].refreshList();
     }
 
@@ -964,16 +969,6 @@ class GroupedWindowListApplet extends Applet.Applet {
     }
 
     onSwitchWorkspace() {
-        // Defer loading of windows until the next tick so we have a complete monitor
-        // watch list built from other app instances
-        if (this.state.settings.listMonitorWindows) {
-            setTimeout(() => this._onSwitchWorkspace(), 0);
-        } else {
-            this._onSwitchWorkspace();
-        }
-    }
-
-    _onSwitchWorkspace() {
         this.state.set({currentWs: global.screen.get_active_workspace_index()});
         let metaWorkspace = global.screen.get_workspace_by_index(this.state.currentWs);
 
