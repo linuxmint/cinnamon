@@ -101,7 +101,7 @@
   },
   "number-display": {
     "type": "combobox",
-    "default": 1,
+    "default": 3,
     "description": "Number display",
     "options": {
       "Smart": 1,
