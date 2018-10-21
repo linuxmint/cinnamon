@@ -472,7 +472,8 @@ class GroupedWindowListApplet extends Applet.Applet {
     }
 
     onWindowMonitorChanged(screen, metaWindow, metaWorkspace) {
-        if (this.state.settings.listMonitorWindows) {
+        if (this.state.settings.listMonitorWindows
+            && this.state.monitorWatchList.length !== this.numberOfMonitors) {
             this.getCurrentAppList().windowRemoved(metaWorkspace, metaWindow);
             this.getCurrentAppList().windowAdded(metaWorkspace, metaWindow);
         }
@@ -539,11 +540,13 @@ class GroupedWindowListApplet extends Applet.Applet {
     }
 
     updateMonitorWatchlist() {
-        let numberOfMonitors = Gdk.Screen.get_default().get_n_monitors();
+        if (!this.numberOfMonitors) {
+            this.numberOfMonitors = Gdk.Screen.get_default().get_n_monitors();
+        }
         let onPrimary = this.panel.monitorIndex === Main.layoutManager.primaryIndex;
         let instances = Main.AppletManager.getRunningInstancesForUuid(this.state.uuid);
         /* Simple cases */
-        if (numberOfMonitors === 1) {
+        if (this.numberOfMonitors === 1) {
             this.state.monitorWatchList = [Main.layoutManager.primaryIndex];
         } else if (instances.length > 1 && !onPrimary) {
             this.state.monitorWatchList = [this.panel.monitorIndex];
@@ -561,7 +564,7 @@ class GroupedWindowListApplet extends Applet.Applet {
                 instances[i] = instances[i].panel.monitorIndex;
             }
 
-            for (let i = 0; i < numberOfMonitors; i++) {
+            for (let i = 0; i < this.numberOfMonitors; i++) {
                 if (instances.indexOf(i) === -1) {
                     this.state.monitorWatchList.push(i);
                 }
