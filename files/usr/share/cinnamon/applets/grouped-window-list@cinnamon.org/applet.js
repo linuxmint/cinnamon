@@ -401,11 +401,11 @@ class GroupedWindowListApplet extends Applet.Applet {
             return;
         }
         // Query apps for the current workspace
+        this.updateMonitorWatchlist();
         this.onSwitchWorkspace();
         this.bindAppKeys();
         this.updateSpacing();
         this.state.set({appletReady: true});
-        setTimeout(() => this.updateMonitorWatchlist(), 0);
     }
 
     on_applet_instances_changed(loaded) {
@@ -567,7 +567,6 @@ class GroupedWindowListApplet extends Applet.Applet {
                 }
             }
         }
-
         this.state.set({monitorWatchList: this.state.monitorWatchList});
     }
 
