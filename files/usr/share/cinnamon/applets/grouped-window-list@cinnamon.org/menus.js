@@ -210,7 +210,7 @@ class AppMenuButtonRightClickMenu extends Applet.AppletPopupMenu {
         this.signals.connect(item, 'activate', () => this.state.trigger('configureApplet'));
         subMenu.menu.addMenuItem(item);
 
-        item = createMenuItem({label: _('Remove') + " 'Grouped Window List'", icon: 'edit-delete'});
+        item = createMenuItem({label: _('Remove') + " 'Grouped window list'", icon: 'edit-delete'});
         this.signals.connect(item, 'activate', () => {
             AppletManager._removeAppletFromPanel(this.state.uuid, this.state.instance_id);
         });
