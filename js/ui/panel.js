@@ -2426,7 +2426,7 @@ Panel.prototype = {
     },
 
     _onFocusChanged: function() {
-        if (global.display.focus_window &&
+        if (global.display.focus_window && this._focusWindow !== undefined &&
             this._focusWindow == global.display.focus_window.get_compositor_private())
             return;
 
