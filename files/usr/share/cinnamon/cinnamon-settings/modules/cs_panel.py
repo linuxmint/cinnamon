@@ -70,16 +70,9 @@ class PanelSettingsPage(SettingsPage):
         widget = PanelSpinButton(_("Hide delay"), "org.cinnamon", "panels-hide-delay", self.panel_id, _("milliseconds"), 0, 2000, 50, 200)#, dep_key="org.cinnamon/panels-autohide")
         section.add_reveal_row(widget, "org.cinnamon", "panels-autohide", check_func=can_show)
 
-        widget = PanelSwitch(_("Use customized panel size (otherwise it's defined by the theme)"), "org.cinnamon", "panels-resizable", self.panel_id)
-        section.add_row(widget)
-
-        widget = PanelSwitch(scale_dimension_text, "org.cinnamon", "panels-scale-text-icons", self.panel_id)#, "org.cinnamon/panels-resizable")
-        section.add_reveal_row(widget, "org.cinnamon", "panels-resizable", check_func=can_show)
-
-        widget = PanelRange(dimension_text, "org.cinnamon", "panels-height", self.panel_id, _("Smaller"), _("Larger"), mini=20, maxi=50, show_value=False)#, dep_key="org.cinnamon/panels-resizable")
-        widget.add_mark(25.0, Gtk.PositionType.TOP, None)
+        widget = PanelRange(dimension_text, "org.cinnamon", "panels-height", self.panel_id, _("Smaller"), _("Larger"), mini=20, maxi=60, show_value=False)
         widget.set_rounding(0)
-        section.add_reveal_row(widget, "org.cinnamon", "panels-resizable", check_func=can_show)
+        section.add_row(widget)
 
         self.show_all()
 
@@ -475,5 +468,6 @@ class PanelRange(Range, PanelWidgetBackend):
 
     def on_setting_changed(self, *args):
         value = self.get_value()
+        print(value)
         if value != int(self.bind_object.get_value()):
             self.bind_object.set_value(value)

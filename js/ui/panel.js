@@ -45,16 +45,12 @@ const PANEL_AUTOHIDE_KEY = "panels-autohide";
 const PANEL_SHOW_DELAY_KEY = "panels-show-delay";
 const PANEL_HIDE_DELAY_KEY = "panels-hide-delay";
 const PANEL_HEIGHT_KEY = "panels-height";
-const PANEL_RESIZABLE_KEY = "panels-resizable";
-const PANEL_SCALE_TEXT_ICONS_KEY = "panels-scale-text-icons";
 const PANEL_ZONE_ICON_SIZES = "panel-zone-icon-sizes";
 
 const DEFAULT_VALUES = {"panels-autohide": "false",
                         "panels-show-delay": "0",
                         "panels-hide-delay": "0",
-                        "panels-height": "25",
-                        "panels-resizable": "false",
-                        "panels-scale-text-icons": "true"};
+                        "panels-height": "25"};
 
 const Direction = {
     LEFT  : 0,
@@ -1985,8 +1981,6 @@ Panel.prototype = {
 
         this._signalManager.connect(global.settings, "changed::" + PANEL_AUTOHIDE_KEY, this._processPanelAutoHide, this);
         this._signalManager.connect(global.settings, "changed::" + PANEL_HEIGHT_KEY, this._moveResizePanel, this);
-        this._signalManager.connect(global.settings, "changed::" + PANEL_RESIZABLE_KEY, this._moveResizePanel, this);
-        this._signalManager.connect(global.settings, "changed::" + PANEL_SCALE_TEXT_ICONS_KEY, this._onScaleTextIconsChanged, this);
         this._signalManager.connect(global.settings, "changed::" + PANEL_ZONE_ICON_SIZES, this._onPanelZoneIconSizesChanged, this);
         this._signalManager.connect(global.settings, "changed::panel-edit-mode", this._onPanelEditModeChanged, this);
         this._signalManager.connect(global.settings, "changed::no-adjacent-panel-barriers", this._updatePanelBarriers, this);
@@ -2538,24 +2532,7 @@ Panel.prototype = {
      */
     _getScaledPanelHeight: function() {
         let panelHeight = 0;
-        let panelResizable = this._getProperty(PANEL_RESIZABLE_KEY, "b");
-        let isHorizontal = (!!((this.panelPosition == PanelLoc.top || this.panelPosition == PanelLoc.bottom)));
-
-        if (panelResizable) {
-            panelHeight = this._getProperty(PANEL_HEIGHT_KEY, "i") * global.ui_scale;
-        } else {
-            let themeNode = this.actor.get_theme_node();
-
-            if (isHorizontal)
-                panelHeight = themeNode.get_height();
-            else
-                panelHeight = themeNode.get_width();
-
-            if (!panelHeight || panelHeight <= 0) {
-                panelHeight = 25 * global.ui_scale;
-            }
-        }
-
+        panelHeight = this._getProperty(PANEL_HEIGHT_KEY, "i") * global.ui_scale;
         return panelHeight;
     },
 
@@ -2851,18 +2828,13 @@ Panel.prototype = {
     },
 
     _setFont: function(panelHeight) {
-        this.scaleMode = this._getProperty(PANEL_RESIZABLE_KEY, "b") && this._getProperty(PANEL_SCALE_TEXT_ICONS_KEY, "b");
-
         if (!this._themeFontSize) {
             let themeNode = this.actor.get_theme_node();
             this._themeFontSize = themeNode.get_length("font-size");
         }
-        if (this.scaleMode) {
-            let textheight = (panelHeight / DEFAULT_PANEL_HEIGHT) * PANEL_FONT_DEFAULT_HEIGHT;
-            this.actor.set_style('font-size: ' + textheight / global.ui_scale + 'px;');
-        } else {
-            this.actor.set_style('font-size: ' + this._themeFontSize ? this._themeFontSize + 'px;' : '8.5pt;');
-        }
+
+        let textheight = (panelHeight / DEFAULT_PANEL_HEIGHT) * PANEL_FONT_DEFAULT_HEIGHT;
+        this.actor.set_style('font-size: ' + textheight / global.ui_scale + 'px;');
     },
 
     _setPanelHeight: function() {
@@ -2874,12 +2846,6 @@ Panel.prototype = {
 
         // In case icon sizes are responding to panel height
         this._onPanelZoneIconSizesChanged();
-    },
-
-    _onScaleTextIconsChanged: function() {
-        let panelHeight = this._getScaledPanelHeight();
-        this._setFont(panelHeight);
-        this._setPanelHeight();
     },
 
     _onPanelZoneIconSizesChanged: function() {
