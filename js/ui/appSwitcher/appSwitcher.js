@@ -383,6 +383,7 @@ AppSwitcher.prototype = {
         if (current === global.screen.get_active_workspace_index())
             return false;
 
+        let workspace = global.screen.get_active_workspace();
         this._onWorkspaceSelected(workspace);
         return true;
     },
