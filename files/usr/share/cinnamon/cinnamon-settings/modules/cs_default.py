@@ -279,15 +279,12 @@ class DefaultTerminalButton(Gtk.AppChooserButton): #TODO: See if we can get this
 class DefaultCalculatorButton(Gtk.AppChooserButton):
     def __init__(self):
         super(DefaultCalculatorButton, self).__init__()
-        self.set_show_default_item(True)
-        self.set_show_dialog_item(True)
-        self.connect("changed", self.onChanged)
-
         apps = Gio.app_info_get_all()
         self.this_item = []
         self.active_items = []
         self.settings = Gio.Settings.new(CALCULATOR_SCHEMA)
         self.key_value = self.settings.get_string("exec")
+        self.connect("changed", self.onChanged)
         count_up = 0
 
         while (self.this_item is not None and count_up < len(apps)):
@@ -537,9 +534,9 @@ class Module:
                 if not button.get_active():
                     settings.add_row(widget)
 
-            widget = SettingsWidget()
 
             # Terminal
+            widget = SettingsWidget()
             button = DefaultTerminalButton()
             label = MnemonicLabel(_("Te_rminal"), button)
             size_group.add_widget(button)
@@ -548,12 +545,13 @@ class Module:
             settings.add_row(widget)
 
             # Calculator
+            widget = SettingsWidget()
             button = DefaultCalculatorButton()
             label = MnemonicLabel(_("_Calculator"), button)
             size_group.add_widget(button)
             widget.pack_start(label, False, False, 0)
             widget.pack_end(button, False, False, 0)
-            setting.add_row(widget)
+            settings.add_row(widget)
 
             # Removable media
 
