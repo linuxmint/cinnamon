@@ -1934,7 +1934,7 @@ Panel.prototype = {
         this._shadowBox = null;
         this._panelZoneIconSizes = [];
 
-        this.scaleMode = false;
+        this.scaleMode = true; // Obsolete, should be removed after we make sure no spices are still using
 
         this.actor = new Cinnamon.GenericContainer({ name: 'panel', reactive: true });
         this.addPanelStyleClass(this.panelPosition);
@@ -2909,25 +2909,26 @@ Panel.prototype = {
         }
 
         let iconSize = zoneConfig[locationLabel];
+        let height = this.height / global.ui_scale;
 
         if (iconSize === -1) { // Legacy: Scale to panel size
-            if (iconType === St.IconType.SYMBOLIC) {
-                iconSize = this.height / DEFAULT_PANEL_HEIGHT * PANEL_SYMBOLIC_ICON_DEFAULT_HEIGHT / global.ui_scale;
-            } else {
-                iconSize = this.height * COLOR_ICON_HEIGHT_FACTOR / global.ui_scale
-            }
-            iconSize = Math.floor(iconSize);
+            iconSize = height;
         } else if (iconSize === 0) { // To best fit within the panel size
-            iconSize = toStandardIconSize(this.height);
+            iconSize = toStandardIconSize(height);
         }
 
         // Don't try to fit an icon that is larger than the panel
         let i = -1;
-        while (iconSize > this.height) {
+        while (iconSize > height) {
             i++;
-            iconSize = toStandardIconSize(this.height - i);
+            iconSize = toStandardIconSize(height - i);
         }
 
+        if (iconType === St.IconType.SYMBOLIC) {
+            iconSize = iconSize * 0.9;
+        }
+
+        global.logError("panel icon size: " + zoneConfig[locationLabel] + " @ " + height + " --> " + iconSize);
         return iconSize; // Always return a value above 0 or St will spam the log.
     },
 

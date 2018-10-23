@@ -293,9 +293,7 @@ class CinnamonSystrayApplet extends Applet.Applet {
             global.log("Resize " + role + " with hardcoded size (" + icon.get_width() + "x" + icon.get_height() + "px)");
         }
         else {
-            if (this._scaleMode) {
-                this._resizeStatusItem(role, icon);
-            }
+            this._resizeStatusItem(role, icon);
         }
     }
 
