@@ -41,8 +41,10 @@ class PanelSettingsPage(SettingsPage):
         section = SettingsBox(_("Settings"))
         self.add(section)
 
+        size_group = Gtk.SizeGroup.new(Gtk.SizeGroupMode.HORIZONTAL)
+
         options = [["true", _("Auto hide panel")], ["false", _("Always show panel")], ["intel", _("Intelligently hide panel")]]
-        widget = PanelComboBox(_("Auto-hide panel"), "org.cinnamon", "panels-autohide", self.panel_id, options)
+        widget = PanelComboBox(_("Auto-hide panel"), "org.cinnamon", "panels-autohide", self.panel_id, options, size_group=size_group)
         section.add_row(widget)
 
         options = [
@@ -55,13 +57,13 @@ class PanelSettingsPage(SettingsPage):
             [48, '48px'],
             [64, '64px']
         ]
-        widget = PanelJSONComboBox(_("Left panel zone icon size"), "org.cinnamon", "panel-zone-icon-sizes", self.panel_id, 'left', options)
+        widget = PanelJSONComboBox(_("Left panel zone icon size"), "org.cinnamon", "panel-zone-icon-sizes", self.panel_id, 'left', options, size_group=size_group)
         section.add_row(widget)
 
-        widget = PanelJSONComboBox(_("Center panel zone icon size"), "org.cinnamon", "panel-zone-icon-sizes", self.panel_id, 'center', options)
+        widget = PanelJSONComboBox(_("Center panel zone icon size"), "org.cinnamon", "panel-zone-icon-sizes", self.panel_id, 'center', options, size_group=size_group)
         section.add_row(widget)
 
-        widget = PanelJSONComboBox(_("Right panel zone icon size"), "org.cinnamon", "panel-zone-icon-sizes", self.panel_id, 'right', options)
+        widget = PanelJSONComboBox(_("Right panel zone icon size"), "org.cinnamon", "panel-zone-icon-sizes", self.panel_id, 'right', options, size_group=size_group)
         section.add_row(widget)
 
         widget = PanelSpinButton(_("Show delay"), "org.cinnamon", "panels-show-delay", self.panel_id, _("milliseconds"), 0, 2000, 50, 200)#, dep_key="org.cinnamon/panels-autohide")
@@ -70,7 +72,7 @@ class PanelSettingsPage(SettingsPage):
         widget = PanelSpinButton(_("Hide delay"), "org.cinnamon", "panels-hide-delay", self.panel_id, _("milliseconds"), 0, 2000, 50, 200)#, dep_key="org.cinnamon/panels-autohide")
         section.add_reveal_row(widget, "org.cinnamon", "panels-autohide", check_func=can_show)
 
-        widget = PanelRange(dimension_text, "org.cinnamon", "panels-height", self.panel_id, _("Smaller"), _("Larger"), mini=20, maxi=60, show_value=False)
+        widget = PanelRange(dimension_text, "org.cinnamon", "panels-height", self.panel_id, _("Smaller"), _("Larger"), mini=20, maxi=60, show_value=True)
         widget.set_rounding(0)
         section.add_row(widget)
 
@@ -452,7 +454,6 @@ class PanelRange(Range, PanelWidgetBackend):
     def __init__(self, label, schema, key, panel_id, *args, **kwargs):
         self.panel_id = panel_id
         super(PanelRange, self).__init__(label, *args, **kwargs)
-
         self.connect_to_settings(schema, key)
 
     def get_range(self):
@@ -468,6 +469,5 @@ class PanelRange(Range, PanelWidgetBackend):
 
     def on_setting_changed(self, *args):
         value = self.get_value()
-        print(value)
         if value != int(self.bind_object.get_value()):
             self.bind_object.set_value(value)
