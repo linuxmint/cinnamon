@@ -717,6 +717,7 @@ class Range(SettingsWidget):
     def set_rounding(self, digits):
         if not self.log:
             self.content_widget.set_round_digits(digits)
+            self.content_widget.set_digits(digits)
 
 class ComboBox(SettingsWidget):
     bind_dir = None
