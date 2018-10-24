@@ -146,7 +146,7 @@
   },
   "middle-click-action": {
     "type": "combobox",
-    "default": 2,
+    "default": 3,
     "description": "Middle click action",
     "options": {
       "None": 1,
@@ -342,7 +342,7 @@
   },
   "launch-new-instance-menu-item": {
     "type": "checkbox",
-    "default": false,
+    "default": true,
     "description": "Show new window option",
     "tooltip": "Shows the \"New Window\" option in an app's context menu if it doesn't already have one from the app's own action menu items."
   },
