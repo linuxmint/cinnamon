@@ -370,7 +370,6 @@ class GroupedWindowListApplet extends Applet.Applet {
             },
             {key: 'vertical-thumbnails', value: 'verticalThumbs', cb: this.updateVerticalThumbnailState},
             {key: 'show-thumbnails', value: 'showThumbs', cb: this.updateVerticalThumbnailState},
-            {key: 'show-icons', value: 'showIcons', cb: this.updateVerticalThumbnailState},
             {key: 'animate-thumbnails', value: 'animateThumbs', cb: null},
             {key: 'number-display', value: 'numDisplay', cb: this.updateWindowNumberState},
             {key: 'title-display', value: 'titleDisplay', cb: this.updateTitleDisplay},
