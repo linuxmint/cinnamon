@@ -127,7 +127,7 @@
     </key>
 
     <key name="panels-height" type="as">
-      <default>['1:25']</default>
+      <default>['1:40']</default>
       <_summary>Panel size</_summary>
       <_description>
         User-defined panel-height for panels.  Note, this value may or may not be the true value in use at runtime, depending
@@ -136,7 +136,7 @@
     </key>
 
     <key type="s" name="panel-zone-icon-sizes">
-      <default>'[{"panelId": 1, "left": 0, "center": 0, "right": 0}]'</default>
+      <default>'[{"panelId": 1, "left": 0, "center": 0, "right": 24}]'</default>
       <_summary>Per-zone icon-size configuration</_summary>
       <_description>
         Panel zone configuration objects for icon size.
