@@ -505,21 +505,11 @@ class WindowThumbnail {
             style_class: 'grouped-window-list-thumbnail-label'
         });
 
-        if (this.state.settings.showIcons) {
-            this.icon = this.groupState.app.create_icon_texture(16);
-            this.themeIcon = new St.BoxLayout({
-                style_class: 'grouped-window-list-thumbnail-icon'
-            });
-            this.themeIcon.add_actor(this.icon);
-            this.container.add_actor(this.themeIcon);
-            this.container.add_actor(this.label);
-        } else {
-            this.labelContainer = new St.Bin({
-                y_align: this.icon ? St.Align.START : St.Align.MIDDLE
-            });
-            this.labelContainer.add_actor(this.label);
-            this.container.add_actor(this.labelContainer);
-        }
+        this.labelContainer = new St.Bin({
+            y_align: this.icon ? St.Align.START : St.Align.MIDDLE
+        });
+        this.labelContainer.add_actor(this.label);
+        this.container.add_actor(this.labelContainer);
 
         this.button = new St.Button({
             reactive: true
@@ -1028,13 +1018,6 @@ class AppThumbnailHoverMenu extends PopupMenu.PopupMenu {
 
         if (skipThumbnailIconResize) return;
 
-        if (this.state.settings.showIcons) {
-            for (let i = 0; i < this.appThumbnails.length; i++) {
-                if (this.appThumbnails[i]) {
-                    this.appThumbnails[i].thumbnailIconSize();
-                }
-            }
-        }
         if (this.isOpen) this.open();
     }
 
