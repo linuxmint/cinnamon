@@ -383,16 +383,6 @@
     "description": "Icon spacing",
     "tooltip": "Controls how much space is between the icons."
   },
-  "icon-padding": {
-    "type": "spinbutton",
-    "default": 0,
-    "min": 0,
-    "max": 15,
-    "step": 1,
-    "units": "px",
-    "description": "Icon padding",
-    "tooltip": "Controls how much horizontal padding is inside the app buttons. Padding is only applied to instances of this applet on horizontal panels."
-  },
   "app-button-transition-duration": {
     "type": "spinbutton",
     "default": 0,
