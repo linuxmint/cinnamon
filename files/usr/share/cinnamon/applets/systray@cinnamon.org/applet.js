@@ -49,7 +49,7 @@ class CinnamonSystrayApplet extends Applet.Applet {
         let manager;
 
         this.orientation = orientation;
-        this.icon_size = this.getPanelIconSize(St.IconType.FULLCOLOR);
+        this.icon_size = this.getPanelIconSize(St.IconType.FULLCOLOR) * global.ui_scale;
 
         if (this.orientation == St.Side.TOP || this.orientation == St.Side.BOTTOM) {
             manager = new Clutter.BoxLayout( { spacing: 2,
@@ -289,7 +289,8 @@ class CinnamonSystrayApplet extends Applet.Applet {
         this.manager_container.insert_child_at_index(icon, 0);
 
         if (["skypeforlinux"].indexOf(role) != -1) {
-            icon.set_size(16, 16);
+            let size = 16 * global.ui_scale;
+            icon.set_size(size, size);
             global.log("Resize " + role + " with hardcoded size (" + icon.get_width() + "x" + icon.get_height() + "px)");
         }
         else {
