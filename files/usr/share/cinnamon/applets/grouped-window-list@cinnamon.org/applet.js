@@ -281,16 +281,6 @@ class GroupedWindowListApplet extends Applet.Applet {
             setThumbnailActorStyle: (actor) => {
                 actor.set_style('border-width:2px;padding:' + this.state.settings.thumbnailPadding + 'px;')
             },
-            setThumbnailCloseButtonStyle: (button) => {
-                let size = this.state.settings.thumbnailCloseButtonSize;
-                button.width = size;
-                button.height = size;
-                let left = global.ui_scale > 1 ? -10 : 0;
-                button.style = 'padding: 0px; width: ' + size + 'px; height: ' + size + 'px; max-width: ' + size
-                    + 'px; max-height: ' + size + 'px; ' + '-cinnamon-close-overlap: 0px; postion: ' + left
-                    + 'px -2px;background-size: ' + size + 'px ' + size + 'px;';
-                button.style_class = 'window-close';
-            },
             cycleWindows: (e, source) => this.handleScroll(e, source),
             openAbout: () => this.openAbout(),
             configureApplet: () => this.configureApplet()
@@ -355,11 +345,6 @@ class GroupedWindowListApplet extends Applet.Applet {
             {key: 'hover-peek-time', value: 'peekTime', cb: null},
             {key: 'thumbnail-timeout', value: 'thumbTimeout', cb: null},
             {key: 'thumbnail-size', value: 'thumbSize', cb: null},
-            {
-                key: 'thumbnail-close-button-size',
-                value: 'thumbnailCloseButtonSize',
-                cb: this.updateThumbnailCloseButtonSize
-            },
             {key: 'thumbnail-padding', value: 'thumbnailPadding', cb: this.updateThumbnailPadding},
             {key: 'thumbnail-scroll-behavior', value: 'thumbnailScrollBehavior', cb: null},
             {key: 'sort-thumbnails', value: 'sortThumbs', cb: this.updateVerticalThumbnailState},
@@ -604,14 +589,6 @@ class GroupedWindowListApplet extends Applet.Applet {
         each(this.appLists, (workspace) => {
             each(workspace.appList, (appGroup) => {
                 appGroup.hoverMenu.updateThumbnailPadding();
-            });
-        });
-    }
-
-    updateThumbnailCloseButtonSize() {
-        each(this.appLists, (workspace) => {
-            each(workspace.appList, (appGroup) => {
-                appGroup.hoverMenu.updateThumbnailCloseButtonSize();
             });
         });
     }
