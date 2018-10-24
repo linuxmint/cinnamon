@@ -259,16 +259,6 @@
     "description": "Thumbnail size",
     "tooltip": "Controls the size of the thumbnails."
   },
-  "thumbnail-close-button-size": {
-    "type": "spinbutton",
-    "default": 16,
-    "min": 8,
-    "max": 32,
-    "step": 1,
-    "units": "px",
-    "description": "Close button size",
-    "tooltip": "Controls how large the thumbnail close button is."
-  },
   "thumbnail-padding": {
     "type": "spinbutton",
     "default": 1,
