@@ -250,6 +250,8 @@ function setHeightForPanel(panel) {
     if (panel.panelPosition > 1) height = panel.actor.get_width();
     else height = panel.actor.get_height();
 
+    if (height < 20) height = 40;
+
     return height;
 }
 
