@@ -19,8 +19,7 @@ const {
     ICON_HEIGHT_FACTOR,
     VERTICAL_ICON_HEIGHT_FACTOR,
     RESERVE_KEYS,
-    TitleDisplay,
-    NumberDisplay,
+    TitleDisplay
 } = require('./constants');
 
 // returns [x1,x2] so that the area between x1 and x2 is
@@ -1003,20 +1002,12 @@ class AppGroup {
 
         let windowNum = this.groupState.metaWindows ? this.groupState.metaWindows.length : 0;
         this.numberLabel.text = windowNum.toString();
-        if (this.state.settings.numDisplay === NumberDisplay.Smart) {
+        if (this.state.settings.numDisplay) {
             if (windowNum <= 1) {
                 this.numberLabel.hide();
             } else {
                 this.numberLabel.show();
             }
-        } else if (this.state.settings.numDisplay === NumberDisplay.Normal) {
-            if (windowNum <= 0) {
-                this.numberLabel.hide();
-            } else {
-                this.numberLabel.show();
-            }
-        } else if (this.state.settings.numDisplay === NumberDisplay.All) {
-            this.numberLabel.show();
         } else {
             this.numberLabel.hide();
         }
