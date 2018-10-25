@@ -14,12 +14,6 @@ const constants = {
         Title: 3,
         Focused: 4
     },
-    NumberDisplay: {
-        Smart: 1,
-        Normal: 2,
-        None: 3,
-        All: 4
-    },
     FavType: {
         favorites: 0,
         pinnedApps: 1,
