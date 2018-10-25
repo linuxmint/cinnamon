@@ -1036,6 +1036,14 @@ class AppThumbnailHoverMenu extends PopupMenu.PopupMenu {
         this.fullyRefreshThumbnails();
     }
 
+    updateThumbnailSize() {
+        for (let i = 0; i < this.appThumbnails.length; i++) {
+            if (this.appThumbnails[i]) {
+                this.appThumbnails[i].refreshThumbnail();
+            }
+        }
+    }
+
     updateThumbnailPadding() {
         for (let i = 0; i < this.appThumbnails.length; i++) {
             if (this.appThumbnails[i]) {
