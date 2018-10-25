@@ -2051,6 +2051,8 @@ Panel.prototype = {
             }
         }
 
+        if (this.actor.is_finalized()) return;
+
         if (this._leftCorner)
             this.actor.add_actor(this._leftCorner.actor);
         if (this._rightCorner)
