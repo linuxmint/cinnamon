@@ -15,7 +15,7 @@
     "thumbnailsPage": {
       "type" : "page",
       "title" : "Thumbnails",
-      "sections": ["thumbnailsSection", "hoverPeekSection"]
+      "sections": ["thumbnailsSection"]
     },
     "contextMenuPage": {
       "type" : "page",
@@ -42,13 +42,14 @@
         "number-display",
         "title-display",
         "launcher-animation-effect",
-        "icon-spacing",
-        "app-button-transition-duration",
         "pinned-apps",
         "show-alerts",
         "show-pinned",
         "enable-app-button-dragging",
-        "pinOnDrag"
+        "pinOnDrag",
+        "panel-show-advanced",
+        "icon-spacing",
+        "app-button-transition-duration"
       ]
     },
     "hotKeysSection": {
@@ -64,23 +65,18 @@
       "type" : "section",
       "title" : "Thumbnails",
       "keys": [
-        "thumbnail-timeout",
-        "thumbnail-size",
-        "thumbnail-padding",
         "thumbnail-scroll-behavior",
         "show-thumbnails",
         "animate-thumbnails",
         "vertical-thumbnails",
         "sort-thumbnails",
         "highlight-last-focused-thumbnail",
-        "onclick-thumbnails"
-      ]
-    },
-    "hoverPeekSection": {
-      "type" : "section",
-      "title" : "Hover Peek",
-      "keys": [
         "enable-hover-peek",
+        "onclick-thumbnails",
+        "thumbnail-timeout",
+        "thumbnail-show-advanced",
+        "thumbnail-size",
+        "thumbnail-padding",
         "hover-peek-time",
         "hover-peek-opacity"
       ]
@@ -239,27 +235,36 @@
     "tooltip": "Determines the duration the window count labels are replaced with the app's order number."
   },
   "thumbnail-timeout": {
-    "type": "spinbutton",
+    "dependency": "!onclick-thumbnails",
+    "type": "scale",
     "default": 50,
     "min": 0,
-    "max": 5000,
+    "max": 2000,
     "step": 5,
-    "units": "milliseconds",
+    "units": "ms",
+    "show-value": true,
     "description": "Thumbnail timeout",
     "tooltip": "Controls how quickly an app's set of window thumbnails will fade out when the mouse leaves the app button."
   },
+  "thumbnail-show-advanced": {
+    "type": "checkbox",
+    "default": false,
+    "description": "Show advanced options"
+  },
   "thumbnail-size": {
-    "type": "spinbutton",
+    "dependency": "thumbnail-show-advanced",
+    "type": "scale",
     "default": 6,
-    "min": 0,
-    "max": 100,
+    "min": 3,
+    "max": 20,
     "step": 1,
-    "units": "size",
+    "show-value": false,
     "description": "Thumbnail size",
     "tooltip": "Controls the size of the thumbnails."
-  },
+},
   "thumbnail-padding": {
-    "type": "spinbutton",
+    "dependency": "thumbnail-show-advanced",
+    "type": "scale",
     "default": 1,
     "min": 0,
     "max": 12,
@@ -342,7 +347,7 @@
   },
   "hover-peek-time": {
     "type": "spinbutton",
-    "dependency": "enable-hover-peek",
+    "dependency": "thumbnail-show-advanced",
     "default": 300,
     "min": 0,
     "max": 1000,
@@ -353,7 +358,7 @@
   },
   "hover-peek-opacity": {
     "type": "spinbutton",
-    "dependency": "enable-hover-peek",
+    "dependency": "thumbnail-show-advanced",
     "default": 94,
     "min": 0,
     "max": 100,
@@ -362,7 +367,13 @@
     "description": "Window opacity",
     "tooltip": "Opacity of the windows on hover."
   },
+  "panel-show-advanced": {
+    "type": "checkbox",
+    "default": false,
+    "description": "Show advanced options"
+  },
   "icon-spacing": {
+    "dependency": "panel-show-advanced",
     "type": "spinbutton",
     "default": 6,
     "min": 0,
@@ -373,6 +384,7 @@
     "tooltip": "Controls how much space is between the icons."
   },
   "app-button-transition-duration": {
+    "dependency": "panel-show-advanced",
     "type": "spinbutton",
     "default": 0,
     "min": 0,
