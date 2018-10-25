@@ -179,16 +179,14 @@ class AppList {
     refreshWindows() {
         each(this.appList, (appGroup) => {
             if (!appGroup) return;
-            let isClosed = false;
             each(appGroup.groupState.metaWindows.slice(), (metaWindow) => {
-                if (!metaWindow) return;
                 this.windowRemoved(this.metaWorkspace, metaWindow);
             });
-            if ((isClosed || appGroup.groupState.metaWindows.length === 0)
-                && !appGroup.actor.is_finalized()) {
-                appGroup.groupState.set({metaWindows: []});
+            if (!appGroup.actor.is_finalized()) {
                 appGroup.actor.set_style_pseudo_class('closed');
             }
+            // Make sure listeners are triggered
+            appGroup.groupState.set({metaWindows: []});
         });
         this.refreshApps();
     }
@@ -326,7 +324,7 @@ class AppList {
             let _appWindows = app.get_windows();
             let appWindows = [];
 
-            for (var i = 0; i < _appWindows.length; i++) {
+            for (let i = 0; i < _appWindows.length; i++) {
                 if ((this.state.settings.showAllWorkspaces
                         || _appWindows[i].is_on_all_workspaces()
                         || _appWindows[i].get_workspace() === this.metaWorkspace)
