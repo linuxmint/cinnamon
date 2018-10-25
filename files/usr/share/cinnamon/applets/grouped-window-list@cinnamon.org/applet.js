@@ -536,18 +536,19 @@ class GroupedWindowListApplet extends Applet.Applet {
         }
         let onPrimary = this.panel.monitorIndex === Main.layoutManager.primaryIndex;
         let instances = Main.AppletManager.getRunningInstancesForUuid(this.state.uuid);
+        let {monitorWatchList} = this.state;
         /* Simple cases */
         if (this.numberOfMonitors === 1) {
-            this.state.monitorWatchList = [Main.layoutManager.primaryIndex];
+            monitorWatchList = [Main.layoutManager.primaryIndex];
         } else if (instances.length > 1 && !onPrimary) {
-            this.state.monitorWatchList = [this.panel.monitorIndex];
+            monitorWatchList = [this.panel.monitorIndex];
         } else {
            /* This is an instance on the primary monitor - it will be
             * responsible for any monitors not covered individually.  First
             * convert the instances list into a list of the monitor indices,
             * and then add the monitors not present to the monitor watch list
             * */
-            this.state.monitorWatchList = [this.panel.monitorIndex];
+            monitorWatchList = [this.panel.monitorIndex];
             for (let i = 0; i < instances.length; i++) {
                 if (!instances[i]) {
                     continue;
@@ -557,11 +558,11 @@ class GroupedWindowListApplet extends Applet.Applet {
 
             for (let i = 0; i < this.numberOfMonitors; i++) {
                 if (instances.indexOf(i) === -1) {
-                    this.state.monitorWatchList.push(i);
+                    monitorWatchList.push(i);
                 }
             }
         }
-        this.state.set({monitorWatchList: this.state.monitorWatchList});
+        this.state.set({monitorWatchList});
     }
 
     refreshCurrentAppList() {
