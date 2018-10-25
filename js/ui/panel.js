@@ -2172,6 +2172,7 @@ Panel.prototype = {
         this._destroyed = true;    // set this early so that any routines triggered during
                                    // the destroy process can test it
 
+        this._removeZoneIconSizes();
         this._clearPanelBarriers();
         AppletManager.unloadAppletsOnPanel(this.panelId);
         this._context_menu.close();
@@ -2853,6 +2854,8 @@ Panel.prototype = {
     },
 
     _onPanelZoneIconSizesChanged: function() {
+        if (this._destroyed) return;
+
         let panelZoneIconSizes = this._getJSONProperty(PANEL_ZONE_ICON_SIZES);
 
         if (!panelZoneIconSizes) return;
@@ -2893,8 +2896,7 @@ Panel.prototype = {
                 right: 32
             });
             global.settings.set_string(PANEL_ZONE_ICON_SIZES, JSON.stringify(panelZoneIconSizes));
-            // WIP debug
-            global.log(`Creating a new zone configuration for panel ${this.panelId}`);
+            global.log(`[Panel ${this.panelId}] Creating a new zone configuration`);
         }
 
         this._panelZoneIconSizes = panelZoneIconSizes;
@@ -2907,13 +2909,14 @@ Panel.prototype = {
             return obj.panelId === this.panelId;
         });
 
+        let height = this.height / global.ui_scale;
+
         if (!zoneConfig) {
             global.logError(`[Panel ${this.panelId}] Unable to find zone configuration`);
-            return 32;
+            return toStandardIconSize(height);
         }
 
         let iconSize = zoneConfig[locationLabel];
-        let height = this.height / global.ui_scale;
 
         if (iconSize === -1) { // Legacy: Scale to panel size
             iconSize = height;
@@ -2934,6 +2937,18 @@ Panel.prototype = {
 
         global.logError("panel icon size: " + zoneConfig[locationLabel] + " @ " + height + " --> " + iconSize);
         return iconSize; // Always return a value above 0 or St will spam the log.
+    },
+
+    _removeZoneIconSizes: function() {
+        let zoneIndex = Util.findIndex(this._panelZoneIconSizes, (obj) => {
+            return obj.panelId === this.panelId;
+        });
+
+        if (zoneIndex < 0) return;
+
+        this._panelZoneIconSizes.splice(zoneIndex, 1);
+        global.settings.set_string(PANEL_ZONE_ICON_SIZES, JSON.stringify(this._panelZoneIconSizes));
+        global.log(`[Panel ${this.panelId}] Removing zone configuration`);
     },
 
     _getPreferredWidth: function(actor, forHeight, alloc) {
