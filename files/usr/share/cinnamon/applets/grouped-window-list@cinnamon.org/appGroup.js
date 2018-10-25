@@ -261,7 +261,6 @@ class AppGroup {
         this.updateIconBoxClip();
         this.setIconPadding();
         this.setMargin();
-        this.setTransitionDuration();
     }
 
     setIconPadding() {
@@ -281,17 +280,6 @@ class AppGroup {
         let direction = this.state.isHorizontal ? 'right' : 'bottom';
         let existingStyle = this.actor.style ? this.actor.style : '';
         this.actor.style = existingStyle + 'margin-' + direction + ': ' + this.state.settings.iconSpacing + 'px;';
-    }
-
-    setTransitionDuration() {
-        if (!this.state.settings.appButtonTransitionDuration) {
-            return;
-        }
-        let existingStyle = this.actor.style ? this.actor.style : '';
-        this.actor.style = existingStyle
-            + 'transition-duration: '
-            + this.state.settings.appButtonTransitionDuration
-            + ';';
     }
 
     onIconBoxStyleChanged() {

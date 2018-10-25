@@ -48,8 +48,7 @@
         "enable-app-button-dragging",
         "pinOnDrag",
         "panel-show-advanced",
-        "icon-spacing",
-        "app-button-transition-duration"
+        "icon-spacing"
       ]
     },
     "hotKeysSection": {
@@ -364,16 +363,5 @@
     "units": "px",
     "description": "Icon spacing",
     "tooltip": "Controls how much space is between the icons."
-  },
-  "app-button-transition-duration": {
-    "dependency": "panel-show-advanced",
-    "type": "spinbutton",
-    "default": 0,
-    "min": 0,
-    "max": 4000,
-    "step": 1,
-    "units": "ms",
-    "description": "App button transition duration",
-    "tooltip": "Overrides the theme's animation time for app buttons. If set to zero, the theme's transition duration will be used."
   }
 }
