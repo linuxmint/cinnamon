@@ -65,6 +65,7 @@
       "type" : "section",
       "title" : "Thumbnails",
       "keys": [
+        "thumbnail-size",
         "thumbnail-scroll-behavior",
         "show-thumbnails",
         "animate-thumbnails",
@@ -75,7 +76,6 @@
         "onclick-thumbnails",
         "thumbnail-timeout",
         "thumbnail-show-advanced",
-        "thumbnail-size",
         "hover-peek-time",
         "hover-peek-opacity"
       ]
@@ -251,14 +251,14 @@
     "description": "Show advanced options"
   },
   "thumbnail-size": {
-    "dependency": "thumbnail-show-advanced",
-    "type": "scale",
+    "type": "combobox",
     "default": 6,
-    "min": 3,
-    "max": 20,
-    "step": 1,
-    "show-value": false,
     "description": "Thumbnail size",
+    "options": {
+      "Small": 3,
+      "Medium": 6,
+      "Large": 9
+    },
     "tooltip": "Controls the size of the thumbnails."
   },
   "thumbnail-scroll-behavior": {
