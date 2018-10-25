@@ -76,7 +76,6 @@
         "thumbnail-timeout",
         "thumbnail-show-advanced",
         "thumbnail-size",
-        "thumbnail-padding",
         "hover-peek-time",
         "hover-peek-opacity"
       ]
@@ -261,17 +260,6 @@
     "show-value": false,
     "description": "Thumbnail size",
     "tooltip": "Controls the size of the thumbnails."
-},
-  "thumbnail-padding": {
-    "dependency": "thumbnail-show-advanced",
-    "type": "scale",
-    "default": 1,
-    "min": 0,
-    "max": 12,
-    "step": 1,
-    "units": "px",
-    "description": "Thumbnail padding",
-    "tooltip": "Controls how much space will be around the window preview thumbnails."
   },
   "thumbnail-scroll-behavior": {
     "type": "checkbox",
