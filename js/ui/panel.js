@@ -72,12 +72,6 @@ var PanelLoc = {
     right : 3
 };
 
-var COLOR_ICON_HEIGHT_FACTOR = .65;  // Panel height factor for normal color icons
-var PANEL_FONT_DEFAULT_HEIGHT = 11.5; // px
-var PANEL_SYMBOLIC_ICON_DEFAULT_HEIGHT = 1.14 * PANEL_FONT_DEFAULT_HEIGHT; // ems conversion
-var DEFAULT_PANEL_HEIGHT = 25;
-var DEFAULT_ICON_SIZE = 22;
-
 // To make sure the panel corners blend nicely with the panel,
 // we draw background and borders the same way, e.g. drawing
 // them as filled shapes from the outside inwards instead of
@@ -1920,7 +1914,6 @@ Panel.prototype = {
         this._disabled = false;
         this._panelEditMode = false;
         this._autohideSettings = null;
-        this._themeFontSize = null;
         this._destroyed = false;
         this._positionChanged = false;
         this._monitorsChanged = false;
@@ -2730,8 +2723,6 @@ Panel.prototype = {
             this.margin_left = newMarginLeft;
             this.margin_right = newMarginRight;
 
-            this._setFont(panelHeight);
-
             // update size and determine position depending on hidden state
             let newX, newY;
             if (horizontal_panel) {
@@ -2830,16 +2821,6 @@ Panel.prototype = {
         this._rightBox.set_vertical(false);
         this._rightBox.set_x_align(rtl ? Clutter.ActorAlign.START : Clutter.ActorAlign.END);
         this._rightBox.set_y_align(Clutter.ActorAlign.FILL);
-    },
-
-    _setFont: function(panelHeight) {
-        if (!this._themeFontSize) {
-            let themeNode = this.actor.get_theme_node();
-            this._themeFontSize = themeNode.get_length("font-size");
-        }
-
-        let textheight = (panelHeight / DEFAULT_PANEL_HEIGHT) * PANEL_FONT_DEFAULT_HEIGHT;
-        this.actor.set_style('font-size: ' + textheight / global.ui_scale + 'px;');
     },
 
     _setPanelHeight: function() {
