@@ -2538,7 +2538,7 @@ Panel.prototype = {
     _getScaledPanelHeight: function() {
         let panelHeight = 0;
         panelHeight = this._getProperty(PANEL_HEIGHT_KEY, "i") * global.ui_scale;
-        return panelHeight;
+        return panelHeight < 20 ? 40 : panelHeight;
     },
 
    /**
