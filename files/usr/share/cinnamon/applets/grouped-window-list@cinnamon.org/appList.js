@@ -180,11 +180,8 @@ class AppList {
         each(this.appList, (appGroup) => {
             if (!appGroup) return;
             let isClosed = false;
-            each(appGroup.groupState.metaWindows, (metaWindow) => {
-                if (!metaWindow) {
-                    isClosed = true;
-                    return;
-                }
+            each(appGroup.groupState.metaWindows.slice(), (metaWindow) => {
+                if (!metaWindow) return;
                 this.windowRemoved(this.metaWorkspace, metaWindow);
             });
             if ((isClosed || appGroup.groupState.metaWindows.length === 0)
