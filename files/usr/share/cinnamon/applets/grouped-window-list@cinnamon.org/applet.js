@@ -344,7 +344,7 @@ class GroupedWindowListApplet extends Applet.Applet {
             {key: 'hover-peek-opacity', value: 'peekOpacity', cb: null},
             {key: 'hover-peek-time', value: 'peekTime', cb: null},
             {key: 'thumbnail-timeout', value: 'thumbTimeout', cb: null},
-            {key: 'thumbnail-size', value: 'thumbSize', cb: null},
+            {key: 'thumbnail-size', value: 'thumbSize', cb: this.updateThumbnailSize},
             {key: 'thumbnail-padding', value: 'thumbnailPadding', cb: this.updateThumbnailPadding},
             {key: 'thumbnail-scroll-behavior', value: 'thumbnailScrollBehavior', cb: null},
             {key: 'sort-thumbnails', value: 'sortThumbs', cb: this.updateVerticalThumbnailState},
@@ -583,6 +583,14 @@ class GroupedWindowListApplet extends Applet.Applet {
     updateFavorites() {
         this.pinnedFavorites.reload();
         this.refreshCurrentAppList();
+    }
+
+    updateThumbnailSize() {
+        each(this.appLists, (workspace) => {
+            each(workspace.appList, (appGroup) => {
+                appGroup.hoverMenu.updateThumbnailSize();
+            });
+        });
     }
 
     updateThumbnailPadding() {
