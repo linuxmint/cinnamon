@@ -278,9 +278,6 @@ class GroupedWindowListApplet extends Applet.Applet {
             addFavorite: (obj) => this.pinnedFavorites.addFavorite(obj),
             removeFavorite: (id) => this.pinnedFavorites.removeFavorite(id),
             getFavorites: () => this.pinnedFavorites._favorites,
-            setThumbnailActorStyle: (actor) => {
-                actor.set_style('border-width:2px;padding:' + this.state.settings.thumbnailPadding + 'px;')
-            },
             cycleWindows: (e, source) => this.handleScroll(e, source),
             openAbout: () => this.openAbout(),
             configureApplet: () => this.configureApplet()
@@ -345,7 +342,6 @@ class GroupedWindowListApplet extends Applet.Applet {
             {key: 'hover-peek-time', value: 'peekTime', cb: null},
             {key: 'thumbnail-timeout', value: 'thumbTimeout', cb: null},
             {key: 'thumbnail-size', value: 'thumbSize', cb: this.updateThumbnailSize},
-            {key: 'thumbnail-padding', value: 'thumbnailPadding', cb: this.updateThumbnailPadding},
             {key: 'thumbnail-scroll-behavior', value: 'thumbnailScrollBehavior', cb: null},
             {key: 'sort-thumbnails', value: 'sortThumbs', cb: this.updateVerticalThumbnailState},
             {
@@ -590,14 +586,6 @@ class GroupedWindowListApplet extends Applet.Applet {
         each(this.appLists, (workspace) => {
             each(workspace.appList, (appGroup) => {
                 appGroup.hoverMenu.updateThumbnailSize();
-            });
-        });
-    }
-
-    updateThumbnailPadding() {
-        each(this.appLists, (workspace) => {
-            each(workspace.appList, (appGroup) => {
-                appGroup.hoverMenu.updateThumbnailPadding();
             });
         });
     }

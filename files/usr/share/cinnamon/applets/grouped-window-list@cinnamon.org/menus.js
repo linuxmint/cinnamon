@@ -11,6 +11,7 @@ const SignalManager = imports.misc.signalManager;
 
 const {each, findIndex, tryFn, unref, trySpawnCommandLine, spawn_async} = imports.misc.util;
 const {
+    CLOSE_BTN_SIZE,
     OPACITY_OPAQUE,
     RESERVE_KEYS,
     FavType,
@@ -485,9 +486,9 @@ class WindowThumbnail {
             reactive: true,
             track_hover: true,
             vertical: true,
-            can_focus: true
+            can_focus: true,
+            style: 'border-width:2px;padding:' + 3 * global.ui_scale + 'px;'
         });
-        this.state.trigger('setThumbnailActorStyle', this.actor);
         this.actor._delegate = null;
         // Override with own theme.
         this.actor.add_style_class_name('thumbnail-box');
@@ -511,18 +512,17 @@ class WindowThumbnail {
         this.labelContainer.add_actor(this.label);
         this.container.add_actor(this.labelContainer);
 
-        this.button = new St.Button({
-            reactive: true
-        });
-
-        let size = 22;
-        this.button.width = size;
-        this.button.height = size;
         let left = global.ui_scale > 1 ? -10 : 0;
-        this.button.style = 'padding: 0px; width: ' + size + 'px; height: ' + size + 'px; max-width: ' + size
-                + 'px; max-height: ' + size + 'px; ' + '-cinnamon-close-overlap: 0px; postion: ' + left
-                + 'px -2px;background-size: ' + size + 'px ' + size + 'px;';
-        this.button.style_class = 'window-close';
+
+        this.button = new St.Button({
+            reactive: true,
+            style_class: 'window-close',
+            width: CLOSE_BTN_SIZE,
+            height: CLOSE_BTN_SIZE,
+            style: 'padding: 0px; width: ' + CLOSE_BTN_SIZE + 'px; height: ' + CLOSE_BTN_SIZE + 'px; max-width: ' + CLOSE_BTN_SIZE
+                + 'px; max-height: ' + CLOSE_BTN_SIZE + 'px; ' + '-cinnamon-close-overlap: 0px; position: ' + left
+                + 'px -2px;background-size: ' + CLOSE_BTN_SIZE + 'px ' + CLOSE_BTN_SIZE + 'px;'
+        });
 
         this.button.set_opacity(0);
         this.bin.add_actor(this.container);
@@ -542,7 +542,6 @@ class WindowThumbnail {
 
     onEnter(a, e) {
         this.entered = true;
-        this.state.trigger('setThumbnailActorStyle', this.actor);
 
         // Cluter.CrossingEvent will always fire on every child actor of the actor connected to the signal, so we have
         // to filter the bogus child hover events so the hoverpeek effect only occurs once while inside this.actor.
@@ -1040,14 +1039,6 @@ class AppThumbnailHoverMenu extends PopupMenu.PopupMenu {
         for (let i = 0; i < this.appThumbnails.length; i++) {
             if (this.appThumbnails[i]) {
                 this.appThumbnails[i].refreshThumbnail();
-            }
-        }
-    }
-
-    updateThumbnailPadding() {
-        for (let i = 0; i < this.appThumbnails.length; i++) {
-            if (this.appThumbnails[i]) {
-                this.state.trigger('setThumbnailActorStyle', this.appThumbnails[i].actor);
             }
         }
     }

@@ -1,4 +1,5 @@
 const constants = {
+    CLOSE_BTN_SIZE: 22,
     THUMBNAIL_ICON_SIZE: 16,
     OPACITY_OPAQUE: 255,
     BUTTON_BOX_ANIMATION_TIME: 0.15,
