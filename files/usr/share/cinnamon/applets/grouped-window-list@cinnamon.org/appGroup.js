@@ -879,16 +879,18 @@ class AppGroup {
             }
             this.onWindowTitleChanged(this.groupState.lastFocused);
             this.groupState.set({
-                    metaWindows: this.groupState.metaWindows,
-                    lastFocused: this.groupState.metaWindows[this.groupState.metaWindows.length - 1]
-            },
-                true);
+                metaWindows: this.groupState.metaWindows,
+                lastFocused: this.groupState.metaWindows[this.groupState.metaWindows.length - 1]
+            }, true);
             this.groupState.trigger('removeThumbnailFromMenu', metaWindow);
             this.groupState.trigger('refreshThumbnails');
         } else {
             // This is the last window, so this group needs to be destroyed. We'll call back windowRemoved
             // in appList to put the final nail in the coffin.
             if (typeof cb === 'function') {
+                if (this.groupState.isFavoriteApp) {
+                    this.groupState.trigger('removeThumbnailFromMenu', metaWindow);
+                }
                 cb(this.groupState.appId, this.groupState.isFavoriteApp);
                 if (this.groupState.isFavoriteApp) this.setActiveStatus(false);
             }
