@@ -39,9 +39,9 @@
       "type" : "section",
       "title" : "App Buttons",
       "keys": [
-        "number-display",
         "title-display",
         "launcher-animation-effect",
+        "number-display",
         "pinned-apps",
         "show-alerts",
         "show-pinned",
@@ -92,16 +92,10 @@
     }
   },
   "number-display": {
-    "type": "combobox",
-    "default": 3,
-    "description": "Number display",
-    "options": {
-      "Smart": 1,
-      "Normal": 2,
-      "None": 3,
-      "All": 4
-    },
-    "tooltip": "normal: display window number, smart: display window number if more than one window, none: don't display number, all: display window number for favorites too"
+    "type": "checkbox",
+    "default": true,
+    "description": "Show window count numbers",
+    "tooltip": "Choose whether or not a number badge is shown next to an app icon when more than one window is present in an app group."
   },
   "title-display": {
     "type": "combobox",
