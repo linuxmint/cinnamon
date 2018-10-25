@@ -331,11 +331,6 @@ class GroupedWindowListApplet extends Applet.Applet {
             {key: 'show-apps-order-hotkey', value: 'showAppsOrderHotkey', cb: this.bindAppKeys},
             {key: 'show-apps-order-timeout', value: 'showAppsOrderTimeout', cb: null},
             {key: 'cycleMenusHotkey', value: 'cycleMenusHotkey', cb: this.bindAppKeys},
-            {
-                key: 'app-button-transition-duration',
-                value: 'appButtonTransitionDuration',
-                cb: this.refreshCurrentAppList
-            },
             {key: 'enable-hover-peek', value: 'enablePeek', cb: null},
             {key: 'onclick-thumbnails', value: 'onClickThumbs', cb: null},
             {key: 'hover-peek-opacity', value: 'peekOpacity', cb: null},
