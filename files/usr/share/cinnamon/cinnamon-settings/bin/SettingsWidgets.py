@@ -608,7 +608,7 @@ class Range(SettingsWidget):
     bind_prop = "value"
     bind_dir = Gio.SettingsBindFlags.GET | Gio.SettingsBindFlags.NO_SENSITIVITY
 
-    def __init__(self, label, min_label="", max_label="", mini=None, maxi=None, step=None, invert=False, log=False, show_value=True, dep_key=None, tooltip="", flipped=False):
+    def __init__(self, label, min_label="", max_label="", mini=None, maxi=None, step=None, invert=False, log=False, show_value=True, dep_key=None, tooltip="", flipped=False, units=""):
         super(Range, self).__init__(dep_key=dep_key)
 
         self.set_orientation(Gtk.Orientation.VERTICAL)
@@ -621,6 +621,9 @@ class Range(SettingsWidget):
         self.value = 0
 
         hbox = Gtk.Box()
+
+        if units:
+            label += " ({})".format(units)
 
         self.label = Gtk.Label.new(label)
         self.label.set_halign(Gtk.Align.CENTER)
