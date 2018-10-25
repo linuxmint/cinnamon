@@ -1106,7 +1106,7 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
         this.menu.setCustomStyleClass('menu-background');
         this.menu.connect('open-state-changed', Lang.bind(this, this._onOpenStateChanged));
 
-        this.settings.bind("menu-icon-custom", "menuIconCustom", this._updateIconAndLabel);
+        this.settings.bind("menu-custom", "menuCustom", this._updateIconAndLabel);
         this.settings.bind("menu-icon", "menuIcon", this._updateIconAndLabel);
         this.settings.bind("menu-label", "menuLabel", this._updateIconAndLabel);
         this.settings.bind("overlay-key", "overlayKey", this._updateKeybinding);
@@ -1369,22 +1369,6 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
         this.emit('destroy');
     }
 
-    _set_default_menu_icon() {
-        let path = global.datadir + "/theme/menu.svg";
-        if (GLib.file_test(path, GLib.FileTest.EXISTS)) {
-            this.set_applet_icon_path(path);
-            return;
-        }
-
-        path = global.datadir + "/theme/menu-symbolic.svg";
-        if (GLib.file_test(path, GLib.FileTest.EXISTS)) {
-            this.set_applet_icon_symbolic_path(path);
-            return;
-        }
-        /* If all else fails, this will yield no icon */
-        this.set_applet_icon_path("");
-    }
-
     _favboxtoggle() {
         if (!this.favBoxShow) {
             this.leftPane.hide();
@@ -1395,7 +1379,7 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
 
     _updateIconAndLabel(){
         try {
-            if (this.menuIconCustom) {
+            if (this.menuCustom) {
                 if (this.menuIcon == "") {
                     this.set_applet_icon_name("");
                 } else if (GLib.path_is_absolute(this.menuIcon) && GLib.file_test(this.menuIcon, GLib.FileTest.EXISTS)) {
@@ -1410,27 +1394,34 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
                         this.set_applet_icon_name(this.menuIcon);
                 }
             } else {
-                this._set_default_menu_icon();
+                this.set_applet_icon_name(global.settings.get_string('app-menu-icon-name'));
             }
         } catch(e) {
             global.logWarning("Could not load icon file \""+this.menuIcon+"\" for menu button");
         }
 
-        if (this.menuIconCustom && this.menuIcon == "") {
+        // Hide the icon box if the icon name/path is empty
+        if ((this.menuCustom && this.menuIcon == "") || (!this.menuCustom && global.settings.get_string('app-menu-icon-name') == "")){
             this._applet_icon_box.hide();
         } else {
             this._applet_icon_box.show();
         }
 
-        if (this.orientation == St.Side.LEFT || this.orientation == St.Side.RIGHT)  // no menu label if in a vertical panel
+        // Hide the menu label in vertical panels
+        if (this.orientation == St.Side.LEFT || this.orientation == St.Side.RIGHT)
         {
             this.set_applet_label("");
         }
         else {
-            if (this.menuLabel != "")
-                this.set_applet_label(_(this.menuLabel));
-            else
-                this.set_applet_label("");
+            if (this.menuCustom) {
+                if (this.menuLabel != "")
+                    this.set_applet_label(_(this.menuLabel));
+                else
+                    this.set_applet_label("");
+            }
+            else {
+                this.set_applet_label(global.settings.get_string('app-menu-label'));
+            }
         }
     }
 
