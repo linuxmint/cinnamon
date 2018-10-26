@@ -820,7 +820,16 @@ class AppThumbnailHoverMenu extends PopupMenu.PopupMenu {
             return false;
         }
         this.shouldClose = false;
-        setTimeout(() => this.open(), this.state.settings.thumbTimeout);
+
+        let timeout;
+
+        if (this.state.thumbnailMenuOpen) {
+            timeout = 50;
+        } else {
+            timeout = this.state.settings.thumbTimeout;
+        }
+
+        setTimeout(() => this.open(), timeout);
     }
 
     onMenuLeave() {
@@ -828,7 +837,7 @@ class AppThumbnailHoverMenu extends PopupMenu.PopupMenu {
             return false;
         }
         this.shouldClose = true;
-        setTimeout(() => this.close(), this.state.settings.thumbTimeout);
+        setTimeout(() => this.close(), 50);
     }
 
     onKeyRelease(actor, event) {
@@ -851,6 +860,7 @@ class AppThumbnailHoverMenu extends PopupMenu.PopupMenu {
             this.groupState.tooltip.set_text(this.groupState.appName);
             this.groupState.tooltip.show();
         } else {
+            this.state.set({thumbnailMenuOpen: true});
             PopupMenu.PopupMenu.prototype.open.call(this, this.state.settings.animateThumbs);
         }
     }
@@ -867,6 +877,7 @@ class AppThumbnailHoverMenu extends PopupMenu.PopupMenu {
             this.groupState.tooltip.hide();
         }
         if (this.isOpen) {
+            this.state.set({thumbnailMenuOpen: false});
             PopupMenu.PopupMenu.prototype.close.call(this, this.state.settings.animateThumbs);
         }
         for (let i = 0; i < this.appThumbnails.length; i++) {
