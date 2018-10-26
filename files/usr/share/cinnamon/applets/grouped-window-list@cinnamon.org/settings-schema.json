@@ -304,7 +304,7 @@
   },
   "autostart-menu-item": {
     "type": "checkbox",
-    "default": true,
+    "default": false,
     "description": "Show autostart option",
     "tooltip": "Shows the autostart toggle option in an app's context menu."
   },
