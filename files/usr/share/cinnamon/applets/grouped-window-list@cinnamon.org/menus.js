@@ -667,7 +667,7 @@ class WindowThumbnail {
                 this.groupState.trigger('removeThumbnailFromMenu', this.metaWindow);
                 this.metaWindowActor = null;
             });
-            let scale = Math.min(1.0, this.thumbnailWidth / width, this.thumbnailHeight / height);
+            let scale = Math.min(1.0, this.thumbnailWidth / width, this.thumbnailHeight / height) * global.ui_scale;
             if (isUpdate) {
                 this.thumbnailActor.child.source = windowTexture;
                 this.thumbnailActor.child.width = width * scale;
