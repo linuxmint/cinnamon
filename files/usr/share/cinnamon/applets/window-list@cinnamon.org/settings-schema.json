@@ -24,6 +24,11 @@
       "description" : "Reverse the direction of mouse-wheel scrolling in the window list",
       "dependency" : "enable-scrolling"
   },
+  "left-click-minimize": {
+      "type": "switch",
+      "default": true,
+      "description": "Left click to minimize window"
+  },
   "middle-click-close": {
       "type": "switch",
       "default": true,
