@@ -15,7 +15,7 @@
     "thumbnailsPage": {
       "type" : "page",
       "title" : "Thumbnails",
-      "sections": ["thumbnailsSection"]
+      "sections": ["thumbnailsSection", "hoverPeekSection"]
     },
     "contextMenuPage": {
       "type" : "page",
@@ -72,10 +72,17 @@
         "vertical-thumbnails",
         "sort-thumbnails",
         "highlight-last-focused-thumbnail",
-        "enable-hover-peek",
         "onclick-thumbnails",
-        "thumbnail-show-advanced",
-        "hover-peek-time",
+        "thumbnail-show-advanced"
+      ]
+    },
+    "hoverPeekSection": {
+      "type" : "section",
+      "title" : "Hover Peek",
+      "keys": [
+        "enable-hover-peek",
+        "hover-peek-time-in",
+        "hover-peek-time-out",
         "hover-peek-opacity"
       ]
     },
@@ -326,20 +333,34 @@
     "description": "Show windows when hovered over",
     "tooltip": "Controls whether or not windows display when hovered over."
   },
-  "hover-peek-time": {
-    "type": "spinbutton",
-    "dependency": "thumbnail-show-advanced",
+  "hover-peek-time-in": {
+    "dependency": "enable-hover-peek",
+    "type": "combobox",
     "default": 300,
-    "min": 0,
-    "max": 1000,
-    "step": 5,
-    "units": "milliseconds",
-    "description": "Window fade time",
-    "tooltip": "Controls how quickly a window will fade on hover."
+    "description": "Window fade-in time",
+    "options": {
+      "150 ms": 150,
+      "300 ms": 300,
+      "450 ms": 450
+    },
+    "tooltip": "Controls how quickly a window will fade in on hover."
+  },
+  "hover-peek-time-out": {
+    "dependency": "enable-hover-peek",
+    "type": "combobox",
+    "default": 0,
+    "description": "Window fade-out time",
+    "options": {
+      "None": 0,
+      "150 ms": 150,
+      "300 ms": 300,
+      "450 ms": 450
+    },
+    "tooltip": "Controls how quickly a window will fade out on hover."
   },
   "hover-peek-opacity": {
+    "dependency": "enable-hover-peek",
     "type": "spinbutton",
-    "dependency": "thumbnail-show-advanced",
     "default": 94,
     "min": 0,
     "max": 100,
