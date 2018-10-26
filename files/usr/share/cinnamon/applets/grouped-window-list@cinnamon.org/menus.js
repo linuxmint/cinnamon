@@ -727,7 +727,7 @@ class WindowThumbnail {
 
                 // Replace the old thumbnail
                 if (this.labelContainer) {
-                    this.labelContainer.set_width(scaledWidth);
+                    this.labelContainer.set_width(scaledWidth - ((scaledWidth * 0.05) * global.ui_scale));
                 }
                 this.label.text = this.metaWindow.title || '';
                 this.getThumbnail();
