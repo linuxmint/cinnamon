@@ -65,6 +65,7 @@
       "title" : "Thumbnails",
       "keys": [
         "thumbnail-size",
+        "thumbnail-timeout",
         "thumbnail-scroll-behavior",
         "show-thumbnails",
         "animate-thumbnails",
@@ -73,7 +74,6 @@
         "highlight-last-focused-thumbnail",
         "enable-hover-peek",
         "onclick-thumbnails",
-        "thumbnail-timeout",
         "thumbnail-show-advanced",
         "hover-peek-time",
         "hover-peek-opacity"
@@ -228,15 +228,15 @@
   },
   "thumbnail-timeout": {
     "dependency": "!onclick-thumbnails",
-    "type": "scale",
-    "default": 50,
-    "min": 0,
-    "max": 2000,
-    "step": 5,
-    "units": "ms",
-    "show-value": true,
+    "type": "combobox",
+    "default": 250,
     "description": "Thumbnail timeout",
-    "tooltip": "Controls how quickly an app's set of window thumbnails will fade out when the mouse leaves the app button."
+    "options": {
+      "50 ms": 50,
+      "250 ms": 250,
+      "500 ms": 500
+    },
+    "tooltip": "Controls how quickly the thumbnail menu will appear when the mouse hovers over an app button."
   },
   "thumbnail-show-advanced": {
     "type": "checkbox",
