@@ -245,35 +245,43 @@ class AppGroup {
 
         this.actor.style = null;
 
+        let panelHeight = this.state.trigger('getPanelHeight');
+
         // TODO: Button width should be applied to buttons if they don't have a label set, not based on
         // mode, but not currently sure how to unset the fixed width on the actor so it revert to a
         // resizable state without destroying it. Otherwise, buttons with labels don't have enough padding set.
         if (!this.state.isHorizontal
             || this.state.settings.titleDisplay === 1
             || this.state.settings.titleDisplay === 3 && !this.labelVisible) {
-            this.actor.width = this.state.trigger('getPanelHeight');
+            this.actor.width = panelHeight;
         }
 
         if (this.state.isHorizontal) {
-            this.actor.height = this.state.trigger('getPanelHeight');
+            this.actor.height = panelHeight;
         }
         this.setIcon(iconSize);
         this.updateIconBoxClip();
-        this.setIconPadding();
+        this.setIconPadding(panelHeight);
         this.setMargin();
     }
 
-    setIconPadding() {
-        this.padding = this.labelVisible ? 0 : Math.floor(this.actor.width - this.iconSize) / 2;
-        if (global.ui_scale > 1) {
-            this.padding = this.padding / global.ui_scale - Math.ceil(this.padding / 4);
-        }
-
+    setIconPadding(panelHeight) {
         if (this.state.settings.titleDisplay > 1 && this.labelVisible) {
             this.iconBox.style = 'padding: 0px;';
-        } else {
-            this.actor.style = `padding-left: ${this.padding}px; padding-right: 0px;`;
+            return;
         }
+
+        this.padding = (panelHeight / global.ui_scale) - this.iconSize;
+
+        if (global.ui_scale === 1) {
+            this.padding /= 2;
+        }
+
+        if (this.state.settings.titleDisplay > 1 && !this.labelVisible) {
+            this.iconBox.style = 'padding: 0px;';
+        }
+
+        this.actor.style = `padding-left: ${this.padding / global.ui_scale}px; padding-right: 0px;`;
     }
 
     setMargin() {
