@@ -41,14 +41,13 @@
       "keys": [
         "title-display",
         "launcher-animation-effect",
+        "icon-spacing",
         "number-display",
         "pinned-apps",
         "show-alerts",
         "show-pinned",
         "enable-app-button-dragging",
-        "pinOnDrag",
-        "panel-show-advanced",
-        "icon-spacing"
+        "pinOnDrag"
       ]
     },
     "hotKeysSection": {
@@ -72,8 +71,7 @@
         "vertical-thumbnails",
         "sort-thumbnails",
         "highlight-last-focused-thumbnail",
-        "onclick-thumbnails",
-        "thumbnail-show-advanced"
+        "onclick-thumbnails"
       ]
     },
     "hoverPeekSection": {
@@ -245,11 +243,6 @@
     },
     "tooltip": "Controls how quickly the thumbnail menu will appear when the mouse hovers over an app button."
   },
-  "thumbnail-show-advanced": {
-    "type": "checkbox",
-    "default": false,
-    "description": "Show advanced options"
-  },
   "thumbnail-size": {
     "type": "combobox",
     "default": 6,
@@ -369,13 +362,7 @@
     "description": "Window opacity",
     "tooltip": "Opacity of the windows on hover."
   },
-  "panel-show-advanced": {
-    "type": "checkbox",
-    "default": false,
-    "description": "Show advanced options"
-  },
   "icon-spacing": {
-    "dependency": "panel-show-advanced",
     "type": "spinbutton",
     "default": 6,
     "min": 0,
