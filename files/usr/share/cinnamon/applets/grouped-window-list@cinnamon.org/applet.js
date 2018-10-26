@@ -303,6 +303,7 @@ class GroupedWindowListApplet extends Applet.Applet {
         this.getAutoStartApps();
         this.onSwitchWorkspace = throttle(this.onSwitchWorkspace, 100, true);
         this.signals.connect(this.actor, 'scroll-event', (c, e) => this.handleScroll(e));
+        this.signals.connect(global, 'scale-changed', (...args) => this.onUIScaleChange(...args));
         this.signals.connect(global.window_manager, 'switch-workspace', (...args) => this.onSwitchWorkspace(...args));
         this.signals.connect(global.screen, 'workspace-removed', (...args) => this.onWorkspaceRemoved(...args));
         this.signals.connect(global.screen, 'window-monitor-changed', (...args) => this.onWindowMonitorChanged(...args));
@@ -981,6 +982,10 @@ class GroupedWindowListApplet extends Applet.Applet {
         }
 
         appList.windowAdded(appList.metaWorkspace, metaWindow);
+    }
+
+    onUIScaleChange() {
+        this.refreshAllAppLists();
     }
 
     onOverviewShow() {
