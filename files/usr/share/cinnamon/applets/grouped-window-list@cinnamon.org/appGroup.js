@@ -199,7 +199,7 @@ class AppGroup {
         this.signals.connect(this.hoverMenu.actor, 'scroll-event',
             (c, e) => this.state.trigger('cycleWindows', e, this.actor._delegate));
         this.signals.connect(this.hoverMenu.box, 'key-press-event',
-            (...args) => this.hoverMenu._onKeyPress.call(this.hoverMenu, ...args));
+            (...args) => this.hoverMenu.onKeyPress.call(this.hoverMenu, ...args));
         this.signals.connect(this.container, 'get-preferred-width', (...args) => this.getPreferredWidth(...args));
         this.signals.connect(this.container, 'get-preferred-height', (...args) => this.getPreferredHeight(...args));
         this.signals.connect(this.container, 'allocate', (...args) => this.allocate(...args));
