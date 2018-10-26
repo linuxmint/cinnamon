@@ -514,7 +514,7 @@ class WindowThumbnail {
         });
 
         this.labelContainer = new St.Bin({
-            y_align: this.icon ? St.Align.START : St.Align.MIDDLE
+            y_align: St.Align.MIDDLE
         });
         this.labelContainer.add_actor(this.label);
         this.container.add_actor(this.labelContainer);
@@ -612,15 +612,6 @@ class WindowThumbnail {
         }
     }
 
-    thumbnailIconSize() {
-        let thumbnailTheme = this.themeIcon.peek_theme_node();
-        if (thumbnailTheme) {
-            let width = thumbnailTheme.get_width();
-            let height = thumbnailTheme.get_height();
-            this.icon.set_size(width, height);
-        }
-    }
-
     handleCloseClick() {
         this.onLeave();
         this.stopClick = true;
@@ -711,11 +702,11 @@ class WindowThumbnail {
 
             let monitorSize, thumbnailSize, thumbMultiplier;
             if (!this.state.isHorizontal) {
-                thumbMultiplier = 1.5;
+                thumbMultiplier = global.ui_scale + (global.ui_scale * 0.5);
                 monitorSize = monitor.height;
                 thumbnailSize = this.thumbnailHeight;
             } else {
-                thumbMultiplier = 1;
+                thumbMultiplier = global.ui_scale;
                 monitorSize = monitor.width;
                 thumbnailSize = this.thumbnailWidth;
             }
@@ -725,7 +716,8 @@ class WindowThumbnail {
                 setThumbSize(divider * divideMultiplier, 16);
                 return;
             } else {
-                this.thumbnailActor.width = this.thumbnailWidth;
+                let scaledWidth = this.thumbnailWidth * global.ui_scale;
+                this.thumbnailActor.width = scaledWidth;
                 this.container.style = `width: ${Math.floor(this.thumbnailWidth - 16)}px;`;
                 if (this.state.settings.verticalThumbs && this.state.settings.showThumbs) {
                     this.thumbnailActor.height = this.thumbnailHeight;
@@ -735,7 +727,7 @@ class WindowThumbnail {
 
                 // Replace the old thumbnail
                 if (this.labelContainer) {
-                    this.labelContainer.set_width(this.thumbnailWidth);
+                    this.labelContainer.set_width(scaledWidth);
                 }
                 this.label.text = this.metaWindow.title || '';
                 this.getThumbnail();
