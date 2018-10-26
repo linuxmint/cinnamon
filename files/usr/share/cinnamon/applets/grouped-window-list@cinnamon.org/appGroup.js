@@ -459,6 +459,7 @@ class AppGroup {
             time: BUTTON_BOX_ANIMATION_TIME,
             transition: 'easeOutQuad',
             onComplete: () => {
+                if (!this.label) return;
                 this.label.show();
             }
         });
@@ -679,13 +680,15 @@ class AppGroup {
 
     onAppButtonRelease(actor, event) {
         this.state.trigger('clearDragPlaceholder');
+
         let button = event.get_button();
+        let nWindows = this.groupState.metaWindows.length;
 
         let shouldStartInstance = (
             (button === 1
                 && this.groupState.isFavoriteApp
-                && this.groupState.metaWindows.length === 0
-                && this.state.settings.leftClickAction === 2)
+                && nWindows === 0
+                && (this.state.settings.leftClickAction === 2 || nWindows < 1))
             || (button === 2
                 && this.state.settings.middleClickAction === 2)
         );
@@ -705,7 +708,7 @@ class AppGroup {
         }
 
         let handleMinimizeToggle = (win) => {
-            if (this.state.settings.onClickThumbs && this.groupState.metaWindows.length > 1) {
+            if (this.state.settings.onClickThumbs && nWindows > 1) {
                 if (this.hoverMenu.isOpen) {
                     this.hoverMenu.close();
                 } else {
@@ -728,7 +731,7 @@ class AppGroup {
             if (this.state.settings.leftClickAction === 1) {
                 return;
             }
-            if (this.state.settings.leftClickAction === 3) {
+            if (this.state.settings.leftClickAction === 3 && nWindows > 1) {
                 this.state.trigger('cycleWindows', null, this.actor._delegate);
                 return;
             }
@@ -736,11 +739,11 @@ class AppGroup {
             if (this.rightClickMenu.isOpen) {
                 this.rightClickMenu.toggle();
             }
-            if (this.groupState.metaWindows.length === 1) {
+            if (nWindows === 1) {
                 handleMinimizeToggle(this.groupState.metaWindows[0]);
             } else {
                 let actionTaken = false;
-                for (let i = 0, len = this.groupState.metaWindows.length; i < len; i++) {
+                for (let i = 0, len = nWindows; i < len; i++) {
                     if (this.groupState.lastFocused && this.groupState.metaWindows[i] === this.groupState.lastFocused) {
                         handleMinimizeToggle(this.groupState.metaWindows[i]);
                         actionTaken = true;
