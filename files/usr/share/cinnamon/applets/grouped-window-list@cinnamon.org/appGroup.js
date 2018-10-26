@@ -277,10 +277,6 @@ class AppGroup {
             this.padding /= 2;
         }
 
-        if (this.state.settings.titleDisplay > 1 && !this.labelVisible) {
-            this.iconBox.style = 'padding: 0px;';
-        }
-
         this.actor.style = `padding-left: ${this.padding / global.ui_scale}px; padding-right: 0px;`;
     }
 
