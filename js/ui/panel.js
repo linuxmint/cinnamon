@@ -1927,7 +1927,7 @@ Panel.prototype = {
         this._topPanelBarrier = 0;
         this._bottomPanelBarrier = 0;
         this._shadowBox = null;
-        this._panelZoneIconSizes = [];
+        this._panelZoneIconSizes = null;
 
         this.scaleMode = true; // Obsolete, should be removed after we make sure no spices are still using
 
@@ -2841,12 +2841,8 @@ Panel.prototype = {
 
         if (!panelZoneIconSizes) return;
 
-        let configFound = false;
         let changed = false;
-
-        let cached = Util.find(this._panelZoneIconSizes, (cachedIconSizes) => {
-            return cachedIconSizes.panelId === this.panelId;
-        });
+        let cached = this._panelZoneIconSizes;
 
         Util.each(panelZoneIconSizes, (iconSizes, i) => {
             if (iconSizes.panelId !== this.panelId) return;
@@ -2882,10 +2878,10 @@ Panel.prototype = {
                 }
             };
 
-            configFound = true;
+            this._panelZoneIconSizes = iconSizes;
         });
 
-        if (!configFound) {
+        if (!this._panelZoneIconSizes) {
             let defaultSymbolicSize = this._calculatePanelZoneIconSize(32, true);
             let defaultFullColorSize = this._calculatePanelZoneIconSize(32, false);
 
@@ -2914,10 +2910,10 @@ Panel.prototype = {
                 }
             };
 
+            this._panelZoneIconSizes = defaultZoneConfig;
+
             global.log(`[Panel ${this.panelId}] Creating a new zone configuration`);
         }
-
-        this._panelZoneIconSizes = panelZoneIconSizes;
 
         if (changed) this.emit('icon-size-changed');
     },
@@ -2946,9 +2942,7 @@ Panel.prototype = {
     },
 
     getPanelZoneIconSize: function(locationLabel, iconType) {
-        let zoneConfig = Util.find(this._panelZoneIconSizes, (obj) => {
-            return obj.panelId === this.panelId;
-        });
+        let zoneConfig = this._panelZoneIconSizes;
 
         if (!zoneConfig) {
             let height = this.height / global.ui_scale;
@@ -2964,19 +2958,18 @@ Panel.prototype = {
     },
 
     _removeZoneIconSizes: function() {
-        let zoneIndex = Util.findIndex(this._panelZoneIconSizes, (obj) => {
+        let panelZoneIconSizes = this._getJSONProperty(PANEL_ZONE_ICON_SIZES);
+        let zoneIndex = Util.findIndex(panelZoneIconSizes, (obj) => {
             return obj.panelId === this.panelId;
         });
 
         if (zoneIndex < 0) return;
 
-        this._panelZoneIconSizes.splice(zoneIndex, 1);
+        panelZoneIconSizes.splice(zoneIndex, 1);
 
-        Util.each(this._panelZoneIconSizes, (iconSizes) => {
-            if (iconSizes.hasOwnProperty('cache')) delete iconSizes.cache;
-        });
+        this._panelZoneIconSizes = null;
 
-        global.settings.set_string(PANEL_ZONE_ICON_SIZES, JSON.stringify(this._panelZoneIconSizes));
+        global.settings.set_string(PANEL_ZONE_ICON_SIZES, JSON.stringify(panelZoneIconSizes));
         global.log(`[Panel ${this.panelId}] Removing zone configuration`);
     },
 
