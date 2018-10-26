@@ -106,6 +106,9 @@ function overrideDumpStack() {
 
 function overrideGObject() {
     GObject.Object.prototype.disconnect = function(id) {
+        if (this.is_finalized()) {
+            return true;
+        }
         if (GObject.signal_handler_is_connected (this, id)) {
             return GObject.signal_handler_disconnect(this, id);
         } else {
