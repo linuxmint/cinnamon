@@ -22,13 +22,20 @@ const convertRange = function(value, r1, r2) {
     return ((value - r1[0]) * (r2[1] - r2[0])) / (r1[1] - r1[0]) + r2[0];
 };
 
-const setOpacity = (peekTime, window_actor, targetOpacity) => {
+const setOpacity = (peekTime, window_actor, targetOpacity, cb) => {
     const opacity = convertRange(targetOpacity, [0, 100], [0, 255]);
-    Tweener.addTween(window_actor, {
+
+    const tweenConfig = {
         time: peekTime * 0.001,
         transition: 'easeOutQuad',
         opacity: opacity > 255 ? 255 : opacity
-    });
+    };
+
+    if (typeof cb === 'function') {
+        tweenConfig.onComplete = cb;
+    }
+
+    Tweener.addTween(window_actor, tweenConfig);
 };
 
 class AppMenuButtonRightClickMenu extends Applet.AppletPopupMenu {
@@ -755,12 +762,25 @@ class WindowThumbnail {
         this.state.overlayPreview.set_position(x, y);
         global.overlay_group.add_child(this.state.overlayPreview);
         global.overlay_group.set_child_above_sibling(this.state.overlayPreview, null);
-        setOpacity(this.state.settings.peekTime, this.state.overlayPreview, opacity);
+        setOpacity(this.state.settings.peekTimeIn, this.state.overlayPreview, opacity);
     }
 
     destroyOverlayPreview() {
         if (!this.state.overlayPreview) return;
 
+        if (this.state.settings.peekTimeOut) {
+            setOpacity(
+                this.state.settings.peekTimeOut,
+                this.state.overlayPreview,
+                0,
+                () => this._destroyOverlayPreview()
+            );
+        } else {
+            this._destroyOverlayPreview();
+        }
+    }
+
+    _destroyOverlayPreview() {
         global.overlay_group.remove_child(this.state.overlayPreview);
         this.state.overlayPreview.destroy();
         this.state.set({overlayPreview: null});
