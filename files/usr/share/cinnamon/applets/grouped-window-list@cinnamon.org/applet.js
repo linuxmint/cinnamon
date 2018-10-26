@@ -230,7 +230,8 @@ class GroupedWindowListApplet extends Applet.Applet {
             overlayPreview: null,
             lastCycled: null,
             lastTitleDisplay: null,
-            scrollActive: false
+            scrollActive: false,
+            thumbnailMenuOpen: false,
         });
 
         // key-function pairs of actions that can be triggered from the store's callback queue. This allows the
