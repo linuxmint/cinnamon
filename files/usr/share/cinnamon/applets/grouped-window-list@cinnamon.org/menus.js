@@ -490,6 +490,7 @@ class WindowThumbnail {
         this.actor = new St.BoxLayout({
             name: 'this.actor',
             style_class: 'item-box',
+            important: true,
             reactive: true,
             track_hover: true,
             vertical: true,
@@ -500,7 +501,8 @@ class WindowThumbnail {
         // Override with own theme.
         this.actor.add_style_class_name('thumbnail-box');
         this.thumbnailActor = new St.Bin({
-            style_class: 'thumbnail'
+            style_class: 'thumbnail',
+            important: true
         });
 
         this.container = new St.BoxLayout();
@@ -510,7 +512,8 @@ class WindowThumbnail {
         });
 
         this.label = new St.Label({
-            style_class: 'grouped-window-list-thumbnail-label'
+            style_class: 'grouped-window-list-thumbnail-label',
+            important: true
         });
 
         this.labelContainer = new St.Bin({
@@ -522,8 +525,8 @@ class WindowThumbnail {
         let left = global.ui_scale > 1 ? -10 : 0;
 
         this.button = new St.Button({
-            reactive: true,
             style_class: 'window-close',
+            reactive: true,
             width: CLOSE_BTN_SIZE,
             height: CLOSE_BTN_SIZE,
             style: 'padding: 0px; width: ' + CLOSE_BTN_SIZE + 'px; height: ' + CLOSE_BTN_SIZE + 'px; max-width: ' + CLOSE_BTN_SIZE
@@ -592,11 +595,9 @@ class WindowThumbnail {
 
     onFocusWindowChange() {
         if (this.willUnmount) return;
-        if (
-            this.isFocused &&
-            this.state.settings.highlightLastFocusedThumbnail &&
-            this.groupState.metaWindows.length > 1
-        ) {
+        if (this.isFocused
+            && this.state.settings.highlightLastFocusedThumbnail
+            && this.groupState.metaWindows.length > 1) {
             this.actor.add_style_pseudo_class('outlined');
         } else {
             this.isFocused = false;
